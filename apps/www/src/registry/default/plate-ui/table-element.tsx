@@ -27,8 +27,6 @@ import {
 import { type LucideProps, Combine, Delete, Ungroup } from 'lucide-react';
 import { useReadOnly, useSelected } from 'slate-react';
 
-import { iconVariants } from '@/components/icons';
-
 import { Button } from './button';
 import {
   DropdownMenu,
@@ -67,28 +65,28 @@ export const TableBordersDropdownMenuContent = withRef<
         checked={hasBottomBorder}
         onCheckedChange={getOnSelectTableBorder('bottom')}
       >
-        <BorderBottom className={iconVariants({ size: 'sm' })} />
+        <BorderBottom className="mr-2 size-4" />
         <div>Bottom Border</div>
       </DropdownMenuCheckboxItem>
       <DropdownMenuCheckboxItem
         checked={hasTopBorder}
         onCheckedChange={getOnSelectTableBorder('top')}
       >
-        <BorderTop className={iconVariants({ size: 'sm' })} />
+        <BorderTop className="mr-2 size-4" />
         <div>Top Border</div>
       </DropdownMenuCheckboxItem>
       <DropdownMenuCheckboxItem
         checked={hasLeftBorder}
         onCheckedChange={getOnSelectTableBorder('left')}
       >
-        <BorderLeft className={iconVariants({ size: 'sm' })} />
+        <BorderLeft className="mr-2 size-4" />
         <div>Left Border</div>
       </DropdownMenuCheckboxItem>
       <DropdownMenuCheckboxItem
         checked={hasRightBorder}
         onCheckedChange={getOnSelectTableBorder('right')}
       >
-        <BorderRight className={iconVariants({ size: 'sm' })} />
+        <BorderRight className="mr-2 size-4" />
         <div>Right Border</div>
       </DropdownMenuCheckboxItem>
 
@@ -98,14 +96,14 @@ export const TableBordersDropdownMenuContent = withRef<
         checked={hasNoBorders}
         onCheckedChange={getOnSelectTableBorder('none')}
       >
-        <BorderNone className={iconVariants({ size: 'sm' })} />
+        <BorderNone className="mr-2 size-4" />
         <div>No Border</div>
       </DropdownMenuCheckboxItem>
       <DropdownMenuCheckboxItem
         checked={hasOuterBorders}
         onCheckedChange={getOnSelectTableBorder('outer')}
       >
-        <BorderAll className={iconVariants({ size: 'sm' })} />
+        <BorderAll className="mr-2 size-4" />
         <div>Outside Borders</div>
       </DropdownMenuCheckboxItem>
     </DropdownMenuContent>

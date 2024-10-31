@@ -21,9 +21,17 @@ import { ListStyleType, toggleIndentList } from '@udecode/plate-indent-list';
 import { IndentListPlugin } from '@udecode/plate-indent-list/react';
 import { unwrapList } from '@udecode/plate-list';
 import { ListPlugin } from '@udecode/plate-list/react';
+import {
+  Heading1Icon,
+  Heading2Icon,
+  Heading3Icon,
+  ListIcon,
+  ListOrderedIcon,
+  PilcrowIcon,
+  QuoteIcon,
+} from 'lucide-react';
 
 import { CheckPlugin } from '@/components/context/check-plugin';
-import { Icons } from '@/components/icons';
 import { useMyEditorRef } from '@/registry/default/lib/plate-types';
 import {
   DropdownMenu,
@@ -39,63 +47,63 @@ import { ToolbarButton } from '@/registry/default/plate-ui/toolbar';
 const items = [
   {
     description: 'Paragraph',
-    icon: Icons.paragraph,
+    icon: PilcrowIcon,
     label: 'Paragraph',
     plugin: HeadingPlugin,
     value: ParagraphPlugin.key,
   },
   {
     description: 'Heading 1',
-    icon: Icons.h1,
+    icon: Heading1Icon,
     label: 'Heading 1',
     plugin: HeadingPlugin,
     value: HEADING_KEYS.h1,
   },
   {
     description: 'Heading 2',
-    icon: Icons.h2,
+    icon: Heading2Icon,
     label: 'Heading 2',
     plugin: HeadingPlugin,
     value: HEADING_KEYS.h2,
   },
   {
     description: 'Heading 3',
-    icon: Icons.h3,
+    icon: Heading3Icon,
     label: 'Heading 3',
     plugin: HeadingPlugin,
     value: HEADING_KEYS.h3,
   },
   {
     description: 'Bulleted list',
-    icon: Icons.ul,
+    icon: ListIcon,
     label: 'Bulleted list',
     plugin: ListPlugin,
     value: 'ul',
   },
   {
     description: 'Numbered list',
-    icon: Icons.ol,
+    icon: ListOrderedIcon,
     label: 'Numbered list',
     plugin: ListPlugin,
     value: 'ol',
   },
   {
     description: 'Bulleted list',
-    icon: Icons.ul,
+    icon: ListIcon,
     label: 'Bulleted list',
     plugin: IndentListPlugin,
     value: ListStyleType.Disc,
   },
   {
     description: 'Numbered list',
-    icon: Icons.ol,
+    icon: ListOrderedIcon,
     label: 'Numbered list',
     plugin: IndentListPlugin,
     value: ListStyleType.Decimal,
   },
   {
     description: 'Quote (⌘+⇧+.)',
-    icon: Icons.blockquote,
+    icon: QuoteIcon,
     label: 'Quote',
     plugin: BlockquotePlugin,
     value: BlockquotePlugin.key,

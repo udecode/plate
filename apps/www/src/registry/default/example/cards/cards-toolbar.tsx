@@ -13,8 +13,16 @@ import {
 } from '@udecode/plate-font/react';
 import { ListStyleType } from '@udecode/plate-indent-list';
 import { ImagePlugin } from '@udecode/plate-media/react';
+import {
+  BaselineIcon,
+  BoldIcon,
+  Code2Icon,
+  ItalicIcon,
+  PaintBucketIcon,
+  StrikethroughIcon,
+  UnderlineIcon,
+} from 'lucide-react';
 
-import { Icons, iconVariants } from '@/components/icons';
 import { AlignDropdownMenu } from '@/registry/default/plate-ui/align-dropdown-menu';
 import { ColorDropdownMenu } from '@/registry/default/plate-ui/color-dropdown-menu';
 import { CommentToolbarButton } from '@/registry/default/plate-ui/comment-toolbar-button';
@@ -52,29 +60,29 @@ export function CardsToolbar() {
 
           <ToolbarGroup>
             <MarkToolbarButton nodeType={BoldPlugin.key} tooltip="Bold (⌘+B)">
-              <Icons.bold />
+              <BoldIcon />
             </MarkToolbarButton>
             <MarkToolbarButton
               nodeType={ItalicPlugin.key}
               tooltip="Italic (⌘+I)"
             >
-              <Icons.italic />
+              <ItalicIcon />
             </MarkToolbarButton>
             <MarkToolbarButton
               nodeType={UnderlinePlugin.key}
               tooltip="Underline (⌘+U)"
             >
-              <Icons.underline />
+              <UnderlineIcon />
             </MarkToolbarButton>
 
             <MarkToolbarButton
               nodeType={StrikethroughPlugin.key}
               tooltip="Strikethrough (⌘+⇧+M)"
             >
-              <Icons.strikethrough />
+              <StrikethroughIcon />
             </MarkToolbarButton>
             <MarkToolbarButton nodeType={CodePlugin.key} tooltip="Code (⌘+E)">
-              <Icons.code />
+              <Code2Icon />
             </MarkToolbarButton>
           </ToolbarGroup>
 
@@ -83,13 +91,13 @@ export function CardsToolbar() {
               nodeType={FontColorPlugin.key}
               tooltip="Text Color"
             >
-              <Icons.color className={iconVariants({ variant: 'toolbar' })} />
+              <BaselineIcon className="size-5" />
             </ColorDropdownMenu>
             <ColorDropdownMenu
               nodeType={FontBackgroundColorPlugin.key}
               tooltip="Highlight Color"
             >
-              <Icons.bg className={iconVariants({ variant: 'toolbar' })} />
+              <PaintBucketIcon className="size-5" />
             </ColorDropdownMenu>
           </ToolbarGroup>
 

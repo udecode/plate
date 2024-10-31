@@ -28,10 +28,18 @@ import {
 import { ImagePlugin } from '@udecode/plate-media/react';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
-import { SparklesIcon } from 'lucide-react';
+import {
+  BaselineIcon,
+  BoldIcon,
+  Code2Icon,
+  ItalicIcon,
+  PaintBucketIcon,
+  SparklesIcon,
+  StrikethroughIcon,
+  UnderlineIcon,
+} from 'lucide-react';
 
 import { CheckPlugin } from '@/components/context/check-plugin';
-import { Icons, iconVariants } from '@/components/icons';
 import { AIToolbarButton } from '@/registry/default/plate-ui/ai-toolbar-button';
 // import { AIToolbarButton } from '@/registry/default/plate-ui/ai-toolbar-button';
 import { AlignDropdownMenu } from '@/registry/default/plate-ui/align-dropdown-menu';
@@ -94,7 +102,7 @@ export function PlaygroundFixedToolbarButtons() {
                   nodeType={BoldPlugin.key}
                   tooltip="Bold (⌘+B)"
                 >
-                  <Icons.bold />
+                  <BoldIcon />
                 </MarkToolbarButton>
               </CheckPlugin>
 
@@ -103,7 +111,7 @@ export function PlaygroundFixedToolbarButtons() {
                   nodeType={ItalicPlugin.key}
                   tooltip="Italic (⌘+I)"
                 >
-                  <Icons.italic />
+                  <ItalicIcon />
                 </MarkToolbarButton>
               </CheckPlugin>
 
@@ -112,7 +120,7 @@ export function PlaygroundFixedToolbarButtons() {
                   nodeType={UnderlinePlugin.key}
                   tooltip="Underline (⌘+U)"
                 >
-                  <Icons.underline />
+                  <UnderlineIcon />
                 </MarkToolbarButton>
               </CheckPlugin>
 
@@ -121,7 +129,7 @@ export function PlaygroundFixedToolbarButtons() {
                   nodeType={StrikethroughPlugin.key}
                   tooltip="Strikethrough (⌘+⇧+M)"
                 >
-                  <Icons.strikethrough />
+                  <StrikethroughIcon />
                 </MarkToolbarButton>
               </CheckPlugin>
 
@@ -130,7 +138,7 @@ export function PlaygroundFixedToolbarButtons() {
                   nodeType={CodePlugin.key}
                   tooltip="Code (⌘+E)"
                 >
-                  <Icons.code />
+                  <Code2Icon />
                 </MarkToolbarButton>
               </CheckPlugin>
 
@@ -139,9 +147,7 @@ export function PlaygroundFixedToolbarButtons() {
                   nodeType={FontColorPlugin.key}
                   tooltip="Text Color"
                 >
-                  <Icons.color
-                    className={iconVariants({ variant: 'toolbar' })}
-                  />
+                  <BaselineIcon className="size-5" />
                 </ColorDropdownMenu>
               </CheckPlugin>
 
@@ -150,7 +156,7 @@ export function PlaygroundFixedToolbarButtons() {
                   nodeType={FontBackgroundColorPlugin.key}
                   tooltip="Highlight Color"
                 >
-                  <Icons.bg className={iconVariants({ variant: 'toolbar' })} />
+                  <PaintBucketIcon className="size-5" />
                 </ColorDropdownMenu>
               </CheckPlugin>
             </ToolbarGroup>

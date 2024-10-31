@@ -26,8 +26,6 @@ import {
   Trash,
 } from 'lucide-react';
 
-import { iconVariants } from '@/components/icons';
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -64,7 +62,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
       >
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>
-            <Table className={iconVariants({ variant: 'menuItem' })} />
+            <Table className="mr-2 size-5" />
             <span>Table</span>
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent>
@@ -75,7 +73,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
                 focusEditor(editor);
               }}
             >
-              <Plus className={iconVariants({ variant: 'menuItem' })} />
+              <Plus className="mr-2 size-5" />
               Insert table
             </DropdownMenuItem>
             <DropdownMenuItem
@@ -86,7 +84,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
                 focusEditor(editor);
               }}
             >
-              <Trash className={iconVariants({ variant: 'menuItem' })} />
+              <Trash className="mr-2 size-5" />
               Delete table
             </DropdownMenuItem>
           </DropdownMenuSubContent>
@@ -94,9 +92,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
 
         <DropdownMenuSub>
           <DropdownMenuSubTrigger disabled={!tableSelected}>
-            <RectangleVertical
-              className={iconVariants({ variant: 'menuItem' })}
-            />
+            <RectangleVertical className="mr-2 size-5" />
             <span>Column</span>
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent>
@@ -108,7 +104,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
                 focusEditor(editor);
               }}
             >
-              <Plus className={iconVariants({ variant: 'menuItem' })} />
+              <Plus className="mr-2 size-5" />
               Insert column after
             </DropdownMenuItem>
             <DropdownMenuItem
@@ -119,7 +115,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
                 focusEditor(editor);
               }}
             >
-              <Minus className={iconVariants({ variant: 'menuItem' })} />
+              <Minus className="mr-2 size-5" />
               Delete column
             </DropdownMenuItem>
           </DropdownMenuSubContent>
@@ -127,9 +123,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
 
         <DropdownMenuSub>
           <DropdownMenuSubTrigger disabled={!tableSelected}>
-            <RectangleHorizontal
-              className={iconVariants({ variant: 'menuItem' })}
-            />
+            <RectangleHorizontal className="mr-2 size-5" />
             <span>Row</span>
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent>
@@ -141,7 +135,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
                 focusEditor(editor);
               }}
             >
-              <Plus className={iconVariants({ variant: 'menuItem' })} />
+              <Plus className="mr-2 size-5" />
               Insert row after
             </DropdownMenuItem>
             <DropdownMenuItem
@@ -152,7 +146,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
                 focusEditor(editor);
               }}
             >
-              <Minus className={iconVariants({ variant: 'menuItem' })} />
+              <Minus className="mr-2 size-5" />
               Delete row
             </DropdownMenuItem>
           </DropdownMenuSubContent>

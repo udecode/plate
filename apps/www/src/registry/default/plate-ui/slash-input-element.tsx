@@ -9,8 +9,15 @@ import { AIChatPlugin } from '@udecode/plate-ai/react';
 import { DatePlugin } from '@udecode/plate-date/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { ListStyleType, toggleIndentList } from '@udecode/plate-indent-list';
-
-import { Icons } from '@/components/icons';
+import {
+  CalendarIcon,
+  Heading1Icon,
+  Heading2Icon,
+  Heading3Icon,
+  ListIcon,
+  ListOrderedIcon,
+  SparklesIcon,
+} from 'lucide-react';
 
 import {
   InlineCombobox,
@@ -33,35 +40,35 @@ interface SlashCommandRule {
 const rules: SlashCommandRule[] = [
   {
     focusEditor: false,
-    icon: Icons.ai,
+    icon: SparklesIcon,
     value: 'AI',
     onSelect: (editor) => {
       editor.getApi(AIChatPlugin).aiChat.show();
     },
   },
   {
-    icon: Icons.h1,
+    icon: Heading1Icon,
     value: 'Heading 1',
     onSelect: (editor) => {
       editor.tf.toggle.block({ type: HEADING_KEYS.h1 });
     },
   },
   {
-    icon: Icons.h2,
+    icon: Heading2Icon,
     value: 'Heading 2',
     onSelect: (editor) => {
       editor.tf.toggle.block({ type: HEADING_KEYS.h2 });
     },
   },
   {
-    icon: Icons.h3,
+    icon: Heading3Icon,
     value: 'Heading 3',
     onSelect: (editor) => {
       editor.tf.toggle.block({ type: HEADING_KEYS.h3 });
     },
   },
   {
-    icon: Icons.ul,
+    icon: ListIcon,
     keywords: ['ul', 'unordered list'],
     value: 'Bulleted list',
     onSelect: (editor) => {
@@ -71,7 +78,7 @@ const rules: SlashCommandRule[] = [
     },
   },
   {
-    icon: Icons.ol,
+    icon: ListOrderedIcon,
     keywords: ['ol', 'ordered list'],
     value: 'Numbered list',
     onSelect: (editor) => {
@@ -81,7 +88,7 @@ const rules: SlashCommandRule[] = [
     },
   },
   {
-    icon: Icons.add,
+    icon: CalendarIcon,
     keywords: ['inline', 'date'],
     value: 'Date',
     onSelect: (editor) => {
