@@ -4,13 +4,19 @@
   ],
   "doc": {
     "description": "A toolbar button for decreasing block indentation.",
+    "docs": [
+      {
+        "route": "/docs/indent",
+        "title": "Indent"
+      }
+    ],
     "examples": [
       "indent-demo"
     ]
   },
   "files": [
     {
-      "content": "'use client';\n\nimport React from 'react';\n\nimport { withRef } from '@udecode/cn';\nimport { useOutdentButton } from '@udecode/plate-indent/react';\n\nimport { Icons } from '@/components/icons';\n\nimport { ToolbarButton } from './toolbar';\n\nexport const OutdentToolbarButton = withRef<typeof ToolbarButton>(\n  (rest, ref) => {\n    const { props } = useOutdentButton();\n\n    return (\n      <ToolbarButton ref={ref} tooltip=\"Outdent\" {...props} {...rest}>\n        <Icons.outdent />\n      </ToolbarButton>\n    );\n  }\n);\n",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { withRef } from '@udecode/cn';\nimport { useOutdentButton } from '@udecode/plate-indent/react';\nimport { Outdent } from 'lucide-react';\n\nimport { ToolbarButton } from './toolbar';\n\nexport const OutdentToolbarButton = withRef<typeof ToolbarButton>(\n  (rest, ref) => {\n    const { props } = useOutdentButton();\n\n    return (\n      <ToolbarButton ref={ref} tooltip=\"Outdent\" {...props} {...rest}>\n        <Outdent />\n      </ToolbarButton>\n    );\n  }\n);\n",
       "path": "plate-ui/outdent-toolbar-button.tsx",
       "target": "components/plate-ui/outdent-toolbar-button.tsx",
       "type": "registry:ui"

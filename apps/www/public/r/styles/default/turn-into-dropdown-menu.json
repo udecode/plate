@@ -1,12 +1,28 @@
 {
   "dependencies": [
     "@udecode/plate-block-quote",
-    "@udecode/plate-heading"
+    "@udecode/plate-heading",
+    "@udecode/plate-indent-list",
+    "@radix-ui/react-dropdown-menu"
   ],
   "doc": {
     "description": "A menu for converting between different block types.",
+    "docs": [
+      {
+        "route": "/docs/basic-elements",
+        "title": "Basic Elements"
+      },
+      {
+        "route": "/docs/indent-list",
+        "title": "Indent List"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/turn-into-dropdown-menu"
+      }
+    ],
     "examples": [
-      "basic-demo"
+      "basic-nodes-demo",
+      "basic-nodes-pro"
     ]
   },
   "files": [

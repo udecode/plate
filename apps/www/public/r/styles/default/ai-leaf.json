@@ -1,7 +1,5 @@
 {
-  "dependencies": [
-    "@udecode/plate-ai"
-  ],
+  "dependencies": [],
   "doc": {
     "description": "A text highlighter for AI-generated content.",
     "docs": [

@@ -87,7 +87,7 @@ export function rehypeComponent() {
                 }
 
                 const file = component.files[0];
-                
+
                 const source = getComponentSourceFileContent(file)!;
 
                 // Add code as children so that rehype can take over at build time.

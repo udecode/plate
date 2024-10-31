@@ -112,7 +112,6 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
 
   const value = usePlaygroundValue(id);
   const key = settingsStore.use.version();
-
   const editorId = id || 'playground-' + key;
 
   return usePlateEditor(

@@ -1,16 +1,17 @@
 {
-  "dependencies": [
-    "@udecode/plate-horizontal-rule"
-  ],
+  "dependencies": [],
   "doc": {
     "description": "A horizontal rule component with focus states.",
     "docs": [
       {
         "route": "/docs/horizontal-rule"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/hr-element"
       }
     ],
     "examples": [
-      "horizontal-rule-demo"
+      "hr-demo"
     ],
     "title": "Horizontal Rule Element"
   },

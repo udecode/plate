@@ -1,7 +1,5 @@
 {
-  "dependencies": [
-    "@udecode/plate-find-replace"
-  ],
+  "dependencies": [],
   "doc": {
     "description": "A component that highlights search results in text."
   },

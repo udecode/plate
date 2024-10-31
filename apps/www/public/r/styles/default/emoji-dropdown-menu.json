@@ -1,16 +1,27 @@
 {
   "dependencies": [
+    "@udecode/plate-emoji",
     "@radix-ui/react-popover"
   ],
   "doc": {
     "description": "A dropdown menu for emoji selection and insertion.",
+    "docs": [
+      {
+        "route": "/docs/emoji",
+        "title": "Emoji"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/emoji-picker"
+      }
+    ],
     "examples": [
-      "emoji-demo"
+      "emoji-demo",
+      "emoji-pro"
     ]
   },
   "files": [
     {
-      "content": "'use client';\n\nimport React from 'react';\n\nimport {\n  type EmojiDropdownMenuOptions,\n  useEmojiDropdownMenuState,\n} from '@udecode/plate-emoji/react';\n\nimport { Icons } from '@/components/icons';\n\nimport { emojiCategoryIcons, emojiSearchIcons } from './emoji-icons';\nimport { EmojiPicker } from './emoji-picker';\nimport { EmojiToolbarDropdown } from './emoji-toolbar-dropdown';\nimport { ToolbarButton } from './toolbar';\n\ntype EmojiDropdownMenuProps = {\n  options?: EmojiDropdownMenuOptions;\n} & React.ComponentPropsWithoutRef<typeof ToolbarButton>;\n\nexport function EmojiDropdownMenu({\n  options,\n  ...props\n}: EmojiDropdownMenuProps) {\n  const { emojiPickerState, isOpen, setIsOpen } =\n    useEmojiDropdownMenuState(options);\n\n  return (\n    <EmojiToolbarDropdown\n      control={\n        <ToolbarButton pressed={isOpen} tooltip=\"Emoji\" isDropdown {...props}>\n          <Icons.emoji className=\"size-4\" />\n        </ToolbarButton>\n      }\n      isOpen={isOpen}\n      setIsOpen={setIsOpen}\n    >\n      <EmojiPicker\n        {...emojiPickerState}\n        icons={{\n          categories: emojiCategoryIcons,\n          search: emojiSearchIcons,\n        }}\n        isOpen={isOpen}\n        setIsOpen={setIsOpen}\n        settings={options?.settings}\n      />\n    </EmojiToolbarDropdown>\n  );\n}\n",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport {\n  type EmojiDropdownMenuOptions,\n  useEmojiDropdownMenuState,\n} from '@udecode/plate-emoji/react';\nimport { Smile } from 'lucide-react';\n\nimport { emojiCategoryIcons, emojiSearchIcons } from './emoji-icons';\nimport { EmojiPicker } from './emoji-picker';\nimport { EmojiToolbarDropdown } from './emoji-toolbar-dropdown';\nimport { ToolbarButton } from './toolbar';\n\ntype EmojiDropdownMenuProps = {\n  options?: EmojiDropdownMenuOptions;\n} & React.ComponentPropsWithoutRef<typeof ToolbarButton>;\n\nexport function EmojiDropdownMenu({\n  options,\n  ...props\n}: EmojiDropdownMenuProps) {\n  const { emojiPickerState, isOpen, setIsOpen } =\n    useEmojiDropdownMenuState(options);\n\n  return (\n    <EmojiToolbarDropdown\n      control={\n        <ToolbarButton pressed={isOpen} tooltip=\"Emoji\" isDropdown {...props}>\n          <Smile className=\"size-4\" />\n        </ToolbarButton>\n      }\n      isOpen={isOpen}\n      setIsOpen={setIsOpen}\n    >\n      <EmojiPicker\n        {...emojiPickerState}\n        icons={{\n          categories: emojiCategoryIcons,\n          search: emojiSearchIcons,\n        }}\n        isOpen={isOpen}\n        setIsOpen={setIsOpen}\n        settings={options?.settings}\n      />\n    </EmojiToolbarDropdown>\n  );\n}\n",
       "path": "plate-ui/emoji-dropdown-menu.tsx",
       "target": "components/plate-ui/emoji-dropdown-menu.tsx",
       "type": "registry:ui"

@@ -1,12 +1,23 @@
 {
   "dependencies": [
-    "@ariakit/react",
-    "@udecode/plate-combobox"
+    "@udecode/plate-combobox",
+    "@ariakit/react"
   ],
   "doc": {
     "description": "A combobox for inline suggestions.",
+    "docs": [
+      {
+        "route": "/docs/combobox",
+        "title": "Combobox"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/inline-combobox"
+      }
+    ],
     "examples": [
-      "combobox-demo"
+      "mention-demo",
+      "slash-command-demo",
+      "emoji-demo"
     ]
   },
   "files": [

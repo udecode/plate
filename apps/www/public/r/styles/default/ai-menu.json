@@ -7,6 +7,16 @@
   ],
   "doc": {
     "description": "A menu for AI-powered content generation and insertion.",
+    "docs": [
+      {
+        "route": "/docs/ai",
+        "title": "AI"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/ai-menu",
+        "title": "AI Menu"
+      }
+    ],
     "examples": [
       "ai-demo",
       "ai-pro"

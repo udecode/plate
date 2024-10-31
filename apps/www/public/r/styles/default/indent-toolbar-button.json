@@ -4,13 +4,19 @@
   ],
   "doc": {
     "description": "A toolbar control for block indentation.",
+    "docs": [
+      {
+        "route": "/docs/indent",
+        "title": "Indent"
+      }
+    ],
     "examples": [
       "indent-demo"
     ]
   },
   "files": [
     {
-      "content": "'use client';\n\nimport React from 'react';\n\nimport { withRef } from '@udecode/cn';\nimport { useIndentButton } from '@udecode/plate-indent/react';\n\nimport { Icons } from '@/components/icons';\n\nimport { ToolbarButton } from './toolbar';\n\nexport const IndentToolbarButton = withRef<typeof ToolbarButton>(\n  (rest, ref) => {\n    const { props } = useIndentButton();\n\n    return (\n      <ToolbarButton ref={ref} tooltip=\"Indent\" {...props} {...rest}>\n        <Icons.indent />\n      </ToolbarButton>\n    );\n  }\n);\n",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { withRef } from '@udecode/cn';\nimport { useIndentButton } from '@udecode/plate-indent/react';\nimport { Indent } from 'lucide-react';\n\nimport { ToolbarButton } from './toolbar';\n\nexport const IndentToolbarButton = withRef<typeof ToolbarButton>(\n  (rest, ref) => {\n    const { props } = useIndentButton();\n\n    return (\n      <ToolbarButton ref={ref} tooltip=\"Indent\" {...props} {...rest}>\n        <Indent />\n      </ToolbarButton>\n    );\n  }\n);\n",
       "path": "plate-ui/indent-toolbar-button.tsx",
       "target": "components/plate-ui/indent-toolbar-button.tsx",
       "type": "registry:ui"

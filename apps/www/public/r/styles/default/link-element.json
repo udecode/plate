@@ -7,6 +7,9 @@
     "docs": [
       {
         "route": "/docs/link"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/link-element"
       }
     ],
     "examples": [

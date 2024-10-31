@@ -1,11 +1,24 @@
 {
   "dependencies": [
-    "@radix-ui/react-context-menu"
+    "@udecode/plate-ai",
+    "@udecode/plate-block-quote",
+    "@udecode/plate-heading",
+    "@udecode/plate-indent-list",
+    "@udecode/plate-selection"
   ],
   "doc": {
     "description": "A context menu for block-level operations.",
+    "docs": [
+      {
+        "route": "/docs/block-menu"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/block-context-menu"
+      }
+    ],
     "examples": [
-      "context-menu-demo"
+      "block-menu-demo",
+      "block-menu-pro"
     ],
     "label": "New"
   },

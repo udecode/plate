@@ -6,11 +6,15 @@
     "description": "A syntax highlighting component for code blocks.",
     "docs": [
       {
-        "route": "/docs/comments"
+        "route": "/docs/basic-elements"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/code-syntax-leaf"
       }
     ],
     "examples": [
-      "basic-elements-demo"
+      "basic-elements-demo",
+      "basic-nodes-pro"
     ]
   },
   "files": [

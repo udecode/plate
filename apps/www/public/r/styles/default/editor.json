@@ -2,6 +2,11 @@
   "dependencies": [],
   "doc": {
     "description": "A container for the editor content and styling.",
+    "docs": [
+      {
+        "route": "https://pro.platejs.org/docs/components/editor"
+      }
+    ],
     "examples": [
       "editor-default",
       "editor-disabled",

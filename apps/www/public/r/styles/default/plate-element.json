@@ -1,9 +1,17 @@
 {
-  "dependencies": [],
+  "dependencies": [
+    "@udecode/plate-selection"
+  ],
   "doc": {
     "description": "A base element with block selection support.",
+    "docs": [
+      {
+        "route": "/docs/block-selection",
+        "title": "Block Selection"
+      }
+    ],
     "examples": [
-      "basic-demo"
+      "basic-nodes-demo"
     ],
     "label": "New"
   },

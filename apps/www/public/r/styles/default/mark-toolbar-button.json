@@ -4,8 +4,15 @@
   ],
   "doc": {
     "description": "A toolbar control for basic text formatting.",
+    "docs": [
+      {
+        "route": "/docs/basic-marks",
+        "title": "Basic Marks"
+      }
+    ],
     "examples": [
-      "basic-marks-demo"
+      "basic-marks-demo",
+      "basic-nodes-pro"
     ]
   },
   "files": [

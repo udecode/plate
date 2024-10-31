@@ -199,7 +199,7 @@ export function ComponentInstallation({
                     <H3>Plate Plus</H3>
 
                     <ComponentPreviewPro
-                      id={example.name}
+                      id={example.name.replace('-pro', '')}
                       description={example.doc?.description}
                     />
                   </React.Fragment>

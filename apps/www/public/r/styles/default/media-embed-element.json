@@ -1,6 +1,7 @@
 {
   "dependencies": [
     "@udecode/plate-media",
+    "@udecode/plate-resizable",
     "react-tweet",
     "react-lite-youtube-embed"
   ],
@@ -9,10 +10,14 @@
     "docs": [
       {
         "route": "/docs/media"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/media-embed-element"
       }
     ],
     "examples": [
-      "media-demo"
+      "media-demo",
+      "media-toolbar-pro"
     ]
   },
   "files": [

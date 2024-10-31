@@ -81,9 +81,21 @@ export const Index: Record<string, any> = {
       name: "column-element",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["command","resizable","plate-element"],
-      files: ["registry/default/plate-ui/column-element.tsx","registry/default/plate-ui/column-group-element.tsx"],
+      registryDependencies: ["resizable","plate-element"],
+      files: ["registry/default/plate-ui/column-element.tsx"],
       component: React.lazy(() => import("@/registry/default/plate-ui/column-element.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
+    "column-group-element": {
+      name: "column-group-element",
+      description: "",
+      type: "registry:ui",
+      registryDependencies: ["command","resizable","plate-element"],
+      files: ["registry/default/plate-ui/column-group-element.tsx"],
+      component: React.lazy(() => import("@/registry/default/plate-ui/column-group-element.tsx")),
       source: "",
       category: "",
       subcategory: "",
@@ -1025,8 +1037,8 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
-    "alignment-demo": {
-      name: "alignment-demo",
+    "align-demo": {
+      name: "align-demo",
       description: "",
       type: "registry:example",
       registryDependencies: [],
@@ -1037,8 +1049,8 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
-    "context-menu-demo": {
-      name: "context-menu-demo",
+    "block-menu-demo": {
+      name: "block-menu-demo",
       description: "",
       type: "registry:example",
       registryDependencies: [],
@@ -1049,8 +1061,8 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
-    "selection-demo": {
-      name: "selection-demo",
+    "block-selection-demo": {
+      name: "block-selection-demo",
       description: "",
       type: "registry:example",
       registryDependencies: [],
@@ -1073,8 +1085,8 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
-    "color-demo": {
-      name: "color-demo",
+    "font-demo": {
+      name: "font-demo",
       description: "",
       type: "registry:example",
       registryDependencies: [],
@@ -1085,8 +1097,8 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
-    "comments-demo": {
-      name: "comments-demo",
+    "column-demo": {
+      name: "column-demo",
       description: "",
       type: "registry:example",
       registryDependencies: [],
@@ -1097,8 +1109,44 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
-    "collaboration-demo": {
-      name: "collaboration-demo",
+    "copilot-demo": {
+      name: "copilot-demo",
+      description: "",
+      type: "registry:example",
+      registryDependencies: [],
+      files: ["registry/default/example/playground-demo.tsx"],
+      component: React.lazy(() => import("@/registry/default/example/playground-demo.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
+    "comment-demo": {
+      name: "comment-demo",
+      description: "",
+      type: "registry:example",
+      registryDependencies: [],
+      files: ["registry/default/example/playground-demo.tsx"],
+      component: React.lazy(() => import("@/registry/default/example/playground-demo.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
+    "date-demo": {
+      name: "date-demo",
+      description: "",
+      type: "registry:example",
+      registryDependencies: [],
+      files: ["registry/default/example/playground-demo.tsx"],
+      component: React.lazy(() => import("@/registry/default/example/playground-demo.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
+    "excalidraw-demo": {
+      name: "excalidraw-demo",
       description: "",
       type: "registry:example",
       registryDependencies: [],
@@ -1181,8 +1229,8 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
-    "horizontal-rule-demo": {
-      name: "horizontal-rule-demo",
+    "hr-demo": {
+      name: "hr-demo",
       description: "",
       type: "registry:example",
       registryDependencies: [],
@@ -1313,8 +1361,8 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
-    "slash-menu-demo": {
-      name: "slash-menu-demo",
+    "slash-command-demo": {
+      name: "slash-command-demo",
       description: "",
       type: "registry:example",
       registryDependencies: [],

@@ -5,7 +5,7 @@ import * as React from 'react';
 import * as ToolbarPrimitive from '@radix-ui/react-toolbar';
 import { cn, withCn, withRef, withVariants } from '@udecode/cn';
 import { type VariantProps, cva } from 'class-variance-authority';
-import { ArrowDown } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 
 import { Separator } from './separator';
 import { withTooltip } from './tooltip';
@@ -98,7 +98,7 @@ const ToolbarButton = withTooltip(
                   {children}
                 </div>
                 <div>
-                  <ArrowDown
+                  <ChevronDown
                     className="ml-0.5 size-3.5 text-muted-foreground"
                     data-icon
                   />

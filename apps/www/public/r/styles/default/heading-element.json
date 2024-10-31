@@ -1,16 +1,18 @@
 {
-  "dependencies": [
-    "@udecode/plate-heading"
-  ],
+  "dependencies": [],
   "doc": {
     "description": "A heading with multiple level support.",
     "docs": [
       {
         "route": "/docs/basic-elements"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/heading-element"
       }
     ],
     "examples": [
-      "basic-elements-demo"
+      "basic-elements-demo",
+      "basic-nodes-pro"
     ]
   },
   "files": [

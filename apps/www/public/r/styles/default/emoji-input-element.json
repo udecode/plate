@@ -7,6 +7,9 @@
     "docs": [
       {
         "route": "/docs/emoji"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/emoji-input-element"
       }
     ],
     "examples": [

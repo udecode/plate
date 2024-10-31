@@ -1,11 +1,17 @@
 {
   "dependencies": [
-    "@udecode/plate-resizable"
+    "react-resizable-panels"
   ],
   "doc": {
     "description": "A resizable wrapper with resize handles.",
+    "docs": [
+      {
+        "route": "https://pro.platejs.org/docs/components/resizable"
+      }
+    ],
     "examples": [
-      "resizable-demo"
+      "media-demo",
+      "media-toolbar-pro"
     ]
   },
   "files": [

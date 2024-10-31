@@ -2,8 +2,13 @@
   "dependencies": [],
   "doc": {
     "description": "A visual overlay for collaborative cursors and selections.",
+    "docs": [
+      {
+        "route": "https://pro.platejs.org/docs/components/cursor-overlay"
+      }
+    ],
     "examples": [
-      "collaboration-demo"
+      "ai-demo"
     ]
   },
   "files": [

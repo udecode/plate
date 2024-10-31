@@ -1,7 +1,5 @@
 {
-  "dependencies": [
-    "@udecode/plate-highlight"
-  ],
+  "dependencies": [],
   "doc": {
     "description": "A text highlighter with customizable colors.",
     "examples": [

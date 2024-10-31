@@ -1,11 +1,17 @@
 {
   "dependencies": [
-    "@udecode/plate-alignment"
+    "@udecode/plate-alignment",
+    "@radix-ui/react-dropdown-menu"
   ],
   "doc": {
     "description": "A dropdown menu for text alignment controls.",
+    "docs": [
+      {
+        "route": "/docs/alignment"
+      }
+    ],
     "examples": [
-      "alignment-demo"
+      "align-demo"
     ]
   },
   "files": [

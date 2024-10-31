@@ -53,7 +53,7 @@ export function DocContent({
     <main
       className={cn(
         'relative py-6 lg:gap-10 lg:py-8',
-        'xl:grid xl:grid-cols-[1fr_200px]'
+        'lg:grid lg:grid-cols-[1fr_230px]'
       )}
     >
       <div className="mx-auto w-full min-w-0">
@@ -110,8 +110,8 @@ export function DocContent({
                   })
                 )}
                 href={item.route as any}
-                rel={item.route?.includes('https') ? 'noreferrer' : undefined}
-                target={item.route?.includes('https') ? '_blank' : undefined}
+                // rel={item.route?.includes('https') ? 'noreferrer' : undefined}
+                // target={item.route?.includes('https') ? '_blank' : undefined}
               >
                 {getDocTitle(item)}
               </Link>
@@ -125,14 +125,14 @@ export function DocContent({
       </div>
 
       {doc?.toc && toc && (
-        <div className="hidden text-sm xl:block">
-          <div className="sticky top-16 -mt-10 pt-4">
-            <ScrollArea className="h-full pb-10">
-              <div className="sticky top-16 -mt-10 flex max-h-[calc(75vh-3.5rem)] w-[300px] flex-col py-12">
+        <div className="hidden text-sm lg:block">
+          <div className="sticky top-16 -mt-10 flex h-[calc(100vh-84px)] flex-col pt-4">
+            <ScrollArea className="grow pb-2">
+              <div className="sticky top-0 flex w-[230px] flex-col">
                 <DashboardTableOfContents toc={toc} />
               </div>
             </ScrollArea>
-            <div className="mt-2">
+            <div className="mt-2 shrink-0">
               <OpenInPlus />
             </div>
           </div>

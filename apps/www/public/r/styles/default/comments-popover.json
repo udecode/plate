@@ -1,11 +1,22 @@
 {
   "dependencies": [
-    "@udecode/plate-comments"
+    "@udecode/plate-comments",
+    "date-fns"
   ],
   "doc": {
     "description": "A popover interface for managing comments and replies.",
+    "docs": [
+      {
+        "route": "/docs/comments",
+        "title": "Comments"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/comments-popover"
+      }
+    ],
     "examples": [
-      "comments-demo"
+      "comment-demo",
+      "comments-pro"
     ]
   },
   "files": [
@@ -28,7 +39,7 @@
       "type": "registry:ui"
     },
     {
-      "content": "'use client';\n\nimport React from 'react';\n\nimport { cn } from '@udecode/cn';\nimport {\n  useCommentDeleteButton,\n  useCommentDeleteButtonState,\n  useCommentEditButton,\n  useCommentEditButtonState,\n} from '@udecode/plate-comments/react';\n\nimport { Icons } from '@/components/icons';\n\nimport { Button } from './button';\nimport {\n  DropdownMenu,\n  DropdownMenuContent,\n  DropdownMenuItem,\n  DropdownMenuTrigger,\n} from './dropdown-menu';\n\nexport function CommentMoreDropdown() {\n  const editButtonState = useCommentEditButtonState();\n  const { props: editProps } = useCommentEditButton(editButtonState);\n  const deleteButtonState = useCommentDeleteButtonState();\n  const { props: deleteProps } = useCommentDeleteButton(deleteButtonState);\n\n  return (\n    <DropdownMenu modal={false}>\n      <DropdownMenuTrigger asChild>\n        <Button variant=\"ghost\" className={cn('h-6 p-1 text-muted-foreground')}>\n          <Icons.more className=\"size-4\" />\n        </Button>\n      </DropdownMenuTrigger>\n      <DropdownMenuContent>\n        <DropdownMenuItem {...editProps}>Edit comment</DropdownMenuItem>\n        <DropdownMenuItem {...deleteProps}>Delete comment</DropdownMenuItem>\n      </DropdownMenuContent>\n    </DropdownMenu>\n  );\n}\n",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { cn } from '@udecode/cn';\nimport {\n  useCommentDeleteButton,\n  useCommentDeleteButtonState,\n  useCommentEditButton,\n  useCommentEditButtonState,\n} from '@udecode/plate-comments/react';\nimport { MoreHorizontal } from 'lucide-react';\n\nimport { Button } from './button';\nimport {\n  DropdownMenu,\n  DropdownMenuContent,\n  DropdownMenuItem,\n  DropdownMenuTrigger,\n} from './dropdown-menu';\n\nexport function CommentMoreDropdown() {\n  const editButtonState = useCommentEditButtonState();\n  const { props: editProps } = useCommentEditButton(editButtonState);\n  const deleteButtonState = useCommentDeleteButtonState();\n  const { props: deleteProps } = useCommentDeleteButton(deleteButtonState);\n\n  return (\n    <DropdownMenu modal={false}>\n      <DropdownMenuTrigger asChild>\n        <Button variant=\"ghost\" className={cn('h-6 p-1 text-muted-foreground')}>\n          <MoreHorizontal className=\"size-4\" />\n        </Button>\n      </DropdownMenuTrigger>\n      <DropdownMenuContent>\n        <DropdownMenuItem {...editProps}>Edit comment</DropdownMenuItem>\n        <DropdownMenuItem {...deleteProps}>Delete comment</DropdownMenuItem>\n      </DropdownMenuContent>\n    </DropdownMenu>\n  );\n}\n",
       "path": "plate-ui/comment-more-dropdown.tsx",
       "target": "components/plate-ui/comment-more-dropdown.tsx",
       "type": "registry:ui"
@@ -40,7 +51,7 @@
       "type": "registry:ui"
     },
     {
-      "content": "'use client';\n\nimport React from 'react';\n\nimport { cn } from '@udecode/cn';\nimport {\n  CommentResolveButton as CommentResolveButtonPrimitive,\n  useComment,\n} from '@udecode/plate-comments/react';\n\nimport { Icons } from '@/components/icons';\n\nimport { buttonVariants } from './button';\n\nexport function CommentResolveButton() {\n  const comment = useComment()!;\n\n  return (\n    <CommentResolveButtonPrimitive\n      className={cn(\n        buttonVariants({ variant: 'ghost' }),\n        'h-6 p-1 text-muted-foreground'\n      )}\n    >\n      {comment.isResolved ? (\n        <Icons.refresh className=\"size-4\" />\n      ) : (\n        <Icons.check className=\"size-4\" />\n      )}\n    </CommentResolveButtonPrimitive>\n  );\n}\n",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { cn } from '@udecode/cn';\nimport {\n  CommentResolveButton as CommentResolveButtonPrimitive,\n  useComment,\n} from '@udecode/plate-comments/react';\nimport { Check, RotateCcw } from 'lucide-react';\n\nimport { buttonVariants } from './button';\n\nexport function CommentResolveButton() {\n  const comment = useComment()!;\n\n  return (\n    <CommentResolveButtonPrimitive\n      className={cn(\n        buttonVariants({ variant: 'ghost' }),\n        'h-6 p-1 text-muted-foreground'\n      )}\n    >\n      {comment.isResolved ? (\n        <RotateCcw className=\"size-4\" />\n      ) : (\n        <Check className=\"size-4\" />\n      )}\n    </CommentResolveButtonPrimitive>\n  );\n}\n",
       "path": "plate-ui/comment-resolve-button.tsx",
       "target": "components/plate-ui/comment-resolve-button.tsx",
       "type": "registry:ui"

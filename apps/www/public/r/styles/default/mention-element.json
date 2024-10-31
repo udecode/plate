@@ -7,6 +7,9 @@
     "docs": [
       {
         "route": "/docs/mention"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/mention-element"
       }
     ],
     "examples": [

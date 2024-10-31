@@ -13,10 +13,6 @@ export const proExamples: Registry = [
     type: 'registry:pro',
   },
   {
-    name: 'basic-elements-pro',
-    type: 'registry:pro',
-  },
-  {
     doc: {
       description: `- Sticky TOC sidebar
 - Hover-to-expand: Opens automatically when you move your mouse over it
@@ -76,17 +72,21 @@ export const proExamples: Registry = [
 - Advanced actions such as "Ask AI", colors, and commenting
 - Beautifully crafted UI`,
     },
-    name: 'context-menu-pro',
+    name: 'block-menu-pro',
     type: 'registry:pro',
   },
   {
     doc: {
-      description: `- Thread-based commenting system
-- Comment markers in the editor margin
-- Collapsible comment threads
-- Reply functionality
-- Resolve/unresolve comments
-- Delete comments and replies
+      description: `- Beautifully crafted UI`,
+    },
+    name: 'block-selection-pro',
+    type: 'registry:pro',
+  },
+  {
+    doc: {
+      description: `- Full stack example for Discussion and Comment
+- Comment rendered with Plate editor
+- Discussion list in the sidebar
 - Beautifully crafted UI`,
     },
     name: 'comments-pro',
@@ -132,59 +132,51 @@ export const proExamples: Registry = [
   },
   {
     doc: {
-      description: `- Enhanced drag and drop functionality
-- Drag handle on the left side of blocks
-- Visual feedback during drag operations
-- Smooth animations
-- Support for nested blocks
+      description: `- "+" button on the left gutter to insert blocks
+- Click on the drag handle to open the block menu
 - Beautifully crafted UI`,
     },
     name: 'dnd-pro',
     type: 'registry:pro',
   },
+  //   {
+  //     doc: {
+  //       description: `- Enhanced emoji picker with search functionality
+  // - Categorized emoji selection
+  // - Recent emojis section
+  // - Keyboard navigation support
+  // - Insert emojis via slash commands
+  // - Beautifully crafted UI`,
+  //     },
+  //     name: 'emoji-pro',
+  //     type: 'registry:pro',
+  //   },
   {
     doc: {
-      description: `- Enhanced emoji picker with search functionality
-- Categorized emoji selection
-- Recent emojis section
-- Keyboard navigation support
-- Insert emojis via slash commands
-- Beautifully crafted UI`,
-    },
-    name: 'emoji-pro',
-    type: 'registry:pro',
-  },
-  {
-    doc: {
-      description: `- Enhanced floating toolbar with rich formatting options
-- Appears when text is selected
-- Support for advanced text styling
-- Quick access to formatting tools
-- Customizable toolbar options
+      description: `- Color picker
+- Mark as equation
 - Beautifully crafted UI`,
     },
     name: 'floating-toolbar-pro',
     type: 'registry:pro',
   },
+  //   {
+  //     doc: {
+  //       description: `- Enhanced link editing experience
+  // - Preview card with metadata
+  // - Custom link actions
+  // - Quick edit and remove options
+  // - Keyboard shortcuts support
+  // - Beautifully crafted UI`,
+  //     },
+  //     name: 'link-pro',
+  //     type: 'registry:pro',
+  //   },
   {
     doc: {
-      description: `- Enhanced link editing experience
-- Preview card with metadata
-- Custom link actions
-- Quick edit and remove options
-- Keyboard shortcuts support
-- Beautifully crafted UI`,
-    },
-    name: 'link-pro',
-    type: 'registry:pro',
-  },
-  {
-    doc: {
-      description: `- Enhanced basic nodes with advanced formatting
-- Rich text styling options
-- Advanced block elements
-- Customizable node configurations
-- Keyboard shortcut support
+      description: `- Code block:
+  - A "Copy" button to easily copy the entire code snippet.
+  - A "Block Menu" button to access additional options and actions.
 - Beautifully crafted UI`,
     },
     name: 'basic-nodes-pro',
@@ -192,77 +184,77 @@ export const proExamples: Registry = [
   },
   {
     doc: {
-      description: `- Enhanced media toolbar with advanced controls
-- Image resizing and alignment options
-- Caption editing interface
-- Quick media actions and transformations
-- Media-specific formatting tools
+      description: `- Floating toolbar appears at the top right of media elements
+- Alignment dropdown menu
+- Caption button
+- Expand button
+- Download button
 - Beautifully crafted UI`,
     },
     name: 'media-toolbar-pro',
     type: 'registry:pro',
   },
-  {
-    doc: {
-      description: `- Enhanced table editing experience
-- Column and row management
-- Cell merging and splitting
-- Custom cell styling options
-- Resize columns with drag handles
-- Header row and column support
-- Beautifully crafted UI`,
-    },
-    name: 'table-pro',
-    type: 'registry:pro',
-  },
-  {
-    doc: {
-      description: `- Enhanced mention functionality
-- Real-time user search and filtering
-- Customizable mention triggers (@, #, etc.)
-- Rich preview cards for mentioned items
-- Keyboard navigation support
-- Beautifully crafted UI`,
-    },
-    name: 'mention-pro',
-    type: 'registry:pro',
-  },
-  {
-    doc: {
-      description: `- Enhanced horizontal rule customization
-- Multiple style presets
-- Custom spacing controls
-- Color and thickness options
-- Quick insertion via slash commands
-- Beautifully crafted UI`,
-    },
-    name: 'horizontal-rule-pro',
-    type: 'registry:pro',
-  },
-  {
-    doc: {
-      description: `- Enhanced date picker functionality
-- Multiple date formats support
-- Calendar interface for date selection
-- Keyboard navigation and shortcuts
-- Custom date formatting options
-- Beautifully crafted UI`,
-    },
-    name: 'date-pro',
-    type: 'registry:pro',
-  },
-  {
-    doc: {
-      description: `- Multi-column layout support
-- Flexible column width adjustment
-- Drag and drop between columns
-- Responsive column behavior
-- Column merging and splitting
-- Beautifully crafted UI`,
-    },
-    name: 'column-pro',
-    type: 'registry:pro',
-  },
+  //   {
+  //     doc: {
+  //       description: `- Enhanced table editing experience
+  // - Column and row management
+  // - Cell merging and splitting
+  // - Custom cell styling options
+  // - Resize columns with drag handles
+  // - Header row and column support
+  // - Beautifully crafted UI`,
+  //     },
+  //     name: 'table-pro',
+  //     type: 'registry:pro',
+  //   },
+  //   {
+  //     doc: {
+  //       description: `- Enhanced mention functionality
+  // - Real-time user search and filtering
+  // - Customizable mention triggers (@, #, etc.)
+  // - Rich preview cards for mentioned items
+  // - Keyboard navigation support
+  // - Beautifully crafted UI`,
+  //     },
+  //     name: 'mention-pro',
+  //     type: 'registry:pro',
+  //   },
+  //   {
+  //     doc: {
+  //       description: `- Enhanced horizontal rule customization
+  // - Multiple style presets
+  // - Custom spacing controls
+  // - Color and thickness options
+  // - Quick insertion via slash commands
+  // - Beautifully crafted UI`,
+  //     },
+  //     name: 'horizontal-rule-pro',
+  //     type: 'registry:pro',
+  //   },
+  //   {
+  //     doc: {
+  //       description: `- Enhanced date picker functionality
+  // - Multiple date formats support
+  // - Calendar interface for date selection
+  // - Keyboard navigation and shortcuts
+  // - Custom date formatting options
+  // - Beautifully crafted UI`,
+  //     },
+  //     name: 'date-pro',
+  //     type: 'registry:pro',
+  //   },
+  //   {
+  //     doc: {
+  //       description: `- Multi-column layout support
+  // - Flexible column width adjustment
+  // - Drag and drop between columns
+  // - Responsive column behavior
+  // - Column merging and splitting
+  // - Beautifully crafted UI`,
+  //     },
+  //     name: 'column-pro',
+  //     type: 'registry:pro',
+  //   },
 ];
 
 export const examples: Registry = [
@@ -329,7 +321,7 @@ export const examples: Registry = [
       description: 'Text alignment controls for blocks.',
     },
     files: ['example/playground-demo.tsx'],
-    name: 'alignment-demo',
+    name: 'align-demo',
     registryDependencies: [],
     type: 'registry:example',
   },
@@ -338,7 +330,7 @@ export const examples: Registry = [
       description: 'Block-level context menu with formatting options.',
     },
     files: ['example/playground-demo.tsx'],
-    name: 'context-menu-demo',
+    name: 'block-menu-demo',
     registryDependencies: [],
     type: 'registry:example',
   },
@@ -347,7 +339,7 @@ export const examples: Registry = [
       description: 'Visual block selection with keyboard support.',
     },
     files: ['example/playground-demo.tsx'],
-    name: 'selection-demo',
+    name: 'block-selection-demo',
     registryDependencies: [],
     type: 'registry:example',
   },
@@ -365,7 +357,25 @@ export const examples: Registry = [
       description: 'Color picker for text and background colors.',
     },
     files: ['example/playground-demo.tsx'],
-    name: 'color-demo',
+    name: 'font-demo',
+    registryDependencies: [],
+    type: 'registry:example',
+  },
+  {
+    doc: {
+      description: 'Layout with configurable columns.',
+    },
+    files: ['example/playground-demo.tsx'],
+    name: 'column-demo',
+    registryDependencies: [],
+    type: 'registry:example',
+  },
+  {
+    doc: {
+      description: 'Render AI suggestions ghost text as you type.',
+    },
+    files: ['example/playground-demo.tsx'],
+    name: 'copilot-demo',
     registryDependencies: [],
     type: 'registry:example',
   },
@@ -374,16 +384,36 @@ export const examples: Registry = [
       description: 'Collaborative commenting system.',
     },
     files: ['example/playground-demo.tsx'],
-    name: 'comments-demo',
+    name: 'comment-demo',
+    registryDependencies: [],
+    type: 'registry:example',
+  },
+  // {
+  //   doc: {
+  //     description: 'Real-time collaboration with cursors and selections.',
+  //   },
+  //   files: ['example/playground-demo.tsx'],
+  //   name: 'collaboration-demo',
+  //   registryDependencies: [],
+  //   type: 'registry:example',
+  // },
+  {
+    doc: {
+      description: 'An inline date element with calendar selection interface.',
+      title: 'Date',
+    },
+    files: ['example/playground-demo.tsx'],
+    name: 'date-demo',
     registryDependencies: [],
     type: 'registry:example',
   },
   {
     doc: {
-      description: 'Real-time collaboration with cursors and selections.',
+      description: 'A drawing component powered by Excalidraw.',
+      title: 'Excalidraw',
     },
     files: ['example/playground-demo.tsx'],
-    name: 'collaboration-demo',
+    name: 'excalidraw-demo',
     registryDependencies: [],
     type: 'registry:example',
   },
@@ -445,9 +475,10 @@ export const examples: Registry = [
   {
     doc: {
       description: 'Horizontal rule insertion and styling.',
+      title: 'Horizontal Rule',
     },
     files: ['example/playground-demo.tsx'],
-    name: 'horizontal-rule-demo',
+    name: 'hr-demo',
     registryDependencies: [],
     type: 'registry:example',
   },
@@ -546,7 +577,7 @@ export const examples: Registry = [
       description: 'Slash commands for block insertion.',
     },
     files: ['example/playground-demo.tsx'],
-    name: 'slash-menu-demo',
+    name: 'slash-command-demo',
     registryDependencies: [],
     type: 'registry:example',
   },

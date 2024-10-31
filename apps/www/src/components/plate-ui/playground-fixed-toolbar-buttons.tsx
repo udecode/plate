@@ -160,11 +160,11 @@ export function PlaygroundFixedToolbarButtons() {
                 <AlignDropdownMenu />
               </CheckPlugin>
 
-              <CheckPlugin id="lineheight" plugin={LineHeightPlugin}>
+              <CheckPlugin id="line-height" plugin={LineHeightPlugin}>
                 <LineHeightDropdownMenu />
               </CheckPlugin>
 
-              <CheckPlugin id="indentlist" plugin={IndentListPlugin}>
+              <CheckPlugin id="indent-list" plugin={IndentListPlugin}>
                 <IndentListToolbarButton nodeType={ListStyleType.Disc} />
                 <IndentListToolbarButton nodeType={ListStyleType.Decimal} />
                 <IndentTodoToolbarButton />
@@ -176,7 +176,7 @@ export function PlaygroundFixedToolbarButtons() {
               </CheckPlugin>
 
               <CheckPlugin
-                id={['indent', 'list', 'indentlist']}
+                id={['indent', 'list', 'indent-list']}
                 plugin={IndentPlugin}
               >
                 <OutdentToolbarButton />
