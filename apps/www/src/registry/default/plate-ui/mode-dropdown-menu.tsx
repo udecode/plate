@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
@@ -8,8 +10,7 @@ import {
   useEditorRef,
   usePlateStore,
 } from '@udecode/plate-common/react';
-
-import { Icons } from '@/components/icons';
+import { Eye, Pen } from 'lucide-react';
 
 import {
   DropdownMenu,
@@ -34,13 +35,13 @@ export function ModeDropdownMenu(props: DropdownMenuProps) {
   const item: any = {
     editing: (
       <>
-        <Icons.editing className="mr-2 size-5" />
+        <Pen className="mr-2 size-5" />
         <span className="hidden lg:inline">Editing</span>
       </>
     ),
     viewing: (
       <>
-        <Icons.viewing className="mr-2 size-5" />
+        <Eye className="mr-2 size-5" />
         <span className="hidden lg:inline">Viewing</span>
       </>
     ),

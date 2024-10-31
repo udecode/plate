@@ -1,7 +1,7 @@
 {
   "files": [
     {
-      "content": "import React from 'react';\n\nimport { Plate, usePlateEditor } from '@udecode/plate-common/react';\n\nimport { Editor } from '@/components/plate-ui/editor';\n\nexport default function BasicEditorStylingDemo() {\n  const editor = usePlateEditor();\n\n  return (\n    <Plate editor={editor}>\n      <Editor placeholder=\"Type...\" />\n    </Plate>\n  );\n}\n",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { Plate, usePlateEditor } from '@udecode/plate-common/react';\n\nimport { Editor } from '@/components/plate-ui/editor';\n\nexport default function BasicEditorStylingDemo() {\n  const editor = usePlateEditor();\n\n  return (\n    <Plate editor={editor}>\n      <Editor placeholder=\"Type...\" />\n    </Plate>\n  );\n}\n",
       "path": "example/basic-editor-styling-demo.tsx",
       "target": "components/basic-editor-styling-demo.tsx",
       "type": "registry:example"

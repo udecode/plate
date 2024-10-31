@@ -7,7 +7,7 @@ jsx;
 export const slashCommandValue: any = (
   <fragment>
     <hh2>
-      <htext>Slash Menu</htext>
+      <htext>Slash Command</htext>
     </hh2>
     <hp>
       <htext>
@@ -15,7 +15,6 @@ export const slashCommandValue: any = (
         content types.
       </htext>
     </hp>
-    <hp>How to use the slash menu:</hp>
     <hp indent={1} listStyleType="disc">
       <htext>Type '/' anywhere in your document to open the slash menu.</htext>
     </hp>

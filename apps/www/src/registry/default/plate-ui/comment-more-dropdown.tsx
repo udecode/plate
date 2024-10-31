@@ -9,8 +9,7 @@ import {
   useCommentEditButton,
   useCommentEditButtonState,
 } from '@udecode/plate-comments/react';
-
-import { Icons } from '@/components/icons';
+import { MoreHorizontal } from 'lucide-react';
 
 import { Button } from './button';
 import {
@@ -30,7 +29,7 @@ export function CommentMoreDropdown() {
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className={cn('h-6 p-1 text-muted-foreground')}>
-          <Icons.more className="size-4" />
+          <MoreHorizontal className="size-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>

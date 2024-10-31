@@ -1,3 +1,5 @@
+'use client';
+
 import { memo, useCallback } from 'react';
 
 import type { UseEmojiPickerType } from '@udecode/plate-emoji/react';

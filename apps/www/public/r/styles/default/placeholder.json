@@ -2,17 +2,31 @@
   "dependencies": [
     "@udecode/plate-heading"
   ],
+  "doc": {
+    "description": "A text placeholder for empty editor blocks.",
+    "docs": [
+      {
+        "route": "/docs/basic-elements",
+        "title": "Basic Elements"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/placeholder"
+      }
+    ],
+    "examples": [
+      "placeholder-demo",
+      "placeholder-pro"
+    ]
+  },
   "files": [
     {
-      "content": "import React from 'react';\n\nimport { cn } from '@udecode/cn';\nimport { ParagraphPlugin } from '@udecode/plate-common/react';\nimport {\n  type PlaceholderProps,\n  createNodeHOC,\n  createNodesHOC,\n  usePlaceholderState,\n} from '@udecode/plate-common/react';\nimport { HEADING_KEYS } from '@udecode/plate-heading';\n\nexport const Placeholder = (props: PlaceholderProps) => {\n  const { children, nodeProps, placeholder } = props;\n\n  const { enabled } = usePlaceholderState(props);\n\n  return React.Children.map(children, (child) => {\n    return React.cloneElement(child, {\n      className: child.props.className,\n      nodeProps: {\n        ...nodeProps,\n        className: cn(\n          enabled &&\n            'before:absolute before:cursor-text before:opacity-30 before:content-[attr(placeholder)]'\n        ),\n        placeholder,\n      },\n    });\n  });\n};\n\nexport const withPlaceholder = createNodeHOC(Placeholder);\n\nexport const withPlaceholdersPrimitive = createNodesHOC(Placeholder);\n\nexport const withPlaceholders = (components: any) =>\n  withPlaceholdersPrimitive(components, [\n    {\n      key: ParagraphPlugin.key,\n      hideOnBlur: true,\n      placeholder: 'Type a paragraph',\n      query: {\n        maxLevel: 1,\n      },\n    },\n    {\n      key: HEADING_KEYS.h1,\n      hideOnBlur: false,\n      placeholder: 'Untitled',\n    },\n  ]);\n",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { cn } from '@udecode/cn';\nimport { ParagraphPlugin } from '@udecode/plate-common/react';\nimport {\n  type PlaceholderProps,\n  createNodeHOC,\n  createNodesHOC,\n  usePlaceholderState,\n} from '@udecode/plate-common/react';\nimport { HEADING_KEYS } from '@udecode/plate-heading';\n\nexport const Placeholder = (props: PlaceholderProps) => {\n  const { children, nodeProps, placeholder } = props;\n\n  const { enabled } = usePlaceholderState(props);\n\n  return React.Children.map(children, (child) => {\n    return React.cloneElement(child, {\n      className: child.props.className,\n      nodeProps: {\n        ...nodeProps,\n        className: cn(\n          enabled &&\n            'before:absolute before:cursor-text before:opacity-30 before:content-[attr(placeholder)]'\n        ),\n        placeholder,\n      },\n    });\n  });\n};\n\nexport const withPlaceholder = createNodeHOC(Placeholder);\n\nexport const withPlaceholdersPrimitive = createNodesHOC(Placeholder);\n\nexport const withPlaceholders = (components: any) =>\n  withPlaceholdersPrimitive(components, [\n    {\n      key: ParagraphPlugin.key,\n      hideOnBlur: true,\n      placeholder: 'Type a paragraph',\n      query: {\n        maxLevel: 1,\n      },\n    },\n    {\n      key: HEADING_KEYS.h1,\n      hideOnBlur: false,\n      placeholder: 'Untitled',\n    },\n  ]);\n",
       "path": "plate-ui/placeholder.tsx",
       "target": "components/plate-ui/placeholder.tsx",
       "type": "registry:ui"
     }
   ],
   "name": "placeholder",
-  "registryDependencies": [
-    "paragraph-element"
-  ],
+  "registryDependencies": [],
   "type": "registry:ui"
 }

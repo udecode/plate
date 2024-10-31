@@ -2,9 +2,21 @@
   "dependencies": [
     "@udecode/plate-list"
   ],
+  "doc": {
+    "description": "A toolbar control for list creation and management.",
+    "docs": [
+      {
+        "route": "/docs/list",
+        "title": "List"
+      }
+    ],
+    "examples": [
+      "list-demo"
+    ]
+  },
   "files": [
     {
-      "content": "import React from 'react';\n\nimport { withRef } from '@udecode/cn';\nimport {\n  BulletedListPlugin,\n  useListToolbarButton,\n  useListToolbarButtonState,\n} from '@udecode/plate-list/react';\n\nimport { Icons } from '@/components/icons';\n\nimport { ToolbarButton } from './toolbar';\n\nexport const ListToolbarButton = withRef<\n  typeof ToolbarButton,\n  {\n    nodeType?: string;\n  }\n>(({ nodeType = BulletedListPlugin.key, ...rest }, ref) => {\n  const state = useListToolbarButtonState({ nodeType });\n  const { props } = useListToolbarButton(state);\n\n  return (\n    <ToolbarButton\n      ref={ref}\n      tooltip={\n        nodeType === BulletedListPlugin.key ? 'Bulleted List' : 'Numbered List'\n      }\n      {...props}\n      {...rest}\n    >\n      {nodeType === BulletedListPlugin.key ? <Icons.ul /> : <Icons.ol />}\n    </ToolbarButton>\n  );\n});\n",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { withRef } from '@udecode/cn';\nimport {\n  BulletedListPlugin,\n  useListToolbarButton,\n  useListToolbarButtonState,\n} from '@udecode/plate-list/react';\nimport { List, ListOrdered } from 'lucide-react';\n\nimport { ToolbarButton } from './toolbar';\n\nexport const ListToolbarButton = withRef<\n  typeof ToolbarButton,\n  {\n    nodeType?: string;\n  }\n>(({ nodeType = BulletedListPlugin.key, ...rest }, ref) => {\n  const state = useListToolbarButtonState({ nodeType });\n  const { props } = useListToolbarButton(state);\n\n  return (\n    <ToolbarButton\n      ref={ref}\n      tooltip={\n        nodeType === BulletedListPlugin.key ? 'Bulleted List' : 'Numbered List'\n      }\n      {...props}\n      {...rest}\n    >\n      {nodeType === BulletedListPlugin.key ? <List /> : <ListOrdered />}\n    </ToolbarButton>\n  );\n});\n",
       "path": "plate-ui/list-toolbar-button.tsx",
       "target": "components/plate-ui/list-toolbar-button.tsx",
       "type": "registry:ui"

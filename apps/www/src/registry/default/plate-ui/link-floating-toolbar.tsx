@@ -18,8 +18,7 @@ import {
   useFloatingLinkInsert,
   useFloatingLinkInsertState,
 } from '@udecode/plate-link/react';
-
-import { Icons } from '@/components/icons';
+import { ExternalLink, Link, Text, Unlink } from 'lucide-react';
 
 import { buttonVariants } from './button';
 import { inputVariants } from './input';
@@ -79,7 +78,7 @@ export function LinkFloatingToolbar({ state }: LinkFloatingToolbarProps) {
     <div className="flex w-[330px] flex-col" {...inputProps}>
       <div className="flex items-center">
         <div className="flex items-center pl-3 text-muted-foreground">
-          <Icons.link className="size-4" />
+          <Link className="size-4" />
         </div>
 
         <FloatingLinkUrlInput
@@ -90,7 +89,7 @@ export function LinkFloatingToolbar({ state }: LinkFloatingToolbarProps) {
       <Separator />
       <div className="flex items-center">
         <div className="flex items-center pl-3 text-muted-foreground">
-          <Icons.text className="size-4" />
+          <Text className="size-4" />
         </div>
         <input
           className={inputVariants({ h: 'sm', variant: 'ghost' })}
@@ -121,7 +120,7 @@ export function LinkFloatingToolbar({ state }: LinkFloatingToolbarProps) {
           variant: 'ghost',
         })}
       >
-        <Icons.externalLink width={18} />
+        <ExternalLink width={18} />
       </LinkOpenButton>
 
       <Separator orientation="vertical" />
@@ -134,7 +133,7 @@ export function LinkFloatingToolbar({ state }: LinkFloatingToolbarProps) {
         type="button"
         {...unlinkButtonProps}
       >
-        <Icons.unlink width={18} />
+        <Unlink width={18} />
       </button>
     </div>
   );

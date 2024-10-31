@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 
 import type { TColumnElement } from '@udecode/plate-layout';
@@ -9,9 +11,16 @@ import {
   useColumnState,
   useDebouncePopoverOpen,
 } from '@udecode/plate-layout/react';
+import { Delete } from 'lucide-react';
 import { useReadOnly } from 'slate-react';
 
-import { Icons } from '@/components/icons';
+import {
+  DoubleColumnOutlined,
+  DoubleSideDoubleColumnOutlined,
+  LeftSideDoubleColumnOutlined,
+  RightSideDoubleColumnOutlined,
+  ThreeColumnOutlined,
+} from '@/components/icons';
 
 import { Button } from './button';
 import { PlateElement } from './plate-element';
@@ -61,28 +70,28 @@ export function ColumnFloatingToolbar({ children }: React.PropsWithChildren) {
       >
         <div className="box-content flex h-9 items-center gap-1 [&_svg]:size-4 [&_svg]:text-muted-foreground">
           <Button size="sms" variant="ghost" onClick={setDoubleColumn}>
-            <Icons.doubleColumn />
+            <DoubleColumnOutlined />
           </Button>
           <Button size="sms" variant="ghost" onClick={setThreeColumn}>
-            <Icons.threeColumn />
+            <ThreeColumnOutlined />
           </Button>
           <Button size="sms" variant="ghost" onClick={setRightSideDoubleColumn}>
-            <Icons.rightSideDoubleColumn />
+            <RightSideDoubleColumnOutlined />
           </Button>
           <Button size="sms" variant="ghost" onClick={setLeftSideDoubleColumn}>
-            <Icons.leftSideDoubleColumn />
+            <LeftSideDoubleColumnOutlined />
           </Button>
           <Button
             size="sms"
             variant="ghost"
             onClick={setDoubleSideDoubleColumn}
           >
-            <Icons.doubleSideDoubleColumn />
+            <DoubleSideDoubleColumnOutlined />
           </Button>
 
           <Separator orientation="vertical" className="my-1" />
           <Button size="sms" variant="ghost" {...buttonProps}>
-            <Icons.delete />
+            <Delete />
           </Button>
         </div>
       </PopoverContent>
