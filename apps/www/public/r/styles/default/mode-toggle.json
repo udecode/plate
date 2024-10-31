@@ -1,7 +1,7 @@
 {
   "files": [
     {
-      "content": "'use client';\n\nimport * as React from 'react';\n\nimport { useTheme } from 'next-themes';\n\nimport { Icons } from '@/components/icons';\nimport { useMounted } from '@/hooks/use-mounted';\nimport { Button } from '@/components/plate-ui/button';\n\nexport default function ModeToggle() {\n  const { setTheme, theme } = useTheme();\n\n  const mounted = useMounted();\n\n  return (\n    <Button\n      size=\"sm\"\n      variant=\"ghost\"\n      className=\"size-8 px-0\"\n      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}\n    >\n      {mounted && theme === 'dark' ? (\n        <Icons.moon className=\"size-[1.2rem]\" />\n      ) : (\n        <Icons.sun className=\"size-[1.2rem]\" />\n      )}\n      <span className=\"sr-only\">Toggle theme</span>\n    </Button>\n  );\n}\n",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport { MoonIcon, SunIcon } from 'lucide-react';\nimport { useTheme } from 'next-themes';\n\nimport { useMounted } from '@/hooks/use-mounted';\nimport { Button } from '@/components/plate-ui/button';\n\nexport default function ModeToggle() {\n  const { setTheme, theme } = useTheme();\n\n  const mounted = useMounted();\n\n  return (\n    <Button\n      size=\"sm\"\n      variant=\"ghost\"\n      className=\"size-8 px-0\"\n      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}\n    >\n      {mounted && theme === 'dark' ? (\n        <MoonIcon className=\"size-[1.2rem]\" />\n      ) : (\n        <SunIcon className=\"size-[1.2rem]\" />\n      )}\n      <span className=\"sr-only\">Toggle theme</span>\n    </Button>\n  );\n}\n",
       "path": "example/mode-toggle.tsx",
       "target": "components/mode-toggle.tsx",
       "type": "registry:example"
