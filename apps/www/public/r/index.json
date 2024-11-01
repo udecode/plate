@@ -1371,7 +1371,7 @@
   },
   {
     "dependencies": [
-      "@udecode/plate-comments/react"
+      "@udecode/plate-comments"
     ],
     "doc": {
       "description": "A toolbar button for adding inline comments.",
