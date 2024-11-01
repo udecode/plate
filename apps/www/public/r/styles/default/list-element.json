@@ -2,9 +2,21 @@
   "dependencies": [
     "@udecode/plate-list"
   ],
+  "doc": {
+    "description": "A list element for ordered and unordered items.",
+    "docs": [
+      {
+        "route": "/docs/list",
+        "title": "List"
+      }
+    ],
+    "examples": [
+      "list-demo"
+    ]
+  },
   "files": [
     {
-      "content": "import React from 'react';\n\nimport { withRef, withVariants } from '@udecode/cn';\nimport { cva } from 'class-variance-authority';\n\nimport { PlateElement } from './plate-element';\n\nconst listVariants = cva('m-0 ps-6', {\n  variants: {\n    variant: {\n      ol: 'list-decimal',\n      ul: 'list-disc [&_ul]:list-[circle] [&_ul_ul]:list-[square]',\n    },\n  },\n});\n\nconst ListElementVariants = withVariants(PlateElement, listVariants, [\n  'variant',\n]);\n\nexport const ListElement = withRef<typeof ListElementVariants>(\n  ({ children, variant = 'ul', ...props }, ref) => {\n    return (\n      <ListElementVariants ref={ref} as={variant!} variant={variant} {...props}>\n        {children}\n      </ListElementVariants>\n    );\n  }\n);\n",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { withRef, withVariants } from '@udecode/cn';\nimport { cva } from 'class-variance-authority';\n\nimport { PlateElement } from './plate-element';\n\nconst listVariants = cva('m-0 ps-6', {\n  variants: {\n    variant: {\n      ol: 'list-decimal',\n      ul: 'list-disc [&_ul]:list-[circle] [&_ul_ul]:list-[square]',\n    },\n  },\n});\n\nconst ListElementVariants = withVariants(PlateElement, listVariants, [\n  'variant',\n]);\n\nexport const ListElement = withRef<typeof ListElementVariants>(\n  ({ children, variant = 'ul', ...props }, ref) => {\n    return (\n      <ListElementVariants ref={ref} as={variant!} variant={variant} {...props}>\n        {children}\n      </ListElementVariants>\n    );\n  }\n);\n",
       "path": "plate-ui/list-element.tsx",
       "target": "components/plate-ui/list-element.tsx",
       "type": "registry:ui"

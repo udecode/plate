@@ -112,29 +112,36 @@ export const customizerPlugins = {
     route: '/docs/autoformat',
     value: autoformatValue,
   },
-  basicmarks: {
-    id: 'basicmarks',
+  'basic-elements': {
+    id: 'basic-elements',
+    label: 'Basic Elements',
+    plugins: [],
+    route: '/docs/basic-elements',
+    value: basicElementsValue,
+  },
+  'basic-marks': {
+    id: 'basic-marks',
     label: 'Basic Marks',
     plugins: [],
     route: '/docs/basic-marks',
-    value: [...basicElementsValue, ...basicMarksValue],
+    value: basicMarksValue,
   },
-  basicnodes: {
-    id: 'basicnodes',
+  'basic-nodes': {
+    id: 'basic-nodes',
     label: 'Basic Nodes',
     plugins: [],
-    route: '/docs/basic-elements',
+    route: '/docs/basic-nodes',
     value: [...basicElementsValue, ...basicMarksValue],
   },
-  blockmenu: {
-    id: 'blockmenu',
+  'block-menu': {
+    id: 'block-menu',
     label: 'Block Menu',
     plugins: [BlockMenuPlugin.key],
     route: '/docs/block-menu',
     value: blockMenuValue,
   },
-  blockselection: {
-    id: 'blockselection',
+  'block-selection': {
+    id: 'block-selection',
     label: 'Block Selection',
     plugins: [
       NodeIdPlugin.key,
@@ -180,8 +187,8 @@ export const customizerPlugins = {
     route: '/docs/csv',
     value: deserializeCsvValue,
   },
-  cursoroverlay: {
-    id: 'cursoroverlay',
+  'cursor-overlay': {
+    id: 'cursor-overlay',
     label: 'Cursor Overlay',
     plugins: [DragOverCursorPlugin.key],
     route: '/docs/cursor-overlay',
@@ -222,8 +229,8 @@ export const customizerPlugins = {
     route: '/docs/excalidraw',
     value: excalidrawValue,
   },
-  exitbreak: {
-    id: 'exitbreak',
+  'exit-break': {
+    id: 'exit-break',
     label: 'Exit Break',
     plugins: [ExitBreakPlugin.key],
     route: '/docs/exit-break',
@@ -236,8 +243,8 @@ export const customizerPlugins = {
     route: '/docs/font',
     value: fontValue,
   },
-  forcedlayout: {
-    id: 'forcedlayout',
+  'forced-layout': {
+    id: 'forced-layout',
     label: 'Forced Layout',
     plugins: [NormalizeTypesPlugin.key, TrailingBlockPlugin.key],
     route: '/docs/forced-layout',
@@ -271,8 +278,8 @@ export const customizerPlugins = {
     route: '/docs/indent',
     value: indentValue,
   },
-  indentlist: {
-    id: 'indentlist',
+  'indent-list': {
+    id: 'indent-list',
     label: 'Indent List',
     plugins: [IndentListPlugin.key],
     route: '/docs/indent-list',
@@ -285,8 +292,8 @@ export const customizerPlugins = {
     route: '/docs/components/kbd-leaf',
     value: kbdValue,
   },
-  lineheight: {
-    id: 'lineheight',
+  'line-height': {
+    id: 'line-height',
     label: 'Line Height',
     plugins: [LineHeightPlugin.key],
     route: '/docs/line-height',
@@ -339,29 +346,29 @@ export const customizerPlugins = {
     label: 'Playground',
     value: [],
   },
-  resetnode: {
-    id: 'resetnode',
+  'reset-node': {
+    id: 'reset-node',
     label: 'Reset Node',
     plugins: [ResetNodePlugin.key],
     route: '/docs/reset-node',
     value: [],
   },
-  singleline: {
-    id: 'singleline',
+  'single-line': {
+    id: 'single-line',
     label: 'Single Line',
     plugins: [SingleLinePlugin.key],
     route: '/docs/single-line',
     value: singleLineValue,
   },
-  slashCommand: {
-    id: 'slashCommand',
+  'slash-command': {
+    id: 'slash-command',
     label: 'Slash Command',
     plugins: [SlashPlugin.key],
     route: '/docs/slash-command',
     value: slashCommandValue,
   },
-  softbreak: {
-    id: 'softbreak',
+  'soft-break': {
+    id: 'soft-break',
     label: 'Soft Break',
     plugins: [SoftBreakPlugin.key],
     route: '/docs/soft-break',
@@ -388,8 +395,8 @@ export const customizerPlugins = {
     route: '/docs/toc',
     value: tocValue,
   },
-  todoli: {
-    id: 'todoli',
+  'todo-list': {
+    id: 'todo-list',
     label: 'Todo List',
     plugins: [TodoListPlugin.key],
     route: '/docs/list',
@@ -402,8 +409,8 @@ export const customizerPlugins = {
     route: '/docs/toggle',
     value: toggleValue,
   },
-  trailingblock: {
-    id: 'trailingblock',
+  'trailing-block': {
+    id: 'trailing-block',
     label: 'Trailing Block',
     plugins: [TrailingBlockPlugin.key],
     route: '/docs/trailing-block',

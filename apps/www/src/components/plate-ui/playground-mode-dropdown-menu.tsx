@@ -8,8 +8,8 @@ import {
   useEditorRef,
   usePlateStore,
 } from '@udecode/plate-common/react';
+import { EyeIcon, PenIcon, PenLineIcon } from 'lucide-react';
 
-import { Icons } from '@/components/icons';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,19 +29,19 @@ export function PlaygroundModeDropdownMenu(props: DropdownMenuProps) {
   const item = {
     editing: (
       <>
-        <Icons.editing className="mr-2 size-5" />
+        <PenIcon className="mr-2 size-5" />
         <span className="hidden lg:inline">Editing</span>
       </>
     ),
     suggesting: (
       <>
-        <Icons.suggesting className="mr-2 size-5" />
+        <PenLineIcon className="mr-2 size-5" />
         <span className="hidden lg:inline">Suggesting</span>
       </>
     ),
     viewing: (
       <>
-        <Icons.viewing className="mr-2 size-5" />
+        <EyeIcon className="mr-2 size-5" />
         <span className="hidden lg:inline">Viewing</span>
       </>
     ),

@@ -1,7 +1,20 @@
 {
-  "dependencies": [
-    "@udecode/plate-code-block"
-  ],
+  "dependencies": [],
+  "doc": {
+    "description": "A line component for code blocks.",
+    "docs": [
+      {
+        "route": "/docs/basic-elements"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/code-line-element"
+      }
+    ],
+    "examples": [
+      "basic-elements-demo",
+      "basic-nodes-pro"
+    ]
+  },
   "files": [
     {
       "content": "'use client';\n\nimport React from 'react';\n\nimport { withRef } from '@udecode/cn';\n\nimport { PlateElement } from './plate-element';\n\nexport const CodeLineElement = withRef<typeof PlateElement>((props, ref) => (\n  <PlateElement ref={ref} {...props} />\n));\n",

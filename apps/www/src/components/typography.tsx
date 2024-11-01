@@ -129,7 +129,7 @@ export const LI = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLElement>) => (
-  <li className={cn('mt-2', className)} {...props} />
+  <li className={cn('mb-0 mt-2', className)} {...props} />
 );
 
 export const Blockquote = ({

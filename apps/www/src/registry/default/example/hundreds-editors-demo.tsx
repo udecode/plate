@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 
 import { Plate, usePlateEditor } from '@udecode/plate-common/react';

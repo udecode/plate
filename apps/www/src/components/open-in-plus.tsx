@@ -16,13 +16,8 @@ export function OpenInPlus({ className }: { className?: string }) {
       <div className="text-balance text-lg font-semibold leading-tight group-hover:underline">
         Build your editor even faster
       </div>
-      <div>Complete, deployable AI-powered template with backend.</div>
-      <div>
-        All components included.
-        <br />
-        Customizable and extensible.
-      </div>
-      <Button size="sm" className="mt-2 w-fit">
+      <div>Production-ready AI template and reusable components.</div>
+      <Button size="sm" className="mt-2 w-fit shrink-0">
         Get all-access
       </Button>
       <Link

@@ -16,14 +16,14 @@ A [template](https://github.com/udecode/plate/tree/main/templates/plate-template
 Run the `init` command to create a new Next.js project or to setup an existing one:
 
 ```bash
-npx shadcx@latest init -u https://platejs.org/r -n plate-ui
+npx shadcx@latest init -u https://platejs.org/r -n plate
 ```
 
 If you want to use [shadcn/ui](https://ui.shadcn.com/) combined with Plate UI, run instead:
 
 ```bash
 npx shadcx@latest init
-npx shadcx@latest init -u https://platejs.org/r -n plate-ui
+npx shadcx@latest init -u https://platejs.org/r -n plate
 ```
 
 ### Configure components.json
@@ -35,20 +35,12 @@ Which color would you like to use as base color? › Slate
 Do you want to use CSS variables for colors? › no / yes
 ```
 
-### Add icons
-
-Add the icons you'll use in `components/icons.tsx`:
-
-<ComponentSource src="../../templates/plate-playground-template/src/components/icons.tsx" />
-
-We use icons from [Lucide](https://lucide.dev). You can use any icon library you want.
-
 ### Add components
 
 You can now start adding components to your project.
 
 ```bash
-npx shadcx@latest add paragraph-element -r plate-ui
+npx shadcx@latest add paragraph-element -r plate
 ```
 
 The command above will add the `ParagraphElement` component to your project.

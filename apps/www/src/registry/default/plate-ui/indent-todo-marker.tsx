@@ -1,3 +1,5 @@
+'use client';
+
 import type { PlateRenderElementProps } from '@udecode/plate-common/react';
 
 import { cn } from '@udecode/cn';

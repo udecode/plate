@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
@@ -10,8 +12,14 @@ import {
   useEditorRef,
 } from '@udecode/plate-common/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
-
-import { Icons } from '@/components/icons';
+import {
+  Heading1Icon,
+  Heading2Icon,
+  Heading3Icon,
+  PilcrowIcon,
+  Plus,
+  QuoteIcon,
+} from 'lucide-react';
 
 import {
   DropdownMenu,
@@ -29,31 +37,31 @@ const items = [
     items: [
       {
         description: 'Paragraph',
-        icon: Icons.paragraph,
+        icon: PilcrowIcon,
         label: 'Paragraph',
         value: ParagraphPlugin.key,
       },
       {
         description: 'Heading 1',
-        icon: Icons.h1,
+        icon: Heading1Icon,
         label: 'Heading 1',
         value: HEADING_KEYS.h1,
       },
       {
         description: 'Heading 2',
-        icon: Icons.h2,
+        icon: Heading2Icon,
         label: 'Heading 2',
         value: HEADING_KEYS.h2,
       },
       {
         description: 'Heading 3',
-        icon: Icons.h3,
+        icon: Heading3Icon,
         label: 'Heading 3',
         value: HEADING_KEYS.h3,
       },
       {
         description: 'Quote (⌘+⇧+.)',
-        icon: Icons.blockquote,
+        icon: QuoteIcon,
         label: 'Quote',
         value: BlockquotePlugin.key,
       },
@@ -134,7 +142,7 @@ export function InsertDropdownMenu(props: DropdownMenuProps) {
     <DropdownMenu modal={false} {...openState} {...props}>
       <DropdownMenuTrigger asChild>
         <ToolbarButton pressed={openState.open} tooltip="Insert" isDropdown>
-          <Icons.add />
+          <Plus />
         </ToolbarButton>
       </DropdownMenuTrigger>
 

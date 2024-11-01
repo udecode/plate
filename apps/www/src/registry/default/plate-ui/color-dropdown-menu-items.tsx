@@ -5,10 +5,7 @@ import React from 'react';
 import type { DropdownMenuItemProps } from '@radix-ui/react-dropdown-menu';
 
 import { cn } from '@udecode/cn';
-
-import { Icons } from '@/components/icons';
-
-import type { TColor } from './color-dropdown-menu';
+import { Check } from 'lucide-react';
 
 import { buttonVariants } from './button';
 import { DropdownMenuItem } from './dropdown-menu';
@@ -18,6 +15,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from './tooltip';
+
+export type TColor = {
+  isBrightColor: boolean;
+  name: string;
+  value: string;
+};
 
 type ColorDropdownMenuItemProps = {
   isBrightColor: boolean;
@@ -43,8 +46,8 @@ export function ColorDropdownMenuItem({
           isMenu: true,
           variant: 'outline',
         }),
-        'size-6 border border-solid border-muted p-0',
-        !isBrightColor && 'border-transparent text-white',
+        'flex size-6 items-center justify-center rounded-full border border-solid border-muted p-0 transition-all hover:scale-125',
+        !isBrightColor && 'border-transparent text-white hover:!text-white',
         className
       )}
       style={{ backgroundColor: value }}
@@ -54,14 +57,14 @@ export function ColorDropdownMenuItem({
       }}
       {...props}
     >
-      {isSelected ? <Icons.check /> : null}
+      {isSelected ? <Check className="size-3" /> : null}
     </DropdownMenuItem>
   );
 
   return name ? (
     <Tooltip>
       <TooltipTrigger>{content}</TooltipTrigger>
-      <TooltipContent>{name}</TooltipContent>
+      <TooltipContent className="mb-1 capitalize">{name}</TooltipContent>
     </Tooltip>
   ) : (
     content
@@ -83,7 +86,10 @@ export function ColorDropdownMenuItems({
 }: ColorDropdownMenuItemsProps) {
   return (
     <div
-      className={cn('grid grid-cols-[repeat(10,1fr)] gap-1', className)}
+      className={cn(
+        'grid grid-cols-[repeat(10,1fr)] place-items-center gap-1',
+        className
+      )}
       {...props}
     >
       <TooltipProvider>
@@ -97,6 +103,7 @@ export function ColorDropdownMenuItems({
             updateColor={updateColor}
           />
         ))}
+        {props.children}
       </TooltipProvider>
     </div>
   );

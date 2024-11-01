@@ -4,13 +4,20 @@ import React from 'react';
 
 import { cn, withRef } from '@udecode/cn';
 
-import type { TColor } from './color-dropdown-menu';
+import { Icons } from '@/components/icons';
 
 import { buttonVariants } from './button';
-import { ColorDropdownMenuItems } from './color-dropdown-menu-items';
-import { ColorsCustom } from './colors-custom';
-import { DropdownMenuItem } from './dropdown-menu';
-import { Separator } from './separator';
+import {
+  type TColor,
+  ColorDropdownMenuItems,
+} from './color-dropdown-menu-items';
+import { ColorCustom } from './colors-custom';
+import {
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from './dropdown-menu';
 
 export const ColorPickerContent = withRef<
   'div',
@@ -37,36 +44,47 @@ export const ColorPickerContent = withRef<
     ref
   ) => {
     return (
-      <div
-        ref={ref}
-        className={cn('flex flex-col gap-4 p-4', className)}
-        {...props}
-      >
-        <ColorsCustom
-          color={color}
-          colors={colors}
-          customColors={customColors}
-          updateColor={updateColor}
-          updateCustomColor={updateCustomColor}
-        />
-
-        <Separator />
-
-        <ColorDropdownMenuItems
-          color={color}
-          colors={colors}
-          updateColor={updateColor}
-        />
+      <div ref={ref} className={cn('flex flex-col', className)} {...props}>
+        <DropdownMenuLabel>Color Picker</DropdownMenuLabel>
+        <DropdownMenuGroup>
+          <ColorCustom
+            color={color}
+            className="p-2"
+            colors={colors}
+            customColors={customColors}
+            updateColor={updateColor}
+            updateCustomColor={updateCustomColor}
+          />
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <ColorDropdownMenuItems
+            color={color}
+            className="p-2"
+            colors={colors}
+            updateColor={updateColor}
+          />
+        </DropdownMenuGroup>
         {color && (
-          <DropdownMenuItem
-            className={buttonVariants({
-              isMenu: true,
-              variant: 'outline',
-            })}
-            onClick={clearColor}
-          >
-            Clear
-          </DropdownMenuItem>
+          <React.Fragment>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuItem
+                className={cn(
+                  buttonVariants({
+                    isMenu: false,
+                    size: 'sm',
+                    variant: 'ghost',
+                  }),
+                  'w-full justify-start'
+                )}
+                onClick={clearColor}
+              >
+                <Icons.colorClear className="mr-2" />
+                <span>Clear</span>
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          </React.Fragment>
         )}
       </div>
     );

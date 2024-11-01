@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
@@ -12,8 +14,15 @@ import {
 } from '@udecode/plate-common/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { ListStyleType, toggleIndentList } from '@udecode/plate-indent-list';
-
-import { Icons } from '@/components/icons';
+import {
+  Heading1Icon,
+  Heading2Icon,
+  Heading3Icon,
+  ListIcon,
+  ListOrderedIcon,
+  PilcrowIcon,
+  QuoteIcon,
+} from 'lucide-react';
 
 import {
   DropdownMenu,
@@ -29,43 +38,43 @@ import { ToolbarButton } from './toolbar';
 const items = [
   {
     description: 'Paragraph',
-    icon: Icons.paragraph,
+    icon: PilcrowIcon,
     label: 'Paragraph',
     value: ParagraphPlugin.key,
   },
   {
     description: 'Heading 1',
-    icon: Icons.h1,
+    icon: Heading1Icon,
     label: 'Heading 1',
     value: HEADING_KEYS.h1,
   },
   {
     description: 'Heading 2',
-    icon: Icons.h2,
+    icon: Heading2Icon,
     label: 'Heading 2',
     value: HEADING_KEYS.h2,
   },
   {
     description: 'Heading 3',
-    icon: Icons.h3,
+    icon: Heading3Icon,
     label: 'Heading 3',
     value: HEADING_KEYS.h3,
   },
   {
     description: 'Quote (⌘+⇧+.)',
-    icon: Icons.blockquote,
+    icon: QuoteIcon,
     label: 'Quote',
     value: BlockquotePlugin.key,
   },
   {
     description: 'Bulleted list',
-    icon: Icons.ul,
+    icon: ListIcon,
     label: 'Bulleted list',
     value: ListStyleType.Disc,
   },
   {
     description: 'Numbered list',
-    icon: Icons.ol,
+    icon: ListOrderedIcon,
     label: 'Numbered list',
     value: ListStyleType.Decimal,
   },

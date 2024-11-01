@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect } from 'react';
 
 import {
@@ -14,9 +16,8 @@ import {
   floatingMediaActions,
   useFloatingMediaSelectors,
 } from '@udecode/plate-media/react';
+import { Delete, Link } from 'lucide-react';
 import { useReadOnly, useSelected } from 'slate-react';
-
-import { Icons } from '@/components/icons';
 
 import { Button, buttonVariants } from './button';
 import { CaptionButton } from './caption';
@@ -64,7 +65,7 @@ export function MediaPopover({ children, plugin }: MediaPopoverProps) {
           <div className="flex w-[330px] flex-col">
             <div className="flex items-center">
               <div className="flex items-center pl-3 text-muted-foreground">
-                <Icons.link className="size-4" />
+                <Link className="size-4" />
               </div>
 
               <FloatingMediaPrimitive.UrlInput
@@ -87,7 +88,7 @@ export function MediaPopover({ children, plugin }: MediaPopoverProps) {
             <Separator orientation="vertical" className="my-1" />
 
             <Button size="sms" variant="ghost" {...buttonProps}>
-              <Icons.delete className="size-4" />
+              <Delete className="size-4" />
             </Button>
           </div>
         )}

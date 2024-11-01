@@ -10,8 +10,14 @@ import { collapseSelection } from '@udecode/plate-common';
 import { focusEditor, useEditorRef } from '@udecode/plate-common/react';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { KbdPlugin } from '@udecode/plate-kbd/react';
+import {
+  HighlighterIcon,
+  KeyboardIcon,
+  MoreHorizontalIcon,
+  SubscriptIcon,
+  SuperscriptIcon,
+} from 'lucide-react';
 
-import { Icons } from '@/components/icons';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,7 +35,7 @@ export function PlaygroundMoreDropdownMenu(props: DropdownMenuProps) {
     <DropdownMenu modal={false} {...openState} {...props}>
       <DropdownMenuTrigger asChild>
         <ToolbarButton pressed={openState.open} tooltip="Insert">
-          <Icons.more />
+          <MoreHorizontalIcon />
         </ToolbarButton>
       </DropdownMenuTrigger>
 
@@ -44,7 +50,7 @@ export function PlaygroundMoreDropdownMenu(props: DropdownMenuProps) {
             focusEditor(editor);
           }}
         >
-          <Icons.highlight className="mr-2 size-5" />
+          <HighlighterIcon className="mr-2 size-5" />
           Highlight
         </DropdownMenuItem>
 
@@ -55,7 +61,7 @@ export function PlaygroundMoreDropdownMenu(props: DropdownMenuProps) {
             focusEditor(editor);
           }}
         >
-          <Icons.kbd className="mr-2 size-5" />
+          <KeyboardIcon className="mr-2 size-5" />
           Keyboard input
         </DropdownMenuItem>
 
@@ -68,7 +74,7 @@ export function PlaygroundMoreDropdownMenu(props: DropdownMenuProps) {
             focusEditor(editor);
           }}
         >
-          <Icons.superscript className="mr-2 size-5" />
+          <SuperscriptIcon className="mr-2 size-5" />
           Superscript
           {/* (⌘+,) */}
         </DropdownMenuItem>
@@ -81,7 +87,7 @@ export function PlaygroundMoreDropdownMenu(props: DropdownMenuProps) {
             focusEditor(editor);
           }}
         >
-          <Icons.subscript className="mr-2 size-5" />
+          <SubscriptIcon className="mr-2 size-5" />
           Subscript
           {/* (⌘+.) */}
         </DropdownMenuItem>

@@ -1,8 +1,15 @@
+'use client';
+
 import { useCallback, useState } from 'react';
 
 import { AIChatPlugin } from '@udecode/plate-ai/react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import { ParagraphPlugin, useEditorPlugin } from '@udecode/plate-core/react';
+import { unsetNodes } from '@udecode/plate-common';
+import {
+  ParagraphPlugin,
+  focusEditor,
+  useEditorPlugin,
+} from '@udecode/plate-common/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { IndentListPlugin } from '@udecode/plate-indent-list/react';
 import {
@@ -10,8 +17,6 @@ import {
   BlockMenuPlugin,
   BlockSelectionPlugin,
 } from '@udecode/plate-selection/react';
-import { unsetNodes } from '@udecode/slate';
-import { focusEditor } from '@udecode/slate-react';
 
 import {
   ContextMenu,

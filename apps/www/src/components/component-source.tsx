@@ -1,4 +1,3 @@
-/* eslint-disable jsx-a11y/interactive-supports-focus */
 'use client';
 
 import * as React from 'react';
@@ -11,9 +10,9 @@ import { Button } from '@/registry/default/plate-ui/button';
 import { CodeBlockWrapper } from './code-block-wrapper';
 
 interface ComponentSourceProps extends React.HTMLAttributes<HTMLDivElement> {
-  src: string;
   name?: string;
   open?: boolean;
+  src?: string;
   title?: string;
 }
 
@@ -21,10 +20,11 @@ export function ComponentSource({
   children,
   className,
   name,
+  src,
   title,
   ...props
 }: ComponentSourceProps) {
-  const displaySrc = title ?? props.src?.split('/').pop() ?? name + '.tsx';
+  const displaySrc = title ?? src?.split('/').pop() ?? name + '.tsx';
   const { copyToClipboard } = useCopyToClipboard();
 
   return (
