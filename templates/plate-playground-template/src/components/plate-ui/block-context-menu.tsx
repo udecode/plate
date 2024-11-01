@@ -63,6 +63,7 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
   return (
     <ContextMenu modal={false}>
       <ContextMenuTrigger
+        asChild
         onContextMenu={(event) => {
           const dataset = (event.target as HTMLElement).dataset;
 
@@ -76,7 +77,7 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
           });
         }}
       >
-        {children}
+        <div className="w-full">{children}</div>
       </ContextMenuTrigger>
       <ContextMenuContent
         className="w-64"

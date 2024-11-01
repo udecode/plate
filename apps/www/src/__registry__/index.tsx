@@ -1457,49 +1457,25 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
-    "editor-ghost": {
-      name: "editor-ghost",
+    "editor-full-width": {
+      name: "editor-full-width",
       description: "",
       type: "registry:example",
       registryDependencies: [],
-      files: ["registry/default/example/editor-ghost.tsx"],
-      component: React.lazy(() => import("@/registry/default/example/editor-ghost.tsx")),
+      files: ["registry/default/example/editor-full-width.tsx"],
+      component: React.lazy(() => import("@/registry/default/example/editor-full-width.tsx")),
       source: "",
       category: "",
       subcategory: "",
       chunks: []
     },
-    "editor-label": {
-      name: "editor-label",
+    "editor-ai-chat": {
+      name: "editor-ai-chat",
       description: "",
       type: "registry:example",
       registryDependencies: [],
-      files: ["registry/default/example/editor-label.tsx"],
-      component: React.lazy(() => import("@/registry/default/example/editor-label.tsx")),
-      source: "",
-      category: "",
-      subcategory: "",
-      chunks: []
-    },
-    "editor-text": {
-      name: "editor-text",
-      description: "",
-      type: "registry:example",
-      registryDependencies: [],
-      files: ["registry/default/example/editor-text.tsx"],
-      component: React.lazy(() => import("@/registry/default/example/editor-text.tsx")),
-      source: "",
-      category: "",
-      subcategory: "",
-      chunks: []
-    },
-    "editor-button": {
-      name: "editor-button",
-      description: "",
-      type: "registry:example",
-      registryDependencies: [],
-      files: ["registry/default/example/editor-button.tsx"],
-      component: React.lazy(() => import("@/registry/default/example/editor-button.tsx")),
+      files: ["registry/default/example/editor-ai-chat.tsx"],
+      component: React.lazy(() => import("@/registry/default/example/editor-ai-chat.tsx")),
       source: "",
       category: "",
       subcategory: "",

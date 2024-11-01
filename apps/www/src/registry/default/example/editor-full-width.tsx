@@ -16,16 +16,14 @@ export default function EditorDefault() {
   });
 
   return (
-    <div className="mt-[72px] p-10">
-      <Plate editor={editor}>
-        <EditorContainer>
-          <Editor placeholder="Type your message here." />
-        </EditorContainer>
+    <Plate editor={editor}>
+      <EditorContainer>
+        <Editor variant="fullWidth" placeholder="Type your message here." />
+      </EditorContainer>
 
-        <FloatingToolbar>
-          <FloatingToolbarButtons />
-        </FloatingToolbar>
-      </Plate>
-    </div>
+      <FloatingToolbar>
+        <FloatingToolbarButtons />
+      </FloatingToolbar>
+    </Plate>
   );
 }

@@ -169,7 +169,6 @@ export default function PlateEditor() {
           id="scroll_container"
           ref={containerRef}
           variant="demo"
-          className="[&>span]:w-full"
         >
           <Editor variant="demo" />
 
@@ -281,6 +280,7 @@ export const useCreateEditor = () => {
           enableMerging: true,
         },
       }),
+      ColumnPlugin,
 
       TodoListPlugin,
       TogglePlugin,

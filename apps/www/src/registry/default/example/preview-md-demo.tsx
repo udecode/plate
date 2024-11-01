@@ -16,7 +16,7 @@ import Prism from 'prismjs';
 import { editableProps } from '@/plate/demo/editableProps';
 import { PlateUI } from '@/plate/demo/plate-ui';
 import { previewMdValue } from '@/plate/demo/values/previewMdValue';
-import { Editor } from '@/registry/default/plate-ui/editor';
+import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 
 import 'prismjs/components/prism-markdown.js';
 
@@ -115,10 +115,10 @@ export default function PreviewMdDemo() {
   })
   
   return (
-    <div className="p-10">
       <Plate editor={editor}>
-        <Editor {..._editableProps} />
+        <EditorContainer>
+          <Editor {..._editableProps} />
+        </EditorContainer>
       </Plate>
-    </div>
   );
 }

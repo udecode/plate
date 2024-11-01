@@ -44,7 +44,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <body
           className={cn(
             'min-h-screen bg-background font-sans antialiased',
-            '[&_.slate-selection-area]:bg-brand/15',
             fontSans.variable
           )}
         >

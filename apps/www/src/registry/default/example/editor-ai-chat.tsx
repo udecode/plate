@@ -5,7 +5,7 @@ import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
 import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 
 import { PlateUI } from '@/plate/demo/plate-ui';
-import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
+import { Editor } from '@/registry/default/plate-ui/editor';
 import { FloatingToolbar } from '@/registry/default/plate-ui/floating-toolbar';
 import { FloatingToolbarButtons } from '@/registry/default/plate-ui/floating-toolbar-buttons';
 
@@ -16,16 +16,12 @@ export default function EditorDefault() {
   });
 
   return (
-    <div className="mt-[72px] p-10">
-      <Plate editor={editor}>
-        <EditorContainer>
-          <Editor variant="aiChat" placeholder="Type your message here." />
-        </EditorContainer>
+    <Plate editor={editor}>
+      <Editor variant="aiChat" placeholder="Type your message here." />
 
-        <FloatingToolbar>
-          <FloatingToolbarButtons />
-        </FloatingToolbar>
-      </Plate>
-    </div>
+      <FloatingToolbar>
+        <FloatingToolbarButtons />
+      </FloatingToolbar>
+    </Plate>
   );
 }
