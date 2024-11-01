@@ -110,7 +110,6 @@ export const withIndentList: ExtendEditor<BaseIndentListConfig> = ({
         }
       }
     }
-
     // When inserting a line break, normalize listStart if the node has a listRestart property
     if (
       operation.type === 'split_node' &&
@@ -157,7 +156,6 @@ export const withIndentList: ExtendEditor<BaseIndentListConfig> = ({
         }
       }
     }
-
     if (operation.type === 'merge_node') {
       const { properties } = operation;
 

@@ -3,5 +3,5 @@
  */
 
 export * from './BaseCaptionPlugin';
-export * from './TCaptionElement';
+export type * from './TCaptionElement';
 export * from './withCaption';

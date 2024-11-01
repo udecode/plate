@@ -1,10 +1,14 @@
 // sync plate packages
-const { exec } = require('node:child_process');
-const fs = require('node:fs/promises');
-const path = require('node:path');
-const util = require('node:util');
+import { exec, execSync } from 'node:child_process';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { promisify } from 'node:util';
 
-const execPromise = util.promisify(exec);
+const execPromise = promisify(exec);
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const TARGET_PATH = path.join(__dirname, '../', './package.json');
 
@@ -20,7 +24,7 @@ async function getPackageJson() {
   }
 }
 
-async function fetchPackageVersion(pkg) {
+async function fetchPackageVersion(pkg: string) {
   try {
     const { stdout } = await execPromise(`npm view ${pkg} version`);
 
@@ -32,7 +36,7 @@ async function fetchPackageVersion(pkg) {
   }
 }
 
-async function fetchLatestVersions(packages, packageJson) {
+async function fetchLatestVersions(packages: string[], packageJson: any) {
   console.info('Fetching latest plate versions in parallel...');
 
   const versionPromises = packages.map(async (pkg) => {
@@ -50,11 +54,14 @@ async function fetchLatestVersions(packages, packageJson) {
 
   const results = await Promise.all(versionPromises);
 
-  return new Map(results.filter(Boolean));
+  return new Map(results.filter(Boolean) as any);
 }
 
-async function updatePackageVersions(packageJson, versionMap) {
-  const updatedPackages = [];
+async function updatePackageVersions(
+  packageJson: any,
+  versionMap: Map<string, { currentVersion: string; version: string }>
+) {
+  const updatedPackages: any[] = [];
 
   for (const [name, versions] of versionMap) {
     if (packageJson.dependencies[name]) {
@@ -88,7 +95,7 @@ async function main() {
     // Update package.json with new versions
     const updatedPackages = await updatePackageVersions(
       packageJson,
-      versionMap
+      versionMap as any
     );
 
     // Log results
@@ -102,7 +109,6 @@ async function main() {
       });
 
       console.info('\nRunning pnpm install...');
-      const { execSync } = require('node:child_process');
 
       try {
         const args = process.argv.slice(2);

@@ -3,5 +3,5 @@
  */
 
 export * from './BaseAlignPlugin';
-export * from './types';
+export type * from './types';
 export * from './transforms/index';

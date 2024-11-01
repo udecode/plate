@@ -54,13 +54,17 @@ export const EmojiPickerState = (): [
           searchValue: '',
         };
       }
-      case 'UPDATE_SEARCH_RESULT': {
+      case 'SET_CLOSE': {
         return {
           ...state,
-          ...payload,
-          focusedCategory: undefined,
-          isSearching: true,
+          emoji: undefined,
+          isOpen: false,
         };
+      }
+      case 'SET_EMOJI':
+      case 'SET_FOCUSED_AND_VISIBLE_CATEGORIES':
+      case 'SET_SEARCH': {
+        return { ...state, ...payload };
       }
       case 'SET_FOCUSED_CATEGORY': {
         return {
@@ -77,13 +81,6 @@ export const EmojiPickerState = (): [
           isOpen: true,
         };
       }
-      case 'SET_CLOSE': {
-        return {
-          ...state,
-          emoji: undefined,
-          isOpen: false,
-        };
-      }
       case 'UPDATE_FREQUENT_EMOJIS': {
         return {
           ...state,
@@ -91,10 +88,13 @@ export const EmojiPickerState = (): [
           emoji: undefined,
         };
       }
-      case 'SET_SEARCH':
-      case 'SET_EMOJI':
-      case 'SET_FOCUSED_AND_VISIBLE_CATEGORIES': {
-        return { ...state, ...payload };
+      case 'UPDATE_SEARCH_RESULT': {
+        return {
+          ...state,
+          ...payload,
+          focusedCategory: undefined,
+          isSearching: true,
+        };
       }
       default: {
         throw new Error(`Unhandled action type: ${type}`);

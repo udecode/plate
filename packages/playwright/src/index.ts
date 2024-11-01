@@ -11,5 +11,5 @@ export * from './getNodeByPath';
 export * from './getSelection';
 export * from './getTypeAtPath';
 export * from './setSelection';
-export * from './types';
+export type * from './types';
 export * from './usePlaywrightAdapter';
