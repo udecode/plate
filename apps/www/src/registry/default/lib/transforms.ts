@@ -23,6 +23,7 @@ import { TocPlugin } from '@udecode/plate-heading/react';
 import { INDENT_LIST_KEYS, ListStyleType } from '@udecode/plate-indent-list';
 import { IndentListPlugin } from '@udecode/plate-indent-list/react';
 import { toggleColumns } from '@udecode/plate-layout';
+import { LinkPlugin, triggerFloatingLink } from '@udecode/plate-link/react';
 import { insertEquation, insertInlineEquation } from '@udecode/plate-math';
 import {
   EquationPlugin,
@@ -31,13 +32,14 @@ import {
 import {
   insertAudioPlaceholder,
   insertFilePlaceholder,
-  insertImagePlaceholder,
+  insertMedia,
   insertVideoPlaceholder,
 } from '@udecode/plate-media';
 import {
   AudioPlugin,
   FilePlugin,
   ImagePlugin,
+  MediaEmbedPlugin,
   VideoPlugin,
 } from '@udecode/plate-media/react';
 import { TablePlugin, insertTable } from '@udecode/plate-table/react';
@@ -81,9 +83,17 @@ const insertBlockMap: Record<
   [FilePlugin.key]: (editor) => insertFilePlaceholder(editor, { select: true }),
   [INDENT_LIST_KEYS.todo]: insertList,
   [ImagePlugin.key]: (editor) =>
-    insertImagePlaceholder(editor, { select: true }),
+    insertMedia(editor, {
+      select: true,
+      type: ImagePlugin.key,
+    }),
   [ListStyleType.Decimal]: insertList,
   [ListStyleType.Disc]: insertList,
+  [MediaEmbedPlugin.key]: (editor) =>
+    insertMedia(editor, {
+      select: true,
+      type: MediaEmbedPlugin.key,
+    }),
   [TablePlugin.key]: (editor) => insertTable(editor, {}, { select: true }),
   [TocPlugin.key]: (editor) => insertToc(editor, { select: true }),
   [VideoPlugin.key]: (editor) =>
@@ -97,6 +107,7 @@ const insertInlineMap: Record<
   [DatePlugin.key]: (editor) => insertDate(editor, { select: true }),
   [InlineEquationPlugin.key]: (editor) =>
     insertInlineEquation(editor, '', { select: true }),
+  [LinkPlugin.key]: (editor) => triggerFloatingLink(editor, { focused: true }),
 };
 
 export const insertBlock = (editor: PlateEditor, type: string) => {

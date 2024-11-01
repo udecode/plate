@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
@@ -8,8 +6,17 @@ import {
   SubscriptPlugin,
   SuperscriptPlugin,
 } from '@udecode/plate-basic-marks/react';
+import { collapseSelection } from '@udecode/plate-common';
 import { focusEditor, useEditorRef } from '@udecode/plate-common/react';
-import { MoreHorizontal, Subscript, Superscript } from 'lucide-react';
+import { HighlightPlugin } from '@udecode/plate-highlight/react';
+import { KbdPlugin } from '@udecode/plate-kbd/react';
+import {
+  HighlighterIcon,
+  KeyboardIcon,
+  MoreHorizontalIcon,
+  SubscriptIcon,
+  SuperscriptIcon,
+} from 'lucide-react';
 
 import {
   DropdownMenu,
@@ -29,15 +36,37 @@ export function MoreDropdownMenu(props: DropdownMenuProps) {
     <DropdownMenu modal={false} {...openState} {...props}>
       <DropdownMenuTrigger asChild>
         <ToolbarButton pressed={openState.open} tooltip="Insert">
-          <MoreHorizontal />
+          <MoreHorizontalIcon />
         </ToolbarButton>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        className="flex max-h-[500px] min-w-[180px] flex-col overflow-y-auto"
+        className="ignore-click-outside/toolbar flex max-h-[500px] min-w-[180px] flex-col overflow-y-auto"
         align="start"
       >
         <DropdownMenuGroup>
+          <DropdownMenuItem
+            onSelect={() => {
+              editor.tf.toggle.mark({ key: HighlightPlugin.key });
+              collapseSelection(editor, { edge: 'end' });
+              focusEditor(editor);
+            }}
+          >
+            <HighlighterIcon />
+            Highlight
+          </DropdownMenuItem>
+
+          <DropdownMenuItem
+            onSelect={() => {
+              editor.tf.toggle.mark({ key: KbdPlugin.key });
+              collapseSelection(editor, { edge: 'end' });
+              focusEditor(editor);
+            }}
+          >
+            <KeyboardIcon />
+            Keyboard input
+          </DropdownMenuItem>
+
           <DropdownMenuItem
             onSelect={() => {
               editor.tf.toggle.mark({
@@ -47,7 +76,7 @@ export function MoreDropdownMenu(props: DropdownMenuProps) {
               focusEditor(editor);
             }}
           >
-            <Superscript />
+            <SuperscriptIcon />
             Superscript
             {/* (⌘+,) */}
           </DropdownMenuItem>
@@ -60,7 +89,7 @@ export function MoreDropdownMenu(props: DropdownMenuProps) {
               focusEditor(editor);
             }}
           >
-            <Subscript />
+            <SubscriptIcon />
             Subscript
             {/* (⌘+.) */}
           </DropdownMenuItem>

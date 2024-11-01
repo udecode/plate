@@ -6,8 +6,7 @@ import {
 } from '@udecode/plate-toggle/react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 
-import { Button } from '@/registry/default/plate-ui/button';
-
+import { Button } from './button';
 import { PlateElement } from './plate-element';
 
 export const ToggleElement = withRef<typeof PlateElement>(

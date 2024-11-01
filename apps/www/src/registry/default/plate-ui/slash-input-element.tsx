@@ -46,12 +46,12 @@ import {
 } from './inline-combobox';
 import { PlateElement } from './plate-element';
 
-type SlashCommandRuleGroup = {
+type Group = {
   group: string;
-  items: SlashCommandRule[];
+  items: Item[];
 };
 
-interface SlashCommandRule {
+interface Item {
   icon: React.ReactNode;
 
   onSelect: (editor: PlateEditor, value: string) => void;
@@ -63,7 +63,7 @@ interface SlashCommandRule {
   label?: string;
 }
 
-const slashRules: SlashCommandRuleGroup[] = [
+const groups: Group[] = [
   {
     group: 'AI',
     items: [
@@ -208,7 +208,7 @@ export const SlashInputElement = withRef<typeof PlateElement>(
           <InlineComboboxContent>
             <InlineComboboxEmpty>No results</InlineComboboxEmpty>
 
-            {slashRules.map(({ group, items }) => (
+            {groups.map(({ group, items }) => (
               <InlineComboboxGroup key={group}>
                 <InlineComboboxGroupLabel>{group}</InlineComboboxGroupLabel>
 

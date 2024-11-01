@@ -138,18 +138,18 @@ export const ToolbarToggleItem = withVariants(
 );
 
 export const ToolbarGroup = withRef<'div'>(({ children, className }, ref) => {
-  const childArr = React.Children.map(children, (c) => c);
-
-  if (!childArr || childArr.length === 0) return null;
-
   return (
     <div
       ref={ref}
-      className={cn('group/toolbar-group relative flex', className)}
+      className={cn(
+        'group/toolbar-group',
+        'relative hidden has-[button]:flex',
+        className
+      )}
     >
       <div className="flex items-center">{children}</div>
 
-      <div className="mx-1.5 hidden py-0.5 group-last/toolbar-group:!hidden group-has-[button]/toolbar-group:block">
+      <div className="mx-1.5 py-0.5 group-last/toolbar-group:!hidden">
         <Separator orientation="vertical" />
       </div>
     </div>

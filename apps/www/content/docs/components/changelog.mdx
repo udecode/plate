@@ -14,8 +14,13 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 ### October 31 #15.6
 
 - Added `lib/transforms.ts`. Contains useful transforms for common operations.
-- Remove `Icons` file dependency. All icons are now imported from `lucide-react`.
+- Removed `Icons` file dependency. All icons are now imported from `lucide-react`.
 - Fixed and modified some styles in emoji and color picker.
+- Group styling: 
+  - `dropdown-menu`
+  - `context-menu`
+  - `inline-combobox`
+- Added groups and items to `slash-input-element`
 - Spacing and sizing update:
   - `ai-menu-items.tsx`
   - `align-dropdown-menu.tsx`
@@ -47,12 +52,6 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
   - `table-element.tsx`
   - `toggle-element.tsx`
   - `toggle-toolbar-button.tsx`
-  
-- Added `gap-2 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0` to `<DropdownMenuItem />` and `<DropdownMenuSubTrigger />` to automatically style icon inside.
-- Added `gap-2` to `<ToolbarButton />`.
-- Removed `h-9` from `<DropdownMenuItem />`, `<ToolbarButton />`, `<ColumnFloatingToolbar />`.
-- `<InlineComboboxItem />`: add `group` and `label` props. 
-- `<SlashInputElement />`: support groups.
 
 ### October 26 #15.5
 
