@@ -107,7 +107,7 @@ import { CommentLeaf } from '@/components/plate-ui/comment-leaf';
 import { CommentsPopover } from '@/components/plate-ui/comments-popover';
 import {
   CursorOverlay,
-  SelectionOverlayPlugin,
+  DragOverCursorPlugin,
 } from '@/components/plate-ui/cursor-overlay';
 import { Editor } from '@/components/plate-ui/editor';
 import { EmojiInputElement } from '@/components/plate-ui/emoji-input-element';
@@ -160,7 +160,12 @@ export default function PlateEditor() {
   return (
     <DndProvider backend={HTML5Backend}>
       <Plate editor={editor}>
-        <div id="scroll_container" ref={containerRef} data-plate-selectable>
+        <div
+          className="relative"
+          id="scroll_container"
+          ref={containerRef}
+          data-plate-selectable
+        >
           <FixedToolbar>
             <FixedToolbarButtons />
           </FixedToolbar>
@@ -225,7 +230,6 @@ export const useCreateEditor = () => {
           enableMerging: true,
         },
       }),
-      SelectionOverlayPlugin,
 
       TodoListPlugin,
       TogglePlugin,
@@ -432,9 +436,9 @@ export const useCreateEditor = () => {
       TrailingBlockPlugin.configure({
         options: { type: ParagraphPlugin.key },
       }),
-      SelectionOverlayPlugin,
 
       // Collaboration
+      DragOverCursorPlugin,
       CommentsPlugin.configure({
         options: {
           users: {

@@ -73,7 +73,7 @@ export function CursorOverlay({ cursors, ...props }: CursorOverlayProps) {
   );
 }
 
-const DragOverCursorPlugin = createPlatePlugin({
+export const DragOverCursorPlugin = createPlatePlugin({
   key: 'dragOverCursor',
   options: { cursors: {} as Record<string, CursorState<CursorData>> },
   handlers: {
