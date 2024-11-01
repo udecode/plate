@@ -1,5 +1,0 @@
----
-'shadcx': patch
----
-
-shadcn sync

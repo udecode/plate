@@ -1,5 +1,11 @@
 # @udecode/slate-utils
 
+## 39.2.20
+
+### Patch Changes
+
+- [#3697](https://github.com/udecode/plate/pull/3697) by [@zbeyens](https://github.com/zbeyens) – Fix `getSelectionFragment` to support collapsed selection
+
 ## 39.2.1
 
 ## 39.1.4
