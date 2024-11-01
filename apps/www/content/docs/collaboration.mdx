@@ -34,9 +34,11 @@ const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
     YjsPlugin.configure({
-      hocuspocusProviderOptions: {
-        url: 'https://hocuspocus.test/hocuspocus',
-        name: 'test',
+        options: {
+          hocuspocusProviderOptions: {
+          url: "https://hocuspocus.test/hocuspocus",
+          name: "test",
+        }
       },
     }),
   ]
