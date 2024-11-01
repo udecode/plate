@@ -29,6 +29,7 @@ module.exports = {
     'unicorn/no-for-loop': 'off',
     'unicorn/no-null': 'off',
     'unicorn/no-thenable': 'off',
+    'unicorn/prefer-export-from': 'off',
     'unicorn/prefer-module': 'off',
     'unicorn/prefer-optional-catch-binding': 'off',
     'unicorn/prefer-regexp-test': 'off',

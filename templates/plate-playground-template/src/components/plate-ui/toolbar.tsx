@@ -2,11 +2,9 @@
 
 import * as React from 'react';
 
-import type { VariantProps } from 'class-variance-authority';
-
 import * as ToolbarPrimitive from '@radix-ui/react-toolbar';
 import { cn, withCn, withRef, withVariants } from '@udecode/cn';
-import { cva } from 'class-variance-authority';
+import { type VariantProps, cva } from 'class-variance-authority';
 import { ChevronDown } from 'lucide-react';
 
 import { Separator } from './separator';

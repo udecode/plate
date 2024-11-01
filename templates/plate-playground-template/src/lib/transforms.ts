@@ -1,4 +1,3 @@
-import type { TElement, TNodeEntry } from '@udecode/plate-common';
 import type { PlateEditor } from '@udecode/plate-common/react';
 
 import { insertCallout } from '@udecode/plate-callout';
@@ -6,6 +5,8 @@ import { CalloutPlugin } from '@udecode/plate-callout/react';
 import { insertCodeBlock } from '@udecode/plate-code-block';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import {
+  type TElement,
+  type TNodeEntry,
   getBlockAbove,
   getBlocks,
   getNodeEntry,

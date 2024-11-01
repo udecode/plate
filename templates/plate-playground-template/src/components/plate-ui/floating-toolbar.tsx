@@ -2,8 +2,6 @@
 
 import React from 'react';
 
-import type { FloatingToolbarState } from '@udecode/plate-floating';
-
 import { cn, withRef } from '@udecode/cn';
 import {
   useComposedRef,
@@ -12,6 +10,7 @@ import {
   useEventEditorSelectors,
 } from '@udecode/plate-common/react';
 import {
+  type FloatingToolbarState,
   flip,
   offset,
   useFloatingToolbar,

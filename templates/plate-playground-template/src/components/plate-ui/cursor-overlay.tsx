@@ -2,13 +2,6 @@
 
 import React, { useEffect } from 'react';
 
-import type {
-  CursorData,
-  CursorOverlayProps,
-  CursorProps,
-  CursorState,
-} from '@udecode/plate-cursor';
-
 import { cn } from '@udecode/cn';
 import {
   createPlatePlugin,
@@ -16,7 +9,13 @@ import {
   useEditorPlugin,
   useEditorRef,
 } from '@udecode/plate-common/react';
-import { CursorOverlay as CursorOverlayPrimitive } from '@udecode/plate-cursor';
+import {
+  type CursorData,
+  type CursorOverlayProps,
+  type CursorProps,
+  type CursorState,
+  CursorOverlay as CursorOverlayPrimitive,
+} from '@udecode/plate-cursor';
 import { DndPlugin } from '@udecode/plate-dnd';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 

@@ -1,7 +1,6 @@
 'use client';
 
-import React from 'react';
-import type { ComponentPropsWithoutRef } from 'react';
+import React, { type ComponentPropsWithoutRef } from 'react';
 
 import { cn } from '@udecode/cn';
 import {
@@ -10,10 +9,11 @@ import {
 } from '@udecode/plate-font/react';
 import { PlusIcon } from 'lucide-react';
 
-import type { TColor } from './color-dropdown-menu-items';
-
 import { buttonVariants } from './button';
-import { ColorDropdownMenuItems } from './color-dropdown-menu-items';
+import {
+  type TColor,
+  ColorDropdownMenuItems,
+} from './color-dropdown-menu-items';
 import { ColorInput } from './color-input';
 
 // import { ColorInput } from './color-input';

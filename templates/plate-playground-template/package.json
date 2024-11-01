@@ -15,6 +15,7 @@
   "dependencies": {
     "@ai-sdk/openai": "^0.0.68",
     "@ariakit/react": "0.4.11",
+    "@faker-js/faker": "^9.1.0",
     "@radix-ui/react-avatar": "^1.1.1",
     "@radix-ui/react-checkbox": "^1.1.2",
     "@radix-ui/react-context-menu": "^2.2.1",

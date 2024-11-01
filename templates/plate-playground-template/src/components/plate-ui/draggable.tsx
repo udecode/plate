@@ -3,18 +3,18 @@
 import React from 'react';
 
 import type { TEditor } from '@udecode/plate-common';
-import type { PlateElementProps } from '@udecode/plate-common/react';
-import type { DragItemNode } from '@udecode/plate-dnd';
 import type { DropTargetMonitor } from 'react-dnd';
 
 import { cn, withRef } from '@udecode/cn';
 import {
+  type PlateElementProps,
   MemoizedChildren,
   useEditorPlugin,
   useEditorRef,
   withHOC,
 } from '@udecode/plate-common/react';
 import {
+  type DragItemNode,
   DraggableProvider,
   useDraggable,
   useDraggableGutter,

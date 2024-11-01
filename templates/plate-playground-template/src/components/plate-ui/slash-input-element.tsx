@@ -31,7 +31,10 @@ import {
   TableOfContentsIcon,
 } from 'lucide-react';
 
-import { insertBlock, insertInlineElement } from '@/lib/transforms';
+import {
+  insertBlock,
+  insertInlineElement,
+} from '@/lib/transforms';
 
 import {
   InlineCombobox,

@@ -8,6 +8,7 @@ import {
   useCodeBlockComboboxState,
 } from '@udecode/plate-code-block/react';
 import { Check, ChevronsUpDown } from 'lucide-react';
+
 // Prism must be imported before all language files
 import Prism from 'prismjs';
 
@@ -30,8 +31,10 @@ import 'prismjs/components/prism-cpp.js';
 import 'prismjs/components/prism-csharp.js';
 import 'prismjs/components/prism-css.js';
 import 'prismjs/components/prism-dart.js';
+
 // import 'prismjs/components/prism-django.js';
 import 'prismjs/components/prism-docker.js';
+
 // import 'prismjs/components/prism-ejs.js';
 import 'prismjs/components/prism-erlang.js';
 import 'prismjs/components/prism-git.js';
@@ -52,6 +55,7 @@ import 'prismjs/components/prism-matlab.js';
 import 'prismjs/components/prism-mermaid.js';
 import 'prismjs/components/prism-objectivec.js';
 import 'prismjs/components/prism-perl.js';
+
 // import 'prismjs/components/prism-php.js';
 import 'prismjs/components/prism-powershell.js';
 import 'prismjs/components/prism-properties.js';
