@@ -156,7 +156,7 @@ export const uiComponents: Registry = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@udecode/plate-comments/react'],
+    dependencies: ['@udecode/plate-comments'],
     doc: {
       description: 'A toolbar button for adding inline comments.',
       docs: [
