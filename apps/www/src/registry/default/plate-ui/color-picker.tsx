@@ -3,8 +3,7 @@
 import React from 'react';
 
 import { cn, withRef } from '@udecode/cn';
-
-import { Icons } from '@/components/icons';
+import { EraserIcon } from 'lucide-react';
 
 import { buttonVariants } from './button';
 import {
@@ -71,7 +70,7 @@ export const ColorPickerContent = withRef<
               )}
               onClick={clearColor}
             >
-              <Icons.colorClear />
+              <EraserIcon />
               <span>Clear</span>
             </DropdownMenuItem>
           </DropdownMenuGroup>

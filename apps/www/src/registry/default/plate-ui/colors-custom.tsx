@@ -7,8 +7,7 @@ import {
   useColorsCustom,
   useColorsCustomState,
 } from '@udecode/plate-font/react';
-
-import { Icons } from '@/components/icons';
+import { PlusIcon } from 'lucide-react';
 
 import { buttonVariants } from './button';
 import {
@@ -65,7 +64,7 @@ export function ColorCustom({
             {...menuItemProps}
           >
             <span className="sr-only">Custom</span>
-            <Icons.add />
+            <PlusIcon />
           </DropdownMenuItem>
         </ColorInput>
       </ColorDropdownMenuItems>
