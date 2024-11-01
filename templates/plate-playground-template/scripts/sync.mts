@@ -100,9 +100,9 @@ async function main() {
 
     // Log results
     if (updatedPackages.length > 0) {
-      console.log('\nThe following packages were updated.');
+      console.info('\nThe following packages were updated.');
       updatedPackages.forEach(({ currentVersion, name, newVersion }) => {
-        console.log(
+        console.info(
           '\u001B[32m%s\u001B[0m',
           `${name}: ${currentVersion} -> ${newVersion}`
         );

@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useEffect } from 'react';
+
+import type { WithRequiredKey } from '@udecode/plate-common';
+
 import { isSelectionExpanded } from '@udecode/plate-common';
 import {
   useEditorSelector,
@@ -8,8 +11,8 @@ import {
   useRemoveNodeButton,
 } from '@udecode/plate-common/react';
 import {
-  floatingMediaActions,
   FloatingMedia as FloatingMediaPrimitive,
+  floatingMediaActions,
   useFloatingMediaSelectors,
 } from '@udecode/plate-media/react';
 import { Link, Trash2Icon } from 'lucide-react';
@@ -20,8 +23,6 @@ import { CaptionButton } from './caption';
 import { inputVariants } from './input';
 import { Popover, PopoverAnchor, PopoverContent } from './popover';
 import { Separator } from './separator';
-
-import type { WithRequiredKey } from '@udecode/plate-common';
 
 export interface MediaPopoverProps {
   children: React.ReactNode;

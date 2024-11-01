@@ -1,6 +1,9 @@
 'use client';
 
 import React from 'react';
+
+import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
+
 import { someNode } from '@udecode/plate-common';
 import {
   focusEditor,
@@ -9,10 +12,10 @@ import {
 } from '@udecode/plate-common/react';
 import { deleteTable, insertTableRow } from '@udecode/plate-table';
 import {
+  TablePlugin,
   deleteColumn,
   deleteRow,
   insertTable,
-  TablePlugin,
 } from '@udecode/plate-table/react';
 import {
   Minus,
@@ -35,8 +38,6 @@ import {
   useOpenState,
 } from './dropdown-menu';
 import { ToolbarButton } from './toolbar';
-
-import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
 export function TableDropdownMenu(props: DropdownMenuProps) {
   const tableSelected = useEditorSelector(

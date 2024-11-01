@@ -1,6 +1,9 @@
 'use client';
 
 import React from 'react';
+
+import type { EmojiDropdownMenuOptions } from '@udecode/plate-emoji/react';
+
 import { useEmojiDropdownMenuState } from '@udecode/plate-emoji/react';
 import { Smile } from 'lucide-react';
 
@@ -8,8 +11,6 @@ import { emojiCategoryIcons, emojiSearchIcons } from './emoji-icons';
 import { EmojiPicker } from './emoji-picker';
 import { EmojiToolbarDropdown } from './emoji-toolbar-dropdown';
 import { ToolbarButton } from './toolbar';
-
-import type { EmojiDropdownMenuOptions } from '@udecode/plate-emoji/react';
 
 type EmojiDropdownMenuProps = {
   options?: EmojiDropdownMenuOptions;

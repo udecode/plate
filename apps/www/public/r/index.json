@@ -1549,10 +1549,8 @@
       "examples": [
         "editor-default",
         "editor-disabled",
-        "editor-ghost",
-        "editor-label",
-        "editor-text",
-        "editor-button"
+        "editor-full-width",
+        "editor-ai-chat"
       ]
     },
     "files": [

@@ -1,9 +1,10 @@
 'use client';
 
 import * as React from 'react';
+import { DayPicker } from 'react-day-picker';
+
 import { cn } from '@udecode/cn';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { DayPicker } from 'react-day-picker';
 
 import { buttonVariants } from './button';
 

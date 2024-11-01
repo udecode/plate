@@ -1,8 +1,8 @@
 import Link from 'next/link';
 
-import { siteConfig } from '@/config/site';
 import { PlateEditor } from '@/components/plate-editor';
 import { buttonVariants } from '@/components/plate-ui/button';
+import { siteConfig } from '@/config/site';
 
 export default function IndexPage() {
   return (
@@ -17,24 +17,24 @@ export default function IndexPage() {
       </div>
       <div className="flex gap-4">
         <Link
-          href={siteConfig.links.docs}
-          target="_blank"
-          rel="noreferrer"
           className={buttonVariants()}
+          href={siteConfig.links.docs}
+          rel="noreferrer"
+          target="_blank"
         >
           Documentation
         </Link>
         <Link
-          target="_blank"
-          rel="noreferrer"
-          href={siteConfig.links.github}
           className={buttonVariants({ variant: 'outline' })}
+          href={siteConfig.links.github}
+          rel="noreferrer"
+          target="_blank"
         >
           GitHub
         </Link>
       </div>
 
-      <div className="flex w-[600px] flex-col gap-4">
+      <div className="max-w-[calc(100vw-32px)] rounded-lg border bg-background shadow sm:max-w-[min(calc(100vw-64px),1336px)]">
         <PlateEditor />
       </div>
     </section>

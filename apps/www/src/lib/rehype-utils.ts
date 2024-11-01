@@ -56,10 +56,14 @@ export function getNodeAttributeByName(node: UnistNode, name: string) {
 }
 
 export function getComponentSourceFileContent(node: UnistNode) {
-  const src = getNodeAttributeByName(node, 'src')?.value as string;
+  let src = getNodeAttributeByName(node, 'src')?.value as string;
 
   if (!src) {
-    return '';
+    if (typeof node === 'string') {
+      src = 'src/' + (node as any);
+    } else {
+      return '';
+    }
   }
 
   // Read the source file.

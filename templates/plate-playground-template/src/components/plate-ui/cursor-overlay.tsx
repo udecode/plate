@@ -1,6 +1,14 @@
 'use client';
 
 import React, { useEffect } from 'react';
+
+import type {
+  CursorData,
+  CursorOverlayProps,
+  CursorProps,
+  CursorState,
+} from '@udecode/plate-cursor';
+
 import { cn } from '@udecode/cn';
 import {
   createPlatePlugin,
@@ -11,13 +19,6 @@ import {
 import { CursorOverlay as CursorOverlayPrimitive } from '@udecode/plate-cursor';
 import { DndPlugin } from '@udecode/plate-dnd';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
-
-import type {
-  CursorData,
-  CursorOverlayProps,
-  CursorProps,
-  CursorState,
-} from '@udecode/plate-cursor';
 
 export function Cursor({
   caretPosition,

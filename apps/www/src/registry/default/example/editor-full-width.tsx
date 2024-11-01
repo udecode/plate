@@ -5,28 +5,25 @@ import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
 import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 
 import { PlateUI } from '@/plate/demo/plate-ui';
-import { Button } from '@/registry/default/plate-ui/button';
-import { Editor } from '@/registry/default/plate-ui/editor';
+import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 import { FloatingToolbar } from '@/registry/default/plate-ui/floating-toolbar';
 import { FloatingToolbarButtons } from '@/registry/default/plate-ui/floating-toolbar-buttons';
 
-export default function EditorButton() {
+export default function EditorDefault() {
   const editor = usePlateEditor({
     override: { components: PlateUI },
     plugins: [BasicElementsPlugin, BasicMarksPlugin],
   });
 
   return (
-    <div className="mt-[72px] grid w-full gap-2 p-10">
-      <Plate editor={editor}>
-        <Editor placeholder="Type your message here." />
+    <Plate editor={editor}>
+      <EditorContainer>
+        <Editor variant="fullWidth" placeholder="Type your message here." />
+      </EditorContainer>
 
-        <FloatingToolbar>
-          <FloatingToolbarButtons />
-        </FloatingToolbar>
-
-        <Button>Send message</Button>
-      </Plate>
-    </div>
+      <FloatingToolbar>
+        <FloatingToolbarButtons />
+      </FloatingToolbar>
+    </Plate>
   );
 }

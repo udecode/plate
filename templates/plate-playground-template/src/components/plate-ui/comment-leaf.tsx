@@ -1,15 +1,16 @@
 'use client';
 
 import React from 'react';
+
+import type { TCommentText } from '@udecode/plate-comments';
+import type { PlateLeafProps } from '@udecode/plate-common/react';
+
 import { cn } from '@udecode/cn';
 import {
   useCommentLeaf,
   useCommentLeafState,
 } from '@udecode/plate-comments/react';
 import { PlateLeaf } from '@udecode/plate-common/react';
-
-import type { TCommentText } from '@udecode/plate-comments';
-import type { PlateLeafProps } from '@udecode/plate-common/react';
 
 export function CommentLeaf({
   className,

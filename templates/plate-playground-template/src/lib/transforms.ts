@@ -1,3 +1,6 @@
+import type { TElement, TNodeEntry } from '@udecode/plate-common';
+import type { PlateEditor } from '@udecode/plate-common/react';
+
 import { insertCallout } from '@udecode/plate-callout';
 import { CalloutPlugin } from '@udecode/plate-callout/react';
 import { insertCodeBlock } from '@udecode/plate-code-block';
@@ -38,11 +41,8 @@ import {
   MediaEmbedPlugin,
   VideoPlugin,
 } from '@udecode/plate-media/react';
-import { insertTable, TablePlugin } from '@udecode/plate-table/react';
+import { TablePlugin, insertTable } from '@udecode/plate-table/react';
 import { Path } from 'slate';
-
-import type { TElement, TNodeEntry } from '@udecode/plate-common';
-import type { PlateEditor } from '@udecode/plate-common/react';
 
 const ACTION_THREE_COLUMNS = 'action_three_columns';
 

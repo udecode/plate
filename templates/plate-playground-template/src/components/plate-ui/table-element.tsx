@@ -1,6 +1,11 @@
 'use client';
 
 import React from 'react';
+
+import type * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
+import type { TTableElement } from '@udecode/plate-table';
+import type { LucideProps } from 'lucide-react';
+
 import { PopoverAnchor } from '@radix-ui/react-popover';
 import { cn, withRef } from '@udecode/cn';
 import { isSelectionExpanded } from '@udecode/plate-common';
@@ -12,8 +17,8 @@ import {
   withHOC,
 } from '@udecode/plate-common/react';
 import {
-  mergeTableCells,
   TableProvider,
+  mergeTableCells,
   unmergeTableCells,
   useTableBordersDropdownMenuContentState,
   useTableElement,
@@ -34,10 +39,6 @@ import {
 } from './dropdown-menu';
 import { PlateElement } from './plate-element';
 import { Popover, PopoverContent, popoverVariants } from './popover';
-
-import type * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-import type { TTableElement } from '@udecode/plate-table';
-import type { LucideProps } from 'lucide-react';
 
 export const TableBordersDropdownMenuContent = withRef<
   typeof DropdownMenuPrimitive.Content

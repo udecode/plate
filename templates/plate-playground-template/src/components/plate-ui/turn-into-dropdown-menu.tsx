@@ -1,11 +1,14 @@
 'use client';
 
 import React from 'react';
+
+import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
+
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import {
-  focusEditor,
   ParagraphPlugin,
+  focusEditor,
   useEditorRef,
   useSelectionFragmentProp,
 } from '@udecode/plate-common/react';
@@ -37,8 +40,6 @@ import {
   useOpenState,
 } from './dropdown-menu';
 import { ToolbarButton } from './toolbar';
-
-import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
 const turnIntoItems = [
   {

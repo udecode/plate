@@ -1,6 +1,9 @@
 'use client';
 
 import React from 'react';
+
+import type { FloatingToolbarState } from '@udecode/plate-floating';
+
 import { cn, withRef } from '@udecode/cn';
 import {
   useComposedRef,
@@ -16,8 +19,6 @@ import {
 } from '@udecode/plate-floating';
 
 import { Toolbar } from './toolbar';
-
-import type { FloatingToolbarState } from '@udecode/plate-floating';
 
 export const FloatingToolbar = withRef<
   typeof Toolbar,

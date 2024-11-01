@@ -1,11 +1,15 @@
 'use client';
 
 import React from 'react';
+
+import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
+import type { PlateEditor } from '@udecode/plate-common/react';
+
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import {
-  focusEditor,
   ParagraphPlugin,
+  focusEditor,
   useEditorRef,
 } from '@udecode/plate-common/react';
 import { DatePlugin } from '@udecode/plate-date/react';
@@ -52,9 +56,6 @@ import {
   useOpenState,
 } from './dropdown-menu';
 import { ToolbarButton } from './toolbar';
-
-import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
-import type { PlateEditor } from '@udecode/plate-common/react';
 
 type Group = {
   group: string;

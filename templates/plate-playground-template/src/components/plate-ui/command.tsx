@@ -1,6 +1,9 @@
 'use client';
 
 import * as React from 'react';
+
+import type { DialogProps } from '@radix-ui/react-dialog';
+
 import {
   cn,
   createPrimitiveElement,
@@ -13,8 +16,6 @@ import { Search } from 'lucide-react';
 
 import { Dialog, DialogContent, DialogTitle } from './dialog';
 import { inputVariants } from './input';
-
-import type { DialogProps } from '@radix-ui/react-dialog';
 
 export const Command = withCn(
   CommandPrimitive,
