@@ -1,4 +1,8 @@
 import * as React from 'react';
+
+import type { TElement, TNodeEntry } from '@udecode/plate-common';
+import type { PlateEditor } from '@udecode/plate-common/react';
+
 import { AIChatPlugin, useEditorChat } from '@udecode/plate-ai/react';
 import {
   getAncestorNode,
@@ -25,9 +29,6 @@ import { AIChatEditor } from './ai-chat-editor';
 import { AIMenuItems } from './ai-menu-items';
 import { Command, CommandList, InputCommand } from './command';
 import { Popover, PopoverAnchor, PopoverContent } from './popover';
-
-import type { TElement, TNodeEntry } from '@udecode/plate-common';
-import type { PlateEditor } from '@udecode/plate-common/react';
 
 export function AIMenu() {
   const { api, editor, useOption } = useEditorPlugin(AIChatPlugin);

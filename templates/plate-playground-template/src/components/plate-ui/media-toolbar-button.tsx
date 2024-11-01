@@ -1,13 +1,14 @@
 'use client';
 
 import React from 'react';
+
+import type { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
+
 import { withRef } from '@udecode/cn';
 import { useMediaToolbarButton } from '@udecode/plate-media/react';
 import { ImageIcon } from 'lucide-react';
 
 import { ToolbarButton } from './toolbar';
-
-import type { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
 
 export const MediaToolbarButton = withRef<
   typeof ToolbarButton,

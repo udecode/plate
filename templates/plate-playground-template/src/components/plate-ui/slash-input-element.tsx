@@ -1,6 +1,9 @@
 'use client';
 
 import React from 'react';
+
+import type { PlateEditor } from '@udecode/plate-common/react';
+
 import { withRef } from '@udecode/cn';
 import { AIChatPlugin } from '@udecode/plate-ai/react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
@@ -41,8 +44,6 @@ import {
   InlineComboboxItem,
 } from './inline-combobox';
 import { PlateElement } from './plate-element';
-
-import type { PlateEditor } from '@udecode/plate-common/react';
 
 type Group = {
   group: string;

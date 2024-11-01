@@ -1,6 +1,9 @@
 'use client';
 
 import { useEffect, useMemo } from 'react';
+
+import type { PlateEditor } from '@udecode/plate-common/react';
+
 import { AIChatPlugin, AIPlugin } from '@udecode/plate-ai/react';
 import {
   getAncestorNode,
@@ -24,8 +27,6 @@ import {
 } from 'lucide-react';
 
 import { CommandGroup, CommandItem } from './command';
-
-import type { PlateEditor } from '@udecode/plate-common/react';
 
 export type EditorChatState =
   | 'cursorCommand'

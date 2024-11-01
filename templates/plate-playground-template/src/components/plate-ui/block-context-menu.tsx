@@ -1,12 +1,13 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+
 import { AIChatPlugin } from '@udecode/plate-ai/react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { unsetNodes } from '@udecode/plate-common';
 import {
-  focusEditor,
   ParagraphPlugin,
+  focusEditor,
   useEditorPlugin,
 } from '@udecode/plate-common/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';

@@ -1,6 +1,9 @@
 'use client';
 
 import React from 'react';
+
+import type { UseEmojiPickerType } from '@udecode/plate-emoji/react';
+
 import { cn } from '@udecode/cn';
 import { EmojiSettings } from '@udecode/plate-emoji';
 
@@ -9,8 +12,6 @@ import { EmojiPickerNavigation } from './emoji-picker-navigation';
 import { EmojiPickerPreview } from './emoji-picker-preview';
 import { EmojiPickerSearchAndClear } from './emoji-picker-search-and-clear';
 import { EmojiPickerSearchBar } from './emoji-picker-search-bar';
-
-import type { UseEmojiPickerType } from '@udecode/plate-emoji/react';
 
 export function EmojiPicker({
   clearSearch,
