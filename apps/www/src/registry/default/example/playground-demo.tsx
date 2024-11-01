@@ -68,9 +68,6 @@ import Prism from 'prismjs';
 
 import { CheckPlugin } from '@/components/context/check-plugin';
 import { settingsStore } from '@/components/context/settings-store';
-import { PlaygroundFixedToolbarButtons } from '@/components/plate-ui/playground-fixed-toolbar-buttons';
-import { PlaygroundFloatingToolbar } from '@/components/plate-ui/playground-floating-toolbar';
-import { PlaygroundFloatingToolbarButtons } from '@/components/plate-ui/playground-floating-toolbar-buttons';
 import { aiPlugins } from '@/lib/plate/demo/plugins/ai-plugins';
 import { getAutoformatOptions } from '@/lib/plate/demo/plugins/autoformatOptions';
 import { copilotPlugins } from '@/lib/plate/demo/plugins/copilot-plugins';
@@ -92,6 +89,9 @@ import {
 } from '@/registry/default/plate-ui/cursor-overlay';
 import { Editor } from '@/registry/default/plate-ui/editor';
 import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
+import { FixedToolbarButtons } from '@/registry/default/plate-ui/fixed-toolbar-buttons';
+import { FloatingToolbar } from '@/registry/default/plate-ui/floating-toolbar';
+import { FloatingToolbarButtons } from '@/registry/default/plate-ui/floating-toolbar-buttons';
 import { ImagePreview } from '@/registry/default/plate-ui/image-preview';
 import {
   FireLiComponent,
@@ -366,7 +366,7 @@ export default function PlaygroundDemo({
         <CheckPlugin componentId="fixed-toolbar">
           <FixedToolbar className="no-scrollbar">
             <CheckPlugin componentId="fixed-toolbar-buttons">
-              <PlaygroundFixedToolbarButtons />
+              <FixedToolbarButtons />
             </CheckPlugin>
           </FixedToolbar>
         </CheckPlugin>
@@ -398,7 +398,7 @@ export default function PlaygroundDemo({
             />
 
             <CheckPlugin componentId="floating-toolbar">
-              <PlaygroundFloatingToolbar
+              <FloatingToolbar
                 state={{
                   // hideToolbar: aiOpen,
                   showWhenReadOnly: isEnabled(
@@ -409,9 +409,9 @@ export default function PlaygroundDemo({
                 }}
               >
                 <CheckPlugin componentId="floating-toolbar-buttons">
-                  <PlaygroundFloatingToolbarButtons />
+                  <FloatingToolbarButtons />
                 </CheckPlugin>
-              </PlaygroundFloatingToolbar>
+              </FloatingToolbar>
             </CheckPlugin>
 
             <CheckPlugin id="cursoroverlay" plugin={DragOverCursorPlugin}>

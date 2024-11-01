@@ -701,30 +701,18 @@
   },
   {
     "dependencies": [
-      "@udecode/plate-heading",
       "@udecode/plate-ai",
+      "@udecode/plate-block-quote",
+      "@udecode/plate-code-block",
       "@udecode/plate-date",
-      "@udecode/plate-indent-list"
+      "@udecode/plate-heading",
+      "@udecode/plate-indent-list",
+      "@udecode/plate-table",
+      "@udecode/plate-toggle"
     ],
     "doc": {
       "description": "A command input component for inserting various elements.",
       "docs": [
-        {
-          "route": "/docs/ai",
-          "title": "AI"
-        },
-        {
-          "route": "/docs/basic-elements",
-          "title": "Basic Elements"
-        },
-        {
-          "route": "/docs/date",
-          "title": "Date"
-        },
-        {
-          "route": "/docs/indent-list",
-          "title": "Indent List"
-        },
         {
           "route": "https://pro.platejs.org/docs/components/slash-input-element"
         }
@@ -744,7 +732,8 @@
     "name": "slash-input-element",
     "registryDependencies": [
       "inline-combobox",
-      "plate-element"
+      "plate-element",
+      "transforms"
     ],
     "type": "registry:ui"
   },
@@ -896,6 +885,7 @@
     ],
     "name": "toggle-element",
     "registryDependencies": [
+      "button",
       "plate-element"
     ],
     "type": "registry:ui"
@@ -1641,16 +1631,14 @@
   },
   {
     "dependencies": [
-      "@udecode/plate-basic-marks"
+      "@udecode/plate-basic-marks",
+      "@udecode/plate-font",
+      "@udecode/plate-indent-list",
+      "@udecode/plate-list",
+      "@udecode/plate-media"
     ],
     "doc": {
       "description": "A set of commonly used formatting buttons.",
-      "docs": [
-        {
-          "route": "/docs/basic-marks",
-          "title": "Basic Marks"
-        }
-      ],
       "examples": [
         "toolbar-demo"
       ]
@@ -1664,9 +1652,25 @@
     "name": "fixed-toolbar-buttons",
     "registryDependencies": [
       "toolbar",
+      "ai-toolbar-button",
+      "align-dropdown-menu",
+      "color-dropdown-menu",
+      "comment-toolbar-button",
+      "emoji-dropdown-menu",
+      "indent-list-toolbar-button",
+      "indent-todo-toolbar-button",
+      "indent-toolbar-button",
       "insert-dropdown-menu",
+      "line-height-dropdown-menu",
+      "link-toolbar-button",
+      "list-toolbar-button",
       "mark-toolbar-button",
+      "media-toolbar-button",
       "mode-dropdown-menu",
+      "more-dropdown-menu",
+      "outdent-toolbar-button",
+      "table-dropdown-menu",
+      "toggle-toolbar-button",
       "turn-into-dropdown-menu"
     ],
     "type": "registry:ui"
@@ -1715,6 +1719,10 @@
     ],
     "name": "floating-toolbar-buttons",
     "registryDependencies": [
+      "toolbar",
+      "ai-toolbar-button",
+      "comment-toolbar-button",
+      "link-toolbar-button",
       "mark-toolbar-button",
       "more-dropdown-menu",
       "turn-into-dropdown-menu"
@@ -1929,18 +1937,21 @@
   },
   {
     "dependencies": [
+      "@radix-ui/react-dropdown-menu",
       "@udecode/plate-block-quote",
+      "@udecode/plate-code-block",
+      "@udecode/plate-date",
+      "@udecode/plate-excalidraw",
       "@udecode/plate-heading",
-      "@radix-ui/react-dropdown-menu"
+      "@udecode/plate-horizontal-rule",
+      "@udecode/plate-indent-list",
+      "@udecode/plate-link",
+      "@udecode/plate-media",
+      "@udecode/plate-table",
+      "@udecode/plate-toggle"
     ],
     "doc": {
       "description": "A menu for inserting different types of blocks.",
-      "docs": [
-        {
-          "route": "/docs/basic-elements",
-          "title": "Basic Elements"
-        }
-      ],
       "examples": [
         "basic-nodes-demo"
       ]
@@ -1954,7 +1965,8 @@
     "name": "insert-dropdown-menu",
     "registryDependencies": [
       "dropdown-menu",
-      "toolbar"
+      "toolbar",
+      "transforms"
     ],
     "type": "registry:ui"
   },
@@ -2199,8 +2211,10 @@
   },
   {
     "dependencies": [
+      "@radix-ui/react-dropdown-menu",
       "@udecode/plate-basic-marks",
-      "@radix-ui/react-dropdown-menu"
+      "@udecode/plate-highlight",
+      "@udecode/plate-kbd"
     ],
     "doc": {
       "description": "A menu for additional text formatting options.",
@@ -2400,22 +2414,16 @@
   },
   {
     "dependencies": [
+      "@radix-ui/react-dropdown-menu",
       "@udecode/plate-block-quote",
+      "@udecode/plate-code-block",
       "@udecode/plate-heading",
       "@udecode/plate-indent-list",
-      "@radix-ui/react-dropdown-menu"
+      "@udecode/plate-toggle"
     ],
     "doc": {
       "description": "A menu for converting between different block types.",
       "docs": [
-        {
-          "route": "/docs/basic-elements",
-          "title": "Basic Elements"
-        },
-        {
-          "route": "/docs/indent-list",
-          "title": "Indent List"
-        },
         {
           "route": "https://pro.platejs.org/docs/components/turn-into-dropdown-menu"
         }
@@ -2434,7 +2442,8 @@
     "name": "turn-into-dropdown-menu",
     "registryDependencies": [
       "dropdown-menu",
-      "toolbar"
+      "toolbar",
+      "transforms"
     ],
     "type": "registry:ui"
   }

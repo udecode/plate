@@ -16,7 +16,7 @@
   },
   "files": [
     {
-      "content": "import { cn, withRef } from '@udecode/cn';\nimport { useElement } from '@udecode/plate-common/react';\nimport {\n  useToggleButton,\n  useToggleButtonState,\n} from '@udecode/plate-toggle/react';\nimport { ChevronDown, ChevronRight } from 'lucide-react';\n\nimport { PlateElement } from './plate-element';\n\nexport const ToggleElement = withRef<typeof PlateElement>(\n  ({ children, className, ...props }, ref) => {\n    const element = useElement();\n    const state = useToggleButtonState(element.id as string);\n    const { buttonProps, open } = useToggleButton(state);\n\n    return (\n      <PlateElement\n        ref={ref}\n        className={cn('relative pl-6', className)}\n        {...props}\n      >\n        <span\n          className=\"absolute -left-0.5 -top-0.5 flex cursor-pointer select-none items-center justify-center rounded-sm p-px transition-colors hover:bg-slate-200\"\n          contentEditable={false}\n          {...buttonProps}\n        >\n          {open ? <ChevronDown /> : <ChevronRight />}\n        </span>\n        {children}\n      </PlateElement>\n    );\n  }\n);\n",
+      "content": "import { cn, withRef } from '@udecode/cn';\nimport { useElement } from '@udecode/plate-common/react';\nimport {\n  useToggleButton,\n  useToggleButtonState,\n} from '@udecode/plate-toggle/react';\nimport { ChevronDown, ChevronRight } from 'lucide-react';\n\nimport { Button } from './button';\nimport { PlateElement } from './plate-element';\n\nexport const ToggleElement = withRef<typeof PlateElement>(\n  ({ children, className, ...props }, ref) => {\n    const element = useElement();\n    const state = useToggleButtonState(element.id as string);\n    const { buttonProps, open } = useToggleButton(state);\n\n    return (\n      <PlateElement\n        ref={ref}\n        className={cn('relative pl-6', className)}\n        {...props}\n      >\n        <Button\n          size=\"icon\"\n          variant=\"ghost\"\n          className=\"absolute -left-0.5 top-0 size-6 cursor-pointer select-none items-center justify-center rounded-md p-px text-muted-foreground transition-colors hover:bg-accent [&_svg]:size-4\"\n          contentEditable={false}\n          {...buttonProps}\n        >\n          {open ? <ChevronDown /> : <ChevronRight />}\n        </Button>\n        {children}\n      </PlateElement>\n    );\n  }\n);\n",
       "path": "plate-ui/toggle-element.tsx",
       "target": "components/plate-ui/toggle-element.tsx",
       "type": "registry:ui"
@@ -24,6 +24,7 @@
   ],
   "name": "toggle-element",
   "registryDependencies": [
+    "button",
     "plate-element"
   ],
   "type": "registry:ui"

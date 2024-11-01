@@ -326,19 +326,40 @@ import { withDraggables } from './withDraggables';`,
     type: 'registry:ui',
   },
   {
-    dependencies: ['@udecode/plate-basic-marks'],
+    dependencies: [
+      '@udecode/plate-basic-marks',
+      '@udecode/plate-font',
+      '@udecode/plate-indent-list',
+      '@udecode/plate-list',
+      '@udecode/plate-media',
+    ],
     doc: {
       description: 'A set of commonly used formatting buttons.',
-      docs: [{ route: '/docs/basic-marks', title: 'Basic Marks' }],
       examples: ['toolbar-demo'],
     },
     files: ['plate-ui/fixed-toolbar-buttons.tsx'],
     name: 'fixed-toolbar-buttons',
     registryDependencies: [
       'toolbar',
+      'ai-toolbar-button',
+      'align-dropdown-menu',
+      'color-dropdown-menu',
+      'comment-toolbar-button',
+      'emoji-dropdown-menu',
+      'indent-list-toolbar-button',
+      'indent-todo-toolbar-button',
+      'indent-toolbar-button',
       'insert-dropdown-menu',
+      'line-height-dropdown-menu',
+      'link-toolbar-button',
+      'list-toolbar-button',
       'mark-toolbar-button',
+      'media-toolbar-button',
       'mode-dropdown-menu',
+      'more-dropdown-menu',
+      'outdent-toolbar-button',
+      'table-dropdown-menu',
+      'toggle-toolbar-button',
       'turn-into-dropdown-menu',
     ],
     type: 'registry:ui',
@@ -368,6 +389,10 @@ import { withDraggables } from './withDraggables';`,
     files: ['plate-ui/floating-toolbar-buttons.tsx'],
     name: 'floating-toolbar-buttons',
     registryDependencies: [
+      'toolbar',
+      'ai-toolbar-button',
+      'comment-toolbar-button',
+      'link-toolbar-button',
       'mark-toolbar-button',
       'more-dropdown-menu',
       'turn-into-dropdown-menu',
@@ -487,18 +512,26 @@ import { withDraggables } from './withDraggables';`,
   },
   {
     dependencies: [
-      '@udecode/plate-block-quote',
-      '@udecode/plate-heading',
       '@radix-ui/react-dropdown-menu',
+      '@udecode/plate-block-quote',
+      '@udecode/plate-code-block',
+      '@udecode/plate-date',
+      '@udecode/plate-excalidraw',
+      '@udecode/plate-heading',
+      '@udecode/plate-horizontal-rule',
+      '@udecode/plate-indent-list',
+      '@udecode/plate-link',
+      '@udecode/plate-media',
+      '@udecode/plate-table',
+      '@udecode/plate-toggle',
     ],
     doc: {
       description: 'A menu for inserting different types of blocks.',
-      docs: [{ route: '/docs/basic-elements', title: 'Basic Elements' }],
       examples: ['basic-nodes-demo'],
     },
     files: ['plate-ui/insert-dropdown-menu.tsx'],
     name: 'insert-dropdown-menu',
-    registryDependencies: ['dropdown-menu', 'toolbar'],
+    registryDependencies: ['dropdown-menu', 'toolbar', 'transforms'],
     type: 'registry:ui',
   },
   {
@@ -611,8 +644,10 @@ import { withDraggables } from './withDraggables';`,
   },
   {
     dependencies: [
-      '@udecode/plate-basic-marks',
       '@radix-ui/react-dropdown-menu',
+      '@udecode/plate-basic-marks',
+      '@udecode/plate-highlight',
+      '@udecode/plate-kbd',
     ],
     doc: {
       description: 'A menu for additional text formatting options.',
@@ -712,19 +747,16 @@ import { withDraggables } from './withDraggables';`,
   },
   {
     dependencies: [
+      '@radix-ui/react-dropdown-menu',
       '@udecode/plate-block-quote',
+      '@udecode/plate-code-block',
       '@udecode/plate-heading',
       '@udecode/plate-indent-list',
-      '@radix-ui/react-dropdown-menu',
+      '@udecode/plate-toggle',
     ],
     doc: {
       description: 'A menu for converting between different block types.',
       docs: [
-        { route: '/docs/basic-elements', title: 'Basic Elements' },
-        {
-          route: '/docs/indent-list',
-          title: 'Indent List',
-        },
         {
           route: siteConfig.links.plateProComponent('turn-into-dropdown-menu'),
         },
@@ -733,7 +765,7 @@ import { withDraggables } from './withDraggables';`,
     },
     files: ['plate-ui/turn-into-dropdown-menu.tsx'],
     name: 'turn-into-dropdown-menu',
-    registryDependencies: ['dropdown-menu', 'toolbar'],
+    registryDependencies: ['dropdown-menu', 'toolbar', 'transforms'],
     type: 'registry:ui',
   },
 ];
@@ -1150,43 +1182,28 @@ export const uiNodes: Registry = [
   },
   {
     dependencies: [
-      '@udecode/plate-heading',
       '@udecode/plate-ai',
+      '@udecode/plate-block-quote',
+      '@udecode/plate-code-block',
       '@udecode/plate-date',
+      '@udecode/plate-heading',
       '@udecode/plate-indent-list',
+      '@udecode/plate-table',
+      '@udecode/plate-toggle',
     ],
     doc: {
       description: 'A command input component for inserting various elements.',
       docs: [
-        { route: '/docs/ai', title: 'AI' },
-        {
-          route: '/docs/basic-elements',
-          title: 'Basic Elements',
-        },
-        {
-          route: '/docs/date',
-          title: 'Date',
-        },
-        {
-          route: '/docs/indent-list',
-          title: 'Indent List',
-        },
         {
           route: siteConfig.links.plateProComponent('slash-input-element'),
         },
       ],
       examples: ['slash-command-demo', 'slash-menu-pro'],
       label: 'New',
-      //       - Refined UI design for better usability and aesthetics
-      // - Extended set of slash menu options
-      // - Integration of premium plugins like Math Upload for specialized editing needs
-      // - No need to worry about the focus issue mentioned above.
-      // - Support grouping and Carefully selected keyword.
-      // - Trigger slash menu by click the puls button on the left of the paragraph.
     },
     files: ['plate-ui/slash-input-element.tsx'],
     name: 'slash-input-element',
-    registryDependencies: ['inline-combobox', 'plate-element'],
+    registryDependencies: ['inline-combobox', 'plate-element', 'transforms'],
     type: 'registry:ui',
   },
   {
@@ -1279,7 +1296,7 @@ export const uiNodes: Registry = [
     },
     files: ['plate-ui/toggle-element.tsx'],
     name: 'toggle-element',
-    registryDependencies: ['plate-element'],
+    registryDependencies: ['button', 'plate-element'],
     type: 'registry:ui',
   },
 ];

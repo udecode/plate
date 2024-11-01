@@ -35,13 +35,13 @@ export function ModeDropdownMenu(props: DropdownMenuProps) {
   const item: any = {
     editing: (
       <>
-        <Pen className="mr-2 size-5" />
+        <Pen />
         <span className="hidden lg:inline">Editing</span>
       </>
     ),
     viewing: (
       <>
-        <Eye className="mr-2 size-5" />
+        <Eye />
         <span className="hidden lg:inline">Viewing</span>
       </>
     ),
@@ -61,7 +61,6 @@ export function ModeDropdownMenu(props: DropdownMenuProps) {
 
       <DropdownMenuContent className="min-w-[180px]" align="start">
         <DropdownMenuRadioGroup
-          className="flex flex-col gap-0.5"
           value={value}
           onValueChange={(newValue) => {
             if (newValue !== 'viewing') {

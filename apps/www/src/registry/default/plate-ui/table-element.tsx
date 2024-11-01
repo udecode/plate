@@ -24,7 +24,7 @@ import {
   useTableElementState,
   useTableMergeState,
 } from '@udecode/plate-table/react';
-import { type LucideProps, Combine, Delete, Ungroup } from 'lucide-react';
+import { type LucideProps, Combine, Trash2Icon, Ungroup } from 'lucide-react';
 import { useReadOnly, useSelected } from 'slate-react';
 
 import { Button } from './button';
@@ -32,12 +32,12 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuPortal,
   DropdownMenuTrigger,
 } from './dropdown-menu';
 import { PlateElement } from './plate-element';
 import { Popover, PopoverContent, popoverVariants } from './popover';
-import { Separator } from './separator';
 
 export const TableBordersDropdownMenuContent = withRef<
   typeof DropdownMenuPrimitive.Content
@@ -61,51 +61,53 @@ export const TableBordersDropdownMenuContent = withRef<
       sideOffset={0}
       {...props}
     >
-      <DropdownMenuCheckboxItem
-        checked={hasBottomBorder}
-        onCheckedChange={getOnSelectTableBorder('bottom')}
-      >
-        <BorderBottom className="mr-2 size-4" />
-        <div>Bottom Border</div>
-      </DropdownMenuCheckboxItem>
-      <DropdownMenuCheckboxItem
-        checked={hasTopBorder}
-        onCheckedChange={getOnSelectTableBorder('top')}
-      >
-        <BorderTop className="mr-2 size-4" />
-        <div>Top Border</div>
-      </DropdownMenuCheckboxItem>
-      <DropdownMenuCheckboxItem
-        checked={hasLeftBorder}
-        onCheckedChange={getOnSelectTableBorder('left')}
-      >
-        <BorderLeft className="mr-2 size-4" />
-        <div>Left Border</div>
-      </DropdownMenuCheckboxItem>
-      <DropdownMenuCheckboxItem
-        checked={hasRightBorder}
-        onCheckedChange={getOnSelectTableBorder('right')}
-      >
-        <BorderRight className="mr-2 size-4" />
-        <div>Right Border</div>
-      </DropdownMenuCheckboxItem>
+      <DropdownMenuGroup>
+        <DropdownMenuCheckboxItem
+          checked={hasBottomBorder}
+          onCheckedChange={getOnSelectTableBorder('bottom')}
+        >
+          <BorderBottom />
+          <div>Bottom Border</div>
+        </DropdownMenuCheckboxItem>
+        <DropdownMenuCheckboxItem
+          checked={hasTopBorder}
+          onCheckedChange={getOnSelectTableBorder('top')}
+        >
+          <BorderTop />
+          <div>Top Border</div>
+        </DropdownMenuCheckboxItem>
+        <DropdownMenuCheckboxItem
+          checked={hasLeftBorder}
+          onCheckedChange={getOnSelectTableBorder('left')}
+        >
+          <BorderLeft />
+          <div>Left Border</div>
+        </DropdownMenuCheckboxItem>
+        <DropdownMenuCheckboxItem
+          checked={hasRightBorder}
+          onCheckedChange={getOnSelectTableBorder('right')}
+        >
+          <BorderRight />
+          <div>Right Border</div>
+        </DropdownMenuCheckboxItem>
+      </DropdownMenuGroup>
 
-      <Separator />
-
-      <DropdownMenuCheckboxItem
-        checked={hasNoBorders}
-        onCheckedChange={getOnSelectTableBorder('none')}
-      >
-        <BorderNone className="mr-2 size-4" />
-        <div>No Border</div>
-      </DropdownMenuCheckboxItem>
-      <DropdownMenuCheckboxItem
-        checked={hasOuterBorders}
-        onCheckedChange={getOnSelectTableBorder('outer')}
-      >
-        <BorderAll className="mr-2 size-4" />
-        <div>Outside Borders</div>
-      </DropdownMenuCheckboxItem>
+      <DropdownMenuGroup>
+        <DropdownMenuCheckboxItem
+          checked={hasNoBorders}
+          onCheckedChange={getOnSelectTableBorder('none')}
+        >
+          <BorderNone />
+          <div>No Border</div>
+        </DropdownMenuCheckboxItem>
+        <DropdownMenuCheckboxItem
+          checked={hasOuterBorders}
+          onCheckedChange={getOnSelectTableBorder('outer')}
+        >
+          <BorderAll />
+          <div>Outside Borders</div>
+        </DropdownMenuCheckboxItem>
+      </DropdownMenuGroup>
     </DropdownMenuContent>
   );
 });
@@ -136,7 +138,7 @@ export const TableFloatingToolbar = withRef<typeof PopoverContent>(
         contentEditable={false}
         isMenu
       >
-        <Combine className="mr-2 size-4" />
+        <Combine />
         Merge
       </Button>
     );
@@ -148,7 +150,7 @@ export const TableFloatingToolbar = withRef<typeof PopoverContent>(
         contentEditable={false}
         isMenu
       >
-        <Ungroup className="mr-2 size-4" />
+        <Ungroup />
         Unmerge
       </Button>
     );
@@ -158,7 +160,7 @@ export const TableFloatingToolbar = withRef<typeof PopoverContent>(
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" isMenu>
-              <BorderAll className="mr-2 size-4" />
+              <BorderAll />
               Borders
             </Button>
           </DropdownMenuTrigger>
@@ -169,7 +171,7 @@ export const TableFloatingToolbar = withRef<typeof PopoverContent>(
         </DropdownMenu>
 
         <Button variant="ghost" contentEditable={false} isMenu {...buttonProps}>
-          <Delete className="mr-2 size-4" />
+          <Trash2Icon />
           Delete
         </Button>
       </>
@@ -181,10 +183,7 @@ export const TableFloatingToolbar = withRef<typeof PopoverContent>(
         {(canMerge || canUnmerge || collapsed) && (
           <PopoverContent
             ref={ref}
-            className={cn(
-              popoverVariants(),
-              'flex w-[220px] flex-col gap-1 p-1'
-            )}
+            className={cn(popoverVariants(), 'flex w-[220px] flex-col p-1')}
             onOpenAutoFocus={(e) => e.preventDefault()}
             {...props}
           >

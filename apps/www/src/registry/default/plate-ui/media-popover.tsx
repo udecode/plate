@@ -16,7 +16,7 @@ import {
   floatingMediaActions,
   useFloatingMediaSelectors,
 } from '@udecode/plate-media/react';
-import { Delete, Link } from 'lucide-react';
+import { Link, Trash2Icon } from 'lucide-react';
 import { useReadOnly, useSelected } from 'slate-react';
 
 import { Button, buttonVariants } from './button';
@@ -64,7 +64,7 @@ export function MediaPopover({ children, plugin }: MediaPopoverProps) {
         {isEditing ? (
           <div className="flex w-[330px] flex-col">
             <div className="flex items-center">
-              <div className="flex items-center pl-3 text-muted-foreground">
+              <div className="flex items-center pl-2 pr-1 text-muted-foreground">
                 <Link className="size-4" />
               </div>
 
@@ -76,7 +76,7 @@ export function MediaPopover({ children, plugin }: MediaPopoverProps) {
             </div>
           </div>
         ) : (
-          <div className="box-content flex h-9 items-center gap-1">
+          <div className="box-content flex items-center">
             <FloatingMediaPrimitive.EditButton
               className={buttonVariants({ size: 'sm', variant: 'ghost' })}
             >
@@ -85,10 +85,10 @@ export function MediaPopover({ children, plugin }: MediaPopoverProps) {
 
             <CaptionButton variant="ghost">Caption</CaptionButton>
 
-            <Separator orientation="vertical" className="my-1" />
+            <Separator orientation="vertical" className="mx-1 h-6" />
 
-            <Button size="sms" variant="ghost" {...buttonProps}>
-              <Delete className="size-4" />
+            <Button size="icon" variant="ghost" {...buttonProps}>
+              <Trash2Icon />
             </Button>
           </div>
         )}
