@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { cn } from '@udecode/cn';
 import { withRef } from '@udecode/plate-common/react';

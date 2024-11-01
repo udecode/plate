@@ -270,7 +270,9 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
         }),
 
         // Functionality
-        AutoformatPlugin.configure({ options: autoformatOptions }),
+        AutoformatPlugin.configure({
+          options: autoformatOptions,
+        }),
         BlockSelectionPlugin.configure({
           options: {
             areaOptions: {

@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect } from 'react';
 import { isSelectionExpanded } from '@udecode/plate-common';
 import {
@@ -10,9 +12,8 @@ import {
   FloatingMedia as FloatingMediaPrimitive,
   useFloatingMediaSelectors,
 } from '@udecode/plate-media/react';
+import { Link, Trash2Icon } from 'lucide-react';
 import { useReadOnly, useSelected } from 'slate-react';
-
-import { Icons } from '@/components/icons';
 
 import { Button, buttonVariants } from './button';
 import { CaptionButton } from './caption';
@@ -61,8 +62,8 @@ export function MediaPopover({ children, plugin }: MediaPopoverProps) {
         {isEditing ? (
           <div className="flex w-[330px] flex-col">
             <div className="flex items-center">
-              <div className="flex items-center pl-3 text-muted-foreground">
-                <Icons.link className="size-4" />
+              <div className="flex items-center pl-2 pr-1 text-muted-foreground">
+                <Link className="size-4" />
               </div>
 
               <FloatingMediaPrimitive.UrlInput
@@ -73,7 +74,7 @@ export function MediaPopover({ children, plugin }: MediaPopoverProps) {
             </div>
           </div>
         ) : (
-          <div className="box-content flex h-9 items-center gap-1">
+          <div className="box-content flex items-center">
             <FloatingMediaPrimitive.EditButton
               className={buttonVariants({ size: 'sm', variant: 'ghost' })}
             >
@@ -82,10 +83,10 @@ export function MediaPopover({ children, plugin }: MediaPopoverProps) {
 
             <CaptionButton variant="ghost">Caption</CaptionButton>
 
-            <Separator orientation="vertical" className="my-1" />
+            <Separator orientation="vertical" className="mx-1 h-6" />
 
-            <Button size="sms" variant="ghost" {...buttonProps}>
-              <Icons.delete className="size-4" />
+            <Button size="icon" variant="ghost" {...buttonProps}>
+              <Trash2Icon />
             </Button>
           </div>
         )}

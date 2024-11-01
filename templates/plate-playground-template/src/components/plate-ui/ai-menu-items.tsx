@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useMemo } from 'react';
 import { AIChatPlugin, AIPlugin } from '@udecode/plate-ai/react';
 import {
@@ -71,7 +73,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     },
   },
   explain: {
-    icon: <BadgeHelp className="size-4" />,
+    icon: <BadgeHelp />,
     label: 'Explain',
     value: 'explain',
     onSelect: ({ editor }) => {
@@ -150,7 +152,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     },
   },
   summarize: {
-    icon: <Album className="size-4" />,
+    icon: <Album />,
     label: 'Add a summary',
     value: 'summarize',
     onSelect: ({ editor }) => {
@@ -273,7 +275,7 @@ export const AIMenuItems = ({
           {group.items.map((menuItem) => (
             <CommandItem
               key={menuItem.value}
-              className="gap-2 [&_svg]:size-4 [&_svg]:text-muted-foreground"
+              className="[&_svg]:text-muted-foreground"
               value={menuItem.value}
               onSelect={() => {
                 menuItem.onSelect?.({

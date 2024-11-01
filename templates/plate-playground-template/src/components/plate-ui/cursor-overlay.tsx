@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect } from 'react';
 import { cn } from '@udecode/cn';
 import {
@@ -71,7 +73,7 @@ export function CursorOverlay({ cursors, ...props }: CursorOverlayProps) {
   );
 }
 
-export const DragOverCursorPlugin = createPlatePlugin({
+const DragOverCursorPlugin = createPlatePlugin({
   key: 'dragOverCursor',
   options: { cursors: {} as Record<string, CursorState<CursorData>> },
   handlers: {

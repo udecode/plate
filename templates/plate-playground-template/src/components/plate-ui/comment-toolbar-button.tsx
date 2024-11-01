@@ -2,8 +2,7 @@
 
 import React from 'react';
 import { useCommentAddButton } from '@udecode/plate-comments/react';
-
-import { Icons } from '@/components/icons';
+import { MessageSquarePlus } from 'lucide-react';
 
 import { ToolbarButton } from './toolbar';
 
@@ -14,7 +13,7 @@ export function CommentToolbarButton() {
 
   return (
     <ToolbarButton tooltip="Comment (⌘+⇧+M)" {...props}>
-      <Icons.commentAdd />
+      <MessageSquarePlus />
     </ToolbarButton>
   );
 }

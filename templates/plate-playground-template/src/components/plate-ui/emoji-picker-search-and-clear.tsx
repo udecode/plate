@@ -1,3 +1,5 @@
+'use client';
+
 import { cn } from '@udecode/cn';
 
 import { Button } from './button';

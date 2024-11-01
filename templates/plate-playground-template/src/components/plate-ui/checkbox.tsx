@@ -3,8 +3,7 @@
 import * as React from 'react';
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
 import { cn, withRef } from '@udecode/cn';
-
-import { Icons } from '@/components/icons';
+import { Check } from 'lucide-react';
 
 export const Checkbox = withRef<typeof CheckboxPrimitive.Root>(
   ({ className, ...props }, ref) => (
@@ -19,7 +18,7 @@ export const Checkbox = withRef<typeof CheckboxPrimitive.Root>(
       <CheckboxPrimitive.Indicator
         className={cn('flex items-center justify-center text-current')}
       >
-        <Icons.check className="size-4" />
+        <Check className="size-4" />
       </CheckboxPrimitive.Indicator>
     </CheckboxPrimitive.Root>
   )

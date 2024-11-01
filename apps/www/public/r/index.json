@@ -1109,7 +1109,8 @@
       "@udecode/plate-ai",
       "@udecode/plate-markdown",
       "@udecode/plate-selection",
-      "ai"
+      "ai",
+      "@faker-js/faker"
     ],
     "doc": {
       "description": "A menu for AI-powered content generation and insertion.",

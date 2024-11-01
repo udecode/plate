@@ -7,8 +7,14 @@ import {
   useScaleInputState,
 } from '@udecode/plate-media/react';
 import { cva } from 'class-variance-authority';
-
-import { Icons } from '@/components/icons';
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  DownloadIcon,
+  MinusIcon,
+  PlusIcon,
+  XIcon,
+} from 'lucide-react';
 
 const toolButtonVariants = cva('rounded bg-[rgba(0,0,0,0.5)] px-1', {
   defaultVariants: {
@@ -80,7 +86,7 @@ export const ImagePreview = () => {
                 )}
                 type="button"
               >
-                <Icons.arrowLeft className="size-5" />
+                <ArrowLeftIcon className="size-5" />
               </button>
               {(currentUrlIndex ?? 0) + 1}
               <button
@@ -92,7 +98,7 @@ export const ImagePreview = () => {
                 )}
                 type="button"
               >
-                <Icons.arrowRight className="size-5" />
+                <ArrowRightIcon className="size-5" />
               </button>
             </div>
             <div className="flex ">
@@ -105,7 +111,7 @@ export const ImagePreview = () => {
                 {...zommOutProps}
                 type="button"
               >
-                <Icons.minus className="size-4" />
+                <MinusIcon className="size-4" />
               </button>
               <div className="mx-px">
                 {state.isEditingScale ? (
@@ -126,19 +132,19 @@ export const ImagePreview = () => {
                 {...zoomInProps}
                 type="button"
               >
-                <Icons.add className="size-4" />
+                <PlusIcon className="size-4" />
               </button>
             </div>
             {/* TODO: downLoad the image */}
             <button className={cn(toolButtonVariants())} type="button">
-              <Icons.download className="size-4" />
+              <DownloadIcon className="size-4" />
             </button>
             <button
               {...closeProps}
               className={cn(toolButtonVariants())}
               type="button"
             >
-              <Icons.close className="size-4" />
+              <XIcon className="size-4" />
             </button>
           </div>
         </div>

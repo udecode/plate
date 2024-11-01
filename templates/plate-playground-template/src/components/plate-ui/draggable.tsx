@@ -1,4 +1,3 @@
-/* eslint-disable tailwindcss/no-custom-classname */
 'use client';
 
 import React from 'react';
@@ -17,9 +16,9 @@ import {
   useDropLine,
 } from '@udecode/plate-dnd';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import { GripVertical } from 'lucide-react';
 
 import { useMounted } from '@/hooks/use-mounted';
-import { Icons } from '@/components/icons';
 
 import {
   Tooltip,
@@ -134,7 +133,7 @@ const DragHandle = React.memo(() => {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger type="button">
-          <Icons.dragHandle
+          <GripVertical
             className="size-4 text-muted-foreground"
             onClick={(event) => {
               event.stopPropagation();

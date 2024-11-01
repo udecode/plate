@@ -9,6 +9,7 @@ export const uiComponents: Registry = [
       '@udecode/plate-markdown',
       '@udecode/plate-selection',
       'ai',
+      '@faker-js/faker',
     ],
     doc: {
       description: 'A menu for AI-powered content generation and insertion.',

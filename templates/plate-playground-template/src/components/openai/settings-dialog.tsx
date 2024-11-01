@@ -78,10 +78,8 @@ export function SettingsDialog() {
             'transition-all duration-300 ease-in-out hover:w-[106px]'
           )}
         >
-          <div className="flex size-full items-center justify-start">
-            <div className="flex size-10 shrink-0 items-center justify-center">
-              <Settings className="size-4" />
-            </div>
+          <div className="flex size-full items-center justify-start gap-2">
+            <Settings className="ml-1.5 size-4" />
             <span
               className={cn(
                 'whitespace-nowrap opacity-0 transition-all duration-300 ease-in-out',

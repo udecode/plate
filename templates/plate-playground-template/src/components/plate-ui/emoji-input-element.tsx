@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useMemo, useState } from 'react';
 import { withRef } from '@udecode/cn';
 import { EmojiInlineIndexSearch, insertEmoji } from '@udecode/plate-emoji';
@@ -8,6 +10,7 @@ import {
   InlineCombobox,
   InlineComboboxContent,
   InlineComboboxEmpty,
+  InlineComboboxGroup,
   InlineComboboxInput,
   InlineComboboxItem,
 } from './inline-combobox';
@@ -47,18 +50,20 @@ export const EmojiInputElement = withRef<typeof PlateElement>(
 
           <InlineComboboxContent>
             {!isPending && (
-              <InlineComboboxEmpty>No matching emoji found</InlineComboboxEmpty>
+              <InlineComboboxEmpty>No results</InlineComboboxEmpty>
             )}
 
-            {filteredEmojis.map((emoji) => (
-              <InlineComboboxItem
-                key={emoji.id}
-                value={emoji.name}
-                onClick={() => insertEmoji(editor, emoji)}
-              >
-                {emoji.skins[0].native} {emoji.name}
-              </InlineComboboxItem>
-            ))}
+            <InlineComboboxGroup>
+              {filteredEmojis.map((emoji) => (
+                <InlineComboboxItem
+                  key={emoji.id}
+                  value={emoji.name}
+                  onClick={() => insertEmoji(editor, emoji)}
+                >
+                  {emoji.skins[0].native} {emoji.name}
+                </InlineComboboxItem>
+              ))}
+            </InlineComboboxGroup>
           </InlineComboboxContent>
         </InlineCombobox>
 

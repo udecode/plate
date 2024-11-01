@@ -17,7 +17,7 @@ module.exports = {
     'react/display-name': 'off',
     'tailwindcss/classnames-order': 'warn',
     'tailwindcss/no-custom-classname': [
-      'error',
+      'off',
       {
         whitelist: ['ignore-click-outside/toolbar'],
       },

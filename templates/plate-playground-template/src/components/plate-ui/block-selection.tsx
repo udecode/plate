@@ -1,3 +1,5 @@
+'use client';
+
 import { useBlockSelected } from '@udecode/plate-selection/react';
 import { cva } from 'class-variance-authority';
 

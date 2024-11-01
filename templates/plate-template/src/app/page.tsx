@@ -12,10 +12,7 @@ export default function IndexPage() {
           Plate Template.
         </h1>
         <p className="max-w-[700px] text-lg text-muted-foreground">
-          Plugin system & primitive component library.{' '}
-          <br className="hidden sm:inline" />
-          CLI for styled components. Customizable. Open Source. And Next.js 14
-          Ready.
+          Minimal Editor · Next 15
         </p>
       </div>
       <div className="flex gap-4">
