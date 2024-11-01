@@ -3,4 +3,4 @@
  */
 
 export * from './EmojiInlineLibrary';
-export * from './EmojiLibrary.types';
+export type * from './EmojiLibrary.types';

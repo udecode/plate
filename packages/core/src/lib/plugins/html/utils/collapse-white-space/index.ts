@@ -11,4 +11,4 @@ export * from './collapseWhiteSpaceText';
 export * from './inferWhiteSpaceRule';
 export * from './isLastNonEmptyTextOfInlineFormattingContext';
 export * from './stateTransforms';
-export * from './types';
+export type * from './types';

@@ -158,7 +158,7 @@ export const useFloatingToolbar = ({
 
   useEditorSelector(() => {
     update?.();
-  }, [update])
+  }, [update]);
 
   const clickOutsideRef = useOnClickOutside(
     () => {

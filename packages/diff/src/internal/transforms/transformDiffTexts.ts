@@ -138,12 +138,6 @@ function slateTextDiff(
     const text = chunk[1]; // The text associated with this diff chunk
 
     switch (op as any) {
-      case 0: {
-        // For unchanged text, just move the offset forward
-        offset += text.length;
-
-        break;
-      }
       case -1: {
         // For deletions, add a remove_text operation
         operations.push({
@@ -154,6 +148,12 @@ function slateTextDiff(
               : text.replaceAll('\n', deletedLineBreakChar),
           type: 'remove_text',
         });
+
+        break;
+      }
+      case 0: {
+        // For unchanged text, just move the offset forward
+        offset += text.length;
 
         break;
       }

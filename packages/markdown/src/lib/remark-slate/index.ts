@@ -10,4 +10,4 @@ export * from './remarkTransformElement';
 export * from './remarkTransformElementChildren';
 export * from './remarkTransformNode';
 export * from './remarkTransformText';
-export * from './types';
+export type * from './types';

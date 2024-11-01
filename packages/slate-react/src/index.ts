@@ -3,5 +3,5 @@
  */
 
 export * from './react-editor/index';
-export * from './types/index';
+export type * from './types/index';
 export * from './utils/index';

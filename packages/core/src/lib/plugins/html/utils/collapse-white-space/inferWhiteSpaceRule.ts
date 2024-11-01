@@ -6,14 +6,14 @@ export const inferWhiteSpaceRule = (
   const whiteSpaceProperty = element.style.whiteSpace;
 
   switch (whiteSpaceProperty) {
+    case 'break-spaces':
+    case 'pre':
+    case 'pre-wrap': {
+      return 'pre';
+    }
     case 'normal':
     case 'nowrap': {
       return 'normal';
-    }
-    case 'pre':
-    case 'pre-wrap':
-    case 'break-spaces': {
-      return 'pre';
     }
     case 'pre-line': {
       return 'pre-line';
