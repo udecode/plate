@@ -160,7 +160,13 @@ export const Table = ({
   ...props
 }: React.HTMLAttributes<HTMLTableElement>) => (
   <div className="my-6 w-full overflow-y-auto">
-    <table className={cn('relative w-full text-sm', className)} {...props} />
+    <table
+      className={cn(
+        'relative w-full overflow-hidden border-none text-sm',
+        className
+      )}
+      {...props}
+    />
   </div>
 );
 
@@ -168,7 +174,7 @@ export const TR = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLTableRowElement>) => (
-  <tr className={cn('m-0 border-t', className)} {...props} />
+  <tr className={cn('m-0 border-b last:border-b-0', className)} {...props} />
 );
 
 export const TH = ({
@@ -177,7 +183,7 @@ export const TH = ({
 }: React.HTMLAttributes<HTMLTableCellElement>) => (
   <th
     className={cn(
-      'border px-4 py-2 text-left font-bold [&[align=center]]:text-center [&[align=right]]:text-right',
+      'px-4 py-2 text-left font-bold [&[align=center]]:text-center [&[align=right]]:text-right',
       className
     )}
     {...props}
@@ -190,7 +196,7 @@ export const TD = ({
 }: React.HTMLAttributes<HTMLTableCellElement>) => (
   <td
     className={cn(
-      'border px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right',
+      'px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right',
       className
     )}
     {...props}

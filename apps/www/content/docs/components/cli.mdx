@@ -40,7 +40,9 @@ Options:
   -y, --yes         skip confirmation prompt. (default: false)
   -c, --cwd <cwd>   the working directory. defaults to the current directory.
   -u, --url <url>   custom registry URL. (default: https://platejs.org/r)
-  -n, --name <name> registry name. (default: plate-ui)
+  -n, --name <name> registry name. (default: plate)
+  -s, --silent      mute output (default: false)
+  --src-dir         use the src directory when creating a new project (default: false)
   -h, --help        display help for command
 ```
 
@@ -49,7 +51,7 @@ Options:
 Use the `add` command to add Plate UI components and dependencies to your project.
 
 ```bash
-npx shadcx@latest add [component]
+npx shadcx@latest add [component] -r plate
 ```
 
 You will be presented with a list of components to choose from:
@@ -84,6 +86,11 @@ Options:
   -o, --overwrite   overwrite existing files. (default: false)
   -c, --cwd <cwd>   the working directory. defaults to the current directory.
   -p, --path <path> the path to add the component to.
+  -a, --all         add all available components (default: false)
+  -s, --silent      mute output (default: false)
+  --src-dir         use the src directory when creating a new project (default: false)
+  -r, --registry    registry name or url
+  -l, --list        list all available registries (default: false)
   -h, --help        display help for command
 ```
 
@@ -98,7 +105,7 @@ npx shadcx@latest init -u https://platejs.org/r -n plate -c ./apps/www
 or
 
 ```bash
-npx shadcx@latest add align-dropdown-menu -c ./apps/www
+npx shadcx@latest add align-dropdown-menu -r plate -c ./apps/www
 ```
 
 ## Example components.json
@@ -119,7 +126,7 @@ Here's an example `components.json` file configured for [shadcn/ui](https://ui.s
     "utils": "@/lib/utils"
   },
   "registries": {
-    "plate-ui": {
+    "plate": {
       "url": "https://platejs.org/r",
       "style": "default",
       "aliases": {

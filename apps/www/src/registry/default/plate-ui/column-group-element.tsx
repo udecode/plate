@@ -11,7 +11,7 @@ import {
   useColumnState,
   useDebouncePopoverOpen,
 } from '@udecode/plate-layout/react';
-import { type LucideProps, Delete } from 'lucide-react';
+import { type LucideProps, Trash2Icon } from 'lucide-react';
 import { useReadOnly } from 'slate-react';
 
 import { Button } from './button';
@@ -60,30 +60,34 @@ export function ColumnFloatingToolbar({ children }: React.PropsWithChildren) {
         side="top"
         sideOffset={10}
       >
-        <div className="box-content flex h-9 items-center gap-1 [&_svg]:size-4 [&_svg]:text-muted-foreground">
-          <Button size="sms" variant="ghost" onClick={setDoubleColumn}>
+        <div className="box-content flex items-center [&_svg]:size-4 [&_svg]:text-muted-foreground">
+          <Button size="icon" variant="ghost" onClick={setDoubleColumn}>
             <DoubleColumnOutlined />
           </Button>
-          <Button size="sms" variant="ghost" onClick={setThreeColumn}>
+          <Button size="icon" variant="ghost" onClick={setThreeColumn}>
             <ThreeColumnOutlined />
           </Button>
-          <Button size="sms" variant="ghost" onClick={setRightSideDoubleColumn}>
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={setRightSideDoubleColumn}
+          >
             <RightSideDoubleColumnOutlined />
           </Button>
-          <Button size="sms" variant="ghost" onClick={setLeftSideDoubleColumn}>
+          <Button size="icon" variant="ghost" onClick={setLeftSideDoubleColumn}>
             <LeftSideDoubleColumnOutlined />
           </Button>
           <Button
-            size="sms"
+            size="icon"
             variant="ghost"
             onClick={setDoubleSideDoubleColumn}
           >
             <DoubleSideDoubleColumnOutlined />
           </Button>
 
-          <Separator orientation="vertical" className="my-1" />
-          <Button size="sms" variant="ghost" {...buttonProps}>
-            <Delete />
+          <Separator orientation="vertical" className="mx-1 h-6" />
+          <Button size="icon" variant="ghost" {...buttonProps}>
+            <Trash2Icon />
           </Button>
         </div>
       </PopoverContent>

@@ -91,13 +91,13 @@ export function CardsToolbar() {
               nodeType={FontColorPlugin.key}
               tooltip="Text Color"
             >
-              <BaselineIcon className="size-5" />
+              <BaselineIcon />
             </ColorDropdownMenu>
             <ColorDropdownMenu
               nodeType={FontBackgroundColorPlugin.key}
               tooltip="Highlight Color"
             >
-              <PaintBucketIcon className="size-5" />
+              <PaintBucketIcon />
             </ColorDropdownMenu>
           </ToolbarGroup>
 

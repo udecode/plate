@@ -1,9 +1,4 @@
-import {
-  type TEditor,
-  type TElement,
-  getFragment,
-  isExpanded,
-} from '@udecode/slate';
+import { type TEditor, type TElement, getFragment } from '@udecode/slate';
 
 import { unwrapStructuralNodes } from '../utils/unwrapStructuralNodes';
 
@@ -15,7 +10,7 @@ export const getSelectionFragment = (
   editor: TEditor,
   options?: GetSelectionFragmentOptions
 ) => {
-  if (!isExpanded(editor.selection)) return [];
+  if (!editor.selection) return [];
 
   const fragment = getFragment(editor, editor.selection!) as TElement[];
 

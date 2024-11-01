@@ -6,6 +6,7 @@ import {
 } from '@udecode/plate-toggle/react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 
+import { Button } from './button';
 import { PlateElement } from './plate-element';
 
 export const ToggleElement = withRef<typeof PlateElement>(
@@ -20,13 +21,15 @@ export const ToggleElement = withRef<typeof PlateElement>(
         className={cn('relative pl-6', className)}
         {...props}
       >
-        <span
-          className="absolute -left-0.5 -top-0.5 flex cursor-pointer select-none items-center justify-center rounded-sm p-px transition-colors hover:bg-slate-200"
+        <Button
+          size="icon"
+          variant="ghost"
+          className="absolute -left-0.5 top-0 size-6 cursor-pointer select-none items-center justify-center rounded-md p-px text-muted-foreground transition-colors hover:bg-accent [&_svg]:size-4"
           contentEditable={false}
           {...buttonProps}
         >
           {open ? <ChevronDown /> : <ChevronRight />}
-        </span>
+        </Button>
         {children}
       </PlateElement>
     );

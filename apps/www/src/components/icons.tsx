@@ -180,32 +180,6 @@ const yarn = (props: LucideProps) => (
   </svg>
 );
 
-const LayoutIcon = (props: LucideProps) => (
-  <svg
-    fill="currentColor"
-    height="16"
-    stroke="currentColor"
-    strokeWidth={0.1}
-    viewBox="0 0 16 16"
-    width="16"
-    xmlns="http://www.w3.org/2000/svg"
-    {...props}
-  >
-    <path
-      d="M3 2C2.44772 2 2 2.44772 2 3V7C2 7.55228 2.44772 8 3 8H13C13.5523 8 14 7.55228 14 7V3C14 2.44772 13.5523 2 13 2H3ZM13 3V7H3L3 3H13Z"
-      fill="#595E6F"
-    />
-    <path
-      d="M2 10C2 9.72386 2.22386 9.5 2.5 9.5H13.5C13.7761 9.5 14 9.72386 14 10C14 10.2761 13.7761 10.5 13.5 10.5H2.5C2.22386 10.5 2 10.2761 2 10Z"
-      fill="#595E6F"
-    />
-    <path
-      d="M2.5 12C2.22386 12 2 12.2239 2 12.5C2 12.7761 2.22386 13 2.5 13H8.5C8.77614 13 9 12.7761 9 12.5C9 12.2239 8.77614 12 8.5 12H2.5Z"
-      fill="#595E6F"
-    />
-  </svg>
-);
-
 export const Icons = {
   add: Plus,
   ai: Sparkles,

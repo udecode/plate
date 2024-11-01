@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 
 import {
@@ -10,12 +8,21 @@ import {
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
 import { useEditorReadOnly } from '@udecode/plate-common/react';
-import { Bold, Code, Italic, Strikethrough, Underline } from 'lucide-react';
+import {
+  BoldIcon,
+  Code2Icon,
+  ItalicIcon,
+  SparklesIcon,
+  StrikethroughIcon,
+  UnderlineIcon,
+} from 'lucide-react';
 
-import { ToolbarGroup } from './toolbar';
-
-// import { AIToolbarButton } from './ai-toolbar-button';
+import { AIToolbarButton } from './ai-toolbar-button';
+import { CommentToolbarButton } from './comment-toolbar-button';
+import { LinkToolbarButton } from './link-toolbar-button';
 import { MarkToolbarButton } from './mark-toolbar-button';
+import { MoreDropdownMenu } from './more-dropdown-menu';
+import { ToolbarGroup } from './toolbar';
 import { TurnIntoDropdownMenu } from './turn-into-dropdown-menu';
 
 export function FloatingToolbarButtons() {
@@ -25,46 +32,58 @@ export function FloatingToolbarButtons() {
     <>
       {!readOnly && (
         <>
-          {/* <ToolbarGroup>
+          <ToolbarGroup>
             <AIToolbarButton
-              className="text-purple-500 hover:text-purple-600"
+              className="gap-1.5 text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-500"
               tooltip="Edit, generate, and more"
             >
-              <SparklesIcon className="mr-1.5 !size-3.5" />
+              <SparklesIcon className="!size-3.5" />
               Ask AI
             </AIToolbarButton>
-          </ToolbarGroup> */}
+          </ToolbarGroup>
 
           <ToolbarGroup>
             <TurnIntoDropdownMenu />
 
             <MarkToolbarButton nodeType={BoldPlugin.key} tooltip="Bold (⌘+B)">
-              <Bold />
+              <BoldIcon />
             </MarkToolbarButton>
+
             <MarkToolbarButton
               nodeType={ItalicPlugin.key}
               tooltip="Italic (⌘+I)"
             >
-              <Italic />
+              <ItalicIcon />
             </MarkToolbarButton>
+
             <MarkToolbarButton
               nodeType={UnderlinePlugin.key}
               tooltip="Underline (⌘+U)"
             >
-              <Underline />
+              <UnderlineIcon />
             </MarkToolbarButton>
+
             <MarkToolbarButton
               nodeType={StrikethroughPlugin.key}
               tooltip="Strikethrough (⌘+⇧+M)"
             >
-              <Strikethrough />
+              <StrikethroughIcon />
             </MarkToolbarButton>
+
             <MarkToolbarButton nodeType={CodePlugin.key} tooltip="Code (⌘+E)">
-              <Code />
+              <Code2Icon />
             </MarkToolbarButton>
+
+            <LinkToolbarButton />
           </ToolbarGroup>
         </>
       )}
+
+      <ToolbarGroup>
+        <CommentToolbarButton />
+
+        {!readOnly && <MoreDropdownMenu />}
+      </ToolbarGroup>
     </>
   );
 }

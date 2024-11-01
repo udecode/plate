@@ -57,7 +57,7 @@ export function ColorDropdownMenuItem({
       }}
       {...props}
     >
-      {isSelected ? <Check className="size-3" /> : null}
+      {isSelected ? <Check className="!size-3" /> : null}
     </DropdownMenuItem>
   );
 

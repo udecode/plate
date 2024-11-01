@@ -15,6 +15,7 @@ import { Button } from './button';
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from './dropdown-menu';
@@ -33,8 +34,10 @@ export function CommentMoreDropdown() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuItem {...editProps}>Edit comment</DropdownMenuItem>
-        <DropdownMenuItem {...deleteProps}>Delete comment</DropdownMenuItem>
+        <DropdownMenuGroup>
+          <DropdownMenuItem {...editProps}>Edit comment</DropdownMenuItem>
+          <DropdownMenuItem {...deleteProps}>Delete comment</DropdownMenuItem>
+        </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   );

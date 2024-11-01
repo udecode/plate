@@ -1,5 +1,11 @@
 # @udecode/plate-ui
 
+## 0.0.3
+
+### Patch Changes
+
+- [#3697](https://github.com/udecode/plate/pull/3697) by [@zbeyens](https://github.com/zbeyens) – shadcn sync
+
 ## 34.0.2
 
 ### Patch Changes
