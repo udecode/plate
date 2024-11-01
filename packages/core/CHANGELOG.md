@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 39.2.21
+
+### Patch Changes
+
+- [#3704](https://github.com/udecode/plate/pull/3704) by [@zbeyens](https://github.com/zbeyens) – Fix DefaultLeaf props
+
 ## 39.2.20
 
 ## 39.2.15
