@@ -5,12 +5,13 @@ import { unstable_cache } from 'next/cache';
 import { BlockDisplay } from '@/components/block-display';
 import { getAllBlockIds } from '@/lib/blocks';
 
-const BLOCKS_WHITELIST_PREFIXES = ['sidebar', 'login'];
+// const BLOCKS_WHITELIST_PREFIXES = ['sidebar', 'login'];
 
 const getBlocks = unstable_cache(async () => {
-  return (await getAllBlockIds()).filter((name) =>
-    BLOCKS_WHITELIST_PREFIXES.some((prefix) => name.startsWith(prefix))
-  );
+  return await getAllBlockIds();
+  // .filter((name) =>
+  //   BLOCKS_WHITELIST_PREFIXES.some((prefix) => name.startsWith(prefix))
+  // );
 }, ['blocks']);
 
 export default async function BlocksPage() {

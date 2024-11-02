@@ -5,9 +5,16 @@ import * as React from 'react';
 import type { Block } from '@/registry/schema';
 import type { ImperativePanelHandle } from 'react-resizable-panels';
 
-import { Monitor, Smartphone, Tablet } from 'lucide-react';
+import {
+  CheckIcon,
+  Monitor,
+  Smartphone,
+  Tablet,
+  TerminalIcon,
+} from 'lucide-react';
 import Link from 'next/link';
 
+import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 import { Button } from '@/registry/default/plate-ui/button';
 import { Separator } from '@/registry/default/plate-ui/separator';
 
@@ -25,6 +32,8 @@ export function BlockToolbar({
 }) {
   const src = block.descriptionSrc ?? block.src;
 
+  const { copyToClipboard, isCopied } = useCopyToClipboard();
+
   return (
     <div className="flex items-center gap-2 md:gap-4">
       <Button asChild variant="link" className="whitespace-normal px-1 md:px-2">
@@ -37,18 +46,18 @@ export function BlockToolbar({
         </a>
       </Button>
       <div className="ml-auto hidden items-center gap-2 md:flex md:pr-[14px]">
-        {/* <Button
+        <Button
+          size="sm"
           variant="ghost"
           className="h-7 rounded-md border bg-muted shadow-none"
-          size="sm"
           onClick={() => {
-            copyToClipboard(`npx shadcn@latest add ${block.name}`)
+            copyToClipboard(`npx shadcx@latest add ${block.name} -r plate`);
           }}
         >
-          {isCopied ? <Check /> : <Terminal />}
-          npx shadcn add {block.name}
-        </Button> */}
-        {/* <Separator orientation="vertical" className="mx-2 hidden h-4 md:flex" /> */}
+          {isCopied ? <CheckIcon /> : <TerminalIcon />}
+          npx shadcx add {block.name}
+        </Button>
+        <Separator orientation="vertical" className="mx-2 hidden h-4 md:flex" />
         <div className="hidden h-7 items-center gap-1.5 rounded-md border p-[2px] shadow-none md:flex">
           <ToggleGroup
             defaultValue="100"
@@ -106,7 +115,10 @@ export function BlockToolbar({
             name={`${block.name}`}
             className="hidden h-[27px] px-3 text-xs shadow-none md:flex"
           >
-            Open {block.name.charAt(0).toUpperCase() + block.name.slice(1)}
+            Open{' '}
+            {block.name === 'potion'
+              ? block.name.charAt(0).toUpperCase() + block.name.slice(1)
+              : ''}
           </Button>
         </Link>
       </div>

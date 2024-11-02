@@ -1,6 +1,6 @@
 import type React from 'react';
 
-import type { useCreateEditor } from '@/components/plate-editor';
+import type { useCreateEditor } from '@/registry/default/block/ai-editor/components/editor/use-create-editor';
 import type { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import type {
   CodeBlockPlugin,
@@ -271,4 +271,4 @@ export type MyValue = MyRootBlock[];
 
 export type MyEditor = ReturnType<typeof useCreateEditor>;
 
-export const useMyEditorRef = () => useEditorRef<MyEditor>();
+export const useEditor = () => useEditorRef<MyEditor>();

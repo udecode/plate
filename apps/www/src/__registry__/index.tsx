@@ -1673,15 +1673,27 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
-    "plate-types": {
-      name: "plate-types",
-      description: "",
-      type: "registry:lib",
-      registryDependencies: undefined,
-      files: ["registry/default/lib/plate-types.ts"],
-      component: React.lazy(() => import("@/registry/default/lib/plate-types.ts")),
-      source: "",
-      category: "",
+    "ai-editor": {
+      name: "ai-editor",
+      description: "An AI editor.",
+      type: "registry:block",
+      registryDependencies: ["editor"],
+      files: ["registry/default/block/ai-editor/page.tsx","registry/default/block/ai-editor/components/editor/ai-plugins.tsx","registry/default/block/ai-editor/components/editor/autoformat-plugin.ts","registry/default/block/ai-editor/components/editor/copilot-plugins.tsx","registry/default/block/ai-editor/components/editor/plate-editor.tsx","registry/default/block/ai-editor/components/editor/plate-types.ts","registry/default/block/ai-editor/components/editor/use-create-editor.tsx"],
+      component: React.lazy(() => import("@/registry/default/block/ai-editor/page.tsx")),
+      source: "src/__registry__/default/block/ai-editor/page.tsx",
+      category: "Editors",
+      subcategory: "",
+      chunks: []
+    },
+    "basic-editor": {
+      name: "basic-editor",
+      description: "A simple editor.",
+      type: "registry:block",
+      registryDependencies: ["editor"],
+      files: ["registry/default/block/basic-editor/page.tsx","registry/default/block/basic-editor/components/editor/plate-editor.tsx"],
+      component: React.lazy(() => import("@/registry/default/block/basic-editor/page.tsx")),
+      source: "src/__registry__/default/block/basic-editor/page.tsx",
+      category: "Editors",
       subcategory: "",
       chunks: []
     },

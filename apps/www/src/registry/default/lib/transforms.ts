@@ -1,3 +1,5 @@
+'use client';
+
 import type { PlateEditor } from '@udecode/plate-common/react';
 
 import { insertCallout } from '@udecode/plate-callout';

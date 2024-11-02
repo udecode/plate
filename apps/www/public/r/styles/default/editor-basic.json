@@ -2,7 +2,7 @@
   "description": "A simple editor.",
   "files": [
     {
-      "content": "import PlateEditor from '@/components/plate-editor';\n\nexport default function Page() {\n  return (\n    <div className=\"flex h-screen w-full items-center justify-center px-4\">\n      <div className=\"max-w-[calc(100vw-32px)] rounded-lg border bg-background shadow sm:max-w-[min(calc(100vw-64px),1336px)]\">\n        <PlateEditor />\n      </div>\n    </div>\n  );\n}\n",
+      "content": "import PlateEditor from '@/components/plate-editor';\n\nexport default function Page() {\n  return (\n    <div className=\"flex h-screen w-full items-center justify-center px-4\">\n      {/* <div className=\"max-w-[calc(100vw-32px)] rounded-lg border bg-background shadow sm:max-w-[min(calc(100vw-64px),1336px)]\"> */}\n      <PlateEditor />\n      {/* </div> */}\n    </div>\n  );\n}\n",
       "path": "block/editor-basic/page.tsx",
       "target": "app/editor/page.tsx",
       "type": "registry:page"

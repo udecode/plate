@@ -8,21 +8,18 @@ import { BlockWrapper } from '@/components/block-wrapper';
 import { siteConfig } from '@/config/site';
 import { absoluteUrl } from '@/lib/absoluteUrl';
 import { getAllBlockIds, getBlock } from '@/lib/blocks';
-import { type Style, styles } from '@/registry/registry-styles';
+import { styles } from '@/registry/registry-styles';
 
 import '@/styles/mdx.css';
 
 export async function generateMetadata({
   params,
 }: {
-  params: {
-    name: string;
-    style: Style['name'];
-  };
+  params: Promise<{ name: string }>;
 }): Promise<Metadata> {
-  const { name, style } = params;
-  console.log('name', name, style);
-  const block = await getBlock(name, style);
+  const { name } = await params;
+
+  const block = await getBlock(name);
 
   if (!block) {
     return {};
@@ -72,13 +69,10 @@ export async function generateStaticParams() {
 export default async function BlockPage({
   params,
 }: {
-  params: {
-    name: string;
-    style: Style['name'];
-  };
+  params: Promise<{ name: string }>;
 }) {
-  const { name, style } = params;
-  const block = await getBlock(name, style);
+  const { name } = await params;
+  const block = await getBlock(name);
 
   if (!block) {
     return notFound();

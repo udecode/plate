@@ -19,7 +19,7 @@ import {
 
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 
-export default function PlateEditor() {
+export function PlateEditor() {
   const editor = useCreateEditor();
 
   return (
