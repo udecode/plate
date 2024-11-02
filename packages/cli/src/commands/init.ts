@@ -41,6 +41,7 @@ export const initOptionsSchema = z.object({
   force: z.boolean(),
   isNewProject: z.boolean(),
   name: z.string().optional(),
+  pm: z.enum(['npm', 'pnpm', 'yarn', 'bun']).optional(),
   silent: z.boolean(),
   srcDir: z.boolean().optional(),
   url: z.string().optional(),
@@ -70,6 +71,7 @@ export const init = new Command()
   )
   .option('-u, --url <url>', 'registry URL', REGISTRY_URL)
   .option('-n, --name <name>', 'registry name')
+  .option('--pm <pm>', 'package manager to use (npm, pnpm, yarn, bun)')
   .action(async (components, opts) => {
     try {
       const options = initOptionsSchema.parse({

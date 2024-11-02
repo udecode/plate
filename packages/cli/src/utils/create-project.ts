@@ -12,7 +12,10 @@ import { logger } from '@/src/utils/logger';
 import { spinner } from '@/src/utils/spinner';
 
 export async function createProject(
-  options: Pick<z.infer<typeof initOptionsSchema>, 'cwd' | 'force' | 'srcDir'>
+  options: Pick<
+    z.infer<typeof initOptionsSchema>,
+    'cwd' | 'force' | 'pm' | 'srcDir'
+  >
 ) {
   options = {
     srcDir: false,
@@ -39,9 +42,11 @@ export async function createProject(
     }
   }
 
-  const packageManager = await getPackageManager(options.cwd, {
-    withFallback: true,
-  });
+  const packageManager =
+    options.pm ||
+    (await getPackageManager(options.cwd, {
+      withFallback: true,
+    }));
 
   const { name } = await prompts({
     format: (value: string) => value.trim(),
@@ -104,6 +109,7 @@ export async function createProject(
       }
     );
   } catch (error) {
+    console.log(error);
     logger.break();
     logger.error(
       `Something went wrong creating a new Next.js project. Please try again.`

@@ -1,0 +1,1 @@
+yarn dev:cli -c ./apps/my-app
