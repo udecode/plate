@@ -4,7 +4,10 @@ import type { MediaPluginOptions, TMediaElement } from '../media';
 
 import { withImage } from './withImage';
 
-export interface TImageElement extends TMediaElement {}
+export interface TImageElement extends TMediaElement {
+  initialHeight?: number;
+  initialWidth?: number;
+}
 
 export type ImageConfig = PluginConfig<
   'img',

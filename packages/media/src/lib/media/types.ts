@@ -4,6 +4,7 @@ export interface TMediaElement extends TElement {
   url: string;
   id?: string;
   align?: 'center' | 'left' | 'right';
+  fromPlaceholderId?: string;
   isUpload?: boolean;
   name?: string;
 }

@@ -19,7 +19,6 @@ export const usePlaceholderPopoverState = () => {
   const focused = useFocused();
 
   const selectionCollapsed = useEditorSelector(
-    // eslint-disable-next-line @typescript-eslint/no-shadow
     (editor) => !isSelectionExpanded(editor),
     []
   );
@@ -31,11 +30,14 @@ export const usePlaceholderPopoverState = () => {
   const setIsUploading = usePlaceholderStore().set.isUploading();
   const setUpdatedFiles = usePlaceholderStore().set.updatedFiles();
 
+  const mediaSize = usePlaceholderStore().get.mediaSize();
+
   return {
     id,
     editor,
     element,
     focused,
+    mediaSize,
     mediaType,
     readOnly,
     selected,
