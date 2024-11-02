@@ -8,7 +8,7 @@ export const containerClassName = 'w-full h-full';
 
 export default function Page() {
   return (
-    <div className="flex h-screen w-full">
+    <div className="h-screen w-full">
       <PlateEditor />
     </div>
   );

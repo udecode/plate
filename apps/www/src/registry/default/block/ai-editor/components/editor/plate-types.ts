@@ -1,6 +1,5 @@
 import type React from 'react';
 
-import type { useCreateEditor } from '@/registry/default/block/ai-editor/components/editor/use-create-editor';
 import type { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import type {
   CodeBlockPlugin,
@@ -42,6 +41,8 @@ import type { TToggleElement } from '@udecode/plate-toggle';
 import type { TogglePlugin } from '@udecode/plate-toggle/react';
 
 import { useEditorRef } from '@udecode/plate-common/react';
+
+import type { useCreateEditor } from './use-create-editor';
 
 /** Text */
 
