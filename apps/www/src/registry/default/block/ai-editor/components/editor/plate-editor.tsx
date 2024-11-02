@@ -97,58 +97,61 @@ import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 import Prism from 'prismjs';
 
-import { BlockquoteElement } from '@/components/plate-ui/blockquote-element';
-import { CodeBlockElement } from '@/components/plate-ui/code-block-element';
-import { CodeLeaf } from '@/components/plate-ui/code-leaf';
-import { CodeLineElement } from '@/components/plate-ui/code-line-element';
-import { CodeSyntaxLeaf } from '@/components/plate-ui/code-syntax-leaf';
-import { CommentLeaf } from '@/components/plate-ui/comment-leaf';
-import { CommentsPopover } from '@/components/plate-ui/comments-popover';
+import { autoformatPlugin } from '@/lib/plate/autoformat-rules';
+import { AILeaf } from '@/registry/default/plate-ui/ai-leaf';
+import { BlockContextMenu } from '@/registry/default/plate-ui/block-context-menu';
+import { BlockquoteElement } from '@/registry/default/plate-ui/blockquote-element';
+import { CodeBlockElement } from '@/registry/default/plate-ui/code-block-element';
+import { CodeLeaf } from '@/registry/default/plate-ui/code-leaf';
+import { CodeLineElement } from '@/registry/default/plate-ui/code-line-element';
+import { CodeSyntaxLeaf } from '@/registry/default/plate-ui/code-syntax-leaf';
+import { ColumnElement } from '@/registry/default/plate-ui/column-element';
+import { ColumnGroupElement } from '@/registry/default/plate-ui/column-group-element';
+import { CommentLeaf } from '@/registry/default/plate-ui/comment-leaf';
+import { CommentsPopover } from '@/registry/default/plate-ui/comments-popover';
 import {
   CursorOverlay,
   DragOverCursorPlugin,
-} from '@/components/plate-ui/cursor-overlay';
-import { Editor, EditorContainer } from '@/components/plate-ui/editor';
-import { EmojiInputElement } from '@/components/plate-ui/emoji-input-element';
-import { ExcalidrawElement } from '@/components/plate-ui/excalidraw-element';
-import { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';
-import { FixedToolbarButtons } from '@/components/plate-ui/fixed-toolbar-buttons';
-import { FloatingToolbar } from '@/components/plate-ui/floating-toolbar';
-import { FloatingToolbarButtons } from '@/components/plate-ui/floating-toolbar-buttons';
-import { HeadingElement } from '@/components/plate-ui/heading-element';
-import { HighlightLeaf } from '@/components/plate-ui/highlight-leaf';
-import { HrElement } from '@/components/plate-ui/hr-element';
-import { ImageElement } from '@/components/plate-ui/image-element';
-import { ImagePreview } from '@/components/plate-ui/image-preview';
-import { TodoLi, TodoMarker } from '@/components/plate-ui/indent-todo-marker';
-import { KbdLeaf } from '@/components/plate-ui/kbd-leaf';
-import { LinkElement } from '@/components/plate-ui/link-element';
-import { LinkFloatingToolbar } from '@/components/plate-ui/link-floating-toolbar';
-import { ListElement } from '@/components/plate-ui/list-element';
-import { MediaEmbedElement } from '@/components/plate-ui/media-embed-element';
-import { MentionElement } from '@/components/plate-ui/mention-element';
-import { MentionInputElement } from '@/components/plate-ui/mention-input-element';
-import { ParagraphElement } from '@/components/plate-ui/paragraph-element';
-import { withPlaceholders } from '@/components/plate-ui/placeholder';
+} from '@/registry/default/plate-ui/cursor-overlay';
+import { DateElement } from '@/registry/default/plate-ui/date-element';
+import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
+import { EmojiInputElement } from '@/registry/default/plate-ui/emoji-input-element';
+import { ExcalidrawElement } from '@/registry/default/plate-ui/excalidraw-element';
+import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
+import { FixedToolbarButtons } from '@/registry/default/plate-ui/fixed-toolbar-buttons';
+import { FloatingToolbar } from '@/registry/default/plate-ui/floating-toolbar';
+import { FloatingToolbarButtons } from '@/registry/default/plate-ui/floating-toolbar-buttons';
+import { HeadingElement } from '@/registry/default/plate-ui/heading-element';
+import { HighlightLeaf } from '@/registry/default/plate-ui/highlight-leaf';
+import { HrElement } from '@/registry/default/plate-ui/hr-element';
+import { ImageElement } from '@/registry/default/plate-ui/image-element';
+import { ImagePreview } from '@/registry/default/plate-ui/image-preview';
+import {
+  TodoLi,
+  TodoMarker,
+} from '@/registry/default/plate-ui/indent-todo-marker';
+import { KbdLeaf } from '@/registry/default/plate-ui/kbd-leaf';
+import { LinkElement } from '@/registry/default/plate-ui/link-element';
+import { LinkFloatingToolbar } from '@/registry/default/plate-ui/link-floating-toolbar';
+import { ListElement } from '@/registry/default/plate-ui/list-element';
+import { MediaEmbedElement } from '@/registry/default/plate-ui/media-embed-element';
+import { MentionElement } from '@/registry/default/plate-ui/mention-element';
+import { MentionInputElement } from '@/registry/default/plate-ui/mention-input-element';
+import { ParagraphElement } from '@/registry/default/plate-ui/paragraph-element';
+import { withPlaceholders } from '@/registry/default/plate-ui/placeholder';
+import { SlashInputElement } from '@/registry/default/plate-ui/slash-input-element';
 import {
   TableCellElement,
   TableCellHeaderElement,
-} from '@/components/plate-ui/table-cell-element';
-import { TableElement } from '@/components/plate-ui/table-element';
-import { TableRowElement } from '@/components/plate-ui/table-row-element';
-import { TodoListElement } from '@/components/plate-ui/todo-list-element';
-import { withDraggables } from '@/components/plate-ui/with-draggables';
-import { autoformatPlugin } from '@/lib/plate/autoformat-rules';
+} from '@/registry/default/plate-ui/table-cell-element';
+import { TableElement } from '@/registry/default/plate-ui/table-element';
+import { TableRowElement } from '@/registry/default/plate-ui/table-row-element';
+import { TocElement } from '@/registry/default/plate-ui/toc-element';
+import { TodoListElement } from '@/registry/default/plate-ui/todo-list-element';
+import { ToggleElement } from '@/registry/default/plate-ui/toggle-element';
+import { withDraggables } from '@/registry/default/plate-ui/with-draggables';
 
 import { SettingsDialog } from './openai/settings-dialog';
-import { AILeaf } from './plate-ui/ai-leaf';
-import { BlockContextMenu } from './plate-ui/block-context-menu';
-import { ColumnElement } from './plate-ui/column-element';
-import { ColumnGroupElement } from './plate-ui/column-group-element';
-import { DateElement } from './plate-ui/date-element';
-import { SlashInputElement } from './plate-ui/slash-input-element';
-import { TocElement } from './plate-ui/toc-element';
-import { ToggleElement } from './plate-ui/toggle-element';
 import { aiPlugins } from './plugins/ai-plugins';
 import { copilotPlugins } from './plugins/copilot-plugins';
 

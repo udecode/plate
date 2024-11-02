@@ -1,0 +1,14 @@
+{
+  "description": "",
+  "files": [
+    {
+      "content": "'use client';\n\nimport { useRef } from 'react';\n\nimport { withProps } from '@udecode/cn';\nimport { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';\nimport {\n  BasicMarksPlugin,\n  BoldPlugin,\n  ItalicPlugin,\n  StrikethroughPlugin,\n  UnderlinePlugin,\n} from '@udecode/plate-basic-marks/react';\nimport {\n  ParagraphPlugin,\n  Plate,\n  PlateElement,\n  PlateLeaf,\n  usePlateEditor,\n} from '@udecode/plate-common/react';\n\nimport { Editor, EditorContainer } from '@/components/plate-ui/editor';\n\nexport function PlateEditor() {\n  const containerRef = useRef(null);\n\n  const editor = useCreateEditor();\n\n  return (\n    <Plate editor={editor}>\n      <EditorContainer id=\"scroll_container\" ref={containerRef} variant=\"demo\">\n        <Editor variant=\"demo\" placeholder=\"Type...\" />\n      </EditorContainer>\n    </Plate>\n  );\n}\n\nconst useCreateEditor = () => {\n  return usePlateEditor({\n    override: {\n      // Default styles in globals.css\n      components: {\n        [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),\n        [ItalicPlugin.key]: withProps(PlateLeaf, { as: 'em' }),\n        [ParagraphPlugin.key]: withProps(PlateElement, { as: 'p' }),\n        [StrikethroughPlugin.key]: withProps(PlateLeaf, { as: 's' }),\n        [UnderlinePlugin.key]: withProps(PlateLeaf, { as: 'u' }),\n        blockquote: withProps(PlateElement, { as: 'blockquote' }),\n        h1: withProps(PlateElement, { as: 'h1' }),\n        h2: withProps(PlateElement, { as: 'h2' }),\n        h3: withProps(PlateElement, { as: 'h3' }),\n      },\n    },\n    plugins: [BasicElementsPlugin, BasicMarksPlugin],\n    value: [\n      {\n        children: [{ text: 'Basic Editor' }],\n        type: 'h1',\n      },\n      {\n        children: [{ text: 'Heading 2' }],\n        type: 'h2',\n      },\n      {\n        children: [{ text: 'Heading 3' }],\n        type: 'h3',\n      },\n      {\n        children: [{ text: 'This is a blockquote element' }],\n        type: 'blockquote',\n      },\n      {\n        children: [\n          { text: 'Basic marks: ' },\n          { bold: true, text: 'bold' },\n          { text: ', ' },\n          { italic: true, text: 'italic' },\n          { text: ', ' },\n          { text: 'underline', underline: true },\n          { text: ', ' },\n          { strikethrough: true, text: 'strikethrough' },\n          { text: '.' },\n        ],\n        type: ParagraphPlugin.key,\n      },\n    ],\n  });\n};\n",
+      "path": "block/playground/components/plate-editor.tsx",
+      "target": "components/plate-editor.tsx",
+      "type": "registry:component"
+    }
+  ],
+  "name": "playground",
+  "registryDependencies": [],
+  "type": "registry:block"
+}

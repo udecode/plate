@@ -73,8 +73,8 @@ export const Index: Record<string, any> = {
 
       let chunks: any = []
       if (item.type === "registry:block") {
-        const file = resolveFiles[0]
-        const filename = path.basename(file)
+        const file = 'src/' + resolveFiles[0]
+        const filename = 'src/' + path.basename(file)
         let raw: string
         try {
           raw = await fs.readFile(file, "utf8")
@@ -243,7 +243,7 @@ export const Index: Record<string, any> = {
           })
         )
 
-        // // Write the source file for blocks only.
+        // Write the source file for blocks only.
         sourceFilename = `src/__registry__/${style.name}/${type}/${item.name}.tsx`
 
         if (item.files) {
