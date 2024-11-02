@@ -1,15 +1,11 @@
-import {
-  AudioPlugin,
-  FilePlugin,
-  ImagePlugin,
-  VideoPlugin,
-} from '@udecode/plate-media/react';
-
 import type {
   MediaConfig,
   MediaItemConfig,
   MediaType,
 } from '../PlaceholderPlugin';
+
+import { getMediaTypeByFileName } from './getMediaTypeByFileName';
+import { parseFileSize } from './parseFileSize';
 
 interface ValidationResult {
   errorMessage: string | null;
@@ -23,10 +19,10 @@ export const validateFiles = (
   const unknown: File[] = [];
 
   const map: Record<MediaType, File[]> = {
-    [AudioPlugin.key]: [],
-    [FilePlugin.key]: [],
-    [ImagePlugin.key]: [],
-    [VideoPlugin.key]: [],
+    audio: [],
+    file: [],
+    image: [],
+    video: [],
   };
 
   Array.from(fileList).forEach((file) => {
@@ -98,73 +94,4 @@ const validateFileItem = (
   });
 
   return { errorMessage: null, isValid: true };
-};
-
-export const getMediaTypeByFileName = (
-  fileName: string,
-  config: MediaConfig
-): MediaType | null => {
-  const extension = getFileExtension(fileName);
-
-  for (const [key, value] of Object.entries(config)) {
-    const accept = value?.accept ?? [];
-
-    // user can use both `.mp3` or `mp3` in options
-    if (accept.includes(extension) || accept.includes(`.${extension}`)) {
-      switch (key) {
-        case AudioPlugin.key: {
-          return AudioPlugin.key;
-        }
-        case FilePlugin.key: {
-          return FilePlugin.key;
-        }
-        case ImagePlugin.key: {
-          return ImagePlugin.key;
-        }
-        case VideoPlugin.key: {
-          return VideoPlugin.key;
-        }
-      }
-    }
-  }
-
-  return null;
-};
-
-/** Convert string like 1B to 1024 number */
-const parseFileSize = (size: string): number => {
-  const match = /^(\d+(?:\.\d+)?)\s*(b|kb|mb|gb)$/i.exec(size);
-
-  if (!match) {
-    throw new Error('Invalid file size format');
-  }
-
-  const [, value, unit] = match;
-  const sizes = { B: 0, GB: 3, KB: 1, MB: 2 };
-  const k = 1024;
-
-  return Math.floor(
-    Number.parseFloat(value) *
-      Math.pow(k, sizes[unit.toUpperCase() as keyof typeof sizes])
-  );
-};
-
-const getFileExtension = (filename: string) => {
-  if (!filename || typeof filename !== 'string') {
-    return '';
-  }
-
-  filename = filename.trim();
-
-  if (filename.endsWith('.')) {
-    return '';
-  }
-
-  const ext = filename.split('.').pop();
-
-  if (ext === filename || filename.startsWith('.')) {
-    return '';
-  }
-
-  return ext?.toLowerCase() ?? '';
 };

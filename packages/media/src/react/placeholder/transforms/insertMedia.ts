@@ -4,9 +4,10 @@ import { insertNodes, nanoid, withoutNormalizing } from '@udecode/plate-common';
 
 import { type TPlaceholderElement, BasePlaceholderPlugin } from '../../../lib';
 import { PlaceholderPlugin } from '../PlaceholderPlugin';
-import { getMediaTypeByFileName, validateFiles } from '../utils/validateFiles';
+import { getMediaTypeByFileName } from '../utils/getMediaTypeByFileName';
+import { validateFiles } from '../utils/validateFiles';
 
-export const insertMedias = (editor: PlateEditor, files: FileList): any => {
+export const insertMedia = (editor: PlateEditor, files: FileList): any => {
   const api = editor.getApi(PlaceholderPlugin);
   const mediaConfig = editor.getOption(PlaceholderPlugin, 'mediaConfig');
   const multiple = editor.getOption(PlaceholderPlugin, 'multiple');

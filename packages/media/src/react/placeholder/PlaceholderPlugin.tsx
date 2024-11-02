@@ -5,15 +5,17 @@ import { findEventRange, toTPlatePlugin } from '@udecode/plate-common/react';
 
 import { BasePlaceholderPlugin } from '../../lib';
 import { AudioPlugin, FilePlugin, ImagePlugin, VideoPlugin } from '../plugins';
-import { insertMedias } from './transforms/insertMedias';
+import { insertMedia } from './transforms/insertMedia';
 
-export type MediaType =
-  | typeof AudioPlugin.key
-  | typeof FilePlugin.key
-  | typeof ImagePlugin.key
-  | typeof VideoPlugin.key;
+export type MediaType = 'audio' | 'file' | 'image' | 'video';
 
 export type MediaItemConfig = {
+  // The type of media that this config is for.
+  mediaType:
+    | typeof AudioPlugin.key
+    | typeof FilePlugin.key
+    | typeof ImagePlugin.key
+    | typeof VideoPlugin.key;
   // extensions that are accepted for this media type
   accept?: string[];
   // The maximum number of files of this type that can be uploaded.
@@ -31,7 +33,7 @@ export type PlaceholderApi = {
 };
 
 export type PlaceholderTransforms = {
-  insertMedias: (files: FileList) => void;
+  insertMedia: (files: FileList) => void;
 };
 
 export type MediaConfig = Partial<Record<MediaType, MediaItemConfig>>;
@@ -53,39 +55,48 @@ export const PlaceholderPlugin = toTPlatePlugin<
 >(BasePlaceholderPlugin, {
   options: {
     mediaConfig: {
-      [AudioPlugin.key]: {
-        accept: ['mp3'],
+      audio: {
+        accept: ['.mp3'],
         maxFileCount: 1,
         maxFileSize: '8MB',
+        mediaType: AudioPlugin.key,
         minFileCount: 1,
       },
-      [FilePlugin.key]: {
-        accept: [],
+      file: {
+        accept: ['.pdf', '.txt', '.doc', '.docx'],
         maxFileCount: 1,
         maxFileSize: '8MB',
+        mediaType: FilePlugin.key,
         minFileCount: 1,
       },
-      [ImagePlugin.key]: {
+      image: {
         accept: ['.png', '.jpg', '.jpeg'],
-        maxFileCount: 3,
-        maxFileSize: '8MB',
+        maxFileCount: 4,
+        maxFileSize: '2MB',
+        mediaType: ImagePlugin.key,
         minFileCount: 1,
       },
-      [VideoPlugin.key]: {
+      video: {
         accept: ['.mp4'],
         maxFileCount: 1,
-        maxFileSize: '8MB',
+        maxFileSize: '256MB',
+        mediaType: VideoPlugin.key,
         minFileCount: 1,
       },
     },
     multiple: true,
     uploadErrorMessage: null,
-    uploadMaxFileCount: 3,
+    uploadMaxFileCount: 5,
     uploadingFiles: {},
   },
 })
   .extendTransforms<PlaceholderTransforms>(({ editor }) => ({
-    insertMedias: bindFirst(insertMedias, editor),
+    insertMedia: bindFirst(insertMedia, editor),
+  }))
+  .extendEditorTransforms(({ editor }) => ({
+    insert: {
+      media: bindFirst(insertMedia, editor),
+    },
   }))
   .extendApi(({ getOption, setOption }) => ({
     addUploadingFile: (id: string, file: File) => {
@@ -128,7 +139,7 @@ export const PlaceholderPlugin = toTPlatePlugin<
 
         if (!at) return false;
 
-        tf.placeholder.insertMedias(files);
+        tf.placeholder.insertMedia(files);
 
         return true;
       },
@@ -140,7 +151,7 @@ export const PlaceholderPlugin = toTPlatePlugin<
         event.preventDefault();
         event.stopPropagation();
 
-        tf.placeholder.insertMedias(files);
+        tf.placeholder.insertMedia(files);
 
         return true;
       },
