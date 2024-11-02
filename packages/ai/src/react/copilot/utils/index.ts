@@ -3,5 +3,6 @@
  */
 
 export * from './callCompletionApi';
+export * from './getNextWord';
 export * from './triggerCopilotSuggestion';
 export * from './withoutAbort';
