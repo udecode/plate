@@ -30,14 +30,13 @@ export const usePlaceholderPopoverState = () => {
   const setIsUploading = usePlaceholderStore().set.isUploading();
   const setUpdatedFiles = usePlaceholderStore().set.updatedFiles();
 
-  const mediaSize = usePlaceholderStore().get.mediaSize();
+  const size = usePlaceholderStore().get.size();
 
   return {
     id,
     editor,
     element,
     focused,
-    mediaSize,
     mediaType,
     readOnly,
     selected,
@@ -45,5 +44,6 @@ export const usePlaceholderPopoverState = () => {
     setIsUploading,
     setProgresses,
     setUpdatedFiles,
+    size,
   };
 };

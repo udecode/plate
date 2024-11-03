@@ -4,7 +4,7 @@ import type {
   MediaType,
 } from '../PlaceholderPlugin';
 
-import { getMediaTypeByFileName } from './getMediaTypeByFileName';
+import { getMediaConfigKeyByFileName } from './getMediaTypeByFileName';
 import { parseFileSize } from './parseFileSize';
 
 interface ValidationResult {
@@ -27,9 +27,11 @@ export const validateFiles = (
 
   Array.from(fileList).forEach((file) => {
     // group files by acceptExtension
-    const mediaType = getMediaTypeByFileName(file.name, config);
+    const mediaType = getMediaConfigKeyByFileName(file.name, config);
 
-    if (!mediaType) {
+    if (mediaType && mediaType in map) {
+      map[mediaType as MediaType].push(file);
+    } else {
       unknown.push(file);
     }
   });
@@ -44,7 +46,9 @@ export const validateFiles = (
   const keys = Object.keys(map) as (keyof typeof map)[];
 
   for (const key of keys) {
-    const result = validateFileItem(map[key], config[key]!, {
+    const itemFiles = map[key];
+
+    const result = validateFileItem(itemFiles, config[key]!, {
       debugName: key,
     });
 
@@ -67,6 +71,7 @@ const validateFileItem = (
   // validate file count
   const minFileCount = config.minFileCount ?? 1;
   const maxFileCount = config.maxFileCount ?? 3;
+  console.log('🚀 ~ maxFileCount:', maxFileCount);
 
   if (fileList.length < minFileCount) {
     return {

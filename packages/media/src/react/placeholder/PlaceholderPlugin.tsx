@@ -7,13 +7,15 @@ import { insertMedia } from './transforms/insertMedia';
 
 export type MediaType = 'audio' | 'file' | 'image' | 'video';
 
+export type MediaKeys =
+  | typeof AudioPlugin.key
+  | typeof FilePlugin.key
+  | typeof ImagePlugin.key
+  | typeof VideoPlugin.key;
+
 export type MediaItemConfig = {
   // The type of media that this config is for.
-  mediaType:
-    | typeof AudioPlugin.key
-    | typeof FilePlugin.key
-    | typeof ImagePlugin.key
-    | typeof VideoPlugin.key;
+  mediaType: MediaKeys;
   // extensions that are accepted for this media type
   accept?: string[];
   // The maximum number of files of this type that can be uploaded.
@@ -47,8 +49,7 @@ export const PlaceholderPlugin = toTPlatePlugin<
       uploadErrorMessage?: string | null;
       uploadMaxFileCount?: number;
     },
-    { placeholder: PlaceholderApi },
-    { placeholder: PlaceholderTransforms }
+    { placeholder: PlaceholderApi }
   >
 >(BasePlaceholderPlugin, {
   options: {
@@ -61,7 +62,7 @@ export const PlaceholderPlugin = toTPlatePlugin<
         minFileCount: 1,
       },
       file: {
-        accept: ['.pdf', '.txt', '.doc', '.docx'],
+        accept: ['.pdf', '.txt'],
         maxFileCount: 1,
         maxFileSize: '8MB',
         mediaType: FilePlugin.key,
@@ -69,7 +70,7 @@ export const PlaceholderPlugin = toTPlatePlugin<
       },
       image: {
         accept: ['.png', '.jpg', '.jpeg'],
-        maxFileCount: 4,
+        maxFileCount: 1,
         maxFileSize: '2MB',
         mediaType: ImagePlugin.key,
         minFileCount: 1,
@@ -88,9 +89,6 @@ export const PlaceholderPlugin = toTPlatePlugin<
     uploadingFiles: {},
   },
 })
-  .extendTransforms<PlaceholderTransforms>(({ editor }) => ({
-    insertMedia: bindFirst(insertMedia, editor),
-  }))
   .extendEditorTransforms(({ editor }) => ({
     insert: {
       media: bindFirst(insertMedia, editor),
@@ -104,6 +102,21 @@ export const PlaceholderPlugin = toTPlatePlugin<
         ...uploadingFiles,
         [id]: file,
       });
+    },
+    getMediaConfig: (mediaType: MediaKeys) => {
+      const config = getOption('mediaConfig');
+
+      const keys = Object.keys(config);
+
+      for (const key of keys) {
+        const item = config[key as MediaType];
+
+        if (item?.mediaType === mediaType) {
+          return item;
+        }
+      }
+
+      return null;
     },
     getUploadingFile: (id: string) => {
       const uploadingFiles = getOption('uploadingFiles');
@@ -137,7 +150,7 @@ export const PlaceholderPlugin = toTPlatePlugin<
 
         if (!at) return false;
 
-        tf.placeholder.insertMedia(files);
+        tf.insert.media(files);
 
         return true;
       },
@@ -149,7 +162,7 @@ export const PlaceholderPlugin = toTPlatePlugin<
         event.preventDefault();
         event.stopPropagation();
 
-        tf.placeholder.insertMedia(files);
+        tf.insert.media(files);
 
         return true;
       },

@@ -17,7 +17,7 @@ export const usePlaceholderElementState = () => {
   const progresses = usePlaceholderStore().get.progresses();
   const isUploading = usePlaceholderStore().get.isUploading();
   const updatedFiles = usePlaceholderStore().get.updatedFiles();
-  const setMediaSize = usePlaceholderStore().set.mediaSize();
+  const setSize = usePlaceholderStore().set.size();
 
   const { mediaType } = useElement<TPlaceholderElement>(
     BasePlaceholderPlugin.key
@@ -35,7 +35,7 @@ export const usePlaceholderElementState = () => {
     progressing,
     readOnly,
     selected,
-    setMediaSize,
+    setSize,
     updatedFiles,
   };
 };
