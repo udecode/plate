@@ -55,28 +55,8 @@ export const blocks: Registry = [
         type: 'registry:page',
       },
       {
-        path: 'block/editor-ai/components/editor/plugins/ai-plugins.tsx',
-        target: 'components/editor/plugins/ai-plugins.tsx',
-        type: 'registry:component',
-      },
-      {
-        path: 'block/editor-ai/components/editor/plugins/autoformat-plugin.ts',
-        target: 'components/editor/plugins/autoformat-plugin.ts',
-        type: 'registry:component',
-      },
-      {
-        path: 'block/editor-ai/components/editor/plugins/copilot-plugins.tsx',
-        target: 'components/editor/plugins/copilot-plugins.tsx',
-        type: 'registry:component',
-      },
-      {
         path: 'block/editor-ai/components/editor/plate-editor.tsx',
         target: 'components/editor/plate-editor.tsx',
-        type: 'registry:component',
-      },
-      {
-        path: 'block/editor-ai/components/editor/plate-types.ts',
-        target: 'components/editor/plate-types.ts',
         type: 'registry:component',
       },
       {
@@ -87,7 +67,10 @@ export const blocks: Registry = [
     ],
     name: 'editor-ai',
     registryDependencies: [
+      'plate-types',
       'ai-plugins',
+      'autoformat-plugin',
+      'copilot-plugins',
       'ai-menu',
       'ai-leaf',
       'ghost-text',

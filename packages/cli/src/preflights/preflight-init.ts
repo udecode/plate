@@ -36,7 +36,7 @@ export async function preFlightInit(
   if (
     fs.existsSync(path.resolve(options.cwd, 'components.json')) &&
     !options.force &&
-    !options.name
+    !options.url
   ) {
     projectSpinner?.fail();
     logger.break();

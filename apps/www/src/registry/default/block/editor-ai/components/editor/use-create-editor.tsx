@@ -92,9 +92,9 @@ import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 import Prism from 'prismjs';
 
+import { aiPlugins } from '@/registry/default/components/editor/plugins/ai-plugins';
 import { autoformatPlugin } from '@/registry/default/components/editor/plugins/autoformat-plugin';
 import { copilotPlugins } from '@/registry/default/components/editor/plugins/copilot-plugins';
-import { aiPlugins } from '@/registry/default/lib/plugins/ai-plugins';
 import { AILeaf } from '@/registry/default/plate-ui/ai-leaf';
 import { BlockContextMenu } from '@/registry/default/plate-ui/block-context-menu';
 import { BlockquoteElement } from '@/registry/default/plate-ui/blockquote-element';

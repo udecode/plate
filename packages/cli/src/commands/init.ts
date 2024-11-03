@@ -128,17 +128,25 @@ export async function runInit(
   let config: Config;
 
   if (projectConfig) {
-    if (isNew || options.url === projectConfig.url) {
-      projectConfig = await getDefaultConfig(projectConfig, options.url);
-      // Updating top-level config
-      config = await promptForMinimalConfig(projectConfig, options);
+    if (isNew) {
+      projectConfig = await getDefaultConfig(projectConfig, REGISTRY_URL);
+      config = await promptForMinimalConfig(projectConfig, {
+        ...options,
+        url: REGISTRY_URL,
+      });
+
+      if (options.url && options.url !== REGISTRY_URL) {
+        config = await promptForNestedRegistryConfig(config, options);
+      }
     } else {
-      // Updating nested registry config
       config = await promptForNestedRegistryConfig(projectConfig, options);
     }
   } else {
-    // New configuration
-    config = await promptForConfig(await getConfig(options.cwd), options.url);
+    config = await promptForConfig(await getConfig(options.cwd), REGISTRY_URL);
+
+    if (options.url && options.url !== REGISTRY_URL) {
+      config = await promptForNestedRegistryConfig(config, options);
+    }
   }
   if (!options.yes) {
     const { proceed } = await prompts({
@@ -158,7 +166,6 @@ export async function runInit(
     delete config.url;
   }
 
-  // Write components.json.
   const componentSpinner = spinner(`Writing components.json.`).start();
   const targetPath = path.resolve(options.cwd, 'components.json');
   await fs.writeFile(targetPath, JSON.stringify(config, null, 2), 'utf8');
@@ -166,7 +173,7 @@ export async function runInit(
 
   let registryConfig = config;
   let registryName: string | undefined;
-  const id = options.name ?? options.url;
+  const id = options.name ?? config.name ?? options.url;
 
   if (id) {
     const registry = config.registries?.[id];
@@ -177,20 +184,16 @@ export async function runInit(
     }
   }
 
-  // Add components.
   const fullConfig = await resolveConfigPaths(options.cwd, registryConfig);
   const components = ['index', ...(options.components || [])];
   await addComponents(components, fullConfig, {
     isNewProject:
       options.isNewProject || projectInfo?.framework.name === 'next-app',
-    // Init will always overwrite files.
     overwrite: true,
     registryName,
     silent: options.silent,
   });
 
-  // If a new project is using src dir, let's update the tailwind content config.
-  // TODO: Handle this per framework.
   if (options.isNewProject && options.srcDir) {
     await updateTailwindContent(
       ['./src/**/*.{js,ts,jsx,tsx,mdx}'],
@@ -414,6 +417,10 @@ async function promptForNestedRegistryConfig(
     opts.url
   );
 
+  const name = opts.name ?? nestedDefaultConfig.name ?? opts.url!;
+
+  logger.info('Initializing ' + name + ' registry...');
+
   const newConfig = await promptForMinimalConfig(nestedDefaultConfig, opts);
 
   const relevantFields = ['style', 'tailwind', 'rsc', 'tsx', 'aliases'];
@@ -439,7 +446,7 @@ async function promptForNestedRegistryConfig(
     ...topLevelConfig,
     registries: {
       ...defaultConfig.registries,
-      [opts.name ?? opts.url!]: registryConfig,
+      [name]: registryConfig,
     },
   } as Config;
 }

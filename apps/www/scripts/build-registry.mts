@@ -30,6 +30,7 @@ const REGISTRY_INDEX_WHITELIST: z.infer<typeof registryItemTypeSchema>[] = [
   "registry:theme",
   "registry:block",
   "registry:example",
+  "registry:component",
 ]
 
 const project = new Project({
@@ -64,6 +65,7 @@ export const Index: Record<string, any> = {
             typeof file === "string" ? file : file.path
           }`
       )
+
       if (!resolveFiles) {
         continue
       }
@@ -278,7 +280,7 @@ export const Index: Record<string, any> = {
           componentPath = `@/registry/${style.name}/${files[0].path}`
         }
       }
-
+      
       index += `
     "${item.name}": {
       name: "${item.name}",
@@ -390,6 +392,7 @@ async function buildStyles(registry: Registry) {
               )
               content = fixImport(content)
             } catch (error) {
+              console.error(error)
               return
             }
 
@@ -403,11 +406,19 @@ async function buildStyles(registry: Registry) {
             sourceFile.getVariableDeclaration("description")?.remove()
 
             let target = file.target
+
             if (!target || target === "") {
               const fileName = file.path.split("/").pop()
+              
+              if (file.type === 'registry:component') {
+                console.log(file.path)
+              }
+              
+              if (file.type === "registry:component") {
+                target = file.path
+              }
               if (
                 file.type === "registry:block" ||
-                file.type === "registry:component" ||
                 file.type === "registry:example"
               ) {
                 target = `components/${fileName}`
