@@ -499,9 +499,32 @@ async function buildStylesIndex() {
       tailwind: {
         config: {
           plugins: [`require("tailwindcss-animate")`],
+          theme: {
+            extend: {
+              colors: {
+                brand: {
+                  DEFAULT: 'hsl(var(--brand))',
+                  foreground: 'hsl(var(--brand-foreground))',
+                },
+                highlight: {
+                  DEFAULT: 'hsl(var(--highlight))',
+                  foreground: 'hsl(var(--highlight-foreground))',
+                },
+              },
+            },
+          },
         },
       },
-      cssVars: {},
+      cssVars: {
+        light: {
+          '--brand': '217.2 91.2% 59.8%',
+          '--highlight': '47.9 95.8% 53.1%',
+        },
+        dark: {
+          '--brand': '213.3 93.9% 67.8%',
+          '--highlight': '48 96% 53%',
+        },
+      },
       files: [],
     }
 
@@ -600,8 +623,6 @@ async function buildThemes() {
     --chart-3: <%- colors.light["chart-3"] %>;
     --chart-4: <%- colors.light["chart-4"] %>;
     --chart-5: <%- colors.light["chart-5"] %>;
-    --brand: <%- colors.light["brand"] %>;
-    --highlight: <%- colors.light["highlight"] %>;
   }
 
   .dark {
@@ -629,8 +650,6 @@ async function buildThemes() {
     --chart-3: <%- colors.dark["chart-3"] %>;
     --chart-4: <%- colors.dark["chart-4"] %>;
     --chart-5: <%- colors.dark["chart-5"] %>;
-    --brand: <%- colors.dark["brand"] %>;
-    --highlight: <%- colors.dark["highlight"] %>;
   }
 }
 
@@ -654,7 +673,7 @@ async function buildThemes() {
       for (const [key, value] of Object.entries(values)) {
         if (typeof value === "string") {
           // Chart colors do not have a 1-to-1 mapping with tailwind colors.
-          if (key.startsWith("chart-") || key === "brand" || key === "highlight") {
+          if (key.startsWith("chart-")) {
             base["cssVars"][mode][key] = value
             continue
           }
@@ -680,6 +699,8 @@ async function buildThemes() {
     base["cssVarsTemplate"] = template(BASE_STYLES_WITH_VARIABLES)({
       colors: base["cssVars"],
     })
+    
+    // console.log(baseColor, base["cssVars"])
     
     await fs.writeFile(
       path.join(REGISTRY_PATH, `colors/${baseColor}.json`),
@@ -722,9 +743,6 @@ async function buildThemes() {
   --ring: <%- colors.light["ring"] %>;
 
   --radius: <%- colors.light["radius"] %>;
-
-  --brand: <%- colors.light["brand"] %>;
-  --highlight: <%- colors.light["highlight"] %>;
 }
 
 .dark .theme-<%- theme %> {
@@ -756,9 +774,6 @@ async function buildThemes() {
   --destructive-foreground: <%- colors.dark["destructive-foreground"] %>;
 
   --ring: <%- colors.dark["ring"] %>;
-
-  --brand: <%- colors.dark["brand"] %>;
-  --highlight: <%- colors.dark["highlight"] %>;
 }`
 
     const themeCSS = []

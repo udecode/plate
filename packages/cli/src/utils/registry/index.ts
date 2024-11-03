@@ -296,6 +296,9 @@ export async function registryResolveItemsTree(
 
     const uniqueRegistryDependencies = Array.from(new Set(registryDependencies))
     const result = await fetchRegistry(uniqueRegistryDependencies, config.url)
+    
+    console.log(config.url, result)
+    
     const payload = z.array(registryItemSchema).parse(result)
 
     if (!payload) {
@@ -322,7 +325,7 @@ export async function registryResolveItemsTree(
     payload.forEach((item) => {
       cssVars = deepmerge(cssVars, item.cssVars ?? {})
     })
-
+    
     let docs = ""
     payload.forEach((item) => {
       if (item.docs) {

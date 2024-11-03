@@ -17,9 +17,32 @@
     "config": {
       "plugins": [
         "require(\"tailwindcss-animate\")"
-      ]
+      ],
+      "theme": {
+        "extend": {
+          "colors": {
+            "brand": {
+              "DEFAULT": "hsl(var(--brand))",
+              "foreground": "hsl(var(--brand-foreground))"
+            },
+            "highlight": {
+              "DEFAULT": "hsl(var(--highlight))",
+              "foreground": "hsl(var(--highlight-foreground))"
+            }
+          }
+        }
+      }
     }
   },
-  "cssVars": {},
+  "cssVars": {
+    "light": {
+      "--brand": "217.2 91.2% 59.8%",
+      "--highlight": "47.9 95.8% 53.1%"
+    },
+    "dark": {
+      "--brand": "213.3 93.9% 67.8%",
+      "--highlight": "48 96% 53%"
+    }
+  },
   "files": []
 }
