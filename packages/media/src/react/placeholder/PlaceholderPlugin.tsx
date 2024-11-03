@@ -1,9 +1,7 @@
-import type { PlaceholderConfig } from '@udecode/plate-media';
-
 import { type ExtendConfig, bindFirst } from '@udecode/plate-common';
 import { findEventRange, toTPlatePlugin } from '@udecode/plate-common/react';
 
-import { BasePlaceholderPlugin } from '../../lib';
+import { type PlaceholderConfig, BasePlaceholderPlugin } from '../../lib';
 import { AudioPlugin, FilePlugin, ImagePlugin, VideoPlugin } from '../plugins';
 import { insertMedia } from './transforms/insertMedia';
 
