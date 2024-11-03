@@ -1,11 +1,12 @@
-import { getEmptyImage } from 'react-dnd-html5-backend';
+import { NativeTypes, getEmptyImage } from 'react-dnd-html5-backend';
 
 import type { DropTargetMonitor } from 'react-dnd';
 
-import { type PlateEditor, useEditorRef } from '@udecode/plate-common/react';
+import { type PlateEditor, useEditorPlugin } from '@udecode/plate-common/react';
 
 import type { DragItemNode } from '../types';
 
+import { DndPlugin } from '../DndPlugin';
 import { useDraggableStore } from '../components/useDraggable';
 import { type UseDragNodeOptions, useDragNode } from './useDragNode';
 import { type UseDropNodeOptions, useDropNode } from './useDropNode';
@@ -47,7 +48,7 @@ export const useDndNode = ({
   type,
   onDropHandler,
 }: UseDndNodeOptions) => {
-  const editor = useEditorRef();
+  const { editor, getOption } = useEditorPlugin(DndPlugin);
 
   const [dropLine, setDropLine] = useDraggableStore().use.dropLine();
 
@@ -58,7 +59,7 @@ export const useDndNode = ({
   });
   const [{ isOver }, drop] = useDropNode(editor, {
     id,
-    accept: type,
+    accept: getOption('enableFile') ? [type, NativeTypes.FILE] : [type],
     dropLine,
     nodeRef,
     onChangeDropLine: setDropLine,

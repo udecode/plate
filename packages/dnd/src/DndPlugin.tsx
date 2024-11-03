@@ -10,6 +10,7 @@ export type DndConfig = PluginConfig<
   'dnd',
   {
     draggingId?: string | null;
+    enableFile?: boolean;
     enableScroller?: boolean;
     isDragging?: boolean;
     scrollerProps?: Partial<ScrollerProps>;
@@ -20,6 +21,7 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
   key: 'dnd',
   options: {
     draggingId: null,
+    enableFile: false,
     isDragging: false,
   },
   handlers: {
