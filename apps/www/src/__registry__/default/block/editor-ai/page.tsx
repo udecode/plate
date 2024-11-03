@@ -1,6 +1,6 @@
-import { PlateEditor } from '@/registry/default/block/basic-editor/components/plate-editor';
+import { PlateEditor } from '@/registry/default/block/editor-ai/components/editor/plate-editor';
 
-export const description = 'A simple editor.';
+export const description = 'An AI editor.';
 
 export const iframeHeight = '650px';
 

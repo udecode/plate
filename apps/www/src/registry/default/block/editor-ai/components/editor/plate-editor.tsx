@@ -6,7 +6,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 
 import { Plate } from '@udecode/plate-common/react';
 
-import { useCreateEditor } from '@/registry/default/block/ai-editor/components/editor/use-create-editor';
+import { useCreateEditor } from '@/registry/default/block/editor-ai/components/editor/use-create-editor';
 import { CommentsPopover } from '@/registry/default/plate-ui/comments-popover';
 import { CursorOverlay } from '@/registry/default/plate-ui/cursor-overlay';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
@@ -17,7 +17,7 @@ import { FloatingToolbarButtons } from '@/registry/default/plate-ui/floating-too
 
 // import { SettingsDialog } from './openai/settings-dialog';
 
-export default function PlateEditor() {
+export function PlateEditor() {
   const containerRef = useRef(null);
 
   const editor = useCreateEditor();

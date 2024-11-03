@@ -5,7 +5,12 @@
     "tailwindcss-animate",
     "class-variance-authority",
     "lucide-react",
-    "@udecode/cn"
+    "@udecode/cn",
+    "@udecode/plate-common",
+    "slate",
+    "slate-react",
+    "slate-history",
+    "slate-hyperscript"
   ],
   "registryDependencies": [],
   "tailwind": {

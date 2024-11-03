@@ -197,6 +197,18 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
+    "image-preview": {
+      name: "image-preview",
+      description: "",
+      type: "registry:ui",
+      registryDependencies: [],
+      files: ["registry/default/plate-ui/image-preview.tsx"],
+      component: React.lazy(() => import("@/registry/default/plate-ui/image-preview.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
     "kbd-leaf": {
       name: "kbd-leaf",
       description: "",
@@ -425,6 +437,18 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
+    "context-menu": {
+      name: "context-menu",
+      description: "",
+      type: "registry:ui",
+      registryDependencies: [],
+      files: ["registry/default/plate-ui/context-menu.tsx"],
+      component: React.lazy(() => import("@/registry/default/plate-ui/context-menu.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
     "dialog": {
       name: "dialog",
       description: "",
@@ -549,7 +573,7 @@ export const Index: Record<string, any> = {
       name: "block-context-menu",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["calendar","plate-element"],
+      registryDependencies: ["calendar","plate-element","context-menu"],
       files: ["registry/default/plate-ui/block-context-menu.tsx"],
       component: React.lazy(() => import("@/registry/default/plate-ui/block-context-menu.tsx")),
       source: "",
@@ -1673,26 +1697,26 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
-    "ai-editor": {
-      name: "ai-editor",
+    "editor-ai": {
+      name: "editor-ai",
       description: "An AI editor.",
       type: "registry:block",
-      registryDependencies: ["editor"],
-      files: ["registry/default/block/ai-editor/page.tsx","registry/default/block/ai-editor/components/editor/ai-plugins.tsx","registry/default/block/ai-editor/components/editor/autoformat-plugin.ts","registry/default/block/ai-editor/components/editor/copilot-plugins.tsx","registry/default/block/ai-editor/components/editor/plate-editor.tsx","registry/default/block/ai-editor/components/editor/plate-types.ts","registry/default/block/ai-editor/components/editor/use-create-editor.tsx"],
-      component: React.lazy(() => import("@/registry/default/block/ai-editor/page.tsx")),
-      source: "src/__registry__/default/block/ai-editor/page.tsx",
+      registryDependencies: ["ai-menu","ai-leaf","ghost-text","comments-popover","cursor-overlay","editor","fixed-toolbar","fixed-toolbar-buttons","floating-toolbar","floating-toolbar-buttons","block-context-menu","blockquote-element","code-block-element","code-leaf","code-line-element","code-syntax-leaf","column-element","column-group-element","comment-leaf","date-element","draggable","emoji-input-element","excalidraw-element","heading-element","highlight-leaf","hr-element","image-element","image-preview","indent-todo-marker","kbd-leaf","link-element","link-floating-toolbar","list-element","media-embed-element","mention-element","mention-input-element","paragraph-element","placeholder","slash-input-element","table-cell-element","table-element","table-row-element","toc-element","todo-list-element","toggle-element"],
+      files: ["registry/default/block/editor-ai/page.tsx","registry/default/block/editor-ai/components/editor/ai-plugins.tsx","registry/default/block/editor-ai/components/editor/autoformat-plugin.ts","registry/default/block/editor-ai/components/editor/copilot-plugins.tsx","registry/default/block/editor-ai/components/editor/plate-editor.tsx","registry/default/block/editor-ai/components/editor/plate-types.ts","registry/default/block/editor-ai/components/editor/use-create-editor.tsx"],
+      component: React.lazy(() => import("@/registry/default/block/editor-ai/page.tsx")),
+      source: "src/__registry__/default/block/editor-ai/page.tsx",
       category: "Editors",
       subcategory: "",
       chunks: []
     },
-    "basic-editor": {
-      name: "basic-editor",
+    "editor-basic": {
+      name: "editor-basic",
       description: "A simple editor.",
       type: "registry:block",
       registryDependencies: ["editor"],
-      files: ["registry/default/block/basic-editor/page.tsx","registry/default/block/basic-editor/components/editor/plate-editor.tsx"],
-      component: React.lazy(() => import("@/registry/default/block/basic-editor/page.tsx")),
-      source: "src/__registry__/default/block/basic-editor/page.tsx",
+      files: ["registry/default/block/editor-basic/page.tsx","registry/default/block/editor-basic/components/editor/plate-editor.tsx"],
+      component: React.lazy(() => import("@/registry/default/block/editor-basic/page.tsx")),
+      source: "src/__registry__/default/block/editor-basic/page.tsx",
       category: "Editors",
       subcategory: "",
       chunks: []

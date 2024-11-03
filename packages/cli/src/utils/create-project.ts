@@ -109,10 +109,10 @@ export async function createProject(
       }
     );
   } catch (error) {
-    console.log(error);
     logger.break();
     logger.error(
-      `Something went wrong creating a new Next.js project. Please try again.`
+      `Something went wrong creating a new Next.js project. Please try again.`,
+      error
     );
     process.exit(1);
   }

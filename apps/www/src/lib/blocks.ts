@@ -82,8 +82,6 @@ export async function getBlock(
   const result = blockSchema.safeParse(block);
 
   if (!result.success) {
-    console.log(block);
-
     return null;
   }
 

@@ -477,7 +477,12 @@ async function buildStylesIndex() {
       "tailwindcss-animate",
       "class-variance-authority",
       "lucide-react",
-      "@udecode/cn"
+      "@udecode/cn",
+      "@udecode/plate-common",
+      "slate",
+      "slate-react",
+      "slate-history",
+      "slate-hyperscript",
     ]
 
     // TODO: Remove this when we migrate to lucide-react.
@@ -595,6 +600,8 @@ async function buildThemes() {
     --chart-3: <%- colors.light["chart-3"] %>;
     --chart-4: <%- colors.light["chart-4"] %>;
     --chart-5: <%- colors.light["chart-5"] %>;
+    --brand: <%- colors.light["brand"] %>;
+    --highlight: <%- colors.light["highlight"] %>;
   }
 
   .dark {
@@ -622,6 +629,8 @@ async function buildThemes() {
     --chart-3: <%- colors.dark["chart-3"] %>;
     --chart-4: <%- colors.dark["chart-4"] %>;
     --chart-5: <%- colors.dark["chart-5"] %>;
+    --brand: <%- colors.dark["brand"] %>;
+    --highlight: <%- colors.dark["highlight"] %>;
   }
 }
 
@@ -645,7 +654,7 @@ async function buildThemes() {
       for (const [key, value] of Object.entries(values)) {
         if (typeof value === "string") {
           // Chart colors do not have a 1-to-1 mapping with tailwind colors.
-          if (key.startsWith("chart-")) {
+          if (key.startsWith("chart-") || key === "brand" || key === "highlight") {
             base["cssVars"][mode][key] = value
             continue
           }
@@ -671,7 +680,7 @@ async function buildThemes() {
     base["cssVarsTemplate"] = template(BASE_STYLES_WITH_VARIABLES)({
       colors: base["cssVars"],
     })
-
+    
     await fs.writeFile(
       path.join(REGISTRY_PATH, `colors/${baseColor}.json`),
       JSON.stringify(base, null, 2),
@@ -713,6 +722,9 @@ async function buildThemes() {
   --ring: <%- colors.light["ring"] %>;
 
   --radius: <%- colors.light["radius"] %>;
+
+  --brand: <%- colors.light["brand"] %>;
+  --highlight: <%- colors.light["highlight"] %>;
 }
 
 .dark .theme-<%- theme %> {
@@ -744,6 +756,9 @@ async function buildThemes() {
   --destructive-foreground: <%- colors.dark["destructive-foreground"] %>;
 
   --ring: <%- colors.dark["ring"] %>;
+
+  --brand: <%- colors.dark["brand"] %>;
+  --highlight: <%- colors.dark["highlight"] %>;
 }`
 
     const themeCSS = []

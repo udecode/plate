@@ -110,7 +110,7 @@ export const DragOverCursorPlugin = createPlatePlugin({
 });
 
 export const SelectionOverlayPlugin = createPlatePlugin({
-  key: 'selection_over_lay',
+  key: 'selection_overlay',
   useHooks: () => {
     const { editor } = useEditorPlugin(BlockSelectionPlugin);
     const isSelecting = editor.useOptions(BlockSelectionPlugin).isSelecting;

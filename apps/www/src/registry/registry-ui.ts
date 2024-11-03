@@ -85,7 +85,7 @@ export const uiComponents: Registry = [
     },
     files: ['plate-ui/block-context-menu.tsx'],
     name: 'block-context-menu',
-    registryDependencies: ['calendar', 'plate-element'],
+    registryDependencies: ['calendar', 'plate-element', 'context-menu'],
     type: 'registry:ui',
   },
   {
@@ -199,7 +199,11 @@ export const uiComponents: Registry = [
     type: 'registry:ui',
   },
   {
-    dependencies: [],
+    dependencies: [
+      '@udecode/plate-cursor',
+      '@udecode/plate-dnd',
+      '@udecode/plate-selection',
+    ],
     doc: {
       description: 'A visual overlay for collaborative cursors and selections.',
       docs: [
@@ -1050,6 +1054,23 @@ export const uiNodes: Registry = [
     type: 'registry:ui',
   },
   {
+    dependencies: ['@udecode/plate-media'],
+    doc: {
+      description: 'A modal component for previewing and manipulating images.',
+      docs: [
+        { route: '/docs/media' },
+        {
+          route: siteConfig.links.plateProComponent('image-preview'),
+        },
+      ],
+      examples: ['media-demo', 'media-toolbar-pro'],
+    },
+    files: ['plate-ui/image-preview.tsx'],
+    name: 'image-preview',
+    registryDependencies: [],
+    type: 'registry:ui',
+  },
+  {
     dependencies: ['@udecode/plate-kbd'],
     doc: {
       description: 'A component for styling keyboard shortcuts.',
@@ -1355,6 +1376,20 @@ export const uiPrimitives: Registry = [
     files: ['plate-ui/command.tsx'],
     name: 'command',
     registryDependencies: ['dialog', 'input'],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@radix-ui/react-context-menu'],
+    doc: {
+      description:
+        'Displays a menu to the user — such as a set of actions or functions — triggered by a button.',
+      links: {
+        doc: 'https://ui.shadcn.com/docs/components/context-menu',
+      },
+    },
+    files: ['plate-ui/context-menu.tsx'],
+    name: 'context-menu',
+    registryDependencies: [],
     type: 'registry:ui',
   },
   {
