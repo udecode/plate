@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useRef } from 'react';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+
 import { withProps } from '@udecode/cn';
 import { AIPlugin } from '@udecode/plate-ai/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
@@ -54,8 +57,8 @@ import { HEADING_KEYS, HEADING_LEVELS } from '@udecode/plate-heading';
 import { HeadingPlugin, TocPlugin } from '@udecode/plate-heading/react';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
-import { IndentListPlugin } from '@udecode/plate-indent-list/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
+import { IndentListPlugin } from '@udecode/plate-indent-list/react';
 import { JuicePlugin } from '@udecode/plate-juice';
 import { KbdPlugin } from '@udecode/plate-kbd/react';
 import { ColumnItemPlugin, ColumnPlugin } from '@udecode/plate-layout/react';
@@ -94,10 +97,7 @@ import {
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 import Prism from 'prismjs';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
 
-import { autoformatRules } from '@/lib/plate/autoformat-rules';
 import { BlockquoteElement } from '@/components/plate-ui/blockquote-element';
 import { CodeBlockElement } from '@/components/plate-ui/code-block-element';
 import { CodeLeaf } from '@/components/plate-ui/code-leaf';
@@ -109,7 +109,7 @@ import {
   CursorOverlay,
   DragOverCursorPlugin,
 } from '@/components/plate-ui/cursor-overlay';
-import { Editor } from '@/components/plate-ui/editor';
+import { Editor, EditorContainer } from '@/components/plate-ui/editor';
 import { EmojiInputElement } from '@/components/plate-ui/emoji-input-element';
 import { ExcalidrawElement } from '@/components/plate-ui/excalidraw-element';
 import { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';
@@ -139,6 +139,7 @@ import { TableElement } from '@/components/plate-ui/table-element';
 import { TableRowElement } from '@/components/plate-ui/table-row-element';
 import { TodoListElement } from '@/components/plate-ui/todo-list-element';
 import { withDraggables } from '@/components/plate-ui/with-draggables';
+import { autoformatRules } from '@/lib/plate/autoformat-rules';
 
 import { SettingsDialog } from './openai/settings-dialog';
 import { AILeaf } from './plate-ui/ai-leaf';
@@ -160,17 +161,16 @@ export default function PlateEditor() {
   return (
     <DndProvider backend={HTML5Backend}>
       <Plate editor={editor}>
-        <div
-          className="relative"
+        <FixedToolbar>
+          <FixedToolbarButtons />
+        </FixedToolbar>
+
+        <EditorContainer
           id="scroll_container"
           ref={containerRef}
-          data-plate-selectable
+          variant="demo"
         >
-          <FixedToolbar>
-            <FixedToolbarButtons />
-          </FixedToolbar>
-
-          <Editor variant="demo" focusRing={false} />
+          <Editor variant="demo" />
 
           <FloatingToolbar>
             <FloatingToolbarButtons />
@@ -179,7 +179,7 @@ export default function PlateEditor() {
           <CommentsPopover />
 
           <CursorOverlay containerRef={containerRef} />
-        </div>
+        </EditorContainer>
 
         <SettingsDialog />
       </Plate>
@@ -189,6 +189,56 @@ export default function PlateEditor() {
 
 export const useCreateEditor = () => {
   return usePlateEditor({
+    override: {
+      components: withDraggables(
+        withPlaceholders({
+          [AIPlugin.key]: AILeaf,
+          [BlockquotePlugin.key]: BlockquoteElement,
+          [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),
+          [BulletedListPlugin.key]: withProps(ListElement, { variant: 'ul' }),
+          [CodeBlockPlugin.key]: CodeBlockElement,
+          [CodeLinePlugin.key]: CodeLineElement,
+          [CodePlugin.key]: CodeLeaf,
+          [CodeSyntaxPlugin.key]: CodeSyntaxLeaf,
+          [ColumnItemPlugin.key]: ColumnElement,
+          [ColumnPlugin.key]: ColumnGroupElement,
+          [CommentsPlugin.key]: CommentLeaf,
+          [DatePlugin.key]: DateElement,
+          [EmojiInputPlugin.key]: EmojiInputElement,
+          [ExcalidrawPlugin.key]: ExcalidrawElement,
+          [HEADING_KEYS.h1]: withProps(HeadingElement, { variant: 'h1' }),
+          [HEADING_KEYS.h2]: withProps(HeadingElement, { variant: 'h2' }),
+          [HEADING_KEYS.h3]: withProps(HeadingElement, { variant: 'h3' }),
+          [HEADING_KEYS.h4]: withProps(HeadingElement, { variant: 'h4' }),
+          [HEADING_KEYS.h5]: withProps(HeadingElement, { variant: 'h5' }),
+          [HEADING_KEYS.h6]: withProps(HeadingElement, { variant: 'h6' }),
+          [HighlightPlugin.key]: HighlightLeaf,
+          [HorizontalRulePlugin.key]: HrElement,
+          [ImagePlugin.key]: ImageElement,
+          [ItalicPlugin.key]: withProps(PlateLeaf, { as: 'em' }),
+          [KbdPlugin.key]: KbdLeaf,
+          [LinkPlugin.key]: LinkElement,
+          [ListItemPlugin.key]: withProps(PlateElement, { as: 'li' }),
+          [MediaEmbedPlugin.key]: MediaEmbedElement,
+          [MentionInputPlugin.key]: MentionInputElement,
+          [MentionPlugin.key]: MentionElement,
+          [NumberedListPlugin.key]: withProps(ListElement, { variant: 'ol' }),
+          [ParagraphPlugin.key]: ParagraphElement,
+          [SlashInputPlugin.key]: SlashInputElement,
+          [StrikethroughPlugin.key]: withProps(PlateLeaf, { as: 's' }),
+          [SubscriptPlugin.key]: withProps(PlateLeaf, { as: 'sub' }),
+          [SuperscriptPlugin.key]: withProps(PlateLeaf, { as: 'sup' }),
+          [TableCellHeaderPlugin.key]: TableCellHeaderElement,
+          [TableCellPlugin.key]: TableCellElement,
+          [TablePlugin.key]: TableElement,
+          [TableRowPlugin.key]: TableRowElement,
+          [TocPlugin.key]: TocElement,
+          [TodoListPlugin.key]: TodoListElement,
+          [TogglePlugin.key]: ToggleElement,
+          [UnderlinePlugin.key]: withProps(PlateLeaf, { as: 'u' }),
+        })
+      ),
+    },
     plugins: [
       // AI
       ...aiPlugins,
@@ -230,6 +280,7 @@ export const useCreateEditor = () => {
           enableMerging: true,
         },
       }),
+      ColumnPlugin,
 
       TodoListPlugin,
       TogglePlugin,
@@ -303,8 +354,8 @@ export const useCreateEditor = () => {
       // Functionality
       AutoformatPlugin.configure({
         options: {
-          rules: autoformatRules,
           enableUndoOnDelete: true,
+          rules: autoformatRules,
         },
       }),
       BlockSelectionPlugin.configure({
@@ -338,18 +389,18 @@ export const useCreateEditor = () => {
               hotkey: 'mod+enter',
             },
             {
-              hotkey: 'mod+shift+enter',
               before: true,
+              hotkey: 'mod+shift+enter',
             },
             {
               hotkey: 'enter',
+              level: 1,
               query: {
-                start: true,
-                end: true,
                 allow: HEADING_LEVELS,
+                end: true,
+                start: true,
               },
               relative: true,
-              level: 1,
             },
           ],
         },
@@ -359,30 +410,30 @@ export const useCreateEditor = () => {
         options: {
           rules: [
             {
-              types: [BlockquotePlugin.key, TodoListPlugin.key],
               defaultType: ParagraphPlugin.key,
               hotkey: 'Enter',
               predicate: isBlockAboveEmpty,
+              types: [BlockquotePlugin.key, TodoListPlugin.key],
             },
             {
-              types: [BlockquotePlugin.key, TodoListPlugin.key],
               defaultType: ParagraphPlugin.key,
               hotkey: 'Backspace',
               predicate: isSelectionAtBlockStart,
+              types: [BlockquotePlugin.key, TodoListPlugin.key],
             },
             {
-              types: [CodeBlockPlugin.key],
               defaultType: ParagraphPlugin.key,
-              onReset: unwrapCodeBlock,
               hotkey: 'Enter',
               predicate: isCodeBlockEmpty,
+              types: [CodeBlockPlugin.key],
+              onReset: unwrapCodeBlock,
             },
             {
-              types: [CodeBlockPlugin.key],
               defaultType: ParagraphPlugin.key,
-              onReset: unwrapCodeBlock,
               hotkey: 'Backspace',
               predicate: isSelectionAtCodeBlockStart,
+              types: [CodeBlockPlugin.key],
+              onReset: unwrapCodeBlock,
             },
           ],
         },
@@ -422,9 +473,9 @@ export const useCreateEditor = () => {
                 return !!(
                   n.type &&
                   ([
+                    CodeBlockPlugin.key,
                     TablePlugin.key,
                     TodoListPlugin.key,
-                    CodeBlockPlugin.key,
                   ].includes(n.type as string) ||
                     n.listStyleType)
                 );
@@ -441,15 +492,15 @@ export const useCreateEditor = () => {
       DragOverCursorPlugin,
       CommentsPlugin.configure({
         options: {
+          myUserId: '1',
           users: {
             1: {
               id: '1',
-              name: 'zbeyens',
               avatarUrl:
                 'https://avatars.githubusercontent.com/u/19695832?s=96&v=4',
+              name: 'zbeyens',
             },
           },
-          myUserId: '1',
         },
       }),
 
@@ -458,72 +509,22 @@ export const useCreateEditor = () => {
       MarkdownPlugin.configure({ options: { indentList: true } }),
       JuicePlugin,
     ],
-    override: {
-      components: withDraggables(
-        withPlaceholders({
-          [AIPlugin.key]: AILeaf,
-          [BlockquotePlugin.key]: BlockquoteElement,
-          [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),
-          [BulletedListPlugin.key]: withProps(ListElement, { variant: 'ul' }),
-          [CodeBlockPlugin.key]: CodeBlockElement,
-          [CodeLinePlugin.key]: CodeLineElement,
-          [CodePlugin.key]: CodeLeaf,
-          [CodeSyntaxPlugin.key]: CodeSyntaxLeaf,
-          [ColumnItemPlugin.key]: ColumnElement,
-          [ColumnPlugin.key]: ColumnGroupElement,
-          [CommentsPlugin.key]: CommentLeaf,
-          [DatePlugin.key]: DateElement,
-          [EmojiInputPlugin.key]: EmojiInputElement,
-          [ExcalidrawPlugin.key]: ExcalidrawElement,
-          [HEADING_KEYS.h1]: withProps(HeadingElement, { variant: 'h1' }),
-          [HEADING_KEYS.h2]: withProps(HeadingElement, { variant: 'h2' }),
-          [HEADING_KEYS.h3]: withProps(HeadingElement, { variant: 'h3' }),
-          [HEADING_KEYS.h4]: withProps(HeadingElement, { variant: 'h4' }),
-          [HEADING_KEYS.h5]: withProps(HeadingElement, { variant: 'h5' }),
-          [HEADING_KEYS.h6]: withProps(HeadingElement, { variant: 'h6' }),
-          [HighlightPlugin.key]: HighlightLeaf,
-          [HorizontalRulePlugin.key]: HrElement,
-          [ImagePlugin.key]: ImageElement,
-          [ItalicPlugin.key]: withProps(PlateLeaf, { as: 'em' }),
-          [KbdPlugin.key]: KbdLeaf,
-          [LinkPlugin.key]: LinkElement,
-          [ListItemPlugin.key]: withProps(PlateElement, { as: 'li' }),
-          [MediaEmbedPlugin.key]: MediaEmbedElement,
-          [MentionInputPlugin.key]: MentionInputElement,
-          [MentionPlugin.key]: MentionElement,
-          [NumberedListPlugin.key]: withProps(ListElement, { variant: 'ol' }),
-          [ParagraphPlugin.key]: ParagraphElement,
-          [SlashInputPlugin.key]: SlashInputElement,
-          [StrikethroughPlugin.key]: withProps(PlateLeaf, { as: 's' }),
-          [SubscriptPlugin.key]: withProps(PlateLeaf, { as: 'sub' }),
-          [SuperscriptPlugin.key]: withProps(PlateLeaf, { as: 'sup' }),
-          [TableCellHeaderPlugin.key]: TableCellHeaderElement,
-          [TableCellPlugin.key]: TableCellElement,
-          [TablePlugin.key]: TableElement,
-          [TableRowPlugin.key]: TableRowElement,
-          [TocPlugin.key]: TocElement,
-          [TodoListPlugin.key]: TodoListElement,
-          [TogglePlugin.key]: ToggleElement,
-          [UnderlinePlugin.key]: withProps(PlateLeaf, { as: 'u' }),
-        })
-      ),
-    },
     value: [
       {
         id: '1',
-        type: 'h1',
         children: [{ text: 'Playground' }],
+        type: 'h1',
       },
       {
         id: '2',
-        type: ParagraphPlugin.key,
         children: [
           { text: 'A rich-text editor with AI capabilities. Try the ' },
-          { text: 'AI commands', bold: true },
+          { bold: true, text: 'AI commands' },
           { text: ' or use ' },
-          { text: 'Cmd+J', kbd: true },
+          { kbd: true, text: 'Cmd+J' },
           { text: ' to open the AI menu.' },
         ],
+        type: ParagraphPlugin.key,
       },
     ],
   });

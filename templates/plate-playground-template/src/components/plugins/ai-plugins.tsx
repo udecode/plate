@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+
 import { withProps } from '@udecode/cn';
 import { AIChatPlugin, AIPlugin } from '@udecode/plate-ai/react';
 import {
@@ -17,9 +18,9 @@ import {
   CodeSyntaxPlugin,
 } from '@udecode/plate-code-block/react';
 import {
-  createPlateEditor,
   ParagraphPlugin,
   PlateLeaf,
+  createPlateEditor,
 } from '@udecode/plate-common/react';
 import {
   FontBackgroundColorPlugin,
@@ -28,8 +29,8 @@ import {
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HeadingPlugin } from '@udecode/plate-heading/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
-import { IndentListPlugin } from '@udecode/plate-indent-list/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
+import { IndentListPlugin } from '@udecode/plate-indent-list/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';

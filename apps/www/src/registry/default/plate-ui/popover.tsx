@@ -17,7 +17,7 @@ export const popoverVariants = cva(
 );
 
 export const PopoverContent = withRef<typeof PopoverPrimitive.Content>(
-  ({ align = 'center', className, sideOffset = 4, style, ...props }, ref) => (
+  ({ align = 'center', className, sideOffset = 4, ...props }, ref) => (
     <PopoverPrimitive.Portal>
       <PopoverPrimitive.Content
         ref={ref}

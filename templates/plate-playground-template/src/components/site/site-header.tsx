@@ -1,11 +1,11 @@
+import type { LucideProps } from 'lucide-react';
+
 import Link from 'next/link';
 
-import { siteConfig } from '@/config/site';
 import { buttonVariants } from '@/components/plate-ui/button';
 import { MainNav } from '@/components/site/main-nav';
 import { ThemeToggle } from '@/components/site/theme-toggle';
-
-import type { LucideProps } from 'lucide-react';
+import { siteConfig } from '@/config/site';
 
 export function SiteHeader() {
   return (
@@ -16,8 +16,8 @@ export function SiteHeader() {
           <nav className="flex items-center space-x-1">
             <Link
               href={siteConfig.links.github}
-              target="_blank"
               rel="noreferrer"
+              target="_blank"
             >
               <div
                 className={buttonVariants({
@@ -31,8 +31,8 @@ export function SiteHeader() {
             </Link>
             <Link
               href={siteConfig.links.twitter}
-              target="_blank"
               rel="noreferrer"
+              target="_blank"
             >
               <div
                 className={buttonVariants({

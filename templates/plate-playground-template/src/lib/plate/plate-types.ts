@@ -1,6 +1,5 @@
-import { useEditorRef } from '@udecode/plate-common/react';
-
 import type React from 'react';
+
 import type { useCreateEditor } from '@/components/plate-editor';
 import type { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import type {
@@ -41,6 +40,8 @@ import type {
 } from '@udecode/plate-table/react';
 import type { TToggleElement } from '@udecode/plate-toggle';
 import type { TogglePlugin } from '@udecode/plate-toggle/react';
+
+import { useEditorRef } from '@udecode/plate-common/react';
 
 /** Text */
 

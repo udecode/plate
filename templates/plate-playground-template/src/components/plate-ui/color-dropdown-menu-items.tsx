@@ -1,6 +1,9 @@
 'use client';
 
 import React from 'react';
+
+import type { DropdownMenuItemProps } from '@radix-ui/react-dropdown-menu';
+
 import { cn } from '@udecode/cn';
 import { Check } from 'lucide-react';
 
@@ -12,8 +15,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from './tooltip';
-
-import type { DropdownMenuItemProps } from '@radix-ui/react-dropdown-menu';
 
 export type TColor = {
   isBrightColor: boolean;

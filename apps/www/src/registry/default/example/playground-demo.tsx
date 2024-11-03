@@ -87,7 +87,7 @@ import {
   CursorOverlay,
   SelectionOverlayPlugin,
 } from '@/registry/default/plate-ui/cursor-overlay';
-import { Editor } from '@/registry/default/plate-ui/editor';
+import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
 import { FixedToolbarButtons } from '@/registry/default/plate-ui/fixed-toolbar-buttons';
 import { FloatingToolbar } from '@/registry/default/plate-ui/floating-toolbar';
@@ -170,6 +170,7 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
             enableMerging: id === 'tableMerge',
           },
         }),
+        ColumnPlugin,
         SelectionOverlayPlugin,
 
         TodoListPlugin,
@@ -332,7 +333,6 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
         DocxPlugin,
         MarkdownPlugin.configure({ options: { indentList: true } }),
         JuicePlugin,
-        ColumnPlugin,
 
         // Testing
         PlaywrightPlugin.configure({
@@ -374,29 +374,22 @@ export default function PlaygroundDemo({
         </CheckPlugin>
 
         <div id="editor-playground" className="flex w-full">
-          <div
+          <EditorContainer
             id={scrollSelector ?? `blockSelection-${id}`}
             ref={containerRef}
-            className={cn(
-              'relative flex w-full overflow-x-auto',
-              // block selection area
-              'max-h-[500px] [&_.slate-selection-area]:border [&_.slate-selection-area]:border-brand/25 [&_.slate-selection-area]:bg-brand/15',
-              className
-            )}
-            data-plate-selectable
+            variant="demo"
+            className={cn(id && 'max-h-[500px]', className)}
           >
             <Editor
               {...editableProps}
-              size="md"
               variant="demo"
               className={cn(
                 editableProps.className,
-                'overflow-x-auto rounded-none',
+                // 'overflow-x-auto rounded-none',
                 !id && 'pb-[20vh] pt-4',
                 id && 'pb-8 pt-2'
               )}
-              placeholder=""
-              focusRing={false}
+              placeholder="Type..."
             />
 
             <CheckPlugin componentId="floating-toolbar">
@@ -419,7 +412,7 @@ export default function PlaygroundDemo({
             <CheckPlugin id="cursoroverlay" plugin={DragOverCursorPlugin}>
               <CursorOverlay containerRef={containerRef} />
             </CheckPlugin>
-          </div>
+          </EditorContainer>
 
           <CheckPlugin
             id="comment"

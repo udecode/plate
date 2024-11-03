@@ -1,5 +1,7 @@
 'use client';
 
+import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
+
 import {
   useColorDropdownMenu,
   useColorDropdownMenuState,
@@ -13,8 +15,6 @@ import {
   DropdownMenuTrigger,
 } from './dropdown-menu';
 import { ToolbarButton } from './toolbar';
-
-import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
 type ColorDropdownMenuProps = {
   nodeType: string;

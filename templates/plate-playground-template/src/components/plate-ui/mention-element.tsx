@@ -1,16 +1,17 @@
 'use client';
 
 import React from 'react';
+
+import type { TMentionElement } from '@udecode/plate-mention';
+
 import { cn, withRef } from '@udecode/cn';
-import { getHandler, IS_APPLE } from '@udecode/plate-common';
+import { IS_APPLE, getHandler } from '@udecode/plate-common';
 import { useElement } from '@udecode/plate-common/react';
 import { useFocused, useSelected } from 'slate-react';
 
 import { useMounted } from '@/hooks/use-mounted';
 
 import { PlateElement } from './plate-element';
-
-import type { TMentionElement } from '@udecode/plate-mention';
 
 export const MentionElement = withRef<
   typeof PlateElement,

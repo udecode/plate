@@ -11,7 +11,7 @@ import { Icons } from '@/components/icons';
 import { editableProps } from '@/plate/demo/editableProps';
 import { PlateUI } from '@/plate/demo/plate-ui';
 import { findReplaceValue } from '@/plate/demo/values/findReplaceValue';
-import { Editor } from '@/registry/default/plate-ui/editor';
+import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
 
 export interface SearchHighlightToolbarProps {
@@ -84,7 +84,9 @@ export default function FindReplaceDemo() {
       <SearchHighlightToolbar icon={Icons.search} setSearch={setSearch} />
 
       <Plate editor={editor}>
-        <Editor {...editableProps} />
+        <EditorContainer>
+          <Editor {...editableProps} />
+        </EditorContainer>
       </Plate>
     </>
   );

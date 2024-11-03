@@ -4,7 +4,7 @@
   },
   "files": [
     {
-      "content": "'use client';\n\nimport { Plate, usePlateEditor } from '@udecode/plate-common/react';\n\nimport { Editor } from '@/components/plate-ui/editor';\n\nexport default function EditorDisabled() {\n  const editor = usePlateEditor();\n\n  return (\n    <div className=\"mt-[72px] p-10\">\n      <Plate editor={editor}>\n        <Editor disabled placeholder=\"Type your message here.\" />\n      </Plate>\n    </div>\n  );\n}\n",
+      "content": "'use client';\n\nimport { Plate, usePlateEditor } from '@udecode/plate-common/react';\n\nimport { Editor, EditorContainer } from '@/components/plate-ui/editor';\n\nexport default function EditorDisabled() {\n  const editor = usePlateEditor();\n\n  return (\n    <Plate editor={editor}>\n      <EditorContainer>\n        <Editor disabled placeholder=\"Type your message here.\" />\n      </EditorContainer>\n    </Plate>\n  );\n}\n",
       "path": "example/editor-disabled.tsx",
       "target": "components/editor-disabled.tsx",
       "type": "registry:example"

@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+
 import type { UseEmojiPickerType } from '@udecode/plate-emoji/react';
 
 export type EmojiPickerSearchBarProps = {

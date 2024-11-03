@@ -20,7 +20,7 @@ import { PlateUI } from '@/plate/demo/plate-ui';
 import { resetBlockTypePlugin } from '@/plate/demo/plugins/resetBlockTypePlugin';
 import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
 import { editableVoidsValue } from '@/plate/demo/values/editableVoidsValue';
-import { Editor } from '@/registry/default/plate-ui/editor';
+import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 import { Input } from '@/registry/default/plate-ui/input';
 
 export const EditableVoidPlugin = createPlatePlugin({
@@ -88,7 +88,9 @@ export function EditableVoidElement({
             editor={editor}
             // initialValue={basicElementsValue}
           >
-            <Editor {...editableProps} />
+            <EditorContainer>
+              <Editor {...editableProps} />
+            </EditorContainer>
           </Plate>
         </div>
       </div>
@@ -107,7 +109,9 @@ export default function EditableVoidsDemo() {
   return (
     <div className="p-10">
       <Plate editor={editor}>
-        <Editor {...editableProps} />
+        <EditorContainer>
+          <Editor {...editableProps} />
+        </EditorContainer>
       </Plate>
     </div>
   );

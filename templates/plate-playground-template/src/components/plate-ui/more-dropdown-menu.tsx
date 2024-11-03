@@ -1,4 +1,7 @@
 import React from 'react';
+
+import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
+
 import {
   SubscriptPlugin,
   SuperscriptPlugin,
@@ -24,8 +27,6 @@ import {
   useOpenState,
 } from './dropdown-menu';
 import { ToolbarButton } from './toolbar';
-
-import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
 export function MoreDropdownMenu(props: DropdownMenuProps) {
   const editor = useEditorRef();

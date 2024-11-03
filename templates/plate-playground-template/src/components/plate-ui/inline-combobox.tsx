@@ -10,6 +10,13 @@ import React, {
   useMemo,
   useState,
 } from 'react';
+import type { HTMLAttributes, ReactNode, RefObject } from 'react';
+
+import type { ComboboxItemProps } from '@ariakit/react';
+import type { UseComboboxInputResult } from '@udecode/plate-combobox/react';
+import type { TElement } from '@udecode/plate-common';
+import type { PointRef } from 'slate';
+
 import {
   Combobox,
   ComboboxGroup,
@@ -40,12 +47,6 @@ import {
   useEditorRef,
 } from '@udecode/plate-common/react';
 import { cva } from 'class-variance-authority';
-
-import type { HTMLAttributes, ReactNode, RefObject } from 'react';
-import type { ComboboxItemProps } from '@ariakit/react';
-import type { UseComboboxInputResult } from '@udecode/plate-combobox/react';
-import type { TElement } from '@udecode/plate-common';
-import type { PointRef } from 'slate';
 
 type FilterFn = (
   item: { value: string; group?: string; keywords?: string[]; label?: string },

@@ -1,6 +1,10 @@
 'use client';
 
 import React from 'react';
+
+import type { TColumnElement } from '@udecode/plate-layout';
+import type { LucideProps } from 'lucide-react';
+
 import { cn, withRef } from '@udecode/cn';
 import { useElement, useRemoveNodeButton } from '@udecode/plate-common/react';
 import {
@@ -15,9 +19,6 @@ import { Button } from './button';
 import { PlateElement } from './plate-element';
 import { Popover, PopoverAnchor, PopoverContent } from './popover';
 import { Separator } from './separator';
-
-import type { TColumnElement } from '@udecode/plate-layout';
-import type { LucideProps } from 'lucide-react';
 
 export const ColumnGroupElement = withRef<typeof PlateElement>(
   ({ children, className, ...props }, ref) => {
