@@ -700,8 +700,6 @@ async function buildThemes() {
       colors: base["cssVars"],
     })
     
-    // console.log(baseColor, base["cssVars"])
-    
     await fs.writeFile(
       path.join(REGISTRY_PATH, `colors/${baseColor}.json`),
       JSON.stringify(base, null, 2),

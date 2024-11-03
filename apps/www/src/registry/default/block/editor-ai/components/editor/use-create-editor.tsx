@@ -92,7 +92,9 @@ import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 import Prism from 'prismjs';
 
-import { autoformatPlugin } from '@/registry/default/block/editor-ai/components/editor/autoformat-plugin';
+import { autoformatPlugin } from '@/registry/default/components/editor/plugins/autoformat-plugin';
+import { copilotPlugins } from '@/registry/default/components/editor/plugins/copilot-plugins';
+import { aiPlugins } from '@/registry/default/lib/plugins/ai-plugins';
 import { AILeaf } from '@/registry/default/plate-ui/ai-leaf';
 import { BlockContextMenu } from '@/registry/default/plate-ui/block-context-menu';
 import { BlockquoteElement } from '@/registry/default/plate-ui/blockquote-element';
@@ -136,10 +138,6 @@ import { TocElement } from '@/registry/default/plate-ui/toc-element';
 import { TodoListElement } from '@/registry/default/plate-ui/todo-list-element';
 import { ToggleElement } from '@/registry/default/plate-ui/toggle-element';
 import { withDraggables } from '@/registry/default/plate-ui/with-draggables';
-
-// import { SettingsDialog } from './openai/settings-dialog';
-import { aiPlugins } from './ai-plugins';
-import { copilotPlugins } from './copilot-plugins';
 
 export const useCreateEditor = () => {
   return usePlateEditor({

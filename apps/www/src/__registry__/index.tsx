@@ -1739,7 +1739,7 @@ export const Index: Record<string, any> = {
       type: "registry:lib",
       registryDependencies: undefined,
       files: ["registry/default/lib/transforms.ts"],
-      component: React.lazy(() => import("@/registry/default/lib/transforms.ts")),
+      component: React.lazy(() => import("@/registry/default/components/editor/transforms")),
       source: "",
       category: "",
       subcategory: "",

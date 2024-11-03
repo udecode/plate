@@ -1,6 +1,7 @@
+'use client';
+
 import type React from 'react';
 
-import type { usePlaygroundEditor } from '@/registry/default/example/playground-demo';
 import type { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import type {
   CodeBlockPlugin,
@@ -8,6 +9,7 @@ import type {
 } from '@udecode/plate-code-block/react';
 import type { TCommentText } from '@udecode/plate-comments';
 import type { ElementOf, TElement, TText } from '@udecode/plate-common';
+import type { ParagraphPlugin } from '@udecode/plate-common/react';
 import type { TExcalidrawElement } from '@udecode/plate-excalidraw';
 import type { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
 import type { HEADING_KEYS } from '@udecode/plate-heading';
@@ -40,10 +42,9 @@ import type {
 import type { TToggleElement } from '@udecode/plate-toggle';
 import type { TogglePlugin } from '@udecode/plate-toggle/react';
 
-import {
-  type ParagraphPlugin,
-  useEditorRef,
-} from '@udecode/plate-common/react';
+import { useEditorRef } from '@udecode/plate-common/react';
+
+import type { useCreateEditor } from '../../block/editor-ai/components/editor/use-create-editor';
 
 /** Text */
 
@@ -271,6 +272,6 @@ export type MyRootBlock =
 
 export type MyValue = MyRootBlock[];
 
-export type MyEditor = ReturnType<typeof usePlaygroundEditor>;
+export type MyEditor = ReturnType<typeof useCreateEditor>;
 
-export const useMyEditorRef = () => useEditorRef<MyEditor>();
+export const useEditor = () => useEditorRef<MyEditor>();

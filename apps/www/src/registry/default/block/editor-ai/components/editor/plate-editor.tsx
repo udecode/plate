@@ -15,8 +15,6 @@ import { FixedToolbarButtons } from '@/registry/default/plate-ui/fixed-toolbar-b
 import { FloatingToolbar } from '@/registry/default/plate-ui/floating-toolbar';
 import { FloatingToolbarButtons } from '@/registry/default/plate-ui/floating-toolbar-buttons';
 
-// import { SettingsDialog } from './openai/settings-dialog';
-
 export function PlateEditor() {
   const containerRef = useRef(null);
 
@@ -44,8 +42,6 @@ export function PlateEditor() {
 
           <CursorOverlay containerRef={containerRef} />
         </EditorContainer>
-
-        {/* <SettingsDialog /> */}
       </Plate>
     </DndProvider>
   );
