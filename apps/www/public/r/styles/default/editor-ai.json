@@ -47,7 +47,7 @@
   "description": "An AI editor.",
   "files": [
     {
-      "content": "import { PlateEditor } from '@/components/editor/plate-editor';\n\nexport default function Page() {\n  return (\n    <div className=\"h-screen w-full\">\n      <PlateEditor />\n    </div>\n  );\n}\n",
+      "content": "import { PlateEditor } from '@/components/editor/plate-editor';\n\nexport default function Page() {\n  return (\n    <div className=\"h-screen w-full\" data-registry=\"plate\">\n      <PlateEditor />\n    </div>\n  );\n}\n",
       "path": "block/editor-ai/page.tsx",
       "target": "app/editor/page.tsx",
       "type": "registry:page"
