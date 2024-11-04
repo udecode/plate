@@ -1,30 +1,12 @@
 import { type ExtendConfig, bindFirst } from '@udecode/plate-common';
 import { findEventRange, toTPlatePlugin } from '@udecode/plate-common/react';
 
+import type { AllowedFileType } from './internal/mimes';
+import type { MediaItemConfig, UploadErrorCode } from './type';
+
 import { type PlaceholderConfig, BasePlaceholderPlugin } from '../../lib';
 import { AudioPlugin, FilePlugin, ImagePlugin, VideoPlugin } from '../plugins';
 import { insertMedia } from './transforms/insertMedia';
-
-export type MediaType = 'audio' | 'file' | 'image' | 'video';
-
-export type MediaKeys =
-  | typeof AudioPlugin.key
-  | typeof FilePlugin.key
-  | typeof ImagePlugin.key
-  | typeof VideoPlugin.key;
-
-export type MediaItemConfig = {
-  // The type of media that this config is for.
-  mediaType: MediaKeys;
-  // extensions that are accepted for this media type
-  accept?: string[];
-  // The maximum number of files of this type that can be uploaded.
-  maxFileCount?: number;
-  // The maximum file size for a file of this type. FileSize is a string that can be parsed as a number followed by a unit of measurement (B, KB, MB, or GB)
-  maxFileSize?: string;
-  // The minimum number of files of this type that must be uploaded.
-  minFileCount?: number;
-};
 
 export type PlaceholderApi = {
   addUploadingFile: (id: string, file: File) => void;
@@ -36,55 +18,69 @@ export type PlaceholderTransforms = {
   insertMedia: (files: FileList) => void;
 };
 
-export type MediaConfig = Partial<Record<MediaType, MediaItemConfig>>;
+export type UploadError = {
+  code: UploadErrorCode;
+  data: { invalidateFiles: File[] };
+};
+
+export type uploadConfig = Partial<Record<AllowedFileType, MediaItemConfig>>;
 
 export const PlaceholderPlugin = toTPlatePlugin<
   ExtendConfig<
     PlaceholderConfig,
     {
-      mediaConfig: MediaConfig;
+      uploadConfig: uploadConfig;
       uploadingFiles: Record<string, File>;
       // Whether multiple files of the same type can be uploaded.
       multiple?: boolean;
-      uploadErrorMessage?: string | null;
+      uploadCode?: string | null;
+      uploadError?: UploadError;
       uploadMaxFileCount?: number;
     },
     { placeholder: PlaceholderApi }
   >
 >(BasePlaceholderPlugin, {
   options: {
-    mediaConfig: {
+    multiple: true,
+    uploadCode: null,
+    uploadConfig: {
       audio: {
-        accept: ['.mp3'],
         maxFileCount: 1,
         maxFileSize: '8MB',
         mediaType: AudioPlugin.key,
         minFileCount: 1,
       },
-      file: {
-        accept: ['.pdf', '.txt'],
+      blob: {
         maxFileCount: 1,
-        maxFileSize: '8MB',
+        maxFileSize: '256MB',
         mediaType: FilePlugin.key,
         minFileCount: 1,
       },
       image: {
-        accept: ['.png', '.jpg', '.jpeg'],
         maxFileCount: 1,
         maxFileSize: '2MB',
         mediaType: ImagePlugin.key,
         minFileCount: 1,
       },
+      pdf: {
+        maxFileCount: 1,
+        maxFileSize: '8MB',
+        mediaType: FilePlugin.key,
+        minFileCount: 1,
+      },
+      text: {
+        maxFileCount: 1,
+        maxFileSize: '256MB',
+        mediaType: FilePlugin.key,
+        minFileCount: 1,
+      },
       video: {
-        accept: ['.mp4'],
         maxFileCount: 1,
         maxFileSize: '256MB',
         mediaType: VideoPlugin.key,
         minFileCount: 1,
       },
     },
-    multiple: true,
-    uploadErrorMessage: null,
     uploadMaxFileCount: 5,
     uploadingFiles: {},
   },
@@ -103,21 +99,21 @@ export const PlaceholderPlugin = toTPlatePlugin<
         [id]: file,
       });
     },
-    getMediaConfig: (mediaType: MediaKeys) => {
-      const config = getOption('mediaConfig');
+    // getMediaConfig: (mediaType: MediaKeys) => {
+    //   const config = getOption('mediaConfig');
 
-      const keys = Object.keys(config);
+    //   const keys = Object.keys(config);
 
-      for (const key of keys) {
-        const item = config[key as MediaType];
+    //   for (const key of keys) {
+    //     const item = config[key as AllowedFileType];
 
-        if (item?.mediaType === mediaType) {
-          return item;
-        }
-      }
+    //     if (item?.mediaType === mediaType) {
+    //       return item;
+    //     }
+    //   }
 
-      return null;
-    },
+    //   return null;
+    // },
     getUploadingFile: (id: string) => {
       const uploadingFiles = getOption('uploadingFiles');
 

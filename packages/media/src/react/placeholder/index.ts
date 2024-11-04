@@ -4,6 +4,7 @@
 
 export * from './PlaceholderPlugin';
 export * from './placeholderStore';
+export * from './type';
 export * from './usePlaceholderElement';
 export * from './usePlaceholderPopover';
 export * from './transforms/index';

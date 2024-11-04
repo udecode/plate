@@ -4,28 +4,31 @@ import { insertNodes, nanoid, withoutNormalizing } from '@udecode/plate-common';
 
 import { type TPlaceholderElement, BasePlaceholderPlugin } from '../../../lib';
 import { PlaceholderPlugin } from '../PlaceholderPlugin';
-import { getMediaTypeByFileName } from '../utils/getMediaTypeByFileName';
+import { UploadErrorCode } from '../type';
+import { createUploadError, isUploadError } from '../utils/createUploadError';
+import { getMediaType } from '../utils/getMediaType';
 import { validateFiles } from '../utils/validateFiles';
 
 export const insertMedia = (editor: PlateEditor, files: FileList): any => {
   const api = editor.getApi(PlaceholderPlugin);
-  const mediaConfig = editor.getOption(PlaceholderPlugin, 'mediaConfig');
+  const uploadConfig = editor.getOption(PlaceholderPlugin, 'uploadConfig');
   const multiple = editor.getOption(PlaceholderPlugin, 'multiple');
 
-  const validationResult = validateFiles(files, mediaConfig);
+  try {
+    validateFiles(files, uploadConfig);
+  } catch (error) {
+    if (!isUploadError(error)) throw error;
 
-  if (!validationResult.isValid && validationResult.errorMessage) {
-    return editor.setOption(
-      PlaceholderPlugin,
-      'uploadErrorMessage',
-      validationResult.errorMessage
-    );
+    return editor.setOption(PlaceholderPlugin, 'uploadError', error);
   }
+
   if (!multiple && files.length > 1) {
     return editor.setOption(
       PlaceholderPlugin,
-      'uploadErrorMessage',
-      'Can not upload multiple files'
+      'uploadError',
+      createUploadError(UploadErrorCode.MaxFileCountExceeded, {
+        invalidateFiles: Array.from(files),
+      })
     );
   }
 
@@ -35,8 +38,10 @@ export const insertMedia = (editor: PlateEditor, files: FileList): any => {
   if (files.length > maxFileCount) {
     return editor.setOption(
       PlaceholderPlugin,
-      'uploadErrorMessage',
-      `Can not upload more than ${maxFileCount} files`
+      'uploadError',
+      createUploadError(UploadErrorCode.MaxFileCountExceeded, {
+        invalidateFiles: Array.from(files),
+      })
     );
   }
 
@@ -47,7 +52,7 @@ export const insertMedia = (editor: PlateEditor, files: FileList): any => {
       insertNodes<TPlaceholderElement>(editor, {
         id,
         children: [{ text: '' }],
-        mediaType: getMediaTypeByFileName(file.name, mediaConfig)!,
+        mediaType: getMediaType(file, uploadConfig)!,
         type: editor.getType(BasePlaceholderPlugin),
       })
     );
