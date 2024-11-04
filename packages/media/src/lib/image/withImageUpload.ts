@@ -39,7 +39,7 @@ export const withImageUpload: ExtendEditor<ImageConfig> = ({
         return insertData(dataTransfer);
       }
 
-      editor.getTransforms(ImagePlugin).insertImageFromFiles(files);
+      editor.getTransforms(ImagePlugin).insert.imageFromFiles(files);
     } else {
       return insertData(dataTransfer);
     }

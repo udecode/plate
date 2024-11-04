@@ -45,7 +45,9 @@ export const BaseImagePlugin = createTSlatePlugin<ImageConfig>({
   },
 })
   .extendEditorTransforms(({ editor }) => ({
-    insertImageFromFiles: bindFirst(insertImageFromFiles, editor),
+    insert: {
+      imageFromFiles: bindFirst(insertImageFromFiles, editor as any),
+    },
   }))
   .extend(({ plugin }) => ({
     parsers: {

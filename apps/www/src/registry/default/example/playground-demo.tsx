@@ -300,11 +300,11 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
         DndPlugin.configure({
           options: {
             enableScroller: true,
-            onDropFiles: (editor, props) => {
+            onDropFiles: ({ dragItem, editor, target }) => {
               editor
                 .getTransforms(ImagePlugin)
-                .insertImageFromFiles(props.dragItem.files, {
-                  at: props.dropPath,
+                .insert.imageFromFiles(dragItem.files, {
+                  at: target,
                   nextBlock: false,
                 });
             },

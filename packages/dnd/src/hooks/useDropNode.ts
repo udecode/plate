@@ -97,12 +97,13 @@ export const useDropNode = (
 
         if (!result || !onDropFiles) return;
 
-        return onDropFiles(editor, {
+        return onDropFiles({
           id,
           dragItem: dragItem as FileDragItemNode,
-          dropPath: result.to,
+          editor,
           monitor,
           nodeRef,
+          target: result.to,
         });
       }
 

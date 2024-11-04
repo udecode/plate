@@ -2,8 +2,8 @@
 
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
+import { ImagePlugin } from '../../react';
 
-import { BaseImagePlugin } from './BaseImagePlugin';
 
 jsx;
 
@@ -24,7 +24,7 @@ describe('withImageUpload', () => {
     it('should insert image from the file(s)', () => {
       const editor = createPlateEditor({
         editor: input,
-        plugins: [BaseImagePlugin],
+        plugins: [ImagePlugin],
       });
 
       const data = {
@@ -59,7 +59,7 @@ describe('withImageUpload', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [BaseImagePlugin],
+        plugins: [ImagePlugin],
       });
 
       const data = {
@@ -87,7 +87,7 @@ describe('withImageUpload', () => {
     it('should insert image from the file(s)', () => {
       const editor = createPlateEditor({
         editor: input,
-        plugins: [BaseImagePlugin],
+        plugins: [ImagePlugin],
       });
 
       const data = {
