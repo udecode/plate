@@ -1,0 +1,25 @@
+{
+  "dependencies": [
+    "@ai-sdk/openai",
+    "ai"
+  ],
+  "files": [
+    {
+      "content": "import type { NextRequest } from 'next/server';\n\nimport { createOpenAI } from '@ai-sdk/openai';\nimport { convertToCoreMessages, streamText } from 'ai';\nimport { NextResponse } from 'next/server';\n\nexport async function POST(req: NextRequest) {\n  const {\n    apiKey: key,\n    messages,\n    model = 'gpt-4o-mini',\n    system,\n  } = await req.json();\n\n  const apiKey = key || process.env.OPENAI_API_KEY;\n\n  if (!apiKey) {\n    return NextResponse.json(\n      { error: 'Missing OpenAI API key.' },\n      { status: 401 }\n    );\n  }\n\n  const openai = createOpenAI({ apiKey });\n\n  try {\n    const result = await streamText({\n      maxTokens: 2048,\n      messages: convertToCoreMessages(messages),\n      model: openai(model),\n      system: system,\n    });\n\n    return result.toDataStreamResponse();\n  } catch {\n    return NextResponse.json(\n      { error: 'Failed to process AI request' },\n      { status: 500 }\n    );\n  }\n}\n",
+      "path": "components/api/ai/command/route.ts",
+      "target": "app/api/ai/command/route.ts",
+      "type": "registry:page"
+    },
+    {
+      "content": "import type { NextRequest } from 'next/server';\n\nimport { createOpenAI } from '@ai-sdk/openai';\nimport { generateText } from 'ai';\nimport { NextResponse } from 'next/server';\n\nexport async function POST(req: NextRequest) {\n  const {\n    apiKey: key,\n    model = 'gpt-4o-mini',\n    prompt,\n    system,\n  } = await req.json();\n\n  const apiKey = key || process.env.OPENAI_API_KEY;\n\n  if (!apiKey) {\n    return NextResponse.json(\n      { error: 'Missing OpenAI API key.' },\n      { status: 401 }\n    );\n  }\n\n  const openai = createOpenAI({ apiKey });\n\n  try {\n    const result = await generateText({\n      abortSignal: req.signal,\n      maxTokens: 50,\n      model: openai(model),\n      prompt: prompt,\n      system,\n      temperature: 0.7,\n    });\n\n    return NextResponse.json(result);\n  } catch (error: any) {\n    if (error.name === 'AbortError') {\n      return NextResponse.json(null, { status: 408 });\n    }\n\n    return NextResponse.json(\n      { error: 'Failed to process AI request' },\n      { status: 500 }\n    );\n  }\n}\n",
+      "path": "components/api/ai/copilot/route.ts",
+      "target": "app/api/ai/copilot/route.ts",
+      "type": "registry:page"
+    }
+  ],
+  "name": "api-ai",
+  "registryDependencies": [
+    "use-chat-playground"
+  ],
+  "type": "registry:component"
+}

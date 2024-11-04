@@ -37,3 +37,11 @@ pnpm dev
 ```
 
 Visit http://localhost:3000/editor to see the editor in action.
+
+## Upgrade
+
+Using the CLI, you can upgrade to `editor-ai` by running:
+
+```bash
+npx shadcx@latest add editor-ai -r plate -o
+```

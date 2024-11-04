@@ -7,6 +7,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Plate } from '@udecode/plate-common/react';
 
 import { useCreateEditor } from '@/registry/default/block/editor-ai/components/editor/use-create-editor';
+import { SettingsDialog } from '@/registry/default/components/editor/use-chat';
 import { CommentsPopover } from '@/registry/default/plate-ui/comments-popover';
 import { CursorOverlay } from '@/registry/default/plate-ui/cursor-overlay';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
@@ -42,6 +43,8 @@ export function PlateEditor() {
 
           <CursorOverlay containerRef={containerRef} />
         </EditorContainer>
+
+        <SettingsDialog />
       </Plate>
     </DndProvider>
   );

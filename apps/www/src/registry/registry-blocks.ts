@@ -67,6 +67,7 @@ export const blocks: Registry = [
     ],
     name: 'editor-ai',
     registryDependencies: [
+      'api-ai',
       'plate-types',
       'ai-plugins',
       'autoformat-plugin',

@@ -39,7 +39,11 @@ const plugins: Registry = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-ai', '@udecode/plate-markdown'],
+    dependencies: [
+      '@udecode/plate-ai',
+      '@udecode/plate-markdown',
+      '@faker-js/faker',
+    ],
     files: ['components/editor/plugins/copilot-plugins.tsx'],
     name: 'copilot-plugins',
     registryDependencies: ['ghost-text'],
@@ -49,6 +53,36 @@ const plugins: Registry = [
 
 export const components: Registry = [
   ...plugins,
+  {
+    dependencies: ['@udecode/plate-ai', 'ai', '@faker-js/faker'],
+    files: [
+      {
+        path: 'components/editor/use-chat.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'use-chat',
+    registryDependencies: ['button', 'dialog', 'input', 'command', 'popover'],
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['@ai-sdk/openai', 'ai'],
+    files: [
+      {
+        path: 'components/api/ai/command/route.ts',
+        target: 'app/api/ai/command/route.ts',
+        type: 'registry:page',
+      },
+      {
+        path: 'components/api/ai/copilot/route.ts',
+        target: 'app/api/ai/copilot/route.ts',
+        type: 'registry:page',
+      },
+    ],
+    name: 'api-ai',
+    registryDependencies: ['use-chat-playground'],
+    type: 'registry:component',
+  },
   {
     dependencies: [
       '@udecode/plate-callout',
