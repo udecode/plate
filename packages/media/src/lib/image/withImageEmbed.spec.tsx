@@ -4,7 +4,7 @@ import { getEditorPlugin } from '@udecode/plate-common';
 import { createSlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { ImagePlugin } from '../../react';
+import { BaseImagePlugin } from './BaseImagePlugin';
 import { withImageEmbed } from './withImageEmbed';
 
 jsx;
@@ -27,7 +27,10 @@ describe('withImageEmbed', () => {
 
   it('should insert image from the text', () => {
     const editor = withImageEmbed(
-      getEditorPlugin(createSlateEditor({ editor: input }), ImagePlugin as any)
+      getEditorPlugin(
+        createSlateEditor({ editor: input }),
+        BaseImagePlugin as any
+      )
     );
 
     const data = {

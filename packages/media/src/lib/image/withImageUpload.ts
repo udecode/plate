@@ -6,7 +6,7 @@ import {
 
 import type { ImageConfig } from './BaseImagePlugin';
 
-import { ImagePlugin } from '../../react';
+import { insertImageFromFiles } from './transforms';
 
 /**
  * Allows for pasting images from clipboard. Not yet: dragging and dropping
@@ -39,7 +39,7 @@ export const withImageUpload: ExtendEditor<ImageConfig> = ({
         return insertData(dataTransfer);
       }
 
-      editor.getTransforms(ImagePlugin).insert.imageFromFiles(files);
+      insertImageFromFiles(editor, files);
     } else {
       return insertData(dataTransfer);
     }

@@ -1,6 +1,6 @@
 import type { InsertNodesOptions, SlateEditor } from '@udecode/plate-common';
 
-import { ImagePlugin } from '../../../react';
+import { BaseImagePlugin } from '../BaseImagePlugin';
 import { insertImage } from './insertImage';
 
 export const insertImageFromFiles = (
@@ -18,7 +18,7 @@ export const insertImageFromFiles = (
           return;
         }
 
-        const uploadImage = editor.getOptions(ImagePlugin).uploadImage;
+        const uploadImage = editor.getOptions(BaseImagePlugin).uploadImage;
 
         const uploadedUrl = uploadImage
           ? await uploadImage(reader.result)
