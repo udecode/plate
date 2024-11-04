@@ -18,9 +18,9 @@
   "rsc": true,
   "style": "default",
   "tailwind": {
-    "baseColor": "neutral",
-    "config": "tailwind.config.js",
-    "css": "src/styles/globals.css",
+    "baseColor": "slate",
+    "config": "tailwind.config.ts",
+    "css": "src/app/globals.css",
     "cssVariables": true,
     "prefix": ""
   },
