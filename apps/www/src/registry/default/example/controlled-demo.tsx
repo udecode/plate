@@ -10,7 +10,7 @@ import {
 } from '@udecode/plate-common/react';
 
 import { Button } from '@/registry/default/plate-ui/button';
-import { Editor } from '@/registry/default/plate-ui/editor';
+import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 
 export default function ControlledEditorDemo() {
   const editor = usePlateEditor({
@@ -25,7 +25,9 @@ export default function ControlledEditorDemo() {
   return (
     <div>
       <Plate editor={editor}>
-        <Editor />
+        <EditorContainer>
+          <Editor />
+        </EditorContainer>
       </Plate>
 
       <div className="mt-4 flex flex-col gap-2">

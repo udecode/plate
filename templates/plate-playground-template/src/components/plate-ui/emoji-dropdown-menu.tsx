@@ -1,14 +1,16 @@
-import React from 'react';
-import { useEmojiDropdownMenuState } from '@udecode/plate-emoji/react';
+'use client';
 
-import { Icons } from '@/components/icons';
+import React from 'react';
+
+import type { EmojiDropdownMenuOptions } from '@udecode/plate-emoji/react';
+
+import { useEmojiDropdownMenuState } from '@udecode/plate-emoji/react';
+import { Smile } from 'lucide-react';
 
 import { emojiCategoryIcons, emojiSearchIcons } from './emoji-icons';
 import { EmojiPicker } from './emoji-picker';
 import { EmojiToolbarDropdown } from './emoji-toolbar-dropdown';
 import { ToolbarButton } from './toolbar';
-
-import type { EmojiDropdownMenuOptions } from '@udecode/plate-emoji/react';
 
 type EmojiDropdownMenuProps = {
   options?: EmojiDropdownMenuOptions;
@@ -25,7 +27,7 @@ export function EmojiDropdownMenu({
     <EmojiToolbarDropdown
       control={
         <ToolbarButton pressed={isOpen} tooltip="Emoji" isDropdown {...props}>
-          <Icons.emoji className="size-4" />
+          <Smile />
         </ToolbarButton>
       }
       isOpen={isOpen}

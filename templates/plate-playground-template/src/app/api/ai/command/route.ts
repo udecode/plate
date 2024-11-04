@@ -1,15 +1,15 @@
-import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
 import { createOpenAI } from '@ai-sdk/openai';
 import { convertToCoreMessages, streamText } from 'ai';
-
-import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
   const {
-    messages,
-    system,
     apiKey: key,
+    messages,
     model = 'gpt-4o-mini',
+    system,
   } = await req.json();
 
   const apiKey = key || process.env.OPENAI_API_KEY;

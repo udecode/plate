@@ -641,46 +641,22 @@ export const examples: Registry = [
   },
   {
     doc: {
-      title: 'Ghost',
+      title: 'Full Width',
     },
-    files: ['example/editor-ghost.tsx'],
-    name: 'editor-ghost',
+    files: ['example/editor-full-width.tsx'],
+    name: 'editor-full-width',
     registryDependencies: [],
     type: 'registry:example',
   },
   {
     doc: {
-      title: 'With Label',
+      title: 'AI Chat',
     },
-    files: ['example/editor-label.tsx'],
-    name: 'editor-label',
+    files: ['example/editor-ai-chat.tsx'],
+    name: 'editor-ai-chat',
     registryDependencies: [],
     type: 'registry:example',
   },
-  {
-    doc: {
-      title: 'With Text',
-    },
-    files: ['example/editor-text.tsx'],
-    name: 'editor-text',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  {
-    doc: {
-      title: 'With Button',
-    },
-    files: ['example/editor-button.tsx'],
-    name: 'editor-button',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  // {
-  //   files: ['example/editor-form.tsx'],
-  //   name: 'editor-form',
-  //   registryDependencies: [],
-  //   type: 'registry:example',
-  // },
   {
     files: ['example/basic-editor-default-demo.tsx'],
     name: 'basic-editor-default-demo',

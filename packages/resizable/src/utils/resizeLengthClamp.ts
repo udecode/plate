@@ -37,11 +37,11 @@ export const resizeLengthClamp = <T extends ResizeLength>(
   });
 
   switch (typeof length) {
-    case 'string': {
-      return resizeLengthToRelative(clampedStaticLength, parentLength) as T;
-    }
     case 'number': {
       return clampedStaticLength as T;
+    }
+    case 'string': {
+      return resizeLengthToRelative(clampedStaticLength, parentLength) as T;
     }
 
     default: {

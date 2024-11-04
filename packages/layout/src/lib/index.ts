@@ -3,7 +3,7 @@
  */
 
 export * from './BaseColumnPlugin';
-export * from './types';
+export type * from './types';
 export * from './withColumn';
 export * from './normalizers/index';
 export * from './transforms/index';

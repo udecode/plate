@@ -8,5 +8,5 @@ export * from './generateSrcAndSrcSet';
 export * from './getInProgressUploads';
 export * from './getSaveValue';
 export * from './handlers';
-export * from './types';
+export type * from './types';
 export * from './uploadFiles';

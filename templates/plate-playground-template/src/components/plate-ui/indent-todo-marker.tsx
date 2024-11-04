@@ -1,3 +1,7 @@
+'use client';
+
+import type { PlateRenderElementProps } from '@udecode/plate-common/react';
+
 import { cn } from '@udecode/cn';
 import {
   useIndentTodoListElement,
@@ -5,8 +9,6 @@ import {
 } from '@udecode/plate-indent-list/react';
 
 import { Checkbox } from './checkbox';
-
-import type { PlateRenderElementProps } from '@udecode/plate-common/react';
 
 export const TodoMarker = ({
   element,

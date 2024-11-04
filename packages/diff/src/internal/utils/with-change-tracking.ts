@@ -76,23 +76,23 @@ const applyWithChangeTracking = <E extends BaseEditor>(
 
         break;
       }
-      case 'remove_text': {
-        applyRemoveText(editor, apply, op);
-
-        break;
-      }
       case 'merge_node': {
         applyMergeNode(editor, apply, op);
 
         break;
       }
-      case 'split_node': {
-        applySplitNode(editor, apply, op);
+      case 'remove_text': {
+        applyRemoveText(editor, apply, op);
 
         break;
       }
       case 'set_node': {
         applySetNode(editor, apply, op);
+
+        break;
+      }
+      case 'split_node': {
+        applySplitNode(editor, apply, op);
 
         break;
       }

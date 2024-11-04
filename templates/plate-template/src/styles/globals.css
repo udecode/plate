@@ -62,4 +62,24 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  h1 {
+    @apply text-3xl font-semibold tracking-tight lg:text-4xl mt-6 mb-4;
+  }
+  
+  h2 {
+    @apply text-2xl font-semibold tracking-tight mt-6 mb-4;
+  }
+
+  h3 {
+    @apply text-xl font-semibold tracking-tight mt-6 mb-4;
+  }
+
+  p {
+    @apply mb-4;
+  }
+
+  blockquote {
+    @apply mb-4 border-l-4 pl-4 text-[#636c76] border-[#d0d7de];
+  }
 }

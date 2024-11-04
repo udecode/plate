@@ -4,4 +4,4 @@
 
 export * from './BaseMentionPlugin';
 export * from './getMentionOnSelectItem';
-export * from './types';
+export type * from './types';

@@ -1,10 +1,10 @@
 'use client';
 
-import { createContext, ReactNode, useContext, useState } from 'react';
+import { ReactNode, createContext, useContext, useState } from 'react';
 
 interface Model {
-  value: string;
   label: string;
+  value: string;
 }
 
 interface OpenAIContextType {
@@ -15,12 +15,12 @@ interface OpenAIContextType {
 }
 
 export const models: Model[] = [
-  { value: 'gpt-4o-mini', label: 'gpt-4o-mini' },
-  { value: 'gpt-4o', label: 'gpt-4o' },
-  { value: 'gpt-4-turbo', label: 'gpt-4-turbo' },
-  { value: 'gpt-4', label: 'gpt-4' },
-  { value: 'gpt-3.5-turbo', label: 'gpt-3.5-turbo' },
-  { value: 'gpt-3.5-turbo-instruct', label: 'gpt-3.5-turbo-instruct' },
+  { label: 'gpt-4o-mini', value: 'gpt-4o-mini' },
+  { label: 'gpt-4o', value: 'gpt-4o' },
+  { label: 'gpt-4-turbo', value: 'gpt-4-turbo' },
+  { label: 'gpt-4', value: 'gpt-4' },
+  { label: 'gpt-3.5-turbo', value: 'gpt-3.5-turbo' },
+  { label: 'gpt-3.5-turbo-instruct', value: 'gpt-3.5-turbo-instruct' },
 ];
 
 const OpenAIContext = createContext<OpenAIContextType | undefined>(undefined);

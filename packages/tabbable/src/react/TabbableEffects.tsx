@@ -113,16 +113,16 @@ export function TabbableEffects() {
         event.preventDefault();
 
         switch (tabDestination.type) {
+          case 'dom-node': {
+            tabDestination.domNode.focus();
+
+            break;
+          }
           case 'path': {
             focusEditor(editor, {
               anchor: { offset: 0, path: tabDestination.path },
               focus: { offset: 0, path: tabDestination.path },
             });
-
-            break;
-          }
-          case 'dom-node': {
-            tabDestination.domNode.focus();
 
             break;
           }

@@ -3,5 +3,5 @@
  */
 
 export * from './cleanDocx';
-export * from './types';
+export type * from './types';
 export * from './utils/index';

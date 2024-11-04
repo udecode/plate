@@ -1,9 +1,12 @@
+'use client';
+
 import { memo, useCallback } from 'react';
-import { cn } from '@udecode/cn';
-import { EmojiSettings } from '@udecode/plate-emoji';
 
 import type { Emoji, GridRow } from '@udecode/plate-emoji';
 import type { UseEmojiPickerType } from '@udecode/plate-emoji/react';
+
+import { cn } from '@udecode/cn';
+import { EmojiSettings } from '@udecode/plate-emoji';
 
 export type EmojiPickerContentProps = Pick<
   UseEmojiPickerType,
@@ -46,7 +49,7 @@ const Button = memo(
           className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100"
           aria-hidden="true"
         />
-        <span style={{ position: 'relative' }} data-emoji-set="native">
+        <span className="relative" data-emoji-set="native">
           {emoji.skins[0].native}
         </span>
       </button>

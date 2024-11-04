@@ -1,7 +1,6 @@
-import { useEditorRef } from '@udecode/plate-common/react';
-
 import type React from 'react';
-import type { useMyEditor } from '@/components/plate-editor';
+
+import type { useCreateEditor } from '@/components/plate-editor';
 import type { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import type {
   CodeBlockPlugin,
@@ -41,6 +40,8 @@ import type {
 } from '@udecode/plate-table/react';
 import type { TToggleElement } from '@udecode/plate-toggle';
 import type { TogglePlugin } from '@udecode/plate-toggle/react';
+
+import { useEditorRef } from '@udecode/plate-common/react';
 
 /** Text */
 
@@ -268,6 +269,6 @@ export type MyRootBlock =
 
 export type MyValue = MyRootBlock[];
 
-export type MyEditor = ReturnType<typeof useMyEditor>;
+export type MyEditor = ReturnType<typeof useCreateEditor>;
 
 export const useMyEditorRef = () => useEditorRef<MyEditor>();

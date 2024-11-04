@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
+
 import { cn } from '@udecode/cn';
 import { CopilotPlugin } from '@udecode/plate-ai/react';
 import { useEditorPlugin } from '@udecode/plate-common/react';
@@ -13,6 +13,7 @@ import {
   EyeOff,
   Settings,
 } from 'lucide-react';
+import Link from 'next/link';
 
 import { Button } from '@/components/plate-ui/button';
 import {
@@ -41,7 +42,7 @@ import {
 import { models, useOpenAI } from './openai-context';
 
 export function SettingsDialog() {
-  const { apiKey, setApiKey, model, setModel } = useOpenAI();
+  const { apiKey, model, setApiKey, setModel } = useOpenAI();
   const [tempKey, setTempKey] = useState(apiKey);
   const [showKey, setShowKey] = useState(false);
   const [open, setOpen] = useState(false);
@@ -70,18 +71,16 @@ export function SettingsDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
-          variant="default"
           size="icon"
+          variant="default"
           className={cn(
             'group fixed bottom-4 right-4 z-50 size-10 overflow-hidden',
             'rounded-full shadow-md hover:shadow-lg',
             'transition-all duration-300 ease-in-out hover:w-[106px]'
           )}
         >
-          <div className="flex size-full items-center justify-start">
-            <div className="flex size-10 shrink-0 items-center justify-center">
-              <Settings className="size-4" />
-            </div>
+          <div className="flex size-full items-center justify-start gap-2">
+            <Settings className="ml-1.5 size-4" />
             <span
               className={cn(
                 'whitespace-nowrap opacity-0 transition-all duration-300 ease-in-out',
@@ -100,10 +99,10 @@ export function SettingsDialog() {
           <DialogDescription>
             Enter your{' '}
             <Link
-              href="https://platform.openai.com/api-keys"
-              target="_blank"
-              rel="noreferrer"
               className="inline-flex items-center font-medium text-primary hover:underline"
+              href="https://platform.openai.com/api-keys"
+              rel="noreferrer"
+              target="_blank"
             >
               OpenAI API key
               <ArrowUpRight className="size-[14px]" />
@@ -111,22 +110,22 @@ export function SettingsDialog() {
             to use AI features.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="relative">
             <Input
-              type={showKey ? 'text' : 'password'}
+              className="pr-10"
               value={tempKey}
               onChange={(e) => setTempKey(e.target.value)}
               placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-              className="pr-10"
               data-1p-ignore
+              type={showKey ? 'text' : 'password'}
             />
             <Button
-              type="button"
-              variant="ghost"
               size="icon"
+              variant="ghost"
               className="absolute right-0 top-0 h-full"
               onClick={() => setShowKey(!showKey)}
+              type="button"
             >
               {showKey ? (
                 <EyeOff className="size-4" />
@@ -143,9 +142,9 @@ export function SettingsDialog() {
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                role="combobox"
-                aria-expanded={openModel}
                 className="w-full justify-between"
+                aria-expanded={openModel}
+                role="combobox"
               >
                 <code>{model.label}</code>
                 <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
@@ -184,7 +183,7 @@ export function SettingsDialog() {
             </PopoverContent>
           </Popover>
 
-          <Button type="submit" className="w-full">
+          <Button className="w-full" type="submit">
             Save
           </Button>
         </form>

@@ -9,6 +9,7 @@ export const uiComponents: Registry = [
       '@udecode/plate-markdown',
       '@udecode/plate-selection',
       'ai',
+      '@faker-js/faker',
     ],
     doc: {
       description: 'A menu for AI-powered content generation and insertion.',
@@ -155,7 +156,7 @@ export const uiComponents: Registry = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@udecode/plate-comments/react'],
+    dependencies: ['@udecode/plate-comments'],
     doc: {
       description: 'A toolbar button for adding inline comments.',
       docs: [
@@ -287,10 +288,8 @@ import { withDraggables } from './withDraggables';`,
       examples: [
         'editor-default',
         'editor-disabled',
-        'editor-ghost',
-        'editor-label',
-        'editor-text',
-        'editor-button',
+        'editor-full-width',
+        'editor-ai-chat',
       ],
     },
     files: ['plate-ui/editor.tsx'],

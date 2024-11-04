@@ -48,7 +48,6 @@ export const getNextWord: GetNextWord = ({ text }) => {
   } else {
     // For non-CJK text (including mixed content), match until space or CJK char
     const match =
-      // eslint-disable-next-line regexp/no-unused-capturing-group
       /^(\s*\S+?)(?=[\s\u1100-\u11FF\u3040-\u30FF\u3400-\u4DBF\u4E00-\u9FFF\uAC00-\uD7AF\uF900-\uFAFF]|$)/.exec(
         text
       );

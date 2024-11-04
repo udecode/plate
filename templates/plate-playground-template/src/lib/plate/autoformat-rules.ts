@@ -1,3 +1,10 @@
+import type {
+  AutoformatBlockRule,
+  AutoformatRule,
+} from '@udecode/plate-autoformat';
+import type { SlateEditor } from '@udecode/plate-common';
+import type { TTodoListItemElement } from '@udecode/plate-list';
+
 import {
   autoformatArrow,
   autoformatLegal,
@@ -45,14 +52,7 @@ import {
   NumberedListPlugin,
   TodoListPlugin,
 } from '@udecode/plate-list/react';
-import { openNextToggles, TogglePlugin } from '@udecode/plate-toggle/react';
-
-import type {
-  AutoformatBlockRule,
-  AutoformatRule,
-} from '@udecode/plate-autoformat';
-import type { SlateEditor } from '@udecode/plate-common';
-import type { TTodoListItemElement } from '@udecode/plate-list';
+import { TogglePlugin, openNextToggles } from '@udecode/plate-toggle/react';
 
 export const preFormat: AutoformatBlockRule['preFormat'] = (editor) =>
   unwrapList(editor);
