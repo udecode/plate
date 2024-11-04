@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { type ReactNode, createContext, useContext, useState } from 'react';
 
+import { faker } from '@faker-js/faker';
 import { cn } from '@udecode/cn';
 import { CopilotPlugin } from '@udecode/plate-ai/react';
 import { useEditorPlugin } from '@udecode/plate-common/react';
+import { useChat as useBaseChat } from 'ai/react';
 import {
   ArrowUpRight,
   Check,
@@ -39,7 +41,116 @@ import {
   PopoverTrigger,
 } from '@/components/plate-ui/popover';
 
-import { models, useOpenAI } from './openai-context';
+export const useChat = () => {
+  return useBaseChat({
+    id: 'editor',
+    api: '/api/ai/command',
+    body: {
+      apiKey: useOpenAI().apiKey,
+      model: useOpenAI().model.value,
+    },
+    fetch: async (input, init) => {
+      try {
+        return await fetch(input, init);
+      } catch (error) {
+        // Mock the API response. Remove it when you implement the route /api/ai
+        await new Promise((resolve) => setTimeout(resolve, 400));
+
+        const stream = fakeStreamText();
+
+        return new Response(stream, {
+          headers: {
+            Connection: 'keep-alive',
+            'Content-Type': 'text/plain',
+          },
+        });
+      }
+    },
+  });
+};
+
+// Used for testing. Remove it after implementing useChat api.
+const fakeStreamText = ({
+  chunkCount = 10,
+  streamProtocol = 'data',
+}: {
+  chunkCount?: number;
+  streamProtocol?: 'data' | 'text';
+} = {}) => {
+  const chunks = Array.from({ length: chunkCount }, () => ({
+    delay: faker.number.int({ max: 150, min: 50 }),
+    texts: faker.lorem.words({ max: 3, min: 1 }) + ' ',
+  }));
+  const encoder = new TextEncoder();
+
+  return new ReadableStream({
+    async start(controller) {
+      for (const chunk of chunks) {
+        await new Promise((resolve) => setTimeout(resolve, chunk.delay));
+
+        if (streamProtocol === 'text') {
+          controller.enqueue(encoder.encode(chunk.texts));
+        } else {
+          controller.enqueue(
+            encoder.encode(`0:${JSON.stringify(chunk.texts)}\n`)
+          );
+        }
+      }
+
+      if (streamProtocol === 'data') {
+        controller.enqueue(
+          `d:{"finishReason":"stop","usage":{"promptTokens":0,"completionTokens":${chunks.length}}}\n`
+        );
+      }
+
+      controller.close();
+    },
+  });
+};
+
+interface Model {
+  label: string;
+  value: string;
+}
+
+interface OpenAIContextType {
+  apiKey: string;
+  model: Model;
+  setApiKey: (key: string) => void;
+  setModel: (model: Model) => void;
+}
+
+export const models: Model[] = [
+  { label: 'gpt-4o-mini', value: 'gpt-4o-mini' },
+  { label: 'gpt-4o', value: 'gpt-4o' },
+  { label: 'gpt-4-turbo', value: 'gpt-4-turbo' },
+  { label: 'gpt-4', value: 'gpt-4' },
+  { label: 'gpt-3.5-turbo', value: 'gpt-3.5-turbo' },
+  { label: 'gpt-3.5-turbo-instruct', value: 'gpt-3.5-turbo-instruct' },
+];
+
+const OpenAIContext = createContext<OpenAIContextType | undefined>(undefined);
+
+export function OpenAIProvider({ children }: { children: ReactNode }) {
+  const [apiKey, setApiKey] = useState('');
+  const [model, setModel] = useState<Model>(models[0]);
+
+  return (
+    <OpenAIContext.Provider value={{ apiKey, model, setApiKey, setModel }}>
+      {children}
+    </OpenAIContext.Provider>
+  );
+}
+
+export function useOpenAI() {
+  const context = useContext(OpenAIContext);
+
+  if (context === undefined) {
+    throw new Error('useOpenAI must be used within an OpenAIProvider');
+  }
+
+  return context;
+}
 
 export function SettingsDialog() {
   const { apiKey, model, setApiKey, setModel } = useOpenAI();
@@ -141,6 +252,7 @@ export function SettingsDialog() {
           <Popover open={openModel} onOpenChange={setOpenModel}>
             <PopoverTrigger asChild>
               <Button
+                size="lg"
                 variant="outline"
                 className="w-full justify-between"
                 aria-expanded={openModel}
@@ -183,7 +295,7 @@ export function SettingsDialog() {
             </PopoverContent>
           </Popover>
 
-          <Button className="w-full" type="submit">
+          <Button size="lg" className="w-full" type="submit">
             Save
           </Button>
         </form>

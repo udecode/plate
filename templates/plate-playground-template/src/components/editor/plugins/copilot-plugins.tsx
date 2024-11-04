@@ -1,10 +1,11 @@
 import type { TElement } from '@udecode/plate-common';
 
+import { faker } from '@faker-js/faker';
 import { CopilotPlugin } from '@udecode/plate-ai/react';
 import { getAncestorNode } from '@udecode/plate-common';
 import { serializeMdNodes, stripMarkdown } from '@udecode/plate-markdown';
 
-import { GhostText } from '../plate-ui/ghost-text';
+import { GhostText } from '@/components/plate-ui/ghost-text';
 
 export const copilotPlugins = [
   CopilotPlugin.configure(({ api }) => ({
@@ -24,17 +25,9 @@ export const copilotPlugins = [
   - CRITICAL: Avoid starting a new block. Do not use block formatting like >, #, 1., 2., -, etc. The suggestion should continue in the same block as the context.
   - If no context is provided or you can't generate a continuation, return "0" without explanation.`,
         },
-        onError: (error) => {
-          let text = '';
-
-          if (error.message.includes('API key')) {
-            text = 'Set your OpenAI API key for real AI suggestions';
-          } else {
-            text = 'Try with a valid OpenAI API key for real AI suggestions';
-          }
-
+        onError: () => {
           api.copilot.setBlockSuggestion({
-            text: stripMarkdown(text),
+            text: stripMarkdown(faker.lorem.sentence()),
           });
         },
         onFinish: (_, completion) => {

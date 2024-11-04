@@ -36,20 +36,20 @@ import { MarkdownPlugin } from '@udecode/plate-markdown';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 import Prism from 'prismjs';
 
-import { AIMenu } from '../plate-ui/ai-menu';
-import { BlockquoteElement } from '../plate-ui/blockquote-element';
-import { CodeBlockElement } from '../plate-ui/code-block-element';
-import { CodeLeaf } from '../plate-ui/code-leaf';
-import { CodeLineElement } from '../plate-ui/code-line-element';
-import { CodeSyntaxLeaf } from '../plate-ui/code-syntax-leaf';
-import { SelectionOverlayPlugin } from '../plate-ui/cursor-overlay';
-import { HeadingElement } from '../plate-ui/heading-element';
-import { HrElement } from '../plate-ui/hr-element';
-import { LinkElement } from '../plate-ui/link-element';
-import { LinkFloatingToolbar } from '../plate-ui/link-floating-toolbar';
-import { ParagraphElement } from '../plate-ui/paragraph-element';
+import { AIMenu } from '@/components/plate-ui/ai-menu';
+import { BlockquoteElement } from '@/components/plate-ui/blockquote-element';
+import { CodeBlockElement } from '@/components/plate-ui/code-block-element';
+import { CodeLeaf } from '@/components/plate-ui/code-leaf';
+import { CodeLineElement } from '@/components/plate-ui/code-line-element';
+import { CodeSyntaxLeaf } from '@/components/plate-ui/code-syntax-leaf';
+import { SelectionOverlayPlugin } from '@/components/plate-ui/cursor-overlay';
+import { HeadingElement } from '@/components/plate-ui/heading-element';
+import { HrElement } from '@/components/plate-ui/hr-element';
+import { LinkElement } from '@/components/plate-ui/link-element';
+import { LinkFloatingToolbar } from '@/components/plate-ui/link-floating-toolbar';
+import { ParagraphElement } from '@/components/plate-ui/paragraph-element';
 
-export const createAIEditor = () => {
+const createAIEditor = () => {
   const editor = createPlateEditor({
     id: 'ai',
     override: {

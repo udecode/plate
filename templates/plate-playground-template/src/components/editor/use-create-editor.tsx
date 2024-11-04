@@ -1,8 +1,4 @@
-'use client';
-
-import React, { useRef } from 'react';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
+import React from 'react';
 
 import { withProps } from '@udecode/cn';
 import { AIPlugin } from '@udecode/plate-ai/react';
@@ -37,7 +33,6 @@ import {
 } from '@udecode/plate-common';
 import {
   ParagraphPlugin,
-  Plate,
   PlateElement,
   PlateLeaf,
   usePlateEditor,
@@ -97,30 +92,32 @@ import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 import Prism from 'prismjs';
 
+import { aiPlugins } from '@/components/editor/plugins/ai-plugins';
+import { autoformatPlugin } from '@/components/editor/plugins/autoformat-plugin';
+import { copilotPlugins } from '@/components/editor/plugins/copilot-plugins';
+import { AILeaf } from '@/components/plate-ui/ai-leaf';
+import { BlockContextMenu } from '@/components/plate-ui/block-context-menu';
 import { BlockquoteElement } from '@/components/plate-ui/blockquote-element';
 import { CodeBlockElement } from '@/components/plate-ui/code-block-element';
 import { CodeLeaf } from '@/components/plate-ui/code-leaf';
 import { CodeLineElement } from '@/components/plate-ui/code-line-element';
 import { CodeSyntaxLeaf } from '@/components/plate-ui/code-syntax-leaf';
+import { ColumnElement } from '@/components/plate-ui/column-element';
+import { ColumnGroupElement } from '@/components/plate-ui/column-group-element';
 import { CommentLeaf } from '@/components/plate-ui/comment-leaf';
-import { CommentsPopover } from '@/components/plate-ui/comments-popover';
-import {
-  CursorOverlay,
-  DragOverCursorPlugin,
-} from '@/components/plate-ui/cursor-overlay';
-import { Editor, EditorContainer } from '@/components/plate-ui/editor';
+import { DragOverCursorPlugin } from '@/components/plate-ui/cursor-overlay';
+import { DateElement } from '@/components/plate-ui/date-element';
 import { EmojiInputElement } from '@/components/plate-ui/emoji-input-element';
 import { ExcalidrawElement } from '@/components/plate-ui/excalidraw-element';
-import { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';
-import { FixedToolbarButtons } from '@/components/plate-ui/fixed-toolbar-buttons';
-import { FloatingToolbar } from '@/components/plate-ui/floating-toolbar';
-import { FloatingToolbarButtons } from '@/components/plate-ui/floating-toolbar-buttons';
 import { HeadingElement } from '@/components/plate-ui/heading-element';
 import { HighlightLeaf } from '@/components/plate-ui/highlight-leaf';
 import { HrElement } from '@/components/plate-ui/hr-element';
 import { ImageElement } from '@/components/plate-ui/image-element';
 import { ImagePreview } from '@/components/plate-ui/image-preview';
-import { TodoLi, TodoMarker } from '@/components/plate-ui/indent-todo-marker';
+import {
+  TodoLi,
+  TodoMarker,
+} from '@/components/plate-ui/indent-todo-marker';
 import { KbdLeaf } from '@/components/plate-ui/kbd-leaf';
 import { LinkElement } from '@/components/plate-ui/link-element';
 import { LinkFloatingToolbar } from '@/components/plate-ui/link-floating-toolbar';
@@ -130,61 +127,16 @@ import { MentionElement } from '@/components/plate-ui/mention-element';
 import { MentionInputElement } from '@/components/plate-ui/mention-input-element';
 import { ParagraphElement } from '@/components/plate-ui/paragraph-element';
 import { withPlaceholders } from '@/components/plate-ui/placeholder';
+import { SlashInputElement } from '@/components/plate-ui/slash-input-element';
 import {
   TableCellElement,
   TableCellHeaderElement,
 } from '@/components/plate-ui/table-cell-element';
 import { TableElement } from '@/components/plate-ui/table-element';
 import { TableRowElement } from '@/components/plate-ui/table-row-element';
-import { TodoListElement } from '@/components/plate-ui/todo-list-element';
+import { TocElement } from '@/components/plate-ui/toc-element';
+import { ToggleElement } from '@/components/plate-ui/toggle-element';
 import { withDraggables } from '@/components/plate-ui/with-draggables';
-import { autoformatPlugin } from '@/lib/plate/autoformat-rules';
-
-import { SettingsDialog } from './openai/settings-dialog';
-import { AILeaf } from './plate-ui/ai-leaf';
-import { BlockContextMenu } from './plate-ui/block-context-menu';
-import { ColumnElement } from './plate-ui/column-element';
-import { ColumnGroupElement } from './plate-ui/column-group-element';
-import { DateElement } from './plate-ui/date-element';
-import { SlashInputElement } from './plate-ui/slash-input-element';
-import { TocElement } from './plate-ui/toc-element';
-import { ToggleElement } from './plate-ui/toggle-element';
-import { aiPlugins } from './plugins/ai-plugins';
-import { copilotPlugins } from './plugins/copilot-plugins';
-
-export default function PlateEditor() {
-  const containerRef = useRef(null);
-
-  const editor = useCreateEditor();
-
-  return (
-    <DndProvider backend={HTML5Backend}>
-      <Plate editor={editor}>
-        <FixedToolbar>
-          <FixedToolbarButtons />
-        </FixedToolbar>
-
-        <EditorContainer
-          id="scroll_container"
-          ref={containerRef}
-          variant="demo"
-        >
-          <Editor variant="demo" />
-
-          <FloatingToolbar>
-            <FloatingToolbarButtons />
-          </FloatingToolbar>
-
-          <CommentsPopover />
-
-          <CursorOverlay containerRef={containerRef} />
-        </EditorContainer>
-
-        <SettingsDialog />
-      </Plate>
-    </DndProvider>
-  );
-}
 
 export const useCreateEditor = () => {
   return usePlateEditor({
@@ -232,7 +184,6 @@ export const useCreateEditor = () => {
           [TablePlugin.key]: TableElement,
           [TableRowPlugin.key]: TableRowElement,
           [TocPlugin.key]: TocElement,
-          [TodoListPlugin.key]: TodoListElement,
           [TogglePlugin.key]: ToggleElement,
           [UnderlinePlugin.key]: withProps(PlateLeaf, { as: 'u' }),
         })

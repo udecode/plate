@@ -17,7 +17,6 @@ module.exports = {
     },
   ],
   plugins: ['tailwindcss', 'unused-imports', 'perfectionist', 'prettier'],
-
   root: true,
   rules: {
     '@next/next/no-html-link-for-pages': 'off',

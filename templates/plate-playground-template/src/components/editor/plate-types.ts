@@ -1,13 +1,14 @@
+'use client';
+
 import type React from 'react';
 
-import type { useCreateEditor } from '@/components/plate-editor';
 import type { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import type {
   CodeBlockPlugin,
   CodeLinePlugin,
 } from '@udecode/plate-code-block/react';
 import type { TCommentText } from '@udecode/plate-comments';
-import type { ElementOf, TElement, TText } from '@udecode/plate-common';
+import type { TElement, TText } from '@udecode/plate-common';
 import type { ParagraphPlugin } from '@udecode/plate-common/react';
 import type { TExcalidrawElement } from '@udecode/plate-excalidraw';
 import type { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
@@ -40,8 +41,6 @@ import type {
 } from '@udecode/plate-table/react';
 import type { TToggleElement } from '@udecode/plate-toggle';
 import type { TogglePlugin } from '@udecode/plate-toggle/react';
-
-import { useEditorRef } from '@udecode/plate-common/react';
 
 /** Text */
 
@@ -241,10 +240,6 @@ export interface MyExcalidrawElement
 
 export type MyNestableBlock = MyParagraphElement;
 
-export type MyElement = ElementOf<MyEditor>;
-
-export type MyBlock = Exclude<MyElement, MyInlineElement>;
-
 export type MyRootBlock =
   | MyBlockquoteElement
   | MyBulletedListElement
@@ -265,10 +260,12 @@ export type MyRootBlock =
   | MyTodoListElement
   | MyToggleElement;
 
-/** Editor types */
-
 export type MyValue = MyRootBlock[];
 
-export type MyEditor = ReturnType<typeof useCreateEditor>;
+// export type MyElement = ElementOf<MyEditor>;
 
-export const useMyEditorRef = () => useEditorRef<MyEditor>();
+// export type MyBlock = Exclude<MyElement, MyInlineElement>;
+
+// export type MyEditor = ReturnType<typeof useCreateEditor>;
+
+// export const useEditor = () => useEditorRef<MyEditor>();

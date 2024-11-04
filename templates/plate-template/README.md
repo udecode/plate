@@ -5,7 +5,7 @@ A minimal template for building rich-text editors with [Plate](https://platejs.o
 ## Features
 
 - Next.js 15 App Directory
-- [Plate](https://platejs.org/) Editor
+- [Plate](https://platejs.org/) editor
 - [shadcn/ui](https://ui.shadcn.com/)
 
 ## Installation
