@@ -4,7 +4,6 @@ import React from 'react';
 
 import { cn, withRef } from '@udecode/cn';
 import { withHOC } from '@udecode/plate-common/react';
-import { useDraggable, useDraggableState } from '@udecode/plate-dnd';
 import { Image, ImagePlugin, useMediaState } from '@udecode/plate-media/react';
 import { ResizableProvider, useResizableStore } from '@udecode/plate-resizable';
 
@@ -24,10 +23,6 @@ export const ImageElement = withHOC(
       const { align = 'center', focused, readOnly, selected } = useMediaState();
 
       const width = useResizableStore().get.width();
-
-      const state = useDraggableState({ element: props.element });
-      const { isDragging } = state;
-      const { handleRef } = useDraggable(state);
 
       return (
         <MediaPopover plugin={ImagePlugin}>
@@ -49,12 +44,10 @@ export const ImageElement = withHOC(
                   options={{ direction: 'left' }}
                 />
                 <Image
-                  ref={handleRef}
                   className={cn(
                     'block w-full max-w-full cursor-pointer object-cover px-0',
                     'rounded-sm',
-                    focused && selected && 'ring-2 ring-ring ring-offset-2',
-                    isDragging && 'opacity-50'
+                    focused && selected && 'ring-2 ring-ring ring-offset-2'
                   )}
                   alt=""
                   {...nodeProps}
