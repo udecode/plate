@@ -1,7 +1,12 @@
-import { type PluginConfig, createTSlatePlugin } from '@udecode/plate-common';
+import {
+  type PluginConfig,
+  bindFirst,
+  createTSlatePlugin,
+} from '@udecode/plate-common';
 
 import type { MediaPluginOptions, TMediaElement } from '../media';
 
+import { insertImageFromFiles } from './transforms/insertImageFromFiles';
 import { withImage } from './withImage';
 
 export interface TImageElement extends TMediaElement {
@@ -38,20 +43,24 @@ export const BaseImagePlugin = createTSlatePlugin<ImageConfig>({
     isElement: true,
     isVoid: true,
   },
-}).extend(({ plugin }) => ({
-  parsers: {
-    html: {
-      deserializer: {
-        parse: ({ element }) => ({
-          type: plugin.node.type,
-          url: element.getAttribute('src'),
-        }),
-        rules: [
-          {
-            validNodeName: 'IMG',
-          },
-        ],
+})
+  .extendEditorTransforms(({ editor }) => ({
+    insertImageFromFiles: bindFirst(insertImageFromFiles, editor),
+  }))
+  .extend(({ plugin }) => ({
+    parsers: {
+      html: {
+        deserializer: {
+          parse: ({ element }) => ({
+            type: plugin.node.type,
+            url: element.getAttribute('src'),
+          }),
+          rules: [
+            {
+              validNodeName: 'IMG',
+            },
+          ],
+        },
       },
     },
-  },
-}));
+  }));

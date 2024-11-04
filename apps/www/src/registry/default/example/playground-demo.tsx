@@ -150,6 +150,9 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
         }),
         ...(id === 'list' ? [ListPlugin] : []),
         ImagePlugin.extend({
+          options: {
+            disableUploadInsert: true,
+          },
           render: { afterEditable: ImagePreview },
         }),
         MediaEmbedPlugin,
@@ -294,7 +297,20 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
         BlockMenuPlugin.configure({
           render: { aboveEditable: BlockContextMenu },
         }),
-        DndPlugin.configure({ options: { enableScroller: true } }),
+        DndPlugin.configure({
+          options: {
+            enableScroller: true,
+            onDropFiles: (editor, props) => {
+              console.log(props.dropPath, 'fj');
+
+              editor
+                .getTransforms(ImagePlugin)
+                .insertImageFromFiles(props.dragItem.files, {
+                  at: props.dropPath,
+                });
+            },
+          },
+        }),
         EmojiPlugin,
         exitBreakPlugin,
         NodeIdPlugin,
@@ -318,7 +334,7 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
         TrailingBlockPlugin.configure({
           options: { type: ParagraphPlugin.key },
         }),
-        DragOverCursorPlugin,
+        // DragOverCursorPlugin,
 
         // Collaboration
         CommentsPlugin.configure({

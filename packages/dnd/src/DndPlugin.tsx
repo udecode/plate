@@ -1,8 +1,15 @@
 import React from 'react';
 
 import type { PluginConfig } from '@udecode/plate-common';
+import type { DropTargetMonitor } from 'react-dnd';
+import type { Path } from 'slate';
 
-import { createTPlatePlugin } from '@udecode/plate-common/react';
+import {
+  type PlateEditor,
+  createTPlatePlugin,
+} from '@udecode/plate-common/react';
+
+import type { DragItemNode, FileDragItemNode } from './types';
 
 import { type ScrollerProps, DndScroller } from './components/Scroller';
 
@@ -10,10 +17,19 @@ export type DndConfig = PluginConfig<
   'dnd',
   {
     draggingId?: string | null;
-    enableFile?: boolean;
     enableScroller?: boolean;
     isDragging?: boolean;
     scrollerProps?: Partial<ScrollerProps>;
+    onDropFiles?: (
+      editor: PlateEditor,
+      props: {
+        id: string;
+        dragItem: FileDragItemNode;
+        monitor: DropTargetMonitor<DragItemNode, unknown>;
+        nodeRef: any;
+        dropPath?: Path;
+      }
+    ) => void;
   }
 >;
 
@@ -21,7 +37,6 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
   key: 'dnd',
   options: {
     draggingId: null,
-    enableFile: false,
     isDragging: false,
   },
   handlers: {

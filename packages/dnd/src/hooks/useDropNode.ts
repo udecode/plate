@@ -6,9 +6,17 @@ import {
 
 import type { PlateEditor } from '@udecode/plate-common/react';
 
-import type { DragItemNode, DropLineDirection } from '../types';
+import { Path } from 'slate';
 
-import { onDropNode } from '../transforms/onDropNode';
+import type {
+  DragItemNode,
+  DropLineDirection,
+  ElementDragItemNode,
+  FileDragItemNode,
+} from '../types';
+
+import { DndPlugin } from '../DndPlugin';
+import { getDropPath, onDropNode } from '../transforms/onDropNode';
 import { onHoverNode } from '../transforms/onHoverNode';
 
 export interface UseDropNodeOptions
@@ -77,6 +85,34 @@ export const useDropNode = (
       isOver: monitor.isOver(),
     }),
     drop: (dragItem, monitor) => {
+      // Don't call onDropNode if this is a file drop
+
+      if (!(dragItem as ElementDragItemNode).id) {
+        const result = getDropPath(editor, {
+          id,
+          dragItem: dragItem as any,
+          monitor,
+          nodeRef,
+        });
+
+        const onDropFiles = editor.getOptions(DndPlugin).onDropFiles;
+
+        if (!result || !onDropFiles) return;
+
+        //FIXME
+        const isFirstPath = Path.equals(result.to, [0]);
+
+        const dropPath = isFirstPath ? [0] : Path.previous(result.to);
+
+        return onDropFiles(editor, {
+          id,
+          dragItem: dragItem as FileDragItemNode,
+          dropPath: dropPath,
+          monitor,
+          nodeRef,
+        });
+      }
+
       const handled =
         !!onDropHandler &&
         onDropHandler(editor, {
@@ -88,7 +124,12 @@ export const useDropNode = (
 
       if (handled) return;
 
-      onDropNode(editor, { id, dragItem, monitor, nodeRef });
+      onDropNode(editor, {
+        id,
+        dragItem: dragItem as ElementDragItemNode,
+        monitor,
+        nodeRef,
+      });
     },
     hover(item: DragItemNode, monitor: DropTargetMonitor) {
       onHoverNode(editor, {
