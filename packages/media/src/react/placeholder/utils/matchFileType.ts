@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/only-throw-error */
 import type { AllowedFileType, FileRouterInputKey } from '../internal/mimes';
 
 import { lookup } from '../internal/utils';

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/only-throw-error */
 import type { uploadConfig } from '../PlaceholderPlugin';
 import type { AllowedFileType } from '../internal/mimes';
 

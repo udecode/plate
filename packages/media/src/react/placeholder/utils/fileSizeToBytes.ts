@@ -15,6 +15,7 @@ export const fileSizeToBytes = (fileSize: FileSize, file: File): number => {
   const match = fileSize.match(regex);
 
   if (!match) {
+    // eslint-disable-next-line @typescript-eslint/only-throw-error
     throw createUploadError(UploadErrorCode.InvalidFileSize, {
       invalidateFiles: [file],
     });
