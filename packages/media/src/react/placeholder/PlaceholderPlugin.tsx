@@ -33,8 +33,7 @@ export const PlaceholderPlugin = toTPlatePlugin<
       uploadingFiles: Record<string, File>;
       // Whether multiple files of the same type can be uploaded.
       multiple?: boolean;
-      uploadCode?: string | null;
-      uploadError?: UploadError;
+      uploadError?: UploadError | null;
       uploadMaxFileCount?: number;
     },
     { placeholder: PlaceholderApi }
@@ -42,7 +41,6 @@ export const PlaceholderPlugin = toTPlatePlugin<
 >(BasePlaceholderPlugin, {
   options: {
     multiple: true,
-    uploadCode: null,
     uploadConfig: {
       audio: {
         maxFileCount: 1,
@@ -52,35 +50,36 @@ export const PlaceholderPlugin = toTPlatePlugin<
       },
       blob: {
         maxFileCount: 1,
-        maxFileSize: '256MB',
+        maxFileSize: '8MB',
         mediaType: FilePlugin.key,
         minFileCount: 1,
       },
       image: {
-        maxFileCount: 1,
-        maxFileSize: '2MB',
+        maxFileCount: 3,
+        maxFileSize: '4MB',
         mediaType: ImagePlugin.key,
         minFileCount: 1,
       },
       pdf: {
         maxFileCount: 1,
-        maxFileSize: '8MB',
+        maxFileSize: '4MB',
         mediaType: FilePlugin.key,
         minFileCount: 1,
       },
       text: {
         maxFileCount: 1,
-        maxFileSize: '256MB',
+        maxFileSize: '64KB',
         mediaType: FilePlugin.key,
         minFileCount: 1,
       },
       video: {
         maxFileCount: 1,
-        maxFileSize: '256MB',
+        maxFileSize: '16MB',
         mediaType: VideoPlugin.key,
         minFileCount: 1,
       },
     },
+    uploadError: null,
     uploadMaxFileCount: 5,
     uploadingFiles: {},
   },
