@@ -301,12 +301,11 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
           options: {
             enableScroller: true,
             onDropFiles: (editor, props) => {
-              console.log(props.dropPath, 'fj');
-
               editor
                 .getTransforms(ImagePlugin)
                 .insertImageFromFiles(props.dragItem.files, {
                   at: props.dropPath,
+                  nextBlock: false,
                 });
             },
           },
@@ -334,7 +333,7 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
         TrailingBlockPlugin.configure({
           options: { type: ParagraphPlugin.key },
         }),
-        // DragOverCursorPlugin,
+        DragOverCursorPlugin,
 
         // Collaboration
         CommentsPlugin.configure({

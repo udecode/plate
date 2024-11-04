@@ -6,8 +6,6 @@ import {
 
 import type { PlateEditor } from '@udecode/plate-common/react';
 
-import { Path } from 'slate';
-
 import type {
   DragItemNode,
   DropLineDirection,
@@ -99,15 +97,10 @@ export const useDropNode = (
 
         if (!result || !onDropFiles) return;
 
-        //FIXME
-        const isFirstPath = Path.equals(result.to, [0]);
-
-        const dropPath = isFirstPath ? [0] : Path.previous(result.to);
-
         return onDropFiles(editor, {
           id,
           dragItem: dragItem as FileDragItemNode,
-          dropPath: dropPath,
+          dropPath: result.to,
           monitor,
           nodeRef,
         });
