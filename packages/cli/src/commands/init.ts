@@ -136,12 +136,10 @@ export async function runInit(
         // Updating top-level config
         config = await promptForMinimalConfig(projectConfig, options);
       } else {
+        const { url, ...rest } = options;
         newConfig = await promptForMinimalConfig(
           await getDefaultConfig(projectConfig),
-          {
-            ...options,
-            url: '',
-          }
+          { ...rest }
         );
         const res = await promptForNestedRegistryConfig(newConfig, options);
         config = res.config;
