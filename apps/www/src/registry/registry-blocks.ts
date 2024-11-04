@@ -114,7 +114,6 @@ export const blocks: Registry = [
       'table-element',
       'table-row-element',
       'toc-element',
-      'todo-list-element',
       'toggle-element',
     ],
     type: 'registry:block',

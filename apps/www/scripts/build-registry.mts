@@ -410,10 +410,6 @@ async function buildStyles(registry: Registry) {
             if (!target || target === "") {
               const fileName = file.path.split("/").pop()
               
-              if (file.type === 'registry:component') {
-                console.log(file.path)
-              }
-              
               if (file.type === "registry:component") {
                 target = file.path
               }

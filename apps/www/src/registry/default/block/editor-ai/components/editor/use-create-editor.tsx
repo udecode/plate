@@ -135,7 +135,6 @@ import {
 import { TableElement } from '@/registry/default/plate-ui/table-element';
 import { TableRowElement } from '@/registry/default/plate-ui/table-row-element';
 import { TocElement } from '@/registry/default/plate-ui/toc-element';
-import { TodoListElement } from '@/registry/default/plate-ui/todo-list-element';
 import { ToggleElement } from '@/registry/default/plate-ui/toggle-element';
 import { withDraggables } from '@/registry/default/plate-ui/with-draggables';
 
@@ -185,7 +184,6 @@ export const useCreateEditor = () => {
           [TablePlugin.key]: TableElement,
           [TableRowPlugin.key]: TableRowElement,
           [TocPlugin.key]: TocElement,
-          [TodoListPlugin.key]: TodoListElement,
           [TogglePlugin.key]: ToggleElement,
           [UnderlinePlugin.key]: withProps(PlateLeaf, { as: 'u' }),
         })

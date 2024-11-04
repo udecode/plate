@@ -1061,6 +1061,18 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
+    "plate-types": {
+      name: "plate-types",
+      description: "",
+      type: "registry:component",
+      registryDependencies: undefined,
+      files: ["registry/default/components/editor/plate-types.ts"],
+      component: React.lazy(() => import("@/registry/default/components/editor/plate-types.ts")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
     "ai-demo": {
       name: "ai-demo",
       description: "",
@@ -1749,7 +1761,7 @@ export const Index: Record<string, any> = {
       name: "editor-ai",
       description: "An AI editor.",
       type: "registry:block",
-      registryDependencies: ["plate-types","ai-plugins","autoformat-plugin","copilot-plugins","ai-menu","ai-leaf","ghost-text","comments-popover","cursor-overlay","editor","fixed-toolbar","fixed-toolbar-buttons","floating-toolbar","floating-toolbar-buttons","block-context-menu","blockquote-element","code-block-element","code-leaf","code-line-element","code-syntax-leaf","column-element","column-group-element","comment-leaf","date-element","draggable","emoji-input-element","excalidraw-element","heading-element","highlight-leaf","hr-element","image-element","image-preview","indent-todo-marker","kbd-leaf","link-element","link-floating-toolbar","list-element","media-embed-element","mention-element","mention-input-element","paragraph-element","placeholder","slash-input-element","table-cell-element","table-element","table-row-element","toc-element","todo-list-element","toggle-element"],
+      registryDependencies: ["plate-types","ai-plugins","autoformat-plugin","copilot-plugins","ai-menu","ai-leaf","ghost-text","comments-popover","cursor-overlay","editor","fixed-toolbar","fixed-toolbar-buttons","floating-toolbar","floating-toolbar-buttons","block-context-menu","blockquote-element","code-block-element","code-leaf","code-line-element","code-syntax-leaf","column-element","column-group-element","comment-leaf","date-element","draggable","emoji-input-element","excalidraw-element","heading-element","highlight-leaf","hr-element","image-element","image-preview","indent-todo-marker","kbd-leaf","link-element","link-floating-toolbar","list-element","media-embed-element","mention-element","mention-input-element","paragraph-element","placeholder","slash-input-element","table-cell-element","table-element","table-row-element","toc-element","toggle-element"],
       files: ["registry/default/block/editor-ai/page.tsx","registry/default/block/editor-ai/components/editor/plate-editor.tsx","registry/default/block/editor-ai/components/editor/use-create-editor.tsx"],
       component: React.lazy(() => import("@/registry/default/block/editor-ai/page.tsx")),
       source: "src/__registry__/default/block/editor-ai/page.tsx",
