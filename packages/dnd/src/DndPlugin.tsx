@@ -21,8 +21,8 @@ export type DndConfig = PluginConfig<
     isDragging?: boolean;
     scrollerProps?: Partial<ScrollerProps>;
     onDropFiles?: (
-      editor: PlateEditor,
       props: {
+        editor: PlateEditor;
         id: string;
         dragItem: FileDragItemNode;
         monitor: DropTargetMonitor<DragItemNode, unknown>;
