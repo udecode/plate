@@ -120,6 +120,10 @@ export const blocks: Registry = [
   },
   {
     category: 'Editors',
+    dependencies: [
+      '@udecode/plate-basic-elements',
+      '@udecode/plate-basic-marks',
+    ],
     files: [
       {
         path: 'block/editor-basic/page.tsx',
@@ -129,6 +133,11 @@ export const blocks: Registry = [
       {
         path: 'block/editor-basic/components/editor/plate-editor.tsx',
         target: 'components/editor/plate-editor.tsx',
+        type: 'registry:component',
+      },
+      {
+        path: 'block/editor-basic/components/editor/use-create-editor.tsx',
+        target: 'components/editor/use-create-editor.tsx',
         type: 'registry:component',
       },
     ],

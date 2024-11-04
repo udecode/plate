@@ -1774,7 +1774,7 @@ export const Index: Record<string, any> = {
       description: "A simple editor.",
       type: "registry:block",
       registryDependencies: ["editor"],
-      files: ["registry/default/block/editor-basic/page.tsx","registry/default/block/editor-basic/components/editor/plate-editor.tsx"],
+      files: ["registry/default/block/editor-basic/page.tsx","registry/default/block/editor-basic/components/editor/plate-editor.tsx","registry/default/block/editor-basic/components/editor/use-create-editor.tsx"],
       component: React.lazy(() => import("@/registry/default/block/editor-basic/page.tsx")),
       source: "src/__registry__/default/block/editor-basic/page.tsx",
       category: "Editors",

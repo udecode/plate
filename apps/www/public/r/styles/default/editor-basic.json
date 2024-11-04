@@ -1,4 +1,8 @@
 {
+  "dependencies": [
+    "@udecode/plate-basic-elements",
+    "@udecode/plate-basic-marks"
+  ],
   "description": "A simple editor.",
   "files": [
     {
@@ -11,6 +15,12 @@
       "content": "'use client';\n\nimport { Plate } from '@udecode/plate-common/react';\n\nimport { useCreateEditor } from '@/components/editor/use-create-editor';\nimport { Editor, EditorContainer } from '@/components/plate-ui/editor';\n\nexport function PlateEditor() {\n  const editor = useCreateEditor();\n\n  return (\n    <Plate editor={editor}>\n      <EditorContainer id=\"scroll_container\" variant=\"demo\">\n        <Editor variant=\"demo\" placeholder=\"Type...\" />\n      </EditorContainer>\n    </Plate>\n  );\n}\n",
       "path": "block/editor-basic/components/editor/plate-editor.tsx",
       "target": "components/editor/plate-editor.tsx",
+      "type": "registry:component"
+    },
+    {
+      "content": "'use client';\n\nimport { withProps } from '@udecode/cn';\nimport { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';\nimport {\n  BasicMarksPlugin,\n  BoldPlugin,\n  ItalicPlugin,\n  StrikethroughPlugin,\n  UnderlinePlugin,\n} from '@udecode/plate-basic-marks/react';\nimport {\n  ParagraphPlugin,\n  PlateElement,\n  PlateLeaf,\n  usePlateEditor,\n} from '@udecode/plate-common/react';\n\nexport const useCreateEditor = () => {\n  return usePlateEditor({\n    override: {\n      // Default styles in globals.css\n      components: {\n        [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),\n        [ItalicPlugin.key]: withProps(PlateLeaf, { as: 'em' }),\n        [ParagraphPlugin.key]: withProps(PlateElement, {\n          as: 'p',\n          className: 'mb-4',\n        }),\n        [StrikethroughPlugin.key]: withProps(PlateLeaf, { as: 's' }),\n        [UnderlinePlugin.key]: withProps(PlateLeaf, { as: 'u' }),\n        blockquote: withProps(PlateElement, {\n          as: 'blockquote',\n          className: 'mb-4 border-l-4 border-[#d0d7de] pl-4 text-[#636c76]',\n        }),\n        h1: withProps(PlateElement, {\n          as: 'h1',\n          className:\n            'mb-4 mt-6 text-3xl font-semibold tracking-tight lg:text-4xl',\n        }),\n        h2: withProps(PlateElement, {\n          as: 'h2',\n          className: 'mb-4 mt-6 text-2xl font-semibold tracking-tight',\n        }),\n        h3: withProps(PlateElement, {\n          as: 'h3',\n          className: 'mb-4 mt-6 text-xl font-semibold tracking-tight',\n        }),\n      },\n    },\n    plugins: [BasicElementsPlugin, BasicMarksPlugin],\n    value: [\n      {\n        children: [{ text: 'Basic Editor' }],\n        type: 'h1',\n      },\n      {\n        children: [{ text: 'Heading 2' }],\n        type: 'h2',\n      },\n      {\n        children: [{ text: 'Heading 3' }],\n        type: 'h3',\n      },\n      {\n        children: [{ text: 'This is a blockquote element' }],\n        type: 'blockquote',\n      },\n      {\n        children: [\n          { text: 'Basic marks: ' },\n          { bold: true, text: 'bold' },\n          { text: ', ' },\n          { italic: true, text: 'italic' },\n          { text: ', ' },\n          { text: 'underline', underline: true },\n          { text: ', ' },\n          { strikethrough: true, text: 'strikethrough' },\n          { text: '.' },\n        ],\n        type: ParagraphPlugin.key,\n      },\n    ],\n  });\n};\n",
+      "path": "block/editor-basic/components/editor/use-create-editor.tsx",
+      "target": "components/editor/use-create-editor.tsx",
       "type": "registry:component"
     }
   ],
