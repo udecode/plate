@@ -3,6 +3,7 @@ import {
   bindFirst,
   getAncestorNode,
   getNodeString,
+  removeNodes,
 } from '@udecode/plate-common';
 import { findEventRange, toTPlatePlugin } from '@udecode/plate-common/react';
 
@@ -117,6 +118,7 @@ export const PlaceholderPlugin = toTPlatePlugin<
     handlers: {
       onDrop: ({ editor, event, tf }) => {
         // using DnD plugin by default
+        if (!getOption('disabledDndPlugin')) return;
 
         const { files } = event.dataTransfer;
 
@@ -125,8 +127,6 @@ export const PlaceholderPlugin = toTPlatePlugin<
         /** Without this, the dropped file replaces the page */
         event.preventDefault();
         event.stopPropagation();
-
-        if (!getOption('disabledDndPlugin')) return;
 
         /**
          * When we drop a file, the selection won't move automatically to the
@@ -156,6 +156,7 @@ export const PlaceholderPlugin = toTPlatePlugin<
           const [node, path] = ancestor;
 
           if (getNodeString(node).length === 0) {
+            removeNodes(editor, { at: path });
             tf.insert.media(files, path);
             inserted = true;
           }
