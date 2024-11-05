@@ -1,11 +1,8 @@
 import { useEditorRef, useElement } from '@udecode/plate-common/react';
 import { useFocused, useReadOnly, useSelected } from 'slate-react';
 
-import {
-  type TPlaceholderElement,
-  BasePlaceholderPlugin,
-} from '../../lib/placeholder/BasePlaceholderPlugin';
-import { usePlaceholderStore } from './placeholderStore';
+import { type TPlaceholderElement, BasePlaceholderPlugin } from '../../../lib';
+import { usePlaceholderStore } from '../placeholderStore';
 
 export const usePlaceholderElementState = () => {
   const element = useElement();
@@ -17,6 +14,7 @@ export const usePlaceholderElementState = () => {
   const progresses = usePlaceholderStore().get.progresses();
   const isUploading = usePlaceholderStore().get.isUploading();
   const updatedFiles = usePlaceholderStore().get.updatedFiles();
+  const setSize = usePlaceholderStore().set.size();
 
   const { mediaType } = useElement<TPlaceholderElement>(
     BasePlaceholderPlugin.key
@@ -34,6 +32,7 @@ export const usePlaceholderElementState = () => {
     progressing,
     readOnly,
     selected,
+    setSize,
     updatedFiles,
   };
 };

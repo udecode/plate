@@ -6,6 +6,6 @@ export * from './isHistoryEditor';
 export * from './isHistoryMerging';
 export * from './isHistorySaving';
 export * from './withMerging';
+export * from './withNewBatch';
 export * from './withoutMergingHistory';
 export * from './withoutSavingHistory';
-export * from './withNewBatch';

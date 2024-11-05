@@ -3,6 +3,7 @@
  */
 
 export * from './duplicateBlockSelectionNodes';
+export * from './insertBlocksAndSelect';
 export * from './removeBlockSelectionNodes';
 export * from './selectBlockSelectionNodes';
 export * from './setBlockSelectionNodes';
