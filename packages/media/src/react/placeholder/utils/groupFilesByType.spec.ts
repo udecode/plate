@@ -2,7 +2,7 @@
 /* eslint-disable jest/no-conditional-expect */
 import type { UploadConfig } from '../PlaceholderPlugin';
 
-import { ErrorCode } from '../type';
+import { UploadErrorCode } from '../type';
 import { groupFilesByType } from './groupFilesByType';
 
 describe('groupFilesByType', () => {
@@ -63,7 +63,7 @@ describe('groupFilesByType', () => {
       try {
         groupFilesByType(fileList, config);
       } catch (error: any) {
-        expect(error.code).toBe(ErrorCode.INVALID_FILE_TYPE);
+        expect(error.code).toBe(UploadErrorCode.INVALID_FILE_TYPE);
       }
     });
   });

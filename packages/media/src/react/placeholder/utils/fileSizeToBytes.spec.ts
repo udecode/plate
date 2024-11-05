@@ -1,6 +1,6 @@
 /* eslint-disable jest/valid-expect */
 /* eslint-disable jest/no-conditional-expect */
-import { ErrorCode } from '../type';
+import { UploadErrorCode } from '../type';
 import { bytesToFileSize, fileSizeToBytes } from './fileSizeToBytes';
 
 describe('fileSizeToBytes', () => {
@@ -32,7 +32,7 @@ describe('fileSizeToBytes', () => {
       try {
         fileSizeToBytes('invalid' as any, new File([], ''));
       } catch (error: any) {
-        expect(error.code).toBe(ErrorCode.INVALID_FILE_SIZE);
+        expect(error.code).toBe(UploadErrorCode.INVALID_FILE_SIZE);
       }
     });
 
@@ -40,7 +40,7 @@ describe('fileSizeToBytes', () => {
       try {
         fileSizeToBytes('-1KB' as any, new File([], ''));
       } catch (error: any) {
-        expect(error.code).toBe(ErrorCode.INVALID_FILE_SIZE);
+        expect(error.code).toBe(UploadErrorCode.INVALID_FILE_SIZE);
       }
     });
   });

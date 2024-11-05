@@ -1,16 +1,19 @@
-import type { Error, ErrorCode } from '../type';
+import type { UploadError, UploadErrorCode } from '../type';
 // 首先定义一个类型,用于获取指定错误码对应的data类型
-type ErrorDataType<T extends ErrorCode> = Extract<Error, { code: T }>['data'];
+type ErrorDataType<T extends UploadErrorCode> = Extract<
+  UploadError,
+  { code: T }
+>['data'];
 
 // 改写createUploadError函数
-export const createUploadError = <T extends ErrorCode>(
+export const createUploadError = <T extends UploadErrorCode>(
   code: T,
   data: ErrorDataType<T>
-): Error => {
-  return { code, data } as Error;
+): UploadError => {
+  return { code, data } as UploadError;
 };
 
-export const isUploadError = (error: unknown): error is Error => {
+export const isUploadError = (error: unknown): error is UploadError => {
   return (
     typeof error === 'object' &&
     error !== null &&
@@ -18,7 +21,7 @@ export const isUploadError = (error: unknown): error is Error => {
     'data' in error &&
     typeof error.data === 'object' &&
     error.data !== null &&
-    'invalidateFiles' in error.data &&
-    Array.isArray(error.data.invalidateFiles)
+    'files' in error.data &&
+    Array.isArray(error.data.files)
   );
 };

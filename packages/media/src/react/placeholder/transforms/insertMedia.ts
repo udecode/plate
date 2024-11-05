@@ -4,7 +4,7 @@ import { insertNodes, nanoid, withoutNormalizing } from '@udecode/plate-common';
 
 import { type TPlaceholderElement, BasePlaceholderPlugin } from '../../../lib';
 import { PlaceholderPlugin } from '../PlaceholderPlugin';
-import { ErrorCode } from '../type';
+import { UploadErrorCode } from '../type';
 import { createUploadError, isUploadError } from '../utils/createUploadError';
 import { getMediaType } from '../utils/getMediaType';
 import { validateFiles } from '../utils/validateFiles';
@@ -26,8 +26,10 @@ export const insertMedia = (editor: PlateEditor, files: FileList): any => {
     return editor.setOption(
       PlaceholderPlugin,
       'error',
-      createUploadError(ErrorCode.TOO_MANY_FILES, {
+      createUploadError(UploadErrorCode.TOO_MANY_FILES, {
+        fileType: null,
         files: Array.from(files),
+        maxFileCount: 1,
       })
     );
   }
@@ -38,8 +40,10 @@ export const insertMedia = (editor: PlateEditor, files: FileList): any => {
     return editor.setOption(
       PlaceholderPlugin,
       'error',
-      createUploadError(ErrorCode.TOO_MANY_FILES, {
+      createUploadError(UploadErrorCode.TOO_MANY_FILES, {
+        fileType: null,
         files: Array.from(files),
+        maxFileCount,
       })
     );
   }

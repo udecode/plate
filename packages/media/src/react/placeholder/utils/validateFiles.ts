@@ -17,6 +17,6 @@ export const validateFiles = (fileList: FileList, config: UploadConfig) => {
 
     if (itemFiles.length === 0) continue;
 
-    validateFileItem(itemFiles, itemConfig!);
+    validateFileItem(itemFiles, itemConfig!, key);
   }
 };

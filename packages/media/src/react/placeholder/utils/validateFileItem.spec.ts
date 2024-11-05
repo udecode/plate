@@ -1,6 +1,6 @@
 /* eslint-disable jest/valid-expect */
 /* eslint-disable jest/no-conditional-expect */
-import { type MediaItemConfig, ErrorCode } from '../type';
+import { type MediaItemConfig, UploadErrorCode } from '../type';
 import { validateFileItem } from './validateFileItem';
 
 describe('validateFileItem', () => {
@@ -18,7 +18,7 @@ describe('validateFileItem', () => {
       mediaType: 'img',
     };
 
-    expect(validateFileItem(files, config)).toBe(true);
+    expect(validateFileItem(files, config, 'image')).toBe(true);
   });
 
   it('should throw MaxFileCountExceeded when files exceed maximum', () => {
@@ -35,9 +35,9 @@ describe('validateFileItem', () => {
 
     expect(() => {
       try {
-        validateFileItem(files, config);
+        validateFileItem(files, config, 'image');
       } catch (error: any) {
-        expect(error.code).toBe(ErrorCode.TOO_MANY_FILES);
+        expect(error.code).toBe(UploadErrorCode.TOO_MANY_FILES);
       }
     });
   });
@@ -51,9 +51,9 @@ describe('validateFileItem', () => {
 
     expect(() => {
       try {
-        validateFileItem(files, config);
+        validateFileItem(files, config, 'image');
       } catch (error: any) {
-        expect(error.code).toBe(ErrorCode.TOO_LARGE);
+        expect(error.code).toBe(UploadErrorCode.TOO_LARGE);
       }
     });
   });
@@ -65,6 +65,6 @@ describe('validateFileItem', () => {
       mediaType: 'img',
     };
 
-    expect(validateFileItem(files, config)).toBe(true);
+    expect(validateFileItem(files, config, 'image')).toBe(true);
   });
 });

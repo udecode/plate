@@ -1,6 +1,12 @@
-import type { AudioPlugin, FilePlugin, ImagePlugin, VideoPlugin } from '..';
+import type {
+  AudioPlugin,
+  FilePlugin,
+  ImagePlugin,
+  VideoPlugin,
+} from '../plugins';
+import type { AllowedFileType } from './internal/mimes';
 
-export enum ErrorCode {
+export enum UploadErrorCode {
   INVALID_FILE_TYPE = 400,
   TOO_MANY_FILES = 402,
   INVALID_FILE_SIZE = 403,
@@ -8,40 +14,43 @@ export enum ErrorCode {
   TOO_LARGE = 413,
 }
 
-export type Error =
+export type UploadError =
   | {
       data: {
         allowedTypes: string[];
         files: File[];
       };
-      code: ErrorCode.INVALID_FILE_TYPE;
+      code: UploadErrorCode.INVALID_FILE_TYPE;
     }
   | {
       data: {
-        files: File[];
-      };
-      code: ErrorCode.INVALID_FILE_SIZE;
-    }
-  | {
-      data: {
-        files: File[];
-        maxFileCount: number;
-      };
-      code: ErrorCode.TOO_MANY_FILES;
-    }
-  | {
-      data: {
+        fileType: AllowedFileType;
         files: File[];
         maxFileSize: string;
       };
-      code: ErrorCode.TOO_LARGE;
+      code: UploadErrorCode.TOO_LARGE;
+    }
+  | {
+      data: {
+        fileType: AllowedFileType;
+        files: File[];
+        minFileCount: number;
+      };
+      code: UploadErrorCode.TOO_LESS_FILES;
+    }
+  | {
+      data: {
+        fileType: AllowedFileType | null;
+        files: File[];
+        maxFileCount: number;
+      };
+      code: UploadErrorCode.TOO_MANY_FILES;
     }
   | {
       data: {
         files: File[];
-        minFileCount: number;
       };
-      code: ErrorCode.TOO_LESS_FILES;
+      code: UploadErrorCode.INVALID_FILE_SIZE;
     };
 
 export type MediaKeys =

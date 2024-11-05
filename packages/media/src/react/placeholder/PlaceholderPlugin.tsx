@@ -2,7 +2,7 @@ import { type ExtendConfig, bindFirst } from '@udecode/plate-common';
 import { findEventRange, toTPlatePlugin } from '@udecode/plate-common/react';
 
 import type { AllowedFileType } from './internal/mimes';
-import type { Error, MediaItemConfig } from './type';
+import type { MediaItemConfig, UploadError } from './type';
 
 import { type PlaceholderConfig, BasePlaceholderPlugin } from '../../lib';
 import { AudioPlugin, FilePlugin, ImagePlugin, VideoPlugin } from '../plugins';
@@ -27,7 +27,7 @@ export const PlaceholderPlugin = toTPlatePlugin<
       disabledDndPlugin: boolean;
       uploadConfig: UploadConfig;
       uploadingFiles: Record<string, File>;
-      error?: Error | null;
+      error?: UploadError | null;
       maxFileCount?: number;
       // Whether multiple files of the same type can be uploaded.
       multiple?: boolean;

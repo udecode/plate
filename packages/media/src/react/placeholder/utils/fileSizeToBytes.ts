@@ -1,4 +1,5 @@
-import { type FileSize, ErrorCode } from '../type';
+/* eslint-disable @typescript-eslint/only-throw-error */
+import { type FileSize, UploadErrorCode } from '../type';
 import { createUploadError } from './createUploadError';
 
 export const FILESIZE_UNITS = ['B', 'KB', 'MB', 'GB'] as const;
@@ -15,8 +16,7 @@ export const fileSizeToBytes = (fileSize: FileSize, file: File): number => {
   const match = fileSize.match(regex);
 
   if (!match) {
-    // eslint-disable-next-line @typescript-eslint/only-throw-error
-    throw createUploadError(ErrorCode.INVALID_FILE_SIZE, {
+    throw createUploadError(UploadErrorCode.INVALID_FILE_SIZE, {
       files: [file],
     });
   }
