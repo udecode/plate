@@ -1,7 +1,7 @@
 import type { TElement } from '@udecode/plate-common';
 
 export interface TMentionItemBase {
-  key: any;
+  key?: any;
   text: string;
 }
 

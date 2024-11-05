@@ -18,7 +18,7 @@ export type MentionConfig = PluginConfig<
   {},
   {
     insert: {
-      mention: (options: { key: any; search: string; value: any; }) => void;
+      mention: (options: { key?: any; search: string; value: any; }) => void;
     };
   }
 >;
