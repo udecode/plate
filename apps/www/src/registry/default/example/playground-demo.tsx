@@ -405,7 +405,6 @@ export default function PlaygroundDemo({
                 !id && 'pb-[20vh] pt-4',
                 id && 'pb-8 pt-2'
               )}
-              placeholder="Type..."
             />
 
             <CheckPlugin componentId="floating-toolbar">
