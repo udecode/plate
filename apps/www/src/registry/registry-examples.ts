@@ -752,10 +752,10 @@ export const examples: Registry = [
     registryDependencies: [],
     type: 'registry:example',
   },
-  {
-    external: true,
-    files: ['lib/plate-types.ts'],
-    name: 'plate-types',
-    type: 'registry:lib',
-  },
+  // {
+  //   external: true,
+  //   files: ['lib/plate-types.ts'],
+  //   name: 'plate-types',
+  //   type: 'registry:lib',
+  // },
 ];

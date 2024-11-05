@@ -73,7 +73,7 @@ export function CursorOverlay({ cursors, ...props }: CursorOverlayProps) {
   );
 }
 
-const DragOverCursorPlugin = createPlatePlugin({
+export const DragOverCursorPlugin = createPlatePlugin({
   key: 'dragOverCursor',
   options: { cursors: {} as Record<string, CursorState<CursorData>> },
   handlers: {
@@ -110,7 +110,7 @@ const DragOverCursorPlugin = createPlatePlugin({
 });
 
 export const SelectionOverlayPlugin = createPlatePlugin({
-  key: 'selection_over_lay',
+  key: 'selection_overlay',
   useHooks: () => {
     const { editor } = useEditorPlugin(BlockSelectionPlugin);
     const isSelecting = editor.useOptions(BlockSelectionPlugin).isSelecting;

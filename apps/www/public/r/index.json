@@ -480,6 +480,35 @@
   },
   {
     "dependencies": [
+      "@udecode/plate-media"
+    ],
+    "doc": {
+      "description": "A modal component for previewing and manipulating images.",
+      "docs": [
+        {
+          "route": "/docs/media"
+        },
+        {
+          "route": "https://pro.platejs.org/docs/components/image-preview"
+        }
+      ],
+      "examples": [
+        "media-demo",
+        "media-toolbar-pro"
+      ]
+    },
+    "files": [
+      {
+        "path": "plate-ui/image-preview.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "image-preview",
+    "registryDependencies": [],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
       "@udecode/plate-kbd"
     ],
     "doc": {
@@ -986,6 +1015,26 @@
   },
   {
     "dependencies": [
+      "@radix-ui/react-context-menu"
+    ],
+    "doc": {
+      "description": "Displays a menu to the user — such as a set of actions or functions — triggered by a button.",
+      "links": {
+        "doc": "https://ui.shadcn.com/docs/components/context-menu"
+      }
+    },
+    "files": [
+      {
+        "path": "plate-ui/context-menu.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "context-menu",
+    "registryDependencies": [],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
       "@radix-ui/react-dialog"
     ],
     "doc": {
@@ -1147,6 +1196,7 @@
     ],
     "name": "ai-menu",
     "registryDependencies": [
+      "use-chat",
       "command",
       "popover",
       "editor"
@@ -1248,7 +1298,8 @@
     "name": "block-context-menu",
     "registryDependencies": [
       "calendar",
-      "plate-element"
+      "plate-element",
+      "context-menu"
     ],
     "type": "registry:ui"
   },
@@ -1463,7 +1514,11 @@
     "type": "registry:ui"
   },
   {
-    "dependencies": [],
+    "dependencies": [
+      "@udecode/plate-cursor",
+      "@udecode/plate-dnd",
+      "@udecode/plate-selection"
+    ],
     "doc": {
       "description": "A visual overlay for collaborative cursors and selections.",
       "docs": [

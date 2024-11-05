@@ -24,6 +24,7 @@ import { handleError } from '@/src/utils/handle-error';
 import { highlighter } from '@/src/utils/highlighter';
 import { logger } from '@/src/utils/logger';
 import {
+  REGISTRY_MAP,
   REGISTRY_URL,
   getDefaultConfig,
   getRegistryBaseColors,
@@ -34,6 +35,12 @@ import { updateTailwindContent } from '@/src/utils/updaters/update-tailwind-cont
 
 import { getDifferences } from '../utils/is-different';
 
+export const registryMap = {
+  magic: 'https://magicui.design/r',
+  plate: 'https://platejs.org/r',
+  shadcn: REGISTRY_URL,
+};
+
 export const initOptionsSchema = z.object({
   components: z.array(z.string()).optional(),
   cwd: z.string(),
@@ -41,6 +48,7 @@ export const initOptionsSchema = z.object({
   force: z.boolean(),
   isNewProject: z.boolean(),
   name: z.string().optional(),
+  pm: z.enum(['npm', 'pnpm', 'yarn', 'bun']).optional(),
   silent: z.boolean(),
   srcDir: z.boolean().optional(),
   url: z.string().optional(),
@@ -68,16 +76,39 @@ export const init = new Command()
     'use the src directory when creating a new project.',
     false
   )
-  .option('-u, --url <url>', 'registry URL', REGISTRY_URL)
   .option('-n, --name <name>', 'registry name')
+  .option('--pm <pm>', 'package manager to use (npm, pnpm, yarn, bun)')
   .action(async (components, opts) => {
     try {
+      // DIFF START
+      let url = REGISTRY_URL;
+      let name = opts.name;
+      let actualComponents = [...components];
+
+      if (components.length > 0) {
+        const registry =
+          REGISTRY_MAP[components[0] as keyof typeof REGISTRY_MAP];
+
+        if (registry) {
+          url = registry;
+          name = components[0];
+          actualComponents = components.slice(1);
+        } else if (components[0].startsWith('http')) {
+          url = components[0];
+          name = components[0];
+          actualComponents = components.slice(1);
+        }
+      }
+
       const options = initOptionsSchema.parse({
-        components,
         cwd: path.resolve(opts.cwd),
         isNewProject: false,
         ...opts,
+        components: actualComponents,
+        name,
+        url,
       });
+      // DIFF END
 
       await runInit(options);
 
@@ -124,15 +155,30 @@ export async function runInit(
   const isNew = res?.[1];
 
   let config: Config;
+  let newConfig: Config | undefined;
+  let registryName: string | undefined;
 
   if (projectConfig) {
     if (isNew || options.url === projectConfig.url) {
-      projectConfig = await getDefaultConfig(projectConfig, options.url);
-      // Updating top-level config
-      config = await promptForMinimalConfig(projectConfig, options);
+      if (options.url === projectConfig.url) {
+        projectConfig = await getDefaultConfig(projectConfig, options.url);
+        // Updating top-level config
+        config = await promptForMinimalConfig(projectConfig, options);
+      } else {
+        const { url, ...rest } = options;
+        newConfig = await promptForMinimalConfig(
+          await getDefaultConfig(projectConfig),
+          { ...rest }
+        );
+        const res = await promptForNestedRegistryConfig(newConfig, options);
+        config = res.config;
+        registryName = res.name;
+      }
     } else {
       // Updating nested registry config
-      config = await promptForNestedRegistryConfig(projectConfig, options);
+      const res = await promptForNestedRegistryConfig(projectConfig, options);
+      config = res.config;
+      registryName = res.name;
     }
   } else {
     // New configuration
@@ -163,14 +209,11 @@ export async function runInit(
   componentSpinner.succeed();
 
   let registryConfig = config;
-  let registryName: string | undefined;
-  const id = options.name ?? options.url;
 
-  if (id) {
-    const registry = config.registries?.[id];
+  if (registryName) {
+    const registry = config.registries?.[registryName];
 
     if (registry) {
-      registryName = id;
       registryConfig = deepmerge(config, registry) as any;
     }
   }
@@ -178,6 +221,21 @@ export async function runInit(
   // Add components.
   const fullConfig = await resolveConfigPaths(options.cwd, registryConfig);
   const components = ['index', ...(options.components || [])];
+
+  if (newConfig) {
+    await addComponents(
+      components,
+      await resolveConfigPaths(options.cwd, newConfig),
+      {
+        isNewProject:
+          options.isNewProject || projectInfo?.framework.name === 'next-app',
+        // Init will always overwrite files.
+        overwrite: true,
+        silent: options.silent,
+      }
+    );
+  }
+
   await addComponents(components, fullConfig, {
     isNewProject:
       options.isNewProject || projectInfo?.framework.name === 'next-app',
@@ -190,6 +248,16 @@ export async function runInit(
   // If a new project is using src dir, let's update the tailwind content config.
   // TODO: Handle this per framework.
   if (options.isNewProject && options.srcDir) {
+    if (newConfig) {
+      await updateTailwindContent(
+        ['./src/**/*.{js,ts,jsx,tsx,mdx}'],
+        await resolveConfigPaths(options.cwd, newConfig),
+        {
+          silent: options.silent,
+        }
+      );
+    }
+
     await updateTailwindContent(
       ['./src/**/*.{js,ts,jsx,tsx,mdx}'],
       fullConfig,
@@ -412,6 +480,10 @@ async function promptForNestedRegistryConfig(
     opts.url
   );
 
+  const name = opts.name ?? nestedDefaultConfig.name ?? opts.url!;
+
+  logger.info('Initializing ' + name + ' registry...');
+
   const newConfig = await promptForMinimalConfig(nestedDefaultConfig, opts);
 
   const relevantFields = ['style', 'tailwind', 'rsc', 'tsx', 'aliases'];
@@ -434,10 +506,13 @@ async function promptForNestedRegistryConfig(
   const { resolvedPaths, ...topLevelConfig } = defaultConfig;
 
   return {
-    ...topLevelConfig,
-    registries: {
-      ...defaultConfig.registries,
-      [opts.name ?? opts.url!]: registryConfig,
+    config: {
+      ...topLevelConfig,
+      registries: {
+        ...defaultConfig.registries,
+        [name]: registryConfig,
+      },
     },
-  } as Config;
+    name,
+  } as { config: Config; name: string };
 }

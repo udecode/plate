@@ -1,14 +1,15 @@
 import type { FC } from 'react';
 
-import type { WithDraggableOptions } from '@udecode/plate-dnd';
-
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import {
   ParagraphPlugin,
   createNodesWithHOC,
 } from '@udecode/plate-common/react';
-import { withDraggable as withDraggablePrimitive } from '@udecode/plate-dnd';
+import {
+  type WithDraggableOptions,
+  withDraggable as withDraggablePrimitive,
+} from '@udecode/plate-dnd';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { ColumnPlugin } from '@udecode/plate-layout/react';
@@ -24,9 +25,7 @@ import {
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 
-import type { DraggableProps } from './draggable';
-
-import { Draggable } from './draggable';
+import { type DraggableProps, Draggable } from './draggable';
 
 export const withDraggable = (
   Component: FC,

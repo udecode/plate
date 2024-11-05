@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 
-import { faker } from '@faker-js/faker';
 import { AIChatPlugin, useEditorChat } from '@udecode/plate-ai/react';
 import {
   type TElement,
@@ -23,8 +22,9 @@ import {
   BlockSelectionPlugin,
   useIsSelecting,
 } from '@udecode/plate-selection/react';
-import { useChat } from 'ai/react';
 import { Loader2Icon } from 'lucide-react';
+
+import { useChat } from '@/registry/default/components/editor/use-chat';
 
 import { AIChatEditor } from './ai-chat-editor';
 import { AIMenuItems } from './ai-menu-items';
@@ -40,24 +40,7 @@ export function AIMenu() {
   const aiEditorRef = React.useRef<PlateEditor | null>(null);
   const [value, setValue] = React.useState('');
 
-  const chat = useChat({
-    id: 'editor',
-    // API to be implemented
-    api: '/api/ai',
-    // Mock the API response. Remove it when you implement the route /api/ai
-    fetch: async () => {
-      await new Promise((resolve) => setTimeout(resolve, 400));
-
-      const stream = fakeStreamText();
-
-      return new Response(stream, {
-        headers: {
-          Connection: 'keep-alive',
-          'Content-Type': 'text/plain',
-        },
-      });
-    },
-  });
+  const chat = useChat();
 
   const { input, isLoading, messages, setInput } = chat;
   const [anchorElement, setAnchorElement] = React.useState<HTMLElement | null>(
@@ -179,42 +162,3 @@ export function AIMenu() {
     </Popover>
   );
 }
-
-// Used for testing. Remove it after implementing useChat api.
-const fakeStreamText = ({
-  chunkCount = 10,
-  streamProtocol = 'data',
-}: {
-  chunkCount?: number;
-  streamProtocol?: 'data' | 'text';
-} = {}) => {
-  const chunks = Array.from({ length: chunkCount }, () => ({
-    delay: faker.number.int({ max: 150, min: 50 }),
-    texts: faker.lorem.words({ max: 3, min: 1 }) + ' ',
-  }));
-  const encoder = new TextEncoder();
-
-  return new ReadableStream({
-    async start(controller) {
-      for (const chunk of chunks) {
-        await new Promise((resolve) => setTimeout(resolve, chunk.delay));
-
-        if (streamProtocol === 'text') {
-          controller.enqueue(encoder.encode(chunk.texts));
-        } else {
-          controller.enqueue(
-            encoder.encode(`0:${JSON.stringify(chunk.texts)}\n`)
-          );
-        }
-      }
-
-      if (streamProtocol === 'data') {
-        controller.enqueue(
-          `d:{"finishReason":"stop","usage":{"promptTokens":0,"completionTokens":${chunks.length}}}\n`
-        );
-      }
-
-      controller.close();
-    },
-  });
-};

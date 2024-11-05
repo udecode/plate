@@ -33,7 +33,8 @@
   "name": "block-context-menu",
   "registryDependencies": [
     "calendar",
-    "plate-element"
+    "plate-element",
+    "context-menu"
   ],
   "type": "registry:ui"
 }

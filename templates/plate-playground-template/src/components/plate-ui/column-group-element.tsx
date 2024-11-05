@@ -3,7 +3,6 @@
 import React from 'react';
 
 import type { TColumnElement } from '@udecode/plate-layout';
-import type { LucideProps } from 'lucide-react';
 
 import { cn, withRef } from '@udecode/cn';
 import { useElement, useRemoveNodeButton } from '@udecode/plate-common/react';
@@ -12,7 +11,7 @@ import {
   useColumnState,
   useDebouncePopoverOpen,
 } from '@udecode/plate-layout/react';
-import { Trash2Icon } from 'lucide-react';
+import { type LucideProps, Trash2Icon } from 'lucide-react';
 import { useReadOnly } from 'slate-react';
 
 import { Button } from './button';

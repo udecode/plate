@@ -1,0 +1,1 @@
+{"version":3,"file":"create-project.d.ts","sourceRoot":"","sources":["create-project.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,iBAAiB,EAAE,MAAM,qBAAqB,CAAC;AAC7D,OAAO,KAAK,EAAE,CAAC,EAAE,MAAM,KAAK,CAAC;AAY7B,wBAAsB,aAAa,CACjC,OAAO,EAAE,IAAI,CACX,CAAC,CAAC,KAAK,CAAC,OAAO,iBAAiB,CAAC,EACjC,KAAK,GAAG,OAAO,GAAG,IAAI,GAAG,QAAQ,CAClC;;;;;;GA4GF"}

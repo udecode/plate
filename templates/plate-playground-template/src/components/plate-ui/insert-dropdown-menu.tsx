@@ -3,11 +3,11 @@
 import React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
-import type { PlateEditor } from '@udecode/plate-common/react';
 
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import {
+  type PlateEditor,
   ParagraphPlugin,
   focusEditor,
   useEditorRef,
@@ -45,7 +45,10 @@ import {
   TableOfContentsIcon,
 } from 'lucide-react';
 
-import { insertBlock, insertInlineElement } from '@/lib/transforms';
+import {
+  insertBlock,
+  insertInlineElement,
+} from '@/components/editor/transforms';
 
 import {
   DropdownMenu,

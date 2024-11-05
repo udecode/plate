@@ -4,7 +4,7 @@ import * as React from 'react';
 
 import { cn } from '@udecode/cn';
 
-import { useCopyToClipboard } from '@/hooks/useCopyToClipboard';
+import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 import { Button } from '@/registry/default/plate-ui/button';
 
 import { CodeBlockWrapper } from './code-block-wrapper';

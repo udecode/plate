@@ -2,9 +2,10 @@
 
 import React, { useEffect } from 'react';
 
-import type { WithRequiredKey } from '@udecode/plate-common';
-
-import { isSelectionExpanded } from '@udecode/plate-common';
+import {
+  type WithRequiredKey,
+  isSelectionExpanded,
+} from '@udecode/plate-common';
 import {
   useEditorSelector,
   useElement,

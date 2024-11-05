@@ -6,9 +6,17 @@ import type { Block } from '@/registry/schema';
 import type { ImperativePanelHandle } from 'react-resizable-panels';
 
 import { cn } from '@udecode/cn';
-import { Fullscreen, Monitor, Smartphone, Tablet } from 'lucide-react';
+import {
+  CheckIcon,
+  Fullscreen,
+  Monitor,
+  Smartphone,
+  Tablet,
+  TerminalIcon,
+} from 'lucide-react';
 import Link from 'next/link';
 
+import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 import { Button } from '@/registry/default/plate-ui/button';
 import { Separator } from '@/registry/default/plate-ui/separator';
 
@@ -26,6 +34,8 @@ export function PlaygroundPreviewToolbar({
   // fullScreen: boolean;
   // setFullScreen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
+  const { copyToClipboard, isCopied } = useCopyToClipboard();
+
   return (
     <div
       className={cn(
@@ -36,6 +46,18 @@ export function PlaygroundPreviewToolbar({
       )}
     >
       <div className="flex items-center gap-2 pr-[14px] sm:ml-auto">
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-7 rounded-md border bg-muted shadow-none"
+          onClick={() => {
+            copyToClipboard(`npx shadcx@latest add plate/${block.name}`);
+          }}
+        >
+          {isCopied ? <CheckIcon /> : <TerminalIcon />}
+          npx shadcx add plate/{block.name}
+        </Button>
+        <Separator orientation="vertical" className="mx-2 hidden h-4 md:flex" />
         <div className="hidden h-[28px] items-center gap-1.5 rounded-md border bg-background p-[2px] shadow-sm md:flex">
           <ToggleGroup
             defaultValue="100"
@@ -80,7 +102,7 @@ export function PlaygroundPreviewToolbar({
               className="size-[22px] rounded-sm p-0"
               title="Open in New Tab"
             >
-              <Link href={`/blocks/${block.name}`} target="_blank">
+              <Link href="/blocks/playground" target="_blank">
                 <span className="sr-only">Open in New Tab</span>
                 <Fullscreen className="size-3.5" />
               </Link>
