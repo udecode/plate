@@ -1,5 +1,11 @@
 # @udecode/plate-dnd
 
+## 39.3.0
+
+### Patch Changes
+
+- [#3708](https://github.com/udecode/plate/pull/3708) by [@felixfeng33](https://github.com/felixfeng33) – Add `enableFile` option to check whether to enable the DnD plugin for files dragged in from outside the browser.
+
 ## 39.0.0
 
 ### Major Changes
