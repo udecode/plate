@@ -1,8 +1,5 @@
 {
-  "dependencies": [
-    "@udecode/plate-ai",
-    "@udecode/plate-markdown"
-  ],
+  "dependencies": ["@udecode/plate-ai", "@udecode/plate-markdown"],
   "doc": {
     "description": "AI menu with commands, streaming responses in a preview or directly into the editor.",
     "title": "AI"

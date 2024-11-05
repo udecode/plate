@@ -1,10 +1,7 @@
 {
   "doc": {
     "description": "Basic block elements and text marks.",
-    "keywords": [
-      "element",
-      "leaf"
-    ]
+    "keywords": ["element", "leaf"]
   },
   "files": [
     {

@@ -1,7 +1,5 @@
 {
-  "dependencies": [
-    "@udecode/plate-toggle"
-  ],
+  "dependencies": ["@udecode/plate-toggle"],
   "doc": {
     "description": "A collapsible component for toggling content visibility.",
     "docs": [
@@ -10,9 +8,7 @@
         "title": "Toggle"
       }
     ],
-    "examples": [
-      "toggle-demo"
-    ]
+    "examples": ["toggle-demo"]
   },
   "files": [
     {
@@ -23,9 +19,6 @@
     }
   ],
   "name": "toggle-element",
-  "registryDependencies": [
-    "button",
-    "plate-element"
-  ],
+  "registryDependencies": ["button", "plate-element"],
   "type": "registry:ui"
 }
