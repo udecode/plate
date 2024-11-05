@@ -2,7 +2,7 @@
 import type { AllowedFileType, FileRouterInputKey } from '../internal/mimes';
 
 import { lookup } from '../internal/utils';
-import { UploadErrorCode } from '../type';
+import { ErrorCode } from '../type';
 import { createUploadError } from './createUploadError';
 
 export const matchFileType = (
@@ -15,8 +15,9 @@ export const matchFileType = (
   if (!mimeType) {
     if (allowedTypes.includes('blob')) return 'blob';
 
-    throw createUploadError(UploadErrorCode.InvalidFileTypeError, {
-      invalidateFiles: [file],
+    throw createUploadError(ErrorCode.INVALID_FILE_TYPE, {
+      allowedTypes: allowedTypes,
+      files: [file],
     });
   }
   // If the user has specified a specific mime type, use that
@@ -39,8 +40,9 @@ export const matchFileType = (
     if (allowedTypes.includes('blob')) {
       return 'blob';
     } else {
-      throw createUploadError(UploadErrorCode.InvalidFileTypeError, {
-        invalidateFiles: [file],
+      throw createUploadError(ErrorCode.INVALID_FILE_TYPE, {
+        allowedTypes: allowedTypes,
+        files: [file],
       });
     }
   }

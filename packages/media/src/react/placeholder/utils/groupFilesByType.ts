@@ -1,11 +1,11 @@
-import type { uploadConfig } from '../PlaceholderPlugin';
+import type { UploadConfig } from '../PlaceholderPlugin';
 import type { AllowedFileType } from '../internal/mimes';
 
 import { matchFileType } from './matchFileType';
 
 export const groupFilesByType = (
   fileList: FileList,
-  config: uploadConfig
+  config: UploadConfig
 ): Record<AllowedFileType, File[]> => {
   const FileTypeMap: Record<AllowedFileType, File[]> = {
     audio: [],

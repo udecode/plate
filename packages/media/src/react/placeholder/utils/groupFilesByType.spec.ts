@@ -1,8 +1,8 @@
 /* eslint-disable jest/valid-expect */
 /* eslint-disable jest/no-conditional-expect */
-import type { uploadConfig } from '../PlaceholderPlugin';
+import type { UploadConfig } from '../PlaceholderPlugin';
 
-import { UploadErrorCode } from '../type';
+import { ErrorCode } from '../type';
 import { groupFilesByType } from './groupFilesByType';
 
 describe('groupFilesByType', () => {
@@ -27,7 +27,7 @@ describe('groupFilesByType', () => {
       length: files.length,
     } as FileList;
 
-    const config: uploadConfig = {
+    const config: UploadConfig = {
       image: { maxFileSize: '8B', mediaType: 'img' },
       pdf: { maxFileSize: '64B', mediaType: 'file' },
       video: { maxFileSize: '1024MB', mediaType: 'video' },
@@ -55,7 +55,7 @@ describe('groupFilesByType', () => {
       length: files.length,
     } as FileList;
 
-    const config: uploadConfig = {
+    const config: UploadConfig = {
       image: { maxFileSize: '8MB', mediaType: 'img' },
     };
 
@@ -63,7 +63,7 @@ describe('groupFilesByType', () => {
       try {
         groupFilesByType(fileList, config);
       } catch (error: any) {
-        expect(error.code).toBe(UploadErrorCode.InvalidFileTypeError);
+        expect(error.code).toBe(ErrorCode.INVALID_FILE_TYPE);
       }
     });
   });
@@ -80,7 +80,7 @@ describe('groupFilesByType', () => {
       length: files.length,
     } as FileList;
 
-    const config: uploadConfig = {
+    const config: UploadConfig = {
       blob: { maxFileSize: '1024MB', mediaType: 'file' },
     };
 

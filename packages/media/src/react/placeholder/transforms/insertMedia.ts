@@ -4,7 +4,7 @@ import { insertNodes, nanoid, withoutNormalizing } from '@udecode/plate-common';
 
 import { type TPlaceholderElement, BasePlaceholderPlugin } from '../../../lib';
 import { PlaceholderPlugin } from '../PlaceholderPlugin';
-import { UploadErrorCode } from '../type';
+import { ErrorCode } from '../type';
 import { createUploadError, isUploadError } from '../utils/createUploadError';
 import { getMediaType } from '../utils/getMediaType';
 import { validateFiles } from '../utils/validateFiles';
@@ -19,28 +19,27 @@ export const insertMedia = (editor: PlateEditor, files: FileList): any => {
   } catch (error) {
     if (!isUploadError(error)) throw error;
 
-    return editor.setOption(PlaceholderPlugin, 'uploadError', error);
+    return editor.setOption(PlaceholderPlugin, 'error', error);
   }
 
   if (!multiple && files.length > 1) {
     return editor.setOption(
       PlaceholderPlugin,
-      'uploadError',
-      createUploadError(UploadErrorCode.MaxFileCountExceeded, {
-        invalidateFiles: Array.from(files),
+      'error',
+      createUploadError(ErrorCode.TOO_MANY_FILES, {
+        files: Array.from(files),
       })
     );
   }
 
-  const maxFileCount =
-    editor.getOption(PlaceholderPlugin, 'uploadMaxFileCount') ?? 3;
+  const maxFileCount = editor.getOption(PlaceholderPlugin, 'maxFileCount') ?? 3;
 
   if (files.length > maxFileCount) {
     return editor.setOption(
       PlaceholderPlugin,
-      'uploadError',
-      createUploadError(UploadErrorCode.MaxFileCountExceeded, {
-        invalidateFiles: Array.from(files),
+      'error',
+      createUploadError(ErrorCode.TOO_MANY_FILES, {
+        files: Array.from(files),
       })
     );
   }

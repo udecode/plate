@@ -2,7 +2,7 @@ import { type ExtendConfig, bindFirst } from '@udecode/plate-common';
 import { findEventRange, toTPlatePlugin } from '@udecode/plate-common/react';
 
 import type { AllowedFileType } from './internal/mimes';
-import type { MediaItemConfig, UploadErrorCode } from './type';
+import type { Error, MediaItemConfig } from './type';
 
 import { type PlaceholderConfig, BasePlaceholderPlugin } from '../../lib';
 import { AudioPlugin, FilePlugin, ImagePlugin, VideoPlugin } from '../plugins';
@@ -18,28 +18,27 @@ export type PlaceholderTransforms = {
   insertMedia: (files: FileList) => void;
 };
 
-export type UploadError = {
-  code: UploadErrorCode;
-  data: { invalidateFiles: File[] };
-};
-
-export type uploadConfig = Partial<Record<AllowedFileType, MediaItemConfig>>;
+export type UploadConfig = Partial<Record<AllowedFileType, MediaItemConfig>>;
 
 export const PlaceholderPlugin = toTPlatePlugin<
   ExtendConfig<
     PlaceholderConfig,
     {
-      uploadConfig: uploadConfig;
+      disabledDndPlugin: boolean;
+      uploadConfig: UploadConfig;
       uploadingFiles: Record<string, File>;
+      error?: Error | null;
+      maxFileCount?: number;
       // Whether multiple files of the same type can be uploaded.
       multiple?: boolean;
-      uploadError?: UploadError | null;
-      uploadMaxFileCount?: number;
     },
     { placeholder: PlaceholderApi }
   >
 >(BasePlaceholderPlugin, {
   options: {
+    disabledDndPlugin: false,
+    error: null,
+    maxFileCount: 5,
     multiple: true,
     uploadConfig: {
       audio: {
@@ -79,8 +78,6 @@ export const PlaceholderPlugin = toTPlatePlugin<
         minFileCount: 1,
       },
     },
-    uploadError: null,
-    uploadMaxFileCount: 5,
     uploadingFiles: {},
   },
 })
@@ -98,21 +95,6 @@ export const PlaceholderPlugin = toTPlatePlugin<
         [id]: file,
       });
     },
-    // getMediaConfig: (mediaType: MediaKeys) => {
-    //   const config = getOption('mediaConfig');
-
-    //   const keys = Object.keys(config);
-
-    //   for (const key of keys) {
-    //     const item = config[key as AllowedFileType];
-
-    //     if (item?.mediaType === mediaType) {
-    //       return item;
-    //     }
-    //   }
-
-    //   return null;
-    // },
     getUploadingFile: (id: string) => {
       const uploadingFiles = getOption('uploadingFiles');
 
@@ -126,9 +108,12 @@ export const PlaceholderPlugin = toTPlatePlugin<
       setOption('uploadingFiles', uploadingFiles);
     },
   }))
-  .extend(() => ({
+  .extend(({ getOption }) => ({
     handlers: {
       onDrop: ({ editor, event, tf }) => {
+        // using DnD plugin by default
+        if (!getOption('disabledDndPlugin')) return;
+
         const { files } = event.dataTransfer;
 
         if (files.length === 0) return false;

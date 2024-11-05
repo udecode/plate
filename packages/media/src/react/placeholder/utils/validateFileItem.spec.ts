@@ -1,6 +1,6 @@
 /* eslint-disable jest/valid-expect */
 /* eslint-disable jest/no-conditional-expect */
-import { type MediaItemConfig, UploadErrorCode } from '../type';
+import { type MediaItemConfig, ErrorCode } from '../type';
 import { validateFileItem } from './validateFileItem';
 
 describe('validateFileItem', () => {
@@ -37,7 +37,7 @@ describe('validateFileItem', () => {
       try {
         validateFileItem(files, config);
       } catch (error: any) {
-        expect(error.code).toBe(UploadErrorCode.MaxFileCountExceeded);
+        expect(error.code).toBe(ErrorCode.TOO_MANY_FILES);
       }
     });
   });
@@ -53,7 +53,7 @@ describe('validateFileItem', () => {
       try {
         validateFileItem(files, config);
       } catch (error: any) {
-        expect(error.code).toBe(UploadErrorCode.MaxFileSizeExceeded);
+        expect(error.code).toBe(ErrorCode.TOO_LARGE);
       }
     });
   });

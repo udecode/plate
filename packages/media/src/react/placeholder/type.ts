@@ -1,14 +1,48 @@
 import type { AudioPlugin, FilePlugin, ImagePlugin, VideoPlugin } from '..';
 
-export enum UploadErrorCode {
-  Success = '200',
-  InvalidFileTypeError = '400',
-  InvalidConfigKey = '401',
-  MaxFileCountExceeded = '402',
-  InvalidFileSize = '403',
-  MaxFileSizeExceeded = '404',
-  MinFileCountNotMet = '405',
+export enum ErrorCode {
+  INVALID_FILE_TYPE = 400,
+  TOO_MANY_FILES = 402,
+  INVALID_FILE_SIZE = 403,
+  TOO_LESS_FILES = 405,
+  TOO_LARGE = 413,
 }
+
+export type Error =
+  | {
+      data: {
+        allowedTypes: string[];
+        files: File[];
+      };
+      code: ErrorCode.INVALID_FILE_TYPE;
+    }
+  | {
+      data: {
+        files: File[];
+      };
+      code: ErrorCode.INVALID_FILE_SIZE;
+    }
+  | {
+      data: {
+        files: File[];
+        maxFileCount: number;
+      };
+      code: ErrorCode.TOO_MANY_FILES;
+    }
+  | {
+      data: {
+        files: File[];
+        maxFileSize: string;
+      };
+      code: ErrorCode.TOO_LARGE;
+    }
+  | {
+      data: {
+        files: File[];
+        minFileCount: number;
+      };
+      code: ErrorCode.TOO_LESS_FILES;
+    };
 
 export type MediaKeys =
   | typeof AudioPlugin.key

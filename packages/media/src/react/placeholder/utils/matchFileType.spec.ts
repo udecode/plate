@@ -1,6 +1,6 @@
 /* eslint-disable jest/valid-expect */
 /* eslint-disable jest/no-conditional-expect */
-import { UploadErrorCode } from '../type';
+import { ErrorCode } from '../type';
 import { matchFileType } from './matchFileType';
 
 describe('matchFileType', () => {
@@ -44,7 +44,7 @@ describe('matchFileType', () => {
       try {
         matchFileType(file, ['image']);
       } catch (error: any) {
-        expect(error.code).toBe(UploadErrorCode.InvalidFileTypeError);
+        expect(error.code).toBe(ErrorCode.INVALID_FILE_TYPE);
       }
     });
   });
