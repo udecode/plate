@@ -1,5 +1,11 @@
 # @udecode/plate-media
 
+## 39.3.3
+
+### Patch Changes
+
+- [#3728](https://github.com/udecode/plate/pull/3728) by [@felixfeng33](https://github.com/felixfeng33) – Fix can't drop
+
 ## 39.3.2
 
 ### Patch Changes
