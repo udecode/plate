@@ -31,7 +31,7 @@ export default async function BlocksPage() {
         <div className="relative scroll-m-16 pb-48">
           <BlockPreview
             block={{
-              description: 'A Notion-like AI template',
+              description: 'A Notion-like AI template.',
               descriptionSrc: siteConfig.links.potionTemplate,
               name: 'potion',
               src: siteConfig.links.potionIframe,

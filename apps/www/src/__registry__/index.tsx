@@ -365,6 +365,18 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
+    "todo-list-element": {
+      name: "todo-list-element",
+      description: "",
+      type: "registry:ui",
+      registryDependencies: ["checkbox","plate-element"],
+      files: ["registry/default/plate-ui/todo-list-element.tsx"],
+      component: React.lazy(() => import("@/registry/default/plate-ui/todo-list-element.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
     "toggle-element": {
       name: "toggle-element",
       description: "",

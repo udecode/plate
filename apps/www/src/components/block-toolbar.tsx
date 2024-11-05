@@ -45,7 +45,7 @@ export function BlockToolbar({
           {block.description}
         </a>
       </Button>
-      <div className="ml-auto hidden items-center gap-2 md:flex md:pr-[14px]">
+      <div className="ml-auto flex items-center gap-2 md:pr-[14px]">
         {block.name !== 'potion' && (
           <>
             <Button
