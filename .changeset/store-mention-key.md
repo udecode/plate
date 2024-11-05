@@ -1,5 +1,5 @@
 ---
-"@udecode/plate-mention": feat
+"@udecode/plate-mention": patch
 ---
 
 store mention key 
