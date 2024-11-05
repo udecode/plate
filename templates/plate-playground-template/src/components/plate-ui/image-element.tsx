@@ -63,6 +63,9 @@ export const ImageElement = withHOC(
               <Caption style={{ width }} align={align}>
                 <CaptionTextarea
                   readOnly={readOnly}
+                  onFocus={(e) => {
+                    e.preventDefault();
+                  }}
                   placeholder="Write a caption..."
                 />
               </Caption>
