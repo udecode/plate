@@ -1,5 +1,36 @@
 # @udecode/plate-media
 
+## 39.3.0
+
+### Minor Changes
+
+- [#3708](https://github.com/udecode/plate/pull/3708) by [@felixfeng33](https://github.com/felixfeng33) – ImagePlugin:
+
+  - New `initialHeight` and `initialWidth` in `TImageElement` This will display a loading placeholder while the image is still loading, which helps maintain a consistent height.
+  - New Api: editor.insert.imageFromFiles
+
+  PlaceholderPlugin:
+
+  - Mew `placeholderId` Used to track what was converted from that placeholder plugin.
+  - New `insertMedia` Used for inserting the placeholder at once.
+  - New `validateFiles` utils for validate the files meet the `mediaConfig`.
+    - If validation fails,stop insert placeholder and save the error message in uploadErrorMessage.
+  - New `option.multiple` `maxFileCount` Used to limit the number of placeholders inserted.
+  - New `option.disable` `disabledDndPlugin` Used to using the browser drop.
+  - New `error` use `editor.useOption` to watch and display a toast message.
+
+## 39.2.13
+
+### Patch Changes
+
+- [`03708f9823d240db78cd9ef9206bff98c6de0488`](https://github.com/udecode/plate/commit/03708f9823d240db78cd9ef9206bff98c6de0488) by [@zbeyens](https://github.com/zbeyens) – Remove `escape` handler
+
+## 39.2.4
+
+### Patch Changes
+
+- [#3653](https://github.com/udecode/plate/pull/3653) by [@felixfeng33](https://github.com/felixfeng33) – Fix scrollbar issue.
+
 ## 39.2.0
 
 ### Minor Changes

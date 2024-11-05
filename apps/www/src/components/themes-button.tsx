@@ -21,14 +21,15 @@ export function ThemesButton() {
       </div>
 
       <Button
+        size="md"
         variant="outline"
-        className="hidden md:flex"
+        className="hidden h-9 md:flex"
         onClick={() => {
           settingsStore.set.customizerTab('themes');
           settingsStore.set.showSettings(true);
         }}
       >
-        <Paintbrush className="mr-2 size-4" />
+        <Paintbrush />
         Themes
       </Button>
     </div>

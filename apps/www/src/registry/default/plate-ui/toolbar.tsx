@@ -5,15 +5,14 @@ import * as React from 'react';
 import * as ToolbarPrimitive from '@radix-ui/react-toolbar';
 import { cn, withCn, withRef, withVariants } from '@udecode/cn';
 import { type VariantProps, cva } from 'class-variance-authority';
-
-import { Icons } from '@/components/icons';
+import { ChevronDown } from 'lucide-react';
 
 import { Separator } from './separator';
 import { withTooltip } from './tooltip';
 
 export const Toolbar = withCn(
   ToolbarPrimitive.Root,
-  'relative flex select-none items-center gap-1 bg-background'
+  'relative flex select-none items-center'
 );
 
 export const ToolbarToggleGroup = withCn(
@@ -28,13 +27,12 @@ export const ToolbarLink = withCn(
 
 export const ToolbarSeparator = withCn(
   ToolbarPrimitive.Separator,
-  'my-1 w-px shrink-0 bg-border'
+  'mx-2 my-1 w-px shrink-0 bg-border'
 );
 
 const toolbarButtonVariants = cva(
   cn(
-    'inline-flex items-center justify-center rounded-md text-sm font-medium text-foreground ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
-    '[&_svg:not([data-icon])]:size-5'
+    'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium text-foreground ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg:not([data-icon])]:size-4'
   ),
   {
     defaultVariants: {
@@ -45,7 +43,7 @@ const toolbarButtonVariants = cva(
       size: {
         default: 'h-10 px-3',
         lg: 'h-11 px-5',
-        sm: 'h-9 px-2',
+        sm: 'h-7 px-2',
       },
       variant: {
         default:
@@ -87,7 +85,7 @@ const ToolbarButton = withTooltip(
                 size,
                 variant,
               }),
-              isDropdown && 'my-1 justify-between pr-1',
+              isDropdown && 'justify-between gap-1 pr-1',
               className
             )}
             value={pressed ? 'single' : ''}
@@ -95,9 +93,14 @@ const ToolbarButton = withTooltip(
           >
             {isDropdown ? (
               <>
-                <div className="flex flex-1">{children}</div>
+                <div className="flex flex-1 items-center gap-2 whitespace-nowrap">
+                  {children}
+                </div>
                 <div>
-                  <Icons.arrowDown className="ml-0.5 size-4" data-icon />
+                  <ChevronDown
+                    className="size-3.5 text-muted-foreground"
+                    data-icon
+                  />
                 </div>
               </>
             ) : (
@@ -134,25 +137,21 @@ export const ToolbarToggleItem = withVariants(
   ['variant', 'size']
 );
 
-export const ToolbarGroup = withRef<
-  'div',
-  {
-    noSeparator?: boolean;
-  }
->(({ children, className, noSeparator }, ref) => {
-  const childArr = React.Children.map(children, (c) => c);
-
-  if (!childArr || childArr.length === 0) return null;
-
+export const ToolbarGroup = withRef<'div'>(({ children, className }, ref) => {
   return (
-    <div ref={ref} className={cn('flex', className)}>
-      {!noSeparator && (
-        <div className="h-full py-1">
-          <Separator orientation="vertical" />
-        </div>
+    <div
+      ref={ref}
+      className={cn(
+        'group/toolbar-group',
+        'relative hidden has-[button]:flex',
+        className
       )}
+    >
+      <div className="flex items-center">{children}</div>
 
-      <div className="mx-1 flex items-center gap-1">{children}</div>
+      <div className="mx-1.5 py-0.5 group-last/toolbar-group:!hidden">
+        <Separator orientation="vertical" />
+      </div>
     </div>
   );
 });

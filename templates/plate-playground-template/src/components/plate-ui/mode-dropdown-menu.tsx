@@ -1,12 +1,16 @@
+'use client';
+
 import React from 'react';
+
+import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
+
 import {
   focusEditor,
   useEditorReadOnly,
   useEditorRef,
   usePlateStore,
 } from '@udecode/plate-common/react';
-
-import { Icons } from '@/components/icons';
+import { Eye, Pen } from 'lucide-react';
 
 import {
   DropdownMenu,
@@ -17,8 +21,6 @@ import {
   useOpenState,
 } from './dropdown-menu';
 import { ToolbarButton } from './toolbar';
-
-import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
 export function ModeDropdownMenu(props: DropdownMenuProps) {
   const editor = useEditorRef();
@@ -33,13 +35,13 @@ export function ModeDropdownMenu(props: DropdownMenuProps) {
   const item: any = {
     editing: (
       <>
-        <Icons.editing className="mr-2 size-5" />
+        <Pen />
         <span className="hidden lg:inline">Editing</span>
       </>
     ),
     viewing: (
       <>
-        <Icons.viewing className="mr-2 size-5" />
+        <Eye />
         <span className="hidden lg:inline">Viewing</span>
       </>
     ),
@@ -49,18 +51,17 @@ export function ModeDropdownMenu(props: DropdownMenuProps) {
     <DropdownMenu modal={false} {...openState} {...props}>
       <DropdownMenuTrigger asChild>
         <ToolbarButton
-          className="min-w-[auto] lg:min-w-[130px]"
-          isDropdown
           pressed={openState.open}
           tooltip="Editing mode"
+          isDropdown
         >
           {item[value]}
         </ToolbarButton>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="start" className="min-w-[180px]">
+      <DropdownMenuContent className="min-w-[180px]" align="start">
         <DropdownMenuRadioGroup
-          className="flex flex-col gap-0.5"
+          value={value}
           onValueChange={(newValue) => {
             if (newValue !== 'viewing') {
               setReadOnly(false);
@@ -76,7 +77,6 @@ export function ModeDropdownMenu(props: DropdownMenuProps) {
               return;
             }
           }}
-          value={value}
         >
           <DropdownMenuRadioItem value="editing">
             {item.editing}

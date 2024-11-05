@@ -1,32 +1,42 @@
+import type { Config } from "@/src/utils/get-config"
+
+import deepmerge from "deepmerge"
+import { HttpsProxyAgent } from "https-proxy-agent"
+import fetch from "node-fetch"
 import path from "path"
-import { Config } from "@/src/utils/get-config"
+import { z } from "zod"
+
 import { handleError } from "@/src/utils/handle-error"
 import { highlighter } from "@/src/utils/highlighter"
 import { logger } from "@/src/utils/logger"
 import {
+  type registryItemFileSchema,
   registryBaseColorSchema,
   registryIndexSchema,
-  registryItemFileSchema,
   registryItemSchema,
   registryResolvedItemsTreeSchema,
   stylesSchema,
 } from "@/src/utils/registry/schema"
 import { buildTailwindThemeColorsFromCssVars } from "@/src/utils/updaters/update-tailwind-config"
-import deepmerge from "deepmerge"
-import { HttpsProxyAgent } from "https-proxy-agent"
-import fetch from "node-fetch"
-import { z } from "zod"
+
 
 export const REGISTRY_URL =
   process.env.REGISTRY_URL ?? "https://ui.shadcn.com/r"
 
+  export const REGISTRY_MAP = {
+    magic: 'https://magicui.design/r',
+    plate: 'https://platejs.org/r',
+    shadcn: REGISTRY_URL,
+  };
+  
 const agent = process.env.https_proxy
   ? new HttpsProxyAgent(process.env.https_proxy)
   : undefined
 
 export async function getRegistryIndex(registryUrl?: string) {
   try {
-    const [result] = await fetchRegistry(["index.json"], registryUrl)
+    // DIFF
+    const [result] = await fetchRegistry(['index.json'], registryUrl)
     return registryIndexSchema.parse(result)
   } catch (error) {
     logger.error("\n")
@@ -52,7 +62,7 @@ export async function getRegistryItem(
   registryUrl?: string
 ) {
   try {
-    let [result] = await fetchRegistry(
+    const [result] = await fetchRegistry(
       [isUrl(name) ? name : `styles/${style}/${name}.json`],
       registryUrl,
       true
@@ -69,24 +79,24 @@ export async function getRegistryItem(
 export async function getRegistryBaseColors() {
   return [
     {
-      name: "neutral",
       label: "Neutral",
+      name: "neutral",
     },
     {
-      name: "gray",
       label: "Gray",
+      name: "gray",
     },
     {
-      name: "zinc",
       label: "Zinc",
+      name: "zinc",
     },
     {
-      name: "stone",
       label: "Stone",
+      name: "stone",
     },
     {
-      name: "slate",
       label: "Slate",
+      name: "slate",
     },
   ]
 }
@@ -177,7 +187,7 @@ export async function fetchRegistry(
         const response = await fetch(url, { agent })
 
         if (!response.ok) {
-          const errorMessages: { [key: number]: string } = {
+          const errorMessages: Record<number, string> = {
             400: "Bad request",
             401: "Unauthorized",
             403: "Forbidden",
@@ -283,7 +293,7 @@ export async function registryResolveItemsTree(
       names.unshift("index")
     }
 
-    let registryDependencies: string[] = []
+    const registryDependencies: string[] = []
     for (const name of names) {
       const itemRegistryDependencies = await resolveRegistryDependencies(
         name,
@@ -293,7 +303,8 @@ export async function registryResolveItemsTree(
     }
 
     const uniqueRegistryDependencies = Array.from(new Set(registryDependencies))
-    let result = await fetchRegistry(uniqueRegistryDependencies, config.url)
+    const result = await fetchRegistry(uniqueRegistryDependencies, config.url)
+    
     const payload = z.array(registryItemSchema).parse(result)
 
     if (!payload) {
@@ -304,14 +315,12 @@ export async function registryResolveItemsTree(
     // the theme item if a base color is provided.
     // We do this for index only.
     // Other components will ship with their theme tokens.
-    if (names.includes("index")) {
-      if (config.tailwind.baseColor) {
+    if (names.includes("index") && config.tailwind.baseColor) {
         const theme = await registryGetTheme(config.tailwind.baseColor, config)
         if (theme) {
           payload.unshift(theme)
         }
       }
-    }
 
     let tailwind = {}
     payload.forEach((item) => {
@@ -322,7 +331,7 @@ export async function registryResolveItemsTree(
     payload.forEach((item) => {
       cssVars = deepmerge(cssVars, item.cssVars ?? {})
     })
-
+    
     let docs = ""
     payload.forEach((item) => {
       if (item.docs) {
@@ -331,16 +340,16 @@ export async function registryResolveItemsTree(
     })
 
     return registryResolvedItemsTreeSchema.parse({
+      cssVars,
       dependencies: deepmerge.all(
         payload.map((item) => item.dependencies ?? [])
       ),
       devDependencies: deepmerge.all(
         payload.map((item) => item.devDependencies ?? [])
       ),
+      docs,
       files: deepmerge.all(payload.map((item) => item.files ?? [])),
       tailwind,
-      cssVars,
-      docs,
     })
   } catch (error) {
     handleError(error)
@@ -397,8 +406,13 @@ export async function registryGetTheme(name: string, config: Config) {
 
   // TODO: Move this to the registry i.e registry:theme.
   const theme = {
+    cssVars: {
+      dark: {},
+      light: {
+        radius: "0.5rem",
+      },
+    },
     name,
-    type: "registry:theme",
     tailwind: {
       config: {
         theme: {
@@ -413,12 +427,7 @@ export async function registryGetTheme(name: string, config: Config) {
         },
       },
     },
-    cssVars: {
-      light: {
-        radius: "0.5rem",
-      },
-      dark: {},
-    },
+    type: "registry:theme",
   } satisfies z.infer<typeof registryItemSchema>
 
   if (config.tailwind.cssVariables) {
@@ -427,13 +436,13 @@ export async function registryGetTheme(name: string, config: Config) {
       ...buildTailwindThemeColorsFromCssVars(baseColor.cssVars.dark),
     }
     theme.cssVars = {
-      light: {
-        ...baseColor.cssVars.light,
-        ...theme.cssVars.light,
-      },
       dark: {
         ...baseColor.cssVars.dark,
         ...theme.cssVars.dark,
+      },
+      light: {
+        ...baseColor.cssVars.light,
+        ...theme.cssVars.light,
       },
     }
   }
@@ -446,7 +455,7 @@ function getRegistryUrl(path: string, registryUrl?: string) {
     // If the url contains /chat/b/, we assume it's the v0 registry.
     // We need to add the /json suffix if it's missing.
     const url = new URL(path)
-    if (url.pathname.match(/\/chat\/b\//) && !url.pathname.endsWith("/json")) {
+    if ((/\/chat\/b\//.exec(url.pathname)) && !url.pathname.endsWith("/json")) {
       url.pathname = `${url.pathname}/json`
     }
 
@@ -479,13 +488,13 @@ export async function getDefaultConfig(
     return {
       ...defaultConfig,
       ...result,
-      tailwind: {
-        ...defaultConfig.tailwind,
-        ...(result as any).tailwind,
-      },
       aliases: {
         ...defaultConfig.aliases,
         ...(result as any).aliases,
+      },
+      tailwind: {
+        ...defaultConfig.tailwind,
+        ...(result as any).tailwind,
       },
     } as Config
   }

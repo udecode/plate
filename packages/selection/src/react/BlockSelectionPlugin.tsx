@@ -110,7 +110,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
 
   React.useEffect(() => {
     if (isSelecting && inputRef.current) {
-      inputRef.current.focus();
+      inputRef.current.focus({ preventScroll: true });
     } else if (inputRef.current) {
       inputRef.current.blur();
     }

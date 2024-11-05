@@ -3,7 +3,7 @@
  */
 
 export * from './BaseCommentsPlugin';
-export * from './types';
+export type * from './types';
 export * from './withComments';
 export * from './queries/index';
 export * from './transforms/index';

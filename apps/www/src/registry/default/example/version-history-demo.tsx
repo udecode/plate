@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 
 import { cn } from '@udecode/cn';
@@ -274,7 +276,7 @@ function Diff({ current, previous }: DiffProps) {
         editor={editor}
       />
 
-      <pre>{JSON.stringify(diffValue, null, 2)}</pre>
+      {/* <pre>{JSON.stringify(diffValue, null, 2)}</pre> */}
     </>
   );
 }

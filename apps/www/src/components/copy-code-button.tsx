@@ -70,11 +70,7 @@ export function CopyCodeButton({
       }}
       {...props}
     >
-      {hasCopied ? (
-        <CheckIcon className="mr-2 size-4" />
-      ) : (
-        <CopyIcon className="mr-2 size-4" />
-      )}
+      {hasCopied ? <CheckIcon /> : <CopyIcon />}
       Copy code
     </Button>
   );

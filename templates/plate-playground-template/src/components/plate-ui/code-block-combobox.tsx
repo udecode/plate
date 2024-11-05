@@ -1,15 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
+
 import { cn } from '@udecode/cn';
 import {
   useCodeBlockCombobox,
   useCodeBlockComboboxState,
 } from '@udecode/plate-code-block/react';
+import { Check, ChevronsUpDown } from 'lucide-react';
+
 // Prism must be imported before all language files
 import Prism from 'prismjs';
-
-import { Icons } from '@/components/icons';
 
 import { Button } from './button';
 import {
@@ -30,8 +31,10 @@ import 'prismjs/components/prism-cpp.js';
 import 'prismjs/components/prism-csharp.js';
 import 'prismjs/components/prism-css.js';
 import 'prismjs/components/prism-dart.js';
+
 // import 'prismjs/components/prism-django.js';
 import 'prismjs/components/prism-docker.js';
+
 // import 'prismjs/components/prism-ejs.js';
 import 'prismjs/components/prism-erlang.js';
 import 'prismjs/components/prism-git.js';
@@ -52,6 +55,7 @@ import 'prismjs/components/prism-matlab.js';
 import 'prismjs/components/prism-mermaid.js';
 import 'prismjs/components/prism-objectivec.js';
 import 'prismjs/components/prism-perl.js';
+
 // import 'prismjs/components/prism-php.js';
 import 'prismjs/components/prism-powershell.js';
 import 'prismjs/components/prism-properties.js';
@@ -159,7 +163,7 @@ export function CodeBlockCombobox() {
             ? languages.find((language) => language.value === state.value)
                 ?.label
             : 'Plain Text'}
-          <Icons.chevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
+          <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0">
@@ -182,9 +186,8 @@ export function CodeBlockCombobox() {
                   setOpen(false);
                 }}
               >
-                <Icons.check
+                <Check
                   className={cn(
-                    'mr-2 size-4',
                     state.value === language.value ? 'opacity-100' : 'opacity-0'
                   )}
                 />

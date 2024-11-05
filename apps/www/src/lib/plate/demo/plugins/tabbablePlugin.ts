@@ -1,5 +1,9 @@
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import { isSelectionAtBlockStart, someNode } from '@udecode/plate-common';
+import {
+  isSelectionAtBlockEnd,
+  isSelectionAtBlockStart,
+  someNode,
+} from '@udecode/plate-common';
 import { createPlatePlugin } from '@udecode/plate-common/react';
 import { IndentListPlugin } from '@udecode/plate-indent-list/react';
 import { ListItemPlugin } from '@udecode/plate-list/react';
@@ -18,7 +22,8 @@ export const tabbablePlugin = TabbablePlugin.extend({
 }).configure(({ editor }) => ({
   options: {
     query: () => {
-      if (isSelectionAtBlockStart(editor)) return false;
+      if (isSelectionAtBlockStart(editor) || isSelectionAtBlockEnd(editor))
+        return false;
 
       return !someNode(editor, {
         match: (n) => {

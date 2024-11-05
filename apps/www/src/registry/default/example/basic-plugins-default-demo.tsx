@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 
 import type { Value } from '@udecode/plate-common';
@@ -11,7 +13,11 @@ import {
 } from '@udecode/plate-basic-marks/react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import { Plate, usePlateEditor } from '@udecode/plate-common/react';
+import {
+  type PlateContentProps,
+  Plate,
+  usePlateEditor,
+} from '@udecode/plate-common/react';
 import { HeadingPlugin } from '@udecode/plate-heading/react';
 
 import {
@@ -20,10 +26,15 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { editableProps } from '@/plate/demo/editableProps';
-import { Editor } from '@/registry/default/plate-ui/editor';
+import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 
 import { basicEditorValue } from './basic-plugins-components-demo';
+
+const editableProps: PlateContentProps = {
+  autoFocus: false,
+  placeholder: 'Type…',
+  spellCheck: false,
+};
 
 export default function BasicPluginsDefaultDemo() {
   const [debugValue, setDebugValue] = useState<Value>(basicEditorValue);
@@ -49,7 +60,9 @@ export default function BasicPluginsDefaultDemo() {
       }}
       editor={editor}
     >
-      <Editor {...editableProps} />
+      <EditorContainer>
+        <Editor {...editableProps} />
+      </EditorContainer>
 
       <Accordion type="single" collapsible>
         <AccordionItem value="manual-installation">

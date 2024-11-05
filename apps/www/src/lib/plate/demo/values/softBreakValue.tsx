@@ -6,7 +6,7 @@ jsx;
 
 export const softBreakValue: any = (
   <fragment>
-    <hh2>Soft Break ⇧⏎</hh2>
+    <hh2>Soft Break</hh2>
     <hp>
       Customize how soft breaks (line breaks within a paragraph) are handled
       using configurable rules

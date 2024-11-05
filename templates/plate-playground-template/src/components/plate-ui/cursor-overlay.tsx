@@ -1,19 +1,23 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect } from 'react';
+
 import { cn } from '@udecode/cn';
 import {
   createPlatePlugin,
   findEventRange,
+  useEditorPlugin,
   useEditorRef,
 } from '@udecode/plate-common/react';
-import { CursorOverlay as CursorOverlayPrimitive } from '@udecode/plate-cursor';
-import { DndPlugin } from '@udecode/plate-dnd';
-
-import type {
-  CursorData,
-  CursorOverlayProps,
-  CursorProps,
-  CursorState,
+import {
+  type CursorData,
+  type CursorOverlayProps,
+  type CursorProps,
+  type CursorState,
+  CursorOverlay as CursorOverlayPrimitive,
 } from '@udecode/plate-cursor';
+import { DndPlugin } from '@udecode/plate-dnd';
+import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 
 export function Cursor({
   caretPosition,
@@ -30,11 +34,11 @@ export function Cursor({
       {!disableSelection &&
         selectionRects.map((position, i) => (
           <div
+            key={i}
             className={cn(
               'pointer-events-none absolute z-10 opacity-30',
               classNames?.selectionRect
             )}
-            key={i}
             style={{
               ...selectionStyle,
               ...position,
@@ -63,13 +67,15 @@ export function CursorOverlay({ cursors, ...props }: CursorOverlayProps) {
   return (
     <CursorOverlayPrimitive
       {...props}
-      cursors={allCursors}
       onRenderCursor={Cursor}
+      cursors={allCursors}
     />
   );
 }
 
 export const DragOverCursorPlugin = createPlatePlugin({
+  key: 'dragOverCursor',
+  options: { cursors: {} as Record<string, CursorState<CursorData>> },
   handlers: {
     onDragEnd: ({ editor, plugin }) => {
       editor.setOption(plugin, 'cursors', {});
@@ -86,13 +92,13 @@ export const DragOverCursorPlugin = createPlatePlugin({
 
       editor.setOption(plugin, 'cursors', {
         drag: {
+          key: 'drag',
           data: {
             style: {
               backgroundColor: 'hsl(222.2 47.4% 11.2%)',
               width: 3,
             },
           },
-          key: 'drag',
           selection: range,
         },
       });
@@ -101,6 +107,45 @@ export const DragOverCursorPlugin = createPlatePlugin({
       editor.setOption(plugin, 'cursors', {});
     },
   },
-  key: 'dragOverCursor',
-  options: { cursors: {} as Record<string, CursorState<CursorData>> },
+});
+
+export const SelectionOverlayPlugin = createPlatePlugin({
+  key: 'selection_overlay',
+  useHooks: () => {
+    const { editor } = useEditorPlugin(BlockSelectionPlugin);
+    const isSelecting = editor.useOptions(BlockSelectionPlugin).isSelecting;
+
+    useEffect(() => {
+      if (isSelecting) {
+        setTimeout(() => {
+          editor.setOption(DragOverCursorPlugin, 'cursors', {});
+        }, 0);
+      }
+    }, [editor, isSelecting]);
+  },
+  handlers: {
+    onBlur: ({ editor, event }) => {
+      const isPrevented =
+        (event.relatedTarget as HTMLElement)?.dataset?.platePreventOverlay ===
+        'true';
+
+      if (isPrevented) return;
+      if (editor.selection) {
+        editor.setOption(DragOverCursorPlugin, 'cursors', {
+          drag: {
+            key: 'blur',
+            data: {
+              selectionStyle: {
+                backgroundColor: 'rgba(47, 121, 216, 0.35)',
+              },
+            },
+            selection: editor.selection,
+          },
+        });
+      }
+    },
+    onFocus: ({ editor }) => {
+      editor.setOption(DragOverCursorPlugin, 'cursors', {});
+    },
+  },
 });

@@ -1,0 +1,31 @@
+{
+  "dependencies": [
+    "@udecode/plate-media"
+  ],
+  "doc": {
+    "description": "A modal component for previewing and manipulating images.",
+    "docs": [
+      {
+        "route": "/docs/media"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/image-preview"
+      }
+    ],
+    "examples": [
+      "media-demo",
+      "media-toolbar-pro"
+    ]
+  },
+  "files": [
+    {
+      "content": "'use client';\n\nimport { cn, createPrimitiveComponent } from '@udecode/cn';\nimport {\n  PreviewImage,\n  useImagePreview,\n  useImagePreviewState,\n  useScaleInput,\n  useScaleInputState,\n} from '@udecode/plate-media/react';\nimport { cva } from 'class-variance-authority';\nimport { ArrowLeft, ArrowRight, Download, Minus, Plus, X } from 'lucide-react';\n\nconst toolButtonVariants = cva('rounded bg-[rgba(0,0,0,0.5)] px-1', {\n  defaultVariants: {\n    variant: 'default',\n  },\n  variants: {\n    variant: {\n      default: 'text-white',\n      disabled: 'cursor-not-allowed text-gray-400',\n    },\n  },\n});\n\nconst ScaleInput = createPrimitiveComponent('input')({\n  propsHook: useScaleInput,\n  stateHook: useScaleInputState,\n});\n\nconst SCROLL_SPEED = 4;\n\nexport const ImagePreview = () => {\n  const state = useImagePreviewState({ scrollSpeed: SCROLL_SPEED });\n\n  const {\n    closeProps,\n    currentUrlIndex,\n    maskLayerProps,\n    nextDisabled,\n    nextProps,\n    prevDisabled,\n    prevProps,\n    scaleTextProps,\n    zommOutProps,\n    zoomInDisabled,\n    zoomInProps,\n    zoomOutDisabled,\n  } = useImagePreview(state);\n\n  const { isOpen, scale } = state;\n\n  return (\n    <div\n      className={cn(\n        'fixed left-0 top-0 z-50 h-screen w-screen',\n        !isOpen && 'hidden'\n      )}\n      {...maskLayerProps}\n    >\n      <div className=\"absolute inset-0 size-full bg-black opacity-30\"></div>\n      <div className=\"absolute inset-0 size-full bg-black opacity-30\"></div>\n      <div className=\"absolute inset-0 flex items-center justify-center \">\n        <div className=\"relative flex max-h-screen w-full items-center\">\n          <PreviewImage\n            className={cn(\n              'mx-auto block max-h-[calc(100vh-4rem)] w-auto object-contain transition-transform'\n            )}\n          />\n          <div\n            className=\"absolute bottom-0 left-1/2 z-40 flex w-fit -translate-x-1/2 justify-center gap-4 p-2 text-center text-white\"\n            onClick={(e) => e.stopPropagation()}\n          >\n            <div className=\"flex gap-1\">\n              <button\n                {...prevProps}\n                className={cn(\n                  toolButtonVariants({\n                    variant: prevDisabled ? 'disabled' : 'default',\n                  })\n                )}\n                type=\"button\"\n              >\n                <ArrowLeft />\n              </button>\n              {(currentUrlIndex ?? 0) + 1}\n              <button\n                {...nextProps}\n                className={cn(\n                  toolButtonVariants({\n                    variant: nextDisabled ? 'disabled' : 'default',\n                  })\n                )}\n                type=\"button\"\n              >\n                <ArrowRight />\n              </button>\n            </div>\n            <div className=\"flex \">\n              <button\n                className={cn(\n                  toolButtonVariants({\n                    variant: zoomOutDisabled ? 'disabled' : 'default',\n                  })\n                )}\n                {...zommOutProps}\n                type=\"button\"\n              >\n                <Minus className=\"size-4\" />\n              </button>\n              <div className=\"mx-px\">\n                {state.isEditingScale ? (\n                  <>\n                    <ScaleInput className=\"w-10 rounded px-1 text-slate-500 outline\" />{' '}\n                    <span>%</span>\n                  </>\n                ) : (\n                  <span {...scaleTextProps}>{scale * 100 + '%'}</span>\n                )}\n              </div>\n              <button\n                className={cn(\n                  toolButtonVariants({\n                    variant: zoomInDisabled ? 'disabled' : 'default',\n                  })\n                )}\n                {...zoomInProps}\n                type=\"button\"\n              >\n                <Plus className=\"size-4\" />\n              </button>\n            </div>\n            {/* TODO: downLoad the image */}\n            <button className={cn(toolButtonVariants())} type=\"button\">\n              <Download className=\"size-4\" />\n            </button>\n            <button\n              {...closeProps}\n              className={cn(toolButtonVariants())}\n              type=\"button\"\n            >\n              <X className=\"size-4\" />\n            </button>\n          </div>\n        </div>\n      </div>\n    </div>\n  );\n};\n",
+      "path": "plate-ui/image-preview.tsx",
+      "target": "components/plate-ui/image-preview.tsx",
+      "type": "registry:ui"
+    }
+  ],
+  "name": "image-preview",
+  "registryDependencies": [],
+  "type": "registry:ui"
+}

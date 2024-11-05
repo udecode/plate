@@ -1,26 +1,29 @@
+'use client';
+
 import React, { useEffect } from 'react';
-import { isSelectionExpanded } from '@udecode/plate-common';
+
+import {
+  type WithRequiredKey,
+  isSelectionExpanded,
+} from '@udecode/plate-common';
 import {
   useEditorSelector,
   useElement,
   useRemoveNodeButton,
 } from '@udecode/plate-common/react';
 import {
-  floatingMediaActions,
   FloatingMedia as FloatingMediaPrimitive,
+  floatingMediaActions,
   useFloatingMediaSelectors,
 } from '@udecode/plate-media/react';
+import { Link, Trash2Icon } from 'lucide-react';
 import { useReadOnly, useSelected } from 'slate-react';
-
-import { Icons } from '@/components/icons';
 
 import { Button, buttonVariants } from './button';
 import { CaptionButton } from './caption';
 import { inputVariants } from './input';
 import { Popover, PopoverAnchor, PopoverContent } from './popover';
 import { Separator } from './separator';
-
-import type { WithRequiredKey } from '@udecode/plate-common';
 
 export interface MediaPopoverProps {
   children: React.ReactNode;
@@ -51,7 +54,7 @@ export function MediaPopover({ children, plugin }: MediaPopoverProps) {
   if (readOnly) return <>{children}</>;
 
   return (
-    <Popover modal={false} open={isOpen}>
+    <Popover open={isOpen} modal={false}>
       <PopoverAnchor>{children}</PopoverAnchor>
 
       <PopoverContent
@@ -61,19 +64,19 @@ export function MediaPopover({ children, plugin }: MediaPopoverProps) {
         {isEditing ? (
           <div className="flex w-[330px] flex-col">
             <div className="flex items-center">
-              <div className="flex items-center pl-3 text-muted-foreground">
-                <Icons.link className="size-4" />
+              <div className="flex items-center pl-2 pr-1 text-muted-foreground">
+                <Link className="size-4" />
               </div>
 
               <FloatingMediaPrimitive.UrlInput
                 className={inputVariants({ h: 'sm', variant: 'ghost' })}
-                options={{ plugin }}
                 placeholder="Paste the embed link..."
+                options={{ plugin }}
               />
             </div>
           </div>
         ) : (
-          <div className="box-content flex h-9 items-center gap-1">
+          <div className="box-content flex items-center">
             <FloatingMediaPrimitive.EditButton
               className={buttonVariants({ size: 'sm', variant: 'ghost' })}
             >
@@ -82,10 +85,10 @@ export function MediaPopover({ children, plugin }: MediaPopoverProps) {
 
             <CaptionButton variant="ghost">Caption</CaptionButton>
 
-            <Separator className="my-1" orientation="vertical" />
+            <Separator orientation="vertical" className="mx-1 h-6" />
 
-            <Button size="sms" variant="ghost" {...buttonProps}>
-              <Icons.delete className="size-4" />
+            <Button size="icon" variant="ghost" {...buttonProps}>
+              <Trash2Icon />
             </Button>
           </div>
         )}

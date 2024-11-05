@@ -1,9 +1,12 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect } from 'react';
 
 import { cn } from '@udecode/cn';
 import {
   createPlatePlugin,
   findEventRange,
+  useEditorPlugin,
   useEditorRef,
 } from '@udecode/plate-common/react';
 import {
@@ -14,6 +17,7 @@ import {
   CursorOverlay as CursorOverlayPrimitive,
 } from '@udecode/plate-cursor';
 import { DndPlugin } from '@udecode/plate-dnd';
+import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 
 export function Cursor({
   caretPosition,
@@ -69,7 +73,7 @@ export function CursorOverlay({ cursors, ...props }: CursorOverlayProps) {
   );
 }
 
-const DragOverCursorPlugin = createPlatePlugin({
+export const DragOverCursorPlugin = createPlatePlugin({
   key: 'dragOverCursor',
   options: { cursors: {} as Record<string, CursorState<CursorData>> },
   handlers: {
@@ -101,6 +105,47 @@ const DragOverCursorPlugin = createPlatePlugin({
     },
     onDrop: ({ editor, plugin }) => {
       editor.setOption(plugin, 'cursors', {});
+    },
+  },
+});
+
+export const SelectionOverlayPlugin = createPlatePlugin({
+  key: 'selection_overlay',
+  useHooks: () => {
+    const { editor } = useEditorPlugin(BlockSelectionPlugin);
+    const isSelecting = editor.useOptions(BlockSelectionPlugin).isSelecting;
+
+    useEffect(() => {
+      if (isSelecting) {
+        setTimeout(() => {
+          editor.setOption(DragOverCursorPlugin, 'cursors', {});
+        }, 0);
+      }
+    }, [editor, isSelecting]);
+  },
+  handlers: {
+    onBlur: ({ editor, event }) => {
+      const isPrevented =
+        (event.relatedTarget as HTMLElement)?.dataset?.platePreventOverlay ===
+        'true';
+
+      if (isPrevented) return;
+      if (editor.selection) {
+        editor.setOption(DragOverCursorPlugin, 'cursors', {
+          drag: {
+            key: 'blur',
+            data: {
+              selectionStyle: {
+                backgroundColor: 'rgba(47, 121, 216, 0.35)',
+              },
+            },
+            selection: editor.selection,
+          },
+        });
+      }
+    },
+    onFocus: ({ editor }) => {
+      editor.setOption(DragOverCursorPlugin, 'cursors', {});
     },
   },
 });

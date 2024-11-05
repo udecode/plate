@@ -12,7 +12,7 @@ import * as ERRORS from '@/src/utils/errors';
 import { handleError } from '@/src/utils/handle-error';
 import { highlighter } from '@/src/utils/highlighter';
 import { logger } from '@/src/utils/logger';
-import { getRegistryIndex } from '@/src/utils/registry';
+import { REGISTRY_MAP, getRegistryIndex } from '@/src/utils/registry';
 import { updateAppIndex } from '@/src/utils/update-app-index';
 
 import { type Config, resolveConfigPaths } from '../utils/get-config';
@@ -35,7 +35,7 @@ export const add = new Command()
   .description('add a component to your project')
   .argument(
     '[components...]',
-    'the components to add or a url to the component.'
+    'the components to add or a url to the component. Use prefix (eg. plate/editor) to specify registry'
   )
   .option('-y, --yes', 'skip confirmation prompt.', false)
   .option('-o, --overwrite', 'overwrite existing files.', false)
@@ -56,11 +56,27 @@ export const add = new Command()
   .option('-l, --list', 'list all available registries', false)
   .action(async (components, opts) => {
     try {
+      // DIFF START
+      let registry = opts.registry;
+      const prefixedComponents = components.map((component: any) => {
+        const [prefix, name] = component.split('/');
+
+        if (name && REGISTRY_MAP[prefix as keyof typeof REGISTRY_MAP]) {
+          registry = prefix;
+
+          return name;
+        }
+
+        return component;
+      });
+
       const options = addOptionsSchema.parse({
-        components,
+        components: prefixedComponents,
         cwd: path.resolve(opts.cwd),
+        registry,
         ...opts,
       });
+      // DIFF END
 
       // Confirm if user is installing themes.
       // For now, we assume a theme is prefixed with "theme-".
@@ -90,12 +106,20 @@ export const add = new Command()
       let { config, errors } = await preFlightAdd(options);
 
       // No components.json file. Prompt the user to run init.
-      if (errors[ERRORS.MISSING_CONFIG]) {
+      if (
+        !config ||
+        errors[ERRORS.MISSING_CONFIG] ||
+        errors[ERRORS.MISSING_REGISTRY]
+      ) {
         const { proceed } = await prompts({
           initial: true,
-          message: `You need to create a ${highlighter.info(
-            'components.json'
-          )} file to add components. Proceed?`,
+          message: errors[ERRORS.MISSING_REGISTRY]
+            ? `You need to add ${highlighter.info(
+                `${options.registry}`
+              )} registry to your config. Proceed?`
+            : `You need to create a ${highlighter.info(
+                'components.json'
+              )} file to add components. Proceed?`,
           name: 'proceed',
           type: 'confirm',
         });
@@ -105,20 +129,32 @@ export const add = new Command()
           process.exit(1);
         }
 
+        let url = options.registry;
+
+        if (url) {
+          url = REGISTRY_MAP[url as keyof typeof REGISTRY_MAP] ?? url;
+        }
+
         config = await runInit({
           cwd: options.cwd,
           defaults: false,
           force: true,
           isNewProject: false,
+          name: options.registry,
           silent: true,
           skipPreflight: false,
           srcDir: options.srcDir,
-          url: options.registry,
+          url,
           yes: true,
         });
+
+        options.cwd = config.resolvedPaths.cwd;
+        const res = await preFlightAdd(options);
+        // config = res.config!;
+        errors = res.errors!;
       }
 
-      const registryConfig = await getRegistryConfig(config as any, options);
+      const registryConfig = await getRegistryConfig(config, options);
 
       if (!options.components?.length) {
         options.components = await promptForRegistryComponents(
@@ -143,17 +179,25 @@ export const add = new Command()
 
         options.cwd = projectPath;
 
+        let url = options.registry;
+
+        if (url) {
+          url = REGISTRY_MAP[url as keyof typeof REGISTRY_MAP] ?? url;
+        }
+
         config = await runInit({
           cwd: options.cwd,
           defaults: false,
           force: true,
           isNewProject: true,
+          name: options.registry,
           silent: true,
           skipPreflight: true,
           srcDir: options.srcDir,
-          url: options.registry,
+          url,
           yes: true,
         });
+        options.cwd = config.resolvedPaths.cwd;
 
         shouldUpdateAppIndex =
           options.components?.length === 1 &&
@@ -212,8 +256,10 @@ async function getRegistryConfig(
   // If a registry is specified
   if (registry) {
     // If it's a URL, use it directly
+
     if (registry.startsWith('http://') || registry.startsWith('https://')) {
       // Find registry by url
+
       if (config.registries) {
         const registryConfig = Object.values(config.registries)?.find(
           (reg) => reg.url === registry

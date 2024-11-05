@@ -14,10 +14,12 @@ import {
 } from '@udecode/plate-common/react';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 
+import type { AIBatch } from '../../lib';
+
+import { AIPlugin } from '../ai/AIPlugin';
 import { acceptAIChat } from './transforms/acceptAIChat';
 import { insertBelowAIChat } from './transforms/insertBelowAIChat';
 import { replaceSelectionAIChat } from './transforms/replaceSelectionAIChat';
-import { undoAI } from './transforms/undoAI';
 import { useAIChatHooks } from './useAIChatHook';
 import {
   type EditorPromptParams,
@@ -28,7 +30,7 @@ import { submitAIChat } from './utils/submitAIChat';
 import { withAIChat } from './withAIChat';
 
 export type AIChatOptions = {
-  chat: UseChatHelpers;
+  chat: Partial<UseChatHelpers>;
   createAIEditor: () => PlateEditor;
   /**
    * Specifies how the assistant message is handled:
@@ -105,11 +107,13 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     ({ editor, getOptions }) => {
       return {
         reload: () => {
-          const { chat } = getOptions();
+          const { chat, mode } = getOptions();
 
-          editor.getTransforms(AIChatPlugin).aiChat.undoAI();
+          if (mode === 'insert') {
+            editor.getTransforms(AIPlugin).ai.undo();
+          }
 
-          void chat.reload({
+          void chat.reload?.({
             body: {
               system: getEditorPrompt(editor, {
                 promptTemplate: getOptions().systemTemplate,
@@ -119,7 +123,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
         },
         reset: bindFirst(resetAIChat, editor),
         stop: () => {
-          getOptions().chat.stop();
+          getOptions().chat.stop?.();
         },
         submit: bindFirst(submitAIChat, editor),
       };
@@ -137,11 +141,17 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
       } else {
         focusEditor(editor);
       }
+
+      const lastBatch = editor.history.undos.at(-1) as AIBatch;
+
+      if (lastBatch?.ai) {
+        delete lastBatch.ai;
+      }
     },
     show: () => {
       api.aiChat.reset();
 
-      getOptions().chat.setMessages([]);
+      getOptions().chat.setMessages?.([]);
 
       setOption('open', true);
     },
@@ -150,5 +160,4 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     accept: bindFirst(acceptAIChat, editor),
     insertBelow: bindFirst(insertBelowAIChat, editor),
     replaceSelection: bindFirst(replaceSelectionAIChat, editor),
-    undoAI: bindFirst(undoAI, editor),
   }));

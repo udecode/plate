@@ -125,11 +125,11 @@ export function CopyWithClassNames({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => copyToClipboard(value)}>
-          <Icons.react className="mr-2 size-4" />
+          <Icons.react />
           <span>Component</span>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => copyToClipboard(classNames)}>
-          <Icons.tailwind className="mr-2 size-4" />
+          <Icons.tailwind />
           <span>Classname</span>
         </DropdownMenuItem>
       </DropdownMenuContent>

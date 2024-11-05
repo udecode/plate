@@ -3,7 +3,7 @@
  */
 
 export * from './BaseLinkPlugin';
-export * from './types';
+export type * from './types';
 export * from './withLink';
 export * from './transforms/index';
 export * from './utils/index';

@@ -6,16 +6,26 @@ import {
 
 import { type TCalloutElement, BaseCalloutPlugin } from '../BaseCalloutPlugin';
 
+export const CALLOUT_STORAGE_KEY = `plate-storage-callout`;
+
 export const insertCallout = <E extends SlateEditor>(
   editor: E,
-  options?: InsertNodesOptions<E>
+  {
+    icon,
+    variant,
+    ...options
+  }: InsertNodesOptions<E> & {
+    icon?: string;
+    variant?: (string & {}) | TCalloutElement['variant'];
+  } = {}
 ) => {
   insertNodes<TCalloutElement>(
     editor,
     {
       children: [{ text: '' }],
+      icon: icon ?? localStorage.getItem(CALLOUT_STORAGE_KEY) ?? '💡',
       type: editor.getType(BaseCalloutPlugin),
-      variant: 'info',
+      variant,
     },
     options as any
   );

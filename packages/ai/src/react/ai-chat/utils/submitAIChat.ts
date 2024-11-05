@@ -1,7 +1,9 @@
 import { type PlateEditor, getEditorPlugin } from '@udecode/plate-common/react';
 import { isSelecting } from '@udecode/plate-selection';
 
-import { type AIChatPluginConfig, AIChatPlugin } from '../AIChatPlugin';
+import type { AIChatPluginConfig } from '../AIChatPlugin';
+
+import { AIPlugin } from '../../ai/AIPlugin';
 import { type EditorPrompt, getEditorPrompt } from './getEditorPrompt';
 
 export const submitAIChat = (
@@ -22,9 +24,10 @@ export const submitAIChat = (
       key: 'aiChat',
     }
   );
+
   const { chat, promptTemplate, systemTemplate } = getOptions();
 
-  if (!prompt && chat.input.length === 0) {
+  if (!prompt && chat.input?.length === 0) {
     return;
   }
   if (!prompt) {
@@ -33,15 +36,15 @@ export const submitAIChat = (
   if (!mode) {
     mode = isSelecting(editor) ? 'chat' : 'insert';
   }
-  if (chat.messages.length > 0) {
-    editor.getTransforms(AIChatPlugin).aiChat.undoAI();
+  if (mode === 'insert') {
+    editor.getTransforms(AIPlugin).ai.undo();
   }
 
   setOption('mode', mode);
 
-  chat.setInput('');
+  chat.setInput?.('');
 
-  void chat.append(
+  void chat.append?.(
     {
       content:
         getEditorPrompt(editor, {

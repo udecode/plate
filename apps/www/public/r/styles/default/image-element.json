@@ -1,10 +1,26 @@
 {
   "dependencies": [
-    "@udecode/plate-media"
+    "@udecode/plate-media",
+    "@udecode/plate-resizable"
   ],
+  "doc": {
+    "description": "Image element with lazy loading, resizing capabilities, and optional caption.",
+    "docs": [
+      {
+        "route": "/docs/media"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/image-element"
+      }
+    ],
+    "examples": [
+      "media-demo",
+      "media-toolbar-pro"
+    ]
+  },
   "files": [
     {
-      "content": "import React from 'react';\n\nimport { cn, withRef } from '@udecode/cn';\nimport { withHOC } from '@udecode/plate-common/react';\nimport { Image, ImagePlugin, useMediaState } from '@udecode/plate-media/react';\nimport { ResizableProvider, useResizableStore } from '@udecode/plate-resizable';\n\nimport { Caption, CaptionTextarea } from './caption';\nimport { MediaPopover } from './media-popover';\nimport { PlateElement } from './plate-element';\nimport {\n  Resizable,\n  ResizeHandle,\n  mediaResizeHandleVariants,\n} from './resizable';\n\nexport const ImageElement = withHOC(\n  ResizableProvider,\n  withRef<typeof PlateElement>(\n    ({ children, className, nodeProps, ...props }, ref) => {\n      const { align = 'center', focused, readOnly, selected } = useMediaState();\n\n      const width = useResizableStore().get.width();\n\n      return (\n        <MediaPopover plugin={ImagePlugin}>\n          <PlateElement\n            ref={ref}\n            className={cn('py-2.5', className)}\n            {...props}\n          >\n            <figure className=\"group relative m-0\" contentEditable={false}>\n              <Resizable\n                align={align}\n                options={{\n                  align,\n                  readOnly,\n                }}\n              >\n                <ResizeHandle\n                  className={mediaResizeHandleVariants({ direction: 'left' })}\n                  options={{ direction: 'left' }}\n                />\n                <Image\n                  className={cn(\n                    'block w-full max-w-full cursor-pointer object-cover px-0',\n                    'rounded-sm',\n                    focused && selected && 'ring-2 ring-ring ring-offset-2'\n                  )}\n                  alt=\"\"\n                  {...nodeProps}\n                />\n                <ResizeHandle\n                  className={mediaResizeHandleVariants({\n                    direction: 'right',\n                  })}\n                  options={{ direction: 'right' }}\n                />\n              </Resizable>\n\n              <Caption style={{ width }} align={align}>\n                <CaptionTextarea\n                  readOnly={readOnly}\n                  placeholder=\"Write a caption...\"\n                />\n              </Caption>\n            </figure>\n\n            {children}\n          </PlateElement>\n        </MediaPopover>\n      );\n    }\n  )\n);\n",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { cn, withRef } from '@udecode/cn';\nimport { withHOC } from '@udecode/plate-common/react';\nimport { Image, ImagePlugin, useMediaState } from '@udecode/plate-media/react';\nimport { ResizableProvider, useResizableStore } from '@udecode/plate-resizable';\n\nimport { Caption, CaptionTextarea } from './caption';\nimport { MediaPopover } from './media-popover';\nimport { PlateElement } from './plate-element';\nimport {\n  Resizable,\n  ResizeHandle,\n  mediaResizeHandleVariants,\n} from './resizable';\n\nexport const ImageElement = withHOC(\n  ResizableProvider,\n  withRef<typeof PlateElement>(\n    ({ children, className, nodeProps, ...props }, ref) => {\n      const { align = 'center', focused, readOnly, selected } = useMediaState();\n\n      const width = useResizableStore().get.width();\n\n      return (\n        <MediaPopover plugin={ImagePlugin}>\n          <PlateElement\n            ref={ref}\n            className={cn('py-2.5', className)}\n            {...props}\n          >\n            <figure className=\"group relative m-0\" contentEditable={false}>\n              <Resizable\n                align={align}\n                options={{\n                  align,\n                  readOnly,\n                }}\n              >\n                <ResizeHandle\n                  className={mediaResizeHandleVariants({ direction: 'left' })}\n                  options={{ direction: 'left' }}\n                />\n                <Image\n                  className={cn(\n                    'block w-full max-w-full cursor-pointer object-cover px-0',\n                    'rounded-sm',\n                    focused && selected && 'ring-2 ring-ring ring-offset-2'\n                  )}\n                  alt=\"\"\n                  {...nodeProps}\n                />\n                <ResizeHandle\n                  className={mediaResizeHandleVariants({\n                    direction: 'right',\n                  })}\n                  options={{ direction: 'right' }}\n                />\n              </Resizable>\n\n              <Caption style={{ width }} align={align}>\n                <CaptionTextarea\n                  readOnly={readOnly}\n                  onFocus={(e) => {\n                    e.preventDefault();\n                  }}\n                  placeholder=\"Write a caption...\"\n                />\n              </Caption>\n            </figure>\n\n            {children}\n          </PlateElement>\n        </MediaPopover>\n      );\n    }\n  )\n);\n",
       "path": "plate-ui/image-element.tsx",
       "target": "components/plate-ui/image-element.tsx",
       "type": "registry:ui"

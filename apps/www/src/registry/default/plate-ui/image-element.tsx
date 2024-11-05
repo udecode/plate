@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 
 import { cn, withRef } from '@udecode/cn';
@@ -61,6 +63,9 @@ export const ImageElement = withHOC(
               <Caption style={{ width }} align={align}>
                 <CaptionTextarea
                   readOnly={readOnly}
+                  onFocus={(e) => {
+                    e.preventDefault();
+                  }}
                   placeholder="Write a caption..."
                 />
               </Caption>

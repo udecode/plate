@@ -6,7 +6,8 @@ export interface NavItem {
   external?: boolean;
   href?: string;
   icon?: keyof typeof Icons;
-  label?: string;
+  keywords?: string[];
+  label?: string[] | string;
 }
 
 export interface NavItemWithChildren extends NavItem {

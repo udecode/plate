@@ -9,6 +9,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { docsConfig } from '@/config/docs';
 import { siteConfig } from '@/config/site';
 import { Button } from '@/registry/default/plate-ui/button';
+import { DialogTitle } from '@/registry/default/plate-ui/dialog';
 
 import { Icons } from './icons';
 import { ScrollArea } from './ui/scroll-area';
@@ -25,6 +26,7 @@ export function MobileNav() {
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button
+          size="md"
           variant="ghost"
           className="mr-2 px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 md:hidden"
         >
@@ -62,6 +64,8 @@ export function MobileNav() {
         </Button>
       </SheetTrigger>
       <SheetContent className="pr-0" side="left">
+        <DialogTitle className="sr-only">Mobile Nav</DialogTitle>
+
         <MobileLink
           className="flex items-center"
           onOpenChange={setOpen}

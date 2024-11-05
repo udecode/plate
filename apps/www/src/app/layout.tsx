@@ -3,11 +3,10 @@ import React from 'react';
 import type { Metadata, Viewport } from 'next';
 
 import { cn } from '@udecode/cn';
+import { NuqsAdapter } from 'nuqs/adapters/next/app';
 
 import { GA } from '@/components/analytics/ga';
 import { Providers } from '@/components/context/providers';
-import { SiteFooter } from '@/components/site-footer';
-import { SiteHeader } from '@/components/site-header';
 import { TailwindIndicator } from '@/components/tailwind-indicator';
 import { Toaster } from '@/components/ui/sonner';
 import { siteConfig } from '@/config/site';
@@ -93,15 +92,16 @@ export default function RootLayout({ children }: RootLayoutProps) {
         )}
         suppressHydrationWarning
       >
-        <Providers>
-          <div vaul-drawer-wrapper="">
-            <div className="relative flex min-h-screen flex-col bg-background">
-              <SiteHeader />
-              <main className="flex-1">{children}</main>
-              <SiteFooter />
+        <NuqsAdapter>
+          <Providers>
+            <div vaul-drawer-wrapper="">
+              <div className="relative flex min-h-screen flex-col bg-background">
+                {children}
+              </div>
             </div>
-          </div>
-        </Providers>
+          </Providers>
+        </NuqsAdapter>
+
         <TailwindIndicator />
 
         <GA />

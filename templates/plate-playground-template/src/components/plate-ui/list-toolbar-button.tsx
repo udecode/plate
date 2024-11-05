@@ -1,12 +1,14 @@
+'use client';
+
 import React from 'react';
+
 import { withRef } from '@udecode/cn';
 import {
   BulletedListPlugin,
   useListToolbarButton,
   useListToolbarButtonState,
 } from '@udecode/plate-list/react';
-
-import { Icons } from '@/components/icons';
+import { List, ListOrdered } from 'lucide-react';
 
 import { ToolbarButton } from './toolbar';
 
@@ -28,7 +30,7 @@ export const ListToolbarButton = withRef<
       {...props}
       {...rest}
     >
-      {nodeType === BulletedListPlugin.key ? <Icons.ul /> : <Icons.ol />}
+      {nodeType === BulletedListPlugin.key ? <List /> : <ListOrdered />}
     </ToolbarButton>
   );
 });

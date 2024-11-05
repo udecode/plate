@@ -1,21 +1,47 @@
 # Playground Template
 
-A minimal template for building rich-text editors with [Plate](https://platejs.org/) and Next.js 14.
-
-## Usage
-
-```bash
-pnpm install
-pnpm dev
-```
+A minimal template for building rich-text editors with [Plate](https://platejs.org/) and Next.js 15.
 
 ## Features
 
-- Next.js 14 App Directory
-- [Plate](https://platejs.org/) Editor
+- Next.js 15 App Directory
+- [Plate](https://platejs.org/) editor
 - [shadcn/ui](https://ui.shadcn.com/)
-- Radix UI Primitives
-- Tailwind CSS
-- Icons from [Lucide](https://lucide.dev)
-- Dark mode with `next-themes`
-- Tailwind CSS class sorting, merging and linting.
+
+## Installation
+
+Choose one of these methods:
+
+### 1. Using CLI (Recommended)
+
+```bash
+npx shadcx@latest init -u https://platejs.org/r
+```
+
+```bash
+npx shadcx@latest add editor-basic -r plate
+```
+
+### 2. Using Template
+
+[Use this template](https://github.com/plate-editor/plate-template/generate), then install dependencies:
+
+```bash
+pnpm install
+```
+
+## Development
+
+```bash
+pnpm dev
+```
+
+Visit http://localhost:3000/editor to see the editor in action.
+
+## Upgrade
+
+Using the CLI, you can upgrade to `editor-ai` by running:
+
+```bash
+npx shadcx@latest add editor-ai -r plate -o
+```

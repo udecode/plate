@@ -1,8 +1,11 @@
 {
   "dependencies": [],
+  "doc": {
+    "description": "Displays a form input field or a component that looks like an input field."
+  },
   "files": [
     {
-      "content": "import { withVariants } from '@udecode/cn';\nimport { cva } from 'class-variance-authority';\n\nexport const inputVariants = cva(\n  'flex w-full rounded-md bg-transparent text-sm file:border-0 file:bg-background file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',\n  {\n    defaultVariants: {\n      h: 'md',\n      variant: 'default',\n    },\n    variants: {\n      h: {\n        md: 'h-10 px-3 py-2',\n        sm: 'h-9 px-3 py-2',\n      },\n      variant: {\n        default:\n          'border border-input ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',\n        ghost: 'border-none focus-visible:ring-transparent',\n      },\n    },\n  }\n);\n\nexport const Input = withVariants('input', inputVariants, ['variant', 'h']);\n",
+      "content": "import { withVariants } from '@udecode/cn';\nimport { cva } from 'class-variance-authority';\n\nexport const inputVariants = cva(\n  'flex w-full rounded-md bg-transparent text-sm file:border-0 file:bg-background file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',\n  {\n    defaultVariants: {\n      h: 'md',\n      variant: 'default',\n    },\n    variants: {\n      h: {\n        md: 'h-10 px-3 py-2',\n        sm: 'h-[28px] px-1.5 py-1',\n      },\n      variant: {\n        default:\n          'border border-input ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',\n        ghost: 'border-none focus-visible:ring-transparent',\n      },\n    },\n  }\n);\n\nexport const Input = withVariants('input', inputVariants, ['variant', 'h']);\n",
       "path": "plate-ui/input.tsx",
       "target": "components/plate-ui/input.tsx",
       "type": "registry:ui"

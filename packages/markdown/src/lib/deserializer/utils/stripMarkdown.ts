@@ -1,6 +1,3 @@
-/* eslint-disable regexp/no-contradiction-with-assertion */
-/* eslint-disable regexp/match-any */
-/* eslint-disable regexp/no-unused-capturing-group */
 export const stripMarkdownBlocks = (text: string) => {
   // Remove headers
   text = text.replaceAll(/^#{1,6}\s+/gm, '');

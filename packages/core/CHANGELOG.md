@@ -1,5 +1,31 @@
 # @udecode/plate-core
 
+## 39.2.21
+
+### Patch Changes
+
+- [#3704](https://github.com/udecode/plate/pull/3704) by [@zbeyens](https://github.com/zbeyens) – Fix DefaultLeaf props
+
+## 39.2.20
+
+## 39.2.15
+
+### Patch Changes
+
+- [#3675](https://github.com/udecode/plate/pull/3675) by [@felixfeng33](https://github.com/felixfeng33) – Fix `DefaultLeaf` missing style attribute
+
+## 39.2.13
+
+### Patch Changes
+
+- [#3469](https://github.com/udecode/plate/pull/3469) by [@felixfeng33](https://github.com/felixfeng33) – Fix `DefaultLeaf` and `DefaultElement` props
+
+## 39.2.12
+
+### Patch Changes
+
+- [`86487a3357dbe6005a0b4e37c2510c97f2ad4d96`](https://github.com/udecode/plate/commit/86487a3357dbe6005a0b4e37c2510c97f2ad4d96) by [@zbeyens](https://github.com/zbeyens) – Remove debug warning on missing plugin
+
 ## 39.2.1
 
 ### Patch Changes

@@ -37,9 +37,13 @@ export const useAIChatHooks = () => {
 
       const nodes = deserializeInlineMd(editor, content);
 
-      withAIBatch(editor, () => {
-        tf.ai.insertNodes(nodes);
-      });
+      withAIBatch(
+        editor,
+        () => {
+          tf.ai.insertNodes(nodes);
+        },
+        { split: true }
+      );
     },
   });
 };

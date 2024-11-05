@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useCallback, useMemo, useState } from 'react';
 
 import type { TElement, Value } from '@udecode/plate-common';
@@ -17,7 +19,7 @@ import {
 import { editableProps } from '@/plate/demo/editableProps';
 import { PlateUI } from '@/plate/demo/plate-ui';
 import { createHugeDocumentValue } from '@/plate/demo/values/createHugeDocumentValue';
-import { Editor } from '@/registry/default/plate-ui/editor';
+import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 
 const value = createHugeDocumentValue();
 
@@ -30,7 +32,9 @@ function WithPlate() {
 
   return (
     <Plate editor={editor}>
-      <Editor {...editableProps} />
+      <EditorContainer>
+        <Editor {...editableProps} />
+      </EditorContainer>
     </Plate>
   );
 }

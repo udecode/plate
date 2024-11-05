@@ -47,6 +47,7 @@ export const useCursorOverlayPositions = <TCursorData extends UnknownObject>({
       const contentRect = containerRef.current!.getBoundingClientRect();
       xOffset = contentRect.x;
       yOffset = contentRect.y;
+      yOffset -= containerRef.current.scrollTop;
     }
 
     let selectionRectsChanged =

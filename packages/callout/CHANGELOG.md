@@ -1,5 +1,31 @@
 # @udecode/plate-callout
 
+## 39.2.18
+
+### Patch Changes
+
+- [#3685](https://github.com/udecode/plate/pull/3685) by [@felixfeng33](https://github.com/felixfeng33) – Fix set local storage
+
+## 39.2.17
+
+### Patch Changes
+
+- [#3683](https://github.com/udecode/plate/pull/3683) by [@felixfeng33](https://github.com/felixfeng33) – `insertCallout`: Add an icon option; if none is provided, use the last one stored in local storage.
+
+## 39.2.14
+
+### Patch Changes
+
+- [#3673](https://github.com/udecode/plate/pull/3673) by [@felixfeng33](https://github.com/felixfeng33) – Fix set icon.
+
+## 39.2.13
+
+### Patch Changes
+
+- [#3469](https://github.com/udecode/plate/pull/3469) by [@felixfeng33](https://github.com/felixfeng33) –
+  - Refactor to `useCalloutEmojiPicker`
+  - Remove default variant
+
 ## 39.2.0
 
 ### Minor Changes

@@ -52,8 +52,8 @@ export const moveSelectionFromCell = (
 
           break;
         }
-        case 'top': {
-          anchorPath[anchorPath.length - 2] -= 1;
+        case 'left': {
+          anchorPath[anchorPath.length - 1] -= 1;
 
           break;
         }
@@ -62,8 +62,8 @@ export const moveSelectionFromCell = (
 
           break;
         }
-        case 'left': {
-          anchorPath[anchorPath.length - 1] -= 1;
+        case 'top': {
+          anchorPath[anchorPath.length - 2] -= 1;
 
           break;
         }

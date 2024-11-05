@@ -35,10 +35,10 @@ const categories = [
     items: [
       customizerPlugins.align,
       customizerPlugins.autoformat,
-      customizerPlugins.basicnodes,
-      customizerPlugins.blockselection,
+      customizerPlugins['basic-nodes'],
+      customizerPlugins['block-selection'],
       customizerPlugins.comment,
-      customizerPlugins.cursoroverlay,
+      customizerPlugins['cursor-overlay'],
       customizerPlugins.column,
       customizerPlugins.csv,
       customizerPlugins.docx,
@@ -46,27 +46,27 @@ const categories = [
       customizerPlugins.markdown,
       customizerPlugins.emoji,
       customizerPlugins.excalidraw,
-      customizerPlugins.exitbreak,
+      customizerPlugins['exit-break'],
       customizerPlugins.font,
-      customizerPlugins.forcedlayout,
+      customizerPlugins['forced-layout'],
       customizerPlugins.highlight,
       customizerPlugins.hr,
       customizerPlugins.indent,
-      customizerPlugins.indentlist,
-      customizerPlugins.lineheight,
+      customizerPlugins['indent-list'],
+      customizerPlugins['line-height'],
       customizerPlugins.link,
       customizerPlugins.list,
       customizerPlugins.media,
       customizerPlugins.mention,
       customizerPlugins.playground,
-      customizerPlugins.resetnode,
-      customizerPlugins.singleline,
-      customizerPlugins.softbreak,
+      customizerPlugins['reset-node'],
+      customizerPlugins['single-line'],
+      customizerPlugins['soft-break'],
       customizerPlugins.tabbable,
       customizerPlugins.table,
-      customizerPlugins.todoli,
+      customizerPlugins['todo-list'],
       customizerPlugins.toggle,
-      customizerPlugins.trailingblock,
+      customizerPlugins['trailing-block'],
     ],
     label: 'Plugins',
     value: 'plugins',
@@ -87,6 +87,7 @@ export function SettingsCombobox() {
         <PopoverTrigger asChild>
           {loaded && (
             <Button
+              size="md"
               variant="outline"
               className="min-w-fit justify-between md:w-[220px]"
               onClick={() => {
@@ -141,7 +142,6 @@ export function SettingsCombobox() {
                       >
                         <Check
                           className={cn(
-                            'mr-2 size-4',
                             valueId === item.id ? 'opacity-100' : 'opacity-0'
                           )}
                         />
@@ -159,7 +159,6 @@ export function SettingsCombobox() {
       {!!route && (
         <Link
           className={buttonVariants({
-            size: 'sms',
             variant: 'ghost',
           })}
           href={route}

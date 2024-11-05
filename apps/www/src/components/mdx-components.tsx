@@ -8,6 +8,7 @@ import { Provider } from 'jotai';
 import Image from 'next/image';
 import { useMDXComponent } from 'next-contentlayer2/hooks';
 
+import { ComponentInstallation } from '@/components/component-installation';
 import { useConfig } from '@/hooks/use-config';
 import { packageInfoAtom } from '@/hooks/use-package-info';
 
@@ -29,6 +30,7 @@ import { Code } from './code';
 import { CodeBlockWrapper } from './code-block-wrapper';
 import { ComponentExample } from './component-example';
 import { ComponentPreview } from './component-preview';
+import { ComponentPreviewPro } from './component-preview-pro';
 import { ComponentSource } from './component-source';
 import { HydrateAtoms } from './context/hydrate-atoms';
 import { FrameworkDocs } from './framework-docs';
@@ -79,7 +81,9 @@ const components = {
     <CodeBlockWrapper className="rounded-md border" {...props} />
   ),
   ComponentExample,
+  ComponentInstallation,
   ComponentPreview,
+  ComponentPreviewPro,
   ComponentSource,
   FrameworkDocs: ({
     className,
@@ -123,7 +127,6 @@ const components = {
       </TableRow>
     );
   },
-  Link,
   LinkedCard: ({ className, ...props }: React.ComponentProps<typeof Link>) => (
     <Link
       className={cn(
@@ -175,7 +178,7 @@ const components = {
       {...props}
     />
   ),
-  a: Typography.A,
+  a: Link,
   blockquote: Typography.Blockquote,
   code: Code,
   h1: Typography.H1,
@@ -197,14 +200,15 @@ const components = {
   ul: Typography.UL,
 };
 
-interface MdxProps {
+export function Mdx({
+  code,
+  packageInfo,
+}: {
   code: string;
   packageInfo?: {
     gzip: string | null;
   };
-}
-
-export function Mdx({ code, packageInfo }: MdxProps) {
+}) {
   const [config] = useConfig();
   const Component = useMDXComponent(code, {
     style: config.style,

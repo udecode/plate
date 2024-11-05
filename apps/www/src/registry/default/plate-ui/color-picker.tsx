@@ -3,14 +3,14 @@
 import React from 'react';
 
 import { cn, withRef } from '@udecode/cn';
+import { EraserIcon } from 'lucide-react';
 
-import type { TColor } from './color-dropdown-menu';
-
-import { buttonVariants } from './button';
-import { ColorDropdownMenuItems } from './color-dropdown-menu-items';
-import { ColorsCustom } from './colors-custom';
-import { DropdownMenuItem } from './dropdown-menu';
-import { Separator } from './separator';
+import {
+  type TColor,
+  ColorDropdownMenuItems,
+} from './color-dropdown-menu-items';
+import { ColorCustom } from './colors-custom';
+import { DropdownMenuGroup, DropdownMenuItem } from './dropdown-menu';
 
 export const ColorPickerContent = withRef<
   'div',
@@ -37,36 +37,32 @@ export const ColorPickerContent = withRef<
     ref
   ) => {
     return (
-      <div
-        ref={ref}
-        className={cn('flex flex-col gap-4 p-4', className)}
-        {...props}
-      >
-        <ColorsCustom
-          color={color}
-          colors={colors}
-          customColors={customColors}
-          updateColor={updateColor}
-          updateCustomColor={updateCustomColor}
-        />
-
-        <Separator />
-
-        <ColorDropdownMenuItems
-          color={color}
-          colors={colors}
-          updateColor={updateColor}
-        />
+      <div ref={ref} className={cn('flex flex-col', className)} {...props}>
+        <DropdownMenuGroup label="Custom Colors">
+          <ColorCustom
+            color={color}
+            className="px-2"
+            colors={colors}
+            customColors={customColors}
+            updateColor={updateColor}
+            updateCustomColor={updateCustomColor}
+          />
+        </DropdownMenuGroup>
+        <DropdownMenuGroup label="Default Colors">
+          <ColorDropdownMenuItems
+            color={color}
+            className="px-2"
+            colors={colors}
+            updateColor={updateColor}
+          />
+        </DropdownMenuGroup>
         {color && (
-          <DropdownMenuItem
-            className={buttonVariants({
-              isMenu: true,
-              variant: 'outline',
-            })}
-            onClick={clearColor}
-          >
-            Clear
-          </DropdownMenuItem>
+          <DropdownMenuGroup>
+            <DropdownMenuItem className="p-2" onClick={clearColor}>
+              <EraserIcon />
+              <span>Clear</span>
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
         )}
       </div>
     );
