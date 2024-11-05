@@ -1,6 +1,7 @@
 import type { PlateEditor } from '@udecode/plate-common/react';
 
 import { insertNodes, nanoid, withoutNormalizing } from '@udecode/plate-common';
+import { Path } from 'slate';
 
 import { type TPlaceholderElement, BasePlaceholderPlugin } from '../../../lib';
 import { PlaceholderPlugin } from '../PlaceholderPlugin';
@@ -9,7 +10,11 @@ import { createUploadError, isUploadError } from '../utils/createUploadError';
 import { getMediaType } from '../utils/getMediaType';
 import { validateFiles } from '../utils/validateFiles';
 
-export const insertMedia = (editor: PlateEditor, files: FileList): any => {
+export const insertMedia = (
+  editor: PlateEditor,
+  files: FileList,
+  at?: Path
+): any => {
   const api = editor.getApi(PlaceholderPlugin);
   const uploadConfig = editor.getOption(PlaceholderPlugin, 'uploadConfig');
   const multiple = editor.getOption(PlaceholderPlugin, 'multiple');
@@ -48,16 +53,30 @@ export const insertMedia = (editor: PlateEditor, files: FileList): any => {
     );
   }
 
-  Array.from(files).forEach((file) => {
+  let currentAt: Path | undefined;
+
+  Array.from(files).forEach((file, index) => {
+    if (index === 0) {
+      if (at) {
+        currentAt = at;
+      }
+    } else {
+      currentAt = currentAt ? Path.next(currentAt) : undefined;
+    }
+
     const id = nanoid();
 
     withoutNormalizing(editor, () =>
-      insertNodes<TPlaceholderElement>(editor, {
-        id,
-        children: [{ text: '' }],
-        mediaType: getMediaType(file, uploadConfig)!,
-        type: editor.getType(BasePlaceholderPlugin),
-      })
+      insertNodes<TPlaceholderElement>(
+        editor,
+        {
+          id,
+          children: [{ text: '' }],
+          mediaType: getMediaType(file, uploadConfig)!,
+          type: editor.getType(BasePlaceholderPlugin),
+        },
+        { at: currentAt, nextBlock: false }
+      )
     );
 
     api.placeholder.addUploadingFile(id, file);
