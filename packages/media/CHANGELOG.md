@@ -1,5 +1,11 @@
 # @udecode/plate-media
 
+## 39.3.1
+
+### Patch Changes
+
+- [#3723](https://github.com/udecode/plate/pull/3723) by [@felixfeng33](https://github.com/felixfeng33) – Add `at` in `insertMedia` api.
+
 ## 39.3.0
 
 ### Minor Changes
