@@ -20,6 +20,7 @@ import {
 } from './ui/resizable';
 
 const block: any = {
+  description: 'An AI editor.',
   name: 'editor-ai',
 };
 
