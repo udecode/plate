@@ -1308,6 +1308,18 @@ export const uiNodes: Registry = [
     type: 'registry:ui',
   },
   {
+    dependencies: ['@udecode/plate-list'],
+    doc: {
+      description: 'A checkbox list element with interactive todo items.',
+      docs: [{ route: '/docs/list', title: 'List' }],
+      examples: ['list-demo'],
+    },
+    files: ['plate-ui/todo-list-element.tsx'],
+    name: 'todo-list-element',
+    registryDependencies: ['checkbox', 'plate-element'],
+    type: 'registry:ui',
+  },
+  {
     dependencies: ['@udecode/plate-toggle'],
     doc: {
       description: 'A collapsible component for toggling content visibility.',

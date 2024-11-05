@@ -50,10 +50,10 @@ export const useChat = () => {
       model: useOpenAI().model.value,
     },
     fetch: async (input, init) => {
-      try {
-        return await fetch(input, init);
-      } catch (error) {
-        // Mock the API response. Remove it when you implement the route /api/ai
+      const res = await fetch(input, init);
+
+      if (!res.ok) {
+        // Mock the API response. Remove it when you implement the route /api/ai/command
         await new Promise((resolve) => setTimeout(resolve, 400));
 
         const stream = fakeStreamText();
@@ -65,6 +65,8 @@ export const useChat = () => {
           },
         });
       }
+
+      return res;
     },
   });
 };

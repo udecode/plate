@@ -44,9 +44,10 @@ export function ColorDropdownMenuItem({
       className={cn(
         buttonVariants({
           isMenu: true,
+          size: 'icon',
           variant: 'outline',
         }),
-        'flex size-6 items-center justify-center rounded-full border border-solid border-muted p-0 transition-all hover:scale-125',
+        'my-1 flex size-6 items-center justify-center rounded-full border border-solid border-muted p-0 transition-all hover:scale-125',
         !isBrightColor && 'border-transparent text-white hover:!text-white',
         className
       )}
@@ -87,7 +88,7 @@ export function ColorDropdownMenuItems({
   return (
     <div
       className={cn(
-        'grid grid-cols-[repeat(10,1fr)] place-items-center gap-1',
+        'grid grid-cols-[repeat(10,1fr)] place-items-center',
         className
       )}
       {...props}

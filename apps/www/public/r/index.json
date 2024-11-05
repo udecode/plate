@@ -892,6 +892,35 @@
   },
   {
     "dependencies": [
+      "@udecode/plate-list"
+    ],
+    "doc": {
+      "description": "A checkbox list element with interactive todo items.",
+      "docs": [
+        {
+          "route": "/docs/list",
+          "title": "List"
+        }
+      ],
+      "examples": [
+        "list-demo"
+      ]
+    },
+    "files": [
+      {
+        "path": "plate-ui/todo-list-element.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "todo-list-element",
+    "registryDependencies": [
+      "checkbox",
+      "plate-element"
+    ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
       "@udecode/plate-toggle"
     ],
     "doc": {

@@ -117,7 +117,7 @@ export default function InstallationTab() {
 
   const installCommands = useMemo(() => {
     return {
-      components: `npx shadcx@latest add ${Array.from(
+      components: `npx shadcx@latest add plate/${Array.from(
         components.reduce(
           (uniqueFilenames, { id, filename, noImport, registry }) => {
             if (noImport) return uniqueFilenames;

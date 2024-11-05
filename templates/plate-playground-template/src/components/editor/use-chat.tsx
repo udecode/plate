@@ -145,11 +145,15 @@ export function OpenAIProvider({ children }: { children: ReactNode }) {
 export function useOpenAI() {
   const context = useContext(OpenAIContext);
 
-  if (context === undefined) {
-    throw new Error('useOpenAI must be used within an OpenAIProvider');
-  }
-
-  return context;
+  return (
+    context ??
+    ({
+      apiKey: '',
+      model: models[0],
+      setApiKey: () => {},
+      setModel: () => {},
+    } as OpenAIContextType)
+  );
 }
 
 export function SettingsDialog() {
@@ -189,6 +193,7 @@ export function SettingsDialog() {
             'rounded-full shadow-md hover:shadow-lg',
             'transition-all duration-300 ease-in-out hover:w-[106px]'
           )}
+          data-block-hide
         >
           <div className="flex size-full items-center justify-start gap-2">
             <Settings className="ml-1.5 size-4" />

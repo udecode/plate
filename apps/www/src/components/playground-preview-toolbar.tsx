@@ -34,18 +34,30 @@ export function PlaygroundPreviewToolbar({
   // fullScreen: boolean;
   // setFullScreen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
+  const src = block.descriptionSrc ?? block.src;
+
   const { copyToClipboard, isCopied } = useCopyToClipboard();
 
   return (
     <div
       className={cn(
-        'flex items-center gap-4',
-        'absolute right-0 z-50',
-        '-top-4 -translate-y-full'
+        'mb-4 flex items-center gap-4'
+        // 'absolute right-0 z-50',
+        // '-top-4 -translate-y-full'
         // fullScreen && 'bottom-4'
       )}
     >
-      <div className="flex items-center gap-2 pr-[14px] sm:ml-auto">
+      <Button asChild variant="link" className="whitespace-normal px-1 md:px-2">
+        <a
+          href={src ?? `#${block.name}`}
+          rel={src ? 'noreferrer' : undefined}
+          target={src ? '_blank' : undefined}
+        >
+          {block.description}
+        </a>
+      </Button>
+
+      <div className="ml-auto flex items-center gap-2 pr-[14px]">
         <Button
           size="sm"
           variant="ghost"

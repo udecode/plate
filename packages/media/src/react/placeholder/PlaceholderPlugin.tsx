@@ -1,4 +1,10 @@
-import { type ExtendConfig, bindFirst } from '@udecode/plate-common';
+import {
+  type ExtendConfig,
+  bindFirst,
+  getAncestorNode,
+  getNodeString,
+  removeNodes,
+} from '@udecode/plate-common';
 import { findEventRange, toTPlatePlugin } from '@udecode/plate-common/react';
 
 import type { AllowedFileType } from './internal/mimes';
@@ -121,6 +127,7 @@ export const PlaceholderPlugin = toTPlatePlugin<
         /** Without this, the dropped file replaces the page */
         event.preventDefault();
         event.stopPropagation();
+
         /**
          * When we drop a file, the selection won't move automatically to the
          * drop location. Find the location from the event and upload the files
@@ -134,7 +141,7 @@ export const PlaceholderPlugin = toTPlatePlugin<
 
         return true;
       },
-      onPaste: ({ event, tf }) => {
+      onPaste: ({ editor, event, tf }) => {
         const { files } = event.clipboardData;
 
         if (files.length === 0) return false;
@@ -142,7 +149,21 @@ export const PlaceholderPlugin = toTPlatePlugin<
         event.preventDefault();
         event.stopPropagation();
 
-        tf.insert.media(files);
+        let inserted = false;
+        const ancestor = getAncestorNode(editor);
+
+        if (ancestor) {
+          const [node, path] = ancestor;
+
+          if (getNodeString(node).length === 0) {
+            removeNodes(editor, { at: path });
+            tf.insert.media(files, path);
+            inserted = true;
+          }
+        }
+        if (!inserted) {
+          tf.insert.media(files);
+        }
 
         return true;
       },

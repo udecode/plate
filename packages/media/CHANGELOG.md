@@ -1,5 +1,23 @@
 # @udecode/plate-media
 
+## 39.3.3
+
+### Patch Changes
+
+- [#3728](https://github.com/udecode/plate/pull/3728) by [@felixfeng33](https://github.com/felixfeng33) – Fix can't drop
+
+## 39.3.2
+
+### Patch Changes
+
+- [#3725](https://github.com/udecode/plate/pull/3725) by [@felixfeng33](https://github.com/felixfeng33) – `insertMedia`: Should insert in the current block if it is empty.
+
+## 39.3.1
+
+### Patch Changes
+
+- [#3723](https://github.com/udecode/plate/pull/3723) by [@felixfeng33](https://github.com/felixfeng33) – Add `at` in `insertMedia` api.
+
 ## 39.3.0
 
 ### Minor Changes
