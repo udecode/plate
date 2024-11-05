@@ -30,7 +30,7 @@ export const uiComponents: Registry = [
       'plate-ui/ai-chat-editor.tsx',
     ],
     name: 'ai-menu',
-    registryDependencies: ['command', 'popover', 'editor'],
+    registryDependencies: ['use-chat', 'command', 'popover', 'editor'],
     type: 'registry:ui',
   },
   {

@@ -3,6 +3,8 @@ import * as React from 'react';
 import { unstable_cache } from 'next/cache';
 
 import { BlockDisplay } from '@/components/block-display';
+import { BlockPreview } from '@/components/block-preview';
+import { siteConfig } from '@/config/site';
 import { getAllBlockIds } from '@/lib/blocks';
 
 // const BLOCKS_WHITELIST_PREFIXES = ['sidebar', 'login'];
@@ -25,6 +27,17 @@ export default async function BlocksPage() {
             <BlockDisplay name={name} />
           </React.Suspense>
         ))}
+
+        <div className="relative scroll-m-16 pb-48">
+          <BlockPreview
+            block={{
+              description: 'A Notion-like AI template',
+              descriptionSrc: siteConfig.links.potionTemplate,
+              name: 'potion',
+              src: siteConfig.links.potionIframe,
+            }}
+          />
+        </div>
       </div>
     </div>
   );

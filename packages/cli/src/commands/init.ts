@@ -24,6 +24,7 @@ import { handleError } from '@/src/utils/handle-error';
 import { highlighter } from '@/src/utils/highlighter';
 import { logger } from '@/src/utils/logger';
 import {
+  REGISTRY_MAP,
   REGISTRY_URL,
   getDefaultConfig,
   getRegistryBaseColors,
@@ -33,6 +34,12 @@ import { spinner } from '@/src/utils/spinner';
 import { updateTailwindContent } from '@/src/utils/updaters/update-tailwind-content';
 
 import { getDifferences } from '../utils/is-different';
+
+export const registryMap = {
+  magic: 'https://magicui.design/r',
+  plate: 'https://platejs.org/r',
+  shadcn: REGISTRY_URL,
+};
 
 export const initOptionsSchema = z.object({
   components: z.array(z.string()).optional(),
@@ -69,17 +76,39 @@ export const init = new Command()
     'use the src directory when creating a new project.',
     false
   )
-  .option('-u, --url <url>', 'registry URL', REGISTRY_URL)
   .option('-n, --name <name>', 'registry name')
   .option('--pm <pm>', 'package manager to use (npm, pnpm, yarn, bun)')
   .action(async (components, opts) => {
     try {
+      // DIFF START
+      let url = REGISTRY_URL;
+      let name = opts.name;
+      let actualComponents = [...components];
+
+      if (components.length > 0) {
+        const registry =
+          REGISTRY_MAP[components[0] as keyof typeof REGISTRY_MAP];
+
+        if (registry) {
+          url = registry;
+          name = components[0];
+          actualComponents = components.slice(1);
+        } else if (components[0].startsWith('http')) {
+          url = components[0];
+          name = components[0];
+          actualComponents = components.slice(1);
+        }
+      }
+
       const options = initOptionsSchema.parse({
-        components,
         cwd: path.resolve(opts.cwd),
         isNewProject: false,
         ...opts,
+        components: actualComponents,
+        name,
+        url,
       });
+      // DIFF END
 
       await runInit(options);
 

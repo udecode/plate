@@ -68,9 +68,7 @@ import Prism from 'prismjs';
 
 import { CheckPlugin } from '@/components/context/check-plugin';
 import { settingsStore } from '@/components/context/settings-store';
-import { aiPlugins } from '@/lib/plate/demo/plugins/ai-plugins';
 import { getAutoformatOptions } from '@/lib/plate/demo/plugins/autoformatOptions';
-import { copilotPlugins } from '@/lib/plate/demo/plugins/copilot-plugins';
 import { createPlateUI } from '@/plate/create-plate-ui';
 import { editableProps } from '@/plate/demo/editableProps';
 import { isEnabled } from '@/plate/demo/is-enabled';
@@ -81,6 +79,8 @@ import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
 import { tabbablePlugin } from '@/plate/demo/plugins/tabbablePlugin';
 import { commentsData, usersData } from '@/plate/demo/values/commentsValue';
 import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
+import { aiPlugins } from '@/registry/default/components/editor/plugins/ai-plugins';
+import { copilotPlugins } from '@/registry/default/components/editor/plugins/copilot-plugins';
 import { BlockContextMenu } from '@/registry/default/plate-ui/block-context-menu';
 import { CommentsPopover } from '@/registry/default/plate-ui/comments-popover';
 import {

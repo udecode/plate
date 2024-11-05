@@ -28,7 +28,7 @@ export default function BlocksLayout({
           Beautifully designed. Copy and paste into your apps. Open Source.
         </PageHeaderDescription>
         <PageActions>
-          <Button asChild size="sm">
+          <Button asChild size="md">
             <a href="#blocks">Browse Editors</a>
           </Button>
           {/* <Button asChild size="sm" variant="ghost">

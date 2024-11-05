@@ -47,6 +47,7 @@
   ],
   "name": "ai-menu",
   "registryDependencies": [
+    "use-chat",
     "command",
     "popover",
     "editor"

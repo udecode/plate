@@ -29,7 +29,10 @@ import {
   SquareIcon,
 } from 'lucide-react';
 
-import { getBlockType, setBlockType } from '@/registry/default/components/editor/transforms';
+import {
+  getBlockType,
+  setBlockType,
+} from '@/registry/default/components/editor/transforms';
 
 import {
   DropdownMenu,

@@ -19,7 +19,7 @@
   ],
   "name": "api-ai",
   "registryDependencies": [
-    "use-chat-playground"
+    "use-chat"
   ],
   "type": "registry:component"
 }

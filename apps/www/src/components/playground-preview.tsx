@@ -20,7 +20,7 @@ import {
 } from './ui/resizable';
 
 const block: any = {
-  name: 'playground',
+  name: 'editor-ai',
 };
 
 // TODO: sync

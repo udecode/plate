@@ -8,6 +8,7 @@ import * as ERRORS from '@/src/utils/errors';
 import { getConfig } from '@/src/utils/get-config';
 import { highlighter } from '@/src/utils/highlighter';
 import { logger } from '@/src/utils/logger';
+import { REGISTRY_MAP } from '@/src/utils/registry';
 
 export async function preFlightAdd(options: z.infer<typeof addOptionsSchema>) {
   const errors: Record<string, boolean> = {};
@@ -25,8 +26,11 @@ export async function preFlightAdd(options: z.infer<typeof addOptionsSchema>) {
       errors,
     };
   }
+
   // Check for existing components.json file.
-  if (!fs.existsSync(path.resolve(options.cwd, 'components.json'))) {
+  const configPath = path.resolve(options.cwd, 'components.json');
+
+  if (!fs.existsSync(configPath)) {
     errors[ERRORS.MISSING_CONFIG] = true;
 
     return {
@@ -38,8 +42,30 @@ export async function preFlightAdd(options: z.infer<typeof addOptionsSchema>) {
   try {
     const config = await getConfig(options.cwd);
 
+    if (!config) {
+      errors[ERRORS.MISSING_CONFIG] = true;
+
+      return { config: null, errors };
+    }
+    // Check if the required registry exists in config
+    if (options.registry) {
+      const registryUrl =
+        REGISTRY_MAP[options.registry as keyof typeof REGISTRY_MAP];
+      const hasRegistry =
+        config.registries?.[options.registry] ||
+        Object.values(config.registries || {}).some(
+          (reg) => reg.url === registryUrl
+        );
+
+      if (!hasRegistry) {
+        errors[ERRORS.MISSING_REGISTRY] = true;
+
+        return { config, errors };
+      }
+    }
+
     return {
-      config: config!,
+      config,
       errors,
     };
   } catch (error) {

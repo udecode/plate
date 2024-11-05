@@ -19,16 +19,24 @@ import {
 } from "@/src/utils/registry/schema"
 import { buildTailwindThemeColorsFromCssVars } from "@/src/utils/updaters/update-tailwind-config"
 
+
 export const REGISTRY_URL =
   process.env.REGISTRY_URL ?? "https://ui.shadcn.com/r"
 
+  export const REGISTRY_MAP = {
+    magic: 'https://magicui.design/r',
+    plate: 'https://platejs.org/r',
+    shadcn: REGISTRY_URL,
+  };
+  
 const agent = process.env.https_proxy
   ? new HttpsProxyAgent(process.env.https_proxy)
   : undefined
 
 export async function getRegistryIndex(registryUrl?: string) {
   try {
-    const [result] = await fetchRegistry(["index.json"], registryUrl)
+    // DIFF
+    const [result] = await fetchRegistry(['index.json'], registryUrl)
     return registryIndexSchema.parse(result)
   } catch (error) {
     logger.error("\n")

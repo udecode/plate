@@ -46,18 +46,25 @@ export function BlockToolbar({
         </a>
       </Button>
       <div className="ml-auto hidden items-center gap-2 md:flex md:pr-[14px]">
-        <Button
-          size="sm"
-          variant="ghost"
-          className="h-7 rounded-md border bg-muted shadow-none"
-          onClick={() => {
-            copyToClipboard(`npx shadcx@latest add ${block.name} -r plate`);
-          }}
-        >
-          {isCopied ? <CheckIcon /> : <TerminalIcon />}
-          npx shadcx add {block.name}
-        </Button>
-        <Separator orientation="vertical" className="mx-2 hidden h-4 md:flex" />
+        {block.name !== 'potion' && (
+          <>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 rounded-md border bg-muted shadow-none"
+              onClick={() => {
+                copyToClipboard(`npx shadcx@latest add plate/${block.name}`);
+              }}
+            >
+              {isCopied ? <CheckIcon /> : <TerminalIcon />}
+              npx shadcx add plate/{block.name}
+            </Button>
+            <Separator
+              orientation="vertical"
+              className="mx-2 hidden h-4 md:flex"
+            />
+          </>
+        )}
         <div className="hidden h-7 items-center gap-1.5 rounded-md border p-[2px] shadow-none md:flex">
           <ToggleGroup
             defaultValue="100"
@@ -109,7 +116,7 @@ export function BlockToolbar({
           </ToggleGroup>
         </div>
         <Separator orientation="vertical" className="mx-2 hidden h-4 md:flex" />
-        <Link href={block.src ?? `/blocks/${block.name}`}>
+        <Link href={block.src ?? `/blocks/${block.name}`} target="_blank">
           <Button
             id={`${block.name}`}
             name={`${block.name}`}

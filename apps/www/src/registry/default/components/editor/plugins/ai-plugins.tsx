@@ -49,7 +49,7 @@ import { LinkElement } from '@/registry/default/plate-ui/link-element';
 import { LinkFloatingToolbar } from '@/registry/default/plate-ui/link-floating-toolbar';
 import { ParagraphElement } from '@/registry/default/plate-ui/paragraph-element';
 
-export const createAIEditor = () => {
+const createAIEditor = () => {
   const editor = createPlateEditor({
     id: 'ai',
     override: {

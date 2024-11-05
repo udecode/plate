@@ -80,7 +80,7 @@ export const components: Registry = [
       },
     ],
     name: 'api-ai',
-    registryDependencies: ['use-chat-playground'],
+    registryDependencies: ['use-chat'],
     type: 'registry:component',
   },
   {
