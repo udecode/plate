@@ -50,6 +50,7 @@ import { LineHeightPlugin } from '@udecode/plate-line-height/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { ListPlugin, TodoListPlugin } from '@udecode/plate-list/react';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
+import { BaseImagePlugin } from '@udecode/plate-media';
 import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
 import { MentionPlugin } from '@udecode/plate-mention/react';
 import { NodeIdPlugin } from '@udecode/plate-node-id';
@@ -150,6 +151,9 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
         }),
         ...(id === 'list' ? [ListPlugin] : []),
         ImagePlugin.extend({
+          options: {
+            disableUploadInsert: true,
+          },
           render: { afterEditable: ImagePreview },
         }),
         MediaEmbedPlugin,
@@ -294,7 +298,19 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
         BlockMenuPlugin.configure({
           render: { aboveEditable: BlockContextMenu },
         }),
-        DndPlugin.configure({ options: { enableScroller: true } }),
+        DndPlugin.configure({
+          options: {
+            enableScroller: true,
+            onDropFiles: ({ dragItem, editor, target }) => {
+              editor
+                .getTransforms(BaseImagePlugin)
+                .insert.imageFromFiles(dragItem.files, {
+                  at: target,
+                  nextBlock: false,
+                });
+            },
+          },
+        }),
         EmojiPlugin,
         exitBreakPlugin,
         NodeIdPlugin,

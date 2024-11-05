@@ -6,11 +6,8 @@ import {
 } from '@udecode/plate-common/react';
 import { useFocused, useReadOnly, useSelected } from 'slate-react';
 
-import {
-  type TPlaceholderElement,
-  BasePlaceholderPlugin,
-} from '../../lib/placeholder/BasePlaceholderPlugin';
-import { usePlaceholderStore } from './placeholderStore';
+import { type TPlaceholderElement, BasePlaceholderPlugin } from '../../../lib';
+import { usePlaceholderStore } from '../placeholderStore';
 
 export const usePlaceholderPopoverState = () => {
   const editor = useEditorRef();
@@ -19,7 +16,6 @@ export const usePlaceholderPopoverState = () => {
   const focused = useFocused();
 
   const selectionCollapsed = useEditorSelector(
-    // eslint-disable-next-line @typescript-eslint/no-shadow
     (editor) => !isSelectionExpanded(editor),
     []
   );
@@ -30,6 +26,8 @@ export const usePlaceholderPopoverState = () => {
   const setProgresses = usePlaceholderStore().set.progresses();
   const setIsUploading = usePlaceholderStore().set.isUploading();
   const setUpdatedFiles = usePlaceholderStore().set.updatedFiles();
+
+  const size = usePlaceholderStore().get.size();
 
   return {
     id,
@@ -43,5 +41,6 @@ export const usePlaceholderPopoverState = () => {
     setIsUploading,
     setProgresses,
     setUpdatedFiles,
+    size,
   };
 };
