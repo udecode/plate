@@ -28,6 +28,7 @@ export const copilotPlugins = [
   - If no context is provided or you can't generate a continuation, return "0" without explanation.`,
         },
         onError: () => {
+          // Mock the API response. Remove it when you implement the route /api/ai/copilot
           api.copilot.setBlockSuggestion({
             text: stripMarkdown(faker.lorem.sentence()),
           });
@@ -36,7 +37,6 @@ export const copilotPlugins = [
           if (completion === '0') return;
 
           api.copilot.setBlockSuggestion({
-            //stripMarkdownBlocks in plus GhostText
             text: stripMarkdown(completion),
           });
         },
