@@ -12,7 +12,7 @@
       "aliases": {
         "ui": "@/components/plate-ui"
       },
-      "url": "https://platejs.org/r"
+      "url": "http://localhost:3000/r"
     }
   },
   "rsc": true,

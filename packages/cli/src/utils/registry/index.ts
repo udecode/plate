@@ -194,7 +194,7 @@ export async function fetchRegistry(
             404: "Not found",
             500: "Internal server error",
           }
-
+          
           if (response.status === 401) {
             throw new Error(
               `You are not authorized to access the component at ${highlighter.info(
@@ -218,16 +218,26 @@ export async function fetchRegistry(
               )}.\nIf this is a remote registry, you may need to authenticate or a token.`
             )
           }
+          
+          // DIFF: Check content-type header
+          const contentType = response.headers.get("content-type")
+          if (!contentType?.includes("application/json")) {
+            throw new Error(
+              `Invalid response from ${highlighter.info(url)}.`
+            )
+          }
 
           const result = await response.json()
           const message =
             result && typeof result === "object" && "error" in result
               ? result.error
               : response.statusText || errorMessages[response.status]
+              
           throw new Error(
             `Failed to fetch from ${highlighter.info(url)}.\n${message}`
           )
         }
+        
 
         return response.json()
       })
@@ -369,13 +379,13 @@ async function resolveRegistryDependencies(
       isUrl(itemUrl) ? itemUrl : `styles/${config.style}/${itemUrl}.json`,
       config.url
     )
-
+    
     if (visited.has(url)) {
       return
     }
-
+    
     visited.add(url)
-
+    
     try {
       const [result] = await fetchRegistry([url], config.url)
       const item = registryItemSchema.parse(result)
@@ -395,6 +405,7 @@ async function resolveRegistryDependencies(
   }
 
   await resolveDependencies(url)
+  
   return Array.from(new Set(payload))
 }
 

@@ -1579,7 +1579,6 @@
       "@udecode/plate-layout",
       "@udecode/plate-table",
       "@udecode/plate-toggle",
-      "@udecode/plate-list",
       "@udecode/plate-media",
       "react-dnd",
       "react-dnd-html5-backend"
@@ -1717,7 +1716,6 @@
       "@udecode/plate-basic-marks",
       "@udecode/plate-font",
       "@udecode/plate-indent-list",
-      "@udecode/plate-list",
       "@udecode/plate-media"
     ],
     "doc": {
@@ -1746,12 +1744,46 @@
       "insert-dropdown-menu",
       "line-height-dropdown-menu",
       "link-toolbar-button",
-      "list-toolbar-button",
       "mark-toolbar-button",
       "media-toolbar-button",
       "mode-dropdown-menu",
       "more-dropdown-menu",
       "outdent-toolbar-button",
+      "table-dropdown-menu",
+      "toggle-toolbar-button",
+      "turn-into-dropdown-menu"
+    ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
+      "@udecode/plate-basic-marks",
+      "@udecode/plate-font",
+      "@udecode/plate-list",
+      "@udecode/plate-media"
+    ],
+    "files": [
+      {
+        "path": "plate-ui/fixed-toolbar-buttons-list.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "fixed-toolbar-buttons-list",
+    "registryDependencies": [
+      "toolbar",
+      "ai-toolbar-button",
+      "align-dropdown-menu",
+      "color-dropdown-menu",
+      "comment-toolbar-button",
+      "emoji-dropdown-menu",
+      "insert-dropdown-menu",
+      "line-height-dropdown-menu",
+      "list-indent-toolbar-button",
+      "link-toolbar-button",
+      "mark-toolbar-button",
+      "media-toolbar-button",
+      "mode-dropdown-menu",
+      "more-dropdown-menu",
       "table-dropdown-menu",
       "toggle-toolbar-button",
       "turn-into-dropdown-menu"
@@ -1869,6 +1901,19 @@
     ],
     "name": "ghost-text",
     "registryDependencies": [],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
+      "@udecode/plate-indent"
+    ],
+    "files": [
+      {
+        "path": "plate-ui/indent-fire-marker.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "indent-fire-marker",
     "type": "registry:ui"
   },
   {
@@ -2146,6 +2191,34 @@
       }
     ],
     "name": "link-toolbar-button",
+    "registryDependencies": [
+      "toolbar"
+    ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
+      "@udecode/plate-list"
+    ],
+    "doc": {
+      "description": "A toolbar control for indenting lists.",
+      "docs": [
+        {
+          "route": "/docs/list",
+          "title": "List"
+        }
+      ],
+      "examples": [
+        "list-demo"
+      ]
+    },
+    "files": [
+      {
+        "path": "plate-ui/list-indent-toolbar-button.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "list-indent-toolbar-button",
     "registryDependencies": [
       "toolbar"
     ],

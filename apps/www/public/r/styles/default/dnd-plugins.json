@@ -1,0 +1,17 @@
+{
+  "dependencies": [
+    "@udecode/plate-dnd",
+    "@udecode/plate-media",
+    "@udecode/plate-node-id"
+  ],
+  "files": [
+    {
+      "content": "'use client';\n\nimport { DndPlugin } from '@udecode/plate-dnd';\nimport { ImagePlugin } from '@udecode/plate-media/react';\nimport { NodeIdPlugin } from '@udecode/plate-node-id';\n\nexport const dndPlugins = [\n  NodeIdPlugin,\n  DndPlugin.configure({\n    options: {\n      enableScroller: true,\n      onDropFiles: ({ dragItem, editor, target }) => {\n        editor\n          .getTransforms(ImagePlugin)\n          .insert.imageFromFiles(dragItem.files, {\n            at: target,\n            nextBlock: false,\n          });\n      },\n    },\n  }),\n] as const;\n",
+      "path": "components/editor/plugins/dnd-plugins.tsx",
+      "target": "components/editor/plugins/dnd-plugins.tsx",
+      "type": "registry:component"
+    }
+  ],
+  "name": "dnd-plugins",
+  "type": "registry:component"
+}

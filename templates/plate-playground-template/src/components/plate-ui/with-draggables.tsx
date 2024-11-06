@@ -1,3 +1,5 @@
+'use client';
+
 import type { FC } from 'react';
 
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
@@ -13,10 +15,6 @@ import {
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { ColumnPlugin } from '@udecode/plate-layout/react';
-import {
-  BulletedListPlugin,
-  NumberedListPlugin,
-} from '@udecode/plate-list/react';
 import {
   ImagePlugin,
   MediaEmbedPlugin,
@@ -40,11 +38,7 @@ export const withDraggablesPrimitive = createNodesWithHOC(withDraggable);
 export const withDraggables = (components: any) => {
   return withDraggablesPrimitive(components, [
     {
-      keys: [
-        ParagraphPlugin.key,
-        BulletedListPlugin.key,
-        NumberedListPlugin.key,
-      ],
+      keys: [ParagraphPlugin.key, 'ul', 'ol'],
       level: 0,
     },
     {
@@ -83,7 +77,7 @@ export const withDraggables = (components: any) => {
       },
     },
     {
-      keys: [HEADING_KEYS.h6, BulletedListPlugin.key, NumberedListPlugin.key],
+      keys: [HEADING_KEYS.h6, 'ul', 'ol'],
       draggableProps: {
         className: '[&_.slate-gutterLeft]:px-0 [&_.slate-gutterLeft]:pb-0',
       },

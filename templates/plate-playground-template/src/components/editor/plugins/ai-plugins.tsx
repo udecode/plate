@@ -22,19 +22,11 @@ import {
   PlateLeaf,
   createPlateEditor,
 } from '@udecode/plate-common/react';
-import {
-  FontBackgroundColorPlugin,
-  FontColorPlugin,
-} from '@udecode/plate-font/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
-import { HeadingPlugin } from '@udecode/plate-heading/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
-import { IndentPlugin } from '@udecode/plate-indent/react';
-import { IndentListPlugin } from '@udecode/plate-indent-list/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
-import Prism from 'prismjs';
 
 import { AIMenu } from '@/components/plate-ui/ai-menu';
 import { BlockquoteElement } from '@/components/plate-ui/blockquote-element';
@@ -46,8 +38,11 @@ import { SelectionOverlayPlugin } from '@/components/plate-ui/cursor-overlay';
 import { HeadingElement } from '@/components/plate-ui/heading-element';
 import { HrElement } from '@/components/plate-ui/hr-element';
 import { LinkElement } from '@/components/plate-ui/link-element';
-import { LinkFloatingToolbar } from '@/components/plate-ui/link-floating-toolbar';
 import { ParagraphElement } from '@/components/plate-ui/paragraph-element';
+
+import { basicNodesPlugins } from './basic-nodes-plugins';
+import { indentListPlugins } from './indent-list-plugins';
+import { linkPlugin } from './link-plugin';
 
 const createAIEditor = () => {
   const editor = createPlateEditor({
@@ -73,39 +68,12 @@ const createAIEditor = () => {
     },
     plugins: [
       ParagraphPlugin,
-      IndentPlugin.configure({
-        inject: {
-          targetPlugins: [
-            ParagraphPlugin.key,
-            HEADING_KEYS.h1,
-            HEADING_KEYS.h2,
-            HEADING_KEYS.h3,
-            BlockquotePlugin.key,
-            CodeBlockPlugin.key,
-          ],
-        },
-      }),
-      IndentListPlugin.configure({
-        inject: {
-          targetPlugins: [
-            ParagraphPlugin.key,
-            HEADING_KEYS.h1,
-            HEADING_KEYS.h2,
-            HEADING_KEYS.h3,
-            BlockquotePlugin.key,
-            CodeBlockPlugin.key,
-          ],
-        },
-      }),
-      HeadingPlugin.configure({ options: { levels: 3 } }),
-      BlockquotePlugin,
-      CodeBlockPlugin.configure({ options: { prism: Prism } }),
+      ...basicNodesPlugins,
       HorizontalRulePlugin,
-      LinkPlugin.configure({
-        render: { afterEditable: () => <LinkFloatingToolbar /> },
-      }),
+      linkPlugin,
+      ...indentListPlugins,
       MarkdownPlugin.configure({ options: { indentList: true } }),
-      // FIXME: Fixed the throw error: BlockSelectionPlugin is missing. readonly editor need'nt this plugin so using an empty plugin instead
+      // FIXME
       BlockSelectionPlugin.configure({
         api: {},
         extendEditor: null,
@@ -114,13 +82,6 @@ const createAIEditor = () => {
         useHooks: null,
         handlers: {},
       }),
-      BoldPlugin,
-      ItalicPlugin,
-      UnderlinePlugin,
-      StrikethroughPlugin,
-      CodePlugin,
-      FontColorPlugin,
-      FontBackgroundColorPlugin,
     ],
     value: [{ children: [{ text: '' }], type: 'p' }],
   });

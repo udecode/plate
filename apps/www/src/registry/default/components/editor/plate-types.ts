@@ -16,13 +16,6 @@ import type { HEADING_KEYS } from '@udecode/plate-heading';
 import type { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import type { TLinkElement } from '@udecode/plate-link';
 import type { LinkPlugin } from '@udecode/plate-link/react';
-import type { TTodoListItemElement } from '@udecode/plate-list';
-import type {
-  BulletedListPlugin,
-  ListItemPlugin,
-  NumberedListPlugin,
-  TodoListPlugin,
-} from '@udecode/plate-list/react';
 import type { TImageElement, TMediaEmbedElement } from '@udecode/plate-media';
 import type { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
 import type {
@@ -142,21 +135,6 @@ export interface MyH3Element extends MyBlockElement {
   type: typeof HEADING_KEYS.h3;
 }
 
-export interface MyH4Element extends MyBlockElement {
-  children: MyInlineChildren;
-  type: typeof HEADING_KEYS.h4;
-}
-
-export interface MyH5Element extends MyBlockElement {
-  children: MyInlineChildren;
-  type: typeof HEADING_KEYS.h5;
-}
-
-export interface MyH6Element extends MyBlockElement {
-  children: MyInlineChildren;
-  type: typeof HEADING_KEYS.h6;
-}
-
 export interface MyBlockquoteElement extends MyBlockElement {
   children: MyInlineChildren;
   type: typeof BlockquotePlugin.key;
@@ -185,28 +163,6 @@ export interface MyTableRowElement extends TElement {
 export interface MyTableCellElement extends TElement {
   children: MyNestableBlock[];
   type: typeof TableCellPlugin.key;
-}
-
-export interface MyBulletedListElement extends TElement, MyBlockElement {
-  children: MyListItemElement[];
-  type: typeof BulletedListPlugin.key;
-}
-
-export interface MyNumberedListElement extends TElement, MyBlockElement {
-  children: MyListItemElement[];
-  type: typeof NumberedListPlugin.key;
-}
-
-export interface MyListItemElement extends TElement, MyBlockElement {
-  children: MyInlineChildren;
-  type: typeof ListItemPlugin.key;
-}
-
-export interface MyTodoListElement
-  extends TTodoListItemElement,
-    MyBlockElement {
-  children: MyInlineChildren;
-  type: typeof TodoListPlugin.key;
 }
 
 export interface MyToggleElement extends TToggleElement, MyBlockElement {
@@ -242,22 +198,16 @@ export type MyNestableBlock = MyParagraphElement;
 
 export type MyRootBlock =
   | MyBlockquoteElement
-  | MyBulletedListElement
   | MyCodeBlockElement
   | MyExcalidrawElement
   | MyH1Element
   | MyH2Element
   | MyH3Element
-  | MyH4Element
-  | MyH5Element
-  | MyH6Element
   | MyHrElement
   | MyImageElement
   | MyMediaEmbedElement
-  | MyNumberedListElement
   | MyParagraphElement
   | MyTableElement
-  | MyTodoListElement
   | MyToggleElement;
 
 export type MyValue = MyRootBlock[];

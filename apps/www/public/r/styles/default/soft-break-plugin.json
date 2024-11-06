@@ -1,0 +1,19 @@
+{
+  "dependencies": [
+    "@udecode/plate-break",
+    "@udecode/plate-block-quote",
+    "@udecode/plate-callout",
+    "@udecode/plate-code-block",
+    "@udecode/plate-table"
+  ],
+  "files": [
+    {
+      "content": "'use client';\n\nimport { BlockquotePlugin } from '@udecode/plate-block-quote/react';\nimport { SoftBreakPlugin } from '@udecode/plate-break/react';\nimport { CalloutPlugin } from '@udecode/plate-callout/react';\nimport { CodeBlockPlugin } from '@udecode/plate-code-block/react';\nimport {\n  TableCellHeaderPlugin,\n  TableCellPlugin,\n} from '@udecode/plate-table/react';\n\nexport const softBreakPlugin = SoftBreakPlugin.configure({\n  options: {\n    rules: [\n      { hotkey: 'shift+enter' },\n      {\n        hotkey: 'enter',\n        query: {\n          allow: [\n            CodeBlockPlugin.key,\n            BlockquotePlugin.key,\n            TableCellPlugin.key,\n            TableCellHeaderPlugin.key,\n            CalloutPlugin.key,\n          ],\n        },\n      },\n    ],\n  },\n});\n",
+      "path": "components/editor/plugins/soft-break-plugin.ts",
+      "target": "components/editor/plugins/soft-break-plugin.ts",
+      "type": "registry:component"
+    }
+  ],
+  "name": "soft-break-plugin",
+  "type": "registry:component"
+}

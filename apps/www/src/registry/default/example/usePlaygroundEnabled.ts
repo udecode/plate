@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 
+import { AIChatPlugin, CopilotPlugin } from '@udecode/plate-ai/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import {
@@ -62,6 +63,9 @@ export function usePlaygroundEnabled(id?: string) {
 
   return useMemo(
     () => ({
+      [AIChatPlugin.key]: {
+        enabled: id === 'ai' || !!enabled[AIChatPlugin.key],
+      },
       [AlignPlugin.key]: { enabled: !!enabled.align },
       [AutoformatPlugin.key]: { enabled: !!enabled.autoformat },
       [BlockSelectionPlugin.key]: {
@@ -74,6 +78,9 @@ export function usePlaygroundEnabled(id?: string) {
       [CodePlugin.key]: { enabled: !!enabled.code },
       [ColumnPlugin.key]: { enabled: !!enabled.column },
       [CommentsPlugin.key]: { enabled: !!enabled.comment },
+      [CopilotPlugin.key]: {
+        enabled: id === 'copilot' || !!enabled[CopilotPlugin.key],
+      },
       [DeletePlugin.key]: { enabled: !!enabled.delete },
       [DndPlugin.key]: { enabled: !!enabled.dnd },
       [DocxPlugin.key]: { enabled: !!enabled.docx },
@@ -93,7 +100,7 @@ export function usePlaygroundEnabled(id?: string) {
       [IndentListPlugin.key]: {
         enabled: id === 'indent-list' || !!enabled.listStyleType,
       },
-      [IndentPlugin.key]: { enabled: !!enabled.indent },
+      [IndentPlugin.key]: { enabled: id !== 'list' && !!enabled.indent },
       [ItalicPlugin.key]: { enabled: !!enabled.italic },
       [JuicePlugin.key]: { enabled: !!enabled.juice },
       [KbdPlugin.key]: { enabled: !!enabled.kbd },

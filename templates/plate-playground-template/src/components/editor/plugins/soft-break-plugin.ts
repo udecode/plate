@@ -1,7 +1,13 @@
+'use client';
+
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { SoftBreakPlugin } from '@udecode/plate-break/react';
+import { CalloutPlugin } from '@udecode/plate-callout/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import { TableCellPlugin } from '@udecode/plate-table/react';
+import {
+  TableCellHeaderPlugin,
+  TableCellPlugin,
+} from '@udecode/plate-table/react';
 
 export const softBreakPlugin = SoftBreakPlugin.configure({
   options: {
@@ -14,6 +20,8 @@ export const softBreakPlugin = SoftBreakPlugin.configure({
             CodeBlockPlugin.key,
             BlockquotePlugin.key,
             TableCellPlugin.key,
+            TableCellHeaderPlugin.key,
+            CalloutPlugin.key,
           ],
         },
       },

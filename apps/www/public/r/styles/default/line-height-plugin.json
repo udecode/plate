@@ -1,0 +1,16 @@
+{
+  "dependencies": [
+    "@udecode/plate-heading",
+    "@udecode/plate-line-height"
+  ],
+  "files": [
+    {
+      "content": "'use client';\n\nimport { ParagraphPlugin } from '@udecode/plate-common/react';\nimport { HEADING_LEVELS } from '@udecode/plate-heading';\nimport { LineHeightPlugin } from '@udecode/plate-line-height/react';\n\nexport const lineHeightPlugin = LineHeightPlugin.configure({\n  inject: {\n    nodeProps: {\n      defaultNodeValue: 1.5,\n      validNodeValues: [1, 1.2, 1.5, 2, 3],\n    },\n    targetPlugins: [ParagraphPlugin.key, ...HEADING_LEVELS],\n  },\n});\n",
+      "path": "components/editor/plugins/line-height-plugin.ts",
+      "target": "components/editor/plugins/line-height-plugin.ts",
+      "type": "registry:component"
+    }
+  ],
+  "name": "line-height-plugin",
+  "type": "registry:component"
+}

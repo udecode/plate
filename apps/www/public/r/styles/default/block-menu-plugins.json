@@ -1,0 +1,19 @@
+{
+  "dependencies": [
+    "@udecode/plate-selection"
+  ],
+  "files": [
+    {
+      "content": "'use client';\n\nimport { BlockMenuPlugin } from '@udecode/plate-selection/react';\n\nimport { blockSelectionPlugins } from './block-selection-plugins';\nimport { BlockContextMenu } from '@/components/plate-ui/block-context-menu';\n\nexport const blockMenuPlugins = [\n  ...blockSelectionPlugins,\n  BlockMenuPlugin.configure({\n    render: { aboveEditable: BlockContextMenu },\n  }),\n] as const;\n",
+      "path": "components/editor/plugins/block-menu-plugins.ts",
+      "target": "components/editor/plugins/block-menu-plugins.ts",
+      "type": "registry:component"
+    }
+  ],
+  "name": "block-menu-plugins",
+  "registryDependencies": [
+    "block-context-menu",
+    "block-selection-plugins"
+  ],
+  "type": "registry:component"
+}

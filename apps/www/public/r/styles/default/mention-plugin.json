@@ -1,0 +1,15 @@
+{
+  "dependencies": [
+    "@udecode/plate-mention"
+  ],
+  "files": [
+    {
+      "content": "'use client';\n\nimport { MentionPlugin } from '@udecode/plate-mention/react';\n\nexport const mentionPlugin = MentionPlugin.configure({\n  options: { triggerPreviousCharPattern: /^$|^[\\s\"']$/ },\n});\n",
+      "path": "components/editor/plugins/mention-plugin.ts",
+      "target": "components/editor/plugins/mention-plugin.ts",
+      "type": "registry:component"
+    }
+  ],
+  "name": "mention-plugin",
+  "type": "registry:component"
+}

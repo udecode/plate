@@ -1,11 +1,7 @@
 'use client';
 
-import type {
-  AutoformatBlockRule,
-  AutoformatRule,
-} from '@udecode/plate-autoformat';
+import type { AutoformatRule } from '@udecode/plate-autoformat';
 import type { SlateEditor } from '@udecode/plate-common';
-import type { TTodoListItemElement } from '@udecode/plate-list';
 
 import {
   autoformatArrow,
@@ -34,7 +30,6 @@ import {
 import {
   getParentNode,
   insertNodes,
-  isBlock,
   isElement,
   isType,
   setNodes,
@@ -48,17 +43,7 @@ import {
   ListStyleType,
   toggleIndentList,
 } from '@udecode/plate-indent-list';
-import { toggleList, unwrapList } from '@udecode/plate-list';
-import {
-  BulletedListPlugin,
-  ListItemPlugin,
-  NumberedListPlugin,
-  TodoListPlugin,
-} from '@udecode/plate-list/react';
 import { TogglePlugin, openNextToggles } from '@udecode/plate-toggle/react';
-
-export const preFormat: AutoformatBlockRule['preFormat'] = (editor) =>
-  unwrapList(editor);
 
 export const format = (editor: SlateEditor, customFormatting: any) => {
   if (editor.selection) {
@@ -76,14 +61,6 @@ export const format = (editor: SlateEditor, customFormatting: any) => {
       customFormatting();
     }
   }
-};
-
-export const formatList = (editor: SlateEditor, elementType: string) => {
-  format(editor, () =>
-    toggleList(editor, {
-      type: elementType,
-    })
-  );
 };
 
 export const autoformatMarks: AutoformatRule[] = [
@@ -163,43 +140,36 @@ export const autoformatBlocks: AutoformatRule[] = [
   {
     match: '# ',
     mode: 'block',
-    preFormat,
     type: HEADING_KEYS.h1,
   },
   {
     match: '## ',
     mode: 'block',
-    preFormat,
     type: HEADING_KEYS.h2,
   },
   {
     match: '### ',
     mode: 'block',
-    preFormat,
     type: HEADING_KEYS.h3,
   },
   {
     match: '#### ',
     mode: 'block',
-    preFormat,
     type: HEADING_KEYS.h4,
   },
   {
     match: '##### ',
     mode: 'block',
-    preFormat,
     type: HEADING_KEYS.h5,
   },
   {
     match: '###### ',
     mode: 'block',
-    preFormat,
     type: HEADING_KEYS.h6,
   },
   {
     match: '> ',
     mode: 'block',
-    preFormat,
     type: BlockquotePlugin.key,
   },
   {
@@ -211,7 +181,6 @@ export const autoformatBlocks: AutoformatRule[] = [
     },
     match: '```',
     mode: 'block',
-    preFormat,
     triggerAtBlockStart: false,
     type: CodeBlockPlugin.key,
   },
@@ -232,42 +201,6 @@ export const autoformatBlocks: AutoformatRule[] = [
     match: ['---', '—-', '___ '],
     mode: 'block',
     type: HorizontalRulePlugin.key,
-  },
-];
-
-export const autoformatLists: AutoformatRule[] = [
-  {
-    format: (editor) => formatList(editor, BulletedListPlugin.key),
-    match: ['* ', '- '],
-    mode: 'block',
-    preFormat,
-    type: ListItemPlugin.key,
-  },
-  {
-    format: (editor) => formatList(editor, NumberedListPlugin.key),
-    match: [String.raw`^\d+\.$ `, String.raw`^\d+\)$ `],
-    matchByRegex: true,
-    mode: 'block',
-    preFormat,
-    type: ListItemPlugin.key,
-  },
-  {
-    match: '[] ',
-    mode: 'block',
-    type: TodoListPlugin.key,
-  },
-  {
-    format: (editor) =>
-      setNodes<TTodoListItemElement>(
-        editor,
-        { checked: true, type: TodoListPlugin.key },
-        {
-          match: (n) => isBlock(editor, n),
-        }
-      ),
-    match: '[x] ',
-    mode: 'block',
-    type: TodoListPlugin.key,
   },
 ];
 
@@ -334,7 +267,6 @@ export const autoformatPlugin = AutoformatPlugin.configure({
       ...autoformatLegalHtml,
       ...autoformatArrow,
       ...autoformatMath,
-      // Use autoformatLists instead if using ListPlugin
       ...autoformatIndentLists,
     ],
   },

@@ -1,4 +1,7 @@
+'use client';
+
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
+import { CalloutPlugin } from '@udecode/plate-callout/react';
 import {
   isCodeBlockEmpty,
   isSelectionAtCodeBlockStart,
@@ -10,12 +13,20 @@ import {
   isSelectionAtBlockStart,
 } from '@udecode/plate-common';
 import { ParagraphPlugin } from '@udecode/plate-common/react';
-import { TodoListPlugin } from '@udecode/plate-list/react';
+import { HEADING_LEVELS } from '@udecode/plate-heading';
+import { INDENT_LIST_KEYS, ListStyleType } from '@udecode/plate-indent-list';
 import { ResetNodePlugin } from '@udecode/plate-reset-node/react';
 
 const resetBlockTypesCommonRule = {
   defaultType: ParagraphPlugin.key,
-  types: [BlockquotePlugin.key, TodoListPlugin.key],
+  types: [
+    ...HEADING_LEVELS,
+    BlockquotePlugin.key,
+    INDENT_LIST_KEYS.todo,
+    ListStyleType.Disc,
+    ListStyleType.Decimal,
+    CalloutPlugin.key,
+  ],
 };
 
 const resetBlockTypesCodeBlockRule = {
