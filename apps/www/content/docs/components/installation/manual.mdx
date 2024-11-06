@@ -11,40 +11,60 @@ Components are styled using Tailwind CSS. You need to install Tailwind CSS in yo
 
 [Follow the Tailwind CSS installation instructions](https://tailwindcss.com/docs/installation) to get started.
 
-### Add dependencies
+### Run the CLI
 
-Add the following dependencies to your project:
+Initialize Plate in your project using the CLI:
 
 ```bash
-npm install @udecode/plate-common slate slate-react slate-history slate-hyperscript @udecode/cn tailwindcss-animate class-variance-authority tailwind-merge lucide-react
+npx shadcx@latest init plate
 ```
 
-We use icons from [Lucide](https://lucide.dev). You can use any icon library you want.
+It should look like this:
 
-### Configure tailwind.config.js
+<ComponentSource src="../../templates/plate-playground-template/tailwind.config.ts" />
 
-Here's what demo `tailwind.config.js` looks like:
+<ComponentSource src="../../templates/plate-playground-template/src/app/globals.css" />
 
-<ComponentSource
-  src="../../templates/plate-playground-template/tailwind.config.ts"
-  open
-/>
+If your project is not supported by the CLI, create `components.json` at the root of your project, then run again the init command:
 
-### Configure styles
+```json
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "default",
+  "rsc": true,
+  "tsx": true,
+  "aliases": {
+    "components": "@/components",
+    "hooks": "@/hooks",
+    "lib": "@/lib",
+    "ui": "@/components/ui",
+    "utils": "@/lib/utils"
+  },
+  "tailwind": {
+    "baseColor": "slate",
+    "config": "tailwind.config.ts",
+    "css": "src/app/globals.css",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "registries": {
+    "plate": {
+      "aliases": {
+        "ui": "@/components/plate-ui"
+      },
+      "url": "https://platejs.org/r"
+    }
+  }
+}
+```
 
-Add the following to your `globals.css` file. You can learn more about using CSS variables for theming in the [theming section](/docs/components/theming).
-
-<ComponentSource
-  src="../../templates/plate-playground-template/src/app/globals.css"
-  open
-/>
 
 ### Add components
 
-You can now start adding components to your project.
+You can now start adding components to `components/plate-ui`:
 
 ```bash
-npx shadcx@latest add plate/paragraph-element
+npx shadcx@latest add -r plate
 ```
 
 ### Add editor (optional)
@@ -61,6 +81,6 @@ npx shadcx@latest add plate/editor-basic
 npx shadcx@latest add plate/editor-ai
 ```
 
-This will add an `/editor` page to your project along with all necessary components as a starting point.
+This will add a page in `app/editor` along with all necessary components in `components/plate-ui` as a starting point.
 
 </Steps>
