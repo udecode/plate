@@ -1,5 +1,7 @@
 # @udecode/plate-ai
 
+## 39.3.5
+
 ## 39.3.0
 
 ### Patch Changes

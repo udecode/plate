@@ -1,5 +1,11 @@
 # @udecode/plate-selection
 
+## 39.3.5
+
+### Patch Changes
+
+- [`49c275252b5a24fac53729e5522f0c8192c643f5`](https://github.com/udecode/plate/commit/49c275252b5a24fac53729e5522f0c8192c643f5) by [@felixfeng33](https://github.com/felixfeng33) – Fix the issue where BlockSelection occasionally fails to delete the selected node.
+
 ## 39.2.12
 
 ### Patch Changes
