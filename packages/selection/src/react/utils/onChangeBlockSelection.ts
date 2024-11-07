@@ -11,7 +11,7 @@ export const onChangeBlockSelection: OnChange<BlockSelectionConfig> = ({
 }) => {
   if (
     editor.selection &&
-    getOptions().isSelecting &&
+    getOptions().selectedIds!.size > 0 &&
     !editor.getOption(BlockMenuPlugin, 'openId')
   ) {
     api.blockSelection.unselect();
