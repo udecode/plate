@@ -46,7 +46,6 @@ import {
 } from './transforms/setBlockSelectionNodes';
 import {
   copySelectedBlocks,
-  onChangeBlockSelection,
   pasteSelectedBlocks,
   selectInsertedBlocks,
 } from './utils';
@@ -62,6 +61,7 @@ export type BlockSelectionConfig = PluginConfig<
     query?: QueryNodeOptions;
     rightSelectionAreaClassName?: string;
     selectedIds?: Set<string>;
+    shadowInputRef?: React.RefObject<HTMLInputElement>;
     onKeyDownSelecting?: (e: KeyboardEvent) => void;
   } & BlockSelectionSelectors,
   {
@@ -82,6 +82,7 @@ export type BlockSelectionApi = {
   setSelectedIds: (
     options: Partial<ChangedElements> & { ids?: string[] }
   ) => void;
+  focus: () => void;
   getNodes: () => TNodeEntry[];
   resetSelectedIds: () => void;
   selectedAll: () => void;
@@ -90,7 +91,7 @@ export type BlockSelectionApi = {
 
 export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
   const editor = useEditorRef();
-  const { api, getOption, getOptions, useOption } =
+  const { api, getOption, getOptions, setOption, useOption } =
     useEditorPlugin<BlockSelectionConfig>({ key: 'blockSelection' });
   const isSelecting = useOption('isSelecting');
   const selectedIds = useOption('selectedIds');
@@ -102,11 +103,12 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
 
   React.useEffect(() => {
     setIsMounted(true);
+    setOption('shadowInputRef', inputRef);
 
     return () => {
       setIsMounted(false);
     };
-  }, []);
+  }, [setOption]);
 
   React.useEffect(() => {
     if (isSelecting && inputRef.current) {
@@ -278,6 +280,7 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
       maxLevel: 1,
     },
     selectedIds: new Set(),
+    shadowInputRef: { current: null },
   },
   plugins: [BlockMenuPlugin],
   render: {
@@ -293,8 +296,22 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
     afterEditable: BlockSelectionAfterEditable,
   },
   handlers: {
-    onChange: onChangeBlockSelection,
     onKeyDown: onKeyDownSelection,
+    onMouseDown: ({ api, editor, event, getOptions }) => {
+      const target = event.target as HTMLElement;
+
+      if (target.dataset.platePreventUnselect) return;
+
+      console.log(editor.getOption(BlockMenuPlugin, 'openId'), 'fj');
+
+      if (
+        event.button === 0 &&
+        getOptions().selectedIds!.size > 0 &&
+        !editor.getOption(BlockMenuPlugin, 'openId')
+      ) {
+        api.blockSelection.unselect();
+      }
+    },
   },
 })
   .extendOptions(({ getOptions }) => ({
@@ -303,6 +320,13 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
   }))
   .extendApi<Partial<BlockSelectionApi>>(
     ({ editor, getOption, getOptions, setOption }) => ({
+      focus: () => {
+        const shadowInputRef = getOption('shadowInputRef');
+
+        if (shadowInputRef?.current) {
+          shadowInputRef.current.focus({ preventScroll: true });
+        }
+      },
       getNodes: () => {
         const selectedIds = getOption('selectedIds');
 

@@ -30,9 +30,9 @@ export const duplicateBlockSelectionNodes = (
     })
     .filter(Boolean);
 
+  const api = editor.getApi(BlockSelectionPlugin);
+
   setTimeout(() => {
-    editor
-      .getApi(BlockSelectionPlugin)
-      .blockSelection.setSelectedIds({ ids } as any);
+    api.blockSelection.setSelectedIds({ ids } as any);
   }, 0);
 };

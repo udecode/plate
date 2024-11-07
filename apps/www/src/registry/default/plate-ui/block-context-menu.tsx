@@ -61,7 +61,17 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <ContextMenu modal={false}>
+    <ContextMenu
+      onOpenChange={(open) => {
+        if (!open) {
+          // prevent unselect the block selection
+          setTimeout(() => {
+            api.blockMenu.hide();
+          }, 0);
+        }
+      }}
+      modal={false}
+    >
       <ContextMenuTrigger
         asChild
         onContextMenu={(event) => {
@@ -83,6 +93,7 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
         className="w-64"
         onCloseAutoFocus={(e) => {
           e.preventDefault();
+          editor.getApi(BlockSelectionPlugin).blockSelection.focus();
 
           if (value === 'askAI') {
             editor.getApi(AIChatPlugin).aiChat.show();
