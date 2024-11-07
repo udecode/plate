@@ -4,7 +4,11 @@
   ],
   "files": [
     {
+<<<<<<< HEAD
       "content": "'use client';\n\nimport { BlockSelectionPlugin } from '@udecode/plate-selection/react';\n\nexport const blockSelectionPlugins = [\n  BlockSelectionPlugin.configure({\n    options: {\n      areaOptions: {\n        behaviour: {\n          scrolling: {\n            speedDivider: 1.5,\n          },\n          startThreshold: 10,\n        },\n      },\n      enableContextMenu: true,\n    },\n  }),\n] as const;\n",
+=======
+      "content": "'use client';\n\nimport { BlockSelectionPlugin } from '@udecode/plate-selection/react';\n\nexport const blockSelectionPlugins = [\n  BlockSelectionPlugin.configure({\n    options: {\n      areaOptions: {\n        behaviour: {\n          scrolling: {\n            speedDivider: 1.5,\n          },\n          startThreshold: 4,\n        },\n        boundaries: '#scroll_container',\n        container: '#scroll_container',\n        selectables: '#scroll_container .slate-selectable',\n        selectionAreaClass: 'slate-selection-area',\n      },\n      enableContextMenu: true,\n    },\n  }),\n] as const;\n",
+>>>>>>> main
       "path": "components/editor/plugins/block-selection-plugins.ts",
       "target": "components/editor/plugins/block-selection-plugins.ts",
       "type": "registry:component"

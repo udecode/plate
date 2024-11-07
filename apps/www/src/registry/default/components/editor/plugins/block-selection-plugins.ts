@@ -10,7 +10,7 @@ export const blockSelectionPlugins = [
           scrolling: {
             speedDivider: 1.5,
           },
-          startThreshold: 10,
+          startThreshold: 4,
         },
       },
       enableContextMenu: true,
