@@ -11,21 +11,38 @@ Components are styled using Tailwind CSS. You need to install Tailwind CSS in yo
 
 [Follow the Tailwind CSS installation instructions](https://tailwindcss.com/docs/installation) to get started.
 
-### Run the CLI
+### Add dependencies
 
-Initialize Plate in your project using the CLI:
+Add the following dependencies to your project:
 
 ```bash
-npx shadcx@latest init plate
+npm install tailwindcss-animate class-variance-authority lucide-react @udecode/cn @udecode/plate-common slate slate-react slate-history slate-hyperscript
 ```
 
-It should look like this:
+### Configure path aliases
+
+```json {3-6} title="tsconfig.json"
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
+  }
+}
+```
+
+### Configure tailwind.config.js
 
 <ComponentSource src="../../templates/plate-playground-template/tailwind.config.ts" />
 
+### Configure styles
+
 <ComponentSource src="../../templates/plate-playground-template/src/app/globals.css" />
 
-If your project is not supported by the CLI, create `components.json` at the root of your project, then run again the init command:
+### Configure components.json
+
+Create [components.json](/docs/components/components-json) at the root of your project, then add the following:
 
 ```json
 {
@@ -58,10 +75,11 @@ If your project is not supported by the CLI, create `components.json` at the roo
 }
 ```
 
+Adjust the values as needed.
 
-### Add components
+### That's it
 
-You can now start adding components to `components/plate-ui`:
+You can now start adding components to your project:
 
 ```bash
 npx shadcx@latest add -r plate
