@@ -35,12 +35,12 @@ Plate
 
 You can choose one of the following templates to get started:
 
-| Option                                                                            | NextJS |  Plate | Plugins |AI & Backend |
-| --------------------------------------------------------------------------------- | ------ |  ----- | ------- |-------- |
-| [Notion clone template](https://pro.platejs.org/docs/templates/potion) | ✅     |  ✅    | ✅      |✅       |
-| [Plate playground template](https://github.com/udecode/plate-playground-template) | ✅     |  ✅    | ✅      |       |
-| [Plate minimal template](https://github.com/udecode/plate-template)               | ✅     |  ✅    |         |       |
-| [NextJS template](https://platejs.org/docs/components/installation/next)          | ✅     |        |         |       |
+| Option                                                                            | NextJS | Plate | Plugins | AI & Backend |
+| --------------------------------------------------------------------------------- | ------ | ----- | ------- | ------------ |
+| [Notion-like template](https://pro.platejs.org/docs/templates/potion)             | ✅     | ✅    | ✅      | ✅           |
+| [Plate playground template](https://github.com/udecode/plate-playground-template) | ✅     | ✅    | ✅      |              |
+| [Plate minimal template](https://github.com/udecode/plate-template)               | ✅     | ✅    |         |              |
+| [NextJS template](https://platejs.org/docs/components/installation/next)          | ✅     |       |         |              |
 
 ## Documentation
 

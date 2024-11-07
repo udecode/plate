@@ -4,4 +4,4 @@
 
 export * from './insertMedia';
 export * from './parseMediaUrl';
-export * from './types';
+export type * from './types';

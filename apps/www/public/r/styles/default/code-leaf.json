@@ -1,12 +1,13 @@
 {
-  "dependencies": [
-    "@udecode/plate-basic-marks"
-  ],
+  "dependencies": [],
   "doc": {
     "description": "An inline component for code snippets.",
     "docs": [
       {
-        "route": "/docs/comments"
+        "route": "/docs/basic-marks"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/code-leaf"
       }
     ],
     "examples": [

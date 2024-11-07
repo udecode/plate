@@ -1,0 +1,20 @@
+{
+  "dependencies": [
+    "@udecode/plate-block-quote",
+    "@udecode/plate-callout",
+    "@udecode/plate-code-block",
+    "@udecode/plate-heading",
+    "@udecode/plate-indent-list",
+    "@udecode/plate-reset-node"
+  ],
+  "files": [
+    {
+      "content": "'use client';\n\nimport { BlockquotePlugin } from '@udecode/plate-block-quote/react';\nimport { CalloutPlugin } from '@udecode/plate-callout/react';\nimport {\n  isCodeBlockEmpty,\n  isSelectionAtCodeBlockStart,\n  unwrapCodeBlock,\n} from '@udecode/plate-code-block';\nimport { CodeBlockPlugin } from '@udecode/plate-code-block/react';\nimport {\n  isBlockAboveEmpty,\n  isSelectionAtBlockStart,\n} from '@udecode/plate-common';\nimport { ParagraphPlugin } from '@udecode/plate-common/react';\nimport { HEADING_LEVELS } from '@udecode/plate-heading';\nimport { INDENT_LIST_KEYS, ListStyleType } from '@udecode/plate-indent-list';\nimport { ResetNodePlugin } from '@udecode/plate-reset-node/react';\n\nconst resetBlockTypesCommonRule = {\n  defaultType: ParagraphPlugin.key,\n  types: [\n    ...HEADING_LEVELS,\n    BlockquotePlugin.key,\n    INDENT_LIST_KEYS.todo,\n    ListStyleType.Disc,\n    ListStyleType.Decimal,\n    CalloutPlugin.key,\n  ],\n};\n\nconst resetBlockTypesCodeBlockRule = {\n  defaultType: ParagraphPlugin.key,\n  types: [CodeBlockPlugin.key],\n  onReset: unwrapCodeBlock,\n};\n\nexport const resetBlockTypePlugin = ResetNodePlugin.configure({\n  options: {\n    rules: [\n      {\n        ...resetBlockTypesCommonRule,\n        hotkey: 'Enter',\n        predicate: isBlockAboveEmpty,\n      },\n      {\n        ...resetBlockTypesCommonRule,\n        hotkey: 'Backspace',\n        predicate: isSelectionAtBlockStart,\n      },\n      {\n        ...resetBlockTypesCodeBlockRule,\n        hotkey: 'Enter',\n        predicate: isCodeBlockEmpty,\n      },\n      {\n        ...resetBlockTypesCodeBlockRule,\n        hotkey: 'Backspace',\n        predicate: isSelectionAtCodeBlockStart,\n      },\n    ],\n  },\n});\n",
+      "path": "components/editor/plugins/reset-block-type-plugin.ts",
+      "target": "components/editor/plugins/reset-block-type-plugin.ts",
+      "type": "registry:component"
+    }
+  ],
+  "name": "reset-block-type-plugin",
+  "type": "registry:component"
+}

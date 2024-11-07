@@ -4,8 +4,18 @@
   ],
   "doc": {
     "description": "A text placeholder for empty editor blocks.",
+    "docs": [
+      {
+        "route": "/docs/basic-elements",
+        "title": "Basic Elements"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/placeholder"
+      }
+    ],
     "examples": [
-      "placeholder-demo"
+      "placeholder-demo",
+      "placeholder-pro"
     ]
   },
   "files": [

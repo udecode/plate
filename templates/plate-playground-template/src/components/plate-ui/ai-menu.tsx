@@ -1,6 +1,11 @@
+'use client';
+
 import * as React from 'react';
+
 import { AIChatPlugin, useEditorChat } from '@udecode/plate-ai/react';
 import {
+  type TElement,
+  type TNodeEntry,
   getAncestorNode,
   getBlocks,
   isElementEmpty,
@@ -8,6 +13,7 @@ import {
   isSelectionAtBlockEnd,
 } from '@udecode/plate-common';
 import {
+  type PlateEditor,
   toDOMNode,
   useEditorPlugin,
   useHotkeys,
@@ -16,18 +22,14 @@ import {
   BlockSelectionPlugin,
   useIsSelecting,
 } from '@udecode/plate-selection/react';
-import { useChat } from 'ai/react';
 import { Loader2Icon } from 'lucide-react';
-import { toast } from 'sonner';
 
-import { useOpenAI } from '../openai/openai-context';
+import { useChat } from '@/components/editor/use-chat';
+
 import { AIChatEditor } from './ai-chat-editor';
 import { AIMenuItems } from './ai-menu-items';
 import { Command, CommandList, InputCommand } from './command';
 import { Popover, PopoverAnchor, PopoverContent } from './popover';
-
-import type { TElement, TNodeEntry } from '@udecode/plate-common';
-import type { PlateEditor } from '@udecode/plate-common/react';
 
 export function AIMenu() {
   const { api, editor, useOption } = useEditorPlugin(AIChatPlugin);
@@ -38,22 +40,7 @@ export function AIMenu() {
   const aiEditorRef = React.useRef<PlateEditor | null>(null);
   const [value, setValue] = React.useState('');
 
-  const chat = useChat({
-    id: 'editor',
-    api: '/api/ai/command',
-    body: {
-      apiKey: useOpenAI().apiKey,
-      model: useOpenAI().model.value,
-    },
-    onError: (error) => {
-      if (error.message.includes('API key')) {
-        toast.error('OpenAI API key required');
-      } else {
-        toast.error('Invalid OpenAI API key');
-      }
-      api.aiChat.hide();
-    },
-  });
+  const chat = useChat();
 
   const { input, isLoading, messages, setInput } = chat;
   const [anchorElement, setAnchorElement] = React.useState<HTMLElement | null>(

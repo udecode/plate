@@ -7,12 +7,12 @@ import type { ImperativePanelHandle } from 'react-resizable-panels';
 
 import { cn } from '@udecode/cn';
 
-import { BlockToolbar } from './block-toolbar';
+import { BlockToolbar } from '@/components/block-toolbar';
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
-} from './ui/resizable';
+} from '@/components/ui/resizable';
 
 export function BlockPreview({
   block,

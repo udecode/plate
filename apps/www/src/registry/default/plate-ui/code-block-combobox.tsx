@@ -1,7 +1,5 @@
 'use client';
 
-/* eslint-disable unicorn/prefer-export-from */
-
 import React, { useState } from 'react';
 
 import { cn } from '@udecode/cn';
@@ -10,6 +8,7 @@ import {
   useCodeBlockComboboxState,
 } from '@udecode/plate-code-block/react';
 import { Check, ChevronsUpDown } from 'lucide-react';
+
 // Prism must be imported before all language files
 import Prism from 'prismjs';
 
@@ -189,7 +188,6 @@ export function CodeBlockCombobox() {
               >
                 <Check
                   className={cn(
-                    'mr-2 size-4',
                     state.value === language.value ? 'opacity-100' : 'opacity-0'
                   )}
                 />

@@ -1,0 +1,17 @@
+{
+  "dependencies": [
+    "@udecode/plate-alignment",
+    "@udecode/plate-heading",
+    "@udecode/plate-media"
+  ],
+  "files": [
+    {
+      "content": "'use client';\n\nimport { AlignPlugin } from '@udecode/plate-alignment/react';\nimport { ParagraphPlugin } from '@udecode/plate-common/react';\nimport { HEADING_LEVELS } from '@udecode/plate-heading';\nimport { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';\n\nexport const alignPlugin = AlignPlugin.extend({\n  inject: {\n    targetPlugins: [\n      ParagraphPlugin.key,\n      ...HEADING_LEVELS,\n      MediaEmbedPlugin.key,\n      ImagePlugin.key,\n    ],\n  },\n});\n",
+      "path": "components/editor/plugins/align-plugin.ts",
+      "target": "components/editor/plugins/align-plugin.ts",
+      "type": "registry:component"
+    }
+  ],
+  "name": "align-plugin",
+  "type": "registry:component"
+}

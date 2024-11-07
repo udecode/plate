@@ -50,6 +50,7 @@ export default function HomeTabs() {
         </TabsList>
 
         <Button
+          size="lg"
           variant="outline"
           className={cn(
             'ml-2 translate-y-[3px]',

@@ -47,6 +47,17 @@ export function MainNav() {
         </Link>
         <Link
           className={cn(
+            'transition-colors hover:text-foreground/80',
+            pathname?.startsWith('/editors')
+              ? 'font-medium text-foreground'
+              : 'text-foreground/60'
+          )}
+          href="/editors"
+        >
+          Editors
+        </Link>
+        <Link
+          className={cn(
             'relative text-foreground/60 transition-colors hover:text-foreground/80'
           )}
           href={siteConfig.links.platePro}

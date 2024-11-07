@@ -4,9 +4,19 @@
   ],
   "doc": {
     "description": "A visual overlay for selected blocks.",
+    "docs": [
+      {
+        "route": "/docs/block-selection"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/block-selection"
+      }
+    ],
     "examples": [
-      "selection-demo"
-    ]
+      "block-selection-demo",
+      "block-selection-pro"
+    ],
+    "label": "New"
   },
   "files": [
     {

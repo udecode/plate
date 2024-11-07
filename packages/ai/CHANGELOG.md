@@ -1,5 +1,17 @@
 # @udecode/plate-ai
 
+## 39.3.7
+
+## 39.3.6
+
+## 39.3.5
+
+## 39.3.0
+
+### Patch Changes
+
+- [#3708](https://github.com/udecode/plate/pull/3708) by [@felixfeng33](https://github.com/felixfeng33) – Missing export
+
 ## 39.2.19
 
 ### Patch Changes

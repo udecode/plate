@@ -3,7 +3,7 @@ title: Block Selection
 description: Select and manipulate entire text blocks.
 ---
 
-<ComponentPreview name="playground-demo" id="blockselection" />
+<ComponentPreview name="playground-demo" id="block-selection" />
 
 <PackageInfo>
 
@@ -138,7 +138,7 @@ options: {
 
 ### Selection area
 
-Style the selection area using `.slate-selection-area` class. For example:
+Style the selection area using `.slate-selection-area` class to your `EditorContainer` component. For example:
 
 ```js
 '[&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/10'
@@ -167,15 +167,14 @@ export function BlockSelection() {
 
 This component should be rendered inside each block element for consistent selection feedback. Plate UI is doing it in `plate-element.tsx`.
 
-### Disable browser default scroll behavior
+## Prevent unselect
 
-When selecting text and moving the cursor to the bottom of the page, the browser's default scroll behavior can conflict with the `BlockSelectionPlugin`. To mitigate this, you can add a non-selectable area to the right side of the editor:
+To prevent unselecting blocks when clicking on certain elements, add the `data-plate-prevent-unselect` attribute to those components
 
+For example:
 ```tsx
-<div className="absolute right-0 top-0 h-full w-4 select-none" />
+  <YourSpecialButtoon data-plate-prevent-unselect />
 ```
-
-This helps prevent unexpected scrolling during selection operations.
 
 ## Plugins
 
@@ -231,6 +230,10 @@ A set of IDs for the currently selected blocks.
 ### BlockMenuPlugin
 
 ## API
+
+
+### editor.api.blockSelection.focus
+Focuses the block selection shadow input. This input handles copy, delete, and paste events for selected blocks.
 
 ### editor.api.blockSelection.addSelectedRow
 

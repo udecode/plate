@@ -21,14 +21,14 @@ export const filterWords = (
   return needleWords[quantifier]((needleWord, i) => {
     const allowPrefix = (() => {
       switch (prefixMode) {
-        case 'none': {
-          return false;
-        }
         case 'all-words': {
           return true;
         }
         case 'last-word': {
           return i === needleWords.length - 1;
+        }
+        case 'none': {
+          return false;
         }
       }
     })();

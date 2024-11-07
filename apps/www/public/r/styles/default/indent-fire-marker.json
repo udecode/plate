@@ -1,0 +1,15 @@
+{
+  "dependencies": [
+    "@udecode/plate-indent"
+  ],
+  "files": [
+    {
+      "content": "import type { PlateRenderElementProps } from '@udecode/plate-common/react';\nimport type { TIndentElement } from '@udecode/plate-indent';\n\nexport const FireMarker = (\n  props: Omit<PlateRenderElementProps, 'children'>\n) => {\n  const { element } = props;\n\n  return (\n    <div contentEditable={false}>\n      <span style={{ left: -26, position: 'absolute', top: -1 }}>\n        {(element as TIndentElement).indent % 2 === 0 ? '🔥' : '🚀'}\n      </span>\n    </div>\n  );\n};\n\nexport const FireLiComponent = (props: PlateRenderElementProps) => {\n  const { children } = props;\n\n  return <span>{children}</span>;\n};\n",
+      "path": "plate-ui/indent-fire-marker.tsx",
+      "target": "components/plate-ui/indent-fire-marker.tsx",
+      "type": "registry:ui"
+    }
+  ],
+  "name": "indent-fire-marker",
+  "type": "registry:ui"
+}

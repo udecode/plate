@@ -6,7 +6,6 @@ import type { PlateRenderElementProps } from '@udecode/plate-common/react';
 
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
-import { ExitBreakPlugin } from '@udecode/plate-break/react';
 import {
   Plate,
   createPlatePlugin,
@@ -17,10 +16,12 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { editableProps } from '@/plate/demo/editableProps';
 import { PlateUI } from '@/plate/demo/plate-ui';
-import { resetBlockTypePlugin } from '@/plate/demo/plugins/resetBlockTypePlugin';
-import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
 import { editableVoidsValue } from '@/plate/demo/values/editableVoidsValue';
-import { Editor } from '@/registry/default/plate-ui/editor';
+import { basicNodesPlugins } from '@/registry/default/components/editor/plugins/basic-nodes-plugins';
+import { exitBreakPlugin } from '@/registry/default/components/editor/plugins/exit-break-plugin';
+import { resetBlockTypePlugin } from '@/registry/default/components/editor/plugins/reset-block-type-plugin';
+import { softBreakPlugin } from '@/registry/default/components/editor/plugins/soft-break-plugin';
+import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 import { Input } from '@/registry/default/plate-ui/input';
 
 export const EditableVoidPlugin = createPlatePlugin({
@@ -42,10 +43,10 @@ export function EditableVoidElement({
     id: 'editable-void-basic-elements',
     override: { components: PlateUI },
     plugins: [
-      BasicElementsPlugin,
+      ...basicNodesPlugins,
       resetBlockTypePlugin,
       softBreakPlugin,
-      ExitBreakPlugin,
+      exitBreakPlugin,
     ],
   });
 
@@ -88,7 +89,9 @@ export function EditableVoidElement({
             editor={editor}
             // initialValue={basicElementsValue}
           >
-            <Editor {...editableProps} />
+            <EditorContainer>
+              <Editor {...editableProps} />
+            </EditorContainer>
           </Plate>
         </div>
       </div>
@@ -107,7 +110,9 @@ export default function EditableVoidsDemo() {
   return (
     <div className="p-10">
       <Plate editor={editor}>
-        <Editor {...editableProps} />
+        <EditorContainer>
+          <Editor {...editableProps} />
+        </EditorContainer>
       </Plate>
     </div>
   );

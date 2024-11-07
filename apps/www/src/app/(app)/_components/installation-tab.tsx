@@ -64,6 +64,7 @@ export default function InstallationTab() {
   const checkedComponents = settingsStore.use.checkedComponents();
   const mounted = useMounted();
   const [isManual, setIsManual] = useState(false);
+  const [radioValue, setRadioValue] = useState('editor-basic');
 
   // Assign initial values to plugins and components using useMemo
   const { components, plugins } = useMemo(
@@ -117,7 +118,7 @@ export default function InstallationTab() {
 
   const installCommands = useMemo(() => {
     return {
-      components: `npx shadcx@latest add ${Array.from(
+      components: `npx shadcx@latest add plate/${Array.from(
         components.reduce(
           (uniqueFilenames, { id, filename, noImport, registry }) => {
             if (noImport) return uniqueFilenames;
@@ -228,7 +229,7 @@ export default function InstallationTab() {
         cnImports.length > 0
           ? `import { ${cnImports} } from '@udecode/cn';\n`
           : ''
-      }import { createPlateEditor, Plate${hasEditor ? '' : ', PlateContent'}${
+      }import { usePlateEditor, Plate${hasEditor ? '' : ', PlateContent'}${
         plateImports.length > 0 ? ', ' + plateImports : ''
       } } from '@udecode/plate-common/react';`,
       ...importsGroups,
@@ -309,7 +310,7 @@ export default function InstallationTab() {
   const hasPlaceholder = components.some((comp) => comp.id === 'placeholder');
 
   const usageCode = [
-    'const editor = createPlateEditor({',
+    'const editor = usePlateEditor({',
     '  plugins: [',
     pluginsCode.join('\n'),
     '  ],',
@@ -429,9 +430,7 @@ export default function InstallationTab() {
       <H2>Installation</H2>
 
       <Typography.P>
-        Here is your <em>personalized</em> installation guide based on the
-        plugins and components you have selected. <br />
-        For a more general guide, please refer to the{' '}
+        For a complete guide, refer to the{' '}
         <Link href="/docs/getting-started" target="_blank">
           Getting Started
         </Link>{' '}
@@ -439,20 +438,25 @@ export default function InstallationTab() {
       </Typography.P>
 
       <Steps>
-        <Step>Install Plate</Step>
+        <Step>Install</Step>
         <RadioGroup
-          value={isManual ? 'manual' : 'template'}
+          value={radioValue}
           onValueChange={(value) => {
+            setRadioValue(value);
             setIsManual(value === 'manual');
           }}
         >
           <div className="mt-4 flex items-center space-x-2">
-            <RadioGroupItem id="r2" value="template" />
-            <Label htmlFor="r2">Start from Template</Label>
+            <RadioGroupItem id="r1" value="editor-basic" />
+            <Label htmlFor="r1">Start from Basic Editor</Label>
           </div>
           <div className="flex items-center space-x-2">
-            <RadioGroupItem id="r1" value="manual" />
-            <Label htmlFor="r1">Manual installation</Label>
+            <RadioGroupItem id="r2" value="editor-ai" />
+            <Label htmlFor="r2">Start from AI Editor</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem id="r3" value="manual" />
+            <Label htmlFor="r3">Manual installation</Label>
           </div>
         </RadioGroup>
         {isManual ? (
@@ -478,17 +482,22 @@ export default function InstallationTab() {
           </div>
         ) : (
           <div className="mt-6">
-            Use{' '}
-            <Link
-              href="https://github.com/udecode/plate-template"
-              target="_blank"
-            >
-              this template
-            </Link>
-            .
+            <Typography.P>
+              Use the following command to add the AI editor to your project:
+            </Typography.P>
+            <InstallationCode
+              code={`npx shadcx@latest add plate/editor-${
+                radioValue === 'editor-ai' ? 'ai' : 'basic'
+              }`}
+              bash
+            ></InstallationCode>
+            <Typography.P className="mt-4">
+              This will add an <code>/editor</code> page to your project along
+              with all necessary components as a starting point.
+            </Typography.P>
           </div>
         )}
-        {somePlugins && (
+        {isManual && somePlugins && (
           <>
             <Step>Install Plugins</Step>
             <InstallationCode code={installCommands.plugins} bash>
@@ -496,7 +505,7 @@ export default function InstallationTab() {
             </InstallationCode>
           </>
         )}
-        {someComponents && (
+        {isManual && someComponents && (
           <>
             <Step>Add Components</Step>
             <InstallationCode code={installCommands.components} bash>
@@ -511,32 +520,51 @@ export default function InstallationTab() {
             </InstallationCode>
           </>
         )}
-        <Step>Imports</Step>
-        <InstallationCode code={importsCode}>
-          All the imports you need:
-        </InstallationCode>
-        <Step>Create Plugins</Step>
-        <InstallationCode code={usageCode}>
-          Create your plugins and link your components into them.
-        </InstallationCode>
-        <Step>Finally, render the editor</Step>
-        <InstallationCode code={plateCode} />
 
-        <Accordion
-          defaultValue=""
-          type="single"
-          collapsible
-          // onValueChange={setValue}
-        >
-          <AccordionItem className="" value="1">
-            <AccordionTrigger className="justify-start gap-1">
-              Full code
-            </AccordionTrigger>
-            <AccordionContent>
-              <InstallationCode code={fullCode}></InstallationCode>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
+        {(isManual || radioValue === 'editor-basic') && (
+          <>
+            <Step>Imports</Step>
+            <InstallationCode code={importsCode}>
+              Here are partial installation steps based on the plugins and
+              components you have selected.
+              <br />
+              For the most reliable setup, we recommend following our{' '}
+              <Link href="/docs/components/installation" target="_blank">
+                CLI-based installation
+              </Link>
+              .
+              <br />
+              All the imports you need:
+            </InstallationCode>
+            <Step>Create Plugins</Step>
+            <InstallationCode code={usageCode}>
+              Create your plugins and link your components into them.
+            </InstallationCode>
+
+            {radioValue === 'editor-basic' && (
+              <>
+                <Step>Finally, render the editor</Step>
+                <InstallationCode code={plateCode} />
+              </>
+            )}
+
+            <Accordion
+              defaultValue=""
+              type="single"
+              collapsible
+              // onValueChange={setValue}
+            >
+              <AccordionItem className="" value="1">
+                <AccordionTrigger className="justify-start gap-1">
+                  Full code
+                </AccordionTrigger>
+                <AccordionContent>
+                  <InstallationCode code={fullCode}></InstallationCode>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </>
+        )}
       </Steps>
     </>
   );

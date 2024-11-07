@@ -1,13 +1,11 @@
 {
-  "dependencies": [
-    "@udecode/plate-find-replace"
-  ],
+  "dependencies": [],
   "doc": {
     "description": "A component that highlights search results in text."
   },
   "files": [
     {
-      "content": "import { withCn } from '@udecode/cn';\nimport { PlateLeaf } from '@udecode/plate-common/react';\n\nexport const SearchHighlightLeaf = withCn(PlateLeaf, 'bg-yellow-100');\n",
+      "content": "'use client';\n\nimport { withCn } from '@udecode/cn';\nimport { PlateLeaf } from '@udecode/plate-common/react';\n\nexport const SearchHighlightLeaf = withCn(PlateLeaf, 'bg-yellow-100');\n",
       "path": "plate-ui/search-highlight-leaf.tsx",
       "target": "components/plate-ui/search-highlight-leaf.tsx",
       "type": "registry:ui"

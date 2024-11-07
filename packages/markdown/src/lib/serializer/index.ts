@@ -7,4 +7,4 @@ export * from './serializeInlineMd';
 export * from './serializeMd';
 export * from './serializeMdNode';
 export * from './serializeMdNodes';
-export * from './types';
+export type * from './types';

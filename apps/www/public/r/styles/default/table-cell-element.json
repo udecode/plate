@@ -7,6 +7,9 @@
     "docs": [
       {
         "route": "/docs/table"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/table-cell-element"
       }
     ],
     "examples": [

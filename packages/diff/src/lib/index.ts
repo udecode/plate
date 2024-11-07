@@ -3,5 +3,5 @@
  */
 
 export * from './computeDiff';
-export * from './types';
+export type * from './types';
 export * from './withGetFragmentExcludeDiff';

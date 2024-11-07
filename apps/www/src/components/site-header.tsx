@@ -37,7 +37,7 @@ export function SiteHeader() {
         <MainNav />
         <MobileNav />
 
-        <nav className="hidden items-center gap-4 text-sm md:flex lg:gap-6">
+        {/* <nav className="hidden items-center gap-4 text-sm md:flex lg:gap-6">
           <Link
             className="text-foreground/60 transition-colors hover:text-foreground/80"
             href="/#playground"
@@ -51,7 +51,7 @@ export function SiteHeader() {
           >
             Potion
           </Link>
-        </nav>
+        </nav> */}
 
         {/* <StarOnGithub count={count} /> */}
         <div className="flex items-center justify-between space-x-2 md:justify-end">

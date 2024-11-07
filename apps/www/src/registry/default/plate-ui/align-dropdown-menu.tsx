@@ -8,8 +8,12 @@ import {
   useAlignDropdownMenu,
   useAlignDropdownMenuState,
 } from '@udecode/plate-alignment/react';
-
-import { Icons, iconVariants } from '@/components/icons';
+import {
+  AlignCenterIcon,
+  AlignJustifyIcon,
+  AlignLeftIcon,
+  AlignRightIcon,
+} from 'lucide-react';
 
 import {
   DropdownMenu,
@@ -23,19 +27,19 @@ import { ToolbarButton } from './toolbar';
 
 const items = [
   {
-    icon: Icons.alignLeft,
+    icon: AlignLeftIcon,
     value: 'left',
   },
   {
-    icon: Icons.alignCenter,
+    icon: AlignCenterIcon,
     value: 'center',
   },
   {
-    icon: Icons.alignRight,
+    icon: AlignRightIcon,
     value: 'right',
   },
   {
-    icon: Icons.alignJustify,
+    icon: AlignJustifyIcon,
     value: 'justify',
   },
 ];
@@ -47,7 +51,7 @@ export function AlignDropdownMenu({ children, ...props }: DropdownMenuProps) {
   const openState = useOpenState();
   const IconValue =
     items.find((item) => item.value === radioGroupProps.value)?.icon ??
-    Icons.alignLeft;
+    AlignLeftIcon;
 
   return (
     <DropdownMenu modal={false} {...openState} {...props}>
@@ -58,13 +62,10 @@ export function AlignDropdownMenu({ children, ...props }: DropdownMenuProps) {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent className="min-w-0" align="start">
-        <DropdownMenuRadioGroup
-          className="flex flex-col gap-0.5"
-          {...radioGroupProps}
-        >
+        <DropdownMenuRadioGroup {...radioGroupProps}>
           {items.map(({ icon: Icon, value: itemValue }) => (
             <DropdownMenuRadioItem key={itemValue} value={itemValue} hideIcon>
-              <Icon className={iconVariants({ variant: 'toolbar' })} />
+              <Icon />
             </DropdownMenuRadioItem>
           ))}
         </DropdownMenuRadioGroup>

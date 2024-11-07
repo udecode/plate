@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-mention",
-  "version": "39.0.0",
+  "version": "39.3.4",
   "description": "Mention plugin for Plate",
   "keywords": [
     "plate",
@@ -56,7 +56,7 @@
     "@udecode/plate-common": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate-common": ">=39.2.15",
+    "@udecode/plate-common": ">=39.2.21",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.103.0",

@@ -9,7 +9,70 @@ Since Plate UI is not a component library, a changelog is maintained here.
 Use the [CLI](https://platejs.org/docs/components/cli) to install the latest version of the components.
 
 
+## November 2024 #16
+
+### November 7 #16.4
+
+- `block-context-menu`: prevent unselect when clicking on the context menu
+- `block-selection`: Add `editor.getApi(BlockSelectionPlugin).blockSelection.focus()` in onCloseAutoFocus.
+
+### November 6 #16.3
+
+- `editor`: add `overflow-x-hidden` to prevent horizontal scrolling
+- `table-element`: add `overflow-x-auto` to allow horizontal scrolling
+
+### November 5 #16.2
+
+- Fixed color-picker clear button's styles
+- Replace toggle-element button with css transitions 
+
+### November 1 #16.1
+
+- `editor`: styles + `<EditorContainer />`
+
 ## October 2024 #15
+
+### October 31 #15.6
+
+- Added `lib/transforms.ts`. Contains useful transforms for common operations.
+- Removed `Icons` file dependency. All icons are now imported from `lucide-react`.
+- Fixed and modified some styles in emoji and color picker.
+- Group styling: 
+  - `dropdown-menu`
+  - `context-menu`
+  - `inline-combobox`
+- Added groups and items to `slash-input-element`
+- Spacing and sizing update:
+  - `ai-menu-items`
+  - `align-dropdown-menu`
+  - `block-context-menu`
+  - `button`
+  - `code-block-combobox`
+  - `color-dropdown-menu-items`
+  - `color-picker`
+  - `column-group-element`
+  - `command`
+  - `comment-more-dropdown`
+  - `context-menu`
+  - `dropdown-menu`
+  - `emoji-dropdown-menu`
+  - `emoji-input-element`
+  - `image-preview`
+  - `inline-combobox`
+  - `input`
+  - `insert-dropdown-menu`
+  - `line-height-dropdown-menu`
+  - `link-floating-toolbar`
+  - `media-popover`
+  - `mention-input-element`
+  - `mode-dropdown-menu`
+  - `more-dropdown-menu`
+  - `popover`
+  - `slash-input-element`
+  - `table-dropdown-menu`
+  - `table-element`
+  - `toggle-element`
+  - `toggle-toolbar-button`
 
 ### October 26 #15.5
 
@@ -45,27 +108,27 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 
 ### October 1 #15.1
 
-- New `block-selection.tsx` component for visual selection feedback
-- New `plate-element.tsx` component for rendering the plate element with `BlockSelection`
-- Updated `paragraph-element.tsx` and all block elements to use `plate-element.tsx`
-- `draggable.tsx`:
+- New `block-selection` component for visual selection feedback
+- New `plate-element` component for rendering the plate element with `BlockSelection`
+- Updated `paragraph-element` and all block elements to use `plate-element`
+- `draggable`:
   - Refactored to use new hooks: `useDraggableGutter` and `useDropLine`
   - Removed `classNames` prop in favor of a single `className`
   - Added `DraggableProvider` wrapper
   - Introduced `Gutter` and `DropLine` as separate components
-- `with-draggables.tsx`:
+- `with-draggables`:
   - Updated to use new className format for draggable props
 - fix `mention-element`: prevent IME input interruption on MacOS
 
 Use `--highlight` color for the following components:
 
-- `comment-leaf.tsx`
-- `highlight-leaf.tsx`
+- `comment-leaf`
+- `highlight-leaf`
 
 Use `--brand` color for the following components:
 
-- `block-selection.tsx`
-- `draggable.tsx`
+- `block-selection`
+- `draggable`
 
 
 ## September 2024 #14

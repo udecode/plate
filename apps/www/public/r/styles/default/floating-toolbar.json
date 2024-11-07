@@ -4,8 +4,14 @@
   ],
   "doc": {
     "description": "A contextual toolbar that appears over selected text.",
+    "docs": [
+      {
+        "route": "https://pro.platejs.org/docs/components/floating-toolbar"
+      }
+    ],
     "examples": [
-      "floating-toolbar-demo"
+      "floating-toolbar-demo",
+      "floating-toolbar-pro"
     ]
   },
   "files": [

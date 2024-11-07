@@ -1,3 +1,7 @@
+import type React from 'react';
+
+import type { EmojiCategoryList } from '@udecode/plate-emoji';
+
 import {
   AppleIcon,
   ClockIcon,
@@ -11,9 +15,6 @@ import {
   StarIcon,
   XIcon,
 } from 'lucide-react';
-
-import type React from 'react';
-import type { EmojiCategoryList } from '@udecode/plate-emoji';
 
 export const emojiCategoryIcons: Record<
   EmojiCategoryList,

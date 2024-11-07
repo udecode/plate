@@ -1,4 +1,4 @@
-import { AIPlugin, CopilotPlugin } from '@udecode/plate-ai/react';
+import { AIChatPlugin, AIPlugin, CopilotPlugin } from '@udecode/plate-ai/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import {
@@ -108,9 +108,27 @@ export type SettingPlugin = {
 };
 
 export const customizerItems: Record<string, SettingPlugin> = {
+  [AIChatPlugin.key]: {
+    id: AIChatPlugin.key,
+    badges: [customizerBadges.handler],
+    dependencies: [AIPlugin.key],
+    label: 'AI Chat',
+    npmPackage: '@udecode/plate-ai',
+    pluginFactory: 'AIChatPlugin',
+    route: customizerPlugins.ai.route,
+  },
   [AIPlugin.key]: {
     id: AIPlugin.key,
     badges: [customizerBadges.handler],
+    components: [
+      {
+        id: 'ai-leaf',
+        label: 'AILeaf',
+        pluginKey: 'AIPlugin.key',
+        route: customizerComponents.aiLeaf.href,
+        usage: 'AILeaf',
+      },
+    ],
     label: 'AI',
     npmPackage: '@udecode/plate-ai',
     pluginFactory: 'AIPlugin',
@@ -149,7 +167,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     label: 'Block Menu',
     npmPackage: '@udecode/plate-selection',
     pluginFactory: 'BlockMenuPlugin',
-    route: customizerPlugins.blockmenu.route,
+    route: customizerPlugins['block-menu'].route,
   },
   [BlockSelectionPlugin.key]: {
     id: BlockSelectionPlugin.key,
@@ -167,7 +185,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     //   `},`,
     // ],
     reactImport: true,
-    route: customizerPlugins.blockselection.route,
+    route: customizerPlugins['block-selection'].route,
   },
   [BlockquotePlugin.key]: {
     id: BlockquotePlugin.key,
@@ -388,7 +406,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     // npmPackage: '@udecode/plate-cursor',
     label: 'Drag Cursor',
     reactImport: true,
-    route: customizerPlugins.cursoroverlay.route,
+    route: customizerPlugins['cursor-overlay'].route,
   },
   [EmojiPlugin.key]: {
     id: EmojiPlugin.key,
@@ -455,7 +473,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
       `},`,
     ],
     reactImport: true,
-    route: customizerPlugins.exitbreak.route,
+    route: customizerPlugins['exit-break'].route,
   },
   [FontBackgroundColorPlugin.key]: {
     id: FontBackgroundColorPlugin.key,
@@ -545,7 +563,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginFactory: 'IndentListPlugin',
     pluginOptions: [`inject: { targetPlugins: ['p', 'h1', 'h2', 'h3'] },`],
     reactImport: true,
-    route: customizerPlugins.indentlist.route,
+    route: customizerPlugins['indent-list'].route,
   },
   [IndentPlugin.key]: {
     id: IndentPlugin.key,
@@ -618,7 +636,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
       `  targetPlugins: ['p', 'h1', 'h2', 'h3'],`,
       `},`,
     ],
-    route: customizerPlugins.lineheight.route,
+    route: customizerPlugins['line-height'].route,
   },
   [LinkPlugin.key]: {
     id: LinkPlugin.key,
@@ -725,7 +743,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     label: 'Normalize Types',
     npmPackage: '@udecode/plate-normalizers',
     pluginFactory: 'NormalizeTypesPlugin',
-    route: customizerPlugins.forcedlayout.route,
+    route: customizerPlugins['forced-layout'].route,
   },
   [ParagraphPlugin.key]: {
     id: ParagraphPlugin.key,
@@ -760,7 +778,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
       `},`,
     ],
     reactImport: true,
-    route: customizerPlugins.resetnode.route,
+    route: customizerPlugins['reset-node'].route,
   },
   [SelectOnBackspacePlugin.key]: {
     id: SelectOnBackspacePlugin.key,
@@ -788,7 +806,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     npmPackage: '@udecode/plate-break',
     pluginFactory: 'SingleLinePlugin',
     reactImport: true,
-    route: customizerPlugins.singleline.route,
+    route: customizerPlugins['single-line'].route,
   },
   [SlashPlugin.key]: {
     id: SlashPlugin.key,
@@ -796,7 +814,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     label: 'Slash Command',
     npmPackage: '@udecode/plate-slash-command',
     pluginFactory: 'SlashPlugin',
-    route: customizerPlugins.slashCommand.route,
+    route: customizerPlugins['slash-command'].route,
   },
   [SoftBreakPlugin.key]: {
     id: SoftBreakPlugin.key,
@@ -818,7 +836,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
       `},`,
     ],
     reactImport: true,
-    route: customizerPlugins.softbreak.route,
+    route: customizerPlugins['soft-break'].route,
   },
   [StrikethroughPlugin.key]: {
     id: StrikethroughPlugin.key,
@@ -957,7 +975,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     npmPackage: '@udecode/plate-list',
     pluginFactory: 'TodoListPlugin',
     reactImport: true,
-    route: customizerPlugins.todoli.route,
+    route: customizerPlugins['todo-list'].route,
   },
   [TogglePlugin.key]: {
     id: TogglePlugin.key,
@@ -986,7 +1004,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     npmPackage: '@udecode/plate-trailing-block',
     pluginFactory: 'TrailingBlockPlugin',
     pluginOptions: [`options: { type: 'p' },`],
-    route: customizerPlugins.trailingblock.route,
+    route: customizerPlugins['trailing-block'].route,
   },
   [UnderlinePlugin.key]: {
     id: UnderlinePlugin.key,

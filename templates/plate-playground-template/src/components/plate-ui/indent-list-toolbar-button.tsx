@@ -1,12 +1,14 @@
+'use client';
+
 import React from 'react';
+
 import { withRef } from '@udecode/cn';
 import { ListStyleType } from '@udecode/plate-indent-list';
 import {
   useIndentListToolbarButton,
   useIndentListToolbarButtonState,
 } from '@udecode/plate-indent-list/react';
-
-import { Icons } from '@/components/icons';
+import { List, ListOrdered } from 'lucide-react';
 
 import { ToolbarButton } from './toolbar';
 
@@ -27,7 +29,7 @@ export const IndentListToolbarButton = withRef<
       }
       {...props}
     >
-      {nodeType === ListStyleType.Disc ? <Icons.ul /> : <Icons.ol />}
+      {nodeType === ListStyleType.Disc ? <List /> : <ListOrdered />}
     </ToolbarButton>
   );
 });

@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 
+import { AIChatPlugin, CopilotPlugin } from '@udecode/plate-ai/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import {
@@ -62,10 +63,13 @@ export function usePlaygroundEnabled(id?: string) {
 
   return useMemo(
     () => ({
+      [AIChatPlugin.key]: {
+        enabled: id === 'ai' || !!enabled[AIChatPlugin.key],
+      },
       [AlignPlugin.key]: { enabled: !!enabled.align },
       [AutoformatPlugin.key]: { enabled: !!enabled.autoformat },
       [BlockSelectionPlugin.key]: {
-        enabled: id === 'blockselection' || !!enabled.blockSelection,
+        enabled: id === 'block-selection' || !!enabled.blockSelection,
       },
       [BlockquotePlugin.key]: { enabled: !!enabled.blockquote },
       [BoldPlugin.key]: { enabled: !!enabled.bold },
@@ -74,6 +78,9 @@ export function usePlaygroundEnabled(id?: string) {
       [CodePlugin.key]: { enabled: !!enabled.code },
       [ColumnPlugin.key]: { enabled: !!enabled.column },
       [CommentsPlugin.key]: { enabled: !!enabled.comment },
+      [CopilotPlugin.key]: {
+        enabled: id === 'copilot' || !!enabled[CopilotPlugin.key],
+      },
       [DeletePlugin.key]: { enabled: !!enabled.delete },
       [DndPlugin.key]: { enabled: !!enabled.dnd },
       [DocxPlugin.key]: { enabled: !!enabled.docx },
@@ -91,9 +98,9 @@ export function usePlaygroundEnabled(id?: string) {
       [HorizontalRulePlugin.key]: { enabled: !!enabled.hr },
       [ImagePlugin.key]: { enabled: !!enabled.img },
       [IndentListPlugin.key]: {
-        enabled: id === 'indentlist' || !!enabled.listStyleType,
+        enabled: id === 'indent-list' || !!enabled.listStyleType,
       },
-      [IndentPlugin.key]: { enabled: !!enabled.indent },
+      [IndentPlugin.key]: { enabled: id !== 'list' && !!enabled.indent },
       [ItalicPlugin.key]: { enabled: !!enabled.italic },
       [JuicePlugin.key]: { enabled: !!enabled.juice },
       [KbdPlugin.key]: { enabled: !!enabled.kbd },
@@ -111,7 +118,7 @@ export function usePlaygroundEnabled(id?: string) {
         enabled: !!enabled.selectOnBackspace,
       },
       [SingleLinePlugin.key]: {
-        enabled: id === 'singleline' || !!enabled.singleLine,
+        enabled: id === 'single-line' || !!enabled.singleLine,
       },
       [SoftBreakPlugin.key]: { enabled: !!enabled.softBreak },
       [StrikethroughPlugin.key]: { enabled: !!enabled.strikethrough },
@@ -122,7 +129,7 @@ export function usePlaygroundEnabled(id?: string) {
       [TodoListPlugin.key]: { enabled: !!enabled.action_item },
       [TogglePlugin.key]: { enabled: !!enabled.toggle },
       [TrailingBlockPlugin.key]: {
-        enabled: id !== 'singleline' && !!enabled.trailingBlock,
+        enabled: id !== 'single-line' && !!enabled.trailingBlock,
       },
       [UnderlinePlugin.key]: { enabled: !!enabled.underline },
     }),

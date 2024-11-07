@@ -7,11 +7,15 @@
     "docs": [
       {
         "route": "/docs/date"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/date-element"
       }
     ],
     "examples": [
       "date-demo"
-    ]
+    ],
+    "label": "New"
   },
   "files": [
     {

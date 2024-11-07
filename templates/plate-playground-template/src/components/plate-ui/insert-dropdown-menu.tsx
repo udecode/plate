@@ -1,272 +1,259 @@
 'use client';
 
 import React from 'react';
+
+import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
+
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import { insertEmptyCodeBlock } from '@udecode/plate-code-block';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import { insertEmptyElement } from '@udecode/plate-common';
-import { focusEditor, ParagraphPlugin } from '@udecode/plate-common/react';
+import {
+  type PlateEditor,
+  ParagraphPlugin,
+  focusEditor,
+  useEditorRef,
+} from '@udecode/plate-common/react';
+import { DatePlugin } from '@udecode/plate-date/react';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
-import { HEADING_KEYS, insertToc } from '@udecode/plate-heading';
+import { HEADING_KEYS } from '@udecode/plate-heading';
 import { TocPlugin } from '@udecode/plate-heading/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
-import { toggleIndentList } from '@udecode/plate-indent-list';
-import { insertColumnGroup } from '@udecode/plate-layout';
-import { ColumnPlugin } from '@udecode/plate-layout/react';
-import { LinkPlugin, triggerFloatingLink } from '@udecode/plate-link/react';
-import { insertMedia } from '@udecode/plate-media';
+import { INDENT_LIST_KEYS, ListStyleType } from '@udecode/plate-indent-list';
+import { LinkPlugin } from '@udecode/plate-link/react';
 import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
-import { insertTable, TablePlugin } from '@udecode/plate-table/react';
+import { TablePlugin } from '@udecode/plate-table/react';
+import { TogglePlugin } from '@udecode/plate-toggle/react';
+import {
+  CalendarIcon,
+  ChevronRightIcon,
+  Columns3Icon,
+  FileCodeIcon,
+  FilmIcon,
+  Heading1Icon,
+  Heading2Icon,
+  Heading3Icon,
+  ImageIcon,
+  Link2Icon,
+  ListIcon,
+  ListOrderedIcon,
+  MinusIcon,
+  PenToolIcon,
+  PilcrowIcon,
+  PlusIcon,
+  QuoteIcon,
+  SquareIcon,
+  TableIcon,
+  TableOfContentsIcon,
+} from 'lucide-react';
 
-import { useMyEditorRef } from '@/lib/plate/plate-types';
-import { Icons } from '@/components/icons';
+import {
+  insertBlock,
+  insertInlineElement,
+} from '@/components/editor/transforms';
 
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
   useOpenState,
 } from './dropdown-menu';
 import { ToolbarButton } from './toolbar';
 
-import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
+type Group = {
+  group: string;
+  items: Item[];
+};
 
-const items = [
+interface Item {
+  icon: React.ReactNode;
+  onSelect: (editor: PlateEditor, value: string) => void;
+  value: string;
+  focusEditor?: boolean;
+  label?: string;
+}
+
+const groups: Group[] = [
   {
+    group: 'Basic blocks',
     items: [
       {
-        description: 'Paragraph',
-        icon: Icons.paragraph,
+        icon: <PilcrowIcon />,
         label: 'Paragraph',
         value: ParagraphPlugin.key,
       },
       {
-        description: 'Heading 1',
-        icon: Icons.h1,
+        icon: <Heading1Icon />,
         label: 'Heading 1',
         value: HEADING_KEYS.h1,
       },
       {
-        description: 'Heading 2',
-        icon: Icons.h2,
+        icon: <Heading2Icon />,
         label: 'Heading 2',
         value: HEADING_KEYS.h2,
       },
       {
-        description: 'Heading 3',
-        icon: Icons.h3,
+        icon: <Heading3Icon />,
         label: 'Heading 3',
         value: HEADING_KEYS.h3,
       },
       {
-        description: 'Heading 4',
-        icon: Icons.h4,
-        label: 'Heading 4',
-        value: HEADING_KEYS.h4,
-      },
-      {
-        description: 'Heading 5',
-        icon: Icons.h5,
-        label: 'Heading 5',
-        value: HEADING_KEYS.h5,
-      },
-      {
-        description: 'Heading 6',
-        icon: Icons.h6,
-        label: 'Heading 6',
-        value: HEADING_KEYS.h6,
-      },
-      {
-        description: 'Table',
-        icon: Icons.table,
+        icon: <TableIcon />,
         label: 'Table',
         value: TablePlugin.key,
       },
       {
-        description: 'Bulleted list',
-        icon: Icons.ul,
-        label: 'Bulleted list',
-        value: 'ul',
-      },
-      {
-        description: 'Numbered list',
-        icon: Icons.ol,
-        label: 'Numbered list',
-        value: 'ol',
-      },
-      {
-        description: 'Quote (⌘+⇧+.)',
-        icon: Icons.blockquote,
-        label: 'Quote',
-        value: BlockquotePlugin.key,
-      },
-      {
-        description: 'Divider (---)',
-        icon: Icons.hr,
-        label: 'Divider',
-        value: HorizontalRulePlugin.key,
-      },
-      {
-        description: 'Columns',
-        icon: Icons.LayoutIcon,
-        label: 'Columns',
-        value: ColumnPlugin.key,
-      },
-      {
-        description: 'Table of Contents',
-        icon: Icons.h3,
-        label: 'Table of Contents',
-        value: TocPlugin.key,
-      },
-    ],
-    label: 'Basic blocks',
-  },
-  {
-    items: [
-      {
-        description: 'Code (```)',
-        icon: Icons.codeblock,
+        icon: <FileCodeIcon />,
         label: 'Code',
         value: CodeBlockPlugin.key,
       },
       {
-        description: 'Image',
-        icon: Icons.image,
+        icon: <QuoteIcon />,
+        label: 'Quote',
+        value: BlockquotePlugin.key,
+      },
+      {
+        icon: <MinusIcon />,
+        label: 'Divider',
+        value: HorizontalRulePlugin.key,
+      },
+    ].map((item) => ({
+      ...item,
+      onSelect: (editor, value) => {
+        insertBlock(editor, value);
+      },
+    })),
+  },
+  {
+    group: 'Lists',
+    items: [
+      {
+        icon: <ListIcon />,
+        label: 'Bulleted list',
+        value: ListStyleType.Disc,
+      },
+      {
+        icon: <ListOrderedIcon />,
+        label: 'Numbered list',
+        value: ListStyleType.Decimal,
+      },
+      {
+        icon: <SquareIcon />,
+        label: 'To-do list',
+        value: INDENT_LIST_KEYS.todo,
+      },
+      {
+        icon: <ChevronRightIcon />,
+        label: 'Toggle list',
+        value: TogglePlugin.key,
+      },
+    ].map((item) => ({
+      ...item,
+      onSelect: (editor, value) => {
+        insertBlock(editor, value);
+      },
+    })),
+  },
+  {
+    group: 'Media',
+    items: [
+      {
+        icon: <ImageIcon />,
         label: 'Image',
         value: ImagePlugin.key,
       },
       {
-        description: 'Embed',
-        icon: Icons.embed,
+        icon: <FilmIcon />,
         label: 'Embed',
         value: MediaEmbedPlugin.key,
       },
       {
-        description: 'Excalidraw',
-        icon: Icons.excalidraw,
+        icon: <PenToolIcon />,
         label: 'Excalidraw',
         value: ExcalidrawPlugin.key,
       },
-    ],
-    label: 'Media',
+    ].map((item) => ({
+      ...item,
+      onSelect: (editor, value) => {
+        insertBlock(editor, value);
+      },
+    })),
   },
   {
+    group: 'Advanced blocks',
     items: [
       {
-        description: 'Link',
-        icon: Icons.link,
+        icon: <TableOfContentsIcon />,
+        label: 'Table of contents',
+        value: TocPlugin.key,
+      },
+      {
+        icon: <Columns3Icon />,
+        label: '3 columns',
+        value: 'action_three_columns',
+      },
+    ].map((item) => ({
+      ...item,
+      onSelect: (editor, value) => {
+        insertBlock(editor, value);
+      },
+    })),
+  },
+  {
+    group: 'Inline',
+    items: [
+      {
+        icon: <Link2Icon />,
         label: 'Link',
         value: LinkPlugin.key,
       },
-    ],
-    label: 'Inline',
+      {
+        focusEditor: true,
+        icon: <CalendarIcon />,
+        label: 'Date',
+        value: DatePlugin.key,
+      },
+    ].map((item) => ({
+      ...item,
+      onSelect: (editor, value) => {
+        insertInlineElement(editor, value);
+      },
+    })),
   },
 ];
 
 export function InsertDropdownMenu(props: DropdownMenuProps) {
-  const editor = useMyEditorRef();
+  const editor = useEditorRef();
   const openState = useOpenState();
 
   return (
     <DropdownMenu modal={false} {...openState} {...props}>
       <DropdownMenuTrigger asChild>
         <ToolbarButton pressed={openState.open} tooltip="Insert" isDropdown>
-          <Icons.add />
+          <PlusIcon />
         </ToolbarButton>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        className="flex max-h-[500px] min-w-0 flex-col gap-0.5 overflow-y-auto"
+        className="flex max-h-[500px] min-w-0 flex-col overflow-y-auto"
         align="start"
       >
-        {items.map(({ items: nestedItems, label }, index) => (
-          <React.Fragment key={label}>
-            {index !== 0 && <DropdownMenuSeparator />}
-
-            <DropdownMenuLabel>{label}</DropdownMenuLabel>
-            {nestedItems.map(
-              ({ icon: Icon, label: itemLabel, value: type }) => (
-                <DropdownMenuItem
-                  key={itemLabel}
-                  className="min-w-[180px]"
-                  onSelect={async () => {
-                    switch (type) {
-                      case CodeBlockPlugin.key: {
-                        insertEmptyCodeBlock(editor, {
-                          insertNodesOptions: { select: true },
-                        });
-
-                        break;
-                      }
-                      case ColumnPlugin.key: {
-                        insertColumnGroup(editor);
-
-                        break;
-                      }
-                      case ImagePlugin.key: {
-                        await insertMedia(editor, {
-                          select: true,
-                          type: ImagePlugin.key,
-                        });
-
-                        break;
-                      }
-                      case LinkPlugin.key: {
-                        triggerFloatingLink(editor, { focused: true });
-
-                        break;
-                      }
-                      case MediaEmbedPlugin.key: {
-                        await insertMedia(editor, {
-                          select: true,
-                          type: MediaEmbedPlugin.key,
-                        });
-
-                        break;
-                      }
-                      case TablePlugin.key: {
-                        insertTable(editor, {}, { select: true });
-
-                        break;
-                      }
-                      case TocPlugin.key: {
-                        insertToc(editor);
-
-                        break;
-                      }
-                      case 'ol':
-                      case 'ul': {
-                        insertEmptyElement(editor, ParagraphPlugin.key, {
-                          nextBlock: true,
-                          select: true,
-                        });
-
-                        toggleIndentList(editor, {
-                          listStyleType: type === 'ul' ? 'disc' : 'decimal',
-                        });
-
-                        break;
-                      }
-                      default: {
-                        insertEmptyElement(editor, type, {
-                          nextBlock: true,
-                          select: true,
-                        });
-                      }
-                    }
-
-                    focusEditor(editor);
-                  }}
-                >
-                  <Icon className="mr-2 size-5" />
-                  {itemLabel}
-                </DropdownMenuItem>
-              )
-            )}
-          </React.Fragment>
+        {groups.map(({ group, items: nestedItems }) => (
+          <DropdownMenuGroup key={group} label={group}>
+            {nestedItems.map(({ icon, label, value, onSelect }) => (
+              <DropdownMenuItem
+                key={value}
+                className="min-w-[180px]"
+                onSelect={() => {
+                  onSelect(editor, value);
+                  focusEditor(editor);
+                }}
+              >
+                {icon}
+                {label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuGroup>
         ))}
       </DropdownMenuContent>
     </DropdownMenu>

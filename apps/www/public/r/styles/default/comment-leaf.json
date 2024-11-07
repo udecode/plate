@@ -7,10 +7,14 @@
     "docs": [
       {
         "route": "/docs/comments"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/comment-leaf"
       }
     ],
     "examples": [
-      "comments-demo"
+      "comment-demo",
+      "comments-pro"
     ]
   },
   "files": [

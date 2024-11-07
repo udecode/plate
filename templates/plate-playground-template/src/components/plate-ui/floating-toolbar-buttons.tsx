@@ -1,4 +1,7 @@
+'use client';
+
 import React from 'react';
+
 import {
   BoldPlugin,
   CodePlugin,
@@ -7,9 +10,14 @@ import {
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
 import { useEditorReadOnly } from '@udecode/plate-common/react';
-import { SparklesIcon } from 'lucide-react';
-
-import { Icons } from '@/components/icons';
+import {
+  BoldIcon,
+  Code2Icon,
+  ItalicIcon,
+  SparklesIcon,
+  StrikethroughIcon,
+  UnderlineIcon,
+} from 'lucide-react';
 
 import { AIToolbarButton } from './ai-toolbar-button';
 import { CommentToolbarButton } from './comment-toolbar-button';
@@ -28,10 +36,10 @@ export function FloatingToolbarButtons() {
         <>
           <ToolbarGroup>
             <AIToolbarButton
-              className="text-purple-500 hover:text-purple-600"
+              className="gap-1.5 text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-500"
               tooltip="Edit, generate, and more"
             >
-              <SparklesIcon className="mr-1.5 !size-3.5" />
+              <SparklesIcon className="!size-3.5" />
               Ask AI
             </AIToolbarButton>
           </ToolbarGroup>
@@ -40,32 +48,32 @@ export function FloatingToolbarButtons() {
             <TurnIntoDropdownMenu />
 
             <MarkToolbarButton nodeType={BoldPlugin.key} tooltip="Bold (⌘+B)">
-              <Icons.bold />
+              <BoldIcon />
             </MarkToolbarButton>
 
             <MarkToolbarButton
               nodeType={ItalicPlugin.key}
               tooltip="Italic (⌘+I)"
             >
-              <Icons.italic />
+              <ItalicIcon />
             </MarkToolbarButton>
 
             <MarkToolbarButton
               nodeType={UnderlinePlugin.key}
               tooltip="Underline (⌘+U)"
             >
-              <Icons.underline />
+              <UnderlineIcon />
             </MarkToolbarButton>
 
             <MarkToolbarButton
               nodeType={StrikethroughPlugin.key}
               tooltip="Strikethrough (⌘+⇧+M)"
             >
-              <Icons.strikethrough />
+              <StrikethroughIcon />
             </MarkToolbarButton>
 
             <MarkToolbarButton nodeType={CodePlugin.key} tooltip="Code (⌘+E)">
-              <Icons.code />
+              <Code2Icon />
             </MarkToolbarButton>
 
             <LinkToolbarButton />

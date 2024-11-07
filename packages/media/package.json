@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-media",
-  "version": "39.2.13",
+  "version": "39.3.3",
   "description": "Plate Media plugin",
   "keywords": [
     "plate",
@@ -56,7 +56,7 @@
     "@udecode/plate-common": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate-common": ">=39.2.15",
+    "@udecode/plate-common": ">=39.2.21",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.103.0",

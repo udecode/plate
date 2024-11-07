@@ -1,5 +1,42 @@
 # @udecode/plate-media
 
+## 39.3.3
+
+### Patch Changes
+
+- [#3728](https://github.com/udecode/plate/pull/3728) by [@felixfeng33](https://github.com/felixfeng33) – Fix can't drop
+
+## 39.3.2
+
+### Patch Changes
+
+- [#3725](https://github.com/udecode/plate/pull/3725) by [@felixfeng33](https://github.com/felixfeng33) – `insertMedia`: Should insert in the current block if it is empty.
+
+## 39.3.1
+
+### Patch Changes
+
+- [#3723](https://github.com/udecode/plate/pull/3723) by [@felixfeng33](https://github.com/felixfeng33) – Add `at` in `insertMedia` api.
+
+## 39.3.0
+
+### Minor Changes
+
+- [#3708](https://github.com/udecode/plate/pull/3708) by [@felixfeng33](https://github.com/felixfeng33) – ImagePlugin:
+
+  - New `initialHeight` and `initialWidth` in `TImageElement` This will display a loading placeholder while the image is still loading, which helps maintain a consistent height.
+  - New Api: editor.insert.imageFromFiles
+
+  PlaceholderPlugin:
+
+  - Mew `placeholderId` Used to track what was converted from that placeholder plugin.
+  - New `insertMedia` Used for inserting the placeholder at once.
+  - New `validateFiles` utils for validate the files meet the `mediaConfig`.
+    - If validation fails,stop insert placeholder and save the error message in uploadErrorMessage.
+  - New `option.multiple` `maxFileCount` Used to limit the number of placeholders inserted.
+  - New `option.disable` `disabledDndPlugin` Used to using the browser drop.
+  - New `error` use `editor.useOption` to watch and display a toast message.
+
 ## 39.2.13
 
 ### Patch Changes

@@ -26,11 +26,10 @@ import {
   Trash,
 } from 'lucide-react';
 
-import { iconVariants } from '@/components/icons';
-
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSub,
   DropdownMenuSubContent,
@@ -59,104 +58,102 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        className="flex w-[180px] min-w-0 flex-col gap-0.5"
+        className="flex w-[180px] min-w-0 flex-col"
         align="start"
       >
-        <DropdownMenuSub>
-          <DropdownMenuSubTrigger>
-            <Table className={iconVariants({ variant: 'menuItem' })} />
-            <span>Table</span>
-          </DropdownMenuSubTrigger>
-          <DropdownMenuSubContent>
-            <DropdownMenuItem
-              className="min-w-[180px]"
-              onSelect={() => {
-                insertTable(editor, {}, { select: true });
-                focusEditor(editor);
-              }}
-            >
-              <Plus className={iconVariants({ variant: 'menuItem' })} />
-              Insert table
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="min-w-[180px]"
-              disabled={!tableSelected}
-              onSelect={() => {
-                deleteTable(editor);
-                focusEditor(editor);
-              }}
-            >
-              <Trash className={iconVariants({ variant: 'menuItem' })} />
-              Delete table
-            </DropdownMenuItem>
-          </DropdownMenuSubContent>
-        </DropdownMenuSub>
+        <DropdownMenuGroup>
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+              <Table />
+              <span>Table</span>
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuItem
+                className="min-w-[180px]"
+                onSelect={() => {
+                  insertTable(editor, {}, { select: true });
+                  focusEditor(editor);
+                }}
+              >
+                <Plus />
+                Insert table
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="min-w-[180px]"
+                disabled={!tableSelected}
+                onSelect={() => {
+                  deleteTable(editor);
+                  focusEditor(editor);
+                }}
+              >
+                <Trash />
+                Delete table
+              </DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
 
-        <DropdownMenuSub>
-          <DropdownMenuSubTrigger disabled={!tableSelected}>
-            <RectangleVertical
-              className={iconVariants({ variant: 'menuItem' })}
-            />
-            <span>Column</span>
-          </DropdownMenuSubTrigger>
-          <DropdownMenuSubContent>
-            <DropdownMenuItem
-              className="min-w-[180px]"
-              disabled={!tableSelected}
-              onSelect={() => {
-                tf.insert.tableColumn();
-                focusEditor(editor);
-              }}
-            >
-              <Plus className={iconVariants({ variant: 'menuItem' })} />
-              Insert column after
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="min-w-[180px]"
-              disabled={!tableSelected}
-              onSelect={() => {
-                deleteColumn(editor);
-                focusEditor(editor);
-              }}
-            >
-              <Minus className={iconVariants({ variant: 'menuItem' })} />
-              Delete column
-            </DropdownMenuItem>
-          </DropdownMenuSubContent>
-        </DropdownMenuSub>
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger disabled={!tableSelected}>
+              <RectangleVertical />
+              <span>Column</span>
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuItem
+                className="min-w-[180px]"
+                disabled={!tableSelected}
+                onSelect={() => {
+                  tf.insert.tableColumn();
+                  focusEditor(editor);
+                }}
+              >
+                <Plus />
+                Insert column after
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="min-w-[180px]"
+                disabled={!tableSelected}
+                onSelect={() => {
+                  deleteColumn(editor);
+                  focusEditor(editor);
+                }}
+              >
+                <Minus />
+                Delete column
+              </DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
 
-        <DropdownMenuSub>
-          <DropdownMenuSubTrigger disabled={!tableSelected}>
-            <RectangleHorizontal
-              className={iconVariants({ variant: 'menuItem' })}
-            />
-            <span>Row</span>
-          </DropdownMenuSubTrigger>
-          <DropdownMenuSubContent>
-            <DropdownMenuItem
-              className="min-w-[180px]"
-              disabled={!tableSelected}
-              onSelect={() => {
-                insertTableRow(editor);
-                focusEditor(editor);
-              }}
-            >
-              <Plus className={iconVariants({ variant: 'menuItem' })} />
-              Insert row after
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="min-w-[180px]"
-              disabled={!tableSelected}
-              onSelect={() => {
-                deleteRow(editor);
-                focusEditor(editor);
-              }}
-            >
-              <Minus className={iconVariants({ variant: 'menuItem' })} />
-              Delete row
-            </DropdownMenuItem>
-          </DropdownMenuSubContent>
-        </DropdownMenuSub>
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger disabled={!tableSelected}>
+              <RectangleHorizontal />
+              <span>Row</span>
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuItem
+                className="min-w-[180px]"
+                disabled={!tableSelected}
+                onSelect={() => {
+                  insertTableRow(editor);
+                  focusEditor(editor);
+                }}
+              >
+                <Plus />
+                Insert row after
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="min-w-[180px]"
+                disabled={!tableSelected}
+                onSelect={() => {
+                  deleteRow(editor);
+                  focusEditor(editor);
+                }}
+              >
+                <Minus />
+                Delete row
+              </DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+        </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -1,0 +1,15 @@
+{
+  "dependencies": [
+    "@udecode/plate-table"
+  ],
+  "files": [
+    {
+      "content": "'use client';\n\nimport { TablePlugin } from '@udecode/plate-table/react';\n\nexport const tablePlugin = TablePlugin.configure({\n  options: {\n    enableMerging: true,\n  },\n});\n",
+      "path": "components/editor/plugins/table-plugin.ts",
+      "target": "components/editor/plugins/table-plugin.ts",
+      "type": "registry:component"
+    }
+  ],
+  "name": "table-plugin",
+  "type": "registry:component"
+}

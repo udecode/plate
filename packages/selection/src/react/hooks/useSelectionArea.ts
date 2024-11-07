@@ -16,6 +16,9 @@ export const useSelectionArea = () => {
       document: window.document,
       ...areaOptions,
     })
+      .on('beforestart', () => {
+        setOption('isSelecting', false);
+      })
       .on('start', ({ event }) => {
         setOption('isSelectionAreaVisible', true);
 

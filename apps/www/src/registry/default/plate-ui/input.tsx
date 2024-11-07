@@ -11,7 +11,7 @@ export const inputVariants = cva(
     variants: {
       h: {
         md: 'h-10 px-3 py-2',
-        sm: 'h-9 px-3 py-2',
+        sm: 'h-[28px] px-1.5 py-1',
       },
       variant: {
         default:

@@ -4,6 +4,12 @@
   ],
   "doc": {
     "description": "A list element for ordered and unordered items.",
+    "docs": [
+      {
+        "route": "/docs/list",
+        "title": "List"
+      }
+    ],
     "examples": [
       "list-demo"
     ]

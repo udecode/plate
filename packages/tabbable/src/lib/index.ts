@@ -4,4 +4,4 @@
 
 export * from './BaseTabbablePlugin';
 export * from './findTabDestination';
-export * from './types';
+export type * from './types';

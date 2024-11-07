@@ -2,10 +2,21 @@
   "dependencies": [],
   "doc": {
     "description": "A toolbar button for accessing AI features.",
+    "docs": [
+      {
+        "route": "/docs/ai",
+        "title": "AI"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/ai-toolbar-button"
+      }
+    ],
     "examples": [
       "ai-demo",
-      "floating-toolbar-demo"
+      "floating-toolbar-demo",
+      "ai-pro"
     ],
+    "label": "New",
     "title": "AI Toolbar Button"
   },
   "files": [

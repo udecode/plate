@@ -24,8 +24,8 @@ export interface GetSiblingIndentListOptions<
   getPreviousEntry?: (
     entry: TNodeEntry<ElementOrTextOf<E>>
   ) => TNodeEntry<N> | undefined;
-  breakOnListRestart?: boolean;
   breakOnEqIndentNeqListStyleType?: boolean;
+  breakOnListRestart?: boolean;
   breakOnLowerIndent?: boolean;
   breakQuery?: (siblingNode: TNode, currentNode: TNode) => boolean | undefined;
   /** Query to break lookup */

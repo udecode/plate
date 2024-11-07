@@ -27,7 +27,7 @@ export function DocsPager({ doc }: DocsPagerProps) {
           className={cn(buttonVariants({ variant: 'outline' }))}
           href={pager.prev.href}
         >
-          <Icons.chevronLeft className="mr-2 size-4" />
+          <Icons.chevronLeft />
           {pager.prev.title}
         </Link>
       )}
@@ -37,7 +37,7 @@ export function DocsPager({ doc }: DocsPagerProps) {
           href={pager.next.href}
         >
           {pager.next.title}
-          <Icons.chevronRight className="ml-2 size-4" />
+          <Icons.chevronRight />
         </Link>
       )}
     </div>

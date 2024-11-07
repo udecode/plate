@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import type { MyValue } from '@/registry/default/lib/plate-types';
+import type { Value } from '@udecode/slate';
 
 import { settingsStore } from '@/components/context/settings-store';
 import { type ValueId, customizerPlugins } from '@/config/customizer-plugins';
@@ -42,7 +42,7 @@ import { tableMergeValue, tableValue } from './tableValue';
 import { tocPlaygroundValue } from './tocValue';
 import { toggleValue } from './toggleValue';
 
-export const usePlaygroundValue = (id?: ValueId): MyValue => {
+export const usePlaygroundValue = (id?: ValueId): Value => {
   let valueId = settingsStore.use.valueId();
 
   if (id) {

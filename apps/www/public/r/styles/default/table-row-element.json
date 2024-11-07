@@ -1,12 +1,13 @@
 {
-  "dependencies": [
-    "@udecode/plate-table"
-  ],
+  "dependencies": [],
   "doc": {
     "description": "A table row component with optional border hiding.",
     "docs": [
       {
         "route": "/docs/table"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/table-row-element"
       }
     ],
     "examples": [

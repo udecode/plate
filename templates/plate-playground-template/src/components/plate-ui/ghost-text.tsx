@@ -1,9 +1,10 @@
 'use client';
 
 import React from 'react';
-import { useEditorPlugin, useElement } from '@udecode/plate-common/react';
 
 import type { CopilotPluginConfig } from '@udecode/plate-ai/react';
+
+import { useEditorPlugin, useElement } from '@udecode/plate-common/react';
 
 export const GhostText = () => {
   const { useOption } = useEditorPlugin<CopilotPluginConfig>({
@@ -26,7 +27,7 @@ export function GhostTextContent() {
   const suggestionText = useOption('suggestionText');
 
   return (
-    <span className="text-muted-foreground" contentEditable={false}>
+    <span className="text-muted-foreground/70" contentEditable={false}>
       {suggestionText && suggestionText}
     </span>
   );

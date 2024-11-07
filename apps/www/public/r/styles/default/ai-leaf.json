@@ -1,7 +1,5 @@
 {
-  "dependencies": [
-    "@udecode/plate-ai"
-  ],
+  "dependencies": [],
   "doc": {
     "description": "A text highlighter for AI-generated content.",
     "docs": [
@@ -16,11 +14,9 @@
     ],
     "examples": [
       "ai-demo",
-      {
-        "isPro": true,
-        "name": "ai"
-      }
+      "ai-pro"
     ],
+    "label": "New",
     "title": "AI Leaf"
   },
   "files": [

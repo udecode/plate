@@ -11,4 +11,4 @@ export * from './isUrl';
 export * from './mergeProps';
 export * from './sanitizeUrl';
 export * from './type-utils';
-export * from './types/index';
+export type * from './types/index';

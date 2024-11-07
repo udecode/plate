@@ -12,13 +12,59 @@ docs:
 
 <ComponentPreview name="playground-demo" id="list" />
 
+<Callout>
+
+Plate offers two approaches for implementing lists:
+
+1. **This List plugin** - Traditional HTML-spec lists with strict nesting rules:
+   - Follows standard HTML list structure (`ul`/`ol` > `li`)
+   - Maintains consistent list hierarchy
+   - Best for content that may be exported to HTML/markdown
+   - Highest complexity
+
+2. The [**Indent List plugin**](/docs/indent-list) - Flexible indentation-based lists:
+   - More like Word/Google Docs behavior
+   - Any block can be indented to create list-like structures
+   - Used in the [AI editor](/editors#editor-ai)
+   - Better for free-form content organization
+
+Choose based on your needs:
+- Use the **List plugin** when you need standard HTML list compatibility
+- Use the **Indent List plugin** when you want more flexible indentation behavior
+
+
+</Callout>
+
 <PackageInfo>
+
 
 ## Features
 
-- Supports both unordered (bulleted) and ordered (numbered) lists.
-- Supports nesting to create complex hierarchical list structures.
-- Combined with the autoformat plugin, use markdown shortcuts (**`-, *`**, **`1.`**) to create lists.
+- **HTML-compliant lists**:
+  - Standard `ul`/`ol` > `li` structure
+  - Proper nesting and hierarchy
+  - SEO-friendly markup
+  - Clean HTML/markdown export
+
+- **List types**:
+  - Unordered (bulleted) lists
+  - Ordered (numbered) lists
+  - Todo lists with checkboxes
+  - Nested sublists
+
+- **Drag & drop**:
+  - Currently supports root-level list items only
+  - Sibling and nested items drag & drop not yet supported
+
+- **Shortcuts**:
+  - Combined with the autoformat plugin, use markdown shortcuts (**`-`**, **`*`**, **`1.`**) to create lists
+  - Tab/Shift+Tab for indentation control
+
+- **Limitations (use [Indent List](/docs/indent-list) for these features)**:
+  - Drag & drop only supports root-level lists
+  - List items cannot be aligned
+
+For a more flexible, Word-like approach, see the [Indent List plugin](/docs/indent-list).
 
 </PackageInfo>
 
@@ -36,27 +82,6 @@ import { ListPlugin } from '@udecode/plate-list/react';
 const plugins = [
   // ...otherPlugins,
   ListPlugin,
-];
-```
-
-## Todo List
-
-<ComponentPreview name="playground-demo" id="todoli" />
-
-## Installation Todo List
-
-```bash
-npm install @udecode/plate-list
-```
-
-## Usage Todo List
-
-```tsx
-import { TodoListPlugin } from '@udecode/plate-list/react';
-
-const plugins = [
-  // ...otherPlugins,
-  TodoListPlugin,
 ];
 ```
 

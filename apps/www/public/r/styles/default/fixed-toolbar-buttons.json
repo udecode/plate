@@ -1,5 +1,10 @@
 {
-  "dependencies": [],
+  "dependencies": [
+    "@udecode/plate-basic-marks",
+    "@udecode/plate-font",
+    "@udecode/plate-indent-list",
+    "@udecode/plate-media"
+  ],
   "doc": {
     "description": "A set of commonly used formatting buttons.",
     "examples": [
@@ -8,7 +13,7 @@
   },
   "files": [
     {
-      "content": "'use client';\n\nimport React from 'react';\n\nimport {\n  BoldPlugin,\n  CodePlugin,\n  ItalicPlugin,\n  StrikethroughPlugin,\n  UnderlinePlugin,\n} from '@udecode/plate-basic-marks/react';\nimport { useEditorReadOnly } from '@udecode/plate-common/react';\n\nimport { Icons } from '@/components/icons';\n\nimport { InsertDropdownMenu } from './insert-dropdown-menu';\nimport { MarkToolbarButton } from './mark-toolbar-button';\nimport { ModeDropdownMenu } from './mode-dropdown-menu';\nimport { ToolbarGroup } from './toolbar';\nimport { TurnIntoDropdownMenu } from './turn-into-dropdown-menu';\n\nexport function FixedToolbarButtons() {\n  const readOnly = useEditorReadOnly();\n\n  return (\n    <div className=\"w-full overflow-hidden\">\n      <div\n        className=\"flex flex-wrap\"\n        style={{\n          transform: 'translateX(calc(-1px))',\n        }}\n      >\n        {!readOnly && (\n          <>\n            <ToolbarGroup>\n              <InsertDropdownMenu />\n              <TurnIntoDropdownMenu />\n            </ToolbarGroup>\n\n            <ToolbarGroup>\n              <MarkToolbarButton nodeType={BoldPlugin.key} tooltip=\"Bold (⌘+B)\">\n                <Icons.bold />\n              </MarkToolbarButton>\n              <MarkToolbarButton\n                nodeType={ItalicPlugin.key}\n                tooltip=\"Italic (⌘+I)\"\n              >\n                <Icons.italic />\n              </MarkToolbarButton>\n              <MarkToolbarButton\n                nodeType={UnderlinePlugin.key}\n                tooltip=\"Underline (⌘+U)\"\n              >\n                <Icons.underline />\n              </MarkToolbarButton>\n\n              <MarkToolbarButton\n                nodeType={StrikethroughPlugin.key}\n                tooltip=\"Strikethrough (⌘+⇧+M)\"\n              >\n                <Icons.strikethrough />\n              </MarkToolbarButton>\n              <MarkToolbarButton nodeType={CodePlugin.key} tooltip=\"Code (⌘+E)\">\n                <Icons.code />\n              </MarkToolbarButton>\n            </ToolbarGroup>\n          </>\n        )}\n\n        <div className=\"grow\" />\n\n        <ToolbarGroup>\n          <ModeDropdownMenu />\n        </ToolbarGroup>\n      </div>\n    </div>\n  );\n}\n",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport {\n  BoldPlugin,\n  CodePlugin,\n  ItalicPlugin,\n  StrikethroughPlugin,\n  UnderlinePlugin,\n} from '@udecode/plate-basic-marks/react';\nimport { useEditorReadOnly } from '@udecode/plate-common/react';\nimport {\n  FontBackgroundColorPlugin,\n  FontColorPlugin,\n} from '@udecode/plate-font/react';\nimport { ListStyleType } from '@udecode/plate-indent-list';\nimport { ImagePlugin } from '@udecode/plate-media/react';\nimport {\n  BaselineIcon,\n  BoldIcon,\n  Code2Icon,\n  ItalicIcon,\n  PaintBucketIcon,\n  SparklesIcon,\n  StrikethroughIcon,\n  UnderlineIcon,\n} from 'lucide-react';\n\nimport { AIToolbarButton } from './ai-toolbar-button';\nimport { AlignDropdownMenu } from './align-dropdown-menu';\nimport { ColorDropdownMenu } from './color-dropdown-menu';\nimport { CommentToolbarButton } from './comment-toolbar-button';\nimport { EmojiDropdownMenu } from './emoji-dropdown-menu';\nimport { IndentListToolbarButton } from './indent-list-toolbar-button';\nimport { IndentTodoToolbarButton } from './indent-todo-toolbar-button';\nimport { IndentToolbarButton } from './indent-toolbar-button';\nimport { InsertDropdownMenu } from './insert-dropdown-menu';\nimport { LineHeightDropdownMenu } from './line-height-dropdown-menu';\nimport { LinkToolbarButton } from './link-toolbar-button';\nimport { MarkToolbarButton } from './mark-toolbar-button';\nimport { MediaToolbarButton } from './media-toolbar-button';\nimport { ModeDropdownMenu } from './mode-dropdown-menu';\nimport { MoreDropdownMenu } from './more-dropdown-menu';\nimport { OutdentToolbarButton } from './outdent-toolbar-button';\nimport { TableDropdownMenu } from './table-dropdown-menu';\nimport { ToggleToolbarButton } from './toggle-toolbar-button';\nimport { ToolbarGroup } from './toolbar';\nimport { TurnIntoDropdownMenu } from './turn-into-dropdown-menu';\n\nexport function FixedToolbarButtons() {\n  const readOnly = useEditorReadOnly();\n\n  return (\n    <div className=\"flex w-full\">\n      {!readOnly && (\n        <>\n          <ToolbarGroup>\n            <AIToolbarButton\n              className=\"gap-1.5 text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-500\"\n              tooltip=\"Edit, generate, and more\"\n            >\n              <SparklesIcon className=\"!size-3.5\" />\n              Ask AI\n            </AIToolbarButton>\n          </ToolbarGroup>\n\n          <ToolbarGroup>\n            <InsertDropdownMenu />\n            <TurnIntoDropdownMenu />\n          </ToolbarGroup>\n\n          <ToolbarGroup>\n            <MarkToolbarButton nodeType={BoldPlugin.key} tooltip=\"Bold (⌘+B)\">\n              <BoldIcon />\n            </MarkToolbarButton>\n\n            <MarkToolbarButton\n              nodeType={ItalicPlugin.key}\n              tooltip=\"Italic (⌘+I)\"\n            >\n              <ItalicIcon />\n            </MarkToolbarButton>\n\n            <MarkToolbarButton\n              nodeType={UnderlinePlugin.key}\n              tooltip=\"Underline (⌘+U)\"\n            >\n              <UnderlineIcon />\n            </MarkToolbarButton>\n\n            <MarkToolbarButton\n              nodeType={StrikethroughPlugin.key}\n              tooltip=\"Strikethrough (⌘+⇧+M)\"\n            >\n              <StrikethroughIcon />\n            </MarkToolbarButton>\n\n            <MarkToolbarButton nodeType={CodePlugin.key} tooltip=\"Code (⌘+E)\">\n              <Code2Icon />\n            </MarkToolbarButton>\n\n            <ColorDropdownMenu\n              nodeType={FontColorPlugin.key}\n              tooltip=\"Text color\"\n            >\n              <BaselineIcon />\n            </ColorDropdownMenu>\n\n            <ColorDropdownMenu\n              nodeType={FontBackgroundColorPlugin.key}\n              tooltip=\"Background color\"\n            >\n              <PaintBucketIcon />\n            </ColorDropdownMenu>\n          </ToolbarGroup>\n\n          <ToolbarGroup>\n            <AlignDropdownMenu />\n            <LineHeightDropdownMenu />\n\n            <IndentListToolbarButton nodeType={ListStyleType.Disc} />\n            <IndentListToolbarButton nodeType={ListStyleType.Decimal} />\n            <IndentTodoToolbarButton />\n\n            <OutdentToolbarButton />\n            <IndentToolbarButton />\n          </ToolbarGroup>\n\n          <ToolbarGroup>\n            <LinkToolbarButton />\n            <ToggleToolbarButton />\n            <MediaToolbarButton nodeType={ImagePlugin.key} />\n            <TableDropdownMenu />\n            <EmojiDropdownMenu />\n            <MoreDropdownMenu />\n          </ToolbarGroup>\n        </>\n      )}\n\n      <div className=\"grow\" />\n\n      <ToolbarGroup>\n        <CommentToolbarButton />\n        <ModeDropdownMenu />\n      </ToolbarGroup>\n    </div>\n  );\n}\n",
       "path": "plate-ui/fixed-toolbar-buttons.tsx",
       "target": "components/plate-ui/fixed-toolbar-buttons.tsx",
       "type": "registry:ui"
@@ -17,9 +22,24 @@
   "name": "fixed-toolbar-buttons",
   "registryDependencies": [
     "toolbar",
+    "ai-toolbar-button",
+    "align-dropdown-menu",
+    "color-dropdown-menu",
+    "comment-toolbar-button",
+    "emoji-dropdown-menu",
+    "indent-list-toolbar-button",
+    "indent-todo-toolbar-button",
+    "indent-toolbar-button",
     "insert-dropdown-menu",
+    "line-height-dropdown-menu",
+    "link-toolbar-button",
     "mark-toolbar-button",
+    "media-toolbar-button",
     "mode-dropdown-menu",
+    "more-dropdown-menu",
+    "outdent-toolbar-button",
+    "table-dropdown-menu",
+    "toggle-toolbar-button",
     "turn-into-dropdown-menu"
   ],
   "type": "registry:ui"

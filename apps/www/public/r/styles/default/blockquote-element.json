@@ -1,7 +1,5 @@
 {
-  "dependencies": [
-    "@udecode/plate-block-quote"
-  ],
+  "dependencies": [],
   "doc": {
     "description": "A quote component for block quotes.",
     "docs": [
@@ -14,10 +12,7 @@
     ],
     "examples": [
       "basic-elements-demo",
-      {
-        "isPro": true,
-        "name": "basic-elements"
-      }
+      "basic-nodes-pro"
     ]
   },
   "files": [

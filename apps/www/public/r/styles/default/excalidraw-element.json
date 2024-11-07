@@ -4,8 +4,11 @@
   ],
   "doc": {
     "description": "A drawing component powered by Excalidraw.",
-    "examples": [
-      "excalidraw-demo"
+    "docs": [
+      {
+        "route": "/docs/excalidraw",
+        "title": "Excalidraw"
+      }
     ]
   },
   "files": [
