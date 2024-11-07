@@ -39,7 +39,7 @@ const plugins = [
   NodeIdPlugin,
   TocPlugin.configure({
     options: {
-      scrollContainerSelector: `#${editor.key}`,
+      scrollContainerSelector: `#${editor.uid}`,
       topOffset: 80,
     },
   }),
@@ -62,7 +62,7 @@ The `TocPlugin` requires a scroll container selector to function properly. This 
 ```tsx
 TocPlugin.configure({
   options: {
-    scrollContainerSelector: `#${editor.key}`,
+    scrollContainerSelector: `#${editor.uid}`,
   },
 })
 ```
@@ -115,7 +115,7 @@ A custom function to query headings from the editor.
 <APIItem name="scrollContainerSelector" type="string" optional>
 The CSS selector for the scrollable container. Required to use scrolling behavior.
 
-- **Default:** `#${editor.key}`
+- **Default:** `#${editor.uid}`
 </APIItem>
 </APIOptions>
 

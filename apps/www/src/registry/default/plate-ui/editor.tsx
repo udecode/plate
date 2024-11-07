@@ -33,7 +33,7 @@ export const EditorContainer = React.forwardRef<
 
   return (
     <div
-      id={editor.key}
+      id={editor.uid}
       ref={ref}
       className={cn(
         'ignore-click-outside/toolbar',

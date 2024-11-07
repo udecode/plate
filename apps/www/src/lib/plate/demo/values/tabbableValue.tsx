@@ -16,10 +16,10 @@ export const tabbableValue: any = (
       navigation and interaction. Without this plugin, DOM elements inside void
       nodes come after the editor in the tab order.
     </hp>
-    <element type="tabbable_element">
+    <element type="tabbable">
       <htext />
     </element>
-    <element type="tabbable_element">
+    <element type="tabbable">
       <htext />
     </element>
     <hp>Place your cursor here and try pressing tab or shift+tab.</hp>
@@ -44,7 +44,7 @@ export const tabbableValue: any = (
       or a code block. You can customise this using the{' '}
       <htext code>query</htext> option.
     </hp>
-    <element type="tabbable_element">
+    <element type="tabbable">
       <htext />
     </element>
     <hp>

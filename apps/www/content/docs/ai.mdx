@@ -192,7 +192,7 @@ The [SelectionOverlayPlugin](https://pro.platejs.org/docs/components/cursor-over
 
 - Maintains selection highlight when editor loses focus
 - Essential for AI menu and other external input interactions
-- Prevents double selection with `data-plate-prevent-overlay` attribute
+- Shows selection overlay when focusing elements with `data-plate-overlay="true"` attribute
 
 ### AI SDK
 
@@ -281,7 +281,7 @@ Template for generating prompts. Supports placeholders:
 
 CSS selector for scrollable container.
 
-- **Default:** `#${editor.key}`,
+- **Default:** `#${editor.uid}`,
 
 </APIItem>
 

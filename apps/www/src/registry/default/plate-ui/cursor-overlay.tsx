@@ -29,12 +29,15 @@ type CursorOverlayConfig = PluginConfig<
   }
 >;
 
-const resetCursorsHandler: DOMHandler<CursorOverlayConfig> = ({
-  editor,
-  plugin,
-}) => {
-  editor.setOption(plugin, 'cursors', {});
-};
+const getResetCursorsHandler =
+  (key: string): DOMHandler<CursorOverlayConfig> =>
+  ({ editor, plugin }) => {
+    const newCursors = { ...editor.getOptions(plugin).cursors };
+    delete newCursors[key];
+    console.log(newCursors);
+
+    editor.setOption(plugin, 'cursors', newCursors);
+  };
 
 export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
   key: 'cursorOverlay',
@@ -53,11 +56,12 @@ export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
   },
   handlers: {
     onBlur: ({ editor, event, setOption }) => {
-      const isPrevented =
-        (event.relatedTarget as HTMLElement)?.dataset?.platePreventOverlay ===
-        'true';
+      if (!editor.selection) return;
 
-      if (isPrevented || !editor.selection) return;
+      const relatedTarget = event.relatedTarget as HTMLElement;
+      const allowOverlay = relatedTarget?.dataset?.plateOverlay === 'true';
+
+      if (!allowOverlay) return;
 
       setOption('cursors', {
         blur: {
@@ -66,8 +70,8 @@ export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
         },
       });
     },
-    onDragEnd: resetCursorsHandler,
-    onDragLeave: resetCursorsHandler,
+    onDragEnd: getResetCursorsHandler('drag'),
+    onDragLeave: getResetCursorsHandler('drag'),
     onDragOver: ({ editor, event, setOption }) => {
       if (editor.getOptions(DndPlugin).isDragging) return;
 
@@ -82,12 +86,13 @@ export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
         },
       });
     },
-    onDrop: resetCursorsHandler,
-    onFocus: resetCursorsHandler,
+    onDrop: getResetCursorsHandler('drag'),
+    onFocus: getResetCursorsHandler('blur'),
   },
 });
 
 export function Cursor({
+  id,
   caretPosition,
   classNames,
   data,
@@ -95,7 +100,7 @@ export function Cursor({
   disableSelection,
   selectionRects,
 }: CursorProps<CursorData>) {
-  const { style } = data ?? ({} as CursorData);
+  const { style, selectionStyle = style } = data ?? ({} as CursorData);
 
   return (
     <>
@@ -104,11 +109,12 @@ export function Cursor({
           <div
             key={i}
             className={cn(
-              'pointer-events-none absolute z-10 bg-brand/25',
+              'pointer-events-none absolute z-10',
+              id === 'blur' && 'bg-brand/25',
               classNames?.selectionRect
             )}
             style={{
-              // ...selectionStyle,
+              ...selectionStyle,
               ...position,
             }}
           />
@@ -116,7 +122,8 @@ export function Cursor({
       {!disableCaret && caretPosition && (
         <div
           className={cn(
-            'pointer-events-none absolute z-10 w-px bg-brand',
+            'pointer-events-none absolute z-10 w-0.5',
+            id === 'drag' && 'w-px bg-brand',
             classNames?.caret
           )}
           style={{ ...caretPosition, ...style }}

@@ -5,7 +5,6 @@ import React, { useRef } from 'react';
 import type { ValueId } from '@/config/customizer-plugins';
 
 import { cn } from '@udecode/cn';
-import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import { SingleLinePlugin } from '@udecode/plate-break/react';
 import { CommentsPlugin } from '@udecode/plate-comments/react';
 import { Plate, usePlateEditor } from '@udecode/plate-common/react';
@@ -18,12 +17,13 @@ import { TablePlugin } from '@udecode/plate-table/react';
 
 import { CheckPlugin } from '@/components/context/check-plugin';
 import { settingsStore } from '@/components/context/settings-store';
-import { getAutoformatOptions } from '@/lib/plate/demo/plugins/autoformatOptions';
 import { createPlateUI } from '@/plate/create-plate-ui';
-import { editableProps } from '@/plate/demo/editableProps';
 import { isEnabled } from '@/plate/demo/is-enabled';
 import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
+import { autoformatPlugin as autoformatListPlugin } from '@/registry/default/components/editor/plugins/autoformat-list-plugin';
+import { autoformatPlugin } from '@/registry/default/components/editor/plugins/autoformat-plugin';
 import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';
+import { tabbablePlugin } from '@/registry/default/components/editor/plugins/tabbable-plugin';
 import { CommentsPopover } from '@/registry/default/plate-ui/comments-popover';
 import { CursorOverlay } from '@/registry/default/plate-ui/cursor-overlay';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
@@ -36,13 +36,40 @@ import { FloatingToolbarButtons } from '@/registry/default/plate-ui/floating-too
 import { usePlaygroundEnabled } from './usePlaygroundEnabled';
 
 export const usePlaygroundEditor = (id: any = '') => {
-  const enabledPlugins = settingsStore.use.checkedPlugins();
   const overridePlugins = usePlaygroundEnabled(id);
-  const autoformatOptions = getAutoformatOptions(id, enabledPlugins);
 
   const value = usePlaygroundValue(id);
   const key = settingsStore.use.version();
   const editorId = id || 'playground-' + key;
+
+  const plugins: any[] = [
+    ...editorPlugins,
+
+    id === 'list' ? autoformatListPlugin : autoformatPlugin,
+    TablePlugin.configure({
+      options: {
+        enableMerging: id === 'tableMerge',
+      },
+    }),
+    ListPlugin,
+    TodoListPlugin,
+    ExcalidrawPlugin,
+    NormalizeTypesPlugin.configure({
+      options: {
+        rules: [{ path: [0], strictType: HEADING_KEYS.h1 }],
+      },
+    }),
+    SingleLinePlugin,
+
+    // Testing
+    PlaywrightPlugin.configure({
+      enabled: process.env.NODE_ENV !== 'production',
+    }),
+  ];
+
+  if (id === 'tabbable') {
+    plugins.push(tabbablePlugin);
+  }
 
   return usePlateEditor(
     {
@@ -54,32 +81,7 @@ export const usePlaygroundEditor = (id: any = '') => {
         }),
         plugins: overridePlugins,
       },
-      plugins: [
-        ...editorPlugins,
-
-        AutoformatPlugin.configure({
-          options: autoformatOptions,
-        }),
-        TablePlugin.configure({
-          options: {
-            enableMerging: id === 'tableMerge',
-          },
-        }),
-        ListPlugin,
-        TodoListPlugin,
-        ExcalidrawPlugin,
-        NormalizeTypesPlugin.configure({
-          options: {
-            rules: [{ path: [0], strictType: HEADING_KEYS.h1 }],
-          },
-        }),
-        SingleLinePlugin,
-
-        // Testing
-        PlaywrightPlugin.configure({
-          enabled: process.env.NODE_ENV !== 'production',
-        }),
-      ],
+      plugins,
       value: value,
     },
     []
@@ -121,14 +123,9 @@ export default function PlaygroundDemo({
             className={cn(id && 'max-h-[500px]', className)}
           >
             <Editor
-              {...editableProps}
               variant="demo"
-              className={cn(
-                editableProps.className,
-                // 'overflow-x-auto rounded-none',
-                !id && 'pb-[20vh] pt-4',
-                id && 'pb-8 pt-2'
-              )}
+              className={cn(!id && 'pb-[20vh] pt-4', id && 'pb-8 pt-2')}
+              spellCheck={false}
             />
 
             <CheckPlugin componentId="floating-toolbar">

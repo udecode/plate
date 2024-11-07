@@ -60,6 +60,9 @@ export const usePlaygroundValue = (id?: ValueId): Value => {
     if (valueId === 'tableMerge') {
       return mapNodeId(tableMergeValue);
     }
+    if (valueId === 'tabbable' && enabled.tabbable) {
+      return mapNodeId(tabbableValue);
+    }
     if (valueId !== customizerPlugins.playground.id) {
       let newValue = (customizerPlugins as any)[valueId]?.value ?? value;
 
@@ -122,7 +125,6 @@ export const usePlaygroundValue = (id?: ValueId): Value => {
     if (enabled.softBreak) value.push(...softBreakValue);
     if (enabled.exitBreak) value.push(...exitBreakValue);
     if (enabled.cursorOverlay) value.push(...cursorOverlayValue);
-    if (enabled.tabbable) value.push(...tabbableValue);
     if (enabled.trailingBlock) value.push(...trailingBlockValue);
 
     // Deserialization

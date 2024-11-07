@@ -46,7 +46,7 @@ const plugins = [
 
 ### Set scrollable container
 
-To control the scrollable container, configure the `boundaries` and `container` options within `areaOptions`. These options accept CSS selectors, such as `#selection-demo #${editor.key}`, which are used with `document.querySelector()`.
+To control the scrollable container, configure the `boundaries` and `container` options within `areaOptions`. These options accept CSS selectors, such as `#selection-demo #${editor.uid}`, which are used with `document.querySelector()`.
 
 For this to work effectively:
 
@@ -59,9 +59,9 @@ Default configuration:
 ```js
 {
   areaOptions: {
-    boundaries: `#${editor.key}`,
-    container: `#${editor.key}`,
-    selectables: `#${editor.key} .slate-selectable`,
+    boundaries: `#${editor.uid}`,
+    container: `#${editor.uid}`,
+    selectables: `#${editor.uid} .slate-selectable`,
     selectionAreaClass: 'slate-selection-area',
   }
 }
@@ -124,9 +124,9 @@ options: {
       // If it’s too small, it may cause the mouse click event to be blocked. 10 is a good default.
       startThreshold: 10,
     },
-    boundaries: `#${editor.key}`,
-    container: `#${editor.key}`,
-    selectables: `#${editor.key} .slate-selectable`,
+    boundaries: `#${editor.uid}`,
+    container: `#${editor.uid}`,
+    selectables: `#${editor.uid} .slate-selectable`,
     selectionAreaClass: 'slate-selection-area',
   },
   // if not using plate-ui context menu, set it to false
@@ -187,9 +187,9 @@ Options for the selection area. Example:
 
 ```ts
 {
-  boundaries: [`#${editor.key}`],
-  container: [`#${editor.key}`],
-  selectables: [`#${editor.key} .slate-selectable`],
+  boundaries: [`#${editor.uid}`],
+  container: [`#${editor.uid}`],
+  selectables: [`#${editor.uid} .slate-selectable`],
   selectionAreaClass: 'slate-selection-area',
 }
 ```

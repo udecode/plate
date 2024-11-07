@@ -47,6 +47,7 @@ import {
   MentionPlugin,
 } from '@udecode/plate-mention/react';
 import { SlashInputPlugin } from '@udecode/plate-slash-command/react';
+import { TabbablePlugin } from '@udecode/plate-tabbable/react';
 import {
   TableCellHeaderPlugin,
   TableCellPlugin,
@@ -55,6 +56,7 @@ import {
 } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 
+import { TabbableElement } from '@/lib/plate/demo/plugins/TabbableElement';
 import { AILeaf } from '@/registry/default/plate-ui/ai-leaf';
 import { BlockquoteElement } from '@/registry/default/plate-ui/blockquote-element';
 import { CodeBlockElement } from '@/registry/default/plate-ui/code-block-element';
@@ -134,6 +136,7 @@ export const createPlateUI = ({
     [StrikethroughPlugin.key]: withProps(PlateLeaf, { as: 's' }),
     [SubscriptPlugin.key]: withProps(PlateLeaf, { as: 'sub' }),
     [SuperscriptPlugin.key]: withProps(PlateLeaf, { as: 'sup' }),
+    [TabbablePlugin.key]: TabbableElement,
     [TableCellHeaderPlugin.key]: TableCellHeaderElement,
     [TableCellPlugin.key]: TableCellElement,
     [TablePlugin.key]: TableElement,

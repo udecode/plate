@@ -40,7 +40,6 @@ import { mediaPlugins } from './media-plugins';
 import { mentionPlugin } from './mention-plugin';
 import { resetBlockTypePlugin } from './reset-block-type-plugin';
 import { softBreakPlugin } from './soft-break-plugin';
-import { tabbablePlugin } from './tabbable-plugin';
 import { tablePlugin } from './table-plugin';
 import { tocPlugin } from './toc-plugin';
 
@@ -85,7 +84,6 @@ export const editorPlugins = [
   resetBlockTypePlugin,
   ...deletePlugins,
   softBreakPlugin,
-  tabbablePlugin,
   TrailingBlockPlugin.configure({ options: { type: ParagraphPlugin.key } }),
 
   // Collaboration

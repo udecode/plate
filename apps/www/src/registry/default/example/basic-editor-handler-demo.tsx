@@ -4,11 +4,7 @@ import React, { useState } from 'react';
 
 import type { Value } from '@udecode/plate-common';
 
-import {
-  type PlateContentProps,
-  Plate,
-  usePlateEditor,
-} from '@udecode/plate-common/react';
+import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 
 import {
   Accordion,
@@ -17,12 +13,6 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
-
-const editableProps: PlateContentProps = {
-  autoFocus: false,
-  placeholder: 'Type…',
-  spellCheck: false,
-};
 
 const value = [
   {
@@ -54,7 +44,7 @@ export default function BasicEditorHandlerDemo() {
       editor={editor}
     >
       <EditorContainer>
-        <Editor {...editableProps} />
+        <Editor />
       </EditorContainer>
 
       <Accordion type="single" collapsible>

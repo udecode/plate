@@ -38,7 +38,6 @@ const plugins: Registry = [
       'mention-plugin',
       'reset-block-type-plugin',
       'soft-break-plugin',
-      'tabbable-plugin',
       'table-plugin',
       'toc-plugin',
     ],

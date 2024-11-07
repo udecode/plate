@@ -16,7 +16,6 @@ import {
   withReact,
 } from 'slate-react';
 
-import { editableProps } from '@/plate/demo/editableProps';
 import { PlateUI } from '@/plate/demo/plate-ui';
 import { createHugeDocumentValue } from '@/plate/demo/values/createHugeDocumentValue';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
@@ -33,7 +32,7 @@ function WithPlate() {
   return (
     <Plate editor={editor}>
       <EditorContainer>
-        <Editor {...editableProps} />
+        <Editor spellCheck={false} />
       </EditorContainer>
     </Plate>
   );
@@ -62,7 +61,7 @@ function WithoutPlate() {
       editor={editor}
       initialValue={initialValue}
     >
-      <Editable renderElement={renderElement} {...(editableProps as any)} />
+      <Editable renderElement={renderElement} spellCheck={false} />
     </Slate>
   );
 }
