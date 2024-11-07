@@ -6,7 +6,7 @@ import type { PlateContentProps } from '@udecode/plate-common/react';
 import type { VariantProps } from 'class-variance-authority';
 
 import { cn } from '@udecode/cn';
-import { PlateContent } from '@udecode/plate-common/react';
+import { PlateContent, useEditorRef } from '@udecode/plate-common/react';
 import { cva } from 'class-variance-authority';
 
 const editorContainerVariants = cva(
@@ -29,8 +29,11 @@ export const EditorContainer = React.forwardRef<
   React.ComponentPropsWithoutRef<'div'> &
     VariantProps<typeof editorContainerVariants>
 >(({ className, variant, ...props }, ref) => {
+  const editor = useEditorRef();
+
   return (
     <div
+      id={editor.key}
       ref={ref}
       className={cn(
         'ignore-click-outside/toolbar',

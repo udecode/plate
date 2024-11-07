@@ -56,7 +56,7 @@ import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
-import { DragOverCursorPlugin } from '@/plate/demo/plugins/DragOverCursorPlugin';
+import { CursorOverlayPlugin } from '@/registry/default/plate-ui/cursor-overlay';
 
 export const descriptions: Record<string, string> = {
   [AIChatPlugin.key]:
@@ -72,12 +72,12 @@ export const descriptions: Record<string, string> = {
   [CommentsPlugin.key]: 'Add comments to text as marks.',
   [CopilotPlugin.key]: 'Render AI suggestions ghost text as you type.',
   [CsvPlugin.key]: 'Copy paste from CSV to Slate.',
+  [CursorOverlayPlugin.key]: 'Cursor and selection overlay on drag or blur.',
   [DatePlugin.key]: 'Add inline date plugins',
   [DeletePlugin.key]:
     'Remove the current block if empty when pressing delete forward',
   [DndPlugin.key]: 'Move blocks within the editor.',
   [DocxPlugin.key]: 'Copy paste from DOCX to Slate.',
-  [DragOverCursorPlugin.key]: 'Customize the cursor when dragging.',
   [EmojiPlugin.key]: 'Enhance your text with emojis.',
   [ExcalidrawPlugin.key]: 'Create drawings and diagrams as block nodes.',
   [ExitBreakPlugin.key]: 'Exit a large block using a shortcut.',

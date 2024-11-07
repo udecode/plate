@@ -1,0 +1,12 @@
+{
+  "files": [
+    {
+      "content": "import { useEffect, useState } from 'react';\n\nexport function useIsTouchDevice() {\n  const [isTouchDevice, setIsTouchDevice] = useState(false);\n\n  useEffect(() => {\n    function onResize() {\n      setIsTouchDevice(\n        'ontouchstart' in window ||\n          navigator.maxTouchPoints > 0 ||\n          navigator.maxTouchPoints > 0\n      );\n    }\n\n    window.addEventListener('resize', onResize);\n    onResize();\n\n    return () => {\n      window.removeEventListener('resize', onResize);\n    };\n  }, []);\n\n  return isTouchDevice;\n}\n",
+      "path": "hooks/use-is-touch-device.ts",
+      "target": "hooks/use-is-touch-device.ts",
+      "type": "registry:hook"
+    }
+  ],
+  "name": "use-is-touch-device",
+  "type": "registry:hook"
+}

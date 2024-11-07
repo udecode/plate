@@ -28,11 +28,7 @@ export function PlateEditor() {
           <FixedToolbarButtons />
         </FixedToolbar>
 
-        <EditorContainer
-          id="scroll_container"
-          ref={containerRef}
-          variant="demo"
-        >
+        <EditorContainer ref={containerRef} variant="demo">
           <Editor variant="demo" />
 
           <FloatingToolbar>

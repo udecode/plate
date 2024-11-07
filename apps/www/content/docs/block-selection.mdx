@@ -46,7 +46,7 @@ const plugins = [
 
 ### Set scrollable container
 
-To control the scrollable container, configure the `boundaries` and `container` options within `areaOptions`. These options accept CSS selectors, such as `#selection-demo #scroll_container`, which are used with `document.querySelector()`.
+To control the scrollable container, configure the `boundaries` and `container` options within `areaOptions`. These options accept CSS selectors, such as `#selection-demo #${editor.key}`, which are used with `document.querySelector()`.
 
 For this to work effectively:
 
@@ -54,14 +54,14 @@ For this to work effectively:
 2. Use the appropriate selector in your configuration.
 3. Don't forget to set `position: relative` to your scroll container.
 
-Example configuration:
+Default configuration:
 
 ```js
 {
   areaOptions: {
-    boundaries: '#your-scroll-container-id',
-    container: '#your-scroll-container-id',
-    selectables: '#your-scroll-container-id .slate-selectable',
+    boundaries: `#${editor.key}`,
+    container: `#${editor.key}`,
+    selectables: `#${editor.key} .slate-selectable`,
     selectionAreaClass: 'slate-selection-area',
   }
 }
@@ -103,15 +103,15 @@ The value of `1.5` is our recommended speed.Since it's same with the default spe
 
 ```ts
   areaOptions: {
-      behaviour: {
-        scrolling: {
-          speedDivider: 1.5,
-        },
+    behaviour: {
+      scrolling: {
+        speedDivider: 1.5,
       },
+    },
   },
 ```
 
-Full configuration recommended:
+Default configuration:
 
 ```ts
 options: {
@@ -121,12 +121,12 @@ options: {
         speedDivider: 1.5,
       },
       // The distance needed to move for the selection area to appear.
-      // If it’s too small, it may cause the mouse click event to be blocked. 30 is a good default.
-      startThreshold: 30,
+      // If it’s too small, it may cause the mouse click event to be blocked. 10 is a good default.
+      startThreshold: 10,
     },
-    boundaries: '#your-scroll-container-id',
-    container: '#your-scroll-container-id',
-    selectables: '#your-scroll-container-id .slate-selectable',
+    boundaries: `#${editor.key}`,
+    container: `#${editor.key}`,
+    selectables: `#${editor.key} .slate-selectable`,
     selectionAreaClass: 'slate-selection-area',
   },
   // if not using plate-ui context menu, set it to false
@@ -138,7 +138,7 @@ options: {
 
 ### Selection area
 
-Style the selection area using `.slate-selection-area` class to your `EditorContainer` component. For example:
+Style the selection area using `.slate-selection-area` class to your editor container component. For example:
 
 ```js
 '[&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/10'
@@ -187,9 +187,9 @@ Options for the selection area. Example:
 
 ```ts
 {
-  boundaries: ['#selection-demo #scroll_container'],
-  container: ['#selection-demo #scroll_container'],
-  selectables: ['#selection-demo #scroll_container .slate-selectable'],
+  boundaries: [`#${editor.key}`],
+  container: [`#${editor.key}`],
+  selectables: [`#${editor.key} .slate-selectable`],
   selectionAreaClass: 'slate-selection-area',
 }
 ```

@@ -22,7 +22,6 @@ import { getAutoformatOptions } from '@/lib/plate/demo/plugins/autoformatOptions
 import { createPlateUI } from '@/plate/create-plate-ui';
 import { editableProps } from '@/plate/demo/editableProps';
 import { isEnabled } from '@/plate/demo/is-enabled';
-import { DragOverCursorPlugin } from '@/plate/demo/plugins/DragOverCursorPlugin';
 import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
 import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';
 import { CommentsPopover } from '@/registry/default/plate-ui/comments-popover';
@@ -117,8 +116,6 @@ export default function PlaygroundDemo({
 
         <div id="editor-playground" className="flex w-full">
           <EditorContainer
-            id="scroll_container"
-            // id={scrollSelector ?? `blockSelection-${id}`}
             ref={containerRef}
             variant="demo"
             className={cn(id && 'max-h-[500px]', className)}
@@ -151,9 +148,7 @@ export default function PlaygroundDemo({
               </FloatingToolbar>
             </CheckPlugin>
 
-            <CheckPlugin id="cursoroverlay" plugin={DragOverCursorPlugin}>
-              <CursorOverlay containerRef={containerRef} />
-            </CheckPlugin>
+            <CursorOverlay containerRef={containerRef} />
           </EditorContainer>
 
           <CheckPlugin

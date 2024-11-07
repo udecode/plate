@@ -172,7 +172,6 @@ const plugins = [
             ? PROMPT_TEMPLATES.userSelecting
             : PROMPT_TEMPLATES.userDefault;
       },
-      scrollContainerSelector: '#scroll_container',
       systemTemplate: ({ isBlockSelecting, isSelecting }) => {
         return isBlockSelecting
           ? PROMPT_TEMPLATES.systemBlockSelecting
@@ -282,7 +281,7 @@ Template for generating prompts. Supports placeholders:
 
 CSS selector for scrollable container.
 
-- **Default:** `'#scroll_container'`
+- **Default:** `#${editor.key}`,
 
 </APIItem>
 

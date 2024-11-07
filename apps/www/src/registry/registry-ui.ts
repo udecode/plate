@@ -85,7 +85,12 @@ export const uiComponents: Registry = [
     },
     files: ['plate-ui/block-context-menu.tsx'],
     name: 'block-context-menu',
-    registryDependencies: ['calendar', 'plate-element', 'context-menu'],
+    registryDependencies: [
+      'calendar',
+      'plate-element',
+      'context-menu',
+      'use-is-touch-device',
+    ],
     type: 'registry:ui',
   },
   {

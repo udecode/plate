@@ -51,7 +51,6 @@ import { columnValue } from '@/lib/plate/demo/values/columnValue';
 import { copilotValue } from '@/lib/plate/demo/values/copilotValue';
 import { slashCommandValue } from '@/lib/plate/demo/values/slashCommandValue';
 import { tocValue } from '@/lib/plate/demo/values/tocValue';
-import { DragOverCursorPlugin } from '@/plate/demo/plugins/DragOverCursorPlugin';
 import { alignValue } from '@/plate/demo/values/alignValue';
 import { autoformatValue } from '@/plate/demo/values/autoformatValue';
 import { basicElementsValue } from '@/plate/demo/values/basicElementsValue';
@@ -86,6 +85,7 @@ import { softBreakValue } from '@/plate/demo/values/softBreakValue';
 import { tabbableValue } from '@/plate/demo/values/tabbableValue';
 import { tableValue } from '@/plate/demo/values/tableValue';
 import { toggleValue } from '@/plate/demo/values/toggleValue';
+import { CursorOverlayPlugin } from '@/registry/default/plate-ui/cursor-overlay';
 
 export type ValueId = keyof typeof customizerPlugins | 'tableMerge';
 
@@ -190,7 +190,7 @@ export const customizerPlugins = {
   'cursor-overlay': {
     id: 'cursor-overlay',
     label: 'Cursor Overlay',
-    plugins: [DragOverCursorPlugin.key],
+    plugins: [CursorOverlayPlugin.key],
     route: '/docs/cursor-overlay',
     value: cursorOverlayValue,
   },

@@ -121,7 +121,7 @@ export const usePlaygroundValue = (id?: ValueId): Value => {
     if (enabled.autoformat) value.push(...autoformatValue);
     if (enabled.softBreak) value.push(...softBreakValue);
     if (enabled.exitBreak) value.push(...exitBreakValue);
-    if (enabled.dragOverCursor) value.push(...cursorOverlayValue);
+    if (enabled.cursorOverlay) value.push(...cursorOverlayValue);
     if (enabled.tabbable) value.push(...tabbableValue);
     if (enabled.trailingBlock) value.push(...trailingBlockValue);
 

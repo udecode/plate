@@ -60,7 +60,7 @@ import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 import { uniqBy } from 'lodash';
 
 import { customizerItems } from '@/config/customizer-items';
-import { DragOverCursorPlugin } from '@/plate/demo/plugins/DragOverCursorPlugin';
+import { CursorOverlayPlugin } from '@/registry/default/plate-ui/cursor-overlay';
 
 export const customizerList = [
   {
@@ -132,8 +132,8 @@ export const customizerList = [
       customizerItems[BlockSelectionPlugin.key],
       customizerItems[BlockMenuPlugin.key],
       customizerItems[CaptionPlugin.key],
+      customizerItems[CursorOverlayPlugin.key],
       customizerItems[DndPlugin.key],
-      customizerItems[DragOverCursorPlugin.key],
       customizerItems[EmojiPlugin.key],
       customizerItems[ExitBreakPlugin.key],
       customizerItems[NodeIdPlugin.key],
@@ -212,7 +212,7 @@ export const orderedPluginKeys = [
   SoftBreakPlugin.key,
   TabbablePlugin.key,
   TrailingBlockPlugin.key,
-  DragOverCursorPlugin.key,
+  CursorOverlayPlugin.key,
 
   // Collaboration
   CommentsPlugin.key,

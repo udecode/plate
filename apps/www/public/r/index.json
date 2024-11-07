@@ -1328,7 +1328,8 @@
     "registryDependencies": [
       "calendar",
       "plate-element",
-      "context-menu"
+      "context-menu",
+      "use-is-touch-device"
     ],
     "type": "registry:ui"
   },

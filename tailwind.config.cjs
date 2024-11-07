@@ -88,6 +88,21 @@ module.exports = {
           to: { height: '0' },
         },
       },
+      screens: {
+        /**
+         * Matches devices where the primary pointing device is capable of
+         * hovering conveniently. Usage: main-hover:group-hover:bg-red-500 See:
+         * https://developer.mozilla.org/en-US/docs/Web/CSS/@media/hover
+         *
+         * On iOS devices, buttons inside a .group element that contains
+         * descendent elements with `group-hover:` CSS rules require two taps to
+         * click. As a workaround, we disable these rules on devices that cannot
+         * conveniently hover using `main-hover:`.
+         */
+        'main-hover': {
+          raw: '(hover: hover)',
+        },
+      },
     },
   },
 };

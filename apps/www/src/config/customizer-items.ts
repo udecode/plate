@@ -71,7 +71,7 @@ import {
 } from '@/config/customizer-badges';
 import { customizerComponents } from '@/config/customizer-components';
 import { customizerPlugins } from '@/config/customizer-plugins';
-import { DragOverCursorPlugin } from '@/plate/demo/plugins/DragOverCursorPlugin';
+import { CursorOverlayPlugin } from '@/registry/default/plate-ui/cursor-overlay';
 
 export type SettingPlugin = {
   id: string;
@@ -342,6 +342,14 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginFactory: 'CsvPlugin',
     route: customizerPlugins.csv.route,
   },
+  [CursorOverlayPlugin.key]: {
+    id: CursorOverlayPlugin.key,
+    badges: [customizerBadges.handler, customizerBadges.ui],
+    // npmPackage: '@udecode/plate-cursor',
+    label: 'Cursor Overlay',
+    reactImport: true,
+    route: customizerPlugins['cursor-overlay'].route,
+  },
   [DatePlugin.key]: {
     id: DatePlugin.key,
     badges: [customizerBadges.element],
@@ -399,14 +407,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
     npmPackage: '@udecode/plate-docx',
     pluginFactory: 'DocxPlugin',
     route: customizerPlugins.docx.route,
-  },
-  [DragOverCursorPlugin.key]: {
-    id: DragOverCursorPlugin.key,
-    badges: [customizerBadges.handler, customizerBadges.ui],
-    // npmPackage: '@udecode/plate-cursor',
-    label: 'Drag Cursor',
-    reactImport: true,
-    route: customizerPlugins['cursor-overlay'].route,
   },
   [EmojiPlugin.key]: {
     id: EmojiPlugin.key,

@@ -519,6 +519,11 @@ async function buildStylesIndex() {
                 },
               },
             },
+            screens: {
+              'main-hover': {
+                raw: '(hover: hover)',
+              },
+            },
           },
         },
       },
