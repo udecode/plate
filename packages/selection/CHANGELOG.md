@@ -1,5 +1,11 @@
 # @udecode/plate-selection
 
+## 39.3.6
+
+### Patch Changes
+
+- [`0b9be462fb6cefa2e75f02f2ade0a20c833aca31`](https://github.com/udecode/plate/commit/0b9be462fb6cefa2e75f02f2ade0a20c833aca31) by [@felixfeng33](https://github.com/felixfeng33) – Fix: clicking the left or right padding of the editor did not deselect.
+
 ## 39.3.5
 
 ### Patch Changes
