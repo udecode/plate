@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 
 import type { TEditableProps } from '@udecode/slate-react';
 
@@ -60,7 +60,11 @@ function PlateInner({
 export function Plate<E extends PlateEditor = PlateEditor>(
   props: PlateProps<E>
 ) {
+  const id = useId();
+
   if (!props.editor) return null;
+
+  props.editor.uid = 'e-' + id.replace(/:/g, '');
 
   return <PlateInner key={props.editor.key} {...(props as any)} />;
 }

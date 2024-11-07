@@ -27,7 +27,7 @@ export const useTocSideBarState = ({
 
   React.useEffect(() => {
     scrollContainerRef.current = document.querySelector(
-      scrollContainerSelector ?? `#${editor.key}`
+      scrollContainerSelector ?? `#${editor.uid}`
     )!;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

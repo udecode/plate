@@ -23,7 +23,7 @@ export const useTocElementState = () => {
 
   useEffect(() => {
     const container = document.querySelector(
-      scrollContainerSelector ?? `#${editor.key}`
+      scrollContainerSelector ?? `#${editor.uid}`
     );
 
     if (!container) return;

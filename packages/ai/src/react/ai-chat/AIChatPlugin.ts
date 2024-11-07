@@ -51,7 +51,10 @@ export type AIChatOptions = {
    * - {prompt}: Replaced with the actual user prompt.
    */
   promptTemplate: (props: EditorPromptParams) => string;
+
+  // @deprecated
   scrollContainerSelector: string | null;
+
   /**
    * Template function for generating the system message. Supports the same
    * placeholders as `promptTemplate`.
