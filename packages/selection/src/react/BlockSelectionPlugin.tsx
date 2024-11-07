@@ -258,6 +258,22 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
 
 export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
   key: 'blockSelection',
+  extendEditor: ({ api, editor, getOptions }) => {
+    const { setSelection } = editor;
+
+    editor.setSelection = (...args) => {
+      if (
+        getOptions().selectedIds!.size > 0 &&
+        !editor.getOption(BlockMenuPlugin, 'openId')
+      ) {
+        api.blockSelection.unselect();
+      }
+
+      setSelection(...args);
+    };
+
+    return editor;
+  },
   options: {
     areaOptions: {
       behaviour: {
@@ -301,9 +317,6 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
       const target = event.target as HTMLElement;
 
       if (target.dataset.platePreventUnselect) return;
-
-      console.log(editor.getOption(BlockMenuPlugin, 'openId'), 'fj');
-
       if (
         event.button === 0 &&
         getOptions().selectedIds!.size > 0 &&
