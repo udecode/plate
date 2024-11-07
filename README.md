@@ -9,6 +9,7 @@ Plate
   <a target="_blank" href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
   <a target="_blank" href="https://discord.gg/mAZRuBzGM3"><img src="https://img.shields.io/badge/chat-on%20discord-7289da.svg?sanitize=true" /></a>
   <a target="_blank" href="https://github.com/udecode/plate/blob/main/LICENSE"><img src="https://badgen.now.sh/badge/license/MIT" /></a>
+  <a target="_blank" href="https://gurubase.io/g/plate"><img src="https://img.shields.io/badge/Gurubase-Ask%20Plate%20Guru-006BFF" alt="Gurubase"></a>
 </div>
 <div align="center">
 <a href="https://console.algora.io/org/Udecode/bounties/new">
