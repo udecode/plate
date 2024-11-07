@@ -1,0 +1,60 @@
+---
+title: resizable
+description: API reference for resizable components.
+---
+
+<ComponentPreview name="playground-demo" id="media" />
+
+### ResizablePanelGroup
+
+A group of resizable panels.
+
+<APIParameters>
+  <APIItem name="className" type="string">
+    Additional classes to apply to the panel group.
+  </APIItem>
+  <APIItem name="...props" type="React.ComponentProps<typeof ResizablePrimitive.PanelGroup>">
+    Additional props to pass to the panel group.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+A component that renders a group of resizable panels.
+
+</APIReturns>
+
+### ResizablePanel
+
+A single resizable panel.
+
+<APIParameters>
+  <APIItem name="...props" type="React.ComponentProps<typeof ResizablePrimitive.Panel>">
+    Additional props to pass to the panel.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+A component that renders a resizable panel.
+
+</APIReturns>
+
+### ResizableHandle
+
+A handle for resizing panels.
+
+<APIParameters>
+  <APIItem name="className" type="string">
+    Additional classes to apply to the handle.
+  </APIItem>
+  <APIItem name="withHandle" type="boolean">
+    Whether to display a visual handle.
+  </APIItem>
+  <APIItem name="...props" type="React.ComponentProps<typeof ResizablePrimitive.PanelResizeHandle>">
+    Additional props to pass to the handle.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+A component that renders a handle for resizing panels.
+
+</APIReturns>

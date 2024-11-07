@@ -1,0 +1,53 @@
+---
+title: Keyboard
+description: Enable keyboard shortcut formatting in the document.
+---
+
+<ComponentPreview name="playground-demo" id="kbd" />
+
+<PackageInfo>
+
+## Features
+
+- Adds support for keyboard shortcut formatting
+- HTML serialization support
+- Preserves KBD tags during paste operations
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-kbd
+```
+
+## Usage
+
+```tsx
+import { KbdPlugin } from '@udecode/plate-kbd';
+```
+
+```tsx
+const plugins = [
+  // ...otherPlugins,
+  KbdPlugin,
+];
+```
+
+## Plugins
+
+### KbdPlugin
+
+Enables keyboard shortcut formatting with HTML serialization support.
+
+<APIOptions>
+<APIItem name="node" type="object">
+  Basic node configuration.
+  
+  - `isLeaf`: `true`
+</APIItem>
+
+<APIItem name="parsers" type="object">
+  HTML parser configuration for KBD tags.
+</APIItem>
+</APIOptions>

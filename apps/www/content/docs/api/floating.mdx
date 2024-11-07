@@ -1,0 +1,45 @@
+---
+title: Floating
+description: API reference for floating components.
+---
+
+`floating` components provide utilities for creating floating UI elements.
+
+### FloatingComponent
+
+A component for creating floating UI elements.
+
+<APIParameters>
+  <APIItem name="className" type="string">
+    Additional classes to apply to the floating component.
+  </APIItem>
+  <APIItem name="...props" type="React.ComponentProps<typeof FloatingPrimitive>">
+    Additional props to pass to the floating component.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+A component that renders a floating UI element.
+
+</APIReturns>
+
+### FloatingHandle
+
+A handle for interacting with floating components.
+
+<APIParameters>
+  <APIItem name="className" type="string">
+    Additional classes to apply to the handle.
+  </APIItem>
+  <APIItem name="withHandle" type="boolean">
+    Whether to display a visual handle.
+  </APIItem>
+  <APIItem name="...props" type="React.ComponentProps<typeof FloatingPrimitive.Handle>">
+    Additional props to pass to the handle.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+A component that renders a handle for interacting with floating components.
+
+</APIReturns>

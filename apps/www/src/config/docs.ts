@@ -471,6 +471,26 @@ export const docsConfig: DocsConfig = {
           label: 'Element',
           title: 'Toggle',
         },
+        {
+          href: '/docs/trailing-block',
+          title: 'Trailing Block',
+        },
+        {
+          href: '/docs/node-id',
+          title: 'Node ID',
+        },
+        {
+          href: '/docs/kbd',
+          title: 'KBD',
+        },
+        {
+          href: '/docs/cursor',
+          title: 'Cursor',
+        },
+        {
+          href: '/docs/delete',
+          title: 'Delete',
+        },
       ],
       title: 'Plugins',
     },
@@ -915,6 +935,16 @@ export const docsConfig: DocsConfig = {
           headings: ['cn', 'withCn', 'withProps', 'withVariants'],
           href: '/docs/api/cn',
           title: 'cn',
+        },
+        {
+          headings: ['cn', 'withCn', 'withProps', 'withVariants'],
+          href: '/docs/api/resizable',
+          title: 'Resizable',
+        },
+        {
+          headings: ['cn', 'withCn', 'withProps', 'withVariants'],
+          href: '/docs/api/floating',
+          title: 'Floating',
         },
       ],
       title: 'API',

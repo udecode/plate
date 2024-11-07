@@ -1,0 +1,53 @@
+---
+title: Trailing Block
+description: Ensure a trailing block is always present in the document.
+---
+
+<ComponentPreview name="playground-demo" id="trailing-block" />
+
+<PackageInfo>
+
+## Features
+
+- Automatically adds a trailing block to the document.
+- Configurable block type and level.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-trailing-block
+```
+
+## Usage
+
+```tsx
+import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
+```
+
+```tsx
+const plugins = [
+  // ...otherPlugins,
+  TrailingBlockPlugin.configure({
+    options: {
+      level: 0, // Level where the trailing block should be
+      type: ParagraphPlugin.key,
+    },
+  }),
+];
+```
+
+## Plugins
+
+### TrailingBlockPlugin
+
+<APIOptions>
+<APIItem name="level" type="number" optional>
+  Level where the trailing node should be, the first level being 0.
+</APIItem>
+
+<APIItem name="type" type="string" optional>
+  Type of the trailing block.
+</APIItem>
+</APIOptions>

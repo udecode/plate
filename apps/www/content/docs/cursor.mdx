@@ -1,0 +1,61 @@
+---
+title: Drag Cursor
+description: Show a cursor indicator during drag operations.
+---
+
+{/* <ComponentPreview name="playground-demo" id="drag-cursor" /> */}
+
+<PackageInfo>
+
+## Features
+
+- Visual cursor feedback during drag operations
+- Customizable cursor appearance
+- Only shows for text drag operations
+- Integrates with Plate's DnD system
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-dnd @udecode/plate-cursor
+```
+
+## Usage
+
+```tsx
+import { DragOverCursorPlugin } from '@udecode/plate-cursor';
+```
+
+```tsx
+const plugins = [
+  // ...otherPlugins,
+  DndPlugin.configure({
+    options: {
+      cursors: {
+        drag: {
+          style: {
+            backgroundColor: 'hsl(222.2 47.4% 11.2%)',
+            width: 3,
+          },
+        },
+      },
+    },
+  }),
+];
+```
+
+## Plugins
+
+### DragOverCursorPlugin
+
+Manages the cursor state during drag operations.
+
+<APIOptions>
+<APIItem name="cursors" type="Record<string, CursorState<CursorData>>">
+  Cursor states configuration object.
+  
+  - Default cursor style includes background color and width
+</APIItem>
+</APIOptions>

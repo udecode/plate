@@ -1,0 +1,76 @@
+---
+title: Node ID
+description: Automatically assign unique IDs to nodes in the document.
+---
+
+{/* <ComponentPreview name="playground-demo" id="node-id" /> */}
+
+<PackageInfo>
+
+## Features
+
+- Automatically assigns unique IDs to nodes
+- Configurable ID generation and storage
+- Handles node operations (insert, split) with ID preservation
+- Optional ID reuse for undo/redo and copy/paste operations
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-node-id
+```
+
+## Usage
+
+```tsx
+import { NodeIdPlugin } from '@udecode/plate-node-id';
+```
+
+```tsx
+const plugins = [
+  // ...otherPlugins,
+  NodeIdPlugin.configure({
+    options: {
+      idKey: 'id',
+      filterText: true,
+      idCreator: () => Math.random().toString(36).slice(2, 7),
+    },
+  }),
+];
+```
+
+## Plugins
+
+### NodeIdPlugin
+
+<APIOptions>
+<APIItem name="disableInsertOverrides" type="boolean" optional>
+  When true, disables using existing IDs during node insertion, even if they don't exist in the document.
+</APIItem>
+
+<APIItem name="filterText" type="boolean" optional>
+  Filter Text nodes from receiving IDs.
+  
+  - **Default:** `true`
+</APIItem>
+
+<APIItem name="idCreator" type="() => any" optional>
+  Function to generate unique IDs.
+  
+  - **Default:** `() => Math.random().toString(36).slice(2, 7)`
+</APIItem>
+
+<APIItem name="idKey" type="string" optional>
+  Node key used to store the ID.
+  
+  - **Default:** `'id'`
+</APIItem>
+
+<APIItem name="reuseId" type="boolean" optional>
+  Reuse IDs on undo/redo and copy/pasting if not existing in the document.
+  
+  - **Default:** `false`
+</APIItem>
+</APIOptions>
