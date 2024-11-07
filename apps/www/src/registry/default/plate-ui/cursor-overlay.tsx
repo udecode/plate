@@ -29,12 +29,11 @@ type CursorOverlayConfig = PluginConfig<
   }
 >;
 
-const getResetCursorsHandler =
+const getRemoveCursorHandler =
   (key: string): DOMHandler<CursorOverlayConfig> =>
   ({ editor, plugin }) => {
     const newCursors = { ...editor.getOptions(plugin).cursors };
     delete newCursors[key];
-    console.log(newCursors);
 
     editor.setOption(plugin, 'cursors', newCursors);
   };
@@ -59,9 +58,9 @@ export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
       if (!editor.selection) return;
 
       const relatedTarget = event.relatedTarget as HTMLElement;
-      const allowOverlay = relatedTarget?.dataset?.plateOverlay === 'true';
+      const enabled = relatedTarget?.dataset?.plateOverlay === 'true';
 
-      if (!allowOverlay) return;
+      if (!enabled) return;
 
       setOption('cursors', {
         blur: {
@@ -70,8 +69,8 @@ export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
         },
       });
     },
-    onDragEnd: getResetCursorsHandler('drag'),
-    onDragLeave: getResetCursorsHandler('drag'),
+    onDragEnd: getRemoveCursorHandler('drag'),
+    onDragLeave: getRemoveCursorHandler('drag'),
     onDragOver: ({ editor, event, setOption }) => {
       if (editor.getOptions(DndPlugin).isDragging) return;
 
@@ -86,8 +85,8 @@ export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
         },
       });
     },
-    onDrop: getResetCursorsHandler('drag'),
-    onFocus: getResetCursorsHandler('blur'),
+    onDrop: getRemoveCursorHandler('drag'),
+    onFocus: getRemoveCursorHandler('blur'),
   },
 });
 
