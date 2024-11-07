@@ -22,9 +22,9 @@ export const useTocElementState = () => {
   const containerRef = React.useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    const container = scrollContainerSelector
-      ? document.querySelector(scrollContainerSelector)
-      : toDOMNode(editor, editor)!;
+    const container = document.querySelector(
+      scrollContainerSelector ?? `#${editor.key}`
+    );
 
     if (!container) return;
 

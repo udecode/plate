@@ -12,7 +12,7 @@ export type TocConfig = PluginConfig<
     isScroll: boolean;
     topOffset: number;
     queryHeading?: (editor: SlateEditor) => Heading[];
-    scrollContainerSelector?: string;
+    scrollContainerSelector?: string | null;
   }
 >;
 
@@ -21,7 +21,7 @@ export const BaseTocPlugin = createTSlatePlugin<TocConfig>({
   node: { isElement: true, isVoid: true },
   options: {
     isScroll: true,
-    scrollContainerSelector: '#scroll_container',
+    scrollContainerSelector: null,
     topOffset: 80,
   },
 });

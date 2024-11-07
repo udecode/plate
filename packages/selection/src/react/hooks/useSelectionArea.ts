@@ -13,7 +13,11 @@ export const useSelectionArea = () => {
 
   React.useEffect(() => {
     const selection = new SelectionArea({
+      boundaries: `#${editor.key}`,
+      container: `#${editor.key}`,
       document: window.document,
+      selectables: `#${editor.key} .slate-selectable`,
+      selectionAreaClass: 'slate-selection-area',
       ...areaOptions,
     })
       .on('beforestart', () => {

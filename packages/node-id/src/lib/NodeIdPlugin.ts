@@ -2,6 +2,7 @@ import {
   type PluginConfig,
   type QueryNodeOptions,
   createTSlatePlugin,
+  nanoid,
 } from '@udecode/plate-common';
 
 import { withNodeId } from './withNodeId';
@@ -54,7 +55,7 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
   options: {
     filter: () => true,
     filterText: true,
-    idCreator: () => Math.random().toString(36).slice(2, 7),
+    idCreator: () => nanoid(),
     idKey: 'id',
   },
 });
