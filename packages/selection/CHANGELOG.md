@@ -1,5 +1,11 @@
 # @udecode/plate-selection
 
+## 39.3.7
+
+### Patch Changes
+
+- [#3740](https://github.com/udecode/plate/pull/3740) by [@felixfeng33](https://github.com/felixfeng33) – Fix enter can't unselect.
+
 ## 39.3.6
 
 ### Patch Changes
