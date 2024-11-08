@@ -182,17 +182,17 @@ const plugins = [
     },
     render: { afterEditable: () => <AIMenu /> },
   }),
-  SelectionOverlayPlugin,
+  CursorOverlayPlugin,
 ];
 ```
 
 - [AIMenu](/docs/components/ai-menu)
 
-The [SelectionOverlayPlugin](https://pro.platejs.org/docs/components/cursor-overlay):
+The [CursorOverlayPlugin](/docs/cursor-overlay):
 
 - Maintains selection highlight when editor loses focus
 - Essential for AI menu and other external input interactions
-- Shows selection overlay when focusing elements with `data-plate-overlay="true"` attribute
+- Shows selection overlay when focusing elements with `data-plate-focus="true"` attribute
 
 ### AI SDK
 

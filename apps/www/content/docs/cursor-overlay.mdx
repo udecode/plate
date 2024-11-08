@@ -1,0 +1,118 @@
+---
+title: Cursor Overlay
+description: A visual overlay for cursors and selections.
+docs:
+  - route: /docs/components/cursor-overlay
+    title: Cursor Overlay
+---
+
+<ComponentPreview name="playground-demo" id="cursor-overlay" />
+
+<PackageInfo>
+
+The Cursor Overlay feature provides visual feedback for selections and cursor positions, particularly useful for maintaining context when the editor loses focus or during drag operations.
+
+## Features
+
+- Maintains selection highlight when another element is focused
+- Shows cursor position during drag operations
+- Customizable styling for cursors and selections
+- Essential for external UI interactions (e.g. link toolbar, AI combobox)
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-selection
+```
+
+## Usage
+
+```tsx
+import { CursorOverlayPlugin } from '@udecode/plate-selection/react';
+
+const plugins = [
+  // ...otherPlugins,
+  CursorOverlayPlugin,
+];
+```
+
+## Styling
+
+- [CursorOverlay](/docs/components/cursor-overlay) should be rendered inside the editor container. The `containerRef` is required to ensure the overlay is positioned correctly.
+
+```tsx lines={12}
+import { CursorOverlay } from '@/registry/default/plate-ui/cursor-overlay';
+
+export function PlateEditor() {
+  const containerRef = useRef(null);
+  const editor = usePlateEditor();
+
+  return (
+    <Plate editor={editor}>
+      <EditorContainer ref={containerRef} variant="demo">
+        <Editor variant="demo" />
+
+        <CursorOverlay containerRef={containerRef} />
+      </EditorContainer>
+    </Plate>
+  );
+}
+```
+
+## Plugins
+
+### CursorOverlayPlugin
+
+Plugin that manages cursor and selection overlays.
+
+<APIOptions>
+<APIItem name="cursors" type="Record<string, CursorState<CursorData>>">
+Object containing cursor states. Default: `{}`
+</APIItem>
+</APIOptions>
+
+## API
+
+### editor.api.cursorOverlay.addCursor
+
+Adds a cursor overlay with the specified key and state.
+
+<APIParameters>
+  <APIItem name="key" type="string">
+    Unique identifier for the cursor (e.g., 'blur', 'drag', 'custom').
+  </APIItem>
+  <APIItem name="cursor" type="CursorState<CursorData>">
+    The cursor state including selection and optional styling data.
+  </APIItem>
+</APIParameters>
+
+### editor.api.cursorOverlay.removeCursor
+
+Removes a cursor overlay by its key.
+
+<APIParameters>
+  <APIItem name="key" type="string">
+    The key of the cursor to remove.
+  </APIItem>
+</APIParameters>
+
+## API Components
+
+### CursorOverlay
+
+<APIProps>
+  <APIItem name="cursors" type="Record<string, CursorState<CursorData>>">
+    Object containing cursor states for different interactions (blur, drag, etc.).
+  </APIItem>
+  <APIItem name="onRenderCursor" type="(props: CursorProps) => React.ReactNode">
+    Custom render function for cursor visualization.
+  </APIItem>
+</APIProps>
+
+## Hooks
+
+### useCursorOverlayPositions
+
+Returns cursor and selection positions for the current editor state.

@@ -86,7 +86,6 @@
     "@udecode/plate-common": "workspace:^",
     "@udecode/plate-core": "workspace:^",
     "@udecode/plate-csv": "workspace:^",
-    "@udecode/plate-cursor": "workspace:^",
     "@udecode/plate-date": "workspace:^",
     "@udecode/plate-diff": "workspace:^",
     "@udecode/plate-dnd": "workspace:^",

@@ -1,94 +1,17 @@
 'use client';
 
-import React, { useEffect } from 'react';
-
-import type { PluginConfig } from '@udecode/plate-common';
+import React from 'react';
 
 import { cn } from '@udecode/cn';
-import {
-  type DOMHandler,
-  createTPlatePlugin,
-  findEventRange,
-  useEditorPlugin,
-  useEditorRef,
-} from '@udecode/plate-common/react';
+import { isCollapsed } from '@udecode/plate-common';
+import { useEditorRef } from '@udecode/plate-common/react';
 import {
   type CursorData,
   type CursorOverlayProps,
   type CursorProps,
-  type CursorState,
+  CursorOverlayPlugin,
   CursorOverlay as CursorOverlayPrimitive,
-} from '@udecode/plate-cursor';
-import { DndPlugin } from '@udecode/plate-dnd';
-import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
-
-type CursorOverlayConfig = PluginConfig<
-  'cursorOverlay',
-  {
-    cursors: Record<string, CursorState<CursorData>>;
-  }
->;
-
-const getRemoveCursorHandler =
-  (key: string): DOMHandler<CursorOverlayConfig> =>
-  ({ editor, plugin }) => {
-    const newCursors = { ...editor.getOptions(plugin).cursors };
-    delete newCursors[key];
-
-    editor.setOption(plugin, 'cursors', newCursors);
-  };
-
-export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
-  key: 'cursorOverlay',
-  options: { cursors: {} },
-  useHooks: ({ setOption }) => {
-    const { editor } = useEditorPlugin(BlockSelectionPlugin);
-    const isSelecting = editor.useOption(BlockSelectionPlugin, 'isSelecting');
-
-    useEffect(() => {
-      if (isSelecting) {
-        setTimeout(() => {
-          setOption('cursors', {});
-        }, 0);
-      }
-    }, [isSelecting, setOption]);
-  },
-  handlers: {
-    onBlur: ({ editor, event, setOption }) => {
-      if (!editor.selection) return;
-
-      const relatedTarget = event.relatedTarget as HTMLElement;
-      const enabled = relatedTarget?.dataset?.plateOverlay === 'true';
-
-      if (!enabled) return;
-
-      setOption('cursors', {
-        blur: {
-          key: 'blur',
-          selection: editor.selection,
-        },
-      });
-    },
-    onDragEnd: getRemoveCursorHandler('drag'),
-    onDragLeave: getRemoveCursorHandler('drag'),
-    onDragOver: ({ editor, event, setOption }) => {
-      if (editor.getOptions(DndPlugin).isDragging) return;
-
-      const range = findEventRange(editor, event);
-
-      if (!range) return;
-
-      setOption('cursors', {
-        drag: {
-          key: 'drag',
-          selection: range,
-        },
-      });
-    },
-    onDrop: getRemoveCursorHandler('drag'),
-    onFocus: getRemoveCursorHandler('blur'),
-  },
-});
+} from '@udecode/plate-selection/react';
 
 export function Cursor({
   id,
@@ -97,27 +20,32 @@ export function Cursor({
   data,
   disableCaret,
   disableSelection,
+  selection,
   selectionRects,
 }: CursorProps<CursorData>) {
   const { style, selectionStyle = style } = data ?? ({} as CursorData);
+  const isCursor = isCollapsed(selection);
 
   return (
     <>
       {!disableSelection &&
-        selectionRects.map((position, i) => (
-          <div
-            key={i}
-            className={cn(
-              'pointer-events-none absolute z-10',
-              id === 'blur' && 'bg-brand/25',
-              classNames?.selectionRect
-            )}
-            style={{
-              ...selectionStyle,
-              ...position,
-            }}
-          />
-        ))}
+        selectionRects.map((position, i) => {
+          return (
+            <div
+              key={i}
+              className={cn(
+                'pointer-events-none absolute z-10',
+                id === 'selection' && 'bg-brand/25',
+                id === 'selection' && isCursor && 'bg-brand',
+                classNames?.selectionRect
+              )}
+              style={{
+                ...selectionStyle,
+                ...position,
+              }}
+            />
+          );
+        })}
       {!disableCaret && caretPosition && (
         <div
           className={cn(
@@ -143,6 +71,7 @@ export function CursorOverlay({ cursors, ...props }: CursorOverlayProps) {
       {...props}
       onRenderCursor={Cursor}
       cursors={allCursors}
+      minSelectionWidth={1}
     />
   );
 }

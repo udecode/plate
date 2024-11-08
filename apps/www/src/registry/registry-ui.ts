@@ -204,18 +204,14 @@ export const uiComponents: Registry = [
     type: 'registry:ui',
   },
   {
-    dependencies: [
-      '@udecode/plate-cursor',
-      '@udecode/plate-dnd',
-      '@udecode/plate-selection',
-    ],
+    dependencies: ['@udecode/plate-dnd', '@udecode/plate-selection'],
     doc: {
-      description: 'A visual overlay for collaborative cursors and selections.',
+      description: 'A visual overlay for cursors and selections.',
       docs: [
-        // { route: '/docs/ai', title: 'AI' },
-        {
-          route: siteConfig.links.plateProComponent('cursor-overlay'),
-        },
+        { route: '/docs/cursor-overlay', title: 'Cursor Overlay' },
+        // {
+        //   route: siteConfig.links.plateProComponent('cursor-overlay'),
+        // },
       ],
       examples: ['ai-demo'],
     },

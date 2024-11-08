@@ -87,10 +87,6 @@ export const customizerComponents = {
     href: '/docs/components/context-menu',
     title: 'Context Menu',
   },
-  cursorOverlay: {
-    href: '/docs/components/cursor-overlay',
-    title: 'Cursor Overlay',
-  },
   dateElement: {
     href: '/docs/components/date-element',
     label: 'Element',

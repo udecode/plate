@@ -26,7 +26,10 @@ import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
-import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import {
+  BlockSelectionPlugin,
+  CursorOverlayPlugin,
+} from '@udecode/plate-selection/react';
 
 import { AIMenu } from '@/registry/default/plate-ui/ai-menu';
 import { BlockquoteElement } from '@/registry/default/plate-ui/blockquote-element';
@@ -34,7 +37,6 @@ import { CodeBlockElement } from '@/registry/default/plate-ui/code-block-element
 import { CodeLeaf } from '@/registry/default/plate-ui/code-leaf';
 import { CodeLineElement } from '@/registry/default/plate-ui/code-line-element';
 import { CodeSyntaxLeaf } from '@/registry/default/plate-ui/code-syntax-leaf';
-import { CursorOverlayPlugin } from '@/registry/default/plate-ui/cursor-overlay';
 import { HeadingElement } from '@/registry/default/plate-ui/heading-element';
 import { HrElement } from '@/registry/default/plate-ui/hr-element';
 import { LinkElement } from '@/registry/default/plate-ui/link-element';
