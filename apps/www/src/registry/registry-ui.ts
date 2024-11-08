@@ -207,7 +207,7 @@ export const uiComponents: Registry = [
     doc: {
       description: 'A visual overlay for collaborative cursors and selections.',
       docs: [
-        // { route: '/docs/ai', title: 'AI' },
+        // { route: '/docs/cursor' },
         {
           route: siteConfig.links.plateProComponent('cursor-overlay'),
         },
@@ -414,6 +414,7 @@ import { withDraggables } from './withDraggables';`,
     doc: {
       description: 'A set of formatting buttons for the floating toolbar.',
       docs: [
+        { route: '/docs/api/floating' },
         {
           route: siteConfig.links.plateProComponent('floating-toolbar-buttons'),
         },
@@ -438,6 +439,7 @@ import { withDraggables } from './withDraggables';`,
     doc: {
       description: 'A contextual toolbar that appears over selected text.',
       docs: [
+        { route: '/docs/api/floating' },
         {
           route: siteConfig.links.plateProComponent('floating-toolbar'),
         },
@@ -762,6 +764,7 @@ import { withDraggables } from './withDraggables';`,
     doc: {
       description: 'A resizable wrapper with resize handles.',
       docs: [
+        { route: '/docs/api/resizable' },
         {
           route: siteConfig.links.plateProComponent('resizable'),
         },
@@ -1054,6 +1057,7 @@ export const uiNodes: Registry = [
     dependencies: [],
     doc: {
       description: 'A text highlighter with customizable colors.',
+      docs: [{ route: '/docs/highlight' }],
       examples: ['highlight-demo'],
     },
     files: ['plate-ui/highlight-leaf.tsx'],
@@ -1123,6 +1127,7 @@ export const uiNodes: Registry = [
     dependencies: ['@udecode/plate-kbd'],
     doc: {
       description: 'A component for styling keyboard shortcuts.',
+      docs: [{ route: '/docs/kbd' }],
       examples: ['kbd-demo'],
     },
     files: ['plate-ui/kbd-leaf.tsx'],
@@ -1243,6 +1248,7 @@ export const uiNodes: Registry = [
     doc: {
       description: 'A component that highlights search results in text.',
       // examples: ['find-replace-demo'],
+      docs: [{ route: '/docs/highlight' }],
     },
     files: ['plate-ui/search-highlight-leaf.tsx'],
     name: 'search-highlight-leaf',
@@ -1263,6 +1269,7 @@ export const uiNodes: Registry = [
     doc: {
       description: 'A command input component for inserting various elements.',
       docs: [
+        { route: '/docs/slash-command' },
         {
           route: siteConfig.links.plateProComponent('slash-input-element'),
         },
