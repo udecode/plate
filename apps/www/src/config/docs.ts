@@ -481,11 +481,8 @@ export const docsConfig: DocsConfig = {
         },
         {
           href: '/docs/kbd',
-          title: 'KBD',
-        },
-        {
-          href: '/docs/cursor',
-          title: 'Cursor',
+          label: 'Leaf',
+          title: 'Keyboard Input',
         },
         {
           href: '/docs/delete',

@@ -366,6 +366,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     label: 'Delete',
     npmPackage: '@udecode/plate-select',
     pluginFactory: 'DeletePlugin',
+    route: customizerPlugins.delete.route,
   },
   [DndPlugin.key]: {
     id: DndPlugin.key,
@@ -735,7 +736,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     label: 'Id',
     npmPackage: '@udecode/plate-node-id',
     pluginFactory: 'NodeIdPlugin',
-    // route: settingValues.nodeid.route,
+    route: customizerPlugins.nodeId.route,
   },
   [NormalizeTypesPlugin.key]: {
     id: NormalizeTypesPlugin.key,

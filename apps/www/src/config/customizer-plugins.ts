@@ -34,6 +34,7 @@ import { MentionPlugin } from '@udecode/plate-mention/react';
 import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { ResetNodePlugin } from '@udecode/plate-reset-node/react';
+import { DeletePlugin } from '@udecode/plate-select';
 import {
   BlockMenuPlugin,
   BlockSelectionPlugin,
@@ -201,6 +202,13 @@ export const customizerPlugins = {
     route: '/docs/date',
     value: dateValue,
   },
+  delete: {
+    id: 'delete',
+    label: 'Delete',
+    plugins: [DeletePlugin.key],
+    route: '/docs/delete',
+    value: [],
+  },
   dnd: {
     id: 'dnd',
     label: 'Drag & Drop',
@@ -333,6 +341,13 @@ export const customizerPlugins = {
     plugins: [MentionPlugin.key],
     route: '/docs/mention',
     value: mentionValue,
+  },
+  nodeId: {
+    id: 'node-id',
+    label: 'Node Id',
+    plugins: [NodeIdPlugin.key],
+    route: '/docs/node-id',
+    value: [],
   },
   placeholder: {
     id: 'placeholder',
