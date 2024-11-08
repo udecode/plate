@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { NativeTypes, getEmptyImage } from 'react-dnd-html5-backend';
 
 import type { DropTargetMonitor } from 'react-dnd';
@@ -74,9 +75,12 @@ export const useDndNode = ({
   } else {
     preview(drop(nodeRef));
   }
-  if (!isOver && dropLine) {
-    setDropLine('');
-  }
+
+  useEffect(() => {
+    if (!isOver && dropLine) {
+      setDropLine('');
+    }
+  }, [isOver, dropLine, setDropLine]);
 
   return {
     dragRef,
