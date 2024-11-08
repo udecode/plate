@@ -37,6 +37,7 @@ import { ResetNodePlugin } from '@udecode/plate-reset-node/react';
 import {
   BlockMenuPlugin,
   BlockSelectionPlugin,
+  CursorOverlayPlugin,
 } from '@udecode/plate-selection/react';
 import { SlashPlugin } from '@udecode/plate-slash-command/react';
 import { TabbablePlugin } from '@udecode/plate-tabbable/react';
@@ -85,7 +86,6 @@ import { softBreakValue } from '@/plate/demo/values/softBreakValue';
 import { tabbableValue } from '@/plate/demo/values/tabbableValue';
 import { tableValue } from '@/plate/demo/values/tableValue';
 import { toggleValue } from '@/plate/demo/values/toggleValue';
-import { CursorOverlayPlugin } from '@/registry/default/plate-ui/cursor-overlay';
 
 export type ValueId = keyof typeof customizerPlugins | 'tableMerge';
 

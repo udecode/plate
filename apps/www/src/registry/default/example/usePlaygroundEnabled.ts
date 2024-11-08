@@ -49,14 +49,16 @@ import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { ResetNodePlugin } from '@udecode/plate-reset-node/react';
 import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
-import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import {
+  BlockSelectionPlugin,
+  CursorOverlayPlugin,
+} from '@udecode/plate-selection/react';
 import { TabbablePlugin } from '@udecode/plate-tabbable/react';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
 import { settingsStore } from '@/components/context/settings-store';
-import { CursorOverlayPlugin } from '@/registry/default/plate-ui/cursor-overlay';
 
 export function usePlaygroundEnabled(id?: string) {
   const enabled = settingsStore.use.checkedPlugins();

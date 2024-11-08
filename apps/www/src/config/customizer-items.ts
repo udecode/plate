@@ -58,6 +58,7 @@ import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
 import {
   BlockMenuPlugin,
   BlockSelectionPlugin,
+  CursorOverlayPlugin,
 } from '@udecode/plate-selection/react';
 import { SlashPlugin } from '@udecode/plate-slash-command/react';
 import { TabbablePlugin } from '@udecode/plate-tabbable/react';
@@ -71,7 +72,6 @@ import {
 } from '@/config/customizer-badges';
 import { customizerComponents } from '@/config/customizer-components';
 import { customizerPlugins } from '@/config/customizer-plugins';
-import { CursorOverlayPlugin } from '@/registry/default/plate-ui/cursor-overlay';
 
 export type SettingPlugin = {
   id: string;

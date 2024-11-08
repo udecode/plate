@@ -2,6 +2,7 @@
 'use client';
 
 import React from 'react';
+import { useMounted } from 'react-tweet';
 
 import type { TEditor } from '@udecode/plate-common';
 import type { DropTargetMonitor } from 'react-dnd';
@@ -9,6 +10,7 @@ import type { DropTargetMonitor } from 'react-dnd';
 import { cn, withRef } from '@udecode/cn';
 import {
   type PlateElementProps,
+  MemoizedChildren,
   useEditorPlugin,
   useEditorRef,
   withHOC,
@@ -16,6 +18,7 @@ import {
 import {
   type DragItemNode,
   DraggableProvider,
+  useDraggable,
   useDraggableGutter,
   useDraggableState,
   useDropLine,
@@ -56,48 +59,46 @@ export const Draggable = withHOC(
       const { children, element } = props;
 
       const state = useDraggableState({ element, onDropHandler });
-      // const { isDragging } = state;
-      // const { previewRef, handleRef } = useDraggable(state);
-      // const mounted = useMounted();
+      const { isDragging } = state;
+      const { previewRef, handleRef } = useDraggable(state);
+      const mounted = useMounted();
 
-      return children;
+      return (
+        <div
+          ref={ref}
+          className={cn(
+            'relative',
+            isDragging && 'opacity-50',
+            'group',
+            className
+          )}
+        >
+          <Gutter>
+            <div className={cn('slate-blockToolbarWrapper', 'flex h-[1.5em]')}>
+              <div
+                className={cn(
+                  'slate-blockToolbar',
+                  'pointer-events-auto mr-1 flex items-center'
+                )}
+              >
+                <div
+                  ref={handleRef}
+                  className="size-4"
+                  data-key={mounted ? (element.id as string) : undefined}
+                >
+                  <DragHandle />
+                </div>
+              </div>
+            </div>
+          </Gutter>
 
-      // return (
-      //   <div
-      //     ref={ref}
-      //     className={cn(
-      //       'relative',
-      //       isDragging && 'opacity-50',
-      //       'group',
-      //       className
-      //     )}
-      //   >
-      //     {/* <Gutter>
-      //       <div className={cn('slate-blockToolbarWrapper', 'flex h-[1.5em]')}>
-      //         <div
-      //           className={cn(
-      //             'slate-blockToolbar',
-      //             'pointer-events-auto mr-1 flex items-center'
-      //           )}
-      //         >
-      //           <div
-      //             ref={handleRef}
-      //             className="size-4"
-      //             data-key={mounted ? (element.id as string) : undefined}
-      //           >
-      //             <DragHandle />
-      //           </div>
-      //         </div>
-      //       </div>
-      //     </Gutter> */}
+          <div ref={previewRef} className="slate-blockWrapper">
+            <MemoizedChildren>{children}</MemoizedChildren>
 
-      //     <div ref={previewRef} className="slate-blockWrapper">
-      //       <MemoizedChildren>{children}</MemoizedChildren>
-
-      //       <DropLine />
-      //     </div>
-      //   </div>
-      // );
+            <DropLine />
+          </div>
+        </div>
+      );
     }
   )
 );

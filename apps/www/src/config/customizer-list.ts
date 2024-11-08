@@ -51,6 +51,7 @@ import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
 import {
   BlockMenuPlugin,
   BlockSelectionPlugin,
+  CursorOverlayPlugin,
 } from '@udecode/plate-selection/react';
 import { SlashPlugin } from '@udecode/plate-slash-command/react';
 import { TabbablePlugin } from '@udecode/plate-tabbable/react';
@@ -60,7 +61,6 @@ import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 import { uniqBy } from 'lodash';
 
 import { customizerItems } from '@/config/customizer-items';
-import { CursorOverlayPlugin } from '@/registry/default/plate-ui/cursor-overlay';
 
 export const customizerList = [
   {
