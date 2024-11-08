@@ -14,6 +14,21 @@ describe('deserializeMd', () => {
     plugins: [MarkdownPlugin],
   });
 
+  // TODO
+  // it('should deserialize strikethrough', () => {
+  //   const input = 'This is ~~strikethrough~~.';
+
+  //   const output = (
+  //     <fragment>
+  //       <hp>
+  //         This is <htext strikethrough>strikethrough</htext>.
+  //       </hp>
+  //     </fragment>
+  //   );
+
+  //   expect(deserializeMd(editor, input)).toEqual(output);
+  // });
+
   it('should deserialize >>> to blockquote', () => {
     const input = '>>>a';
 
