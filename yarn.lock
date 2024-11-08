@@ -6197,7 +6197,7 @@ __metadata:
   dependencies:
     "@udecode/plate-combobox": "npm:39.0.0"
     "@udecode/plate-markdown": "npm:39.2.0"
-    "@udecode/plate-selection": "npm:39.3.5"
+    "@udecode/plate-selection": "npm:39.3.7"
     ai: "npm:^3.4.10"
     lodash: "npm:^4.17.21"
   peerDependencies:
@@ -6485,7 +6485,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-cursor@workspace:^, @udecode/plate-cursor@workspace:packages/cursor":
+"@udecode/plate-cursor@workspace:packages/cursor":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-cursor@workspace:packages/cursor"
   dependencies:
@@ -6871,6 +6871,7 @@ __metadata:
   dependencies:
     "@udecode/plate-common": "workspace:^"
     lodash: "npm:^4.17.21"
+    remark-gfm: "npm:4.0.0"
     remark-parse: "npm:^9.0.0"
     unified: "npm:^11.0.5"
   peerDependencies:
@@ -7035,7 +7036,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-selection@npm:39.3.5, @udecode/plate-selection@workspace:^, @udecode/plate-selection@workspace:packages/selection":
+"@udecode/plate-selection@npm:39.3.7, @udecode/plate-selection@workspace:^, @udecode/plate-selection@workspace:packages/selection":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-selection@workspace:packages/selection"
   dependencies:
@@ -7245,7 +7246,7 @@ __metadata:
     "@udecode/plate-reset-node": "npm:39.0.0"
     "@udecode/plate-resizable": "npm:39.1.6"
     "@udecode/plate-select": "npm:39.0.0"
-    "@udecode/plate-selection": "npm:39.3.5"
+    "@udecode/plate-selection": "npm:39.3.7"
     "@udecode/plate-slash-command": "npm:39.0.0"
     "@udecode/plate-suggestion": "npm:39.0.0"
     "@udecode/plate-tabbable": "npm:39.0.0"
@@ -18300,7 +18301,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"remark-gfm@npm:^4.0.0":
+"remark-gfm@npm:4.0.0, remark-gfm@npm:^4.0.0":
   version: 4.0.0
   resolution: "remark-gfm@npm:4.0.0"
   dependencies:
@@ -21859,7 +21860,6 @@ __metadata:
     "@udecode/plate-common": "workspace:^"
     "@udecode/plate-core": "workspace:^"
     "@udecode/plate-csv": "workspace:^"
-    "@udecode/plate-cursor": "workspace:^"
     "@udecode/plate-date": "workspace:^"
     "@udecode/plate-diff": "workspace:^"
     "@udecode/plate-dnd": "workspace:^"
