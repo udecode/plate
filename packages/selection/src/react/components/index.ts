@@ -3,3 +3,4 @@
  */
 
 export * from './BlockSelectable';
+export * from './CursorOverlay';
