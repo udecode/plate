@@ -4,7 +4,7 @@
 
 export * from './useBlockSelected';
 export * from './useBlockSelectionNodes';
-export * from './useCursorOverlayPositions';
+export * from './useCursorOverlay';
 export * from './useIsSelecting';
 export * from './useRefreshOnResize';
 export * from './useRequestReRender';

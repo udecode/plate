@@ -24,17 +24,14 @@ export type CursorOverlayConfig = PluginConfig<
 >;
 
 type CursorOverlayApi = {
-  addCursor: (
-    key: string,
-    cursor: Omit<CursorState<CursorData>, 'key'>
-  ) => void;
-  removeCursor: (key: (string & {}) | 'drag' | 'selection') => void;
+  addCursor: (id: string, cursor: Omit<CursorState<CursorData>, 'id'>) => void;
+  removeCursor: (id: (string & {}) | 'drag' | 'selection') => void;
 };
 
 const getRemoveCursorHandler =
-  (key: string): DOMHandler<CursorOverlayConfig> =>
+  (id: string): DOMHandler<CursorOverlayConfig> =>
   ({ api }) => {
-    api.cursorOverlay.removeCursor(key);
+    api.cursorOverlay.removeCursor(id);
   };
 
 export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
@@ -42,24 +39,41 @@ export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
   options: { cursors: {} },
 })
   .extendApi<CursorOverlayApi>(({ editor, plugin }) => ({
-    addCursor: (key, cursor) => {
+    addCursor: (id, cursor) => {
       const newCursors = { ...editor.getOptions(plugin).cursors };
-      newCursors[key] = {
-        key,
+      newCursors[id] = {
+        id,
         ...cursor,
       };
       editor.setOption(plugin, 'cursors', newCursors);
     },
-    removeCursor: (key) => {
+    removeCursor: (id) => {
       const newCursors = { ...editor.getOptions(plugin).cursors };
 
-      if (!newCursors[key]) return;
+      if (!newCursors[id]) return;
 
-      delete newCursors[key];
+      delete newCursors[id];
       editor.setOption(plugin, 'cursors', newCursors);
     },
   }))
   .extend(() => ({
+    extendEditor: ({ api, editor, getOptions }) => {
+      const { setSelection } = editor;
+
+      editor.setSelection = (...args) => {
+        if (getOptions().cursors?.selection) {
+          setTimeout(() => {
+            api.cursorOverlay.addCursor('selection', {
+              selection: editor.selection,
+            });
+          }, 0);
+        }
+
+        setSelection(...args);
+      };
+
+      return editor;
+    },
     useHooks: ({ api, setOption }) => {
       const { editor } = useEditorPlugin(BlockSelectionPlugin);
       const isSelecting = editor.useOption(BlockSelectionPlugin, 'isSelecting');
@@ -94,6 +108,10 @@ export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
         ) {
           return;
         }
+
+        const types = event.dataTransfer?.types || [];
+
+        if (types.some((type) => type.startsWith('Files'))) return;
 
         const range = findEventRange(editor, event);
 

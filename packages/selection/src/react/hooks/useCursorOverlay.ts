@@ -8,24 +8,52 @@ import {
   useIsomorphicLayoutEffect,
 } from '@udecode/plate-common/react';
 
-import type { CursorOverlayProps } from '../components/CursorOverlay';
-import type { CursorState, SelectionRect } from '../types';
+import type { CursorOverlayState, CursorState, SelectionRect } from '../types';
 
+import { CursorOverlayPlugin } from '../CursorOverlayPlugin';
 import { getCursorOverlayState } from '../queries/getCursorOverlayState';
 import { getSelectionRects } from '../queries/getSelectionRects';
 import { useRefreshOnResize } from './useRefreshOnResize';
+
+export type UseCursorOverlayOptions = {
+  /**
+   * Container the overlay will be rendered in. If set, all returned overlay
+   * positions will be relative to this container.
+   */
+  containerRef?: React.RefObject<HTMLElement>;
+
+  /**
+   * Minimum width of a selection rect.
+   *
+   * @default 1
+   */
+  minSelectionWidth?: number;
+
+  /**
+   * Whether to refresh the cursor overlay positions on container resize.
+   *
+   * @default true
+   */
+  refreshOnResize?: boolean;
+};
 
 export const FROZEN_EMPTY_ARRAY = Object.freeze(
   []
 ) as unknown as SelectionRect[];
 
-export const useCursorOverlayPositions = <TCursorData extends UnknownObject>({
+export const useCursorOverlay = <TCursorData extends UnknownObject>({
   containerRef,
-  cursors: cursorStates,
   minSelectionWidth = 1,
   refreshOnResize = true,
-}: CursorOverlayProps<TCursorData> = {}) => {
+}: UseCursorOverlayOptions = {}): {
+  cursors: CursorOverlayState<TCursorData>[];
+  refresh: () => void;
+} => {
   const editor = useEditorRef();
+  const cursorStates = editor.useOption(
+    CursorOverlayPlugin,
+    'cursors'
+  ) as Record<string, CursorState<TCursorData>>;
 
   const selectionRectCache = React.useRef<WeakMap<Range, SelectionRect[]>>(
     new WeakMap()

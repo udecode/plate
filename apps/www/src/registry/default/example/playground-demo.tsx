@@ -22,6 +22,7 @@ import { isEnabled } from '@/plate/demo/is-enabled';
 import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
 import { autoformatPlugin as autoformatListPlugin } from '@/registry/default/components/editor/plugins/autoformat-list-plugin';
 import { autoformatPlugin } from '@/registry/default/components/editor/plugins/autoformat-plugin';
+import { copilotPlugins } from '@/registry/default/components/editor/plugins/copilot-plugins';
 import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';
 import { tabbablePlugin } from '@/registry/default/components/editor/plugins/tabbable-plugin';
 import { CommentsPopover } from '@/registry/default/plate-ui/comments-popover';
@@ -43,6 +44,7 @@ export const usePlaygroundEditor = (id: any = '') => {
   const editorId = id || 'playground-' + key;
 
   const plugins: any[] = [
+    ...copilotPlugins,
     ...editorPlugins,
 
     id === 'list' ? autoformatListPlugin : autoformatPlugin,

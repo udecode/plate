@@ -2,7 +2,6 @@
 'use client';
 
 import React from 'react';
-import { useMounted } from 'react-tweet';
 
 import type { TEditor } from '@udecode/plate-common';
 import type { DropTargetMonitor } from 'react-dnd';
@@ -26,6 +25,8 @@ import {
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 import { GripVertical } from 'lucide-react';
 import { useSelected } from 'slate-react';
+
+import { useMounted } from '@/registry/default/hooks/use-mounted';
 
 import {
   Tooltip,

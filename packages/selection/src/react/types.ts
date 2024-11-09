@@ -19,8 +19,8 @@ export type CaretPosition = {
 };
 
 export type CursorState<TCursorData extends UnknownObject = UnknownObject> = {
+  id: any;
   selection: Range | null;
-  key?: any;
   data?: TCursorData;
 };
 

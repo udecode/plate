@@ -2,21 +2,21 @@ import React from 'react';
 
 import type { Range } from 'slate';
 
-import type { CursorOverlayProps } from '../components';
 import type { SelectionRect } from '../types';
 
 import { useRequestReRender } from './useRequestReRender';
 
-export interface useRefreshOnResizeOptions
-  extends Pick<CursorOverlayProps, 'containerRef' | 'refreshOnResize'> {
+export interface UseRefreshOnResizeOptions {
   selectionRectCache: React.MutableRefObject<WeakMap<Range, SelectionRect[]>>;
+  containerRef?: React.RefObject<HTMLElement>;
+  refreshOnResize?: boolean;
 }
 
 export const useRefreshOnResize = ({
   containerRef,
   refreshOnResize,
   selectionRectCache,
-}: useRefreshOnResizeOptions) => {
+}: UseRefreshOnResizeOptions) => {
   const requestReRender = useRequestReRender();
 
   // Reset the selection rect cache and request re-render.

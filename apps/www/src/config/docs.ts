@@ -366,6 +366,7 @@ export const docsConfig: DocsConfig = {
         },
         {
           href: '/docs/cursor-overlay',
+          label: 'New',
           title: 'Cursor Overlay',
         },
         {

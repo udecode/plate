@@ -1,7 +1,6 @@
 import type { UnknownObject } from '@udecode/plate-common';
 
-import type { CursorOverlayProps } from '../components';
-import type { CursorOverlayState, SelectionRect } from '../types';
+import type { CursorOverlayState, CursorState, SelectionRect } from '../types';
 
 import { FROZEN_EMPTY_ARRAY } from '../hooks';
 import { getCaretPosition } from './getCaretPosition';
@@ -13,11 +12,9 @@ export const getCursorOverlayState = <
   cursors: cursorStates,
   selectionRects,
 }: {
+  cursors: Record<string, CursorState<TCursorData>>;
   selectionRects: Record<string, SelectionRect[]>;
-} & Pick<
-  CursorOverlayProps<TCursorData>,
-  'cursors'
->): CursorOverlayState<TCursorData>[] => {
+}): CursorOverlayState<TCursorData>[] => {
   if (!cursorStates) return [];
 
   return Object.entries(cursorStates).map(([key, cursorState]) => {

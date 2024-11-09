@@ -4,6 +4,7 @@ import type { TEditableProps } from '@udecode/slate-react';
 
 import type { PlateEditor } from '../editor/PlateEditor';
 
+import { usePlateInstancesWarn } from '../../internal/usePlateInstancesWarn';
 import { type PlateStoreState, PlateStoreProvider } from '../stores';
 
 export interface PlateProps<E extends PlateEditor = PlateEditor>
@@ -25,6 +26,8 @@ export interface PlateProps<E extends PlateEditor = PlateEditor>
   renderElement?: TEditableProps['renderElement'];
 
   renderLeaf?: TEditableProps['renderLeaf'];
+
+  suppressInstanceWarning?: boolean;
 }
 
 function PlateInner({
@@ -61,6 +64,8 @@ export function Plate<E extends PlateEditor = PlateEditor>(
   props: PlateProps<E>
 ) {
   const id = useId();
+
+  usePlateInstancesWarn(props.suppressInstanceWarning);
 
   if (!props.editor) return null;
 

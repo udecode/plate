@@ -13,7 +13,8 @@ export const cursorOverlayValue: any = (
     </hp>
     <hp>
       You can also try clicking the "Ask AI" button - the selection will stay
-      visible while focusing the another input.
+      visible while focusing the another input, and will be updated while
+      streaming.
     </hp>
   </fragment>
 );
