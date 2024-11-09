@@ -132,12 +132,10 @@ export const useCreateEditor = () => {
     plugins: [...copilotPlugins, ...editorPlugins],
     value: [
       {
-        id: '1',
         children: [{ text: 'Playground' }],
         type: 'h1',
       },
       {
-        id: '2',
         children: [
           { text: 'A rich-text editor with AI capabilities. Try the ' },
           { bold: true, text: 'AI commands' },

@@ -70,9 +70,11 @@ export default function HundredsBlocksDemo() {
   return (
     <div className="flex">
       <div className="w-1/2 p-4">
+        <div className="mb-4 text-lg font-bold">Plate</div>
         <WithPlate />
       </div>
       <div className="w-1/2 p-4">
+        <div className="mb-4 text-lg font-bold">Slate</div>
         <WithoutPlate />
       </div>
     </div>
