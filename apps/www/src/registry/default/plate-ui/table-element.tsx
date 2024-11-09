@@ -207,16 +207,15 @@ export const TableElement = withHOC(
     return (
       <TableFloatingToolbar>
         <PlateElement
-          className="overflow-x-auto"
+          className={cn('overflow-x-auto', className)}
           style={{ paddingLeft: marginLeft }}
           {...props}
         >
           <table
             ref={ref}
             className={cn(
-              'my-4 ml-px mr-0 table h-px w-full table-fixed border-collapse',
-              isSelectingCell && '[&_*::selection]:bg-none',
-              className
+              'my-4 ml-px mr-0 table h-px w-[calc(100%-6px)] table-fixed border-collapse',
+              isSelectingCell && '[&_*::selection]:bg-none'
             )}
             {...tableProps}
           >
