@@ -3,6 +3,7 @@
  */
 
 export * from './applyDeepToNodes';
+export * from './getInjectMatch';
 export * from './getInjectedPlugins';
 export * from './getKeysByTypes';
 export * from './hotkeys';

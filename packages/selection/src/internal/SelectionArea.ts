@@ -499,6 +499,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
 
     this._container = selectAll(container, document)[0];
 
+    if (!this._container) return;
     if (
       this._container.contains(target) &&
       target.dataset.slateEditor !== 'true' &&

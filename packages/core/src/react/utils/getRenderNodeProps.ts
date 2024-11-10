@@ -7,7 +7,7 @@ import type { PlateEditor } from '../editor';
 import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
 import type { PlateRenderNodeProps } from '../plugin/PlateRenderNodeProps';
 
-import { getSlateClass } from '../../lib';
+import { getSlateClass, pipeInjectNodeProps } from '../../lib';
 import { getEditorPlugin } from '../plugin';
 
 /**
@@ -22,19 +22,19 @@ export const getRenderNodeProps = ({
   props,
 }: {
   editor: PlateEditor;
-  plugin: AnyEditorPlatePlugin;
   props: PlateRenderNodeProps;
   attributes?: AnyObject;
+  plugin?: AnyEditorPlatePlugin;
 }): PlateRenderNodeProps => {
   let newProps: AnyObject = {};
 
-  if (plugin.node.props) {
+  if (plugin?.node.props) {
     newProps =
       (typeof plugin.node.props === 'function'
         ? plugin.node.props(props as any)
         : plugin.node.props) ?? {};
   }
-  if (!newProps.nodeProps && attributes) {
+  if (!newProps.nodeProps && attributes && plugin) {
     /**
      * WARNING: Improper use of `dangerouslyAllowAttributes` WILL make your
      * application vulnerable to cross-site scripting (XSS) or information
@@ -61,9 +61,17 @@ export const getRenderNodeProps = ({
 
   const { className } = props;
 
-  return {
+  let nodeProps = {
     ...props,
-    className: clsx(getSlateClass(plugin.node.type), className),
-    ...(getEditorPlugin(editor, plugin) as any),
+    ...(plugin ? (getEditorPlugin(editor, plugin) as any) : {}),
+    className: clsx(getSlateClass(plugin?.node.type), className),
   };
+
+  nodeProps = pipeInjectNodeProps(editor, nodeProps) as PlateRenderNodeProps;
+
+  if (nodeProps.style && Object.keys(nodeProps.style).length === 0) {
+    delete nodeProps.style;
+  }
+
+  return nodeProps;
 };

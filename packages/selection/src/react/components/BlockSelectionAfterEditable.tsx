@@ -79,7 +79,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
         // get the first block in the selection
         const entry = findNode(editor, {
           at: [],
-          match: (n) => selectedIds!.has(n.id),
+          match: (n) => n.id && selectedIds!.has(n.id),
         });
 
         if (entry) {
@@ -93,7 +93,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
       if (isHotkey(['backspace', 'delete'])(e) && !isReadonly) {
         removeNodes(editor, {
           at: [],
-          match: (n) => selectedIds!.has(n.id),
+          match: (n) => !!n.id && selectedIds!.has(n.id),
         });
       }
       // TODO: skip toggle child
@@ -101,7 +101,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
         const firstId = [...selectedIds!][0];
         const node = findNode(editor, {
           at: [],
-          match: (n) => n.id === firstId,
+          match: (n) => n.id && n.id === firstId,
         });
         const prev = getPreviousNode(editor, {
           at: node?.[1],
@@ -114,7 +114,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
         const lastId = [...selectedIds!].pop();
         const node = findNode(editor, {
           at: [],
-          match: (n) => n.id === lastId,
+          match: (n) => n.id && n.id === lastId,
         });
         const next = getNextNode(editor, {
           at: node?.[1],

@@ -1,8 +1,6 @@
 import {
   type InsertNodesOptions,
   type SlateEditor,
-  BaseParagraphPlugin,
-  getQueryOptions,
   insertNodes,
 } from '@udecode/plate-common';
 
@@ -10,19 +8,17 @@ import type { TColumnElement } from '../types';
 
 import { BaseColumnItemPlugin } from '../BaseColumnPlugin';
 
-export const insertEmptyColumn = <E extends SlateEditor>(
+export const insertColumn = <E extends SlateEditor>(
   editor: E,
-  options?: { width?: string } & InsertNodesOptions<E>
+  { width = '33%', ...options }: { width?: string } & InsertNodesOptions<E> = {}
 ) => {
-  const width = options?.width || '33%';
-
   insertNodes<TColumnElement>(
     editor,
     {
-      children: [{ children: [{ text: '' }], type: BaseParagraphPlugin.key }],
+      children: [editor.api.create.block()],
       type: BaseColumnItemPlugin.key,
       width,
     },
-    getQueryOptions(editor, options)
+    options as any
   );
 };

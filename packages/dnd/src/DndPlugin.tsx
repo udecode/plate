@@ -48,7 +48,7 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
       dataTransfer.effectAllowed = 'move';
       dataTransfer.dropEffect = 'move';
 
-      const id = target.dataset.key;
+      const id = target.dataset.blockId;
 
       if (!id) return;
 

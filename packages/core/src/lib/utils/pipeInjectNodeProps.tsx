@@ -1,3 +1,5 @@
+import clsx from 'clsx';
+
 import type { SlateEditor } from '../editor';
 
 import { pluginInjectNodeProps } from './pluginInjectNodeProps';
@@ -6,16 +8,21 @@ import { pluginInjectNodeProps } from './pluginInjectNodeProps';
 export const pipeInjectNodeProps = (editor: SlateEditor, nodeProps: any) => {
   editor.pluginList.forEach((plugin) => {
     if (plugin.inject.nodeProps) {
-      const props = pluginInjectNodeProps(editor, plugin, nodeProps);
+      const newProps = pluginInjectNodeProps(editor, plugin, nodeProps);
 
-      if (props) {
-        nodeProps = {
-          ...nodeProps,
-          ...props,
-        };
-      }
+      if (!newProps) return;
+
+      nodeProps = {
+        ...nodeProps,
+        ...newProps,
+        className: clsx(nodeProps.className, newProps.className),
+        style: {
+          ...nodeProps.style,
+          ...newProps.style,
+        },
+      };
     }
   });
 
-  return { ...nodeProps, editor };
+  return nodeProps;
 };

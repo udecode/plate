@@ -206,7 +206,7 @@ export const withSlate = <
       edge === 'start' ? getStartPoint(editor, []) : getEndPoint(editor, []);
     select(editor, target);
   }
-  if (value) {
+  if (editor.children.length > 0) {
     pipeNormalizeInitialValue(editor);
   }
   if (shouldNormalizeEditor) {

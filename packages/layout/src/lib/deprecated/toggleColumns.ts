@@ -7,6 +7,7 @@ import {
 
 import { BaseColumnItemPlugin, BaseColumnPlugin } from '../BaseColumnPlugin';
 
+// @deprecated - use `toggleColumnGroup` instead
 export const toggleColumns = (editor: SlateEditor, nodeEntry: TNodeEntry) => {
   const nodes = {
     children: [

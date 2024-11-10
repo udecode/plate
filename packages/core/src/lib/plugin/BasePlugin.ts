@@ -9,6 +9,28 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
   key: C['key'];
 
   inject: Nullable<{
+    /** Plugin keys of elements to exclude the children from */
+    excludeBelowPlugins?: string[];
+
+    /** Plugin keys of elements to exclude */
+    excludePlugins?: string[];
+
+    /** Whether to filter blocks */
+    isBlock?: boolean;
+
+    /** Whether to filter elements */
+    isElement?: boolean;
+
+    /** Whether to filter leaves */
+    isLeaf?: boolean;
+
+    /**
+     * Filter nodes with path above this level. Use 0 for no limit.
+     *
+     * @default 1 if excludePlugins is empty, 0 otherwise
+     */
+    maxLevel?: number;
+
     /**
      * Plugin keys used by {@link InjectNodeProps} and the targetPluginToInject
      * function. For plugin injection by key, use the inject.plugins property.

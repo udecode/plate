@@ -4,6 +4,7 @@ import {
   type AnyPlatePlugin,
   type PlateRenderElementProps,
   omitPluginContext,
+  usePlateStore,
 } from '@udecode/plate-core/react';
 import { type BoxProps, Box, useComposedRef } from '@udecode/react-utils';
 import { type TElement, isBlock } from '@udecode/slate';
@@ -21,10 +22,11 @@ export type PlateElementProps<
 export const usePlateElement = (props: PlateElementProps) => {
   const { attributes, element, elementToAttributes, nodeProps, ...rootProps } =
     omitPluginContext(props);
+  const mounted = usePlateStore().get.isMounted();
 
   const block = React.useMemo(
-    () => !!element.id && isBlock(props.editor, element),
-    [element, props.editor]
+    () => mounted && !!element.id && isBlock(props.editor, element),
+    [element, props.editor, mounted]
   );
 
   return {
@@ -47,9 +49,9 @@ const PlateElement = React.forwardRef<HTMLDivElement, PlateElementProps>(
       ...props,
       ref,
     });
-    const { 'data-block-id': blockId, ...rest } = rootProps;
+    const { ...rest } = rootProps;
 
-    return <Box data-block-id={blockId} {...rest} ref={rootRef} />;
+    return <Box {...rest} ref={rootRef} />;
   }
 ) as (<
   N extends TElement = TElement,
