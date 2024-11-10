@@ -4,6 +4,7 @@ import { BaseParagraphPlugin, createSlatePlugin } from '@udecode/plate-common';
 export const BaseAlignPlugin = createSlatePlugin({
   key: 'align',
   inject: {
+    isBlock: true,
     nodeProps: {
       defaultNodeValue: 'start',
       nodeKey: 'align',

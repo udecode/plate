@@ -80,6 +80,7 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
       filter,
       filterInline,
       filterText,
+      idKey,
       normalizeInitialValue,
     } = getOptions();
 
@@ -98,7 +99,7 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
       const newNode = { ...node };
 
       if (
-        !newNode.id &&
+        !newNode[idKey!] &&
         queryNode([node, path], {
           allow,
           exclude,
@@ -116,7 +117,7 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
           },
         })
       ) {
-        newNode.id = getOptions().idCreator!();
+        newNode[idKey!] = getOptions().idCreator!();
       }
       // Recursively process children if they exist
       if ((newNode.children as any)?.length > 0) {

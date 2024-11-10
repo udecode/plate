@@ -4,7 +4,7 @@
 
 export * from './BaseTablePlugin';
 export * from './constants';
-export type * from './types';
+export * from './types';
 export * from './withNormalizeTable';
 export * from './withTable';
 export * from './merge/index';

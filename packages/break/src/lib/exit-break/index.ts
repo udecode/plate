@@ -3,6 +3,6 @@
  */
 
 export * from './BaseExitBreakPlugin';
-export type * from './types';
+export * from './types';
 export * from './queries/index';
 export * from './transforms/index';
