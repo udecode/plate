@@ -16,7 +16,7 @@
   },
   "files": [
     {
-      "content": "'use client';\n\nimport React from 'react';\n\nimport { cn, withRef } from '@udecode/cn';\n\nimport { PlateElement } from './plate-element';\n\nexport const TableRowElement = withRef<\n  typeof PlateElement,\n  {\n    hideBorder?: boolean;\n  }\n>(({ children, hideBorder, ...props }, ref) => {\n  return (\n    <PlateElement\n      ref={ref}\n      as=\"tr\"\n      className={cn('h-full', hideBorder && 'border-none')}\n      {...props}\n    >\n      {children}\n    </PlateElement>\n  );\n});\n",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { cn, withRef } from '@udecode/cn';\nimport { PlateElement } from '@udecode/plate-common/react';\n\nexport const TableRowElement = withRef<\n  typeof PlateElement,\n  {\n    hideBorder?: boolean;\n  }\n>(({ children, hideBorder, ...props }, ref) => {\n  return (\n    <PlateElement\n      ref={ref}\n      as=\"tr\"\n      className={cn('h-full', hideBorder && 'border-none')}\n      {...props}\n    >\n      {children}\n    </PlateElement>\n  );\n});\n",
       "path": "plate-ui/table-row-element.tsx",
       "target": "components/plate-ui/table-row-element.tsx",
       "type": "registry:ui"

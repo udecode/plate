@@ -1065,7 +1065,7 @@ export const Index: Record<string, any> = {
       name: "editor-plugins",
       description: "",
       type: "registry:component",
-      registryDependencies: ["ai-plugins","basic-nodes-plugins","align-plugin","autoformat-plugin","block-menu-plugins","comments-plugin","delete-plugins","dnd-plugins","exit-break-plugin","indent-list-plugins","line-height-plugin","link-plugin","media-plugins","mention-plugin","reset-block-type-plugin","soft-break-plugin","tabbable-plugin","table-plugin","toc-plugin"],
+      registryDependencies: ["ai-plugins","basic-nodes-plugins","align-plugin","autoformat-plugin","block-menu-plugins","comments-plugin","delete-plugins","dnd-plugins","exit-break-plugin","indent-list-plugins","line-height-plugin","link-plugin","media-plugins","mention-plugin","reset-block-type-plugin","soft-break-plugin","table-plugin","toc-plugin"],
       files: ["registry/default/components/editor/plugins/editor-plugins.tsx"],
       component: React.lazy(() => import("@/registry/default/components/editor/plugins/editor-plugins.tsx")),
       source: "",

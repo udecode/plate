@@ -1,7 +1,6 @@
 import type { Path } from 'slate';
 
 import { type TNode, getAboveNode, isBlock, isElement } from '@udecode/slate';
-import { findNodePath } from '@udecode/slate-react';
 
 import type { SlateEditor } from '../editor';
 import type { EditorPlugin } from '../plugin';
@@ -12,7 +11,7 @@ export const getInjectMatch = <E extends SlateEditor>(
   editor: E,
   plugin: EditorPlugin
 ) => {
-  return (node: TNode, _path?: Path) => {
+  return (node: TNode, path: Path) => {
     const {
       inject: {
         excludeBelowPlugins,
@@ -45,21 +44,17 @@ export const getInjectMatch = <E extends SlateEditor>(
     }
     // Exclude below plugins
     if (excludeBelowPlugins || maxLevel) {
-      const path = _path || findNodePath(editor, node);
+      if (maxLevel && path.length > maxLevel) {
+        return false;
+      }
+      if (excludeBelowPlugins) {
+        const excludeTypes = getKeysByTypes(editor, excludeBelowPlugins);
+        const isBelow = getAboveNode(editor, {
+          at: path,
+          match: (n) => isElement(n) && excludeTypes.includes(n.type),
+        });
 
-      if (path) {
-        if (maxLevel && path.length > maxLevel) {
-          return false;
-        }
-        if (excludeBelowPlugins) {
-          const excludeTypes = getKeysByTypes(editor, excludeBelowPlugins);
-          const isBelow = getAboveNode(editor, {
-            at: path,
-            match: (n) => isElement(n) && excludeTypes.includes(n.type),
-          });
-
-          if (isBelow) return false;
-        }
+        if (isBelow) return false;
       }
     }
 

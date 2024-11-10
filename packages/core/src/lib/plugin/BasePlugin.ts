@@ -1,8 +1,8 @@
+import type { TElement, TText } from '@udecode/slate';
 import type { AnyObject } from '@udecode/utils';
 import type { SetImmerState, StoreApi } from 'zustand-x';
 
 import type { Nullable } from '../types';
-import type { GetInjectNodePropsOptions } from '../utils';
 
 export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
   /** Unique identifier for this plugin. */
@@ -249,6 +249,25 @@ export type BaseInjectProps = {
   /** List of supported node values. */
   validNodeValues?: any[];
 };
+
+export interface GetInjectNodePropsOptions {
+  /** Existing className. */
+  className?: string;
+
+  /** Style value or className key. */
+  element?: TElement;
+
+  /** Existing style. */
+  style?: CSSStyleDeclaration;
+
+  /** Style value or className key. */
+  text?: TText;
+}
+
+export interface GetInjectNodePropsReturnType extends AnyObject {
+  className?: string;
+  style?: CSSStyleDeclaration;
+}
 
 export type BaseTransformOptions = GetInjectNodePropsOptions & {
   nodeValue?: any;

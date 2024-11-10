@@ -7,8 +7,9 @@ import type { PlateEditor } from '../editor';
 import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
 import type { PlateRenderNodeProps } from '../plugin/PlateRenderNodeProps';
 
-import { getSlateClass, pipeInjectNodeProps } from '../../lib';
+import { getSlateClass } from '../../lib';
 import { getEditorPlugin } from '../plugin';
+import { pipeInjectNodeProps } from './pipeInjectNodeProps';
 
 /**
  * Override node props with plugin props. Allowed properties in

@@ -1545,15 +1545,15 @@
   },
   {
     "dependencies": [
-      "@udecode/plate-cursor",
       "@udecode/plate-dnd",
       "@udecode/plate-selection"
     ],
     "doc": {
-      "description": "A visual overlay for collaborative cursors and selections.",
+      "description": "A visual overlay for cursors and selections.",
       "docs": [
         {
-          "route": "https://pro.platejs.org/docs/components/cursor-overlay"
+          "route": "/docs/cursor-overlay",
+          "title": "Cursor Overlay"
         }
       ],
       "examples": [

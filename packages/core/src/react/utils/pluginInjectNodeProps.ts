@@ -1,31 +1,18 @@
-import type { TElement, TText } from '@udecode/slate';
+import { findNodePath } from '@udecode/slate-react';
+import { isDefined } from '@udecode/utils';
 
-import { type AnyObject, isDefined } from '@udecode/utils';
+import type { SlateEditor } from '../../lib/editor';
+import type {
+  EditorPlugin,
+  TransformOptions,
+} from '../../lib/plugin/SlatePlugin';
 
-import type { SlateEditor } from '../editor';
-import type { EditorPlugin, TransformOptions } from '../plugin/SlatePlugin';
-
-import { getEditorPlugin } from '../plugin';
-import { getInjectMatch } from './getInjectMatch';
-
-export interface GetInjectNodePropsOptions {
-  /** Existing className. */
-  className?: string;
-
-  /** Style value or className key. */
-  element?: TElement;
-
-  /** Existing style. */
-  style?: CSSStyleDeclaration;
-
-  /** Style value or className key. */
-  text?: TText;
-}
-
-export interface GetInjectNodePropsReturnType extends AnyObject {
-  className?: string;
-  style?: CSSStyleDeclaration;
-}
+import {
+  type GetInjectNodePropsOptions,
+  type GetInjectNodePropsReturnType,
+  getEditorPlugin,
+} from '../../lib/plugin';
+import { getInjectMatch } from '../../lib/utils/getInjectMatch';
 
 /**
  * Return if `element`, `text`, `nodeKey` is defined. Return if `node.type` is
@@ -66,7 +53,7 @@ export const pluginInjectNodeProps = (
 
   const injectMatch = getInjectMatch(editor, plugin);
 
-  if (!injectMatch(node)) return;
+  if (!injectMatch(node, findNodePath(editor, node)!)) return;
 
   const queryResult = query?.({
     ...injectNodeProps,
