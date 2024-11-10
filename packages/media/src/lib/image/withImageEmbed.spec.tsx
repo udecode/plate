@@ -27,7 +27,10 @@ describe('withImageEmbed', () => {
 
   it('should insert image from the text', () => {
     const editor = withImageEmbed(
-      getEditorPlugin(createSlateEditor({ editor: input }), BaseImagePlugin)
+      getEditorPlugin(
+        createSlateEditor({ editor: input }),
+        BaseImagePlugin as any
+      )
     );
 
     const data = {

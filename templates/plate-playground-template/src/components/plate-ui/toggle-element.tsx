@@ -1,10 +1,12 @@
+'use client';
+
 import { cn, withRef } from '@udecode/cn';
 import { useElement } from '@udecode/plate-common/react';
 import {
   useToggleButton,
   useToggleButtonState,
 } from '@udecode/plate-toggle/react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 
 import { Button } from './button';
 import { PlateElement } from './plate-element';
@@ -28,7 +30,12 @@ export const ToggleElement = withRef<typeof PlateElement>(
           contentEditable={false}
           {...buttonProps}
         >
-          {open ? <ChevronDown /> : <ChevronRight />}
+          <ChevronRight
+            className={cn(
+              'transition-transform duration-75',
+              open ? 'rotate-90' : 'rotate-0'
+            )}
+          />
         </Button>
         {children}
       </PlateElement>

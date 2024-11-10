@@ -2,13 +2,15 @@
 
 import React from 'react';
 
-import type { UseVirtualFloatingOptions } from '@udecode/plate-floating';
-import type { LinkFloatingToolbarState } from '@udecode/plate-link/react';
-
 import { cn } from '@udecode/cn';
 import { useFormInputProps } from '@udecode/plate-common/react';
-import { flip, offset } from '@udecode/plate-floating';
 import {
+  type UseVirtualFloatingOptions,
+  flip,
+  offset,
+} from '@udecode/plate-floating';
+import {
+  type LinkFloatingToolbarState,
   FloatingLinkUrlInput,
   LinkOpenButton,
   useFloatingLinkEdit,

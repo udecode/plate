@@ -1,0 +1,20 @@
+{
+  "dependencies": [
+    "@udecode/plate-ai",
+    "@udecode/plate-markdown",
+    "@faker-js/faker"
+  ],
+  "files": [
+    {
+      "content": "'use client';\n\nimport type { TElement } from '@udecode/plate-common';\n\nimport { faker } from '@faker-js/faker';\nimport { CopilotPlugin } from '@udecode/plate-ai/react';\nimport { getAncestorNode } from '@udecode/plate-common';\nimport { serializeMdNodes, stripMarkdown } from '@udecode/plate-markdown';\n\nimport { GhostText } from '@/components/plate-ui/ghost-text';\n\nexport const copilotPlugins = [\n  CopilotPlugin.configure(({ api }) => ({\n    options: {\n      completeOptions: {\n        api: '/api/ai/copilot',\n        body: {\n          system: `You are an advanced AI writing assistant, similar to VSCode Copilot but for general text. Your task is to predict and generate the next part of the text based on the given context.\n  \n  Rules:\n  - Continue the text naturally up to the next punctuation mark (., ,, ;, :, ?, or !).\n  - Maintain style and tone. Don't repeat given text.\n  - For unclear context, provide the most likely continuation.\n  - Handle code snippets, lists, or structured text if needed.\n  - Don't include \"\"\" in your response.\n  - CRITICAL: Always end with a punctuation mark.\n  - CRITICAL: Avoid starting a new block. Do not use block formatting like >, #, 1., 2., -, etc. The suggestion should continue in the same block as the context.\n  - If no context is provided or you can't generate a continuation, return \"0\" without explanation.`,\n        },\n        onError: () => {\n          // Mock the API response. Remove it when you implement the route /api/ai/copilot\n          api.copilot.setBlockSuggestion({\n            text: stripMarkdown(faker.lorem.sentence()),\n          });\n        },\n        onFinish: (_, completion) => {\n          if (completion === '0') return;\n\n          api.copilot.setBlockSuggestion({\n            text: stripMarkdown(completion),\n          });\n        },\n      },\n      debounceDelay: 500,\n      getPrompt: ({ editor }) => {\n        const contextEntry = getAncestorNode(editor);\n\n        if (!contextEntry) return '';\n\n        const prompt = serializeMdNodes([contextEntry[0] as TElement]);\n\n        return `Continue the text up to the next punctuation mark:\n  \"\"\"\n  ${prompt}\n  \"\"\"`;\n      },\n      renderGhostText: GhostText,\n    },\n  })),\n] as const;\n",
+      "path": "components/editor/plugins/copilot-plugins.ts",
+      "target": "components/editor/plugins/copilot-plugins.ts",
+      "type": "registry:component"
+    }
+  ],
+  "name": "copilot-plugins",
+  "registryDependencies": [
+    "ghost-text"
+  ],
+  "type": "registry:component"
+}

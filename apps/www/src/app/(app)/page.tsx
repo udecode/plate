@@ -66,7 +66,7 @@ export default function IndexPage() {
         <div className="relative mt-12 scroll-m-16 pb-48 md:mt-24 lg:mt-36 ">
           <BlockPreview
             block={{
-              description: 'A Notion-like AI template',
+              description: 'A Notion-like AI template.',
               descriptionSrc: siteConfig.links.potionTemplate,
               name: 'potion',
               src: siteConfig.links.potionIframe,

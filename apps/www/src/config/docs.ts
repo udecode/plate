@@ -172,8 +172,8 @@ export const docsConfig: DocsConfig = {
       title: 'Components',
     },
     {
-      href: '/#playground',
-      title: 'Playground',
+      href: '/editors',
+      title: 'Editors',
     },
     {
       href: '/#potion',
@@ -204,6 +204,10 @@ export const docsConfig: DocsConfig = {
         {
           href: '/docs/getting-started',
           title: 'Getting Started',
+        },
+        {
+          href: '/docs/components',
+          title: 'Components',
         },
       ],
       title: 'Overview',

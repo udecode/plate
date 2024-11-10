@@ -35,10 +35,10 @@ export const setBlockSelectionIndent = (
   indent: number,
   options?: SetNodesOptions
 ) => {
+  const api = editor.getApi(BlockSelectionPlugin);
+
   withoutNormalizing(editor, () => {
-    const blocks = editor
-      .getApi(BlockSelectionPlugin)
-      .blockSelection.getNodes();
+    const blocks = api.blockSelection.getNodes();
 
     blocks.forEach(([node, path]) => {
       const prevIndent = (node as any).indent ?? 0;

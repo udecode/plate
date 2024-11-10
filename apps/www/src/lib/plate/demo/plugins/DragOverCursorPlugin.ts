@@ -15,6 +15,8 @@ export const DragOverCursorPlugin = createPlatePlugin({
     },
     onDragOver: ({ editor, event, plugin }) => {
       if (editor.getOptions(DndPlugin).isDragging) return;
+      // Only show cursor for text drag
+      if (!event.dataTransfer?.types.includes('text/plain')) return;
 
       const range = findEventRange(editor, event);
 

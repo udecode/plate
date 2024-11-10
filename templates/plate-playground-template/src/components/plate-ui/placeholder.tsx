@@ -2,11 +2,10 @@
 
 import React from 'react';
 
-import type { PlaceholderProps } from '@udecode/plate-common/react';
-
 import { cn } from '@udecode/cn';
+import { ParagraphPlugin } from '@udecode/plate-common/react';
 import {
-  ParagraphPlugin,
+  type PlaceholderProps,
   createNodeHOC,
   createNodesHOC,
   usePlaceholderState,

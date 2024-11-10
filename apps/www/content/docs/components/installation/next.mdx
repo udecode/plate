@@ -5,13 +5,29 @@ description: Install and configure Next.js.
 
 <Callout>
 
-A [template](https://github.com/udecode/plate/tree/main/templates/plate-template) is available to help you get started quickly.
-
-<Callout>
-**If you're using Next.js 15, see the [Next.js 15 + React 19](https://ui.shadcn.com/docs/installation/react-19) guide.**
-</Callout>
+**If you're using React 19, see the [Next.js 15 + React 19](https://ui.shadcn.com/docs/react-19) guide.**
 
 </Callout>
+
+## Quick Start
+
+Choose your editor to get started. These commands will initialize your project and add the editor ([browse available editors](/editors)):
+
+[Minimal Editor](https://template.platejs.org/editor)
+```bash
+npx shadcx@latest add plate/editor-basic
+```
+
+[AI Editor](https://playground.platejs.org/editor)
+```bash
+npx shadcx@latest add plate/editor-ai
+```
+
+This will add a page in `app/editor` along with all necessary components in `components/plate-ui` as a starting point.
+
+## Manual Installation
+
+If you prefer to set up your project step by step, follow these instructions:
 
 <Steps>
 
@@ -20,14 +36,7 @@ A [template](https://github.com/udecode/plate/tree/main/templates/plate-template
 Run the `init` command to create a new Next.js project or to setup an existing one:
 
 ```bash
-npx shadcx@latest init -u https://platejs.org/r -n plate
-```
-
-If you want to use [shadcn/ui](https://ui.shadcn.com/) combined with Plate UI, run instead:
-
-```bash
-npx shadcx@latest init
-npx shadcx@latest init -u https://platejs.org/r -n plate
+npx shadcx@latest init plate
 ```
 
 ### Configure components.json
@@ -44,7 +53,7 @@ Do you want to use CSS variables for colors? › no / yes
 You can now start adding components to your project.
 
 ```bash
-npx shadcx@latest add paragraph-element -r plate
+npx shadcx@latest add -r plate
 ```
 
 The command above will add the `ParagraphElement` component to your project.
@@ -52,5 +61,21 @@ The command above will add the `ParagraphElement` component to your project.
 ### Register components
 
 To add more components to your plugins, see [Plugin Components](/docs/plugin-components#register-components).
+
+### Add editor (optional)
+
+Choose your editor to get started ([browse available editors](/editors)). 
+
+[Minimal Editor](https://template.platejs.org/editor)
+```bash
+npx shadcx@latest add plate/editor-basic
+```
+
+[AI Editor](https://playground.platejs.org/editor)
+```bash
+npx shadcx@latest add plate/editor-ai
+```
+
+This will add an `/editor` page to your project along with all necessary components as a starting point.
 
 </Steps>

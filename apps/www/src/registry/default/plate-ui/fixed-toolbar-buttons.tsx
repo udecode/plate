@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 
 import {
@@ -13,10 +15,6 @@ import {
   FontColorPlugin,
 } from '@udecode/plate-font/react';
 import { ListStyleType } from '@udecode/plate-indent-list';
-import {
-  BulletedListPlugin,
-  NumberedListPlugin,
-} from '@udecode/plate-list/react';
 import { ImagePlugin } from '@udecode/plate-media/react';
 import {
   BaselineIcon,
@@ -40,7 +38,6 @@ import { IndentToolbarButton } from './indent-toolbar-button';
 import { InsertDropdownMenu } from './insert-dropdown-menu';
 import { LineHeightDropdownMenu } from './line-height-dropdown-menu';
 import { LinkToolbarButton } from './link-toolbar-button';
-import { ListToolbarButton } from './list-toolbar-button';
 import { MarkToolbarButton } from './mark-toolbar-button';
 import { MediaToolbarButton } from './media-toolbar-button';
 import { ModeDropdownMenu } from './mode-dropdown-menu';
@@ -125,9 +122,6 @@ export function FixedToolbarButtons() {
             <IndentListToolbarButton nodeType={ListStyleType.Disc} />
             <IndentListToolbarButton nodeType={ListStyleType.Decimal} />
             <IndentTodoToolbarButton />
-
-            <ListToolbarButton nodeType={BulletedListPlugin.key} />
-            <ListToolbarButton nodeType={NumberedListPlugin.key} />
 
             <OutdentToolbarButton />
             <IndentToolbarButton />

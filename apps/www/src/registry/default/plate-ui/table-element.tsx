@@ -206,7 +206,7 @@ export const TableElement = withHOC(
 
     return (
       <TableFloatingToolbar>
-        <div style={{ paddingLeft: marginLeft }}>
+        <div className="overflow-x-auto" style={{ paddingLeft: marginLeft }}>
           <PlateElement
             ref={ref}
             as="table"

@@ -2,15 +2,17 @@
 
 import { useEffect, useMemo } from 'react';
 
-import type { PlateEditor } from '@udecode/plate-common/react';
-
 import { AIChatPlugin, AIPlugin } from '@udecode/plate-ai/react';
 import {
   getAncestorNode,
   getEndPoint,
   getNodeString,
 } from '@udecode/plate-common';
-import { focusEditor, useEditorPlugin } from '@udecode/plate-common/react';
+import {
+  type PlateEditor,
+  focusEditor,
+  useEditorPlugin,
+} from '@udecode/plate-common/react';
 import { useIsSelecting } from '@udecode/plate-selection/react';
 import {
   Album,

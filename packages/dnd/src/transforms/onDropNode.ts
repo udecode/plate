@@ -5,12 +5,12 @@ import { focusEditor } from '@udecode/plate-common/react';
 import { Path } from 'slate';
 
 import type { UseDropNodeOptions } from '../hooks';
-import type { DragItemNode } from '../types';
+import type { ElementDragItemNode } from '../types';
 
 import { getHoverDirection } from '../utils';
 
 /** Callback called on drag an drop a node with id. */
-export const onDropNode = (
+export const getDropPath = (
   editor: TEditor,
   {
     id,
@@ -18,7 +18,7 @@ export const onDropNode = (
     monitor,
     nodeRef,
   }: {
-    dragItem: DragItemNode;
+    dragItem: ElementDragItemNode;
     monitor: DropTargetMonitor;
   } & Pick<UseDropNodeOptions, 'id' | 'nodeRef'>
 ) => {
@@ -61,9 +61,35 @@ export const onDropNode = (
       Path.isBefore(dragPath, _dropPath) && Path.isSibling(dragPath, _dropPath);
     const to = before ? _dropPath : Path.next(_dropPath);
 
-    moveNodes(editor, {
-      at: dragPath,
-      to,
-    });
+    return { dragPath, to };
   }
+};
+
+export const onDropNode = (
+  editor: TEditor,
+  {
+    id,
+    dragItem,
+    monitor,
+    nodeRef,
+  }: {
+    dragItem: ElementDragItemNode;
+    monitor: DropTargetMonitor;
+  } & Pick<UseDropNodeOptions, 'id' | 'nodeRef'>
+) => {
+  const result = getDropPath(editor, {
+    id,
+    dragItem,
+    monitor,
+    nodeRef,
+  });
+
+  if (!result) return;
+
+  const { dragPath, to } = result;
+
+  moveNodes(editor, {
+    at: dragPath,
+    to,
+  });
 };

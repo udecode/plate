@@ -5,10 +5,10 @@ import React from 'react';
 import { cn, withRef } from '@udecode/cn';
 import { EraserIcon } from 'lucide-react';
 
-import type { TColor } from './color-dropdown-menu-items';
-
-import { buttonVariants } from './button';
-import { ColorDropdownMenuItems } from './color-dropdown-menu-items';
+import {
+  type TColor,
+  ColorDropdownMenuItems,
+} from './color-dropdown-menu-items';
 import { ColorCustom } from './colors-custom';
 import { DropdownMenuGroup, DropdownMenuItem } from './dropdown-menu';
 
@@ -38,37 +38,27 @@ export const ColorPickerContent = withRef<
   ) => {
     return (
       <div ref={ref} className={cn('flex flex-col', className)} {...props}>
-        <DropdownMenuGroup label="Color picker">
+        <DropdownMenuGroup label="Custom Colors">
           <ColorCustom
             color={color}
-            className="p-2"
+            className="px-2"
             colors={colors}
             customColors={customColors}
             updateColor={updateColor}
             updateCustomColor={updateCustomColor}
           />
         </DropdownMenuGroup>
-        <DropdownMenuGroup>
+        <DropdownMenuGroup label="Default Colors">
           <ColorDropdownMenuItems
             color={color}
-            className="p-2"
+            className="px-2"
             colors={colors}
             updateColor={updateColor}
           />
         </DropdownMenuGroup>
         {color && (
           <DropdownMenuGroup>
-            <DropdownMenuItem
-              className={cn(
-                buttonVariants({
-                  isMenu: false,
-                  size: 'sm',
-                  variant: 'ghost',
-                }),
-                'w-full justify-start'
-              )}
-              onClick={clearColor}
-            >
+            <DropdownMenuItem className="p-2" onClick={clearColor}>
               <EraserIcon />
               <span>Clear</span>
             </DropdownMenuItem>

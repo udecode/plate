@@ -4,7 +4,6 @@ import React from 'react';
 
 import type * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import type { TTableElement } from '@udecode/plate-table';
-import type { LucideProps } from 'lucide-react';
 
 import { PopoverAnchor } from '@radix-ui/react-popover';
 import { cn, withRef } from '@udecode/cn';
@@ -25,7 +24,7 @@ import {
   useTableElementState,
   useTableMergeState,
 } from '@udecode/plate-table/react';
-import { Combine, Trash2Icon, Ungroup } from 'lucide-react';
+import { type LucideProps, Combine, Trash2Icon, Ungroup } from 'lucide-react';
 import { useReadOnly, useSelected } from 'slate-react';
 
 import { Button } from './button';

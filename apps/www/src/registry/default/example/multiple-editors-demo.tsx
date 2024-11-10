@@ -5,14 +5,13 @@ import React from 'react';
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
 import { Plate, usePlateEditor } from '@udecode/plate-common/react';
-import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { ImagePlugin } from '@udecode/plate-media/react';
-import { SelectOnBackspacePlugin } from '@udecode/plate-select';
 
 import { PlateUI } from '@/plate/demo/plate-ui';
 import { basicElementsValue } from '@/plate/demo/values/basicElementsValue';
 import { basicMarksValue } from '@/plate/demo/values/basicMarksValue';
 import { imageValue } from '@/plate/demo/values/mediaValue';
+import { deletePlugins } from '@/registry/default/components/editor/plugins/delete-plugins';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
 import { Separator } from '@/registry/default/plate-ui/separator';
@@ -39,13 +38,7 @@ export default function MultipleEditorsDemo() {
       BasicElementsPlugin,
       BasicMarksPlugin,
       ImagePlugin,
-      SelectOnBackspacePlugin.configure({
-        options: {
-          query: {
-            allow: [ImagePlugin.key, HorizontalRulePlugin.key],
-          },
-        },
-      }),
+      ...deletePlugins,
     ],
     value: imageValue,
   });

@@ -1,6 +1,6 @@
-import type { FC } from 'react';
+'use client';
 
-import type { WithDraggableOptions } from '@udecode/plate-dnd';
+import type { FC } from 'react';
 
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
@@ -8,14 +8,13 @@ import {
   ParagraphPlugin,
   createNodesWithHOC,
 } from '@udecode/plate-common/react';
-import { withDraggable as withDraggablePrimitive } from '@udecode/plate-dnd';
+import {
+  type WithDraggableOptions,
+  withDraggable as withDraggablePrimitive,
+} from '@udecode/plate-dnd';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { ColumnPlugin } from '@udecode/plate-layout/react';
-import {
-  BulletedListPlugin,
-  NumberedListPlugin,
-} from '@udecode/plate-list/react';
 import {
   ImagePlugin,
   MediaEmbedPlugin,
@@ -24,9 +23,7 @@ import {
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 
-import type { DraggableProps } from './draggable';
-
-import { Draggable } from './draggable';
+import { type DraggableProps, Draggable } from './draggable';
 
 export const withDraggable = (
   Component: FC,
@@ -41,11 +38,7 @@ export const withDraggablesPrimitive = createNodesWithHOC(withDraggable);
 export const withDraggables = (components: any) => {
   return withDraggablesPrimitive(components, [
     {
-      keys: [
-        ParagraphPlugin.key,
-        BulletedListPlugin.key,
-        NumberedListPlugin.key,
-      ],
+      keys: [ParagraphPlugin.key, 'ul', 'ol'],
       level: 0,
     },
     {
@@ -84,7 +77,7 @@ export const withDraggables = (components: any) => {
       },
     },
     {
-      keys: [HEADING_KEYS.h6, BulletedListPlugin.key, NumberedListPlugin.key],
+      keys: [HEADING_KEYS.h6, 'ul', 'ol'],
       draggableProps: {
         className: '[&_.slate-gutterLeft]:px-0 [&_.slate-gutterLeft]:pb-0',
       },

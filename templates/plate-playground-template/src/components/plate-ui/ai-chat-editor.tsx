@@ -2,10 +2,12 @@
 
 import React, { memo } from 'react';
 
-import type { PlateEditor } from '@udecode/plate-common/react';
-
 import { AIChatPlugin, useLastAssistantMessage } from '@udecode/plate-ai/react';
-import { Plate, useEditorPlugin } from '@udecode/plate-common/react';
+import {
+  type PlateEditor,
+  Plate,
+  useEditorPlugin,
+} from '@udecode/plate-common/react';
 import { deserializeMd } from '@udecode/plate-markdown';
 
 import { Editor } from './editor';

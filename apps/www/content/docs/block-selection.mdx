@@ -167,15 +167,37 @@ export function BlockSelection() {
 
 This component should be rendered inside each block element for consistent selection feedback. Plate UI is doing it in `plate-element.tsx`.
 
-### Disable browser default scroll behavior
+## Selectable and resetable
 
-When selecting text and moving the cursor to the bottom of the page, the browser's default scroll behavior can conflict with the `BlockSelectionPlugin`. To mitigate this, you can add a non-selectable area to the right side of the editor:
+### full page selectable
+
+Like the [potion](https://potion.platejs.org/) template, you can enable block selection outside of the `<Editor />` component.
+
+Simply add the `data-plate-selectable` attribute to any component outside the editor that you want to make selectable. You can even make the entire page selectable if desired.
+
+For example:
 
 ```tsx
-<div className="absolute right-0 top-0 h-full w-4 select-none" />
+<Cover data-plate-selectable />
 ```
 
-This helps prevent unexpected scrolling during selection operations.
+### full page resetable
+
+To reset the selection, you need call the `api.blockSelection.unselect();` method.
+
+If you want to make the full page resetable by click, this means you need to be able to access the editor outside of `<Editor />`.
+
+Or you can implement a click outside handler to reset the selection.
+
+
+## Prevent unselect
+
+To prevent unselecting blocks when clicking on certain elements, add the `data-plate-prevent-unselect` attribute to those components
+
+For example:
+```tsx
+  <YourSpecialButtoon data-plate-prevent-unselect />
+```
 
 ## Plugins
 
@@ -231,6 +253,10 @@ A set of IDs for the currently selected blocks.
 ### BlockMenuPlugin
 
 ## API
+
+
+### editor.api.blockSelection.focus
+Focuses the block selection shadow input. This input handles copy, delete, and paste events for selected blocks.
 
 ### editor.api.blockSelection.addSelectedRow
 

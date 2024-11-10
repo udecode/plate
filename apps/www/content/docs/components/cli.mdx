@@ -7,17 +7,10 @@ description: Use the CLI to add Plate UI components to your project.
 
 Use the `init` command to initialize configuration and dependencies for a new project with Plate UI.
 
-The `init` command installs dependencies, adds the `cn` util, configures `tailwind.config.js`, and CSS variables for the project.
+The `init` command installs dependencies, configures `tailwind.config.js`, and CSS variables for the project.
 
 ```bash
-npx shadcx@latest init -u https://platejs.org/r -n plate
-```
-
-If you also want to use [shadcn/ui](https://ui.shadcn.com/) in your project, you can use the following command:
-
-```bash
-npx shadcx@latest init
-npx shadcx@latest init -u https://platejs.org/r -n plate
+npx shadcx@latest init plate
 ```
 
 You will be asked a few questions to configure `components.json`:
@@ -30,7 +23,7 @@ Do you want to use CSS variables for colors? › yes
 ### Options
 
 ```txt
-Usage: shadcx init [options]
+Usage: shadcx init [options] [registry]
 
 initialize your project and install dependencies
 
@@ -39,10 +32,10 @@ Options:
   -f, --force       force overwrite of existing components.json. (default: false)
   -y, --yes         skip confirmation prompt. (default: false)
   -c, --cwd <cwd>   the working directory. defaults to the current directory.
-  -u, --url <url>   custom registry URL. (default: https://platejs.org/r)
   -n, --name <name> registry name. (default: plate)
   -s, --silent      mute output (default: false)
   --src-dir         use the src directory when creating a new project (default: false)
+  --pm <pm>         package manager to use (npm, pnpm, yarn, bun)
   -h, --help        display help for command
 ```
 
@@ -51,7 +44,14 @@ Options:
 Use the `add` command to add Plate UI components and dependencies to your project.
 
 ```bash
-npx shadcx@latest add [component] -r plate
+# Using prefix syntax
+npx shadcx@latest add plate/editor plate/toolbar
+
+# Or mixed usage (registry will be from the first prefix found)
+npx shadcx@latest add plate/editor toolbar
+
+# Or using registry option
+npx shadcx@latest add editor toolbar -r plate
 ```
 
 You will be presented with a list of components to choose from:
@@ -99,13 +99,13 @@ Options:
 In a monorepo, you can specify the path to your workspace with the `-c` or `--cwd` option.
 
 ```bash
-npx shadcx@latest init -u https://platejs.org/r -n plate -c ./apps/www
+npx shadcx@latest init plate -c ./apps/www
 ```
 
 or
 
 ```bash
-npx shadcx@latest add align-dropdown-menu -r plate -c ./apps/www
+npx shadcx@latest add plate/editor -c ./apps/www
 ```
 
 ## Example components.json
@@ -114,24 +114,30 @@ Here's an example `components.json` file configured for [shadcn/ui](https://ui.s
 
 ```json
 {
+  "$schema": "https://ui.shadcn.com/schema.json",
   "style": "default",
-  "tailwind": {
-    "config": "tailwind.config.js",
-    "css": "app/globals.css",
-    "baseColor": "slate",
-    "cssVariables": true
-  },
+  "rsc": true,
+  "tsx": true,
   "aliases": {
     "components": "@/components",
+    "hooks": "@/hooks",
+    "lib": "@/lib",
+    "ui": "@/components/ui",
     "utils": "@/lib/utils"
+  },
+  "tailwind": {
+    "baseColor": "slate",
+    "config": "tailwind.config.ts",
+    "css": "src/app/globals.css",
+    "cssVariables": true,
+    "prefix": ""
   },
   "registries": {
     "plate": {
-      "url": "https://platejs.org/r",
-      "style": "default",
       "aliases": {
         "ui": "@/components/plate-ui"
-      }
+      },
+      "url": "https://platejs.org/r"
     }
   }
 }

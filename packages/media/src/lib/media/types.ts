@@ -6,6 +6,7 @@ export interface TMediaElement extends TElement {
   align?: 'center' | 'left' | 'right';
   isUpload?: boolean;
   name?: string;
+  placeholderId?: string;
 }
 
 export interface MediaPluginOptions {

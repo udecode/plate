@@ -9,6 +9,7 @@ export const blockChunkSchema = z.object({
     })
     .optional(),
   description: z.string(),
+  descriptionSrc: z.string().optional(),
   file: z.string(),
   name: z.string(),
 });

@@ -1,0 +1,19 @@
+{
+  "dependencies": [
+    "@udecode/plate-basic-marks",
+    "@udecode/plate-block-quote",
+    "@udecode/plate-code-block",
+    "@udecode/plate-heading",
+    "prismjs"
+  ],
+  "files": [
+    {
+      "content": "'use client';\n\nimport { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';\nimport { BlockquotePlugin } from '@udecode/plate-block-quote/react';\nimport { CodeBlockPlugin } from '@udecode/plate-code-block/react';\nimport { HeadingPlugin } from '@udecode/plate-heading/react';\nimport Prism from 'prismjs';\n\nexport const basicNodesPlugins = [\n  HeadingPlugin.configure({ options: { levels: 3 } }),\n  BlockquotePlugin,\n  CodeBlockPlugin.configure({ options: { prism: Prism } }),\n  BasicMarksPlugin,\n] as const;\n",
+      "path": "components/editor/plugins/basic-nodes-plugins.tsx",
+      "target": "components/editor/plugins/basic-nodes-plugins.tsx",
+      "type": "registry:component"
+    }
+  ],
+  "name": "basic-nodes-plugins",
+  "type": "registry:component"
+}

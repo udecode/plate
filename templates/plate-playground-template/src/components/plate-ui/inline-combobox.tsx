@@ -1,6 +1,9 @@
 'use client';
 
 import React, {
+  type HTMLAttributes,
+  type ReactNode,
+  type RefObject,
   createContext,
   forwardRef,
   startTransition,
@@ -10,14 +13,11 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import type { HTMLAttributes, ReactNode, RefObject } from 'react';
 
-import type { ComboboxItemProps } from '@ariakit/react';
-import type { UseComboboxInputResult } from '@udecode/plate-combobox/react';
-import type { TElement } from '@udecode/plate-common';
 import type { PointRef } from 'slate';
 
 import {
+  type ComboboxItemProps,
   Combobox,
   ComboboxGroup,
   ComboboxGroupLabel,
@@ -32,10 +32,12 @@ import {
 import { cn, withCn } from '@udecode/cn';
 import { filterWords } from '@udecode/plate-combobox';
 import {
+  type UseComboboxInputResult,
   useComboboxInput,
   useHTMLInputCursorState,
 } from '@udecode/plate-combobox/react';
 import {
+  type TElement,
   createPointRef,
   getPointBefore,
   insertText,

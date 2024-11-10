@@ -132,7 +132,7 @@ export function ComponentInstallation({
         <TabsContent value="cli">
           <CodeBlock
             className="mb-4 mt-6"
-            value={`npx shadcx@latest add ${name} -r plate`}
+            value={`npx shadcx@latest add plate/${name}`}
             language="bash"
           />
         </TabsContent>

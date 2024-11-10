@@ -7,8 +7,12 @@ import {
 type props = {
   type: string;
   url: string;
+  id?: string;
+  initialHeight?: number;
+  initialWidth?: number;
   isUpload?: boolean;
   name?: string;
+  placeholderId?: string;
   width?: number;
 };
 
