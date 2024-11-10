@@ -24,11 +24,7 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
     /** Whether to filter leaves */
     isLeaf?: boolean;
 
-    /**
-     * Filter nodes with path above this level. Use 0 for no limit.
-     *
-     * @default 1 if excludePlugins is empty, 0 otherwise
-     */
+    /** Filter nodes with path above this level. */
     maxLevel?: number;
 
     /**
