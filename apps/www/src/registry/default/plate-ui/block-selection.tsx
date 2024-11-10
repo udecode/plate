@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from '@udecode/cn';
 import { useBlockSelected } from '@udecode/plate-selection/react';
 import { type VariantProps, cva } from 'class-variance-authority';
 
@@ -29,10 +30,12 @@ export function BlockSelection({
 
   return (
     <div
-      className={blockSelectionVariants({
-        active: isBlockSelected,
-        className,
-      })}
+      className={cn(
+        blockSelectionVariants({
+          active: isBlockSelected,
+        }),
+        className
+      )}
       {...props}
     />
   );
