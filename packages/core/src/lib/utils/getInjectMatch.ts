@@ -33,10 +33,6 @@ export const getInjectMatch = <E extends SlateEditor>(
     if (element?.type) {
       // Exclude plugins
       if (excludePlugins?.includes(getKeyByType(editor, element.type))) {
-        if (element?.type === 'table') {
-          console.log('excludePlugins', excludePlugins);
-        }
-
         return false;
       }
       // Target plugins
