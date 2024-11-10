@@ -124,6 +124,37 @@ For example:
   <YourSpecialButtoon data-plate-prevent-unselect />
 ```
 
+### Full Page Selection
+
+#### Making Elements Selectable
+
+You can enable block selection for elements outside the `<Editor />` component, similar to the [Potion](https://potion.platejs.org/) template. Add the `data-plate-selectable` attribute to any component you want to make selectable:
+
+```tsx
+<Cover data-plate-selectable />
+<Sidebar data-plate-selectable />
+```
+
+This works for any element, even those outside the editor's DOM tree.
+
+#### Resetting Selection
+
+There are two ways to handle resetting selection across the full page:
+
+1. Direct API call:
+```tsx
+editor.api.blockSelection.unselect();
+```
+
+2. Click outside handler:
+```tsx
+const handleClickOutside = (event: MouseEvent) => {
+  if (!(event.target as HTMLElement).closest('[data-plate-selectable]')) {
+    editor.api.blockSelection.unselect();
+  }
+};
+```
+
 ## Styling
 
 ### Selection area
