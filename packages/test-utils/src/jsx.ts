@@ -1,12 +1,12 @@
 /* eslint-disable prettier/prettier */
-import type { HyperscriptShorthands } from 'slate-hyperscript/dist/hyperscript';
 
 import {
-  createHyperscript,
+  type HyperscriptShorthands,
   createText as createTestText,
 } from 'slate-hyperscript';
 
-import { createText } from './hyperscript/creators';
+import { createText } from './internals/creators';
+import { createHyperscript } from './internals/hyperscript';
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -81,6 +81,7 @@ const elements: HyperscriptShorthands = {
   hul: { type: 'ul' },
   hvideo: { children: voidChildren, type: 'video' },
 };
+
 
 export const jsx = createHyperscript({
   creators: {

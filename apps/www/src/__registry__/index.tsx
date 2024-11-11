@@ -2095,7 +2095,7 @@ export const Index: Record<string, any> = {
     },
     "editor-ai": {
       name: "editor-ai",
-      description: "An AI editor.",
+      description: "An AI editor",
       type: "registry:block",
       registryDependencies: ["api-ai","plate-types","copilot-plugins","editor-plugins","ai-menu","ghost-text","comments-popover","cursor-overlay","editor","fixed-toolbar","fixed-toolbar-buttons","block-context-menu","ai-leaf","blockquote-element","code-block-element","code-leaf","code-line-element","code-syntax-leaf","column-element","column-group-element","comment-leaf","date-element","draggable","emoji-input-element","excalidraw-element","heading-element","highlight-leaf","hr-element","image-element","kbd-leaf","link-element","media-embed-element","mention-element","mention-input-element","paragraph-element","placeholder","slash-input-element","table-cell-element","table-element","table-row-element","toc-element","toggle-element"],
       files: ["registry/default/block/editor-ai/page.tsx","registry/default/block/editor-ai/components/editor/plate-editor.tsx","registry/default/block/editor-ai/components/editor/use-create-editor.tsx"],
@@ -2107,7 +2107,7 @@ export const Index: Record<string, any> = {
     },
     "editor-basic": {
       name: "editor-basic",
-      description: "A simple editor.",
+      description: "A simple editor",
       type: "registry:block",
       registryDependencies: ["editor"],
       files: ["registry/default/block/editor-basic/page.tsx","registry/default/block/editor-basic/components/editor/plate-editor.tsx","registry/default/block/editor-basic/components/editor/use-create-editor.tsx"],

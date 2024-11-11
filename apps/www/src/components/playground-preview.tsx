@@ -22,7 +22,7 @@ import {
 const block: any = {
   description: 'An AI editor.',
   name: 'editor-ai',
-  src: '/blocks/editor-ai',
+  src: '/blocks/playground',
 };
 
 // TODO: sync
