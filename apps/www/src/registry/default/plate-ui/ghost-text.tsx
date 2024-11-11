@@ -28,7 +28,7 @@ export function GhostTextContent() {
 
   return (
     <span
-      className="pointer-events-none hidden text-muted-foreground/70 sm:inline"
+      className="max-sm:hidden pointer-events-none text-muted-foreground/70"
       contentEditable={false}
     >
       {suggestionText && suggestionText}
