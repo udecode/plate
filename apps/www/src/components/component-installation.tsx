@@ -82,9 +82,6 @@ export function ComponentInstallation({
     </>
   );
 
-  if (!files[0]) {
-    console.log(files[0]);
-  }
   if (codeTabs) {
     return (
       <Tabs className="relative w-full" defaultValue={files[0]?.name}>
