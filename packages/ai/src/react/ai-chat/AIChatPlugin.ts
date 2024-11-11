@@ -94,7 +94,6 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     mode: 'chat',
     open: false,
     promptTemplate: () => '{prompt}',
-    scrollContainerSelector: null,
     systemTemplate: () => {},
     trigger: ' ',
     triggerPreviousCharPattern: /^\s?$/,
