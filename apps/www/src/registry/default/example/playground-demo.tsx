@@ -25,8 +25,6 @@ import { autoformatPlugin } from '@/registry/default/components/editor/plugins/a
 import { copilotPlugins } from '@/registry/default/components/editor/plugins/copilot-plugins';
 import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';
 import { tabbablePlugin } from '@/registry/default/components/editor/plugins/tabbable-plugin';
-import { CommentsPopover } from '@/registry/default/plate-ui/comments-popover';
-import { CursorOverlay } from '@/registry/default/plate-ui/cursor-overlay';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
 import { FixedToolbarButtons } from '@/registry/default/plate-ui/fixed-toolbar-buttons';
@@ -120,7 +118,6 @@ export default function PlaygroundDemo({
 
         <div id="editor-playground" className="flex w-full">
           <EditorContainer
-            ref={containerRef}
             variant="demo"
             className={cn(id && 'max-h-[500px]', className)}
           >
@@ -146,17 +143,7 @@ export default function PlaygroundDemo({
                 </CheckPlugin>
               </FloatingToolbar>
             </CheckPlugin>
-
-            <CursorOverlay containerRef={containerRef} />
           </EditorContainer>
-
-          <CheckPlugin
-            id="comment"
-            componentId="comments-popover"
-            plugin={CommentsPlugin}
-          >
-            <CommentsPopover />
-          </CheckPlugin>
         </div>
       </Plate>
     </DemoId>

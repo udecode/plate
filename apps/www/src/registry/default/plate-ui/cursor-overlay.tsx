@@ -51,12 +51,8 @@ export function Cursor({
   );
 }
 
-export function CursorOverlay({
-  containerRef,
-}: {
-  containerRef?: React.RefObject<HTMLElement>;
-}) {
-  const { cursors } = useCursorOverlay({ containerRef });
+export function CursorOverlay() {
+  const { cursors } = useCursorOverlay();
 
   return (
     <>

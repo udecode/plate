@@ -204,7 +204,7 @@ export const uiComponents: Registry = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@udecode/plate-dnd', '@udecode/plate-selection'],
+    dependencies: ['@udecode/plate-selection'],
     doc: {
       description: 'A visual overlay for cursors and selections.',
       docs: [

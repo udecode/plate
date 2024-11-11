@@ -32,6 +32,7 @@ export interface PlateProps<E extends PlateEditor = PlateEditor>
 
 function PlateInner({
   children,
+  containerRef,
   decorate,
   editor,
   primary,
@@ -41,13 +42,14 @@ function PlateInner({
   onChange,
   onSelectionChange,
   onValueChange,
-}: PlateProps) {
+}: PlateProps & { containerRef: React.RefObject<HTMLDivElement> }) {
   return (
     <PlateStoreProvider
       readOnly={readOnly}
       onChange={onChange}
       onSelectionChange={onSelectionChange}
       onValueChange={onValueChange}
+      containerRef={containerRef}
       decorate={decorate}
       editor={editor!}
       primary={primary}
@@ -65,11 +67,19 @@ export function Plate<E extends PlateEditor = PlateEditor>(
 ) {
   const id = useId();
 
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
   usePlateInstancesWarn(props.suppressInstanceWarning);
 
   if (!props.editor) return null;
 
   props.editor.uid = 'e-' + id.replace(/:/g, '');
 
-  return <PlateInner key={props.editor.key} {...(props as any)} />;
+  return (
+    <PlateInner
+      key={props.editor.key}
+      containerRef={containerRef}
+      {...(props as any)}
+    />
+  );
 }

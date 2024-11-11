@@ -4,6 +4,7 @@ import type { UnknownObject } from '@udecode/plate-common';
 import type { Range } from 'slate';
 
 import {
+  useEditorContainerRef,
   useEditorRef,
   useIsomorphicLayoutEffect,
 } from '@udecode/plate-common/react';
@@ -16,12 +17,6 @@ import { getSelectionRects } from '../queries/getSelectionRects';
 import { useRefreshOnResize } from './useRefreshOnResize';
 
 export type UseCursorOverlayOptions = {
-  /**
-   * Container the overlay will be rendered in. If set, all returned overlay
-   * positions will be relative to this container.
-   */
-  containerRef?: React.RefObject<HTMLElement>;
-
   /**
    * Minimum width of a selection rect.
    *
@@ -42,7 +37,6 @@ export const FROZEN_EMPTY_ARRAY = Object.freeze(
 ) as unknown as SelectionRect[];
 
 export const useCursorOverlay = <TCursorData extends UnknownObject>({
-  containerRef,
   minSelectionWidth = 1,
   refreshOnResize = true,
 }: UseCursorOverlayOptions = {}): {
@@ -50,6 +44,8 @@ export const useCursorOverlay = <TCursorData extends UnknownObject>({
   refresh: () => void;
 } => {
   const editor = useEditorRef();
+  const containerRef = useEditorContainerRef();
+
   const cursorStates = editor.useOption(
     CursorOverlayPlugin,
     'cursors'

@@ -60,6 +60,9 @@ export type PlateStoreState<E extends PlateEditor = PlateEditor> = Nullable<{
    */
   id: string;
 
+  /** A reference to the editor container element. */
+  containerRef: React.RefObject<HTMLDivElement>;
+
   /**
    * Slate editor reference.
    *
