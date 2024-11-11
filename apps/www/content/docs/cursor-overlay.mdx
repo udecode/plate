@@ -30,36 +30,21 @@ npm install @udecode/plate-selection
 
 ## Usage
 
+
 ```tsx
 import { CursorOverlayPlugin } from '@udecode/plate-selection/react';
-
-const plugins = [
-  // ...otherPlugins,
-  CursorOverlayPlugin,
-];
+import { CursorOverlay } from '@/components/plate-ui/cursor-overlay';
 ```
 
-## Styling
+- [CursorOverlay](/docs/components/cursor-overlay)
 
-- [CursorOverlay](/docs/components/cursor-overlay) should be rendered inside the editor container. The `containerRef` is required to ensure the overlay is positioned correctly.
-
-```tsx lines={12}
-import { CursorOverlay } from '@/registry/default/plate-ui/cursor-overlay';
-
-export function PlateEditor() {
-  const containerRef = useRef(null);
-  const editor = usePlateEditor();
-
-  return (
-    <Plate editor={editor}>
-      <EditorContainer ref={containerRef} variant="demo">
-        <Editor variant="demo" />
-
-        <CursorOverlay containerRef={containerRef} />
-      </EditorContainer>
-    </Plate>
-  );
-}
+```tsx
+const plugins = [
+  // ...otherPlugins,
+  CursorOverlayPlugin.configure({
+    render: { afterEditable: () => <CursorOverlay /> },
+  }),
+];
 ```
 
 ## Plugins
@@ -99,21 +84,32 @@ Removes a cursor overlay by its key.
   </APIItem>
 </APIParameters>
 
-## API Components
-
-### CursorOverlay
-
-<APIProps>
-  <APIItem name="cursors" type="Record<string, CursorState<CursorData>>">
-    Object containing cursor states for different interactions (blur, drag, etc.).
-  </APIItem>
-  <APIItem name="onRenderCursor" type="(props: CursorProps) => React.ReactNode">
-    Custom render function for cursor visualization.
-  </APIItem>
-</APIProps>
-
 ## Hooks
 
-### useCursorOverlayPositions
+### useCursorOverlay
 
-Returns cursor and selection positions for the current editor state.
+A hook that manages cursor and selection overlay states, providing real-time cursor positions and selection rectangles.
+
+<APIParameters>
+  <APIItem name="options" type="object" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="minSelectionWidth" type="number" optional>
+        Minimum width in pixels for a selection rectangle. Useful for making cursor carets more visible.
+        - **Default:** `1`
+      </APISubListItem>
+      <APISubListItem parent="options" name="refreshOnResize" type="boolean" optional>
+        Whether to recalculate cursor positions when the container is resized.
+        - **Default:** `true`
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem name="cursors" type="CursorOverlayState<TCursorData>[]">
+    Array of cursor states with their corresponding selection rectangles and styling data.
+  </APIItem>
+  <APIItem name="refresh" type="() => void">
+    Function to manually trigger a recalculation of cursor positions.
+  </APIItem>
+</APIReturns>

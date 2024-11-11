@@ -315,6 +315,9 @@ export const customizerItems: Record<string, SettingPlugin> = {
       {
         id: 'comments-popover',
         label: 'CommentsPopover',
+        pluginOptions: [
+          `render: { afterEditable: () => <CommentsPopover /> },`,
+        ],
         route: customizerComponents.commentsPopover.href,
         usage: 'CommentsPopover',
       },
@@ -345,8 +348,10 @@ export const customizerItems: Record<string, SettingPlugin> = {
   [CursorOverlayPlugin.key]: {
     id: CursorOverlayPlugin.key,
     badges: [customizerBadges.handler, customizerBadges.ui],
-    // npmPackage: '@udecode/plate-cursor',
     label: 'Cursor Overlay',
+    npmPackage: '@udecode/plate-selection',
+    pluginFactory: 'CursorOverlayPlugin',
+    pluginOptions: [`render: { afterEditable: () => <CursorOverlay /> },`],
     reactImport: true,
     route: customizerPlugins['cursor-overlay'].route,
   },
@@ -1058,6 +1063,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     components: [
       {
         id: 'editor',
+        import: 'Editor, EditorContainer',
         label: 'Editor',
         route: customizerComponents.editor.href,
         usage: 'Editor',
