@@ -22,7 +22,7 @@ const editorContainerVariants = cva(
     variants: {
       variant: {
         default: 'w-full',
-        demo: 'h-[650px] w-full overflow-y-auto',
+        demo: 'w-full overflow-y-auto',
       },
     },
   }

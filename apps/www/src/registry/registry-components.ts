@@ -31,6 +31,7 @@ const plugins: Registry = [
       'delete-plugins',
       'dnd-plugins',
       'exit-break-plugin',
+      'floating-toolbar-plugin',
       'indent-list-plugins',
       'line-height-plugin',
       'link-plugin',
@@ -184,6 +185,13 @@ const plugins: Registry = [
     dependencies: ['@udecode/plate-break', '@udecode/plate-heading'],
     files: ['components/editor/plugins/exit-break-plugin.ts'],
     name: 'exit-break-plugin',
+    type: 'registry:component',
+  },
+  {
+    dependencies: [],
+    files: ['components/editor/plugins/floating-toolbar-plugin.tsx'],
+    name: 'floating-toolbar-plugin',
+    registryDependencies: ['floating-toolbar', 'floating-toolbar-buttons'],
     type: 'registry:component',
   },
   {

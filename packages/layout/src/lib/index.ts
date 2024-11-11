@@ -5,5 +5,4 @@
 export * from './BaseColumnPlugin';
 export * from './types';
 export * from './withColumn';
-export * from './deprecated/index';
 export * from './transforms/index';

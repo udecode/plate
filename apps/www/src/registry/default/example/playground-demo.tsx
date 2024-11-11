@@ -1,12 +1,11 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React from 'react';
 
 import type { ValueId } from '@/config/customizer-plugins';
 
 import { cn } from '@udecode/cn';
 import { SingleLinePlugin } from '@udecode/plate-break/react';
-import { CommentsPlugin } from '@udecode/plate-comments/react';
 import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
@@ -29,8 +28,6 @@ import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
 import { FixedToolbarButtons } from '@/registry/default/plate-ui/fixed-toolbar-buttons';
 import { FixedToolbarButtonsList } from '@/registry/default/plate-ui/fixed-toolbar-buttons-list';
-import { FloatingToolbar } from '@/registry/default/plate-ui/floating-toolbar';
-import { FloatingToolbarButtons } from '@/registry/default/plate-ui/floating-toolbar-buttons';
 
 import { usePlaygroundEnabled } from './usePlaygroundEnabled';
 
@@ -96,9 +93,6 @@ export default function PlaygroundDemo({
   className?: string;
   scrollSelector?: string;
 }) {
-  const containerRef = useRef(null);
-  const enabled = settingsStore.use.checkedComponents();
-
   const editor = usePlaygroundEditor(id);
 
   return (
@@ -116,35 +110,16 @@ export default function PlaygroundDemo({
           </FixedToolbar>
         </CheckPlugin>
 
-        <div id="editor-playground" className="flex w-full">
-          <EditorContainer
+        <EditorContainer
+          variant="demo"
+          className={cn(id && 'max-h-[500px]', className)}
+        >
+          <Editor
             variant="demo"
-            className={cn(id && 'max-h-[500px]', className)}
-          >
-            <Editor
-              variant="demo"
-              className={cn(!id && 'pb-[20vh] pt-4', id && 'pb-8 pt-2')}
-              spellCheck={false}
-            />
-
-            <CheckPlugin componentId="floating-toolbar">
-              <FloatingToolbar
-                state={{
-                  // hideToolbar: aiOpen,
-                  showWhenReadOnly: isEnabled(
-                    'comment',
-                    id,
-                    enabled[CommentsPlugin.key]
-                  ),
-                }}
-              >
-                <CheckPlugin componentId="floating-toolbar-buttons">
-                  <FloatingToolbarButtons />
-                </CheckPlugin>
-              </FloatingToolbar>
-            </CheckPlugin>
-          </EditorContainer>
-        </div>
+            className={cn(!id && 'pb-[20vh] pt-4', id && 'pb-8 pt-2')}
+            spellCheck={false}
+          />
+        </EditorContainer>
       </Plate>
     </DemoId>
   );

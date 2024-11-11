@@ -26,10 +26,7 @@ import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
-import {
-  BlockSelectionPlugin,
-  CursorOverlayPlugin,
-} from '@udecode/plate-selection/react';
+import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 
 import { AIMenu } from '@/registry/default/plate-ui/ai-menu';
 import { BlockquoteElement } from '@/registry/default/plate-ui/blockquote-element';
@@ -173,7 +170,6 @@ export const PROMPT_TEMPLATES = {
 };
 
 export const aiPlugins = [
-  CursorOverlayPlugin,
   MarkdownPlugin.configure({ options: { indentList: true } }),
   AIPlugin,
   AIChatPlugin.configure({

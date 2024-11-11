@@ -58,8 +58,6 @@ export const blocks: Registry = [
       'editor',
       'fixed-toolbar',
       'fixed-toolbar-buttons',
-      'floating-toolbar',
-      'floating-toolbar-buttons',
       'block-context-menu',
 
       'ai-leaf',
