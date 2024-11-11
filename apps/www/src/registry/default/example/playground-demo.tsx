@@ -104,7 +104,7 @@ export default function PlaygroundDemo({
         >
           <Editor
             variant="demo"
-            className={cn(!id && 'pb-[20vh]', id && 'pb-8')}
+            className={cn(!id && 'pb-[20vh]', id && 'h-[463px] pb-8')}
             spellCheck={false}
           />
         </EditorContainer>

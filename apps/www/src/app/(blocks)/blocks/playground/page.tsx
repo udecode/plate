@@ -18,7 +18,7 @@ export default function PlaygroundPage() {
       className={cn('themes-wrapper bg-background', block.container?.className)}
     >
       {/* <BlockWrapper block={block}> */}
-      <PlaygroundDemo className="h-dvh" />
+      <PlaygroundDemo className="h-dvh [&_[data-slate-editor]]:h-[calc(100dvh-37px)]" />
       {/* {chunks?.map((chunk, index) => (
           <BlockChunk
             key={chunk.name}

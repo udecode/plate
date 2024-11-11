@@ -82,9 +82,12 @@ export function ComponentInstallation({
     </>
   );
 
+  if (!files[0]) {
+    console.log(files[0]);
+  }
   if (codeTabs) {
     return (
-      <Tabs className="relative w-full" defaultValue={files[0].name}>
+      <Tabs className="relative w-full" defaultValue={files[0]?.name}>
         <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0">
           {files.map((file: any) => (
             <TabsTrigger
