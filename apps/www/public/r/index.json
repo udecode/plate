@@ -1764,11 +1764,11 @@
     ],
     "files": [
       {
-        "path": "plate-ui/fixed-toolbar-buttons-list.tsx",
+        "path": "plate-ui/fixed-toolbar-list-buttons.tsx",
         "type": "registry:ui"
       }
     ],
-    "name": "fixed-toolbar-buttons-list",
+    "name": "fixed-toolbar-list-buttons",
     "registryDependencies": [
       "toolbar",
       "ai-toolbar-button",

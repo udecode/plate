@@ -15,6 +15,10 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 
 - Add this to your tailwind config: 
 ```ts
+// plugins
+require("tailwind-scrollbar-hide")
+
+// theme.extend.screens
 screens: {
   /**
    * Matches devices where the primary pointing device is capable of
@@ -41,12 +45,13 @@ screens: {
 - `table-element`: fix width
 - `table-row-element`, `table-cell-element`: support row selection
 - Add `draggable` prop to `date-element`, `mention-element`
-- Add `data-plate-focus` attribute to `link-toolbar-button`, `link-floating-toolbar`, `ai-menu`
+- Add `data-plate-focus` attribute to `link-toolbar-button`, `link-floating-toolbar`, `ai-menu` input
 - `cursor-overlay`: 
   - support collapsed selection
   - remove `DragOverCursorPlugin`, `SelectionOverlayPlugin`. Use `@udecode/plate-selection` instead.
 - `ghost-text`: hide for xs media, add `pointer-events-none`
-- `floating-toolbar`: add `overflow-x-auto` to allow horizontal scrolling (mobile)
+- `floating-toolbar`: add `overflow-x-auto scrollbar-hide` to allow horizontal scrolling (mobile)
+- `fixed-toolbar`: add `scrollbar-hide`, update from `sticky` to `absolute`
 - `emoji-picker-content`: add emoji font
 - `column-element`: add `w-full` as default
 - New hook: `use-is-touch-device`
@@ -60,7 +65,7 @@ inject: {
   excludePlugins: ['table', 'code_line', 'column_group', 'column'],
 },
 ```
-- Add `floating-toolbar-plugin`
+- Add `floating-toolbar-plugin`, `fixed-toolbar-plugin`
 - misc: `hr-element`, `plate-element`, `transforms`
 
 ### November 7 #16.4
