@@ -6,7 +6,7 @@ export const useBlockSelected = (_id?: string) => {
   const { useOption } = useEditorPlugin(BlockSelectionPlugin);
   const { id } = useElement();
 
-  const isBlockSelected = useOption('isSelected', id as string);
+  const isBlockSelected = useOption('isSelected', _id ?? (id as string));
 
   return isBlockSelected;
 };

@@ -7,6 +7,7 @@ import { BaseParagraphPlugin, createSlatePlugin } from '@udecode/plate-common';
 export const BaseLineHeightPlugin = createSlatePlugin({
   key: 'lineHeight',
   inject: {
+    isBlock: true,
     nodeProps: {
       defaultNodeValue: 1.5,
       nodeKey: 'lineHeight',

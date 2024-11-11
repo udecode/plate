@@ -7,7 +7,6 @@ import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
 import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 
-import { editableProps } from '@/plate/demo/editableProps';
 import { PlateUI } from '@/plate/demo/plate-ui';
 import { iframeValue } from '@/plate/demo/values/iframeValue';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
@@ -37,7 +36,7 @@ export default function IframeDemo() {
     <IFrame className="p-10">
       <Plate editor={editor}>
         <EditorContainer>
-          <Editor {...editableProps} />
+          <Editor />
         </EditorContainer>
       </Plate>
     </IFrame>

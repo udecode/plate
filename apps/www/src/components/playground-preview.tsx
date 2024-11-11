@@ -22,6 +22,7 @@ import {
 const block: any = {
   description: 'An AI editor.',
   name: 'editor-ai',
+  src: '/blocks/playground',
 };
 
 // TODO: sync
@@ -64,7 +65,7 @@ export function PlaygroundPreview({
         <ResizablePanel
           ref={ref}
           className={cn(
-            'relative rounded-lg border bg-background max-sm:w-full max-sm:!flex-auto',
+            'max-sm:w-full max-sm:!flex-auto relative rounded-lg border bg-background',
             isLiftMode && 'border-border/50'
           )}
           defaultSize={100}

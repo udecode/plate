@@ -172,7 +172,6 @@ const plugins = [
             ? PROMPT_TEMPLATES.userSelecting
             : PROMPT_TEMPLATES.userDefault;
       },
-      scrollContainerSelector: '#scroll_container',
       systemTemplate: ({ isBlockSelecting, isSelecting }) => {
         return isBlockSelecting
           ? PROMPT_TEMPLATES.systemBlockSelecting
@@ -183,17 +182,10 @@ const plugins = [
     },
     render: { afterEditable: () => <AIMenu /> },
   }),
-  SelectionOverlayPlugin,
 ];
 ```
 
 - [AIMenu](/docs/components/ai-menu)
-
-The [SelectionOverlayPlugin](https://pro.platejs.org/docs/components/cursor-overlay):
-
-- Maintains selection highlight when editor loses focus
-- Essential for AI menu and other external input interactions
-- Prevents double selection with `data-plate-prevent-overlay` attribute
 
 ### AI SDK
 
@@ -275,14 +267,6 @@ Template for generating prompts. Supports placeholders:
 - `{selection}`: Markdown of current selection
 - `{prompt}`: Actual user prompt
 - **Default:** `'{prompt}'`
-
-</APIItem>
-
-<APIItem name="scrollContainerSelector" type="string" optional>
-
-CSS selector for scrollable container.
-
-- **Default:** `'#scroll_container'`
 
 </APIItem>
 

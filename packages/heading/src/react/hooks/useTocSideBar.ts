@@ -3,6 +3,7 @@ import React from 'react';
 import { getNode } from '@udecode/plate-common';
 import {
   toDOMNode,
+  useEditorContainerRef,
   useEditorPlugin,
   useEditorSelector,
 } from '@udecode/plate-common/react';
@@ -20,17 +21,9 @@ export const useTocSideBarState = ({
   rootMargin = '0px 0px 0px 0px',
   topOffset = 0,
 }: TocSideBarProps) => {
-  const { editor, getOptions } = useEditorPlugin(TocPlugin);
-  const { scrollContainerSelector } = getOptions();
+  const { editor } = useEditorPlugin(TocPlugin);
   const headingList = useEditorSelector(getHeadingList, []);
-  const scrollContainerRef = React.useRef<HTMLDivElement | null>(null);
-
-  React.useEffect(() => {
-    scrollContainerRef.current = document.querySelector(
-      scrollContainerSelector ?? '#scroll_container'
-    )!;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const containerRef = useEditorContainerRef();
 
   const tocRef = React.useRef<HTMLElement>(null);
 
@@ -39,7 +32,7 @@ export const useTocSideBarState = ({
   const [isObserve, setIsObserve] = React.useState(open);
 
   const { activeContentId, onContentScroll } = useContentController({
-    containerRef: scrollContainerRef,
+    containerRef,
     isObserve,
     rootMargin,
     topOffset,

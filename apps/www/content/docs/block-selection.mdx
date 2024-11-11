@@ -42,56 +42,50 @@ const plugins = [
 ];
 ```
 
-## Configuration
+### Exclude blocks from selection
+
+You can exclude certain plugins from block selection using:
+
+```ts
+BlockSelectionPlugin.configure({
+  inject: {
+    // Exclude blocks below table rows
+    excludeBelowPlugins: ['tr'],
+    // Exclude block types
+    excludePlugins: ['table', 'code_line', 'column_group', 'column'],
+  }
+})
+```
+
+- `excludeBelowPlugins`: Plugin keys of non-selectable block descendants. Use this to prevent selection below specific blocks. For example, excluding 'tr' prevents selecting individual cells while still allowing table row selection.
+
+- `excludePlugins`: Plugin keys of non-selectable blocks.
 
 ### Set scrollable container
 
-To control the scrollable container, configure the `boundaries` and `container` options within `areaOptions`. These options accept CSS selectors, such as `#selection-demo #scroll_container`, which are used with `document.querySelector()`.
+If you're using `EditorContainer` from [Editor](/docs/components/editor), you can skip this section.
+
+To control the scrollable container, configure the `boundaries` and `container` options within `areaOptions`. These options accept CSS selectors, such as `#selection-demo #${editor.uid}`, which are used with `document.querySelector()`.
 
 For this to work effectively:
 
-1. Add an `id` or `className` to your scroll container.If you not sure about the container, you can add it to the `<Editor />` component.
+1. Add an `id` or `className` to your scroll container. If you not sure about the container, you can add it to the `<Editor />` component. We recommend using `id={editor.uid}`.
 2. Use the appropriate selector in your configuration.
-3. Don't forget to set `position: relative` to your scroll container.
+3. Don't forget to set `position: relative` to the container.
 
-Example configuration:
+Default configuration:
 
 ```js
-{
-  areaOptions: {
-    boundaries: '#your-scroll-container-id',
-    container: '#your-scroll-container-id',
-    selectables: '#your-scroll-container-id .slate-selectable',
-    selectionAreaClass: 'slate-selection-area',
-  }
-}
-```
-
-This setup ensures that the block selection functionality is properly constrained within your designated scrollable area.
-
-### Set selectable element
-
-Add data-plate-selectable to the container or the element you want to start block selection.
-
-Example:
-```tsx
-   <PlateContent
-    aria-disabled={disabled}
-    className={cn(
-      editorVariants({
-        disabled,
-        focusRing,
-        focused,
-        size,
-        variant,
-      }),
-      className
-    )}
-    data-plate-selectable
-    disableDefaultStyles
-    readOnly={disabled ?? readOnly}
-    {...props}
-    />
+BlockSelectionPlugin.configure({
+  options: {
+    areaOptions: {
+    boundaries: `#${editor.uid}`,
+    container: `#${editor.uid}`,
+    selectables: `#${editor.uid} .slate-selectable`,
+      },
+    },
+  },
+});
 ```
 
 ### Set scroll speed
@@ -102,95 +96,26 @@ The value of `1.5` is our recommended speed.Since it's same with the default spe
 
 
 ```ts
-  areaOptions: {
+BlockSelectionPlugin.configure({
+  options: {
+    areaOptions: {
       behaviour: {
-        scrolling: {
-          speedDivider: 1.5,
-        },
-      },
-  },
-```
-
-Full configuration recommended:
-
-```ts
-options: {
-  areaOptions: {
-    behaviour: {
       scrolling: {
         speedDivider: 1.5,
       },
       // The distance needed to move for the selection area to appear.
-      // If it’s too small, it may cause the mouse click event to be blocked. 30 is a good default.
-      startThreshold: 30,
+      // If it’s too small, it may cause the mouse click event to be blocked. 10 is a good default.
+      startThreshold: 10,
     },
-    boundaries: '#your-scroll-container-id',
-    container: '#your-scroll-container-id',
-    selectables: '#your-scroll-container-id .slate-selectable',
-    selectionAreaClass: 'slate-selection-area',
   },
-  // if not using plate-ui context menu, set it to false
-  enableContextMenu: true,
-},
-```
-
-## Styling
-
-### Selection area
-
-Style the selection area using `.slate-selection-area` class to your `EditorContainer` component. For example:
-
-```js
-'[&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/10'
-```
-
-### Selected element
-
-To determine if an element is selected, use the new `useBlockSelected` hook. You can render a visual indicator around selected blocks using our `BlockSelection` component or create your own:
-
-```tsx
-import React from 'react';
-import { useBlockSelected } from '@udecode/plate-selection/react';
-
-export function BlockSelection() {
-  const isBlockSelected = useBlockSelected();
-
-  return (
-    <div
-      className={`pointer-events-none absolute inset-0 z-10 bg-primary/15 ${
-        isBlockSelected ? 'opacity-100' : 'opacity-0'
-      }`}
-    />
-  );
 }
 ```
 
-This component should be rendered inside each block element for consistent selection feedback. Plate UI is doing it in `plate-element.tsx`.
+### Add selectable element
 
-## Selectable and resetable
+Add `data-plate-selectable="true"` to any element you want to start block selection.
 
-### full page selectable
-
-Like the [potion](https://potion.platejs.org/) template, you can enable block selection outside of the `<Editor />` component.
-
-Simply add the `data-plate-selectable` attribute to any component outside the editor that you want to make selectable. You can even make the entire page selectable if desired.
-
-For example:
-
-```tsx
-<Cover data-plate-selectable />
-```
-
-### full page resetable
-
-To reset the selection, you need call the `api.blockSelection.unselect();` method.
-
-If you want to make the full page resetable by click, this means you need to be able to access the editor outside of `<Editor />`.
-
-Or you can implement a click outside handler to reset the selection.
-
-
-## Prevent unselect
+### Prevent unselect
 
 To prevent unselecting blocks when clicking on certain elements, add the `data-plate-prevent-unselect` attribute to those components
 
@@ -198,6 +123,53 @@ For example:
 ```tsx
   <YourSpecialButtoon data-plate-prevent-unselect />
 ```
+
+### Full Page Selection
+
+#### Making Elements Selectable
+
+You can enable block selection for elements outside the `<Editor />` component, similar to the [Potion](https://potion.platejs.org/) template. Add the `data-plate-selectable` attribute to any component you want to make selectable:
+
+```tsx
+<Cover data-plate-selectable />
+<Sidebar data-plate-selectable />
+```
+
+This works for any element, even those outside the editor's DOM tree.
+
+#### Resetting Selection
+
+There are two ways to handle resetting selection across the full page:
+
+1. Direct API call:
+```tsx
+editor.api.blockSelection.unselect();
+```
+
+2. Click outside handler:
+```tsx
+const handleClickOutside = (event: MouseEvent) => {
+  if (!(event.target as HTMLElement).closest('[data-plate-selectable]')) {
+    editor.api.blockSelection.unselect();
+  }
+};
+```
+
+## Styling
+
+### Selection area
+
+Style the selection area using `.slate-selection-area` class to your editor container component. For example:
+
+```js
+'[&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/10'
+```
+
+### Selected element
+
+To determine if an element is selected, use `useBlockSelected` hook. You can render a visual indicator around selected blocks using our [BlockSelection](/docs/components/block-selection) component or create your own.
+
+This component should be rendered inside each block element for consistent selection feedback. Plate UI is doing it in [PlateElement](/docs/components/plate-element).
 
 ## Plugins
 
@@ -209,9 +181,9 @@ Options for the selection area. Example:
 
 ```ts
 {
-  boundaries: ['#selection-demo #scroll_container'],
-  container: ['#selection-demo #scroll_container'],
-  selectables: ['#selection-demo #scroll_container .slate-selectable'],
+  boundaries: [`#${editor.uid}`],
+  container: [`#${editor.uid}`],
+  selectables: [`#${editor.uid} .slate-selectable`],
   selectionAreaClass: 'slate-selection-area',
 }
 ```
@@ -254,7 +226,6 @@ A set of IDs for the currently selected blocks.
 
 ## API
 
-
 ### editor.api.blockSelection.focus
 Focuses the block selection shadow input. This input handles copy, delete, and paste events for selected blocks.
 
@@ -268,9 +239,6 @@ Adds a selected row to the block selection.
   </APIItem>
   <APIItem name="options" type="object" optional>
     <APISubList>
-      <APISubListItem parent="options" name="aboveHtmlNode" type="HTMLDivElement" optional>
-        The HTML node above which to add the selection.
-      </APISubListItem>
       <APISubListItem parent="options" name="clear" type="boolean" optional>
         Whether to clear existing selections before adding the new one.
         - **Default:** `true`
@@ -364,67 +332,33 @@ Sets text properties on the selected nodes.
   </APIItem>
 </APIParameters>
 
-## API Components
+## Hooks
 
-### BlockSelectable
+### useBlockSelectable
 
-<APIProps>
-  <APIItem name="options" type="BlockSelectableOptions">
+A hook that provides props for making a block element selectable, including context menu behavior.
+
+<APIReturns>
+  <APIItem name="props" type="object">
+    Props to be spread on the block element:
     <APISubList>
-      <APISubListItem parent="options" name="element" type="TElement">
-        The element to render the block selectable.
+      <APISubListItem parent="props" name="className" type="string">
+        `'slate-selectable'` - Required class for selection functionality
       </APISubListItem>
-      <APISubListItem parent="options" name="active" type="boolean" optional>
-        Whether the selection is active.
+      <APISubListItem parent="props" name="onContextMenu" type="(event: React.MouseEvent) => void">
+        Handles right-click context menu behavior:
+        - Opens context menu for selected blocks
+        - Opens for void elements
+        - Opens for elements with `data-plate-open-context-menu="true"`
+        - Adds block to selection with Shift key for multi-select
       </APISubListItem>
     </APISubList>
   </APIItem>
-</APIProps>
-
-### BlockSelection
-
-A wrapper component that adds block selection functionality to its children.
-
-<APIProps>
-  <APIItem name="children" type="React.ReactNode">
-    The content to be wrapped with block selection functionality.
-  </APIItem>
-</APIProps>
-
-## Hooks
+</APIReturns>
 
 ### useBlockSelected
 
 Returns true if context block is selected.
-
-### useBlockSelectableState
-
-<APIReturns>
-  <APIItem name="active" type="boolean">
-    Whether the block is active for selection.
-  </APIItem>
-  <APIItem name="element" type="TElement" optional>
-    The element associated with the block.
-  </APIItem>
-  <APIItem name="path" type="Path" optional>
-    The path of the block in the editor.
-  </APIItem>
-  <APIItem name="ref" type="React.RefObject<HTMLDivElement>" optional>
-    A ref to the block's DOM element.
-  </APIItem>
-</APIReturns>
-
-### useBlockSelectable
-
-<APIReturns>
-  <APIItem name="props" type="object">
-    Props to be spread on the block's wrapper element.
-  </APIItem>
-</APIReturns>
-
-### useSelectionArea
-
-A hook that initializes and manages the selection area functionality.
 
 ### useBlockSelectionNodes
 
@@ -437,3 +371,7 @@ Returns an array of nodes for the currently selected blocks.
 ### useBlockSelectionFragmentProp
 
 Returns fragment prop for the currently selected blocks.
+
+### useSelectionArea
+
+A hook that initializes and manages the selection area functionality.

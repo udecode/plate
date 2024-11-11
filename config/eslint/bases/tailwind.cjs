@@ -28,7 +28,6 @@ module.exports = {
       {
         whitelist: [
           'ignore-click-outside/toolbar',
-          'no-scrollbar',
           'chunk-mode',
           'preview',
           'toaster',

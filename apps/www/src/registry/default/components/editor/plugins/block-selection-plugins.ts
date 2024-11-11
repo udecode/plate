@@ -4,6 +4,10 @@ import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 
 export const blockSelectionPlugins = [
   BlockSelectionPlugin.configure({
+    inject: {
+      excludeBelowPlugins: ['tr'],
+      excludePlugins: ['table', 'code_line', 'column_group', 'column'],
+    },
     options: {
       areaOptions: {
         behaviour: {
@@ -12,10 +16,6 @@ export const blockSelectionPlugins = [
           },
           startThreshold: 4,
         },
-        boundaries: '#scroll_container',
-        container: '#scroll_container',
-        selectables: '#scroll_container .slate-selectable',
-        selectionAreaClass: 'slate-selection-area',
       },
       enableContextMenu: true,
     },

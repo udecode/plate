@@ -1,31 +1,18 @@
-import { type TElement, type TText, isElement } from '@udecode/slate';
-import { type AnyObject, isDefined } from '@udecode/utils';
-import { clsx } from 'clsx';
+import { findNodePath } from '@udecode/slate-react';
+import { isDefined } from '@udecode/utils';
 
-import type { SlateEditor } from '../editor';
-import type { EditorPlugin, TransformOptions } from '../plugin/SlatePlugin';
+import type { SlateEditor } from '../../lib/editor';
+import type {
+  EditorPlugin,
+  TransformOptions,
+} from '../../lib/plugin/SlatePlugin';
 
-import { getEditorPlugin } from '../plugin';
-import { getKeyByType } from './getKeysByTypes';
-
-export interface GetInjectNodePropsOptions {
-  /** Existing className. */
-  className?: string;
-
-  /** Style value or className key. */
-  element?: TElement;
-
-  /** Existing style. */
-  style?: CSSStyleDeclaration;
-
-  /** Style value or className key. */
-  text?: TText;
-}
-
-export interface GetInjectNodePropsReturnType extends AnyObject {
-  className?: string;
-  style?: CSSStyleDeclaration;
-}
+import {
+  type GetInjectNodePropsOptions,
+  type GetInjectNodePropsReturnType,
+  getEditorPlugin,
+} from '../../lib/plugin';
+import { getInjectMatch } from '../../lib/utils/getInjectMatch';
 
 /**
  * Return if `element`, `text`, `nodeKey` is defined. Return if `node.type` is
@@ -41,10 +28,10 @@ export const pluginInjectNodeProps = (
 ): GetInjectNodePropsReturnType | undefined => {
   const {
     key,
-    inject: { nodeProps: injectNodeProps, targetPlugins },
+    inject: { nodeProps: injectNodeProps },
   } = plugin;
 
-  const { className, element, style, text } = nodeProps;
+  const { element, text } = nodeProps;
 
   const node = element ?? text;
 
@@ -64,19 +51,17 @@ export const pluginInjectNodeProps = (
     validNodeValues,
   } = injectNodeProps;
 
+  const injectMatch = getInjectMatch(editor, plugin);
+
+  if (!injectMatch(node, findNodePath(editor, node)!)) return;
+
   const queryResult = query?.({
     ...injectNodeProps,
     ...(getEditorPlugin(editor, plugin) as any),
     nodeProps,
   });
 
-  if (
-    !queryResult &&
-    targetPlugins &&
-    isElement(node) &&
-    node.type &&
-    !targetPlugins.includes(getKeyByType(editor, node.type))
-  ) {
+  if (query && !queryResult) {
     return;
   }
 
@@ -84,7 +69,7 @@ export const pluginInjectNodeProps = (
 
   // early return if there is no reason to inject props
   if (
-    !queryResult &&
+    !transformProps &&
     (!isDefined(nodeValue) ||
       (validNodeValues && !validNodeValues.includes(nodeValue)) ||
       nodeValue === defaultNodeValue)
@@ -100,27 +85,26 @@ export const pluginInjectNodeProps = (
   const value = transformNodeValue?.(transformOptions) ?? nodeValue;
   transformOptions.value = value;
 
-  let res: GetInjectNodePropsReturnType = {};
+  let newProps: GetInjectNodePropsReturnType = {};
 
-  if (element) {
-    res.className = clsx(className, `slate-${nodeKey}-${nodeValue}`);
+  if (element && nodeKey) {
+    newProps.className = `slate-${nodeKey}-${nodeValue}`;
   }
   if (classNames?.[nodeValue] || transformClassName) {
-    res.className =
-      transformClassName?.(transformOptions) ??
-      clsx(className, classNames?.[value]);
+    newProps.className =
+      transformClassName?.(transformOptions) ?? classNames?.[value];
   }
   if (styleKey) {
-    res.style =
+    newProps.style =
       transformStyle?.(transformOptions) ??
       ({
-        ...style,
         [styleKey as string]: value,
       } as any);
   }
   if (transformProps) {
-    res = transformProps({ ...transformOptions, props: res }) ?? res;
+    newProps =
+      transformProps({ ...transformOptions, props: newProps }) ?? newProps;
   }
 
-  return res;
+  return newProps;
 };

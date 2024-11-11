@@ -10,33 +10,19 @@ export const blockSelectionValue: any = (
     <hp>
       <htext>
         Block selection allows you to select multiple blocks at once.You can
-        initiate a selection by clicking and dragging from the left or right
-        padding of the editor.
+        initiate a selection by clicking and dragging from the editor padding.
       </htext>
     </hp>
     <hp>Key features of block selection:</hp>
     <hp indent={1} listStyleType="disc">
-      <htext>
-        Select multiple blocks by dragging from the editor's padding
-      </htext>
+      <htext>Select multiple blocks.</htext>
     </hp>
     <hp indent={1} listStyleType="disc">
-      <htext>
-        Try using Shift + drag after the first block selection to select
-        multiple non-contiguous blocks.
-      </htext>
-    </hp>
-    <hp indent={1} listStyleType="disc">
-      <htext>Easily manipulate groups of blocks</htext>
+      Keep pressing Shift to keep the previous selection. That way, you can
+      select non-contiguous blocks.
     </hp>
     <hp indent={1} listStyleType="disc">
       <htext>Perform bulk actions on selected blocks</htext>
-    </hp>
-    <hp indent={1} listStyleType="disc">
-      <htext>Intuitive and efficient way to manage content</htext>
-    </hp>
-    <hp indent={1} listStyleType="disc">
-      <htext>Enhances productivity for complex document structures</htext>
     </hp>
   </fragment>
 );

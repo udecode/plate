@@ -85,7 +85,12 @@ export const uiComponents: Registry = [
     },
     files: ['plate-ui/block-context-menu.tsx'],
     name: 'block-context-menu',
-    registryDependencies: ['calendar', 'plate-element', 'context-menu'],
+    registryDependencies: [
+      'calendar',
+      'plate-element',
+      'context-menu',
+      'use-is-touch-device',
+    ],
     type: 'registry:ui',
   },
   {
@@ -199,18 +204,14 @@ export const uiComponents: Registry = [
     type: 'registry:ui',
   },
   {
-    dependencies: [
-      '@udecode/plate-cursor',
-      '@udecode/plate-dnd',
-      '@udecode/plate-selection',
-    ],
+    dependencies: ['@udecode/plate-selection'],
     doc: {
-      description: 'A visual overlay for collaborative cursors and selections.',
+      description: 'A visual overlay for cursors and selections.',
       docs: [
-        // { route: '/docs/ai', title: 'AI' },
-        {
-          route: siteConfig.links.plateProComponent('cursor-overlay'),
-        },
+        { route: '/docs/cursor-overlay', title: 'Cursor Overlay' },
+        // {
+        //   route: siteConfig.links.plateProComponent('cursor-overlay'),
+        // },
       ],
       examples: ['ai-demo'],
     },
@@ -375,8 +376,8 @@ import { withDraggables } from './withDraggables';`,
     //   description: 'A set of commonly used formatting buttons.',
     //   examples: ['toolbar-demo'],
     // },
-    files: ['plate-ui/fixed-toolbar-buttons-list.tsx'],
-    name: 'fixed-toolbar-buttons-list',
+    files: ['plate-ui/fixed-toolbar-list-buttons.tsx'],
+    name: 'fixed-toolbar-list-buttons',
     registryDependencies: [
       'toolbar',
       'ai-toolbar-button',

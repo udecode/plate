@@ -81,24 +81,6 @@ describe('pipeNormalizeInitialValue', () => {
     });
   });
 
-  describe('when no initial value is provided', () => {
-    it('should not normalize', () => {
-      const editor = createPlateEditor({
-        plugins,
-      });
-
-      const wrapper = ({ children }: any) => (
-        <Plate editor={editor}>{children}</Plate>
-      );
-
-      const { result } = renderHook(() => useEditorValue(), {
-        wrapper,
-      });
-
-      expect(result.current).toEqual([{ children: [{ text: '' }], type: 'p' }]);
-    });
-  });
-
   describe('withPlate', () => {
     describe('children handling', () => {
       it('should use provided children', () => {

@@ -1,18 +1,93 @@
 import {
   type ExtendEditor,
+  createPathRef,
   getAboveNode,
+  getLastChildPath,
   isCollapsed,
   isElement,
   isStartPoint,
+  removeNodes,
+  unwrapNodes,
 } from '@udecode/plate-common';
 
-import { BaseColumnItemPlugin } from './BaseColumnPlugin';
-import { normalizeColumn } from './normalizers/normalizedColumn';
+import type { TColumnElement, TColumnGroupElement } from './types';
+
+import { BaseColumnItemPlugin, BaseColumnPlugin } from './BaseColumnPlugin';
+import { insertColumn, moveMiddleColumn, setColumnWidth } from './transforms';
 
 export const withColumn: ExtendEditor = ({ editor }) => {
-  const { deleteBackward, isEmpty } = editor;
+  const { deleteBackward, isEmpty, normalizeNode } = editor;
 
-  editor.normalizeNode = normalizeColumn(editor);
+  editor.normalizeNode = (entry) => {
+    const [n, path] = entry;
+
+    if (isElement(n) && n.type === BaseColumnPlugin.key) {
+      const node = n as TColumnGroupElement;
+
+      if (
+        !node.children.some(
+          (child) =>
+            isElement(child) &&
+            child.type === editor.getType(BaseColumnItemPlugin)
+        )
+      ) {
+        removeNodes(editor, { at: path });
+
+        return;
+      }
+      if (node.children.length < 2) {
+        editor.withoutNormalizing(() => {
+          unwrapNodes(editor, { at: path });
+          unwrapNodes(editor, { at: path });
+        });
+
+        return;
+      }
+
+      const prevChildrenCnt = node.children.length;
+      const currentLayout = node.layout;
+
+      if (currentLayout) {
+        const currentChildrenCnt = currentLayout.length;
+
+        const groupPathRef = createPathRef(editor, path);
+
+        if (prevChildrenCnt === 2 && currentChildrenCnt === 3) {
+          const lastChildPath = getLastChildPath(entry);
+
+          insertColumn(editor, {
+            at: lastChildPath,
+          });
+
+          setColumnWidth(editor, groupPathRef, currentLayout);
+
+          return;
+        }
+        if (prevChildrenCnt === 3 && currentChildrenCnt === 2) {
+          moveMiddleColumn(editor, entry, { direction: 'left' });
+          setColumnWidth(editor, groupPathRef, currentLayout);
+
+          return;
+        }
+        if (prevChildrenCnt === currentChildrenCnt) {
+          setColumnWidth(editor, groupPathRef, currentLayout);
+
+          return;
+        }
+      }
+    }
+    if (isElement(n) && n.type === BaseColumnItemPlugin.key) {
+      const node = n as TColumnElement;
+
+      if (node.children.length === 0) {
+        removeNodes(editor, { at: path });
+
+        return;
+      }
+    }
+
+    return normalizeNode(entry);
+  };
 
   editor.deleteBackward = (unit) => {
     if (isCollapsed(editor.selection)) {

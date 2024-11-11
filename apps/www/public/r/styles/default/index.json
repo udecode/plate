@@ -8,6 +8,7 @@
     "@udecode/cn",
     "@udecode/plate-common",
     "slate",
+    "slate-dom",
     "slate-react",
     "slate-history",
     "slate-hyperscript"
@@ -29,6 +30,11 @@
               "DEFAULT": "hsl(var(--highlight))",
               "foreground": "hsl(var(--highlight-foreground))"
             }
+          }
+        },
+        "screens": {
+          "main-hover": {
+            "raw": "(hover: hover)"
           }
         }
       }

@@ -5,7 +5,7 @@
   ],
   "files": [
     {
-      "content": "'use client';\n\nimport { CaptionPlugin } from '@udecode/plate-caption/react';\nimport {\n  AudioPlugin,\n  FilePlugin,\n  ImagePlugin,\n  MediaEmbedPlugin,\n  PlaceholderPlugin,\n  VideoPlugin,\n} from '@udecode/plate-media/react';\n\nimport { ImagePreview } from '@/components/plate-ui/image-preview';\n\nexport const mediaPlugins = [\n  PlaceholderPlugin,\n  ImagePlugin.extend({\n    options: {\n      disableUploadInsert: true,\n    },\n    render: { afterEditable: ImagePreview },\n  }),\n  VideoPlugin,\n  AudioPlugin,\n  FilePlugin,\n  CaptionPlugin.configure({\n    options: { plugins: [ImagePlugin, MediaEmbedPlugin] },\n  }),\n] as const;\n",
+      "content": "'use client';\n\nimport { CaptionPlugin } from '@udecode/plate-caption/react';\nimport {\n  AudioPlugin,\n  FilePlugin,\n  ImagePlugin,\n  MediaEmbedPlugin,\n  PlaceholderPlugin,\n  VideoPlugin,\n} from '@udecode/plate-media/react';\n\nimport { ImagePreview } from '@/components/plate-ui/image-preview';\n\nexport const mediaPlugins = [\n  PlaceholderPlugin,\n  ImagePlugin.extend({\n    options: {\n      disableUploadInsert: true,\n    },\n    render: { afterEditable: ImagePreview },\n  }),\n  MediaEmbedPlugin,\n  VideoPlugin,\n  AudioPlugin,\n  FilePlugin,\n  CaptionPlugin.configure({\n    options: { plugins: [ImagePlugin, MediaEmbedPlugin] },\n  }),\n] as const;\n",
       "path": "components/editor/plugins/media-plugins.tsx",
       "target": "components/editor/plugins/media-plugins.tsx",
       "type": "registry:component"

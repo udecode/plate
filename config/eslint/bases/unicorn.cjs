@@ -22,6 +22,7 @@ module.exports = {
     ],
     'unicorn/expiring-todo-comments': 'off',
     'unicorn/filename-case': 'off',
+    'unicorn/new-for-builtins': 'off',
     'unicorn/no-abusive-eslint-disable': 'off',
     'unicorn/no-array-callback-reference': 'off',
     'unicorn/no-array-for-each': 'off',

@@ -20,9 +20,12 @@ import {
   EquationPlugin,
   InlineEquationPlugin,
 } from '@udecode/plate-math/react';
+import { CursorOverlayPlugin } from '@udecode/plate-selection/react';
 import { SlashPlugin } from '@udecode/plate-slash-command/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
+
+import { CursorOverlay } from '@/registry/default/plate-ui/cursor-overlay';
 
 import { aiPlugins } from './ai-plugins';
 import { alignPlugin } from './align-plugin';
@@ -40,7 +43,6 @@ import { mediaPlugins } from './media-plugins';
 import { mentionPlugin } from './mention-plugin';
 import { resetBlockTypePlugin } from './reset-block-type-plugin';
 import { softBreakPlugin } from './soft-break-plugin';
-import { tabbablePlugin } from './tabbable-plugin';
 import { tablePlugin } from './table-plugin';
 import { tocPlugin } from './toc-plugin';
 
@@ -78,6 +80,9 @@ export const editorPlugins = [
 
   // Functionality
   autoformatPlugin,
+  CursorOverlayPlugin.configure({
+    render: { afterEditable: () => <CursorOverlay /> },
+  }),
   ...blockMenuPlugins,
   ...dndPlugins,
   EmojiPlugin,
@@ -85,7 +90,6 @@ export const editorPlugins = [
   resetBlockTypePlugin,
   ...deletePlugins,
   softBreakPlugin,
-  tabbablePlugin,
   TrailingBlockPlugin.configure({ options: { type: ParagraphPlugin.key } }),
 
   // Collaboration

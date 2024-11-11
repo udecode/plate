@@ -18,6 +18,8 @@ import {
   BlockSelectionPlugin,
 } from '@udecode/plate-selection/react';
 
+import { useIsTouchDevice } from '@/registry/default/hooks/use-is-touch-device';
+
 import {
   ContextMenu,
   ContextMenuContent,
@@ -34,6 +36,7 @@ type Value = 'askAI' | null;
 export function BlockContextMenu({ children }: { children: React.ReactNode }) {
   const { api, editor } = useEditorPlugin(BlockMenuPlugin);
   const [value, setValue] = useState<Value>(null);
+  const isTouch = useIsTouchDevice();
 
   const handleTurnInto = useCallback(
     (type: string) => {
@@ -59,6 +62,10 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
     },
     [editor]
   );
+
+  if (isTouch) {
+    return children;
+  }
 
   return (
     <ContextMenu

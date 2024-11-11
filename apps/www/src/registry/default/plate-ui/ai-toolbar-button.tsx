@@ -19,6 +19,9 @@ export const AIToolbarButton = withRef<typeof ToolbarButton>(
         onClick={() => {
           api.aiChat.show();
         }}
+        onMouseDown={(e) => {
+          e.preventDefault();
+        }}
       >
         {children}
       </ToolbarButton>

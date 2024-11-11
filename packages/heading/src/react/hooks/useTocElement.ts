@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 
 import { getNode } from '@udecode/plate-common';
 import {
   toDOMNode,
+  useEditorContainerRef,
   useEditorPlugin,
   useEditorSelector,
 } from '@udecode/plate-common/react';
@@ -15,26 +16,11 @@ import { heightToTop } from '../utils';
 
 export const useTocElementState = () => {
   const { editor, getOptions } = useEditorPlugin(TocPlugin);
-  const { isScroll, scrollContainerSelector, topOffset } = getOptions();
+  const { isScroll, topOffset } = getOptions();
 
   const headingList = useEditorSelector(getHeadingList, []);
 
-  const containerRef = React.useRef<HTMLElement | null>(null);
-
-  useEffect(() => {
-    const container = scrollContainerSelector
-      ? document.querySelector(scrollContainerSelector)
-      : toDOMNode(editor, editor)!;
-
-    if (!container) return;
-
-    containerRef.current = container as HTMLElement;
-
-    return () => {
-      containerRef.current = null;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const containerRef = useEditorContainerRef();
 
   const onContentScroll = React.useCallback(
     (el: HTMLElement, id: string, behavior: ScrollBehavior = 'instant') => {

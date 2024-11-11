@@ -365,6 +365,11 @@ export const docsConfig: DocsConfig = {
           title: 'CSV',
         },
         {
+          href: '/docs/cursor-overlay',
+          label: 'New',
+          title: 'Cursor Overlay',
+        },
+        {
           href: '/docs/date',
           label: 'Element',
           title: 'Date',

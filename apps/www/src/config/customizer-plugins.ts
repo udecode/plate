@@ -37,6 +37,7 @@ import { ResetNodePlugin } from '@udecode/plate-reset-node/react';
 import {
   BlockMenuPlugin,
   BlockSelectionPlugin,
+  CursorOverlayPlugin,
 } from '@udecode/plate-selection/react';
 import { SlashPlugin } from '@udecode/plate-slash-command/react';
 import { TabbablePlugin } from '@udecode/plate-tabbable/react';
@@ -51,7 +52,6 @@ import { columnValue } from '@/lib/plate/demo/values/columnValue';
 import { copilotValue } from '@/lib/plate/demo/values/copilotValue';
 import { slashCommandValue } from '@/lib/plate/demo/values/slashCommandValue';
 import { tocValue } from '@/lib/plate/demo/values/tocValue';
-import { DragOverCursorPlugin } from '@/plate/demo/plugins/DragOverCursorPlugin';
 import { alignValue } from '@/plate/demo/values/alignValue';
 import { autoformatValue } from '@/plate/demo/values/autoformatValue';
 import { basicElementsValue } from '@/plate/demo/values/basicElementsValue';
@@ -86,6 +86,8 @@ import { softBreakValue } from '@/plate/demo/values/softBreakValue';
 import { tabbableValue } from '@/plate/demo/values/tabbableValue';
 import { tableValue } from '@/plate/demo/values/tableValue';
 import { toggleValue } from '@/plate/demo/values/toggleValue';
+import { FixedToolbarPlugin } from '@/registry/default/components/editor/plugins/fixed-toolbar-plugin';
+import { FloatingToolbarPlugin } from '@/registry/default/components/editor/plugins/floating-toolbar-plugin';
 
 export type ValueId = keyof typeof customizerPlugins | 'tableMerge';
 
@@ -190,7 +192,7 @@ export const customizerPlugins = {
   'cursor-overlay': {
     id: 'cursor-overlay',
     label: 'Cursor Overlay',
-    plugins: [DragOverCursorPlugin.key],
+    plugins: [CursorOverlayPlugin.key],
     route: '/docs/cursor-overlay',
     value: cursorOverlayValue,
   },
@@ -235,6 +237,20 @@ export const customizerPlugins = {
     plugins: [ExitBreakPlugin.key],
     route: '/docs/exit-break',
     value: exitBreakValue,
+  },
+  'fixed-toolbar': {
+    id: 'fixed-toolbar',
+    label: 'Fixed Toolbar',
+    plugins: [FixedToolbarPlugin.key],
+    // route: '/docs/toolbar',
+    value: [],
+  },
+  'floating-toolbar': {
+    id: 'floating-toolbar',
+    label: 'Floating Toolbar',
+    plugins: [FloatingToolbarPlugin.key],
+    // route: '/docs/toolbar',
+    value: [],
   },
   font: {
     id: 'font',

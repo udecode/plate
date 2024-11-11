@@ -8,7 +8,6 @@ import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 import { FindReplacePlugin } from '@udecode/plate-find-replace';
 
 import { Icons } from '@/components/icons';
-import { editableProps } from '@/plate/demo/editableProps';
 import { PlateUI } from '@/plate/demo/plate-ui';
 import { findReplaceValue } from '@/plate/demo/values/findReplaceValue';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
@@ -85,7 +84,7 @@ export default function FindReplaceDemo() {
 
       <Plate editor={editor}>
         <EditorContainer>
-          <Editor {...editableProps} />
+          <Editor />
         </EditorContainer>
       </Plate>
     </>

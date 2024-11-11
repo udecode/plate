@@ -5,10 +5,6 @@ import type { Range } from 'slate';
 import type { SlateEditor } from '../editor';
 import type { Nullable } from '../types/misc';
 import type {
-  GetInjectNodePropsOptions,
-  GetInjectNodePropsReturnType,
-} from '../utils';
-import type {
   AnyPluginConfig,
   BaseDeserializer,
   BaseHtmlDeserializer,
@@ -17,6 +13,8 @@ import type {
   BasePluginContext,
   BaseSerializer,
   BaseTransformOptions,
+  GetInjectNodePropsOptions,
+  GetInjectNodePropsReturnType,
   InferApi,
   InferOptions,
   InferTransforms,

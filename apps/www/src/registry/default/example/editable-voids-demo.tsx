@@ -14,7 +14,6 @@ import {
 
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { editableProps } from '@/plate/demo/editableProps';
 import { PlateUI } from '@/plate/demo/plate-ui';
 import { editableVoidsValue } from '@/plate/demo/values/editableVoidsValue';
 import { basicNodesPlugins } from '@/registry/default/components/editor/plugins/basic-nodes-plugins';
@@ -90,7 +89,7 @@ export function EditableVoidElement({
             // initialValue={basicElementsValue}
           >
             <EditorContainer>
-              <Editor {...editableProps} />
+              <Editor />
             </EditorContainer>
           </Plate>
         </div>
@@ -108,12 +107,10 @@ export default function EditableVoidsDemo() {
   });
 
   return (
-    <div className="p-10">
-      <Plate editor={editor}>
-        <EditorContainer>
-          <Editor {...editableProps} />
-        </EditorContainer>
-      </Plate>
-    </div>
+    <Plate editor={editor}>
+      <EditorContainer>
+        <Editor />
+      </EditorContainer>
+    </Plate>
   );
 }
