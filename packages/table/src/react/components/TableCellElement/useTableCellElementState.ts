@@ -1,6 +1,11 @@
 import React from 'react';
 
-import { useEditorRef, useElement } from '@udecode/plate-common/react';
+import { findNode } from '@udecode/plate-common';
+import {
+  findNodePath,
+  useEditorRef,
+  useElement,
+} from '@udecode/plate-common/react';
 import { useReadOnly } from 'slate-react';
 
 import {
@@ -13,7 +18,7 @@ import {
   getColSpan,
   getRowSpan,
 } from '../../../lib';
-import { TablePlugin } from '../../TablePlugin';
+import { TableCellPlugin, TablePlugin } from '../../TablePlugin';
 import { getTableColumnIndex } from '../../merge';
 import { getTableRowIndex } from '../../queries';
 import { useTableStore } from '../../stores';
@@ -25,14 +30,8 @@ import { useIsCellSelected } from './useIsCellSelected';
 
 export type TableCellElementState = {
   borders: BorderStylesDefault;
-  colIndex: number;
-  colSpan: number;
-  hovered: boolean;
-  hoveredLeft: boolean;
-  isSelectingCell: boolean;
+  isFirstCell: boolean;
   readOnly: boolean;
-  rowIndex: number;
-  rowSize: number | undefined;
   selected: boolean;
 };
 
@@ -43,29 +42,25 @@ export const useTableCellElementState = ({
   ignoreReadOnly?: boolean;
 } = {}): TableCellElementState => {
   const editor = useEditorRef();
-  const cellElement = useElement<TTableCellElement>();
-
-  const colSpan = getColSpan(cellElement);
-  const rowSpan = getRowSpan(cellElement);
+  const cellElement = useElement<TTableCellElement>(TableCellPlugin.key);
+  const cellPath = findNodePath(editor, cellElement);
 
   const readOnly = useReadOnly();
-
   const isCellSelected = useIsCellSelected(cellElement);
-  const hoveredColIndex = useTableStore().get.hoveredColIndex();
-  const selectedCells = useTableStore().get.selectedCells();
 
-  const tableElement = useElement<TTableElement>(TablePlugin.key);
-  const rowElement = useElement<TTableRowElement>(BaseTableRowPlugin.key);
-  const rowSizeOverrides = useTableStore().get.rowSizeOverrides();
+  const [tableElement] = findNode<TTableElement>(editor, {
+    at: cellPath,
+    match: { type: TablePlugin.key },
+  })!;
+  const [rowElement] = findNode<TTableRowElement>(editor, {
+    at: cellPath,
+    match: { type: BaseTableRowPlugin.key },
+  })!;
 
   const { _cellIndices, enableMerging } = editor.getOptions(TablePlugin);
 
   if (!enableMerging) {
     const colIndex = getTableColumnIndex(editor, cellElement);
-    const rowIndex = getTableRowIndex(editor, cellElement);
-
-    const rowSize =
-      rowSizeOverrides.get?.(rowIndex) ?? rowElement?.size ?? undefined;
 
     const isFirstCell = colIndex === 0;
     const isFirstRow = tableElement.children?.[0] === rowElement;
@@ -77,14 +72,8 @@ export const useTableCellElementState = ({
 
     return {
       borders,
-      colIndex,
-      colSpan,
-      hovered: hoveredColIndex === colIndex,
-      hoveredLeft: isFirstCell && hoveredColIndex === -1,
-      isSelectingCell: !!selectedCells,
+      isFirstCell,
       readOnly: !ignoreReadOnly && readOnly,
-      rowIndex,
-      rowSize,
       selected: isCellSelected,
     };
   }
@@ -104,13 +93,6 @@ export const useTableCellElementState = ({
   }
 
   const colIndex = result.col;
-  const rowIndex = result.row;
-
-  const endingRowIndex = rowIndex + rowSpan - 1;
-  const endingColIndex = colIndex + colSpan - 1;
-
-  const rowSize =
-    rowSizeOverrides.get?.(endingRowIndex) ?? rowElement?.size ?? undefined;
 
   const isFirstCell = colIndex === 0;
   const isFirstRow = tableElement.children?.[0] === rowElement;
@@ -122,14 +104,8 @@ export const useTableCellElementState = ({
 
   return {
     borders,
-    colIndex: endingColIndex,
-    colSpan,
-    hovered: hoveredColIndex === endingColIndex,
-    hoveredLeft: isFirstCell && hoveredColIndex === -1,
-    isSelectingCell: !!selectedCells,
+    isFirstCell,
     readOnly: !ignoreReadOnly && readOnly,
-    rowIndex: endingRowIndex,
-    rowSize,
     selected: isCellSelected,
   };
 };

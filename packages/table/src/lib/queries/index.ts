@@ -13,5 +13,6 @@ export * from './getTableAbove';
 export * from './getTableColumnCount';
 export * from './getTableEntries';
 export * from './getTableOverriddenColSizes';
+export * from './getTableOverriddenRowSizes';
 export * from './getTopTableCell';
 export * from './isTableBorderHidden';

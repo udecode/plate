@@ -10,6 +10,7 @@ export const { TableProvider, tableStore, useTableStore } = createAtomStore(
   {
     colSizeOverrides: atom(new Map() as TableStoreSizeOverrides),
     hoveredColIndex: null as number | null,
+    hoveredRowIndex: null as number | null,
     marginLeftOverride: null as number | null,
     rowSizeOverrides: atom(new Map() as TableStoreSizeOverrides),
     selectedCells: null as TElement[] | null,
