@@ -1,5 +1,13 @@
 # @udecode/plate-test-utils
 
+## 40.0.0
+
+### Patch Changes
+
+- [#3744](https://github.com/udecode/plate/pull/3744) by [@zbeyens](https://github.com/zbeyens) –
+  - Strip (potentially injected by the compiler) attributes starting with `__`.
+  - Remove internal functions from exports.
+
 ## 37.0.9
 
 ### Patch Changes

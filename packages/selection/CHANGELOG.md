@@ -1,5 +1,16 @@
 # @udecode/plate-selection
 
+## 40.0.0
+
+### Minor Changes
+
+- [#3744](https://github.com/udecode/plate/pull/3744) by [@zbeyens](https://github.com/zbeyens) –
+  - New plugin `CursorOverlayPlugin`
+  - `useCursorOverlay` now supports collapsed selection using `minSelectionWidth = 1`
+  - selectable depends now on `data-block-id` instead of `data-key`
+  - Fix a bug when deleting selected blocks without id
+  - Fix `useBlockSelected`: use `id` parameter if defined
+
 ## 39.3.7
 
 ### Patch Changes

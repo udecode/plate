@@ -1,5 +1,18 @@
 # @udecode/plate-ai
 
+## 40.0.0
+
+### Major Changes
+
+- [#3744](https://github.com/udecode/plate/pull/3744) by [@zbeyens](https://github.com/zbeyens) –
+  - Remove `scrollContainerSelector` option in favor of `useEditorContainerRef`
+
+### Patch Changes
+
+- [#3744](https://github.com/udecode/plate/pull/3744) by [@zbeyens](https://github.com/zbeyens) –
+  - `CopilotPlugin`: reset on mouse down
+  - `CopilotPlugin`: auto trigger only on selection change
+
 ## 39.3.7
 
 ## 39.3.6

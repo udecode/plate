@@ -1,5 +1,7 @@
 # @udecode/plate-link
 
+## 40.0.0
+
 ## 39.1.9
 
 ### Patch Changes
