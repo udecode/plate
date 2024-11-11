@@ -41,7 +41,11 @@ import {
   NumberedListPlugin,
   TodoListPlugin,
 } from '@udecode/plate-list/react';
-import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
+import {
+  ImagePlugin,
+  MediaEmbedPlugin,
+  PlaceholderPlugin,
+} from '@udecode/plate-media/react';
 import {
   MentionInputPlugin,
   MentionPlugin,
@@ -75,6 +79,7 @@ import { KbdLeaf } from '@/registry/default/plate-ui/kbd-leaf';
 import { LinkElement } from '@/registry/default/plate-ui/link-element';
 import { ListElement } from '@/registry/default/plate-ui/list-element';
 import { MediaEmbedElement } from '@/registry/default/plate-ui/media-embed-element';
+import { MediaPlaceholderElement } from '@/registry/default/plate-ui/media-placeholder-element';
 import { MentionElement } from '@/registry/default/plate-ui/mention-element';
 import { MentionInputElement } from '@/registry/default/plate-ui/mention-input-element';
 import { ParagraphElement } from '@/registry/default/plate-ui/paragraph-element';
@@ -130,6 +135,7 @@ export const createPlateUI = ({
     [MentionPlugin.key]: MentionElement,
     [NumberedListPlugin.key]: withProps(ListElement, { variant: 'ol' }),
     [ParagraphPlugin.key]: ParagraphElement,
+    [PlaceholderPlugin.key]: MediaPlaceholderElement,
     [SlashInputPlugin.key]: SlashInputElement,
     [StrikethroughPlugin.key]: withProps(PlateLeaf, { as: 's' }),
     [SubscriptPlugin.key]: withProps(PlateLeaf, { as: 'sub' }),

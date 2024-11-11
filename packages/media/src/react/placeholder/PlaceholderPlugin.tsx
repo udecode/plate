@@ -4,6 +4,7 @@ import {
   getAncestorNode,
   getNodeString,
   removeNodes,
+  withoutSavingHistory,
 } from '@udecode/plate-common';
 import { findEventRange, toTPlatePlugin } from '@udecode/plate-common/react';
 
@@ -30,6 +31,7 @@ export const PlaceholderPlugin = toTPlatePlugin<
   ExtendConfig<
     PlaceholderConfig,
     {
+      disableEmptyPlaceholder: boolean;
       disabledDndPlugin: boolean;
       uploadConfig: UploadConfig;
       uploadingFiles: Record<string, File>;
@@ -41,7 +43,54 @@ export const PlaceholderPlugin = toTPlatePlugin<
     { placeholder: PlaceholderApi }
   >
 >(BasePlaceholderPlugin, {
+  extendEditor: ({ editor, getOption }) => {
+    const disableEmptyPlaceholder = getOption('disableEmptyPlaceholder');
+
+    const { normalizeNode, undo } = editor;
+
+    editor.normalizeNode = (entry, options) => {
+      if (!disableEmptyPlaceholder) return normalizeNode(entry, options);
+
+      const [node, path] = entry;
+
+      if (node.type === PlaceholderPlugin.key) {
+        const uploadingFiles = getOption('uploadingFiles');
+
+        const isLoading = uploadingFiles?.[node.id];
+
+        if (!isLoading) {
+          removeNodes(editor, { at: path });
+        }
+      }
+
+      return normalizeNode(entry, options);
+    };
+
+    editor.undo = () => {
+      if (disableEmptyPlaceholder) {
+        const uploadingFiles = getOption('uploadingFiles');
+
+        if (!uploadingFiles) return undo();
+
+        const keys = Object.keys(uploadingFiles);
+
+        for (const key of keys) {
+          withoutSavingHistory(editor, () => {
+            removeNodes(editor, {
+              at: [],
+              match: (node) => node.id === key,
+            });
+          });
+        }
+      }
+
+      return undo();
+    };
+
+    return editor;
+  },
   options: {
+    disableEmptyPlaceholder: true,
     disabledDndPlugin: false,
     error: null,
     maxFileCount: 5,
@@ -157,7 +206,7 @@ export const PlaceholderPlugin = toTPlatePlugin<
 
           if (getNodeString(node).length === 0) {
             removeNodes(editor, { at: path });
-            tf.insert.media(files, path);
+            tf.insert.media(files, { at: path });
             inserted = true;
           }
         }
