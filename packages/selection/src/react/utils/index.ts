@@ -3,6 +3,5 @@
  */
 
 export * from './copySelectedBlocks';
-export * from './onChangeBlockSelection';
 export * from './pasteSelectedBlocks';
 export * from './selectInsertedBlocks';
