@@ -148,6 +148,7 @@ export function AIMenu() {
               }}
               onValueChange={setInput}
               placeholder="Ask AI anything..."
+              data-plate-focus
               autoFocus
             />
           )}

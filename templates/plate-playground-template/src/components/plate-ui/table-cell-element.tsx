@@ -3,13 +3,17 @@
 import React from 'react';
 
 import { cn, withProps, withRef } from '@udecode/cn';
+import { useElement } from '@udecode/plate-common/react';
+import { useBlockSelected } from '@udecode/plate-selection/react';
 import {
+  TableRowPlugin,
   useTableCellElement,
   useTableCellElementResizable,
   useTableCellElementResizableState,
   useTableCellElementState,
 } from '@udecode/plate-table/react';
 
+import { blockSelectionVariants } from './block-selection';
 import { PlateElement } from './plate-element';
 import { ResizeHandle } from './resizable';
 
@@ -21,6 +25,9 @@ export const TableCellElement = withRef<
   }
 >(({ children, className, hideBorder, isHeader, style, ...props }, ref) => {
   const { element } = props;
+
+  const rowElement = useElement(TableRowPlugin.key);
+  const isSelectingRow = useBlockSelected(rowElement.id as string);
 
   const {
     borders,
@@ -129,6 +136,10 @@ export const TableCellElement = withRef<
             </>
           )}
         </div>
+      )}
+
+      {isSelectingRow && (
+        <div className={blockSelectionVariants()} contentEditable={false} />
       )}
     </PlateElement>
   );

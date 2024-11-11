@@ -27,7 +27,10 @@ export function GhostTextContent() {
   const suggestionText = useOption('suggestionText');
 
   return (
-    <span className="text-muted-foreground/70" contentEditable={false}>
+    <span
+      className="pointer-events-none max-sm:hidden text-muted-foreground/70"
+      contentEditable={false}
+    >
       {suggestionText && suggestionText}
     </span>
   );

@@ -47,6 +47,8 @@ import { TogglePlugin } from '@udecode/plate-toggle/react';
 
 import { copilotPlugins } from '@/components/editor/plugins/copilot-plugins';
 import { editorPlugins } from '@/components/editor/plugins/editor-plugins';
+import { FixedToolbarPlugin } from '@/components/editor/plugins/fixed-toolbar-plugin';
+import { FloatingToolbarPlugin } from '@/components/editor/plugins/floating-toolbar-plugin';
 import { AILeaf } from '@/components/plate-ui/ai-leaf';
 import { BlockquoteElement } from '@/components/plate-ui/blockquote-element';
 import { CodeBlockElement } from '@/components/plate-ui/code-block-element';
@@ -129,15 +131,18 @@ export const useCreateEditor = () => {
         })
       ),
     },
-    plugins: [...copilotPlugins, ...editorPlugins],
+    plugins: [
+      ...copilotPlugins,
+      ...editorPlugins,
+      FixedToolbarPlugin,
+      FloatingToolbarPlugin,
+    ],
     value: [
       {
-        id: '1',
         children: [{ text: 'Playground' }],
         type: 'h1',
       },
       {
-        id: '2',
         children: [
           { text: 'A rich-text editor with AI capabilities. Try the ' },
           { bold: true, text: 'AI commands' },
