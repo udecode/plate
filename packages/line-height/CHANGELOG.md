@@ -1,5 +1,11 @@
 # @udecode/plate-line-height
 
+## 40.0.0
+
+### Patch Changes
+
+- [#3744](https://github.com/udecode/plate/pull/3744) by [@zbeyens](https://github.com/zbeyens) – Use `getInjectMatch(editor, plugin)`
+
 ## 39.0.0
 
 ## 38.0.1

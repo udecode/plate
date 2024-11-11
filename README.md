@@ -10,16 +10,6 @@ Plate
   <a target="_blank" href="https://discord.gg/mAZRuBzGM3"><img src="https://img.shields.io/badge/chat-on%20discord-7289da.svg?sanitize=true" /></a>
   <a target="_blank" href="https://github.com/udecode/plate/blob/main/LICENSE"><img src="https://badgen.now.sh/badge/license/MIT" /></a>
 </div>
-<div align="center">
-<a href="https://console.algora.io/org/Udecode/bounties/new">
-<img style="border-radius: 100px;" height="24" src="https://img.shields.io/static/v1?labelColor=grey&color=6366f1&label=Algora&message=%F0%9F%92%8E+Bounty+issues&style=for-the-badge" alt="Udecode">
-</a>
-
-</div>
-<div align="center">
-  <a href="https://vercel.com/?utm_source=udecode&utm_campaign=oss"><img height="24" src="https://styled-icons.dev/powered-by-vercel.svg" alt="Powered by Vercel" /></a>
-</div>
-</p>
 
 ![hero](apps/www/public/og.png)
 
@@ -35,12 +25,11 @@ Plate
 
 You can choose one of the following templates to get started:
 
-| Option                                                                            | NextJS | Plate | Plugins | AI & Backend |
-| --------------------------------------------------------------------------------- | ------ | ----- | ------- | ------------ |
-| [Notion-like template](https://pro.platejs.org/docs/templates/potion)             | ✅     | ✅    | ✅      | ✅           |
-| [Plate playground template](https://github.com/udecode/plate-playground-template) | ✅     | ✅    | ✅      |              |
-| [Plate minimal template](https://github.com/udecode/plate-template)               | ✅     | ✅    |         |              |
-| [NextJS template](https://platejs.org/docs/components/installation/next)          | ✅     |       |         |              |
+| Option                                                                            | Plate | Plugins | AI  | Backend |
+| --------------------------------------------------------------------------------- | ----- | ------- | --- | ------- |
+| [Notion-like template](https://pro.platejs.org/docs/templates/potion)             | ✅    | ✅      | ✅  | ✅      |
+| [Plate playground template](https://github.com/udecode/plate-playground-template) | ✅    | ✅      | ✅  |         |
+| [Plate minimal template](https://github.com/udecode/plate-template)               | ✅    |         |     |         |
 
 ## Documentation
 
