@@ -1,5 +1,30 @@
 # @udecode/plate-core
 
+## 40.0.0
+
+### Minor Changes
+
+- [`195163e6e3d612c1d016112b982e9d49213efb3d`](https://github.com/udecode/plate/commit/195163e6e3d612c1d016112b982e9d49213efb3d) by [@zbeyens](https://github.com/zbeyens) –
+  - `Plate` store: add `containerRef`. This is used by some plugins like `CursorOverlay`.
+  - Add `useEditorContainerRef` selector hook. You can pass the returned ref to your editor scroll container.
+  - `usePlateEditor` options: `value` can now be a callback function to get the value from the editor
+  - `editor.key` is now using `nanoid()`
+  - `editor.uid`: new property added by `Plate` to uniquely identify the editor. The difference with `editor.key` is that `uid` supports SSR hydration. This can be passed to the editor container as `id` prop.
+  - `render.aboveNodes` and `render.belowNodes` now support `useElement`
+  - `PlatePlugin.inject` new properties:
+    - `excludePlugins?: string[]`
+    - `excludeBelowPlugins?: string[]`
+    - `maxLevel?: number`
+    - `isLeaf?: boolean`
+    - `isBlock?: boolean`
+    - `isElement?: boolean`
+  - Add `getInjectMatch(editor, plugin)` to get a plugin inject match function.
+
+### Patch Changes
+
+- [#3744](https://github.com/udecode/plate/pull/3744) by [@zbeyens](https://github.com/zbeyens) –
+  - `Plate` now warns if multiple instances of `@udecode/plate-core` are detected. Use `suppressInstanceWarning` to suppress the warning.
+
 ## 39.2.21
 
 ### Patch Changes

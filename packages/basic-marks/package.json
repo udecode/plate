@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-basic-marks",
-  "version": "39.0.0",
+  "version": "40.0.0",
   "description": "Basic marks plugin for Plate",
   "keywords": [
     "plate",
@@ -52,7 +52,7 @@
     "@udecode/plate-common": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate-common": ">=39.2.21",
+    "@udecode/plate-common": ">=40.0.0",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.103.0",
