@@ -14,15 +14,15 @@ import {
 import { cva } from 'class-variance-authority';
 
 const editorContainerVariants = cva(
-  'relative flex cursor-text caret-primary selection:bg-brand/25 [&_.slate-selection-area]:border [&_.slate-selection-area]:border-brand/25 [&_.slate-selection-area]:bg-brand/15',
+  'relative flex w-full cursor-text overflow-y-auto caret-primary selection:bg-brand/25 [&_.slate-selection-area]:border [&_.slate-selection-area]:border-brand/25 [&_.slate-selection-area]:bg-brand/15',
   {
     defaultVariants: {
       variant: 'default',
     },
     variants: {
       variant: {
-        default: 'w-full',
-        demo: 'w-full overflow-y-auto',
+        default: 'h-full',
+        demo: 'h-[650px]',
       },
     },
   }
@@ -80,7 +80,7 @@ const editorVariants = cva(
           'max-h-[min(70vh,320px)] w-full max-w-[700px] overflow-y-auto px-3 py-2 text-sm',
         default:
           'min-h-full w-full px-16 pb-72 pt-4 text-base sm:px-[max(64px,calc(50%-350px))]',
-        demo: 'min-h-full w-full px-16 pb-72 pt-4 text-base sm:px-[max(64px,calc(50%-350px))]',
+        demo: 'min-h-full w-full px-16 pb-72 pt-14 text-base sm:px-[max(64px,calc(50%-350px))]',
         fullWidth: 'min-h-full w-full px-16 pb-72 pt-4 text-base sm:px-24',
       },
     },

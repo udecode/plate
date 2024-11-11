@@ -25,7 +25,6 @@ import { SlashPlugin } from '@udecode/plate-slash-command/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
-import { FloatingToolbarPlugin } from '@/registry/default/components/editor/plugins/floating-toolbar-plugin';
 import { CursorOverlay } from '@/registry/default/plate-ui/cursor-overlay';
 
 import { aiPlugins } from './ai-plugins';
@@ -81,6 +80,9 @@ export const editorPlugins = [
 
   // Functionality
   autoformatPlugin,
+  CursorOverlayPlugin.configure({
+    render: { afterEditable: () => <CursorOverlay /> },
+  }),
   ...blockMenuPlugins,
   ...dndPlugins,
   EmojiPlugin,
@@ -97,10 +99,4 @@ export const editorPlugins = [
   DocxPlugin,
   MarkdownPlugin.configure({ options: { indentList: true } }),
   JuicePlugin,
-
-  // UI
-  CursorOverlayPlugin.configure({
-    render: { afterEditable: () => <CursorOverlay /> },
-  }),
-  FloatingToolbarPlugin,
 ];

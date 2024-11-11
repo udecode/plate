@@ -48,16 +48,16 @@ export const blocks: Registry = [
       'api-ai',
       'plate-types',
 
-      'copilot-plugins',
       'editor-plugins',
+      'copilot-plugins',
+      'floating-toolbar-plugin',
+      'fixed-toolbar-plugin',
 
       'ai-menu',
       'ghost-text',
       'comments-popover',
       'cursor-overlay',
       'editor',
-      'fixed-toolbar',
-      'fixed-toolbar-buttons',
       'block-context-menu',
 
       'ai-leaf',

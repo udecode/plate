@@ -1,7 +1,7 @@
 import { PlateEditor } from '@/registry/default/block/editor-ai/components/editor/plate-editor';
 import { OpenAIProvider } from '@/registry/default/components/editor/use-chat';
 
-export const description = 'An AI editor.';
+export const description = 'An AI editor';
 
 export const iframeHeight = '650px';
 

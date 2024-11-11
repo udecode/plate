@@ -14,7 +14,6 @@ import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { PlaywrightPlugin } from '@udecode/plate-playwright';
 import { TablePlugin } from '@udecode/plate-table/react';
 
-import { CheckPlugin } from '@/components/context/check-plugin';
 import { settingsStore } from '@/components/context/settings-store';
 import { createPlateUI } from '@/plate/create-plate-ui';
 import { isEnabled } from '@/plate/demo/is-enabled';
@@ -23,11 +22,11 @@ import { autoformatPlugin as autoformatListPlugin } from '@/registry/default/com
 import { autoformatPlugin } from '@/registry/default/components/editor/plugins/autoformat-plugin';
 import { copilotPlugins } from '@/registry/default/components/editor/plugins/copilot-plugins';
 import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';
+import { FixedToolbarListPlugin } from '@/registry/default/components/editor/plugins/fixed-toolbar-list-plugin';
+import { FixedToolbarPlugin } from '@/registry/default/components/editor/plugins/fixed-toolbar-plugin';
+import { FloatingToolbarPlugin } from '@/registry/default/components/editor/plugins/floating-toolbar-plugin';
 import { tabbablePlugin } from '@/registry/default/components/editor/plugins/tabbable-plugin';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
-import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
-import { FixedToolbarButtons } from '@/registry/default/plate-ui/fixed-toolbar-buttons';
-import { FixedToolbarButtonsList } from '@/registry/default/plate-ui/fixed-toolbar-buttons-list';
 
 import { usePlaygroundEnabled } from './usePlaygroundEnabled';
 
@@ -41,6 +40,8 @@ export const usePlaygroundEditor = (id: any = '') => {
   const plugins: any[] = [
     ...copilotPlugins,
     ...editorPlugins,
+    id === 'list' ? FixedToolbarListPlugin : FixedToolbarPlugin,
+    FloatingToolbarPlugin,
 
     id === 'list' ? autoformatListPlugin : autoformatPlugin,
     TablePlugin.configure({
@@ -98,25 +99,12 @@ export default function PlaygroundDemo({
   return (
     <DemoId id={id}>
       <Plate editor={editor}>
-        <CheckPlugin componentId="fixed-toolbar">
-          <FixedToolbar className="no-scrollbar">
-            <CheckPlugin componentId="fixed-toolbar-buttons">
-              {id === 'list' ? (
-                <FixedToolbarButtonsList />
-              ) : (
-                <FixedToolbarButtons />
-              )}
-            </CheckPlugin>
-          </FixedToolbar>
-        </CheckPlugin>
-
         <EditorContainer
-          variant="demo"
-          className={cn(id && 'max-h-[500px]', className)}
+          className={cn(id ? 'h-[500px]' : 'h-[650px]', className)}
         >
           <Editor
             variant="demo"
-            className={cn(!id && 'pb-[20vh] pt-4', id && 'pb-8 pt-2')}
+            className={cn(!id && 'pb-[20vh]', id && 'pb-8')}
             spellCheck={false}
           />
         </EditorContainer>

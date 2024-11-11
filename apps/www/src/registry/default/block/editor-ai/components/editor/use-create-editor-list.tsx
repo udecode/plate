@@ -53,6 +53,8 @@ import { TogglePlugin } from '@udecode/plate-toggle/react';
 
 import { copilotPlugins } from '@/registry/default/components/editor/plugins/copilot-plugins';
 import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';
+import { FixedToolbarPlugin } from '@/registry/default/components/editor/plugins/fixed-toolbar-plugin';
+import { FloatingToolbarPlugin } from '@/registry/default/components/editor/plugins/floating-toolbar-plugin';
 import { AILeaf } from '@/registry/default/plate-ui/ai-leaf';
 import { BlockquoteElement } from '@/registry/default/plate-ui/blockquote-element';
 import { CodeBlockElement } from '@/registry/default/plate-ui/code-block-element';
@@ -139,7 +141,12 @@ export const useCreateEditor = () => {
         })
       ),
     },
-    plugins: [...copilotPlugins, ...editorPlugins],
+    plugins: [
+      ...copilotPlugins,
+      ...editorPlugins,
+      FixedToolbarPlugin,
+      FloatingToolbarPlugin,
+    ],
     value: [
       {
         children: [{ text: 'Playground' }],

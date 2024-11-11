@@ -7,6 +7,7 @@ module.exports = {
   darkMode: ['class'],
   plugins: [
     require('tailwindcss-animate'),
+    require('tailwind-scrollbar-hide'),
     require('@tailwindcss/typography'),
     plugin(({ addVariant }) => {
       addVariant('all', '& *');
