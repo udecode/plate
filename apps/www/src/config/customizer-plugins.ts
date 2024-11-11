@@ -86,6 +86,8 @@ import { softBreakValue } from '@/plate/demo/values/softBreakValue';
 import { tabbableValue } from '@/plate/demo/values/tabbableValue';
 import { tableValue } from '@/plate/demo/values/tableValue';
 import { toggleValue } from '@/plate/demo/values/toggleValue';
+import { FixedToolbarPlugin } from '@/registry/default/components/editor/plugins/fixed-toolbar-plugin';
+import { FloatingToolbarPlugin } from '@/registry/default/components/editor/plugins/floating-toolbar-plugin';
 
 export type ValueId = keyof typeof customizerPlugins | 'tableMerge';
 
@@ -235,6 +237,20 @@ export const customizerPlugins = {
     plugins: [ExitBreakPlugin.key],
     route: '/docs/exit-break',
     value: exitBreakValue,
+  },
+  'fixed-toolbar': {
+    id: 'fixed-toolbar',
+    label: 'Fixed Toolbar',
+    plugins: [FixedToolbarPlugin.key],
+    // route: '/docs/toolbar',
+    value: [],
+  },
+  'floating-toolbar': {
+    id: 'floating-toolbar',
+    label: 'Floating Toolbar',
+    plugins: [FloatingToolbarPlugin.key],
+    // route: '/docs/toolbar',
+    value: [],
   },
   font: {
     id: 'font',

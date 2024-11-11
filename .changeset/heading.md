@@ -1,5 +1,6 @@
 ---
-'@udecode/plate-heading': patch
+'@udecode/plate-heading': major
+'@udecode/plate-ai': major
 ---
 
-- `scrollContainerSelector` default is now `#${editor.uid}`
+- Remove `scrollContainerSelector` option in favor of `useEditorContainerRef`

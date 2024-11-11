@@ -61,6 +61,8 @@ import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 import { uniqBy } from 'lodash';
 
 import { customizerItems } from '@/config/customizer-items';
+import { FixedToolbarPlugin } from '@/registry/default/components/editor/plugins/fixed-toolbar-plugin';
+import { FloatingToolbarPlugin } from '@/registry/default/components/editor/plugins/floating-toolbar-plugin';
 
 export const customizerList = [
   {
@@ -136,6 +138,8 @@ export const customizerList = [
       customizerItems[DndPlugin.key],
       customizerItems[EmojiPlugin.key],
       customizerItems[ExitBreakPlugin.key],
+      customizerItems[FixedToolbarPlugin.key],
+      customizerItems[FloatingToolbarPlugin.key],
       customizerItems[NodeIdPlugin.key],
       customizerItems[NormalizeTypesPlugin.key],
       customizerItems[ResetNodePlugin.key],

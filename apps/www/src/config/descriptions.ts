@@ -57,6 +57,9 @@ import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
+import { FixedToolbarPlugin } from '@/registry/default/components/editor/plugins/fixed-toolbar-plugin';
+import { FloatingToolbarPlugin } from '@/registry/default/components/editor/plugins/floating-toolbar-plugin';
+
 export const descriptions: Record<string, string> = {
   [AIChatPlugin.key]:
     'AI menu with commands, streaming responses in a preview or directly into the editor.',
@@ -80,6 +83,8 @@ export const descriptions: Record<string, string> = {
   [EmojiPlugin.key]: 'Enhance your text with emojis.',
   [ExcalidrawPlugin.key]: 'Create drawings and diagrams as block nodes.',
   [ExitBreakPlugin.key]: 'Exit a large block using a shortcut.',
+  [FixedToolbarPlugin.key]: 'Fixed toolbar.',
+  [FloatingToolbarPlugin.key]: 'Floating toolbar.',
   [FontBackgroundColorPlugin.key]: 'Add color to text backgrounds.',
   [FontColorPlugin.key]: 'Highlight text with a specific color.',
   [FontSizePlugin.key]: 'Adjust the size of the text.',

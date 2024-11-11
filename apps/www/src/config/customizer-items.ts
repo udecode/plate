@@ -72,6 +72,8 @@ import {
 } from '@/config/customizer-badges';
 import { customizerComponents } from '@/config/customizer-components';
 import { customizerPlugins } from '@/config/customizer-plugins';
+import { FixedToolbarPlugin } from '@/registry/default/components/editor/plugins/fixed-toolbar-plugin';
+import { FloatingToolbarPlugin } from '@/registry/default/components/editor/plugins/floating-toolbar-plugin';
 
 export type SettingPlugin = {
   id: string;
@@ -479,6 +481,28 @@ export const customizerItems: Record<string, SettingPlugin> = {
     ],
     reactImport: true,
     route: customizerPlugins['exit-break'].route,
+  },
+  [FixedToolbarPlugin.key]: {
+    id: FixedToolbarPlugin.key,
+    badges: [customizerBadges.handler, customizerBadges.ui],
+    customImports: [
+      `import { FixedToolbarPlugin } from '@/components/editor/plugins/fixed-toolbar-plugin';`,
+    ],
+    label: 'Fixed Toolbar',
+    pluginFactory: 'FixedToolbarPlugin',
+    reactImport: true,
+    // route: customizerPlugins['fixed-toolbar'].route,
+  },
+  [FloatingToolbarPlugin.key]: {
+    id: FloatingToolbarPlugin.key,
+    badges: [customizerBadges.handler, customizerBadges.ui],
+    customImports: [
+      `import { FloatingToolbarPlugin } from '@/components/editor/plugins/floating-toolbar-plugin';`,
+    ],
+    label: 'Floating Toolbar',
+    pluginFactory: 'FloatingToolbarPlugin',
+    reactImport: true,
+    // route: customizerPlugins['floating-toolbar'].route,
   },
   [FontBackgroundColorPlugin.key]: {
     id: FontBackgroundColorPlugin.key,
@@ -1067,30 +1091,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
         label: 'Editor',
         route: customizerComponents.editor.href,
         usage: 'Editor',
-      },
-      {
-        id: 'fixed-toolbar',
-        label: 'FixedToolbar',
-        route: customizerComponents.fixedToolbar.href,
-        usage: 'FixedToolbar',
-      },
-      {
-        id: 'fixed-toolbar-buttons',
-        label: 'FixedToolbarButtons',
-        route: customizerComponents.fixedToolbarButtons.href,
-        usage: 'FixedToolbarButtons',
-      },
-      {
-        id: 'floating-toolbar',
-        label: 'FloatingToolbar',
-        route: customizerComponents.floatingToolbar.href,
-        usage: 'FloatingToolbar',
-      },
-      {
-        id: 'floating-toolbar-buttons',
-        label: 'FloatingToolbarButtons',
-        route: customizerComponents.floatingToolbarButtons.href,
-        usage: 'FloatingToolbarButtons',
       },
       {
         id: 'placeholder',

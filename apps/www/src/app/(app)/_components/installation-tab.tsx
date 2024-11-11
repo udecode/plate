@@ -369,32 +369,12 @@ export default function InstallationTab() {
 
   addLine(`<Plate editor={editor}>`, true);
 
-  if (hasFixedToolbar) {
-    addLine(`<FixedToolbar>`, true);
-  }
-  if (hasFixedToolbarButtons) {
-    addLine(`<FixedToolbarButtons />`);
-  }
-  if (hasFixedToolbar) {
-    addLine(`</FixedToolbar>`, false, true);
-    addLine(``);
-  }
   if (hasEditor) {
     addLine(`<EditorContainer>`, true);
     addLine(`<Editor />`);
     addLine(`</EditorContainer>`, false, true);
   } else {
     addLine(`<PlateContent />`);
-  }
-  if (hasFloatingToolbar) {
-    addLine(``);
-    addLine(`<FloatingToolbar>`, true);
-  }
-  if (hasFloatingToolbarButtons) {
-    addLine(`<FloatingToolbarButtons />`);
-  }
-  if (hasFloatingToolbar) {
-    addLine(`</FloatingToolbar>`, false, true);
   }
 
   addLine(`</Plate>`, false, true);
