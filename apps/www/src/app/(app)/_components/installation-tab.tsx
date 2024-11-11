@@ -455,7 +455,7 @@ export default function InstallationTab() {
           <div>
             <InstallationCode
               code={[
-                `npm install react react-dom slate slate-react slate-history slate-hyperscript`,
+                `npm install react react-dom slate slate-dom slate-react slate-history slate-hyperscript`,
                 `npm install @udecode/plate-common`,
               ].join('\n')}
               bash

@@ -487,6 +487,7 @@ async function buildStylesIndex() {
       "@udecode/cn",
       "@udecode/plate-common",
       "slate",
+      "slate-dom",
       "slate-react",
       "slate-history",
       "slate-hyperscript",

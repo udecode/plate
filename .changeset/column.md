@@ -8,5 +8,3 @@
   - remove column when it has no children
 - Add `insertColumnGroup`
 - Add `toggleColumnGroup`
-- Deprecate `insertEmptyColumn`, use `insertColumnGroup` instead
-- Deprecate `toggleColumns`, use `toggleColumnGroup` instead

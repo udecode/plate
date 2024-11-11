@@ -1545,7 +1545,6 @@
   },
   {
     "dependencies": [
-      "@udecode/plate-dnd",
       "@udecode/plate-selection"
     ],
     "doc": {
