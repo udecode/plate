@@ -42,9 +42,11 @@ import {
   TodoListPlugin,
 } from '@udecode/plate-list/react';
 import {
+  FilePlugin,
   ImagePlugin,
   MediaEmbedPlugin,
   PlaceholderPlugin,
+  VideoPlugin,
 } from '@udecode/plate-media/react';
 import {
   MentionInputPlugin,
@@ -79,7 +81,9 @@ import { KbdLeaf } from '@/registry/default/plate-ui/kbd-leaf';
 import { LinkElement } from '@/registry/default/plate-ui/link-element';
 import { ListElement } from '@/registry/default/plate-ui/list-element';
 import { MediaEmbedElement } from '@/registry/default/plate-ui/media-embed-element';
+import { MediaFileElement } from '@/registry/default/plate-ui/media-file-element';
 import { MediaPlaceholderElement } from '@/registry/default/plate-ui/media-placeholder-element';
+import { MediaVideoElement } from '@/registry/default/plate-ui/media-video-element';
 import { MentionElement } from '@/registry/default/plate-ui/mention-element';
 import { MentionInputElement } from '@/registry/default/plate-ui/mention-input-element';
 import { ParagraphElement } from '@/registry/default/plate-ui/paragraph-element';
@@ -116,6 +120,7 @@ export const createPlateUI = ({
     [DatePlugin.key]: DateElement,
     [EmojiInputPlugin.key]: EmojiInputElement,
     [ExcalidrawPlugin.key]: ExcalidrawElement,
+    [FilePlugin.key]: MediaFileElement,
     [FindReplacePlugin.key]: SearchHighlightLeaf,
     [HEADING_KEYS.h1]: withProps(HeadingElement, { variant: 'h1' }),
     [HEADING_KEYS.h2]: withProps(HeadingElement, { variant: 'h2' }),
@@ -148,6 +153,7 @@ export const createPlateUI = ({
     [TodoListPlugin.key]: TodoListElement,
     [TogglePlugin.key]: ToggleElement,
     [UnderlinePlugin.key]: withProps(PlateLeaf, { as: 'u' }),
+    [VideoPlugin.key]: MediaVideoElement,
   };
 
   if (placeholder) {

@@ -155,6 +155,7 @@
     "react-dom": "^18.3.1",
     "react-lite-youtube-embed": "^2.4.0",
     "react-markdown": "9.0.1",
+    "react-player": "2.16.0",
     "react-resizable-panels": "^2.0.22",
     "react-syntax-highlighter": "^15.5.0",
     "react-tweet": "^3.2.1",

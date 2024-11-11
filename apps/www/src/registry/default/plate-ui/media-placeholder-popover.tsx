@@ -20,6 +20,7 @@ import {
   PlaceholderPlugin,
   UploadErrorCode,
   VideoPlugin,
+  updateUploadHistory,
   usePlaceholderPopoverState,
 } from '@udecode/plate-media/react';
 import { toast } from 'sonner';
@@ -162,22 +163,22 @@ export const MediaPlaceholderPopover = ({ children }: MediaPopoverProps) => {
 
     withoutSavingHistory(editor, () => {
       removeNodes(editor, { at: path });
-    });
 
-    insertNodes(
-      editor,
-      {
-        children: [],
-        initialHeight: size!.height,
-        initialWidth: size!.width,
+      const node = {
+        children: [{ text: '' }],
+        initialHeight: size?.height,
+        initialWidth: size?.width,
         isUpload: true,
         name: mediaType === FilePlugin.key ? fileInfo.name : '',
         placeholderId: element.id as string,
         type: mediaType!,
         url: fileInfo.url,
-      },
-      { at: path }
-    );
+      };
+
+      insertNodes(editor, node, { at: path });
+
+      updateUploadHistory(editor, node);
+    });
 
     // setMediaNode(
     //   editor,

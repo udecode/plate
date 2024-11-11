@@ -5,7 +5,6 @@ import {
   insertNodes,
   nanoid,
   withoutNormalizing,
-  withoutSavingHistory,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
@@ -14,6 +13,7 @@ import { PlaceholderPlugin } from '../PlaceholderPlugin';
 import { UploadErrorCode } from '../type';
 import { createUploadError, isUploadError } from '../utils/createUploadError';
 import { getMediaType } from '../utils/getMediaType';
+import { withHistoryMark } from '../utils/history';
 import { validateFiles } from '../utils/validateFiles';
 
 export const insertMedia = (
@@ -94,8 +94,7 @@ export const insertMedia = (
     );
 
     if (disableEmptyPlaceholder) {
-      withoutSavingHistory(editor, insert);
-      // insert();
+      withHistoryMark(editor, insert);
     } else {
       withoutNormalizing(editor, insert);
     }

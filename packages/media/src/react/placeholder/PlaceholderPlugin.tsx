@@ -4,7 +4,6 @@ import {
   getAncestorNode,
   getNodeString,
   removeNodes,
-  withoutSavingHistory,
 } from '@udecode/plate-common';
 import { findEventRange, toTPlatePlugin } from '@udecode/plate-common/react';
 
@@ -14,6 +13,7 @@ import type { MediaItemConfig, UploadError } from './type';
 import { type PlaceholderConfig, BasePlaceholderPlugin } from '../../lib';
 import { AudioPlugin, FilePlugin, ImagePlugin, VideoPlugin } from '../plugins';
 import { insertMedia } from './transforms/insertMedia';
+import { isHistoryMarked } from './utils/history';
 
 export type PlaceholderApi = {
   addUploadingFile: (id: string, file: File) => void;
@@ -43,48 +43,26 @@ export const PlaceholderPlugin = toTPlatePlugin<
     { placeholder: PlaceholderApi }
   >
 >(BasePlaceholderPlugin, {
-  extendEditor: ({ editor, getOption }) => {
-    const disableEmptyPlaceholder = getOption('disableEmptyPlaceholder');
+  extendEditor: ({ editor }) => {
+    const { apply, writeHistory } = editor;
 
-    const { normalizeNode, undo } = editor;
+    editor.writeHistory = (stack, batch) => {
+      if (isHistoryMarked(editor)) {
+        const newBatch = {
+          ...batch,
+          [PlaceholderPlugin.key]: true,
+        };
 
-    editor.normalizeNode = (entry, options) => {
-      if (!disableEmptyPlaceholder) return normalizeNode(entry, options);
-
-      const [node, path] = entry;
-
-      if (node.type === PlaceholderPlugin.key) {
-        const uploadingFiles = getOption('uploadingFiles');
-
-        const isLoading = uploadingFiles?.[node.id];
-
-        if (!isLoading) {
-          removeNodes(editor, { at: path });
-        }
+        return writeHistory(stack, newBatch);
       }
 
-      return normalizeNode(entry, options);
+      writeHistory(stack, batch);
     };
 
-    editor.undo = () => {
-      if (disableEmptyPlaceholder) {
-        const uploadingFiles = getOption('uploadingFiles');
+    editor.apply = (op) => {
+      console.log(editor.history.undos);
 
-        if (!uploadingFiles) return undo();
-
-        const keys = Object.keys(uploadingFiles);
-
-        for (const key of keys) {
-          withoutSavingHistory(editor, () => {
-            removeNodes(editor, {
-              at: [],
-              match: (node) => node.id === key,
-            });
-          });
-        }
-      }
-
-      return undo();
+      return apply(op);
     };
 
     return editor;
