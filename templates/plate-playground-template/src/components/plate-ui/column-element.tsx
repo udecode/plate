@@ -24,7 +24,7 @@ export const ColumnElement = withHOC(
           className,
           !readOnly && 'rounded-lg border border-dashed p-1.5'
         )}
-        style={{ width }}
+        style={{ width: width ?? '100%' }}
         {...props}
       >
         {children}

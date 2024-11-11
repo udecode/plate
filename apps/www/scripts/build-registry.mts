@@ -520,10 +520,10 @@ async function buildStylesIndex() {
                   foreground: 'hsl(var(--highlight-foreground))',
                 },
               },
-            },
-            screens: {
-              'main-hover': {
-                raw: '(hover: hover)',
+              screens: {
+                'main-hover': {
+                  raw: '(hover: hover)',
+                },
               },
             },
           },

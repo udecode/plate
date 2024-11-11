@@ -6,32 +6,41 @@ import type { PlateContentProps } from '@udecode/plate-common/react';
 import type { VariantProps } from 'class-variance-authority';
 
 import { cn } from '@udecode/cn';
-import { PlateContent } from '@udecode/plate-common/react';
+import {
+  PlateContent,
+  useEditorContainerRef,
+  useEditorRef,
+} from '@udecode/plate-common/react';
 import { cva } from 'class-variance-authority';
 
 const editorContainerVariants = cva(
-  'relative flex cursor-text [&_.slate-selection-area]:border [&_.slate-selection-area]:border-brand/25 [&_.slate-selection-area]:bg-brand/15',
+  'relative w-full cursor-text overflow-y-auto caret-primary selection:bg-brand/25 [&_.slate-selection-area]:border [&_.slate-selection-area]:border-brand/25 [&_.slate-selection-area]:bg-brand/15',
   {
     defaultVariants: {
       variant: 'default',
     },
     variants: {
       variant: {
-        default: 'w-full',
-        demo: 'h-[650px] w-full overflow-y-auto',
+        default: 'h-full',
+        demo: 'h-[650px]',
       },
     },
   }
 );
 
-export const EditorContainer = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentPropsWithoutRef<'div'> &
-    VariantProps<typeof editorContainerVariants>
->(({ className, variant, ...props }, ref) => {
+export const EditorContainer = ({
+  className,
+  variant,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement> &
+  VariantProps<typeof editorContainerVariants>) => {
+  const editor = useEditorRef();
+  const containerRef = useEditorContainerRef();
+
   return (
     <div
-      ref={ref}
+      id={editor.uid}
+      ref={containerRef}
       className={cn(
         'ignore-click-outside/toolbar',
         editorContainerVariants({ variant }),
@@ -41,14 +50,14 @@ export const EditorContainer = React.forwardRef<
       {...props}
     />
   );
-});
+};
 
 EditorContainer.displayName = 'EditorContainer';
 
 const editorVariants = cva(
   cn(
     'group/editor',
-    'relative w-full whitespace-pre-wrap break-words',
+    'relative w-full overflow-x-hidden whitespace-pre-wrap break-words',
     'rounded-md ring-offset-background placeholder:text-muted-foreground/80 focus-visible:outline-none',
     '[&_[data-slate-placeholder]]:text-muted-foreground/80 [&_[data-slate-placeholder]]:!opacity-100',
     '[&_[data-slate-placeholder]]:top-[auto_!important]',
@@ -70,9 +79,9 @@ const editorVariants = cva(
         aiChat:
           'max-h-[min(70vh,320px)] w-full max-w-[700px] overflow-y-auto px-3 py-2 text-sm',
         default:
-          'min-h-full w-full px-16 pb-72 pt-4 text-base sm:px-[max(64px,calc(50%-350px))]',
-        demo: 'min-h-full w-full px-16 pb-72 pt-4 text-base sm:px-[max(64px,calc(50%-350px))]',
-        fullWidth: 'min-h-full w-full px-16 pb-72 pt-4 text-base sm:px-24',
+          'size-full px-16 pb-72 pt-4 text-base sm:px-[max(64px,calc(50%-350px))]',
+        demo: 'size-full px-16 pb-72 pt-4 text-base sm:px-[max(64px,calc(50%-350px))]',
+        fullWidth: 'size-full px-16 pb-72 pt-4 text-base sm:px-24',
       },
     },
   }

@@ -24,7 +24,7 @@ import { insertToc } from '@udecode/plate-heading';
 import { TocPlugin } from '@udecode/plate-heading/react';
 import { INDENT_LIST_KEYS, ListStyleType } from '@udecode/plate-indent-list';
 import { IndentListPlugin } from '@udecode/plate-indent-list/react';
-import { toggleColumns } from '@udecode/plate-layout';
+import { insertColumnGroup, toggleColumnGroup } from '@udecode/plate-layout';
 import { LinkPlugin, triggerFloatingLink } from '@udecode/plate-link/react';
 import { insertEquation, insertInlineEquation } from '@udecode/plate-math';
 import {
@@ -60,23 +60,12 @@ const insertList = (editor: PlateEditor, type: string) => {
   );
 };
 
-const insertColumns = (editor: PlateEditor, _: string) => {
-  insertNodes(editor, editor.api.create.block(), {
-    select: true,
-  });
-
-  const entry = getBlockAbove(editor);
-
-  if (!entry) return;
-
-  toggleColumns(editor, entry);
-};
-
 const insertBlockMap: Record<
   string,
   (editor: PlateEditor, type: string) => void
 > = {
-  [ACTION_THREE_COLUMNS]: insertColumns,
+  [ACTION_THREE_COLUMNS]: (editor) =>
+    insertColumnGroup(editor, { layout: 3, select: true }),
   [AudioPlugin.key]: (editor) =>
     insertAudioPlaceholder(editor, { select: true }),
   [CalloutPlugin.key]: (editor) => insertCallout(editor, { select: true }),
@@ -156,19 +145,11 @@ const setList = (
   );
 };
 
-const setColumns = (
-  editor: PlateEditor,
-  _: string,
-  entry: TNodeEntry<TElement>
-) => {
-  toggleColumns(editor, entry);
-};
-
 const setBlockMap: Record<
   string,
   (editor: PlateEditor, type: string, entry: TNodeEntry<TElement>) => void
 > = {
-  [ACTION_THREE_COLUMNS]: setColumns,
+  [ACTION_THREE_COLUMNS]: (editor) => toggleColumnGroup(editor, { layout: 3 }),
   [INDENT_LIST_KEYS.todo]: setList,
   [ListStyleType.Decimal]: setList,
   [ListStyleType.Disc]: setList,
