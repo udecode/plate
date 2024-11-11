@@ -1,5 +1,7 @@
 import { toPlatePlugin } from '@udecode/plate-common/react';
 
+import type { TTableRowElement } from '../lib';
+
 import {
   BaseTableCellHeaderPlugin,
   BaseTableCellPlugin,
@@ -9,7 +11,18 @@ import {
 import { onKeyDownTable } from './onKeyDownTable';
 import { withTable } from './withTable';
 
-export const TableRowPlugin = toPlatePlugin(BaseTableRowPlugin);
+export const TableRowPlugin = toPlatePlugin(BaseTableRowPlugin, {
+  node: {
+    props: ({ element }: { element: TTableRowElement }) => ({
+      nodeProps: {
+        style: {
+          height:
+            element.size === 0 || !element?.size ? 'auto' : `${element.size}px`,
+        },
+      },
+    }),
+  },
+});
 
 export const TableCellPlugin = toPlatePlugin(BaseTableCellPlugin, {
   node: {

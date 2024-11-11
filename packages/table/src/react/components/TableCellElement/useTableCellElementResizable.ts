@@ -1,267 +1,92 @@
 import React from 'react';
 
+import { findNode } from '@udecode/plate-common';
 import {
   findNodePath,
   useEditorPlugin,
   useElement,
 } from '@udecode/plate-common/react';
-import {
-  type ResizeEvent,
-  type ResizeHandle,
-  resizeLengthClampStatic,
-} from '@udecode/plate-resizable';
-
-import type { TableCellElementState } from './useTableCellElementState';
+import debounce from 'lodash/debounce.js';
 
 import {
   type TTableElement,
-  setTableColSize,
-  setTableMarginLeft,
-  setTableRowSize,
+  computeCellIndices,
+  getColSpan,
+  getRowSpan,
 } from '../../../lib';
 import { TablePlugin } from '../../TablePlugin';
-import {
-  useOverrideColSize,
-  useOverrideMarginLeft,
-  useOverrideRowSize,
-  useTableStore,
-} from '../../stores';
-import { useTableColSizes } from '../TableElement/useTableColSizes';
-import { roundCellSizeToStep } from './roundCellSizeToStep';
+import { getTableRowIndex } from '../../queries';
+import { useTableStore } from '../../stores';
 
-export type TableCellElementResizableOptions = {
-  /** Resize by step instead of by pixel. */
-  step?: number;
-
-  /** Overrides for X and Y axes. */
-  stepX?: number;
-  stepY?: number;
-} & Pick<TableCellElementState, 'colIndex' | 'colSpan' | 'rowIndex'>;
-
-export const useTableCellElementResizableState = ({
-  colIndex,
-  colSpan,
-  rowIndex,
-  step,
-  stepX = step,
-  stepY = step,
-}: TableCellElementResizableOptions) => {
-  const { getOptions } = useEditorPlugin(TablePlugin);
-  const { disableMarginLeft } = getOptions();
-
-  return {
-    colIndex,
-    colSpan,
-    disableMarginLeft,
-    rowIndex,
-    stepX,
-    stepY,
-  };
-};
-
-export const useTableCellElementResizable = ({
-  colIndex,
-  colSpan,
-  disableMarginLeft,
-  rowIndex,
-  stepX,
-  stepY,
-}: ReturnType<typeof useTableCellElementResizableState>): {
-  bottomProps: React.ComponentPropsWithoutRef<typeof ResizeHandle>;
-  hiddenLeft: boolean;
-  leftProps: React.ComponentPropsWithoutRef<typeof ResizeHandle>;
-  rightProps: React.ComponentPropsWithoutRef<typeof ResizeHandle>;
-} => {
-  const { editor, getOptions } = useEditorPlugin(TablePlugin);
+export const useTableCellElementResizable = () => {
+  const { editor } = useEditorPlugin(TablePlugin);
   const element = useElement();
-  const tableElement = useElement<TTableElement>(TablePlugin.key);
-  const { minColumnWidth = 0 } = getOptions();
 
-  let initialWidth: number | undefined;
+  const setHoveredColIndex = useTableStore().set.hoveredColIndex();
+  const setHoveredRowIndex = useTableStore().set.hoveredRowIndex();
 
-  if (colSpan > 1) {
-    initialWidth = tableElement.colSizes?.[colIndex];
-  }
+  const handleColumnResize = debounce((colIndex?: number) => {
+    if (colIndex === -1) {
+      setHoveredColIndex(colIndex);
 
-  const [hoveredColIndex, setHoveredColIndex] =
-    useTableStore().use.hoveredColIndex();
+      return;
+    }
 
-  const colSizesWithoutOverrides = useTableColSizes(tableElement, {
-    disableOverrides: true,
-  });
-  const { marginLeft = 0 } = tableElement;
+    const cellPath = findNodePath(editor, element)!;
+    const [tableElement] = findNode<TTableElement>(editor, {
+      at: cellPath,
+      match: { type: TablePlugin.key },
+    })!;
 
-  const overrideColSize = useOverrideColSize();
-  const overrideRowSize = useOverrideRowSize();
-  const overrideMarginLeft = useOverrideMarginLeft();
+    const defaultColIndex = computeCellIndices(
+      editor,
+      tableElement,
+      element
+    )!.col;
+    const colSpan = getColSpan(element);
+    const endingColIndex = defaultColIndex + colSpan - 1;
 
-  /* eslint-disable @typescript-eslint/no-shadow */
-  const setColSize = React.useCallback(
-    (colIndex: number, width: number) => {
-      setTableColSize(
-        editor,
-        { colIndex, width },
-        { at: findNodePath(editor, element)! }
-      );
+    if (endingColIndex !== undefined) {
+      setHoveredColIndex(endingColIndex);
+    }
+  }, 150);
 
-      // Prevent flickering
-      setTimeout(() => overrideColSize(colIndex, null), 0);
-    },
-    [editor, element, overrideColSize]
-  );
+  const handleRowResize = debounce(() => {
+    const defaultRowIndex = getTableRowIndex(editor, element);
+    const rowSpan = getRowSpan(element);
+    const endingRowIndex = defaultRowIndex + rowSpan - 1;
+    setHoveredRowIndex(endingRowIndex);
+  }, 150);
 
-  /* eslint-disable @typescript-eslint/no-shadow */
-  const setRowSize = React.useCallback(
-    (rowIndex: number, height: number) => {
-      setTableRowSize(
-        editor,
-        { height, rowIndex },
-        { at: findNodePath(editor, element)! }
-      );
+  const handleColumnResizeCancel = () => {
+    handleColumnResize.cancel();
+    setHoveredColIndex(null);
+  };
 
-      // Prevent flickering
-      setTimeout(() => overrideRowSize(rowIndex, null), 0);
-    },
-    [editor, element, overrideRowSize]
-  );
+  const handleRowResizeCancel = () => {
+    handleRowResize.cancel();
+    setHoveredRowIndex(null);
+  };
 
-  const setMarginLeft = React.useCallback(
-    (marginLeft: number) => {
-      setTableMarginLeft(
-        editor,
-        { marginLeft },
-        { at: findNodePath(editor, element)! }
-      );
-
-      // Prevent flickering
-      setTimeout(() => overrideMarginLeft(null), 0);
-    },
-    [editor, element, overrideMarginLeft]
-  );
-
-  const handleResizeRight = React.useCallback(
-    ({ delta, finished, initialSize: currentInitial }: ResizeEvent) => {
-      const nextInitial = colSizesWithoutOverrides[colIndex + 1];
-
-      const complement = (width: number) =>
-        currentInitial + nextInitial - width;
-
-      const currentNew = roundCellSizeToStep(
-        resizeLengthClampStatic(currentInitial + delta, {
-          max: nextInitial ? complement(minColumnWidth) : undefined,
-          min: minColumnWidth,
-        }),
-        stepX
-      );
-
-      const nextNew = nextInitial ? complement(currentNew) : undefined;
-
-      const fn = finished ? setColSize : overrideColSize;
-      fn(colIndex, currentNew);
-
-      if (nextNew) fn(colIndex + 1, nextNew);
-    },
-    [
-      colIndex,
-      colSizesWithoutOverrides,
-      minColumnWidth,
-      overrideColSize,
-      setColSize,
-      stepX,
-    ]
-  );
-
-  const handleResizeBottom = React.useCallback(
-    (event: ResizeEvent) => {
-      const newHeight = roundCellSizeToStep(
-        event.initialSize + event.delta,
-        stepY
-      );
-
-      if (event.finished) {
-        setRowSize(rowIndex, newHeight);
-      } else {
-        overrideRowSize(rowIndex, newHeight);
-      }
-    },
-    [overrideRowSize, rowIndex, setRowSize, stepY]
-  );
-
-  const handleResizeLeft = React.useCallback(
-    (event: ResizeEvent) => {
-      const initial = colSizesWithoutOverrides[colIndex];
-
-      const complement = (width: number) => initial + marginLeft - width;
-
-      const newMargin = roundCellSizeToStep(
-        resizeLengthClampStatic(marginLeft + event.delta, {
-          max: complement(minColumnWidth),
-          min: 0,
-        }),
-        stepX
-      );
-
-      const newWidth = complement(newMargin);
-
-      if (event.finished) {
-        setMarginLeft(newMargin);
-        setColSize(colIndex, newWidth);
-      } else {
-        overrideMarginLeft(newMargin);
-        overrideColSize(colIndex, newWidth);
-      }
-    },
-    [
-      colIndex,
-      colSizesWithoutOverrides,
-      marginLeft,
-      minColumnWidth,
-      overrideColSize,
-      overrideMarginLeft,
-      setColSize,
-      setMarginLeft,
-      stepX,
-    ]
-  );
-
-  /* eslint-disable @typescript-eslint/no-shadow */
-  const getHandleHoverProps = (colIndex: number) => ({
-    onHover: () => {
-      if (hoveredColIndex === null) {
-        setHoveredColIndex(colIndex);
-      }
-    },
-    onHoverEnd: () => {
-      if (hoveredColIndex === colIndex) {
-        setHoveredColIndex(null);
-      }
-    },
-  });
-
-  const hasLeftHandle = colIndex === 0 && !disableMarginLeft;
+  React.useEffect(() => {
+    return () => {
+      handleColumnResize.cancel();
+      handleRowResize.cancel();
+    };
+  }, [handleColumnResize, handleRowResize]);
 
   return {
     bottomProps: {
-      options: {
-        direction: 'bottom',
-        onResize: handleResizeBottom,
-      },
+      onMouseEnter: handleRowResize,
+      onMouseLeave: handleRowResizeCancel,
     },
-    hiddenLeft: !hasLeftHandle,
     leftProps: {
-      options: {
-        direction: 'left',
-        onResize: handleResizeLeft,
-        ...getHandleHoverProps(-1),
-      },
+      onMouseEnter: () => handleColumnResize(-1),
+      onMouseLeave: handleColumnResizeCancel,
     },
     rightProps: {
-      options: {
-        direction: 'right',
-        initialSize: initialWidth,
-        onResize: handleResizeRight,
-        ...getHandleHoverProps(colIndex),
-      },
+      onMouseEnter: () => handleColumnResize(),
+      onMouseLeave: handleColumnResizeCancel,
     },
   };
 };

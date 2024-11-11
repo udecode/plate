@@ -6,12 +6,10 @@ import { cn, withProps, withRef } from '@udecode/cn';
 import {
   useTableCellElement,
   useTableCellElementResizable,
-  useTableCellElementResizableState,
   useTableCellElementState,
 } from '@udecode/plate-table/react';
 
 import { PlateElement } from './plate-element';
-import { ResizeHandle } from './resizable';
 
 export const TableCellElement = withRef<
   typeof PlateElement,
@@ -22,27 +20,11 @@ export const TableCellElement = withRef<
 >(({ children, className, hideBorder, isHeader, style, ...props }, ref) => {
   const { element } = props;
 
-  const {
-    borders,
-    colIndex,
-    colSpan,
-    hovered,
-    hoveredLeft,
-    isSelectingCell,
-    readOnly,
-    rowIndex,
-    rowSize,
-    selected,
-  } = useTableCellElementState();
+  const { borders, isFirstCell, readOnly, selected } =
+    useTableCellElementState();
   const { props: cellProps } = useTableCellElement({ element: props.element });
-  const resizableState = useTableCellElementResizableState({
-    colIndex,
-    colSpan,
-    rowIndex,
-  });
 
-  const { bottomProps, hiddenLeft, leftProps, rightProps } =
-    useTableCellElementResizable(resizableState);
+  const { bottomProps, leftProps, rightProps } = useTableCellElementResizable();
 
   return (
     <PlateElement
@@ -78,56 +60,30 @@ export const TableCellElement = withRef<
         } as React.CSSProperties
       }
     >
-      <div
-        className="relative z-20 box-border h-full px-3 py-2"
-        style={{
-          minHeight: rowSize,
-        }}
-      >
+      <div className="relative z-20 box-border h-full px-3 py-2">
         {children}
       </div>
 
-      {!isSelectingCell && (
+      {!readOnly && (
         <div
           className="group absolute top-0 size-full select-none"
           contentEditable={false}
           suppressContentEditableWarning={true}
         >
-          {!readOnly && (
-            <>
-              <ResizeHandle
-                {...rightProps}
-                className="-top-3 right-[-5px] w-[10px]"
-              />
-              <ResizeHandle
-                {...bottomProps}
-                className="bottom-[-5px] h-[10px]"
-              />
-              {!hiddenLeft && (
-                <ResizeHandle
-                  {...leftProps}
-                  className="-top-3 left-[-5px] w-[10px]"
-                />
-              )}
-
-              {hovered && (
-                <div
-                  className={cn(
-                    'absolute -top-3 z-30 h-[calc(100%_+_12px)] w-1 bg-ring',
-                    'right-[-1.5px]'
-                  )}
-                />
-              )}
-              {hoveredLeft && (
-                <div
-                  className={cn(
-                    'absolute -top-3 z-30 h-[calc(100%_+_12px)] w-1 bg-ring',
-                    'left-[-1.5px]'
-                  )}
-                />
-              )}
-            </>
+          {isFirstCell && (
+            <div
+              className="absolute left-[-2px] z-30 h-full w-1 cursor-col-resize bg-transparent"
+              {...leftProps}
+            />
           )}
+          <div
+            className="absolute right-[-2px] z-30 h-full w-1 cursor-col-resize bg-transparent"
+            {...rightProps}
+          />
+          <div
+            className="absolute bottom-[-2px] z-30 h-1 w-full cursor-row-resize bg-transparent"
+            {...bottomProps}
+          />
         </div>
       )}
     </PlateElement>

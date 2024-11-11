@@ -23,6 +23,8 @@ import {
   useTableElement,
   useTableElementState,
   useTableMergeState,
+  useTableResizableState,
+  useTableResize,
 } from '@udecode/plate-table/react';
 import { type LucideProps, Combine, Trash2Icon, Ungroup } from 'lucide-react';
 import { useReadOnly, useSelected } from 'slate-react';
@@ -38,6 +40,7 @@ import {
 } from './dropdown-menu';
 import { PlateElement } from './plate-element';
 import { Popover, PopoverContent, popoverVariants } from './popover';
+import { ResizeHandle } from './resizable';
 
 export const TableBordersDropdownMenuContent = withRef<
   typeof DropdownMenuPrimitive.Content
@@ -200,13 +203,34 @@ export const TableFloatingToolbar = withRef<typeof PopoverContent>(
 export const TableElement = withHOC(
   TableProvider,
   withRef<typeof PlateElement>(({ children, className, ...props }, ref) => {
-    const { colSizes, isSelectingCell, marginLeft, minColumnWidth } =
-      useTableElementState();
+    const {
+      colSizes,
+      containerRef,
+      element,
+      isSelectingCell,
+      marginLeft,
+      minColumnWidth,
+    } = useTableElementState();
     const { colGroupProps, props: tableProps } = useTableElement();
+
+    const tableResizableState = useTableResizableState({});
+
+    const { currentColIndex, currentRowIndex, resizeHandleProps, resizeStyle } =
+      useTableResize({
+        containerRef,
+        element,
+        isSelectingCell,
+        minColumnWidth,
+        ...tableResizableState,
+      });
 
     return (
       <TableFloatingToolbar>
-        <div className="overflow-x-auto" style={{ paddingLeft: marginLeft }}>
+        <div
+          ref={containerRef}
+          className="overflow-x-auto"
+          style={{ paddingLeft: marginLeft }}
+        >
           <PlateElement
             ref={ref}
             as="table"
@@ -232,6 +256,38 @@ export const TableElement = withHOC(
 
             <tbody className="min-w-full">{children}</tbody>
           </PlateElement>
+          {!isSelectingCell && (
+            <div
+              className="absolute left-0 top-0 my-4"
+              style={resizeStyle}
+              contentEditable={false}
+              suppressContentEditableWarning={true}
+            >
+              <ResizeHandle
+                className={cn(
+                  'absolute left-0 z-40 h-full w-1 cursor-col-resize select-none bg-ring transition-opacity duration-200',
+                  currentColIndex === -1 ? 'opacity-100' : 'z-0 opacity-0'
+                )}
+                {...resizeHandleProps.leftProps}
+              />
+              <ResizeHandle
+                className={cn(
+                  'absolute z-40 h-full w-1 cursor-col-resize select-none bg-ring transition-opacity duration-200',
+                  currentColIndex === null || currentColIndex === -1
+                    ? 'z-0 opacity-0'
+                    : 'opacity-100'
+                )}
+                {...resizeHandleProps.rightProps}
+              />
+              <ResizeHandle
+                className={cn(
+                  'absolute z-40 h-1 w-full cursor-row-resize select-none bg-ring transition-opacity duration-200',
+                  currentRowIndex === null ? 'z-0 opacity-0' : 'opacity-100'
+                )}
+                {...resizeHandleProps.bottomProps}
+              />
+            </div>
+          )}
         </div>
       </TableFloatingToolbar>
     );
