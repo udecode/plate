@@ -99,12 +99,10 @@ export default function PlaygroundDemo({
   return (
     <DemoId id={id}>
       <Plate editor={editor}>
-        <EditorContainer
-          className={cn(id ? 'h-[500px]' : 'h-[650px]', className)}
-        >
+        <EditorContainer className={cn(id && 'h-[500px]', className)}>
           <Editor
             variant="demo"
-            className={cn(!id && 'pb-[20vh]', id && 'h-[463px] pb-8')}
+            className={cn(id ? 'h-[calc(100%-37px)] pb-8' : 'pb-[20vh]')}
             spellCheck={false}
           />
         </EditorContainer>

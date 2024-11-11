@@ -73,7 +73,7 @@ export function PlaygroundPreview({
         >
           <div className="chunk-mode relative z-20 w-full bg-background">
             <ThemeWrapper>
-              <PlaygroundDemo className="max-h-[655px]" />
+              <PlaygroundDemo className="h-[650px]" />
             </ThemeWrapper>
           </div>
 
