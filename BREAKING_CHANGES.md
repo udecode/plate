@@ -1,5 +1,37 @@
 For older changelogs, see https://github.com/udecode/plate/blob/main/docs
 
+# 40.0.0
+
+## @udecode/slate-react@40.0.0
+
+### Major Changes
+
+- [#3744](https://github.com/udecode/plate/pull/3744) by [@zbeyens](https://github.com/zbeyens) –
+  - Add `slate-dom` as a peer dependency.
+  - Update `slate-react` peer dependency to `>=0.111.0`
+
+## @udecode/plate-ai@40.0.0
+
+### Major Changes
+
+- [#3744](https://github.com/udecode/plate/pull/3744) by [@zbeyens](https://github.com/zbeyens) –
+  - Remove `scrollContainerSelector` option in favor of `useEditorContainerRef`
+
+## @udecode/plate-heading@40.0.0
+
+### Major Changes
+
+- [#3744](https://github.com/udecode/plate/pull/3744) by [@zbeyens](https://github.com/zbeyens) –
+  - Remove `scrollContainerSelector` option in favor of `useEditorContainerRef`
+
+## @udecode/plate-layout@40.0.0
+
+### Major Changes
+
+- [#3744](https://github.com/udecode/plate/pull/3744) by [@zbeyens](https://github.com/zbeyens) –
+  - Remove `toggleColumns` in favor of `toggleColumnGroup`
+  - Remove `insertEmptyColumn` in favor of `insertColumn`
+
 # 39.0.0
 
 ## @udecode/plate-dnd@39.0.0
