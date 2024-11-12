@@ -78,9 +78,7 @@ export const usePlaygroundEditor = (id: any = '') => {
         }),
         SingleLinePlugin,
 
-        PlaceholderPlugin.configure({ enabled: id === 'upload' }).withComponent(
-          MediaPlaceholderElement
-        ),
+        PlaceholderPlugin.withComponent(MediaPlaceholderElement),
         // Testing
         PlaywrightPlugin.configure({
           enabled: process.env.NODE_ENV !== 'production',
