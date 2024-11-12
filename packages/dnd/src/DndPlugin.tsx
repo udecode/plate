@@ -42,7 +42,15 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
       editor.setOption(plugin, 'isDragging', false);
     },
     onDragStart: ({ editor, event, plugin }) => {
-      const id = (event.target as HTMLDivElement).dataset.key ?? null;
+      const target = event.target as HTMLElement;
+
+      const dataTransfer = (event as React.DragEvent).dataTransfer!;
+      dataTransfer.effectAllowed = 'move';
+      dataTransfer.dropEffect = 'move';
+
+      const id = target.dataset.blockId;
+
+      if (!id) return;
 
       editor.setOption(plugin, 'draggingId', id);
       editor.setOption(plugin, 'isDragging', true);

@@ -333,12 +333,6 @@ export default function InstallationTab() {
 
   const hasDnd = plugins.some((plugin) => plugin.id === DndPlugin.key);
 
-  const hasCommentsPopover = components.some(
-    (comp) => comp.id === 'comments-popover'
-  );
-  const hasMentionCombobox = components.some(
-    (comp) => comp.id === 'mention-combobox'
-  );
   const hasFixedToolbar = components.some(
     (comp) => comp.id === 'fixed-toolbar'
   );
@@ -375,34 +369,12 @@ export default function InstallationTab() {
 
   addLine(`<Plate editor={editor}>`, true);
 
-  if (hasFixedToolbar) {
-    addLine(`<FixedToolbar>`, true);
-  }
-  if (hasFixedToolbarButtons) {
-    addLine(`<FixedToolbarButtons />`);
-  }
-  if (hasFixedToolbar) {
-    addLine(`</FixedToolbar>`, false, true);
-    addLine(``);
-  }
-
-  addLine(`<${hasEditor ? 'Editor' : 'PlateContent'} />`);
-
-  if (hasFloatingToolbar) {
-    addLine(``);
-    addLine(`<FloatingToolbar>`, true);
-  }
-  if (hasFloatingToolbarButtons) {
-    addLine(`<FloatingToolbarButtons />`);
-  }
-  if (hasFloatingToolbar) {
-    addLine(`</FloatingToolbar>`, false, true);
-  }
-  if (hasMentionCombobox) {
-    addLine(`<MentionCombobox items={[]} />`);
-  }
-  if (hasCommentsPopover) {
-    addLine(`<CommentsPopover />`);
+  if (hasEditor) {
+    addLine(`<EditorContainer>`, true);
+    addLine(`<Editor />`);
+    addLine(`</EditorContainer>`, false, true);
+  } else {
+    addLine(`<PlateContent />`);
   }
 
   addLine(`</Plate>`, false, true);
@@ -463,7 +435,7 @@ export default function InstallationTab() {
           <div>
             <InstallationCode
               code={[
-                `npm install react react-dom slate slate-react slate-history slate-hyperscript`,
+                `npm install react react-dom slate slate-dom slate-react slate-history slate-hyperscript`,
                 `npm install @udecode/plate-common`,
               ].join('\n')}
               bash

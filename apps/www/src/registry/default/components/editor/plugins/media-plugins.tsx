@@ -18,6 +18,7 @@ export const mediaPlugins = [
     },
     render: { afterEditable: ImagePreview },
   }),
+  MediaEmbedPlugin,
   VideoPlugin,
   AudioPlugin,
   FilePlugin,

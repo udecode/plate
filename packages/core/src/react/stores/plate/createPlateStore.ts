@@ -19,6 +19,7 @@ export const GLOBAL_PLATE_SCOPE = Symbol('global-plate');
 
 export const createPlateStore = <E extends PlateEditor = PlateEditor>({
   id,
+  containerRef = { current: null },
   decorate = null,
   editor,
   isMounted = false,
@@ -37,6 +38,7 @@ export const createPlateStore = <E extends PlateEditor = PlateEditor>({
 }: Partial<PlateStoreState<E>> = {}) =>
   createAtomStore(
     {
+      containerRef,
       decorate,
       editor,
       isMounted,

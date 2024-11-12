@@ -49,7 +49,7 @@ import { ToggleToolbarButton } from './toggle-toolbar-button';
 import { ToolbarGroup } from './toolbar';
 import { TurnIntoDropdownMenu } from './turn-into-dropdown-menu';
 
-export function FixedToolbarButtonsList() {
+export function FixedToolbarListButtons() {
   const readOnly = useEditorReadOnly();
 
   return (

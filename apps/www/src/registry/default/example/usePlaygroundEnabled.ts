@@ -49,14 +49,16 @@ import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { ResetNodePlugin } from '@udecode/plate-reset-node/react';
 import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
-import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import {
+  BlockSelectionPlugin,
+  CursorOverlayPlugin,
+} from '@udecode/plate-selection/react';
 import { TabbablePlugin } from '@udecode/plate-tabbable/react';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
 import { settingsStore } from '@/components/context/settings-store';
-import { DragOverCursorPlugin } from '@/plate/demo/plugins/DragOverCursorPlugin';
 
 export function usePlaygroundEnabled(id?: string) {
   const enabled = settingsStore.use.checkedPlugins();
@@ -81,10 +83,10 @@ export function usePlaygroundEnabled(id?: string) {
       [CopilotPlugin.key]: {
         enabled: id === 'copilot' || !!enabled[CopilotPlugin.key],
       },
+      [CursorOverlayPlugin.key]: { enabled: !!enabled.cursorOverlay },
       [DeletePlugin.key]: { enabled: !!enabled.delete },
       [DndPlugin.key]: { enabled: !!enabled.dnd },
       [DocxPlugin.key]: { enabled: !!enabled.docx },
-      [DragOverCursorPlugin.key]: { enabled: !!enabled.dragOverCursor },
       [EmojiPlugin.key]: { enabled: !!enabled.emoji },
       [ExcalidrawPlugin.key]: { enabled: !!enabled.excalidraw },
       [ExitBreakPlugin.key]: { enabled: !!enabled.exitBreak },

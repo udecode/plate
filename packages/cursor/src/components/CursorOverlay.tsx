@@ -19,6 +19,8 @@ export interface CursorProps<TCursorData extends UnknownObject = UnknownObject>
       caret: string;
       selectionRect: string;
     }> {
+  id: string;
+
   /**
    * Custom caret component. For example, you could display a label next to the
    * caret.
@@ -99,7 +101,12 @@ export function CursorOverlayContent<
   return (
     <>
       {cursors.map((cursor) => (
-        <CursorComponent key={cursor.key} {...cursorProps} {...cursor} />
+        <CursorComponent
+          id={cursor.key}
+          key={cursor.key}
+          {...cursorProps}
+          {...cursor}
+        />
       ))}
     </>
   );

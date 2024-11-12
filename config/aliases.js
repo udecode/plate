@@ -13,7 +13,6 @@ module.exports = {
   '@udecode/plate-common': 'common',
   '@udecode/plate-core': 'core',
   '@udecode/plate-csv': 'csv',
-  '@udecode/plate-cursor': 'cursor',
   '@udecode/plate-diff': 'diff',
   '@udecode/plate-dnd': 'dnd',
   '@udecode/plate-docx': 'docx',

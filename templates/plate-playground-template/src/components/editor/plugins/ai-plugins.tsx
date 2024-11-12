@@ -34,7 +34,6 @@ import { CodeBlockElement } from '@/components/plate-ui/code-block-element';
 import { CodeLeaf } from '@/components/plate-ui/code-leaf';
 import { CodeLineElement } from '@/components/plate-ui/code-line-element';
 import { CodeSyntaxLeaf } from '@/components/plate-ui/code-syntax-leaf';
-import { SelectionOverlayPlugin } from '@/components/plate-ui/cursor-overlay';
 import { HeadingElement } from '@/components/plate-ui/heading-element';
 import { HrElement } from '@/components/plate-ui/hr-element';
 import { LinkElement } from '@/components/plate-ui/link-element';
@@ -171,7 +170,6 @@ export const PROMPT_TEMPLATES = {
 };
 
 export const aiPlugins = [
-  SelectionOverlayPlugin,
   MarkdownPlugin.configure({ options: { indentList: true } }),
   AIPlugin,
   AIChatPlugin.configure({
@@ -184,7 +182,6 @@ export const aiPlugins = [
             ? PROMPT_TEMPLATES.userSelecting
             : PROMPT_TEMPLATES.userDefault;
       },
-      scrollContainerSelector: '#scroll_container',
       systemTemplate: ({ isBlockSelecting, isSelecting }) => {
         return isBlockSelecting
           ? PROMPT_TEMPLATES.systemBlockSelecting

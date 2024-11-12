@@ -1,5 +1,17 @@
 # @udecode/plate-dnd
 
+## 40.0.0
+
+### Minor Changes
+
+- [#3744](https://github.com/udecode/plate/pull/3744) by [@zbeyens](https://github.com/zbeyens) –
+  - Dragging `dropEffect` is now `move` instead of `copy`
+  - Fix drag bug when dragging an element without id
+
+### Patch Changes
+
+- [#3745](https://github.com/udecode/plate/pull/3745) by [@12joan](https://github.com/12joan) – Fix: `useDndNode` calls a state setter during its render function
+
 ## 39.3.0
 
 ### Patch Changes

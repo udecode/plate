@@ -13,7 +13,6 @@ import {
 import { type TRenderLeafProps, Plate , usePlateEditor } from "@udecode/plate-common/react";
 import Prism from 'prismjs';
 
-import { editableProps } from '@/plate/demo/editableProps';
 import { PlateUI } from '@/plate/demo/plate-ui';
 import { previewMdValue } from '@/plate/demo/values/previewMdValue';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
@@ -99,10 +98,6 @@ function PreviewLeaf({
   );
 }
 
-const _editableProps = {
-  ...editableProps,
-  renderLeaf: PreviewLeaf,
-};
 
 export default function PreviewMdDemo() {
   const editor = usePlateEditor({
@@ -117,7 +112,7 @@ export default function PreviewMdDemo() {
   return (
       <Plate editor={editor}>
         <EditorContainer>
-          <Editor {..._editableProps} />
+          <Editor renderLeaf={PreviewLeaf} />
         </EditorContainer>
       </Plate>
   );

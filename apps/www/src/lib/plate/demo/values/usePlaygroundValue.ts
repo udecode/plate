@@ -4,7 +4,6 @@ import type { Value } from '@udecode/slate';
 
 import { settingsStore } from '@/components/context/settings-store';
 import { type ValueId, customizerPlugins } from '@/config/customizer-plugins';
-import { mapNodeId } from '@/plate/demo/mapNodeId';
 
 import { aiValue } from './aiValue';
 import { alignValue } from './alignValue';
@@ -58,7 +57,10 @@ export const usePlaygroundValue = (id?: ValueId): Value => {
 
     if (!version) return value;
     if (valueId === 'tableMerge') {
-      return mapNodeId(tableMergeValue);
+      return tableMergeValue;
+    }
+    if (valueId === 'tabbable' && enabled.tabbable) {
+      return tabbableValue;
     }
     if (valueId !== customizerPlugins.playground.id) {
       let newValue = (customizerPlugins as any)[valueId]?.value ?? value;
@@ -67,7 +69,7 @@ export const usePlaygroundValue = (id?: ValueId): Value => {
         newValue = value;
       }
 
-      return mapNodeId(newValue);
+      return newValue;
     }
 
     value = [{ children: [{ text: 'Playground' }], type: 'h1' }];
@@ -121,8 +123,7 @@ export const usePlaygroundValue = (id?: ValueId): Value => {
     if (enabled.autoformat) value.push(...autoformatValue);
     if (enabled.softBreak) value.push(...softBreakValue);
     if (enabled.exitBreak) value.push(...exitBreakValue);
-    if (enabled.dragOverCursor) value.push(...cursorOverlayValue);
-    if (enabled.tabbable) value.push(...tabbableValue);
+    if (enabled.cursorOverlay) value.push(...cursorOverlayValue);
     if (enabled.trailingBlock) value.push(...trailingBlockValue);
 
     // Deserialization
@@ -133,6 +134,6 @@ export const usePlaygroundValue = (id?: ValueId): Value => {
     if (enabled.docx) value.push(...deserializeDocxValue);
     if (enabled.csv) value.push(...deserializeCsvValue);
 
-    return mapNodeId(value);
+    return value;
   }, [valueId, version]);
 };

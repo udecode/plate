@@ -3,10 +3,9 @@ import React from 'react';
 import type { TEditableProps } from '@udecode/slate-react';
 
 import type { PlateEditor } from '../editor/PlateEditor';
-import type { PlateRenderLeafProps } from '../plugin/PlateRenderLeafProps';
 
-import { pipeInjectNodeProps } from '../../lib';
 import { DefaultLeaf } from '../components';
+import { getRenderNodeProps } from './getRenderNodeProps';
 import { type RenderLeaf, pluginRenderLeaf } from './pluginRenderLeaf';
 
 /** @see {@link RenderLeaf} */
@@ -22,12 +21,7 @@ export const pipeRenderLeaf = (
     }
   });
 
-  return function render(nodeProps) {
-    const props = pipeInjectNodeProps(
-      editor,
-      nodeProps
-    ) as PlateRenderLeafProps;
-
+  return function render(props) {
     renderLeafs.forEach((renderLeaf) => {
       const newChildren = renderLeaf(props as any);
 
@@ -40,6 +34,12 @@ export const pipeRenderLeaf = (
       return renderLeafProp(props);
     }
 
-    return <DefaultLeaf {...props} />;
+    const ctxProps = getRenderNodeProps({
+      attributes: props.attributes as any,
+      editor,
+      props: props as any,
+    }) as any;
+
+    return <DefaultLeaf {...(ctxProps as any)} />;
   };
 };

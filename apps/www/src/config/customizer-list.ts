@@ -51,6 +51,7 @@ import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
 import {
   BlockMenuPlugin,
   BlockSelectionPlugin,
+  CursorOverlayPlugin,
 } from '@udecode/plate-selection/react';
 import { SlashPlugin } from '@udecode/plate-slash-command/react';
 import { TabbablePlugin } from '@udecode/plate-tabbable/react';
@@ -60,7 +61,8 @@ import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 import { uniqBy } from 'lodash';
 
 import { customizerItems } from '@/config/customizer-items';
-import { DragOverCursorPlugin } from '@/plate/demo/plugins/DragOverCursorPlugin';
+import { FixedToolbarPlugin } from '@/registry/default/components/editor/plugins/fixed-toolbar-plugin';
+import { FloatingToolbarPlugin } from '@/registry/default/components/editor/plugins/floating-toolbar-plugin';
 
 export const customizerList = [
   {
@@ -132,10 +134,12 @@ export const customizerList = [
       customizerItems[BlockSelectionPlugin.key],
       customizerItems[BlockMenuPlugin.key],
       customizerItems[CaptionPlugin.key],
+      customizerItems[CursorOverlayPlugin.key],
       customizerItems[DndPlugin.key],
-      customizerItems[DragOverCursorPlugin.key],
       customizerItems[EmojiPlugin.key],
       customizerItems[ExitBreakPlugin.key],
+      customizerItems[FixedToolbarPlugin.key],
+      customizerItems[FloatingToolbarPlugin.key],
       customizerItems[NodeIdPlugin.key],
       customizerItems[NormalizeTypesPlugin.key],
       customizerItems[ResetNodePlugin.key],
@@ -212,7 +216,7 @@ export const orderedPluginKeys = [
   SoftBreakPlugin.key,
   TabbablePlugin.key,
   TrailingBlockPlugin.key,
-  DragOverCursorPlugin.key,
+  CursorOverlayPlugin.key,
 
   // Collaboration
   CommentsPlugin.key,

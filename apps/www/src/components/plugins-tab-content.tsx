@@ -174,7 +174,7 @@ export function PluginsTabContent() {
               }}
             >
               Done
-              <ArrowUpRight className="ml-2 size-4" />
+              <ArrowUpRight />
             </Button>
           </div>
         </div>

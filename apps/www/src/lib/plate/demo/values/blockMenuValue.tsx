@@ -7,34 +7,36 @@ jsx;
 export const blockMenuValue: any = (
   <fragment>
     <hh2>Block Menu</hh2>
-    <hp>
-      <htext>
-        The Block Menu provides quick access to actions for individual blocks.
-        You can open this menu by right-clicking on any block in the editor.
-      </htext>
-    </hp>
-    <hp>Key features of the Block Context Menu:</hp>
-    <hp indent={1} listStyleType="disc">
-      <htext>Right-click on any block to open the menu</htext>
-    </hp>
+
+    <hp>Open the block menu:</hp>
+    {/* <hp indent={1} listStyleType="disc">
+      <htext>Click on a drag handle to open the block menu.</htext>
+    </hp> */}
     <hp indent={1} listStyleType="disc">
       <htext>
-        Try using block selection to select multiple blocks, then open the menu
-        for the selected blocks.
+        Right-click any unselected block to open the context menu. If you
+        right-click within a selected block, you'll see the browser's native
+        context menu instead.
       </htext>
     </hp>
+    <hp>Available options in the block menu:</hp>
+    {/* <hp indent={1} listStyleType="disc">
+      <htext>Comment the block text.</htext>
+    </hp> */}
     <hp indent={1} listStyleType="disc">
-      <htext>
-        When you try to right-click the block at the cursor's location, the
-        default menu will open.This allows users to use browser extensions or
-        paste plain text, etc.
-      </htext>
+      <htext>Ask AI to edit the block.</htext>
     </hp>
     <hp indent={1} listStyleType="disc">
-      <htext>Options to duplicate, delete, or other what you want</htext>
+      <htext>Delete the block.</htext>
     </hp>
     <hp indent={1} listStyleType="disc">
-      <htext>Transform blocks into different types</htext>
+      <htext>Duplicate the block.</htext>
     </hp>
+    <hp indent={1} listStyleType="disc">
+      <htext>Turn the block type into another block type.</htext>
+    </hp>
+    {/* <hp indent={1} listStyleType="disc">
+      <htext>Color: update the block text color or background color.</htext>
+    </hp> */}
   </fragment>
 );

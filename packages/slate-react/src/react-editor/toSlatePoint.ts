@@ -1,5 +1,5 @@
 import type { TEditor } from '@udecode/slate';
-import type { DOMPoint } from 'slate-react/dist/utils/dom';
+import type { DOMPoint } from 'slate-dom';
 
 import { ReactEditor } from 'slate-react';
 

@@ -39,7 +39,7 @@ export function BlockPreview({
         <ResizablePanel
           ref={ref}
           className={cn(
-            'relative rounded-lg border bg-background max-sm:w-full max-sm:!flex-auto'
+            'max-sm:w-full max-sm:!flex-auto relative rounded-lg border bg-background'
           )}
           defaultSize={100}
           minSize={30}

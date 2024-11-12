@@ -58,6 +58,7 @@ import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
 import {
   BlockMenuPlugin,
   BlockSelectionPlugin,
+  CursorOverlayPlugin,
 } from '@udecode/plate-selection/react';
 import { SlashPlugin } from '@udecode/plate-slash-command/react';
 import { TabbablePlugin } from '@udecode/plate-tabbable/react';
@@ -71,7 +72,8 @@ import {
 } from '@/config/customizer-badges';
 import { customizerComponents } from '@/config/customizer-components';
 import { customizerPlugins } from '@/config/customizer-plugins';
-import { DragOverCursorPlugin } from '@/plate/demo/plugins/DragOverCursorPlugin';
+import { FixedToolbarPlugin } from '@/registry/default/components/editor/plugins/fixed-toolbar-plugin';
+import { FloatingToolbarPlugin } from '@/registry/default/components/editor/plugins/floating-toolbar-plugin';
 
 export type SettingPlugin = {
   id: string;
@@ -315,6 +317,9 @@ export const customizerItems: Record<string, SettingPlugin> = {
       {
         id: 'comments-popover',
         label: 'CommentsPopover',
+        pluginOptions: [
+          `render: { afterEditable: () => <CommentsPopover /> },`,
+        ],
         route: customizerComponents.commentsPopover.href,
         usage: 'CommentsPopover',
       },
@@ -341,6 +346,16 @@ export const customizerItems: Record<string, SettingPlugin> = {
     npmPackage: '@udecode/plate-csv',
     pluginFactory: 'CsvPlugin',
     route: customizerPlugins.csv.route,
+  },
+  [CursorOverlayPlugin.key]: {
+    id: CursorOverlayPlugin.key,
+    badges: [customizerBadges.handler, customizerBadges.ui],
+    label: 'Cursor Overlay',
+    npmPackage: '@udecode/plate-selection',
+    pluginFactory: 'CursorOverlayPlugin',
+    pluginOptions: [`render: { afterEditable: () => <CursorOverlay /> },`],
+    reactImport: true,
+    route: customizerPlugins['cursor-overlay'].route,
   },
   [DatePlugin.key]: {
     id: DatePlugin.key,
@@ -399,14 +414,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
     npmPackage: '@udecode/plate-docx',
     pluginFactory: 'DocxPlugin',
     route: customizerPlugins.docx.route,
-  },
-  [DragOverCursorPlugin.key]: {
-    id: DragOverCursorPlugin.key,
-    badges: [customizerBadges.handler, customizerBadges.ui],
-    // npmPackage: '@udecode/plate-cursor',
-    label: 'Drag Cursor',
-    reactImport: true,
-    route: customizerPlugins['cursor-overlay'].route,
   },
   [EmojiPlugin.key]: {
     id: EmojiPlugin.key,
@@ -474,6 +481,28 @@ export const customizerItems: Record<string, SettingPlugin> = {
     ],
     reactImport: true,
     route: customizerPlugins['exit-break'].route,
+  },
+  [FixedToolbarPlugin.key]: {
+    id: FixedToolbarPlugin.key,
+    badges: [customizerBadges.handler, customizerBadges.ui],
+    customImports: [
+      `import { FixedToolbarPlugin } from '@/components/editor/plugins/fixed-toolbar-plugin';`,
+    ],
+    label: 'Fixed Toolbar',
+    pluginFactory: 'FixedToolbarPlugin',
+    reactImport: true,
+    // route: customizerPlugins['fixed-toolbar'].route,
+  },
+  [FloatingToolbarPlugin.key]: {
+    id: FloatingToolbarPlugin.key,
+    badges: [customizerBadges.handler, customizerBadges.ui],
+    customImports: [
+      `import { FloatingToolbarPlugin } from '@/components/editor/plugins/floating-toolbar-plugin';`,
+    ],
+    label: 'Floating Toolbar',
+    pluginFactory: 'FloatingToolbarPlugin',
+    reactImport: true,
+    // route: customizerPlugins['floating-toolbar'].route,
   },
   [FontBackgroundColorPlugin.key]: {
     id: FontBackgroundColorPlugin.key,
@@ -1058,33 +1087,10 @@ export const customizerItems: Record<string, SettingPlugin> = {
     components: [
       {
         id: 'editor',
+        import: 'Editor, EditorContainer',
         label: 'Editor',
         route: customizerComponents.editor.href,
         usage: 'Editor',
-      },
-      {
-        id: 'fixed-toolbar',
-        label: 'FixedToolbar',
-        route: customizerComponents.fixedToolbar.href,
-        usage: 'FixedToolbar',
-      },
-      {
-        id: 'fixed-toolbar-buttons',
-        label: 'FixedToolbarButtons',
-        route: customizerComponents.fixedToolbarButtons.href,
-        usage: 'FixedToolbarButtons',
-      },
-      {
-        id: 'floating-toolbar',
-        label: 'FloatingToolbar',
-        route: customizerComponents.floatingToolbar.href,
-        usage: 'FloatingToolbar',
-      },
-      {
-        id: 'floating-toolbar-buttons',
-        label: 'FloatingToolbarButtons',
-        route: customizerComponents.floatingToolbarButtons.href,
-        usage: 'FloatingToolbarButtons',
       },
       {
         id: 'placeholder',

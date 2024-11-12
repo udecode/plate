@@ -11,6 +11,63 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 
 ## November 2024 #16
 
+### November 8 #16.5
+
+- Add this to your tailwind config: 
+```ts
+// plugins
+require("tailwind-scrollbar-hide")
+
+// theme.extend.screens
+screens: {
+  /**
+   * Matches devices where the primary pointing device is capable of
+   * hovering conveniently. Usage: main-hover:group-hover:bg-red-500 See:
+   * https://developer.mozilla.org/en-US/docs/Web/CSS/@media/hover
+   *
+   * On iOS devices, buttons inside a .group element that contains
+   * descendent elements with `group-hover:` CSS rules require two taps to
+   * click. As a workaround, we disable these rules on devices that cannot
+   * conveniently hover using `main-hover:`.
+   */
+  'main-hover': {
+    raw: '(hover: hover)',
+  },
+},
+```
+- `editor`: 
+  - `EditorContainer`: remove `ref`, use `useEditorContainerRef` instead
+  - add `caret-primary selection:bg-brand/25`
+  - add `id={editor.uid}` to `EditorContainer` so you can remove `scroll_container` or any id you may have defined.
+- `draggable`: 
+  - fix a **critical** mobile ux issue: focusing the editor required two taps because of the group hover styles. Fixed with `main-hover:group-hover:opacity-100`.
+  - for xs media, show only if selected
+- `table-element`: fix width
+- `table-row-element`, `table-cell-element`: support row selection
+- Add `draggable` prop to `date-element`, `mention-element`
+- Add `data-plate-focus` attribute to `link-toolbar-button`, `link-floating-toolbar`, `ai-menu` input
+- `cursor-overlay`: 
+  - support collapsed selection
+  - remove `DragOverCursorPlugin`, `SelectionOverlayPlugin`. Use `@udecode/plate-selection` instead.
+- `ghost-text`: hide for xs media, add `pointer-events-none`
+- `floating-toolbar`: add `overflow-x-auto scrollbar-hide` to allow horizontal scrolling (mobile)
+- `fixed-toolbar`: add `scrollbar-hide`
+- `emoji-picker-content`: add emoji font
+- `column-element`: add `w-full` as default
+- New hook: `use-is-touch-device`
+- `block-context-menu`: disable on touch device
+- `ai-toolbar-button`: add `onMouseDown`
+- `ai-menu-items`: add undefined check
+- `block-selection-plugins`: add
+```ts
+inject: {
+  excludeBelowPlugins: ['tr'],
+  excludePlugins: ['table', 'code_line', 'column_group', 'column'],
+},
+```
+- Add `floating-toolbar-plugin`, `fixed-toolbar-plugin`
+- misc: `hr-element`, `plate-element`, `transforms`
+
 ### November 7 #16.4
 
 - `block-context-menu`: prevent unselect when clicking on the context menu

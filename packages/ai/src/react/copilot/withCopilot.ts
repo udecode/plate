@@ -1,5 +1,3 @@
-import type { BaseOperation } from 'slate';
-
 import { withoutMergingHistory } from '@udecode/plate-common';
 import {
   type ExtendEditor,
@@ -8,6 +6,7 @@ import {
 } from '@udecode/plate-common/react';
 import { serializeInlineMd } from '@udecode/plate-markdown';
 import debounce from 'lodash/debounce.js';
+import { type BaseOperation, Range } from 'slate';
 
 import type { CopilotPluginConfig } from './CopilotPlugin';
 
@@ -133,12 +132,21 @@ export const withCopilot: ExtendEditor<CopilotPluginConfig> = ({
     insertText(text);
   };
 
+  let prevSelection: Range | null = null;
+
   editor.setSelection = (selection) => {
-    if (getOptions().autoTriggerQuery!({ editor }) && isEditorFocused(editor)) {
+    setSelection(selection);
+
+    if (
+      editor.selection &&
+      (!prevSelection || !Range.equals(prevSelection, editor.selection)) &&
+      getOptions().autoTriggerQuery!({ editor }) &&
+      isEditorFocused(editor)
+    ) {
       void api.copilot.triggerSuggestion();
     }
 
-    return setSelection(selection);
+    prevSelection = editor.selection;
   };
 
   return editor;

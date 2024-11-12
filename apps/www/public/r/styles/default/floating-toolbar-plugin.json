@@ -1,0 +1,17 @@
+{
+  "dependencies": [],
+  "files": [
+    {
+      "content": "'use client';\n\nimport { createPlatePlugin } from '@udecode/plate-common/react';\n\nimport { FloatingToolbar } from '@/components/plate-ui/floating-toolbar';\nimport { FloatingToolbarButtons } from '@/components/plate-ui/floating-toolbar-buttons';\n\nexport const FloatingToolbarPlugin = createPlatePlugin({\n  key: 'floating-toolbar',\n  render: {\n    afterEditable: () => (\n      <FloatingToolbar>\n        <FloatingToolbarButtons />\n      </FloatingToolbar>\n    ),\n  },\n});\n",
+      "path": "components/editor/plugins/floating-toolbar-plugin.tsx",
+      "target": "components/editor/plugins/floating-toolbar-plugin.tsx",
+      "type": "registry:component"
+    }
+  ],
+  "name": "floating-toolbar-plugin",
+  "registryDependencies": [
+    "floating-toolbar",
+    "floating-toolbar-buttons"
+  ],
+  "type": "registry:component"
+}

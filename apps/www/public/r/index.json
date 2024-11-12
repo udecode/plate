@@ -1328,7 +1328,8 @@
     "registryDependencies": [
       "calendar",
       "plate-element",
-      "context-menu"
+      "context-menu",
+      "use-is-touch-device"
     ],
     "type": "registry:ui"
   },
@@ -1544,15 +1545,14 @@
   },
   {
     "dependencies": [
-      "@udecode/plate-cursor",
-      "@udecode/plate-dnd",
       "@udecode/plate-selection"
     ],
     "doc": {
-      "description": "A visual overlay for collaborative cursors and selections.",
+      "description": "A visual overlay for cursors and selections.",
       "docs": [
         {
-          "route": "https://pro.platejs.org/docs/components/cursor-overlay"
+          "route": "/docs/cursor-overlay",
+          "title": "Cursor Overlay"
         }
       ],
       "examples": [
@@ -1764,11 +1764,11 @@
     ],
     "files": [
       {
-        "path": "plate-ui/fixed-toolbar-buttons-list.tsx",
+        "path": "plate-ui/fixed-toolbar-list-buttons.tsx",
         "type": "registry:ui"
       }
     ],
-    "name": "fixed-toolbar-buttons-list",
+    "name": "fixed-toolbar-list-buttons",
     "registryDependencies": [
       "toolbar",
       "ai-toolbar-button",

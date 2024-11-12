@@ -32,6 +32,18 @@ export const withNormalizeTable: ExtendEditor<TableConfig> = ({
 
     if (isElement(node)) {
       if (node.type === type) {
+        if (
+          !node.children.some(
+            (child) =>
+              isElement(child) &&
+              child.type === editor.getType(BaseTableRowPlugin)
+          )
+        ) {
+          editor.removeNodes({ at: path });
+
+          return;
+        }
+
         const tableEntry = getBlockAbove(editor, {
           at: path,
           match: { type: type },

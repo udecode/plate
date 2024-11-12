@@ -10,6 +10,9 @@ import { TabbablePlugin } from '@udecode/plate-tabbable/react';
 import { TablePlugin } from '@udecode/plate-table/react';
 
 export const tabbablePlugin = TabbablePlugin.configure(({ editor }) => ({
+  node: {
+    isElement: true,
+  },
   options: {
     query: () => {
       if (isSelectionAtBlockStart(editor) || isSelectionAtBlockEnd(editor))
@@ -29,6 +32,11 @@ export const tabbablePlugin = TabbablePlugin.configure(({ editor }) => ({
           );
         },
       });
+    },
+  },
+  override: {
+    enabled: {
+      indent: false,
     },
   },
 }));

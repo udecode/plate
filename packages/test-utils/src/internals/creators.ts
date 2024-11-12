@@ -5,7 +5,6 @@ import {
   Node,
   Range,
   Text,
-  createEditor as makeEditor,
 } from 'slate';
 
 import {
@@ -178,59 +177,61 @@ export const createText = (
 };
 
 /** Create a top-level `Editor` object. */
-export const createEditor = (
-  tagName: string,
-  attributes: Record<string, any>,
-  children: any[]
-): Editor => {
-  const otherChildren: any[] = [];
-  let selectionChild: Range | undefined;
+export const createEditor =
+  (makeEditor: () => Editor) =>
+  (
+    tagName: string,
+    attributes: Record<string, any>,
+    children: any[]
+  ): Editor => {
+    const otherChildren: any[] = [];
+    let selectionChild: Range | undefined;
 
-  for (const child of children) {
-    if (Range.isRange(child)) {
-      selectionChild = child;
-    } else {
-      otherChildren.push(child);
+    for (const child of children) {
+      if (Range.isRange(child)) {
+        selectionChild = child;
+      } else {
+        otherChildren.push(child);
+      }
     }
-  }
 
-  const descendants = resolveDescendants(otherChildren);
-  const selection: Partial<Range> = {};
-  const editor = makeEditor();
-  Object.assign(editor, attributes);
-  editor.children = descendants;
+    const descendants = resolveDescendants(otherChildren);
+    const selection: Partial<Range> = {};
+    const editor = makeEditor();
+    Object.assign(editor, attributes);
+    editor.children = descendants;
 
-  // Search the document's texts to see if any of them have tokens associated
-  // that need incorporated into the selection.
-  for (const [node, path] of Node.texts(editor)) {
-    const anchor = getAnchorOffset(node);
-    const focus = getFocusOffset(node);
+    // Search the document's texts to see if any of them have tokens associated
+    // that need incorporated into the selection.
+    for (const [node, path] of Node.texts(editor)) {
+      const anchor = getAnchorOffset(node);
+      const focus = getFocusOffset(node);
 
-    if (anchor != null) {
-      const [offset] = anchor;
-      selection.anchor = { offset, path };
+      if (anchor != null) {
+        const [offset] = anchor;
+        selection.anchor = { offset, path };
+      }
+      if (focus != null) {
+        const [offset] = focus;
+        selection.focus = { offset, path };
+      }
     }
-    if (focus != null) {
-      const [offset] = focus;
-      selection.focus = { offset, path };
+
+    if (selection.anchor && !selection.focus) {
+      throw new Error(
+        `Slate hyperscript ranges must have both \`<anchor />\` and \`<focus />\` defined if one is defined, but you only defined \`<anchor />\`. For collapsed selections, use \`<cursor />\` instead.`
+      );
     }
-  }
+    if (!selection.anchor && selection.focus) {
+      throw new Error(
+        `Slate hyperscript ranges must have both \`<anchor />\` and \`<focus />\` defined if one is defined, but you only defined \`<focus />\`. For collapsed selections, use \`<cursor />\` instead.`
+      );
+    }
+    if (selectionChild != null) {
+      editor.selection = selectionChild;
+    } else if (Range.isRange(selection)) {
+      editor.selection = selection;
+    }
 
-  if (selection.anchor && !selection.focus) {
-    throw new Error(
-      `Slate hyperscript ranges must have both \`<anchor />\` and \`<focus />\` defined if one is defined, but you only defined \`<anchor />\`. For collapsed selections, use \`<cursor />\` instead.`
-    );
-  }
-  if (!selection.anchor && selection.focus) {
-    throw new Error(
-      `Slate hyperscript ranges must have both \`<anchor />\` and \`<focus />\` defined if one is defined, but you only defined \`<focus />\`. For collapsed selections, use \`<cursor />\` instead.`
-    );
-  }
-  if (selectionChild != null) {
-    editor.selection = selectionChild;
-  } else if (Range.isRange(selection)) {
-    editor.selection = selection;
-  }
-
-  return editor;
-};
+    return editor;
+  };
