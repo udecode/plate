@@ -48,10 +48,12 @@ import { MediaToolbarButton } from './media-toolbar-button';
 import { ModeDropdownMenu } from './mode-dropdown-menu';
 import { MoreDropdownMenu } from './more-dropdown-menu';
 import { OutdentToolbarButton } from './outdent-toolbar-button';
+import { RedoToolbarButton } from './redo-toolbar-button';
 import { TableDropdownMenu } from './table-dropdown-menu';
 import { ToggleToolbarButton } from './toggle-toolbar-button';
 import { ToolbarGroup } from './toolbar';
 import { TurnIntoDropdownMenu } from './turn-into-dropdown-menu';
+import { UndoToolbarButton } from './undo-toolbar-button';
 
 export function FixedToolbarButtons() {
   const readOnly = useEditorReadOnly();
@@ -60,6 +62,11 @@ export function FixedToolbarButtons() {
     <div className="flex w-full">
       {!readOnly && (
         <>
+          <ToolbarGroup>
+            <UndoToolbarButton />
+            <RedoToolbarButton />
+          </ToolbarGroup>
+
           <ToolbarGroup>
             <AIToolbarButton
               className="gap-1.5 text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-500"
