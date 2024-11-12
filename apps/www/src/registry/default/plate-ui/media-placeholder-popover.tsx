@@ -145,22 +145,6 @@ export const MediaPlaceholderPopover = ({ children }: MediaPopoverProps) => {
 
     const path = findNodePath(editor, element);
 
-    // replaceNode<TImageElement>(editor, {
-    //   at: path!,
-    //   nodes: [
-    //     {
-    //       children: [],
-    //       initialHeight: size!.height,
-    //       initialWidth: size!.width,
-    //       isUpload: true,
-    //       name: mediaType === FilePlugin.key ? fileInfo.name : '',
-    //       placeholderId: element.id as string,
-    //       type: mediaType!,
-    //       url: fileInfo.url,
-    //     },
-    //   ],
-    // });
-
     withoutSavingHistory(editor, () => {
       removeNodes(editor, { at: path });
 
@@ -179,21 +163,6 @@ export const MediaPlaceholderPopover = ({ children }: MediaPopoverProps) => {
 
       updateUploadHistory(editor, node);
     });
-
-    // setMediaNode(
-    //   editor,
-    //   {
-    //     id: nanoid(),
-    //     initialHeight: size?.height,
-    //     initialWidth: size?.width,
-    //     isUpload: true,
-    //     name: mediaType === FilePlugin.key ? fileInfo.name : '',
-    //     placeholderId: element.id as string,
-    //     type: mediaType!,
-    //     url: fileInfo.url,
-    //   },
-    //   { at: path }
-    // );
 
     api.placeholder.removeUploadingFile(element.id as string);
 
@@ -237,7 +206,7 @@ export const MediaPlaceholderPopover = ({ children }: MediaPopoverProps) => {
       <PopoverTrigger asChild>{children}</PopoverTrigger>
 
       <PopoverContent
-        className="flex flex-col"
+        className="flex w-fit flex-col"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <Tabs className="w-full shrink-0" defaultValue="account">
@@ -245,7 +214,7 @@ export const MediaPlaceholderPopover = ({ children }: MediaPopoverProps) => {
             <TabsTrigger value="account">Upload</TabsTrigger>
             <TabsTrigger value="password">Embed link</TabsTrigger>
           </TabsList>
-          <TabsContent className="w-[300px] px-3 py-2" value="account">
+          <TabsContent className=" px-3 py-2" value="account">
             <Button className="w-full" onClick={openFilePicker}>
               {currentMedia.buttonText}
             </Button>
@@ -254,10 +223,7 @@ export const MediaPlaceholderPopover = ({ children }: MediaPopoverProps) => {
             </div>
           </TabsContent>
 
-          <TabsContent
-            className="w-[300px] px-3 pb-3 pt-2 text-center"
-            value="password"
-          >
+          <TabsContent className="px-3 pb-3 pt-2 text-center" value="password">
             <Input
               value={embedValue}
               onChange={(e) => setEmbedValue(e.target.value)}
@@ -265,7 +231,7 @@ export const MediaPlaceholderPopover = ({ children }: MediaPopoverProps) => {
             />
 
             <Button
-              className="mt-2 w-full max-w-[300px]"
+              className="mt-2 w-full "
               onClick={() => onEmbed(embedValue)}
             >
               {currentMedia.embedText}
