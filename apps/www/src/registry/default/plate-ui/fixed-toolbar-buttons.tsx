@@ -37,6 +37,7 @@ import { AlignDropdownMenu } from './align-dropdown-menu';
 import { ColorDropdownMenu } from './color-dropdown-menu';
 import { CommentToolbarButton } from './comment-toolbar-button';
 import { EmojiDropdownMenu } from './emoji-dropdown-menu';
+import { FontSizeToolbarButton } from './font-size-toolbar-butoon';
 import { IndentListToolbarButton } from './indent-list-toolbar-button';
 import { IndentTodoToolbarButton } from './indent-todo-toolbar-button';
 import { IndentToolbarButton } from './indent-toolbar-button';
@@ -80,6 +81,7 @@ export function FixedToolbarButtons() {
           <ToolbarGroup>
             <InsertDropdownMenu />
             <TurnIntoDropdownMenu />
+            <FontSizeToolbarButton />
           </ToolbarGroup>
 
           <ToolbarGroup>

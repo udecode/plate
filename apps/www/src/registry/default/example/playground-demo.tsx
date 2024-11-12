@@ -12,6 +12,7 @@ import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { ListPlugin, TodoListPlugin } from '@udecode/plate-list/react';
+import { PlaceholderPlugin } from '@udecode/plate-media/react';
 import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { PlaywrightPlugin } from '@udecode/plate-playwright';
 import { TablePlugin } from '@udecode/plate-table/react';
@@ -34,6 +35,7 @@ import { FixedToolbarButtonsList } from '@/registry/default/plate-ui/fixed-toolb
 import { FloatingToolbar } from '@/registry/default/plate-ui/floating-toolbar';
 import { FloatingToolbarButtons } from '@/registry/default/plate-ui/floating-toolbar-buttons';
 
+import { MediaPlaceholderElement } from '../plate-ui/media-placeholder-element';
 import { usePlaygroundEnabled } from './usePlaygroundEnabled';
 
 export const usePlaygroundEditor = (id: any = '') => {
@@ -76,6 +78,9 @@ export const usePlaygroundEditor = (id: any = '') => {
         }),
         SingleLinePlugin,
 
+        PlaceholderPlugin.configure({ enabled: id === 'upload' }).withComponent(
+          MediaPlaceholderElement
+        ),
         // Testing
         PlaywrightPlugin.configure({
           enabled: process.env.NODE_ENV !== 'production',

@@ -2081,6 +2081,18 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
+    "upload": {
+      name: "upload",
+      description: "",
+      type: "registry:example",
+      registryDependencies: [],
+      files: ["registry/default/example/upload-demo.tsx"],
+      component: React.lazy(() => import("@/registry/default/example/upload-demo.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
     "editor-ai": {
       name: "editor-ai",
       description: "An AI editor.",

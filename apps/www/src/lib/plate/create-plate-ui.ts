@@ -45,7 +45,6 @@ import {
   FilePlugin,
   ImagePlugin,
   MediaEmbedPlugin,
-  PlaceholderPlugin,
   VideoPlugin,
 } from '@udecode/plate-media/react';
 import {
@@ -82,7 +81,6 @@ import { LinkElement } from '@/registry/default/plate-ui/link-element';
 import { ListElement } from '@/registry/default/plate-ui/list-element';
 import { MediaEmbedElement } from '@/registry/default/plate-ui/media-embed-element';
 import { MediaFileElement } from '@/registry/default/plate-ui/media-file-element';
-import { MediaPlaceholderElement } from '@/registry/default/plate-ui/media-placeholder-element';
 import { MediaVideoElement } from '@/registry/default/plate-ui/media-video-element';
 import { MentionElement } from '@/registry/default/plate-ui/mention-element';
 import { MentionInputElement } from '@/registry/default/plate-ui/mention-input-element';
@@ -104,7 +102,7 @@ import { withDraggables } from '@/registry/default/plate-ui/with-draggables';
 export const createPlateUI = ({
   draggable,
   placeholder,
-}: { draggable?: boolean; placeholder?: boolean } = {}) => {
+}: { draggable?: boolean; placeholder?: boolean; upload?: boolean } = {}) => {
   let components: Record<string, NodeComponent> = {
     [AIPlugin.key]: AILeaf,
     [BlockquotePlugin.key]: BlockquoteElement,
@@ -140,7 +138,6 @@ export const createPlateUI = ({
     [MentionPlugin.key]: MentionElement,
     [NumberedListPlugin.key]: withProps(ListElement, { variant: 'ol' }),
     [ParagraphPlugin.key]: ParagraphElement,
-    [PlaceholderPlugin.key]: MediaPlaceholderElement,
     [SlashInputPlugin.key]: SlashInputElement,
     [StrikethroughPlugin.key]: withProps(PlateLeaf, { as: 's' }),
     [SubscriptPlugin.key]: withProps(PlateLeaf, { as: 'sub' }),

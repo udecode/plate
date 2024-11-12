@@ -44,7 +44,7 @@ export const PlaceholderPlugin = toTPlatePlugin<
   >
 >(BasePlaceholderPlugin, {
   extendEditor: ({ editor }) => {
-    const { apply, writeHistory } = editor;
+    const { writeHistory } = editor;
 
     editor.writeHistory = (stack, batch) => {
       if (isHistoryMarked(editor)) {
@@ -57,12 +57,6 @@ export const PlaceholderPlugin = toTPlatePlugin<
       }
 
       writeHistory(stack, batch);
-    };
-
-    editor.apply = (op) => {
-      console.log(editor.history.undos);
-
-      return apply(op);
     };
 
     return editor;
