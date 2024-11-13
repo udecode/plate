@@ -1,5 +1,11 @@
 # @udecode/plate-md-serializer
 
+## 40.0.4
+
+### Patch Changes
+
+- [#3764](https://github.com/udecode/plate/pull/3764) by [@abhi-bc](https://github.com/abhi-bc) – fix: [add strikethrough support to deserializeMd](https://github.com/udecode/plate/issues/3733)
+
 ## 40.0.0
 
 ### Minor Changes
