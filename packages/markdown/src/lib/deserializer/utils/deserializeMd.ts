@@ -1,5 +1,6 @@
 import type { SlateEditor } from '@udecode/plate-common';
 
+import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { type Processor, unified } from 'unified';
 
@@ -36,6 +37,7 @@ export const deserializeMd = (
   }
 
   tree = tree
+    .use(remarkGfm)
     .use(remarkPlugin, {
       editor,
       elementRules,

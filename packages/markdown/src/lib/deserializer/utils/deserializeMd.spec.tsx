@@ -159,6 +159,25 @@ describe('deserializeMd', () => {
     expect(deserializeMd(editor, input)).toEqual(output);
   });
 
+  it('should deserialize strikethrough', () => {
+    const input =
+      'This is ~~strikethrough~~ text and **~~strike~~ inside bold**.';
+
+    const output = (
+      <fragment>
+        <hp>
+          This is <htext strikethrough>strikethrough</htext> text and{' '}
+          <htext bold strikethrough>
+            strike
+          </htext>
+          <htext bold> inside bold</htext>.
+        </hp>
+      </fragment>
+    );
+
+    expect(deserializeMd(editor, input)).toEqual(output);
+  });
+
   it('should deserialize nested marks', () => {
     const input = 'This is **bold *italic***.';
 

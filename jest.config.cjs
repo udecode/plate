@@ -63,7 +63,7 @@ module.exports = {
       'react-dnd|dnd-core|@react-dnd|react-dnd-html5-backend|react-tweet|unified' +
       '|remark-.*' +
       '|mdast-.*' +
-      '|micromark-.*' +
+      '|micromark.*' +
       '|unist-.*' +
       '|markdown-table' +
       // '|markdown-.*' +
