@@ -2,10 +2,12 @@
 
 import React from 'react';
 
-import { cn, withRef, withVariants } from '@udecode/cn';
+import { cn, createPrimitiveElement, withRef, withVariants } from '@udecode/cn';
 import {
+  type ResizeHandle as ResizeHandlePrimitive,
   Resizable as ResizablePrimitive,
-  ResizeHandle as ResizeHandlePrimitive,
+  useResizeHandle,
+  useResizeHandleState,
 } from '@udecode/plate-resizable';
 import { cva } from 'class-variance-authority';
 
@@ -36,19 +38,28 @@ const resizeHandleVariants = cva(cn('absolute z-40'), {
 });
 
 const ResizeHandleVariants = withVariants(
-  ResizeHandlePrimitive,
+  createPrimitiveElement('div'),
   resizeHandleVariants,
   ['direction']
 );
 
 export const ResizeHandle = withRef<typeof ResizeHandlePrimitive>(
-  (props, ref) => (
-    <ResizeHandleVariants
-      ref={ref}
-      direction={props.options?.direction}
-      {...props}
-    />
-  )
+  ({ options, ...props }, ref) => {
+    const state = useResizeHandleState(options ?? {});
+    const resizeHandle = useResizeHandle(state);
+
+    if (state.readOnly) return null;
+
+    return (
+      <ResizeHandleVariants
+        ref={ref}
+        data-resizing={state.isResizing}
+        direction={options?.direction}
+        {...resizeHandle.props}
+        {...props}
+      />
+    );
+  }
 );
 
 const resizableVariants = cva('', {

@@ -3,8 +3,8 @@ import React from 'react';
 import { getNode } from '@udecode/plate-common';
 import {
   toDOMNode,
-  useEditorContainerRef,
   useEditorPlugin,
+  useEditorScrollRef,
   useEditorSelector,
 } from '@udecode/plate-common/react';
 
@@ -23,7 +23,7 @@ export const useTocSideBarState = ({
 }: TocSideBarProps) => {
   const { editor } = useEditorPlugin(TocPlugin);
   const headingList = useEditorSelector(getHeadingList, []);
-  const containerRef = useEditorContainerRef();
+  const containerRef = useEditorScrollRef();
 
   const tocRef = React.useRef<HTMLElement>(null);
 

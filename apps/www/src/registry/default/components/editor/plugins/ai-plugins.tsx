@@ -26,8 +26,8 @@ import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
-import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 
+import { cursorOverlayPlugin } from '@/registry/default/components/editor/plugins/cursor-overlay-plugin';
 import { AIMenu } from '@/registry/default/plate-ui/ai-menu';
 import { BlockquoteElement } from '@/registry/default/plate-ui/blockquote-element';
 import { CodeBlockElement } from '@/registry/default/plate-ui/code-block-element';
@@ -40,6 +40,7 @@ import { LinkElement } from '@/registry/default/plate-ui/link-element';
 import { ParagraphElement } from '@/registry/default/plate-ui/paragraph-element';
 
 import { basicNodesPlugins } from './basic-nodes-plugins';
+import { blockSelectionReadOnlyPlugin } from './block-selection-plugins';
 import { indentListPlugins } from './indent-list-plugins';
 import { linkPlugin } from './link-plugin';
 
@@ -66,23 +67,13 @@ const createAIEditor = () => {
       },
     },
     plugins: [
-      ParagraphPlugin,
       ...basicNodesPlugins,
+      ...indentListPlugins,
       HorizontalRulePlugin,
       linkPlugin,
-      ...indentListPlugins,
       MarkdownPlugin.configure({ options: { indentList: true } }),
-      // FIXME
-      BlockSelectionPlugin.configure({
-        api: {},
-        extendEditor: null,
-        options: {},
-        render: {},
-        useHooks: null,
-        handlers: {},
-      }),
+      blockSelectionReadOnlyPlugin,
     ],
-    value: [{ children: [{ text: '' }], type: 'p' }],
   });
 
   return editor;
@@ -170,6 +161,7 @@ export const PROMPT_TEMPLATES = {
 };
 
 export const aiPlugins = [
+  cursorOverlayPlugin,
   MarkdownPlugin.configure({ options: { indentList: true } }),
   AIPlugin,
   AIChatPlugin.configure({
