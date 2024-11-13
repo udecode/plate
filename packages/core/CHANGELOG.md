@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 40.0.2
+
+### Patch Changes
+
+- [#3761](https://github.com/udecode/plate/pull/3761) by [@zbeyens](https://github.com/zbeyens) – Fix scroll ref
+
 ## 40.0.1
 
 ### Patch Changes
