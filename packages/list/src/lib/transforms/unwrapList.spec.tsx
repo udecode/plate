@@ -1,14 +1,14 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import type { SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { ListPlugin } from '../../react';
 import { unwrapList } from './unwrapList';
 
-jsx;
+jsxt;
 
 describe('li list unwrapping', () => {
   it('should unwrap a nested list ul > single li', () => {

@@ -1,4 +1,4 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import {
   BoldPlugin,
@@ -6,11 +6,11 @@ import {
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
 import { createSlateEditor } from '@udecode/plate-common';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { BaseAutoformatPlugin } from '../../BaseAutoformatPlugin';
 
-jsx;
+jsxt;
 
 describe('when match is an array', () => {
   it('should autoformat', () => {

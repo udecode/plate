@@ -1,8 +1,8 @@
 import type { TElement } from '@udecode/plate-common';
 
 export interface TMentionItemBase {
-  key?: any;
   text: string;
+  key?: any;
 }
 
 export interface TMentionInputElement extends TElement {

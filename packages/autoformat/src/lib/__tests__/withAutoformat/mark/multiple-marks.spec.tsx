@@ -1,4 +1,4 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import {
   BoldPlugin,
@@ -6,12 +6,12 @@ import {
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
 import { createSlateEditor } from '@udecode/plate-common';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 import { getAutoformatOptions } from 'www/src/lib/plate/demo/plugins/autoformatOptions';
 
 import { BaseAutoformatPlugin } from '../../../BaseAutoformatPlugin';
 
-jsx;
+jsxt;
 
 describe('when inserting ***', () => {
   it('should autoformat to italic bold', () => {

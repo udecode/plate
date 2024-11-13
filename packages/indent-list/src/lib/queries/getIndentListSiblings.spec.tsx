@@ -1,4 +1,4 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import {
   type SlateEditor,
@@ -6,11 +6,11 @@ import {
   type TElement,
   getBlockAbove,
 } from '@udecode/plate-common';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { getIndentListSiblings } from './getIndentListSiblings';
 
-jsx;
+jsxt;
 
 describe('getIndentListSiblings', () => {
   describe('listStyleType is not defined', () => {

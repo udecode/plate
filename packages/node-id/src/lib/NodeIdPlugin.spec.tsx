@@ -1,4 +1,4 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import {
   type SlateEditor,
@@ -10,11 +10,11 @@ import {
 import { ParagraphPlugin } from '@udecode/plate-common/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { BulletedListPlugin, ListItemPlugin } from '@udecode/plate-list/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { NodeIdPlugin } from './NodeIdPlugin';
 
-jsx;
+jsxt;
 
 const getIdFactory = () => {
   let id = 1;

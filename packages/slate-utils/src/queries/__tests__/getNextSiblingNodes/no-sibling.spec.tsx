@@ -1,4 +1,4 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import type { SlateEditor } from '@udecode/plate-common';
 import type { TDescendant } from '@udecode/slate';
@@ -6,12 +6,12 @@ import type { Range } from 'slate';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { getBlockAbove } from '../../getBlockAbove';
 import { getNextSiblingNodes } from '../../getNextSiblingNodes';
 
-jsx;
+jsxt;
 
 const input = (
   <editor>

@@ -1,11 +1,11 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { BaseLinkPlugin } from './BaseLinkPlugin';
 
-jsx;
+jsxt;
 
 /**
  * TODO: test react: https://github.com/udecode/editor-protocol/issues/44

@@ -1,15 +1,15 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import {
   type SlateEditor,
   type TDescendant,
   createSlateEditor,
 } from '@udecode/plate-common';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { ListPlugin } from '../react';
 
-jsx;
+jsxt;
 
 const editorTest = (input: any, fragment: any, expected: any) => {
   const editor = createSlateEditor({

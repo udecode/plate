@@ -1,12 +1,12 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import { type SlateEditor, getNode } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 
-jsx;
+jsxt;
 
 describe('clean up code block', () => {
   it('should turn children of code block to code lines', () => {

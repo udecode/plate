@@ -1,14 +1,14 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import type { SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { BaseTablePlugin } from '../BaseTablePlugin';
 import { setBorderSize } from './setBorderSize';
 
-jsx;
+jsxt;
 
 // These tests cover the various border cases: top, bottom, left, and right.
 // Each test creates an input editor with a cursor in a specific cell,

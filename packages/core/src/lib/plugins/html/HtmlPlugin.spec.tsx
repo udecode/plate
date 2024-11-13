@@ -1,17 +1,17 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import { BoldPlugin } from '@udecode/plate-basic-marks/react';
 import { HeadingPlugin } from '@udecode/plate-heading/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { MediaEmbedPlugin } from '@udecode/plate-media/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import type { SlateEditor } from '../../editor';
 
 import { createPlateEditor } from '../../../react';
 import { BaseParagraphPlugin } from '../paragraph';
 
-jsx;
+jsxt;
 
 describe('when inserting html', () => {
   // noinspection CheckTagEmptyBody
