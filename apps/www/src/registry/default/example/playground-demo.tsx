@@ -30,6 +30,7 @@ import { tabbablePlugin } from '@/registry/default/components/editor/plugins/tab
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 import { MediaPlaceholderElement } from '@/registry/default/plate-ui/media-placeholder-element';
 
+import { MediaFloatingToolbar } from '../plate-ui/media-floating-toolbar';
 import { usePlaygroundEnabled } from './usePlaygroundEnabled';
 
 export const usePlaygroundEditor = (id: any = '') => {
@@ -60,7 +61,9 @@ export const usePlaygroundEditor = (id: any = '') => {
       },
     }),
     SingleLinePlugin,
-    PlaceholderPlugin.withComponent(MediaPlaceholderElement),
+    PlaceholderPlugin.withComponent(MediaPlaceholderElement).configure({
+      render: { afterEditable: () => <MediaFloatingToolbar /> },
+    }),
     // Testing
     PlaywrightPlugin.configure({
       enabled: process.env.NODE_ENV !== 'production',

@@ -55,6 +55,31 @@ const toolbarButtonVariants = cva(
   }
 );
 
+const dropdownArrowVariants = cva(
+  cn(
+    'inline-flex items-center justify-center rounded-r-md text-sm font-medium text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50'
+  ),
+  {
+    defaultVariants: {
+      size: 'sm',
+      variant: 'default',
+    },
+    variants: {
+      size: {
+        default: 'h-10 w-6',
+        lg: 'h-11 w-8',
+        sm: 'h-7 w-4',
+      },
+      variant: {
+        default:
+          'bg-transparent hover:bg-muted hover:text-muted-foreground aria-checked:bg-accent aria-checked:text-accent-foreground',
+        outline:
+          'border border-l-0 border-input bg-transparent hover:bg-accent hover:text-accent-foreground',
+      },
+    },
+  }
+);
+
 const ToolbarButton = withTooltip(
   // eslint-disable-next-line react/display-name
   React.forwardRef<
@@ -130,6 +155,103 @@ const ToolbarButton = withTooltip(
 ToolbarButton.displayName = 'ToolbarButton';
 
 export { ToolbarButton };
+
+const ToolbarSplitButton = withTooltip(
+  React.forwardRef<
+    React.ElementRef<typeof ToolbarToggleItem>,
+    {
+      pressed?: boolean;
+      onMainButtonClick?: () => void;
+    } & Omit<
+      React.ComponentPropsWithoutRef<typeof ToolbarToggleItem>,
+      'asChild' | 'value'
+    > &
+      VariantProps<typeof toolbarButtonVariants>
+  >(
+    (
+      {
+        children,
+        className,
+        pressed,
+        size,
+        variant,
+        onMainButtonClick,
+        ...props
+      },
+      ref
+    ) => {
+      const mainButtonClass = cn(
+        toolbarButtonVariants({
+          size,
+          variant,
+        }),
+        'rounded-r-none',
+        className
+      );
+
+      const dropdownButtonClass = dropdownArrowVariants({
+        size,
+        variant,
+      });
+
+      return typeof pressed === 'boolean' ? (
+        <ToolbarToggleGroup
+          disabled={props.disabled}
+          value="single"
+          type="single"
+        >
+          <div className="flex">
+            <ToolbarToggleItem
+              className={mainButtonClass}
+              value={pressed ? 'single' : ''}
+              onClick={onMainButtonClick}
+            >
+              <div className="flex flex-1 items-center gap-2 whitespace-nowrap">
+                {children}
+              </div>
+            </ToolbarToggleItem>
+
+            <button
+              ref={ref}
+              className={cn(
+                dropdownButtonClass,
+                pressed && 'bg-accent text-accent-foreground'
+              )}
+              disabled={props.disabled}
+              value={pressed ? 'single' : ''}
+              type="reset"
+              {...props}
+            >
+              <ChevronDown
+                className="size-3.5 text-muted-foreground"
+                data-icon
+              />
+            </button>
+          </div>
+        </ToolbarToggleGroup>
+      ) : (
+        <div className="flex">
+          <ToolbarPrimitive.Button className={mainButtonClass}>
+            {children}
+          </ToolbarPrimitive.Button>
+
+          <button
+            ref={ref}
+            {...props}
+            className={dropdownButtonClass}
+            disabled={props.disabled}
+            type="button"
+          >
+            <ChevronDown className="size-2.5 text-muted-foreground" data-icon />
+          </button>
+        </div>
+      );
+    }
+  )
+);
+ToolbarSplitButton.displayName = 'ToolbarButton';
+
+export { ToolbarSplitButton };
 
 export const ToolbarToggleItem = withVariants(
   ToolbarPrimitive.ToggleItem,

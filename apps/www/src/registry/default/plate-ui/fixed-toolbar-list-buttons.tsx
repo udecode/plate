@@ -18,7 +18,6 @@ import {
   BulletedListPlugin,
   NumberedListPlugin,
 } from '@udecode/plate-list/react';
-import { ImagePlugin } from '@udecode/plate-media/react';
 import {
   BaselineIcon,
   BoldIcon,
@@ -41,7 +40,7 @@ import { LinkToolbarButton } from './link-toolbar-button';
 import { ListIndentToolbarButton } from './list-indent-toolbar-button';
 import { ListToolbarButton } from './list-toolbar-button';
 import { MarkToolbarButton } from './mark-toolbar-button';
-import { MediaToolbarButton } from './media-toolbar-button';
+// import { MediaToolbarButton } from './media-toolbar-button';
 import { ModeDropdownMenu } from './mode-dropdown-menu';
 import { MoreDropdownMenu } from './more-dropdown-menu';
 import { TableDropdownMenu } from './table-dropdown-menu';
@@ -130,7 +129,7 @@ export function FixedToolbarListButtons() {
           <ToolbarGroup>
             <LinkToolbarButton />
             <ToggleToolbarButton />
-            <MediaToolbarButton nodeType={ImagePlugin.key} />
+            {/* <MediaToolbarButton nodeType={ImagePlugin.key} /> */}
             <TableDropdownMenu />
             <EmojiDropdownMenu />
             <MoreDropdownMenu />
