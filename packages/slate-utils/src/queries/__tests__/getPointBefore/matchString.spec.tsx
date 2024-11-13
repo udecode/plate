@@ -1,12 +1,12 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import type { SlateEditor } from '@udecode/plate-core';
 
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { getPointBeforeLocation } from '../../getPointBeforeLocation';
 
-jsx;
+jsxt;
 
 describe('when skipInvalid is true', () => {
   describe('when matchString is a character', () => {

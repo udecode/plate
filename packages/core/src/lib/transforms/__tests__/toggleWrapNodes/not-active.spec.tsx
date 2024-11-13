@@ -1,10 +1,10 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 import { toggleWrapNodes } from '@udecode/slate-utils';
 
-jsx;
+jsxt;
 
 const input = (
   <editor>

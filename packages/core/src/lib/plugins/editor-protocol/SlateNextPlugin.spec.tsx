@@ -1,10 +1,10 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { createPlateEditor } from '../../../react';
 
-jsx;
+jsxt;
 
 // https://github.com/udecode/editor-protocol/issues/81
 describe('delete marked text at block start', () => {

@@ -1,12 +1,12 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import { findNode } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { isListNested } from './isListNested';
 
-jsx;
+jsxt;
 
 describe('when the list is nested', () => {
   const input = (

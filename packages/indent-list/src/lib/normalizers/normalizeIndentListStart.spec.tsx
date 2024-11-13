@@ -1,16 +1,16 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import type { SlateEditor } from '@udecode/plate-common';
 
 import { ParagraphPlugin } from '@udecode/plate-common/react';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { indentListPluginPage } from '../../__tests__/indentListPluginPage';
 import { BaseIndentListPlugin } from '../BaseIndentListPlugin';
 
-jsx;
+jsxt;
 
 describe('normalizeIndentListStart', () => {
   describe('when all cases', () => {

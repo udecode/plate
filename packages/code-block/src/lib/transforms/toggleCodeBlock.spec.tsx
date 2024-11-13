@@ -1,14 +1,14 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import type { SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { toggleCodeBlock } from './toggleCodeBlock';
 
-jsx;
+jsxt;
 
 describe('toggle on', () => {
   it('should turn a p to a code block', () => {

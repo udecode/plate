@@ -1,4 +1,4 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import {
@@ -21,14 +21,14 @@ import { LinkPlugin } from '@udecode/plate-link/react';
 import { ListPlugin } from '@udecode/plate-list/react';
 import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
 import { TablePlugin } from '@udecode/plate-table/react';
-import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
+import { getHtmlDocument, jsxt } from '@udecode/plate-test-utils';
 
 import { createPlateEditor } from '../../../../react';
 import { BaseParagraphPlugin } from '../../paragraph';
 import { deserializeHtml } from './deserializeHtml';
 import { deserializeHtmlElement } from './deserializeHtmlElement';
 
-jsx;
+jsxt;
 
 describe('type', () => {});
 

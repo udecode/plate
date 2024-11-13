@@ -1,11 +1,11 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 import { LinkPlugin } from '@udecode/plate-link/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { createPlateEditor } from '../../react';
 import { normalizeDescendantsToDocumentFragment } from './index';
 
-jsx;
+jsxt;
 
 describe('normalizeDescendantsToDocumentFragment()', () => {
   it.each([

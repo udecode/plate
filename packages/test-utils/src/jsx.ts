@@ -2,6 +2,7 @@
 
 import {
   type HyperscriptShorthands,
+  createHyperscript as createHyperscriptBase,
   createText as createTestText,
 } from 'slate-hyperscript';
 
@@ -84,6 +85,13 @@ const elements: HyperscriptShorthands = {
 
 
 export const jsx = createHyperscript({
+  creators: {
+    htext: createTestText,
+  },
+  elements,
+});
+
+export const jsxt = createHyperscriptBase({
   creators: {
     htext: createTestText,
   },

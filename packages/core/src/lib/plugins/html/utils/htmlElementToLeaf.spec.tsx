@@ -1,9 +1,9 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import { BoldPlugin, ItalicPlugin } from '@udecode/plate-basic-marks/react';
 import { ListPlugin } from '@udecode/plate-list/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { createPlateEditor } from '../../../../react';
 import { createSlatePlugin } from '../../../plugin';
@@ -11,7 +11,7 @@ import { BaseParagraphPlugin } from '../../paragraph';
 import { htmlElementToLeaf } from './htmlElementToLeaf';
 import { parseHtmlElement } from './parseHtmlElement';
 
-jsx;
+jsxt;
 
 describe('when children is a text', () => {
   const output = (

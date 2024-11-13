@@ -333,19 +333,6 @@ export default function InstallationTab() {
 
   const hasDnd = plugins.some((plugin) => plugin.id === DndPlugin.key);
 
-  const hasFixedToolbar = components.some(
-    (comp) => comp.id === 'fixed-toolbar'
-  );
-  const hasFixedToolbarButtons = components.some(
-    (comp) => comp.id === 'fixed-toolbar-buttons'
-  );
-  const hasFloatingToolbar = components.some(
-    (comp) => comp.id === 'floating-toolbar'
-  );
-  const hasFloatingToolbarButtons = components.some(
-    (comp) => comp.id === 'floating-toolbar-buttons'
-  );
-
   let indentLevel = 0;
 
   const addLine = (line: string, opensBlock = false, closesBlock = false) => {

@@ -1,4 +1,4 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import type { SlateEditor } from '@udecode/plate-common';
 
@@ -7,12 +7,12 @@ import {
   createPlateEditor,
   getEditorPlugin,
 } from '@udecode/plate-common/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { BaseTablePlugin } from '../lib/BaseTablePlugin';
 import { withDeleteTable } from './withDeleteTable';
 
-jsx;
+jsxt;
 
 describe('withDeleteTable', () => {
   // https://github.com/udecode/editor-protocol/issues/22

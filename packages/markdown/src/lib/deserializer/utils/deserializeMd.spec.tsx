@@ -1,13 +1,13 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import { createSlateEditor } from '@udecode/plate-common';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { MarkdownPlugin } from '../../MarkdownPlugin';
 import { deserializeMd } from './deserializeMd';
 
-jsx;
+jsxt;
 
 describe('deserializeMd', () => {
   const editor = createSlateEditor({

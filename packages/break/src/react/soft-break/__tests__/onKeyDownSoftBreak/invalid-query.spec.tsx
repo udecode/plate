@@ -1,4 +1,4 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import {
@@ -6,12 +6,12 @@ import {
   getEditorPlugin,
 } from '@udecode/plate-common/react';
 import * as isHotkey from '@udecode/plate-core';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { SoftBreakPlugin } from '../../SoftBreakPlugin';
 import { onKeyDownSoftBreak } from '../../onKeyDownSoftBreak';
 
-jsx;
+jsxt;
 
 const input = (
   <editor>

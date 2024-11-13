@@ -1,14 +1,14 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import type { TNode } from '@udecode/slate';
 
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import type { SlateEditor } from '../../../editor';
 
 import { mergeDeepToNodes } from '../../../utils';
 
-jsx;
+jsxt;
 
 const editor = (
   <editor>

@@ -1,8 +1,8 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import { createSlateEditor } from '@udecode/plate-common';
 import { HEADING_KEYS } from '@udecode/plate-heading';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 import {
   getAutoformatOptions,
   preFormat,
@@ -10,7 +10,7 @@ import {
 
 import { BaseAutoformatPlugin } from '../../../BaseAutoformatPlugin';
 
-jsx;
+jsxt;
 
 describe('when #space', () => {
   it('should set block type to h1', () => {

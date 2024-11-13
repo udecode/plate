@@ -1,13 +1,13 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import type { SlateEditor } from '@udecode/plate-common';
 
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { createPlateTestEditor } from '../../../core/src/react/__tests__/createPlateTestEditor';
 import { TablePlugin } from './TablePlugin';
 
-jsx;
+jsxt;
 
 /**
  * TODO: test e2e? https://github.com/udecode/editor-protocol/issues/71

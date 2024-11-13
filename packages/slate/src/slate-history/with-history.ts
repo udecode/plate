@@ -146,7 +146,7 @@ const shouldMerge = (op: Operation, prev: Operation | undefined): boolean => {
 
 /** Check whether an operation needs to be saved to the history. */
 
-const shouldSave = (op: Operation, prev: Operation | undefined): boolean => {
+const shouldSave = (op: Operation, _: Operation | undefined): boolean => {
   if (op.type === 'set_selection') {
     return false;
   }

@@ -1,4 +1,4 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import {
   type SlateEditor,
@@ -6,12 +6,12 @@ import {
   getNodeEntry,
 } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { outdentCodeLine } from './outdentCodeLine';
 
-jsx;
+jsxt;
 
 describe('outdent code line', () => {
   describe('when line is indented', () => {
