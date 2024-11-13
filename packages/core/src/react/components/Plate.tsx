@@ -39,10 +39,14 @@ function PlateInner({
   readOnly,
   renderElement,
   renderLeaf,
+  scrollRef,
   onChange,
   onSelectionChange,
   onValueChange,
-}: PlateProps & { containerRef: React.RefObject<HTMLDivElement> }) {
+}: PlateProps & {
+  containerRef: React.RefObject<HTMLDivElement>;
+  scrollRef: React.RefObject<HTMLDivElement>;
+}) {
   return (
     <PlateStoreProvider
       readOnly={readOnly}
@@ -56,6 +60,7 @@ function PlateInner({
       renderElement={renderElement}
       renderLeaf={renderLeaf}
       scope={editor!.id}
+      scrollRef={scrollRef}
     >
       {children}
     </PlateStoreProvider>
@@ -68,6 +73,7 @@ export function Plate<E extends PlateEditor = PlateEditor>(
   const id = useId();
 
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
 
   usePlateInstancesWarn(props.suppressInstanceWarning);
 
@@ -79,6 +85,7 @@ export function Plate<E extends PlateEditor = PlateEditor>(
     <PlateInner
       key={props.editor.key}
       containerRef={containerRef}
+      scrollRef={scrollRef}
       {...(props as any)}
     />
   );

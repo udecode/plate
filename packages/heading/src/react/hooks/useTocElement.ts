@@ -3,8 +3,8 @@ import React from 'react';
 import { getNode } from '@udecode/plate-common';
 import {
   toDOMNode,
-  useEditorContainerRef,
   useEditorPlugin,
+  useEditorScrollRef,
   useEditorSelector,
 } from '@udecode/plate-common/react';
 
@@ -20,7 +20,7 @@ export const useTocElementState = () => {
 
   const headingList = useEditorSelector(getHeadingList, []);
 
-  const containerRef = useEditorContainerRef();
+  const containerRef = useEditorScrollRef();
 
   const onContentScroll = React.useCallback(
     (el: HTMLElement, id: string, behavior: ScrollBehavior = 'instant') => {
