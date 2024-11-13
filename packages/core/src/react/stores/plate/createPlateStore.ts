@@ -93,10 +93,6 @@ export const usePlateEditorStore = (
   // Try to fetch the store from a Plate provider
   const localStore = usePlateStore(id).store({ warnIfNoStore: false }) ?? null;
 
-  /**
-   * To preserve hook order, only use `localStore` if it was present on first
-   * render. This lets us call `usePlateControllerEditorStore` conditionally.
-   */
   const [localStoreExists] = React.useState(!!localStore);
 
   // If no store was found, try to fetch the store from a PlateController
