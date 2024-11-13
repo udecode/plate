@@ -8,8 +8,8 @@ export const useEditorContainerRef = (id?: string) => {
 
 export const useEditorScrollRef = (id?: string) => {
   return usePlateSelectors(id, {
-    debugHookName: 'useScrollRef',
-  }).containerRef();
+    debugHookName: 'useEditorScrollRef',
+  }).scrollRef();
 };
 
 /** Returns the scrollRef if it exists, otherwise returns the containerRef. */
