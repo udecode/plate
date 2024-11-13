@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 40.0.3
+
+### Patch Changes
+
+- [`0682bb02329d6cf09d96fdf9a226e85925b8ce54`](https://github.com/udecode/plate/commit/0682bb02329d6cf09d96fdf9a226e85925b8ce54) by [@zbeyens](https://github.com/zbeyens) – Fix scrollRef
+
 ## 40.0.2
 
 ### Patch Changes
