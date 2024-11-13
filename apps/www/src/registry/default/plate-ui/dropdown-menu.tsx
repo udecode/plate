@@ -125,6 +125,7 @@ export const DropdownMenuContent = withRef<
       ref={ref}
       onCloseAutoFocus={(e) => {
         e.preventDefault();
+        e.stopPropagation();
       }}
       {...props}
     />

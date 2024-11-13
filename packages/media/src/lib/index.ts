@@ -4,6 +4,7 @@
 
 export * from './BaseAudioPlugin';
 export * from './BaseFilePlugin';
+export * from './BaseMediaFloatingPlugin';
 export * from './BaseVideoPlugin';
 export * from './image/index';
 export * from './media/index';

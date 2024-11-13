@@ -4,7 +4,10 @@ import React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { useEditorRef } from '@udecode/plate-core/react';
+import { cn } from '@udecode/cn';
+import { useEditorPlugin } from '@udecode/plate-core/react';
+import { MediaFloatingPlugin } from '@udecode/plate-media/react';
+import { focusEditor } from '@udecode/slate-react';
 import { ImageUp, LinkIcon } from 'lucide-react';
 import { useFilePicker } from 'use-file-picker';
 
@@ -20,7 +23,7 @@ import { ToolbarSplitButton } from './toolbar';
 
 export function ImageDropdownMenu({ children, ...props }: DropdownMenuProps) {
   /** Open file picker */
-  const editor = useEditorRef();
+  const { editor, setOption } = useEditorPlugin(MediaFloatingPlugin);
   const { openFilePicker } = useFilePicker({
     accept: 'image/*',
     multiple: true,
@@ -32,7 +35,7 @@ export function ImageDropdownMenu({ children, ...props }: DropdownMenuProps) {
   const openState = useOpenState();
 
   return (
-    <DropdownMenu modal={false} {...openState} {...props}>
+    <DropdownMenu {...openState} modal={false} {...props}>
       <DropdownMenuTrigger asChild>
         <ToolbarSplitButton
           onMainButtonClick={() => openFilePicker()}
@@ -43,7 +46,10 @@ export function ImageDropdownMenu({ children, ...props }: DropdownMenuProps) {
         </ToolbarSplitButton>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className="min-w-0" align="start">
+      <DropdownMenuContent
+        className={cn('min-w-0 data-[state=closed]:hidden')}
+        align="start"
+      >
         <DropdownMenuRadioGroup>
           <DropdownMenuRadioItem
             value="upload"
@@ -57,7 +63,10 @@ export function ImageDropdownMenu({ children, ...props }: DropdownMenuProps) {
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem
             value="url"
-            onSelect={() => console.log('url')}
+            onSelect={() => {
+              focusEditor(editor);
+              setOption('isOpen', true);
+            }}
             hideIcon
           >
             <div className="flex items-center gap-2">
