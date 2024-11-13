@@ -53,12 +53,13 @@ const plugins: Registry = [
       '@udecode/plate-horizontal-rule',
       '@udecode/plate-link',
       '@udecode/plate-markdown',
-      '@udecode/plate-selection',
     ],
     files: ['components/editor/plugins/ai-plugins.tsx'],
     name: 'ai-plugins',
     registryDependencies: [
       'basic-nodes-plugins',
+      'block-selection-plugins',
+      'cursor-overlay-plugin',
       'indent-list-plugins',
       'link-plugin',
       'ai-menu',
@@ -147,6 +148,13 @@ const plugins: Registry = [
     files: ['components/editor/plugins/comments-plugin.tsx'],
     name: 'comments-plugin',
     registryDependencies: ['comments-popover'],
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['@udecode/plate-selection'],
+    files: ['components/editor/plugins/cursor-overlay-plugin.tsx'],
+    name: 'cursor-overlay-plugin',
+    registryDependencies: ['cursor-overlay'],
     type: 'registry:component',
   },
   {
