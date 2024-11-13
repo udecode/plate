@@ -1,44 +1,59 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 
+import type { TPlaceholderElement } from '@udecode/plate-media';
+
 import { cn } from '@udecode/cn';
-import { withHOC, withRef } from '@udecode/plate-common/react';
+import {
+  findNodePath,
+  useEditorPlugin,
+  withHOC,
+  withRef,
+} from '@udecode/plate-common/react';
 import {
   AudioPlugin,
   FilePlugin,
   ImagePlugin,
+  PlaceholderPlugin,
   PlaceholderProvider,
   VideoPlugin,
-  usePlaceholderElementState,
+  updateUploadHistory,
 } from '@udecode/plate-media/react';
+import { insertNodes, removeNodes, withoutSavingHistory } from '@udecode/slate';
 import { AudioLines, FileUp, Film, ImageIcon } from 'lucide-react';
+import { useFilePicker } from 'use-file-picker';
 
-import { MediaPlaceholderPopover } from './media-placeholder-popover';
+import { useUploadFile } from '../lib/uploadthing';
 import { PlateElement } from './plate-element';
 import { Spinner } from './spinner';
 
 const CONTENT: Record<
   string,
   {
+    accept: string[];
     content: ReactNode;
     icon: ReactNode;
   }
 > = {
   [AudioPlugin.key]: {
+    accept: ['audio/*'],
     content: 'Add an audio file',
     icon: <AudioLines />,
   },
   [FilePlugin.key]: {
+    accept: ['*'],
     content: 'Add a file',
     icon: <FileUp />,
   },
   [ImagePlugin.key]: {
+    accept: ['image/*'],
     content: 'Add an image',
     icon: <ImageIcon />,
   },
   [VideoPlugin.key]: {
+    accept: ['video/*'],
     content: 'Add a video',
     icon: <Film />,
   },
@@ -48,28 +63,87 @@ export const MediaPlaceholderElement = withHOC(
   PlaceholderProvider,
   withRef<typeof PlateElement>(
     ({ children, className, editor, nodeProps, ...props }, ref) => {
-      const { mediaType, progresses, progressing, setSize, updatedFiles } =
-        usePlaceholderElementState();
+      const element = props.element as TPlaceholderElement;
 
-      const currentContent = CONTENT[mediaType];
+      const { api } = useEditorPlugin(PlaceholderPlugin);
 
-      const isImage = mediaType === ImagePlugin.key;
+      const { isUploading, progress, uploadFile, uploadedFile, uploadingFile } =
+        useUploadFile('imageUploader');
 
-      const file: File | undefined = updatedFiles?.[0];
-      const progress = file ? progresses?.[file.name] : undefined;
+      const loading = isUploading && uploadingFile;
+
+      const currentContent = CONTENT[element.mediaType];
+
+      const isImage = element.mediaType === ImagePlugin.key;
 
       const imageRef = useRef<HTMLImageElement>(null);
+
+      const { openFilePicker } = useFilePicker({
+        accept: currentContent.accept,
+        multiple: true,
+        onFilesSelected: ({ plainFiles: updatedFiles }) => {
+          const firstFile = updatedFiles[0];
+          const restFiles = updatedFiles.slice(1);
+
+          replaceCurrentPlaceholder(firstFile);
+
+          restFiles.length > 0 && (editor as any).tf.insert.media(restFiles);
+        },
+      });
+
+      const replaceCurrentPlaceholder = useCallback(
+        (file: File) => {
+          void uploadFile(file);
+          api.placeholder.addUploadingFile(element.id as string, file);
+        },
+        [api.placeholder, element.id, uploadFile]
+      );
+
       useEffect(() => {
-        if (!imageRef.current) return;
+        if (!uploadedFile) return;
 
-        const { height, width } = imageRef.current;
+        const path = findNodePath(editor, element);
 
-        setSize?.({
-          height,
-          width,
+        withoutSavingHistory(editor, () => {
+          removeNodes(editor, { at: path });
+
+          const node = {
+            children: [{ text: '' }],
+            initialHeight: imageRef.current?.height,
+            initialWidth: imageRef.current?.width,
+            isUpload: true,
+            name: element.mediaType === FilePlugin.key ? uploadedFile.name : '',
+            placeholderId: element.id as string,
+            type: element.mediaType!,
+            url: uploadedFile.url,
+          };
+
+          insertNodes(editor, node, { at: path });
+
+          updateUploadHistory(editor, node);
         });
+
+        api.placeholder.removeUploadingFile(element.id as string);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-      }, [imageRef.current]);
+      }, [uploadedFile, element.id]);
+
+      // React dev mode will call useEffect twice
+      const isReplaced = useRef(false);
+      /** Paste and drop */
+      useEffect(() => {
+        if (isReplaced.current) return;
+
+        isReplaced.current = true;
+        const currentFiles = api.placeholder.getUploadingFile(
+          element.id as string
+        );
+
+        if (!currentFiles) return;
+
+        replaceCurrentPlaceholder(currentFiles);
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, [isReplaced]);
 
       return (
         <PlateElement
@@ -78,39 +152,39 @@ export const MediaPlaceholderElement = withHOC(
           editor={editor}
           {...props}
         >
-          <MediaPlaceholderPopover>
-            {(!progressing || !isImage) && (
-              <div
-                className={cn(
-                  'flex cursor-pointer select-none items-center rounded-sm bg-muted p-3 pr-9 hover:bg-primary/10'
-                )}
-                contentEditable={false}
-                role="button"
-              >
-                <div className="relative mr-3 flex text-muted-foreground/80 [&_svg]:size-6">
-                  {currentContent.icon}
-                </div>
-                <div className="whitespace-nowrap text-sm text-muted-foreground">
-                  <div>{progressing ? file?.name : currentContent.content}</div>
-
-                  {progressing && !isImage && (
-                    <div className="mt-1 flex items-center gap-1.5">
-                      <div>{formatBytes(file.size)}</div>
-                      <div>–</div>
-                      <div className="flex items-center">
-                        <Spinner className="mr-1 size-3.5" />
-                        {progress ?? 0}%
-                      </div>
-                    </div>
-                  )}
-                </div>
+          {(!loading || !isImage) && (
+            <div
+              className={cn(
+                'flex cursor-pointer select-none items-center rounded-sm bg-muted p-3 pr-9 hover:bg-primary/10'
+              )}
+              onClick={() => !loading && openFilePicker()}
+              contentEditable={false}
+            >
+              <div className="relative mr-3 flex text-muted-foreground/80 [&_svg]:size-6">
+                {currentContent.icon}
               </div>
-            )}
-          </MediaPlaceholderPopover>
+              <div className="whitespace-nowrap text-sm text-muted-foreground">
+                <div>
+                  {loading ? uploadingFile?.name : currentContent.content}
+                </div>
 
-          {isImage && progressing && file && (
+                {loading && !isImage && (
+                  <div className="mt-1 flex items-center gap-1.5">
+                    <div>{formatBytes(uploadingFile?.size ?? 0)}</div>
+                    <div>–</div>
+                    <div className="flex items-center">
+                      <Spinner className="mr-1 size-3.5" />
+                      {progress ?? 0}%
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {isImage && loading && (
             <ImageProgress
-              file={file}
+              file={uploadingFile}
               imageRef={imageRef}
               progress={progress}
             />

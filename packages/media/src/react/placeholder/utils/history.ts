@@ -11,13 +11,19 @@ export const withHistoryMark = (editor: PlateEditor, fn: () => void) => {
   historyMarks.set(editor, false);
 };
 
-export const isHistoryMarked = (editor: PlateEditor): boolean => {
+export const isHistoryMarking = (editor: PlateEditor): boolean => {
   return historyMarks.get(editor) ?? false;
 };
 
 export const updateUploadHistory = (editor: PlateEditor, node: TElement) => {
-  const index = editor.history.undos.findIndex(
-    (batch: any) => batch[PlaceholderPlugin.key]
+  const index = editor.history.undos.findLastIndex(
+    (batch: any) =>
+      batch[PlaceholderPlugin.key] &&
+      batch.operations.some(
+        (operation: any) =>
+          operation.type === 'insert_node' &&
+          operation.node.id === node.placeholderId
+      )
   );
 
   const batch = editor.history.undos[index];
@@ -42,7 +48,6 @@ export const updateUploadHistory = (editor: PlateEditor, node: TElement) => {
 
   const newBatch = {
     ...batch,
-    [PlaceholderPlugin.key]: false,
     operations: newOperations,
   };
 

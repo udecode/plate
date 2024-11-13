@@ -13,7 +13,7 @@ import type { MediaItemConfig, UploadError } from './type';
 import { type PlaceholderConfig, BasePlaceholderPlugin } from '../../lib';
 import { AudioPlugin, FilePlugin, ImagePlugin, VideoPlugin } from '../plugins';
 import { insertMedia } from './transforms/insertMedia';
-import { isHistoryMarked } from './utils/history';
+import { isHistoryMarking } from './utils/history';
 
 export type PlaceholderApi = {
   addUploadingFile: (id: string, file: File) => void;
@@ -47,7 +47,7 @@ export const PlaceholderPlugin = toTPlatePlugin<
     const { writeHistory } = editor;
 
     editor.writeHistory = (stack, batch) => {
-      if (isHistoryMarked(editor)) {
+      if (isHistoryMarking(editor)) {
         const newBatch = {
           ...batch,
           [PlaceholderPlugin.key]: true,

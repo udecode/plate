@@ -18,49 +18,37 @@ interface UseUploadFileProps
     UploadFilesOptions<OurFileRouter, keyof OurFileRouter>,
     'headers' | 'onUploadBegin' | 'onUploadProgress' | 'skipPolling'
   > {
-  defaultUploadedFiles?: UploadedFile[];
-  onUploadComplete?: (files: UploadedFile[]) => void;
+  onUploadComplete?: (file: UploadedFile) => void;
   onUploadError?: (error: unknown) => void;
 }
 
 export function useUploadFile(
   endpoint: keyof OurFileRouter,
-  {
-    defaultUploadedFiles = [],
-    onUploadComplete,
-    onUploadError,
-    ...props
-  }: UseUploadFileProps = {}
+  { onUploadComplete, onUploadError, ...props }: UseUploadFileProps = {}
 ) {
-  const [uploadedFiles, setUploadedFiles] =
-    React.useState<UploadedFile[]>(defaultUploadedFiles);
-  const [progresses, setProgresses] = React.useState<Record<string, number>>(
-    {}
-  );
+  const [uploadedFile, setUploadedFile] = React.useState<UploadedFile>();
+  const [uploadingFile, setUploadingFile] = React.useState<File>();
+  const [progress, setProgress] = React.useState<number>(0);
   const [isUploading, setIsUploading] = React.useState(false);
 
-  async function uploadThings(files: File[]) {
+  async function uploadThing(file: File) {
     setIsUploading(true);
+    setUploadingFile(file);
 
     try {
       const res = await uploadFiles(endpoint, {
         ...props,
-        files,
-        onUploadProgress: ({ file, progress }) => {
-          setProgresses((prev) => {
-            return {
-              ...prev,
-              [file.name]: Math.min(progress, 100),
-            };
-          });
+        files: [file],
+        onUploadProgress: ({ progress }) => {
+          setProgress(Math.min(progress, 100));
         },
       });
 
-      setUploadedFiles((prev) => (prev ? [...prev, ...res] : res));
+      setUploadedFile(res[0]);
 
-      onUploadComplete?.(res);
+      onUploadComplete?.(res[0]);
 
-      return uploadedFiles;
+      return uploadedFile;
     } catch (error) {
       const errorMessage = getErrorMessage(error);
 
@@ -72,15 +60,17 @@ export function useUploadFile(
       toast.error(message);
       onUploadError?.(error);
     } finally {
-      setProgresses({});
+      setProgress(0);
       setIsUploading(false);
+      setUploadingFile(undefined);
     }
   }
 
   return {
     isUploading,
-    progresses,
-    uploadFiles: uploadThings,
-    uploadedFiles,
+    progress,
+    uploadFile: uploadThing,
+    uploadedFile,
+    uploadingFile,
   };
 }
