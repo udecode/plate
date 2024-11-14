@@ -941,13 +941,13 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
-    "media-toolbar-button": {
-      name: "media-toolbar-button",
+    "media-dropdown-menu": {
+      name: "media-dropdown-menu",
       description: "",
       type: "registry:ui",
       registryDependencies: ["toolbar"],
-      files: ["registry/default/plate-ui/media-toolbar-button.tsx"],
-      component: React.lazy(() => import("@/registry/default/plate-ui/media-toolbar-button.tsx")),
+      files: ["registry/default/plate-ui/media-dropdown-menu.tsx"],
+      component: React.lazy(() => import("@/registry/default/plate-ui/media-dropdown-menu.tsx")),
       source: "",
       category: "",
       subcategory: "",

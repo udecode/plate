@@ -39,7 +39,7 @@ import { InsertDropdownMenu } from '@/registry/default/plate-ui/insert-dropdown-
 import { LineHeightDropdownMenu } from '@/registry/default/plate-ui/line-height-dropdown-menu';
 import { LinkToolbarButton } from '@/registry/default/plate-ui/link-toolbar-button';
 import { MarkToolbarButton } from '@/registry/default/plate-ui/mark-toolbar-button';
-import { MediaDropdownMenu } from '@/registry/default/plate-ui/media-toolbar-button';
+import { MediaDropdownMenu } from '@/registry/default/plate-ui/media-dropdown-menu';
 import { ModeDropdownMenu } from '@/registry/default/plate-ui/mode-dropdown-menu';
 import { MoreDropdownMenu } from '@/registry/default/plate-ui/more-dropdown-menu';
 import { OutdentToolbarButton } from '@/registry/default/plate-ui/outdent-toolbar-button';
