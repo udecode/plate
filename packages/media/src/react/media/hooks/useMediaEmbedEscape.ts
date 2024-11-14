@@ -1,6 +1,6 @@
 import { useEditorPlugin, useHotkeys } from '@udecode/plate-common/react';
 
-import { MediaEmbedPlugin } from '../../../react';
+import { MediaEmbedPlugin } from '../MediaEmbedPlugin';
 
 export const useMediaEmbedEscape = () => {
   const { api, useOption } = useEditorPlugin(MediaEmbedPlugin);

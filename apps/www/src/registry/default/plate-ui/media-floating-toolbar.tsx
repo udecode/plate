@@ -3,7 +3,6 @@
 import React, { useMemo } from 'react';
 
 import { cn } from '@udecode/cn';
-import { useMediaFloatingToolbar } from '@udecode/plate';
 import { useEditorPlugin } from '@udecode/plate-core/react';
 import {
   type UseVirtualFloatingOptions,
@@ -16,6 +15,7 @@ import {
   ImagePlugin,
   MediaEmbedPlugin,
   VideoPlugin,
+  useMediaFloatingToolbar,
 } from '@udecode/plate-media/react';
 import { AudioLinesIcon, FileUpIcon, FilmIcon, ImageIcon } from 'lucide-react';
 

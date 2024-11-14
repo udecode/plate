@@ -10,12 +10,8 @@ export interface TMediaElement extends TElement {
 }
 
 export interface MediaPluginOptions {
-  isFloatingOpen?: boolean;
   isUrl?: (text: string) => boolean;
-  mediaType?: string | null;
 
   /** Transforms the url. */
   transformUrl?: (url: string) => string;
-
-  url?: string;
 }

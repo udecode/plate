@@ -18,7 +18,7 @@ import {
   useVirtualFloating,
 } from '@udecode/plate-floating';
 
-import { MediaEmbedPlugin } from '../../../react';
+import { MediaEmbedPlugin } from '../MediaEmbedPlugin';
 import { useMediaEmbedEnter } from './useMediaEmbedEnter';
 import { useMediaEmbedEscape } from './useMediaEmbedEscape';
 

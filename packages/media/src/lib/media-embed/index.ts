@@ -6,5 +6,4 @@ export * from './BaseMediaEmbedPlugin';
 export * from './parseIframeUrl';
 export * from './parseTwitterUrl';
 export * from './parseVideoUrl';
-export * from './hooks/index';
 export * from './transforms/index';
