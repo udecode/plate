@@ -19,6 +19,12 @@ import {
   NumberedListPlugin,
 } from '@udecode/plate-list/react';
 import {
+  AudioPlugin,
+  FilePlugin,
+  ImagePlugin,
+  VideoPlugin,
+} from '@udecode/plate-media/react';
+import {
   BaselineIcon,
   BoldIcon,
   Code2Icon,
@@ -40,6 +46,8 @@ import { LinkToolbarButton } from './link-toolbar-button';
 import { ListIndentToolbarButton } from './list-indent-toolbar-button';
 import { ListToolbarButton } from './list-toolbar-button';
 import { MarkToolbarButton } from './mark-toolbar-button';
+import { MediaDropdownMenu } from './media-toolbar-button';
+
 // import { MediaToolbarButton } from './media-toolbar-button';
 import { ModeDropdownMenu } from './mode-dropdown-menu';
 import { MoreDropdownMenu } from './more-dropdown-menu';
@@ -127,9 +135,15 @@ export function FixedToolbarListButtons() {
           </ToolbarGroup>
 
           <ToolbarGroup>
+            <MediaDropdownMenu nodeType={ImagePlugin.key} />
+            <MediaDropdownMenu nodeType={VideoPlugin.key} />
+            <MediaDropdownMenu nodeType={AudioPlugin.key} />
+            <MediaDropdownMenu nodeType={FilePlugin.key} />
+          </ToolbarGroup>
+
+          <ToolbarGroup>
             <LinkToolbarButton />
             <ToggleToolbarButton />
-            {/* <MediaToolbarButton nodeType={ImagePlugin.key} /> */}
             <TableDropdownMenu />
             <EmojiDropdownMenu />
             <MoreDropdownMenu />

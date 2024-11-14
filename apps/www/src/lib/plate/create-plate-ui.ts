@@ -104,7 +104,7 @@ import { withDraggables } from '@/registry/default/plate-ui/with-draggables';
 export const createPlateUI = ({
   draggable,
   placeholder,
-}: { draggable?: boolean; placeholder?: boolean; upload?: boolean } = {}) => {
+}: { draggable?: boolean; placeholder?: boolean } = {}) => {
   let components: Record<string, NodeComponent> = {
     [AIPlugin.key]: AILeaf,
     [BlockquotePlugin.key]: BlockquoteElement,

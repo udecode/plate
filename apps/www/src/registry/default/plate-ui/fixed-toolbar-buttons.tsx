@@ -80,7 +80,6 @@ export function FixedToolbarButtons() {
           <ToolbarGroup>
             <InsertDropdownMenu />
             <TurnIntoDropdownMenu />
-            {/* <FontSizeToolbarButton /> */}
           </ToolbarGroup>
 
           <ToolbarGroup>
