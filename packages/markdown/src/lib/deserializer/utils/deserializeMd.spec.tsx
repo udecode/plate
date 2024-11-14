@@ -553,4 +553,78 @@ describe('deserializeMdIndentList', () => {
 
     expect(deserializeMd(editor, input)).toEqual(output);
   });
+  it('should deserialize a table', () => {
+    const input = `
+| Left columns  | Right columns |
+| ------------- |:-------------:|
+| left foo      | right foo     |
+| left bar      | right bar     |
+| left baz      | right baz     |
+`;
+
+    const output = [
+      {
+        type: 'table',
+        children: [
+          {
+            type: 'tr',
+            children: [
+              {
+                type: 'td',
+                children: [{ text: 'Left columns' }],
+              },
+              {
+                type: 'td',
+                children: [{ text: 'Right columns' }],
+              },
+            ],
+          },
+          {
+            type: 'tr',
+            children: [
+              {
+                type: 'td',
+                children: [{ text: 'left foo' }],
+              },
+              {
+                type: 'td',
+                children: [{ text: 'right foo' }],
+              },
+            ],
+          },
+          {
+            type: 'tr',
+            children: [
+              {
+                type: 'td',
+                children: [{ text: 'left bar' }],
+              },
+              {
+                type: 'td',
+                children: [{ text: 'right bar' }],
+              },
+            ],
+          },
+          {
+            type: 'tr',
+            children: [
+              {
+                type: 'td',
+                children: [{ text: 'left baz' }],
+              },
+              {
+                type: 'td',
+                children: [{ text: 'right baz' }],
+              },
+            ],
+          },
+        ],
+      }
+    ]
+
+    console.log(JSON.stringify(deserializeMd(editor, input)))
+
+    expect(deserializeMd(editor, input)).toEqual(output);
+  });
+
 });
