@@ -156,98 +156,101 @@ ToolbarButton.displayName = 'ToolbarButton';
 
 export { ToolbarButton };
 
-const ToolbarSplitButton = withTooltip(
-  React.forwardRef<
-    React.ElementRef<typeof ToolbarToggleItem>,
+const ToolbarSplitButton = React.forwardRef<
+  React.ElementRef<typeof ToolbarToggleItem>,
+  {
+    pressed?: boolean;
+    tooltip?: string;
+    onMainButtonClick?: () => void;
+  } & Omit<
+    React.ComponentPropsWithoutRef<typeof ToolbarToggleItem>,
+    'asChild' | 'value'
+  > &
+    VariantProps<typeof toolbarButtonVariants>
+>(
+  (
     {
-      pressed?: boolean;
-      onMainButtonClick?: () => void;
-    } & Omit<
-      React.ComponentPropsWithoutRef<typeof ToolbarToggleItem>,
-      'asChild' | 'value'
-    > &
-      VariantProps<typeof toolbarButtonVariants>
-  >(
-    (
-      {
-        children,
-        className,
-        pressed,
+      children,
+      className,
+      pressed,
+      size,
+      tooltip,
+      variant,
+      onMainButtonClick,
+      ...props
+    },
+    ref
+  ) => {
+    const mainButtonClass = cn(
+      toolbarButtonVariants({
         size,
         variant,
-        onMainButtonClick,
-        ...props
-      },
-      ref
-    ) => {
-      const mainButtonClass = cn(
-        toolbarButtonVariants({
-          size,
-          variant,
-        }),
-        'rounded-r-none',
-        className
-      );
+      }),
+      'rounded-r-none',
+      className
+    );
 
-      const dropdownButtonClass = dropdownArrowVariants({
-        size,
-        variant,
-      });
+    const dropdownButtonClass = dropdownArrowVariants({
+      size,
+      variant,
+    });
 
-      return typeof pressed === 'boolean' ? (
-        <ToolbarToggleGroup
-          disabled={props.disabled}
-          value="single"
-          type="single"
+    const MainButton = withTooltip(
+      React.forwardRef<HTMLButtonElement>((mainProps, mainRef) => (
+        <ToolbarToggleItem
+          {...mainProps}
+          ref={mainRef}
+          className={mainButtonClass}
+          value={pressed ? 'single' : ''}
+          onClick={onMainButtonClick}
         >
-          <div className="flex">
-            <ToolbarToggleItem
-              className={mainButtonClass}
-              value={pressed ? 'single' : ''}
-              onClick={onMainButtonClick}
-            >
-              <div className="flex flex-1 items-center gap-2 whitespace-nowrap">
-                {children}
-              </div>
-            </ToolbarToggleItem>
-
-            <button
-              ref={ref}
-              className={cn(
-                dropdownButtonClass,
-                pressed && 'bg-accent text-accent-foreground'
-              )}
-              disabled={props.disabled}
-              value={pressed ? 'single' : ''}
-              type="reset"
-              {...props}
-            >
-              <ChevronDown
-                className="size-3.5 text-muted-foreground"
-                data-icon
-              />
-            </button>
-          </div>
-        </ToolbarToggleGroup>
-      ) : (
-        <div className="flex">
-          <ToolbarPrimitive.Button className={mainButtonClass}>
+          <div className="flex flex-1 items-center gap-2 whitespace-nowrap">
             {children}
-          </ToolbarPrimitive.Button>
+          </div>
+        </ToolbarToggleItem>
+      ))
+    );
+
+    return typeof pressed === 'boolean' ? (
+      <ToolbarToggleGroup
+        disabled={props.disabled}
+        value="single"
+        type="single"
+      >
+        <div className="flex">
+          <MainButton tooltip={tooltip} />
 
           <button
             ref={ref}
-            {...props}
-            className={dropdownButtonClass}
+            className={cn(
+              dropdownButtonClass,
+              pressed && 'bg-accent text-accent-foreground'
+            )}
             disabled={props.disabled}
-            type="button"
+            value={pressed ? 'single' : ''}
+            type="reset"
+            {...props}
           >
-            <ChevronDown className="size-2.5 text-muted-foreground" data-icon />
+            <ChevronDown className="size-3.5 text-muted-foreground" data-icon />
           </button>
         </div>
-      );
-    }
-  )
+      </ToolbarToggleGroup>
+    ) : (
+      <div className="flex">
+        <MainButton tooltip={tooltip} />
+
+        <button
+          ref={ref}
+          {...props}
+          className={dropdownButtonClass}
+          disabled={props.disabled}
+          type="button"
+        >
+          <ChevronDown className="size-2.5 text-muted-foreground" data-icon />
+        </button>
+      </div>
+    );
+  }
 );
 ToolbarSplitButton.displayName = 'ToolbarButton';
 

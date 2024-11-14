@@ -1,22 +1,23 @@
 'use client';
 
-import React, { useCallback, useEffect } from 'react';
+import React, { useMemo } from 'react';
 
-import { cn, useComposedRef, useOnClickOutside } from '@udecode/cn';
+import { cn } from '@udecode/cn';
+import { useMediaFloatingToolbar } from '@udecode/plate';
 import { useEditorPlugin } from '@udecode/plate-core/react';
 import {
   type UseVirtualFloatingOptions,
   flip,
-  getDOMSelectionBoundingClientRect,
-  getRangeBoundingClientRect,
   offset,
-  useVirtualFloating,
 } from '@udecode/plate-floating';
-import { insertImage } from '@udecode/plate-media';
-import { MediaFloatingPlugin } from '@udecode/plate-media/react';
-import { getAboveNode, getEndPoint, getStartPoint } from '@udecode/slate';
-import { mergeProps } from '@udecode/utils';
-import { ImageIcon } from 'lucide-react';
+import {
+  AudioPlugin,
+  FilePlugin,
+  ImagePlugin,
+  MediaEmbedPlugin,
+  VideoPlugin,
+} from '@udecode/plate-media/react';
+import { AudioLinesIcon, FileUpIcon, FilmIcon, ImageIcon } from 'lucide-react';
 
 import { Button } from './button';
 import { Input } from './input';
@@ -34,102 +35,63 @@ const floatingOptions: UseVirtualFloatingOptions = {
   placement: 'bottom-start',
 };
 
+const MEDIA_CONFIG: Record<
+  string,
+  {
+    icon: React.ReactNode;
+    placeholder: string;
+  }
+> = {
+  [AudioPlugin.key]: {
+    icon: <AudioLinesIcon className="size-4" />,
+    placeholder: 'https://example.com/audio.mp3',
+  },
+  [FilePlugin.key]: {
+    icon: <FileUpIcon className="size-4" />,
+    placeholder: 'https://example.com/file.pdf',
+  },
+  [ImagePlugin.key]: {
+    icon: <ImageIcon className="size-4" />,
+    placeholder: 'https://example.com/image.jpg',
+  },
+  [VideoPlugin.key]: {
+    icon: <FilmIcon className="size-4" />,
+    placeholder: 'https://example.com/video.mp4',
+  },
+};
+
 export function MediaFloatingToolbar() {
-  const { api, editor, setOption, type, useOption } =
-    useEditorPlugin(MediaFloatingPlugin);
+  const { useOption } = useEditorPlugin(MediaEmbedPlugin);
 
-  const isOpen = useOption('isOpen');
-  const url = useOption('url');
+  const mediaType = useOption('mediaType');
 
-  const getBoundingClientRect = React.useCallback(() => {
-    const entry = getAboveNode(editor, {
-      match: { type },
-    });
+  const mediaConfig = useMemo(() => {
+    if (!mediaType) return null;
 
-    if (entry) {
-      const [, path] = entry;
+    return MEDIA_CONFIG[mediaType];
+  }, [mediaType]);
 
-      return getRangeBoundingClientRect(editor, {
-        anchor: getStartPoint(editor, path),
-        focus: getEndPoint(editor, path),
-      });
-    }
-
-    return getDOMSelectionBoundingClientRect();
-  }, [editor, type]);
-
-  const clickOutsideRef = useOnClickOutside(() => {
-    if (!isOpen) return;
-
-    api.mediaFloating.hide();
-  });
-
-  const floating = useVirtualFloating(
-    mergeProps(
-      {
-        getBoundingClientRect,
-        open: isOpen,
-      },
-      floatingOptions
-    )
-  );
-
-  const onEmbed = useCallback(
-    (value: string) => {
-      insertImage(editor, value);
-      api.mediaFloating.hide();
-    },
-    [editor, api.mediaFloating]
-  );
-
-  const handleCancel = () => {
-    api.mediaFloating.hide();
-  };
-
-  const inputRef = React.useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    setTimeout(() => {
-      inputRef.current?.focus({ preventScroll: true });
-
-      setTimeout(() => {
-        console.log(document.activeElement, 'fj');
-      }, 1000);
-    }, 0);
-  }, [isOpen]);
+  const { acceptProps, cancelProps, inputProps, rootProps } =
+    useMediaFloatingToolbar(floatingOptions);
 
   return (
-    <div
-      ref={useComposedRef<HTMLElement | null>(
-        floating.refs.setFloating,
-        clickOutsideRef
-      )}
-      className={cn(popoverVariants(), 'w-auto p-1')}
-      style={floating.style}
-    >
+    <div {...rootProps} className={cn(popoverVariants(), 'w-auto p-1')}>
       <div className="flex w-[330px] flex-col">
         <div className="flex items-center">
-          <div className="flex items-center pl-2 pr-1">
-            <ImageIcon className="size-4" />
-          </div>
-
+          <div className="flex items-center pl-2 pr-1">{mediaConfig?.icon}</div>
           <Input
-            ref={inputRef}
             variant="ghost"
-            value={url}
-            onChange={(e) => setOption('url', e.target.value)}
-            placeholder="https://example.com/image.jpg"
+            {...inputProps}
+            placeholder={mediaConfig?.placeholder}
             h="sm"
           />
         </div>
         <Separator className="my-1" />
         <div className="flex items-center justify-end gap-2 pt-2">
-          <Button size="sm" variant="secondary" onClick={handleCancel}>
+          <Button size="sm" variant="secondary" {...cancelProps}>
             Cancel
           </Button>
-          <Button size="sm" variant="default" onClick={() => onEmbed(url)}>
+          <Button size="sm" variant="default" {...acceptProps}>
             Accept
           </Button>
         </div>

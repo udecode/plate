@@ -6,7 +6,6 @@ import {
   FilePlugin,
   ImagePlugin,
   MediaEmbedPlugin,
-  MediaFloatingPlugin,
   VideoPlugin,
 } from '@udecode/plate-media/react';
 
@@ -20,14 +19,13 @@ export const mediaPlugins = [
     },
     render: { afterEditable: ImagePreview },
   }),
-  MediaEmbedPlugin,
+  MediaEmbedPlugin.configure({
+    render: { afterEditable: () => <MediaFloatingToolbar /> },
+  }),
   VideoPlugin,
   AudioPlugin,
   FilePlugin,
   CaptionPlugin.configure({
     options: { plugins: [ImagePlugin, MediaEmbedPlugin] },
-  }),
-  MediaFloatingPlugin.configure({
-    render: { afterEditable: () => <MediaFloatingToolbar /> },
   }),
 ] as const;

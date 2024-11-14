@@ -6,9 +6,20 @@ import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
 import { cn } from '@udecode/cn';
 import { useEditorPlugin } from '@udecode/plate-core/react';
-import { MediaFloatingPlugin } from '@udecode/plate-media/react';
-import { focusEditor } from '@udecode/slate-react';
-import { ImageUp, LinkIcon } from 'lucide-react';
+import {
+  AudioPlugin,
+  FilePlugin,
+  ImagePlugin,
+  MediaEmbedPlugin,
+  VideoPlugin,
+} from '@udecode/plate-media/react';
+import {
+  AudioLinesIcon,
+  FileUpIcon,
+  FilmIcon,
+  ImageIcon,
+  LinkIcon,
+} from 'lucide-react';
 import { useFilePicker } from 'use-file-picker';
 
 import {
@@ -21,11 +32,46 @@ import {
 } from './dropdown-menu';
 import { ToolbarSplitButton } from './toolbar';
 
-export function ImageDropdownMenu({ children, ...props }: DropdownMenuProps) {
-  /** Open file picker */
-  const { editor, setOption } = useEditorPlugin(MediaFloatingPlugin);
+const MEDIA_CONFIG: Record<
+  string,
+  {
+    accept: string[];
+    icon: React.ReactNode;
+    tooltip: string;
+  }
+> = {
+  [AudioPlugin.key]: {
+    accept: ['audio/*'],
+    icon: <AudioLinesIcon />,
+    tooltip: 'Audio',
+  },
+  [FilePlugin.key]: {
+    accept: ['*'],
+    icon: <FileUpIcon />,
+    tooltip: 'File',
+  },
+  [ImagePlugin.key]: {
+    accept: ['image/*'],
+    icon: <ImageIcon />,
+    tooltip: 'Image',
+  },
+  [VideoPlugin.key]: {
+    accept: ['video/*'],
+    icon: <FilmIcon />,
+    tooltip: 'Video',
+  },
+};
+
+export function MediaDropdownMenu({
+  children,
+  nodeType,
+  ...props
+}: DropdownMenuProps & { nodeType: string }) {
+  const currentConfig = MEDIA_CONFIG[nodeType];
+
+  const { api, editor } = useEditorPlugin(MediaEmbedPlugin);
   const { openFilePicker } = useFilePicker({
-    accept: 'image/*',
+    accept: currentConfig.accept,
     multiple: true,
     onFilesSelected: ({ plainFiles: updatedFiles }) => {
       (editor as any).tf.insert.media(updatedFiles);
@@ -40,9 +86,9 @@ export function ImageDropdownMenu({ children, ...props }: DropdownMenuProps) {
         <ToolbarSplitButton
           onMainButtonClick={() => openFilePicker()}
           pressed={openState.open}
-          tooltip="Align"
+          tooltip={currentConfig.tooltip}
         >
-          <ImageUp />
+          {currentConfig.icon}
         </ToolbarSplitButton>
       </DropdownMenuTrigger>
 
@@ -57,15 +103,14 @@ export function ImageDropdownMenu({ children, ...props }: DropdownMenuProps) {
             hideIcon
           >
             <div className="flex items-center gap-2">
-              <ImageUp />
+              {currentConfig.icon}
               <span className="text-sm">Upload from computer</span>
             </div>
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem
             value="url"
             onSelect={() => {
-              focusEditor(editor);
-              setOption('isOpen', true);
+              api.media_embed.openFloating(nodeType);
             }}
             hideIcon
           >

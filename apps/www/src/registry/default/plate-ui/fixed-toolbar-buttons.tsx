@@ -16,6 +16,12 @@ import {
 } from '@udecode/plate-font/react';
 import { ListStyleType } from '@udecode/plate-indent-list';
 import {
+  AudioPlugin,
+  FilePlugin,
+  ImagePlugin,
+  VideoPlugin,
+} from '@udecode/plate-media/react';
+import {
   BaselineIcon,
   BoldIcon,
   Code2Icon,
@@ -38,7 +44,7 @@ import { InsertDropdownMenu } from './insert-dropdown-menu';
 import { LineHeightDropdownMenu } from './line-height-dropdown-menu';
 import { LinkToolbarButton } from './link-toolbar-button';
 import { MarkToolbarButton } from './mark-toolbar-button';
-import { ImageDropdownMenu } from './media-toolbar-button';
+import { MediaDropdownMenu } from './media-toolbar-button';
 import { ModeDropdownMenu } from './mode-dropdown-menu';
 import { MoreDropdownMenu } from './more-dropdown-menu';
 import { OutdentToolbarButton } from './outdent-toolbar-button';
@@ -135,11 +141,10 @@ export function FixedToolbarButtons() {
           </ToolbarGroup>
 
           <ToolbarGroup>
-            <ImageDropdownMenu />
-            {/* <MediaToolbarButton nodeType={ImagePlugin.key} />
-            <MediaToolbarButton nodeType={VideoPlugin.key} />
-            <MediaToolbarButton nodeType={AudioPlugin.key} />
-            <MediaToolbarButton nodeType={FilePlugin.key} /> */}
+            <MediaDropdownMenu nodeType={ImagePlugin.key} />
+            <MediaDropdownMenu nodeType={VideoPlugin.key} />
+            <MediaDropdownMenu nodeType={AudioPlugin.key} />
+            <MediaDropdownMenu nodeType={FilePlugin.key} />
           </ToolbarGroup>
 
           <ToolbarGroup>

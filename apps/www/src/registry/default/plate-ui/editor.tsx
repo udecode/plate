@@ -13,6 +13,8 @@ import {
 } from '@udecode/plate-common/react';
 import { cva } from 'class-variance-authority';
 
+import { useUploadErrorToast } from './media-placeholder-element';
+
 const editorContainerVariants = cva(
   'relative w-full cursor-text overflow-y-auto caret-primary selection:bg-brand/25 [&_.slate-selection-area]:border [&_.slate-selection-area]:border-brand/25 [&_.slate-selection-area]:bg-brand/15',
   {
@@ -36,6 +38,8 @@ export const EditorContainer = ({
   VariantProps<typeof editorContainerVariants>) => {
   const editor = useEditorRef();
   const containerRef = useEditorContainerRef();
+
+  useUploadErrorToast();
 
   return (
     <div
