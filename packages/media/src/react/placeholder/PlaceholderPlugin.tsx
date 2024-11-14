@@ -1,5 +1,6 @@
 import {
   type ExtendConfig,
+  type InsertNodesOptions,
   bindFirst,
   getAncestorNode,
   getNodeString,
@@ -22,7 +23,7 @@ export type PlaceholderApi = {
 };
 
 export type PlaceholderTransforms = {
-  insertMedia: (files: FileList) => void;
+  insertMedia: (files: FileList, options?: InsertNodesOptions) => void;
 };
 
 export type UploadConfig = Partial<Record<AllowedFileType, MediaItemConfig>>;
