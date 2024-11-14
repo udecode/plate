@@ -23,6 +23,7 @@ module.exports = {
     'prettier/prettier': ['warn', { ...prettierConfig }],
     'react/display-name': 'off',
     'react/jsx-key': 'off',
+    'react/no-unescaped-entities': 'off',
     'tailwindcss/classnames-order': 'warn',
     'tailwindcss/no-custom-classname': 'off',
     'unused-imports/no-unused-imports': 'warn',
