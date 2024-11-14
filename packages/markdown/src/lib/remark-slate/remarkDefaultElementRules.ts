@@ -78,7 +78,7 @@ export const remarkDefaultElementRules: RemarkElementRules = {
           listItems: TElement[] = [],
           indent = 1
         ) => {
-          _node.children!.forEach((listItem) => {
+          _node.children?.forEach((listItem) => {
             const [paragraph, ...subLists] = listItem.children!;
 
             listItems.push({
@@ -114,12 +114,12 @@ export const remarkDefaultElementRules: RemarkElementRules = {
         };
 
         return parseListItems(node);
-      } else {
-        return {
-          children: remarkTransformElementChildren(node, options),
-          type: options.editor.getType({ key: node.ordered ? 'ol' : 'ul' }),
-        };
       }
+
+      return {
+        children: remarkTransformElementChildren(node, options),
+        type: options.editor.getType({ key: node.ordered ? 'ol' : 'ul' }),
+      };
     },
   },
   listItem: {
@@ -172,6 +172,28 @@ export const remarkDefaultElementRules: RemarkElementRules = {
       flushInlineNodes();
 
       return elements;
+    },
+  },
+  table: {
+    transform: (node, options) => {
+      const rows =
+        node.children?.map((row) => {
+          return {
+            children:
+              row.children?.map((cell) => {
+                return {
+                  children: remarkTransformElementChildren(cell, options),
+                  type: options.editor.getType({ key: 'td' }),
+                };
+              }) || [],
+            type: options.editor.getType({ key: 'tr' }),
+          };
+        }) || [];
+
+      return {
+        children: rows,
+        type: options.editor.getType({ key: 'table' }),
+      };
     },
   },
   thematicBreak: {
