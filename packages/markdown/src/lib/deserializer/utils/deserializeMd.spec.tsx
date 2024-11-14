@@ -571,24 +571,17 @@ describe('deserializeMdIndentList', () => {
             children: [
               {
                 type: 'td',
-                children: [{ text: 'Left columns' }],
+                children: [{ 
+                  type: 'p',
+                  children: [{ text: 'Left columns' }],
+                 }],
               },
               {
                 type: 'td',
-                children: [{ text: 'Right columns' }],
-              },
-            ],
-          },
-          {
-            type: 'tr',
-            children: [
-              {
-                type: 'td',
-                children: [{ text: 'left foo' }],
-              },
-              {
-                type: 'td',
-                children: [{ text: 'right foo' }],
+                children: [{ 
+                  type: 'p',
+                  children: [{ text: 'Right columns' }],
+                 }],
               },
             ],
           },
@@ -597,11 +590,17 @@ describe('deserializeMdIndentList', () => {
             children: [
               {
                 type: 'td',
-                children: [{ text: 'left bar' }],
+                children: [{
+                  type: 'p',
+                  children: [{ text: 'left foo' }],
+                }],
               },
               {
                 type: 'td',
-                children: [{ text: 'right bar' }],
+                children: [{
+                  type: 'p',
+                  children: [{ text: 'right foo' }],
+                }],
               },
             ],
           },
@@ -610,11 +609,36 @@ describe('deserializeMdIndentList', () => {
             children: [
               {
                 type: 'td',
-                children: [{ text: 'left baz' }],
+                children: [{
+                  type: 'p',
+                  children: [{ text: 'left bar' }],
+                }],
               },
               {
                 type: 'td',
-                children: [{ text: 'right baz' }],
+                children: [{
+                  type: 'p',
+                  children: [{ text: 'right bar' }],
+                }],
+              },
+            ],
+          },
+          {
+            type: 'tr',
+            children: [
+              {
+                type: 'td',
+                children: [{
+                  type: 'p',
+                  children: [{ text: 'left baz' }],
+                }],
+              },
+              {
+                type: 'td',
+                children: [{
+                  type: 'p',
+                  children: [{ text: 'right baz' }],
+                }],
               },
             ],
           },
