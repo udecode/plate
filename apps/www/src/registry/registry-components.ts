@@ -27,6 +27,7 @@ const plugins: Registry = [
       'align-plugin',
       'autoformat-plugin',
       'block-menu-plugins',
+      'cursor-overlay-plugin',
       'comments-plugin',
       'delete-plugins',
       'dnd-plugins',

@@ -2129,6 +2129,18 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
+    "markdown-demo": {
+      name: "markdown-demo",
+      description: "",
+      type: "registry:example",
+      registryDependencies: [],
+      files: ["registry/default/example/markdown-demo.tsx"],
+      component: React.lazy(() => import("@/registry/default/example/markdown-demo.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
     "editor-ai": {
       name: "editor-ai",
       description: "An AI editor",

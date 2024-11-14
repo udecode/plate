@@ -4973,6 +4973,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@sindresorhus/is@npm:^4.6.0":
+  version: 4.6.0
+  resolution: "@sindresorhus/is@npm:4.6.0"
+  checksum: 10c0/33b6fb1d0834ec8dd7689ddc0e2781c2bfd8b9c4e4bacbcb14111e0ae00621f2c264b8a7d36541799d74888b5dccdf422a891a5cb5a709ace26325eedc81e22e
+  languageName: node
+  linkType: hard
+
 "@sinonjs/commons@npm:^3.0.0":
   version: 3.0.1
   resolution: "@sinonjs/commons@npm:3.0.1"
@@ -5602,7 +5609,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/mdast@npm:^4.0.0":
+"@types/mdast@npm:^4.0.0, @types/mdast@npm:^4.0.4":
   version: 4.0.4
   resolution: "@types/mdast@npm:4.0.4"
   dependencies:
@@ -6196,7 +6203,7 @@ __metadata:
   resolution: "@udecode/plate-ai@workspace:packages/ai"
   dependencies:
     "@udecode/plate-combobox": "npm:40.0.0"
-    "@udecode/plate-markdown": "npm:40.0.0"
+    "@udecode/plate-markdown": "npm:40.0.4"
     "@udecode/plate-selection": "npm:40.0.0"
     ai: "npm:^3.4.10"
     lodash: "npm:^4.17.21"
@@ -6902,7 +6909,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-markdown@npm:40.0.0, @udecode/plate-markdown@workspace:^, @udecode/plate-markdown@workspace:packages/markdown":
+"@udecode/plate-markdown@npm:40.0.4, @udecode/plate-markdown@workspace:^, @udecode/plate-markdown@workspace:packages/markdown":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-markdown@workspace:packages/markdown"
   dependencies:
@@ -7293,7 +7300,7 @@ __metadata:
     "@udecode/plate-line-height": "npm:40.0.0"
     "@udecode/plate-link": "npm:40.0.0"
     "@udecode/plate-list": "npm:40.0.0"
-    "@udecode/plate-markdown": "npm:40.0.0"
+    "@udecode/plate-markdown": "npm:40.0.4"
     "@udecode/plate-media": "npm:40.0.0"
     "@udecode/plate-mention": "npm:40.0.0"
     "@udecode/plate-node-id": "npm:40.0.0"
@@ -9682,6 +9689,20 @@ __metadata:
   version: 9.2.2
   resolution: "emoji-regex@npm:9.2.2"
   checksum: 10c0/af014e759a72064cf66e6e694a7fc6b0ed3d8db680427b021a89727689671cefe9d04151b2cad51dbaf85d5ba790d061cd167f1cf32eb7b281f6368b3c181639
+  languageName: node
+  linkType: hard
+
+"emojilib@npm:^2.4.0":
+  version: 2.4.0
+  resolution: "emojilib@npm:2.4.0"
+  checksum: 10c0/6e66ba8921175842193f974e18af448bb6adb0cf7aeea75e08b9d4ea8e9baba0e4a5347b46ed901491dcaba277485891c33a8d70b0560ca5cc9672a94c21ab8f
+  languageName: node
+  linkType: hard
+
+"emoticon@npm:^4.0.1":
+  version: 4.1.0
+  resolution: "emoticon@npm:4.1.0"
+  checksum: 10c0/b3bc0a9b370445ac1e980ccba7baea614b4648199cc6fa0a51696a6d2393733e8f985edc4f1af381a1903f625789483dd155de427ec9fa2ea415fac116adc06d
   languageName: node
   linkType: hard
 
@@ -14512,7 +14533,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mdast-util-find-and-replace@npm:^3.0.0":
+"mdast-util-find-and-replace@npm:^3.0.0, mdast-util-find-and-replace@npm:^3.0.1":
   version: 3.0.1
   resolution: "mdast-util-find-and-replace@npm:3.0.1"
   dependencies:
@@ -16061,6 +16082,18 @@ __metadata:
   version: 1.0.0
   resolution: "node-domexception@npm:1.0.0"
   checksum: 10c0/5e5d63cda29856402df9472335af4bb13875e1927ad3be861dc5ebde38917aecbf9ae337923777af52a48c426b70148815e890a5d72760f1b4d758cc671b1a2b
+  languageName: node
+  linkType: hard
+
+"node-emoji@npm:^2.1.3":
+  version: 2.1.3
+  resolution: "node-emoji@npm:2.1.3"
+  dependencies:
+    "@sindresorhus/is": "npm:^4.6.0"
+    char-regex: "npm:^1.0.2"
+    emojilib: "npm:^2.4.0"
+    skin-tone: "npm:^2.0.0"
+  checksum: 10c0/e688333373563aa8308df16111eee2b5837b53a51fb63bf8b7fbea2896327c5d24c9984eb0c8ca6ac155d4d9c194dcf1840d271033c1b588c7c45a3b65339ef7
   languageName: node
   linkType: hard
 
@@ -18346,6 +18379,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"remark-emoji@npm:5.0.1":
+  version: 5.0.1
+  resolution: "remark-emoji@npm:5.0.1"
+  dependencies:
+    "@types/mdast": "npm:^4.0.4"
+    emoticon: "npm:^4.0.1"
+    mdast-util-find-and-replace: "npm:^3.0.1"
+    node-emoji: "npm:^2.1.3"
+    unified: "npm:^11.0.4"
+  checksum: 10c0/d4b330a06c1d42b97b9e9a03e486426f462d50a66b68c70443abb224ba576e2008c38faef19c654cd3e95749b5783cc3a64e7b997a279057fb7f5b8fd912b6b5
+  languageName: node
+  linkType: hard
+
 "remark-frontmatter@npm:^5.0.0":
   version: 5.0.0
   resolution: "remark-frontmatter@npm:5.0.0"
@@ -19208,6 +19254,15 @@ __metadata:
   version: 1.0.5
   resolution: "sisteransi@npm:1.0.5"
   checksum: 10c0/230ac975cca485b7f6fe2b96a711aa62a6a26ead3e6fb8ba17c5a00d61b8bed0d7adc21f5626b70d7c33c62ff4e63933017a6462942c719d1980bb0b1207ad46
+  languageName: node
+  linkType: hard
+
+"skin-tone@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "skin-tone@npm:2.0.0"
+  dependencies:
+    unicode-emoji-modifier-base: "npm:^1.0.0"
+  checksum: 10c0/82d4c2527864f9cbd6cb7f3c4abb31e2224752234d5013b881d3e34e9ab543545b05206df5a17d14b515459fcb265ce409f9cfe443903176b0360cd20e4e4ba5
   languageName: node
   linkType: hard
 
@@ -20972,6 +21027,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"unicode-emoji-modifier-base@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "unicode-emoji-modifier-base@npm:1.0.0"
+  checksum: 10c0/b37623fcf0162186debd20f116483e035a2d5b905b932a2c472459d9143d446ebcbefb2a494e2fe4fa7434355396e2a95ec3fc1f0c29a3bc8f2c827220e79c66
+  languageName: node
+  linkType: hard
+
 "unicode-trie@npm:^2.0.0":
   version: 2.0.0
   resolution: "unicode-trie@npm:2.0.0"
@@ -22016,6 +22078,7 @@ __metadata:
     rehype-slug: "npm:^5.1.0"
     remark: "npm:^14.0.3"
     remark-code-import: "npm:^1.2.0"
+    remark-emoji: "npm:5.0.1"
     remark-gfm: "npm:^4.0.0"
     rimraf: "npm:^6.0.1"
     sass: "npm:^1.78.0"

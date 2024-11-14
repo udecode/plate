@@ -157,6 +157,7 @@
     "react-syntax-highlighter": "^15.5.0",
     "react-tweet": "^3.2.1",
     "react-wrap-balancer": "^1.1.1",
+    "remark-emoji": "5.0.1",
     "sass": "^1.78.0",
     "slate": "0.110.2",
     "slate-dom": "0.111.0",

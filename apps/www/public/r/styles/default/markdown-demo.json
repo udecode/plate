@@ -1,0 +1,16 @@
+{
+  "doc": {
+    "description": "Live preview of Slate content as Markdown."
+  },
+  "files": [
+    {
+      "content": "import React, { useCallback, useState } from 'react';\n\nimport { Plate, PlateContent, createPlateEditor } from '@udecode/plate-common';\nimport { MarkdownPlugin } from '@udecode/plate-markdown';\n\nimport { basicMarksPlugins, basicNodesPlugins } from '../plate/demo/plugins';\n\nconst editor = createPlateEditor({\n  plugins: [...basicNodesPlugins, ...basicMarksPlugins, MarkdownPlugin],\n});\n\nexport function MarkdownDemo() {\n  const [markdown, setMarkdown] = useState('');\n\n  const onChange = useCallback((value: any) => {\n    // Convert the Slate value to Markdown\n    const markdownString = editor.api.markdown.serialize({ nodes: value });\n    setMarkdown(markdownString);\n  }, []);\n\n  return (\n    <div className=\"grid grid-cols-2 gap-4\">\n      <div className=\"rounded-lg border p-4\">\n        <Plate onChange={onChange} editor={editor}>\n          <PlateContent className=\"min-h-[150px]\" />\n        </Plate>\n      </div>\n      <div className=\"whitespace-pre-wrap rounded-lg border p-4 font-mono text-sm\">\n        {markdown}\n      </div>\n    </div>\n  );\n}\n",
+      "path": "example/markdown-demo.tsx",
+      "target": "components/markdown-demo.tsx",
+      "type": "registry:example"
+    }
+  ],
+  "name": "markdown-demo",
+  "registryDependencies": [],
+  "type": "registry:example"
+}
