@@ -622,8 +622,6 @@ describe('deserializeMdIndentList', () => {
       }
     ]
 
-    console.log(JSON.stringify(deserializeMd(editor, input)))
-
     expect(deserializeMd(editor, input)).toEqual(output);
   });
 
