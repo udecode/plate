@@ -1,12 +1,17 @@
 import * as React from 'react';
 
-import type { ClientUploadedFileData } from 'uploadthing/types';
-
 import { toast } from 'sonner';
 
 import { getErrorMessage } from './handle-error';
 
-export interface UploadedFile<T = unknown> extends ClientUploadedFileData<T> {}
+export interface UploadedFile {
+  key: string;
+  appUrl: string;
+  name: string;
+  size: number;
+  type: string;
+  url: string;
+}
 
 export function useUploadFile() {
   const [uploadedFile, setUploadedFile] = React.useState<UploadedFile>();
