@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
@@ -31,6 +31,7 @@ import {
   DropdownMenuTrigger,
   useOpenState,
 } from './dropdown-menu';
+import { MediaEmbedPopover } from './media-embed-popover';
 import {
   ToolbarSplitButton,
   ToolbarSplitButtonPrimary,
@@ -72,9 +73,10 @@ export function MediaDropdownMenu({
   nodeType,
   ...props
 }: DropdownMenuProps & { nodeType: string }) {
-  const currentConfig = MEDIA_CONFIG[nodeType];
+  const { editor } = useEditorPlugin(MediaEmbedPlugin);
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
-  const { editor, setOptions } = useEditorPlugin(MediaEmbedPlugin);
+  const currentConfig = MEDIA_CONFIG[nodeType];
   const { openFilePicker } = useFilePicker({
     accept: currentConfig.accept,
     multiple: true,
@@ -86,50 +88,58 @@ export function MediaDropdownMenu({
   const openState = useOpenState();
 
   return (
-    <DropdownMenu {...openState} modal={false} {...props}>
-      <ToolbarSplitButton
-        pressed={openState.open}
-        tooltip={currentConfig.tooltip}
-      >
-        <ToolbarSplitButtonPrimary onClick={() => openFilePicker()}>
-          {currentConfig.icon}
-        </ToolbarSplitButtonPrimary>
+    <>
+      <DropdownMenu {...openState} modal={false} {...props}>
+        <ToolbarSplitButton
+          pressed={openState.open}
+          tooltip={currentConfig.tooltip}
+        >
+          <ToolbarSplitButtonPrimary onClick={() => openFilePicker()}>
+            {currentConfig.icon}
+          </ToolbarSplitButtonPrimary>
 
-        <DropdownMenuTrigger asChild>
-          <ToolbarSplitButtonSecondary />
-        </DropdownMenuTrigger>
-      </ToolbarSplitButton>
+          <DropdownMenuTrigger asChild>
+            <ToolbarSplitButtonSecondary />
+          </DropdownMenuTrigger>
+        </ToolbarSplitButton>
 
-      <DropdownMenuContent
-        className={cn('min-w-0 data-[state=closed]:hidden')}
-        align="start"
-      >
-        <DropdownMenuRadioGroup>
-          <DropdownMenuRadioItem
-            value="upload"
-            onSelect={() => openFilePicker()}
-            hideIcon
-          >
-            <div className="flex items-center gap-2">
-              {currentConfig.icon}
-              <span className="text-sm">Upload from computer</span>
-            </div>
-          </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem
-            value="url"
-            onSelect={() => {
-              focusEditor(editor);
-              setOptions({ isOpen: true, mediaType: nodeType });
-            }}
-            hideIcon
-          >
-            <div className="flex items-center gap-2">
-              <LinkIcon />
-              <span className="text-sm">Insert via URL</span>
-            </div>
-          </DropdownMenuRadioItem>
-        </DropdownMenuRadioGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
+        <DropdownMenuContent
+          className={cn('min-w-0 data-[state=closed]:hidden')}
+          align="start"
+        >
+          <DropdownMenuRadioGroup>
+            <DropdownMenuRadioItem
+              value="upload"
+              onSelect={() => openFilePicker()}
+              hideIcon
+            >
+              <div className="flex items-center gap-2">
+                {currentConfig.icon}
+                <span className="text-sm">Upload from computer</span>
+              </div>
+            </DropdownMenuRadioItem>
+            <DropdownMenuRadioItem
+              value="url"
+              onSelect={() => {
+                focusEditor(editor);
+                setIsPopoverOpen(true);
+              }}
+              hideIcon
+            >
+              <div className="flex items-center gap-2">
+                <LinkIcon />
+                <span className="text-sm">Insert via URL</span>
+              </div>
+            </DropdownMenuRadioItem>
+          </DropdownMenuRadioGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <MediaEmbedPopover
+        onOpenChange={setIsPopoverOpen}
+        isOpen={isPopoverOpen}
+        mediaType={nodeType}
+      />
+    </>
   );
 }

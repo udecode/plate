@@ -4,10 +4,13 @@ import {
   BaseAudioPlugin,
   BaseFilePlugin,
   BaseImagePlugin,
+  BaseMediaEmbedPlugin,
   BaseVideoPlugin,
 } from '../lib';
 
 export const ImagePlugin = toPlatePlugin(BaseImagePlugin);
+
+export const MediaEmbedPlugin = toPlatePlugin(BaseMediaEmbedPlugin);
 
 export const AudioPlugin = toPlatePlugin(BaseAudioPlugin);
 
