@@ -177,10 +177,12 @@ export const remarkDefaultElementRules: RemarkElementRules = {
   table: {
     transform: (node, options) => {
       const rows =
-        node.children?.map((row) => {
+        node.children?.map((row, rowIndex) => {
           return {
             children:
               row.children?.map((cell) => {
+                const cellType = rowIndex === 0 ? 'th' : 'td';
+
                 return {
                   children: remarkTransformElementChildren(cell, options).map(
                     (child) => {
@@ -194,7 +196,7 @@ export const remarkDefaultElementRules: RemarkElementRules = {
                       return child;
                     }
                   ),
-                  type: options.editor.getType({ key: 'td' }),
+                  type: options.editor.getType({ key: cellType }),
                 };
               }) || [],
             type: options.editor.getType({ key: 'tr' }),
