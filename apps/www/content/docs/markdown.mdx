@@ -1,6 +1,7 @@
 ---
 title: Serializing Markdown
 description: Copy paste from Markdown to Slate.
+toc: false
 ---
 
 <ComponentPreview name="playground-demo" id="markdown" />
@@ -9,11 +10,8 @@ description: Copy paste from Markdown to Slate.
 
 ## Features
 
-- Convert Markdown content to a Slate value.
-
-<Callout className="my-4">
-  **Note**: Converting a Slate value to Markdown is not yet supported.
-</Callout>
+- Convert Markdown string to Slate JSON.
+- Convert Slate JSON to Markdown string.
 
 </PackageInfo>
 
@@ -25,7 +23,7 @@ npm install @udecode/plate-markdown
 
 ## Usage
 
-### Markdown -> Slate
+### Markdown to Slate
 
 ```tsx
 import { MarkdownPlugin } from '@udecode/plate-markdown';
@@ -40,7 +38,9 @@ const editor = createPlateEditor({
 const value = editor.api.markdown.deserialize('**Hello world!**');
 ```
 
-### Slate -> Markdown
+<ComponentPreview name="markdown-demo" />
+
+### Slate to Markdown
 
 Currently supported plugins: paragraph, link, list, heading, italic, bold and code.
 

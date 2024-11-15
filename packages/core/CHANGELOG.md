@@ -1,5 +1,25 @@
 # @udecode/plate-core
 
+## 40.0.3
+
+### Patch Changes
+
+- [`0682bb02329d6cf09d96fdf9a226e85925b8ce54`](https://github.com/udecode/plate/commit/0682bb02329d6cf09d96fdf9a226e85925b8ce54) by [@zbeyens](https://github.com/zbeyens) – Fix scrollRef
+
+## 40.0.2
+
+### Patch Changes
+
+- [#3761](https://github.com/udecode/plate/pull/3761) by [@zbeyens](https://github.com/zbeyens) – Fix scroll ref
+
+## 40.0.1
+
+### Patch Changes
+
+- [#3759](https://github.com/udecode/plate/pull/3759) by [@zbeyens](https://github.com/zbeyens) –
+  - Add `scrollRef` in Plate store
+  - Add `useEditorScrollRef` to get the scroll container ref, that can be used in plugins to control the scroll position
+
 ## 40.0.0
 
 ### Minor Changes

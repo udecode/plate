@@ -49,11 +49,13 @@ export function DocContent({
 } & Partial<RegistryEntry>) {
   const title = doc?.title ?? getRegistryTitle(file);
 
+  const hasToc = doc?.toc && toc;
+
   return (
     <main
       className={cn(
         'relative py-6 lg:gap-10 lg:py-8',
-        'lg:grid lg:grid-cols-[1fr_230px]'
+        hasToc && 'lg:grid lg:grid-cols-[1fr_230px]'
       )}
     >
       <div className="mx-auto w-full min-w-0">
@@ -124,7 +126,7 @@ export function DocContent({
         {doc && <DocsPager doc={doc as any} />}
       </div>
 
-      {doc?.toc && toc && (
+      {hasToc && (
         <div className="hidden text-sm lg:block">
           <div className="sticky top-16 -mt-10 flex h-[calc(100vh-84px)] flex-col pt-4">
             <ScrollArea className="grow pb-2">

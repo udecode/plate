@@ -752,6 +752,12 @@ export const examples: Registry = [
     registryDependencies: [],
     type: 'registry:example',
   },
+  {
+    files: ['example/markdown-demo.tsx'],
+    name: 'markdown-demo',
+    registryDependencies: [],
+    type: 'registry:example',
+  },
   // {
   //   external: true,
   //   files: ['lib/plate-types.ts'],

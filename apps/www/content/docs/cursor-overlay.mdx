@@ -30,7 +30,6 @@ npm install @udecode/plate-selection
 
 ## Usage
 
-
 ```tsx
 import { CursorOverlayPlugin } from '@udecode/plate-selection/react';
 import { CursorOverlay } from '@/components/plate-ui/cursor-overlay';
@@ -45,6 +44,16 @@ const plugins = [
     render: { afterEditable: () => <CursorOverlay /> },
   }),
 ];
+```
+
+### Preserving Selection Focus
+
+To maintain the editor's selection state when focusing UI elements, add the `data-plate-focus="true"` attribute to those elements:
+
+```tsx
+<ToolbarButton data-plate-focus="true">
+  {/* toolbar content */}
+</ToolbarButton>
 ```
 
 ## Plugins

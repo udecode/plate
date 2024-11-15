@@ -14,9 +14,9 @@
   },
   "dependencies": {
     "@udecode/cn": "^39.0.0",
-    "@udecode/plate-basic-elements": "^40.0.0",
+    "@udecode/plate-basic-elements": "^40.0.2",
     "@udecode/plate-basic-marks": "^40.0.0",
-    "@udecode/plate-common": "^40.0.0",
+    "@udecode/plate-common": "^40.0.3",
     "class-variance-authority": "0.7.0",
     "clsx": "^2.1.1",
     "lucide-react": "0.456.0",

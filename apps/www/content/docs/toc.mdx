@@ -56,7 +56,34 @@ const components = {
 
 ### Scroll container
 
-If not using [Editor](/docs/components/editor), don't forget to pass `useEditorContainerRef()` to your scroll container `ref` prop.
+- If your scrolling element is [EditorContainer](/docs/components/editor), you can skip this step.
+- If your scrolling element is the editor container, pass `useEditorContainerRef()` as the `ref` prop. For example:
+
+```tsx
+// Should be rendered below <Plate> component
+function EditorContainer({ children }: { children: React.ReactNode }) {
+  const containerRef = useEditorContainerRef();
+
+  return <div ref={containerRef}>{children}</div>;
+}
+```
+
+- If your scrolling element is an ancestor of the editor container, pass `useEditorScrollRef()` as the `ref` prop. For example:
+
+```tsx
+// Should be rendered below <Plate> component
+function Layout() {
+  const scrollRef = useEditorScrollRef();
+
+  return (
+    <main ref={scrollRef}>
+      <EditorContainer>
+        <PlateContent />
+      </EditorContainer>
+    </main>
+  );
+}
+```
 
 ### Components
 

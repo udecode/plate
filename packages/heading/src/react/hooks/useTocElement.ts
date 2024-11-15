@@ -3,9 +3,9 @@ import React from 'react';
 import { getNode } from '@udecode/plate-common';
 import {
   toDOMNode,
-  useEditorContainerRef,
   useEditorPlugin,
   useEditorSelector,
+  useScrollRef,
 } from '@udecode/plate-common/react';
 
 import type { Heading } from '../../lib/types';
@@ -20,7 +20,7 @@ export const useTocElementState = () => {
 
   const headingList = useEditorSelector(getHeadingList, []);
 
-  const containerRef = useEditorContainerRef();
+  const containerRef = useScrollRef();
 
   const onContentScroll = React.useCallback(
     (el: HTMLElement, id: string, behavior: ScrollBehavior = 'instant') => {

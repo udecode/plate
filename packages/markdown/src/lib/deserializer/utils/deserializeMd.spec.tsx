@@ -159,6 +159,25 @@ describe('deserializeMd', () => {
     expect(deserializeMd(editor, input)).toEqual(output);
   });
 
+  it('should deserialize strikethrough', () => {
+    const input =
+      'This is ~~strikethrough~~ text and **~~strike~~ inside bold**.';
+
+    const output = (
+      <fragment>
+        <hp>
+          This is <htext strikethrough>strikethrough</htext> text and{' '}
+          <htext bold strikethrough>
+            strike
+          </htext>
+          <htext bold> inside bold</htext>.
+        </hp>
+      </fragment>
+    );
+
+    expect(deserializeMd(editor, input)).toEqual(output);
+  });
+
   it('should deserialize nested marks', () => {
     const input = 'This is **bold *italic***.';
 
@@ -534,4 +553,100 @@ describe('deserializeMdIndentList', () => {
 
     expect(deserializeMd(editor, input)).toEqual(output);
   });
+  it('should deserialize a table', () => {
+    const input = `
+| Left columns  | Right columns |
+| ------------- |:-------------:|
+| left foo      | right foo     |
+| left bar      | right bar     |
+| left baz      | right baz     |
+`;
+
+    const output = [
+      {
+        type: 'table',
+        children: [
+          {
+            type: 'tr',
+            children: [
+              {
+                type: 'td',
+                children: [{ 
+                  type: 'p',
+                  children: [{ text: 'Left columns' }],
+                 }],
+              },
+              {
+                type: 'td',
+                children: [{ 
+                  type: 'p',
+                  children: [{ text: 'Right columns' }],
+                 }],
+              },
+            ],
+          },
+          {
+            type: 'tr',
+            children: [
+              {
+                type: 'td',
+                children: [{
+                  type: 'p',
+                  children: [{ text: 'left foo' }],
+                }],
+              },
+              {
+                type: 'td',
+                children: [{
+                  type: 'p',
+                  children: [{ text: 'right foo' }],
+                }],
+              },
+            ],
+          },
+          {
+            type: 'tr',
+            children: [
+              {
+                type: 'td',
+                children: [{
+                  type: 'p',
+                  children: [{ text: 'left bar' }],
+                }],
+              },
+              {
+                type: 'td',
+                children: [{
+                  type: 'p',
+                  children: [{ text: 'right bar' }],
+                }],
+              },
+            ],
+          },
+          {
+            type: 'tr',
+            children: [
+              {
+                type: 'td',
+                children: [{
+                  type: 'p',
+                  children: [{ text: 'left baz' }],
+                }],
+              },
+              {
+                type: 'td',
+                children: [{
+                  type: 'p',
+                  children: [{ text: 'right baz' }],
+                }],
+              },
+            ],
+          },
+        ],
+      }
+    ]
+
+    expect(deserializeMd(editor, input)).toEqual(output);
+  });
+
 });
