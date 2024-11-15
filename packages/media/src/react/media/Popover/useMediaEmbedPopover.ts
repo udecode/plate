@@ -6,14 +6,14 @@ import { MediaEmbedPlugin } from '../MediaEmbedPlugin';
 import { useMediaEmbedEnter } from './useMediaEmbedEnter';
 import { useMediaEmbedEscape } from './useMediaEmbedEscape';
 
-export const useMediaFloatingToolbar = () => {
+export const useMediaEmbedPopover = () => {
   const { editor, setOption, tf, useOption } =
     useEditorPlugin(MediaEmbedPlugin);
-  const isOpen = useOption('isFloatingOpen');
+  const isOpen = useOption('isOpen');
   const url = useOption('url');
 
   const handleCancel = () => {
-    setOption('isFloatingOpen', false);
+    setOption('isOpen', false);
     focusEditor(editor);
   };
 

@@ -9,12 +9,12 @@ import { MediaEmbedPlugin } from '../MediaEmbedPlugin';
 export const useMediaEmbedEscape = () => {
   const { editor, setOptions, useOption } = useEditorPlugin(MediaEmbedPlugin);
 
-  const isOpen = useOption('isFloatingOpen');
+  const isOpen = useOption('isOpen');
 
   useHotkeys(
     'escape',
     () => {
-      setOptions({ isFloatingOpen: false, url: '' });
+      setOptions({ isOpen: false, url: '' });
       focusEditor(editor);
     },
     {

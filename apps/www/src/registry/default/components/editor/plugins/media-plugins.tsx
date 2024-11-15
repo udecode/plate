@@ -11,7 +11,7 @@ import {
 } from '@udecode/plate-media/react';
 
 import { ImagePreview } from '@/registry/default/plate-ui/image-preview';
-import { MediaFloatingToolbar } from '@/registry/default/plate-ui/media-floating-toolbar';
+import { MediaEmbedPopover } from '@/registry/default/plate-ui/media-embed-popover';
 import { MediaUploadToast } from '@/registry/default/plate-ui/media-upload-toast';
 
 export const mediaPlugins = [
@@ -22,7 +22,7 @@ export const mediaPlugins = [
     render: { afterEditable: ImagePreview },
   }),
   MediaEmbedPlugin.configure({
-    render: { afterEditable: () => <MediaFloatingToolbar /> },
+    render: { afterEditable: () => <MediaEmbedPopover /> },
   }),
   VideoPlugin,
   AudioPlugin,

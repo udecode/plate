@@ -9,7 +9,7 @@ import {
   ImagePlugin,
   MediaEmbedPlugin,
   VideoPlugin,
-  useMediaFloatingToolbar,
+  useMediaEmbedPopover,
 } from '@udecode/plate-media/react';
 import { toDOMNode } from '@udecode/slate-react';
 import { getAncestorNode } from '@udecode/slate-utils';
@@ -45,11 +45,11 @@ const MEDIA_CONFIG: Record<
   },
 };
 
-export function MediaFloatingToolbar() {
+export function MediaEmbedPopover() {
   const { setOption, useOption } = useEditorPlugin(MediaEmbedPlugin);
 
   const mediaType = useOption('mediaType');
-  const isOpen = useOption('isFloatingOpen');
+  const isOpen = useOption('isOpen');
 
   const anchorElement = useEditorSelector(
     (editor) => {
@@ -70,14 +70,14 @@ export function MediaFloatingToolbar() {
     return MEDIA_CONFIG[mediaType];
   }, [mediaType]);
 
-  const { acceptProps, cancelProps, inputProps } = useMediaFloatingToolbar();
+  const { acceptProps, cancelProps, inputProps } = useMediaEmbedPopover();
 
   if (!anchorElement) return null;
 
   return (
     <Popover
       open={isOpen}
-      onOpenChange={(open) => setOption('isFloatingOpen', open)}
+      onOpenChange={(open) => setOption('isOpen', open)}
       modal={false}
     >
       <PopoverAnchor virtualRef={{ current: anchorElement }} />

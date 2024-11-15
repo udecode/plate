@@ -4,4 +4,4 @@
 
 export * from './useMediaEmbedEnter';
 export * from './useMediaEmbedEscape';
-export * from './useMediaFloatingToolbar';
+export * from './useMediaEmbedPopover';

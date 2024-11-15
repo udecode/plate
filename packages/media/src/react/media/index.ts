@@ -8,4 +8,4 @@ export * from './useMediaController';
 export * from './useMediaState';
 export * from './useMediaToolbarButton';
 export * from './FloatingMedia/index';
-export * from './hooks/index';
+export * from './Popover/index';

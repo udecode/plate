@@ -5,7 +5,7 @@ import { MediaEmbedPlugin } from '../../../react';
 export const useMediaEmbedEnter = () => {
   const { tf, useOption } = useEditorPlugin(MediaEmbedPlugin);
 
-  const isOpen = useOption('isFloatingOpen');
+  const isOpen = useOption('isOpen');
   const url = useOption('url');
 
   useHotkeys(

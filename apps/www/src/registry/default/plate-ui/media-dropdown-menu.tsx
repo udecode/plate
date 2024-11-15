@@ -119,7 +119,7 @@ export function MediaDropdownMenu({
             value="url"
             onSelect={() => {
               focusEditor(editor);
-              setOptions({ isFloatingOpen: true, mediaType: nodeType });
+              setOptions({ isOpen: true, mediaType: nodeType });
             }}
             hideIcon
           >

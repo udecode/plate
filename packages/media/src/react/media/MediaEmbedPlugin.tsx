@@ -11,7 +11,7 @@ import {
 type MediaEmbedConfig = ExtendConfig<
   BaseMediaEmbedConfig,
   {
-    isFloatingOpen?: boolean;
+    isOpen?: boolean;
     mediaType?: string | null;
     url?: string;
   }
@@ -21,14 +21,14 @@ export const MediaEmbedPlugin = toTPlatePlugin<MediaEmbedConfig>(
   BaseMediaEmbedPlugin,
   {
     options: {
-      isFloatingOpen: false,
+      isOpen: false,
       mediaType: null,
       url: '',
     },
   }
 ).extendTransforms(({ editor, getOptions, setOptions }) => ({
   embed: (url: string) => {
-    setOptions({ isFloatingOpen: false, url });
+    setOptions({ isOpen: false, url });
 
     const isUrl = getOptions().isUrl;
 
