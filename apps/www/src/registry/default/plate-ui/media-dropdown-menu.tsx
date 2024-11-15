@@ -74,7 +74,7 @@ export function MediaDropdownMenu({
 }: DropdownMenuProps & { nodeType: string }) {
   const currentConfig = MEDIA_CONFIG[nodeType];
 
-  const { api, editor, setOptions } = useEditorPlugin(MediaEmbedPlugin);
+  const { editor, setOptions } = useEditorPlugin(MediaEmbedPlugin);
   const { openFilePicker } = useFilePicker({
     accept: currentConfig.accept,
     multiple: true,
@@ -118,7 +118,6 @@ export function MediaDropdownMenu({
           <DropdownMenuRadioItem
             value="url"
             onSelect={() => {
-              // api.media_embed.openFloating(nodeType);
               focusEditor(editor);
               setOptions({ isFloatingOpen: true, mediaType: nodeType });
             }}

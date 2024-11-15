@@ -6954,7 +6954,6 @@ __metadata:
   resolution: "@udecode/plate-media@workspace:packages/media"
   dependencies:
     "@udecode/plate-common": "workspace:^"
-    "@udecode/plate-floating": "npm:40.0.0"
     js-video-url-parser: "npm:^0.5.1"
   peerDependencies:
     "@udecode/plate-common": ">=40.0.3"

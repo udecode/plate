@@ -2,7 +2,6 @@ import React from 'react';
 
 import { useEditorRef, useEditorSelector } from '@udecode/plate-core/react';
 import { withRef } from '@udecode/react-utils';
-import { focusEditor } from '@udecode/slate-react';
 import { Redo2Icon, Undo2Icon } from 'lucide-react';
 
 import { ToolbarButton } from './toolbar';
@@ -18,11 +17,8 @@ export const RedoToolbarButton = withRef<typeof ToolbarButton>((props, ref) => {
     <ToolbarButton
       ref={ref}
       disabled={disabled}
-      onClick={(e) => {
-        e.preventDefault();
-        editor.redo();
-        focusEditor(editor);
-      }}
+      onClick={() => editor.redo()}
+      onMouseDown={(e) => e.preventDefault()}
       tooltip="Redo"
       {...props}
     >
@@ -42,11 +38,8 @@ export const UndoToolbarButton = withRef<typeof ToolbarButton>((props, ref) => {
     <ToolbarButton
       ref={ref}
       disabled={disabled}
-      onClick={(e) => {
-        e.preventDefault();
-        editor.undo();
-        focusEditor(editor);
-      }}
+      onClick={() => editor.undo()}
+      onMouseDown={(e) => e.preventDefault()}
       tooltip="Undo"
       {...props}
     >

@@ -175,7 +175,9 @@ export const ToolbarSplitButton = React.forwardRef<
       data-pressed={pressed}
       type="single"
     >
-      <div className="flex">{children}</div>
+      <button className="flex" type="button">
+        {children}
+      </button>
     </ToolbarToggleGroup>
   );
 });
@@ -189,7 +191,7 @@ export const ToolbarSplitButtonPrimary = React.forwardRef<
   } & Omit<React.ComponentPropsWithoutRef<typeof ToolbarToggleItem>, 'value'>
 >(({ children, className, size, variant, ...props }, ref) => {
   return (
-    <ToolbarToggleItem
+    <span
       ref={ref}
       className={cn(
         className,
@@ -200,11 +202,10 @@ export const ToolbarSplitButtonPrimary = React.forwardRef<
         'rounded-r-none',
         'group-data-[pressed=true]:bg-accent group-data-[pressed=true]:text-accent-foreground'
       )}
-      value="split-primary"
       {...props}
     >
       {children}
-    </ToolbarToggleItem>
+    </span>
   );
 });
 
@@ -217,7 +218,7 @@ export const ToolbarSplitButtonSecondary = React.forwardRef<
   } & React.ButtonHTMLAttributes<HTMLButtonElement>
 >(({ className, size, variant, ...props }, ref) => {
   return (
-    <button
+    <span
       ref={ref}
       className={cn(
         className,
@@ -228,11 +229,10 @@ export const ToolbarSplitButtonSecondary = React.forwardRef<
         'group-data-[pressed=true]:bg-accent group-data-[pressed=true]:text-accent-foreground'
       )}
       disabled={props.disabled}
-      type="reset"
       {...props}
     >
       <ChevronDown className="size-3.5 text-muted-foreground" data-icon />
-    </button>
+    </span>
   );
 });
 
