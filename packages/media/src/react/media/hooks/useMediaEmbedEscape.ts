@@ -1,16 +1,21 @@
-import { useEditorPlugin, useHotkeys } from '@udecode/plate-common/react';
+import {
+  focusEditor,
+  useEditorPlugin,
+  useHotkeys,
+} from '@udecode/plate-common/react';
 
 import { MediaEmbedPlugin } from '../MediaEmbedPlugin';
 
 export const useMediaEmbedEscape = () => {
-  const { api, useOption } = useEditorPlugin(MediaEmbedPlugin);
+  const { editor, setOptions, useOption } = useEditorPlugin(MediaEmbedPlugin);
 
   const isOpen = useOption('isFloatingOpen');
 
   useHotkeys(
     'escape',
     () => {
-      api.media_embed.hideFloating();
+      setOptions({ isFloatingOpen: false, url: '' });
+      focusEditor(editor);
     },
     {
       enableOnFormTags: ['INPUT'],
