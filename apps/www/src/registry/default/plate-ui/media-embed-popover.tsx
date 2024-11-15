@@ -12,7 +12,6 @@ import {
   MediaEmbedPlugin,
   VideoPlugin,
 } from '@udecode/plate-media/react';
-import { useLastBlockDOMNode } from '@udecode/plate-utils/react';
 import { AudioLinesIcon, FileUpIcon, FilmIcon, ImageIcon } from 'lucide-react';
 
 import { Button } from './button';
@@ -45,19 +44,21 @@ const MEDIA_CONFIG: Record<
   },
 };
 
-export function MediaEmbedPopover({
-  isOpen,
-  mediaType,
-  onOpenChange,
-}: {
+interface MediaEmbedPopoverProps {
+  children: React.ReactNode;
   isOpen: boolean;
   mediaType: string;
   onOpenChange: (open: boolean) => void;
-}) {
+}
+
+export function MediaEmbedPopover({
+  children,
+  isOpen,
+  mediaType,
+  onOpenChange,
+}: MediaEmbedPopoverProps) {
   const { editor } = useEditorPlugin(MediaEmbedPlugin);
   const [url, setUrl] = useState('');
-
-  const anchorElement = useLastBlockDOMNode(editor, { enabled: isOpen });
 
   const embedMedia = useCallback(() => {
     insertImage(editor, url);
@@ -71,11 +72,9 @@ export function MediaEmbedPopover({
     return MEDIA_CONFIG[mediaType];
   }, [mediaType]);
 
-  if (!anchorElement) return null;
-
   return (
     <Popover open={isOpen} onOpenChange={onOpenChange} modal={false}>
-      <PopoverAnchor virtualRef={{ current: anchorElement }} />
+      <PopoverAnchor>{children}</PopoverAnchor>
 
       <PopoverContent className="w-auto p-1" align="center" side="bottom">
         <div className="flex w-[330px] flex-col">

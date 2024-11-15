@@ -88,7 +88,11 @@ export function MediaDropdownMenu({
   const openState = useOpenState();
 
   return (
-    <>
+    <MediaEmbedPopover
+      onOpenChange={setIsPopoverOpen}
+      isOpen={isPopoverOpen}
+      mediaType={nodeType}
+    >
       <DropdownMenu {...openState} modal={false} {...props}>
         <ToolbarSplitButton
           pressed={openState.open}
@@ -134,12 +138,6 @@ export function MediaDropdownMenu({
           </DropdownMenuRadioGroup>
         </DropdownMenuContent>
       </DropdownMenu>
-
-      <MediaEmbedPopover
-        onOpenChange={setIsPopoverOpen}
-        isOpen={isPopoverOpen}
-        mediaType={nodeType}
-      />
-    </>
+    </MediaEmbedPopover>
   );
 }
