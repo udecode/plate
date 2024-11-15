@@ -1,12 +1,14 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 
 import {
   BoldPlugin,
   CodePlugin,
   ItalicPlugin,
   StrikethroughPlugin,
+  SubscriptPlugin,
+  SuperscriptPlugin,
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
 import { useEditorReadOnly } from '@udecode/plate-common/react';
@@ -14,7 +16,9 @@ import {
   FontBackgroundColorPlugin,
   FontColorPlugin,
 } from '@udecode/plate-font/react';
+import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { ListStyleType } from '@udecode/plate-indent-list';
+import { KbdPlugin } from '@udecode/plate-kbd/react';
 import {
   AudioPlugin,
   FilePlugin,
@@ -25,13 +29,24 @@ import {
   BaselineIcon,
   BoldIcon,
   Code2Icon,
+  HighlighterIcon,
   ItalicIcon,
+  KeyboardIcon,
+  MoreHorizontalIcon,
   PaintBucketIcon,
   SparklesIcon,
   StrikethroughIcon,
+  SubscriptIcon,
+  SuperscriptIcon,
   UnderlineIcon,
 } from 'lucide-react';
 
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from './accordion';
 import { AIToolbarButton } from './ai-toolbar-button';
 import { AlignDropdownMenu } from './align-dropdown-menu';
 import { ColorDropdownMenu } from './color-dropdown-menu';
@@ -47,14 +62,34 @@ import { LinkToolbarButton } from './link-toolbar-button';
 import { MarkToolbarButton } from './mark-toolbar-button';
 import { MediaDropdownMenu } from './media-dropdown-menu';
 import { ModeDropdownMenu } from './mode-dropdown-menu';
-import { MoreDropdownMenu } from './more-dropdown-menu';
 import { OutdentToolbarButton } from './outdent-toolbar-button';
 import { TableDropdownMenu } from './table-dropdown-menu';
 import { ToggleToolbarButton } from './toggle-toolbar-button';
-import { ToolbarGroup } from './toolbar';
+import { ToolbarButton, ToolbarGroup } from './toolbar';
 import { TurnIntoDropdownMenu } from './turn-into-dropdown-menu';
 
 export function FixedToolbarButtons() {
+  const [value, setValue] = useState('');
+  const expanded = value === 'toolbar';
+
+  return (
+    <Accordion
+      className="w-full"
+      onValueChange={setValue}
+      type="single"
+      collapsible
+    >
+      <AccordionItem className="border-b-0" value="toolbar">
+        <PrimaryButtons expanded={expanded} />
+        <AccordionContent className="p-0">
+          <ExpandedButtons />
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
+  );
+}
+
+function PrimaryButtons({ expanded }: { expanded: boolean }) {
   const readOnly = useEditorReadOnly();
 
   return (
@@ -128,21 +163,10 @@ export function FixedToolbarButtons() {
 
           <ToolbarGroup>
             <AlignDropdownMenu />
-            <LineHeightDropdownMenu />
 
             <IndentListToolbarButton nodeType={ListStyleType.Disc} />
             <IndentListToolbarButton nodeType={ListStyleType.Decimal} />
             <IndentTodoToolbarButton />
-
-            <OutdentToolbarButton />
-            <IndentToolbarButton />
-          </ToolbarGroup>
-
-          <ToolbarGroup>
-            <MediaDropdownMenu nodeType={ImagePlugin.key} />
-            <MediaDropdownMenu nodeType={VideoPlugin.key} />
-            <MediaDropdownMenu nodeType={AudioPlugin.key} />
-            <MediaDropdownMenu nodeType={FilePlugin.key} />
           </ToolbarGroup>
 
           <ToolbarGroup>
@@ -150,7 +174,11 @@ export function FixedToolbarButtons() {
             <ToggleToolbarButton />
             <TableDropdownMenu />
             <EmojiDropdownMenu />
-            <MoreDropdownMenu />
+          </ToolbarGroup>
+
+          <ToolbarGroup>
+            <MediaDropdownMenu nodeType={ImagePlugin.key} />
+            <MediaDropdownMenu nodeType={VideoPlugin.key} />
           </ToolbarGroup>
         </>
       )}
@@ -160,6 +188,49 @@ export function FixedToolbarButtons() {
       <ToolbarGroup>
         <CommentToolbarButton />
         <ModeDropdownMenu />
+        <AccordionTrigger className="p-0" hideIcon>
+          <ToolbarButton pressed={expanded} tooltip="More">
+            <MoreHorizontalIcon />
+          </ToolbarButton>
+        </AccordionTrigger>
+      </ToolbarGroup>
+    </div>
+  );
+}
+
+function ExpandedButtons() {
+  return (
+    <div className="mt-1 flex w-full">
+      <ToolbarGroup>
+        <LineHeightDropdownMenu />
+        <OutdentToolbarButton />
+        <IndentToolbarButton />
+      </ToolbarGroup>
+
+      <ToolbarGroup>
+        <MediaDropdownMenu nodeType={AudioPlugin.key} />
+        <MediaDropdownMenu nodeType={FilePlugin.key} />
+      </ToolbarGroup>
+
+      <ToolbarGroup>
+        <MarkToolbarButton nodeType={HighlightPlugin.key} tooltip="Highlight">
+          <HighlighterIcon />
+        </MarkToolbarButton>
+
+        <MarkToolbarButton nodeType={KbdPlugin.key} tooltip="Keyboard input">
+          <KeyboardIcon />
+        </MarkToolbarButton>
+
+        <MarkToolbarButton
+          nodeType={SuperscriptPlugin.key}
+          tooltip="Superscript"
+        >
+          <SuperscriptIcon />
+        </MarkToolbarButton>
+
+        <MarkToolbarButton nodeType={SubscriptPlugin.key} tooltip="Subscript">
+          <SubscriptIcon />
+        </MarkToolbarButton>
       </ToolbarGroup>
     </div>
   );
