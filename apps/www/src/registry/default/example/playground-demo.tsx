@@ -28,7 +28,6 @@ import { FixedToolbarPlugin } from '@/registry/default/components/editor/plugins
 import { FloatingToolbarPlugin } from '@/registry/default/components/editor/plugins/floating-toolbar-plugin';
 import { tabbablePlugin } from '@/registry/default/components/editor/plugins/tabbable-plugin';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
-import { MediaPlaceholderElement } from '@/registry/default/plate-ui/media-placeholder-element';
 
 import { usePlaygroundEnabled } from './usePlaygroundEnabled';
 
@@ -60,7 +59,7 @@ export const usePlaygroundEditor = (id: any = '') => {
       },
     }),
     SingleLinePlugin,
-    PlaceholderPlugin.withComponent(MediaPlaceholderElement),
+    PlaceholderPlugin,
     // Testing
     PlaywrightPlugin.configure({
       enabled: process.env.NODE_ENV !== 'production',
