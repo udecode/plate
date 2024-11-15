@@ -10,7 +10,6 @@ import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { ListPlugin, TodoListPlugin } from '@udecode/plate-list/react';
-import { PlaceholderPlugin } from '@udecode/plate-media/react';
 import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { PlaywrightPlugin } from '@udecode/plate-playwright';
 import { TablePlugin } from '@udecode/plate-table/react';
@@ -59,7 +58,6 @@ export const usePlaygroundEditor = (id: any = '') => {
       },
     }),
     SingleLinePlugin,
-    PlaceholderPlugin,
     // Testing
     PlaywrightPlugin.configure({
       enabled: process.env.NODE_ENV !== 'production',

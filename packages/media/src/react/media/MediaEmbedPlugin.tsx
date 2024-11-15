@@ -1,6 +1,6 @@
 import type { ExtendConfig } from '@udecode/plate-common';
 
-import { toTPlatePlugin } from '@udecode/plate-common/react';
+import { focusEditor, toTPlatePlugin } from '@udecode/plate-common/react';
 
 import {
   type BaseMediaEmbedConfig,
@@ -14,16 +14,8 @@ type MediaEmbedConfig = ExtendConfig<
     isFloatingOpen?: boolean;
     mediaType?: string | null;
     url?: string;
-  },
-  {
-    media_embed: MediaEmbedApi;
   }
 >;
-
-export type MediaEmbedApi = {
-  hideFloating: () => void;
-  openFloating: (mediaType: string) => void;
-};
 
 export const MediaEmbedPlugin = toTPlatePlugin<MediaEmbedConfig>(
   BaseMediaEmbedPlugin,
@@ -34,7 +26,7 @@ export const MediaEmbedPlugin = toTPlatePlugin<MediaEmbedConfig>(
       url: '',
     },
   }
-).extendTransforms(({ api, editor, getOptions, setOptions }) => ({
+).extendTransforms(({ editor, getOptions, setOptions }) => ({
   embed: (url: string) => {
     setOptions({ isFloatingOpen: false, url });
 
@@ -44,6 +36,6 @@ export const MediaEmbedPlugin = toTPlatePlugin<MediaEmbedConfig>(
 
     insertImage(editor, url);
 
-    api.media_embed.hideFloating();
+    focusEditor(editor);
   },
 }));

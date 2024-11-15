@@ -6,11 +6,13 @@ import {
   FilePlugin,
   ImagePlugin,
   MediaEmbedPlugin,
+  PlaceholderPlugin,
   VideoPlugin,
 } from '@udecode/plate-media/react';
 
 import { ImagePreview } from '@/registry/default/plate-ui/image-preview';
 import { MediaFloatingToolbar } from '@/registry/default/plate-ui/media-floating-toolbar';
+import { MediaUploadToast } from '@/registry/default/plate-ui/media-upload-toast';
 
 export const mediaPlugins = [
   ImagePlugin.extend({
@@ -27,5 +29,10 @@ export const mediaPlugins = [
   FilePlugin,
   CaptionPlugin.configure({
     options: { plugins: [ImagePlugin, MediaEmbedPlugin] },
+  }),
+  PlaceholderPlugin.configure({
+    render: {
+      afterEditable: () => <MediaUploadToast />,
+    },
   }),
 ] as const;

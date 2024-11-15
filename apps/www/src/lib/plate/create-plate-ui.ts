@@ -45,6 +45,7 @@ import {
   FilePlugin,
   ImagePlugin,
   MediaEmbedPlugin,
+  PlaceholderPlugin,
   VideoPlugin,
 } from '@udecode/plate-media/react';
 import {
