@@ -11,8 +11,8 @@ export const remarkDefaultElementRules: RemarkElementRules = {
     transform: (node, options) => {
       const children = node.children?.length
         ? node.children.flatMap((paragraph) =>
-          remarkTransformElementChildren(paragraph, options)
-        )
+            remarkTransformElementChildren(paragraph, options)
+          )
         : [{ text: '' }];
 
       // Flatten nested blockquotes (e.g. >>>)
@@ -182,16 +182,19 @@ export const remarkDefaultElementRules: RemarkElementRules = {
             children:
               row.children?.map((cell) => {
                 return {
-                  type: options.editor.getType({ key: 'td' }),
-                  children: remarkTransformElementChildren(cell, options).map(child => {
-                    if (!child.type) {
-                      return {
-                        type: options.editor.getType({ key: 'p' }),
-                        children: [child]
+                  children: remarkTransformElementChildren(cell, options).map(
+                    (child) => {
+                      if (!child.type) {
+                        return {
+                          children: [child],
+                          type: options.editor.getType({ key: 'p' }),
+                        };
                       }
+
+                      return child;
                     }
-                    return child
-                  }),
+                  ),
+                  type: options.editor.getType({ key: 'td' }),
                 };
               }) || [],
             type: options.editor.getType({ key: 'tr' }),

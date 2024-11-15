@@ -553,6 +553,7 @@ describe('deserializeMdIndentList', () => {
 
     expect(deserializeMd(editor, input)).toEqual(output);
   });
+
   it('should deserialize a table', () => {
     const input = `
 | Left columns  | Right columns |
@@ -564,89 +565,104 @@ describe('deserializeMdIndentList', () => {
 
     const output = [
       {
-        type: 'table',
         children: [
           {
-            type: 'tr',
             children: [
               {
+                children: [
+                  {
+                    children: [{ text: 'Left columns' }],
+                    type: 'p',
+                  },
+                ],
                 type: 'td',
-                children: [{ 
-                  type: 'p',
-                  children: [{ text: 'Left columns' }],
-                 }],
               },
               {
+                children: [
+                  {
+                    children: [{ text: 'Right columns' }],
+                    type: 'p',
+                  },
+                ],
                 type: 'td',
-                children: [{ 
-                  type: 'p',
-                  children: [{ text: 'Right columns' }],
-                 }],
               },
             ],
+            type: 'tr',
           },
           {
-            type: 'tr',
             children: [
               {
+                children: [
+                  {
+                    children: [{ text: 'left foo' }],
+                    type: 'p',
+                  },
+                ],
                 type: 'td',
-                children: [{
-                  type: 'p',
-                  children: [{ text: 'left foo' }],
-                }],
               },
               {
+                children: [
+                  {
+                    children: [{ text: 'right foo' }],
+                    type: 'p',
+                  },
+                ],
                 type: 'td',
-                children: [{
-                  type: 'p',
-                  children: [{ text: 'right foo' }],
-                }],
               },
             ],
+            type: 'tr',
           },
           {
-            type: 'tr',
             children: [
               {
+                children: [
+                  {
+                    children: [{ text: 'left bar' }],
+                    type: 'p',
+                  },
+                ],
                 type: 'td',
-                children: [{
-                  type: 'p',
-                  children: [{ text: 'left bar' }],
-                }],
               },
               {
+                children: [
+                  {
+                    children: [{ text: 'right bar' }],
+                    type: 'p',
+                  },
+                ],
                 type: 'td',
-                children: [{
-                  type: 'p',
-                  children: [{ text: 'right bar' }],
-                }],
               },
             ],
+            type: 'tr',
           },
           {
-            type: 'tr',
             children: [
               {
+                children: [
+                  {
+                    children: [{ text: 'left baz' }],
+                    type: 'p',
+                  },
+                ],
                 type: 'td',
-                children: [{
-                  type: 'p',
-                  children: [{ text: 'left baz' }],
-                }],
               },
               {
+                children: [
+                  {
+                    children: [{ text: 'right baz' }],
+                    type: 'p',
+                  },
+                ],
                 type: 'td',
-                children: [{
-                  type: 'p',
-                  children: [{ text: 'right baz' }],
-                }],
               },
             ],
+            type: 'tr',
           },
         ],
-      }
-    ]
+        type: 'table',
+      },
+    ];
 
     expect(deserializeMd(editor, input)).toEqual(output);
   });
-
 });
