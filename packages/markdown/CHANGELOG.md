@@ -1,5 +1,11 @@
 # @udecode/plate-md-serializer
 
+## 40.0.5
+
+### Patch Changes
+
+- [`c7a030e31590f558b63685040df55a8d9d6a79bb`](https://github.com/udecode/plate/commit/c7a030e31590f558b63685040df55a8d9d6a79bb) by [@zbeyens](https://github.com/zbeyens) – Support deserializing tables
+
 ## 40.0.4
 
 ### Patch Changes
