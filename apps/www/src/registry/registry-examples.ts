@@ -752,12 +752,6 @@ export const examples: Registry = [
     registryDependencies: [],
     type: 'registry:example',
   },
-  {
-    files: ['example/upload-demo.tsx'],
-    name: 'upload',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
   // {
   //   external: true,
   //   files: ['lib/plate-types.ts'],
