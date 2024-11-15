@@ -13,6 +13,7 @@ import {
   MediaEmbedPlugin,
   VideoPlugin,
 } from '@udecode/plate-media/react';
+import { focusEditor } from '@udecode/slate-react';
 import {
   AudioLinesIcon,
   FileUpIcon,
@@ -30,7 +31,11 @@ import {
   DropdownMenuTrigger,
   useOpenState,
 } from './dropdown-menu';
-import { ToolbarSplitButton } from './toolbar';
+import {
+  ToolbarSplitButton,
+  ToolbarSplitButtonPrimary,
+  ToolbarSplitButtonSecondary,
+} from './toolbar';
 
 const MEDIA_CONFIG: Record<
   string,
@@ -42,22 +47,22 @@ const MEDIA_CONFIG: Record<
 > = {
   [AudioPlugin.key]: {
     accept: ['audio/*'],
-    icon: <AudioLinesIcon />,
+    icon: <AudioLinesIcon className="size-4" />,
     tooltip: 'Audio',
   },
   [FilePlugin.key]: {
     accept: ['*'],
-    icon: <FileUpIcon />,
+    icon: <FileUpIcon className="size-4" />,
     tooltip: 'File',
   },
   [ImagePlugin.key]: {
     accept: ['image/*'],
-    icon: <ImageIcon />,
+    icon: <ImageIcon className="size-4" />,
     tooltip: 'Image',
   },
   [VideoPlugin.key]: {
     accept: ['video/*'],
-    icon: <FilmIcon />,
+    icon: <FilmIcon className="size-4" />,
     tooltip: 'Video',
   },
 };
@@ -69,7 +74,7 @@ export function MediaDropdownMenu({
 }: DropdownMenuProps & { nodeType: string }) {
   const currentConfig = MEDIA_CONFIG[nodeType];
 
-  const { api, editor } = useEditorPlugin(MediaEmbedPlugin);
+  const { api, editor, setOptions } = useEditorPlugin(MediaEmbedPlugin);
   const { openFilePicker } = useFilePicker({
     accept: currentConfig.accept,
     multiple: true,
@@ -82,15 +87,18 @@ export function MediaDropdownMenu({
 
   return (
     <DropdownMenu {...openState} modal={false} {...props}>
-      <DropdownMenuTrigger asChild>
-        <ToolbarSplitButton
-          onMainButtonClick={() => openFilePicker()}
-          pressed={openState.open}
-          tooltip={currentConfig.tooltip}
-        >
+      <ToolbarSplitButton
+        pressed={openState.open}
+        tooltip={currentConfig.tooltip}
+      >
+        <ToolbarSplitButtonPrimary onClick={() => openFilePicker()}>
           {currentConfig.icon}
-        </ToolbarSplitButton>
-      </DropdownMenuTrigger>
+        </ToolbarSplitButtonPrimary>
+
+        <DropdownMenuTrigger asChild>
+          <ToolbarSplitButtonSecondary />
+        </DropdownMenuTrigger>
+      </ToolbarSplitButton>
 
       <DropdownMenuContent
         className={cn('min-w-0 data-[state=closed]:hidden')}
@@ -110,7 +118,9 @@ export function MediaDropdownMenu({
           <DropdownMenuRadioItem
             value="url"
             onSelect={() => {
-              api.media_embed.openFloating(nodeType);
+              // api.media_embed.openFloating(nodeType);
+              focusEditor(editor);
+              setOptions({ isFloatingOpen: true, mediaType: nodeType });
             }}
             hideIcon
           >

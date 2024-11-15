@@ -2,13 +2,7 @@
 
 import React, { useMemo } from 'react';
 
-import { cn } from '@udecode/cn';
-import { useEditorPlugin } from '@udecode/plate-core/react';
-import {
-  type UseVirtualFloatingOptions,
-  flip,
-  offset,
-} from '@udecode/plate-floating';
+import { useEditorPlugin, useEditorSelector } from '@udecode/plate-core/react';
 import {
   AudioPlugin,
   FilePlugin,
@@ -17,23 +11,14 @@ import {
   VideoPlugin,
   useMediaFloatingToolbar,
 } from '@udecode/plate-media/react';
+import { toDOMNode } from '@udecode/slate-react';
+import { getAncestorNode } from '@udecode/slate-utils';
 import { AudioLinesIcon, FileUpIcon, FilmIcon, ImageIcon } from 'lucide-react';
 
 import { Button } from './button';
 import { Input } from './input';
-import { popoverVariants } from './popover';
+import { Popover, PopoverAnchor, PopoverContent } from './popover';
 import { Separator } from './separator';
-
-const floatingOptions: UseVirtualFloatingOptions = {
-  middleware: [
-    offset(12),
-    flip({
-      fallbackPlacements: ['bottom-end', 'top-start', 'top-end'],
-      padding: 12,
-    }),
-  ],
-  placement: 'bottom-start',
-};
 
 const MEDIA_CONFIG: Record<
   string,
@@ -61,9 +46,23 @@ const MEDIA_CONFIG: Record<
 };
 
 export function MediaFloatingToolbar() {
-  const { useOption } = useEditorPlugin(MediaEmbedPlugin);
+  const { setOption, useOption } = useEditorPlugin(MediaEmbedPlugin);
 
   const mediaType = useOption('mediaType');
+  const isOpen = useOption('isFloatingOpen');
+
+  const anchorElement = useEditorSelector(
+    (editor) => {
+      if (!isOpen) return null;
+
+      const enter = getAncestorNode(editor);
+
+      if (!enter) return null;
+
+      return toDOMNode(editor, enter[0]);
+    },
+    [isOpen]
+  );
 
   const mediaConfig = useMemo(() => {
     if (!mediaType) return null;
@@ -71,31 +70,42 @@ export function MediaFloatingToolbar() {
     return MEDIA_CONFIG[mediaType];
   }, [mediaType]);
 
-  const { acceptProps, cancelProps, inputProps, rootProps } =
-    useMediaFloatingToolbar(floatingOptions);
+  const { acceptProps, cancelProps, inputProps } = useMediaFloatingToolbar();
+
+  if (!anchorElement) return null;
 
   return (
-    <div {...rootProps} className={cn(popoverVariants(), 'w-auto p-1')}>
-      <div className="flex w-[330px] flex-col">
-        <div className="flex items-center">
-          <div className="flex items-center pl-2 pr-1">{mediaConfig?.icon}</div>
-          <Input
-            variant="ghost"
-            {...inputProps}
-            placeholder={mediaConfig?.placeholder}
-            h="sm"
-          />
+    <Popover
+      open={isOpen}
+      onOpenChange={(open) => setOption('isFloatingOpen', open)}
+      modal={false}
+    >
+      <PopoverAnchor virtualRef={{ current: anchorElement }} />
+
+      <PopoverContent className="w-auto p-1" align="center" side="bottom">
+        <div className="flex w-[330px] flex-col">
+          <div className="flex items-center">
+            <div className="flex items-center pl-2 pr-1">
+              {mediaConfig?.icon}
+            </div>
+            <Input
+              variant="ghost"
+              {...inputProps}
+              placeholder={mediaConfig?.placeholder}
+              h="sm"
+            />
+          </div>
+          <Separator className="my-1" />
+          <div className="flex items-center justify-end gap-2 pt-2">
+            <Button size="sm" variant="secondary" {...cancelProps}>
+              Cancel
+            </Button>
+            <Button size="sm" variant="default" {...acceptProps}>
+              Accept
+            </Button>
+          </div>
         </div>
-        <Separator className="my-1" />
-        <div className="flex items-center justify-end gap-2 pt-2">
-          <Button size="sm" variant="secondary" {...cancelProps}>
-            Cancel
-          </Button>
-          <Button size="sm" variant="default" {...acceptProps}>
-            Accept
-          </Button>
-        </div>
-      </div>
-    </div>
+      </PopoverContent>
+    </Popover>
   );
 }

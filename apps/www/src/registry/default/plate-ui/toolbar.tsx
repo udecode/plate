@@ -156,105 +156,87 @@ ToolbarButton.displayName = 'ToolbarButton';
 
 export { ToolbarButton };
 
-const ToolbarSplitButton = React.forwardRef<
-  React.ElementRef<typeof ToolbarToggleItem>,
+export const ToolbarSplitButton = React.forwardRef<
+  React.ElementRef<typeof ToolbarToggleGroup>,
   {
     pressed?: boolean;
     tooltip?: string;
-    onMainButtonClick?: () => void;
   } & Omit<
     React.ComponentPropsWithoutRef<typeof ToolbarToggleItem>,
     'asChild' | 'value'
-  > &
-    VariantProps<typeof toolbarButtonVariants>
->(
-  (
-    {
-      children,
-      className,
-      pressed,
-      size,
-      tooltip,
-      variant,
-      onMainButtonClick,
-      ...props
-    },
-    ref
-  ) => {
-    const mainButtonClass = cn(
-      toolbarButtonVariants({
-        size,
-        variant,
-      }),
-      'rounded-r-none',
-      className
-    );
+  >
+>(({ children, pressed, ...props }, ref) => {
+  return (
+    <ToolbarToggleGroup
+      ref={ref}
+      className="group"
+      disabled={props.disabled}
+      value="single"
+      data-pressed={pressed}
+      type="single"
+    >
+      <div className="flex">{children}</div>
+    </ToolbarToggleGroup>
+  );
+});
 
-    const dropdownButtonClass = dropdownArrowVariants({
-      size,
-      variant,
-    });
+export const ToolbarSplitButtonPrimary = React.forwardRef<
+  React.ElementRef<typeof ToolbarToggleItem>,
+  {
+    className?: string;
+    size?: 'default' | 'lg' | 'sm';
+    variant?: 'default' | 'outline';
+  } & Omit<React.ComponentPropsWithoutRef<typeof ToolbarToggleItem>, 'value'>
+>(({ children, className, size, variant, ...props }, ref) => {
+  return (
+    <ToolbarToggleItem
+      ref={ref}
+      className={cn(
+        className,
+        toolbarButtonVariants({
+          size,
+          variant,
+        }),
+        'rounded-r-none',
+        'group-data-[pressed=true]:bg-accent group-data-[pressed=true]:text-accent-foreground'
+      )}
+      value="split-primary"
+      {...props}
+    >
+      {children}
+    </ToolbarToggleItem>
+  );
+});
 
-    const MainButton = withTooltip(
-      React.forwardRef<HTMLButtonElement>((mainProps, mainRef) => (
-        <ToolbarToggleItem
-          {...mainProps}
-          ref={mainRef}
-          className={mainButtonClass}
-          value={pressed ? 'single' : ''}
-          onClick={onMainButtonClick}
-        >
-          <div className="flex flex-1 items-center gap-2 whitespace-nowrap">
-            {children}
-          </div>
-        </ToolbarToggleItem>
-      ))
-    );
+export const ToolbarSplitButtonSecondary = React.forwardRef<
+  HTMLButtonElement,
+  {
+    className?: string;
+    size?: 'default' | 'lg' | 'sm';
+    variant?: 'default' | 'outline';
+  } & React.ButtonHTMLAttributes<HTMLButtonElement>
+>(({ className, size, variant, ...props }, ref) => {
+  return (
+    <button
+      ref={ref}
+      className={cn(
+        className,
+        dropdownArrowVariants({
+          size,
+          variant,
+        }),
+        'group-data-[pressed=true]:bg-accent group-data-[pressed=true]:text-accent-foreground'
+      )}
+      disabled={props.disabled}
+      type="reset"
+      {...props}
+    >
+      <ChevronDown className="size-3.5 text-muted-foreground" data-icon />
+    </button>
+  );
+});
 
-    return typeof pressed === 'boolean' ? (
-      <ToolbarToggleGroup
-        disabled={props.disabled}
-        value="single"
-        type="single"
-      >
-        <div className="flex">
-          <MainButton tooltip={tooltip} />
-
-          <button
-            ref={ref}
-            className={cn(
-              dropdownButtonClass,
-              pressed && 'bg-accent text-accent-foreground'
-            )}
-            disabled={props.disabled}
-            value={pressed ? 'single' : ''}
-            type="reset"
-            {...props}
-          >
-            <ChevronDown className="size-3.5 text-muted-foreground" data-icon />
-          </button>
-        </div>
-      </ToolbarToggleGroup>
-    ) : (
-      <div className="flex">
-        <MainButton tooltip={tooltip} />
-
-        <button
-          ref={ref}
-          {...props}
-          className={dropdownButtonClass}
-          disabled={props.disabled}
-          type="button"
-        >
-          <ChevronDown className="size-2.5 text-muted-foreground" data-icon />
-        </button>
-      </div>
-    );
-  }
-);
 ToolbarSplitButton.displayName = 'ToolbarButton';
-
-export { ToolbarSplitButton };
 
 export const ToolbarToggleItem = withVariants(
   ToolbarPrimitive.ToggleItem,
