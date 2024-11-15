@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate",
-  "version": "40.0.4",
+  "version": "40.0.5",
   "description": "Plate – a plugin system for slate",
   "keywords": [
     "contentEditable",
@@ -83,7 +83,7 @@
     "@udecode/plate-line-height": "40.0.0",
     "@udecode/plate-link": "40.0.0",
     "@udecode/plate-list": "40.0.0",
-    "@udecode/plate-markdown": "40.0.4",
+    "@udecode/plate-markdown": "40.0.5",
     "@udecode/plate-media": "40.0.0",
     "@udecode/plate-mention": "40.0.0",
     "@udecode/plate-node-id": "40.0.0",
