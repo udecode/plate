@@ -1,5 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import { withProps } from '@udecode/cn';
 import { AIPlugin } from '@udecode/plate-ai/react';
 import {
@@ -42,6 +40,7 @@ import {
   TodoListPlugin,
 } from '@udecode/plate-list/react';
 import {
+  AudioPlugin,
   FilePlugin,
   ImagePlugin,
   MediaEmbedPlugin,
@@ -82,6 +81,7 @@ import { ImageElement } from '@/registry/default/plate-ui/image-element';
 import { KbdLeaf } from '@/registry/default/plate-ui/kbd-leaf';
 import { LinkElement } from '@/registry/default/plate-ui/link-element';
 import { ListElement } from '@/registry/default/plate-ui/list-element';
+import { MediaAudioElement } from '@/registry/default/plate-ui/media-audio-element';
 import { MediaEmbedElement } from '@/registry/default/plate-ui/media-embed-element';
 import { MediaFileElement } from '@/registry/default/plate-ui/media-file-element';
 import { MediaPlaceholderElement } from '@/registry/default/plate-ui/media-placeholder-element';
@@ -109,6 +109,7 @@ export const createPlateUI = ({
 }: { draggable?: boolean; placeholder?: boolean } = {}) => {
   let components: Record<string, NodeComponent> = {
     [AIPlugin.key]: AILeaf,
+    [AudioPlugin.key]: MediaAudioElement,
     [BlockquotePlugin.key]: BlockquoteElement,
     [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),
     [BulletedListPlugin.key]: withProps(ListElement, { variant: 'ul' }),

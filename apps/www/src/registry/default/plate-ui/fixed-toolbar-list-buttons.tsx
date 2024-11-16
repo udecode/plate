@@ -46,9 +46,7 @@ import { LinkToolbarButton } from './link-toolbar-button';
 import { ListIndentToolbarButton } from './list-indent-toolbar-button';
 import { ListToolbarButton } from './list-toolbar-button';
 import { MarkToolbarButton } from './mark-toolbar-button';
-import { MediaDropdownMenu } from './media-dropdown-menu';
-
-// import { MediaToolbarButton } from './media-toolbar-button';
+import { MediaToolbarButton } from './media-toolbar-button';
 import { ModeDropdownMenu } from './mode-dropdown-menu';
 import { MoreDropdownMenu } from './more-dropdown-menu';
 import { TableDropdownMenu } from './table-dropdown-menu';
@@ -135,10 +133,10 @@ export function FixedToolbarListButtons() {
           </ToolbarGroup>
 
           <ToolbarGroup>
-            <MediaDropdownMenu nodeType={ImagePlugin.key} />
-            <MediaDropdownMenu nodeType={VideoPlugin.key} />
-            <MediaDropdownMenu nodeType={AudioPlugin.key} />
-            <MediaDropdownMenu nodeType={FilePlugin.key} />
+            <MediaToolbarButton nodeType={ImagePlugin.key} />
+            <MediaToolbarButton nodeType={VideoPlugin.key} />
+            <MediaToolbarButton nodeType={AudioPlugin.key} />
+            <MediaToolbarButton nodeType={FilePlugin.key} />
           </ToolbarGroup>
 
           <ToolbarGroup>

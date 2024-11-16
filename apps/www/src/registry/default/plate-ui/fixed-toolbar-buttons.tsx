@@ -32,7 +32,6 @@ import {
   HighlighterIcon,
   ItalicIcon,
   KeyboardIcon,
-  MoreHorizontalIcon,
   PaintBucketIcon,
   SparklesIcon,
   StrikethroughIcon,
@@ -60,12 +59,13 @@ import { InsertDropdownMenu } from './insert-dropdown-menu';
 import { LineHeightDropdownMenu } from './line-height-dropdown-menu';
 import { LinkToolbarButton } from './link-toolbar-button';
 import { MarkToolbarButton } from './mark-toolbar-button';
-import { MediaDropdownMenu } from './media-dropdown-menu';
+import { MediaToolbarButton } from './media-toolbar-button';
 import { ModeDropdownMenu } from './mode-dropdown-menu';
+import { MoreToolbarButton } from './more-toolbar-button';
 import { OutdentToolbarButton } from './outdent-toolbar-button';
 import { TableDropdownMenu } from './table-dropdown-menu';
 import { ToggleToolbarButton } from './toggle-toolbar-button';
-import { ToolbarButton, ToolbarGroup } from './toolbar';
+import { ToolbarGroup } from './toolbar';
 import { TurnIntoDropdownMenu } from './turn-into-dropdown-menu';
 
 export function FixedToolbarButtons() {
@@ -177,8 +177,8 @@ function PrimaryButtons({ expanded }: { expanded: boolean }) {
           </ToolbarGroup>
 
           <ToolbarGroup>
-            <MediaDropdownMenu nodeType={ImagePlugin.key} />
-            <MediaDropdownMenu nodeType={VideoPlugin.key} />
+            <MediaToolbarButton nodeType={ImagePlugin.key} />
+            <MediaToolbarButton nodeType={VideoPlugin.key} />
           </ToolbarGroup>
         </>
       )}
@@ -189,9 +189,7 @@ function PrimaryButtons({ expanded }: { expanded: boolean }) {
         <CommentToolbarButton />
         <ModeDropdownMenu />
         <AccordionTrigger className="p-0" hideIcon>
-          <ToolbarButton pressed={expanded} tooltip="More">
-            <MoreHorizontalIcon />
-          </ToolbarButton>
+          <MoreToolbarButton pressed={expanded} tooltip="More" />
         </AccordionTrigger>
       </ToolbarGroup>
     </div>
@@ -208,8 +206,8 @@ function ExpandedButtons() {
       </ToolbarGroup>
 
       <ToolbarGroup>
-        <MediaDropdownMenu nodeType={AudioPlugin.key} />
-        <MediaDropdownMenu nodeType={FilePlugin.key} />
+        <MediaToolbarButton nodeType={AudioPlugin.key} />
+        <MediaToolbarButton nodeType={FilePlugin.key} />
       </ToolbarGroup>
 
       <ToolbarGroup>

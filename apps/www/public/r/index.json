@@ -2332,11 +2332,11 @@
     },
     "files": [
       {
-        "path": "plate-ui/media-dropdown-menu.tsx",
+        "path": "plate-ui/media-toolbar-button.tsx",
         "type": "registry:ui"
       }
     ],
-    "name": "media-dropdown-menu",
+    "name": "media-toolbar-button",
     "registryDependencies": [
       "toolbar"
     ],

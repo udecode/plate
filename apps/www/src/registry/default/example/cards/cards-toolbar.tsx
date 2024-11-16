@@ -39,7 +39,7 @@ import { InsertDropdownMenu } from '@/registry/default/plate-ui/insert-dropdown-
 import { LineHeightDropdownMenu } from '@/registry/default/plate-ui/line-height-dropdown-menu';
 import { LinkToolbarButton } from '@/registry/default/plate-ui/link-toolbar-button';
 import { MarkToolbarButton } from '@/registry/default/plate-ui/mark-toolbar-button';
-import { MediaDropdownMenu } from '@/registry/default/plate-ui/media-dropdown-menu';
+import { MediaToolbarButton } from '@/registry/default/plate-ui/media-toolbar-button';
 import { ModeDropdownMenu } from '@/registry/default/plate-ui/mode-dropdown-menu';
 import { MoreDropdownMenu } from '@/registry/default/plate-ui/more-dropdown-menu';
 import { OutdentToolbarButton } from '@/registry/default/plate-ui/outdent-toolbar-button';
@@ -119,10 +119,10 @@ export function CardsToolbar() {
           </ToolbarGroup>
 
           <ToolbarGroup>
-            <MediaDropdownMenu nodeType={ImagePlugin.key} />
-            <MediaDropdownMenu nodeType={VideoPlugin.key} />
-            <MediaDropdownMenu nodeType={AudioPlugin.key} />
-            <MediaDropdownMenu nodeType={FilePlugin.key} />
+            <MediaToolbarButton nodeType={ImagePlugin.key} />
+            <MediaToolbarButton nodeType={VideoPlugin.key} />
+            <MediaToolbarButton nodeType={AudioPlugin.key} />
+            <MediaToolbarButton nodeType={FilePlugin.key} />
           </ToolbarGroup>
 
           <ToolbarGroup>

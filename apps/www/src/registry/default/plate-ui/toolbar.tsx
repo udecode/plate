@@ -182,32 +182,34 @@ export const ToolbarSplitButton = React.forwardRef<
   );
 });
 
-export const ToolbarSplitButtonPrimary = React.forwardRef<
-  React.ElementRef<typeof ToolbarToggleItem>,
-  {
-    className?: string;
-    size?: 'default' | 'lg' | 'sm';
-    variant?: 'default' | 'outline';
-  } & Omit<React.ComponentPropsWithoutRef<typeof ToolbarToggleItem>, 'value'>
->(({ children, className, size, variant, ...props }, ref) => {
-  return (
-    <span
-      ref={ref}
-      className={cn(
-        className,
-        toolbarButtonVariants({
-          size,
-          variant,
-        }),
-        'rounded-r-none',
-        'group-data-[pressed=true]:bg-accent group-data-[pressed=true]:text-accent-foreground'
-      )}
-      {...props}
-    >
-      {children}
-    </span>
-  );
-});
+export const ToolbarSplitButtonPrimary = withTooltip(
+  React.forwardRef<
+    React.ElementRef<typeof ToolbarToggleItem>,
+    {
+      className?: string;
+      size?: 'default' | 'lg' | 'sm';
+      variant?: 'default' | 'outline';
+    } & Omit<React.ComponentPropsWithoutRef<typeof ToolbarToggleItem>, 'value'>
+  >(({ children, className, size, variant, ...props }, ref) => {
+    return (
+      <span
+        ref={ref}
+        className={cn(
+          className,
+          toolbarButtonVariants({
+            size,
+            variant,
+          }),
+          'rounded-r-none',
+          'group-data-[pressed=true]:bg-accent group-data-[pressed=true]:text-accent-foreground'
+        )}
+        {...props}
+      >
+        {children}
+      </span>
+    );
+  })
+);
 
 export const ToolbarSplitButtonSecondary = React.forwardRef<
   HTMLButtonElement,
