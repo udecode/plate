@@ -82,11 +82,7 @@ export const Draggable = withHOC(
                   'pointer-events-auto mr-1 flex items-center'
                 )}
               >
-                <div
-                  ref={handleRef}
-                  className="size-4"
-                  data-key={mounted ? (element.id as string) : undefined}
-                >
+                <div ref={handleRef} className="size-4">
                   <DragHandle />
                 </div>
               </div>

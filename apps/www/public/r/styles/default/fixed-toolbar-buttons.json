@@ -8,7 +8,7 @@
   "doc": {
     "description": "A set of commonly used formatting buttons.",
     "examples": [
-      "toolbar-demo"
+      "basic-nodes-demo"
     ]
   },
   "files": [

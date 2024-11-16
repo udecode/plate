@@ -18,13 +18,10 @@ import { settingsStore } from '@/components/context/settings-store';
 import { createPlateUI } from '@/plate/create-plate-ui';
 import { isEnabled } from '@/plate/demo/is-enabled';
 import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
-import { autoformatPlugin as autoformatListPlugin } from '@/registry/default/components/editor/plugins/autoformat-list-plugin';
-import { autoformatPlugin } from '@/registry/default/components/editor/plugins/autoformat-plugin';
+import { autoformatListPlugin } from '@/registry/default/components/editor/plugins/autoformat-list-plugin';
 import { copilotPlugins } from '@/registry/default/components/editor/plugins/copilot-plugins';
 import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';
 import { FixedToolbarListPlugin } from '@/registry/default/components/editor/plugins/fixed-toolbar-list-plugin';
-import { FixedToolbarPlugin } from '@/registry/default/components/editor/plugins/fixed-toolbar-plugin';
-import { FloatingToolbarPlugin } from '@/registry/default/components/editor/plugins/floating-toolbar-plugin';
 import { tabbablePlugin } from '@/registry/default/components/editor/plugins/tabbable-plugin';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 
@@ -40,17 +37,21 @@ export const usePlaygroundEditor = (id: any = '') => {
   const plugins: any[] = [
     ...copilotPlugins,
     ...editorPlugins,
-    id === 'list' ? FixedToolbarListPlugin : FixedToolbarPlugin,
-    FloatingToolbarPlugin,
+    ...(id === 'list'
+      ? [
+          ListPlugin,
+          TodoListPlugin,
+          FixedToolbarListPlugin,
+          autoformatListPlugin,
+        ]
+      : []),
 
-    id === 'list' ? autoformatListPlugin : autoformatPlugin,
     TablePlugin.configure({
       options: {
         enableMerging: id === 'tableMerge',
       },
     }),
-    ListPlugin,
-    TodoListPlugin,
+
     ExcalidrawPlugin,
     NormalizeTypesPlugin.configure({
       options: {

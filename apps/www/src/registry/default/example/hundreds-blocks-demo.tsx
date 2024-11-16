@@ -17,7 +17,7 @@ import {
 } from 'slate-react';
 
 import { PlateUI } from '@/plate/demo/plate-ui';
-import { createHugeDocumentValue } from '@/plate/demo/values/createHugeDocumentValue';
+import { createHugeDocumentValue } from '@/registry/default/example/values/huge-document-value';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 
 const value = createHugeDocumentValue();

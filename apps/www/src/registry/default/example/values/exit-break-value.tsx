@@ -2,7 +2,7 @@
 /** @jsx jsx */
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createTable } from './tableValue';
+import { createTable } from './table-value';
 
 jsx;
 

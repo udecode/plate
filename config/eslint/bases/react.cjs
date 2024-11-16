@@ -102,7 +102,7 @@ module.exports = {
       },
     },
     {
-      files: [...filePatterns.test, '**/demo/**'],
+      files: [...filePatterns.test, '**/values/**'],
       rules: {
         'react/no-unknown-property': 'off',
       },

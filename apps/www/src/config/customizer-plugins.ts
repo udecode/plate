@@ -45,49 +45,52 @@ import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
-import { aiValue } from '@/lib/plate/demo/values/aiValue';
-import { blockMenuValue } from '@/lib/plate/demo/values/blockMenuValue';
-import { blockSelectionValue } from '@/lib/plate/demo/values/blockSelectionValue';
-import { columnValue } from '@/lib/plate/demo/values/columnValue';
-import { copilotValue } from '@/lib/plate/demo/values/copilotValue';
-import { slashCommandValue } from '@/lib/plate/demo/values/slashCommandValue';
-import { tocValue } from '@/lib/plate/demo/values/tocValue';
-import { alignValue } from '@/plate/demo/values/alignValue';
-import { autoformatValue } from '@/plate/demo/values/autoformatValue';
-import { basicElementsValue } from '@/plate/demo/values/basicElementsValue';
-import { basicMarksValue } from '@/plate/demo/values/basicMarksValue';
-import { commentsValue } from '@/plate/demo/values/commentsValue';
-import { cursorOverlayValue } from '@/plate/demo/values/cursorOverlayValue';
-import { dateValue } from '@/plate/demo/values/dateValue';
-import { deserializeCsvValue } from '@/plate/demo/values/deserializeCsvValue';
-import { deserializeDocxValue } from '@/plate/demo/values/deserializeDocxValue';
-import { deserializeHtmlValue } from '@/plate/demo/values/deserializeHtmlValue';
-import { deserializeMdValue } from '@/plate/demo/values/deserializeMdValue';
-import { emojiValue } from '@/plate/demo/values/emojiValue';
-import { excalidrawValue } from '@/plate/demo/values/excalidrawValue';
+import { FixedToolbarPlugin } from '@/registry/default/components/editor/plugins/fixed-toolbar-plugin';
+import { FloatingToolbarPlugin } from '@/registry/default/components/editor/plugins/floating-toolbar-plugin';
+import { aiValue } from '@/registry/default/example/values/ai-value';
+import { alignValue } from '@/registry/default/example/values/align-value';
+import { autoformatValue } from '@/registry/default/example/values/autoformat-value';
+import { basicElementsValue } from '@/registry/default/example/values/basic-elements-value';
+import { basicMarksValue } from '@/registry/default/example/values/basic-marks-value';
+import { blockMenuValue } from '@/registry/default/example/values/block-menu-value';
+import { blockSelectionValue } from '@/registry/default/example/values/block-selection-value';
+import { columnValue } from '@/registry/default/example/values/column-value';
+import { commentsValue } from '@/registry/default/example/values/comments-value';
+import { copilotValue } from '@/registry/default/example/values/copilot-value';
+import { cursorOverlayValue } from '@/registry/default/example/values/cursor-overlay-value';
+import { dateValue } from '@/registry/default/example/values/date-value';
+import { deserializeCsvValue } from '@/registry/default/example/values/deserialize-csv-value';
+import { deserializeDocxValue } from '@/registry/default/example/values/deserialize-docx-value';
+import { deserializeHtmlValue } from '@/registry/default/example/values/deserialize-html-value';
+import { deserializeMdValue } from '@/registry/default/example/values/deserialize-md-value';
+import { emojiValue } from '@/registry/default/example/values/emoji-value';
+import { excalidrawValue } from '@/registry/default/example/values/excalidraw-value';
 import {
   exitBreakValue,
   trailingBlockValue,
-} from '@/plate/demo/values/exitBreakValue';
-import { fontValue } from '@/plate/demo/values/fontValue';
-import { highlightValue } from '@/plate/demo/values/highlightValue';
-import { horizontalRuleValue } from '@/plate/demo/values/horizontalRuleValue';
-import { indentListValue } from '@/plate/demo/values/indentListValue';
-import { indentValue } from '@/plate/demo/values/indentValue';
-import { kbdValue } from '@/plate/demo/values/kbdValue';
-import { lineHeightValue } from '@/plate/demo/values/lineHeightValue';
-import { linkValue } from '@/plate/demo/values/linkValue';
-import { listValue, todoListValue } from '@/plate/demo/values/listValue';
-import { mediaValue } from '@/plate/demo/values/mediaValue';
-import { mentionValue } from '@/plate/demo/values/mentionValue';
-import { placeholderValue } from '@/plate/demo/values/placeholderValue';
-import { singleLineValue } from '@/plate/demo/values/singleLineValue';
-import { softBreakValue } from '@/plate/demo/values/softBreakValue';
-import { tabbableValue } from '@/plate/demo/values/tabbableValue';
-import { tableValue } from '@/plate/demo/values/tableValue';
-import { toggleValue } from '@/plate/demo/values/toggleValue';
-import { FixedToolbarPlugin } from '@/registry/default/components/editor/plugins/fixed-toolbar-plugin';
-import { FloatingToolbarPlugin } from '@/registry/default/components/editor/plugins/floating-toolbar-plugin';
+} from '@/registry/default/example/values/exit-break-value';
+import { fontValue } from '@/registry/default/example/values/font-value';
+import { highlightValue } from '@/registry/default/example/values/highlight-value';
+import { horizontalRuleValue } from '@/registry/default/example/values/horizontal-rule-value';
+import { indentListValue } from '@/registry/default/example/values/indent-list-value';
+import { indentValue } from '@/registry/default/example/values/indent-value';
+import { kbdValue } from '@/registry/default/example/values/kbd-value';
+import { lineHeightValue } from '@/registry/default/example/values/line-height-value';
+import { linkValue } from '@/registry/default/example/values/link-value';
+import {
+  listValue,
+  todoListValue,
+} from '@/registry/default/example/values/list-value';
+import { mediaValue } from '@/registry/default/example/values/media-value';
+import { mentionValue } from '@/registry/default/example/values/mention-value';
+import { placeholderValue } from '@/registry/default/example/values/placeholder-value';
+import { singleLineValue } from '@/registry/default/example/values/single-line-value';
+import { slashCommandValue } from '@/registry/default/example/values/slash-command-value';
+import { softBreakValue } from '@/registry/default/example/values/soft-break-value';
+import { tabbableValue } from '@/registry/default/example/values/tabbable-value';
+import { tableValue } from '@/registry/default/example/values/table-value';
+import { tocValue } from '@/registry/default/example/values/toc-value';
+import { toggleValue } from '@/registry/default/example/values/toggle-value';
 
 export type ValueId = keyof typeof customizerPlugins | 'tableMerge';
 

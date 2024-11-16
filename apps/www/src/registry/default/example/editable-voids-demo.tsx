@@ -15,11 +15,11 @@ import {
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { PlateUI } from '@/plate/demo/plate-ui';
-import { editableVoidsValue } from '@/plate/demo/values/editableVoidsValue';
 import { basicNodesPlugins } from '@/registry/default/components/editor/plugins/basic-nodes-plugins';
 import { exitBreakPlugin } from '@/registry/default/components/editor/plugins/exit-break-plugin';
 import { resetBlockTypePlugin } from '@/registry/default/components/editor/plugins/reset-block-type-plugin';
 import { softBreakPlugin } from '@/registry/default/components/editor/plugins/soft-break-plugin';
+import { editableVoidsValue } from '@/registry/default/example/values/editable-voids-value';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 import { Input } from '@/registry/default/plate-ui/input';
 

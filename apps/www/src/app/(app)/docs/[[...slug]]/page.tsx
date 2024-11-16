@@ -8,6 +8,7 @@ import { DocContent } from '@/app/(app)/docs/[[...slug]]/doc-content';
 import { ComponentInstallation } from '@/components/component-installation';
 import { ComponentPreview } from '@/components/component-preview';
 import { Mdx } from '@/components/mdx-components';
+import { pluginsNavItems } from '@/config/docs';
 import { siteConfig } from '@/config/site';
 import { getRegistryTitle } from '@/lib/registry-utils';
 import {
@@ -88,8 +89,11 @@ export function generateStaticParams() {
 export default async function DocPage(props: DocPageProps) {
   const params = await props.params;
   const name = params.slug?.[0];
+  const currentPath = '/docs/' + (params.slug?.join('/') || '');
 
   const isUI = name === 'components';
+  const isExample = name === 'examples';
+  const isPlugin = pluginsNavItems.some((plugin) => plugin.href === currentPath);
 
   const doc = getDocFromParams({ params });
 
@@ -131,6 +135,8 @@ export default async function DocPage(props: DocPageProps) {
 
     return (
       <DocContent
+        isExample={isExample}
+        isPlugin={isPlugin}
         isUI={isUI}
         {...file}
         doc={{
@@ -162,7 +168,13 @@ export default async function DocPage(props: DocPageProps) {
   const toc = await getTableOfContents(doc.body.raw);
 
   return (
-    <DocContent doc={doc} isUI={isUI} toc={toc}>
+    <DocContent
+      doc={doc}
+      isExample={isExample}
+      isPlugin={isPlugin}
+      isUI={isUI}
+      toc={toc}
+    >
       <Mdx code={doc.body.code} packageInfo={packageInfo} />
     </DocContent>
   );
@@ -179,7 +191,7 @@ function getRegistryDocs({
   files: { name: string }[];
   registryNames: Set<string>;
 }) {
-  const usedBy = registry.filter(
+  const usedBy = ui.filter(
     (item) =>
       item.doc &&
       Array.isArray(item.doc.examples) &&
@@ -194,7 +206,7 @@ function getRegistryDocs({
           !!fileName && registryNames.has(fileName) && fileName !== docName
       )
       .map((fileName) => {
-        const uiItem = registry.find((item) => item.name === fileName);
+        const uiItem = ui.find((item) => item.name === fileName);
 
         if (!uiItem) return null;
 

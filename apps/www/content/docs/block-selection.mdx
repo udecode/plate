@@ -3,7 +3,7 @@ title: Block Selection
 description: Select and manipulate entire text blocks.
 ---
 
-<ComponentPreview name="playground-demo" id="block-selection" />
+<ComponentPreview name="demo" id="block-selection" />
 
 <PackageInfo>
 
@@ -79,10 +79,9 @@ Default configuration:
 BlockSelectionPlugin.configure({
   options: {
     areaOptions: {
-    boundaries: `#${editor.uid}`,
-    container: `#${editor.uid}`,
-    selectables: `#${editor.uid} .slate-selectable`,
-      },
+      boundaries: `#${editor.uid}`,
+      container: `#${editor.uid}`,
+      selectables: `#${editor.uid} .slate-selectable`,
     },
   },
 });

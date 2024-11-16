@@ -14,7 +14,7 @@ import { type TRenderLeafProps, Plate , usePlateEditor } from "@udecode/plate-co
 import Prism from 'prismjs';
 
 import { PlateUI } from '@/plate/demo/plate-ui';
-import { previewMdValue } from '@/plate/demo/values/previewMdValue';
+import { previewMdValue } from '@/registry/default/example/values/preview-md-value';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 
 import 'prismjs/components/prism-markdown.js';

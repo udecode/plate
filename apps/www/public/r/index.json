@@ -264,7 +264,7 @@
         }
       ],
       "examples": [
-        "comment-demo",
+        "comments-demo",
         "comments-pro"
       ]
     },
@@ -1466,7 +1466,7 @@
         }
       ],
       "examples": [
-        "comment-demo",
+        "comments-demo",
         "floating-toolbar-demo",
         "comments-pro"
       ]
@@ -1498,7 +1498,7 @@
         }
       ],
       "examples": [
-        "comment-demo",
+        "comments-demo",
         "comments-pro"
       ]
     },
@@ -1721,7 +1721,7 @@
     "doc": {
       "description": "A set of commonly used formatting buttons.",
       "examples": [
-        "toolbar-demo"
+        "basic-nodes-demo"
       ]
     },
     "files": [
@@ -1795,7 +1795,7 @@
     "doc": {
       "description": "A fixed toolbar that stays at the top of the editor.",
       "examples": [
-        "toolbar-demo"
+        "basic-nodes-demo"
       ]
     },
     "files": [
@@ -2349,7 +2349,7 @@
     "doc": {
       "description": "A menu for switching between editor modes.",
       "examples": [
-        "mode-demo"
+        "basic-nodes-demo"
       ]
     },
     "files": [

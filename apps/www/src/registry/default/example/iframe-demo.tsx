@@ -8,7 +8,7 @@ import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
 import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 
 import { PlateUI } from '@/plate/demo/plate-ui';
-import { iframeValue } from '@/plate/demo/values/iframeValue';
+import { iframeValue } from '@/registry/default/example/values/iframe-value';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 
 import { EditableVoidPlugin } from './editable-voids-demo';

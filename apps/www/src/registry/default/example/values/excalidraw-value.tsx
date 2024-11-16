@@ -1,3 +1,9 @@
+/** @jsxRuntime classic */
+/** @jsx jsx */
+import { jsx } from '@udecode/plate-test-utils';
+
+jsx;
+
 import type { TNodeProps } from '@udecode/plate-common';
 import type { TExcalidrawElement } from '@udecode/plate-excalidraw';
 
@@ -50,3 +56,16 @@ export const excalidrawInitialData: TNodeProps<TExcalidrawElement> = {
     state: { currentItemFontFamily: 1, viewBackgroundColor: '#AFEEEE' },
   },
 };
+
+export const excalidrawValue: any = (
+  <fragment>
+    <hh2>Excalidraw</hh2>
+    <hp>
+      Unleash your creativity with the Excalidraw plugin, which enables you to
+      embed and draw diagrams directly within your editor.
+    </hp>
+    <hexcalidraw {...excalidrawInitialData} width="50%">
+      <htext />
+    </hexcalidraw>
+  </fragment>
+);

@@ -24,6 +24,9 @@ import { SlashPlugin } from '@udecode/plate-slash-command/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
+import { FixedToolbarPlugin } from '@/registry/default/components/editor/plugins/fixed-toolbar-plugin';
+import { FloatingToolbarPlugin } from '@/registry/default/components/editor/plugins/floating-toolbar-plugin';
+
 import { aiPlugins } from './ai-plugins';
 import { alignPlugin } from './align-plugin';
 import { autoformatPlugin } from './autoformat-plugin';
@@ -44,17 +47,12 @@ import { softBreakPlugin } from './soft-break-plugin';
 import { tablePlugin } from './table-plugin';
 import { tocPlugin } from './toc-plugin';
 
-export const editorPlugins = [
-  // AI
-  ...aiPlugins,
-
-  // Nodes
+export const viewPlugins = [
   ...basicNodesPlugins,
   HorizontalRulePlugin,
   linkPlugin,
   DatePlugin,
   mentionPlugin,
-  SlashPlugin,
   tablePlugin,
   TogglePlugin,
   tocPlugin,
@@ -76,7 +74,19 @@ export const editorPlugins = [
   ...indentListPlugins,
   lineHeightPlugin,
 
+  // Collaboration
+  commentsPlugin,
+] as const;
+
+export const editorPlugins = [
+  // AI
+  ...aiPlugins,
+
+  // Nodes
+  ...viewPlugins,
+
   // Functionality
+  SlashPlugin,
   autoformatPlugin,
   cursorOverlayPlugin,
   ...blockMenuPlugins,
@@ -88,11 +98,12 @@ export const editorPlugins = [
   softBreakPlugin,
   TrailingBlockPlugin.configure({ options: { type: ParagraphPlugin.key } }),
 
-  // Collaboration
-  commentsPlugin,
-
   // Deserialization
   DocxPlugin,
   MarkdownPlugin.configure({ options: { indentList: true } }),
   JuicePlugin,
+
+  // UI
+  FixedToolbarPlugin,
+  FloatingToolbarPlugin,
 ];

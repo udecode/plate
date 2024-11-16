@@ -4,42 +4,50 @@ import type { Value } from '@udecode/slate';
 
 import { settingsStore } from '@/components/context/settings-store';
 import { type ValueId, customizerPlugins } from '@/config/customizer-plugins';
-
-import { aiValue } from './aiValue';
-import { alignValue } from './alignValue';
-import { autoformatValue } from './autoformatValue';
-import { basicElementsValue } from './basicElementsValue';
-import { basicMarksValue } from './basicMarksValue';
-import { blockMenuValue } from './blockMenuValue';
-import { blockSelectionValue } from './blockSelectionValue';
-import { columnValue } from './columnValue';
-import { commentsValue } from './commentsValue';
-import { copilotValue } from './copilotValue';
-import { cursorOverlayValue } from './cursorOverlayValue';
-import { dateValue } from './dateValue';
-import { deserializeCsvValue } from './deserializeCsvValue';
-import { deserializeDocxValue } from './deserializeDocxValue';
-import { deserializeHtmlValue } from './deserializeHtmlValue';
-import { deserializeMdValue } from './deserializeMdValue';
-import { emojiValue } from './emojiValue';
-import { exitBreakValue, trailingBlockValue } from './exitBreakValue';
-import { fontValue } from './fontValue';
-import { highlightValue } from './highlightValue';
-import { horizontalRuleValue } from './horizontalRuleValue';
-import { indentListValue } from './indentListValue';
-import { indentValue } from './indentValue';
-import { kbdValue } from './kbdValue';
-import { lineHeightValue } from './lineHeightValue';
-import { linkValue } from './linkValue';
-import { listValue, todoListValue } from './listValue';
-import { mediaValue } from './mediaValue';
-import { mentionValue } from './mentionValue';
-import { slashCommandValue } from './slashCommandValue';
-import { softBreakValue } from './softBreakValue';
-import { tabbableValue } from './tabbableValue';
-import { tableMergeValue, tableValue } from './tableValue';
-import { tocPlaygroundValue } from './tocValue';
-import { toggleValue } from './toggleValue';
+import { aiValue } from '@/registry/default/example/values/ai-value';
+import { alignValue } from '@/registry/default/example/values/align-value';
+import { autoformatValue } from '@/registry/default/example/values/autoformat-value';
+import { basicElementsValue } from '@/registry/default/example/values/basic-elements-value';
+import { basicMarksValue } from '@/registry/default/example/values/basic-marks-value';
+import { blockMenuValue } from '@/registry/default/example/values/block-menu-value';
+import { blockSelectionValue } from '@/registry/default/example/values/block-selection-value';
+import { columnValue } from '@/registry/default/example/values/column-value';
+import { commentsValue } from '@/registry/default/example/values/comments-value';
+import { copilotValue } from '@/registry/default/example/values/copilot-value';
+import { cursorOverlayValue } from '@/registry/default/example/values/cursor-overlay-value';
+import { dateValue } from '@/registry/default/example/values/date-value';
+import { deserializeCsvValue } from '@/registry/default/example/values/deserialize-csv-value';
+import { deserializeDocxValue } from '@/registry/default/example/values/deserialize-docx-value';
+import { deserializeHtmlValue } from '@/registry/default/example/values/deserialize-html-value';
+import { deserializeMdValue } from '@/registry/default/example/values/deserialize-md-value';
+import { emojiValue } from '@/registry/default/example/values/emoji-value';
+import {
+  exitBreakValue,
+  trailingBlockValue,
+} from '@/registry/default/example/values/exit-break-value';
+import { fontValue } from '@/registry/default/example/values/font-value';
+import { highlightValue } from '@/registry/default/example/values/highlight-value';
+import { horizontalRuleValue } from '@/registry/default/example/values/horizontal-rule-value';
+import { indentListValue } from '@/registry/default/example/values/indent-list-value';
+import { indentValue } from '@/registry/default/example/values/indent-value';
+import { kbdValue } from '@/registry/default/example/values/kbd-value';
+import { lineHeightValue } from '@/registry/default/example/values/line-height-value';
+import { linkValue } from '@/registry/default/example/values/link-value';
+import {
+  listValue,
+  todoListValue,
+} from '@/registry/default/example/values/list-value';
+import { mediaValue } from '@/registry/default/example/values/media-value';
+import { mentionValue } from '@/registry/default/example/values/mention-value';
+import { slashCommandValue } from '@/registry/default/example/values/slash-command-value';
+import { softBreakValue } from '@/registry/default/example/values/soft-break-value';
+import { tabbableValue } from '@/registry/default/example/values/tabbable-value';
+import {
+  tableMergeValue,
+  tableValue,
+} from '@/registry/default/example/values/table-value';
+import { tocPlaygroundValue } from '@/registry/default/example/values/toc-value';
+import { toggleValue } from '@/registry/default/example/values/toggle-value';
 
 export const usePlaygroundValue = (id?: ValueId): Value => {
   let valueId = settingsStore.use.valueId();

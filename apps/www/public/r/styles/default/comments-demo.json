@@ -1,0 +1,34 @@
+{
+  "doc": {
+    "description": "Adding and displaying comments within content.",
+    "docs": [
+      {
+        "route": "/docs/comments",
+        "title": "Comments"
+      }
+    ]
+  },
+  "files": [
+    {
+      "content": "import React from 'react';\n\nimport { Plate } from '@udecode/plate-common/react';\n\nimport { editorPlugins } from '@/components/editor/plugins/editor-plugins';\nimport { useCreateEditor } from '@/components/editor/use-create-editor';\nimport { Editor, EditorContainer } from '@/components/plate-ui/editor';\n\nimport { DEMO_VALUES } from './values/demo-values';\n\nexport default function Demo({ id }: { id: string }) {\n  const editor = useCreateEditor({\n    plugins: [...editorPlugins],\n    value: DEMO_VALUES[id],\n  });\n\n  return (\n    <Plate editor={editor}>\n      <EditorContainer variant=\"demo\">\n        <Editor />\n      </EditorContainer>\n    </Plate>\n  );\n}\n",
+      "path": "example/demo.tsx",
+      "target": "components/demo.tsx",
+      "type": "registry:example"
+    },
+    {
+      "content": "'use client';\n\nimport { CommentsPlugin } from '@udecode/plate-comments/react';\n\nimport { CommentsPopover } from '@/components/plate-ui/comments-popover';\n\nexport const commentsPlugin = CommentsPlugin.configure({\n  options: {\n    myUserId: '1',\n    users: {\n      1: {\n        id: '1',\n        avatarUrl: 'https://avatars.githubusercontent.com/u/19695832?s=96&v=4',\n        name: 'zbeyens',\n      },\n      2: {\n        id: '2',\n        avatarUrl: 'https://avatars.githubusercontent.com/u/4272090?v=4',\n        name: '12joan',\n      },\n    },\n  },\n  render: { afterEditable: () => <CommentsPopover /> },\n});\n",
+      "path": "components/editor/plugins/comments-plugin.tsx",
+      "target": "components/comments-plugin.tsx",
+      "type": "registry:example"
+    },
+    {
+      "content": "import type { TComment } from '@udecode/plate-comments';\nimport type { Value } from '@udecode/plate-common';\n\nexport const usersData = {\n  1: {\n    id: '1',\n    avatarUrl: 'https://avatars.githubusercontent.com/u/19695832?s=96&v=4',\n    name: 'zbeyens',\n  },\n  2: {\n    id: '2',\n    avatarUrl: 'https://avatars.githubusercontent.com/u/4272090?v=4',\n    name: '12joan',\n  },\n};\n\nexport const commentsData: Record<string, TComment> = {\n  1: {\n    id: '1',\n    createdAt: 1_663_453_625_129,\n    userId: '1',\n    value: [{ children: [{ text: 'This is a comment.' }], type: 'p' }],\n  },\n  2: {\n    id: '2',\n    createdAt: 1_663_453_729_191,\n    userId: '1',\n    value: [\n      { children: [{ text: 'Can you review this one @12joan?' }], type: 'p' },\n    ],\n  },\n  3: {\n    id: '3',\n    createdAt: 1_663_453_740_180,\n    isResolved: true,\n    userId: '1',\n    value: [{ children: [{ text: 'This is a resolved comment.' }], type: 'p' }],\n  },\n  4: {\n    id: '4',\n    createdAt: 1_663_453_740_181,\n    parentId: '2',\n    userId: '2',\n    value: [{ children: [{ text: 'LGTM.' }], type: 'p' }],\n  },\n  5: {\n    id: '4',\n    createdAt: 1_663_453_740_182,\n    parentId: '2',\n    userId: '1',\n    value: [{ children: [{ text: 'Thanks!' }], type: 'p' }],\n  },\n};\n\nexport const commentsValue: Value = [\n  {\n    children: [{ text: 'Comments' }],\n    type: 'h2',\n  },\n  {\n    children: [\n      {\n        text: 'Add ',\n      },\n      {\n        comment: true,\n        comment_1: true,\n        text: 'comments to your content',\n      },\n      { text: ' to provide additional context, insights, or ' },\n      {\n        comment: true,\n        comment_2: true,\n        text: 'collaborate',\n      },\n      {\n        text: '  with others',\n      },\n    ],\n    type: 'p',\n  },\n];\n",
+      "path": "example/values/comments-value.tsx",
+      "target": "components/comments-value.tsx",
+      "type": "registry:example"
+    }
+  ],
+  "name": "comments-demo",
+  "registryDependencies": [],
+  "type": "registry:example"
+}
