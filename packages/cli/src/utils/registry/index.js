@@ -290,7 +290,7 @@ function fetchRegistry(paths, registryUrl, ignoreErrors) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
                     return [4 /*yield*/, Promise.all(paths.map(function (path) { return __awaiter(_this, void 0, void 0, function () {
-                            var url, response, errorMessages, result, message;
+                            var url, response, errorMessages, contentType, result, message;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
@@ -314,6 +314,10 @@ function fetchRegistry(paths, registryUrl, ignoreErrors) {
                                         }
                                         if (response.status === 403) {
                                             throw new Error("You do not have access to the component at ".concat(highlighter_1.highlighter.info(url), ".\nIf this is a remote registry, you may need to authenticate or a token."));
+                                        }
+                                        contentType = response.headers.get("content-type");
+                                        if (!(contentType === null || contentType === void 0 ? void 0 : contentType.includes("application/json"))) {
+                                            throw new Error("Invalid response from ".concat(highlighter_1.highlighter.info(url), "."));
                                         }
                                         return [4 /*yield*/, response.json()];
                                     case 2:
