@@ -92,7 +92,7 @@ BlockSelectionPlugin.configure({
 
 useing `options.areaOptions.behaviour.scrolling.speedDivider` to set the scroll speed.
 
-The value of `1.5` is our recommended speed since it's near the browser-native speed.
+The value of `0.8` is our recommended speed since it's near the browser-native speed.
 
 
 ```ts
@@ -101,11 +101,12 @@ BlockSelectionPlugin.configure({
     areaOptions: {
       behaviour: {
       scrolling: {
+        // You can slow down the scroll speed by setting a bigger value.
         speedDivider: 1.5,
       },
       // The distance needed to move for the selection area to appear.
       // If it’s too small, it may cause the mouse click event to be blocked. 10 is a good default.
-      startThreshold: 10,
+      startThreshold: 4,
     },
   },
 }

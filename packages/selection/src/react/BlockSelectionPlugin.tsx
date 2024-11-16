@@ -92,13 +92,6 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
   },
   options: {
     areaOptions: {
-      behaviour: {
-        scrolling: {
-          speedDivider: 5,
-          startScrollMargins: { x: 20, y: 0 },
-        },
-        startThreshold: 5,
-      },
       features: {
         singleTap: {
           allow: false,
