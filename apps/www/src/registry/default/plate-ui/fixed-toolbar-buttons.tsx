@@ -7,23 +7,36 @@ import {
   CodePlugin,
   ItalicPlugin,
   StrikethroughPlugin,
+  SubscriptPlugin,
+  SuperscriptPlugin,
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
-import { useEditorReadOnly } from '@udecode/plate-common/react';
+import { useEditorReadOnly } from '@udecode/plate-core/react';
 import {
   FontBackgroundColorPlugin,
   FontColorPlugin,
 } from '@udecode/plate-font/react';
+import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { ListStyleType } from '@udecode/plate-indent-list';
-import { ImagePlugin } from '@udecode/plate-media/react';
+import { KbdPlugin } from '@udecode/plate-kbd/react';
+import {
+  AudioPlugin,
+  FilePlugin,
+  ImagePlugin,
+  VideoPlugin,
+} from '@udecode/plate-media/react';
 import {
   BaselineIcon,
   BoldIcon,
   Code2Icon,
+  HighlighterIcon,
   ItalicIcon,
+  KeyboardIcon,
   PaintBucketIcon,
   SparklesIcon,
   StrikethroughIcon,
+  SubscriptIcon,
+  SuperscriptIcon,
   UnderlineIcon,
 } from 'lucide-react';
 
@@ -32,6 +45,7 @@ import { AlignDropdownMenu } from './align-dropdown-menu';
 import { ColorDropdownMenu } from './color-dropdown-menu';
 import { CommentToolbarButton } from './comment-toolbar-button';
 import { EmojiDropdownMenu } from './emoji-dropdown-menu';
+import { RedoToolbarButton, UndoToolbarButton } from './history-toolbar-button';
 import { IndentListToolbarButton } from './indent-list-toolbar-button';
 import { IndentTodoToolbarButton } from './indent-todo-toolbar-button';
 import { IndentToolbarButton } from './indent-toolbar-button';
@@ -41,7 +55,6 @@ import { LinkToolbarButton } from './link-toolbar-button';
 import { MarkToolbarButton } from './mark-toolbar-button';
 import { MediaToolbarButton } from './media-toolbar-button';
 import { ModeDropdownMenu } from './mode-dropdown-menu';
-import { MoreDropdownMenu } from './more-dropdown-menu';
 import { OutdentToolbarButton } from './outdent-toolbar-button';
 import { TableDropdownMenu } from './table-dropdown-menu';
 import { ToggleToolbarButton } from './toggle-toolbar-button';
@@ -55,6 +68,11 @@ export function FixedToolbarButtons() {
     <div className="flex w-full">
       {!readOnly && (
         <>
+          <ToolbarGroup>
+            <UndoToolbarButton />
+            <RedoToolbarButton />
+          </ToolbarGroup>
+
           <ToolbarGroup>
             <AIToolbarButton
               className="gap-1.5 text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-500"
@@ -117,23 +135,63 @@ export function FixedToolbarButtons() {
 
           <ToolbarGroup>
             <AlignDropdownMenu />
-            <LineHeightDropdownMenu />
 
             <IndentListToolbarButton nodeType={ListStyleType.Disc} />
             <IndentListToolbarButton nodeType={ListStyleType.Decimal} />
             <IndentTodoToolbarButton />
-
-            <OutdentToolbarButton />
-            <IndentToolbarButton />
           </ToolbarGroup>
 
           <ToolbarGroup>
             <LinkToolbarButton />
             <ToggleToolbarButton />
-            <MediaToolbarButton nodeType={ImagePlugin.key} />
             <TableDropdownMenu />
             <EmojiDropdownMenu />
-            <MoreDropdownMenu />
+          </ToolbarGroup>
+
+          <ToolbarGroup>
+            <MediaToolbarButton nodeType={ImagePlugin.key} />
+            <MediaToolbarButton nodeType={VideoPlugin.key} />
+          </ToolbarGroup>
+
+          <ToolbarGroup>
+            <LineHeightDropdownMenu />
+            <OutdentToolbarButton />
+            <IndentToolbarButton />
+          </ToolbarGroup>
+
+          <ToolbarGroup>
+            <MediaToolbarButton nodeType={AudioPlugin.key} />
+            <MediaToolbarButton nodeType={FilePlugin.key} />
+          </ToolbarGroup>
+
+          <ToolbarGroup>
+            <MarkToolbarButton
+              nodeType={HighlightPlugin.key}
+              tooltip="Highlight"
+            >
+              <HighlighterIcon />
+            </MarkToolbarButton>
+
+            <MarkToolbarButton
+              nodeType={KbdPlugin.key}
+              tooltip="Keyboard input"
+            >
+              <KeyboardIcon />
+            </MarkToolbarButton>
+
+            <MarkToolbarButton
+              nodeType={SuperscriptPlugin.key}
+              tooltip="Superscript"
+            >
+              <SuperscriptIcon />
+            </MarkToolbarButton>
+
+            <MarkToolbarButton
+              nodeType={SubscriptPlugin.key}
+              tooltip="Subscript"
+            >
+              <SubscriptIcon />
+            </MarkToolbarButton>
           </ToolbarGroup>
         </>
       )}
@@ -143,6 +201,7 @@ export function FixedToolbarButtons() {
       <ToolbarGroup>
         <CommentToolbarButton />
         <ModeDropdownMenu />
+        {/* <MoreToolbarButton pressed={expanded} tooltip="More" /> */}
       </ToolbarGroup>
     </div>
   );

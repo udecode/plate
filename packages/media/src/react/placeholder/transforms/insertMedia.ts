@@ -1,6 +1,11 @@
 import type { PlateEditor } from '@udecode/plate-common/react';
 
-import { insertNodes, nanoid, withoutNormalizing } from '@udecode/plate-common';
+import {
+  type InsertNodesOptions,
+  insertNodes,
+  nanoid,
+  withoutNormalizing,
+} from '@udecode/plate-common';
 import { Path } from 'slate';
 
 import { type TPlaceholderElement, BasePlaceholderPlugin } from '../../../lib';
@@ -8,12 +13,13 @@ import { PlaceholderPlugin } from '../PlaceholderPlugin';
 import { UploadErrorCode } from '../type';
 import { createUploadError, isUploadError } from '../utils/createUploadError';
 import { getMediaType } from '../utils/getMediaType';
+import { withHistoryMark } from '../utils/history';
 import { validateFiles } from '../utils/validateFiles';
 
 export const insertMedia = (
   editor: PlateEditor,
   files: FileList,
-  at?: Path
+  options?: Omit<InsertNodesOptions, 'at'> & { at?: Path }
 ): any => {
   const api = editor.getApi(PlaceholderPlugin);
   const uploadConfig = editor.getOption(PlaceholderPlugin, 'uploadConfig');
@@ -54,6 +60,7 @@ export const insertMedia = (
   }
 
   let currentAt: Path | undefined;
+  const { at, nextBlock = true, ...restOptions } = options ?? {};
 
   Array.from(files).forEach((file, index) => {
     if (index === 0) {
@@ -66,7 +73,9 @@ export const insertMedia = (
 
     const id = nanoid();
 
-    withoutNormalizing(editor, () =>
+    api.placeholder.addUploadingFile(id, file);
+
+    const insert = () => {
       insertNodes<TPlaceholderElement>(
         editor,
         {
@@ -75,10 +84,19 @@ export const insertMedia = (
           mediaType: getMediaType(file, uploadConfig)!,
           type: editor.getType(BasePlaceholderPlugin),
         },
-        { at: currentAt, nextBlock: false }
-      )
+        { at: currentAt, nextBlock, ...restOptions }
+      );
+    };
+
+    const disableEmptyPlaceholder = editor.getOption(
+      PlaceholderPlugin,
+      'disableEmptyPlaceholder'
     );
 
-    api.placeholder.addUploadingFile(id, file);
+    if (disableEmptyPlaceholder) {
+      withHistoryMark(editor, insert);
+    } else {
+      withoutNormalizing(editor, insert);
+    }
   });
 };

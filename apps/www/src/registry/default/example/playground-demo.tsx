@@ -58,7 +58,6 @@ export const usePlaygroundEditor = (id: any = '') => {
       },
     }),
     SingleLinePlugin,
-
     // Testing
     PlaywrightPlugin.configure({
       enabled: process.env.NODE_ENV !== 'production',

@@ -1,5 +1,6 @@
 import {
   type ExtendConfig,
+  type InsertNodesOptions,
   bindFirst,
   getAncestorNode,
   getNodeString,
@@ -13,6 +14,7 @@ import type { MediaItemConfig, UploadError } from './type';
 import { type PlaceholderConfig, BasePlaceholderPlugin } from '../../lib';
 import { AudioPlugin, FilePlugin, ImagePlugin, VideoPlugin } from '../plugins';
 import { insertMedia } from './transforms/insertMedia';
+import { isHistoryMarking } from './utils/history';
 
 export type PlaceholderApi = {
   addUploadingFile: (id: string, file: File) => void;
@@ -21,7 +23,7 @@ export type PlaceholderApi = {
 };
 
 export type PlaceholderTransforms = {
-  insertMedia: (files: FileList) => void;
+  insertMedia: (files: FileList, options?: InsertNodesOptions) => void;
 };
 
 export type UploadConfig = Partial<Record<AllowedFileType, MediaItemConfig>>;
@@ -30,7 +32,8 @@ export const PlaceholderPlugin = toTPlatePlugin<
   ExtendConfig<
     PlaceholderConfig,
     {
-      disabledDndPlugin: boolean;
+      disableEmptyPlaceholder: boolean;
+      disableFileDrop: boolean;
       uploadConfig: UploadConfig;
       uploadingFiles: Record<string, File>;
       error?: UploadError | null;
@@ -41,8 +44,27 @@ export const PlaceholderPlugin = toTPlatePlugin<
     { placeholder: PlaceholderApi }
   >
 >(BasePlaceholderPlugin, {
+  extendEditor: ({ editor }) => {
+    const { writeHistory } = editor;
+
+    editor.writeHistory = (stack, batch) => {
+      if (isHistoryMarking(editor)) {
+        const newBatch = {
+          ...batch,
+          [PlaceholderPlugin.key]: true,
+        };
+
+        return writeHistory(stack, newBatch);
+      }
+
+      writeHistory(stack, batch);
+    };
+
+    return editor;
+  },
   options: {
-    disabledDndPlugin: false,
+    disableEmptyPlaceholder: false,
+    disableFileDrop: false,
     error: null,
     maxFileCount: 5,
     multiple: true,
@@ -118,7 +140,7 @@ export const PlaceholderPlugin = toTPlatePlugin<
     handlers: {
       onDrop: ({ editor, event, tf }) => {
         // using DnD plugin by default
-        if (!getOption('disabledDndPlugin')) return;
+        if (!getOption('disableFileDrop')) return;
 
         const { files } = event.dataTransfer;
 
@@ -157,7 +179,7 @@ export const PlaceholderPlugin = toTPlatePlugin<
 
           if (getNodeString(node).length === 0) {
             removeNodes(editor, { at: path });
-            tf.insert.media(files, path);
+            tf.insert.media(files, { at: path });
             inserted = true;
           }
         }

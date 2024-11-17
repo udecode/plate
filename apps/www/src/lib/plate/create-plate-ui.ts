@@ -41,7 +41,14 @@ import {
   NumberedListPlugin,
   TodoListPlugin,
 } from '@udecode/plate-list/react';
-import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
+import {
+  AudioPlugin,
+  FilePlugin,
+  ImagePlugin,
+  MediaEmbedPlugin,
+  PlaceholderPlugin,
+  VideoPlugin,
+} from '@udecode/plate-media/react';
 import {
   MentionInputPlugin,
   MentionPlugin,
@@ -76,7 +83,11 @@ import { ImageElement } from '@/registry/default/plate-ui/image-element';
 import { KbdLeaf } from '@/registry/default/plate-ui/kbd-leaf';
 import { LinkElement } from '@/registry/default/plate-ui/link-element';
 import { ListElement } from '@/registry/default/plate-ui/list-element';
+import { MediaAudioElement } from '@/registry/default/plate-ui/media-audio-element';
 import { MediaEmbedElement } from '@/registry/default/plate-ui/media-embed-element';
+import { MediaFileElement } from '@/registry/default/plate-ui/media-file-element';
+import { MediaPlaceholderElement } from '@/registry/default/plate-ui/media-placeholder-element';
+import { MediaVideoElement } from '@/registry/default/plate-ui/media-video-element';
 import { MentionElement } from '@/registry/default/plate-ui/mention-element';
 import { MentionInputElement } from '@/registry/default/plate-ui/mention-input-element';
 import { ParagraphElement } from '@/registry/default/plate-ui/paragraph-element';
@@ -100,6 +111,7 @@ export const createPlateUI = ({
 }: { draggable?: boolean; placeholder?: boolean } = {}) => {
   let components: Record<string, NodeComponent> = {
     [AIPlugin.key]: AILeaf,
+    [AudioPlugin.key]: MediaAudioElement,
     [BlockquotePlugin.key]: BlockquoteElement,
     [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),
     [BulletedListPlugin.key]: withProps(ListElement, { variant: 'ul' }),
@@ -113,6 +125,7 @@ export const createPlateUI = ({
     [DatePlugin.key]: DateElement,
     [EmojiInputPlugin.key]: EmojiInputElement,
     [ExcalidrawPlugin.key]: ExcalidrawElement,
+    [FilePlugin.key]: MediaFileElement,
     [FindReplacePlugin.key]: SearchHighlightLeaf,
     [HEADING_KEYS.h1]: withProps(HeadingElement, { variant: 'h1' }),
     [HEADING_KEYS.h2]: withProps(HeadingElement, { variant: 'h2' }),
@@ -132,6 +145,7 @@ export const createPlateUI = ({
     [MentionPlugin.key]: MentionElement,
     [NumberedListPlugin.key]: withProps(ListElement, { variant: 'ol' }),
     [ParagraphPlugin.key]: ParagraphElement,
+    [PlaceholderPlugin.key]: MediaPlaceholderElement,
     [SlashInputPlugin.key]: SlashInputElement,
     [StrikethroughPlugin.key]: withProps(PlateLeaf, { as: 's' }),
     [SubscriptPlugin.key]: withProps(PlateLeaf, { as: 'sub' }),
@@ -145,6 +159,7 @@ export const createPlateUI = ({
     [TodoListPlugin.key]: TodoListElement,
     [TogglePlugin.key]: ToggleElement,
     [UnderlinePlugin.key]: withProps(PlateLeaf, { as: 'u' }),
+    [VideoPlugin.key]: MediaVideoElement,
   };
 
   if (placeholder) {
