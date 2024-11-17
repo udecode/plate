@@ -9,14 +9,6 @@ export const blockSelectionPlugins = [
       excludePlugins: ['table', 'code_line', 'column_group', 'column'],
     },
     options: {
-      areaOptions: {
-        behaviour: {
-          scrolling: {
-            speedDivider: 1.5,
-          },
-          startThreshold: 4,
-        },
-      },
       enableContextMenu: true,
     },
   }),
