@@ -1,15 +1,15 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import { ParagraphPlugin, getEditorPlugin } from '@udecode/plate-common/react';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import * as isHotkey from '@udecode/plate-core';
 import { IndentPlugin } from '@udecode/plate-indent/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { IndentListPlugin } from './IndentListPlugin';
 import { onKeyDownIndentList } from './onKeyDownIndentList';
 
-jsx;
+jsxt;
 
 jest.spyOn(isHotkey, 'isHotkey').mockReturnValue(true);
 

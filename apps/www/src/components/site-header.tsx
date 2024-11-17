@@ -10,7 +10,6 @@ import { CommandMenu } from './command-menu';
 import { Icons } from './icons';
 import { MainNav } from './main-nav';
 import { MobileNav } from './mobile-nav';
-import { StarOnGithub } from './star-on-github';
 
 export function SiteHeader() {
   // const { stargazers_count: count } = await fetch(
@@ -30,21 +29,38 @@ export function SiteHeader() {
   //   .then((res) => res.json())
   //   .catch(() => ({ stargazers_count: 0 }));
 
-  const count = 0;
+  // const count = 0;
 
   return (
-    <header className="sticky top-0 z-50 w-full border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-[100] w-full border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 max-w-screen-2xl items-center justify-between">
         <MainNav />
         <MobileNav />
-        <StarOnGithub count={count} />
+
+        {/* <nav className="hidden items-center gap-4 text-sm md:flex lg:gap-6">
+          <Link
+            className="text-foreground/60 transition-colors hover:text-foreground/80"
+            href="/#playground"
+          >
+            Playground
+          </Link>
+          <Link
+            className="text-foreground/60 transition-colors hover:text-foreground/80"
+            href="/#potion"
+            // href={siteConfig.links.potion}
+          >
+            Potion
+          </Link>
+        </nav> */}
+
+        {/* <StarOnGithub count={count} /> */}
         <div className="flex items-center justify-between space-x-2 md:justify-end">
           <div className="w-full flex-1 md:w-auto md:flex-none">
             <CommandMenu />
           </div>
           <nav className="flex items-center">
             <Link
-              className="inline md:hidden"
+              className="inline"
               href={siteConfig.links.github}
               rel="noreferrer"
               target="_blank"

@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -5,10 +7,9 @@ import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
 import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 
-import { editableProps } from '@/plate/demo/editableProps';
 import { PlateUI } from '@/plate/demo/plate-ui';
 import { iframeValue } from '@/plate/demo/values/iframeValue';
-import { Editor } from '@/registry/default/plate-ui/editor';
+import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 
 import { EditableVoidPlugin } from './editable-voids-demo';
 
@@ -34,7 +35,9 @@ export default function IframeDemo() {
   return (
     <IFrame className="p-10">
       <Plate editor={editor}>
-        <Editor {...editableProps} />
+        <EditorContainer>
+          <Editor />
+        </EditorContainer>
       </Plate>
     </IFrame>
   );

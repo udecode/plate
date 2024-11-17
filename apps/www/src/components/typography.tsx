@@ -28,7 +28,7 @@ export const H2 = ({
 }: React.HTMLAttributes<HTMLHeadingElement>) => (
   <h2
     className={cn(
-      'mt-12 scroll-m-20 pb-2 font-heading text-2xl font-semibold tracking-tight first:mt-0',
+      'mt-12 scroll-m-20 border-b pb-2 font-heading text-2xl font-semibold tracking-tight first:mt-0',
       className
     )}
     {...props}
@@ -87,16 +87,6 @@ export const H6 = ({
   />
 );
 
-export const A = ({
-  className,
-  ...props
-}: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
-  <a
-    className={cn('font-medium underline underline-offset-4', className)}
-    {...props}
-  />
-);
-
 export const P = ({
   className,
   ...props
@@ -111,21 +101,35 @@ export const UL = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLUListElement>) => (
-  <ul className={cn('my-4 ml-6 list-disc', className)} {...props} />
+  <ul
+    className={cn(
+      'group my-4 ml-6 list-disc group-data-[list]:my-2',
+      className
+    )}
+    data-list
+    {...props}
+  />
 );
 
 export const OL = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLOListElement>) => (
-  <ol className={cn('my-4 ml-6 list-decimal', className)} {...props} />
+  <ol
+    className={cn(
+      'group my-4 ml-6 list-decimal group-data-[list]:my-2',
+      className
+    )}
+    data-list
+    {...props}
+  />
 );
 
 export const LI = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLElement>) => (
-  <li className={cn('mt-2', className)} {...props} />
+  <li className={cn('mb-0 mt-2', className)} {...props} />
 );
 
 export const Blockquote = ({
@@ -155,10 +159,10 @@ export const Table = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLTableElement>) => (
-  <div className="my-6 w-full overflow-y-auto rounded-lg">
+  <div className="my-6 w-full overflow-y-auto">
     <table
       className={cn(
-        'relative w-full overflow-hidden text-sm after:absolute after:inset-0 after:rounded-lg after:ring-1 after:ring-border',
+        'relative w-full overflow-hidden border-none text-sm',
         className
       )}
       {...props}
@@ -170,7 +174,7 @@ export const TR = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLTableRowElement>) => (
-  <tr className={cn('m-0 border-t', className)} {...props} />
+  <tr className={cn('m-0 border-b last:border-b-0', className)} {...props} />
 );
 
 export const TH = ({
@@ -179,7 +183,7 @@ export const TH = ({
 }: React.HTMLAttributes<HTMLTableCellElement>) => (
   <th
     className={cn(
-      'border px-4 py-2 text-left font-bold [&[align=center]]:text-center [&[align=right]]:text-right',
+      'px-4 py-2 text-left font-bold [&[align=center]]:text-center [&[align=right]]:text-right',
       className
     )}
     {...props}
@@ -192,7 +196,7 @@ export const TD = ({
 }: React.HTMLAttributes<HTMLTableCellElement>) => (
   <td
     className={cn(
-      'border px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right',
+      'px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right',
       className
     )}
     {...props}

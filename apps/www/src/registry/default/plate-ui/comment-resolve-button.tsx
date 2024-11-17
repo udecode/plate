@@ -7,8 +7,7 @@ import {
   CommentResolveButton as CommentResolveButtonPrimitive,
   useComment,
 } from '@udecode/plate-comments/react';
-
-import { Icons } from '@/components/icons';
+import { Check, RotateCcw } from 'lucide-react';
 
 import { buttonVariants } from './button';
 
@@ -23,9 +22,9 @@ export function CommentResolveButton() {
       )}
     >
       {comment.isResolved ? (
-        <Icons.refresh className="size-4" />
+        <RotateCcw className="size-4" />
       ) : (
-        <Icons.check className="size-4" />
+        <Check className="size-4" />
       )}
     </CommentResolveButtonPrimitive>
   );

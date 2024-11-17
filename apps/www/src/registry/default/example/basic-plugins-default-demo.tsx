@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 
 import type { Value } from '@udecode/plate-common';
@@ -20,8 +22,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { editableProps } from '@/plate/demo/editableProps';
-import { Editor } from '@/registry/default/plate-ui/editor';
+import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 
 import { basicEditorValue } from './basic-plugins-components-demo';
 
@@ -49,7 +50,9 @@ export default function BasicPluginsDefaultDemo() {
       }}
       editor={editor}
     >
-      <Editor {...editableProps} />
+      <EditorContainer>
+        <Editor />
+      </EditorContainer>
 
       <Accordion type="single" collapsible>
         <AccordionItem value="manual-installation">

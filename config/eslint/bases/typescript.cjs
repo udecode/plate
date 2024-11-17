@@ -39,8 +39,9 @@ module.exports = {
         '@typescript-eslint/consistent-generic-constructors': 'error',
         '@typescript-eslint/consistent-indexed-object-style': 'error',
         '@typescript-eslint/consistent-type-definitions': 'off',
+        // not compatible with barrelby
+        '@typescript-eslint/consistent-type-exports': 'off',
         // for now we can use both type and interface
-        '@typescript-eslint/consistent-type-exports': 'warn',
         '@typescript-eslint/consistent-type-imports': [
           'warn',
           { fixStyle: 'inline-type-imports' },

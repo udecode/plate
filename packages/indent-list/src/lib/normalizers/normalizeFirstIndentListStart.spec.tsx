@@ -1,15 +1,15 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import type { SlateEditor } from '@udecode/plate-common';
 
 import { BaseParagraphPlugin } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { BaseIndentListPlugin } from '../BaseIndentListPlugin';
 
-jsx;
+jsxt;
 
 const input = (
   <editor>

@@ -1,8 +1,14 @@
 {
   "dependencies": [],
+  "doc": {
+    "description": "A fixed toolbar that stays at the top of the editor.",
+    "examples": [
+      "toolbar-demo"
+    ]
+  },
   "files": [
     {
-      "content": "import { withCn } from '@udecode/cn';\n\nimport { Toolbar } from './toolbar';\n\nexport const FixedToolbar = withCn(\n  Toolbar,\n  'supports-backdrop-blur:bg-background/60 sticky left-0 top-0 z-50 w-full justify-between overflow-x-auto rounded-t-lg border-b border-b-border bg-background/95 backdrop-blur'\n);\n",
+      "content": "'use client';\n\nimport { withCn } from '@udecode/cn';\n\nimport { Toolbar } from './toolbar';\n\nexport const FixedToolbar = withCn(\n  Toolbar,\n  'supports-backdrop-blur:bg-background/60 sticky left-0 top-0 z-50 w-full justify-between overflow-x-auto rounded-t-lg border-b border-b-border bg-background/95 p-1 backdrop-blur scrollbar-hide'\n);\n",
       "path": "plate-ui/fixed-toolbar.tsx",
       "target": "components/plate-ui/fixed-toolbar.tsx",
       "type": "registry:ui"

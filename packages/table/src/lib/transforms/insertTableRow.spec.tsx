@@ -1,14 +1,14 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import type { SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { BaseTablePlugin } from '../BaseTablePlugin';
 import { insertTableRow } from './insertTableRow';
 
-jsx;
+jsxt;
 
 describe('insertTableRow', () => {
   describe('when inserting a table row', () => {

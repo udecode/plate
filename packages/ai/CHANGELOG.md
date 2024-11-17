@@ -1,5 +1,56 @@
 # @udecode/plate-ai
 
+## 40.1.0
+
+## 40.0.5
+
+## 40.0.4
+
+## 40.0.0
+
+### Major Changes
+
+- [#3744](https://github.com/udecode/plate/pull/3744) by [@zbeyens](https://github.com/zbeyens) –
+  - Remove `scrollContainerSelector` option in favor of `useEditorContainerRef`
+
+### Patch Changes
+
+- [#3744](https://github.com/udecode/plate/pull/3744) by [@zbeyens](https://github.com/zbeyens) –
+  - `CopilotPlugin`: reset on mouse down
+  - `CopilotPlugin`: auto trigger only on selection change
+
+## 39.3.7
+
+## 39.3.6
+
+## 39.3.5
+
+## 39.3.0
+
+### Patch Changes
+
+- [#3708](https://github.com/udecode/plate/pull/3708) by [@felixfeng33](https://github.com/felixfeng33) – Missing export
+
+## 39.2.19
+
+### Patch Changes
+
+- [#3690](https://github.com/udecode/plate/pull/3690) by [@felixfeng33](https://github.com/felixfeng33) – Copilot: `getNextWord` when handle the case with mixed Chinese and English text.
+
+## 39.2.16
+
+### Patch Changes
+
+- [#3681](https://github.com/udecode/plate/pull/3681) by [@felixfeng33](https://github.com/felixfeng33) – Copilot:
+  - Fix the issue where `getNextWord` returns the entire sentence in Chinese/Korean/Japanese.
+  - When entering two characters using IME, the suggestion text should not be lost.
+
+## 39.2.13
+
+### Patch Changes
+
+- [#3469](https://github.com/udecode/plate/pull/3469) by [@felixfeng33](https://github.com/felixfeng33) – First stable version
+
 ## 39.2.12
 
 ## 39.2.10

@@ -1,11 +1,30 @@
+import type { Registry } from '@/registry/schema';
 import type { MainNavItem, SidebarNavItem } from '@/types/nav';
 
-import { customizerComponents } from '@/config/customizer-components';
+import { getRegistryTitle } from '@/lib/registry-utils';
+import { uiComponents, uiNodes, uiPrimitives } from '@/registry/registry-ui';
+
+import { siteConfig } from './site';
 
 export interface DocsConfig {
   componentsNav: SidebarNavItem[];
   mainNav: MainNavItem[];
   sidebarNav: SidebarNavItem[];
+}
+
+function registryToNav(registry: Registry): SidebarNavItem[] {
+  return registry
+    .map((item) =>
+      item.doc
+        ? {
+            href: `/docs/${item.type.includes('registry:example') ? 'examples' : 'components'}/${item.name.replace('-demo', '')}`,
+            keywords: item.doc.keywords,
+            label: item.doc.label,
+            title: getRegistryTitle(item).replace(' Demo', ''),
+          }
+        : (null as never)
+    )
+    .filter(Boolean);
 }
 
 export const docsConfig: DocsConfig = {
@@ -43,84 +62,104 @@ export const docsConfig: DocsConfig = {
       ],
       title: 'Plate UI',
     },
+    // {
+    //   items: [
+    //     customizerComponents.aiLeaf,
+    //     customizerComponents.aiMenu,
+    //     customizerComponents.aiToolbarButton,
+    //     customizerComponents.ghostText,
+    //     customizerComponents.editor,
+    //     customizerComponents.alignDropdownMenu,
+    //     customizerComponents.avatar,
+    //     customizerComponents.blockContextMenu,
+    //     customizerComponents.blockquoteElement,
+    //     customizerComponents.button,
+    //     customizerComponents.caption,
+    //     customizerComponents.calendar,
+    //     customizerComponents.checkbox,
+    //     customizerComponents.codeBlockElement,
+    //     customizerComponents.codeLeaf,
+    //     customizerComponents.codeLineElement,
+    //     customizerComponents.codeSyntaxLeaf,
+    //     customizerComponents.colorDropdownMenu,
+    //     customizerComponents.contextMenu,
+    //     customizerComponents.command,
+    //     customizerComponents.commentLeaf,
+    //     customizerComponents.commentToolbarButton,
+    //     customizerComponents.commentsPopover,
+    //     customizerComponents.cursorOverlay,
+    //     customizerComponents.columnGroupElement,
+    //     customizerComponents.columnElement,
+    //     customizerComponents.dateElement,
+    //     customizerComponents.dialog,
+    //     customizerComponents.draggable,
+    //     customizerComponents.dropdownMenu,
+    //     customizerComponents.emojiDropdownMenu,
+    //     customizerComponents.emojiInputElement,
+    //     customizerComponents.emojiToolbarDropdown,
+    //     customizerComponents.excalidrawElement,
+    //     customizerComponents.fixedToolbar,
+    //     customizerComponents.fixedToolbarButtons,
+    //     customizerComponents.floatingToolbar,
+    //     customizerComponents.floatingToolbarButtons,
+    //     customizerComponents.headingElement,
+    //     customizerComponents.highlightLeaf,
+    //     customizerComponents.hrElement,
+    //     customizerComponents.imageElement,
+    //     customizerComponents.indentListToolbarButton,
+    //     customizerComponents.indentToolbarButton,
+    //     customizerComponents.indentTodoMarker,
+    //     customizerComponents.inlineCombobox,
+    //     customizerComponents.input,
+    //     customizerComponents.insertDropdownMenu,
+    //     customizerComponents.kbdLeaf,
+    //     customizerComponents.lineHeightDropdownMenu,
+    //     customizerComponents.linkElement,
+    //     customizerComponents.linkFloatingToolbar,
+    //     customizerComponents.linkToolbarButton,
+    //     customizerComponents.listElement,
+    //     customizerComponents.listToolbarButton,
+    //     customizerComponents.markToolbarButton,
+    //     customizerComponents.mediaEmbedElement,
+    //     customizerComponents.mediaPopover,
+    //     customizerComponents.mediaToolbarButton,
+    //     customizerComponents.mentionElement,
+    //     customizerComponents.mentionInputElement,
+    //     customizerComponents.modeDropdownMenu,
+    //     customizerComponents.moreDropdownMenu,
+    //     customizerComponents.outdentToolbarButton,
+    //     customizerComponents.paragraphElement,
+    //     customizerComponents.placeholder,
+    //     customizerComponents.popover,
+    //     customizerComponents.resizable,
+    //     customizerComponents.slashInputElement,
+    //     customizerComponents.searchHighlightLeaf,
+    //     customizerComponents.separator,
+    //     customizerComponents.tableCellElement,
+    //     customizerComponents.tableDropdownMenu,
+    //     customizerComponents.tableElement,
+    //     customizerComponents.tableRowElement,
+    //     customizerComponents.tocElement,
+    //     customizerComponents.todoListElement,
+    //     customizerComponents.toggleElement,
+    //     customizerComponents.toggleToolbarButton,
+    //     customizerComponents.toolbar,
+    //     customizerComponents.tooltip,
+    //     customizerComponents.turnIntoDropdownMenu,
+    //   ],
+    //   title: 'Components',
+    // },
     {
-      items: [
-        customizerComponents.editor,
-        customizerComponents.alignDropdownMenu,
-        customizerComponents.avatar,
-        customizerComponents.blockquoteElement,
-        customizerComponents.button,
-        customizerComponents.caption,
-        customizerComponents.calendar,
-        customizerComponents.checkbox,
-        customizerComponents.codeBlockElement,
-        customizerComponents.codeLeaf,
-        customizerComponents.codeLineElement,
-        customizerComponents.codeSyntaxLeaf,
-        customizerComponents.colorDropdownMenu,
-        customizerComponents.combobox,
-        customizerComponents.command,
-        customizerComponents.commentLeaf,
-        customizerComponents.commentToolbarButton,
-        customizerComponents.commentsPopover,
-        customizerComponents.cursorOverlay,
-        customizerComponents.columnGroupElement,
-        customizerComponents.columnElement,
-        customizerComponents.dateElement,
-        customizerComponents.dialog,
-        customizerComponents.draggable,
-        customizerComponents.dropdownMenu,
-        customizerComponents.emojiDropdownMenu,
-        customizerComponents.emojiInputElement,
-        customizerComponents.emojiToolbarDropdown,
-        customizerComponents.excalidrawElement,
-        customizerComponents.fixedToolbar,
-        customizerComponents.fixedToolbarButtons,
-        customizerComponents.floatingToolbar,
-        customizerComponents.floatingToolbarButtons,
-        customizerComponents.headingElement,
-        customizerComponents.highlightLeaf,
-        customizerComponents.hrElement,
-        customizerComponents.imageElement,
-        customizerComponents.indentListToolbarButton,
-        customizerComponents.indentToolbarButton,
-        customizerComponents.inlineCombobox,
-        customizerComponents.input,
-        customizerComponents.insertDropdownMenu,
-        customizerComponents.kbdLeaf,
-        customizerComponents.lineHeightDropdownMenu,
-        customizerComponents.linkElement,
-        customizerComponents.linkFloatingToolbar,
-        customizerComponents.linkToolbarButton,
-        customizerComponents.listElement,
-        customizerComponents.listToolbarButton,
-        customizerComponents.markToolbarButton,
-        customizerComponents.mediaEmbedElement,
-        customizerComponents.mediaPopover,
-        customizerComponents.mediaToolbarButton,
-        customizerComponents.mentionElement,
-        customizerComponents.mentionInputElement,
-        customizerComponents.modeDropdownMenu,
-        customizerComponents.moreDropdownMenu,
-        customizerComponents.outdentToolbarButton,
-        customizerComponents.paragraphElement,
-        customizerComponents.placeholder,
-        customizerComponents.popover,
-        customizerComponents.resizable,
-        customizerComponents.searchHighlightLeaf,
-        customizerComponents.separator,
-        customizerComponents.tableCellElement,
-        customizerComponents.tableDropdownMenu,
-        customizerComponents.tableElement,
-        customizerComponents.tableRowElement,
-        customizerComponents.todoListElement,
-        customizerComponents.toggleElement,
-        customizerComponents.toggleToolbarButton,
-        customizerComponents.toolbar,
-        customizerComponents.tooltip,
-        customizerComponents.turnIntoDropdownMenu,
-      ],
+      items: registryToNav(uiNodes),
+      title: 'Node Components',
+    },
+    {
+      items: registryToNav(uiComponents),
       title: 'Components',
+    },
+    {
+      items: registryToNav(uiPrimitives),
+      title: 'Primitives',
     },
   ],
   mainNav: [
@@ -133,6 +172,14 @@ export const docsConfig: DocsConfig = {
       title: 'Components',
     },
     {
+      href: '/editors',
+      title: 'Editors',
+    },
+    {
+      href: '/#potion',
+      title: 'Potion',
+    },
+    {
       external: true,
       href: 'https://github.com/udecode/plate',
       title: 'GitHub',
@@ -141,6 +188,10 @@ export const docsConfig: DocsConfig = {
       external: true,
       href: 'https://discord.gg/mAZRuBzGM3',
       title: 'Discord',
+    },
+    {
+      href: siteConfig.links.platePro,
+      title: 'Plate Plus',
     },
   ],
   sidebarNav: [
@@ -155,8 +206,8 @@ export const docsConfig: DocsConfig = {
           title: 'Getting Started',
         },
         {
-          href: '/',
-          title: 'Playground',
+          href: '/docs/components',
+          title: 'Components',
         },
       ],
       title: 'Overview',
@@ -174,62 +225,50 @@ export const docsConfig: DocsConfig = {
       items: [
         {
           href: '/docs/plugin',
-          label: 'New',
           title: 'Plugin Configuration',
         },
         {
           href: '/docs/plugin-methods',
-          label: 'New',
           title: 'Plugin Methods',
         },
         {
           href: '/docs/plugin-shortcuts',
-          label: 'New',
           title: 'Plugin Shortcuts',
         },
         {
           href: '/docs/plugin-context',
-          label: 'New',
           title: 'Plugin Context',
         },
         {
           href: '/docs/plugin-components',
-          label: 'UI',
           title: 'Plugin Components',
         },
         {
           href: '/docs/editor',
-          label: 'New',
           title: 'Editor Configuration',
         },
         {
           href: '/docs/editor-methods',
-          label: 'New',
           title: 'Editor Methods',
         },
         {
           href: '/docs/controlled',
-          label: 'New',
           title: 'Controlled Value',
         },
         {
           href: '/docs/html',
-          label: 'New',
           title: 'HTML',
         },
         {
           href: '/docs/debugging',
-          label: 'New',
           title: 'Debugging',
         },
         {
           href: '/docs/unit-testing',
-          label: 'New',
           title: 'Unit Testing',
         },
         {
           href: '/docs/playwright',
-          label: 'New',
           title: 'Playwright Testing',
         },
       ],
@@ -237,6 +276,46 @@ export const docsConfig: DocsConfig = {
     },
     {
       items: [
+        {
+          href: '/docs/ai',
+          label: 'New',
+          title: 'AI',
+        },
+        {
+          href: '/docs/copilot',
+          label: 'New',
+          title: 'Copilot',
+        },
+        {
+          href: '/docs/block-menu',
+          label: 'New',
+          title: 'Block Menu',
+        },
+        {
+          href: '/docs/callout',
+          label: 'New',
+          title: 'Callout',
+        },
+        {
+          href: '/docs/equation',
+          label: 'New',
+          title: 'Equation',
+        },
+        {
+          href: '/docs/media-placeholder',
+          label: 'New',
+          title: 'Media Placeholder',
+        },
+        {
+          href: '/docs/slash-command',
+          label: 'New',
+          title: 'Slash Command',
+        },
+        {
+          href: '/docs/toc',
+          label: 'New',
+          title: 'Table of Contents',
+        },
         {
           href: '/docs/alignment',
           title: 'Alignment',
@@ -268,6 +347,11 @@ export const docsConfig: DocsConfig = {
           title: 'Collaboration',
         },
         {
+          href: '/docs/column',
+          label: 'Element',
+          title: 'Column',
+        },
+        {
           href: '/docs/combobox',
           title: 'Combobox',
         },
@@ -277,9 +361,13 @@ export const docsConfig: DocsConfig = {
           title: 'Comments',
         },
         {
-          href: '/docs/column',
-          label: 'Element',
-          title: 'Column',
+          href: '/docs/csv',
+          title: 'CSV',
+        },
+        {
+          href: '/docs/cursor-overlay',
+          label: 'New',
+          title: 'Cursor Overlay',
         },
         {
           href: '/docs/date',
@@ -289,6 +377,10 @@ export const docsConfig: DocsConfig = {
         {
           href: '/docs/dnd',
           title: 'Drag & Drop',
+        },
+        {
+          href: '/docs/docx',
+          title: 'DOCX',
         },
         {
           href: '/docs/emoji',
@@ -303,10 +395,6 @@ export const docsConfig: DocsConfig = {
           href: '/docs/exit-break',
           title: 'Exit Break',
         },
-        // {
-        //   title: 'Find',
-        //   href: '/docs/find-replace',
-        // },
         {
           href: '/docs/font',
           title: 'Font',
@@ -333,6 +421,7 @@ export const docsConfig: DocsConfig = {
           href: '/docs/indent-list',
           title: 'Indent List',
         },
+
         {
           href: '/docs/line-height',
           title: 'Line Height',
@@ -348,6 +437,10 @@ export const docsConfig: DocsConfig = {
           title: 'List',
         },
         {
+          href: '/docs/markdown',
+          title: 'Markdown',
+        },
+        {
           href: '/docs/media',
           label: 'Element',
           title: 'Media',
@@ -360,18 +453,6 @@ export const docsConfig: DocsConfig = {
         {
           href: '/docs/reset-node',
           title: 'Reset Node',
-        },
-        {
-          href: '/docs/csv',
-          title: 'CSV',
-        },
-        {
-          href: '/docs/docx',
-          title: 'DOCX',
-        },
-        {
-          href: '/docs/markdown',
-          title: 'Markdown',
         },
         {
           href: '/docs/single-line',
@@ -401,6 +482,16 @@ export const docsConfig: DocsConfig = {
     {
       items: [
         {
+          href: '/docs/upload',
+          label: 'New',
+          title: 'Upload',
+        },
+        {
+          href: '/docs/examples/version-history',
+          label: 'New',
+          title: 'Version History',
+        },
+        {
           href: '/docs/examples/editable-voids',
           title: 'Editable Voids',
         },
@@ -421,12 +512,7 @@ export const docsConfig: DocsConfig = {
           title: 'Preview Markdown',
         },
         {
-          href: '/docs/examples/version-history',
-          title: 'Version History',
-        },
-        {
           href: '/docs/examples/server',
-          label: 'New',
           title: 'Server-Side',
         },
       ],

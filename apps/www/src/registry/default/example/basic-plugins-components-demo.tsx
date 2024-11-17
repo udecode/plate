@@ -1,4 +1,5 @@
-// local import, not from npm
+'use client';
+
 import {
   BoldPlugin,
   CodePlugin,
@@ -13,7 +14,7 @@ import { HeadingPlugin } from '@udecode/plate-heading/react';
 import Prism from 'prismjs';
 
 import { createPlateUI } from '@/lib/plate/create-plate-ui';
-import { Editor } from '@/registry/default/plate-ui/editor';
+import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 
 export default function BasicPluginsComponentsDemo() {
   const editor = usePlateEditor({
@@ -33,7 +34,9 @@ export default function BasicPluginsComponentsDemo() {
 
   return (
     <Plate editor={editor}>
-      <Editor placeholder="Type..." autoFocus={false} spellCheck={false} />
+      <EditorContainer>
+        <Editor placeholder="Type..." autoFocus={false} spellCheck={false} />
+      </EditorContainer>
     </Plate>
   );
 }

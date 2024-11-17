@@ -1,5 +1,5 @@
 export const getSelectedDomNode = (id: string) => {
-  return document.querySelector(`.slate-selectable[data-key="${id}"]`);
+  return document.querySelector(`.slate-selectable[data-block-id="${id}"]`);
 };
 
 export const getAllSelectableDomNode = () => {

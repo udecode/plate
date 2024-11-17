@@ -1,3 +1,5 @@
+'use client';
+
 import React, {
   type HTMLAttributes,
   type ReactNode,
@@ -17,14 +19,17 @@ import type { PointRef } from 'slate';
 import {
   type ComboboxItemProps,
   Combobox,
+  ComboboxGroup,
+  ComboboxGroupLabel,
   ComboboxItem,
   ComboboxPopover,
   ComboboxProvider,
+  ComboboxRow,
   Portal,
   useComboboxContext,
   useComboboxStore,
 } from '@ariakit/react';
-import { cn } from '@udecode/cn';
+import { cn, withCn } from '@udecode/cn';
 import { filterWords } from '@udecode/plate-combobox';
 import {
   type UseComboboxInputResult,
@@ -46,14 +51,14 @@ import {
 import { cva } from 'class-variance-authority';
 
 type FilterFn = (
-  item: { value: string; keywords?: string[] },
+  item: { value: string; group?: string; keywords?: string[]; label?: string },
   search: string
 ) => boolean;
 
 interface InlineComboboxContextValue {
   filter: FilterFn | false;
   inputProps: UseComboboxInputResult['props'];
-  inputRef: RefObject<HTMLInputElement>;
+  inputRef: RefObject<HTMLInputElement | null>;
   removeInput: UseComboboxInputResult['removeInput'];
   setHasEmpty: (hasEmpty: boolean) => void;
   showTrigger: boolean;
@@ -64,8 +69,18 @@ const InlineComboboxContext = createContext<InlineComboboxContextValue>(
   null as any
 );
 
-export const defaultFilter: FilterFn = ({ keywords = [], value }, search) =>
-  [value, ...keywords].some((keyword) => filterWords(keyword, search));
+export const defaultFilter: FilterFn = (
+  { group, keywords = [], label, value },
+  search
+) => {
+  const uniqueTerms = new Set(
+    [value, ...keywords, group, label].filter(Boolean)
+  );
+
+  return Array.from(uniqueTerms).some((keyword) =>
+    filterWords(keyword!, search)
+  );
+};
 
 interface InlineComboboxProps {
   children: ReactNode;
@@ -279,7 +294,7 @@ const InlineComboboxContent: typeof ComboboxPopover = ({
 };
 
 const comboboxItemVariants = cva(
-  'relative flex h-9 select-none items-center rounded-sm px-2 py-1.5 text-sm text-foreground outline-none',
+  'relative mx-1 flex h-[28px] select-none items-center rounded-sm px-2 text-sm text-foreground outline-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
   {
     defaultVariants: {
       interactive: true,
@@ -294,13 +309,19 @@ const comboboxItemVariants = cva(
 );
 
 export type InlineComboboxItemProps = {
+  focusEditor?: boolean;
+  group?: string;
   keywords?: string[];
+  label?: string;
 } & ComboboxItemProps &
   Required<Pick<ComboboxItemProps, 'value'>>;
 
 const InlineComboboxItem = ({
   className,
+  focusEditor = true,
+  group,
   keywords,
+  label,
   onClick,
   ...props
 }: InlineComboboxItemProps) => {
@@ -314,8 +335,9 @@ const InlineComboboxItem = ({
   const search = filter && store.useState('value');
 
   const visible = useMemo(
-    () => !filter || filter({ keywords, value }, search as string),
-    [filter, value, keywords, search]
+    () =>
+      !filter || filter({ group, keywords, label, value }, search as string),
+    [filter, group, keywords, label, value, search]
   );
 
   if (!visible) return null;
@@ -324,7 +346,7 @@ const InlineComboboxItem = ({
     <ComboboxItem
       className={cn(comboboxItemVariants(), className)}
       onClick={(event) => {
-        removeInput(true);
+        removeInput(focusEditor);
         onClick?.(event);
       }}
       {...props}
@@ -359,10 +381,25 @@ const InlineComboboxEmpty = ({
   );
 };
 
+const InlineComboboxRow = ComboboxRow;
+
+const InlineComboboxGroup = withCn(
+  ComboboxGroup,
+  'hidden py-1.5 [&:has([role=option])]:block [&:not(:last-child)]:border-b'
+);
+
+const InlineComboboxGroupLabel = withCn(
+  ComboboxGroupLabel,
+  'mb-2 mt-1.5 px-3 text-xs font-medium text-muted-foreground'
+);
+
 export {
   InlineCombobox,
   InlineComboboxContent,
   InlineComboboxEmpty,
+  InlineComboboxGroup,
+  InlineComboboxGroupLabel,
   InlineComboboxInput,
   InlineComboboxItem,
+  InlineComboboxRow,
 };

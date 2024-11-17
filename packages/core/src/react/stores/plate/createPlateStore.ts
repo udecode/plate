@@ -19,6 +19,7 @@ export const GLOBAL_PLATE_SCOPE = Symbol('global-plate');
 
 export const createPlateStore = <E extends PlateEditor = PlateEditor>({
   id,
+  containerRef = { current: null },
   decorate = null,
   editor,
   isMounted = false,
@@ -26,6 +27,7 @@ export const createPlateStore = <E extends PlateEditor = PlateEditor>({
   readOnly = null,
   renderElement = null,
   renderLeaf = null,
+  scrollRef = { current: null },
   versionDecorate = 1,
   versionEditor = 1,
   versionSelection = 1,
@@ -37,6 +39,7 @@ export const createPlateStore = <E extends PlateEditor = PlateEditor>({
 }: Partial<PlateStoreState<E>> = {}) =>
   createAtomStore(
     {
+      containerRef,
       decorate,
       editor,
       isMounted,
@@ -44,6 +47,7 @@ export const createPlateStore = <E extends PlateEditor = PlateEditor>({
       readOnly,
       renderElement,
       renderLeaf,
+      scrollRef,
       versionDecorate,
       versionEditor,
       versionSelection,
@@ -89,10 +93,6 @@ export const usePlateEditorStore = (
   // Try to fetch the store from a Plate provider
   const localStore = usePlateStore(id).store({ warnIfNoStore: false }) ?? null;
 
-  /**
-   * To preserve hook order, only use `localStore` if it was present on first
-   * render. This lets us call `usePlateControllerEditorStore` conditionally.
-   */
   const [localStoreExists] = React.useState(!!localStore);
 
   // If no store was found, try to fetch the store from a PlateController

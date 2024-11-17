@@ -13,7 +13,7 @@ description: Collaborate with others in a single document.
 
 ## Features
 
-- The yjs plugin enables support for collaboration using <Link href="https://docs.slate-yjs.dev/">slate-yjs</Link> and <Link href="https://docs.slate-yjs.dev/walkthroughs/collaboration-hocuspocus">Hocuspocus</Link>.
+- The yjs plugin enables support for collaboration using [slate-yjs](https://docs.slate-yjs.dev/) and [Hocuspocus](https://docs.slate-yjs.dev/walkthroughs/collaboration-hocuspocus).
 
 </PackageInfo>
 
@@ -34,18 +34,20 @@ const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
     YjsPlugin.configure({
-      hocuspocusProviderOptions: {
-        url: 'https://hocuspocus.test/hocuspocus',
-        name: 'test',
+      options: {
+        hocuspocusProviderOptions: {
+          url: "https://hocuspocus.test/hocuspocus",
+          name: "test",
+        },
       },
     }),
-  ]
+  ],
 });
 ```
 
 ## Backend
 
-Follow the backend instructions in <Link href="https://tiptap.dev/hocuspocus/getting-started">Hocuspocus docs</Link>.
+Follow the backend instructions in [Hocuspocus docs](https://tiptap.dev/hocuspocus/getting-started).
 
 ## Plugins
 
@@ -56,7 +58,7 @@ Follow the backend instructions in <Link href="https://tiptap.dev/hocuspocus/get
 Configuration for handling cursors in the editor. These options are passed
 to the `withCursors` function.
 
-- <Link href="https://docs.slate-yjs.dev/api/slate-yjs-core/cursor-plugin#withcursors">WithCursorsOptions API</Link>.
+- [WithCursorsOptions API](https://docs.slate-yjs.dev/api/slate-yjs-core/cursor-plugin#withcursors).
 
 </APIItem>
 <APIItem
@@ -66,14 +68,14 @@ to the `withCursors` function.
 >
 Configuration for the Hocuspocus provider.
 
-- <Link href="https://tiptap.dev/hocuspocus/provider/configuration">HocuspocusProviderConfiguration API</Link>.
+- [HocuspocusProviderConfiguration API](https://tiptap.dev/hocuspocus/provider/configuration).
 
 </APIItem>
 <APIItem name="yjsOptions" type="WithYjsOptions" optional>
 Optional configuration for the Yjs integration. These options are passed to
 the `withYjs` function.
 
-- <Link href="https://docs.slate-yjs.dev/api/slate-yjs-core/yjs-plugin#withyjs">WithYjsOptions API</Link>.
+- [WithYjsOptions API](https://docs.slate-yjs.dev/api/slate-yjs-core/yjs-plugin#withyjs).
 
 </APIItem>
 <APIItem name="disableCursors" type="boolean" optional>
@@ -102,7 +104,7 @@ Higher-order function that wraps a Plate editor with Yjs support, allowing for r
 
 <APIAttributes>
 
-Extends `YjsEditorProps` and <Link href="https://docs.slate-yjs.dev/api/slate-yjs-core/cursor-plugin#cursoreditor">CursorEditor</Link>.
+Extends `YjsEditorProps` and [CursorEditor](https://docs.slate-yjs.dev/api/slate-yjs-core/cursor-plugin#cursoreditor).
 
 <APIItem name="yjs" type="object">
   
@@ -122,8 +124,8 @@ The Hocuspocus provider instance.
 
 ### YHistoryEditorProps
 
-Extends `YjsEditorProps`, <Link href="https://docs.slate-yjs.dev/api/slate-yjs-core/history-plugin#yhistoryeditor">YHistoryEditor</Link>.
+Extends `YjsEditorProps`, [YHistoryEditor](https://docs.slate-yjs.dev/api/slate-yjs-core/history-plugin#yhistoryeditor).
 
 ### YjsEditorProps
 
-<Link href="https://docs.slate-yjs.dev/api/slate-yjs-core/yjs-plugin#yjseditor">YjsEditor API</Link>.
+[YjsEditor API](https://docs.slate-yjs.dev/api/slate-yjs-core/yjs-plugin#yjseditor).

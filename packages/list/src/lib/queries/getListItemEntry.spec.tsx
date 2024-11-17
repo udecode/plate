@@ -1,13 +1,13 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import type { SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { getListItemEntry } from './getListItemEntry';
 
-jsx;
+jsxt;
 
 describe('when the cursor is in a list item paragraph', () => {
   const input = (

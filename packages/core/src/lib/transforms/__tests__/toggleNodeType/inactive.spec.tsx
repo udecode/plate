@@ -1,13 +1,13 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import type { SlateEditor } from '../../../editor';
 
 import { createPlateEditor } from '../../../../react';
 
-jsx;
+jsxt;
 
 const input = (
   <editor>

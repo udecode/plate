@@ -1,0 +1,18 @@
+{
+  "dependencies": [
+    "@udecode/plate-link"
+  ],
+  "files": [
+    {
+      "content": "'use client';\n\nimport { LinkPlugin } from '@udecode/plate-link/react';\n\nimport { LinkFloatingToolbar } from '@/components/plate-ui/link-floating-toolbar';\n\nexport const linkPlugin = LinkPlugin.extend({\n  render: { afterEditable: () => <LinkFloatingToolbar /> },\n});\n",
+      "path": "components/editor/plugins/link-plugin.tsx",
+      "target": "components/editor/plugins/link-plugin.tsx",
+      "type": "registry:component"
+    }
+  ],
+  "name": "link-plugin",
+  "registryDependencies": [
+    "link-floating-toolbar"
+  ],
+  "type": "registry:component"
+}

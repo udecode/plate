@@ -6,7 +6,6 @@ import { DefaultElement } from 'slate-react';
 
 import type { PlateEditor } from '../editor/PlateEditor';
 
-import { pipeInjectNodeProps } from '../../lib';
 import { type RenderElement, pluginRenderElement } from './pluginRenderElement';
 
 /** @see {@link RenderElement} */
@@ -22,9 +21,7 @@ export const pipeRenderElement = (
     }
   });
 
-  return function render(nodeProps) {
-    const props = pipeInjectNodeProps(editor, nodeProps);
-
+  return function render(props) {
     let element;
 
     renderElements.some((renderElement) => {
@@ -38,6 +35,10 @@ export const pipeRenderElement = (
       return renderElementProp(props);
     }
 
-    return <DefaultElement {...props} />;
+    return (
+      <DefaultElement attributes={props.attributes} element={props.element}>
+        {props.children}
+      </DefaultElement>
+    );
   };
 };

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+
 import { cn, withRef } from '@udecode/cn';
 import {
   useComposedRef,
@@ -9,16 +10,14 @@ import {
   useEventEditorSelectors,
 } from '@udecode/plate-common/react';
 import {
+  type FloatingToolbarState,
   flip,
   offset,
   useFloatingToolbar,
   useFloatingToolbarState,
 } from '@udecode/plate-floating';
-import { LinkPlugin } from '@udecode/plate-link/react';
 
 import { Toolbar } from './toolbar';
-
-import type { FloatingToolbarState } from '@udecode/plate-floating';
 
 export const FloatingToolbar = withRef<
   typeof Toolbar,
@@ -29,12 +28,13 @@ export const FloatingToolbar = withRef<
   const editor = useEditorRef();
   const editorId = useEditorId();
   const focusedEditorId = useEventEditorSelectors.focus();
-  const isFloatingLinkOpen = !!editor.useOption(LinkPlugin, 'mode');
+  const isFloatingLinkOpen = !!editor.useOption({ key: 'a' }, 'mode');
+  const isAIChatOpen = editor.useOption({ key: 'aiChat' }, 'open');
 
   const floatingToolbarState = useFloatingToolbarState({
     editorId,
     focusedEditorId,
-    hideToolbar: isFloatingLinkOpen,
+    hideToolbar: isFloatingLinkOpen || isAIChatOpen,
     ...state,
     floatingOptions: {
       middleware: [
@@ -70,7 +70,8 @@ export const FloatingToolbar = withRef<
       <Toolbar
         ref={ref}
         className={cn(
-          'absolute z-50 whitespace-nowrap rounded-md border bg-popover px-1 opacity-100 shadow-md print:hidden'
+          'absolute z-50 overflow-x-auto whitespace-nowrap rounded-md border bg-popover p-1 opacity-100 shadow-md scrollbar-hide print:hidden',
+          'max-w-[80vw]'
         )}
         {...rootProps}
         {...props}

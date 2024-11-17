@@ -1,0 +1,18 @@
+{
+  "dependencies": [
+    "@udecode/plate-comments"
+  ],
+  "files": [
+    {
+      "content": "'use client';\n\nimport { CommentsPlugin } from '@udecode/plate-comments/react';\n\nimport { CommentsPopover } from '@/components/plate-ui/comments-popover';\n\nexport const commentsPlugin = CommentsPlugin.configure({\n  options: {\n    myUserId: '1',\n    users: {\n      1: {\n        id: '1',\n        avatarUrl: 'https://avatars.githubusercontent.com/u/19695832?s=96&v=4',\n        name: 'zbeyens',\n      },\n      2: {\n        id: '2',\n        avatarUrl: 'https://avatars.githubusercontent.com/u/4272090?v=4',\n        name: '12joan',\n      },\n    },\n  },\n  render: { afterEditable: () => <CommentsPopover /> },\n});\n",
+      "path": "components/editor/plugins/comments-plugin.tsx",
+      "target": "components/editor/plugins/comments-plugin.tsx",
+      "type": "registry:component"
+    }
+  ],
+  "name": "comments-plugin",
+  "registryDependencies": [
+    "comments-popover"
+  ],
+  "type": "registry:component"
+}

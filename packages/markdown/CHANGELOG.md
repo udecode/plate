@@ -1,5 +1,25 @@
 # @udecode/plate-md-serializer
 
+## 40.0.5
+
+### Patch Changes
+
+- [`c7a030e31590f558b63685040df55a8d9d6a79bb`](https://github.com/udecode/plate/commit/c7a030e31590f558b63685040df55a8d9d6a79bb) by [@zbeyens](https://github.com/zbeyens) – Support deserializing tables
+
+## 40.0.4
+
+### Patch Changes
+
+- [#3764](https://github.com/udecode/plate/pull/3764) by [@abhi-bc](https://github.com/abhi-bc) – fix: [add strikethrough support to deserializeMd](https://github.com/udecode/plate/issues/3733)
+
+## 40.0.0
+
+### Minor Changes
+
+- [#3744](https://github.com/udecode/plate/pull/3744) by [@zbeyens](https://github.com/zbeyens) –
+  - `api.markdown.deserialize`: add second argument option: `processor?: (processor: Processor) => Processor`. You could use this to add other remark plugins like `remark-gfm`.
+  - Add `delete` text rule. This does not add support for strikethrough yet.
+
 ## 39.2.0
 
 ### Minor Changes

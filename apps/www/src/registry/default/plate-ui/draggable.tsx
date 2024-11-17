@@ -23,8 +23,9 @@ import {
   useDropLine,
 } from '@udecode/plate-dnd';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import { GripVertical } from 'lucide-react';
+import { useSelected } from 'slate-react';
 
-import { Icons } from '@/components/icons';
 import { useMounted } from '@/registry/default/hooks/use-mounted';
 
 import {
@@ -110,14 +111,16 @@ const Gutter = React.forwardRef<
   const { useOption } = useEditorPlugin(BlockSelectionPlugin);
   const isSelectionAreaVisible = useOption('isSelectionAreaVisible');
   const gutter = useDraggableGutter();
+  const selected = useSelected();
 
   return (
     <div
       ref={ref}
       className={cn(
         'slate-gutterLeft',
-        'absolute -top-px z-50 flex h-full -translate-x-full cursor-text opacity-0 hover:opacity-100 group-hover:opacity-100',
+        'absolute -top-px z-50 flex h-full -translate-x-full cursor-text hover:opacity-100 sm:opacity-0 main-hover:group-hover:opacity-100',
         isSelectionAreaVisible && 'hidden',
+        !selected && 'opacity-0',
         className
       )}
       {...props}
@@ -135,7 +138,7 @@ const DragHandle = React.memo(() => {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger type="button">
-          <Icons.dragHandle
+          <GripVertical
             className="size-4 text-muted-foreground"
             onClick={(event) => {
               event.stopPropagation();

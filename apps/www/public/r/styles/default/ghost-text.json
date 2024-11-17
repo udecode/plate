@@ -1,0 +1,33 @@
+{
+  "dependencies": [
+    "@udecode/plate-ai"
+  ],
+  "doc": {
+    "description": "A text suggestion system that displays AI-generated content after the cursor.",
+    "docs": [
+      {
+        "route": "/docs/copilot",
+        "title": "Copilot"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/ghost-text"
+      }
+    ],
+    "examples": [
+      "copilot-demo",
+      "copilot-pro"
+    ],
+    "label": "New"
+  },
+  "files": [
+    {
+      "content": "'use client';\n\nimport React from 'react';\n\nimport type { CopilotPluginConfig } from '@udecode/plate-ai/react';\n\nimport { useEditorPlugin, useElement } from '@udecode/plate-common/react';\n\nexport const GhostText = () => {\n  const { useOption } = useEditorPlugin<CopilotPluginConfig>({\n    key: 'copilot',\n  });\n  const element = useElement();\n\n  const isSuggested = useOption('isSuggested', element.id as string);\n\n  if (!isSuggested) return null;\n\n  return <GhostTextContent />;\n};\n\nexport function GhostTextContent() {\n  const { useOption } = useEditorPlugin<CopilotPluginConfig>({\n    key: 'copilot',\n  });\n\n  const suggestionText = useOption('suggestionText');\n\n  return (\n    <span\n      className=\"max-sm:hidden pointer-events-none text-muted-foreground/70\"\n      contentEditable={false}\n    >\n      {suggestionText && suggestionText}\n    </span>\n  );\n}\n",
+      "path": "plate-ui/ghost-text.tsx",
+      "target": "components/plate-ui/ghost-text.tsx",
+      "type": "registry:ui"
+    }
+  ],
+  "name": "ghost-text",
+  "registryDependencies": [],
+  "type": "registry:ui"
+}

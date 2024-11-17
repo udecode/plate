@@ -1,4 +1,5 @@
-import { getEmptyImage } from 'react-dnd-html5-backend';
+import { useEffect } from 'react';
+import { NativeTypes, getEmptyImage } from 'react-dnd-html5-backend';
 
 import type { DropTargetMonitor } from 'react-dnd';
 
@@ -48,7 +49,6 @@ export const useDndNode = ({
   onDropHandler,
 }: UseDndNodeOptions) => {
   const editor = useEditorRef();
-
   const [dropLine, setDropLine] = useDraggableStore().use.dropLine();
 
   const [{ isDragging }, dragRef, preview] = useDragNode(editor, {
@@ -58,7 +58,7 @@ export const useDndNode = ({
   });
   const [{ isOver }, drop] = useDropNode(editor, {
     id,
-    accept: type,
+    accept: [type, NativeTypes.FILE],
     dropLine,
     nodeRef,
     onChangeDropLine: setDropLine,
@@ -75,9 +75,12 @@ export const useDndNode = ({
   } else {
     preview(drop(nodeRef));
   }
-  if (!isOver && dropLine) {
-    setDropLine('');
-  }
+
+  useEffect(() => {
+    if (!isOver && dropLine) {
+      setDropLine('');
+    }
+  }, [isOver, dropLine, setDropLine]);
 
   return {
     dragRef,

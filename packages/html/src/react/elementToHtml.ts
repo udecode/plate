@@ -2,7 +2,7 @@ import type React from 'react';
 
 import type { TRenderElementProps } from '@udecode/slate-react';
 
-import { getEditorPlugin, pipeInjectNodeProps } from '@udecode/plate-common';
+import { getEditorPlugin } from '@udecode/plate-common';
 import {
   type PlateEditor,
   type PlateProps,
@@ -34,8 +34,6 @@ export const elementToHtml = (
   if (!props.element.type) {
     return html;
   }
-
-  props = pipeInjectNodeProps(editor, props);
 
   // Search for matching plugin based on element type
   editor.pluginList.some((plugin) => {

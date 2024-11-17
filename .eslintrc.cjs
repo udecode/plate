@@ -16,7 +16,6 @@ module.exports = {
     'turbo',
 
     './config/eslint/bases/typescript.cjs',
-    './config/eslint/bases/regexp.cjs',
     './config/eslint/bases/jest.cjs',
     './config/eslint/bases/react.cjs',
     './config/eslint/bases/tailwind.cjs',
@@ -43,28 +42,28 @@ module.exports = {
         project: true,
       },
     },
-    {
-      extends: ['plugin:@dword-design/import-alias/recommended'],
-      files: ['apps/www/src/**/*'],
-      rules: {
-        '@dword-design/import-alias/prefer-alias': [
-          'warn',
-          {
-            alias: {
-              '@/__registry__': './apps/www/src/__registry__',
-              '@/app': './apps/www/src/app',
-              '@/components': './apps/www/src/components',
-              '@/hooks': './apps/www/src/hooks',
-              '@/lib': './apps/www/src/lib',
-              '@/plate': './apps/www/src/lib/plate',
-              '@/registry': './apps/www/src/registry',
-              '@/styles': './apps/www/src/styles',
-            },
-          },
-        ],
-        'import/no-relative-packages': 'off',
-      },
-    },
+    // {
+    //   extends: ['plugin:@dword-design/import-alias/recommended'],
+    //   files: ['apps/www/src/**/*'],
+    //   rules: {
+    //     '@dword-design/import-alias/prefer-alias': [
+    //       'warn',
+    //       {
+    //         alias: {
+    //           '@/__registry__': './apps/www/src/__registry__',
+    //           '@/app': './apps/www/src/app',
+    //           '@/components': './apps/www/src/components',
+    //           '@/hooks': './apps/www/src/hooks',
+    //           '@/lib': './apps/www/src/lib',
+    //           '@/plate': './apps/www/src/lib/plate',
+    //           '@/registry': './apps/www/src/registry',
+    //           '@/styles': './apps/www/src/styles',
+    //         },
+    //       },
+    //     ],
+    //     'import/no-relative-packages': 'off',
+    //   },
+    // },
     {
       files: filePatterns.test,
       rules: {

@@ -1,51 +1,48 @@
+'use client';
+
 import React from 'react';
 
 import { cn } from '@udecode/cn';
-import {
-  createPlatePlugin,
-  findEventRange,
-  useEditorRef,
-} from '@udecode/plate-common/react';
+import { isCollapsed } from '@udecode/plate-common';
 import {
   type CursorData,
-  type CursorOverlayProps,
-  type CursorProps,
-  type CursorState,
-  CursorOverlay as CursorOverlayPrimitive,
-} from '@udecode/plate-cursor';
-import { DndPlugin } from '@udecode/plate-dnd';
+  type CursorOverlayState,
+  useCursorOverlay,
+} from '@udecode/plate-selection/react';
 
 export function Cursor({
+  id,
   caretPosition,
-  classNames,
   data,
-  disableCaret,
-  disableSelection,
+  selection,
   selectionRects,
-}: CursorProps<CursorData>) {
+}: CursorOverlayState<CursorData>) {
   const { style, selectionStyle = style } = data ?? ({} as CursorData);
+  const isCursor = isCollapsed(selection);
 
   return (
     <>
-      {!disableSelection &&
-        selectionRects.map((position, i) => (
+      {selectionRects.map((position, i) => {
+        return (
           <div
             key={i}
             className={cn(
-              'pointer-events-none absolute z-10 opacity-30',
-              classNames?.selectionRect
+              'pointer-events-none absolute z-10',
+              id === 'selection' && 'bg-brand/25',
+              id === 'selection' && isCursor && 'bg-primary'
             )}
             style={{
               ...selectionStyle,
               ...position,
             }}
           />
-        ))}
-      {!disableCaret && caretPosition && (
+        );
+      })}
+      {caretPosition && (
         <div
           className={cn(
             'pointer-events-none absolute z-10 w-0.5',
-            classNames?.caret
+            id === 'drag' && 'w-px bg-brand'
           )}
           style={{ ...caretPosition, ...style }}
         />
@@ -54,53 +51,14 @@ export function Cursor({
   );
 }
 
-export function CursorOverlay({ cursors, ...props }: CursorOverlayProps) {
-  const editor = useEditorRef();
-  const dynamicCursors = editor.useOption(DragOverCursorPlugin, 'cursors');
-
-  const allCursors = { ...cursors, ...dynamicCursors };
+export function CursorOverlay() {
+  const { cursors } = useCursorOverlay();
 
   return (
-    <CursorOverlayPrimitive
-      {...props}
-      onRenderCursor={Cursor}
-      cursors={allCursors}
-    />
+    <>
+      {cursors.map((cursor) => (
+        <Cursor key={cursor.id} {...cursor} />
+      ))}
+    </>
   );
 }
-
-const DragOverCursorPlugin = createPlatePlugin({
-  key: 'dragOverCursor',
-  options: { cursors: {} as Record<string, CursorState<CursorData>> },
-  handlers: {
-    onDragEnd: ({ editor, plugin }) => {
-      editor.setOption(plugin, 'cursors', {});
-    },
-    onDragLeave: ({ editor, plugin }) => {
-      editor.setOption(plugin, 'cursors', {});
-    },
-    onDragOver: ({ editor, event, plugin }) => {
-      if (editor.getOptions(DndPlugin).isDragging) return;
-
-      const range = findEventRange(editor, event);
-
-      if (!range) return;
-
-      editor.setOption(plugin, 'cursors', {
-        drag: {
-          key: 'drag',
-          data: {
-            style: {
-              backgroundColor: 'hsl(222.2 47.4% 11.2%)',
-              width: 3,
-            },
-          },
-          selection: range,
-        },
-      });
-    },
-    onDrop: ({ editor, plugin }) => {
-      editor.setOption(plugin, 'cursors', {});
-    },
-  },
-});

@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-date",
-  "version": "39.0.0",
+  "version": "40.0.0",
   "description": "Date plugin for Plate",
   "keywords": [
     "plate",
@@ -53,7 +53,7 @@
     "@udecode/plate-common": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate-common": ">=39.2.12",
+    "@udecode/plate-common": ">=40.0.3",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.94.0",

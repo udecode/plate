@@ -9,48 +9,96 @@ description: Add dependencies to your project manually.
 
 Components are styled using Tailwind CSS. You need to install Tailwind CSS in your project.
 
-<Link href="https://tailwindcss.com/docs/installation">Follow the Tailwind CSS installation instructions to get started.</Link>
+[Follow the Tailwind CSS installation instructions](https://tailwindcss.com/docs/installation) to get started.
 
 ### Add dependencies
 
 Add the following dependencies to your project:
 
 ```bash
-npm install @udecode/cn tailwindcss-animate class-variance-authority tailwind-merge lucide-react
+npm install slate slate-dom slate-react slate-history slate-hyperscript @udecode/plate-common @udecode/cn class-variance-authority tailwindcss-animate tailwind-scrollbar-hide lucide-react
+```
+
+### Configure path aliases
+
+```json {3-6} title="tsconfig.json"
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
+  }
+}
 ```
 
 ### Configure tailwind.config.js
 
-Here's what demo `tailwind.config.js` looks like:
-
-<ComponentSource
-  src="../../templates/plate-playground-template/tailwind.config.js"
-  open
-/>
+<ComponentSource src="../../templates/plate-playground-template/tailwind.config.ts" />
 
 ### Configure styles
 
-Add the following to your `styles/globals.css` file. You can learn more about using CSS variables for theming in the [theming section](/docs/components/theming).
+<ComponentSource src="../../templates/plate-playground-template/src/app/globals.css" />
 
-<ComponentSource
-  src="../../templates/plate-playground-template/src/styles/globals.css"
-  open
-/>
+### Configure components.json
 
-### Add icons
+Create [components.json](/docs/components/components-json) at the root of your project, then add the following:
 
-Add the icons you'll use in `components/icons.tsx`:
+```json
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "default",
+  "rsc": true,
+  "tsx": true,
+  "aliases": {
+    "components": "@/components",
+    "hooks": "@/hooks",
+    "lib": "@/lib",
+    "ui": "@/components/ui",
+    "utils": "@/lib/utils"
+  },
+  "tailwind": {
+    "baseColor": "slate",
+    "config": "tailwind.config.ts",
+    "css": "src/app/globals.css",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "registries": {
+    "plate": {
+      "aliases": {
+        "ui": "@/components/plate-ui"
+      },
+      "url": "https://platejs.org/r"
+    }
+  }
+}
+```
 
-<ComponentSource src="../../templates/plate-playground-template/src/components/icons.tsx" />
+Adjust the values as needed.
 
-We use icons from <Link href="https://lucide.dev">Lucide</Link>. You can use any icon library you want.
+### That's it
 
-### Add components
-
-You can now start adding components to your project.
+You can now start adding components to your project:
 
 ```bash
-npx shadcx@latest add paragraph-element -r plate-ui
+npx shadcx@latest add -r plate
 ```
+
+### Add editor (optional)
+
+Choose your editor to get started ([browse available editors](/editors)). 
+
+[Minimal Editor](https://template.platejs.org/editor)
+```bash
+npx shadcx@latest add plate/editor-basic
+```
+
+[AI Editor](https://playground.platejs.org/editor)
+```bash
+npx shadcx@latest add plate/editor-ai
+```
+
+This will add a page in `app/editor` along with all necessary components in `components/plate-ui` as a starting point.
 
 </Steps>

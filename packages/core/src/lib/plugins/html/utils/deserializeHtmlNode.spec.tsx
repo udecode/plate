@@ -1,11 +1,11 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
-import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
+import { getHtmlDocument, jsxt } from '@udecode/plate-test-utils';
 
 import { createPlateEditor } from '../../../../react';
 import { deserializeHtmlNode } from './deserializeHtmlNode';
 
-jsx;
+jsxt;
 
 describe('when element has a br', () => {
   const editor = createPlateEditor({ plugins: [] });

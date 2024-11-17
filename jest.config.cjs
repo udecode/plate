@@ -1,5 +1,5 @@
-const { pathsToModuleNameMapper } = require('ts-jest');
 const appRoot = require('app-root-path');
+const { pathsToModuleNameMapper } = require('ts-jest');
 
 const packageJson = require(`${process.cwd()}/package.json`);
 const packageName = packageJson.name ?? 'plate';
@@ -41,7 +41,7 @@ module.exports = {
     '!**/*stories*',
     '!**/*.development.*',
   ],
-  coveragePathIgnorePatterns: ['/node_modules/', '\\.d\\.ts$'],
+  coveragePathIgnorePatterns: ['/node_modules/', String.raw`\.d\.ts$`],
   displayName: packageName,
   moduleDirectories: ['node_modules'],
   moduleFileExtensions: ['js', 'json', 'ts', 'tsx'],
@@ -59,10 +59,20 @@ module.exports = {
     '^.+\\.(t|j)sx?$': '@swc/jest',
   },
   transformIgnorePatterns: [
-    '/node_modules/(?!(react-dnd|dnd-core|@react-dnd|react-dnd-html5-backend|react-tweet|unified' +
-    '|remark-parse|bail|devlop|is-plain-obj|trough|vfile|vfile-message|is-reference|is-buffer|@types/unist' +
-    '|unist-util-stringify-position|mdast-util-from-markdown|mdast-util-to-string' +
-    ')/)',
+    '/node_modules/(?!(' +
+      'react-dnd|dnd-core|@react-dnd|react-dnd-html5-backend|react-tweet|unified' +
+      '|remark-.*' +
+      '|mdast-.*' +
+      '|micromark.*' +
+      '|unist-.*' +
+      '|markdown-table' +
+      // '|markdown-.*' +
+      '|mdast-util-to-markdown|zwitch|longest-streak|unist-util-visit|mdast-util-phrasing' +
+      '|escape-string-regexp|micromark-util-decode-string|decode-named-character-reference' +
+      '|ccount|bail|devlop|is-plain-obj|trough|vfile|vfile-message' +
+      '|is-reference|is-buffer|@types/unist' +
+      '|unist-util-stringify-position|mdast-util-from-markdown|mdast-util-to-string' +
+      ')/)',
   ],
   watchman: false,
 };

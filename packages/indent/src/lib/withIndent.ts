@@ -1,4 +1,4 @@
-import { getKeyByType } from '@udecode/plate-common';
+import { getInjectMatch } from '@udecode/plate-common';
 import {
   type ExtendEditor,
   setElements,
@@ -14,9 +14,7 @@ import type { IndentConfig, TIndentElement } from './BaseIndentPlugin';
 export const withIndent: ExtendEditor<IndentConfig> = ({
   editor,
   getOptions,
-  plugin: {
-    inject: { targetPlugins },
-  },
+  plugin,
 }) => {
   const { normalizeNode } = editor;
 
@@ -26,8 +24,10 @@ export const withIndent: ExtendEditor<IndentConfig> = ({
     const element = node as TIndentElement;
     const { type } = element;
 
+    const match = getInjectMatch(editor, plugin);
+
     if (type) {
-      if (targetPlugins!.includes(getKeyByType(editor, type))) {
+      if (match(element, path)) {
         if (indentMax && element.indent && element.indent > indentMax) {
           setElements(editor, { indent: indentMax }, { at: path });
 

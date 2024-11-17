@@ -1,0 +1,16 @@
+{
+  "doc": {
+    "title": "Full Width"
+  },
+  "files": [
+    {
+      "content": "'use client';\n\nimport { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';\nimport { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';\nimport { Plate, usePlateEditor } from '@udecode/plate-common/react';\n\nimport { PlateUI } from '@/plate/demo/plate-ui';\nimport { FloatingToolbarPlugin } from '@/components/editor/plugins/floating-toolbar-plugin';\nimport { Editor, EditorContainer } from '@/components/plate-ui/editor';\n\nexport default function EditorDefault() {\n  const editor = usePlateEditor({\n    override: { components: PlateUI },\n    plugins: [BasicElementsPlugin, BasicMarksPlugin, FloatingToolbarPlugin],\n  });\n\n  return (\n    <Plate editor={editor}>\n      <EditorContainer>\n        <Editor variant=\"fullWidth\" placeholder=\"Type your message here.\" />\n      </EditorContainer>\n    </Plate>\n  );\n}\n",
+      "path": "example/editor-full-width.tsx",
+      "target": "components/editor-full-width.tsx",
+      "type": "registry:example"
+    }
+  ],
+  "name": "editor-full-width",
+  "registryDependencies": [],
+  "type": "registry:example"
+}

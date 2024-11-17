@@ -1,9 +1,10 @@
+'use client';
+
 import React from 'react';
 
 import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 
-import { editableProps } from '@/plate/demo/editableProps';
-import { Editor } from '@/registry/default/plate-ui/editor';
+import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 
 const value = [
   {
@@ -21,7 +22,9 @@ export default function BasicEditorValueDemo() {
 
   return (
     <Plate editor={editor}>
-      <Editor {...editableProps} />
+      <EditorContainer>
+        <Editor />
+      </EditorContainer>
     </Plate>
   );
 }

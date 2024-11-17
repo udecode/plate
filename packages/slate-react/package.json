@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-react",
-  "version": "39.2.1",
+  "version": "40.0.0",
   "description": "Slate extension",
   "keywords": [
     "slate"
@@ -51,7 +51,7 @@
     "react-dom": ">=16.8.0",
     "slate": ">=0.103.0",
     "slate-history": ">=0.93.0",
-    "slate-react": ">=0.108.0"
+    "slate-react": ">=0.111.0"
   },
   "publishConfig": {
     "access": "public"

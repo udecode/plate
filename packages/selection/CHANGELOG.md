@@ -1,5 +1,44 @@
 # @udecode/plate-selection
 
+## 40.1.0
+
+### Minor Changes
+
+- [#3774](https://github.com/udecode/plate/pull/3774) by [@felixfeng33](https://github.com/felixfeng33) – Fix the issue of slow scrolling speed when the cursor is at the bottom.(areaOption needs to be removed to fix the issue.)
+  If there are no special requirements, there is no need to pass areaOptions; the default configuration is the optimal one.
+
+## 40.0.0
+
+### Minor Changes
+
+- [#3744](https://github.com/udecode/plate/pull/3744) by [@zbeyens](https://github.com/zbeyens) –
+  - New plugin `CursorOverlayPlugin`
+  - `useCursorOverlay` now supports collapsed selection using `minSelectionWidth = 1`
+  - selectable depends now on `data-block-id` instead of `data-key`
+  - Fix a bug when deleting selected blocks without id
+  - Fix `useBlockSelected`: use `id` parameter if defined
+
+## 39.3.7
+
+### Patch Changes
+
+- [#3740](https://github.com/udecode/plate/pull/3740) by [@felixfeng33](https://github.com/felixfeng33) – Fix enter can't unselect.
+
+## 39.3.6
+
+### Patch Changes
+
+- [#3738](https://github.com/udecode/plate/pull/3738) by [@felixfeng33](https://github.com/felixfeng33) – New api `editor.getApi(BlockSelectionPlugin).blockSelection.focus();`
+  Fix the issue where block selection should not be unselect when the block context menu is open.
+
+- [`0b9be462fb6cefa2e75f02f2ade0a20c833aca31`](https://github.com/udecode/plate/commit/0b9be462fb6cefa2e75f02f2ade0a20c833aca31) by [@felixfeng33](https://github.com/felixfeng33) – Fix: clicking the left or right padding of the editor did not deselect.
+
+## 39.3.5
+
+### Patch Changes
+
+- [`49c275252b5a24fac53729e5522f0c8192c643f5`](https://github.com/udecode/plate/commit/49c275252b5a24fac53729e5522f0c8192c643f5) by [@felixfeng33](https://github.com/felixfeng33) – Fix the issue where BlockSelection occasionally fails to delete the selected node.
+
 ## 39.2.12
 
 ### Patch Changes

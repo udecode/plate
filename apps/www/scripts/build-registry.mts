@@ -30,6 +30,7 @@ const REGISTRY_INDEX_WHITELIST: z.infer<typeof registryItemTypeSchema>[] = [
   "registry:theme",
   "registry:block",
   "registry:example",
+  "registry:component",
 ]
 
 const project = new Project({
@@ -64,6 +65,7 @@ export const Index: Record<string, any> = {
             typeof file === "string" ? file : file.path
           }`
       )
+
       if (!resolveFiles) {
         continue
       }
@@ -73,8 +75,8 @@ export const Index: Record<string, any> = {
 
       let chunks: any = []
       if (item.type === "registry:block") {
-        const file = resolveFiles[0]
-        const filename = path.basename(file)
+        const file = 'src/' + resolveFiles[0]
+        const filename = 'src/' + path.basename(file)
         let raw: string
         try {
           raw = await fs.readFile(file, "utf8")
@@ -243,7 +245,7 @@ export const Index: Record<string, any> = {
           })
         )
 
-        // // Write the source file for blocks only.
+        // Write the source file for blocks only.
         sourceFilename = `src/__registry__/${style.name}/${type}/${item.name}.tsx`
 
         if (item.files) {
@@ -278,7 +280,7 @@ export const Index: Record<string, any> = {
           componentPath = `@/registry/${style.name}/${files[0].path}`
         }
       }
-
+      
       index += `
     "${item.name}": {
       name: "${item.name}",
@@ -390,6 +392,7 @@ async function buildStyles(registry: Registry) {
               )
               content = fixImport(content)
             } catch (error) {
+              console.error(error)
               return
             }
 
@@ -403,11 +406,15 @@ async function buildStyles(registry: Registry) {
             sourceFile.getVariableDeclaration("description")?.remove()
 
             let target = file.target
+
             if (!target || target === "") {
               const fileName = file.path.split("/").pop()
+              
+              if (file.type === "registry:component") {
+                target = file.path
+              }
               if (
                 file.type === "registry:block" ||
-                file.type === "registry:component" ||
                 file.type === "registry:example"
               ) {
                 target = `components/${fileName}`
@@ -475,9 +482,16 @@ async function buildStylesIndex() {
 
     const dependencies = [
       "tailwindcss-animate",
+      "tailwind-scrollbar-hide",
       "class-variance-authority",
       "lucide-react",
-      "@udecode/cn"
+      "@udecode/cn",
+      "@udecode/plate-common",
+      "slate",
+      "slate-dom",
+      "slate-react",
+      "slate-history",
+      "slate-hyperscript",
     ]
 
     // TODO: Remove this when we migrate to lucide-react.
@@ -493,10 +507,38 @@ async function buildStylesIndex() {
       registryDependencies: [],
       tailwind: {
         config: {
-          plugins: [`require("tailwindcss-animate")`],
+          plugins: [`require("tailwindcss-animate")`, `require("tailwind-scrollbar-hide")`],
+          theme: {
+            extend: {
+              colors: {
+                brand: {
+                  DEFAULT: 'hsl(var(--brand))',
+                  foreground: 'hsl(var(--brand-foreground))',
+                },
+                highlight: {
+                  DEFAULT: 'hsl(var(--highlight))',
+                  foreground: 'hsl(var(--highlight-foreground))',
+                },
+              },
+              screens: {
+                'main-hover': {
+                  raw: '(hover: hover)',
+                },
+              },
+            },
+          },
         },
       },
-      cssVars: {},
+      cssVars: {
+        light: {
+          '--brand': '217.2 91.2% 59.8%',
+          '--highlight': '47.9 95.8% 53.1%',
+        },
+        dark: {
+          '--brand': '213.3 93.9% 67.8%',
+          '--highlight': '48 96% 53%',
+        },
+      },
       files: [],
     }
 
@@ -671,7 +713,7 @@ async function buildThemes() {
     base["cssVarsTemplate"] = template(BASE_STYLES_WITH_VARIABLES)({
       colors: base["cssVars"],
     })
-
+    
     await fs.writeFile(
       path.join(REGISTRY_PATH, `colors/${baseColor}.json`),
       JSON.stringify(base, null, 2),

@@ -3,7 +3,7 @@ title: Store
 description: API reference for Plate store.
 ---
 
-`Plate` is using <Link href="https://github.com/pmndrs/jotai">jotai</Link> to store the state of the editor.
+`Plate` is using [jotai](https://github.com/pmndrs/jotai) to store the state of the editor.
 
 <Callout className="my-4">
   **Note**: To use the store hooks in a component, it needs to be rendered
@@ -29,12 +29,16 @@ A unique ID used as a provider scope. Use it if you have multiple `Plate` in the
 - **Default:** random id
 </APIItem>
 
+<APIItem name="containerRef" type="React.RefObject<HTMLDivElement>">
+A reference to the editor container element.
+</APIItem>
+
 <APIItem name="decorate" type="function" optional>
 Function used to decorate ranges in the editor.
 
-``ts
+```ts
 (options: { editor: PlateEditor; entry: TNodeEntry }) => Range[]
-``
+```
 </APIItem>
 
 <APIItem name="isMounted" type="boolean" optional>
@@ -44,25 +48,25 @@ Whether `Editable` is rendered so slate DOM is resolvable.
 <APIItem name="onChange" type="function" optional>
 Controlled callback called when the editor state changes.
 
-``ts
+```ts
 (options: { editor: PlateEditor; value: ValueOf<PlateEditor> }) => void
-``
+```
 </APIItem>
 
 <APIItem name="onSelectionChange" type="function" optional>
 Controlled callback called when the editor.selection changes.
 
-``ts
+```ts
 (options: { editor: PlateEditor; selection: TSelection }) => void
-``
+```
 </APIItem>
 
 <APIItem name="onValueChange" type="function" optional>
 Controlled callback called when the editor.children changes.
 
-``ts
+```ts
 (options: { editor: PlateEditor; value: ValueOf<PlateEditor> }) => void
-``
+```
 </APIItem>
 
 <APIItem name="primary" type="boolean" optional>
@@ -115,14 +119,14 @@ The following store keys are exposed in `editor.setPlateState`:
 Use `usePlateSelectors(id).<state property>()` when you need to subscribe to a value.
 
 - **Example:** `const value = usePlateSelectors(id).value()` will subscribe to `value` changes.
-- It's using <Link href="https://jotai.org/docs/utils/use-atom-value">useAtomValue</Link> under the hood.
+- It's using [useAtomValue](https://jotai.org/docs/utils/use-atom-value) under the hood.
 
 ## Actions
 
 Use `usePlateStates(id).<state property>()` when you need both the value and the setter of a store property.
 
 - **Example:** `const [value, setValue] = usePlateStates(id).value()`
-- It's using <Link href="https://jotai.org/docs/basics/primitives#use-atom">useAtom</Link> under the hood.
+- It's using [useAtom](https://jotai.org/docs/basics/primitives#use-atom) under the hood.
 
 ### `useRedecorate`
 

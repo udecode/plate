@@ -1,13 +1,13 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import type { SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { isSelectionAtCodeBlockStart } from './isSelectionAtCodeBlockStart';
 
-jsx;
+jsxt;
 
 describe('isSelectionAtCodeBlockStart', () => {
   it('should be false when not in a code block', () => {

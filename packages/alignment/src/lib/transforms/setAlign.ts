@@ -1,9 +1,7 @@
 import {
   type SetNodesOptions,
   type SlateEditor,
-  type TNodeMatch,
-  getKeyByType,
-  isBlock,
+  getInjectMatch,
   setElements,
   unsetNodes,
 } from '@udecode/plate-common';
@@ -22,18 +20,9 @@ export const setAlign = <E extends SlateEditor>(
     setNodesOptions?: SetNodesOptions<E>;
   }
 ) => {
-  const {
-    inject: { targetPlugins },
-  } = editor.getPlugin(BaseAlignPlugin);
   const { defaultNodeValue, nodeKey } = editor.getInjectProps(BaseAlignPlugin);
 
-  const match: TNodeMatch = (n) => {
-    return (
-      isBlock(editor, n) &&
-      !!targetPlugins &&
-      targetPlugins.includes(getKeyByType(editor, n.type as string))
-    );
-  };
+  const match = getInjectMatch(editor, editor.getPlugin(BaseAlignPlugin));
 
   if (value === defaultNodeValue) {
     unsetNodes(editor, nodeKey!, {

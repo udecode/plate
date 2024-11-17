@@ -63,6 +63,28 @@ Defines how the plugin injects functionality into other plugins or the editor.
 <APISubListItem parent="inject" name="nodeProps" type="InjectNodeProps<WithAnyKey<C>>" optional>
 Properties used by Plate to inject props into any node component.
 </APISubListItem>
+
+
+<APISubListItem parent="inject" name="excludePlugins" type="string[]" optional>
+An array of plugin keys to exclude from node prop injection.
+</APISubListItem>
+
+<APISubListItem parent="inject" name="excludeBelowPlugins" type="string[]" optional>
+An array of plugin keys. Node prop injection will be excluded for any nodes that are descendants of elements with these plugin types.
+</APISubListItem>
+<APISubListItem parent="inject" name="isBlock" type="boolean" optional>
+If true, only matches block elements. Used to restrict prop injection to block-level nodes.
+</APISubListItem>
+
+<APISubListItem parent="inject" name="isElement" type="boolean" optional>
+If true, only matches element nodes. Used to restrict prop injection to element nodes.
+</APISubListItem>
+<APISubListItem parent="inject" name="isLeaf" type="boolean" optional>
+If true, only matches leaf nodes. Used to restrict prop injection to leaf nodes.
+</APISubListItem>
+<APISubListItem parent="inject" name="maxLevel" type="number" optional>
+Maximum nesting level for node prop injection. Nodes deeper than this level will not receive injected props.
+</APISubListItem>
 <APISubListItem parent="inject" name="plugins" type="Record<string, Partial<EditorPlatePlugin<AnyPluginConfig>>>" optional>
 Property that can be used by a plugin to allow other plugins to inject code.
 </APISubListItem>

@@ -1,15 +1,15 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import {
   createPlateEditor,
   getEditorPlugin,
 } from '@udecode/plate-common/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { ExitBreakPlugin } from '../../ExitBreakPlugin';
 import { onKeyDownExitBreak } from '../../onKeyDownExitBreak';
 
-jsx;
+jsxt;
 
 const input = (
   <editor>

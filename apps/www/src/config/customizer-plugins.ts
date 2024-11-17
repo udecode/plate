@@ -1,3 +1,4 @@
+import { AIPlugin, CopilotPlugin } from '@udecode/plate-ai/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import {
@@ -17,6 +18,7 @@ import {
   FontBackgroundColorPlugin,
   FontSizePlugin,
 } from '@udecode/plate-font/react';
+import { TocPlugin } from '@udecode/plate-heading/react';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
@@ -32,14 +34,24 @@ import { MentionPlugin } from '@udecode/plate-mention/react';
 import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { ResetNodePlugin } from '@udecode/plate-reset-node/react';
-import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import {
+  BlockMenuPlugin,
+  BlockSelectionPlugin,
+  CursorOverlayPlugin,
+} from '@udecode/plate-selection/react';
+import { SlashPlugin } from '@udecode/plate-slash-command/react';
 import { TabbablePlugin } from '@udecode/plate-tabbable/react';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
+import { aiValue } from '@/lib/plate/demo/values/aiValue';
+import { blockMenuValue } from '@/lib/plate/demo/values/blockMenuValue';
+import { blockSelectionValue } from '@/lib/plate/demo/values/blockSelectionValue';
 import { columnValue } from '@/lib/plate/demo/values/columnValue';
-import { DragOverCursorPlugin } from '@/plate/demo/plugins/DragOverCursorPlugin';
+import { copilotValue } from '@/lib/plate/demo/values/copilotValue';
+import { slashCommandValue } from '@/lib/plate/demo/values/slashCommandValue';
+import { tocValue } from '@/lib/plate/demo/values/tocValue';
 import { alignValue } from '@/plate/demo/values/alignValue';
 import { autoformatValue } from '@/plate/demo/values/autoformatValue';
 import { basicElementsValue } from '@/plate/demo/values/basicElementsValue';
@@ -74,11 +86,20 @@ import { softBreakValue } from '@/plate/demo/values/softBreakValue';
 import { tabbableValue } from '@/plate/demo/values/tabbableValue';
 import { tableValue } from '@/plate/demo/values/tableValue';
 import { toggleValue } from '@/plate/demo/values/toggleValue';
+import { FixedToolbarPlugin } from '@/registry/default/components/editor/plugins/fixed-toolbar-plugin';
+import { FloatingToolbarPlugin } from '@/registry/default/components/editor/plugins/floating-toolbar-plugin';
 
 export type ValueId = keyof typeof customizerPlugins | 'tableMerge';
 
 // cmdk needs lowercase
 export const customizerPlugins = {
+  ai: {
+    id: 'ai',
+    label: 'AI',
+    plugins: [AIPlugin.key],
+    route: '/docs/ai',
+    value: aiValue,
+  },
   align: {
     id: 'align',
     label: 'Align',
@@ -93,22 +114,36 @@ export const customizerPlugins = {
     route: '/docs/autoformat',
     value: autoformatValue,
   },
-  basicmarks: {
-    id: 'basicmarks',
+  'basic-elements': {
+    id: 'basic-elements',
+    label: 'Basic Elements',
+    plugins: [],
+    route: '/docs/basic-elements',
+    value: basicElementsValue,
+  },
+  'basic-marks': {
+    id: 'basic-marks',
     label: 'Basic Marks',
     plugins: [],
     route: '/docs/basic-marks',
-    value: [...basicElementsValue, ...basicMarksValue],
+    value: basicMarksValue,
   },
-  basicnodes: {
-    id: 'basicnodes',
+  'basic-nodes': {
+    id: 'basic-nodes',
     label: 'Basic Nodes',
     plugins: [],
-    route: '/docs/basic-elements',
+    route: '/docs/basic-nodes',
     value: [...basicElementsValue, ...basicMarksValue],
   },
-  blockselection: {
-    id: 'blockselection',
+  'block-menu': {
+    id: 'block-menu',
+    label: 'Block Menu',
+    plugins: [BlockMenuPlugin.key],
+    route: '/docs/block-menu',
+    value: blockMenuValue,
+  },
+  'block-selection': {
+    id: 'block-selection',
     label: 'Block Selection',
     plugins: [
       NodeIdPlugin.key,
@@ -117,7 +152,7 @@ export const customizerPlugins = {
       MediaEmbedPlugin.key,
     ],
     route: '/docs/block-selection',
-    value: mediaValue,
+    value: blockSelectionValue,
   },
   caption: {
     id: 'caption',
@@ -140,6 +175,13 @@ export const customizerPlugins = {
     route: '/docs/comments',
     value: commentsValue,
   },
+  copilot: {
+    id: 'copilot',
+    label: 'Copilot',
+    plugins: [CopilotPlugin.key],
+    route: '/docs/copilot',
+    value: copilotValue,
+  },
   csv: {
     id: 'csv',
     label: 'CSV',
@@ -147,10 +189,10 @@ export const customizerPlugins = {
     route: '/docs/csv',
     value: deserializeCsvValue,
   },
-  cursoroverlay: {
-    id: 'cursoroverlay',
+  'cursor-overlay': {
+    id: 'cursor-overlay',
     label: 'Cursor Overlay',
-    plugins: [DragOverCursorPlugin.key],
+    plugins: [CursorOverlayPlugin.key],
     route: '/docs/cursor-overlay',
     value: cursorOverlayValue,
   },
@@ -189,12 +231,26 @@ export const customizerPlugins = {
     route: '/docs/excalidraw',
     value: excalidrawValue,
   },
-  exitbreak: {
-    id: 'exitbreak',
+  'exit-break': {
+    id: 'exit-break',
     label: 'Exit Break',
     plugins: [ExitBreakPlugin.key],
     route: '/docs/exit-break',
     value: exitBreakValue,
+  },
+  'fixed-toolbar': {
+    id: 'fixed-toolbar',
+    label: 'Fixed Toolbar',
+    plugins: [FixedToolbarPlugin.key],
+    // route: '/docs/toolbar',
+    value: [],
+  },
+  'floating-toolbar': {
+    id: 'floating-toolbar',
+    label: 'Floating Toolbar',
+    plugins: [FloatingToolbarPlugin.key],
+    // route: '/docs/toolbar',
+    value: [],
   },
   font: {
     id: 'font',
@@ -203,8 +259,8 @@ export const customizerPlugins = {
     route: '/docs/font',
     value: fontValue,
   },
-  forcedlayout: {
-    id: 'forcedlayout',
+  'forced-layout': {
+    id: 'forced-layout',
     label: 'Forced Layout',
     plugins: [NormalizeTypesPlugin.key, TrailingBlockPlugin.key],
     route: '/docs/forced-layout',
@@ -238,8 +294,8 @@ export const customizerPlugins = {
     route: '/docs/indent',
     value: indentValue,
   },
-  indentlist: {
-    id: 'indentlist',
+  'indent-list': {
+    id: 'indent-list',
     label: 'Indent List',
     plugins: [IndentListPlugin.key],
     route: '/docs/indent-list',
@@ -252,8 +308,8 @@ export const customizerPlugins = {
     route: '/docs/components/kbd-leaf',
     value: kbdValue,
   },
-  lineheight: {
-    id: 'lineheight',
+  'line-height': {
+    id: 'line-height',
     label: 'Line Height',
     plugins: [LineHeightPlugin.key],
     route: '/docs/line-height',
@@ -306,22 +362,29 @@ export const customizerPlugins = {
     label: 'Playground',
     value: [],
   },
-  resetnode: {
-    id: 'resetnode',
+  'reset-node': {
+    id: 'reset-node',
     label: 'Reset Node',
     plugins: [ResetNodePlugin.key],
     route: '/docs/reset-node',
     value: [],
   },
-  singleline: {
-    id: 'singleline',
+  'single-line': {
+    id: 'single-line',
     label: 'Single Line',
     plugins: [SingleLinePlugin.key],
     route: '/docs/single-line',
     value: singleLineValue,
   },
-  softbreak: {
-    id: 'softbreak',
+  'slash-command': {
+    id: 'slash-command',
+    label: 'Slash Command',
+    plugins: [SlashPlugin.key],
+    route: '/docs/slash-command',
+    value: slashCommandValue,
+  },
+  'soft-break': {
+    id: 'soft-break',
     label: 'Soft Break',
     plugins: [SoftBreakPlugin.key],
     route: '/docs/soft-break',
@@ -341,8 +404,15 @@ export const customizerPlugins = {
     route: '/docs/table',
     value: tableValue,
   },
-  todoli: {
-    id: 'todoli',
+  toc: {
+    id: 'toc',
+    label: 'Table of Contents',
+    plugins: [TocPlugin.key],
+    route: '/docs/toc',
+    value: tocValue,
+  },
+  'todo-list': {
+    id: 'todo-list',
     label: 'Todo List',
     plugins: [TodoListPlugin.key],
     route: '/docs/list',
@@ -355,8 +425,8 @@ export const customizerPlugins = {
     route: '/docs/toggle',
     value: toggleValue,
   },
-  trailingblock: {
-    id: 'trailingblock',
+  'trailing-block': {
+    id: 'trailing-block',
     label: 'Trailing Block',
     plugins: [TrailingBlockPlugin.key],
     route: '/docs/trailing-block',

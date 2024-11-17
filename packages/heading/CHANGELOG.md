@@ -1,5 +1,25 @@
 # @udecode/plate-heading
 
+## 40.0.2
+
+### Patch Changes
+
+- [#3761](https://github.com/udecode/plate/pull/3761) by [@zbeyens](https://github.com/zbeyens) – Fix scroll ref
+
+## 40.0.1
+
+### Patch Changes
+
+- [#3759](https://github.com/udecode/plate/pull/3759) by [@zbeyens](https://github.com/zbeyens) –
+  - Use `useEditorScrollRef` instead of `useEditorContainerRef`
+
+## 40.0.0
+
+### Major Changes
+
+- [#3744](https://github.com/udecode/plate/pull/3744) by [@zbeyens](https://github.com/zbeyens) –
+  - Remove `scrollContainerSelector` option in favor of `useEditorContainerRef`
+
 ## 39.0.0
 
 ## 38.0.12

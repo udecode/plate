@@ -1,3 +1,4 @@
+import { AIChatPlugin, AIPlugin, CopilotPlugin } from '@udecode/plate-ai/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import {
@@ -30,6 +31,7 @@ import {
   FontColorPlugin,
   FontSizePlugin,
 } from '@udecode/plate-font/react';
+import { TocPlugin } from '@udecode/plate-heading/react';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
@@ -46,7 +48,12 @@ import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { ResetNodePlugin } from '@udecode/plate-reset-node/react';
 import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
-import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import {
+  BlockMenuPlugin,
+  BlockSelectionPlugin,
+  CursorOverlayPlugin,
+} from '@udecode/plate-selection/react';
+import { SlashPlugin } from '@udecode/plate-slash-command/react';
 import { TabbablePlugin } from '@udecode/plate-tabbable/react';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
@@ -54,9 +61,19 @@ import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 import { uniqBy } from 'lodash';
 
 import { customizerItems } from '@/config/customizer-items';
-import { DragOverCursorPlugin } from '@/plate/demo/plugins/DragOverCursorPlugin';
+import { FixedToolbarPlugin } from '@/registry/default/components/editor/plugins/fixed-toolbar-plugin';
+import { FloatingToolbarPlugin } from '@/registry/default/components/editor/plugins/floating-toolbar-plugin';
 
 export const customizerList = [
+  {
+    id: 'ai',
+    children: [
+      customizerItems[AIPlugin.key],
+      customizerItems[AIChatPlugin.key],
+      customizerItems[CopilotPlugin.key],
+    ],
+    label: 'AI',
+  },
   {
     id: 'blocks',
     children: [
@@ -76,6 +93,7 @@ export const customizerList = [
       customizerItems[TablePlugin.key],
       customizerItems[TodoListPlugin.key],
       customizerItems[DatePlugin.key],
+      customizerItems[TocPlugin.key],
     ],
     label: 'Nodes',
   },
@@ -114,11 +132,14 @@ export const customizerList = [
       customizerItems.components,
       customizerItems[AutoformatPlugin.key],
       customizerItems[BlockSelectionPlugin.key],
+      customizerItems[BlockMenuPlugin.key],
       customizerItems[CaptionPlugin.key],
+      customizerItems[CursorOverlayPlugin.key],
       customizerItems[DndPlugin.key],
-      customizerItems[DragOverCursorPlugin.key],
       customizerItems[EmojiPlugin.key],
       customizerItems[ExitBreakPlugin.key],
+      customizerItems[FixedToolbarPlugin.key],
+      customizerItems[FloatingToolbarPlugin.key],
       customizerItems[NodeIdPlugin.key],
       customizerItems[NormalizeTypesPlugin.key],
       customizerItems[ResetNodePlugin.key],
@@ -128,6 +149,7 @@ export const customizerList = [
       customizerItems[SoftBreakPlugin.key],
       customizerItems[TabbablePlugin.key],
       customizerItems[TrailingBlockPlugin.key],
+      customizerItems[SlashPlugin.key],
     ],
     label: 'Functionality',
   },
@@ -194,7 +216,7 @@ export const orderedPluginKeys = [
   SoftBreakPlugin.key,
   TabbablePlugin.key,
   TrailingBlockPlugin.key,
-  DragOverCursorPlugin.key,
+  CursorOverlayPlugin.key,
 
   // Collaboration
   CommentsPlugin.key,

@@ -1,14 +1,14 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-/** @jsx jsx */
+/** @jsx jsxt */
 
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { ParagraphPlugin } from '../../../../react';
 import { createPlateEditor } from '../../../../react/editor/withPlate';
 import { htmlElementToElement } from './htmlElementToElement';
 import { parseHtmlElement } from './parseHtmlElement';
 
-jsx;
+jsxt;
 
 const output = (
   <hp>

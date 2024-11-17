@@ -1,12 +1,13 @@
 'use client';
 
 import React from 'react';
+
 import { CommentsPlugin } from '@udecode/plate-comments/react';
 import { useEditorPlugin } from '@udecode/plate-common/react';
 
 import { Avatar, AvatarFallback, AvatarImage } from './avatar';
 
-export function CommentAvatar({ userId }: { userId: null | string }) {
+export function CommentAvatar({ userId }: { userId: string | null }) {
   const { useOption } = useEditorPlugin(CommentsPlugin);
   const user = useOption('userById', userId);
 

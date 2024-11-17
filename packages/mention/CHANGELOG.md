@@ -1,5 +1,13 @@
 # @udecode/plate-mention
 
+## 40.0.0
+
+## 39.3.4
+
+### Patch Changes
+
+- [#3649](https://github.com/udecode/plate/pull/3649) by [@beeant0512](https://github.com/beeant0512) – store mention key
+
 ## 39.0.0
 
 ## 38.0.1

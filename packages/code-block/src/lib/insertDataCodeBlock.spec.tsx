@@ -1,14 +1,14 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import type { SlateEditor } from '@udecode/plate-common';
 
 import { BaseParagraphPlugin } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { createDataTransfer, jsx } from '@udecode/plate-test-utils';
+import { createDataTransfer, jsxt } from '@udecode/plate-test-utils';
 
 import { CodeBlockPlugin } from '../react/CodeBlockPlugin';
 
-jsx;
+jsxt;
 
 const editorTest = (input: any, data: DataTransfer, expected: any) => {
   const plugins = [BaseParagraphPlugin, CodeBlockPlugin];

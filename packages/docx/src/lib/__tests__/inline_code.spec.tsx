@@ -1,9 +1,9 @@
-/** @jsx jsx */
-import { jsx } from '@udecode/plate-test-utils';
+/** @jsx jsxt */
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { getDocxTestName, testDocxDeserializer } from './testDocxDeserializer';
 
-jsx;
+jsxt;
 
 const name = 'inline_code';
 

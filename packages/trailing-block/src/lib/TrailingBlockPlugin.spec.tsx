@@ -1,13 +1,13 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import { createSlateEditor } from '@udecode/plate-common';
 import { ParagraphPlugin } from '@udecode/plate-common/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { TrailingBlockPlugin } from './TrailingBlockPlugin';
 
-jsx;
+jsxt;
 
 describe('when last node is invalid', () => {
   const input = (

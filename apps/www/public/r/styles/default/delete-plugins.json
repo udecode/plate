@@ -1,0 +1,17 @@
+{
+  "dependencies": [
+    "@udecode/plate-select",
+    "@udecode/plate-horizontal-rule",
+    "@udecode/plate-media"
+  ],
+  "files": [
+    {
+      "content": "'use client';\n\nimport { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';\nimport { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';\nimport { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';\n\nexport const deletePlugins = [\n  SelectOnBackspacePlugin.configure({\n    options: {\n      query: {\n        allow: [\n          ImagePlugin.key,\n          MediaEmbedPlugin.key,\n          HorizontalRulePlugin.key,\n        ],\n      },\n    },\n  }),\n  DeletePlugin,\n] as const;\n",
+      "path": "components/editor/plugins/delete-plugins.ts",
+      "target": "components/editor/plugins/delete-plugins.ts",
+      "type": "registry:component"
+    }
+  ],
+  "name": "delete-plugins",
+  "type": "registry:component"
+}

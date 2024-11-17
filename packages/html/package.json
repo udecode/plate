@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-html",
-  "version": "39.0.0",
+  "version": "40.0.0",
   "description": "HTML serializer plugin for Plate",
   "keywords": [
     "html",
@@ -59,13 +59,14 @@
     "@udecode/plate-common": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate-common": ">=39.2.12",
+    "@udecode/plate-common": ">=40.0.3",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.103.0",
+    "slate-dom": ">=0.111.0",
     "slate-history": ">=0.93.0",
     "slate-hyperscript": ">=0.66.0",
-    "slate-react": ">=0.108.0"
+    "slate-react": ">=0.111.0"
   },
   "publishConfig": {
     "access": "public"

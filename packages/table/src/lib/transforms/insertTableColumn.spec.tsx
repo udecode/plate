@@ -1,15 +1,15 @@
 /* eslint-disable react/jsx-key */
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import type { TEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { BaseTablePlugin } from '../BaseTablePlugin';
 import { insertTableColumn } from './insertTableColumn';
 
-jsx;
+jsxt;
 
 type MakeTableWithColsOptions = {
   rowCols: string[][];

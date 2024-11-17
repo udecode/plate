@@ -26,6 +26,7 @@ export const DateElement = withRef<typeof PlateElement>(
                 'w-fit cursor-pointer rounded-sm bg-muted px-1 text-muted-foreground'
               )}
               contentEditable={false}
+              draggable
             >
               {element.date ? (
                 (() => {

@@ -1,19 +1,18 @@
-/* eslint-disable jsx-a11y/interactive-supports-focus */
 'use client';
 
 import * as React from 'react';
 
 import { cn } from '@udecode/cn';
 
-import { useCopyToClipboard } from '@/hooks/useCopyToClipboard';
+import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 import { Button } from '@/registry/default/plate-ui/button';
 
 import { CodeBlockWrapper } from './code-block-wrapper';
 
 interface ComponentSourceProps extends React.HTMLAttributes<HTMLDivElement> {
-  src: string;
   name?: string;
   open?: boolean;
+  src?: string;
   title?: string;
 }
 
@@ -21,10 +20,11 @@ export function ComponentSource({
   children,
   className,
   name,
+  src,
   title,
   ...props
 }: ComponentSourceProps) {
-  const displaySrc = title ?? props.src?.split('/').pop() ?? name + '.tsx';
+  const displaySrc = title ?? src?.split('/').pop() ?? name + '.tsx';
   const { copyToClipboard } = useCopyToClipboard();
 
   return (
@@ -33,7 +33,7 @@ export function ComponentSource({
         <Button
           size="none"
           variant="ghost"
-          className="w-fit select-auto px-4 py-1 text-sm font-medium text-foreground"
+          className="mb-0.5 w-fit select-auto px-4 py-1 text-sm font-medium text-foreground"
           onClick={() => {
             copyToClipboard(displaySrc, {
               tooltip: 'Copied to clipboard',

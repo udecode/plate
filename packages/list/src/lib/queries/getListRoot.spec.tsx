@@ -1,11 +1,11 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { getListRoot } from './getListRoot';
 
-jsx;
+jsxt;
 
 const listRoot = (
   <hul>

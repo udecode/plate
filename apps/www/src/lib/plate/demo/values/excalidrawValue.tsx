@@ -13,7 +13,7 @@ export const excalidrawValue: any = (
       Unleash your creativity with the Excalidraw plugin, which enables you to
       embed and draw diagrams directly within your editor.
     </hp>
-    <hexcalidraw {...excalidrawInitialData}>
+    <hexcalidraw {...excalidrawInitialData} width="50%">
       <htext />
     </hexcalidraw>
   </fragment>

@@ -1,20 +1,21 @@
+'use client';
+
 import React from 'react';
 
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
 import { Plate, usePlateEditor } from '@udecode/plate-common/react';
-import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { ImagePlugin } from '@udecode/plate-media/react';
-import { SelectOnBackspacePlugin } from '@udecode/plate-select';
 
-import { PlaygroundTurnIntoDropdownMenu } from '@/components/plate-ui/playground-turn-into-dropdown-menu';
 import { PlateUI } from '@/plate/demo/plate-ui';
 import { basicElementsValue } from '@/plate/demo/values/basicElementsValue';
 import { basicMarksValue } from '@/plate/demo/values/basicMarksValue';
 import { imageValue } from '@/plate/demo/values/mediaValue';
-import { Editor } from '@/registry/default/plate-ui/editor';
+import { deletePlugins } from '@/registry/default/components/editor/plugins/delete-plugins';
+import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
 import { Separator } from '@/registry/default/plate-ui/separator';
+import { TurnIntoDropdownMenu } from '@/registry/default/plate-ui/turn-into-dropdown-menu';
 
 export default function MultipleEditorsDemo() {
   const editor = usePlateEditor({
@@ -37,13 +38,7 @@ export default function MultipleEditorsDemo() {
       BasicElementsPlugin,
       BasicMarksPlugin,
       ImagePlugin,
-      SelectOnBackspacePlugin.configure({
-        options: {
-          query: {
-            allow: [ImagePlugin.key, HorizontalRulePlugin.key],
-          },
-        },
-      }),
+      ...deletePlugins,
     ],
     value: imageValue,
   });
@@ -53,15 +48,21 @@ export default function MultipleEditorsDemo() {
       <Plate editor={editorMarks}>
         <Plate editor={editorImage}>
           <FixedToolbar>
-            <PlaygroundTurnIntoDropdownMenu />
+            <TurnIntoDropdownMenu />
           </FixedToolbar>
 
           <div>
-            <Editor />
+            <EditorContainer>
+              <Editor />
+            </EditorContainer>
             <Separator />
-            <Editor id="marks" />
+            <EditorContainer>
+              <Editor id="marks" />
+            </EditorContainer>
             <Separator />
-            <Editor id="image" />
+            <EditorContainer>
+              <Editor id="image" />
+            </EditorContainer>
           </div>
         </Plate>
       </Plate>

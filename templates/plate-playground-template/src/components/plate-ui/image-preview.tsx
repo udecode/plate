@@ -1,3 +1,5 @@
+'use client';
+
 import { cn, createPrimitiveComponent } from '@udecode/cn';
 import {
   PreviewImage,
@@ -7,8 +9,7 @@ import {
   useScaleInputState,
 } from '@udecode/plate-media/react';
 import { cva } from 'class-variance-authority';
-
-import { Icons } from '@/components/icons';
+import { ArrowLeft, ArrowRight, Download, Minus, Plus, X } from 'lucide-react';
 
 const toolButtonVariants = cva('rounded bg-[rgba(0,0,0,0.5)] px-1', {
   defaultVariants: {
@@ -70,7 +71,7 @@ export const ImagePreview = () => {
             className="absolute bottom-0 left-1/2 z-40 flex w-fit -translate-x-1/2 justify-center gap-4 p-2 text-center text-white"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex gap-1 ">
+            <div className="flex gap-1">
               <button
                 {...prevProps}
                 className={cn(
@@ -80,7 +81,7 @@ export const ImagePreview = () => {
                 )}
                 type="button"
               >
-                <Icons.arrowLeft className="size-5" />
+                <ArrowLeft />
               </button>
               {(currentUrlIndex ?? 0) + 1}
               <button
@@ -92,7 +93,7 @@ export const ImagePreview = () => {
                 )}
                 type="button"
               >
-                <Icons.arrowRight className="size-5" />
+                <ArrowRight />
               </button>
             </div>
             <div className="flex ">
@@ -105,7 +106,7 @@ export const ImagePreview = () => {
                 {...zommOutProps}
                 type="button"
               >
-                <Icons.minus className="size-4" />
+                <Minus className="size-4" />
               </button>
               <div className="mx-px">
                 {state.isEditingScale ? (
@@ -126,19 +127,19 @@ export const ImagePreview = () => {
                 {...zoomInProps}
                 type="button"
               >
-                <Icons.add className="size-4" />
+                <Plus className="size-4" />
               </button>
             </div>
             {/* TODO: downLoad the image */}
             <button className={cn(toolButtonVariants())} type="button">
-              <Icons.download className="size-4" />
+              <Download className="size-4" />
             </button>
             <button
               {...closeProps}
               className={cn(toolButtonVariants())}
               type="button"
             >
-              <Icons.close className="size-4" />
+              <X className="size-4" />
             </button>
           </div>
         </div>

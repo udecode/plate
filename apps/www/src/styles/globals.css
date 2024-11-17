@@ -27,6 +27,11 @@
     
     --brand: 217.2 91.2% 59.8%;
     --highlight: 47.9 95.8% 53.1%;
+    
+    .prose {
+      --tw-prose-body: var(--foreground);
+      --tw-prose-bullets: var(--foreground);
+    }
   }
 
   .dark {
@@ -59,9 +64,9 @@
   * {
     @apply border-border;
   }
-  /*html {*/
-  /*  @apply scroll-smooth;*/
-  /*}*/
+  html {
+    @apply scroll-smooth;
+  }
   body {
     @apply bg-background text-foreground;
     font-feature-settings:
@@ -73,15 +78,6 @@
 }
 
 @layer utilities {
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-
-  .no-scrollbar {
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
-  }
-
   .step {
     counter-increment: step;
   }

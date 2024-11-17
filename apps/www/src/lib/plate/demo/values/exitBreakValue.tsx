@@ -15,7 +15,7 @@ export const trailingBlockValue: any = (
 
 export const exitBreakValue: any = (
   <fragment>
-    <hh2>Exit Break ⏎</hh2>
+    <hh2>Exit Break</hh2>
     <hp>
       Configure how exit breaks (line breaks between blocks) behave using simple
       rules:

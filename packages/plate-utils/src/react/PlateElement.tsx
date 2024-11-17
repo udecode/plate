@@ -1,13 +1,13 @@
 import React from 'react';
 
-import type { TElement } from '@udecode/slate';
-
 import {
   type AnyPlatePlugin,
   type PlateRenderElementProps,
   omitPluginContext,
+  usePlateStore,
 } from '@udecode/plate-core/react';
 import { type BoxProps, Box, useComposedRef } from '@udecode/react-utils';
+import { type TElement, isBlock } from '@udecode/slate';
 import { clsx } from 'clsx';
 
 export type PlateElementProps<
@@ -22,6 +22,12 @@ export type PlateElementProps<
 export const usePlateElement = (props: PlateElementProps) => {
   const { attributes, element, elementToAttributes, nodeProps, ...rootProps } =
     omitPluginContext(props);
+  const mounted = usePlateStore().get.isMounted();
+
+  const block = React.useMemo(
+    () => mounted && !!element.id && isBlock(props.editor, element),
+    [element, props.editor, mounted]
+  );
 
   return {
     props: {
@@ -30,6 +36,7 @@ export const usePlateElement = (props: PlateElementProps) => {
       ...nodeProps,
       ...elementToAttributes?.(element),
       className: clsx(props.className, nodeProps?.className),
+      'data-block-id': block ? element.id : undefined,
     },
     ref: useComposedRef(props.ref, attributes.ref),
   };
@@ -42,8 +49,9 @@ const PlateElement = React.forwardRef<HTMLDivElement, PlateElementProps>(
       ...props,
       ref,
     });
+    const { ...rest } = rootProps;
 
-    return <Box {...rootProps} ref={rootRef} />;
+    return <Box {...rest} ref={rootRef} />;
   }
 ) as (<
   N extends TElement = TElement,

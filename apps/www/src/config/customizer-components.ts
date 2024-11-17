@@ -1,9 +1,29 @@
 export const customizerComponents = {
+  aiLeaf: {
+    href: '/docs/components/ai-leaf',
+    new: true,
+    title: 'AI Leaf',
+  },
+  aiMenu: {
+    href: '/docs/components/ai-menu',
+    new: true,
+    title: 'AI Menu',
+  },
+  aiToolbarButton: {
+    href: '/docs/components/ai-toolbar-button',
+    new: true,
+    title: 'AI Toolbar Button',
+  },
   alignDropdownMenu: {
     href: '/docs/components/align-dropdown-menu',
     title: 'Align Dropdown Menu',
   },
   avatar: { href: '/docs/components/avatar', title: 'Avatar' },
+  blockContextMenu: {
+    href: '/docs/components/block-context-menu',
+    label: 'New',
+    title: 'Block Context Menu',
+  },
   blockquoteElement: {
     href: '/docs/components/blockquote-element',
     label: 'Element',
@@ -63,9 +83,9 @@ export const customizerComponents = {
     href: '/docs/components/comments-popover',
     title: 'Comments Popover',
   },
-  cursorOverlay: {
-    href: '/docs/components/cursor-overlay',
-    title: 'Cursor Overlay',
+  contextMenu: {
+    href: '/docs/components/context-menu',
+    title: 'Context Menu',
   },
   dateElement: {
     href: '/docs/components/date-element',
@@ -110,11 +130,17 @@ export const customizerComponents = {
   },
   floatingToolbar: {
     href: '/docs/components/floating-toolbar',
+    new: true,
     title: 'Floating Toolbar',
   },
   floatingToolbarButtons: {
     href: '/docs/components/floating-toolbar-buttons',
     title: 'Floating Toolbar Buttons',
+  },
+  ghostText: {
+    href: '/docs/components/ghost-text',
+    label: 'New',
+    title: 'Ghost Text',
   },
   headingElement: {
     href: '/docs/components/heading-element',
@@ -134,11 +160,16 @@ export const customizerComponents = {
   imageElement: {
     href: '/docs/components/image-element',
     label: 'Element',
+    new: true,
     title: 'Image',
   },
   indentListToolbarButton: {
     href: '/docs/components/indent-list-toolbar-button',
     title: 'Indent List Toolbar Button',
+  },
+  indentTodoMarker: {
+    href: '/docs/components/indent-todo-marker',
+    title: 'Indent Todo Marker',
   },
   indentToolbarButton: {
     href: '/docs/components/indent-toolbar-button',
@@ -233,6 +264,11 @@ export const customizerComponents = {
     title: 'Search Highlight',
   },
   separator: { href: '/docs/components/separator', title: 'Separator' },
+  slashInputElement: {
+    href: '/docs/components/slash-input-element',
+    label: 'New',
+    title: 'Slash Input',
+  },
   tableCellElement: {
     href: '/docs/components/table-cell-element',
     label: 'Element',
@@ -251,6 +287,12 @@ export const customizerComponents = {
     href: '/docs/components/table-row-element',
     label: 'Element',
     title: 'Table Row',
+  },
+  tocElement: {
+    href: '/docs/components/toc-element',
+    label: 'Element',
+    new: true,
+    title: 'Table of Contents',
   },
   todoListElement: {
     href: '/docs/components/todo-list-element',

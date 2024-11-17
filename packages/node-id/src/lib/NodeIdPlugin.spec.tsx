@@ -1,4 +1,4 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import {
   type SlateEditor,
@@ -8,18 +8,143 @@ import {
   splitNodes,
 } from '@udecode/plate-common';
 import { ParagraphPlugin } from '@udecode/plate-common/react';
+import { LinkPlugin } from '@udecode/plate-link/react';
 import { BulletedListPlugin, ListItemPlugin } from '@udecode/plate-list/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { NodeIdPlugin } from './NodeIdPlugin';
 
-jsx;
+jsxt;
 
 const getIdFactory = () => {
   let id = 1;
 
   return () => id++;
 };
+
+describe('when normalizing initial value', () => {
+  it('should not add id to inline nodes', () => {
+    const input = (
+      <editor>
+        <hp>
+          test1
+          <ha>link</ha>
+          test2
+        </hp>
+        <hp>
+          <ha>link2</ha>
+        </hp>
+      </editor>
+    ) as any as SlateEditor;
+
+    const editor = createSlateEditor({
+      plugins: [
+        NodeIdPlugin.configure({
+          options: {
+            idCreator: getIdFactory(),
+          },
+        }),
+        LinkPlugin,
+      ],
+      value: input.children,
+    });
+
+    // Block elements should have IDs
+    expect(editor.children[0].id).toBe(1);
+    expect(editor.children[1].id).toBe(2);
+
+    // Inline elements should not have IDs
+    expect((editor.children[0] as any).children[1].id).toBeUndefined();
+    expect((editor.children[1] as any).children[0].id).toBeUndefined();
+  });
+
+  it('should add id to inline nodes', () => {
+    const input = (
+      <editor>
+        <hp>
+          test1
+          <ha>link</ha>
+          test2
+        </hp>
+        <hp>
+          <ha>link2</ha>
+        </hp>
+      </editor>
+    ) as any as SlateEditor;
+
+    const editor = createSlateEditor({
+      plugins: [
+        NodeIdPlugin.configure({
+          options: {
+            filterInline: false,
+            idCreator: getIdFactory(),
+          },
+        }),
+        LinkPlugin,
+      ],
+      value: input.children,
+    });
+
+    // Block elements should have IDs
+    expect(editor.children[0].id).toBe(1);
+    expect(editor.children[1].id).toBe(3);
+
+    // Inline elements should have IDs
+    expect((editor.children[0] as any).children[1].id).toBe(2);
+    expect((editor.children[1] as any).children[0].id).toBe(4);
+  });
+
+  it('should add ids to all nodes when normalizeInitialValue is true', () => {
+    const input = (
+      <editor>
+        <hp id={2}>test1</hp>
+        <hp>test2</hp>
+        <hli id={3}>
+          <hp id={4}>test3</hp>
+        </hli>
+      </editor>
+    ) as any as SlateEditor;
+
+    const editor = createSlateEditor({
+      plugins: [
+        NodeIdPlugin.configure({
+          options: {
+            idCreator: getIdFactory(),
+            normalizeInitialValue: true,
+          },
+        }),
+      ],
+      value: input.children,
+    });
+
+    // All nodes should have sequential IDs
+    expect(editor.children[1].id).toBe(1);
+  });
+
+  it('should only add ids to first and last nodes when normalizeInitialValue is false', () => {
+    const input = (
+      <editor>
+        <hp>test1</hp>
+        <hp>test2</hp>
+        <hp id={3}>test3</hp>
+      </editor>
+    ) as any as SlateEditor;
+
+    const editor = createSlateEditor({
+      plugins: [
+        NodeIdPlugin.configure({
+          options: {
+            idCreator: getIdFactory(),
+          },
+        }),
+      ],
+      value: input.children,
+    });
+
+    // Only first and last nodes should have IeDs
+    expect(editor.children[0].id).toBe(1);
+  });
+});
 
 describe('when inserting nodes', () => {
   describe('when allow is p, inserting li and p', () => {

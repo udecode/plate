@@ -11,12 +11,13 @@ export const inputVariants = cva(
     variants: {
       h: {
         md: 'h-10 px-3 py-2',
-        sm: 'h-9 px-3 py-2',
+        sm: 'h-[28px] px-1.5 py-1',
       },
       variant: {
         default:
           'border border-input ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
         ghost: 'border-none focus-visible:ring-transparent',
+        underline: 'rounded-none border-b border-input',
       },
     },
   }

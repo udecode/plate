@@ -1,3 +1,5 @@
+'use client';
+
 /* eslint-disable prettier/prettier */
 import React from 'react';
 
@@ -11,10 +13,9 @@ import {
 import { type TRenderLeafProps, Plate , usePlateEditor } from "@udecode/plate-common/react";
 import Prism from 'prismjs';
 
-import { editableProps } from '@/plate/demo/editableProps';
 import { PlateUI } from '@/plate/demo/plate-ui';
 import { previewMdValue } from '@/plate/demo/values/previewMdValue';
-import { Editor } from '@/registry/default/plate-ui/editor';
+import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 
 import 'prismjs/components/prism-markdown.js';
 
@@ -97,10 +98,6 @@ function PreviewLeaf({
   );
 }
 
-const _editableProps = {
-  ...editableProps,
-  renderLeaf: PreviewLeaf,
-};
 
 export default function PreviewMdDemo() {
   const editor = usePlateEditor({
@@ -113,10 +110,10 @@ export default function PreviewMdDemo() {
   })
   
   return (
-    <div className="p-10">
       <Plate editor={editor}>
-        <Editor {..._editableProps} />
+        <EditorContainer>
+          <Editor renderLeaf={PreviewLeaf} />
+        </EditorContainer>
       </Plate>
-    </div>
   );
 }

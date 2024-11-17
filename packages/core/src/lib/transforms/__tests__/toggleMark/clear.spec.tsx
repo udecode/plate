@@ -1,10 +1,10 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import { BoldPlugin, ItalicPlugin } from '@udecode/plate-basic-marks/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 import { toggleMark } from '@udecode/slate-utils';
 
-jsx;
+jsxt;
 
 const input = (
   <editor>

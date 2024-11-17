@@ -1,13 +1,13 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import type { SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { TablePlugin } from './TablePlugin';
 
-jsx;
+jsxt;
 
 describe('withInsertTextTable', () => {
   // https://github.com/udecode/editor-protocol/issues/65

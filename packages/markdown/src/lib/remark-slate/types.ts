@@ -9,6 +9,7 @@ export type MdastElementType =
   | 'list'
   | 'listItem'
   | 'paragraph'
+  | 'table'
   | 'thematicBreak';
 
 export type MdastTextType =

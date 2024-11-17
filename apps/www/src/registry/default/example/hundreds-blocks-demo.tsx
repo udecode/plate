@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useCallback, useMemo, useState } from 'react';
 
 import type { TElement, Value } from '@udecode/plate-common';
@@ -14,10 +16,9 @@ import {
   withReact,
 } from 'slate-react';
 
-import { editableProps } from '@/plate/demo/editableProps';
 import { PlateUI } from '@/plate/demo/plate-ui';
 import { createHugeDocumentValue } from '@/plate/demo/values/createHugeDocumentValue';
-import { Editor } from '@/registry/default/plate-ui/editor';
+import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 
 const value = createHugeDocumentValue();
 
@@ -30,7 +31,9 @@ function WithPlate() {
 
   return (
     <Plate editor={editor}>
-      <Editor {...editableProps} />
+      <EditorContainer>
+        <Editor spellCheck={false} />
+      </EditorContainer>
     </Plate>
   );
 }
@@ -58,7 +61,7 @@ function WithoutPlate() {
       editor={editor}
       initialValue={initialValue}
     >
-      <Editable renderElement={renderElement} {...(editableProps as any)} />
+      <Editable renderElement={renderElement} spellCheck={false} />
     </Slate>
   );
 }
@@ -67,9 +70,11 @@ export default function HundredsBlocksDemo() {
   return (
     <div className="flex">
       <div className="w-1/2 p-4">
+        <div className="mb-4 text-lg font-bold">Plate</div>
         <WithPlate />
       </div>
       <div className="w-1/2 p-4">
+        <div className="mb-4 text-lg font-bold">Slate</div>
         <WithoutPlate />
       </div>
     </div>

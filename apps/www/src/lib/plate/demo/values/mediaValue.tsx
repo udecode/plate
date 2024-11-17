@@ -6,7 +6,7 @@ jsx;
 
 export const imageValue: any = (
   <fragment>
-    <hh2>📸 Image</hh2>
+    <hh2>Image</hh2>
     <hp>Add images by either uploading them or providing the image URL:</hp>
     <himg
       align="center"
@@ -23,7 +23,7 @@ export const mediaValue: any = (
   <fragment>
     {imageValue}
 
-    <hh2>📺 Embed</hh2>
+    <hh2>Embed</hh2>
     <hp>Embed various types of content, such as videos and tweets:</hp>
     <hmediaembed
       align="center"
@@ -31,11 +31,12 @@ export const mediaValue: any = (
     >
       <htext />
     </hmediaembed>
-    <hmediaembed
+    {/* BUG */}
+    {/* <hmediaembed
       align="center"
       url="https://twitter.com/zbeyens/status/1677214892212776960"
     >
       <htext />
-    </hmediaembed>
+    </hmediaembed> */}
   </fragment>
 );

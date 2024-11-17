@@ -34,21 +34,21 @@ export type PlateEditor = {
       C extends AnyPluginConfig,
       K extends keyof InferOptions<C>,
       F extends InferOptions<C>[K],
+    >(
+      plugin: WithRequiredKey<C>,
+      optionKey: K
+    ): F extends (...args: any[]) => any ? never : F;
+
+    <
+      C extends AnyPluginConfig,
+      K extends keyof InferOptions<C>,
+      F extends InferOptions<C>[K],
       Args extends Parameters<((...args: any[]) => any) & F>,
     >(
       plugin: WithRequiredKey<C>,
       optionKey: K,
       ...args: Args
     ): F extends (...args: any[]) => any ? ReturnType<F> : F;
-
-    <
-      C extends AnyPluginConfig,
-      K extends keyof InferOptions<C>,
-      F extends InferOptions<C>[K],
-    >(
-      plugin: WithRequiredKey<C>,
-      optionKey: K
-    ): F extends (...args: any[]) => any ? never : F;
   };
 
   useOptions: {
@@ -72,6 +72,8 @@ export type PlateEditor = {
   tf: PlateEditor['transforms'];
 
   transforms: UnionToIntersection<InferTransforms<PlateCorePlugin>>;
+
+  uid?: string;
 } & BaseEditor;
 
 export type TPlateEditor<

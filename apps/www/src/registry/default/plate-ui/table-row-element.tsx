@@ -1,8 +1,9 @@
+'use client';
+
 import React from 'react';
 
 import { cn, withRef } from '@udecode/cn';
-
-import { PlateElement } from './plate-element';
+import { PlateElement } from '@udecode/plate-common/react';
 
 export const TableRowElement = withRef<
   typeof PlateElement,

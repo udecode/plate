@@ -79,7 +79,7 @@ export const remarkDefaultElementRules: RemarkElementRules = {
           listItems: TElement[] = [],
           indent = 1
         ) => {
-          _node.children!.forEach((listItem) => {
+          _node.children?.forEach((listItem) => {
             if (!listItem.children) {
               listItems.push({
                 children: remarkTransformElementChildren(listItem, options),
@@ -124,12 +124,12 @@ export const remarkDefaultElementRules: RemarkElementRules = {
         };
 
         return parseListItems(node);
-      } else {
-        return {
-          children: remarkTransformElementChildren(node, options),
-          type: options.editor.getType({ key: node.ordered ? 'ol' : 'ul' }),
-        };
       }
+
+      return {
+        children: remarkTransformElementChildren(node, options),
+        type: options.editor.getType({ key: node.ordered ? 'ol' : 'ul' }),
+      };
     },
   },
   listItem: {
@@ -221,6 +221,41 @@ export const remarkDefaultElementRules: RemarkElementRules = {
       flushInlineNodes();
 
       return elements;
+    },
+  },
+  table: {
+    transform: (node, options) => {
+      const rows =
+        node.children?.map((row, rowIndex) => {
+          return {
+            children:
+              row.children?.map((cell) => {
+                const cellType = rowIndex === 0 ? 'th' : 'td';
+
+                return {
+                  children: remarkTransformElementChildren(cell, options).map(
+                    (child) => {
+                      if (!child.type) {
+                        return {
+                          children: [child],
+                          type: options.editor.getType({ key: 'p' }),
+                        };
+                      }
+
+                      return child;
+                    }
+                  ),
+                  type: options.editor.getType({ key: cellType }),
+                };
+              }) || [],
+            type: options.editor.getType({ key: 'tr' }),
+          };
+        }) || [];
+
+      return {
+        children: rows,
+        type: options.editor.getType({ key: 'table' }),
+      };
     },
   },
   thematicBreak: {

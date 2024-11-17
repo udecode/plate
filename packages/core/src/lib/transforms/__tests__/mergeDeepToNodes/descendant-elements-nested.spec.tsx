@@ -1,13 +1,13 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import { ListItemPlugin } from '@udecode/plate-list/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 import { isDescendant } from '@udecode/slate';
 
 import { BaseParagraphPlugin } from '../../../plugins';
 import { mergeDeepToNodes } from '../../../utils';
 
-jsx;
+jsxt;
 
 const node = (
   <hli>

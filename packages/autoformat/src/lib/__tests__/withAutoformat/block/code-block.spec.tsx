@@ -1,4 +1,4 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import type { Range } from 'slate';
 
@@ -12,7 +12,7 @@ import {
   getRangeFromBlockStart,
 } from '@udecode/plate-common';
 import { createSlateEditor } from '@udecode/plate-common';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 import {
   getAutoformatOptions,
   preFormat,
@@ -20,7 +20,7 @@ import {
 
 import { BaseAutoformatPlugin } from '../../../BaseAutoformatPlugin';
 
-jsx;
+jsxt;
 
 describe('when ``` at block start', () => {
   it('should insert a code block below', () => {

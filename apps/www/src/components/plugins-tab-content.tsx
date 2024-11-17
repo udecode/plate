@@ -164,6 +164,7 @@ export function PluginsTabContent() {
             </div>
 
             <Button
+              size="md"
               onClick={() => {
                 // settingsStore.set.homeTab('installation');
                 settingsStore.set.showSettings(false);
@@ -173,7 +174,7 @@ export function PluginsTabContent() {
               }}
             >
               Done
-              <ArrowUpRight className="ml-2 size-4" />
+              <ArrowUpRight />
             </Button>
           </div>
         </div>

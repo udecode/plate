@@ -1,0 +1,24 @@
+{
+  "dependencies": [
+    "@udecode/plate-block-quote",
+    "@udecode/plate-code-block",
+    "@udecode/plate-heading",
+    "@udecode/plate-indent",
+    "@udecode/plate-indent-list",
+    "@udecode/plate-toggle"
+  ],
+  "files": [
+    {
+      "content": "'use client';\n\nimport { BlockquotePlugin } from '@udecode/plate-block-quote/react';\nimport { CodeBlockPlugin } from '@udecode/plate-code-block/react';\nimport { ParagraphPlugin } from '@udecode/plate-common/react';\nimport { HEADING_LEVELS } from '@udecode/plate-heading';\nimport { IndentPlugin } from '@udecode/plate-indent/react';\nimport { IndentListPlugin } from '@udecode/plate-indent-list/react';\nimport { TogglePlugin } from '@udecode/plate-toggle/react';\n\nimport {\n  FireLiComponent,\n  FireMarker,\n} from '@/components/plate-ui/indent-fire-marker';\nimport {\n  TodoLi,\n  TodoMarker,\n} from '@/components/plate-ui/indent-todo-marker';\n\nexport const indentListPlugins = [\n  IndentPlugin.extend({\n    inject: {\n      targetPlugins: [\n        ParagraphPlugin.key,\n        ...HEADING_LEVELS,\n        BlockquotePlugin.key,\n        CodeBlockPlugin.key,\n        TogglePlugin.key,\n      ],\n    },\n  }),\n  IndentListPlugin.extend({\n    inject: {\n      targetPlugins: [\n        ParagraphPlugin.key,\n        ...HEADING_LEVELS,\n        BlockquotePlugin.key,\n        CodeBlockPlugin.key,\n        TogglePlugin.key,\n      ],\n    },\n    options: {\n      listStyleTypes: {\n        fire: {\n          liComponent: FireLiComponent,\n          markerComponent: FireMarker,\n          type: 'fire',\n        },\n        todo: {\n          liComponent: TodoLi,\n          markerComponent: TodoMarker,\n          type: 'todo',\n        },\n      },\n    },\n  }),\n];\n",
+      "path": "components/editor/plugins/indent-list-plugins.ts",
+      "target": "components/editor/plugins/indent-list-plugins.ts",
+      "type": "registry:component"
+    }
+  ],
+  "name": "indent-list-plugins",
+  "registryDependencies": [
+    "indent-fire-marker",
+    "indent-todo-marker"
+  ],
+  "type": "registry:component"
+}

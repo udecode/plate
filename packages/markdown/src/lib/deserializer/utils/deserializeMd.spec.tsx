@@ -1,18 +1,33 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import { createSlateEditor } from '@udecode/plate-common';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { MarkdownPlugin } from '../../MarkdownPlugin';
 import { deserializeMd } from './deserializeMd';
 
-jsx;
+jsxt;
 
 describe('deserializeMd', () => {
   const editor = createSlateEditor({
     plugins: [MarkdownPlugin],
   });
+
+  // TODO
+  // it('should deserialize strikethrough', () => {
+  //   const input = 'This is ~~strikethrough~~.';
+
+  //   const output = (
+  //     <fragment>
+  //       <hp>
+  //         This is <htext strikethrough>strikethrough</htext>.
+  //       </hp>
+  //     </fragment>
+  //   );
+
+  //   expect(deserializeMd(editor, input)).toEqual(output);
+  // });
 
   it('should deserialize >>> to blockquote', () => {
     const input = '>>>a';
@@ -137,6 +152,25 @@ describe('deserializeMd', () => {
       <fragment>
         <hp>
           This is <htext bold>bold</htext>.
+        </hp>
+      </fragment>
+    );
+
+    expect(deserializeMd(editor, input)).toEqual(output);
+  });
+
+  it('should deserialize strikethrough', () => {
+    const input =
+      'This is ~~strikethrough~~ text and **~~strike~~ inside bold**.';
+
+    const output = (
+      <fragment>
+        <hp>
+          This is <htext strikethrough>strikethrough</htext> text and{' '}
+          <htext bold strikethrough>
+            strike
+          </htext>
+          <htext bold> inside bold</htext>.
         </hp>
       </fragment>
     );
@@ -516,6 +550,57 @@ describe('deserializeMdIndentList', () => {
         type: 'code_block',
       },
     ];
+
+    expect(deserializeMd(editor, input)).toEqual(output);
+  });
+
+  it('should deserialize a table', () => {
+    const input = `
+| Left columns  | Right columns |
+| ------------- |:-------------:|
+| left foo      | right foo     |
+| left bar      | right bar     |
+| left baz      | right baz     |
+`;
+
+    const output = (
+      <fragment>
+        <htable>
+          <htr>
+            <hth>
+              <hp>Left columns</hp>
+            </hth>
+            <hth>
+              <hp>Right columns</hp>
+            </hth>
+          </htr>
+          <htr>
+            <htd>
+              <hp>left foo</hp>
+            </htd>
+            <htd>
+              <hp>right foo</hp>
+            </htd>
+          </htr>
+          <htr>
+            <htd>
+              <hp>left bar</hp>
+            </htd>
+            <htd>
+              <hp>right bar</hp>
+            </htd>
+          </htr>
+          <htr>
+            <htd>
+              <hp>left baz</hp>
+            </htd>
+            <htd>
+              <hp>right baz</hp>
+            </htd>
+          </htr>
+        </htable>
+      </fragment>
+    );
 
     expect(deserializeMd(editor, input)).toEqual(output);
   });

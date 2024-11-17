@@ -1,13 +1,13 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import { getEditorPlugin } from '@udecode/plate-common/react';
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { BulletedListPlugin, ListPlugin } from './ListPlugin';
 import { onKeyDownList } from './onKeyDownList';
 
-jsx;
+jsxt;
 
 /*
 input:

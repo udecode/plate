@@ -60,12 +60,22 @@ export type PlateStoreState<E extends PlateEditor = PlateEditor> = Nullable<{
    */
   id: string;
 
+  /** A reference to the editor container element. */
+  containerRef: React.RefObject<HTMLDivElement>;
+
   /**
    * Slate editor reference.
    *
    * @default createPlateFallbackEditor()
    */
   editor: E;
+
+  /**
+   * A reference to the editor scroll container element.
+   *
+   * @default containerRef
+   */
+  scrollRef: React.RefObject<HTMLDivElement>;
 };
 
 //  A list of store keys to be exposed in `editor.api.plate.set`.
