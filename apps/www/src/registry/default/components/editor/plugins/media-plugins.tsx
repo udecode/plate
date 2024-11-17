@@ -28,6 +28,9 @@ export const mediaPlugins = [
     options: { plugins: [ImagePlugin, MediaEmbedPlugin] },
   }),
   PlaceholderPlugin.configure({
+    options: {
+      disableEmptyPlaceholder: true,
+    },
     render: {
       afterEditable: () => <MediaUploadToast />,
     },

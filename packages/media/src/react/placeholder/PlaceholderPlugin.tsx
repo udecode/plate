@@ -33,7 +33,7 @@ export const PlaceholderPlugin = toTPlatePlugin<
     PlaceholderConfig,
     {
       disableEmptyPlaceholder: boolean;
-      disabledDndPlugin: boolean;
+      disableFileDrop: boolean;
       uploadConfig: UploadConfig;
       uploadingFiles: Record<string, File>;
       error?: UploadError | null;
@@ -63,8 +63,8 @@ export const PlaceholderPlugin = toTPlatePlugin<
     return editor;
   },
   options: {
-    disableEmptyPlaceholder: true,
-    disabledDndPlugin: false,
+    disableEmptyPlaceholder: false,
+    disableFileDrop: false,
     error: null,
     maxFileCount: 5,
     multiple: true,
@@ -140,7 +140,7 @@ export const PlaceholderPlugin = toTPlatePlugin<
     handlers: {
       onDrop: ({ editor, event, tf }) => {
         // using DnD plugin by default
-        if (!getOption('disabledDndPlugin')) return;
+        if (!getOption('disableFileDrop')) return;
 
         const { files } = event.dataTransfer;
 
