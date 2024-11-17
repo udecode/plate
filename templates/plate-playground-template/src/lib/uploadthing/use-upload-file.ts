@@ -1,19 +1,31 @@
 import * as React from 'react';
 
+import type { OurFileRouter } from '@/app/api/uploadthing/core';
+import type {
+  ClientUploadedFileData,
+  UploadFilesOptions,
+} from 'uploadthing/types';
+
 import { toast } from 'sonner';
 
 import { getErrorMessage } from './handle-error';
+import { uploadFiles } from './uploadthing';
 
-export interface UploadedFile {
-  key: string;
-  appUrl: string;
-  name: string;
-  size: number;
-  type: string;
-  url: string;
+export interface UploadedFile<T = unknown> extends ClientUploadedFileData<T> {}
+
+interface UseUploadFileProps
+  extends Pick<
+    UploadFilesOptions<OurFileRouter, keyof OurFileRouter>,
+    'headers' | 'onUploadBegin' | 'onUploadProgress' | 'skipPolling'
+  > {
+  onUploadComplete?: (file: UploadedFile) => void;
+  onUploadError?: (error: unknown) => void;
 }
 
-export function useUploadFile() {
+export function useUploadFile(
+  endpoint: keyof OurFileRouter,
+  { onUploadComplete, onUploadError, ...props }: UseUploadFileProps = {}
+) {
   const [uploadedFile, setUploadedFile] = React.useState<UploadedFile>();
   const [uploadingFile, setUploadingFile] = React.useState<File>();
   const [progress, setProgress] = React.useState<number>(0);
@@ -24,33 +36,19 @@ export function useUploadFile() {
     setUploadingFile(file);
 
     try {
-      // Mock upload for unauthenticated users
-      // toast.info('User not logged in. Mocking upload process.');
-      const mockUploadedFile = {
-        key: 'mock-key-0',
-        appUrl: `https://mock-app-url.com/${file.name}`,
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        url: URL.createObjectURL(file),
-      } as UploadedFile;
-
-      // Simulate upload progress
-      let progress = 0;
-
-      const simulateProgress = async () => {
-        while (progress < 100) {
-          await new Promise((resolve) => setTimeout(resolve, 100));
-          progress += 2;
+      const res = await uploadFiles(endpoint, {
+        ...props,
+        files: [file],
+        onUploadProgress: ({ progress }) => {
           setProgress(Math.min(progress, 100));
-        }
-      };
+        },
+      });
 
-      await simulateProgress();
+      setUploadedFile(res[0]);
 
-      setUploadedFile(mockUploadedFile);
+      onUploadComplete?.(res[0]);
 
-      return mockUploadedFile;
+      return uploadedFile;
     } catch (error) {
       const errorMessage = getErrorMessage(error);
 
@@ -60,6 +58,7 @@ export function useUploadFile() {
           : 'Something went wrong, please try again later.';
 
       toast.error(message);
+      onUploadError?.(error);
     } finally {
       setProgress(0);
       setIsUploading(false);

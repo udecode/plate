@@ -73,6 +73,8 @@
     "@udecode/plate-table": "^40.0.0",
     "@udecode/plate-toggle": "^40.0.0",
     "@udecode/plate-trailing-block": "^40.0.0",
+    "@uploadthing/react": "7.1.0",
+    "uploadthing": "7.2.0",
     "zod": "^3.23.8",
     "react-player": "^2.16.0",
     "sonner": "^1.5.0",

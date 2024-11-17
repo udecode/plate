@@ -41,6 +41,7 @@ cp .env.example .env.local
 Configure `.env.local`:
 
 - `OPENAI_API_KEY` – OpenAI API key ([get one here](https://platform.openai.com/account/api-keys))
+- `UPLOADTHING_TOKEN` – UploadThing API key ([get one here](https://uploadthing.com/dashboard)) You can also using your own backend
 
 Start the development server:
 
