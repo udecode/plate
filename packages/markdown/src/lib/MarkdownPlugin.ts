@@ -54,7 +54,7 @@ export const MarkdownPlugin = createTSlatePlugin<MarkdownConfig>({
   options: {
     elementRules: remarkDefaultElementRules,
     indentList: false,
-    splitLineBreaks: true,
+    splitLineBreaks: false,
     textRules: remarkDefaultTextRules,
   },
 })
