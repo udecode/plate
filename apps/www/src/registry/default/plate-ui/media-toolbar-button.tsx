@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
 import { cn } from '@udecode/cn';
-import { insertNodes } from '@udecode/plate-common';
-import { focusEditor, useEditorRef } from '@udecode/plate-common/react';
+import { insertNodes, isUrl } from '@udecode/plate-common';
+import { useEditorRef } from '@udecode/plate-core/react';
 import {
   AudioPlugin,
   FilePlugin,
@@ -20,6 +20,7 @@ import {
   ImageIcon,
   LinkIcon,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useFilePicker } from 'use-file-picker';
 
 import {
@@ -104,6 +105,8 @@ export function MediaToolbarButton({
   const [url, setUrl] = useState('');
 
   const embedMedia = useCallback(() => {
+    if (!isUrl(url)) return toast.error('Invalid URL');
+
     setDialogOpen(false);
     insertNodes(editor, {
       children: [{ text: '' }],
@@ -111,14 +114,7 @@ export function MediaToolbarButton({
       type: nodeType,
       url,
     });
-  }, [editor, nodeType, url]);
-
-  useEffect(() => {
-    if (!dialogOpen) {
-      focusEditor(editor);
-      setUrl('');
-    }
-  }, [dialogOpen, editor]);
+  }, [url, editor, nodeType]);
 
   return (
     <>
@@ -166,7 +162,13 @@ export function MediaToolbarButton({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <AlertDialog
+        open={dialogOpen}
+        onOpenChange={(value) => {
+          setDialogOpen(value);
+          setUrl('');
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{currentConfig.title}</AlertDialogTitle>
@@ -192,7 +194,14 @@ export function MediaToolbarButton({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={embedMedia}>Accept</AlertDialogAction>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                embedMedia();
+              }}
+            >
+              Accept
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
