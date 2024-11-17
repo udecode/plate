@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 
 import {
   BoldPlugin,
@@ -11,7 +11,7 @@ import {
   SuperscriptPlugin,
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
-import { useEditorReadOnly } from '@udecode/plate-common/react';
+import { useEditorReadOnly } from '@udecode/plate-core/react';
 import {
   FontBackgroundColorPlugin,
   FontColorPlugin,
@@ -40,12 +40,6 @@ import {
   UnderlineIcon,
 } from 'lucide-react';
 
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from './accordion';
 import { AIToolbarButton } from './ai-toolbar-button';
 import { AlignDropdownMenu } from './align-dropdown-menu';
 import { ColorDropdownMenu } from './color-dropdown-menu';
@@ -61,7 +55,6 @@ import { LinkToolbarButton } from './link-toolbar-button';
 import { MarkToolbarButton } from './mark-toolbar-button';
 import { MediaToolbarButton } from './media-toolbar-button';
 import { ModeDropdownMenu } from './mode-dropdown-menu';
-import { MoreToolbarButton } from './more-toolbar-button';
 import { OutdentToolbarButton } from './outdent-toolbar-button';
 import { TableDropdownMenu } from './table-dropdown-menu';
 import { ToggleToolbarButton } from './toggle-toolbar-button';
@@ -69,27 +62,6 @@ import { ToolbarGroup } from './toolbar';
 import { TurnIntoDropdownMenu } from './turn-into-dropdown-menu';
 
 export function FixedToolbarButtons() {
-  const [value, setValue] = useState('');
-  const expanded = value === 'toolbar';
-
-  return (
-    <Accordion
-      className="w-full"
-      onValueChange={setValue}
-      type="single"
-      collapsible
-    >
-      <AccordionItem className="border-b-0" value="toolbar">
-        <PrimaryButtons expanded={expanded} />
-        <AccordionContent className="p-0">
-          <ExpandedButtons />
-        </AccordionContent>
-      </AccordionItem>
-    </Accordion>
-  );
-}
-
-function PrimaryButtons({ expanded }: { expanded: boolean }) {
   const readOnly = useEditorReadOnly();
 
   return (
@@ -180,6 +152,47 @@ function PrimaryButtons({ expanded }: { expanded: boolean }) {
             <MediaToolbarButton nodeType={ImagePlugin.key} />
             <MediaToolbarButton nodeType={VideoPlugin.key} />
           </ToolbarGroup>
+
+          <ToolbarGroup>
+            <LineHeightDropdownMenu />
+            <OutdentToolbarButton />
+            <IndentToolbarButton />
+          </ToolbarGroup>
+
+          <ToolbarGroup>
+            <MediaToolbarButton nodeType={AudioPlugin.key} />
+            <MediaToolbarButton nodeType={FilePlugin.key} />
+          </ToolbarGroup>
+
+          <ToolbarGroup>
+            <MarkToolbarButton
+              nodeType={HighlightPlugin.key}
+              tooltip="Highlight"
+            >
+              <HighlighterIcon />
+            </MarkToolbarButton>
+
+            <MarkToolbarButton
+              nodeType={KbdPlugin.key}
+              tooltip="Keyboard input"
+            >
+              <KeyboardIcon />
+            </MarkToolbarButton>
+
+            <MarkToolbarButton
+              nodeType={SuperscriptPlugin.key}
+              tooltip="Superscript"
+            >
+              <SuperscriptIcon />
+            </MarkToolbarButton>
+
+            <MarkToolbarButton
+              nodeType={SubscriptPlugin.key}
+              tooltip="Subscript"
+            >
+              <SubscriptIcon />
+            </MarkToolbarButton>
+          </ToolbarGroup>
         </>
       )}
 
@@ -188,47 +201,7 @@ function PrimaryButtons({ expanded }: { expanded: boolean }) {
       <ToolbarGroup>
         <CommentToolbarButton />
         <ModeDropdownMenu />
-        <AccordionTrigger className="p-0" hideIcon>
-          <MoreToolbarButton pressed={expanded} tooltip="More" />
-        </AccordionTrigger>
-      </ToolbarGroup>
-    </div>
-  );
-}
-
-function ExpandedButtons() {
-  return (
-    <div className="mt-1 flex w-full">
-      <ToolbarGroup>
-        <LineHeightDropdownMenu />
-        <OutdentToolbarButton />
-        <IndentToolbarButton />
-      </ToolbarGroup>
-
-      <ToolbarGroup>
-        <MediaToolbarButton nodeType={AudioPlugin.key} />
-        <MediaToolbarButton nodeType={FilePlugin.key} />
-      </ToolbarGroup>
-
-      <ToolbarGroup>
-        <MarkToolbarButton nodeType={HighlightPlugin.key} tooltip="Highlight">
-          <HighlighterIcon />
-        </MarkToolbarButton>
-
-        <MarkToolbarButton nodeType={KbdPlugin.key} tooltip="Keyboard input">
-          <KeyboardIcon />
-        </MarkToolbarButton>
-
-        <MarkToolbarButton
-          nodeType={SuperscriptPlugin.key}
-          tooltip="Superscript"
-        >
-          <SuperscriptIcon />
-        </MarkToolbarButton>
-
-        <MarkToolbarButton nodeType={SubscriptPlugin.key} tooltip="Subscript">
-          <SubscriptIcon />
-        </MarkToolbarButton>
+        {/* <MoreToolbarButton pressed={expanded} tooltip="More" /> */}
       </ToolbarGroup>
     </div>
   );

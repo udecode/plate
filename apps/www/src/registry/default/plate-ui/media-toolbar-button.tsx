@@ -52,7 +52,6 @@ const MEDIA_CONFIG: Record<
   {
     accept: string[];
     icon: React.ReactNode;
-    placeholder: string;
     title: string;
     tooltip: string;
   }
@@ -60,28 +59,24 @@ const MEDIA_CONFIG: Record<
   [AudioPlugin.key]: {
     accept: ['audio/*'],
     icon: <AudioLinesIcon className="size-4" />,
-    placeholder: 'https://example.com/audio.mp3',
     title: 'Insert Audio',
     tooltip: 'Audio',
   },
   [FilePlugin.key]: {
     accept: ['*'],
     icon: <FileUpIcon className="size-4" />,
-    placeholder: 'https://example.com/file.pdf',
     title: 'Insert File',
     tooltip: 'File',
   },
   [ImagePlugin.key]: {
     accept: ['image/*'],
     icon: <ImageIcon className="size-4" />,
-    placeholder: 'https://example.com/image.jpg',
     title: 'Insert Image',
     tooltip: 'Image',
   },
   [VideoPlugin.key]: {
     accept: ['video/*'],
     icon: <FilmIcon className="size-4" />,
-    placeholder: 'https://example.com/video.mp4',
     title: 'Insert Video',
     tooltip: 'Video',
   },
@@ -177,25 +172,30 @@ export function MediaToolbarButton({
           <AlertDialogHeader>
             <AlertDialogTitle>{currentConfig.title}</AlertDialogTitle>
             <AlertDialogDescription className="flex items-center gap-2">
-              {currentConfig.icon}
-              <Input
-                variant="underline"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') embedMedia();
-                }}
-                placeholder={currentConfig.placeholder}
-                h="sm"
-                autoFocus
-              />
+              <div className="group relative w-full">
+                <label
+                  className="absolute top-1/2 block -translate-y-1/2 cursor-text px-1 text-sm text-muted-foreground/70 transition-all group-focus-within:pointer-events-none group-focus-within:top-0 group-focus-within:cursor-default group-focus-within:text-xs group-focus-within:font-medium group-focus-within:text-foreground has-[+input:not(:placeholder-shown)]:pointer-events-none has-[+input:not(:placeholder-shown)]:top-0 has-[+input:not(:placeholder-shown)]:cursor-default has-[+input:not(:placeholder-shown)]:text-xs has-[+input:not(:placeholder-shown)]:font-medium has-[+input:not(:placeholder-shown)]:text-foreground"
+                  htmlFor="input-32"
+                >
+                  <span className="inline-flex bg-background px-2">URL</span>
+                </label>
+                <Input
+                  id="input-32"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') embedMedia();
+                  }}
+                  placeholder=""
+                  type="email"
+                  autoFocus
+                />
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>CANCEL</AlertDialogCancel>
-            <AlertDialogAction onClick={embedMedia}>
-              {currentConfig.title.toUpperCase()}
-            </AlertDialogAction>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={embedMedia}>Accept</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
