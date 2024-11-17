@@ -1,5 +1,17 @@
 # @udecode/plate-media
 
+## 40.2.0
+
+### Minor Changes
+
+- [#3753](https://github.com/udecode/plate/pull/3753) by [@felixfeng33](https://github.com/felixfeng33) – PlaceholderPlugin:
+  New `updateUploadHistory` `withHistoryMark` `isHistoryMarking` to fix undo to the loading state.
+  `editor.insert.insertMedia` add options
+
+  New option `disableEmptyPlaceholder` to hidden empty placeholder.
+
+  Rename `disabledDndPlugin` to `disableFileDrop`
+
 ## 40.0.0
 
 ## 39.3.3
