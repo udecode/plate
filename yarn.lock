@@ -6204,7 +6204,7 @@ __metadata:
   dependencies:
     "@udecode/plate-combobox": "npm:40.0.0"
     "@udecode/plate-markdown": "npm:40.0.5"
-    "@udecode/plate-selection": "npm:40.0.0"
+    "@udecode/plate-selection": "npm:40.1.0"
     ai: "npm:^3.4.10"
     lodash: "npm:^4.17.21"
   peerDependencies:
@@ -7090,7 +7090,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-selection@npm:40.0.0, @udecode/plate-selection@workspace:^, @udecode/plate-selection@workspace:packages/selection":
+"@udecode/plate-selection@npm:40.1.0, @udecode/plate-selection@workspace:^, @udecode/plate-selection@workspace:packages/selection":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-selection@workspace:packages/selection"
   dependencies:
@@ -7308,7 +7308,7 @@ __metadata:
     "@udecode/plate-reset-node": "npm:40.0.0"
     "@udecode/plate-resizable": "npm:40.0.0"
     "@udecode/plate-select": "npm:40.0.0"
-    "@udecode/plate-selection": "npm:40.0.0"
+    "@udecode/plate-selection": "npm:40.1.0"
     "@udecode/plate-slash-command": "npm:40.0.0"
     "@udecode/plate-suggestion": "npm:40.0.0"
     "@udecode/plate-tabbable": "npm:40.0.0"
