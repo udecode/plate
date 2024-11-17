@@ -15,7 +15,12 @@ import {
   FontColorPlugin,
 } from '@udecode/plate-font/react';
 import { ListStyleType } from '@udecode/plate-indent-list';
-import { ImagePlugin } from '@udecode/plate-media/react';
+import {
+  AudioPlugin,
+  FilePlugin,
+  ImagePlugin,
+  VideoPlugin,
+} from '@udecode/plate-media/react';
 import {
   BaselineIcon,
   BoldIcon,
@@ -128,9 +133,15 @@ export function FixedToolbarButtons() {
           </ToolbarGroup>
 
           <ToolbarGroup>
+            <MediaToolbarButton nodeType={ImagePlugin.key} />
+            <MediaToolbarButton nodeType={VideoPlugin.key} />
+            <MediaToolbarButton nodeType={AudioPlugin.key} />
+            <MediaToolbarButton nodeType={FilePlugin.key} />
+          </ToolbarGroup>
+
+          <ToolbarGroup>
             <LinkToolbarButton />
             <ToggleToolbarButton />
-            <MediaToolbarButton nodeType={ImagePlugin.key} />
             <TableDropdownMenu />
             <EmojiDropdownMenu />
             <MoreDropdownMenu />

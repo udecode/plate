@@ -170,26 +170,24 @@ export function MediaToolbarButton({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{currentConfig.title}</AlertDialogTitle>
-            <AlertDialogDescription className="flex items-center gap-2">
-              <div className="group relative w-full">
-                <label
-                  className="text-muted-foreground/70 group-focus-within:text-foreground has-[+input:not(:placeholder-shown)]:text-foreground absolute top-1/2 block -translate-y-1/2 cursor-text px-1 text-sm transition-all group-focus-within:pointer-events-none group-focus-within:top-0 group-focus-within:cursor-default group-focus-within:text-xs group-focus-within:font-medium has-[+input:not(:placeholder-shown)]:pointer-events-none has-[+input:not(:placeholder-shown)]:top-0 has-[+input:not(:placeholder-shown)]:cursor-default has-[+input:not(:placeholder-shown)]:text-xs has-[+input:not(:placeholder-shown)]:font-medium"
-                  htmlFor="input-32"
-                >
-                  <span className="bg-background inline-flex px-2">URL</span>
-                </label>
-                <Input
-                  id="input-32"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') embedMedia();
-                  }}
-                  placeholder=""
-                  type="email"
-                  autoFocus
-                />
-              </div>
+            <AlertDialogDescription className="group relative flex w-full items-center gap-2">
+              <label
+                className="text-muted-foreground/70 group-focus-within:text-foreground has-[+input:not(:placeholder-shown)]:text-foreground absolute top-1/2 block -translate-y-1/2 cursor-text px-1 text-sm transition-all group-focus-within:pointer-events-none group-focus-within:top-0 group-focus-within:cursor-default group-focus-within:text-xs group-focus-within:font-medium has-[+input:not(:placeholder-shown)]:pointer-events-none has-[+input:not(:placeholder-shown)]:top-0 has-[+input:not(:placeholder-shown)]:cursor-default has-[+input:not(:placeholder-shown)]:text-xs has-[+input:not(:placeholder-shown)]:font-medium"
+                htmlFor="input-32"
+              >
+                <span className="bg-background inline-flex px-2">URL</span>
+              </label>
+              <Input
+                id="input-32"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') embedMedia();
+                }}
+                placeholder=""
+                type="email"
+                autoFocus
+              />
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
