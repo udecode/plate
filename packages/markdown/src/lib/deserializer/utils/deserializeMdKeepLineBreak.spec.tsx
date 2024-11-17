@@ -10,7 +10,7 @@ jsx;
 
 describe('deserializeMd', () => {
   const editor = createSlateEditor({
-    plugins: [MarkdownPlugin.configure({ options: { keepLineBreak: true } })],
+    plugins: [MarkdownPlugin.configure({ options: { splitLineBreaks: true } })],
   });
 
   it('should deserialize paragraphs and keep in separate paragraphs with line breaks', () => {

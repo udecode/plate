@@ -14,7 +14,7 @@ export function remarkPlugin(options: RemarkPluginOptions) {
   };
 
   // @ts-ignore
-  this.Compiler = options.editor.getOptions(MarkdownPlugin).keepLineBreak
+  this.Compiler = options.editor.getOptions(MarkdownPlugin).splitLineBreaks
     ? (node: MdastNode) => remarkLineBreakCompiler(node, options)
     : compiler;
 }

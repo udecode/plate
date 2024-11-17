@@ -36,7 +36,7 @@ export type MarkdownConfig = PluginConfig<
      *
      * @default false
      */
-    keepLineBreak?: boolean;
+    splitLineBreaks?: boolean;
 
     /** Override text rules. */
     textRules?: RemarkTextRules;
@@ -54,7 +54,7 @@ export const MarkdownPlugin = createTSlatePlugin<MarkdownConfig>({
   options: {
     elementRules: remarkDefaultElementRules,
     indentList: false,
-    keepLineBreak: false,
+    splitLineBreaks: true,
     textRules: remarkDefaultTextRules,
   },
 })

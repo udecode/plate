@@ -150,7 +150,7 @@ export const remarkDefaultElementRules: RemarkElementRules = {
   paragraph: {
     transform: (node, options) => {
       const isKeepLineBreak =
-        options.editor.getOptions(MarkdownPlugin).keepLineBreak;
+        options.editor.getOptions(MarkdownPlugin).splitLineBreaks;
 
       const children = remarkTransformElementChildren(node, options);
 
