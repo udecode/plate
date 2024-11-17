@@ -26,8 +26,6 @@ import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 import { GripVertical } from 'lucide-react';
 import { useSelected } from 'slate-react';
 
-import { useMounted } from '@/registry/default/hooks/use-mounted';
-
 import {
   Tooltip,
   TooltipContent,
@@ -62,7 +60,6 @@ export const Draggable = withHOC(
       const state = useDraggableState({ element, onDropHandler });
       const { isDragging } = state;
       const { previewRef, handleRef } = useDraggable(state);
-      const mounted = useMounted();
 
       return (
         <div

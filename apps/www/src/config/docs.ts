@@ -156,10 +156,6 @@ export const pluginsNavItems: SidebarNavItem[] = [
     title: 'Comments',
   },
   {
-    href: '/docs/csv',
-    title: 'CSV',
-  },
-  {
     href: '/docs/cursor-overlay',
     label: 'New',
     title: 'Cursor Overlay',
@@ -172,10 +168,6 @@ export const pluginsNavItems: SidebarNavItem[] = [
   {
     href: '/docs/dnd',
     title: 'Drag & Drop',
-  },
-  {
-    href: '/docs/docx',
-    title: 'DOCX',
   },
   {
     href: '/docs/emoji',
@@ -232,10 +224,6 @@ export const pluginsNavItems: SidebarNavItem[] = [
     title: 'List',
   },
   {
-    href: '/docs/markdown',
-    title: 'Markdown',
-  },
-  {
     href: '/docs/media',
     label: 'Element',
     title: 'Media',
@@ -248,6 +236,22 @@ export const pluginsNavItems: SidebarNavItem[] = [
   {
     href: '/docs/reset-node',
     title: 'Reset Node',
+  },
+  {
+    href: '/docs/csv',
+    title: 'Serializing CSV',
+  },
+  {
+    href: '/docs/docx',
+    title: 'Serializing DOCX',
+  },
+  {
+    href: '/docs/html',
+    title: 'Serializing HTML',
+  },
+  {
+    href: '/docs/markdown',
+    title: 'Serializing Markdown',
   },
   {
     href: '/docs/single-line',
@@ -741,10 +745,6 @@ export const guidesNavItems: SidebarNavItem[] = [
     title: 'Controlled Value',
   },
   {
-    href: '/docs/html',
-    title: 'HTML',
-  },
-  {
     href: '/docs/debugging',
     title: 'Debugging',
   },
@@ -848,12 +848,12 @@ export const docsConfig: DocsConfig = {
       title: 'Guides',
     },
     {
-      items: examplesNavItems,
-      title: 'Examples',
-    },
-    {
       items: pluginsNavItems,
       title: 'Plugins',
+    },
+    {
+      items: examplesNavItems,
+      title: 'Examples',
     },
     {
       items: apiNavItems,

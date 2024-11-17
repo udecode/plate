@@ -1,0 +1,28 @@
+{
+  "doc": {
+    "description": "Exit a large block using a shortcut.",
+    "title": "Exit Break"
+  },
+  "files": [
+    {
+      "content": "import React from 'react';\n\nimport { Plate } from '@udecode/plate-common/react';\n\nimport { editorPlugins } from '@/components/editor/plugins/editor-plugins';\nimport { useCreateEditor } from '@/components/editor/use-create-editor';\nimport { Editor, EditorContainer } from '@/components/plate-ui/editor';\n\nimport { DEMO_VALUES } from './values/demo-values';\n\nexport default function Demo({ id }: { id: string }) {\n  const editor = useCreateEditor({\n    plugins: [...editorPlugins],\n    value: DEMO_VALUES[id],\n  });\n\n  return (\n    <Plate editor={editor}>\n      <EditorContainer variant=\"demo\">\n        <Editor />\n      </EditorContainer>\n    </Plate>\n  );\n}\n",
+      "path": "example/demo.tsx",
+      "target": "components/demo.tsx",
+      "type": "registry:example"
+    },
+    {
+      "content": "'use client';\n\nimport { ExitBreakPlugin } from '@udecode/plate-break/react';\nimport { HEADING_LEVELS } from '@udecode/plate-heading';\n\nexport const exitBreakPlugin = ExitBreakPlugin.configure({\n  options: {\n    rules: [\n      {\n        hotkey: 'mod+enter',\n      },\n      {\n        before: true,\n        hotkey: 'mod+shift+enter',\n      },\n      {\n        hotkey: 'enter',\n        level: 1,\n        query: {\n          allow: HEADING_LEVELS,\n          end: true,\n          start: true,\n        },\n        relative: true,\n      },\n    ],\n  },\n});\n",
+      "path": "components/editor/plugins/exit-break-plugin.ts",
+      "target": "components/exit-break-plugin.ts",
+      "type": "registry:example"
+    },
+    {
+      "content": "import { jsx } from '@udecode/plate-test-utils';\n\nimport { createTable } from './table-value';\n\njsx;\n\nexport const trailingBlockValue: any = (\n  <fragment>\n    <hh2>Trailing Block</hh2>\n    <hp>Always have a trailing paragraph at the end of your editor.</hp>\n  </fragment>\n);\n\nexport const exitBreakValue: any = (\n  <fragment>\n    <hh2>Exit Break</hh2>\n    <hp>\n      Configure how exit breaks (line breaks between blocks) behave using simple\n      rules:\n    </hp>\n\n    <hp indent={1} listStyleType=\"disc\">\n      hotkey – Use hotkeys like ⌘⏎ to move the cursor to the next block\n    </hp>\n    <hp indent={1} listStyleType=\"disc\">\n      query – Specify block types where exit breaks are allowed.\n    </hp>\n    <hp indent={1} listStyleType=\"disc\">\n      before – Choose whether the cursor exits to the next or previous block\n    </hp>\n\n    <hcodeblock>\n      <hcodeline>And in the middle ⌘⏎ of a block.</hcodeline>\n    </hcodeblock>\n    <hp>Exit breaks also work within nested blocks:</hp>\n    {createTable()}\n  </fragment>\n);\n",
+      "path": "example/values/exit-break-value.tsx",
+      "target": "components/exit-break-value.tsx",
+      "type": "registry:example"
+    }
+  ],
+  "name": "exit-break",
+  "type": "registry:example"
+}

@@ -1,0 +1,22 @@
+{
+  "doc": {
+    "description": "Restrict the editor to a single block.",
+    "title": "Single Line"
+  },
+  "files": [
+    {
+      "content": "import React from 'react';\n\nimport { Plate } from '@udecode/plate-common/react';\n\nimport { editorPlugins } from '@/components/editor/plugins/editor-plugins';\nimport { useCreateEditor } from '@/components/editor/use-create-editor';\nimport { Editor, EditorContainer } from '@/components/plate-ui/editor';\n\nimport { DEMO_VALUES } from './values/demo-values';\n\nexport default function Demo({ id }: { id: string }) {\n  const editor = useCreateEditor({\n    plugins: [...editorPlugins],\n    value: DEMO_VALUES[id],\n  });\n\n  return (\n    <Plate editor={editor}>\n      <EditorContainer variant=\"demo\">\n        <Editor />\n      </EditorContainer>\n    </Plate>\n  );\n}\n",
+      "path": "example/demo.tsx",
+      "target": "components/demo.tsx",
+      "type": "registry:example"
+    },
+    {
+      "content": "import { jsx } from '@udecode/plate-test-utils';\n\njsx;\n\nexport const singleLineValue: any = (\n  <fragment>\n    <hp>You cannot type or paste text with multiple lines.</hp>\n  </fragment>\n);\n",
+      "path": "example/values/single-line-value.tsx",
+      "target": "components/single-line-value.tsx",
+      "type": "registry:example"
+    }
+  ],
+  "name": "single-line",
+  "type": "registry:example"
+}

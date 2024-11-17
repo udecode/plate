@@ -93,7 +93,9 @@ export default async function DocPage(props: DocPageProps) {
 
   const isUI = name === 'components';
   const isExample = name === 'examples';
-  const isPlugin = pluginsNavItems.some((plugin) => plugin.href === currentPath);
+  const isPlugin = pluginsNavItems.some(
+    (plugin) => plugin.href === currentPath
+  );
 
   const doc = getDocFromParams({ params });
 
@@ -120,6 +122,7 @@ export default async function DocPage(props: DocPageProps) {
 
     const dependencies = getAllDependencies(docName);
     const files = getAllFiles(docName);
+
     const slug = '/docs/' + params.slug?.join('/') || '';
 
     const docs = getRegistryDocs({
@@ -220,7 +223,12 @@ function getRegistryDocs({
       route: `/docs/${item.type.includes('example') ? 'examples' : 'components'}/${item.name}`,
       title: getRegistryTitle(item),
     })),
-  ].filter(Boolean);
+  ]
+    .filter(Boolean)
+    .filter(
+      (doc, index, self) =>
+        index === self.findIndex((d) => d.route === doc.route)
+    );
 
   const groups = [...(file.doc?.docs || []), ...relatedDocs].reduce(
     (acc, doc) => {
