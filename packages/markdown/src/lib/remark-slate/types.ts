@@ -25,10 +25,11 @@ export type MdastNodeType = MdastElementType | MdastTextType;
 export interface TextPosition {
   column: number;
   line: number;
-  offset: number;
+  offset?: number;
 }
 
 export interface MdastNode {
+  type: MdastNodeType;
   // mdast metadata
   position?: {
     end: TextPosition;
@@ -43,7 +44,6 @@ export interface MdastNode {
   ordered?: boolean;
   spread?: any;
   text?: string;
-  type?: MdastNodeType;
   url?: string;
   value?: string;
 }

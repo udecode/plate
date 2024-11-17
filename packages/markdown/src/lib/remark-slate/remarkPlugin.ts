@@ -1,20 +1,21 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
+import type { Processor } from 'unified';
+
 import type { MdastNode, RemarkPluginOptions } from './types';
 
 import { MarkdownPlugin } from '../MarkdownPlugin';
-import { remarkLineBreakCompiler } from './remarkLineBreakCompiler';
-import { remarkTransformNode } from './remarkTransformNode';
+import { remarkDefaultCompiler } from './remarkDefaultCompiler';
+import { remarkSplitLineBreaksCompiler } from './remarkSplitLineBreaksCompiler';
 
-export function remarkPlugin(options: RemarkPluginOptions) {
-  const compiler = (node: { children: MdastNode[] }) => {
-    return node.children.flatMap((child) =>
-      remarkTransformNode(child, options)
-    );
-  };
+export function remarkPlugin(
+  this: Processor<undefined, undefined, undefined, MdastNode, any>,
+  options: RemarkPluginOptions
+) {
+  const shouldSplitLineBreaks =
+    options.editor.getOptions(MarkdownPlugin).splitLineBreaks;
 
-  // @ts-ignore
-  this.Compiler = options.editor.getOptions(MarkdownPlugin).splitLineBreaks
-    ? (node: MdastNode) => remarkLineBreakCompiler(node, options)
-    : compiler;
+  this.compiler = shouldSplitLineBreaks
+    ? (tree: MdastNode) => remarkSplitLineBreaksCompiler(tree, options)
+    : (tree: MdastNode) => remarkDefaultCompiler(tree, options);
 }

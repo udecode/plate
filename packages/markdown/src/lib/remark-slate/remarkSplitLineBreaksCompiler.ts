@@ -4,10 +4,10 @@ import type { MdastNode, RemarkPluginOptions } from './types';
 
 import { remarkTransformNode } from './remarkTransformNode';
 
-export const remarkLineBreakCompiler = (
+export const remarkSplitLineBreaksCompiler = (
   node: MdastNode,
   options: RemarkPluginOptions
-) => {
+): TDescendant[] => {
   const results: TDescendant[] = [];
   let startLine = node.position!.start.line;
 
