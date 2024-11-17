@@ -19,9 +19,33 @@ export const imageValue: any = (
   </fragment>
 );
 
+export const mediaPlaceholderValue: any = (
+  <fragment>
+    <hh2>Upload</hh2>
+    <hp indent={1} listStyleType="disc">
+      Easily upload media files by dragging and dropping them into the editor or
+      using the file picker. The editor provides:
+    </hp>
+    <hp indent={1} listStyleType="disc">
+      Real-time upload status and progress tracking
+    </hp>
+    <hp indent={1} listStyleType="disc">
+      Configurable file size limits and batch upload settings
+    </hp>
+    <hp indent={1} listStyleType="disc">
+      Clear error messages for any upload issues
+    </hp>
+    <hp indent={1} listStyleType="disc">
+      Try it now - drag an image from your desktop or click the upload button in
+      the toolbar
+    </hp>
+  </fragment>
+);
+
 export const mediaValue: any = (
   <fragment>
     {imageValue}
+    {mediaPlaceholderValue}
 
     <hh2>Embed</hh2>
     <hp>Embed various types of content, such as videos and tweets:</hp>

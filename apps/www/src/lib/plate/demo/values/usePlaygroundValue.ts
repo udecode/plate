@@ -95,7 +95,8 @@ export const usePlaygroundValue = (id?: ValueId): Value => {
     if (enabled.a) value.push(...linkValue);
     if (enabled.hr) value.push(...horizontalRuleValue);
     if (enabled.table) value.push(...tableValue);
-    if (enabled.img || enabled.media_embed) value.push(...mediaValue);
+    if (enabled.img || enabled.media_embed || enabled.media_placeholder)
+      value.push(...mediaValue);
     if (enabled.column) value.push(...columnValue);
     if (enabled.mention) value.push(...mentionValue);
     if (enabled.date) value.push(...dateValue);
