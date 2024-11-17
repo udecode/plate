@@ -31,7 +31,14 @@ import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { KbdPlugin } from '@udecode/plate-kbd/react';
 import { ColumnItemPlugin, ColumnPlugin } from '@udecode/plate-layout/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
-import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
+import {
+  AudioPlugin,
+  FilePlugin,
+  ImagePlugin,
+  MediaEmbedPlugin,
+  PlaceholderPlugin,
+  VideoPlugin,
+} from '@udecode/plate-media/react';
 import {
   MentionInputPlugin,
   MentionPlugin,
@@ -83,12 +90,18 @@ import { TocElement } from '@/components/plate-ui/toc-element';
 import { ToggleElement } from '@/components/plate-ui/toggle-element';
 import { withDraggables } from '@/components/plate-ui/with-draggables';
 
+import { MediaAudioElement } from '../plate-ui/media-audio-element';
+import { MediaFileElement } from '../plate-ui/media-file-element';
+import { MediaPlaceholderElement } from '../plate-ui/media-placeholder-element';
+import { MediaVideoElement } from '../plate-ui/media-video-element';
+
 export const useCreateEditor = () => {
   return usePlateEditor({
     override: {
       components: withDraggables(
         withPlaceholders({
           [AIPlugin.key]: AILeaf,
+          [AudioPlugin.key]: MediaAudioElement,
           [BlockquotePlugin.key]: BlockquoteElement,
           [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),
           [CodeBlockPlugin.key]: CodeBlockElement,
@@ -101,6 +114,7 @@ export const useCreateEditor = () => {
           [DatePlugin.key]: DateElement,
           [EmojiInputPlugin.key]: EmojiInputElement,
           [ExcalidrawPlugin.key]: ExcalidrawElement,
+          [FilePlugin.key]: MediaFileElement,
           [HEADING_KEYS.h1]: withProps(HeadingElement, { variant: 'h1' }),
           [HEADING_KEYS.h2]: withProps(HeadingElement, { variant: 'h2' }),
           [HEADING_KEYS.h3]: withProps(HeadingElement, { variant: 'h3' }),
@@ -117,6 +131,7 @@ export const useCreateEditor = () => {
           [MentionInputPlugin.key]: MentionInputElement,
           [MentionPlugin.key]: MentionElement,
           [ParagraphPlugin.key]: ParagraphElement,
+          [PlaceholderPlugin.key]: MediaPlaceholderElement,
           [SlashInputPlugin.key]: SlashInputElement,
           [StrikethroughPlugin.key]: withProps(PlateLeaf, { as: 's' }),
           [SubscriptPlugin.key]: withProps(PlateLeaf, { as: 'sub' }),
@@ -128,6 +143,7 @@ export const useCreateEditor = () => {
           [TocPlugin.key]: TocElement,
           [TogglePlugin.key]: ToggleElement,
           [UnderlinePlugin.key]: withProps(PlateLeaf, { as: 'u' }),
+          [VideoPlugin.key]: MediaVideoElement,
         })
       ),
     },

@@ -27,12 +27,12 @@ export const ToolbarLink = withCn(
 
 export const ToolbarSeparator = withCn(
   ToolbarPrimitive.Separator,
-  'mx-2 my-1 w-px shrink-0 bg-border'
+  'bg-border mx-2 my-1 w-px shrink-0'
 );
 
 const toolbarButtonVariants = cva(
   cn(
-    'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium text-foreground ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg:not([data-icon])]:size-4'
+    'text-foreground ring-offset-background focus-visible:ring-ring inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg:not([data-icon])]:size-4'
   ),
   {
     defaultVariants: {
@@ -47,9 +47,34 @@ const toolbarButtonVariants = cva(
       },
       variant: {
         default:
-          'bg-transparent hover:bg-muted hover:text-muted-foreground aria-checked:bg-accent aria-checked:text-accent-foreground',
+          'hover:bg-muted hover:text-muted-foreground aria-checked:bg-accent aria-checked:text-accent-foreground bg-transparent',
         outline:
-          'border border-input bg-transparent hover:bg-accent hover:text-accent-foreground',
+          'border-input hover:bg-accent hover:text-accent-foreground border bg-transparent',
+      },
+    },
+  }
+);
+
+const dropdownArrowVariants = cva(
+  cn(
+    'text-foreground focus-visible:ring-ring inline-flex items-center justify-center rounded-r-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50'
+  ),
+  {
+    defaultVariants: {
+      size: 'sm',
+      variant: 'default',
+    },
+    variants: {
+      size: {
+        default: 'h-10 w-6',
+        lg: 'h-11 w-8',
+        sm: 'h-7 w-4',
+      },
+      variant: {
+        default:
+          'hover:bg-muted hover:text-muted-foreground aria-checked:bg-accent aria-checked:text-accent-foreground bg-transparent',
+        outline:
+          'border-input hover:bg-accent hover:text-accent-foreground border border-l-0 bg-transparent',
       },
     },
   }
@@ -98,7 +123,7 @@ const ToolbarButton = withTooltip(
                 </div>
                 <div>
                   <ChevronDown
-                    className="size-3.5 text-muted-foreground"
+                    className="text-muted-foreground size-3.5"
                     data-icon
                   />
                 </div>
@@ -130,6 +155,90 @@ const ToolbarButton = withTooltip(
 ToolbarButton.displayName = 'ToolbarButton';
 
 export { ToolbarButton };
+
+export const ToolbarSplitButton = React.forwardRef<
+  React.ElementRef<typeof ToolbarToggleGroup>,
+  {
+    pressed?: boolean;
+    tooltip?: string;
+  } & Omit<
+    React.ComponentPropsWithoutRef<typeof ToolbarToggleItem>,
+    'asChild' | 'value'
+  >
+>(({ children, pressed, ...props }, ref) => {
+  return (
+    <ToolbarToggleGroup
+      ref={ref}
+      className="group"
+      disabled={props.disabled}
+      value="single"
+      data-pressed={pressed}
+      type="single"
+    >
+      <button className="flex" type="button">
+        {children}
+      </button>
+    </ToolbarToggleGroup>
+  );
+});
+
+export const ToolbarSplitButtonPrimary = withTooltip(
+  React.forwardRef<
+    React.ElementRef<typeof ToolbarToggleItem>,
+    {
+      className?: string;
+      size?: 'default' | 'lg' | 'sm';
+      variant?: 'default' | 'outline';
+    } & Omit<React.ComponentPropsWithoutRef<typeof ToolbarToggleItem>, 'value'>
+  >(({ children, className, size, variant, ...props }, ref) => {
+    return (
+      <span
+        ref={ref}
+        className={cn(
+          className,
+          toolbarButtonVariants({
+            size,
+            variant,
+          }),
+          'rounded-r-none',
+          'group-data-[pressed=true]:bg-accent group-data-[pressed=true]:text-accent-foreground'
+        )}
+        {...props}
+      >
+        {children}
+      </span>
+    );
+  })
+);
+
+export const ToolbarSplitButtonSecondary = React.forwardRef<
+  HTMLButtonElement,
+  {
+    className?: string;
+    size?: 'default' | 'lg' | 'sm';
+    variant?: 'default' | 'outline';
+  } & React.ButtonHTMLAttributes<HTMLButtonElement>
+>(({ className, size, variant, ...props }, ref) => {
+  return (
+    <span
+      ref={ref}
+      className={cn(
+        className,
+        dropdownArrowVariants({
+          size,
+          variant,
+        }),
+        'group-data-[pressed=true]:bg-accent group-data-[pressed=true]:text-accent-foreground'
+      )}
+      disabled={props.disabled}
+      {...props}
+    >
+      <ChevronDown className="text-muted-foreground size-3.5" data-icon />
+    </span>
+  );
+});
+
+ToolbarSplitButton.displayName = 'ToolbarButton';
 
 export const ToolbarToggleItem = withVariants(
   ToolbarPrimitive.ToggleItem,
