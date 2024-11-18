@@ -2189,13 +2189,13 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
-    "preview-md-demo": {
-      name: "preview-md-demo",
+    "preview-markdown-demo": {
+      name: "preview-markdown-demo",
       description: "",
       type: "registry:example",
       registryDependencies: [],
-      files: ["registry/default/example/preview-md-demo.tsx"],
-      component: React.lazy(() => import("@/registry/default/example/preview-md-demo.tsx")),
+      files: ["registry/default/example/preview-markdown-demo.tsx"],
+      component: React.lazy(() => import("@/registry/default/example/preview-markdown-demo.tsx")),
       source: "",
       category: "",
       subcategory: "",

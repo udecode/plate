@@ -14439,12 +14439,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lucide-react@npm:^0.441.0":
-  version: 0.441.0
-  resolution: "lucide-react@npm:0.441.0"
+"lucide-react@npm:0.460.0":
+  version: 0.460.0
+  resolution: "lucide-react@npm:0.460.0"
   peerDependencies:
     react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0-rc
-  checksum: 10c0/3c8bc83cb72b5fa7b391cdce32b25c2212ff2fd3b66f6e989f130d9e53c69ac4cc9782ae499d639026357c5cc5e280b8ae91fd81743b14ffc98d940b6d5c17c2
+  checksum: 10c0/7f54cbc1ab88276f79cfb8c3ac440de9db013d76e386abc68deda4b04ea51e826f1ad5df22983619b970adff7430d892d4e990dbdf6eceb7243eb2e9a2762704
   languageName: node
   linkType: hard
 
@@ -22051,7 +22051,7 @@ __metadata:
     framer-motion: "npm:^11.5.4"
     glob: "npm:^11.0.0"
     lodash.template: "npm:^4.5.0"
-    lucide-react: "npm:^0.441.0"
+    lucide-react: "npm:0.460.0"
     match-sorter: "npm:6.3.4"
     mdast-util-toc: "npm:^7.1.0"
     next: "npm:15.0.0"

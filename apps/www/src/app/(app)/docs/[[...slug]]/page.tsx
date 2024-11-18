@@ -8,7 +8,8 @@ import { DocContent } from '@/app/(app)/docs/[[...slug]]/doc-content';
 import { ComponentInstallation } from '@/components/component-installation';
 import { ComponentPreview } from '@/components/component-preview';
 import { Mdx } from '@/components/mdx-components';
-import { pluginsNavItems } from '@/config/docs';
+import { docsConfig } from '@/config/docs';
+import { slugToCategory } from '@/config/docs-utils';
 import { siteConfig } from '@/config/site';
 import { getRegistryTitle } from '@/lib/registry-utils';
 import {
@@ -88,14 +89,8 @@ export function generateStaticParams() {
 
 export default async function DocPage(props: DocPageProps) {
   const params = await props.params;
-  const name = params.slug?.[0];
-  const currentPath = '/docs/' + (params.slug?.join('/') || '');
 
-  const isUI = name === 'components';
-  const isExample = name === 'examples';
-  const isPlugin = pluginsNavItems.some(
-    (plugin) => plugin.href === currentPath
-  );
+  const category = slugToCategory(params.slug);
 
   const doc = getDocFromParams({ params });
 
@@ -110,9 +105,9 @@ export default async function DocPage(props: DocPageProps) {
     let docName = params.slug?.at(-1);
     let file: RegistryEntry | undefined;
 
-    if (isUI) {
+    if (category === 'component') {
       file = ui.find((c) => c.name === docName);
-    } else {
+    } else if (category === 'example') {
       docName += '-demo';
       file = examples.find((c) => c.name === docName);
     }
@@ -138,9 +133,7 @@ export default async function DocPage(props: DocPageProps) {
 
     return (
       <DocContent
-        isExample={isExample}
-        isPlugin={isPlugin}
-        isUI={isUI}
+        category={category as any}
         {...file}
         doc={{
           ...file.doc,
@@ -148,10 +141,10 @@ export default async function DocPage(props: DocPageProps) {
           slug,
         }}
       >
-        {isUI ? (
+        {category === 'component' ? (
           <ComponentInstallation
             name={file.name}
-            codeTabs={!isUI}
+            codeTabs={category !== 'component'}
             dependencies={dependencies}
             examples={componentExamples as any}
             files={files}
@@ -167,17 +160,16 @@ export default async function DocPage(props: DocPageProps) {
       </DocContent>
     );
   }
+  if (!doc.description) {
+    doc.description = docsConfig.sidebarNav
+      .flatMap((item) => item.items)
+      .find((item) => item?.href === doc.slug)?.description;
+  }
 
   const toc = await getTableOfContents(doc.body.raw);
 
   return (
-    <DocContent
-      doc={doc}
-      isExample={isExample}
-      isPlugin={isPlugin}
-      isUI={isUI}
-      toc={toc}
-    >
+    <DocContent category={category as any} doc={doc} toc={toc}>
       <Mdx code={doc.body.code} packageInfo={packageInfo} />
     </DocContent>
   );

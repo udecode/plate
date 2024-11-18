@@ -1185,8 +1185,8 @@ export const examples: Registry = [
     type: 'registry:example',
   },
   {
-    files: ['example/preview-md-demo.tsx'],
-    name: 'preview-md-demo',
+    files: ['example/preview-markdown-demo.tsx'],
+    name: 'preview-markdown-demo',
     registryDependencies: [],
     type: 'registry:example',
   },

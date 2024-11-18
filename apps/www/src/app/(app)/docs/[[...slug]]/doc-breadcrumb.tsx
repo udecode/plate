@@ -23,7 +23,7 @@ import {
   PopoverTrigger,
 } from '@/registry/default/plate-ui/popover';
 
-export function SearchableSelect({
+export function DocBreadcrumb({
   buttonClassName,
   combobox = true,
   emptyText = 'No results found.',
@@ -43,7 +43,9 @@ export function SearchableSelect({
 
   const flatItems = React.useMemo(() => items.flatMap((g) => g.items), [items]);
 
-  const selectedItem = flatItems.find((item) => item?.href === value);
+  const selectedItem = flatItems.find(
+    (item) => (item?.value ?? item?.href) === value
+  );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -82,7 +84,7 @@ export function SearchableSelect({
                 {group.items?.map((item) => (
                   <CommandItem
                     key={item.href}
-                    value={item.title}
+                    value={item.value ?? item.href}
                     onSelect={() => {
                       router.push(item.href!);
                       setOpen(false);

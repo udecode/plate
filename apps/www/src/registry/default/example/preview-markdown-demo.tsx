@@ -103,7 +103,7 @@ export default function PreviewMdDemo() {
   const editor = usePlateEditor({
     override: { components: PlateUI },
     plugins: [BasicElementsPlugin, BasicMarksPlugin, createSlatePlugin({
-      key: 'preview-md',
+      key: 'preview-markdown',
       decorate: decoratePreview,
     })],
     value: previewMdValue,

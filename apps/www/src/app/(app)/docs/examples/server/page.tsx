@@ -65,7 +65,7 @@ import { basicMarksValue } from '@/registry/default/example/values/basic-marks-v
 
 export default function RSCPage() {
   const mockDoc = {
-    description: 'Use Plate in server environment',
+    description: 'Server-side rendering.',
     title: 'Server-Side',
     // ... other necessary properties
   };
@@ -238,7 +238,7 @@ export default function RSCPage() {
   });
 
   return (
-    <DocContent doc={mockDoc} toc={{}} isExample>
+    <DocContent category="example" doc={mockDoc} toc={{}}>
       <H2>Using Plate in a Server Environment</H2>
       <P>
         Plate can be utilized in server-side environments, enabling operations

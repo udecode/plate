@@ -1,13 +1,15 @@
-import type { Icons } from '@/components/icons';
+import type { DocIcons } from '@/config/docs-icons';
 
 export interface NavItem {
+  description?: string;
   disabled?: boolean;
   external?: boolean;
   href?: string;
-  icon?: keyof typeof Icons;
+  icon?: keyof typeof DocIcons;
   keywords?: string[];
   label?: string[] | string;
   title?: string;
+  value?: string;
 }
 
 export interface NavItemWithChildren extends NavItem {

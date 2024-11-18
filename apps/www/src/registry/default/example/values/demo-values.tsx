@@ -88,7 +88,7 @@ const values = {
   mention: mentionValue,
   // 'multi-editors': multiEditorsValue,
   placeholder: placeholderValue,
-  'preview-md': previewMdValue,
+  'preview-markdown': previewMdValue,
   'reset-node': basicElementsValue,
   'single-line': singleLineValue,
   'slash-command': slashCommandValue,
