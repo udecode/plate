@@ -859,8 +859,8 @@ export const uiNodes: Registry = [
       examples: ['media-demo', 'media-toolbar-pro'],
     },
     files: [
-      '../../../../../templates/plate-playground-template/src/components/plate-ui/media-placeholder-element.tsx',
-      '../../../../../templates/plate-playground-template/src/lib/uploadthing/uploadthing.ts',
+      'plate-ui/media-placeholder-element.tsx',
+      'lib/uploadthing/uploadthing.ts',
     ],
     name: 'media-placeholder-element',
     registryDependencies: [],

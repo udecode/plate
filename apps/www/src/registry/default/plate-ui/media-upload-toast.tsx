@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect } from 'react';
 
 import { useEditorRef } from '@udecode/plate-common/react';
