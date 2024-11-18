@@ -29,7 +29,8 @@ export type MarkdownConfig = PluginConfig<
     /**
      * When the text contains \n, split the text into a separate paragraph.
      *
-     * Line breaks between paragraphs are also preserved.
+     * Line breaks between paragraphs will also be converted into separate
+     * paragraphs.
      *
      * @default false
      */
