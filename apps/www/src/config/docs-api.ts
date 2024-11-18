@@ -1,12 +1,14 @@
 import type { SidebarNavItem } from '@/types/nav';
 
-export const apiNavItems: SidebarNavItem[] = [
+export const docsApi: SidebarNavItem[] = [
   {
+    description: 'Common utilities for Plate.',
     headings: [],
     href: '/docs/api/common',
     title: 'Plate Common',
   },
   {
+    description: 'Core utilities for Plate.',
     headings: [
       'createAtomStore',
       'createDeserializeAstPlugin',
@@ -160,6 +162,7 @@ export const apiNavItems: SidebarNavItem[] = [
     title: 'Plate Core',
   },
   {
+    description: 'Additional utilities for Plate.',
     headings: [
       'PlateElement',
       'PlateLeaf',
@@ -176,6 +179,7 @@ export const apiNavItems: SidebarNavItem[] = [
     title: 'Plate Utils',
   },
   {
+    description: 'Slate utilities.',
     headings: [
       'addMark',
       'createPathRef',
@@ -299,6 +303,7 @@ export const apiNavItems: SidebarNavItem[] = [
     title: 'Slate',
   },
   {
+    description: 'Slate React utilities.',
     headings: [
       'blurEditor',
       'hasEditorSelectableTarget',
@@ -330,6 +335,7 @@ export const apiNavItems: SidebarNavItem[] = [
     title: 'Slate React',
   },
   {
+    description: 'Additional utilities for Slate.',
     headings: [
       'findDescendant',
       'getBlockAbove',
@@ -386,6 +392,7 @@ export const apiNavItems: SidebarNavItem[] = [
     title: 'Slate Utils',
   },
   {
+    description: 'React utilities.',
     headings: [
       'PortalBody',
       'Text',
@@ -398,6 +405,7 @@ export const apiNavItems: SidebarNavItem[] = [
     title: 'React Utils',
   },
   {
+    description: 'Class utilities.',
     headings: ['cn', 'withCn', 'withProps', 'withVariants'],
     href: '/docs/api/cn',
     title: 'cn',

@@ -10,8 +10,7 @@
     "examples": [
       "editor-default",
       "editor-disabled",
-      "editor-full-width",
-      "editor-ai-chat"
+      "editor-full-width"
     ]
   },
   "files": [

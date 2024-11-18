@@ -15,21 +15,26 @@ You can choose one of the following templates to get started:
 | [Plate playground template](https://github.com/udecode/plate-playground-template) | ✅    | ✅      | ✅  |         |
 | [Plate minimal template](https://github.com/udecode/plate-template)               | ✅    |         |     |         |
 
-For an existing project, jump to the next step.
+For an existing React project, jump to the next step.
 
 ### Add dependencies
 
-Install the core and the plugins you need. You need at least:
+First, install the core dependencies:
 
 ```bash
-npm install @udecode/plate-common slate slate-dom slate-react slate-history slate-hyperscript react react-dom
+npm install @udecode/plate-common slate slate-dom slate-react slate-history
 ```
 
-Alternatively you can install **`@udecode/plate`** that contains all the packages excluding the ones with heavy dependencies (e.g. **`@udecode/plate-dnd`**).
+For the examples in this guide, we'll also use these plugins:
 
 ```bash
-npm install @udecode/plate slate slate-dom slate-react slate-history slate-hyperscript react react-dom
+npm install @udecode/plate-basic-marks @udecode/plate-heading @udecode/plate-block-quote @udecode/cn
 ```
+
+- `@udecode/plate-basic-marks` provides bold, italic, underline, and code formatting.
+- `@udecode/plate-heading` adds h1-h6 support.
+- `@udecode/plate-block-quote` adds blockquote support.
+- `@udecode/cn` helps with component styling (optional).
 
 ### Basic Editor
 
@@ -62,6 +67,8 @@ export default function BasicEditor() {
 Let's give our editor some styles: [Editor](/docs/components/editor) is a styled version of `PlateContent`.
 
 <ComponentPreview name="basic-editor-styling-demo" padding="md" />
+
+To keep things simple, we'll continue to use `PlateContent` in the following code snippets.
 
 <Callout className="mt-4">
   **Note**: `Editor` is just an example of a styled editor using Tailwind, and
@@ -113,7 +120,7 @@ export default function BasicEditor() {
 
 At this stage, it's crucial to monitor editor modifications in order to store the values appropriately. The **`onChange`** prop will serve this purpose. You can also persist the editor's state by saving the value to local storage or a database and loading it back when needed.
 
-```tsx showLineNumbers {4-5,8,14-16}
+```tsx showLineNumbers {4-5,8,14-17}
 // ...
 
 export default function BasicEditor() {
@@ -128,6 +135,7 @@ export default function BasicEditor() {
     <Plate
       editor={editor}
       onChange={({ value }) => {
+        // For performance, debounce your saving logic
         localStorage.setItem('editorContent', JSON.stringify(value));
       }}
     >
@@ -142,23 +150,21 @@ export default function BasicEditor() {
 ### Plugins
 
 <Callout className="my-4">
-  Use our [interactive builder](/?builder=true) to pick your plugins.
+  See the full list of plugins in the [Plugins](/docs/plugins) section.
 </Callout>
 
-Let's use the basic plugins for a rich-text editor.
+Let's use a few basic plugins.
 
-```tsx showLineNumbers {20-28}
+```tsx showLineNumbers {3-9,17-23}
 // ...
 
 import {
   BoldPlugin,
   ItalicPlugin,
   UnderlinePlugin,
-  CodePlugin,
 } from '@udecode/plate-basic-marks/react';
 import { HeadingPlugin } from '@udecode/plate-heading/react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 
 const value = [
   // ...
@@ -166,16 +172,14 @@ const value = [
 
 export default function BasicEditor() {
   const editor = usePlateEditor({
-    value,
     plugins: [
       HeadingPlugin,
       BlockquotePlugin,
-      CodeBlockPlugin,
       BoldPlugin,
       ItalicPlugin,
       UnderlinePlugin,
-      CodePlugin,
     ],
+    value,
   });
 
   return (
@@ -201,33 +205,58 @@ The plugins are functioning correctly. However, since we haven't specified any c
 <Callout className="mt-4">
   **Note**: Plate plugins are packaged unstyled, implying that you have complete
   control over markup and styling, hence you can integrate your own design
-  system or [Plate UI](/docs/components). If using the latter, use our [interactive builder](/?builder=true) to pick your components.
+  system or [Plate UI](/docs/components).
 </Callout>
 
-To plug-in all the components in one place, we can use the **`override.components`** option in **`usePlateEditor`**:
+To plug-in all the components in one place, use the **`override.components`** option in **`usePlateEditor`**. We'll use the **`withProps`** helper to pass additional props to the components with Tailwind CSS classes.
 
-```tsx showLineNumbers {14,20-22}
+```tsx showLineNumbers {3,6-7,20-47}
 // ...
 
-// Import Prism for code highlighting
-import Prism from 'prismjs';
-
-// This is a local file, you will need to create this file in your project
-import { createPlateUI } from '@/lib/create-plate-ui';
+import { withProps } from '@udecode/cn';
+import {
+  Plate,
+  PlateElement,
+  PlateLeaf,
+  usePlateEditor,
+} from '@udecode/plate-common/react';
 
 export default function BasicEditor() {
   const editor = usePlateEditor({
     plugins: [
       HeadingPlugin,
       BlockquotePlugin,
-      CodeBlockPlugin.configure({ options: { prism: Prism } }),
       BoldPlugin,
       ItalicPlugin,
       UnderlinePlugin,
-      CodePlugin,
     ],
     override: {
-      components: createPlateUI(),
+      components: {
+        blockquote: withProps(PlateElement, {
+          as: 'blockquote',
+          className: 'mb-4 border-l-4 border-[#d0d7de] pl-4 text-[#636c76]',
+        }),
+        bold: withProps(PlateLeaf, { as: 'strong' }),
+        h1: withProps(PlateElement, {
+          as: 'h1',
+          className:
+            'mb-4 mt-6 text-3xl font-semibold tracking-tight lg:text-4xl',
+        }),
+        h2: withProps(PlateElement, {
+          as: 'h2',
+          className: 'mb-4 mt-6 text-2xl font-semibold tracking-tight',
+        }),
+        h3: withProps(PlateElement, {
+          as: 'h3',
+          className: 'mb-4 mt-6 text-xl font-semibold tracking-tight',
+        }),
+        italic: withProps(PlateLeaf, { as: 'em' }),
+        p: withProps(PlateElement, {
+          as: 'p',
+          className: 'mb-4',
+        }),
+        underline: withProps(PlateLeaf, { as: 'u' }),
+      },
     },
   });
 
@@ -239,23 +268,21 @@ export default function BasicEditor() {
 }
 ```
 
-<ComponentSource src="src/lib/plate/create-plate-ui.ts" />
-
 <ComponentPreview name="basic-plugins-components-demo" padding="md" />
 
 ### Initializing Editor's Value with HTML String
 
 You can also specify the initial content of the editor using an HTML string and the corresponding plugins.
 
-```tsx showLineNumbers {3,7}
+```tsx showLineNumbers {3,8}
 // ...
 
 const htmlValue = '<p>This is <b>bold</b> and <i>italic</i> text!</p>';
 
 export default function BasicEditor() {
   const editor = usePlateEditor({
+    // ...
     value: htmlValue,
-    plugins: [BoldPlugin, ItalicPlugin],
   });
 
   return (

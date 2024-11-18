@@ -81,6 +81,7 @@ export function DocContent({
           <DocBreadcrumb
             value={doc?.slug || 'Introduction'}
             placeholder={searchCategories[category] ?? 'Search'}
+            category={category}
             items={items}
           />
         </div>

@@ -1,8 +1,9 @@
 import type { MainNavItem, SidebarNavItem } from '@/types/nav';
 
-import { apiNavItems } from '@/config/docs-api';
-import { examplesNavItems } from '@/config/docs-examples';
-import { pluginsNavItems } from '@/config/docs-plugins';
+import { docsApi } from '@/config/docs-api';
+import { docsExamples } from '@/config/docs-examples';
+import { pluginNavMap, pluginsNavItems } from '@/config/docs-plugins';
+import { navToObject } from '@/config/nav-to-object';
 import { registryToNav } from '@/config/registry-to-nav';
 import { uiComponents, uiNodes, uiPrimitives } from '@/registry/registry-ui';
 
@@ -28,6 +29,8 @@ export const componentNavGroups: SidebarNavItem[] = [
     title: 'Primitives',
   },
 ];
+
+export const componentNavMap = navToObject(componentNavGroups);
 
 export const overviewNavItems: SidebarNavItem[] = [
   {
@@ -138,6 +141,8 @@ export const componentGuidesNavItems: SidebarNavItem[] = [
   },
 ];
 
+export const componentGuidesNavMap = navToObject(componentGuidesNavItems);
+
 export const docsConfig: DocsConfig = {
   componentsNav: [
     {
@@ -197,16 +202,44 @@ export const docsConfig: DocsConfig = {
       title: 'Guides',
     },
     {
-      items: pluginsNavItems,
+      items: [
+        {
+          href: '/docs/plugins',
+          title: 'Overview',
+        },
+        ...pluginsNavItems,
+      ],
       title: 'Plugins',
     },
     {
-      items: examplesNavItems,
+      items: [
+        {
+          href: '/docs/examples',
+          title: 'Overview',
+        },
+        ...docsExamples,
+      ],
       title: 'Examples',
     },
     {
-      items: apiNavItems,
+      items: [
+        {
+          href: '/docs/api',
+          title: 'Overview',
+        },
+        ...docsApi,
+      ],
       title: 'API',
     },
   ],
+};
+
+export const docsMap = navToObject(docsConfig.sidebarNav);
+
+export const getComponentNavItem = (id: string) => {
+  return componentNavMap['/docs/components/' + id];
+};
+
+export const getPluginNavItem = (id: string) => {
+  return pluginNavMap['/docs/' + id];
 };

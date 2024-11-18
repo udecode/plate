@@ -747,15 +747,17 @@ export const docExamples: Registry = [
     registryDependencies: ['indent-list-plugins'],
     type: 'registry:example',
   },
-  // {
-  //   doc: {
-  //     description: 'Keyboard shortcut styling.',
-  //   },
-  //   files: ['example/demo.tsx'],
-  //   name: 'kbd-demo',
-  //   registryDependencies: [],
-  //   type: 'registry:example',
-  // },
+  {
+    files: [
+      'example/demo.tsx',
+      'example/values/kbd-value.tsx',
+      'components/editor/use-create-editor.tsx',
+      'components/editor/plugins/editor-plugins.tsx',
+    ],
+    name: 'kbd-demo',
+    registryDependencies: [],
+    type: 'registry:example',
+  },
   {
     doc: {
       description: 'Line height adjustment controls.',
@@ -975,6 +977,16 @@ export const docExamples: Registry = [
     type: 'registry:example',
   },
   {
+    files: [
+      'example/tabbable-demo.tsx',
+      'example/values/tabbable-value.tsx',
+      'components/editor/use-create-editor.tsx',
+      'components/editor/plugins/editor-plugins.tsx',
+    ],
+    name: 'tabbable-demo',
+    type: 'registry:example',
+  },
+  {
     doc: {
       description:
         'Customizable tables with resizable columns and row merging options.',
@@ -993,6 +1005,16 @@ export const docExamples: Registry = [
     ],
     name: 'table-demo',
     registryDependencies: ['table-plugin'],
+    type: 'registry:example',
+  },
+  {
+    files: [
+      'example/table-nomerge-demo.tsx',
+      'example/values/table-value.tsx',
+      'components/editor/use-create-editor.tsx',
+      'components/editor/plugins/editor-plugins.tsx',
+    ],
+    name: 'table-nomerge-demo',
     type: 'registry:example',
   },
   {
@@ -1079,15 +1101,6 @@ export const examples: Registry = [
     },
     files: ['example/editor-full-width.tsx'],
     name: 'editor-full-width',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  {
-    doc: {
-      title: 'AI Chat',
-    },
-    files: ['example/editor-ai-chat.tsx'],
-    name: 'editor-ai-chat',
     registryDependencies: [],
     type: 'registry:example',
   },

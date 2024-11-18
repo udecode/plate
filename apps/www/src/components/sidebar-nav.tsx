@@ -36,8 +36,8 @@ export function DocsSidebarNav({ config }: DocsSidebarNavProps) {
 
     return sidebarNav
       .map((section) => {
-        const sectionMatches = section
-          .title!.toLowerCase()
+        const sectionMatches = section.title
+          ?.toLowerCase()
           .includes(lowercasedFilter);
 
         return {
@@ -46,7 +46,7 @@ export function DocsSidebarNav({ config }: DocsSidebarNavProps) {
             ? section.items
             : section.items?.filter(({ keywords = [], ...item }) => {
                 return (
-                  item.title!.toLowerCase().includes(lowercasedFilter) ||
+                  item.title?.toLowerCase().includes(lowercasedFilter) ||
                   [...keywords, ...castArray(item.label)].some((label) =>
                     label?.toLowerCase().includes(lowercasedFilter)
                   )

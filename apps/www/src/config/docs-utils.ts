@@ -2,13 +2,14 @@ import type { SidebarNavItem } from '@/types/nav';
 
 import {
   componentGuidesNavItems,
+  componentGuidesNavMap,
   componentNavGroups,
   guidesNavItems,
   overviewNavItems,
 } from '@/config/docs';
-import { apiNavItems } from '@/config/docs-api';
-import { examplesNavItems } from '@/config/docs-examples';
-import { pluginsNavItems } from '@/config/docs-plugins';
+import { docsApi } from '@/config/docs-api';
+import { docsExamples } from '@/config/docs-examples';
+import { pluginNavMap, pluginsNavItems } from '@/config/docs-plugins';
 
 export const docSections: SidebarNavItem[] = [
   {
@@ -27,18 +28,18 @@ export const slugToCategory = (slug: string[]) => {
   const path = '/docs/' + (slug?.join('/') || '');
 
   if (name === 'examples') return 'example';
-  if (name === 'components') return 'component';
+  if (name === 'components' && !componentGuidesNavMap[path]) return 'component';
   if (name === 'plugins') return 'plugin';
   if (name === 'api') return 'api';
-  if (pluginsNavItems.some((plugin) => plugin.href === path)) return 'plugin';
+  if (pluginNavMap[path]) return 'plugin';
 
   return 'guide';
 };
 
 export const categoryNavGroups = {
-  api: [{ items: apiNavItems }],
+  api: [{ items: docsApi }],
   component: componentNavGroups,
-  example: [{ items: examplesNavItems }],
+  example: [{ items: docsExamples }],
   guide: [
     { items: overviewNavItems, title: 'Overview' },
     {

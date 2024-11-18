@@ -1,15 +1,15 @@
 {
   "files": [
     {
-      "content": "'use client';\n\nimport React from 'react';\n\nimport { Plate } from '@udecode/plate-common/react';\n\nimport { editorPlugins } from '@/components/editor/plugins/editor-plugins';\nimport { useCreateEditor } from '@/components/editor/use-create-editor';\nimport { Editor, EditorContainer } from '@/components/plate-ui/editor';\n\nimport { DEMO_VALUES } from './values/demo-values';\n\nexport default function Demo({ id }: { id: string }) {\n  const editor = useCreateEditor({\n    plugins: [...editorPlugins],\n    value: DEMO_VALUES[id],\n  });\n\n  return (\n    <Plate editor={editor}>\n      <EditorContainer variant=\"demo\">\n        <Editor />\n      </EditorContainer>\n    </Plate>\n  );\n}\n",
-      "path": "example/demo.tsx",
-      "target": "components/demo.tsx",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport type { PlateElementProps } from '@udecode/plate-common/react';\n\nimport { cn } from '@udecode/cn';\nimport { Plate } from '@udecode/plate-common/react';\nimport { TabbablePlugin } from '@udecode/plate-tabbable/react';\nimport { useFocused, useSelected } from 'slate-react';\n\nimport { editorPlugins } from '@/components/editor/plugins/editor-plugins';\nimport { useCreateEditor } from '@/components/editor/use-create-editor';\nimport { tabbableValue } from '@/registry/default/example/values/tabbable-value';\nimport { Editor, EditorContainer } from '@/components/plate-ui/editor';\nimport { PlateElement } from '@/components/plate-ui/plate-element';\n\nexport default function TabbableDemo() {\n  const editor = useCreateEditor({\n    plugins: [\n      ...editorPlugins,\n      TabbablePlugin.configure({\n        node: { component: TabbableElement, isElement: true, isVoid: true },\n      }),\n    ],\n    value: tabbableValue,\n  });\n\n  return (\n    <Plate editor={editor}>\n      <EditorContainer variant=\"demo\">\n        <Editor />\n      </EditorContainer>\n    </Plate>\n  );\n}\n\nexport function TabbableElement({ children, ...props }: PlateElementProps) {\n  const selected = useSelected();\n  const focused = useFocused();\n\n  return (\n    <PlateElement {...props}>\n      <div\n        className={cn(\n          'mb-2 p-2',\n          selected && focused\n            ? 'border-2 border-blue-500'\n            : 'border border-gray-200'\n        )}\n        contentEditable={false}\n      >\n        <p>This is a void element.</p>\n        <button type=\"button\">Button 1</button>{' '}\n        <button type=\"button\">Button 2</button>\n      </div>\n      {children}\n    </PlateElement>\n  );\n}\n",
+      "path": "example/tabbable-demo.tsx",
+      "target": "components/tabbable-demo.tsx",
       "type": "registry:example"
     },
     {
-      "content": "import { jsx } from '@udecode/plate-test-utils';\n\njsx;\n\nexport const kbdValue: any = (\n  <fragment>\n    <hp>\n      Press <htext kbd>⌘ + B</htext> to apply bold mark or{' '}\n      <htext kbd>⌘ + I</htext> for italic mark.\n    </hp>\n  </fragment>\n);\n",
-      "path": "example/values/kbd-value.tsx",
-      "target": "components/kbd-value.tsx",
+      "content": "import { jsx } from '@udecode/plate-test-utils';\n\njsx;\n\nexport const tabbableValue: any = (\n  <fragment>\n    <hh2>Tabbable</hh2>\n    <hp>\n      Ensure a smooth tab navigation experience within your editor with the\n      Tabbable plugin.\n    </hp>\n    <hp>\n      Properly handle tab orders for void nodes, allowing for seamless\n      navigation and interaction. Without this plugin, DOM elements inside void\n      nodes come after the editor in the tab order.\n    </hp>\n    <element type=\"tabbable\">\n      <htext />\n    </element>\n    <element type=\"tabbable\">\n      <htext />\n    </element>\n    <hp>Place your cursor here and try pressing tab or shift+tab.</hp>\n    <hp indent={1} listStyleType=\"disc\">\n      List item 1\n    </hp>\n    <hp indent={1} listStyleType=\"disc\">\n      List item 2\n    </hp>\n    <hp indent={1} listStyleType=\"disc\">\n      List item 3\n    </hp>\n    <hcodeblock lang=\"javascript\">\n      <hcodeline>if (true) {'{'}</hcodeline>\n      <hcodeline>\n        {'// <-'} Place cursor at start of line and press tab\n      </hcodeline>\n      <hcodeline>{'}'}</hcodeline>\n    </hcodeblock>\n    <hp>\n      In this example, the plugin is disabled when the cursor is inside a list\n      or a code block. You can customise this using the{' '}\n      <htext code>query</htext> option.\n    </hp>\n    <element type=\"tabbable\">\n      <htext />\n    </element>\n    <hp>\n      When you press tab at the end of the editor, the focus should go to the\n      button below.\n    </hp>\n  </fragment>\n);\n",
+      "path": "example/values/tabbable-value.tsx",
+      "target": "components/tabbable-value.tsx",
       "type": "registry:example"
     },
     {
@@ -25,7 +25,6 @@
       "type": "registry:example"
     }
   ],
-  "name": "kbd-demo",
-  "registryDependencies": [],
+  "name": "tabbable-demo",
   "type": "registry:example"
 }

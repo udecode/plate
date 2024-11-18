@@ -1,9 +1,10 @@
 import type { SidebarNavItem } from '@/types/nav';
 
+import { navToObject } from '@/config/nav-to-object';
 import { registryToNav } from '@/config/registry-to-nav';
 import { docExamples } from '@/registry/registry-examples';
 
-export const examplesNavItems: SidebarNavItem[] = [
+export const docsExamples: SidebarNavItem[] = [
   {
     description: 'Upload files into your editor.',
     href: '/docs/examples/upload',
@@ -51,5 +52,10 @@ export const examplesNavItems: SidebarNavItem[] = [
     docExamples.filter(
       (item) => !['basic-elements-demo', 'basic-marks-demo'].includes(item.name)
     )
-  ),
+  ).map((item) => ({
+    ...item,
+    title: item.title + ' Demo',
+  })),
 ];
+
+export const exampleNavMap = navToObject(docsExamples);

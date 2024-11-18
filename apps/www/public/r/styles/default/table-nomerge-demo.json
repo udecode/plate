@@ -1,15 +1,15 @@
 {
   "files": [
     {
-      "content": "'use client';\n\nimport React from 'react';\n\nimport { Plate } from '@udecode/plate-common/react';\n\nimport { editorPlugins } from '@/components/editor/plugins/editor-plugins';\nimport { useCreateEditor } from '@/components/editor/use-create-editor';\nimport { Editor, EditorContainer } from '@/components/plate-ui/editor';\n\nimport { DEMO_VALUES } from './values/demo-values';\n\nexport default function Demo({ id }: { id: string }) {\n  const editor = useCreateEditor({\n    plugins: [...editorPlugins],\n    value: DEMO_VALUES[id],\n  });\n\n  return (\n    <Plate editor={editor}>\n      <EditorContainer variant=\"demo\">\n        <Editor />\n      </EditorContainer>\n    </Plate>\n  );\n}\n",
-      "path": "example/demo.tsx",
-      "target": "components/demo.tsx",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { Plate } from '@udecode/plate-common/react';\nimport { TablePlugin } from '@udecode/plate-table/react';\n\nimport { editorPlugins } from '@/components/editor/plugins/editor-plugins';\nimport { useCreateEditor } from '@/components/editor/use-create-editor';\nimport { tableValue } from '@/registry/default/example/values/table-value';\nimport { Editor, EditorContainer } from '@/components/plate-ui/editor';\n\nexport default function TableMergeDemo() {\n  const editor = useCreateEditor({\n    plugins: [\n      ...editorPlugins,\n      TablePlugin.configure({\n        options: {\n          enableMerging: false,\n        },\n      }),\n    ],\n    value: tableValue,\n  });\n\n  return (\n    <Plate editor={editor}>\n      <EditorContainer variant=\"demo\">\n        <Editor />\n      </EditorContainer>\n    </Plate>\n  );\n}\n",
+      "path": "example/table-nomerge-demo.tsx",
+      "target": "components/table-nomerge-demo.tsx",
       "type": "registry:example"
     },
     {
-      "content": "import { jsx } from '@udecode/plate-test-utils';\n\njsx;\n\nexport const kbdValue: any = (\n  <fragment>\n    <hp>\n      Press <htext kbd>⌘ + B</htext> to apply bold mark or{' '}\n      <htext kbd>⌘ + I</htext> for italic mark.\n    </hp>\n  </fragment>\n);\n",
-      "path": "example/values/kbd-value.tsx",
-      "target": "components/kbd-value.tsx",
+      "content": "import { jsx } from '@udecode/plate-test-utils';\n\njsx;\n\nexport const createTable = (spanning?: boolean): any => (\n  <fragment>\n    <htable colSizes={[100, 100, 100, 100]} marginLeft={20}>\n      {spanning ? (\n        <htr>\n          <hth colSpan={4}>\n            <hp>\n              <htext bold>Plugin</htext>\n            </hp>\n          </hth>\n        </htr>\n      ) : (\n        <htr>\n          <hth>\n            <hp>\n              <htext bold>Plugin</htext>\n            </hp>\n          </hth>\n          <hth>\n            <hp>\n              <htext bold>Element</htext>\n            </hp>\n          </hth>\n          <hth>\n            <hp>\n              <htext bold>Inline</htext>\n            </hp>\n          </hth>\n          <hth>\n            <hp>\n              <htext bold>Void</htext>\n            </hp>\n          </hth>\n        </htr>\n      )}\n\n      <htr>\n        <htd>\n          <hp>\n            <htext bold>Heading</htext>\n          </hp>\n        </htd>\n        <htd>\n          <hp>\n            <htext />\n          </hp>\n        </htd>\n        <htd>\n          <hp>\n            <htext />\n          </hp>\n        </htd>\n        <htd>\n          <hp>No</hp>\n        </htd>\n      </htr>\n      <htr>\n        <htd>\n          <hp>\n            <htext bold>Image</htext>\n          </hp>\n        </htd>\n        <htd>\n          <hp>Yes</hp>\n        </htd>\n        <htd>\n          <hp>No</hp>\n        </htd>\n        <htd>\n          <hp>Yes</hp>\n        </htd>\n      </htr>\n      <htr>\n        <htd>\n          <hp>\n            <htext bold>Mention</htext>\n          </hp>\n        </htd>\n        <htd>\n          <hp>Yes</hp>\n        </htd>\n        <htd>\n          <hp>Yes</hp>\n        </htd>\n        <htd>\n          <hp>Yes</hp>\n        </htd>\n      </htr>\n    </htable>\n  </fragment>\n);\n\nexport const tableValue: any = (\n  <fragment>\n    <hh2>Table</hh2>\n    <hp>\n      Create customizable tables with resizable columns and rows, allowing you\n      to design structured layouts.\n    </hp>\n    {createTable()}\n  </fragment>\n);\n\nexport const tableMergeValue: any = (\n  <fragment>\n    <hh3>Table Merge</hh3>\n    <hp>\n      You can enable merging using <htext code>enableMerging: true</htext>{' '}\n      option. Try it out:\n    </hp>\n    {createTable(true)}\n  </fragment>\n);\n",
+      "path": "example/values/table-value.tsx",
+      "target": "components/table-value.tsx",
       "type": "registry:example"
     },
     {
@@ -25,7 +25,6 @@
       "type": "registry:example"
     }
   ],
-  "name": "kbd-demo",
-  "registryDependencies": [],
+  "name": "table-nomerge-demo",
   "type": "registry:example"
 }

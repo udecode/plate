@@ -10,10 +10,10 @@ import {
   type Decorate,
   type TText, createSlatePlugin, isText
 } from "@udecode/plate-common";
-import { type TRenderLeafProps, Plate , usePlateEditor } from "@udecode/plate-common/react";
+import { type TRenderLeafProps, Plate  } from "@udecode/plate-common/react";
 import Prism from 'prismjs';
 
-import { PlateUI } from '@/plate/demo/plate-ui';
+import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
 import { previewMdValue } from '@/registry/default/example/values/preview-md-value';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 
@@ -100,8 +100,7 @@ function PreviewLeaf({
 
 
 export default function PreviewMdDemo() {
-  const editor = usePlateEditor({
-    override: { components: PlateUI },
+  const editor = useCreateEditor({
     plugins: [BasicElementsPlugin, BasicMarksPlugin, createSlatePlugin({
       key: 'preview-markdown',
       decorate: decoratePreview,

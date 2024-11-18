@@ -8,7 +8,7 @@ import { DocContent } from '@/app/(app)/docs/[[...slug]]/doc-content';
 import { ComponentInstallation } from '@/components/component-installation';
 import { ComponentPreview } from '@/components/component-preview';
 import { Mdx } from '@/components/mdx-components';
-import { docsConfig } from '@/config/docs';
+import { docsMap } from '@/config/docs';
 import { slugToCategory } from '@/config/docs-utils';
 import { siteConfig } from '@/config/site';
 import { getRegistryTitle } from '@/lib/registry-utils';
@@ -161,9 +161,7 @@ export default async function DocPage(props: DocPageProps) {
     );
   }
   if (!doc.description) {
-    doc.description = docsConfig.sidebarNav
-      .flatMap((item) => item.items)
-      .find((item) => item?.href === doc.slug)?.description;
+    doc.description = docsMap[doc.slug]?.description;
   }
 
   const toc = await getTableOfContents(doc.body.raw);

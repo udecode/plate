@@ -427,7 +427,7 @@
         }
       ],
       "examples": [
-        "hr-demo"
+        "horizontal-rule-demo"
       ],
       "title": "Horizontal Rule Element"
     },
@@ -1379,7 +1379,7 @@
         }
       ],
       "examples": [
-        "upload-demo"
+        "media-demo"
       ]
     },
     "files": [
@@ -1632,8 +1632,7 @@
       "examples": [
         "editor-default",
         "editor-disabled",
-        "editor-full-width",
-        "editor-ai-chat"
+        "editor-full-width"
       ]
     },
     "files": [

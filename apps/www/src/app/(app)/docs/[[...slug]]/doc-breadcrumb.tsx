@@ -8,6 +8,7 @@ import { cn } from '@udecode/cn';
 import { ChevronsUpDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
+import { getDocIcon } from '@/config/docs-icons';
 import { Button } from '@/registry/default/plate-ui/button';
 import {
   Command,
@@ -25,6 +26,7 @@ import {
 
 export function DocBreadcrumb({
   buttonClassName,
+  category,
   combobox = true,
   emptyText = 'No results found.',
   items,
@@ -33,6 +35,7 @@ export function DocBreadcrumb({
 }: {
   items: SidebarNavItem[];
   buttonClassName?: string;
+  category?: string;
   combobox?: boolean;
   emptyText?: string;
   placeholder?: string;
@@ -68,7 +71,10 @@ export function DocBreadcrumb({
           </Button>
         )}
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0" align="start">
+      <PopoverContent
+        className={cn('w-[200px] p-0', category && 'w-[300px]')}
+        align="start"
+      >
         <Command>
           {combobox && (
             <CommandInput className="h-9" placeholder={placeholder} />
@@ -81,18 +87,42 @@ export function DocBreadcrumb({
                 className="px-2"
                 heading={group.title}
               >
-                {group.items?.map((item) => (
-                  <CommandItem
-                    key={item.href}
-                    value={item.value ?? item.href}
-                    onSelect={() => {
-                      router.push(item.href!);
-                      setOpen(false);
-                    }}
-                  >
-                    {item.title}
-                  </CommandItem>
-                ))}
+                {group.items?.map((item) => {
+                  const Icon = getDocIcon(item, category);
+
+                  return (
+                    <CommandItem
+                      key={item.href}
+                      className="flex items-center gap-2"
+                      value={item.value ?? item.href}
+                      onSelect={() => {
+                        router.push(item.href!);
+                        setOpen(false);
+                      }}
+                    >
+                      {category && Icon && (
+                        <div className="flex size-9 shrink-0 items-center justify-center rounded-md border bg-white">
+                          <Icon className="size-4 text-neutral-800" />
+                        </div>
+                      )}
+                      <div>
+                        <div
+                          className={cn(
+                            'line-clamp-1',
+                            category && 'font-medium'
+                          )}
+                        >
+                          {item.title}
+                        </div>
+                        {category && item.description && (
+                          <div className="line-clamp-1 text-xs text-muted-foreground">
+                            {item.description}
+                          </div>
+                        )}
+                      </div>
+                    </CommandItem>
+                  );
+                })}
               </CommandGroup>
             ))}
           </CommandList>

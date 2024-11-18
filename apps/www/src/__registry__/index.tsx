@@ -1733,6 +1733,18 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
+    "kbd-demo": {
+      name: "kbd-demo",
+      description: "",
+      type: "registry:example",
+      registryDependencies: [],
+      files: ["registry/default/example/demo.tsx","registry/default/example/values/kbd-value.tsx","registry/default/components/editor/use-create-editor.tsx","registry/default/components/editor/plugins/editor-plugins.tsx"],
+      component: React.lazy(() => import("@/registry/default/example/demo.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
     "line-height-demo": {
       name: "line-height-demo",
       description: "",
@@ -1889,6 +1901,18 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
+    "tabbable-demo": {
+      name: "tabbable-demo",
+      description: "",
+      type: "registry:example",
+      registryDependencies: undefined,
+      files: ["registry/default/example/tabbable-demo.tsx","registry/default/example/values/tabbable-value.tsx","registry/default/components/editor/use-create-editor.tsx","registry/default/components/editor/plugins/editor-plugins.tsx"],
+      component: React.lazy(() => import("@/registry/default/example/tabbable-demo.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
     "table-demo": {
       name: "table-demo",
       description: "",
@@ -1896,6 +1920,18 @@ export const Index: Record<string, any> = {
       registryDependencies: ["table-plugin"],
       files: ["registry/default/example/demo.tsx","registry/default/example/values/table-value.tsx","registry/default/components/editor/use-create-editor.tsx","registry/default/components/editor/plugins/editor-plugins.tsx"],
       component: React.lazy(() => import("@/registry/default/example/demo.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
+    "table-nomerge-demo": {
+      name: "table-nomerge-demo",
+      description: "",
+      type: "registry:example",
+      registryDependencies: undefined,
+      files: ["registry/default/example/table-nomerge-demo.tsx","registry/default/example/values/table-value.tsx","registry/default/components/editor/use-create-editor.tsx","registry/default/components/editor/plugins/editor-plugins.tsx"],
+      component: React.lazy(() => import("@/registry/default/example/table-nomerge-demo.tsx")),
       source: "",
       category: "",
       subcategory: "",
@@ -1992,18 +2028,6 @@ export const Index: Record<string, any> = {
       registryDependencies: [],
       files: ["registry/default/example/editor-full-width.tsx"],
       component: React.lazy(() => import("@/registry/default/example/editor-full-width.tsx")),
-      source: "",
-      category: "",
-      subcategory: "",
-      chunks: []
-    },
-    "editor-ai-chat": {
-      name: "editor-ai-chat",
-      description: "",
-      type: "registry:example",
-      registryDependencies: [],
-      files: ["registry/default/example/editor-ai-chat.tsx"],
-      component: React.lazy(() => import("@/registry/default/example/editor-ai-chat.tsx")),
       source: "",
       category: "",
       subcategory: "",

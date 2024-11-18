@@ -21,8 +21,11 @@ import {
 } from '@/components/ui/accordion';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { customizerItems } from '@/config/customizer-items';
-import { allPlugins, orderedPluginKeys } from '@/config/customizer-list';
+import {
+  allPlugins,
+  customizerItems,
+  orderedPluginKeys,
+} from '@/config/customizer-items';
 import { useMounted } from '@/registry/default/hooks/use-mounted';
 
 import { InstallationCode } from './installation-code';

@@ -21,6 +21,7 @@ import {
 } from '@udecode/plate-code-block/react';
 import { CommentsPlugin } from '@udecode/plate-comments/react';
 import {
+  type CreatePlateEditorOptions,
   ParagraphPlugin,
   PlateLeaf,
   usePlateEditor,
@@ -132,14 +133,14 @@ export const editorComponents = {
 export const useCreateEditor = (
   {
     components,
+    override,
     readOnly,
     ...options
   }: {
     components?: Record<string, any>;
     plugins?: any[];
     readOnly?: boolean;
-    value?: Value;
-  } = {},
+  } & Omit<CreatePlateEditorOptions, 'plugins'> = {},
   deps: any[] = []
 ) => {
   return usePlateEditor<Value, (typeof editorPlugins)[number]>(
@@ -151,6 +152,7 @@ export const useCreateEditor = (
             : withPlaceholders(withDraggables(editorComponents))),
           ...components,
         },
+        ...override,
       },
       plugins: (readOnly ? viewPlugins : editorPlugins) as any,
       ...options,

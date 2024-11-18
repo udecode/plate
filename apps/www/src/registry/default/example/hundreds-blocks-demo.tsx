@@ -6,7 +6,7 @@ import type { TElement, Value } from '@udecode/plate-common';
 
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
-import { Plate, usePlateEditor } from '@udecode/plate-common/react';
+import { Plate } from '@udecode/plate-common/react';
 import { createEditor } from 'slate';
 import {
   type ReactEditor,
@@ -16,15 +16,14 @@ import {
   withReact,
 } from 'slate-react';
 
-import { PlateUI } from '@/plate/demo/plate-ui';
+import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
 import { createHugeDocumentValue } from '@/registry/default/example/values/huge-document-value';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 
 const value = createHugeDocumentValue();
 
 function WithPlate() {
-  const editor = usePlateEditor({
-    override: { components: PlateUI },
+  const editor = useCreateEditor({
     plugins: [BasicElementsPlugin, BasicMarksPlugin],
     value,
   });
