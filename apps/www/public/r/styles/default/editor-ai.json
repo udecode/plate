@@ -20,7 +20,8 @@
     "@udecode/plate-mention",
     "@udecode/plate-slash-command",
     "@udecode/plate-table",
-    "@udecode/plate-toggle"
+    "@udecode/plate-toggle",
+    "sonner"
   ],
   "description": "An AI editor",
   "files": [
