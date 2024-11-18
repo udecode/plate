@@ -15,7 +15,13 @@ export function remarkPlugin(
   const shouldSplitLineBreaks =
     options.editor.getOptions(MarkdownPlugin).splitLineBreaks;
 
-  this.compiler = shouldSplitLineBreaks
-    ? (tree: MdastNode) => remarkSplitLineBreaksCompiler(tree, options)
-    : (tree: MdastNode) => remarkDefaultCompiler(tree, options);
+  const compiler = (node: MdastNode) => {
+    if (shouldSplitLineBreaks) {
+      return remarkSplitLineBreaksCompiler(node, options);
+    }
+
+    return remarkDefaultCompiler(node, options);
+  };
+
+  this.compiler = compiler;
 }

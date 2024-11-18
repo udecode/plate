@@ -31,9 +31,6 @@ export type MarkdownConfig = PluginConfig<
      *
      * Line breaks between paragraphs are also preserved.
      *
-     * This means that if the text contains \n, the \n and the text before it
-     * are split into separate paragraphs.
-     *
      * @default false
      */
     splitLineBreaks?: boolean;
