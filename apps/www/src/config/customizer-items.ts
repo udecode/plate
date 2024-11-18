@@ -46,7 +46,11 @@ import { LineHeightPlugin } from '@udecode/plate-line-height/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { TodoListPlugin } from '@udecode/plate-list/react';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
-import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
+import {
+  ImagePlugin,
+  MediaEmbedPlugin,
+  PlaceholderPlugin,
+} from '@udecode/plate-media/react';
 import {
   MentionInputPlugin,
   MentionPlugin,
@@ -110,6 +114,14 @@ export type SettingPlugin = {
 };
 
 export const customizerItems: Record<string, SettingPlugin> = {
+  [`media_${PlaceholderPlugin.key}`]: {
+    id: `media_${PlaceholderPlugin.key}`,
+    label: 'MediaPlaceholder',
+    npmPackage: '@udecode/plate-placeholder',
+    pluginFactory: 'PlaceholderPlugin',
+    reactImport: true,
+    route: customizerPlugins.mediaPlaceholder.route,
+  },
   [AIChatPlugin.key]: {
     id: AIChatPlugin.key,
     badges: [customizerBadges.handler],

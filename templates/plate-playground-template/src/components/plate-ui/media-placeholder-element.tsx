@@ -230,6 +230,7 @@ export function ImageProgress({
 
   return (
     <div className={cn('relative', className)} contentEditable={false}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         ref={imageRef}
         className="h-auto w-full rounded-sm object-cover"

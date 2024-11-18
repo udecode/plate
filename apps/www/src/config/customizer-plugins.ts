@@ -78,7 +78,10 @@ import { kbdValue } from '@/plate/demo/values/kbdValue';
 import { lineHeightValue } from '@/plate/demo/values/lineHeightValue';
 import { linkValue } from '@/plate/demo/values/linkValue';
 import { listValue, todoListValue } from '@/plate/demo/values/listValue';
-import { mediaValue } from '@/plate/demo/values/mediaValue';
+import {
+  mediaPlaceholderValue,
+  mediaValue,
+} from '@/plate/demo/values/mediaValue';
 import { mentionValue } from '@/plate/demo/values/mentionValue';
 import { placeholderValue } from '@/plate/demo/values/placeholderValue';
 import { singleLineValue } from '@/plate/demo/values/singleLineValue';
@@ -342,6 +345,12 @@ export const customizerPlugins = {
     plugins: [ImagePlugin.key, MediaEmbedPlugin.key],
     route: '/docs/media',
     value: mediaValue,
+  },
+  mediaPlaceholder: {
+    id: 'media-placeholder',
+    label: 'MediaPlaceholder',
+    route: '/docs/media-placeholder',
+    value: mediaPlaceholderValue,
   },
   mention: {
     id: 'mention',

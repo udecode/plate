@@ -13,7 +13,6 @@ export const useUploadErrorToast = () => {
     if (!uploadError) return;
 
     const { code, data } = uploadError;
-    console.log('🚀 ~ useEffect ~ data:', data);
 
     switch (code) {
       case UploadErrorCode.INVALID_FILE_SIZE: {

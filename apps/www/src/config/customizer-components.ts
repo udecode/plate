@@ -220,6 +220,11 @@ export const customizerComponents = {
     label: 'Element',
     title: 'Media Embed',
   },
+  mediaPlaceholderElement: {
+    href: '/docs/components/media-placeholder-element',
+    label: 'Element',
+    title: 'Media Placeholder',
+  },
   mediaPopover: {
     href: '/docs/components/media-popover',
     title: 'Media Popover',
@@ -227,6 +232,10 @@ export const customizerComponents = {
   mediaToolbarButton: {
     href: '/docs/components/media-toolbar-button',
     title: 'Media Toolbar Button',
+  },
+  mediaUploadToast: {
+    href: '/docs/components/media-upload-toast',
+    title: 'Media Upload Toast',
   },
   mentionElement: {
     href: '/docs/components/mention-element',

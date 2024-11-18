@@ -40,7 +40,11 @@ import { LineHeightPlugin } from '@udecode/plate-line-height/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { TodoListPlugin } from '@udecode/plate-list/react';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
-import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
+import {
+  ImagePlugin,
+  MediaEmbedPlugin,
+  PlaceholderPlugin,
+} from '@udecode/plate-media/react';
 import { MentionPlugin } from '@udecode/plate-mention/react';
 import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
@@ -61,6 +65,7 @@ import { FixedToolbarPlugin } from '@/registry/default/components/editor/plugins
 import { FloatingToolbarPlugin } from '@/registry/default/components/editor/plugins/floating-toolbar-plugin';
 
 export const descriptions: Record<string, string> = {
+  [`media_${PlaceholderPlugin.key}`]: 'Add placeholder to your media blocks.',
   [AIChatPlugin.key]:
     'AI menu with commands, streaming responses in a preview or directly into the editor.',
   [AIPlugin.key]: 'AI transforms.',
