@@ -164,30 +164,34 @@ export const PlaceholderPlugin = toTPlatePlugin<
         return true;
       },
       onPaste: ({ editor, event, tf }) => {
-        const { files } = event.clipboardData;
+        const { files, types } = event.clipboardData;
+        const TEXT_HTML = 'text/html';
 
-        if (files.length === 0) return false;
+        // If there are files but no HTML, it must be a system file
+        if (files.length > 0 && !types.includes(TEXT_HTML)) {
+          event.preventDefault();
+          event.stopPropagation();
 
-        event.preventDefault();
-        event.stopPropagation();
+          let inserted = false;
+          const ancestor = getAncestorNode(editor);
 
-        let inserted = false;
-        const ancestor = getAncestorNode(editor);
+          if (ancestor) {
+            const [node, path] = ancestor;
 
-        if (ancestor) {
-          const [node, path] = ancestor;
-
-          if (getNodeString(node).length === 0) {
-            removeNodes(editor, { at: path });
-            tf.insert.media(files, { at: path });
-            inserted = true;
+            if (getNodeString(node).length === 0) {
+              removeNodes(editor, { at: path });
+              tf.insert.media(files, { at: path });
+              inserted = true;
+            }
           }
-        }
-        if (!inserted) {
-          tf.insert.media(files);
+          if (!inserted) {
+            tf.insert.media(files);
+          }
+
+          return true;
         }
 
-        return true;
+        return false;
       },
     },
   }));
