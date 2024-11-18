@@ -42,7 +42,11 @@ import { LineHeightPlugin } from '@udecode/plate-line-height/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { TodoListPlugin } from '@udecode/plate-list/react';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
-import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
+import {
+  ImagePlugin,
+  MediaEmbedPlugin,
+  PlaceholderPlugin,
+} from '@udecode/plate-media/react';
 import { MentionPlugin } from '@udecode/plate-mention/react';
 import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
@@ -88,6 +92,7 @@ export const customizerList = [
       customizerItems.heading,
       customizerItems.list,
       customizerItems[MediaEmbedPlugin.key],
+      customizerItems[`media_${PlaceholderPlugin.key}`],
       customizerItems[MentionPlugin.key],
       customizerItems[ParagraphPlugin.key],
       customizerItems[TablePlugin.key],
@@ -175,6 +180,8 @@ export const orderedPluginKeys = [
   'list',
   ImagePlugin.key,
   MediaEmbedPlugin.key,
+  PlaceholderPlugin.key,
+
   CaptionPlugin.key,
   MentionPlugin.key,
   TablePlugin.key,
