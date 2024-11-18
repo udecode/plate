@@ -1,5 +1,11 @@
 # @udecode/plate-md-serializer
 
+## 40.2.2
+
+### Patch Changes
+
+- [#3679](https://github.com/udecode/plate/pull/3679) by [@natamox](https://github.com/natamox) – Split line breaks into separate paragraphs during Markdown deserialization
+
 ## 40.0.5
 
 ### Patch Changes
