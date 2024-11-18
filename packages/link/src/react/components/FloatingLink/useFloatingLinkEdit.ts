@@ -31,8 +31,7 @@ import { useVirtualFloatingLink } from './useVirtualFloatingLink';
 export const useFloatingLinkEditState = ({
   floatingOptions,
 }: LinkFloatingToolbarState = {}) => {
-  const { editor, getOptions, type, useOption } =
-    useEditorPlugin(LinkPlugin);
+  const { editor, getOptions, type, useOption } = useEditorPlugin(LinkPlugin);
 
   const { triggerFloatingLinkHotkeys } = getOptions();
   const readOnly = useEditorReadOnly();

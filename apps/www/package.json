@@ -153,6 +153,7 @@
     "react-dom": "^18.3.1",
     "react-lite-youtube-embed": "^2.4.0",
     "react-markdown": "9.0.1",
+    "react-player": "2.16.0",
     "react-resizable-panels": "^2.0.22",
     "react-syntax-highlighter": "^15.5.0",
     "react-tweet": "^3.2.1",
@@ -171,6 +172,7 @@
     "ts-morph": "^22.0.0",
     "unist-builder": "4.0.0",
     "unist-util-visit": "^5.0.0",
+    "use-file-picker": "2.1.2",
     "vaul": "0.9.0"
   },
   "devDependencies": {

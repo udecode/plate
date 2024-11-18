@@ -25,6 +25,7 @@ export const blocks: Registry = [
       '@udecode/plate-slash-command',
       '@udecode/plate-table',
       '@udecode/plate-toggle',
+      'sonner',
     ],
     files: [
       {

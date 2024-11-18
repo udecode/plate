@@ -35,7 +35,14 @@ import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { KbdPlugin } from '@udecode/plate-kbd/react';
 import { ColumnItemPlugin, ColumnPlugin } from '@udecode/plate-layout/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
-import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
+import {
+  AudioPlugin,
+  FilePlugin,
+  ImagePlugin,
+  MediaEmbedPlugin,
+  PlaceholderPlugin,
+  VideoPlugin,
+} from '@udecode/plate-media/react';
 import {
   MentionInputPlugin,
   MentionPlugin,
@@ -66,7 +73,11 @@ import { HrElement } from '@/registry/default/plate-ui/hr-element';
 import { ImageElement } from '@/registry/default/plate-ui/image-element';
 import { KbdLeaf } from '@/registry/default/plate-ui/kbd-leaf';
 import { LinkElement } from '@/registry/default/plate-ui/link-element';
+import { MediaAudioElement } from '@/registry/default/plate-ui/media-audio-element';
 import { MediaEmbedElement } from '@/registry/default/plate-ui/media-embed-element';
+import { MediaFileElement } from '@/registry/default/plate-ui/media-file-element';
+import { MediaPlaceholderElement } from '@/registry/default/plate-ui/media-placeholder-element';
+import { MediaVideoElement } from '@/registry/default/plate-ui/media-video-element';
 import { MentionElement } from '@/registry/default/plate-ui/mention-element';
 import { MentionInputElement } from '@/registry/default/plate-ui/mention-input-element';
 import { ParagraphElement } from '@/registry/default/plate-ui/paragraph-element';
@@ -85,6 +96,7 @@ import { withDraggables } from '@/registry/default/plate-ui/with-draggables';
 import { editorPlugins, viewPlugins } from './plugins/editor-plugins';
 
 export const viewComponents = {
+  [AudioPlugin.key]: MediaAudioElement,
   [BlockquotePlugin.key]: BlockquoteElement,
   [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),
   [CodeBlockPlugin.key]: CodeBlockElement,
@@ -95,6 +107,7 @@ export const viewComponents = {
   [ColumnPlugin.key]: ColumnGroupElement,
   [CommentsPlugin.key]: CommentLeaf,
   [DatePlugin.key]: DateElement,
+  [FilePlugin.key]: MediaFileElement,
   [HEADING_KEYS.h1]: withProps(HeadingElement, { variant: 'h1' }),
   [HEADING_KEYS.h2]: withProps(HeadingElement, { variant: 'h2' }),
   [HEADING_KEYS.h3]: withProps(HeadingElement, { variant: 'h3' }),
@@ -110,6 +123,7 @@ export const viewComponents = {
   [MediaEmbedPlugin.key]: MediaEmbedElement,
   [MentionPlugin.key]: MentionElement,
   [ParagraphPlugin.key]: ParagraphElement,
+  [PlaceholderPlugin.key]: MediaPlaceholderElement,
   [StrikethroughPlugin.key]: withProps(PlateLeaf, { as: 's' }),
   [SubscriptPlugin.key]: withProps(PlateLeaf, { as: 'sub' }),
   [SuperscriptPlugin.key]: withProps(PlateLeaf, { as: 'sup' }),
@@ -120,6 +134,7 @@ export const viewComponents = {
   [TocPlugin.key]: TocElement,
   [TogglePlugin.key]: ToggleElement,
   [UnderlinePlugin.key]: withProps(PlateLeaf, { as: 'u' }),
+  [VideoPlugin.key]: MediaVideoElement,
 };
 
 export const editorComponents = {

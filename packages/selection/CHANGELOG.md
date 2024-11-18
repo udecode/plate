@@ -1,5 +1,12 @@
 # @udecode/plate-selection
 
+## 40.1.0
+
+### Minor Changes
+
+- [#3774](https://github.com/udecode/plate/pull/3774) by [@felixfeng33](https://github.com/felixfeng33) – Fix the issue of slow scrolling speed when the cursor is at the bottom.(areaOption needs to be removed to fix the issue.)
+  If there are no special requirements, there is no need to pass areaOptions; the default configuration is the optimal one.
+
 ## 40.0.0
 
 ### Minor Changes

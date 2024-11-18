@@ -17,6 +17,30 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
+    "media-placeholder-element": {
+      name: "media-placeholder-element",
+      description: "",
+      type: "registry:ui",
+      registryDependencies: [],
+      files: ["registry/default/plate-ui/media-placeholder-element.tsx","registry/default/lib/uploadthing/uploadthing.ts"],
+      component: React.lazy(() => import("@/registry/default/plate-ui/media-placeholder-element.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
+    "media-upload-toast": {
+      name: "media-upload-toast",
+      description: "",
+      type: "registry:ui",
+      registryDependencies: [],
+      files: ["registry/default/plate-ui/media-upload-toast.tsx"],
+      component: React.lazy(() => import("@/registry/default/plate-ui/media-upload-toast.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
     "blockquote-element": {
       name: "blockquote-element",
       description: "",

@@ -5,24 +5,22 @@ docs:
     title: Upload
 ---
 
-{/* ### UploadThing Integration
+### UploadThing Integration
 
-This component uses UploadThing for file uploads. UploadThing provides a simple and efficient way to handle file uploads in your application.
+Make sure you have install the [media-placeholder-element](/docs/components/media-placeholder-element) component and all the dependencies.
 
-To use UploadThing:
+Set `UPLOADTHING_TOKEN` in your .env file [get one here](https://uploadthing.com/dashboard).
 
-1. Set up an UploadThing account and configure your upload endpoints.
-2. Install the UploadThing client in your project:
 
-```bash
-npm install uploadthing
-```
+### Using your own backend
 
-3. Configure the UploadThing client in your application.
+Remove this two folder `lib/uploadthing` and `/api/uploadthing`.
 
-For more details on setting up UploadThing, refer to their [documentation](https://docs.uploadthing.com/). */}
+Then impelement a similar hooks like `useUploadFile` using your own backend.
 
 ## Examples
+
+<ComponentPreview name="playground-demo" id="mediaPlaceholder" />
 
 ### Plate UI
 

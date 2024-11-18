@@ -17,6 +17,7 @@ export const inputVariants = cva(
         default:
           'border border-input ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
         ghost: 'border-none focus-visible:ring-transparent',
+        underline: 'rounded-none border-b border-input',
       },
     },
   }

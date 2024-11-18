@@ -31,6 +31,67 @@
     "type": "registry:ui"
   },
   {
+    "dependencies": [
+      "@udecode/plate-media",
+      "use-file-picker",
+      "@uploadthing/react@7.1.0",
+      "uploadthing@7.2.0",
+      "zod",
+      "sonner"
+    ],
+    "doc": {
+      "description": "A placeholder for media files.",
+      "docs": [
+        {
+          "route": "/docs/media-placeholder",
+          "title": "Media Placeholder"
+        }
+      ],
+      "examples": [
+        "media-demo",
+        "media-toolbar-pro"
+      ]
+    },
+    "files": [
+      {
+        "path": "plate-ui/media-placeholder-element.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "lib/uploadthing/uploadthing.ts",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "media-placeholder-element",
+    "registryDependencies": [],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [],
+    "doc": {
+      "description": "A toast for media uploads.",
+      "docs": [
+        {
+          "route": "/docs/media-placeholder",
+          "title": "Media Placeholder"
+        }
+      ],
+      "examples": [
+        "media-demo",
+        "upload-pro"
+      ]
+    },
+    "files": [
+      {
+        "path": "plate-ui/media-upload-toast.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "media-upload-toast",
+    "registryDependencies": [],
+    "type": "registry:ui"
+  },
+  {
     "dependencies": [],
     "doc": {
       "description": "A quote component for block quotes.",

@@ -99,19 +99,19 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
         ...opt.behaviour,
         scrolling: {
           manualSpeed: 750,
-          speedDivider: 10,
+          speedDivider: 0.7,
           ...opt.behaviour?.scrolling,
           startScrollMargins: {
             x: 20,
-            y: 20,
+            y: 40,
             ...opt.behaviour?.scrolling?.startScrollMargins,
           },
         },
         startThreshold: opt.behaviour?.startThreshold
           ? typeof opt.behaviour.startThreshold === 'number'
             ? opt.behaviour.startThreshold
-            : { x: 20, y: 20, ...opt.behaviour.startThreshold }
-          : { x: 20, y: 20 },
+            : { x: 4, y: 4, ...opt.behaviour.startThreshold }
+          : { x: 4, y: 4 },
       },
 
       features: {
@@ -663,7 +663,10 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     ) {
       _scrollSpeed.y = scrollTop
         ? -abs(
-            _containerRect!.top - _areaClientLocation.y2 - this._scrollDelta.y
+            _containerRect!.top -
+              _areaClientLocation.y2 -
+              this._scrollDelta.y +
+              startScrollMargins.y
           )
         : 0;
       y2 = max(y2, this._container!.scrollTop);
@@ -674,10 +677,11 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
       _scrollSpeed.y =
         scrollHeight - scrollTop - clientHeight
           ? abs(
-              _containerRect!.top +
-                this._container!.clientHeight -
-                _areaClientLocation.y2 -
-                this._scrollDelta.y
+              _areaClientLocation.y2 +
+                this._scrollDelta.y -
+                (_containerRect!.top +
+                  this._container!.clientHeight -
+                  startScrollMargins.y)
             )
           : 0;
       y2 = clientHeight + scrollTop;

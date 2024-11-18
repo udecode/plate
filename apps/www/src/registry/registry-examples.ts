@@ -29,12 +29,14 @@ export const proExamples: Registry = [
 - Support for various media types: images, videos, audio, and files
 - Use slash commands for quick insertion
 - Image-specific features:
+  - **Better loading animation and image replacement**
   - Resize using vertical edge bars
   - Alignment options
   - Caption support
   - Expand/collapse view
   - Easy download
 - Video-specific features:
+  - Lazy load
   - Resize using vertical edge bars
   - Alignment options
   - Caption support

@@ -1,8 +1,10 @@
 ---
 title: Media Placeholder
 docs:
-  - route: https://pro.platejs.org/docs/components/media-placeholder-element
+  - route: components/media-placeholder-element
     title: Media Placeholder Element
+  - route: components/media-upload-toast
+    title: Media Upload Toast
 ---
 
 <PackageInfo>
@@ -21,6 +23,7 @@ npm install @udecode/plate-media
 ```
 
 ## Usage
+How to configuration the backend see [Upload](/docs/upload).
 
 ```tsx
 import {
@@ -36,7 +39,14 @@ import {
 ```tsx
 const plugins = [
   // ...otherPlugins,
-  PlaceholderPlugin,
+  PlaceholderPlugin.configure({
+    options: {
+      disableEmptyPlaceholder: true,
+    },
+    render: {
+      afterEditable: () => <MediaUploadToast />,
+    },
+  }),
 ];
 ```
 
@@ -47,17 +57,111 @@ const components = {
 };
 ```
 
-- [MediaPlaceholderElement](https://pro.platejs.org/docs/components/media-placeholder-element) (Plus)
+
+## UploadOptions
+
+### uploadConfig
+
+Configuration for different file types:
+
+- You can use this option to configure upload limits for each file type, including:
+
+  - Maximum file count (e.g. `maxFileCount: 1`)
+  - Maximum file size (e.g. `maxFileSize: '8MB'`)
+  - Minimum file count (e.g. `minFileCount: 1`)
+  - mediaType: Used for passing to the media-placeholder-elements file to distinguish between different file types and their progress bar styles.
+
+  default configuration:
+
+  ```tsx
+    uploadConfig: {
+      audio: {
+        maxFileCount: 1,
+        maxFileSize: '8MB',
+        mediaType: AudioPlugin.key,
+        minFileCount: 1,
+      },
+      blob: {
+        maxFileCount: 1,
+        maxFileSize: '8MB',
+        mediaType: FilePlugin.key,
+        minFileCount: 1,
+      },
+      image: {
+        maxFileCount: 3,
+        maxFileSize: '4MB',
+        mediaType: ImagePlugin.key,
+        minFileCount: 1,
+      },
+      pdf: {
+        maxFileCount: 1,
+        maxFileSize: '4MB',
+        mediaType: FilePlugin.key,
+        minFileCount: 1,
+      },
+      text: {
+        maxFileCount: 1,
+        maxFileSize: '64KB',
+        mediaType: FilePlugin.key,
+        minFileCount: 1,
+      },
+      video: {
+        maxFileCount: 1,
+        maxFileSize: '16MB',
+        mediaType: VideoPlugin.key,
+        minFileCount: 1,
+      },
+    },
+  ```
+
+  here is all allowed file types (keys for `uploadConfig`):
+
+  ```tsx
+  export const ALLOWED_FILE_TYPES = [
+    'image',
+    'video',
+    'audio',
+    'pdf',
+    'text',
+    'blob',
+  ] as const;
+  ```
+
+### disableEmptyPlaceholder
+
+`boolean` (default: `false`)
+
+Disable empty placeholder when no file is selected.
+
+### disableFileDrop
+
+`boolean` (default: `false`)
+
+Whether we can undo to the placeholder after the file upload is complete.
+
+### maxFileCount
+
+`number` (default: `5`)
+
+Maximum number of files that can be uploaded at once.
+
+### multiple
+
+`boolean` (default: `true`)
+
+Whether multiple files can be uploaded in one time.
 
 ## Examples
 
+<ComponentPreview name="playground-demo" id="mediaPlaceholder" />
+
 ### Plate UI
 
-Work in progress.
+Refer to the preview above.
 
 ### Plate Plus
 
-<ComponentPreviewPro name="media-placeholder-pro" />
+<ComponentPreviewPro name="upload-pro" />
 
 ## Plugins
 

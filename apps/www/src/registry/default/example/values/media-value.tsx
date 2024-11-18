@@ -19,9 +19,57 @@ export const imageValue: any = (
   </fragment>
 );
 
+export const mediaPlaceholderValue: any = (
+  <fragment>
+    <hh2>Upload</hh2>
+    <hp>
+      Our editor supports various media types for upload, including images,
+      videos, audio, and files.
+    </hp>
+    <hfile
+      name="sample.pdf"
+      align="center"
+      url="https://s26.q4cdn.com/900411403/files/doc_downloads/test.pdf"
+      width="80%"
+      isUpload
+    >
+      <htext />
+    </hfile>
+    <hp indent={1} listStyleType="disc">
+      Real-time upload status and progress tracking
+    </hp>
+    <haudio
+      align="center"
+      url="https://samplelib.com/lib/preview/mp3/sample-3s.mp3"
+      width="80%"
+    >
+      <htext />
+    </haudio>
+    <hp indent={1} listStyleType="disc">
+      Configurable file size limits and batch upload settings
+    </hp>
+    <hvideo
+      align="center"
+      url="https://videos.pexels.com/video-files/6769791/6769791-uhd_2560_1440_24fps.mp4"
+      width="80%"
+      isUpload
+    >
+      <htext />
+    </hvideo>
+    <hp indent={1} listStyleType="disc">
+      Clear error messages for any upload issues
+    </hp>
+    <hp indent={1} listStyleType="disc">
+      Try it now - drag an image from your desktop or click the upload button in
+      the toolbar
+    </hp>
+  </fragment>
+);
+
 export const mediaValue: any = (
   <fragment>
     {imageValue}
+    {mediaPlaceholderValue}
 
     <hh2>Embed</hh2>
     <hp>Embed various types of content, such as videos and tweets:</hp>

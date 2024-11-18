@@ -68,7 +68,7 @@ To control the scrollable container, configure the `boundaries` and `container` 
 
 For this to work effectively:
 
-1. Add an `id` or `className` to your scroll container. If you not sure about the container, you can add it to the `<Editor />` component. We recommend using `id={editor.uid}`.
+1. Add an `id` or `className` to your scroll container. If you're not sure about the container, you can add it to the `<Editor />` component. We recommend using `id={editor.uid}`.
 2. Use the appropriate selector in your configuration.
 3. Don't forget to set `position: relative` to the container.
 
@@ -88,9 +88,9 @@ BlockSelectionPlugin.configure({
 
 ### Set scroll speed
 
-useing `options.areaOptions.behaviour.scrolling.speedDivider` to set the scroll speed.
+Use `options.areaOptions.behaviour.scrolling.speedDivider` to set the scroll speed.
 
-The value of `1.5` is our recommended speed since it's near the browser-native speed.
+The value `0.8` is our recommended speed since it's near the browser-native speed.
 
 
 ```ts
@@ -99,11 +99,12 @@ BlockSelectionPlugin.configure({
     areaOptions: {
       behaviour: {
       scrolling: {
+        // You can slow down the scroll speed by setting a bigger value.
         speedDivider: 1.5,
       },
       // The distance needed to move for the selection area to appear.
       // If it’s too small, it may cause the mouse click event to be blocked. 10 is a good default.
-      startThreshold: 10,
+      startThreshold: 4,
     },
   },
 }
@@ -157,7 +158,7 @@ const handleClickOutside = (event: MouseEvent) => {
 
 ### Selection area
 
-Style the selection area using `.slate-selection-area` class to your editor container component. For example:
+Style the selection area by adding the `.slate-selection-area` class to your editor container component. For example:
 
 ```js
 '[&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/10'
