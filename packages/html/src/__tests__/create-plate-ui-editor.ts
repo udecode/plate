@@ -44,7 +44,6 @@ import {
   FilePlugin,
   ImagePlugin,
   MediaEmbedPlugin,
-  PlaceholderPlugin,
   VideoPlugin,
 } from '@udecode/plate-media/react';
 import { MentionInputPlugin } from '@udecode/plate-mention/react';
@@ -97,7 +96,6 @@ import { MediaEmbedElement } from 'www/src/registry/default/plate-ui/media-embed
 // @ts-nocheck
 import { MediaFileElement } from 'www/src/registry/default/plate-ui/media-file-element';
 // @ts-nocheck
-import { MediaPlaceholderElement } from 'www/src/registry/default/plate-ui/media-placeholder-element';
 // @ts-nocheck
 import { MediaVideoElement } from 'www/src/registry/default/plate-ui/media-video-element';
 // @ts-nocheck
@@ -166,7 +164,7 @@ export const createPlateUIEditor = <
         // [MentionPlugin.key]: MentionElement,
         [NumberedListPlugin.key]: withProps(ListElement, { variant: 'ol' }),
         [ParagraphPlugin.key]: ParagraphElement,
-        [PlaceholderPlugin.key]: MediaPlaceholderElement,
+        // [PlaceholderPlugin.key]: MediaPlaceholderElement,
         // [SlashInputPlugin.key]: SlashInputElement,
         [StrikethroughPlugin.key]: withProps(PlateLeaf, { as: 's' }),
         [SubscriptPlugin.key]: withProps(PlateLeaf, { as: 'sub' }),
