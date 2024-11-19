@@ -1,4 +1,3 @@
-// @ts-nocheck
 import * as React from 'react';
 
 import type { OurFileRouter } from '@/registry/default/components/api/uploadthing/route';
