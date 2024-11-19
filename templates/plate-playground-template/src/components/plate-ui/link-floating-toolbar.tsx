@@ -77,7 +77,7 @@ export function LinkFloatingToolbar({ state }: LinkFloatingToolbarProps) {
   const input = (
     <div className="flex w-[330px] flex-col" {...inputProps}>
       <div className="flex items-center">
-        <div className="flex items-center pl-2 pr-1 text-muted-foreground">
+        <div className="text-muted-foreground flex items-center pl-2 pr-1">
           <Link className="size-4" />
         </div>
 
@@ -89,7 +89,7 @@ export function LinkFloatingToolbar({ state }: LinkFloatingToolbarProps) {
       </div>
       <Separator className="my-1" />
       <div className="flex items-center">
-        <div className="flex items-center pl-2 pr-1 text-muted-foreground">
+        <div className="text-muted-foreground flex items-center pl-2 pr-1">
           <Text className="size-4" />
         </div>
         <input

@@ -53,7 +53,7 @@ export function EmojiPickerNavigation({
     <TooltipProvider delayDuration={500}>
       <nav
         id="emoji-nav"
-        className="mb-2.5 border-0 border-b border-solid border-b-border p-1.5"
+        className="border-b-border mb-2.5 border-0 border-b border-solid p-1.5"
       >
         <div className="relative flex items-center justify-evenly">
           {emojiLibrary
@@ -66,9 +66,9 @@ export function EmojiPickerNavigation({
                     size="sm"
                     variant="ghost"
                     className={cn(
-                      'h-fit rounded-full fill-current p-1.5 text-muted-foreground hover:bg-muted hover:text-muted-foreground',
+                      'text-muted-foreground hover:bg-muted hover:text-muted-foreground h-fit rounded-full fill-current p-1.5',
                       id === focusedCategory &&
-                        'pointer-events-none bg-accent fill-current text-accent-foreground'
+                        'bg-accent text-accent-foreground pointer-events-none fill-current'
                     )}
                     onClick={() => {
                       onClick(id);

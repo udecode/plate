@@ -23,7 +23,7 @@ export const DateElement = withRef<typeof PlateElement>(
           <PopoverTrigger asChild>
             <span
               className={cn(
-                'w-fit cursor-pointer rounded-sm bg-muted px-1 text-muted-foreground'
+                'bg-muted text-muted-foreground w-fit cursor-pointer rounded-sm px-1'
               )}
               contentEditable={false}
               draggable

@@ -15,7 +15,7 @@ export type PickAnEmojiPreviewProps = NoEmojiPreviewProps;
 
 function EmojiPreview({ emoji }: EmojiPreviewProps) {
   return (
-    <div className="flex h-14 max-h-14 min-h-14 items-center border-t border-muted p-2">
+    <div className="border-muted flex h-14 max-h-14 min-h-14 items-center border-t p-2">
       <div className="flex items-center justify-center text-2xl">
         {emoji?.skins[0].native}
       </div>
@@ -29,7 +29,7 @@ function EmojiPreview({ emoji }: EmojiPreviewProps) {
 
 function NoEmoji({ i18n }: NoEmojiPreviewProps) {
   return (
-    <div className="flex h-14 max-h-14 min-h-14 items-center border-t border-muted p-2">
+    <div className="border-muted flex h-14 max-h-14 min-h-14 items-center border-t p-2">
       <div className="flex items-center justify-center text-2xl">😢</div>
       <div className="overflow-hidden pl-2">
         <div className="truncate text-sm font-bold">
@@ -43,7 +43,7 @@ function NoEmoji({ i18n }: NoEmojiPreviewProps) {
 
 function PickAnEmoji({ i18n }: PickAnEmojiPreviewProps) {
   return (
-    <div className="flex h-14 max-h-14 min-h-14 items-center border-t border-muted p-2">
+    <div className="border-muted flex h-14 max-h-14 min-h-14 items-center border-t p-2">
       <div className="flex items-center justify-center text-2xl">☝️</div>
       <div className="overflow-hidden pl-2">
         <div className="truncate text-sm font-semibold">{i18n.pick}</div>

@@ -127,14 +127,14 @@ export function AIMenu() {
           )}
 
           {isLoading ? (
-            <div className="flex grow select-none items-center gap-2 p-2 text-sm text-muted-foreground">
+            <div className="text-muted-foreground flex grow select-none items-center gap-2 p-2 text-sm">
               <Loader2Icon className="size-4 animate-spin" />
               {messages.length > 1 ? 'Editing...' : 'Thinking...'}
             </div>
           ) : (
             <InputCommand
               variant="ghost"
-              className="rounded-none border-b border-solid border-border [&_svg]:hidden"
+              className="border-border rounded-none border-b border-solid [&_svg]:hidden"
               value={input}
               onKeyDown={(e) => {
                 if (isHotkey('backspace')(e) && input.length === 0) {
