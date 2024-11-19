@@ -30,7 +30,6 @@ export const MediaFileElement = withHOC(
           className={cn('relative my-px rounded-sm', className)}
           {...props}
         >
-          {/* eslint-disable-next-line jsx-a11y/interactive-supports-focus */}
           <div
             className="group relative m-0 flex cursor-pointer items-center rounded px-0.5 py-[3px] hover:bg-muted"
             onClick={onDownload}

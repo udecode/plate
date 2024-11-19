@@ -41,7 +41,7 @@ export function MainNav() {
               ? 'font-medium text-foreground'
               : 'text-foreground/60'
           )}
-          href="/docs/components"
+          href="/docs/components/introduction"
         >
           Components
         </Link>

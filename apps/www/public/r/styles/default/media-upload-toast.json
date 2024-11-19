@@ -1,7 +1,10 @@
 {
-  "dependencies": [],
+  "dependencies": [
+    "@udecode/plate-media",
+    "sonner"
+  ],
   "doc": {
-    "description": "A toast for media uploads.",
+    "description": "Show toast notifications for media uploads.",
     "docs": [
       {
         "route": "/docs/media-placeholder",

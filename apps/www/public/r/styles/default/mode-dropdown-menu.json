@@ -5,7 +5,7 @@
   "doc": {
     "description": "A menu for switching between editor modes.",
     "examples": [
-      "mode-demo"
+      "basic-nodes-demo"
     ]
   },
   "files": [

@@ -31,67 +31,6 @@
     "type": "registry:ui"
   },
   {
-    "dependencies": [
-      "@udecode/plate-media",
-      "use-file-picker",
-      "@uploadthing/react@7.1.0",
-      "uploadthing@7.2.0",
-      "zod",
-      "sonner"
-    ],
-    "doc": {
-      "description": "A placeholder for media files.",
-      "docs": [
-        {
-          "route": "/docs/media-placeholder",
-          "title": "Media Placeholder"
-        }
-      ],
-      "examples": [
-        "media-demo",
-        "media-toolbar-pro"
-      ]
-    },
-    "files": [
-      {
-        "path": "plate-ui/media-placeholder-element.tsx",
-        "type": "registry:ui"
-      },
-      {
-        "path": "lib/uploadthing/uploadthing.ts",
-        "type": "registry:ui"
-      }
-    ],
-    "name": "media-placeholder-element",
-    "registryDependencies": [],
-    "type": "registry:ui"
-  },
-  {
-    "dependencies": [],
-    "doc": {
-      "description": "A toast for media uploads.",
-      "docs": [
-        {
-          "route": "/docs/media-placeholder",
-          "title": "Media Placeholder"
-        }
-      ],
-      "examples": [
-        "media-demo",
-        "upload-pro"
-      ]
-    },
-    "files": [
-      {
-        "path": "plate-ui/media-upload-toast.tsx",
-        "type": "registry:ui"
-      }
-    ],
-    "name": "media-upload-toast",
-    "registryDependencies": [],
-    "type": "registry:ui"
-  },
-  {
     "dependencies": [],
     "doc": {
       "description": "A quote component for block quotes.",
@@ -325,7 +264,7 @@
         }
       ],
       "examples": [
-        "comment-demo",
+        "comments-demo",
         "comments-pro"
       ]
     },
@@ -488,7 +427,7 @@
         }
       ],
       "examples": [
-        "hr-demo"
+        "horizontal-rule-demo"
       ],
       "title": "Horizontal Rule Element"
     },
@@ -649,6 +588,39 @@
   {
     "dependencies": [
       "@udecode/plate-media",
+      "@udecode/plate-resizable"
+    ],
+    "doc": {
+      "description": "An audio player component with caption support.",
+      "docs": [
+        {
+          "route": "/docs/media",
+          "title": "Media"
+        },
+        {
+          "route": "https://pro.platejs.org/docs/components/media-audio-element"
+        }
+      ],
+      "examples": [
+        "media-demo"
+      ]
+    },
+    "files": [
+      {
+        "path": "plate-ui/media-audio-element.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "media-audio-element",
+    "registryDependencies": [
+      "caption",
+      "plate-element"
+    ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
+      "@udecode/plate-media",
       "@udecode/plate-resizable",
       "react-tweet",
       "react-lite-youtube-embed"
@@ -675,6 +647,117 @@
       }
     ],
     "name": "media-embed-element",
+    "registryDependencies": [
+      "media-popover",
+      "caption",
+      "resizable",
+      "plate-element"
+    ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
+      "@udecode/plate-media",
+      "@udecode/plate-resizable"
+    ],
+    "doc": {
+      "description": "A file attachment component with download capability and caption.",
+      "docs": [
+        {
+          "route": "/docs/media",
+          "title": "Media"
+        },
+        {
+          "route": "https://pro.platejs.org/docs/components/media-file-element"
+        }
+      ],
+      "examples": [
+        "media-demo"
+      ]
+    },
+    "files": [
+      {
+        "path": "plate-ui/media-file-element.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "media-file-element",
+    "registryDependencies": [
+      "caption",
+      "plate-element"
+    ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
+      "@udecode/plate-media",
+      "use-file-picker",
+      "@uploadthing/react@7.1.0",
+      "uploadthing@7.2.0"
+    ],
+    "doc": {
+      "description": "A placeholder for media upload progress indication.",
+      "docs": [
+        {
+          "route": "/docs/media",
+          "title": "Media"
+        },
+        {
+          "route": "https://pro.platejs.org/docs/components/media-placeholder-element"
+        }
+      ],
+      "examples": [
+        "media-demo",
+        "upload-pro"
+      ]
+    },
+    "files": [
+      {
+        "path": "plate-ui/media-placeholder-element.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "lib/uploadthing.ts",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "media-placeholder-element",
+    "registryDependencies": [
+      "plate-element",
+      "spinner"
+    ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
+      "@udecode/plate-media",
+      "@udecode/plate-resizable",
+      "react-player",
+      "react-lite-youtube-embed"
+    ],
+    "doc": {
+      "description": "A video player component with YouTube and file upload support.",
+      "docs": [
+        {
+          "route": "/docs/media",
+          "title": "Media"
+        },
+        {
+          "route": "https://pro.platejs.org/docs/components/media-video-element"
+        }
+      ],
+      "examples": [
+        "media-demo",
+        "media-toolbar-pro"
+      ]
+    },
+    "files": [
+      {
+        "path": "plate-ui/media-video-element.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "media-video-element",
     "registryDependencies": [
       "media-popover",
       "caption",
@@ -1011,6 +1094,28 @@
   },
   {
     "dependencies": [
+      "@radix-ui/react-alert-dialog"
+    ],
+    "doc": {
+      "description": "A modal dialog that interrupts the user with important content and expects a response.",
+      "links": {
+        "doc": "https://ui.shadcn.com/docs/components/alert-dialog"
+      }
+    },
+    "files": [
+      {
+        "path": "plate-ui/alert-dialog.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "alert-dialog",
+    "registryDependencies": [
+      "button"
+    ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
       "@radix-ui/react-avatar"
     ],
     "doc": {
@@ -1244,6 +1349,20 @@
     "type": "registry:ui"
   },
   {
+    "doc": {
+      "description": "A loading spinner component with size variants."
+    },
+    "files": [
+      {
+        "path": "plate-ui/spinner.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "spinner",
+    "registryDependencies": [],
+    "type": "registry:ui"
+  },
+  {
     "dependencies": [
       "@udecode/plate-ai",
       "@udecode/plate-markdown",
@@ -1440,7 +1559,7 @@
         }
       ],
       "examples": [
-        "upload-demo"
+        "media-demo"
       ]
     },
     "files": [
@@ -1527,7 +1646,7 @@
         }
       ],
       "examples": [
-        "comment-demo",
+        "comments-demo",
         "floating-toolbar-demo",
         "comments-pro"
       ]
@@ -1559,7 +1678,7 @@
         }
       ],
       "examples": [
-        "comment-demo",
+        "comments-demo",
         "comments-pro"
       ]
     },
@@ -1693,8 +1812,7 @@
       "examples": [
         "editor-default",
         "editor-disabled",
-        "editor-full-width",
-        "editor-ai-chat"
+        "editor-full-width"
       ]
     },
     "files": [
@@ -1777,12 +1895,13 @@
       "@udecode/plate-basic-marks",
       "@udecode/plate-font",
       "@udecode/plate-indent-list",
-      "@udecode/plate-media"
+      "@udecode/plate-media",
+      "@udecode/plate-highlight"
     ],
     "doc": {
       "description": "A set of commonly used formatting buttons.",
       "examples": [
-        "toolbar-demo"
+        "basic-nodes-demo"
       ]
     },
     "files": [
@@ -1799,6 +1918,7 @@
       "color-dropdown-menu",
       "comment-toolbar-button",
       "emoji-dropdown-menu",
+      "history-toolbar-button",
       "indent-list-toolbar-button",
       "indent-todo-toolbar-button",
       "indent-toolbar-button",
@@ -1856,7 +1976,7 @@
     "doc": {
       "description": "A fixed toolbar that stays at the top of the editor.",
       "examples": [
-        "toolbar-demo"
+        "basic-nodes-demo"
       ]
     },
     "files": [
@@ -1975,6 +2095,26 @@
       }
     ],
     "name": "indent-fire-marker",
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [],
+    "doc": {
+      "description": "Toolbar buttons for undo and redo operations.",
+      "examples": [
+        "basic-nodes-demo"
+      ]
+    },
+    "files": [
+      {
+        "path": "plate-ui/history-toolbar-button.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "history-toolbar-button",
+    "registryDependencies": [
+      "toolbar"
+    ],
     "type": "registry:ui"
   },
   {
@@ -2376,7 +2516,9 @@
   },
   {
     "dependencies": [
-      "@udecode/plate-media"
+      "@udecode/plate-media",
+      "use-file-picker",
+      "sonner"
     ],
     "doc": {
       "description": "Toolbar button for inserting and managing media.",
@@ -2399,8 +2541,39 @@
     ],
     "name": "media-toolbar-button",
     "registryDependencies": [
-      "toolbar"
+      "toolbar",
+      "input",
+      "dropdown-menu",
+      "alert-dialog"
     ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
+      "@udecode/plate-media",
+      "sonner"
+    ],
+    "doc": {
+      "description": "Show toast notifications for media uploads.",
+      "docs": [
+        {
+          "route": "/docs/media-placeholder",
+          "title": "Media Placeholder"
+        }
+      ],
+      "examples": [
+        "media-demo",
+        "upload-pro"
+      ]
+    },
+    "files": [
+      {
+        "path": "plate-ui/media-upload-toast.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "media-upload-toast",
+    "registryDependencies": [],
     "type": "registry:ui"
   },
   {
@@ -2410,7 +2583,7 @@
     "doc": {
       "description": "A menu for switching between editor modes.",
       "examples": [
-        "mode-demo"
+        "basic-nodes-demo"
       ]
     },
     "files": [
@@ -2430,7 +2603,6 @@
     "dependencies": [
       "@radix-ui/react-dropdown-menu",
       "@udecode/plate-basic-marks",
-      "@udecode/plate-highlight",
       "@udecode/plate-kbd"
     ],
     "doc": {
@@ -2502,7 +2674,7 @@
         }
       ],
       "examples": [
-        "placeholder-demo",
+        "basic-elements-demo",
         "placeholder-pro"
       ]
     },

@@ -2,7 +2,7 @@
 
 import { createSlateEditor } from '@udecode/plate-common';
 import { jsxt } from '@udecode/plate-test-utils';
-import { getAutoformatOptions } from 'www/src/lib/plate/demo/plugins/autoformatOptions';
+import { autoformatPlugin } from 'www/src/registry/default/components/editor/plugins/autoformat-plugin';
 
 import type {
   AutoformatBlockRule,
@@ -36,9 +36,7 @@ describe('when -space', () => {
     ) as any;
 
     const editor = createSlateEditor({
-      plugins: [
-        BaseAutoformatPlugin.configure({ options: getAutoformatOptions() }),
-      ],
+      plugins: [autoformatPlugin],
       value: input,
     });
 
@@ -71,9 +69,7 @@ describe('when 1.space', () => {
     ) as any;
 
     const editor = createSlateEditor({
-      plugins: [
-        BaseAutoformatPlugin.configure({ options: getAutoformatOptions() }),
-      ],
+      plugins: [autoformatPlugin],
       value: input,
     });
 
@@ -102,9 +98,7 @@ describe('when [].space', () => {
     ) as any;
 
     const editor = createSlateEditor({
-      plugins: [
-        BaseAutoformatPlugin.configure({ options: getAutoformatOptions() }),
-      ],
+      plugins: [autoformatPlugin],
       value: input,
     });
 
@@ -133,9 +127,7 @@ describe('when [x].space', () => {
     ) as any;
 
     const editor = createSlateEditor({
-      plugins: [
-        BaseAutoformatPlugin.configure({ options: getAutoformatOptions() }),
-      ],
+      plugins: [autoformatPlugin],
       value: input,
     });
 
@@ -167,7 +159,7 @@ describe('when +space', () => {
     //   so here we need to remove the `preformat` property of the autoformat rule that uses this overload.
 
     const autoformatPluginRulesWitoutTogglePreformat =
-      getAutoformatOptions()!.rules!.map((rule) => {
+      autoformatPlugin.options.rules!.map((rule) => {
         const { preFormat, ...rest } = rule as AutoformatBlockRule;
 
         if (rule.match === '+ ') return rest;
@@ -176,7 +168,7 @@ describe('when +space', () => {
       });
 
     const autoformatPluginWitoutTogglePreformat: AutoformatPluginOptions = {
-      ...getAutoformatOptions(),
+      ...autoformatPlugin.options,
       rules: autoformatPluginRulesWitoutTogglePreformat as any,
     };
 

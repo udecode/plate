@@ -60,7 +60,7 @@ export const Doc = defineDocumentType(() => ({
       type: 'boolean',
     },
     description: {
-      required: true,
+      // required: true,
       type: 'string',
     },
     docs: {

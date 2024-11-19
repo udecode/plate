@@ -3,12 +3,11 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 
-import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
-import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
-import { Plate, usePlateEditor } from '@udecode/plate-common/react';
+import { Plate } from '@udecode/plate-common/react';
 
-import { PlateUI } from '@/plate/demo/plate-ui';
-import { iframeValue } from '@/plate/demo/values/iframeValue';
+import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';
+import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
+import { iframeValue } from '@/registry/default/example/values/iframe-value';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 
 import { EditableVoidPlugin } from './editable-voids-demo';
@@ -26,14 +25,13 @@ export function IFrame({ children, ...props }: any) {
 }
 
 export default function IframeDemo() {
-  const editor = usePlateEditor({
-    override: { components: PlateUI },
-    plugins: [BasicElementsPlugin, BasicMarksPlugin, EditableVoidPlugin],
+  const editor = useCreateEditor({
+    plugins: [...editorPlugins, EditableVoidPlugin],
     value: iframeValue,
   });
 
   return (
-    <IFrame className="p-10">
+    <IFrame className="size-full h-[500px]">
       <Plate editor={editor}>
         <EditorContainer>
           <Editor />

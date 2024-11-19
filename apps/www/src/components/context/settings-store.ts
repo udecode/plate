@@ -5,8 +5,7 @@ import { createZustandStore } from '@udecode/plate-common';
 import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { SelectOnBackspacePlugin } from '@udecode/plate-select';
 
-import { customizerList } from '@/config/customizer-list';
-import { type ValueId, customizerPlugins } from '@/config/customizer-plugins';
+import { customizerList } from '@/config/customizer-items';
 
 export const categoryIds = customizerList.map((item) => item.id);
 
@@ -52,7 +51,7 @@ export type SettingsStoreValue = {
   loadingSettings: boolean;
   showComponents: boolean;
   showSettings: boolean;
-  valueId: ValueId;
+  valueId: string;
   version: number;
 };
 
@@ -69,7 +68,7 @@ const initialState: SettingsStoreValue = {
 
   showSettings: false,
 
-  valueId: customizerPlugins.playground.id as ValueId,
+  valueId: 'playground',
   version: 1,
 };
 

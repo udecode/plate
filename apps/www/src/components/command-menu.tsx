@@ -175,7 +175,7 @@ export function CommandMenu({ ...props }: DialogProps) {
 
             return (
               <CommandMenuGroup
-                key={group.title}
+                key={group.title + ':sidebar'}
                 runCommand={runCommand}
                 {...group}
               />

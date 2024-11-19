@@ -139,7 +139,7 @@
     "date-fns": "^3.6.0",
     "framer-motion": "^11.5.4",
     "lodash.template": "^4.5.0",
-    "lucide-react": "^0.441.0",
+    "lucide-react": "0.460.0",
     "match-sorter": "6.3.4",
     "next": "15.0.0",
     "next-contentlayer2": "^0.4.6",
