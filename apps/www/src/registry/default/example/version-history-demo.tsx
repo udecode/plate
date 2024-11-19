@@ -20,7 +20,6 @@ import {
   PlateElement,
   PlateLeaf,
   createPlateEditor,
-  usePlateEditor,
 } from '@udecode/plate-common/react';
 import {
   type DiffOperation,
@@ -31,7 +30,7 @@ import {
 import { cloneDeep } from 'lodash';
 import { useSelected } from 'slate-react';
 
-import { PlateUI } from '@/lib/plate/demo/plate-ui';
+import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
 import { Button } from '@/registry/default/plate-ui/button';
 
 const InlinePlugin = createPlatePlugin({
@@ -259,9 +258,8 @@ function Diff({ current, previous }: DiffProps) {
     }) as Value;
   }, [previous, current]);
 
-  const editor = usePlateEditor(
+  const editor = useCreateEditor(
     {
-      override: { components: PlateUI },
       plugins,
       value: diffValue,
     },
@@ -296,15 +294,13 @@ export default function VersionHistoryDemo() {
     setRevisions([...revisions, value]);
   };
 
-  const editor = usePlateEditor({
-    override: { components: PlateUI },
+  const editor = useCreateEditor({
     plugins,
     value: initialValue,
   });
 
-  const editorRevision = usePlateEditor(
+  const editorRevision = useCreateEditor(
     {
-      override: { components: PlateUI },
       plugins,
       value: selectedRevisionValue,
     },

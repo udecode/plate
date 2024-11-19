@@ -8,11 +8,9 @@ import {
   BoldPlugin,
   CodePlugin,
   ItalicPlugin,
-  StrikethroughPlugin,
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 import { HeadingPlugin } from '@udecode/plate-heading/react';
 
@@ -31,12 +29,10 @@ export default function BasicPluginsDefaultDemo() {
   const editor = usePlateEditor({
     plugins: [
       BlockquotePlugin,
-      CodeBlockPlugin,
       HeadingPlugin,
       BoldPlugin,
       ItalicPlugin,
       UnderlinePlugin,
-      StrikethroughPlugin,
       CodePlugin,
     ],
     value: basicEditorValue,

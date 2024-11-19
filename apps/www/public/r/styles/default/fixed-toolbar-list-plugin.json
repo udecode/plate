@@ -2,7 +2,7 @@
   "dependencies": [],
   "files": [
     {
-      "content": "'use client';\n\nimport { createPlatePlugin } from '@udecode/plate-common/react';\n\nimport { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';\nimport { FixedToolbarListButtons } from '@/components/plate-ui/fixed-toolbar-list-buttons';\n\nexport const FixedToolbarListPlugin = createPlatePlugin({\n  render: {\n    beforeEditable: () => (\n      <FixedToolbar>\n        <FixedToolbarListButtons />\n      </FixedToolbar>\n    ),\n  },\n});\n",
+      "content": "'use client';\n\nimport { createPlatePlugin } from '@udecode/plate-common/react';\n\nimport { FixedToolbar } from '@/components/plate-ui/fixed-toolbar';\nimport { FixedToolbarListButtons } from '@/components/plate-ui/fixed-toolbar-list-buttons';\n\nexport const FixedToolbarListPlugin = createPlatePlugin({\n  key: 'fixed-toolbar',\n  render: {\n    beforeEditable: () => (\n      <FixedToolbar>\n        <FixedToolbarListButtons />\n      </FixedToolbar>\n    ),\n  },\n});\n",
       "path": "components/editor/plugins/fixed-toolbar-list-plugin.tsx",
       "target": "components/editor/plugins/fixed-toolbar-list-plugin.tsx",
       "type": "registry:component"

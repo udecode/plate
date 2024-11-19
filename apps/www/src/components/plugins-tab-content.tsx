@@ -5,7 +5,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 
 import { ArrowUpRight, Eye, EyeOff } from 'lucide-react';
 
-import { customizerList } from '@/config/customizer-list';
+import { customizerList } from '@/config/customizer-items';
 import { useDebounce } from '@/registry/default/hooks/use-debounce';
 import { Button } from '@/registry/default/plate-ui/button';
 import { Checkbox } from '@/registry/default/plate-ui/checkbox';
@@ -13,7 +13,6 @@ import { Checkbox } from '@/registry/default/plate-ui/checkbox';
 import { categoryIds, settingsStore } from './context/settings-store';
 import { Icons } from './icons';
 import { SettingCheckbox } from './setting-checkbox';
-import { SettingsCombobox } from './settings-combobox';
 import { TreeIcon } from './tree-icon';
 import {
   Accordion,
@@ -148,10 +147,6 @@ export function PluginsTabContent() {
   return (
     <div>
       <div className="space-y-4">
-        <div className="flex justify-between">
-          <SettingsCombobox />
-        </div>
-
         <div className="gap-2">
           <div className="flex items-center justify-between">
             <div className="space-y-1 pb-4 pr-2 pt-2">

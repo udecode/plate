@@ -1,5 +1,7 @@
 'use client';
 
+import React from 'react';
+
 import { cn } from '@udecode/cn';
 import { useBlockSelected } from '@udecode/plate-selection/react';
 import { type VariantProps, cva } from 'class-variance-authority';

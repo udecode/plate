@@ -164,7 +164,7 @@ const plugins: Registry = [
       '@udecode/plate-markdown',
       '@faker-js/faker',
     ],
-    files: ['components/editor/plugins/copilot-plugins.ts'],
+    files: ['components/editor/plugins/copilot-plugins.tsx'],
     name: 'copilot-plugins',
     registryDependencies: ['ghost-text'],
     type: 'registry:component',
@@ -247,7 +247,7 @@ const plugins: Registry = [
     dependencies: ['@udecode/plate-caption', '@udecode/plate-media'],
     files: ['components/editor/plugins/media-plugins.tsx'],
     name: 'media-plugins',
-    registryDependencies: ['image-preview'],
+    registryDependencies: ['image-preview', 'media-upload-toast'],
     type: 'registry:component',
   },
   {

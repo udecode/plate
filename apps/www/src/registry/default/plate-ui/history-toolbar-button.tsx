@@ -1,7 +1,10 @@
-import React from 'react';
+'use client';
 
-import { useEditorRef, useEditorSelector } from '@udecode/plate-core/react';
-import { withRef } from '@udecode/react-utils';
+import {
+  useEditorRef,
+  useEditorSelector,
+  withRef,
+} from '@udecode/plate-common/react';
 import { Redo2Icon, Undo2Icon } from 'lucide-react';
 
 import { ToolbarButton } from './toolbar';

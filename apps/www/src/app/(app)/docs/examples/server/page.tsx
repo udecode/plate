@@ -60,12 +60,12 @@ import { Code } from '@/components/code';
 import { Link } from '@/components/link';
 import { Markdown } from '@/components/markdown';
 import { H2, H3, P } from '@/components/typography';
-import { basicElementsValue } from '@/plate/demo/values/basicElementsValue';
-import { basicMarksValue } from '@/plate/demo/values/basicMarksValue';
+import { basicElementsValue } from '@/registry/default/example/values/basic-elements-value';
+import { basicMarksValue } from '@/registry/default/example/values/basic-marks-value';
 
 export default function RSCPage() {
   const mockDoc = {
-    description: 'Use Plate in server environment',
+    description: 'Server-side rendering.',
     title: 'Server-Side',
     // ... other necessary properties
   };
@@ -238,7 +238,7 @@ export default function RSCPage() {
   });
 
   return (
-    <DocContent doc={mockDoc} isUI={false} toc={{}}>
+    <DocContent category="example" doc={mockDoc} toc={{}}>
       <H2>Using Plate in a Server Environment</H2>
       <P>
         Plate can be utilized in server-side environments, enabling operations

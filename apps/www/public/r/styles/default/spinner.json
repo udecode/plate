@@ -1,0 +1,16 @@
+{
+  "doc": {
+    "description": "A loading spinner component with size variants."
+  },
+  "files": [
+    {
+      "content": "import React from 'react';\n\nimport { cn } from '@udecode/cn';\nimport { type VariantProps, cva } from 'class-variance-authority';\nimport { type LucideProps, Loader2Icon } from 'lucide-react';\n\nconst spinnerVariants = cva('animate-spin text-muted-foreground', {\n  defaultVariants: {\n    size: 'default',\n  },\n  variants: {\n    size: {\n      default: 'size-4',\n      icon: 'size-10',\n      lg: 'size-6',\n      sm: 'size-2',\n    },\n  },\n});\n\nexport const Spinner = ({\n  className,\n  size,\n  ...props\n}: Partial<LucideProps & VariantProps<typeof spinnerVariants>>) => (\n  <Loader2Icon\n    className={cn(spinnerVariants({ size }), className)}\n    {...props}\n  />\n);\n",
+      "path": "plate-ui/spinner.tsx",
+      "target": "components/plate-ui/spinner.tsx",
+      "type": "registry:ui"
+    }
+  ],
+  "name": "spinner",
+  "registryDependencies": [],
+  "type": "registry:ui"
+}

@@ -15,9 +15,7 @@ import { MediaUploadToast } from '@/registry/default/plate-ui/media-upload-toast
 
 export const mediaPlugins = [
   ImagePlugin.extend({
-    options: {
-      disableUploadInsert: true,
-    },
+    options: { disableUploadInsert: true },
     render: { afterEditable: ImagePreview },
   }),
   MediaEmbedPlugin,
@@ -28,11 +26,7 @@ export const mediaPlugins = [
     options: { plugins: [ImagePlugin, MediaEmbedPlugin] },
   }),
   PlaceholderPlugin.configure({
-    options: {
-      disableEmptyPlaceholder: true,
-    },
-    render: {
-      afterEditable: () => <MediaUploadToast />,
-    },
+    options: { disableEmptyPlaceholder: true },
+    render: { afterEditable: MediaUploadToast },
   }),
 ] as const;

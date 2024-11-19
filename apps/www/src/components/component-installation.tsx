@@ -85,7 +85,7 @@ export function ComponentInstallation({
   if (codeTabs) {
     return (
       <Tabs className="relative w-full" defaultValue={files[0]?.name}>
-        <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0">
+        <TabsList className="w-full justify-start overflow-x-auto rounded-none border-b bg-transparent p-0">
           {files.map((file: any) => (
             <TabsTrigger
               key={file.name}

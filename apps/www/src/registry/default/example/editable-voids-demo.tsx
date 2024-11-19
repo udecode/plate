@@ -4,22 +4,13 @@ import React, { useState } from 'react';
 
 import type { PlateRenderElementProps } from '@udecode/plate-common/react';
 
-import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
-import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
-import {
-  Plate,
-  createPlatePlugin,
-  usePlateEditor,
-} from '@udecode/plate-common/react';
+import { Plate, createPlatePlugin } from '@udecode/plate-common/react';
 
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { PlateUI } from '@/plate/demo/plate-ui';
-import { editableVoidsValue } from '@/plate/demo/values/editableVoidsValue';
-import { basicNodesPlugins } from '@/registry/default/components/editor/plugins/basic-nodes-plugins';
-import { exitBreakPlugin } from '@/registry/default/components/editor/plugins/exit-break-plugin';
-import { resetBlockTypePlugin } from '@/registry/default/components/editor/plugins/reset-block-type-plugin';
-import { softBreakPlugin } from '@/registry/default/components/editor/plugins/soft-break-plugin';
+import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';
+import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
+import { editableVoidsValue } from '@/registry/default/example/values/editable-voids-value';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 import { Input } from '@/registry/default/plate-ui/input';
 
@@ -38,15 +29,8 @@ export function EditableVoidElement({
 }: PlateRenderElementProps) {
   const [inputValue, setInputValue] = useState('');
 
-  const editor = usePlateEditor({
-    id: 'editable-void-basic-elements',
-    override: { components: PlateUI },
-    plugins: [
-      ...basicNodesPlugins,
-      resetBlockTypePlugin,
-      softBreakPlugin,
-      exitBreakPlugin,
-    ],
+  const editor = useCreateEditor({
+    plugins: editorPlugins,
   });
 
   return (
@@ -100,9 +84,8 @@ export function EditableVoidElement({
 }
 
 export default function EditableVoidsDemo() {
-  const editor = usePlateEditor({
-    override: { components: PlateUI },
-    plugins: [BasicElementsPlugin, BasicMarksPlugin, EditableVoidPlugin],
+  const editor = useCreateEditor({
+    plugins: [...editorPlugins, EditableVoidPlugin],
     value: editableVoidsValue,
   });
 

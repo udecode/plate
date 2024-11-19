@@ -14,6 +14,7 @@ import {
   FontBackgroundColorPlugin,
   FontColorPlugin,
 } from '@udecode/plate-font/react';
+import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import {
   BulletedListPlugin,
   NumberedListPlugin,
@@ -28,18 +29,22 @@ import {
   BaselineIcon,
   BoldIcon,
   Code2Icon,
+  HighlighterIcon,
   ItalicIcon,
   PaintBucketIcon,
-  SparklesIcon,
   StrikethroughIcon,
   UnderlineIcon,
+  WandSparklesIcon,
 } from 'lucide-react';
+
+import { MoreDropdownMenu } from '@/registry/default/plate-ui/more-dropdown-menu';
 
 import { AIToolbarButton } from './ai-toolbar-button';
 import { AlignDropdownMenu } from './align-dropdown-menu';
 import { ColorDropdownMenu } from './color-dropdown-menu';
 import { CommentToolbarButton } from './comment-toolbar-button';
 import { EmojiDropdownMenu } from './emoji-dropdown-menu';
+import { RedoToolbarButton, UndoToolbarButton } from './history-toolbar-button';
 import { InsertDropdownMenu } from './insert-dropdown-menu';
 import { LineHeightDropdownMenu } from './line-height-dropdown-menu';
 import { LinkToolbarButton } from './link-toolbar-button';
@@ -48,7 +53,6 @@ import { ListToolbarButton } from './list-toolbar-button';
 import { MarkToolbarButton } from './mark-toolbar-button';
 import { MediaToolbarButton } from './media-toolbar-button';
 import { ModeDropdownMenu } from './mode-dropdown-menu';
-import { MoreDropdownMenu } from './more-dropdown-menu';
 import { TableDropdownMenu } from './table-dropdown-menu';
 import { ToggleToolbarButton } from './toggle-toolbar-button';
 import { ToolbarGroup } from './toolbar';
@@ -62,12 +66,13 @@ export function FixedToolbarListButtons() {
       {!readOnly && (
         <>
           <ToolbarGroup>
-            <AIToolbarButton
-              className="gap-1.5 text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-500"
-              tooltip="Edit, generate, and more"
-            >
-              <SparklesIcon className="!size-3.5" />
-              Ask AI
+            <UndoToolbarButton />
+            <RedoToolbarButton />
+          </ToolbarGroup>
+
+          <ToolbarGroup>
+            <AIToolbarButton tooltip="AI commands">
+              <WandSparklesIcon />
             </AIToolbarButton>
           </ToolbarGroup>
 
@@ -123,13 +128,16 @@ export function FixedToolbarListButtons() {
 
           <ToolbarGroup>
             <AlignDropdownMenu />
-            <LineHeightDropdownMenu />
 
             <ListToolbarButton nodeType={BulletedListPlugin.key} />
             <ListToolbarButton nodeType={NumberedListPlugin.key} />
+            <ToggleToolbarButton />
+          </ToolbarGroup>
 
-            <ListIndentToolbarButton reverse />
-            <ListIndentToolbarButton />
+          <ToolbarGroup>
+            <LinkToolbarButton />
+            <TableDropdownMenu />
+            <EmojiDropdownMenu />
           </ToolbarGroup>
 
           <ToolbarGroup>
@@ -140,10 +148,12 @@ export function FixedToolbarListButtons() {
           </ToolbarGroup>
 
           <ToolbarGroup>
-            <LinkToolbarButton />
-            <ToggleToolbarButton />
-            <TableDropdownMenu />
-            <EmojiDropdownMenu />
+            <LineHeightDropdownMenu />
+            <ListIndentToolbarButton reverse />
+            <ListIndentToolbarButton />
+          </ToolbarGroup>
+
+          <ToolbarGroup>
             <MoreDropdownMenu />
           </ToolbarGroup>
         </>
@@ -152,7 +162,13 @@ export function FixedToolbarListButtons() {
       <div className="grow" />
 
       <ToolbarGroup>
+        <MarkToolbarButton nodeType={HighlightPlugin.key} tooltip="Highlight">
+          <HighlighterIcon />
+        </MarkToolbarButton>
         <CommentToolbarButton />
+      </ToolbarGroup>
+
+      <ToolbarGroup>
         <ModeDropdownMenu />
       </ToolbarGroup>
     </div>

@@ -3,7 +3,7 @@
   "doc": {
     "description": "A fixed toolbar that stays at the top of the editor.",
     "examples": [
-      "toolbar-demo"
+      "basic-nodes-demo"
     ]
   },
   "files": [
