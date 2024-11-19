@@ -247,7 +247,7 @@ const plugins: Registry = [
     dependencies: ['@udecode/plate-caption', '@udecode/plate-media'],
     files: ['components/editor/plugins/media-plugins.tsx'],
     name: 'media-plugins',
-    registryDependencies: ['image-preview'],
+    registryDependencies: ['image-preview', 'media-upload-toast'],
     type: 'registry:component',
   },
   {

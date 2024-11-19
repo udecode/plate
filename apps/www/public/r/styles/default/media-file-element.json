@@ -1,0 +1,35 @@
+{
+  "dependencies": [
+    "@udecode/plate-media",
+    "@udecode/plate-resizable"
+  ],
+  "doc": {
+    "description": "A file attachment component with download capability and caption.",
+    "docs": [
+      {
+        "route": "/docs/media",
+        "title": "Media"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/media-file-element"
+      }
+    ],
+    "examples": [
+      "media-demo"
+    ]
+  },
+  "files": [
+    {
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { cn, withRef } from '@udecode/cn';\nimport { withHOC } from '@udecode/plate-common/react';\nimport { useMediaState } from '@udecode/plate-media/react';\nimport { ResizableProvider } from '@udecode/plate-resizable';\nimport { FileUp } from 'lucide-react';\nimport { useReadOnly } from 'slate-react';\n\nimport { Caption, CaptionTextarea } from './caption';\nimport { PlateElement } from './plate-element';\n\nexport const MediaFileElement = withHOC(\n  ResizableProvider,\n  withRef<typeof PlateElement>(\n    ({ children, className, nodeProps, ...props }, ref) => {\n      const readOnly = useReadOnly();\n\n      const { name, unsafeUrl } = useMediaState();\n\n      const onDownload = () => {\n        window.open(unsafeUrl);\n      };\n\n      return (\n        <PlateElement\n          ref={ref}\n          className={cn('relative my-px rounded-sm', className)}\n          {...props}\n        >\n          <div\n            className=\"group relative m-0 flex cursor-pointer items-center rounded px-0.5 py-[3px] hover:bg-muted\"\n            onClick={onDownload}\n            contentEditable={false}\n            role=\"button\"\n          >\n            <div className=\"flex items-center gap-1 p-1\">\n              <FileUp className=\"size-5\" />\n\n              <div>{name}</div>\n\n              {/* TODO: add size */}\n              {/* <div className=\"text-muted-foreground\">{element.size}</div> */}\n            </div>\n\n            <Caption align=\"left\">\n              <CaptionTextarea\n                className=\"text-left\"\n                readOnly={readOnly}\n                placeholder=\"Write a caption...\"\n              />\n            </Caption>\n          </div>\n          {children}\n        </PlateElement>\n      );\n    }\n  )\n);\n",
+      "path": "plate-ui/media-file-element.tsx",
+      "target": "components/plate-ui/media-file-element.tsx",
+      "type": "registry:ui"
+    }
+  ],
+  "name": "media-file-element",
+  "registryDependencies": [
+    "caption",
+    "plate-element"
+  ],
+  "type": "registry:ui"
+}

@@ -157,80 +157,61 @@ ToolbarButton.displayName = 'ToolbarButton';
 export { ToolbarButton };
 
 export const ToolbarSplitButton = React.forwardRef<
-  React.ElementRef<typeof ToolbarToggleGroup>,
-  {
-    pressed?: boolean;
-    tooltip?: string;
-  } & Omit<
-    React.ComponentPropsWithoutRef<typeof ToolbarToggleItem>,
-    'asChild' | 'value'
-  >
->(({ children, pressed, ...props }, ref) => {
+  React.ElementRef<typeof ToolbarButton>,
+  React.ComponentPropsWithoutRef<typeof ToolbarButton>
+>(({ children, className, ...props }, ref) => {
   return (
-    <ToolbarToggleGroup
+    <ToolbarButton
       ref={ref}
-      className="group"
-      disabled={props.disabled}
-      value="single"
-      data-pressed={pressed}
-      type="single"
+      className={cn('group flex gap-0 px-0 hover:bg-transparent', className)}
+      {...props}
     >
-      <button className="flex" type="button">
-        {children}
-      </button>
-    </ToolbarToggleGroup>
+      {children}
+    </ToolbarButton>
   );
 });
 
-export const ToolbarSplitButtonPrimary = withTooltip(
-  React.forwardRef<
-    React.ElementRef<typeof ToolbarToggleItem>,
-    {
-      className?: string;
-      size?: 'default' | 'lg' | 'sm';
-      variant?: 'default' | 'outline';
-    } & Omit<React.ComponentPropsWithoutRef<typeof ToolbarToggleItem>, 'value'>
-  >(({ children, className, size, variant, ...props }, ref) => {
-    return (
-      <span
-        ref={ref}
-        className={cn(
-          className,
-          toolbarButtonVariants({
-            size,
-            variant,
-          }),
-          'rounded-r-none',
-          'group-data-[pressed=true]:bg-accent group-data-[pressed=true]:text-accent-foreground'
-        )}
-        {...props}
-      >
-        {children}
-      </span>
-    );
-  })
-);
+export const ToolbarSplitButtonPrimary = React.forwardRef<
+  React.ElementRef<typeof ToolbarToggleItem>,
+  Omit<React.ComponentPropsWithoutRef<typeof ToolbarToggleItem>, 'value'>
+>(({ children, className, size, variant, ...props }, ref) => {
+  return (
+    <span
+      ref={ref}
+      className={cn(
+        toolbarButtonVariants({
+          size,
+          variant,
+        }),
+        'rounded-r-none',
+        'group-data-[pressed=true]:bg-accent group-data-[pressed=true]:text-accent-foreground',
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </span>
+  );
+});
 
 export const ToolbarSplitButtonSecondary = React.forwardRef<
   HTMLButtonElement,
-  {
-    className?: string;
-    size?: 'default' | 'lg' | 'sm';
-    variant?: 'default' | 'outline';
-  } & React.ButtonHTMLAttributes<HTMLButtonElement>
+  React.ComponentPropsWithoutRef<'span'> &
+    VariantProps<typeof dropdownArrowVariants>
 >(({ className, size, variant, ...props }, ref) => {
   return (
     <span
       ref={ref}
       className={cn(
-        className,
         dropdownArrowVariants({
           size,
           variant,
         }),
-        'group-data-[pressed=true]:bg-accent group-data-[pressed=true]:text-accent-foreground'
+        'group-data-[pressed=true]:bg-accent group-data-[pressed=true]:text-accent-foreground',
+        className
       )}
-      disabled={props.disabled}
+      onClick={(e) => e.stopPropagation()}
+      role="button"
       {...props}
     >
       <ChevronDown className="size-3.5 text-muted-foreground" data-icon />

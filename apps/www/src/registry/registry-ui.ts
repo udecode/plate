@@ -332,6 +332,7 @@ import { withDraggables } from './withDraggables';`,
       '@udecode/plate-font',
       '@udecode/plate-indent-list',
       '@udecode/plate-media',
+      '@udecode/plate-highlight',
     ],
     doc: {
       description: 'A set of commonly used formatting buttons.',
@@ -346,6 +347,7 @@ import { withDraggables } from './withDraggables';`,
       'color-dropdown-menu',
       'comment-toolbar-button',
       'emoji-dropdown-menu',
+      'history-toolbar-button',
       'indent-list-toolbar-button',
       'indent-todo-toolbar-button',
       'indent-toolbar-button',
@@ -477,6 +479,18 @@ import { withDraggables } from './withDraggables';`,
     dependencies: ['@udecode/plate-indent'],
     files: ['plate-ui/indent-fire-marker.tsx'],
     name: 'indent-fire-marker',
+    type: 'registry:ui',
+  },
+  {
+    dependencies: [],
+    doc: {
+      description: 'Toolbar buttons for undo and redo operations.',
+      // docs: [{ route: '/docs/history', title: 'History' }],
+      examples: ['basic-nodes-demo'],
+    },
+    files: ['plate-ui/history-toolbar-button.tsx'],
+    name: 'history-toolbar-button',
+    registryDependencies: ['toolbar'],
     type: 'registry:ui',
   },
   {
@@ -671,7 +685,7 @@ import { withDraggables } from './withDraggables';`,
     type: 'registry:ui',
   },
   {
-    dependencies: ['@udecode/plate-media'],
+    dependencies: ['@udecode/plate-media', 'use-file-picker', 'sonner'],
     doc: {
       description: 'Toolbar button for inserting and managing media.',
       docs: [{ route: '/docs/media', title: 'Media' }],
@@ -679,7 +693,19 @@ import { withDraggables } from './withDraggables';`,
     },
     files: ['plate-ui/media-toolbar-button.tsx'],
     name: 'media-toolbar-button',
-    registryDependencies: ['toolbar'],
+    registryDependencies: ['toolbar', 'input', 'dropdown-menu', 'alert-dialog'],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@udecode/plate-media', 'sonner'],
+    doc: {
+      description: 'Show toast notifications for media uploads.',
+      docs: [{ route: '/docs/media-placeholder', title: 'Media Placeholder' }],
+      examples: ['media-demo', 'upload-pro'],
+    },
+    files: ['plate-ui/media-upload-toast.tsx'],
+    name: 'media-upload-toast',
+    registryDependencies: [],
     type: 'registry:ui',
   },
   {
@@ -697,7 +723,6 @@ import { withDraggables } from './withDraggables';`,
     dependencies: [
       '@radix-ui/react-dropdown-menu',
       '@udecode/plate-basic-marks',
-      '@udecode/plate-highlight',
       '@udecode/plate-kbd',
     ],
     doc: {
@@ -736,7 +761,7 @@ import { withDraggables } from './withDraggables';`,
           route: siteConfig.links.plateProComponent('placeholder'),
         },
       ],
-      examples: ['placeholder-demo', 'placeholder-pro'],
+      examples: ['basic-elements-demo', 'placeholder-pro'],
     },
     files: ['plate-ui/placeholder.tsx'],
     name: 'placeholder',
@@ -839,40 +864,6 @@ export const uiNodes: Registry = [
     },
     files: ['plate-ui/ai-leaf.tsx'],
     name: 'ai-leaf',
-    registryDependencies: [],
-    type: 'registry:ui',
-  },
-  {
-    dependencies: [
-      '@udecode/plate-media',
-      'use-file-picker',
-      '@uploadthing/react@7.1.0',
-      'uploadthing@7.2.0',
-      'zod',
-      'sonner',
-    ],
-    doc: {
-      description: 'A placeholder for media files.',
-      docs: [{ route: '/docs/media-placeholder', title: 'Media Placeholder' }],
-      examples: ['media-demo', 'media-toolbar-pro'],
-    },
-    files: [
-      'plate-ui/media-placeholder-element.tsx',
-      'lib/uploadthing/uploadthing.ts',
-    ],
-    name: 'media-placeholder-element',
-    registryDependencies: [],
-    type: 'registry:ui',
-  },
-  {
-    dependencies: [],
-    doc: {
-      description: 'A toast for media uploads.',
-      docs: [{ route: '/docs/media-placeholder', title: 'Media Placeholder' }],
-      examples: ['media-demo', 'upload-pro'],
-    },
-    files: ['plate-ui/media-upload-toast.tsx'],
-    name: 'media-upload-toast',
     registryDependencies: [],
     type: 'registry:ui',
   },
@@ -1193,6 +1184,23 @@ export const uiNodes: Registry = [
     type: 'registry:ui',
   },
   {
+    dependencies: ['@udecode/plate-media', '@udecode/plate-resizable'],
+    doc: {
+      description: 'An audio player component with caption support.',
+      docs: [
+        { route: '/docs/media', title: 'Media' },
+        {
+          route: siteConfig.links.plateProComponent('media-audio-element'),
+        },
+      ],
+      examples: ['media-demo'],
+    },
+    files: ['plate-ui/media-audio-element.tsx'],
+    name: 'media-audio-element',
+    registryDependencies: ['caption', 'plate-element'],
+    type: 'registry:ui',
+  },
+  {
     dependencies: [
       '@udecode/plate-media',
       '@udecode/plate-resizable',
@@ -1212,6 +1220,76 @@ export const uiNodes: Registry = [
     },
     files: ['plate-ui/media-embed-element.tsx'],
     name: 'media-embed-element',
+    registryDependencies: [
+      'media-popover',
+      'caption',
+      'resizable',
+      'plate-element',
+    ],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@udecode/plate-media', '@udecode/plate-resizable'],
+    doc: {
+      description:
+        'A file attachment component with download capability and caption.',
+      docs: [
+        { route: '/docs/media', title: 'Media' },
+        {
+          route: siteConfig.links.plateProComponent('media-file-element'),
+        },
+      ],
+      examples: ['media-demo'],
+    },
+    files: ['plate-ui/media-file-element.tsx'],
+    name: 'media-file-element',
+    registryDependencies: ['caption', 'plate-element'],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: [
+      '@udecode/plate-media',
+      'use-file-picker',
+      '@uploadthing/react@7.1.0',
+      'uploadthing@7.2.0',
+    ],
+    doc: {
+      description: 'A placeholder for media upload progress indication.',
+      docs: [
+        { route: '/docs/media', title: 'Media' },
+        {
+          route: siteConfig.links.plateProComponent(
+            'media-placeholder-element'
+          ),
+        },
+      ],
+      examples: ['media-demo', 'upload-pro'],
+    },
+    files: ['plate-ui/media-placeholder-element.tsx', 'lib/uploadthing.ts'],
+    name: 'media-placeholder-element',
+    registryDependencies: ['plate-element', 'spinner'],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: [
+      '@udecode/plate-media',
+      '@udecode/plate-resizable',
+      'react-player',
+      'react-lite-youtube-embed',
+    ],
+    doc: {
+      description:
+        'A video player component with YouTube and file upload support.',
+      docs: [
+        { route: '/docs/media', title: 'Media' },
+        {
+          route: siteConfig.links.plateProComponent('media-video-element'),
+        },
+      ],
+      examples: ['media-demo', 'media-toolbar-pro'],
+    },
+    files: ['plate-ui/media-video-element.tsx'],
+    name: 'media-video-element',
     registryDependencies: [
       'media-popover',
       'caption',
@@ -1417,6 +1495,20 @@ export const uiNodes: Registry = [
 
 export const uiPrimitives: Registry = [
   {
+    dependencies: ['@radix-ui/react-alert-dialog'],
+    doc: {
+      description:
+        'A modal dialog that interrupts the user with important content and expects a response.',
+      links: {
+        doc: 'https://ui.shadcn.com/docs/components/alert-dialog',
+      },
+    },
+    files: ['plate-ui/alert-dialog.tsx'],
+    name: 'alert-dialog',
+    registryDependencies: ['button'],
+    type: 'registry:ui',
+  },
+  {
     dependencies: ['@radix-ui/react-avatar'],
     doc: {
       description:
@@ -1558,6 +1650,15 @@ export const uiPrimitives: Registry = [
     },
     files: ['plate-ui/tooltip.tsx'],
     name: 'tooltip',
+    registryDependencies: [],
+    type: 'registry:ui',
+  },
+  {
+    doc: {
+      description: 'A loading spinner component with size variants.',
+    },
+    files: ['plate-ui/spinner.tsx'],
+    name: 'spinner',
     registryDependencies: [],
     type: 'registry:ui',
   },

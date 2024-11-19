@@ -7,18 +7,15 @@ import {
   CodePlugin,
   ItalicPlugin,
   StrikethroughPlugin,
-  SubscriptPlugin,
-  SuperscriptPlugin,
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
-import { useEditorReadOnly } from '@udecode/plate-core/react';
+import { useEditorReadOnly } from '@udecode/plate-common/react';
 import {
   FontBackgroundColorPlugin,
   FontColorPlugin,
 } from '@udecode/plate-font/react';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { ListStyleType } from '@udecode/plate-indent-list';
-import { KbdPlugin } from '@udecode/plate-kbd/react';
 import {
   AudioPlugin,
   FilePlugin,
@@ -31,14 +28,13 @@ import {
   Code2Icon,
   HighlighterIcon,
   ItalicIcon,
-  KeyboardIcon,
   PaintBucketIcon,
-  SparklesIcon,
   StrikethroughIcon,
-  SubscriptIcon,
-  SuperscriptIcon,
   UnderlineIcon,
+  WandSparklesIcon,
 } from 'lucide-react';
+
+import { MoreDropdownMenu } from '@/registry/default/plate-ui/more-dropdown-menu';
 
 import { AIToolbarButton } from './ai-toolbar-button';
 import { AlignDropdownMenu } from './align-dropdown-menu';
@@ -74,12 +70,8 @@ export function FixedToolbarButtons() {
           </ToolbarGroup>
 
           <ToolbarGroup>
-            <AIToolbarButton
-              className="gap-1.5 text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-500"
-              tooltip="Edit, generate, and more"
-            >
-              <SparklesIcon className="!size-3.5" />
-              Ask AI
+            <AIToolbarButton tooltip="AI commands">
+              <WandSparklesIcon />
             </AIToolbarButton>
           </ToolbarGroup>
 
@@ -139,11 +131,11 @@ export function FixedToolbarButtons() {
             <IndentListToolbarButton nodeType={ListStyleType.Disc} />
             <IndentListToolbarButton nodeType={ListStyleType.Decimal} />
             <IndentTodoToolbarButton />
+            <ToggleToolbarButton />
           </ToolbarGroup>
 
           <ToolbarGroup>
             <LinkToolbarButton />
-            <ToggleToolbarButton />
             <TableDropdownMenu />
             <EmojiDropdownMenu />
           </ToolbarGroup>
@@ -151,6 +143,8 @@ export function FixedToolbarButtons() {
           <ToolbarGroup>
             <MediaToolbarButton nodeType={ImagePlugin.key} />
             <MediaToolbarButton nodeType={VideoPlugin.key} />
+            <MediaToolbarButton nodeType={AudioPlugin.key} />
+            <MediaToolbarButton nodeType={FilePlugin.key} />
           </ToolbarGroup>
 
           <ToolbarGroup>
@@ -160,38 +154,7 @@ export function FixedToolbarButtons() {
           </ToolbarGroup>
 
           <ToolbarGroup>
-            <MediaToolbarButton nodeType={AudioPlugin.key} />
-            <MediaToolbarButton nodeType={FilePlugin.key} />
-          </ToolbarGroup>
-
-          <ToolbarGroup>
-            <MarkToolbarButton
-              nodeType={HighlightPlugin.key}
-              tooltip="Highlight"
-            >
-              <HighlighterIcon />
-            </MarkToolbarButton>
-
-            <MarkToolbarButton
-              nodeType={KbdPlugin.key}
-              tooltip="Keyboard input"
-            >
-              <KeyboardIcon />
-            </MarkToolbarButton>
-
-            <MarkToolbarButton
-              nodeType={SuperscriptPlugin.key}
-              tooltip="Superscript"
-            >
-              <SuperscriptIcon />
-            </MarkToolbarButton>
-
-            <MarkToolbarButton
-              nodeType={SubscriptPlugin.key}
-              tooltip="Subscript"
-            >
-              <SubscriptIcon />
-            </MarkToolbarButton>
+            <MoreDropdownMenu />
           </ToolbarGroup>
         </>
       )}
@@ -199,9 +162,14 @@ export function FixedToolbarButtons() {
       <div className="grow" />
 
       <ToolbarGroup>
+        <MarkToolbarButton nodeType={HighlightPlugin.key} tooltip="Highlight">
+          <HighlighterIcon />
+        </MarkToolbarButton>
         <CommentToolbarButton />
+      </ToolbarGroup>
+
+      <ToolbarGroup>
         <ModeDropdownMenu />
-        {/* <MoreToolbarButton pressed={expanded} tooltip="More" /> */}
       </ToolbarGroup>
     </div>
   );

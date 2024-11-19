@@ -40,7 +40,7 @@ export function useUploadFile() {
 
       const simulateProgress = async () => {
         while (progress < 100) {
-          await new Promise((resolve) => setTimeout(resolve, 100));
+          await new Promise((resolve) => setTimeout(resolve, 50));
           progress += 2;
           setProgress(Math.min(progress, 100));
         }

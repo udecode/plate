@@ -50,12 +50,12 @@ export const overviewNavItems: SidebarNavItem[] = [
     title: 'Examples',
   },
   {
-    href: '/docs/components',
-    title: 'Components',
-  },
-  {
     href: '/docs/api',
     title: 'API Reference',
+  },
+  {
+    href: '/docs/components',
+    title: 'Components',
   },
 ];
 

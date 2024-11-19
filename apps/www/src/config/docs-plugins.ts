@@ -36,8 +36,7 @@ export const pluginsNavItems: SidebarNavItem[] = [
     title: 'Equation',
   },
   {
-    description:
-      'Media placeholders to be used as clickable placeholders for various media types (image, video, audio, file).',
+    description: 'A placeholder for media upload with progress indication.',
     href: '/docs/media-placeholder',
     label: 'New',
     title: 'Media Placeholder',

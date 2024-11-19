@@ -141,14 +141,6 @@ export const customizerBadges = {
 };
 
 export const customizerItems: Record<string, SettingPlugin> = {
-  [`media_${PlaceholderPlugin.key}`]: {
-    id: `media_${PlaceholderPlugin.key}`,
-    label: 'MediaPlaceholder',
-    npmPackage: '@udecode/plate-placeholder',
-    pluginFactory: 'PlaceholderPlugin',
-    reactImport: true,
-    route: customizerPlugins.mediaPlaceholder.route,
-  },
   [AIChatPlugin.key]: {
     id: AIChatPlugin.key,
     badges: [customizerBadges.handler],
@@ -766,7 +758,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginFactory: 'MentionInputPlugin',
     reactImport: true,
   },
-
   [MentionPlugin.key]: {
     id: MentionPlugin.key,
     badges: [
@@ -797,6 +788,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     reactImport: true,
     route: getPluginNavItem('mention').href,
   },
+
   [NodeIdPlugin.key]: {
     id: NodeIdPlugin.key,
     badges: [customizerBadges.normalizer],
@@ -1259,6 +1251,14 @@ export const customizerItems: Record<string, SettingPlugin> = {
     reactImport: true,
     route: getPluginNavItem('list').href,
   },
+  media_placeholder: {
+    id: 'media_placeholder',
+    label: 'MediaPlaceholder',
+    npmPackage: '@udecode/plate-placeholder',
+    pluginFactory: 'PlaceholderPlugin',
+    reactImport: true,
+    route: getPluginNavItem('media-placeholder').href,
+  },
 };
 
 export const customizerList = [
@@ -1285,6 +1285,7 @@ export const customizerList = [
       customizerItems.heading,
       customizerItems.list,
       customizerItems[MediaEmbedPlugin.key],
+      customizerItems.media_placeholder,
       customizerItems[MentionPlugin.key],
       customizerItems[ParagraphPlugin.key],
       customizerItems[TablePlugin.key],
@@ -1372,6 +1373,7 @@ export const orderedPluginKeys = [
   'list',
   ImagePlugin.key,
   MediaEmbedPlugin.key,
+  PlaceholderPlugin.key,
   CaptionPlugin.key,
   MentionPlugin.key,
   TablePlugin.key,

@@ -820,6 +820,7 @@ export const docExamples: Registry = [
     },
     files: [
       'example/demo.tsx',
+      'example/values/media-value.tsx',
       'components/editor/use-create-editor.tsx',
       'components/editor/plugins/editor-plugins.tsx',
     ],

@@ -227,7 +227,7 @@ function getRegistryDocs({
       } else if (doc.route!.startsWith('/docs/components')) {
         acc.components.push(doc as any);
       } else {
-        acc.docs.push(doc as any);
+        acc.docs.push({ ...doc, title: doc.title + ' Plugin' } as any);
       }
 
       return acc;
