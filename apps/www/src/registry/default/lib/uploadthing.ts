@@ -1,19 +1,31 @@
 import * as React from 'react';
 
+import type { OurFileRouter } from '@/registry/default/components/api/uploadthing/route';
+import type {
+  ClientUploadedFileData,
+  UploadFilesOptions,
+} from 'uploadthing/types';
+
+import { generateReactHelpers } from '@uploadthing/react';
 import { isRedirectError } from 'next/dist/client/components/redirect';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
-export interface UploadedFile {
-  key: string;
-  appUrl: string;
-  name: string;
-  size: number;
-  type: string;
-  url: string;
+export interface UploadedFile<T = unknown> extends ClientUploadedFileData<T> {}
+
+interface UseUploadFileProps
+  extends Pick<
+    UploadFilesOptions<OurFileRouter, keyof OurFileRouter>,
+    'headers' | 'onUploadBegin' | 'onUploadProgress' | 'skipPolling'
+  > {
+  onUploadComplete?: (file: UploadedFile) => void;
+  onUploadError?: (error: unknown) => void;
 }
 
-export function useUploadFile() {
+export function useUploadFile(
+  endpoint: keyof OurFileRouter,
+  { onUploadComplete, onUploadError, ...props }: UseUploadFileProps = {}
+) {
   const [uploadedFile, setUploadedFile] = React.useState<UploadedFile>();
   const [uploadingFile, setUploadingFile] = React.useState<File>();
   const [progress, setProgress] = React.useState<number>(0);
@@ -24,6 +36,31 @@ export function useUploadFile() {
     setUploadingFile(file);
 
     try {
+      const res = await uploadFiles(endpoint, {
+        ...props,
+        files: [file],
+        onUploadProgress: ({ progress }) => {
+          setProgress(Math.min(progress, 100));
+        },
+      });
+
+      setUploadedFile(res[0]);
+
+      onUploadComplete?.(res[0]);
+
+      return uploadedFile;
+    } catch (error) {
+      const errorMessage = getErrorMessage(error);
+
+      const message =
+        errorMessage.length > 0
+          ? errorMessage
+          : 'Something went wrong, please try again later.';
+
+      toast.error(message);
+
+      onUploadError?.(error);
+
       // Mock upload for unauthenticated users
       // toast.info('User not logged in. Mocking upload process.');
       const mockUploadedFile = {
@@ -51,15 +88,6 @@ export function useUploadFile() {
       setUploadedFile(mockUploadedFile);
 
       return mockUploadedFile;
-    } catch (error) {
-      const errorMessage = getErrorMessage(error);
-
-      const message =
-        errorMessage.length > 0
-          ? errorMessage
-          : 'Something went wrong, please try again later.';
-
-      toast.error(message);
     } finally {
       setProgress(0);
       setIsUploading(false);
@@ -75,6 +103,9 @@ export function useUploadFile() {
     uploadingFile,
   };
 }
+
+export const { uploadFiles, useUploadThing } =
+  generateReactHelpers<OurFileRouter>();
 
 export function getErrorMessage(err: unknown) {
   const unknownError = 'Something went wrong, please try again later.';

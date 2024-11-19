@@ -29,7 +29,7 @@ import {
 import { AudioLines, FileUp, Film, ImageIcon } from 'lucide-react';
 import { useFilePicker } from 'use-file-picker';
 
-import { useUploadFile } from '@/lib/uploadthing';
+import { useUploadFile } from '@/lib/uploadthing/uploadthing';
 
 import { PlateElement } from './plate-element';
 import { Spinner } from './spinner';

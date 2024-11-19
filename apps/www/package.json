@@ -131,6 +131,7 @@
     "@udecode/slate-react": "workspace:^",
     "@udecode/slate-utils": "workspace:^",
     "@udecode/utils": "workspace:^",
+    "@uploadthing/react": "7.1.0",
     "@vercel/og": "^0.6.2",
     "ai": "^3.4.10",
     "class-variance-authority": "^0.7.0",
@@ -172,6 +173,7 @@
     "ts-morph": "^22.0.0",
     "unist-builder": "4.0.0",
     "unist-util-visit": "^5.0.0",
+    "uploadthing": "7.2.0",
     "use-file-picker": "2.1.2",
     "vaul": "0.9.0"
   },

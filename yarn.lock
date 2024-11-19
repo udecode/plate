@@ -1135,6 +1135,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@effect/platform@npm:0.69.8":
+  version: 0.69.8
+  resolution: "@effect/platform@npm:0.69.8"
+  dependencies:
+    find-my-way-ts: "npm:^0.1.5"
+    multipasta: "npm:^0.2.5"
+  peerDependencies:
+    effect: ^3.10.3
+  checksum: 10c0/23028c02a15d8504369d301ed49f42157ebcee2bc4caddf473f35231a725dfa75eb5363add2d686d5dec58bd500559b787a61827d423fb448a6b2dddf65d605c
+  languageName: node
+  linkType: hard
+
 "@emnapi/runtime@npm:^1.2.0":
   version: 1.3.1
   resolution: "@emnapi/runtime@npm:1.3.1"
@@ -7402,6 +7414,41 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@uploadthing/mime-types@npm:0.3.1":
+  version: 0.3.1
+  resolution: "@uploadthing/mime-types@npm:0.3.1"
+  checksum: 10c0/40acf3ce6427c979e8e8a9fc60169fee35c6b6b504d8ed462d62579f9f57a940c3b0afd9e387cec03247b86772fcfc93ba7539fa07cb43a9698c18dbdff5802f
+  languageName: node
+  linkType: hard
+
+"@uploadthing/react@npm:7.1.0":
+  version: 7.1.0
+  resolution: "@uploadthing/react@npm:7.1.0"
+  dependencies:
+    "@uploadthing/shared": "npm:7.1.0"
+    file-selector: "npm:0.6.0"
+  peerDependencies:
+    next: "*"
+    react: ^17.0.2 || ^18.0.0
+    uploadthing: 7.2.0
+  peerDependenciesMeta:
+    next:
+      optional: true
+  checksum: 10c0/4ef6353e38a9dcbaf3078943ddb111b5a9cc682bc4436ba3c124a8b92afcfad39c195a77592bffab567abb296598e804254b47b6507e28fd73872f4ac853c7de
+  languageName: node
+  linkType: hard
+
+"@uploadthing/shared@npm:7.1.0":
+  version: 7.1.0
+  resolution: "@uploadthing/shared@npm:7.1.0"
+  dependencies:
+    "@uploadthing/mime-types": "npm:0.3.1"
+    effect: "npm:3.10.3"
+    sqids: "npm:^0.3.0"
+  checksum: 10c0/655d316470c288a237f6e4c749f45d81ebdaed1b3d2dc6813180fc0e500029874130b2adf9b29681cc395f435c4b4ec4061bb38c6d3abbbbb88af5282c12925c
+  languageName: node
+  linkType: hard
+
 "@vercel/og@npm:^0.6.2":
   version: 0.6.3
   resolution: "@vercel/og@npm:0.6.3"
@@ -9646,6 +9693,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"effect@npm:3.10.3":
+  version: 3.10.3
+  resolution: "effect@npm:3.10.3"
+  dependencies:
+    fast-check: "npm:^3.21.0"
+  checksum: 10c0/aa09e50b67c9bf90e4ab11e34d8c9163de46d1ec2baa84ff8ce180f06e3b45798578cb5dca3051bb42596404f8978e24bc912790a984af1921618aef22570ee7
+  languageName: node
+  linkType: hard
+
 "ejs@npm:^3.1.10":
   version: 3.1.10
   resolution: "ejs@npm:3.1.10"
@@ -11118,6 +11174,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fast-check@npm:^3.21.0":
+  version: 3.23.1
+  resolution: "fast-check@npm:3.23.1"
+  dependencies:
+    pure-rand: "npm:^6.1.0"
+  checksum: 10c0/d61ee4a7a2e1abc5126bf2f1894413f532f686b3d1fc15c67fefb60dcca66024934b69a6454d3eba92e6568ac1abbb9882080e212d255865c3b3bbe52c5bf702
+  languageName: node
+  linkType: hard
+
 "fast-deep-equal@npm:^3.1.1, fast-deep-equal@npm:^3.1.3":
   version: 3.1.3
   resolution: "fast-deep-equal@npm:3.1.3"
@@ -11283,6 +11348,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"file-selector@npm:0.6.0":
+  version: 0.6.0
+  resolution: "file-selector@npm:0.6.0"
+  dependencies:
+    tslib: "npm:^2.4.0"
+  checksum: 10c0/477ca1b56274db9fee1a8a623c4bfef580389726a5fef843af8c1f2f17f70ec2d1e41b29115777c92e120a15f1cca734c6ef36bb48bfa2ee027c68da16cd0d28
+  languageName: node
+  linkType: hard
+
 "filelist@npm:^1.0.4":
   version: 1.0.4
   resolution: "filelist@npm:1.0.4"
@@ -11307,6 +11381,13 @@ __metadata:
   dependencies:
     json5: "npm:^2.2.3"
   checksum: 10c0/c9151b23d636378eae11aa761b0af41d5f67d5479e3ebfca7b0ec7feef91723f14242d243342783b89e6c51fc5b4120086eacf5d8a1a335cf7bae4b0ac89f493
+  languageName: node
+  linkType: hard
+
+"find-my-way-ts@npm:^0.1.5":
+  version: 0.1.5
+  resolution: "find-my-way-ts@npm:0.1.5"
+  checksum: 10c0/703797b8466e1fbf437f0a6f7e100e02ca5922c0d7afb0548b5e77fa9c7b4e4a5bed5d2589e27cc037a516b144e3ba334acce5369387a79975ffaf61b2900398
   languageName: node
   linkType: hard
 
@@ -15913,6 +15994,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"multipasta@npm:^0.2.5":
+  version: 0.2.5
+  resolution: "multipasta@npm:0.2.5"
+  checksum: 10c0/f0790b1bdfc6b84ae6139982ead353957b668fe54fec8a4d93c19e9d051b02c837c93fbdff10b26bff2dbfcf7792c6435c27786c14ad82a0fb33b939c1bf96c6
+  languageName: node
+  linkType: hard
+
 "mz@npm:^2.7.0":
   version: 2.7.0
   resolution: "mz@npm:2.7.0"
@@ -17663,7 +17751,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pure-rand@npm:^6.0.0":
+"pure-rand@npm:^6.0.0, pure-rand@npm:^6.1.0":
   version: 6.1.0
   resolution: "pure-rand@npm:6.1.0"
   checksum: 10c0/1abe217897bf74dcb3a0c9aba3555fe975023147b48db540aa2faf507aee91c03bf54f6aef0eb2bf59cc259a16d06b28eca37f0dc426d94f4692aeff02fb0e65
@@ -19660,6 +19748,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"sqids@npm:^0.3.0":
+  version: 0.3.0
+  resolution: "sqids@npm:0.3.0"
+  checksum: 10c0/2ce528b83f2780166b2e8025ece1e8262ee217ed51ab5656959cb6e1a885eee5b6ea86627ce6b0321d7b0eeb34a2ed455476c01c44e6e55e18cee52b3e1b9eb3
+  languageName: node
+  linkType: hard
+
 "ssri@npm:^10.0.0":
   version: 10.0.6
   resolution: "ssri@npm:10.0.6"
@@ -21333,6 +21428,35 @@ __metadata:
   languageName: node
   linkType: hard
 
+"uploadthing@npm:7.2.0":
+  version: 7.2.0
+  resolution: "uploadthing@npm:7.2.0"
+  dependencies:
+    "@effect/platform": "npm:0.69.8"
+    "@uploadthing/mime-types": "npm:0.3.1"
+    "@uploadthing/shared": "npm:7.1.0"
+    effect: "npm:3.10.3"
+  peerDependencies:
+    express: "*"
+    fastify: "*"
+    h3: "*"
+    next: "*"
+    tailwindcss: "*"
+  peerDependenciesMeta:
+    express:
+      optional: true
+    fastify:
+      optional: true
+    h3:
+      optional: true
+    next:
+      optional: true
+    tailwindcss:
+      optional: true
+  checksum: 10c0/49ee09f7fefd676c02597a618cff98c08b113398571ca9ab5748c69f3b56868e0c99579639aa0e59a496377b5de533b24fc38b65ea2fa95b97d82769f05b78b8
+  languageName: node
+  linkType: hard
+
 "uri-js@npm:^4.2.2":
   version: 4.4.1
   resolution: "uri-js@npm:4.4.1"
@@ -22096,6 +22220,7 @@ __metadata:
     "@udecode/slate-react": "workspace:^"
     "@udecode/slate-utils": "workspace:^"
     "@udecode/utils": "workspace:^"
+    "@uploadthing/react": "npm:7.1.0"
     "@vercel/og": "npm:^0.6.2"
     ai: "npm:^3.4.10"
     autoprefixer: "npm:^10.4.20"
@@ -22158,6 +22283,7 @@ __metadata:
     typescript: "npm:5.6.2"
     unist-builder: "npm:4.0.0"
     unist-util-visit: "npm:^5.0.0"
+    uploadthing: "npm:7.2.0"
     use-file-picker: "npm:2.1.2"
     vaul: "npm:0.9.0"
   languageName: unknown

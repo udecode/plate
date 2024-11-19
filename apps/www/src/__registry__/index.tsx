@@ -1505,6 +1505,18 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
+    "api-uploadthing": {
+      name: "api-uploadthing",
+      description: "",
+      type: "registry:component",
+      registryDependencies: ["media-placeholder-element","uploadthing"],
+      files: ["registry/default/components/api/uploadthing/route.ts"],
+      component: React.lazy(() => import("@/registry/default/components/api/uploadthing/route.ts")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
     "transforms": {
       name: "transforms",
       description: "",
@@ -2364,6 +2376,18 @@ export const Index: Record<string, any> = {
       registryDependencies: undefined,
       files: ["registry/default/lib/utils.ts"],
       component: React.lazy(() => import("@/registry/default/lib/utils.ts")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
+    "uploadthing": {
+      name: "uploadthing",
+      description: "",
+      type: "registry:lib",
+      registryDependencies: undefined,
+      files: ["registry/default/lib/uploadthing.ts"],
+      component: React.lazy(() => import("@/registry/default/lib/uploadthing.ts")),
       source: "",
       category: "",
       subcategory: "",

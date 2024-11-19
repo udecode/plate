@@ -1,0 +1,19 @@
+{
+  "dependencies": [
+    "uploadthing@7.2.0"
+  ],
+  "files": [
+    {
+      "content": "import type { FileRouter } from 'uploadthing/next';\n\nimport { createRouteHandler, createUploadthing } from 'uploadthing/next';\n\nconst f = createUploadthing();\n\n// FileRouter for your app, can contain multiple FileRoutes\nconst ourFileRouter = {\n  // Define as many FileRoutes as you like, each with a unique routeSlug\n  imageUploader: f(['image', 'text', 'blob', 'pdf', 'video', 'audio'])\n    // Set permissions and file types for this FileRoute\n    .middleware(async ({ req }) => {\n      // This code runs on your server before upload\n\n      // Whatever is returned here is accessible in onUploadComplete as `metadata`\n      return {};\n    })\n    .onUploadComplete(({ file, metadata }) => {\n      // This code RUNS ON YOUR SERVER after upload\n\n      // !!! Whatever is returned here is sent to the clientside `onClientUploadComplete` callback\n      return { file };\n    }),\n} satisfies FileRouter;\n\nexport type OurFileRouter = typeof ourFileRouter;\n\n// Export routes for Next App Router\nexport const { GET, POST } = createRouteHandler({\n  router: ourFileRouter,\n\n  // Apply an (optional) custom config:\n  // config: { ... },\n});\n",
+      "path": "components/api/uploadthing/route.ts",
+      "target": "app/api/uploadthing/route.ts",
+      "type": "registry:page"
+    }
+  ],
+  "name": "api-uploadthing",
+  "registryDependencies": [
+    "media-placeholder-element",
+    "uploadthing"
+  ],
+  "type": "registry:component"
+}
