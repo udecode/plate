@@ -134,6 +134,7 @@ export const MediaPlaceholderElement = withHOC(
 
       // React dev mode will call useEffect twice
       const isReplaced = useRef(false);
+
       /** Paste and drop */
       useEffect(() => {
         if (isReplaced.current) return;

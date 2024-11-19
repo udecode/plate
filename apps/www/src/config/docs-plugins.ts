@@ -36,12 +36,6 @@ export const pluginsNavItems: SidebarNavItem[] = [
     title: 'Equation',
   },
   {
-    description: 'A placeholder for media upload with progress indication.',
-    href: '/docs/media-placeholder',
-    label: 'New',
-    title: 'Media Placeholder',
-  },
-  {
     description:
       'Slash command menu for quick insertion of various content types.',
     href: '/docs/slash-command',
@@ -197,7 +191,7 @@ export const pluginsNavItems: SidebarNavItem[] = [
   {
     description: 'Embed medias like videos or tweets into your document.',
     href: '/docs/media',
-    label: 'Element',
+    label: ['Element', 'New'],
     title: 'Media',
   },
   {

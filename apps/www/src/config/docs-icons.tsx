@@ -210,7 +210,6 @@ export const DocIcons = {
   'media-audio-element': AudioLinesIcon,
   'media-embed-element': DockIcon,
   'media-file-element': FileIcon,
-  'media-placeholder': SquareDashedIcon,
   'media-placeholder-element': SquareDashedIcon,
   'media-popover': ImageIcon,
   'media-toolbar-button': ImageIcon,

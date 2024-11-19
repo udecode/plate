@@ -700,7 +700,7 @@ import { withDraggables } from './withDraggables';`,
     dependencies: ['@udecode/plate-media', 'sonner'],
     doc: {
       description: 'Show toast notifications for media uploads.',
-      docs: [{ route: '/docs/media-placeholder', title: 'Media Placeholder' }],
+      docs: [{ route: '/docs/media', title: 'Media Placeholder' }],
       examples: ['media-demo', 'upload-pro'],
     },
     files: ['plate-ui/media-upload-toast.tsx'],

@@ -30,6 +30,8 @@
     
     .prose {
       --tw-prose-body: var(--foreground);
+      --tw-prose-bold: inherit;
+      --tw-prose-links: inherit;
       --tw-prose-bullets: var(--foreground);
     }
   }
