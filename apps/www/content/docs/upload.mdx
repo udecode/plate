@@ -8,16 +8,57 @@ docs:
 
 ### UploadThing Integration
 
-Make sure you have install the [media-placeholder-element](/docs/components/media-placeholder-element) component and all the dependencies.
+The UploadThing integration provides an easy way to handle file uploads in your editor. Follow these steps to set it up:
 
-Set `UPLOADTHING_TOKEN` in your .env file [get one here](https://uploadthing.com/dashboard).
+1. Install the required dependencies:
+   ```bash
+   npm install @uploadthing/react uploadthing
+   ```
+
+2. Install the [media-placeholder-element](/docs/components/media-placeholder-element) component.
+
+3. Set up the UploadThing API route by copying the [example implementation](https://github.com/udecode/plate/blob/main/templates/plate-playground-template/src/app/api/uploadthing/core.ts).
+
+4. Get your UploadThing API key from the [dashboard](https://uploadthing.com/dashboard) and add it to your `.env` file:
+   ```bash
+   UPLOADTHING_SECRET=your_secret_key
+   ```
 
 
 ### Using your own backend
 
-Remove this two folder `lib/uploadthing` and `/api/uploadthing`.
+To implement your own backend for file uploads:
 
-Then impelement a similar hooks like `useUploadFile` using your own backend.
+1. Remove the UploadThing implementation:
+   ```bash
+   lib/uploadthing/
+   api/uploadthing/
+   ```
+
+2. Create your own upload hook:
+   ```ts
+   function useUploadFile() {
+     // Your implementation here
+     return {
+       isUploading: boolean,
+       progress: number,
+       uploadFile: (file: File) => Promise<UploadedFile>,
+       uploadedFile: UploadedFile | undefined,
+       uploadingFile: File | undefined
+     }
+   }
+   ```
+
+3. The hook should match the interface expected by the media placeholder component:
+   ```ts
+   interface UploadedFile {
+     key: string
+     url: string
+     name: string
+     size: number
+     type: string
+   }
+   ```
 
 ## Examples
 

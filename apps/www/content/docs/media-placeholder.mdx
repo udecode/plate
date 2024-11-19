@@ -59,10 +59,33 @@ const components = {
 ```
 
 
-## UploadOptions
 
-### uploadConfig
+### multiple
 
+`boolean` (default: `true`)
+
+Whether multiple files can be uploaded in one time.
+
+## Examples
+
+<ComponentPreview name="playground-demo" id="mediaPlaceholder" />
+
+### Plate UI
+
+Refer to the preview above.
+
+### Plate Plus
+
+<ComponentPreviewPro name="upload-pro" />
+
+## Plugins
+
+### PlaceholderPlugin
+
+Media placeholder element plugin.
+
+<APIOptions>
+<APIItem name="uploadConfig" type="Partial<Record<AllowedFileType, MediaItemConfig>>" optional>
 Configuration for different file types:
 
 - You can use this option to configure upload limits for each file type, including:
@@ -73,7 +96,6 @@ Configuration for different file types:
   - mediaType: Used for passing to the media-placeholder-elements file to distinguish between different file types and their progress bar styles.
 
   default configuration:
-
   ```tsx
     uploadConfig: {
       audio: {
@@ -115,6 +137,7 @@ Configuration for different file types:
     },
   ```
 
+
   here is all allowed file types (keys for `uploadConfig`):
 
   ```tsx
@@ -128,47 +151,26 @@ Configuration for different file types:
   ] as const;
   ```
 
-### disableEmptyPlaceholder
+</APIItem>
 
-`boolean` (default: `false`)
-
+<APIItem name="disableEmptyPlaceholder" type="boolean" optional>
 Disable empty placeholder when no file is selected.
 
-### disableFileDrop
+- **Default:** `false`
+</APIItem>
 
-`boolean` (default: `false`)
-
+<APIItem name="disableFileDrop" type="boolean" optional>
 Whether we can undo to the placeholder after the file upload is complete.
 
-### maxFileCount
+- **Default:** `false`
+</APIItem>
 
-`number` (default: `5`)
-
+<APIItem name="maxFileCount" type="number" optional>
 Maximum number of files that can be uploaded at once.
 
-### multiple
-
-`boolean` (default: `true`)
-
-Whether multiple files can be uploaded in one time.
-
-## Examples
-
-<ComponentPreview name="playground-demo" id="mediaPlaceholder" />
-
-### Plate UI
-
-Refer to the preview above.
-
-### Plate Plus
-
-<ComponentPreviewPro name="upload-pro" />
-
-## Plugins
-
-### PlaceholderPlugin
-
-Media placeholder element plugin.
+- **Default:** `5`
+</APIItem>
+</APIOptions>
 
 ## Transforms
 
