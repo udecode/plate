@@ -7,9 +7,7 @@ import {
 } from '@udecode/plate-basic-marks/react';
 import { createSlateEditor } from '@udecode/plate-common';
 import { jsxt } from '@udecode/plate-test-utils';
-import { getAutoformatOptions } from 'www/src/lib/plate/demo/plugins/autoformatOptions';
-
-import { BaseAutoformatPlugin } from '../../../BaseAutoformatPlugin';
+import { autoformatPlugin } from 'www/src/registry/default/components/editor/plugins/autoformat-plugin';
 
 jsxt;
 
@@ -35,9 +33,7 @@ describe('when inserting ***', () => {
     ) as any;
 
     const editor = createSlateEditor({
-      plugins: [
-        BaseAutoformatPlugin.configure({ options: getAutoformatOptions() }),
-      ],
+      plugins: [autoformatPlugin],
       value: input,
     });
 
@@ -72,7 +68,7 @@ describe('when inserting ***___', () => {
 
     const editor = createSlateEditor({
       plugins: [
-        BaseAutoformatPlugin.configure({
+        autoformatPlugin.configure({
           options: {
             rules: [
               {
