@@ -4,6 +4,7 @@ const nextConfig = {
     return [
       {
         destination: '/editor',
+        permanent: false,
         source: '/',
       },
     ];
