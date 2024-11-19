@@ -12,10 +12,7 @@ import {
   FireLiComponent,
   FireMarker,
 } from '@/components/plate-ui/indent-fire-marker';
-import {
-  TodoLi,
-  TodoMarker,
-} from '@/components/plate-ui/indent-todo-marker';
+import { TodoLi, TodoMarker } from '@/components/plate-ui/indent-todo-marker';
 
 export const indentListPlugins = [
   IndentPlugin.extend({

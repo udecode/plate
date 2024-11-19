@@ -42,7 +42,7 @@ export function Cursor({
         <div
           className={cn(
             'pointer-events-none absolute z-10 w-0.5',
-            id === 'drag' && 'w-px bg-brand'
+            id === 'drag' && 'bg-brand w-px'
           )}
           style={{ ...caretPosition, ...style }}
         />

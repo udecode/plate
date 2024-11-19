@@ -6,9 +6,10 @@ import { PlaceholderPlugin } from '../PlaceholderPlugin';
 const historyMarks = new WeakMap<PlateEditor, boolean>();
 
 export const withHistoryMark = (editor: PlateEditor, fn: () => void) => {
+  const prev = isHistoryMarking(editor);
   historyMarks.set(editor, true);
   fn();
-  historyMarks.set(editor, false);
+  historyMarks.set(editor, prev);
 };
 
 export const isHistoryMarking = (editor: PlateEditor): boolean => {

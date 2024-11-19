@@ -180,12 +180,12 @@ export const PlaceholderPlugin = toTPlatePlugin<
 
             if (getNodeString(node).length === 0) {
               removeNodes(editor, { at: path });
-              tf.insert.media(files, { at: path });
+              tf.insert.media(files, { at: path, nextBlock: false });
               inserted = true;
             }
           }
           if (!inserted) {
-            tf.insert.media(files);
+            tf.insert.media(files, { nextBlock: false });
           }
 
           return true;

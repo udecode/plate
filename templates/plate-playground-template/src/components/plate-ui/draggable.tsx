@@ -117,7 +117,7 @@ const Gutter = React.forwardRef<
       ref={ref}
       className={cn(
         'slate-gutterLeft',
-        'absolute -top-px z-50 flex h-full -translate-x-full cursor-text hover:opacity-100 sm:opacity-0 main-hover:group-hover:opacity-100',
+        'main-hover:group-hover:opacity-100 absolute -top-px z-50 flex h-full -translate-x-full cursor-text hover:opacity-100 sm:opacity-0',
         isSelectionAreaVisible && 'hidden',
         !selected && 'opacity-0',
         className
@@ -138,7 +138,7 @@ const DragHandle = React.memo(() => {
       <Tooltip>
         <TooltipTrigger type="button">
           <GripVertical
-            className="size-4 text-muted-foreground"
+            className="text-muted-foreground size-4"
             onClick={(event) => {
               event.stopPropagation();
               event.preventDefault();

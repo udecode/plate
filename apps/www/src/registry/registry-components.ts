@@ -338,6 +338,19 @@ export const components: Registry = [
     type: 'registry:component',
   },
   {
+    dependencies: ['uploadthing@7.2.0'],
+    files: [
+      {
+        path: 'components/api/uploadthing/route.ts',
+        target: 'app/api/uploadthing/route.ts',
+        type: 'registry:page',
+      },
+    ],
+    name: 'api-uploadthing',
+    registryDependencies: ['media-placeholder-element', 'uploadthing'],
+    type: 'registry:component',
+  },
+  {
     dependencies: [
       '@udecode/plate-callout',
       '@udecode/plate-code-block',

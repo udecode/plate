@@ -12,4 +12,15 @@ export const lib: Registry = [
     name: 'utils',
     type: 'registry:lib',
   },
+  {
+    dependencies: ['uploadthing@7.2.0', 'sonner'],
+    files: [
+      {
+        path: 'lib/uploadthing.ts',
+        type: 'registry:lib',
+      },
+    ],
+    name: 'uploadthing',
+    type: 'registry:lib',
+  },
 ];

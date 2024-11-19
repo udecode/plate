@@ -4,6 +4,7 @@ import {
   type InsertNodesOptions,
   insertNodes,
   nanoid,
+  withoutMergingHistory,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
@@ -94,7 +95,9 @@ export const insertMedia = (
     );
 
     if (disableEmptyPlaceholder) {
-      withHistoryMark(editor, insert);
+      withoutMergingHistory(editor, () => {
+        withHistoryMark(editor, insert);
+      });
     } else {
       withoutNormalizing(editor, insert);
     }

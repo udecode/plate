@@ -29,7 +29,8 @@ import {
 import { AudioLines, FileUp, Film, ImageIcon } from 'lucide-react';
 import { useFilePicker } from 'use-file-picker';
 
-import { useUploadFile } from '../lib/uploadthing';
+import { useUploadFile } from '@/registry/default/lib/uploadthing';
+
 import { PlateElement } from './plate-element';
 import { Spinner } from './spinner';
 
@@ -72,7 +73,7 @@ export const MediaPlaceholderElement = withHOC(
       const { api } = useEditorPlugin(PlaceholderPlugin);
 
       const { isUploading, progress, uploadFile, uploadedFile, uploadingFile } =
-        useUploadFile();
+        useUploadFile('imageUploader');
 
       const loading = isUploading && uploadingFile;
 
