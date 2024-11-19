@@ -44,7 +44,7 @@
     "clean": "yarn p:clean && rimraf components",
     "dev": "COMPONENTS_REGISTRY_URL=http://localhost:3000 node dist/index.js",
     "start": "node dist/index.js",
-    "typecheck": "yarn p:typecheck"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@antfu/ni": "^0.21.4",
