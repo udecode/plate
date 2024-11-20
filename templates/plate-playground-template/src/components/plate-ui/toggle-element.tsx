@@ -26,7 +26,7 @@ export const ToggleElement = withRef<typeof PlateElement>(
         <Button
           size="icon"
           variant="ghost"
-          className="text-muted-foreground hover:bg-accent absolute -left-0.5 top-0 size-6 cursor-pointer select-none items-center justify-center rounded-md p-px transition-colors [&_svg]:size-4"
+          className="absolute -left-0.5 top-0 size-6 cursor-pointer select-none items-center justify-center rounded-md p-px text-muted-foreground transition-colors hover:bg-accent [&_svg]:size-4"
           contentEditable={false}
           {...buttonProps}
         >

@@ -14,9 +14,9 @@ import {
   BoldIcon,
   Code2Icon,
   ItalicIcon,
-  SparklesIcon,
   StrikethroughIcon,
   UnderlineIcon,
+  WandSparklesIcon,
 } from 'lucide-react';
 
 import { AIToolbarButton } from './ai-toolbar-button';
@@ -35,11 +35,8 @@ export function FloatingToolbarButtons() {
       {!readOnly && (
         <>
           <ToolbarGroup>
-            <AIToolbarButton
-              className="gap-1.5 text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-500"
-              tooltip="Edit, generate, and more"
-            >
-              <SparklesIcon className="!size-3.5" />
+            <AIToolbarButton tooltip="AI commands">
+              <WandSparklesIcon />
               Ask AI
             </AIToolbarButton>
           </ToolbarGroup>

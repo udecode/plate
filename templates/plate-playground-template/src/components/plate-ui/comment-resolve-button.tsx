@@ -18,7 +18,7 @@ export function CommentResolveButton() {
     <CommentResolveButtonPrimitive
       className={cn(
         buttonVariants({ variant: 'ghost' }),
-        'text-muted-foreground h-6 p-1'
+        'h-6 p-1 text-muted-foreground'
       )}
     >
       {comment.isResolved ? (

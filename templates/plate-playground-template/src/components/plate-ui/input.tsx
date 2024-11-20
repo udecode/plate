@@ -1,8 +1,10 @@
-import { withVariants } from '@udecode/cn';
-import { cva } from 'class-variance-authority';
+import React from 'react';
+
+import { cn, withVariants } from '@udecode/cn';
+import { type VariantProps, cva } from 'class-variance-authority';
 
 export const inputVariants = cva(
-  'file:bg-background file:text-foreground placeholder:text-muted-foreground flex w-full rounded-md bg-transparent text-sm file:border-0 file:text-sm file:font-medium focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
+  'flex w-full rounded-md bg-transparent text-sm file:border-0 file:bg-background file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
   {
     defaultVariants: {
       h: 'md',
@@ -15,11 +17,37 @@ export const inputVariants = cva(
       },
       variant: {
         default:
-          'border-input ring-offset-background focus-visible:ring-ring border focus-visible:ring-2 focus-visible:ring-offset-2',
+          'border border-input ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
         ghost: 'border-none focus-visible:ring-transparent',
       },
     },
   }
 );
 
+export type InputProps = React.ComponentPropsWithoutRef<'input'> &
+  VariantProps<typeof inputVariants>;
+
 export const Input = withVariants('input', inputVariants, ['variant', 'h']);
+
+export type FloatingInputProps = InputProps & {
+  label: string;
+};
+
+export function FloatingInput({
+  id,
+  className,
+  label,
+  ...props
+}: FloatingInputProps) {
+  return (
+    <>
+      <label
+        className="absolute top-1/2 block -translate-y-1/2 cursor-text px-1 text-sm text-muted-foreground/70 transition-all group-focus-within:pointer-events-none group-focus-within:top-0 group-focus-within:cursor-default group-focus-within:text-xs group-focus-within:font-medium group-focus-within:text-foreground has-[+input:not(:placeholder-shown)]:pointer-events-none has-[+input:not(:placeholder-shown)]:top-0 has-[+input:not(:placeholder-shown)]:cursor-default has-[+input:not(:placeholder-shown)]:text-xs has-[+input:not(:placeholder-shown)]:font-medium has-[+input:not(:placeholder-shown)]:text-foreground"
+        htmlFor={id}
+      >
+        <span className="inline-flex bg-background px-2">{label}</span>
+      </label>
+      <Input id={id} className={cn(className)} placeholder="" {...props} />
+    </>
+  );
+}

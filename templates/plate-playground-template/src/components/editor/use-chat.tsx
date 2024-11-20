@@ -217,7 +217,7 @@ export function SettingsDialog() {
           <DialogDescription>
             Enter your{' '}
             <Link
-              className="text-primary inline-flex items-center font-medium hover:underline"
+              className="inline-flex items-center font-medium text-primary hover:underline"
               href="https://platform.openai.com/api-keys"
               rel="noreferrer"
               target="_blank"
@@ -306,7 +306,7 @@ export function SettingsDialog() {
             Save
           </Button>
         </form>
-        <p className="text-muted-foreground mt-4 text-sm">
+        <p className="mt-4 text-sm text-muted-foreground">
           Not stored anywhere. Used only for current session requests.
         </p>
       </DialogContent>
