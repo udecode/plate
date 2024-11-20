@@ -8,16 +8,10 @@ import {
   BoldPlugin,
   CodePlugin,
   ItalicPlugin,
-  StrikethroughPlugin,
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import {
-  type PlateContentProps,
-  Plate,
-  usePlateEditor,
-} from '@udecode/plate-common/react';
+import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 import { HeadingPlugin } from '@udecode/plate-heading/react';
 
 import {
@@ -30,23 +24,15 @@ import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 
 import { basicEditorValue } from './basic-plugins-components-demo';
 
-const editableProps: PlateContentProps = {
-  autoFocus: false,
-  placeholder: 'Type…',
-  spellCheck: false,
-};
-
 export default function BasicPluginsDefaultDemo() {
   const [debugValue, setDebugValue] = useState<Value>(basicEditorValue);
   const editor = usePlateEditor({
     plugins: [
       BlockquotePlugin,
-      CodeBlockPlugin,
       HeadingPlugin,
       BoldPlugin,
       ItalicPlugin,
       UnderlinePlugin,
-      StrikethroughPlugin,
       CodePlugin,
     ],
     value: basicEditorValue,
@@ -61,7 +47,7 @@ export default function BasicPluginsDefaultDemo() {
       editor={editor}
     >
       <EditorContainer>
-        <Editor {...editableProps} />
+        <Editor />
       </EditorContainer>
 
       <Accordion type="single" collapsible>

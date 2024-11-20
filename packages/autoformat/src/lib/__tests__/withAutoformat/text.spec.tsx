@@ -1,12 +1,10 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import { createSlateEditor } from '@udecode/plate-common';
-import { jsx } from '@udecode/plate-test-utils';
-import { getAutoformatOptions } from 'www/src/lib/plate/demo/plugins/autoformatOptions';
+import { jsxt } from '@udecode/plate-test-utils';
+import { autoformatPlugin } from 'www/src/registry/default/components/editor/plugins/autoformat-plugin';
 
-import { BaseAutoformatPlugin } from '../../BaseAutoformatPlugin';
-
-jsx;
+jsxt;
 
 describe('when --space', () => {
   it('should insert —', () => {
@@ -31,9 +29,7 @@ describe('when --space', () => {
     ) as any;
 
     const editor = createSlateEditor({
-      plugins: [
-        BaseAutoformatPlugin.configure({ options: getAutoformatOptions() }),
-      ],
+      plugins: [autoformatPlugin],
       value: input,
     });
 
@@ -64,9 +60,7 @@ describe('when --space', () => {
     ) as any;
 
     const editor = createSlateEditor({
-      plugins: [
-        BaseAutoformatPlugin.configure({ options: getAutoformatOptions() }),
-      ],
+      plugins: [autoformatPlugin],
       value: input,
     });
 
@@ -97,9 +91,7 @@ describe('when --space', () => {
     ) as any;
 
     const editor = createSlateEditor({
-      plugins: [
-        BaseAutoformatPlugin.configure({ options: getAutoformatOptions() }),
-      ],
+      plugins: [autoformatPlugin],
       value: input,
     });
 
@@ -132,9 +124,7 @@ describe('when (tm)', () => {
     ) as any;
 
     const editor = createSlateEditor({
-      plugins: [
-        BaseAutoformatPlugin.configure({ options: getAutoformatOptions() }),
-      ],
+      plugins: [autoformatPlugin],
       value: input,
     });
 
@@ -167,9 +157,7 @@ describe('when &sect', () => {
     ) as any;
 
     const editor = createSlateEditor({
-      plugins: [
-        BaseAutoformatPlugin.configure({ options: getAutoformatOptions() }),
-      ],
+      plugins: [autoformatPlugin],
       value: input,
     });
 
@@ -202,9 +190,7 @@ describe('when //', () => {
     ) as any;
 
     const editor = createSlateEditor({
-      plugins: [
-        BaseAutoformatPlugin.configure({ options: getAutoformatOptions() }),
-      ],
+      plugins: [autoformatPlugin],
       value: input,
     });
 
@@ -247,9 +233,7 @@ describe('when typing %%%', () => {
     ) as any;
 
     const editor = createSlateEditor({
-      plugins: [
-        BaseAutoformatPlugin.configure({ options: getAutoformatOptions() }),
-      ],
+      plugins: [autoformatPlugin],
       value: input,
     });
 
@@ -282,7 +266,7 @@ describe('when using quotes', () => {
 
     const editor = createSlateEditor({
       plugins: [
-        BaseAutoformatPlugin.configure({
+        autoformatPlugin.configure({
           options: {
             rules: [
               {

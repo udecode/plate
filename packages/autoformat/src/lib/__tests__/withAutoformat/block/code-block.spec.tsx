@@ -1,4 +1,4 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import type { Range } from 'slate';
 
@@ -12,15 +12,10 @@ import {
   getRangeFromBlockStart,
 } from '@udecode/plate-common';
 import { createSlateEditor } from '@udecode/plate-common';
-import { jsx } from '@udecode/plate-test-utils';
-import {
-  getAutoformatOptions,
-  preFormat,
-} from 'www/src/lib/plate/demo/plugins/autoformatOptions';
+import { jsxt } from '@udecode/plate-test-utils';
+import { autoformatPlugin } from 'www/src/registry/default/components/editor/plugins/autoformat-plugin';
 
-import { BaseAutoformatPlugin } from '../../../BaseAutoformatPlugin';
-
-jsx;
+jsxt;
 
 describe('when ``` at block start', () => {
   it('should insert a code block below', () => {
@@ -44,9 +39,7 @@ describe('when ``` at block start', () => {
     ) as any;
 
     const editor = createSlateEditor({
-      plugins: [
-        BaseAutoformatPlugin.configure({ options: getAutoformatOptions() }),
-      ],
+      plugins: [autoformatPlugin],
       value: input,
     });
 
@@ -80,7 +73,7 @@ describe('when ``` at block start, but customising with query we get the most re
 
     const codeEditor = createSlateEditor({
       plugins: [
-        BaseAutoformatPlugin.configure({
+        autoformatPlugin.configure({
           options: {
             rules: [
               {
@@ -92,7 +85,7 @@ describe('when ``` at block start, but customising with query we get the most re
                 },
                 match: '```',
                 mode: 'block',
-                preFormat: preFormat as any,
+                // preFormat: preFormat as any,
                 query: (editor, rule): boolean => {
                   if (!editor.selection) {
                     return false;
@@ -147,9 +140,7 @@ describe('when ```', () => {
     ) as any;
 
     const editor = createSlateEditor({
-      plugins: [
-        BaseAutoformatPlugin.configure({ options: getAutoformatOptions() }),
-      ],
+      plugins: [autoformatPlugin],
       value: input,
     });
 

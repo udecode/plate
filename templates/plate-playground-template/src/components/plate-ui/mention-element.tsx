@@ -40,6 +40,7 @@ export const MentionElement = withRef<
       onClick={getHandler(onClick, element)}
       data-slate-value={element.value}
       contentEditable={false}
+      draggable
       {...props}
     >
       {mounted && IS_APPLE ? (

@@ -1,17 +1,17 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import { BoldPlugin } from '@udecode/plate-basic-marks/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { ImagePlugin } from '@udecode/plate-media/react';
 import { TablePlugin } from '@udecode/plate-table/react';
-import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
+import { getHtmlDocument, jsxt } from '@udecode/plate-test-utils';
 
 import { createPlateEditor } from '../../../../react';
 import { createSlatePlugin } from '../../../plugin';
 import { BaseParagraphPlugin } from '../../paragraph';
 import { deserializeHtmlElement } from './deserializeHtmlElement';
 
-jsx;
+jsxt;
 
 describe('when element has class and attribute, and plugin has deserialize type, getNode and className', () => {
   const html = '<html><body><div class="poll" data-id="456" /></body></html>';

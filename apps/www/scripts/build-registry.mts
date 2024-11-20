@@ -281,6 +281,8 @@ export const Index: Record<string, any> = {
         }
       }
       
+      let componentImport = `React.lazy(() => import("${componentPath}"))`
+      
       index += `
     "${item.name}": {
       name: "${item.name}",
@@ -288,7 +290,7 @@ export const Index: Record<string, any> = {
       type: "${item.type}",
       registryDependencies: ${JSON.stringify(item.registryDependencies)},
       files: [${resolveFiles.map((file) => `"${file}"`)}],
-      component: React.lazy(() => import("${componentPath}")),
+      component: ${componentImport},
       source: "${sourceFilename}",
       category: "${item.category ?? ''}",
       subcategory: "${item.subcategory ?? ''}",
@@ -482,11 +484,13 @@ async function buildStylesIndex() {
 
     const dependencies = [
       "tailwindcss-animate",
+      "tailwind-scrollbar-hide",
       "class-variance-authority",
       "lucide-react",
       "@udecode/cn",
       "@udecode/plate-common",
       "slate",
+      "slate-dom",
       "slate-react",
       "slate-history",
       "slate-hyperscript",
@@ -505,7 +509,7 @@ async function buildStylesIndex() {
       registryDependencies: [],
       tailwind: {
         config: {
-          plugins: [`require("tailwindcss-animate")`],
+          plugins: [`require("tailwindcss-animate")`, `require("tailwind-scrollbar-hide")`],
           theme: {
             extend: {
               colors: {
@@ -516,6 +520,11 @@ async function buildStylesIndex() {
                 highlight: {
                   DEFAULT: 'hsl(var(--highlight))',
                   foreground: 'hsl(var(--highlight-foreground))',
+                },
+              },
+              screens: {
+                'main-hover': {
+                  raw: '(hover: hover)',
                 },
               },
             },

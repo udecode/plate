@@ -21,4 +21,14 @@ export const hooks: Registry = [
     name: 'use-mounted',
     type: 'registry:hook',
   },
+  {
+    files: [
+      {
+        path: 'hooks/use-is-touch-device.ts',
+        type: 'registry:hook',
+      },
+    ],
+    name: 'use-is-touch-device',
+    type: 'registry:hook',
+  },
 ];

@@ -1,8 +1,8 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import { type SlateEditor, type TNode, getNode } from '@udecode/plate-common';
 import { createSlateEditor } from '@udecode/plate-common';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import type { TabbableEntry } from './types';
 
@@ -11,7 +11,7 @@ import {
   findTabDestination,
 } from './findTabDestination';
 
-jsx;
+jsxt;
 
 describe('findTabDestination', () => {
   const editor = createSlateEditor({

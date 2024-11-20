@@ -1,5 +1,23 @@
 # @udecode/plate-layout
 
+## 40.0.0
+
+### Major Changes
+
+- [#3744](https://github.com/udecode/plate/pull/3744) by [@zbeyens](https://github.com/zbeyens) –
+  - Remove `toggleColumns` in favor of `toggleColumnGroup`
+  - Remove `insertEmptyColumn` in favor of `insertColumn`
+
+### Minor Changes
+
+- [#3744](https://github.com/udecode/plate/pull/3744) by [@zbeyens](https://github.com/zbeyens) –
+  - `ColumnPlugin`:
+    - unwrap columns when there is only one column
+    - remove column group when it has no column children
+    - remove column when it has no children
+  - Add `insertColumnGroup`
+  - Add `toggleColumnGroup`
+
 ## 39.0.0
 
 ## 38.0.1

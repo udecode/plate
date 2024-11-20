@@ -164,6 +164,9 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
     onBlur: ({ api }) => {
       api.copilot.reset();
     },
+    onMouseDown: ({ api }) => {
+      api.copilot.reset();
+    },
   },
 })
   .extendOptions<Required<CopilotSelectors>>(({ getOptions }) => ({

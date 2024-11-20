@@ -18,7 +18,7 @@ export type MentionConfig = PluginConfig<
   {},
   {
     insert: {
-      mention: (options: { key?: any; search: string; value: any; }) => void;
+      mention: (options: { search: string; value: any; key?: any }) => void;
     };
   }
 >;
@@ -47,8 +47,8 @@ export const BaseMentionPlugin = createSlatePlugin({
   insert: {
     mention: ({ key, value }) => {
       insertNodes<TMentionElement>(editor, {
-        children: [{ text: '' }],
         key,
+        children: [{ text: '' }],
         type,
         value,
       });

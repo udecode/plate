@@ -266,7 +266,7 @@ export const autoformatLists: AutoformatRule[] = [
   },
 ];
 
-export const autoformatPlugin = AutoformatPlugin.configure({
+export const autoformatListPlugin = AutoformatPlugin.configure({
   options: {
     enableUndoOnDelete: true,
     rules: [

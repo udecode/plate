@@ -1,12 +1,10 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import { createSlateEditor } from '@udecode/plate-common';
-import { jsx } from '@udecode/plate-test-utils';
-import { getAutoformatOptions } from 'www/src/lib/plate/demo/plugins/autoformatOptions';
+import { jsxt } from '@udecode/plate-test-utils';
+import { autoformatPlugin } from 'www/src/registry/default/components/editor/plugins/autoformat-plugin';
 
-import { BaseAutoformatPlugin } from '../../BaseAutoformatPlugin';
-
-jsx;
+jsxt;
 
 describe('when the start match is not present and the end match is present', () => {
   it('should run default', () => {
@@ -26,9 +24,7 @@ describe('when the start match is not present and the end match is present', () 
     ) as any;
 
     const editor = createSlateEditor({
-      plugins: [
-        BaseAutoformatPlugin.configure({ options: getAutoformatOptions() }),
-      ],
+      plugins: [autoformatPlugin],
       value: input,
     });
 
@@ -56,9 +52,7 @@ describe('when there is a character before match', () => {
     ) as any;
 
     const editor = createSlateEditor({
-      plugins: [
-        BaseAutoformatPlugin.configure({ options: getAutoformatOptions() }),
-      ],
+      plugins: [autoformatPlugin],
       value: input,
     });
 
@@ -87,9 +81,7 @@ describe('when there is a character before match', () => {
     ) as any;
 
     const editor = createSlateEditor({
-      plugins: [
-        BaseAutoformatPlugin.configure({ options: getAutoformatOptions() }),
-      ],
+      plugins: [autoformatPlugin],
       value: input,
     });
 
@@ -115,9 +107,7 @@ describe('when selection is null', () => {
     ) as any;
 
     const editor = createSlateEditor({
-      plugins: [
-        BaseAutoformatPlugin.configure({ options: getAutoformatOptions() }),
-      ],
+      plugins: [autoformatPlugin],
       value: input,
     });
 

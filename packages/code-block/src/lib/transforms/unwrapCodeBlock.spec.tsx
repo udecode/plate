@@ -1,14 +1,14 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import type { SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { unwrapCodeBlock } from './unwrapCodeBlock';
 
-jsx;
+jsxt;
 
 describe('unwrap code block', () => {
   it('should turn a code block to multiple p', () => {

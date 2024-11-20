@@ -1,11 +1,11 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import { BoldPlugin } from '@udecode/plate-basic-marks/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { createPlateTestEditor } from '../__tests__/createPlateTestEditor';
 
-jsx;
+jsxt;
 import { type PlateEditor, createPlateEditor } from '../editor';
 import { createPlatePlugin } from '../plugin';
 

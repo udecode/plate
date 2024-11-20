@@ -5,6 +5,7 @@ import {
   toDOMNode,
   useEditorPlugin,
   useEditorSelector,
+  useScrollRef,
 } from '@udecode/plate-common/react';
 
 import type { Heading } from '../../lib/types';
@@ -20,17 +21,9 @@ export const useTocSideBarState = ({
   rootMargin = '0px 0px 0px 0px',
   topOffset = 0,
 }: TocSideBarProps) => {
-  const { editor, getOptions } = useEditorPlugin(TocPlugin);
-  const { scrollContainerSelector } = getOptions();
+  const { editor } = useEditorPlugin(TocPlugin);
   const headingList = useEditorSelector(getHeadingList, []);
-  const scrollContainerRef = React.useRef<HTMLDivElement | null>(null);
-
-  React.useEffect(() => {
-    scrollContainerRef.current = document.querySelector(
-      scrollContainerSelector ?? '#scroll_container'
-    )!;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const containerRef = useScrollRef();
 
   const tocRef = React.useRef<HTMLElement>(null);
 
@@ -39,7 +32,7 @@ export const useTocSideBarState = ({
   const [isObserve, setIsObserve] = React.useState(open);
 
   const { activeContentId, onContentScroll } = useContentController({
-    containerRef: scrollContainerRef,
+    containerRef,
     isObserve,
     rootMargin,
     topOffset,

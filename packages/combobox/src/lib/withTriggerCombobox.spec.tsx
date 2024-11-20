@@ -1,4 +1,4 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import {
   type TriggerComboboxPluginOptions,
@@ -7,7 +7,7 @@ import {
 import { createSlatePlugin } from '@udecode/plate-common';
 import { createSlateEditor } from '@udecode/plate-common';
 import { ParagraphPlugin } from '@udecode/plate-common/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 const ExampleComboboxPlugin = createSlatePlugin<
   string,
@@ -59,7 +59,7 @@ const createEditorWithCombobox = (chidren: any) =>
     plugins,
   });
 
-jsx;
+jsxt;
 
 describe('withTriggerCombobox', () => {
   ['@', '#', ':'].forEach((trigger) => {

@@ -1,4 +1,4 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import {
   FontBackgroundColorPlugin,
@@ -7,11 +7,11 @@ import {
   FontSizePlugin,
   FontWeightPlugin,
 } from '@udecode/plate-font/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { getDocxTestName, testDocxDeserializer } from './testDocxDeserializer';
 
-jsx;
+jsxt;
 
 const name = 'font';
 

@@ -1,14 +1,14 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import type { SlateEditor } from '@udecode/plate-core';
 
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 import { findNode } from '@udecode/slate';
 import { Path } from 'slate';
 
 import { moveChildren } from './moveChildren';
 
-jsx;
+jsxt;
 
 const input = (
   <editor>

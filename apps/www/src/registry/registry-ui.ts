@@ -85,7 +85,12 @@ export const uiComponents: Registry = [
     },
     files: ['plate-ui/block-context-menu.tsx'],
     name: 'block-context-menu',
-    registryDependencies: ['calendar', 'plate-element', 'context-menu'],
+    registryDependencies: [
+      'calendar',
+      'plate-element',
+      'context-menu',
+      'use-is-touch-device',
+    ],
     type: 'registry:ui',
   },
   {
@@ -116,7 +121,10 @@ export const uiComponents: Registry = [
           route: siteConfig.links.plateProComponent('caption'),
         },
       ],
-      examples: ['upload-demo'],
+      examples: [
+        'media-demo',
+        // 'upload-demo'
+      ],
     },
     files: ['plate-ui/caption.tsx'],
     name: 'caption',
@@ -165,7 +173,7 @@ export const uiComponents: Registry = [
           route: siteConfig.links.plateProComponent('comment-toolbar-button'),
         },
       ],
-      examples: ['comment-demo', 'floating-toolbar-demo', 'comments-pro'],
+      examples: ['comments-demo', 'floating-toolbar-demo', 'comments-pro'],
     },
     files: ['plate-ui/comment-toolbar-button.tsx'],
     name: 'comment-toolbar-button',
@@ -182,7 +190,7 @@ export const uiComponents: Registry = [
           route: siteConfig.links.plateProComponent('comments-popover'),
         },
       ],
-      examples: ['comment-demo', 'comments-pro'],
+      examples: ['comments-demo', 'comments-pro'],
     },
     files: [
       'plate-ui/comment-avatar.tsx',
@@ -199,15 +207,11 @@ export const uiComponents: Registry = [
     type: 'registry:ui',
   },
   {
-    dependencies: [
-      '@udecode/plate-cursor',
-      '@udecode/plate-dnd',
-      '@udecode/plate-selection',
-    ],
+    dependencies: ['@udecode/plate-selection'],
     doc: {
-      description: 'A visual overlay for collaborative cursors and selections.',
+      description: 'A visual overlay for cursors and selections.',
       docs: [
-        // { route: '/docs/cursor' },
+        { route: '/docs/cursor-overlay', title: 'Cursor Overlay' },
         {
           route: siteConfig.links.plateProComponent('cursor-overlay'),
         },
@@ -288,12 +292,7 @@ import { withDraggables } from './withDraggables';`,
           route: siteConfig.links.plateProComponent('editor'),
         },
       ],
-      examples: [
-        'editor-default',
-        'editor-disabled',
-        'editor-full-width',
-        'editor-ai-chat',
-      ],
+      examples: ['editor-default', 'editor-disabled', 'editor-full-width'],
     },
     files: ['plate-ui/editor.tsx'],
     name: 'editor',
@@ -333,10 +332,11 @@ import { withDraggables } from './withDraggables';`,
       '@udecode/plate-font',
       '@udecode/plate-indent-list',
       '@udecode/plate-media',
+      '@udecode/plate-highlight',
     ],
     doc: {
       description: 'A set of commonly used formatting buttons.',
-      examples: ['toolbar-demo'],
+      examples: ['basic-nodes-demo'],
     },
     files: ['plate-ui/fixed-toolbar-buttons.tsx'],
     name: 'fixed-toolbar-buttons',
@@ -347,6 +347,7 @@ import { withDraggables } from './withDraggables';`,
       'color-dropdown-menu',
       'comment-toolbar-button',
       'emoji-dropdown-menu',
+      'history-toolbar-button',
       'indent-list-toolbar-button',
       'indent-todo-toolbar-button',
       'indent-toolbar-button',
@@ -375,8 +376,8 @@ import { withDraggables } from './withDraggables';`,
     //   description: 'A set of commonly used formatting buttons.',
     //   examples: ['toolbar-demo'],
     // },
-    files: ['plate-ui/fixed-toolbar-buttons-list.tsx'],
-    name: 'fixed-toolbar-buttons-list',
+    files: ['plate-ui/fixed-toolbar-list-buttons.tsx'],
+    name: 'fixed-toolbar-list-buttons',
     registryDependencies: [
       'toolbar',
       'ai-toolbar-button',
@@ -402,7 +403,7 @@ import { withDraggables } from './withDraggables';`,
     dependencies: [],
     doc: {
       description: 'A fixed toolbar that stays at the top of the editor.',
-      examples: ['toolbar-demo'],
+      examples: ['basic-nodes-demo'],
     },
     files: ['plate-ui/fixed-toolbar.tsx'],
     name: 'fixed-toolbar',
@@ -480,6 +481,18 @@ import { withDraggables } from './withDraggables';`,
     dependencies: ['@udecode/plate-indent'],
     files: ['plate-ui/indent-fire-marker.tsx'],
     name: 'indent-fire-marker',
+    type: 'registry:ui',
+  },
+  {
+    dependencies: [],
+    doc: {
+      description: 'Toolbar buttons for undo and redo operations.',
+      // docs: [{ route: '/docs/history', title: 'History' }],
+      examples: ['basic-nodes-demo'],
+    },
+    files: ['plate-ui/history-toolbar-button.tsx'],
+    name: 'history-toolbar-button',
+    registryDependencies: ['toolbar'],
     type: 'registry:ui',
   },
   {
@@ -674,7 +687,7 @@ import { withDraggables } from './withDraggables';`,
     type: 'registry:ui',
   },
   {
-    dependencies: ['@udecode/plate-media'],
+    dependencies: ['@udecode/plate-media', 'use-file-picker', 'sonner'],
     doc: {
       description: 'Toolbar button for inserting and managing media.',
       docs: [{ route: '/docs/media', title: 'Media' }],
@@ -682,14 +695,26 @@ import { withDraggables } from './withDraggables';`,
     },
     files: ['plate-ui/media-toolbar-button.tsx'],
     name: 'media-toolbar-button',
-    registryDependencies: ['toolbar'],
+    registryDependencies: ['toolbar', 'input', 'dropdown-menu', 'alert-dialog'],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@udecode/plate-media', 'sonner'],
+    doc: {
+      description: 'Show toast notifications for media uploads.',
+      docs: [{ route: '/docs/media', title: 'Media Placeholder' }],
+      examples: ['media-demo', 'upload-pro'],
+    },
+    files: ['plate-ui/media-upload-toast.tsx'],
+    name: 'media-upload-toast',
+    registryDependencies: [],
     type: 'registry:ui',
   },
   {
     dependencies: ['@radix-ui/react-dropdown-menu'],
     doc: {
       description: 'A menu for switching between editor modes.',
-      examples: ['mode-demo'],
+      examples: ['basic-nodes-demo'],
     },
     files: ['plate-ui/mode-dropdown-menu.tsx'],
     name: 'mode-dropdown-menu',
@@ -700,7 +725,6 @@ import { withDraggables } from './withDraggables';`,
     dependencies: [
       '@radix-ui/react-dropdown-menu',
       '@udecode/plate-basic-marks',
-      '@udecode/plate-highlight',
       '@udecode/plate-kbd',
     ],
     doc: {
@@ -739,7 +763,7 @@ import { withDraggables } from './withDraggables';`,
           route: siteConfig.links.plateProComponent('placeholder'),
         },
       ],
-      examples: ['placeholder-demo', 'placeholder-pro'],
+      examples: ['basic-elements-demo', 'placeholder-pro'],
     },
     files: ['plate-ui/placeholder.tsx'],
     name: 'placeholder',
@@ -981,7 +1005,7 @@ export const uiNodes: Registry = [
           route: siteConfig.links.plateProComponent('comment-leaf'),
         },
       ],
-      examples: ['comment-demo', 'comments-pro'],
+      examples: ['comments-demo', 'comments-pro'],
     },
     files: ['plate-ui/comment-leaf.tsx'],
     name: 'comment-leaf',
@@ -1075,7 +1099,7 @@ export const uiNodes: Registry = [
           route: siteConfig.links.plateProComponent('hr-element'),
         },
       ],
-      examples: ['hr-demo'],
+      examples: ['horizontal-rule-demo'],
       title: 'Horizontal Rule Element',
     },
     files: ['plate-ui/hr-element.tsx'],
@@ -1165,6 +1189,23 @@ export const uiNodes: Registry = [
     type: 'registry:ui',
   },
   {
+    dependencies: ['@udecode/plate-media', '@udecode/plate-resizable'],
+    doc: {
+      description: 'An audio player component with caption support.',
+      docs: [
+        { route: '/docs/media', title: 'Media' },
+        {
+          route: siteConfig.links.plateProComponent('media-audio-element'),
+        },
+      ],
+      examples: ['media-demo'],
+    },
+    files: ['plate-ui/media-audio-element.tsx'],
+    name: 'media-audio-element',
+    registryDependencies: ['caption', 'plate-element'],
+    type: 'registry:ui',
+  },
+  {
     dependencies: [
       '@udecode/plate-media',
       '@udecode/plate-resizable',
@@ -1184,6 +1225,71 @@ export const uiNodes: Registry = [
     },
     files: ['plate-ui/media-embed-element.tsx'],
     name: 'media-embed-element',
+    registryDependencies: [
+      'media-popover',
+      'caption',
+      'resizable',
+      'plate-element',
+    ],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@udecode/plate-media', '@udecode/plate-resizable'],
+    doc: {
+      description:
+        'A file attachment component with download capability and caption.',
+      docs: [
+        { route: '/docs/media', title: 'Media' },
+        {
+          route: siteConfig.links.plateProComponent('media-file-element'),
+        },
+      ],
+      examples: ['media-demo'],
+    },
+    files: ['plate-ui/media-file-element.tsx'],
+    name: 'media-file-element',
+    registryDependencies: ['caption', 'plate-element'],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@udecode/plate-media', 'use-file-picker'],
+    doc: {
+      description: 'A placeholder for media upload progress indication.',
+      docs: [
+        { route: '/docs/media', title: 'Media' },
+        {
+          route: siteConfig.links.plateProComponent(
+            'media-placeholder-element'
+          ),
+        },
+      ],
+      examples: ['media-demo', 'upload-pro'],
+    },
+    files: ['plate-ui/media-placeholder-element.tsx'],
+    name: 'media-placeholder-element',
+    registryDependencies: ['plate-element', 'spinner', 'uploadthing'],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: [
+      '@udecode/plate-media',
+      '@udecode/plate-resizable',
+      'react-player',
+      'react-lite-youtube-embed',
+    ],
+    doc: {
+      description:
+        'A video player component with YouTube and file upload support.',
+      docs: [
+        { route: '/docs/media', title: 'Media' },
+        {
+          route: siteConfig.links.plateProComponent('media-video-element'),
+        },
+      ],
+      examples: ['media-demo', 'media-toolbar-pro'],
+    },
+    files: ['plate-ui/media-video-element.tsx'],
+    name: 'media-video-element',
     registryDependencies: [
       'media-popover',
       'caption',
@@ -1391,6 +1497,20 @@ export const uiNodes: Registry = [
 
 export const uiPrimitives: Registry = [
   {
+    dependencies: ['@radix-ui/react-alert-dialog'],
+    doc: {
+      description:
+        'A modal dialog that interrupts the user with important content and expects a response.',
+      links: {
+        doc: 'https://ui.shadcn.com/docs/components/alert-dialog',
+      },
+    },
+    files: ['plate-ui/alert-dialog.tsx'],
+    name: 'alert-dialog',
+    registryDependencies: ['button'],
+    type: 'registry:ui',
+  },
+  {
     dependencies: ['@radix-ui/react-avatar'],
     doc: {
       description:
@@ -1532,6 +1652,15 @@ export const uiPrimitives: Registry = [
     },
     files: ['plate-ui/tooltip.tsx'],
     name: 'tooltip',
+    registryDependencies: [],
+    type: 'registry:ui',
+  },
+  {
+    doc: {
+      description: 'A loading spinner component with size variants.',
+    },
+    files: ['plate-ui/spinner.tsx'],
+    name: 'spinner',
     registryDependencies: [],
     type: 'registry:ui',
   },

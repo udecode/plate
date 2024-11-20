@@ -1,0 +1,30 @@
+{
+  "dependencies": [
+    "@udecode/plate-media",
+    "sonner"
+  ],
+  "doc": {
+    "description": "Show toast notifications for media uploads.",
+    "docs": [
+      {
+        "route": "/docs/media",
+        "title": "Media Placeholder"
+      }
+    ],
+    "examples": [
+      "media-demo",
+      "upload-pro"
+    ]
+  },
+  "files": [
+    {
+      "content": "'use client';\n\nimport { useEffect } from 'react';\n\nimport { useEditorRef } from '@udecode/plate-common/react';\nimport { PlaceholderPlugin, UploadErrorCode } from '@udecode/plate-media/react';\nimport { toast } from 'sonner';\n\nexport const useUploadErrorToast = () => {\n  const editor = useEditorRef();\n\n  const uploadError = editor.useOption(PlaceholderPlugin, 'error');\n\n  useEffect(() => {\n    if (!uploadError) return;\n\n    const { code, data } = uploadError;\n\n    switch (code) {\n      case UploadErrorCode.INVALID_FILE_SIZE: {\n        toast.error(\n          `The size of files ${data.files\n            .map((f) => f.name)\n            .join(', ')} is invalid`\n        );\n\n        break;\n      }\n      case UploadErrorCode.INVALID_FILE_TYPE: {\n        toast.error(\n          `The type of files ${data.files\n            .map((f) => f.name)\n            .join(', ')} is invalid`\n        );\n\n        break;\n      }\n      case UploadErrorCode.TOO_LARGE: {\n        toast.error(\n          `The size of files ${data.files\n            .map((f) => f.name)\n            .join(', ')} is too large than ${data.maxFileSize}`\n        );\n\n        break;\n      }\n      case UploadErrorCode.TOO_LESS_FILES: {\n        toast.error(\n          `The mini um number of files is ${data.minFileCount} for ${data.fileType}`\n        );\n\n        break;\n      }\n      case UploadErrorCode.TOO_MANY_FILES: {\n        toast.error(\n          `The maximum number of files is ${data.maxFileCount} ${\n            data.fileType ? `for ${data.fileType}` : ''\n          }`\n        );\n\n        break;\n      }\n    }\n  }, [uploadError]);\n};\n\nexport const MediaUploadToast = () => {\n  useUploadErrorToast();\n\n  return null;\n};\n",
+      "path": "plate-ui/media-upload-toast.tsx",
+      "target": "components/plate-ui/media-upload-toast.tsx",
+      "type": "registry:ui"
+    }
+  ],
+  "name": "media-upload-toast",
+  "registryDependencies": [],
+  "type": "registry:ui"
+}

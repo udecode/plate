@@ -22,6 +22,7 @@ interface ComponentInstallationProps {
   dependencies?: string[];
   examples?: RegistryEntry[];
   files?: any[];
+  inline?: boolean;
   name?: string;
   usage?: string[];
 }
@@ -33,6 +34,7 @@ export function ComponentInstallation({
   __previewFiles__ = '[]',
   codeTabs,
   examples,
+  inline,
   name,
   usage,
   ...props
@@ -84,8 +86,8 @@ export function ComponentInstallation({
 
   if (codeTabs) {
     return (
-      <Tabs className="relative w-full" defaultValue={files[0].name}>
-        <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0">
+      <Tabs className="relative w-full" defaultValue={files[0]?.name}>
+        <TabsList className="w-full justify-start overflow-x-auto rounded-none border-b bg-transparent p-0">
           {files.map((file: any) => (
             <TabsTrigger
               key={file.name}
@@ -112,7 +114,7 @@ export function ComponentInstallation({
 
   return (
     <div className="my-4">
-      <H2>Installation</H2>
+      {!inline && <H2>Installation</H2>}
 
       <Tabs className="relative mt-6 w-full" defaultValue="cli">
         <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0">

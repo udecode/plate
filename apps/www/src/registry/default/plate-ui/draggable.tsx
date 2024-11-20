@@ -24,8 +24,7 @@ import {
 } from '@udecode/plate-dnd';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 import { GripVertical } from 'lucide-react';
-
-import { useMounted } from '@/registry/default/hooks/use-mounted';
+import { useSelected } from 'slate-react';
 
 import {
   Tooltip,
@@ -61,7 +60,6 @@ export const Draggable = withHOC(
       const state = useDraggableState({ element, onDropHandler });
       const { isDragging } = state;
       const { previewRef, handleRef } = useDraggable(state);
-      const mounted = useMounted();
 
       return (
         <div
@@ -81,11 +79,7 @@ export const Draggable = withHOC(
                   'pointer-events-auto mr-1 flex items-center'
                 )}
               >
-                <div
-                  ref={handleRef}
-                  className="size-4"
-                  data-key={mounted ? (element.id as string) : undefined}
-                >
+                <div ref={handleRef} className="size-4">
                   <DragHandle />
                 </div>
               </div>
@@ -110,14 +104,16 @@ const Gutter = React.forwardRef<
   const { useOption } = useEditorPlugin(BlockSelectionPlugin);
   const isSelectionAreaVisible = useOption('isSelectionAreaVisible');
   const gutter = useDraggableGutter();
+  const selected = useSelected();
 
   return (
     <div
       ref={ref}
       className={cn(
         'slate-gutterLeft',
-        'absolute -top-px z-50 flex h-full -translate-x-full cursor-text opacity-0 hover:opacity-100 group-hover:opacity-100',
+        'absolute -top-px z-50 flex h-full -translate-x-full cursor-text hover:opacity-100 sm:opacity-0 main-hover:group-hover:opacity-100',
         isSelectionAreaVisible && 'hidden',
+        !selected && 'opacity-0',
         className
       )}
       {...props}

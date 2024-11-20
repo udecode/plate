@@ -1,0 +1,1 @@
+sed -i '' 's|"url": "https://platejs.org/r"|"url": "http://localhost:3000/r"|' templates/plate-playground-template/components.json

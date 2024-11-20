@@ -1,10 +1,10 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { getLastNodeByLevel } from '../../getLastNodeByLevel';
 
-jsx;
+jsxt;
 
 const input = (
   <editor>

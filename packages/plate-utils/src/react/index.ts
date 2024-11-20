@@ -9,6 +9,7 @@ export * from './createNodesHOC';
 export * from './selectEditor';
 export * from './selectSiblingNodePoint';
 export * from './useFormInputProps';
+export * from './useLastBlockDOMNode';
 export * from './useMarkToolbarButton';
 export * from './usePlaceholder';
 export * from './useRemoveNodeButton';

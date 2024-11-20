@@ -1,16 +1,13 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import { createSlateEditor } from '@udecode/plate-common';
 import { HEADING_KEYS } from '@udecode/plate-heading';
-import { jsx } from '@udecode/plate-test-utils';
-import {
-  getAutoformatOptions,
-  preFormat,
-} from 'www/src/lib/plate/demo/plugins/autoformatOptions';
+import { jsxt } from '@udecode/plate-test-utils';
+import { autoformatPlugin } from 'www/src/registry/default/components/editor/plugins/autoformat-plugin';
 
 import { BaseAutoformatPlugin } from '../../../BaseAutoformatPlugin';
 
-jsx;
+jsxt;
 
 describe('when #space', () => {
   it('should set block type to h1', () => {
@@ -38,7 +35,7 @@ describe('when #space', () => {
               {
                 match: '# ',
                 mode: 'block',
-                preFormat: preFormat,
+                // preFormat: preFormat,
                 type: HEADING_KEYS.h1,
               },
             ],
@@ -73,9 +70,7 @@ describe('when ##space', () => {
     ) as any;
 
     const editor = createSlateEditor({
-      plugins: [
-        BaseAutoformatPlugin.configure({ options: getAutoformatOptions() }),
-      ],
+      plugins: [autoformatPlugin],
       value: input,
     });
 

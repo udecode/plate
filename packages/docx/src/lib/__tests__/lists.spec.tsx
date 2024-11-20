@@ -1,11 +1,11 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { getDocxTestName, testDocxDeserializer } from './testDocxDeserializer';
 
-jsx;
+jsxt;
 
 const name = 'lists';
 

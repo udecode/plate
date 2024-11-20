@@ -1,12 +1,12 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import { createSlateEditor } from '@udecode/plate-common';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { type BaseLinkConfig, BaseLinkPlugin } from '../BaseLinkPlugin';
 import { upsertLink } from './upsertLink';
 
-jsx;
+jsxt;
 
 const url = 'http://google.com';
 const urlOutput = 'http://output.com';

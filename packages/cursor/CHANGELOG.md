@@ -1,5 +1,11 @@
 # @udecode/plate-cursor
 
+## 40.0.0
+
+### Patch Changes
+
+- [#3744](https://github.com/udecode/plate/pull/3744) by [@zbeyens](https://github.com/zbeyens) – Deprecated, use `@udecode/plate-selection` instead.
+
 ## 39.2.11
 
 ### Patch Changes

@@ -6,7 +6,7 @@ export * from './BaseCodeBlockPlugin';
 export * from './decorateCodeLine';
 export * from './htmlDeserializerCodeBlock';
 export * from './insertFragmentCodeBlock';
-export type * from './types';
+export * from './types';
 export * from './withCodeBlock';
 export * from './normalizers/index';
 export * from './queries/index';

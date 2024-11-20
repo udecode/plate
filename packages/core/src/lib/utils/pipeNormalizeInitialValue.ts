@@ -1,27 +1,17 @@
-import cloneDeep from 'lodash/cloneDeep.js';
-import isEqual from 'lodash/isEqual.js';
-
 import type { SlateEditor } from '../editor';
 
 import { getEditorPlugin } from '../plugin';
 
 /** Normalize initial value from editor plugins. Set into plate store if diff. */
 export const pipeNormalizeInitialValue = (editor: SlateEditor) => {
-  const value = editor.children;
-  let normalizedValue = cloneDeep(value);
-
   editor.pluginList.forEach((p) => {
-    const _normalizedValue = p.normalizeInitialValue?.({
+    const normalizedValue = p.normalizeInitialValue?.({
       ...getEditorPlugin(editor, p),
-      value: normalizedValue,
+      value: editor.children,
     } as any);
 
-    if (_normalizedValue) {
-      normalizedValue = _normalizedValue;
+    if (normalizedValue) {
+      editor.children = normalizedValue;
     }
   });
-
-  if (!isEqual(value, normalizedValue) && normalizedValue) {
-    editor.children = normalizedValue;
-  }
 };

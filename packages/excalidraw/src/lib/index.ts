@@ -3,5 +3,5 @@
  */
 
 export * from './BaseExcalidrawPlugin';
-export type * from './types';
+export * from './types';
 export * from './transforms/index';

@@ -1,10 +1,6 @@
-// render children only if editor.plugins[id] exists
-
 import type { WithRequiredKey } from '@udecode/plate-core';
 
 import { useEditorRef } from '@udecode/plate-common/react';
-
-import { useDemoId } from '@/registry/default/example/playground-demo';
 
 import { settingsStore } from './settings-store';
 
@@ -20,13 +16,12 @@ export const CheckPlugin = ({
   plugin?: WithRequiredKey;
 }) => {
   const editor = useEditorRef();
-  const demoId = useDemoId();
   const enabledComponent = settingsStore.use.checkedComponentId(componentId);
 
   let isEnabled = true;
 
   // enable if component is enabled
-  if (!demoId && componentId && !enabledComponent) {
+  if (componentId && !enabledComponent) {
     isEnabled = false;
   }
   // enable if id is in demoId

@@ -30,6 +30,8 @@
     
     .prose {
       --tw-prose-body: var(--foreground);
+      --tw-prose-bold: inherit;
+      --tw-prose-links: inherit;
       --tw-prose-bullets: var(--foreground);
     }
   }
@@ -64,9 +66,6 @@
   * {
     @apply border-border;
   }
-  html {
-    @apply scroll-smooth;
-  }
   body {
     @apply bg-background text-foreground;
     font-feature-settings:
@@ -78,15 +77,6 @@
 }
 
 @layer utilities {
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-
-  .no-scrollbar {
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
-  }
-
   .step {
     counter-increment: step;
   }

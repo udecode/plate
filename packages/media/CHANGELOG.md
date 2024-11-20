@@ -1,5 +1,33 @@
 # @udecode/plate-media
 
+## 40.2.3
+
+### Patch Changes
+
+- [#3790](https://github.com/udecode/plate/pull/3790) by [@felixfeng33](https://github.com/felixfeng33) – Fix editor crash when inserting media into an empty paragraph.
+
+## 40.2.1
+
+### Patch Changes
+
+- [#3784](https://github.com/udecode/plate/pull/3784) by [@felixfeng33](https://github.com/felixfeng33) – Fix the issue where pasting DOCX text triggers image uploads.
+
+- [#3782](https://github.com/udecode/plate/pull/3782) by [@felixfeng33](https://github.com/felixfeng33) – Fix error message.
+
+## 40.2.0
+
+### Minor Changes
+
+- [#3753](https://github.com/udecode/plate/pull/3753) by [@felixfeng33](https://github.com/felixfeng33) – PlaceholderPlugin:
+  New `updateUploadHistory` `withHistoryMark` `isHistoryMarking` to fix undo to the loading state.
+  `editor.insert.insertMedia` add options
+
+  New option `disableEmptyPlaceholder` to hidden empty placeholder.
+
+  Rename `disabledDndPlugin` to `disableFileDrop`
+
+## 40.0.0
+
 ## 39.3.3
 
 ### Patch Changes

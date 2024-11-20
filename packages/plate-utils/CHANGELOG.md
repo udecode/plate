@@ -1,5 +1,18 @@
 # @udecode/plate-utils
 
+## 40.0.3
+
+## 40.0.2
+
+## 40.0.1
+
+## 40.0.0
+
+### Minor Changes
+
+- [#3744](https://github.com/udecode/plate/pull/3744) by [@zbeyens](https://github.com/zbeyens) –
+  - `PlateElement` add `data-block-id` if `element.id` is defined, after editor mount to support SSR hydration.
+
 ## 39.2.21
 
 ## 39.2.20

@@ -1,12 +1,16 @@
+import { Toaster } from 'sonner';
+
 import { PlateEditor } from '@/components/editor/plate-editor';
-import { OpenAIProvider } from '@/components/editor/use-chat';
+import { SettingsProvider } from '@/components/editor/settings';
 
 export default function Page() {
   return (
     <div className="h-screen w-full" data-registry="plate">
-      <OpenAIProvider>
+      <SettingsProvider>
         <PlateEditor />
-      </OpenAIProvider>
+      </SettingsProvider>
+
+      <Toaster />
     </div>
   );
 }

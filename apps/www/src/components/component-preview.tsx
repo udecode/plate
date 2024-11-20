@@ -76,7 +76,7 @@ export function ComponentPreview({
     }
 
     // DIFF
-    return <Component {...props} id={props.id} />;
+    return <Component {...props} id={props.id ?? name.replace('-demo', '')} />;
   }, [config.style, name, props]);
 
   const codeString = React.useMemo(() => {

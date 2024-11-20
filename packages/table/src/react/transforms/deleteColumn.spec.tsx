@@ -1,14 +1,14 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import type { SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { BaseTablePlugin } from '../../lib/BaseTablePlugin';
 import { deleteColumn } from './deleteColumn';
 
-jsx;
+jsxt;
 
 describe('deleteColumn', () => {
   describe('when 2x2', () => {

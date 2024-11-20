@@ -3,5 +3,5 @@
  */
 
 export * from './Grid';
-export type * from './Grid.types';
+export * from './Grid.types';
 export * from './GridSection';

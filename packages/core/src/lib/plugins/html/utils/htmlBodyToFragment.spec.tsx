@@ -1,12 +1,12 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { ParagraphPlugin, createPlateEditor } from '../../../../react';
 import { htmlBodyToFragment } from './htmlBodyToFragment';
 import { parseHtmlElement } from './parseHtmlElement';
 
-jsx;
+jsxt;
 
 describe('when element is a body', () => {
   it('should be a fragment with the children', () => {

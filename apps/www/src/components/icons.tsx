@@ -93,6 +93,7 @@ import {
   Underline,
   Ungroup,
   Unlink,
+  UploadIcon,
   Wand,
   WrapText,
   X,
@@ -298,6 +299,7 @@ export const Icons = {
   underline: Underline,
   ungroup: Ungroup,
   unlink: Link2Off,
+  upload: UploadIcon,
   viewing: Eye,
   yarn,
 };

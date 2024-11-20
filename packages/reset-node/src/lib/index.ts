@@ -3,4 +3,4 @@
  */
 
 export * from './BaseResetNodePlugin';
-export type * from './types';
+export * from './types';

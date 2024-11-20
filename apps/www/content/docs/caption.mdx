@@ -1,12 +1,11 @@
 ---
 title: Caption
-description: Add captions to your blocks.
 docs:
-  - route: /docs/components/draggable
-    title: Draggable
+  - route: /docs/components/caption
+    title: Caption
 ---
 
-<ComponentPreview name="playground-demo" id="media" />
+<ComponentPreview name="media-demo" />
 
 <PackageInfo>
 
@@ -26,25 +25,35 @@ npm install @udecode/plate-caption
 
 ```tsx
 import { CaptionPlugin } from '@udecode/plate-caption/react';
-import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
-
-const plugins = [
-  // ...otherPlugins,
-  CaptionPlugin,
+import {
+  AudioPlugin,
+  FilePlugin,
   ImagePlugin,
   MediaEmbedPlugin,
-];
+  VideoPlugin,
+} from '@udecode/plate-media/react';
+```
 
-const editor = createPlateEditor({
-  plugins,
-  override: {
-    plugins: {
-      [CaptionPlugin.key]: {
-        plugins: [ImagePlugin.key, MediaEmbedPlugin.key],
-      },
+```tsx
+const plugins = [
+  // ...otherPlugins,
+  ImagePlugin,
+  VideoPlugin,
+  AudioPlugin,
+  FilePlugin,
+  MediaEmbedPlugin,
+  CaptionPlugin.configure({
+    options: {
+      plugins: [
+        ImagePlugin,
+        VideoPlugin,
+        AudioPlugin,
+        FilePlugin,
+        MediaEmbedPlugin,
+      ],
     },
-  },
-});
+  }),
+];
 ```
 
 ## Plugins

@@ -1,13 +1,13 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import type { SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { ListPlugin } from '../react';
 
-jsx;
+jsxt;
 
 describe('p (empty) + list when selection not in list', () => {
   it('should remove the p', () => {

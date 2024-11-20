@@ -1,9 +1,9 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 import { type SlateEditor, createSlateEditor } from '@udecode/plate-core';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 import { isType } from '@udecode/plate-utils';
 
-jsx;
+jsxt;
 
 const editor = (
   <editor>

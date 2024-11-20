@@ -1,13 +1,13 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import type { PlateEditor } from '@udecode/plate-common/react';
 
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { createPlateTestEditor } from '../../../core/src/react/__tests__/createPlateTestEditor';
 import { BaseDatePlugin } from './BaseDatePlugin';
 
-jsx;
+jsxt;
 
 describe('On keydown', () => {
   it('inline date should not be selected on keydown arrow right', async () => {

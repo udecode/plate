@@ -5,4 +5,4 @@
 export * from './EmojiFloatingGrid';
 export * from './EmojiFloatingGridBuilder';
 export * from './EmojiFloatingLibrary';
-export type * from './EmojiFloatingLibrary.types';
+export * from './EmojiFloatingLibrary.types';

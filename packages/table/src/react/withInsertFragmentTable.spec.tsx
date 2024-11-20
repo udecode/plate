@@ -1,15 +1,15 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import {
   type SlateEditor,
   type TElement,
   createSlateEditor,
 } from '@udecode/plate-common';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { TablePlugin } from './TablePlugin';
 
-jsx;
+jsxt;
 
 describe('withInsertFragmentTable', () => {
   // https://github.com/udecode/editor-protocol/issues/13

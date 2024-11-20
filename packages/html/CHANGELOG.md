@@ -1,5 +1,11 @@
 # @udecode/plate-serializer-html
 
+## 40.0.0
+
+### Patch Changes
+
+- [#3744](https://github.com/udecode/plate/pull/3744) by [@zbeyens](https://github.com/zbeyens) – Sync with `@udecode/plate-core`
+
 ## 39.0.0
 
 ## 38.0.1

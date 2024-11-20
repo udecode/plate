@@ -72,6 +72,8 @@ export type PlateEditor = {
   tf: PlateEditor['transforms'];
 
   transforms: UnionToIntersection<InferTransforms<PlateCorePlugin>>;
+
+  uid?: string;
 } & BaseEditor;
 
 export type TPlateEditor<

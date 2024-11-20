@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 interface ComponentPreviewProps extends React.HTMLAttributes<HTMLDivElement> {
   id: string;
   description?: string;
+  name?: string;
 }
 
 export function ComponentPreviewPro({
@@ -23,8 +24,13 @@ export function ComponentPreviewPro({
   children,
   className,
   description,
+  name,
   ...props
 }: ComponentPreviewProps) {
+  if (!id && name) {
+    id = name?.replace('-pro', '');
+  }
+
   return (
     <div
       className={cn('relative mb-4 flex flex-col space-y-2', className)}

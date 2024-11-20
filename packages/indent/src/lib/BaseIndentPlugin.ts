@@ -37,6 +37,7 @@ export const BaseIndentPlugin = createTSlatePlugin<IndentConfig>({
   key: 'indent',
   extendEditor: withIndent,
   inject: {
+    isBlock: true,
     nodeProps: {
       nodeKey: 'indent',
       styleKey: 'marginLeft',
