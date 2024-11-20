@@ -1,0 +1,152 @@
+---
+title: Select
+---
+
+{/* <ComponentPreview name="playground-demo" id="delete" /> */}
+
+<PackageInfo>
+
+## Features
+
+- Set a list of element types to remove on backspace
+- Set a list of element types to select on backspace, instead of removing
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-select
+```
+
+## Usage
+
+```tsx
+import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
+```
+
+```tsx
+const plugins = [
+  // ...otherPlugins,
+  SelectOnBackspacePlugin.configure({
+    options: {
+      query: {
+        allow: ['img', 'hr'],
+      },
+    },
+  }),
+  DeletePlugin,
+];
+```
+
+## Plugins
+
+### DeletePlugin
+
+Plugin that removes empty blocks when pressing delete (forward delete) if they match the query options.
+
+<APIOptions>
+<APIItem name="query" type="QueryNodeOptions" optional>
+  Query options to filter which empty blocks can be removed.
+  - **Default:** `{ allow: ['p'] }`
+</APIItem>
+</APIOptions>
+
+For example:
+
+```tsx
+const plugins = [
+  DeletePlugin.configure({
+    options: {
+      // Only remove empty paragraphs and blockquotes
+      query: {
+        allow: ['p', 'blockquote'],
+      },
+    },
+  }),
+];
+```
+
+The plugin will:
+1. Check if the current block is empty and matches the query options
+2. If true: Remove the entire block
+3. If false: Use default delete behavior
+
+```tsx
+// Empty paragraph followed by code block
+<editor>
+  <p>
+    <cursor />
+  </p>
+  <codeblock>
+    <codeline>test</codeline>
+  </codeblock>
+</editor>
+
+// Pressing delete will remove the empty paragraph instead of nothing
+<editor>
+  <codeblock>
+    <codeline>test</codeline>
+  </codeblock>
+</editor>
+```
+
+### SelectOnBackspacePlugin
+
+Plugin that selects nodes instead of deleting them when pressing backspace. Useful for nodes like images or horizontal rules.
+
+<APIOptions>
+<APIItem name="query" type="QueryNodeOptions">
+  Query options to determine which nodes trigger selection on backspace.
+</APIItem>
+<APIItem parent="options" name="removeNodeIfEmpty" type="boolean" optional>
+  Whether to remove the node if it's empty when backspacing.
+  - **Default:** `false`
+</APIItem>
+</APIOptions>
+
+For example:
+
+```tsx
+const plugins = [
+  SelectOnBackspacePlugin.configure({
+    options: {
+      // Select these nodes instead of deleting them
+      query: {
+        allow: ['img', 'hr'],
+      },
+      // Remove current node if empty
+      removeNodeIfEmpty: true,
+    },
+  }),
+];
+```
+
+The plugin will:
+1. When backspace is pressed at the start of a block:
+2. Check if the previous node matches query options
+3. If true:
+   - Select the previous node instead of deleting it
+   - Optionally remove current node if it's empty
+4. If false: Use default backspace behavior
+
+```tsx
+// Empty paragraph after an image
+<editor>
+  <img src="..." />
+  <p>
+    <cursor />
+  </p>
+</editor>
+
+// Pressing backspace will select the image instead of deleting it
+<editor>
+  <img src="..." selected />
+  <p></p>
+</editor>
+
+// If removeNodeIfEmpty is true, the empty paragraph is also removed
+<editor>
+  <img src="..." selected />
+</editor>
+```

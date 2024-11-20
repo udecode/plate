@@ -6,8 +6,7 @@
     "description": "A toolbar control for link management.",
     "docs": [
       {
-        "route": "/docs/link",
-        "title": "Link"
+        "route": "/docs/link"
       },
       {
         "route": "https://pro.platejs.org/docs/components/link-toolbar-button"

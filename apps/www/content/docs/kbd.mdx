@@ -1,20 +1,17 @@
 ---
 title: Keyboard Input
-description: Enable keyboard shortcut formatting in the document.
 docs:
   - route: /docs/components/kbd-leaf
     title: Kbd Leaf
 ---
 
-<ComponentPreview name="playground-demo" id="kbd" />
+<ComponentPreview name="kbd-demo" />
 
 <PackageInfo>
 
 ## Features
 
-- Adds support for keyboard shortcut formatting
-- HTML serialization support
-- Preserves KBD tags during paste operations
+- Adds support for keyboard input marks
 
 </PackageInfo>
 
@@ -37,20 +34,16 @@ const plugins = [
 ];
 ```
 
+```tsx
+const components ={
+  [KbdPlugin.key]: KbdLeaf,
+}
+```
+
+- [KbdLeaf](/docs/components/kbd-leaf)
+
 ## Plugins
 
 ### KbdPlugin
 
-Enables keyboard shortcut formatting with HTML serialization support.
-
-<APIOptions>
-<APIItem name="node" type="object">
-  Basic node configuration.
-  
-  - `isLeaf`: `true`
-</APIItem>
-
-<APIItem name="parsers" type="object">
-  HTML parser configuration for KBD tags.
-</APIItem>
-</APIOptions>
+Enables keyboard input marks.

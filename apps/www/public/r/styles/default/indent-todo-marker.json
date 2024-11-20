@@ -6,8 +6,7 @@
     "description": "A checkbox marker for interactive todo lists.",
     "docs": [
       {
-        "route": "/docs/indent-list",
-        "title": "Indent List"
+        "route": "/docs/indent-list"
       },
       {
         "route": "https://pro.platejs.org/docs/components/indent-todo-marker"

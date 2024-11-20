@@ -6,8 +6,7 @@
     "description": "A toolbar control for creating todo list items.",
     "docs": [
       {
-        "route": "/docs/indent-list",
-        "title": "Indent List"
+        "route": "/docs/indent-list"
       }
     ],
     "examples": [

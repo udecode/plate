@@ -7,8 +7,7 @@
     "description": "A placeholder for media upload progress indication.",
     "docs": [
       {
-        "route": "/docs/media",
-        "title": "Media"
+        "route": "/docs/media"
       },
       {
         "route": "https://pro.platejs.org/docs/components/media-placeholder-element"

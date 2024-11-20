@@ -1,16 +1,14 @@
 ---
 title: Trailing Block
-description: Ensure a trailing block is always present in the document.
 ---
 
-<ComponentPreview name="playground-demo" id="trailing-block" />
+<ComponentPreview name="basic-elements-demo" />
 
 <PackageInfo>
 
 ## Features
 
-- Automatically adds a trailing block to the document.
-- Configurable block type and level.
+- Ensures a specific block type is always present at the end of the document.
 
 </PackageInfo>
 
@@ -31,8 +29,8 @@ const plugins = [
   // ...otherPlugins,
   TrailingBlockPlugin.configure({
     options: {
-      level: 0, // Level where the trailing block should be
-      type: ParagraphPlugin.key,
+      level: 0,
+      type: 'p',
     },
   }),
 ];
@@ -43,11 +41,22 @@ const plugins = [
 ### TrailingBlockPlugin
 
 <APIOptions>
-<APIItem name="level" type="number" optional>
+<APIItem parent="options" name="level" type="number" optional>
   Level where the trailing node should be, the first level being 0.
+  - **Default:** `0` (root level)
 </APIItem>
-
-<APIItem name="type" type="string" optional>
+<APIItem parent="options" name="type" type="string" optional>
   Type of the trailing block.
+  - **Default:** `editor.getType(ParagraphPlugin)`
+</APIItem>
+<APIItem parent="options" name="allow" type="string[]" optional>
+  Filter nodes that match any of these types.
+  - **Default:** `[]` (all types)
+</APIItem>
+<APIItem parent="options" name="exclude" type="string[]" optional>
+  Filter nodes that don't match any of these types.
+</APIItem>
+<APIItem parent="options" name="filter" type="(node: TNode) => boolean" optional>
+  Custom filter function.
 </APIItem>
 </APIOptions>

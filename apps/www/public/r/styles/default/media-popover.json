@@ -6,8 +6,7 @@
     "description": "A popover interface for media settings.",
     "docs": [
       {
-        "route": "/docs/media",
-        "title": "Media"
+        "route": "/docs/media"
       }
     ],
     "examples": [

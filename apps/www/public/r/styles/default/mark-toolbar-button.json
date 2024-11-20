@@ -6,8 +6,7 @@
     "description": "A toolbar control for basic text formatting.",
     "docs": [
       {
-        "route": "/docs/basic-marks",
-        "title": "Basic Marks"
+        "route": "/docs/basic-marks"
       }
     ],
     "examples": [

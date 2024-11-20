@@ -7,8 +7,7 @@
     "description": "An audio player component with caption support.",
     "docs": [
       {
-        "route": "/docs/media",
-        "title": "Media"
+        "route": "/docs/media"
       },
       {
         "route": "https://pro.platejs.org/docs/components/media-audio-element"

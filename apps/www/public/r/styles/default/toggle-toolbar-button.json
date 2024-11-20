@@ -6,8 +6,7 @@
     "description": "A toolbar button for expanding and collapsing blocks.",
     "docs": [
       {
-        "route": "/docs/toggle",
-        "title": "Toggle"
+        "route": "/docs/toggle"
       }
     ],
     "examples": [

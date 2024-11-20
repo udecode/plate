@@ -8,8 +8,7 @@
     "description": "Toolbar button for inserting and managing media.",
     "docs": [
       {
-        "route": "/docs/media",
-        "title": "Media"
+        "route": "/docs/media"
       }
     ],
     "examples": [

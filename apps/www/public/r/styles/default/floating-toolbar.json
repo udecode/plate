@@ -6,6 +6,9 @@
     "description": "A contextual toolbar that appears over selected text.",
     "docs": [
       {
+        "route": "/docs/api/floating"
+      },
+      {
         "route": "https://pro.platejs.org/docs/components/floating-toolbar"
       }
     ],

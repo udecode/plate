@@ -6,8 +6,7 @@
     "description": "A toolbar control for indenting lists.",
     "docs": [
       {
-        "route": "/docs/list",
-        "title": "List"
+        "route": "/docs/list"
       }
     ],
     "examples": [

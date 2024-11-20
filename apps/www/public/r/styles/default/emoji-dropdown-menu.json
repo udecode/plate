@@ -7,8 +7,7 @@
     "description": "A dropdown menu for emoji selection and insertion.",
     "docs": [
       {
-        "route": "/docs/emoji",
-        "title": "Emoji"
+        "route": "/docs/emoji"
       },
       {
         "route": "https://pro.platejs.org/docs/components/emoji-picker"

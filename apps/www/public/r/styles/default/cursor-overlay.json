@@ -6,8 +6,10 @@
     "description": "A visual overlay for cursors and selections.",
     "docs": [
       {
-        "route": "/docs/cursor-overlay",
-        "title": "Cursor Overlay"
+        "route": "/docs/cursor-overlay"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/cursor-overlay"
       }
     ],
     "examples": [
