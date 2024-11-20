@@ -19,7 +19,6 @@ import {
 export const useCreateEditor = () => {
   return usePlateEditor({
     override: {
-      // Default styles in globals.css
       components: {
         [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),
         [ItalicPlugin.key]: withProps(PlateLeaf, { as: 'em' }),
