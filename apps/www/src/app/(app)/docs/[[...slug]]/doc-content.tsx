@@ -18,6 +18,7 @@ import { badgeVariants } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { categoryNavGroups, docSections } from '@/config/docs-utils';
 import { getDocTitle, getRegistryTitle } from '@/lib/registry-utils';
+import { Button } from '@/registry/default/plate-ui/button';
 
 // import { formatBytes, getPackageData } from '@/lib/bundlephobia';
 
@@ -62,6 +63,10 @@ export function DocContent({
 
   const items = categoryNavGroups[category];
 
+  const docSection = docSections[0].items!.find(
+    (item) => item.value === category
+  );
+
   return (
     <main
       className={cn(
@@ -71,12 +76,18 @@ export function DocContent({
     >
       <div className="mx-auto w-full min-w-0">
         <div className="mb-4 flex items-center space-x-1 text-sm text-muted-foreground">
-          <DocBreadcrumb
-            value={category}
-            placeholder="Search"
-            combobox={false}
-            items={docSections}
-          />
+          {category === 'guide' ? (
+            <DocBreadcrumb
+              value={category}
+              placeholder="Search"
+              combobox={false}
+              items={docSections}
+            />
+          ) : (
+            <Link href={docSection!.href!}>
+              <Button variant="ghost">{docSection!.title}</Button>
+            </Link>
+          )}
           <ChevronRight className="size-4" />
           <DocBreadcrumb
             value={doc?.slug || 'Introduction'}

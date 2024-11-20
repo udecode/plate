@@ -7,7 +7,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Plate } from '@udecode/plate-common/react';
 
 import { useCreateEditor } from '@/registry/default/block/editor-ai/components/editor/use-create-editor';
-import { SettingsDialog } from '@/registry/default/components/editor/use-chat';
+import { SettingsDialog } from '@/registry/default/components/editor/settings';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 
 export function PlateEditor() {

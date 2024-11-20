@@ -1,5 +1,6 @@
 import type { Registry } from './schema';
 
+import { registryApp } from './registry-app';
 import { blocks } from './registry-blocks';
 import { components } from './registry-components';
 import { examples } from './registry-examples';
@@ -12,6 +13,7 @@ export const registry: Registry = [
   ...ui,
   ...components,
   ...examples,
+  ...registryApp,
   ...blocks,
   ...lib,
   ...hooks,

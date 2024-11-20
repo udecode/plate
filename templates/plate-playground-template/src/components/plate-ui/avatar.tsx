@@ -15,5 +15,5 @@ export const AvatarImage = withCn(
 
 export const AvatarFallback = withCn(
   AvatarPrimitive.Fallback,
-  'bg-muted flex size-full items-center justify-center rounded-full'
+  'flex size-full items-center justify-center rounded-full bg-muted'
 );

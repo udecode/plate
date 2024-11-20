@@ -74,7 +74,11 @@ import { HrElement } from '@/components/plate-ui/hr-element';
 import { ImageElement } from '@/components/plate-ui/image-element';
 import { KbdLeaf } from '@/components/plate-ui/kbd-leaf';
 import { LinkElement } from '@/components/plate-ui/link-element';
+import { MediaAudioElement } from '@/components/plate-ui/media-audio-element';
 import { MediaEmbedElement } from '@/components/plate-ui/media-embed-element';
+import { MediaFileElement } from '@/components/plate-ui/media-file-element';
+import { MediaPlaceholderElement } from '@/components/plate-ui/media-placeholder-element';
+import { MediaVideoElement } from '@/components/plate-ui/media-video-element';
 import { MentionElement } from '@/components/plate-ui/mention-element';
 import { MentionInputElement } from '@/components/plate-ui/mention-input-element';
 import { ParagraphElement } from '@/components/plate-ui/paragraph-element';
@@ -89,11 +93,6 @@ import { TableRowElement } from '@/components/plate-ui/table-row-element';
 import { TocElement } from '@/components/plate-ui/toc-element';
 import { ToggleElement } from '@/components/plate-ui/toggle-element';
 import { withDraggables } from '@/components/plate-ui/with-draggables';
-
-import { MediaAudioElement } from '../plate-ui/media-audio-element';
-import { MediaFileElement } from '../plate-ui/media-file-element';
-import { MediaPlaceholderElement } from '../plate-ui/media-placeholder-element';
-import { MediaVideoElement } from '../plate-ui/media-video-element';
 
 export const useCreateEditor = () => {
   return usePlateEditor({

@@ -73,7 +73,7 @@ export const MediaPlaceholderElement = withHOC(
       const { api } = useEditorPlugin(PlaceholderPlugin);
 
       const { isUploading, progress, uploadFile, uploadedFile, uploadingFile } =
-        useUploadFile('imageUploader');
+        useUploadFile();
 
       const loading = isUploading && uploadingFile;
 
@@ -134,6 +134,7 @@ export const MediaPlaceholderElement = withHOC(
 
       // React dev mode will call useEffect twice
       const isReplaced = useRef(false);
+
       /** Paste and drop */
       useEffect(() => {
         if (isReplaced.current) return;

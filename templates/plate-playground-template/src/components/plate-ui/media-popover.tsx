@@ -64,7 +64,7 @@ export function MediaPopover({ children, plugin }: MediaPopoverProps) {
         {isEditing ? (
           <div className="flex w-[330px] flex-col">
             <div className="flex items-center">
-              <div className="text-muted-foreground flex items-center pl-2 pr-1">
+              <div className="flex items-center pl-2 pr-1 text-muted-foreground">
                 <Link className="size-4" />
               </div>
 

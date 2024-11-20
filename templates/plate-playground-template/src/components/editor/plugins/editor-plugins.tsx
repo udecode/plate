@@ -20,12 +20,12 @@ import {
   EquationPlugin,
   InlineEquationPlugin,
 } from '@udecode/plate-math/react';
-import { CursorOverlayPlugin } from '@udecode/plate-selection/react';
 import { SlashPlugin } from '@udecode/plate-slash-command/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
-import { CursorOverlay } from '@/components/plate-ui/cursor-overlay';
+import { FixedToolbarPlugin } from '@/components/editor/plugins/fixed-toolbar-plugin';
+import { FloatingToolbarPlugin } from '@/components/editor/plugins/floating-toolbar-plugin';
 
 import { aiPlugins } from './ai-plugins';
 import { alignPlugin } from './align-plugin';
@@ -33,6 +33,7 @@ import { autoformatPlugin } from './autoformat-plugin';
 import { basicNodesPlugins } from './basic-nodes-plugins';
 import { blockMenuPlugins } from './block-menu-plugins';
 import { commentsPlugin } from './comments-plugin';
+import { cursorOverlayPlugin } from './cursor-overlay-plugin';
 import { deletePlugins } from './delete-plugins';
 import { dndPlugins } from './dnd-plugins';
 import { exitBreakPlugin } from './exit-break-plugin';
@@ -46,17 +47,12 @@ import { softBreakPlugin } from './soft-break-plugin';
 import { tablePlugin } from './table-plugin';
 import { tocPlugin } from './toc-plugin';
 
-export const editorPlugins = [
-  // AI
-  ...aiPlugins,
-
-  // Nodes
+export const viewPlugins = [
   ...basicNodesPlugins,
   HorizontalRulePlugin,
   linkPlugin,
   DatePlugin,
   mentionPlugin,
-  SlashPlugin,
   tablePlugin,
   TogglePlugin,
   tocPlugin,
@@ -78,11 +74,21 @@ export const editorPlugins = [
   ...indentListPlugins,
   lineHeightPlugin,
 
+  // Collaboration
+  commentsPlugin,
+] as const;
+
+export const editorPlugins = [
+  // AI
+  ...aiPlugins,
+
+  // Nodes
+  ...viewPlugins,
+
   // Functionality
+  SlashPlugin,
   autoformatPlugin,
-  CursorOverlayPlugin.configure({
-    render: { afterEditable: () => <CursorOverlay /> },
-  }),
+  cursorOverlayPlugin,
   ...blockMenuPlugins,
   ...dndPlugins,
   EmojiPlugin,
@@ -92,11 +98,12 @@ export const editorPlugins = [
   softBreakPlugin,
   TrailingBlockPlugin.configure({ options: { type: ParagraphPlugin.key } }),
 
-  // Collaboration
-  commentsPlugin,
-
   // Deserialization
   DocxPlugin,
   MarkdownPlugin.configure({ options: { indentList: true } }),
   JuicePlugin,
+
+  // UI
+  FixedToolbarPlugin,
+  FloatingToolbarPlugin,
 ];

@@ -24,7 +24,7 @@ module.exports = {
     'react/display-name': 'off',
     'react/jsx-key': 'off',
     'react/no-unescaped-entities': 'off',
-    'tailwindcss/classnames-order': 'warn',
+    'tailwindcss/classnames-order': 'off',
     'tailwindcss/no-custom-classname': 'off',
     'unused-imports/no-unused-imports': 'warn',
     'unused-imports/no-unused-vars': [

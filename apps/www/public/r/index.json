@@ -691,9 +691,7 @@
   {
     "dependencies": [
       "@udecode/plate-media",
-      "use-file-picker",
-      "@uploadthing/react@7.1.0",
-      "uploadthing@7.2.0"
+      "use-file-picker"
     ],
     "doc": {
       "description": "A placeholder for media upload progress indication.",
@@ -715,16 +713,13 @@
       {
         "path": "plate-ui/media-placeholder-element.tsx",
         "type": "registry:ui"
-      },
-      {
-        "path": "lib/uploadthing.ts",
-        "type": "registry:ui"
       }
     ],
     "name": "media-placeholder-element",
     "registryDependencies": [
       "plate-element",
-      "spinner"
+      "spinner",
+      "uploadthing"
     ],
     "type": "registry:ui"
   },
@@ -2557,7 +2552,7 @@
       "description": "Show toast notifications for media uploads.",
       "docs": [
         {
-          "route": "/docs/media-placeholder",
+          "route": "/docs/media",
           "title": "Media Placeholder"
         }
       ],

@@ -37,8 +37,6 @@ const nextConfig = async (phase: string) => {
     //   ignoreDuringBuilds: true,
     // },
 
-    serverExternalPackages: ['@prisma/client'],
-
     staticPageGenerationTimeout: 1200,
   };
 

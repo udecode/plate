@@ -24,7 +24,7 @@ npx shadcx@latest add editor-basic -r plate
 
 ### 2. Using Template
 
-[Use this template](https://github.com/plate-editor/plate-template/generate), then install dependencies:
+[Use this template](https://github.com/udecode/plate-template/generate), then install dependencies:
 
 ```bash
 pnpm install

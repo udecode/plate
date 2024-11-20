@@ -281,6 +281,8 @@ export const Index: Record<string, any> = {
         }
       }
       
+      let componentImport = `React.lazy(() => import("${componentPath}"))`
+      
       index += `
     "${item.name}": {
       name: "${item.name}",
@@ -288,7 +290,7 @@ export const Index: Record<string, any> = {
       type: "${item.type}",
       registryDependencies: ${JSON.stringify(item.registryDependencies)},
       files: [${resolveFiles.map((file) => `"${file}"`)}],
-      component: React.lazy(() => import("${componentPath}")),
+      component: ${componentImport},
       source: "${sourceFilename}",
       category: "${item.category ?? ''}",
       subcategory: "${item.subcategory ?? ''}",

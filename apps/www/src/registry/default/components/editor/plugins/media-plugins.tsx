@@ -23,7 +23,15 @@ export const mediaPlugins = [
   AudioPlugin,
   FilePlugin,
   CaptionPlugin.configure({
-    options: { plugins: [ImagePlugin, MediaEmbedPlugin] },
+    options: {
+      plugins: [
+        ImagePlugin,
+        VideoPlugin,
+        AudioPlugin,
+        FilePlugin,
+        MediaEmbedPlugin,
+      ],
+    },
   }),
   PlaceholderPlugin.configure({
     options: { disableEmptyPlaceholder: true },

@@ -1257,7 +1257,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     npmPackage: '@udecode/plate-placeholder',
     pluginFactory: 'PlaceholderPlugin',
     reactImport: true,
-    route: getPluginNavItem('media-placeholder').href,
+    route: getPluginNavItem('media').href,
   },
 };
 

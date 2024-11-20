@@ -44,7 +44,6 @@ export function NavItemsGrid({
           <DocBreadcrumb
             value={category}
             placeholder="Search"
-            combobox={false}
             items={docSections}
           />
         </div>
