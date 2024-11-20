@@ -93,7 +93,7 @@ export const pluginsNavItems: SidebarNavItem[] = [
     title: 'Column',
   },
   {
-    description: 'Utilities for adding comboboxes to your editor.',
+    description: 'Utilities for adding combobox to your editor.',
     href: '/docs/combobox',
     title: 'Combobox',
   },
@@ -114,6 +114,10 @@ export const pluginsNavItems: SidebarNavItem[] = [
     href: '/docs/date',
     label: 'Element',
     title: 'Date',
+  },
+  {
+    href: '/docs/delete',
+    title: 'Delete',
   },
   {
     description:
@@ -170,7 +174,11 @@ export const pluginsNavItems: SidebarNavItem[] = [
     href: '/docs/indent-list',
     title: 'Indent List',
   },
-
+  {
+    href: '/docs/kbd',
+    label: 'Leaf',
+    title: 'Keyboard Input',
+  },
   {
     description: 'Adjust the height between lines of text.',
     href: '/docs/line-height',
@@ -199,6 +207,10 @@ export const pluginsNavItems: SidebarNavItem[] = [
     href: '/docs/mention',
     label: 'Element',
     title: 'Mention',
+  },
+  {
+    href: '/docs/node-id',
+    title: 'Node ID',
   },
   {
     description: 'Reset the block type using rules.',
@@ -253,6 +265,10 @@ export const pluginsNavItems: SidebarNavItem[] = [
     href: '/docs/toggle',
     label: 'Element',
     title: 'Toggle',
+  },
+  {
+    href: '/docs/trailing-block',
+    title: 'Trailing Block',
   },
 ];
 

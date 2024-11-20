@@ -410,4 +410,14 @@ export const docsApi: SidebarNavItem[] = [
     href: '/docs/api/cn',
     title: 'cn',
   },
+  {
+    headings: [],
+    href: '/docs/api/floating',
+    title: 'Floating',
+  },
+  {
+    headings: [],
+    href: '/docs/api/resizable',
+    title: 'Resizable',
+  },
 ];
