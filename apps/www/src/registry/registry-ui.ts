@@ -1247,12 +1247,7 @@ export const uiNodes: Registry = [
     type: 'registry:ui',
   },
   {
-    dependencies: [
-      '@udecode/plate-media',
-      'use-file-picker',
-      '@uploadthing/react@7.1.0',
-      'uploadthing@7.2.0',
-    ],
+    dependencies: ['@udecode/plate-media', 'use-file-picker'],
     doc: {
       description: 'A placeholder for media upload progress indication.',
       docs: [
@@ -1265,9 +1260,9 @@ export const uiNodes: Registry = [
       ],
       examples: ['media-demo', 'upload-pro'],
     },
-    files: ['plate-ui/media-placeholder-element.tsx', 'lib/uploadthing.ts'],
+    files: ['plate-ui/media-placeholder-element.tsx'],
     name: 'media-placeholder-element',
-    registryDependencies: ['plate-element', 'spinner'],
+    registryDependencies: ['plate-element', 'spinner', 'uploadthing'],
     type: 'registry:ui',
   },
   {
