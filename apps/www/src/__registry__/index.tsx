@@ -1493,30 +1493,6 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
-    "api-ai": {
-      name: "api-ai",
-      description: "",
-      type: "registry:component",
-      registryDependencies: ["use-chat"],
-      files: ["registry/default/components/api/ai/command/route.ts","registry/default/components/api/ai/copilot/route.ts"],
-      component: React.lazy(() => import("@/registry/default/components/api/ai/command/route.ts")),
-      source: "",
-      category: "",
-      subcategory: "",
-      chunks: []
-    },
-    "api-uploadthing": {
-      name: "api-uploadthing",
-      description: "",
-      type: "registry:component",
-      registryDependencies: ["media-placeholder-element","uploadthing"],
-      files: ["registry/default/components/api/uploadthing/route.ts"],
-      component: React.lazy(() => import("@/registry/default/components/api/uploadthing/route.ts")),
-      source: "",
-      category: "",
-      subcategory: "",
-      chunks: []
-    },
     "transforms": {
       name: "transforms",
       description: "",
@@ -2345,11 +2321,35 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
+    "api-ai": {
+      name: "api-ai",
+      description: "",
+      type: "registry:app",
+      registryDependencies: ["use-chat"],
+      files: ["registry/default/app/api/ai/command/route.ts","registry/default/app/api/ai/copilot/route.ts"],
+      component: React.lazy(() => import("@/registry/default/app/api/ai/command/route.ts")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
+    "api-uploadthing": {
+      name: "api-uploadthing",
+      description: "",
+      type: "registry:app",
+      registryDependencies: [],
+      files: ["registry/default/app/api/uploadthing/route.ts"],
+      component: React.lazy(() => import("@/registry/default/app/api/uploadthing/route.ts")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
     "editor-ai": {
       name: "editor-ai",
       description: "An AI editor",
       type: "registry:block",
-      registryDependencies: ["api-ai","plate-types","editor-plugins","copilot-plugins","floating-toolbar-plugin","fixed-toolbar-plugin","ai-menu","ghost-text","comments-popover","cursor-overlay","editor","block-context-menu","ai-leaf","blockquote-element","code-block-element","code-leaf","code-line-element","code-syntax-leaf","column-element","column-group-element","comment-leaf","date-element","draggable","emoji-input-element","excalidraw-element","heading-element","highlight-leaf","hr-element","image-element","kbd-leaf","link-element","media-audio-element","media-embed-element","media-file-element","media-placeholder-element","media-video-element","mention-element","mention-input-element","paragraph-element","placeholder","slash-input-element","table-cell-element","table-element","table-row-element","toc-element","toggle-element"],
+      registryDependencies: ["api-ai","api-uploadthing","plate-types","editor-plugins","copilot-plugins","floating-toolbar-plugin","fixed-toolbar-plugin","ai-menu","ghost-text","comments-popover","cursor-overlay","editor","block-context-menu","ai-leaf","blockquote-element","code-block-element","code-leaf","code-line-element","code-syntax-leaf","column-element","column-group-element","comment-leaf","date-element","draggable","emoji-input-element","excalidraw-element","heading-element","highlight-leaf","hr-element","image-element","kbd-leaf","link-element","media-audio-element","media-embed-element","media-file-element","media-placeholder-element","media-video-element","mention-element","mention-input-element","paragraph-element","placeholder","slash-input-element","table-cell-element","table-element","table-row-element","toc-element","toggle-element"],
       files: ["registry/default/block/editor-ai/page.tsx","registry/default/block/editor-ai/components/editor/plate-editor.tsx","registry/default/block/editor-ai/components/editor/use-create-editor.tsx"],
       component: React.lazy(() => import("@/registry/default/block/editor-ai/page.tsx")),
       source: "src/__registry__/default/block/editor-ai/page.tsx",
