@@ -43,7 +43,11 @@ export const blocks: Registry = [
         target: 'components/editor/use-create-editor.ts',
         type: 'registry:component',
       },
-      'components/editor/settings.tsx',
+      {
+        path: 'components/editor/settings.tsx',
+        target: 'components/editor/settings.tsx',
+        type: 'registry:component',
+      },
     ],
     name: 'editor-ai',
     registryDependencies: [
