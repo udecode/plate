@@ -7,17 +7,17 @@ export const registryApp: Registry = [
       {
         path: 'app/api/ai/command/route.ts',
         target: 'app/api/ai/command/route.ts',
-        type: 'registry:block',
+        type: 'registry:lib',
       },
       {
         path: 'app/api/ai/copilot/route.ts',
         target: 'app/api/ai/copilot/route.ts',
-        type: 'registry:block',
+        type: 'registry:lib',
       },
     ],
     name: 'api-ai',
     registryDependencies: ['use-chat'],
-    type: 'registry:block',
+    type: 'registry:lib',
   },
   {
     dependencies: ['uploadthing@7.2.0'],
@@ -25,11 +25,11 @@ export const registryApp: Registry = [
       {
         path: 'app/api/uploadthing/route.ts',
         target: 'app/api/uploadthing/route.ts',
-        type: 'registry:block',
+        type: 'registry:lib',
       },
     ],
     name: 'api-uploadthing',
     registryDependencies: [],
-    type: 'registry:block',
+    type: 'registry:lib',
   },
 ];

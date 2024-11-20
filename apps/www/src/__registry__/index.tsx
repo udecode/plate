@@ -2324,11 +2324,11 @@ export const Index: Record<string, any> = {
     "api-ai": {
       name: "api-ai",
       description: "",
-      type: "registry:block",
+      type: "registry:lib",
       registryDependencies: ["use-chat"],
       files: ["registry/default/app/api/ai/command/route.ts","registry/default/app/api/ai/copilot/route.ts"],
       component: React.lazy(() => import("@/registry/default/app/api/ai/command/route.ts")),
-      source: "src/__registry__/default/app/api/ai/command/route.ts",
+      source: "",
       category: "",
       subcategory: "",
       chunks: []
@@ -2336,11 +2336,11 @@ export const Index: Record<string, any> = {
     "api-uploadthing": {
       name: "api-uploadthing",
       description: "",
-      type: "registry:block",
+      type: "registry:lib",
       registryDependencies: [],
       files: ["registry/default/app/api/uploadthing/route.ts"],
       component: React.lazy(() => import("@/registry/default/app/api/uploadthing/route.ts")),
-      source: "src/__registry__/default/app/api/uploadthing/route.ts",
+      source: "",
       category: "",
       subcategory: "",
       chunks: []

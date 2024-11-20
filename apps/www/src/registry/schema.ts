@@ -16,7 +16,6 @@ export const blockChunkSchema = z.object({
 
 export const registryItemTypeSchema = z.enum([
   'registry:pro',
-  'registry:app',
   'registry:style',
   'registry:lib',
   'registry:example',

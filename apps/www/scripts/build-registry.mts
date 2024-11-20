@@ -24,7 +24,6 @@ import { fixImport } from "./fix-import.mts"
 const REGISTRY_PATH = path.join(process.cwd(), "public/r")
 
 const REGISTRY_INDEX_WHITELIST: z.infer<typeof registryItemTypeSchema>[] = [
-  "registry:app",
   "registry:ui",
   "registry:lib",
   "registry:hook",
@@ -291,7 +290,7 @@ export const Index: Record<string, any> = {
       type: "${item.type}",
       registryDependencies: ${JSON.stringify(item.registryDependencies)},
       files: [${resolveFiles.map((file) => `"${file}"`)}],
-      ${item.type !== "registry:app" ? `component: ${componentImport},` : ""}
+      component: ${componentImport},
       source: "${sourceFilename}",
       category: "${item.category ?? ''}",
       subcategory: "${item.subcategory ?? ''}",
@@ -413,7 +412,7 @@ async function buildStyles(registry: Registry) {
             if (!target || target === "") {
               const fileName = file.path.split("/").pop()
               
-              if (file.type === "registry:component" || file.type === "registry:app") {
+              if (file.type === "registry:component") {
                 target = file.path
               }
               if (
