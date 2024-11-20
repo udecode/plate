@@ -35,6 +35,8 @@
     }
   ],
   "name": "comments-demo",
-  "registryDependencies": ["comments-plugin"],
+  "registryDependencies": [
+    "comments-plugin"
+  ],
   "type": "registry:example"
 }

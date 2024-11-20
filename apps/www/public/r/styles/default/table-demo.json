@@ -35,6 +35,8 @@
     }
   ],
   "name": "table-demo",
-  "registryDependencies": ["table-plugin"],
+  "registryDependencies": [
+    "table-plugin"
+  ],
   "type": "registry:example"
 }

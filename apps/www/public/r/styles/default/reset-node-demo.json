@@ -26,6 +26,8 @@
     }
   ],
   "name": "reset-node-demo",
-  "registryDependencies": ["reset-block-type-plugin"],
+  "registryDependencies": [
+    "reset-block-type-plugin"
+  ],
   "type": "registry:example"
 }

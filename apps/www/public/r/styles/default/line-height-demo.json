@@ -29,6 +29,8 @@
     }
   ],
   "name": "line-height-demo",
-  "registryDependencies": ["line-height-plugin"],
+  "registryDependencies": [
+    "line-height-plugin"
+  ],
   "type": "registry:example"
 }

@@ -30,6 +30,8 @@
     }
   ],
   "name": "autoformat-demo",
-  "registryDependencies": ["autoformat-plugin"],
+  "registryDependencies": [
+    "autoformat-plugin"
+  ],
   "type": "registry:example"
 }

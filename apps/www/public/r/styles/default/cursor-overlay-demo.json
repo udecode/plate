@@ -30,6 +30,8 @@
     }
   ],
   "name": "cursor-overlay-demo",
-  "registryDependencies": ["cursor-overlay-plugin"],
+  "registryDependencies": [
+    "cursor-overlay-plugin"
+  ],
   "type": "registry:example"
 }

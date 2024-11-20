@@ -25,6 +25,8 @@
     }
   ],
   "name": "editor-basic",
-  "registryDependencies": ["editor"],
+  "registryDependencies": [
+    "editor"
+  ],
   "type": "registry:block"
 }

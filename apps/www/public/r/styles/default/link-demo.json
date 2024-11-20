@@ -35,6 +35,8 @@
     }
   ],
   "name": "link-demo",
-  "registryDependencies": ["link-plugin"],
+  "registryDependencies": [
+    "link-plugin"
+  ],
   "type": "registry:example"
 }

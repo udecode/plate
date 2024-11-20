@@ -1,5 +1,8 @@
 {
-  "dependencies": ["@udecode/plate-ai", "@udecode/plate-markdown"],
+  "dependencies": [
+    "@udecode/plate-ai",
+    "@udecode/plate-markdown"
+  ],
   "doc": {
     "description": "Renders AI ghost text suggestions at the cursor position.",
     "docs": [
@@ -36,6 +39,8 @@
     }
   ],
   "name": "copilot-demo",
-  "registryDependencies": ["copilot-plugins"],
+  "registryDependencies": [
+    "copilot-plugins"
+  ],
   "type": "registry:example"
 }

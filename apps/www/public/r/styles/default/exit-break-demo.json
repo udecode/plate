@@ -30,6 +30,8 @@
     }
   ],
   "name": "exit-break-demo",
-  "registryDependencies": ["exit-break-plugin"],
+  "registryDependencies": [
+    "exit-break-plugin"
+  ],
   "type": "registry:example"
 }

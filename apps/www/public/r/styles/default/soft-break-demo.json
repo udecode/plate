@@ -30,6 +30,8 @@
     }
   ],
   "name": "soft-break-demo",
-  "registryDependencies": ["soft-break-plugin"],
+  "registryDependencies": [
+    "soft-break-plugin"
+  ],
   "type": "registry:example"
 }

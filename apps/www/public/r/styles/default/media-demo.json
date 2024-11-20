@@ -29,6 +29,8 @@
     }
   ],
   "name": "media-demo",
-  "registryDependencies": ["media-plugins"],
+  "registryDependencies": [
+    "media-plugins"
+  ],
   "type": "registry:example"
 }

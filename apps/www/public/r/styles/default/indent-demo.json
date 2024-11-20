@@ -26,6 +26,8 @@
     }
   ],
   "name": "indent-demo",
-  "registryDependencies": ["indent-list-plugins"],
+  "registryDependencies": [
+    "indent-list-plugins"
+  ],
   "type": "registry:example"
 }

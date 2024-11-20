@@ -35,6 +35,8 @@
     }
   ],
   "name": "basic-marks-demo",
-  "registryDependencies": ["basic-nodes-plugins"],
+  "registryDependencies": [
+    "basic-nodes-plugins"
+  ],
   "type": "registry:example"
 }

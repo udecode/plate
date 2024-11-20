@@ -35,6 +35,8 @@
     }
   ],
   "name": "block-menu-demo",
-  "registryDependencies": ["block-menu-plugins"],
+  "registryDependencies": [
+    "block-menu-plugins"
+  ],
   "type": "registry:example"
 }

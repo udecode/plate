@@ -36,6 +36,8 @@
     }
   ],
   "name": "toc-demo",
-  "registryDependencies": ["toc-plugin"],
+  "registryDependencies": [
+    "toc-plugin"
+  ],
   "type": "registry:example"
 }

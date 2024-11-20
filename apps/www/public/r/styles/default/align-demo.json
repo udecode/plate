@@ -29,6 +29,8 @@
     }
   ],
   "name": "align-demo",
-  "registryDependencies": ["align-plugin"],
+  "registryDependencies": [
+    "align-plugin"
+  ],
   "type": "registry:example"
 }

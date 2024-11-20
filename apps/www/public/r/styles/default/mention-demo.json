@@ -35,6 +35,8 @@
     }
   ],
   "name": "mention-demo",
-  "registryDependencies": ["mention-plugin"],
+  "registryDependencies": [
+    "mention-plugin"
+  ],
   "type": "registry:example"
 }

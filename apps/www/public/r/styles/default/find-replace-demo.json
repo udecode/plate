@@ -29,6 +29,10 @@
     }
   ],
   "name": "find-replace-demo",
-  "registryDependencies": ["fixed-toolbar", "input", "search-highlight-leaf"],
+  "registryDependencies": [
+    "fixed-toolbar",
+    "input",
+    "search-highlight-leaf"
+  ],
   "type": "registry:example"
 }

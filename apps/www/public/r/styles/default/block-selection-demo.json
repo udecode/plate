@@ -29,6 +29,8 @@
     }
   ],
   "name": "block-selection-demo",
-  "registryDependencies": ["block-selection-plugins"],
+  "registryDependencies": [
+    "block-selection-plugins"
+  ],
   "type": "registry:example"
 }
