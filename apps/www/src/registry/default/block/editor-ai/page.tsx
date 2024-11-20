@@ -1,3 +1,5 @@
+import { Toaster } from 'sonner';
+
 import { PlateEditor } from '@/registry/default/block/editor-ai/components/editor/plate-editor';
 import { SettingsProvider } from '@/registry/default/components/editor/settings';
 
@@ -13,6 +15,8 @@ export default function Page() {
       <SettingsProvider>
         <PlateEditor />
       </SettingsProvider>
+
+      <Toaster />
     </div>
   );
 }

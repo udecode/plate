@@ -26,7 +26,7 @@
   "description": "An AI editor",
   "files": [
     {
-      "content": "import { PlateEditor } from '@/components/editor/plate-editor';\nimport { SettingsProvider } from '@/components/editor/settings';\n\nexport default function Page() {\n  return (\n    <div className=\"h-screen w-full\" data-registry=\"plate\">\n      <SettingsProvider>\n        <PlateEditor />\n      </SettingsProvider>\n    </div>\n  );\n}\n",
+      "content": "import { Toaster } from 'sonner';\n\nimport { PlateEditor } from '@/components/editor/plate-editor';\nimport { SettingsProvider } from '@/components/editor/settings';\n\nexport default function Page() {\n  return (\n    <div className=\"h-screen w-full\" data-registry=\"plate\">\n      <SettingsProvider>\n        <PlateEditor />\n      </SettingsProvider>\n\n      <Toaster />\n    </div>\n  );\n}\n",
       "path": "block/editor-ai/page.tsx",
       "target": "app/editor/page.tsx",
       "type": "registry:page"
