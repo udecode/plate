@@ -22,6 +22,7 @@ interface ComponentInstallationProps {
   dependencies?: string[];
   examples?: RegistryEntry[];
   files?: any[];
+  inline?: boolean;
   name?: string;
   usage?: string[];
 }
@@ -33,6 +34,7 @@ export function ComponentInstallation({
   __previewFiles__ = '[]',
   codeTabs,
   examples,
+  inline,
   name,
   usage,
   ...props
@@ -112,7 +114,7 @@ export function ComponentInstallation({
 
   return (
     <div className="my-4">
-      <H2>Installation</H2>
+      {!inline && <H2>Installation</H2>}
 
       <Tabs className="relative mt-6 w-full" defaultValue="cli">
         <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0">

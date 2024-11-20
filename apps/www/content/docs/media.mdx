@@ -129,9 +129,14 @@ There are two ways to implement file uploads in your editor:
 
 #### UploadThing
 
-1. Install [MediaPlaceholderElement](/docs/components/media-placeholder-element)
-2. Get your secret key from [UploadThing](https://uploadthing.com/dashboard/settings) for free
-3. Add your UploadThing secret key to `.env`:
+1. Add [MediaPlaceholderElement](/docs/components/media-placeholder-element) component
+
+2. Add API routes for UploadThing:
+
+<ComponentInstallation name="api-uploadthing" inline />
+
+3. Get your secret key from [UploadThing](https://uploadthing.com/dashboard/settings) for free
+4. Add your UploadThing secret key to `.env`:
 
 ```bash title=".env"
 UPLOADTHING_TOKEN=sk_live_xxx
