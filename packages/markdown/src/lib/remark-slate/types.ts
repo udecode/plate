@@ -55,18 +55,16 @@ export type RemarkElementRule = {
   ) => TElement | TElement[];
 };
 
-export type RemarkElementRules = {
-  [key in MdastElementType]?: RemarkElementRule;
-};
+export type RemarkElementRules = Partial<
+  Record<MdastElementType, RemarkElementRule>
+>;
 
 export type RemarkTextRule = {
   mark?: (options: RemarkPluginOptions) => string;
   transform?: (text: string) => string;
 };
 
-export type RemarkTextRules = {
-  [key in MdastTextType]?: RemarkTextRule;
-};
+export type RemarkTextRules = Partial<Record<MdastTextType, RemarkTextRule>>;
 
 export type RemarkPluginOptions = {
   editor: SlateEditor;
