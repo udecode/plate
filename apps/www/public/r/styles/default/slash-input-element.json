@@ -13,6 +13,10 @@
     "description": "A command input component for inserting various elements.",
     "docs": [
       {
+        "route": "/docs/slash-command",
+        "title": "Slash"
+      },
+      {
         "route": "https://pro.platejs.org/docs/components/slash-input-element"
       }
     ],

@@ -139,7 +139,7 @@ There are two ways to implement file uploads in your editor:
 4. Add your UploadThing secret key to `.env`:
 
 ```bash title=".env"
-UPLOADTHING_TOKEN=sk_live_xxx
+UPLOADTHING_TOKEN=xxx
 ```
 
 #### Custom Implementation
@@ -239,64 +239,6 @@ export function useUploadFile({
 
 ## Plugins
 
-### MediaPluginOptions
-
-Plugin options used by media plugins.
-
-<APIAttributes>
-  <APIItem name="isUrl" type="function" optional>
-    A function to check whether a text string is a URL.
-  </APIItem>
-  <APIItem name="transformUrl" type="function" optional>
-    A function to transform the URL.
-  </APIItem>
-</APIAttributes>
-
-### ImagePlugin
-
-Plugin for void image elements. Options extends [MediaPluginOptions](#mediapluginoptions).
-
-<APIOptions>
-
-Extends [MediaPluginOptions](#mediapluginoptions).
-
-<APIItem name="uploadImage" type="(dataUrl: string | ArrayBuffer) => Promise<string | ArrayBuffer> | string | ArrayBuffer" optional>
-
-An optional method that will upload the image to a server. The method receives either:
-- A data URL (string) from `FileReader.readAsDataURL`
-- An ArrayBuffer from clipboard data
-
-Should return either:
-- A URL string to the uploaded image
-- The original data URL/ArrayBuffer if no upload is needed
-
-If not provided, the original data URL/ArrayBuffer will be used as the image source.
-
-</APIItem>
-<APIItem name="disableUploadInsert" type="boolean" optional>
-Disables file upload on data insertion if set to true.
-</APIItem>
-<APIItem name="disableEmbedInsert" type="boolean" optional>
-Disables URL embed on data insertion if set to true.
-</APIItem>
-</APIOptions>
-
-### VideoPlugin
-
-Plugin for void video elements.
-
-### AudioPlugin
-
-Plugin for void audio elements.
-
-### FilePlugin
-
-Plugin for void file elements.
-
-### MediaEmbedPlugin
-
-Plugin for void media embed elements. Options extends `MediaPluginOptions`.
-
 ### PlaceholderPlugin
 
 Plugin for void media placeholder elements. Handles file uploads, drag & drop, and clipboard paste events.
@@ -392,6 +334,64 @@ Allow multiple files of the same type to be uploaded.
 </APIItem>
 
 </APIOptions>
+
+### MediaPluginOptions
+
+Plugin options used by media plugins.
+
+<APIAttributes>
+  <APIItem name="isUrl" type="function" optional>
+    A function to check whether a text string is a URL.
+  </APIItem>
+  <APIItem name="transformUrl" type="function" optional>
+    A function to transform the URL.
+  </APIItem>
+</APIAttributes>
+
+### ImagePlugin
+
+Plugin for void image elements. Options extends [MediaPluginOptions](#mediapluginoptions).
+
+<APIOptions>
+
+Extends [MediaPluginOptions](#mediapluginoptions).
+
+<APIItem name="uploadImage" type="(dataUrl: string | ArrayBuffer) => Promise<string | ArrayBuffer> | string | ArrayBuffer" optional>
+
+An optional method that will upload the image to a server. The method receives either:
+- A data URL (string) from `FileReader.readAsDataURL`
+- An ArrayBuffer from clipboard data
+
+Should return either:
+- A URL string to the uploaded image
+- The original data URL/ArrayBuffer if no upload is needed
+
+If not provided, the original data URL/ArrayBuffer will be used as the image source.
+
+</APIItem>
+<APIItem name="disableUploadInsert" type="boolean" optional>
+Disables file upload on data insertion if set to true.
+</APIItem>
+<APIItem name="disableEmbedInsert" type="boolean" optional>
+Disables URL embed on data insertion if set to true.
+</APIItem>
+</APIOptions>
+
+### VideoPlugin
+
+Plugin for void video elements.
+
+### AudioPlugin
+
+Plugin for void audio elements.
+
+### FilePlugin
+
+Plugin for void file elements.
+
+### MediaEmbedPlugin
+
+Plugin for void media embed elements. Options extends `MediaPluginOptions`.
 
 ## API Placeholder
 

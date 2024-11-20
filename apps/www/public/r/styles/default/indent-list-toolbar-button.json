@@ -6,8 +6,7 @@
     "description": "A toolbar control for adjusting list indentation.",
     "docs": [
       {
-        "route": "/docs/indent-list",
-        "title": "Indent List"
+        "route": "/docs/indent-list"
       }
     ],
     "examples": [

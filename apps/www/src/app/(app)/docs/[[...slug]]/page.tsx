@@ -226,8 +226,24 @@ function getRegistryDocs({
         acc.external.push(doc as any);
       } else if (doc.route!.startsWith('/docs/components')) {
         acc.components.push(doc as any);
+      } else if (doc.route!.startsWith('/docs/api')) {
+        acc.docs.push({
+          ...doc,
+          title:
+            getRegistryTitle({
+              name: doc.title ?? doc.route?.split('/').pop(),
+            }) + ' API',
+        } as any);
+      } else if (doc.route!.startsWith('/docs/')) {
+        acc.docs.push({
+          ...doc,
+          title:
+            getRegistryTitle({
+              name: doc.title ?? doc.route?.split('/').pop(),
+            }) + ' Plugin',
+        } as any);
       } else {
-        acc.docs.push({ ...doc, title: doc.title + ' Plugin' } as any);
+        acc.docs.push(doc as any);
       }
 
       return acc;

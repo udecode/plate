@@ -6,6 +6,9 @@
     "description": "A resizable wrapper with resize handles.",
     "docs": [
       {
+        "route": "/docs/api/resizable"
+      },
+      {
         "route": "https://pro.platejs.org/docs/components/resizable"
       }
     ],

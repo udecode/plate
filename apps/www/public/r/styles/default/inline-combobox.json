@@ -7,8 +7,7 @@
     "description": "A combobox for inline suggestions.",
     "docs": [
       {
-        "route": "/docs/combobox",
-        "title": "Combobox"
+        "route": "/docs/combobox"
       },
       {
         "route": "https://pro.platejs.org/docs/components/inline-combobox"

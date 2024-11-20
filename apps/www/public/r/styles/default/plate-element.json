@@ -6,8 +6,7 @@
     "description": "A base element with block selection support.",
     "docs": [
       {
-        "route": "/docs/block-selection",
-        "title": "Block Selection"
+        "route": "/docs/block-selection"
       }
     ],
     "examples": [

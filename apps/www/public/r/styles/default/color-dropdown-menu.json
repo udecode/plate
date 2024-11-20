@@ -7,8 +7,7 @@
     "description": "A color picker with text and background color controls.",
     "docs": [
       {
-        "route": "/docs/font",
-        "title": "Font"
+        "route": "/docs/font"
       },
       {
         "route": "https://pro.platejs.org/docs/components/color-dropdown-menu"

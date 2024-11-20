@@ -6,8 +6,7 @@
     "description": "A text suggestion system that displays AI-generated content after the cursor.",
     "docs": [
       {
-        "route": "/docs/copilot",
-        "title": "Copilot"
+        "route": "/docs/copilot"
       },
       {
         "route": "https://pro.platejs.org/docs/components/ghost-text"

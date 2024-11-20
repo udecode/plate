@@ -14,40 +14,7 @@ export const pluginsNavItems: SidebarNavItem[] = [
     description: 'Render AI suggestions ghost text as you type.',
     href: '/docs/copilot',
     label: 'New',
-    title: 'Copilot',
-  },
-  {
-    description: 'Provides quick access to block-specific actions.',
-    href: '/docs/block-menu',
-    label: 'New',
-    title: 'Block Menu',
-  },
-  {
-    description: 'Highlight important information or add special notes.',
-    href: '/docs/callout',
-    label: 'New',
-    title: 'Callout',
-  },
-  {
-    description:
-      'Enables the insertion and rendering of LaTeX equations in your editor.',
-    href: '/docs/equation',
-    label: 'New',
-    title: 'Equation',
-  },
-  {
-    description:
-      'Slash command menu for quick insertion of various content types.',
-    href: '/docs/slash-command',
-    label: 'New',
-    title: 'Slash Command',
-  },
-  {
-    description:
-      'Renders a table of contents element with clickable links to headings in the document.',
-    href: '/docs/toc',
-    label: 'New',
-    title: 'Table of Contents',
+    title: 'AI Copilot',
   },
   {
     description: 'Align your content to different positions.',
@@ -72,9 +39,21 @@ export const pluginsNavItems: SidebarNavItem[] = [
     title: 'Basic Marks',
   },
   {
+    description: 'Provides quick access to block-specific actions.',
+    href: '/docs/block-menu',
+    label: 'New',
+    title: 'Block Menu',
+  },
+  {
     description: 'Select and manipulate entire text blocks.',
     href: '/docs/block-selection',
     title: 'Block Selection',
+  },
+  {
+    description: 'Highlight important information or add special notes.',
+    href: '/docs/callout',
+    label: 'New',
+    title: 'Callout',
   },
   {
     description: 'Add captions to your blocks.',
@@ -93,7 +72,7 @@ export const pluginsNavItems: SidebarNavItem[] = [
     title: 'Column',
   },
   {
-    description: 'Utilities for adding comboboxes to your editor.',
+    description: 'Utilities for adding combobox to your editor.',
     href: '/docs/combobox',
     title: 'Combobox',
   },
@@ -125,6 +104,13 @@ export const pluginsNavItems: SidebarNavItem[] = [
     description: 'Insert emoji inline.',
     href: '/docs/emoji',
     title: 'Emoji',
+  },
+  {
+    description:
+      'Enables the insertion and rendering of LaTeX equations in your editor.',
+    href: '/docs/equation',
+    label: 'New',
+    title: 'Equation',
   },
   {
     description: 'Create drawings and diagrams as block nodes.',
@@ -170,7 +156,12 @@ export const pluginsNavItems: SidebarNavItem[] = [
     href: '/docs/indent-list',
     title: 'Indent List',
   },
-
+  {
+    description: 'Keyboard input markup.',
+    href: '/docs/kbd',
+    label: 'Leaf',
+    title: 'Keyboard Input',
+  },
   {
     description: 'Adjust the height between lines of text.',
     href: '/docs/line-height',
@@ -201,9 +192,22 @@ export const pluginsNavItems: SidebarNavItem[] = [
     title: 'Mention',
   },
   {
+    description: 'Automatically assign unique IDs to nodes in the document.',
+    href: '/docs/node-id',
+    label: 'New',
+    title: 'Node ID',
+  },
+  {
     description: 'Reset the block type using rules.',
     href: '/docs/reset-node',
     title: 'Reset Node',
+  },
+  {
+    description:
+      'Customize selection and deletion behavior for specific node types.',
+    href: '/docs/select',
+    label: 'New',
+    title: 'Select',
   },
   {
     description: 'Copy paste from CSV to Slate.',
@@ -232,6 +236,13 @@ export const pluginsNavItems: SidebarNavItem[] = [
   },
   {
     description:
+      'Slash command menu for quick insertion of various content types.',
+    href: '/docs/slash-command',
+    label: 'New',
+    title: 'Slash Command',
+  },
+  {
+    description:
       'Insert line breaks within a block of text without starting a new block.',
     href: '/docs/soft-break',
     title: 'Soft Break',
@@ -249,10 +260,23 @@ export const pluginsNavItems: SidebarNavItem[] = [
     title: 'Table',
   },
   {
+    description:
+      'Renders a table of contents element with clickable links to headings in the document.',
+    href: '/docs/toc',
+    label: 'New',
+    title: 'Table of Contents',
+  },
+  {
     description: 'Add Toggles to your document.',
     href: '/docs/toggle',
     label: 'Element',
     title: 'Toggle',
+  },
+  {
+    description: 'Ensure a trailing block is always present in the document.',
+    href: '/docs/trailing-block',
+    label: 'New',
+    title: 'Trailing Block',
   },
 ];
 

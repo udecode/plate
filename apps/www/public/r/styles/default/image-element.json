@@ -10,6 +10,9 @@
         "route": "/docs/media"
       },
       {
+        "route": "/docs/api/resizable"
+      },
+      {
         "route": "https://pro.platejs.org/docs/components/image-element"
       }
     ],

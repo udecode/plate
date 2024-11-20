@@ -7,8 +7,10 @@
     "description": "A floating interface for link editing.",
     "docs": [
       {
-        "route": "/docs/link",
-        "title": "Link"
+        "route": "/docs/link"
+      },
+      {
+        "route": "/docs/api/floating"
       },
       {
         "route": "https://pro.platejs.org/docs/components/link-floating-toolbar"

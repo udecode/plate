@@ -6,8 +6,7 @@
     "description": "A table of contents component with links to document headings.",
     "docs": [
       {
-        "route": "/docs/basic-elements",
-        "title": "Basic Elements"
+        "route": "/docs/basic-elements"
       },
       {
         "route": "https://pro.platejs.org/docs/components/toc-element"

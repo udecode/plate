@@ -410,4 +410,18 @@ export const docsApi: SidebarNavItem[] = [
     href: '/docs/api/cn',
     title: 'cn',
   },
+  {
+    description: 'API reference for @udecode/plate-floating',
+    headings: [],
+    href: '/docs/api/floating',
+    label: 'New',
+    title: 'Floating',
+  },
+  {
+    description: 'API reference for @udecode/plate-resizable',
+    headings: [],
+    href: '/docs/api/resizable',
+    label: 'New',
+    title: 'Resizable',
+  },
 ];

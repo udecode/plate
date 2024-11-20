@@ -2,6 +2,11 @@
   "dependencies": [],
   "doc": {
     "description": "A text highlighter with customizable colors.",
+    "docs": [
+      {
+        "route": "/docs/highlight"
+      }
+    ],
     "examples": [
       "highlight-demo"
     ]

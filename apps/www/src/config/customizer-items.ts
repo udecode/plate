@@ -412,6 +412,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     label: 'Delete',
     npmPackage: '@udecode/plate-select',
     pluginFactory: 'DeletePlugin',
+    route: getPluginNavItem('select').href,
   },
   [DndPlugin.key]: {
     id: DndPlugin.key,
@@ -679,7 +680,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     npmPackage: '@udecode/plate-kbd',
     pluginFactory: 'KbdPlugin',
     reactImport: true,
-    // route: getPluginNavItem('kbd').href,
+    route: getPluginNavItem('kbd').href,
   },
   [LineHeightPlugin.key]: {
     id: LineHeightPlugin.key,
@@ -795,7 +796,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     label: 'Id',
     npmPackage: '@udecode/plate-node-id',
     pluginFactory: 'NodeIdPlugin',
-    // route: settingValues.nodeid.route,
+    route: getPluginNavItem('node-id').href,
   },
   [NormalizeTypesPlugin.key]: {
     id: NormalizeTypesPlugin.key,
@@ -855,7 +856,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
       `  },`,
       `},`,
     ],
-    route: getPluginNavItem('media').href,
+    route: getPluginNavItem('select').href,
   },
   [SingleLinePlugin.key]: {
     id: SingleLinePlugin.key,
@@ -1064,7 +1065,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     npmPackage: '@udecode/plate-trailing-block',
     pluginFactory: 'TrailingBlockPlugin',
     pluginOptions: [`options: { type: 'p' },`],
-    // route: getPluginNavItem('trailing-block').href,
+    route: getPluginNavItem('trailing-block').href,
   },
   [UnderlinePlugin.key]: {
     id: UnderlinePlugin.key,

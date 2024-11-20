@@ -1,7 +1,12 @@
 {
   "dependencies": [],
   "doc": {
-    "description": "A component that highlights search results in text."
+    "description": "A component that highlights search results in text.",
+    "docs": [
+      {
+        "route": "/docs/highlight"
+      }
+    ]
   },
   "files": [
     {
