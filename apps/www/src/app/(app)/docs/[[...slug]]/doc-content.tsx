@@ -9,7 +9,6 @@ import type { RegistryEntry } from '@/registry/schema';
 import { cn } from '@udecode/cn';
 import { ChevronRight, ExternalLinkIcon } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 
 import { DocBreadcrumb } from '@/app/(app)/docs/[[...slug]]/doc-breadcrumb';
 import { OpenInPlus } from '@/components/open-in-plus';
@@ -59,15 +58,6 @@ export function DocContent({
   children: React.ReactNode;
   toc?: TableOfContents;
 } & Omit<Partial<RegistryEntry>, 'category'>) {
-  const pathname = usePathname();
-  const isCategory =
-    pathname &&
-    [
-      '/docs/api',
-      '/docs/components',
-      '/docs/examples',
-      '/docs/plugins',
-    ].includes(pathname);
   const title = doc?.title ?? getRegistryTitle(file);
   const hasToc = doc?.toc && toc;
 
@@ -86,7 +76,7 @@ export function DocContent({
     >
       <div className="mx-auto w-full min-w-0">
         <div className="mb-4 flex items-center space-x-1 text-sm text-muted-foreground">
-          {isCategory ? (
+          {category === 'guide' ? (
             <DocBreadcrumb
               value={category}
               placeholder="Search"

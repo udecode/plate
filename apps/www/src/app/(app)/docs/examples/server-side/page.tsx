@@ -60,16 +60,11 @@ import { Code } from '@/components/code';
 import { Link } from '@/components/link';
 import { Markdown } from '@/components/markdown';
 import { H2, H3, P } from '@/components/typography';
+import { exampleNavMap } from '@/config/docs-examples';
 import { basicElementsValue } from '@/registry/default/example/values/basic-elements-value';
 import { basicMarksValue } from '@/registry/default/example/values/basic-marks-value';
 
 export default function RSCPage() {
-  const mockDoc = {
-    description: 'Server-side rendering.',
-    title: 'Server-Side',
-    // ... other necessary properties
-  };
-
   const editor = createSlateEditor({
     plugins: [
       BaseHeadingPlugin,
@@ -238,7 +233,11 @@ export default function RSCPage() {
   });
 
   return (
-    <DocContent category="example" doc={mockDoc} toc={{}}>
+    <DocContent
+      category="example"
+      doc={exampleNavMap['/docs/examples/server-side']}
+      toc={{}}
+    >
       <H2>Using Plate in a Server Environment</H2>
       <P>
         Plate can be utilized in server-side environments, enabling operations

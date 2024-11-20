@@ -10,6 +10,8 @@ import { generateReactHelpers } from '@uploadthing/react';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
+import { useSettings } from '@/components/editor/settings';
+
 export interface UploadedFile<T = unknown> extends ClientUploadedFileData<T> {}
 
 interface UseUploadFileProps
@@ -26,6 +28,8 @@ export function useUploadFile({
   onUploadError,
   ...props
 }: UseUploadFileProps = {}) {
+  // !!! DEMO ONLY: don't use API keys client-side
+  const { keys } = useSettings();
   const [uploadedFile, setUploadedFile] = React.useState<UploadedFile>();
   const [uploadingFile, setUploadingFile] = React.useState<File>();
   const [progress, setProgress] = React.useState<number>(0);
@@ -39,6 +43,10 @@ export function useUploadFile({
       const res = await uploadFiles('editorUploader', {
         ...props,
         files: [file],
+        // !!! DEMO ONLY: don't use API keys client-side
+        headers: {
+          'x-uploadthing-api-key': keys.uploadthing,
+        },
         onUploadProgress: ({ progress }) => {
           setProgress(Math.min(progress, 100));
         },

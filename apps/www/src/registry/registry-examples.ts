@@ -276,7 +276,7 @@ export const docExamples: Registry = [
       'example/demo.tsx',
       'components/editor/plugins/ai-plugins.tsx',
       'example/values/ai-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'ai-demo',
@@ -295,7 +295,7 @@ export const docExamples: Registry = [
     files: [
       'example/demo.tsx',
       'example/values/align-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'align-demo',
@@ -311,7 +311,7 @@ export const docExamples: Registry = [
     files: [
       'example/demo.tsx',
       'example/values/autoformat-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'autoformat-demo',
@@ -332,7 +332,7 @@ export const docExamples: Registry = [
     files: [
       'example/demo.tsx',
       'example/values/basic-elements-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'basic-elements-demo',
@@ -353,7 +353,7 @@ export const docExamples: Registry = [
     files: [
       'example/demo.tsx',
       'example/values/basic-marks-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'basic-marks-demo',
@@ -376,7 +376,7 @@ export const docExamples: Registry = [
       'example/values/basic-nodes-value.tsx',
       'example/values/basic-elements-value.tsx',
       'example/values/basic-marks-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'basic-nodes-demo',
@@ -396,7 +396,7 @@ export const docExamples: Registry = [
     files: [
       'example/demo.tsx',
       'example/values/block-menu-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'block-menu-demo',
@@ -410,7 +410,7 @@ export const docExamples: Registry = [
     files: [
       'example/demo.tsx',
       'example/values/block-selection-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'block-selection-demo',
@@ -430,7 +430,7 @@ export const docExamples: Registry = [
     files: [
       'example/demo.tsx',
       'example/values/column-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'column-demo',
@@ -450,7 +450,7 @@ export const docExamples: Registry = [
     files: [
       'example/demo.tsx',
       'example/values/comments-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'comments-demo',
@@ -471,7 +471,7 @@ export const docExamples: Registry = [
     files: [
       'example/copilot-demo.tsx',
       'example/values/copilot-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'copilot-demo',
@@ -486,7 +486,7 @@ export const docExamples: Registry = [
     files: [
       'example/demo.tsx',
       'example/values/cursor-overlay-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'cursor-overlay-demo',
@@ -524,7 +524,7 @@ export const docExamples: Registry = [
     files: [
       'example/demo.tsx',
       'example/values/date-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'date-demo',
@@ -546,7 +546,7 @@ export const docExamples: Registry = [
     files: [
       'example/demo.tsx',
       'example/values/dnd-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'dnd-demo',
@@ -566,7 +566,7 @@ export const docExamples: Registry = [
     files: [
       'example/demo.tsx',
       'example/values/emoji-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'emoji-demo',
@@ -581,7 +581,7 @@ export const docExamples: Registry = [
     files: [
       'example/demo.tsx',
       'example/values/exit-break-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'exit-break-demo',
@@ -596,7 +596,7 @@ export const docExamples: Registry = [
     files: [
       'example/excalidraw-demo.tsx',
       'example/values/excalidraw-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'excalidraw-demo',
@@ -629,7 +629,7 @@ export const docExamples: Registry = [
     files: [
       'example/find-replace-demo.tsx',
       'example/values/find-replace-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'find-replace-demo',
@@ -650,7 +650,7 @@ export const docExamples: Registry = [
     files: [
       'example/demo.tsx',
       'example/values/floating-toolbar-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'floating-toolbar-demo',
@@ -664,7 +664,7 @@ export const docExamples: Registry = [
     files: [
       'example/demo.tsx',
       'example/values/font-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'font-demo',
@@ -678,7 +678,7 @@ export const docExamples: Registry = [
     files: [
       'example/demo.tsx',
       'example/values/highlight-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'highlight-demo',
@@ -698,7 +698,7 @@ export const docExamples: Registry = [
     files: [
       'example/demo.tsx',
       'example/values/horizontal-rule-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'horizontal-rule-demo',
@@ -718,7 +718,7 @@ export const docExamples: Registry = [
     files: [
       'example/demo.tsx',
       'example/values/indent-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'indent-demo',
@@ -742,7 +742,7 @@ export const docExamples: Registry = [
     files: [
       'example/demo.tsx',
       'example/values/indent-list-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'indent-list-demo',
@@ -753,7 +753,7 @@ export const docExamples: Registry = [
     files: [
       'example/demo.tsx',
       'example/values/kbd-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'kbd-demo',
@@ -767,7 +767,7 @@ export const docExamples: Registry = [
     files: [
       'example/demo.tsx',
       'example/values/line-height-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'line-height-demo',
@@ -787,7 +787,7 @@ export const docExamples: Registry = [
     files: [
       'example/demo.tsx',
       'example/values/link-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'link-demo',
@@ -803,7 +803,7 @@ export const docExamples: Registry = [
       'example/values/list-value.tsx',
       'components/editor/plugins/fixed-toolbar-list-plugin.tsx',
       'plate-ui/fixed-toolbar-list-buttons.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'list-demo',
@@ -821,7 +821,7 @@ export const docExamples: Registry = [
     files: [
       'example/demo.tsx',
       'example/values/media-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'media-demo',
@@ -841,7 +841,7 @@ export const docExamples: Registry = [
     files: [
       'example/demo.tsx',
       'example/values/mention-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'mention-demo',
@@ -854,7 +854,7 @@ export const docExamples: Registry = [
   //   },
   //   files: [
   //     'example/demo.tsx',
-  //     'components/editor/use-create-editor.tsx',
+  //     'components/editor/use-create-editor.ts',
   //     'components/editor/plugins/editor-plugins.tsx',
   //   ],
   //   name: 'placeholder-demo',
@@ -865,7 +865,7 @@ export const docExamples: Registry = [
     files: [
       'example/demo.tsx',
       'example/values/basic-elements-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'reset-node-demo',
@@ -880,7 +880,7 @@ export const docExamples: Registry = [
     files: [
       'example/demo.tsx',
       'example/values/deserialize-csv-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'csv-demo',
@@ -894,7 +894,7 @@ export const docExamples: Registry = [
     files: [
       'example/demo.tsx',
       'example/values/deserialize-docx-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'docx-demo',
@@ -908,7 +908,7 @@ export const docExamples: Registry = [
     files: [
       'example/demo.tsx',
       'example/values/deserialize-html-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'html-demo',
@@ -922,7 +922,7 @@ export const docExamples: Registry = [
     files: [
       'example/demo.tsx',
       'example/values/deserialize-md-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'markdown-demo',
@@ -936,7 +936,7 @@ export const docExamples: Registry = [
     files: [
       'example/single-line-demo.tsx',
       'example/values/single-line-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'single-line-demo',
@@ -956,7 +956,7 @@ export const docExamples: Registry = [
     files: [
       'example/demo.tsx',
       'example/values/slash-command-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'slash-command-demo',
@@ -972,7 +972,7 @@ export const docExamples: Registry = [
     files: [
       'example/demo.tsx',
       'example/values/soft-break-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'soft-break-demo',
@@ -983,7 +983,7 @@ export const docExamples: Registry = [
     files: [
       'example/tabbable-demo.tsx',
       'example/values/tabbable-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'tabbable-demo',
@@ -1003,7 +1003,7 @@ export const docExamples: Registry = [
     files: [
       'example/demo.tsx',
       'example/values/table-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'table-demo',
@@ -1014,7 +1014,7 @@ export const docExamples: Registry = [
     files: [
       'example/table-nomerge-demo.tsx',
       'example/values/table-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'table-nomerge-demo',
@@ -1034,7 +1034,7 @@ export const docExamples: Registry = [
     files: [
       'example/demo.tsx',
       'example/values/toc-value.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'toc-demo',
@@ -1047,7 +1047,7 @@ export const docExamples: Registry = [
     },
     files: [
       'example/demo.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'toggle-demo',
@@ -1062,7 +1062,7 @@ export const examples: Registry = [
   {
     files: [
       'example/demo.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'demo',
@@ -1193,7 +1193,7 @@ export const examples: Registry = [
   {
     files: [
       'example/demo.tsx',
-      'components/editor/use-create-editor.tsx',
+      'components/editor/use-create-editor.ts',
       'components/editor/plugins/editor-plugins.tsx',
     ],
     name: 'playground-demo',

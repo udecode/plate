@@ -3,7 +3,7 @@
 import { faker } from '@faker-js/faker';
 import { useChat as useBaseChat } from 'ai/react';
 
-import { useSettings } from '@/components/editor/settings';
+import { useSettings } from '@/registry/default/components/editor/settings';
 
 export const useChat = () => {
   const { keys, model } = useSettings();

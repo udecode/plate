@@ -21,7 +21,6 @@ import {
   Columns3Icon,
   ColumnsIcon,
   CommandIcon,
-  CopyIcon,
   CornerDownLeftIcon,
   DockIcon,
   Edit3Icon,
@@ -141,7 +140,6 @@ export const DocIcons = {
   comments: MessageSquareTextIcon,
   'comments-popover': MessageSquareTextIcon,
   'context-menu': MousePointerClickIcon,
-  controlled: CopyIcon,
   copilot: ArrowRightToLineIcon,
   csv: FileSpreadsheetIcon,
   'cursor-overlay': TextCursorInputIcon,
@@ -232,7 +230,7 @@ export const DocIcons = {
   resizable: ProportionsIcon,
   'search-highlight-leaf': HighlighterIcon,
   separator: SeparatorHorizontalIcon,
-  server: ServerIcon,
+  'server-side': ServerIcon,
   'single-line': RectangleHorizontalIcon,
   'slash-command': SlashIcon,
   'slash-input-element': SlashIcon,
@@ -258,6 +256,8 @@ export const DocIcons = {
 };
 
 export const getDocIcon = (item: SidebarNavItem, category?: string) => {
+  if (category === 'guide') return null;
+
   const icon = item.icon ?? item.href?.split('/').pop();
 
   return (DocIcons as any)[icon!] ?? (category === 'api' ? CodeXmlIcon : null);

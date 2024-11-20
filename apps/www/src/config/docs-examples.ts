@@ -39,7 +39,7 @@ export const docsExamples: SidebarNavItem[] = [
   },
   {
     description: 'Server-side rendering.',
-    href: '/docs/examples/server',
+    href: '/docs/examples/server-side',
     title: 'Server-Side',
   },
   ...registryToNav(

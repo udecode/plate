@@ -311,7 +311,7 @@ export const components: Registry = [
     dependencies: ['@udecode/plate-ai', 'ai', '@faker-js/faker'],
     files: [
       {
-        path: 'components/editor/use-chat.tsx',
+        path: 'components/editor/use-chat.ts',
         type: 'registry:component',
       },
     ],

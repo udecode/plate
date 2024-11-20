@@ -39,8 +39,13 @@ export const blocks: Registry = [
         type: 'registry:component',
       },
       {
-        path: 'block/editor-ai/components/editor/use-create-editor.tsx',
-        target: 'components/editor/use-create-editor.tsx',
+        path: 'block/editor-ai/components/editor/use-create-editor.ts',
+        target: 'components/editor/use-create-editor.ts',
+        type: 'registry:component',
+      },
+      {
+        path: 'block/editor-ai/components/editor/settings.tsx',
+        target: 'components/editor/settings.tsx',
         type: 'registry:component',
       },
     ],
@@ -117,8 +122,8 @@ export const blocks: Registry = [
         type: 'registry:component',
       },
       {
-        path: 'block/editor-basic/components/editor/use-create-editor.tsx',
-        target: 'components/editor/use-create-editor.tsx',
+        path: 'block/editor-basic/components/editor/use-create-editor.ts',
+        target: 'components/editor/use-create-editor.ts',
         type: 'registry:component',
       },
     ],
