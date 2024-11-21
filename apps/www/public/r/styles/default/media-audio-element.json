@@ -14,7 +14,8 @@
       }
     ],
     "examples": [
-      "media-demo"
+      "media-demo",
+      "upload-pro"
     ]
   },
   "files": [

@@ -611,7 +611,8 @@
         }
       ],
       "examples": [
-        "media-demo"
+        "media-demo",
+        "upload-pro"
       ]
     },
     "files": [
@@ -649,7 +650,7 @@
       ],
       "examples": [
         "media-demo",
-        "media-toolbar-pro"
+        "upload-pro"
       ]
     },
     "files": [
@@ -683,7 +684,8 @@
         }
       ],
       "examples": [
-        "media-demo"
+        "media-demo",
+        "upload-pro"
       ]
     },
     "files": [
@@ -755,7 +757,7 @@
       ],
       "examples": [
         "media-demo",
-        "media-toolbar-pro"
+        "upload-pro"
       ]
     },
     "files": [
