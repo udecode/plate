@@ -19,6 +19,8 @@ docs:
     title: Media Upload Toast
   - route: /docs/components/media-toolbar-button
     title: Media Toolbar Button
+  - route: https://pro.platejs.org/docs/examples/upload
+    title: Upload
   - route: https://pro.platejs.org/docs/components/media-toolbar
     title: Media Toolbar
 ---
@@ -56,6 +58,7 @@ docs:
 - **Upload experience**:
   - Real-time progress tracking
   - Preview during upload
+  - Automatically converts the placeholder to the appropriate media element (image, video, audio, file) once the upload or embed is submitted
   - Error handling
   - File size validation
   - Type validation
@@ -236,6 +239,15 @@ export function useUploadFile({
 }
 ```
 
+## Examples
+
+### Plate UI
+
+Refer to the preview above.
+
+### Plate Plus
+
+<ComponentPreviewPro name="upload-pro" />
 
 ## Plugins
 

@@ -26,44 +26,25 @@ export const proExamples: Registry = [
   {
     doc: {
       description: `- Integration with [UploadThing](https://uploadthing.com/)
-- Support for various media types: images, videos, audio, and files
 - Use slash commands for quick insertion
-- Image-specific features:
-  - **Better loading animation and image replacement**
-  - Resize using vertical edge bars
-  - Alignment options
-  - Caption support
-  - Expand/collapse view
-  - Easy download
-- Video-specific features:
-  - Lazy load
-  - Resize using vertical edge bars
-  - Alignment options
-  - Caption support
-  - View original source
-- Audio and file upload support
-- Ability to embed media via URL
-`,
-      // {/* - Multiple upload methods:
-      //   - Drag & drop files from your computer
-      //   - Paste images directly from clipboard */}
-      // {/* - Block menu for easy modification of uploaded content */}
-    },
-    name: 'upload-pro',
-    type: 'registry:pro',
-  },
-  {
-    doc: {
-      description: `- Displays clickable placeholders for various media types (image, video, audio, file)
+- Displays clickable placeholders for various media types (image, video, audio, file)
 - Opens a popover with two tabs when the placeholder is clicked:
   - Upload tab: Allows uploading local files directly
   - Embed tab: Enables pasting embed links for media content
-- Automatically converts the placeholder to the appropriate media element (image, video, audio, file) once the upload or embed is submitted
-- Validates URLs and file types for each media category
-- Beautifully crafted UI`,
+- Image-specific features:
+  - **Better loading rendering and image replacement**
+  - Alignment options
+  - Expand/collapse view
+  - Download button
+- Video-specific features:
+  - Lazy load
+  - Alignment options
+  - Caption support
+  - View original source
+- Beautifully crafted UI
+`,
     },
-    // TODO in pro
-    name: 'media-placeholder-pro',
+    name: 'upload-pro',
     type: 'registry:pro',
   },
   {
