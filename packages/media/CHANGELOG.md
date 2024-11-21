@@ -1,5 +1,11 @@
 # @udecode/plate-media
 
+## 40.2.4
+
+### Patch Changes
+
+- [#3796](https://github.com/udecode/plate/pull/3796) by [@siosio34](https://github.com/siosio34) – fix: `parseTwitterUrl`
+
 ## 40.2.3
 
 ### Patch Changes
