@@ -3,10 +3,13 @@ import type { EmbedUrlData } from '../media/parseMediaUrl';
 const twitterRegex =
   /^https?:\/\/(?:twitter|x)\.com\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/;
 
+const TWITTER_ID_INDEX = 3
+
 export const parseTwitterUrl = (url: string): EmbedUrlData | undefined => {
-  if (twitterRegex.exec(url)) {
+  const match = twitterRegex.exec(url);
+  if (match) {
     return {
-      id: twitterRegex.exec(url)?.groups?.id,
+      id: match[TWITTER_ID_INDEX],
       provider: 'twitter',
       url,
     };
