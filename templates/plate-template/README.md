@@ -15,11 +15,11 @@ Choose one of these methods:
 ### 1. Using CLI (Recommended)
 
 ```bash
-npx shadcx@latest init -u https://platejs.org/r
+npx shadcx@latest init plate
 ```
 
 ```bash
-npx shadcx@latest add editor-basic -r plate
+npx shadcx@latest add plate/editor-basic
 ```
 
 ### 2. Using Template
