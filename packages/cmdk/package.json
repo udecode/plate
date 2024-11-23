@@ -1,0 +1,58 @@
+{
+  "name": "@udecode/cmdk",
+  "version": "0.1.1",
+  "description": "Fork of cmdk with control actions.",
+  "keywords": [],
+  "homepage": "https://github.com/pacocoursey/cmdk#readme",
+  "bugs": {
+    "url": "https://github.com/pacocoursey/cmdk/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/udecode/plate.git",
+    "directory": "packages/cmdk"
+  },
+  "license": "MIT",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "module": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
+  "scripts": {
+    "brl": "yarn p:brl",
+    "build": "yarn p:build",
+    "build:watch": "yarn p:build:watch",
+    "clean": "yarn p:clean",
+    "lint": "yarn p:lint",
+    "lint:fix": "yarn p:lint:fix",
+    "test": "yarn p:test",
+    "test:watch": "yarn p:test:watch",
+    "typecheck": "yarn p:typecheck"
+  },
+  "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.2",
+    "@radix-ui/react-id": "^1.1.0",
+    "@radix-ui/react-primitive": "^2.0.0",
+    "use-sync-external-store": "^1.2.2"
+  },
+  "devDependencies": {
+    "@types/use-sync-external-store": "0.0.6"
+  },
+  "peerDependencies": {
+    "react": "^18 || ^19 || ^19.0.0-rc",
+    "react-dom": "^18 || ^19 || ^19.0.0-rc"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

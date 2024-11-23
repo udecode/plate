@@ -1,8 +1,7 @@
 import React, { useRef } from 'react';
 
-import type { TEditableProps } from '@udecode/slate-react';
-
 import { useComposedRef } from '@udecode/react-utils';
+import { type TEditableProps, focusEditorEdge } from '@udecode/slate-react';
 import { Editable } from 'slate-react';
 
 import { useEditableProps } from '../hooks';
@@ -15,6 +14,8 @@ import { PlateControllerEffect } from './PlateControllerEffect';
 import { PlateSlate } from './PlateSlate';
 
 export type PlateContentProps = Omit<TEditableProps, 'decorate'> & {
+  /** Autofocus when it becomes editable (readOnly false -> readOnly true) */
+  autoFocusOnEditable?: boolean;
   decorate?: PlateStoreState['decorate'];
   disabled?: boolean;
   /** R enders the editable content. */
@@ -34,7 +35,10 @@ export type PlateContentProps = Omit<TEditableProps, 'decorate'> & {
  * - UseHooks
  */
 const PlateContent = React.forwardRef(
-  ({ renderEditable, ...props }: PlateContentProps, ref) => {
+  (
+    { autoFocusOnEditable, renderEditable, ...props }: PlateContentProps,
+    ref
+  ) => {
     const { id } = props;
 
     const editor = useEditorRef(id);
@@ -105,6 +109,17 @@ const PlateContent = React.forwardRef(
       if (AboveEditable)
         aboveEditable = <AboveEditable>{aboveEditable}</AboveEditable>;
     });
+
+    const readOnly = props.readOnly ?? false;
+    const prevReadOnly = React.useRef(readOnly);
+
+    React.useEffect(() => {
+      if (autoFocusOnEditable && prevReadOnly.current && !readOnly) {
+        focusEditorEdge(editor, { edge: 'end' });
+      }
+
+      prevReadOnly.current = readOnly;
+    }, [autoFocusOnEditable, editor, readOnly]);
 
     return <PlateSlate id={id}>{aboveEditable}</PlateSlate>;
   }

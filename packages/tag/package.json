@@ -1,0 +1,68 @@
+{
+  "name": "@udecode/plate-tag",
+  "version": "40.0.0",
+  "description": "Tag plugin for Plate",
+  "keywords": [
+    "plate",
+    "plugin",
+    "slate"
+  ],
+  "homepage": "https://platejs.org",
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/tag"
+  },
+  "license": "MIT",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "module": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react/index.mjs",
+      "module": "./dist/react/index.mjs",
+      "require": "./dist/react/index.js"
+    }
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
+  "scripts": {
+    "brl": "yarn p:brl",
+    "build": "yarn p:build",
+    "build:watch": "yarn p:build:watch",
+    "clean": "yarn p:clean",
+    "lint": "yarn p:lint",
+    "lint:fix": "yarn p:lint:fix",
+    "test": "yarn p:test",
+    "test:watch": "yarn p:test:watch",
+    "typecheck": "yarn p:typecheck"
+  },
+  "devDependencies": {
+    "@udecode/plate-common": "workspace:^"
+  },
+  "peerDependencies": {
+    "@udecode/plate-common": ">=40.0.3",
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0",
+    "slate": ">=0.103.0",
+    "slate-dom": ">=0.111.0",
+    "slate-history": ">=0.93.0",
+    "slate-hyperscript": ">=0.66.0",
+    "slate-react": ">=0.111.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
