@@ -3,7 +3,10 @@
     "react-day-picker@8.10.1"
   ],
   "doc": {
-    "description": "A date field component that allows users to enter and edit date."
+    "description": "A date field component that allows users to enter and edit date.",
+    "links": {
+      "doc": "https://ui.shadcn.com/docs/components/calendar"
+    }
   },
   "files": [
     {

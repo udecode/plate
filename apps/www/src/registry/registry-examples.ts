@@ -911,6 +911,16 @@ export const docExamples: Registry = [
   },
   {
     doc: {
+      description: 'A form with a select editor component for managing labels.',
+      title: 'Select Editor Form',
+    },
+    files: ['example/select-editor-demo.tsx'],
+    name: 'select-editor-demo',
+    registryDependencies: ['form', 'button', 'select-editor'],
+    type: 'registry:example',
+  },
+  {
+    doc: {
       description: 'Restrict the editor to a single block.',
       title: 'Single Line',
     },

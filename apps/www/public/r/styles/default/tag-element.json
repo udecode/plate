@@ -1,0 +1,27 @@
+{
+  "dependencies": [],
+  "doc": {
+    "description": "A tag element component with selection states and styling.",
+    "docs": [
+      {
+        "route": "/docs/tag"
+      }
+    ],
+    "examples": [
+      "select-editor-demo"
+    ]
+  },
+  "files": [
+    {
+      "content": "'use client';\n\nimport { cn, withRef } from '@udecode/cn';\nimport { PlateElement } from '@udecode/plate-common/react';\nimport Link from 'next/link';\nimport { useFocused, useReadOnly, useSelected } from 'slate-react';\n\nexport const TagElement = withRef<typeof PlateElement>(\n  ({ children, className, ...props }, ref) => {\n    const { element } = props;\n    const selected = useSelected();\n    const focused = useFocused();\n    const readOnly = useReadOnly();\n\n    console.log(element);\n\n    const badge = (\n      <div\n        className={cn(\n          'shrink-0 break-normal rounded-full border px-2.5 align-middle text-sm font-semibold transition-colors focus:outline-none',\n          'border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/60',\n          selected && focused && 'ring-2 ring-ring ring-offset-0',\n          'flex items-center gap-1.5'\n        )}\n      >\n        {element.value as string}\n      </div>\n    );\n\n    const content =\n      readOnly && element.url ? (\n        <Link href={element.url as string}>{badge}</Link>\n      ) : (\n        badge\n      );\n\n    return (\n      <PlateElement\n        ref={ref}\n        className={cn(\n          'm-0.5 inline-flex cursor-pointer select-none',\n          className\n        )}\n        {...props}\n      >\n        {content}\n        {children}\n      </PlateElement>\n    );\n  }\n);\n",
+      "path": "plate-ui/tag-element.tsx",
+      "target": "components/plate-ui/tag-element.tsx",
+      "type": "registry:ui"
+    }
+  ],
+  "name": "tag-element",
+  "registryDependencies": [
+    "plate-element"
+  ],
+  "type": "registry:ui"
+}

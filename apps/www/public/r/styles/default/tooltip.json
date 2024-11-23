@@ -3,7 +3,10 @@
     "@radix-ui/react-tooltip"
   ],
   "doc": {
-    "description": "A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it."
+    "description": "A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.",
+    "links": {
+      "doc": "https://ui.shadcn.com/docs/components/tooltip"
+    }
   },
   "files": [
     {

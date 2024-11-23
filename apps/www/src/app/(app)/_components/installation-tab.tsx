@@ -19,7 +19,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   allPlugins,
@@ -27,6 +26,7 @@ import {
   orderedPluginKeys,
 } from '@/config/customizer-items';
 import { useMounted } from '@/registry/default/hooks/use-mounted';
+import { Label } from '@/registry/default/plate-ui/label';
 
 import { InstallationCode } from './installation-code';
 

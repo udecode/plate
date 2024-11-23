@@ -15,7 +15,8 @@
     "lint:fix": "yarn lint --fix",
     "preview": "next build && next start",
     "start": "next start",
-    "typecheck": "yarn prebuild && tsc --noEmit"
+    "typecheck": "yarn prebuild && tsc --noEmit",
+    "typecheck:watch": "yarn typecheck --watch"
   },
   "browserslist": {
     "production": [
@@ -37,6 +38,7 @@
     "@ai-sdk/openai": "^0.0.67",
     "@ariakit/react": "0.4.11",
     "@faker-js/faker": "^9.0.2",
+    "@hookform/resolvers": "3.9.1",
     "@next/third-parties": "15.0.3",
     "@radix-ui/colors": "3.0.0",
     "@radix-ui/react-accessible-icon": "^1.1.0",
@@ -69,6 +71,7 @@
     "@radix-ui/react-toggle-group": "^1.1.0",
     "@radix-ui/react-toolbar": "^1.1.0",
     "@radix-ui/react-tooltip": "^1.1.2",
+    "@udecode/cmdk": "workspace:^",
     "@udecode/cn": "workspace:^",
     "@udecode/plate": "workspace:^",
     "@udecode/plate-ai": "workspace:^",
@@ -121,6 +124,7 @@
     "@udecode/plate-suggestion": "workspace:^",
     "@udecode/plate-tabbable": "workspace:^",
     "@udecode/plate-table": "workspace:^",
+    "@udecode/plate-tag": "workspace:^",
     "@udecode/plate-test-utils": "workspace:^",
     "@udecode/plate-toggle": "workspace:^",
     "@udecode/plate-trailing-block": "workspace:^",
@@ -139,6 +143,7 @@
     "contentlayer2": "^0.4.6",
     "date-fns": "^3.6.0",
     "framer-motion": "^11.5.4",
+    "fzf": "0.5.2",
     "lodash.template": "^4.5.0",
     "lucide-react": "0.460.0",
     "match-sorter": "6.3.4",
@@ -152,6 +157,7 @@
     "react-dnd": "16.0.1",
     "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18.3.1",
+    "react-hook-form": "7.53.2",
     "react-lite-youtube-embed": "^2.4.0",
     "react-markdown": "9.0.1",
     "react-player": "2.16.0",

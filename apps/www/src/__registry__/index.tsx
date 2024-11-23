@@ -401,6 +401,18 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
+    "tag-element": {
+      name: "tag-element",
+      description: "",
+      type: "registry:ui",
+      registryDependencies: ["plate-element"],
+      files: ["registry/default/plate-ui/tag-element.tsx"],
+      component: React.lazy(() => import("@/registry/default/plate-ui/tag-element.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
     "toc-element": {
       name: "toc-element",
       description: "",
@@ -545,6 +557,18 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
+    "form": {
+      name: "form",
+      description: "",
+      type: "registry:ui",
+      registryDependencies: ["label"],
+      files: ["registry/default/plate-ui/form.tsx"],
+      component: React.lazy(() => import("@/registry/default/plate-ui/form.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
     "input": {
       name: "input",
       description: "",
@@ -552,6 +576,18 @@ export const Index: Record<string, any> = {
       registryDependencies: [],
       files: ["registry/default/plate-ui/input.tsx"],
       component: React.lazy(() => import("@/registry/default/plate-ui/input.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
+    "label": {
+      name: "label",
+      description: "",
+      type: "registry:ui",
+      registryDependencies: [],
+      files: ["registry/default/plate-ui/label.tsx"],
+      component: React.lazy(() => import("@/registry/default/plate-ui/label.tsx")),
       source: "",
       category: "",
       subcategory: "",
@@ -756,6 +792,18 @@ export const Index: Record<string, any> = {
       registryDependencies: [],
       files: ["registry/default/plate-ui/editor.tsx"],
       component: React.lazy(() => import("@/registry/default/plate-ui/editor.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
+    "select-editor": {
+      name: "select-editor",
+      description: "",
+      type: "registry:ui",
+      registryDependencies: ["editor","command","popover","tag-element"],
+      files: ["registry/default/plate-ui/select-editor.tsx"],
+      component: React.lazy(() => import("@/registry/default/plate-ui/select-editor.tsx")),
       source: "",
       category: "",
       subcategory: "",
@@ -1944,6 +1992,18 @@ export const Index: Record<string, any> = {
       registryDependencies: undefined,
       files: ["registry/default/example/demo.tsx","registry/default/example/values/deserialize-md-value.tsx","registry/default/components/editor/use-create-editor.ts","registry/default/components/editor/plugins/editor-plugins.tsx"],
       component: React.lazy(() => import("@/registry/default/example/demo.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
+    "select-editor-demo": {
+      name: "select-editor-demo",
+      description: "",
+      type: "registry:example",
+      registryDependencies: ["form","button","select-editor"],
+      files: ["registry/default/example/select-editor-demo.tsx"],
+      component: React.lazy(() => import("@/registry/default/example/select-editor-demo.tsx")),
       source: "",
       category: "",
       subcategory: "",

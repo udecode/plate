@@ -48,7 +48,7 @@ export const docsExamples: SidebarNavItem[] = [
     )
   ).map((item) => ({
     ...item,
-    title: item.title + ' Demo',
+    title: item.title + (item.title?.includes(' Form') ? '' : ' Demo'),
   })),
 ];
 

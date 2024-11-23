@@ -3,7 +3,10 @@
     "@radix-ui/react-separator"
   ],
   "doc": {
-    "description": "Visually or semantically separates content."
+    "description": "Visually or semantically separates content.",
+    "links": {
+      "doc": "https://ui.shadcn.com/docs/components/separator"
+    }
   },
   "files": [
     {

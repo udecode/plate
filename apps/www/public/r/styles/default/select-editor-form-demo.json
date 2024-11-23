@@ -1,0 +1,21 @@
+{
+  "doc": {
+    "description": "A form with a select editor component for managing labels.",
+    "title": "Editor Select Form"
+  },
+  "files": [
+    {
+      "content": "'use client';\n\nimport React from 'react';\nimport { useForm } from 'react-hook-form';\n\nimport { zodResolver } from '@hookform/resolvers/zod';\nimport { CheckIcon, PlusIcon } from 'lucide-react';\nimport * as z from 'zod';\n\nimport { Button } from '@/components/plate-ui/button';\nimport {\n  Form,\n  FormControl,\n  FormField,\n  FormItem,\n  FormMessage,\n} from '@/components/plate-ui/form';\nimport {\n  type SelectItem,\n  SelectEditor,\n  SelectEditorCombobox,\n  SelectEditorContent,\n  SelectEditorInput,\n} from '@/components/plate-ui/select-editor';\n\nconst LABELS = [\n  { value: 'Bug' },\n  { value: 'Feature' },\n  { value: 'Enhancement' },\n  { value: 'Breaking Change' },\n  { value: 'Documentation' },\n  { value: 'Design' },\n  { value: 'Performance' },\n  { value: 'Security' },\n  { value: 'Technical Debt' },\n  { value: 'Dependencies' },\n  { value: 'High Priority' },\n  { value: 'Low Priority' },\n] satisfies SelectItem[];\n\nconst formSchema = z.object({\n  labels: z\n    .array(\n      z.object({\n        value: z.string(),\n      })\n    )\n    .min(1, 'Select at least one label')\n    .max(10, 'Select up to 10 labels'),\n});\n\ntype FormValues = z.infer<typeof formSchema>;\n\nexport function EditorSelectForm() {\n  const [readOnly, setReadOnly] = React.useState(false);\n  const form = useForm<FormValues>({\n    defaultValues: {\n      labels: [],\n    },\n    resolver: zodResolver(formSchema),\n  });\n\n  return (\n    <div className=\"mx-auto w-full max-w-2xl space-y-8 p-8\">\n      <Form {...form}>\n        <div className=\"space-y-6\">\n          <FormField\n            name=\"labels\"\n            control={form.control}\n            render={({ field }) => (\n              <FormItem>\n                <div className=\"flex items-start gap-2\">\n                  <FormControl>\n                    <SelectEditor\n                      value={field.value}\n                      onValueChange={readOnly ? undefined : field.onChange}\n                      items={LABELS}\n                    >\n                      <SelectEditorContent>\n                        <SelectEditorInput\n                          readOnly={readOnly}\n                          placeholder={readOnly ? 'Empty' : 'Select labels...'}\n                          autoFocus\n                        />\n                        {!readOnly && <SelectEditorCombobox />}\n                      </SelectEditorContent>\n                    </SelectEditor>\n                  </FormControl>\n\n                  <Button\n                    size=\"icon\"\n                    variant=\"ghost\"\n                    onClick={() => setReadOnly(!readOnly)}\n                    type=\"button\"\n                  >\n                    {readOnly ? (\n                      <PlusIcon className=\"size-4\" />\n                    ) : (\n                      <CheckIcon className=\"size-4\" />\n                    )}\n                  </Button>\n                </div>\n                <FormMessage />\n              </FormItem>\n            )}\n          />\n        </div>\n      </Form>\n    </div>\n  );\n}\n",
+      "path": "example/select-editor-form.tsx",
+      "target": "components/select-editor-form.tsx",
+      "type": "registry:example"
+    }
+  ],
+  "name": "select-editor-form-demo",
+  "registryDependencies": [
+    "form",
+    "button",
+    "select-editor"
+  ],
+  "type": "registry:example"
+}

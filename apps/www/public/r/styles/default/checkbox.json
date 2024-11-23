@@ -3,7 +3,10 @@
     "@radix-ui/react-checkbox"
   ],
   "doc": {
-    "description": "A control that allows the user to toggle between checked and not checked."
+    "description": "A control that allows the user to toggle between checked and not checked.",
+    "links": {
+      "doc": "https://ui.shadcn.com/docs/components/checkbox"
+    }
   },
   "files": [
     {
