@@ -6,10 +6,8 @@ import { useCommandActions } from '@udecode/cmdk';
 import {
   getEditorString,
   isHotkey,
-  moveSelection,
   removeEditorText,
   replaceNodeChildren,
-  someNode,
 } from '@udecode/plate-common';
 import {
   Plate,
@@ -19,6 +17,7 @@ import {
 } from '@udecode/plate-common/react';
 import { isEqualTags } from '@udecode/plate-tag';
 import {
+  MultiSelectPlugin,
   TagPlugin,
   useSelectEditorCombobox,
   useSelectableItems,
@@ -112,7 +111,7 @@ export function SelectEditorContent({
   const editor = usePlateEditor(
     {
       plugins: [
-        TagPlugin.configure({
+        MultiSelectPlugin.configure({
           node: {
             component: TagElement,
           },
@@ -166,10 +165,6 @@ export const SelectEditorInput = React.forwardRef<
           e.preventDefault();
           selectCurrentItem();
           removeEditorText(editor);
-
-          if (someNode(editor, { match: { type: TagPlugin.key } })) {
-            moveSelection(editor);
-          }
         }
         if (isHotkey('escape', e) || isHotkey('mod+enter', e)) {
           e.preventDefault();
@@ -219,7 +214,7 @@ export function SelectEditorCombobox() {
                 className="cursor-pointer gap-2"
                 onMouseDown={(e) => e.preventDefault()}
                 onSelect={() => {
-                  editor.getTransforms(TagPlugin).insert.option(item);
+                  editor.getTransforms(TagPlugin).insert.tag(item);
                 }}
               >
                 {item.isNew ? (

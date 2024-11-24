@@ -12,8 +12,6 @@ export const TagElement = withRef<typeof PlateElement>(
     const focused = useFocused();
     const readOnly = useReadOnly();
 
-    console.log(element);
-
     const badge = (
       <div
         className={cn(
