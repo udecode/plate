@@ -1876,13 +1876,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@excalidraw/excalidraw@npm:0.16.4":
-  version: 0.16.4
-  resolution: "@excalidraw/excalidraw@npm:0.16.4"
+"@excalidraw/excalidraw@npm:0.17.6":
+  version: 0.17.6
+  resolution: "@excalidraw/excalidraw@npm:0.17.6"
   peerDependencies:
     react: ^17.0.2 || ^18.2.0
     react-dom: ^17.0.2 || ^18.2.0
-  checksum: 10c0/a6ce3797b3a0a10e521422ef076757d75ed71a0510d8389d7dab6a8aef4c560e06fdaa415ed3892faa8c221e915a9165f3f05649c98975e855365cf607341c50
+  checksum: 10c0/94242d5e3e3e274704fd0cbe4fb4aa552104d7ecc815e0a5bc55d045e974a1e0e0223e805baa2e7899ca2ff10125b95184acfb5f11e9f3fdb07f25ff9afb54e1
   languageName: node
   linkType: hard
 
@@ -6430,7 +6430,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/plate-excalidraw@workspace:packages/excalidraw"
   dependencies:
-    "@excalidraw/excalidraw": "npm:0.16.4"
+    "@excalidraw/excalidraw": "npm:0.17.6"
     "@udecode/plate-common": "workspace:^"
   peerDependencies:
     "@udecode/plate-common": ">=40.0.3"
