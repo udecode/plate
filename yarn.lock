@@ -6384,7 +6384,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-docx@npm:40.2.3, @udecode/plate-docx@workspace:^, @udecode/plate-docx@workspace:packages/docx":
+"@udecode/plate-docx@npm:40.2.4, @udecode/plate-docx@workspace:^, @udecode/plate-docx@workspace:packages/docx":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-docx@workspace:packages/docx"
   dependencies:
@@ -6392,7 +6392,7 @@ __metadata:
     "@udecode/plate-heading": "npm:40.0.2"
     "@udecode/plate-indent": "npm:40.0.0"
     "@udecode/plate-indent-list": "npm:40.0.0"
-    "@udecode/plate-media": "npm:40.2.3"
+    "@udecode/plate-media": "npm:40.2.4"
     "@udecode/plate-table": "npm:40.0.0"
     validator: "npm:^13.12.0"
   peerDependencies:
@@ -6752,7 +6752,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-media@npm:40.2.3, @udecode/plate-media@workspace:^, @udecode/plate-media@workspace:packages/media":
+"@udecode/plate-media@npm:40.2.4, @udecode/plate-media@workspace:^, @udecode/plate-media@workspace:packages/media":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-media@workspace:packages/media"
   dependencies:
@@ -7088,7 +7088,7 @@ __metadata:
     "@udecode/plate-common": "npm:40.0.3"
     "@udecode/plate-csv": "npm:40.0.0"
     "@udecode/plate-diff": "npm:40.0.0"
-    "@udecode/plate-docx": "npm:40.2.3"
+    "@udecode/plate-docx": "npm:40.2.4"
     "@udecode/plate-find-replace": "npm:40.0.0"
     "@udecode/plate-floating": "npm:40.0.0"
     "@udecode/plate-font": "npm:40.0.0"
@@ -7104,7 +7104,7 @@ __metadata:
     "@udecode/plate-link": "npm:40.0.0"
     "@udecode/plate-list": "npm:40.0.0"
     "@udecode/plate-markdown": "npm:40.2.2"
-    "@udecode/plate-media": "npm:40.2.3"
+    "@udecode/plate-media": "npm:40.2.4"
     "@udecode/plate-mention": "npm:40.0.0"
     "@udecode/plate-node-id": "npm:40.0.0"
     "@udecode/plate-normalizers": "npm:40.0.0"
