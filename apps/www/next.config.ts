@@ -27,7 +27,7 @@ const nextConfig = async (phase: string) => {
     },
 
     outputFileTracingIncludes: {
-      '/blocks/*': ['./registry/**/*'],
+      '/api/registry/*': ['./src/registry/**/*'],
     },
 
     // Configure domains to allow for optimized image loading.
