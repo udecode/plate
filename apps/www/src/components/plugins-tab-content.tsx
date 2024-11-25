@@ -159,7 +159,7 @@ export function PluginsTabContent() {
             </div>
 
             <Button
-              size="md"
+              size="lg"
               onClick={() => {
                 // settingsStore.set.homeTab('installation');
                 settingsStore.set.showSettings(false);

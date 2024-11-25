@@ -27,15 +27,12 @@ export const registryItemTypeSchema = z.enum([
   'registry:page',
 ]);
 
-export const registryItemFileSchema = z.union([
-  z.string(),
-  z.object({
-    content: z.string().optional(),
-    path: z.string(),
-    target: z.string().optional(),
-    type: registryItemTypeSchema,
-  }),
-]);
+export const registryItemFileSchema = z.object({
+  content: z.string().optional(),
+  path: z.string(),
+  target: z.string().optional(),
+  type: registryItemTypeSchema,
+});
 
 export const registryItemTailwindSchema = z.object({
   config: z.object({
@@ -50,7 +47,7 @@ export const registryItemCssVarsSchema = z.object({
   light: z.record(z.string(), z.string()).optional(),
 });
 
-export const registryEntrySchema = z.object({
+export const registryItemSchema = z.object({
   category: z.string().optional(),
   chunks: z.array(blockChunkSchema).optional(),
   cssVars: registryItemCssVarsSchema.optional(),
@@ -98,21 +95,26 @@ export const registryEntrySchema = z.object({
   external: z.boolean().optional(),
   files: z.array(registryItemFileSchema).optional(),
   items: z.array(z.string()).optional(),
+  meta: z.record(z.string(), z.any()).optional(),
   name: z.string(),
   registryDependencies: z.array(z.string()).optional(),
-  source: z.string().optional(),
   subcategory: z.string().optional(),
   tailwind: registryItemTailwindSchema.optional(),
   type: registryItemTypeSchema,
 });
 
-export const registrySchema = z.array(registryEntrySchema);
+export const registryEntrySchema = registryItemSchema.extend({
+  category: z.string().optional(),
+  subcategory: z.string().optional(),
+});
 
-export type RegistryEntry = z.infer<typeof registryEntrySchema>;
+export const registrySchema = z.array(registryItemSchema);
+
+export type RegistryEntry = z.infer<typeof registryItemSchema>;
 
 export type Registry = z.infer<typeof registrySchema>;
 
-export const blockSchema = registryEntrySchema.extend({
+export const blockSchema = registryItemSchema.extend({
   code: z.string(),
   component: z.any(),
   container: z
