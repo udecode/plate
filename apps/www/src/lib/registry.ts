@@ -117,7 +117,7 @@ async function getAllItemFiles(
 }
 
 async function getFileContent(filePath: string) {
-  const raw = await fs.readFile(filePath, 'utf8');
+  const raw = await fs.readFile(path.join(process.cwd(), filePath), 'utf8');
 
   const project = new Project({
     compilerOptions: {},

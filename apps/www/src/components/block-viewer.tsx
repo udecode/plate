@@ -115,6 +115,7 @@ function BlockViewerProvider({
   >(highlightedFiles?.[0]?.target ?? null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [isSettled, setIsSettled] = React.useState(false);
+  const [hasError, setHasError] = React.useState(false); // Add error state
   const resizablePanelRef = React.useRef<ImperativePanelHandle>(null);
 
   // Load code files when switching to code view
@@ -124,6 +125,7 @@ function BlockViewerProvider({
       highlightedFiles?.[1] &&
       !highlightedFiles[1].content &&
       !isLoading &&
+      !hasError &&
       !isSettled
     ) {
       const loadFiles = async () => {
@@ -136,6 +138,9 @@ function BlockViewerProvider({
           if (!activeFile && files?.length) {
             setActiveFile(files[0].target!);
           }
+        } catch (error) {
+          console.error('Failed to load files:', error);
+          setHasError(true); // Set error state to prevent retries
         } finally {
           setIsLoading(false);
         }
@@ -144,7 +149,15 @@ function BlockViewerProvider({
       };
       void loadFiles();
     }
-  }, [activeFile, highlightedFiles, isLoading, isSettled, item.name, view]);
+  }, [
+    activeFile,
+    hasError,
+    highlightedFiles,
+    isLoading,
+    isSettled,
+    item.name,
+    view,
+  ]);
 
   return (
     <BlockViewerContext.Provider
