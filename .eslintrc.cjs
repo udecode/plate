@@ -37,6 +37,14 @@ module.exports = {
   ],
   overrides: [
     {
+      files: ['**/registry/default/**/*'],
+      rules: {
+        'jsx-a11y/iframe-has-title': 'off',
+        'jsx-a11y/media-has-caption': 'off',
+        'react/jsx-no-comment-textnodes': 'off',
+      },
+    },
+    {
       files: ['*.ts', '*.tsx', '*.mts'],
       parserOptions: {
         project: true,
