@@ -68,7 +68,9 @@ export default function IndexPage() {
 
         <div className="container py-6">
           <section className="relative">
-            <HomeTabs />
+            <React.Suspense fallback={null}>
+              <HomeTabs />
+            </React.Suspense>
 
             <CustomizerDrawer />
           </section>
