@@ -153,6 +153,10 @@ export const docsConfig: DocsConfig = {
   ],
   mainNav: [
     {
+      href: '/',
+      title: 'Home',
+    },
+    {
       href: '/docs',
       title: 'Documentation',
     },

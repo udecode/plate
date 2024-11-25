@@ -78,7 +78,7 @@ export default function CustomizerDrawer() {
 
             <SheetPrimitive.Close asChild onClick={() => setOpen(false)}>
               <Button
-                size="md"
+                size="lg"
                 variant="ghost"
                 className="absolute left-4 top-4 size-8 p-0 px-1.5"
               >

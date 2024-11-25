@@ -9,6 +9,7 @@ import { tmpdir } from 'os';
 import path from 'path';
 import objectToString from 'stringify-object';
 import {
+  type ArrayLiteralExpression,
   type ObjectLiteralExpression,
   type PropertyAssignment,
   type VariableStatement,
@@ -198,8 +199,11 @@ async function addTailwindConfigTheme(
   if (themeInitializer?.isKind(SyntaxKind.ObjectLiteralExpression)) {
     const themeObjectString = themeInitializer.getText();
     const themeObject = await parseObjectLiteral(themeObjectString);
-    const result = deepmerge(themeObject, theme);
+    const result = deepmerge(themeObject, theme, {
+      arrayMerge: (dst, src) => src,
+    });
     const resultString = objectToString(result)
+      .replace(/'\.{3}(.*)'/g, '...$1') // Remove quote around spread element
       .replace(/'"/g, "'") // Replace `\" with "
       .replace(/"'/g, "'") // Replace `\" with "
       .replace(/'\[/g, '[') // Replace `[ with [
@@ -293,7 +297,8 @@ export function nestSpreadProperties(obj: ObjectLiteralExpression) {
       // Replace spread with a property assignment
       obj.insertPropertyAssignment(i, {
         initializer: `"...${spreadText.replace(/^\.{3}/, '')}"`,
-        name: `___${spreadText.replace(/^\.{3}/, '')}`,
+        // Need to escape the name with " so that deepmerge doesn't mishandle the key
+        name: `"___${spreadText.replace(/^\.{3}/, '')}"`,
       });
 
       // Remove the original spread assignment
@@ -307,7 +312,36 @@ export function nestSpreadProperties(obj: ObjectLiteralExpression) {
         nestSpreadProperties(
           initializer.asKindOrThrow(SyntaxKind.ObjectLiteralExpression)
         );
+      } else if (initializer?.isKind(SyntaxKind.ArrayLiteralExpression)) {
+        nestSpreadElements(
+          initializer.asKindOrThrow(SyntaxKind.ArrayLiteralExpression)
+        );
       }
+    }
+  }
+}
+
+export function nestSpreadElements(arr: ArrayLiteralExpression) {
+  const elements = arr.getElements();
+
+  for (let j = 0; j < elements.length; j++) {
+    const element = elements[j];
+
+    if (element.isKind(SyntaxKind.ObjectLiteralExpression)) {
+      // Recursive check on objects within arrays
+      nestSpreadProperties(
+        element.asKindOrThrow(SyntaxKind.ObjectLiteralExpression)
+      );
+    } else if (element.isKind(SyntaxKind.ArrayLiteralExpression)) {
+      // Recursive check on nested arrays
+      nestSpreadElements(
+        element.asKindOrThrow(SyntaxKind.ArrayLiteralExpression)
+      );
+    } else if (element.isKind(SyntaxKind.SpreadElement)) {
+      const spreadText = element.getText();
+      // Spread element within an array
+      arr.removeElement(j);
+      arr.insertElement(j, `"${spreadText}"`);
     }
   }
 }
@@ -323,7 +357,9 @@ export function unnestSpreadProperties(obj: ObjectLiteralExpression) {
       const initializer = propAssignment.getInitializer();
 
       if (initializer?.isKind(SyntaxKind.StringLiteral)) {
-        const value = initializer.getLiteralValue();
+        const value = initializer
+          .asKindOrThrow(SyntaxKind.StringLiteral)
+          .getLiteralValue();
 
         if (value.startsWith('...')) {
           obj.insertSpreadAssignment(i, { expression: value.slice(3) });
@@ -331,6 +367,39 @@ export function unnestSpreadProperties(obj: ObjectLiteralExpression) {
         }
       } else if (initializer?.isKind(SyntaxKind.ObjectLiteralExpression)) {
         unnestSpreadProperties(initializer as ObjectLiteralExpression);
+      } else if (initializer?.isKind(SyntaxKind.ArrayLiteralExpression)) {
+        unnsetSpreadElements(
+          initializer.asKindOrThrow(SyntaxKind.ArrayLiteralExpression)
+        );
+      }
+    }
+  }
+}
+
+export function unnsetSpreadElements(arr: ArrayLiteralExpression) {
+  const elements = arr.getElements();
+
+  for (let j = 0; j < elements.length; j++) {
+    const element = elements[j];
+
+    if (element.isKind(SyntaxKind.ObjectLiteralExpression)) {
+      // Recursive check on objects within arrays
+      unnestSpreadProperties(
+        element.asKindOrThrow(SyntaxKind.ObjectLiteralExpression)
+      );
+    } else if (element.isKind(SyntaxKind.ArrayLiteralExpression)) {
+      // Recursive check on nested arrays
+      unnsetSpreadElements(
+        element.asKindOrThrow(SyntaxKind.ArrayLiteralExpression)
+      );
+    } else if (element.isKind(SyntaxKind.StringLiteral)) {
+      const spreadText = element.getText();
+      // check if spread element
+      const spreadTest = /^["'](\.{3}.*)["']$/g;
+
+      if (spreadTest.test(spreadText)) {
+        arr.removeElement(j);
+        arr.insertElement(j, spreadText.replace(spreadTest, '$1'));
       }
     }
   }
@@ -364,13 +433,46 @@ function parseObjectLiteralExpression(node: ObjectLiteralExpression): any {
   for (const property of node.getProperties()) {
     if (property.isKind(SyntaxKind.PropertyAssignment)) {
       const name = property.getName().replace(/'/g, '');
-      result[name] = property
-        .getInitializer()
-        ?.isKind(SyntaxKind.ObjectLiteralExpression)
-        ? parseObjectLiteralExpression(
-            property.getInitializer() as ObjectLiteralExpression
-          )
-        : parseValue(property.getInitializer());
+
+      if (
+        property.getInitializer()?.isKind(SyntaxKind.ObjectLiteralExpression)
+      ) {
+        result[name] = parseObjectLiteralExpression(
+          property.getInitializer() as ObjectLiteralExpression
+        );
+      } else if (
+        property.getInitializer()?.isKind(SyntaxKind.ArrayLiteralExpression)
+      ) {
+        result[name] = parseArrayLiteralExpression(
+          property.getInitializer() as ArrayLiteralExpression
+        );
+      } else {
+        result[name] = parseValue(property.getInitializer());
+      }
+    }
+  }
+
+  return result;
+}
+
+function parseArrayLiteralExpression(node: ArrayLiteralExpression): any[] {
+  const result: any[] = [];
+
+  for (const element of node.getElements()) {
+    if (element.isKind(SyntaxKind.ObjectLiteralExpression)) {
+      result.push(
+        parseObjectLiteralExpression(
+          element.asKindOrThrow(SyntaxKind.ObjectLiteralExpression)
+        )
+      );
+    } else if (element.isKind(SyntaxKind.ArrayLiteralExpression)) {
+      result.push(
+        parseArrayLiteralExpression(
+          element.asKindOrThrow(SyntaxKind.ArrayLiteralExpression)
+        )
+      );
+    } else {
+      result.push(parseValue(element));
     }
   }
 
@@ -378,9 +480,9 @@ function parseObjectLiteralExpression(node: ObjectLiteralExpression): any {
 }
 
 function parseValue(node: any): any {
-  switch (node.kind) {
+  switch (node.getKind()) {
     case SyntaxKind.ArrayLiteralExpression: {
-      return node.elements.map(parseValue);
+      return node.getElements().map(parseValue);
     }
     case SyntaxKind.FalseKeyword: {
       return false;
@@ -389,10 +491,13 @@ function parseValue(node: any): any {
       return null;
     }
     case SyntaxKind.NumericLiteral: {
-      return Number(node.text);
+      return Number(node.getText());
+    }
+    case SyntaxKind.ObjectLiteralExpression: {
+      return parseObjectLiteralExpression(node);
     }
     case SyntaxKind.StringLiteral: {
-      return node.text;
+      return node.getText();
     }
     case SyntaxKind.TrueKeyword: {
       return true;

@@ -1,33 +1,59 @@
-import { unstable_cache } from 'next/cache';
+import * as React from 'react';
 
-import { BlockPreview } from '@/components/block-preview';
-import { getBlock } from '@/lib/blocks';
+import { BlockViewer } from '@/components/block-viewer';
+import {
+  getCachedDependencies,
+  getCachedFileTree,
+  getCachedHighlightedFiles,
+  getCachedRegistryItem,
+} from '@/lib/registry-cache';
 
-const getBlockByName = unstable_cache(
-  async (name: string) => {
-    const block = await getBlock(name);
+export async function BlockDisplay({
+  isPro,
+  name,
+  src,
+  ...props
+}: {
+  name: string;
+  isPro?: boolean;
+  src?: string;
+}) {
+  if (src) {
+    return (
+      <BlockViewer
+        dependencies={[]}
+        highlightedFiles={[]}
+        isPro={isPro}
+        item={
+          {
+            name,
+            src,
+            ...props,
+          } as any
+        }
+        tree={[]}
+      />
+    );
+  }
 
-    if (!block) {
-      return null;
-    }
+  const item = await getCachedRegistryItem(name, true);
 
-    return {
-      container: block.container,
-      description: block.description,
-      name: block.name,
-      // style: block.style,
-      style: 'default',
-    };
-  },
-  ['block']
-);
-
-export async function BlockDisplay({ name }: { name: string }) {
-  const block = await getBlockByName(name);
-
-  if (!block) {
+  if (!item?.files) {
     return null;
   }
 
-  return <BlockPreview key={block.name} block={block} />;
+  const [tree, highlightedFiles, dependencies] = await Promise.all([
+    getCachedFileTree(item.files),
+    getCachedHighlightedFiles(item.files),
+    getCachedDependencies(name),
+  ]);
+
+  return (
+    <BlockViewer
+      dependencies={dependencies}
+      highlightedFiles={highlightedFiles}
+      item={item}
+      tree={tree}
+    />
+  );
 }

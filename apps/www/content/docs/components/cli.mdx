@@ -32,6 +32,7 @@ Options:
   -f, --force       force overwrite of existing components.json. (default: false)
   -y, --yes         skip confirmation prompt. (default: false)
   -c, --cwd <cwd>   the working directory. defaults to the current directory.
+  -a, --all         add all available components. (default: false)
   -n, --name <name> registry name. (default: plate)
   -s, --silent      mute output (default: false)
   --src-dir         use the src directory when creating a new project (default: false)
@@ -118,13 +119,6 @@ Here's an example `components.json` file configured for [shadcn/ui](https://ui.s
   "style": "default",
   "rsc": true,
   "tsx": true,
-  "aliases": {
-    "components": "@/components",
-    "hooks": "@/hooks",
-    "lib": "@/lib",
-    "ui": "@/components/ui",
-    "utils": "@/lib/utils"
-  },
   "tailwind": {
     "baseColor": "slate",
     "config": "tailwind.config.ts",
@@ -132,6 +126,14 @@ Here's an example `components.json` file configured for [shadcn/ui](https://ui.s
     "cssVariables": true,
     "prefix": ""
   },
+  "aliases": {
+    "components": "@/components",
+    "hooks": "@/hooks",
+    "lib": "@/lib",
+    "ui": "@/components/ui",
+    "utils": "@/lib/utils"
+  },
+  "iconLibrary": "lucide",
   "registries": {
     "plate": {
       "aliases": {

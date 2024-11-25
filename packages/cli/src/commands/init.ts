@@ -458,6 +458,7 @@ async function promptForMinimalConfig(
   return rawConfigSchema.parse({
     $schema: defaultConfig?.$schema,
     aliases: defaultConfig?.aliases,
+    iconLibrary: defaultConfig?.iconLibrary,
     registries: defaultConfig?.registries,
     rsc: defaultConfig?.rsc,
     style,

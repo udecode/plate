@@ -7,13 +7,10 @@ import Link, { type LinkProps } from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
 import { docsConfig } from '@/config/docs';
-import { siteConfig } from '@/config/site';
+import { useMetaColor } from '@/hooks/use-meta-color';
 import { Button } from '@/registry/default/plate-ui/button';
-import { DialogTitle } from '@/registry/default/plate-ui/dialog';
 
-import { Icons } from './icons';
-import { ScrollArea } from './ui/scroll-area';
-import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
+import { Drawer, DrawerContent, DrawerTrigger } from './ui/drawer';
 
 export function MobileNav() {
   const pathname = usePathname();
@@ -21,60 +18,43 @@ export function MobileNav() {
   const navItems = isUI ? docsConfig.componentsNav : docsConfig.sidebarNav;
 
   const [open, setOpen] = React.useState(false);
+  const { metaColor, setMetaColor } = useMetaColor();
+  const onOpenChange = React.useCallback(
+    (open: boolean) => {
+      setOpen(open);
+      setMetaColor(open ? '#09090b' : metaColor);
+    },
+    [setMetaColor, metaColor]
+  );
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
+    <Drawer open={open} onOpenChange={onOpenChange}>
+      <DrawerTrigger asChild>
         <Button
-          size="md"
+          size="lg"
           variant="ghost"
-          className="mr-2 px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 md:hidden"
+          className="-ml-2 mr-2 size-8 px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 md:hidden"
         >
           <svg
-            className="size-5"
+            className="!size-6"
             fill="none"
+            stroke="currentColor"
             strokeWidth="1.5"
             viewBox="0 0 24 24"
             xmlns="http://www.w3.org/2000/svg"
           >
             <path
-              d="M3 5H11"
-              stroke="currentColor"
+              d="M3.75 9h16.5m-16.5 6.75h16.5"
               strokeLinecap="round"
               strokeLinejoin="round"
-              strokeWidth="1.5"
-            ></path>
-            <path
-              d="M3 12H16"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="1.5"
-            ></path>
-            <path
-              d="M3 19H21"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="1.5"
-            ></path>
+            />
           </svg>
 
           <span className="sr-only">Toggle Menu</span>
         </Button>
-      </SheetTrigger>
-      <SheetContent className="pr-0" side="left">
-        <DialogTitle className="sr-only">Mobile Nav</DialogTitle>
-
-        <MobileLink
-          className="flex items-center"
-          onOpenChange={setOpen}
-          href="/"
-        >
-          <Icons.minus className="mr-2 size-4" />
-          <span className="font-bold">{siteConfig.name}</span>
-        </MobileLink>
-        <ScrollArea className="my-4 h-[calc(100vh-8rem)] pb-10 pl-6">
+      </DrawerTrigger>
+      <DrawerContent className="max-h-[60svh] p-0">
+        <div className="overflow-auto p-6">
           <div className="flex flex-col space-y-3">
             {docsConfig.mainNav?.map((item) => {
               return (
@@ -124,9 +104,9 @@ export function MobileNav() {
               </div>
             ))}
           </div>
-        </ScrollArea>
-      </SheetContent>
-    </Sheet>
+        </div>
+      </DrawerContent>
+    </Drawer>
   );
 }
 
@@ -147,7 +127,7 @@ function MobileLink({
 
   return (
     <Link
-      className={cn(className)}
+      className={cn('text-base', className)}
       onClick={() => {
         // eslint-disable-next-line @typescript-eslint/no-base-to-string
         router.push(href.toString());

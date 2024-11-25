@@ -17,7 +17,6 @@ export function IFrame({ children, ...props }: any) {
   const mountNode = contentRef?.contentWindow?.document.body;
 
   return (
-    // eslint-disable-next-line jsx-a11y/iframe-has-title
     <iframe {...props} ref={setContentRef}>
       {mountNode && createPortal(React.Children.only(children), mountNode)}
     </iframe>

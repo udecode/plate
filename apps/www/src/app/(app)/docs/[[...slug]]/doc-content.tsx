@@ -74,7 +74,7 @@ export function DocContent({
         hasToc && 'lg:grid lg:grid-cols-[1fr_230px]'
       )}
     >
-      <div className="mx-auto w-full min-w-0">
+      <div className="w-full min-w-0">
         <div className="mb-4 flex items-center space-x-1 text-sm text-muted-foreground">
           {category === 'guide' ? (
             <DocBreadcrumb
@@ -155,7 +155,7 @@ export function DocContent({
 
       {hasToc && (
         <div className="hidden text-sm lg:block">
-          <div className="sticky top-16 -mt-10 flex h-[calc(100vh-84px)] flex-col pt-4">
+          <div className="sticky top-20 -mt-6 flex h-[calc(100vh-100px)] flex-col pt-4">
             <ScrollArea className="grow pb-2">
               <div className="sticky top-0 flex w-[230px] flex-col">
                 <DashboardTableOfContents toc={toc} />
