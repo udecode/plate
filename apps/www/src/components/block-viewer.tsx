@@ -29,7 +29,6 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
-import { getHighlightedFiles } from '@/components/block-actions';
 import { CopyNpmCommandButton } from '@/components/copy-button';
 import {
   Collapsible,
@@ -132,11 +131,20 @@ function BlockViewerProvider({
         setIsLoading(true);
 
         try {
-          const files = await getHighlightedFiles(item.name);
-          setHighlightedFiles(files);
+          const response = await fetch(
+            `/api/registry/${encodeURIComponent(item.name)}`
+          );
+          const data = await response.json();
 
-          if (!activeFile && files?.length) {
-            setActiveFile(files[0].target!);
+          if (!response.ok) {
+            throw new Error(data.error || 'Failed to fetch files');
+          }
+          if (data.files) {
+            setHighlightedFiles(data.files);
+
+            if (!activeFile && data.files?.length) {
+              setActiveFile(data.files[0].target!);
+            }
           }
         } catch (error) {
           console.error('Failed to load files:', error);
