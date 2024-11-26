@@ -3,14 +3,23 @@ import { z } from 'zod';
 
 import { highlightFiles } from '@/lib/highlight-code';
 import { getRegistryItem } from '@/lib/registry';
+import { registry } from '@/registry/registry';
+
+export const dynamic = 'force-static';
 
 const ParamsSchema = z.object({
   name: z.string().min(1, 'Name parameter is required'),
 });
 
+export function generateStaticParams() {
+  return registry.map(({ name }) => ({
+    name,
+  }));
+}
+
 export async function GET(_: Request, { params }: any) {
   try {
-    const { name } = ParamsSchema.parse({ name: params.name });
+    const { name } = ParamsSchema.parse({ name: (await params).name });
 
     const item = await getRegistryItem(name);
 
