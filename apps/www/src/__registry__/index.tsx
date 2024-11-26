@@ -546,7 +546,11 @@ export const Index: Record<string, any> = {
       description: "",
       type: "registry:ui",
       registryDependencies: ["plate-element"],
-      files: ["registry/default/plate-ui/tag-element.tsx"],
+      files: [{
+        path: "src/registry/default/plate-ui/tag-element.tsx",
+        type: "registry:ui",
+        target: ""
+      }],
       component: React.lazy(() => import("@/registry/default/plate-ui/tag-element.tsx")),
       source: "",
       category: "",
@@ -750,7 +754,11 @@ export const Index: Record<string, any> = {
       description: "",
       type: "registry:ui",
       registryDependencies: ["label"],
-      files: ["registry/default/plate-ui/form.tsx"],
+      files: [{
+        path: "src/registry/default/plate-ui/form.tsx",
+        type: "registry:ui",
+        target: ""
+      }],
       component: React.lazy(() => import("@/registry/default/plate-ui/form.tsx")),
       source: "",
       category: "",
@@ -778,7 +786,11 @@ export const Index: Record<string, any> = {
       description: "",
       type: "registry:ui",
       registryDependencies: [],
-      files: ["registry/default/plate-ui/label.tsx"],
+      files: [{
+        path: "src/registry/default/plate-ui/label.tsx",
+        type: "registry:ui",
+        target: ""
+      }],
       component: React.lazy(() => import("@/registry/default/plate-ui/label.tsx")),
       source: "",
       category: "",
@@ -1122,7 +1134,11 @@ export const Index: Record<string, any> = {
       description: "",
       type: "registry:ui",
       registryDependencies: ["editor","command","popover","tag-element"],
-      files: ["registry/default/plate-ui/select-editor.tsx"],
+      files: [{
+        path: "src/registry/default/plate-ui/select-editor.tsx",
+        type: "registry:ui",
+        target: ""
+      }],
       component: React.lazy(() => import("@/registry/default/plate-ui/select-editor.tsx")),
       source: "",
       category: "",
@@ -3190,7 +3206,11 @@ export const Index: Record<string, any> = {
       description: "",
       type: "registry:example",
       registryDependencies: ["form","button","select-editor"],
-      files: ["registry/default/example/select-editor-demo.tsx"],
+      files: [{
+        path: "src/registry/default/example/select-editor-demo.tsx",
+        type: "registry:example",
+        target: ""
+      }],
       component: React.lazy(() => import("@/registry/default/example/select-editor-demo.tsx")),
       source: "",
       category: "",

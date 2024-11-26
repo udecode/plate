@@ -1184,7 +1184,9 @@ export const docExamples: Registry = [
       description: 'A form with a select editor component for managing labels.',
       title: 'Select Editor Form',
     },
-    files: ['example/select-editor-demo.tsx'],
+    files: [
+      { path: 'example/select-editor-demo.tsx', type: 'registry:example' },
+    ],
     name: 'select-editor-demo',
     registryDependencies: ['form', 'button', 'select-editor'],
     type: 'registry:example',
