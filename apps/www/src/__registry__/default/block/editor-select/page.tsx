@@ -8,10 +8,7 @@ export const containerClassName = 'w-full h-full';
 
 export default function Page() {
   return (
-    <div
-      className="flex h-screen w-full justify-center pt-16"
-      data-registry="plate"
-    >
+    <div className="flex h-screen w-full justify-center" data-registry="plate">
       <EditorSelectForm />
     </div>
   );

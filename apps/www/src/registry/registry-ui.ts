@@ -286,7 +286,7 @@ import { withDraggables } from './withDraggables';`,
     dependencies: ['fzf@0.5.2', '@udecode/plate-tag', '@udecode/cmdk'],
     doc: {
       description: 'An editor to select tags.',
-      // docs: [{ route: siteConfig.links.plateProComponent('select-editor') }],
+      docs: [{ route: '/docs/multi-select' }],
       examples: ['select-editor-demo'],
       label: 'New',
     },
@@ -1416,7 +1416,7 @@ export const uiNodes: Registry = [
     doc: {
       description: 'A tag element component with selection states and styling.',
       docs: [
-        { route: '/docs/tag' },
+        { route: '/docs/multi-select' },
         // { route: siteConfig.links.plateProComponent('tag-element') },
       ],
       examples: ['select-editor-demo'],

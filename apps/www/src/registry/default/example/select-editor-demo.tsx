@@ -63,7 +63,7 @@ export default function EditorSelectForm() {
   const labels = useWatch({ control: form.control, name: 'labels' });
 
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-8 p-11 pl-2">
+    <div className="mx-auto w-full max-w-2xl space-y-8 p-11 pl-2 pt-24">
       <Form {...form}>
         <div className="space-y-6">
           <FormField

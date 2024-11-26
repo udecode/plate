@@ -1,15 +1,13 @@
 ---
 title: Multi Select
 docs:
-  - route: /docs/multi-select
-    title: MultiSelect Plugin
+  - route: /docs/components/tag-element
+  - route: /docs/components/select-editor
 ---
 
 <ComponentPreview name="select-editor-demo" />
 
 <PackageInfo>
-
-Enables a rich multi-select experience.
 
 ## Features
 
@@ -32,13 +30,43 @@ npm install @udecode/plate-tag
 ## Usage
 
 ```tsx
-import { MultiSelectPlugin } from '@udecode/plate-tag';
+import { MultiSelectPlugin } from '@udecode/plate-tag/react';
+import { TagElement } from '@/components/plate-ui/tag-element';
+import {
+  SelectEditor,
+  SelectEditorContent,
+  SelectEditorInput,
+  SelectEditorCombobox,
+  type SelectItem,
+} from '@/components/plate-ui/select-editor';
 
-const plugins = [
-  // ...otherPlugins,
-  MultiSelectPlugin,
+// Define your items
+const ITEMS: SelectItem[] = [
+  { value: 'React' },
+  { value: 'TypeScript' },
+  { value: 'JavaScript' },
 ];
+
+export default function MySelectEditor() {
+  const [value, setValue] = React.useState<SelectItem[]>([ITEMS[0]]);
+
+  return (
+    <SelectEditor
+      value={value}
+      onValueChange={setValue}
+      items={ITEMS}
+    >
+      <SelectEditorContent>
+        <SelectEditorInput placeholder="Select items..." />
+        <SelectEditorCombobox />
+      </SelectEditorContent>
+    </SelectEditor>
+  );
+}
 ```
+
+- [TagElement](/docs/components/tag-element)
+- [SelectEditor](/docs/components/select-editor)
 
 ## Plugins
 
@@ -54,80 +82,8 @@ The type identifier for multi-select elements.
 </APIItem>
 </APIOptions>
 
-### BaseTagPlugin
+### TagPlugin
 
-The core implementation with the following features:
-
-#### Editor Modifications
-
-- **Delete Backward**: Custom handling of backspace key to maintain proper cursor position around selections
-- **onChange**: Removes text that's either not in selection or when selection contains a tag
-- **Normalization**:
-  - Removes duplicate selections with the same value
-  - Trims leading whitespace in text nodes
-
-#### Node Configuration
-
-<APIState>
-<APIItem name="isElement" type="boolean">
-Marks multi-select nodes as elements.
-
-- **Default:** `true`
-</APIItem>
-
-<APIItem name="isInline" type="boolean">
-Marks multi-select nodes as inline elements.
-
-- **Default:** `true`
-</APIItem>
-
-<APIItem name="isVoid" type="boolean">
-Marks multi-select nodes as void elements.
-
-- **Default:** `true`
-</APIItem>
-</APIState>
+Inline void element plugin.
 
 ## API
-
-### editor.insert.option
-
-Inserts a new multi-select element at the current selection.
-
-<APIParameters>
-<APIItem name="props" type="TagLike">
-Properties for the multi-select element:
-<APISubList>
-<APISubListItem parent="props" name="value" type="string">
-The value of the multi-select element.
-</APISubListItem>
-<APISubListItem parent="props" name="...rest" type="UnknownObject">
-Additional properties to be included in the multi-select element.
-</APISubListItem>
-</APISubList>
-</APIItem>
-</APIParameters>
-
-## Types
-
-### TTagElement
-
-The type definition for a tag element.
-
-```ts
-type TTagElement = TElement & {
-  value: string;
-  [key: string]: unknown;
-};
-```
-
-### TagLike
-
-The base interface for tag properties.
-
-```ts
-type TagLike = {
-  value: string;
-  [key: string]: unknown;
-};
-```

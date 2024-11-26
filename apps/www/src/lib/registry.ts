@@ -159,10 +159,12 @@ async function getFileMeta(filePath: string) {
   const iframeHeight = extractVariable(sourceFile, 'iframeHeight');
   const containerClassName = extractVariable(sourceFile, 'containerClassName');
   const description = extractVariable(sourceFile, 'description');
+  const descriptionSrc = extractVariable(sourceFile, 'descriptionSrc');
 
   return {
     containerClassName,
     description,
+    descriptionSrc,
     iframeHeight,
   };
 }
