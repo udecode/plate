@@ -2,6 +2,12 @@
   "dependencies": [],
   "doc": {
     "description": "Toolbar buttons for undo and redo operations.",
+    "docs": [
+      {
+        "route": "https://docs.slatejs.org/libraries/slate-history",
+        "title": "Slate History"
+      }
+    ],
     "examples": [
       "basic-nodes-demo"
     ]

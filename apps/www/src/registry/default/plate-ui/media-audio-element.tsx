@@ -24,7 +24,6 @@ export const MediaAudioElement = withHOC(
         >
           <figure className="group relative" contentEditable={false}>
             <div className="h-16">
-              {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
               <audio className="size-full" src={unsafeUrl} controls />
             </div>
 

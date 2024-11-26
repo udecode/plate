@@ -31,7 +31,7 @@ export const MediaFileElement = withHOC(
           {...props}
         >
           <div
-            className="hover:bg-muted group relative m-0 flex cursor-pointer items-center rounded px-0.5 py-[3px]"
+            className="group relative m-0 flex cursor-pointer items-center rounded px-0.5 py-[3px] hover:bg-muted"
             onClick={onDownload}
             contentEditable={false}
             role="button"

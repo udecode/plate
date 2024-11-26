@@ -1,5 +1,11 @@
 # @udecode/plate-heading
 
+## 40.2.6
+
+### Patch Changes
+
+- [`430d362b168055d07d618745b6aefb42aa8d99e5`](https://github.com/udecode/plate/commit/430d362b168055d07d618745b6aefb42aa8d99e5) by [@felixfeng33](https://github.com/felixfeng33) – Fix scrolling container error.
+
 ## 40.0.2
 
 ### Patch Changes

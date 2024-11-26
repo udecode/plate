@@ -6,8 +6,7 @@
     "description": "A text field for adding captions to media elements.",
     "docs": [
       {
-        "route": "/docs/caption",
-        "title": "Caption"
+        "route": "/docs/caption"
       },
       {
         "route": "https://pro.platejs.org/docs/components/caption"

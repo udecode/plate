@@ -6,8 +6,7 @@
     "description": "A drawing component powered by Excalidraw.",
     "docs": [
       {
-        "route": "/docs/excalidraw",
-        "title": "Excalidraw"
+        "route": "/docs/excalidraw"
       }
     ]
   },

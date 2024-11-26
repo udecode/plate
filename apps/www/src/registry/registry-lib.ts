@@ -13,7 +13,12 @@ export const lib: Registry = [
     type: 'registry:lib',
   },
   {
-    dependencies: ['uploadthing@7.2.0', 'sonner'],
+    dependencies: [
+      'uploadthing@7.2.0',
+      '@uploadthing/react@7.1.0',
+      'sonner',
+      'zod',
+    ],
     files: [
       {
         path: 'lib/uploadthing.ts',

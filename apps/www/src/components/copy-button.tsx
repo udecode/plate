@@ -14,6 +14,7 @@ import { Button } from '@/registry/default/plate-ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/registry/default/plate-ui/dropdown-menu';
@@ -139,11 +140,13 @@ export function CopyWithClassNames({
 
 interface CopyNpmCommandButtonProps extends DropdownMenuTriggerProps {
   commands: Required<NpmCommands>;
+  icon?: React.ReactNode;
 }
 
 export function CopyNpmCommandButton({
   className,
   commands,
+  icon,
 }: CopyNpmCommandButtonProps) {
   const [hasCopied, setHasCopied] = React.useState(false);
 
@@ -181,32 +184,34 @@ export function CopyNpmCommandButton({
           {hasCopied ? (
             <Icons.check className="size-3" />
           ) : (
-            <ClipboardIcon className="size-3" />
+            (icon ?? <ClipboardIcon className="size-3" />)
           )}
           <span className="sr-only">Copy</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem
-          onClick={() => copyCommand(commands.__npmCommand__, 'npm')}
-        >
-          npm
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => copyCommand(commands.__yarnCommand__, 'yarn')}
-        >
-          yarn
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => copyCommand(commands.__pnpmCommand__, 'pnpm')}
-        >
-          pnpm
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => copyCommand(commands.__bunCommand__, 'bun')}
-        >
-          bun
-        </DropdownMenuItem>
+        <DropdownMenuGroup>
+          <DropdownMenuItem
+            onClick={() => copyCommand(commands.__pnpmCommand__, 'pnpm')}
+          >
+            pnpm
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => copyCommand(commands.__npmCommand__, 'npm')}
+          >
+            npm
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => copyCommand(commands.__yarnCommand__, 'yarn')}
+          >
+            yarn
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => copyCommand(commands.__bunCommand__, 'bun')}
+          >
+            bun
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   );

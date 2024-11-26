@@ -3,7 +3,8 @@ import * as React from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 
-import { BlockPreview } from '@/components/block-preview';
+import HomeTabs from '@/app/(app)/_components/home-tabs';
+import { BlockDisplay } from '@/components/block-display';
 import {
   PageHeader,
   PageHeaderDescription,
@@ -18,15 +19,25 @@ import { AnnouncementButton } from './_components/announcement-button';
 
 import '../../../public/r/themes.css';
 
-const HomeTabs = dynamic(() => import('./_components/home-tabs'));
 const CustomizerDrawer = dynamic(
   () => import('@/components/customizer-drawer')
 );
 
+const block = {
+  description: 'A Notion-like AI template.',
+  descriptionSrc: siteConfig.links.potionTemplate,
+  isPro: true,
+  meta: {
+    iframeHeight: 800,
+  },
+  name: 'potion',
+  src: siteConfig.links.potionIframe,
+};
+
 export default function IndexPage() {
   return (
     <>
-      <div className="container relative">
+      <div className="relative">
         <div className="flex items-center justify-between">
           <PageHeader className="w-full pb-8">
             <AnnouncementButton />
@@ -55,23 +66,18 @@ export default function IndexPage() {
           </PageHeader>
         </div>
 
-        <section className="relative">
-          <React.Suspense fallback={null}>
-            <HomeTabs />
-          </React.Suspense>
+        <div className="container py-6">
+          <section className="relative">
+            <React.Suspense fallback={null}>
+              <HomeTabs />
+            </React.Suspense>
 
-          <CustomizerDrawer />
-        </section>
+            <CustomizerDrawer />
+          </section>
 
-        <div className="relative mt-12 scroll-m-16 pb-48 md:mt-24 lg:mt-36 ">
-          <BlockPreview
-            block={{
-              description: 'A Notion-like AI template.',
-              descriptionSrc: siteConfig.links.potionTemplate,
-              name: 'potion',
-              src: siteConfig.links.potionIframe,
-            }}
-          />
+          <div className="relative mt-12 scroll-m-16 pb-48 md:mt-24 lg:mt-36 ">
+            <BlockDisplay {...block} />
+          </div>
         </div>
       </div>
       <SiteFooter />

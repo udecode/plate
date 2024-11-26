@@ -13,3 +13,12 @@ export const blockSelectionPlugins = [
     },
   }),
 ] as const;
+
+export const blockSelectionReadOnlyPlugin = BlockSelectionPlugin.configure({
+  api: {},
+  extendEditor: null,
+  options: {},
+  render: {},
+  useHooks: null,
+  handlers: {},
+});

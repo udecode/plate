@@ -6,8 +6,7 @@
     "description": "A resizable column component for layout.",
     "docs": [
       {
-        "route": "/docs/column",
-        "title": "Column"
+        "route": "/docs/column"
       },
       {
         "route": "https://pro.platejs.org/docs/components/column-group-element"

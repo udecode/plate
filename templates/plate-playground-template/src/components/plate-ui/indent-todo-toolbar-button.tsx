@@ -5,7 +5,7 @@ import {
   useIndentTodoToolBarButton,
   useIndentTodoToolBarButtonState,
 } from '@udecode/plate-indent-list/react';
-import { Square } from 'lucide-react';
+import { ListTodoIcon } from 'lucide-react';
 
 import { ToolbarButton } from './toolbar';
 
@@ -16,7 +16,7 @@ export const IndentTodoToolbarButton = withRef<typeof ToolbarButton>(
 
     return (
       <ToolbarButton ref={ref} tooltip="Todo" {...props} {...rest}>
-        <Square />
+        <ListTodoIcon />
       </ToolbarButton>
     );
   }

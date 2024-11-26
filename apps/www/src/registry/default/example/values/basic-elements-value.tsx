@@ -16,7 +16,6 @@ export const basicElementsValue: any = (
       from external sources.
     </hblockquote>
     <hcodeblock lang="javascript">
-      {/* eslint-disable-next-line react/jsx-no-comment-textnodes */}
       <hcodeline>// Use code blocks to showcase code snippets</hcodeline>
       <hcodeline>{`function greet() {`}</hcodeline>
       <hcodeline>{`  console.info('Hello World!');`}</hcodeline>

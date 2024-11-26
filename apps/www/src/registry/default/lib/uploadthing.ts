@@ -1,13 +1,12 @@
 import * as React from 'react';
 
-import type { OurFileRouter } from '@/registry/default/components/api/uploadthing/route';
+import type { OurFileRouter } from '@/registry/default/app/api/uploadthing/route';
 import type {
   ClientUploadedFileData,
   UploadFilesOptions,
 } from 'uploadthing/types';
 
 import { generateReactHelpers } from '@uploadthing/react';
-import { isRedirectError } from 'next/dist/client/components/redirect';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
@@ -22,10 +21,11 @@ interface UseUploadFileProps
   onUploadError?: (error: unknown) => void;
 }
 
-export function useUploadFile(
-  endpoint: keyof OurFileRouter,
-  { onUploadComplete, onUploadError, ...props }: UseUploadFileProps = {}
-) {
+export function useUploadFile({
+  onUploadComplete,
+  onUploadError,
+  ...props
+}: UseUploadFileProps = {}) {
   const [uploadedFile, setUploadedFile] = React.useState<UploadedFile>();
   const [uploadingFile, setUploadingFile] = React.useState<File>();
   const [progress, setProgress] = React.useState<number>(0);
@@ -36,7 +36,7 @@ export function useUploadFile(
     setUploadingFile(file);
 
     try {
-      const res = await uploadFiles(endpoint, {
+      const res = await uploadFiles('editorUploader', {
         ...props,
         files: [file],
         onUploadProgress: ({ progress }) => {
@@ -118,8 +118,6 @@ export function getErrorMessage(err: unknown) {
     return errors.join('\n');
   } else if (err instanceof Error) {
     return err.message;
-  } else if (isRedirectError(err)) {
-    throw err;
   } else {
     return unknownError;
   }

@@ -26,6 +26,11 @@ const nextConfig = async (phase: string) => {
       ],
     },
 
+    outputFileTracingIncludes: {
+      '/api/registry/*': ['./src/registry/**/*'],
+      '/docs/*': ['./src/registry/**/*'],
+    },
+
     // Configure domains to allow for optimized image loading.
     // https://nextjs.org/docs/api-reference/next.config.js/react-strict-mod
     reactStrictMode: true,
@@ -36,8 +41,6 @@ const nextConfig = async (phase: string) => {
     // eslint: {
     //   ignoreDuringBuilds: true,
     // },
-
-    serverExternalPackages: ['@prisma/client'],
 
     staticPageGenerationTimeout: 1200,
   };

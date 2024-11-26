@@ -7,15 +7,15 @@
     "description": "A file attachment component with download capability and caption.",
     "docs": [
       {
-        "route": "/docs/media",
-        "title": "Media"
+        "route": "/docs/media"
       },
       {
         "route": "https://pro.platejs.org/docs/components/media-file-element"
       }
     ],
     "examples": [
-      "media-demo"
+      "media-demo",
+      "upload-pro"
     ]
   },
   "files": [

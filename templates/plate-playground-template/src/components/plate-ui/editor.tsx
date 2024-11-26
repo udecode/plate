@@ -14,7 +14,7 @@ import {
 import { cva } from 'class-variance-authority';
 
 const editorContainerVariants = cva(
-  'caret-primary selection:bg-brand/25 [&_.slate-selection-area]:border-brand/25 [&_.slate-selection-area]:bg-brand/15 relative w-full cursor-text overflow-y-auto [&_.slate-selection-area]:border',
+  'relative w-full cursor-text overflow-y-auto caret-primary selection:bg-brand/25 [&_.slate-selection-area]:border [&_.slate-selection-area]:border-brand/25 [&_.slate-selection-area]:bg-brand/15',
   {
     defaultVariants: {
       variant: 'default',
@@ -58,7 +58,7 @@ const editorVariants = cva(
   cn(
     'group/editor',
     'relative w-full overflow-x-hidden whitespace-pre-wrap break-words',
-    'ring-offset-background placeholder:text-muted-foreground/80 rounded-md focus-visible:outline-none',
+    'rounded-md ring-offset-background placeholder:text-muted-foreground/80 focus-visible:outline-none',
     '[&_[data-slate-placeholder]]:text-muted-foreground/80 [&_[data-slate-placeholder]]:!opacity-100',
     '[&_[data-slate-placeholder]]:top-[auto_!important]',
     '[&_strong]:font-bold'
@@ -72,7 +72,7 @@ const editorVariants = cva(
         true: 'cursor-not-allowed opacity-50',
       },
       focused: {
-        true: 'ring-ring ring-2 ring-offset-2',
+        true: 'ring-2 ring-ring ring-offset-2',
       },
       variant: {
         ai: 'w-full px-0 text-sm',
@@ -82,6 +82,7 @@ const editorVariants = cva(
           'size-full px-16 pb-72 pt-4 text-base sm:px-[max(64px,calc(50%-350px))]',
         demo: 'size-full px-16 pb-72 pt-4 text-base sm:px-[max(64px,calc(50%-350px))]',
         fullWidth: 'size-full px-16 pb-72 pt-4 text-base sm:px-24',
+        none: '',
       },
     },
   }

@@ -6,6 +6,9 @@
     "description": "A set of formatting buttons for the floating toolbar.",
     "docs": [
       {
+        "route": "/docs/api/floating"
+      },
+      {
         "route": "https://pro.platejs.org/docs/components/floating-toolbar-buttons"
       }
     ],

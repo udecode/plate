@@ -192,8 +192,7 @@
       "description": "A resizable column component for layout.",
       "docs": [
         {
-          "route": "/docs/column",
-          "title": "Column"
+          "route": "/docs/column"
         },
         {
           "route": "https://pro.platejs.org/docs/components/column-element"
@@ -224,8 +223,7 @@
       "description": "A resizable column component for layout.",
       "docs": [
         {
-          "route": "/docs/column",
-          "title": "Column"
+          "route": "/docs/column"
         },
         {
           "route": "https://pro.platejs.org/docs/components/column-group-element"
@@ -350,8 +348,7 @@
       "description": "A drawing component powered by Excalidraw.",
       "docs": [
         {
-          "route": "/docs/excalidraw",
-          "title": "Excalidraw"
+          "route": "/docs/excalidraw"
         }
       ]
     },
@@ -400,6 +397,11 @@
     "dependencies": [],
     "doc": {
       "description": "A text highlighter with customizable colors.",
+      "docs": [
+        {
+          "route": "/docs/highlight"
+        }
+      ],
       "examples": [
         "highlight-demo"
       ]
@@ -453,6 +455,9 @@
       "docs": [
         {
           "route": "/docs/media"
+        },
+        {
+          "route": "/docs/api/resizable"
         },
         {
           "route": "https://pro.platejs.org/docs/components/image-element"
@@ -513,6 +518,12 @@
     ],
     "doc": {
       "description": "A component for styling keyboard shortcuts.",
+      "docs": [
+        {
+          "route": "/docs/kbd",
+          "title": "Keyboard Input"
+        }
+      ],
       "examples": [
         "kbd-demo"
       ]
@@ -565,8 +576,7 @@
       "description": "A list element for ordered and unordered items.",
       "docs": [
         {
-          "route": "/docs/list",
-          "title": "List"
+          "route": "/docs/list"
         }
       ],
       "examples": [
@@ -594,15 +604,15 @@
       "description": "An audio player component with caption support.",
       "docs": [
         {
-          "route": "/docs/media",
-          "title": "Media"
+          "route": "/docs/media"
         },
         {
           "route": "https://pro.platejs.org/docs/components/media-audio-element"
         }
       ],
       "examples": [
-        "media-demo"
+        "media-demo",
+        "upload-pro"
       ]
     },
     "files": [
@@ -632,12 +642,15 @@
           "route": "/docs/media"
         },
         {
+          "route": "/docs/api/resizable"
+        },
+        {
           "route": "https://pro.platejs.org/docs/components/media-embed-element"
         }
       ],
       "examples": [
         "media-demo",
-        "media-toolbar-pro"
+        "upload-pro"
       ]
     },
     "files": [
@@ -664,15 +677,15 @@
       "description": "A file attachment component with download capability and caption.",
       "docs": [
         {
-          "route": "/docs/media",
-          "title": "Media"
+          "route": "/docs/media"
         },
         {
           "route": "https://pro.platejs.org/docs/components/media-file-element"
         }
       ],
       "examples": [
-        "media-demo"
+        "media-demo",
+        "upload-pro"
       ]
     },
     "files": [
@@ -691,16 +704,13 @@
   {
     "dependencies": [
       "@udecode/plate-media",
-      "use-file-picker",
-      "@uploadthing/react@7.1.0",
-      "uploadthing@7.2.0"
+      "use-file-picker"
     ],
     "doc": {
       "description": "A placeholder for media upload progress indication.",
       "docs": [
         {
-          "route": "/docs/media",
-          "title": "Media"
+          "route": "/docs/media"
         },
         {
           "route": "https://pro.platejs.org/docs/components/media-placeholder-element"
@@ -715,16 +725,13 @@
       {
         "path": "plate-ui/media-placeholder-element.tsx",
         "type": "registry:ui"
-      },
-      {
-        "path": "lib/uploadthing.ts",
-        "type": "registry:ui"
       }
     ],
     "name": "media-placeholder-element",
     "registryDependencies": [
       "plate-element",
-      "spinner"
+      "spinner",
+      "uploadthing"
     ],
     "type": "registry:ui"
   },
@@ -739,8 +746,10 @@
       "description": "A video player component with YouTube and file upload support.",
       "docs": [
         {
-          "route": "/docs/media",
-          "title": "Media"
+          "route": "/docs/media"
+        },
+        {
+          "route": "/docs/api/resizable"
         },
         {
           "route": "https://pro.platejs.org/docs/components/media-video-element"
@@ -748,7 +757,7 @@
       ],
       "examples": [
         "media-demo",
-        "media-toolbar-pro"
+        "upload-pro"
       ]
     },
     "files": [
@@ -860,7 +869,12 @@
   {
     "dependencies": [],
     "doc": {
-      "description": "A component that highlights search results in text."
+      "description": "A component that highlights search results in text.",
+      "docs": [
+        {
+          "route": "/docs/highlight"
+        }
+      ]
     },
     "files": [
       {
@@ -886,6 +900,10 @@
     "doc": {
       "description": "A command input component for inserting various elements.",
       "docs": [
+        {
+          "route": "/docs/slash-command",
+          "title": "Slash"
+        },
         {
           "route": "https://pro.platejs.org/docs/components/slash-input-element"
         }
@@ -1010,8 +1028,7 @@
       "description": "A table of contents component with links to document headings.",
       "docs": [
         {
-          "route": "/docs/basic-elements",
-          "title": "Basic Elements"
+          "route": "/docs/basic-elements"
         },
         {
           "route": "https://pro.platejs.org/docs/components/toc-element"
@@ -1042,8 +1059,7 @@
       "description": "A checkbox list element with interactive todo items.",
       "docs": [
         {
-          "route": "/docs/list",
-          "title": "List"
+          "route": "/docs/list"
         }
       ],
       "examples": [
@@ -1071,8 +1087,7 @@
       "description": "A collapsible component for toggling content visibility.",
       "docs": [
         {
-          "route": "/docs/toggle",
-          "title": "Toggle"
+          "route": "/docs/toggle"
         }
       ],
       "examples": [
@@ -1551,8 +1566,7 @@
       "description": "A text field for adding captions to media elements.",
       "docs": [
         {
-          "route": "/docs/caption",
-          "title": "Caption"
+          "route": "/docs/caption"
         },
         {
           "route": "https://pro.platejs.org/docs/components/caption"
@@ -1583,8 +1597,7 @@
       "description": "A color picker with text and background color controls.",
       "docs": [
         {
-          "route": "/docs/font",
-          "title": "Font"
+          "route": "/docs/font"
         },
         {
           "route": "https://pro.platejs.org/docs/components/color-dropdown-menu"
@@ -1638,8 +1651,7 @@
       "description": "A toolbar button for adding inline comments.",
       "docs": [
         {
-          "route": "/docs/comments",
-          "title": "Comments"
+          "route": "/docs/comments"
         },
         {
           "route": "https://pro.platejs.org/docs/components/comment-toolbar-button"
@@ -1670,8 +1682,7 @@
       "description": "A popover interface for managing comments and replies.",
       "docs": [
         {
-          "route": "/docs/comments",
-          "title": "Comments"
+          "route": "/docs/comments"
         },
         {
           "route": "https://pro.platejs.org/docs/components/comments-popover"
@@ -1731,8 +1742,10 @@
       "description": "A visual overlay for cursors and selections.",
       "docs": [
         {
-          "route": "/docs/cursor-overlay",
-          "title": "Cursor Overlay"
+          "route": "/docs/cursor-overlay"
+        },
+        {
+          "route": "https://pro.platejs.org/docs/components/cursor-overlay"
         }
       ],
       "examples": [
@@ -1834,8 +1847,7 @@
       "description": "A dropdown menu for emoji selection and insertion.",
       "docs": [
         {
-          "route": "/docs/emoji",
-          "title": "Emoji"
+          "route": "/docs/emoji"
         },
         {
           "route": "https://pro.platejs.org/docs/components/emoji-picker"
@@ -1999,6 +2011,9 @@
       "description": "A set of formatting buttons for the floating toolbar.",
       "docs": [
         {
+          "route": "/docs/api/floating"
+        },
+        {
           "route": "https://pro.platejs.org/docs/components/floating-toolbar-buttons"
         }
       ],
@@ -2033,6 +2048,9 @@
       "description": "A contextual toolbar that appears over selected text.",
       "docs": [
         {
+          "route": "/docs/api/floating"
+        },
+        {
           "route": "https://pro.platejs.org/docs/components/floating-toolbar"
         }
       ],
@@ -2061,8 +2079,7 @@
       "description": "A text suggestion system that displays AI-generated content after the cursor.",
       "docs": [
         {
-          "route": "/docs/copilot",
-          "title": "Copilot"
+          "route": "/docs/copilot"
         },
         {
           "route": "https://pro.platejs.org/docs/components/ghost-text"
@@ -2101,6 +2118,12 @@
     "dependencies": [],
     "doc": {
       "description": "Toolbar buttons for undo and redo operations.",
+      "docs": [
+        {
+          "route": "https://docs.slatejs.org/libraries/slate-history",
+          "title": "Slate History"
+        }
+      ],
       "examples": [
         "basic-nodes-demo"
       ]
@@ -2125,8 +2148,7 @@
       "description": "A toolbar control for adjusting list indentation.",
       "docs": [
         {
-          "route": "/docs/indent-list",
-          "title": "Indent List"
+          "route": "/docs/indent-list"
         }
       ],
       "examples": [
@@ -2153,8 +2175,7 @@
       "description": "A checkbox marker for interactive todo lists.",
       "docs": [
         {
-          "route": "/docs/indent-list",
-          "title": "Indent List"
+          "route": "/docs/indent-list"
         },
         {
           "route": "https://pro.platejs.org/docs/components/indent-todo-marker"
@@ -2184,8 +2205,7 @@
       "description": "A toolbar control for creating todo list items.",
       "docs": [
         {
-          "route": "/docs/indent-list",
-          "title": "Indent List"
+          "route": "/docs/indent-list"
         }
       ],
       "examples": [
@@ -2212,8 +2232,7 @@
       "description": "A toolbar control for block indentation.",
       "docs": [
         {
-          "route": "/docs/indent",
-          "title": "Indent"
+          "route": "/docs/indent"
         }
       ],
       "examples": [
@@ -2241,8 +2260,7 @@
       "description": "A combobox for inline suggestions.",
       "docs": [
         {
-          "route": "/docs/combobox",
-          "title": "Combobox"
+          "route": "/docs/combobox"
         },
         {
           "route": "https://pro.platejs.org/docs/components/inline-combobox"
@@ -2308,8 +2326,7 @@
       "description": "A menu for controlling text line spacing.",
       "docs": [
         {
-          "route": "/docs/line-height",
-          "title": "Line Height"
+          "route": "/docs/line-height"
         }
       ],
       "examples": [
@@ -2338,8 +2355,10 @@
       "description": "A floating interface for link editing.",
       "docs": [
         {
-          "route": "/docs/link",
-          "title": "Link"
+          "route": "/docs/link"
+        },
+        {
+          "route": "/docs/api/floating"
         },
         {
           "route": "https://pro.platejs.org/docs/components/link-floating-toolbar"
@@ -2373,8 +2392,7 @@
       "description": "A toolbar control for link management.",
       "docs": [
         {
-          "route": "/docs/link",
-          "title": "Link"
+          "route": "/docs/link"
         },
         {
           "route": "https://pro.platejs.org/docs/components/link-toolbar-button"
@@ -2405,8 +2423,7 @@
       "description": "A toolbar control for indenting lists.",
       "docs": [
         {
-          "route": "/docs/list",
-          "title": "List"
+          "route": "/docs/list"
         }
       ],
       "examples": [
@@ -2433,8 +2450,7 @@
       "description": "A toolbar control for list creation and management.",
       "docs": [
         {
-          "route": "/docs/list",
-          "title": "List"
+          "route": "/docs/list"
         }
       ],
       "examples": [
@@ -2461,8 +2477,7 @@
       "description": "A toolbar control for basic text formatting.",
       "docs": [
         {
-          "route": "/docs/basic-marks",
-          "title": "Basic Marks"
+          "route": "/docs/basic-marks"
         }
       ],
       "examples": [
@@ -2490,8 +2505,7 @@
       "description": "A popover interface for media settings.",
       "docs": [
         {
-          "route": "/docs/media",
-          "title": "Media"
+          "route": "/docs/media"
         }
       ],
       "examples": [
@@ -2524,8 +2538,7 @@
       "description": "Toolbar button for inserting and managing media.",
       "docs": [
         {
-          "route": "/docs/media",
-          "title": "Media"
+          "route": "/docs/media"
         }
       ],
       "examples": [
@@ -2557,8 +2570,7 @@
       "description": "Show toast notifications for media uploads.",
       "docs": [
         {
-          "route": "/docs/media-placeholder",
-          "title": "Media Placeholder"
+          "route": "/docs/media"
         }
       ],
       "examples": [
@@ -2638,8 +2650,7 @@
       "description": "A toolbar button for decreasing block indentation.",
       "docs": [
         {
-          "route": "/docs/indent",
-          "title": "Indent"
+          "route": "/docs/indent"
         }
       ],
       "examples": [
@@ -2666,8 +2677,7 @@
       "description": "A text placeholder for empty editor blocks.",
       "docs": [
         {
-          "route": "/docs/basic-elements",
-          "title": "Basic Elements"
+          "route": "/docs/basic-elements"
         },
         {
           "route": "https://pro.platejs.org/docs/components/placeholder"
@@ -2696,8 +2706,7 @@
       "description": "A base element with block selection support.",
       "docs": [
         {
-          "route": "/docs/block-selection",
-          "title": "Block Selection"
+          "route": "/docs/block-selection"
         }
       ],
       "examples": [
@@ -2724,6 +2733,9 @@
     "doc": {
       "description": "A resizable wrapper with resize handles.",
       "docs": [
+        {
+          "route": "/docs/api/resizable"
+        },
         {
           "route": "https://pro.platejs.org/docs/components/resizable"
         }
@@ -2752,8 +2764,7 @@
       "description": "A menu for table manipulation and formatting.",
       "docs": [
         {
-          "route": "/docs/table",
-          "title": "Table"
+          "route": "/docs/table"
         }
       ],
       "examples": [
@@ -2781,8 +2792,7 @@
       "description": "A toolbar button for expanding and collapsing blocks.",
       "docs": [
         {
-          "route": "/docs/toggle",
-          "title": "Toggle"
+          "route": "/docs/toggle"
         }
       ],
       "examples": [

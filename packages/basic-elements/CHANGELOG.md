@@ -1,5 +1,7 @@
 # @udecode/plate-basic-elements
 
+## 40.2.6
+
 ## 40.0.2
 
 ## 40.0.1

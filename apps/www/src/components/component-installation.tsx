@@ -4,115 +4,66 @@ import * as React from 'react';
 
 import type { RegistryEntry } from '@/registry/schema';
 
+import { BlockCode } from '@/components/block-viewer';
 import { ComponentPreviewPro } from '@/components/component-preview-pro';
 import { getRegistryTitle } from '@/lib/registry-utils';
 
 import { CodeBlock } from './codeblock';
 import { ComponentPreview } from './component-preview';
-import { ComponentSource } from './component-source';
 import { H2, H3, Step, Steps } from './typography';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
 interface ComponentInstallationProps {
   __dependencies__?: string;
-  __files__?: string;
+  __highlightedFiles__?: string;
+  __item__?: string;
   __previewDependencies__?: string;
   __previewFiles__?: string;
-  codeTabs?: boolean;
+  __tree__?: string;
   dependencies?: string[];
   examples?: RegistryEntry[];
-  files?: any[];
+  highlightedFiles?: any;
+  inline?: boolean;
+  item?: any;
   name?: string;
+  tree?: any;
   usage?: string[];
 }
 
 export function ComponentInstallation({
   __dependencies__: __registryDependencies__ = '[]',
-  __files__ = '[]',
+  __highlightedFiles__: __highlightedFilesProp__ = '[]',
+  __item__: __itemProp__ = '[]',
   __previewDependencies__ = '[]',
   __previewFiles__ = '[]',
-  codeTabs,
+  __tree__: __treeProp__ = '[]',
   examples,
+  inline,
   name,
   usage,
   ...props
 }: ComponentInstallationProps) {
-  const files = React.useMemo(
-    () => props.files ?? JSON.parse(__files__) ?? [],
-    [__files__, props.files]
-  );
-  const registryDependencies =
+  const dependencies =
     props.dependencies ?? JSON.parse(__registryDependencies__) ?? [];
 
-  // const previewDependencies =
-  //   props.previewDependencies ?? JSON.parse(__previewDependencies__) ?? [];
-  // const previewFiles = props.previewFiles ?? JSON.parse(__previewFiles__) ?? [];
-
-  const filesByCategory = React.useMemo(
-    () =>
-      files.reduce(
-        (acc: any, file: any) => {
-          acc[file.type] = [...(acc[file.type] || []), file];
-
-          return acc;
-        },
-        {} as Record<string, typeof files>
-      ),
-    [files]
+  const item = React.useMemo(
+    () => props.item ?? JSON.parse(__itemProp__),
+    [__itemProp__, props.item]
+  );
+  const highlightedFiles = React.useMemo(
+    () => props.highlightedFiles ?? JSON.parse(__highlightedFilesProp__),
+    [__highlightedFilesProp__, props.highlightedFiles]
+  );
+  const tree = React.useMemo(
+    () => props.tree ?? JSON.parse(__treeProp__),
+    [__treeProp__, props.tree]
   );
 
-  const categories = Object.keys(filesByCategory);
-  const showTabs = categories.length >= 2;
-
-  const dependenciesString = registryDependencies.join(' ');
-
-  if (files.length === 0 && !dependenciesString) return null;
-
-  const renderFiles = (files: any[]) => (
-    <>
-      {files.map((file: any) => (
-        <ComponentSource key={file.name} title={file.name}>
-          <CodeBlock
-            className="[&_.codeblock]:!pb-[100px]"
-            value={file.code}
-            language={file.language}
-          />
-        </ComponentSource>
-      ))}
-    </>
-  );
-
-  if (codeTabs) {
-    return (
-      <Tabs className="relative w-full" defaultValue={files[0]?.name}>
-        <TabsList className="w-full justify-start overflow-x-auto rounded-none border-b bg-transparent p-0">
-          {files.map((file: any) => (
-            <TabsTrigger
-              key={file.name}
-              className="relative h-9 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
-              value={file.name}
-            >
-              {file.name}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-        {files.map((file: any) => (
-          <TabsContent key={file.name} value={file.name}>
-            <CodeBlock
-              className="[&_.codeblock]:!pb-[100px]"
-              value={file.code}
-              language={file.language}
-              fixedHeight
-            />
-          </TabsContent>
-        ))}
-      </Tabs>
-    );
-  }
+  const dependenciesString = dependencies.join(' ');
 
   return (
     <div className="my-4">
-      <H2>Installation</H2>
+      {!inline && <H2>Installation</H2>}
 
       <Tabs className="relative mt-6 w-full" defaultValue="cli">
         <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0">
@@ -144,31 +95,14 @@ export function ComponentInstallation({
                 <CodeBlock value={dependenciesString} language="bash" npm />
               </>
             )}
-
             <Step>Copy and paste the following code into your project.</Step>
 
-            {showTabs ? (
-              <Tabs className="relative w-full" defaultValue={categories[0]}>
-                <TabsList className="w-full justify-start gap-3 rounded-none bg-transparent p-0">
-                  {categories.map((category) => (
-                    <TabsTrigger
-                      key={category}
-                      className="relative h-8 rounded-md bg-transparent px-4 font-semibold text-muted-foreground shadow-none transition-none hover:bg-muted/70 data-[state=active]:bg-secondary data-[state=active]:text-foreground data-[state=active]:shadow-none"
-                      value={category}
-                    >
-                      {category}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-                {categories.map((category) => (
-                  <TabsContent key={category} value={category}>
-                    {renderFiles(filesByCategory[category])}
-                  </TabsContent>
-                ))}
-              </Tabs>
-            ) : (
-              renderFiles(files)
-            )}
+            <BlockCode
+              dependencies={dependencies}
+              highlightedFiles={highlightedFiles}
+              item={item}
+              tree={tree}
+            />
 
             <Step>Update the import paths to match your project setup.</Step>
           </Steps>
@@ -214,8 +148,9 @@ export function ComponentInstallation({
                     id={example.name.replace('-demo', '')}
                     name={example.name}
                     dependencies={example.dependencies}
-                    files={example.files}
-                    codeTabs
+                    highlightedFiles={(example as any).highlightedFiles}
+                    item={(example as any).item}
+                    tree={(example as any).tree}
                   />
                 </React.Fragment>
               );

@@ -59,6 +59,7 @@ export const rawConfigSchema = z
       ui: z.string().optional(),
       utils: z.string(),
     }),
+    iconLibrary: z.string().optional(),
     name: z.string().optional(),
     registries: z.record(z.string(), registrySchema).optional(),
     rsc: z.coerce.boolean().default(false),
@@ -73,7 +74,7 @@ export const rawConfigSchema = z
     tsx: z.coerce.boolean().default(true),
     url: z.string().optional(),
   })
-  .strict();
+  .passthrough();
 
 export type RawConfig = z.infer<typeof rawConfigSchema>;
 
@@ -98,13 +99,17 @@ export async function getConfig(cwd: string) {
   if (!config) {
     return null;
   }
+  // Set default icon library if not provided.
+  if (!config.iconLibrary) {
+    config.iconLibrary = config.style === 'new-york' ? 'radix' : 'lucide';
+  }
 
   return await resolveConfigPaths(cwd, config);
 }
 
 export async function resolveConfigPaths(cwd: string, config: RawConfig) {
   // Read tsconfig.json.
-  const tsConfig = await loadConfig(cwd);
+  const tsConfig = loadConfig(cwd);
 
   if (tsConfig.resultType === 'failed') {
     throw new Error(

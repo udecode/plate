@@ -9,8 +9,10 @@
     "description": "A video player component with YouTube and file upload support.",
     "docs": [
       {
-        "route": "/docs/media",
-        "title": "Media"
+        "route": "/docs/media"
+      },
+      {
+        "route": "/docs/api/resizable"
       },
       {
         "route": "https://pro.platejs.org/docs/components/media-video-element"
@@ -18,7 +20,7 @@
     ],
     "examples": [
       "media-demo",
-      "media-toolbar-pro"
+      "upload-pro"
     ]
   },
   "files": [

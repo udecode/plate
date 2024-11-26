@@ -21,6 +21,8 @@ npm install slate slate-dom slate-react slate-history slate-hyperscript @udecode
 
 ### Configure path aliases
 
+Configure the path aliases in your `tsconfig.json` file.
+
 ```json {3-6} title="tsconfig.json"
 {
   "compilerOptions": {
@@ -42,7 +44,7 @@ npm install slate slate-dom slate-react slate-history slate-hyperscript @udecode
 
 ### Configure components.json
 
-Create [components.json](/docs/components/components-json) at the root of your project, then add the following:
+Create a [components.json](/docs/components/components-json) in the root of your project.
 
 ```json
 {
@@ -50,13 +52,6 @@ Create [components.json](/docs/components/components-json) at the root of your p
   "style": "default",
   "rsc": true,
   "tsx": true,
-  "aliases": {
-    "components": "@/components",
-    "hooks": "@/hooks",
-    "lib": "@/lib",
-    "ui": "@/components/ui",
-    "utils": "@/lib/utils"
-  },
   "tailwind": {
     "baseColor": "slate",
     "config": "tailwind.config.ts",
@@ -64,6 +59,14 @@ Create [components.json](/docs/components/components-json) at the root of your p
     "cssVariables": true,
     "prefix": ""
   },
+  "aliases": {
+    "components": "@/components",
+    "hooks": "@/hooks",
+    "lib": "@/lib",
+    "ui": "@/components/ui",
+    "utils": "@/lib/utils"
+  },
+  "iconLibrary": "lucide",
   "registries": {
     "plate": {
       "aliases": {

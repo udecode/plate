@@ -1,5 +1,17 @@
 # @udecode/plate-media
 
+## 40.2.4
+
+### Patch Changes
+
+- [#3796](https://github.com/udecode/plate/pull/3796) by [@siosio34](https://github.com/siosio34) – fix: `parseTwitterUrl`
+
+## 40.2.3
+
+### Patch Changes
+
+- [#3790](https://github.com/udecode/plate/pull/3790) by [@felixfeng33](https://github.com/felixfeng33) – Fix editor crash when inserting media into an empty paragraph.
+
 ## 40.2.1
 
 ### Patch Changes

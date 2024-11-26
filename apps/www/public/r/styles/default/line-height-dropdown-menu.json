@@ -7,8 +7,7 @@
     "description": "A menu for controlling text line spacing.",
     "docs": [
       {
-        "route": "/docs/line-height",
-        "title": "Line Height"
+        "route": "/docs/line-height"
       }
     ],
     "examples": [

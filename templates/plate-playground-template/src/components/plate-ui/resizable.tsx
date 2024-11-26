@@ -14,7 +14,7 @@ import { cva } from 'class-variance-authority';
 export const mediaResizeHandleVariants = cva(
   cn(
     'top-0 flex w-6 select-none flex-col justify-center',
-    "after:bg-ring after:flex after:h-16 after:w-[3px] after:rounded-[6px] after:opacity-0 after:content-['_'] group-hover:after:opacity-100"
+    "after:flex after:h-16 after:w-[3px] after:rounded-[6px] after:bg-ring after:opacity-0 after:content-['_'] group-hover:after:opacity-100"
   ),
   {
     variants: {

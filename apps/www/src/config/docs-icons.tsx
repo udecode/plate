@@ -2,6 +2,7 @@ import type { SidebarNavItem } from '@/types/nav';
 
 import {
   AlignCenterIcon,
+  ArrowDownToLineIcon,
   ArrowRightToLineIcon,
   AtSignIcon,
   AudioLinesIcon,
@@ -21,7 +22,6 @@ import {
   Columns3Icon,
   ColumnsIcon,
   CommandIcon,
-  CopyIcon,
   CornerDownLeftIcon,
   DockIcon,
   Edit3Icon,
@@ -37,6 +37,7 @@ import {
   GridIcon,
   GripVerticalIcon,
   HandIcon,
+  HashIcon,
   Heading1Icon,
   HelpCircleIcon,
   HighlighterIcon,
@@ -141,7 +142,6 @@ export const DocIcons = {
   comments: MessageSquareTextIcon,
   'comments-popover': MessageSquareTextIcon,
   'context-menu': MousePointerClickIcon,
-  controlled: CopyIcon,
   copilot: ArrowRightToLineIcon,
   csv: FileSpreadsheetIcon,
   'cursor-overlay': TextCursorInputIcon,
@@ -192,6 +192,7 @@ export const DocIcons = {
   'inline-combobox': SlashIcon,
   input: RectangleHorizontalIcon,
   'insert-dropdown-menu': PlusSquareIcon,
+  kbd: KeyboardIcon,
   'kbd-leaf': KeyboardIcon,
   'line-height': MoveVerticalIcon,
   'line-height-dropdown-menu': MoveVerticalIcon,
@@ -210,7 +211,6 @@ export const DocIcons = {
   'media-audio-element': AudioLinesIcon,
   'media-embed-element': DockIcon,
   'media-file-element': FileIcon,
-  'media-placeholder': SquareDashedIcon,
   'media-placeholder-element': SquareDashedIcon,
   'media-popover': ImageIcon,
   'media-toolbar-button': ImageIcon,
@@ -222,6 +222,7 @@ export const DocIcons = {
   'mode-dropdown-menu': EyeIcon,
   'more-dropdown-menu': EllipsisIcon,
   'multiple-editors': SplitSquareVerticalIcon,
+  'node-id': HashIcon,
   'outdent-toolbar-button': OutdentIcon,
   'paragraph-element': PilcrowIcon,
   placeholder: TextCursorIcon,
@@ -232,8 +233,9 @@ export const DocIcons = {
   'reset-node': RotateCcwIcon,
   resizable: ProportionsIcon,
   'search-highlight-leaf': HighlighterIcon,
+  select: KeyboardIcon,
   separator: SeparatorHorizontalIcon,
-  server: ServerIcon,
+  'server-side': ServerIcon,
   'single-line': RectangleHorizontalIcon,
   'slash-command': SlashIcon,
   'slash-input-element': SlashIcon,
@@ -253,12 +255,15 @@ export const DocIcons = {
   'toggle-toolbar-button': ChevronRightSquareIcon,
   toolbar: PanelTopIcon,
   tooltip: HelpCircleIcon,
+  'trailing-block': ArrowDownToLineIcon,
   'turn-into-dropdown-menu': ReplaceIcon,
   upload: UploadIcon,
   'version-history': HistoryIcon,
 };
 
 export const getDocIcon = (item: SidebarNavItem, category?: string) => {
+  if (category === 'guide') return null;
+
   const icon = item.icon ?? item.href?.split('/').pop();
 
   return (DocIcons as any)[icon!] ?? (category === 'api' ? CodeXmlIcon : null);

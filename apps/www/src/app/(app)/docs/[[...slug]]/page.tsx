@@ -11,15 +11,18 @@ import { Mdx } from '@/components/mdx-components';
 import { docsMap } from '@/config/docs';
 import { slugToCategory } from '@/config/docs-utils';
 import { siteConfig } from '@/config/site';
-import { getRegistryTitle } from '@/lib/registry-utils';
+import { getRegistryItem } from '@/lib/registry';
 import {
-  getAllDependencies,
-  getAllFiles,
-  getExampleCode,
-} from '@/lib/rehype-utils';
+  getCachedDependencies,
+  getCachedFileTree,
+  getCachedHighlightedFiles,
+  getCachedRegistryItem,
+} from '@/lib/registry-cache';
+import { getRegistryTitle } from '@/lib/registry-utils';
+import { getAllDependencies, getAllFiles } from '@/lib/rehype-utils';
 import { getTableOfContents } from '@/lib/toc';
 import { registry } from '@/registry/registry';
-import { examples } from '@/registry/registry-examples';
+import { examples, proExamples } from '@/registry/registry-examples';
 import { ui } from '@/registry/registry-ui';
 
 import '@/styles/mdx.css';
@@ -127,9 +130,21 @@ export default async function DocPage(props: DocPageProps) {
       registryNames,
     });
 
-    const componentExamples = file.doc?.examples
-      ?.map((ex) => getExampleCode(ex))
-      .filter(Boolean);
+    const item = await getRegistryItem(docName, true);
+
+    if (!item?.files) {
+      notFound();
+    }
+
+    const [tree, highlightedFiles, componentExamples] = await Promise.all([
+      getCachedFileTree(item.files),
+      getCachedHighlightedFiles(item.files as any),
+      file.doc?.examples
+        ? Promise.all(
+            file.doc.examples.map(async (ex) => await getExampleCode(ex))
+          )
+        : undefined,
+    ]);
 
     return (
       <DocContent
@@ -144,17 +159,20 @@ export default async function DocPage(props: DocPageProps) {
         {category === 'component' ? (
           <ComponentInstallation
             name={file.name}
-            codeTabs={category !== 'component'}
             dependencies={dependencies}
-            examples={componentExamples as any}
-            files={files}
+            examples={componentExamples?.filter(Boolean) as any}
+            highlightedFiles={highlightedFiles}
+            item={item}
+            tree={tree}
             usage={file.doc?.usage}
           />
         ) : (
           <ComponentPreview
             name={file.name}
             dependencies={dependencies}
-            files={files}
+            highlightedFiles={highlightedFiles}
+            item={item}
+            tree={tree}
           />
         )}
       </DocContent>
@@ -226,8 +244,24 @@ function getRegistryDocs({
         acc.external.push(doc as any);
       } else if (doc.route!.startsWith('/docs/components')) {
         acc.components.push(doc as any);
+      } else if (doc.route!.startsWith('/docs/api')) {
+        acc.docs.push({
+          ...doc,
+          title:
+            getRegistryTitle({
+              name: doc.title ?? doc.route?.split('/').pop(),
+            }) + ' API',
+        } as any);
+      } else if (doc.route!.startsWith('/docs/')) {
+        acc.docs.push({
+          ...doc,
+          title:
+            getRegistryTitle({
+              name: doc.title ?? doc.route?.split('/').pop(),
+            }) + ' Plugin',
+        } as any);
       } else {
-        acc.docs.push({ ...doc, title: doc.title + ' Plugin' } as any);
+        acc.docs.push(doc as any);
       }
 
       return acc;
@@ -243,6 +277,42 @@ function getRegistryDocs({
     ...groups.components.sort((a, b) => a.title.localeCompare(b.title)),
     ...groups.external.sort((a, b) => a.title.localeCompare(b.title)),
   ];
+}
+
+async function getExampleCode(name?: string) {
+  if (!name) return null;
+  if (name.endsWith('-pro')) {
+    return proExamples.find((ex) => ex.name === name);
+  }
+
+  const example = examples.find((ex) => ex.name === name);
+
+  if (!example) {
+    throw new Error(`Component ${name} not found`);
+  }
+
+  // Use the same caching pattern
+  const item = await getCachedRegistryItem(name, true);
+  let highlightedFiles: any = [];
+  let tree: any = null;
+  let dependencies: string[] = [];
+
+  if (item?.files) {
+    [tree, highlightedFiles, dependencies] = await Promise.all([
+      getCachedFileTree(item.files),
+      getCachedHighlightedFiles(item.files),
+      getCachedDependencies(name),
+    ]);
+  }
+
+  return {
+    dependencies,
+    doc: { title: example.doc?.title },
+    highlightedFiles,
+    item,
+    name: example.name,
+    tree,
+  };
 }
 
 // const pkg = docToPackage(name);

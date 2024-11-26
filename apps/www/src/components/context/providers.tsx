@@ -14,6 +14,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         attribute="class"
         defaultTheme="light"
         disableTransitionOnChange
+        enableColorScheme
         enableSystem
       >
         <DndProvider backend={HTML5Backend}>{children}</DndProvider>

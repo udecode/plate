@@ -36,7 +36,7 @@ function CommentItemContent() {
 
         <h4 className="text-sm font-semibold leading-none">{user?.name}</h4>
 
-        <div className="text-muted-foreground text-xs leading-none">
+        <div className="text-xs leading-none text-muted-foreground">
           {formatDistance(comment.createdAt, Date.now())} ago
         </div>
 

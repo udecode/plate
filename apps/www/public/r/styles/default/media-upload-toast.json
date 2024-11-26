@@ -7,8 +7,7 @@
     "description": "Show toast notifications for media uploads.",
     "docs": [
       {
-        "route": "/docs/media-placeholder",
-        "title": "Media Placeholder"
+        "route": "/docs/media"
       }
     ],
     "examples": [

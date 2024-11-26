@@ -18,7 +18,7 @@ importers:
         specifier: ^9.2.0
         version: 9.2.0
       '@radix-ui/react-alert-dialog':
-        specifier: ^1.1.1
+        specifier: ^1.1.2
         version: 1.1.2(@types/react-dom@18.3.1)(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-avatar':
         specifier: ^1.1.1
@@ -54,8 +54,8 @@ importers:
         specifier: ^39.0.0
         version: 39.0.0(@types/react@18.3.12)(class-variance-authority@0.7.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(tailwind-merge@2.5.4)
       '@udecode/plate-ai':
-        specifier: 40.1.0
-        version: 40.1.0(@udecode/plate-common@40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)
+        specifier: 40.2.2
+        version: 40.2.2(@udecode/plate-common@40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)
       '@udecode/plate-alignment':
         specifier: ^40.0.0
         version: 40.0.0(@udecode/plate-common@40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)
@@ -102,8 +102,8 @@ importers:
         specifier: 40.0.0
         version: 40.0.0(@udecode/plate-common@40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2))(react-dnd-html5-backend@16.0.1)(react-dnd@16.0.1(@types/node@22.9.0)(@types/react@18.3.12)(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)
       '@udecode/plate-docx':
-        specifier: 40.2.0
-        version: 40.2.0(@udecode/plate-common@40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)
+        specifier: 40.2.3
+        version: 40.2.3(@udecode/plate-common@40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)
       '@udecode/plate-emoji':
         specifier: ^40.0.0
         version: 40.0.0(@udecode/plate-common@40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)
@@ -147,14 +147,14 @@ importers:
         specifier: ^40.0.0
         version: 40.0.0(@udecode/plate-common@40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)
       '@udecode/plate-markdown':
-        specifier: 40.0.5
-        version: 40.0.5(@udecode/plate-common@40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)
+        specifier: 40.2.2
+        version: 40.2.2(@udecode/plate-common@40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)
       '@udecode/plate-math':
         specifier: ^40.0.0
         version: 40.0.0(@udecode/plate-common@40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)
       '@udecode/plate-media':
-        specifier: 40.2.0
-        version: 40.2.0(@udecode/plate-common@40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)
+        specifier: 40.2.3
+        version: 40.2.3(@udecode/plate-common@40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)
       '@udecode/plate-mention':
         specifier: 40.0.0
         version: 40.0.0(@udecode/plate-common@40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)
@@ -193,7 +193,7 @@ importers:
         version: 7.1.0(next@15.0.3(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(uploadthing@7.2.0(next@15.0.3(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(tailwindcss@3.4.14))
       ai:
         specifier: ^3.4.33
-        version: 3.4.33(react@18.3.1)(sswr@2.1.0(svelte@5.2.0))(svelte@5.2.0)(vue@3.5.12(typescript@5.6.3))(zod@3.23.8)
+        version: 3.4.33(react@18.3.1)(sswr@2.1.0(svelte@5.2.4))(svelte@5.2.4)(vue@3.5.13(typescript@5.6.3))(zod@3.23.8)
       class-variance-authority:
         specifier: 0.7.0
         version: 0.7.0
@@ -258,7 +258,7 @@ importers:
         specifier: ^0.111.0
         version: 0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2)
       sonner:
-        specifier: ^1.5.0
+        specifier: ^1.7.0
         version: 1.7.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       tailwind-merge:
         specifier: 2.5.4
@@ -308,7 +308,7 @@ importers:
         version: 9.1.0(eslint@8.57.1)
       eslint-plugin-perfectionist:
         specifier: 3.9.1
-        version: 3.9.1(eslint@8.57.1)(svelte@5.2.0)(typescript@5.6.3)
+        version: 3.9.1(eslint@8.57.1)(svelte@5.2.4)(typescript@5.6.3)
       eslint-plugin-prettier:
         specifier: ^5.2.1
         version: 5.2.1(eslint-config-prettier@9.1.0(eslint@8.57.1))(eslint@8.57.1)(prettier@3.3.3)
@@ -320,7 +320,7 @@ importers:
         version: 3.17.5(tailwindcss@3.4.14)
       eslint-plugin-unused-imports:
         specifier: ^4.1.3
-        version: 4.1.4(@typescript-eslint/eslint-plugin@8.14.0(@typescript-eslint/parser@8.14.0(eslint@8.57.1)(typescript@5.6.3))(eslint@8.57.1)(typescript@5.6.3))(eslint@8.57.1)
+        version: 4.1.4(@typescript-eslint/eslint-plugin@8.15.0(@typescript-eslint/parser@8.14.0(eslint@8.57.1)(typescript@5.6.3))(eslint@8.57.1)(typescript@5.6.3))(eslint@8.57.1)
       postcss:
         specifier: ^8.4.49
         version: 8.4.49
@@ -1388,6 +1388,17 @@ packages:
       typescript:
         optional: true
 
+  '@typescript-eslint/eslint-plugin@8.15.0':
+    resolution: {integrity: sha512-+zkm9AR1Ds9uLWN3fkoeXgFppaQ+uEVtfOV62dDmsy9QCNqlRHWNEck4yarvRNrvRcHQLGfqBNui3cimoz8XAg==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    peerDependencies:
+      '@typescript-eslint/parser': ^8.0.0 || ^8.0.0-alpha.0
+      eslint: ^8.57.0 || ^9.0.0
+      typescript: '*'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
   '@typescript-eslint/parser@8.14.0':
     resolution: {integrity: sha512-2p82Yn9juUJq0XynBXtFCyrBDb6/dJombnz6vbo6mgQEtWHfvHbQuEa9kAOVIt1c9YFwi7H6WxtPj1kg+80+RA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
@@ -1406,10 +1417,24 @@ packages:
     resolution: {integrity: sha512-aBbBrnW9ARIDn92Zbo7rguLnqQ/pOrUguVpbUwzOhkFg2npFDwTgPGqFqE0H5feXcOoJOfX3SxlJaKEVtq54dw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
+  '@typescript-eslint/scope-manager@8.15.0':
+    resolution: {integrity: sha512-QRGy8ADi4J7ii95xz4UoiymmmMd/zuy9azCaamnZ3FM8T5fZcex8UfJcjkiEZjJSztKfEBe3dZ5T/5RHAmw2mA==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
   '@typescript-eslint/type-utils@8.14.0':
     resolution: {integrity: sha512-Xcz9qOtZuGusVOH5Uk07NGs39wrKkf3AxlkK79RBK6aJC1l03CobXjJbwBPSidetAOV+5rEVuiT1VSBUOAsanQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     peerDependencies:
+      typescript: '*'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
+  '@typescript-eslint/type-utils@8.15.0':
+    resolution: {integrity: sha512-UU6uwXDoI3JGSXmcdnP5d8Fffa2KayOhUUqr/AiBnG1Gl7+7ut/oyagVeSkh7bxQ0zSXV9ptRh/4N15nkCqnpw==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    peerDependencies:
+      eslint: ^8.57.0 || ^9.0.0
       typescript: '*'
     peerDependenciesMeta:
       typescript:
@@ -1421,6 +1446,10 @@ packages:
 
   '@typescript-eslint/types@8.14.0':
     resolution: {integrity: sha512-yjeB9fnO/opvLJFAsPNYlKPnEM8+z4og09Pk504dkqonT02AyL5Z9SSqlE0XqezS93v6CXn49VHvB2G7XSsl0g==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  '@typescript-eslint/types@8.15.0':
+    resolution: {integrity: sha512-n3Gt8Y/KyJNe0S3yDCD2RVKrHBC4gTUcLTebVBXacPy091E6tNspFLKRXlk3hwT4G55nfr1n2AdFqi/XMxzmPQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   '@typescript-eslint/typescript-estree@8.12.2':
@@ -1441,6 +1470,15 @@ packages:
       typescript:
         optional: true
 
+  '@typescript-eslint/typescript-estree@8.15.0':
+    resolution: {integrity: sha512-1eMp2JgNec/niZsR7ioFBlsh/Fk0oJbhaqO0jRyQBMgkz7RrFfkqF9lYYmBoGBaSiLnu8TAPQTwoTUiSTUW9dg==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    peerDependencies:
+      typescript: '*'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
   '@typescript-eslint/utils@8.12.2':
     resolution: {integrity: sha512-UTTuDIX3fkfAz6iSVa5rTuSfWIYZ6ATtEocQ/umkRSyC9O919lbZ8dcH7mysshrCdrAM03skJOEYaBugxN+M6A==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
@@ -1453,12 +1491,26 @@ packages:
     peerDependencies:
       eslint: ^8.57.0 || ^9.0.0
 
+  '@typescript-eslint/utils@8.15.0':
+    resolution: {integrity: sha512-k82RI9yGhr0QM3Dnq+egEpz9qB6Un+WLYhmoNcvl8ltMEededhh7otBVVIDDsEEttauwdY/hQoSsOv13lxrFzQ==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    peerDependencies:
+      eslint: ^8.57.0 || ^9.0.0
+      typescript: '*'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
   '@typescript-eslint/visitor-keys@8.12.2':
     resolution: {integrity: sha512-PChz8UaKQAVNHghsHcPyx1OMHoFRUEA7rJSK/mDhdq85bk+PLsUHUBqTQTFt18VJZbmxBovM65fezlheQRsSDA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   '@typescript-eslint/visitor-keys@8.14.0':
     resolution: {integrity: sha512-vG0XZo8AdTH9OE6VFRwAZldNc7qtJ/6NLGWak+BtENuEUXGZgFpihILPiBvKXvJ2nFu27XNGC6rKiwuaoMbYzQ==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  '@typescript-eslint/visitor-keys@8.15.0':
+    resolution: {integrity: sha512-h8vYOulWec9LhpwfAdZf2bjr8xIp0KNKnpgqSz0qqYYKAW/QZKw3ktRndbiAtUz4acH4QLQavwZBYCc0wulA/Q==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   '@udecode/cn@39.0.0':
@@ -1469,8 +1521,8 @@ packages:
       react-dom: '>=16.8.0'
       tailwind-merge: '>=2.2.0'
 
-  '@udecode/plate-ai@40.1.0':
-    resolution: {integrity: sha512-sIYeEcUyxYOcHTcISlEWCWRoX6XODEltPGsBPgU8pFKuWNMIt34g06Q9YB2f211RLIVSikzGhKrhB/ARsL82fg==}
+  '@udecode/plate-ai@40.2.2':
+    resolution: {integrity: sha512-KwDch4ESGqfuX51NDnf6OxeJiEeW7ebs9i2M6EX+L2DJHSfAwUMop0G8AH/bqSwM/bIfrk58Sqqmvo36XvbYIw==}
     peerDependencies:
       '@udecode/plate-common': '>=40.0.0'
       react: '>=16.8.0'
@@ -1672,8 +1724,8 @@ packages:
       slate-hyperscript: '>=0.66.0'
       slate-react: '>=0.111.0'
 
-  '@udecode/plate-docx@40.2.0':
-    resolution: {integrity: sha512-bS4b4OjfnMwUvu+EKc89DbQWIMnTx3bXwt+DypWXaf0WqAUYDyj0WAN/KXshRuyBjju29UE5nL1RjLQNO3Jumw==}
+  '@udecode/plate-docx@40.2.3':
+    resolution: {integrity: sha512-QuIWZnO6/BWrn0VAOpYna/xocaxjVZ20nTsuNlzqvQg7ngKi5Sv6y0YVKF2pwx/zMGU6DfC62fOOSuMqkXRDxg==}
     peerDependencies:
       '@udecode/plate-common': '>=40.0.3'
       react: '>=16.8.0'
@@ -1864,8 +1916,8 @@ packages:
       slate-hyperscript: '>=0.66.0'
       slate-react: '>=0.111.0'
 
-  '@udecode/plate-markdown@40.0.5':
-    resolution: {integrity: sha512-Slbwurt3ltrH1Vru+RvBl4WbwtAC9BUgLbcIBiYLU8HDfd7Yr2+uJ568a3BeeT+QiRLONYuC5H2qIOZ38FFwlA==}
+  '@udecode/plate-markdown@40.2.2':
+    resolution: {integrity: sha512-SvAF6WFustu/4R2/DMe4RzcDhQlwLSZNaPA9V6oZ/Yn10EPkbprkd47zSF81HYF4qOcEyUw33VbFoTGEibyheg==}
     peerDependencies:
       '@udecode/plate-common': '>=40.0.3'
       react: '>=16.8.0'
@@ -1888,8 +1940,8 @@ packages:
       slate-hyperscript: '>=0.66.0'
       slate-react: '>=0.111.0'
 
-  '@udecode/plate-media@40.2.0':
-    resolution: {integrity: sha512-7J+qMHVD2CzZ1xxoKl5MtnSFz81Y/6rfHIO5v8S2iBdUa5EDuEh7xmI44kNdQ1XCSeZVlkFhqiK1w74v2DzUnw==}
+  '@udecode/plate-media@40.2.3':
+    resolution: {integrity: sha512-5NZUrBstMSOf+CywZX5khX9A/eseyNKqyx7y7V5n9agDZwX1IvuBOdFoURTCZu8qX7VCvt3UNXyy8KMyEDW1Qg==}
     peerDependencies:
       '@udecode/plate-common': '>=40.0.3'
       react: '>=16.8.0'
@@ -2108,34 +2160,34 @@ packages:
   '@uploadthing/shared@7.1.0':
     resolution: {integrity: sha512-6cdS2hq9jUJFU/tqRKHs5XsDIwc6HdaVI4ka0vRy+IwjPnQBR0iXHwqyCtNNssCCAq4zQxrZr3iNEDPNqc0dqw==}
 
-  '@vue/compiler-core@3.5.12':
-    resolution: {integrity: sha512-ISyBTRMmMYagUxhcpyEH0hpXRd/KqDU4ymofPgl2XAkY9ZhQ+h0ovEZJIiPop13UmR/54oA2cgMDjgroRelaEw==}
+  '@vue/compiler-core@3.5.13':
+    resolution: {integrity: sha512-oOdAkwqUfW1WqpwSYJce06wvt6HljgY3fGeM9NcVA1HaYOij3mZG9Rkysn0OHuyUAGMbEbARIpsG+LPVlBJ5/Q==}
 
-  '@vue/compiler-dom@3.5.12':
-    resolution: {integrity: sha512-9G6PbJ03uwxLHKQ3P42cMTi85lDRvGLB2rSGOiQqtXELat6uI4n8cNz9yjfVHRPIu+MsK6TE418Giruvgptckg==}
+  '@vue/compiler-dom@3.5.13':
+    resolution: {integrity: sha512-ZOJ46sMOKUjO3e94wPdCzQ6P1Lx/vhp2RSvfaab88Ajexs0AHeV0uasYhi99WPaogmBlRHNRuly8xV75cNTMDA==}
 
-  '@vue/compiler-sfc@3.5.12':
-    resolution: {integrity: sha512-2k973OGo2JuAa5+ZlekuQJtitI5CgLMOwgl94BzMCsKZCX/xiqzJYzapl4opFogKHqwJk34vfsaKpfEhd1k5nw==}
+  '@vue/compiler-sfc@3.5.13':
+    resolution: {integrity: sha512-6VdaljMpD82w6c2749Zhf5T9u5uLBWKnVue6XWxprDobftnletJ8+oel7sexFfM3qIxNmVE7LSFGTpv6obNyaQ==}
 
-  '@vue/compiler-ssr@3.5.12':
-    resolution: {integrity: sha512-eLwc7v6bfGBSM7wZOGPmRavSWzNFF6+PdRhE+VFJhNCgHiF8AM7ccoqcv5kBXA2eWUfigD7byekvf/JsOfKvPA==}
+  '@vue/compiler-ssr@3.5.13':
+    resolution: {integrity: sha512-wMH6vrYHxQl/IybKJagqbquvxpWCuVYpoUJfCqFZwa/JY1GdATAQ+TgVtgrwwMZ0D07QhA99rs/EAAWfvG6KpA==}
 
-  '@vue/reactivity@3.5.12':
-    resolution: {integrity: sha512-UzaN3Da7xnJXdz4Okb/BGbAaomRHc3RdoWqTzlvd9+WBR5m3J39J1fGcHes7U3za0ruYn/iYy/a1euhMEHvTAg==}
+  '@vue/reactivity@3.5.13':
+    resolution: {integrity: sha512-NaCwtw8o48B9I6L1zl2p41OHo/2Z4wqYGGIK1Khu5T7yxrn+ATOixn/Udn2m+6kZKB/J7cuT9DbWWhRxqixACg==}
 
-  '@vue/runtime-core@3.5.12':
-    resolution: {integrity: sha512-hrMUYV6tpocr3TL3Ad8DqxOdpDe4zuQY4HPY3X/VRh+L2myQO8MFXPAMarIOSGNu0bFAjh1yBkMPXZBqCk62Uw==}
+  '@vue/runtime-core@3.5.13':
+    resolution: {integrity: sha512-Fj4YRQ3Az0WTZw1sFe+QDb0aXCerigEpw418pw1HBUKFtnQHWzwojaukAs2X/c9DQz4MQ4bsXTGlcpGxU/RCIw==}
 
-  '@vue/runtime-dom@3.5.12':
-    resolution: {integrity: sha512-q8VFxR9A2MRfBr6/55Q3umyoN7ya836FzRXajPB6/Vvuv0zOPL+qltd9rIMzG/DbRLAIlREmnLsplEF/kotXKA==}
+  '@vue/runtime-dom@3.5.13':
+    resolution: {integrity: sha512-dLaj94s93NYLqjLiyFzVs9X6dWhTdAlEAciC3Moq7gzAc13VJUdCnjjRurNM6uTLFATRHexHCTu/Xp3eW6yoog==}
 
-  '@vue/server-renderer@3.5.12':
-    resolution: {integrity: sha512-I3QoeDDeEPZm8yR28JtY+rk880Oqmj43hreIBVTicisFTx/Dl7JpG72g/X7YF8hnQD3IFhkky5i2bPonwrTVPg==}
+  '@vue/server-renderer@3.5.13':
+    resolution: {integrity: sha512-wAi4IRJV/2SAW3htkTlB+dHeRmpTiVIK1OGLWV1yeStVSebSQQOwGwIq0D3ZIoBj2C2qpgz5+vX9iEBkTdk5YA==}
     peerDependencies:
-      vue: 3.5.12
+      vue: 3.5.13
 
-  '@vue/shared@3.5.12':
-    resolution: {integrity: sha512-L2RPSAwUFbgZH20etwrXyVyCBu9OxRSi8T/38QsvnkJyvq2LufW2lDCOzm7t/U9C1mkhJGWYfCuFBCmIuNivrg==}
+  '@vue/shared@3.5.13':
+    resolution: {integrity: sha512-/hnE/qP5ZoGpol0a5mDi45bOd7t3tjYJBjsgCsivow7D48cJeV5l05RD82lPqi7gRiphZM37rnhW1l6ZoCNNnQ==}
 
   acorn-jsx@5.3.2:
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
@@ -2762,6 +2814,10 @@ packages:
     resolution: {integrity: sha512-wpc+LXeiyiisxPlEkUzU6svyS1frIO3Mgxj1fdy7Pm8Ygzguax2N3Fa/D/ag1WqbOprdI+uY6wMUl8/a2G+iag==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
 
+  eslint-visitor-keys@4.2.0:
+    resolution: {integrity: sha512-UyLnSehNt62FFhSwjZlHmeokpRK59rcz29j+F1/aDgbkbRTk7wIc9XzdoasMUbRNKDM0qQt/+BJ4BrpFeABemw==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
   eslint@8.57.1:
     resolution: {integrity: sha512-ypowyDxpVSYpkXr9WPv2PAZCtNip1Mv5KTW0SCurXv/9iOpcrH9PaqUElksqEB6pChqHGDRCFTyrZlGhnLNGiA==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
@@ -3294,8 +3350,8 @@ packages:
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0-rc
 
-  magic-string@0.30.12:
-    resolution: {integrity: sha512-Ea8I3sQMVXr8JhN4z+H/d8zwo+tYDgHE9+5G4Wnrwhs0gaK9fXTKx0Tw5Xwsd/bCPTTZNRAdpyzvoeORe9LYpw==}
+  magic-string@0.30.13:
+    resolution: {integrity: sha512-8rYBO+MsWkgjDSOvLomYnzhdwEG51olQ4zL5KXnNJWV5MNmrb4rTZdrtkhxjnD/QyZUqR/Z/XDsUs/4ej2nx0g==}
 
   markdown-table@3.0.4:
     resolution: {integrity: sha512-wiYz4+JrLyb/DqW2hkFJxP7Vd7JuTDm77fvbM8VfEQdmSMqcImWeeRbHwZjBjIFki/VaMK2BhFi7oUUZeM5bqw==}
@@ -3415,8 +3471,8 @@ packages:
   micromark-util-sanitize-uri@2.0.1:
     resolution: {integrity: sha512-9N9IomZ/YuGGZZmQec1MbgxtlgougxTodVwDzzEouPKo3qFWvymFHWcnDi2vzV1ff6kas9ucW+o3yzJK9YB1AQ==}
 
-  micromark-util-subtokenize@2.0.2:
-    resolution: {integrity: sha512-xKxhkB62vwHUuuxHe9Xqty3UaAsizV2YKq5OV344u3hFBbf8zIYrhYOWhAQb94MtMPkjTOzzjJ/hid9/dR5vFA==}
+  micromark-util-subtokenize@2.0.3:
+    resolution: {integrity: sha512-VXJJuNxYWSoYL6AJ6OQECCFGhIU2GGHMw8tahogePBrjkG8aCCas3ibkp7RnVOSTClg2is05/R7maAhF1XyQMg==}
 
   micromark-util-symbol@2.0.1:
     resolution: {integrity: sha512-vs5t8Apaud9N28kgCrRUdEed4UJ+wWNvicHLPxCa9ENlYuAY31M0ETy5y1vA33YoNPDFTghEbnh6efaE8h4x0Q==}
@@ -4080,8 +4136,8 @@ packages:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
 
-  svelte@5.2.0:
-    resolution: {integrity: sha512-LOowFhMB0CoTzDsa90snaICFMftrxKlYsOhH4YP1AamjCSDBZvtDq0yB5QY8LJA1tFftcmpAhmLCK/gAOFNrtw==}
+  svelte@5.2.4:
+    resolution: {integrity: sha512-hsab3Inx/HKV6Y/FUwtX8yCkt+nl6n46zC7Z6y7VWoDFhJWEQ453vP0KmDL42cLm9Q92nZyOE+izANqjss61/A==}
     engines: {node: '>=18'}
 
   swr@2.2.5:
@@ -4346,8 +4402,8 @@ packages:
   vfile@6.0.3:
     resolution: {integrity: sha512-KzIbH/9tXat2u30jf+smMwFCsno4wHVdNmzFyL+T/L3UGqqk6JKfVqOFOZEpZSHADH1k40ab6NUIXZq422ov3Q==}
 
-  vue@3.5.12:
-    resolution: {integrity: sha512-CLVZtXtn2ItBIi/zHZ0Sg1Xkb7+PU32bJJ8Bmy7ts3jxXTcbfsEfBivFYYWz1Hur+lalqGAh65Coin0r+HRUfg==}
+  vue@3.5.13:
+    resolution: {integrity: sha512-wmeiSMxkZCSc+PM2w2VRsOYAZC8GdipNFRTsLSfodVqI9mbejKeXEGr8SckuLnrQPGe3oJN5c3K0vpoU9q/wCQ==}
     peerDependencies:
       typescript: '*'
     peerDependenciesMeta:
@@ -4480,13 +4536,13 @@ snapshots:
     transitivePeerDependencies:
       - zod
 
-  '@ai-sdk/svelte@0.0.57(svelte@5.2.0)(zod@3.23.8)':
+  '@ai-sdk/svelte@0.0.57(svelte@5.2.4)(zod@3.23.8)':
     dependencies:
       '@ai-sdk/provider-utils': 1.0.22(zod@3.23.8)
       '@ai-sdk/ui-utils': 0.0.50(zod@3.23.8)
-      sswr: 2.1.0(svelte@5.2.0)
+      sswr: 2.1.0(svelte@5.2.4)
     optionalDependencies:
-      svelte: 5.2.0
+      svelte: 5.2.4
     transitivePeerDependencies:
       - zod
 
@@ -4500,13 +4556,13 @@ snapshots:
     optionalDependencies:
       zod: 3.23.8
 
-  '@ai-sdk/vue@0.0.59(vue@3.5.12(typescript@5.6.3))(zod@3.23.8)':
+  '@ai-sdk/vue@0.0.59(vue@3.5.13(typescript@5.6.3))(zod@3.23.8)':
     dependencies:
       '@ai-sdk/provider-utils': 1.0.22(zod@3.23.8)
       '@ai-sdk/ui-utils': 0.0.50(zod@3.23.8)
-      swrv: 1.0.4(vue@3.5.12(typescript@5.6.3))
+      swrv: 1.0.4(vue@3.5.13(typescript@5.6.3))
     optionalDependencies:
-      vue: 3.5.12(typescript@5.6.3)
+      vue: 3.5.13(typescript@5.6.3)
     transitivePeerDependencies:
       - zod
 
@@ -5354,6 +5410,25 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@typescript-eslint/eslint-plugin@8.15.0(@typescript-eslint/parser@8.14.0(eslint@8.57.1)(typescript@5.6.3))(eslint@8.57.1)(typescript@5.6.3)':
+    dependencies:
+      '@eslint-community/regexpp': 4.12.1
+      '@typescript-eslint/parser': 8.14.0(eslint@8.57.1)(typescript@5.6.3)
+      '@typescript-eslint/scope-manager': 8.15.0
+      '@typescript-eslint/type-utils': 8.15.0(eslint@8.57.1)(typescript@5.6.3)
+      '@typescript-eslint/utils': 8.15.0(eslint@8.57.1)(typescript@5.6.3)
+      '@typescript-eslint/visitor-keys': 8.15.0
+      eslint: 8.57.1
+      graphemer: 1.4.0
+      ignore: 5.3.2
+      natural-compare: 1.4.0
+      ts-api-utils: 1.4.0(typescript@5.6.3)
+    optionalDependencies:
+      typescript: 5.6.3
+    transitivePeerDependencies:
+      - supports-color
+    optional: true
+
   '@typescript-eslint/parser@8.14.0(eslint@8.57.1)(typescript@5.6.3)':
     dependencies:
       '@typescript-eslint/scope-manager': 8.14.0
@@ -5377,6 +5452,12 @@ snapshots:
       '@typescript-eslint/types': 8.14.0
       '@typescript-eslint/visitor-keys': 8.14.0
 
+  '@typescript-eslint/scope-manager@8.15.0':
+    dependencies:
+      '@typescript-eslint/types': 8.15.0
+      '@typescript-eslint/visitor-keys': 8.15.0
+    optional: true
+
   '@typescript-eslint/type-utils@8.14.0(eslint@8.57.1)(typescript@5.6.3)':
     dependencies:
       '@typescript-eslint/typescript-estree': 8.14.0(typescript@5.6.3)
@@ -5389,9 +5470,25 @@ snapshots:
       - eslint
       - supports-color
 
+  '@typescript-eslint/type-utils@8.15.0(eslint@8.57.1)(typescript@5.6.3)':
+    dependencies:
+      '@typescript-eslint/typescript-estree': 8.15.0(typescript@5.6.3)
+      '@typescript-eslint/utils': 8.15.0(eslint@8.57.1)(typescript@5.6.3)
+      debug: 4.3.7
+      eslint: 8.57.1
+      ts-api-utils: 1.4.0(typescript@5.6.3)
+    optionalDependencies:
+      typescript: 5.6.3
+    transitivePeerDependencies:
+      - supports-color
+    optional: true
+
   '@typescript-eslint/types@8.12.2': {}
 
   '@typescript-eslint/types@8.14.0': {}
+
+  '@typescript-eslint/types@8.15.0':
+    optional: true
 
   '@typescript-eslint/typescript-estree@8.12.2(typescript@5.6.3)':
     dependencies:
@@ -5423,6 +5520,22 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@typescript-eslint/typescript-estree@8.15.0(typescript@5.6.3)':
+    dependencies:
+      '@typescript-eslint/types': 8.15.0
+      '@typescript-eslint/visitor-keys': 8.15.0
+      debug: 4.3.7
+      fast-glob: 3.3.2
+      is-glob: 4.0.3
+      minimatch: 9.0.5
+      semver: 7.6.3
+      ts-api-utils: 1.4.0(typescript@5.6.3)
+    optionalDependencies:
+      typescript: 5.6.3
+    transitivePeerDependencies:
+      - supports-color
+    optional: true
+
   '@typescript-eslint/utils@8.12.2(eslint@8.57.1)(typescript@5.6.3)':
     dependencies:
       '@eslint-community/eslint-utils': 4.4.1(eslint@8.57.1)
@@ -5445,6 +5558,19 @@ snapshots:
       - supports-color
       - typescript
 
+  '@typescript-eslint/utils@8.15.0(eslint@8.57.1)(typescript@5.6.3)':
+    dependencies:
+      '@eslint-community/eslint-utils': 4.4.1(eslint@8.57.1)
+      '@typescript-eslint/scope-manager': 8.15.0
+      '@typescript-eslint/types': 8.15.0
+      '@typescript-eslint/typescript-estree': 8.15.0(typescript@5.6.3)
+      eslint: 8.57.1
+    optionalDependencies:
+      typescript: 5.6.3
+    transitivePeerDependencies:
+      - supports-color
+    optional: true
+
   '@typescript-eslint/visitor-keys@8.12.2':
     dependencies:
       '@typescript-eslint/types': 8.12.2
@@ -5454,6 +5580,12 @@ snapshots:
     dependencies:
       '@typescript-eslint/types': 8.14.0
       eslint-visitor-keys: 3.4.3
+
+  '@typescript-eslint/visitor-keys@8.15.0':
+    dependencies:
+      '@typescript-eslint/types': 8.15.0
+      eslint-visitor-keys: 4.2.0
+    optional: true
 
   '@udecode/cn@39.0.0(@types/react@18.3.12)(class-variance-authority@0.7.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(tailwind-merge@2.5.4)':
     dependencies:
@@ -5465,10 +5597,10 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
 
-  '@udecode/plate-ai@40.1.0(@udecode/plate-common@40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)':
+  '@udecode/plate-ai@40.2.2(@udecode/plate-common@40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)':
     dependencies:
       '@udecode/plate-common': 40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)
-      '@udecode/plate-markdown': 40.0.5(@udecode/plate-common@40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)
+      '@udecode/plate-markdown': 40.2.2(@udecode/plate-common@40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)
       '@udecode/plate-selection': 40.1.0(@udecode/plate-common@40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)
       lodash: 4.17.21
       react: 18.3.1
@@ -5701,13 +5833,13 @@ snapshots:
       slate-hyperscript: 0.100.0(slate@0.110.2)
       slate-react: 0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2)
 
-  '@udecode/plate-docx@40.2.0(@udecode/plate-common@40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)':
+  '@udecode/plate-docx@40.2.3(@udecode/plate-common@40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)':
     dependencies:
       '@udecode/plate-common': 40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)
       '@udecode/plate-heading': 40.0.2(@udecode/plate-common@40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)
       '@udecode/plate-indent': 40.0.0(@udecode/plate-common@40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)
       '@udecode/plate-indent-list': 40.0.0(@udecode/plate-common@40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)
-      '@udecode/plate-media': 40.2.0(@udecode/plate-common@40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)
+      '@udecode/plate-media': 40.2.3(@udecode/plate-common@40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)
       '@udecode/plate-table': 40.0.0(@udecode/plate-common@40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
@@ -5899,7 +6031,7 @@ snapshots:
       slate-hyperscript: 0.100.0(slate@0.110.2)
       slate-react: 0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2)
 
-  '@udecode/plate-markdown@40.0.5(@udecode/plate-common@40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)':
+  '@udecode/plate-markdown@40.2.2(@udecode/plate-common@40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)':
     dependencies:
       '@udecode/plate-common': 40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)
       lodash: 4.17.21
@@ -5928,7 +6060,7 @@ snapshots:
       slate-hyperscript: 0.100.0(slate@0.110.2)
       slate-react: 0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2)
 
-  '@udecode/plate-media@40.2.0(@udecode/plate-common@40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)':
+  '@udecode/plate-media@40.2.3(@udecode/plate-common@40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)':
     dependencies:
       '@udecode/plate-common': 40.0.3(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)(slate-dom@0.111.0(slate@0.110.2))(slate-history@0.110.3(slate@0.110.2))(slate-hyperscript@0.100.0(slate@0.110.2))(slate-react@0.111.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(slate-dom@0.111.0(slate@0.110.2))(slate@0.110.2))(slate@0.110.2)
       js-video-url-parser: 0.5.1
@@ -6171,59 +6303,59 @@ snapshots:
       effect: 3.10.3
       sqids: 0.3.0
 
-  '@vue/compiler-core@3.5.12':
+  '@vue/compiler-core@3.5.13':
     dependencies:
       '@babel/parser': 7.26.2
-      '@vue/shared': 3.5.12
+      '@vue/shared': 3.5.13
       entities: 4.5.0
       estree-walker: 2.0.2
       source-map-js: 1.2.1
 
-  '@vue/compiler-dom@3.5.12':
+  '@vue/compiler-dom@3.5.13':
     dependencies:
-      '@vue/compiler-core': 3.5.12
-      '@vue/shared': 3.5.12
+      '@vue/compiler-core': 3.5.13
+      '@vue/shared': 3.5.13
 
-  '@vue/compiler-sfc@3.5.12':
+  '@vue/compiler-sfc@3.5.13':
     dependencies:
       '@babel/parser': 7.26.2
-      '@vue/compiler-core': 3.5.12
-      '@vue/compiler-dom': 3.5.12
-      '@vue/compiler-ssr': 3.5.12
-      '@vue/shared': 3.5.12
+      '@vue/compiler-core': 3.5.13
+      '@vue/compiler-dom': 3.5.13
+      '@vue/compiler-ssr': 3.5.13
+      '@vue/shared': 3.5.13
       estree-walker: 2.0.2
-      magic-string: 0.30.12
+      magic-string: 0.30.13
       postcss: 8.4.49
       source-map-js: 1.2.1
 
-  '@vue/compiler-ssr@3.5.12':
+  '@vue/compiler-ssr@3.5.13':
     dependencies:
-      '@vue/compiler-dom': 3.5.12
-      '@vue/shared': 3.5.12
+      '@vue/compiler-dom': 3.5.13
+      '@vue/shared': 3.5.13
 
-  '@vue/reactivity@3.5.12':
+  '@vue/reactivity@3.5.13':
     dependencies:
-      '@vue/shared': 3.5.12
+      '@vue/shared': 3.5.13
 
-  '@vue/runtime-core@3.5.12':
+  '@vue/runtime-core@3.5.13':
     dependencies:
-      '@vue/reactivity': 3.5.12
-      '@vue/shared': 3.5.12
+      '@vue/reactivity': 3.5.13
+      '@vue/shared': 3.5.13
 
-  '@vue/runtime-dom@3.5.12':
+  '@vue/runtime-dom@3.5.13':
     dependencies:
-      '@vue/reactivity': 3.5.12
-      '@vue/runtime-core': 3.5.12
-      '@vue/shared': 3.5.12
+      '@vue/reactivity': 3.5.13
+      '@vue/runtime-core': 3.5.13
+      '@vue/shared': 3.5.13
       csstype: 3.1.3
 
-  '@vue/server-renderer@3.5.12(vue@3.5.12(typescript@5.6.3))':
+  '@vue/server-renderer@3.5.13(vue@3.5.13(typescript@5.6.3))':
     dependencies:
-      '@vue/compiler-ssr': 3.5.12
-      '@vue/shared': 3.5.12
-      vue: 3.5.12(typescript@5.6.3)
+      '@vue/compiler-ssr': 3.5.13
+      '@vue/shared': 3.5.13
+      vue: 3.5.13(typescript@5.6.3)
 
-  '@vue/shared@3.5.12': {}
+  '@vue/shared@3.5.13': {}
 
   acorn-jsx@5.3.2(acorn@8.12.1):
     dependencies:
@@ -6237,15 +6369,15 @@ snapshots:
 
   acorn@8.14.0: {}
 
-  ai@3.4.33(react@18.3.1)(sswr@2.1.0(svelte@5.2.0))(svelte@5.2.0)(vue@3.5.12(typescript@5.6.3))(zod@3.23.8):
+  ai@3.4.33(react@18.3.1)(sswr@2.1.0(svelte@5.2.4))(svelte@5.2.4)(vue@3.5.13(typescript@5.6.3))(zod@3.23.8):
     dependencies:
       '@ai-sdk/provider': 0.0.26
       '@ai-sdk/provider-utils': 1.0.22(zod@3.23.8)
       '@ai-sdk/react': 0.0.70(react@18.3.1)(zod@3.23.8)
       '@ai-sdk/solid': 0.0.54(zod@3.23.8)
-      '@ai-sdk/svelte': 0.0.57(svelte@5.2.0)(zod@3.23.8)
+      '@ai-sdk/svelte': 0.0.57(svelte@5.2.4)(zod@3.23.8)
       '@ai-sdk/ui-utils': 0.0.50(zod@3.23.8)
-      '@ai-sdk/vue': 0.0.59(vue@3.5.12(typescript@5.6.3))(zod@3.23.8)
+      '@ai-sdk/vue': 0.0.59(vue@3.5.13(typescript@5.6.3))(zod@3.23.8)
       '@opentelemetry/api': 1.9.0
       eventsource-parser: 1.1.2
       json-schema: 0.4.0
@@ -6254,8 +6386,8 @@ snapshots:
       zod-to-json-schema: 3.23.5(zod@3.23.8)
     optionalDependencies:
       react: 18.3.1
-      sswr: 2.1.0(svelte@5.2.0)
-      svelte: 5.2.0
+      sswr: 2.1.0(svelte@5.2.4)
+      svelte: 5.2.4
       zod: 3.23.8
     transitivePeerDependencies:
       - solid-js
@@ -6920,7 +7052,7 @@ snapshots:
       safe-regex-test: 1.0.3
       string.prototype.includes: 2.0.1
 
-  eslint-plugin-perfectionist@3.9.1(eslint@8.57.1)(svelte@5.2.0)(typescript@5.6.3):
+  eslint-plugin-perfectionist@3.9.1(eslint@8.57.1)(svelte@5.2.4)(typescript@5.6.3):
     dependencies:
       '@typescript-eslint/types': 8.12.2
       '@typescript-eslint/utils': 8.12.2(eslint@8.57.1)(typescript@5.6.3)
@@ -6928,7 +7060,7 @@ snapshots:
       minimatch: 9.0.5
       natural-compare-lite: 1.4.0
     optionalDependencies:
-      svelte: 5.2.0
+      svelte: 5.2.4
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -6974,11 +7106,11 @@ snapshots:
       postcss: 8.4.49
       tailwindcss: 3.4.14
 
-  eslint-plugin-unused-imports@4.1.4(@typescript-eslint/eslint-plugin@8.14.0(@typescript-eslint/parser@8.14.0(eslint@8.57.1)(typescript@5.6.3))(eslint@8.57.1)(typescript@5.6.3))(eslint@8.57.1):
+  eslint-plugin-unused-imports@4.1.4(@typescript-eslint/eslint-plugin@8.15.0(@typescript-eslint/parser@8.14.0(eslint@8.57.1)(typescript@5.6.3))(eslint@8.57.1)(typescript@5.6.3))(eslint@8.57.1):
     dependencies:
       eslint: 8.57.1
     optionalDependencies:
-      '@typescript-eslint/eslint-plugin': 8.14.0(@typescript-eslint/parser@8.14.0(eslint@8.57.1)(typescript@5.6.3))(eslint@8.57.1)(typescript@5.6.3)
+      '@typescript-eslint/eslint-plugin': 8.15.0(@typescript-eslint/parser@8.14.0(eslint@8.57.1)(typescript@5.6.3))(eslint@8.57.1)(typescript@5.6.3)
 
   eslint-scope@7.2.2:
     dependencies:
@@ -6986,6 +7118,9 @@ snapshots:
       estraverse: 5.3.0
 
   eslint-visitor-keys@3.4.3: {}
+
+  eslint-visitor-keys@4.2.0:
+    optional: true
 
   eslint@8.57.1:
     dependencies:
@@ -7542,7 +7677,7 @@ snapshots:
     dependencies:
       react: 18.3.1
 
-  magic-string@0.30.12:
+  magic-string@0.30.13:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.0
 
@@ -7671,7 +7806,7 @@ snapshots:
       micromark-util-html-tag-name: 2.0.1
       micromark-util-normalize-identifier: 2.0.1
       micromark-util-resolve-all: 2.0.1
-      micromark-util-subtokenize: 2.0.2
+      micromark-util-subtokenize: 2.0.3
       micromark-util-symbol: 2.0.1
       micromark-util-types: 2.0.1
 
@@ -7814,7 +7949,7 @@ snapshots:
       micromark-util-encode: 2.0.1
       micromark-util-symbol: 2.0.1
 
-  micromark-util-subtokenize@2.0.2:
+  micromark-util-subtokenize@2.0.3:
     dependencies:
       devlop: 1.1.0
       micromark-util-chunked: 2.0.1
@@ -7841,7 +7976,7 @@ snapshots:
       micromark-util-normalize-identifier: 2.0.1
       micromark-util-resolve-all: 2.0.1
       micromark-util-sanitize-uri: 2.0.1
-      micromark-util-subtokenize: 2.0.2
+      micromark-util-subtokenize: 2.0.3
       micromark-util-symbol: 2.0.1
       micromark-util-types: 2.0.1
     transitivePeerDependencies:
@@ -8456,9 +8591,9 @@ snapshots:
 
   sqids@0.3.0: {}
 
-  sswr@2.1.0(svelte@5.2.0):
+  sswr@2.1.0(svelte@5.2.4):
     dependencies:
-      svelte: 5.2.0
+      svelte: 5.2.4
       swrev: 4.0.0
 
   streamsearch@1.1.0: {}
@@ -8553,7 +8688,7 @@ snapshots:
 
   supports-preserve-symlinks-flag@1.0.0: {}
 
-  svelte@5.2.0:
+  svelte@5.2.4:
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@jridgewell/sourcemap-codec': 1.5.0
@@ -8566,7 +8701,7 @@ snapshots:
       esrap: 1.2.2
       is-reference: 3.0.3
       locate-character: 3.0.0
-      magic-string: 0.30.12
+      magic-string: 0.30.13
       zimmerframe: 1.1.2
 
   swr@2.2.5(react@18.3.1):
@@ -8577,9 +8712,9 @@ snapshots:
 
   swrev@4.0.0: {}
 
-  swrv@1.0.4(vue@3.5.12(typescript@5.6.3)):
+  swrv@1.0.4(vue@3.5.13(typescript@5.6.3)):
     dependencies:
-      vue: 3.5.12(typescript@5.6.3)
+      vue: 3.5.13(typescript@5.6.3)
 
   synckit@0.9.2:
     dependencies:
@@ -8840,13 +8975,13 @@ snapshots:
       '@types/unist': 3.0.3
       vfile-message: 4.0.2
 
-  vue@3.5.12(typescript@5.6.3):
+  vue@3.5.13(typescript@5.6.3):
     dependencies:
-      '@vue/compiler-dom': 3.5.12
-      '@vue/compiler-sfc': 3.5.12
-      '@vue/runtime-dom': 3.5.12
-      '@vue/server-renderer': 3.5.12(vue@3.5.12(typescript@5.6.3))
-      '@vue/shared': 3.5.12
+      '@vue/compiler-dom': 3.5.13
+      '@vue/compiler-sfc': 3.5.13
+      '@vue/runtime-dom': 3.5.13
+      '@vue/server-renderer': 3.5.13(vue@3.5.13(typescript@5.6.3))
+      '@vue/shared': 3.5.13
     optionalDependencies:
       typescript: 5.6.3
 

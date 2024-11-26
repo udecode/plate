@@ -1,5 +1,11 @@
 # @udecode/plate-caption
 
+## 40.2.5
+
+### Patch Changes
+
+- [#3799](https://github.com/udecode/plate/pull/3799) by [@siosio34](https://github.com/siosio34) – fix: caption text area korean ime issue
+
 ## 40.0.0
 
 ## 39.0.0
