@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 
 import type { TextareaAutosizeProps } from 'react-textarea-autosize';
 
@@ -49,25 +49,59 @@ export const useCaptionTextareaState = () => {
   const element = useElement<TCaptionElement>();
   const editor = useEditorRef();
 
-  const {
-    caption: nodeCaption = [{ children: [{ text: '' }] }] as [TElement],
-  } = element;
+  const [isComposing, setIsComposing] = useState(false)
 
-  const captionValue: TextareaAutosizeProps['value'] = getNodeString(
-    nodeCaption[0]
-  );
+  const [captionValue, setCaptionValue] = useState<
+    TextareaAutosizeProps['value']
+  >(() => {
+    const nodeCaption =
+      element.caption ?? ([{ children: [{ text: '' }] }] as [TElement])
+    return getNodeString(nodeCaption[0])
+  })
 
-  function setCaptionValue(newValue: TextareaAutosizeProps['value']) {
-    const path = findNodePath(editor, element);
+  const updateEditorCaptionValue = useCallback(
+    (newValue: string) => {
+      const path = findNodePath(editor, element)
+      if (!path) {
+        return 
+      }
 
-    if (!path) return;
+      setNodes<TCaptionElement>(
+        editor,
+        { caption: [{ text: newValue }] },
+        { at: path },
+      )
+    },
+    [editor, element],
+  )
 
-    setNodes<TCaptionElement>(
-      editor,
-      { caption: [{ text: newValue }] },
-      { at: path }
-    );
-  }
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const newValue = e.target.value
+      setCaptionValue(newValue) 
+
+      if (!isComposing) {
+        updateEditorCaptionValue(newValue)
+      }
+    },
+    [isComposing, updateEditorCaptionValue],
+  )
+
+  const handleCompositionStart = useCallback(() => {
+    setIsComposing(true)
+  }, [])
+
+  const handleCompositionEnd = useCallback(
+    (e: React.CompositionEvent<HTMLTextAreaElement>) => {
+      setIsComposing(false)
+      const newValue = e.currentTarget.value
+      setCaptionValue(newValue) 
+      updateEditorCaptionValue(newValue) 
+    },
+    [updateEditorCaptionValue],
+  )
+
+
 
   const readOnly = useReadOnly();
 
@@ -79,7 +113,9 @@ export const useCaptionTextareaState = () => {
     captionValue,
     element,
     readOnly,
-    setCaptionValue,
+    handleChange,
+    handleCompositionStart,
+    handleCompositionEnd,
     textareaRef,
   };
 };
@@ -88,19 +124,12 @@ export const useCaptionTextarea = ({
   captionValue,
   element,
   readOnly,
-  setCaptionValue,
+  handleChange,
+  handleCompositionStart,
+  handleCompositionEnd,
   textareaRef,
 }: ReturnType<typeof useCaptionTextareaState>) => {
   const editor = useEditorRef();
-
-  const onChange: TextareaAutosizeProps['onChange'] = React.useCallback(
-    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      const newValue = e.target.value;
-
-      setCaptionValue(newValue);
-    },
-    [setCaptionValue]
-  );
 
   const onKeyDown: TextareaAutosizeProps['onKeyDown'] = (e) => {
     // select image
@@ -142,8 +171,10 @@ export const useCaptionTextarea = ({
       readOnly,
       value: captionValue,
       onBlur,
-      onChange,
       onKeyDown,
+      onChange: handleChange,
+      onCompositionStart: handleCompositionStart,
+      onCompositionEnd: handleCompositionEnd,
     },
     ref: textareaRef,
   };

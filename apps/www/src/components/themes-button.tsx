@@ -21,7 +21,7 @@ export function ThemesButton() {
       </div>
 
       <Button
-        size="md"
+        size="lg"
         variant="outline"
         className="hidden h-9 md:flex"
         onClick={() => {

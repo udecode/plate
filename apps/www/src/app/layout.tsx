@@ -9,8 +9,8 @@ import { GA } from '@/components/analytics/ga';
 import { Providers } from '@/components/context/providers';
 import { TailwindIndicator } from '@/components/tailwind-indicator';
 import { Toaster } from '@/components/ui/sonner';
-import { siteConfig } from '@/config/site';
-import { fontSans } from '@/lib/fonts';
+import { META_THEME_COLORS, siteConfig } from '@/config/site';
+import { fontMono, fontSans } from '@/lib/fonts';
 
 import '@/styles/globals.css';
 
@@ -71,10 +71,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { color: 'white', media: '(prefers-color-scheme: light)' },
-    { color: 'black', media: '(prefers-color-scheme: dark)' },
-  ],
+  themeColor: META_THEME_COLORS.light,
 };
 
 interface RootLayoutProps {
@@ -84,11 +81,24 @@ interface RootLayoutProps {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head />
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                if (localStorage.theme === 'dark' || ((!('theme' in localStorage) || localStorage.theme === 'system') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                  document.querySelector('meta[name="theme-color"]').setAttribute('content', '${META_THEME_COLORS.dark}')
+                }
+              } catch (_) {}
+            `,
+          }}
+        />
+      </head>
       <body
         className={cn(
           'min-h-screen bg-background font-sans antialiased',
-          fontSans.variable
+          fontSans.variable,
+          fontMono.variable
         )}
         suppressHydrationWarning
       >

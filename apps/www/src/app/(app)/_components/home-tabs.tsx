@@ -70,7 +70,7 @@ export default function HomeTabs() {
         </Button>
 
         <TabsContent className="pt-2" value="playground">
-          <PlaygroundPreview className="max-w-[1336px]" />
+          <PlaygroundPreview className="" />
         </TabsContent>
 
         <TabsContent className="pt-2" value="installation">

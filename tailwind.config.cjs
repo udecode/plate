@@ -18,7 +18,7 @@ module.exports = {
       center: true,
       padding: '2rem',
       screens: {
-        '2xl': '1400px',
+        '2xl': '1536px',
       },
     },
     extend: {
@@ -74,9 +74,20 @@ module.exports = {
           DEFAULT: 'hsl(var(--secondary))',
           foreground: 'hsl(var(--secondary-foreground))',
         },
+        sidebar: {
+          DEFAULT: 'hsl(var(--sidebar-background))',
+          accent: 'hsl(var(--sidebar-accent))',
+          'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
+          border: 'hsl(var(--sidebar-border))',
+          foreground: 'hsl(var(--sidebar-foreground))',
+          primary: 'hsl(var(--sidebar-primary))',
+          'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
+          ring: 'hsl(var(--sidebar-ring))',
+        },
       },
       fontFamily: {
         heading: ['var(--font-heading)', ...fontFamily.sans],
+        mono: ['var(--font-mono)', ...fontFamily.mono],
         sans: ['var(--font-sans)', ...fontFamily.sans],
       },
       keyframes: {

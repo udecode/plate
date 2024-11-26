@@ -93,8 +93,7 @@ export const useTocSideBar = ({
 
       onContentScroll({ id, behavior, el });
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [editor, onContentScroll]
   );
 
   return {

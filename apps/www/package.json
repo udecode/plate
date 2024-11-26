@@ -149,7 +149,7 @@
     "match-sorter": "6.3.4",
     "next": "15.0.3",
     "next-contentlayer2": "^0.4.6",
-    "next-themes": "^0.3.0",
+    "next-themes": "^0.4.3",
     "nuqs": "^2.0.3",
     "prismjs": "^1.29.0",
     "react": "^18.3.1",
@@ -181,7 +181,7 @@
     "unist-util-visit": "^5.0.0",
     "uploadthing": "7.2.0",
     "use-file-picker": "2.1.2",
-    "vaul": "0.9.0"
+    "vaul": "1.1.1"
   },
   "devDependencies": {
     "@shikijs/compat": "^1.17.5",

@@ -1,16 +1,21 @@
+import * as React from 'react';
+
 import type { Metadata } from 'next';
 
 import { cn } from '@udecode/cn';
 import { notFound } from 'next/navigation';
 
-import { BlockChunk } from '@/components/block-chunk';
-import { BlockWrapper } from '@/components/block-wrapper';
 import { siteConfig } from '@/config/site';
 import { absoluteUrl } from '@/lib/absoluteUrl';
-import { getAllBlockIds, getBlock } from '@/lib/blocks';
+import { getAllBlockIds } from '@/lib/blocks';
+import { getRegistryComponent, getRegistryItem } from '@/lib/registry';
 import { styles } from '@/registry/registry-styles';
 
 import '@/styles/mdx.css';
+
+const getCachedRegistryItem = React.cache(async (name: string) => {
+  return await getRegistryItem(name, true);
+});
 
 export async function generateMetadata({
   params,
@@ -19,14 +24,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { name } = await params;
 
-  const block = await getBlock(name);
+  const item = await getCachedRegistryItem(name);
 
-  if (!block) {
+  if (!item) {
     return {};
   }
 
-  const title = block.name;
-  const description = block.description;
+  const title = item.name;
+  const description = item.description;
 
   return {
     description,
@@ -42,9 +47,9 @@ export async function generateMetadata({
       ],
       title,
       type: 'article',
-      url: absoluteUrl(`/blocks/${block.name}`),
+      url: absoluteUrl(`/blocks/${item.name}`),
     },
-    title: `${block.description} - ${block.name}`,
+    title: `${item.name}${item.description ? ` - ${item.description}` : ''}`,
     twitter: {
       card: 'summary_large_image',
       creator: '@shadcn',
@@ -72,41 +77,22 @@ export default async function BlockPage({
   params: Promise<{ name: string }>;
 }) {
   const { name } = await params;
-  const block = await getBlock(name);
+  const item = await getCachedRegistryItem(name);
+  const Component = getRegistryComponent(name);
 
-  if (!block) {
+  if (!item || !Component) {
     return notFound();
   }
 
-  const Component = block.component;
-
-  const chunks = block.chunks?.map((chunk) => ({ ...chunk }));
-  delete block.component;
-  block.chunks?.map((chunk) => delete chunk.component);
-
   return (
-    <>
-      {/* <ThemesStyle /> */}
-      <div
-        // eslint-disable-next-line tailwindcss/no-custom-classname
-        className={cn(
-          'themes-wrapper bg-background [&_[data-block-hide]]:hidden',
-          block.container?.className
-        )}
-      >
-        <BlockWrapper block={block}>
-          <Component />
-          {chunks?.map((chunk, index) => (
-            <BlockChunk
-              key={chunk.name}
-              block={block}
-              chunk={block.chunks?.[index]}
-            >
-              <chunk.component />
-            </BlockChunk>
-          ))}
-        </BlockWrapper>
-      </div>
-    </>
+    <div
+      // eslint-disable-next-line tailwindcss/no-custom-classname
+      className={cn(
+        'themes-wrapper bg-background [&_[data-block-hide]]:hidden',
+        item.meta?.containerClassName
+      )}
+    >
+      <Component />
+    </div>
   );
 }

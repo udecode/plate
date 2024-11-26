@@ -2,13 +2,9 @@
 
 import * as React from 'react';
 
-import {
-  InfoCircledIcon,
-  MoonIcon,
-  ResetIcon,
-  SunIcon,
-} from '@radix-ui/react-icons';
+import { MoonIcon, SunIcon } from '@radix-ui/react-icons';
 import { cn } from '@udecode/cn';
+import { RepeatIcon } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
 import { useConfig } from '@/hooks/use-config';
@@ -16,11 +12,6 @@ import { useThemesConfig } from '@/hooks/use-themes-config';
 import { THEMES } from '@/lib/themes';
 import { useMounted } from '@/registry/default/hooks/use-mounted';
 import { Button } from '@/registry/default/plate-ui/button';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/registry/default/plate-ui/popover';
 import { Separator } from '@/registry/default/plate-ui/separator';
 
 import { CopyCodeButton, getThemeCode } from './copy-code-button';
@@ -41,77 +32,35 @@ export function ThemeCustomizer() {
 
   return (
     <div className="flex h-full flex-col space-y-4 md:space-y-6">
-      <div className="flex items-start justify-between">
-        <div className="space-y-1 px-6 pr-2">
+      <div className="flex items-start justify-between px-6">
+        <div className="space-y-1 pr-2">
           <div className="font-semibold leading-none tracking-tight">
             Customize
           </div>
           <div className="text-xs text-muted-foreground">
-            Pick a style and color for your components.
+            Customize your components colors.
           </div>
         </div>
+        <Button
+          size="icon"
+          variant="ghost"
+          className="ml-auto rounded-[0.5rem]"
+          onClick={() => {
+            setConfig({
+              radius: 0.5,
+              style: 'default',
+              theme: 'slate',
+            });
+            setThemesConfig({
+              activeTheme: THEMES['default-shadcn'],
+            });
+          }}
+        >
+          <RepeatIcon />
+          <span className="sr-only">Reset</span>
+        </Button>
       </div>
       <div className="flex flex-col space-y-4 md:space-y-6">
-        <div className="space-y-1.5 px-6">
-          <div className="flex w-full items-center">
-            <Label className="text-xs">Style</Label>
-            <Popover>
-              <PopoverTrigger>
-                <InfoCircledIcon className="ml-1 size-3" />
-                <span className="sr-only">About styles</span>
-              </PopoverTrigger>
-              <PopoverContent
-                className="space-y-3 rounded-[0.5rem] text-sm"
-                align="start"
-                alignOffset={-20}
-                side="right"
-              >
-                <p className="font-medium">What is a style?</p>
-                <p>
-                  A style comes with its own set of components, animations,
-                  icons and more.
-                </p>
-                <p>
-                  The <span className="font-medium">Default</span> style has
-                  large inputs, uses lucide-react for icons and
-                  tailwindcss-animate for animations.
-                </p>
-                <p>Other styles will be added in the future.</p>
-              </PopoverContent>
-            </Popover>
-          </div>
-          <div className="flex justify-between">
-            <Button
-              size="md"
-              variant="outline"
-              className={cn(
-                config.style === 'default' && 'border-2 border-primary'
-              )}
-              onClick={() => setConfig({ ...config, style: 'default' })}
-            >
-              Default
-            </Button>
-
-            <Button
-              size="icon"
-              variant="ghost"
-              className="ml-auto rounded-[0.5rem]"
-              onClick={() => {
-                setConfig({
-                  radius: 0.5,
-                  style: 'default',
-                  theme: 'slate',
-                });
-                setThemesConfig({
-                  activeTheme: THEMES['default-shadcn'],
-                });
-              }}
-            >
-              <ResetIcon />
-              <span className="sr-only">Reset</span>
-            </Button>
-          </div>
-        </div>
         <div className="space-y-1.5 px-6">
           <Label className="text-xs">Theme</Label>
           <ThemesSwitcher />
