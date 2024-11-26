@@ -112,7 +112,7 @@ export const uiComponents: Registry = [
       docs: [{ route: '/docs/export', title: 'Export' }],
       examples: ['basic-nodes-demo'],
       label: 'New',
-      title: 'PDF Toolbar Button',
+      title: 'Export Toolbar Button',
     },
     files: [
       { path: 'plate-ui/export-toolbar-button.tsx', type: 'registry:ui' },
