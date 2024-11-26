@@ -3,8 +3,7 @@
 import React from 'react';
 
 import { withRef } from '@udecode/cn';
-import { useEditorRef } from '@udecode/plate-core/react';
-import { toDOMNode } from '@udecode/slate-react';
+import { toDOMNode, useEditorRef } from '@udecode/plate-common/react';
 
 import { ToolbarButton } from './toolbar';
 
@@ -19,11 +18,15 @@ export const PdfToolbarButton = withRef<typeof ToolbarButton>(
         onClick={async () => {
           const { default: html2canvas } = await import('html2canvas');
 
-          const canvas = await html2canvas(toDOMNode(editor, editor)!, {
-            onclone(document, element) {
-              console.log(document, element, 'fj');
-            },
-          });
+          const style = document.createElement('style');
+          document.head.append(style);
+          style.sheet?.insertRule(
+            'body > div:last-child img { display: inline-block !important; }'
+          );
+
+          const canvas = await html2canvas(toDOMNode(editor, editor)!);
+
+          style.remove();
 
           const PDFLib = await import('pdf-lib');
           const pdfDoc = await PDFLib.PDFDocument.create();
