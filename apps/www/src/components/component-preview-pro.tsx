@@ -39,6 +39,7 @@ export function ComponentPreviewPro({
         highlightedFiles={[]}
         item={
           {
+            descriptionSrc: siteConfig.links.plateProExample(id),
             name: id,
             src: `${siteConfig.links.plateProIframe}/${id}`,
           } as any
