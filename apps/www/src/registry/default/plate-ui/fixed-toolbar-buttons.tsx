@@ -23,6 +23,7 @@ import {
   VideoPlugin,
 } from '@udecode/plate-media/react';
 import {
+  ArrowUpToLineIcon,
   BaselineIcon,
   BoldIcon,
   Code2Icon,
@@ -41,6 +42,7 @@ import { AlignDropdownMenu } from './align-dropdown-menu';
 import { ColorDropdownMenu } from './color-dropdown-menu';
 import { CommentToolbarButton } from './comment-toolbar-button';
 import { EmojiDropdownMenu } from './emoji-dropdown-menu';
+import { ExportToolbarButton } from './export-toolbar-button';
 import { RedoToolbarButton, UndoToolbarButton } from './history-toolbar-button';
 import { IndentListToolbarButton } from './indent-list-toolbar-button';
 import { IndentTodoToolbarButton } from './indent-todo-toolbar-button';
@@ -73,6 +75,12 @@ export function FixedToolbarButtons() {
             <AIToolbarButton tooltip="AI commands">
               <WandSparklesIcon />
             </AIToolbarButton>
+          </ToolbarGroup>
+
+          <ToolbarGroup>
+            <ExportToolbarButton tooltip="Export File">
+              <ArrowUpToLineIcon />
+            </ExportToolbarButton>
           </ToolbarGroup>
 
           <ToolbarGroup>

@@ -106,6 +106,22 @@ export const uiComponents: Registry = [
     type: 'registry:ui',
   },
   {
+    dependencies: ['html2canvas', 'pdf-lib'],
+    doc: {
+      description: 'A toolbar button to export editor content as PDF.',
+      docs: [{ route: '/docs/export', title: 'Export' }],
+      examples: ['basic-nodes-demo'],
+      label: 'New',
+      title: 'PDF Toolbar Button',
+    },
+    files: [
+      { path: 'plate-ui/export-toolbar-button.tsx', type: 'registry:ui' },
+    ],
+    name: 'export-toolbar-button',
+    registryDependencies: ['toolbar'],
+    type: 'registry:ui',
+  },
+  {
     dependencies: ['@udecode/plate-caption'],
     doc: {
       description: 'A text field for adding captions to media elements.',

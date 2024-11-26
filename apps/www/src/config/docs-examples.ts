@@ -6,6 +6,12 @@ import { docExamples } from '@/registry/registry-examples';
 
 export const docsExamples: SidebarNavItem[] = [
   {
+    description: 'Export a Plate document to a file.',
+    href: '/docs/examples/export',
+    label: 'New',
+    title: 'Export',
+  },
+  {
     description:
       "Show a diff of two different points in a Plate document's history.",
     href: '/docs/examples/version-history',
