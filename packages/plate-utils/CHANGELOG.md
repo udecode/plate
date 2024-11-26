@@ -1,5 +1,12 @@
 # @udecode/plate-utils
 
+## 40.2.7
+
+### Patch Changes
+
+- [#3809](https://github.com/udecode/plate/pull/3809) by [@zbeyens](https://github.com/zbeyens) –
+  - Add `useEditorString`: Subscribes to the editor string on each change
+
 ## 40.0.3
 
 ## 40.0.2
