@@ -1,0 +1,33 @@
+{
+  "dependencies": [
+    "html2canvas",
+    "pdf-lib"
+  ],
+  "doc": {
+    "description": "A toolbar button to export editor content as PDF.",
+    "docs": [
+      {
+        "route": "/docs/export",
+        "title": "Export"
+      }
+    ],
+    "examples": [
+      "basic-nodes-demo"
+    ],
+    "label": "New",
+    "title": "Export Toolbar Button"
+  },
+  "files": [
+    {
+      "content": "'use client';\n\nimport React from 'react';\n\nimport type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';\n\nimport { toDOMNode, useEditorRef } from '@udecode/plate-common/react';\nimport { ArrowDownToLineIcon } from 'lucide-react';\n\nimport {\n  DropdownMenu,\n  DropdownMenuContent,\n  DropdownMenuGroup,\n  DropdownMenuItem,\n  DropdownMenuTrigger,\n  useOpenState,\n} from './dropdown-menu';\nimport { ToolbarButton } from './toolbar';\n\nexport function ExportToolbarButton({ children, ...props }: DropdownMenuProps) {\n  const editor = useEditorRef();\n  const openState = useOpenState();\n\n  const getCanvas = async () => {\n    const { default: html2canvas } = await import('html2canvas');\n\n    const style = document.createElement('style');\n    document.head.append(style);\n    style.sheet?.insertRule(\n      'body > div:last-child img { display: inline-block !important; }'\n    );\n\n    const canvas = await html2canvas(toDOMNode(editor, editor)!);\n    style.remove();\n\n    return canvas;\n  };\n\n  const downloadFile = (href: string, filename: string) => {\n    const element = document.createElement('a');\n    element.setAttribute('href', href);\n    element.setAttribute('download', filename);\n    element.style.display = 'none';\n    document.body.append(element);\n    element.click();\n    element.remove();\n  };\n\n  const exportToPdf = async () => {\n    const canvas = await getCanvas();\n\n    const PDFLib = await import('pdf-lib');\n    const pdfDoc = await PDFLib.PDFDocument.create();\n    const page = pdfDoc.addPage([canvas.width, canvas.height]);\n    const imageEmbed = await pdfDoc.embedPng(canvas.toDataURL('PNG'));\n    const { height, width } = imageEmbed.scale(1);\n    page.drawImage(imageEmbed, {\n      height,\n      width,\n      x: 0,\n      y: 0,\n    });\n    const pdfBase64 = await pdfDoc.saveAsBase64({ dataUri: true });\n\n    downloadFile(pdfBase64, 'plate.pdf');\n  };\n\n  const exportToImage = async () => {\n    const canvas = await getCanvas();\n    downloadFile(canvas.toDataURL('image/png'), 'plate.png');\n  };\n\n  return (\n    <DropdownMenu modal={false} {...openState} {...props}>\n      <DropdownMenuTrigger asChild>\n        <ToolbarButton pressed={openState.open} tooltip=\"Export\" isDropdown>\n          <ArrowDownToLineIcon className=\"size-4\" />\n        </ToolbarButton>\n      </DropdownMenuTrigger>\n\n      <DropdownMenuContent align=\"start\">\n        <DropdownMenuGroup>\n          <DropdownMenuItem onSelect={exportToPdf}>\n            Export as PDF\n          </DropdownMenuItem>\n          <DropdownMenuItem onSelect={exportToImage}>\n            Export as Image\n          </DropdownMenuItem>\n        </DropdownMenuGroup>\n      </DropdownMenuContent>\n    </DropdownMenu>\n  );\n}\n",
+      "path": "plate-ui/export-toolbar-button.tsx",
+      "target": "components/plate-ui/export-toolbar-button.tsx",
+      "type": "registry:ui"
+    }
+  ],
+  "name": "export-toolbar-button",
+  "registryDependencies": [
+    "toolbar"
+  ],
+  "type": "registry:ui"
+}

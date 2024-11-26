@@ -50,7 +50,6 @@ export const EditorContainer = ({
         editorContainerVariants({ variant }),
         className
       )}
-      role="button"
       {...props}
     />
   );

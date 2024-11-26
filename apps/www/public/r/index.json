@@ -1658,6 +1658,37 @@
   },
   {
     "dependencies": [
+      "html2canvas",
+      "pdf-lib"
+    ],
+    "doc": {
+      "description": "A toolbar button to export editor content as PDF.",
+      "docs": [
+        {
+          "route": "/docs/export",
+          "title": "Export"
+        }
+      ],
+      "examples": [
+        "basic-nodes-demo"
+      ],
+      "label": "New",
+      "title": "Export Toolbar Button"
+    },
+    "files": [
+      {
+        "path": "plate-ui/export-toolbar-button.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "export-toolbar-button",
+    "registryDependencies": [
+      "toolbar"
+    ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
       "@udecode/plate-caption"
     ],
     "doc": {
@@ -2075,7 +2106,8 @@
       "outdent-toolbar-button",
       "table-dropdown-menu",
       "toggle-toolbar-button",
-      "turn-into-dropdown-menu"
+      "turn-into-dropdown-menu",
+      "export-toolbar-button"
     ],
     "type": "registry:ui"
   },
