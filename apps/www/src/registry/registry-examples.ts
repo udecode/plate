@@ -1181,6 +1181,23 @@ export const docExamples: Registry = [
   },
   {
     doc: {
+      description: 'A form with a select editor component for managing labels.',
+      docs: [
+        {
+          route: '/docs/multi-select',
+        },
+      ],
+      title: 'Select Editor Form',
+    },
+    files: [
+      { path: 'example/select-editor-demo.tsx', type: 'registry:example' },
+    ],
+    name: 'select-editor-demo',
+    registryDependencies: ['form', 'button', 'select-editor'],
+    type: 'registry:example',
+  },
+  {
+    doc: {
       description: 'Restrict the editor to a single block.',
       title: 'Single Line',
     },

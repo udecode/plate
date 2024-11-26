@@ -208,6 +208,11 @@ function BlockViewerToolbar({
   const { item, resizablePanelRef, setView } = useBlockViewer();
   const { copyToClipboard, isCopied } = useCopyToClipboard();
 
+  const descriptionSrc =
+    item.meta?.descriptionSrc ??
+    item.src?.replace('?iframe=true', '') ??
+    `/blocks/${item.name}`;
+
   return (
     <div className="flex w-full items-center gap-2 md:pr-[14px]">
       <Tabs
@@ -240,8 +245,8 @@ function BlockViewerToolbar({
 
       <Link
         className="text-sm font-medium underline-offset-2 hover:underline"
-        href={item.src?.replace('?iframe=true', '') ?? `/blocks/${item.name}`}
-        target="_blank"
+        href={descriptionSrc}
+        target={descriptionSrc.startsWith('/') ? '_self' : '_blank'}
       >
         {item.description}
       </Link>

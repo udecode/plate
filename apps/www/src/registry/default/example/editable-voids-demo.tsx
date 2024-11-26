@@ -6,7 +6,7 @@ import type { PlateRenderElementProps } from '@udecode/plate-common/react';
 
 import { Plate, createPlatePlugin } from '@udecode/plate-common/react';
 
-import { Label } from '@/components/ui/label';
+import { Label } from '@/registry/default/plate-ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';

@@ -1858,6 +1858,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@hookform/resolvers@npm:3.9.1":
+  version: 3.9.1
+  resolution: "@hookform/resolvers@npm:3.9.1"
+  peerDependencies:
+    react-hook-form: ^7.0.0
+  checksum: 10c0/8a4056db3860b12ee30921ba352996104d6ae75ac45996d4c8b6df429e07ee73f5b87c82a22a15403789213f6f52f5fead1c2637b26ef624068b68d213362cd1
+  languageName: node
+  linkType: hard
+
 "@humanwhocodes/config-array@npm:^0.13.0":
   version: 0.13.0
   resolution: "@humanwhocodes/config-array@npm:0.13.0"
@@ -3672,7 +3681,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-dialog@npm:1.1.2, @radix-ui/react-dialog@npm:^1.1.1":
+"@radix-ui/react-dialog@npm:1.1.2, @radix-ui/react-dialog@npm:^1.1.1, @radix-ui/react-dialog@npm:^1.1.2":
   version: 1.1.2
   resolution: "@radix-ui/react-dialog@npm:1.1.2"
   dependencies:
@@ -3912,7 +3921,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-id@npm:1.1.0":
+"@radix-ui/react-id@npm:1.1.0, @radix-ui/react-id@npm:^1.1.0":
   version: 1.1.0
   resolution: "@radix-ui/react-id@npm:1.1.0"
   dependencies:
@@ -4204,7 +4213,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-primitive@npm:2.0.0":
+"@radix-ui/react-primitive@npm:2.0.0, @radix-ui/react-primitive@npm:^2.0.0":
   version: 2.0.0
   resolution: "@radix-ui/react-primitive@npm:2.0.0"
   dependencies:
@@ -5996,6 +6005,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/use-sync-external-store@npm:0.0.6":
+  version: 0.0.6
+  resolution: "@types/use-sync-external-store@npm:0.0.6"
+  checksum: 10c0/77c045a98f57488201f678b181cccd042279aff3da34540ad242f893acc52b358bd0a8207a321b8ac09adbcef36e3236944390e2df4fcedb556ce7bb2a88f2a8
+  languageName: node
+  linkType: hard
+
 "@types/validator@npm:^13.12.1":
   version: 13.12.2
   resolution: "@types/validator@npm:13.12.2"
@@ -6334,6 +6350,21 @@ __metadata:
   checksum: 10c0/02a954c3752c4328482a884eb1da06ca8fb72ae78ef28f1d854b18f3779406ed47263af22321cf3f65a637ec7584e5f483e34a263b5c8cec60ec85aebc263574
   languageName: node
   linkType: hard
+
+"@udecode/cmdk@workspace:^, @udecode/cmdk@workspace:packages/cmdk":
+  version: 0.0.0-use.local
+  resolution: "@udecode/cmdk@workspace:packages/cmdk"
+  dependencies:
+    "@radix-ui/react-dialog": "npm:^1.1.2"
+    "@radix-ui/react-id": "npm:^1.1.0"
+    "@radix-ui/react-primitive": "npm:^2.0.0"
+    "@types/use-sync-external-store": "npm:0.0.6"
+    use-sync-external-store: "npm:^1.2.2"
+  peerDependencies:
+    react: ^18 || ^19 || ^19.0.0-rc
+    react-dom: ^18 || ^19 || ^19.0.0-rc
+  languageName: unknown
+  linkType: soft
 
 "@udecode/cn@workspace:^, @udecode/cn@workspace:packages/cn":
   version: 0.0.0-use.local
@@ -7327,6 +7358,23 @@ __metadata:
     slate: ">=0.103.0"
     slate-dom: ">=0.111.0"
     slate-history: ">=0.93.0"
+    slate-react: ">=0.111.0"
+  languageName: unknown
+  linkType: soft
+
+"@udecode/plate-tag@workspace:^, @udecode/plate-tag@workspace:packages/tag":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-tag@workspace:packages/tag"
+  dependencies:
+    "@udecode/plate-common": "workspace:^"
+  peerDependencies:
+    "@udecode/plate-common": ">=40.0.3"
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.103.0"
+    slate-dom: ">=0.111.0"
+    slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
   linkType: soft
@@ -11881,6 +11929,13 @@ __metadata:
   bin:
     fx: index.js
   checksum: 10c0/0f5bc30717780ee509e49c2add550104fd7697d425d3fdf92817e8ce2166f01f93eec888ed0d2e12c0fa88d6bebce2c19e52604efbf024c3791aa91d95a02457
+  languageName: node
+  linkType: hard
+
+"fzf@npm:0.5.2":
+  version: 0.5.2
+  resolution: "fzf@npm:0.5.2"
+  checksum: 10c0/5b1f945b289855891c4e3cb03db35381f8d85464dceb15b6d32f0fc74e43d7d2b9a13554cf78a86760ba762de39134d40644ccb54e60668a4bc5b15c4765d36e
   languageName: node
   linkType: hard
 
@@ -18091,6 +18146,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-hook-form@npm:7.53.2":
+  version: 7.53.2
+  resolution: "react-hook-form@npm:7.53.2"
+  peerDependencies:
+    react: ^16.8.0 || ^17 || ^18 || ^19
+  checksum: 10c0/18336d8e8798a70dcd0af703a0becca2d5dbf82a7b7a3ca334ae0e1f26410490bc3ef2ea51adcf790bb1e7006ed7a763fd00d664e398f71225b23529a7ccf0bf
+  languageName: node
+  linkType: hard
+
 "react-is@npm:18.3.1, react-is@npm:^16.12.0 || ^17.0.0 || ^18.0.0, react-is@npm:^18.0.0, react-is@npm:^18.3.1":
   version: 18.3.1
   resolution: "react-is@npm:18.3.1"
@@ -21832,7 +21896,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"use-sync-external-store@npm:1.2.2, use-sync-external-store@npm:^1.2.0":
+"use-sync-external-store@npm:1.2.2, use-sync-external-store@npm:^1.2.0, use-sync-external-store@npm:^1.2.2":
   version: 1.2.2
   resolution: "use-sync-external-store@npm:1.2.2"
   peerDependencies:
@@ -22375,6 +22439,7 @@ __metadata:
     "@ai-sdk/openai": "npm:^0.0.67"
     "@ariakit/react": "npm:0.4.11"
     "@faker-js/faker": "npm:^9.0.2"
+    "@hookform/resolvers": "npm:3.9.1"
     "@next/third-parties": "npm:15.0.3"
     "@radix-ui/colors": "npm:3.0.0"
     "@radix-ui/react-accessible-icon": "npm:^1.1.0"
@@ -22411,6 +22476,7 @@ __metadata:
     "@types/lodash.template": "npm:^4.5.3"
     "@types/react-color": "npm:^3.0.12"
     "@types/react-syntax-highlighter": "npm:^15.5.13"
+    "@udecode/cmdk": "workspace:^"
     "@udecode/cn": "workspace:^"
     "@udecode/plate": "workspace:^"
     "@udecode/plate-ai": "workspace:^"
@@ -22463,6 +22529,7 @@ __metadata:
     "@udecode/plate-suggestion": "workspace:^"
     "@udecode/plate-tabbable": "workspace:^"
     "@udecode/plate-table": "workspace:^"
+    "@udecode/plate-tag": "workspace:^"
     "@udecode/plate-test-utils": "workspace:^"
     "@udecode/plate-toggle": "workspace:^"
     "@udecode/plate-trailing-block": "workspace:^"
@@ -22483,6 +22550,7 @@ __metadata:
     contentlayer2: "npm:^0.4.6"
     date-fns: "npm:^3.6.0"
     framer-motion: "npm:^11.5.4"
+    fzf: "npm:0.5.2"
     glob: "npm:^11.0.0"
     html2canvas: "npm:^1.4.1"
     lodash.template: "npm:^4.5.0"
@@ -22502,6 +22570,7 @@ __metadata:
     react-dnd: "npm:16.0.1"
     react-dnd-html5-backend: "npm:^16.0.1"
     react-dom: "npm:^18.3.1"
+    react-hook-form: "npm:7.53.2"
     react-lite-youtube-embed: "npm:^2.4.0"
     react-markdown: "npm:9.0.1"
     react-player: "npm:2.16.0"

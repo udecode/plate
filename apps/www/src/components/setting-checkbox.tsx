@@ -17,7 +17,7 @@ import { settingsStore } from './context/settings-store';
 import { Icons } from './icons';
 import { TreeIcon } from './tree-icon';
 import { Badge } from './ui/badge';
-import { Label } from './ui/label';
+import { Label } from '../registry/default/plate-ui/label';
 
 export function SettingCheckbox({
   id,

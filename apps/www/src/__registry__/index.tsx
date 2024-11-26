@@ -541,6 +541,22 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
+    "tag-element": {
+      name: "tag-element",
+      description: "",
+      type: "registry:ui",
+      registryDependencies: [],
+      files: [{
+        path: "src/registry/default/plate-ui/tag-element.tsx",
+        type: "registry:ui",
+        target: ""
+      }],
+      component: React.lazy(() => import("@/registry/default/plate-ui/tag-element.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
     "toc-element": {
       name: "toc-element",
       description: "",
@@ -733,6 +749,22 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
+    "form": {
+      name: "form",
+      description: "",
+      type: "registry:ui",
+      registryDependencies: ["label"],
+      files: [{
+        path: "src/registry/default/plate-ui/form.tsx",
+        type: "registry:ui",
+        target: ""
+      }],
+      component: React.lazy(() => import("@/registry/default/plate-ui/form.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
     "input": {
       name: "input",
       description: "",
@@ -744,6 +776,22 @@ export const Index: Record<string, any> = {
         target: ""
       }],
       component: React.lazy(() => import("@/registry/default/plate-ui/input.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
+    "label": {
+      name: "label",
+      description: "",
+      type: "registry:ui",
+      registryDependencies: [],
+      files: [{
+        path: "src/registry/default/plate-ui/label.tsx",
+        type: "registry:ui",
+        target: ""
+      }],
+      component: React.lazy(() => import("@/registry/default/plate-ui/label.tsx")),
       source: "",
       category: "",
       subcategory: "",
@@ -1092,6 +1140,22 @@ export const Index: Record<string, any> = {
         target: ""
       }],
       component: React.lazy(() => import("@/registry/default/plate-ui/editor.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
+    "select-editor": {
+      name: "select-editor",
+      description: "",
+      type: "registry:ui",
+      registryDependencies: ["editor","command","popover","tag-element"],
+      files: [{
+        path: "src/registry/default/plate-ui/select-editor.tsx",
+        type: "registry:ui",
+        target: ""
+      }],
+      component: React.lazy(() => import("@/registry/default/plate-ui/select-editor.tsx")),
       source: "",
       category: "",
       subcategory: "",
@@ -3153,6 +3217,22 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
+    "select-editor-demo": {
+      name: "select-editor-demo",
+      description: "",
+      type: "registry:example",
+      registryDependencies: ["form","button","select-editor"],
+      files: [{
+        path: "src/registry/default/example/select-editor-demo.tsx",
+        type: "registry:example",
+        target: ""
+      }],
+      component: React.lazy(() => import("@/registry/default/example/select-editor-demo.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
     "single-line-demo": {
       name: "single-line-demo",
       description: "",
@@ -3790,6 +3870,22 @@ export const Index: Record<string, any> = {
       component: React.lazy(() => import("@/registry/default/app/api/uploadthing/route.ts")),
       source: "",
       category: "",
+      subcategory: "",
+      chunks: []
+    },
+    "editor-select": {
+      name: "editor-select",
+      description: "A select editor",
+      type: "registry:block",
+      registryDependencies: ["select-editor-demo"],
+      files: [{
+        path: "src/registry/default/block/editor-select/page.tsx",
+        type: "registry:page",
+        target: "app/editor/page.tsx"
+      }],
+      component: React.lazy(() => import("@/registry/default/block/editor-select/page.tsx")),
+      source: "src/__registry__/default/block/editor-select/page.tsx",
+      category: "Editors",
       subcategory: "",
       chunks: []
     },

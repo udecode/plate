@@ -20,7 +20,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from './ui/accordion';
-import { Label } from './ui/label';
+import { Label } from '../registry/default/plate-ui/label';
 
 export function SettingsEffect() {
   const checkedPluginsNext = settingsStore.use.checkedPluginsNext();

@@ -299,6 +299,19 @@ import { withDraggables } from './withDraggables';`,
     type: 'registry:ui',
   },
   {
+    dependencies: ['fzf@0.5.2', '@udecode/plate-tag', '@udecode/cmdk'],
+    doc: {
+      description: 'An editor to select tags.',
+      docs: [{ route: '/docs/multi-select' }],
+      examples: ['select-editor-demo'],
+      label: 'New',
+    },
+    files: [{ path: 'plate-ui/select-editor.tsx', type: 'registry:ui' }],
+    name: 'select-editor',
+    registryDependencies: ['editor', 'command', 'popover', 'tag-element'],
+    type: 'registry:ui',
+  },
+  {
     dependencies: ['@udecode/plate-emoji', '@radix-ui/react-popover'],
     doc: {
       description: 'A dropdown menu for emoji selection and insertion.',
@@ -1416,6 +1429,21 @@ export const uiNodes: Registry = [
     type: 'registry:ui',
   },
   {
+    dependencies: [],
+    doc: {
+      description: 'A tag element component with selection states and styling.',
+      docs: [
+        { route: '/docs/multi-select' },
+        // { route: siteConfig.links.plateProComponent('tag-element') },
+      ],
+      examples: ['select-editor-demo'],
+    },
+    files: [{ path: 'plate-ui/tag-element.tsx', type: 'registry:ui' }],
+    name: 'tag-element',
+    registryDependencies: [],
+    type: 'registry:ui',
+  },
+  {
     dependencies: ['@udecode/plate-heading'],
     doc: {
       description:
@@ -1484,6 +1512,9 @@ export const uiPrimitives: Registry = [
     doc: {
       description:
         'An image element with a fallback for representing the user.',
+      links: {
+        doc: 'https://ui.shadcn.com/docs/components/avatar',
+      },
     },
     files: [{ path: 'plate-ui/avatar.tsx', type: 'registry:ui' }],
     name: 'avatar',
@@ -1508,6 +1539,9 @@ export const uiPrimitives: Registry = [
     doc: {
       description:
         'A date field component that allows users to enter and edit date.',
+      links: {
+        doc: 'https://ui.shadcn.com/docs/components/calendar',
+      },
     },
     files: [{ path: 'plate-ui/calendar.tsx', type: 'registry:ui' }],
     name: 'calendar',
@@ -1519,6 +1553,9 @@ export const uiPrimitives: Registry = [
     doc: {
       description:
         'A control that allows the user to toggle between checked and not checked.',
+      links: {
+        doc: 'https://ui.shadcn.com/docs/components/checkbox',
+      },
     },
     files: [{ path: 'plate-ui/checkbox.tsx', type: 'registry:ui' }],
     name: 'checkbox',
@@ -1526,9 +1563,12 @@ export const uiPrimitives: Registry = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@radix-ui/react-dialog', 'cmdk'],
+    dependencies: ['@radix-ui/react-dialog', '@udecode/cmdk'],
     doc: {
       description: 'Fast, composable, unstyled command menu for React.',
+      links: {
+        doc: 'https://ui.shadcn.com/docs/components/command',
+      },
     },
     files: [{ path: 'plate-ui/command.tsx', type: 'registry:ui' }],
     name: 'command',
@@ -1554,6 +1594,9 @@ export const uiPrimitives: Registry = [
     doc: {
       description:
         'A window overlaid on either the primary window or another dialog window, rendering the content underneath inert.',
+      links: {
+        doc: 'https://ui.shadcn.com/docs/components/dialog',
+      },
     },
     files: [{ path: 'plate-ui/dialog.tsx', type: 'registry:ui' }],
     name: 'dialog',
@@ -1565,6 +1608,9 @@ export const uiPrimitives: Registry = [
     doc: {
       description:
         'Displays a menu to the user — such as a set of actions or functions — triggered by a button.',
+      links: {
+        doc: 'https://ui.shadcn.com/docs/components/dropdown-menu',
+      },
     },
     files: [{ path: 'plate-ui/dropdown-menu.tsx', type: 'registry:ui' }],
     name: 'dropdown-menu',
@@ -1572,10 +1618,31 @@ export const uiPrimitives: Registry = [
     type: 'registry:ui',
   },
   {
+    dependencies: [
+      'react-hook-form',
+      '@hookform/resolvers/zod',
+      '@radix-ui/react-label',
+      '@radix-ui/react-slot',
+    ],
+    doc: {
+      description: 'Building forms with React Hook Form and Zod.',
+      links: {
+        doc: 'https://ui.shadcn.com/docs/components/form',
+      },
+    },
+    files: [{ path: 'plate-ui/form.tsx', type: 'registry:ui' }],
+    name: 'form',
+    registryDependencies: ['label'],
+    type: 'registry:ui',
+  },
+  {
     dependencies: [],
     doc: {
       description:
         'Displays a form input field or a component that looks like an input field.',
+      links: {
+        doc: 'https://ui.shadcn.com/docs/components/input',
+      },
     },
     files: [{ path: 'plate-ui/input.tsx', type: 'registry:ui' }],
     name: 'input',
@@ -1583,9 +1650,25 @@ export const uiPrimitives: Registry = [
     type: 'registry:ui',
   },
   {
+    dependencies: ['@radix-ui/react-label'],
+    doc: {
+      description: 'Renders an accessible label associated with controls.',
+      links: {
+        doc: 'https://ui.shadcn.com/docs/components/label',
+      },
+    },
+    files: [{ path: 'plate-ui/label.tsx', type: 'registry:ui' }],
+    name: 'label',
+    registryDependencies: [],
+    type: 'registry:ui',
+  },
+  {
     dependencies: ['@radix-ui/react-popover'],
     doc: {
       description: 'Displays rich content in a portal, triggered by a button.',
+      links: {
+        doc: 'https://ui.shadcn.com/docs/components/popover',
+      },
     },
     files: [{ path: 'plate-ui/popover.tsx', type: 'registry:ui' }],
     name: 'popover',
@@ -1596,6 +1679,9 @@ export const uiPrimitives: Registry = [
     dependencies: ['@radix-ui/react-separator'],
     doc: {
       description: 'Visually or semantically separates content.',
+      links: {
+        doc: 'https://ui.shadcn.com/docs/components/separator',
+      },
     },
     files: [{ path: 'plate-ui/separator.tsx', type: 'registry:ui' }],
     name: 'separator',
@@ -1618,6 +1704,9 @@ export const uiPrimitives: Registry = [
     doc: {
       description:
         'A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.',
+      links: {
+        doc: 'https://ui.shadcn.com/docs/components/tooltip',
+      },
     },
     files: [{ path: 'plate-ui/tooltip.tsx', type: 'registry:ui' }],
     name: 'tooltip',

@@ -1,0 +1,89 @@
+---
+title: Multi Select
+docs:
+  - route: /docs/components/tag-element
+  - route: /docs/components/select-editor
+---
+
+<ComponentPreview name="select-editor-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Inline selectable elements with keyboard navigation
+- Multi-item selection support
+- Automatic cleanup of surrounding text
+- Duplicate prevention
+- Customizable rendering and behavior
+- Built on top of the Tag plugin infrastructure
+- Keyboard shortcuts for quick selection and navigation
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-tag
+```
+
+## Usage
+
+```tsx
+import { MultiSelectPlugin } from '@udecode/plate-tag/react';
+import { TagElement } from '@/components/plate-ui/tag-element';
+import {
+  SelectEditor,
+  SelectEditorContent,
+  SelectEditorInput,
+  SelectEditorCombobox,
+  type SelectItem,
+} from '@/components/plate-ui/select-editor';
+
+// Define your items
+const ITEMS: SelectItem[] = [
+  { value: 'React' },
+  { value: 'TypeScript' },
+  { value: 'JavaScript' },
+];
+
+export default function MySelectEditor() {
+  const [value, setValue] = React.useState<SelectItem[]>([ITEMS[0]]);
+
+  return (
+    <SelectEditor
+      value={value}
+      onValueChange={setValue}
+      items={ITEMS}
+    >
+      <SelectEditorContent>
+        <SelectEditorInput placeholder="Select items..." />
+        <SelectEditorCombobox />
+      </SelectEditorContent>
+    </SelectEditor>
+  );
+}
+```
+
+- [TagElement](/docs/components/tag-element)
+- [SelectEditor](/docs/components/select-editor)
+
+## Plugins
+
+### MultiSelectPlugin
+
+Handling multi-select elements in the editor. Built on top of TagPlugin.
+
+<APIOptions>
+<APIItem name="type" type="string" optional>
+The type identifier for multi-select elements.
+
+- **Default:** `'multi-select'`
+</APIItem>
+</APIOptions>
+
+### TagPlugin
+
+Inline void element plugin.
+
+## API

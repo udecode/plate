@@ -16,7 +16,7 @@ import { Separator } from '@/registry/default/plate-ui/separator';
 
 import { CopyCodeButton, getThemeCode } from './copy-code-button';
 import { ThemesSwitcher } from './themes-selector-mini';
-import { Label } from './ui/label';
+import { Label } from '../registry/default/plate-ui/label';
 import { Skeleton } from './ui/skeleton';
 
 export function ThemeCustomizer() {

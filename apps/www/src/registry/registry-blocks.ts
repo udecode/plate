@@ -3,6 +3,19 @@ import type { Registry } from '@/registry/schema';
 export const blocks: Registry = [
   {
     category: 'Editors',
+    files: [
+      {
+        path: 'block/editor-select/page.tsx',
+        target: 'app/editor/page.tsx',
+        type: 'registry:page',
+      },
+    ],
+    name: 'editor-select',
+    registryDependencies: ['select-editor-demo'],
+    type: 'registry:block',
+  },
+  {
+    category: 'Editors',
     dependencies: [
       '@udecode/cn',
       '@udecode/plate-ai',
