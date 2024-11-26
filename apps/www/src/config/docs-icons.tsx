@@ -237,6 +237,7 @@ export const DocIcons = {
   resizable: ProportionsIcon,
   'search-highlight-leaf': HighlighterIcon,
   select: KeyboardIcon,
+  'select-editor': TagsIcon,
   separator: SeparatorHorizontalIcon,
   'server-side': ServerIcon,
   'single-line': RectangleHorizontalIcon,

@@ -1026,7 +1026,7 @@
       "description": "A tag element component with selection states and styling.",
       "docs": [
         {
-          "route": "/docs/tag"
+          "route": "/docs/multi-select"
         }
       ],
       "examples": [
@@ -1944,6 +1944,11 @@
     ],
     "doc": {
       "description": "An editor to select tags.",
+      "docs": [
+        {
+          "route": "/docs/multi-select"
+        }
+      ],
       "examples": [
         "select-editor-demo"
       ],
