@@ -114,8 +114,10 @@ export const uiComponents: Registry = [
       label: 'New',
       title: 'PDF Toolbar Button',
     },
-    files: ['plate-ui/pdf-toolbar-button.tsx'],
-    name: 'pdf-toolbar-button',
+    files: [
+      { path: 'plate-ui/export-toolbar-button.tsx', type: 'registry:ui' },
+    ],
+    name: 'export-toolbar-button',
     registryDependencies: ['toolbar'],
     type: 'registry:ui',
   },
