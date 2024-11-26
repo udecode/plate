@@ -1620,7 +1620,8 @@ export const uiPrimitives: Registry = [
   {
     dependencies: [
       'react-hook-form',
-      '@hookform/resolvers/zod',
+      'zod',
+      '@hookform/resolvers',
       '@radix-ui/react-label',
       '@radix-ui/react-slot',
     ],

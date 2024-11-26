@@ -132,11 +132,13 @@ async function getFileContent(filePath: string) {
   removeVariable(sourceFile, 'iframeHeight');
   removeVariable(sourceFile, 'containerClassName');
   removeVariable(sourceFile, 'description');
+  removeVariable(sourceFile, 'descriptionSrc');
 
   let code = sourceFile.getFullText();
 
+  // FORK: not useful?
   // Format the code.
-  code = code.replaceAll('export default', 'export');
+  // code = code.replaceAll('export default', 'export');
 
   // Fix imports.
   code = fixImport(code);

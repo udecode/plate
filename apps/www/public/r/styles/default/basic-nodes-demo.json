@@ -20,7 +20,7 @@
       "type": "registry:example"
     },
     {
-      "content": "import { basicElementsValue } from '@/registry/default/example/values/basic-elements-value';\nimport { basicMarksValue } from '@/registry/default/example/values/basic-marks-value';\n\nexport const basicNodesValue = [...basicElementsValue, ...basicMarksValue];\n",
+      "content": "import { basicElementsValue } from '@/components/values/basic-elements-value';\nimport { basicMarksValue } from '@/components/values/basic-marks-value';\n\nexport const basicNodesValue = [...basicElementsValue, ...basicMarksValue];\n",
       "path": "example/values/basic-nodes-value.tsx",
       "target": "components/basic-nodes-value.tsx",
       "type": "registry:example"
