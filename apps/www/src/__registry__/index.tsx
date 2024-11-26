@@ -545,7 +545,7 @@ export const Index: Record<string, any> = {
       name: "tag-element",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["plate-element"],
+      registryDependencies: [],
       files: [{
         path: "src/registry/default/plate-ui/tag-element.tsx",
         type: "registry:ui",
@@ -3854,6 +3854,22 @@ export const Index: Record<string, any> = {
       component: React.lazy(() => import("@/registry/default/app/api/uploadthing/route.ts")),
       source: "",
       category: "",
+      subcategory: "",
+      chunks: []
+    },
+    "editor-select": {
+      name: "editor-select",
+      description: "A select editor",
+      type: "registry:block",
+      registryDependencies: ["select-editor-demo"],
+      files: [{
+        path: "src/registry/default/block/editor-select/page.tsx",
+        type: "registry:page",
+        target: "app/editor/page.tsx"
+      }],
+      component: React.lazy(() => import("@/registry/default/block/editor-select/page.tsx")),
+      source: "src/__registry__/default/block/editor-select/page.tsx",
+      category: "Editors",
       subcategory: "",
       chunks: []
     },

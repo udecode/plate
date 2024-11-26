@@ -49,6 +49,9 @@ Custom render function for leaf nodes.
 Props for the [Editable](https://docs.slatejs.org/libraries/slate-react/editable) component. Extends `TextareaHTMLAttributes<HTMLDivElement>`.
 
 <APIProps>
+<APIItem name="autoFocusOnEditable" type="boolean" optional>
+Automatically focus the editor when it transitions from read-only to editable mode (when `readOnly` changes from `true` to `false`).
+</APIItem>
 <APIItem name="renderEditable" type="(editable: ReactNode) => ReactNode" optional>
 Custom `Editable` node.
 

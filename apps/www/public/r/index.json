@@ -1040,9 +1040,7 @@
       }
     ],
     "name": "tag-element",
-    "registryDependencies": [
-      "plate-element"
-    ],
+    "registryDependencies": [],
     "type": "registry:ui"
   },
   {

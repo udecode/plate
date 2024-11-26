@@ -1182,6 +1182,11 @@ export const docExamples: Registry = [
   {
     doc: {
       description: 'A form with a select editor component for managing labels.',
+      docs: [
+        {
+          route: '/docs/multi-select',
+        },
+      ],
       title: 'Select Editor Form',
     },
     files: [

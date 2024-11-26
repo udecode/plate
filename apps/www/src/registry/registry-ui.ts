@@ -1423,7 +1423,7 @@ export const uiNodes: Registry = [
     },
     files: [{ path: 'plate-ui/tag-element.tsx', type: 'registry:ui' }],
     name: 'tag-element',
-    registryDependencies: ['plate-element'],
+    registryDependencies: [],
     type: 'registry:ui',
   },
   {

@@ -192,6 +192,12 @@ export const pluginsNavItems: SidebarNavItem[] = [
     title: 'Mention',
   },
   {
+    description: 'A rich multi-select editor.',
+    href: '/docs/multi-select',
+    label: 'Element',
+    title: 'Multi Select',
+  },
+  {
     description: 'Automatically assign unique IDs to nodes in the document.',
     href: '/docs/node-id',
     label: 'New',
@@ -267,7 +273,7 @@ export const pluginsNavItems: SidebarNavItem[] = [
     title: 'Table of Contents',
   },
   {
-    description: 'Add Toggles to your document.',
+    description: 'Add toggles to your document.',
     href: '/docs/toggle',
     label: 'Element',
     title: 'Toggle',

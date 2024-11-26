@@ -25,19 +25,10 @@ import {
 import { Fzf } from 'fzf';
 import { PlusIcon } from 'lucide-react';
 
-import {
-  Command,
-  CommandGroup,
-  CommandItem,
-  CommandList,
-} from '@/registry/default/plate-ui/command';
-import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
-import {
-  Popover,
-  PopoverAnchor,
-  PopoverContent,
-} from '@/registry/default/plate-ui/popover';
-import { TagElement } from '@/registry/default/plate-ui/tag-element';
+import { Command, CommandGroup, CommandItem, CommandList } from './command';
+import { Editor, EditorContainer } from './editor';
+import { Popover, PopoverAnchor, PopoverContent } from './popover';
+import { TagElement } from './tag-element';
 
 export type SelectItem = {
   value: string;

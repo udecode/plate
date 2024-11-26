@@ -1,0 +1,133 @@
+---
+title: Multi Select
+docs:
+  - route: /docs/multi-select
+    title: MultiSelect Plugin
+---
+
+<ComponentPreview name="select-editor-demo" />
+
+<PackageInfo>
+
+Enables a rich multi-select experience.
+
+## Features
+
+- Inline selectable elements with keyboard navigation
+- Multi-item selection support
+- Automatic cleanup of surrounding text
+- Duplicate prevention
+- Customizable rendering and behavior
+- Built on top of the Tag plugin infrastructure
+- Keyboard shortcuts for quick selection and navigation
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-tag
+```
+
+## Usage
+
+```tsx
+import { MultiSelectPlugin } from '@udecode/plate-tag';
+
+const plugins = [
+  // ...otherPlugins,
+  MultiSelectPlugin,
+];
+```
+
+## Plugins
+
+### MultiSelectPlugin
+
+Handling multi-select elements in the editor. Built on top of TagPlugin.
+
+<APIOptions>
+<APIItem name="type" type="string" optional>
+The type identifier for multi-select elements.
+
+- **Default:** `'multi-select'`
+</APIItem>
+</APIOptions>
+
+### BaseTagPlugin
+
+The core implementation with the following features:
+
+#### Editor Modifications
+
+- **Delete Backward**: Custom handling of backspace key to maintain proper cursor position around selections
+- **onChange**: Removes text that's either not in selection or when selection contains a tag
+- **Normalization**:
+  - Removes duplicate selections with the same value
+  - Trims leading whitespace in text nodes
+
+#### Node Configuration
+
+<APIState>
+<APIItem name="isElement" type="boolean">
+Marks multi-select nodes as elements.
+
+- **Default:** `true`
+</APIItem>
+
+<APIItem name="isInline" type="boolean">
+Marks multi-select nodes as inline elements.
+
+- **Default:** `true`
+</APIItem>
+
+<APIItem name="isVoid" type="boolean">
+Marks multi-select nodes as void elements.
+
+- **Default:** `true`
+</APIItem>
+</APIState>
+
+## API
+
+### editor.insert.option
+
+Inserts a new multi-select element at the current selection.
+
+<APIParameters>
+<APIItem name="props" type="TagLike">
+Properties for the multi-select element:
+<APISubList>
+<APISubListItem parent="props" name="value" type="string">
+The value of the multi-select element.
+</APISubListItem>
+<APISubListItem parent="props" name="...rest" type="UnknownObject">
+Additional properties to be included in the multi-select element.
+</APISubListItem>
+</APISubList>
+</APIItem>
+</APIParameters>
+
+## Types
+
+### TTagElement
+
+The type definition for a tag element.
+
+```ts
+type TTagElement = TElement & {
+  value: string;
+  [key: string]: unknown;
+};
+```
+
+### TagLike
+
+The base interface for tag properties.
+
+```ts
+type TagLike = {
+  value: string;
+  [key: string]: unknown;
+};
+```

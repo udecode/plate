@@ -63,7 +63,7 @@ export default function EditorSelectForm() {
   const labels = useWatch({ control: form.control, name: 'labels' });
 
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-8 p-8">
+    <div className="mx-auto w-full max-w-2xl space-y-8 p-11 pl-2">
       <Form {...form}>
         <div className="space-y-6">
           <FormField
@@ -73,9 +73,8 @@ export default function EditorSelectForm() {
               <FormItem>
                 <div className="flex items-start gap-2">
                   <Button
-                    size="icon"
                     variant="ghost"
-                    className="mt-2"
+                    className="h-10"
                     onClick={() => setReadOnly(!readOnly)}
                     type="button"
                   >
@@ -90,12 +89,12 @@ export default function EditorSelectForm() {
                     <Button
                       size="lg"
                       variant="ghost"
+                      className="h-10"
                       onClick={() => {
                         setReadOnly(false);
                       }}
                       type="button"
                     >
-                      <PlusIcon className="size-4" />
                       Add labels
                     </Button>
                   ) : (
