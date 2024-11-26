@@ -46,8 +46,6 @@ export const EditorContainer = ({
         editorContainerVariants({ variant }),
         className
       )}
-      // Adding this role attribute could cause the content captured by html2canvas to be incorrectly centered.
-      // role="button"
       {...props}
     />
   );
