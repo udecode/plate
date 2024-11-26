@@ -107,7 +107,7 @@ export const ExportToolbarButton = withRef<typeof ToolbarSplitButton>(
                 Export as PDF
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={exportToImage}>
-                Export via Image
+                Export as Image
               </DropdownMenuItem>
             </DropdownMenuGroup>
           </DropdownMenuContent>
