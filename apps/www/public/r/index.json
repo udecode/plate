@@ -1975,7 +1975,8 @@
       "outdent-toolbar-button",
       "table-dropdown-menu",
       "toggle-toolbar-button",
-      "turn-into-dropdown-menu"
+      "turn-into-dropdown-menu",
+      "export-toolbar-button"
     ],
     "type": "registry:ui"
   },
