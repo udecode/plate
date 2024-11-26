@@ -53,10 +53,10 @@ export function ExportToolbarButton({ children, ...props }: DropdownMenuProps) {
     const pdfDoc = await PDFLib.PDFDocument.create();
     const page = pdfDoc.addPage([canvas.width, canvas.height]);
     const imageEmbed = await pdfDoc.embedPng(canvas.toDataURL('PNG'));
-
+    const { height, width } = imageEmbed.scale(1);
     page.drawImage(imageEmbed, {
-      height: canvas.height,
-      width: canvas.width,
+      height,
+      width,
       x: 0,
       y: 0,
     });
