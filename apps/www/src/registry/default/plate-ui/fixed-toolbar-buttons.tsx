@@ -78,7 +78,7 @@ export function FixedToolbarButtons() {
           </ToolbarGroup>
 
           <ToolbarGroup>
-            <ExportToolbarButton tooltip="Export File">
+            <ExportToolbarButton>
               <ArrowUpToLineIcon />
             </ExportToolbarButton>
           </ToolbarGroup>
