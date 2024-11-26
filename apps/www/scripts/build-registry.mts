@@ -419,6 +419,7 @@ async function buildStyles(registry: Registry) {
             sourceFile.getVariableDeclaration("iframeHeight")?.remove()
             sourceFile.getVariableDeclaration("containerClassName")?.remove()
             sourceFile.getVariableDeclaration("description")?.remove()
+            sourceFile.getVariableDeclaration("descriptionSrc")?.remove()
 
             let target = file.target || ""
 
