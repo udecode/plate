@@ -77,20 +77,150 @@ export default function MySelectEditor() {
 
 ## Plugins
 
-### MultiSelectPlugin
-
-Handling multi-select elements in the editor. Built on top of TagPlugin.
-
-<APIOptions>
-<APIItem name="type" type="string" optional>
-The type identifier for multi-select elements.
-
-- **Default:** `'multi-select'`
-</APIItem>
-</APIOptions>
-
 ### TagPlugin
 
 Inline void element plugin.
 
+### MultiSelectPlugin
+
+Extension of the TagPlugin that constrains the editor to tag elements.
+
 ## API
+
+### editor.tf.insert.tag
+
+Inserts a new multi-select element at the current selection.
+
+<APIParameters>
+<APIItem name="props" type="TagLike">
+Properties for the multi-select element:
+<APISubList>
+<APISubListItem parent="props" name="value" type="string">
+The unique value of the multi-select element.
+</APISubListItem>
+</APISubList>
+</APIItem>
+</APIParameters>
+
+## Hooks
+
+### useSelectedItems
+
+Hook to get the currently selected tag items in the editor.
+
+<APIReturns>
+  <APIItem type="TagLike[]">
+    Array of selected tag items, each containing a value and any additional properties.
+  </APIItem>
+</APIReturns>
+
+### getSelectedItems
+
+Gets all tag items in the editor.
+
+<APIParameters>
+<APIItem name="editor" type="SlateEditor">
+  The Slate editor instance.
+</APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="TagLike[]">
+    Array of tag items in the editor.
+  </APIItem>
+</APIReturns>
+
+### isEqualTags
+
+Utility function to compare two sets of tags for equality, ignoring order.
+
+<APIParameters>
+<APIItem name="editor" type="SlateEditor">
+  The Slate editor instance.
+</APIItem>
+<APIItem name="newTags" type="TagLike[]" optional>
+  New set of tags to compare against the current editor tags.
+</APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="boolean">
+    `true` if both sets contain the same values, `false` otherwise.
+  </APIItem>
+</APIReturns>
+
+### useSelectableItems
+
+Hook to get the available items that can be selected, filtered by search and excluding already selected items.
+
+<APIParameters>
+<APIItem name="options" type="object">
+<APISubList>
+<APISubListItem parent="options" name="allowNew" type="boolean" optional>
+Whether to allow creating new items.
+
+- **Default:** `true`
+</APISubListItem>
+<APISubListItem parent="options" name="filter" type="(value: string, search: string) => boolean" optional>
+Custom filter function for items.
+</APISubListItem>
+<APISubListItem parent="options" name="items" type="T[]" optional>
+Array of available items.
+</APISubListItem>
+<APISubListItem parent="options" name="newItemFilter" type="(search: string) => boolean" optional>
+Filter function for new items.
+</APISubListItem>
+<APISubListItem parent="options" name="newItemPosition" type="'end' | 'start'" optional>
+Position of new items in the list.
+
+- **Default:** `'end'`
+</APISubListItem>
+</APISubList>
+</APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="T[]">
+    Filtered array of selectable items.
+  </APIItem>
+</APIReturns>
+
+### useSelectEditorCombobox
+
+Hook to handle combobox behavior in the editor, including text cleanup and item selection.
+
+<APIParameters>
+<APIItem name="options" type="object">
+<APISubList>
+<APISubListItem parent="options" name="open" type="boolean">
+Whether the combobox is open.
+</APISubListItem>
+<APISubListItem parent="options" name="selectFirstItem" type="() => void">
+Function to select the first item in the combobox.
+</APISubListItem>
+<APISubListItem parent="options" name="onValueChange" type="(items: TagLike[]) => void" optional>
+Callback when selected items change.
+</APISubListItem>
+</APISubList>
+</APIItem>
+</APIParameters>
+
+## Types
+
+### TTagElement
+
+```ts
+type TTagElement = TElement & {
+  value: string;
+  [key: string]: unknown;
+};
+```
+
+### TagLike
+
+```ts
+type TagLike = {
+  value: string;
+  [key: string]: unknown;
+};
+```
