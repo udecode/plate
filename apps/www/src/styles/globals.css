@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+/* global.css */
+@layer base {
+  img {
+    @apply inline-block;
+  }
+}
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -24,10 +30,10 @@
     --input: 240 5.9% 90%;
     --ring: 240 5% 64.9%;
     --radius: 0.5rem;
-    
+
     --brand: 217.2 91.2% 59.8%;
     --highlight: 47.9 95.8% 53.1%;
-    
+
     .prose {
       --tw-prose-body: var(--foreground);
       --tw-prose-bullets: var(--foreground);
@@ -54,7 +60,7 @@
     --border: 240 3.7% 25%;
     --input: 240 3.7% 25%;
     --ring: 240 3.7% 25%;
-    
+
     --brand: 213.3 93.9% 67.8%;
     --highlight: 48 96% 53%;
   }

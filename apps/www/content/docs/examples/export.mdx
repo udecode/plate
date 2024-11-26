@@ -1,0 +1,58 @@
+---
+title: Export
+---
+
+<ComponentPreview name="playground-demo" id="basic-elements" />
+
+<PackageInfo>
+
+## Features
+
+- Export editor content to:
+- Client-side export with no server dependencies
+
+</PackageInfo>
+
+## Usage
+
+Install the [PDF Toolbar Button](/docs/plate-ui/pdf-toolbar-button) component.
+
+Note: When using Tailwind CSS, you may encounter background color issues. Please refer to [this link](https://github.com/niklasvh/html2canvas/issues/2775#issuecomment-1204988157) for a solution.
+
+Add the following CSS to fix background color rendering issues with html2canvas:
+```css
+@layer base {
+  img {
+    @apply inline-block;
+  }
+}
+```
+
+## Examples
+
+### Plate UI
+
+Refer to the preview above.
+
+### Plate Plus
+
+- Server-side PDF export:
+  - High-quality PDF generation
+  - Custom fonts and styling
+  - Headers and footers
+  - Page numbers
+  - Font selectable
+- Advanced export options:
+  - Paper size selection
+  - Margin controls
+  - Orientation settings
+  - Compression level
+- Enterprise-ready features:
+  {/* - Batch processing */}
+  {/* - Watermarking */}
+  - Custom templates
+  - Password protection
+
+Try it out with our server-side PDF export:
+
+<ComponentPreviewPro name="export-demo" />

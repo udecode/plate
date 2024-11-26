@@ -23,6 +23,7 @@ import {
   VideoPlugin,
 } from '@udecode/plate-media/react';
 import {
+  ArrowUpToLineIcon,
   BaselineIcon,
   BoldIcon,
   Code2Icon,
@@ -52,6 +53,7 @@ import { MarkToolbarButton } from './mark-toolbar-button';
 import { MediaToolbarButton } from './media-toolbar-button';
 import { ModeDropdownMenu } from './mode-dropdown-menu';
 import { OutdentToolbarButton } from './outdent-toolbar-button';
+import { PdfToolbarButton } from './pdf-toolbar-button';
 import { TableDropdownMenu } from './table-dropdown-menu';
 import { ToggleToolbarButton } from './toggle-toolbar-button';
 import { ToolbarGroup } from './toolbar';
@@ -73,6 +75,12 @@ export function FixedToolbarButtons() {
             <AIToolbarButton tooltip="AI commands">
               <WandSparklesIcon />
             </AIToolbarButton>
+          </ToolbarGroup>
+
+          <ToolbarGroup>
+            <PdfToolbarButton tooltip="Export PDF">
+              <ArrowUpToLineIcon />
+            </PdfToolbarButton>
           </ToolbarGroup>
 
           <ToolbarGroup>

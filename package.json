@@ -164,5 +164,8 @@
     "node": ">=18.12.0",
     "npm": "please-use-yarn",
     "yarn": ">=1.22.0"
+  },
+  "dependencies": {
+    "puppeteer": "23.9.0"
   }
 }
