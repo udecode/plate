@@ -1,5 +1,11 @@
 # @udecode/react-utils
 
+## 40.2.8
+
+### Patch Changes
+
+- [#3816](https://github.com/udecode/plate/pull/3816) by [@zbeyens](https://github.com/zbeyens) – Add useEffectOnce, useMemoOnce
+
 ## 39.0.0
 
 ### Patch Changes

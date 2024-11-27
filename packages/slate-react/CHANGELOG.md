@@ -1,5 +1,7 @@
 # @udecode/slate-react
 
+## 40.2.8
+
 ## 40.0.0
 
 ### Major Changes
