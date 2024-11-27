@@ -15,7 +15,7 @@ it('should decorate matching text', () => {
   expect(
     plugin.decorate?.({
       ...getEditorPlugin(editor, plugin),
-      entry: [{ type: 'p', children: [{ text: 'test' }] }, [0]],
+      entry: [{ children: [{ text: 'test' }], type: 'p' }, [0]],
     })
   ).toEqual([
     {
@@ -45,7 +45,7 @@ it('should decorate matching text case-insensitively', () => {
   expect(
     plugin.decorate?.({
       ...getEditorPlugin(editor, plugin),
-      entry: [{ type: 'p', children: [{ text: 'test' }] }, [0]],
+      entry: [{ children: [{ text: 'test' }], type: 'p' }, [0]],
     })
   ).toEqual([
     {
@@ -76,7 +76,7 @@ it('should decorate matching consecutive text nodes', () => {
     plugin.decorate?.({
       ...getEditorPlugin(editor, plugin),
       entry: [
-        { type: 'p', children: [{ text: 'tes' }, { text: 't', bold: true }] },
+        { children: [{ text: 'tes' }, { bold: true, text: 't' }], type: 'p' },
         [0],
       ],
     })
@@ -122,12 +122,12 @@ it('should decorate matching multiple occurrences', () => {
       ...getEditorPlugin(editor, plugin),
       entry: [
         {
-          type: 'p',
           children: [
             { text: 'tes' },
-            { text: 'ts and tests and t', bold: true },
+            { bold: true, text: 'ts and tests and t' },
             { text: 'ests' },
           ],
+          type: 'p',
         },
         [0],
       ],

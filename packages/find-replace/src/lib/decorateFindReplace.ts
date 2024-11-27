@@ -22,12 +22,13 @@ export const decorateFindReplace: Decorate<FindReplaceConfig> = ({
 
   let start = 0;
   const matches: number[] = [];
+
   while ((start = str.indexOf(searchLower, start)) !== -1) {
     matches.push(start);
     start += searchLower.length;
   }
 
-  if (!matches.length) {
+  if (matches.length === 0) {
     return [];
   }
 
@@ -47,6 +48,7 @@ export const decorateFindReplace: Decorate<FindReplaceConfig> = ({
       // If the match ends before the start of the current text, move to the next match
       if (matchEnd <= textStart) {
         matchIndex++;
+
         continue;
       }
 
@@ -66,18 +68,17 @@ export const decorateFindReplace: Decorate<FindReplaceConfig> = ({
 
         ranges.push({
           anchor: {
-            path: textNodePath,
             offset: anchorOffset,
+            path: textNodePath,
           },
           focus: {
-            path: textNodePath,
             offset: focusOffset,
+            path: textNodePath,
           },
-          search: search.substring(searchOverlapStart, searchOverlapEnd),
+          search: search.slice(searchOverlapStart, searchOverlapEnd),
           [type]: true,
         });
       }
-
       // If the match ends within the current text, move to the next match
       if (matchEnd <= textEnd) {
         matchIndex++;
