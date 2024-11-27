@@ -11,7 +11,6 @@ import { Mdx } from '@/components/mdx-components';
 import { docsMap } from '@/config/docs';
 import { slugToCategory } from '@/config/docs-utils';
 import { siteConfig } from '@/config/site';
-import { getRegistryItem } from '@/lib/registry';
 import {
   getCachedDependencies,
   getCachedFileTree,
@@ -130,7 +129,7 @@ export default async function DocPage(props: DocPageProps) {
       registryNames,
     });
 
-    const item = await getRegistryItem(docName, true);
+    const item = await getCachedRegistryItem(docName, true);
 
     if (!item?.files) {
       notFound();

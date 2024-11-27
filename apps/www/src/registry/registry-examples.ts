@@ -992,7 +992,7 @@ export const docExamples: Registry = [
         type: 'registry:example',
       },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'components/editor/use-create-editor-list.ts',
         type: 'registry:example',
       },
       {

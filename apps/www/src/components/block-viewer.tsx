@@ -216,7 +216,7 @@ function BlockViewerToolbar({
   return (
     <div className="flex w-full items-center gap-2 md:pr-[14px]">
       <Tabs
-        className="hidden lg:flex"
+        className="hidden sm:flex"
         defaultValue="preview"
         onValueChange={(value) => setView(value as 'code' | 'preview')}
       >
@@ -240,7 +240,7 @@ function BlockViewerToolbar({
       </Tabs>
 
       {item.description && (
-        <Separator orientation="vertical" className="mx-2 hidden h-4 lg:flex" />
+        <Separator orientation="vertical" className="mx-2 hidden h-4 sm:flex" />
       )}
 
       <Link
@@ -274,7 +274,7 @@ function BlockViewerToolbar({
             {block && (
               <Separator
                 orientation="vertical"
-                className="mx-2 hidden h-4 lg:flex"
+                className="mx-2 hidden h-4 sm:flex"
               />
             )}
           </>

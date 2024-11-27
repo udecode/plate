@@ -53,7 +53,7 @@ import { TogglePlugin } from '@udecode/plate-toggle/react';
 
 import { copilotPlugins } from '@/registry/default/components/editor/plugins/copilot-plugins';
 import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';
-import { FixedToolbarPlugin } from '@/registry/default/components/editor/plugins/fixed-toolbar-plugin';
+import { FixedToolbarListPlugin } from '@/registry/default/components/editor/plugins/fixed-toolbar-list-plugin';
 import { FloatingToolbarPlugin } from '@/registry/default/components/editor/plugins/floating-toolbar-plugin';
 import { AILeaf } from '@/registry/default/plate-ui/ai-leaf';
 import { BlockquoteElement } from '@/registry/default/plate-ui/blockquote-element';
@@ -144,7 +144,7 @@ export const useCreateEditor = () => {
     plugins: [
       ...copilotPlugins,
       ...editorPlugins,
-      FixedToolbarPlugin,
+      FixedToolbarListPlugin,
       FloatingToolbarPlugin,
     ],
     value: [

@@ -73,7 +73,7 @@ export function ComponentPreview({
   );
 
   return (
-    <div className="my-4">
+    <div className="mb-12 mt-4">
       <BlockViewer
         block={false}
         dependencies={

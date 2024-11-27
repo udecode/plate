@@ -62,7 +62,7 @@ export function ComponentInstallation({
   const dependenciesString = dependencies.join(' ');
 
   return (
-    <div className="my-4">
+    <div className="mb-12 mt-4">
       {!inline && <H2>Installation</H2>}
 
       <Tabs className="relative mt-6 w-full" defaultValue="cli">
@@ -141,18 +141,18 @@ export function ComponentInstallation({
               }
 
               return (
-                <React.Fragment key={example.name}>
-                  <H3>{getRegistryTitle(example as any)}</H3>
-
-                  <ComponentPreview
-                    id={example.name.replace('-demo', '')}
-                    name={example.name}
-                    dependencies={example.dependencies}
-                    highlightedFiles={(example as any).highlightedFiles}
-                    item={(example as any).item}
-                    tree={(example as any).tree}
-                  />
-                </React.Fragment>
+                <ComponentPreview
+                  id={example.name.replace('-demo', '')}
+                  name={example.name}
+                  key={example.name}
+                  dependencies={example.dependencies}
+                  highlightedFiles={(example as any).highlightedFiles}
+                  item={{
+                    ...(example as any).item,
+                    description: getRegistryTitle(example as any),
+                  }}
+                  tree={(example as any).tree}
+                />
               );
             })}
           </div>

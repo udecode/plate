@@ -2157,7 +2157,7 @@ export const Index: Record<string, any> = {
       name: "use-chat",
       description: "",
       type: "registry:component",
-      registryDependencies: ["button","dialog","input","command","popover"],
+      registryDependencies: [],
       files: [{
         path: "src/registry/default/components/editor/use-chat.ts",
         type: "registry:component",
@@ -3007,7 +3007,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/components/editor/use-create-editor.ts",
+        path: "src/registry/default/components/editor/use-create-editor-list.ts",
         type: "registry:example",
         target: ""
       },{
@@ -3841,7 +3841,7 @@ export const Index: Record<string, any> = {
       name: "api-ai",
       description: "",
       type: "registry:lib",
-      registryDependencies: ["use-chat"],
+      registryDependencies: [],
       files: [{
         path: "src/registry/default/app/api/ai/command/route.ts",
         type: "registry:lib",

@@ -1,6 +1,5 @@
 {
   "dependencies": [
-    "@udecode/plate-ai",
     "ai",
     "@faker-js/faker"
   ],
@@ -13,12 +12,6 @@
     }
   ],
   "name": "use-chat",
-  "registryDependencies": [
-    "button",
-    "dialog",
-    "input",
-    "command",
-    "popover"
-  ],
+  "registryDependencies": [],
   "type": "registry:component"
 }

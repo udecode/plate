@@ -443,7 +443,7 @@ const plugins: Registry = [
 export const components: Registry = [
   ...plugins,
   {
-    dependencies: ['@udecode/plate-ai', 'ai', '@faker-js/faker'],
+    dependencies: ['ai', '@faker-js/faker'],
     files: [
       {
         path: 'components/editor/use-chat.ts',
@@ -451,7 +451,7 @@ export const components: Registry = [
       },
     ],
     name: 'use-chat',
-    registryDependencies: ['button', 'dialog', 'input', 'command', 'popover'],
+    registryDependencies: [],
     type: 'registry:component',
   },
   {

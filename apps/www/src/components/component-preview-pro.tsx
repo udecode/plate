@@ -28,7 +28,7 @@ export function ComponentPreviewPro({
 
   return (
     <div
-      className={cn('relative my-4 flex flex-col space-y-2', className)}
+      className={cn('relative mb-12 mt-4 flex flex-col space-y-2', className)}
       {...props}
     >
       {description && <Markdown>{description}</Markdown>}

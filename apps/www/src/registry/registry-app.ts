@@ -16,7 +16,7 @@ export const registryApp: Registry = [
       },
     ],
     name: 'api-ai',
-    registryDependencies: ['use-chat'],
+    registryDependencies: [],
     type: 'registry:lib',
   },
   {
