@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-playwright",
-  "version": "40.0.0",
+  "version": "40.2.8",
   "description": "Interact with a Plate editor from inside a Playwright test",
   "keywords": [
     "plate",
@@ -46,7 +46,7 @@
   },
   "peerDependencies": {
     "@playwright/test": ">=1.42.1",
-    "@udecode/plate-common": ">=40.2.7",
+    "@udecode/plate-common": ">=40.2.8",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.103.0",

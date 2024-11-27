@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 40.2.8
+
+### Patch Changes
+
+- [#3816](https://github.com/udecode/plate/pull/3816) by [@zbeyens](https://github.com/zbeyens) – Use useMemoOnce for decorate, usePlateEditor
+
 ## 40.2.7
 
 ### Patch Changes

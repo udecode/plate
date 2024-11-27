@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-suggestion",
-  "version": "40.0.0",
+  "version": "40.2.8",
   "description": "Plate plugin for suggestions",
   "keywords": [
     "plate",
@@ -56,7 +56,7 @@
     "@udecode/plate-common": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate-common": ">=40.2.7",
+    "@udecode/plate-common": ">=40.2.8",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.103.0",
