@@ -15,7 +15,7 @@ it('should decorate matching text', () => {
   expect(
     plugin.decorate?.({
       ...getEditorPlugin(editor, plugin),
-      entry: [{ text: 'test' }, [0, 0]],
+      entry: [{ type: 'p', children: [{ text: 'test' }] }, [0]],
     })
   ).toEqual([
     {
@@ -45,7 +45,7 @@ it('should decorate matching text case-insensitively', () => {
   expect(
     plugin.decorate?.({
       ...getEditorPlugin(editor, plugin),
-      entry: [{ text: 'test' }, [0, 0]],
+      entry: [{ type: 'p', children: [{ text: 'test' }] }, [0]],
     })
   ).toEqual([
     {
@@ -59,6 +59,51 @@ it('should decorate matching text case-insensitively', () => {
         path: [0, 0],
       },
       search: 'Test',
+    },
+  ]);
+});
+
+it('should decorate matching consecutive text nodes', () => {
+  const editor = createSlateEditor({
+    plugins: [FindReplacePlugin],
+  });
+
+  const plugin = editor.getPlugin(FindReplacePlugin);
+
+  editor.setOption(FindReplacePlugin, 'search', 'test');
+
+  expect(
+    plugin.decorate?.({
+      ...getEditorPlugin(editor, plugin),
+      entry: [
+        { type: 'p', children: [{ text: 'tes' }, { text: 't', bold: true }] },
+        [0],
+      ],
+    })
+  ).toEqual([
+    {
+      [FindReplacePlugin.key]: true,
+      anchor: {
+        offset: 0,
+        path: [0, 0],
+      },
+      focus: {
+        offset: 3,
+        path: [0, 0],
+      },
+      search: 'tes',
+    },
+    {
+      [FindReplacePlugin.key]: true,
+      anchor: {
+        offset: 0,
+        path: [0, 1],
+      },
+      focus: {
+        offset: 1,
+        path: [0, 1],
+      },
+      search: 't',
     },
   ]);
 });

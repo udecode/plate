@@ -16,7 +16,7 @@ it('should be', () => {
   expect(
     decorateFindReplace({
       ...getEditorPlugin(editor, FindReplacePlugin),
-      entry: [{ text: '' }, [0, 0]],
+      entry: [{ type: 'p', children: [{ text: '' }] }, [0]],
     })
   ).toEqual(output);
 });
