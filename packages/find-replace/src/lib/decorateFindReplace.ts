@@ -17,51 +17,76 @@ export const decorateFindReplace: Decorate<FindReplaceConfig> = ({
   }
 
   const texts = node.children.map((it) => it.text);
+  const str = texts.join('').toLowerCase();
+  const searchLower = search.toLowerCase();
 
-  // Try to find a match
-  const matchStart = texts.join('').toLowerCase().indexOf(search.toLowerCase());
-  if (matchStart === -1) {
+  let start = 0;
+  const matches: number[] = [];
+  while ((start = str.indexOf(searchLower, start)) !== -1) {
+    matches.push(start);
+    start += searchLower.length;
+  }
+
+  if (!matches.length) {
     return [];
   }
 
-  const matchEnd = matchStart + search.length;
-  let cumulativePosition = 0;
   const ranges: SearchRange[] = [];
+  let cumulativePosition = 0;
+  let matchIndex = 0; // Index in the matches array
 
-  for (const [i, text] of texts.entries()) {
+  for (const [textIndex, text] of texts.entries()) {
     const textStart = cumulativePosition;
-    const textEnd = cumulativePosition + text.length;
+    const textEnd = textStart + text.length;
 
-    // Corresponding offsets within the text string
-    const overlapStart = Math.max(matchStart, textStart);
-    const overlapEnd = Math.min(matchEnd, textEnd);
+    // Process matches that overlap with the current text node
+    while (matchIndex < matches.length && matches[matchIndex] < textEnd) {
+      const matchStart = matches[matchIndex];
+      const matchEnd = matchStart + search.length;
 
-    if (overlapStart < overlapEnd) {
-      // Overlapping region exists
-      const anchorOffset = overlapStart - textStart;
-      const focusOffset = overlapEnd - textStart;
+      // If the match ends before the start of the current text, move to the next match
+      if (matchEnd <= textStart) {
+        matchIndex++;
+        continue;
+      }
 
-      // Corresponding offsets within the search string
-      const searchOverlapStart = overlapStart - matchStart;
-      const searchOverlapEnd = overlapEnd - matchStart;
+      // Calculate overlap between the text and the current match
+      const overlapStart = Math.max(matchStart, textStart);
+      const overlapEnd = Math.min(matchEnd, textEnd);
 
-      const textNodePath = [...path, i];
+      if (overlapStart < overlapEnd) {
+        const anchorOffset = overlapStart - textStart;
+        const focusOffset = overlapEnd - textStart;
 
-      ranges.push({
-        anchor: {
-          path: textNodePath,
-          offset: anchorOffset,
-        },
-        focus: {
-          path: textNodePath,
-          offset: focusOffset,
-        },
-        search: search.substring(searchOverlapStart, searchOverlapEnd),
-        [type]: true,
-      });
+        // Corresponding offsets within the search string
+        const searchOverlapStart = overlapStart - matchStart;
+        const searchOverlapEnd = overlapEnd - matchStart;
+
+        const textNodePath = [...path, textIndex];
+
+        ranges.push({
+          anchor: {
+            path: textNodePath,
+            offset: anchorOffset,
+          },
+          focus: {
+            path: textNodePath,
+            offset: focusOffset,
+          },
+          search: search.substring(searchOverlapStart, searchOverlapEnd),
+          [type]: true,
+        });
+      }
+
+      // If the match ends within the current text, move to the next match
+      if (matchEnd <= textEnd) {
+        matchIndex++;
+      } else {
+        // The match continues in the next text node
+        break;
+      }
     }
 
-    // Update the cumulative position for the next iteration
     cumulativePosition = textEnd;
   }
 
