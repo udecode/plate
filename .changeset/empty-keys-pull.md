@@ -1,5 +1,5 @@
 ---
-'@udecode/plate-selection': minor
+'@udecode/plate-selection': patch
 ---
 
-Add `duration` in addSelectedRow option
+Add `delay` in addSelectedRow option

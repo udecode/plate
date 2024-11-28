@@ -50,7 +50,7 @@ export type BlockSelectionSelectors = {
 export type BlockSelectionApi = {
   addSelectedRow: (
     id: string,
-    options?: { clear?: boolean; duration?: number }
+    options?: { clear?: boolean; delay?: number }
   ) => void;
   setSelectedIds: (
     options: Partial<ChangedElements> & { ids?: string[] }
@@ -180,7 +180,7 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
   )
   .extendApi<Partial<BlockSelectionApi>>(({ api, getOptions, setOption }) => ({
     addSelectedRow: (id, options = {}) => {
-      const { clear = true, duration } = options;
+      const { clear = true, delay } = options;
 
       const element = getSelectedDomNode(id);
 
@@ -194,13 +194,13 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
         removed: [],
       });
 
-      if (duration) {
+      if (delay) {
         setTimeout(() => {
           api.blockSelection.setSelectedIds({
             added: [],
             removed: [element],
           });
-        }, duration);
+        }, delay);
       }
     },
 
