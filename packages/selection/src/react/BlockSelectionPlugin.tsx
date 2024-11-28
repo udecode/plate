@@ -1,13 +1,9 @@
 import type { CSSProperties } from 'react';
 import type React from 'react';
 
-import {
-  type PluginConfig,
-  type TElement,
-  type TNodeEntry,
-  bindFirst,
-  getNodeEntries,
-} from '@udecode/plate-common';
+import type { PluginConfig, TElement, TNodeEntry } from '@udecode/plate-common';
+
+import { bindFirst, getNodeEntries } from '@udecode/plate-common';
 import { createTPlatePlugin } from '@udecode/plate-common/react';
 
 import type { ChangedElements, PartialSelectionOptions } from '../internal';
@@ -52,10 +48,13 @@ export type BlockSelectionSelectors = {
 };
 
 export type BlockSelectionApi = {
+  addSelectedRow: (
+    id: string,
+    options?: { clear?: boolean; duration?: number }
+  ) => void;
   setSelectedIds: (
     options: Partial<ChangedElements> & { ids?: string[] }
   ) => void;
-  addSelectedRow: (id: string, options?: { clear?: boolean }) => void;
   focus: () => void;
   getNodes: () => TNodeEntry[];
   resetSelectedIds: () => void;
@@ -181,7 +180,7 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
   )
   .extendApi<Partial<BlockSelectionApi>>(({ api, getOptions, setOption }) => ({
     addSelectedRow: (id, options = {}) => {
-      const { clear = true } = options;
+      const { clear = true, duration } = options;
 
       const element = getSelectedDomNode(id);
 
@@ -194,6 +193,15 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
         added: [element],
         removed: [],
       });
+
+      if (duration) {
+        setTimeout(() => {
+          api.blockSelection.setSelectedIds({
+            added: [],
+            removed: [element],
+          });
+        }, duration);
+      }
     },
 
     selectedAll: () => {
