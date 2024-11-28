@@ -1,5 +1,11 @@
 # @udecode/plate-selection
 
+## 40.2.9
+
+### Patch Changes
+
+- [#3821](https://github.com/udecode/plate/pull/3821) by [@felixfeng33](https://github.com/felixfeng33) – Add `delay` in addSelectedRow option
+
 ## 40.1.0
 
 ### Minor Changes
