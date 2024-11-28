@@ -45,6 +45,21 @@ const plugins = [
 ];
 ```
 
+### Editor Container
+
+The editor requires a container component above `PlateContent` to ensure correct cursor overlay positioning:
+
+```tsx
+export const EditorContainer = (props: React.HTMLAttributes<HTMLDivElement>) => {
+  const editor = useEditorRef();
+  const containerRef = useEditorContainerRef();
+
+  return <div id={editor.uid} ref={containerRef} {...props} />;
+};
+```
+
+This component is available in [Editor](/docs/components/editor).
+
 ### Preserving Selection Focus
 
 To maintain the editor's selection state when focusing UI elements, add the `data-plate-focus="true"` attribute to those elements:
