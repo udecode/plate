@@ -25,7 +25,7 @@ Controlled callback called when the editor state changes.
 <APIItem name="onSelectionChange" type="(selection: Range | null) => void" optional>
 Callback called when the editor selection changes.
 </APIItem>
-<APIItem name="onValueChange" type="(value: Value) => void" optional>
+<APIItem name="onValueChange" type="({ value, editor }: { value: Value; editor: PlateEditor }) => void" optional>
 Callback called when the editor value changes.
 </APIItem>
 <APIItem name="primary" type="boolean" optional>
