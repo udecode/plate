@@ -18,4 +18,5 @@ export * from './pipeTransformFragment';
 export * from './resolveCreatePluginTest';
 export * from './resolvePlugin';
 export * from './resolvePlugins';
+export * from './resolveStaticPlugin';
 export * from './misc/index';

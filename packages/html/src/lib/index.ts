@@ -3,6 +3,7 @@
  */
 
 export * from './newLinesToHtmlBr';
+export * from './serializeHtml';
 export * from './stripClassNames';
 export * from './stripSlateDataAttributes';
 export * from './trimWhitespace';

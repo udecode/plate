@@ -2,6 +2,8 @@
 
 import React from 'react';
 
+import type { StaticElementProps } from '@udecode/plate-common';
+
 import { withRef, withVariants } from '@udecode/cn';
 import { cva } from 'class-variance-authority';
 
@@ -38,3 +40,18 @@ export const HeadingElement = withRef<typeof HeadingElementVariants>(
     );
   }
 );
+
+interface HeadingElementViewProps extends StaticElementProps {
+  variant?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+}
+
+export const HeadingStaticElement = ({
+  children,
+  variant = 'h1',
+}: HeadingElementViewProps) => {
+  const Component = variant as any;
+
+  return (
+    <Component className={headingVariants({ variant })}>{children}</Component>
+  );
+};

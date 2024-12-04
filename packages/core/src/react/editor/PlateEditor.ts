@@ -8,6 +8,7 @@ import type {
   InferApi,
   InferOptions,
   InferTransforms,
+  NodeComponent,
   PluginConfig,
   WithRequiredKey,
 } from '../../lib';
@@ -67,6 +68,7 @@ export type PlateEditor = {
   plugins: Record<string, AnyEditorPlatePlugin>;
 
   shortcuts: Shortcuts;
+  staticComponents: Record<string, NodeComponent>;
 
   // Alias for transforms
   tf: PlateEditor['transforms'];

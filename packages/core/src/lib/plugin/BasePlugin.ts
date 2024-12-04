@@ -2,6 +2,7 @@ import type { TElement, TText } from '@udecode/slate';
 import type { AnyObject } from '@udecode/utils';
 import type { SetImmerState, StoreApi } from 'zustand-x';
 
+import type { NodeComponent } from '../editor';
 import type { Nullable } from '../types';
 
 export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
@@ -171,6 +172,8 @@ export type BasePluginNode = {
    * void.
    */
   isVoid?: boolean;
+
+  staticComponent?: NodeComponent;
 };
 
 export type BaseSerializer = AnyObject;
