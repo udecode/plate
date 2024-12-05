@@ -4,3 +4,4 @@
 
 export * from './useFloatingToolbar';
 export * from './useVirtualFloating';
+export * from './useVirtualRefState';

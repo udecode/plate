@@ -109,6 +109,7 @@
     "@udecode/plate-layout": "workspace:^",
     "@udecode/plate-line-height": "workspace:^",
     "@udecode/plate-link": "workspace:^",
+    "@udecode/plate-lint": "workspace:^",
     "@udecode/plate-list": "workspace:^",
     "@udecode/plate-markdown": "workspace:^",
     "@udecode/plate-media": "workspace:^",
