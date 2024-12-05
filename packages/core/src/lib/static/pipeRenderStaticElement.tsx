@@ -31,7 +31,6 @@ const pluginRenderStaticElement = (
       const component = (
         <Element
           attributes={{
-            'data-slate-static': true,
             ...nodeProps.attributes,
           }}
           element={element}

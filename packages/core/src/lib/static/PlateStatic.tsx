@@ -56,7 +56,7 @@ function Element({
   return (
     <React.Fragment>
       {renderElement?.({
-        attributes: {} as any,
+        attributes: { 'data-slate-node': 'element' } as any,
         children: (
           <PlateViewContent children={element.children} editor={editor} />
         ),
@@ -70,8 +70,8 @@ function Leaf({ editor, leaf = { text: '' } }: LeafProps) {
   const renderLeaf = pipeRenderStaticLeaf(editor);
 
   return renderLeaf!({
-    attributes: {} as any,
-    children: <span>{leaf.text === '' ? '\uFEFF' : leaf.text}</span>,
+    attributes: { 'data-slate-leaf': true } as any,
+    children: createStaticString({ text: leaf.text }),
     leaf,
     text: leaf,
   });
@@ -97,10 +97,34 @@ export function PlateStatic(props: PlateViewProps) {
   return <PlateViewContent children={editor.children} editor={editor} />;
 }
 
-export function DefaultStaticElement({ children }: RenderElementProps) {
-  return <div>{children}</div>;
+export function DefaultStaticElement({
+  attributes,
+  children,
+}: RenderElementProps) {
+  return <div {...attributes}>{children}</div>;
 }
 
-export function DefaultStaticLeaf({ children }: RenderLeafProps) {
-  return <span>{children}</span>;
+export function DefaultStaticLeaf({ attributes, children }: RenderLeafProps) {
+  return <span {...attributes}>{children}</span>;
 }
+
+export function createStaticString({ text }: { text: string }) {
+  return React.createElement(
+    'span',
+    { 'data-slate-string': true },
+    text === '' ? '\uFEFF' : text
+  );
+}
+
+// export function PlateStaticLeaf({ as, attributes, children }: StaticLeafProps) {
+//   const Leaf = (as ?? 'span') as any;
+
+//   return <Leaf {...attributes}>{children}</Leaf>;
+// }
+
+// export const PlateStaticElement = ({
+//   attributes,
+//   children,
+// }: StaticElementProps) => {
+//   return <div {...attributes}>{children}</div>;
+// };

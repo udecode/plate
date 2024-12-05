@@ -1,5 +1,3 @@
-'use client';
-
 import { withProps } from '@udecode/cn';
 import {
   BaseBoldPlugin,
@@ -25,18 +23,18 @@ import { BaseHeadingPlugin, HEADING_KEYS } from '@udecode/plate-heading';
 import { serializeHtml } from '@udecode/plate-html';
 
 import { basicNodesValue } from '@/registry/default/example/values/basic-nodes-value';
-import { BlockquoteStaticElement } from '@/registry/default/plate-ui/blockquote-element';
-import { CodeBlockElementStatic } from '@/registry/default/plate-ui/code-block-element';
-import { CodeStaticLeaf } from '@/registry/default/plate-ui/code-leaf';
-import { CodeLineStaticElement } from '@/registry/default/plate-ui/code-line-element';
-import { CodeSyntaxStaticLeaf } from '@/registry/default/plate-ui/code-syntax-leaf';
-import { HeadingStaticElement } from '@/registry/default/plate-ui/heading-element';
+import { BlockquoteStaticElement } from '@/registry/default/plate-static-ui/blockquote-element';
+import { CodeBlockElementStatic } from '@/registry/default/plate-static-ui/code-block-element';
+import { CodeStaticLeaf } from '@/registry/default/plate-static-ui/code-leaf';
+import { CodeLineStaticElement } from '@/registry/default/plate-static-ui/code-line-element';
+import { CodeSyntaxStaticLeaf } from '@/registry/default/plate-static-ui/code-syntax-leaf';
+import { HeadingStaticElement } from '@/registry/default/plate-static-ui/heading-element';
 import {
   ParagraphStaticElement,
   PlateStaticLeaf,
-} from '@/registry/default/plate-ui/paragraph-element';
+} from '@/registry/default/plate-static-ui/paragraph-element';
 
-export default function DevPage() {
+export default async function DevPage() {
   const editorStatic = createSlateEditor({
     plugins: [
       BaseParagraphPlugin,
@@ -74,16 +72,20 @@ export default function DevPage() {
     value: [...basicNodesValue],
   });
 
-  const html = serializeHtml(editorStatic, {
-    convertNewLinesToHtmlBr: true,
+  // eslint-disable-next-line @typescript-eslint/await-thenable
+  const html = await serializeHtml(editorStatic, {
     nodes: editorStatic.children,
-    stripWhitespace: true,
   });
-  console.log('🚀 ~ DevPage ~ html:', html);
 
   return (
     <div className="mx-auto w-1/2">
+      <h1>Plate Static :</h1>
       <PlateStatic editor={editorStatic} />
+
+      <br />
+      <br />
+      <h1>HTML :</h1>
+      <div dangerouslySetInnerHTML={{ __html: html }} />
     </div>
   );
 }

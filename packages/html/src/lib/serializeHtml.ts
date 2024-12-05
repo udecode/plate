@@ -1,185 +1,66 @@
-import React from 'react';
-
-import type {
-  TRenderElementProps,
-  TRenderLeafProps,
-} from '@udecode/plate-common/react';
-
 import {
   type SlateEditor,
-  type SlatePlugin,
   type TDescendant,
   isText,
 } from '@udecode/plate-common';
-import { decode, encode } from 'html-entities';
-import ReactDOMServer from 'react-dom/server';
+import { encode } from 'html-entities';
 
 import { newLinesToHtmlBr } from './newLinesToHtmlBr';
-import { stripClassNames } from './stripClassNames';
+import { staticElementToHtml } from './staticElementToHtml';
+import { staticLeafToHtml } from './staticLeafToHtml';
 
-// 处理叶子节点
-const leafToHtml = (
-  editor: SlateEditor,
-  { props }: { props: TRenderLeafProps }
-): string => {
-  const { children, leaf } = props;
+const getReactDOMServer = async () => {
+  const ReactDOMServer = (await import('react-dom/server')).default;
 
-  let html = '';
-
-  editor.pluginList.some((plugin: SlatePlugin) => {
-    if (!plugin.node.isLeaf) return false;
-
-    console.log(plugin, 'fj');
-
-    if (leaf[plugin.key]) {
-      const Component = plugin.node.staticComponent!;
-
-      const elementProps = {
-        attributes: props.attributes,
-        children,
-        leaf,
-      };
-
-      html = decode(
-        ReactDOMServer.renderToStaticMarkup(
-          React.createElement(Component, elementProps)
-        )
-      );
-
-      return true;
-    }
-
-    return false;
-  });
-
-  return html || `<span>${leaf.text}</span>`;
+  return ReactDOMServer;
 };
 
-// 处理元素节点
-const elementToHtml = (
-  editor: SlateEditor,
-  {
-    preserveClassNames,
-    props,
-  }: {
-    props: TRenderElementProps;
-    preserveClassNames?: string[];
-  }
-): string => {
-  const { children, element } = props;
-
-  if (!element.type) {
-    return ReactDOMServer.renderToStaticMarkup(
-      React.createElement('div', null, children)
-    );
-  }
-
-  let html = '';
-
-  editor.pluginList.some((plugin: SlatePlugin) => {
-    if (
-      !plugin.node.staticComponent ||
-      props.element.type !== plugin.node.type
-    ) {
-      return false;
-    }
-
-    try {
-      const Component = plugin.node.staticComponent;
-      const elementProps = {
-        attributes: props.attributes,
-        children,
-        element,
-      };
-
-      html = decode(
-        ReactDOMServer.renderToStaticMarkup(
-          React.createElement(Component, elementProps)
-        )
-      );
-
-      if (preserveClassNames) {
-        html = stripClassNames(html, { preserveClassNames });
-      }
-
-      return true;
-    } catch (error) {
-      console.error(
-        `Error rendering plugin component for type ${element.type}:`,
-        error
-      );
-
-      return false;
-    }
-  });
-
-  return (
-    html ||
-    ReactDOMServer.renderToStaticMarkup(
-      React.createElement('div', null, children)
-    )
-  );
+type SerializeHtmlOptions = {
+  nodes: TDescendant[];
 };
 
-// 主序列化函数
-export const serializeHtml = (
+export const serializeHtml = async (
   editor: SlateEditor,
-  {
-    convertNewLinesToHtmlBr = true,
-    nodes,
-    preserveClassNames,
-    stripWhitespace = true,
-  }: {
-    convertNewLinesToHtmlBr: boolean;
-    nodes: TDescendant[];
-    stripWhitespace: boolean;
-    preserveClassNames?: string[];
-  }
-): string => {
-  try {
-    const result = nodes
-      .map((node) => {
-        if (isText(node)) {
-          const textContent = encode(node.text);
-          const children = convertNewLinesToHtmlBr
-            ? newLinesToHtmlBr(textContent)
-            : textContent;
+  { nodes }: SerializeHtmlOptions
+): Promise<string> => {
+  const ReactDOMServer = await getReactDOMServer();
 
-          return leafToHtml(editor, {
-            props: {
-              attributes: { 'data-slate-leaf': true },
-              children,
-              leaf: node,
-              text: node,
-            },
-          });
-        }
+  const results = await Promise.all(
+    nodes.map(async (node) => {
+      if (isText(node)) {
+        const textContent = encode(node.text);
+        const children = newLinesToHtmlBr(textContent);
 
-        const childrenHtml = serializeHtml(editor, {
-          convertNewLinesToHtmlBr,
-          nodes: node.children as TDescendant[],
-          preserveClassNames,
-          stripWhitespace,
-        });
-
-        return elementToHtml(editor, {
-          preserveClassNames,
+        return staticLeafToHtml(editor, {
+          ReactDOMServer,
           props: {
-            attributes: {
-              'data-slate-node': 'element',
-              ref: null,
-            },
-            children: childrenHtml,
-            element: node,
+            attributes: { 'data-slate-leaf': true },
+            children,
+            leaf: node,
+            text: node,
           },
         });
-      })
-      .join('');
+      }
 
-    return stripWhitespace ? result.trim() : result;
-  } catch (error) {
-    console.error('Error in serializeHtml:', error);
+      const childrenHtml = await serializeHtml(editor, {
+        nodes: node.children as TDescendant[],
+      });
 
-    return '';
-  }
+      return staticElementToHtml(editor, {
+        ReactDOMServer,
+        props: {
+          attributes: {
+            'data-slate-node': 'element',
+            ref: null,
+          },
+          children: childrenHtml,
+          element: node,
+        },
+      });
+    })
+  );
+
+  const result = results.join('');
+
+  return result.trim();
 };

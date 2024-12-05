@@ -1,15 +1,12 @@
-'use client';
-
 import React from 'react';
 
-import type { StaticElementProps } from '@udecode/plate-common';
-
-import { withRef, withVariants } from '@udecode/cn';
+import { withVariants } from '@udecode/cn';
+import { withRef } from '@udecode/react-utils';
 import { cva } from 'class-variance-authority';
 
 import { PlateElement } from './plate-element';
 
-const headingVariants = cva('relative mb-1', {
+export const headingVariants = cva('relative mb-1', {
   variants: {
     variant: {
       h1: 'mt-[1.6em] pb-1 font-heading text-4xl font-bold',
@@ -40,18 +37,3 @@ export const HeadingElement = withRef<typeof HeadingElementVariants>(
     );
   }
 );
-
-interface HeadingElementViewProps extends StaticElementProps {
-  variant?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-}
-
-export const HeadingStaticElement = ({
-  children,
-  variant = 'h1',
-}: HeadingElementViewProps) => {
-  const Component = variant as any;
-
-  return (
-    <Component className={headingVariants({ variant })}>{children}</Component>
-  );
-};

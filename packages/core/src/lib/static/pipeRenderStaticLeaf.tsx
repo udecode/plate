@@ -14,6 +14,7 @@ export type RenderLeaf = (
 
 export interface StaticLeafProps<T extends TText = TText> {
   as?: React.ElementType;
+  attributes?: Record<string, any>;
   children?: React.ReactNode;
   leaf?: T;
 }
