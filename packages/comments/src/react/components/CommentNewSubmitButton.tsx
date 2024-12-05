@@ -2,8 +2,10 @@ import { nanoid } from '@udecode/plate-common';
 import {
   createPrimitiveComponent,
   useEditorPlugin,
+  useEditorRef,
 } from '@udecode/plate-common/react';
 
+import { getCommentFragment } from '../../lib/queries/getCommentFragment';
 import { CommentsPlugin } from '../CommentsPlugin';
 import {
   SCOPE_ACTIVE_COMMENT,
@@ -38,6 +40,8 @@ export const useCommentNewSubmitButton = ({
   newText,
   submitButtonText,
 }: ReturnType<typeof useCommentNewSubmitButtonState>) => {
+  const editor = useEditorRef();
+
   return {
     props: {
       children: submitButtonText,
@@ -55,6 +59,7 @@ export const useCommentNewSubmitButton = ({
               }
             : {
                 id: activeCommentId!,
+                initialFragment: getCommentFragment(editor, activeCommentId!),
                 value: newValue,
               }
         );
