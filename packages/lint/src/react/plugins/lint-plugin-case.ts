@@ -63,7 +63,7 @@ const plugin = {
     name: 'case',
   },
   rules: {
-    sentence: caseMatchRule,
+    'capitalize-sentence': caseMatchRule,
   },
 } satisfies LintConfigPlugin;
 
@@ -73,8 +73,8 @@ export const caseLintPlugin = {
     all: {
       languageOptions: {
         parserOptions: (context) => {
-          const { options: contextOptions } = context;
-          const ignoredWords = contextOptions[0]?.ignoredWords ?? [];
+          const { options } = context;
+          const ignoredWords = options[0]?.ignoredWords ?? [];
 
           // Helper to check if a word is part of URL/email
           const isUrlOrEmail = (
@@ -140,7 +140,7 @@ export const caseLintPlugin = {
       name: 'case/all',
       plugins: { case: plugin },
       rules: {
-        'case/sentence': ['error'],
+        'case/capitalize-sentence': ['error'],
       },
     },
   },
