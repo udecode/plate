@@ -1,5 +1,3 @@
-import type { TRenderLeafProps } from '@udecode/plate-common/react';
-
 import {
   type SlateEditor,
   type SlatePlugin,
@@ -11,7 +9,7 @@ import { renderComponentToHtml } from './utils/renderComponentToHtml';
 
 export const staticLeafToHtml = (
   editor: SlateEditor,
-  { ReactDOMServer, props }: { ReactDOMServer: any; props: TRenderLeafProps }
+  { ReactDOMServer, props }: { ReactDOMServer: any; props: any }
 ): string => {
   let html;
 

@@ -1,5 +1,3 @@
-import type { TRenderElementProps } from '@udecode/plate-common/react';
-
 import {
   type SlateEditor,
   type SlatePlugin,
@@ -15,7 +13,7 @@ export const staticElementToHtml = (
     props,
   }: {
     ReactDOMServer: any;
-    props: TRenderElementProps;
+    props: any;
     preserveClassNames?: string[];
   }
 ): string => {

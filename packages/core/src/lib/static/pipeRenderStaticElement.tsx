@@ -1,27 +1,15 @@
 import React from 'react';
 
-import type { TElement } from '@udecode/slate';
-import type { TEditableProps, TRenderElementProps } from '@udecode/slate-react';
-
 import type { SlateEditor } from '../editor';
 import type { SlatePlugin } from '../plugin';
+import type { RenderStaticElement } from './type';
 
-import { DefaultStaticElement } from './PlateStatic';
-
-export type RenderElement = (
-  props: TRenderElementProps
-) => React.ReactElement | undefined;
-
-export interface StaticElementProps<T extends TElement = TElement> {
-  attributes?: Record<string, any>;
-  children?: React.ReactNode;
-  element?: T;
-}
+import { DefaultStaticElement } from './components/DefaultStaticElement';
 
 const pluginRenderStaticElement = (
-  editor: SlateEditor,
+  _: SlateEditor,
   plugin: SlatePlugin
-): RenderElement =>
+): RenderStaticElement =>
   function render(nodeProps) {
     if (nodeProps.element.type === plugin.node.type) {
       const { children, element } = nodeProps;
@@ -46,9 +34,9 @@ const pluginRenderStaticElement = (
 /** @see {@link RenderElement} */
 export const pipeRenderStaticElement = (
   editor: SlateEditor,
-  renderElementProp?: TEditableProps['renderElement']
-): TEditableProps['renderElement'] => {
-  const renderElements: RenderElement[] = [];
+  renderElementProp?: RenderStaticElement
+): RenderStaticElement => {
+  const renderElements: RenderStaticElement[] = [];
 
   editor.pluginList.forEach((plugin) => {
     if (plugin.node.isElement) {

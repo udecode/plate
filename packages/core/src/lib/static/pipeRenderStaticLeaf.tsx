@@ -1,28 +1,15 @@
 import React from 'react';
 
-import type { TText } from '@udecode/slate';
-import type { TEditableProps, TRenderLeafProps } from '@udecode/slate-react';
-
 import type { SlateEditor } from '../editor';
 import type { SlatePlugin } from '../plugin';
+import type { RenderStaticLeaf } from './type';
 
-import { DefaultStaticLeaf } from './PlateStatic';
-
-export type RenderLeaf = (
-  props: TRenderLeafProps
-) => React.ReactElement | undefined;
-
-export interface StaticLeafProps<T extends TText = TText> {
-  as?: React.ElementType;
-  attributes?: Record<string, any>;
-  children?: React.ReactNode;
-  leaf?: T;
-}
+import { DefaultStaticLeaf } from './components/DefaultStaticLeaf';
 
 export const pluginRenderStaticLeaf = (
-  editor: SlateEditor,
+  _: SlateEditor,
   plugin: SlatePlugin
-): RenderLeaf =>
+): RenderStaticLeaf =>
   function render(nodeProps) {
     const {
       node: { staticComponent },
@@ -45,9 +32,9 @@ export const pluginRenderStaticLeaf = (
 /** @see {@link RenderLeaf} */
 export const pipeRenderStaticLeaf = (
   editor: SlateEditor,
-  renderLeafProp?: TEditableProps['renderLeaf']
-): TEditableProps['renderLeaf'] => {
-  const renderLeafs: RenderLeaf[] = [];
+  renderLeafProp?: RenderStaticLeaf
+): RenderStaticLeaf => {
+  const renderLeafs: RenderStaticLeaf[] = [];
 
   editor.pluginList.forEach((plugin) => {
     if (plugin.node.isLeaf && plugin.key) {
