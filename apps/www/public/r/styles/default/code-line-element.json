@@ -17,7 +17,7 @@
   },
   "files": [
     {
-      "content": "'use client';\n\nimport React from 'react';\n\nimport { withRef } from '@udecode/cn';\n\nimport { PlateElement } from './plate-element';\n\nexport const CodeLineElement = withRef<typeof PlateElement>((props, ref) => (\n  <PlateElement ref={ref} {...props} />\n));\n",
+      "content": "'use client';\nimport React from 'react';\n\nimport { withRef } from '@udecode/cn';\n\nimport { PlateElement } from './plate-element';\n\nexport const CodeLineElement = withRef<typeof PlateElement>((props, ref) => (\n  <PlateElement ref={ref} {...props} />\n));\n",
       "path": "plate-ui/code-line-element.tsx",
       "target": "components/plate-ui/code-line-element.tsx",
       "type": "registry:ui"
