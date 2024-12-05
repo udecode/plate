@@ -1,7 +1,5 @@
-/* eslint-disable react/no-children-prop */
 import React from 'react';
 
-import type { RenderElementFn, RenderLeafFn } from '@udecode/slate-react';
 import type {
   EditableProps,
   RenderElementProps,
@@ -35,12 +33,6 @@ export type LeafProps = {
   leaf: TText;
 };
 
-export type PlateViewContextProps = {
-  editor: SlateEditor;
-  renderElement: RenderElementFn;
-  renderLeaf: RenderLeafFn;
-};
-
 export type PlateViewProps = {
   editor: SlateEditor;
   renderElement?: EditableProps['renderElement'];
@@ -58,7 +50,9 @@ function Element({
       {renderElement?.({
         attributes: { 'data-slate-node': 'element' } as any,
         children: (
-          <PlateViewContent children={element.children} editor={editor} />
+          <PlateViewContent editor={editor}>
+            {element.children}
+          </PlateViewContent>
         ),
         element,
       })}
@@ -94,7 +88,7 @@ function PlateViewContent({ children = [], editor }: ChildrenProps) {
 export function PlateStatic(props: PlateViewProps) {
   const { editor } = props;
 
-  return <PlateViewContent children={editor.children} editor={editor} />;
+  return <PlateViewContent editor={editor}>{editor.children}</PlateViewContent>;
 }
 
 export function DefaultStaticElement({
@@ -115,16 +109,3 @@ export function createStaticString({ text }: { text: string }) {
     text === '' ? '\uFEFF' : text
   );
 }
-
-// export function PlateStaticLeaf({ as, attributes, children }: StaticLeafProps) {
-//   const Leaf = (as ?? 'span') as any;
-
-//   return <Leaf {...attributes}>{children}</Leaf>;
-// }
-
-// export const PlateStaticElement = ({
-//   attributes,
-//   children,
-// }: StaticElementProps) => {
-//   return <div {...attributes}>{children}</div>;
-// };
