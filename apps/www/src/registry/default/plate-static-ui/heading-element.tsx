@@ -1,4 +1,6 @@
-import type { StaticElementProps } from '@udecode/plate-core';
+import * as React from 'react';
+
+import type { StaticElementProps } from '@udecode/plate-common';
 
 import { cva } from 'class-variance-authority';
 

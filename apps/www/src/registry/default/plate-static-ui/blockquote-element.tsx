@@ -1,4 +1,4 @@
-import type { StaticElementProps } from '@udecode/plate-core';
+import type { StaticElementProps } from '@udecode/plate-common';
 
 export const BlockquoteStaticElement = ({
   attributes,

@@ -1,5 +1,5 @@
 import type { TCodeBlockElement } from '@udecode/plate-code-block';
-import type { StaticElementProps } from '@udecode/plate-core';
+import type { StaticElementProps } from '@udecode/plate-common';
 
 import { cn } from '../lib/utils';
 

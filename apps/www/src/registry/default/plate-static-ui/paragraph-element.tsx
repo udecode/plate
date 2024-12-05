@@ -1,4 +1,7 @@
-import type { StaticElementProps, StaticLeafProps } from '@udecode/plate-core';
+import type {
+  StaticElementProps,
+  StaticLeafProps,
+} from '@udecode/plate-common';
 
 export const ParagraphStaticElement = ({
   attributes,
