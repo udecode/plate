@@ -147,4 +147,127 @@ describe('caseLintPlugin', () => {
       'Cat'
     );
   });
+
+  it('should handle multiple sentence endings correctly', () => {
+    const editor = createPlateEditor({
+      plugins: [ExperimentalLintPlugin],
+    });
+
+    editor.children = [
+      {
+        children: [
+          {
+            text: 'First sentence! second here? third now. fourth one',
+          },
+        ],
+        type: 'p',
+      },
+    ];
+
+    const plugin = editor.getPlugin(ExperimentalLintPlugin);
+    editor.setOption(ExperimentalLintPlugin, 'configs', [
+      caseLintPlugin.configs.all,
+    ]);
+
+    const decorations = plugin.decorate?.({
+      ...getEditorPlugin(editor, plugin),
+      entry: [editor.children[0], [0]],
+    }) as unknown as TokenDecoration[];
+
+    expect(decorations).toHaveLength(3); // second, third, fourth should be flagged
+    expect(decorations[0].token.text).toBe('second');
+    expect(decorations[1].token.text).toBe('third');
+    expect(decorations[2].token.text).toBe('fourth');
+  });
+
+  it('should handle multiple spaces after sentence endings', () => {
+    const editor = createPlateEditor({
+      plugins: [ExperimentalLintPlugin],
+    });
+
+    editor.children = [
+      {
+        children: [
+          {
+            text: 'One sentence.   two spaces. three  spaces.',
+          },
+        ],
+        type: 'p',
+      },
+    ];
+
+    const plugin = editor.getPlugin(ExperimentalLintPlugin);
+    editor.setOption(ExperimentalLintPlugin, 'configs', [
+      caseLintPlugin.configs.all,
+    ]);
+
+    const decorations = plugin.decorate?.({
+      ...getEditorPlugin(editor, plugin),
+      entry: [editor.children[0], [0]],
+    }) as unknown as TokenDecoration[];
+
+    expect(decorations).toHaveLength(2);
+    expect(decorations[0].token.text).toBe('two');
+    expect(decorations[1].token.text).toBe('three');
+  });
+
+  it('should handle special characters and punctuation', () => {
+    const editor = createPlateEditor({
+      plugins: [ExperimentalLintPlugin],
+    });
+
+    editor.children = [
+      {
+        children: [
+          {
+            text: 'Hello world! "this" needs caps. (another) sentence.',
+          },
+        ],
+        type: 'p',
+      },
+    ];
+
+    const plugin = editor.getPlugin(ExperimentalLintPlugin);
+    editor.setOption(ExperimentalLintPlugin, 'configs', [
+      caseLintPlugin.configs.all,
+    ]);
+
+    const decorations = plugin.decorate?.({
+      ...getEditorPlugin(editor, plugin),
+      entry: [editor.children[0], [0]],
+    }) as unknown as TokenDecoration[];
+
+    expect(decorations).toHaveLength(2);
+    expect(decorations[0].token.text).toBe('this');
+    expect(decorations[1].token.text).toBe('another');
+  });
+
+  it('should handle empty and whitespace-only strings', () => {
+    const editor = createPlateEditor({
+      plugins: [ExperimentalLintPlugin],
+    });
+
+    editor.children = [
+      {
+        children: [
+          {
+            text: '   ',
+          },
+        ],
+        type: 'p',
+      },
+    ];
+
+    const plugin = editor.getPlugin(ExperimentalLintPlugin);
+    editor.setOption(ExperimentalLintPlugin, 'configs', [
+      caseLintPlugin.configs.all,
+    ]);
+
+    const decorations = plugin.decorate?.({
+      ...getEditorPlugin(editor, plugin),
+      entry: [editor.children[0], [0]],
+    }) as unknown as TokenDecoration[];
+
+    expect(decorations).toHaveLength(0);
+  });
 });

@@ -66,8 +66,8 @@ export const replaceLintPlugin = {
           const replaceMap = options[0].replaceMap;
 
           return {
-            match: (token: string) => {
-              return !!replaceMap?.has(token.toLowerCase());
+            match: ({ text }) => {
+              return !!replaceMap?.has(text.toLowerCase());
             },
             splitPattern: /\b[\dA-Za-z]+(?:['-]\w+)*\b/g,
           };

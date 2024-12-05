@@ -9,10 +9,16 @@ import {
 } from '@udecode/slate';
 
 export type ParseNodeOptions = {
+  /** Function to match tokens and return match result */
+  match: (params: {
+    end: number;
+    fullText: string;
+    getContext: (options: { after?: number; before?: number }) => string;
+    start: number;
+    text: string;
+  }) => AnyObject | boolean;
   /** Base path to the current node */
   at: Path;
-  /** Function to match tokens and return match result */
-  match: (token: string) => AnyObject | boolean;
   /** Maximum length of tokens to process */
   maxLength?: number;
   /** Minimum length of tokens to process */
@@ -51,39 +57,56 @@ export type TokenMatch = {
 
 export const experimental_parseNode = (
   editor: TEditor,
-  {
-    at,
-    match: matchToken,
-    maxLength = Infinity,
-    minLength = 0,
-    splitPattern = /\b[\dA-Za-z]+(?:['-]\w+)*\b/g,
-    transform,
-  }: ParseNodeOptions
+  options: ParseNodeOptions
 ): ParseNodeResult => {
-  const node = getNode(editor, at);
+  const node = getNode(editor, options.at);
 
   if (!node) return { decorations: [], tokens: [] };
 
   const texts = [...getNodeTexts(node)];
-  const str = texts.map((text) => text[0].text).join('');
+  const fullText = texts.map((text) => text[0].text).join('');
+
+  const createContextGetter = (start: number, end: number) => {
+    return ({ after = 0, before = 0 }) => {
+      const beforeText = fullText.slice(Math.max(0, start - before), start);
+      const afterText = fullText.slice(
+        end,
+        Math.min(fullText.length, end + after)
+      );
+
+      return beforeText + afterText;
+    };
+  };
+
+  // Process matches
+  const splitPattern = options.splitPattern ?? /\b[\dA-Za-z]+(?:['-]\w+)*\b/g;
+  const matches = Array.from(fullText.matchAll(splitPattern));
+
   const tokenDecorations: TokenDecoration[] = [];
   const uniqueTokens = new Map<string, TokenMatch>();
 
-  let matchResult: RegExpExecArray | null = null;
-
-  while ((matchResult = splitPattern.exec(str)) !== null) {
-    const tokenText = matchResult[0];
+  matches.forEach((match) => {
+    const tokenText = match[0];
+    const start = match.index!;
+    const end = start + tokenText.length;
 
     // Skip tokens that don't meet length requirements
-    if (tokenText.length < minLength || tokenText.length > maxLength) {
-      continue;
+    if (
+      tokenText.length < (options.minLength ?? 0) ||
+      tokenText.length > (options.maxLength ?? Infinity)
+    ) {
+      return;
     }
 
-    const tokenStart = matchResult.index;
-    const tokenEnd = tokenStart + tokenText.length;
-    const tokenData = matchToken(tokenText);
+    const matchResult = options.match({
+      end,
+      fullText,
+      getContext: createContextGetter(start, end),
+      start,
+      text: tokenText,
+    });
 
-    if (tokenData) {
+    if (matchResult) {
       let startPath: Path | null = null;
       let endPath: Path | null = null;
       let startOffset = 0;
@@ -96,14 +119,14 @@ export const experimental_parseNode = (
         const textEnd = cumulativeLength + textLength;
 
         // Find start position
-        if (startPath === null && tokenStart < textEnd) {
-          startPath = [...at, ...path];
-          startOffset = tokenStart - cumulativeLength;
+        if (startPath === null && start < textEnd) {
+          startPath = [...options.at, ...path];
+          startOffset = start - cumulativeLength;
         }
         // Find end position
-        if (endPath === null && tokenEnd <= textEnd) {
-          endPath = [...at, ...path];
-          endOffset = tokenEnd - cumulativeLength;
+        if (endPath === null && end <= textEnd) {
+          endPath = [...options.at, ...path];
+          endOffset = end - cumulativeLength;
         }
         if (startPath !== null && endPath !== null) break;
 
@@ -123,8 +146,8 @@ export const experimental_parseNode = (
           text: tokenText,
         };
 
-        if (transform) {
-          token = transform(token);
+        if (options.transform) {
+          token = options.transform(token);
         }
 
         // Store unique token
@@ -138,19 +161,19 @@ export const experimental_parseNode = (
         cumulativeLength = 0;
 
         for (const [text, path] of texts) {
-          const textPath = [...at, ...path];
+          const textPath = [...options.at, ...path];
           const textStart = cumulativeLength;
           const textEnd = textStart + text.text.length;
 
-          if (tokenStart >= textEnd) {
+          if (start >= textEnd) {
             cumulativeLength = textEnd;
 
             continue;
           }
-          if (tokenEnd <= textStart) break;
+          if (end <= textStart) break;
 
-          const overlapStart = Math.max(tokenStart, textStart);
-          const overlapEnd = Math.min(tokenEnd, textEnd);
+          const overlapStart = Math.max(start, textStart);
+          const overlapEnd = Math.min(end, textEnd);
 
           if (overlapStart < overlapEnd) {
             tokenDecorations.push({
@@ -172,7 +195,7 @@ export const experimental_parseNode = (
         }
       }
     }
-  }
+  });
 
   return {
     decorations: tokenDecorations,

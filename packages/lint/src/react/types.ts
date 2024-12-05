@@ -156,24 +156,20 @@ export type LintFixer = {
 
 // ─── Parser ──────────────────────────────────────────────────────────────────
 
-export type LintParserContext = {
-  /** Custom token position calculator */
-  getTokenPosition: (token: string, text: string) => number;
-  /** Custom token context checker */
-  isValidTokenContext: (position: number, text: string) => boolean;
-  /** Full text content for context-aware matching */
-  text: string;
-};
-
 export type LintParserOptions = {
-  context?: LintParserContext;
-  /** Function to determine if a token should be processed */
-  match?: (token: string) => boolean;
+  /** Function to match tokens and return match result */
+  match: (params: {
+    end: number;
+    fullText: string;
+    getContext: (options: { after?: number; before?: number }) => string;
+    start: number;
+    text: string;
+  }) => AnyObject | boolean;
   /** Maximum length of tokens to process */
   maxLength?: number;
   /** Minimum length of tokens to process */
   minLength?: number;
-  /** Pattern for splitting text into tokens */
+  /** Pattern for matching tokens in text */
   splitPattern?: RegExp;
 };
 

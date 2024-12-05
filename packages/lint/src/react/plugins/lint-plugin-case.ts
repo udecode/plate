@@ -1,5 +1,3 @@
-import { Node } from 'slate';
-
 import type { LintConfigPlugin, LintConfigPluginRule } from '../types';
 
 export type CaseLintPluginOptions = {
@@ -15,9 +13,15 @@ const caseMatchRule: LintConfigPluginRule<CaseLintPluginOptions> = {
       Token: (token) => {
         const text = token.text;
 
-        // Skip if word is in ignored list
-        if (ignoredWords.includes(text)) return token;
-        // Check if first letter is lowercase using startsWith
+        // Skip if word is in ignored list or is part of URL/email
+        if (ignoredWords.includes(text) || /\.|@/.test(text)) {
+          return token;
+        }
+        // Skip if not a regular word or already capitalized
+        if (!/^[a-z][\da-z]*$/i.test(text) || /^[A-Z]/.test(text)) {
+          return token;
+        }
+        // Check if first letter is lowercase
         if (text && /^[a-z]/.test(text)) {
           const suggestion = text.charAt(0).toUpperCase() + text.slice(1);
 
@@ -69,84 +73,67 @@ export const caseLintPlugin = {
     all: {
       languageOptions: {
         parserOptions: (context) => {
-          const { editor, options: contextOptions } = context;
-          const text = Node.string(editor.children[0]);
+          const { options: contextOptions } = context;
           const ignoredWords = contextOptions[0]?.ignoredWords ?? [];
 
-          console.log('Parsing text:', text);
-          console.log('Ignored words:', ignoredWords);
+          // Helper to check if a word is part of URL/email
+          const isUrlOrEmail = (
+            text: string,
+            fullText: string,
+            start: number
+          ) => {
+            // Check if part of email
+            if (text.includes('@')) return true;
+
+            // Check if part of URL (look before and after)
+            const beforeDot = fullText.slice(Math.max(0, start - 10), start);
+            const afterDot = fullText.slice(
+              start + text.length,
+              start + text.length + 10
+            );
+
+            return (
+              /\.[a-z]/i.test(beforeDot + text) ||
+              /^[a-z]*\./.test(text + afterDot)
+            );
+          };
 
           return {
-            context: {
-              getTokenPosition: (token: string, text: string) => {
-                const match = new RegExp(`\\b${token}\\b`).exec(text);
-                const position = match?.index ?? 0;
-                console.log(
-                  'Getting position for token:',
-                  token,
-                  'position:',
-                  position
-                );
+            match: (params) => {
+              const { fullText, getContext, start, text: token } = params;
 
-                return position;
-              },
-              isValidTokenContext: (position: number, text: string) => {
-                if (position === 0) {
-                  console.log('Position 0, valid context');
-
-                  return true;
-                }
-
-                const prevChar = text[position - 2];
-                const isValid =
-                  prevChar === '.' || prevChar === '!' || prevChar === '?';
-                console.log(
-                  'Checking context at position:',
-                  position,
-                  'prevChar:',
-                  prevChar,
-                  'isValid:',
-                  isValid
-                );
-
-                return isValid;
-              },
-              text,
-            },
-            match: (token: string) => {
-              console.log('\nMatching token:', token);
-
-              if (ignoredWords.includes(token)) {
-                console.log('Token is ignored');
-
+              // Skip ignored words and parts of URLs/emails
+              if (
+                ignoredWords.includes(token) ||
+                isUrlOrEmail(token, fullText, start)
+              ) {
                 return false;
               }
-              if (!/^[a-z]/.test(token)) {
-                console.log('Token starts with uppercase');
-
+              // Skip if already capitalized
+              if (/^[A-Z]/.test(token)) {
+                return false;
+              }
+              // Skip if not a regular word (contains special characters or mixed case)
+              if (
+                !/^[a-z][\da-z]*$/i.test(token) ||
+                /[A-Z]/.test(token.slice(1))
+              ) {
                 return false;
               }
 
-              // Get position
-              const match = new RegExp(`\\b${token}\\b`).exec(text);
-              const position = match?.index ?? 0;
-              console.log('Token position:', position);
+              // Get previous context with enough characters for sentence boundaries
+              const prevText = getContext({ before: 5 });
 
-              // Check position
-              if (position === 0) {
-                console.log('Token at start of text');
+              // Check for sentence boundaries, including quotes and parentheses
+              const isStartOfSentence =
+                start === 0 || // First word in text
+                /[!.?]\s*(?:["')\]}]\s*)*$/.test(prevText) || // Punctuation followed by optional closing chars and whitespace
+                /[!.?]\s*["'([{]\s*$/.test(prevText); // Punctuation followed by opening chars and whitespace
 
-                return true;
-              }
-
-              const prevChar = text[position - 2];
-              const isValid =
-                prevChar === '.' || prevChar === '!' || prevChar === '?';
-              console.log('Previous char:', prevChar, 'isValid:', isValid);
-
-              return isValid;
+              return isStartOfSentence;
             },
-            splitPattern: /\b[\dA-Za-z]+\b/g,
+            // Update pattern to better match words
+            splitPattern: /\b[A-Za-z][\dA-Za-z]*\b/g,
           };
         },
       },

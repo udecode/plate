@@ -48,6 +48,7 @@ describe('resolveLintConfigs', () => {
       {
         languageOptions: {
           parserOptions: {
+            match: (params) => true,
             minLength: 4,
           },
         },
@@ -157,6 +158,7 @@ describe('resolveLintConfigs', () => {
       {
         languageOptions: {
           parserOptions: {
+            match: (params) => true,
             maxLength: 4,
           },
         },
@@ -228,7 +230,7 @@ describe('resolveLintConfigs', () => {
       {
         languageOptions: {
           parserOptions: {
-            match: (token: string) => token.length > 2,
+            match: (params) => params.text.length > 2,
             splitPattern: /\w+/g,
           },
         },
@@ -240,7 +242,7 @@ describe('resolveLintConfigs', () => {
       {
         languageOptions: {
           parserOptions: {
-            match: (token: string) => token.length > 4,
+            match: (params) => params.text.length > 4,
             minLength: 3,
           },
         },
@@ -277,7 +279,8 @@ describe('resolveLintConfigs', () => {
       {
         languageOptions: {
           parserOptions: (context) => ({
-            match: () => true,
+            match: (params) => true,
+            splitPattern: /\w+/g,
           }),
         },
         plugins: { replace: replaceLintPlugin },
@@ -288,6 +291,7 @@ describe('resolveLintConfigs', () => {
       {
         languageOptions: {
           parserOptions: (context) => ({
+            match: (params) => true,
             splitPattern: /\w+/g,
           }),
         },
