@@ -1,9 +1,10 @@
 'use client';
+
 import React from 'react';
 
+import { withRef } from '@udecode/cn';
 import { useCodeSyntaxLeaf } from '@udecode/plate-code-block/react';
-import { PlateLeaf } from '@udecode/plate-utils/react';
-import { withRef } from '@udecode/react-utils';
+import { PlateLeaf } from '@udecode/plate-common/react';
 
 export const CodeSyntaxLeaf = withRef<typeof PlateLeaf>(
   ({ children, ...props }, ref) => {

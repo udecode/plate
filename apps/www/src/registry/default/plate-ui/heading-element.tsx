@@ -1,7 +1,8 @@
+'use client';
+
 import React from 'react';
 
-import { withVariants } from '@udecode/cn';
-import { withRef } from '@udecode/react-utils';
+import { withRef, withVariants } from '@udecode/cn';
 import { cva } from 'class-variance-authority';
 
 import { PlateElement } from './plate-element';
