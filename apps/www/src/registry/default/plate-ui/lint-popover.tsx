@@ -11,7 +11,7 @@ import {
 import { useVirtualRefState } from '@udecode/plate-floating';
 import {
   ExperimentalLintPlugin,
-  useTokenSelected,
+  useAnnotationSelected,
 } from '@udecode/plate-lint/react';
 
 import {
@@ -25,28 +25,27 @@ export function LintPopover() {
   const { api, editor, setOption, tf, useOption } = useEditorPlugin(
     ExperimentalLintPlugin
   );
-  const activeToken = useOption('activeToken');
-  const selected = useTokenSelected();
+  const activeAnnotation = useOption('activeAnnotation');
+  console.log(activeAnnotation);
+  const selected = useAnnotationSelected();
   const toolbarRef = React.useRef<HTMLDivElement>(null);
   const firstButtonRef = React.useRef<HTMLButtonElement>(null);
   const [virtualRef] = useVirtualRefState({
-    at: activeToken?.range,
+    at: activeAnnotation?.range,
   });
-  const suggestions = activeToken?.suggest ?? [];
+  const suggestions = activeAnnotation?.suggest ?? [];
   const open = selected && !!virtualRef?.current && suggestions.length > 0;
-
-  console.log(suggestions);
 
   useEffect(() => {
     if (!selected) {
-      setOption('activeToken', null);
+      setOption('activeAnnotation', null);
     }
   }, [selected, setOption]);
 
   useHotkeys(
     'ctrl+space',
     (e) => {
-      if (api.lint.setSelectedActiveToken()) {
+      if (api.lint.setSelectedactiveAnnotation()) {
         e.preventDefault();
       }
     },
@@ -56,14 +55,12 @@ export function LintPopover() {
   useHotkeys(
     'enter',
     (e) => {
-      const suggestion = activeToken?.suggest?.[0];
+      const suggestion = activeAnnotation?.suggest?.[0];
 
       if (suggestion) {
         e.preventDefault();
 
         suggestion.fix({ goNext: true });
-
-        console.log(editor.selection);
       }
     },
     { enableOnContentEditable: true, enabled: open }
@@ -91,8 +88,6 @@ export function LintPopover() {
   useHotkeys(
     'tab',
     (e) => {
-      console.log(1111);
-
       if (tf.lint.focusNextMatch()) {
         e.preventDefault();
       }
@@ -110,15 +105,13 @@ export function LintPopover() {
     { enableOnContentEditable: true, enabled: open }
   );
 
-  console.log(activeToken?.data);
-
   return (
     <Popover open={open}>
       <PopoverAnchor virtualRef={virtualRef} />
       <PopoverContent
         className={cn(
           'w-auto !animate-none p-0',
-          activeToken?.data?.type !== 'emoji' && 'p-0'
+          activeAnnotation?.data?.type !== 'emoji' && 'p-0'
         )}
         onCloseAutoFocus={(e) => {
           e.preventDefault();
@@ -126,7 +119,7 @@ export function LintPopover() {
         }}
         onEscapeKeyDown={(e) => {
           e.preventDefault();
-          setOption('activeToken', null);
+          setOption('activeAnnotation', null);
         }}
         onOpenAutoFocus={(e) => {
           e.preventDefault();
@@ -136,7 +129,7 @@ export function LintPopover() {
           ref={toolbarRef}
           className={cn(
             'flex gap-0.5',
-            activeToken?.data?.type === 'emoji' && 'px-2 py-1.5'
+            activeAnnotation?.data?.type === 'emoji' && 'px-2 py-1.5'
           )}
         >
           {suggestions.map((suggestion, index) => (

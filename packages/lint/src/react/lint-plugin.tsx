@@ -1,5 +1,6 @@
 import {
   type PluginConfig,
+  bindFirst,
   collapseSelection,
   getNextRange,
   isSelectionInRange,
@@ -7,28 +8,33 @@ import {
 } from '@udecode/plate-common';
 import { createTPlatePlugin, focusEditor } from '@udecode/plate-common/react';
 
-import type { LintConfigArray, LintToken } from './types';
+import type { LintAnnotation, LintConfigArray } from './types';
 
 import { decorateLint } from './decorateLint';
+import { runLint } from './runLint';
 
 export type LintConfig = PluginConfig<
   'lint',
   {
-    activeToken: LintToken | null;
+    activeAnnotation: LintAnnotation | null;
+    annotations: LintAnnotation[];
     configs: LintConfigArray;
-    tokens: LintToken[];
   },
   {
     lint: {
-      getNextMatch: (options?: { reverse: boolean }) => LintToken | undefined;
+      getNextMatch: (options?: {
+        reverse: boolean;
+      }) => LintAnnotation | undefined;
       reset: () => void;
       run: (configs: LintConfigArray) => void;
-      setSelectedActiveToken: () => boolean | undefined;
+      setSelectedactiveAnnotation: () => boolean | undefined;
     };
   },
   {
     lint: {
-      focusNextMatch: (options?: { reverse: boolean }) => LintToken | undefined;
+      focusNextMatch: (options?: {
+        reverse: boolean;
+      }) => LintAnnotation | undefined;
     };
   }
 >;
@@ -40,9 +46,15 @@ export const ExperimentalLintPlugin = createTPlatePlugin<LintConfig>({
     isLeaf: true,
   },
   options: {
-    activeToken: null,
+    activeAnnotation: null,
+    annotations: [],
     configs: [],
-    tokens: [],
+  },
+  handlers: {
+    onChange: ({ api, getOptions }) => {
+      const { configs } = getOptions();
+      api.lint.run(configs);
+    },
   },
 })
   .extendApi<LintConfig['api']['lint']>((ctx) => {
@@ -50,38 +62,36 @@ export const ExperimentalLintPlugin = createTPlatePlugin<LintConfig>({
 
     return {
       getNextMatch: (options) => {
-        const { activeToken, tokens } = getOptions();
+        const { activeAnnotation, annotations } = getOptions();
 
-        const ranges = tokens.map((token) => token.rangeRef.current!);
+        const ranges = annotations.map(
+          (annotation) => annotation.rangeRef.current!
+        );
         const nextRange = getNextRange(editor, {
-          from: activeToken?.rangeRef.current,
+          from: activeAnnotation?.rangeRef.current,
           ranges,
           reverse: options?.reverse,
         });
 
-        console.log(33, ranges, activeToken?.rangeRef.current, nextRange);
-
         if (!nextRange) return;
 
-        return tokens[ranges.indexOf(nextRange)];
+        return annotations[ranges.indexOf(nextRange)];
       },
       reset: () => {
         setOption('configs', []);
+        setOption('annotations', []);
         editor.api.redecorate();
       },
-      run: (configs) => {
-        setOption('configs', configs);
-        editor.api.redecorate();
-      },
-      setSelectedActiveToken: () => {
+      run: bindFirst(runLint, editor),
+      setSelectedactiveAnnotation: () => {
         if (!editor.selection) return false;
 
-        const activeToken = getOptions().tokens.find((match) =>
+        const activeAnnotation = getOptions().annotations.find((match) =>
           isSelectionInRange(editor, { at: match.rangeRef.current! })
         );
 
-        if (activeToken) {
-          setOption('activeToken', activeToken);
+        if (activeAnnotation) {
+          setOption('activeAnnotation', activeAnnotation);
 
           return true;
         }
@@ -94,17 +104,12 @@ export const ExperimentalLintPlugin = createTPlatePlugin<LintConfig>({
     ({ api, editor, setOption }) => ({
       focusNextMatch: (options) => {
         const match = api.lint.getNextMatch(options);
-        console.log(222, match);
-        setOption('activeToken', match ?? null);
+        setOption('activeAnnotation', match ?? null);
 
         if (match) {
-          console.log('focusNextMatch', editor.selection);
           collapseSelection(editor);
           setSelection(editor, match!.rangeRef.current!);
           focusEditor(editor);
-          // setTimeout(() => {
-          //   focusEditor(editor);
-          // }, 0);
         }
 
         return match;

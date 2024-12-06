@@ -3,4 +3,4 @@
  */
 
 export * from './resolveLintConfigs';
-export * from './useTokenSelected';
+export * from './useAnnotationSelected';

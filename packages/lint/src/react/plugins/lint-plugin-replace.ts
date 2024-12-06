@@ -1,7 +1,7 @@
 import type {
+  LintAnnotationSuggestion,
   LintConfigPlugin,
   LintConfigPluginRule,
-  LintTokenSuggestion,
 } from '../types';
 
 export type ReplaceLintPluginOptions = {
@@ -15,30 +15,28 @@ const replaceMatchRule: LintConfigPluginRule<ReplaceLintPluginOptions> = {
     const maxSuggestions = options[0].maxSuggestions;
 
     return {
-      Token: (token) => {
-        const replacements = replaceMap?.get(token.text.toLowerCase());
+      Annotation: (annotation) => {
+        const replacements = replaceMap?.get(annotation.text.toLowerCase());
 
         return {
-          ...token,
+          ...annotation,
           data: {
-            ...token.data,
+            ...annotation.data,
             type: replacements?.[0]?.type,
           },
           messageId: 'replaceWithText',
           suggest: replacements?.slice(0, maxSuggestions).map(
-            (replacement): LintTokenSuggestion => ({
+            (replacement): LintAnnotationSuggestion => ({
               data: {
                 text: replacement.text,
                 type: replacement.type,
               },
               fix: (options) => {
-                console.log(token.rangeRef.current);
                 fixer.replaceText({
-                  range: token.rangeRef.current!,
+                  range: annotation.rangeRef.current!,
                   text: replacement.text,
                   ...options,
                 });
-                console.log(token.rangeRef.current);
               },
             })
           ),

@@ -5,20 +5,20 @@ import type { Range, RangeRef } from 'slate';
 // ─── Plate ──────────────────────────────────────────────────────────────────
 
 export type LintDecoration = TText & {
+  annotation: LintAnnotation;
   lint: boolean;
-  token: LintToken;
 };
 
-export type LintToken = {
+export type LintAnnotation = {
   range: Range;
   rangeRef: RangeRef;
   text: string;
   data?: UnknownObject;
   messageId?: string;
-  suggest?: LintTokenSuggestion[];
+  suggest?: LintAnnotationSuggestion[];
 };
 
-export type LintTokenSuggestion = {
+export type LintAnnotationSuggestion = {
   fix: (options?: { goNext?: boolean }) => void;
   data?: Record<string, any>;
   messageId?: string;
@@ -64,9 +64,9 @@ export type LintConfigRuleOptionsArray<T = {}> = [
   ...LintConfigRuleOptions[],
 ];
 
-export type LintTokenOptions = {
-  tokens?: {
-    match?: (token: string) => boolean;
+export type LintAnnotationOptions = {
+  annotations?: {
+    match?: (annotation: string) => boolean;
     splitPattern?: RegExp;
   };
 };
@@ -109,12 +109,12 @@ export type LintConfigPlugin<T = {}> = {
 
 export type LintConfigPluginRule<T = {}> = {
   /**
-   * Returns an object with methods that the linter calls to process text tokens
-   * while traversing the document during decoration.
+   * Returns an object with methods that the linter calls to process text
+   * annotations while traversing the document during decoration.
    */
   create: (context: LintConfigPluginRuleContext<T>) => {
-    /** A function that transforms a token. */
-    Token: (token: LintToken) => LintToken;
+    /** A function that transforms an annotation. */
+    Annotation: (annotation: LintAnnotation) => LintAnnotation;
   };
   meta: {
     docs?: {
@@ -157,7 +157,7 @@ export type LintFixer = {
 // ─── Parser ──────────────────────────────────────────────────────────────────
 
 export type LintParserOptions = {
-  /** Function to match tokens and return match result */
+  /** Function to match annotations and return match result */
   match?: (params: {
     end: number;
     fullText: string;
@@ -165,11 +165,11 @@ export type LintParserOptions = {
     start: number;
     text: string;
   }) => AnyObject | boolean;
-  /** Maximum length of tokens to process */
+  /** Maximum length of annotations to process */
   maxLength?: number;
-  /** Minimum length of tokens to process */
+  /** Minimum length of annotations to process */
   minLength?: number;
-  /** Pattern for matching tokens in text */
+  /** Pattern for matching annotations in text */
   splitPattern?: RegExp;
 };
 
@@ -217,12 +217,12 @@ export type ResolvedLintRules = Record<string, ResolvedLintRule>;
 // export type LintParserOptions = {
 //   /** Type of analysis to perform */
 //   analysisType?: LintAnalysisType;
-//   /** Custom pattern for token extraction */
+//   /** Custom pattern for annotation extraction */
 //   pattern?: RegExp;
 //   /** Additional conditions for matching */
-//   match?: (token: string) => boolean;
-//   /** Minimum token length */
+//   match?: (annotation: string) => boolean;
+//   /** Minimum annotation length */
 //   minLength?: number;
-//   /** Maximum token length */
+//   /** Maximum annotation length */
 //   maxLength?: number;
 // };

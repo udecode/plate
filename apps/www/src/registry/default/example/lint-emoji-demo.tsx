@@ -78,24 +78,10 @@ function EmojiPlateEditorContent() {
     api.lint.run([
       {
         ...replaceLintPlugin.configs.all,
-        targets: [
-          { id: editor.children[0].id as string },
-          { id: editor.children[1].id as string },
-        ],
-      },
-      {
-        languageOptions: {
-          parserOptions: {
-            minLength: 4,
-          },
-        },
-        targets: [{ id: editor.children[0].id as string }],
-      },
-      {
         settings: {
-          maxSuggestions: 5,
           replaceMap: emojiMap,
         },
+        targets: [{ id: editor.children[0].id as string }],
       },
     ]);
   };
@@ -109,17 +95,6 @@ function EmojiPlateEditorContent() {
             maxLength: 4,
           },
         },
-        settings: {
-          replaceMap: emojiMap,
-        },
-      },
-    ]);
-  };
-
-  const runAll = () => {
-    api.lint.run([
-      replaceLintPlugin.configs.all,
-      {
         settings: {
           replaceMap: emojiMap,
         },
@@ -155,13 +130,10 @@ function EmojiPlateEditorContent() {
     <>
       <div className="mb-4 flex gap-4">
         <Button size="md" className="mb-4 px-4" onClick={runFirst}>
-          First
+          Emoji
         </Button>
         <Button size="md" className="mb-4 px-4" onClick={runMax}>
           Max Length
-        </Button>
-        <Button size="md" className="mb-4 px-4" onClick={runAll}>
-          All
         </Button>
         <Button size="md" className="mb-4 px-4" onClick={runCase}>
           Case

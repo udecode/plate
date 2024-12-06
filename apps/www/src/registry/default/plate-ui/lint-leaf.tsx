@@ -20,7 +20,8 @@ export const LintLeaf = withRef<typeof PlateLeaf>(
         className={cn('bg-inherit text-red-400', className)}
         onClick={(e) => {
           e.preventDefault();
-          setOption('activeToken', leaf.token);
+          console.log(leaf.annotation);
+          setOption('activeAnnotation', leaf.annotation);
         }}
         {...props}
       >

@@ -6,18 +6,20 @@ import {
 
 import { ExperimentalLintPlugin } from '../lint-plugin';
 
-export const useTokenSelected = () => {
+export const useAnnotationSelected = () => {
   const { useOption } = useEditorPlugin(ExperimentalLintPlugin);
-  const activeToken = useOption('activeToken');
+  const activeAnnotation = useOption('activeAnnotation');
 
   return useEditorSelector(
     (editor) => {
-      if (!editor.selection || !activeToken) return false;
-      if (isSelectionInRange(editor, { at: activeToken.rangeRef.current! }))
+      if (!editor.selection || !activeAnnotation) return false;
+      if (
+        isSelectionInRange(editor, { at: activeAnnotation.rangeRef.current! })
+      )
         return true;
 
       return false;
     },
-    [activeToken]
+    [activeAnnotation]
   );
 };

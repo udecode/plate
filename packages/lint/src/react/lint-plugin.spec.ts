@@ -7,7 +7,7 @@ jest.mock('@udecode/slate-react', () => ({
 }));
 
 describe('LintPlugin', () => {
-  it('should set selected active token', () => {
+  it('should set selected active annotation', () => {
     const editor = createPlateEditor({
       plugins: [ExperimentalLintPlugin],
     });
@@ -19,7 +19,7 @@ describe('LintPlugin', () => {
       },
     ];
 
-    const activeToken: any = {
+    const activeAnnotation: any = {
       rangeRef: {
         current: {
           anchor: { offset: 0, path: [0, 0] },
@@ -28,18 +28,22 @@ describe('LintPlugin', () => {
       },
       text: 'hello',
     };
-    editor.setOption(ExperimentalLintPlugin, 'tokens', [activeToken]);
-    editor.setOption(ExperimentalLintPlugin, 'activeToken', activeToken);
+    editor.setOption(ExperimentalLintPlugin, 'annotations', [activeAnnotation]);
+    editor.setOption(
+      ExperimentalLintPlugin,
+      'activeAnnotation',
+      activeAnnotation
+    );
 
     editor.selection = {
       anchor: { offset: 2, path: [0, 0] },
       focus: { offset: 2, path: [0, 0] },
     };
-    const result = editor.api.lint.setSelectedActiveToken();
+    const result = editor.api.lint.setSelectedactiveAnnotation();
     expect(result).toBe(true);
-    expect(editor.getOption(ExperimentalLintPlugin, 'activeToken')?.text).toBe(
-      'hello'
-    );
+    expect(
+      editor.getOption(ExperimentalLintPlugin, 'activeAnnotation')?.text
+    ).toBe('hello');
   });
 
   it('should focus next match', () => {
@@ -47,7 +51,7 @@ describe('LintPlugin', () => {
       plugins: [ExperimentalLintPlugin],
     });
 
-    const activeToken = {
+    const activeAnnotation = {
       rangeRef: {
         current: {
           anchor: { offset: 0, path: [0, 0] },
@@ -56,8 +60,8 @@ describe('LintPlugin', () => {
       },
       text: 'hello',
     } as any;
-    editor.setOption(ExperimentalLintPlugin, 'tokens', [
-      activeToken,
+    editor.setOption(ExperimentalLintPlugin, 'annotations', [
+      activeAnnotation,
       {
         rangeRef: {
           current: {
@@ -68,12 +72,16 @@ describe('LintPlugin', () => {
         text: 'world',
       } as any,
     ]);
-    editor.setOption(ExperimentalLintPlugin, 'activeToken', activeToken);
+    editor.setOption(
+      ExperimentalLintPlugin,
+      'activeAnnotation',
+      activeAnnotation
+    );
 
     const match = editor.tf.lint.focusNextMatch();
     expect(match?.text).toBe('world');
-    expect(editor.getOption(ExperimentalLintPlugin, 'activeToken')?.text).toBe(
-      'world'
-    );
+    expect(
+      editor.getOption(ExperimentalLintPlugin, 'activeAnnotation')?.text
+    ).toBe('world');
   });
 });

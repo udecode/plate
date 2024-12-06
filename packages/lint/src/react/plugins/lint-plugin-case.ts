@@ -10,30 +10,30 @@ const caseMatchRule: LintConfigPluginRule<CaseLintPluginOptions> = {
     const ignoredWords = options[0].ignoredWords ?? [];
 
     return {
-      Token: (token) => {
-        const text = token.text;
+      Annotation: (annotation) => {
+        const text = annotation.text;
 
         // Skip if word is in ignored list or is part of URL/email
         if (ignoredWords.includes(text) || /\.|@/.test(text)) {
-          return token;
+          return annotation;
         }
         // Skip if not a regular word or already capitalized
         if (!/^[a-z][\da-z]*$/i.test(text) || /^[A-Z]/.test(text)) {
-          return token;
+          return annotation;
         }
         // Check if first letter is lowercase
         if (text && /^[a-z]/.test(text)) {
           const suggestion = text.charAt(0).toUpperCase() + text.slice(1);
 
           return {
-            ...token,
+            ...annotation,
             messageId: 'capitalizeFirstLetter',
             suggest: [
               {
                 data: { text: suggestion },
                 fix: (options) => {
                   fixer.replaceText({
-                    range: token.rangeRef.current!,
+                    range: annotation.rangeRef.current!,
                     text: suggestion,
                     ...options,
                   });
@@ -43,7 +43,7 @@ const caseMatchRule: LintConfigPluginRule<CaseLintPluginOptions> = {
           };
         }
 
-        return token;
+        return annotation;
       },
     };
   },
@@ -100,23 +100,23 @@ export const caseLintPlugin = {
 
           return {
             match: (params) => {
-              const { fullText, getContext, start, text: token } = params;
+              const { fullText, getContext, start, text: annotation } = params;
 
               // Skip ignored words and parts of URLs/emails
               if (
-                ignoredWords.includes(token) ||
-                isUrlOrEmail(token, fullText, start)
+                ignoredWords.includes(annotation) ||
+                isUrlOrEmail(annotation, fullText, start)
               ) {
                 return false;
               }
               // Skip if already capitalized
-              if (/^[A-Z]/.test(token)) {
+              if (/^[A-Z]/.test(annotation)) {
                 return false;
               }
               // Skip if not a regular word (contains special characters or mixed case)
               if (
-                !/^[a-z][\da-z]*$/i.test(token) ||
-                /[A-Z]/.test(token.slice(1))
+                !/^[a-z][\da-z]*$/i.test(annotation) ||
+                /[A-Z]/.test(annotation.slice(1))
               ) {
                 return false;
               }

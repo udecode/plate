@@ -1,9 +1,4 @@
-import type { TokenDecoration } from '@udecode/slate-utils';
-
-import { getEditorPlugin } from '@udecode/plate-common/react';
 import { createPlateEditor } from '@udecode/plate-common/react';
-
-import type { LintToken } from '../types';
 
 import { ExperimentalLintPlugin } from '../lint-plugin';
 import { caseLintPlugin } from './lint-plugin-case';
@@ -26,26 +21,13 @@ describe('caseLintPlugin', () => {
     ];
 
     const plugin = editor.getPlugin(ExperimentalLintPlugin);
+    plugin.api.lint.run([caseLintPlugin.configs.all]);
 
-    editor.setOption(ExperimentalLintPlugin, 'configs', [
-      caseLintPlugin.configs.all,
-    ]);
-
-    const decorations = plugin.decorate?.({
-      ...getEditorPlugin(editor, plugin),
-      entry: [editor.children[0], [0]],
-    }) as unknown as TokenDecoration[];
-
-    expect(decorations).toHaveLength(3);
-    expect((decorations[0].token as LintToken).suggest?.[0].data?.text).toBe(
-      'Hello'
-    );
-    expect((decorations[1].token as LintToken).suggest?.[0].data?.text).toBe(
-      'This'
-    );
-    expect((decorations[2].token as LintToken).suggest?.[0].data?.text).toBe(
-      'New'
-    );
+    const annotations = editor.getOption(ExperimentalLintPlugin, 'annotations');
+    expect(annotations).toHaveLength(3);
+    expect(annotations[0].suggest?.[0].data?.text).toBe('Hello');
+    expect(annotations[1].suggest?.[0].data?.text).toBe('This');
+    expect(annotations[2].suggest?.[0].data?.text).toBe('New');
   });
 
   it('should respect ignored words', () => {
@@ -65,8 +47,7 @@ describe('caseLintPlugin', () => {
     ];
 
     const plugin = editor.getPlugin(ExperimentalLintPlugin);
-
-    editor.setOption(ExperimentalLintPlugin, 'configs', [
+    plugin.api.lint.run([
       caseLintPlugin.configs.all,
       {
         settings: {
@@ -75,15 +56,9 @@ describe('caseLintPlugin', () => {
       },
     ]);
 
-    const decorations = plugin.decorate?.({
-      ...getEditorPlugin(editor, plugin),
-      entry: [editor.children[0], [0]],
-    }) as unknown as TokenDecoration[];
-
-    expect(decorations).toHaveLength(1); // Only "app" should be flagged
-    expect((decorations[0].token as LintToken).suggest?.[0].data?.text).toBe(
-      'App'
-    );
+    const annotations = editor.getOption(ExperimentalLintPlugin, 'annotations');
+    expect(annotations).toHaveLength(1); // Only "app" should be flagged
+    expect(annotations[0].suggest?.[0].data?.text).toBe('App');
   });
 
   it('should handle fixer actions', () => {
@@ -99,17 +74,10 @@ describe('caseLintPlugin', () => {
     ];
 
     const plugin = editor.getPlugin(ExperimentalLintPlugin);
-    editor.setOption(ExperimentalLintPlugin, 'configs', [
-      caseLintPlugin.configs.all,
-    ]);
+    plugin.api.lint.run([caseLintPlugin.configs.all]);
 
-    const decorations = plugin.decorate?.({
-      ...getEditorPlugin(editor, plugin),
-      entry: [editor.children[0], [0]],
-    }) as unknown as TokenDecoration[];
-
-    const token = decorations[0].token as LintToken;
-    token.suggest?.[0].fix();
+    const annotations = editor.getOption(ExperimentalLintPlugin, 'annotations');
+    annotations[0].suggest?.[0].fix();
     expect(editor.children[0].children[0].text).toBe('Hello world.');
   });
 
@@ -130,22 +98,12 @@ describe('caseLintPlugin', () => {
     ];
 
     const plugin = editor.getPlugin(ExperimentalLintPlugin);
+    plugin.api.lint.run([caseLintPlugin.configs.all]);
 
-    editor.setOption(ExperimentalLintPlugin, 'configs', [
-      caseLintPlugin.configs.all,
-    ]);
-
-    const decorations = plugin.decorate?.({
-      ...getEditorPlugin(editor, plugin),
-      entry: [editor.children[0], [0]],
-    }) as unknown as TokenDecoration[];
-
-    // Only the second "cat" (after period) should be flagged
-    expect(decorations).toHaveLength(1);
-    expect((decorations[0].token as LintToken).text).toBe('cat');
-    expect((decorations[0].token as LintToken).suggest?.[0].data?.text).toBe(
-      'Cat'
-    );
+    const annotations = editor.getOption(ExperimentalLintPlugin, 'annotations');
+    expect(annotations).toHaveLength(1);
+    expect(annotations[0].text).toBe('cat');
+    expect(annotations[0].suggest?.[0].data?.text).toBe('Cat');
   });
 
   it('should handle multiple sentence endings correctly', () => {
@@ -165,19 +123,13 @@ describe('caseLintPlugin', () => {
     ];
 
     const plugin = editor.getPlugin(ExperimentalLintPlugin);
-    editor.setOption(ExperimentalLintPlugin, 'configs', [
-      caseLintPlugin.configs.all,
-    ]);
+    plugin.api.lint.run([caseLintPlugin.configs.all]);
 
-    const decorations = plugin.decorate?.({
-      ...getEditorPlugin(editor, plugin),
-      entry: [editor.children[0], [0]],
-    }) as unknown as TokenDecoration[];
-
-    expect(decorations).toHaveLength(3); // second, third, fourth should be flagged
-    expect(decorations[0].token.text).toBe('second');
-    expect(decorations[1].token.text).toBe('third');
-    expect(decorations[2].token.text).toBe('fourth');
+    const annotations = editor.getOption(ExperimentalLintPlugin, 'annotations');
+    expect(annotations).toHaveLength(3); // second, third, fourth should be flagged
+    expect(annotations[0].text).toBe('second');
+    expect(annotations[1].text).toBe('third');
+    expect(annotations[2].text).toBe('fourth');
   });
 
   it('should handle multiple spaces after sentence endings', () => {
@@ -197,18 +149,12 @@ describe('caseLintPlugin', () => {
     ];
 
     const plugin = editor.getPlugin(ExperimentalLintPlugin);
-    editor.setOption(ExperimentalLintPlugin, 'configs', [
-      caseLintPlugin.configs.all,
-    ]);
+    plugin.api.lint.run([caseLintPlugin.configs.all]);
 
-    const decorations = plugin.decorate?.({
-      ...getEditorPlugin(editor, plugin),
-      entry: [editor.children[0], [0]],
-    }) as unknown as TokenDecoration[];
-
-    expect(decorations).toHaveLength(2);
-    expect(decorations[0].token.text).toBe('two');
-    expect(decorations[1].token.text).toBe('three');
+    const annotations = editor.getOption(ExperimentalLintPlugin, 'annotations');
+    expect(annotations).toHaveLength(2);
+    expect(annotations[0].text).toBe('two');
+    expect(annotations[1].text).toBe('three');
   });
 
   it('should handle special characters and punctuation', () => {
@@ -228,18 +174,12 @@ describe('caseLintPlugin', () => {
     ];
 
     const plugin = editor.getPlugin(ExperimentalLintPlugin);
-    editor.setOption(ExperimentalLintPlugin, 'configs', [
-      caseLintPlugin.configs.all,
-    ]);
+    plugin.api.lint.run([caseLintPlugin.configs.all]);
 
-    const decorations = plugin.decorate?.({
-      ...getEditorPlugin(editor, plugin),
-      entry: [editor.children[0], [0]],
-    }) as unknown as TokenDecoration[];
-
-    expect(decorations).toHaveLength(2);
-    expect(decorations[0].token.text).toBe('this');
-    expect(decorations[1].token.text).toBe('another');
+    const annotations = editor.getOption(ExperimentalLintPlugin, 'annotations');
+    expect(annotations).toHaveLength(2);
+    expect(annotations[0].text).toBe('this');
+    expect(annotations[1].text).toBe('another');
   });
 
   it('should handle empty and whitespace-only strings', () => {
@@ -259,15 +199,9 @@ describe('caseLintPlugin', () => {
     ];
 
     const plugin = editor.getPlugin(ExperimentalLintPlugin);
-    editor.setOption(ExperimentalLintPlugin, 'configs', [
-      caseLintPlugin.configs.all,
-    ]);
+    plugin.api.lint.run([caseLintPlugin.configs.all]);
 
-    const decorations = plugin.decorate?.({
-      ...getEditorPlugin(editor, plugin),
-      entry: [editor.children[0], [0]],
-    }) as unknown as TokenDecoration[];
-
-    expect(decorations).toHaveLength(0);
+    const annotations = editor.getOption(ExperimentalLintPlugin, 'annotations');
+    expect(annotations).toHaveLength(0);
   });
 });

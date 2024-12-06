@@ -1,20 +1,21 @@
-import type { TokenDecoration } from '@udecode/slate-utils';
-
-import { getEditorPlugin } from '@udecode/plate-common/react';
 import { createPlateEditor } from '@udecode/plate-common/react';
-
-import type { LintToken } from '../types';
 
 import { ExperimentalLintPlugin } from '../lint-plugin';
 import { replaceLintPlugin } from './lint-plugin-replace';
 
 describe('replaceLintPlugin', () => {
   const replaceMap = new Map([
-    ['hello', [{ text: '👋' }]],
-    ['world', [{ text: '🌍' }, { text: '🌎' }]],
+    ['hello', [{ text: '👋', type: 'emoji' }]],
+    [
+      'world',
+      [
+        { text: '🌍', type: 'emoji' },
+        { text: '🌎', type: 'emoji' },
+      ],
+    ],
   ]);
 
-  it('should suggest replacements', () => {
+  it('should decorate matching text', () => {
     const editor = createPlateEditor({
       plugins: [ExperimentalLintPlugin],
     });
@@ -32,7 +33,8 @@ describe('replaceLintPlugin', () => {
 
     const plugin = editor.getPlugin(ExperimentalLintPlugin);
 
-    editor.setOption(ExperimentalLintPlugin, 'configs', [
+    // Call run instead of decorate
+    plugin.api.lint.run([
       replaceLintPlugin.configs.all,
       {
         settings: {
@@ -41,20 +43,51 @@ describe('replaceLintPlugin', () => {
       },
     ]);
 
-    const decorations = plugin.decorate?.({
-      ...getEditorPlugin(editor, plugin),
-      entry: [editor.children[0], [0]],
-    }) as unknown as TokenDecoration[];
-
-    expect(decorations).toHaveLength(2);
-    expect((decorations[0].token as LintToken).suggest?.[0].data?.text).toBe(
-      '👋'
-    );
-    expect((decorations[1].token as LintToken).suggest?.[0].data?.text).toBe(
-      '🌍'
-    );
-    expect((decorations[1].token as LintToken).suggest?.[1].data?.text).toBe(
-      '🌎'
-    );
+    const annotations = editor.getOption(ExperimentalLintPlugin, 'annotations');
+    expect(annotations).toEqual([
+      {
+        data: {
+          type: 'emoji',
+        },
+        messageId: 'replaceWithText',
+        range: expect.any(Object),
+        rangeRef: expect.any(Object),
+        suggest: [
+          {
+            data: {
+              text: '👋',
+              type: 'emoji',
+            },
+            fix: expect.any(Function),
+          },
+        ],
+        text: 'hello',
+      },
+      {
+        data: {
+          type: 'emoji',
+        },
+        messageId: 'replaceWithText',
+        range: expect.any(Object),
+        rangeRef: expect.any(Object),
+        suggest: [
+          {
+            data: {
+              text: '🌍',
+              type: 'emoji',
+            },
+            fix: expect.any(Function),
+          },
+          {
+            data: {
+              text: '🌎',
+              type: 'emoji',
+            },
+            fix: expect.any(Function),
+          },
+        ],
+        text: 'world',
+      },
+    ]);
   });
 });

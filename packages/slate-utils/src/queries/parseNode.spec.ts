@@ -20,27 +20,26 @@ describe('experimental_parseNode', () => {
   });
 
   it('should find all matches in a single block', () => {
-    const { decorations, tokens } = experimental_parseNode(editor, {
+    const { annotations } = experimental_parseNode(editor, {
       at: [0],
       match: () => true,
       splitPattern: /\b[A-Za-z]+\b/g,
     });
 
-    expect(tokens).toHaveLength(6); // hello, world, this, is, a, test
-    expect(decorations).toHaveLength(6);
+    expect(annotations).toHaveLength(6); // hello, world, this, is, a, test
 
-    // Check token positions
-    expect(tokens[0].text).toBe('hello');
-    expect(tokens[0].range.anchor.offset).toBe(0);
-    expect(tokens[0].range.focus.offset).toBe(5);
+    // Check annotation positions
+    expect(annotations[0].text).toBe('hello');
+    expect(annotations[0].range.anchor.offset).toBe(0);
+    expect(annotations[0].range.focus.offset).toBe(5);
 
-    expect(tokens[1].text).toBe('world');
-    expect(tokens[1].range.anchor.offset).toBe(6);
-    expect(tokens[1].range.focus.offset).toBe(11);
+    expect(annotations[1].text).toBe('world');
+    expect(annotations[1].range.anchor.offset).toBe(6);
+    expect(annotations[1].range.focus.offset).toBe(11);
   });
 
   it('should respect minLength and maxLength', () => {
-    const { tokens } = experimental_parseNode(editor, {
+    const { annotations } = experimental_parseNode(editor, {
       at: [0],
       match: () => true,
       maxLength: 5,
@@ -49,8 +48,8 @@ describe('experimental_parseNode', () => {
     });
 
     // Words with length 4-5: 'hello', 'world', 'this', 'test'
-    expect(tokens).toHaveLength(4);
-    expect(tokens.map((t) => t.text)).toEqual([
+    expect(annotations).toHaveLength(4);
+    expect(annotations.map((t) => t.text)).toEqual([
       'hello',
       'world',
       'this',
@@ -59,15 +58,15 @@ describe('experimental_parseNode', () => {
   });
 
   it('should apply match function correctly', () => {
-    const { tokens } = experimental_parseNode(editor, {
+    const { annotations } = experimental_parseNode(editor, {
       at: [0],
       match: ({ text }) => text.length > 4, // Only match words longer than 4 chars
       splitPattern: /\b[A-Za-z]+\b/g,
     });
 
     // Only words longer than 4 chars: 'hello', 'world'
-    expect(tokens).toHaveLength(2);
-    expect(tokens.map((t) => t.text)).toEqual(['hello', 'world']);
+    expect(annotations).toHaveLength(2);
+    expect(annotations.map((t) => t.text)).toEqual(['hello', 'world']);
   });
 
   it('should provide correct context in match function', () => {
@@ -98,18 +97,18 @@ describe('experimental_parseNode', () => {
   });
 
   it('should handle transform function', () => {
-    const { tokens } = experimental_parseNode(editor, {
+    const { annotations } = experimental_parseNode(editor, {
       at: [0],
       match: () => true,
       splitPattern: /\b[A-Za-z]+\b/g,
-      transform: (token) => ({
-        ...token,
+      transform: (annotation) => ({
+        ...annotation,
         data: { transformed: true },
       }),
     });
 
-    tokens.forEach((token) => {
-      expect(token.data).toEqual({ transformed: true });
+    annotations.forEach((annotation) => {
+      expect(annotation.data).toEqual({ transformed: true });
     });
   });
 
@@ -133,13 +132,13 @@ describe('experimental_parseNode', () => {
       },
     ];
 
-    const { tokens } = experimental_parseNode(editor, {
+    const { annotations } = experimental_parseNode(editor, {
       match: () => true,
       splitPattern: /\b[A-Za-z]+\b/g,
     });
 
-    expect(tokens).toHaveLength(4); // hello, world, another, block
-    expect(tokens.map((t) => t.text)).toEqual([
+    expect(annotations).toHaveLength(4); // hello, world, another, block
+    expect(annotations.map((t) => t.text)).toEqual([
       'hello',
       'world',
       'another',
@@ -147,20 +146,19 @@ describe('experimental_parseNode', () => {
     ]);
 
     // Check paths are correct - now they should be nested under root []
-    expect(tokens[0].range.anchor.path).toEqual([0, 0]);
-    expect(tokens[2].range.anchor.path).toEqual([1, 0]);
+    expect(annotations[0].range.anchor.path).toEqual([0, 0]);
+    expect(annotations[2].range.anchor.path).toEqual([1, 0]);
   });
 
-  it('should handle empty editor with at=[]', () => {
+  it('should handle empty editor', () => {
     editor.children = [];
 
-    const { decorations, tokens } = experimental_parseNode(editor, {
+    const { annotations } = experimental_parseNode(editor, {
       match: () => true,
       splitPattern: /\b[A-Za-z]+\b/g,
     });
 
-    expect(tokens).toHaveLength(0);
-    expect(decorations).toHaveLength(0);
+    expect(annotations).toHaveLength(0);
   });
 
   it('should handle root block with at=[]', () => {
@@ -175,14 +173,14 @@ describe('experimental_parseNode', () => {
       },
     ];
 
-    const { tokens } = experimental_parseNode(editor, {
+    const { annotations } = experimental_parseNode(editor, {
       match: () => true,
       splitPattern: /\b[A-Za-z]+\b/g,
     });
 
-    expect(tokens.map((t) => t.text)).toEqual(['hello', 'world']);
-    expect(tokens[0].range.anchor.path).toEqual([0, 0]);
-    expect(tokens[1].range.anchor.path).toEqual([1, 0]);
+    expect(annotations.map((t) => t.text)).toEqual(['hello', 'world']);
+    expect(annotations[0].range.anchor.path).toEqual([0, 0]);
+    expect(annotations[1].range.anchor.path).toEqual([1, 0]);
   });
 
   it('should handle nested blocks with at=[]', () => {
@@ -198,12 +196,12 @@ describe('experimental_parseNode', () => {
       },
     ];
 
-    const { tokens } = experimental_parseNode(editor, {
+    const { annotations } = experimental_parseNode(editor, {
       match: () => true,
       splitPattern: /\b[A-Za-z]+\b/g,
     });
 
-    expect(tokens.map((t) => t.text)).toEqual(['nested']);
-    expect(tokens[0].range.anchor.path).toEqual([0, 0, 0]);
+    expect(annotations.map((t) => t.text)).toEqual(['nested']);
+    expect(annotations[0].range.anchor.path).toEqual([0, 0, 0]);
   });
 });
