@@ -1724,7 +1724,7 @@ export const uiPrimitives: Registry = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@slate-yjs/react', '@udecode/plate-core'],
+    dependencies: ['@slate-yjs/react'],
     doc: {
       description:
         'A cursor overlay to display multiplayer cursors in the yjs plugin.',
