@@ -97,11 +97,7 @@ function RemoteSelection({
   );
 }
 
-type RemoteCursorsProps = PropsWithChildren<{
-  className?: string;
-}>;
-
-export function RemoteCursorOverlay({ children }: RemoteCursorsProps) {
+export function RemoteCursorOverlay() {
   const containerRef = useEditorContainerRef();
   const [cursors] = useRemoteCursorOverlayPositions<CursorData>({
     containerRef,
@@ -109,7 +105,6 @@ export function RemoteCursorOverlay({ children }: RemoteCursorsProps) {
 
   return (
     <>
-      {children}
       {cursors.map((cursor) => (
         <RemoteSelection key={cursor.clientId} {...cursor} />
       ))}
