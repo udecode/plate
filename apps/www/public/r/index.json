@@ -1478,8 +1478,7 @@
   },
   {
     "dependencies": [
-      "@slate-yjs/react",
-      "@udecode/plate-core"
+      "@slate-yjs/react"
     ],
     "doc": {
       "description": "A cursor overlay to display multiplayer cursors in the yjs plugin.",
