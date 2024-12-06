@@ -1,7 +1,9 @@
 import {
   type PluginConfig,
+  collapseSelection,
   getNextRange,
   isSelectionInRange,
+  setSelection,
 } from '@udecode/plate-common';
 import { createTPlatePlugin, focusEditor } from '@udecode/plate-common/react';
 
@@ -57,6 +59,8 @@ export const ExperimentalLintPlugin = createTPlatePlugin<LintConfig>({
           reverse: options?.reverse,
         });
 
+        console.log(33, ranges, activeToken?.rangeRef.current, nextRange);
+
         if (!nextRange) return;
 
         return tokens[ranges.indexOf(nextRange)];
@@ -90,10 +94,17 @@ export const ExperimentalLintPlugin = createTPlatePlugin<LintConfig>({
     ({ api, editor, setOption }) => ({
       focusNextMatch: (options) => {
         const match = api.lint.getNextMatch(options);
+        console.log(222, match);
         setOption('activeToken', match ?? null);
 
         if (match) {
-          focusEditor(editor, match!.rangeRef.current!);
+          console.log('focusNextMatch', editor.selection);
+          collapseSelection(editor);
+          setSelection(editor, match!.rangeRef.current!);
+          focusEditor(editor);
+          // setTimeout(() => {
+          //   focusEditor(editor);
+          // }, 0);
         }
 
         return match;

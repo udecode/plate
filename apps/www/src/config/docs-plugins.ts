@@ -174,6 +174,12 @@ export const pluginsNavItems: SidebarNavItem[] = [
     title: 'Link',
   },
   {
+    description: 'Lint your document with custom rules.',
+    href: '/docs/lint',
+    label: 'New',
+    title: 'Lint',
+  },
+  {
     description: 'Organize nestable items in a bulleted or numbered list.',
     href: '/docs/list',
     label: 'Element',

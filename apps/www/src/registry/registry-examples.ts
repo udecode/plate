@@ -1539,6 +1539,32 @@ export const examples: Registry = [
     type: 'registry:example',
   },
   {
+    dependencies: [
+      '@udecode/plate-lint',
+      '@udecode/plate-basic-marks',
+      '@udecode/plate-node-id',
+    ],
+    doc: {
+      description: 'Lint your document with emoji suggestions.',
+      docs: [
+        {
+          route: '/docs/lint',
+          title: 'Lint',
+        },
+      ],
+    },
+    files: [
+      { path: 'example/lint-emoji-demo.tsx', type: 'registry:example' },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+    ],
+    name: 'lint-emoji-demo',
+    registryDependencies: ['editor', 'button', 'lint-leaf', 'lint-popover'],
+    type: 'registry:example',
+  },
+  {
     files: [{ path: 'example/mode-toggle.tsx', type: 'registry:example' }],
     name: 'mode-toggle',
     type: 'registry:example',

@@ -6,7 +6,7 @@ import type {
 
 export type ReplaceLintPluginOptions = {
   maxSuggestions?: number;
-  replaceMap?: Map<string, { text: string }[]>;
+  replaceMap?: Map<string, { text: string; type?: string }[]>;
 };
 
 const replaceMatchRule: LintConfigPluginRule<ReplaceLintPluginOptions> = {
@@ -20,16 +20,25 @@ const replaceMatchRule: LintConfigPluginRule<ReplaceLintPluginOptions> = {
 
         return {
           ...token,
+          data: {
+            ...token.data,
+            type: replacements?.[0]?.type,
+          },
           messageId: 'replaceWithText',
           suggest: replacements?.slice(0, maxSuggestions).map(
             (replacement): LintTokenSuggestion => ({
-              data: { text: replacement.text },
+              data: {
+                text: replacement.text,
+                type: replacement.type,
+              },
               fix: (options) => {
+                console.log(token.rangeRef.current);
                 fixer.replaceText({
                   range: token.rangeRef.current!,
                   text: replacement.text,
                   ...options,
                 });
+                console.log(token.rangeRef.current);
               },
             })
           ),

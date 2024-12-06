@@ -1,0 +1,97 @@
+---
+title: Lint
+description: Lint your document with custom rules.
+---
+
+<Callout>
+
+This package is experimental. Expect breaking changes in future releases.
+
+</Callout>
+
+<ComponentPreview name="lint-emoji-demo" />
+
+<PackageInfo>
+
+The Lint feature allows you to enforce custom rules and configurations on your documents.
+
+## Features
+
+- Customizable linting config, plugins and rules with a similar API to ESLint
+- Provides suggestions and fixes for each rule
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-lint
+```
+
+## Usage
+
+```tsx
+import { resolveLintConfigs } from '@udecode/plate-lint/react';
+import { emojiLintPlugin } from '@udecode/plate-lint/plugins';
+
+const lintConfigs = resolveLintConfigs([
+  emojiLintPlugin.configs.all,
+  // ...otherConfigs
+]);
+```
+
+- [resolveLintConfigs](/docs/components/resolve-lint-configs)
+
+### Configuration
+
+To configure the linting rules, you can use the `resolveLintConfigs` function to merge multiple configurations:
+
+```tsx
+const configs = [
+  emojiLintPlugin.configs.all,
+  {
+    languageOptions: {
+      parserOptions: {
+        minLength: 4,
+      },
+    },
+    settings: {
+      emojiMap: wordToEmojisMap,
+      maxSuggestions: 5,
+    },
+  },
+];
+```
+
+### Plugins
+
+#### EmojiLintPlugin
+
+A plugin that provides linting rules for replacing text with emojis.
+
+<APIOptions>
+<APIItem name="emojiMap" type="Map<string, { emoji: string }[]>">
+Map of words to their corresponding emoji suggestions.
+</APIItem>
+<APIItem name="maxSuggestions" type="number">
+Maximum number of emoji suggestions to provide. Default: `8`
+</APIItem>
+</APIOptions>
+
+## API
+
+### resolveLintConfigs
+
+Merges multiple lint configurations into a single set of resolved rules.
+
+<APIParameters>
+  <APIItem name="configs" type="LintConfigArray">
+    Array of lint configurations to merge.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem name="ResolvedLintRules">
+    Object containing the resolved lint rules.
+  </APIItem>
+</APIReturns>

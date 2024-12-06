@@ -2,6 +2,10 @@ import { createPlateEditor } from '@udecode/plate-common/react';
 
 import { ExperimentalLintPlugin } from './lint-plugin';
 
+jest.mock('@udecode/slate-react', () => ({
+  focusEditor: jest.fn(),
+}));
+
 describe('LintPlugin', () => {
   it('should set selected active token', () => {
     const editor = createPlateEditor({

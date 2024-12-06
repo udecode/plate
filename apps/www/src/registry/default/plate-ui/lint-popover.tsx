@@ -2,24 +2,29 @@
 
 import React, { useEffect } from 'react';
 
+import { cn } from '@udecode/cn';
 import {
   focusEditor,
   useEditorPlugin,
   useHotkeys,
 } from '@udecode/plate-common/react';
+import { useVirtualRefState } from '@udecode/plate-floating';
+import {
+  ExperimentalLintPlugin,
+  useTokenSelected,
+} from '@udecode/plate-lint/react';
 
-import { LintPlugin } from '@/components/editor/lint/lint-plugin';
-import { useVirtualRefState } from '@/components/editor/lint/next/useVirtualRefState';
-import { useTokenSelected } from '@/components/editor/lint/useTokenSelected';
 import {
   Popover,
   PopoverAnchor,
   PopoverContent,
-} from '@/registry/default/potion-ui/popover';
-import { Toolbar, ToolbarButton } from '@/registry/default/potion-ui/toolbar';
+} from '@/registry/default/plate-ui/popover';
+import { Toolbar, ToolbarButton } from '@/registry/default/plate-ui/toolbar';
 
 export function LintPopover() {
-  const { api, editor, setOption, tf, useOption } = useEditorPlugin(LintPlugin);
+  const { api, editor, setOption, tf, useOption } = useEditorPlugin(
+    ExperimentalLintPlugin
+  );
   const activeToken = useOption('activeToken');
   const selected = useTokenSelected();
   const toolbarRef = React.useRef<HTMLDivElement>(null);
@@ -29,6 +34,8 @@ export function LintPopover() {
   });
   const suggestions = activeToken?.suggest ?? [];
   const open = selected && !!virtualRef?.current && suggestions.length > 0;
+
+  console.log(suggestions);
 
   useEffect(() => {
     if (!selected) {
@@ -43,7 +50,7 @@ export function LintPopover() {
         e.preventDefault();
       }
     },
-    { enabled: !open, enableOnContentEditable: true }
+    { enableOnContentEditable: true, enabled: !open }
   );
 
   useHotkeys(
@@ -55,9 +62,11 @@ export function LintPopover() {
         e.preventDefault();
 
         suggestion.fix({ goNext: true });
+
+        console.log(editor.selection);
       }
     },
-    { enabled: open, enableOnContentEditable: true }
+    { enableOnContentEditable: true, enabled: open }
   );
 
   useHotkeys(
@@ -66,7 +75,7 @@ export function LintPopover() {
       e.preventDefault();
       firstButtonRef.current?.focus();
     },
-    { enabled: open, enableOnContentEditable: true }
+    { enableOnContentEditable: true, enabled: open }
   );
   useHotkeys(
     'up',
@@ -76,17 +85,19 @@ export function LintPopover() {
         focusEditor(editor);
       }
     },
-    { enabled: open, enableOnContentEditable: true }
+    { enableOnContentEditable: true, enabled: open }
   );
 
   useHotkeys(
     'tab',
     (e) => {
+      console.log(1111);
+
       if (tf.lint.focusNextMatch()) {
         e.preventDefault();
       }
     },
-    { enabled: open, enableOnContentEditable: true }
+    { enableOnContentEditable: true, enabled: open }
   );
 
   useHotkeys(
@@ -96,17 +107,22 @@ export function LintPopover() {
         e.preventDefault();
       }
     },
-    { enabled: open, enableOnContentEditable: true }
+    { enableOnContentEditable: true, enabled: open }
   );
+
+  console.log(activeToken?.data);
 
   return (
     <Popover open={open}>
       <PopoverAnchor virtualRef={virtualRef} />
       <PopoverContent
-        className="w-auto !animate-none p-0"
+        className={cn(
+          'w-auto !animate-none p-0',
+          activeToken?.data?.type !== 'emoji' && 'p-0'
+        )}
         onCloseAutoFocus={(e) => {
           e.preventDefault();
-          focusEditor(editor);
+          // focusEditor(editor);
         }}
         onEscapeKeyDown={(e) => {
           e.preventDefault();
@@ -116,18 +132,26 @@ export function LintPopover() {
           e.preventDefault();
         }}
       >
-        <Toolbar ref={toolbarRef} className="flex gap-0.5 px-2 py-1.5">
+        <Toolbar
+          ref={toolbarRef}
+          className={cn(
+            'flex gap-0.5',
+            activeToken?.data?.type === 'emoji' && 'px-2 py-1.5'
+          )}
+        >
           {suggestions.map((suggestion, index) => (
             <ToolbarButton
               key={index}
               ref={index === 0 ? firstButtonRef : undefined}
-              size="none"
-              className="px-1 text-2xl"
+              className={cn(
+                'px-1 font-normal',
+                suggestion.data?.type === 'emoji' ? 'text-2xl' : 'text-sm'
+              )}
               onClick={() => {
                 suggestion.fix();
               }}
             >
-              {suggestion.data?.emoji}
+              {suggestion.data?.text}
             </ToolbarButton>
           ))}
         </Toolbar>

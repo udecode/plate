@@ -10,8 +10,14 @@ import { replaceLintPlugin } from './plugins/lint-plugin-replace';
 
 describe('decorateLint', () => {
   const replaceMap = new Map([
-    ['hello', [{ text: '👋' }]],
-    ['world', [{ text: '🌍' }, { text: '🌎' }]],
+    ['hello', [{ text: '👋', type: 'emoji' }]],
+    [
+      'world',
+      [
+        { text: '🌍', type: 'emoji' },
+        { text: '🌎', type: 'emoji' },
+      ],
+    ],
   ]);
 
   it('should decorate matching text', () => {
@@ -36,7 +42,7 @@ describe('decorateLint', () => {
       replaceLintPlugin.configs.all,
       {
         settings: {
-          replaceMap: replaceMap,
+          replaceMap,
         },
       },
     ]);
@@ -58,12 +64,18 @@ describe('decorateLint', () => {
         },
         lint: true,
         token: {
+          data: {
+            type: 'emoji',
+          },
           messageId: 'replaceWithText',
           range: expect.any(Object),
           rangeRef: expect.any(Object),
           suggest: [
             {
-              data: { text: '👋' },
+              data: {
+                text: '👋',
+                type: 'emoji',
+              },
               fix: expect.any(Function),
             },
           ],
@@ -81,16 +93,25 @@ describe('decorateLint', () => {
         },
         lint: true,
         token: {
+          data: {
+            type: 'emoji',
+          },
           messageId: 'replaceWithText',
           range: expect.any(Object),
           rangeRef: expect.any(Object),
           suggest: [
             {
-              data: { text: '🌍' },
+              data: {
+                text: '🌍',
+                type: 'emoji',
+              },
               fix: expect.any(Function),
             },
             {
-              data: { text: '🌎' },
+              data: {
+                text: '🌎',
+                type: 'emoji',
+              },
               fix: expect.any(Function),
             },
           ],
@@ -127,7 +148,7 @@ describe('decorateLint', () => {
       },
       {
         settings: {
-          replaceMap: replaceMap,
+          replaceMap,
         },
       },
     ]);
@@ -149,12 +170,18 @@ describe('decorateLint', () => {
         },
         lint: true,
         token: {
+          data: {
+            type: 'emoji',
+          },
           messageId: 'replaceWithText',
           range: expect.any(Object),
           rangeRef: expect.any(Object),
           suggest: [
             {
-              data: { text: '👋' },
+              data: {
+                text: '👋',
+                type: 'emoji',
+              },
               fix: expect.any(Function),
             },
           ],
@@ -175,7 +202,7 @@ describe('decorateLint', () => {
       replaceLintPlugin.configs.all,
       {
         settings: {
-          replaceMap: replaceMap,
+          replaceMap,
         },
       },
     ]);
@@ -219,7 +246,7 @@ describe('decorateLint', () => {
       },
       {
         settings: {
-          replaceMap: replaceMap,
+          replaceMap,
         },
       },
     ]);

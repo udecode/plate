@@ -1,6 +1,7 @@
 import type { Decorate, PlatePluginContext } from '@udecode/plate-common/react';
 
 import {
+  collapseSelection,
   deleteText,
   experimental_parseNode,
   isBlock,
@@ -73,6 +74,7 @@ export const decorateLint: Decorate<LintConfig> = (ctx) => {
                 tf.lint.focusNextMatch();
               }, 0);
             } else {
+              collapseSelection(editor);
               setTimeout(() => {
                 setOption('activeToken', null);
               }, 0);

@@ -166,5 +166,8 @@
     "node": ">=18.12.0",
     "npm": "please-use-yarn",
     "yarn": ">=1.22.0"
+  },
+  "dependencies": {
+    "gemoji": "8.1.0"
   }
 }

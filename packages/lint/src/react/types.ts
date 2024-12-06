@@ -158,7 +158,7 @@ export type LintFixer = {
 
 export type LintParserOptions = {
   /** Function to match tokens and return match result */
-  match: (params: {
+  match?: (params: {
     end: number;
     fullText: string;
     getContext: (options: { after?: number; before?: number }) => string;

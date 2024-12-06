@@ -3733,6 +3733,26 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
+    "lint-emoji-demo": {
+      name: "lint-emoji-demo",
+      description: "",
+      type: "registry:example",
+      registryDependencies: ["editor","button","lint-leaf","lint-popover"],
+      files: [{
+        path: "src/registry/default/example/lint-emoji-demo.tsx",
+        type: "registry:example",
+        target: ""
+      },{
+        path: "src/registry/default/components/editor/use-create-editor.ts",
+        type: "registry:example",
+        target: ""
+      }],
+      component: React.lazy(() => import("@/registry/default/example/lint-emoji-demo.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
     "mode-toggle": {
       name: "mode-toggle",
       description: "",

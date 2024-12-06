@@ -1,12 +1,13 @@
 /** @jsx jsxt */
 
+import type { SlateEditor } from '@udecode/plate-core';
 import type { Range } from 'slate';
 
-import { type SlateEditor, getBlockAbove } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
+import { getBlockAbove } from '../../getBlockAbove';
 import { getNextSiblingNodes } from '../../getNextSiblingNodes';
 
 jsxt;
