@@ -6,7 +6,7 @@ import {
   type CursorOverlayData,
   useRemoteCursorOverlayPositions,
 } from '@slate-yjs/react';
-import { useEditorContainerRef } from '@udecode/plate-core/react';
+import { useEditorContainerRef } from '@udecode/plate-common/react';
 
 export function addAlpha(hexColor: string, opacity: number): string {
   const normalized = Math.round(Math.min(Math.max(opacity, 0), 1) * 255);
