@@ -28,14 +28,11 @@ export const serializeHtml = async (
   const results = await Promise.all(
     nodes.map(async (node) => {
       if (isText(node)) {
-        const textContent = encode(node.text);
-        const children = newLinesToHtmlBr(textContent);
-
         return staticLeafToHtml(editor, {
           ReactDOMServer,
           props: {
             attributes: { 'data-slate-leaf': true },
-            children,
+            children: newLinesToHtmlBr(encode(node.text)),
             leaf: node,
             text: node,
           },

@@ -11,31 +11,30 @@ export const staticLeafToHtml = (
   editor: SlateEditor,
   { ReactDOMServer, props }: { ReactDOMServer: any; props: any }
 ): string => {
-  let html;
+  const innerString = editor.pluginList.reduce(
+    (result: string, plugin: SlatePlugin) => {
+      if (!plugin.node.isLeaf) return result;
+      if (props.leaf[plugin.key]) {
+        const Component = plugin.node.staticComponent!;
 
-  editor.pluginList.some((plugin: SlatePlugin) => {
-    if (!plugin.node.isLeaf) return false;
-    if (props.leaf[plugin.key]) {
-      const Component = plugin.node.staticComponent!;
+        if (!Component) return result;
 
-      if (!Component) return false;
+        return renderComponentToHtml(ReactDOMServer, Component, {
+          ...props,
+          children: result,
+        });
+      }
 
-      html = renderComponentToHtml(ReactDOMServer, Component, {
-        ...props,
-        children: createStaticString({ text: props.leaf.text }),
-      });
-
-      return true;
-    }
-
-    return false;
-  });
-
-  return (
-    html ??
-    renderComponentToHtml(ReactDOMServer, DefaultStaticLeaf, {
+      return result;
+    },
+    renderComponentToHtml(ReactDOMServer, createStaticString, {
       ...props,
-      children: createStaticString({ text: props.leaf.text }),
+      text: props.children,
     })
   );
+
+  return renderComponentToHtml(ReactDOMServer, DefaultStaticLeaf, {
+    ...props,
+    children: innerString,
+  });
 };
