@@ -13,7 +13,7 @@ title: Collaboration
 ## Features
 
 - The yjs plugin enables support for collaboration using [slate-yjs](https://docs.slate-yjs.dev/) and [Hocuspocus](https://docs.slate-yjs.dev/walkthroughs/collaboration-hocuspocus).
-- By default remote cursors are rendered slightly faded and become solid on hover.
+- By default remote cursors are rendered slightly faded and become solid on hover. Use the `data` field in `cursorOptions` to customise the display name and color.
 - To customize, copy `YjsAboveEditable.tsx` and `Overlay.tsx` into your project and override the `options.render.aboveEditable` option to this plugin.
 
 </PackageInfo>
@@ -36,6 +36,11 @@ const editor = createPlateEditor({
     // ...otherPlugins,
     YjsPlugin.configure({
       options: {
+        cursorOptions: {
+          autoSend: true,
+          data: { name: 'A plate user', color: '#5AC990' },
+        },
+        disableCursors: false,
         hocuspocusProviderOptions: {
           url: 'https://hocuspocus.test/hocuspocus',
           name: 'test',
