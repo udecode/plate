@@ -35,14 +35,17 @@ const editor = createPlateEditor({
     YjsPlugin.configure({
       options: {
         hocuspocusProviderOptions: {
-          url: "https://hocuspocus.test/hocuspocus",
-          name: "test",
+          url: 'https://hocuspocus.test/hocuspocus',
+          name: 'test',
         },
       },
     }),
   ],
 });
 ```
+
+As an alternative to allowing plate to create the provider, you may want to pass it yourself.
+This can be passed as the `provider` field to `options`.
 
 ## Backend
 
