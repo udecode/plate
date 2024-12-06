@@ -1723,6 +1723,21 @@ export const uiPrimitives: Registry = [
     registryDependencies: [],
     type: 'registry:ui',
   },
+  {
+    dependencies: ['@slate-yjs/react', '@udecode/plate-core'],
+    doc: {
+      description:
+        'A cursor overlay to display multiplayer cursors in the yjs plugin.',
+      docs: [{ route: '/docs/collaboration' }],
+      examples: [],
+    },
+    files: [
+      { path: 'plate-ui/remote-cursor-overlay.tsx', type: 'registry:ui' },
+    ],
+    name: 'remote-cursor-overlay',
+    registryDependencies: [],
+    type: 'registry:ui',
+  },
 ];
 
 export const ui: Registry = [...uiNodes, ...uiPrimitives, ...uiComponents];

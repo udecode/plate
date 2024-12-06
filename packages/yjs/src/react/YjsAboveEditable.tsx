@@ -4,7 +4,6 @@ import { YjsEditor } from '@slate-yjs/core';
 import { useEditorPlugin } from '@udecode/plate-common/react';
 
 import { type YjsConfig, BaseYjsPlugin } from '../lib/BaseYjsPlugin';
-import { RemoteCursorOverlay } from './Overlay';
 
 export const YjsAboveEditable: React.FC<{
   children: React.ReactNode;
@@ -29,5 +28,5 @@ export const YjsAboveEditable: React.FC<{
 
   if (!isSynced) return null;
 
-  return <RemoteCursorOverlay>{children}</RemoteCursorOverlay>;
+  return <>{children}</>;
 };

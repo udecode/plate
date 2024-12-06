@@ -3,7 +3,6 @@
 import React, {
   type CSSProperties,
   type PropsWithChildren,
-  useRef,
   useState,
 } from 'react';
 
@@ -11,8 +10,7 @@ import {
   type CursorOverlayData,
   useRemoteCursorOverlayPositions,
 } from '@slate-yjs/react';
-
-import { cn } from '@udecode/cn';
+import { useEditorContainerRef } from '@udecode/plate-core/react';
 
 export function addAlpha(hexColor: string, opacity: number): string {
   const normalized = Math.round(Math.min(Math.max(opacity, 0), 1) * 255);
@@ -103,21 +101,18 @@ type RemoteCursorsProps = PropsWithChildren<{
   className?: string;
 }>;
 
-export function RemoteCursorOverlay({
-  children,
-  className,
-}: RemoteCursorsProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
+export function RemoteCursorOverlay({ children }: RemoteCursorsProps) {
+  const containerRef = useEditorContainerRef();
   const [cursors] = useRemoteCursorOverlayPositions<CursorData>({
     containerRef,
   });
 
   return (
-    <div ref={containerRef} className={cn('relative', className)}>
+    <>
       {children}
       {cursors.map((cursor) => (
         <RemoteSelection key={cursor.clientId} {...cursor} />
       ))}
-    </div>
+    </>
   );
 }
