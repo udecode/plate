@@ -5162,6 +5162,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@slate-yjs/react@npm:1.1.0":
+  version: 1.1.0
+  resolution: "@slate-yjs/react@npm:1.1.0"
+  dependencies:
+    use-sync-external-store: "npm:^1.2.0"
+    y-protocols: "npm:^1.0.5"
+  peerDependencies:
+    "@slate-yjs/core": ^1.0.0
+    react: ">=16.8.0"
+    slate: ">=0.70.0"
+    slate-react: ">=0.70.0"
+    yjs: ^13.5.29
+  checksum: 10c0/5fc3b49ec209f175bb9d11c206f76c792c0fcb234bf223082497e267658edaa97a530295fb396af63aae9a930bad8e6e761ac7bea63ee1c91d632a981b287506
+  languageName: node
+  linkType: hard
+
 "@socket.io/component-emitter@npm:~3.1.0":
   version: 3.1.2
   resolution: "@socket.io/component-emitter@npm:3.1.2"
@@ -22473,6 +22489,7 @@ __metadata:
     "@radix-ui/react-toolbar": "npm:^1.1.0"
     "@radix-ui/react-tooltip": "npm:^1.1.2"
     "@shikijs/compat": "npm:^1.17.5"
+    "@slate-yjs/react": "npm:1.1.0"
     "@types/lodash.template": "npm:^4.5.3"
     "@types/react-color": "npm:^3.0.12"
     "@types/react-syntax-highlighter": "npm:^15.5.13"

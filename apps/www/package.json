@@ -71,6 +71,7 @@
     "@radix-ui/react-toggle-group": "^1.1.0",
     "@radix-ui/react-toolbar": "^1.1.0",
     "@radix-ui/react-tooltip": "^1.1.2",
+    "@slate-yjs/react": "1.1.0",
     "@udecode/cmdk": "workspace:^",
     "@udecode/cn": "workspace:^",
     "@udecode/plate": "workspace:^",
