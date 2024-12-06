@@ -1,10 +1,6 @@
 // Lifted from slate-yjs https://github.com/BitPhinix/slate-yjs/blob/main/examples/frontend/src/pages/RemoteCursorOverlay/Overlay.tsx
 
-import React, {
-  type CSSProperties,
-  type PropsWithChildren,
-  useState,
-} from 'react';
+import React, { type CSSProperties, useState } from 'react';
 
 import {
   type CursorOverlayData,
