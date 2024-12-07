@@ -3733,13 +3733,13 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
-    "lint-emoji-demo": {
-      name: "lint-emoji-demo",
+    "lint-demo": {
+      name: "lint-demo",
       description: "",
       type: "registry:example",
       registryDependencies: ["editor","button","lint-leaf","lint-popover"],
       files: [{
-        path: "src/registry/default/example/lint-emoji-demo.tsx",
+        path: "src/registry/default/example/lint-demo.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -3747,7 +3747,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       }],
-      component: React.lazy(() => import("@/registry/default/example/lint-emoji-demo.tsx")),
+      component: React.lazy(() => import("@/registry/default/example/lint-demo.tsx")),
       source: "",
       category: "",
       subcategory: "",

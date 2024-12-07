@@ -38,7 +38,9 @@ describe('replaceLintPlugin', () => {
       replaceLintPlugin.configs.all,
       {
         settings: {
-          replaceMap,
+          replace: {
+            replaceMap,
+          },
         },
       },
     ]);
@@ -46,9 +48,6 @@ describe('replaceLintPlugin', () => {
     const annotations = editor.getOption(ExperimentalLintPlugin, 'annotations');
     expect(annotations).toEqual([
       {
-        data: {
-          type: 'emoji',
-        },
         messageId: 'replaceWithText',
         range: expect.any(Object),
         rangeRef: expect.any(Object),
@@ -62,11 +61,9 @@ describe('replaceLintPlugin', () => {
           },
         ],
         text: 'hello',
+        type: 'emoji',
       },
       {
-        data: {
-          type: 'emoji',
-        },
         messageId: 'replaceWithText',
         range: expect.any(Object),
         rangeRef: expect.any(Object),
@@ -87,6 +84,7 @@ describe('replaceLintPlugin', () => {
           },
         ],
         text: 'world',
+        type: 'emoji',
       },
     ]);
   });

@@ -24,10 +24,12 @@ describe('decorateLint', () => {
       replaceLintPlugin.configs.all,
       {
         settings: {
-          replaceMap: new Map([
-            ['hello', [{ text: '👋', type: 'emoji' }]],
-            ['world', [{ text: '🌍', type: 'emoji' }]],
-          ]),
+          replace: {
+            replaceMap: new Map([
+              ['hello', [{ text: '👋', type: 'emoji' }]],
+              ['world', [{ text: '🌍', type: 'emoji' }]],
+            ]),
+          },
         },
       },
     ]);
@@ -40,19 +42,23 @@ describe('decorateLint', () => {
     expect(decorations).toEqual([
       {
         anchor: { offset: 0, path: [0, 0] },
-        annotation: expect.objectContaining({
-          data: { type: 'emoji' },
-          text: 'hello',
-        }),
+        annotations: [
+          expect.objectContaining({
+            text: 'hello',
+            type: 'emoji',
+          }),
+        ],
         focus: { offset: 5, path: [0, 0] },
         lint: true,
       },
       {
         anchor: { offset: 6, path: [0, 0] },
-        annotation: expect.objectContaining({
-          data: { type: 'emoji' },
-          text: 'world',
-        }),
+        annotations: [
+          expect.objectContaining({
+            text: 'world',
+            type: 'emoji',
+          }),
+        ],
         focus: { offset: 11, path: [0, 0] },
         lint: true,
       },
@@ -82,10 +88,12 @@ describe('decorateLint', () => {
       replaceLintPlugin.configs.all,
       {
         settings: {
-          replaceMap: new Map([
-            ['hello', [{ text: '👋', type: 'emoji' }]],
-            ['world', [{ text: '🌍', type: 'emoji' }]],
-          ]),
+          replace: {
+            replaceMap: new Map([
+              ['hello', [{ text: '👋', type: 'emoji' }]],
+              ['world', [{ text: '🌍', type: 'emoji' }]],
+            ]),
+          },
         },
       },
     ]);
@@ -99,38 +107,38 @@ describe('decorateLint', () => {
       // "hello" annotation spans 3 leaves
       {
         anchor: { offset: 0, path: [0, 0] },
-        annotation: expect.objectContaining({ text: 'hello' }),
+        annotations: [expect.objectContaining({ text: 'hello' })],
         focus: { offset: 2, path: [0, 0] },
         lint: true,
       },
       {
         anchor: { offset: 0, path: [0, 1] },
-        annotation: expect.objectContaining({ text: 'hello' }),
+        annotations: [expect.objectContaining({ text: 'hello' })],
         focus: { offset: 2, path: [0, 1] },
         lint: true,
       },
       {
         anchor: { offset: 0, path: [0, 2] },
-        annotation: expect.objectContaining({ text: 'hello' }),
+        annotations: [expect.objectContaining({ text: 'hello' })],
         focus: { offset: 1, path: [0, 2] },
         lint: true,
       },
       // "world" annotation spans 3 leaves
       {
         anchor: { offset: 2, path: [0, 2] },
-        annotation: expect.objectContaining({ text: 'world' }),
+        annotations: [expect.objectContaining({ text: 'world' })],
         focus: { offset: 4, path: [0, 2] },
         lint: true,
       },
       {
         anchor: { offset: 0, path: [0, 3] },
-        annotation: expect.objectContaining({ text: 'world' }),
+        annotations: [expect.objectContaining({ text: 'world' })],
         focus: { offset: 1, path: [0, 3] },
         lint: true,
       },
       {
         anchor: { offset: 0, path: [0, 4] },
-        annotation: expect.objectContaining({ text: 'world' }),
+        annotations: [expect.objectContaining({ text: 'world' })],
         focus: { offset: 2, path: [0, 4] },
         lint: true,
       },
@@ -160,10 +168,12 @@ describe('decorateLint', () => {
       replaceLintPlugin.configs.all,
       {
         settings: {
-          replaceMap: new Map([
-            ['hello', [{ text: '👋', type: 'emoji' }]],
-            ['world', [{ text: '🌍', type: 'emoji' }]],
-          ]),
+          replace: {
+            replaceMap: new Map([
+              ['hello', [{ text: '👋', type: 'emoji' }]],
+              ['world', [{ text: '🌍', type: 'emoji' }]],
+            ]),
+          },
         },
       },
     ]);
@@ -176,13 +186,13 @@ describe('decorateLint', () => {
     expect(decorations).toEqual([
       {
         anchor: { offset: 0, path: [0, 1] },
-        annotation: expect.objectContaining({ text: 'hello' }),
+        annotations: [expect.objectContaining({ text: 'hello' })],
         focus: { offset: 5, path: [0, 1] },
         lint: true,
       },
       {
         anchor: { offset: 0, path: [0, 3] },
-        annotation: expect.objectContaining({ text: 'world' }),
+        annotations: [expect.objectContaining({ text: 'world' })],
         focus: { offset: 5, path: [0, 3] },
         lint: true,
       },
@@ -212,10 +222,12 @@ describe('decorateLint', () => {
       replaceLintPlugin.configs.all,
       {
         settings: {
-          replaceMap: new Map([
-            ['hello', [{ text: '👋', type: 'emoji' }]],
-            ['world', [{ text: '🌍', type: 'emoji' }]],
-          ]),
+          replace: {
+            replaceMap: new Map([
+              ['hello', [{ text: '👋', type: 'emoji' }]],
+              ['world', [{ text: '🌍', type: 'emoji' }]],
+            ]),
+          },
         },
       },
     ]);
@@ -228,13 +240,13 @@ describe('decorateLint', () => {
     expect(decorations).toEqual([
       {
         anchor: { offset: 0, path: [0, 1] },
-        annotation: expect.objectContaining({ text: 'hello' }),
+        annotations: [expect.objectContaining({ text: 'hello' })],
         focus: { offset: 5, path: [0, 1] },
         lint: true,
       },
       {
         anchor: { offset: 0, path: [0, 3] },
-        annotation: expect.objectContaining({ text: 'world' }),
+        annotations: [expect.objectContaining({ text: 'world' })],
         focus: { offset: 5, path: [0, 3] },
         lint: true,
       },

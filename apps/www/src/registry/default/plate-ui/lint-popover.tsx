@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React from 'react';
 
 import { cn } from '@udecode/cn';
 import {
@@ -19,33 +19,30 @@ import {
   PopoverAnchor,
   PopoverContent,
 } from '@/registry/default/plate-ui/popover';
+import { Separator } from '@/registry/default/plate-ui/separator';
 import { Toolbar, ToolbarButton } from '@/registry/default/plate-ui/toolbar';
 
 export function LintPopover() {
   const { api, editor, setOption, tf, useOption } = useEditorPlugin(
     ExperimentalLintPlugin
   );
-  const activeAnnotation = useOption('activeAnnotation');
-  console.log(activeAnnotation);
+  const activeAnnotations = useOption('activeAnnotations');
   const selected = useAnnotationSelected();
   const toolbarRef = React.useRef<HTMLDivElement>(null);
   const firstButtonRef = React.useRef<HTMLButtonElement>(null);
   const [virtualRef] = useVirtualRefState({
-    at: activeAnnotation?.range,
+    at: activeAnnotations?.[0]?.range,
   });
-  const suggestions = activeAnnotation?.suggest ?? [];
-  const open = selected && !!virtualRef?.current && suggestions.length > 0;
 
-  useEffect(() => {
-    if (!selected) {
-      setOption('activeAnnotation', null);
-    }
-  }, [selected, setOption]);
+  const open =
+    selected &&
+    !!virtualRef?.current &&
+    activeAnnotations?.some((annotation) => annotation.suggest?.length);
 
   useHotkeys(
     'ctrl+space',
     (e) => {
-      if (api.lint.setSelectedactiveAnnotation()) {
+      if (api.lint.setSelectedActiveAnnotations()) {
         e.preventDefault();
       }
     },
@@ -55,7 +52,7 @@ export function LintPopover() {
   useHotkeys(
     'enter',
     (e) => {
-      const suggestion = activeAnnotation?.suggest?.[0];
+      const suggestion = activeAnnotations?.[0]?.suggest?.[0];
 
       if (suggestion) {
         e.preventDefault();
@@ -110,42 +107,48 @@ export function LintPopover() {
       <PopoverAnchor virtualRef={virtualRef} />
       <PopoverContent
         className={cn(
-          'w-auto !animate-none p-0',
-          activeAnnotation?.data?.type !== 'emoji' && 'p-0'
+          'w-auto !animate-none overflow-hidden p-0',
+          activeAnnotations?.[0]?.type !== 'emoji' && 'p-0'
         )}
         onCloseAutoFocus={(e) => {
           e.preventDefault();
-          // focusEditor(editor);
+          focusEditor(editor);
         }}
         onEscapeKeyDown={(e) => {
           e.preventDefault();
-          setOption('activeAnnotation', null);
+          setOption('activeAnnotations', null);
         }}
         onOpenAutoFocus={(e) => {
           e.preventDefault();
         }}
       >
-        <Toolbar
-          ref={toolbarRef}
-          className={cn(
-            'flex gap-0.5',
-            activeAnnotation?.data?.type === 'emoji' && 'px-2 py-1.5'
-          )}
-        >
-          {suggestions.map((suggestion, index) => (
-            <ToolbarButton
-              key={index}
-              ref={index === 0 ? firstButtonRef : undefined}
-              className={cn(
-                'px-1 font-normal',
-                suggestion.data?.type === 'emoji' ? 'text-2xl' : 'text-sm'
+        <Toolbar ref={toolbarRef} className={cn('relative flex h-7 gap-0')}>
+          {activeAnnotations?.map((annotation, anotIndex) => (
+            <React.Fragment key={anotIndex}>
+              <div className="peer flex gap-0">
+                {annotation.suggest?.map((suggestion, suggIndex) => (
+                  <ToolbarButton
+                    key={suggIndex}
+                    ref={suggIndex === 0 ? firstButtonRef : undefined}
+                    className={cn(
+                      'rounded-none font-normal hover:text-inherit focus-visible:bg-accent focus-visible:ring-0 focus-visible:ring-offset-0',
+                      annotation.type === 'emoji'
+                        ? 'p-1 text-xl'
+                        : 'px-2 text-sm'
+                    )}
+                    onClick={() => {
+                      suggestion.fix();
+                    }}
+                  >
+                    {suggestion.data?.text as string}
+                  </ToolbarButton>
+                ))}
+              </div>
+
+              {anotIndex < activeAnnotations.length - 1 && (
+                <Separator orientation="vertical" />
               )}
-              onClick={() => {
-                suggestion.fix();
-              }}
-            >
-              {suggestion.data?.text}
-            </ToolbarButton>
+            </React.Fragment>
           ))}
         </Toolbar>
       </PopoverContent>

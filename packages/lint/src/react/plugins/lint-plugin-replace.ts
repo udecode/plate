@@ -11,8 +11,8 @@ export type ReplaceLintPluginOptions = {
 
 const replaceMatchRule: LintConfigPluginRule<ReplaceLintPluginOptions> = {
   create: ({ fixer, options }) => {
-    const replaceMap = options[0].replaceMap;
-    const maxSuggestions = options[0].maxSuggestions;
+    const replaceMap = options.replaceMap;
+    const maxSuggestions = options.maxSuggestions;
 
     return {
       Annotation: (annotation) => {
@@ -20,10 +20,6 @@ const replaceMatchRule: LintConfigPluginRule<ReplaceLintPluginOptions> = {
 
         return {
           ...annotation,
-          data: {
-            ...annotation.data,
-            type: replacements?.[0]?.type,
-          },
           messageId: 'replaceWithText',
           suggest: replacements?.slice(0, maxSuggestions).map(
             (replacement): LintAnnotationSuggestion => ({
@@ -40,16 +36,15 @@ const replaceMatchRule: LintConfigPluginRule<ReplaceLintPluginOptions> = {
               },
             })
           ),
+          type: replacements?.[0]?.type,
         };
       },
     };
   },
   meta: {
-    defaultOptions: [
-      {
-        maxSuggestions: 8,
-      },
-    ],
+    defaultOptions: {
+      maxSuggestions: 8,
+    },
     hasSuggestions: true,
     type: 'suggestion',
   },
@@ -68,22 +63,22 @@ export const replaceLintPlugin = {
   ...plugin,
   configs: {
     all: {
-      languageOptions: {
-        parserOptions: ({ options }) => {
-          const replaceMap = options[0].replaceMap;
-
-          return {
-            match: ({ text }) => {
-              return !!replaceMap?.has(text.toLowerCase());
-            },
-            splitPattern: /\b[\dA-Za-z]+(?:['-]\w+)*\b/g,
-          };
-        },
-      },
       name: 'replace/all',
       plugins: { replace: plugin },
       rules: {
-        'replace/text': ['error'],
+        'replace/text': ['error', {}],
+      },
+      settings: {
+        replace: {
+          parserOptions: ({ options }) => {
+            return {
+              match: ({ text }) => {
+                return !!options.replaceMap?.has(text.toLowerCase());
+              },
+              splitPattern: /\b[\dA-Za-z]+(?:['-]\w+)*\b/g,
+            };
+          },
+        },
       },
     },
   },

@@ -1554,13 +1554,13 @@ export const examples: Registry = [
       ],
     },
     files: [
-      { path: 'example/lint-emoji-demo.tsx', type: 'registry:example' },
+      { path: 'example/lint-demo.tsx', type: 'registry:example' },
       {
         path: 'components/editor/use-create-editor.ts',
         type: 'registry:example',
       },
     ],
-    name: 'lint-emoji-demo',
+    name: 'lint-demo',
     registryDependencies: ['editor', 'button', 'lint-leaf', 'lint-popover'],
     type: 'registry:example',
   },

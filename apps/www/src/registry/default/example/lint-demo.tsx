@@ -78,10 +78,14 @@ function EmojiPlateEditorContent() {
     api.lint.run([
       {
         ...replaceLintPlugin.configs.all,
-        settings: {
-          replaceMap: emojiMap,
-        },
         targets: [{ id: editor.children[0].id as string }],
+      },
+      {
+        settings: {
+          replace: {
+            replaceMap: emojiMap,
+          },
+        },
       },
     ]);
   };
@@ -90,13 +94,13 @@ function EmojiPlateEditorContent() {
     api.lint.run([
       replaceLintPlugin.configs.all,
       {
-        languageOptions: {
-          parserOptions: {
-            maxLength: 4,
-          },
-        },
         settings: {
-          replaceMap: emojiMap,
+          replace: {
+            parserOptions: {
+              maxLength: 4,
+            },
+            replaceMap: emojiMap,
+          },
         },
       },
     ]);
@@ -107,7 +111,9 @@ function EmojiPlateEditorContent() {
       caseLintPlugin.configs.all,
       {
         settings: {
-          ignoredWords: ['iPhone', 'iOS', 'iPad'],
+          case: {
+            ignoredWords: ['iPhone', 'iOS', 'iPad'],
+          },
         },
       },
     ]);
@@ -119,8 +125,12 @@ function EmojiPlateEditorContent() {
       caseLintPlugin.configs.all,
       {
         settings: {
-          ignoredWords: ['iPhone', 'iOS', 'iPad'],
-          replaceMap: emojiMap,
+          case: {
+            ignoredWords: ['iPhone', 'iOS', 'iPad'],
+          },
+          replace: {
+            replaceMap: emojiMap,
+          },
         },
       },
     ]);

@@ -8,18 +8,25 @@ import { ExperimentalLintPlugin } from '../lint-plugin';
 
 export const useAnnotationSelected = () => {
   const { useOption } = useEditorPlugin(ExperimentalLintPlugin);
-  const activeAnnotation = useOption('activeAnnotation');
+  const activeAnnotations = useOption('activeAnnotations');
 
   return useEditorSelector(
     (editor) => {
-      if (!editor.selection || !activeAnnotation) return false;
+      if (!editor.selection || !activeAnnotations?.length) return false;
+
+      const range = activeAnnotations[0].rangeRef.current;
+
       if (
-        isSelectionInRange(editor, { at: activeAnnotation.rangeRef.current! })
-      )
+        range &&
+        isSelectionInRange(editor, {
+          at: range,
+        })
+      ) {
         return true;
+      }
 
       return false;
     },
-    [activeAnnotation]
+    [activeAnnotations]
   );
 };

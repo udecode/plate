@@ -1,26 +1,27 @@
-import type { AnyObject, TText, UnknownObject } from '@udecode/plate-common';
+import type {
+  Annotation,
+  AnyObject,
+  TText,
+  UnknownObject,
+} from '@udecode/plate-common';
 import type { PlatePluginContext } from '@udecode/plate-common/react';
-import type { Range, RangeRef } from 'slate';
+import type { Range } from 'slate';
 
 // ─── Plate ──────────────────────────────────────────────────────────────────
 
 export type LintDecoration = TText & {
-  annotation: LintAnnotation;
+  annotations: LintAnnotation[];
   lint: boolean;
 };
 
-export type LintAnnotation = {
-  range: Range;
-  rangeRef: RangeRef;
-  text: string;
-  data?: UnknownObject;
+export type LintAnnotation = Annotation<{
   messageId?: string;
   suggest?: LintAnnotationSuggestion[];
-};
+}>;
 
 export type LintAnnotationSuggestion = {
   fix: (options?: { goNext?: boolean }) => void;
-  data?: Record<string, any>;
+  data?: UnknownObject;
   messageId?: string;
 };
 
@@ -28,8 +29,6 @@ export type LintAnnotationSuggestion = {
 export type LintConfigArray = LintConfigObject[];
 
 export type LintConfigObject<T = {}> = {
-  /** Language-specific options for parsing and processing */
-  languageOptions?: LintLanguageOptions<T>;
   /** An object containing settings related to the linting process. */
   linterOptions?: AnyObject;
   /**
@@ -52,17 +51,22 @@ export type LintConfigObject<T = {}> = {
    * An object containing name-value pairs of information that should be
    * available to all rules.
    */
-  settings?: LintConfigRuleOptions<Partial<T>>;
+  settings?: LintConfigSettings<Partial<T>>;
   /** The targets to match. */
   targets?: { id?: string }[];
 };
 
-export type LintConfigRuleOptions<T = {}> = T & UnknownObject;
+export type LintConfigRuleOptions<T = {}> = {
+  parserOptions?:
+    | ((context: LintConfigPluginRuleContext<T>) => LintParserOptions)
+    | LintParserOptions;
+} & T &
+  UnknownObject;
 
-export type LintConfigRuleOptionsArray<T = {}> = [
-  LintConfigRuleOptions<T>,
-  ...LintConfigRuleOptions[],
-];
+export type LintConfigSettings<T = {}> = Record<
+  string,
+  LintConfigRuleOptions<T>
+>;
 
 export type LintAnnotationOptions = {
   annotations?: {
@@ -75,13 +79,17 @@ export type LintAnnotationOptions = {
 
 export type LintConfigRule =
   | LintConfigRuleLevel
-  | LintConfigRuleLevelAndOptions;
+  | LintConfigRuleLevelAndOptions
+  | [LintConfigRuleLevel];
 
 export type LintConfigRuleLevel =
   | LintConfigRuleSeverity
   | LintConfigRuleSeverityString;
 
-export type LintConfigRuleLevelAndOptions = [LintConfigRuleLevel, ...unknown[]];
+export type LintConfigRuleLevelAndOptions = [
+  LintConfigRuleLevel,
+  LintConfigRuleOptions,
+];
 
 export type LintConfigRules = Partial<Record<string, LintConfigRule>>;
 
@@ -124,10 +132,8 @@ export type LintConfigPluginRule<T = {}> = {
      * Specifies default options for the rule. If present, any user-provided
      * options in their config will be merged on top of them recursively.
      */
-    defaultOptions?: LintConfigRuleOptionsArray<Partial<T>>;
+    defaultOptions?: LintConfigRuleOptions<Partial<T>>;
     hasSuggestions?: boolean;
-    /** Overrides the language options for the rule. */
-    languageOptions?: LintLanguageOptions<T>;
     messages?: Record<string, string>;
     type?: 'problem' | 'suggestion';
   };
@@ -135,7 +141,7 @@ export type LintConfigPluginRule<T = {}> = {
 
 export type LintConfigPluginRuleContext<T = {}> = Pick<
   ResolvedLintRule<T>,
-  'languageOptions' | 'options' | 'settings'
+  'options'
 > & {
   /** The id of the rule. */
   id: string;
@@ -173,26 +179,13 @@ export type LintParserOptions = {
   splitPattern?: RegExp;
 };
 
-// Add new language options types
-export type LintLanguageOptions<T = {}> = T & {
-  /** Custom parser implementation */
-  // parser?: typeof findRanges;
-  /** Parser-specific options */
-  parserOptions?:
-    | ((context: LintConfigPluginRuleContext<T>) => LintParserOptions)
-    | LintParserOptions;
-};
-
 // ─── Resolved Rules ────────────────────────────────────────────────────────────
 
 export type ResolvedLintRule<T = {}> = Pick<
   LintConfigPluginRule,
   'create' | 'meta'
 > &
-  Pick<LintConfigObject<T>, 'languageOptions' | 'settings' | 'targets'> & {
-    languageOptions: {
-      parserOptions?: LintParserOptions;
-    };
+  Pick<LintConfigObject<T>, 'targets'> & {
     linterOptions: {
       severity: LintConfigRuleSeverityString;
     };
@@ -202,8 +195,17 @@ export type ResolvedLintRule<T = {}> = Pick<
      * An array of the configured options for this rule. This array does not
      * include the rule severity.
      */
-    options: LintConfigRuleOptionsArray<T>;
+    options: ResolvedLintRuleOptions<T>;
   };
+
+export type ResolvedParserOptions = (
+  context: LintConfigPluginRuleContext
+) => LintParserOptions;
+
+export type ResolvedLintRuleOptions<T = {}> = {
+  parserOptions: ResolvedParserOptions;
+} & T &
+  UnknownObject;
 
 export type ResolvedLintRules = Record<string, ResolvedLintRule>;
 

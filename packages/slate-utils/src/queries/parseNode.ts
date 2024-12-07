@@ -12,7 +12,7 @@ import {
   isEditor,
 } from '@udecode/slate';
 
-import type { Annotation } from './annotationToDecorations';
+import type { Annotation } from './annotation';
 
 export type ParseNodeOptions = {
   /** Function to match annotations and return match result */

@@ -29,20 +29,18 @@ describe('LintPlugin', () => {
       text: 'hello',
     };
     editor.setOption(ExperimentalLintPlugin, 'annotations', [activeAnnotation]);
-    editor.setOption(
-      ExperimentalLintPlugin,
-      'activeAnnotation',
-      activeAnnotation
-    );
+    editor.setOption(ExperimentalLintPlugin, 'activeAnnotations', [
+      activeAnnotation,
+    ]);
 
     editor.selection = {
       anchor: { offset: 2, path: [0, 0] },
       focus: { offset: 2, path: [0, 0] },
     };
-    const result = editor.api.lint.setSelectedactiveAnnotation();
+    const result = editor.api.lint.setSelectedActiveAnnotations();
     expect(result).toBe(true);
     expect(
-      editor.getOption(ExperimentalLintPlugin, 'activeAnnotation')?.text
+      editor.getOption(ExperimentalLintPlugin, 'activeAnnotations')?.[0]?.text
     ).toBe('hello');
   });
 
@@ -72,16 +70,14 @@ describe('LintPlugin', () => {
         text: 'world',
       } as any,
     ]);
-    editor.setOption(
-      ExperimentalLintPlugin,
-      'activeAnnotation',
-      activeAnnotation
-    );
+    editor.setOption(ExperimentalLintPlugin, 'activeAnnotations', [
+      activeAnnotation,
+    ]);
 
     const match = editor.tf.lint.focusNextMatch();
     expect(match?.text).toBe('world');
     expect(
-      editor.getOption(ExperimentalLintPlugin, 'activeAnnotation')?.text
+      editor.getOption(ExperimentalLintPlugin, 'activeAnnotations')?.[0]?.text
     ).toBe('world');
   });
 });

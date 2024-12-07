@@ -17,11 +17,21 @@ export const LintLeaf = withRef<typeof PlateLeaf>(
       <PlateLeaf
         ref={ref}
         as="mark"
-        className={cn('bg-inherit text-red-400', className)}
-        onClick={(e) => {
-          e.preventDefault();
-          console.log(leaf.annotation);
-          setOption('activeAnnotation', leaf.annotation);
+        className={cn(
+          'bg-inherit',
+          leaf.annotations.some((annotation) => annotation.type === 'emoji') &&
+            'text-orange-400',
+          leaf.annotations.some(
+            (annotation) => annotation.type === undefined
+          ) &&
+            'underline decoration-red-500 underline-offset-2 selection:underline selection:decoration-red-500',
+
+          className
+        )}
+        onMouseDown={() => {
+          setTimeout(() => {
+            setOption('activeAnnotations', leaf.annotations);
+          }, 0);
         }}
         {...props}
       >

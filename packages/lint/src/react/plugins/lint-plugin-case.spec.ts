@@ -51,7 +51,9 @@ describe('caseLintPlugin', () => {
       caseLintPlugin.configs.all,
       {
         settings: {
-          ignoredWords: ['iPhone', 'ios'],
+          case: {
+            ignoredWords: ['iPhone', 'ios'],
+          },
         },
       },
     ]);

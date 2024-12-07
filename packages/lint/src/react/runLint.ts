@@ -25,9 +25,6 @@ export const runLint = (editor: PlateEditor, configs: LintConfigArray) => {
   const { setOption, tf } = ctx;
 
   setOption('configs', configs);
-  const resolvedRules = resolveLintConfigs(configs);
-
-  console.log('Resolved rules:', Object.keys(resolvedRules));
 
   // Create fixer actions once
   const fixerActions: LintFixer = {
@@ -50,14 +47,13 @@ export const runLint = (editor: PlateEditor, configs: LintConfigArray) => {
     },
   };
 
-  console.log(resolvedRules);
+  const annotations = editor.children.flatMap((node, index) => {
+    const resolvedRules = resolveLintConfigs(configs, {
+      id: node.id as string,
+    });
 
-  // Process each rule
-  const annotations = Object.entries(resolvedRules).flatMap(
-    ([ruleId, rule]) => {
-      console.log('Processing rule:', ruleId);
-      console.log('Rule settings:', rule.settings);
-
+    // Process each rule
+    return Object.entries(resolvedRules).flatMap(([ruleId, rule]) => {
       const fixer = Object.fromEntries(
         Object.entries(fixerActions).map(([key, fn]) => [
           key,
@@ -71,7 +67,7 @@ export const runLint = (editor: PlateEditor, configs: LintConfigArray) => {
             } else {
               collapseSelection(editor);
               setTimeout(() => {
-                setOption('activeAnnotation', null);
+                setOption('activeAnnotations', null);
               }, 0);
             }
           },
@@ -82,23 +78,14 @@ export const runLint = (editor: PlateEditor, configs: LintConfigArray) => {
         ...(ctx as unknown as PlatePluginContext),
         id: ruleId,
         fixer,
-        languageOptions: rule.languageOptions ?? {},
         options: rule.options ?? [],
-        settings: rule.settings ?? {},
       };
 
-      let parserOptions = rule.languageOptions?.parserOptions;
-
-      if (typeof parserOptions === 'function') {
-        parserOptions = parserOptions(context);
-      }
-
-      console.log('Parser options:', parserOptions);
+      const parserOptions = rule.options.parserOptions(context);
 
       const { Annotation } = rule.create(context);
-
-      // Parse with transform
       const { annotations } = experimental_parseNode(editor, {
+        at: [index],
         match: parserOptions?.match ?? (() => false),
         maxLength: parserOptions?.maxLength,
         minLength: parserOptions?.minLength,
@@ -106,13 +93,10 @@ export const runLint = (editor: PlateEditor, configs: LintConfigArray) => {
         transform: Annotation,
       });
 
-      console.log(`Annotations for ${ruleId}:`, annotations.length);
-
       return annotations;
-    }
-  );
+    });
+  });
 
-  console.log('Total annotations:', annotations.length);
   setOption('annotations', annotations);
   editor.api.redecorate();
 };

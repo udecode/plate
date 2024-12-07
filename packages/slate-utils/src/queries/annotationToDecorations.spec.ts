@@ -1,10 +1,7 @@
 import { createPlateEditor } from '@udecode/plate-core/react';
 import { createRangeRef } from '@udecode/slate';
 
-import {
-  annotationToDecorations,
-  annotationsToDecorations,
-} from './annotationToDecorations';
+import { annotationToDecorations } from './annotationToDecorations';
 
 describe('annotationToDecorations', () => {
   const editor = createPlateEditor();
@@ -33,11 +30,9 @@ describe('annotationToDecorations', () => {
 
     expect(decorations).toEqual([
       {
-        annotation,
-        range: {
-          anchor: { offset: 0, path: [0, 0] },
-          focus: { offset: 5, path: [0, 0] },
-        },
+        anchor: { offset: 0, path: [0, 0] },
+        annotations: [annotation],
+        focus: { offset: 5, path: [0, 0] },
       },
     ]);
   });
@@ -66,25 +61,19 @@ describe('annotationToDecorations', () => {
 
     expect(decorations).toEqual([
       {
-        annotation,
-        range: {
-          anchor: { offset: 0, path: [0, 0] },
-          focus: { offset: 2, path: [0, 0] },
-        },
+        anchor: { offset: 0, path: [0, 0] },
+        annotations: [annotation],
+        focus: { offset: 2, path: [0, 0] },
       },
       {
-        annotation,
-        range: {
-          anchor: { offset: 0, path: [0, 1] },
-          focus: { offset: 2, path: [0, 1] },
-        },
+        anchor: { offset: 0, path: [0, 1] },
+        annotations: [annotation],
+        focus: { offset: 2, path: [0, 1] },
       },
       {
-        annotation,
-        range: {
-          anchor: { offset: 0, path: [0, 2] },
-          focus: { offset: 1, path: [0, 2] },
-        },
+        anchor: { offset: 0, path: [0, 2] },
+        annotations: [annotation],
+        focus: { offset: 1, path: [0, 2] },
       },
     ]);
   });
@@ -117,11 +106,9 @@ describe('annotationToDecorations', () => {
 
     expect(decorations).toEqual([
       {
-        annotation,
-        range: {
-          anchor: { offset: 0, path: [0, 1] },
-          focus: { offset: 5, path: [0, 1] },
-        },
+        anchor: { offset: 0, path: [0, 1] },
+        annotations: [annotation],
+        focus: { offset: 5, path: [0, 1] },
       },
     ]);
   });
@@ -150,11 +137,9 @@ describe('annotationToDecorations', () => {
 
     expect(decorations).toEqual([
       {
-        annotation,
-        range: {
-          anchor: { offset: 0, path: [0, 1] },
-          focus: { offset: 5, path: [0, 1] },
-        },
+        anchor: { offset: 0, path: [0, 1] },
+        annotations: [annotation],
+        focus: { offset: 5, path: [0, 1] },
       },
     ]);
   });
@@ -207,18 +192,14 @@ describe('annotationToDecorations', () => {
 
     expect(decorations).toEqual([
       {
-        annotation,
-        range: {
-          anchor: { offset: 3, path: [0, 0] },
-          focus: { offset: 5, path: [0, 0] },
-        },
+        anchor: { offset: 3, path: [0, 0] },
+        annotations: [annotation],
+        focus: { offset: 5, path: [0, 0] },
       },
       {
-        annotation,
-        range: {
-          anchor: { offset: 0, path: [1, 0] },
-          focus: { offset: 3, path: [1, 0] },
-        },
+        anchor: { offset: 0, path: [1, 0] },
+        annotations: [annotation],
+        focus: { offset: 3, path: [1, 0] },
       },
     ]);
   });
@@ -251,188 +232,14 @@ describe('annotationToDecorations', () => {
 
     expect(decorations).toEqual([
       {
-        annotation,
-        range: {
-          anchor: { offset: 3, path: [0, 0] },
-          focus: { offset: 5, path: [0, 0] },
-        },
-      },
-      {
-        annotation,
-        range: {
-          anchor: { offset: 0, path: [1, 0] },
-          focus: { offset: 1, path: [1, 0] },
-        },
-      },
-    ]);
-  });
-});
-
-describe('annotationsToDecorations', () => {
-  const editor = createPlateEditor();
-
-  it('should handle multiple annotations with different ranges', () => {
-    editor.children = [
-      {
-        children: [{ text: 'hello world' }],
-        type: 'p',
-      },
-    ];
-
-    const annotation1 = {
-      range: {
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 5, path: [0, 0] }, // "hello"
-      },
-      rangeRef: createRangeRef(editor, {
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 5, path: [0, 0] },
-      }),
-      text: 'hello',
-    };
-
-    const annotation2 = {
-      range: {
-        anchor: { offset: 6, path: [0, 0] },
-        focus: { offset: 11, path: [0, 0] }, // "world"
-      },
-      rangeRef: createRangeRef(editor, {
-        anchor: { offset: 6, path: [0, 0] },
-        focus: { offset: 11, path: [0, 0] },
-      }),
-      text: 'world',
-    };
-
-    const decorations = annotationsToDecorations(editor, {
-      annotations: [annotation1, annotation2],
-    });
-
-    expect(decorations).toEqual([
-      {
-        annotation: annotation1,
-        range: {
-          anchor: { offset: 0, path: [0, 0] },
-          focus: { offset: 5, path: [0, 0] },
-        },
-      },
-      {
-        annotation: annotation2,
-        range: {
-          anchor: { offset: 6, path: [0, 0] },
-          focus: { offset: 11, path: [0, 0] },
-        },
-      },
-    ]);
-  });
-
-  it('should handle overlapping annotations', () => {
-    editor.children = [
-      {
-        children: [{ text: 'hello world' }],
-        type: 'p',
-      },
-    ];
-
-    const annotation1 = {
-      range: {
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 7, path: [0, 0] }, // "hello w"
-      },
-      rangeRef: createRangeRef(editor, {
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 7, path: [0, 0] },
-      }),
-      text: 'hello w',
-    };
-
-    const annotation2 = {
-      range: {
-        anchor: { offset: 6, path: [0, 0] },
-        focus: { offset: 11, path: [0, 0] }, // "world"
-      },
-      rangeRef: createRangeRef(editor, {
-        anchor: { offset: 6, path: [0, 0] },
-        focus: { offset: 11, path: [0, 0] },
-      }),
-      text: 'world',
-    };
-
-    const decorations = annotationsToDecorations(editor, {
-      annotations: [annotation1, annotation2],
-    });
-
-    // Should include both annotations for the overlapping region
-    expect(decorations).toEqual([
-      {
-        annotation: annotation1,
-        range: {
-          anchor: { offset: 0, path: [0, 0] },
-          focus: { offset: 7, path: [0, 0] },
-        },
-      },
-      {
-        annotation: annotation2,
-        range: {
-          anchor: { offset: 6, path: [0, 0] },
-          focus: { offset: 11, path: [0, 0] },
-        },
-      },
-    ]);
-  });
-
-  it('should handle multiple annotations with same range', () => {
-    editor.children = [
-      {
-        children: [{ text: 'hello' }],
-        type: 'p',
-      },
-    ];
-
-    const annotation1 = {
-      data: { type: 'spelling' },
-      range: {
-        anchor: { offset: 0, path: [0, 0] },
+        anchor: { offset: 3, path: [0, 0] },
+        annotations: [annotation],
         focus: { offset: 5, path: [0, 0] },
       },
-      rangeRef: createRangeRef(editor, {
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 5, path: [0, 0] },
-      }),
-      text: 'hello',
-    };
-
-    const annotation2 = {
-      data: { type: 'grammar' },
-      range: {
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 5, path: [0, 0] },
-      },
-      rangeRef: createRangeRef(editor, {
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 5, path: [0, 0] },
-      }),
-      text: 'hello',
-    };
-
-    const decorations = annotationsToDecorations(editor, {
-      annotations: [annotation1, annotation2],
-    });
-
-    // Should include both annotations for the same range
-    expect(decorations).toEqual([
       {
-        annotation: annotation1,
-        range: {
-          anchor: { offset: 0, path: [0, 0] },
-          focus: { offset: 5, path: [0, 0] },
-        },
-      },
-      {
-        annotation: annotation2,
-        range: {
-          anchor: { offset: 0, path: [0, 0] },
-          focus: { offset: 5, path: [0, 0] },
-        },
+        anchor: { offset: 0, path: [1, 0] },
+        annotations: [annotation],
+        focus: { offset: 1, path: [1, 0] },
       },
     ]);
   });

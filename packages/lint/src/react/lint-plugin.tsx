@@ -16,7 +16,7 @@ import { runLint } from './runLint';
 export type LintConfig = PluginConfig<
   'lint',
   {
-    activeAnnotation: LintAnnotation | null;
+    activeAnnotations: LintAnnotation[] | null;
     annotations: LintAnnotation[];
     configs: LintConfigArray;
   },
@@ -27,7 +27,7 @@ export type LintConfig = PluginConfig<
       }) => LintAnnotation | undefined;
       reset: () => void;
       run: (configs: LintConfigArray) => void;
-      setSelectedactiveAnnotation: () => boolean | undefined;
+      setSelectedActiveAnnotations: () => boolean | undefined;
     };
   },
   {
@@ -46,7 +46,7 @@ export const ExperimentalLintPlugin = createTPlatePlugin<LintConfig>({
     isLeaf: true,
   },
   options: {
-    activeAnnotation: null,
+    activeAnnotations: null,
     annotations: [],
     configs: [],
   },
@@ -62,13 +62,13 @@ export const ExperimentalLintPlugin = createTPlatePlugin<LintConfig>({
 
     return {
       getNextMatch: (options) => {
-        const { activeAnnotation, annotations } = getOptions();
+        const { activeAnnotations, annotations } = getOptions();
 
         const ranges = annotations.map(
           (annotation) => annotation.rangeRef.current!
         );
         const nextRange = getNextRange(editor, {
-          from: activeAnnotation?.rangeRef.current,
+          from: activeAnnotations?.[0]?.rangeRef.current,
           ranges,
           reverse: options?.reverse,
         });
@@ -83,15 +83,15 @@ export const ExperimentalLintPlugin = createTPlatePlugin<LintConfig>({
         editor.api.redecorate();
       },
       run: bindFirst(runLint, editor),
-      setSelectedactiveAnnotation: () => {
+      setSelectedActiveAnnotations: () => {
         if (!editor.selection) return false;
 
-        const activeAnnotation = getOptions().annotations.find((match) =>
+        const activeAnnotations = getOptions().annotations.filter((match) =>
           isSelectionInRange(editor, { at: match.rangeRef.current! })
         );
 
-        if (activeAnnotation) {
-          setOption('activeAnnotation', activeAnnotation);
+        if (activeAnnotations.length > 0) {
+          setOption('activeAnnotations', activeAnnotations);
 
           return true;
         }
@@ -104,7 +104,8 @@ export const ExperimentalLintPlugin = createTPlatePlugin<LintConfig>({
     ({ api, editor, setOption }) => ({
       focusNextMatch: (options) => {
         const match = api.lint.getNextMatch(options);
-        setOption('activeAnnotation', match ?? null);
+        // TODO: handle multiple active annotations
+        setOption('activeAnnotations', match ? [match] : null);
 
         if (match) {
           collapseSelection(editor);

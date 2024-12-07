@@ -37,7 +37,9 @@ describe('runLint', () => {
       replaceLintPlugin.configs.all,
       {
         settings: {
-          replaceMap,
+          replace: {
+            replaceMap,
+          },
         },
       },
     ]);
@@ -45,9 +47,6 @@ describe('runLint', () => {
     const annotations = editor.getOption(ExperimentalLintPlugin, 'annotations');
     expect(annotations).toEqual([
       {
-        data: {
-          type: 'emoji',
-        },
         messageId: 'replaceWithText',
         range: expect.any(Object),
         rangeRef: expect.any(Object),
@@ -61,11 +60,9 @@ describe('runLint', () => {
           },
         ],
         text: 'hello',
+        type: 'emoji',
       },
       {
-        data: {
-          type: 'emoji',
-        },
         messageId: 'replaceWithText',
         range: expect.any(Object),
         rangeRef: expect.any(Object),
@@ -86,6 +83,7 @@ describe('runLint', () => {
           },
         ],
         text: 'world',
+        type: 'emoji',
       },
     ]);
   });
@@ -116,7 +114,9 @@ describe('runLint', () => {
       },
       {
         settings: {
-          replaceMap,
+          replace: {
+            replaceMap,
+          },
         },
       },
     ]);
@@ -124,9 +124,6 @@ describe('runLint', () => {
     const annotations = editor.getOption(ExperimentalLintPlugin, 'annotations');
     expect(annotations).toEqual([
       {
-        data: {
-          type: 'emoji',
-        },
         messageId: 'replaceWithText',
         range: expect.any(Object),
         rangeRef: expect.any(Object),
@@ -140,6 +137,7 @@ describe('runLint', () => {
           },
         ],
         text: 'hello',
+        type: 'emoji',
       },
     ]);
   });
@@ -154,7 +152,9 @@ describe('runLint', () => {
       replaceLintPlugin.configs.all,
       {
         settings: {
-          replaceMap,
+          replace: {
+            replaceMap,
+          },
         },
       },
     ]);
@@ -191,7 +191,9 @@ describe('runLint', () => {
     plugin.api.lint.run([
       replaceLintPlugin.configs.all,
       {
-        settings: { replaceMap: new Map([['hello', [{ text: '👋' }]]]) },
+        settings: {
+          replace: { replaceMap: new Map([['hello', [{ text: '👋' }]]]) },
+        },
       },
     ]);
 
@@ -223,10 +225,9 @@ describe('runLint', () => {
       caseLintPlugin.configs.all,
       {
         settings: {
-          replaceMap: new Map([
-            ['hello', [{ text: '👋', type: 'emoji' }]],
-            ['world', [{ text: '🌍', type: 'emoji' }]],
-          ]),
+          replace: {
+            replaceMap: new Map([['world', [{ text: '🌍', type: 'emoji' }]]]),
+          },
         },
       },
     ]);
@@ -237,26 +238,17 @@ describe('runLint', () => {
     expect(annotations).toEqual([
       // Replace annotations
       {
-        data: { type: 'emoji' },
         messageId: 'replaceWithText',
         range: expect.any(Object),
         rangeRef: expect.any(Object),
         suggest: [
           {
-            data: { text: '👋', type: 'emoji' },
+            data: { text: '🌍', type: 'emoji' },
             fix: expect.any(Function),
           },
         ],
-        text: 'hello',
-      },
-      // Case annotation for 'this'
-      {
-        data: { type: undefined },
-        messageId: 'replaceWithText',
-        range: expect.any(Object),
-        rangeRef: expect.any(Object),
-        suggest: undefined,
-        text: 'this',
+        text: 'world',
+        type: 'emoji',
       },
       // Case annotation for 'hello'
       {
@@ -288,16 +280,53 @@ describe('runLint', () => {
         text: 'this',
       },
     ]);
+  });
 
-    // Verify both types of fixes work
-    annotations[0].suggest?.[0].fix(); // Replace 'hello' with emoji
-    expect(editor.children[0].children[0].text).toBe(
-      '👋 world. this is a test.'
-    );
+  it('should only lint targeted block when target specified', () => {
+    const editor = createPlateEditor({
+      plugins: [ExperimentalLintPlugin],
+    });
 
-    annotations[2].suggest?.[0].fix(); // Capitalize 'this'
-    expect(editor.children[0].children[0].text).toBe(
-      '👋 world. This is a test.'
-    );
+    // Create two blocks with different content
+    const firstBlockId = 'block-1';
+    const secondBlockId = 'block-2';
+    editor.children = [
+      {
+        id: firstBlockId,
+        children: [{ text: 'hello world' }],
+        type: 'p',
+      },
+      {
+        id: secondBlockId,
+        children: [{ text: 'hello earth' }],
+        type: 'p',
+      },
+    ];
+
+    editor.api.lint.run([
+      {
+        ...replaceLintPlugin.configs.all,
+        targets: [{ id: firstBlockId }], // Only target first block
+      },
+      {
+        settings: {
+          replace: {
+            replaceMap: new Map([
+              ['earth', [{ text: '🌏', type: 'emoji' }]],
+              ['hello', [{ text: '👋', type: 'emoji' }]],
+              ['world', [{ text: '�', type: 'emoji' }]],
+            ]),
+          },
+        },
+      },
+    ]);
+
+    const annotations = editor.getOption(ExperimentalLintPlugin, 'annotations');
+
+    // Should only have annotations for "hello" and "world" from first block
+    expect(annotations).toHaveLength(2);
+    expect(annotations[0].text).toBe('hello');
+    expect(annotations[1].text).toBe('world');
+    expect(annotations.some((a) => a.text === 'earth')).toBe(false);
   });
 });
