@@ -93,7 +93,7 @@
     "react-player": "^2.16.0",
     "react-resizable-panels": "^2.1.6",
     "react-tweet": "^3.2.1",
-    "slate": "^0.110.2",
+    "slate": "^0.112.0",
     "slate-dom": "^0.111.0",
     "slate-history": "^0.110.3",
     "slate-hyperscript": "^0.100.0",

@@ -47,7 +47,7 @@
     "lodash": "^4.17.21"
   },
   "peerDependencies": {
-    "slate": ">=0.103.0",
+    "slate": ">=0.112.0",
     "slate-history": ">=0.93.0"
   },
   "publishConfig": {

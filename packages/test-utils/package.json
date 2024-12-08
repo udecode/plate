@@ -45,7 +45,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "peerDependencies": {
-    "slate": ">=0.103.0",
+    "slate": ">=0.112.0",
     "slate-hyperscript": ">=0.66.0"
   },
   "publishConfig": {
