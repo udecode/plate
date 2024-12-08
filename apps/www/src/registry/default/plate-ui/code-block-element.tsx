@@ -1,5 +1,4 @@
 'use client';
-
 import React from 'react';
 
 import { cn, withRef } from '@udecode/cn';
@@ -13,6 +12,7 @@ import './code-block-element.css';
 export const CodeBlockElement = withRef<typeof PlateElement>(
   ({ children, className, ...props }, ref) => {
     const { element } = props;
+
     const state = useCodeBlockElementState({ element });
 
     return (
