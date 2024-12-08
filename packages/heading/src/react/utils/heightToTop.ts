@@ -2,7 +2,7 @@ import type React from 'react';
 
 export const heightToTop = (
   ele: HTMLElement,
-  editorContentRef?: React.RefObject<HTMLDivElement>
+  editorContentRef?: React.RefObject<HTMLDivElement | null>
 ) => {
   const root = editorContentRef ? editorContentRef.current : document.body;
 

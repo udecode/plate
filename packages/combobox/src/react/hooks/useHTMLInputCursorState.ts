@@ -9,7 +9,7 @@ import {
 import type { ComboboxInputCursorState } from '../../lib';
 
 export const useHTMLInputCursorState = (
-  ref: RefObject<HTMLInputElement>
+  ref: RefObject<HTMLInputElement | null>
 ): ComboboxInputCursorState => {
   const [atStart, setAtStart] = useState(false);
   const [atEnd, setAtEnd] = useState(false);
