@@ -107,7 +107,7 @@ Hook for managing combobox input behavior and keyboard interactions.
 <APIParameters>
   <APIItem name="options" type="UseComboboxInputOptions">
     <APISubList>
-      <APISubListItem parent="options" name="ref" type="RefObject<HTMLElement>">
+      <APISubListItem parent="options" name="ref" type="RefObject<HTMLElement | null>">
         Reference to the input element.
       </APISubListItem>
       <APISubListItem parent="options" name="autoFocus" type="boolean" optional>
@@ -200,7 +200,7 @@ const MyCombobox = () => {
 Hook for tracking cursor position in an HTML input element.
 
 <APIParameters>
-  <APIItem name="ref" type="RefObject<HTMLInputElement>">
+  <APIItem name="ref" type="RefObject<HTMLInputElement | null>">
     Reference to the input element to track.
   </APIItem>
 </APIParameters>

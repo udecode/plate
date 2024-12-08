@@ -29,7 +29,7 @@ export type UseOnClickOutsideCallback<T extends Event = Event> = (
 ) => void;
 
 type El = HTMLElement;
-type Refs = React.RefObject<El>[];
+type Refs = React.RefObject<El | null>[];
 
 export interface UseOnClickOutsideOptions {
   detectIFrame?: boolean;

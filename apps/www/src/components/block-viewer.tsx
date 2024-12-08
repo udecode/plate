@@ -69,7 +69,7 @@ type BlockViewerContext = {
   dependencies: string[];
   isLoading: boolean;
   item: z.infer<typeof registryItemSchema> & { src?: string };
-  resizablePanelRef: React.RefObject<ImperativePanelHandle> | null;
+  resizablePanelRef: React.RefObject<ImperativePanelHandle | null> | null;
   setActiveFile: (file: string) => void;
   setView: (view: 'code' | 'preview') => void;
   tree: ReturnType<typeof createFileTreeForRegistryItemFiles> | null;

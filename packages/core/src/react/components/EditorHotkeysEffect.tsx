@@ -11,7 +11,7 @@ export function EditorHotkeysEffect({
   id,
   editableRef,
 }: {
-  editableRef: React.RefObject<HTMLDivElement>;
+  editableRef: React.RefObject<HTMLDivElement | null>;
   id?: string;
 }) {
   const editor = useEditorRef(id);
@@ -45,7 +45,7 @@ function HotkeyEffect({
   editableRef,
   hotkeyConfig,
 }: {
-  editableRef: React.RefObject<HTMLDivElement>;
+  editableRef: React.RefObject<HTMLDivElement | null>;
   hotkeyConfig: Shortcut;
   id?: string;
 }) {

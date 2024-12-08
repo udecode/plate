@@ -34,7 +34,7 @@ export type BlockSelectionConfig = PluginConfig<
     isSelectionAreaVisible?: boolean;
     rightSelectionAreaClassName?: string;
     selectedIds?: Set<string>;
-    shadowInputRef?: React.RefObject<HTMLInputElement>;
+    shadowInputRef?: React.RefObject<HTMLInputElement | null>;
     onKeyDownSelecting?: (e: KeyboardEvent) => void;
   } & BlockSelectionSelectors,
   {

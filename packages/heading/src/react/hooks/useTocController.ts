@@ -5,7 +5,7 @@ import { useTocObserver } from './useTocObserver';
 interface UseTocController {
   activeId: string;
   isObserve: boolean;
-  tocRef: React.RefObject<HTMLElement>;
+  tocRef: React.RefObject<HTMLElement | null>;
 }
 
 export const useTocController = ({

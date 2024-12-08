@@ -26,7 +26,7 @@ import { TextareaAutosize } from './TextareaAutosize';
 
 /** Focus textareaRef when focusCaptionPath is set to the image path. */
 export const useCaptionTextareaFocus = (
-  textareaRef: React.RefObject<HTMLTextAreaElement>
+  textareaRef: React.RefObject<HTMLTextAreaElement | null>
 ) => {
   const editor = useEditorRef();
   const element = useElement<TCaptionElement>();

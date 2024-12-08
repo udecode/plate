@@ -7,8 +7,11 @@ import type { SelectionRect } from '../types';
 import { useRequestReRender } from './useRequestReRender';
 
 export interface UseRefreshOnResizeOptions {
-  selectionRectCache: React.MutableRefObject<WeakMap<Range, SelectionRect[]>>;
-  containerRef?: React.RefObject<HTMLElement>;
+  selectionRectCache: React.MutableRefObject<WeakMap<
+    Range,
+    SelectionRect[]
+  > | null>;
+  containerRef?: React.RefObject<HTMLElement | null>;
   refreshOnResize?: boolean;
 }
 

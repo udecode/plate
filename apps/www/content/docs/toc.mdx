@@ -212,7 +212,7 @@ This hook manages the state for the TOC sidebar.
   <APIItem name="setMouseInToc" type="React.Dispatch<React.SetStateAction<boolean>>">
     Function to set whether the mouse is over the TOC.
   </APIItem>
-  <APIItem name="tocRef" type="React.RefObject<HTMLElement>">
+  <APIItem name="tocRef" type="React.RefObject<HTMLElement | null>">
     Ref for the TOC element.
   </APIItem>
   <APIItem name="onContentScroll" type="(options: { id: string; behavior?: ScrollBehavior; el: HTMLElement }) => void">
@@ -240,7 +240,7 @@ This hook provides props and handlers for the TOC sidebar component.
   <APIItem name="setMouseInToc" type="React.Dispatch<React.SetStateAction<boolean>>">
     Function to set whether the mouse is over the TOC.
   </APIItem>
-  <APIItem name="tocRef" type="React.RefObject<HTMLElement>">
+  <APIItem name="tocRef" type="React.RefObject<HTMLElement | null>">
     Ref for the TOC element.
   </APIItem>
   <APIItem name="onContentScroll" type="(options: { id: string; behavior?: ScrollBehavior; el: HTMLElement }) => void">
@@ -252,7 +252,7 @@ This hook provides props and handlers for the TOC sidebar component.
   <APIItem name="navProps" type="object">
     Props for the TOC navigation element.
     <APISubList>
-      <APISubListItem parent="navProps" name="ref" type="React.RefObject<HTMLElement>">
+      <APISubListItem parent="navProps" name="ref" type="React.RefObject<HTMLElement | null>">
         Ref for the TOC element.
       </APISubListItem>
       <APISubListItem parent="navProps" name="onMouseEnter" type="() => void">

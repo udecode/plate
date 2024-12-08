@@ -22,11 +22,10 @@ export interface UseVirtualFloatingOptions extends Partial<UseFloatingOptions> {
   open?: boolean;
 }
 
-export interface UseVirtualFloatingReturn<
-  RT extends ReferenceType = ReferenceType,
-> extends UseFloatingReturn<RT> {
+export interface UseVirtualFloatingReturn<RT extends ReferenceType = ReferenceType>
+  extends UseFloatingReturn<RT> {
   style: React.CSSProperties;
-  virtualElementRef: React.MutableRefObject<VirtualElement>;
+  virtualElementRef: React.MutableRefObject<VirtualElement | null>;
 }
 
 /**
