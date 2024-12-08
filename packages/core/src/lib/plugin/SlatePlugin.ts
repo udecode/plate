@@ -1,6 +1,6 @@
 import type { TDescendant, TNodeEntry, Value } from '@udecode/slate';
 import type { AnyObject } from '@udecode/utils';
-import type { Range } from 'slate';
+import type { DecoratedRange } from 'slate';
 
 import type { SlateEditor } from '../editor';
 import type { Nullable } from '../types/misc';
@@ -393,7 +393,7 @@ export type HtmlSerializer<C extends AnyPluginConfig = PluginConfig> =
  */
 export type Decorate<C extends AnyPluginConfig = PluginConfig> = (
   ctx: SlatePluginContext<C> & { entry: TNodeEntry }
-) => Range[] | undefined;
+) => DecoratedRange[] | undefined;
 
 export type InjectNodeProps<C extends AnyPluginConfig = PluginConfig> =
   BaseInjectProps & {
