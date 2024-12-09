@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 40.3.1
+
+### Patch Changes
+
+- [#3837](https://github.com/udecode/plate/pull/3837) by [@yf-yang](https://github.com/yf-yang) – feat: Change Decorate's return type to DecoratedRange/TDecoratedRange
+
 ## 40.2.8
 
 ### Patch Changes

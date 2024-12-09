@@ -1,5 +1,7 @@
 # @udecode/slate-utils
 
+## 40.3.1
+
 ## 40.2.7
 
 ### Patch Changes
