@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-react",
-  "version": "40.2.8",
+  "version": "40.3.1",
   "description": "Slate extension",
   "keywords": [
     "slate"
@@ -43,7 +43,7 @@
   },
   "dependencies": {
     "@udecode/react-utils": "40.2.8",
-    "@udecode/slate": "39.2.1",
+    "@udecode/slate": "40.3.1",
     "@udecode/utils": "37.0.0"
   },
   "peerDependencies": {
