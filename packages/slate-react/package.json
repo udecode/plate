@@ -49,7 +49,7 @@
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
-    "slate": ">=0.103.0",
+    "slate": ">=0.112.0",
     "slate-history": ">=0.93.0",
     "slate-react": ">=0.111.0"
   },

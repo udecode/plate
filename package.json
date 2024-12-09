@@ -148,7 +148,7 @@
     "react-test-renderer": "18.3.1",
     "rimraf": "^6.0.1",
     "shadcx": "workspace:^",
-    "slate": "0.110.2",
+    "slate": "0.112.0",
     "slate-dom": "0.111.0",
     "slate-history": "0.110.3",
     "slate-hyperscript": "0.100.0",
