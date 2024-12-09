@@ -1,6 +1,5 @@
 ---
 title: Table of Contents
-description: Renders a table of contents element with clickable links to headings in the document.
 docs:
   - route: components/toc-element
     title: Toc Element
@@ -8,7 +7,7 @@ docs:
     title: Toc Sidebar
 ---
 
-<ComponentPreview name="playground-demo" id="toc" />
+<ComponentPreview name="toc-demo" />
 
 <PackageInfo>
 
@@ -39,7 +38,6 @@ const plugins = [
   NodeIdPlugin,
   TocPlugin.configure({
     options: {
-      scrollContainerSelector: `#your-scroll-container-id`,
       topOffset: 80,
     },
   }),
@@ -55,27 +53,36 @@ const components = {
 
 - [TocElement](/docs/components/toc-element)
 
-### Set scroll container
+### Scroll container
 
-The `TocPlugin` requires a scroll container selector to function properly. This selector is used to identify the scrollable area containing your content.
+- If your scrolling element is [EditorContainer](/docs/components/editor), you can skip this step.
+- If your scrolling element is the editor container, pass `useEditorContainerRef()` as the `ref` prop. For example:
 
 ```tsx
-TocPlugin.configure({
-  options: {
-    scrollContainerSelector: '#your-scroll-container-id',
-  },
-})
+// Should be rendered below <Plate> component
+function EditorContainer({ children }: { children: React.ReactNode }) {
+  const containerRef = useEditorContainerRef();
+
+  return <div ref={containerRef}>{children}</div>;
+}
 ```
 
-You can use any valid CSS selector:
+- If your scrolling element is an ancestor of the editor container, pass `useEditorScrollRef()` as the `ref` prop. For example:
 
-- ID: `#scrollable-container`
-- Class: `.content-wrapper`
-- Nested selector: `body #main-content`
+```tsx
+// Should be rendered below <Plate> component
+function Layout() {
+  const scrollRef = useEditorScrollRef();
 
-Apply this selector to your `<Editor />` component or a wrapper `<div>` around it, depending on your layout.
-
-For consistency, use the same container for both `TocPlugin` and `BlockSelectionPlugin`.
+  return (
+    <main ref={scrollRef}>
+      <EditorContainer>
+        <PlateContent />
+      </EditorContainer>
+    </main>
+  );
+}
+```
 
 ### Components
 
@@ -111,14 +118,7 @@ The top offset to apply when scrolling to a heading.
 <APIItem name="queryHeading" type="(editor: SlateEditor) => Heading[]" optional>
 A custom function to query headings from the editor.
 </APIItem>
-
-<APIItem name="scrollContainerSelector" type="string" optional>
-The CSS selector for the scrollable container. Required to use scrolling behavior.
-
-- **Default:** `'#scroll_container'`
-</APIItem>
 </APIOptions>
-
 ## Transforms
 
 ### insertToc

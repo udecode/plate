@@ -3,7 +3,10 @@
     "@radix-ui/react-dropdown-menu"
   ],
   "doc": {
-    "description": "Displays a menu to the user — such as a set of actions or functions — triggered by a button."
+    "description": "Displays a menu to the user — such as a set of actions or functions — triggered by a button.",
+    "links": {
+      "doc": "https://ui.shadcn.com/docs/components/dropdown-menu"
+    }
   },
   "files": [
     {

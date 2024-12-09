@@ -9,6 +9,7 @@ export type MdastElementType =
   | 'list'
   | 'listItem'
   | 'paragraph'
+  | 'table'
   | 'thematicBreak';
 
 export type MdastTextType =
@@ -21,7 +22,19 @@ export type MdastTextType =
 
 export type MdastNodeType = MdastElementType | MdastTextType;
 
+export interface TextPosition {
+  column: number;
+  line: number;
+  offset?: number;
+}
+
 export interface MdastNode {
+  type: MdastNodeType;
+  // mdast metadata
+  position?: {
+    end: TextPosition;
+    start: TextPosition;
+  };
   alt?: string;
   checked?: any;
   children?: MdastNode[];
@@ -29,11 +42,8 @@ export interface MdastNode {
   indent?: any;
   lang?: string;
   ordered?: boolean;
-  // mdast metadata
-  position?: any;
   spread?: any;
   text?: string;
-  type?: MdastNodeType;
   url?: string;
   value?: string;
 }
@@ -45,18 +55,16 @@ export type RemarkElementRule = {
   ) => TElement | TElement[];
 };
 
-export type RemarkElementRules = {
-  [key in MdastElementType]?: RemarkElementRule;
-};
+export type RemarkElementRules = Partial<
+  Record<MdastElementType, RemarkElementRule>
+>;
 
 export type RemarkTextRule = {
   mark?: (options: RemarkPluginOptions) => string;
   transform?: (text: string) => string;
 };
 
-export type RemarkTextRules = {
-  [key in MdastTextType]?: RemarkTextRule;
-};
+export type RemarkTextRules = Partial<Record<MdastTextType, RemarkTextRule>>;
 
 export type RemarkPluginOptions = {
   editor: SlateEditor;

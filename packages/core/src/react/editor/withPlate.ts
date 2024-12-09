@@ -3,7 +3,7 @@ import { type TEditor, type Value, createTEditor } from '@udecode/slate';
 
 import type { AnyPlatePlugin } from '../plugin';
 import type { PlateApiPlugin } from '../plugins';
-import type { TPlateEditor } from './PlateEditor';
+import type { PlateEditor, TPlateEditor } from './PlateEditor';
 
 import {
   type AnyPluginConfig,
@@ -19,7 +19,7 @@ export type PlateCorePlugin = CorePlugin | typeof PlateApiPlugin;
 export type WithPlateOptions<
   V extends Value = Value,
   P extends AnyPluginConfig = PlateCorePlugin,
-> = BaseWithSlateOptions<V, P> &
+> = BaseWithSlateOptions<P> &
   Pick<
     Partial<AnyPlatePlugin>,
     | 'api'
@@ -37,6 +37,7 @@ export type WithPlateOptions<
     | 'useHooks'
   > & {
     rootPlugin?: (plugin: AnyPlatePlugin) => AnyPlatePlugin;
+    value?: ((editor: PlateEditor) => V) | V | string;
   };
 
 /**

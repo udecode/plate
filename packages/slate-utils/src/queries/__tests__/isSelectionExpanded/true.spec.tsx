@@ -1,10 +1,10 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { isSelectionExpanded } from '../../isSelectionExpanded';
 
-jsx;
+jsxt;
 
 const input = (
   <editor>

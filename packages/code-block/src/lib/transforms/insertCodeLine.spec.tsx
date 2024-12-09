@@ -1,14 +1,14 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import type { SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { insertCodeLine } from './insertCodeLine';
 
-jsx;
+jsxt;
 
 describe('insert code line', () => {
   it('should insert code line below selected line', () => {

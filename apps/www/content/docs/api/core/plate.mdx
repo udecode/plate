@@ -25,7 +25,7 @@ Controlled callback called when the editor state changes.
 <APIItem name="onSelectionChange" type="(selection: Range | null) => void" optional>
 Callback called when the editor selection changes.
 </APIItem>
-<APIItem name="onValueChange" type="(value: Value) => void" optional>
+<APIItem name="onValueChange" type="({ value, editor }: { value: Value; editor: PlateEditor }) => void" optional>
 Callback called when the editor value changes.
 </APIItem>
 <APIItem name="primary" type="boolean" optional>
@@ -49,6 +49,9 @@ Custom render function for leaf nodes.
 Props for the [Editable](https://docs.slatejs.org/libraries/slate-react/editable) component. Extends `TextareaHTMLAttributes<HTMLDivElement>`.
 
 <APIProps>
+<APIItem name="autoFocusOnEditable" type="boolean" optional>
+Automatically focus the editor when it transitions from read-only to editable mode (when `readOnly` changes from `true` to `false`).
+</APIItem>
 <APIItem name="renderEditable" type="(editable: ReactNode) => ReactNode" optional>
 Custom `Editable` node.
 

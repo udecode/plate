@@ -4,7 +4,6 @@ import { cn } from '@udecode/cn';
 import Link from 'next/link';
 
 import { type SettingPlugin, customizerItems } from '@/config/customizer-items';
-import { descriptions } from '@/config/descriptions';
 import { buttonVariants } from '@/registry/default/plate-ui/button';
 import { Checkbox } from '@/registry/default/plate-ui/checkbox';
 import {
@@ -12,19 +11,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/registry/default/plate-ui/popover';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/registry/default/plate-ui/tooltip';
 
 import { Code } from './code';
 import { settingsStore } from './context/settings-store';
 import { Icons } from './icons';
 import { TreeIcon } from './tree-icon';
 import { Badge } from './ui/badge';
-import { Label } from './ui/label';
+import { Label } from '../registry/default/plate-ui/label';
 
 export function SettingCheckbox({
   id,
@@ -35,12 +28,6 @@ export function SettingCheckbox({
   label,
   route,
 }: SettingPlugin) {
-  const description = descriptions[id];
-
-  if (!description) {
-    throw new Error(`No description found for ${id}`);
-  }
-
   // const checked = settingsStore.use.checkedIdNext(id);
   const checked = settingsStore.use.checkedId(id);
   const showComponents = settingsStore.use.showComponents();
@@ -51,27 +38,27 @@ export function SettingCheckbox({
       <div className="flex w-full items-center justify-between">
         <div className="overflow-hidden text-left">
           <div className="flex items-center">
-            <TooltipProvider>
+            <div className="flex items-center">
+              <Checkbox
+                id={id}
+                checked={checked}
+                onCheckedChange={(_checked: boolean) => {
+                  settingsStore.set.setCheckedIdNext(id, _checked);
+                }}
+              />
+              <Label className="flex px-2" htmlFor={id}>
+                {label}
+              </Label>
+            </div>
+            {/* <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="flex items-center">
-                    <Checkbox
-                      id={id}
-                      checked={checked}
-                      onCheckedChange={(_checked: boolean) => {
-                        settingsStore.set.setCheckedIdNext(id, _checked);
-                      }}
-                    />
-                    <Label className="flex px-2" htmlFor={id}>
-                      {label}
-                    </Label>
-                  </div>
                 </TooltipTrigger>
                 <TooltipContent className="max-w-[200px]">
                   {description}
                 </TooltipContent>
               </Tooltip>
-            </TooltipProvider>
+            </TooltipProvider> */}
 
             <div className="flex flex-wrap gap-1">
               {badges?.map((badge) => (

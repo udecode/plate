@@ -6,6 +6,7 @@ export * from './createUploadError';
 export * from './fileSizeToBytes';
 export * from './getMediaType';
 export * from './groupFilesByType';
+export * from './history';
 export * from './matchFileType';
 export * from './validateFileItem';
 export * from './validateFiles';

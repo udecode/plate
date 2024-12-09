@@ -2,19 +2,9 @@
 
 import React from 'react';
 
-import {
-  type PlateContentProps,
-  Plate,
-  usePlateEditor,
-} from '@udecode/plate-common/react';
+import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
-
-const editableProps: PlateContentProps = {
-  autoFocus: false,
-  placeholder: 'Type…',
-  spellCheck: false,
-};
 
 const value = [
   {
@@ -33,7 +23,7 @@ export default function BasicEditorValueDemo() {
   return (
     <Plate editor={editor}>
       <EditorContainer>
-        <Editor {...editableProps} />
+        <Editor />
       </EditorContainer>
     </Plate>
   );

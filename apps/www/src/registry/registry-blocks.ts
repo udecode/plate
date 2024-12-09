@@ -3,6 +3,19 @@ import type { Registry } from '@/registry/schema';
 export const blocks: Registry = [
   {
     category: 'Editors',
+    files: [
+      {
+        path: 'block/editor-select/page.tsx',
+        target: 'app/editor/page.tsx',
+        type: 'registry:page',
+      },
+    ],
+    name: 'editor-select',
+    registryDependencies: ['select-editor-demo'],
+    type: 'registry:block',
+  },
+  {
+    category: 'Editors',
     dependencies: [
       '@udecode/cn',
       '@udecode/plate-ai',
@@ -25,6 +38,7 @@ export const blocks: Registry = [
       '@udecode/plate-slash-command',
       '@udecode/plate-table',
       '@udecode/plate-toggle',
+      'sonner',
     ],
     files: [
       {
@@ -38,28 +52,32 @@ export const blocks: Registry = [
         type: 'registry:component',
       },
       {
-        path: 'block/editor-ai/components/editor/use-create-editor.tsx',
-        target: 'components/editor/use-create-editor.tsx',
+        path: 'block/editor-ai/components/editor/use-create-editor.ts',
+        target: 'components/editor/use-create-editor.ts',
+        type: 'registry:component',
+      },
+      {
+        path: 'components/editor/settings.tsx',
+        target: 'components/editor/settings.tsx',
         type: 'registry:component',
       },
     ],
     name: 'editor-ai',
     registryDependencies: [
       'api-ai',
+      'api-uploadthing',
       'plate-types',
 
-      'copilot-plugins',
       'editor-plugins',
+      'copilot-plugins',
+      'floating-toolbar-plugin',
+      'fixed-toolbar-plugin',
 
       'ai-menu',
       'ghost-text',
       'comments-popover',
       'cursor-overlay',
       'editor',
-      'fixed-toolbar',
-      'fixed-toolbar-buttons',
-      'floating-toolbar',
-      'floating-toolbar-buttons',
       'block-context-menu',
 
       'ai-leaf',
@@ -81,7 +99,11 @@ export const blocks: Registry = [
       'image-element',
       'kbd-leaf',
       'link-element',
+      'media-audio-element',
       'media-embed-element',
+      'media-file-element',
+      'media-placeholder-element',
+      'media-video-element',
       'mention-element',
       'mention-input-element',
       'paragraph-element',
@@ -113,8 +135,8 @@ export const blocks: Registry = [
         type: 'registry:component',
       },
       {
-        path: 'block/editor-basic/components/editor/use-create-editor.tsx',
-        target: 'components/editor/use-create-editor.tsx',
+        path: 'block/editor-basic/components/editor/use-create-editor.ts',
+        target: 'components/editor/use-create-editor.ts',
         type: 'registry:component',
       },
     ],

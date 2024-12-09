@@ -1,5 +1,15 @@
 # @udecode/slate-react
 
+## 40.2.8
+
+## 40.0.0
+
+### Major Changes
+
+- [#3744](https://github.com/udecode/plate/pull/3744) by [@zbeyens](https://github.com/zbeyens) –
+  - Add `slate-dom` as a peer dependency
+  - Update `slate-react` peer dependency to `>=0.111.0`
+
 ## 39.2.1
 
 ## 39.1.4

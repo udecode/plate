@@ -84,6 +84,7 @@ export function LinkFloatingToolbar({ state }: LinkFloatingToolbarProps) {
         <FloatingLinkUrlInput
           className={inputVariants({ h: 'sm', variant: 'ghost' })}
           placeholder="Paste link"
+          data-plate-focus
         />
       </div>
       <Separator className="my-1" />
@@ -94,6 +95,7 @@ export function LinkFloatingToolbar({ state }: LinkFloatingToolbarProps) {
         <input
           className={inputVariants({ h: 'sm', variant: 'ghost' })}
           placeholder="Text to display"
+          data-plate-focus
           {...textInputProps}
         />
       </div>

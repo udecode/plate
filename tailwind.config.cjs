@@ -7,6 +7,7 @@ module.exports = {
   darkMode: ['class'],
   plugins: [
     require('tailwindcss-animate'),
+    require('tailwind-scrollbar-hide'),
     require('@tailwindcss/typography'),
     plugin(({ addVariant }) => {
       addVariant('all', '& *');
@@ -17,7 +18,7 @@ module.exports = {
       center: true,
       padding: '2rem',
       screens: {
-        '2xl': '1400px',
+        '2xl': '1536px',
       },
     },
     extend: {
@@ -73,9 +74,20 @@ module.exports = {
           DEFAULT: 'hsl(var(--secondary))',
           foreground: 'hsl(var(--secondary-foreground))',
         },
+        sidebar: {
+          DEFAULT: 'hsl(var(--sidebar-background))',
+          accent: 'hsl(var(--sidebar-accent))',
+          'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
+          border: 'hsl(var(--sidebar-border))',
+          foreground: 'hsl(var(--sidebar-foreground))',
+          primary: 'hsl(var(--sidebar-primary))',
+          'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
+          ring: 'hsl(var(--sidebar-ring))',
+        },
       },
       fontFamily: {
         heading: ['var(--font-heading)', ...fontFamily.sans],
+        mono: ['var(--font-mono)', ...fontFamily.mono],
         sans: ['var(--font-sans)', ...fontFamily.sans],
       },
       keyframes: {
@@ -86,6 +98,21 @@ module.exports = {
         'accordion-up': {
           from: { height: 'var(--radix-accordion-content-height)' },
           to: { height: '0' },
+        },
+      },
+      screens: {
+        /**
+         * Matches devices where the primary pointing device is capable of
+         * hovering conveniently. Usage: main-hover:group-hover:bg-red-500 See:
+         * https://developer.mozilla.org/en-US/docs/Web/CSS/@media/hover
+         *
+         * On iOS devices, buttons inside a .group element that contains
+         * descendent elements with `group-hover:` CSS rules require two taps to
+         * click. As a workaround, we disable these rules on devices that cannot
+         * conveniently hover using `main-hover:`.
+         */
+        'main-hover': {
+          raw: '(hover: hover)',
         },
       },
     },

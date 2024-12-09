@@ -4,8 +4,7 @@ import React from 'react';
 
 import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 
-import { editableProps } from '@/plate/demo/editableProps';
-import { createMultiEditorsValue } from '@/plate/demo/values/createMultiEditorsValue';
+import { createMultiEditorsValue } from '@/registry/default/example/values/multi-editors-value';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 
 const values = createMultiEditorsValue();
@@ -21,7 +20,7 @@ function WithPlate({ id, value }: any) {
   return (
     <Plate editor={editor}>
       <EditorContainer>
-        <Editor {...editableProps} />
+        <Editor spellCheck={false} />
       </EditorContainer>
     </Plate>
   );

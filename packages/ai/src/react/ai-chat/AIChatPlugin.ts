@@ -51,7 +51,7 @@ export type AIChatOptions = {
    * - {prompt}: Replaced with the actual user prompt.
    */
   promptTemplate: (props: EditorPromptParams) => string;
-  scrollContainerSelector: string;
+
   /**
    * Template function for generating the system message. Supports the same
    * placeholders as `promptTemplate`.
@@ -94,7 +94,6 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     mode: 'chat',
     open: false,
     promptTemplate: () => '{prompt}',
-    scrollContainerSelector: '#scroll_container',
     systemTemplate: () => {},
     trigger: ' ',
     triggerPreviousCharPattern: /^\s?$/,

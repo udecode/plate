@@ -1,4 +1,4 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import {
   type SlateEditor,
@@ -6,12 +6,12 @@ import {
   getNodeEntry,
 } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { indentCodeLine } from './indentCodeLine';
 
-jsx;
+jsxt;
 
 describe('indent code line', () => {
   describe('when the selection is expanded', () => {

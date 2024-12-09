@@ -7,15 +7,14 @@
     "description": "A popover interface for managing comments and replies.",
     "docs": [
       {
-        "route": "/docs/comments",
-        "title": "Comments"
+        "route": "/docs/comments"
       },
       {
         "route": "https://pro.platejs.org/docs/components/comments-popover"
       }
     ],
     "examples": [
-      "comment-demo",
+      "comments-demo",
       "comments-pro"
     ]
   },

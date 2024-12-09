@@ -3,7 +3,10 @@
     "@radix-ui/react-dialog"
   ],
   "doc": {
-    "description": "A window overlaid on either the primary window or another dialog window, rendering the content underneath inert."
+    "description": "A window overlaid on either the primary window or another dialog window, rendering the content underneath inert.",
+    "links": {
+      "doc": "https://ui.shadcn.com/docs/components/dialog"
+    }
   },
   "files": [
     {

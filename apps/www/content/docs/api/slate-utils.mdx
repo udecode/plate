@@ -771,6 +771,19 @@ The number of children moved.
 
 </APIReturns>
 
+### removeEditorText
+
+Removes all non-empty text nodes from the editor.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="RemoveNodesOptions<E>" optional>
+    Options for removing nodes. The `match` function in options will be combined with the text length check.
+  </APIItem>
+</APIParameters>
+
 ### removeMark
 
 Removes a mark and triggers `onChange` if the selection is collapsed.

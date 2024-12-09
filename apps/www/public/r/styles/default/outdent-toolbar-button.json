@@ -6,8 +6,7 @@
     "description": "A toolbar button for decreasing block indentation.",
     "docs": [
       {
-        "route": "/docs/indent",
-        "title": "Indent"
+        "route": "/docs/indent"
       }
     ],
     "examples": [

@@ -26,6 +26,15 @@ export type MarkdownConfig = PluginConfig<
     /** Override element rules. */
     elementRules?: RemarkElementRules;
     indentList?: boolean;
+    /**
+     * When the text contains \n, split the text into a separate paragraph.
+     *
+     * Line breaks between paragraphs will also be converted into separate
+     * paragraphs.
+     *
+     * @default false
+     */
+    splitLineBreaks?: boolean;
 
     /** Override text rules. */
     textRules?: RemarkTextRules;
@@ -43,6 +52,7 @@ export const MarkdownPlugin = createTSlatePlugin<MarkdownConfig>({
   options: {
     elementRules: remarkDefaultElementRules,
     indentList: false,
+    splitLineBreaks: false,
     textRules: remarkDefaultTextRules,
   },
 })

@@ -11,6 +11,12 @@ import { X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { Input } from '@/registry/default/plate-ui/input';
 
 export interface DocsSidebarNavProps {
@@ -31,7 +37,7 @@ export function DocsSidebarNav({ config }: DocsSidebarNavProps) {
     return sidebarNav
       .map((section) => {
         const sectionMatches = section.title
-          .toLowerCase()
+          ?.toLowerCase()
           .includes(lowercasedFilter);
 
         return {
@@ -40,7 +46,7 @@ export function DocsSidebarNav({ config }: DocsSidebarNavProps) {
             ? section.items
             : section.items?.filter(({ keywords = [], ...item }) => {
                 return (
-                  item.title.toLowerCase().includes(lowercasedFilter) ||
+                  item.title?.toLowerCase().includes(lowercasedFilter) ||
                   [...keywords, ...castArray(item.label)].some((label) =>
                     label?.toLowerCase().includes(lowercasedFilter)
                   )
@@ -53,8 +59,8 @@ export function DocsSidebarNav({ config }: DocsSidebarNavProps) {
 
   return sidebarNav.length > 0 ? (
     <div className="relative w-[calc(100%-1rem)]">
-      <div className="sticky top-0 z-10 mb-2 flex w-full items-center bg-background/95 px-2 pb-2 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="relative flex w-full items-center">
+      <div className="sticky top-0 z-10 flex w-full items-center bg-background/95 px-2 pb-3 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="relative mt-3 flex w-full items-center">
           <Input
             className={cn(
               'h-8 w-full rounded-lg bg-muted/50 px-3 py-1 text-sm text-muted-foreground shadow-none focus-visible:ring-transparent'
@@ -75,33 +81,88 @@ export function DocsSidebarNav({ config }: DocsSidebarNavProps) {
         </div>
       </div>
 
-      {filteredNav.map((item, index) => (
-        <div key={index} className={cn('pb-4')}>
-          <h4 className="mb-1 flex items-center rounded-md px-2 py-1 text-sm font-semibold">
-            {item.title}
-            {item.label && (
-              <div className="ml-2 flex gap-1">
-                {castArray(item.label).map((label, labelIndex) => (
-                  <span
-                    key={labelIndex}
-                    className={cn(
-                      'rounded-md bg-secondary px-1.5 py-0.5 text-xs font-medium leading-none text-foreground',
-                      label === 'Plus' &&
-                        'bg-primary text-background dark:text-background',
-                      label === 'New' && 'bg-[#adfa1d] dark:text-background'
+      <Accordion
+        defaultValue={filteredNav.map((_, i) => `item-${i}`)}
+        type="multiple"
+      >
+        {filteredNav.map((section, index) => {
+          const isAccordion = ['Examples', 'Plugins'].includes(section.title!);
+
+          if (isAccordion) {
+            return (
+              <AccordionItem
+                key={index}
+                className="mb-4 border-none px-2"
+                value={`item-${index}`}
+              >
+                <AccordionTrigger className="py-1 text-sm font-semibold outline-none">
+                  <div className="flex items-center">
+                    {section.title}
+                    {section.label && (
+                      <div className="flex gap-1">
+                        {castArray(section.label).map((label, labelIndex) => (
+                          <span
+                            key={labelIndex}
+                            className={cn(
+                              'rounded-md bg-secondary py-0.5 text-xs font-medium leading-none text-foreground',
+                              label === 'Plus' &&
+                                'bg-primary text-background dark:text-background',
+                              label === 'New' &&
+                                'bg-[#adfa1d] dark:text-background'
+                            )}
+                          >
+                            {label}
+                          </span>
+                        ))}
+                      </div>
                     )}
-                  >
-                    {label}
-                  </span>
-                ))}
-              </div>
-            )}
-          </h4>
-          {item?.items?.length && (
-            <DocsSidebarNavItems items={item.items} pathname={pathname} />
-          )}
-        </div>
-      ))}
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="mt-1">
+                  {section?.items?.length && (
+                    <DocsSidebarNavItems
+                      className="[&_a]:px-0"
+                      items={section.items}
+                      pathname={pathname}
+                    />
+                  )}
+                </AccordionContent>
+              </AccordionItem>
+            );
+          }
+
+          return (
+            <div key={index} className={cn('pb-4')}>
+              <h4 className="mb-1 flex items-center rounded-md px-2 py-1 text-sm font-semibold">
+                {section.title}
+                {section.label && (
+                  <div className="ml-2 flex gap-1">
+                    {castArray(section.label).map((label, labelIndex) => (
+                      <span
+                        key={labelIndex}
+                        className={cn(
+                          'rounded-md bg-secondary px-1.5 py-0.5 text-xs font-medium leading-none text-foreground',
+                          label === 'Plus' &&
+                            'bg-primary text-background dark:text-background',
+                          label === 'New' && 'bg-[#adfa1d] dark:text-background'
+                        )}
+                      >
+                        {label}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </h4>
+              {section?.items?.length && (
+                <DocsSidebarNavItems
+                  items={section.items}
+                  pathname={pathname}
+                />
+              )}
+            </div>
+          );
+        })}
+      </Accordion>
     </div>
   ) : null;
 }
@@ -109,20 +170,27 @@ export function DocsSidebarNav({ config }: DocsSidebarNavProps) {
 interface DocsSidebarNavItemsProps {
   items: SidebarNavItem[];
   pathname: string | null;
+  className?: string;
 }
 
 export function DocsSidebarNavItems({
+  className,
   items,
   pathname,
 }: DocsSidebarNavItemsProps) {
   return items?.length ? (
-    <div className="grid grid-flow-row auto-rows-max text-sm">
+    <div
+      className={cn(
+        'grid grid-flow-row auto-rows-max gap-0.5 text-sm',
+        className
+      )}
+    >
       {items.map((item, index) =>
         item.href && !item.disabled ? (
           <React.Fragment key={index}>
             <Link
               className={cn(
-                'group flex w-full items-center rounded-md border border-transparent px-2 py-1',
+                'group flex w-full items-center px-2 py-1 font-normal text-foreground underline-offset-2 hover:underline',
                 item.disabled && 'cursor-not-allowed opacity-60',
                 pathname === item.href
                   ? 'font-medium text-foreground'

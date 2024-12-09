@@ -8,16 +8,20 @@ import { DocContent } from '@/app/(app)/docs/[[...slug]]/doc-content';
 import { ComponentInstallation } from '@/components/component-installation';
 import { ComponentPreview } from '@/components/component-preview';
 import { Mdx } from '@/components/mdx-components';
+import { docsMap } from '@/config/docs';
+import { slugToCategory } from '@/config/docs-utils';
 import { siteConfig } from '@/config/site';
-import { getRegistryTitle } from '@/lib/registry-utils';
 import {
-  getAllDependencies,
-  getAllFiles,
-  getExampleCode,
-} from '@/lib/rehype-utils';
+  getCachedDependencies,
+  getCachedFileTree,
+  getCachedHighlightedFiles,
+  getCachedRegistryItem,
+} from '@/lib/registry-cache';
+import { getRegistryTitle } from '@/lib/registry-utils';
+import { getAllDependencies, getAllFiles } from '@/lib/rehype-utils';
 import { getTableOfContents } from '@/lib/toc';
 import { registry } from '@/registry/registry';
-import { examples } from '@/registry/registry-examples';
+import { examples, proExamples } from '@/registry/registry-examples';
 import { ui } from '@/registry/registry-ui';
 
 import '@/styles/mdx.css';
@@ -87,9 +91,8 @@ export function generateStaticParams() {
 
 export default async function DocPage(props: DocPageProps) {
   const params = await props.params;
-  const name = params.slug?.[0];
 
-  const isUI = name === 'components';
+  const category = slugToCategory(params.slug);
 
   const doc = getDocFromParams({ params });
 
@@ -104,9 +107,9 @@ export default async function DocPage(props: DocPageProps) {
     let docName = params.slug?.at(-1);
     let file: RegistryEntry | undefined;
 
-    if (isUI) {
+    if (category === 'component') {
       file = ui.find((c) => c.name === docName);
-    } else {
+    } else if (category === 'example') {
       docName += '-demo';
       file = examples.find((c) => c.name === docName);
     }
@@ -116,6 +119,7 @@ export default async function DocPage(props: DocPageProps) {
 
     const dependencies = getAllDependencies(docName);
     const files = getAllFiles(docName);
+
     const slug = '/docs/' + params.slug?.join('/') || '';
 
     const docs = getRegistryDocs({
@@ -125,13 +129,25 @@ export default async function DocPage(props: DocPageProps) {
       registryNames,
     });
 
-    const componentExamples = file.doc?.examples
-      ?.map((ex) => getExampleCode(ex))
-      .filter(Boolean);
+    const item = await getCachedRegistryItem(docName, true);
+
+    if (!item?.files) {
+      notFound();
+    }
+
+    const [tree, highlightedFiles, componentExamples] = await Promise.all([
+      getCachedFileTree(item.files),
+      getCachedHighlightedFiles(item.files as any),
+      file.doc?.examples
+        ? Promise.all(
+            file.doc.examples.map(async (ex) => await getExampleCode(ex))
+          )
+        : undefined,
+    ]);
 
     return (
       <DocContent
-        isUI={isUI}
+        category={category as any}
         {...file}
         doc={{
           ...file.doc,
@@ -139,30 +155,36 @@ export default async function DocPage(props: DocPageProps) {
           slug,
         }}
       >
-        {isUI ? (
+        {category === 'component' ? (
           <ComponentInstallation
             name={file.name}
-            codeTabs={!isUI}
             dependencies={dependencies}
-            examples={componentExamples as any}
-            files={files}
+            examples={componentExamples?.filter(Boolean) as any}
+            highlightedFiles={highlightedFiles}
+            item={item}
+            tree={tree}
             usage={file.doc?.usage}
           />
         ) : (
           <ComponentPreview
             name={file.name}
             dependencies={dependencies}
-            files={files}
+            highlightedFiles={highlightedFiles}
+            item={item}
+            tree={tree}
           />
         )}
       </DocContent>
     );
   }
+  if (!doc.description) {
+    doc.description = docsMap[doc.slug]?.description;
+  }
 
   const toc = await getTableOfContents(doc.body.raw);
 
   return (
-    <DocContent doc={doc} isUI={isUI} toc={toc}>
+    <DocContent category={category as any} doc={doc} toc={toc}>
       <Mdx code={doc.body.code} packageInfo={packageInfo} />
     </DocContent>
   );
@@ -179,7 +201,7 @@ function getRegistryDocs({
   files: { name: string }[];
   registryNames: Set<string>;
 }) {
-  const usedBy = registry.filter(
+  const usedBy = ui.filter(
     (item) =>
       item.doc &&
       Array.isArray(item.doc.examples) &&
@@ -194,7 +216,7 @@ function getRegistryDocs({
           !!fileName && registryNames.has(fileName) && fileName !== docName
       )
       .map((fileName) => {
-        const uiItem = registry.find((item) => item.name === fileName);
+        const uiItem = ui.find((item) => item.name === fileName);
 
         if (!uiItem) return null;
 
@@ -208,7 +230,12 @@ function getRegistryDocs({
       route: `/docs/${item.type.includes('example') ? 'examples' : 'components'}/${item.name}`,
       title: getRegistryTitle(item),
     })),
-  ].filter(Boolean);
+  ]
+    .filter(Boolean)
+    .filter(
+      (doc, index, self) =>
+        index === self.findIndex((d) => d.route === doc.route)
+    );
 
   const groups = [...(file.doc?.docs || []), ...relatedDocs].reduce(
     (acc, doc) => {
@@ -216,6 +243,22 @@ function getRegistryDocs({
         acc.external.push(doc as any);
       } else if (doc.route!.startsWith('/docs/components')) {
         acc.components.push(doc as any);
+      } else if (doc.route!.startsWith('/docs/api')) {
+        acc.docs.push({
+          ...doc,
+          title:
+            getRegistryTitle({
+              name: doc.title ?? doc.route?.split('/').pop(),
+            }) + ' API',
+        } as any);
+      } else if (doc.route!.startsWith('/docs/')) {
+        acc.docs.push({
+          ...doc,
+          title:
+            getRegistryTitle({
+              name: doc.title ?? doc.route?.split('/').pop(),
+            }) + ' Plugin',
+        } as any);
       } else {
         acc.docs.push(doc as any);
       }
@@ -233,6 +276,42 @@ function getRegistryDocs({
     ...groups.components.sort((a, b) => a.title.localeCompare(b.title)),
     ...groups.external.sort((a, b) => a.title.localeCompare(b.title)),
   ];
+}
+
+async function getExampleCode(name?: string) {
+  if (!name) return null;
+  if (name.endsWith('-pro')) {
+    return proExamples.find((ex) => ex.name === name);
+  }
+
+  const example = examples.find((ex) => ex.name === name);
+
+  if (!example) {
+    throw new Error(`Component ${name} not found`);
+  }
+
+  // Use the same caching pattern
+  const item = await getCachedRegistryItem(name, true);
+  let highlightedFiles: any = [];
+  let tree: any = null;
+  let dependencies: string[] = [];
+
+  if (item?.files) {
+    [tree, highlightedFiles, dependencies] = await Promise.all([
+      getCachedFileTree(item.files),
+      getCachedHighlightedFiles(item.files),
+      getCachedDependencies(name),
+    ]);
+  }
+
+  return {
+    dependencies,
+    doc: { title: example.doc?.title },
+    highlightedFiles,
+    item,
+    name: example.name,
+    tree,
+  };
 }
 
 // const pkg = docToPackage(name);

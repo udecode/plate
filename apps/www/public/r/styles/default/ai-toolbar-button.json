@@ -21,7 +21,7 @@
   },
   "files": [
     {
-      "content": "'use client';\n\nimport React from 'react';\n\nimport { withRef } from '@udecode/cn';\nimport { AIChatPlugin } from '@udecode/plate-ai/react';\nimport { useEditorPlugin } from '@udecode/plate-common/react';\n\nimport { ToolbarButton } from './toolbar';\n\nexport const AIToolbarButton = withRef<typeof ToolbarButton>(\n  ({ children, ...rest }, ref) => {\n    const { api } = useEditorPlugin(AIChatPlugin);\n\n    return (\n      <ToolbarButton\n        ref={ref}\n        {...rest}\n        onClick={() => {\n          api.aiChat.show();\n        }}\n      >\n        {children}\n      </ToolbarButton>\n    );\n  }\n);\n",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { withRef } from '@udecode/cn';\nimport { AIChatPlugin } from '@udecode/plate-ai/react';\nimport { useEditorPlugin } from '@udecode/plate-common/react';\n\nimport { ToolbarButton } from './toolbar';\n\nexport const AIToolbarButton = withRef<typeof ToolbarButton>(\n  ({ children, ...rest }, ref) => {\n    const { api } = useEditorPlugin(AIChatPlugin);\n\n    return (\n      <ToolbarButton\n        ref={ref}\n        {...rest}\n        onClick={() => {\n          api.aiChat.show();\n        }}\n        onMouseDown={(e) => {\n          e.preventDefault();\n        }}\n      >\n        {children}\n      </ToolbarButton>\n    );\n  }\n);\n",
       "path": "plate-ui/ai-toolbar-button.tsx",
       "target": "components/plate-ui/ai-toolbar-button.tsx",
       "type": "registry:ui"

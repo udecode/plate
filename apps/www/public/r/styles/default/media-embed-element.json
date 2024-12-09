@@ -12,12 +12,15 @@
         "route": "/docs/media"
       },
       {
+        "route": "/docs/api/resizable"
+      },
+      {
         "route": "https://pro.platejs.org/docs/components/media-embed-element"
       }
     ],
     "examples": [
       "media-demo",
-      "media-toolbar-pro"
+      "upload-pro"
     ]
   },
   "files": [

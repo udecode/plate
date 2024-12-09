@@ -1,4 +1,4 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import {
   BoldPlugin,
@@ -9,12 +9,12 @@ import {
   createPlateEditor,
   getEditorPlugin,
 } from '@udecode/plate-common/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { onKeyDownAutoformat } from '../../../react/onKeyDownAutoformat';
 import { BaseAutoformatPlugin } from '../../BaseAutoformatPlugin';
 
-jsx;
+jsxt;
 
 const input = (
   <fragment>

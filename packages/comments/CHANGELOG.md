@@ -1,5 +1,13 @@
 # @udecode/plate-comments
 
+## 40.3.0
+
+### Minor Changes
+
+- [#3832](https://github.com/udecode/plate/pull/3832) by [@12joan](https://github.com/12joan) – Add an optional `initialFragment` property to `TComment`, which is populated with the fragment of text the comment is initially added to.
+
+## 40.0.0
+
 ## 39.0.0
 
 ## 38.0.1

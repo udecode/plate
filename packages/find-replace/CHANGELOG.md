@@ -1,5 +1,13 @@
 # @udecode/plate-find-replace
 
+## 40.2.8
+
+### Patch Changes
+
+- [#3815](https://github.com/udecode/plate/pull/3815) by [@yf-yang](https://github.com/yf-yang) – fix: FindReplacePlugin supports matching consecutive text nodes
+
+## 40.0.0
+
 ## 39.0.0
 
 ## 38.0.0

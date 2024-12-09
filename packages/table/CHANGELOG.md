@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 40.0.0
+
+### Patch Changes
+
+- [#3744](https://github.com/udecode/plate/pull/3744) by [@zbeyens](https://github.com/zbeyens) – Fix: remove tables without any rows
+
 ## 39.1.6
 
 ## 39.0.1

@@ -1,13 +1,11 @@
 import type { NavItem, NavItemWithChildren } from '@/types/nav';
 import type { Doc } from 'contentlayer/generated';
 
-import { cn } from '@udecode/cn';
+import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 import Link from 'next/link';
 
 import { docsConfig } from '@/config/docs';
-import { buttonVariants } from '@/registry/default/plate-ui/button';
-
-import { Icons } from './icons';
+import { Button } from '@/registry/default/plate-ui/button';
 
 interface DocsPagerProps {
   doc: Doc;
@@ -23,22 +21,20 @@ export function DocsPager({ doc }: DocsPagerProps) {
   return (
     <div className="flex flex-row items-center justify-between">
       {pager?.prev?.href && (
-        <Link
-          className={cn(buttonVariants({ variant: 'outline' }))}
-          href={pager.prev.href}
-        >
-          <Icons.chevronLeft />
-          {pager.prev.title}
-        </Link>
+        <Button asChild size="lg" variant="ghost">
+          <Link href={pager.prev.href}>
+            <ChevronLeftIcon />
+            {pager.prev.title}
+          </Link>
+        </Button>
       )}
       {pager?.next?.href && (
-        <Link
-          className={buttonVariants({ variant: 'outline' })}
-          href={pager.next.href}
-        >
-          {pager.next.title}
-          <Icons.chevronRight />
-        </Link>
+        <Button asChild size="lg" variant="ghost" className="ml-auto">
+          <Link href={pager.next.href}>
+            {pager.next.title}
+            <ChevronRightIcon />
+          </Link>
+        </Button>
       )}
     </div>
   );

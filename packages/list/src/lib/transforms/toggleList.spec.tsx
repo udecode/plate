@@ -1,8 +1,8 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import { type SlateEditor, createSlateEditor } from '@udecode/plate-common';
 import { ImagePlugin } from '@udecode/plate-media/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import {
   BulletedListPlugin,
@@ -11,7 +11,7 @@ import {
 } from '../../react';
 import { toggleList } from './toggleList';
 
-jsx;
+jsxt;
 
 describe('toggle on', () => {
   it('should turn a p to list', () => {

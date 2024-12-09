@@ -1,12 +1,12 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import { createSlateEditor } from '@udecode/plate-common';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { editorValueMock } from './__tests__/data';
 import { serializeMd } from './serializeMd';
 
-jsx;
+jsxt;
 
 describe('deserializeMd', () => {
   const editor = createSlateEditor();

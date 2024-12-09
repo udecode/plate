@@ -5,10 +5,6 @@ import type { Range } from 'slate';
 import type { SlateEditor } from '../editor';
 import type { Nullable } from '../types/misc';
 import type {
-  GetInjectNodePropsOptions,
-  GetInjectNodePropsReturnType,
-} from '../utils';
-import type {
   AnyPluginConfig,
   BaseDeserializer,
   BaseHtmlDeserializer,
@@ -17,6 +13,8 @@ import type {
   BasePluginContext,
   BaseSerializer,
   BaseTransformOptions,
+  GetInjectNodePropsOptions,
+  GetInjectNodePropsReturnType,
   InferApi,
   InferOptions,
   InferTransforms,
@@ -48,12 +46,13 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> =
         plugins?: Record<string, Partial<EditorPlugin<AnyPluginConfig>>>;
       };
       parsers:
-        | ({
-            [K in string]: {
+        | (Record<
+            string,
+            {
               deserializer?: Deserializer<WithAnyKey<C>>;
               serializer?: Serializer<WithAnyKey<C>>;
-            };
-          } & { html?: never })
+            }
+          > & { html?: never })
         | {
             html?: Nullable<{
               deserializer?: HtmlDeserializer<WithAnyKey<C>>;

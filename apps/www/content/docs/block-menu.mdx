@@ -1,6 +1,5 @@
 ---
 title: Block Menu
-description: Provides quick access to block-specific actions.
 docs:
   - route: /docs/components/block-context-menu
     title: Block Context Menu
@@ -13,7 +12,7 @@ docs:
 
 ---
 
-<ComponentPreview name="playground-demo" id="blockmenu" />
+<ComponentPreview name="block-menu-demo" />
 
 <PackageInfo>
 
@@ -45,18 +44,6 @@ const plugins = [
   NodeIdPlugin,
   BlockSelectionPlugin.configure({
     options: {
-      areaOptions: {
-        behaviour: {
-          scrolling: {
-            speedDivider: 1.5,
-          },
-          startThreshold: 10,
-        },
-        boundaries: '#scroll_container',
-        container: '#scroll_container',
-        selectables: '#scroll_container .slate-selectable',
-        selectionAreaClass: 'slate-selection-area',
-      },
       enableContextMenu: true,
     },
   }),

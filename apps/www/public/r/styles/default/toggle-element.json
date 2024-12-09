@@ -6,8 +6,7 @@
     "description": "A collapsible component for toggling content visibility.",
     "docs": [
       {
-        "route": "/docs/toggle",
-        "title": "Toggle"
+        "route": "/docs/toggle"
       }
     ],
     "examples": [

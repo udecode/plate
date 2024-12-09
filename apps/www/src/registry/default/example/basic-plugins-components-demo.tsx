@@ -1,32 +1,59 @@
 'use client';
 
+import { withProps } from '@udecode/cn';
 import {
   BoldPlugin,
   CodePlugin,
   ItalicPlugin,
-  StrikethroughPlugin,
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import { Plate, usePlateEditor } from '@udecode/plate-common/react';
+import {
+  Plate,
+  PlateElement,
+  PlateLeaf,
+  usePlateEditor,
+} from '@udecode/plate-common/react';
 import { HeadingPlugin } from '@udecode/plate-heading/react';
-import Prism from 'prismjs';
 
-import { createPlateUI } from '@/lib/plate/create-plate-ui';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 
 export default function BasicPluginsComponentsDemo() {
   const editor = usePlateEditor({
-    override: { components: createPlateUI() },
+    override: {
+      components: {
+        blockquote: withProps(PlateElement, {
+          as: 'blockquote',
+          className: 'mb-4 border-l-4 border-[#d0d7de] pl-4 text-[#636c76]',
+        }),
+        bold: withProps(PlateLeaf, { as: 'strong' }),
+        h1: withProps(PlateElement, {
+          as: 'h1',
+          className:
+            'mb-4 mt-6 text-3xl font-semibold tracking-tight lg:text-4xl',
+        }),
+        h2: withProps(PlateElement, {
+          as: 'h2',
+          className: 'mb-4 mt-6 text-2xl font-semibold tracking-tight',
+        }),
+        h3: withProps(PlateElement, {
+          as: 'h3',
+          className: 'mb-4 mt-6 text-xl font-semibold tracking-tight',
+        }),
+        italic: withProps(PlateLeaf, { as: 'em' }),
+        p: withProps(PlateElement, {
+          as: 'p',
+          className: 'mb-4',
+        }),
+        underline: withProps(PlateLeaf, { as: 'u' }),
+      },
+    },
     plugins: [
       BlockquotePlugin,
-      CodeBlockPlugin.configure({ options: { prism: Prism } }),
       HeadingPlugin,
       BoldPlugin,
       ItalicPlugin,
       UnderlinePlugin,
-      StrikethroughPlugin,
       CodePlugin,
     ],
     value: basicEditorValue,
@@ -68,45 +95,6 @@ export const basicEditorValue = [
       },
     ],
     type: 'blockquote',
-  },
-  {
-    id: '4',
-    children: [
-      {
-        children: [
-          {
-            text: '// Use code blocks to showcase code snippets',
-          },
-        ],
-        type: 'code_line',
-      },
-      {
-        children: [
-          {
-            text: 'function greet() {',
-          },
-        ],
-        type: 'code_line',
-      },
-      {
-        children: [
-          {
-            text: "  console.info('Hello World!');",
-          },
-        ],
-        type: 'code_line',
-      },
-      {
-        children: [
-          {
-            text: '}',
-          },
-        ],
-        type: 'code_line',
-      },
-    ],
-    lang: 'javascript',
-    type: 'code_block',
   },
   {
     id: '1',
@@ -161,61 +149,6 @@ export const basicEditorValue = [
       },
       {
         text: ' of these styles for a visually striking effect.',
-      },
-    ],
-    type: 'p',
-  },
-  {
-    id: '4',
-    children: [
-      {
-        text: 'Add ',
-      },
-      {
-        strikethrough: true,
-        text: 'strikethrough',
-      },
-      {
-        text: ' to indicate deleted or outdated content.',
-      },
-    ],
-    type: 'p',
-  },
-  {
-    id: '5',
-    children: [
-      {
-        text: 'Write code snippets with inline ',
-      },
-      {
-        code: true,
-        text: 'code',
-      },
-      {
-        text: ' formatting for easy readability.',
-      },
-    ],
-    type: 'p',
-  },
-  {
-    id: '6',
-    children: [
-      {
-        text: 'Press ',
-      },
-      {
-        kbd: true,
-        text: '⌘+B',
-      },
-      {
-        text: ' to apply bold mark or ',
-      },
-      {
-        kbd: true,
-        text: '⌘+I',
-      },
-      {
-        text: ' for italic mark.',
       },
     ],
     type: 'p',

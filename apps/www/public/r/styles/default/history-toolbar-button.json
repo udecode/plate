@@ -1,0 +1,28 @@
+{
+  "dependencies": [],
+  "doc": {
+    "description": "Toolbar buttons for undo and redo operations.",
+    "docs": [
+      {
+        "route": "https://docs.slatejs.org/libraries/slate-history",
+        "title": "Slate History"
+      }
+    ],
+    "examples": [
+      "basic-nodes-demo"
+    ]
+  },
+  "files": [
+    {
+      "content": "'use client';\n\nimport {\n  useEditorRef,\n  useEditorSelector,\n  withRef,\n} from '@udecode/plate-common/react';\nimport { Redo2Icon, Undo2Icon } from 'lucide-react';\n\nimport { ToolbarButton } from './toolbar';\n\nexport const RedoToolbarButton = withRef<typeof ToolbarButton>((props, ref) => {\n  const editor = useEditorRef();\n  const disabled = useEditorSelector(\n    (editor) => editor.history.redos.length === 0,\n    []\n  );\n\n  return (\n    <ToolbarButton\n      ref={ref}\n      disabled={disabled}\n      onClick={() => editor.redo()}\n      onMouseDown={(e) => e.preventDefault()}\n      tooltip=\"Redo\"\n      {...props}\n    >\n      <Redo2Icon />\n    </ToolbarButton>\n  );\n});\n\nexport const UndoToolbarButton = withRef<typeof ToolbarButton>((props, ref) => {\n  const editor = useEditorRef();\n  const disabled = useEditorSelector(\n    (editor) => editor.history.undos.length === 0,\n    []\n  );\n\n  return (\n    <ToolbarButton\n      ref={ref}\n      disabled={disabled}\n      onClick={() => editor.undo()}\n      onMouseDown={(e) => e.preventDefault()}\n      tooltip=\"Undo\"\n      {...props}\n    >\n      <Undo2Icon />\n    </ToolbarButton>\n  );\n});\n",
+      "path": "plate-ui/history-toolbar-button.tsx",
+      "target": "components/plate-ui/history-toolbar-button.tsx",
+      "type": "registry:ui"
+    }
+  ],
+  "name": "history-toolbar-button",
+  "registryDependencies": [
+    "toolbar"
+  ],
+  "type": "registry:ui"
+}

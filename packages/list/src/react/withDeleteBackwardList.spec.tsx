@@ -1,13 +1,13 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import type { SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { ListPlugin } from './ListPlugin';
 
-jsx;
+jsxt;
 
 describe('li > lic * 2 with selection at second child start', () => {
   it('should merge the children', () => {

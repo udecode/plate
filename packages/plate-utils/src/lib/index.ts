@@ -5,4 +5,4 @@
 export * from './defaultsDeepToNodes';
 export * from './isType';
 export * from './moveSelectionByOffset';
-export type * from './types/index';
+export * from './types/index';

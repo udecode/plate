@@ -26,42 +26,25 @@ export const proExamples: Registry = [
   {
     doc: {
       description: `- Integration with [UploadThing](https://uploadthing.com/)
-- Support for various media types: images, videos, audio, and files
 - Use slash commands for quick insertion
-- Image-specific features:
-  - Resize using vertical edge bars
-  - Alignment options
-  - Caption support
-  - Expand/collapse view
-  - Easy download
-- Video-specific features:
-  - Resize using vertical edge bars
-  - Alignment options
-  - Caption support
-  - View original source
-- Audio and file upload support
-- Ability to embed media via URL
-`,
-      // {/* - Multiple upload methods:
-      //   - Drag & drop files from your computer
-      //   - Paste images directly from clipboard */}
-      // {/* - Block menu for easy modification of uploaded content */}
-    },
-    name: 'upload-pro',
-    type: 'registry:pro',
-  },
-  {
-    doc: {
-      description: `- Displays clickable placeholders for various media types (image, video, audio, file)
+- Displays clickable placeholders for various media types (image, video, audio, file)
 - Opens a popover with two tabs when the placeholder is clicked:
   - Upload tab: Allows uploading local files directly
   - Embed tab: Enables pasting embed links for media content
-- Automatically converts the placeholder to the appropriate media element (image, video, audio, file) once the upload or embed is submitted
-- Validates URLs and file types for each media category
-- Beautifully crafted UI`,
+- Image-specific features:
+  - **Better loading rendering and image replacement**
+  - Alignment options
+  - Expand/collapse view
+  - Download button
+- Video-specific features:
+  - Lazy load
+  - Alignment options
+  - Caption support
+  - View original source
+- Beautifully crafted UI
+`,
     },
-    // TODO in pro
-    name: 'media-placeholder-pro',
+    name: 'upload-pro',
     type: 'registry:pro',
   },
   {
@@ -257,98 +240,545 @@ export const proExamples: Registry = [
   //   },
 ];
 
-export const examples: Registry = [
+export const docExamples: Registry = [
   {
-    dependencies: ['@udecode/plate-ai', '@udecode/plate-markdown'],
     doc: {
       description:
         'AI menu with commands, streaming responses in a preview or directly into the editor.',
+      docs: [
+        {
+          route: '/docs/ai',
+          title: 'AI',
+        },
+      ],
       title: 'AI',
     },
     files: [
-      'example/playground-demo.tsx',
-      // 'example/ai-plugins.tsx',
-      // 'example/ai-value.tsx',
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      {
+        path: 'components/editor/plugins/ai-plugins.tsx',
+        type: 'registry:example',
+      },
+      { path: 'example/values/ai-value.tsx', type: 'registry:example' },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
     ],
     name: 'ai-demo',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  {
-    doc: {
-      description:
-        'Basic block elements like headings, quotes, and code blocks.',
-    },
-    files: [
-      'example/playground-demo.tsx',
-      // 'example/basic-elements-plugins.tsx',
-      // 'example/basic-elements-value.tsx',
+    registryDependencies: [
+      'basic-nodes-plugins',
+      'block-selection-plugins',
+      'indent-list-plugins',
+      'link-plugin',
     ],
-    name: 'basic-elements-demo',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  {
-    doc: {
-      description:
-        'Basic text formatting marks like bold, italic, and underline.',
-    },
-    files: [
-      'example/playground-demo.tsx',
-      // 'example/basic-marks-plugins.tsx',
-      // 'example/basic-marks-value.tsx',
-    ],
-    name: 'basic-marks-demo',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  {
-    doc: {
-      description: 'Basic block elements and text marks.',
-      keywords: ['element', 'leaf'],
-    },
-    files: [
-      'example/playground-demo.tsx',
-      // 'example/basic-nodes-plugins.tsx',
-      // 'example/basic-nodes-value.tsx',
-    ],
-    name: 'basic-nodes-demo',
-    registryDependencies: [],
     type: 'registry:example',
   },
   {
     doc: {
       description: 'Text alignment controls for blocks.',
     },
-    files: ['example/playground-demo.tsx'],
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      { path: 'example/values/align-value.tsx', type: 'registry:example' },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
     name: 'align-demo',
-    registryDependencies: [],
+    registryDependencies: ['align-plugin'],
+    type: 'registry:example',
+  },
+
+  {
+    doc: {
+      description: 'Apply formatting automatically using shortcodes.',
+      title: 'Autoformat',
+    },
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      { path: 'example/values/autoformat-value.tsx', type: 'registry:example' },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'autoformat-demo',
+    registryDependencies: ['autoformat-plugin'],
+    type: 'registry:example',
+  },
+  {
+    doc: {
+      description:
+        'Basic block elements like headings, quotes, and code blocks.',
+      docs: [
+        {
+          route: '/docs/basic-elements',
+          title: 'Basic Elements',
+        },
+      ],
+    },
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      {
+        path: 'example/values/basic-elements-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'basic-elements-demo',
+    registryDependencies: ['basic-nodes-plugins'],
+    type: 'registry:example',
+  },
+  {
+    doc: {
+      description:
+        'Basic text formatting marks like bold, italic, and underline.',
+      docs: [
+        {
+          route: '/docs/basic-marks',
+          title: 'Basic Marks',
+        },
+      ],
+    },
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      {
+        path: 'example/values/basic-marks-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'basic-marks-demo',
+    registryDependencies: ['basic-nodes-plugins'],
+    type: 'registry:example',
+  },
+  {
+    doc: {
+      description: 'Basic block elements and text marks.',
+      docs: [
+        {
+          route: '/docs/basic-elements',
+          title: 'Basic Elements',
+        },
+      ],
+      keywords: ['element', 'leaf'],
+    },
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      {
+        path: 'example/values/basic-nodes-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'example/values/basic-elements-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'example/values/basic-marks-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'basic-nodes-demo',
+    registryDependencies: ['basic-nodes-plugins'],
     type: 'registry:example',
   },
   {
     doc: {
       description: 'Block-level context menu with formatting options.',
+      docs: [
+        {
+          route: '/docs/block-menu',
+          title: 'Block Menu',
+        },
+      ],
     },
-    files: ['example/playground-demo.tsx'],
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      { path: 'example/values/block-menu-value.tsx', type: 'registry:example' },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
     name: 'block-menu-demo',
-    registryDependencies: [],
+    registryDependencies: ['block-menu-plugins'],
     type: 'registry:example',
   },
   {
     doc: {
       description: 'Visual block selection with keyboard support.',
     },
-    files: ['example/playground-demo.tsx'],
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      {
+        path: 'example/values/block-selection-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
     name: 'block-selection-demo',
+    registryDependencies: ['block-selection-plugins'],
+    type: 'registry:example',
+  },
+  {
+    doc: {
+      description: 'Column layout.',
+      docs: [
+        {
+          route: '/docs/column',
+          title: 'Column',
+        },
+      ],
+    },
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      { path: 'example/values/column-value.tsx', type: 'registry:example' },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'column-demo',
     registryDependencies: [],
     type: 'registry:example',
   },
   {
     doc: {
-      description: 'Media upload and caption functionality.',
+      description: 'Adding and displaying comments within content.',
+      docs: [
+        {
+          route: '/docs/comments',
+          title: 'Comments',
+        },
+      ],
     },
-    files: ['example/playground-demo.tsx'],
-    name: 'upload-demo',
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      { path: 'example/values/comments-value.tsx', type: 'registry:example' },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'comments-demo',
+    registryDependencies: ['comments-plugin'],
+    type: 'registry:example',
+  },
+  {
+    dependencies: ['@udecode/plate-ai', '@udecode/plate-markdown'],
+    doc: {
+      description: 'Renders AI ghost text suggestions at the cursor position.',
+      docs: [
+        {
+          route: '/docs/copilot',
+          title: 'Copilot',
+        },
+      ],
+    },
+    files: [
+      { path: 'example/copilot-demo.tsx', type: 'registry:example' },
+      { path: 'example/values/copilot-value.tsx', type: 'registry:example' },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'copilot-demo',
+    registryDependencies: ['copilot-plugins'],
+    type: 'registry:example',
+  },
+  {
+    doc: {
+      description: 'Visual indicator for cursor position within the editor.',
+      title: 'Cursor Overlay',
+    },
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      {
+        path: 'example/values/cursor-overlay-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'cursor-overlay-demo',
+    registryDependencies: ['cursor-overlay-plugin'],
+    type: 'registry:example',
+  },
+  // {
+  //   doc: {
+  //     description: 'Media upload and caption functionality.',
+  //   },
+  // {type: 'registry:example',path:  //   files: ['example/demo.tsx'],}
+  //   name: 'upload-demo',
+  //   registryDependencies: [],
+  //   type: 'registry:example',
+  // },
+  // {
+  //   doc: {
+  //     description: 'Real-time collaboration with cursors and selections.',
+  //   },
+  // {type: 'registry:example',path:  //   files: ['example/demo.tsx'],}
+  //   name: 'collaboration-demo',
+  //   registryDependencies: [],
+  //   type: 'registry:example',
+  // },
+  {
+    doc: {
+      description: 'Inline date elements with calendar selection interface.',
+      docs: [
+        {
+          route: '/docs/date',
+          title: 'Date',
+        },
+      ],
+    },
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      { path: 'example/values/date-value.tsx', type: 'registry:example' },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'date-demo',
+    registryDependencies: [],
+    type: 'registry:example',
+  },
+  {
+    doc: {
+      description:
+        'Implements draggable functionality for editor blocks, including drag handles and drop indicators.',
+      docs: [
+        {
+          route: '/docs/dnd',
+          title: 'Drag & Drop',
+        },
+      ],
+      title: 'Drag & Drop',
+    },
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      { path: 'example/values/dnd-value.tsx', type: 'registry:example' },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'dnd-demo',
+    registryDependencies: ['dnd-plugins'],
+    type: 'registry:example',
+  },
+  {
+    doc: {
+      description: 'Emoji insertion via toolbar or colon-triggered combobox.',
+      docs: [
+        {
+          route: '/docs/emoji',
+          title: 'Emoji',
+        },
+      ],
+    },
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      { path: 'example/values/emoji-value.tsx', type: 'registry:example' },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'emoji-demo',
+    registryDependencies: [],
+    type: 'registry:example',
+  },
+  {
+    doc: {
+      description: 'Exit a large block using a shortcut.',
+      title: 'Exit Break',
+    },
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      { path: 'example/values/exit-break-value.tsx', type: 'registry:example' },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'exit-break-demo',
+    registryDependencies: ['exit-break-plugin'],
+    type: 'registry:example',
+  },
+  {
+    // doc: {
+    //   description: 'A drawing component powered by Excalidraw.',
+    //   title: 'Excalidraw',
+    // },
+    files: [
+      { path: 'example/excalidraw-demo.tsx', type: 'registry:example' },
+      { path: 'example/values/excalidraw-value.tsx', type: 'registry:example' },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'excalidraw-demo',
+    registryDependencies: [],
+    type: 'registry:example',
+  },
+  // {
+  //   doc: {
+  //     description: 'LaTeX equations with inline and block formats.',
+  //     docs: [
+  //       {
+  //         route: '/docs/equation',
+  //         title: 'Equation',
+  //       },
+  //     ],
+  //   },
+  //   files: [
+  // {type: 'registry:example',path:  //     'example/demo.tsx',}
+  // {type: 'registry:example',path:  //     'components/editor/plugins/equation-plugins.tsx',}
+  // {type: 'registry:example',path:  //     'example/values/equation-value.tsx',}
+  //   ],
+  //   name: 'equation-demo',
+  //   registryDependencies: [],
+  //   type: 'registry:example',
+  // },
+  {
+    doc: {
+      description: 'Find and replace functionality in text.',
+    },
+    files: [
+      { path: 'example/find-replace-demo.tsx', type: 'registry:example' },
+      {
+        path: 'example/values/find-replace-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'find-replace-demo',
+    registryDependencies: ['fixed-toolbar', 'input', 'search-highlight-leaf'],
+    type: 'registry:example',
+  },
+  {
+    doc: {
+      description:
+        'Floating toolbar with text formatting and AI assistance options.',
+      docs: [
+        {
+          route: '/docs/ai',
+          title: 'AI',
+        },
+      ],
+    },
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      {
+        path: 'example/values/floating-toolbar-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'floating-toolbar-demo',
     registryDependencies: [],
     type: 'registry:example',
   },
@@ -356,146 +786,143 @@ export const examples: Registry = [
     doc: {
       description: 'Color picker for text and background colors.',
     },
-    files: ['example/playground-demo.tsx'],
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      { path: 'example/values/font-value.tsx', type: 'registry:example' },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
     name: 'font-demo',
     registryDependencies: [],
     type: 'registry:example',
   },
   {
-    doc: {
-      description: 'Layout with configurable columns.',
-    },
-    files: ['example/playground-demo.tsx'],
-    name: 'column-demo',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  {
-    doc: {
-      description: 'Render AI suggestions ghost text as you type.',
-    },
-    files: ['example/playground-demo.tsx'],
-    name: 'copilot-demo',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  {
-    doc: {
-      description: 'Collaborative commenting system.',
-    },
-    files: ['example/playground-demo.tsx'],
-    name: 'comment-demo',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  // {
-  //   doc: {
-  //     description: 'Real-time collaboration with cursors and selections.',
-  //   },
-  //   files: ['example/playground-demo.tsx'],
-  //   name: 'collaboration-demo',
-  //   registryDependencies: [],
-  //   type: 'registry:example',
-  // },
-  {
-    doc: {
-      description: 'An inline date element with calendar selection interface.',
-      title: 'Date',
-    },
-    files: ['example/playground-demo.tsx'],
-    name: 'date-demo',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  {
-    doc: {
-      description: 'A drawing component powered by Excalidraw.',
-      title: 'Excalidraw',
-    },
-    files: ['example/playground-demo.tsx'],
-    name: 'excalidraw-demo',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  {
-    doc: {
-      description: 'Drag and drop functionality for blocks.',
-      title: 'Drag & Drop',
-    },
-    files: ['example/playground-demo.tsx'],
-    name: 'dnd-demo',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  {
-    doc: {
-      description: 'Emoji picker with search and categories.',
-    },
-    files: ['example/playground-demo.tsx'],
-    name: 'emoji-demo',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  {
-    doc: {
-      description: 'Fixed toolbar with formatting controls.',
-    },
-    files: ['example/playground-demo.tsx'],
-    name: 'toolbar-demo',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  {
-    doc: {
-      description: 'Floating toolbar for selected text.',
-    },
-    files: ['example/playground-demo.tsx'],
-    name: 'floating-toolbar-demo',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  {
-    doc: {
-      description: 'Find and replace functionality in text.',
-    },
-    files: ['example/find-replace-demo.tsx'],
-    name: 'find-replace-demo',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  {
-    doc: {
-      description: 'Text highlighting with customizable colors.',
-    },
-    files: ['example/playground-demo.tsx'],
+    // doc: {
+    //   description: 'Text highlighting with customizable colors.',
+    // },
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      { path: 'example/values/highlight-value.tsx', type: 'registry:example' },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
     name: 'highlight-demo',
     registryDependencies: [],
     type: 'registry:example',
   },
   {
     doc: {
-      description: 'Horizontal rule insertion and styling.',
-      title: 'Horizontal Rule',
+      description: 'Horizontal lines for visually separating content sections.',
+      docs: [
+        {
+          route: '/docs/horizontal-rule',
+          title: 'Horizontal Rule',
+        },
+      ],
     },
-    files: ['example/playground-demo.tsx'],
-    name: 'hr-demo',
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      {
+        path: 'example/values/horizontal-rule-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'horizontal-rule-demo',
     registryDependencies: [],
     type: 'registry:example',
   },
   {
-    doc: {
-      description: 'Block indentation controls.',
-    },
-    files: ['example/playground-demo.tsx'],
+    // doc: {
+    //   description: 'Customize text indentation.',
+    //   docs: [
+    //     {
+    //       route: '/docs/indent',
+    //       title: 'Indent',
+    //     },
+    //   ],
+    // },
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      { path: 'example/values/indent-value.tsx', type: 'registry:example' },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
     name: 'indent-demo',
-    registryDependencies: [],
+    registryDependencies: ['indent-list-plugins'],
     type: 'registry:example',
   },
   {
     doc: {
-      description: 'Keyboard shortcut styling.',
+      description: 'Turn any block into a list item.',
+      docs: [
+        {
+          route: '/docs/indent',
+          title: 'Indent',
+        },
+        {
+          route: '/docs/indent-list',
+          title: 'Indent List',
+        },
+      ],
     },
-    files: ['example/playground-demo.tsx'],
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      {
+        path: 'example/values/indent-list-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'indent-list-demo',
+    registryDependencies: ['indent-list-plugins'],
+    type: 'registry:example',
+  },
+  {
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      { path: 'example/values/kbd-value.tsx', type: 'registry:example' },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
     name: 'kbd-demo',
     registryDependencies: [],
     type: 'registry:example',
@@ -504,119 +931,481 @@ export const examples: Registry = [
     doc: {
       description: 'Line height adjustment controls.',
     },
-    files: ['example/playground-demo.tsx'],
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      {
+        path: 'example/values/line-height-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
     name: 'line-height-demo',
-    registryDependencies: [],
+    registryDependencies: ['line-height-plugin'],
     type: 'registry:example',
   },
   {
     doc: {
-      description: 'Link insertion and editing.',
+      description: 'Hyperlinks with toolbar insertion and URL pasting support.',
+      docs: [
+        {
+          route: '/docs/link',
+          title: 'Link',
+        },
+      ],
     },
-    files: ['example/playground-demo.tsx'],
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      { path: 'example/values/link-value.tsx', type: 'registry:example' },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
     name: 'link-demo',
-    registryDependencies: [],
+    registryDependencies: ['link-plugin'],
     type: 'registry:example',
   },
   {
     doc: {
       description: 'List creation and formatting.',
     },
-    files: ['example/playground-demo.tsx'],
+    files: [
+      { path: 'example/list-demo.tsx', type: 'registry:example' },
+      { path: 'example/values/list-value.tsx', type: 'registry:example' },
+      {
+        path: 'components/editor/plugins/fixed-toolbar-list-plugin.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'plate-ui/fixed-toolbar-list-buttons.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/use-create-editor-list.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
     name: 'list-demo',
-    registryDependencies: [],
+    registryDependencies: [
+      'autoformat-list-plugin',
+      'list-element',
+      'todo-list-element',
+    ],
     type: 'registry:example',
   },
   {
     doc: {
       description: 'Media embedding and management.',
     },
-    files: ['example/playground-demo.tsx'],
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      { path: 'example/values/media-value.tsx', type: 'registry:example' },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
     name: 'media-demo',
-    registryDependencies: [],
+    registryDependencies: ['media-plugins'],
     type: 'registry:example',
   },
   {
     doc: {
-      description: 'User mention functionality with autocomplete.',
+      description: 'Mention functionality for referencing users or entities.',
+      docs: [
+        {
+          route: '/docs/mention',
+          title: 'Mention',
+        },
+      ],
     },
-    files: ['example/playground-demo.tsx'],
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      { path: 'example/values/mention-value.tsx', type: 'registry:example' },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
     name: 'mention-demo',
-    registryDependencies: [],
+    registryDependencies: ['mention-plugin'],
+    type: 'registry:example',
+  },
+  // {
+  //   doc: {
+  //     description: 'Placeholder text in empty blocks.',
+  //   },
+  //   files: [
+  // {type: 'registry:example',path:  //     'example/demo.tsx',}
+  // {type: 'registry:example',path:  //     'components/editor/use-create-editor.ts',}
+  // {type: 'registry:example',path:  //     'components/editor/plugins/editor-plugins.tsx',}
+  //   ],
+  //   name: 'placeholder-demo',
+  //   registryDependencies: [],
+  //   type: 'registry:example',
+  // },
+  {
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      {
+        path: 'example/values/basic-elements-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'reset-node-demo',
+    registryDependencies: ['reset-block-type-plugin'],
     type: 'registry:example',
   },
   {
     doc: {
-      description: 'Editor mode switching.',
+      description: 'Copy paste from CSV to Slate.',
+      title: 'Serializing CSV',
     },
-    files: ['example/playground-demo.tsx'],
-    name: 'mode-demo',
-    registryDependencies: [],
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      {
+        path: 'example/values/deserialize-csv-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'csv-demo',
     type: 'registry:example',
   },
   {
     doc: {
-      description: 'Placeholder text in empty blocks.',
+      description: 'Copy paste from DOCX to Slate.',
+      title: 'Serializing Docx',
     },
-    files: ['example/playground-demo.tsx'],
-    name: 'placeholder-demo',
-    registryDependencies: [],
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      {
+        path: 'example/values/deserialize-docx-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'docx-demo',
     type: 'registry:example',
   },
   {
     doc: {
-      description: 'Element resizing functionality.',
+      description: 'Copy paste from HTML to Slate.',
+      title: 'Serializing HTML',
     },
-    files: ['example/playground-demo.tsx'],
-    name: 'resizable-demo',
-    registryDependencies: [],
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      {
+        path: 'example/values/deserialize-html-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'html-demo',
     type: 'registry:example',
   },
   {
     doc: {
-      description: 'Slash commands for block insertion.',
+      description: 'Copy paste from Markdown to Slate.',
+      title: 'Serializing Markdown',
     },
-    files: ['example/playground-demo.tsx'],
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      {
+        path: 'example/values/deserialize-md-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'markdown-demo',
+    type: 'registry:example',
+  },
+  {
+    doc: {
+      description: 'A form with a select editor component for managing labels.',
+      docs: [
+        {
+          route: '/docs/multi-select',
+        },
+      ],
+      title: 'Select Editor Form',
+    },
+    files: [
+      { path: 'example/select-editor-demo.tsx', type: 'registry:example' },
+    ],
+    name: 'select-editor-demo',
+    registryDependencies: ['form', 'button', 'select-editor'],
+    type: 'registry:example',
+  },
+  {
+    doc: {
+      description: 'Restrict the editor to a single block.',
+      title: 'Single Line',
+    },
+    files: [
+      { path: 'example/single-line-demo.tsx', type: 'registry:example' },
+      {
+        path: 'example/values/single-line-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'single-line-demo',
+    type: 'registry:example',
+  },
+  {
+    doc: {
+      description:
+        'Slash command menu for quick insertion of various content types.',
+      docs: [
+        {
+          route: '/docs/slash-command',
+          title: 'Slash Command',
+        },
+      ],
+    },
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      {
+        path: 'example/values/slash-command-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
     name: 'slash-command-demo',
     registryDependencies: [],
     type: 'registry:example',
   },
   {
     doc: {
-      description: 'Table creation and manipulation.',
+      description:
+        'Insert line breaks within a block of text without starting a new block.',
+      title: 'Soft Break',
     },
-    files: ['example/playground-demo.tsx'],
-    name: 'table-demo',
-    registryDependencies: [],
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      { path: 'example/values/soft-break-value.tsx', type: 'registry:example' },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'soft-break-demo',
+    registryDependencies: ['soft-break-plugin'],
+    type: 'registry:example',
+  },
+  {
+    files: [
+      { path: 'example/tabbable-demo.tsx', type: 'registry:example' },
+      { path: 'example/values/tabbable-value.tsx', type: 'registry:example' },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'tabbable-demo',
     type: 'registry:example',
   },
   {
     doc: {
-      description: 'Table of contents generation.',
+      description:
+        'Customizable tables with resizable columns and row merging options.',
+      docs: [
+        {
+          route: '/docs/table',
+          title: 'Table',
+        },
+      ],
     },
-    files: ['example/playground-demo.tsx'],
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      { path: 'example/values/table-value.tsx', type: 'registry:example' },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'table-demo',
+    registryDependencies: ['table-plugin'],
+    type: 'registry:example',
+  },
+  {
+    files: [
+      { path: 'example/table-nomerge-demo.tsx', type: 'registry:example' },
+      { path: 'example/values/table-value.tsx', type: 'registry:example' },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'table-nomerge-demo',
+    type: 'registry:example',
+  },
+  {
+    doc: {
+      description: 'Dynamic TOC with in-document element for easy navigation.',
+      docs: [
+        {
+          route: '/docs/toc',
+          title: 'TOC',
+        },
+      ],
+      title: 'Table of Contents',
+    },
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      { path: 'example/values/toc-value.tsx', type: 'registry:example' },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
     name: 'toc-demo',
-    registryDependencies: [],
+    registryDependencies: ['toc-plugin'],
     type: 'registry:example',
   },
   {
     doc: {
       description: 'Collapsible content blocks.',
     },
-    files: ['example/playground-demo.tsx'],
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
     name: 'toggle-demo',
     registryDependencies: [],
     type: 'registry:example',
   },
+];
 
+export const examples: Registry = [
+  ...docExamples,
+
+  {
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'demo',
+    type: 'registry:example',
+  },
   // Others
   {
-    files: ['example/pro-iframe-demo.tsx'],
+    files: [{ path: 'example/pro-iframe-demo.tsx', type: 'registry:example' }],
     name: 'pro-iframe-demo',
     type: 'registry:example',
   },
   {
-    files: ['example/potion-iframe-demo.tsx'],
+    files: [
+      { path: 'example/potion-iframe-demo.tsx', type: 'registry:example' },
+    ],
     name: 'potion-iframe-demo',
     type: 'registry:example',
   },
@@ -625,7 +1414,7 @@ export const examples: Registry = [
     doc: {
       title: 'Default',
     },
-    files: ['example/editor-default.tsx'],
+    files: [{ path: 'example/editor-default.tsx', type: 'registry:example' }],
     name: 'editor-default',
     registryDependencies: [],
     type: 'registry:example',
@@ -634,7 +1423,7 @@ export const examples: Registry = [
     doc: {
       title: 'Disabled',
     },
-    files: ['example/editor-disabled.tsx'],
+    files: [{ path: 'example/editor-disabled.tsx', type: 'registry:example' }],
     name: 'editor-disabled',
     registryDependencies: [],
     type: 'registry:example',
@@ -643,118 +1432,168 @@ export const examples: Registry = [
     doc: {
       title: 'Full Width',
     },
-    files: ['example/editor-full-width.tsx'],
+    files: [
+      { path: 'example/editor-full-width.tsx', type: 'registry:example' },
+    ],
     name: 'editor-full-width',
     registryDependencies: [],
     type: 'registry:example',
   },
   {
-    doc: {
-      title: 'AI Chat',
-    },
-    files: ['example/editor-ai-chat.tsx'],
-    name: 'editor-ai-chat',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  {
-    files: ['example/basic-editor-default-demo.tsx'],
+    files: [
+      {
+        path: 'example/basic-editor-default-demo.tsx',
+        type: 'registry:example',
+      },
+    ],
     name: 'basic-editor-default-demo',
     registryDependencies: [],
     type: 'registry:example',
   },
   {
-    files: ['example/controlled-demo.tsx'],
+    files: [{ path: 'example/controlled-demo.tsx', type: 'registry:example' }],
     name: 'controlled-demo',
     registryDependencies: [],
     type: 'registry:example',
   },
   {
-    files: ['example/basic-editor-styling-demo.tsx'],
+    files: [
+      {
+        path: 'example/basic-editor-styling-demo.tsx',
+        type: 'registry:example',
+      },
+    ],
     name: 'basic-editor-styling-demo',
     registryDependencies: [],
     type: 'registry:example',
   },
   {
-    files: ['example/basic-editor-handler-demo.tsx'],
+    files: [
+      {
+        path: 'example/basic-editor-handler-demo.tsx',
+        type: 'registry:example',
+      },
+    ],
     name: 'basic-editor-handler-demo',
     registryDependencies: [],
     type: 'registry:example',
   },
   {
-    files: ['example/basic-editor-value-demo.tsx'],
+    files: [
+      { path: 'example/basic-editor-value-demo.tsx', type: 'registry:example' },
+    ],
     name: 'basic-editor-value-demo',
     registryDependencies: [],
     type: 'registry:example',
   },
   {
-    files: ['example/basic-plugins-components-demo.tsx'],
+    files: [
+      {
+        path: 'example/basic-plugins-components-demo.tsx',
+        type: 'registry:example',
+      },
+    ],
     name: 'basic-plugins-components-demo',
     registryDependencies: [],
     type: 'registry:example',
   },
   {
-    files: ['example/basic-plugins-default-demo.tsx'],
+    files: [
+      {
+        path: 'example/basic-plugins-default-demo.tsx',
+        type: 'registry:example',
+      },
+    ],
     name: 'basic-plugins-default-demo',
     registryDependencies: [],
     type: 'registry:example',
   },
   {
-    files: ['example/editable-voids-demo.tsx'],
+    files: [
+      { path: 'example/editable-voids-demo.tsx', type: 'registry:example' },
+    ],
     name: 'editable-voids-demo',
     registryDependencies: [],
     type: 'registry:example',
   },
   {
-    files: ['example/hundreds-blocks-demo.tsx'],
+    files: [
+      { path: 'example/hundreds-blocks-demo.tsx', type: 'registry:example' },
+    ],
     name: 'hundreds-blocks-demo',
     registryDependencies: [],
     type: 'registry:example',
   },
   {
-    files: ['example/hundreds-editors-demo.tsx'],
+    files: [
+      { path: 'example/hundreds-editors-demo.tsx', type: 'registry:example' },
+    ],
     name: 'hundreds-editors-demo',
     registryDependencies: [],
     type: 'registry:example',
   },
   {
-    files: ['example/iframe-demo.tsx'],
+    files: [{ path: 'example/iframe-demo.tsx', type: 'registry:example' }],
     name: 'iframe-demo',
     registryDependencies: [],
     type: 'registry:example',
   },
   {
-    files: ['example/mode-toggle.tsx'],
+    files: [{ path: 'example/mode-toggle.tsx', type: 'registry:example' }],
     name: 'mode-toggle',
     type: 'registry:example',
   },
   {
-    files: ['example/multiple-editors-demo.tsx'],
+    files: [
+      { path: 'example/multiple-editors-demo.tsx', type: 'registry:example' },
+    ],
     name: 'multiple-editors-demo',
     registryDependencies: [],
     type: 'registry:example',
   },
   {
-    files: ['example/version-history-demo.tsx'],
+    files: [
+      { path: 'example/version-history-demo.tsx', type: 'registry:example' },
+    ],
     name: 'version-history-demo',
     registryDependencies: [],
     type: 'registry:example',
   },
   {
-    files: ['example/playground-demo.tsx'],
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
     name: 'playground-demo',
     registryDependencies: [],
     type: 'registry:example',
   },
   {
-    files: ['example/preview-md-demo.tsx'],
-    name: 'preview-md-demo',
+    files: [
+      { path: 'example/preview-markdown-demo.tsx', type: 'registry:example' },
+    ],
+    name: 'preview-markdown-demo',
+    registryDependencies: [],
+    type: 'registry:example',
+  },
+  {
+    files: [
+      { path: 'example/markdown-to-slate-demo.tsx', type: 'registry:example' },
+    ],
+    name: 'markdown-to-slate-demo',
     registryDependencies: [],
     type: 'registry:example',
   },
   // {
   //   external: true,
-  //   files: ['lib/plate-types.ts'],
+  // {type: 'registry:example',path:  //   files: ['lib/plate-types.ts'],}
   //   name: 'plate-types',
   //   type: 'registry:lib',
   // },

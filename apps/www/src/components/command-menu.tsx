@@ -140,7 +140,7 @@ export function CommandMenu({ ...props }: DialogProps) {
       <Button
         variant="outline"
         className={cn(
-          'relative flex h-8 w-full items-center justify-start rounded-[0.5rem] bg-muted/50 text-sm font-normal text-muted-foreground shadow-none sm:pr-12 md:w-40 lg:w-64'
+          'relative flex h-8 w-full items-center justify-start rounded-[0.5rem] bg-muted/50 text-sm font-normal text-muted-foreground shadow-none sm:pr-12 md:w-40 lg:w-56 xl:w-64'
         )}
         onClick={() => setOpen(true)}
         {...props}
@@ -175,7 +175,7 @@ export function CommandMenu({ ...props }: DialogProps) {
 
             return (
               <CommandMenuGroup
-                key={group.title}
+                key={group.title + ':sidebar'}
                 runCommand={runCommand}
                 {...group}
               />

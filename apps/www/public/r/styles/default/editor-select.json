@@ -1,0 +1,16 @@
+{
+  "description": "A select editor",
+  "files": [
+    {
+      "content": "import EditorSelectForm from '@/components/select-editor-demo';\n\nexport default function Page() {\n  return (\n    <div className=\"flex h-screen w-full justify-center\" data-registry=\"plate\">\n      <EditorSelectForm />\n    </div>\n  );\n}\n",
+      "path": "block/editor-select/page.tsx",
+      "target": "app/editor/page.tsx",
+      "type": "registry:page"
+    }
+  ],
+  "name": "editor-select",
+  "registryDependencies": [
+    "select-editor-demo"
+  ],
+  "type": "registry:block"
+}

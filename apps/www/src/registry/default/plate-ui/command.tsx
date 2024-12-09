@@ -4,6 +4,7 @@ import * as React from 'react';
 
 import type { DialogProps } from '@radix-ui/react-dialog';
 
+import { Command as CommandPrimitive } from '@udecode/cmdk';
 import {
   cn,
   createPrimitiveElement,
@@ -11,16 +12,30 @@ import {
   withRef,
   withVariants,
 } from '@udecode/cn';
-import { Command as CommandPrimitive } from 'cmdk';
+import { cva } from 'class-variance-authority';
 import { Search } from 'lucide-react';
 
 import { Dialog, DialogContent, DialogTitle } from './dialog';
 import { inputVariants } from './input';
 
-export const Command = withCn(
-  CommandPrimitive,
-  'flex size-full flex-col overflow-hidden rounded-md bg-popover text-popover-foreground'
+const commandVariants = cva(
+  'flex size-full flex-col rounded-md bg-popover text-popover-foreground',
+  {
+    defaultVariants: {
+      variant: 'default',
+    },
+    variants: {
+      variant: {
+        combobox: 'overflow-visible bg-transparent has-[[data-readonly]]:w-fit',
+        default: 'overflow-hidden',
+      },
+    },
+  }
 );
+
+export const Command = withVariants(CommandPrimitive, commandVariants, [
+  'variant',
+]);
 
 export function CommandDialog({ children, ...props }: DialogProps) {
   return (

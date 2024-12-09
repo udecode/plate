@@ -105,14 +105,15 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
       };
 
       parsers:
-        | ({
-            [K in string]: {
+        | (Record<
+            string,
+            {
               /** @see {@link Deserializer} */
               deserializer?: Deserializer<WithAnyKey<C>>;
               /** @see {@link Serializer} */
               serializer?: Serializer<WithAnyKey<C>>;
-            };
-          } & { html?: never; htmlReact?: never })
+            }
+          > & { html?: never; htmlReact?: never })
         | {
             html?: Nullable<{
               /** @see {@link HtmlDeserializer} */

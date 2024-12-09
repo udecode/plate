@@ -49,9 +49,10 @@ export function PlaygroundPreviewToolbar({
     >
       <Button asChild variant="link" className="whitespace-normal px-1 md:px-2">
         <a
+          className="whitespace-nowrap"
           href={src ?? `#${block.name}`}
-          rel={src ? 'noreferrer' : undefined}
-          target={src ? '_blank' : undefined}
+          // rel={src ? 'noreferrer' : undefined}
+          // target={src ? '_blank' : undefined}
         >
           {block.description}
         </a>

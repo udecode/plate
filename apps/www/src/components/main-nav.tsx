@@ -16,19 +16,19 @@ export function MainNav() {
 
   return (
     <div className="mr-4 hidden md:flex">
-      <Link className="mr-4 flex items-center space-x-2 lg:mr-6" href="/">
+      <Link className="mr-4 flex items-center gap-2 lg:mr-6" href="/">
         <Icons.minus className="size-6" />
         <span className="hidden items-center font-bold lg:inline-flex">
           {siteConfig.name} {isUI && 'UI'}
         </span>
       </Link>
-      <nav className="flex items-center gap-4 text-sm lg:gap-6">
+      <nav className="flex items-center gap-4 text-sm xl:gap-6">
         <Link
           className={cn(
             'transition-colors hover:text-foreground/80',
             pathname === '/docs'
               ? 'font-medium text-foreground'
-              : 'text-foreground/60'
+              : 'text-foreground/80'
           )}
           href="/docs"
         >
@@ -39,9 +39,9 @@ export function MainNav() {
             'transition-colors hover:text-foreground/80',
             pathname?.startsWith('/docs/components')
               ? 'font-medium text-foreground'
-              : 'text-foreground/60'
+              : 'text-foreground/80'
           )}
-          href="/docs/components"
+          href="/docs/components/introduction"
         >
           Components
         </Link>
@@ -50,7 +50,7 @@ export function MainNav() {
             'transition-colors hover:text-foreground/80',
             pathname?.startsWith('/editors')
               ? 'font-medium text-foreground'
-              : 'text-foreground/60'
+              : 'text-foreground/80'
           )}
           href="/editors"
         >
@@ -58,7 +58,7 @@ export function MainNav() {
         </Link>
         <Link
           className={cn(
-            'relative text-foreground/60 transition-colors hover:text-foreground/80'
+            'relative text-foreground/80 transition-colors hover:text-foreground/80'
           )}
           href={siteConfig.links.platePro}
         >

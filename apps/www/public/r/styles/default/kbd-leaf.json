@@ -4,6 +4,12 @@
   ],
   "doc": {
     "description": "A component for styling keyboard shortcuts.",
+    "docs": [
+      {
+        "route": "/docs/kbd",
+        "title": "Keyboard Input"
+      }
+    ],
     "examples": [
       "kbd-demo"
     ]

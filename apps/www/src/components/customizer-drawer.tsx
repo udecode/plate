@@ -9,11 +9,14 @@ import { ChevronsRight } from 'lucide-react';
 import { useViewport } from '@/hooks/use-viewport';
 import { useMounted } from '@/registry/default/hooks/use-mounted';
 import { Button } from '@/registry/default/plate-ui/button';
-import { DialogTitle } from '@/registry/default/plate-ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from '@/registry/default/plate-ui/dialog';
 
 import { settingsStore } from './context/settings-store';
 import { CustomizerTabs } from './customizer-tabs';
-import { Drawer, DrawerContent } from './ui/drawer';
 import { Sheet, SheetContent } from './ui/sheet';
 
 import '@/styles/mdx.css';
@@ -45,17 +48,17 @@ export default function CustomizerDrawer() {
   return (
     <div className="flex items-center space-x-2">
       {width <= 768 && (
-        <Drawer
+        <Dialog
           open={open}
           onOpenChange={(value) => {
             setOpen(value);
           }}
-          shouldScaleBackground={false}
+          // shouldScaleBackground={false}
         >
-          <DrawerContent className="pb-6 pt-0">
+          <DialogContent className="max-h-[80vh] overflow-auto px-0 pb-6 pt-0">
             <CustomizerTabs />
-          </DrawerContent>
-        </Drawer>
+          </DialogContent>
+        </Dialog>
       )}
 
       <div className="hidden md:flex">
@@ -75,7 +78,7 @@ export default function CustomizerDrawer() {
 
             <SheetPrimitive.Close asChild onClick={() => setOpen(false)}>
               <Button
-                size="md"
+                size="lg"
                 variant="ghost"
                 className="absolute left-4 top-4 size-8 p-0 px-1.5"
               >

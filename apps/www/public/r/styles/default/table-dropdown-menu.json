@@ -7,8 +7,7 @@
     "description": "A menu for table manipulation and formatting.",
     "docs": [
       {
-        "route": "/docs/table",
-        "title": "Table"
+        "route": "/docs/table"
       }
     ],
     "examples": [

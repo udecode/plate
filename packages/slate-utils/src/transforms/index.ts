@@ -6,6 +6,7 @@ export * from './duplicateBlocks';
 export * from './insertElements';
 export * from './insertEmptyElement';
 export * from './moveChildren';
+export * from './removeEditorText';
 export * from './removeEmptyPreviousBlock';
 export * from './removeMark';
 export * from './removeNodeChildren';

@@ -1,0 +1,171 @@
+---
+title: Node ID
+---
+
+{/* <ComponentPreview name="playground-demo" id="node-id" /> */}
+
+<PackageInfo>
+
+## Features
+
+- Plugin that automatically assigns and manages unique IDs for nodes in the editor.
+- Configurable ID generation and storage
+- Handles node operations (insert, split) with ID preservation
+- Optional ID reuse for undo/redo and copy/paste operations
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-node-id
+```
+
+## Usage
+
+```tsx
+import { NodeIdPlugin } from '@udecode/plate-node-id';
+```
+
+```tsx
+const plugins = [
+  // ...otherPlugins,
+  NodeIdPlugin.configure({
+    options: {
+      idKey: 'id',
+      filterInline: true,
+      filterText: true,
+      idCreator: () => nanoid(10),
+    },
+  }),
+];
+```
+
+## Plugins
+
+### NodeIdPlugin
+
+Plugin that automatically assigns and manages unique IDs for nodes in the editor.
+
+<APIOptions>
+<APIItem name="disableInsertOverrides" type="boolean" optional>
+  Disable using existing IDs when inserting nodes.
+  - When `false`: Keeps existing IDs if they don't exist in the document
+  - When `true`: Always generates new IDs
+  - **Default:** `false`
+</APIItem>
+
+<APIItem name="filterInline" type="boolean" optional>
+  Filter inline Element nodes from receiving IDs.
+  - **Default:** `true`
+</APIItem>
+
+<APIItem name="filterText" type="boolean" optional>
+  Filter Text nodes from receiving IDs.
+  - **Default:** `true`
+</APIItem>
+
+<APIItem name="idCreator" type="() => any" optional>
+  Function to generate unique IDs.
+  - **Default:** `() => nanoid(10)`
+</APIItem>
+
+<APIItem name="idKey" type="string" optional>
+  Property key used to store the ID on nodes.
+  - **Default:** `'id'`
+</APIItem>
+
+<APIItem name="normalizeInitialValue" type="boolean" optional>
+  Whether to normalize all nodes in the initial value.
+  - When `false`: Only checks first and last nodes
+  - When `true`: Normalizes all nodes
+  - **Default:** `false`
+</APIItem>
+
+<APIItem name="reuseId" type="boolean" optional>
+  Reuse IDs on undo/redo and copy/paste operations.
+  - When `true`: Keeps IDs if they don't exist in document
+  - When `false`: Always generates new IDs (safer across documents)
+  - **Default:** `false`
+</APIItem>
+
+<APIItem name="allow" type="string[]" optional>
+  List of node types that should receive IDs.
+</APIItem>
+
+<APIItem name="exclude" type="string[]" optional>
+  List of node types that should not receive IDs.
+</APIItem>
+
+<APIItem name="filter" type="(node: TNodeEntry) => boolean" optional>
+  Custom filter function for nodes that should receive IDs.
+  - **Default:** `() => true`
+</APIItem>
+</APIOptions>
+
+### Behavior
+
+The plugin handles several scenarios:
+
+1. **Node Insertion**:
+```tsx
+<editor>
+  <hp id="10">test</hp>
+</editor>
+
+// Insert node with existing ID (e.g. copy/paste)
+editor.insertNode(<hp id="10">inserted</hp>);
+// Results in:
+<editor>
+  <hp id="10">test</hp>
+  <hp id="1">inserted</hp>  {/* Gets new ID */}
+</editor>
+
+// Insert multiple nodes
+editor.insertNodes([
+  <hp>inserted</hp>,
+  <hp>test</hp>,
+]);
+// Results in:
+<editor>
+  <hp id="10">test</hp>
+  <hp id="1">inserted</hp>  
+  <hp id="2">test</hp>      
+</editor>
+```
+
+2. **Node Splitting**:
+```tsx
+// Before split
+<hp id="1">te|st</hp>
+// After split:
+<hp id="1">te</hp>
+<hp id="2">st</hp>
+```
+
+3. **Filtering**:
+```tsx
+// With filterText=false
+<hp id="1">
+  <htext id="2">text</htext>
+</hp>
+
+// With allow=['p'] exclude=['blockquote']
+<hp id="1">text</hp>
+<hblockquote>quote</hblockquote>
+```
+
+4. **Undo/Redo**:
+```tsx
+// With reuseId=true
+editor.insertNode(<hp id="1">text</hp>);
+editor.undo();
+editor.redo();
+// Node keeps id="1" if not in use
+
+// With reuseId=false
+editor.insertNode(<hp id="1">text</hp>);
+editor.undo();
+editor.redo();
+// Node gets new id="2"
+```

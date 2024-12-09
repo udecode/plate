@@ -1,16 +1,16 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import {
   type SlateEditor,
   type TElement,
   createSlateEditor,
 } from '@udecode/plate-common';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { BaseTablePlugin } from '../../lib/BaseTablePlugin';
 import { getTableGridAbove } from './getTableGridAbove';
 
-jsx;
+jsxt;
 
 // https://github.com/udecode/editor-protocol/issues/12
 describe('getTableGridByRange', () => {

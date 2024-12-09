@@ -1,6 +1,5 @@
 ---
 title: Column
-description: Add Columns to your document.
 docs:
   - route: /docs/components/column-element
     title: Column Element
@@ -8,7 +7,7 @@ docs:
     title: Column Group Element
 ---
 
-<ComponentPreview name="playground-demo" id="column" />
+<ComponentPreview name="column-demo" />
 
 <PackageInfo>
 
@@ -77,9 +76,13 @@ Insert a columnGroup with two empty columns.
   <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
+  <APIItem name="options" type="InsertNodesOptions & { layout?: number[] | number }">
+    - `layout`: Array of column widths or number of equal-width columns (default: 2)
+    - Other InsertNodesOptions to control insert behavior
+  </APIItem>
 </APIParameters>
 
-### insertEmptyColumn
+### insertColumn
 
 Insert an empty column. You can set the width by options.width default is "33%"
 
@@ -122,6 +125,19 @@ If you want to set the `layout` use setNodes.
   </APIItem>
   <APIItem name="layout" type="number[]">
     The element property of `layout`
+  </APIItem>
+</APIParameters>
+
+### toggleColumnGroup
+
+Convert a block into a column group layout. The selected block becomes the content of the first column.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="ReplaceNodeChildrenOptions & { layout?: number[] | number }">
+    - `layout`: Array of column widths or number of equal-width columns (default: 2)
   </APIItem>
 </APIParameters>
 

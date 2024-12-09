@@ -14,8 +14,7 @@ Includes:
 
 ## Documentation
 
-- Check out [Image](https://platejs.org/docs/image).
-- Check out [Media Embed](https://platejs.org/docs/media-embed).
+- Check out [Media](https://platejs.org/docs/media).
 
 ## License
 

@@ -1,4 +1,4 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import {
@@ -19,13 +19,13 @@ import {
 } from '@udecode/plate-common/react';
 import * as isHotkey from '@udecode/plate-core';
 import { BaseListItemPlugin, unwrapList } from '@udecode/plate-list';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import type { ResetNodeConfig } from '../lib/BaseResetNodePlugin';
 
 import { onKeyDownResetNode } from './onKeyDownResetNode';
 
-jsx;
+jsxt;
 
 describe('onKeyDownResetNode', () => {
   const enterRule = {

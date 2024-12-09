@@ -1,4 +1,4 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
@@ -14,11 +14,11 @@ import { LineHeightPlugin } from '@udecode/plate-line-height/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { ImagePlugin } from '@udecode/plate-media/react';
 import { TablePlugin } from '@udecode/plate-table/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { BaseIndentListPlugin } from './BaseIndentListPlugin';
 
-jsx;
+jsxt;
 
 const injectConfig = {
   inject: {

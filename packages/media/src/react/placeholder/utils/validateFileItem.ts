@@ -3,7 +3,7 @@ import type { AllowedFileType } from '../internal/mimes';
 
 import { type FileSize, type MediaItemConfig, UploadErrorCode } from '../type';
 import { createUploadError } from './createUploadError';
-import { bytesToFileSize, fileSizeToBytes } from './fileSizeToBytes';
+import { fileSizeToBytes } from './fileSizeToBytes';
 
 export const validateFileItem = (
   files: File[],
@@ -32,7 +32,7 @@ export const validateFileItem = (
       throw createUploadError(UploadErrorCode.TOO_LARGE, {
         fileType: key,
         files: [f],
-        maxFileSize: bytesToFileSize(bytes),
+        maxFileSize: maxFileSize!,
       });
   }
 

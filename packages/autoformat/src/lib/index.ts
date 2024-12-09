@@ -3,7 +3,7 @@
  */
 
 export * from './BaseAutoformatPlugin';
-export type * from './types';
+export * from './types';
 export * from './withAutoformat';
 export * from './rules/index';
 export * from './transforms/index';

@@ -1,5 +1,13 @@
 # @udecode/plate-playwright
 
+## 40.2.8
+
+### Patch Changes
+
+- [#3819](https://github.com/udecode/plate/pull/3819) by [@LunaticMuch](https://github.com/LunaticMuch) – Added license to package.json
+
+## 40.0.0
+
 ## 39.0.0
 
 ## 38.0.0

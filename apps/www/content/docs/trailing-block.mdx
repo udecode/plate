@@ -1,0 +1,62 @@
+---
+title: Trailing Block
+---
+
+<ComponentPreview name="basic-elements-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Ensures a specific block type is always present at the end of the document.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-trailing-block
+```
+
+## Usage
+
+```tsx
+import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
+```
+
+```tsx
+const plugins = [
+  // ...otherPlugins,
+  TrailingBlockPlugin.configure({
+    options: {
+      level: 0,
+      type: 'p',
+    },
+  }),
+];
+```
+
+## Plugins
+
+### TrailingBlockPlugin
+
+<APIOptions>
+<APIItem parent="options" name="level" type="number" optional>
+  Level where the trailing node should be, the first level being 0.
+  - **Default:** `0` (root level)
+</APIItem>
+<APIItem parent="options" name="type" type="string" optional>
+  Type of the trailing block.
+  - **Default:** `editor.getType(ParagraphPlugin)`
+</APIItem>
+<APIItem parent="options" name="allow" type="string[]" optional>
+  Filter nodes that match any of these types.
+  - **Default:** `[]` (all types)
+</APIItem>
+<APIItem parent="options" name="exclude" type="string[]" optional>
+  Filter nodes that don't match any of these types.
+</APIItem>
+<APIItem parent="options" name="filter" type="(node: TNode) => boolean" optional>
+  Custom filter function.
+</APIItem>
+</APIOptions>

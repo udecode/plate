@@ -19,11 +19,14 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { customizerItems } from '@/config/customizer-items';
-import { allPlugins, orderedPluginKeys } from '@/config/customizer-list';
+import {
+  allPlugins,
+  customizerItems,
+  orderedPluginKeys,
+} from '@/config/customizer-items';
 import { useMounted } from '@/registry/default/hooks/use-mounted';
+import { Label } from '@/registry/default/plate-ui/label';
 
 import { InstallationCode } from './installation-code';
 
@@ -333,25 +336,6 @@ export default function InstallationTab() {
 
   const hasDnd = plugins.some((plugin) => plugin.id === DndPlugin.key);
 
-  const hasCommentsPopover = components.some(
-    (comp) => comp.id === 'comments-popover'
-  );
-  const hasMentionCombobox = components.some(
-    (comp) => comp.id === 'mention-combobox'
-  );
-  const hasFixedToolbar = components.some(
-    (comp) => comp.id === 'fixed-toolbar'
-  );
-  const hasFixedToolbarButtons = components.some(
-    (comp) => comp.id === 'fixed-toolbar-buttons'
-  );
-  const hasFloatingToolbar = components.some(
-    (comp) => comp.id === 'floating-toolbar'
-  );
-  const hasFloatingToolbarButtons = components.some(
-    (comp) => comp.id === 'floating-toolbar-buttons'
-  );
-
   let indentLevel = 0;
 
   const addLine = (line: string, opensBlock = false, closesBlock = false) => {
@@ -375,34 +359,12 @@ export default function InstallationTab() {
 
   addLine(`<Plate editor={editor}>`, true);
 
-  if (hasFixedToolbar) {
-    addLine(`<FixedToolbar>`, true);
-  }
-  if (hasFixedToolbarButtons) {
-    addLine(`<FixedToolbarButtons />`);
-  }
-  if (hasFixedToolbar) {
-    addLine(`</FixedToolbar>`, false, true);
-    addLine(``);
-  }
-
-  addLine(`<${hasEditor ? 'Editor' : 'PlateContent'} />`);
-
-  if (hasFloatingToolbar) {
-    addLine(``);
-    addLine(`<FloatingToolbar>`, true);
-  }
-  if (hasFloatingToolbarButtons) {
-    addLine(`<FloatingToolbarButtons />`);
-  }
-  if (hasFloatingToolbar) {
-    addLine(`</FloatingToolbar>`, false, true);
-  }
-  if (hasMentionCombobox) {
-    addLine(`<MentionCombobox items={[]} />`);
-  }
-  if (hasCommentsPopover) {
-    addLine(`<CommentsPopover />`);
+  if (hasEditor) {
+    addLine(`<EditorContainer>`, true);
+    addLine(`<Editor />`);
+    addLine(`</EditorContainer>`, false, true);
+  } else {
+    addLine(`<PlateContent />`);
   }
 
   addLine(`</Plate>`, false, true);
@@ -463,7 +425,7 @@ export default function InstallationTab() {
           <div>
             <InstallationCode
               code={[
-                `npm install react react-dom slate slate-react slate-history slate-hyperscript`,
+                `npm install react react-dom slate slate-dom slate-react slate-history slate-hyperscript`,
                 `npm install @udecode/plate-common`,
               ].join('\n')}
               bash

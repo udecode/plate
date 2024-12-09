@@ -1,13 +1,13 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import { type SlateEditor, normalizeEditor } from '@udecode/plate-common';
 import { createSlateEditor } from '@udecode/plate-common';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { SUGGESTION_KEYS } from './BaseSuggestionPlugin';
 import { BaseSuggestionPlugin } from './BaseSuggestionPlugin';
 
-jsx;
+jsxt;
 
 describe('withSuggestion', () => {
   describe('insertText', () => {

@@ -7,7 +7,7 @@ import {
   useToggleToolbarButton,
   useToggleToolbarButtonState,
 } from '@udecode/plate-toggle/react';
-import { ChevronRightIcon } from 'lucide-react';
+import { ListCollapseIcon } from 'lucide-react';
 
 import { ToolbarButton } from './toolbar';
 
@@ -18,7 +18,7 @@ export const ToggleToolbarButton = withRef<typeof ToolbarButton>(
 
     return (
       <ToolbarButton ref={ref} tooltip="Toggle" {...props} {...rest}>
-        <ChevronRightIcon />
+        <ListCollapseIcon />
       </ToolbarButton>
     );
   }

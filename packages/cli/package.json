@@ -1,6 +1,6 @@
 {
   "name": "shadcx",
-  "version": "0.0.7",
+  "version": "0.1.0",
   "description": "Add Plate components to your apps.",
   "keywords": [
     "components",
@@ -44,7 +44,7 @@
     "clean": "yarn p:clean && rimraf components",
     "dev": "COMPONENTS_REGISTRY_URL=http://localhost:3000 node dist/index.js",
     "start": "node dist/index.js",
-    "typecheck": "yarn p:typecheck"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@antfu/ni": "^0.21.4",

@@ -1,12 +1,12 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import { type SlateEditor, findNode } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { removeListItem } from './removeListItem';
 
-jsx;
+jsxt;
 
 const input = (
   <editor>

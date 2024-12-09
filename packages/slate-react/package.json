@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-react",
-  "version": "39.2.1",
+  "version": "40.2.8",
   "description": "Slate extension",
   "keywords": [
     "slate"
@@ -42,7 +42,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/react-utils": "39.0.0",
+    "@udecode/react-utils": "40.2.8",
     "@udecode/slate": "39.2.1",
     "@udecode/utils": "37.0.0"
   },
@@ -51,7 +51,7 @@
     "react-dom": ">=16.8.0",
     "slate": ">=0.103.0",
     "slate-history": ">=0.93.0",
-    "slate-react": ">=0.108.0"
+    "slate-react": ">=0.111.0"
   },
   "publishConfig": {
     "access": "public"

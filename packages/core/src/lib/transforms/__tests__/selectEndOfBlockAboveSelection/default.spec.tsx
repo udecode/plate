@@ -1,11 +1,11 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 import { selectEndOfBlockAboveSelection } from '@udecode/slate-utils';
 
 import type { SlateEditor } from '../../../editor';
 
-jsx;
+jsxt;
 
 const input = (
   <editor>

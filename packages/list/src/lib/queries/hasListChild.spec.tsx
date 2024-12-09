@@ -1,11 +1,11 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import { createSlateEditor, findNode } from '@udecode/plate-common';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { hasListChild } from './hasListChild';
 
-jsx;
+jsxt;
 
 describe('when there is a sublist', () => {
   const input = (

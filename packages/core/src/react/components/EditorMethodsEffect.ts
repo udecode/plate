@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { useMemoOnce } from '@udecode/react-utils';
+
 import {
   EXPOSED_STORE_KEYS,
   useEditorRef,
@@ -18,7 +20,7 @@ export const EditorMethodsEffect = ({ id }: { id?: string }) => {
     EXPOSED_STORE_KEYS.map((key) => [key, plateStore.set[key]()])
   ) as any;
 
-  const memorizedStoreSetters = React.useMemo(
+  const memorizedStoreSetters = useMemoOnce(
     () => storeSetters,
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []

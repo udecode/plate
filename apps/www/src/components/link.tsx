@@ -14,7 +14,7 @@ export function Link({
   return (
     <LinkPrimitive
       className={cn(
-        'relative font-medium',
+        'relative inline-block font-medium',
         !isExternal && 'underline underline-offset-4',
         isExternal &&
           'no-underline hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:h-[1.5px] hover:after:w-[calc(100%-2px)] hover:after:bg-primary',

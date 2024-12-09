@@ -6,15 +6,14 @@
     "description": "A toolbar button for adding inline comments.",
     "docs": [
       {
-        "route": "/docs/comments",
-        "title": "Comments"
+        "route": "/docs/comments"
       },
       {
         "route": "https://pro.platejs.org/docs/components/comment-toolbar-button"
       }
     ],
     "examples": [
-      "comment-demo",
+      "comments-demo",
       "floating-toolbar-demo",
       "comments-pro"
     ]

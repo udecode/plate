@@ -15,16 +15,16 @@ Choose one of these methods:
 ### 1. Using CLI (Recommended)
 
 ```bash
-npx shadcx@latest init -u https://platejs.org/r
+npx shadcx@latest init plate
 ```
 
 ```bash
-npx shadcx@latest add editor-ai -r plate
+npx shadcx@latest add plate/editor-ai
 ```
 
 ### 2. Using Template
 
-[Use this template](https://github.com/plate-editor/plate-template/generate), then install dependencies:
+[Use this template](https://github.com/udecode/plate-playground-template/generate), then install dependencies:
 
 ```bash
 pnpm install
@@ -41,6 +41,7 @@ cp .env.example .env.local
 Configure `.env.local`:
 
 - `OPENAI_API_KEY` – OpenAI API key ([get one here](https://platform.openai.com/account/api-keys))
+- `UPLOADTHING_TOKEN` – UploadThing API key ([get one here](https://uploadthing.com/dashboard))
 
 Start the development server:
 

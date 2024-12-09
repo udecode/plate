@@ -14,24 +14,36 @@ import {
   FontBackgroundColorPlugin,
   FontColorPlugin,
 } from '@udecode/plate-font/react';
+import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { ListStyleType } from '@udecode/plate-indent-list';
-import { ImagePlugin } from '@udecode/plate-media/react';
 import {
+  AudioPlugin,
+  FilePlugin,
+  ImagePlugin,
+  VideoPlugin,
+} from '@udecode/plate-media/react';
+import {
+  ArrowUpToLineIcon,
   BaselineIcon,
   BoldIcon,
   Code2Icon,
+  HighlighterIcon,
   ItalicIcon,
   PaintBucketIcon,
-  SparklesIcon,
   StrikethroughIcon,
   UnderlineIcon,
+  WandSparklesIcon,
 } from 'lucide-react';
+
+import { MoreDropdownMenu } from '@/registry/default/plate-ui/more-dropdown-menu';
 
 import { AIToolbarButton } from './ai-toolbar-button';
 import { AlignDropdownMenu } from './align-dropdown-menu';
 import { ColorDropdownMenu } from './color-dropdown-menu';
 import { CommentToolbarButton } from './comment-toolbar-button';
 import { EmojiDropdownMenu } from './emoji-dropdown-menu';
+import { ExportToolbarButton } from './export-toolbar-button';
+import { RedoToolbarButton, UndoToolbarButton } from './history-toolbar-button';
 import { IndentListToolbarButton } from './indent-list-toolbar-button';
 import { IndentTodoToolbarButton } from './indent-todo-toolbar-button';
 import { IndentToolbarButton } from './indent-toolbar-button';
@@ -41,7 +53,6 @@ import { LinkToolbarButton } from './link-toolbar-button';
 import { MarkToolbarButton } from './mark-toolbar-button';
 import { MediaToolbarButton } from './media-toolbar-button';
 import { ModeDropdownMenu } from './mode-dropdown-menu';
-import { MoreDropdownMenu } from './more-dropdown-menu';
 import { OutdentToolbarButton } from './outdent-toolbar-button';
 import { TableDropdownMenu } from './table-dropdown-menu';
 import { ToggleToolbarButton } from './toggle-toolbar-button';
@@ -56,13 +67,20 @@ export function FixedToolbarButtons() {
       {!readOnly && (
         <>
           <ToolbarGroup>
-            <AIToolbarButton
-              className="gap-1.5 text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-500"
-              tooltip="Edit, generate, and more"
-            >
-              <SparklesIcon className="!size-3.5" />
-              Ask AI
+            <UndoToolbarButton />
+            <RedoToolbarButton />
+          </ToolbarGroup>
+
+          <ToolbarGroup>
+            <AIToolbarButton tooltip="AI commands">
+              <WandSparklesIcon />
             </AIToolbarButton>
+          </ToolbarGroup>
+
+          <ToolbarGroup>
+            <ExportToolbarButton>
+              <ArrowUpToLineIcon />
+            </ExportToolbarButton>
           </ToolbarGroup>
 
           <ToolbarGroup>
@@ -117,22 +135,33 @@ export function FixedToolbarButtons() {
 
           <ToolbarGroup>
             <AlignDropdownMenu />
-            <LineHeightDropdownMenu />
 
             <IndentListToolbarButton nodeType={ListStyleType.Disc} />
             <IndentListToolbarButton nodeType={ListStyleType.Decimal} />
             <IndentTodoToolbarButton />
+            <ToggleToolbarButton />
+          </ToolbarGroup>
 
+          <ToolbarGroup>
+            <LinkToolbarButton />
+            <TableDropdownMenu />
+            <EmojiDropdownMenu />
+          </ToolbarGroup>
+
+          <ToolbarGroup>
+            <MediaToolbarButton nodeType={ImagePlugin.key} />
+            <MediaToolbarButton nodeType={VideoPlugin.key} />
+            <MediaToolbarButton nodeType={AudioPlugin.key} />
+            <MediaToolbarButton nodeType={FilePlugin.key} />
+          </ToolbarGroup>
+
+          <ToolbarGroup>
+            <LineHeightDropdownMenu />
             <OutdentToolbarButton />
             <IndentToolbarButton />
           </ToolbarGroup>
 
           <ToolbarGroup>
-            <LinkToolbarButton />
-            <ToggleToolbarButton />
-            <MediaToolbarButton nodeType={ImagePlugin.key} />
-            <TableDropdownMenu />
-            <EmojiDropdownMenu />
             <MoreDropdownMenu />
           </ToolbarGroup>
         </>
@@ -141,7 +170,13 @@ export function FixedToolbarButtons() {
       <div className="grow" />
 
       <ToolbarGroup>
+        <MarkToolbarButton nodeType={HighlightPlugin.key} tooltip="Highlight">
+          <HighlighterIcon />
+        </MarkToolbarButton>
         <CommentToolbarButton />
+      </ToolbarGroup>
+
+      <ToolbarGroup>
         <ModeDropdownMenu />
       </ToolbarGroup>
     </div>

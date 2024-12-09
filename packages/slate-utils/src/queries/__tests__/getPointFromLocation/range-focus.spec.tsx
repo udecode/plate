@@ -1,12 +1,12 @@
-/** @jsx jsx */
+/** @jsx jsxt */
 
 import type { SlateEditor } from '@udecode/plate-core';
 
-import { jsx } from '@udecode/plate-test-utils';
+import { jsxt } from '@udecode/plate-test-utils';
 
 import { getPointFromLocation } from '../../getPointFromLocation';
 
-jsx;
+jsxt;
 
 const input = (
   <editor>
