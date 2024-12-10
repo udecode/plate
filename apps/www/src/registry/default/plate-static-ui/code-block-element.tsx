@@ -1,3 +1,5 @@
+import React from 'react';
+
 import type { TCodeBlockElement } from '@udecode/plate-code-block';
 import type { StaticElementProps } from '@udecode/plate-common';
 

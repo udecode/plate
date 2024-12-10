@@ -93,8 +93,6 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
 };
 
 export type BasePluginNode = {
-  props: (nodeProps: StaticElementProps<TElement>) => any;
-
   /**
    * Specifies the type identifier for this plugin's nodes.
    *
@@ -175,6 +173,8 @@ export type BasePluginNode = {
    * void.
    */
   isVoid?: boolean;
+
+  props?: (nodeProps: StaticElementProps<TElement>) => any;
 
   /** Used for serialized HTML and rendering Plate Static. */
   staticComponent?: NodeComponent;
