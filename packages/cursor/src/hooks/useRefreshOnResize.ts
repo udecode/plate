@@ -9,7 +9,10 @@ import { useRequestReRender } from './useRequestReRender';
 
 export interface useRefreshOnResizeOptions
   extends Pick<CursorOverlayProps, 'containerRef' | 'refreshOnResize'> {
-  selectionRectCache: React.MutableRefObject<WeakMap<Range, SelectionRect[]>>;
+  selectionRectCache: React.MutableRefObject<WeakMap<
+    Range,
+    SelectionRect[]
+  > | null>;
 }
 
 export const useRefreshOnResize = ({

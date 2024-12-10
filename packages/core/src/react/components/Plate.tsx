@@ -44,8 +44,8 @@ function PlateInner({
   onSelectionChange,
   onValueChange,
 }: PlateProps & {
-  containerRef: React.RefObject<HTMLDivElement>;
-  scrollRef: React.RefObject<HTMLDivElement>;
+  containerRef: React.RefObject<HTMLDivElement | null>;
+  scrollRef: React.RefObject<HTMLDivElement | null>;
 }) {
   return (
     <PlateStoreProvider

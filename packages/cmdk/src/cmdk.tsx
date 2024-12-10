@@ -1243,8 +1243,8 @@ function useCmdk<T = any>(selector: (state: State) => T): T {
 
 function useValue(
   id: string,
-  ref: React.RefObject<HTMLElement>,
-  deps: (React.ReactNode | React.RefObject<HTMLElement> | string)[],
+  ref: React.RefObject<HTMLElement | null>,
+  deps: (React.ReactNode | React.RefObject<HTMLElement | null> | string)[],
   aliases: string[] = []
 ) {
   const valueRef = React.useRef<string>();

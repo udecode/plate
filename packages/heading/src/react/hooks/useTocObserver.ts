@@ -3,7 +3,7 @@ import React from 'react';
 interface UseTocObserver {
   activeId: string;
   isObserve: boolean;
-  tocRef: React.RefObject<HTMLElement>;
+  tocRef: React.RefObject<HTMLElement | null>;
 }
 
 export const useTocObserver = ({

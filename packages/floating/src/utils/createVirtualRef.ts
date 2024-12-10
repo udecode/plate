@@ -5,9 +5,10 @@ import type { Location } from 'slate';
 
 import { getBoundingClientRect } from './getBoundingClientRect';
 
-export type VirtualRef = React.RefObject<
-  Pick<HTMLElement, 'getBoundingClientRect'>
->;
+export type VirtualRef = React.RefObject<Pick<
+  HTMLElement,
+  'getBoundingClientRect'
+> | null>;
 
 export const createVirtualRef = (
   editor: TEditor,
