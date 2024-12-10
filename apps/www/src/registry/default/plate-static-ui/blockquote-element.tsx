@@ -1,12 +1,20 @@
 import type { StaticElementProps } from '@udecode/plate-common';
 
+import { cn } from '../lib/utils';
+import { StaticElement } from './paragraph-element';
+
 export const BlockquoteStaticElement = ({
-  attributes,
   children,
+  className,
+  ...props
 }: StaticElementProps) => {
   return (
-    <blockquote className="my-1 border-l-2 pl-6 italic" {...attributes}>
+    <StaticElement
+      as="blockquote"
+      className={cn('my-1 border-l-2 pl-6 italic', className)}
+      {...props}
+    >
       {children}
-    </blockquote>
+    </StaticElement>
   );
 };

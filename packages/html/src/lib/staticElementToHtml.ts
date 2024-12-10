@@ -2,6 +2,7 @@ import {
   type SlateEditor,
   type SlatePlugin,
   DefaultStaticElement,
+  getRenderStaticNodeProps,
 } from '@udecode/plate-common';
 
 import { renderComponentToHtml } from './utils/renderComponentToHtml';
@@ -33,7 +34,11 @@ export const staticElementToHtml = (
 
     const Component = plugin.node.staticComponent;
 
-    html = renderComponentToHtml(ReactDOMServer, Component, props);
+    html = renderComponentToHtml(
+      ReactDOMServer,
+      Component,
+      getRenderStaticNodeProps({ editor, plugin, props })
+    );
 
     return true;
   });

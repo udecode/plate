@@ -43,6 +43,8 @@ export const serializeHtml = async (
         nodes: node.children as TDescendant[],
       });
 
+      console.log(node, 'fj');
+
       return staticElementToHtml(editor, {
         ReactDOMServer,
         props: {

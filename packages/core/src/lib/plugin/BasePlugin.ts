@@ -3,6 +3,7 @@ import type { AnyObject } from '@udecode/utils';
 import type { SetImmerState, StoreApi } from 'zustand-x';
 
 import type { NodeComponent } from '../editor';
+import type { StaticElementProps } from '../static';
 import type { Nullable } from '../types';
 
 export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
@@ -92,6 +93,8 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
 };
 
 export type BasePluginNode = {
+  props: (nodeProps: StaticElementProps<TElement>) => any;
+
   /**
    * Specifies the type identifier for this plugin's nodes.
    *
@@ -173,6 +176,7 @@ export type BasePluginNode = {
    */
   isVoid?: boolean;
 
+  /** Used for serialized HTML and rendering Plate Static. */
   staticComponent?: NodeComponent;
 };
 

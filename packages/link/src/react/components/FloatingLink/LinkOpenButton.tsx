@@ -9,8 +9,8 @@ import {
 
 import type { TLinkElement } from '../../../lib';
 
+import { getLinkAttributes } from '../../../lib/utils/getLinkAttributes';
 import { LinkPlugin } from '../../LinkPlugin';
-import { getLinkAttributes } from '../../utils';
 
 export const useLinkOpenButtonState = () => {
   const editor = useEditorRef();

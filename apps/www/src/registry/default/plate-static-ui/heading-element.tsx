@@ -2,7 +2,10 @@ import * as React from 'react';
 
 import type { StaticElementProps } from '@udecode/plate-common';
 
+import { cn } from '@udecode/cn';
 import { cva } from 'class-variance-authority';
+
+import { StaticElement } from './paragraph-element';
 
 interface HeadingElementViewProps extends StaticElementProps {
   variant?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
@@ -22,15 +25,18 @@ export const headingVariants = cva('relative mb-1', {
 });
 
 export const HeadingStaticElement = ({
-  attributes,
   children,
+  className,
   variant = 'h1',
+  ...props
 }: HeadingElementViewProps) => {
-  const Component = variant as any;
-
   return (
-    <Component className={headingVariants({ variant })} {...attributes}>
+    <StaticElement
+      as={variant}
+      className={cn(className, headingVariants({ variant }))}
+      {...props}
+    >
       {children}
-    </Component>
+    </StaticElement>
   );
 };

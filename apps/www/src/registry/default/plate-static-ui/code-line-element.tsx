@@ -1,7 +1,10 @@
 import type { StaticElementProps } from '@udecode/plate-common';
 
-export const CodeLineStaticElement = (props: StaticElementProps) => {
-  const { children } = props;
+import { StaticElement } from './paragraph-element';
 
-  return <div>{children}</div>;
+export const CodeLineStaticElement = ({
+  children,
+  ...props
+}: StaticElementProps) => {
+  return <StaticElement {...props}>{children}</StaticElement>;
 };

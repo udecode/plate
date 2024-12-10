@@ -1,6 +1,21 @@
+import type { AnyObject } from '@udecode/plate-common';
 import type { TElement, TText } from '@udecode/slate';
 
-export interface TRenderStaticElementProps<T extends TElement = TElement> {
+// export interface TRenderStaticElementProps<T extends TElement = TElement> {
+//   attributes: {
+//     'data-slate-node': 'element';
+//     ref: any;
+//     'data-slate-inline'?: true;
+//     'data-slate-void'?: true;
+//     dir?: 'rtl';
+//   };
+//   children: any;
+//   element: T;
+//   className?: string;
+//   style?: CSSStyleDeclaration;
+// }
+
+export interface StaticElementProps<T extends TElement = TElement> {
   attributes: {
     'data-slate-node': 'element';
     ref: any;
@@ -10,17 +25,15 @@ export interface TRenderStaticElementProps<T extends TElement = TElement> {
   };
   children: any;
   element: T;
+  as?: React.ElementType;
+  className?: string;
+  nodeProps?: AnyObject;
+  style?: React.CSSProperties;
 }
 
 export type RenderStaticElement<T extends TElement = TElement> = (
-  props: TRenderStaticElementProps<T>
+  props: StaticElementProps<T>
 ) => React.ReactElement | undefined;
-
-export interface StaticElementProps<T extends TElement = TElement> {
-  attributes?: Record<string, any>;
-  children?: React.ReactNode;
-  element?: T;
-}
 
 export interface TRenderStaticLeafProps<N extends TText = TText> {
   attributes: {
