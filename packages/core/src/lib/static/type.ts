@@ -1,5 +1,5 @@
-import type { AnyObject } from '@udecode/plate-common';
 import type { TElement, TText } from '@udecode/slate';
+import type { AnyObject } from '@udecode/utils';
 
 // export interface TRenderStaticElementProps<T extends TElement = TElement> {
 //   attributes: {
