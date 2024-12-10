@@ -6,10 +6,10 @@ import type {
   Keys,
 } from '@udecode/react-hotkeys';
 import type {
+  TDecoratedRange,
   TDescendant,
   TElement,
   TNodeEntry,
-  TRange,
   TText,
   Value,
 } from '@udecode/slate';
@@ -657,7 +657,7 @@ export type HtmlReactSerializer<C extends AnyPluginConfig = PluginConfig> = {
  */
 export type Decorate<C extends AnyPluginConfig = PluginConfig> = (
   ctx: PlatePluginContext<C> & { entry: TNodeEntry }
-) => TRange[] | undefined;
+) => TDecoratedRange[] | undefined;
 
 /** Properties used by Plate to inject props into any {@link NodeComponent}. */
 export type InjectNodeProps<C extends AnyPluginConfig = PluginConfig> =

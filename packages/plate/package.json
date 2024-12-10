@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate",
-  "version": "40.2.9",
+  "version": "40.3.1",
   "description": "Plate – a plugin system for slate",
   "keywords": [
     "contentEditable",
@@ -64,8 +64,8 @@
     "@udecode/plate-break": "40.0.0",
     "@udecode/plate-code-block": "40.0.0",
     "@udecode/plate-combobox": "40.0.0",
-    "@udecode/plate-comments": "40.0.0",
-    "@udecode/plate-common": "40.2.8",
+    "@udecode/plate-comments": "40.3.0",
+    "@udecode/plate-common": "40.3.1",
     "@udecode/plate-csv": "40.0.0",
     "@udecode/plate-diff": "40.0.0",
     "@udecode/plate-docx": "40.2.7",
@@ -102,7 +102,7 @@
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
-    "slate": ">=0.103.0",
+    "slate": ">=0.112.0",
     "slate-dom": ">=0.111.0",
     "slate-history": ">=0.93.0",
     "slate-hyperscript": ">=0.66.0",

@@ -1478,6 +1478,29 @@
   },
   {
     "dependencies": [
+      "@slate-yjs/react"
+    ],
+    "doc": {
+      "description": "A cursor overlay to display multiplayer cursors in the yjs plugin.",
+      "docs": [
+        {
+          "route": "/docs/collaboration"
+        }
+      ],
+      "examples": []
+    },
+    "files": [
+      {
+        "path": "plate-ui/remote-cursor-overlay.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "remote-cursor-overlay",
+    "registryDependencies": [],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
       "@udecode/plate-ai",
       "@udecode/plate-markdown",
       "@udecode/plate-selection",

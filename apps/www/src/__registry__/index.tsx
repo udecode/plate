@@ -877,6 +877,22 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
+    "remote-cursor-overlay": {
+      name: "remote-cursor-overlay",
+      description: "",
+      type: "registry:ui",
+      registryDependencies: [],
+      files: [{
+        path: "src/registry/default/plate-ui/remote-cursor-overlay.tsx",
+        type: "registry:ui",
+        target: ""
+      }],
+      component: React.lazy(() => import("@/registry/default/plate-ui/remote-cursor-overlay.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
     "ai-menu": {
       name: "ai-menu",
       description: "",

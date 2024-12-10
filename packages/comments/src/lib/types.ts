@@ -1,4 +1,4 @@
-import type { TText, Value } from '@udecode/plate-common';
+import type { TDescendant, TText, Value } from '@udecode/plate-common';
 
 export interface CommentUser {
   id: string;
@@ -17,6 +17,9 @@ export interface TComment {
 
   /** Slate value of the document. */
   value: Value;
+
+  /** The fragment of text that the comment was originally added to. */
+  initialFragment?: TDescendant[];
 
   /** Whether the comment is resolved. */
   isResolved?: boolean;

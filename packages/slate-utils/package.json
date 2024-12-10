@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-utils",
-  "version": "40.2.7",
+  "version": "40.3.1",
   "description": "Slate utils",
   "keywords": [
     "slate"
@@ -42,12 +42,12 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/slate": "39.2.1",
+    "@udecode/slate": "40.3.1",
     "@udecode/utils": "37.0.0",
     "lodash": "^4.17.21"
   },
   "peerDependencies": {
-    "slate": ">=0.103.0",
+    "slate": ">=0.112.0",
     "slate-history": ">=0.93.0"
   },
   "publishConfig": {

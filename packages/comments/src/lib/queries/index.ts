@@ -4,5 +4,6 @@
 
 export * from './findCommentNode';
 export * from './findCommentNodeById';
+export * from './getCommentFragment';
 export * from './getCommentNodeEntries';
 export * from './getCommentNodesById';
