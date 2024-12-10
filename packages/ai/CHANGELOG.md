@@ -1,5 +1,11 @@
 # @udecode/plate-ai
 
+## 40.3.2
+
+### Patch Changes
+
+- [#3848](https://github.com/udecode/plate/pull/3848) by [@wststone](https://github.com/wststone) – `submitAIChat`: add `ChatRequestOptions` options
+
 ## 40.2.9
 
 ## 40.2.2
