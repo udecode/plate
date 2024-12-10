@@ -2,8 +2,8 @@ import { createPlateEditor } from '@udecode/plate-common/react';
 
 import type { TLinkElement } from '../../lib/types';
 
+import { getLinkAttributes } from '../../lib';
 import { type LinkConfig, LinkPlugin } from '../LinkPlugin';
-import { getLinkAttributes } from './getLinkAttributes';
 
 const baseLink = {
   children: [{ text: 'Link text' }],

@@ -28,6 +28,12 @@ export const BaseTableCellPlugin = createSlatePlugin({
   node: {
     dangerouslyAllowAttributes: ['colspan', 'rowspan'],
     isElement: true,
+    props: ({ element }) => ({
+      nodeProps: {
+        colSpan: (element?.attributes as any)?.colspan,
+        rowSpan: (element?.attributes as any)?.rowspan,
+      },
+    }),
   },
 }).extend(({ type }) => ({
   parsers: {
@@ -46,6 +52,12 @@ export const BaseTableCellHeaderPlugin = createSlatePlugin({
   node: {
     dangerouslyAllowAttributes: ['colspan', 'rowspan'],
     isElement: true,
+    props: ({ element }) => ({
+      nodeProps: {
+        colSpan: (element?.attributes as any)?.colspan,
+        rowSpan: (element?.attributes as any)?.rowspan,
+      },
+    }),
   },
 }).extend(({ type }) => ({
   parsers: {
