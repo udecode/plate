@@ -5,6 +5,9 @@ import {
   isUrl,
 } from '@udecode/plate-common';
 
+import type { TLinkElement } from './types';
+
+import { getLinkAttributes } from './utils/getLinkAttributes';
 import { validateUrl } from './utils/index';
 import { withLink } from './withLink';
 
@@ -24,6 +27,8 @@ export type BaseLinkConfig = PluginConfig<
      * @default false
      */
     dangerouslySkipSanitization?: boolean;
+
+    defaultLinkAttributes?: React.AnchorHTMLAttributes<HTMLAnchorElement>;
 
     forceSubmit?: boolean;
 
@@ -101,6 +106,7 @@ export const BaseLinkPlugin = createTSlatePlugin<BaseLinkConfig>({
   options: {
     allowedSchemes: ['http', 'https', 'mailto', 'tel'],
     dangerouslySkipSanitization: false,
+    defaultLinkAttributes: {},
     isUrl,
     keepSelectedTextOnPaste: true,
     rangeBeforeOptions: {
@@ -110,6 +116,11 @@ export const BaseLinkPlugin = createTSlatePlugin<BaseLinkConfig>({
     },
   },
 }).extend(({ editor, type }) => ({
+  node: {
+    props: ({ element }) => ({
+      nodeProps: getLinkAttributes(editor, element as TLinkElement),
+    }),
+  },
   parsers: {
     html: {
       deserializer: {

@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 
-import type { SlateEditor } from '../../lib/editor';
+import type { SlateEditor } from '../editor';
 
 import { pluginInjectNodeProps } from './pluginInjectNodeProps';
 
