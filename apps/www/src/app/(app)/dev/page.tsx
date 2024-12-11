@@ -23,9 +23,14 @@ import { BaseHeadingPlugin, HEADING_KEYS } from '@udecode/plate-heading';
 import { serializeHtml } from '@udecode/plate-html';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 import { BaseLinkPlugin } from '@udecode/plate-link';
+import {
+  BaseTableCellHeaderPlugin,
+  BaseTableCellPlugin,
+  BaseTablePlugin,
+  BaseTableRowPlugin,
+} from '@udecode/plate-table';
 
-import { basicNodesValue } from '@/registry/default/example/values/basic-nodes-value';
-import { linkValue } from '@/registry/default/example/values/link-value';
+import { indentListValue } from '@/registry/default/example/values/indent-list-value';
 import { BlockquoteStaticElement } from '@/registry/default/plate-static-ui/blockquote-element';
 import { CodeBlockElementStatic } from '@/registry/default/plate-static-ui/code-block-element';
 import { CodeStaticLeaf } from '@/registry/default/plate-static-ui/code-leaf';
@@ -37,6 +42,12 @@ import {
   ParagraphStaticElement,
   PlateStaticLeaf,
 } from '@/registry/default/plate-static-ui/paragraph-element';
+import {
+  TableCellHeaderStaticElement,
+  TableCellStaticElement,
+} from '@/registry/default/plate-static-ui/table-cell-element';
+import { TableStaticElement } from '@/registry/default/plate-static-ui/table-element';
+import { TableRowStaticElement } from '@/registry/default/plate-static-ui/table-row-element';
 
 export default async function DevPage() {
   const editorStatic = createSlateEditor({
@@ -62,6 +73,9 @@ export default async function DevPage() {
         },
       }),
       BaseLinkPlugin,
+      BaseTableRowPlugin,
+      BaseTablePlugin,
+      BaseTableCellPlugin,
     ],
     staticComponents: {
       [BaseBlockquotePlugin.key]: BlockquoteStaticElement,
@@ -76,6 +90,10 @@ export default async function DevPage() {
       [BaseStrikethroughPlugin.key]: withProps(PlateStaticLeaf, { as: 'del' }),
       [BaseSubscriptPlugin.key]: withProps(PlateStaticLeaf, { as: 'sub' }),
       [BaseSuperscriptPlugin.key]: withProps(PlateStaticLeaf, { as: 'sup' }),
+      [BaseTableCellHeaderPlugin.key]: TableCellHeaderStaticElement,
+      [BaseTableCellPlugin.key]: TableCellStaticElement,
+      [BaseTablePlugin.key]: TableStaticElement,
+      [BaseTableRowPlugin.key]: TableRowStaticElement,
       [BaseUnderlinePlugin.key]: withProps(PlateStaticLeaf, { as: 'u' }),
       [HEADING_KEYS.h1]: withProps(HeadingStaticElement, { variant: 'h1' }),
       [HEADING_KEYS.h2]: withProps(HeadingStaticElement, { variant: 'h2' }),
@@ -84,15 +102,18 @@ export default async function DevPage() {
       [HEADING_KEYS.h5]: withProps(HeadingStaticElement, { variant: 'h5' }),
       [HEADING_KEYS.h6]: withProps(HeadingStaticElement, { variant: 'h6' }),
     },
-    value: [...basicNodesValue, ...linkValue],
+    value: [
+      // ...basicNodesValue,
+      // ...linkValue,
+      // ...tableValue,
+      ...indentListValue,
+    ],
   });
 
   // eslint-disable-next-line @typescript-eslint/await-thenable
   const html = await serializeHtml(editorStatic, {
     nodes: editorStatic.children,
   });
-
-  // Prism.highlightAll();
 
   return (
     <div className="mx-auto w-1/2">

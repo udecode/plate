@@ -3,7 +3,6 @@
  */
 
 export * from './getOnSelectTableBorderFactory';
-export * from './getTableCellBorders';
 export * from './roundCellSizeToStep';
 export * from './useIsCellSelected';
 export * from './useTableBordersDropdownMenuContentState';
