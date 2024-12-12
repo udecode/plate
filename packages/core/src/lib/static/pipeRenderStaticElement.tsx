@@ -3,6 +3,7 @@ import React from 'react';
 import clsx from 'clsx';
 
 import type { SlateEditor } from '../editor';
+import type { StaticComponents } from './components';
 import type { RenderStaticElement, StaticElementProps } from './type';
 
 import { type SlatePlugin, getEditorPlugin } from '../plugin';
@@ -61,11 +62,12 @@ export const getBelowNodesChildren = (
 
 export const pluginRenderStaticElement = (
   editor: SlateEditor,
-  plugin: SlatePlugin
+  plugin: SlatePlugin,
+  staticComponents?: StaticComponents
 ): RenderStaticElement =>
   function render(nodeProps) {
     if (nodeProps.element.type === plugin.node.type) {
-      const Element = plugin.node.staticComponent ?? PlateStaticElement;
+      const Element = staticComponents?.[plugin.key] ?? PlateStaticElement;
 
       const { children } = nodeProps;
 
@@ -93,13 +95,16 @@ export const pluginRenderStaticElement = (
 /** @see {@link RenderElement} */
 export const pipeRenderStaticElement = (
   editor: SlateEditor,
+  staticComponents?: StaticComponents,
   renderElementProp?: RenderStaticElement
 ): RenderStaticElement => {
   const renderElements: RenderStaticElement[] = [];
 
   editor.pluginList.forEach((plugin) => {
     if (plugin.node.isElement) {
-      renderElements.push(pluginRenderStaticElement(editor, plugin));
+      renderElements.push(
+        pluginRenderStaticElement(editor, plugin, staticComponents)
+      );
     }
   });
 

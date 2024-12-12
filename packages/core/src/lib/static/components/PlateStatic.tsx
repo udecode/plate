@@ -7,46 +7,50 @@ import {
   isElement,
 } from '@udecode/slate';
 
-import type { SlateEditor } from '../../editor';
-import type { RenderStaticElement, RenderStaticLeaf } from '../type';
+import type { NodeComponent, SlateEditor } from '../../editor';
 
 import { pipeRenderStaticElement } from '../pipeRenderStaticElement';
 import { pipeRenderStaticLeaf } from '../pipeRenderStaticLeaf';
 import { createStaticString } from '../utils/createStaticString';
 
+export type StaticComponents = Record<string, NodeComponent>;
+
 export type ChildrenProps = {
   children: TDescendant[];
   editor: SlateEditor;
+  staticComponents: StaticComponents;
 };
 
 export type ElementProps = {
   editor: SlateEditor;
   element: TElement;
+  staticComponents: StaticComponents;
 };
 
 export type LeafProps = {
   editor: SlateEditor;
   leaf: TText;
+  staticComponents: StaticComponents;
 };
 
 export type PlateViewProps = {
   editor: SlateEditor;
-  renderElement?: RenderStaticElement;
-  renderLeaf?: RenderStaticLeaf;
+  staticComponents: StaticComponents;
 };
 
 function Element({
   editor,
   element = { children: [], type: '' },
+  staticComponents,
 }: ElementProps) {
-  const renderElement = pipeRenderStaticElement(editor);
+  const renderElement = pipeRenderStaticElement(editor, staticComponents);
 
   return (
     <React.Fragment>
       {renderElement?.({
         attributes: { 'data-slate-node': 'element', ref: null },
         children: (
-          <PlateViewContent editor={editor}>
+          <PlateViewContent editor={editor} staticComponents={staticComponents}>
             {element.children}
           </PlateViewContent>
         ),
@@ -56,8 +60,8 @@ function Element({
   );
 }
 
-function Leaf({ editor, leaf = { text: '' } }: LeafProps) {
-  const renderLeaf = pipeRenderStaticLeaf(editor);
+function Leaf({ editor, leaf = { text: '' }, staticComponents }: LeafProps) {
+  const renderLeaf = pipeRenderStaticLeaf(editor, staticComponents);
 
   return renderLeaf!({
     attributes: { 'data-slate-leaf': true },
@@ -67,14 +71,28 @@ function Leaf({ editor, leaf = { text: '' } }: LeafProps) {
   });
 }
 
-function PlateViewContent({ children = [], editor }: ChildrenProps) {
+function PlateViewContent({
+  children = [],
+  editor,
+  staticComponents,
+}: ChildrenProps) {
   return (
     <React.Fragment>
       {children.map((child, i) => {
         return isElement(child) ? (
-          <Element key={i} editor={editor} element={child} />
+          <Element
+            key={i}
+            editor={editor}
+            element={child}
+            staticComponents={staticComponents}
+          />
         ) : (
-          <Leaf key={i} editor={editor} leaf={child} />
+          <Leaf
+            key={i}
+            editor={editor}
+            leaf={child}
+            staticComponents={staticComponents}
+          />
         );
       })}
     </React.Fragment>
@@ -82,7 +100,11 @@ function PlateViewContent({ children = [], editor }: ChildrenProps) {
 }
 
 export function PlateStatic(props: PlateViewProps) {
-  const { editor } = props;
+  const { editor, staticComponents } = props;
 
-  return <PlateViewContent editor={editor}>{editor.children}</PlateViewContent>;
+  return (
+    <PlateViewContent editor={editor} staticComponents={staticComponents}>
+      {editor.children}
+    </PlateViewContent>
+  );
 }

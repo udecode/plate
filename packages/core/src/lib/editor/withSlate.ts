@@ -19,11 +19,8 @@ import { getPluginType, getSlatePlugin } from '../plugin/getSlatePlugin';
 import { type CorePlugin, getCorePlugins } from '../plugins/getCorePlugins';
 import { pipeNormalizeInitialValue } from '../utils/pipeNormalizeInitialValue';
 import { resolvePlugins } from '../utils/resolvePlugins';
-import { resolveStaticPlugin } from '../utils/resolveStaticPlugin';
 
 export type NodeComponent<T = any> = React.FC<T>;
-
-export type StaticComponents = Record<string, NodeComponent>;
 
 export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
   id?: any;
@@ -54,8 +51,6 @@ export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
    * @default false
    */
   shouldNormalizeEditor?: boolean;
-
-  staticComponents?: Record<string, NodeComponent>;
 };
 
 export type WithSlateOptions<
@@ -103,7 +98,6 @@ export const withSlate = <
     rootPlugin,
     selection,
     shouldNormalizeEditor,
-    staticComponents,
     value,
     ...pluginConfig
   }: WithSlateOptions<V, P> = {}
@@ -195,8 +189,6 @@ export const withSlate = <
   }
 
   resolvePlugins(editor, [rootPluginInstance]);
-
-  resolveStaticPlugin(editor, staticComponents ?? {});
 
   if (typeof value === 'string') {
     editor.children = editor.api.html.deserialize({ element: value }) as Value;

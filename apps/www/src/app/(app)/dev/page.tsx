@@ -17,6 +17,7 @@ import {
 } from '@udecode/plate-code-block';
 import {
   BaseParagraphPlugin,
+  PlateStatic,
   PlateStaticLeaf,
   createSlateEditor,
 } from '@udecode/plate-common';
@@ -64,7 +65,6 @@ import { CodeStaticLeaf } from '@/registry/default/plate-static-ui/code-leaf';
 import { CodeLineStaticElement } from '@/registry/default/plate-static-ui/code-line-element';
 import { CodeSyntaxStaticLeaf } from '@/registry/default/plate-static-ui/code-syntax-leaf';
 import { HeadingStaticElement } from '@/registry/default/plate-static-ui/heading-element';
-import { HighlightStaticLeaf } from '@/registry/default/plate-static-ui/highlight-leaf';
 import { HrStaticElement } from '@/registry/default/plate-static-ui/hr-element';
 import {
   TodoLi,
@@ -81,6 +81,34 @@ import { TableStaticElement } from '@/registry/default/plate-static-ui/table-ele
 import { TableRowStaticElement } from '@/registry/default/plate-static-ui/table-row-element';
 
 export default async function DevPage() {
+  const staticComponents = {
+    [BaseBlockquotePlugin.key]: BlockquoteStaticElement,
+    [BaseBoldPlugin.key]: withProps(PlateStaticLeaf, { as: 'strong' }),
+    [BaseCodeBlockPlugin.key]: CodeBlockElementStatic,
+    [BaseCodeLinePlugin.key]: CodeLineStaticElement,
+    [BaseCodePlugin.key]: CodeStaticLeaf,
+    [BaseCodeSyntaxPlugin.key]: CodeSyntaxStaticLeaf,
+    [BaseHorizontalRulePlugin.key]: HrStaticElement,
+    [BaseItalicPlugin.key]: withProps(PlateStaticLeaf, { as: 'em' }),
+    [BaseKbdPlugin.key]: KbdStaticLeaf,
+    [BaseLinkPlugin.key]: LinkStaticElement,
+    [BaseParagraphPlugin.key]: ParagraphStaticElement,
+    [BaseStrikethroughPlugin.key]: withProps(PlateStaticLeaf, { as: 'del' }),
+    [BaseSubscriptPlugin.key]: withProps(PlateStaticLeaf, { as: 'sub' }),
+    [BaseSuperscriptPlugin.key]: withProps(PlateStaticLeaf, { as: 'sup' }),
+    [BaseTableCellHeaderPlugin.key]: TableCellHeaderStaticElement,
+    [BaseTableCellPlugin.key]: TableCellStaticElement,
+    [BaseTablePlugin.key]: TableStaticElement,
+    [BaseTableRowPlugin.key]: TableRowStaticElement,
+    [BaseUnderlinePlugin.key]: withProps(PlateStaticLeaf, { as: 'u' }),
+    [HEADING_KEYS.h1]: withProps(HeadingStaticElement, { variant: 'h1' }),
+    [HEADING_KEYS.h2]: withProps(HeadingStaticElement, { variant: 'h2' }),
+    [HEADING_KEYS.h3]: withProps(HeadingStaticElement, { variant: 'h3' }),
+    [HEADING_KEYS.h4]: withProps(HeadingStaticElement, { variant: 'h4' }),
+    [HEADING_KEYS.h5]: withProps(HeadingStaticElement, { variant: 'h5' }),
+    [HEADING_KEYS.h6]: withProps(HeadingStaticElement, { variant: 'h6' }),
+  };
+
   const editorStatic = createSlateEditor({
     plugins: [
       BaseParagraphPlugin,
@@ -150,33 +178,6 @@ export default async function DevPage() {
       BaseLineHeightPlugin,
       BaseHighlightPlugin,
     ],
-    staticComponents: {
-      [BaseBlockquotePlugin.key]: BlockquoteStaticElement,
-      [BaseBoldPlugin.key]: withProps(PlateStaticLeaf, { as: 'strong' }),
-      [BaseCodeBlockPlugin.key]: CodeBlockElementStatic,
-      [BaseCodeLinePlugin.key]: CodeLineStaticElement,
-      [BaseCodePlugin.key]: CodeStaticLeaf,
-      [BaseCodeSyntaxPlugin.key]: CodeSyntaxStaticLeaf,
-      [BaseHighlightPlugin.key]: HighlightStaticLeaf,
-      [BaseHorizontalRulePlugin.key]: HrStaticElement,
-      [BaseItalicPlugin.key]: withProps(PlateStaticLeaf, { as: 'em' }),
-      [BaseLinkPlugin.key]: LinkStaticElement,
-      [BaseParagraphPlugin.key]: ParagraphStaticElement,
-      [BaseStrikethroughPlugin.key]: withProps(PlateStaticLeaf, { as: 'del' }),
-      [BaseSubscriptPlugin.key]: withProps(PlateStaticLeaf, { as: 'sub' }),
-      [BaseSuperscriptPlugin.key]: withProps(PlateStaticLeaf, { as: 'sup' }),
-      [BaseTableCellHeaderPlugin.key]: TableCellHeaderStaticElement,
-      [BaseTableCellPlugin.key]: TableCellStaticElement,
-      [BaseTablePlugin.key]: TableStaticElement,
-      [BaseTableRowPlugin.key]: TableRowStaticElement,
-      [BaseUnderlinePlugin.key]: withProps(PlateStaticLeaf, { as: 'u' }),
-      [HEADING_KEYS.h1]: withProps(HeadingStaticElement, { variant: 'h1' }),
-      [HEADING_KEYS.h2]: withProps(HeadingStaticElement, { variant: 'h2' }),
-      [HEADING_KEYS.h3]: withProps(HeadingStaticElement, { variant: 'h3' }),
-      [HEADING_KEYS.h4]: withProps(HeadingStaticElement, { variant: 'h4' }),
-      [HEADING_KEYS.h5]: withProps(HeadingStaticElement, { variant: 'h5' }),
-      [HEADING_KEYS.h6]: withProps(HeadingStaticElement, { variant: 'h6' }),
-    },
     value: [
       ...basicNodesValue,
       ...linkValue,
@@ -194,40 +195,14 @@ export default async function DevPage() {
 
   // eslint-disable-next-line @typescript-eslint/await-thenable
   const html = await serializeHtml(editorStatic, {
-    components: {
-      [BaseBlockquotePlugin.key]: BlockquoteStaticElement,
-      [BaseBoldPlugin.key]: withProps(PlateStaticLeaf, { as: 'strong' }),
-      [BaseCodeBlockPlugin.key]: CodeBlockElementStatic,
-      [BaseCodeLinePlugin.key]: CodeLineStaticElement,
-      [BaseCodePlugin.key]: CodeStaticLeaf,
-      [BaseCodeSyntaxPlugin.key]: CodeSyntaxStaticLeaf,
-      [BaseHorizontalRulePlugin.key]: HrStaticElement,
-      [BaseItalicPlugin.key]: withProps(PlateStaticLeaf, { as: 'em' }),
-      [BaseKbdPlugin.key]: KbdStaticLeaf,
-      [BaseLinkPlugin.key]: LinkStaticElement,
-      [BaseParagraphPlugin.key]: ParagraphStaticElement,
-      [BaseStrikethroughPlugin.key]: withProps(PlateStaticLeaf, { as: 'del' }),
-      [BaseSubscriptPlugin.key]: withProps(PlateStaticLeaf, { as: 'sub' }),
-      [BaseSuperscriptPlugin.key]: withProps(PlateStaticLeaf, { as: 'sup' }),
-      [BaseTableCellHeaderPlugin.key]: TableCellHeaderStaticElement,
-      [BaseTableCellPlugin.key]: TableCellStaticElement,
-      [BaseTablePlugin.key]: TableStaticElement,
-      [BaseTableRowPlugin.key]: TableRowStaticElement,
-      [BaseUnderlinePlugin.key]: withProps(PlateStaticLeaf, { as: 'u' }),
-      [HEADING_KEYS.h1]: withProps(HeadingStaticElement, { variant: 'h1' }),
-      [HEADING_KEYS.h2]: withProps(HeadingStaticElement, { variant: 'h2' }),
-      [HEADING_KEYS.h3]: withProps(HeadingStaticElement, { variant: 'h3' }),
-      [HEADING_KEYS.h4]: withProps(HeadingStaticElement, { variant: 'h4' }),
-      [HEADING_KEYS.h5]: withProps(HeadingStaticElement, { variant: 'h5' }),
-      [HEADING_KEYS.h6]: withProps(HeadingStaticElement, { variant: 'h6' }),
-    },
+    components: staticComponents,
     nodes: editorStatic.children,
   });
 
   return (
     <div className="mx-auto w-1/2">
-      {/* <h1 className="text-xl font-bold text-green-800">Plate Static :</h1> */}
-      {/* <PlateStatic editor={editorStatic} /> */}
+      <h1 className="text-xl font-bold text-green-800">Plate Static :</h1>
+      <PlateStatic editor={editorStatic} staticComponents={staticComponents} />
 
       <br />
       <br />

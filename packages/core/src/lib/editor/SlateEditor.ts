@@ -17,7 +17,6 @@ import type {
   InjectNodeProps,
 } from '../plugin/SlatePlugin';
 import type { CorePlugin } from '../plugins';
-import type { NodeComponent } from './withSlate';
 
 export type BaseEditor = TEditor & {
   key: any;
@@ -99,7 +98,6 @@ export type SlateEditor = BaseEditor & {
 
   plugins: Record<string, AnyEditorPlugin>;
 
-  staticComponents: Record<string, NodeComponent>;
   // Alias for transforms
   tf: SlateEditor['transforms'];
   transforms: UnionToIntersection<InferTransforms<CorePlugin>>;

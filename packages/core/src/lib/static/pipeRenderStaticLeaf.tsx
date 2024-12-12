@@ -2,23 +2,22 @@ import React from 'react';
 
 import type { SlateEditor } from '../editor';
 import type { SlatePlugin } from '../plugin';
+import type { StaticComponents } from './components';
 import type { RenderStaticLeaf } from './type';
 
 import { PlateStaticLeaf } from './components/DefaultStaticLeaf';
 import { getRenderStaticNodeProps } from './pipeRenderStaticElement';
 
 export const pluginRenderStaticLeaf = (
-  _: SlateEditor,
-  plugin: SlatePlugin
+  editor: SlateEditor,
+  plugin: SlatePlugin,
+  staticComponents: StaticComponents
 ): RenderStaticLeaf =>
   function render(nodeProps) {
-    const {
-      node: { staticComponent },
-    } = plugin;
     const { children, leaf } = nodeProps;
 
     if (leaf[plugin.node.type ?? plugin.key]) {
-      const Leaf = staticComponent ?? PlateStaticLeaf;
+      const Leaf = staticComponents?.[plugin.key] ?? PlateStaticLeaf;
 
       return (
         <Leaf attributes={nodeProps.attributes} leaf={leaf} text={leaf}>
@@ -33,13 +32,16 @@ export const pluginRenderStaticLeaf = (
 /** @see {@link RenderLeaf} */
 export const pipeRenderStaticLeaf = (
   editor: SlateEditor,
+  staticComponents: StaticComponents,
   renderLeafProp?: RenderStaticLeaf
 ): RenderStaticLeaf => {
   const renderLeafs: RenderStaticLeaf[] = [];
 
   editor.pluginList.forEach((plugin) => {
     if (plugin.node.isLeaf && plugin.key) {
-      renderLeafs.push(pluginRenderStaticLeaf(editor, plugin));
+      renderLeafs.push(
+        pluginRenderStaticLeaf(editor, plugin, staticComponents)
+      );
     }
   });
 
