@@ -3,12 +3,18 @@ import React from 'react';
 import type { StaticElementProps } from '@udecode/plate-core';
 
 import { cn } from '@udecode/cn';
-import { PlateStaticElement } from '@udecode/plate-common';
+import {
+  PlateStaticElement,
+  findNode,
+  getParentNode,
+  isElement,
+} from '@udecode/plate-common';
 import { getTableCellBorders } from '@udecode/plate-table';
 
 export function TableCellStaticElement({
   children,
   className,
+  editor,
   element,
   isHeader,
   style,
@@ -16,7 +22,16 @@ export function TableCellStaticElement({
 }: StaticElementProps & {
   isHeader?: boolean;
 }) {
-  const borders = getTableCellBorders(element);
+  const cellPath = findNode(editor!, {
+    match: (n) => isElement(n) && n === element,
+  })![1];
+
+  const rowPath = getParentNode(editor!, cellPath)![1];
+
+  const borders = getTableCellBorders(element, {
+    isFirstCell: cellPath.at(-1) === 0,
+    isFirstRow: rowPath.at(-1) === 0,
+  });
 
   return (
     <PlateStaticElement

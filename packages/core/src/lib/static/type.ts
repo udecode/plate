@@ -1,6 +1,8 @@
 import type { TElement, TText } from '@udecode/slate';
 import type { AnyObject } from '@udecode/utils';
 
+import type { SlateEditor } from '../editor';
+
 // export interface TRenderStaticElementProps<T extends TElement = TElement> {
 //   attributes: {
 //     'data-slate-node': 'element';
@@ -27,6 +29,7 @@ export interface StaticElementProps<T extends TElement = TElement> {
   element: T;
   as?: React.ElementType;
   className?: string;
+  editor?: SlateEditor;
   nodeProps?: AnyObject;
   style?: React.CSSProperties;
 }
