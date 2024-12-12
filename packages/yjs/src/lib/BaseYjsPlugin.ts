@@ -23,18 +23,18 @@ export type YjsPluginOptions<
 
   isSynced: boolean;
 
-  provider: HocuspocusProvider;
-
   /** WithCursors options */
   cursorOptions?: WithCursorsOptions<TCursorData>;
 
   disableCursors?: boolean;
+
   /**
    * HocuspocusProvider configuration
    *
    * @required
    */
   hocuspocusProviderOptions?: HocuspocusProviderConfiguration;
+  provider?: HocuspocusProvider;
 
   /** WithYjs options */
   yjsOptions?: WithYjsOptions;
