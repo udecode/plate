@@ -12,6 +12,7 @@ import {
 import type { GetSiblingIndentListOptions } from './queries/getSiblingIndentList';
 import type { ListStyleType } from './types';
 
+import { renderIndentListBelowNodes } from './renderIndentListBelowNodes';
 import { withIndentList } from './withIndentList';
 
 export const INDENT_LIST_KEYS = {
@@ -24,6 +25,18 @@ export const INDENT_LIST_KEYS = {
 export type BaseIndentListConfig = PluginConfig<
   'listStyleType',
   {
+    listStyleTypes?: Record<
+      string,
+      // TODO: type
+      any
+      // {
+      //   type: string;
+      //   isOrdered?: boolean;
+      //   liComponent?: React.FC<PlateRenderElementProps>;
+      //   markerComponent?: React.FC<Omit<PlateRenderElementProps, 'children'>>;
+      // }
+    >;
+
     /** Map html element to list style type. */
     getListStyleType?: (element: HTMLElement) => ListStyleType;
 
@@ -92,5 +105,8 @@ export const BaseIndentListPlugin = createTSlatePlugin<BaseIndentListConfig>({
         ],
       },
     },
+  },
+  render: {
+    belowNodes: renderIndentListBelowNodes,
   },
 });

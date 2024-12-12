@@ -3,9 +3,8 @@ import React from 'react';
 import type { StaticElementProps } from '@udecode/plate-core';
 
 import { cn } from '@udecode/cn';
+import { PlateStaticElement } from '@udecode/plate-common';
 import { getTableCellBorders } from '@udecode/plate-table';
-
-import { StaticElement } from './paragraph-element';
 
 export function TableCellStaticElement({
   children,
@@ -20,7 +19,7 @@ export function TableCellStaticElement({
   const borders = getTableCellBorders(element);
 
   return (
-    <StaticElement
+    <PlateStaticElement
       as={isHeader ? 'th' : 'td'}
       className={cn(
         'relative h-full overflow-visible bg-background p-0',
@@ -51,7 +50,7 @@ export function TableCellStaticElement({
       <div className="relative z-20 box-border h-full px-3 py-2">
         {children}
       </div>
-    </StaticElement>
+    </PlateStaticElement>
   );
 }
 

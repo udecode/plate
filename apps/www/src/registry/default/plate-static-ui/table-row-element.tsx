@@ -3,8 +3,7 @@ import React from 'react';
 import type { StaticElementProps } from '@udecode/plate-core';
 
 import { cn } from '@udecode/cn';
-
-import { StaticElement } from './paragraph-element';
+import { PlateStaticElement } from '@udecode/plate-common';
 
 export function TableRowStaticElement({
   children,
@@ -15,13 +14,13 @@ export function TableRowStaticElement({
   // const { hideBorder } = element as TTableRowElement;
 
   return (
-    <StaticElement
+    <PlateStaticElement
       as="tr"
       className={cn('h-full', className)}
       element={element}
       {...props}
     >
       {children}
-    </StaticElement>
+    </PlateStaticElement>
   );
 }

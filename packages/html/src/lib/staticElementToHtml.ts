@@ -1,7 +1,10 @@
 import {
   type SlateEditor,
   type SlatePlugin,
-  DefaultStaticElement,
+  type StaticComponents,
+  PlateStaticElement,
+  getBelowNodesChildren,
+  getEditorPlugin,
   getRenderStaticNodeProps,
 } from '@udecode/plate-common';
 
@@ -11,39 +14,55 @@ export const staticElementToHtml = (
   editor: SlateEditor,
   {
     ReactDOMServer,
-    props,
+    components,
+    props: nodeProps,
   }: {
     ReactDOMServer: any;
+    components: StaticComponents;
     props: any;
     preserveClassNames?: string[];
   }
 ): string => {
-  if (!props.element.type) {
-    return renderComponentToHtml(ReactDOMServer, DefaultStaticElement, props);
+  if (!nodeProps.element.type) {
+    return renderComponentToHtml(ReactDOMServer, PlateStaticElement, nodeProps);
   }
 
-  let html;
+  const plugin = editor.pluginList.find(
+    (plugin: SlatePlugin) => nodeProps.element.type === plugin.node.type
+  );
 
-  editor.pluginList.some((plugin: SlatePlugin) => {
-    if (
-      !plugin.node.staticComponent ||
-      props.element.type !== plugin.node.type
-    ) {
-      return false;
-    }
+  if (!plugin) {
+    return renderComponentToHtml(ReactDOMServer, PlateStaticElement, nodeProps);
+  }
 
-    const Component = plugin.node.staticComponent;
+  const Component = components[plugin.key];
 
-    html = renderComponentToHtml(
-      ReactDOMServer,
-      Component,
-      getRenderStaticNodeProps({ editor, plugin, props })
-    );
+  // Apply below nodes to children for example indent list plugin
+  nodeProps.children = getBelowNodesChildren(
+    editor,
+    nodeProps,
+    plugin,
+    nodeProps.children
+  );
 
-    return true;
-  });
+  // console.log(plugin ? (getEditorPlugin(editor, plugin) as any) : {}, 'fj');
+
+  const html = renderComponentToHtml(
+    ReactDOMServer,
+    Component,
+    // inject plugin props for example link plugin and table plugin
+    getRenderStaticNodeProps({
+      editor,
+      plugin,
+      props: {
+        ...nodeProps,
+        plugin,
+        ...(plugin ? getEditorPlugin(editor, plugin) : {}),
+      },
+    })
+  );
 
   return (
-    html ?? renderComponentToHtml(ReactDOMServer, DefaultStaticElement, props)
+    html ?? renderComponentToHtml(ReactDOMServer, PlateStaticElement, nodeProps)
   );
 };

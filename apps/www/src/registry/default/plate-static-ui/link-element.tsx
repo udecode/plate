@@ -3,8 +3,7 @@ import React from 'react';
 import type { StaticElementProps } from '@udecode/plate-core';
 
 import { cn } from '@udecode/cn';
-
-import { StaticElement } from './paragraph-element';
+import { PlateStaticElement } from '@udecode/plate-common';
 
 export const LinkStaticElement = ({
   children,
@@ -13,7 +12,7 @@ export const LinkStaticElement = ({
   ...props
 }: StaticElementProps) => {
   return (
-    <StaticElement
+    <PlateStaticElement
       as="a"
       className={cn(
         'font-medium text-primary underline decoration-primary underline-offset-4',
@@ -24,6 +23,6 @@ export const LinkStaticElement = ({
       {...props}
     >
       {children}
-    </StaticElement>
+    </PlateStaticElement>
   );
 };

@@ -1,26 +1,37 @@
 import {
   type SlateEditor,
   type SlatePlugin,
-  DefaultStaticLeaf,
+  PlateStaticLeaf,
   createStaticString,
+  getRenderStaticNodeProps,
 } from '@udecode/plate-common';
 
 import { renderComponentToHtml } from './utils/renderComponentToHtml';
 
 export const staticLeafToHtml = (
   editor: SlateEditor,
-  { ReactDOMServer, props }: { ReactDOMServer: any; props: any }
+  {
+    ReactDOMServer,
+    components,
+    props,
+  }: { ReactDOMServer: any; components: any; props: any }
 ): string => {
   const innerString = editor.pluginList.reduce(
     (result: string, plugin: SlatePlugin) => {
       if (!plugin.node.isLeaf) return result;
       if (props.leaf[plugin.key]) {
-        const Component = plugin.node.staticComponent!;
+        const Component = components[plugin.key];
 
         if (!Component) return result;
 
+        const ctxProps = getRenderStaticNodeProps({
+          editor,
+          plugin,
+          props: props,
+        });
+
         return renderComponentToHtml(ReactDOMServer, Component, {
-          ...props,
+          ...ctxProps,
           children: result,
         });
       }
@@ -33,8 +44,13 @@ export const staticLeafToHtml = (
     })
   );
 
-  return renderComponentToHtml(ReactDOMServer, DefaultStaticLeaf, {
-    ...props,
+  const ctxProps = getRenderStaticNodeProps({
+    editor,
+    props,
+  }) as any;
+
+  return renderComponentToHtml(ReactDOMServer, PlateStaticLeaf, {
+    ...ctxProps,
     children: innerString,
   });
 };

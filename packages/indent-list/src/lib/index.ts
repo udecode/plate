@@ -3,6 +3,7 @@
  */
 
 export * from './BaseIndentListPlugin';
+export * from './renderIndentListBelowNodes';
 export * from './types';
 export * from './withIndentList';
 export * from './withNormalizeIndentList';

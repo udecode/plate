@@ -4,8 +4,7 @@ import type { StaticElementProps } from '@udecode/plate-core';
 import type { TTableElement } from '@udecode/plate-table';
 
 import { cn } from '@udecode/cn';
-
-import { StaticElement } from './paragraph-element';
+import { PlateStaticElement } from '@udecode/plate-common';
 
 export const TableStaticElement = ({
   children,
@@ -16,7 +15,7 @@ export const TableStaticElement = ({
   const { colSizes } = element as TTableElement;
 
   return (
-    <StaticElement
+    <PlateStaticElement
       className={cn('overflow-x-auto', className)}
       element={element}
       {...props}
@@ -39,6 +38,6 @@ export const TableStaticElement = ({
 
         <tbody className="min-w-full">{children}</tbody>
       </table>
-    </StaticElement>
+    </PlateStaticElement>
   );
 };

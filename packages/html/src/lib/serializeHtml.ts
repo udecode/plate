@@ -1,5 +1,6 @@
 import {
   type SlateEditor,
+  type StaticComponents,
   type TDescendant,
   isText,
 } from '@udecode/plate-common';
@@ -16,12 +17,13 @@ const getReactDOMServer = async () => {
 };
 
 type SerializeHtmlOptions = {
+  components: StaticComponents;
   nodes: TDescendant[];
 };
 
 export const serializeHtml = async (
   editor: SlateEditor,
-  { nodes }: SerializeHtmlOptions
+  { components, nodes }: SerializeHtmlOptions
 ): Promise<string> => {
   const ReactDOMServer = await getReactDOMServer();
 
@@ -30,6 +32,7 @@ export const serializeHtml = async (
       if (isText(node)) {
         return staticLeafToHtml(editor, {
           ReactDOMServer,
+          components,
           props: {
             attributes: { 'data-slate-leaf': true },
             children: newLinesToHtmlBr(encode(node.text)),
@@ -40,17 +43,20 @@ export const serializeHtml = async (
       }
 
       const childrenHtml = await serializeHtml(editor, {
+        components,
         nodes: node.children as TDescendant[],
       });
 
       return staticElementToHtml(editor, {
         ReactDOMServer,
+        components,
         props: {
           attributes: {
             'data-slate-node': 'element',
             ref: null,
           },
           children: childrenHtml,
+          editor,
           element: node,
         },
       });

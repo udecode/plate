@@ -3,9 +3,8 @@ import * as React from 'react';
 import type { StaticElementProps } from '@udecode/plate-common';
 
 import { cn } from '@udecode/cn';
+import { PlateStaticElement } from '@udecode/plate-common';
 import { cva } from 'class-variance-authority';
-
-import { StaticElement } from './paragraph-element';
 
 interface HeadingElementViewProps extends StaticElementProps {
   variant?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
@@ -31,12 +30,12 @@ export const HeadingStaticElement = ({
   ...props
 }: HeadingElementViewProps) => {
   return (
-    <StaticElement
+    <PlateStaticElement
       as={variant}
       className={cn(className, headingVariants({ variant }))}
       {...props}
     >
       {children}
-    </StaticElement>
+    </PlateStaticElement>
   );
 };

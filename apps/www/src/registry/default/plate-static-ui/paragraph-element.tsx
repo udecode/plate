@@ -1,11 +1,9 @@
 import React from 'react';
 
-import type {
-  StaticElementProps,
-  StaticLeafProps,
-} from '@udecode/plate-common';
+import type { StaticElementProps } from '@udecode/plate-common';
 
 import { cn } from '@udecode/cn';
+import { PlateStaticElement } from '@udecode/plate-common';
 
 export const ParagraphStaticElement = ({
   children,
@@ -14,35 +12,12 @@ export const ParagraphStaticElement = ({
   ...props
 }: StaticElementProps) => {
   return (
-    <StaticElement
+    <PlateStaticElement
       className={cn('m-0 px-0 py-1', className)}
       element={element}
       {...props}
     >
       {children}
-    </StaticElement>
+    </PlateStaticElement>
   );
 };
-
-export const StaticElement = ({
-  as,
-  attributes,
-  children,
-  element,
-  nodeProps,
-  ...props
-}: StaticElementProps) => {
-  const Element = (as ?? 'div') as any;
-
-  return (
-    <Element {...attributes} {...props} {...nodeProps}>
-      {children}
-    </Element>
-  );
-};
-
-export function PlateStaticLeaf({ as, attributes, children }: StaticLeafProps) {
-  const Leaf = (as ?? 'span') as any;
-
-  return <Leaf {...attributes}>{children}</Leaf>;
-}

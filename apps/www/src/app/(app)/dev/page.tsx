@@ -1,4 +1,5 @@
 import { withProps } from '@udecode/cn';
+import { BaseAlignPlugin } from '@udecode/plate-alignment';
 import {
   BaseBoldPlugin,
   BaseCodePlugin,
@@ -16,32 +17,62 @@ import {
 } from '@udecode/plate-code-block';
 import {
   BaseParagraphPlugin,
-  PlateStatic,
+  PlateStaticLeaf,
   createSlateEditor,
 } from '@udecode/plate-common';
-import { BaseHeadingPlugin, HEADING_KEYS } from '@udecode/plate-heading';
+import {
+  BaseFontBackgroundColorPlugin,
+  BaseFontColorPlugin,
+  BaseFontSizePlugin,
+} from '@udecode/plate-font';
+import {
+  BaseHeadingPlugin,
+  HEADING_KEYS,
+  HEADING_LEVELS,
+} from '@udecode/plate-heading';
+import { BaseHighlightPlugin } from '@udecode/plate-highlight';
+import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { serializeHtml } from '@udecode/plate-html';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
+import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
+import { BaseKbdPlugin } from '@udecode/plate-kbd';
+import { BaseLineHeightPlugin } from '@udecode/plate-line-height';
 import { BaseLinkPlugin } from '@udecode/plate-link';
+import { BaseImagePlugin, BaseMediaEmbedPlugin } from '@udecode/plate-media';
 import {
   BaseTableCellHeaderPlugin,
   BaseTableCellPlugin,
   BaseTablePlugin,
   BaseTableRowPlugin,
 } from '@udecode/plate-table';
+import { BaseTogglePlugin } from '@udecode/plate-toggle';
 
+import { alignValue } from '@/registry/default/example/values/align-value';
+import { basicNodesValue } from '@/registry/default/example/values/basic-nodes-value';
+import { fontValue } from '@/registry/default/example/values/font-value';
+import { highlightValue } from '@/registry/default/example/values/highlight-value';
+import { horizontalRuleValue } from '@/registry/default/example/values/horizontal-rule-value';
 import { indentListValue } from '@/registry/default/example/values/indent-list-value';
+import { indentValue } from '@/registry/default/example/values/indent-value';
+import { kbdValue } from '@/registry/default/example/values/kbd-value';
+import { lineHeightValue } from '@/registry/default/example/values/line-height-value';
+import { linkValue } from '@/registry/default/example/values/link-value';
+import { tableValue } from '@/registry/default/example/values/table-value';
 import { BlockquoteStaticElement } from '@/registry/default/plate-static-ui/blockquote-element';
 import { CodeBlockElementStatic } from '@/registry/default/plate-static-ui/code-block-element';
 import { CodeStaticLeaf } from '@/registry/default/plate-static-ui/code-leaf';
 import { CodeLineStaticElement } from '@/registry/default/plate-static-ui/code-line-element';
 import { CodeSyntaxStaticLeaf } from '@/registry/default/plate-static-ui/code-syntax-leaf';
 import { HeadingStaticElement } from '@/registry/default/plate-static-ui/heading-element';
-import { LinkStaticElement } from '@/registry/default/plate-static-ui/link-element';
+import { HighlightStaticLeaf } from '@/registry/default/plate-static-ui/highlight-leaf';
+import { HrStaticElement } from '@/registry/default/plate-static-ui/hr-element';
 import {
-  ParagraphStaticElement,
-  PlateStaticLeaf,
-} from '@/registry/default/plate-static-ui/paragraph-element';
+  TodoLi,
+  TodoMarker,
+} from '@/registry/default/plate-static-ui/indent-todo-marker';
+import { KbdStaticLeaf } from '@/registry/default/plate-static-ui/kbd-leaf';
+import { LinkStaticElement } from '@/registry/default/plate-static-ui/link-element';
+import { ParagraphStaticElement } from '@/registry/default/plate-static-ui/paragraph-element';
 import {
   TableCellHeaderStaticElement,
   TableCellStaticElement,
@@ -72,10 +103,52 @@ export default async function DevPage() {
           ],
         },
       }),
+      BaseIndentListPlugin.extend({
+        inject: {
+          targetPlugins: [
+            BaseParagraphPlugin.key,
+            ...HEADING_LEVELS,
+            BaseBlockquotePlugin.key,
+            BaseCodeBlockPlugin.key,
+            BaseTogglePlugin.key,
+          ],
+        },
+        options: {
+          listStyleTypes: {
+            // fire: {
+            //   liComponent: FireLiComponent,
+            //   markerComponent: FireMarker,
+            //   type: 'fire',
+            // },
+            todo: {
+              liComponent: TodoLi,
+              markerComponent: TodoMarker,
+              type: 'todo',
+            },
+          },
+        },
+      }),
       BaseLinkPlugin,
       BaseTableRowPlugin,
       BaseTablePlugin,
       BaseTableCellPlugin,
+      BaseHorizontalRulePlugin,
+      BaseFontColorPlugin,
+      BaseFontBackgroundColorPlugin,
+      BaseFontSizePlugin,
+      BaseKbdPlugin,
+      BaseAlignPlugin.extend({
+        inject: {
+          targetPlugins: [
+            BaseParagraphPlugin.key,
+            BaseMediaEmbedPlugin.key,
+            ...HEADING_LEVELS,
+            BaseImagePlugin.key,
+          ],
+        },
+      }),
+      BaseLineHeightPlugin,
+      BaseHighlightPlugin,
     ],
     staticComponents: {
       [BaseBlockquotePlugin.key]: BlockquoteStaticElement,
@@ -84,6 +157,8 @@ export default async function DevPage() {
       [BaseCodeLinePlugin.key]: CodeLineStaticElement,
       [BaseCodePlugin.key]: CodeStaticLeaf,
       [BaseCodeSyntaxPlugin.key]: CodeSyntaxStaticLeaf,
+      [BaseHighlightPlugin.key]: HighlightStaticLeaf,
+      [BaseHorizontalRulePlugin.key]: HrStaticElement,
       [BaseItalicPlugin.key]: withProps(PlateStaticLeaf, { as: 'em' }),
       [BaseLinkPlugin.key]: LinkStaticElement,
       [BaseParagraphPlugin.key]: ParagraphStaticElement,
@@ -103,22 +178,56 @@ export default async function DevPage() {
       [HEADING_KEYS.h6]: withProps(HeadingStaticElement, { variant: 'h6' }),
     },
     value: [
-      // ...basicNodesValue,
-      // ...linkValue,
-      // ...tableValue,
+      ...basicNodesValue,
+      ...linkValue,
+      ...tableValue,
+      ...horizontalRuleValue,
+      ...fontValue,
+      ...highlightValue,
+      ...kbdValue,
+      ...alignValue,
+      ...lineHeightValue,
+      ...indentValue,
       ...indentListValue,
     ],
   });
 
   // eslint-disable-next-line @typescript-eslint/await-thenable
   const html = await serializeHtml(editorStatic, {
+    components: {
+      [BaseBlockquotePlugin.key]: BlockquoteStaticElement,
+      [BaseBoldPlugin.key]: withProps(PlateStaticLeaf, { as: 'strong' }),
+      [BaseCodeBlockPlugin.key]: CodeBlockElementStatic,
+      [BaseCodeLinePlugin.key]: CodeLineStaticElement,
+      [BaseCodePlugin.key]: CodeStaticLeaf,
+      [BaseCodeSyntaxPlugin.key]: CodeSyntaxStaticLeaf,
+      [BaseHorizontalRulePlugin.key]: HrStaticElement,
+      [BaseItalicPlugin.key]: withProps(PlateStaticLeaf, { as: 'em' }),
+      [BaseKbdPlugin.key]: KbdStaticLeaf,
+      [BaseLinkPlugin.key]: LinkStaticElement,
+      [BaseParagraphPlugin.key]: ParagraphStaticElement,
+      [BaseStrikethroughPlugin.key]: withProps(PlateStaticLeaf, { as: 'del' }),
+      [BaseSubscriptPlugin.key]: withProps(PlateStaticLeaf, { as: 'sub' }),
+      [BaseSuperscriptPlugin.key]: withProps(PlateStaticLeaf, { as: 'sup' }),
+      [BaseTableCellHeaderPlugin.key]: TableCellHeaderStaticElement,
+      [BaseTableCellPlugin.key]: TableCellStaticElement,
+      [BaseTablePlugin.key]: TableStaticElement,
+      [BaseTableRowPlugin.key]: TableRowStaticElement,
+      [BaseUnderlinePlugin.key]: withProps(PlateStaticLeaf, { as: 'u' }),
+      [HEADING_KEYS.h1]: withProps(HeadingStaticElement, { variant: 'h1' }),
+      [HEADING_KEYS.h2]: withProps(HeadingStaticElement, { variant: 'h2' }),
+      [HEADING_KEYS.h3]: withProps(HeadingStaticElement, { variant: 'h3' }),
+      [HEADING_KEYS.h4]: withProps(HeadingStaticElement, { variant: 'h4' }),
+      [HEADING_KEYS.h5]: withProps(HeadingStaticElement, { variant: 'h5' }),
+      [HEADING_KEYS.h6]: withProps(HeadingStaticElement, { variant: 'h6' }),
+    },
     nodes: editorStatic.children,
   });
 
   return (
     <div className="mx-auto w-1/2">
-      <h1 className="text-xl font-bold text-green-800">Plate Static :</h1>
-      <PlateStatic editor={editorStatic} />
+      {/* <h1 className="text-xl font-bold text-green-800">Plate Static :</h1> */}
+      {/* <PlateStatic editor={editorStatic} /> */}
 
       <br />
       <br />

@@ -52,5 +52,9 @@ export interface StaticLeafProps<N extends TText = TText> {
   as?: React.ElementType;
   attributes?: Record<string, any>;
   children?: React.ReactNode;
+  className?: string;
   leaf?: N;
+  nodeProps?: AnyObject;
+  style?: React.CSSProperties;
+  text?: N;
 }

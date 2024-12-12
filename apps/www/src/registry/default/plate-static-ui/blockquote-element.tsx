@@ -2,8 +2,9 @@ import React from 'react';
 
 import type { StaticElementProps } from '@udecode/plate-common';
 
+import { PlateStaticElement } from '@udecode/plate-common';
+
 import { cn } from '../lib/utils';
-import { StaticElement } from './paragraph-element';
 
 export const BlockquoteStaticElement = ({
   children,
@@ -11,12 +12,12 @@ export const BlockquoteStaticElement = ({
   ...props
 }: StaticElementProps) => {
   return (
-    <StaticElement
+    <PlateStaticElement
       as="blockquote"
       className={cn('my-1 border-l-2 pl-6 italic', className)}
       {...props}
     >
       {children}
-    </StaticElement>
+    </PlateStaticElement>
   );
 };

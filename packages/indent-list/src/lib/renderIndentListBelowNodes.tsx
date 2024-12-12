@@ -7,20 +7,23 @@ import type {
 
 import { clsx } from 'clsx';
 
-import { INDENT_LIST_KEYS } from '../lib';
+import {
+  type BaseIndentListConfig,
+  BaseIndentListPlugin,
+  INDENT_LIST_KEYS,
+} from '../lib';
 import { ULIST_STYLE_TYPES } from '../lib/types';
-import { type IndentListConfig, IndentListPlugin } from './IndentListPlugin';
 
 export const renderIndentListBelowNodes = (
-  injectProps: NodeWrapperComponentProps<IndentListConfig>
+  injectProps: NodeWrapperComponentProps<BaseIndentListConfig>
 ): NodeWrapperComponentReturnType => {
   const { element } = injectProps;
 
-  const listStyleType = element[IndentListPlugin.key] as string;
+  const listStyleType = element[BaseIndentListPlugin.key] as string;
   const listStart = element[INDENT_LIST_KEYS.listStart] as number;
 
   if (listStyleType) {
-    let className = clsx(`slate-${IndentListPlugin.key}-${listStyleType}`);
+    let className = clsx(`slate-${BaseIndentListPlugin.key}-${listStyleType}`);
     const style: React.CSSProperties = {
       listStyleType,
       margin: 0,
@@ -31,7 +34,7 @@ export const renderIndentListBelowNodes = (
     return function Component({ children, ...props }) {
       const { editor } = props;
 
-      const { listStyleTypes = {} } = editor.getOptions(IndentListPlugin);
+      const { listStyleTypes = {} } = editor.getOptions(BaseIndentListPlugin);
 
       let listOptions = listStyleTypes[listStyleType];
 
