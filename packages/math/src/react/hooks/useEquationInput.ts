@@ -23,9 +23,11 @@ export const useEquationInput = ({
   const element = useElement<TEquationElement>();
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const [initialExpression, setInitialExpression] = React.useState<
-    string | null
-  >(null);
+  const [expressionInput, setExpressionInput] = React.useState<string>(
+    element.texExpression
+  );
+
+  const initialExpressionRef = useRef<string>(element.texExpression);
 
   useEffect(() => {
     if (open) {
@@ -35,13 +37,20 @@ export const useEquationInput = ({
           inputRef.current.select();
 
           if (isInline) {
-            setInitialExpression(element.texExpression);
+            initialExpressionRef.current = element.texExpression;
           }
         }
       }, 0);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
+
+  useEffect(() => {
+    setNode<TEquationElement>(editor, element, {
+      texExpression: expressionInput || '',
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [expressionInput]);
 
   const onSubmit = () => {
     onClose?.();
@@ -50,7 +59,7 @@ export const useEquationInput = ({
   const onDismiss = () => {
     if (isInline) {
       setNode(editor, element, {
-        texExpression: initialExpression ?? '',
+        texExpression: initialExpressionRef.current,
       });
     }
 
@@ -59,11 +68,9 @@ export const useEquationInput = ({
 
   return {
     props: {
-      value: element.texExpression,
+      value: expressionInput,
       onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        setNode<TEquationElement>(editor, element, {
-          texExpression: e.target.value,
-        });
+        setExpressionInput(e.target.value);
       },
       onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (isHotkey('enter')(e)) {
