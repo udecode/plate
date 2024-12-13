@@ -15,11 +15,10 @@ export const LinkStaticElement = ({
     <PlateStaticElement
       as="a"
       className={cn(
-        'font-medium text-primary underline decoration-primary underline-offset-4',
+        'text-primary decoration-primary font-medium underline underline-offset-4',
         className
       )}
       element={element}
-      // {...(linkProps as any)}
       {...props}
     >
       {children}
