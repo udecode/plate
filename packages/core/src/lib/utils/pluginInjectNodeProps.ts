@@ -1,6 +1,7 @@
-import { findNode } from '@udecode/slate';
-import { findNodePath } from '@udecode/slate-react';
-import { IS_SERVER, isDefined } from '@udecode/utils';
+import type { TElement, TText } from '@udecode/slate';
+import type { Path } from 'slate';
+
+import { isDefined } from '@udecode/utils';
 
 import type { SlateEditor } from '../../lib/editor';
 import type {
@@ -25,7 +26,8 @@ import { getInjectMatch } from '../../lib/utils/getInjectMatch';
 export const pluginInjectNodeProps = (
   editor: SlateEditor,
   plugin: EditorPlugin,
-  nodeProps: GetInjectNodePropsOptions
+  nodeProps: GetInjectNodePropsOptions,
+  getElementPath: (node: TElement | TText) => Path
 ): GetInjectNodePropsReturnType | undefined => {
   const {
     key,
@@ -54,13 +56,7 @@ export const pluginInjectNodeProps = (
 
   const injectMatch = getInjectMatch(editor, plugin);
 
-  const elementPath = findNode(editor, { match: (n) => n === node })?.[1];
-
-  if (IS_SERVER) {
-    if (!elementPath || !injectMatch(node, elementPath)) return;
-  } else {
-    if (!injectMatch(node, findNodePath(editor, node)!)) return;
-  }
+  if (!injectMatch(node, getElementPath(node))) return;
 
   const queryResult = query?.({
     ...injectNodeProps,
