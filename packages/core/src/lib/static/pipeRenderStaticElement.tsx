@@ -1,5 +1,8 @@
 import React from 'react';
 
+import type { Path } from 'slate';
+
+import { findNode } from '@udecode/slate';
 import clsx from 'clsx';
 
 import type { SlateEditor } from '../editor';
@@ -30,7 +33,11 @@ export const getRenderStaticNodeProps = ({
     className: clsx(getSlateClass(plugin?.node.type), className),
   };
 
-  nodeProps = pipeInjectNodeProps(editor, nodeProps);
+  nodeProps = pipeInjectNodeProps(
+    editor,
+    nodeProps,
+    (node) => findNode(editor, { match: (n) => n === node })?.[1] as Path
+  );
 
   if (nodeProps.style && Object.keys(nodeProps.style).length === 0) {
     delete nodeProps.style;

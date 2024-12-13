@@ -39,7 +39,13 @@ import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
 import { BaseKbdPlugin } from '@udecode/plate-kbd';
 import { BaseLineHeightPlugin } from '@udecode/plate-line-height';
 import { BaseLinkPlugin } from '@udecode/plate-link';
-import { BaseImagePlugin, BaseMediaEmbedPlugin } from '@udecode/plate-media';
+import {
+  BaseAudioPlugin,
+  BaseFilePlugin,
+  BaseImagePlugin,
+  BaseMediaEmbedPlugin,
+  BaseVideoPlugin,
+} from '@udecode/plate-media';
 import {
   BaseTableCellHeaderPlugin,
   BaseTableCellPlugin,
@@ -58,6 +64,7 @@ import { indentValue } from '@/registry/default/example/values/indent-value';
 import { kbdValue } from '@/registry/default/example/values/kbd-value';
 import { lineHeightValue } from '@/registry/default/example/values/line-height-value';
 import { linkValue } from '@/registry/default/example/values/link-value';
+import { mediaValue } from '@/registry/default/example/values/media-value';
 import { tableValue } from '@/registry/default/example/values/table-value';
 import { BlockquoteStaticElement } from '@/registry/default/plate-static-ui/blockquote-element';
 import { CodeBlockElementStatic } from '@/registry/default/plate-static-ui/code-block-element';
@@ -66,12 +73,16 @@ import { CodeLineStaticElement } from '@/registry/default/plate-static-ui/code-l
 import { CodeSyntaxStaticLeaf } from '@/registry/default/plate-static-ui/code-syntax-leaf';
 import { HeadingStaticElement } from '@/registry/default/plate-static-ui/heading-element';
 import { HrStaticElement } from '@/registry/default/plate-static-ui/hr-element';
+import { ImageStaticElement } from '@/registry/default/plate-static-ui/image-element';
 import {
   TodoLi,
   TodoMarker,
 } from '@/registry/default/plate-static-ui/indent-todo-marker';
 import { KbdStaticLeaf } from '@/registry/default/plate-static-ui/kbd-leaf';
 import { LinkStaticElement } from '@/registry/default/plate-static-ui/link-element';
+import { MediaAudioStaticElement } from '@/registry/default/plate-static-ui/media-audio-element';
+import { MediaFileStaticElement } from '@/registry/default/plate-static-ui/media-file-element';
+import { MediaVideoStaticElement } from '@/registry/default/plate-static-ui/media-video-element';
 import { ParagraphStaticElement } from '@/registry/default/plate-static-ui/paragraph-element';
 import {
   TableCellHeaderStaticElement,
@@ -82,13 +93,16 @@ import { TableRowStaticElement } from '@/registry/default/plate-static-ui/table-
 
 export default async function DevPage() {
   const staticComponents = {
+    [BaseAudioPlugin.key]: MediaAudioStaticElement,
     [BaseBlockquotePlugin.key]: BlockquoteStaticElement,
     [BaseBoldPlugin.key]: withProps(PlateStaticLeaf, { as: 'strong' }),
     [BaseCodeBlockPlugin.key]: CodeBlockElementStatic,
     [BaseCodeLinePlugin.key]: CodeLineStaticElement,
     [BaseCodePlugin.key]: CodeStaticLeaf,
     [BaseCodeSyntaxPlugin.key]: CodeSyntaxStaticLeaf,
+    [BaseFilePlugin.key]: MediaFileStaticElement,
     [BaseHorizontalRulePlugin.key]: HrStaticElement,
+    [BaseImagePlugin.key]: ImageStaticElement,
     [BaseItalicPlugin.key]: withProps(PlateStaticLeaf, { as: 'em' }),
     [BaseKbdPlugin.key]: KbdStaticLeaf,
     [BaseLinkPlugin.key]: LinkStaticElement,
@@ -101,6 +115,7 @@ export default async function DevPage() {
     [BaseTablePlugin.key]: TableStaticElement,
     [BaseTableRowPlugin.key]: TableRowStaticElement,
     [BaseUnderlinePlugin.key]: withProps(PlateStaticLeaf, { as: 'u' }),
+    [BaseVideoPlugin.key]: MediaVideoStaticElement,
     [HEADING_KEYS.h1]: withProps(HeadingStaticElement, { variant: 'h1' }),
     [HEADING_KEYS.h2]: withProps(HeadingStaticElement, { variant: 'h2' }),
     [HEADING_KEYS.h3]: withProps(HeadingStaticElement, { variant: 'h3' }),
@@ -111,8 +126,11 @@ export default async function DevPage() {
 
   const editorStatic = createSlateEditor({
     plugins: [
+      BaseVideoPlugin,
+      BaseAudioPlugin,
       BaseParagraphPlugin,
       BaseHeadingPlugin,
+      BaseMediaEmbedPlugin,
       BaseBoldPlugin,
       BaseCodePlugin,
       BaseItalicPlugin,
@@ -177,6 +195,8 @@ export default async function DevPage() {
       }),
       BaseLineHeightPlugin,
       BaseHighlightPlugin,
+      BaseFilePlugin,
+      BaseImagePlugin,
     ],
     value: [
       ...basicNodesValue,
@@ -190,6 +210,8 @@ export default async function DevPage() {
       ...lineHeightValue,
       ...indentValue,
       ...indentListValue,
+      ...mediaValue,
+      ...alignValue,
     ],
   });
 
