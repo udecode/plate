@@ -20,6 +20,7 @@ import {
   PlateStatic,
   PlateStaticLeaf,
   createSlateEditor,
+  serializePlateStatic,
 } from '@udecode/plate-common';
 import {
   BaseFontBackgroundColorPlugin,
@@ -33,7 +34,6 @@ import {
 } from '@udecode/plate-heading';
 import { BaseHighlightPlugin } from '@udecode/plate-highlight';
 import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
-import { serializeHtml } from '@udecode/plate-html';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
 import { BaseKbdPlugin } from '@udecode/plate-kbd';
@@ -193,11 +193,7 @@ export default async function DevPage() {
     ],
   });
 
-  // eslint-disable-next-line @typescript-eslint/await-thenable
-  const html = await serializeHtml(editorStatic, {
-    components: staticComponents,
-    nodes: editorStatic.children,
-  });
+  const html = await serializePlateStatic(editorStatic, staticComponents);
 
   return (
     <div className="mx-auto w-1/2">

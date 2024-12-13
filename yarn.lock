@@ -6664,6 +6664,7 @@ __metadata:
     "@udecode/slate-utils": "npm:40.3.1"
     "@udecode/utils": "npm:37.0.0"
     clsx: "npm:^2.1.1"
+    html-entities: "npm:^2.5.2"
     is-hotkey: "npm:^0.2.0"
     jotai: "npm:~2.8.4"
     jotai-optics: "npm:0.4.0"

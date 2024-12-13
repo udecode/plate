@@ -7,3 +7,4 @@ export * from './pipeRenderStaticLeaf';
 export * from './type';
 export * from './components/index';
 export * from './utils/index';
+export * from './serializedHtml';
