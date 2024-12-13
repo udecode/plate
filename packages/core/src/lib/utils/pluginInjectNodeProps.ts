@@ -1,5 +1,6 @@
 import { findNode } from '@udecode/slate';
-import { isDefined } from '@udecode/utils';
+import { findNodePath } from '@udecode/slate-react';
+import { IS_SERVER, isDefined } from '@udecode/utils';
 
 import type { SlateEditor } from '../../lib/editor';
 import type {
@@ -55,9 +56,11 @@ export const pluginInjectNodeProps = (
 
   const elementPath = findNode(editor, { match: (n) => n === node })?.[1];
 
-  // Need REVIEW
-  // Before is using findNodePath import from 'slate-react'
-  if (!elementPath || !injectMatch(node, elementPath)) return;
+  if (IS_SERVER) {
+    if (!elementPath || !injectMatch(node, elementPath)) return;
+  } else {
+    if (!injectMatch(node, findNodePath(editor, node)!)) return;
+  }
 
   const queryResult = query?.({
     ...injectNodeProps,
