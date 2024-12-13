@@ -61,26 +61,23 @@ describe('serializePlateStatic', () => {
       { children: [{ text: ' part.' }], type: 'p' },
     ]);
 
-    const html = await serializePlateStatic(editor, {});
+    const html = await serializePlateStatic(editor, staticComponents);
     expect(html).toContain(decode('href="https://example.com/"'));
     expect(html).toContain('slate-a');
   });
 
-  // it('should serialize image to html', async () => {
-  //   const editor = createSlateEditor({
-  //     plugins: [BaseImagePlugin],
-  //     value: [
-  //       {
-  //         children: [{ text: '' }],
-  //         type: 'img',
-  //         url: 'https://example.com/image.jpg',
-  //       },
-  //     ],
-  //   });
+  it('should serialize image to html', async () => {
+    const editor = createStaticEditor([
+      {
+        children: [{ text: '' }],
+        type: 'img',
+        url: 'https://example.com/image.jpg',
+      },
+    ]);
 
-  //   const html = await serializePlateStatic(editor, {});
-  //   expect(html).toContain('src="https://example.com/image.jpg"');
-  // });
+    const html = await serializePlateStatic(editor, staticComponents);
+    expect(html).toContain('src="https://example.com/image.jpg"');
+  });
 
   it('should serialize table to html', async () => {
     const editor = createStaticEditor([
@@ -98,7 +95,7 @@ describe('serializePlateStatic', () => {
       },
     ]);
 
-    const html = await serializePlateStatic(editor, {});
+    const html = await serializePlateStatic(editor, staticComponents);
     expect(html).toContain('Cell 1');
     expect(html).toContain('Cell 2');
   });

@@ -35,7 +35,13 @@ import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
 import { BaseKbdPlugin } from '@udecode/plate-kbd';
 import { BaseLineHeightPlugin } from '@udecode/plate-line-height';
 import { BaseLinkPlugin } from '@udecode/plate-link';
-import { BaseImagePlugin, BaseMediaEmbedPlugin } from '@udecode/plate-media';
+import {
+  BaseAudioPlugin,
+  BaseFilePlugin,
+  BaseImagePlugin,
+  BaseMediaEmbedPlugin,
+  BaseVideoPlugin,
+} from '@udecode/plate-media';
 import {
   BaseTableCellHeaderPlugin,
   BaseTableCellPlugin,
@@ -50,12 +56,16 @@ import { CodeLineStaticElement } from 'www/src/registry/default/plate-static-ui/
 import { CodeSyntaxStaticLeaf } from 'www/src/registry/default/plate-static-ui/code-syntax-leaf';
 import { HeadingStaticElement } from 'www/src/registry/default/plate-static-ui/heading-element';
 import { HrStaticElement } from 'www/src/registry/default/plate-static-ui/hr-element';
+import { ImageStaticElement } from 'www/src/registry/default/plate-static-ui/image-element';
 import {
   TodoLi,
   TodoMarker,
 } from 'www/src/registry/default/plate-static-ui/indent-todo-marker';
 import { KbdStaticLeaf } from 'www/src/registry/default/plate-static-ui/kbd-leaf';
 import { LinkStaticElement } from 'www/src/registry/default/plate-static-ui/link-element';
+import { MediaAudioStaticElement } from 'www/src/registry/default/plate-static-ui/media-audio-element';
+import { MediaFileStaticElement } from 'www/src/registry/default/plate-static-ui/media-file-element';
+import { MediaVideoStaticElement } from 'www/src/registry/default/plate-static-ui/media-video-element';
 import { ParagraphStaticElement } from 'www/src/registry/default/plate-static-ui/paragraph-element';
 import {
   TableCellHeaderStaticElement,
@@ -70,8 +80,11 @@ import { createSlateEditor } from '../../editor';
 export const createStaticEditor = (value: Value) => {
   return createSlateEditor({
     plugins: [
+      BaseVideoPlugin,
+      BaseAudioPlugin,
       BaseParagraphPlugin,
       BaseHeadingPlugin,
+      BaseMediaEmbedPlugin,
       BaseBoldPlugin,
       BaseCodePlugin,
       BaseItalicPlugin,
@@ -136,19 +149,24 @@ export const createStaticEditor = (value: Value) => {
       }),
       BaseLineHeightPlugin,
       BaseHighlightPlugin,
+      BaseFilePlugin,
+      BaseImagePlugin,
     ],
     value,
   });
 };
 
 export const staticComponents = {
+  [BaseAudioPlugin.key]: MediaAudioStaticElement,
   [BaseBlockquotePlugin.key]: BlockquoteStaticElement,
   [BaseBoldPlugin.key]: withProps(PlateStaticLeaf, { as: 'strong' }),
   [BaseCodeBlockPlugin.key]: CodeBlockElementStatic,
   [BaseCodeLinePlugin.key]: CodeLineStaticElement,
   [BaseCodePlugin.key]: CodeStaticLeaf,
   [BaseCodeSyntaxPlugin.key]: CodeSyntaxStaticLeaf,
+  [BaseFilePlugin.key]: MediaFileStaticElement,
   [BaseHorizontalRulePlugin.key]: HrStaticElement,
+  [BaseImagePlugin.key]: ImageStaticElement,
   [BaseItalicPlugin.key]: withProps(PlateStaticLeaf, { as: 'em' }),
   [BaseKbdPlugin.key]: KbdStaticLeaf,
   [BaseLinkPlugin.key]: LinkStaticElement,
@@ -161,6 +179,7 @@ export const staticComponents = {
   [BaseTablePlugin.key]: TableStaticElement,
   [BaseTableRowPlugin.key]: TableRowStaticElement,
   [BaseUnderlinePlugin.key]: withProps(PlateStaticLeaf, { as: 'u' }),
+  [BaseVideoPlugin.key]: MediaVideoStaticElement,
   [HEADING_KEYS.h1]: withProps(HeadingStaticElement, { variant: 'h1' }),
   [HEADING_KEYS.h2]: withProps(HeadingStaticElement, { variant: 'h2' }),
   [HEADING_KEYS.h3]: withProps(HeadingStaticElement, { variant: 'h3' }),
