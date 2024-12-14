@@ -102,7 +102,6 @@
     "@udecode/plate-heading": "workspace:^",
     "@udecode/plate-highlight": "workspace:^",
     "@udecode/plate-horizontal-rule": "workspace:^",
-    "@udecode/plate-html": "workspace:^",
     "@udecode/plate-indent": "workspace:^",
     "@udecode/plate-indent-list": "workspace:^",
     "@udecode/plate-juice": "workspace:^",

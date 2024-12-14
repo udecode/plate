@@ -6,6 +6,7 @@ export * from './applyDeepToNodes';
 export * from './getInjectMatch';
 export * from './getInjectedPlugins';
 export * from './getKeysByTypes';
+export * from './getPluginNodeProps';
 export * from './hotkeys';
 export * from './mergeDeepToNodes';
 export * from './normalizeDescendantsToDocumentFragment';

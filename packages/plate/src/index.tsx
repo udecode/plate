@@ -29,7 +29,6 @@ export * from '@udecode/plate-reset-node';
 export * from '@udecode/plate-select';
 export * from '@udecode/plate-csv';
 export * from '@udecode/plate-docx';
-export * from '@udecode/plate-html';
 export * from '@udecode/plate-markdown';
 export * from '@udecode/plate-slash-command';
 export * from '@udecode/plate-suggestion';
