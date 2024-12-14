@@ -175,7 +175,7 @@ describe('serializePlateStatic nodes', () => {
     });
 
     expect(html).toContain(
-      '<div data-slate-node="element><span data-slate-leaf="true"><span data-slate-string="true">None encoded string 100%</span></span></div>'
+      '<div data-slate-node="element"><span data-slate-node="text"><span data-slate-leaf="true"><span data-slate-string="true">None encoded string 100%</span></span></span></div>'
     );
     // expect(html).toContain(
     //   '<div><span data-slate-leaf="true"><span data-slate-string="true">Encoded string 100%25</span></span></div>'
