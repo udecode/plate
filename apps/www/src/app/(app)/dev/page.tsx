@@ -215,8 +215,27 @@ export default async function DevPage() {
     ],
   });
 
+  // console.log(
+  //   [
+  //     ...basicNodesValue,
+  //     ...linkValue,
+  //     ...tableValue,
+  //     ...horizontalRuleValue,
+  //     ...fontValue,
+  //     ...highlightValue,
+  //     ...kbdValue,
+  //     ...alignValue,
+  //     ...lineHeightValue,
+  //     ...indentValue,
+  //     ...indentListValue,
+  //     ...mediaValue,
+  //     ...alignValue,
+  //   ],
+  //   'fj'
+  // );
+
   const html = await serializePlateStatic(editorStatic, staticComponents);
-  // console.log('🚀 ~ DevPage ~ html:', html);
+  console.log('🚀 ~ DevPage ~ html:', html);
 
   return (
     <div className="mx-auto w-1/2">
