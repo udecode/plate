@@ -1,50 +1,12 @@
 import React from 'react';
 
-import type { Path } from 'slate';
-
-import { findNode } from '@udecode/slate';
-import clsx from 'clsx';
-
 import type { SlateEditor } from '../editor';
+import type { SlatePlugin } from '../plugin';
 import type { StaticComponents } from './components';
 import type { RenderStaticElement, StaticElementProps } from './type';
 
-import { type SlatePlugin, getEditorPlugin } from '../plugin';
-import { getSlateClass, pipeInjectNodeProps } from '../utils';
-import { getPluginNodeProps } from '../utils/getPluginNodeProps';
 import { PlateStaticElement } from './components/DefaultStaticElement';
-
-export const getRenderStaticNodeProps = ({
-  editor,
-  plugin,
-  props,
-}: {
-  editor: SlateEditor;
-  props: StaticElementProps;
-  plugin?: SlatePlugin;
-}): StaticElementProps => {
-  props = getPluginNodeProps(props, plugin);
-
-  const { className } = props;
-
-  let nodeProps = {
-    ...props,
-    ...(plugin ? getEditorPlugin(editor, plugin) : {}),
-    className: clsx(getSlateClass(plugin?.node.type), className),
-  };
-
-  nodeProps = pipeInjectNodeProps(
-    editor,
-    nodeProps,
-    (node) => findNode(editor, { match: (n) => n === node })?.[1] as Path
-  );
-
-  if (nodeProps.style && Object.keys(nodeProps.style).length === 0) {
-    delete nodeProps.style;
-  }
-
-  return nodeProps;
-};
+import { getRenderStaticNodeProps } from './utils/getRenderStaticNodeProps';
 
 export const getBelowNodesChildren = (
   editor: SlateEditor,

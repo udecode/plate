@@ -6,7 +6,7 @@ import type { StaticComponents } from './components';
 import type { RenderStaticLeaf } from './type';
 
 import { PlateStaticLeaf } from './components/DefaultStaticLeaf';
-import { getRenderStaticNodeProps } from './pipeRenderStaticElement';
+import { getRenderStaticNodeProps } from './utils/getRenderStaticNodeProps';
 
 export const pluginRenderStaticLeaf = (
   editor: SlateEditor,
@@ -19,11 +19,14 @@ export const pluginRenderStaticLeaf = (
     if (leaf[plugin.node.type ?? plugin.key]) {
       const Leaf = staticComponents?.[plugin.key] ?? PlateStaticLeaf;
 
-      return (
-        <Leaf attributes={nodeProps.attributes} leaf={leaf} text={leaf}>
-          {children}
-        </Leaf>
-      );
+      const ctxProps = getRenderStaticNodeProps({
+        attributes: leaf.attributes as any,
+        editor,
+        plugin,
+        props: nodeProps as any,
+      }) as any;
+
+      return <Leaf {...ctxProps}>{children}</Leaf>;
     }
 
     return children;

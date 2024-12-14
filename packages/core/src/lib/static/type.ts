@@ -26,7 +26,8 @@ export type RenderStaticElement<T extends TElement = TElement> = (
 
 export interface TRenderStaticLeafProps<N extends TText = TText> {
   attributes: {
-    'data-slate-leaf': true;
+    'data-slate-leaf'?: true;
+    'data-slate-node'?: 'text';
   };
   children: any;
   leaf: N;

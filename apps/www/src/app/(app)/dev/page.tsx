@@ -216,7 +216,7 @@ export default async function DevPage() {
   });
 
   const html = await serializePlateStatic(editorStatic, staticComponents);
-  console.log('🚀 ~ DevPage ~ html:', html);
+  // console.log('🚀 ~ DevPage ~ html:', html);
 
   return (
     <div className="mx-auto w-1/2">

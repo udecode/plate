@@ -3,12 +3,25 @@ import React from 'react';
 import type { StaticLeafProps } from '../type';
 
 export function PlateStaticLeaf(props: StaticLeafProps) {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { as, attributes, children, className, style, ...rest } = props;
+  const { as, attributes, children, className, leaf, text, ...rest } = props;
+
   const Leaf = (as ?? 'span') as any;
 
+  const {
+    api,
+    editor,
+    getOption,
+    getOptions,
+    plugin,
+    setOption,
+    setOptions,
+    tf,
+    type,
+    ...restProps
+  } = rest as any;
+
   return (
-    <Leaf className={className} style={style} {...attributes}>
+    <Leaf className={className} {...attributes} {...restProps}>
       {children}
     </Leaf>
   );

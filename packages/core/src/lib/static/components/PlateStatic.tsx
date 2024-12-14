@@ -63,12 +63,16 @@ function Element({
 function Leaf({ editor, leaf = { text: '' }, staticComponents }: LeafProps) {
   const renderLeaf = pipeRenderStaticLeaf(editor, staticComponents);
 
-  return renderLeaf!({
-    attributes: { 'data-slate-leaf': true },
-    children: createStaticString({ text: leaf.text }),
-    leaf,
-    text: leaf,
-  });
+  return (
+    <span data-slate-node="text">
+      {renderLeaf!({
+        attributes: { 'data-slate-leaf': true },
+        children: createStaticString({ text: leaf.text }),
+        leaf,
+        text: leaf,
+      })}
+    </span>
+  );
 }
 
 function PlateViewContent({
