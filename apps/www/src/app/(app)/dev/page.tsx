@@ -15,6 +15,7 @@ import {
   BaseCodeLinePlugin,
   BaseCodeSyntaxPlugin,
 } from '@udecode/plate-code-block';
+import { BaseCommentsPlugin } from '@udecode/plate-comments';
 import {
   BaseParagraphPlugin,
   PlateStatic,
@@ -22,6 +23,7 @@ import {
   createSlateEditor,
   serializePlateStatic,
 } from '@udecode/plate-common';
+import { BaseDatePlugin } from '@udecode/plate-date';
 import {
   BaseFontBackgroundColorPlugin,
   BaseFontColorPlugin,
@@ -29,6 +31,7 @@ import {
 } from '@udecode/plate-font';
 import {
   BaseHeadingPlugin,
+  BaseTocPlugin,
   HEADING_KEYS,
   HEADING_LEVELS,
 } from '@udecode/plate-heading';
@@ -46,6 +49,7 @@ import {
   BaseMediaEmbedPlugin,
   BaseVideoPlugin,
 } from '@udecode/plate-media';
+import { BaseMentionPlugin } from '@udecode/plate-mention';
 import {
   BaseTableCellHeaderPlugin,
   BaseTableCellPlugin,
@@ -55,7 +59,24 @@ import {
 import { BaseTogglePlugin } from '@udecode/plate-toggle';
 
 import { alignValue } from '@/registry/default/example/values/align-value';
-import { basicNodesValue } from '@/registry/default/example/values/basic-nodes-value';
+import { autoformatValue } from '@/registry/default/example/values/autoformat-value';
+import { basicElementsValue } from '@/registry/default/example/values/basic-elements-value';
+import { basicMarksValue } from '@/registry/default/example/values/basic-marks-value';
+import { blockMenuValue } from '@/registry/default/example/values/block-menu-value';
+import { blockSelectionValue } from '@/registry/default/example/values/block-selection-value';
+import { columnValue } from '@/registry/default/example/values/column-value';
+import { commentsValue } from '@/registry/default/example/values/comments-value';
+import { cursorOverlayValue } from '@/registry/default/example/values/cursor-overlay-value';
+import { dateValue } from '@/registry/default/example/values/date-value';
+import { deserializeCsvValue } from '@/registry/default/example/values/deserialize-csv-value';
+import { deserializeDocxValue } from '@/registry/default/example/values/deserialize-docx-value';
+import { deserializeHtmlValue } from '@/registry/default/example/values/deserialize-html-value';
+import { deserializeMdValue } from '@/registry/default/example/values/deserialize-md-value';
+import { emojiValue } from '@/registry/default/example/values/emoji-value';
+import {
+  exitBreakValue,
+  trailingBlockValue,
+} from '@/registry/default/example/values/exit-break-value';
 import { fontValue } from '@/registry/default/example/values/font-value';
 import { highlightValue } from '@/registry/default/example/values/highlight-value';
 import { horizontalRuleValue } from '@/registry/default/example/values/horizontal-rule-value';
@@ -64,16 +85,21 @@ import { indentValue } from '@/registry/default/example/values/indent-value';
 import { kbdValue } from '@/registry/default/example/values/kbd-value';
 import { lineHeightValue } from '@/registry/default/example/values/line-height-value';
 import { linkValue } from '@/registry/default/example/values/link-value';
+import { todoListValue } from '@/registry/default/example/values/list-value';
 import { mediaValue } from '@/registry/default/example/values/media-value';
-import {
-  tableMergeValue,
-  tableValue,
-} from '@/registry/default/example/values/table-value';
+import { mentionValue } from '@/registry/default/example/values/mention-value';
+import { slashCommandValue } from '@/registry/default/example/values/slash-command-value';
+import { softBreakValue } from '@/registry/default/example/values/soft-break-value';
+import { tableValue } from '@/registry/default/example/values/table-value';
+import { tocPlaygroundValue } from '@/registry/default/example/values/toc-value';
+import { toggleValue } from '@/registry/default/example/values/toggle-value';
 import { BlockquoteElementStatic } from '@/registry/default/plate-ui/blockquote-element-static';
 import { CodeBlockElementStatic } from '@/registry/default/plate-ui/code-block-element-static';
 import { CodeLeafStatic } from '@/registry/default/plate-ui/code-leaf-static';
 import { CodeLineElementStatic } from '@/registry/default/plate-ui/code-line-element-static';
 import { CodeSyntaxLeafStatic } from '@/registry/default/plate-ui/code-syntax-leaf-static';
+import { CommentLeafStatic } from '@/registry/default/plate-ui/comment-leaf-static';
+import { DateElementStatic } from '@/registry/default/plate-ui/date-element-static';
 import { HeadingElementStatic } from '@/registry/default/plate-ui/heading-element-static';
 import { HrElementStatic } from '@/registry/default/plate-ui/hr-element-static';
 import { ImageElementStatic } from '@/registry/default/plate-ui/image-element-static';
@@ -90,6 +116,7 @@ import { LinkElementStatic } from '@/registry/default/plate-ui/link-element-stat
 import { MediaAudioElementStatic } from '@/registry/default/plate-ui/media-audio-element-static';
 import { MediaFileElementStatic } from '@/registry/default/plate-ui/media-file-element-static';
 import { MediaVideoElementStatic } from '@/registry/default/plate-ui/media-video-element-static';
+import { MentionElementStatic } from '@/registry/default/plate-ui/mention-element-static';
 import { ParagraphElementStatic } from '@/registry/default/plate-ui/paragraph-element-static';
 import {
   TableCellElementStatic,
@@ -97,6 +124,8 @@ import {
 } from '@/registry/default/plate-ui/table-cell-element-static';
 import { TableElementStatic } from '@/registry/default/plate-ui/table-element-static';
 import { TableRowElementStatic } from '@/registry/default/plate-ui/table-row-element-static';
+import { TocElementStatic } from '@/registry/default/plate-ui/toc-element-static';
+import { ToggleElementStatic } from '@/registry/default/plate-ui/toggle-element-static';
 
 export default async function DevPage() {
   const staticComponents = {
@@ -107,12 +136,15 @@ export default async function DevPage() {
     [BaseCodeLinePlugin.key]: CodeLineElementStatic,
     [BaseCodePlugin.key]: CodeLeafStatic,
     [BaseCodeSyntaxPlugin.key]: CodeSyntaxLeafStatic,
+    [BaseCommentsPlugin.key]: CommentLeafStatic,
+    [BaseDatePlugin.key]: DateElementStatic,
     [BaseFilePlugin.key]: MediaFileElementStatic,
     [BaseHorizontalRulePlugin.key]: HrElementStatic,
     [BaseImagePlugin.key]: ImageElementStatic,
     [BaseItalicPlugin.key]: withProps(PlateStaticLeaf, { as: 'em' }),
     [BaseKbdPlugin.key]: KbdLeafStatic,
     [BaseLinkPlugin.key]: LinkElementStatic,
+    [BaseMentionPlugin.key]: MentionElementStatic,
     [BaseParagraphPlugin.key]: ParagraphElementStatic,
     [BaseStrikethroughPlugin.key]: withProps(PlateStaticLeaf, { as: 'del' }),
     [BaseSubscriptPlugin.key]: withProps(PlateStaticLeaf, { as: 'sub' }),
@@ -121,6 +153,8 @@ export default async function DevPage() {
     [BaseTableCellPlugin.key]: TableCellElementStatic,
     [BaseTablePlugin.key]: TableElementStatic,
     [BaseTableRowPlugin.key]: TableRowElementStatic,
+    [BaseTocPlugin.key]: TocElementStatic,
+    [BaseTogglePlugin.key]: ToggleElementStatic,
     [BaseUnderlinePlugin.key]: withProps(PlateStaticLeaf, { as: 'u' }),
     [BaseVideoPlugin.key]: MediaVideoElementStatic,
     [HEADING_KEYS.h1]: withProps(HeadingElementStatic, { variant: 'h1' }),
@@ -133,6 +167,7 @@ export default async function DevPage() {
 
   const editorStatic = createSlateEditor({
     plugins: [
+      BaseTocPlugin,
       BaseVideoPlugin,
       BaseAudioPlugin,
       BaseParagraphPlugin,
@@ -146,6 +181,7 @@ export default async function DevPage() {
       BaseSuperscriptPlugin,
       BaseUnderlinePlugin,
       BaseBlockquotePlugin,
+      BaseDatePlugin,
       BaseCodeBlockPlugin,
       BaseIndentPlugin.extend({
         inject: {
@@ -204,22 +240,44 @@ export default async function DevPage() {
       BaseHighlightPlugin,
       BaseFilePlugin,
       BaseImagePlugin,
+      BaseMentionPlugin,
+      BaseCommentsPlugin,
+      BaseTogglePlugin,
     ],
     value: [
-      ...basicNodesValue,
+      ...tocPlaygroundValue,
+      ...basicElementsValue,
+      ...basicMarksValue,
+      ...todoListValue,
       ...linkValue,
-      ...tableValue,
       ...horizontalRuleValue,
+      ...tableValue,
+      ...mediaValue,
+      ...columnValue,
+      ...mentionValue,
+      ...dateValue,
+      ...emojiValue,
       ...fontValue,
       ...highlightValue,
       ...kbdValue,
+      ...commentsValue,
       ...alignValue,
       ...lineHeightValue,
       ...indentValue,
       ...indentListValue,
-      ...mediaValue,
-      ...alignValue,
-      ...tableMergeValue,
+      ...toggleValue,
+      ...slashCommandValue,
+      ...blockSelectionValue,
+      ...blockMenuValue,
+      ...autoformatValue,
+      ...softBreakValue,
+      ...exitBreakValue,
+      ...cursorOverlayValue,
+      ...trailingBlockValue,
+      ...deserializeHtmlValue,
+      ...deserializeMdValue,
+      ...deserializeDocxValue,
+      ...deserializeCsvValue,
     ],
   });
 
@@ -232,8 +290,14 @@ export default async function DevPage() {
 
       <br />
       <br />
-      <h1 className="text-xl font-bold text-green-800">HTML :</h1>
-      <div dangerouslySetInnerHTML={{ __html: html }} />
+
+      {/* <h1 className="text-xl font-bold text-green-800">HTML :</h1> */}
+      {/* <iframe
+        style={{ height: '500px', width: '100%' }}
+        title="Plate Static"
+        frameBorder="0"
+        src={`data:text/html;charset=utf-8,${html}`}
+      /> */}
     </div>
   );
 }
