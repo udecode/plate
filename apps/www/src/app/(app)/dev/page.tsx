@@ -65,63 +65,70 @@ import { kbdValue } from '@/registry/default/example/values/kbd-value';
 import { lineHeightValue } from '@/registry/default/example/values/line-height-value';
 import { linkValue } from '@/registry/default/example/values/link-value';
 import { mediaValue } from '@/registry/default/example/values/media-value';
-import { tableValue } from '@/registry/default/example/values/table-value';
-import { BlockquoteStaticElement } from '@/registry/default/plate-static-ui/blockquote-element';
-import { CodeBlockElementStatic } from '@/registry/default/plate-static-ui/code-block-element';
-import { CodeStaticLeaf } from '@/registry/default/plate-static-ui/code-leaf';
-import { CodeLineStaticElement } from '@/registry/default/plate-static-ui/code-line-element';
-import { CodeSyntaxStaticLeaf } from '@/registry/default/plate-static-ui/code-syntax-leaf';
-import { HeadingStaticElement } from '@/registry/default/plate-static-ui/heading-element';
-import { HrStaticElement } from '@/registry/default/plate-static-ui/hr-element';
-import { ImageStaticElement } from '@/registry/default/plate-static-ui/image-element';
 import {
-  TodoLi,
-  TodoMarker,
-} from '@/registry/default/plate-static-ui/indent-todo-marker';
-import { KbdStaticLeaf } from '@/registry/default/plate-static-ui/kbd-leaf';
-import { LinkStaticElement } from '@/registry/default/plate-static-ui/link-element';
-import { MediaAudioStaticElement } from '@/registry/default/plate-static-ui/media-audio-element';
-import { MediaFileStaticElement } from '@/registry/default/plate-static-ui/media-file-element';
-import { MediaVideoStaticElement } from '@/registry/default/plate-static-ui/media-video-element';
-import { ParagraphStaticElement } from '@/registry/default/plate-static-ui/paragraph-element';
+  tableMergeValue,
+  tableValue,
+} from '@/registry/default/example/values/table-value';
+import { BlockquoteElementStatic } from '@/registry/default/plate-ui/blockquote-element-static';
+import { CodeBlockElementStatic } from '@/registry/default/plate-ui/code-block-element-static';
+import { CodeLeafStatic } from '@/registry/default/plate-ui/code-leaf-static';
+import { CodeLineElementStatic } from '@/registry/default/plate-ui/code-line-element-static';
+import { CodeSyntaxLeafStatic } from '@/registry/default/plate-ui/code-syntax-leaf-static';
+import { HeadingElementStatic } from '@/registry/default/plate-ui/heading-element-static';
+import { HrElementStatic } from '@/registry/default/plate-ui/hr-element-static';
+import { ImageElementStatic } from '@/registry/default/plate-ui/image-element-static';
 import {
+  FireLiComponentStatic,
+  FireMarkerStatic,
+} from '@/registry/default/plate-ui/indent-fire-marker-static';
+import {
+  TodoLiStatic,
+  TodoMarkerStatic,
+} from '@/registry/default/plate-ui/indent-todo-marker-static';
+import { KbdLeafStatic } from '@/registry/default/plate-ui/kbd-leaf-static';
+import { LinkElementStatic } from '@/registry/default/plate-ui/link-element-static';
+import { MediaAudioElementStatic } from '@/registry/default/plate-ui/media-audio-element-static';
+import { MediaFileElementStatic } from '@/registry/default/plate-ui/media-file-element-static';
+import { MediaVideoElementStatic } from '@/registry/default/plate-ui/media-video-element-static';
+import { ParagraphElementStatic } from '@/registry/default/plate-ui/paragraph-element-static';
+import {
+  TableCellElementStatic,
   TableCellHeaderStaticElement,
-  TableCellStaticElement,
-} from '@/registry/default/plate-static-ui/table-cell-element';
-import { TableStaticElement } from '@/registry/default/plate-static-ui/table-element';
-import { TableRowStaticElement } from '@/registry/default/plate-static-ui/table-row-element';
+} from '@/registry/default/plate-ui/table-cell-element-static';
+import { TableElementStatic } from '@/registry/default/plate-ui/table-element-static';
+import { TableRowElementStatic } from '@/registry/default/plate-ui/table-row-element-static';
 
 export default async function DevPage() {
   const staticComponents = {
-    [BaseAudioPlugin.key]: MediaAudioStaticElement,
-    [BaseBlockquotePlugin.key]: BlockquoteStaticElement,
+    [BaseAudioPlugin.key]: MediaAudioElementStatic,
+    [BaseBlockquotePlugin.key]: BlockquoteElementStatic,
     [BaseBoldPlugin.key]: withProps(PlateStaticLeaf, { as: 'strong' }),
     [BaseCodeBlockPlugin.key]: CodeBlockElementStatic,
-    [BaseCodeLinePlugin.key]: CodeLineStaticElement,
-    [BaseCodePlugin.key]: CodeStaticLeaf,
-    [BaseCodeSyntaxPlugin.key]: CodeSyntaxStaticLeaf,
-    [BaseFilePlugin.key]: MediaFileStaticElement,
-    [BaseHorizontalRulePlugin.key]: HrStaticElement,
-    [BaseImagePlugin.key]: ImageStaticElement,
+    [BaseCodeLinePlugin.key]: CodeLineElementStatic,
+    [BaseCodePlugin.key]: CodeLeafStatic,
+    [BaseCodeSyntaxPlugin.key]: CodeSyntaxLeafStatic,
+    [BaseFilePlugin.key]: MediaFileElementStatic,
+    [BaseHorizontalRulePlugin.key]: HrElementStatic,
+    [BaseImagePlugin.key]: ImageElementStatic,
     [BaseItalicPlugin.key]: withProps(PlateStaticLeaf, { as: 'em' }),
-    [BaseKbdPlugin.key]: KbdStaticLeaf,
-    [BaseLinkPlugin.key]: LinkStaticElement,
-    [BaseParagraphPlugin.key]: ParagraphStaticElement,
+    [BaseKbdPlugin.key]: KbdLeafStatic,
+    [BaseLinkPlugin.key]: LinkElementStatic,
+    [BaseParagraphPlugin.key]: ParagraphElementStatic,
     [BaseStrikethroughPlugin.key]: withProps(PlateStaticLeaf, { as: 'del' }),
     [BaseSubscriptPlugin.key]: withProps(PlateStaticLeaf, { as: 'sub' }),
     [BaseSuperscriptPlugin.key]: withProps(PlateStaticLeaf, { as: 'sup' }),
     [BaseTableCellHeaderPlugin.key]: TableCellHeaderStaticElement,
-    [BaseTableCellPlugin.key]: TableCellStaticElement,
-    [BaseTablePlugin.key]: TableStaticElement,
-    [BaseTableRowPlugin.key]: TableRowStaticElement,
+    [BaseTableCellPlugin.key]: TableCellElementStatic,
+    [BaseTablePlugin.key]: TableElementStatic,
+    [BaseTableRowPlugin.key]: TableRowElementStatic,
     [BaseUnderlinePlugin.key]: withProps(PlateStaticLeaf, { as: 'u' }),
-    [BaseVideoPlugin.key]: MediaVideoStaticElement,
-    [HEADING_KEYS.h1]: withProps(HeadingStaticElement, { variant: 'h1' }),
-    [HEADING_KEYS.h2]: withProps(HeadingStaticElement, { variant: 'h2' }),
-    [HEADING_KEYS.h3]: withProps(HeadingStaticElement, { variant: 'h3' }),
-    [HEADING_KEYS.h4]: withProps(HeadingStaticElement, { variant: 'h4' }),
-    [HEADING_KEYS.h5]: withProps(HeadingStaticElement, { variant: 'h5' }),
-    [HEADING_KEYS.h6]: withProps(HeadingStaticElement, { variant: 'h6' }),
+    [BaseVideoPlugin.key]: MediaVideoElementStatic,
+    [HEADING_KEYS.h1]: withProps(HeadingElementStatic, { variant: 'h1' }),
+    [HEADING_KEYS.h2]: withProps(HeadingElementStatic, { variant: 'h2' }),
+    [HEADING_KEYS.h3]: withProps(HeadingElementStatic, { variant: 'h3' }),
+    [HEADING_KEYS.h4]: withProps(HeadingElementStatic, { variant: 'h4' }),
+    [HEADING_KEYS.h5]: withProps(HeadingElementStatic, { variant: 'h5' }),
+    [HEADING_KEYS.h6]: withProps(HeadingElementStatic, { variant: 'h6' }),
   };
 
   const editorStatic = createSlateEditor({
@@ -161,14 +168,14 @@ export default async function DevPage() {
         },
         options: {
           listStyleTypes: {
-            // fire: {
-            //   liComponent: FireLiComponent,
-            //   markerComponent: FireMarker,
-            //   type: 'fire',
-            // },
+            fire: {
+              liComponent: FireLiComponentStatic,
+              markerComponent: FireMarkerStatic,
+              type: 'fire',
+            },
             todo: {
-              liComponent: TodoLi,
-              markerComponent: TodoMarker,
+              liComponent: TodoLiStatic,
+              markerComponent: TodoMarkerStatic,
               type: 'todo',
             },
           },
@@ -212,30 +219,11 @@ export default async function DevPage() {
       ...indentListValue,
       ...mediaValue,
       ...alignValue,
+      ...tableMergeValue,
     ],
   });
 
-  // console.log(
-  //   [
-  //     ...basicNodesValue,
-  //     ...linkValue,
-  //     ...tableValue,
-  //     ...horizontalRuleValue,
-  //     ...fontValue,
-  //     ...highlightValue,
-  //     ...kbdValue,
-  //     ...alignValue,
-  //     ...lineHeightValue,
-  //     ...indentValue,
-  //     ...indentListValue,
-  //     ...mediaValue,
-  //     ...alignValue,
-  //   ],
-  //   'fj'
-  // );
-
   const html = await serializePlateStatic(editorStatic, staticComponents);
-  console.log('🚀 ~ DevPage ~ html:', html);
 
   return (
     <div className="mx-auto w-1/2">

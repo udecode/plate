@@ -5,7 +5,7 @@ import type { StaticLeafProps } from '@udecode/plate-core';
 import { cn } from '@udecode/cn';
 import { PlateStaticLeaf } from '@udecode/plate-common';
 
-export function KbdStaticLeaf({
+export function KbdLeafStatic({
   children,
   className,
   ...props

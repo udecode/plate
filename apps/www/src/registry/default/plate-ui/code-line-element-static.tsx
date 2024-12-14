@@ -4,7 +4,7 @@ import type { StaticElementProps } from '@udecode/plate-common';
 
 import { PlateStaticElement } from '@udecode/plate-common';
 
-export const CodeLineStaticElement = ({
+export const CodeLineElementStatic = ({
   children,
   ...props
 }: StaticElementProps) => {

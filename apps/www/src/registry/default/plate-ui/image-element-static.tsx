@@ -7,7 +7,7 @@ import type { TImageElement } from '@udecode/plate-media';
 import { cn } from '@udecode/cn';
 import { PlateStaticElement, getNodeString } from '@udecode/plate-common';
 
-export function ImageStaticElement({
+export function ImageElementStatic({
   children,
   className,
   element,

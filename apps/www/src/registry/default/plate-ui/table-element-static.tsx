@@ -6,7 +6,7 @@ import type { TTableElement } from '@udecode/plate-table';
 import { cn } from '@udecode/cn';
 import { PlateStaticElement } from '@udecode/plate-common';
 
-export const TableStaticElement = ({
+export const TableElementStatic = ({
   children,
   className,
   element,

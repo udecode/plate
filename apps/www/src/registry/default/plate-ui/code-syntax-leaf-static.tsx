@@ -4,6 +4,6 @@ import type { StaticLeafProps } from '@udecode/plate-common';
 
 import { PlateStaticLeaf } from '@udecode/plate-common';
 
-export function CodeSyntaxStaticLeaf({ children, ...props }: StaticLeafProps) {
+export function CodeSyntaxLeafStatic({ children, ...props }: StaticLeafProps) {
   return <PlateStaticLeaf {...props}>{children}</PlateStaticLeaf>;
 }

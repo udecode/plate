@@ -5,7 +5,7 @@ import type { StaticLeafProps } from '@udecode/plate-core';
 import { cn } from '@udecode/cn';
 import { PlateStaticLeaf } from '@udecode/plate-common';
 
-export function HighlightStaticLeaf({
+export function HighlightLeafStatic({
   children,
   className,
   ...props

@@ -11,7 +11,7 @@ import {
 } from '@udecode/plate-common';
 import { getTableCellBorders } from '@udecode/plate-table';
 
-export function TableCellStaticElement({
+export function TableCellElementStatic({
   children,
   className,
   editor,
@@ -70,5 +70,5 @@ export function TableCellStaticElement({
 }
 
 export function TableCellHeaderStaticElement(props: StaticElementProps) {
-  return <TableCellStaticElement {...props} isHeader />;
+  return <TableCellElementStatic {...props} isHeader />;
 }

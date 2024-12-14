@@ -7,7 +7,7 @@ import type { TVideoElement } from '@udecode/plate-media';
 import { cn } from '@udecode/cn';
 import { PlateStaticElement, getNodeString } from '@udecode/plate-common';
 
-export function MediaVideoStaticElement({
+export function MediaVideoElementStatic({
   children,
   className,
   element,

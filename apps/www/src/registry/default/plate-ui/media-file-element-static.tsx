@@ -7,7 +7,7 @@ import { cn } from '@udecode/cn';
 import { PlateStaticElement } from '@udecode/plate-common';
 import { FileUp } from 'lucide-react';
 
-export const MediaFileStaticElement = ({
+export const MediaFileElementStatic = ({
   children,
   className,
   element,
@@ -22,7 +22,7 @@ export const MediaFileStaticElement = ({
       {...props}
     >
       <div
-        className="hover:bg-muted group relative m-0 flex cursor-pointer items-center rounded px-0.5 py-[3px]"
+        className="group relative m-0 flex cursor-pointer items-center rounded px-0.5 py-[3px] hover:bg-muted"
         role="button"
       >
         <div className="flex items-center gap-1 p-1">

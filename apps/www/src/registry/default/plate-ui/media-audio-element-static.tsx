@@ -6,7 +6,7 @@ import type { TAudioElement } from '@udecode/plate-media';
 import { cn } from '@udecode/cn';
 import { PlateStaticElement } from '@udecode/plate-common';
 
-export function MediaAudioStaticElement({
+export function MediaAudioElementStatic({
   children,
   className,
   element,

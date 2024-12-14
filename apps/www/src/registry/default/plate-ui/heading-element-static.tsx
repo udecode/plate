@@ -10,7 +10,7 @@ interface HeadingElementViewProps extends StaticElementProps {
   variant?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 }
 
-export const headingVariants = cva('relative mb-1', {
+const headingVariants = cva('relative mb-1', {
   variants: {
     variant: {
       h1: 'mt-[1.6em] pb-1 font-heading text-4xl font-bold',
@@ -23,7 +23,7 @@ export const headingVariants = cva('relative mb-1', {
   },
 });
 
-export const HeadingStaticElement = ({
+export const HeadingElementStatic = ({
   children,
   className,
   variant = 'h1',

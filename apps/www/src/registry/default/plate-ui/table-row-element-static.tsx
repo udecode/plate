@@ -5,7 +5,7 @@ import type { StaticElementProps } from '@udecode/plate-core';
 import { cn } from '@udecode/cn';
 import { PlateStaticElement } from '@udecode/plate-common';
 
-export function TableRowStaticElement({
+export function TableRowElementStatic({
   children,
   className,
   element,
