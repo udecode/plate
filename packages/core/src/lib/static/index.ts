@@ -4,7 +4,7 @@
 
 export * from './pipeRenderStaticElement';
 export * from './pipeRenderStaticLeaf';
-export * from './serializedHtml';
+export * from './serializePlateStatic';
 export * from './type';
 export * from './components/index';
 export * from './utils/index';

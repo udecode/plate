@@ -33,10 +33,10 @@ export type LeafProps = {
   staticComponents: StaticComponents;
 };
 
-export type PlateViewProps = {
+export type PlateStaticProps = {
   editor: SlateEditor;
   staticComponents: StaticComponents;
-};
+} & React.HTMLAttributes<HTMLDivElement>;
 
 function Element({
   editor,
@@ -103,12 +103,14 @@ function PlateViewContent({
   );
 }
 
-export function PlateStatic(props: PlateViewProps) {
-  const { editor, staticComponents } = props;
+export function PlateStatic(props: PlateStaticProps) {
+  const { className, editor, staticComponents, ...rest } = props;
 
   return (
-    <PlateViewContent editor={editor} staticComponents={staticComponents}>
-      {editor.children}
-    </PlateViewContent>
+    <div className={className} {...rest}>
+      <PlateViewContent editor={editor} staticComponents={staticComponents}>
+        {editor.children}
+      </PlateViewContent>
+    </div>
   );
 }

@@ -18,10 +18,8 @@ import {
 import { BaseCommentsPlugin } from '@udecode/plate-comments';
 import {
   BaseParagraphPlugin,
-  PlateStatic,
   PlateStaticLeaf,
   createSlateEditor,
-  serializePlateStatic,
 } from '@udecode/plate-common';
 import { BaseDatePlugin } from '@udecode/plate-date';
 import {
@@ -40,6 +38,7 @@ import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
 import { BaseKbdPlugin } from '@udecode/plate-kbd';
+import { BaseColumnItemPlugin, BaseColumnPlugin } from '@udecode/plate-layout';
 import { BaseLineHeightPlugin } from '@udecode/plate-line-height';
 import { BaseLinkPlugin } from '@udecode/plate-link';
 import {
@@ -98,8 +97,11 @@ import { CodeBlockElementStatic } from '@/registry/default/plate-ui/code-block-e
 import { CodeLeafStatic } from '@/registry/default/plate-ui/code-leaf-static';
 import { CodeLineElementStatic } from '@/registry/default/plate-ui/code-line-element-static';
 import { CodeSyntaxLeafStatic } from '@/registry/default/plate-ui/code-syntax-leaf-static';
+import { ColumnElementStatic } from '@/registry/default/plate-ui/column-element-static';
+import { ColumnGroupElementStatic } from '@/registry/default/plate-ui/column-group-element-staic';
 import { CommentLeafStatic } from '@/registry/default/plate-ui/comment-leaf-static';
 import { DateElementStatic } from '@/registry/default/plate-ui/date-element-static';
+import { PlateStatic } from '@/registry/default/plate-ui/eidtor-static';
 import { HeadingElementStatic } from '@/registry/default/plate-ui/heading-element-static';
 import { HrElementStatic } from '@/registry/default/plate-ui/hr-element-static';
 import { ImageElementStatic } from '@/registry/default/plate-ui/image-element-static';
@@ -127,7 +129,7 @@ import { TableRowElementStatic } from '@/registry/default/plate-ui/table-row-ele
 import { TocElementStatic } from '@/registry/default/plate-ui/toc-element-static';
 import { ToggleElementStatic } from '@/registry/default/plate-ui/toggle-element-static';
 
-export default async function DevPage() {
+export default function DevPage() {
   const staticComponents = {
     [BaseAudioPlugin.key]: MediaAudioElementStatic,
     [BaseBlockquotePlugin.key]: BlockquoteElementStatic,
@@ -136,6 +138,8 @@ export default async function DevPage() {
     [BaseCodeLinePlugin.key]: CodeLineElementStatic,
     [BaseCodePlugin.key]: CodeLeafStatic,
     [BaseCodeSyntaxPlugin.key]: CodeSyntaxLeafStatic,
+    [BaseColumnItemPlugin.key]: ColumnElementStatic,
+    [BaseColumnPlugin.key]: ColumnGroupElementStatic,
     [BaseCommentsPlugin.key]: CommentLeafStatic,
     [BaseDatePlugin.key]: DateElementStatic,
     [BaseFilePlugin.key]: MediaFileElementStatic,
@@ -144,6 +148,7 @@ export default async function DevPage() {
     [BaseItalicPlugin.key]: withProps(PlateStaticLeaf, { as: 'em' }),
     [BaseKbdPlugin.key]: KbdLeafStatic,
     [BaseLinkPlugin.key]: LinkElementStatic,
+    // [BaseMediaEmbedPlugin.key]: MediaEmbedElementStatic,
     [BaseMentionPlugin.key]: MentionElementStatic,
     [BaseParagraphPlugin.key]: ParagraphElementStatic,
     [BaseStrikethroughPlugin.key]: withProps(PlateStaticLeaf, { as: 'del' }),
@@ -167,6 +172,8 @@ export default async function DevPage() {
 
   const editorStatic = createSlateEditor({
     plugins: [
+      BaseColumnPlugin,
+      BaseColumnItemPlugin,
       BaseTocPlugin,
       BaseVideoPlugin,
       BaseAudioPlugin,
@@ -281,23 +288,11 @@ export default async function DevPage() {
     ],
   });
 
-  const html = await serializePlateStatic(editorStatic, staticComponents);
-
   return (
-    <div className="mx-auto w-1/2">
-      <h1 className="text-xl font-bold text-green-800">Plate Static :</h1>
-      <PlateStatic editor={editorStatic} staticComponents={staticComponents} />
-
-      <br />
-      <br />
-
-      {/* <h1 className="text-xl font-bold text-green-800">HTML :</h1> */}
-      {/* <iframe
-        style={{ height: '500px', width: '100%' }}
-        title="Plate Static"
-        frameBorder="0"
-        src={`data:text/html;charset=utf-8,${html}`}
-      /> */}
-    </div>
+    <PlateStatic
+      variant="demo"
+      editor={editorStatic}
+      staticComponents={staticComponents}
+    />
   );
 }
