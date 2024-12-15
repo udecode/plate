@@ -12,6 +12,7 @@ export const useFloatingLinkUrlInputState = () => {
   const { getOptions, useOption } = useEditorPlugin(LinkPlugin);
   const updated = useOption('updated');
   const ref = React.useRef<HTMLInputElement>(null);
+  const focused = React.useRef(false);
 
   React.useEffect(() => {
     if (ref.current && updated) {
@@ -19,6 +20,9 @@ export const useFloatingLinkUrlInputState = () => {
         const input = ref.current;
 
         if (!input) return;
+        if (focused.current) return;
+
+        focused.current = true;
 
         const url = getOptions().url;
         input.focus();

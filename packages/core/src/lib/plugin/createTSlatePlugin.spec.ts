@@ -1,5 +1,4 @@
-import type { NodeComponent } from '../../react';
-import type { PluginConfig } from './BasePlugin';
+import type { NodeComponent, PluginConfig } from './BasePlugin';
 
 import { createTPlatePlugin } from '../../react/plugin/createPlatePlugin';
 import { createSlateEditor } from '../editor';

@@ -2,12 +2,18 @@ import type { AnyObject } from '@udecode/utils';
 
 import pick from 'lodash/pick.js';
 
-export const getPluginNodeProps = (
-  // REVIEW TYPE
-  props: any,
-  plugin?: any,
-  attributes?: AnyObject
-): any => {
+import type { AnyEditorPlugin } from '../plugin';
+import type { PlateRenderNodeStaticProps } from '../static';
+
+export const getPluginNodeProps = ({
+  attributes,
+  plugin,
+  props,
+}: {
+  props: PlateRenderNodeStaticProps;
+  attributes?: AnyObject;
+  plugin?: AnyEditorPlugin;
+}): any => {
   let newProps: AnyObject = {};
 
   if (plugin?.node.props) {

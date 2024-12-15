@@ -1,9 +1,9 @@
 import React from 'react';
 
-import type { StaticElementProps } from '@udecode/plate-common';
+import type { PlateElementStaticProps } from '@udecode/plate-common';
 
 import { cn } from '@udecode/cn';
-import { PlateStaticElement } from '@udecode/plate-common';
+import { PlateElementStatic } from '@udecode/plate-common';
 import { ChevronRight } from 'lucide-react';
 
 export function ToggleElementStatic({
@@ -11,9 +11,9 @@ export function ToggleElementStatic({
   className,
   element,
   ...props
-}: StaticElementProps) {
+}: PlateElementStaticProps) {
   return (
-    <PlateStaticElement
+    <PlateElementStatic
       className={cn('relative pl-6', className)}
       element={element}
       {...props}
@@ -27,6 +27,6 @@ export function ToggleElementStatic({
         />
       </div>
       {children}
-    </PlateStaticElement>
+    </PlateElementStatic>
   );
 }

@@ -3,6 +3,6 @@
  */
 
 export * from './createStaticString';
-export * from './getRenderStaticNodeProps';
+export * from './getRenderNodeStaticProps';
 export * from './stripHtmlClassNames';
 export * from './stripSlateDataAttributes';

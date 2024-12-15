@@ -1,18 +1,18 @@
 import React from 'react';
 
 import type { TCaptionElement } from '@udecode/plate-caption';
-import type { StaticElementProps } from '@udecode/plate-common';
+import type { PlateElementStaticProps } from '@udecode/plate-common';
 import type { TVideoElement } from '@udecode/plate-media';
 
 import { cn } from '@udecode/cn';
-import { PlateStaticElement, getNodeString } from '@udecode/plate-common';
+import { PlateElementStatic, getNodeString } from '@udecode/plate-common';
 
 export function MediaVideoElementStatic({
   children,
   className,
   element,
   ...props
-}: StaticElementProps) {
+}: PlateElementStaticProps) {
   const {
     align = 'center',
     caption,
@@ -24,7 +24,7 @@ export function MediaVideoElementStatic({
     };
 
   return (
-    <PlateStaticElement
+    <PlateElementStatic
       className={cn('py-2.5', className)}
       element={element}
       {...props}
@@ -40,6 +40,6 @@ export function MediaVideoElementStatic({
         </figure>
       </div>
       {children}
-    </PlateStaticElement>
+    </PlateElementStatic>
   );
 }

@@ -28,7 +28,11 @@ export const getRenderNodeProps = ({
   attributes?: AnyObject;
   plugin?: AnyEditorPlatePlugin;
 }): PlateRenderNodeProps => {
-  props = getPluginNodeProps(props, plugin, attributes);
+  props = getPluginNodeProps({
+    attributes,
+    plugin: plugin as any,
+    props: props as any,
+  });
 
   const { className } = props;
 

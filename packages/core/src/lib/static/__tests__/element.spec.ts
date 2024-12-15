@@ -1,6 +1,6 @@
 import { decode } from 'html-entities';
 
-import { serializePlateStatic } from '../serializePlateStatic';
+import { serializeHtml } from '../serializeHtml';
 import { createStaticEditor, staticComponents } from './create-static-editor';
 
 describe('serializePlateStatic', () => {
@@ -12,7 +12,9 @@ describe('serializePlateStatic', () => {
       },
     ]);
 
-    const html = await serializePlateStatic(editor, staticComponents);
+    const html = await serializeHtml(editor, {
+      components: staticComponents,
+    });
     expect(html).toContain('Some random paragraph here...');
   });
 
@@ -32,7 +34,9 @@ describe('serializePlateStatic', () => {
       },
     ]);
 
-    const html = await serializePlateStatic(editor, staticComponents);
+    const html = await serializeHtml(editor, {
+      components: staticComponents,
+    });
     expect(html).toContain('Heading 1');
     expect(html).toContain('Heading 2');
     expect(html).toContain('Heading 3');
@@ -46,7 +50,9 @@ describe('serializePlateStatic', () => {
       },
     ]);
 
-    const html = await serializePlateStatic(editor, staticComponents);
+    const html = await serializeHtml(editor, {
+      components: staticComponents,
+    });
     expect(html).toContain('Blockquoted text here...');
   });
 
@@ -61,7 +67,9 @@ describe('serializePlateStatic', () => {
       { children: [{ text: ' part.' }], type: 'p' },
     ]);
 
-    const html = await serializePlateStatic(editor, staticComponents);
+    const html = await serializeHtml(editor, {
+      components: staticComponents,
+    });
     expect(html).toContain(decode('href="https://example.com/"'));
     expect(html).toContain('slate-a');
   });
@@ -75,7 +83,9 @@ describe('serializePlateStatic', () => {
       },
     ]);
 
-    const html = await serializePlateStatic(editor, staticComponents);
+    const html = await serializeHtml(editor, {
+      components: staticComponents,
+    });
     expect(html).toContain('src="https://example.com/image.jpg"');
   });
 
@@ -95,7 +105,9 @@ describe('serializePlateStatic', () => {
       },
     ]);
 
-    const html = await serializePlateStatic(editor, staticComponents);
+    const html = await serializeHtml(editor, {
+      components: staticComponents,
+    });
     expect(html).toContain('Cell 1');
     expect(html).toContain('Cell 2');
   });

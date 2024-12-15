@@ -1,10 +1,10 @@
 import React from 'react';
 
-import type { StaticElementProps } from '@udecode/plate-common';
+import type { PlateElementStaticProps } from '@udecode/plate-common';
 import type { TFileElement } from '@udecode/plate-media';
 
 import { cn } from '@udecode/cn';
-import { PlateStaticElement } from '@udecode/plate-common';
+import { PlateElementStatic } from '@udecode/plate-common';
 import { FileUp } from 'lucide-react';
 
 export const MediaFileElementStatic = ({
@@ -12,11 +12,11 @@ export const MediaFileElementStatic = ({
   className,
   element,
   ...props
-}: StaticElementProps) => {
+}: PlateElementStaticProps) => {
   const { name } = element as TFileElement;
 
   return (
-    <PlateStaticElement
+    <PlateElementStatic
       className={cn('relative my-px rounded-sm', className)}
       element={element}
       {...props}
@@ -31,6 +31,6 @@ export const MediaFileElementStatic = ({
         </div>
       </div>
       {children}
-    </PlateStaticElement>
+    </PlateElementStatic>
   );
 };

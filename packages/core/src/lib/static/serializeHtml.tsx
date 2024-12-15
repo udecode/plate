@@ -3,8 +3,9 @@ import React from 'react';
 import { decode } from 'html-entities';
 
 import type { SlateEditor } from '../editor';
+import type { NodeComponents } from '../plugin';
 
-import { type StaticComponents, PlateStatic } from './components';
+import { PlateStatic } from './components';
 import { stripHtmlClassNames } from './utils/stripHtmlClassNames';
 import { stripSlateDataAttributes } from './utils/stripSlateDataAttributes';
 
@@ -14,7 +15,7 @@ const getReactDOMServer = async () => {
   return ReactDOMServer;
 };
 
-export const renderComponentToHtml = <P extends {}>(
+const renderComponentToHtml = <P extends {}>(
   ReactDOMServer: any,
   type: React.ComponentType<P>,
   props: P
@@ -24,10 +25,20 @@ export const renderComponentToHtml = <P extends {}>(
   );
 };
 
-export const serializePlateStatic = async (
+export const serializeHtml = async (
   editor: SlateEditor,
-  staticComponents: StaticComponents,
-  options: {
+  {
+    components,
+    preserveClassNames,
+    stripClassNames = false,
+    stripDataAttributes = false,
+  }: {
+    /**
+     * Components to render the HTML. Keys are the plugin keys. Values are the
+     * React components.
+     */
+    components: NodeComponents;
+
     /** List of className prefixes to preserve from being stripped out */
     preserveClassNames?: string[];
 
@@ -36,20 +47,14 @@ export const serializePlateStatic = async (
 
     /** Enable stripping data attributes */
     stripDataAttributes?: boolean;
-  } = {}
+  }
 ) => {
   const ReactDOMServer = await getReactDOMServer();
 
   let htmlString = renderComponentToHtml(ReactDOMServer, PlateStatic, {
+    components,
     editor,
-    staticComponents,
   });
-
-  const {
-    preserveClassNames,
-    stripClassNames = false,
-    stripDataAttributes = false,
-  } = options;
 
   if (stripClassNames) {
     htmlString = stripHtmlClassNames(htmlString, {

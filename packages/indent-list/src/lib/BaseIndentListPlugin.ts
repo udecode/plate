@@ -1,5 +1,3 @@
-import type { PlateRenderElementProps } from '@udecode/plate-common/react';
-
 import {
   type PluginConfig,
   type TElement,
@@ -29,12 +27,13 @@ export type BaseIndentListConfig = PluginConfig<
   {
     listStyleTypes?: Record<
       string,
-      // REVIEW TYPE
       {
         type: string;
+        markerComponent?: React.FC<
+          Omit<PlateRenderElementStaticProps, 'children'>
+        >;
         isOrdered?: boolean;
-        liComponent?: React.FC<PlateRenderElementProps>;
-        markerComponent?: React.FC<Omit<PlateRenderElementProps, 'children'>>;
+        liComponent?: React.FC<PlateRenderElementStaticProps>;
       }
     >;
 

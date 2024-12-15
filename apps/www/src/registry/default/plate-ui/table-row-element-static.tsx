@@ -1,26 +1,26 @@
 import React from 'react';
 
-import type { StaticElementProps } from '@udecode/plate-core';
+import type { PlateElementStaticProps } from '@udecode/plate-core';
 
 import { cn } from '@udecode/cn';
-import { PlateStaticElement } from '@udecode/plate-common';
+import { PlateElementStatic } from '@udecode/plate-common';
 
 export function TableRowElementStatic({
   children,
   className,
   element,
   ...props
-}: StaticElementProps) {
+}: PlateElementStaticProps) {
   // const { hideBorder } = element as TTableRowElement;
 
   return (
-    <PlateStaticElement
+    <PlateElementStatic
       as="tr"
       className={cn('h-full', className)}
       element={element}
       {...props}
     >
       {children}
-    </PlateStaticElement>
+    </PlateElementStatic>
   );
 }

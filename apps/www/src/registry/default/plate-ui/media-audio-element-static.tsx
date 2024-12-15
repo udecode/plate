@@ -1,21 +1,21 @@
 import React from 'react';
 
-import type { StaticElementProps } from '@udecode/plate-common';
+import type { PlateElementStaticProps } from '@udecode/plate-common';
 import type { TAudioElement } from '@udecode/plate-media';
 
 import { cn } from '@udecode/cn';
-import { PlateStaticElement } from '@udecode/plate-common';
+import { PlateElementStatic } from '@udecode/plate-common';
 
 export function MediaAudioElementStatic({
   children,
   className,
   element,
   ...props
-}: StaticElementProps) {
+}: PlateElementStaticProps) {
   const { url } = element as TAudioElement;
 
   return (
-    <PlateStaticElement
+    <PlateElementStatic
       className={cn('relative mb-1', className)}
       element={element}
       {...props}
@@ -26,6 +26,6 @@ export function MediaAudioElementStatic({
         </div>
       </figure>
       {children}
-    </PlateStaticElement>
+    </PlateElementStatic>
   );
 }

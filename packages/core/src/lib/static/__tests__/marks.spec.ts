@@ -1,4 +1,4 @@
-import { serializePlateStatic } from '../serializePlateStatic';
+import { serializeHtml } from '../serializeHtml';
 import { createStaticEditor, staticComponents } from './create-static-editor';
 
 describe('serializePlateStatic marks', () => {
@@ -14,7 +14,8 @@ describe('serializePlateStatic marks', () => {
       },
     ]);
 
-    const html = await serializePlateStatic(editor, staticComponents, {
+    const html = await serializeHtml(editor, {
+      components: staticComponents,
       preserveClassNames: [],
       stripClassNames: true,
       stripDataAttributes: true,
@@ -34,7 +35,8 @@ describe('serializePlateStatic marks', () => {
       },
     ]);
 
-    const html = await serializePlateStatic(editor, staticComponents, {
+    const html = await serializeHtml(editor, {
+      components: staticComponents,
       preserveClassNames: [],
       stripClassNames: true,
       stripDataAttributes: true,
@@ -54,7 +56,8 @@ describe('serializePlateStatic marks', () => {
       },
     ]);
 
-    const html = await serializePlateStatic(editor, staticComponents, {
+    const html = await serializeHtml(editor, {
+      components: staticComponents,
       preserveClassNames: [],
       stripClassNames: true,
       stripDataAttributes: true,
@@ -74,7 +77,8 @@ describe('serializePlateStatic marks', () => {
       },
     ]);
 
-    const html = await serializePlateStatic(editor, staticComponents, {
+    const html = await serializeHtml(editor, {
+      components: staticComponents,
       preserveClassNames: [],
       stripClassNames: true,
       stripDataAttributes: true,
@@ -94,7 +98,8 @@ describe('serializePlateStatic marks', () => {
       },
     ]);
 
-    const html = await serializePlateStatic(editor, staticComponents, {
+    const html = await serializeHtml(editor, {
+      components: staticComponents,
       preserveClassNames: [],
       stripClassNames: true,
       stripDataAttributes: true,
@@ -114,7 +119,8 @@ describe('serializePlateStatic marks', () => {
       },
     ]);
 
-    const html = await serializePlateStatic(editor, staticComponents, {
+    const html = await serializeHtml(editor, {
+      components: staticComponents,
       preserveClassNames: [],
       stripClassNames: true,
       stripDataAttributes: true,
@@ -134,7 +140,8 @@ describe('serializePlateStatic marks', () => {
       },
     ]);
 
-    const html = await serializePlateStatic(editor, staticComponents, {
+    const html = await serializeHtml(editor, {
+      components: staticComponents,
       preserveClassNames: [],
       stripClassNames: true,
       stripDataAttributes: true,
@@ -154,7 +161,8 @@ describe('serializePlateStatic marks', () => {
       },
     ]);
 
-    const html = await serializePlateStatic(editor, staticComponents, {
+    const html = await serializeHtml(editor, {
+      components: staticComponents,
       preserveClassNames: [],
       stripClassNames: true,
       stripDataAttributes: true,
@@ -174,7 +182,8 @@ describe('serializePlateStatic marks', () => {
       },
     ]);
 
-    const html = await serializePlateStatic(editor, staticComponents, {
+    const html = await serializeHtml(editor, {
+      components: staticComponents,
       preserveClassNames: [],
       stripClassNames: true,
       stripDataAttributes: true,

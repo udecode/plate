@@ -7,7 +7,7 @@ import { BaseImagePlugin } from '@udecode/plate-media';
 
 import { createSlateEditor } from '../../editor';
 import { BaseParagraphPlugin } from '../../plugins';
-import { serializePlateStatic } from '../serializePlateStatic';
+import { serializeHtml } from '../serializeHtml';
 import { staticComponents } from './create-static-editor';
 
 const plugins = [
@@ -58,7 +58,8 @@ it('serialize link to html with attributes', async () => {
   });
 
   expect(
-    await serializePlateStatic(staticEditor, staticComponents, {
+    await serializeHtml(staticEditor, {
+      components: staticComponents,
       preserveClassNames: [],
       stripClassNames: true,
       stripDataAttributes: true,
@@ -84,15 +85,12 @@ it('serialize image with alt to html', async () => {
     ],
   });
 
-  const htmlString = await serializePlateStatic(
-    staticEditor,
-    staticComponents,
-    {
-      preserveClassNames: [],
-      stripClassNames: true,
-      stripDataAttributes: true,
-    }
-  );
+  const htmlString = await serializeHtml(staticEditor, {
+    components: staticComponents,
+    preserveClassNames: [],
+    stripClassNames: true,
+    stripDataAttributes: true,
+  });
 
   expect(htmlString).toContain(`alt="Placeholder"`);
   expect(htmlString).toContain(`width="300"`);

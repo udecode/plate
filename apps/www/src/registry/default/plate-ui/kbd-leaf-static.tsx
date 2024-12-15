@@ -1,17 +1,17 @@
 import React from 'react';
 
-import type { StaticLeafProps } from '@udecode/plate-core';
+import type { PlateLeafStaticProps } from '@udecode/plate-core';
 
 import { cn } from '@udecode/cn';
-import { PlateStaticLeaf } from '@udecode/plate-common';
+import { PlateLeafStatic } from '@udecode/plate-common';
 
 export function KbdLeafStatic({
   children,
   className,
   ...props
-}: StaticLeafProps) {
+}: PlateLeafStaticProps) {
   return (
-    <PlateStaticLeaf
+    <PlateLeafStatic
       {...props}
       as="kbd"
       className={cn(
@@ -20,6 +20,6 @@ export function KbdLeafStatic({
       )}
     >
       {children}
-    </PlateStaticLeaf>
+    </PlateLeafStatic>
   );
 }

@@ -8,52 +8,34 @@ import {
 } from '@udecode/slate';
 import clsx from 'clsx';
 
-import type { NodeComponent, SlateEditor } from '../../editor';
+import type { SlateEditor } from '../../editor';
+import type { NodeComponents } from '../../plugin';
 
-import { pipeRenderStaticElement } from '../pipeRenderStaticElement';
-import { pipeRenderStaticLeaf } from '../pipeRenderStaticLeaf';
+import { pipeRenderElementStatic } from '../pipeRenderElementStatic';
+import { pipeRenderLeafStatic } from '../pluginRenderLeafStatic';
 import { createStaticString } from '../utils/createStaticString';
 
-export type StaticComponents = Record<string, NodeComponent>;
-
-export type ChildrenProps = {
-  children: TDescendant[];
-  editor: SlateEditor;
-  staticComponents: StaticComponents;
-};
-
-export type ElementProps = {
-  editor: SlateEditor;
-  element: TElement;
-  staticComponents: StaticComponents;
-};
-
-export type LeafProps = {
-  editor: SlateEditor;
-  leaf: TText;
-  staticComponents: StaticComponents;
-};
-
-export type PlateStaticProps = {
-  editor: SlateEditor;
-  staticComponents: StaticComponents;
-} & React.HTMLAttributes<HTMLDivElement>;
-
-function Element({
+function ElementStatic({
+  components,
   editor,
   element = { children: [], type: '' },
-  staticComponents,
-}: ElementProps) {
-  const renderElement = pipeRenderStaticElement(editor, staticComponents);
+}: {
+  components: NodeComponents;
+  editor: SlateEditor;
+  element: TElement;
+}) {
+  const renderElement = pipeRenderElementStatic(editor, {
+    components,
+  });
 
   return (
     <React.Fragment>
       {renderElement?.({
         attributes: { 'data-slate-node': 'element', ref: null },
         children: (
-          <PlateViewContent editor={editor} staticComponents={staticComponents}>
+          <Children components={components} editor={editor}>
             {element.children}
-          </PlateViewContent>
+          </Children>
         ),
         element,
       })}
@@ -61,8 +43,18 @@ function Element({
   );
 }
 
-function Leaf({ editor, leaf = { text: '' }, staticComponents }: LeafProps) {
-  const renderLeaf = pipeRenderStaticLeaf(editor, staticComponents);
+function LeafStatic({
+  components,
+  editor,
+  leaf = { text: '' },
+}: {
+  components: NodeComponents;
+  editor: SlateEditor;
+  leaf: TText;
+}) {
+  const renderLeaf = pipeRenderLeafStatic(editor, {
+    components,
+  });
 
   return (
     <span data-slate-node="text">
@@ -76,27 +68,31 @@ function Leaf({ editor, leaf = { text: '' }, staticComponents }: LeafProps) {
   );
 }
 
-function PlateViewContent({
+function Children({
   children = [],
+  components,
   editor,
-  staticComponents,
-}: ChildrenProps) {
+}: {
+  children: TDescendant[];
+  components: NodeComponents;
+  editor: SlateEditor;
+}) {
   return (
     <React.Fragment>
       {children.map((child, i) => {
         return isElement(child) ? (
-          <Element
+          <ElementStatic
             key={i}
+            components={components}
             editor={editor}
             element={child}
-            staticComponents={staticComponents}
           />
         ) : (
-          <Leaf
+          <LeafStatic
             key={i}
+            components={components}
             editor={editor}
             leaf={child}
-            staticComponents={staticComponents}
           />
         );
       })}
@@ -104,22 +100,91 @@ function PlateViewContent({
   );
 }
 
-export function PlateStatic(props: PlateStaticProps) {
-  const { className, editor, staticComponents, ...rest } = props;
+export type PlateStaticProps = {
+  components: NodeComponents;
+  editor: SlateEditor;
+  disableDefaultStyles?: boolean;
+  style?: React.CSSProperties;
+} & React.HTMLAttributes<HTMLDivElement>;
 
-  return (
+export function PlateStatic(props: PlateStaticProps) {
+  const {
+    className,
+    components,
+    disableDefaultStyles,
+    editor,
+    style: userStyle,
+    ...rest
+  } = props;
+
+  let afterEditable: React.ReactNode = null;
+  let beforeEditable: React.ReactNode = null;
+
+  editor.pluginList.forEach((plugin) => {
+    const {
+      render: { afterEditable: AfterEditable, beforeEditable: BeforeEditable },
+    } = plugin;
+
+    if (AfterEditable) {
+      afterEditable = (
+        <>
+          {afterEditable}
+          <AfterEditable />
+        </>
+      );
+    }
+    if (BeforeEditable) {
+      beforeEditable = (
+        <>
+          {beforeEditable}
+          <BeforeEditable />
+        </>
+      );
+    }
+  });
+
+  const content = (
     <div
-      className={clsx(className, 'slate-editor')}
-      aria-multiline="true"
-      data-slate-editor="true"
+      className={clsx('slate-editor', className)}
+      style={{
+        ...(disableDefaultStyles
+          ? {}
+          : {
+              position: 'relative',
+              userSelect: 'text',
+              whiteSpace: 'pre-wrap',
+              wordWrap: 'break-word',
+              zIndex: -1,
+            }),
+        ...userStyle,
+      }}
+      data-slate-editor
       data-slate-node="value"
-      role="textbox"
-      spellCheck="false"
       {...rest}
     >
-      <PlateViewContent editor={editor} staticComponents={staticComponents}>
+      <Children components={components} editor={editor}>
         {editor.children}
-      </PlateViewContent>
+      </Children>
     </div>
   );
+
+  let aboveEditable: React.ReactNode = (
+    <>
+      {beforeEditable}
+      {content}
+      {afterEditable}
+    </>
+  );
+
+  editor.pluginList.forEach((plugin) => {
+    const {
+      render: { aboveEditable: AboveEditable },
+    } = plugin;
+
+    if (AboveEditable) {
+      aboveEditable = <AboveEditable>{aboveEditable}</AboveEditable>;
+    }
+  });
+
+  return aboveEditable;
 }

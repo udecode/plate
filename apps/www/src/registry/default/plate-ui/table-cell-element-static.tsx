@@ -1,10 +1,10 @@
 import React from 'react';
 
-import type { StaticElementProps } from '@udecode/plate-core';
+import type { PlateElementStaticProps } from '@udecode/plate-core';
 
 import { cn } from '@udecode/cn';
 import {
-  PlateStaticElement,
+  PlateElementStatic,
   findNode,
   getParentNode,
   isElement,
@@ -14,14 +14,14 @@ import { getTableCellBorders } from '@udecode/plate-table';
 export function TableCellElementStatic({
   children,
   className,
-  editor,
-  element,
   isHeader,
   style,
   ...props
-}: StaticElementProps & {
+}: PlateElementStaticProps & {
   isHeader?: boolean;
 }) {
+  const { editor, element } = props;
+
   const cellPath = findNode(editor!, {
     match: (n) => isElement(n) && n === element,
   })![1];
@@ -34,7 +34,7 @@ export function TableCellElementStatic({
   });
 
   return (
-    <PlateStaticElement
+    <PlateElementStatic
       as={isHeader ? 'th' : 'td'}
       className={cn(
         'relative h-full overflow-visible bg-background p-0',
@@ -59,16 +59,15 @@ export function TableCellElementStatic({
           ...style,
         } as React.CSSProperties
       }
-      element={element}
       {...props}
     >
       <div className="relative z-20 box-border h-full px-3 py-2">
         {children}
       </div>
-    </PlateStaticElement>
+    </PlateElementStatic>
   );
 }
 
-export function TableCellHeaderStaticElement(props: StaticElementProps) {
+export function TableCellHeaderStaticElement(props: PlateElementStaticProps) {
   return <TableCellElementStatic {...props} isHeader />;
 }

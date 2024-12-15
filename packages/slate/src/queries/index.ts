@@ -3,4 +3,5 @@
  */
 
 export * from './findNode';
+export * from './findNodePath';
 export * from './someNode';

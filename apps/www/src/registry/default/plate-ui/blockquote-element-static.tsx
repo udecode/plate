@@ -1,23 +1,22 @@
 import React from 'react';
 
-import type { StaticElementProps } from '@udecode/plate-common';
+import type { PlateElementStaticProps } from '@udecode/plate-common';
 
-import { PlateStaticElement } from '@udecode/plate-common';
-
-import { cn } from '../lib/utils';
+import { cn } from '@udecode/cn';
+import { PlateElementStatic } from '@udecode/plate-common';
 
 export const BlockquoteElementStatic = ({
   children,
   className,
   ...props
-}: StaticElementProps) => {
+}: PlateElementStaticProps) => {
   return (
-    <PlateStaticElement
+    <PlateElementStatic
       as="blockquote"
       className={cn('my-1 border-l-2 pl-6 italic', className)}
       {...props}
     >
       {children}
-    </PlateStaticElement>
+    </PlateElementStatic>
   );
 };

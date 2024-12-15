@@ -18,7 +18,7 @@ import {
   BaseCodeSyntaxPlugin,
 } from '@udecode/plate-code-block';
 import { BaseCommentsPlugin } from '@udecode/plate-comments';
-import { type Value, PlateStaticLeaf } from '@udecode/plate-common';
+import { type Value, PlateLeafStatic } from '@udecode/plate-common';
 import { BaseDatePlugin } from '@udecode/plate-date';
 import {
   BaseFontBackgroundColorPlugin,
@@ -182,7 +182,7 @@ export const createStaticEditor = (value: Value) => {
 export const staticComponents = {
   [BaseAudioPlugin.key]: MediaAudioElementStatic,
   [BaseBlockquotePlugin.key]: BlockquoteElementStatic,
-  [BaseBoldPlugin.key]: withProps(PlateStaticLeaf, { as: 'strong' }),
+  [BaseBoldPlugin.key]: withProps(PlateLeafStatic, { as: 'strong' }),
   [BaseCodeBlockPlugin.key]: CodeBlockElementStatic,
   [BaseCodeLinePlugin.key]: CodeLineElementStatic,
   [BaseCodePlugin.key]: CodeLeafStatic,
@@ -194,22 +194,22 @@ export const staticComponents = {
   [BaseFilePlugin.key]: MediaFileElementStatic,
   [BaseHorizontalRulePlugin.key]: HrElementStatic,
   [BaseImagePlugin.key]: ImageElementStatic,
-  [BaseItalicPlugin.key]: withProps(PlateStaticLeaf, { as: 'em' }),
+  [BaseItalicPlugin.key]: withProps(PlateLeafStatic, { as: 'em' }),
   [BaseKbdPlugin.key]: KbdLeafStatic,
   [BaseLinkPlugin.key]: LinkElementStatic,
   // [BaseMediaEmbedPlugin.key]: MediaEmbedElementStatic,
   [BaseMentionPlugin.key]: MentionElementStatic,
   [BaseParagraphPlugin.key]: ParagraphElementStatic,
-  [BaseStrikethroughPlugin.key]: withProps(PlateStaticLeaf, { as: 'del' }),
-  [BaseSubscriptPlugin.key]: withProps(PlateStaticLeaf, { as: 'sub' }),
-  [BaseSuperscriptPlugin.key]: withProps(PlateStaticLeaf, { as: 'sup' }),
+  [BaseStrikethroughPlugin.key]: withProps(PlateLeafStatic, { as: 'del' }),
+  [BaseSubscriptPlugin.key]: withProps(PlateLeafStatic, { as: 'sub' }),
+  [BaseSuperscriptPlugin.key]: withProps(PlateLeafStatic, { as: 'sup' }),
   [BaseTableCellHeaderPlugin.key]: TableCellHeaderStaticElement,
   [BaseTableCellPlugin.key]: TableCellElementStatic,
   [BaseTablePlugin.key]: TableElementStatic,
   [BaseTableRowPlugin.key]: TableRowElementStatic,
   [BaseTocPlugin.key]: TocElementStatic,
   [BaseTogglePlugin.key]: ToggleElementStatic,
-  [BaseUnderlinePlugin.key]: withProps(PlateStaticLeaf, { as: 'u' }),
+  [BaseUnderlinePlugin.key]: withProps(PlateLeafStatic, { as: 'u' }),
   [BaseVideoPlugin.key]: MediaVideoElementStatic,
   [HEADING_KEYS.h1]: withProps(HeadingElementStatic, { variant: 'h1' }),
   [HEADING_KEYS.h2]: withProps(HeadingElementStatic, { variant: 'h2' }),

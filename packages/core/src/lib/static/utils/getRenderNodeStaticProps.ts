@@ -1,41 +1,44 @@
 import type { AnyObject } from '@udecode/utils';
-import type { Path } from 'slate';
 
-import { findNode } from '@udecode/slate';
+import { findNodePath } from '@udecode/slate';
 import clsx from 'clsx';
 
 import type { SlateEditor } from '../../editor';
-import type { StaticElementProps } from '../type';
+import type { PlateRenderNodeStaticProps } from '../types';
 
-import { type SlatePlugin, getEditorPlugin } from '../../plugin';
+import { type AnyEditorPlugin, getEditorPlugin } from '../../plugin';
 import { getSlateClass, pipeInjectNodeProps } from '../../utils';
 import { getPluginNodeProps } from '../../utils/getPluginNodeProps';
 
-export const getRenderStaticNodeProps = ({
+export const getRenderNodeStaticProps = ({
   attributes,
   editor,
   plugin,
   props,
 }: {
   editor: SlateEditor;
-  props: StaticElementProps;
+  props: PlateRenderNodeStaticProps;
   attributes?: AnyObject;
-  plugin?: SlatePlugin;
-}): StaticElementProps => {
-  props = getPluginNodeProps(props, plugin, attributes);
+  plugin?: AnyEditorPlugin;
+}): PlateRenderNodeStaticProps => {
+  props = getPluginNodeProps({
+    attributes,
+    plugin,
+    props,
+  });
 
   const { className } = props;
 
   let nodeProps = {
     ...props,
-    ...(plugin ? getEditorPlugin(editor, plugin) : {}),
+    ...(plugin ? (getEditorPlugin(editor, plugin) as any) : {}),
     className: clsx(getSlateClass(plugin?.node.type), className),
   };
 
   nodeProps = pipeInjectNodeProps(
     editor,
     nodeProps,
-    (node) => findNode(editor, { match: (n) => n === node })?.[1] as Path
+    (node) => findNodePath(editor, node)!
   );
 
   if (nodeProps.style && Object.keys(nodeProps.style).length === 0) {

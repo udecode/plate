@@ -20,8 +20,6 @@ import { type CorePlugin, getCorePlugins } from '../plugins/getCorePlugins';
 import { pipeNormalizeInitialValue } from '../utils/pipeNormalizeInitialValue';
 import { resolvePlugins } from '../utils/resolvePlugins';
 
-export type NodeComponent<T = any> = React.FC<T>;
-
 export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
   id?: any;
 

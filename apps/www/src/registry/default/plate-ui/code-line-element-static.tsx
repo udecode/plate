@@ -1,12 +1,12 @@
 import React from 'react';
 
-import type { StaticElementProps } from '@udecode/plate-common';
+import type { PlateElementStaticProps } from '@udecode/plate-common';
 
-import { PlateStaticElement } from '@udecode/plate-common';
+import { PlateElementStatic } from '@udecode/plate-common';
 
 export const CodeLineElementStatic = ({
   children,
   ...props
-}: StaticElementProps) => {
-  return <PlateStaticElement {...props}>{children}</PlateStaticElement>;
+}: PlateElementStaticProps) => {
+  return <PlateElementStatic {...props}>{children}</PlateElementStatic>;
 };

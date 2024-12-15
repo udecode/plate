@@ -1,4 +1,4 @@
-import { serializePlateStatic } from '../serializePlateStatic';
+import { serializeHtml } from '../serializeHtml';
 import { createStaticEditor, staticComponents } from './create-static-editor';
 
 describe('serializePlateStatic with attributes', () => {
@@ -10,13 +10,14 @@ describe('serializePlateStatic with attributes', () => {
       },
     ]);
 
-    const html = await serializePlateStatic(editor, staticComponents, {
+    const html = await serializeHtml(editor, {
+      components: staticComponents,
       preserveClassNames: [],
       stripClassNames: true,
     });
 
     expect(html).toEqual(
-      '<div aria-multiline="true" data-slate-editor="true" data-slate-node="value" role="textbox" spellcheck="false"><div data-slate-node="element"><span data-slate-node="text"><span data-slate-leaf="true"><strong data-slate-leaf="true"><span data-slate-string="true">Right Aligned Heading</span></strong></span></span></div></div>'
+      '<div style="position:relative;user-select:text;white-space:pre-wrap;word-wrap:break-word;z-index:-1" data-slate-editor="true" data-slate-node="value"><div data-slate-node="element"><span data-slate-node="text"><span data-slate-leaf="true"><strong data-slate-leaf="true"><span data-slate-string="true">Right Aligned Heading</span></strong></span></span></div></div>'
     );
   });
 });

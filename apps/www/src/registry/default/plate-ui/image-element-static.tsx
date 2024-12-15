@@ -1,11 +1,11 @@
 import React from 'react';
 
 import type { TCaptionElement } from '@udecode/plate-caption';
-import type { StaticElementProps } from '@udecode/plate-common';
+import type { PlateElementStaticProps } from '@udecode/plate-common';
 import type { TImageElement } from '@udecode/plate-media';
 
 import { cn } from '@udecode/cn';
-import { PlateStaticElement, getNodeString } from '@udecode/plate-common';
+import { PlateElementStatic, getNodeString } from '@udecode/plate-common';
 
 export function ImageElementStatic({
   children,
@@ -13,7 +13,7 @@ export function ImageElementStatic({
   element,
   nodeProps,
   ...props
-}: StaticElementProps) {
+}: PlateElementStaticProps) {
   const {
     align = 'center',
     caption,
@@ -25,7 +25,7 @@ export function ImageElementStatic({
     };
 
   return (
-    <PlateStaticElement
+    <PlateElementStatic
       className={cn('py-2.5', className)}
       element={element}
       {...props}
@@ -42,6 +42,6 @@ export function ImageElementStatic({
         </figure>
       </div>
       {children}
-    </PlateStaticElement>
+    </PlateElementStatic>
   );
 }

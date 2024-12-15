@@ -33,6 +33,7 @@ import type {
   InferApi,
   InferOptions,
   InferTransforms,
+  NodeComponent,
   Nullable,
   ParserOptions,
   PluginConfig,
@@ -89,9 +90,6 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
       }>;
 
       node: {
-        /** @see {@link NodeComponent} */
-        component?: NodeComponent | null;
-
         /** @see {@link NodeProps} */
         props?: NodeProps<WithAnyKey<C>>;
       };
@@ -130,23 +128,10 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
 
       render: Nullable<{
         /**
-         * Renders a component above the `Editable` component but within the
-         * `Slate` wrapper. Useful for adding UI elements that should appear
-         * above the editable area.
-         */
-        aboveEditable?: React.FC<{ children: React.ReactNode }>;
-
-        /**
          * Renders a component above all other plugins' `node` components.
          * Useful for wrapping or decorating nodes with additional UI elements.
          */
         aboveNodes?: NodeWrapperComponent<WithAnyKey<C>>;
-
-        /**
-         * Renders a component above the `Slate` wrapper. This is the outermost
-         * render position in the editor structure.
-         */
-        aboveSlate?: React.FC<{ children: React.ReactNode }>;
 
         /**
          * Renders a component after the `Editable` component. This is the last
@@ -700,15 +685,6 @@ export type InjectNodeProps<C extends AnyPluginConfig = PluginConfig> =
   };
 
 // -----------------------------------------------------------------------------
-
-/**
- * Renders a component for Slate Nodes (elements if `isElement: true` or leaves
- * if `isLeaf: true`) that match this plugin's type. This is the primary render
- * method for plugin-specific node content.
- *
- * @default DefaultElement for elements, DefaultLeaf for leaves
- */
-export type NodeComponent<T = any> = React.FC<T>;
 
 /**
  * Property used by Plate to override node `component` props. If function, its
