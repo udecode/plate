@@ -1,4 +1,4 @@
-import { serializePlateStatic } from '../serializedHtml';
+import { serializePlateStatic } from '../serializePlateStatic';
 import { createStaticEditor, staticComponents } from './create-static-editor';
 
 describe('serializePlateStatic marks', () => {

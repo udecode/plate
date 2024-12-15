@@ -2,7 +2,7 @@ import React from 'react';
 
 import { createSlateEditor } from '../../editor';
 import { createTSlatePlugin } from '../../plugin';
-import { serializePlateStatic } from '../serializedHtml';
+import { serializePlateStatic } from '../serializePlateStatic';
 import { createStaticEditor, staticComponents } from './create-static-editor';
 
 describe('serializePlateStatic nodes', () => {
@@ -44,8 +44,8 @@ describe('serializePlateStatic nodes', () => {
       stripDataAttributes: true,
     });
 
-    expect(html).toEqual(
-      '<div><ul><li><span><span><span>test render below</span></span></span></li></ul></div>'
+    expect(html).toContain(
+      '<ul><li><span><span><span>test render below</span></span></span></li></ul>'
     );
   });
 

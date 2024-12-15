@@ -7,7 +7,7 @@ import { BaseImagePlugin } from '@udecode/plate-media';
 
 import { createSlateEditor } from '../../editor';
 import { BaseParagraphPlugin } from '../../plugins';
-import { serializePlateStatic } from '../serializedHtml';
+import { serializePlateStatic } from '../serializePlateStatic';
 import { staticComponents } from './create-static-editor';
 
 const plugins = [

@@ -17,7 +17,9 @@ import {
   BaseCodeLinePlugin,
   BaseCodeSyntaxPlugin,
 } from '@udecode/plate-code-block';
+import { BaseCommentsPlugin } from '@udecode/plate-comments';
 import { type Value, PlateStaticLeaf } from '@udecode/plate-common';
+import { BaseDatePlugin } from '@udecode/plate-date';
 import {
   BaseFontBackgroundColorPlugin,
   BaseFontColorPlugin,
@@ -25,6 +27,7 @@ import {
 } from '@udecode/plate-font';
 import {
   BaseHeadingPlugin,
+  BaseTocPlugin,
   HEADING_KEYS,
   HEADING_LEVELS,
 } from '@udecode/plate-heading';
@@ -33,6 +36,7 @@ import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
 import { BaseKbdPlugin } from '@udecode/plate-kbd';
+import { BaseColumnItemPlugin, BaseColumnPlugin } from '@udecode/plate-layout';
 import { BaseLineHeightPlugin } from '@udecode/plate-line-height';
 import { BaseLinkPlugin } from '@udecode/plate-link';
 import {
@@ -42,6 +46,7 @@ import {
   BaseMediaEmbedPlugin,
   BaseVideoPlugin,
 } from '@udecode/plate-media';
+import { BaseMentionPlugin } from '@udecode/plate-mention';
 import {
   BaseTableCellHeaderPlugin,
   BaseTableCellPlugin,
@@ -54,9 +59,17 @@ import { CodeBlockElementStatic } from 'www/src/registry/default/plate-ui/code-b
 import { CodeLeafStatic } from 'www/src/registry/default/plate-ui/code-leaf-static';
 import { CodeLineElementStatic } from 'www/src/registry/default/plate-ui/code-line-element-static';
 import { CodeSyntaxLeafStatic } from 'www/src/registry/default/plate-ui/code-syntax-leaf-static';
+import { ColumnElementStatic } from 'www/src/registry/default/plate-ui/column-element-static';
+import { ColumnGroupElementStatic } from 'www/src/registry/default/plate-ui/column-group-element-staic';
+import { CommentLeafStatic } from 'www/src/registry/default/plate-ui/comment-leaf-static';
+import { DateElementStatic } from 'www/src/registry/default/plate-ui/date-element-static';
 import { HeadingElementStatic } from 'www/src/registry/default/plate-ui/heading-element-static';
 import { HrElementStatic } from 'www/src/registry/default/plate-ui/hr-element-static';
 import { ImageElementStatic } from 'www/src/registry/default/plate-ui/image-element-static';
+import {
+  FireLiComponentStatic,
+  FireMarkerStatic,
+} from 'www/src/registry/default/plate-ui/indent-fire-marker-static';
 import {
   TodoLiStatic,
   TodoMarkerStatic,
@@ -66,6 +79,7 @@ import { LinkElementStatic } from 'www/src/registry/default/plate-ui/link-elemen
 import { MediaAudioElementStatic } from 'www/src/registry/default/plate-ui/media-audio-element-static';
 import { MediaFileElementStatic } from 'www/src/registry/default/plate-ui/media-file-element-static';
 import { MediaVideoElementStatic } from 'www/src/registry/default/plate-ui/media-video-element-static';
+import { MentionElementStatic } from 'www/src/registry/default/plate-ui/mention-element-static';
 import { ParagraphElementStatic } from 'www/src/registry/default/plate-ui/paragraph-element-static';
 import {
   TableCellElementStatic,
@@ -73,6 +87,8 @@ import {
 } from 'www/src/registry/default/plate-ui/table-cell-element-static';
 import { TableElementStatic } from 'www/src/registry/default/plate-ui/table-element-static';
 import { TableRowElementStatic } from 'www/src/registry/default/plate-ui/table-row-element-static';
+import { TocElementStatic } from 'www/src/registry/default/plate-ui/toc-element-static';
+import { ToggleElementStatic } from 'www/src/registry/default/plate-ui/toggle-element-static';
 
 import { BaseParagraphPlugin } from '../..';
 import { createSlateEditor } from '../../editor';
@@ -80,6 +96,9 @@ import { createSlateEditor } from '../../editor';
 export const createStaticEditor = (value: Value) => {
   return createSlateEditor({
     plugins: [
+      BaseColumnPlugin,
+      BaseColumnItemPlugin,
+      BaseTocPlugin,
       BaseVideoPlugin,
       BaseAudioPlugin,
       BaseParagraphPlugin,
@@ -93,6 +112,7 @@ export const createStaticEditor = (value: Value) => {
       BaseSuperscriptPlugin,
       BaseUnderlinePlugin,
       BaseBlockquotePlugin,
+      BaseDatePlugin,
       BaseCodeBlockPlugin,
       BaseIndentPlugin.extend({
         inject: {
@@ -115,11 +135,11 @@ export const createStaticEditor = (value: Value) => {
         },
         options: {
           listStyleTypes: {
-            // fire: {
-            //   liComponent: FireLiComponent,
-            //   markerComponent: FireMarker,
-            //   type: 'fire',
-            // },
+            fire: {
+              liComponent: FireLiComponentStatic,
+              markerComponent: FireMarkerStatic,
+              type: 'fire',
+            },
             todo: {
               liComponent: TodoLiStatic,
               markerComponent: TodoMarkerStatic,
@@ -151,6 +171,9 @@ export const createStaticEditor = (value: Value) => {
       BaseHighlightPlugin,
       BaseFilePlugin,
       BaseImagePlugin,
+      BaseMentionPlugin,
+      BaseCommentsPlugin,
+      BaseTogglePlugin,
     ],
     value,
   });
@@ -164,12 +187,18 @@ export const staticComponents = {
   [BaseCodeLinePlugin.key]: CodeLineElementStatic,
   [BaseCodePlugin.key]: CodeLeafStatic,
   [BaseCodeSyntaxPlugin.key]: CodeSyntaxLeafStatic,
+  [BaseColumnItemPlugin.key]: ColumnElementStatic,
+  [BaseColumnPlugin.key]: ColumnGroupElementStatic,
+  [BaseCommentsPlugin.key]: CommentLeafStatic,
+  [BaseDatePlugin.key]: DateElementStatic,
   [BaseFilePlugin.key]: MediaFileElementStatic,
   [BaseHorizontalRulePlugin.key]: HrElementStatic,
   [BaseImagePlugin.key]: ImageElementStatic,
   [BaseItalicPlugin.key]: withProps(PlateStaticLeaf, { as: 'em' }),
   [BaseKbdPlugin.key]: KbdLeafStatic,
   [BaseLinkPlugin.key]: LinkElementStatic,
+  // [BaseMediaEmbedPlugin.key]: MediaEmbedElementStatic,
+  [BaseMentionPlugin.key]: MentionElementStatic,
   [BaseParagraphPlugin.key]: ParagraphElementStatic,
   [BaseStrikethroughPlugin.key]: withProps(PlateStaticLeaf, { as: 'del' }),
   [BaseSubscriptPlugin.key]: withProps(PlateStaticLeaf, { as: 'sub' }),
@@ -178,6 +207,8 @@ export const staticComponents = {
   [BaseTableCellPlugin.key]: TableCellElementStatic,
   [BaseTablePlugin.key]: TableElementStatic,
   [BaseTableRowPlugin.key]: TableRowElementStatic,
+  [BaseTocPlugin.key]: TocElementStatic,
+  [BaseTogglePlugin.key]: ToggleElementStatic,
   [BaseUnderlinePlugin.key]: withProps(PlateStaticLeaf, { as: 'u' }),
   [BaseVideoPlugin.key]: MediaVideoElementStatic,
   [HEADING_KEYS.h1]: withProps(HeadingElementStatic, { variant: 'h1' }),

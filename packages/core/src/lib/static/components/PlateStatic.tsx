@@ -6,6 +6,7 @@ import {
   type TText,
   isElement,
 } from '@udecode/slate';
+import clsx from 'clsx';
 
 import type { NodeComponent, SlateEditor } from '../../editor';
 
@@ -107,7 +108,15 @@ export function PlateStatic(props: PlateStaticProps) {
   const { className, editor, staticComponents, ...rest } = props;
 
   return (
-    <div className={className} {...rest}>
+    <div
+      className={clsx(className, 'slate-editor')}
+      aria-multiline="true"
+      data-slate-editor="true"
+      data-slate-node="value"
+      role="textbox"
+      spellCheck="false"
+      {...rest}
+    >
       <PlateViewContent editor={editor} staticComponents={staticComponents}>
         {editor.children}
       </PlateViewContent>
