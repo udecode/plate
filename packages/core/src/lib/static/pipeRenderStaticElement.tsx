@@ -5,7 +5,7 @@ import type { SlatePlugin } from '../plugin';
 import type { StaticComponents } from './components';
 import type { RenderStaticElement, StaticElementProps } from './type';
 
-import { PlateStaticElement } from './components/DefaultStaticElement';
+import { PlateStaticElement } from './components/PlateStaticElement';
 import { getRenderStaticNodeProps } from './utils/getRenderStaticNodeProps';
 
 export const getBelowNodesChildren = (

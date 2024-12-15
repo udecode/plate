@@ -2,7 +2,6 @@ import type { TElement, TText } from '@udecode/slate';
 import type { AnyObject } from '@udecode/utils';
 import type { SetImmerState, StoreApi } from 'zustand-x';
 
-import type { NodeComponent } from '../editor';
 import type { StaticElementProps } from '../static';
 import type { Nullable } from '../types';
 
@@ -174,10 +173,8 @@ export type BasePluginNode = {
    */
   isVoid?: boolean;
 
+  // REVIEW TYPE
   props?: (nodeProps: StaticElementProps<TElement>) => any;
-
-  /** Used for serialized HTML and rendering Plate Static. */
-  staticComponent?: NodeComponent;
 };
 
 export type BaseSerializer = AnyObject;

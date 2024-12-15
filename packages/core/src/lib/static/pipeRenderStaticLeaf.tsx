@@ -5,7 +5,7 @@ import type { SlatePlugin } from '../plugin';
 import type { StaticComponents } from './components';
 import type { RenderStaticLeaf } from './type';
 
-import { PlateStaticLeaf } from './components/DefaultStaticLeaf';
+import { PlateStaticLeaf } from './components/PlateStaticLeaf';
 import { getRenderStaticNodeProps } from './utils/getRenderStaticNodeProps';
 
 export const pluginRenderStaticLeaf = (

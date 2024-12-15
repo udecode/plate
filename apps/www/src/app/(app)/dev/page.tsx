@@ -101,7 +101,7 @@ import { ColumnElementStatic } from '@/registry/default/plate-ui/column-element-
 import { ColumnGroupElementStatic } from '@/registry/default/plate-ui/column-group-element-staic';
 import { CommentLeafStatic } from '@/registry/default/plate-ui/comment-leaf-static';
 import { DateElementStatic } from '@/registry/default/plate-ui/date-element-static';
-import { PlateStatic } from '@/registry/default/plate-ui/eidtor-static';
+import { PlateStatic } from '@/registry/default/plate-ui/editor-static';
 import { HeadingElementStatic } from '@/registry/default/plate-ui/heading-element-static';
 import { HrElementStatic } from '@/registry/default/plate-ui/hr-element-static';
 import { ImageElementStatic } from '@/registry/default/plate-ui/image-element-static';

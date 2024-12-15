@@ -15,8 +15,6 @@ export const getPluginNodeProps = (
       (typeof plugin.node.props === 'function'
         ? plugin.node.props(props as any)
         : plugin.node.props) ?? {};
-
-    // console.log(newProps, 'fj');
   }
   if (!newProps.nodeProps && attributes && plugin) {
     /**

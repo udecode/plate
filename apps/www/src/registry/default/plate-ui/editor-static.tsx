@@ -13,7 +13,7 @@ export const editorVariants = cva(
   cn(
     'group/editor',
     'relative w-full overflow-x-hidden whitespace-pre-wrap break-words',
-    'ring-offset-background placeholder:text-muted-foreground/80 rounded-md focus-visible:outline-none',
+    'rounded-md ring-offset-background placeholder:text-muted-foreground/80 focus-visible:outline-none',
     '[&_[data-slate-placeholder]]:text-muted-foreground/80 [&_[data-slate-placeholder]]:!opacity-100',
     '[&_[data-slate-placeholder]]:top-[auto_!important]',
     '[&_strong]:font-bold'
@@ -27,7 +27,7 @@ export const editorVariants = cva(
         true: 'cursor-not-allowed opacity-50',
       },
       focused: {
-        true: 'ring-ring ring-2 ring-offset-2',
+        true: 'ring-2 ring-ring ring-offset-2',
       },
       variant: {
         ai: 'w-full px-0 text-base md:text-sm',

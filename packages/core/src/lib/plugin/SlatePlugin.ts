@@ -61,6 +61,7 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> =
           };
       parser: Nullable<Parser<WithAnyKey<C>>>;
 
+      // REVIEW TYPE
       render: any;
 
       shortcuts: {};

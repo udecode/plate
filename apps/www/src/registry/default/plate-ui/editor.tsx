@@ -13,7 +13,7 @@ import {
 } from '@udecode/plate-common/react';
 import { cva } from 'class-variance-authority';
 
-export const editorContainerVariants = cva(
+const editorContainerVariants = cva(
   'relative w-full cursor-text overflow-y-auto caret-primary selection:bg-brand/25 focus-visible:outline-none [&_.slate-selection-area]:border [&_.slate-selection-area]:border-brand/25 [&_.slate-selection-area]:bg-brand/15',
   {
     defaultVariants: {
@@ -57,7 +57,7 @@ export const EditorContainer = ({
 
 EditorContainer.displayName = 'EditorContainer';
 
-export const editorVariants = cva(
+const editorVariants = cva(
   cn(
     'group/editor',
     'relative w-full overflow-x-hidden whitespace-pre-wrap break-words',
