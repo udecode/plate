@@ -1,5 +1,11 @@
 # @udecode/plate-code-block
 
+## 40.3.4
+
+### Patch Changes
+
+- [#3858](https://github.com/udecode/plate/pull/3858) by [@wststone](https://github.com/wststone) – add vscode data paste handle
+
 ## 40.0.0
 
 ## 39.0.0
