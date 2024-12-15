@@ -2,6 +2,7 @@ import type { ExtendEditor } from '@udecode/plate-common';
 
 import type { CodeBlockConfig } from './BaseCodeBlockPlugin';
 
+import { insertDataCodeBlock } from './insertDataCodeBlock';
 import { insertFragmentCodeBlock } from './insertFragmentCodeBlock';
 import { normalizeCodeBlock } from './normalizers/normalizeCodeBlock';
 import { getCodeLineEntry, getIndentDepth } from './queries';
@@ -43,6 +44,8 @@ export const withCodeBlock: ExtendEditor<CodeBlockConfig> = ({ editor }) => {
   editor.insertFragment = insertFragmentCodeBlock(editor);
 
   editor.normalizeNode = normalizeCodeBlock(editor);
+
+  editor.insertData = insertDataCodeBlock(editor);
 
   return editor;
 };
