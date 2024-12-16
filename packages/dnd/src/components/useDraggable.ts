@@ -1,18 +1,8 @@
 import React from 'react';
 
-import type { TEditor, TElement } from '@udecode/plate-common';
-import type { DropTargetMonitor } from 'react-dnd';
+import type { TElement } from '@udecode/plate-common';
 
-import { createAtomStore } from '@udecode/plate-common/react';
-
-import { type DragItemNode, type DropLineDirection, useDndBlock } from '..';
-
-export const { DraggableProvider, useDraggableStore } = createAtomStore(
-  {
-    dropLine: '' as DropLineDirection,
-  },
-  { name: 'draggable' }
-);
+import { type UseDndNodeOptions, DRAG_ITEM_BLOCK, useDndNode } from '..';
 
 export type DraggableState = {
   dragRef: (
@@ -22,25 +12,25 @@ export type DraggableState = {
   nodeRef: React.RefObject<HTMLDivElement>;
 };
 
-export const useDraggableState = (props: {
-  element: TElement;
-  onDropHandler?: (
-    editor: TEditor,
-    props: {
-      id: string;
-      dragItem: DragItemNode;
-      monitor: DropTargetMonitor<DragItemNode, unknown>;
-      nodeRef: any;
-    }
-  ) => boolean;
-}): DraggableState => {
-  const { element, onDropHandler } = props;
+export const useDraggableState = (
+  props: UseDndNodeOptions & { element: TElement }
+): DraggableState => {
+  const {
+    element,
+    orientation = 'vertical',
+    type = DRAG_ITEM_BLOCK,
+    onDropHandler,
+  } = props;
 
   const nodeRef = React.useRef<HTMLDivElement>(null);
-  const { dragRef, isDragging } = useDndBlock({
+
+  const { dragRef, isDragging } = useDndNode({
     id: element.id as string,
     nodeRef,
+    orientation,
+    type,
     onDropHandler,
+    ...props,
   });
 
   return {
@@ -59,17 +49,6 @@ export const useDraggable = (state: DraggableState) => {
 
 export const useDraggableGutter = () => {
   return {
-    props: {
-      contentEditable: false,
-    },
-  };
-};
-
-export const useDropLine = () => {
-  const dropLine = useDraggableStore().get.dropLine();
-
-  return {
-    dropLine,
     props: {
       contentEditable: false,
     },

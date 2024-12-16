@@ -12,6 +12,6 @@ export interface FileDragItemNode {
   items: DataTransferItemList;
 }
 
-export type DropLineDirection = '' | 'bottom' | 'top';
+export type DropLineDirection = '' | 'bottom' | 'left' | 'right' | 'top';
 
-export type DropDirection = 'bottom' | 'top' | undefined;
+export type DropDirection = 'bottom' | 'left' | 'right' | 'top' | undefined;

@@ -4,11 +4,11 @@ import {
   useDrop,
 } from 'react-dnd';
 
+import type { TElement, TNodeEntry } from '@udecode/plate-common';
 import type { PlateEditor } from '@udecode/plate-common/react';
 
 import type {
   DragItemNode,
-  DropLineDirection,
   ElementDragItemNode,
   FileDragItemNode,
 } from '../types';
@@ -17,19 +17,21 @@ import { DndPlugin } from '../DndPlugin';
 import { getDropPath, onDropNode } from '../transforms/onDropNode';
 import { onHoverNode } from '../transforms/onHoverNode';
 
+export type CanDropCallback = (args: {
+  dragEntry: TNodeEntry<TElement>;
+  dragItem: DragItemNode;
+  dropEntry: TNodeEntry<TElement>;
+  editor: PlateEditor;
+}) => boolean;
+
 export interface UseDropNodeOptions
   extends DropTargetHookSpec<DragItemNode, unknown, { isOver: boolean }> {
   /** Id of the node. */
   id: string;
 
-  /** Current value of dropLine. */
-  dropLine: string;
-
   /** The reference to the node being dragged. */
   nodeRef: any;
 
-  /** Callback called on dropLine change. */
-  onChangeDropLine: (newValue: DropLineDirection) => void;
   /**
    * Intercepts the drop handling. If `false` is returned, the default drop
    * behavior is called after. If `true` is returned, the default behavior is
@@ -44,6 +46,10 @@ export interface UseDropNodeOptions
       nodeRef: any;
     }
   ) => boolean;
+
+  canDropNode?: CanDropCallback;
+
+  orientation?: 'horizontal' | 'vertical';
 }
 
 /**
@@ -71,16 +77,18 @@ export const useDropNode = (
   editor: PlateEditor,
   {
     id,
-    dropLine,
+    canDropNode,
     nodeRef,
-    onChangeDropLine,
+    orientation,
     onDropHandler,
     ...options
   }: UseDropNodeOptions
 ) => {
   return useDrop<DragItemNode, unknown, { isOver: boolean }>({
     collect: (monitor) => ({
-      isOver: monitor.isOver(),
+      isOver: monitor.isOver({
+        shallow: true,
+      }),
     }),
     drop: (dragItem, monitor) => {
       // Don't call onDropNode if this is a file drop
@@ -88,9 +96,11 @@ export const useDropNode = (
       if (!(dragItem as ElementDragItemNode).id) {
         const result = getDropPath(editor, {
           id,
+          canDropNode,
           dragItem: dragItem as any,
           monitor,
           nodeRef,
+          orientation,
         });
 
         const onDropFiles = editor.getOptions(DndPlugin).onDropFiles;
@@ -123,16 +133,17 @@ export const useDropNode = (
         dragItem: dragItem as ElementDragItemNode,
         monitor,
         nodeRef,
+        orientation,
       });
     },
     hover(item: DragItemNode, monitor: DropTargetMonitor) {
       onHoverNode(editor, {
         id,
+        canDropNode,
         dragItem: item,
-        dropLine,
         monitor,
         nodeRef,
-        onChangeDropLine,
+        orientation,
       });
     },
     ...options,
