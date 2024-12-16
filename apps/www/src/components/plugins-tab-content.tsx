@@ -10,6 +10,7 @@ import { useDebounce } from '@/registry/default/hooks/use-debounce';
 import { Button } from '@/registry/default/plate-ui/button';
 import { Checkbox } from '@/registry/default/plate-ui/checkbox';
 
+import { Label } from '../registry/default/plate-ui/label';
 import { categoryIds, settingsStore } from './context/settings-store';
 import { Icons } from './icons';
 import { SettingCheckbox } from './setting-checkbox';
@@ -20,7 +21,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from './ui/accordion';
-import { Label } from '../registry/default/plate-ui/label';
 
 export function SettingsEffect() {
   const checkedPluginsNext = settingsStore.use.checkedPluginsNext();
