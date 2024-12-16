@@ -8,7 +8,7 @@ import type { AnyEditorPlugin, NodeComponents } from '../plugin';
 import { PlateElementStatic } from './components/PlateElementStatic';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps';
 
-export type RenderElementStatic = (props: {
+export type RenderElementStaticProps = {
   attributes: {
     'data-slate-node': 'element';
     ref: any;
@@ -18,7 +18,11 @@ export type RenderElementStatic = (props: {
   };
   children: any;
   element: TElement;
-}) => React.ReactElement | undefined;
+};
+
+export type RenderElementStatic = (
+  props: RenderElementStaticProps
+) => React.ReactElement | undefined;
 
 export const pluginRenderElementStatic = (
   editor: SlateEditor,

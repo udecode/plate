@@ -58,6 +58,7 @@ export function PlateStatic({
         }),
         className
       )}
+      disableDefaultStyles
       {...props}
     />
   );

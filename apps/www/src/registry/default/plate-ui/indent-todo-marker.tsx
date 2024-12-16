@@ -1,6 +1,6 @@
 'use client';
 
-import type { PlateRenderElementProps } from '@udecode/plate-common/react';
+import type { PlateRenderElementStaticProps } from '@udecode/plate-common';
 
 import { cn } from '@udecode/cn';
 import {
@@ -12,7 +12,7 @@ import { Checkbox } from './checkbox';
 
 export const TodoMarker = ({
   element,
-}: Omit<PlateRenderElementProps, 'children'>) => {
+}: Omit<PlateRenderElementStaticProps, 'children'>) => {
   const state = useIndentTodoListElementState({ element });
   const { checkboxProps } = useIndentTodoListElement(state);
 
@@ -26,7 +26,7 @@ export const TodoMarker = ({
   );
 };
 
-export const TodoLi = (props: PlateRenderElementProps) => {
+export const TodoLi = (props: PlateRenderElementStaticProps) => {
   const { children, element } = props;
 
   return (

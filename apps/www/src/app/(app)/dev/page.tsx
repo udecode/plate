@@ -291,8 +291,8 @@ export default function DevPage() {
   return (
     <PlateStatic
       variant="demo"
+      components={staticComponents}
       editor={editorStatic}
-      staticComponents={staticComponents}
     />
   );
 }

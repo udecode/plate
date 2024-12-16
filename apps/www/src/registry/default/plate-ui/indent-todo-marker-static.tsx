@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { PlateRenderElementProps } from '@udecode/plate-common/react';
+import type { PlateRenderElementStaticProps } from '@udecode/plate-common';
 
 import { cn } from '@udecode/cn';
 
@@ -8,7 +8,7 @@ import { CheckboxStatic } from './checkbox-static';
 
 export const TodoMarkerStatic = ({
   element,
-}: Omit<PlateRenderElementProps, 'children'>) => {
+}: Omit<PlateRenderElementStaticProps, 'children'>) => {
   return (
     <div contentEditable={false}>
       <CheckboxStatic
@@ -19,7 +19,7 @@ export const TodoMarkerStatic = ({
   );
 };
 
-export const TodoLiStatic = (props: PlateRenderElementProps) => {
+export const TodoLiStatic = (props: PlateRenderElementStaticProps) => {
   const { children, element } = props;
 
   return (

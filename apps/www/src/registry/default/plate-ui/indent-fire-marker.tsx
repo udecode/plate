@@ -1,8 +1,8 @@
-import type { PlateRenderElementProps } from '@udecode/plate-common/react';
+import type { PlateRenderElementStaticProps } from '@udecode/plate-common';
 import type { TIndentElement } from '@udecode/plate-indent';
 
 export const FireMarker = (
-  props: Omit<PlateRenderElementProps, 'children'>
+  props: Omit<PlateRenderElementStaticProps, 'children'>
 ) => {
   const { element } = props;
 
@@ -15,7 +15,7 @@ export const FireMarker = (
   );
 };
 
-export const FireLiComponent = (props: PlateRenderElementProps) => {
+export const FireLiComponent = (props: PlateRenderElementStaticProps) => {
   const { children } = props;
 
   return <span>{children}</span>;

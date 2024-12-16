@@ -1,4 +1,5 @@
 import {
+  type PlateRenderElementStaticProps,
   type PluginConfig,
   type TElement,
   BaseParagraphPlugin,

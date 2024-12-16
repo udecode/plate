@@ -1,11 +1,11 @@
 import React from 'react';
 
-import type { PlateRenderElementProps } from '@udecode/plate-common/react';
+import type { PlateRenderElementStaticProps } from '@udecode/plate-common';
 import type { TIndentElement } from '@udecode/plate-indent';
 
 export function FireMarkerStatic({
   element,
-}: Omit<PlateRenderElementProps, 'children'>) {
+}: Omit<PlateRenderElementStaticProps, 'children'>) {
   return (
     <div contentEditable={false}>
       <span style={{ left: -26, position: 'absolute', top: -1 }}>
@@ -15,8 +15,8 @@ export function FireMarkerStatic({
   );
 }
 
-export function FireLiComponentStatic(props: PlateRenderElementProps) {
-  const { children } = props;
-
+export function FireLiComponentStatic({
+  children,
+}: PlateRenderElementStaticProps) {
   return <span>{children}</span>;
 }

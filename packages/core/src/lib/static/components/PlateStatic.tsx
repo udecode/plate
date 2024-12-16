@@ -5,11 +5,14 @@ import {
   type TElement,
   type TText,
   isElement,
+  isInline,
+  isVoid,
 } from '@udecode/slate';
 import clsx from 'clsx';
 
 import type { SlateEditor } from '../../editor';
 import type { NodeComponents } from '../../plugin';
+import type { RenderElementStaticProps } from '../pluginRenderElementStatic';
 
 import { pipeRenderElementStatic } from '../pipeRenderElementStatic';
 import { pipeRenderLeafStatic } from '../pluginRenderLeafStatic';
@@ -28,10 +31,21 @@ function ElementStatic({
     components,
   });
 
+  const attributes: RenderElementStaticProps['attributes'] = {
+    'data-slate-node': 'element',
+    ref: null,
+  };
+
+  if (isVoid(editor, element)) {
+    attributes['data-slate-void'] = true;
+  } else if (isInline(editor, element)) {
+    attributes['data-slate-inline'] = true;
+  }
+
   return (
     <React.Fragment>
       {renderElement?.({
-        attributes: { 'data-slate-node': 'element', ref: null },
+        attributes,
         children: (
           <Children components={components} editor={editor}>
             {element.children}
