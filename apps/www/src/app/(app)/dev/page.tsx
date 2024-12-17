@@ -102,7 +102,7 @@ import { ColumnElementStatic } from '@/registry/default/plate-ui/column-element-
 import { ColumnGroupElementStatic } from '@/registry/default/plate-ui/column-group-element-staic';
 import { CommentLeafStatic } from '@/registry/default/plate-ui/comment-leaf-static';
 import { DateElementStatic } from '@/registry/default/plate-ui/date-element-static';
-import { PlateStatic } from '@/registry/default/plate-ui/editor-static';
+import { EditorStatic } from '@/registry/default/plate-ui/editor-static';
 import { HeadingElementStatic } from '@/registry/default/plate-ui/heading-element-static';
 import { HrElementStatic } from '@/registry/default/plate-ui/hr-element-static';
 import { ImageElementStatic } from '@/registry/default/plate-ui/image-element-static';
@@ -131,7 +131,7 @@ import { TocElementStatic } from '@/registry/default/plate-ui/toc-element-static
 import { ToggleElementStatic } from '@/registry/default/plate-ui/toggle-element-static';
 
 export default function DevPage() {
-  const staticComponents = {
+  const components = {
     [BaseAudioPlugin.key]: MediaAudioElementStatic,
     [BaseBlockquotePlugin.key]: BlockquoteElementStatic,
     [BaseBoldPlugin.key]: withProps(PlateLeafStatic, { as: 'strong' }),
@@ -171,7 +171,7 @@ export default function DevPage() {
     [HEADING_KEYS.h6]: withProps(HeadingElementStatic, { variant: 'h6' }),
   };
 
-  const editorStatic = createSlateEditor({
+  const editor = createSlateEditor({
     plugins: [
       BaseColumnPlugin,
       BaseColumnItemPlugin,
@@ -294,10 +294,20 @@ export default function DevPage() {
   });
 
   return (
-    <PlateStatic
-      variant="demo"
-      components={staticComponents}
-      editor={editorStatic}
-    />
+    <div className="grid grid-cols-2 overflow-y-auto">
+      <EditorStatic
+        variant="none"
+        className="p-2"
+        components={components}
+        editor={editor}
+      />
+
+      <EditorStatic
+        variant="none"
+        className="p-2"
+        components={components}
+        editor={editor}
+      />
+    </div>
   );
 }

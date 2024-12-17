@@ -3,10 +3,7 @@ import React from 'react';
 import type { VariantProps } from 'class-variance-authority';
 
 import { cn } from '@udecode/cn';
-import {
-  type PlateStaticProps,
-  PlateStatic as PlateStaticPrimitive,
-} from '@udecode/plate-core';
+import { type PlateStaticProps, PlateStatic } from '@udecode/plate-core';
 import { cva } from 'class-variance-authority';
 
 export const editorVariants = cva(
@@ -44,20 +41,15 @@ export const editorVariants = cva(
   }
 );
 
-export function PlateStatic({
+export function EditorStatic({
   children,
   className,
   variant,
   ...props
 }: PlateStaticProps & VariantProps<typeof editorVariants>) {
   return (
-    <PlateStaticPrimitive
-      className={cn(
-        editorVariants({
-          variant,
-        }),
-        className
-      )}
+    <PlateStatic
+      className={cn(editorVariants({ variant }), className)}
       disableDefaultStyles
       {...props}
     />
