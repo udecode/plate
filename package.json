@@ -12,6 +12,7 @@
     "build:apps": "turbo --filter \"./apps/www\" build",
     "build:registry": "yarn workspace www build:registry",
     "build:templates": "turbo --filter \"./templates/**\" build",
+    "build:tw": "yarn workspace www build:tw",
     "build:watch": "ROARR_LOG=true turbowatch ./config/turbowatch.config.ts | roarr",
     "check:install": "yarn dlx @yarnpkg/doctor@4.0.0-rc.10 --configFileName config/.ncurc.yml packages",
     "cli:basic": "sh ./scripts/pre-basic.sh && npx shadcx@latest add plate/editor-basic -o -c templates/plate-template && sh ./scripts/post-basic.sh",
