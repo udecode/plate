@@ -9,9 +9,9 @@ import { useDeepCompareMemo } from 'use-deep-compare';
 
 import type { PlateProps } from '../components';
 
+import { pipeDecorate } from '../../lib/static/utils/pipeDecorate';
 import { useEditorRef, usePlateSelectors } from '../stores';
 import { DOM_HANDLERS } from '../utils/dom-attributes';
-import { pipeDecorate } from '../utils/pipeDecorate';
 import { pipeHandler } from '../utils/pipeHandler';
 import { pipeRenderElement } from '../utils/pipeRenderElement';
 import { pipeRenderLeaf } from '../utils/pipeRenderLeaf';
@@ -33,7 +33,10 @@ export const useEditableProps = ({
   const storeRenderElement = selectors.renderElement();
 
   const decorateMemo = useMemoOnce(() => {
-    return pipeDecorate(editor, storeDecorate ?? editableProps?.decorate);
+    return pipeDecorate(
+      editor,
+      storeDecorate ?? (editableProps?.decorate as any)
+    );
   }, [editableProps?.decorate, editor, storeDecorate]);
 
   const decorate: typeof decorateMemo = useMemoOnce(() => {

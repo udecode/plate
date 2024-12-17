@@ -6,7 +6,6 @@ export * from './createPlateFallbackEditor';
 export * from './dom-attributes';
 export * from './getRenderNodeProps';
 export * from './hotkeys';
-export * from './pipeDecorate';
 export * from './pipeHandler';
 export * from './pipeOnChange';
 export * from './pipeRenderElement';

@@ -39,7 +39,7 @@ export const pipeDecorate = (
     if (decorateProp) {
       addRanges(
         decorateProp({
-          editor: editor,
+          editor,
           entry,
         })
       );
