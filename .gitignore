@@ -8,6 +8,7 @@
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+.repo_ignore
 
 **/traceDir
 
