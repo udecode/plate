@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { cn, withVariants } from '@udecode/cn';
+import { withVariants } from '@udecode/cn';
 import { type VariantProps, cva } from 'class-variance-authority';
 
 export const inputVariants = cva(
@@ -47,7 +47,7 @@ export function FloatingInput({
       >
         <span className="inline-flex bg-background px-2">{label}</span>
       </label>
-      <Input id={id} className={cn(className)} placeholder="" {...props} />
+      <Input id={id} className={className} placeholder="" {...props} />
     </>
   );
 }

@@ -57,7 +57,7 @@ export function CopyCodeButton({
 
   return (
     <Button
-      className={cn(className)}
+      className={className}
       onClick={() => {
         copyToClipboardWithMeta(themeCode, {
           name: 'copy_theme_code',

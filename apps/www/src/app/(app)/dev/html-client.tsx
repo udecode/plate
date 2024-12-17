@@ -2,9 +2,13 @@
 
 import * as React from 'react';
 
+import { Plate } from '@udecode/plate-core/react';
 import { useTheme } from 'next-themes';
 
+import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';
+import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
 import { Button } from '@/registry/default/plate-ui/button';
+import { Editor } from '@/registry/default/plate-ui/editor';
 
 function useThemedHtml(html: string, serverTheme?: string) {
   const { resolvedTheme } = useTheme();
@@ -79,4 +83,19 @@ export function HtmlIframe({
   }, [getThemedHtml]);
 
   return <iframe title="Preview" srcDoc={content} {...props} />;
+}
+
+export function EditorClient({ value }: { value: any }) {
+  const editor = useCreateEditor({
+    plugins: editorPlugins.filter(
+      (p) => !['fixed-toolbar', 'floating-toolbar'].includes(p.key)
+    ),
+    value,
+  });
+
+  return (
+    <Plate readOnly editor={editor}>
+      <Editor variant="none" />
+    </Plate>
+  );
 }

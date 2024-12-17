@@ -8,15 +8,12 @@ import { SlateElement } from '@udecode/plate-common';
 export function DateElementStatic({
   children,
   className,
-  element,
   ...props
 }: SlateElementProps) {
+  const { element } = props;
+
   return (
-    <SlateElement
-      className={cn('inline-block', className)}
-      element={element}
-      {...props}
-    >
+    <SlateElement className={cn(className, 'inline-block')} {...props}>
       <span
         className={cn('w-fit rounded-sm bg-muted px-1 text-muted-foreground')}
       >

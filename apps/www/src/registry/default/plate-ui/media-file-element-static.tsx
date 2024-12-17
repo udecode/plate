@@ -16,7 +16,7 @@ export const MediaFileElementStatic = ({
 
   return (
     <SlateElement
-      className={cn('relative my-px rounded-sm', className)}
+      className={cn(className, 'relative my-px rounded-sm')}
       {...props}
     >
       <a

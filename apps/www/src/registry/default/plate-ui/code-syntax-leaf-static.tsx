@@ -6,7 +6,12 @@ import { SlateLeaf } from '@udecode/plate-common';
 
 export function CodeSyntaxLeafStatic({
   children,
+  className,
   ...props
 }: SlateLeafProps) {
-  return <SlateLeaf {...props}>{children}</SlateLeaf>;
+  return (
+    <SlateLeaf className={className} {...props}>
+      {children}
+    </SlateLeaf>
+  );
 }

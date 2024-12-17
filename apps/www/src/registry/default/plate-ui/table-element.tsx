@@ -207,7 +207,7 @@ export const TableElement = withHOC(
     return (
       <TableFloatingToolbar>
         <PlateElement
-          className={cn('overflow-x-auto', className)}
+          className={cn(className, 'overflow-x-auto')}
           style={{ paddingLeft: marginLeft }}
           {...props}
         >

@@ -12,16 +12,14 @@ export const TodoMarkerStatic = ({
   return (
     <div contentEditable={false}>
       <CheckboxStatic
-        style={{ left: -24, position: 'absolute', top: 4 }}
+        className="pointer-events-none absolute -left-6 top-1"
         checked={element.checked as boolean}
       />
     </div>
   );
 };
 
-export const TodoLiStatic = (props: SlateElementProps) => {
-  const { children, element } = props;
-
+export const TodoLiStatic = ({ children, element }: SlateElementProps) => {
   return (
     <span
       className={cn(

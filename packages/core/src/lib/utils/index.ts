@@ -10,6 +10,7 @@ export * from './getPluginNodeProps';
 export * from './hotkeys';
 export * from './mergeDeepToNodes';
 export * from './normalizeDescendantsToDocumentFragment';
+export * from './omitPluginContext';
 export * from './overridePluginsByKey';
 export * from './pipeInjectNodeProps';
 export * from './pipeInsertDataQuery';

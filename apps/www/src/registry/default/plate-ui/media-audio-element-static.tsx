@@ -9,18 +9,13 @@ import { SlateElement } from '@udecode/plate-common';
 export function MediaAudioElementStatic({
   children,
   className,
-  element,
   ...props
 }: SlateElementProps) {
-  const { url } = element as TAudioElement;
+  const { url } = props.element as TAudioElement;
 
   return (
-    <SlateElement
-      className={cn('relative mb-1', className)}
-      element={element}
-      {...props}
-    >
-      <figure className="group relative">
+    <SlateElement className={cn(className, 'relative mb-1')} {...props}>
+      <figure className="group relative cursor-default">
         <div className="h-16">
           <audio className="size-full" src={url} controls />
         </div>

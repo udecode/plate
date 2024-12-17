@@ -4,5 +4,6 @@
 
 export * from './createStaticString';
 export * from './getRenderNodeStaticProps';
+export * from './pipeDecorate';
 export * from './stripHtmlClassNames';
 export * from './stripSlateDataAttributes';

@@ -19,6 +19,7 @@ import {
 } from '@udecode/plate-code-block';
 import { BaseCommentsPlugin } from '@udecode/plate-comments';
 import {
+  type Value,
   BaseParagraphPlugin,
   SlateLeaf,
   createSlateEditor,
@@ -64,7 +65,12 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import Prism from 'prismjs';
 
-import { ExportHtmlButton, HtmlIframe } from '@/app/(app)/dev/html-client';
+import {
+  EditorClient,
+  ExportHtmlButton,
+  HtmlIframe,
+} from '@/app/(app)/dev/html-client';
+import { H3 } from '@/components/typography';
 import { alignValue } from '@/registry/default/example/values/align-value';
 import { basicElementsValue } from '@/registry/default/example/values/basic-elements-value';
 import { basicMarksValue } from '@/registry/default/example/values/basic-marks-value';
@@ -91,11 +97,12 @@ import { CodeLeafStatic } from '@/registry/default/plate-ui/code-leaf-static';
 import { CodeLineElementStatic } from '@/registry/default/plate-ui/code-line-element-static';
 import { CodeSyntaxLeafStatic } from '@/registry/default/plate-ui/code-syntax-leaf-static';
 import { ColumnElementStatic } from '@/registry/default/plate-ui/column-element-static';
-import { ColumnGroupElementStatic } from '@/registry/default/plate-ui/column-group-element-staic';
+import { ColumnGroupElementStatic } from '@/registry/default/plate-ui/column-group-element-static';
 import { CommentLeafStatic } from '@/registry/default/plate-ui/comment-leaf-static';
 import { DateElementStatic } from '@/registry/default/plate-ui/date-element-static';
 import { EditorStatic } from '@/registry/default/plate-ui/editor-static';
 import { HeadingElementStatic } from '@/registry/default/plate-ui/heading-element-static';
+import { HighlightLeafStatic } from '@/registry/default/plate-ui/highlight-leaf-static';
 import { HrElementStatic } from '@/registry/default/plate-ui/hr-element-static';
 import { ImageElementStatic } from '@/registry/default/plate-ui/image-element-static';
 import {
@@ -142,6 +149,7 @@ export default async function DevPage() {
     [BaseCommentsPlugin.key]: CommentLeafStatic,
     [BaseDatePlugin.key]: DateElementStatic,
     [BaseFilePlugin.key]: MediaFileElementStatic,
+    [BaseHighlightPlugin.key]: HighlightLeafStatic,
     [BaseHorizontalRulePlugin.key]: HrElementStatic,
     [BaseImagePlugin.key]: ImageElementStatic,
     [BaseItalicPlugin.key]: withProps(SlateLeaf, { as: 'em' }),
@@ -168,6 +176,28 @@ export default async function DevPage() {
     [HEADING_KEYS.h5]: withProps(HeadingElementStatic, { variant: 'h5' }),
     [HEADING_KEYS.h6]: withProps(HeadingElementStatic, { variant: 'h6' }),
   };
+
+  const createValue = (): Value => [
+    ...basicElementsValue,
+    ...basicMarksValue,
+    ...tocPlaygroundValue,
+    ...todoListValue,
+    ...linkValue,
+    ...horizontalRuleValue,
+    ...tableValue,
+    ...mediaValue,
+    ...columnValue,
+    ...mentionValue,
+    ...dateValue,
+    ...fontValue,
+    ...highlightValue,
+    ...kbdValue,
+    ...commentsValue,
+    ...alignValue,
+    ...lineHeightValue,
+    ...indentValue,
+    ...indentListValue,
+  ];
 
   const editor = createSlateEditor({
     plugins: [
@@ -254,35 +284,19 @@ export default async function DevPage() {
       BaseCommentsPlugin,
       BaseTogglePlugin,
     ],
-    value: [
-      ...basicElementsValue,
-      ...basicMarksValue,
-      ...tocPlaygroundValue,
-      ...todoListValue,
-      ...linkValue,
-      ...horizontalRuleValue,
-      ...tableValue,
-      ...mediaValue,
-      ...columnValue,
-      ...mentionValue,
-      ...dateValue,
-      ...fontValue,
-      ...highlightValue,
-      ...kbdValue,
-      ...commentsValue,
-      ...alignValue,
-      ...lineHeightValue,
-      ...indentValue,
-      ...indentListValue,
-    ],
+    value: createValue(),
   });
 
   const tailwindCss = await getCachedTailwindCss();
   const cookieStore = await cookies();
   const theme = cookieStore.get('theme')?.value;
 
-  // Get the editor content HTML
-  const editorHtml = await serializeHtml(editor, { components });
+  // Get the editor content HTML using EditorStatic
+  const editorHtml = await serializeHtml(editor, {
+    components,
+    editorComponent: EditorStatic,
+    props: { variant: 'none' },
+  });
 
   // Create the full HTML document
   const html = createHtmlDocument({
@@ -292,22 +306,23 @@ export default async function DevPage() {
   });
 
   return (
-    <div>
-      <ExportHtmlButton html={html} serverTheme={theme} />
+    <div className="grid grid-cols-3 overflow-y-auto px-4">
+      <div className="p-2">
+        <H3>Editor</H3>
+        <EditorClient value={createValue()} />
+      </div>
 
-      <div className="grid grid-cols-2 overflow-y-auto">
-        <EditorStatic
-          variant="none"
-          className="p-2"
-          components={components}
-          editor={editor}
-        />
+      <div className="p-2">
+        <H3>EditorStatic</H3>
+        <EditorStatic variant="none" components={components} editor={editor} />
+      </div>
 
-        <HtmlIframe
-          className="size-full min-h-[500px] p-2"
-          html={html}
-          serverTheme={theme}
-        />
+      <div className="p-2">
+        <div className="flex items-end gap-2">
+          <H3>HTML Iframe</H3>
+          <ExportHtmlButton html={html} serverTheme={theme} />
+        </div>
+        <HtmlIframe className="size-full" html={html} serverTheme={theme} />
       </div>
     </div>
   );

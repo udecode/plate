@@ -9,17 +9,12 @@ import { SlateElement } from '@udecode/plate-common';
 export const TableElementStatic = ({
   children,
   className,
-  element,
   ...props
 }: SlateElementProps) => {
-  const { colSizes } = element as TTableElement;
+  const { colSizes } = props.element as TTableElement;
 
   return (
-    <SlateElement
-      className={cn('overflow-x-auto', className)}
-      element={element}
-      {...props}
-    >
+    <SlateElement className={cn(className, 'overflow-x-auto')} {...props}>
       <table
         className={cn(
           'my-4 ml-px mr-0 table h-px w-[calc(100%-6px)] table-fixed border-collapse'

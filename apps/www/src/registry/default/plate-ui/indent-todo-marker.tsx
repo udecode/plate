@@ -7,6 +7,7 @@ import {
   useIndentTodoListElement,
   useIndentTodoListElementState,
 } from '@udecode/plate-indent-list/react';
+import { useReadOnly } from 'slate-react';
 
 import { Checkbox } from './checkbox';
 
@@ -15,11 +16,15 @@ export const TodoMarker = ({
 }: Omit<SlateRenderElementProps, 'children'>) => {
   const state = useIndentTodoListElementState({ element });
   const { checkboxProps } = useIndentTodoListElement(state);
+  const readOnly = useReadOnly();
 
   return (
     <div contentEditable={false}>
       <Checkbox
-        style={{ left: -24, position: 'absolute', top: 4 }}
+        className={cn(
+          'absolute -left-6 top-1',
+          readOnly && 'pointer-events-none'
+        )}
         {...checkboxProps}
       />
     </div>

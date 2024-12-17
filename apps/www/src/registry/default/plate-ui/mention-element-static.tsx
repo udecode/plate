@@ -9,25 +9,23 @@ import { IS_APPLE, SlateElement } from '@udecode/plate-common';
 export function MentionElementStatic({
   children,
   className,
-  element,
   prefix,
-  renderLabel,
   ...props
 }: SlateElementProps & {
   prefix?: string;
-  renderLabel?: (mentionable: TMentionElement) => string;
 }) {
+  const element = props.element as TMentionElement;
+
   return (
     <SlateElement
       className={cn(
-        'inline-block cursor-pointer rounded-md bg-muted px-1.5 py-0.5 align-baseline text-sm font-medium',
+        className,
+        'inline-block rounded-md bg-muted px-1.5 py-0.5 align-baseline text-sm font-medium',
         element.children[0].bold === true && 'font-bold',
         element.children[0].italic === true && 'italic',
-        element.children[0].underline === true && 'underline',
-        className
+        element.children[0].underline === true && 'underline'
       )}
       data-slate-value={element.value}
-      element={element}
       {...props}
     >
       {IS_APPLE ? (
@@ -35,17 +33,13 @@ export function MentionElementStatic({
         <React.Fragment>
           {children}
           {prefix}
-          {renderLabel
-            ? renderLabel(element as TMentionElement)
-            : element.value}
+          {element.value}
         </React.Fragment>
       ) : (
         // Others like Android https://github.com/ianstormtaylor/slate/pull/5360
         <React.Fragment>
           {prefix}
-          {renderLabel
-            ? renderLabel(element as TMentionElement)
-            : element.value}
+          {element.value}
           {children}
         </React.Fragment>
       )}

@@ -20,7 +20,7 @@ export const ToggleElement = withRef<typeof PlateElement>(
     return (
       <PlateElement
         ref={ref}
-        className={cn('relative pl-6', className)}
+        className={cn(className, 'relative pl-6')}
         {...props}
       >
         <Button

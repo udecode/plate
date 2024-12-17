@@ -8,18 +8,10 @@ import { SlateElement } from '@udecode/plate-common';
 export function TableRowElementStatic({
   children,
   className,
-  element,
   ...props
 }: SlateElementProps) {
-  // const { hideBorder } = element as TTableRowElement;
-
   return (
-    <SlateElement
-      as="tr"
-      className={cn('h-full', className)}
-      element={element}
-      {...props}
-    >
+    <SlateElement as="tr" className={cn(className, 'h-full')} {...props}>
       {children}
     </SlateElement>
   );

@@ -10,7 +10,6 @@ import { SlateElement, getNodeString } from '@udecode/plate-common';
 export function ImageElementStatic({
   children,
   className,
-  element,
   nodeProps,
   ...props
 }: SlateElementProps) {
@@ -19,21 +18,20 @@ export function ImageElementStatic({
     caption,
     url,
     width,
-  } = element as TImageElement &
+  } = props.element as TImageElement &
     TCaptionElement & {
       width: number;
     };
 
   return (
-    <SlateElement
-      className={cn('py-2.5', className)}
-      element={element}
-      {...props}
-    >
+    <SlateElement className={cn(className, 'py-2.5')} {...props}>
       <div style={{ textAlign: align }}>
         <figure className="group relative m-0 inline-block" style={{ width }}>
           <img
-            className={cn('w-full max-w-full object-cover px-0', 'rounded-sm')}
+            className={cn(
+              'w-full max-w-full cursor-default object-cover px-0',
+              'rounded-sm'
+            )}
             alt=""
             src={url}
             {...nodeProps}

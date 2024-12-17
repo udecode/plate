@@ -14,8 +14,8 @@ export function CommentLeafStatic({
   return (
     <SlateLeaf
       className={cn(
-        'border-b-2 border-b-highlight/35 bg-highlight/15',
-        className
+        className,
+        'border-b-2 border-b-highlight/35 bg-highlight/15'
       )}
       {...props}
     >

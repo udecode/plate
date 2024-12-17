@@ -12,10 +12,11 @@ export function HighlightLeafStatic({
 }: SlateLeafProps) {
   return (
     <SlateLeaf
-      className={cn('bg-highlight/30 text-inherit', className)}
+      as="mark"
+      className={cn(className, 'bg-highlight/30 text-inherit')}
       {...props}
     >
-      <mark>{children}</mark>
+      {children}
     </SlateLeaf>
   );
 }

@@ -13,11 +13,11 @@ export function HrElementStatic({
 }: SlateElementProps) {
   return (
     <SlateElement className={className} {...props}>
-      <div className="py-6" contentEditable={false}>
+      <div className="cursor-text py-6" contentEditable={false}>
         <hr
           {...nodeProps}
           className={cn(
-            'h-0.5 cursor-pointer rounded-sm border-none bg-muted bg-clip-content'
+            'h-0.5 rounded-sm border-none bg-muted bg-clip-content'
           )}
         />
       </div>

@@ -8,17 +8,15 @@ import { SlateElement } from '@udecode/plate-common';
 export const LinkElementStatic = ({
   children,
   className,
-  element,
   ...props
 }: SlateElementProps) => {
   return (
     <SlateElement
       as="a"
       className={cn(
-        'font-medium text-primary underline decoration-primary underline-offset-4',
-        className
+        className,
+        'font-medium text-primary underline decoration-primary underline-offset-4'
       )}
-      element={element}
       {...props}
     >
       {children}

@@ -37,6 +37,7 @@ export function TableCellElementStatic({
     <SlateElement
       as={isHeader ? 'th' : 'td'}
       className={cn(
+        className,
         'relative h-full overflow-visible bg-background p-0',
         element.background ? 'bg-[--cellBackground]' : 'bg-background',
         cn(
@@ -50,8 +51,7 @@ export function TableCellElementStatic({
               borders.left?.size && `before:border-l before:border-l-border`,
               borders.top?.size && `before:border-t before:border-t-border`
             )
-        ),
-        className
+        )
       )}
       style={
         {

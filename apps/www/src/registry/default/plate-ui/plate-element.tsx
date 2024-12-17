@@ -14,7 +14,7 @@ export const PlateElement = React.forwardRef<HTMLDivElement, PlateElementProps>(
     return (
       <PlateElementPrimitive
         ref={ref}
-        className={cn('relative', className)}
+        className={cn(className, 'relative')}
         {...props}
       >
         {children}

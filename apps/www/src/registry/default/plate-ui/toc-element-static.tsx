@@ -38,19 +38,13 @@ const headingItemVariants = cva(
 export function TocElementStatic({
   children,
   className,
-  editor,
-  element,
   ...props
 }: SlateElementProps) {
+  const { editor } = props;
   const headingList = getHeadingList(editor);
 
   return (
-    <SlateElement
-      className={cn('relative mb-1 p-0', className)}
-      editor={editor}
-      element={element}
-      {...props}
-    >
+    <SlateElement className={cn(className, 'relative mb-1 p-0')} {...props}>
       <div>
         {headingList.length > 0 ? (
           headingList.map((item) => (

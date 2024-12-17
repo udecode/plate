@@ -12,12 +12,12 @@ import {
   PopoverTrigger,
 } from '@/registry/default/plate-ui/popover';
 
+import { Label } from '../registry/default/plate-ui/label';
 import { Code } from './code';
 import { settingsStore } from './context/settings-store';
 import { Icons } from './icons';
 import { TreeIcon } from './tree-icon';
 import { Badge } from './ui/badge';
-import { Label } from '../registry/default/plate-ui/label';
 
 export function SettingCheckbox({
   id,

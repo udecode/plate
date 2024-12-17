@@ -8,6 +8,7 @@ import { SlateElement } from '@udecode/plate-common';
 
 export const CodeBlockElementStatic = ({
   children,
+  className,
   ...props
 }: SlateElementProps<TCodeBlockElement>) => {
   const { element } = props;
@@ -18,7 +19,7 @@ export const CodeBlockElementStatic = ({
 
   return (
     <SlateElement
-      className={cn('relative py-1', codeClassName)}
+      className={cn(className, 'relative py-1', codeClassName)}
       {...props}
     >
       <pre className="overflow-x-auto rounded-md bg-muted px-6 py-8 font-mono text-sm leading-[normal] [tab-size:2]">

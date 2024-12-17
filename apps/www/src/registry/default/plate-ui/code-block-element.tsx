@@ -19,7 +19,7 @@ export const CodeBlockElement = withRef<typeof PlateElement>(
     return (
       <PlateElement
         ref={ref}
-        className={cn('relative py-1', state.className, className)}
+        className={cn(className, 'relative py-1', state.className)}
         {...props}
       >
         <pre className="overflow-x-auto rounded-md bg-muted px-6 py-8 font-mono text-sm leading-[normal] [tab-size:2]">

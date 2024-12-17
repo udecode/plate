@@ -25,15 +25,9 @@ export function createHtmlDocument({
         --font-sans: 'Inter', sans-serif;
         --font-mono: 'JetBrains Mono', monospace;
       }
-
-      body {
-        font-family: var(--font-sans);
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-      }
     </style>
   </head>
-  <body class="bg-background text-foreground">
+  <body>
     ${editorHtml}
   </body>
 </html>`;

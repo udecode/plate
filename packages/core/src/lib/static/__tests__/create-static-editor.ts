@@ -60,7 +60,7 @@ import { CodeLeafStatic } from 'www/src/registry/default/plate-ui/code-leaf-stat
 import { CodeLineElementStatic } from 'www/src/registry/default/plate-ui/code-line-element-static';
 import { CodeSyntaxLeafStatic } from 'www/src/registry/default/plate-ui/code-syntax-leaf-static';
 import { ColumnElementStatic } from 'www/src/registry/default/plate-ui/column-element-static';
-import { ColumnGroupElementStatic } from 'www/src/registry/default/plate-ui/column-group-element-staic';
+import { ColumnGroupElementStatic } from 'www/src/registry/default/plate-ui/column-group-element-static';
 import { CommentLeafStatic } from 'www/src/registry/default/plate-ui/comment-leaf-static';
 import { DateElementStatic } from 'www/src/registry/default/plate-ui/date-element-static';
 import { HeadingElementStatic } from 'www/src/registry/default/plate-ui/heading-element-static';

@@ -10,7 +10,6 @@ import { SlateElement, getNodeString } from '@udecode/plate-common';
 export function MediaVideoElementStatic({
   children,
   className,
-  element,
   ...props
 }: SlateElementProps) {
   const {
@@ -18,19 +17,18 @@ export function MediaVideoElementStatic({
     caption,
     url,
     width,
-  } = element as TVideoElement &
+  } = props.element as TVideoElement &
     TCaptionElement & {
       width: number;
     };
 
   return (
-    <SlateElement
-      className={cn('py-2.5', className)}
-      element={element}
-      {...props}
-    >
+    <SlateElement className={cn(className, 'py-2.5')} {...props}>
       <div style={{ textAlign: align }}>
-        <figure className="group relative m-0 inline-block" style={{ width }}>
+        <figure
+          className="group relative m-0 inline-block cursor-default"
+          style={{ width }}
+        >
           <video
             className={cn('w-full max-w-full object-cover px-0', 'rounded-sm')}
             src={url}

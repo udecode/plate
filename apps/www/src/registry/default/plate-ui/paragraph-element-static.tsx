@@ -8,15 +8,10 @@ import { SlateElement } from '@udecode/plate-common';
 export const ParagraphElementStatic = ({
   children,
   className,
-  element,
   ...props
 }: SlateElementProps) => {
   return (
-    <SlateElement
-      className={cn('m-0 px-0 py-1', className)}
-      element={element}
-      {...props}
-    >
+    <SlateElement className={cn(className, 'm-0 px-0 py-1')} {...props}>
       {children}
     </SlateElement>
   );
