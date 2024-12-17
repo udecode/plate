@@ -13,7 +13,12 @@ export function ModeSwitcher() {
   const { resolvedTheme, setTheme } = useTheme();
   const { setMetaColor } = useMetaColor();
   const toggleTheme = React.useCallback(() => {
-    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+    const newTheme = resolvedTheme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+
+    // Set cookie when theme changes
+    document.cookie = `theme=${newTheme};path=/;max-age=31536000`; // 1 year
+
     setMetaColor(
       resolvedTheme === 'dark'
         ? META_THEME_COLORS.light

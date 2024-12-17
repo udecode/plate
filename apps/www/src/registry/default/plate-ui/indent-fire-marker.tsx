@@ -1,8 +1,10 @@
-import type { PlateRenderElementStaticProps } from '@udecode/plate-common';
+import React from 'react';
+
+import type { SlateRenderElementProps } from '@udecode/plate-core';
 import type { TIndentElement } from '@udecode/plate-indent';
 
 export const FireMarker = (
-  props: Omit<PlateRenderElementStaticProps, 'children'>
+  props: Omit<SlateRenderElementProps, 'children'>
 ) => {
   const { element } = props;
 
@@ -15,7 +17,7 @@ export const FireMarker = (
   );
 };
 
-export const FireLiComponent = (props: PlateRenderElementStaticProps) => {
+export const FireLiComponent = (props: SlateRenderElementProps) => {
   const { children } = props;
 
   return <span>{children}</span>;

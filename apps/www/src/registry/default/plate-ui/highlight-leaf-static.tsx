@@ -1,21 +1,21 @@
 import React from 'react';
 
-import type { PlateLeafStaticProps } from '@udecode/plate-core';
+import type { SlateLeafProps } from '@udecode/plate-common';
 
 import { cn } from '@udecode/cn';
-import { PlateLeafStatic } from '@udecode/plate-common';
+import { SlateLeaf } from '@udecode/plate-common';
 
 export function HighlightLeafStatic({
   children,
   className,
   ...props
-}: PlateLeafStaticProps) {
+}: SlateLeafProps) {
   return (
-    <PlateLeafStatic
+    <SlateLeaf
       className={cn('bg-highlight/30 text-inherit', className)}
       {...props}
     >
       <mark>{children}</mark>
-    </PlateLeafStatic>
+    </SlateLeaf>
   );
 }

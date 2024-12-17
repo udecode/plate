@@ -1,20 +1,23 @@
 import React from 'react';
 
 import type { TText } from '@udecode/slate';
+import type { DecoratedRange } from 'slate';
 
 import type { AnySlatePlugin } from '../../plugin';
-import type { PlateRenderLeafStaticProps, TextStaticProps } from '../types';
+import type { SlateRenderLeafProps, TextStaticProps } from '../types';
 
-export type PlateLeafStaticProps<
+export type SlateLeafProps<
   T extends TText = TText,
   P extends AnySlatePlugin = AnySlatePlugin,
 > = {
+  decorations?: DecoratedRange[];
+
   /** Get HTML attributes from Slate leaf. Alternative to `PlatePlugin.props`. */
   leafToAttributes?: (leaf: T) => any;
-} & PlateRenderLeafStaticProps<T, P> &
+} & SlateRenderLeafProps<T, P> &
   TextStaticProps;
 
-export function PlateLeafStatic(props: PlateLeafStaticProps) {
+export function SlateLeaf(props: SlateLeafProps) {
   const {
     as,
     attributes,

@@ -1,12 +1,12 @@
 import React from 'react';
 
-import type { PlateLeafStaticProps } from '@udecode/plate-common';
+import type { SlateLeafProps } from '@udecode/plate-common';
 
-import { PlateLeafStatic } from '@udecode/plate-common';
+import { SlateLeaf } from '@udecode/plate-common';
 
 export function CodeSyntaxLeafStatic({
   children,
   ...props
-}: PlateLeafStaticProps) {
-  return <PlateLeafStatic {...props}>{children}</PlateLeafStatic>;
+}: SlateLeafProps) {
+  return <SlateLeaf {...props}>{children}</SlateLeaf>;
 }

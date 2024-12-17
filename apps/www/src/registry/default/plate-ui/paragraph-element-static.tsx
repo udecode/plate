@@ -1,23 +1,23 @@
 import React from 'react';
 
-import type { PlateElementStaticProps } from '@udecode/plate-common';
+import type { SlateElementProps } from '@udecode/plate-common';
 
 import { cn } from '@udecode/cn';
-import { PlateElementStatic } from '@udecode/plate-common';
+import { SlateElement } from '@udecode/plate-common';
 
 export const ParagraphElementStatic = ({
   children,
   className,
   element,
   ...props
-}: PlateElementStaticProps) => {
+}: SlateElementProps) => {
   return (
-    <PlateElementStatic
+    <SlateElement
       className={cn('m-0 px-0 py-1', className)}
       element={element}
       {...props}
     >
       {children}
-    </PlateElementStatic>
+    </SlateElement>
   );
 };

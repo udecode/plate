@@ -1,6 +1,9 @@
 import type { TElement, TText } from '@udecode/slate';
+import type {
+  TRenderElementProps,
+  TRenderLeafProps,
+} from '@udecode/slate-react';
 import type { AnyObject } from '@udecode/utils';
-import type { DecoratedRange } from 'slate';
 
 import type {
   AnyPluginConfig,
@@ -8,47 +11,23 @@ import type {
   SlatePluginContext,
 } from '../plugin';
 
-export type PlateRenderElementStaticProps<
+export type SlateRenderElementProps<
   N extends TElement = TElement,
   C extends AnyPluginConfig = PluginConfig,
-> = PlateRenderNodeStaticProps<C> & TRenderElementStaticProps<N>;
+> = SlateRenderNodeProps<C> & TRenderElementProps<N>;
 
-export interface TRenderElementStaticProps<N extends TElement = TElement> {
-  attributes: {
-    'data-slate-node': 'element';
-    ref: any;
-    'data-slate-inline'?: true;
-    'data-slate-void'?: true;
-    dir?: 'rtl';
+export type SlateRenderNodeProps<C extends AnyPluginConfig = PluginConfig> =
+  SlatePluginContext<C> & {
+    className?: string;
+
+    /** @see {@link NodeProps} */
+    nodeProps?: AnyObject;
   };
-  children: any;
-  element: N;
-}
 
-export type PlateRenderNodeStaticProps<
-  C extends AnyPluginConfig = PluginConfig,
-> = SlatePluginContext<C> & {
-  className?: string;
-
-  /** @see {@link NodeProps} */
-  nodeProps?: AnyObject;
-};
-
-export type PlateRenderLeafStaticProps<
+export type SlateRenderLeafProps<
   N extends TText = TText,
   C extends AnyPluginConfig = PluginConfig,
-> = PlateRenderNodeStaticProps<C> & TRenderLeafStaticProps<N>;
-
-export interface TRenderLeafStaticProps<N extends TText = TText> {
-  attributes: {
-    'data-slate-leaf'?: true;
-    'data-slate-node'?: 'text';
-  };
-  children: any;
-  decorations: DecoratedRange[];
-  leaf: N;
-  text: N;
-}
+> = SlateRenderNodeProps<C> & TRenderLeafProps<N>;
 
 export type BoxStaticProps = React.ComponentProps<'div'> & {
   as?: React.ElementType;

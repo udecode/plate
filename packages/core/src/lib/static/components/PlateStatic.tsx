@@ -18,7 +18,7 @@ import { type DecoratedRange, Range, Text } from 'slate';
 
 import type { SlateEditor } from '../../editor';
 import type { NodeComponents } from '../../plugin';
-import type { RenderElementStaticProps } from '../pluginRenderElementStatic';
+import type { SlateRenderElementProps } from '../types';
 
 import { pipeRenderElementStatic } from '../pipeRenderElementStatic';
 import { pipeRenderLeafStatic } from '../pluginRenderLeafStatic';
@@ -41,7 +41,7 @@ function ElementStatic({
     components,
   });
 
-  const attributes: RenderElementStaticProps['attributes'] = {
+  const attributes: SlateRenderElementProps['attributes'] = {
     'data-slate-node': 'element',
     ref: null,
   };
@@ -91,8 +91,8 @@ function LeafStatic({
 
   return (
     <span data-slate-node="text">
-      {leaves.map((l) => {
-        return renderLeaf!({
+      {leaves.map((l, index) => {
+        const leafElement = renderLeaf!({
           attributes: { 'data-slate-leaf': true },
           children: (
             <span data-slate-string={true}>
@@ -102,6 +102,8 @@ function LeafStatic({
           leaf: l as TText,
           text: l as TText,
         });
+
+        return <React.Fragment key={index}>{leafElement}</React.Fragment>;
       })}
     </span>
   );
@@ -168,19 +170,11 @@ function Children({
 export type PlateStaticProps = {
   components: NodeComponents;
   editor: SlateEditor;
-  disableDefaultStyles?: boolean;
   style?: React.CSSProperties;
 } & React.HTMLAttributes<HTMLDivElement>;
 
 export function PlateStatic(props: PlateStaticProps) {
-  const {
-    className,
-    components,
-    disableDefaultStyles,
-    editor,
-    style: userStyle,
-    ...rest
-  } = props;
+  const { className, components, editor, ...rest } = props;
 
   const decorate = pipeDecorate(editor);
 
@@ -213,18 +207,6 @@ export function PlateStatic(props: PlateStaticProps) {
   const content = (
     <div
       className={clsx('slate-editor', className)}
-      style={{
-        ...(disableDefaultStyles
-          ? {}
-          : {
-              position: 'relative',
-              userSelect: 'text',
-              whiteSpace: 'pre-wrap',
-              wordWrap: 'break-word',
-              zIndex: -1,
-            }),
-        ...userStyle,
-      }}
       data-slate-editor
       data-slate-node="value"
       {...rest}

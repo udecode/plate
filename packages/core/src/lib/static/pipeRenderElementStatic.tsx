@@ -3,9 +3,9 @@ import React from 'react';
 import type { SlateEditor } from '../editor';
 import type { NodeComponents } from '../plugin';
 
-import { PlateElementStatic } from './components/PlateElementStatic';
+import { SlateElement } from './components/SlateElement';
 import {
-  type RenderElementStatic,
+  type SlateRenderElement,
   pluginRenderElementStatic,
 } from './pluginRenderElementStatic';
 
@@ -16,10 +16,10 @@ export const pipeRenderElementStatic = (
     renderElement: renderElementProp,
   }: {
     components: NodeComponents;
-    renderElement?: RenderElementStatic;
+    renderElement?: SlateRenderElement;
   }
-): RenderElementStatic => {
-  const renderElements: RenderElementStatic[] = [];
+): SlateRenderElement => {
+  const renderElements: SlateRenderElement[] = [];
 
   editor.pluginList.forEach((plugin) => {
     if (plugin.node.isElement) {
@@ -44,13 +44,13 @@ export const pipeRenderElementStatic = (
     }
 
     return (
-      <PlateElementStatic
+      <SlateElement
         attributes={props.attributes}
         element={props.element}
         {...({} as any)}
       >
         {props.children}
-      </PlateElementStatic>
+      </SlateElement>
     );
   };
 };

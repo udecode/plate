@@ -1,40 +1,28 @@
 import React from 'react';
 
-import type { TElement } from '@udecode/slate';
+import type { TRenderElementProps } from '@udecode/slate-react';
 
 import type { SlateEditor } from '../editor';
 import type { AnyEditorPlugin, NodeComponents } from '../plugin';
 
-import { PlateElementStatic } from './components/PlateElementStatic';
+import { SlateElement } from './components/SlateElement';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps';
 
-export type RenderElementStaticProps = {
-  attributes: {
-    'data-slate-node': 'element';
-    ref: any;
-    'data-slate-inline'?: true;
-    'data-slate-void'?: true;
-    dir?: 'rtl';
-  };
-  children: any;
-  element: TElement;
-};
-
-export type RenderElementStatic = (
-  props: RenderElementStaticProps
+export type SlateRenderElement = (
+  props: TRenderElementProps
 ) => React.ReactElement | undefined;
 
 export const pluginRenderElementStatic = (
   editor: SlateEditor,
   plugin: AnyEditorPlugin,
   components?: NodeComponents
-): RenderElementStatic =>
+): SlateRenderElement =>
   function render(nodeProps) {
     if (nodeProps.element.type === plugin.node.type) {
       const element = nodeProps.element;
 
       const key = plugin.key;
-      const Element: any = components?.[plugin.key] ?? PlateElementStatic;
+      const Element: any = components?.[plugin.key] ?? SlateElement;
 
       let { children } = nodeProps;
 

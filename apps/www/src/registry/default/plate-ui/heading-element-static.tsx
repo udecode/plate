@@ -1,12 +1,12 @@
 import * as React from 'react';
 
-import type { PlateElementStaticProps } from '@udecode/plate-common';
+import type { SlateElementProps } from '@udecode/plate-common';
 
 import { cn } from '@udecode/cn';
-import { PlateElementStatic } from '@udecode/plate-common';
+import { SlateElement } from '@udecode/plate-common';
 import { cva } from 'class-variance-authority';
 
-interface HeadingElementViewProps extends PlateElementStaticProps {
+interface HeadingElementViewProps extends SlateElementProps {
   variant?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 }
 
@@ -30,12 +30,12 @@ export const HeadingElementStatic = ({
   ...props
 }: HeadingElementViewProps) => {
   return (
-    <PlateElementStatic
+    <SlateElement
       as={variant}
       className={cn(className, headingVariants({ variant }))}
       {...props}
     >
       {children}
-    </PlateElementStatic>
+    </SlateElement>
   );
 };

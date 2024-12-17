@@ -22,7 +22,8 @@ export const ColumnElement = withHOC(
         ref={ref}
         className={cn(
           className,
-          !readOnly && 'rounded-lg border border-dashed p-1.5'
+          'border p-1.5',
+          !readOnly && 'rounded-lg border-dashed'
         )}
         style={{ width: width ?? '100%' }}
         {...props}

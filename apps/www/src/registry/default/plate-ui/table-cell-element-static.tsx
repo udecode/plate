@@ -1,10 +1,10 @@
 import React from 'react';
 
-import type { PlateElementStaticProps } from '@udecode/plate-core';
+import type { SlateElementProps } from '@udecode/plate-common';
 
 import { cn } from '@udecode/cn';
 import {
-  PlateElementStatic,
+  SlateElement,
   findNode,
   getParentNode,
   isElement,
@@ -17,7 +17,7 @@ export function TableCellElementStatic({
   isHeader,
   style,
   ...props
-}: PlateElementStaticProps & {
+}: SlateElementProps & {
   isHeader?: boolean;
 }) {
   const { editor, element } = props;
@@ -34,7 +34,7 @@ export function TableCellElementStatic({
   });
 
   return (
-    <PlateElementStatic
+    <SlateElement
       as={isHeader ? 'th' : 'td'}
       className={cn(
         'relative h-full overflow-visible bg-background p-0',
@@ -64,10 +64,10 @@ export function TableCellElementStatic({
       <div className="relative z-20 box-border h-full px-3 py-2">
         {children}
       </div>
-    </PlateElementStatic>
+    </SlateElement>
   );
 }
 
-export function TableCellHeaderStaticElement(props: PlateElementStaticProps) {
+export function TableCellHeaderStaticElement(props: SlateElementProps) {
   return <TableCellElementStatic {...props} isHeader />;
 }

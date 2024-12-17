@@ -1,32 +1,27 @@
 import React from 'react';
 
-import type { TText } from '@udecode/slate';
+import type { TRenderLeafProps } from '@udecode/slate-react';
 
 import type { SlateEditor } from '../editor';
 import type { NodeComponents, SlatePlugin } from '../plugin';
 
-import { PlateLeafStatic } from './components/PlateLeafStatic';
+import { SlateLeaf } from './components/SlateLeaf';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps';
 
-export type RenderLeafStatic = (props: {
-  attributes: {
-    'data-slate-leaf': true;
-  };
-  children: any;
-  leaf: TText;
-  text: TText;
-}) => React.ReactElement | undefined;
+export type SlateRenderLeaf = (
+  props: TRenderLeafProps
+) => React.ReactElement | undefined;
 
 export const pluginRenderLeafStatic = (
   editor: SlateEditor,
   plugin: SlatePlugin,
   components: NodeComponents
-): RenderLeafStatic =>
+): SlateRenderLeaf =>
   function render(nodeProps) {
     const { children, leaf } = nodeProps;
 
     if (leaf[plugin.node.type ?? plugin.key]) {
-      const Leaf = components?.[plugin.key] ?? PlateLeafStatic;
+      const Leaf = components?.[plugin.key] ?? SlateLeaf;
 
       const ctxProps = getRenderNodeStaticProps({
         attributes: leaf.attributes as any,
@@ -49,10 +44,10 @@ export const pipeRenderLeafStatic = (
     renderLeaf: renderLeafProp,
   }: {
     components: NodeComponents;
-    renderLeaf?: RenderLeafStatic;
+    renderLeaf?: SlateRenderLeaf;
   }
-): RenderLeafStatic => {
-  const renderLeafs: RenderLeafStatic[] = [];
+): SlateRenderLeaf => {
+  const renderLeafs: SlateRenderLeaf[] = [];
 
   editor.pluginList.forEach((plugin) => {
     if (plugin.node.isLeaf && plugin.key) {
@@ -79,6 +74,6 @@ export const pipeRenderLeafStatic = (
       props: props as any,
     }) as any;
 
-    return <PlateLeafStatic {...ctxProps} />;
+    return <SlateLeaf {...ctxProps} />;
   };
 };

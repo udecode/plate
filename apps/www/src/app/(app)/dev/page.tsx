@@ -1,3 +1,5 @@
+import React from 'react';
+
 import { withProps } from '@udecode/cn';
 import { BaseAlignPlugin } from '@udecode/plate-alignment';
 import {
@@ -18,8 +20,9 @@ import {
 import { BaseCommentsPlugin } from '@udecode/plate-comments';
 import {
   BaseParagraphPlugin,
-  PlateLeafStatic,
+  SlateLeaf,
   createSlateEditor,
+  serializeHtml,
 } from '@udecode/plate-common';
 import { BaseDatePlugin } from '@udecode/plate-date';
 import {
@@ -56,27 +59,18 @@ import {
   BaseTableRowPlugin,
 } from '@udecode/plate-table';
 import { BaseTogglePlugin } from '@udecode/plate-toggle';
+import { cookies } from 'next/headers';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import Prism from 'prismjs';
 
+import { ExportHtmlButton, HtmlIframe } from '@/app/(app)/dev/html-client';
 import { alignValue } from '@/registry/default/example/values/align-value';
-import { autoformatValue } from '@/registry/default/example/values/autoformat-value';
 import { basicElementsValue } from '@/registry/default/example/values/basic-elements-value';
 import { basicMarksValue } from '@/registry/default/example/values/basic-marks-value';
-import { blockMenuValue } from '@/registry/default/example/values/block-menu-value';
-import { blockSelectionValue } from '@/registry/default/example/values/block-selection-value';
 import { columnValue } from '@/registry/default/example/values/column-value';
 import { commentsValue } from '@/registry/default/example/values/comments-value';
-import { cursorOverlayValue } from '@/registry/default/example/values/cursor-overlay-value';
 import { dateValue } from '@/registry/default/example/values/date-value';
-import { deserializeCsvValue } from '@/registry/default/example/values/deserialize-csv-value';
-import { deserializeDocxValue } from '@/registry/default/example/values/deserialize-docx-value';
-import { deserializeHtmlValue } from '@/registry/default/example/values/deserialize-html-value';
-import { deserializeMdValue } from '@/registry/default/example/values/deserialize-md-value';
-import { emojiValue } from '@/registry/default/example/values/emoji-value';
-import {
-  exitBreakValue,
-  trailingBlockValue,
-} from '@/registry/default/example/values/exit-break-value';
 import { fontValue } from '@/registry/default/example/values/font-value';
 import { highlightValue } from '@/registry/default/example/values/highlight-value';
 import { horizontalRuleValue } from '@/registry/default/example/values/horizontal-rule-value';
@@ -88,11 +82,9 @@ import { linkValue } from '@/registry/default/example/values/link-value';
 import { todoListValue } from '@/registry/default/example/values/list-value';
 import { mediaValue } from '@/registry/default/example/values/media-value';
 import { mentionValue } from '@/registry/default/example/values/mention-value';
-import { slashCommandValue } from '@/registry/default/example/values/slash-command-value';
-import { softBreakValue } from '@/registry/default/example/values/soft-break-value';
 import { tableValue } from '@/registry/default/example/values/table-value';
 import { tocPlaygroundValue } from '@/registry/default/example/values/toc-value';
-import { toggleValue } from '@/registry/default/example/values/toggle-value';
+import { createHtmlDocument } from '@/registry/default/lib/create-html-document';
 import { BlockquoteElementStatic } from '@/registry/default/plate-ui/blockquote-element-static';
 import { CodeBlockElementStatic } from '@/registry/default/plate-ui/code-block-element-static';
 import { CodeLeafStatic } from '@/registry/default/plate-ui/code-leaf-static';
@@ -107,9 +99,9 @@ import { HeadingElementStatic } from '@/registry/default/plate-ui/heading-elemen
 import { HrElementStatic } from '@/registry/default/plate-ui/hr-element-static';
 import { ImageElementStatic } from '@/registry/default/plate-ui/image-element-static';
 import {
-  FireLiComponentStatic,
-  FireMarkerStatic,
-} from '@/registry/default/plate-ui/indent-fire-marker-static';
+  FireLiComponent,
+  FireMarker,
+} from '@/registry/default/plate-ui/indent-fire-marker';
 import {
   TodoLiStatic,
   TodoMarkerStatic,
@@ -130,11 +122,17 @@ import { TableRowElementStatic } from '@/registry/default/plate-ui/table-row-ele
 import { TocElementStatic } from '@/registry/default/plate-ui/toc-element-static';
 import { ToggleElementStatic } from '@/registry/default/plate-ui/toggle-element-static';
 
-export default function DevPage() {
+export const getCachedTailwindCss = React.cache(async () => {
+  const cssPath = path.join(process.cwd(), 'public', 'tailwind.css');
+
+  return await fs.readFile(cssPath, 'utf8');
+});
+
+export default async function DevPage() {
   const components = {
     [BaseAudioPlugin.key]: MediaAudioElementStatic,
     [BaseBlockquotePlugin.key]: BlockquoteElementStatic,
-    [BaseBoldPlugin.key]: withProps(PlateLeafStatic, { as: 'strong' }),
+    [BaseBoldPlugin.key]: withProps(SlateLeaf, { as: 'strong' }),
     [BaseCodeBlockPlugin.key]: CodeBlockElementStatic,
     [BaseCodeLinePlugin.key]: CodeLineElementStatic,
     [BaseCodePlugin.key]: CodeLeafStatic,
@@ -146,22 +144,22 @@ export default function DevPage() {
     [BaseFilePlugin.key]: MediaFileElementStatic,
     [BaseHorizontalRulePlugin.key]: HrElementStatic,
     [BaseImagePlugin.key]: ImageElementStatic,
-    [BaseItalicPlugin.key]: withProps(PlateLeafStatic, { as: 'em' }),
+    [BaseItalicPlugin.key]: withProps(SlateLeaf, { as: 'em' }),
     [BaseKbdPlugin.key]: KbdLeafStatic,
     [BaseLinkPlugin.key]: LinkElementStatic,
     // [BaseMediaEmbedPlugin.key]: MediaEmbedElementStatic,
     [BaseMentionPlugin.key]: MentionElementStatic,
     [BaseParagraphPlugin.key]: ParagraphElementStatic,
-    [BaseStrikethroughPlugin.key]: withProps(PlateLeafStatic, { as: 'del' }),
-    [BaseSubscriptPlugin.key]: withProps(PlateLeafStatic, { as: 'sub' }),
-    [BaseSuperscriptPlugin.key]: withProps(PlateLeafStatic, { as: 'sup' }),
+    [BaseStrikethroughPlugin.key]: withProps(SlateLeaf, { as: 'del' }),
+    [BaseSubscriptPlugin.key]: withProps(SlateLeaf, { as: 'sub' }),
+    [BaseSuperscriptPlugin.key]: withProps(SlateLeaf, { as: 'sup' }),
     [BaseTableCellHeaderPlugin.key]: TableCellHeaderStaticElement,
     [BaseTableCellPlugin.key]: TableCellElementStatic,
     [BaseTablePlugin.key]: TableElementStatic,
     [BaseTableRowPlugin.key]: TableRowElementStatic,
     [BaseTocPlugin.key]: TocElementStatic,
     [BaseTogglePlugin.key]: ToggleElementStatic,
-    [BaseUnderlinePlugin.key]: withProps(PlateLeafStatic, { as: 'u' }),
+    [BaseUnderlinePlugin.key]: withProps(SlateLeaf, { as: 'u' }),
     [BaseVideoPlugin.key]: MediaVideoElementStatic,
     [HEADING_KEYS.h1]: withProps(HeadingElementStatic, { variant: 'h1' }),
     [HEADING_KEYS.h2]: withProps(HeadingElementStatic, { variant: 'h2' }),
@@ -217,8 +215,8 @@ export default function DevPage() {
         options: {
           listStyleTypes: {
             fire: {
-              liComponent: FireLiComponentStatic,
-              markerComponent: FireMarkerStatic,
+              liComponent: FireLiComponent,
+              markerComponent: FireMarker,
               type: 'fire',
             },
             todo: {
@@ -257,9 +255,9 @@ export default function DevPage() {
       BaseTogglePlugin,
     ],
     value: [
-      ...tocPlaygroundValue,
       ...basicElementsValue,
       ...basicMarksValue,
+      ...tocPlaygroundValue,
       ...todoListValue,
       ...linkValue,
       ...horizontalRuleValue,
@@ -268,7 +266,6 @@ export default function DevPage() {
       ...columnValue,
       ...mentionValue,
       ...dateValue,
-      ...emojiValue,
       ...fontValue,
       ...highlightValue,
       ...kbdValue,
@@ -277,37 +274,41 @@ export default function DevPage() {
       ...lineHeightValue,
       ...indentValue,
       ...indentListValue,
-      ...toggleValue,
-      ...slashCommandValue,
-      ...blockSelectionValue,
-      ...blockMenuValue,
-      ...autoformatValue,
-      ...softBreakValue,
-      ...exitBreakValue,
-      ...cursorOverlayValue,
-      ...trailingBlockValue,
-      ...deserializeHtmlValue,
-      ...deserializeMdValue,
-      ...deserializeDocxValue,
-      ...deserializeCsvValue,
     ],
   });
 
-  return (
-    <div className="grid grid-cols-2 overflow-y-auto">
-      <EditorStatic
-        variant="none"
-        className="p-2"
-        components={components}
-        editor={editor}
-      />
+  const tailwindCss = await getCachedTailwindCss();
+  const cookieStore = await cookies();
+  const theme = cookieStore.get('theme')?.value;
 
-      <EditorStatic
-        variant="none"
-        className="p-2"
-        components={components}
-        editor={editor}
-      />
+  // Get the editor content HTML
+  const editorHtml = await serializeHtml(editor, { components });
+
+  // Create the full HTML document
+  const html = createHtmlDocument({
+    editorHtml,
+    tailwindCss,
+    theme,
+  });
+
+  return (
+    <div>
+      <ExportHtmlButton html={html} serverTheme={theme} />
+
+      <div className="grid grid-cols-2 overflow-y-auto">
+        <EditorStatic
+          variant="none"
+          className="p-2"
+          components={components}
+          editor={editor}
+        />
+
+        <HtmlIframe
+          className="size-full min-h-[500px] p-2"
+          html={html}
+          serverTheme={theme}
+        />
+      </div>
     </div>
   );
 }

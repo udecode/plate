@@ -3,18 +3,18 @@ import React from 'react';
 import type { TElement } from '@udecode/slate';
 
 import type { AnySlatePlugin } from '../../plugin';
-import type { BoxStaticProps, PlateRenderElementStaticProps } from '../types';
+import type { BoxStaticProps, SlateRenderElementProps } from '../types';
 
-export type PlateElementStaticProps<
+export type SlateElementProps<
   N extends TElement = TElement,
   P extends AnySlatePlugin = AnySlatePlugin,
 > = {
   /** Get HTML attributes from Slate element. Alternative to `PlatePlugin.props`. */
   elementToAttributes?: (element: N) => any;
 } & BoxStaticProps &
-  PlateRenderElementStaticProps<N, P>;
+  SlateRenderElementProps<N, P>;
 
-export const PlateElementStatic = (props: PlateElementStaticProps) => {
+export const SlateElement = (props: SlateElementProps) => {
   const {
     as,
     attributes,

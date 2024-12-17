@@ -4,7 +4,7 @@ import { findNodePath } from '@udecode/slate';
 import clsx from 'clsx';
 
 import type { SlateEditor } from '../../editor';
-import type { PlateRenderNodeStaticProps } from '../types';
+import type { SlateRenderNodeProps } from '../types';
 
 import { type AnyEditorPlugin, getEditorPlugin } from '../../plugin';
 import { getSlateClass, pipeInjectNodeProps } from '../../utils';
@@ -17,10 +17,10 @@ export const getRenderNodeStaticProps = ({
   props,
 }: {
   editor: SlateEditor;
-  props: PlateRenderNodeStaticProps;
+  props: SlateRenderNodeProps;
   attributes?: AnyObject;
   plugin?: AnyEditorPlugin;
-}): PlateRenderNodeStaticProps => {
+}): SlateRenderNodeProps => {
   props = getPluginNodeProps({
     attributes,
     plugin,

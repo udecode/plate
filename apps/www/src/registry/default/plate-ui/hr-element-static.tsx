@@ -1,18 +1,18 @@
 import React from 'react';
 
-import type { PlateElementStaticProps } from '@udecode/plate-core';
+import type { SlateElementProps } from '@udecode/plate-common';
 
 import { cn } from '@udecode/cn';
-import { PlateElementStatic } from '@udecode/plate-common';
+import { SlateElement } from '@udecode/plate-common';
 
 export function HrElementStatic({
   children,
   className,
   nodeProps,
   ...props
-}: PlateElementStaticProps) {
+}: SlateElementProps) {
   return (
-    <PlateElementStatic className={className} {...props}>
+    <SlateElement className={className} {...props}>
       <div className="py-6" contentEditable={false}>
         <hr
           {...nodeProps}
@@ -22,6 +22,6 @@ export function HrElementStatic({
         />
       </div>
       {children}
-    </PlateElementStatic>
+    </SlateElement>
   );
 }

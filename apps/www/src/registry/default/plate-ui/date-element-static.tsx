@@ -1,18 +1,18 @@
 import React from 'react';
 
-import type { PlateElementStaticProps } from '@udecode/plate-common';
+import type { SlateElementProps } from '@udecode/plate-common';
 
 import { cn } from '@udecode/cn';
-import { PlateElementStatic } from '@udecode/plate-common';
+import { SlateElement } from '@udecode/plate-common';
 
 export function DateElementStatic({
   children,
   className,
   element,
   ...props
-}: PlateElementStaticProps) {
+}: SlateElementProps) {
   return (
-    <PlateElementStatic
+    <SlateElement
       className={cn('inline-block', className)}
       element={element}
       {...props}
@@ -51,6 +51,6 @@ export function DateElementStatic({
         )}
       </span>
       {children}
-    </PlateElementStatic>
+    </SlateElement>
   );
 }

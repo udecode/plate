@@ -1,21 +1,21 @@
 import React from 'react';
 
-import type { PlateElementStaticProps } from '@udecode/plate-core';
+import type { SlateElementProps } from '@udecode/plate-common';
 import type { TTableElement } from '@udecode/plate-table';
 
 import { cn } from '@udecode/cn';
-import { PlateElementStatic } from '@udecode/plate-common';
+import { SlateElement } from '@udecode/plate-common';
 
 export const TableElementStatic = ({
   children,
   className,
   element,
   ...props
-}: PlateElementStaticProps) => {
+}: SlateElementProps) => {
   const { colSizes } = element as TTableElement;
 
   return (
-    <PlateElementStatic
+    <SlateElement
       className={cn('overflow-x-auto', className)}
       element={element}
       {...props}
@@ -38,6 +38,6 @@ export const TableElementStatic = ({
 
         <tbody className="min-w-full">{children}</tbody>
       </table>
-    </PlateElementStatic>
+    </SlateElement>
   );
 };

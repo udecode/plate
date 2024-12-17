@@ -1,10 +1,10 @@
 import React from 'react';
 
-import type { PlateElementStaticProps } from '@udecode/plate-common';
+import type { SlateElementProps } from '@udecode/plate-common';
 import type { TMentionElement } from '@udecode/plate-mention';
 
 import { cn } from '@udecode/cn';
-import { IS_APPLE, PlateElementStatic } from '@udecode/plate-common';
+import { IS_APPLE, SlateElement } from '@udecode/plate-common';
 
 export function MentionElementStatic({
   children,
@@ -13,12 +13,12 @@ export function MentionElementStatic({
   prefix,
   renderLabel,
   ...props
-}: PlateElementStaticProps & {
+}: SlateElementProps & {
   prefix?: string;
   renderLabel?: (mentionable: TMentionElement) => string;
 }) {
   return (
-    <PlateElementStatic
+    <SlateElement
       className={cn(
         'inline-block cursor-pointer rounded-md bg-muted px-1.5 py-0.5 align-baseline text-sm font-medium',
         element.children[0].bold === true && 'font-bold',
@@ -49,6 +49,6 @@ export function MentionElementStatic({
           {children}
         </React.Fragment>
       )}
-    </PlateElementStatic>
+    </SlateElement>
   );
 }

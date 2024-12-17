@@ -2,13 +2,13 @@ import React from 'react';
 
 import type {
   SlateEditor,
-  PlateElementStaticProps,
+  SlateElementProps,
   TElement,
 } from '@udecode/plate-common';
 
 import { cn } from '@udecode/cn';
 import {
-  PlateElementStatic,
+  SlateElement,
   getNodeEntries,
   getNodeString,
 } from '@udecode/plate-common';
@@ -41,11 +41,11 @@ export function TocElementStatic({
   editor,
   element,
   ...props
-}: PlateElementStaticProps) {
+}: SlateElementProps) {
   const headingList = getHeadingList(editor);
 
   return (
-    <PlateElementStatic
+    <SlateElement
       className={cn('relative mb-1 p-0', className)}
       editor={editor}
       element={element}
@@ -69,7 +69,7 @@ export function TocElementStatic({
         )}
       </div>
       {children}
-    </PlateElementStatic>
+    </SlateElement>
   );
 }
 

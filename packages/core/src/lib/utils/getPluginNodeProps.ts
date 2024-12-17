@@ -3,14 +3,14 @@ import type { AnyObject } from '@udecode/utils';
 import pick from 'lodash/pick.js';
 
 import type { AnyEditorPlugin } from '../plugin';
-import type { PlateRenderNodeStaticProps } from '../static';
+import type { SlateRenderNodeProps } from '../static';
 
 export const getPluginNodeProps = ({
   attributes,
   plugin,
   props,
 }: {
-  props: PlateRenderNodeStaticProps;
+  props: SlateRenderNodeProps;
   attributes?: AnyObject;
   plugin?: AnyEditorPlugin;
 }): any => {

@@ -18,7 +18,7 @@ import {
   BaseCodeSyntaxPlugin,
 } from '@udecode/plate-code-block';
 import { BaseCommentsPlugin } from '@udecode/plate-comments';
-import { type Value, PlateLeafStatic } from '@udecode/plate-common';
+import { type Value, SlateLeaf } from '@udecode/plate-common';
 import { BaseDatePlugin } from '@udecode/plate-date';
 import {
   BaseFontBackgroundColorPlugin,
@@ -67,9 +67,9 @@ import { HeadingElementStatic } from 'www/src/registry/default/plate-ui/heading-
 import { HrElementStatic } from 'www/src/registry/default/plate-ui/hr-element-static';
 import { ImageElementStatic } from 'www/src/registry/default/plate-ui/image-element-static';
 import {
-  FireLiComponentStatic,
-  FireMarkerStatic,
-} from 'www/src/registry/default/plate-ui/indent-fire-marker-static';
+  FireLiComponent,
+  FireMarker,
+} from 'www/src/registry/default/plate-ui/indent-fire-marker';
 import {
   TodoLiStatic,
   TodoMarkerStatic,
@@ -136,8 +136,8 @@ export const createStaticEditor = (value: Value) => {
         options: {
           listStyleTypes: {
             fire: {
-              liComponent: FireLiComponentStatic,
-              markerComponent: FireMarkerStatic,
+              liComponent: FireLiComponent,
+              markerComponent: FireMarker,
               type: 'fire',
             },
             todo: {
@@ -182,7 +182,7 @@ export const createStaticEditor = (value: Value) => {
 export const staticComponents = {
   [BaseAudioPlugin.key]: MediaAudioElementStatic,
   [BaseBlockquotePlugin.key]: BlockquoteElementStatic,
-  [BaseBoldPlugin.key]: withProps(PlateLeafStatic, { as: 'strong' }),
+  [BaseBoldPlugin.key]: withProps(SlateLeaf, { as: 'strong' }),
   [BaseCodeBlockPlugin.key]: CodeBlockElementStatic,
   [BaseCodeLinePlugin.key]: CodeLineElementStatic,
   [BaseCodePlugin.key]: CodeLeafStatic,
@@ -194,22 +194,22 @@ export const staticComponents = {
   [BaseFilePlugin.key]: MediaFileElementStatic,
   [BaseHorizontalRulePlugin.key]: HrElementStatic,
   [BaseImagePlugin.key]: ImageElementStatic,
-  [BaseItalicPlugin.key]: withProps(PlateLeafStatic, { as: 'em' }),
+  [BaseItalicPlugin.key]: withProps(SlateLeaf, { as: 'em' }),
   [BaseKbdPlugin.key]: KbdLeafStatic,
   [BaseLinkPlugin.key]: LinkElementStatic,
   // [BaseMediaEmbedPlugin.key]: MediaEmbedElementStatic,
   [BaseMentionPlugin.key]: MentionElementStatic,
   [BaseParagraphPlugin.key]: ParagraphElementStatic,
-  [BaseStrikethroughPlugin.key]: withProps(PlateLeafStatic, { as: 'del' }),
-  [BaseSubscriptPlugin.key]: withProps(PlateLeafStatic, { as: 'sub' }),
-  [BaseSuperscriptPlugin.key]: withProps(PlateLeafStatic, { as: 'sup' }),
+  [BaseStrikethroughPlugin.key]: withProps(SlateLeaf, { as: 'del' }),
+  [BaseSubscriptPlugin.key]: withProps(SlateLeaf, { as: 'sub' }),
+  [BaseSuperscriptPlugin.key]: withProps(SlateLeaf, { as: 'sup' }),
   [BaseTableCellHeaderPlugin.key]: TableCellHeaderStaticElement,
   [BaseTableCellPlugin.key]: TableCellElementStatic,
   [BaseTablePlugin.key]: TableElementStatic,
   [BaseTableRowPlugin.key]: TableRowElementStatic,
   [BaseTocPlugin.key]: TocElementStatic,
   [BaseTogglePlugin.key]: ToggleElementStatic,
-  [BaseUnderlinePlugin.key]: withProps(PlateLeafStatic, { as: 'u' }),
+  [BaseUnderlinePlugin.key]: withProps(SlateLeaf, { as: 'u' }),
   [BaseVideoPlugin.key]: MediaVideoElementStatic,
   [HEADING_KEYS.h1]: withProps(HeadingElementStatic, { variant: 'h1' }),
   [HEADING_KEYS.h2]: withProps(HeadingElementStatic, { variant: 'h2' }),

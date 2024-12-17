@@ -9,10 +9,7 @@ import type { AnyObject } from '@udecode/utils';
 import type { DecoratedRange } from 'slate';
 
 import type { SlateEditor } from '../editor';
-import type {
-  PlateRenderElementStaticProps,
-  PlateRenderLeafStaticProps,
-} from '../static';
+import type { SlateRenderElementProps, SlateRenderLeafProps } from '../static';
 import type { Nullable } from '../types/misc';
 import type {
   AnyPluginConfig,
@@ -454,8 +451,8 @@ export type InjectNodeProps<C extends AnyPluginConfig = PluginConfig> =
 
 export type NodeStaticProps<C extends AnyPluginConfig = PluginConfig> =
   | ((
-      props: PlateRenderElementStaticProps<TElement, C> &
-        PlateRenderLeafStaticProps<TText, C>
+      props: SlateRenderElementProps<TElement, C> &
+        SlateRenderLeafProps<TText, C>
     ) => AnyObject | undefined)
   | AnyObject;
 
@@ -467,10 +464,10 @@ export type NodeStaticWrapperComponent<
 
 export type NodeStaticWrapperComponentReturnType<
   C extends AnyPluginConfig = PluginConfig,
-> = React.FC<PlateRenderElementStaticProps<TElement, C>> | undefined;
+> = React.FC<SlateRenderElementProps<TElement, C>> | undefined;
 
 export interface NodeStaticWrapperComponentProps<
   C extends AnyPluginConfig = PluginConfig,
-> extends PlateRenderElementStaticProps<TElement, C> {
+> extends SlateRenderElementProps<TElement, C> {
   key: string;
 }
