@@ -5,6 +5,7 @@ import type { TEditableProps } from '@udecode/slate-react';
 import {
   type TDescendant,
   type TElement,
+  type TNodeEntry,
   type TText,
   findNode,
   getRange,
@@ -106,10 +107,12 @@ function LeafStatic({
   );
 }
 
+const defaultDecorate: (entry: TNodeEntry) => DecoratedRange[] = () => [];
+
 function Children({
   children = [],
   components,
-  decorate,
+  decorate = defaultDecorate,
   decorations,
   editor,
 }: {
@@ -128,7 +131,7 @@ function Children({
 
         if (p) {
           const range = getRange(editor, p);
-          ds = decorate!([child, p]);
+          ds = decorate([child, p]);
 
           for (const dec of decorations) {
             const d = Range.intersection(dec, range);

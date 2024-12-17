@@ -75,7 +75,7 @@ it('serialize image with alt to html', async () => {
         children: [
           {
             attributes: { alt: 'Placeholder' },
-            children: [],
+            children: [{ text: '' }],
             type: 'img',
             url: 'https://via.placeholder.com/300',
           },
