@@ -16,8 +16,7 @@ import { GripHorizontal } from 'lucide-react';
 import { Path } from 'slate';
 import { useReadOnly } from 'slate-react';
 
-import { Button } from '@/registry/default/plate-ui/button';
-
+import { Button } from './button';
 import { PlateElement } from './plate-element';
 import {
   Tooltip,
