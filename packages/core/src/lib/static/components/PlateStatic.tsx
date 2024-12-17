@@ -1,14 +1,19 @@
 import React from 'react';
 
+import type { TEditableProps } from '@udecode/slate-react';
+
 import {
   type TDescendant,
   type TElement,
   type TText,
+  findNode,
+  getRange,
   isElement,
   isInline,
   isVoid,
 } from '@udecode/slate';
 import clsx from 'clsx';
+import { type DecoratedRange, Range, Text } from 'slate';
 
 import type { SlateEditor } from '../../editor';
 import type { NodeComponents } from '../../plugin';
@@ -16,14 +21,18 @@ import type { RenderElementStaticProps } from '../pluginRenderElementStatic';
 
 import { pipeRenderElementStatic } from '../pipeRenderElementStatic';
 import { pipeRenderLeafStatic } from '../pluginRenderLeafStatic';
-import { createStaticString } from '../utils/createStaticString';
+import { pipeDecorate } from '../utils/pipeDecorate';
 
 function ElementStatic({
   components,
+  decorate,
+  decorations,
   editor,
   element = { children: [], type: '' },
 }: {
   components: NodeComponents;
+  decorate: TEditableProps['decorate'];
+  decorations: DecoratedRange[];
   editor: SlateEditor;
   element: TElement;
 }) {
@@ -47,7 +56,12 @@ function ElementStatic({
       {renderElement?.({
         attributes,
         children: (
-          <Children components={components} editor={editor}>
+          <Children
+            components={components}
+            decorate={decorate}
+            decorations={decorations}
+            editor={editor}
+          >
             {element.children}
           </Children>
         ),
@@ -59,10 +73,12 @@ function ElementStatic({
 
 function LeafStatic({
   components,
+  decorations,
   editor,
   leaf = { text: '' },
 }: {
   components: NodeComponents;
+  decorations: DecoratedRange[];
   editor: SlateEditor;
   leaf: TText;
 }) {
@@ -70,13 +86,21 @@ function LeafStatic({
     components,
   });
 
+  const leaves = Text.decorations(leaf, decorations);
+
   return (
     <span data-slate-node="text">
-      {renderLeaf!({
-        attributes: { 'data-slate-leaf': true },
-        children: createStaticString({ text: leaf.text }),
-        leaf,
-        text: leaf,
+      {leaves.map((l) => {
+        return renderLeaf!({
+          attributes: { 'data-slate-leaf': true },
+          children: (
+            <span data-slate-string={true}>
+              {l.text === '' ? '\uFEFF' : l.text}
+            </span>
+          ),
+          leaf: l as TText,
+          text: l as TText,
+        });
       })}
     </span>
   );
@@ -85,19 +109,42 @@ function LeafStatic({
 function Children({
   children = [],
   components,
+  decorate,
+  decorations,
   editor,
 }: {
   children: TDescendant[];
   components: NodeComponents;
+  decorate: TEditableProps['decorate'];
+  decorations: DecoratedRange[];
   editor: SlateEditor;
 }) {
   return (
     <React.Fragment>
       {children.map((child, i) => {
+        const p = findNode(editor, { match: (n) => n === child })?.[1];
+
+        let ds: DecoratedRange[] = [];
+
+        if (p) {
+          const range = getRange(editor, p);
+          ds = decorate!([child, p]);
+
+          for (const dec of decorations) {
+            const d = Range.intersection(dec, range);
+
+            if (d) {
+              ds.push(d);
+            }
+          }
+        }
+
         return isElement(child) ? (
           <ElementStatic
             key={i}
             components={components}
+            decorate={decorate}
+            decorations={ds}
             editor={editor}
             element={child}
           />
@@ -105,6 +152,7 @@ function Children({
           <LeafStatic
             key={i}
             components={components}
+            decorations={ds}
             editor={editor}
             leaf={child}
           />
@@ -130,6 +178,8 @@ export function PlateStatic(props: PlateStaticProps) {
     style: userStyle,
     ...rest
   } = props;
+
+  const decorate = pipeDecorate(editor);
 
   let afterEditable: React.ReactNode = null;
   let beforeEditable: React.ReactNode = null;
@@ -176,7 +226,12 @@ export function PlateStatic(props: PlateStaticProps) {
       data-slate-node="value"
       {...rest}
     >
-      <Children components={components} editor={editor}>
+      <Children
+        components={components}
+        decorate={decorate}
+        decorations={[]}
+        editor={editor}
+      >
         {editor.children}
       </Children>
     </div>

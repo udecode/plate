@@ -15,7 +15,16 @@ export type PlateLeafStaticProps<
   TextStaticProps;
 
 export function PlateLeafStatic(props: PlateLeafStaticProps) {
-  const { as, attributes, children, className, leaf, text, ...rest } = props;
+  const {
+    as,
+    attributes,
+    children,
+    className,
+    decorations,
+    leaf,
+    text,
+    ...rest
+  } = props;
 
   const Leaf = (as ?? 'span') as any;
 

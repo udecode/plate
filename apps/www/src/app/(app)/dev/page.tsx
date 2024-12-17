@@ -56,6 +56,7 @@ import {
   BaseTableRowPlugin,
 } from '@udecode/plate-table';
 import { BaseTogglePlugin } from '@udecode/plate-toggle';
+import Prism from 'prismjs';
 
 import { alignValue } from '@/registry/default/example/values/align-value';
 import { autoformatValue } from '@/registry/default/example/values/autoformat-value';
@@ -189,7 +190,11 @@ export default function DevPage() {
       BaseUnderlinePlugin,
       BaseBlockquotePlugin,
       BaseDatePlugin,
-      BaseCodeBlockPlugin,
+      BaseCodeBlockPlugin.configure({
+        options: {
+          prism: Prism,
+        },
+      }),
       BaseIndentPlugin.extend({
         inject: {
           targetPlugins: [

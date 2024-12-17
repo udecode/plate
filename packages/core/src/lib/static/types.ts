@@ -1,5 +1,6 @@
 import type { TElement, TText } from '@udecode/slate';
 import type { AnyObject } from '@udecode/utils';
+import type { DecoratedRange } from 'slate';
 
 import type {
   AnyPluginConfig,
@@ -44,6 +45,7 @@ export interface TRenderLeafStaticProps<N extends TText = TText> {
     'data-slate-node'?: 'text';
   };
   children: any;
+  decorations: DecoratedRange[];
   leaf: N;
   text: N;
 }
