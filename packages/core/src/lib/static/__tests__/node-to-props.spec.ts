@@ -8,7 +8,7 @@ import { BaseImagePlugin } from '@udecode/plate-media';
 import { createSlateEditor } from '../../editor';
 import { BaseParagraphPlugin } from '../../plugins';
 import { serializeHtml } from '../serializeHtml';
-import { staticComponents } from './create-static-editor';
+import { components } from './create-static-editor';
 
 const plugins = [
   BaseParagraphPlugin,
@@ -59,7 +59,7 @@ it('serialize link to html with attributes', async () => {
 
   expect(
     await serializeHtml(staticEditor, {
-      components: staticComponents,
+      components: components,
       preserveClassNames: [],
       stripClassNames: true,
       stripDataAttributes: true,
@@ -86,7 +86,7 @@ it('serialize image with alt to html', async () => {
   });
 
   const htmlString = await serializeHtml(staticEditor, {
-    components: staticComponents,
+    components: components,
     preserveClassNames: [],
     stripClassNames: true,
     stripDataAttributes: true,

@@ -179,7 +179,7 @@ export const createStaticEditor = (value: Value) => {
   });
 };
 
-export const staticComponents = {
+export const components = {
   [BaseAudioPlugin.key]: MediaAudioElementStatic,
   [BaseBlockquotePlugin.key]: BlockquoteElementStatic,
   [BaseBoldPlugin.key]: withProps(SlateLeaf, { as: 'strong' }),

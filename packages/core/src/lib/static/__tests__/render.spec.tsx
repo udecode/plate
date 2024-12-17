@@ -3,7 +3,10 @@ import React from 'react';
 import { createSlateEditor } from '../../editor';
 import { createTSlatePlugin } from '../../plugin';
 import { serializeHtml } from '../serializeHtml';
-import { createStaticEditor, staticComponents } from './create-static-editor';
+import {
+  components as components,
+  createStaticEditor,
+} from './create-static-editor';
 
 describe('serializePlateStatic nodes', () => {
   it('should serialize render below nodes', async () => {
@@ -39,7 +42,7 @@ describe('serializePlateStatic nodes', () => {
     });
 
     const html = await serializeHtml(editor, {
-      components: staticComponents,
+      components: components,
       preserveClassNames: [],
       stripClassNames: true,
       stripDataAttributes: true,
@@ -67,7 +70,7 @@ describe('serializePlateStatic nodes', () => {
     ]);
 
     const html = await serializeHtml(editor, {
-      components: staticComponents,
+      components: components,
       preserveClassNames: [],
       stripClassNames: true,
       // stripDataAttributes: true,

@@ -1,7 +1,7 @@
 import { decode } from 'html-entities';
 
 import { serializeHtml } from '../serializeHtml';
-import { createStaticEditor, staticComponents } from './create-static-editor';
+import { createStaticEditor, components } from './create-static-editor';
 
 describe('serializePlateStatic', () => {
   it('should serialize paragraph to html', async () => {
@@ -13,7 +13,7 @@ describe('serializePlateStatic', () => {
     ]);
 
     const html = await serializeHtml(editor, {
-      components: staticComponents,
+      components: components,
     });
     expect(html).toContain('Some random paragraph here...');
   });
@@ -35,7 +35,7 @@ describe('serializePlateStatic', () => {
     ]);
 
     const html = await serializeHtml(editor, {
-      components: staticComponents,
+      components: components,
     });
     expect(html).toContain('Heading 1');
     expect(html).toContain('Heading 2');
@@ -51,7 +51,7 @@ describe('serializePlateStatic', () => {
     ]);
 
     const html = await serializeHtml(editor, {
-      components: staticComponents,
+      components: components,
     });
     expect(html).toContain('Blockquoted text here...');
   });
@@ -68,7 +68,7 @@ describe('serializePlateStatic', () => {
     ]);
 
     const html = await serializeHtml(editor, {
-      components: staticComponents,
+      components: components,
     });
     expect(html).toContain(decode('href="https://example.com/"'));
     expect(html).toContain('slate-a');
@@ -84,7 +84,7 @@ describe('serializePlateStatic', () => {
     ]);
 
     const html = await serializeHtml(editor, {
-      components: staticComponents,
+      components: components,
     });
     expect(html).toContain('src="https://example.com/image.jpg"');
   });
@@ -106,7 +106,7 @@ describe('serializePlateStatic', () => {
     ]);
 
     const html = await serializeHtml(editor, {
-      components: staticComponents,
+      components: components,
     });
     expect(html).toContain('Cell 1');
     expect(html).toContain('Cell 2');
