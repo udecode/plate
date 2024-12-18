@@ -1,12 +1,12 @@
 import {
   type ExtendEditor,
   type TElement,
-  BaseParagraphPlugin,
   getAboveNode,
-  insertNodes,
   isDefined,
   isEndPoint,
   isExpanded,
+  setNodes,
+  withoutNormalizing,
 } from '@udecode/plate-common';
 
 import {
@@ -25,23 +25,32 @@ export const withInsertBreakIndentList: ExtendEditor<BaseIndentListConfig> = ({
 
     if (!nodeEntry) return insertBreak();
 
-    const [node] = nodeEntry;
+    const [node, path] = nodeEntry;
 
     if (
       !isDefined(node[BaseIndentListPlugin.key]) ||
       node[BaseIndentListPlugin.key] !== INDENT_LIST_KEYS.todo ||
       // https://github.com/udecode/plate/issues/3340
       isExpanded(editor.selection) ||
-      !isEndPoint(editor, editor.selection?.focus, nodeEntry[1])
-    )
+      !isEndPoint(editor, editor.selection?.focus, path)
+    ) {
       return insertBreak();
+    }
 
-    insertNodes<TElement>(editor, {
-      [BaseIndentListPlugin.key]: INDENT_LIST_KEYS.todo,
-      checked: false,
-      children: [{ text: '' }],
-      indent: node.indent,
-      type: BaseParagraphPlugin.key,
+    withoutNormalizing(editor, () => {
+      insertBreak();
+
+      const newEntry = getAboveNode<TElement>(editor);
+
+      if (newEntry) {
+        setNodes<TElement>(
+          editor,
+          {
+            checked: false,
+          },
+          { at: newEntry[1] }
+        );
+      }
     });
   };
 

@@ -8,6 +8,7 @@ export * from './getBlockAbove';
 export * from './getBlocks';
 export * from './getChildren';
 export * from './getEdgeBlocksAbove';
+export * from './getFirstNodeText';
 export * from './getFragmentProp';
 export * from './getLastChild';
 export * from './getLastNodeByLevel';
