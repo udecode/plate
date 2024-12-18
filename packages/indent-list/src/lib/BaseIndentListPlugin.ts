@@ -1,6 +1,6 @@
 import {
-  type PlateRenderElementStaticProps,
   type PluginConfig,
+  type SlateRenderElementProps,
   type TElement,
   BaseParagraphPlugin,
   HtmlPlugin,
@@ -30,11 +30,9 @@ export type BaseIndentListConfig = PluginConfig<
       string,
       {
         type: string;
-        markerComponent?: React.FC<
-          Omit<PlateRenderElementStaticProps, 'children'>
-        >;
         isOrdered?: boolean;
-        liComponent?: React.FC<PlateRenderElementStaticProps>;
+        liComponent?: React.FC<SlateRenderElementProps>;
+        markerComponent?: React.FC<Omit<SlateRenderElementProps, 'children'>>;
       }
     >;
 
