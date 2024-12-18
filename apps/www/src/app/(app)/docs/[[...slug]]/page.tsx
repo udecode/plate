@@ -24,8 +24,6 @@ import { registry } from '@/registry/registry';
 import { examples, proExamples } from '@/registry/registry-examples';
 import { ui } from '@/registry/registry-ui';
 
-import '@/styles/mdx.css';
-
 // export async function generateMetadata({
 //   params,
 // }: DocPageProps): Promise<Metadata> {

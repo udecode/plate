@@ -63,13 +63,10 @@ import { BaseTogglePlugin } from '@udecode/plate-toggle';
 import { cookies } from 'next/headers';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+// import fs from 'node:fs/promises';
+// import path from 'node:path';
 import Prism from 'prismjs';
 
-import {
-  EditorClient,
-  ExportHtmlButton,
-  HtmlIframe,
-} from '@/app/(app)/dev/html-client';
 import { H3 } from '@/components/typography';
 import { alignValue } from '@/registry/default/example/values/align-value';
 import { basicElementsValue } from '@/registry/default/example/values/basic-elements-value';
@@ -129,13 +126,25 @@ import { TableRowElementStatic } from '@/registry/default/plate-ui/table-row-ele
 import { TocElementStatic } from '@/registry/default/plate-ui/toc-element-static';
 import { ToggleElementStatic } from '@/registry/default/plate-ui/toggle-element-static';
 
-export const getCachedTailwindCss = React.cache(async () => {
+import {
+  EditorClient,
+  ExportHtmlButton,
+  HtmlIframe,
+} from './slate-to-html-client';
+
+export const description = 'Slate to HTML';
+
+export const iframeHeight = '800px';
+
+export const containerClassName = 'w-full h-full';
+
+const getCachedTailwindCss = React.cache(async () => {
   const cssPath = path.join(process.cwd(), 'public', 'tailwind.css');
 
   return await fs.readFile(cssPath, 'utf8');
 });
 
-export default async function DevPage() {
+export default async function SlateToHtmlBlock() {
   const components = {
     [BaseAudioPlugin.key]: MediaAudioElementStatic,
     [BaseBlockquotePlugin.key]: BlockquoteElementStatic,
@@ -306,7 +315,7 @@ export default async function DevPage() {
   });
 
   return (
-    <div className="grid grid-cols-3 overflow-y-auto px-4">
+    <div className="grid grid-cols-3 px-4">
       <div className="p-2">
         <H3>Editor</H3>
         <EditorClient value={createValue()} />

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { SlateElementProps } from '@udecode/plate-common';
+import type { SlateRenderElementProps } from '@udecode/plate-common';
 
 import { cn } from '@udecode/cn';
 
@@ -8,7 +8,7 @@ import { CheckboxStatic } from './checkbox-static';
 
 export const TodoMarkerStatic = ({
   element,
-}: Omit<SlateElementProps, 'children'>) => {
+}: Omit<SlateRenderElementProps, 'children'>) => {
   return (
     <div contentEditable={false}>
       <CheckboxStatic
@@ -19,7 +19,10 @@ export const TodoMarkerStatic = ({
   );
 };
 
-export const TodoLiStatic = ({ children, element }: SlateElementProps) => {
+export const TodoLiStatic = ({
+  children,
+  element,
+}: SlateRenderElementProps) => {
   return (
     <span
       className={cn(

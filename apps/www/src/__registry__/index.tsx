@@ -3733,22 +3733,6 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
-    "iframe-demo": {
-      name: "iframe-demo",
-      description: "",
-      type: "registry:example",
-      registryDependencies: [],
-      files: [{
-        path: "src/registry/default/example/iframe-demo.tsx",
-        type: "registry:example",
-        target: ""
-      }],
-      component: React.lazy(() => import("@/registry/default/example/iframe-demo.tsx")),
-      source: "",
-      category: "",
-      subcategory: "",
-      chunks: []
-    },
     "mode-toggle": {
       name: "mode-toggle",
       description: "",
@@ -3954,6 +3938,26 @@ export const Index: Record<string, any> = {
       component: React.lazy(() => import("@/registry/default/block/editor-basic/page.tsx")),
       source: "src/__registry__/default/block/editor-basic/page.tsx",
       category: "Editors",
+      subcategory: "",
+      chunks: []
+    },
+    "slate-to-html": {
+      name: "slate-to-html",
+      description: "Slate to HTML",
+      type: "registry:block",
+      registryDependencies: [],
+      files: [{
+        path: "src/registry/default/block/slate-to-html/page.tsx",
+        type: "registry:page",
+        target: "app/html/page.tsx"
+      },{
+        path: "src/registry/default/block/slate-to-html/slate-to-html-client.tsx",
+        type: "registry:component",
+        target: "app/html/slate-to-html-client.tsx"
+      }],
+      component: undefined,
+      source: "src/__registry__/default/block/slate-to-html/page.tsx",
+      category: "Serializers",
       subcategory: "",
       chunks: []
     },

@@ -4,11 +4,190 @@ title: Serializing HTML
 
 <ComponentPreview name="html-demo" />
 
-<PackageInfo>
+<Callout className="my-4">
+  **Note**: Round-tripping is not yet supported: the HTML serializer will not
+  preserve all information from the Slate value when converting to HTML and
+  back.
+</Callout>
 
-Many Plate plugins include HTML deserialization rules. These rules define how HTML elements and styles are mapped to Plate's node types and attributes.
+## Slate -> HTML
 
-</PackageInfo>
+[Server-side example](/docs/examples/slate-to-html)
+
+### Usage
+
+```tsx
+// ...
+import { createSlateEditor, serializeHtml } from '@udecode/plate-common';
+import { EditorStatic } from '@/components/plate-ui/editor-static';
+
+// Create an editor and configure all the plugins you need
+const editor = createSlateEditor({
+  // ... your plugins ...
+});
+
+// Provide the components that map Slate nodes to HTML elements
+const components = {
+  // [ParagraphPlugin.key]: ParagraphElementStatic,
+  // [HeadingPlugin.key]: HeadingElementStatic,
+  // ...
+};
+
+// You can also pass a custom editor component and props
+// For example, EditorStatic is a styled version of PlateStatic.
+const html = await serializeHtml(editor, {
+  components,
+  editorComponent: EditorStatic, // defaults to PlateStatic if not provided
+  props: { variant: 'none', className: 'p-2' },
+});
+```
+
+If you use a custom component, like [EditorStatic](/docs/components/editor), you must also ensure that all required styles and classes are included in your final HTML file. Since serialize only returns the inner editor HTML, you may need to wrap it in a full HTML document with any external CSS, scripts, or `<style>` tags.
+
+For example:
+
+```tsx
+// After serializing the content:
+const html = await serializeHtml(editor, {
+  components,
+  editorComponent: EditorStatic,
+  props: { variant: 'none' },
+});
+
+// Wrap the HTML in a full HTML document
+const fullHtml = `<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="/path/to/tailwind.css" />
+    <!-- other head elements -->
+  </head>
+  <body>
+    ${html}
+  </body>
+</html>`;
+```
+
+<Callout className="my-4"> **Note**: The serialization process converts Slate nodes into static HTML markup. Interactivity like React event handlers, client-side hooks, or components that rely on browser APIs won't work in the serialized output. </Callout>
+
+### Using Static Components
+
+When serializing Slate content to HTML, **you must use static versions of your components**. Your interactive, "client" components often rely on browser APIs or client-side React features that are not available during server-side rendering (SSR).
+
+**What does this mean?**  
+- **Interactive Components:** Components that use `use client`, event handlers (`onClick`), or browser-only APIs (like `window` or `document`) cannot run on the server.  
+- **Static Components:** Instead, for serialization, you must provide "static" versions of these components. Static components should:
+  - Not include any event handlers like `onClick`.
+  - Not rely on browser APIs or client-side hooks.
+  - Simply render the content as plain HTML.
+
+**Example:**
+
+If you have a client-only component like `ImageElement` that uses `use client` and event handlers, you need to create a static version `ImageElementStatic` that just returns a plain `<img>` tag with all its attributes and no interactivity.
+
+For each plugin key, provide its corresponding static component in the `components` object passed to `serializeHtml`:
+
+```tsx
+// Instead of using interactive components that rely on 'use client',
+// use statically defined components that simply return plain HTML.
+
+import { createSlateEditor, serializeHtml } from '@udecode/plate-common';
+
+// Import static versions of your components
+import { ParagraphElementStatic } from '@/components/plate-ui/paragraph-element-static';
+import { HeadingElementStatic } from '@/components/plate-ui/heading-element-static';
+import { ImageElementStatic } from '@/components/plate-ui/image-element-static';
+// ... and so on for each plugin ...
+
+const editor = createSlateEditor({ /* ...plugins... */ });
+
+const components = {
+  [BaseParagraphPlugin.key]: ParagraphElementStatic,
+  [BaseHeadingPlugin.key]: HeadingElementStatic,
+  [BaseImagePlugin.key]: ImageElementStatic,
+  // ... other static components ...
+};
+
+const html = await serializeHtml(editor, { components });
+```
+
+### PlateStatic vs. Plate
+
+When rendering your editor output without the need for an interactive environment, you have two primary options: `PlateStatic` and `Plate`. Both are designed to produce static, non-editable views of your content, but they differ in purpose and performance characteristics.
+
+**PlateStatic**  
+- **Purpose:** A more lightweight, server-compatible static renderer of the editor content.  
+- **Performance:** Generally more performant than `Plate` in read-only mode.  
+- **Use Case:** Ideal when you need a static preview of the content (e.g., in a server-side render or a static build). `PlateStatic` should be the default choice if you want a fast, static representation of your content.
+
+**Plate (Read-Only)**  
+- **Purpose:** The standard `Plate` editor component used with `readOnly={true}`. While this prevents editing, it still operates as a client component relying on browser APIs.  
+- **Use Case:** Suitable if you’re rendering in a browser and want an interactive environment (e.g. comments) that just happens to be non-editable. It’s **not** suitable for server-side HTML serialization or scenarios where static output is required, as it still runs client-side code.
+
+**In summary:**
+
+- **If you need high performance, a static view or HTML serialization:** Use `PlateStatic`.
+- **If you need an interactive environment and can run in a browser, but just want it read-only:** Use `Plate` with `readOnly={true}`.
+
+### API
+
+#### serializeHtml
+
+Convert Slate Nodes into HTML string.
+
+<APIParameters>
+<APIItem name="options" type="object">
+
+Options to control the HTML serialization process.
+
+<APISubList>
+<APISubListItem parent="options" name="components" type="NodeComponents">
+
+A mapping of plugin keys to React components. Each component renders the corresponding Slate node as HTML.
+
+</APISubListItem>
+
+<APISubListItem parent="options" name="editorComponent" type="React.ComponentType<T>" optional>
+
+A React component to render the entire editor content. Defaults to `PlateStatic` if not provided. This component receives `components`, `editor`, and `props`.
+
+</APISubListItem>
+
+<APISubListItem parent="options" name="props" type="Partial<T>" optional>
+
+Props to pass to the `editorComponent`. The generic type `T` extends `PlateStaticProps`.
+
+</APISubListItem>
+
+<APISubListItem parent="options" name="preserveClassNames" type="string[]" optional>
+
+A list of class name prefixes to preserve if `stripClassNames` is enabled.
+
+</APISubListItem>
+
+<APISubListItem parent="options" name="stripClassNames" type="boolean" optional>
+
+If `true`, remove class names from the output HTML except those listed in `preserveClassNames`.
+
+- **Default:** `false`
+
+</APISubListItem>
+
+<APISubListItem parent="options" name="stripDataAttributes" type="boolean" optional>
+
+If `true`, remove `data-*` attributes from the output HTML.
+
+- **Default:** `false`
+
+</APISubListItem>
+</APISubList>
+</APIItem>
+</APIParameters>
+
+<APIReturns>
+<APIItem type="string">
+A HTML string representing the Slate content.
+</APIItem>
+</APIReturns>
 
 ## HTML -> Slate
 
@@ -205,107 +384,5 @@ Flag to enable or disable the removal of whitespace from the serialized HTML.
 <APIItem type="TDescendant[]">
 
 The deserialized Slate value.
-</APIItem>
-</APIReturns>
-
-## Slate -> React -> HTML
-
-### Installation
-
-```bash
-npm install @udecode/plate-html
-```
-
-### Usage
-
-```tsx
-// ...
-import { HtmlReactPlugin } from '@udecode/plate-html/react';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-
-const editor = createPlateEditor({ 
-  plugins: [
-    HtmlReactPlugin
-    // all plugins that you want to serialize
-  ],
-  override: {
-    // do not forget to add your custom components, otherwise it won't work
-    components: createPlateUI(),
-  },
-});
-
-const html = editor.api.htmlReact.serialize({
-  nodes: editor.children,
-  // if you use @udecode/plate-dnd
-  dndWrapper: (props) => <DndProvider backend={HTML5Backend} {...props} />,
-});
-```
-
-<Callout className="my-4">
-  **Note**: Round-tripping is not yet supported: the HTML serializer will not
-  preserve all information from the Slate value when converting to HTML and
-  back.
-</Callout>
-
-### API
-
-#### editor.api.htmlReact.serialize
-
-Convert Slate Nodes into HTML string.
-
-<APIParameters>
-<APIItem name="options" type="object">
-
-Options to control the HTML serialization process.
-
-<APISubList>
-<APISubListItem parent="options" name="nodes" type="DescendantOf<E>[]">
-
-The Slate nodes to convert into HTML.
-
-</APISubListItem>
-<APISubListItem parent="options" name="stripDataAttributes" type="boolean" optional>
-
-Flag to enable or disable the removal of data attributes from the serialized HTML.
-
-- **Default:** `true` (Data attributes will be removed.)
-
-</APISubListItem>
-<APISubListItem parent="options" name="preserveClassNames" type="string[]" optional>
-
-A list of class name prefixes that should not be stripped out from the serialized HTML.
-
-</APISubListItem>
-<APISubListItem parent="options" name="slateProps" type="Partial<SlateProps>" optional>
-
-Additional Slate properties to provide, in case the rendering process depends on certain Slate hooks.
-
-</APISubListItem>
-<APISubListItem parent="options" name="stripWhitespace" type="boolean" optional>
-
-Flag to enable or disable the removal of whitespace from the serialized HTML.
-
-- **Default:** `true` (Whitespace will be removed.)
-
-</APISubListItem>
-<APISubListItem parent="options" name="convertNewLinesToHtmlBr" type="boolean" optional>
-
-Optionally convert newline characters (`\n`) to HTML `<br />` tags.
-
-- **Default:** `false` (Newline characters will not be converted.)
-
-</APISubListItem>
-<APISubListItem parent="options" name="dndWrapper" type="string | FunctionComponent | ComponentClass" optional>
-
-Specifies a component to be used for wrapping the rendered elements during a drag-and-drop operation.
-
-</APISubListItem>
-</APISubList>
-</APIItem>
-</APIParameters>
-<APIReturns>
-<APIItem type="string">
-A HTML string representing the Slate nodes.
 </APIItem>
 </APIReturns>

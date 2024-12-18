@@ -99,7 +99,7 @@ export function ComponentPreview({
                   }
                 )}
               >
-                <div className="size-full grow">{Preview}</div>
+                <div className="size-full grow overflow-auto">{Preview}</div>
               </div>
             ) : (
               loadingPreview

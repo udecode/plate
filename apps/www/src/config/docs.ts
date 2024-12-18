@@ -93,6 +93,12 @@ export const guidesNavItems: SidebarNavItem[] = [
     title: 'Controlled Value',
   },
   {
+    description: 'HTML <-> Slate',
+    href: '/docs/html',
+    label: 'New',
+    title: 'Serializing HTML',
+  },
+  {
     href: '/docs/debugging',
     title: 'Debugging',
   },

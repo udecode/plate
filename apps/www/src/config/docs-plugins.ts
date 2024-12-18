@@ -226,12 +226,7 @@ export const pluginsNavItems: SidebarNavItem[] = [
     title: 'Serializing DOCX',
   },
   {
-    description: 'Copy paste from HTML to Slate.',
-    href: '/docs/html',
-    title: 'Serializing HTML',
-  },
-  {
-    description: 'Copy paste from Markdown to Slate.',
+    description: 'Markdown <-> Slate',
     href: '/docs/markdown',
     title: 'Serializing Markdown',
   },

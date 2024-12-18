@@ -1,3 +1,5 @@
+import React from 'react';
+
 import type { z } from 'zod';
 
 import { promises as fs } from 'node:fs';
@@ -17,6 +19,12 @@ const memoizedIndex: typeof Index = Object.fromEntries(
 );
 
 export function getRegistryComponent(name: string) {
+  if (name === 'slate-to-html') {
+    return React.lazy(
+      () => import('@/registry/default/block/slate-to-html/page')
+    );
+  }
+
   return memoizedIndex.default[name]?.component;
 }
 
