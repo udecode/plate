@@ -22,8 +22,8 @@ import {
 } from '../utils';
 
 export type MutableRefs = React.MutableRefObject<{
-  content: React.RefObject<HTMLDivElement> | undefined;
-  contentRoot: React.RefObject<HTMLDivElement> | undefined;
+  content: React.RefObject<HTMLDivElement | null> | undefined;
+  contentRoot: React.RefObject<HTMLDivElement | null> | undefined;
 }>;
 
 export type UseEmojiPickerProps = {

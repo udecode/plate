@@ -9,7 +9,7 @@ export type DraggableState = {
     elementOrNode: Element | React.ReactElement | React.RefObject<any> | null
   ) => void;
   isDragging: boolean;
-  nodeRef: React.RefObject<HTMLDivElement>;
+  nodeRef: React.RefObject<HTMLDivElement | null>;
 };
 
 export const useDraggableState = (

@@ -21,7 +21,7 @@ import type {
 } from '../../lib';
 
 export interface UseComboboxInputOptions {
-  ref: RefObject<HTMLElement>;
+  ref: RefObject<HTMLElement | null>;
   autoFocus?: boolean;
   cancelInputOnArrowLeftRight?: boolean;
   cancelInputOnBackspace?: boolean;
