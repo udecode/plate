@@ -185,7 +185,7 @@ export const setBlockType = (
       }
     }
 
-    const entries = getBlocks(editor);
+    const entries = getBlocks(editor, { mode: 'lowest' });
 
     entries.forEach((entry) => setEntry(entry));
   });
