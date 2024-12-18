@@ -1,7 +1,7 @@
 import type { Range } from 'slate';
 
-import { type SlateEditor, getNodesRange, select } from '@udecode/plate-common';
-import { focusEditor } from '@udecode/plate-common/react';
+import { getNodesRange, select } from '@udecode/plate-common';
+import { type PlateEditor, focusEditor } from '@udecode/plate-common/react';
 
 import { getBlocksWithId } from '../queries/getBlocksWithId';
 import { selectBlockById } from './selectBlockById';
@@ -11,7 +11,7 @@ import { selectBlockById } from './selectBlockById';
  * select the block with id. Else, select the blocks above the selection.
  */
 export const selectBlocksBySelectionOrId = (
-  editor: SlateEditor,
+  editor: PlateEditor,
   id: string
 ) => {
   if (!editor.selection) return;

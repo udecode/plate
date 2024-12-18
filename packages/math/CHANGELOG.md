@@ -1,5 +1,11 @@
 # @udecode/plate-math
 
+## 40.3.3
+
+### Patch Changes
+
+- [#3852](https://github.com/udecode/plate/pull/3852) by [@wststone](https://github.com/wststone) – Fixes #3851
+
 ## 40.0.0
 
 ## 39.2.0

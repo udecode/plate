@@ -9,13 +9,23 @@ import {
   createTPlatePlugin,
 } from '@udecode/plate-common/react';
 
-import type { DragItemNode, FileDragItemNode } from './types';
+import type {
+  DragItemNode,
+  DropLineDirection,
+  FileDragItemNode,
+} from './types';
 
 import { type ScrollerProps, DndScroller } from './components/Scroller';
+
+export const DRAG_ITEM_BLOCK = 'block';
 
 export type DndConfig = PluginConfig<
   'dnd',
   {
+    dropTarget?: {
+      id: string | null;
+      line: DropLineDirection;
+    };
     draggingId?: string | null;
     enableScroller?: boolean;
     isDragging?: boolean;
@@ -35,6 +45,7 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
   key: 'dnd',
   options: {
     draggingId: null,
+    dropTarget: { id: null, line: '' },
     isDragging: false,
   },
   handlers: {

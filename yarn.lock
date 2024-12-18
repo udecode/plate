@@ -6451,12 +6451,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-basic-elements@npm:40.2.6, @udecode/plate-basic-elements@workspace:^, @udecode/plate-basic-elements@workspace:packages/basic-elements":
+"@udecode/plate-basic-elements@npm:40.3.4, @udecode/plate-basic-elements@workspace:^, @udecode/plate-basic-elements@workspace:packages/basic-elements":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-basic-elements@workspace:packages/basic-elements"
   dependencies:
     "@udecode/plate-block-quote": "npm:40.0.0"
-    "@udecode/plate-code-block": "npm:40.0.0"
+    "@udecode/plate-code-block": "npm:40.3.4"
     "@udecode/plate-common": "workspace:^"
     "@udecode/plate-heading": "npm:40.2.6"
   peerDependencies:
@@ -6577,7 +6577,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-code-block@npm:40.0.0, @udecode/plate-code-block@workspace:^, @udecode/plate-code-block@workspace:packages/code-block":
+"@udecode/plate-code-block@npm:40.3.4, @udecode/plate-code-block@workspace:^, @udecode/plate-code-block@workspace:packages/code-block":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-code-block@workspace:packages/code-block"
   dependencies:
@@ -7471,11 +7471,11 @@ __metadata:
   dependencies:
     "@udecode/plate-alignment": "npm:40.0.0"
     "@udecode/plate-autoformat": "npm:40.0.0"
-    "@udecode/plate-basic-elements": "npm:40.2.6"
+    "@udecode/plate-basic-elements": "npm:40.3.4"
     "@udecode/plate-basic-marks": "npm:40.0.0"
     "@udecode/plate-block-quote": "npm:40.0.0"
     "@udecode/plate-break": "npm:40.0.0"
-    "@udecode/plate-code-block": "npm:40.0.0"
+    "@udecode/plate-code-block": "npm:40.3.4"
     "@udecode/plate-combobox": "npm:40.0.0"
     "@udecode/plate-comments": "npm:40.3.0"
     "@udecode/plate-common": "npm:40.3.1"

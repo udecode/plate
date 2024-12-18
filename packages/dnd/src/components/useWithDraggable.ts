@@ -1,9 +1,9 @@
 import React from 'react';
 
-import type { TEditor } from '@udecode/plate-common';
 import type { Path } from 'slate';
 
 import {
+  type PlateEditor,
   type PlateRenderElementProps,
   findNodePath,
 } from '@udecode/plate-common/react';
@@ -16,7 +16,7 @@ export interface WithDraggableOptions<T = any> {
   draggableProps?: T;
 
   /** Filter out elements that can't be dragged. */
-  filter?: (editor: TEditor, path: Path) => boolean;
+  filter?: (editor: PlateEditor, path: Path) => boolean;
   /**
    * Document level where dnd is enabled. 0 = root blocks, 1 = first level of
    * children, etc. Set to null to allow all levels.

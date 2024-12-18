@@ -36,10 +36,10 @@ const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
     YjsPlugin.configure({
+      render: {
+        afterEditable: RemoteCursorOverlay,
+      },
       options: {
-        render: {
-          afterEditable: RemoteCursorOverlay,
-        },
         cursorOptions: {
           autoSend: true,
           data: { name: 'A plate user', color: '#5AC990' },

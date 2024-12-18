@@ -3,6 +3,7 @@
  */
 
 export * from './useDraggable';
+export * from './useDropLine';
 export * from './useWithDraggable';
 export * from './withDraggable';
 export * from './Scroller/index';

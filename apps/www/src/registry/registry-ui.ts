@@ -874,6 +874,21 @@ import { withDraggables } from './withDraggables';`,
     registryDependencies: ['dropdown-menu', 'toolbar', 'transforms'],
     type: 'registry:ui',
   },
+  {
+    dependencies: ['@slate-yjs/react'],
+    doc: {
+      description:
+        'A cursor overlay to display multiplayer cursors in the yjs plugin.',
+      docs: [{ route: '/docs/collaboration' }],
+      examples: [],
+    },
+    files: [
+      { path: 'plate-ui/remote-cursor-overlay.tsx', type: 'registry:ui' },
+    ],
+    name: 'remote-cursor-overlay',
+    registryDependencies: [],
+    type: 'registry:ui',
+  },
 ];
 
 export const uiNodes: Registry = [
@@ -1720,21 +1735,6 @@ export const uiPrimitives: Registry = [
     },
     files: [{ path: 'plate-ui/spinner.tsx', type: 'registry:ui' }],
     name: 'spinner',
-    registryDependencies: [],
-    type: 'registry:ui',
-  },
-  {
-    dependencies: ['@slate-yjs/react'],
-    doc: {
-      description:
-        'A cursor overlay to display multiplayer cursors in the yjs plugin.',
-      docs: [{ route: '/docs/collaboration' }],
-      examples: [],
-    },
-    files: [
-      { path: 'plate-ui/remote-cursor-overlay.tsx', type: 'registry:ui' },
-    ],
-    name: 'remote-cursor-overlay',
     registryDependencies: [],
     type: 'registry:ui',
   },

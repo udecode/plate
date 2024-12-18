@@ -22,9 +22,9 @@ import { Separator } from './separator';
 export const ColumnGroupElement = withRef<typeof PlateElement>(
   ({ children, className, ...props }, ref) => {
     return (
-      <PlateElement ref={ref} className={cn(className, 'my-2')} {...props}>
+      <PlateElement ref={ref} className={cn(className, 'mb-2')} {...props}>
         <ColumnFloatingToolbar>
-          <div className={cn('flex size-full gap-4 rounded')}>{children}</div>
+          <div className={cn('flex size-full rounded')}>{children}</div>
         </ColumnFloatingToolbar>
       </PlateElement>
     );
