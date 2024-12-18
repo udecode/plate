@@ -130,6 +130,22 @@ Retrieves a consistent property value from a fragment of nodes.
   The consistent property value found in the fragment, or undefined if no consistent value is found.
 </APIReturns>
 
+### getFirstNodeText
+
+Gets the first text node from a node.
+
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    The root node to search for text nodes.
+  </APIItem>
+  <APIItem name="options" type="NodeTextsOptions<N, R>" optional>
+    Options for getting node texts.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns the first text node entry or `undefined` if no text nodes are found.
+</APIReturns>
+
 ### getLastChild
 
 Returns the last child of a node or `null` if no children.
