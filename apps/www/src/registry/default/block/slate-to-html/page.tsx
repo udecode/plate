@@ -144,6 +144,12 @@ const getCachedTailwindCss = React.cache(async () => {
   return await fs.readFile(cssPath, 'utf8');
 });
 
+const getCachedPrismCss = React.cache(async () => {
+  const cssPath = path.join(process.cwd(), 'public', 'prism.css');
+
+  return await fs.readFile(cssPath, 'utf8');
+});
+
 export default async function SlateToHtmlBlock() {
   const components = {
     [BaseAudioPlugin.key]: MediaAudioElementStatic,
@@ -297,6 +303,7 @@ export default async function SlateToHtmlBlock() {
   });
 
   const tailwindCss = await getCachedTailwindCss();
+  const prismCss = await getCachedPrismCss();
   const cookieStore = await cookies();
   const theme = cookieStore.get('theme')?.value;
 
@@ -310,6 +317,7 @@ export default async function SlateToHtmlBlock() {
   // Create the full HTML document
   const html = createHtmlDocument({
     editorHtml,
+    prismCss,
     tailwindCss,
     theme,
   });

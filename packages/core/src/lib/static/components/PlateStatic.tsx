@@ -36,6 +36,7 @@ function ElementStatic({
   decorations: DecoratedRange[];
   editor: SlateEditor;
   element: TElement;
+  style?: React.CSSProperties;
 }) {
   const renderElement = pipeRenderElementStatic(editor, {
     components,
@@ -46,9 +47,41 @@ function ElementStatic({
     ref: null,
   };
 
+  let children: React.ReactNode = (
+    <Children
+      components={components}
+      decorate={decorate}
+      decorations={decorations}
+      editor={editor}
+    >
+      {element.children}
+    </Children>
+  );
+
   if (isVoid(editor, element)) {
     attributes['data-slate-void'] = true;
-  } else if (isInline(editor, element)) {
+    children = (
+      <span
+        style={{
+          color: 'transparent',
+          height: '0',
+          outline: 'none',
+          position: 'absolute',
+        }}
+        data-slate-spacer
+      >
+        <Children
+          components={components}
+          decorate={decorate}
+          decorations={decorations}
+          editor={editor}
+        >
+          {element.children}
+        </Children>
+      </span>
+    );
+  }
+  if (isInline(editor, element)) {
     attributes['data-slate-inline'] = true;
   }
 
@@ -56,16 +89,7 @@ function ElementStatic({
     <React.Fragment>
       {renderElement?.({
         attributes,
-        children: (
-          <Children
-            components={components}
-            decorate={decorate}
-            decorations={decorations}
-            editor={editor}
-          >
-            {element.children}
-          </Children>
-        ),
+        children,
         element,
       })}
     </React.Fragment>

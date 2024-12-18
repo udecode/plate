@@ -25,8 +25,11 @@ export function ImageElementStatic({
 
   return (
     <SlateElement className={cn(className, 'py-2.5')} {...props}>
-      <div style={{ textAlign: align }}>
-        <figure className="group relative m-0 inline-block" style={{ width }}>
+      <figure className="group relative m-0 inline-block" style={{ width }}>
+        <div
+          className="relative min-w-[92px] max-w-full"
+          style={{ textAlign: align }}
+        >
           <img
             className={cn(
               'w-full max-w-full cursor-default object-cover px-0',
@@ -36,9 +39,13 @@ export function ImageElementStatic({
             src={url}
             {...nodeProps}
           />
-          {caption && <figcaption>{getNodeString(caption[0])}</figcaption>}
-        </figure>
-      </div>
+          {caption && (
+            <figcaption className="mx-auto mt-2 h-[24px] max-w-full">
+              {getNodeString(caption[0])}
+            </figcaption>
+          )}
+        </div>
+      </figure>
       {children}
     </SlateElement>
   );
