@@ -2,7 +2,7 @@ import React from 'react';
 
 import { select, setNodes } from '@udecode/plate-common';
 import {
-  findNodePath,
+  findPath,
   useEditorRef,
   useElement,
 } from '@udecode/plate-common/react';
@@ -38,7 +38,7 @@ export const useResizableState = ({
 
   const setNodeWidth = React.useCallback(
     (w: number) => {
-      const path = findNodePath(editor, element!);
+      const path = findPath(editor, element!);
 
       if (!path) return;
       if (w === nodeWidth) {

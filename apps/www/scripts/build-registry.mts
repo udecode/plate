@@ -269,6 +269,7 @@ export const Index: Record<string, any> = {
         await fs.writeFile(sourcePath, sourceFile.getText())
       }
 
+      
       let componentPath = `@/registry/${style.name}/${type}/${item.name}`
 
       if (item.files) {
@@ -282,7 +283,7 @@ export const Index: Record<string, any> = {
         }
       }
       
-      let componentImport = `React.lazy(() => import("${componentPath}"))`
+      let componentImport = !item.rsc ? `React.lazy(() => import("${componentPath}"))` : undefined
       
       index += `
     "${item.name}": {

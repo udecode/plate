@@ -5,6 +5,7 @@
 export * from './BaseCodeBlockPlugin';
 export * from './decorateCodeLine';
 export * from './htmlDeserializerCodeBlock';
+export * from './insertDataCodeBlock';
 export * from './insertFragmentCodeBlock';
 export * from './types';
 export * from './withCodeBlock';

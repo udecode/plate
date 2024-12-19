@@ -1,8 +1,5 @@
-import {
-  findNodePath,
-  useEditorRef,
-  useElement,
-} from '@udecode/plate-common/react';
+import { findNodePath } from '@udecode/plate-common';
+import { useEditorRef, useElement } from '@udecode/plate-common/react';
 
 import { BaseCaptionPlugin } from '../../lib';
 

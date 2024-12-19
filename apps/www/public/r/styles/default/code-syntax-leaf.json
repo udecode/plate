@@ -23,6 +23,12 @@
       "path": "plate-ui/code-syntax-leaf.tsx",
       "target": "components/plate-ui/code-syntax-leaf.tsx",
       "type": "registry:ui"
+    },
+    {
+      "content": "import React from 'react';\n\nimport type { SlateLeafProps } from '@udecode/plate-common';\n\nimport { cn } from '@udecode/cn';\nimport { SlateLeaf } from '@udecode/plate-common';\n\nexport function CodeSyntaxLeafStatic({\n  children,\n  className,\n  ...props\n}: SlateLeafProps) {\n  const syntaxClassName = `prism-token token ${props.leaf.tokenType}`;\n\n  return (\n    <SlateLeaf className={cn(className, syntaxClassName)} {...props}>\n      {children}\n    </SlateLeaf>\n  );\n}\n",
+      "path": "plate-ui/code-syntax-leaf-static.tsx",
+      "target": "components/plate-ui/code-syntax-leaf-static.tsx",
+      "type": "registry:ui"
     }
   ],
   "name": "code-syntax-leaf",

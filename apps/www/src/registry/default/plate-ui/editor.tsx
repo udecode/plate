@@ -14,7 +14,7 @@ import {
 import { cva } from 'class-variance-authority';
 
 const editorContainerVariants = cva(
-  'relative w-full cursor-text overflow-y-auto caret-primary selection:bg-brand/25 focus-visible:outline-none [&_.slate-selection-area]:border [&_.slate-selection-area]:border-brand/25 [&_.slate-selection-area]:bg-brand/15',
+  'relative w-full cursor-text select-text overflow-y-auto caret-primary selection:bg-brand/25 focus-visible:outline-none [&_.slate-selection-area]:border [&_.slate-selection-area]:border-brand/25 [&_.slate-selection-area]:bg-brand/15',
   {
     defaultVariants: {
       variant: 'default',
@@ -60,10 +60,9 @@ EditorContainer.displayName = 'EditorContainer';
 const editorVariants = cva(
   cn(
     'group/editor',
-    'relative w-full overflow-x-hidden whitespace-pre-wrap break-words',
-    'rounded-md ring-offset-background placeholder:text-muted-foreground/80 focus-visible:outline-none',
-    '[&_[data-slate-placeholder]]:text-muted-foreground/80 [&_[data-slate-placeholder]]:!opacity-100',
-    '[&_[data-slate-placeholder]]:top-[auto_!important]',
+    'relative w-full cursor-text select-text overflow-x-hidden whitespace-pre-wrap break-words',
+    'rounded-md ring-offset-background  focus-visible:outline-none',
+    'placeholder:text-muted-foreground/80 [&_[data-slate-placeholder]]:top-[auto_!important] [&_[data-slate-placeholder]]:text-muted-foreground/80 [&_[data-slate-placeholder]]:!opacity-100',
     '[&_strong]:font-bold'
   ),
   {

@@ -1,7 +1,7 @@
 import { useEditorRef, useEditorSelector } from '@udecode/plate-common/react';
 
 import { ListStyleType, toggleIndentList } from '../../index';
-import { someIndentList } from './someIndentList';
+import { someIndentList } from '../../lib/queries/someIndentList';
 
 export const useIndentListToolbarButtonState = ({
   nodeType = ListStyleType.Disc,

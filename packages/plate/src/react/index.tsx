@@ -23,7 +23,6 @@ export * from '@udecode/plate-list/react';
 export * from '@udecode/plate-media/react';
 export * from '@udecode/plate-reset-node/react';
 export * from '@udecode/plate-selection';
-export * from '@udecode/plate-html/react';
 export * from '@udecode/plate-suggestion/react';
 export * from '@udecode/plate-tabbable/react';
 export * from '@udecode/plate-table/react';

@@ -1,7 +1,7 @@
 import React from 'react';
 
 import {
-  findNodePath,
+  findPath,
   useEditorPlugin,
   useElement,
 } from '@udecode/plate-common/react';
@@ -101,7 +101,7 @@ export const useTableCellElementResizable = ({
       setTableColSize(
         editor,
         { colIndex, width },
-        { at: findNodePath(editor, element)! }
+        { at: findPath(editor, element)! }
       );
 
       // Prevent flickering
@@ -116,7 +116,7 @@ export const useTableCellElementResizable = ({
       setTableRowSize(
         editor,
         { height, rowIndex },
-        { at: findNodePath(editor, element)! }
+        { at: findPath(editor, element)! }
       );
 
       // Prevent flickering
@@ -130,7 +130,7 @@ export const useTableCellElementResizable = ({
       setTableMarginLeft(
         editor,
         { marginLeft },
-        { at: findNodePath(editor, element)! }
+        { at: findPath(editor, element)! }
       );
 
       // Prevent flickering

@@ -5,12 +5,12 @@ import type { SlateEditor } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { TablePlugin } from '../../react';
+import { BaseTablePlugin } from '..';
 import { isTableBorderHidden } from './isTableBorderHidden';
 
 jsxt;
 
-const createTablePluginWithOptions = () => TablePlugin;
+const createTablePluginWithOptions = () => BaseTablePlugin;
 
 const createEditorInstance = (input: any) => {
   return createPlateEditor({

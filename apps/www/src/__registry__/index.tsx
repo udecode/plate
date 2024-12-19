@@ -30,6 +30,10 @@ export const Index: Record<string, any> = {
         path: "src/registry/default/plate-ui/blockquote-element.tsx",
         type: "registry:ui",
         target: ""
+      },{
+        path: "src/registry/default/plate-ui/blockquote-element-static.tsx",
+        type: "registry:ui",
+        target: ""
       }],
       component: React.lazy(() => import("@/registry/default/plate-ui/blockquote-element.tsx")),
       source: "",
@@ -44,6 +48,10 @@ export const Index: Record<string, any> = {
       registryDependencies: ["command","plate-element"],
       files: [{
         path: "src/registry/default/plate-ui/code-block-element.tsx",
+        type: "registry:ui",
+        target: ""
+      },{
+        path: "src/registry/default/plate-ui/code-block-element-static.tsx",
         type: "registry:ui",
         target: ""
       },{
@@ -70,6 +78,10 @@ export const Index: Record<string, any> = {
         path: "src/registry/default/plate-ui/code-leaf.tsx",
         type: "registry:ui",
         target: ""
+      },{
+        path: "src/registry/default/plate-ui/code-leaf-static.tsx",
+        type: "registry:ui",
+        target: ""
       }],
       component: React.lazy(() => import("@/registry/default/plate-ui/code-leaf.tsx")),
       source: "",
@@ -84,6 +96,10 @@ export const Index: Record<string, any> = {
       registryDependencies: ["plate-element"],
       files: [{
         path: "src/registry/default/plate-ui/code-line-element.tsx",
+        type: "registry:ui",
+        target: ""
+      },{
+        path: "src/registry/default/plate-ui/code-line-element-static.tsx",
         type: "registry:ui",
         target: ""
       }],
@@ -102,6 +118,10 @@ export const Index: Record<string, any> = {
         path: "src/registry/default/plate-ui/code-syntax-leaf.tsx",
         type: "registry:ui",
         target: ""
+      },{
+        path: "src/registry/default/plate-ui/code-syntax-leaf-static.tsx",
+        type: "registry:ui",
+        target: ""
       }],
       component: React.lazy(() => import("@/registry/default/plate-ui/code-syntax-leaf.tsx")),
       source: "",
@@ -116,6 +136,10 @@ export const Index: Record<string, any> = {
       registryDependencies: ["resizable","plate-element"],
       files: [{
         path: "src/registry/default/plate-ui/column-element.tsx",
+        type: "registry:ui",
+        target: ""
+      },{
+        path: "src/registry/default/plate-ui/column-element-static.tsx",
         type: "registry:ui",
         target: ""
       }],
@@ -134,6 +158,10 @@ export const Index: Record<string, any> = {
         path: "src/registry/default/plate-ui/column-group-element.tsx",
         type: "registry:ui",
         target: ""
+      },{
+        path: "src/registry/default/plate-ui/column-group-element-static.tsx",
+        type: "registry:ui",
+        target: ""
       }],
       component: React.lazy(() => import("@/registry/default/plate-ui/column-group-element.tsx")),
       source: "",
@@ -150,6 +178,10 @@ export const Index: Record<string, any> = {
         path: "src/registry/default/plate-ui/comment-leaf.tsx",
         type: "registry:ui",
         target: ""
+      },{
+        path: "src/registry/default/plate-ui/comment-leaf-static.tsx",
+        type: "registry:ui",
+        target: ""
       }],
       component: React.lazy(() => import("@/registry/default/plate-ui/comment-leaf.tsx")),
       source: "",
@@ -164,6 +196,10 @@ export const Index: Record<string, any> = {
       registryDependencies: ["calendar","plate-element"],
       files: [{
         path: "src/registry/default/plate-ui/date-element.tsx",
+        type: "registry:ui",
+        target: ""
+      },{
+        path: "src/registry/default/plate-ui/date-element-static.tsx",
         type: "registry:ui",
         target: ""
       }],
@@ -214,6 +250,10 @@ export const Index: Record<string, any> = {
         path: "src/registry/default/plate-ui/heading-element.tsx",
         type: "registry:ui",
         target: ""
+      },{
+        path: "src/registry/default/plate-ui/heading-element-static.tsx",
+        type: "registry:ui",
+        target: ""
       }],
       component: React.lazy(() => import("@/registry/default/plate-ui/heading-element.tsx")),
       source: "",
@@ -228,6 +268,10 @@ export const Index: Record<string, any> = {
       registryDependencies: [],
       files: [{
         path: "src/registry/default/plate-ui/highlight-leaf.tsx",
+        type: "registry:ui",
+        target: ""
+      },{
+        path: "src/registry/default/plate-ui/highlight-leaf-static.tsx",
         type: "registry:ui",
         target: ""
       }],
@@ -246,6 +290,10 @@ export const Index: Record<string, any> = {
         path: "src/registry/default/plate-ui/hr-element.tsx",
         type: "registry:ui",
         target: ""
+      },{
+        path: "src/registry/default/plate-ui/hr-element-static.tsx",
+        type: "registry:ui",
+        target: ""
       }],
       component: React.lazy(() => import("@/registry/default/plate-ui/hr-element.tsx")),
       source: "",
@@ -260,6 +308,10 @@ export const Index: Record<string, any> = {
       registryDependencies: ["media-popover","caption","resizable","plate-element"],
       files: [{
         path: "src/registry/default/plate-ui/image-element.tsx",
+        type: "registry:ui",
+        target: ""
+      },{
+        path: "src/registry/default/plate-ui/image-element-static.tsx",
         type: "registry:ui",
         target: ""
       }],
@@ -294,6 +346,10 @@ export const Index: Record<string, any> = {
         path: "src/registry/default/plate-ui/kbd-leaf.tsx",
         type: "registry:ui",
         target: ""
+      },{
+        path: "src/registry/default/plate-ui/kbd-leaf-static.tsx",
+        type: "registry:ui",
+        target: ""
       }],
       component: React.lazy(() => import("@/registry/default/plate-ui/kbd-leaf.tsx")),
       source: "",
@@ -308,6 +364,10 @@ export const Index: Record<string, any> = {
       registryDependencies: ["plate-element"],
       files: [{
         path: "src/registry/default/plate-ui/link-element.tsx",
+        type: "registry:ui",
+        target: ""
+      },{
+        path: "src/registry/default/plate-ui/link-element-static.tsx",
         type: "registry:ui",
         target: ""
       }],
@@ -342,6 +402,10 @@ export const Index: Record<string, any> = {
         path: "src/registry/default/plate-ui/media-audio-element.tsx",
         type: "registry:ui",
         target: ""
+      },{
+        path: "src/registry/default/plate-ui/media-audio-element-static.tsx",
+        type: "registry:ui",
+        target: ""
       }],
       component: React.lazy(() => import("@/registry/default/plate-ui/media-audio-element.tsx")),
       source: "",
@@ -372,6 +436,10 @@ export const Index: Record<string, any> = {
       registryDependencies: ["caption","plate-element"],
       files: [{
         path: "src/registry/default/plate-ui/media-file-element.tsx",
+        type: "registry:ui",
+        target: ""
+      },{
+        path: "src/registry/default/plate-ui/media-file-element-static.tsx",
         type: "registry:ui",
         target: ""
       }],
@@ -406,6 +474,10 @@ export const Index: Record<string, any> = {
         path: "src/registry/default/plate-ui/media-video-element.tsx",
         type: "registry:ui",
         target: ""
+      },{
+        path: "src/registry/default/plate-ui/media-video-element-static.tsx",
+        type: "registry:ui",
+        target: ""
       }],
       component: React.lazy(() => import("@/registry/default/plate-ui/media-video-element.tsx")),
       source: "",
@@ -420,6 +492,10 @@ export const Index: Record<string, any> = {
       registryDependencies: ["plate-element","use-mounted"],
       files: [{
         path: "src/registry/default/plate-ui/mention-element.tsx",
+        type: "registry:ui",
+        target: ""
+      },{
+        path: "src/registry/default/plate-ui/mention-element-static.tsx",
         type: "registry:ui",
         target: ""
       }],
@@ -452,6 +528,10 @@ export const Index: Record<string, any> = {
       registryDependencies: ["plate-element"],
       files: [{
         path: "src/registry/default/plate-ui/paragraph-element.tsx",
+        type: "registry:ui",
+        target: ""
+      },{
+        path: "src/registry/default/plate-ui/paragraph-element-static.tsx",
         type: "registry:ui",
         target: ""
       }],
@@ -502,6 +582,10 @@ export const Index: Record<string, any> = {
         path: "src/registry/default/plate-ui/table-cell-element.tsx",
         type: "registry:ui",
         target: ""
+      },{
+        path: "src/registry/default/plate-ui/table-cell-element-static.tsx",
+        type: "registry:ui",
+        target: ""
       }],
       component: React.lazy(() => import("@/registry/default/plate-ui/table-cell-element.tsx")),
       source: "",
@@ -518,6 +602,10 @@ export const Index: Record<string, any> = {
         path: "src/registry/default/plate-ui/table-element.tsx",
         type: "registry:ui",
         target: ""
+      },{
+        path: "src/registry/default/plate-ui/table-element-static.tsx",
+        type: "registry:ui",
+        target: ""
       }],
       component: React.lazy(() => import("@/registry/default/plate-ui/table-element.tsx")),
       source: "",
@@ -532,6 +620,10 @@ export const Index: Record<string, any> = {
       registryDependencies: ["plate-element"],
       files: [{
         path: "src/registry/default/plate-ui/table-row-element.tsx",
+        type: "registry:ui",
+        target: ""
+      },{
+        path: "src/registry/default/plate-ui/table-row-element-static.tsx",
         type: "registry:ui",
         target: ""
       }],
@@ -566,6 +658,10 @@ export const Index: Record<string, any> = {
         path: "src/registry/default/plate-ui/toc-element.tsx",
         type: "registry:ui",
         target: ""
+      },{
+        path: "src/registry/default/plate-ui/toc-element-static.tsx",
+        type: "registry:ui",
+        target: ""
       }],
       component: React.lazy(() => import("@/registry/default/plate-ui/toc-element.tsx")),
       source: "",
@@ -596,6 +692,10 @@ export const Index: Record<string, any> = {
       registryDependencies: ["button","plate-element"],
       files: [{
         path: "src/registry/default/plate-ui/toggle-element.tsx",
+        type: "registry:ui",
+        target: ""
+      },{
+        path: "src/registry/default/plate-ui/toggle-element-static.tsx",
         type: "registry:ui",
         target: ""
       }],
@@ -676,6 +776,10 @@ export const Index: Record<string, any> = {
       registryDependencies: [],
       files: [{
         path: "src/registry/default/plate-ui/checkbox.tsx",
+        type: "registry:ui",
+        target: ""
+      },{
+        path: "src/registry/default/plate-ui/checkbox-static.tsx",
         type: "registry:ui",
         target: ""
       }],
@@ -1136,6 +1240,10 @@ export const Index: Record<string, any> = {
       registryDependencies: [],
       files: [{
         path: "src/registry/default/plate-ui/editor.tsx",
+        type: "registry:ui",
+        target: ""
+      },{
+        path: "src/registry/default/plate-ui/editor-static.tsx",
         type: "registry:ui",
         target: ""
       }],
@@ -3733,22 +3841,6 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
-    "iframe-demo": {
-      name: "iframe-demo",
-      description: "",
-      type: "registry:example",
-      registryDependencies: [],
-      files: [{
-        path: "src/registry/default/example/iframe-demo.tsx",
-        type: "registry:example",
-        target: ""
-      }],
-      component: React.lazy(() => import("@/registry/default/example/iframe-demo.tsx")),
-      source: "",
-      category: "",
-      subcategory: "",
-      chunks: []
-    },
     "mode-toggle": {
       name: "mode-toggle",
       description: "",
@@ -3954,6 +4046,26 @@ export const Index: Record<string, any> = {
       component: React.lazy(() => import("@/registry/default/block/editor-basic/page.tsx")),
       source: "src/__registry__/default/block/editor-basic/page.tsx",
       category: "Editors",
+      subcategory: "",
+      chunks: []
+    },
+    "slate-to-html": {
+      name: "slate-to-html",
+      description: "Slate to HTML",
+      type: "registry:block",
+      registryDependencies: [],
+      files: [{
+        path: "src/registry/default/block/slate-to-html/page.tsx",
+        type: "registry:page",
+        target: "app/html/page.tsx"
+      },{
+        path: "src/registry/default/components/editor/slate-to-html.tsx",
+        type: "registry:component",
+        target: "components/editor/slate-to-html.tsx"
+      }],
+      component: undefined,
+      source: "src/__registry__/default/block/slate-to-html/page.tsx",
+      category: "Serializers",
       subcategory: "",
       chunks: []
     },

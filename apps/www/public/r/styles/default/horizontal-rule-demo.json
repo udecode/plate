@@ -16,7 +16,7 @@
       "type": "registry:example"
     },
     {
-      "content": "import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';\nimport { jsx } from '@udecode/plate-test-utils';\n\njsx;\n\nexport const horizontalRuleValue: any = (\n  <fragment>\n    <hh2>Horizontal Rule</hh2>\n    <hp>\n      Add horizontal rules to visually separate sections and content within your\n      document.\n    </hp>\n    <element type={HorizontalRulePlugin.key}>\n      <htext />\n    </element>\n  </fragment>\n);\n",
+      "content": "import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';\nimport { jsx } from '@udecode/plate-test-utils';\n\njsx;\n\nexport const horizontalRuleValue: any = (\n  <fragment>\n    <hh2>Horizontal Rule</hh2>\n    <hp>\n      Add horizontal rules to visually separate sections and content within your\n      document.\n    </hp>\n    <element type={BaseHorizontalRulePlugin.key}>\n      <htext />\n    </element>\n  </fragment>\n);\n",
       "path": "example/values/horizontal-rule-value.tsx",
       "target": "components/horizontal-rule-value.tsx",
       "type": "registry:example"

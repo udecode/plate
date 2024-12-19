@@ -1,6 +1,6 @@
 import { setNodes } from '@udecode/plate-common';
 import {
-  findNodePath,
+  findPath,
   useEditorRef,
   useElement,
 } from '@udecode/plate-common/react';
@@ -14,7 +14,7 @@ export const useColumnState = () => {
 
   const columnGroupElement = useElement<TColumnGroupElement>(ColumnPlugin.key);
 
-  const columnPath = findNodePath(editor, columnGroupElement);
+  const columnPath = findPath(editor, columnGroupElement);
 
   const setDoubleColumn = () => {
     setNodes(editor, { layout: [50, 50] }, { at: columnPath });

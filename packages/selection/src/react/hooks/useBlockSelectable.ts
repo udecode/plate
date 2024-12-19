@@ -2,7 +2,7 @@ import React from 'react';
 
 import { getAboveNode, isVoid } from '@udecode/plate-common';
 import {
-  findNodePath,
+  findPath,
   useEditorPlugin,
   useElement,
 } from '@udecode/plate-common/react';
@@ -15,7 +15,7 @@ export const useBlockSelectable = () => {
   const { api, editor, getOption, getOptions } =
     useEditorPlugin(BlockSelectionPlugin);
   const path = React.useMemo(
-    () => findNodePath(editor, element),
+    () => findPath(editor, element),
     [editor, element]
   );
 

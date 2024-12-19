@@ -144,4 +144,23 @@ export const blocks: Registry = [
     registryDependencies: ['editor'],
     type: 'registry:block',
   },
+  {
+    category: 'Serializers',
+    files: [
+      {
+        path: 'block/slate-to-html/page.tsx',
+        target: 'app/html/page.tsx',
+        type: 'registry:page',
+      },
+      {
+        path: 'components/editor/slate-to-html.tsx',
+        target: 'components/editor/slate-to-html.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'slate-to-html',
+    registryDependencies: [],
+    rsc: true,
+    type: 'registry:block',
+  },
 ];

@@ -89,7 +89,7 @@ const components = {
     className,
     ...props
   }: React.ComponentProps<typeof FrameworkDocs>) => (
-    <FrameworkDocs className={cn(className)} {...props} />
+    <FrameworkDocs className={className} {...props} />
   ),
   Image,
   KeyTable: ({

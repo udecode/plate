@@ -19,8 +19,6 @@ import { settingsStore } from './context/settings-store';
 import { CustomizerTabs } from './customizer-tabs';
 import { Sheet, SheetContent } from './ui/sheet';
 
-import '@/styles/mdx.css';
-
 export default function CustomizerDrawer() {
   const open = settingsStore.use.showSettings();
   const setOpen = settingsStore.set.showSettings;

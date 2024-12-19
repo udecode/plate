@@ -4,6 +4,7 @@ import { useEditorRef, useElement } from '@udecode/plate-common/react';
 import { useReadOnly } from 'slate-react';
 
 import {
+  type BorderStylesDefault,
   type TTableCellElement,
   type TTableElement,
   type TTableRowElement,
@@ -12,15 +13,12 @@ import {
   getCellIndices,
   getColSpan,
   getRowSpan,
+  getTableCellBorders,
+  getTableColumnIndex,
+  getTableRowIndex,
 } from '../../../lib';
 import { TablePlugin } from '../../TablePlugin';
-import { getTableColumnIndex } from '../../merge';
-import { getTableRowIndex } from '../../queries';
 import { useTableStore } from '../../stores';
-import {
-  type BorderStylesDefault,
-  getTableCellBorders,
-} from './getTableCellBorders';
 import { useIsCellSelected } from './useIsCellSelected';
 
 export type TableCellElementState = {

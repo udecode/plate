@@ -21,6 +21,12 @@
       "path": "plate-ui/heading-element.tsx",
       "target": "components/plate-ui/heading-element.tsx",
       "type": "registry:ui"
+    },
+    {
+      "content": "import * as React from 'react';\n\nimport type { SlateElementProps } from '@udecode/plate-common';\n\nimport { cn } from '@udecode/cn';\nimport { SlateElement } from '@udecode/plate-common';\nimport { cva } from 'class-variance-authority';\n\ninterface HeadingElementViewProps extends SlateElementProps {\n  variant?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';\n}\n\nconst headingVariants = cva('relative mb-1', {\n  variants: {\n    variant: {\n      h1: 'mt-[1.6em] pb-1 font-heading text-4xl font-bold',\n      h2: 'mt-[1.4em] pb-px font-heading text-2xl font-semibold tracking-tight',\n      h3: 'mt-[1em] pb-px font-heading text-xl font-semibold tracking-tight',\n      h4: 'mt-[0.75em] font-heading text-lg font-semibold tracking-tight',\n      h5: 'mt-[0.75em] text-lg font-semibold tracking-tight',\n      h6: 'mt-[0.75em] text-base font-semibold tracking-tight',\n    },\n  },\n});\n\nexport const HeadingElementStatic = ({\n  children,\n  className,\n  variant = 'h1',\n  ...props\n}: HeadingElementViewProps) => {\n  return (\n    <SlateElement\n      as={variant}\n      className={cn(className, headingVariants({ variant }))}\n      {...props}\n    >\n      {children}\n    </SlateElement>\n  );\n};\n",
+      "path": "plate-ui/heading-element-static.tsx",
+      "target": "components/plate-ui/heading-element-static.tsx",
+      "type": "registry:ui"
     }
   ],
   "name": "heading-element",

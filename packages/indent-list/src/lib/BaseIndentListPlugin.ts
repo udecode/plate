@@ -1,5 +1,6 @@
 import {
   type PluginConfig,
+  type SlateRenderElementProps,
   type TElement,
   BaseParagraphPlugin,
   HtmlPlugin,
@@ -12,6 +13,7 @@ import {
 import type { GetSiblingIndentListOptions } from './queries/getSiblingIndentList';
 import type { ListStyleType } from './types';
 
+import { renderIndentListBelowNodes } from './renderIndentListBelowNodes';
 import { withIndentList } from './withIndentList';
 
 export const INDENT_LIST_KEYS = {
@@ -24,6 +26,16 @@ export const INDENT_LIST_KEYS = {
 export type BaseIndentListConfig = PluginConfig<
   'listStyleType',
   {
+    listStyleTypes?: Record<
+      string,
+      {
+        type: string;
+        isOrdered?: boolean;
+        liComponent?: React.FC<SlateRenderElementProps>;
+        markerComponent?: React.FC<Omit<SlateRenderElementProps, 'children'>>;
+      }
+    >;
+
     /** Map html element to list style type. */
     getListStyleType?: (element: HTMLElement) => ListStyleType;
 
@@ -92,5 +104,8 @@ export const BaseIndentListPlugin = createTSlatePlugin<BaseIndentListConfig>({
         ],
       },
     },
+  },
+  render: {
+    belowNodes: renderIndentListBelowNodes,
   },
 });

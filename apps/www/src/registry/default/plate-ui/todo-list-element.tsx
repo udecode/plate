@@ -20,7 +20,7 @@ export const TodoListElement = withRef<typeof PlateElement>(
     return (
       <PlateElement
         ref={ref}
-        className={cn('flex flex-row py-1', className)}
+        className={cn(className, 'flex flex-row py-1')}
         {...props}
       >
         <div

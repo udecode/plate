@@ -12,7 +12,7 @@ import {
   withoutSavingHistory,
 } from '@udecode/plate-common';
 import {
-  findNodePath,
+  findPath,
   useEditorPlugin,
   withHOC,
   withRef,
@@ -67,7 +67,8 @@ const CONTENT: Record<
 export const MediaPlaceholderElement = withHOC(
   PlaceholderProvider,
   withRef<typeof PlateElement>(
-    ({ children, className, editor, nodeProps, ...props }, ref) => {
+    ({ children, className, nodeProps, ...props }, ref) => {
+      const editor = props.editor;
       const element = props.element as TPlaceholderElement;
 
       const { api } = useEditorPlugin(PlaceholderPlugin);
@@ -107,7 +108,7 @@ export const MediaPlaceholderElement = withHOC(
       useEffect(() => {
         if (!uploadedFile) return;
 
-        const path = findNodePath(editor, element);
+        const path = findPath(editor, element);
 
         withoutSavingHistory(editor, () => {
           removeNodes(editor, { at: path });
@@ -154,8 +155,7 @@ export const MediaPlaceholderElement = withHOC(
       return (
         <PlateElement
           ref={ref}
-          className={cn('relative my-1', className)}
-          editor={editor}
+          className={cn(className, 'relative my-1')}
           {...props}
         >
           {(!loading || !isImage) && (

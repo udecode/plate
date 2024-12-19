@@ -1,5 +1,4 @@
-import { setNodes } from '@udecode/plate-common';
-import { findNodePath, useEditorRef } from '@udecode/plate-common/react';
+import { setNode, useEditorRef } from '@udecode/plate-common/react';
 import { useReadOnly } from 'slate-react';
 
 import type { TTodoListItemElement } from '../../lib';
@@ -33,17 +32,7 @@ export const useTodoListElement = (
       onCheckedChange: (value: boolean) => {
         if (readOnly) return;
 
-        const path = findNodePath(editor, element);
-
-        if (!path) return;
-
-        setNodes<TTodoListItemElement>(
-          editor,
-          { checked: value },
-          {
-            at: path,
-          }
-        );
+        setNode<TTodoListItemElement>(editor, element, { checked: value });
       },
     },
   };

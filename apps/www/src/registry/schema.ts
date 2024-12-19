@@ -98,6 +98,7 @@ export const registryItemSchema = z.object({
   meta: z.record(z.string(), z.any()).optional(),
   name: z.string(),
   registryDependencies: z.array(z.string()).optional(),
+  rsc: z.boolean().optional(),
   subcategory: z.string().optional(),
   tailwind: registryItemTailwindSchema.optional(),
   type: registryItemTypeSchema,

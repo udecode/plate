@@ -1,8 +1,15 @@
-import type { TDescendant, TNodeEntry, Value } from '@udecode/slate';
+import type {
+  TDescendant,
+  TElement,
+  TNodeEntry,
+  TText,
+  Value,
+} from '@udecode/slate';
 import type { AnyObject } from '@udecode/utils';
 import type { DecoratedRange } from 'slate';
 
 import type { SlateEditor } from '../editor';
+import type { SlateRenderElementProps, SlateRenderLeafProps } from '../static';
 import type { Nullable } from '../types/misc';
 import type {
   AnyPluginConfig,
@@ -42,6 +49,9 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> =
         nodeProps?: InjectNodeProps<WithAnyKey<C>>;
         plugins?: Record<string, Partial<EditorPlugin<AnyPluginConfig>>>;
       }>;
+      node: {
+        props?: NodeStaticProps<WithAnyKey<C>>;
+      };
       override: {
         plugins?: Record<string, Partial<EditorPlugin<AnyPluginConfig>>>;
       };
@@ -59,6 +69,32 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> =
               serializer?: HtmlSerializer<WithAnyKey<C>>;
             }>;
           };
+      render: Nullable<{
+        /**
+         * Renders a component above all other plugins' `node` components.
+         * Useful for wrapping or decorating nodes with additional UI elements.
+         */
+        aboveNodes?: NodeStaticWrapperComponent<WithAnyKey<C>>;
+
+        /**
+         * Renders a component after the `Editable` component. This is the last
+         * render position within the editor structure.
+         */
+        afterEditable?: () => React.ReactElement | null;
+
+        /** Renders a component before the `Editable` component. */
+        beforeEditable?: () => React.ReactElement | null;
+
+        /**
+         * Renders a component below all other plugins' `node` components, but
+         * above their `children`. This allows for injecting content or UI
+         * elements within nodes but before their child content.
+         */
+        belowNodes?: NodeStaticWrapperComponent<WithAnyKey<C>>;
+
+        node?: React.FC;
+      }>;
+
       parser: Nullable<Parser<WithAnyKey<C>>>;
 
       shortcuts: {};
@@ -412,3 +448,26 @@ export type InjectNodeProps<C extends AnyPluginConfig = PluginConfig> =
     transformNodeValue?: (options: TransformOptions<C>) => any;
     transformStyle?: (options: TransformOptions<C>) => CSSStyleDeclaration;
   };
+
+export type NodeStaticProps<C extends AnyPluginConfig = PluginConfig> =
+  | ((
+      props: SlateRenderElementProps<TElement, C> &
+        SlateRenderLeafProps<TText, C>
+    ) => AnyObject | undefined)
+  | AnyObject;
+
+export type NodeStaticWrapperComponent<
+  C extends AnyPluginConfig = PluginConfig,
+> = (
+  props: NodeStaticWrapperComponentProps<C>
+) => NodeStaticWrapperComponentReturnType<C>;
+
+export type NodeStaticWrapperComponentReturnType<
+  C extends AnyPluginConfig = PluginConfig,
+> = React.FC<SlateRenderElementProps<TElement, C>> | undefined;
+
+export interface NodeStaticWrapperComponentProps<
+  C extends AnyPluginConfig = PluginConfig,
+> extends SlateRenderElementProps<TElement, C> {
+  key: string;
+}

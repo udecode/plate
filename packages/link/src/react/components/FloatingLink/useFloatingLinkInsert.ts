@@ -118,7 +118,7 @@ export const useFloatingLinkInsert = ({
   );
 
   return {
-    hidden: readOnly,
+    hidden: readOnly || !isOpen,
     props: {
       style: {
         ...floating.style,

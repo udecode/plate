@@ -11,8 +11,6 @@ import { getAllBlockIds } from '@/lib/blocks';
 import { getRegistryComponent, getRegistryItem } from '@/lib/registry';
 import { styles } from '@/registry/registry-styles';
 
-import '@/styles/mdx.css';
-
 const getCachedRegistryItem = React.cache(async (name: string) => {
   return await getRegistryItem(name, true);
 });

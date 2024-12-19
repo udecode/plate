@@ -5,7 +5,7 @@ import type { Path } from 'slate';
 import {
   type PlateEditor,
   type PlateRenderElementProps,
-  findNodePath,
+  findPath,
 } from '@udecode/plate-common/react';
 import { useReadOnly } from 'slate-react';
 
@@ -36,7 +36,7 @@ export const useWithDraggable = <T = any>({
 }: PlateRenderElementProps & WithDraggableOptions<T>) => {
   const readOnly = useReadOnly();
   const path = React.useMemo(
-    () => findNodePath(editor, element),
+    () => findPath(editor, element),
     [editor, element]
   );
 

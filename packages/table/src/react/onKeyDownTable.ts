@@ -12,8 +12,8 @@ import {
   getNextTableCell,
   getPreviousTableCell,
   getTableEntries,
+  moveSelectionFromCell,
 } from '../lib';
-import { moveSelectionFromCell } from './transforms';
 
 export const onKeyDownTable: KeyboardHandler<TableConfig> = ({
   editor,

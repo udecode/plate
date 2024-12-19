@@ -13,9 +13,15 @@
   },
   "files": [
     {
-      "content": "'use client';\n\nimport React from 'react';\n\nimport { cn, withRef } from '@udecode/cn';\nimport { PlateLeaf } from '@udecode/plate-common/react';\n\nexport const HighlightLeaf = withRef<typeof PlateLeaf>(\n  ({ children, className, ...props }, ref) => (\n    <PlateLeaf\n      ref={ref}\n      asChild\n      className={cn('bg-highlight/30 text-inherit', className)}\n      {...props}\n    >\n      <mark>{children}</mark>\n    </PlateLeaf>\n  )\n);\n",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { cn, withRef } from '@udecode/cn';\nimport { PlateLeaf } from '@udecode/plate-common/react';\n\nexport const HighlightLeaf = withRef<typeof PlateLeaf>(\n  ({ children, className, ...props }, ref) => (\n    <PlateLeaf\n      ref={ref}\n      as=\"mark\"\n      className={cn(className, 'bg-highlight/30 text-inherit')}\n      {...props}\n    >\n      {children}\n    </PlateLeaf>\n  )\n);\n",
       "path": "plate-ui/highlight-leaf.tsx",
       "target": "components/plate-ui/highlight-leaf.tsx",
+      "type": "registry:ui"
+    },
+    {
+      "content": "import React from 'react';\n\nimport type { SlateLeafProps } from '@udecode/plate-common';\n\nimport { cn } from '@udecode/cn';\nimport { SlateLeaf } from '@udecode/plate-common';\n\nexport function HighlightLeafStatic({\n  children,\n  className,\n  ...props\n}: SlateLeafProps) {\n  return (\n    <SlateLeaf\n      as=\"mark\"\n      className={cn(className, 'bg-highlight/30 text-inherit')}\n      {...props}\n    >\n      {children}\n    </SlateLeaf>\n  );\n}\n",
+      "path": "plate-ui/highlight-leaf-static.tsx",
+      "target": "components/plate-ui/highlight-leaf-static.tsx",
       "type": "registry:ui"
     }
   ],

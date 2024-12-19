@@ -1,5 +1,5 @@
-import { type TElement, setNodes } from '@udecode/plate-common';
-import { findNodePath, useEditorRef } from '@udecode/plate-common/react';
+import { type TElement, findNodePath, setNodes } from '@udecode/plate-common';
+import { useEditorRef } from '@udecode/plate-common/react';
 import { useReadOnly } from 'slate-react';
 
 export const useIndentTodoListElementState = ({

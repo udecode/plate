@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { setNodes } from '@udecode/plate-common';
-import { findNodePath, useEditorRef } from '@udecode/plate-common/react';
+import { findPath, useEditorRef } from '@udecode/plate-common/react';
 import { useFocused, useSelected } from 'slate-react';
 
 import { type TCloudImageElement, generateSrcAndSrcSet, useUpload } from '..';
@@ -33,7 +33,7 @@ export const useCloudImageElementState = ({
       !url.startsWith('blob:') &&
       url !== element.url
     ) {
-      const path = findNodePath(editor, element);
+      const path = findPath(editor, element);
       setNodes<TCloudImageElement>(
         editor,
         { url },

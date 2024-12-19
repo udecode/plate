@@ -1533,12 +1533,6 @@ export const examples: Registry = [
     type: 'registry:example',
   },
   {
-    files: [{ path: 'example/iframe-demo.tsx', type: 'registry:example' }],
-    name: 'iframe-demo',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  {
     files: [{ path: 'example/mode-toggle.tsx', type: 'registry:example' }],
     name: 'mode-toggle',
     type: 'registry:example',

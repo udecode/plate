@@ -36,8 +36,8 @@ export const TagElement = withRef<typeof PlateElement>(
       <PlateElement
         ref={ref}
         className={cn(
-          'm-0.5 inline-flex cursor-pointer select-none',
-          className
+          className,
+          'm-0.5 inline-flex cursor-pointer select-none'
         )}
         draggable
         {...props}

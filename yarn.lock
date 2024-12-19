@@ -6664,6 +6664,7 @@ __metadata:
     "@udecode/slate-utils": "npm:40.3.1"
     "@udecode/utils": "npm:37.0.0"
     clsx: "npm:^2.1.1"
+    html-entities: "npm:^2.5.2"
     is-hotkey: "npm:^0.2.0"
     jotai: "npm:~2.8.4"
     jotai-optics: "npm:0.4.0"
@@ -6931,25 +6932,6 @@ __metadata:
   resolution: "@udecode/plate-horizontal-rule@workspace:packages/horizontal-rule"
   dependencies:
     "@udecode/plate-common": "workspace:^"
-  peerDependencies:
-    "@udecode/plate-common": ">=40.3.1"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate: ">=0.112.0"
-    slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
-    slate-hyperscript: ">=0.66.0"
-    slate-react: ">=0.111.0"
-  languageName: unknown
-  linkType: soft
-
-"@udecode/plate-html@npm:40.0.0, @udecode/plate-html@workspace:^, @udecode/plate-html@workspace:packages/html":
-  version: 0.0.0-use.local
-  resolution: "@udecode/plate-html@workspace:packages/html"
-  dependencies:
-    "@types/papaparse": "npm:^5.3.14"
-    "@udecode/plate-common": "workspace:^"
-    html-entities: "npm:^2.5.2"
   peerDependencies:
     "@udecode/plate-common": ">=40.3.1"
     react: ">=16.8.0"
@@ -7506,7 +7488,6 @@ __metadata:
     "@udecode/plate-heading": "npm:40.2.6"
     "@udecode/plate-highlight": "npm:40.0.0"
     "@udecode/plate-horizontal-rule": "npm:40.0.0"
-    "@udecode/plate-html": "npm:40.0.0"
     "@udecode/plate-indent": "npm:40.0.0"
     "@udecode/plate-indent-list": "npm:40.0.0"
     "@udecode/plate-kbd": "npm:40.0.0"
@@ -22523,7 +22504,6 @@ __metadata:
     "@udecode/plate-heading": "workspace:^"
     "@udecode/plate-highlight": "workspace:^"
     "@udecode/plate-horizontal-rule": "workspace:^"
-    "@udecode/plate-html": "workspace:^"
     "@udecode/plate-indent": "workspace:^"
     "@udecode/plate-indent-list": "workspace:^"
     "@udecode/plate-juice": "workspace:^"

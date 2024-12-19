@@ -41,6 +41,24 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
     enabled?: Partial<Record<string, boolean>>;
   };
 
+  render: Nullable<{
+    /**
+     * Renders a component above the `Editable` component but within the `Slate`
+     * wrapper. Useful for adding UI elements that should appear above the
+     * editable area.
+     */
+    aboveEditable?: React.FC<{ children: React.ReactNode }>;
+
+    /**
+     * Renders a component above the `Slate` wrapper. This is the outermost
+     * render position in the editor structure.
+     */
+    aboveSlate?: React.FC<{ children: React.ReactNode }>;
+
+    /** @see {@link NodeComponent} */
+    node?: NodeComponent;
+  }>;
+
   /** API methods provided by this plugin. */
   api: InferApi<C>;
 
@@ -110,6 +128,8 @@ export type BasePluginNode = {
    * @default plugin.key
    */
   type: string;
+
+  component?: NodeComponent | null;
 
   /**
    * Controls which (if any) attribute names in the `attributes` property of an
@@ -339,3 +359,14 @@ export type BasePluginContext<C extends AnyPluginConfig = PluginConfig> = {
   tf: C['transforms'];
   type: string;
 };
+
+/**
+ * Renders a component for Slate Nodes (elements if `isElement: true` or leaves
+ * if `isLeaf: true`) that match this plugin's type. This is the primary render
+ * method for plugin-specific node content.
+ *
+ * @default DefaultElement for elements, DefaultLeaf for leaves
+ */
+export type NodeComponent<T = any> = React.FC<T>;
+
+export type NodeComponents = Record<string, NodeComponent>;

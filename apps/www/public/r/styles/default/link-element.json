@@ -18,9 +18,15 @@
   },
   "files": [
     {
-      "content": "'use client';\n\nimport React from 'react';\n\nimport type { TLinkElement } from '@udecode/plate-link';\n\nimport { cn, withRef } from '@udecode/cn';\nimport { useElement } from '@udecode/plate-common/react';\nimport { useLink } from '@udecode/plate-link/react';\n\nimport { PlateElement } from './plate-element';\n\nexport const LinkElement = withRef<typeof PlateElement>(\n  ({ children, className, ...props }, ref) => {\n    const element = useElement<TLinkElement>();\n    const { props: linkProps } = useLink({ element });\n\n    return (\n      <PlateElement\n        ref={ref}\n        as=\"a\"\n        className={cn(\n          'font-medium text-primary underline decoration-primary underline-offset-4',\n          className\n        )}\n        {...(linkProps as any)}\n        {...props}\n      >\n        {children}\n      </PlateElement>\n    );\n  }\n);\n",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport type { TLinkElement } from '@udecode/plate-link';\n\nimport { cn, withRef } from '@udecode/cn';\nimport { useElement } from '@udecode/plate-common/react';\nimport { useLink } from '@udecode/plate-link/react';\n\nimport { PlateElement } from './plate-element';\n\nexport const LinkElement = withRef<typeof PlateElement>(\n  ({ children, className, ...props }, ref) => {\n    const element = useElement<TLinkElement>();\n    const { props: linkProps } = useLink({ element });\n\n    return (\n      <PlateElement\n        ref={ref}\n        as=\"a\"\n        className={cn(\n          className,\n          'font-medium text-primary underline decoration-primary underline-offset-4'\n        )}\n        {...(linkProps as any)}\n        {...props}\n      >\n        {children}\n      </PlateElement>\n    );\n  }\n);\n",
       "path": "plate-ui/link-element.tsx",
       "target": "components/plate-ui/link-element.tsx",
+      "type": "registry:ui"
+    },
+    {
+      "content": "import React from 'react';\n\nimport type { SlateElementProps } from '@udecode/plate-common';\n\nimport { cn } from '@udecode/cn';\nimport { SlateElement } from '@udecode/plate-common';\n\nexport const LinkElementStatic = ({\n  children,\n  className,\n  ...props\n}: SlateElementProps) => {\n  return (\n    <SlateElement\n      as=\"a\"\n      className={cn(\n        className,\n        'font-medium text-primary underline decoration-primary underline-offset-4'\n      )}\n      {...props}\n    >\n      {children}\n    </SlateElement>\n  );\n};\n",
+      "path": "plate-ui/link-element-static.tsx",
+      "target": "components/plate-ui/link-element-static.tsx",
       "type": "registry:ui"
     }
   ],

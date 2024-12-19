@@ -34,7 +34,7 @@ export const TocElement = withRef<typeof PlateElement>(
     return (
       <PlateElement
         ref={ref}
-        className={cn('relative mb-1 p-0', className)}
+        className={cn(className, 'relative mb-1 p-0')}
         {...props}
       >
         <div contentEditable={false}>

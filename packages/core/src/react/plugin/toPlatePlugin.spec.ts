@@ -1,7 +1,8 @@
-import type { ExtendEditor, NodeComponent, PlatePlugin } from './PlatePlugin';
+import type { ExtendEditor, PlatePlugin } from './PlatePlugin';
 
 import {
   type ExtendConfig,
+  type NodeComponent,
   type PluginConfig,
   type SlatePlugin,
   createSlatePlugin,

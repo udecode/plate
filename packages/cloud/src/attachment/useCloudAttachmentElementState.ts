@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { isDefined, setNodes } from '@udecode/plate-common';
-import { findNodePath, useEditorRef } from '@udecode/plate-common/react';
+import { findPath, useEditorRef } from '@udecode/plate-common/react';
 import { useFocused, useSelected } from 'slate-react';
 
 import { type TCloudAttachmentElement, useUpload } from '..';
@@ -30,7 +30,7 @@ export const useCloudAttachmentElementState = ({
      * appears to have the final URL.
      */
     if (isDefined(url) && !url.startsWith('blob:') && url !== element.url) {
-      const path = findNodePath(editor, element);
+      const path = findPath(editor, element);
       setNodes<TCloudAttachmentElement>(
         editor,
         { url },

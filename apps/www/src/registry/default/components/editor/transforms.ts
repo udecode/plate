@@ -45,11 +45,11 @@ import {
   MediaEmbedPlugin,
   VideoPlugin,
 } from '@udecode/plate-media/react';
+import { insertTable } from '@udecode/plate-table';
 import {
   TableCellPlugin,
   TablePlugin,
   TableRowPlugin,
-  insertTable,
 } from '@udecode/plate-table/react';
 import { Path } from 'slate';
 
