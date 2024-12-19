@@ -1,5 +1,35 @@
 # @udecode/plate-dnd
 
+## 41.0.0
+
+### Major Changes
+
+- [#3861](https://github.com/udecode/plate/pull/3861) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Removed `useDndBlock`, `useDragBlock`, and `useDropBlock` hooks in favor of `useDndNode`, `useDragNode`, and `useDropNode`.
+  - Removed `DndProvider` and `useDraggableStore`. Drop line state is now managed by `DndPlugin` as a single state object `dropTarget` containing both `id` and `line`.
+  - `useDropNode`: removed `onChangeDropLine` and `dropLine` options
+
+  Migration steps:
+
+  - Remove `DndProvider` from your draggable component (e.g. `draggable.tsx`)
+  - Replace `useDraggableStore` with `useEditorPlugin(DndPlugin).useOption`
+
+### Minor Changes
+
+- [#3861](https://github.com/udecode/plate/pull/3861) by [@zbeyens](https://github.com/zbeyens) –
+  - `useDndNode` now supports horizontal orientation. New option is `orientation?: 'horizontal' | 'vertical'`. Default is `vertical`.
+  - `useDraggableState`, `useDndNode`: add `canDropNode` callback option to query if a dragged node can be dropped onto a hovered node.
+  - `useDropLine`:
+    - Added `id` option to show dropline only for hovered element. Default is `useElement().id`.
+    - Added `orientation` option to filter droplines by orientation (`'horizontal' | 'vertical'`). Default is `vertical`.
+    - Returns empty dropline if orientation doesn't match (e.g., horizontal dropline in vertical orientation)
+    - Returns empty dropline if elementId doesn't match current hovered element
+
+### Patch Changes
+
+- [#3830](https://github.com/udecode/plate/pull/3830) by [@felixfeng33](https://github.com/felixfeng33) – Replace `findNodePath` with `findPath`
+
 ## 40.0.0
 
 ### Minor Changes

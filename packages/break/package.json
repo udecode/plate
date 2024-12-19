@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-break",
-  "version": "40.0.0",
+  "version": "41.0.0",
   "description": "Insert break plugins for Plate",
   "keywords": [
     "plate",
@@ -53,7 +53,7 @@
     "@udecode/plate-common": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate-common": ">=40.3.1",
+    "@udecode/plate-common": ">=41.0.0",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.112.0",

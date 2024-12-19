@@ -1,5 +1,22 @@
 # @udecode/slate-react
 
+## 41.0.0
+
+### Major Changes
+
+- [#3830](https://github.com/udecode/plate/pull/3830) by [@felixfeng33](https://github.com/felixfeng33) – Rename `findNodePath` to `findPath` since the addition of `findNodePath` in the headless lib.
+
+  We recommend using `findPath` mostly when subscribing to its value (e.g. in a React component) as it has O(path.length) complexity, compared to O(n) for the traversal-based `findNodePath`. This optimization is particularly important in:
+
+  - Render functions of Plate components where using `findNodePath` would increase the initial render time by O(n²)
+  - Key press handlers where using `findNodePath` would increase the handling time by O(n)
+
+  where n is the number of nodes in the editor.
+
+### Patch Changes
+
+- [#3830](https://github.com/udecode/plate/pull/3830) by [@felixfeng33](https://github.com/felixfeng33) – Update `TRenderElementProps`, `TRenderLeafProps` types
+
 ## 40.3.1
 
 ## 40.2.8

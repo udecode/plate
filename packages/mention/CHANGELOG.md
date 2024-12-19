@@ -1,5 +1,7 @@
 # @udecode/plate-mention
 
+## 41.0.0
+
 ## 40.0.0
 
 ## 39.3.4

@@ -1,5 +1,11 @@
 # @udecode/slate-utils
 
+## 41.0.0
+
+### Patch Changes
+
+- [#3868](https://github.com/udecode/plate/pull/3868) by [@zbeyens](https://github.com/zbeyens) – Add `getFirstNodeText`
+
 ## 40.3.1
 
 ## 40.2.7

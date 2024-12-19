@@ -1,5 +1,19 @@
 # @udecode/plate-indent-list
 
+## 41.0.0
+
+### Major Changes
+
+- [#3830](https://github.com/udecode/plate/pull/3830) by [@felixfeng33](https://github.com/felixfeng33) –
+  - Move `render.belowNodes` from `IndentListPlugin` to `BaseIndentListPlugin`. Props type for `listStyleTypes.liComponent` and `listStyleTypes.markerComponent` options is now `SlateRenderElementProps` instead of `PlateRenderElementProps`
+  - Move `someIndentList`, `someIndentTodo` from `@udecode/plate-indent-list/react` to `@udecode/plate-indent-list`
+
+### Patch Changes
+
+- [#3830](https://github.com/udecode/plate/pull/3830) by [@felixfeng33](https://github.com/felixfeng33) – Replace `findNodePath` with `findPath`
+
+- [#3868](https://github.com/udecode/plate/pull/3868) by [@zbeyens](https://github.com/zbeyens) – Fix todo list: insert break should inherit format
+
 ## 40.0.0
 
 ## 39.1.10

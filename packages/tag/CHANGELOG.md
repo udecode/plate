@@ -1,5 +1,7 @@
 # @udecode/plate-tag
 
+## 41.0.0
+
 ## 40.2.7
 
 ### Patch Changes
