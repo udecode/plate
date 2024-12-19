@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 
 import {
+  STRUCTURAL_TYPES,
   getBlockType,
   setBlockType,
 } from '@/registry/default/components/editor/transforms';
@@ -119,6 +120,7 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
   const value = useSelectionFragmentProp({
     defaultValue: ParagraphPlugin.key,
     getProp: (node) => getBlockType(node as any),
+    structuralTypes: STRUCTURAL_TYPES,
   });
   const selectedItem = React.useMemo(
     () =>
