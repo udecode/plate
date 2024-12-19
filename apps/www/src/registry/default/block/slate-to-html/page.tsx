@@ -60,6 +60,9 @@ import {
   BaseTableRowPlugin,
 } from '@udecode/plate-table';
 import { BaseTogglePlugin } from '@udecode/plate-toggle';
+import { cookies } from 'next/headers';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import Prism from 'prismjs';
 
 import { H3 } from '@/components/typography';
@@ -132,17 +135,17 @@ export const iframeHeight = '800px';
 
 export const containerClassName = 'w-full h-full';
 
-// const getCachedTailwindCss = React.cache(async () => {
-//   const cssPath = path.join(process.cwd(), 'public', 'tailwind.css');
+const getCachedTailwindCss = React.cache(async () => {
+  const cssPath = path.join(process.cwd(), 'public', 'tailwind.css');
 
-//   return await fs.readFile(cssPath, 'utf8');
-// });
+  return await fs.readFile(cssPath, 'utf8');
+});
 
-// const getCachedPrismCss = React.cache(async () => {
-//   const cssPath = path.join(process.cwd(), 'public', 'prism.css');
+const getCachedPrismCss = React.cache(async () => {
+  const cssPath = path.join(process.cwd(), 'public', 'prism.css');
 
-//   return await fs.readFile(cssPath, 'utf8');
-// });
+  return await fs.readFile(cssPath, 'utf8');
+});
 
 export default async function SlateToHtmlBlock() {
   const components = {
@@ -296,13 +299,10 @@ export default async function SlateToHtmlBlock() {
     value: createValue(),
   });
 
-  // const tailwindCss = await getCachedTailwindCss();
-  // const prismCss = await getCachedPrismCss();
-  // const cookieStore = await cookies();
-  // const theme = cookieStore.get('theme')?.value;
-  const theme = 'light';
-  const prismCss = '';
-  const tailwindCss = '';
+  const tailwindCss = await getCachedTailwindCss();
+  const prismCss = await getCachedPrismCss();
+  const cookieStore = await cookies();
+  const theme = cookieStore.get('theme')?.value;
 
   // Get the editor content HTML using EditorStatic
   const editorHtml = await serializeHtml(editor, {
