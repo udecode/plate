@@ -14,26 +14,27 @@ import { BaseColumnItemPlugin, BaseColumnPlugin } from '../BaseColumnPlugin';
 export const insertColumnGroup = (
   editor: SlateEditor,
   {
-    columns = 2,
+    layout = 2,
     select: selectProp,
     ...options
   }: InsertNodesOptions & {
-    columns?: number;
+    layout?: number[] | number;
   } = {}
 ) => {
-  const width = 100 / columns;
+  const columnLayout = Array.isArray(layout)
+    ? layout
+    : Array(layout).fill(Math.floor(100 / layout));
 
   withoutNormalizing(editor, () => {
     insertNodes<TColumnGroupElement>(
       editor,
       {
-        children: Array(columns)
-          .fill(null)
-          .map(() => ({
-            children: [editor.api.create.block()],
-            type: BaseColumnItemPlugin.key,
-            width: `${width}%`,
-          })),
+        children: columnLayout.map((width) => ({
+          children: [editor.api.create.block()],
+          type: BaseColumnItemPlugin.key,
+          width: `${width}%`,
+        })),
+        layout: columnLayout,
         type: BaseColumnPlugin.key,
       },
       options

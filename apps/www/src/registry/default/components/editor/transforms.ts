@@ -53,7 +53,7 @@ import {
 } from '@udecode/plate-table/react';
 import { Path } from 'slate';
 
-export const STRUCTURAL_TYPES: string[] = [
+export const STRUCTURAL_TYPES = [
   ColumnPlugin.key,
   ColumnItemPlugin.key,
   TablePlugin.key,
@@ -79,7 +79,7 @@ const insertBlockMap: Record<
   (editor: PlateEditor, type: string) => void
 > = {
   [ACTION_THREE_COLUMNS]: (editor) =>
-    insertColumnGroup(editor, { columns: 3, select: true }),
+    insertColumnGroup(editor, { layout: 3, select: true }),
   [AudioPlugin.key]: (editor) =>
     insertAudioPlaceholder(editor, { select: true }),
   [CalloutPlugin.key]: (editor) => insertCallout(editor, { select: true }),
@@ -163,7 +163,7 @@ const setBlockMap: Record<
   string,
   (editor: PlateEditor, type: string, entry: TNodeEntry<TElement>) => void
 > = {
-  [ACTION_THREE_COLUMNS]: (editor) => toggleColumnGroup(editor, { columns: 3 }),
+  [ACTION_THREE_COLUMNS]: (editor) => toggleColumnGroup(editor, { layout: 3 }),
   [INDENT_LIST_KEYS.todo]: setList,
   [ListStyleType.Decimal]: setList,
   [ListStyleType.Disc]: setList,

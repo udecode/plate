@@ -6,4 +6,3 @@ export * from './BaseColumnPlugin';
 export * from './types';
 export * from './withColumn';
 export * from './transforms/index';
-export * from './utils/index';

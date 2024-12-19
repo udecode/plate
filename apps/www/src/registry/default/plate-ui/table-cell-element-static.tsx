@@ -61,7 +61,7 @@ export function TableCellElementStatic({
       }
       {...props}
     >
-      <div className="relative z-20 box-border h-full px-4 py-2">
+      <div className="relative z-20 box-border h-full px-3 py-2">
         {children}
       </div>
     </SlateElement>

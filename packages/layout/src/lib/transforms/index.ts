@@ -5,6 +5,5 @@
 export * from './insertColumn';
 export * from './insertColumnGroup';
 export * from './moveMiddleColumn';
-export * from './resizeColumn';
-export * from './setColumns';
+export * from './setColumnWidth';
 export * from './toggleColumnGroup';

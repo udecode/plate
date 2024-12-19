@@ -309,6 +309,7 @@ export default function InstallationTab() {
     pluginsCode.push(formattedPlugin + ',');
   });
 
+  const hasDraggable = components.some((comp) => comp.id === 'draggable');
   const hasPlaceholder = components.some((comp) => comp.id === 'placeholder');
 
   const usageCode = [
@@ -317,11 +318,11 @@ export default function InstallationTab() {
     pluginsCode.join('\n'),
     '  ],',
     '  override: {',
-    `    components: ${hasPlaceholder ? 'withPlaceholders(' : ''}({`,
+    `    components: ${hasDraggable ? 'withDraggables(' : ''}${hasPlaceholder ? 'withPlaceholders(' : ''}({`,
     ...componentsWithPluginKey.map(
       ({ pluginKey, usage }) => `      [${pluginKey}]: ${usage},`
     ),
-    `    })${hasPlaceholder ? ')' : ''},`,
+    `    })${hasPlaceholder ? ')' : ''}${hasDraggable ? ')' : ''},`,
     '  },',
     '  value: [',
     '    {',

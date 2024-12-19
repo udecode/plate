@@ -250,7 +250,9 @@ export const uiComponents: Registry = [
         `import { DndPlugin } from '@udecode/plate-dnd';
 import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';`,
+import { HTML5Backend } from 'react-dnd-html5-backend';
+
+import { withDraggables } from './withDraggables';`,
         `export function MyEditor() {
   const editor = usePlateEditor({
     plugins: [
@@ -259,9 +261,9 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       DndPlugin.configure({ options: { enableScroller: true } }),
     ],
     override: {
-      components: {
+      components: withDraggables({
         // ...components
-      },
+      }),
     }
   });
 

@@ -91,6 +91,7 @@ import { TableElement } from '@/registry/default/plate-ui/table-element';
 import { TableRowElement } from '@/registry/default/plate-ui/table-row-element';
 import { TocElement } from '@/registry/default/plate-ui/toc-element';
 import { ToggleElement } from '@/registry/default/plate-ui/toggle-element';
+import { withDraggables } from '@/registry/default/plate-ui/with-draggables';
 
 import { editorPlugins, viewPlugins } from './plugins/editor-plugins';
 
@@ -161,7 +162,9 @@ export const useCreateEditor = (
     {
       override: {
         components: {
-          ...(readOnly ? viewComponents : withPlaceholders(editorComponents)),
+          ...(readOnly
+            ? viewComponents
+            : withPlaceholders(withDraggables(editorComponents))),
           ...components,
         },
         ...override,
