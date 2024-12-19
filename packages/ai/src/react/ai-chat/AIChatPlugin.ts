@@ -4,14 +4,11 @@ import type { UseChatHelpers } from 'ai/react';
 import {
   type OmitFirst,
   type PluginConfig,
+  type SlateEditor,
   bindFirst,
+  createSlateEditor,
 } from '@udecode/plate-common';
-import {
-  type PlateEditor,
-  createPlateEditor,
-  createTPlatePlugin,
-  focusEditor,
-} from '@udecode/plate-common/react';
+import { createTPlatePlugin, focusEditor } from '@udecode/plate-common/react';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 
 import type { AIBatch } from '../../lib';
@@ -31,7 +28,7 @@ import { withAIChat } from './withAIChat';
 
 export type AIChatOptions = {
   chat: Partial<UseChatHelpers>;
-  createAIEditor: () => PlateEditor;
+  createAIEditor: () => SlateEditor;
   /**
    * Specifies how the assistant message is handled:
    *
@@ -88,7 +85,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
   options: {
     chat: { messages: [] } as any,
     createAIEditor: () =>
-      createPlateEditor({
+      createSlateEditor({
         id: 'ai',
       }),
     mode: 'chat',
