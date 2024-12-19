@@ -22,7 +22,7 @@ import {
   type SlateEditor,
   BaseParagraphPlugin,
   SlateLeaf,
-} from '@udecode/plate-core';
+} from '@udecode/plate-common';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { BaseLinkPlugin } from '@udecode/plate-link';

@@ -2461,6 +2461,10 @@
       {
         "path": "plate-ui/indent-todo-marker.tsx",
         "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/indent-todo-marker-static.tsx",
+        "type": "registry:ui"
       }
     ],
     "name": "indent-todo-marker",

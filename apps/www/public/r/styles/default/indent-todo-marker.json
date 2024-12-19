@@ -22,6 +22,12 @@
       "path": "plate-ui/indent-todo-marker.tsx",
       "target": "components/plate-ui/indent-todo-marker.tsx",
       "type": "registry:ui"
+    },
+    {
+      "content": "import React from 'react';\n\nimport type { SlateRenderElementProps } from '@udecode/plate-common';\n\nimport { cn } from '@udecode/cn';\n\nimport { CheckboxStatic } from './checkbox-static';\n\nexport const TodoMarkerStatic = ({\n  element,\n}: Omit<SlateRenderElementProps, 'children'>) => {\n  return (\n    <div contentEditable={false}>\n      <CheckboxStatic\n        className=\"pointer-events-none absolute -left-6 top-1\"\n        checked={element.checked as boolean}\n      />\n    </div>\n  );\n};\n\nexport const TodoLiStatic = ({\n  children,\n  element,\n}: SlateRenderElementProps) => {\n  return (\n    <span\n      className={cn(\n        (element.checked as boolean) && 'text-muted-foreground line-through'\n      )}\n    >\n      {children}\n    </span>\n  );\n};\n",
+      "path": "plate-ui/indent-todo-marker-static.tsx",
+      "target": "components/plate-ui/indent-todo-marker-static.tsx",
+      "type": "registry:ui"
     }
   ],
   "name": "indent-todo-marker",
