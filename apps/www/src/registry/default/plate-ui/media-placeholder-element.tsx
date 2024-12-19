@@ -12,7 +12,7 @@ import {
   withoutSavingHistory,
 } from '@udecode/plate-common';
 import {
-  findNodePath,
+  findPath,
   useEditorPlugin,
   withHOC,
   withRef,
@@ -108,7 +108,7 @@ export const MediaPlaceholderElement = withHOC(
       useEffect(() => {
         if (!uploadedFile) return;
 
-        const path = findNodePath(editor, element);
+        const path = findPath(editor, element);
 
         withoutSavingHistory(editor, () => {
           removeNodes(editor, { at: path });

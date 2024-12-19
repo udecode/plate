@@ -22,6 +22,12 @@
       "path": "plate-ui/table-cell-element.tsx",
       "target": "components/plate-ui/table-cell-element.tsx",
       "type": "registry:ui"
+    },
+    {
+      "content": "import React from 'react';\n\nimport type { SlateElementProps } from '@udecode/plate-common';\n\nimport { cn } from '@udecode/cn';\nimport {\n  SlateElement,\n  findNode,\n  getParentNode,\n  isElement,\n} from '@udecode/plate-common';\nimport { getTableCellBorders } from '@udecode/plate-table';\n\nexport function TableCellElementStatic({\n  children,\n  className,\n  isHeader,\n  style,\n  ...props\n}: SlateElementProps & {\n  isHeader?: boolean;\n}) {\n  const { editor, element } = props;\n\n  const cellPath = findNode(editor!, {\n    match: (n) => isElement(n) && n === element,\n  })![1];\n\n  const rowPath = getParentNode(editor!, cellPath)![1];\n\n  const borders = getTableCellBorders(element, {\n    isFirstCell: cellPath.at(-1) === 0,\n    isFirstRow: rowPath.at(-1) === 0,\n  });\n\n  return (\n    <SlateElement\n      as={isHeader ? 'th' : 'td'}\n      className={cn(\n        className,\n        'relative h-full overflow-visible bg-background p-0',\n        element.background ? 'bg-[--cellBackground]' : 'bg-background',\n        cn(\n          isHeader && 'text-left font-normal [&_>_*]:m-0',\n          'before:size-full',\n          \"before:absolute before:box-border before:select-none before:content-['']\",\n          borders &&\n            cn(\n              borders.bottom?.size && `before:border-b before:border-b-border`,\n              borders.right?.size && `before:border-r before:border-r-border`,\n              borders.left?.size && `before:border-l before:border-l-border`,\n              borders.top?.size && `before:border-t before:border-t-border`\n            )\n        )\n      )}\n      style={\n        {\n          '--cellBackground': element.background,\n          ...style,\n        } as React.CSSProperties\n      }\n      {...props}\n    >\n      <div className=\"relative z-20 box-border h-full px-3 py-2\">\n        {children}\n      </div>\n    </SlateElement>\n  );\n}\n\nexport function TableCellHeaderStaticElement(props: SlateElementProps) {\n  return <TableCellElementStatic {...props} isHeader />;\n}\n",
+      "path": "plate-ui/table-cell-element-static.tsx",
+      "target": "components/plate-ui/table-cell-element-static.tsx",
+      "type": "registry:ui"
     }
   ],
   "name": "table-cell-element",

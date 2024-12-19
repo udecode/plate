@@ -21,6 +21,12 @@
       "path": "plate-ui/paragraph-element.tsx",
       "target": "components/plate-ui/paragraph-element.tsx",
       "type": "registry:ui"
+    },
+    {
+      "content": "import React from 'react';\n\nimport type { SlateElementProps } from '@udecode/plate-common';\n\nimport { cn } from '@udecode/cn';\nimport { SlateElement } from '@udecode/plate-common';\n\nexport const ParagraphElementStatic = ({\n  children,\n  className,\n  ...props\n}: SlateElementProps) => {\n  return (\n    <SlateElement className={cn(className, 'm-0 px-0 py-1')} {...props}>\n      {children}\n    </SlateElement>\n  );\n};\n",
+      "path": "plate-ui/paragraph-element-static.tsx",
+      "target": "components/plate-ui/paragraph-element-static.tsx",
+      "type": "registry:ui"
     }
   ],
   "name": "paragraph-element",

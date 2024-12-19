@@ -24,6 +24,12 @@
       "path": "plate-ui/table-element.tsx",
       "target": "components/plate-ui/table-element.tsx",
       "type": "registry:ui"
+    },
+    {
+      "content": "import React from 'react';\n\nimport type { SlateElementProps } from '@udecode/plate-common';\nimport type { TTableElement } from '@udecode/plate-table';\n\nimport { cn } from '@udecode/cn';\nimport { SlateElement } from '@udecode/plate-common';\n\nexport const TableElementStatic = ({\n  children,\n  className,\n  ...props\n}: SlateElementProps) => {\n  const { colSizes } = props.element as TTableElement;\n\n  return (\n    <SlateElement className={cn(className, 'overflow-x-auto')} {...props}>\n      <table\n        className={cn(\n          'my-4 ml-px mr-0 table h-px w-[calc(100%-6px)] table-fixed border-collapse'\n        )}\n      >\n        <colgroup>\n          {colSizes?.map((width, index) => (\n            <col\n              key={index}\n              style={{\n                width: width || undefined,\n              }}\n            />\n          ))}\n        </colgroup>\n\n        <tbody className=\"min-w-full\">{children}</tbody>\n      </table>\n    </SlateElement>\n  );\n};\n",
+      "path": "plate-ui/table-element-static.tsx",
+      "target": "components/plate-ui/table-element-static.tsx",
+      "type": "registry:ui"
     }
   ],
   "name": "table-element",

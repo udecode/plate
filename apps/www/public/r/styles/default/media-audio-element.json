@@ -24,6 +24,12 @@
       "path": "plate-ui/media-audio-element.tsx",
       "target": "components/plate-ui/media-audio-element.tsx",
       "type": "registry:ui"
+    },
+    {
+      "content": "import React from 'react';\n\nimport type { SlateElementProps } from '@udecode/plate-common';\nimport type { TAudioElement } from '@udecode/plate-media';\n\nimport { cn } from '@udecode/cn';\nimport { SlateElement } from '@udecode/plate-common';\n\nexport function MediaAudioElementStatic({\n  children,\n  className,\n  ...props\n}: SlateElementProps) {\n  const { url } = props.element as TAudioElement;\n\n  return (\n    <SlateElement className={cn(className, 'relative mb-1')} {...props}>\n      <figure className=\"group relative cursor-default\">\n        <div className=\"h-16\">\n          <audio className=\"size-full\" src={url} controls />\n        </div>\n      </figure>\n      {children}\n    </SlateElement>\n  );\n}\n",
+      "path": "plate-ui/media-audio-element-static.tsx",
+      "target": "components/plate-ui/media-audio-element-static.tsx",
+      "type": "registry:ui"
     }
   ],
   "name": "media-audio-element",

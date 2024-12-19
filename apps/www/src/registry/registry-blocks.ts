@@ -153,8 +153,8 @@ export const blocks: Registry = [
         type: 'registry:page',
       },
       {
-        path: 'block/slate-to-html/slate-to-html-client.tsx',
-        target: 'app/html/slate-to-html-client.tsx',
+        path: 'components/editor/slate-to-html.tsx',
+        target: 'components/editor/slate-to-html.tsx',
         type: 'registry:component',
       },
     ],

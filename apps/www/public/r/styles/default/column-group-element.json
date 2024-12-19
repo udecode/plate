@@ -22,6 +22,12 @@
       "path": "plate-ui/column-group-element.tsx",
       "target": "components/plate-ui/column-group-element.tsx",
       "type": "registry:ui"
+    },
+    {
+      "content": "import React from 'react';\n\nimport type { SlateElementProps } from '@udecode/plate-common';\n\nimport { cn } from '@udecode/cn';\nimport { SlateElement } from '@udecode/plate-common';\n\nexport function ColumnGroupElementStatic({\n  children,\n  className,\n  ...props\n}: SlateElementProps) {\n  return (\n    <SlateElement className={cn(className, 'my-2')} {...props}>\n      <div className={cn('flex size-full gap-4 rounded')}>{children}</div>\n    </SlateElement>\n  );\n}\n",
+      "path": "plate-ui/column-group-element-static.tsx",
+      "target": "components/plate-ui/column-group-element-static.tsx",
+      "type": "registry:ui"
     }
   ],
   "name": "column-group-element",

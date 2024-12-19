@@ -22,6 +22,12 @@
       "path": "plate-ui/mention-element.tsx",
       "target": "components/plate-ui/mention-element.tsx",
       "type": "registry:ui"
+    },
+    {
+      "content": "import React from 'react';\n\nimport type { SlateElementProps } from '@udecode/plate-common';\nimport type { TMentionElement } from '@udecode/plate-mention';\n\nimport { cn } from '@udecode/cn';\nimport { IS_APPLE, SlateElement } from '@udecode/plate-common';\n\nexport function MentionElementStatic({\n  children,\n  className,\n  prefix,\n  ...props\n}: SlateElementProps & {\n  prefix?: string;\n}) {\n  const element = props.element as TMentionElement;\n\n  return (\n    <SlateElement\n      className={cn(\n        className,\n        'inline-block rounded-md bg-muted px-1.5 py-0.5 align-baseline text-sm font-medium',\n        element.children[0].bold === true && 'font-bold',\n        element.children[0].italic === true && 'italic',\n        element.children[0].underline === true && 'underline'\n      )}\n      data-slate-value={element.value}\n      {...props}\n    >\n      {IS_APPLE ? (\n        // Mac OS IME https://github.com/ianstormtaylor/slate/issues/3490\n        <React.Fragment>\n          {children}\n          {prefix}\n          {element.value}\n        </React.Fragment>\n      ) : (\n        // Others like Android https://github.com/ianstormtaylor/slate/pull/5360\n        <React.Fragment>\n          {prefix}\n          {element.value}\n          {children}\n        </React.Fragment>\n      )}\n    </SlateElement>\n  );\n}\n",
+      "path": "plate-ui/mention-element-static.tsx",
+      "target": "components/plate-ui/mention-element-static.tsx",
+      "type": "registry:ui"
     }
   ],
   "name": "mention-element",

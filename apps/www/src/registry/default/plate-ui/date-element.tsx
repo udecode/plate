@@ -2,7 +2,7 @@
 
 import { cn, withRef } from '@udecode/cn';
 import { setNodes } from '@udecode/plate-common';
-import { findNodePath } from '@udecode/plate-common/react';
+import { findPath } from '@udecode/plate-common/react';
 import { useReadOnly } from 'slate-react';
 
 import { Calendar } from './calendar';
@@ -77,7 +77,7 @@ export const DateElement = withRef<typeof PlateElement>(
                 setNodes(
                   editor,
                   { date: date.toDateString() },
-                  { at: findNodePath(editor, element) }
+                  { at: findPath(editor, element) }
                 );
               }}
               mode="single"

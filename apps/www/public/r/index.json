@@ -51,6 +51,10 @@
       {
         "path": "plate-ui/blockquote-element.tsx",
         "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/blockquote-element-static.tsx",
+        "type": "registry:ui"
       }
     ],
     "name": "blockquote-element",
@@ -81,6 +85,10 @@
     "files": [
       {
         "path": "plate-ui/code-block-element.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/code-block-element-static.tsx",
         "type": "registry:ui"
       },
       {
@@ -119,6 +127,10 @@
       {
         "path": "plate-ui/code-leaf.tsx",
         "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/code-leaf-static.tsx",
+        "type": "registry:ui"
       }
     ],
     "name": "code-leaf",
@@ -145,6 +157,10 @@
     "files": [
       {
         "path": "plate-ui/code-line-element.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/code-line-element-static.tsx",
         "type": "registry:ui"
       }
     ],
@@ -177,6 +193,10 @@
       {
         "path": "plate-ui/code-syntax-leaf.tsx",
         "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/code-syntax-leaf-static.tsx",
+        "type": "registry:ui"
       }
     ],
     "name": "code-syntax-leaf",
@@ -205,6 +225,10 @@
     "files": [
       {
         "path": "plate-ui/column-element.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/column-element-static.tsx",
         "type": "registry:ui"
       }
     ],
@@ -236,6 +260,10 @@
     "files": [
       {
         "path": "plate-ui/column-group-element.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/column-group-element-static.tsx",
         "type": "registry:ui"
       }
     ],
@@ -270,6 +298,10 @@
       {
         "path": "plate-ui/comment-leaf.tsx",
         "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/comment-leaf-static.tsx",
+        "type": "registry:ui"
       }
     ],
     "name": "comment-leaf",
@@ -298,6 +330,10 @@
     "files": [
       {
         "path": "plate-ui/date-element.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/date-element-static.tsx",
         "type": "registry:ui"
       }
     ],
@@ -385,6 +421,10 @@
       {
         "path": "plate-ui/heading-element.tsx",
         "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/heading-element-static.tsx",
+        "type": "registry:ui"
       }
     ],
     "name": "heading-element",
@@ -409,6 +449,10 @@
     "files": [
       {
         "path": "plate-ui/highlight-leaf.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/highlight-leaf-static.tsx",
         "type": "registry:ui"
       }
     ],
@@ -436,6 +480,10 @@
     "files": [
       {
         "path": "plate-ui/hr-element.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/hr-element-static.tsx",
         "type": "registry:ui"
       }
     ],
@@ -471,6 +519,10 @@
     "files": [
       {
         "path": "plate-ui/image-element.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/image-element-static.tsx",
         "type": "registry:ui"
       }
     ],
@@ -532,6 +584,10 @@
       {
         "path": "plate-ui/kbd-leaf.tsx",
         "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/kbd-leaf-static.tsx",
+        "type": "registry:ui"
       }
     ],
     "name": "kbd-leaf",
@@ -559,6 +615,10 @@
     "files": [
       {
         "path": "plate-ui/link-element.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/link-element-static.tsx",
         "type": "registry:ui"
       }
     ],
@@ -618,6 +678,10 @@
     "files": [
       {
         "path": "plate-ui/media-audio-element.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/media-audio-element-static.tsx",
         "type": "registry:ui"
       }
     ],
@@ -692,6 +756,10 @@
       {
         "path": "plate-ui/media-file-element.tsx",
         "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/media-file-element-static.tsx",
+        "type": "registry:ui"
       }
     ],
     "name": "media-file-element",
@@ -764,6 +832,10 @@
       {
         "path": "plate-ui/media-video-element.tsx",
         "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/media-video-element-static.tsx",
+        "type": "registry:ui"
       }
     ],
     "name": "media-video-element",
@@ -796,6 +868,10 @@
     "files": [
       {
         "path": "plate-ui/mention-element.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/mention-element-static.tsx",
         "type": "registry:ui"
       }
     ],
@@ -857,6 +933,10 @@
     "files": [
       {
         "path": "plate-ui/paragraph-element.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/paragraph-element-static.tsx",
         "type": "registry:ui"
       }
     ],
@@ -950,6 +1030,10 @@
       {
         "path": "plate-ui/table-cell-element.tsx",
         "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/table-cell-element-static.tsx",
+        "type": "registry:ui"
       }
     ],
     "name": "table-cell-element",
@@ -983,6 +1067,10 @@
       {
         "path": "plate-ui/table-element.tsx",
         "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/table-element-static.tsx",
+        "type": "registry:ui"
       }
     ],
     "name": "table-element",
@@ -1011,6 +1099,10 @@
     "files": [
       {
         "path": "plate-ui/table-row-element.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/table-row-element-static.tsx",
         "type": "registry:ui"
       }
     ],
@@ -1068,6 +1160,10 @@
       {
         "path": "plate-ui/toc-element.tsx",
         "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/toc-element-static.tsx",
+        "type": "registry:ui"
       }
     ],
     "name": "toc-element",
@@ -1120,6 +1216,10 @@
     "files": [
       {
         "path": "plate-ui/toggle-element.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/toggle-element-static.tsx",
         "type": "registry:ui"
       }
     ],
@@ -1227,6 +1327,10 @@
     "files": [
       {
         "path": "plate-ui/checkbox.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/checkbox-static.tsx",
         "type": "registry:ui"
       }
     ],
@@ -1961,6 +2065,10 @@
     "files": [
       {
         "path": "plate-ui/editor.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/editor-static.tsx",
         "type": "registry:ui"
       }
     ],

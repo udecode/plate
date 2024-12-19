@@ -27,6 +27,12 @@
       "path": "plate-ui/image-element.tsx",
       "target": "components/plate-ui/image-element.tsx",
       "type": "registry:ui"
+    },
+    {
+      "content": "import React from 'react';\n\nimport type { TCaptionElement } from '@udecode/plate-caption';\nimport type { SlateElementProps } from '@udecode/plate-common';\nimport type { TImageElement } from '@udecode/plate-media';\n\nimport { cn } from '@udecode/cn';\nimport { SlateElement, getNodeString } from '@udecode/plate-common';\n\nexport function ImageElementStatic({\n  children,\n  className,\n  nodeProps,\n  ...props\n}: SlateElementProps) {\n  const {\n    align = 'center',\n    caption,\n    url,\n    width,\n  } = props.element as TImageElement &\n    TCaptionElement & {\n      width: number;\n    };\n\n  return (\n    <SlateElement className={cn(className, 'py-2.5')} {...props}>\n      <figure className=\"group relative m-0 inline-block\" style={{ width }}>\n        <div\n          className=\"relative min-w-[92px] max-w-full\"\n          style={{ textAlign: align }}\n        >\n          <img\n            className={cn(\n              'w-full max-w-full cursor-default object-cover px-0',\n              'rounded-sm'\n            )}\n            alt=\"\"\n            src={url}\n            {...nodeProps}\n          />\n          {caption && (\n            <figcaption className=\"mx-auto mt-2 h-[24px] max-w-full\">\n              {getNodeString(caption[0])}\n            </figcaption>\n          )}\n        </div>\n      </figure>\n      {children}\n    </SlateElement>\n  );\n}\n",
+      "path": "plate-ui/image-element-static.tsx",
+      "target": "components/plate-ui/image-element-static.tsx",
+      "type": "registry:ui"
     }
   ],
   "name": "image-element",

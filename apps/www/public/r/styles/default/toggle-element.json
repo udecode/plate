@@ -19,6 +19,12 @@
       "path": "plate-ui/toggle-element.tsx",
       "target": "components/plate-ui/toggle-element.tsx",
       "type": "registry:ui"
+    },
+    {
+      "content": "import React from 'react';\n\nimport type { SlateElementProps } from '@udecode/plate-common';\n\nimport { cn } from '@udecode/cn';\nimport { SlateElement } from '@udecode/plate-common';\nimport { ChevronRight } from 'lucide-react';\n\nexport function ToggleElementStatic({\n  children,\n  className,\n  ...props\n}: SlateElementProps) {\n  return (\n    <SlateElement className={cn(className, 'relative pl-6')} {...props}>\n      <div\n        className=\"absolute -left-0.5 top-0 size-6 cursor-pointer select-none items-center justify-center rounded-md p-px text-muted-foreground transition-colors hover:bg-accent [&_svg]:size-4\"\n        contentEditable={false}\n      >\n        <ChevronRight\n          className={cn('transition-transform duration-75', 'rotate-0')}\n        />\n      </div>\n      {children}\n    </SlateElement>\n  );\n}\n",
+      "path": "plate-ui/toggle-element-static.tsx",
+      "target": "components/plate-ui/toggle-element-static.tsx",
+      "type": "registry:ui"
     }
   ],
   "name": "toggle-element",

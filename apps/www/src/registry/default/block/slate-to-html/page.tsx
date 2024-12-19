@@ -63,11 +63,14 @@ import { BaseTogglePlugin } from '@udecode/plate-toggle';
 import { cookies } from 'next/headers';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-// import fs from 'node:fs/promises';
-// import path from 'node:path';
 import Prism from 'prismjs';
 
 import { H3 } from '@/components/typography';
+import {
+  EditorClient,
+  ExportHtmlButton,
+  HtmlIframe,
+} from '@/registry/default/components/editor/slate-to-html';
 import { alignValue } from '@/registry/default/example/values/align-value';
 import { basicElementsValue } from '@/registry/default/example/values/basic-elements-value';
 import { basicMarksValue } from '@/registry/default/example/values/basic-marks-value';
@@ -125,12 +128,6 @@ import { TableElementStatic } from '@/registry/default/plate-ui/table-element-st
 import { TableRowElementStatic } from '@/registry/default/plate-ui/table-row-element-static';
 import { TocElementStatic } from '@/registry/default/plate-ui/toc-element-static';
 import { ToggleElementStatic } from '@/registry/default/plate-ui/toggle-element-static';
-
-import {
-  EditorClient,
-  ExportHtmlButton,
-  HtmlIframe,
-} from './slate-to-html-client';
 
 export const description = 'Slate to HTML';
 

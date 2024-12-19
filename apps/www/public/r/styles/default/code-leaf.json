@@ -20,6 +20,12 @@
       "path": "plate-ui/code-leaf.tsx",
       "target": "components/plate-ui/code-leaf.tsx",
       "type": "registry:ui"
+    },
+    {
+      "content": "import React from 'react';\n\nimport type { SlateLeafProps } from '@udecode/plate-common';\n\nimport { cn } from '@udecode/cn';\nimport { SlateLeaf } from '@udecode/plate-common';\n\nexport const CodeLeafStatic = ({\n  children,\n  className,\n  ...props\n}: SlateLeafProps) => {\n  return (\n    <SlateLeaf\n      as=\"code\"\n      className={cn(\n        className,\n        'whitespace-pre-wrap rounded-md bg-muted px-[0.3em] py-[0.2em] font-mono text-sm'\n      )}\n      {...props}\n    >\n      {children}\n    </SlateLeaf>\n  );\n};\n",
+      "path": "plate-ui/code-leaf-static.tsx",
+      "target": "components/plate-ui/code-leaf-static.tsx",
+      "type": "registry:ui"
     }
   ],
   "name": "code-leaf",

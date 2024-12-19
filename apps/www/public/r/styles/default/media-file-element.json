@@ -24,6 +24,12 @@
       "path": "plate-ui/media-file-element.tsx",
       "target": "components/plate-ui/media-file-element.tsx",
       "type": "registry:ui"
+    },
+    {
+      "content": "import React from 'react';\n\nimport type { SlateElementProps } from '@udecode/plate-common';\nimport type { TFileElement } from '@udecode/plate-media';\n\nimport { cn } from '@udecode/cn';\nimport { SlateElement } from '@udecode/plate-common';\nimport { FileUp } from 'lucide-react';\n\nexport const MediaFileElementStatic = ({\n  children,\n  className,\n  ...props\n}: SlateElementProps) => {\n  const { name, url } = props.element as TFileElement;\n\n  return (\n    <SlateElement\n      className={cn(className, 'relative my-px rounded-sm')}\n      {...props}\n    >\n      <a\n        className=\"group relative m-0 flex cursor-pointer items-center rounded px-0.5 py-[3px] hover:bg-muted\"\n        contentEditable={false}\n        download={name}\n        href={url}\n        rel=\"noopener noreferrer\"\n        role=\"button\"\n        target=\"_blank\"\n      >\n        <div className=\"flex items-center gap-1 p-1\">\n          <FileUp className=\"size-5\" />\n\n          <div>{name}</div>\n        </div>\n\n        {/* <Caption align=\"left\">\n              <CaptionTextarea\n                className=\"text-left\"\n                readOnly={readOnly}\n                placeholder=\"Write a caption...\"\n              />\n            </Caption> */}\n      </a>\n\n      {children}\n    </SlateElement>\n  );\n};\n",
+      "path": "plate-ui/media-file-element-static.tsx",
+      "target": "components/plate-ui/media-file-element-static.tsx",
+      "type": "registry:ui"
     }
   ],
   "name": "media-file-element",

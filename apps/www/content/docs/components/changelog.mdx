@@ -11,9 +11,17 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 
 ## December 2024 #17
 
-### December 18 #17.2
+### December 19 #17.2
 
-New RSC components for element and leaf components, filename ending with `-static.tsx`. Those are now installed along with the default client components.
+Plate 41
+
+- New RSC components for element and leaf components, filename ending with `-static.tsx`. Those are now added along with the default client components.
+- `editor`: add `select-text` to `editorVariants`
+- `date-element`: remove popover when read-only
+- `indent-todo-marker`: use `SlateRenderElementProps` type instead of `PlateRenderElementProps`
+- `hr-element`, `media-audio-element`, `media-embed-element`, `mention-element`: improve cursor styling
+- `media-file-element`: use `<a>` instead of `div` + `onClick`
+- all element and leaf components: `className` prop is now placed before inline prop.
 
 ### December 16 #17.1
 

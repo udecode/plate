@@ -21,6 +21,12 @@
       "path": "plate-ui/code-line-element.tsx",
       "target": "components/plate-ui/code-line-element.tsx",
       "type": "registry:ui"
+    },
+    {
+      "content": "import React from 'react';\n\nimport type { SlateElementProps } from '@udecode/plate-common';\n\nimport { SlateElement } from '@udecode/plate-common';\n\nexport const CodeLineElementStatic = ({\n  children,\n  ...props\n}: SlateElementProps) => {\n  return <SlateElement {...props}>{children}</SlateElement>;\n};\n",
+      "path": "plate-ui/code-line-element-static.tsx",
+      "target": "components/plate-ui/code-line-element-static.tsx",
+      "type": "registry:ui"
     }
   ],
   "name": "code-line-element",
