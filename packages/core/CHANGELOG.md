@@ -1,5 +1,19 @@
 # @udecode/plate-core
 
+## 41.0.0
+
+### Minor Changes
+
+- [#3830](https://github.com/udecode/plate/pull/3830) by [@felixfeng33](https://github.com/felixfeng33) – ## @udecode/plate-core@40.1.0
+
+  ### Minor Changes
+
+  - [#3744](https://github.com/udecode/plate/pull/3744) by [@zbeyens](https://github.com/zbeyens) –
+    - Add `PlateStatic`, `SlateElement`, `SlateLeaf` components for static rendering and server-side HTML serialization
+    - Add `serializeHtml` function to serialize editor content to HTML. Deprecating `@udecode/plate-html` in favor of core serialization.
+    - Move from `PlatePlugin` (`/react`) to `BasePlugin` (`/`): `node.component`, `render.aboveEditable`, `render.aboveSlate`, `render.node`
+    - Add to `SlatePlugin`: `node.props`, `render.aboveNodes`, `render.belowNodes`, `render.afterEditable`, `render.beforeEditable`, `render.node`
+
 ## 40.3.1
 
 ### Patch Changes

@@ -1,5 +1,19 @@
 # @udecode/slate
 
+## 41.0.0
+
+### Minor Changes
+
+- [#3830](https://github.com/udecode/plate/pull/3830) by [@felixfeng33](https://github.com/felixfeng33) – Add `findNodePath` - a traversal-based node path finder with O(n) complexity. This is the headless alternative to `findPath` from `@udecode/slate-react`, recommended for:
+
+  - Non-React contexts
+  - Plugin logic that doesn't require React dependencies
+  - Non-performance-critical paths where O(n) traversal is acceptable
+
+### Patch Changes
+
+- [#3868](https://github.com/udecode/plate/pull/3868) by [@zbeyens](https://github.com/zbeyens) – export type NodeTextsOptions
+
 ## 40.3.1
 
 ### Patch Changes

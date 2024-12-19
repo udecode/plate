@@ -1,5 +1,39 @@
 # @udecode/plate-table
 
+## 41.0.0
+
+### Major Changes
+
+- [#3830](https://github.com/udecode/plate/pull/3830) by [@felixfeng33](https://github.com/felixfeng33) – Move from `@udecode/plate-table/react` to `@udecode/plate-table`:
+
+  - `deleteColumn`
+  - `deleteColumnWhenExpanded`
+  - `deleteRow`
+  - `deleteRowWhenExpanded`
+  - `getTableColumn`
+  - `getTableGridAbove`
+  - `getTableGridByRange`
+  - `getTableRow`
+  - `insertTable`
+  - `mergeTableCells`
+  - `moveSelectionFromCell`
+  - `overrideSelectionFromCell`
+  - `unmergeTableCells`
+  - `withDeleteTable`
+  - `withGetFragmentlable`
+  - `withInsertFragmentTable`
+  - `withInsertTextTable`
+  - `withMarkTable`
+  - `withSelectionTable`
+  - `withSetFragmentDataTable`
+  - `withTable`
+
+### Patch Changes
+
+- [#3830](https://github.com/udecode/plate/pull/3830) by [@felixfeng33](https://github.com/felixfeng33) – Move `node.props` plugin attributes from `/react` to `/`
+
+- [#3830](https://github.com/udecode/plate/pull/3830) by [@felixfeng33](https://github.com/felixfeng33) – Replace `findNodePath` with `findPath`
+
 ## 40.0.0
 
 ### Patch Changes

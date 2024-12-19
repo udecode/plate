@@ -1,5 +1,17 @@
 # @udecode/plate-ai
 
+## 41.0.0
+
+### Minor Changes
+
+- [#3868](https://github.com/udecode/plate/pull/3868) by [@zbeyens](https://github.com/zbeyens) –
+  - `api.aiChat.replaceSelection()` – new option `format: 'none' | 'single' | 'all'`
+    - `'single'` (default):
+      - Single block: Applies block's formatting to inserted content
+      - Multiple blocks: Preserves source formatting
+    - `'all'`: Forces first block's formatting on all inserted blocks
+    - `'none'`: Preserves source formatting completely
+
 ## 40.3.2
 
 ### Patch Changes

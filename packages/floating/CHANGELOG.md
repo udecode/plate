@@ -1,5 +1,7 @@
 # @udecode/plate-floating
 
+## 41.0.0
+
 ## 40.0.0
 
 ## 39.1.6

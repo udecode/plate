@@ -1,5 +1,7 @@
 # @udecode/plate-comments
 
+## 41.0.0
+
 ## 40.3.0
 
 ### Minor Changes
