@@ -10,13 +10,14 @@ import {
   useEditorPlugin,
   useEditorSelector,
 } from '@udecode/plate-common/react';
-import { deleteTable, insertTableRow } from '@udecode/plate-table';
 import {
-  TablePlugin,
   deleteColumn,
   deleteRow,
+  deleteTable,
   insertTable,
-} from '@udecode/plate-table/react';
+  insertTableRow,
+} from '@udecode/plate-table';
+import { TablePlugin } from '@udecode/plate-table/react';
 import {
   Minus,
   Plus,

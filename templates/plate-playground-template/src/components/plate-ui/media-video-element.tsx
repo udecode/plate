@@ -46,7 +46,7 @@ export const MediaVideoElement = withHOC(
       return (
         <PlateElement
           ref={ref}
-          className={cn('relative py-2.5', className)}
+          className={cn(className, 'relative py-2.5')}
           {...props}
         >
           <figure

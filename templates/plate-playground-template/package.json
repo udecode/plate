@@ -27,6 +27,7 @@
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-toolbar": "^1.1.0",
     "@radix-ui/react-tooltip": "^1.1.3",
+    "@udecode/cmdk": "^0.1.1",
     "@udecode/cn": "^39.0.0",
     "@udecode/plate-ai": "40.2.2",
     "@udecode/plate-alignment": "^40.0.0",

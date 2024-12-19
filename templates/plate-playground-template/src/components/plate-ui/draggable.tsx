@@ -11,11 +11,9 @@ import {
   MemoizedChildren,
   useEditorPlugin,
   useEditorRef,
-  withHOC,
 } from '@udecode/plate-common/react';
 import {
   type DragItemNode,
-  DraggableProvider,
   useDraggable,
   useDraggableGutter,
   useDraggableState,
@@ -50,50 +48,47 @@ export interface DraggableProps extends PlateElementProps {
   ) => boolean;
 }
 
-export const Draggable = withHOC(
-  DraggableProvider,
-  withRef<'div', DraggableProps>(
-    ({ className, onDropHandler, ...props }, ref) => {
-      const { children, element } = props;
+export const Draggable = withRef<'div', DraggableProps>(
+  ({ className, onDropHandler, ...props }, ref) => {
+    const { children, element } = props;
 
-      const state = useDraggableState({ element, onDropHandler });
-      const { isDragging } = state;
-      const { previewRef, handleRef } = useDraggable(state);
+    const state = useDraggableState({ element, onDropHandler });
+    const { isDragging } = state;
+    const { previewRef, handleRef } = useDraggable(state);
 
-      return (
-        <div
-          ref={ref}
-          className={cn(
-            'relative',
-            isDragging && 'opacity-50',
-            'group',
-            className
-          )}
-        >
-          <Gutter>
-            <div className={cn('slate-blockToolbarWrapper', 'flex h-[1.5em]')}>
-              <div
-                className={cn(
-                  'slate-blockToolbar',
-                  'pointer-events-auto mr-1 flex items-center'
-                )}
-              >
-                <div ref={handleRef} className="size-4">
-                  <DragHandle />
-                </div>
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          'relative',
+          isDragging && 'opacity-50',
+          'group',
+          className
+        )}
+      >
+        <Gutter>
+          <div className={cn('slate-blockToolbarWrapper', 'flex h-[1.5em]')}>
+            <div
+              className={cn(
+                'slate-blockToolbar',
+                'pointer-events-auto mr-1 flex items-center'
+              )}
+            >
+              <div ref={handleRef} className="size-4">
+                <DragHandle />
               </div>
             </div>
-          </Gutter>
-
-          <div ref={previewRef} className="slate-blockWrapper">
-            <MemoizedChildren>{children}</MemoizedChildren>
-
-            <DropLine />
           </div>
+        </Gutter>
+
+        <div ref={previewRef} className="slate-blockWrapper">
+          <MemoizedChildren>{children}</MemoizedChildren>
+
+          <DropLine />
         </div>
-      );
-    }
-  )
+      </div>
+    );
+  }
 );
 
 const Gutter = React.forwardRef<
@@ -153,7 +148,7 @@ const DragHandle = React.memo(() => {
 
 const DropLine = React.memo(
   React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-    ({ children, className, ...props }, ref) => {
+    ({ className, ...props }, ref) => {
       const state = useDropLine();
 
       if (!state.dropLine) return null;
@@ -171,9 +166,7 @@ const DropLine = React.memo(
             state.dropLine === 'bottom' && '-bottom-px',
             className
           )}
-        >
-          {children}
-        </div>
+        />
       );
     }
   )
