@@ -82,7 +82,7 @@ export const remarkDefaultElementRules: RemarkElementRules = {
           _node.children?.forEach((listItem) => {
             const defaultType = options.editor.getType({ key: 'p' });
             const todoListType = options.editor.getType({ key: 'action_item' }) ?? defaultType
-            const listItemType = listItem.checked ? todoListType : defaultType;
+            const listItemType = typeof listItem.checked !== 'undefined' ? todoListType : defaultType;
             if (!listItem.children) {
               listItems.push({
                 children: remarkTransformElementChildren(listItem, options),
