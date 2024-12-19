@@ -60,7 +60,6 @@ import {
   BaseTableRowPlugin,
 } from '@udecode/plate-table';
 import { BaseTogglePlugin } from '@udecode/plate-toggle';
-import { cookies } from 'next/headers';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import Prism from 'prismjs';
@@ -128,8 +127,6 @@ import { TableElementStatic } from '@/registry/default/plate-ui/table-element-st
 import { TableRowElementStatic } from '@/registry/default/plate-ui/table-row-element-static';
 import { TocElementStatic } from '@/registry/default/plate-ui/toc-element-static';
 import { ToggleElementStatic } from '@/registry/default/plate-ui/toggle-element-static';
-
-export const dynamic = 'force-dynamic';
 
 export const description = 'Slate to HTML';
 
@@ -303,8 +300,9 @@ export default async function SlateToHtmlBlock() {
 
   const tailwindCss = await getCachedTailwindCss();
   const prismCss = await getCachedPrismCss();
-  const cookieStore = await cookies();
-  const theme = cookieStore.get('theme')?.value;
+  // const cookieStore = await cookies();
+  // const theme = cookieStore.get('theme')?.value;
+  const theme = 'light';
 
   // Get the editor content HTML using EditorStatic
   const editorHtml = await serializeHtml(editor, {

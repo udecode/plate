@@ -9,40 +9,54 @@ import {
 } from '@udecode/plate-common';
 
 import { BaseColumnItemPlugin, BaseColumnPlugin } from '../BaseColumnPlugin';
+import { columnsToWidths } from '../utils/columnsToWidths';
+import { setColumns } from './setColumns';
 
 export const toggleColumnGroup = (
   editor: SlateEditor,
   {
     at,
-    layout = 2,
+    columns = 2,
+    widths,
   }: Partial<Omit<ReplaceNodeChildrenOptions<TElement>, 'nodes'>> & {
-    layout?: number[] | number;
+    columns?: number;
+    widths?: string[];
   } = {}
 ) => {
   const entry = getBlockAbove(editor, { at });
+  const columnGroupEntry = getBlockAbove(editor, {
+    at,
+    match: { type: editor.getType(BaseColumnPlugin) },
+  });
 
   if (!entry) return;
 
-  const [node] = entry;
+  const [node, path] = entry;
 
-  const columnLayout = Array.isArray(layout)
-    ? layout
-    : Array(layout).fill(Math.floor(100 / layout));
+  // Check if the node is already a column_group
+  if (columnGroupEntry) {
+    // Node is already a column_group, just update the columns using setColumns
+    setColumns(editor, { at: columnGroupEntry[1], columns, widths });
+  } else {
+    // Node is not a column_group, wrap it in a column_group
+    const columnWidths = widths || columnsToWidths({ columns });
 
-  const nodes = {
-    children: columnLayout.map((width, index) => ({
-      children: [index === 0 ? node : editor.api.create.block()],
-      type: BaseColumnItemPlugin.key,
-      width: `${width}%`,
-    })),
-    layout: columnLayout,
-    type: BaseColumnPlugin.key,
-  } as TElement;
+    const nodes = {
+      children: Array(columns)
+        .fill(null)
+        .map((_, index) => ({
+          children: [index === 0 ? node : editor.api.create.block()],
+          type: BaseColumnItemPlugin.key,
+          width: columnWidths[index],
+        })),
+      type: BaseColumnPlugin.key,
+    } as TElement;
 
-  replaceNode(editor, {
-    at: entry[1],
-    nodes,
-  });
+    replaceNode(editor, {
+      at: path,
+      nodes,
+    });
 
-  select(editor, getStartPoint(editor, entry[1].concat([0])));
+    select(editor, getStartPoint(editor, path.concat([0])));
+  }
 };

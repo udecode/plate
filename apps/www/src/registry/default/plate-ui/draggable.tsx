@@ -12,6 +12,7 @@ import {
   MemoizedChildren,
   useEditorPlugin,
   useEditorRef,
+  useElement,
 } from '@udecode/plate-common/react';
 import {
   type DragItemNode,
@@ -23,6 +24,8 @@ import {
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 import { GripVertical } from 'lucide-react';
 import { useSelected } from 'slate-react';
+
+import { STRUCTURAL_TYPES } from '@/registry/default/components/editor/transforms';
 
 import {
   Tooltip,
@@ -63,7 +66,9 @@ export const Draggable = withRef<'div', DraggableProps>(
         className={cn(
           'relative',
           isDragging && 'opacity-50',
-          'group',
+          STRUCTURAL_TYPES.includes(element.type)
+            ? 'group/structural'
+            : 'group',
           className
         )}
       >
@@ -97,6 +102,7 @@ const Gutter = React.forwardRef<
   React.HTMLAttributes<HTMLDivElement>
 >(({ children, className, ...props }, ref) => {
   const { useOption } = useEditorPlugin(BlockSelectionPlugin);
+  const element = useElement();
   const isSelectionAreaVisible = useOption('isSelectionAreaVisible');
   const gutter = useDraggableGutter();
   const selected = useSelected();
@@ -106,7 +112,10 @@ const Gutter = React.forwardRef<
       ref={ref}
       className={cn(
         'slate-gutterLeft',
-        'absolute -top-px z-50 flex h-full -translate-x-full cursor-text hover:opacity-100 sm:opacity-0 main-hover:group-hover:opacity-100',
+        'absolute -top-px z-50 flex h-full -translate-x-full cursor-text hover:opacity-100 sm:opacity-0',
+        STRUCTURAL_TYPES.includes(element.type)
+          ? 'main-hover:group-hover/structural:opacity-100'
+          : 'main-hover:group-hover:opacity-100',
         isSelectionAreaVisible && 'hidden',
         !selected && 'opacity-0',
         className
