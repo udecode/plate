@@ -16,7 +16,7 @@ export const editorVariants = cva(
   ),
   {
     defaultVariants: {
-      variant: 'default',
+      variant: 'none',
     },
     variants: {
       disabled: {

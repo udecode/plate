@@ -308,7 +308,7 @@ export default async function SlateToHtmlBlock() {
   const editorHtml = await serializeHtml(editor, {
     components,
     editorComponent: EditorStatic,
-    props: { variant: 'none' },
+    props: { style: { padding: '0 calc(50% - 350px)', paddingBottom: '' } },
   });
 
   // Create the full HTML document
@@ -328,7 +328,7 @@ export default async function SlateToHtmlBlock() {
 
       <div className="p-2">
         <H3>EditorStatic</H3>
-        <EditorStatic variant="none" components={components} editor={editor} />
+        <EditorStatic components={components} editor={editor} />
       </div>
 
       <div className="p-2">

@@ -3,7 +3,6 @@
 import React from 'react';
 
 import type * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-import type { TTableElement } from '@udecode/plate-table';
 
 import { PopoverAnchor } from '@radix-ui/react-popover';
 import { cn, withRef } from '@udecode/cn';
@@ -16,9 +15,12 @@ import {
   withHOC,
 } from '@udecode/plate-common/react';
 import {
-  TableProvider,
+  type TTableElement,
   mergeTableCells,
   unmergeTableCells,
+} from '@udecode/plate-table';
+import {
+  TableProvider,
   useTableBordersDropdownMenuContentState,
   useTableElement,
   useTableElementState,

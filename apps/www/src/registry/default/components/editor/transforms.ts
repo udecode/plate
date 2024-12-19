@@ -44,7 +44,8 @@ import {
   MediaEmbedPlugin,
   VideoPlugin,
 } from '@udecode/plate-media/react';
-import { TablePlugin, insertTable } from '@udecode/plate-table/react';
+import { insertTable } from '@udecode/plate-table';
+import { TablePlugin } from '@udecode/plate-table/react';
 import { Path } from 'slate';
 
 const ACTION_THREE_COLUMNS = 'action_three_columns';

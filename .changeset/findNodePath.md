@@ -2,8 +2,6 @@
 '@udecode/plate-indent-list': patch
 '@udecode/plate-utils': patch
 '@udecode/plate-code-block': patch
-'@udecode/plate-excalidraw': patch
-'@udecode/plate-suggestion': patch
 '@udecode/plate-resizable': patch
 '@udecode/plate-selection': patch
 '@udecode/plate-combobox': patch
