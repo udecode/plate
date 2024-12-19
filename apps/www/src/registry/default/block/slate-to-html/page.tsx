@@ -129,6 +129,8 @@ import { TableRowElementStatic } from '@/registry/default/plate-ui/table-row-ele
 import { TocElementStatic } from '@/registry/default/plate-ui/toc-element-static';
 import { ToggleElementStatic } from '@/registry/default/plate-ui/toggle-element-static';
 
+export const dynamic = 'force-dynamic';
+
 export const description = 'Slate to HTML';
 
 export const iframeHeight = '800px';
