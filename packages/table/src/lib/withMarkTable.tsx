@@ -1,7 +1,6 @@
-import type { ExtendEditor } from '@udecode/plate-common';
+import type { ExtendEditor, TElement } from '@udecode/plate-common';
 
 import {
-  type TElement,
   getNodeEntries,
   isCollapsed,
   isText,

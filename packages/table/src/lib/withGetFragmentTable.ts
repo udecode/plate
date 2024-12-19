@@ -1,5 +1,8 @@
-import type { TDescendant, TElement } from '@udecode/plate-common';
-import type { ExtendEditor } from '@udecode/plate-common';
+import type {
+  ExtendEditor,
+  TDescendant,
+  TElement,
+} from '@udecode/plate-common';
 
 import type { TTableRowElement, TableConfig } from './types';
 

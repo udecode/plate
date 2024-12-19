@@ -1,8 +1,7 @@
-import type { ExtendEditor } from '@udecode/plate-common';
+import type { ExtendEditor, TElement } from '@udecode/plate-common';
 import type { Path } from 'slate';
 
 import {
-  type TElement,
   getEndPoint,
   getStartPoint,
   hasNode,
@@ -19,8 +18,8 @@ import {
   type TableConfig,
   getTableAbove,
 } from '.';
-import { getTableGridAbove } from './queries/getTableGridAbove';
 import { BaseTablePlugin } from './BaseTablePlugin';
+import { getTableGridAbove } from './queries/getTableGridAbove';
 
 /**
  * If inserting a table, If block above anchor is a table,
