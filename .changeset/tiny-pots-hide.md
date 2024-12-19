@@ -1,5 +1,4 @@
 ---
-"www": patch
 "@udecode/plate-ai": patch
 ---
 
