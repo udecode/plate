@@ -9,7 +9,7 @@ import {
   removeNodes,
   withoutNormalizing,
 } from '@udecode/plate-common';
-import { findNodePath } from '@udecode/plate-common/react';
+import { findPath } from '@udecode/plate-common/react';
 
 import {
   type TTableCellElement,
@@ -94,7 +94,7 @@ export const unmergeTableCells = (editor: SlateEditor) => {
 
         if (diff < smallestDiff) {
           smallestDiff = diff;
-          closestColPath = findNodePath(editor, cellElement)!;
+          closestColPath = findPath(editor, cellElement)!;
           isDirectionLeft = cellCol < targetCol;
         }
       });

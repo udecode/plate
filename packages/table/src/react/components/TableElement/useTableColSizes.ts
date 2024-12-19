@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { unsetNodes } from '@udecode/plate-common';
-import { findNodePath, useEditorRef } from '@udecode/plate-common/react';
+import { findPath, useEditorRef } from '@udecode/plate-common/react';
 
 import {
   type TTableElement,
@@ -38,7 +38,7 @@ export const useTableColSizes = (
       tableNode.colSizes?.length
     ) {
       unsetNodes(editor, 'colSizes', {
-        at: findNodePath(editor, tableNode),
+        at: findPath(editor, tableNode),
       });
     }
   }, [colCount, enableUnsetSingleColSize, editor, tableNode]);

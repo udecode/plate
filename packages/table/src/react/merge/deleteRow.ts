@@ -8,7 +8,7 @@ import {
   setNodes,
   someNode,
 } from '@udecode/plate-common';
-import { findNodePath } from '@udecode/plate-common/react';
+import { findPath } from '@udecode/plate-common/react';
 import cloneDeep from 'lodash/cloneDeep.js';
 
 import {
@@ -127,7 +127,7 @@ export const deleteTableMergeRow = (editor: SlateEditor) => {
 
         if (startingCellIndex === -1) {
           const startingCell = nextRow.children.at(-1) as TTableCellElement;
-          const startingCellPath = findNodePath(editor, startingCell)!;
+          const startingCellPath = findPath(editor, startingCell)!;
           const tablePath = startingCellPath.slice(0, -2);
           const colPath = startingCellPath.at(-1)! + index + 1;
           const nextRowStartCellPath = [...tablePath, nextRowIndex, colPath];
@@ -163,7 +163,7 @@ export const deleteTableMergeRow = (editor: SlateEditor) => {
           incrementBy += 1;
         }
 
-        const startingCellPath = findNodePath(editor, startingCell)!;
+        const startingCellPath = findPath(editor, startingCell)!;
         const tablePath = startingCellPath.slice(0, -2);
         const colPath = startingCellPath.at(-1)!;
 
@@ -195,7 +195,7 @@ export const deleteTableMergeRow = (editor: SlateEditor) => {
       )!;
       const curRowCellRowSpan = getRowSpan(curRowCell);
 
-      const curCellPath = findNodePath(editor, curRowCell)!;
+      const curCellPath = findPath(editor, curRowCell)!;
 
       const curCellEndingRowIndex = Math.min(
         curRowCellRowIndex + curRowCellRowSpan - 1,
@@ -213,7 +213,7 @@ export const deleteTableMergeRow = (editor: SlateEditor) => {
     });
 
     const rowToDelete = table.children[deletingRowIndex] as TTableRowElement;
-    const rowPath = findNodePath(editor, rowToDelete);
+    const rowPath = findPath(editor, rowToDelete);
     Array.from({ length: rowsDeleteNumber }).forEach(() => {
       removeNodes(editor, {
         at: rowPath,

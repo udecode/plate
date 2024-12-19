@@ -8,7 +8,7 @@ import {
 
 import { Hotkeys, isHotkey, removeNodes } from '@udecode/plate-common';
 import {
-  findNodePath,
+  findPath,
   focusEditor,
   useEditorRef,
   useElement,
@@ -63,7 +63,7 @@ export const useComboboxInput = ({
 
   const removeInput = useCallback(
     (shouldFocusEditor = false) => {
-      const path = findNodePath(editor, element);
+      const path = findPath(editor, element);
 
       if (!path) return;
 

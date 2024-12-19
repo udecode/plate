@@ -6,7 +6,7 @@ import {
   select,
   withoutNormalizing,
 } from '@udecode/plate-common';
-import { type ExtendEditor, findNodePath } from '@udecode/plate-common/react';
+import { type ExtendEditor, findPath } from '@udecode/plate-common/react';
 
 import {
   type TTableCellElement,
@@ -84,7 +84,7 @@ export const withSetFragmentDataTable: ExtendEditor<TableConfig> = ({
           // need to clean data before every iteration
           data.clearData();
 
-          const cellPath = findNodePath(editor, cell)!;
+          const cellPath = findPath(editor, cell)!;
 
           // select cell by cell
           select(editor, {

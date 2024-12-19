@@ -3,11 +3,11 @@ import {
   type TElement,
   getParentNode,
 } from '@udecode/plate-common';
-import { findNodePath } from '@udecode/plate-common/react';
+import { findPath } from '@udecode/plate-common/react';
 
 /** Get table column index of a cell node. */
 export const getTableColumnIndex = (editor: TEditor, cellNode: TElement) => {
-  const path = findNodePath(editor, cellNode);
+  const path = findPath(editor, cellNode);
 
   if (!path) return -1;
 

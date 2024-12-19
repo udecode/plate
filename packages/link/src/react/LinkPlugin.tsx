@@ -100,10 +100,3 @@ export const LinkPlugin = toTPlatePlugin<LinkConfig>(BaseLinkPlugin, {
   .extendOptions(({ getOptions }) => ({
     isOpen: (editorId: string) => getOptions().openEditorId === editorId,
   }));
-// .extend(({ api }) => ({
-//   node: {
-//     props: ({ element }) => ({
-//       nodeProps: api.link.getAttributes(element as unknown as TLinkElement),
-//     }),
-//   },
-// }));

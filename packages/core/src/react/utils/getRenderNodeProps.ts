@@ -1,6 +1,6 @@
 import type { AnyObject } from '@udecode/utils';
 
-import { findNodePath } from '@udecode/slate-react';
+import { findPath } from '@udecode/slate-react';
 import { clsx } from 'clsx';
 
 import type { PlateEditor } from '../editor';
@@ -45,7 +45,7 @@ export const getRenderNodeProps = ({
   nodeProps = pipeInjectNodeProps(
     editor,
     nodeProps,
-    (node) => findNodePath(editor, node)!
+    (node) => findPath(editor, node)!
   ) as PlateRenderNodeProps;
 
   if (nodeProps.style && Object.keys(nodeProps.style).length === 0) {

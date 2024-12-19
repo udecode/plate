@@ -7,7 +7,7 @@ import {
   findNode,
   getEditorPlugin,
 } from '@udecode/plate-common';
-import { findNodePath } from '@udecode/plate-common/react';
+import { findPath } from '@udecode/plate-common/react';
 
 import type {
   TTableCellElement,
@@ -164,7 +164,7 @@ export const getTableMergeGridByRange = <T extends FormatType>(
         .children as TElement[];
       rows[colIndex - startColIndex] = cell;
 
-      const cellPath = findNodePath(editor, cell)!;
+      const cellPath = findPath(editor, cell)!;
       cellEntries.push([cell, cellPath]);
     }
     if (colIndex + 1 <= endColIndex) {
