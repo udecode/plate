@@ -1,8 +1,8 @@
-import type { ExtendEditor } from '@udecode/plate-common/react';
+import type { ExtendEditor } from '@udecode/plate-common';
 
 import { collapseSelection, isExpanded } from '@udecode/plate-common';
 
-import { type TableConfig, getTableAbove } from '../lib';
+import { type TableConfig, getTableAbove } from '.';
 import { getTableGridAbove } from './queries';
 
 export const withInsertTextTable: ExtendEditor<TableConfig> = ({ editor }) => {

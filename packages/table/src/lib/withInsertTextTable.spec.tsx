@@ -5,7 +5,7 @@ import type { SlateEditor } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { TablePlugin } from './TablePlugin';
+import { BaseTablePlugin } from './BaseTablePlugin';
 
 jsxt;
 
@@ -67,7 +67,7 @@ describe('withInsertTextTable', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [TablePlugin],
+        plugins: [BaseTablePlugin],
       });
 
       editor.deleteFragment();

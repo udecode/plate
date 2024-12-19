@@ -19,13 +19,13 @@ import {
   getCellIndices,
   getColSpan,
   getRowSpan,
-} from '../../lib';
-import { TableCellHeaderPlugin, TablePlugin } from '../TablePlugin';
+} from '..';
+import { BaseTableCellHeaderPlugin, BaseTablePlugin } from '../BaseTablePlugin';
 import { getTableGridAbove } from '../queries';
 
 /** Merges multiple selected cells into one. */
 export const mergeTableCells = (editor: SlateEditor) => {
-  const { api, getOptions, type } = getEditorPlugin(editor, TablePlugin);
+  const { api, getOptions, type } = getEditorPlugin(editor, BaseTablePlugin);
   const { _cellIndices } = getOptions();
 
   withoutNormalizing(editor, () => {
@@ -114,7 +114,7 @@ export const mergeTableCells = (editor: SlateEditor) => {
       ...api.create.cell!({
         children: mergingCellChildren,
         header:
-          cellEntries[0][0].type === editor.getType(TableCellHeaderPlugin),
+          cellEntries[0][0].type === editor.getType(BaseTableCellHeaderPlugin),
       }),
       colSpan,
       rowSpan,

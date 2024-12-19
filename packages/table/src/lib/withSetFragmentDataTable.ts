@@ -1,12 +1,13 @@
 import {
+  type ExtendEditor,
   type TElement,
   findNode,
+  findNodePath,
   getEndPoint,
   getStartPoint,
   select,
   withoutNormalizing,
 } from '@udecode/plate-common';
-import { type ExtendEditor, findPath } from '@udecode/plate-common/react';
 
 import {
   type TTableCellElement,
@@ -14,8 +15,8 @@ import {
   type TableConfig,
   getColSpan,
   getRowSpan,
-} from '../lib';
-import { TableCellHeaderPlugin, TablePlugin } from './TablePlugin';
+} from '.';
+import { BaseTableCellHeaderPlugin, BaseTablePlugin } from './BaseTablePlugin';
 import { getTableGridAbove } from './queries';
 
 export const withSetFragmentDataTable: ExtendEditor<TableConfig> = ({
@@ -76,7 +77,7 @@ export const withSetFragmentDataTable: ExtendEditor<TableConfig> = ({
 
         const cellStrings: string[] = [];
         const rowElement =
-          row.type === editor.getType(TableCellHeaderPlugin)
+          row.type === editor.getType(BaseTableCellHeaderPlugin)
             ? document.createElement('th')
             : document.createElement('tr');
 
@@ -84,7 +85,7 @@ export const withSetFragmentDataTable: ExtendEditor<TableConfig> = ({
           // need to clean data before every iteration
           data.clearData();
 
-          const cellPath = findPath(editor, cell)!;
+          const cellPath = findNodePath(editor, cell)!;
 
           // select cell by cell
           select(editor, {
@@ -117,7 +118,7 @@ export const withSetFragmentDataTable: ExtendEditor<TableConfig> = ({
 
       const _tableEntry = findNode<TTableElement>(editor, {
         at: tablePath,
-        match: { type: TablePlugin.key },
+        match: { type: BaseTablePlugin.key },
       });
 
       if (_tableEntry != null && _tableEntry.length > 0) {

@@ -5,18 +5,18 @@ import {
   getEditorPlugin,
   getStartPoint,
   insertNodes,
+  select,
   someNode,
   withoutNormalizing,
 } from '@udecode/plate-common';
-import { selectEditor } from '@udecode/plate-common/react';
 
-import type { TTableElement } from '../../lib/types';
+import type { TTableElement } from '../types';
 
-import { BaseTablePlugin } from '../../lib/BaseTablePlugin';
+import { BaseTablePlugin } from '../BaseTablePlugin';
 import {
   type GetEmptyTableNodeOptions,
   getEmptyTableNode,
-} from '../../lib/utils/getEmptyTableNode';
+} from '../utils/getEmptyTableNode';
 
 /** Insert table if selection not in table. Select start of table. */
 export const insertTable = <E extends SlateEditor>(
@@ -52,7 +52,7 @@ export const insertTable = <E extends SlateEditor>(
 
         if (!tableEntry) return;
 
-        selectEditor(editor, { at: getStartPoint(editor, tableEntry[1]) });
+        select(editor, getStartPoint(editor, tableEntry[1]));
       }
     }
   });

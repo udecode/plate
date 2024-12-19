@@ -14,10 +14,10 @@ import {
   getColSpan,
   getRowSpan,
   getTableCellBorders,
+  getTableColumnIndex,
+  getTableRowIndex,
 } from '../../../lib';
 import { TablePlugin } from '../../TablePlugin';
-import { getTableColumnIndex } from '../../merge';
-import { getTableRowIndex } from '../../queries';
 import { useTableStore } from '../../stores';
 import { useIsCellSelected } from './useIsCellSelected';
 

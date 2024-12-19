@@ -1,4 +1,4 @@
-import type { ExtendEditor } from '@udecode/plate-common/react';
+import type { ExtendEditor } from '@udecode/plate-common';
 import type { Path } from 'slate';
 
 import {
@@ -18,9 +18,9 @@ import {
   type TTableRowElement,
   type TableConfig,
   getTableAbove,
-} from '../lib';
-import { getTableGridAbove } from '../react/queries/getTableGridAbove';
-import { TablePlugin } from './TablePlugin';
+} from '.';
+import { getTableGridAbove } from './queries/getTableGridAbove';
+import { BaseTablePlugin } from './BaseTablePlugin';
 
 /**
  * If inserting a table, If block above anchor is a table,
@@ -164,7 +164,7 @@ export const withInsertFragmentTable: ExtendEditor<TableConfig> = ({
         }
       } else if (
         fragment.length === 1 &&
-        fragment[0].type === TablePlugin.key
+        fragment[0].type === BaseTablePlugin.key
       ) {
         // needed to insert as node, otherwise it will be inserted as text
         editor.insertNode(fragment[0]);

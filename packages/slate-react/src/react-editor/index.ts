@@ -7,7 +7,7 @@ export * from './deselectEditor';
 export * from './findEditorDocumentOrShadowRoot';
 export * from './findEventRange';
 export * from './findNodeKey';
-export * from './findNodePath';
+export * from './findPath';
 export * from './focusEditor';
 export * from './getEditorWindow';
 export * from './hasEditorDOMNode';

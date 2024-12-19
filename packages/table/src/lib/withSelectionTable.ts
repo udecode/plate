@@ -1,4 +1,4 @@
-import type { ExtendEditor } from '@udecode/plate-common/react';
+import type { ExtendEditor } from '@udecode/plate-common';
 
 import {
   getBlockAbove,
@@ -9,7 +9,7 @@ import {
 } from '@udecode/plate-common';
 import { Range } from 'slate';
 
-import type { TableConfig } from '../lib';
+import type { TableConfig } from '.';
 
 import { overrideSelectionFromCell } from './transforms/overrideSelectionFromCell';
 

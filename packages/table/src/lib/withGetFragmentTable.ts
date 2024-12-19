@@ -1,7 +1,7 @@
 import type { TDescendant, TElement } from '@udecode/plate-common';
-import type { ExtendEditor } from '@udecode/plate-common/react';
+import type { ExtendEditor } from '@udecode/plate-common';
 
-import type { TTableRowElement, TableConfig } from '../lib/types';
+import type { TTableRowElement, TableConfig } from './types';
 
 import { getTableGridAbove } from './queries/getTableGridAbove';
 

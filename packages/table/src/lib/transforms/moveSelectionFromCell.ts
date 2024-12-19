@@ -11,8 +11,8 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common';
 
-import { getCellTypes } from '../../lib/utils/getCellType';
 import { getTableGridAbove } from '../queries/getTableGridAbove';
+import { getCellTypes } from '../utils/getCellType';
 
 /** Move selection by cell unit. */
 export const moveSelectionFromCell = (

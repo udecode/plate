@@ -1,11 +1,13 @@
-import type { TEditor, TElement } from '@udecode/plate-common';
-
-import { findPath } from '@udecode/plate-common/react';
+import {
+  type TEditor,
+  type TElement,
+  findNodePath,
+} from '@udecode/plate-common';
 import { Path } from 'slate';
 
 /** Get table row index of a cell node. */
 export const getTableRowIndex = (editor: TEditor, cellNode: TElement) => {
-  const path = findPath(editor, cellNode);
+  const path = findNodePath(editor, cellNode);
 
   if (!path) return 0;
 

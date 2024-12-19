@@ -21,12 +21,12 @@ import {
   getCellPath,
   getCellTypes,
   getColSpan,
-} from '../../lib';
-import { TablePlugin } from '../TablePlugin';
+} from '..';
+import { BaseTablePlugin } from '../BaseTablePlugin';
 import { deleteColumnWhenExpanded } from './deleteColumnWhenExpanded';
 
 export const deleteTableMergeColumn = (editor: SlateEditor) => {
-  const { getOptions, type } = getEditorPlugin(editor, TablePlugin);
+  const { getOptions, type } = getEditorPlugin(editor, BaseTablePlugin);
 
   if (
     someNode(editor, {

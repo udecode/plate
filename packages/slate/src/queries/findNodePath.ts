@@ -8,9 +8,11 @@ export const findNodePath = <E extends TEditor = TEditor>(
   node: TNode,
   options: FindNodeOptions<E> = {}
 ) => {
+  const { match } = getQueryOptions(editor, options);
+
   const nodeEntry = findNode(editor, {
     at: [],
-    match: (n) => n === node && getQueryOptions(editor, options).match?.(n),
+    match: (n) => n === node && (!match || match(n)),
     ...options,
   });
 

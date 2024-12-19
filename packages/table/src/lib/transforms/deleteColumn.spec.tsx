@@ -5,7 +5,7 @@ import type { SlateEditor } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { BaseTablePlugin } from '../../lib/BaseTablePlugin';
+import { BaseTablePlugin } from '../BaseTablePlugin';
 import { deleteColumn } from './deleteColumn';
 
 jsxt;

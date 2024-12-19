@@ -7,12 +7,12 @@ import {
   getNodeString,
   getPointAfter,
   isHotkey,
-  setNodes,
 } from '@udecode/plate-common';
 import {
   createPrimitiveComponent,
   findPath,
   focusEditor,
+  setNode,
   useEditorRef,
   useElement,
 } from '@udecode/plate-common/react';
@@ -49,59 +49,51 @@ export const useCaptionTextareaState = () => {
   const element = useElement<TCaptionElement>();
   const editor = useEditorRef();
 
-  const [isComposing, setIsComposing] = useState(false)
+  const [isComposing, setIsComposing] = useState(false);
 
   const [captionValue, setCaptionValue] = useState<
     TextareaAutosizeProps['value']
   >(() => {
     const nodeCaption =
-      element.caption ?? ([{ children: [{ text: '' }] }] as [TElement])
-    return getNodeString(nodeCaption[0])
-  })
+      element.caption ?? ([{ children: [{ text: '' }] }] as [TElement]);
+
+    return getNodeString(nodeCaption[0]);
+  });
 
   const updateEditorCaptionValue = useCallback(
     (newValue: string) => {
-      const path = findPath(editor, element)
-      if (!path) {
-        return 
-      }
-
-      setNodes<TCaptionElement>(
-        editor,
-        { caption: [{ text: newValue }] },
-        { at: path },
-      )
+      setNode<TCaptionElement>(editor, element, {
+        caption: [{ text: newValue }],
+      });
     },
-    [editor, element],
-  )
+    [editor, element]
+  );
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      const newValue = e.target.value
-      setCaptionValue(newValue) 
+      const newValue = e.target.value;
+      setCaptionValue(newValue);
 
       if (!isComposing) {
-        updateEditorCaptionValue(newValue)
+        updateEditorCaptionValue(newValue);
       }
     },
-    [isComposing, updateEditorCaptionValue],
-  )
+    [isComposing, updateEditorCaptionValue]
+  );
 
   const handleCompositionStart = useCallback(() => {
-    setIsComposing(true)
-  }, [])
+    setIsComposing(true);
+  }, []);
 
   const handleCompositionEnd = useCallback(
     (e: React.CompositionEvent<HTMLTextAreaElement>) => {
-      setIsComposing(false)
-      const newValue = e.currentTarget.value
-      setCaptionValue(newValue) 
-      updateEditorCaptionValue(newValue) 
+      setIsComposing(false);
+      const newValue = e.currentTarget.value;
+      setCaptionValue(newValue);
+      updateEditorCaptionValue(newValue);
     },
-    [updateEditorCaptionValue],
-  )
-
-
+    [updateEditorCaptionValue]
+  );
 
   const readOnly = useReadOnly();
 
@@ -113,10 +105,10 @@ export const useCaptionTextareaState = () => {
     captionValue,
     element,
     readOnly,
-    handleChange,
-    handleCompositionStart,
-    handleCompositionEnd,
     textareaRef,
+    handleChange,
+    handleCompositionEnd,
+    handleCompositionStart,
   };
 };
 
@@ -124,10 +116,10 @@ export const useCaptionTextarea = ({
   captionValue,
   element,
   readOnly,
-  handleChange,
-  handleCompositionStart,
-  handleCompositionEnd,
   textareaRef,
+  handleChange,
+  handleCompositionEnd,
+  handleCompositionStart,
 }: ReturnType<typeof useCaptionTextareaState>) => {
   const editor = useEditorRef();
 
@@ -171,10 +163,10 @@ export const useCaptionTextarea = ({
       readOnly,
       value: captionValue,
       onBlur,
-      onKeyDown,
       onChange: handleChange,
-      onCompositionStart: handleCompositionStart,
       onCompositionEnd: handleCompositionEnd,
+      onCompositionStart: handleCompositionStart,
+      onKeyDown,
     },
     ref: textareaRef,
   };

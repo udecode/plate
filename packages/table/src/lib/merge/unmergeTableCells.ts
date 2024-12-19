@@ -4,34 +4,33 @@ import {
   type SlateEditor,
   type TDescendant,
   findNode,
+  findNodePath,
   getEditorPlugin,
   insertElements,
   removeNodes,
   withoutNormalizing,
 } from '@udecode/plate-common';
-import { findPath } from '@udecode/plate-common/react';
 
 import {
   type TTableCellElement,
   type TTableElement,
   type TTableRowElement,
-  BaseTableRowPlugin,
   computeCellIndices,
   getCellIndices,
   getColSpan,
   getRowSpan,
-} from '../../lib';
+} from '..';
 import {
-  TableCellHeaderPlugin,
-  TablePlugin,
-  TableRowPlugin,
-} from '../TablePlugin';
+  BaseTableCellHeaderPlugin,
+  BaseTablePlugin,
+  BaseTableRowPlugin,
+} from '../BaseTablePlugin';
 import { getTableGridAbove } from '../queries';
 
 export const unmergeTableCells = (editor: SlateEditor) => {
-  const { api, getOptions } = getEditorPlugin(editor, TablePlugin);
+  const { api, getOptions } = getEditorPlugin(editor, BaseTablePlugin);
   const { _cellIndices: cellIndices } = getOptions();
-  const tableRowType = editor.getType(TableRowPlugin);
+  const tableRowType = editor.getType(BaseTableRowPlugin);
 
   withoutNormalizing(editor, () => {
     const cellEntries = getTableGridAbove(editor, { format: 'cell' });
@@ -42,7 +41,7 @@ export const unmergeTableCells = (editor: SlateEditor) => {
       return {
         ...api.create.cell!({
           children,
-          header: cellElem.type === editor.getType(TableCellHeaderPlugin),
+          header: cellElem.type === editor.getType(BaseTableCellHeaderPlugin),
         }),
         colSpan: 1,
         rowSpan: 1,
@@ -94,7 +93,7 @@ export const unmergeTableCells = (editor: SlateEditor) => {
 
         if (diff < smallestDiff) {
           smallestDiff = diff;
-          closestColPath = findPath(editor, cellElement)!;
+          closestColPath = findNodePath(editor, cellElement)!;
           isDirectionLeft = cellCol < targetCol;
         }
       });

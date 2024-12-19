@@ -7,13 +7,13 @@ import {
   someNode,
 } from '@udecode/plate-common';
 
-import { type TTableElement, BaseTableRowPlugin } from '../../lib';
-import { TablePlugin } from '../TablePlugin';
+import { type TTableElement, BaseTableRowPlugin } from '..';
+import { BaseTablePlugin } from '../BaseTablePlugin';
 import { deleteRowWhenExpanded } from '../merge';
 import { deleteTableMergeRow } from '../merge/deleteRow';
 
 export const deleteRow = (editor: SlateEditor) => {
-  const { getOptions, type } = getEditorPlugin(editor, TablePlugin);
+  const { getOptions, type } = getEditorPlugin(editor, BaseTablePlugin);
   const { enableMerging } = getOptions();
 
   if (enableMerging) {

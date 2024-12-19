@@ -12,7 +12,7 @@ import {
   getCellRowIndexByPath,
   getRowSpan,
   getTableMergedColumnCount,
-} from '../../lib';
+} from '..';
 import { getTableGridAbove } from '../queries';
 
 export const deleteRowWhenExpanded = (

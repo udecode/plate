@@ -5,23 +5,23 @@ import {
   type TElement,
   type TElementEntry,
   findNode,
+  findNodePath,
   getEditorPlugin,
 } from '@udecode/plate-common';
-import { findPath } from '@udecode/plate-common/react';
 
 import type {
   TTableCellElement,
   TTableElement,
   TTableRowElement,
-} from '../../lib/types';
+} from '../types';
 
-import { BaseTablePlugin } from '../../lib/BaseTablePlugin';
-import { computeCellIndices } from '../../lib/merge/computeCellIndices';
-import { findCellByIndexes } from '../../lib/merge/findCellByIndexes';
-import { getCellIndices } from '../../lib/merge/getCellIndices';
-import { getCellIndicesWithSpans } from '../../lib/merge/getCellIndicesWithSpans';
-import { getCellTypes } from '../../lib/utils';
-import { getEmptyTableNode } from '../../lib/utils/getEmptyTableNode';
+import { BaseTablePlugin } from '../BaseTablePlugin';
+import { getCellTypes } from '../utils';
+import { getEmptyTableNode } from '../utils/getEmptyTableNode';
+import { computeCellIndices } from './computeCellIndices';
+import { findCellByIndexes } from './findCellByIndexes';
+import { getCellIndices } from './getCellIndices';
+import { getCellIndicesWithSpans } from './getCellIndicesWithSpans';
 
 type FormatType = 'all' | 'cell' | 'table';
 
@@ -164,7 +164,8 @@ export const getTableMergeGridByRange = <T extends FormatType>(
         .children as TElement[];
       rows[colIndex - startColIndex] = cell;
 
-      const cellPath = findPath(editor, cell)!;
+      const cellPath = findNodePath(editor, cell)!;
+
       cellEntries.push([cell, cellPath]);
     }
     if (colIndex + 1 <= endColIndex) {

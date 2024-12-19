@@ -4,4 +4,5 @@
 
 export * from './addRangeMarks';
 export * from './setElements';
+export * from './setNode';
 export * from './unhangCharacterRange';

@@ -6,7 +6,7 @@ import {
   isRangeInSameBlock,
 } from '@udecode/plate-common';
 
-import { KEY_SHIFT_EDGES, getCellTypes } from '../../lib';
+import { KEY_SHIFT_EDGES, getCellTypes } from '..';
 import { moveSelectionFromCell } from './moveSelectionFromCell';
 
 /**

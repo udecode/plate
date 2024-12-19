@@ -3,12 +3,20 @@
  */
 
 export * from './computeCellIndices';
+export * from './deleteColumn';
+export * from './deleteColumnWhenExpanded';
+export * from './deleteRow';
+export * from './deleteRowWhenExpanded';
 export * from './findCellByIndexes';
 export * from './getCellIndices';
 export * from './getCellIndicesWithSpans';
 export * from './getCellPath';
 export * from './getSelectionWidth';
+export * from './getTableColumnIndex';
+export * from './getTableGridByRange';
 export * from './getTableMergedColumnCount';
 export * from './insertTableColumn';
 export * from './insertTableRow';
 export * from './isTableRectangular';
+export * from './mergeTableCells';
+export * from './unmergeTableCells';

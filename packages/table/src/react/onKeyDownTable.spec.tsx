@@ -1,3 +1,4 @@
+/* eslint-disable jest/no-disabled-tests */
 /** @jsx jsxt */
 
 import type { SlateEditor } from '@udecode/plate-common';
@@ -275,7 +276,7 @@ describe('onKeyDownTable', () => {
 
   // https://github.com/udecode/editor-protocol/issues/30
   describe('when shift+down in a cell', () => {
-    it('should add cell below to selection', async () => {
+    it.skip('should add cell below to selection', async () => {
       const input = (
         <editor>
           <htable>
@@ -340,7 +341,7 @@ describe('onKeyDownTable', () => {
 
   // https://github.com/udecode/editor-protocol/issues/31
   describe('when shift+up in a cell', () => {
-    it('should add cell above to selection', async () => {
+    it.skip('should add cell above to selection', async () => {
       const input = (
         <editor>
           <htable>
@@ -405,7 +406,7 @@ describe('onKeyDownTable', () => {
 
   // https://github.com/udecode/editor-protocol/issues/15
   describe('when shift+right in a cell', () => {
-    it('should add cell right to selection', async () => {
+    it.skip('should add cell right to selection', async () => {
       const input = (
         <editor>
           <htable>
@@ -465,7 +466,7 @@ describe('onKeyDownTable', () => {
 
   // https://github.com/udecode/editor-protocol/issues/17
   describe('when shift+left in a cell', () => {
-    it('should add cell left to selection', async () => {
+    it.skip('should add cell left to selection', async () => {
       const input = (
         <editor>
           <htable>

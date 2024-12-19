@@ -1,4 +1,4 @@
-import type { ExtendEditor } from '@udecode/plate-common/react';
+import type { ExtendEditor } from '@udecode/plate-common';
 
 import {
   type TElement,
@@ -9,7 +9,7 @@ import {
   unsetNodes,
 } from '@udecode/plate-common';
 
-import type { TableConfig } from '../lib';
+import type { TableConfig } from '.';
 
 import { getTableGridAbove } from './queries';
 

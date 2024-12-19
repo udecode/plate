@@ -10,14 +10,14 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common';
 
-import type { TTableElement } from '../../lib/types';
+import type { TTableElement } from '../types';
 
 import {
   BaseTableCellHeaderPlugin,
   BaseTableCellPlugin,
   BaseTablePlugin,
   BaseTableRowPlugin,
-} from '../../lib/BaseTablePlugin';
+} from '../BaseTablePlugin';
 import { deleteTableMergeColumn } from '../merge/deleteColumn';
 import { deleteColumnWhenExpanded } from '../merge/deleteColumnWhenExpanded';
 

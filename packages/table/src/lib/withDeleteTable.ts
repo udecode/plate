@@ -1,6 +1,5 @@
-import type { ExtendEditor } from '@udecode/plate-common/react';
-
 import {
+  type ExtendEditor,
   type SlateEditor,
   type TElement,
   getBlockAbove,
@@ -17,7 +16,7 @@ import {
 } from '@udecode/plate-common';
 import { Point } from 'slate';
 
-import { type TableConfig, getCellTypes } from '../lib';
+import { type TableConfig, getCellTypes } from '.';
 import { getTableGridAbove } from './queries/getTableGridAbove';
 
 /**
