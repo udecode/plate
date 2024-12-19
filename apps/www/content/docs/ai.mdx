@@ -280,7 +280,7 @@ Template for system messages. Supports same placeholders as `promptTemplate`.
 
 ## API
 
-### editor.aiChat.accept()
+### api.aiChat.accept()
 
 Accepts the current AI suggestion:
 
@@ -288,7 +288,7 @@ Accepts the current AI suggestion:
 - Hides the AI chat interface
 - Focuses the editor
 
-### editor.aiChat.insertBelow()
+### api.aiChat.insertBelow()
 
 Inserts AI content below the current block.
 
@@ -303,7 +303,7 @@ Handles both block selection and normal selection modes:
 - In block selection: Inserts after the last selected block
 - In normal selection: Inserts after the current block
 
-### editor.aiChat.replaceSelection()
+### api.aiChat.replaceSelection()
 
 Replaces the current selection with AI content.
 
@@ -311,14 +311,22 @@ Replaces the current selection with AI content.
   <APIItem name="sourceEditor" type="PlateEditor">
     Editor containing the content to replace with.
   </APIItem>
+  <APIItem name="options" type="object" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="forceUniformFormatting" type="boolean" optional>
+        When true, applies the first block's formatting to all inserted blocks. Defaults to false.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
 </APIParameters>
 
-Handles both block selection and normal selection modes:
+Handles different selection modes:
 
-- In block selection: Replaces all selected blocks
-- In normal selection: Replaces the current selection
+- Single block selection: Replaces the selected block, applying its formatting to all inserted content
+- Multiple block selection: Replaces all selected blocks, preserving the original formatting unless `forceUniformFormatting` is enabled
+- Normal selection: Replaces the current selection while maintaining surrounding context
 
-### editor.aiChat.reset()
+### api.aiChat.reset()
 
 Resets the chat state:
 
@@ -326,7 +334,7 @@ Resets the chat state:
 - Clears chat messages
 - Removes all AI nodes from the editor
 
-### editor.aiChat.submit()
+### api.aiChat.submit()
 
 Submits a prompt to generate AI content.
 
@@ -355,7 +363,7 @@ In insert mode, undoes previous AI changes before submitting.
 
 ## Transforms
 
-### editor.ai.insertNodes()
+### tf.ai.insertNodes()
 
 Inserts AI-generated nodes with the AI mark.
 
@@ -372,7 +380,7 @@ Inserts AI-generated nodes with the AI mark.
   </APIItem>
 </APIParameters>
 
-### editor.ai.removeMarks()
+### tf.ai.removeMarks()
 
 Removes AI marks from nodes in the specified location.
 
@@ -386,7 +394,7 @@ Removes AI marks from nodes in the specified location.
   </APIItem>
 </APIParameters>
 
-### editor.ai.removeNodes()
+### tf.ai.removeNodes()
 
 Removes nodes that have the AI mark.
 
@@ -400,7 +408,7 @@ Removes nodes that have the AI mark.
   </APIItem>
 </APIParameters>
 
-### editor.ai.undo()
+### tf.ai.undo()
 
 Special undo operation for AI changes:
 

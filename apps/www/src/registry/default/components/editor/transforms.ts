@@ -25,6 +25,7 @@ import { TocPlugin } from '@udecode/plate-heading/react';
 import { INDENT_LIST_KEYS, ListStyleType } from '@udecode/plate-indent-list';
 import { IndentListPlugin } from '@udecode/plate-indent-list/react';
 import { insertColumnGroup, toggleColumnGroup } from '@udecode/plate-layout';
+import { ColumnItemPlugin, ColumnPlugin } from '@udecode/plate-layout/react';
 import { LinkPlugin, triggerFloatingLink } from '@udecode/plate-link/react';
 import { insertEquation, insertInlineEquation } from '@udecode/plate-math';
 import {
@@ -44,8 +45,21 @@ import {
   MediaEmbedPlugin,
   VideoPlugin,
 } from '@udecode/plate-media/react';
-import { TablePlugin, insertTable } from '@udecode/plate-table/react';
+import {
+  TableCellPlugin,
+  TablePlugin,
+  TableRowPlugin,
+  insertTable,
+} from '@udecode/plate-table/react';
 import { Path } from 'slate';
+
+export const STRUCTURAL_TYPES = [
+  ColumnPlugin.key,
+  ColumnItemPlugin.key,
+  TablePlugin.key,
+  TableRowPlugin.key,
+  TableCellPlugin.key,
+];
 
 const ACTION_THREE_COLUMNS = 'action_three_columns';
 
