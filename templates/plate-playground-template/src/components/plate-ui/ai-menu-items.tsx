@@ -4,6 +4,7 @@ import { useEffect, useMemo } from 'react';
 
 import { AIChatPlugin, AIPlugin } from '@udecode/plate-ai/react';
 import {
+  type SlateEditor,
   getAncestorNode,
   getEndPoint,
   getNodeString,
@@ -193,7 +194,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
       aiEditor,
       editor,
     }: {
-      aiEditor: PlateEditor;
+      aiEditor: SlateEditor;
       editor: PlateEditor;
     }) => void;
   }
@@ -247,7 +248,7 @@ export const AIMenuItems = ({
   aiEditorRef,
   setValue,
 }: {
-  aiEditorRef: React.MutableRefObject<PlateEditor | null>;
+  aiEditorRef: React.MutableRefObject<SlateEditor | null>;
   setValue: (value: string) => void;
 }) => {
   const { editor, useOption } = useEditorPlugin(AIChatPlugin);

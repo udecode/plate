@@ -1470,6 +1470,10 @@ export const Index: Record<string, any> = {
         path: "src/registry/default/plate-ui/indent-todo-marker.tsx",
         type: "registry:ui",
         target: ""
+      },{
+        path: "src/registry/default/plate-ui/indent-todo-marker-static.tsx",
+        type: "registry:ui",
+        target: ""
       }],
       component: React.lazy(() => import("@/registry/default/plate-ui/indent-todo-marker.tsx")),
       source: "",

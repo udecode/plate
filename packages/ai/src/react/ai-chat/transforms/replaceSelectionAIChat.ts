@@ -1,4 +1,5 @@
 import {
+  type SlateEditor,
   type TElement,
   getFirstNodeText,
   getNodeProps,
@@ -17,7 +18,7 @@ import type { AIChatPluginConfig } from '../AIChatPlugin';
 
 export const replaceSelectionAIChat = (
   editor: PlateEditor,
-  sourceEditor: PlateEditor,
+  sourceEditor: SlateEditor,
   { format = 'single' }: { format?: 'all' | 'none' | 'single' } = {}
 ) => {
   if (!sourceEditor || isEditorEmpty(sourceEditor)) return;
