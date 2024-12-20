@@ -8,8 +8,4 @@ export const getEquationHtml = ({
 }: {
   element: TEquationElement;
   options?: KatexOptions;
-}) => {
-  const html = katex.renderToString(element.texExpression, options);
-
-  return html;
-};
+}) => katex.renderToString(element.texExpression, options);
