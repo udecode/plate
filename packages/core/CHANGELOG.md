@@ -1,5 +1,14 @@
 # @udecode/plate-core
 
+## 41.0.2
+
+### Patch Changes
+
+- [#3878](https://github.com/udecode/plate/pull/3878) by [@zbeyens](https://github.com/zbeyens) –
+  - Add `useNodePath(node: TNode)`: memoized `findPath` (`useMemo`)
+  - Add `usePath(pluginKey?: string)`: memoized `findPath` (context)
+  - `PlateElementProps` now includes `path` prop, also accessible using `usePath`
+
 ## 41.0.0
 
 ### Minor Changes
