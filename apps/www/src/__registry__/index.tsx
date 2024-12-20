@@ -2045,7 +2045,7 @@ export const Index: Record<string, any> = {
       name: "dnd-plugins",
       description: "",
       type: "registry:component",
-      registryDependencies: undefined,
+      registryDependencies: ["draggable"],
       files: [{
         path: "src/registry/default/components/editor/plugins/dnd-plugins.tsx",
         type: "registry:component",
