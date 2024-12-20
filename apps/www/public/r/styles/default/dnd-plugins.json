@@ -6,12 +6,15 @@
   ],
   "files": [
     {
-      "content": "'use client';\n\nimport { DndPlugin } from '@udecode/plate-dnd';\nimport { PlaceholderPlugin } from '@udecode/plate-media/react';\nimport { NodeIdPlugin } from '@udecode/plate-node-id';\n\nexport const dndPlugins = [\n  NodeIdPlugin,\n  DndPlugin.configure({\n    options: {\n      enableScroller: true,\n      onDropFiles: ({ dragItem, editor, target }) => {\n        editor\n          .getTransforms(PlaceholderPlugin)\n          .insert.media(dragItem.files, { at: target, nextBlock: false });\n      },\n    },\n  }),\n] as const;\n",
+      "content": "'use client';\n\nimport { DndPlugin } from '@udecode/plate-dnd';\nimport { PlaceholderPlugin } from '@udecode/plate-media/react';\nimport { NodeIdPlugin } from '@udecode/plate-node-id';\n\nimport { DraggableAboveNodes } from '@/components/plate-ui/draggable';\n\nexport const dndPlugins = [\n  NodeIdPlugin,\n  DndPlugin.configure({\n    options: {\n      enableScroller: true,\n      onDropFiles: ({ dragItem, editor, target }) => {\n        editor\n          .getTransforms(PlaceholderPlugin)\n          .insert.media(dragItem.files, { at: target, nextBlock: false });\n      },\n    },\n    render: {\n      aboveNodes: DraggableAboveNodes,\n    },\n  }),\n] as const;\n",
       "path": "components/editor/plugins/dnd-plugins.tsx",
       "target": "components/editor/plugins/dnd-plugins.tsx",
       "type": "registry:component"
     }
   ],
   "name": "dnd-plugins",
+  "registryDependencies": [
+    "draggable"
+  ],
   "type": "registry:component"
 }
