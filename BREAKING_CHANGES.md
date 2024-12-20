@@ -1,5 +1,84 @@
 For older changelogs, see https://github.com/udecode/plate/blob/main/docs
 
+# 41.0.2
+
+## @udecode/slate-react@41.0.0
+
+### Major Changes
+
+- [#3830](https://github.com/udecode/plate/pull/3830) by [@felixfeng33](https://github.com/felixfeng33) – Rename `findNodePath` to `findPath` since the addition of `findNodePath` in the headless lib.
+
+  We recommend using `findPath` mostly when subscribing to its value (e.g. in a React component) as it has O(path.length) complexity, compared to O(n) for the traversal-based `findNodePath`. This optimization is particularly important in:
+
+  - Render functions of Plate components where using `findNodePath` would increase the initial render time by O(n²)
+  - Key press handlers where using `findNodePath` would increase the handling time by O(n)
+
+  where n is the number of nodes in the editor.
+
+## @udecode/plate-dnd@41.0.2
+
+### Major Changes
+
+- [#3861](https://github.com/udecode/plate/pull/3861) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Removed `useDndBlock`, `useDragBlock`, and `useDropBlock` hooks in favor of `useDndNode`, `useDragNode`, and `useDropNode`.
+  - Removed `DndProvider` and `useDraggableStore`. Drop line state is now managed by `DndPlugin` as a single state object `dropTarget` containing both `id` and `line`.
+  - `useDropNode`: removed `onChangeDropLine` and `dropLine` options
+
+  Migration steps:
+
+  - Remove `DndProvider` from your draggable component (e.g. `draggable.tsx`)
+  - Replace `useDraggableStore` with `useEditorPlugin(DndPlugin).useOption`
+  - Remove `useDraggableState`. Use `const { isDragging, previewRef, handleRef } = useDraggable`
+  - Remove `useDraggableGutter`. Set `contentEditable={false}` to your gutter element
+  - Remove `props` from `useDropLine`. Set `contentEditable={false}` to your drop line element
+  - Remove `withDraggable`, `useWithDraggable`. Use [`DraggableAboveNodes`](https://github.com/udecode/plate/pull/3878/files#diff-493c12ebed9c3ef9fd8c3a723909b18ad439a448c0132d2d93e5341ee0888ad2) instead
+
+## @udecode/plate-indent-list@41.0.0
+
+### Major Changes
+
+- [#3830](https://github.com/udecode/plate/pull/3830) by [@felixfeng33](https://github.com/felixfeng33) –
+  - Move `render.belowNodes` from `IndentListPlugin` to `BaseIndentListPlugin`. Props type for `listStyleTypes.liComponent` and `listStyleTypes.markerComponent` options is now `SlateRenderElementProps` instead of `PlateRenderElementProps`
+  - Move `someIndentList`, `someIndentTodo` from `@udecode/plate-indent-list/react` to `@udecode/plate-indent-list`
+
+## @udecode/plate-layout@41.0.2
+
+### Major Changes
+
+- [#3878](https://github.com/udecode/plate/pull/3878) by [@zbeyens](https://github.com/zbeyens) –
+
+  - `insertColumnGroup`: rename `layout` to `columns`
+  - Remove `setColumnWidth`, `useColumnState`. Use `setColumns` instead
+
+## @udecode/plate-table@41.0.0
+
+### Major Changes
+
+- [#3830](https://github.com/udecode/plate/pull/3830) by [@felixfeng33](https://github.com/felixfeng33) – Move from `@udecode/plate-table/react` to `@udecode/plate-table`:
+
+  - `deleteColumn`
+  - `deleteColumnWhenExpanded`
+  - `deleteRow`
+  - `deleteRowWhenExpanded`
+  - `getTableColumn`
+  - `getTableGridAbove`
+  - `getTableGridByRange`
+  - `getTableRow`
+  - `insertTable`
+  - `mergeTableCells`
+  - `moveSelectionFromCell`
+  - `overrideSelectionFromCell`
+  - `unmergeTableCells`
+  - `withDeleteTable`
+  - `withGetFragmentlable`
+  - `withInsertFragmentTable`
+  - `withInsertTextTable`
+  - `withMarkTable`
+  - `withSelectionTable`
+  - `withSetFragmentDataTable`
+  - `withTable`
+
 # 40.0.0
 
 ## @udecode/slate-react@40.0.0
