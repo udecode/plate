@@ -6,7 +6,6 @@ module.exports = {
   '@udecode/plate-basic-marks': 'basic-marks',
   '@udecode/plate-block-quote': 'block-quote',
   '@udecode/plate-break': 'break',
-  '@udecode/plate-cloud': 'cloud',
   '@udecode/plate-code-block': 'code-block',
   '@udecode/plate-combobox': 'combobox',
   '@udecode/plate-comments': 'comments',

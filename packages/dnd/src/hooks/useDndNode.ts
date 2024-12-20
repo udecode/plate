@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { NativeTypes, getEmptyImage } from 'react-dnd-html5-backend';
 
-import type { DropTargetMonitor } from 'react-dnd';
+import type { ConnectDragSource, DropTargetMonitor } from 'react-dnd';
 
 import { type PlateEditor, useEditorRef } from '@udecode/plate-common/react';
 
@@ -58,8 +58,13 @@ export const useDndNode = ({
   preview: previewOptions = {},
   type = DRAG_ITEM_BLOCK,
   onDropHandler,
-}: UseDndNodeOptions) => {
+}: UseDndNodeOptions): {
+  dragRef: ConnectDragSource;
+  isDragging: boolean;
+  isOver: boolean;
+} => {
   const editor = useEditorRef();
+
   const [{ isDragging }, dragRef, preview] = useDragNode(editor, {
     id,
     type,

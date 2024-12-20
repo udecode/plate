@@ -1,10 +1,10 @@
-import React from 'react';
+import type React from 'react';
 
 import { getAboveNode, isVoid } from '@udecode/plate-common';
 import {
-  findPath,
   useEditorPlugin,
   useElement,
+  usePath,
 } from '@udecode/plate-common/react';
 import { Path } from 'slate';
 
@@ -12,12 +12,9 @@ import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 
 export const useBlockSelectable = () => {
   const element = useElement();
+  const path = usePath();
   const { api, editor, getOption, getOptions } =
     useEditorPlugin(BlockSelectionPlugin);
-  const path = React.useMemo(
-    () => findPath(editor, element),
-    [editor, element]
-  );
 
   const id = element?.id as string | undefined;
 

@@ -6,11 +6,7 @@ import type { TColumnElement } from '@udecode/plate-layout';
 
 import { cn, useComposedRef, withRef } from '@udecode/cn';
 import { useElement, withHOC } from '@udecode/plate-common/react';
-import {
-  useDraggable,
-  useDraggableState,
-  useDropLine,
-} from '@udecode/plate-dnd';
+import { useDraggable, useDropLine } from '@udecode/plate-dnd';
 import { ResizableProvider } from '@udecode/plate-resizable';
 import { GripHorizontal } from 'lucide-react';
 import { Path } from 'slate';
@@ -26,23 +22,19 @@ import {
   TooltipTrigger,
 } from './tooltip';
 
-const DRAG_ITEM_COLUMN = 'column';
-
 export const ColumnElement = withHOC(
   ResizableProvider,
   withRef<typeof PlateElement>(({ children, className, ...props }, ref) => {
     const readOnly = useReadOnly();
     const { width } = useElement<TColumnElement>();
 
-    const state = useDraggableState({
+    const { isDragging, previewRef, handleRef } = useDraggable({
       canDropNode: ({ dragEntry, dropEntry }) =>
         Path.equals(Path.parent(dragEntry[1]), Path.parent(dropEntry[1])),
       element: props.element,
       orientation: 'horizontal',
-      type: DRAG_ITEM_COLUMN,
+      type: 'column',
     });
-
-    const { previewRef, handleRef } = useDraggable(state);
 
     return (
       <div className="group/column relative" style={{ width: width ?? '100%' }}>
@@ -69,7 +61,7 @@ export const ColumnElement = withHOC(
             className={cn(
               'relative h-full border border-transparent p-1.5',
               !readOnly && 'rounded-lg border-dashed border-border',
-              state.isDragging && 'opacity-50'
+              isDragging && 'opacity-50'
             )}
           >
             {children}
@@ -108,9 +100,9 @@ const DropLine = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => {
-  const state = useDropLine({ orientation: 'horizontal' });
+  const { dropLine } = useDropLine({ orientation: 'horizontal' });
 
-  if (!state.dropLine) return null;
+  if (!dropLine) return null;
 
   return (
     <div
@@ -120,9 +112,9 @@ const DropLine = React.forwardRef<
       className={cn(
         'slate-dropLine',
         'absolute bg-brand/50',
-        state.dropLine === 'left' &&
+        dropLine === 'left' &&
           'inset-y-0 left-[-10.5px] w-1 group-first/column:-left-1',
-        state.dropLine === 'right' &&
+        dropLine === 'right' &&
           'inset-y-0 right-[-11px] w-1 group-last/column:-right-1',
         className
       )}

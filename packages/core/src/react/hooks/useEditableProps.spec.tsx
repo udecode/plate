@@ -30,7 +30,7 @@ describe('useEditableProps', () => {
         </Plate>
       );
 
-      expect(decorate).toHaveBeenCalledTimes(3);
+      expect(decorate).toHaveBeenCalledTimes(4);
     });
   });
 

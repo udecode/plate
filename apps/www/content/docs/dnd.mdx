@@ -269,23 +269,23 @@ A custom hook that enables dragging of a node from the editor using the `useDrag
   </APIItem>
 </APIParameters>
 
-### useDraggableState
+### useDraggable
 
 A custom hook that manages the draggable state for a node.
 
 <APIParameters>
-  <APIItem name="props" type="UseDndNodeOptions & { element: TElement }">
+  <APIItem name="options" type="UseDndNodeOptions & { element: TElement }">
     <APISubList>
-      <APISubListItem parent="props" name="element" type="TElement">
+      <APISubListItem parent="options" name="element" type="TElement">
         The element to make draggable.
       </APISubListItem>
-      <APISubListItem parent="props" name="orientation" type="'horizontal' | 'vertical'" optional>
+      <APISubListItem parent="options" name="orientation" type="'horizontal' | 'vertical'" optional>
         The orientation of drag and drop. Defaults to `'vertical'`.
       </APISubListItem>
-      <APISubListItem parent="props" name="type" type="string" optional>
+      <APISubListItem parent="options" name="type" type="string" optional>
         The type of drag item. Defaults to `'block'`.
       </APISubListItem>
-      <APISubListItem parent="props" name="onDropHandler" type="function" optional>
+      <APISubListItem parent="options" name="onDropHandler" type="function" optional>
         Handler called when the element is dropped.
       </APISubListItem>
     </APISubList>
@@ -293,33 +293,14 @@ A custom hook that manages the draggable state for a node.
 </APIParameters>
 
 <APIReturns>
-  <APIItem name="dragRef" type="(element: Element | React.ReactElement | React.RefObject<any> | null) => void">
+  <APIItem name="handleRef" type="(element: Element | React.ReactElement | React.RefObject<any> | null) => void">
     The drag source connector function.
   </APIItem>
   <APIItem name="isDragging" type="boolean">
     Whether the element is currently being dragged.
   </APIItem>
-  <APIItem name="nodeRef" type="React.RefObject<HTMLDivElement>">
+  <APIItem name="previewRef" type="React.RefObject<HTMLDivElement>">
     Reference to the draggable element.
-  </APIItem>
-</APIReturns>
-
-### useDraggable
-
-A custom hook that provides the necessary properties and event handlers for making an element draggable.
-
-<APIParameters>
-  <APIItem name="state" type="DraggableState">
-    The state returned from `useDraggableState`.
-  </APIItem>
-</APIParameters>
-
-<APIReturns>
-  <APIItem name="previewRef" type="React.RefObject">
-    A reference to the HTML `div` element that serves as the preview during drag.
-  </APIItem>
-  <APIItem name="handleRef" type="ConnectDragSource">
-    A reference to the drag source connector provided by `react-dnd`.
   </APIItem>
 </APIReturns>
 
@@ -358,16 +339,6 @@ A custom hook that enables dropping a node on the editor. It uses the `useDrop` 
 
   </APIItem>
 </APIParameters>
-
-### useDraggableGutter
-
-Returns props for the draggable gutter.
-
-<APIReturns>
-  <APIItem name="props" type="object">
-    Props to be spread on the gutter element.
-  </APIItem>
-</APIReturns>
 
 ### useDropLine
 

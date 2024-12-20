@@ -84,7 +84,6 @@
     "@udecode/plate-block-quote": "workspace:^",
     "@udecode/plate-break": "workspace:^",
     "@udecode/plate-caption": "workspace:^",
-    "@udecode/plate-cloud": "workspace:^",
     "@udecode/plate-code-block": "workspace:^",
     "@udecode/plate-combobox": "workspace:^",
     "@udecode/plate-comments": "workspace:^",

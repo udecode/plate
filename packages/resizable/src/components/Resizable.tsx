@@ -1,11 +1,7 @@
 import React from 'react';
 
 import { select, setNodes } from '@udecode/plate-common';
-import {
-  findPath,
-  useEditorRef,
-  useElement,
-} from '@udecode/plate-common/react';
+import { useEditorRef, useElement, usePath } from '@udecode/plate-common/react';
 
 import type { ResizeEvent, ResizeLength } from '../types';
 import type { TResizableElement } from './TResizableElement';
@@ -29,8 +25,9 @@ export const useResizableState = ({
   maxWidth = '100%',
   minWidth = 92,
 }: ResizableOptions = {}) => {
-  const element = useElement<TResizableElement>();
   const editor = useEditorRef();
+  const element = useElement<TResizableElement>();
+  const path = usePath();
 
   const nodeWidth = element?.width ?? '100%';
 
@@ -38,8 +35,6 @@ export const useResizableState = ({
 
   const setNodeWidth = React.useCallback(
     (w: number) => {
-      const path = findPath(editor, element!);
-
       if (!path) return;
       if (w === nodeWidth) {
         // Focus the node if not resized
@@ -48,7 +43,7 @@ export const useResizableState = ({
         setNodes<TResizableElement>(editor, { width: w }, { at: path });
       }
     },
-    [editor, element, nodeWidth]
+    [editor, nodeWidth, path]
   );
 
   React.useEffect(() => {

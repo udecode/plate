@@ -3,4 +3,5 @@
  */
 
 export * from './useEditableProps';
+export * from './useNodePath';
 export * from './useSlateProps';

@@ -4,3 +4,4 @@
 
 export * from './useElement';
 export * from './useElementStore';
+export * from './usePath';

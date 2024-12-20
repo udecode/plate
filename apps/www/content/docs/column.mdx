@@ -53,9 +53,6 @@ Add Column Item Plugin to your document.
 <APIAttributes>
 Extends `TElement`.
 
-<APIItem name="layout" type="number[]" optional>
-  Set the width of its children `Column`
-</APIItem>
 </APIAttributes>
 
 ### TColumnElement
@@ -76,9 +73,9 @@ Insert a columnGroup with two empty columns.
   <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
-  <APIItem name="options" type="InsertNodesOptions & { layout?: number[] | number }">
-    - `layout`: Array of column widths or number of equal-width columns (default: 2)
-    - Other InsertNodesOptions to control insert behavior
+  <APIItem name="options" type="InsertNodesOptions & { columns?: number[] | number }">
+    - `columns`: Array of column widths or number of equal-width columns (default: 2)
+    - Other `InsertNodesOptions` to control insert behavior
   </APIItem>
 </APIParameters>
 
@@ -111,59 +108,69 @@ Move the middle column to the left or right by options.direction. If the middle 
   </APIItem>
 </APIParameters>
 
-### setColumnWidth
-
-Set the width of `ColumnGroup`'s children. In general, you don't need to use this function, since we will call this function automatically when the property of `layout` changes.
-If you want to set the `layout` use setNodes.
-
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="groupPathRef" type="PathRef">
-    The path ref of `ColumnGroup`
-  </APIItem>
-  <APIItem name="layout" type="number[]">
-    The element property of `layout`
-  </APIItem>
-</APIParameters>
-
 ### toggleColumnGroup
 
-Convert a block into a column group layout. The selected block becomes the content of the first column.
+Converts a block into a column group layout or updates an existing column group's layout.
 
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
-  <APIItem name="options" type="ReplaceNodeChildrenOptions & { layout?: number[] | number }">
-    - `layout`: Array of column widths or number of equal-width columns (default: 2)
+  <APIItem name="options" type="object">
+    <APISubList>
+      <APISubListItem parent="options" name="at" type="Location" optional>
+        The location to toggle the column group at.
+      </APISubListItem>
+      <APISubListItem parent="options" name="columns" type="number" optional>
+        Number of equal-width columns to create (default: 2)
+      </APISubListItem>
+      <APISubListItem parent="options" name="widths" type="string[]" optional>
+        Array of column widths (e.g., ['50%', '50%']). Takes precedence over `columns`.
+      </APISubListItem>
+    </APISubList>
   </APIItem>
 </APIParameters>
 
+Behavior:
+- If the target block is not a column group, wraps it in a new column group with the specified number of columns
+- If the target block is already a column group, updates its column layout using `setColumns`
+- The original content becomes the content of the first column
+- Additional columns are created with empty paragraphs
+
+### setColumns
+
+Updates the column layout of an existing column group by modifying the number and widths of columns.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="object">
+    <APISubList>
+      <APISubListItem parent="options" name="at" type="Path">
+        The path to the column group element.
+      </APISubListItem>
+      <APISubListItem parent="options" name="columns" type="number" optional>
+        Number of equal-width columns to create.
+      </APISubListItem>
+      <APISubListItem parent="options" name="widths" type="string[]" optional>
+        Array of column widths (e.g., ['33%', '67%']). Takes precedence over `columns`.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+Behavior:
+- When increasing columns:
+  - Keeps existing column content
+  - Adds new empty columns with specified widths
+- When decreasing columns:
+  - Merges content from removed columns into the last remaining column
+  - Updates widths of remaining columns
+- When keeping same number of columns:
+  - Only updates column widths
+
 ## API Components
-
-### useColumnState
-
-<APIReturns>
-  <APIItem name="setDoubleColumn" type="function">
-    Call this function to make the `ColumnGroup`'s children, column bisects the
-    parent element space. This sets the `layout` property of
-    `ColumnGroup` to `[50,50]`
-  </APIItem>
-  <APIItem name="setThreeColumn" type="function">
-    Set the `layout` property of `ColumnGroup` to `[33, 33, 33]`
-  </APIItem>
-  <APIItem name="setRightSideDoubleColumn" type="function">
-    Set the `layout` property of `ColumnGroup` to `[70,30]`
-  </APIItem>
-  <APIItem name="setLeftSideDoubleColumn" type="function">
-    Set the `layout` property of `ColumnGroup` to `[30,70]`
-  </APIItem>
-  <APIItem name="setDoubleSideDoubleColumn" type="function">
-    Set the `layout` property of `ColumnGroup` to `[25, 50, 25]`
-  </APIItem>
-</APIReturns>
 
 ### useDebouncePopoverOpen
 

@@ -2,17 +2,21 @@ import React from 'react';
 
 import type { TElement } from '@udecode/plate-common';
 
+import { useEditorRef } from '@udecode/plate-common/react';
+
 import { type UseDndNodeOptions, DRAG_ITEM_BLOCK, useDndNode } from '..';
 
 export type DraggableState = {
-  dragRef: (
+  isDragging: boolean;
+  /** The ref of the draggable element */
+  previewRef: React.RefObject<HTMLDivElement>;
+  /** The ref of the draggable handle */
+  handleRef: (
     elementOrNode: Element | React.ReactElement | React.RefObject<any> | null
   ) => void;
-  isDragging: boolean;
-  nodeRef: React.RefObject<HTMLDivElement>;
 };
 
-export const useDraggableState = (
+export const useDraggable = (
   props: UseDndNodeOptions & { element: TElement }
 ): DraggableState => {
   const {
@@ -22,8 +26,13 @@ export const useDraggableState = (
     onDropHandler,
   } = props;
 
+  const editor = useEditorRef();
+
   const nodeRef = React.useRef<HTMLDivElement>(null);
 
+  if (!editor.plugins.dnd) return {} as any;
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const { dragRef, isDragging } = useDndNode({
     id: element.id as string,
     nodeRef,
@@ -34,23 +43,8 @@ export const useDraggableState = (
   });
 
   return {
-    dragRef,
     isDragging,
-    nodeRef,
-  };
-};
-
-export const useDraggable = (state: DraggableState) => {
-  return {
-    previewRef: state.nodeRef,
-    handleRef: state.dragRef,
-  };
-};
-
-export const useDraggableGutter = () => {
-  return {
-    props: {
-      contentEditable: false,
-    },
+    previewRef: nodeRef,
+    handleRef: dragRef,
   };
 };
