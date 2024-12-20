@@ -417,16 +417,16 @@ export const customizerItems: Record<string, SettingPlugin> = {
   [DndPlugin.key]: {
     id: DndPlugin.key,
     badges: [customizerBadges.handler, customizerBadges.ui],
-    components: [
-      {
-        id: 'draggable',
-        filename: 'with-draggables',
-        label: 'Draggable',
-        registry: 'draggable',
-        route: getComponentNavItem('draggable').href,
-        usage: 'withDraggables',
-      },
-    ],
+    // components: [
+    //   {
+    //     id: 'draggable',
+    //     filename: 'with-draggables',
+    //     label: 'Draggable',
+    //     registry: 'draggable',
+    //     route: getComponentNavItem('draggable').href,
+    //     usage: 'withDraggables',
+    //   },
+    // ],
     customImports: [
       `import { DndProvider } from 'react-dnd';`,
       `import { HTML5Backend } from 'react-dnd-html5-backend';`,

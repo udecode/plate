@@ -2,15 +2,23 @@
 
 import React from 'react';
 
-import type { TColumnElement } from '@udecode/plate-layout';
-
 import { cn, withRef } from '@udecode/cn';
-import { useElement, useRemoveNodeButton } from '@udecode/plate-common/react';
+import {
+  useEditorRef,
+  useElement,
+  useRemoveNodeButton,
+} from '@udecode/plate-common/react';
+import {
+  type TColumnElement,
+  type TColumnGroupElement,
+  setColumns,
+} from '@udecode/plate-layout';
 import {
   ColumnItemPlugin,
-  useColumnState,
+  ColumnPlugin,
   useDebouncePopoverOpen,
 } from '@udecode/plate-layout/react';
+import { findNodePath } from '@udecode/slate';
 import { type LucideProps, Trash2Icon } from 'lucide-react';
 import { useReadOnly } from 'slate-react';
 
@@ -32,21 +40,22 @@ export const ColumnGroupElement = withRef<typeof PlateElement>(
 );
 
 export function ColumnFloatingToolbar({ children }: React.PropsWithChildren) {
+  const editor = useEditorRef();
   const readOnly = useReadOnly();
 
-  const {
-    setDoubleColumn,
-    setDoubleSideDoubleColumn,
-    setLeftSideDoubleColumn,
-    setRightSideDoubleColumn,
-    setThreeColumn,
-  } = useColumnState();
-
   const element = useElement<TColumnElement>(ColumnItemPlugin.key);
+  const columnGroupElement = useElement<TColumnGroupElement>(ColumnPlugin.key);
 
   const { props: buttonProps } = useRemoveNodeButton({ element });
 
   const isOpen = useDebouncePopoverOpen();
+
+  const onColumnChange = (widths: string[]) => {
+    setColumns(editor, {
+      at: findNodePath(editor, columnGroupElement),
+      widths,
+    });
+  };
 
   if (readOnly) return <>{children}</>;
 
@@ -61,26 +70,38 @@ export function ColumnFloatingToolbar({ children }: React.PropsWithChildren) {
         sideOffset={10}
       >
         <div className="box-content flex items-center [&_svg]:size-4 [&_svg]:text-muted-foreground">
-          <Button size="icon" variant="ghost" onClick={setDoubleColumn}>
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => onColumnChange(['50%', '50%'])}
+          >
             <DoubleColumnOutlined />
           </Button>
-          <Button size="icon" variant="ghost" onClick={setThreeColumn}>
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => onColumnChange(['33%', '33%', '33%'])}
+          >
             <ThreeColumnOutlined />
           </Button>
           <Button
             size="icon"
             variant="ghost"
-            onClick={setRightSideDoubleColumn}
+            onClick={() => onColumnChange(['70%', '30%'])}
           >
             <RightSideDoubleColumnOutlined />
           </Button>
-          <Button size="icon" variant="ghost" onClick={setLeftSideDoubleColumn}>
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => onColumnChange(['30%', '70%'])}
+          >
             <LeftSideDoubleColumnOutlined />
           </Button>
           <Button
             size="icon"
             variant="ghost"
-            onClick={setDoubleSideDoubleColumn}
+            onClick={() => onColumnChange(['25%', '50%', '25%'])}
           >
             <DoubleSideDoubleColumnOutlined />
           </Button>
