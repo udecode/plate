@@ -2,4 +2,6 @@
 '@udecode/plate-dnd': patch
 ---
 
-w
+Additional breaking changes to v41:
+
+-
