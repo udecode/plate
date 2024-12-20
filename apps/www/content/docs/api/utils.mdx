@@ -189,31 +189,6 @@ Generates the props for a mark toolbar button using the state created by **`useM
   </APIItem>
 </APIReturns>
 
-### usePlaceholderState
-
-Generates the state for a placeholder in an editor.
-
-<APIParameters>
-  <APIItem name="hideOnBlur" type="boolean" optional>
-    If true, the placeholder is hidden when the editor is not focused.
-
-    - **Default:** `true`
-
-  </APIItem>
-  <APIItem name="query" type="QueryNodeOptions" optional>
-    Options to query the node. If defined, the placeholder is only shown if the
-    node matches the query.
-  </APIItem>
-  <APIItem name="element" type="PlateElementProps">
-    The element in which the placeholder is to be displayed.
-  </APIItem>
-</APIParameters>
-<APIReturns>
-  <APIItem name="enabled" type="boolean">
-    A boolean indicating whether the placeholder should be displayed or not.
-  </APIItem>
-</APIReturns>
-
 ### useRemoveNodeButton
 
 Generates the props for a button that, when clicked, removes a node from the editor.

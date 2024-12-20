@@ -168,7 +168,6 @@ export const docsApi: SidebarNavItem[] = [
       'PlateLeaf',
       'useMarkToolbarButtonState',
       'useMarkToolbarButton',
-      'usePlaceholderState',
       'useRemoveNodeButton',
       'isType',
       'resetEditorChildren',

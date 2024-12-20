@@ -1,20 +1,13 @@
-'use client';
+---
+'@udecode/plate-utils': patch
+---
 
-import React, { useMemo } from 'react';
+Breaking changes part of v41:
 
-import type {
-  NodeWrapperComponent,
-  PlateRenderElementProps,
-} from '@udecode/plate-common/react';
+- Remove `usePlaceholderState`. This should be implemented in your own plugin:
 
-import { isCollapsed, isElementEmpty } from '@udecode/plate-common';
-import {
-  ParagraphPlugin,
-  createPlatePlugin,
-} from '@udecode/plate-common/react';
-import { useComposing, useFocused, useSelected } from 'slate-react';
-
-const PlaceholderAboveNodes: NodeWrapperComponent = (props) => {
+```tsx
+export const PlaceholderAboveNodes: NodeWrapperComponent = (props) => {
   const { editor, element, path } = props;
 
   const focused = useFocused();
@@ -22,21 +15,17 @@ const PlaceholderAboveNodes: NodeWrapperComponent = (props) => {
   const composing = useComposing();
 
   const placeholderProps = useMemo(() => {
-    if (!composing) {
+    if (isElementEmpty(editor, element) && !composing) {
       if (
         path.length === 1 &&
         element.type === editor.getType(ParagraphPlugin) &&
         isCollapsed(editor.selection) &&
         focused &&
-        selected &&
-        isElementEmpty(editor, element)
+        selected
       ) {
         return { placeholder: 'Type a paragraph' };
       }
-      if (
-        element.type === editor.getType({ key: 'h1' }) &&
-        isElementEmpty(editor, element)
-      ) {
+      if (element.type === editor.getType({ key: 'h1' })) {
         return { placeholder: 'Untitled' };
       }
     }
@@ -47,7 +36,7 @@ const PlaceholderAboveNodes: NodeWrapperComponent = (props) => {
   return (props) => <Placeholder {...props} {...placeholderProps} />;
 };
 
-const Placeholder = (
+export const Placeholder = (
   props: PlateRenderElementProps & { placeholder: string }
 ) => {
   const { children, nodeProps, placeholder } = props;
@@ -67,7 +56,6 @@ const Placeholder = (
 
 export const BlockPlaceholderPlugin = createPlatePlugin({
   key: 'block-placeholder',
-  render: {
-    aboveNodes: PlaceholderAboveNodes,
-  },
+  render: { aboveNodes: PlaceholderAboveNodes },
 });
+```

@@ -81,7 +81,6 @@ import { MediaVideoElement } from '@/registry/default/plate-ui/media-video-eleme
 import { MentionElement } from '@/registry/default/plate-ui/mention-element';
 import { MentionInputElement } from '@/registry/default/plate-ui/mention-input-element';
 import { ParagraphElement } from '@/registry/default/plate-ui/paragraph-element';
-import { withPlaceholders } from '@/registry/default/plate-ui/placeholder';
 import { SlashInputElement } from '@/registry/default/plate-ui/slash-input-element';
 import {
   TableCellElement,
@@ -161,7 +160,7 @@ export const useCreateEditor = (
     {
       override: {
         components: {
-          ...(readOnly ? viewComponents : withPlaceholders(editorComponents)),
+          ...(readOnly ? viewComponents : editorComponents),
           ...components,
         },
         ...override,

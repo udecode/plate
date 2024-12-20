@@ -26,6 +26,7 @@ import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
 import { FixedToolbarPlugin } from '@/registry/default/components/editor/plugins/fixed-toolbar-plugin';
 import { FloatingToolbarPlugin } from '@/registry/default/components/editor/plugins/floating-toolbar-plugin';
+import { BlockPlaceholderPlugin } from '@/registry/default/plate-ui/placeholder';
 
 import { aiPlugins } from './ai-plugins';
 import { alignPlugin } from './align-plugin';
@@ -86,6 +87,7 @@ export const editorPlugins = [
   ...viewPlugins,
 
   // Functionality
+  BlockPlaceholderPlugin,
   SlashPlugin,
   autoformatPlugin,
   cursorOverlayPlugin,

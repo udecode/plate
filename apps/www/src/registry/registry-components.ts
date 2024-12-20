@@ -46,6 +46,7 @@ const plugins: Registry = [
       'soft-break-plugin',
       'table-plugin',
       'toc-plugin',
+      'placeholder',
     ],
     type: 'registry:component',
   },

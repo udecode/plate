@@ -82,7 +82,6 @@ import { MediaVideoElement } from '@/registry/default/plate-ui/media-video-eleme
 import { MentionElement } from '@/registry/default/plate-ui/mention-element';
 import { MentionInputElement } from '@/registry/default/plate-ui/mention-input-element';
 import { ParagraphElement } from '@/registry/default/plate-ui/paragraph-element';
-import { withPlaceholders } from '@/registry/default/plate-ui/placeholder';
 import { SlashInputElement } from '@/registry/default/plate-ui/slash-input-element';
 import {
   TableCellElement,
@@ -96,7 +95,7 @@ import { ToggleElement } from '@/registry/default/plate-ui/toggle-element';
 export const useCreateEditor = () => {
   return usePlateEditor({
     override: {
-      components: withPlaceholders({
+      components: {
         [AIPlugin.key]: AILeaf,
         [AudioPlugin.key]: MediaAudioElement,
         [BlockquotePlugin.key]: BlockquoteElement,
@@ -141,7 +140,7 @@ export const useCreateEditor = () => {
         [TogglePlugin.key]: ToggleElement,
         [UnderlinePlugin.key]: withProps(PlateLeaf, { as: 'u' }),
         [VideoPlugin.key]: MediaVideoElement,
-      }),
+      },
     },
     plugins: [
       ...copilotPlugins,

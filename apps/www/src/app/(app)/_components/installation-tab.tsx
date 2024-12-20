@@ -309,19 +309,17 @@ export default function InstallationTab() {
     pluginsCode.push(formattedPlugin + ',');
   });
 
-  const hasPlaceholder = components.some((comp) => comp.id === 'placeholder');
-
   const usageCode = [
     'const editor = usePlateEditor({',
     '  plugins: [',
     pluginsCode.join('\n'),
     '  ],',
     '  override: {',
-    `    components: ${hasPlaceholder ? 'withPlaceholders(' : ''}({`,
+    `    components: {`,
     ...componentsWithPluginKey.map(
       ({ pluginKey, usage }) => `      [${pluginKey}]: ${usage},`
     ),
-    `    })${hasPlaceholder ? ')' : ''},`,
+    `    },`,
     '  },',
     '  value: [',
     '    {',
