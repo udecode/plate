@@ -5,6 +5,7 @@ import {
   isElement,
   isStartPoint,
   removeNodes,
+  setNodes,
   unwrapNodes,
 } from '@udecode/plate-common';
 
@@ -43,40 +44,37 @@ export const withColumn: ExtendEditor = ({ editor }) => {
 
         return;
       }
+
+      // PERF: only run when the number of columns changes
+      editor.withoutNormalizing(() => {
+        // Add new width normalization logic
+        const totalColumns = node.children.length;
+        let widths = node.children.map((col) => {
+          const parsed = Number.parseFloat(col.width);
+
+          return Number.isNaN(parsed) ? 0 : parsed;
+        });
+
+        const sum = widths.reduce((acc, w) => acc + w, 0);
+
+        if (sum !== 100) {
+          const diff = 100 - sum;
+          const adjustment = diff / totalColumns;
+
+          widths = widths.map((w) => w + adjustment);
+
+          // Update the columns with the new widths
+          widths.forEach((w, i) => {
+            const columnPath = path.concat([i]);
+            setNodes<TColumnElement>(
+              editor,
+              { width: `${w}%` },
+              { at: columnPath }
+            );
+          });
+        }
+      });
     }
-
-    // const prevChildrenCnt = node.children.length;
-    //   const currentLayout = node.layout;
-
-    //   if (currentLayout) {
-    //     const currentChildrenCnt = currentLayout.length;
-
-    //     const groupPathRef = createPathRef(editor, path);
-
-    //     if (prevChildrenCnt === 2 && currentChildrenCnt === 3) {
-    //       const lastChildPath = getLastChildPath(entry);
-
-    //       insertColumn(editor, {
-    //         at: lastChildPath,
-    //       });
-
-    //       setColumnWidth(editor, groupPathRef, currentLayout);
-
-    //       return;
-    //     }
-    //     if (prevChildrenCnt === 3 && currentChildrenCnt === 2) {
-    //       moveMiddleColumn(editor, entry, { direction: 'left' });
-    //       setColumnWidth(editor, groupPathRef, currentLayout);
-
-    //       return;
-    //     }
-    //     if (prevChildrenCnt === currentChildrenCnt) {
-    //       setColumnWidth(editor, groupPathRef, currentLayout);
-
-    //       return;
-    //     }
-    //   }
-
     // If it's a column, ensure it has at least one block (optional)
     if (isElement(n) && n.type === BaseColumnItemPlugin.key) {
       const node = n as TColumnElement;
@@ -113,3 +111,35 @@ export const withColumn: ExtendEditor = ({ editor }) => {
 
   return editor;
 };
+
+// const prevChildrenCnt = node.children.length;
+//   const currentLayout = node.layout;
+
+//   if (currentLayout) {
+//     const currentChildrenCnt = currentLayout.length;
+
+//     const groupPathRef = createPathRef(editor, path);
+
+//     if (prevChildrenCnt === 2 && currentChildrenCnt === 3) {
+//       const lastChildPath = getLastChildPath(entry);
+
+//       insertColumn(editor, {
+//         at: lastChildPath,
+//       });
+
+//       setColumnWidth(editor, groupPathRef, currentLayout);
+
+//       return;
+//     }
+//     if (prevChildrenCnt === 3 && currentChildrenCnt === 2) {
+//       moveMiddleColumn(editor, entry, { direction: 'left' });
+//       setColumnWidth(editor, groupPathRef, currentLayout);
+
+//       return;
+//     }
+//     if (prevChildrenCnt === currentChildrenCnt) {
+//       setColumnWidth(editor, groupPathRef, currentLayout);
+
+//       return;
+//     }
+//   }
