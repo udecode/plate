@@ -15,6 +15,7 @@ import {
   useEditorPlugin,
   useEditorRef,
   useElement,
+  usePath,
 } from '@udecode/plate-common/react';
 import { useDraggable, useDropLine } from '@udecode/plate-dnd';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
@@ -95,8 +96,11 @@ export const DraggableAboveNodes: NodeWrapperComponent = (props) => {
 
 export const Draggable = withRef<'div', PlateRenderElementProps>(
   ({ className, ...props }, ref) => {
-    const { children, editor, element } = props;
+    const { children, editor, element, path } = props;
     const { isDragging, previewRef, handleRef } = useDraggable({ element });
+
+    const isInColumn = path?.length === 3;
+    const isInTable = path?.length === 4;
 
     return (
       <div
@@ -121,13 +125,16 @@ export const Draggable = withRef<'div', PlateRenderElementProps>(
                 HEADING_KEYS.h3,
                 HEADING_KEYS.h4,
                 HEADING_KEYS.h5,
-              ]) && 'h-[1.3em]'
+              ]) && 'h-[1.3em]',
+              isInColumn && 'h-4',
+              isInTable && 'mt-1 size-4'
             )}
           >
             <div
               className={cn(
                 'slate-blockToolbar',
-                'pointer-events-auto mr-1 flex items-center'
+                'pointer-events-auto mr-1 flex items-center',
+                isInColumn && 'mr-1.5'
               )}
             >
               <div ref={handleRef} className="size-4">
@@ -153,10 +160,14 @@ const Gutter = React.forwardRef<
 >(({ children, className, ...props }, ref) => {
   const { editor, useOption } = useEditorPlugin(BlockSelectionPlugin);
   const element = useElement();
+  const path = usePath();
   const isSelectionAreaVisible = useOption('isSelectionAreaVisible');
   const selected = useSelected();
 
   const isNodeType = (keys: string[] | string) => isType(editor, element, keys);
+
+  const isInColumn = path?.length === 3;
+  const isInTable = path?.length === 4;
 
   return (
     <div
@@ -187,6 +198,8 @@ const Gutter = React.forwardRef<
           ColumnPlugin.key,
         ]) && 'py-0',
         isNodeType([PlaceholderPlugin.key, TablePlugin.key]) && 'pb-0 pt-3',
+        isInColumn && 'mt-2 h-4 pt-0',
+        isInTable && 'size-4',
         className
       )}
       contentEditable={false}
