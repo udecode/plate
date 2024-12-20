@@ -1,5 +1,5 @@
 {
   "extends": "../../config/tsconfig.base.json",
-  "include": ["src"],
+  "include": ["src", "../core/src/react/hooks/useNodePath.ts"],
   "exclude": []
 }

@@ -10,6 +10,8 @@ import { useComposing, useFocused, useSelected } from 'slate-react';
 
 import type { PlateElementProps } from './PlateElement';
 
+import { useElementPath } from '../../../core/src/react/hooks/useNodePath';
+
 export interface PlaceholderProps extends PlateElementProps {
   placeholder: string;
   hideOnBlur?: boolean;
@@ -27,6 +29,8 @@ export const usePlaceholderState = ({
   const editor = useEditorRef();
 
   const isEmptyBlock = isElementEmpty(editor, element) && !composing;
+
+  const path = useElementPath();
 
   const enabled =
     isEmptyBlock &&

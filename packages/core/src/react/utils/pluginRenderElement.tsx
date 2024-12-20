@@ -81,11 +81,11 @@ export const pluginRenderElement = (
   plugin: AnyEditorPlatePlugin
 ): RenderElement =>
   function render(nodeProps) {
-    const { element } = nodeProps;
+    const { element, path } = nodeProps;
 
     if (element.type === plugin.node.type) {
       return (
-        <ElementProvider element={element} scope={plugin.key}>
+        <ElementProvider element={element} path={path} scope={plugin.key}>
           <ElementContent
             editor={editor}
             nodeProps={nodeProps}
