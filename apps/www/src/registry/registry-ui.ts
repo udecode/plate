@@ -276,10 +276,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       ],
       // Click the plus button next to the drag button to insert blocks
     },
-    files: [
-      { path: 'plate-ui/draggable.tsx', type: 'registry:ui' },
-      { path: 'plate-ui/with-draggables.tsx', type: 'registry:ui' },
-    ],
+    files: [{ path: 'plate-ui/draggable.tsx', type: 'registry:ui' }],
     name: 'draggable',
     registryDependencies: ['tooltip', 'use-mounted'],
     type: 'registry:ui',

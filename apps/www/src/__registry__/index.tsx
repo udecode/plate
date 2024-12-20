@@ -1222,10 +1222,6 @@ export const Index: Record<string, any> = {
         path: "src/registry/default/plate-ui/draggable.tsx",
         type: "registry:ui",
         target: ""
-      },{
-        path: "src/registry/default/plate-ui/with-draggables.tsx",
-        type: "registry:ui",
-        target: ""
       }],
       component: React.lazy(() => import("@/registry/default/plate-ui/draggable.tsx")),
       source: "",

@@ -2034,10 +2034,6 @@
       {
         "path": "plate-ui/draggable.tsx",
         "type": "registry:ui"
-      },
-      {
-        "path": "plate-ui/with-draggables.tsx",
-        "type": "registry:ui"
       }
     ],
     "name": "draggable",

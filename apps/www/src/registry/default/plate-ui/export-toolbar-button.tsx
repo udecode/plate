@@ -67,7 +67,6 @@ import { BaseTogglePlugin } from '@udecode/plate-toggle';
 import { ArrowDownToLineIcon } from 'lucide-react';
 import Prism from 'prismjs';
 
-import { siteConfig } from '@/config/site';
 import { BlockquoteElementStatic } from '@/registry/default/plate-ui/blockquote-element-static';
 import { CodeBlockElementStatic } from '@/registry/default/plate-ui/code-block-element-static';
 import { CodeLeafStatic } from '@/registry/default/plate-ui/code-leaf-static';
@@ -115,6 +114,8 @@ import {
 } from './dropdown-menu';
 import { EditorStatic } from './editor-static';
 import { ToolbarButton } from './toolbar';
+
+const siteUrl = 'https://platejs.org';
 
 export function ExportToolbarButton({ children, ...props }: DropdownMenuProps) {
   const editor = useEditorRef();
@@ -319,8 +320,8 @@ export function ExportToolbarButton({ children, ...props }: DropdownMenuProps) {
       props: { style: { padding: '0 calc(50% - 350px)', paddingBottom: '' } },
     });
 
-    const prismCss = `<link rel="stylesheet" href="${siteConfig.url}/prism.css">`;
-    const tailwindCss = `<link rel="stylesheet" href="${siteConfig.url}/tailwind.css">`;
+    const prismCss = `<link rel="stylesheet" href="${siteUrl}/prism.css">`;
+    const tailwindCss = `<link rel="stylesheet" href="${siteUrl}/tailwind.css">`;
 
     const html = `<!DOCTYPE html>
     <html lang="en">

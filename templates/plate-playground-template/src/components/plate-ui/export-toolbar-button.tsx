@@ -115,6 +115,8 @@ import {
 import { EditorStatic } from './editor-static';
 import { ToolbarButton } from './toolbar';
 
+const siteUrl = 'https://platejs.org';
+
 export function ExportToolbarButton({ children, ...props }: DropdownMenuProps) {
   const editor = useEditorRef();
   const openState = useOpenState();
@@ -318,13 +320,8 @@ export function ExportToolbarButton({ children, ...props }: DropdownMenuProps) {
       props: { style: { padding: '0 calc(50% - 350px)', paddingBottom: '' } },
     });
 
-    console.log(process.env.NEXT_PUBLIC_URL, 'fj');
-
-    const prismCss = `<link rel="stylesheet" href="https://platejs.org/_next/static/css/274e256ca08ece78.css">`;
-    const tailwindCss = `
-      <link rel="stylesheet" href="https://platejs.org/_next/static/css/4d3ab7d3f144d56d.css">
-      <link rel="stylesheet" href="https://platejs.org/_next/static/css/e8dd5394bd410c4c.css">  
-    `;
+    const prismCss = `<link rel="stylesheet" href="${siteUrl}/prism.css">`;
+    const tailwindCss = `<link rel="stylesheet" href="${siteUrl}/tailwind.css">`;
 
     const html = `<!DOCTYPE html>
     <html lang="en">
