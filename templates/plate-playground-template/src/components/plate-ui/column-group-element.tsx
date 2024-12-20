@@ -18,7 +18,7 @@ import {
   ColumnPlugin,
   useDebouncePopoverOpen,
 } from '@udecode/plate-layout/react';
-import { findNodePath } from '@udecode/slate';
+import { findNodePath } from '@udecode/plate-common';
 import { type LucideProps, Trash2Icon } from 'lucide-react';
 import { useReadOnly } from 'slate-react';
 
