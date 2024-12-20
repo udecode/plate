@@ -1,5 +1,11 @@
 # @udecode/plate-math
 
+## 41.0.3
+
+### Patch Changes
+
+- [#3888](https://github.com/udecode/plate/pull/3888) by [@felixfeng33](https://github.com/felixfeng33) – Add `getEquationHtml`
+
 ## 41.0.0
 
 ## 40.3.3
