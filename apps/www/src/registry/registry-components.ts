@@ -252,6 +252,7 @@ const plugins: Registry = [
       },
     ],
     name: 'dnd-plugins',
+    registryDependencies: ['draggable'],
     type: 'registry:component',
   },
   {

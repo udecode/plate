@@ -14,7 +14,6 @@ export * from './useFormInputProps';
 export * from './useLastBlock';
 export * from './useLastBlockDOMNode';
 export * from './useMarkToolbarButton';
-export * from '../../../core/src/react/hooks/useNodePath';
 export * from './usePlaceholder';
 export * from './useRemoveNodeButton';
 export * from './useSelection';

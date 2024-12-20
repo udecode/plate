@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { unsetNodes } from '@udecode/plate-common';
-import { findPath, useEditorRef } from '@udecode/plate-common/react';
+import { useEditorRef, useNodePath } from '@udecode/plate-common/react';
 
 import {
   type TTableElement,
@@ -21,6 +21,7 @@ export const useTableColSizes = (
 ): number[] => {
   const editor = useEditorRef();
   const colSizeOverrides = useTableStore().get.colSizeOverrides();
+  const path = useNodePath(tableNode);
 
   const { enableUnsetSingleColSize } = editor.getOptions(TablePlugin);
 
@@ -38,10 +39,10 @@ export const useTableColSizes = (
       tableNode.colSizes?.length
     ) {
       unsetNodes(editor, 'colSizes', {
-        at: findPath(editor, tableNode),
+        at: path,
       });
     }
-  }, [colCount, enableUnsetSingleColSize, editor, tableNode]);
+  }, [colCount, enableUnsetSingleColSize, editor, tableNode, path]);
 
   return overriddenColSizes;
 };
