@@ -3209,27 +3209,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@portive/api-types@npm:^9.0.0":
-  version: 9.0.0
-  resolution: "@portive/api-types@npm:9.0.0"
-  dependencies:
-    "@thesunny/assert-type": "npm:^0.1.13"
-    superstruct: "npm:^0.15.4"
-  checksum: 10c0/7055f09e497450ba40dc3b841677a52743c805aba5a89c08748fdb3d8bb6a22ba819714a76cbe46f86e3ef8c3ce49b82ca1708b294d24f60bc8aabf56b3491b2
-  languageName: node
-  linkType: hard
-
-"@portive/client@npm:10.0.3":
-  version: 10.0.3
-  resolution: "@portive/client@npm:10.0.3"
-  dependencies:
-    "@portive/api-types": "npm:^9.0.0"
-    axios: "npm:^0.27.2"
-    resolvable-value: "npm:^1.0.2"
-  checksum: 10c0/9e998f3f9e8b3b8475c843fd5ec123c96f9f0952941ec3a18bffe4477cfac585e17a45258c4ec313ebdcf88f74cca5c78435bfef77ac342ec412fb5b3a2618c2
-  languageName: node
-  linkType: hard
-
 "@protobufjs/aspromise@npm:^1.1.1, @protobufjs/aspromise@npm:^1.1.2":
   version: 1.1.2
   resolution: "@protobufjs/aspromise@npm:1.1.2"
@@ -5444,15 +5423,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@thesunny/assert-type@npm:^0.1.13":
-  version: 0.1.13
-  resolution: "@thesunny/assert-type@npm:0.1.13"
-  dependencies:
-    ts-node: "npm:^10.9.1"
-  checksum: 10c0/059e420ad9013cd7b9983c9300449efa620fa40975bfd34da2ce43a757f8f30991091eac309057b82b5c9436183bf5fbfcfcf32fa869b6a79e52087916d15dcd
-  languageName: node
-  linkType: hard
-
 "@tootallnate/once@npm:2":
   version: 2.0.0
   resolution: "@tootallnate/once@npm:2.0.0"
@@ -6545,26 +6515,6 @@ __metadata:
   dependencies:
     "@udecode/plate-common": "workspace:^"
     react-textarea-autosize: "npm:^8.5.3"
-  peerDependencies:
-    "@udecode/plate-common": ">=41.0.0"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate: ">=0.112.0"
-    slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
-    slate-hyperscript: ">=0.66.0"
-    slate-react: ">=0.111.0"
-  languageName: unknown
-  linkType: soft
-
-"@udecode/plate-cloud@workspace:^, @udecode/plate-cloud@workspace:packages/cloud":
-  version: 0.0.0-use.local
-  resolution: "@udecode/plate-cloud@workspace:packages/cloud"
-  dependencies:
-    "@portive/client": "npm:10.0.3"
-    "@udecode/plate-common": "workspace:^"
-    delay: "npm:5.0.0"
-    p-defer: "npm:^4.0.1"
   peerDependencies:
     "@udecode/plate-common": ">=41.0.0"
     react: ">=16.8.0"
@@ -8124,16 +8074,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^0.27.2":
-  version: 0.27.2
-  resolution: "axios@npm:0.27.2"
-  dependencies:
-    follow-redirects: "npm:^1.14.9"
-    form-data: "npm:^4.0.0"
-  checksum: 10c0/76d673d2a90629944b44d6f345f01e58e9174690f635115d5ffd4aca495d99bcd8f95c590d5ccb473513f5ebc1d1a6e8934580d0c57cdd0498c3a101313ef771
-  languageName: node
-  linkType: hard
-
 "axobject-query@npm:^4.1.0":
   version: 4.1.0
   resolution: "axobject-query@npm:4.1.0"
@@ -9584,13 +9524,6 @@ __metadata:
     escodegen: "npm:^2.1.0"
     esprima: "npm:^4.0.1"
   checksum: 10c0/e48d8a651edeb512a648711a09afec269aac6de97d442a4bb9cf121a66877e0eec11b9727100a10252335c0666ae1c84a8bc1e3a3f47788742c975064d2c7b1c
-  languageName: node
-  linkType: hard
-
-"delay@npm:5.0.0":
-  version: 5.0.0
-  resolution: "delay@npm:5.0.0"
-  checksum: 10c0/01cdc4cd0cd35fb622518a3df848e67e09763a38e7cdada2232b6fda9ddda72eddcf74f0e24211200fbe718434f2335f2a2633875a6c96037fefa6de42896ad7
   languageName: node
   linkType: hard
 
@@ -11693,16 +11626,6 @@ __metadata:
   version: 3.3.1
   resolution: "flatted@npm:3.3.1"
   checksum: 10c0/324166b125ee07d4ca9bcf3a5f98d915d5db4f39d711fba640a3178b959919aae1f7cfd8aabcfef5826ed8aa8a2aa14cc85b2d7d18ff638ddf4ae3df39573eaf
-  languageName: node
-  linkType: hard
-
-"follow-redirects@npm:^1.14.9":
-  version: 1.15.9
-  resolution: "follow-redirects@npm:1.15.9"
-  peerDependenciesMeta:
-    debug:
-      optional: true
-  checksum: 10c0/5829165bd112c3c0e82be6c15b1a58fa9dcfaede3b3c54697a82fe4a62dd5ae5e8222956b448d2f98e331525f05d00404aba7d696de9e761ef6e42fdc780244f
   languageName: node
   linkType: hard
 
@@ -16825,13 +16748,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"p-defer@npm:^4.0.1":
-  version: 4.0.1
-  resolution: "p-defer@npm:4.0.1"
-  checksum: 10c0/592f5bd32f8c6a57f892b00976e5272b3bbbd792b503f4cf3bc22094d08d7a973413c59c15deccff4759d860b38467a08b5b3363e865da6f00f44a031777118c
-  languageName: node
-  linkType: hard
-
 "p-filter@npm:^2.1.0":
   version: 2.1.0
   resolution: "p-filter@npm:2.1.0"
@@ -18969,13 +18885,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"resolvable-value@npm:^1.0.2":
-  version: 1.0.2
-  resolution: "resolvable-value@npm:1.0.2"
-  checksum: 10c0/e3141df461131d77c31b6bea9044be4f53b25688decb79a4b21f6d6f9028f32833756128039ad28826c7c09497192542ba79480522c244efb9e232aa1352d620
-  languageName: node
-  linkType: hard
-
 "resolve-cwd@npm:^3.0.0":
   version: 3.0.0
   resolution: "resolve-cwd@npm:3.0.0"
@@ -20405,13 +20314,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"superstruct@npm:^0.15.4":
-  version: 0.15.5
-  resolution: "superstruct@npm:0.15.5"
-  checksum: 10c0/73ae2043443dcc7868da6e8b4e4895410c79a88e021b514c665161199675ee920d5eadd85bb9dee5a9f515817e62f4b65a67ccb82d29f73259d012afcbcd3ce4
-  languageName: node
-  linkType: hard
-
 "supports-color@npm:^5.3.0":
   version: 5.5.0
   resolution: "supports-color@npm:5.5.0"
@@ -20969,7 +20871,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-node@npm:^10.9.1, ts-node@npm:^10.9.2":
+"ts-node@npm:^10.9.2":
   version: 10.9.2
   resolution: "ts-node@npm:10.9.2"
   dependencies:
@@ -22485,7 +22387,6 @@ __metadata:
     "@udecode/plate-block-quote": "workspace:^"
     "@udecode/plate-break": "workspace:^"
     "@udecode/plate-caption": "workspace:^"
-    "@udecode/plate-cloud": "workspace:^"
     "@udecode/plate-code-block": "workspace:^"
     "@udecode/plate-combobox": "workspace:^"
     "@udecode/plate-comments": "workspace:^"
