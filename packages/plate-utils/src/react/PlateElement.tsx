@@ -20,8 +20,14 @@ export type PlateElementProps<
   PlateRenderElementProps<N, P>;
 
 export const usePlateElement = (props: PlateElementProps) => {
-  const { attributes, element, elementToAttributes, nodeProps, ...rootProps } =
-    omitPluginContext(props);
+  const {
+    attributes,
+    element,
+    elementToAttributes,
+    nodeProps,
+    path,
+    ...rootProps
+  } = omitPluginContext(props);
   const mounted = usePlateStore().get.isMounted();
 
   const block = React.useMemo(
