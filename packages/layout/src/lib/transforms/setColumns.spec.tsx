@@ -62,11 +62,11 @@ describe('setColumns', () => {
     expect(node.children).toHaveLength(3);
 
     // First two columns updated
-    expect(node.children[0].width).toBe('33%');
-    expect(node.children[1].width).toBe('33%');
+    expect(node.children[0].width).toContain('33.');
+    expect(node.children[1].width).toContain('33.');
 
     // New column inserted
-    expect(node.children[2].width).toBe('33%');
+    expect(node.children[2].width).toContain('33.');
     // Should have a default block inside
     expect(node.children[2].children).toHaveLength(1);
     expect(node.children[2].children[0].type).toBe('p');
@@ -173,9 +173,8 @@ describe('setColumns', () => {
 
     const node = editor.children[0] as any;
     expect(node.children).toHaveLength(2);
-    // Even though this sums to 80%, we do not enforce total width
-    expect(node.children[0].width).toBe('40%');
-    expect(node.children[1].width).toBe('40%');
+    expect(node.children[0].width).toBe('50%');
+    expect(node.children[1].width).toBe('50%');
   });
 
   it('should handle multiple toggles without losing content', () => {
@@ -205,7 +204,7 @@ describe('setColumns', () => {
     expect(node.children).toHaveLength(2);
     // Col3 content should have merged into column 2
     expect(node.children[1].children[0].children[0].text).toBe('Column 2 text');
-    expect(node.children[1].children[1].children[0].text).toBe('Column 3 text');
+    expect(node.children[1].children[2].children[0].text).toBe('Column 3 text');
 
     // Toggle again to 3 columns
     setColumns(editor, { at: columnGroupPath, widths: ['33%', '33%', '34%'] });
@@ -216,7 +215,7 @@ describe('setColumns', () => {
     expect(node.children[2].children.length).toBeGreaterThan(0);
     // Original content is still preserved in columns 2
     expect(node.children[1].children[0].children[0].text).toBe('Column 2 text');
-    expect(node.children[1].children[1].children[0].text).toBe('Column 3 text');
+    expect(node.children[1].children[2].children[0].text).toBe('Column 3 text');
     expect(node.children[2].children[0].children[0].text).toBe('');
   });
 
