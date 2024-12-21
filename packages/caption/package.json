@@ -38,18 +38,18 @@
     "dist/**/*"
   ],
   "scripts": {
-    "brl": "yarn p:brl",
-    "build": "yarn p:build",
-    "build:watch": "yarn p:build:watch",
-    "clean": "yarn p:clean",
-    "lint": "yarn p:lint",
-    "lint:fix": "yarn p:lint:fix",
-    "test": "yarn p:test",
-    "test:watch": "yarn p:test:watch",
-    "typecheck": "yarn p:typecheck"
+    "brl": "pnpm run p:brl",
+    "build": "pnpm run p:build",
+    "build:watch": "pnpm run p:build:watch",
+    "clean": "pnpm run p:clean",
+    "lint": "pnpm run p:lint",
+    "lint:fix": "pnpm run p:lint:fix",
+    "test": "pnpm run p:test",
+    "test:watch": "pnpm run p:test:watch",
+    "typecheck": "pnpm run p:typecheck"
   },
   "dependencies": {
-    "react-textarea-autosize": "^8.5.3"
+    "react-textarea-autosize": "^8.5.6"
   },
   "devDependencies": {
     "@udecode/plate-common": "workspace:^"

@@ -22,9 +22,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: 'pnpm'
 
-      - name: 📦 Monorepo install
-        uses: ./.github/actions/yarn-nm-install
+      - name: 📥 Install
+        run: pnpm install -
 
       # @link https://github.com/changesets/action
       - name: 🦋 Create Release Pull Request or Publish
@@ -33,7 +34,11 @@ jobs:
         with:
           cwd: ${{ github.workspace }}
           title: '[Release] Version packages'
-          publish: yarn release
+          publish: pnpm release
+          # Optional, might be used in conjunction with GITHUB_TOKEN to
+          # allow running the workflows on a Version package action.
+          # Be aware of security implications.
+          # setupGitUser: true
         env:
           # See https://github.com/changesets/action/issues/147
           HOME: ${{ github.workspace }}

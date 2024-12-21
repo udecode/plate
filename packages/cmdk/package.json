@@ -29,21 +29,21 @@
     "dist/**/*"
   ],
   "scripts": {
-    "brl": "yarn p:brl",
-    "build": "yarn p:build",
-    "build:watch": "yarn p:build:watch",
-    "clean": "yarn p:clean",
-    "lint": "yarn p:lint",
-    "lint:fix": "yarn p:lint:fix",
-    "test": "yarn p:test",
-    "test:watch": "yarn p:test:watch",
-    "typecheck": "yarn p:typecheck"
+    "brl": "pnpm run p:brl",
+    "build": "pnpm run p:build",
+    "build:watch": "pnpm run p:build:watch",
+    "clean": "pnpm run p:clean",
+    "lint": "pnpm run p:lint",
+    "lint:fix": "pnpm run p:lint:fix",
+    "test": "pnpm run p:test",
+    "test:watch": "pnpm run p:test:watch",
+    "typecheck": "pnpm run p:typecheck"
   },
   "dependencies": {
-    "@radix-ui/react-dialog": "^1.1.2",
+    "@radix-ui/react-dialog": "^1.1.4",
     "@radix-ui/react-id": "^1.1.0",
-    "@radix-ui/react-primitive": "^2.0.0",
-    "use-sync-external-store": "^1.2.2"
+    "@radix-ui/react-primitive": "^2.0.1",
+    "use-sync-external-store": "^1.4.0"
   },
   "devDependencies": {
     "@types/use-sync-external-store": "0.0.6"
