@@ -39,15 +39,15 @@
     "dist/**/*"
   ],
   "scripts": {
-    "brl": "yarn p:brl",
-    "build": "yarn p:build",
-    "build:watch": "yarn p:build:watch",
-    "clean": "yarn p:clean",
-    "lint": "yarn p:lint",
-    "lint:fix": "yarn p:lint:fix",
-    "test": "yarn p:test",
-    "test:watch": "yarn p:test:watch",
-    "typecheck": "yarn p:typecheck"
+    "brl": "INIT_CWD=\"$PWD\" pnpm -w run p:brl",
+    "build": "INIT_CWD=\"$PWD\" pnpm -w run p:build",
+    "build:watch": "INIT_CWD=\"$PWD\" pnpm -w run p:build:watch",
+    "clean": "INIT_CWD=\"$PWD\" pnpm -w run p:clean",
+    "lint": "INIT_CWD=\"$PWD\" pnpm -w run p:lint",
+    "lint:fix": "INIT_CWD=\"$PWD\" pnpm -w run p:lint:fix",
+    "test": "INIT_CWD=\"$PWD\" pnpm -w run p:test",
+    "test:watch": "INIT_CWD=\"$PWD\" pnpm -w run p:test:watch",
+    "typecheck": "INIT_CWD=\"$PWD\" pnpm -w run p:typecheck"
   },
   "dependencies": {
     "@udecode/plate-indent": "41.0.0",

@@ -13,7 +13,7 @@ jobs:
   update-registry:
     name: Update Registry
     runs-on: ubuntu-latest
-    
+
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
@@ -21,13 +21,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          version: 9.15.1
+          run_install: false
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: 'pnpm'
 
-      - name: 📥 Monorepo install
-        uses: ./.github/actions/yarn-nm-install
+      - name: 📥 Install
+        run: pnpm install -r
 
       - name: ♻️ Restore packages cache
         uses: actions/cache@v4
@@ -35,10 +42,10 @@ jobs:
           path: |
             ${{ github.workspace }}/.cache
             ${{ github.workspace }}/**/tsconfig.tsbuildinfo
-          key: packages-cache-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+          key: packages-cache-${{ runner.os }}-${{ hashFiles('pnpm.lock') }}
 
       - name: 🏗 Build Registry
-        run: yarn build:registry && yarn build:tw
+        run: pnpm run build:registry && pnpm run build:tw
 
       - name: ◻️ Create Pull Request
         uses: peter-evans/create-pull-request@v4

@@ -21,7 +21,11 @@
     "target": "es2017",
     "outDir": "dist",
     "rootDir": ".",
-    "types": ["node", "jest", "@testing-library/jest-dom"]
+    "types": ["node", "jest", "@testing-library/jest-dom"],
+    "paths": {
+      "react": ["./node_modules/@types/react"],
+      "react-dom": ["./node_modules/@types/react-dom"]
+    }
   },
   "exclude": ["node_modules", "**/node_modules", "dist", "**/dist"]
 }

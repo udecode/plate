@@ -9,8 +9,7 @@ on:
       - 'packages/**'
       - '.github/actions/**'
       - '.github/workflows/lint-typecheck.yml'
-      - '.yarnrc.yml'
-      - 'yarn.lock'
+      - 'pnpm.lock'
       - '.prettier*'
       - '.eslint*'
       - 'jest.config.js'
@@ -28,8 +27,7 @@ on:
       - 'packages/**'
       - '.github/actions/**'
       - '.github/workflows/**'
-      - '.yarnrc.yml'
-      - 'yarn.lock'
+      - 'pnpm.lock'
       - '.prettier*'
       - '.eslint*'
       - 'jest.config.js'
@@ -52,13 +50,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          version: 9.15.1
+          run_install: false
+
+      - name: Use Node.js ${{ matrix.node-version }}
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: 'pnpm'
 
-      - name: 📥 Monorepo install
-        uses: ./.github/actions/yarn-nm-install
+      - name: 📥 Install
+        run: pnpm install -r
 
       - name: ♻️ Restore packages cache
         uses: actions/cache@v4
@@ -66,16 +72,16 @@ jobs:
           path: |
             ${{ github.workspace }}/.cache
             ${{ github.workspace }}/**/tsconfig.tsbuildinfo
-          key: packages-cache-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+          key: packages-cache-${{ runner.os }}-${{ hashFiles('pnpm.lock') }}
 
-      - name: 🏗 Build
-        run: yarn build
+      - name: 🏗 Run build
+        run: pnpm run build
 
-      - name: 🔬 Lint
-        run: yarn lint
+      - name: 🔬 Linter
+        run: pnpm run lint
 
       - name: 🕵️ Typecheck
-        run: yarn typecheck:all
+        run: pnpm run typecheck:all
 
   notify-failure:
     name: Discord Notification

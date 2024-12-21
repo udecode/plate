@@ -34,10 +34,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v2.4.1
+      - uses: pnpm/action-setup@v4
         name: Install pnpm
         with:
-          version: 8.6.1
+          version: 9.15.1
           run_install: false
 
       - name: Setup Node.js
@@ -45,18 +45,9 @@ jobs:
         with:
           node-version: 22
           cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
 
-      - name: Setup pnpm cache
-        uses: actions/cache@v4
-        with:
-          path: $(pnpm store path)
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-
+      - name: 📥 Install
+        run: pnpm install -r
 
-      - name: 📥 Install dependencies
-        run: pnpm install --no-frozen-lockfile
-
-      - name: 🏗 Build
-        run: pnpm build
+      - name: 🏗 Run build
+        run: pnpm run build

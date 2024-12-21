@@ -9,8 +9,7 @@ on:
       - 'packages/**'
       - '.github/actions/**'
       - '.github/workflows/test.yml'
-      - '.yarnrc.yml'
-      - 'yarn.lock'
+      - 'pnpm.lock'
       - '.prettier*'
       - '.eslint*'
       - 'jest.config.js'
@@ -28,8 +27,7 @@ on:
       - 'packages/**'
       - '.github/actions/**'
       - '.github/workflows/test.yml'
-      - '.yarnrc.yml'
-      - 'yarn.lock'
+      - 'pnpm.lock'
       - '.prettier*'
       - '.eslint*'
       - 'jest.config.js'
@@ -54,13 +52,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          version: 9.15.1
+          run_install: false
+
       - name: ♻️ Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: 'pnpm'
 
-      - name: 📥 Monorepo install
-        uses: ./.github/actions/yarn-nm-install
+      - name: 📥 Install
+        run: pnpm install -r
 
       - name: ♻️ Restore packages cache
         uses: actions/cache@v4
@@ -68,13 +73,13 @@ jobs:
           path: |
             ${{ github.workspace }}/.cache
             ${{ github.workspace }}/**/tsconfig.tsbuildinfo
-          key: packages-cache-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+          key: packages-cache-${{ runner.os }}-${{ hashFiles('pnpm.lock') }}
 
       - name: 🏗 Build
-        run: yarn build
+        run: pnpm run build
 
       - name: 🧪 Run tests
-        run: yarn test
+        run: pnpm run test
 
   notify-test-failure:
     name: Discord Notification

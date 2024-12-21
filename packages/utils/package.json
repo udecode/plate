@@ -28,15 +28,15 @@
     }
   },
   "scripts": {
-    "build": "yarn p:build",
-    "build:watch": "yarn p:build:watch",
-    "brl": "yarn p:brl",
-    "clean": "yarn p:clean",
-    "lint": "yarn p:lint",
-    "lint:fix": "yarn p:lint:fix",
-    "test": "yarn p:test",
-    "test:watch": "yarn p:test:watch",
-    "typecheck": "yarn p:typecheck"
+    "build": "INIT_CWD=\"$PWD\" pnpm -w run p:build",
+    "build:watch": "INIT_CWD=\"$PWD\" pnpm -w run p:build:watch",
+    "brl": "INIT_CWD=\"$PWD\" pnpm -w run p:brl",
+    "clean": "INIT_CWD=\"$PWD\" pnpm -w run p:clean",
+    "lint": "INIT_CWD=\"$PWD\" pnpm -w run p:lint",
+    "lint:fix": "INIT_CWD=\"$PWD\" pnpm -w run p:lint:fix",
+    "test": "INIT_CWD=\"$PWD\" pnpm -w run p:test",
+    "test:watch": "INIT_CWD=\"$PWD\" pnpm -w run p:test:watch",
+    "typecheck": "INIT_CWD=\"$PWD\" pnpm -w run p:typecheck"
   },
   "keywords": [
     "utils"

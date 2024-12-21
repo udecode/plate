@@ -7,7 +7,7 @@ This is the documentation for the Plate project.
 Anytime you make a change in the `registry` folder, run:
 
 ```bash
-yarn build:registry
+pnpm run build:registry
 ```
 
 ## License
