@@ -10,6 +10,46 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 
 ## December 2024 #17
 
+### December 21 #17.4
+
+Update `tailwind.config.cjs` for better font support in the HTML export:
+
+```ts
+fontFamily: {
+  heading: [
+    'var(--font-heading)',
+    'ui-sans-serif',
+    '-apple-system',
+    'BlinkMacSystemFont',
+    'Segoe UI Variable Display',
+    'Segoe UI',
+    'Helvetica',
+    'Apple Color Emoji',
+    'Arial',
+    'sans-serif',
+    'Segoe UI Emoji',
+    'Segoe UI Symbol',
+    'Noto Color Emoji',
+  ],
+  mono: ['var(--font-mono)', ...fontFamily.mono],
+  sans: [
+    'var(--font-sans)',
+    'ui-sans-serif',
+    '-apple-system',
+    'BlinkMacSystemFont',
+    'Segoe UI Variable Display',
+    'Segoe UI',
+    'Helvetica',
+    'Apple Color Emoji',
+    'Arial',
+    'sans-serif',
+    'Segoe UI Emoji',
+    'Segoe UI Symbol',
+    'Noto Color Emoji',
+  ],
+```
+
+
 ### December 20 #17.3
 
 - `insertColumnGroup`, `toggleColumnGroup`: use `columns` option instead of `layout` 

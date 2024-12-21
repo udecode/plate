@@ -1,4 +1,3 @@
-const { fontFamily } = require('tailwindcss/defaultTheme');
 const plugin = require('tailwindcss/plugin');
 
 /** @type {import('tailwindcss').Config} */
@@ -86,9 +85,40 @@ module.exports = {
         },
       },
       fontFamily: {
-        heading: ['var(--font-heading)', ...fontFamily.sans],
-        mono: ['var(--font-mono)', ...fontFamily.mono],
-        sans: ['var(--font-sans)', ...fontFamily.sans],
+        heading: [
+          'var(--font-heading)',
+          'ui-sans-serif',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'Segoe UI Variable Display',
+          'Segoe UI',
+          'Helvetica',
+          'Apple Color Emoji',
+          'Arial',
+          'sans-serif',
+          'Segoe UI Emoji',
+          'Segoe UI Symbol',
+          'Noto Color Emoji',
+        ],
+        mono: [
+          'var(--font-mono)',
+          ...require('tailwindcss/defaultTheme').fontFamily.mono,
+        ],
+        sans: [
+          'var(--font-sans)',
+          'ui-sans-serif',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'Segoe UI Variable Display',
+          'Segoe UI',
+          'Helvetica',
+          'Apple Color Emoji',
+          'Arial',
+          'sans-serif',
+          'Segoe UI Emoji',
+          'Segoe UI Symbol',
+          'Noto Color Emoji',
+        ],
       },
       keyframes: {
         'accordion-down': {
