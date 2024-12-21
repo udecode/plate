@@ -39,6 +39,8 @@ export const remarkDefaultElementRules: RemarkElementRules = {
   },
   heading: {
     transform: (node, options) => {
+      const depth = Math.max(1, Math.min(6, node.depth ?? 1));
+
       const headingType = {
         1: 'h1',
         2: 'h2',
@@ -46,11 +48,13 @@ export const remarkDefaultElementRules: RemarkElementRules = {
         4: 'h4',
         5: 'h5',
         6: 'h6',
-      }[node.depth ?? 1];
+      }[depth];
+
+      const type = options.editor.getType({ key: headingType ?? 'h3' });
 
       return {
         children: remarkTransformElementChildren(node, options),
-        type: options.editor.getType({ key: headingType }),
+        type: type,
       };
     },
   },

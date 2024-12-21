@@ -63,7 +63,7 @@ export const MarkdownPlugin = createTSlatePlugin<MarkdownConfig>({
   .extend(({ api }) => ({
     parser: {
       deserialize: ({ data }) => api.markdown.deserialize(data),
-      format: 'text/plain',
+      format: 'text/markdown',
       query: ({ data, dataTransfer }) => {
         const htmlData = dataTransfer.getData('text/html');
 
