@@ -13,23 +13,30 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
 
-      - name: 🧹 Cleanup
-        run: |
-          gh extension install actions/gh-actions-cache
-
-          REPO=${{ github.repository }}
-          BRANCH="refs/pull/${{ github.event.pull_request.number }}/merge"
-
-          echo "Fetching list of cache key"
-          cacheKeysForPR=$(gh actions-cache list -R $REPO -B $BRANCH | cut -f 1 )
-
-          ## Setting this to not fail the workflow while deleting cache keys. 
-          set +e
-          echo "Deleting caches..."
-          for cacheKey in $cacheKeysForPR
-          do
-              gh actions-cache delete $cacheKey -R $REPO -B $BRANCH --confirm
-          done
-          echo "Done"
+      - name: 🧹 Cleanup caches
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          BRANCH: refs/pull/${{ github.event.pull_request.number }}/merge
+        run: |
+          # Install GitHub CLI cache extension
+          gh extension install actions/gh-actions-cache
+
+          echo "Fetching list of cache keys..."
+          cacheKeys=$(gh actions-cache list -R $REPO -B $BRANCH | cut -f 1)
+
+          # Continue even if some cache deletions fail
+          set +e
+          
+          if [ -z "$cacheKeys" ]; then
+            echo "No caches found to delete"
+            exit 0
+          fi
+
+          echo "Deleting caches..."
+          for cacheKey in $cacheKeys; do
+            echo "Deleting cache: $cacheKey"
+            gh actions-cache delete "$cacheKey" -R $REPO -B $BRANCH --confirm
+          done
+          
+          echo "Cache cleanup completed"

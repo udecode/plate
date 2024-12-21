@@ -9,12 +9,13 @@ jobs:
     name: Discord Notification
     runs-on: ubuntu-latest
     if: ${{ startsWith(github.ref, 'refs/tags/@udecode/plate@') }}
+    
     steps:
-      - name: get-version
+      - name: Extract Version
         id: version
         run: echo "output=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
 
-      - name: notify
+      - name: Send Discord Notification
         uses: sebastianpopp/discord-action@releases/v2
         with:
           webhook: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
