@@ -1,0 +1,90 @@
+---
+title: Date
+docs:
+  - route: /docs/components/date-element
+    title: Date Element
+---
+
+<ComponentPreview name="date-demo" />
+
+<PackageInfo>
+
+## 功能
+
+- 在文本中插入和显示日期，使用内联日期元素。
+- 这些日期可以轻松选择和修改，使用日历界面。
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-date
+```
+
+## 使用
+
+```tsx
+import { DatePlugin } from '@udecode/plate-date/react';
+
+const plugins = [
+  // ...otherPlugins,
+  DatePlugin,
+];
+```
+
+## 插件
+
+### DatePlugin
+
+添加日期插件到您的文档。
+
+## API
+
+### isPointNextToNode
+
+检查一个点是否靠近特定节点类型。
+
+<APIParameters>
+
+<APIItem name="editor" type="PlateEditor">
+编辑器实例。
+</APIItem>
+
+<APIItem name="nodeType" type="string">
+要检查的节点类型。这应该是一个表示节点类型的字符串，例如 'date' 用于内联日期元素。
+</APIItem>
+
+<APIItem name="options" type="object">
+检查邻接的选项：
+
+<APISubList>
+<APISubListItem parent="options" name="at" type="Point" optional>
+一个可选的 Point 对象，指定要检查的位置。如果未提供，则使用当前选择锚点。
+</APISubListItem>
+<APISubListItem parent="options" name="reverse" type="boolean">
+一个布尔值，指示要检查的方向。如果为 true，则检查前一个节点；如果为 false，则检查下一个节点。
+</APISubListItem>
+</APISubList>
+
+</APIItem>
+
+</APIParameters>
+
+## 插件转换
+
+### editor.tf.insert.date
+
+插入一个日期到编辑器中。
+
+<APIParameters>
+
+<APIItem name="date" type="string" optional>
+要插入的日期字符串，格式为 'YYYY-MM-DD'（例如，'2024-04-22'）。如果未提供，则使用当前日期作为默认值。
+</APIItem>
+
+<APIItem name="options" type="InsertNodesOptions" optional>
+插入节点的选项。
+</APIItem>
+
+</APIParameters>

@@ -1,0 +1,223 @@
+---
+title: Copilot
+docs:
+  - route: /docs/components/ghost-text
+    title: Ghost Text
+  - route: https://pro.platejs.org/docs/components/ghost-text
+    title: Ghost Text
+---
+
+<ComponentPreview name="copilot-demo" />
+
+<PackageInfo>
+
+## 功能
+
+- 在输入时渲染 ghost text suggestions
+- 两种触发模式：
+  - 快捷键 (`Ctrl+Space`). 再次按下以获取替代建议。
+  - 防抖模式：在段落末尾自动触发
+- 使用 Tab 或逐词接受建议，使用 `Cmd+→`
+- 内置支持 Vercel AI SDK 完成 API
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-ai @udecode/plate-markdown
+```
+
+## 使用
+
+```tsx
+import { CopilotPlugin } from '@udecode/plate-ai/react';
+import {
+  MarkdownPlugin,
+  serializeMdNodes,
+  stripMarkdown,
+} from '@udecode/plate-markdown';
+```
+
+```tsx
+const plugins = [
+  // ...otherPlugins,
+  MarkdownPlugin.configure({ options: { indentList: true } }),
+  CopilotPlugin.configure(({ api }) => ({
+    options: {
+    completeOptions: {
+      api: '/api/your-api-endpoint',
+      body: {
+        system: `You are an advanced AI writing assistant, similar to VSCode Copilot but for general text. Your task is to predict and generate the next part of the text based on the given context.
+
+Rules:
+- Continue the text naturally up to the next punctuation mark (., ,, ;, :, ?, or !).
+- Maintain style and tone. Don't repeat given text.
+- For unclear context, provide the most likely continuation.
+- Handle code snippets, lists, or structured text if needed.
+- Don't include """ in your response.
+- CRITICAL: Always end with a punctuation mark.
+- CRITICAL: Avoid starting a new block. Do not use block formatting like >, #, 1., 2., -, etc. The suggestion should continue in the same block as the context.
+- If no context is provided or you can't generate a continuation, return "0" without explanation.`,
+      },
+      onFinish: (_, completion) => {
+        if (completion === '0') return;
+
+        api.copilot.setBlockSuggestion({
+          //stripMarkdownBlocks in plus GhostText
+          text: stripMarkdown(completion),
+        });
+      },
+    },
+    debounceDelay: 500,
+    getPrompt: ({ editor }) => {
+      const contextEntry = getAncestorNode(editor);
+
+      if (!contextEntry) return '';
+
+      const prompt = serializeMdNodes([contextEntry[0] as TElement]);
+
+      return `Continue the text up to the next punctuation mark:
+"""
+${prompt}
+"""`;
+    },
+    renderGhostText: GhostText,
+  },
+}));
+```
+
+- [GhostText](/docs/components/ghost-text)
+
+## Tab 键处理
+
+Copilot 插件使用 Tab 键接受建议。为了避免与其他使用 Tab 的插件（如 `IndentPlugin` 或 `TabbablePlugin`）发生冲突，确保 `CopilotPlugin` 在您的插件配置中位于它们之前。这使得 Copilot 在有建议时优先处理 Tab 键事件。
+
+```tsx
+const plugins = [
+  // ...otherPlugins,
+  CopilotPlugin,
+  // 将使用 Tab 的插件放在 Copilot 之后
+  IndentPlugin,
+  TabbablePlugin,
+];
+```
+
+## 示例
+
+### Plate UI
+
+请参阅上面的预览。
+
+### Plate Plus
+
+<ComponentPreviewPro name="copilot-pro" />
+
+## 键盘快捷键
+
+<KeyTable>
+  <KeyTableItem hotkey="Ctrl + Space">
+    触发建议。再次按下以获取替代建议。
+  </KeyTableItem>
+  <KeyTableItem hotkey="Tab">接受整个建议。</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + →">
+    接受建议的下一个单词。
+  </KeyTableItem>
+  <KeyTableItem hotkey="Escape">
+    取消当前建议。
+  </KeyTableItem>
+</KeyTable>
+
+## Plugins
+
+### CopilotPlugin
+
+<APIOptions>
+<APIItem name="autoTriggerQuery" type="(options: { editor: PlateEditor }) => boolean" optional>
+  自动触发 copilot 的条件。默认检查：
+  - 上面的块不为空
+  - 上面的块以空格结尾
+  - 没有现有的建议
+</APIItem>
+
+<APIItem name="completeOptions" type="Partial<CompleteOptions>">
+  AI 完成配置选项。请参阅 [AI SDK useCompletion 参数](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-completion#parameters)。
+</APIItem>
+
+<APIItem name="debounceDelay" type="number" optional>
+  防抖延迟。**默认:** `0`
+</APIItem>
+
+<APIItem
+  name="getNextWord"
+  type="(options: { text: string }) => { firstWord: string; remainingText: string }"
+  optional
+>
+  从建议文本中提取下一个单词的函数。
+</APIItem>
+
+<APIItem
+  name="getPrompt"
+  type="(options: { editor: PlateEditor }) => string"
+  optional
+>
+  生成 AI 补全提示的函数。**默认：**使用祖先节点的 markdown 序列化
+</APIItem>
+
+<APIItem name="renderGhostText" type="(() => React.ReactNode) | null" optional>
+  渲染幽灵文本建议的组件。
+</APIItem>
+
+<APIItem name="triggerQuery" type="(options: { editor: PlateEditor }) => boolean" optional>
+  触发 copilot 的条件。默认检查：
+  - 选择未展开
+  - 选择在块末尾
+</APIItem>
+</APIOptions>
+
+## API
+
+### editor.api.copilot.accept()
+
+接受当前建议。
+
+### editor.api.copilot.acceptNextWord()
+
+接受建议的下一个单词。
+
+### editor.api.copilot.reset()
+
+重置插件状态：
+
+- 中止任何正在进行的 API 请求
+- 清除当前补全
+- 清除建议节点 ID 和文本
+
+### editor.api.copilot.setBlockSuggestion()
+
+为块设置建议文本。
+
+<APIParameters>
+  <APIItem name="options" type="object">
+    <APISubList>
+      <APISubListItem parent="options" name="text" type="string">
+        要设置的建议文本。
+      </APISubListItem>
+      <APISubListItem parent="options" name="id" type="string" optional>
+        目标块 ID。如果未提供，默认为当前块。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### editor.api.copilot.stop()
+
+停止正在进行的建议请求：
+
+- 取消防抖触发调用
+- 中止当前 API 请求
+- 重置中止控制器
+
+### editor.api.copilot.triggerSuggestion()
+
+触发新的建议请求。可以根据插件配置进行防抖。

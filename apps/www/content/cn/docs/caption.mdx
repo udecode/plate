@@ -1,0 +1,155 @@
+---
+title: Caption
+docs:
+  - route: /docs/components/caption
+    title: Caption
+---
+
+<ComponentPreview name="media-demo" />
+
+<PackageInfo>
+
+## 功能
+
+- 箭头导航应选择块内的标题。
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-caption
+```
+
+## 使用
+
+```tsx
+import { CaptionPlugin } from '@udecode/plate-caption/react';
+import {
+  AudioPlugin,
+  FilePlugin,
+  ImagePlugin,
+  MediaEmbedPlugin,
+  VideoPlugin,
+} from '@udecode/plate-media/react';
+```
+
+```tsx
+const plugins = [
+  // ...otherPlugins,
+  ImagePlugin,
+  VideoPlugin,
+  AudioPlugin,
+  FilePlugin,
+  MediaEmbedPlugin,
+  CaptionPlugin.configure({
+    options: {
+      plugins: [
+        ImagePlugin,
+        VideoPlugin,
+        AudioPlugin,
+        FilePlugin,
+        MediaEmbedPlugin,
+      ],
+    },
+  }),
+];
+```
+
+## 插件
+
+### CaptionPlugin
+
+<APIOptions>
+  <APIItem name="plugins" type="string[]" required>
+    具有标题的块的插件键。
+  </APIItem>
+  <APIItem name="focusEndPath" type="Path" optional>
+    聚焦到标题末尾的路径。
+  </APIItem>
+  <APIItem name="focusStartPath" type="Path" optional>
+    聚焦到标题开头的路径。
+  </APIItem>
+  <APIItem name="visibleId" type="string" optional>
+    可见标题的 ID。
+  </APIItem>
+  <APIItem name="isVisible" type="boolean" optional>
+    标题是否可见。
+  </APIItem>
+</APIOptions>
+
+## API
+
+### TCaptionElement
+
+<APIAttributes>
+扩展 `TElement`.
+
+<APIItem name="caption" type="TDescendant[]" optional>
+标题值。
+</APIItem>
+</APIAttributes>
+
+## API Components
+
+### Caption
+
+<APIProps>
+  <APIItem name="options" type="object" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="readOnly" type="boolean" optional>
+        标题组件是否处于只读模式。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+  <APIItem name="state" type="object" optional>
+    <APISubList>
+      <APISubListItem
+        parent="state"
+        name="captionString"
+        type="string"
+        optional
+      >
+        标题字符串。
+      </APISubListItem>
+      <APISubListItem parent="state" name="selected" type="boolean" optional>
+        标题组件是否被选中。
+      </APISubListItem>
+      <APISubListItem parent="state" name="readOnly" type="boolean" optional>
+        标题组件是否处于只读模式。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIProps>
+
+### CaptionTextarea
+
+<APIProps>
+  <APIItem name="state">
+    <APISubList>
+      <APISubListItem parent="state" name="textareaRef" type="Ref">
+        标题组件关联的 `textarea` 元素的引用。
+      </APISubListItem>
+      <APISubListItem
+        parent="state"
+        name="captionValue"
+        type="TextareaAutosizeProps['value']"
+      >
+        标题组件显示的 `textarea` 的值。
+      </APISubListItem>
+      <APISubListItem
+        parent="state"
+        name="setCaptionValue"
+        type="(value: TextareaAutosizeProps['value']) => void"
+      >
+        `captionValue` 设置器。
+      </APISubListItem>
+      <APISubListItem parent="state" name="readOnly" type="boolean">
+        标题组件是否处于只读模式。
+      </APISubListItem>
+      <APISubListItem parent="state" name="element" type="TCaptionElement">
+        标题元素。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIProps>

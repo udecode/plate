@@ -1,0 +1,489 @@
+---
+title: Plate Core
+description: udecode/plate-core的 API 参考。
+---
+
+## API
+
+### createPlateEditor
+
+生成一个新的 `PlateEditor` 实例，使用一组插件及其配置进行初始化。
+
+<APIParameters>
+  <APIItem name="options" type="CreatePlateEditorOptions<V, E>">
+    创建 Plate 编辑器的选项。
+    <APISubList>
+      <APISubListItem parent="options" name="id" type="any" optional>
+        编辑器的唯一标识符。
+      </APISubListItem>
+      <APISubListItem parent="options" name="editor" type="E" optional>
+        不带 `withPlate` 的初始编辑器。
+      </APISubListItem>
+      <APISubListItem parent="options" name="plugins" type="P[]" optional>
+        编辑器插件数组。
+      </APISubListItem>
+      <APISubListItem parent="options" name="value" type="V" optional>
+        编辑器的初始值。
+      </APISubListItem>
+      <APISubListItem parent="options" name="autoSelect" type="'end' | 'start' | boolean" optional>
+        初始化后选择编辑器。
+        - **默认值：** `false`
+        - `true` | 'end'：选择编辑器末尾
+        - `false`：不选择任何内容
+        - `'start'`：选择编辑器开头
+      </APISubListItem>
+      <APISubListItem parent="options" name="maxLength" type="number" optional>
+        指定编辑器允许的最大字符数。
+      </APISubListItem>
+      <APISubListItem parent="options" name="selection" type="TSelection" optional>
+        编辑器的初始选择。
+      </APISubListItem>
+      <APISubListItem parent="options" name="shouldNormalizeEditor" type="boolean" optional>
+        当为 `true` 时，将规范化传递给 `editor` 的初始 `value`。
+        - **默认值：** `false`
+      </APISubListItem>
+      <APISubListItem parent="options" name="rootPlugin" type="(plugin: AnyPlatePlugin) => AnyPlatePlugin" optional>
+        配置根插件的函数。
+      </APISubListItem>
+      <APISubListItem parent="options" name="api" type="object" optional>
+        编辑器的 API 方法。
+      </APISubListItem>
+      <APISubListItem parent="options" name="decorate" type="function" optional>
+        编辑器的装饰函数。
+      </APISubListItem>
+      <APISubListItem parent="options" name="extendEditor" type="function" optional>
+        扩展编辑器的函数。
+      </APISubListItem>
+      <APISubListItem parent="options" name="handlers" type="object" optional>
+        编辑器的事件处理程序。
+      </APISubListItem>
+      <APISubListItem parent="options" name="inject" type="object" optional>
+        编辑器的注入配置。
+      </APISubListItem>
+      <APISubListItem parent="options" name="normalizeInitialValue" type="function" optional>
+        规范化初始值的函数。
+      </APISubListItem>
+      <APISubListItem parent="options" name="options" type="object" optional>
+        编辑器的其他选项。
+      </APISubListItem>
+      <APISubListItem parent="options" name="override" type="object" optional>
+        编辑器的覆盖配置。
+      </APISubListItem>
+      <APISubListItem parent="options" name="priority" type="number" optional>
+        编辑器插件的优先级。
+      </APISubListItem>
+      <APISubListItem parent="options" name="render" type="object" optional>
+        编辑器的渲染函数。
+      </APISubListItem>
+      <APISubListItem parent="options" name="shortcuts" type="object" optional>
+        编辑器的键盘快捷键。
+      </APISubListItem>
+      <APISubListItem parent="options" name="transforms" type="object" optional>
+        编辑器的转换函数。
+      </APISubListItem>
+      <APISubListItem parent="options" name="useHooks" type="function" optional>
+        与编辑器一起使用的钩子。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  应用了指定插件和设置的 `PlateEditor` 实例。
+</APIReturns>
+
+有关编辑器配置的更多详细信息，请参阅[编辑器配置](/docs/editor)指南。
+
+### createPlatePlugin
+
+使用给定的配置创建一个新的 Plate 插件，支持扩展、嵌套插件操作和运行时配置。
+
+<APIParameters>
+  <APIItem name="config" type="PlatePluginConfig<K, O, A, T> | ((editor: PlateEditor) => PlatePluginConfig<K, O, A, T>)">
+    插件的配置对象，或返回配置的函数。如果提供函数，它将在插件与编辑器一起解析时执行。
+
+    有关 `PlatePluginConfig` 类型的详细信息，请参阅 [PlatePlugin API](/docs/api/core/plate-plugin#plugin-properties)。
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  一个新的 `PlatePlugin<PluginConfig<K, O, A, T>>` 实例。
+</APIReturns>
+
+### createTPlatePlugin
+
+`createPlatePlugin` 的显式类型版本。
+
+<APIParameters>
+  <APIItem name="config" type="TPlatePluginConfig<C> | ((editor: PlateEditor) => TPlatePluginConfig<C>)">
+    插件的配置对象，或返回配置的函数。此版本需要一个显式类型参数 `C` 扩展 `AnyPluginConfig`。
+
+    有关 `TPlatePluginConfig` 类型的详细信息，请参阅 [PlatePlugin API](/docs/api/core/plate-plugin#plugin-properties)。
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  一个新的 `PlatePlugin<C>` 实例。
+</APIReturns>
+
+### toPlatePlugin
+
+扩展 SlatePlugin 以创建 React PlatePlugin。
+
+<APIParameters>
+  <APIItem name="basePlugin" type="SlatePlugin<C>">
+    要扩展的基础 SlatePlugin。
+  </APIItem>
+  <APIItem name="extendConfig" type="PlatePluginConfig<C, EO, EA, ET> | ((ctx: PlatePluginContext<C>) => PlatePluginConfig<C, EO, EA, ET>)" optional>
+    提供扩展配置的函数或对象。如果是函数，它接收插件上下文并应返回部分 PlatePlugin。如果是对象，它应该是部分 PlatePlugin 配置。
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  一个新的 `PlatePlugin`，它结合了基础 SlatePlugin 功能和扩展配置中定义的 React 特定功能。
+</APIReturns>
+
+### toTPlatePlugin
+
+`toPlatePlugin` 的显式类型版本。
+
+<APIParameters>
+  <APIItem name="basePlugin" type="SlatePlugin<TContext>">
+    要扩展的基础 SlatePlugin。
+  </APIItem>
+  <APIItem name="extendConfig" type="ExtendPluginConfig<C> | ((ctx: PlatePluginContext<TContext>) => ExtendPluginConfig<C>)" optional>
+    提供扩展配置的函数或对象。此版本需要基础插件配置（`TContext`）和扩展配置（`C`）的显式类型参数。
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  具有精确类型控制的新 `PlatePlugin`。
+</APIReturns>
+
+### useEditorContainerRef
+
+获取编辑器容器的 DOM 引用。
+
+### useEditorScrollRef
+
+获取编辑器滚动容器的引用。
+
+### useScrollRef
+
+获取编辑器滚动容器的引用。如果存在滚动引用则返回滚动引用，否则返回容器引用。
+
+### useEditorPlugin
+
+获取编辑器和插件上下文。
+
+<APIParameters>
+  <APIItem name="p" type="WithRequiredKey<P>">
+    具有必需键的插件或插件配置。
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  包含以下内容的 `PlatePluginContext` 对象：
+  <APISubList>
+    <APISubListItem parent="PlatePluginContext" name="editor" type="PlateEditor">
+      当前编辑器实例。
+    </APISubListItem>
+    <APISubListItem parent="PlatePluginContext" name="plugin" type="PlatePlugin">
+      插件实例。
+    </APISubListItem>
+    <APISubListItem parent="PlatePluginContext" name="getOption" type="function">
+      获取特定选项值的函数。
+    </APISubListItem>
+    <APISubListItem parent="PlatePluginContext" name="getOptions" type="function">
+      获取插件所有选项的函数。
+    </APISubListItem>
+    <APISubListItem parent="PlatePluginContext" name="setOption" type="function">
+      设置特定选项值的函数。
+    </APISubListItem>
+    <APISubListItem parent="PlatePluginContext" name="setOptions" type="function">
+      设置多个选项的函数。
+    </APISubListItem>
+    <APISubListItem parent="PlatePluginContext" name="useOption" type="function">
+      在 React 组件中订阅特定选项值的钩子。
+    </APISubListItem>
+  </APISubList>
+</APIReturns>
+
+### useEditorRef
+
+获取 Slate 编辑器引用而不重新渲染。
+
+<APIParameters>
+  <APIItem name="id" type="string" optional>
+    plate 编辑器的 ID。仅在嵌套编辑器时有用。默认使用最近的编辑器 id。
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  一个 `PlateEditor` 对象，即 Slate 编辑器。
+</APIReturns>
+
+### useEditorSelector
+
+订阅编辑器的特定属性。
+
+<APIParameters>
+  <APIItem name="selector" type="(editor: PlateEditor<V>, prev?: T) => T">
+    选择器函数。
+  </APIItem>
+  <APIItem name="deps" type="DependencyList">
+    选择器函数的依赖列表。
+  </APIItem>
+  <APIItem name="options" type="UseEditorSelectorOptions<T>" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="id" type="string" optional>
+        plate 编辑器的 ID。仅在嵌套编辑器时有用。默认使用最近的编辑器 id。
+      </APISubListItem>
+      <APISubListItem parent="options" name="equalityFn" type="(a: T, b: T) => boolean" optional>
+        用于确定选择器函数的结果是否已更改的相等函数。默认为 `(a, b) => a === b`。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  选择器函数的返回值。
+</APIReturns>
+
+### useEditorState
+
+获取带重新渲染的 Slate 编辑器引用。
+
+<APIParameters>
+  <APIItem name="id" type="string" optional>
+    plate 编辑器的 ID。默认使用最近的编辑器 id。
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  一个 `PlateEditor` 对象，即 Slate 编辑器。
+</APIReturns>
+
+### useEditorReadOnly
+
+获取编辑器的 `readOnly` 状态。
+
+<APIParameters>
+  <APIItem name="id" type="string" optional>
+    plate 编辑器的 ID。
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  编辑器的 `readOnly` 状态。
+</APIReturns>
+
+### useEditorMounted
+
+获取编辑器的 `isMounted` 状态。
+
+<APIParameters>
+  <APIItem name="id" type="string" optional>
+    plate 编辑器的 ID。
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  编辑器的 `isMounted` 状态。
+</APIReturns>
+
+### useEditorSelection
+
+获取编辑器的选择。已记忆化，因此如果范围相同则不会重新渲染。
+
+<APIParameters>
+  <APIItem name="id" type="string" optional>
+    plate 编辑器的 ID。
+  </APIItem>
+</APIParameters>
+<APIReturns>编辑器中的当前选择。</APIReturns>
+
+### useEditorVersion
+
+获取编辑器值的版本。该版本在每次编辑器更改时递增。
+
+<APIParameters>
+  <APIItem name="id" type="string" optional>
+    plate 编辑器的 ID。
+  </APIItem>
+</APIParameters>
+<APIReturns>编辑器值的当前版本。</APIReturns>
+
+### useSelectionVersion
+
+获取编辑器选择的版本。该版本在每次选择更改时递增（范围不同）。
+
+<APIParameters>
+  <APIItem name="id" type="string" optional>
+    plate 编辑器的 ID。
+  </APIItem>
+</APIParameters>
+<APIReturns>编辑器选择的当前版本。</APIReturns>
+
+### useSelectionCollapsed
+
+返回当前选择是否已折叠（即选择是单个点）。
+
+<APIReturns>
+  一个布尔值，指示选择是否已折叠。
+</APIReturns>
+
+### useSelectionExpanded
+
+返回当前选择是否已展开（即选择有非零范围）。
+
+<APIReturns>
+  一个布尔值，指示选择是否已展开。
+</APIReturns>
+
+### useSelectionWithinBlock
+
+返回当前选择是否在单个块内。
+
+<APIReturns>
+  一个布尔值，指示选择是否在单个块内。
+</APIReturns>
+
+### useSelectionAcrossBlocks
+
+返回当前选择是否跨越多个块。
+
+<APIReturns>
+  一个布尔值，指示选择是否跨越多个块。
+</APIReturns>
+
+### useSelectionFragment
+
+返回当前选择的片段，可选择解包结构节点。
+
+<APIParameters>
+  <APIItem name="options" type="GetSelectionFragmentOptions" optional>
+    获取选择片段的选项。
+    <APISubList>
+      <APISubListItem parent="options" name="structuralTypes" type="string[]" optional>
+        要从片段中解包的结构类型数组。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  表示当前选择片段的 `TElement` 数组。如果选择未展开或未找到片段，则返回空数组。
+</APIReturns>
+
+### useSelectionFragmentProp
+
+返回从当前选择片段派生的属性值。
+
+<APIParameters>
+  <APIItem name="options" type="GetSelectionFragmentOptions & GetFragmentPropOptions" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="structuralTypes" type="string[]" optional>
+        要从片段中解包的结构类型数组。
+      </APISubListItem>
+      <APISubListItem parent="options" name="key" type="string" optional>
+        要从每个节点提取的属性键。
+      </APISubListItem>
+      <APISubListItem parent="options" name="defaultValue" type="string" optional>
+        如果未找到有效属性时返回的默认值。
+      </APISubListItem>
+      <APISubListItem parent="options" name="getProp" type="(node: TElement | TText) => any" optional>
+        从节点提取属性值的自定义函数。
+      </APISubListItem>
+      <APISubListItem parent="options" name="mode" type="'all' | 'block' | 'text'" optional>
+        确定如何遍历片段：
+        - 'all'：检查块节点和文本节点
+        - 'block'：仅检查块节点
+        - 'text'：仅检查文本节点
+        默认为 'block'。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  从片段节点派生的值，如果在指定节点中未找到一致的值，则为 undefined。
+</APIReturns>
+
+### useNodePath
+
+返回编辑器中节点的路径。
+
+<APIParameters>
+  <APIItem name="node" type="TNode">
+    要查找路径的节点。
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  表示节点在编辑器树结构中位置的记忆化 Path 数组。
+</APIReturns>
+
+### usePath
+
+获取最近元素的记忆化路径。
+
+<APIParameters>
+  <APIItem name="pluginKey" type="string" optional>
+    要获取路径的插件的键。
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  元素的路径，如果在节点组件上下文之外使用则为 `undefined`。
+</APIReturns>
+
+### useElement
+
+通过插件键获取元素。
+
+<APIParameters>
+  <APIItem name="pluginKey" type="string" optional>
+    要获取元素的插件的键。
+    - **默认值：** `'element'`
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  类型为 `T extends TElement` 的元素，如果在节点组件上下文之外使用则为空对象。
+</APIReturns>
+
+## 核心插件
+
+### DebugPlugin
+提供具有可配置日志级别和错误处理的调试功能。
+
+有关更多详细信息，请参阅[调试](/docs/debugging)。
+
+### SlateNextPlugin
+扩展核心 API 并改进默认功能。
+
+### DOMPlugin & ReactPlugin
+将 React 特定功能集成到编辑器中。
+
+### HistoryPlugin
+为编辑器启用撤销和重做功能。
+
+### InlineVoidPlugin
+管理编辑器中的内联和空元素。
+
+### ParserPlugin
+处理编辑器的内容解析。
+
+### LengthPlugin
+强制执行编辑器内容的最大长度。
+
+### HtmlPlugin
+启用 HTML 序列化和反序列化。
+
+### AstPlugin
+处理编辑器的抽象语法树（AST）操作。
+
+### ParagraphPlugin
+提供段落格式化功能。
+
+### EventEditorPlugin
+管理编辑器事件，如焦点和模糊。
+
+### PlateApiPlugin
+提供 Plate 编辑器功能的核心 API。

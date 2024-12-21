@@ -1,0 +1,98 @@
+---
+title: Excalidraw
+docs:
+  - route: /docs/components/excalidraw-element
+    title: Excalidraw Element
+---
+
+<ComponentPreview name="excalidraw-demo" />
+
+<PackageInfo>
+
+## 功能特性
+
+- 集成 Excalidraw 库用于创建绘图和图表。
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-excalidraw
+```
+
+## Usage
+
+```tsx
+import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
+import { SelectOnBackspace } from '@udecode/plate-select';
+
+const plugins = [
+  // ...otherPlugins
+  ExcalidrawPlugin,
+  SelectOnBackspace.configure({
+    options: { query: { allow: [ExcalidrawPlugin.key] } },
+  }),
+];
+```
+
+## 插件
+
+### ExcalidrawPlugin
+
+为编辑器添加 Excalidraw 功能。
+
+## API
+
+#### insertExcalidraw
+
+在编辑器中插入一个 Excalidraw 元素。
+
+<APIParameters>
+<APIItem name="editor" type="PlateEditor">
+  编辑器实例。
+</APIItem>
+<APIItem
+  name="props"
+  type="TNodeProps<TExcalidrawElement>"
+  optional
+>
+Excalidraw 元素的属性。
+</APIItem>
+<APIItem name="options" type="InsertNodesOptions" optional>
+  插入 Excalidraw 元素的选项。
+</APIItem>
+</APIParameters>
+
+## API 组件
+
+### useExcalidrawElement
+
+Excalidraw 组件的行为 hook。
+
+<APIState>
+<APIItem name="element" type="TExcalidrawElement">
+Excalidraw 元素。
+</APIItem>
+<APIItem name="libraryItems" type="LibraryItems" optional>
+要在 Excalidraw 组件中显示的库项目。
+
+- **默认值：** `[]`
+
+</APIItem>
+<APIItem name="scrollToContent" type="boolean" optional>
+决定是否滚动到 Excalidraw 组件内的内容。
+
+- **默认值：** `true`
+
+</APIItem>
+</APIState>
+
+<APIReturns>
+  <APIItem name="Excalidraw" type="any">
+    Excalidraw 组件。
+  </APIItem>
+  <APIItem name="excalidrawProps" type="ExcalidrawProps">
+    要传递给 Excalidraw 组件的属性。
+  </APIItem>
+</APIReturns>

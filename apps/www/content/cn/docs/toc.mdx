@@ -1,0 +1,270 @@
+---
+title: Table of Contents
+docs:
+  - route: components/toc-element
+    title: Toc Element
+  - route: https://pro.platejs.org/docs/components/toc-sidebar
+    title: Toc Sidebar
+---
+
+<ComponentPreview name="toc-demo" />
+
+<PackageInfo>
+
+## Features
+
+- 自动从文档标题生成目录
+- 平滑滚动到标题
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-heading @udecode/plate-node-id
+```
+
+## Usage
+
+```tsx
+import { TocPlugin, HeadingPlugin } from '@udecode/plate-heading/react';
+import { NodeIdPlugin } from '@udecode/plate-node-id';
+```
+
+```tsx
+const plugins = [
+  // ...otherPlugins,
+  HeadingPlugin,
+  NodeIdPlugin,
+  TocPlugin.configure({
+    options: {
+      topOffset: 80,
+    },
+  }),
+];
+```
+
+```tsx
+const components = {
+  // ...otherComponents,
+  [TocPlugin.key]: TocElement,
+};
+```
+
+- [TocElement](/docs/components/toc-element)
+
+### Scroll container
+
+- 如果你的滚动元素是 [EditorContainer](/docs/components/editor), 你可以跳过这一步。
+- 如果你的滚动元素是编辑器容器，请将 `useEditorContainerRef()` 作为 `ref` 属性传递。例如：
+
+```tsx
+// Should be rendered below <Plate> component
+function EditorContainer({ children }: { children: React.ReactNode }) {
+  const containerRef = useEditorContainerRef();
+
+  return <div ref={containerRef}>{children}</div>;
+}
+```
+
+- 如果你的滚动元素是编辑器容器的祖先，请将 `useEditorScrollRef()` 作为 `ref` 属性传递。例如：
+
+```tsx
+// Should be rendered below <Plate> component
+function Layout() {
+  const scrollRef = useEditorScrollRef();
+
+  return (
+    <main ref={scrollRef}>
+      <EditorContainer>
+        <PlateContent />
+      </EditorContainer>
+    </main>
+  );
+}
+```
+
+### 组件
+
+- [`TocElement`](/docs/components/toc-element)
+
+## 示例
+
+### Plate UI
+
+参考上面的预览。
+
+### Plate Plus
+
+<ComponentPreviewPro name="toc-pro" />
+
+## 插件
+
+### TocPlugin
+
+<APIOptions>
+<APIItem name="isScroll" type="boolean" optional>
+是否使用滚动行为。
+
+- **默认值:** `true`
+</APIItem>
+
+<APIItem name="topOffset" type="number" optional>
+滚动到标题时应用的顶部偏移量。
+
+- **默认值:** `80`
+</APIItem>
+
+<APIItem name="queryHeading" type="(editor: SlateEditor) => Heading[]" optional>
+从编辑器查询标题的自定义函数。
+</APIItem>
+</APIOptions>
+
+## 转换
+
+### insertToc
+
+在编辑器中插入目录元素。
+
+<APIParameters>
+  <APIItem name="editor" type="SlateEditor">
+    编辑器实例。
+  </APIItem>
+  <APIItem name="options" type="InsertNodesOptions<SlateEditor>" optional>
+    插入目录节点的选项。
+  </APIItem>
+</APIParameters>
+
+## Hooks
+
+### useTocElementState
+
+<APIReturns>
+  <APIItem name="editor" type="SlateEditor">
+    编辑器实例。
+  </APIItem>
+  <APIItem name="headingList" type="Heading[]">
+    文档中标题对象的数组。
+  </APIItem>
+  <APIItem name="onContentScroll" type="(el: HTMLElement, id: string, behavior: ScrollBehavior) => void">
+    处理滚动到特定标题的函数。
+  </APIItem>
+</APIReturns>
+
+### useTocElement
+
+<APIParameters>
+  <APIItem name="editor" type="SlateEditor">
+    编辑器实例。
+  </APIItem>
+  <APIItem name="onContentScroll" type="(el: HTMLElement, id: string, behavior: ScrollBehavior) => void">
+    来自 `useTocElementState` 的滚动处理函数。
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem name="props" type="object">
+    <APISubList>
+      <APISubListItem parent="props" name="onClick" type="(e: React.MouseEvent, item: Heading, behavior: ScrollBehavior) => void">
+        目录项的点击处理程序。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+
+### useTocSideBarState
+
+此 hook 管理目录侧边栏的状态。
+
+<APIParameters>
+  <APIItem name="open" type="boolean" optional>
+    目录侧边栏是否打开。
+    - **默认值:** `true`
+  </APIItem>
+  <APIItem name="rootMargin" type="string" optional>
+    Intersection Observer 的根边距。
+    - **默认值:** `'0px 0px 0px 0px'`
+  </APIItem>
+  <APIItem name="topOffset" type="number" optional>
+    滚动的顶部偏移量。
+    - **默认值:** `0`
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem name="activeContentId" type="string">
+    当前活动内容部分的 ID。
+  </APIItem>
+  <APIItem name="editor" type="PlateEditor">
+    编辑器实例。
+  </APIItem>
+  <APIItem name="headingList" type="Heading[]">
+    文档中的标题列表。
+  </APIItem>
+  <APIItem name="mouseInToc" type="boolean">
+    鼠标当前是否在目录上。
+  </APIItem>
+  <APIItem name="open" type="boolean">
+    目录侧边栏是否打开。
+  </APIItem>
+  <APIItem name="setIsObserve" type="React.Dispatch<React.SetStateAction<boolean>>">
+    设置观察状态的函数。
+  </APIItem>
+  <APIItem name="setMouseInToc" type="React.Dispatch<React.SetStateAction<boolean>>">
+    设置鼠标是否在目录上的函数。
+  </APIItem>
+  <APIItem name="tocRef" type="React.RefObject<HTMLElement>">
+    目录元素的引用。
+  </APIItem>
+  <APIItem name="onContentScroll" type="(options: { id: string; behavior?: ScrollBehavior; el: HTMLElement }) => void">
+    处理内容滚动的函数。
+  </APIItem>
+</APIReturns>
+
+### useTocSideBar
+
+此 hook 为目录侧边栏组件提供属性和处理程序。
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    编辑器实例。
+  </APIItem>
+  <APIItem name="mouseInToc" type="boolean">
+    鼠标当前是否在目录上。
+  </APIItem>
+  <APIItem name="open" type="boolean">
+    目录侧边栏是否打开。
+  </APIItem>
+  <APIItem name="setIsObserve" type="React.Dispatch<React.SetStateAction<boolean>>">
+    设置观察状态的函数。
+  </APIItem>
+  <APIItem name="setMouseInToc" type="React.Dispatch<React.SetStateAction<boolean>>">
+    设置鼠标是否在目录上的函数。
+  </APIItem>
+  <APIItem name="tocRef" type="React.RefObject<HTMLElement>">
+    目录元素的引用。
+  </APIItem>
+  <APIItem name="onContentScroll" type="(options: { id: string; behavior?: ScrollBehavior; el: HTMLElement }) => void">
+    处理内容滚动的函数。
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem name="navProps" type="object">
+    目录导航元素的属性。
+    <APISubList>
+      <APISubListItem parent="navProps" name="ref" type="React.RefObject<HTMLElement>">
+        目录元素的引用。
+      </APISubListItem>
+      <APISubListItem parent="navProps" name="onMouseEnter" type="() => void">
+        鼠标进入事件的处理程序。
+      </APISubListItem>
+      <APISubListItem parent="navProps" name="onMouseLeave" type="(e: React.MouseEvent<HTMLElement, MouseEvent>) => void">
+        鼠标离开事件的处理程序。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+  <APIItem name="onContentClick" type="(e: React.MouseEvent<HTMLElement, MouseEvent>, item: Heading, behavior?: ScrollBehavior) => void">
+    点击目录项的处理程序。
+  </APIItem>
+</APIReturns>

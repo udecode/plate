@@ -1,0 +1,42 @@
+---
+title: Serializing Docx
+---
+
+<ComponentPreview name="docx-demo" />
+
+<PackageInfo>
+## 功能
+
+- 将 DOCX 内容转换为 Slate 值。
+
+<Callout className="my-4">
+  **注意**: 将 Slate 值转换为 DOCX 尚不支持。
+</Callout>
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-docx @udecode/plate-juice
+```
+
+## Usage
+
+### DOCX -> Slate
+
+```tsx
+import { JuicePlugin } from '@udecode/plate-juice';
+import { DocxPlugin } from '@udecode/plate-docx';
+
+const plugins = [
+  // ...otherPlugins,
+  DocxPlugin,
+  JuicePlugin,
+];
+```
+对于粘贴的 HTML，`@udecode/plate-juice` 用于将 CSS 属性内联到 `style` 属性中。
+
+## 插件
+
+### DocxPlugin

@@ -1,0 +1,238 @@
+---
+title: Editor Methods
+description: 探索用于与 Plate 编辑器交互和自定义的各种方法。
+---
+
+本指南涵盖了 Plate 编辑器实例可用的各种方法。
+
+## 访问编辑器
+
+如何访问编辑器实例取决于你需要它的上下文。
+
+### 在 Plate 内部
+
+使用以下这些 hooks：
+
+- `useEditorRef`: 从不重新渲染。
+- `useEditorSelector`: 仅在特定编辑器属性更改时重新渲染。
+- `useEditorState`: 每次更改时重新渲染。
+
+```ts
+import { useEditorRef, useEditorSelector, useEditorState } from '@udecode/plate-common/react';
+
+const MyComponent = () => {
+  const editor = useEditorRef();
+  const hasSelection = useEditorSelector((editor) => !!editor.selection, []);
+  const editorState = useEditorState();
+  
+  // ...
+};
+```
+
+#### useEditorRef
+
+- 使用一个永不替换的编辑器引用。这应该是默认选择。
+- 由于编辑器是一个通过引用更新的可变对象，`useEditorRef` 在回调函数中访问编辑器总是足够的。
+- `useEditorRef` 永远不会导致组件重新渲染，因此它是性能最佳的选择。
+
+#### useEditorSelector
+
+- 基于编辑器订阅特定的选择器。这是订阅状态变化的最高性能选项。
+- 使用示例：`const hasSelection = useEditorSelector((editor) => !!editor.selection, []);`
+- 当你希望组件响应你感兴趣的特定变化而重新渲染时，可以使用 `useEditorSelector` 来访问相关属性。
+- 选择器函数在编辑器每次变化时都会被调用（即每次按键或选择变化时），但组件只在返回值改变时重新渲染。
+- 为了使其正常工作，你应该确保返回值可以使用 `===` 进行比较。在大多数情况下，这意味着返回一个原始值，如数字、字符串或布尔值。
+- 在 `===` 不足够的情况下，你可以在 `useEditorSelector` 的选项中提供自定义的 `equalityFn`。
+- 如果选择器函数依赖于任何局部作用域变量，你应该将这些变量包含在依赖列表中。
+
+#### useEditorState
+
+- 在编辑器每次变化时重新渲染。
+- 使用 `useEditorState` 将导致你的组件在用户每次按键或改变选择时重新渲染。
+- 对于大型文档或重新渲染成本特别高的情况，这可能会导致性能问题。
+
+### 在 Plate 外部
+
+要在 `Plate` 组件外部访问编辑器或处理多个编辑器，请使用 `PlateController` 组件：
+
+```ts
+import { PlateController } from '@udecode/plate-common/react';
+
+const App = () => (
+  <PlateController>
+    <Toolbar />
+    <MyEditor />
+  </PlateController>
+);
+
+const Toolbar = () => {
+  const editor = useEditorState();
+  const isMounted = useEditorMounted();
+  // Use editor methods here
+};
+```
+`PlateController` 管理活动编辑器：
+- 默认情况下，第一个挂载的编辑器是活动的（可以在 `Plate` 上使用 `primary={false}` 覆盖）。
+- 焦点变化会改变活动编辑器。
+- 编辑器保持活动状态，直到另一个编辑器获得焦点或它被卸载。
+
+像 `useEditorRef` 和 `useEditorSelector` 这样的钩子在 `PlateController` 内部与活动编辑器一起工作。如果没有活动的编辑器，它们会返回一个后备编辑器，该编辑器：
+- 为查询提供默认值。
+- 不能被修改。
+- 在状态改变操作时抛出错误。
+
+后备编辑器的场景：
+- 没有挂载的 `Plate` 组件。
+- 所有 `Plate` 组件都是非主要的。
+- 在 `PlateContent` 挂载期间。
+
+你可以使用 `useEditorMounted` 检查是否有编辑器被挂载：
+
+```ts
+const Toolbar = () => {
+  const editor = useEditorState();
+  const isMounted = useEditorMounted();
+  
+  if (!isMounted) {
+    return <div>Editor not ready</div>;
+  }
+  
+  return <div>{/* Toolbar content */}</div>;
+};
+```
+你也可以使用 `editor.isFallback` 来检查编辑器是否是后备实例。
+
+## API 方法
+
+### getApi
+
+获取编辑器的类型化 API：
+
+```ts
+const api = editor.getApi(TablePlugin);
+api.api.create.cell(); // Type-safe API method
+```
+
+### getTransforms
+
+获取编辑器的类型化转换：
+
+```ts
+const tf = editor.getTransforms(TablePlugin);
+tf.insert.tableRow(); // Type-safe transform method
+```
+
+## Plugin Methods
+
+### getPlugin
+
+通过插件的 key 或基础插件获取编辑器插件实例：
+
+```ts
+const paragraphPlugin = editor.getPlugin(ParagraphPlugin);
+const headingPlugin = editor.getPlugin({ key: 'heading' });
+```
+
+### getType
+
+获取与插件关联的节点类型：
+
+```ts
+const paragraphType = editor.getType(ParagraphPlugin);
+```
+
+## Option Methods
+
+### getOption
+
+Get a specific option value for a plugin:
+
+```ts
+const search = editor.getOption(FindReplacePlugin, 'search');
+```
+
+### getOptions
+
+获取插件的所有选项：
+
+```ts
+const linkOptions = editor.getOptions(LinkPlugin);
+```
+
+### setOption
+
+为插件设置特定的选项值：
+
+```ts
+editor.setOption(FindReplacePlugin, 'search', 'hello');
+```
+
+### setOptions
+
+为插件设置多个选项：
+
+```ts
+editor.setOptions(FindReplacePlugin, {
+  search: 'hello',
+  caseSensitive: true,
+});
+```
+
+您也可以使用函数通过 Immer 来更新选项：
+
+```ts
+editor.setOptions(FindReplacePlugin, (draft) => {
+  draft.search = 'hello';
+  draft.caseSensitive = true;
+});
+```
+
+### getOptionsStore
+
+获取插件的 [zustand-x](https://github.com/udecode/zustand-x) 选项存储：
+
+```ts
+const store = editor.getOptionsStore(FindReplacePlugin);
+```
+
+## React Hooks
+
+### useOption
+
+在 React 组件中订阅特定选项值：
+
+```ts
+const MyComponent = () => {
+  const search = editor.useOption(FindReplacePlugin, 'search');
+  return <div>Current search: {search}</div>;
+};
+```
+
+### useOptions
+
+您还可以使用选择器函数来订阅选项的特定部分：
+
+```ts
+const MyComponent = () => {
+  const search = editor.useOptions(FindReplacePlugin, (options) => options.search);
+  return <div>Current search: {search}</div>;
+};
+```
+
+### useOptionsStore
+
+Get the [zustand-x](https://github.com/udecode/zustand-x) store hook for a plugin:
+
+```ts
+const store = editor.useOptionsStore(FindReplacePlugin);
+```
+
+## Plate Store
+
+### setPlateState
+
+更新全局 Plate 状态：
+
+```ts
+editor.setPlateState('readOnly', true);
+```

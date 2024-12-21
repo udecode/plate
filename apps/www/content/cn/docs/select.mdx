@@ -1,0 +1,152 @@
+---
+title: Select
+---
+
+{/* <ComponentPreview name="playground-demo" id="delete" /> */}
+
+<PackageInfo>
+
+## 功能
+
+- 设置一个元素类型列表，在按退格键时删除
+- 设置一个元素类型列表，在按退格键时选择，而不是删除
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-select
+```
+
+## 用法
+
+```tsx
+import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
+```
+
+```tsx
+const plugins = [
+  // ...otherPlugins,
+  SelectOnBackspacePlugin.configure({
+    options: {
+      query: {
+        allow: ['img', 'hr'],
+      },
+    },
+  }),
+  DeletePlugin,
+];
+```
+
+## 插件
+
+### DeletePlugin
+
+在按删除键（向前删除）时，如果匹配查询选项，则删除空块的插件。
+
+<APIOptions>
+<APIItem name="query" type="QueryNodeOptions" optional>
+  查询选项，用于过滤哪些空块可以被删除。
+  - **默认:** `{ allow: ['p'] }`
+</APIItem>
+</APIOptions>
+
+例如：
+
+```tsx
+const plugins = [
+  DeletePlugin.configure({
+    options: {
+      // Only remove empty paragraphs and blockquotes
+      query: {
+        allow: ['p', 'blockquote'],
+      },
+    },
+  }),
+];
+```
+
+插件将：
+1. 检查当前块是否为空并匹配查询选项
+2. 如果为真：删除整个块
+3. 如果为假：使用默认删除行为
+
+```tsx
+// Empty paragraph followed by code block
+<editor>
+  <p>
+    <cursor />
+  </p>
+  <codeblock>
+    <codeline>test</codeline>
+  </codeblock>
+</editor>
+
+// Pressing delete will remove the empty paragraph instead of nothing
+<editor>
+  <codeblock>
+    <codeline>test</codeline>
+  </codeblock>
+</editor>
+```
+
+### SelectOnBackspacePlugin
+
+在按退格键时选择节点而不是删除它们的插件。适用于图像或水平规则等节点。
+
+<APIOptions>
+<APIItem name="query" type="QueryNodeOptions">
+  查询选项，用于确定哪些节点在按退格键时触发选择。
+</APIItem>
+<APIItem parent="options" name="removeNodeIfEmpty" type="boolean" optional>
+  是否在按退格键时删除空节点。
+  - **默认:** `false`
+</APIItem>
+</APIOptions>
+
+例如：
+
+```tsx
+const plugins = [
+  SelectOnBackspacePlugin.configure({
+    options: {
+      // Select these nodes instead of deleting them
+      query: {
+        allow: ['img', 'hr'],
+      },
+      // Remove current node if empty
+      removeNodeIfEmpty: true,
+    },
+  }),
+];
+```
+
+插件将：
+1. 当按退格键在块的开头时：
+2. 检查前一个节点是否匹配查询选项
+3. 如果为真：
+   - 选择前一个节点而不是删除它
+   - 如果为空，则删除当前节点
+4. 如果为假：使用默认退格行为
+
+```tsx
+// 图片后的空段落
+<editor>
+  <img src="..." />
+  <p>
+    <cursor />
+  </p>
+</editor>
+
+// 按退格键将选择图片而不是删除它
+<editor>
+  <img src="..." selected />
+  <p></p>
+</editor>
+
+// 如果 removeNodeIfEmpty 为 true，空段落也会被删除
+<editor>
+  <img src="..." selected />
+</editor>
+```

@@ -1,0 +1,84 @@
+---
+title: Forced Layout
+---
+
+{/* <ComponentPreview name="forced-layout-demo" /> */}
+
+<PackageInfo>
+
+## 功能特性
+
+- 自动确保使用指定的元素作为必需元素以维护文档结构（例如，第一个块应为 H1 元素）。
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-normalizers @udecode/plate-trailing-block
+```
+
+## 使用
+
+```tsx
+import { NormalizersPlugin } from '@udecode/plate-normalizers/react';
+import { TrailingBlockPlugin } from '@udecode/plate-trailing-block/react';
+import { ParagraphPlugin } from '@udecode/plate-common/react';
+import { HEADING_KEYS } from '@udecode/plate-heading/react';
+
+const plugins = [
+  // ...otherPlugins
+  TrailingBlockPlugin.configure({ options: { type: ParagraphPlugin.key } }),
+  NormalizersPlugin.configure({
+    options: {
+      rules: [{ path: [0], strictType: 'h1' }],
+    },
+  }),
+];
+```
+
+## 插件
+
+### TrailingBlockPlugin
+
+<APIOptions>
+<APIItem name="level" type="number" optional>
+Trailing node 所在的级别，第一个级别为 0。
+
+- **默认值:** `0`
+</APIItem>
+
+<APIItem name="type" type="string" optional>
+Trailing block 的类型。
+
+- **默认值:** `editor.getType(ParagraphPlugin)`
+</APIItem>
+</APIOptions>
+
+`TrailingBlockPlugin` 还扩展了 `QueryNodeOptions`，它包括用于查询节点的附加选项。
+
+### NormalizeTypesPlugin
+
+<APIOptions>
+<APIItem name="rules" type="Rule[]" optional>
+用于规范化类型的规则数组。
+
+- **默认值:** `[]`
+</APIItem>
+</APIOptions>
+
+#### Rule
+
+<APIAttributes>
+<APIItem name="path" type="Path">
+规则应用的路径。
+</APIItem>
+
+<APIItem name="strictType" type="string" optional>
+强制指定路径处的节点类型。
+</APIItem>
+
+<APIItem name="type" type="string" optional>
+如果未提供 `strictType`，则插入节点在给定路径处的类型。
+</APIItem>
+</APIAttributes>

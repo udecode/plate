@@ -1,0 +1,183 @@
+---
+title: Plugin Context
+description: 了解和使用 Plate 插件中的 Plugin Context。
+---
+
+Plugin Context 是一个在所有插件方法中可用的对象，提供对编辑器实例、插件配置和实用函数的访问。
+
+## 访问 Plugin Context
+
+### Plugin Methods
+
+Plugin Context 作为所有插件方法的第一个参数可用：
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  handlers: {
+    onKeyDown: (ctx) => {
+      // ctx is the Plugin Context
+      console.info(ctx.editor, ctx.plugin);
+    },
+  },
+});
+```
+
+### getEditorPlugin
+
+此函数在需要访问另一个插件的上下文时特别有用。它允许跨插件通信和交互，从而实现更复杂和相互关联的插件行为。
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  handlers: {
+    onKeyDown: ({ editor }) => {
+      const linkCtx = getEditorPlugin(LinkPlugin);
+    },
+  },
+});
+```
+
+### useEditorPlugin
+
+在 React 组件中，您可以使用 `useEditorPlugin` 钩子来访问 Plugin Context：
+
+```ts
+const MyComponent = () => {
+  const { editor, plugin, useOption, type } = useEditorPlugin(MyPlugin);
+  
+  return <div>{useOption('myOption')}</div>;
+};
+```
+
+## Plugin Context 属性
+
+### editor
+
+当前的 `PlateEditor` 实例：
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  handlers: {
+    onChange: ({ editor }) => {
+      console.info('Editor value:', editor.children);
+    },
+  },
+});
+```
+
+### plugin
+
+当前插件配置：
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  handlers: {
+    onKeyDown: ({ plugin }) => {
+      console.info('Plugin key:', plugin.key);
+    },
+  },
+});
+```
+
+### getOption
+
+获取插件特定选项值的函数：
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  options: { myOption: 'default' },
+  handlers: {
+    onClick: ({ getOption }) => {
+      const myOption = getOption('myOption');
+      console.info('My option value:', myOption);
+    },
+  },
+});
+```
+
+### getOptions
+
+获取插件所有选项的函数：
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  options: { option1: 'value1', option2: 'value2' },
+  handlers: {
+    onClick: ({ getOptions }) => {
+      const options = getOptions();
+      console.info('All options:', options);
+    },
+  },
+});
+```
+
+### setOption
+
+设置插件特定选项值的函数：
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  options: { count: 0 },
+  handlers: {
+    onClick: ({ setOption }) => {
+      setOption('count', 1);
+    },
+  },
+});
+```
+
+### setOptions
+
+设置插件多个选项的函数：
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  options: { option1: 'value1', option2: 'value2' },
+  handlers: {
+    onClick: ({ setOptions }) => {
+      setOptions({
+        option1: 'newValue1',
+        option2: 'newValue2',
+      });
+    },
+  },
+});
+```
+
+### useOption
+
+在 React 组件中订阅特定选项值的hook：
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  options: { count: 0 },
+  useHooks: ({ useOption }) => {
+    const count = useOption('count');
+    return <div>Count: {count}</div>;
+  },
+});
+```
+
+### type
+
+  与插件关联的节点类型：
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  node: { type: 'myNodeType' },
+  handlers: {
+    onKeyDown: ({ type }) => {
+      console.info('Node type:', type);
+    },
+  },
+});
+```

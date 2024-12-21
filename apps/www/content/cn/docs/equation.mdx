@@ -1,0 +1,113 @@
+---
+title: Equation
+docs:
+  - route: https://pro.platejs.org/docs/components/equation-element
+    title: Equation Element
+  - route: https://pro.platejs.org/docs/components/inline-equation-element
+    title: Inline Equation Element
+  - route: https://pro.platejs.org/docs/components/inline-equation-toolbar-button
+    title: Inline Equation Toolbar Button
+---
+
+<PackageInfo>
+
+## Features
+
+- LaTeX 语法支持复杂数学表达式
+- 内联和块方程格式
+- 使用 KaTeX 实时渲染方程
+- 轻松编辑和导航方程
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-math
+```
+
+## Usage
+
+```tsx
+import { EquationPlugin, InlineEquationPlugin } from '@udecode/plate-math/react';
+```
+
+```tsx
+const plugins = [
+  // ...otherPlugins,
+  EquationPlugin,
+  InlineEquationPlugin,
+]
+```
+
+```tsx
+const components = {
+  // ...otherComponents,
+  [EquationPlugin.key]: EquationElement,
+  [InlineEquationPlugin.key]: InlineEquationElement,
+}
+```
+
+- [EquationElement](https://pro.platejs.org/docs/components/equation-element) (Plus)
+- [InlineEquationElement](https://pro.platejs.org/docs/components/inline-equation-element) (Plus)
+
+
+{/* ### How to use
+
+1. Use the slash command `/equation` to insert a block equation.
+2. Use the slash command `/inline equation` to insert an inline equation.
+3. Click on any equation to edit it. Press Escape to close the editor without saving changes.
+4. Navigate through the equation using arrow keys. */}
+
+## 示例
+
+### Plate UI
+
+开发中。
+
+### Plate Plus
+
+<ComponentPreviewPro name="equation-pro" />
+
+## 插件
+
+### EquationPlugin
+
+块级方程元素插件。
+
+### InlineEquationPlugin
+
+内联方程元素插件。
+
+## 转换
+
+### editor.tf.insert.equation
+
+插入一个空的块级方程。
+<APIParameters>
+  <APIItem name="options" type="InsertNodesOptions">
+    插入节点转换的选项。
+  </APIItem>
+</APIParameters>
+
+### editor.tf.insert.inlineEquation
+
+插入一个内联方程。
+<APIParameters>
+  <APIItem name="texExpression" type="string" optional>
+    要插入的 LaTeX 表达式。如果未提供，将插入一个空方程。
+  </APIItem>
+  <APIItem name="options" type="InsertNodesOptions" optional>
+    插入节点转换的选项。
+  </APIItem>
+</APIParameters>
+
+## 类型
+
+### TEquationElement
+
+```typescript
+interface TEquationElement extends TElement {
+  texExpression: string;
+}
+```

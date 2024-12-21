@@ -1,0 +1,639 @@
+---
+title: Comments
+docs:
+  - route: /docs/components/comment-leaf
+    title: Comment Leaf
+  - route: /docs/components/comment-toolbar-button
+    title: Comment Toolbar Button
+  - route: /docs/components/comments-popover
+    title: Comments Popover
+---
+
+<ComponentPreview name="comments-demo" />
+
+<PackageInfo>
+
+## 功能
+
+- 将文本注释添加为标记。
+- 注释可以包含解释、建议、问题、笔记或内容改进的想法。
+- 通过选择文本并使用注释按钮或快捷键 **`Cmd+Shift+M`** 添加注释。
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-comments
+```
+
+## Usage
+
+```tsx
+import { CommentsPlugin } from '@udecode/plate-comments/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    CommentsPlugin,
+  ],
+});
+```
+
+## 键盘快捷键
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + Shift + M">
+    在选中的文本上添加注释。
+  </KeyTableItem>
+</KeyTable>
+
+## 插件
+
+### CommentsPlugin
+
+<APIOptions>
+
+<APIItem name="newText" type="string">
+新注释的文本。
+</APIItem>
+
+<APIItem name="myUser" type="CommentUser">
+当前用户的信息。
+</APIItem>
+
+<APIItem name="userById" type="(id: string) => CommentUser">
+通过 ID 获取用户的函数。
+</APIItem>
+
+<APIItem name="commentById" type="(id: string) => TComment">
+通过 ID 获取注释的函数。
+</APIItem>
+
+<APIItem name="activeComment" type="TComment">
+当前活动的注释。
+</APIItem>
+
+</APIOptions>
+
+## API
+
+### editor.tf.insert.comment
+
+插入新的注释标记。
+
+### editor.api.comment.updateComment
+
+更新现有注释。
+
+### editor.api.comment.addRawComment
+
+添加新的原始注释。
+
+### editor.api.comment.addComment
+
+添加新注释。
+
+### editor.api.comment.removeComment
+
+删除注释。
+
+### editor.api.comment.resetNewCommentValue
+
+重置新注释的值。
+
+### CommentStoreState
+
+<APIState>
+  <APIItem name="id" type="string">
+    注释的唯一 ID。
+  </APIItem>
+  <APIItem name="isMenuOpen" type="boolean">
+    表示与此注释关联的菜单当前是否打开的标志。
+  </APIItem>
+  <APIItem name="editingValue" type="Value | null">
+    此注释当前正在编辑的值。如果没有正在进行的编辑，此值为 null。
+  </APIItem>
+</APIState>
+
+### findCommentNode
+
+在编辑器中查找注释节点。
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    编辑器实例。
+  </APIItem>
+  <APIItem name="options" type="FindNodeOptions" optional>
+    查找节点的附加选项。
+  </APIItem>
+</APIParameters>
+
+### findCommentNodeById
+
+通过 ID 在编辑器中查找注释节点。
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    编辑器实例。
+  </APIItem>
+  <APIItem name="id" type="string">
+    要查找的注释节点的 ID。
+  </APIItem>
+</APIParameters>
+
+### getCommentCount
+
+获取注释节点中的注释数量。
+
+<APIParameters>
+  <APIItem name="node" type="TCommentText">
+    注释节点。
+  </APIItem>
+</APIParameters>
+
+### getCommentKey
+
+根据提供的 ID 生成注释键。
+
+<APIParameters>
+  <APIItem name="id" type="string">
+    注释的 ID。
+  </APIItem>
+</APIParameters>
+
+### getCommentKeyId
+
+从注释键中提取注释 ID。
+
+<APIParameters>
+  <APIItem name="key" type="string">
+    注释键。
+  </APIItem>
+</APIParameters>
+
+### getCommentKeys
+
+返回给定节点中存在的注释键数组。
+
+<APIParameters>
+  <APIItem name="node" type="TCommentText">
+    要检查注释键的节点。
+  </APIItem>
+</APIParameters>
+
+### getCommentNodeEntries
+
+返回编辑器中注释节点的节点entry数组。
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    编辑器实例。
+  </APIItem>
+</APIParameters>
+
+### getCommentNodesById
+
+返回编辑器中具有特定 ID 的注释节点的节点entry数组。
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    编辑器实例。
+  </APIItem>
+  <APIItem name="id" type="string">
+    要检索的注释节点的 ID。
+  </APIItem>
+</APIParameters>
+
+### getCommentPosition
+
+计算注释节点相对于编辑器的位置。
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    编辑器实例。
+  </APIItem>
+  <APIItem name="node" type="TCommentText">
+    要计算位置的注释节点。
+  </APIItem>
+</APIParameters>
+
+### getCommentUrl
+
+生成带有特定注释 ID 查询参数的 URL。
+
+<APIParameters>
+  <APIItem name="commentId" type="string">
+    注释的 ID。
+  </APIItem>
+</APIParameters>
+
+### getElementAbsolutePosition
+
+计算 HTML 元素相对于文档的绝对位置。
+
+<APIParameters>
+  <APIItem name="element" type="HTMLElement">
+    要计算绝对位置的 HTML 元素。
+  </APIItem>
+</APIParameters>
+
+### isCommentKey
+
+检查给定的键是否是注释键。
+
+<APIParameters>
+  <APIItem name="key" type="string">
+    要检查的键。
+  </APIItem>
+</APIParameters>
+
+### isCommentNodeById
+
+检查给定节点是否是具有指定 ID 的注释。
+
+<APIParameters>
+  <APIItem name="node" type="TNode">
+    要检查的节点。
+  </APIItem>
+  <APIItem name="id" type="string">
+    注释的 ID。
+  </APIItem>
+</APIParameters>
+
+### isCommentText
+
+检查给定节点是否是注释文本节点。
+
+<APIParameters>
+  <APIItem name="node" type="TNode">
+    要检查的节点。
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="boolean">如果节点是注释文本节点则返回 `true`。</APIItem>
+</APIReturns>
+
+### removeCommentMark
+
+从编辑器中删除注释标记。
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    编辑器实例。
+  </APIItem>
+</APIParameters>
+
+### unsetCommentNodesById
+
+从编辑器中取消设置指定 ID 的注释节点。
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    编辑器实例。
+  </APIItem>
+  <APIItem name="id" type="string">
+    要取消设置的注释节点的 ID。
+  </APIItem>
+</APIParameters>
+
+### CommentUser
+
+表示可以发表注释的用户的接口。
+
+<APIParameters>
+  <APIItem name="id" type="string">
+    用户的唯一 ID。
+  </APIItem>
+  <APIItem name="name" type="string">
+    用户的名称。
+  </APIItem>
+  <APIItem name="avatarUrl" type="string" optional>
+    用户头像的 URL。
+  </APIItem>
+</APIParameters>
+
+### TComment
+
+<APIAttributes>
+<APIItem name="id" type="string">
+注释的唯一 ID。
+</APIItem>
+<APIItem name="value" type="Value">
+注释的 Slate 值。
+</APIItem>
+<APIItem name="createdAt" type="number">
+注释创建的时间戳。
+
+- **默认值：** `Date.now()`
+
+</APIItem>
+<APIItem name="userId" type="string">
+注释作者的 ID。
+</APIItem>
+<APIItem name="parentId" type="string" optional>
+回复的父注释的 ID。
+</APIItem>
+<APIItem name="isResolved" type="boolean" optional>
+注释是否已解决。
+</APIItem>
+</APIAttributes>
+
+### TCommentText
+
+<APIAttributes>
+  <APIItem name="comment_<id>" type="boolean" optional>
+    表示这是否是一个注释。单个文本节点中可以存在多个注释。
+  </APIItem>
+</APIAttributes>
+
+## API 组件
+
+### CommentProvider
+
+注释数据的 jotai 提供者。
+
+<APIProps>
+  扩展 `CommentStoreState`。
+
+  <APIItem name="scope" type="Scope" optional>
+    提供者的作用域。
+  </APIItem>
+</APIProps>
+
+### CommentDeleteButton
+
+用于删除注释的按钮组件。
+
+<APIState>
+  <APIItem name="activeCommentId" type="string">
+    活动注释的 ID。
+  </APIItem>
+  <APIItem name="editor" type="PlateEditor">
+    编辑器实例。
+  </APIItem>
+  <APIItem name="id" type="string">
+    注释的 ID。
+  </APIItem>
+  <APIItem name="onCommentDelete" type="function">
+    注释被删除时调用的函数。
+  </APIItem>
+  <APIItem name="removeComment" type="function">
+    删除注释的函数。
+  </APIItem>
+  <APIItem name="setActiveCommentId" type="function">
+    设置活动注释 ID 的函数。
+  </APIItem>
+</APIState>
+
+### CommentEditButton
+
+用于编辑注释的按钮组件。
+
+<APIState>
+  <APIItem name="setIsMenuOpen" type="function">
+    设置菜单打开状态的函数。
+  </APIItem>
+  <APIItem name="comment" type="TComment">
+    注释对象。
+  </APIItem>
+  <APIItem name="editingValue" type="function">
+    设置编辑值的函数。
+  </APIItem>
+</APIState>
+
+### CommentEditCancelButton
+
+用于取消编辑注释的按钮组件。
+
+### CommentEditSaveButton
+
+用于保存编辑注释的按钮组件。
+
+<APIState>
+  <APIItem name="editingValue" type="Value">
+    编辑值的值。
+  </APIItem>
+  <APIItem name="setEditingValue" type="function">
+    设置编辑值的函数。
+  </APIItem>
+  <APIItem name="id" type="string">
+    注释的 ID。
+  </APIItem>
+  <APIItem name="onCommentUpdate" type="function">
+    注释更新时调用的函数。
+  </APIItem>
+  <APIItem name="updateComment" type="function">
+    更新注释的函数。
+  </APIItem>
+  <APIItem name="value" type="string">
+    注释的值。
+  </APIItem>
+</APIState>
+
+### CommentEditTextarea
+
+用于编辑注释的文本区域组件。
+
+<APIState>
+  <APIItem name="setEditingValue" type="function">
+    设置编辑值的函数。
+  </APIItem>
+  <APIItem name="textareaRef" type="React.Ref">
+    文本区域的引用。
+  </APIItem>
+  <APIItem name="value" type="string">
+    文本区域的值。
+  </APIItem>
+</APIState>
+
+### CommentNewSubmitButton
+
+用于提交新注释的按钮组件。
+
+<APIState>
+  <APIItem name="editingCommentText" type="string">
+    正在编辑的注释文本。
+  </APIItem>
+  <APIItem name="resetNewCommentValue" type="function">
+    重置新注释值的函数。
+  </APIItem>
+  <APIItem name="addComment" type="function">
+    添加注释的函数。
+  </APIItem>
+  <APIItem name="isReplyComment" type="boolean">
+    注释是否是回复。
+  </APIItem>
+  <APIItem name="submitButtonText" type="string">
+    提交按钮的文本。
+  </APIItem>
+  <APIItem name="onCommentAdd" type="function">
+    注释添加时调用的函数。
+  </APIItem>
+  <APIItem name="activeCommentId" type="string">
+    活动注释的 ID。
+  </APIItem>
+  <APIItem name="comment" type="TComment">
+    注释对象。
+  </APIItem>
+  <APIItem name="newValue" type="Value">
+    编辑的注释的值。
+  </APIItem>
+</APIState>
+
+### CommentNewTextarea
+
+用于添加新注释的文本区域组件。
+
+<APIState>
+  <APIItem name="textareaRef" type="React.Ref">
+    文本区域的引用。
+  </APIItem>
+  <APIItem name="placeholder" type="string">
+    文本区域的占位符。
+  </APIItem>
+  <APIItem name="value" type="string">
+    文本区域的值。
+  </APIItem>
+  <APIItem name="setNewValue" type="function">
+    设置新值的函数。
+  </APIItem>
+</APIState>
+
+### CommentResolveButton
+
+用于解决/取消解决注释的按钮组件。
+
+### CommentUserName
+
+用于显示注释用户名称的 div 组件。
+
+### CommentsPositioner
+
+用于在编辑器中定位注释的 div 组件。
+
+<APIState>
+  <APIItem name="activeCommentId" type="string">
+    活动注释的 ID。
+  </APIItem>
+  <APIItem name="position" type="object">
+    表示注释当前位置的对象（顶部和左侧坐标）。
+  </APIItem>
+</APIState>
+
+### useActiveCommentNode
+
+基于活动注释 ID 检索活动注释节点的自定义钩子。
+
+<APIReturns>
+
+- 如果存在活动注释 ID，则返回相应的注释节点。
+
+- 如果没有活动注释 ID 或找不到注释节点，则返回 `null`。
+
+</APIReturns>
+
+### useCommentAddButton
+
+提供向选定文本添加注释标记并将焦点设置到注释文本区域的功能的自定义钩子。
+
+<APIReturns>
+  <APIItem name="props" type="object">
+    <APISubList>
+      <APISubListItem parent="props" name="onClick" type="function">
+        按钮点击时调用的函数。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+
+### useCommentItemContentState
+
+注释项内容组件的状态钩子。
+
+<APIReturns>
+  <APIItem name="comment" type="TComment">
+    注释对象。
+  </APIItem>
+  <APIItem name="isReplyComment" type="boolean">
+    表示注释是否是回复注释的布尔值。
+  </APIItem>
+  <APIItem name="commentText" type="string">
+    注释的文本内容。
+  </APIItem>
+  <APIItem name="user" type="CommentUser">
+    与注释关联的用户。
+  </APIItem>
+  <APIItem name="myUserId" type="string">
+    当前用户的 ID。
+  </APIItem>
+  <APIItem name="editingValue" type="Value">
+    正在编辑的注释的值。
+  </APIItem>
+  <APIItem name="isMyComment" type="boolean">
+    表示注释是否由当前用户创作的布尔值。
+  </APIItem>
+</APIReturns>
+
+### useCommentLeaf
+
+注释叶子组件的行为钩子。
+
+<APIParameters>
+  <APIItem name="setActiveCommentId" type="function">
+    设置活动注释 ID 的函数。
+  </APIItem>
+  <APIItem name="lastCommentId" type="string">
+    叶子中最后一个注释的 ID。
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem name="props" type="object">
+    <APISubList>
+      <APISubListItem parent="props" name="onClick" type="function">
+        按钮点击时调用的函数。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+
+### useCommentValue
+
+聚焦并选择文本区域内文本的自定义钩子。
+
+<APIReturns>
+  <APIItem name="textareaRef" type="React.Ref">
+    文本区域元素的引用。
+  </APIItem>
+</APIReturns>
+
+### useCommentsResolved
+
+返回已解决注释数组的自定义钩子。
+
+<APIReturns>
+<APIItem type="TComment[]">
+
+已解决注释的数组。
+
+</APIItem>
+</APIReturns>
+
+### useCommentsShowResolvedButton
+
+返回用于显示已解决注释的按钮组件属性的自定义钩子。
+
+<APIReturns>
+  <APIItem name="props" type="object">
+    <APISubList>
+      <APISubListItem parent="props" name="pressed" type="boolean">
+        表示按钮是否被按下的布尔值。
+      </APISubListItem>
+      <APISubListItem parent="props" name="onClick" type="function">
+        按钮点击时调用的函数。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>

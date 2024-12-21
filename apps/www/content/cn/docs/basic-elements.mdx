@@ -1,0 +1,292 @@
+---
+title: Basic Elements
+docs:
+  - route: /docs/components/blockquote-element
+    title: Block Quote Element
+  - route: /docs/components/code-block-element
+    title: Code Block Element
+  - route: /docs/components/code-line-element
+    title: Code Line Element
+  - route: /docs/components/code-syntax-leaf
+    title: Code Syntax Leaf
+  - route: /docs/components/heading-element
+    title: Heading Element
+---
+
+<ComponentPreview name="basic-elements-demo" />
+
+<PackageInfo>
+
+## 功能特点
+
+- 包含常用的块级元素：引用块、代码块和标题。
+
+</PackageInfo>
+
+**插件：**
+
+- `BlockquotePlugin` 用于 `blockquote` 元素
+- `CodeBlockPlugin` 用于 `code_block` 元素
+- `HeadingPlugin` 用于 `h1`、`h2`... 等元素
+
+## 安装
+
+## Usage
+
+```tsx
+import {
+  BasicElementsPlugin,
+  CodeBlockPlugin,
+} from '@udecode/plate-basic-elements/react';
+import Prism from 'prismjs';
+
+const plugins = [
+  // ...otherPlugins,
+  BasicElementsPlugin.configurePlugin(CodeBlockPlugin, {
+    options: {
+      prism: Prism,
+    },
+  }),
+];
+```
+
+## 键盘快捷键
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + Opt + 1">切换一级标题块。</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Opt + 2">切换二级标题块。</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Opt + 3">切换三级标题块。</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Shift + .">
+    切换所选文本的引用块格式。
+  </KeyTableItem>
+</KeyTable>
+
+## 插件
+
+### BasicElementsPlugin
+
+### BlockquotePlugin
+
+### HeadingPlugin
+
+<APIOptions>
+<APIItem name="levels" type="number" optional>
+指定支持的标题级别，范围从1到指定的级别。
+
+</APIItem>
+</APIOptions>
+
+### CodeBlockPlugin
+
+<APIOptions>
+
+<APIItem name="syntax" type="boolean" optional>
+确定是否启用语法高亮。
+
+</APIItem>
+<APIItem name="syntaxPopularFirst" type="boolean" optional>
+确定是否优先显示常用语法。
+
+</APIItem>
+<APIItem name="deserializers" type="string[]" optional>
+定义代码块插件的反序列化器。
+
+</APIItem>
+</APIOptions>
+
+## 代码块 API
+
+### isCodeBlockEmpty
+
+检查选区是否在空代码块内。
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    编辑器实例。
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="boolean">
+    如果选区在空代码块内则返回 true。
+  </APIItem>
+</APIReturns>
+
+### isSelectionAtCodeBlockStart
+
+检查选区是否在代码块第一行的开始位置。
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    编辑器实例。
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="boolean">
+    如果选区在代码块第一行的开始位置则返回 true。
+  </APIItem>
+</APIReturns>
+
+### indentCodeLine
+
+如果选区已展开或光标左侧没有非空白字符，则缩进代码行。默认缩进为2个空格。
+
+<APIParameters>
+<APIItem name="editor" type="PlateEditor">
+编辑器实例。
+</APIItem>
+<APIItem name="options" type="IndentCodeLineOptions">
+<APISubList>
+<APISubListItem parent="options" name="codeLine" type="TElementEntry">
+  要缩进的代码行。
+</APISubListItem>
+<APISubListItem
+  parent="options"
+  name="indentDepth"
+  type="number"
+>
+代码行的缩进大小。
+
+- **默认值：** `2`
+
+</APISubListItem>
+</APISubList>
+
+</APIItem>
+</APIParameters>
+
+### insertCodeBlock
+
+插入一个代码块，将节点设置为代码行并将其包裹在代码块中。如果光标不在块开始处，则会在代码块前插入一个换行符。
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    编辑器实例。
+  </APIItem>
+  <APIItem
+    name="insertNodesOptions"
+    type="Omit<InsertNodesOptions, 'match'>"
+    optional
+  >
+    `setNodes` 函数的选项。
+  </APIItem>
+</APIParameters>
+
+### insertCodeLine
+
+插入一个具有指定缩进深度的代码行。
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    编辑器实例。
+  </APIItem>
+  <APIItem name="indentDepth" type="number" optional>
+    代码行的缩进深度。
+
+    - **默认值：** `0`
+
+  </APIItem>
+</APIParameters>
+
+### outdentCodeLine
+
+减少代码行缩进，如果存在则删除两个空白字符。
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    编辑器实例。
+  </APIItem>
+  <APIItem name="options" type="OutdentCodeLineOptions" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="codeLine" type="TElementEntry">
+        要减少缩进的代码行。
+      </APISubListItem>
+      <APISubListItem parent="options" name="codeBlock" type="TElementEntry">
+        包含要减少缩进的代码行的代码块。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### toggleCodeBlock
+
+在编辑器中切换代码块。
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    编辑器实例。
+  </APIItem>
+</APIParameters>
+
+### unwrapCodeBlock
+
+在编辑器中解除代码块包裹。
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    编辑器实例。
+  </APIItem>
+</APIParameters>
+
+### useCodeBlockCombobox
+
+<APIState>
+  <APIItem name="element" type="TCodeBlockElement">
+    代码块元素。
+  </APIItem>
+  <APIItem name="setValue" type="function">
+    设置元素值的回调函数。
+  </APIItem>
+</APIState>
+
+<APIReturns>
+  <APIItem name="commandItemProps" type="object">
+    命令项的属性。
+    <APISubList>
+      <APISubListItem parent="commandItemProps" name="onSelect" type="function">
+        选择命令项时调用的函数。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+
+### useCodeBlockElementState
+
+<APIParameters>
+  <APIItem name="element" type="TCodeBlockElement">
+    代码块元素。
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem name="className" type="string | false">
+    代码块元素的 CSS 类名，表示所选的语言。
+  </APIItem>
+  <APIItem name="syntax" type="boolean | undefined">
+    语法插件选项。
+  </APIItem>
+</APIReturns>
+
+### useCodeSyntaxLeaf
+
+<APIParameters>
+  <APIItem name="options" type="object">
+    <APISubList>
+      <APISubListItem parent="options" name="leaf" type="any">
+        表示代码语法标记的叶节点。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem name="tokenProps" type="object">
+    标记的属性。
+    <APISubList>
+      <APISubListItem parent="tokenProps" name="className" type="string">
+        标记的 CSS 类名。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
