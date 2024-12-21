@@ -8,9 +8,9 @@ export const remarkTransformElementChildren = (
   node: MdastNode,
   options: RemarkPluginOptions
 ): TDescendant[] => {
-  const { children } = node;
+  const { children = [] } = node;
 
-  if (!children || children.length === 0) {
+  if (children.length === 0) {
     return [{ text: '' }];
   }
 
