@@ -341,11 +341,29 @@ describe('deserializeMd', () => {
     expect(deserializeMd(editor, input)).toEqual(output);
   });
 
-  it('should deserialize headings', () => {
-    const input = Array.from(
-      { length: 6 },
-      (_, i) => `${'#'.repeat(i + 1)} Heading ${i + 1}`
-    ).join('\n\n');
+  it('should deserialize line break tags', () => {
+    const input = 'Line 1<br>Line 2';
+
+    const output = (
+      <fragment>
+        <hp>
+          <htext>Line 1</htext>
+          <htext>{'\n'}</htext>
+          <htext>Line 2</htext>
+        </hp>
+      </fragment>
+    );
+
+    expect(deserializeMd(editor, input)).toEqual(output);
+  });
+
+  it('should deserialize all heading levels (h1-h6)', () => {
+    const input = `# Heading 1
+## Heading 2
+### Heading 3
+#### Heading 4
+##### Heading 5
+###### Heading 6`;
 
     const output = (
       <fragment>
@@ -361,16 +379,54 @@ describe('deserializeMd', () => {
     expect(deserializeMd(editor, input)).toEqual(output);
   });
 
-  it('should deserialize line break tags', () => {
-    const input = 'Line 1<br>Line 2';
+  it('should handle headings with multiple spaces', () => {
+    const input = `#  Heading 1  
+##    Heading 2    
+###      Heading 3      `;
 
     const output = (
       <fragment>
-        <hp>
-          <htext>Line 1</htext>
-          <htext>{'\n'}</htext>
-          <htext>Line 2</htext>
-        </hp>
+        <hh1>Heading 1</hh1>
+        <hh2>Heading 2</hh2>
+        <hh3>Heading 3</hh3>
+      </fragment>
+    );
+
+    expect(deserializeMd(editor, input)).toEqual(output);
+  });
+
+  it('should handle more than 6 hashes as h6', () => {
+    const input = `####### Should be h6`;
+
+    const output = (
+      <fragment>
+        <hh6>Should be h6</hh6>
+      </fragment>
+    );
+
+    expect(deserializeMd(editor, input)).toEqual(output);
+  });
+
+  it('should handle headings with no space after hash', () => {
+    const input = `#No space`;
+
+    const output = (
+      <fragment>
+        <hp>#No space</hp>
+      </fragment>
+    );
+
+    expect(deserializeMd(editor, input)).toEqual(output);
+  });
+
+  it('should handle escaped hashes', () => {
+    const input = `\\# Not a heading
+\\## Also not a heading`;
+
+    const output = (
+      <fragment>
+        <hp># Not a heading</hp>
+        <hp>## Also not a heading</hp>
       </fragment>
     );
 
