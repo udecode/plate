@@ -1,5 +1,11 @@
 # @udecode/plate-math
 
+## 41.0.4
+
+### Patch Changes
+
+- [`ddaa89a49075c341cdf7dde57a549435daa1845e`](https://github.com/udecode/plate/commit/ddaa89a49075c341cdf7dde57a549435daa1845e) by [@felixfeng33](https://github.com/felixfeng33) – Missing export
+
 ## 41.0.3
 
 ### Patch Changes
