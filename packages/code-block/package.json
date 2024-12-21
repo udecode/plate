@@ -39,15 +39,15 @@
     "dist/**/*"
   ],
   "scripts": {
-    "brl": "pnpm run p:brl",
-    "build": "pnpm run p:build",
-    "build:watch": "pnpm run p:build:watch",
-    "clean": "pnpm run p:clean",
-    "lint": "pnpm run p:lint",
-    "lint:fix": "pnpm run p:lint:fix",
-    "test": "pnpm run p:test",
-    "test:watch": "pnpm run p:test:watch",
-    "typecheck": "pnpm run p:typecheck"
+    "brl": "INIT_CWD=\"$PWD\" pnpm -w run p:brl",
+    "build": "INIT_CWD=\"$PWD\" pnpm -w run p:build",
+    "build:watch": "INIT_CWD=\"$PWD\" pnpm -w run p:build:watch",
+    "clean": "INIT_CWD=\"$PWD\" pnpm -w run p:clean",
+    "lint": "INIT_CWD=\"$PWD\" pnpm -w run p:lint",
+    "lint:fix": "INIT_CWD=\"$PWD\" pnpm -w run p:lint:fix",
+    "test": "INIT_CWD=\"$PWD\" pnpm -w run p:test",
+    "test:watch": "INIT_CWD=\"$PWD\" pnpm -w run p:test:watch",
+    "typecheck": "INIT_CWD=\"$PWD\" pnpm -w run p:typecheck"
   },
   "devDependencies": {
     "@udecode/plate-common": "workspace:^",

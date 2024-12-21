@@ -5,7 +5,9 @@ import { type Options, defineConfig } from 'tsup';
 
 const silent = false;
 
-const PACKAGE_ROOT_PATH = process.cwd();
+const PACKAGE_ROOT_PATH = process.env.INIT_CWD ?? process.cwd();
+console.log('INIT_CWD', process.env.INIT_CWD);
+console.log('process.cwd', process.cwd());
 
 const INPUT_TS_FILE_PATH = path.join(PACKAGE_ROOT_PATH, 'src/index.ts');
 const INPUT_TSX_FILE_PATH = path.join(PACKAGE_ROOT_PATH, 'src/index.tsx');
@@ -13,16 +15,22 @@ const INPUT_FILE = fs.existsSync(INPUT_TS_FILE_PATH)
   ? INPUT_TS_FILE_PATH
   : INPUT_TSX_FILE_PATH;
 
-const REACT_TS_INPUT_FILE_PATH = path.join(PACKAGE_ROOT_PATH, 'src/react/index.ts');
-const REACT_TSX_INPUT_FILE_PATH = path.join(PACKAGE_ROOT_PATH, 'src/react/index.tsx');
+const REACT_TS_INPUT_FILE_PATH = path.join(
+  PACKAGE_ROOT_PATH,
+  'src/react/index.ts'
+);
+const REACT_TSX_INPUT_FILE_PATH = path.join(
+  PACKAGE_ROOT_PATH,
+  'src/react/index.tsx'
+);
 const REACT_INPUT_FILE_PATH = fs.existsSync(REACT_TS_INPUT_FILE_PATH)
   ? REACT_TS_INPUT_FILE_PATH
   : REACT_TSX_INPUT_FILE_PATH;
 
-const entry = [INPUT_FILE]
+const entry = [INPUT_FILE];
 
 if (fs.existsSync(REACT_INPUT_FILE_PATH)) {
-  entry.push(REACT_INPUT_FILE_PATH)
+  entry.push(REACT_INPUT_FILE_PATH);
 }
 
 export default defineConfig((opts) => {
@@ -35,6 +43,8 @@ export default defineConfig((opts) => {
     splitting: false,
     ...(silent
       ? {
+          silent: true,
+
           // eslint-disable-next-line @typescript-eslint/require-await
           onSuccess: async () => {
             if (opts.watch) {
@@ -45,7 +55,6 @@ export default defineConfig((opts) => {
 
             console.info('Build succeeded!');
           },
-          silent: true,
         }
       : {}),
   };

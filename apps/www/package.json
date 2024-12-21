@@ -206,6 +206,6 @@
     "tailwindcss-animate": "^1.0.7",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.2",
-    "typescript": "5.6.2"
+    "typescript": "5.7.2"
   }
 }
