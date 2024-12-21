@@ -1,6 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalEnv": ["CI", "GITHUB_OAUTH_TOKEN", "OPENAI_API_KEY"],
+  "globalEnv": ["CI", "GITHUB_OAUTH_TOKEN", "OPENAI_API_KEY", "INIT_CWD"],
   "tasks": {
     "dev": {
       "cache": false,

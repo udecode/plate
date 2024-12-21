@@ -6,8 +6,7 @@ import { type Options, defineConfig } from 'tsup';
 const silent = false;
 
 const PACKAGE_ROOT_PATH = process.env.INIT_CWD ?? process.cwd();
-console.log('INIT_CWD', process.env.INIT_CWD);
-console.log('process.cwd', process.cwd());
+const WORKSPACE_PATH = path.resolve(__dirname, '../..');
 
 const INPUT_TS_FILE_PATH = path.join(PACKAGE_ROOT_PATH, 'src/index.ts');
 const INPUT_TSX_FILE_PATH = path.join(PACKAGE_ROOT_PATH, 'src/index.tsx');
@@ -37,7 +36,17 @@ export default defineConfig((opts) => {
   const options: Options = {
     ...opts,
     clean: true,
-    dts: true,
+    dts: {
+      compilerOptions: {
+        paths: {
+          jotai: [path.join(WORKSPACE_PATH, 'node_modules/jotai')],
+          'jotai/*': [path.join(WORKSPACE_PATH, 'node_modules/jotai/*')],
+          'jotai-x': [path.join(WORKSPACE_PATH, 'node_modules/jotai-x')],
+          'zustand-x': [path.join(WORKSPACE_PATH, 'node_modules/zustand-x')],
+        },
+      },
+      resolve: true,
+    },
     format: ['cjs', 'esm'],
     sourcemap: true,
     splitting: false,
