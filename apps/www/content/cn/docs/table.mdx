@@ -246,14 +246,14 @@ const plugins = [
 <APIReturns>
 
 <APIItem type="TNodeEntry | undefined">
-  下一行中单元格的节点条目，如果当前行是最后一行则返回 `undefined`。
+  下一行中单元格的节点entry，如果当前行是最后一行则返回 `undefined`。
 </APIItem>
 
 </APIReturns>
 
 ### getCellInPreviousTableRow
 
-获取上一行中单元格的节点条目，给定当前行的路径。
+获取上一行中单元格的节点entry，给定当前行的路径。
 
 <APIParameters>
   <APIItem name="editor" type="TEditor">
@@ -267,7 +267,7 @@ const plugins = [
 <APIReturns>
 
 <APIItem type="TNodeEntry | undefined">
-  上一行中单元格的节点条目，如果当前行是第一行则返回 `undefined`。
+  上一行中单元格的节点entry，如果当前行是第一行则返回 `undefined`。
 </APIItem>
 
 </APIReturns>
@@ -417,7 +417,7 @@ const plugins = [
 
 <APIReturns>
   <APIItem type="TNodeEntry | undefined">
-    当前单元格左侧单元格的节点条目，如果当前单元格是行中的第一个单元格则返回 `undefined`。
+    当前单元格左侧单元格的节点entry，如果当前单元格是行中的第一个单元格则返回 `undefined`。
   </APIItem>
 </APIReturns>
 
@@ -430,19 +430,19 @@ const plugins = [
     编辑器实例。
   </APIItem>
   <APIItem name="currentCell" type="TNodeEntry">
-    当前单元格的条目。
+    当前单元格的entry。
   </APIItem>
   <APIItem name="currentPath" type="Path">
     当前单元格的路径。
   </APIItem>
   <APIItem name="currentRow" type="TNodeEntry">
-    当前行的条目。
+    当前行的entry。
   </APIItem>
 </APIParameters>
 
 <APIReturns>
   <APIItem type="TNodeEntry | undefined">
-    下一行中单元格的节点条目，如果当前行是最后一行则返回 `undefined`。
+    下一行中单元格的节点entry，如果当前行是最后一行则返回 `undefined`。
   </APIItem>
 </APIReturns>
 
@@ -455,19 +455,19 @@ const plugins = [
     编辑器实例。
   </APIItem>
   <APIItem name="currentCell" type="TNodeEntry">
-    当前单元格的条目。
+    当前单元格的entry。
   </APIItem>
   <APIItem name="currentPath" type="Path">
     当前单元格的路径。
   </APIItem>
   <APIItem name="currentRow" type="TNodeEntry">
-    当前行的条目。
+    当前行的entry。
   </APIItem>
 </APIParameters>
 
 <APIReturns>
   <APIItem type="TNodeEntry | undefined">
-    上一行中单元格的节点条目，如果当前行是第一行则返回 `undefined`。
+    上一行中单元格的节点entry，如果当前行是第一行则返回 `undefined`。
   </APIItem>
 </APIReturns>
 
@@ -484,7 +484,7 @@ const plugins = [
 
 <APIReturns>
   <APIItem type="TNodeEntry | undefined">
-    当前选择上方的表格节点条目，如果不存在则返回 `undefined`。
+    当前选择上方的表格节点entry，如果不存在则返回 `undefined`。
   </APIItem>
 </APIReturns>
 
@@ -529,7 +529,7 @@ const plugins = [
 
 ### getTableEntries
 
-根据当前选择或指定位置获取表格、行和单元格节点条目。
+根据当前选择或指定位置获取表格、行和单元格节点entry。
 
 <APIParameters>
 <APIItem name="editor" type="PlateEditor">
@@ -555,13 +555,13 @@ const plugins = [
 
 <APIReturns>
   <APIItem name="table" type="TNodeEntry | undefined">
-    表格节点条目。
+    表格节点entry。
   </APIItem>
   <APIItem name="row" type="TNodeEntry | undefined">
-    行节点条目。
+    行节点entry。
   </APIItem>
   <APIItem name="cell" type="TNodeEntry | undefined">
-    单元格节点条目。
+    单元格节点entry。
   </APIItem>
 </APIReturns>
 
@@ -587,7 +587,7 @@ const plugins = [
 </APIParameters>
 
 <APIReturns>
-  <APIItem type="TElementEntry[]">子表格条目。</APIItem>
+  <APIItem type="TElementEntry[]">子表格entry。</APIItem>
 </APIReturns>
 
 ### getTableGridByRange
@@ -620,7 +620,7 @@ const plugins = [
 </APIParameters>
 
 <APIReturns>
-  <APIItem type="TElementEntry[]">子表格条目。</APIItem>
+  <APIItem type="TElementEntry[]">子表格entry。</APIItem>
 </APIReturns>
 
 ### getTableOverriddenColSizes
@@ -679,7 +679,7 @@ const plugins = [
 <APIReturns>
 <APIItem type="TElementEntry | undefined">
 
-单元格节点条目。
+单元格节点entry。
 
 </APIItem>
 </APIReturns>
@@ -1048,7 +1048,7 @@ const plugins = [
 
 通过执行以下操作处理复制或剪切表格数据时设置到剪贴板的数据：
 
-- 检查是否存在表格条目和选定的单元格条目。
+- 检查是否存在表格entry和选定的单元格entry。
 - 通过复制单元格内容而不是表格结构来处理单个单元格的复制或剪切操作。
 - 使用选定单元格的内容创建表格结构。
 - 将文本、HTML、CSV、TSV 和 Slate 片段数据设置到剪贴板。

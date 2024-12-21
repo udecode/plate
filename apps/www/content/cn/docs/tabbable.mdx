@@ -59,7 +59,7 @@ query: (editor) => !!findNode(editor, {
 
 一个 `TabbableEntry` 将创建每个可 tab 切换的 DOM 元素，使用 [tabbable](https://www.npmjs.com/package/tabbable) NPM 包确定。然后使用 `isTabbable` 过滤列表。
 
-默认情况下，`isTabbable` 仅对 void Slate 节点内的条目返回 true。你可以覆盖 `isTabbable` 以添加对包含在其他类型 Slate 节点中的 DOM 元素的支持。
+默认情况下，`isTabbable` 仅对 void Slate 节点内的entry返回 true。你可以覆盖 `isTabbable` 以添加对包含在其他类型 Slate 节点中的 DOM 元素的支持。
 
 ```tsx
 // Enable tabbable DOM elements inside CUSTOM_ELEMENT
@@ -110,7 +110,7 @@ insertTabbableEntries: (editor) => {
 
 </APIItem>
 <APIItem name="insertTabbableEntries" type="(editor: PlateEditor<V>, event: KeyboardEvent) => TabbableEntry[]" optional>
-向可 tab 切换元素列表添加额外的条目。对于添加不在编辑器内的可 tab 切换元素很有用。它会忽略 `isTabbable`。
+向可 tab 切换元素列表添加额外的entry。对于添加不在编辑器内的可 tab 切换元素很有用。它会忽略 `isTabbable`。
 
 - **默认值:** **`() => []`**
 
@@ -127,14 +127,14 @@ insertTabbableEntries: (editor) => {
 
 ### TabbableEntry
 
-定义可 tab 切换条目的属性。
+定义可 tab 切换entry的属性。
 
 <APIAttributes>
   <APIItem name="domNode" type="HTMLElement">
-    表示可 tab 切换条目的 HTML 元素。
+    表示可 tab 切换entry的 HTML 元素。
   </APIItem>
   <APIItem name="slateNode" type="TNode">
-    可 tab 切换条目对应的 Slate 节点。
+    可 tab 切换entry对应的 Slate 节点。
   </APIItem>
   <APIItem name="path" type="TPath">
     Slate 文档中 Slate 节点的路径。
