@@ -1,0 +1,49 @@
+---
+title: Keyboard Input
+docs:
+  - route: /docs/components/kbd-leaf
+    title: Kbd Leaf
+---
+
+<ComponentPreview name="kbd-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Adds support for keyboard input marks
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-kbd
+```
+
+## Usage
+
+```tsx
+import { KbdPlugin } from '@udecode/plate-kbd';
+```
+
+```tsx
+const plugins = [
+  // ...otherPlugins,
+  KbdPlugin,
+];
+```
+
+```tsx
+const components ={
+  [KbdPlugin.key]: KbdLeaf,
+}
+```
+
+- [KbdLeaf](/docs/components/kbd-leaf)
+
+## Plugins
+
+### KbdPlugin
+
+Enables keyboard input marks.

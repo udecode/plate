@@ -1,0 +1,164 @@
+---
+title: Floating
+description: API reference for floating UI components and hooks.
+---
+
+<PackageInfo>
+
+## Features
+
+- Virtual floating elements that follow cursor position
+- Floating toolbar that appears on text selection
+- Built on top of Floating UI
+- Customizable positioning and behavior
+- Automatic updates on scroll and resize
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-floating
+```
+
+## API Hooks
+
+### useVirtualFloating
+
+Creates a floating element with a controlled virtual element, typically used to follow cursor position.
+
+<APIParameters>
+  <APIItem name="options" type="UseVirtualFloatingOptions">
+    Options for the virtual floating element.
+    <APISubList>
+      <APISubListItem parent="options" name="getBoundingClientRect" type="() => ClientRectObject" optional>
+        Function to get the bounding client rect.
+        - **Default:** Returns a zero-sized rect at (0,0)
+      </APISubListItem>
+      <APISubListItem parent="options" name="open" type="boolean" optional>
+        Controls visibility of the floating element.
+      </APISubListItem>
+      <APISubListItem parent="options" name="whileElementsMounted" type="function" optional>
+        Callback when elements are mounted.
+        - **Default:** `autoUpdate` (updates on scroll and resize)
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem name="style" type="React.CSSProperties">
+    Style object to apply to the floating element.
+  </APIItem>
+  <APIItem name="virtualElementRef" type="React.MutableRefObject">
+    Reference to the virtual element.
+  </APIItem>
+  <APIItem name="refs" type="object">
+    References for floating UI positioning.
+  </APIItem>
+  <APIItem name="update" type="() => void">
+    Function to manually update positioning.
+  </APIItem>
+</APIReturns>
+
+### useFloatingToolbar
+
+Creates a floating toolbar that appears when text is selected in the editor.
+
+<APIParameters>
+  <APIItem name="state" type="FloatingToolbarState">
+    State options for the floating toolbar.
+    <APISubList>
+      <APISubListItem parent="state" name="floatingOptions" type="UseVirtualFloatingOptions" optional>
+        Options passed to useVirtualFloating.
+      </APISubListItem>
+      <APISubListItem parent="state" name="hideToolbar" type="boolean" optional>
+        Force hide the toolbar.
+      </APISubListItem>
+      <APISubListItem parent="state" name="showWhenReadOnly" type="boolean" optional>
+        Show toolbar in read-only mode.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem name="clickOutsideRef" type="React.RefObject">
+    Ref to detect clicks outside the toolbar.
+  </APIItem>
+  <APIItem name="hidden" type="boolean">
+    Whether the toolbar should be hidden.
+  </APIItem>
+  <APIItem name="props" type="object">
+    Props to spread on the toolbar element.
+  </APIItem>
+  <APIItem name="ref" type="React.RefObject">
+    Ref to attach to the toolbar element.
+  </APIItem>
+</APIReturns>
+
+## API
+
+### getBoundingClientRect
+
+Gets the bounding client rectangle for a location or array of locations in the editor.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="at" type="Location | Location[]" optional>
+    The location(s) to get the bounding rectangle for. If not provided, uses the current editor selection.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="DOMRect | undefined">
+    The merged bounding client rectangle of all specified locations, or undefined if no valid rectangles found.
+  </APIItem>
+</APIReturns>
+
+### getDOMSelectionBoundingClientRect
+
+Gets the bounding client rectangle of the current DOM selection.
+
+<APIReturns>
+  <APIItem type="ClientRectObject">
+    The bounding client rectangle of the DOM selection. Returns a zero-sized rect at (0,0) if no selection exists.
+  </APIItem>
+</APIReturns>
+
+### getRangeBoundingClientRect
+
+Gets the bounding client rectangle for a specific Slate range.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="at" type="Range | null">
+    The Slate range to get the bounding rectangle for.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="ClientRectObject">
+    The bounding client rectangle of the range. Returns a zero-sized rect at (0,0) if the range is null or invalid.
+  </APIItem>
+</APIReturns>
+
+### getSelectionBoundingClientRect
+
+Gets the bounding client rectangle of the current editor selection.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="ClientRectObject">
+    The bounding client rectangle of the selection. Returns a zero-sized rect at (0,0) if the selection is not expanded.
+  </APIItem>
+</APIReturns>

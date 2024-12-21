@@ -1,0 +1,217 @@
+---
+title: Migrating from Slate to Plate
+description: Learn how to migrate from Slate to Plate.
+---
+
+Plate is built on top of Slate, so migrating from a pure Slate implementation to Plate is relatively straightforward. This guide will help you transition your Slate-based editor to Plate.
+
+## 1. Install Plate
+
+First, install the necessary Plate packages. If you're new to Plate, you might want to start by reading the [Introduction](/docs/getting-started) to get an overview of the library.
+
+```bash
+npm install @udecode/plate
+```
+
+## 2. Replace Slate Imports
+
+Replace your Slate imports with Plate imports. Plate re-exports most Slate types and functions:
+
+```ts
+// Before
+import { createEditor } from 'slate';
+import { Slate, Editable, withReact } from 'slate-react';
+
+// After
+import { createPlateEditor, Plate, PlateContent } from '@udecode/plate/react';
+```
+
+## 3. Create a Plate Editor
+
+Replace `createEditor`, `withHistory` and `withReact` with `createPlateEditor`:
+
+```ts
+// Before
+const editor = useMemo(() => withReact(withHistory(createEditor()))), []);
+
+// After
+const editor = createPlateEditor({
+  value,
+  plugins: [
+    // Additional plugins here
+  ],
+});
+```
+
+For more details on editor configuration, check out the [Editor Configuration guide](/docs/editor).
+
+## 4. Replace Slate and Editable Components
+
+Replace the `Slate` and `Editable` components with Plate's `Plate` component:
+
+```tsx
+// Before
+<Slate editor={editor} value={value}>
+  <Editable className="p-4" />
+</Slate>
+
+// After
+<Plate editor={editor}>
+  <PlateContent className="p-4" />
+</Plate>
+```
+
+## 5. Convert Custom Elements and Leaves
+
+For custom elements and leaves, create Plate plugins:
+
+```tsx
+// Before
+const renderElement = useCallback(({ attributes, children, element }) => {
+  switch (element.type) {
+    case 'paragraph':
+      return <p {...attributes}>{children}</p>;
+    // ... other cases
+  }
+}, []);
+
+// After
+import { withCn, type PlateElement } from '@udecode/plate/react';
+
+const ParagraphElement = withRef<typeof PlateElement>(
+  ({ children, className, ...props }, ref) => {
+    return (
+      <PlateElement
+        asChild
+        className={cn('py-1', className)}
+        ref={ref}
+        {...props}
+      >
+        <p>{children}</p>
+      </PlateElement>
+    );
+  }
+);
+
+const ParagraphPlugin = createPlatePlugin({
+  key: 'p',
+  node: {
+    isElement: true,
+    type: 'paragraph',
+    component: ParagraphElement,
+  },
+});
+```
+
+Learn more about creating plugins in the [Plugin Configuration guide](/docs/plugin) and [Plugin Components guide](/docs/plugin-components).
+
+## 6. Convert Slate Plugins to Plate Plugins
+
+If you have custom Slate plugins, convert them to Plate plugins:
+
+```ts
+// Before
+const withMyPlugin = (editor) => {
+  const { insertText } = editor;
+  editor.insertText = (text) => {
+    // Custom logic
+    insertText(text);
+  };
+  return editor;
+};
+
+// After
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  extendEditor: ({ editor }) => {
+    const { insertText } = editor;
+    editor.insertText = (text) => {
+      // Custom logic
+      insertText(text);
+    };
+    return editor;
+  },
+});
+```
+
+For more information on working with the plugin context, see the [Plugin Context guide](/docs/plugin-context).
+
+## 7. Update Event Handlers
+
+Update your event handlers to use Plate's plugin system:
+
+```ts
+// Before
+const onKeyDown = (event) => {
+  if (event.key === 'Tab') {
+    // Handle tab
+  }
+};
+
+// After
+const TabPlugin = createPlatePlugin({
+  key: 'tab',
+  handlers: {
+    onKeyDown: ({ editor, event }) => {
+      if (event.key === 'Tab') {
+        // Handle tab
+      }
+    },
+  },
+});
+```
+
+Alternatively, you can use Plate's powerful shortcuts system:
+
+```ts
+const TabPlugin = createPlatePlugin({
+  key: 'tab',
+  shortcuts: {
+    indent: {
+      handler: ({ editor }) => {
+        // Handle tab
+      },
+      keys: ['Tab'],
+    },
+  },
+});
+```
+
+For more details on using shortcuts, check out the [Plugin Shortcuts guide](/docs/plugin-shortcuts).
+
+## 8. Adapt to Plate's API
+
+Familiarize yourself with Plate's API and use its utilities and hooks:
+
+```ts
+// Using Plate's transforms
+editor.tf.toggle.mark({ key: 'bold' });
+
+// Using Plate's debug API
+editor.api.debug.log('Hello, Plate!');
+```
+
+For a comprehensive list of editor methods, see the [Editor Methods guide](/docs/editor-methods).
+
+## 9. Leverage Plate's Built-in Plugins
+
+Plate comes with many built-in plugins that you can see in the sidebar. Use them to quickly add functionality:
+
+```ts
+import { BoldPlugin, ItalicPlugin, UnderlinePlugin } from '@udecode/plate/react';
+
+const plugins = [
+  BoldPlugin,
+  ItalicPlugin,
+  UnderlinePlugin,
+  // ... other plugins
+];
+
+const editor = createPlateEditor({ plugins });
+```
+
+## 10. Testing and Refinement
+
+After migrating, thoroughly test your editor to ensure all functionality works as expected. Refine and optimize your implementation using Plate's features and best practices.
+
+For debugging tips and strategies, check out our [Debugging guide](/docs/debugging).

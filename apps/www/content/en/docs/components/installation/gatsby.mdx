@@ -1,0 +1,48 @@
+---
+title: Gatsby
+description: Install and configure Gatsby.
+---
+
+<Steps>
+
+### Install shadcn/ui
+
+Follow the [shadcn/ui](https://ui.shadcn.com/docs/installation/gatsby) guide.
+
+### Run the CLI
+
+Initialize Plate in your project using the CLI:
+
+```bash
+npx shadcx@latest init plate
+```
+
+### Add components
+
+You can now start adding components to `components/plate-ui`:
+
+```bash
+npx shadcx@latest add -r plate
+```
+
+### Register components
+
+To add the components to your plugins, see [Plugin Components](/docs/plugin-components#register-components).
+
+### Add editor (optional)
+
+Choose your editor to get started ([browse available editors](/editors)). 
+
+[Minimal Editor](https://template.platejs.org/editor)
+```bash
+npx shadcx@latest add plate/editor-basic
+```
+
+[AI Editor](https://playground.platejs.org/editor)
+```bash
+npx shadcx@latest add plate/editor-ai
+```
+
+This will add a page in `app/editor` along with all necessary components in `components/plate-ui` as a starting point.
+
+</Steps>

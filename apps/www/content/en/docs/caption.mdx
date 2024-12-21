@@ -1,0 +1,159 @@
+---
+title: Caption
+docs:
+  - route: /docs/components/caption
+    title: Caption
+---
+
+<ComponentPreview name="media-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Arrow navigation should select caption within a block.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-caption
+```
+
+## Usage
+
+```tsx
+import { CaptionPlugin } from '@udecode/plate-caption/react';
+import {
+  AudioPlugin,
+  FilePlugin,
+  ImagePlugin,
+  MediaEmbedPlugin,
+  VideoPlugin,
+} from '@udecode/plate-media/react';
+```
+
+```tsx
+const plugins = [
+  // ...otherPlugins,
+  ImagePlugin,
+  VideoPlugin,
+  AudioPlugin,
+  FilePlugin,
+  MediaEmbedPlugin,
+  CaptionPlugin.configure({
+    options: {
+      plugins: [
+        ImagePlugin,
+        VideoPlugin,
+        AudioPlugin,
+        FilePlugin,
+        MediaEmbedPlugin,
+      ],
+    },
+  }),
+];
+```
+
+## Plugins
+
+### CaptionPlugin
+
+<APIOptions>
+  <APIItem name="plugins" type="string[]" required>
+    The plugin keys of the blocks that have caption.
+  </APIItem>
+  <APIItem name="focusEndPath" type="Path" optional>
+    Path to focus at the end of the caption.
+  </APIItem>
+  <APIItem name="focusStartPath" type="Path" optional>
+    Path to focus at the start of the caption.
+  </APIItem>
+  <APIItem name="visibleId" type="string" optional>
+    ID of the visible caption.
+  </APIItem>
+  <APIItem name="isVisible" type="boolean" optional>
+    Whether the caption is visible.
+  </APIItem>
+</APIOptions>
+
+## API
+
+### TCaptionElement
+
+<APIAttributes>
+Extends `TElement`.
+
+<APIItem name="caption" type="TDescendant[]" optional>
+Caption value.
+</APIItem>
+</APIAttributes>
+
+## API Components
+
+### Caption
+
+<APIProps>
+  <APIItem name="options" type="object" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="readOnly" type="boolean" optional>
+        A boolean value indicating whether the caption component is in read-only
+        mode.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+  <APIItem name="state" type="object" optional>
+    <APISubList>
+      <APISubListItem
+        parent="state"
+        name="captionString"
+        type="string"
+        optional
+      >
+        The string representing the caption.
+      </APISubListItem>
+      <APISubListItem parent="state" name="selected" type="boolean" optional>
+        A boolean value indicating whether the caption component is selected.
+      </APISubListItem>
+      <APISubListItem parent="state" name="readOnly" type="boolean" optional>
+        A boolean value indicating whether the caption component is in read-only
+        mode.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIProps>
+
+### CaptionTextarea
+
+<APIProps>
+  <APIItem name="state">
+    <APISubList>
+      <APISubListItem parent="state" name="textareaRef" type="Ref">
+        A reference to the `textarea` element associated with the caption
+        component.
+      </APISubListItem>
+      <APISubListItem
+        parent="state"
+        name="captionValue"
+        type="TextareaAutosizeProps['value']"
+      >
+        The value of the caption displayed in the `textarea`.
+      </APISubListItem>
+      <APISubListItem
+        parent="state"
+        name="setCaptionValue"
+        type="(value: TextareaAutosizeProps['value']) => void"
+      >
+        `captionValue` setter.
+      </APISubListItem>
+      <APISubListItem parent="state" name="readOnly" type="boolean">
+        A boolean value indicating whether the caption component is in read-only
+        mode.
+      </APISubListItem>
+      <APISubListItem parent="state" name="element" type="TCaptionElement">
+        The caption element.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIProps>

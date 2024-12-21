@@ -1,0 +1,181 @@
+---
+title: Column
+docs:
+  - route: /docs/components/column-element
+    title: Column Element
+  - route: /docs/components/column-group-element
+    title: Column Group Element
+---
+
+<ComponentPreview name="column-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Add columns to your document.
+- Choose from a variety of column layouts using `column-group-element` toolbar.
+- [ ] Resizable columns
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-layout
+```
+
+## Usage
+
+```tsx
+import { ColumnPlugin, ColumnItemPlugin } from '@udecode/plate-layout/react';
+
+const plugins = [
+  // ...otherPlugins,
+  ColumnPlugin,
+];
+```
+
+## Plugins
+
+### ColumnPlugin
+
+Add Column Plugin to your document.
+
+### ColumnItemPlugin
+
+Add Column Item Plugin to your document.
+
+## API
+
+### TColumnGroupElement
+
+<APIAttributes>
+Extends `TElement`.
+
+</APIAttributes>
+
+### TColumnElement
+
+<APIAttributes>
+Extends `TElement`.
+
+<APIItem name="width" type="string" optional>
+  The `Column`'s width end with `%`
+</APIItem>
+</APIAttributes>
+
+### insertColumnGroup
+
+Insert a columnGroup with two empty columns.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="InsertNodesOptions & { columns?: number[] | number }">
+    - `columns`: Array of column widths or number of equal-width columns (default: 2)
+    - Other `InsertNodesOptions` to control insert behavior
+  </APIItem>
+</APIParameters>
+
+### insertColumn
+
+Insert an empty column. You can set the width by options.width default is "33%"
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="InsertNodesOptions & { width?: string }">
+    InsertNodesOptions and width to set the insert behavior.
+  </APIItem>
+</APIParameters>
+
+### moveMiddleColumn
+
+Move the middle column to the left or right by options.direction. If the middle node is empty, return false and remove it.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="nodeEntry" type="NodeEntry">
+    The node entry of `column` element
+  </APIItem>
+  <APIItem name="options" type="{ direction: 'left' | 'right' }">
+    Control the direction the middle column moves to
+  </APIItem>
+</APIParameters>
+
+### toggleColumnGroup
+
+Converts a block into a column group layout or updates an existing column group's layout.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="object">
+    <APISubList>
+      <APISubListItem parent="options" name="at" type="Location" optional>
+        The location to toggle the column group at.
+      </APISubListItem>
+      <APISubListItem parent="options" name="columns" type="number" optional>
+        Number of equal-width columns to create (default: 2)
+      </APISubListItem>
+      <APISubListItem parent="options" name="widths" type="string[]" optional>
+        Array of column widths (e.g., ['50%', '50%']). Takes precedence over `columns`.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+Behavior:
+- If the target block is not a column group, wraps it in a new column group with the specified number of columns
+- If the target block is already a column group, updates its column layout using `setColumns`
+- The original content becomes the content of the first column
+- Additional columns are created with empty paragraphs
+
+### setColumns
+
+Updates the column layout of an existing column group by modifying the number and widths of columns.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="object">
+    <APISubList>
+      <APISubListItem parent="options" name="at" type="Path">
+        The path to the column group element.
+      </APISubListItem>
+      <APISubListItem parent="options" name="columns" type="number" optional>
+        Number of equal-width columns to create.
+      </APISubListItem>
+      <APISubListItem parent="options" name="widths" type="string[]" optional>
+        Array of column widths (e.g., ['33%', '67%']). Takes precedence over `columns`.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+Behavior:
+- When increasing columns:
+  - Keeps existing column content
+  - Adds new empty columns with specified widths
+- When decreasing columns:
+  - Merges content from removed columns into the last remaining column
+  - Updates widths of remaining columns
+- When keeping same number of columns:
+  - Only updates column widths
+
+## API Components
+
+### useDebouncePopoverOpen
+
+<APIReturns>
+
+<APIItem type="boolean">Control whether the `popover` is open or not</APIItem>
+
+</APIReturns>

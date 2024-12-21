@@ -1,0 +1,82 @@
+---
+title: React Utils
+description: API reference for @udecode/react-utils.
+---
+
+`@udecode/react-utils` contains utility functions for React.
+
+### PortalBody
+
+Renders a React component in the `document.body` using a portal.
+
+### Text
+
+Generic component for rendering a span.
+
+### Box
+
+Generic component for rendering a div.
+
+### createPrimitiveComponent
+
+Creates a primitive component factory which utilizes hooks for managing state, props, and forwards references to child components.
+
+<APIParameters>
+  <APIItem name="element" type="React.ElementType">
+    The base component or native HTML element.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  A function returning a primitive component with hooks for state and props
+  management.
+</APIReturns>
+
+### createPrimitiveElement
+
+Creates a component from an element type.
+
+<APIParameters>
+  <APIItem name="element" type="React.ElementType">
+    The native HTML element.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  A function component that renders the specified element.
+</APIReturns>
+
+### createSlotComponent
+
+Creates a Slot component, which is useful when you want a component to behave as its child.
+
+<APIParameters>
+  <APIItem name="element" type="React.ElementType">
+    The base component or native HTML element.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+A function returning a Slot component.
+
+</APIReturns>
+
+### withProviders
+
+A function that wraps a component into multiple providers.
+
+<APIParameters>
+<APIItem name="providers" type="any[]">
+Providers with which to wrap the component.
+
+If there are any props that you want a provider to receive, you can simply pass an array.
+
+</APIItem>
+<APIItem name="WrappedComponent" type="FunctionComponent<T>">
+The component to be wrapped.
+</APIItem>
+<APIItem name="props" type="T">
+The props to be passed to the wrapped component.
+</APIItem>
+</APIParameters>
+<APIReturns>
+A new component that is wrapped by the specified providers.
+</APIReturns>

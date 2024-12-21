@@ -1,0 +1,204 @@
+---
+title: Indent
+docs:
+  - route: /docs/components/indent-toolbar-button
+    title: Indent Toolbar Button
+  - route: /docs/components/outdent-toolbar-button
+    title: Outdent Toolbar Button
+---
+
+<ComponentPreview name="indent-demo" />
+
+<PackageInfo>
+
+## Features
+
+- **Core Functionality**:
+  - Indent/outdent any block element
+  - Tab/Shift+Tab keyboard shortcuts
+  - Clean DOM structure
+
+- **Customization**:
+  - Define target block types
+  - Set indentation size and units
+  - Control maximum depth
+  - Custom CSS styling
+
+For list-specific features, see the [Indent List plugin](/docs/indent-list).
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-indent
+```
+
+## Usage
+
+```tsx
+import { IndentPlugin } from '@udecode/plate-indent/react';
+import { HEADING_KEYS } from '@udecode/plate-heading';
+import { HeadingPlugin } from '@udecode/plate-heading/react';
+import { ParagraphPlugin } from '@udecode/plate-common/react';
+
+const plugins = [
+  // ...otherPlugins,
+  HeadingPlugin,
+  IndentPlugin.configure({
+    inject: {
+      targetPlugins: [ParagraphPlugin.key, HEADING_KEYS.h1],
+    },
+  }),
+];
+```
+
+## Plugins
+
+### IndentPlugin
+
+<APIOptions>
+<APIItem name="offset" type="number" optional>
+The indentation offset used in `(offset * element.indent) + unit`.
+
+- **Default:** `40`
+
+</APIItem>
+<APIItem name="unit" type="string" optional>
+The indentation unit used in `(offset * element.indent) + unit`.
+
+- **Default:** `'px'`
+
+</APIItem>
+<APIItem name="indentMax" type="number" optional>
+The maximum number of indentations that can be applied to an element.
+</APIItem>
+</APIOptions>
+
+## API
+
+### indent
+
+Indents the selected block(s) in the editor.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="SetIndentOptions" optional></APIItem>
+</APIParameters>
+
+### outdent
+
+Decrease the indentation of the selected blocks.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="SetIndentOptions" optional></APIItem>
+</APIParameters>
+
+### setIndent
+
+Add offset to the indentation of the selected blocks.
+
+<APIParameters>
+<APIItem name="editor" type="PlateEditor">
+The editor instance.
+</APIItem>
+<APIItem name="options" type="SetIndentOptions" optional>
+<APISubList>
+<APISubListItem parent="options" name="offset" type="number" optional>
+The indentation offset used in `(offset * element.indent) + unit`.
+
+- **Default:** `1`
+
+</APISubListItem>
+<APISubListItem
+  parent="options"
+  name="getNodesOptions"
+  type="GetNodeEntriesOptions & UnhangRangeOptions"
+  optional
+>
+Options to get the nodes to indent.
+</APISubListItem>
+<APISubListItem
+  parent="options"
+  name="setNodesProps"
+  types="object"
+  optional
+>
+Additional props to set on the nodes to indent.
+</APISubListItem>
+<APISubListItem
+  parent="options"
+  name="unsetNodesProps"
+  types="string[]"
+  optional
+>
+Additional props to unset on the nodes to indent.
+
+- **Default:** `[]`
+
+</APISubListItem>
+</APISubList>
+
+</APIItem>
+</APIParameters>
+
+### SetIndentOptions
+
+Used to provide options for setting the indentation of a block of text.
+
+<APIState>
+  <APIItem name="offset" type="number">
+    Defines the change in indentation. A value of 1 increases the indentation
+    (indents the block), whereas a value of -1 decreases the indentation
+    (outdents the block). By default, the offset is set to 1.
+  </APIItem>
+  <APIItem
+    name="getNodesOptions"
+    type="GetNodeEntriesOptions&lt;V&gt; &amp; UnhangRangeOptions"
+  >
+    Additional `getNodes` options.
+  </APIItem>
+  <APIItem name="setNodesProps" type="function">
+    Additional `setNodes` options.
+  </APIItem>
+  <APIItem name="unsetNodesProps" type="string[]">
+    A list of property names that should be unset when the indentation is 0.
+  </APIItem>
+</APIState>
+
+## API Components
+
+### useIndentButton
+
+A behavior hook for the indent button component.
+
+<APIReturns>
+  <APIItem name="props" type="object">
+    <APISubList>
+      <APISubListItem parent="props" name="onClick" type="function">
+        A callback function to handle the click event of the button. It indents
+        the selected content in the editor and focuses the editor.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+
+### useOutdentButton
+
+A behavior hook for the outdent button component.
+
+<APIReturns>
+  <APIItem name="props" type="object">
+    <APISubList>
+      <APISubListItem parent="props" name="onClick" type="function">
+        A callback function to handle the click event of the button. It outdents
+        the selected content in the editor and focuses the editor.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>

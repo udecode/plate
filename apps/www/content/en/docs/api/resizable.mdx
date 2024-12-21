@@ -1,0 +1,206 @@
+---
+title: Resizable
+---
+
+<PackageInfo>
+
+## Features
+
+- Resizable elements with handles
+- Configurable min/max width constraints
+- Center/left/right alignment support
+- Width persistence in editor state
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-resizable
+```
+
+## API
+
+### useResizableState
+
+Manages state for resizable elements.
+
+<APIParameters>
+  <APIItem name="options" type="ResizableOptions" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="align" type="'center' | 'left' | 'right'" optional>
+        Node alignment.
+        - **Default:** `'center'`
+      </APISubListItem>
+      <APISubListItem parent="options" name="maxWidth" type="ResizeLength" optional>
+        Maximum width constraint.
+        - **Default:** `'100%'`
+      </APISubListItem>
+      <APISubListItem parent="options" name="minWidth" type="ResizeLength" optional>
+        Minimum width constraint.
+        - **Default:** `92`
+      </APISubListItem>
+      <APISubListItem parent="options" name="readOnly" type="boolean" optional>
+        Whether the element is resizable in read-only mode.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem name="align" type="'center' | 'left' | 'right'">
+    Current alignment setting.
+  </APIItem>
+  <APIItem name="maxWidth" type="ResizeLength">
+    Maximum width constraint.
+  </APIItem>
+  <APIItem name="minWidth" type="ResizeLength">
+    Minimum width constraint.
+  </APIItem>
+  <APIItem name="setNodeWidth" type="(width: number) => void">
+    Updates node width in editor state.
+  </APIItem>
+  <APIItem name="setWidth" type="(width: number | string) => void">
+    Updates width in local state.
+  </APIItem>
+  <APIItem name="width" type="number | string">
+    Current width value.
+  </APIItem>
+</APIReturns>
+
+### useResizable
+
+Provides resize behavior props and handlers for resizable elements.
+
+<APIParameters>
+  <APIItem name="state" type="ReturnType<typeof useResizableState>">
+    State from useResizableState.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem name="context" type="object">
+    <APISubList>
+      <APISubListItem parent="context" name="onResize" type="(event: ResizeEvent) => void">
+        Handler for resize events.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+  <APIItem name="props" type="object">
+    Style props for the resizable element:
+    - maxWidth: Maximum width constraint
+    - minWidth: Minimum width constraint
+    - position: 'relative'
+    - width: Current width
+  </APIItem>
+  <APIItem name="wrapperProps" type="object">
+    Style props for the wrapper element:
+    - position: 'relative'
+  </APIItem>
+  <APIItem name="wrapperRef" type="React.RefObject<HTMLDivElement>">
+    Reference to the wrapper element.
+  </APIItem>
+</APIReturns>
+
+### useResizeHandleState
+
+Manages state for resize handle elements.
+
+<APIParameters>
+  <APIItem name="options" type="ResizeHandleOptions">
+    <APISubList>
+      <APISubListItem parent="options" name="direction" type="ResizeDirection" optional>
+        Direction of resize.
+        - **Default:** `'left'`
+      </APISubListItem>
+      <APISubListItem parent="options" name="initialSize" type="number" optional>
+        Initial size of the resizable element.
+      </APISubListItem>
+      <APISubListItem parent="options" name="onHover" type="() => void" optional>
+        Callback when handle is hovered.
+      </APISubListItem>
+      <APISubListItem parent="options" name="onHoverEnd" type="() => void" optional>
+        Callback when handle hover ends.
+      </APISubListItem>
+      <APISubListItem parent="options" name="onMouseDown" type="React.MouseEventHandler" optional>
+        Custom mouse down handler.
+      </APISubListItem>
+      <APISubListItem parent="options" name="onResize" type="(event: ResizeEvent) => void" optional>
+        Custom resize handler. Falls back to store handler if not provided.
+      </APISubListItem>
+      <APISubListItem parent="options" name="onTouchStart" type="React.TouchEventHandler" optional>
+        Custom touch start handler.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem name="direction" type="ResizeDirection">
+    Current resize direction.
+  </APIItem>
+  <APIItem name="initialPosition" type="number">
+    Initial cursor/touch position.
+  </APIItem>
+  <APIItem name="initialSize" type="number">
+    Initial element size.
+  </APIItem>
+  <APIItem name="isHorizontal" type="boolean">
+    Whether resize direction is horizontal.
+  </APIItem>
+  <APIItem name="isResizing" type="boolean">
+    Whether resize is in progress.
+  </APIItem>
+  <APIItem name="readOnly" type="boolean">
+    Editor read-only state.
+  </APIItem>
+  <APIItem name="setInitialPosition" type="(position: number) => void">
+    Update initial position.
+  </APIItem>
+  <APIItem name="setInitialSize" type="(size: number) => void">
+    Update initial size.
+  </APIItem>
+  <APIItem name="setIsResizing" type="(resizing: boolean) => void">
+    Update resize state.
+  </APIItem>
+  <APIItem name="onHover" type="() => void">
+    Hover callback.
+  </APIItem>
+  <APIItem name="onHoverEnd" type="() => void">
+    Hover end callback.
+  </APIItem>
+  <APIItem name="onMouseDown" type="React.MouseEventHandler">
+    Mouse down handler.
+  </APIItem>
+  <APIItem name="onResize" type="(event: ResizeEvent) => void">
+    Resize handler.
+  </APIItem>
+  <APIItem name="onTouchStart" type="React.TouchEventHandler">
+    Touch start handler.
+  </APIItem>
+</APIReturns>
+
+### useResizeHandle
+
+Provides handlers and props for resize handle elements.
+
+<APIParameters>
+  <APIItem name="state" type="ReturnType<typeof useResizeHandleState>">
+    State from useResizeHandleState.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem name="hidden" type="boolean">
+    Whether the handle should be hidden (in read-only mode).
+  </APIItem>
+  <APIItem name="props" type="object">
+    Props to spread on the handle element:
+    - onMouseDown: Mouse down event handler
+    - onMouseOut: Mouse out event handler
+    - onMouseOver: Mouse over event handler
+    - onTouchEnd: Touch end event handler
+    - onTouchMove: Touch move event handler
+    - onTouchStart: Touch start event handler
+  </APIItem>
+</APIReturns>

@@ -1,0 +1,582 @@
+---
+title: Changelog
+description: Latest component updates and announcements.
+toc: true
+---
+
+Since Plate UI is not a component library, a changelog is maintained here.
+
+Use the [CLI](https://platejs.org/docs/components/cli) to install the latest version of the components.
+
+## December 2024 #17
+
+### December 20 #17.3
+
+- `insertColumnGroup`, `toggleColumnGroup`: use `columns` option instead of `layout` 
+- Remove `with-draggables`. Add [`DraggableAboveNodes`](https://github.com/udecode/plate/pull/3878/files#diff-493c12ebed9c3ef9fd8c3a723909b18ad439a448c0132d2d93e5341ee0888ad2) to `draggable`. Add to `DndPlugin` config:
+```tsx
+DndPlugin.configure({ render: { aboveNodes: DraggableAboveNodes } }),
+```
+- `column-element`, `image-element`, `media-video-element`: Remove `useDraggableState`. Use `const { isDragging, previewRef, handleRef } = useDraggable`
+- `column-group-element`: Remove `useColumnState`. Use instead:
+```tsx
+const columnGroupElement = useElement<TColumnGroupElement>(ColumnPlugin.key);
+
+const onColumnChange = (widths: string[]) => {
+  setColumns(editor, {
+    at: findNodePath(editor, columnGroupElement),
+    widths,
+  });
+};
+```
+- `export-toolbar-button`: add `exportToHtml`
+
+### December 19 #17.2
+
+Plate 41
+
+- New RSC components for element and leaf components, filename ending with `-static.tsx`. Those are now added along with the default client components.
+- `editor`: add `select-text` to `editorVariants`
+- `date-element`: remove popover when read-only
+- `indent-todo-marker`: use `SlateRenderElementProps` type instead of `PlateRenderElementProps`
+- `hr-element`, `media-audio-element`, `media-embed-element`, `mention-element`: improve cursor styling
+- `media-file-element`: use `<a>` instead of `div` + `onClick`
+- all element and leaf components: `className` prop is now placed before inline prop.
+
+### December 16 #17.1
+
+- `column-element`:
+  - Add drag and drop support for columns
+  - Add drag handle with tooltip
+  - Fix column spacing and padding
+
+- `column-group-element`:
+  - Remove gap between columns
+  - Remove margin top
+
+- `draggable`:
+  - Remove `DraggableProvider` HOC
+  - Remove `DropLine` children prop
+
+## November 2024 #16
+
+### November 26 #16.9
+
+https://github.com/udecode/plate/pull/3809/files
+- Add `select-editor`, `tag-element`, `label`, `form`
+- Replace `cmdk` dependency with `@udecode/cmdk`. It's a controllable version of `cmdk`.
+- `command`: add variants
+- `editor`: add `select` variant
+- `popover`: add `animate` variant
+
+https://github.com/udecode/plate/pull/3807/files
+- `toc-element`: remove `<nav>` tag using `<div>` instead to fix html2canvas issue
+- `editor`: remove `role="button"` to fix html2canvas issue
+
+### November 21 #16.8
+
+Shadcn sync:
+
+- `input`: add `text-base md:text-sm`
+- `textarea`: add `text-base md:text-sm`
+- `editor`(`ai`, `aiChat` variants): add `text-base md:text-sm`
+
+### November 14 #16.7
+
+- `toolbar`: Add `ToolbarSplitButton`, `ToolbarSplitButtonPrimary`, `ToolbarSplitButtonSecondary`
+- `media-toolbar-button`: use `ToolbarSplitButton`
+
+### November 13 #16.6
+
+- `resizable`: hide `ResizeHandle` when read-only
+
+### November 8 #16.5
+
+- Add this to your tailwind config: 
+```ts
+// plugins
+require("tailwind-scrollbar-hide")
+
+// theme.extend.screens
+screens: {
+  /**
+   * Matches devices where the primary pointing device is capable of
+   * hovering conveniently. Usage: main-hover:group-hover:bg-red-500 See:
+   * https://developer.mozilla.org/en-US/docs/Web/CSS/@media/hover
+   *
+   * On iOS devices, buttons inside a .group element that contains
+   * descendent elements with `group-hover:` CSS rules require two taps to
+   * click. As a workaround, we disable these rules on devices that cannot
+   * conveniently hover using `main-hover:`.
+   */
+  'main-hover': {
+    raw: '(hover: hover)',
+  },
+},
+```
+- `editor`: 
+  - `EditorContainer`: remove `ref`, use `useEditorContainerRef` instead
+  - add `caret-primary selection:bg-brand/25`
+  - add `id={editor.uid}` to `EditorContainer` so you can remove `scroll_container` or any id you may have defined.
+- `draggable`: 
+  - fix a **critical** mobile ux issue: focusing the editor required two taps because of the group hover styles. Fixed with `main-hover:group-hover:opacity-100`.
+  - for xs media, show only if selected
+- `table-element`: fix width
+- `table-row-element`, `table-cell-element`: support row selection
+- Add `draggable` prop to `date-element`, `mention-element`
+- Add `data-plate-focus` attribute to `link-toolbar-button`, `link-floating-toolbar`, `ai-menu` input
+- `cursor-overlay`: 
+  - support collapsed selection
+  - remove `DragOverCursorPlugin`, `SelectionOverlayPlugin`. Use `@udecode/plate-selection` instead.
+- `ghost-text`: hide for xs media, add `pointer-events-none`
+- `floating-toolbar`: add `overflow-x-auto scrollbar-hide` to allow horizontal scrolling (mobile)
+- `fixed-toolbar`: add `scrollbar-hide`
+- `emoji-picker-content`: add emoji font
+- `column-element`: add `w-full` as default
+- New hook: `use-is-touch-device`
+- `block-context-menu`: disable on touch device
+- `ai-toolbar-button`: add `onMouseDown`
+- `ai-menu-items`: add undefined check
+- `block-selection-plugins`: add
+```ts
+inject: {
+  excludeBelowPlugins: ['tr'],
+  excludePlugins: ['table', 'code_line', 'column_group', 'column'],
+},
+```
+- Add `floating-toolbar-plugin`, `fixed-toolbar-plugin`
+- misc: `hr-element`, `plate-element`, `transforms`
+
+### November 7 #16.4
+
+- `block-context-menu`: prevent unselect when clicking on the context menu
+- `block-selection`: Add `editor.getApi(BlockSelectionPlugin).blockSelection.focus()` in onCloseAutoFocus.
+
+### November 6 #16.3
+
+- `editor`: add `overflow-x-hidden` to prevent horizontal scrolling
+- `table-element`: add `overflow-x-auto` to allow horizontal scrolling
+
+### November 5 #16.2
+
+- Fixed color-picker clear button's styles
+- Replace toggle-element button with css transitions 
+
+### November 1 #16.1
+
+- `editor`: styles + `<EditorContainer />`
+
+## October 2024 #15
+
+### October 31 #15.6
+
+- Added `lib/transforms.ts`. Contains useful transforms for common operations.
+- Removed `Icons` file dependency. All icons are now imported from `lucide-react`.
+- Fixed and modified some styles in emoji and color picker.
+- Group styling: 
+  - `dropdown-menu`
+  - `context-menu`
+  - `inline-combobox`
+- Added groups and items to `slash-input-element`
+- Spacing and sizing update:
+  - `ai-menu-items`
+  - `align-dropdown-menu`
+  - `block-context-menu`
+  - `button`
+  - `code-block-combobox`
+  - `color-dropdown-menu-items`
+  - `color-picker`
+  - `column-group-element`
+  - `command`
+  - `comment-more-dropdown`
+  - `context-menu`
+  - `dropdown-menu`
+  - `emoji-dropdown-menu`
+  - `emoji-input-element`
+  - `image-preview`
+  - `inline-combobox`
+  - `input`
+  - `insert-dropdown-menu`
+  - `line-height-dropdown-menu`
+  - `link-floating-toolbar`
+  - `media-popover`
+  - `mention-input-element`
+  - `mode-dropdown-menu`
+  - `more-dropdown-menu`
+  - `popover`
+  - `slash-input-element`
+  - `table-dropdown-menu`
+  - `table-element`
+  - `toggle-element`
+  - `toggle-toolbar-button`
+
+### October 26 #15.5
+
+- Rename `indent-todo-marker-component` to `indent-todo-marker`.
+
+### October 25 #15.4
+
+- `slash-input-element`: add AI command & add `focusEditor` option
+
+### October 24 #15.3
+
+- Add `ai-menu`, `ai-menu-items`, `ai-toolbar-button`, `ai-chat-editor`, `block-context-menu`, `context-menu`, `ghost-text`, `toc-element`
+- `command`: add `InputCommand`
+- `toolbar` new style
+- `editor` demo variant
+- `heading-element`: remove `isFirstBlock` prop
+- misc: `fixed-toolbar`, `fixed-toolbar-buttons`, `floating-toolbar`, `floating-toolbar-buttons`, `mode-dropdown-menu`, `turn-into-dropdown-menu`, `button`, `cursor-overlay`, `excalidraw-element`, `inline-combobox`, `slash-input-element`
+
+### October 14 #15.3
+
+- New cli: `shadcx`. See [CLI](/docs/components/cli) and [components.json](/docs/components/components-json).
+
+### October 10 #15.3
+
+- `dropdown-menu`(`DropdownMenuContent`): prevent default on `onCloseAutoFocus`
+- `floating-toolbar`(`FloatingToolbar`): remove portal, hide on click outside, hide when floating link open
+- `turn-into-dropdown-menu`(`TurnIntoDropdownMenu`): add indent list items
+- `table-dropdown-menu`(`TableDropdownMenu`): select in `insertTable`
+
+### October 4 #15.2
+
+- feat `emoji-picker`: adjust ui emoji picker
+
+### October 1 #15.1
+
+- New `block-selection` component for visual selection feedback
+- New `plate-element` component for rendering the plate element with `BlockSelection`
+- Updated `paragraph-element` and all block elements to use `plate-element`
+- `draggable`:
+  - Refactored to use new hooks: `useDraggableGutter` and `useDropLine`
+  - Removed `classNames` prop in favor of a single `className`
+  - Added `DraggableProvider` wrapper
+  - Introduced `Gutter` and `DropLine` as separate components
+- `with-draggables`:
+  - Updated to use new className format for draggable props
+- fix `mention-element`: prevent IME input interruption on MacOS
+
+Use `--highlight` color for the following components:
+
+- `comment-leaf`
+- `highlight-leaf`
+
+Use `--brand` color for the following components:
+
+- `block-selection`
+- `draggable`
+
+
+## September 2024 #14
+
+### September 29 #14.3
+
+- fix `heading-element`: if the heading is the first block, it should not have a top margin
+
+### September 13 #14.2
+
+- fix `code-block-combobox`: filter based on label or value
+
+### September 10 #14.1
+
+- fix `floating-toolbar`: show toolbar when readOnly
+
+## August 2024 #13
+
+
+### August 27 #13.3
+
+- Migrate to Plate 37
+
+### August 26 #13.2
+
+- feat `emoji-picker`: adapt shadcn themes & styles
+
+### August 12 #13.1
+
+- add mermaid to list of supported languages in preparation for Excalidraw improvements.
+
+## July 2024 #12
+
+### July 14 #12.2
+
+- fix `cursor`: Show selection rect/caret if cursor data is undefined.
+
+### July 12 #12.1
+
+- `fixed-toolbar`: `top-0`
+
+## June 2024 #11
+
+### June 23 #11.3
+
+- breaking change: move list of supported prismjs languages to `code-block-combobox`
+
+### June 13 #11.2
+
+- fix `caption`: update UI when element `caption` property changes
+
+### June 6 #11.1
+
+- replace `combobox` with `inline-combobox`
+- remove `mention-combobox`, `emoji-combobox` and `slash-combobox`
+- add `emoji-input-element`
+- update `mention-input-element` and `slash-input-element` to use the new combobox
+- feat `draggable`: add the data-key attribute to facilitate adding selection after the drag-and-drop operation is completed
+- breaking change: Open the caption by using `CaptionButton` or pass the media element's ID through `captionActions.showCaptionId`"
+- add `portalElement` prop to `floating-toolbar`
+
+## May 2024 #10
+
+### May 30 #10.2
+
+- fix `draggable`: add portal to fix clipping, button type to stop form submission
+- fix `editor`: increase x padding to improve drag handle visibility
+
+### May 24 #10.1
+
+- fix `site-header`: change zIndex to 60
+- fix `fixed-toolbar`: change zIndex to 60
+
+## April 2024 #9
+
+### April 30 #9.3
+
+- fix `indent-todo-marker-component`: clicking the checkbox removing the focus
+
+### April 17 #9.2
+
+- add `column-element`, `column-group-element`
+
+### April 6 #9.1
+
+- fix `combobox`: undo was crashing the editor
+
+## February 2024 #8
+
+### February 6 #8.2
+
+- fix `list-element`: variant styles were missing
+
+### February 5 #8.1
+
+- fix `mention-element`: Mention input removed when clicking mention combobox scrollbar
+  ([#2919](https://github.com/udecode/plate/issues/2919))
+
+## January 2024 #7
+
+### January 31 #7.5
+
+- add `toggle-element`
+- add `toggle-toolbar-button`
+
+### January 11 #7.4
+
+- add support for custom ui dir in `components.json`
+- add support for `plate-components.json` to avoid conflict with shadcn's `components.json`
+
+### January 9 #7.3
+
+- `toolbar`
+  - `Toolbar`: replace `items-stretch` with `items-center`
+  - use `toolbarButtonVariants` instead of `toggleVariants`
+  - fix `value` prop type bug
+  - uses now `withTooltip`, so replace `[data-state=on]` with `aria-checked` to avoid conflicts
+- `toggle`: removed as unused
+- `tooltip`: add `withTooltip`, which is used by `ToolbarButton`
+
+### January 8 #7.2
+
+- `table-element` - TableProvider must now be rendered above TableElement
+
+```tsx
+// Before
+export const TableElement = withRef<typeof PlateElement>(
+  ({ className, children, ...props }, ref) => {
+    // ...
+  }
+);
+
+// After
+export const TableElement = withHOC(
+  TableProvider,
+  withRef<typeof PlateElement>(({ className, children, ...props }, ref) => {
+    // ...
+  })
+);
+```
+
+### January 2 #7.1
+
+- `dropdown-menu` - fix: do not exclude `className` in `DropdownMenuContent`
+
+## December 2023 #6
+
+### December 27 #6.3
+
+- remove `clsx` from dependency: `class-variance-utility` already exports it as `cx`
+- new dependency: `@udecode/cn`
+- remove `@/lib/utils.ts` in favor of `cn` from `@udecode/cn`. Replace all imports from `@/lib/utils` with `@udecode/cn`
+- import `withProps` from `@udecode/cn` instead of `@udecode/plate-common
+
+  `
+- all components using `forwardRef` are now using `withRef`. `withProps`, `withCn` and `withVariants` are also used to reduce boilerplate.
+- add `withCn` to ESLint `settings.tailwindcss.callees` and `classAttributes` in your IDE settings
+
+```tsx
+// before
+const Avatar = React.forwardRef<
+  React.ElementRef<typeof AvatarPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root>
+>(({ className, ...props }, ref) => (
+  <AvatarPrimitive.Root
+    ref={ref}
+    className={cn(
+      'relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full',
+      className
+    )}
+    {...props}
+  />
+));
+Avatar.displayName = AvatarPrimitive.Root.displayName;
+
+export { Avatar };
+
+// after
+export const Avatar = withCn(
+  AvatarPrimitive.Root,
+  'relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full'
+);
+```
+
+### December 25 #6.2
+
+- [dialog](https://github.com/udecode/plate/pull/2824/files#diff-5f7205cdd85718b7f26cef1e746ad67d69c83703135a7e3ad1a9a09ca69c38c8)
+- Plate 28, includes a few optimizations: [changes](https://github.com/udecode/plate/pull/2816/files#diff-726cd463a614f1a49228e05a2eb7ea9bc95f2e574423eb4264c6cb95eb0ac792)
+  - `combobox`
+  - `insert-dropdown-menu`
+  - `media-popover`
+  - `mode-dropdown-menu`
+  - `more-dropdown-menu`
+  - `table-dropdown-menu`
+  - `table-element`
+  - `turn-into-dropdown-menu`
+
+### December 10 #6.1
+
+- `image-element`: wrap the component with `withHOC(ResizableProvide, ...)`
+- `media-embed-element`: wrap the component with `withHOC(ResizableProvide, ...)`
+
+## November 2023 #5
+
+### 28 Nov #5.1
+
+- `table-element`
+  - [feat](https://github.com/udecode/plate/pull/2733/files#diff-c5f0c4861d1d4f4e3551cebd8bc75888f5ab60a21a41d5da07487a6c9c79d483): merging support (plate 26)
+- `table-cell-element`
+  - [feat](https://github.com/udecode/plate/pull/2733/files#diff-b474b48d3e947c67296867abe2421b7dad66a8327a4e09f43402825393e3aa26): merging support (plate 26)
+- `comments-popover`
+  - `comment-more-dropdown`
+    - [fix](https://github.com/udecode/plate/commit/cb6838962f105e30b4d6a56db2e5bda01a118b43): edit and delete comments
+  - `comment-value`
+    - [fix](https://github.com/udecode/plate/commit/cb6838962f105e30b4d6a56db2e5bda01a118b43#diff-9234422f7416eb31a4f9aca1d2070bf26dae1dcf92579ee4145702123b4347e2): remove `useCommentValue` (deprecated from plate 25)
+- `toolbar`
+  - [fix](https://github.com/udecode/plate/pull/2742/files): pressed state
+
+## September 2023 #4
+
+### 18 Sept #4.4
+
+- `editor`: New component 🎉 See [Editor](https://platejs.org/docs/components/editor)
+- `fixed-toolbar-buttons`, `floating-toolbar-buttons`, `mode-dropdown-menu`:
+  - plate 24: rename `usePlateReadOnly` to `useEditorReadOnly`
+- `code-block-element`: changes in `code-block-element.css`
+
+### 15 Sept #4.3
+
+- `table-element`
+  - fix: typing in a table should keep the floating toolbar opened
+- `floating-toolbar`:
+  - fix: import
+- `comment-leaf`, `link-element`
+  - feat: use primary color
+- block selection:
+  - add this class to `body`: `'[&_.slate-selected]:!bg-primary/20 [&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/10'`
+
+### 12 Sept #4.2
+
+- `button`: add `whitespace-nowrap`
+- `popover`: hidden when printing
+- `caption`: hidden placeholder when printing
+- `highlight-leaf`: highlight color is now based on the primary color
+
+### 2 Sept #4.1
+
+- `link-floating-toolbar`
+  - [fix](https://github.com/udecode/plate/pull/2593/files#diff-bd61ef4cfdcfe9401df0307a461ac13dce507b178d8e9a7ed693cb36453e9202): props type
+- `media-embed-element`
+  - [fix](https://github.com/udecode/plate/pull/2593/files#diff-13ddd3e18dbdc399e507d7bb512e0f592fba062a36bca14d66d39069773617bdR54): use `align` option
+- `caption`
+  - fix: `style` prop
+
+## August 2023 #3
+
+### 19 August #3.4
+
+- `floating-toolbar` - [changes](https://github.com/udecode/plate/pull/2585/files#diff-c3329bdae6493e8868acb88f985b2929109dae7a04d756359346f0c614913766):
+  - feat: `ref` support
+  - refactor: using `useFloatingToolbarState`, control `floatingOptions` default value
+  - fix: added `fallbackPlacements` to keep the floating in the viewport
+  - br: remove the following props: `portalElement`, `floatingOptions`, `ignoreReadOnly`, `hideToolbar`
+  - feat: `state` prop
+- `link-floating-toolbar` - [changes](https://github.com/udecode/plate/pull/2585/files#diff-bd61ef4cfdcfe9401df0307a461ac13dce507b178d8e9a7ed693cb36453e9202):
+  - refactor: control `floatingOptions` default value
+  - fix: added `fallbackPlacements` to keep the floating in the viewport
+
+### 9 August #3.3
+
+- `mention-element` - [feat](https://github.com/udecode/plate/pull/2564/files#diff-b008c662509a2be20fae922f91462771d69105ba04e5731184427e37dc86b236): support bold, italic, underline
+
+### 3 August #3.2
+
+- `table-cell-element` - [feat](https://github.com/udecode/plate/pull/2557/files#diff-b474b48d3e947c67296867abe2421b7dad66a8327a4e09f43402825393e3aa26): support table cell backround styles
+
+### 2 August #3.1
+
+- `image-element`: [refactor](https://github.com/udecode/plate/pull/2555/files#diff-932738209da6d341356f451777ebf380ae116fd70bf73124a786ede5ca7eb77e): use `mediaResizeHandleVariants`
+- `media-embed-element`: [refactor](https://github.com/udecode/plate/pull/2555/files#diff-13ddd3e18dbdc399e507d7bb512e0f592fba062a36bca14d66d39069773617bd): use `mediaResizeHandleVariants`
+- `resizable` - [changes](https://github.com/udecode/plate/pull/2555/files#diff-514a5137146b81612a86bf85717ed3185ec745889f6aa5beeddf9dc8f03acae7):
+  - refactor
+  - feat: `mediaResizeHandleVariants`
+- `table-cell-element`:
+  - [fix](https://github.com/udecode/plate/pull/2555/files#diff-b474b48d3e947c67296867abe2421b7dad66a8327a4e09f43402825393e3aa26): resizable
+  - [fix](https://github.com/udecode/plate/pull/2550/files#diff-b474b48d3e947c67296867abe2421b7dad66a8327a4e09f43402825393e3aa26): table selection in firefox
+
+## July 2023 #2
+
+### 27 July #2.2
+
+- `caption` - new component
+- `image-element`:
+  - refactor: state
+  - new registry deps: `caption`, `resizable`
+- `media-embed-element` is now fully headless:
+  - new deps: `react-lite-youtube-embed`, `react-tweet` to decrease the bundle size
+  - new registry deps: `caption`, `resizable`
+- `media-popover` - fix: popover closing
+- `resizable` - new component
+- `table-element` - fix: popover closing
+
+### 17 July #2.1
+
+- `comments-popover` - fix: popover not opening on new comment
+- `comment-toolbar-button` - feat: hide when `myUserId` is null
+- `excalidraw-element` - fix: typo
+
+### Launch #1
+
+Plate headless components are now available:
+
+- [Manual Installation](https://platejs.org/docs/components/installation/manual)
+- [Theming](https://platejs.org/docs/components/theming)
+- [CLI](https://platejs.org/docs/components/cli)
