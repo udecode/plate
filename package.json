@@ -21,7 +21,6 @@
     "docs:build": "cd docs && pnpm run && pnpm run build",
     "docs:start": "cd docs && pnpm run && pnpm run start",
     "e2e": "pnpm run playwright test",
-    "echo": "echo $INIT_CWD",
     "g:Test:Watch": "turbo --filter \"./packages/**\" test:watch",
     "g:brl": "turbo --filter \"./packages/**\" brl",
     "g:build": "turbo --filter \"./packages/**\" build",
