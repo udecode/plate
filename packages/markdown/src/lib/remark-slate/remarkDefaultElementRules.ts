@@ -50,15 +50,7 @@ export const remarkDefaultElementRules: RemarkElementRules = {
         6: 'h6',
       }[depth];
 
-      const type = options.editor.getType({ key: headingType });
-
-      if (!type) {
-
-        return {
-          children: remarkTransformElementChildren(node, options),
-          type: options.editor.getType({ key: 'p' }),
-        };
-      }
+      const type = options.editor.getType({ key: headingType ?? 'h3' });
 
       return {
         children: remarkTransformElementChildren(node, options),
