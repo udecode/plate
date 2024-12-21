@@ -5,3 +5,4 @@
 export * from './BaseEquationPlugin';
 export * from './BaseInlineEquationPlugin';
 export * from './transforms/index';
+export * from './utils/index';
