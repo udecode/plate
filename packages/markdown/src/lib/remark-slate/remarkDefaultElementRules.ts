@@ -53,7 +53,6 @@ export const remarkDefaultElementRules: RemarkElementRules = {
       const type = options.editor.getType({ key: headingType });
 
       if (!type) {
-        console.warn(`Heading type ${headingType} not registered in editor`);
 
         return {
           children: remarkTransformElementChildren(node, options),
