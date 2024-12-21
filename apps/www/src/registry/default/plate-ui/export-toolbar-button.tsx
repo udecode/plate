@@ -339,8 +339,8 @@ export function ExportToolbarButton({ children, ...props }: DropdownMenuProps) {
         ${prismCss}
         <style>
           :root {
-            --font-sans: 'Inter', sans-serif;
-            --font-mono: 'JetBrains Mono', monospace;
+            --font-sans: 'Inter', 'Inter Fallback';
+            --font-mono: 'JetBrains Mono', 'JetBrains Mono Fallback';
           }
         </style>
       </head>
