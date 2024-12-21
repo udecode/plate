@@ -95,7 +95,7 @@ export const Doc = defineDocumentType(() => ({
 }));
 
 export default makeSource({
-  contentDirPath: './content/en',
+  contentDirPath: './content/cn',
   documentTypes: [Doc],
   mdx: {
     rehypePlugins: [

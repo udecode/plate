@@ -5,6 +5,7 @@ The following JSX and markdown codeblock like ```tsx must not be translated.
 1.DONOT remove any content.
 2.You can translate the title markdown ## Plugin Context.
 3.Please ensure that the number of lines in the translated file MATCHES the original.
+4.DONOT translate the entry and entries
 
 For Example:
 <APIItem name="extendApi" type="function">

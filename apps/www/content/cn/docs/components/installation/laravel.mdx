@@ -5,11 +5,11 @@ description: Install and configure Laravel.
 
 <Steps>
 
-### Install shadcn/ui
+### 安装 shadcn/ui
 
-Follow the [shadcn/ui](https://ui.shadcn.com/docs/installation/laravel) guide.
+按照 [shadcn/ui](https://ui.shadcn.com/docs/installation/laravel) 指南进行操作。
 
-### Run the CLI
+### 运行 CLI
 
 Initialize Plate in your project using the CLI:
 
@@ -17,32 +17,32 @@ Initialize Plate in your project using the CLI:
 npx shadcx@latest init plate
 ```
 
-### Add components
+### 增加组件
 
-You can now start adding components to `components/plate-ui`:
+现在您可以开始向 `components/plate-ui` 添加组件：
 
 ```bash
 npx shadcx@latest add -r plate
 ```
 
-### Register components
+### 注册组件
 
-To add the components to your plugins, see [Plugin Components](/docs/plugin-components#register-components).
+要将组件添加到您的插件中，请参阅[插件组件](/docs/plugin-components#register-components)。
 
-### Add editor (optional)
+### 添加编辑器（可选）
 
-Choose your editor to get started ([browse available editors](/editors)). 
+选择一个编辑器开始使用（[浏览可用的编辑器](/editors)）。
 
-[Minimal Editor](https://template.platejs.org/editor)
+[最小编辑器](https://template.platejs.org/editor)
 ```bash
 npx shadcx@latest add plate/editor-basic
 ```
 
-[AI Editor](https://playground.platejs.org/editor)
+[AI编辑器](https://playground.platejs.org/editor)
 ```bash
 npx shadcx@latest add plate/editor-ai
 ```
 
-This will add a page in `app/editor` along with all necessary components in `components/plate-ui` as a starting point.
+这将在 `app/editor` 中添加一个页面，并在 `components/plate-ui` 中添加所有必要的组件作为起点。
 
 </Steps>

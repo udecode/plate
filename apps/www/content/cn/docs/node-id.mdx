@@ -8,10 +8,10 @@ title: Node ID
 
 ## Features
 
-- Plugin that automatically assigns and manages unique IDs for nodes in the editor.
-- Configurable ID generation and storage
-- Handles node operations (insert, split) with ID preservation
-- Optional ID reuse for undo/redo and copy/paste operations
+- 自动为编辑器中的节点分配和管理唯一 ID。
+- 可配置的 ID 生成和存储
+- 处理节点操作（插入、拆分）时保留 ID
+- 可选的 ID 重用，用于撤销/重做和复制/粘贴操作
 
 </PackageInfo>
 
@@ -45,88 +45,88 @@ const plugins = [
 
 ### NodeIdPlugin
 
-Plugin that automatically assigns and manages unique IDs for nodes in the editor.
+自动为编辑器中的节点分配和管理唯一 ID 的插件。
 
 <APIOptions>
 <APIItem name="disableInsertOverrides" type="boolean" optional>
-  Disable using existing IDs when inserting nodes.
-  - When `false`: Keeps existing IDs if they don't exist in the document
-  - When `true`: Always generates new IDs
-  - **Default:** `false`
+  插入节点时禁用使用现有 ID。
+  - 当 `false`: 保留现有 ID，如果它们不存在于文档中
+  - 当 `true`: 始终生成新 ID
+  - **默认值:** `false`
 </APIItem>
 
 <APIItem name="filterInline" type="boolean" optional>
-  Filter inline Element nodes from receiving IDs.
-  - **Default:** `true`
+  过滤内联元素节点不接收 ID。
+  - **默认值:** `true`
 </APIItem>
 
 <APIItem name="filterText" type="boolean" optional>
-  Filter Text nodes from receiving IDs.
-  - **Default:** `true`
+  过滤文本节点不接收 ID。
+  - **默认值:** `true`
 </APIItem>
 
 <APIItem name="idCreator" type="() => any" optional>
-  Function to generate unique IDs.
-  - **Default:** `() => nanoid(10)`
+  生成唯一 ID 的函数。
+  - **默认值:** `() => nanoid(10)`
 </APIItem>
 
 <APIItem name="idKey" type="string" optional>
-  Property key used to store the ID on nodes.
-  - **Default:** `'id'`
+  用于在节点上存储 ID 的属性键。
+  - **默认值:** `'id'`
 </APIItem>
 
 <APIItem name="normalizeInitialValue" type="boolean" optional>
-  Whether to normalize all nodes in the initial value.
-  - When `false`: Only checks first and last nodes
-  - When `true`: Normalizes all nodes
-  - **Default:** `false`
+  是否规范化初始值中的所有节点。
+  - 当 `false`: 仅检查第一个和最后一个节点
+  - 当 `true`: 规范化所有节点
+  - **默认值:** `false`
 </APIItem>
 
 <APIItem name="reuseId" type="boolean" optional>
-  Reuse IDs on undo/redo and copy/paste operations.
-  - When `true`: Keeps IDs if they don't exist in document
-  - When `false`: Always generates new IDs (safer across documents)
-  - **Default:** `false`
+  在撤销/重做和复制/粘贴操作时重用 ID。
+  - 当 `true`: 如果 ID 不存在于文档中则保留
+  - 当 `false`: 始终生成新 ID（跨文档更安全）
+  - **默认值:** `false`
 </APIItem>
 
 <APIItem name="allow" type="string[]" optional>
-  List of node types that should receive IDs.
+  应该接收 ID 的节点类型列表。
 </APIItem>
 
 <APIItem name="exclude" type="string[]" optional>
-  List of node types that should not receive IDs.
+  不应该接收 ID 的节点类型列表。
 </APIItem>
 
 <APIItem name="filter" type="(node: TNodeEntry) => boolean" optional>
-  Custom filter function for nodes that should receive IDs.
-  - **Default:** `() => true`
+  用于确定节点是否应该接收 ID 的自定义过滤函数。
+  - **默认值:** `() => true`
 </APIItem>
 </APIOptions>
 
-### Behavior
+### 行为
 
-The plugin handles several scenarios:
+该插件处理以下几种场景：
 
-1. **Node Insertion**:
+1. **节点插入**:
 ```tsx
 <editor>
   <hp id="10">test</hp>
 </editor>
 
-// Insert node with existing ID (e.g. copy/paste)
+// 插入节点（例如复制/粘贴）
 editor.insertNode(<hp id="10">inserted</hp>);
-// Results in:
+// 结果：
 <editor>
   <hp id="10">test</hp>
   <hp id="1">inserted</hp>  {/* Gets new ID */}
 </editor>
 
-// Insert multiple nodes
+// 插入多个节点
 editor.insertNodes([
   <hp>inserted</hp>,
   <hp>test</hp>,
 ]);
-// Results in:
+// 结果：
 <editor>
   <hp id="10">test</hp>
   <hp id="1">inserted</hp>  
@@ -134,38 +134,38 @@ editor.insertNodes([
 </editor>
 ```
 
-2. **Node Splitting**:
+2. **节点拆分**:
 ```tsx
-// Before split
+// 拆分前
 <hp id="1">te|st</hp>
-// After split:
+// 拆分后：
 <hp id="1">te</hp>
 <hp id="2">st</hp>
 ```
 
-3. **Filtering**:
+3. **过滤**:
 ```tsx
-// With filterText=false
+// 当 filterText=false
 <hp id="1">
   <htext id="2">text</htext>
 </hp>
 
-// With allow=['p'] exclude=['blockquote']
+// 当 allow=['p'] exclude=['blockquote']
 <hp id="1">text</hp>
 <hblockquote>quote</hblockquote>
 ```
 
-4. **Undo/Redo**:
+4. **撤销/重做**:
 ```tsx
-// With reuseId=true
+// 当 reuseId=true
 editor.insertNode(<hp id="1">text</hp>);
 editor.undo();
 editor.redo();
-// Node keeps id="1" if not in use
+// 如果 ID 未被使用，节点保持 id="1"
 
-// With reuseId=false
+// 当 reuseId=false
 editor.insertNode(<hp id="1">text</hp>);
 editor.undo();
 editor.redo();
-// Node gets new id="2"
+// 节点获得新的 id="2"
 ```

@@ -17,30 +17,27 @@ docs:
 
 <PackageInfo>
 
-## Features
+## 功能特点
 
-- Includes commonly used block elements: blockquote, code block, and headings.
+- 包含常用的块级元素：引用块、代码块和标题。
 
 </PackageInfo>
 
-**Plugins:**
+**插件：**
 
-- `BlockquotePlugin` for `blockquote` element
-- `CodeBlockPlugin` for `code_block` element
-- `HeadingPlugin` for `h1`, `h2`,... elements
+- `BlockquotePlugin` 用于 `blockquote` 元素
+- `CodeBlockPlugin` 用于 `code_block` 元素
+- `HeadingPlugin` 用于 `h1`、`h2`... 等元素
 
-## Installation
-
-```bash
-npm install @udecode/plate-basic-elements
-# or
-npm install @udecode/plate-block-quote @udecode/plate-code-block @udecode/plate-heading
-```
+## 安装
 
 ## Usage
 
 ```tsx
-import { BasicElementsPlugin, CodeBlockPlugin } from '@udecode/plate-basic-elements/react';
+import {
+  BasicElementsPlugin,
+  CodeBlockPlugin,
+} from '@udecode/plate-basic-elements/react';
 import Prism from 'prismjs';
 
 const plugins = [
@@ -53,18 +50,18 @@ const plugins = [
 ];
 ```
 
-## Keyboard Shortcuts
+## 键盘快捷键
 
 <KeyTable>
-  <KeyTableItem hotkey="Cmd + Opt + 1">Toggle heading 1 block.</KeyTableItem>
-  <KeyTableItem hotkey="Cmd + Opt + 2">Toggle heading 2 block.</KeyTableItem>
-  <KeyTableItem hotkey="Cmd + Opt + 3">Toggle heading 3 block.</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Opt + 1">切换一级标题块。</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Opt + 2">切换二级标题块。</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Opt + 3">切换三级标题块。</KeyTableItem>
   <KeyTableItem hotkey="Cmd + Shift + .">
-    Toggle the blockquote formatting for selected text.
+    切换所选文本的引用块格式。
   </KeyTableItem>
 </KeyTable>
 
-## Plugins
+## 插件
 
 ### BasicElementsPlugin
 
@@ -74,7 +71,7 @@ const plugins = [
 
 <APIOptions>
 <APIItem name="levels" type="number" optional>
-Specifies the heading levels supported, ranging from 1 to the specified levels.
+指定支持的标题级别，范围从1到指定的级别。
 
 </APIItem>
 </APIOptions>
@@ -84,75 +81,74 @@ Specifies the heading levels supported, ranging from 1 to the specified levels.
 <APIOptions>
 
 <APIItem name="syntax" type="boolean" optional>
-Determines if syntax highlighting is enabled.
+确定是否启用语法高亮。
 
 </APIItem>
 <APIItem name="syntaxPopularFirst" type="boolean" optional>
-Determines if popular syntax should be displayed first.
+确定是否优先显示常用语法。
 
 </APIItem>
 <APIItem name="deserializers" type="string[]" optional>
-Defines deserializers for the code block plugin.
+定义代码块插件的反序列化器。
 
 </APIItem>
 </APIOptions>
 
-## API Code Block
+## 代码块 API
 
 ### isCodeBlockEmpty
 
-Checks if the selection is inside an empty code block.
+检查选区是否在空代码块内。
 
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
-    The editor instance.
+    编辑器实例。
   </APIItem>
 </APIParameters>
 
 <APIReturns>
   <APIItem type="boolean">
-    Returns true if the selection is in an empty code block.
+    如果选区在空代码块内则返回 true。
   </APIItem>
 </APIReturns>
 
 ### isSelectionAtCodeBlockStart
 
-Checks if the selection is at the start of the first code line in a code block.
+检查选区是否在代码块第一行的开始位置。
 
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
-    The editor instance.
+    编辑器实例。
   </APIItem>
 </APIParameters>
 
 <APIReturns>
   <APIItem type="boolean">
-    Returns true if the selection is at the start of the first code line in a
-    code block.
+    如果选区在代码块第一行的开始位置则返回 true。
   </APIItem>
 </APIReturns>
 
 ### indentCodeLine
 
-Indents the code line if the selection is expanded or there are no non-whitespace characters at left of the cursor. The indentation is 2 spaces by default.
+如果选区已展开或光标左侧没有非空白字符，则缩进代码行。默认缩进为2个空格。
 
 <APIParameters>
 <APIItem name="editor" type="PlateEditor">
-The editor instance.
+编辑器实例。
 </APIItem>
 <APIItem name="options" type="IndentCodeLineOptions">
 <APISubList>
 <APISubListItem parent="options" name="codeLine" type="TElementEntry">
-  The code line to be indented.
+  要缩进的代码行。
 </APISubListItem>
 <APISubListItem
   parent="options"
   name="indentDepth"
   type="number"
 >
-The size of indentation for the code line.
+代码行的缩进大小。
 
-- **Default:** `2`
+- **默认值：** `2`
 
 </APISubListItem>
 </APISubList>
@@ -162,50 +158,52 @@ The size of indentation for the code line.
 
 ### insertCodeBlock
 
-Inserts a code block by setting the node to code line and wrapping it with a code block. If the cursor is not at the block start, it inserts a break before the code block.
+插入一个代码块，将节点设置为代码行并将其包裹在代码块中。如果光标不在块开始处，则会在代码块前插入一个换行符。
 
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
-    The editor instance.
+    编辑器实例。
   </APIItem>
   <APIItem
     name="insertNodesOptions"
     type="Omit<InsertNodesOptions, 'match'>"
     optional
-  ></APIItem>
+  >
+    `setNodes` 函数的选项。
+  </APIItem>
 </APIParameters>
 
 ### insertCodeLine
 
-Inserts a code line starting with the specified indentation depth.
+插入一个具有指定缩进深度的代码行。
 
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
-    The editor instance.
+    编辑器实例。
   </APIItem>
   <APIItem name="indentDepth" type="number" optional>
-    The depth of indentation for the code line.
+    代码行的缩进深度。
 
-    - **Default:** `0`
+    - **默认值：** `0`
 
   </APIItem>
 </APIParameters>
 
 ### outdentCodeLine
 
-Outdents a code line, removing two whitespace characters if present.
+减少代码行缩进，如果存在则删除两个空白字符。
 
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
-    The editor instance.
+    编辑器实例。
   </APIItem>
   <APIItem name="options" type="OutdentCodeLineOptions" optional>
     <APISubList>
       <APISubListItem parent="options" name="codeLine" type="TElementEntry">
-        The code line to be outdented.
+        要减少缩进的代码行。
       </APISubListItem>
       <APISubListItem parent="options" name="codeBlock" type="TElementEntry">
-        The code block containing the code line to be outdented.
+        包含要减少缩进的代码行的代码块。
       </APISubListItem>
     </APISubList>
   </APIItem>
@@ -213,21 +211,21 @@ Outdents a code line, removing two whitespace characters if present.
 
 ### toggleCodeBlock
 
-Toggles the code block in the editor.
+在编辑器中切换代码块。
 
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
-    The editor instance.
+    编辑器实例。
   </APIItem>
 </APIParameters>
 
 ### unwrapCodeBlock
 
-Unwraps the code block in the editor.
+在编辑器中解除代码块包裹。
 
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
-    The editor instance.
+    编辑器实例。
   </APIItem>
 </APIParameters>
 
@@ -235,19 +233,19 @@ Unwraps the code block in the editor.
 
 <APIState>
   <APIItem name="element" type="TCodeBlockElement">
-    The code block element.
+    代码块元素。
   </APIItem>
   <APIItem name="setValue" type="function">
-    Set element value callback.
+    设置元素值的回调函数。
   </APIItem>
 </APIState>
 
 <APIReturns>
   <APIItem name="commandItemProps" type="object">
-    The props for the command item.
+    命令项的属性。
     <APISubList>
       <APISubListItem parent="commandItemProps" name="onSelect" type="function">
-        The function to call when the command item is selected.
+        选择命令项时调用的函数。
       </APISubListItem>
     </APISubList>
   </APIItem>
@@ -257,17 +255,16 @@ Unwraps the code block in the editor.
 
 <APIParameters>
   <APIItem name="element" type="TCodeBlockElement">
-    The code block element.
+    代码块元素。
   </APIItem>
 </APIParameters>
 
 <APIReturns>
   <APIItem name="className" type="string | false">
-    The CSS class name for the code block element, representing the selected
-    language.
+    代码块元素的 CSS 类名，表示所选的语言。
   </APIItem>
   <APIItem name="syntax" type="boolean | undefined">
-    The syntax plugin option.
+    语法插件选项。
   </APIItem>
 </APIReturns>
 
@@ -277,7 +274,7 @@ Unwraps the code block in the editor.
   <APIItem name="options" type="object">
     <APISubList>
       <APISubListItem parent="options" name="leaf" type="any">
-        The leaf node representing a code syntax token.
+        表示代码语法标记的叶节点。
       </APISubListItem>
     </APISubList>
   </APIItem>
@@ -285,10 +282,10 @@ Unwraps the code block in the editor.
 
 <APIReturns>
   <APIItem name="tokenProps" type="object">
-    The props for the token.
+    标记的属性。
     <APISubList>
       <APISubListItem parent="tokenProps" name="className" type="string">
-        The CSS class name for the token.
+        标记的 CSS 类名。
       </APISubListItem>
     </APISubList>
   </APIItem>

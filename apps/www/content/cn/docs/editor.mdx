@@ -1,13 +1,13 @@
 ---
 title: Editor Configuration
-description: Learn how to configure and customize the Plate editor.
+description: 学习如何配置和自定义 Plate 编辑器。
 ---
 
-This guide covers the configuration options for the Plate editor, including basic setup, plugin management, and advanced configuration techniques.
+本指南涵盖了 Plate 编辑器的配置选项，包括基本设置、插件管理和高级配置技术。
 
-## Basic Editor Configuration
+## 基本编辑器配置
 
-To create a basic Plate editor, you can use the `createPlateEditor` function, or `usePlateEditor` in a React component:
+要创建一个基本的 Plate 编辑器，你可以使用 `createPlateEditor` 函数，或在 React 组件中使用 `usePlateEditor`：
 
 ```ts
 import { createPlateEditor } from '@udecode/plate-common/react';
@@ -17,9 +17,9 @@ const editor = createPlateEditor({
 });
 ```
 
-### Initial Value
+### 初始化值
 
-Set the initial content of the editor:
+设置编辑器的初始内容：
 
 ```ts
 const editor = createPlateEditor({
@@ -33,7 +33,7 @@ const editor = createPlateEditor({
 });
 ```
 
-You can also initialize the editor with an HTML string and the associated plugins:
+你也可以使用 HTML 字符串和相关的插件来初始化编辑器：
 
 ```ts
 const editor = createPlateEditor({
@@ -42,11 +42,11 @@ const editor = createPlateEditor({
 });
 ```
 
-For a comprehensive list of plugins that support HTML string deserialization, refer to the [Plugin Deserialization Rules](/docs/html#plugin-deserialization-rules) section.
+有关支持 HTML 字符串反序列化的插件的完整列表，请参阅 [Plugin Deserialization Rules](/docs/html#plugin-deserialization-rules) 部分。
 
-### Adding Plugins
+### 添加插件
 
-You can add plugins to your editor by including them in the `plugins` array:
+你可以通过在 `plugins` 数组中包含它们来向编辑器添加插件：
 
 ```ts
 const editor = createPlateEditor({
@@ -54,9 +54,9 @@ const editor = createPlateEditor({
 });
 ```
 
-### Max Length
+### 最大长度
 
-Set the maximum length of the editor:
+设置编辑器的最大长度：
 
 ```ts
 const editor = createPlateEditor({
@@ -65,11 +65,11 @@ const editor = createPlateEditor({
 });
 ```
 
-## Advanced Configuration
+## 高级配置
 
-### Id
+### 自定义 ID
 
-Set a custom id for the editor:
+设置编辑器的自定义 ID：
 
 ```ts
 const editor = createPlateEditor({
@@ -78,11 +78,11 @@ const editor = createPlateEditor({
 });
 ```
 
-If defined, you should always pass the `id` as the first argument in any editor retrieval methods.
+如果定义了，你应该始终将 `id` 作为第一个参数传递给任何编辑器检索方法。
 
 ### Normalization
 
-Control whether the editor should normalize its content on initialization:
+控制编辑器是否应在初始化时规范化其内容：
 
 ```ts
 const editor = createPlateEditor({
@@ -91,11 +91,11 @@ const editor = createPlateEditor({
 });
 ```
 
-Note that normalization may take a few dozen milliseconds for large documents, such as the playground value.
+请注意，规范化可能需要几毫秒来处理大型文档，例如 Playground 值。
 
 ### Auto-selection
 
-Configure the editor to automatically select a range:
+配置编辑器以自动选择范围：
 
 ```ts
 const editor = createPlateEditor({
@@ -104,11 +104,11 @@ const editor = createPlateEditor({
 });
 ```
 
-This is not the same as auto-focus: you can select text without focusing the editor.
+这不同于自动聚焦：你可以在不聚焦编辑器的情况下选择文本。
 
 ### Component Overrides
 
-Override default components for plugins:
+覆盖插件的默认组件：
 
 ```ts
 const editor = createPlateEditor({
@@ -124,7 +124,7 @@ const editor = createPlateEditor({
 
 ### Plugin Overrides
 
-Override specific plugin configurations:
+覆盖特定插件的配置：
 
 ```ts
 const editor = createPlateEditor({
@@ -141,9 +141,9 @@ const editor = createPlateEditor({
 });
 ```
 
-### Disable Plugins
+### 禁用插件
 
-Disable specific plugins:
+禁用特定插件：
 
 ```ts
 const editor = createPlateEditor({
@@ -158,7 +158,7 @@ const editor = createPlateEditor({
 
 ### Overriding Plugins
 
-You can override core plugins or previously defined plugins by adding a plugin with the same key. The last plugin with a given key wins:
+你可以通过添加具有相同键的插件来覆盖核心插件或先前定义的插件。具有给定键的最后一个插件获胜：
 
 ```ts
 const CustomParagraphPlugin = createPlatePlugin({
@@ -173,7 +173,7 @@ const editor = createPlateEditor({
 
 ### Root Plugin
 
-From the root plugin, you can configure any plugin:
+从根插件，你可以配置任何插件：
 
 ```ts
 const editor = createPlateEditor({
@@ -189,7 +189,7 @@ const editor = createPlateEditor({
 
 ## Typed Editor
 
-`createPlateEditor` will automatically infer the types for your editor from the value and the plugins you pass in. For explicit type creation, use the generics:
+`createPlateEditor` 将自动从你传递的值和插件中推断编辑器的类型。对于显式类型创建，使用泛型：
 
 ### Plugins Type
 
@@ -204,13 +204,13 @@ editor.tf.insert.tableRow()
 
 ### Value Type
 
-For more complex editors, you can define your types in a separate file (e.g., `plate-types.ts`):
+对于更复杂的编辑器，你可以在单独的文件中定义你的类型（例如 `plate-types.ts`）：
 
 ```ts
 import type { TElement, TText } from '@udecode/plate-common';
 import type { TPlateEditor } from '@udecode/plate-common/react';
 
-// Define custom element types
+// 定义自定义元素类型
 interface ParagraphElement extends TElement {
   align?: 'left' | 'center' | 'right' | 'justify';
   children: RichText[];
@@ -223,7 +223,7 @@ interface ImageElement extends TElement {
   url: string;
 }
 
-// Define custom text types
+// 定义自定义文本类型
 interface FormattedText extends TText {
   bold?: boolean;
   italic?: boolean;
@@ -231,15 +231,15 @@ interface FormattedText extends TText {
 
 export type MyRootBlock = ParagraphElement | ImageElement;
 
-// Define the editor's value type
+// 定义编辑器的值类型
 export type MyValue = MyRootBlock[];
 
-// Define the custom editor type
+// 定义自定义编辑器类型
 export type MyEditor = TPlateEditor<MyValue, typeof TablePlugin | typeof LinkPlugin>;
 
 export const useMyEditorRef = () => useEditorRef<MyEditor>();
 
-// Usage
+// 使用
 const value: MyValue = [{
   type: 'p',
   children: [{ text: 'Hello, Plate!' }],
@@ -250,18 +250,18 @@ const editorInferred = createPlateEditor({
   value,
 });
 
-// or 
+// 或者
 const editorExplicit = createPlateEditor<MyValue, typeof TablePlugin | typeof LinkPlugin>({
   plugins: [TablePlugin, LinkPlugin],
   value,
 });
 ```
 
-### Benefits
+### 好处
 
-We strongly recommend using typed editors for the following reasons:
+我们强烈推荐使用类型化编辑器，原因如下：
 
-1. **Type Safety**: The editor enforces the structure of your document, preventing invalid operations.
-2. **Autocomplete**: Your IDE can provide better autocomplete suggestions based on your custom types.
-3. **Refactoring**: Changing types in one place will highlight necessary changes throughout your codebase.
-4. **Documentation**: Types serve as a form of self-documentation for your editor's structure and capabilities.
+1. **类型安全**：编辑器强制执行文档结构，防止无效操作。
+2. **自动完成**：你的 IDE 可以根据你的自定义类型提供更好的自动完成建议。
+3. **重构**：在单个位置更改类型将突出显示代码库中的必要更改。
+4. **文档**：类型充当编辑器结构和功能的形式化文档。

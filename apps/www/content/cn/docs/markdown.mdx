@@ -7,10 +7,10 @@ toc: false
 
 <PackageInfo>
 
-## Features
+## 功能特性
 
-- Convert Markdown string to Slate JSON.
-- Convert Slate JSON to Markdown string.
+- 将 Markdown 字符串转换为 Slate JSON。
+- 将 Slate JSON 转换为 Markdown 字符串。
 
 </PackageInfo>
 
@@ -39,9 +39,9 @@ const value = editor.api.markdown.deserialize('**Hello world!**');
 
 <ComponentPreview name="markdown-to-slate-demo" />
 
-### Slate to Markdown
+### Slate 转 Markdown
 
-Currently supported plugins: paragraph, link, list, heading, italic, bold and code.
+当前支持的插件：段落、链接、列表、标题、斜体、粗体和代码。
 
 ```tsx
 const editor = createPlateEditor({ 
@@ -62,16 +62,16 @@ const content = editor.api.markdown.serialize();
 <APIOptions>
 <APIItem name="elementRules" type="RemarkElementRules">
 
-Object where each key is a Markdown syntax element type and the value is a transformation function.
+每个键是一个 Markdown 语法元素类型，值是一个转换函数。
 
 <APISubList>
 <APISubListItem parent="elementRules" name="[key in MdastElementType]" type="RemarkElementRule">
 
-The key corresponds to a Markdown element type (`paragraph`, `heading`, `list`, `listItem`, `link`, `image`, `blockquote`, `code`, `thematicBreak`). The value is an object specifying how to transform the given type of Markdown element into a Slate element.
+键对应一个 Markdown 元素类型 (`paragraph`, `heading`, `list`, `listItem`, `link`, `image`, `blockquote`, `code`, `thematicBreak`)。值是一个对象，指定如何将给定类型的 Markdown 元素转换为 Slate 元素。
 
 <APISubList>
 <APISubListItem parent="RemarkElementRule" name="transform" type="(node: MdastNode, options: RemarkPluginOptions<V>) => TElement | TElement[]">
-A function that takes a `MdastNode` and `RemarkPluginOptions` as arguments and returns a `TElement` or an array of `TElement`.
+一个函数，接受一个 `MdastNode` 和 `RemarkPluginOptions` 作为参数，并返回一个 `TElement` 或 `TElement` 数组。
 
 </APISubListItem>
 </APISubList>
@@ -80,22 +80,22 @@ A function that takes a `MdastNode` and `RemarkPluginOptions` as arguments and r
 </APIItem>
 <APIItem name="textRules" type="RemarkTextRules">
 
-Object where each key is a Markdown syntax text type and the value is an object providing optional mark and transform functions.
+每个键是一个 Markdown 语法文本类型，值是一个提供可选标记和转换函数的对象。
 
 <APISubList>
 <APISubListItem parent="textRules" name="[key in MdastTextType]" type="RemarkTextRule">
 
-The key corresponds to a Markdown text type (`emphasis`, `strong`, `delete`, `inlineCode`, `html`, `text`). The value is an object specifying how to process the given type of Markdown text.
+键对应一个 Markdown 文本类型 (`emphasis`, `strong`, `delete`, `inlineCode`, `html`, `text`)。值是一个对象，指定如何处理给定类型的 Markdown 文本。
 
 <APISubList>
 <APISubListItem parent="RemarkTextRule" name="mark" type="(options: RemarkPluginOptions<V>) => string" optional>
 
-An optional function that takes `RemarkPluginOptions` as argument and returns a string, indicating the mark type for the given Markdown text.
+一个可选函数，接受 `RemarkPluginOptions` 作为参数，并返回一个字符串，指示给定 Markdown 文本的标记类型。
 
 </APISubListItem>
 <APISubListItem parent="RemarkTextRule" name="transform" type="(text: string) => string" optional>
 
-An optional function that takes a string (the Markdown text) as argument and returns a transformed string.
+一个可选函数，接受一个字符串（Markdown 文本）作为参数，并返回一个转换后的字符串。
 
 </APISubListItem>
 </APISubList>
@@ -108,29 +108,29 @@ An optional function that takes a string (the Markdown text) as argument and ret
 
 ### editor.api.markdown.deserialize
 
-Converts a Markdown string to a Slate value.
+将 Markdown 字符串转换为 Slate 值。
 
 <APIParameters>
 <APIItem name="markdown" type="string">
-The Markdown string to be deserialized.
+要反序列化的 Markdown 字符串。
 </APIItem>
 </APIParameters>
 
 <APIReturns>
 <APIItem type="TDescendant[]">
-An array of Slate nodes representing the deserialized Markdown content.
+一个 Slate 节点数组，表示反序列化的 Markdown 内容。
 </APIItem>
 </APIReturns>
 
 ### editor.api.markdown.serialize
 
-Converts the current Slate value to a Markdown string.
+将当前 Slate 值转换为 Markdown 字符串。
 
 <APIParameters>
 <APIItem name="options" type="object" optional>
 <APISubList>
 <APISubListItem parent="options" name="nodes" type="TDescendant[]" optional>
-The Slate nodes to serialize. If not provided, the entire editor value will be used.
+要序列化的 Slate 节点。如果未提供，则使用整个编辑器值。
 </APISubListItem>
 </APISubList>
 </APIItem>
@@ -138,6 +138,6 @@ The Slate nodes to serialize. If not provided, the entire editor value will be u
 
 <APIReturns>
 <APIItem type="string">
-A Markdown string representing the serialized Slate content.
+一个表示序列化 Slate 内容的 Markdown 字符串。
 </APIItem>
 </APIReturns>

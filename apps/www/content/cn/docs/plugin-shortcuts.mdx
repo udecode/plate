@@ -1,15 +1,15 @@
 ---
 title: Plugin Shortcuts
-description: Learn how to configure and use keyboard shortcuts in Plate plugins.
+description: 了解如何在 Plate 插件中配置和使用键盘快捷键。
 ---
 
-This guide covers the configuration and usage of keyboard shortcuts in Plate plugins, allowing you to create custom hotkeys for various editor actions.
+本指南介绍了 Plate 插件中键盘快捷键的配置和使用，让你能够为各种编辑器操作创建自定义快捷键。
 
-## Plugin Shortcuts
+## 插件快捷键
 
-Plate provides a set of default shortcuts for common actions.
+Plate 为常见操作提供了一组默认快捷键。
 
-### Text Formatting
+### 文本格式化
 
 - **BoldPlugin**
   - `toggleBold`: `Mod+B`
@@ -35,46 +35,46 @@ Plate provides a set of default shortcuts for common actions.
 - **HighlightPlugin**
   - `toggleHighlight`: `Mod+Shift+H`
 
-## Block Formatting
+## 块级格式化
 
 - **ParagraphPlugin**
-  - `toggleParagraph`: `Mod+Alt+0` or `Mod+Shift+0`
+  - `toggleParagraph`: `Mod+Alt+0` 或 `Mod+Shift+0`
 
 - **BlockquotePlugin**
   - `toggleBlockquote`: `Mod+Shift+.`
 
 - **HeadingPlugin**
-  - `toggleHeading1`: `Mod+Alt+1` or `Mod+Shift+1`
-  - `toggleHeading2`: `Mod+Alt+2` or `Mod+Shift+2`
-  - `toggleHeading3`: `Mod+Alt+3` or `Mod+Shift+3`
+  - `toggleHeading1`: `Mod+Alt+1` 或 `Mod+Shift+1`
+  - `toggleHeading2`: `Mod+Alt+2` 或 `Mod+Shift+2`
+  - `toggleHeading3`: `Mod+Alt+3` 或 `Mod+Shift+3`
 
 - **CodeBlockPlugin**
   - `toggleCodeBlock`: `Mod+Alt+8`
 
-## Lists
+## 列表
 
 - **ListPlugin**
   - `toggleBulletedList`: `Mod+Alt+5`
   - `toggleNumberedList`: `Mod+Alt+6`
 
 - **TodoListPlugin**
-  - `toggleTodoList`: `Mod+Alt+4` or `Mod+Shift+4`
+  - `toggleTodoList`: `Mod+Alt+4` 或 `Mod+Shift+4`
 
-## Comments
+## 评论
 
 - **CommentsPlugin**
   - `toggleComment`: `Mod+Shift+M`
 
-### Notes
+### 注意事项
 
-- `Mod` represents `Cmd` on macOS and `Ctrl` on Windows/Linux.
-- Shortcuts can be customized or extended as needed in your Plate configuration.
+- `Mod` 在 macOS 上代表 `Cmd`，在 Windows/Linux 上代表 `Ctrl`。
+- 快捷键可以根据需要在 Plate 配置中自定义或扩展。
 
-## Adding Shortcuts to Plugins
+## 为插件添加快捷键
 
-You can add shortcuts to your plugins using the `shortcuts` option. Each shortcut is defined with a unique key and an object containing the handler, keys, and other optional properties.
+你可以使用 `shortcuts` 选项为插件添加快捷键。每个快捷键都用一个唯一的键定义，包含处理函数、按键组合和其他可选属性。
 
-Here's a basic example:
+以下是一个基本示例：
 
 ```ts
 const ParagraphPlugin = createPlatePlugin({
@@ -89,21 +89,20 @@ const ParagraphPlugin = createPlatePlugin({
   },
 });
 ```
+在这个示例中，按下 `Cmd+Option+0` 或 `Cmd+Shift+0`（在 Mac 上）或 `Ctrl+Alt+0` 或 `Ctrl+Shift+0`（在 Windows/Linux 上）将切换段落块。
 
-In this example, pressing `Cmd+Option+0` or `Cmd+Shift+0` (on Mac) or `Ctrl+Alt+0` or `Ctrl+Shift+0` (on Windows/Linux) will toggle the paragraph block.
+## 快捷键属性
 
-## Shortcut Properties
+每个快捷键可以具有以下属性：
 
-Each shortcut can have the following properties:
+- `handler`: 当快捷键触发时调用的函数。
+- `keys`: 表示按键组合的字符串或字符串数组。
+- `priority`: （可选）表示快捷键优先级的数字。
+- `preventDefault`: （可选）一个布尔值，用于阻止浏览器默认行为。
 
-- `handler`: A function that is called when the shortcut is triggered.
-- `keys`: A string or array of strings representing the key combination(s).
-- `priority`: (Optional) A number indicating the priority of the shortcut.
-- `preventDefault`: (Optional) A boolean to prevent the default browser action.
+## 多个快捷键
 
-## Multiple Shortcuts
-
-You can define multiple shortcuts for a single plugin:
+你可以为单个插件定义多个快捷键：
 
 ```ts
 const FormattingPlugin = createPlatePlugin({
@@ -125,9 +124,9 @@ const FormattingPlugin = createPlatePlugin({
 });
 ```
 
-## Shortcut Priority
+## 快捷键优先级
 
-When multiple plugins define shortcuts with the same key combination, you can use the `priority` property to determine which one takes precedence:
+当多个插件定义了相同按键组合的快捷键时，可以使用 `priority` 属性来确定哪个插件优先：
 
 ```ts
 const HighPriorityPlugin = createPlatePlugin({
@@ -153,11 +152,11 @@ const LowPriorityPlugin = createPlatePlugin({
 });
 ```
 
-In this case, the `HighPriorityPlugin` shortcut will be triggered when `Cmd+K` (Mac) or `Ctrl+K` (Windows/Linux) is pressed.
+在这个示例中，当按下 `Cmd+K`（在 Mac 上）或 `Ctrl+K`（在 Windows/Linux 上）时，`HighPriorityPlugin` 的快捷键将被触发。
 
-## Disabling Shortcuts
+## 禁用快捷键
 
-You can disable a specific shortcut by setting its value to `null`:
+你可以通过将快捷键的值设置为 `null` 来禁用特定快捷键：
 
 ```ts
 const MyPlugin = ParagraphPlugin.configure({
@@ -167,9 +166,9 @@ const MyPlugin = ParagraphPlugin.configure({
 });
 ```
 
-## Extending Shortcuts
+## 扩展快捷键
 
-You can extend or override shortcuts using the `extend` method:
+你可以使用 `extend` 方法扩展或覆盖快捷键：
 
 ```ts
 const ExtendedPlugin = BasePlugin.extend({
@@ -182,9 +181,9 @@ const ExtendedPlugin = BasePlugin.extend({
 });
 ```
 
-## Root Plugin Shortcuts
+## 根插件快捷键
 
-You can also define shortcuts at the root level when creating the editor:
+你也可以在创建编辑器时定义根级别的快捷键：
 
 ```ts
 const editor = createPlateEditor({
@@ -198,10 +197,10 @@ const editor = createPlateEditor({
 });
 ```
 
-Root-level shortcuts have the highest priority by default.
+根级别的快捷键默认具有最高优先级。
 
-## Best Practices
+## 最佳实践
 
-- Consider using the `preventDefault` option for shortcuts that might conflict with browser defaults.
-- Be mindful of existing shortcuts in your application to avoid conflicts.
-- Use the `priority` property when you need fine-grained control over which shortcut is triggered.
+- 考虑使用 `preventDefault` 选项来避免与浏览器默认快捷键冲突。
+- 在应用程序中注意现有的快捷键，以避免冲突。
+- 当你需要细粒度控制哪个快捷键被触发时，使用 `priority` 属性。

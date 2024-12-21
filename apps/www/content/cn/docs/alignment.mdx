@@ -11,11 +11,11 @@ docs:
 
 ## Features
 
-- Provides text alignment options: left, right, center, or justify.
+- 提供文本对齐选项：左对齐、右对齐、居中对齐或两端对齐。
 
 </PackageInfo>
 
-## Installation
+## 安装
 
 ```bash
 npm install @udecode/plate-alignment
@@ -45,40 +45,40 @@ const editor = createPlateEditor({
 });
 ```
 
-## Plugins
+## 插件
 
 ### AlignPlugin
 
 ## API
 
 ### setAlign
-
-Sets the alignment for the specified block elements in the editor.
+  
+设置指定块元素的对齐方式。
 
 <APIParameters>
 <APIItem name="editor" type="PlateEditor">
-The editor instance.
+编辑器实例。
 </APIItem>
 <APIItem name="options" type="object" optional>
 <APISubList>
 <APISubListItem parent="options" name="value" type="Alignment" optional>
-The alignment value.
+对齐方式的值。
 </APISubListItem>
 <APISubListItem parent="options" name="setNodesOptions" type="SetNodesOptions" optional>
-Options for the `setNodes` function.
+`setNodes` 函数的选项。
 </APISubListItem>
 
 </APISubList>
 </APIItem>
 </APIParameters>
 
-## API Components
+## API 组件
 
 ### useAlignDropdownMenuState
 
 <APIReturns>
   <APIItem name="value" type="'left' | 'center' | 'right' | 'justify'">
-    The alignment value.
+    对齐方式的值。
   </APIItem>
 </APIReturns>
 
@@ -86,27 +86,27 @@ Options for the `setNodes` function.
 
 <APIState>
   <APIItem name="value" type="'left' | 'center' | 'right' | 'justify'">
-    The alignment value.
+    对齐方式的值。
   </APIItem>
 </APIState>
 
 <APIReturns>
   <APIItem name="radioGroupProps" type="object">
-    Props for the radio group.
+    单选按钮组的属性。
     <APISubList>
       <APISubListItem
         parent="radioGroupProps"
         name="value"
         type="'left' | 'center' | 'right' | 'justify'"
       >
-        The alignment value.
+        对齐方式的值。
       </APISubListItem>
       <APISubListItem
         parent="radioGroupProps"
         name="onValueChange"
         type="function"
       >
-        Callback to set the alignment value.
+        设置对齐方式值的回调函数。
       </APISubListItem>
     </APISubList>
   </APIItem>

@@ -13,9 +13,9 @@ docs:
 
 ## Features
 
-- Add toggles to your document.
-  - Toggles are closed by default, and can be opened to reveal the content inside.
-- Refer to the [Indent documentation](/docs/indent) for more information.
+- 添加折叠和展开功能到你的文档中。
+  - 默认情况下，折叠的，可以展开以显示内部内容。
+- 参考 [Indent 文档](/docs/indent) 了解更多信息。
 
 ## Plugin dependencies
 
@@ -40,7 +40,7 @@ import { IndentPlugin } from '@udecode/plate-indent/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 
 const plugins = [
-  // ...otherPlugins,
+  // ...其他插件,
   HeadingPlugin,
   IndentPlugin.configure({
     inject: {
@@ -58,13 +58,13 @@ const plugins = [
 
 <APIOptions>
 <APIItem name="openIds" type="Set<string>" optional>
-A set of open toggle IDs.
+打开的折叠 ID 集合。
 </APIItem>
 <APIItem name="isOpen" type="(toggleId: string) => boolean" optional>
-A function to determine if a toggle is open.
+判断折叠是否打开的函数。
 </APIItem>
 <APIItem name="someClosed" type="(toggleIds: string[]) => boolean" optional>
-A function to determine if some toggles are closed.
+判断是否有折叠处于关闭状态的函数。
 </APIItem>
 </APIOptions>
 
@@ -72,47 +72,45 @@ A function to determine if some toggles are closed.
 
 ### editor.api.toggle.toggleIds
 
-Toggles the open state of toggles.
+切换折叠的打开状态。
 
 <APIParameters>
   <APIItem name="ids" type="string[]">
-    An array of element ids.
+    元素 ID 数组。
   </APIItem>
   <APIItem name="force" type="boolean | null" optional>
-    Set to true if you want to expand all toggles regardless of their current
-    state. Set to false if you want to collapse all toggles regardless of their
-    current state. If null, it will toggle the current state.
+    设置为 true 将展开所有折叠，无论其当前状态如何。设置为 false 将折叠所有折叠，无论其当前状态如何。如果为 null，将切换当前状态。
   </APIItem>
 </APIParameters>
 
 ### openNextToggles
 
-Marks the block at the current selection as an open toggle.
-Use this function right before inserting a block so that the toggle is expanded upon insertion.
+将当前选择处的块标记为打开的折叠。
+在插入块之前使用此函数，以便在插入时折叠处于展开状态。
 
 <APIParameters>
   <APIItem name="editor" type="TEditor">
-    The editor instance.
+    编辑器实例。
   </APIItem>
 </APIParameters>
 
-## API Components
+## API 组件
 
 ### useToggleToolbarButtonState
 
 <APIReturns>
   <APIItem name="pressed" type="boolean">
-    A boolean indicating whether the button is pressed or not.
+    指示按钮是否被按下的布尔值。
   </APIItem>
 </APIReturns>
 
 ### useToggleToolbarButton
 
-A behavior hook for the toggle toolbar button.
+折叠工具栏按钮的行为钩子。
 
 <APIState>
   <APIItem name="pressed" type="boolean">
-    A boolean indicating whether the button is pressed or not.
+    指示按钮是否被按下的布尔值。
   </APIItem>
 </APIState>
 
@@ -120,17 +118,13 @@ A behavior hook for the toggle toolbar button.
   <APIItem name="props" type="object">
     <APISubList>
       <APISubListItem parent="props" name="pressed" type="boolean">
-        A boolean indicating whether the button is pressed or not.
+        指示按钮是否被按下的布尔值。
       </APISubListItem>
       <APISubListItem parent="props" name="onClick" type="function">
-        A callback function to handle the click event of the button. It toggles
-        the toggle of the specified node type in the editor and focuses the
-        editor.
+        处理按钮点击事件的回调函数。它会切换编辑器中指定节点类型的折叠状态并使编辑器获得焦点。
       </APISubListItem>
       <APISubListItem parent="props" name="onMouseDown" type="function">
-        A callback function to handle the mouse down event of the button. It
-        just prevents default so that focus is not lost when clicking on the
-        button.
+        处理按钮鼠标按下事件的回调函数。它只是阻止默认行为，以便在点击按钮时不会失去焦点。
       </APISubListItem>
     </APISubList>
   </APIItem>
@@ -140,52 +134,46 @@ A behavior hook for the toggle toolbar button.
 
 <APIParameters>
   <APIItem name="toggleId" type="string">
-    The id of the toggle element.
+    折叠元素的 ID。
   </APIItem>
 </APIParameters>
 
 <APIReturns>
   <APIItem name="toggleId" type="string">
-    The id of the toggle element.
+    折叠元素的 ID。
   </APIItem>
   <APIItem name="open" type="boolean">
-    A boolean indicating whether the toggle is open (expanded) or not
-    (collapsed).
+    指示折叠是否打开（展开）或关闭（折叠）的布尔值。
   </APIItem>
 </APIReturns>
 
 ### useToggleButton
 
-A behavior hook for the toggle button that expands or collapses a toggle element.
+用于展开或折叠折叠元素的折叠按钮的行为钩子。
 
 <APIParameters>
   <APIItem name="toggleId" type="string">
-    The id of the toggle element.
+    折叠元素的 ID。
   </APIItem>
   <APIItem name="open" type="boolean">
-    A boolean indicating whether the toggle is open (expanded) or not
-    (collapsed).
+    指示折叠是否打开（展开）或关闭（折叠）的布尔值。
   </APIItem>
 </APIParameters>
 
 <APIReturns>
   <APIItem name="toggleId" type="string">
-    The id of the toggle element.
+    折叠元素的 ID。
   </APIItem>
   <APIItem name="open" type="boolean">
-    A boolean indicating whether the toggle is open (expanded) or not
-    (collapsed).
+    指示折叠是否打开（展开）或关闭（折叠）的布尔值。
   </APIItem>
   <APIItem name="buttonProps" type="object">
     <APISubList>
       <APISubListItem parent="buttonProps" name="onClick" type="function">
-        A callback function to handle the click event of the button. It toggles
-        the open state of the toggle.
+        处理按钮点击事件的回调函数。它会切换折叠的打开状态。
       </APISubListItem>
       <APISubListItem parent="buttonProps" name="onMouseDown" type="function">
-        A callback function to handle the mouse down event of the button. It
-        just prevents default so that focus is not lost when clicking on the
-        button.
+        处理按钮鼠标按下事件的回调函数。它只是阻止默认行为，以便在点击按钮时不会失去焦点。
       </APISubListItem>
     </APISubList>
   </APIItem>

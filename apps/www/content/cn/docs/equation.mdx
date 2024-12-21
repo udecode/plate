@@ -13,14 +13,14 @@ docs:
 
 ## Features
 
-- LaTeX syntax support for complex mathematical expressions
-- Both inline and block equation formats
-- Real-time rendering of equations using KaTeX
-- Easy editing and navigation within equations
+- LaTeX 语法支持复杂数学表达式
+- 内联和块方程格式
+- 使用 KaTeX 实时渲染方程
+- 轻松编辑和导航方程
 
 </PackageInfo>
 
-## Installation
+## 安装
 
 ```bash
 npm install @udecode/plate-math
@@ -59,50 +59,50 @@ const components = {
 3. Click on any equation to edit it. Press Escape to close the editor without saving changes.
 4. Navigate through the equation using arrow keys. */}
 
-## Examples
+## 示例
 
 ### Plate UI
 
-Work in progress.
+开发中。
 
 ### Plate Plus
 
 <ComponentPreviewPro name="equation-pro" />
 
-## Plugins
+## 插件
 
 ### EquationPlugin
 
-Block equation element plugin.
+块级方程元素插件。
 
 ### InlineEquationPlugin
 
-Inline equation element plugin.
+内联方程元素插件。
 
-## Transforms
+## 转换
 
 ### editor.tf.insert.equation
 
-Inserts an empty block equation.
+插入一个空的块级方程。
 <APIParameters>
   <APIItem name="options" type="InsertNodesOptions">
-    Options for the insert nodes transform.
+    插入节点转换的选项。
   </APIItem>
 </APIParameters>
 
 ### editor.tf.insert.inlineEquation
 
-Inserts an inline equation.
+插入一个内联方程。
 <APIParameters>
   <APIItem name="texExpression" type="string" optional>
-    The LaTeX expression to insert. If not provided, an empty equation will be inserted.
+    要插入的 LaTeX 表达式。如果未提供，将插入一个空方程。
   </APIItem>
   <APIItem name="options" type="InsertNodesOptions" optional>
-    Options for the insert nodes transform.
+    插入节点转换的选项。
   </APIItem>
 </APIParameters>
 
-## Types
+## 类型
 
 ### TEquationElement
 

@@ -9,50 +9,50 @@ docs:
 
 <Callout>
 
-Plate offers two approaches for implementing lists:
+Plate 提供了两种实现列表的方法：
 
-1. **This Indent List plugin** - Flexible indentation-based lists:
-   - More like Word/Google Docs behavior
-   - Any block can be indented to create list-like structures
-   - Used in the [AI editor](/editors#editor-ai)
-   - Better for free-form content organization
+1. **此缩进列表插件** - 灵活的基于缩进的列表：
+   - 更像 Word/Google Docs 的行为
+   - 任何块都可以通过缩进创建类似列表的结构
+   - 在 [AI 编辑器](/editors#editor-ai)中使用
+   - 更适合自由格式的内容组织
 
-2. The [**List plugin**](/docs/list) - Traditional HTML-spec lists with strict nesting rules:
-   - Follows standard HTML list structure (`ul`/`ol` > `li`)
-   - Maintains consistent list hierarchy
-   - Best for content that may be exported to HTML/markdown
-   - Highest complexity
+2. [**列表插件**](/docs/list) - 具有严格嵌套规则的传统 HTML 规范列表：
+   - 遵循标准 HTML 列表结构（`ul`/`ol` > `li`）
+   - 维护一致的列表层次结构
+   - 最适合需要导出为 HTML/markdown 的内容
+   - 最高复杂度
 
-Choose based on your needs:
-- Use the **Indent List plugin** when you want more flexible indentation behavior
-- Use the **List plugin** when you need standard HTML list compatibility
+根据您的需求选择：
+- 当您想要更灵活的缩进行为时，使用**缩进列表插件**
+- 当您需要标准 HTML 列表兼容性时，使用**列表插件**
 
 </Callout>
 
 <PackageInfo>
 
-## Features
+## 功能
 
-- **Flexible Block Indentation**:
-  - Set list indentation for any block type (paragraphs, headings, etc.)
-  - Transform any block into a list item through indentation
-  - More intuitive Word/Google Docs-like behavior
+- **灵活的块缩进**：
+  - 为任何块类型（段落、标题等）设置列表缩进
+  - 通过缩进将任何块转换为列表项
+  - 更直观的 Word/Google Docs 式行为
 
-- **Simplified Structure** - Differs from the [List plugin](/docs/list):
-  - Flat DOM structure where each indented block is independent
-  - Each indented list block consists of a single `ul` or `ol` with one item
-  - No strict parent-child relationships enforced
-  - Better for free-form content organization
+- **简化结构** - 与[列表插件](/docs/list)的区别：
+  - 每个缩进块都独立的扁平 DOM 结构
+  - 每个缩进列表块由一个带有一个项目的 `ul` 或 `ol` 组成
+  - 不强制严格的父子关系
+  - 更适合自由格式的内容组织
 
-- **List Types**:
-  - Bulleted lists (unordered)
-  - Numbered lists (ordered)
+- **列表类型**：
+  - 项目符号列表（无序）
+  - 编号列表（有序）
 
-- **Shortcuts**:
-  - Combined with the autoformat plugin, use markdown shortcuts (**`-`**, **`*`**, **`1.`**) to create lists
-  - Tab/Shift+Tab for indentation control
+- **快捷键**：
+  - 结合自动格式插件，使用 markdown 快捷键（**`-`**、**`*`**、**`1.`**）创建列表
+  - Tab/Shift+Tab 用于缩进控制
 
-For more information about the underlying indentation system, see the [Indent doc](/docs/indent).
+有关底层缩进系统的更多信息，请参阅 [Indent 文档](/docs/indent)。
 
 </PackageInfo>
 
@@ -97,21 +97,21 @@ const plugins = [
     type="GetSiblingIndentListOptions<TElement>"
     optional
   >
-    A function to determine indent list options for sibling elements.
+    用于确定兄弟元素的缩进列表选项的函数。
   </APIItem>
   <APIItem
     name="getListStyleType"
     type="(element: HTMLElement) => ListStyleType"
     optional
   >
-    A function mapping HTML elements to list style types.
+    将 HTML 元素映射到列表样式类型的函数。
   </APIItem>
   <APIItem
     name="renderIndentListBelowNodes"
     type="(editor: PlateEditor) => React.ReactNode"
     optional
   >
-    A function to render components below indent list nodes.
+    在缩进列表节点下渲染组件的函数。
   </APIItem>
 </APIOptions>
 
@@ -121,61 +121,63 @@ const plugins = [
 
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
-    The editor instance.
+    编辑器实例。
   </APIItem>
   <APIItem name="entry" type="ElementEntryOf">
-    The entry of the current element.
+    当前元素的entry。
   </APIItem>
   <APIItem
     name="options"
     type="Partial<GetSiblingIndentListOptions>"
     optional
-  ></APIItem>
+  >
+    获取下一个兄弟缩进列表的选项。
+  </APIItem>
 </APIParameters>
 
 <APIReturns>
   <APIItem type="TNodeEntry | undefined">
-    The entry of the next sibling with an indent list, or `undefined` if not
-    found.
+    具有缩进列表的下一个兄弟entry，如果未找到则返回 `undefined`。
   </APIItem>
 </APIReturns>
 
 ### getPreviousIndentList
 
-Gets the previous sibling entry with an indent list.
+获取具有缩进列表的前一个兄弟entry。
 
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
-    The editor instance.
+    编辑器实例。
   </APIItem>
   <APIItem name="entry" type="ElementEntryOf">
-    The entry of the current element.
+    当前元素的entry。
   </APIItem>
   <APIItem
     name="options"
     type="Partial<GetSiblingIndentListOptions>"
     optional
-  ></APIItem>
+  >
+    获取前一个兄弟缩进列表的选项。
+  </APIItem>
 </APIParameters>
 
 <APIReturns>
   <APIItem type="TNodeEntry | undefined">
-    The entry of the previous sibling with an indent list, or `undefined` if not
-    found.
+    具有缩进列表的前一个兄弟entry，如果未找到则返回 `undefined`。
   </APIItem>
 </APIReturns>
 
 ### indentList
 
-Increases the indentation of the selected blocks.
+增加所选块的缩进。
 
 <APIParameters>
 <APIItem name="editor" type="PlateEditor">
-The editor instance.
+编辑器实例。
 </APIItem>
 <APIItem name="options" type="IndentListOptions" optional>
 
-Extends `SetIndentOptions`.
+扩展 `SetIndentOptions`。
 
 <APISubList>
 <APISubListItem
@@ -184,9 +186,9 @@ Extends `SetIndentOptions`.
   type="ListStyleType | string"
   optional
 >
-The list style type to use.
+要使用的列表样式类型。
 
-- **Default:** `ListStyleType.Disc`
+- **默认值：** `ListStyleType.Disc`
 
 </APISubListItem>
 </APISubList>
@@ -196,15 +198,15 @@ The list style type to use.
 
 ### outdentList
 
-Decreases the indentation of the selected blocks.
+减少所选块的缩进。
 
 <APIParameters>
 <APIItem name="editor" type="PlateEditor">
-The editor instance.
+编辑器实例。
 </APIItem>
 <APIItem name="options" type="IndentListOptions" optional>
 
-Extends `SetIndentOptions`.
+扩展 `SetIndentOptions`。
 
 <APISubList>
 <APISubListItem
@@ -213,9 +215,9 @@ Extends `SetIndentOptions`.
   type="ListStyleType | string"
   optional
 >
-The list style type to use.
+要使用的列表样式类型。
 
-- **Default:** `ListStyleType.Disc`
+- **默认值：** `ListStyleType.Disc`
 
 </APISubListItem>
 </APISubList>
@@ -225,27 +227,27 @@ The list style type to use.
 
 ### someIndentList
 
-Checks if some of the selected blocks have a specific list style type.
+检查所选块中是否有特定的列表样式类型。
 
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
-    The editor instance.
+    编辑器实例。
   </APIItem>
   <APIItem name="type" type="string">
-    The list style type to check.
+    要检查的列表样式类型。
   </APIItem>
 </APIParameters>
 
 ### toggleIndentList
 
-Toggles the indent list.
+切换缩进列表。
 
 <APIParameters>
 <APIItem name="editor" type="PlateEditor">
-The editor instance.
+编辑器实例。
 </APIItem>
 <APIItem name="options" type="IndentListOptions">
-The options for toggling the indent list.
+切换缩进列表的选项。
 <APISubList>
 <APISubListItem
   parent="options"
@@ -253,7 +255,7 @@ The options for toggling the indent list.
   type="ListStyleType | string"
   optional
 >
-The list style type to use.
+要使用的列表样式类型。
 
 </APISubListItem>
 </APISubList>
@@ -263,53 +265,44 @@ The list style type to use.
 
 ### GetSiblingIndentListOptions
 
-Used to provide options for getting the sibling indent list in a block of text.
+用于提供获取文本块中兄弟缩进列表的选项。
 
 <APIAttributes>
   <APIItem name="getPreviousEntry" type="function">
-    This function is used to get the previous sibling entry from a given entry.
+    此函数用于从给定entry获取前一个兄弟entry。
   </APIItem>
   <APIItem name="getNextEntry" type="function">
-    This function is used to get the next sibling entry from a given entry.
+    此函数用于从给定entry获取下一个兄弟entry。
   </APIItem>
   <APIItem name="query" type="function">
-    This function is used to validate a sibling node during the lookup process.
-    If it returns false, the next sibling is checked.
+    此函数用于在查找过程中验证兄弟节点。如果返回 false，则检查下一个兄弟节点。
   </APIItem>
   <APIItem name="eqIndent" type="boolean">
-    Indicates whether to break the lookup when the sibling node has an indent
-    level equal to the current node. If true, the lookup stops when a sibling
-    node with the same indent level is found.
+    指示当兄弟节点具有与当前节点相同的缩进级别时是否中断查找。如果为 true，则在找到具有相同缩进级别的兄弟节点时停止查找。
   </APIItem>
   <APIItem name="breakQuery" type="function">
-    A function that takes a `TNode` and returns a boolean value or undefined.
-    This function is used to specify a condition under which the lookup process
-    should be stopped.
+    一个接受 `TNode` 并返回布尔值或 undefined 的函数。此函数用于指定应该停止查找过程的条件。
   </APIItem>
   <APIItem name="breakOnLowerIndent" type="boolean">
-    Indicates whether to break the lookup when a sibling node with a lower
-    indent level is found. If true, the lookup stops when a sibling node with a
-    lower indent level is found.
+    指示当找到具有较低缩进级别的兄弟节点时是否中断查找。如果为 true，则在找到具有较低缩进级别的兄弟节点时停止查找。
   </APIItem>
   <APIItem name="breakOnEqIndentNeqListStyleType" type="boolean">
-    Indicates whether to break the lookup when a sibling node with the same
-    indent level but a different list style type is found. If true, the lookup
-    stops when such a sibling node is found.
+    指示当找到具有相同缩进级别但不同列表样式类型的兄弟节点时是否中断查找。如果为 true，则在找到这样的兄弟节点时停止查找。
   </APIItem>
 </APIAttributes>
 
-## API Components
+## API 组件
 
 ### useIndentListToolbarButton
 
-A behavior hook for the indent list toolbar button.
+缩进列表工具栏按钮的行为钩子。
 
 <APIState>
   <APIItem name="nodeType" type="string">
-    The list style type.
+    列表样式类型。
   </APIItem>
   <APIItem name="pressed" type="boolean">
-    A boolean indicating whether the button is pressed or not.
+    指示按钮是否被按下的布尔值。
   </APIItem>
 </APIState>
 
@@ -317,12 +310,10 @@ A behavior hook for the indent list toolbar button.
   <APIItem name="props" type="object">
     <APISubList>
       <APISubListItem parent="props" name="pressed" type="boolean">
-        A boolean indicating whether the button is pressed or not.
+        指示按钮是否被按下的布尔值。
       </APISubListItem>
       <APISubListItem parent="props" name="onClick" type="function">
-        A callback function to handle the click event of the button. It toggles
-        the indent list of the specified node type in the editor and focuses the
-        editor.
+        处理按钮点击事件的回调函数。它切换编辑器中指定节点类型的缩进列表并聚焦编辑器。
       </APISubListItem>
     </APISubList>
   </APIItem>

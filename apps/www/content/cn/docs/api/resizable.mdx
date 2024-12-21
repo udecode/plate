@@ -4,16 +4,16 @@ title: Resizable
 
 <PackageInfo>
 
-## Features
+## 特性
 
-- Resizable elements with handles
-- Configurable min/max width constraints
-- Center/left/right alignment support
-- Width persistence in editor state
+- 带有手柄的可调整大小的元素
+- 可配置的最小/最大宽度约束
+- 支持居中/左/右对齐
+- 在编辑器状态中保持宽度
 
 </PackageInfo>
 
-## Installation
+## 安装
 
 ```bash
 npm install @udecode/plate-resizable
@@ -23,25 +23,25 @@ npm install @udecode/plate-resizable
 
 ### useResizableState
 
-Manages state for resizable elements.
+管理可调整大小元素的状态。
 
 <APIParameters>
   <APIItem name="options" type="ResizableOptions" optional>
     <APISubList>
       <APISubListItem parent="options" name="align" type="'center' | 'left' | 'right'" optional>
-        Node alignment.
-        - **Default:** `'center'`
+        节点对齐方式。
+        - **默认值：** `'center'`
       </APISubListItem>
       <APISubListItem parent="options" name="maxWidth" type="ResizeLength" optional>
-        Maximum width constraint.
-        - **Default:** `'100%'`
+        最大宽度约束。
+        - **默认值：** `'100%'`
       </APISubListItem>
       <APISubListItem parent="options" name="minWidth" type="ResizeLength" optional>
-        Minimum width constraint.
-        - **Default:** `92`
+        最小宽度约束。
+        - **默认值：** `92`
       </APISubListItem>
       <APISubListItem parent="options" name="readOnly" type="boolean" optional>
-        Whether the element is resizable in read-only mode.
+        元素在只读模式下是否可调整大小。
       </APISubListItem>
     </APISubList>
   </APIItem>
@@ -49,32 +49,32 @@ Manages state for resizable elements.
 
 <APIReturns>
   <APIItem name="align" type="'center' | 'left' | 'right'">
-    Current alignment setting.
+    当前对齐设置。
   </APIItem>
   <APIItem name="maxWidth" type="ResizeLength">
-    Maximum width constraint.
+    最大宽度约束。
   </APIItem>
   <APIItem name="minWidth" type="ResizeLength">
-    Minimum width constraint.
+    最小宽度约束。
   </APIItem>
   <APIItem name="setNodeWidth" type="(width: number) => void">
-    Updates node width in editor state.
+    在编辑器状态中更新节点宽度。
   </APIItem>
   <APIItem name="setWidth" type="(width: number | string) => void">
-    Updates width in local state.
+    在本地状态中更新宽度。
   </APIItem>
   <APIItem name="width" type="number | string">
-    Current width value.
+    当前宽度值。
   </APIItem>
 </APIReturns>
 
 ### useResizable
 
-Provides resize behavior props and handlers for resizable elements.
+为可调整大小的元素提供调整大小行为的 props 和处理程序。
 
 <APIParameters>
   <APIItem name="state" type="ReturnType<typeof useResizableState>">
-    State from useResizableState.
+    来自 useResizableState 的状态。
   </APIItem>
 </APIParameters>
 
@@ -82,54 +82,54 @@ Provides resize behavior props and handlers for resizable elements.
   <APIItem name="context" type="object">
     <APISubList>
       <APISubListItem parent="context" name="onResize" type="(event: ResizeEvent) => void">
-        Handler for resize events.
+        调整大小事件的处理程序。
       </APISubListItem>
     </APISubList>
   </APIItem>
   <APIItem name="props" type="object">
-    Style props for the resizable element:
-    - maxWidth: Maximum width constraint
-    - minWidth: Minimum width constraint
+    可调整大小元素的样式属性：
+    - maxWidth: 最大宽度约束
+    - minWidth: 最小宽度约束
     - position: 'relative'
-    - width: Current width
+    - width: 当前宽度
   </APIItem>
   <APIItem name="wrapperProps" type="object">
-    Style props for the wrapper element:
+    包装器元素的样式属性：
     - position: 'relative'
   </APIItem>
   <APIItem name="wrapperRef" type="React.RefObject<HTMLDivElement>">
-    Reference to the wrapper element.
+    包装器元素的引用。
   </APIItem>
 </APIReturns>
 
 ### useResizeHandleState
 
-Manages state for resize handle elements.
+管理调整大小手柄元素的状态。
 
 <APIParameters>
   <APIItem name="options" type="ResizeHandleOptions">
     <APISubList>
       <APISubListItem parent="options" name="direction" type="ResizeDirection" optional>
-        Direction of resize.
-        - **Default:** `'left'`
+        调整大小的方向。
+        - **默认值：** `'left'`
       </APISubListItem>
       <APISubListItem parent="options" name="initialSize" type="number" optional>
-        Initial size of the resizable element.
+        可调整大小元素的初始大小。
       </APISubListItem>
       <APISubListItem parent="options" name="onHover" type="() => void" optional>
-        Callback when handle is hovered.
+        手柄悬停时的回调。
       </APISubListItem>
       <APISubListItem parent="options" name="onHoverEnd" type="() => void" optional>
-        Callback when handle hover ends.
+        手柄悬停结束时的回调。
       </APISubListItem>
       <APISubListItem parent="options" name="onMouseDown" type="React.MouseEventHandler" optional>
-        Custom mouse down handler.
+        自定义鼠标按下处理程序。
       </APISubListItem>
       <APISubListItem parent="options" name="onResize" type="(event: ResizeEvent) => void" optional>
-        Custom resize handler. Falls back to store handler if not provided.
+        自定义调整大小处理程序。如果未提供，则回退到存储处理程序。
       </APISubListItem>
       <APISubListItem parent="options" name="onTouchStart" type="React.TouchEventHandler" optional>
-        Custom touch start handler.
+        自定义触摸开始处理程序。
       </APISubListItem>
     </APISubList>
   </APIItem>
@@ -137,70 +137,70 @@ Manages state for resize handle elements.
 
 <APIReturns>
   <APIItem name="direction" type="ResizeDirection">
-    Current resize direction.
+    当前调整大小的方向。
   </APIItem>
   <APIItem name="initialPosition" type="number">
-    Initial cursor/touch position.
+    初始光标/触摸位置。
   </APIItem>
   <APIItem name="initialSize" type="number">
-    Initial element size.
+    元素的初始大小。
   </APIItem>
   <APIItem name="isHorizontal" type="boolean">
-    Whether resize direction is horizontal.
+    调整大小的方向是否为水平。
   </APIItem>
   <APIItem name="isResizing" type="boolean">
-    Whether resize is in progress.
+    是否正在调整大小。
   </APIItem>
   <APIItem name="readOnly" type="boolean">
-    Editor read-only state.
+    编辑器只读状态。
   </APIItem>
   <APIItem name="setInitialPosition" type="(position: number) => void">
-    Update initial position.
+    更新初始位置。
   </APIItem>
   <APIItem name="setInitialSize" type="(size: number) => void">
-    Update initial size.
+    更新初始大小。
   </APIItem>
   <APIItem name="setIsResizing" type="(resizing: boolean) => void">
-    Update resize state.
+    更新调整大小状态。
   </APIItem>
   <APIItem name="onHover" type="() => void">
-    Hover callback.
+    悬停回调。
   </APIItem>
   <APIItem name="onHoverEnd" type="() => void">
-    Hover end callback.
+    悬停结束回调。
   </APIItem>
   <APIItem name="onMouseDown" type="React.MouseEventHandler">
-    Mouse down handler.
+    鼠标按下处理程序。
   </APIItem>
   <APIItem name="onResize" type="(event: ResizeEvent) => void">
-    Resize handler.
+    调整大小处理程序。
   </APIItem>
   <APIItem name="onTouchStart" type="React.TouchEventHandler">
-    Touch start handler.
+    触摸开始处理程序。
   </APIItem>
 </APIReturns>
 
 ### useResizeHandle
 
-Provides handlers and props for resize handle elements.
+为调整大小的句柄元素提供处理程序和 props。
 
 <APIParameters>
   <APIItem name="state" type="ReturnType<typeof useResizeHandleState>">
-    State from useResizeHandleState.
+    来自 useResizeHandleState 的状态。
   </APIItem>
 </APIParameters>
 
 <APIReturns>
   <APIItem name="hidden" type="boolean">
-    Whether the handle should be hidden (in read-only mode).
+    句柄是否应该隐藏（在只读模式下）。
   </APIItem>
   <APIItem name="props" type="object">
-    Props to spread on the handle element:
-    - onMouseDown: Mouse down event handler
-    - onMouseOut: Mouse out event handler
-    - onMouseOver: Mouse over event handler
-    - onTouchEnd: Touch end event handler
-    - onTouchMove: Touch move event handler
-    - onTouchStart: Touch start event handler
+    要传递给句柄元素的 props：
+    - onMouseDown: 鼠标按下事件处理程序
+    - onMouseOut: 鼠标移出事件处理程序
+    - onMouseOver: 鼠标悬停事件处理程序
+    - onTouchEnd: 触摸结束事件处理程序
+    - onTouchMove: 触摸移动事件处理程序
+    - onTouchStart: 触摸开始事件处理程序
   </APIItem>
 </APIReturns>

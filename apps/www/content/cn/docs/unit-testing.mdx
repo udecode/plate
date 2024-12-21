@@ -1,9 +1,9 @@
 ---
 title: Unit Testing Plate
-description: Learn how to unit test Plate editor and plugins.
+description: 学习如何对 Plate 编辑器和插件进行单元测试。
 ---
 
-This guide outlines best practices for unit testing Plate plugins and components using `@udecode/plate-test-utils`.
+本指南概述了使用 `@udecode/plate-test-utils` 对 Plate 插件和组件进行单元测试的最佳实践。
 
 ## Installation
 
@@ -11,9 +11,9 @@ This guide outlines best practices for unit testing Plate plugins and components
 npm install @udecode/plate-test-utils slate-hyperscript
 ```
 
-## Setting Up Tests
+## 设置测试
 
-Add the JSX pragma at the top of your test file:
+在测试文件顶部添加 JSX pragma：
 
 ```typescript
 /** @jsx jsx */
@@ -23,13 +23,13 @@ import { jsx } from '@udecode/plate-test-utils';
 jsx; // so ESLint doesn't complain
 ```
 
-This allows you to use JSX syntax for creating editor values.
+这允许你使用 JSX 语法来创建编辑器的值。
 
-## Creating Test Cases
+## 创建测试用例
 
-### Editor State Representation
+### 编辑器状态表示
 
-Use JSX to represent editor states:
+使用 JSX 来表示编辑器状态：
 
 ```typescript
 const input = (
@@ -41,19 +41,19 @@ const input = (
 ) as any as PlateEditor;
 ```
 
-Node elements like `<hp />`, `<hul />`, `<hli />` represent different types of nodes.
+节点元素如 `<hp />`、`<hul />`、`<hli />` 代表不同类型的节点。
 
-Special elements like `<cursor />`, `<anchor />`, and `<focus />` represent selection states.
+特殊元素如 `<cursor />`、`<anchor />`、`<focus />` 代表选区状态。
 
-### Testing Transforms
+### 测试转换
 
-1. Create an input state
-2. Define the expected output state
-3. Use `createPlateEditor` or `createPlateTestEditor` to set up the editor
-4. Apply the transform(s)
-5. Assert the editor's new state
+1. 创建输入状态
+2. 定义预期的输出状态
+3. 使用 `createPlateEditor` 或 `createPlateTestEditor` 来设置编辑器
+4. 应用转换
+5. 断言编辑器的新状态
 
-Example testing bold formatting:
+以下是测试粗体格式化的示例:
 
 ```typescript
 it('should use custom hotkey for bold', async () => {
@@ -95,10 +95,9 @@ it('should use custom hotkey for bold', async () => {
   expect(editor.children).toEqual(output.children);
 });
 ```
+### 测试选区
 
-### Testing Selection
-
-Test how operations affect the editor's selection:
+测试操作如何影响编辑器的选区:
 
 ```typescript
 it('should collapse selection on backspace', async () => {
@@ -129,9 +128,9 @@ it('should collapse selection on backspace', async () => {
 });
 ```
 
-## Testing Key Events
+## 测试键盘事件
 
-Use `triggerKeyboardEvent` from `createPlateTestEditor`:
+使用 `createPlateTestEditor` 中的 `triggerKeyboardEvent`:
 
 ```typescript
 it('should extend selection on shift+ArrowRight', async () => {
@@ -163,9 +162,9 @@ it('should extend selection on shift+ArrowRight', async () => {
 });
 ```
 
-## Testing Complex Scenarios
+## 测试复杂场景
 
-For complex plugins like tables, test various scenarios:
+对于表格等复杂插件，测试各种场景：
 
 ```typescript
 describe('Table plugin', () => {
@@ -213,9 +212,9 @@ describe('Table plugin', () => {
 });
 ```
 
-## Testing Plugins with Options
+## 测试带选项的插件
 
-Test how different plugin options affect behavior:
+测试不同的插件选项如何影响行为：
 
 ```typescript
 it('should use custom hotkey for bold', async () => {
@@ -257,6 +256,6 @@ it('should use custom hotkey for bold', async () => {
 });
 ```
 
-## Mocking vs. Real Transforms
+## Mock 与真实转换
 
-While mocking can be useful for isolating specific behaviors, Plate tests often assess actual editor children and selection after transforms. This approach ensures that plugins work correctly with the entire editor state.
+虽然 Mock 对于隔离特定行为很有用，但 Plate 测试通常会在转换后评估实际的编辑器子节点和选择。这种方法确保插件能够正确地与整个编辑器状态一起工作。

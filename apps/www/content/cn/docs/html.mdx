@@ -5,9 +5,7 @@ title: Serializing HTML
 <ComponentPreview name="html-demo" />
 
 <Callout className="my-4">
-  **Note**: Round-tripping is not yet supported: the HTML serializer will not
-  preserve all information from the Slate value when converting to HTML and
-  back.
+  **注意**: 回环转换尚未支持：HTML 序列化器不会保留 Slate 值中的所有信息，当从 HTML 转换回 Slate 时。
 </Callout>
 
 ## Slate -> HTML
@@ -21,20 +19,20 @@ title: Serializing HTML
 import { createSlateEditor, serializeHtml } from '@udecode/plate-common';
 import { EditorStatic } from '@/components/plate-ui/editor-static';
 
-// Create an editor and configure all the plugins you need
+// 创建一个编辑器并配置所有需要的插件
 const editor = createSlateEditor({
   // ... your plugins ...
 });
 
-// Provide the components that map Slate nodes to HTML elements
+// 提供将 Slate 节点映射到 HTML 元素的组件
 const components = {
   // [ParagraphPlugin.key]: ParagraphElementStatic,
   // [HeadingPlugin.key]: HeadingElementStatic,
   // ...
 };
 
-// You can also pass a custom editor component and props
-// For example, EditorStatic is a styled version of PlateStatic.
+// 你还可以传递一个自定义编辑器组件和 props
+// 例如，EditorStatic 是 PlateStatic 的样式版本。
 const html = await serializeHtml(editor, {
   components,
   editorComponent: EditorStatic, // defaults to PlateStatic if not provided
@@ -42,19 +40,19 @@ const html = await serializeHtml(editor, {
 });
 ```
 
-If you use a custom component, like [EditorStatic](/docs/components/editor), you must also ensure that all required styles and classes are included in your final HTML file. Since serialize only returns the inner editor HTML, you may need to wrap it in a full HTML document with any external CSS, scripts, or `<style>` tags.
+如果你使用一个自定义组件，比如 [EditorStatic](/docs/components/editor)，你必须确保所有需要的样式和类都包含在你的最终 HTML 文件中。由于 serialize 只返回内部编辑器 HTML，你可能需要将其包装在一个完整的 HTML 文档中，包含任何外部 CSS、脚本或 `<style>` 标签。
 
-For example:
+例如：
 
 ```tsx
-// After serializing the content:
+// 序列化内容后：
 const html = await serializeHtml(editor, {
   components,
   editorComponent: EditorStatic,
   props: { variant: 'none' },
 });
 
-// Wrap the HTML in a full HTML document
+// 将 HTML 包装在一个完整的 HTML 文档中
 const fullHtml = `<!DOCTYPE html>
 <html>
   <head>
@@ -67,36 +65,36 @@ const fullHtml = `<!DOCTYPE html>
 </html>`;
 ```
 
-<Callout className="my-4"> **Note**: The serialization process converts Slate nodes into static HTML markup. Interactivity like React event handlers, client-side hooks, or components that rely on browser APIs won't work in the serialized output. </Callout>
+<Callout className="my-4"> **注意**: 序列化过程将 Slate 节点转换为静态 HTML 标记。交互性，如 React 事件处理程序、客户端钩子或依赖于浏览器 API 的组件，在序列化输出中将无法工作。 </Callout>
 
-### Using Static Components
+### 使用静态组件
 
-When serializing Slate content to HTML, **you must use static versions of your components**. Your interactive, "client" components often rely on browser APIs or client-side React features that are not available during server-side rendering (SSR).
+当序列化 Slate 内容到 HTML 时，**你必须使用静态版本的组件**。你的交互式、“客户端”组件通常依赖于浏览器 API 或客户端 React 特性，这些特性在服务器端渲染（SSR）期间是不可用的。
 
-**What does this mean?**  
-- **Interactive Components:** Components that use `use client`, event handlers (`onClick`), or browser-only APIs (like `window` or `document`) cannot run on the server.  
-- **Static Components:** Instead, for serialization, you must provide "static" versions of these components. Static components should:
-  - Not include any event handlers like `onClick`.
-  - Not rely on browser APIs or client-side hooks.
-  - Simply render the content as plain HTML.
+**这意味着什么？**  
+- **交互组件:** 使用 `use client`、事件处理程序（`onClick`）或仅限浏览器的 API（如 `window` 或 `document`）的组件无法在服务器上运行。  
+- **静态组件:** 相反，对于序列化，你必须提供这些组件的静态版本。静态组件应该：
+  - 不包含任何事件处理程序，如 `onClick`。
+  - 不依赖于浏览器 API 或客户端钩子。
+  - 简单地渲染为纯 HTML。
 
-**Example:**
+**示例:**
 
-If you have a client-only component like `ImageElement` that uses `use client` and event handlers, you need to create a static version `ImageElementStatic` that just returns a plain `<img>` tag with all its attributes and no interactivity.
+如果你有一个使用 `use client` 和事件处理程序的客户端组件，如 `ImageElement`，你需要创建一个静态版本 `ImageElementStatic`，它只返回一个带有所有属性的纯 `<img>` 标签，没有交互性。
 
-For each plugin key, provide its corresponding static component in the `components` object passed to `serializeHtml`:
+对于每个插件键，提供其对应的静态组件在 `components` 对象中传递给 `serializeHtml`：
 
 ```tsx
-// Instead of using interactive components that rely on 'use client',
-// use statically defined components that simply return plain HTML.
+// 使用静态组件，这些组件不依赖于 'use client'，
+// 它们只是返回纯 HTML。
 
 import { createSlateEditor, serializeHtml } from '@udecode/plate-common';
 
-// Import static versions of your components
+// 导入静态版本的组件
 import { ParagraphElementStatic } from '@/components/plate-ui/paragraph-element-static';
 import { HeadingElementStatic } from '@/components/plate-ui/heading-element-static';
 import { ImageElementStatic } from '@/components/plate-ui/image-element-static';
-// ... and so on for each plugin ...
+// ... 每个插件的静态版本 ...
 
 const editor = createSlateEditor({ /* ...plugins... */ });
 
@@ -104,7 +102,7 @@ const components = {
   [BaseParagraphPlugin.key]: ParagraphElementStatic,
   [BaseHeadingPlugin.key]: HeadingElementStatic,
   [BaseImagePlugin.key]: ImageElementStatic,
-  // ... other static components ...
+  // ... 其他静态组件 ...
 };
 
 const html = await serializeHtml(editor, { components });
@@ -112,71 +110,71 @@ const html = await serializeHtml(editor, { components });
 
 ### PlateStatic vs. Plate
 
-When rendering your editor output without the need for an interactive environment, you have two primary options: `PlateStatic` and `Plate`. Both are designed to produce static, non-editable views of your content, but they differ in purpose and performance characteristics.
+在不需要交互式环境的情况下渲染编辑器输出时，你有两个主要选择：`PlateStatic` 和 `Plate`。两者都旨在生成静态的、不可编辑的内容视图，但它们在目的和性能特征上有所不同。
 
 **PlateStatic**  
-- **Purpose:** A more lightweight, server-compatible static renderer of the editor content.  
-- **Performance:** Generally more performant than `Plate` in read-only mode.  
-- **Use Case:** Ideal when you need a static preview of the content (e.g., in a server-side render or a static build). `PlateStatic` should be the default choice if you want a fast, static representation of your content.
+- **目的：** 一个更轻量级的、服务器兼容的编辑器内容静态渲染器。  
+- **性能：** 在只读模式下通常比 `Plate` 性能更好。  
+- **使用场景：** 当你需要内容的静态预览时（例如，在服务器端渲染或静态构建中）最为理想。如果你想要内容的快速、静态表示，`PlateStatic` 应该是默认选择。
 
-**Plate (Read-Only)**  
-- **Purpose:** The standard `Plate` editor component used with `readOnly={true}`. While this prevents editing, it still operates as a client component relying on browser APIs.  
-- **Use Case:** Suitable if you’re rendering in a browser and want an interactive environment (e.g. comments) that just happens to be non-editable. It’s **not** suitable for server-side HTML serialization or scenarios where static output is required, as it still runs client-side code.
+**Plate (只读模式)**  
+- **目的：** 使用 `readOnly={true}` 的标准 `Plate` 编辑器组件。虽然这样可以防止编辑，但它仍然作为依赖浏览器 API 的客户端组件运行。  
+- **使用场景：** 适用于在浏览器中渲染且需要交互环境（例如评论）但恰好是不可编辑的情况。它不适用于服务器端 HTML 序列化或需要静态输出的场景，因为它仍然运行客户端代码。
 
-**In summary:**
+**总结：**
 
-- **If you need high performance, a static view or HTML serialization:** Use `PlateStatic`.
-- **If you need an interactive environment and can run in a browser, but just want it read-only:** Use `Plate` with `readOnly={true}`.
+- **如果你需要高性能、静态视图或 HTML 序列化：** 使用 `PlateStatic`。
+- **如果你需要交互式环境且可以在浏览器中运行，但只想要只读模式：** 使用带有 `readOnly={true}` 的 `Plate`。
 
 ### API
 
 #### serializeHtml
 
-Convert Slate Nodes into HTML string.
+将 Slate 节点转换为 HTML 字符串。
 
 <APIParameters>
 <APIItem name="options" type="object">
 
-Options to control the HTML serialization process.
+控制 HTML 序列化过程的选项。
 
 <APISubList>
 <APISubListItem parent="options" name="components" type="NodeComponents">
 
-A mapping of plugin keys to React components. Each component renders the corresponding Slate node as HTML.
+插件键到 React 组件的映射。每个组件将对应的 Slate 节点渲染为 HTML。
 
 </APISubListItem>
 
 <APISubListItem parent="options" name="editorComponent" type="React.ComponentType<T>" optional>
 
-A React component to render the entire editor content. Defaults to `PlateStatic` if not provided. This component receives `components`, `editor`, and `props`.
+用于渲染整个编辑器内容的 React 组件。如果未提供，默认为 `PlateStatic`。该组件接收 `components`、`editor` 和 `props`。
 
 </APISubListItem>
 
 <APISubListItem parent="options" name="props" type="Partial<T>" optional>
 
-Props to pass to the `editorComponent`. The generic type `T` extends `PlateStaticProps`.
+传递给 `editorComponent` 的属性。泛型类型 `T` 扩展自 `PlateStaticProps`。
 
 </APISubListItem>
 
 <APISubListItem parent="options" name="preserveClassNames" type="string[]" optional>
 
-A list of class name prefixes to preserve if `stripClassNames` is enabled.
+如果启用了 `stripClassNames`，要保留的类名前缀列表。
 
 </APISubListItem>
 
 <APISubListItem parent="options" name="stripClassNames" type="boolean" optional>
 
-If `true`, remove class names from the output HTML except those listed in `preserveClassNames`.
+如果为 `true`，从输出 HTML 中移除类名，除了 `preserveClassNames` 中列出的类名。
 
-- **Default:** `false`
+- **默认值：** `false`
 
 </APISubListItem>
 
 <APISubListItem parent="options" name="stripDataAttributes" type="boolean" optional>
 
-If `true`, remove `data-*` attributes from the output HTML.
+如果为 `true`，从输出 HTML 中移除 `data-*` 属性。
 
-- **Default:** `false`
+- **默认值：** `false`
 
 </APISubListItem>
 </APISubList>
@@ -185,13 +183,13 @@ If `true`, remove `data-*` attributes from the output HTML.
 
 <APIReturns>
 <APIItem type="string">
-A HTML string representing the Slate content.
+表示 Slate 内容的 HTML 字符串。
 </APIItem>
 </APIReturns>
 
 ## HTML -> Slate
 
-### Usage
+### 使用方法
 
 The `editor.api.html.deserialize` function allows you to convert HTML content into Slate value:
 
@@ -206,61 +204,61 @@ const editor = createPlateEditor({
 editor.children = editor.api.html.deserialize('<p>Hello, world!</p>')
 ```
 
-### Plugin Deserialization Rules
+### 插件反序列化规则
 
-Here's a comprehensive list of plugins that support HTML deserialization, along with their corresponding HTML elements and styles:
+以下是支持 HTML 反序列化的插件列表，以及它们对应的 HTML 元素和样式：
 
-#### Text Formatting
+#### 文本格式化
 
-- **BoldPlugin**: `<strong>`, `<b>`, or `style="font-weight: 600|700|bold"`
-- **ItalicPlugin**: `<em>`, `<i>`, or `style="font-style: italic"`
-- **UnderlinePlugin**: `<u>` or `style="text-decoration: underline"`
-- **StrikethroughPlugin**: `<s>`, `<del>`, `<strike>`, or `style="text-decoration: line-through"`
-- **SubscriptPlugin**: `<sub>` or `style="vertical-align: sub"`
-- **SuperscriptPlugin**: `<sup>` or `style="vertical-align: super"`
-- **CodePlugin**: `<code>` or `style="font-family: Consolas"` (not within a `<pre>` tag)
+- **BoldPlugin**: `<strong>`、`<b>` 或 `style="font-weight: 600|700|bold"`
+- **ItalicPlugin**: `<em>`、`<i>` 或 `style="font-style: italic"`
+- **UnderlinePlugin**: `<u>` 或 `style="text-decoration: underline"`
+- **StrikethroughPlugin**: `<s>`、`<del>`、`<strike>` 或 `style="text-decoration: line-through"`
+- **SubscriptPlugin**: `<sub>` 或 `style="vertical-align: sub"`
+- **SuperscriptPlugin**: `<sup>` 或 `style="vertical-align: super"`
+- **CodePlugin**: `<code>` 或 `style="font-family: Consolas"` (不在 `<pre>` 标签内)
 - **KbdPlugin**: `<kbd>`
 
-#### Paragraphs and Headings
+#### 段落和标题
 
 - **ParagraphPlugin**: `<p>`
-- **HeadingPlugin**: `<h1>`, `<h2>`, `<h3>`, `<h4>`, `<h5>`, `<h6>`
+- **HeadingPlugin**: `<h1>`、`<h2>`、`<h3>`、`<h4>`、`<h5>`、`<h6>`
 
-#### Lists
+#### 列表
 
 - **ListPlugin**:
-  - Unordered List: `<ul>`
-  - Ordered List: `<ol>`
-  - List Item: `<li>`
+  - 无序列表: `<ul>`
+  - 有序列表: `<ol>`
+  - 列表项: `<li>`
 - **IndentListPlugin**:
-  - List Item: `<li>`
-  - Parses `aria-level` attribute for indentation
+  - 列表项: `<li>`
+  - 解析 `aria-level` 属性以确定缩进
 
-#### Blocks
+#### 块级元素
 
 - **BlockquotePlugin**: `<blockquote>`
 - **CodeBlockPlugin**:
-  - Deserializes `<pre>` elements
-  - Deserializes `<p>` elements with `fontFamily: 'Consolas'` style
-  - Splits content into code lines
-  - Preserves language information if available
+  - 反序列化 `<pre>` 元素
+  - 反序列化带有 `fontFamily: 'Consolas'` 样式的 `<p>` 元素
+  - 将内容分割成代码行
+  - 如果可用，保留语言信息
 - **HorizontalRulePlugin**: `<hr>`
 
-#### Links and Media
+#### 链接和媒体
 
 - **LinkPlugin**: `<a>`
 - **ImagePlugin**: `<img>`
 - **MediaEmbedPlugin**: `<iframe>`
 
-#### Tables
+#### 表格
 
 - **TablePlugin**:
-  - Table: `<table>`
-  - Table Row: `<tr>`
-  - Table Cell: `<td>`
-  - Table Header Cell: `<th>`
+  - 表格: `<table>`
+  - 表格行: `<tr>`
+  - 表格单元格: `<td>`
+  - 表格标题单元格: `<th>`
 
-#### Text Styling
+#### 文本样式
 
 - **FontBackgroundColorPlugin**: `style="background-color: *"`
 - **FontColorPlugin**: `style="color: *"`
@@ -269,31 +267,31 @@ Here's a comprehensive list of plugins that support HTML deserialization, along 
 - **FontWeightPlugin**: `style="font-weight: *"`
 - **HighlightPlugin**: `<mark>`
 
-#### Layout and Formatting
+#### 布局和格式
 
 - **AlignPlugin**: `style="text-align: *"`
 - **LineHeightPlugin**: `style="line-height: *"`
 
-### Deserialization Properties
+### 反序列化属性
 
-Plugins can define various properties to control HTML deserialization:
+插件可以定义各种属性来控制 HTML 反序列化：
 
-- `parse`: A function to parse an HTML element into a Plate node
-- `query`: A function that determines if the deserializer should be applied
-- `rules`: An array of rule objects that define valid HTML elements and attributes
-- `isElement`: Indicates if the plugin deserializes elements
-- `isLeaf`: Indicates if the plugin deserializes leaf nodes
-- `attributeNames`: List of HTML attribute names to store in `node.attributes`
-- `withoutChildren`: Excludes child nodes from deserialization
-- `rules`: Array of rule objects for element matching
-  - `validAttribute`: Valid element attributes
-  - `validClassName`: Valid CSS class name
-  - `validNodeName`: Valid HTML tag names
-  - `validStyle`: Valid CSS styles
+- `parse`: 将 HTML 元素解析为 Plate 节点的函数
+- `query`: 确定是否应用反序列化器的函数
+- `rules`: 定义有效 HTML 元素和属性的规则对象数组
+- `isElement`: 指示插件是否反序列化元素
+- `isLeaf`: 指示插件是否反序列化叶子节点
+- `attributeNames`: 要存储在 `node.attributes` 中的 HTML 属性名列表
+- `withoutChildren`: 从反序列化中排除子节点
+- `rules`: 用于元素匹配的规则对象数组
+  - `validAttribute`: 有效的元素属性
+  - `validClassName`: 有效的 CSS 类名
+  - `validNodeName`: 有效的 HTML 标签名
+  - `validStyle`: 有效的 CSS 样式
 
-### Extending Deserialization
+### 扩展反序列化
 
-You can extend or customize the deserialization behavior of any plugin. Here's an example of how you might extend the `CodeBlockPlugin`:
+你可以扩展或自定义任何插件的反序列化行为。以下是如何扩展 `CodeBlockPlugin` 的示例：
 
 ```typescript
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
@@ -326,17 +324,17 @@ const CustomCodeBlockPlugin = CodeBlockPlugin.extend({
 });
 ```
 
-This customization adds support for a `data-language` attribute in code block deserialization and preserves the language information.
+此自定义添加了对代码块反序列化中 `data-language` 属性的支持，并保留了语言信息。
 
-### Advanced Deserialization Example
+### 高级反序列化示例
 
-The `IndentListPlugin` provides a more complex deserialization process:
+`IndentListPlugin` 提供了一个更复杂的反序列化过程：
 
-1. It transforms HTML list structures into indented paragraphs.
-2. It handles nested lists by preserving the indentation level.
-3. It uses the `aria-level` attribute to determine the indentation level.
+1. 它将 HTML 列表结构转换为缩进的段落。
+2. 它通过保留缩进级别来处理嵌套列表。
+3. 它使用 `aria-level` 属性来确定缩进级别。
 
-Here's a simplified version of its deserialization logic:
+以下是其反序列化逻辑的简化版本：
 
 ```typescript
 export const IndentListPlugin = createTSlatePlugin<IndentListConfig>({
@@ -365,24 +363,24 @@ export const IndentListPlugin = createTSlatePlugin<IndentListConfig>({
 
 #### editor.api.html.deserialize
 
-Deserialize HTML string into Slate value.
+将 HTML 字符串反序列化为 Slate 值。
 
 <APIParameters>
 <APISubListItem parent="options" name="element" type="HTMLElement | string">
 
-The HTML element or string to deserialize.
+要反序列化的 HTML 元素或字符串。
 
 </APISubListItem>
 <APISubListItem parent="options" name="collapseWhiteSpace" type="boolean" optional>
 
-Flag to enable or disable the removal of whitespace from the serialized HTML.
+用于启用或禁用从序列化 HTML 中删除空白的标志。
 
-- **Default:** `true` (Whitespace will be removed.)
+- **默认值:** `true` (将删除空白。)
 </APISubListItem>
 </APIParameters>
 <APIReturns>
 <APIItem type="TDescendant[]">
 
-The deserialized Slate value.
+反序列化后的 Slate 值。
 </APIItem>
 </APIReturns>

@@ -1,6 +1,6 @@
 ---
 title: Next.js
-description: Adding dark mode to your next app.
+description: 为您的 Next.js 应用添加深色模式。
 ---
 
 ## Dark mode
@@ -33,7 +33,7 @@ export function ThemeProvider({
 
 ### Wrap your root layout
 
-Add the `ThemeProvider` to your root layout.
+将 `ThemeProvider` 添加到您的 root layout 中。
 
 ```tsx {1,9-11} title="app/layout.tsx"
 import { ThemeProvider } from '@/components/theme-provider';
@@ -61,7 +61,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
 
 ### Add a mode toggle
 
-Place a mode toggle on your site to toggle between light and dark mode.
+在您的网站上放置一个模式切换按钮，用于在浅色和深色模式之间切换。
 
 <ComponentPreview name="mode-toggle" className="[&_.preview]:items-start" />
 

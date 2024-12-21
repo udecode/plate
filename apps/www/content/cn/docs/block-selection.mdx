@@ -8,20 +8,19 @@ docs:
 <ComponentPreview name="block-selection-demo" />
 
 <PackageInfo>
+块选择功能允许用户选择和操作整个文本块，而不是单个词或字符。这个强大的功能通过提供高效的方式来管理大段内容，从而增强了编辑体验。
 
-The Block Selection feature allows users to select and manipulate entire text blocks, as opposed to individual words or characters. This powerful functionality enhances the editing experience by providing efficient ways to manage large sections of content.
+## 功能特点
 
-## Features
-
-- Select entire blocks with a single action
-- Multi-block selection
-- Copy, cut, and delete operations on selected blocks
-- Keyboard shortcuts for quick selection:
-  - `Cmd+A`:
-    - First press: select the current block
-    - Double press: select all blocks
-  - Arrow keys: select the block above or below
-- Customizable styling for selected blocks
+- 单次操作即可选择整个块
+- 多块选择
+- 对选中的块进行复制、剪切和删除操作
+- 快速选择的键盘快捷键：
+  - `Cmd+A`：
+    - 第一次按：选择当前块
+    - 双击：选择所有块
+  - 方向键：选择上方或下方的块
+- 可自定义选中块的样式
 
 </PackageInfo>
 
@@ -44,9 +43,9 @@ const plugins = [
 ];
 ```
 
-### Exclude blocks from selection
+### 从选择中排除块
 
-You can exclude certain plugins from block selection using:
+你可以使用以下方式从块选择中排除某些插件：
 
 ```ts
 BlockSelectionPlugin.configure({
@@ -58,22 +57,21 @@ BlockSelectionPlugin.configure({
   }
 })
 ```
+- `excludeBelowPlugins`: 不可选择的块级后代元素的插件键。用于防止在特定块下进行选择。例如，排除 'tr' 可以防止选择单个单元格，但仍允许选择表格行。
 
-- `excludeBelowPlugins`: Plugin keys of non-selectable block descendants. Use this to prevent selection below specific blocks. For example, excluding 'tr' prevents selecting individual cells while still allowing table row selection.
+- `excludePlugins`: 不可选择的块的插件键。
 
-- `excludePlugins`: Plugin keys of non-selectable blocks.
+### 设置可滚动容器
 
-### Set scrollable container
+如果你正在使用 [Editor](/docs/components/editor) 中的 `EditorContainer`，可以跳过本节。
 
-If you're using `EditorContainer` from [Editor](/docs/components/editor), you can skip this section.
+要控制可滚动容器，请在 `areaOptions` 中配置 `boundaries` 和 `container` 选项。这些选项接受 CSS 选择器，例如 `#selection-demo #${editor.uid}`，它们与 `document.querySelector()` 一起使用。
 
-To control the scrollable container, configure the `boundaries` and `container` options within `areaOptions`. These options accept CSS selectors, such as `#selection-demo #${editor.uid}`, which are used with `document.querySelector()`.
+为了使其有效工作：
 
-For this to work effectively:
-
-1. Add an `id` or `className` to your scroll container. If you're not sure about the container, you can add it to the `<Editor />` component. We recommend using `id={editor.uid}`.
-2. Use the appropriate selector in your configuration.
-3. Don't forget to set `position: relative` to the container.
+1. 为你的滚动容器添加 `id` 或 `className`。如果你不确定容器，可以将其添加到 `<Editor />` 组件中。我们推荐使用 `id={editor.uid}`。
+2. 在你的配置中使用适当的选择器。
+3. 不要忘记将 `position: relative` 设置到容器。
 
 Default configuration:
 
@@ -89,11 +87,11 @@ BlockSelectionPlugin.configure({
 });
 ```
 
-### Set scroll speed
+### 设置滚动速度
 
-Use `options.areaOptions.behaviour.scrolling.speedDivider` to set the scroll speed.
+使用 `options.areaOptions.behaviour.scrolling.speedDivider` 来设置滚动速度。
 
-The value `0.8` is our recommended speed since it's near the browser-native speed.
+我们推荐使用 `0.8` 的值，因为它接近浏览器原生的滚动速度。
 
 
 ```ts
@@ -102,53 +100,52 @@ BlockSelectionPlugin.configure({
     areaOptions: {
       behaviour: {
       scrolling: {
-        // You can slow down the scroll speed by setting a bigger value.
+        // 你可以通过设置更大的值来减慢滚动速度。
         speedDivider: 1.5,
       },
-      // The distance needed to move for the selection area to appear.
-      // If it’s too small, it may cause the mouse click event to be blocked. 10 is a good default.
+      // 需要移动的距离，使选择区域出现。
+      // 如果太小，可能会导致鼠标点击事件被阻止。10 是一个很好的默认值。
       startThreshold: 4,
     },
   },
 }
 ```
+### 添加可选择元素
 
-### Add selectable element
+在任何你想要启动块选择的元素上添加 `data-plate-selectable="true"` 属性。
 
-Add `data-plate-selectable="true"` to any element you want to start block selection.
+### 阻止取消选择
 
-### Prevent unselect
+要防止在点击某些元素时取消选择块，请在这些组件上添加 `data-plate-prevent-unselect` 属性
 
-To prevent unselecting blocks when clicking on certain elements, add the `data-plate-prevent-unselect` attribute to those components
-
-For example:
+例如：
 ```tsx
   <YourSpecialButtoon data-plate-prevent-unselect />
 ```
 
-### Full Page Selection
+### 全页选择
 
-#### Making Elements Selectable
+#### 使元素可选择
 
-You can enable block selection for elements outside the `<Editor />` component, similar to the [Potion](https://potion.platejs.org/) template. Add the `data-plate-selectable` attribute to any component you want to make selectable:
+你可以启用块选择，使 `<Editor />` 组件之外的元素可选择，类似于 [Potion](https://potion.platejs.org/) 模板。添加 `data-plate-selectable` 属性到任何你想使可选择的组件：
 
 ```tsx
 <Cover data-plate-selectable />
 <Sidebar data-plate-selectable />
 ```
 
-This works for any element, even those outside the editor's DOM tree.
+这适用于任何元素，即使是在编辑器 DOM 树之外的元素。
 
-#### Resetting Selection
+#### 重置选择
 
-There are two ways to handle resetting selection across the full page:
+有两种方式处理全页面的选择重置：
 
-1. Direct API call:
+1. 直接调用 API：
 ```tsx
 editor.api.blockSelection.unselect();
 ```
 
-2. Click outside handler:
+2. 点击外部处理程序：
 ```tsx
 const handleClickOutside = (event: MouseEvent) => {
   if (!(event.target as HTMLElement).closest('[data-plate-selectable]')) {
@@ -157,23 +154,23 @@ const handleClickOutside = (event: MouseEvent) => {
 };
 ```
 
-## Styling
+## 样式
 
-### Selection area
+### 选择区域
 
-Style the selection area by adding the `.slate-selection-area` class to your editor container component. For example:
+通过将 `.slate-selection-area` 类添加到你的编辑器容器组件来样式化选择区域。例如：
 
 ```js
 '[&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/10'
 ```
 
-### Selected element
+### 选中的元素
 
-To determine if an element is selected, use `useBlockSelected` hook. You can render a visual indicator around selected blocks using our [BlockSelection](/docs/components/block-selection) component or create your own.
+要确定一个元素是否被选中，使用 `useBlockSelected` 钩子。你可以使用我们的 [BlockSelection](/docs/components/block-selection) 组件或创建你自己的来渲染选中的块的视觉指示器。
 
-This component should be rendered inside each block element for consistent selection feedback. Plate UI is doing it in [PlateElement](/docs/components/plate-element).
+这个组件应该在每个块元素内部渲染，以确保一致的选择反馈。Plate UI 在 [PlateElement](/docs/components/plate-element) 中这样做。
 
-## Plugins
+## 插件
 
 ### BlockSelectionPlugin
 
@@ -192,35 +189,35 @@ Options for the selection area. Example:
 </APIItem>
 
 <APIItem name="editorPaddingRight" type="CSSProperties['width']" optional>
-The padding-right of the editor.
+编辑器的右内边距。
 </APIItem>
 
 <APIItem name="enableContextMenu" type="boolean" optional>
-Enables or disables the context menu for block selection.
+启用或禁用块选择的上下文菜单。
 
-- **Default:** `false`
+- **默认值:** `false`
 </APIItem>
 
 <APIItem name="isSelecting" type="boolean" optional>
-Indicates whether block selection is currently active.
+指示块选择当前是否处于活动状态。
 
-- **Default:** `false`
+- **默认值:** `false`
 </APIItem>
 
 <APIItem name="onKeyDownSelecting" type="(e: KeyboardEvent) => void" optional>
-A function to handle the **`keydown`** event when selecting.
+一个用于处理选择时的 **`keydown`** 事件的函数。
 </APIItem>
 
 <APIItem name="query" type="QueryNodeOptions" optional>
-Options for querying nodes during block selection.
+块选择期间查询节点的选项。
 
-- **Default:** `{ maxLevel: 1 }`
+- **默认值:** `{ maxLevel: 1 }`
 </APIItem>
 
 <APIItem name="selectedIds" type="Set<string>" optional>
-A set of IDs for the currently selected blocks.
+当前选中的块的 ID 集合。
 
-- **Default:** `new Set()`
+- **默认值:** `new Set()`
 </APIItem>
 </APIOptions>
 
@@ -229,21 +226,21 @@ A set of IDs for the currently selected blocks.
 ## API
 
 ### editor.api.blockSelection.focus
-Focuses the block selection shadow input. This input handles copy, delete, and paste events for selected blocks.
+聚焦块选择的影子输入。这个输入处理选中块的复制、删除和粘贴事件。
 
 ### editor.api.blockSelection.addSelectedRow
 
-Adds a selected row to the block selection.
+向块选择中添加一个选中的行。
 
 <APIParameters>
   <APIItem name="id" type="string">
-    The ID of the row to be selected.
+    要选择的行的 ID。
   </APIItem>
   <APIItem name="options" type="object" optional>
     <APISubList>
       <APISubListItem parent="options" name="clear" type="boolean" optional>
-        Whether to clear existing selections before adding the new one.
-        - **Default:** `true`
+        在添加新选择之前是否清除现有选择。
+        - **默认值:** `true`
       </APISubListItem>
     </APISubList>
   </APIItem>
@@ -251,34 +248,34 @@ Adds a selected row to the block selection.
 
 ### editor.api.blockSelection.getNodes
 
-Gets the selected blocks in the editor.
+获取编辑器中选中的块。
 
 <APIReturns>
   <APIItem type="TNodeEntry[]">
-    An array of selected block entries.
+    选中块entry的数组。
   </APIItem>
 </APIReturns>
 
 ### editor.api.blockSelection.resetSelectedIds
 
-Resets the set of selected IDs to an empty set.
+将选中的 ID 集合重置为空集合。
 
 ### editor.api.blockSelection.selectedAll
 
-Selects all selectable blocks in the editor.
+选择编辑器中所有可选择的块。
 
 ### editor.api.blockSelection.setSelectedIds
 
-Sets the selected IDs based on added and removed elements.
+根据添加和移除的元素设置选中的 ID。
 
 <APIParameters>
   <APIItem name="options" type="ChangedElements">
     <APISubList>
       <APISubListItem parent="options" name="added" type="HTMLElement[]">
-        Array of HTML elements to be added to the selection.
+        要添加到选择中的 HTML 元素数组。
       </APISubListItem>
       <APISubListItem parent="options" name="removed" type="HTMLElement[]">
-        Array of HTML elements to be removed from the selection.
+        要从选择中移除的 HTML 元素数组。
       </APISubListItem>
     </APISubList>
   </APIItem>
@@ -286,73 +283,73 @@ Sets the selected IDs based on added and removed elements.
 
 ### editor.api.blockSelection.unselect
 
-Unselects all blocks and sets the `isSelecting` flag to false.
+取消选择所有块并将 `isSelecting` 标志设置为 false。
 
-## Transforms
+## 转换
 
 ### editor.tf.blockSelection.duplicate
 
-Duplicates the selected blocks.
+复制选中的块。
 
 <APIParameters>
   <APIItem name="blocks" type="TNodeEntry[]">
-    An array of node entries to duplicate.
+    要复制的节点entry数组。
   </APIItem>
 </APIParameters>
 
 ### editor.tf.blockSelection.removeNodes
 
-Removes the selected nodes from the editor.
+从编辑器中移除选中的节点。
 
 ### editor.tf.blockSelection.select
 
-Selects the nodes returned by `getNodes()` and resets the selected IDs.
+选择由 `getNodes()` 返回的节点并重置选中的 ID。
 
 ### editor.tf.blockSelection.setNodes
 
-Sets properties on the selected nodes.
+设置选中节点的属性。
 
 <APIParameters>
   <APIItem name="props" type="Partial<TNodeProps<TElement>>">
-    The properties to set on the selected nodes.
+    要设置到选中节点的属性。
   </APIItem>
   <APIItem name="options" type="SetNodesOptions" optional>
-    Options for setting nodes.
+    设置节点的选项。
   </APIItem>
 </APIParameters>
 
 ### editor.tf.blockSelection.setTexts
 
-Sets text properties on the selected nodes.
+设置选中节点的文本属性。
 
 <APIParameters>
   <APIItem name="props" type="Partial<TNodeProps<TText>>">
-    The text properties to set on the selected nodes.
+    要设置到选中节点的文本属性。
   </APIItem>
   <APIItem name="options" type="Omit<SetNodesOptions, 'at'>" optional>
-    Options for setting text nodes, excluding the 'at' property.
+    设置文本节点的选项，不包括 'at' 属性。
   </APIItem>
 </APIParameters>
 
-## Hooks
+## 钩子
 
 ### useBlockSelectable
 
-A hook that provides props for making a block element selectable, including context menu behavior.
+一个提供使块元素可选择的属性的钩子，包括上下文菜单行为。
 
 <APIReturns>
   <APIItem name="props" type="object">
-    Props to be spread on the block element:
+    要传播到块元素的属性：
     <APISubList>
       <APISubListItem parent="props" name="className" type="string">
-        `'slate-selectable'` - Required class for selection functionality
+        `'slate-selectable'` - 选择功能所需的类
       </APISubListItem>
       <APISubListItem parent="props" name="onContextMenu" type="(event: React.MouseEvent) => void">
-        Handles right-click context menu behavior:
-        - Opens context menu for selected blocks
-        - Opens for void elements
-        - Opens for elements with `data-plate-open-context-menu="true"`
-        - Adds block to selection with Shift key for multi-select
+        处理右键上下文菜单行为：
+        - 为选中的块打开上下文菜单
+        - 为 void 元素打开
+        - 为带有 `data-plate-open-context-menu="true"` 的元素打开
+        - 使用 Shift 键进行多选时添加块到选择
       </APISubListItem>
     </APISubList>
   </APIItem>
@@ -360,20 +357,20 @@ A hook that provides props for making a block element selectable, including cont
 
 ### useBlockSelected
 
-Returns true if context block is selected.
+如果上下文块被选中则返回 true。
 
 ### useBlockSelectionNodes
 
-Returns an array of node entries for the currently selected blocks.
+返回当前选中块的节点entry数组。
 
 ### useBlockSelectionFragment
 
-Returns an array of nodes for the currently selected blocks.
+返回当前选中块的节点数组。
 
 ### useBlockSelectionFragmentProp
 
-Returns fragment prop for the currently selected blocks.
+返回当前选中块的片段属性。
 
 ### useSelectionArea
 
-A hook that initializes and manages the selection area functionality.
+一个初始化和管理选择区域功能的钩子。

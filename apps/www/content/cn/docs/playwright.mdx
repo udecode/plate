@@ -1,17 +1,17 @@
 ---
 title: Playwright Testing
-description: Learn how to write Playwright tests that integrate with Plate.
+description: 学习如何编写与 Plate 集成的 Playwright 测试。
 ---
 
-[Playwright](https://playwright.dev/) enables end-to-end testing in headless browsers. This guide covers integrating Playwright with Plate using `@udecode/plate-playwright`.
+[Playwright](https://playwright.dev/) 支持在无头浏览器中进行端到端测试。本指南介绍如何使用 `@udecode/plate-playwright` 将 Playwright 与 Plate 集成。
 
-## Setup
+## 设置
 
 <Steps>
 
-### Install Dependencies
+### 安装依赖
 
-Follow [Playwright's guide](https://playwright.dev/docs/intro) to install Playwright in your app and ensure that you can write basic end-to-end tests.
+按照 [Playwright's guide](https://playwright.dev/docs/intro) 在你的应用中安装 Playwright，并确保你可以编写基本的端到端测试。
 
 ```bash
 npm install @udecode/plate-playwright playwright
@@ -19,7 +19,7 @@ npm install @udecode/plate-playwright playwright
 
 ### Add PlaywrightPlugin
 
-In order for your Playwright tests to access and interact with the editor, you'll need to add `PlaywrightPlugin` to your editor:
+为了使 Playwright 测试能够访问和与编辑器交互，你需要将 `PlaywrightPlugin` 添加到你的编辑器中：
 
 ```tsx
 const editor = createPlateEditor({
@@ -30,47 +30,47 @@ const editor = createPlateEditor({
 })
 ```
 
-This exposes various utilities on `window.platePlaywrightAdapter`.
+这会在 `window.platePlaywrightAdapter` 上暴露各种实用程序。
 
-### Get Editor Handle
+### 获取编辑器句柄
 
 <Callout>
 
-**What is an editor handle?**
+**什么是editor handle?**
 
-Most Playwright test code runs in a non-browser environment. Interacting with a Plate editor requires running JavaScript inside the browser context using Playwright's `evaluate` and `evaluateHandle` [APIs](https://playwright.dev/docs/evaluating).
+大多数 Playwright 测试代码在非浏览器环境中运行。与 Plate 编辑器交互需要使用 Playwright 的 `evaluate` 和 `evaluateHandle` [API](https://playwright.dev/docs/evaluating) 在浏览器上下文中运行 JavaScript。
 
 A [handle](https://playwright.dev/docs/handles) references a JavaScript object within the browser. The editor handle refers to the `editor` instance of your Plate editor (`JSHandle<PlateEditor>`).
 
 </Callout>
 
-In your Playwright test, get the editor handle before interacting with Plate:
+在你的 Playwright 测试中，在与 Plate 交互之前获取编辑器句柄：
 
 ```ts
 const editorHandle = await getEditorHandle(page);
 // ...
 ```
 
-For multiple editors, specify the editable element:
+对于多个编辑器，指定可编辑元素：
 
 ```ts
 const editable = getEditable(page.getByTestId('my-editor-container'));
 const editorHandle = await getEditorHandle(page, editable);
 ```
 
-The locator must match exactly one `[data-slate-editor]` element.
+locator 必须完全匹配一个 `[data-slate-editor]` 元素。
 
-### Start Writing Tests
+### 开始编写测试
 
-With the `editorHandle`, you can now write Playwright tests for your editor.
+有了 `editorHandle`，你现在可以为你的编辑器编写 Playwright 测试。
 
 </Steps>
 
 ## Examples
 
-### Get a node handle by its path
+### 获取节点句柄
 
-Use `getNodeByPath` to get a handle referencing the node at a specific path. To make assertions about the value of the node, convert it to JSON using `.jsonValue()`.
+使用 `getNodeByPath` 获取对特定路径的节点句柄。为了对节点的值进行断言，使用 `.jsonValue()` 将其转换为 JSON。
 
 ```ts
 const nodeHandle = await getNodeByPath(page, editorHandle, [0]);
@@ -81,16 +81,16 @@ expect(await nodeHandle.jsonValue()).toBe({
 });
 ```
 
-### Get the type of a node
+### 获取节点的类型
 
 ```ts
 const firstNodeType = await getTypeAtPath(page, editorHandle, [0]);
 expect(firstNodeType).toBe('h1');
 ```
 
-### Get the DOM node for a node
+### 获取节点的 DOM 节点
 
-Often in Playwright, you'll want to reference a specific DOM element in order to make assertions about its state or perform operations involving it.
+在 Playwright 中，你通常需要引用特定的 DOM 元素来对其状态或涉及它的操作进行断言。
 
 `getDOMNodeByPath` returns an [ElementHandle](https://playwright.dev/docs/api/class-elementhandle) for the DOM node corresponding to the Slate node at a given path.
 
@@ -99,13 +99,13 @@ const firstNodeEl = await getDOMNodeByPath(page, elementHandle, [0]);
 await firstNodeEl.hover();
 ```
 
-### Click a node
+### 点击节点
 
 ```ts
 await clickAtPath(page, elementHandle, [0]);
 ```
 
-### Get the selection
+### 获取选区
 
 ```ts
 const selection = await getSelection(page, editorHandle);
@@ -116,16 +116,16 @@ expect(selection).toBe({
 });
 ```
 
-### Select a point or range
+### 选择一个点或范围
 
-In order to type at a specific point in the editor, you'll need to select that point using `setSelection`.
+为了在编辑器中输入特定点，你需要使用 `setSelection` 选择该点。
 
-If you select a single point (consisting of a `path` and an `offset`), the cursor will be placed at that point. If you select a range (consisting of an `anchor` and a `focus`), that range will be selected. If you select a path, the entire node at that path will be selected.
+如果你选择一个点（由 `path` 和 `offset` 组成），光标将放置在该点。如果你选择一个范围（由 `anchor` 和 `focus` 组成），该范围将被选中。如果你选择一个路径，该路径下的整个节点将被选中。
 
-Make sure you focus the editor before setting the selection. Focusing the editor using `editable.focus()` may not work correctly in WebKit, so the best way of doing this is with `clickAtPath`.
+确保在设置选区之前聚焦编辑器。使用 `editable.focus()` 聚焦编辑器可能无法在 WebKit 中正常工作，因此最好使用 `clickAtPath`。
 
 ```ts
-// Click the first paragraph to focus the editor 
+// 点击第一个段落以聚焦编辑器
 await clickAtPath(page, editorHandle, [0]);
 
 await setSelection(page, editorHandle, {
@@ -138,17 +138,17 @@ await page.keyboard.type('Hello world!');
 
 ## Imported queries and transforms
 
-You may want to import a query or a transform such as `getBlockAbove` or `insertNodes` into your Playwright test and use it.
+你可能希望将 `getBlockAbove` 或 `insertNodes` 等查询或转换导入到你的 Playwright 测试中并使用它。
 
-Unfortunately, this is not possible. You can only interact directly with the `editor` instance inside the browser context (using `evaluate` or `evaluateHandle`), and it isn't possible to pass imported functions from Playwright's scope into the browser. This is because neither the `editor` object nor JavaScript functions can be adequately serialized.
+很遗憾，这是不可能的。你只能在浏览器上下文中直接与 `editor` 实例交互（使用 `evaluate` 或 `evaluateHandle`），无法将从 Playwright 作用域导入的函数传递到浏览器中。这是因为 `editor` 对象和 JavaScript 函数都无法被充分序列化。
 
-The best workaround is to interact with the editor in the same way that a user would, without using any imported queries or transforms. This will make your Playwright tests more likely to catch bugs in your application.
+最好的解决方法是像用户一样与编辑器交互，不使用任何导入的查询或转换。这样可以让你的 Playwright 测试更容易发现应用程序中的 bug。
 
-If this isn't practical, you can instead call a method on the `editor` object inside an `evaluate` or `evaluateHandle`. (Use `evaluateHandle` if you need to return a reference to a DOM node or a JavaScript object from the browser. Use `evaluate` if you need to return a serialized copy of a JavaScript object, or if you don't need to return any value.)
+如果这种方法不实用，你可以在 `evaluate` 或 `evaluateHandle` 中调用 `editor` 对象上的方法。（如果你需要返回对 DOM 节点或浏览器中 JavaScript 对象的引用，请使用 `evaluateHandle`。如果你需要返回 JavaScript 对象的序列化副本，或者不需要返回任何值，请使用 `evaluate`。）
 
-Note that while these queries and transforms can't be directly used in Playwright tests, they are available when working with the editor instance in your application code. For more information on how to use these methods in your application, refer to the [Editor Methods](/docs/editor-methods) documentation.
+请注意，虽然这些查询和转换不能直接在 Playwright 测试中使用，但在应用程序代码中使用编辑器实例时是可用的。有关如何在应用程序中使用这些方法的更多信息，请参阅 [编辑器方法](/docs/editor-methods) 文档。
 
-See [Playwright's docs](https://playwright.dev/docs/evaluating) for more information about `evaluate` and `evaluateHandle`.
+查看 [Playwright 文档](https://playwright.dev/docs/evaluating) 了解更多关于 `evaluate` 和 `evaluateHandle` 的信息。
 
 ```ts
 await editorHandle.evaluate((editor) => {
@@ -160,136 +160,136 @@ await editorHandle.evaluate((editor) => {
 
 ### getEditorHandle
 
-Gets a handle to the Plate editor instance.
+获取 Plate 编辑器实例的句柄。
 
 <APIParameters>
 <APIItem name="page" type="Page">
-The Playwright page object.
+Playwright 的 page 对象。
 </APIItem>
 <APIItem name="editable" type="Locator" optional>
-A locator for the editable element. If not provided, it will look for the first [data-slate-editor] on the page.
+可编辑元素的定位器。如果未提供，它将查找页面上的第一个 `[data-slate-editor]` 元素。
 </APIItem>
 </APIParameters>
 
 <APIReturns>
 <APIItem type="EditorHandle">
-A handle to the Plate editor instance.
+Plate 编辑器实例的句柄。
 </APIItem>
 </APIReturns>
 
 ### getNodeByPath
 
-Retrieves a node at the specified path.
+获取指定路径的节点。
 
 <APIParameters>
 <APIItem name="page" type="Page">
-The Playwright page object.
+Playwright 的 page 对象。
 </APIItem>
 <APIItem name="editorHandle" type="EditorHandle">
-The handle to the Plate editor instance.
+Plate 编辑器实例的句柄。
 </APIItem>
 <APIItem name="path" type="Path">
-The path to the node.
+节点的路径。
 </APIItem>
 </APIParameters>
 
 <APIReturns>
 <APIItem type="JSHandle<TNode>">
-A handle to the node at the specified path.
+指定路径节点的句柄。
 </APIItem>
 </APIReturns>
 
 ### getDOMNodeByPath
 
-Gets the DOM node for a Slate node at the given path.
+获取给定路径的 Slate 节点对应的 DOM 节点。
 
 <APIParameters>
 <APIItem name="page" type="Page">
-The Playwright page object.
+Playwright 的 page 对象。
 </APIItem>
 <APIItem name="editorHandle" type="EditorHandle">
-The handle to the Plate editor instance.
+Plate 编辑器实例的句柄。
 </APIItem>
 <APIItem name="path" type="Path">
-The path to the node.
+节点的路径。
 </APIItem>
 </APIParameters>
 
 <APIReturns>
 <APIItem type="ElementHandle">
-An ElementHandle for the DOM node corresponding to the Slate node.
+对应 Slate 节点的 DOM 节点的 ElementHandle。
 </APIItem>
 </APIReturns>
 
 ### clickAtPath
 
-Simulates a click on the node at the specified path.
+模拟点击指定路径的节点。
 
 <APIParameters>
 <APIItem name="page" type="Page">
-The Playwright page object.
+Playwright 的 page 对象。
 </APIItem>
 <APIItem name="editorHandle" type="EditorHandle">
-The handle to the Plate editor instance.
+Plate 编辑器实例的句柄。
 </APIItem>
 <APIItem name="path" type="Path">
-The path to the node to click.
+要点击的节点路径。
 </APIItem>
 </APIParameters>
 
 ### getSelection
 
-Retrieves the current editor selection.
+获取当前编辑器选区。
 
 <APIParameters>
 <APIItem name="page" type="Page">
-The Playwright page object.
+Playwright 的 page 对象。
 </APIItem>
 <APIItem name="editorHandle" type="EditorHandle">
-The handle to the Plate editor instance.
+Plate 编辑器实例的句柄。
 </APIItem>
 </APIParameters>
 
 <APIReturns>
 <APIItem type="Selection">
-The current editor selection.
+当前编辑器选区。
 </APIItem>
 </APIReturns>
 
 ### setSelection
 
-Sets the editor selection to the specified range.
+将编辑器选区设置为指定范围。
 
 <APIParameters>
 <APIItem name="page" type="Page">
-The Playwright page object.
+Playwright 的 page 对象。
 </APIItem>
 <APIItem name="editorHandle" type="EditorHandle">
-The handle to the Plate editor instance.
+Plate 编辑器实例的句柄。
 </APIItem>
 <APIItem name="at" type="Location">
-The location to set the selection.
+要设置选区的位置。
 </APIItem>
 </APIParameters>
 
 ### getTypeAtPath
 
-Gets the type of the node at the specified path.
+获取指定路径节点的类型。
 
 <APIParameters>
 <APIItem name="page" type="Page">
-The Playwright page object.
+Playwright 的 page 对象。
 </APIItem>
 <APIItem name="editorHandle" type="EditorHandle">
-The handle to the Plate editor instance.
+Plate 编辑器实例的句柄。
 </APIItem>
 <APIItem name="path" type="Path">
-The path to the node.
+节点的路径。
 </APIItem>
 </APIParameters>
 
 <APIReturns>
 <APIItem type="string">
-The type of the node at the specified path.
+指定路径节点的类型。
 </APIItem>
 </APIReturns>

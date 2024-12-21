@@ -9,19 +9,19 @@ docs:
 
 <PackageInfo>
 
-## Features
+## 功能特点
 
-- Set line height for selected blocks.
+- 设置选定块的行高。
 
 </PackageInfo>
 
-## Installation
+## 安装
 
 ```bash
 npm install @udecode/plate-line-height
 ```
 
-## Usage
+## 使用
 
 ```tsx
 import { LineHeightPlugin } from '@udecode/plate-line-height/react';
@@ -32,7 +32,7 @@ const plugins = [
 ];
 ```
 
-## Plugins
+## 插件
 
 ### LineHeightPlugin
 
@@ -40,54 +40,54 @@ const plugins = [
 
 ### setLineHeight
 
-Sets the line height for selected nodes in the editor.
+设置编辑器中选定节点的行高。
 
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
-    The editor instance.
+    编辑器实例。
   </APIItem>
   <APIItem name="options" type="object">
-    The options for setting the line height.
+    设置行高的选项。
     <APISubList>
       <APISubListItem parent="options" name="value" type="number">
-        The line height value to be set.
+        要设置的行高值。
       </APISubListItem>
       <APISubListItem
         parent="options"
         name="setNodesOptions"
         type="SetNodesOptions"
       >
-        Additional options for setting nodes.
+        设置节点的其他选项。
       </APISubListItem>
     </APISubList>
   </APIItem>
 </APIParameters>
 
-## API Components
+## API 组件
 
 ### useLineHeightDropdownMenu
 
-The behavior hook for the line height dropdown menu.
+行高下拉菜单的行为钩子。
 
 <APIState>
   <APIItem name="value" type="number">
-    The line height value.
+    行高值。
   </APIItem>
 </APIState>
 
 <APIReturns>
   <APIItem name="radioGroupProps" type="object">
-    The props for the radio group.
+    单选组的属性。
     <APISubList>
       <APISubListItem parent="radioGroupProps" name="value" type="string">
-        The line height value.
+        行高值。
       </APISubListItem>
       <APISubListItem
         parent="radioGroupProps"
         name="onValueChange"
         type="function"
       >
-        Callback to set the line height value.
+        设置行高值的回调函数。
       </APISubListItem>
     </APISubList>
   </APIItem>

@@ -6,20 +6,20 @@ title: Reset Node
 
 <PackageInfo>
 
-## Features
+## 功能
 
-- Enables quick reset of text block formatting to default on key events (e.g. `Enter`).
-- To test, press Enter in an empty or at the end of a block quote, or Backspace at the start of a block quote.
+- 在按键事件（如 `Enter`）时快速重置文本块格式为默认值。
+- 要测试，请在空块或块引号末尾按 Enter，或在块引号开头按 Backspace。
 
 </PackageInfo>
 
-## Installation
+## 安装
 
 ```bash
 npm install @udecode/plate-reset-node
 ```
 
-## Usage
+## 用法
 
 ```tsx
 // ...
@@ -71,36 +71,36 @@ const plugins = [
 ];
 ```
 
-## Plugins
+## 插件
 
 ### ResetNodePlugin
 
 <APIOptions>
 
 <APIItem name="rules" type="Array" optional>
-An array of rules which govern how the node reset will be performed. Each rule includes:
+一个规则数组，用于控制节点重置的执行方式。每个规则包括：
 <APISubList>
 <APISubListItem parent="rules" name="hotkey" type="string | string[]" optional>
-The hotkey(s) that trigger the rule.
+触发规则的快捷键。
 </APISubListItem>
 <APISubListItem parent="rules" name="defaultType" type="string" optional>
-The default type to which the node should be reset.
+节点应该重置为的默认类型。
 </APISubListItem>
 <APISubListItem parent="rules" name="types" type="string[]">
-The types of nodes where the rule applies.
+规则适用的节点类型。
 </APISubListItem>
 <APISubListItem parent="rules" name="predicate" type="(editor: PlateEditor) => boolean">
-An additional condition to the rule which should be a function taking the editor state and returning a boolean.
+规则的附加条件，应该是一个接收编辑器状态并返回布尔值的函数。
 </APISubListItem>
 <APISubListItem parent="rules" name="onReset" type="(editor: PlateEditor) => void" optional>
-A callback function that is called when the reset operation is performed.
+在执行重置操作时调用的回调函数。
 </APISubListItem>
 </APISubList>
 </APIItem>
 <APIItem name="disableFirstBlockReset" type="boolean" optional>
-Whether to disable reset for the first block in the editor.
+是否禁用编辑器中第一个块的重置。
 </APIItem>
 <APIItem name="disableEditorReset" type="boolean" optional>
-Whether to disable the reset operation for the entire editor.
+是否禁用整个编辑器的重置操作。
 </APIItem>
 </APIOptions>

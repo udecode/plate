@@ -1,31 +1,31 @@
 ---
-title: Getting Started
-description: A quick tutorial to get you up and running with Plate.
+title: 快速开始
+description: 一个快速教程，帮助你快速上手 Plate。
 ---
 
 <Steps>
 
-### Create project
+### 创建项目
 
-You can choose one of the following templates to get started:
+你可以选择以下模板之一来开始：
 
-| Option                                                                            | Plate | Plugins | AI  | Backend |
+| 选项                                                                            | Plate | Plugins | AI  | 后端 |
 | --------------------------------------------------------------------------------- | ----- | ------- | --- | ------- |
 | [Notion-like template](https://pro.platejs.org/docs/templates/potion)             | ✅    | ✅      | ✅  | ✅      |
 | [Plate playground template](https://github.com/udecode/plate-playground-template) | ✅    | ✅      | ✅  |         |
 | [Plate minimal template](https://github.com/udecode/plate-template)               | ✅    |         |     |         |
 
-For an existing React project, jump to the next step.
+对于现有的 React 项目，请跳到下一步。
 
-### Add dependencies
+### 添加依赖
 
-First, install the core dependencies:
+首先，安装核心依赖：
 
 ```bash
 npm install @udecode/plate-common slate slate-dom slate-react slate-history
 ```
 
-For the examples in this guide, we'll also use these plugins:
+对于本指南中的示例，我们还将使用这些插件：
 
 ```bash
 npm install @udecode/plate-basic-marks @udecode/plate-heading @udecode/plate-block-quote @udecode/cn
@@ -36,9 +36,9 @@ npm install @udecode/plate-basic-marks @udecode/plate-heading @udecode/plate-blo
 - `@udecode/plate-block-quote` adds blockquote support.
 - `@udecode/cn` helps with component styling (optional).
 
-### Basic Editor
+### 基本编辑器
 
-Let's start with a minimal editor setup.
+让我们从一个最小的编辑器设置开始。
 
 ```tsx showLineNumbers {1-5,11-13}
 import {
@@ -58,29 +58,27 @@ export default function BasicEditor() {
 }
 ```
 
-`Plate` manages the editor state and `PlateContent` renders the editor content.
+`Plate` 管理编辑器状态，`PlateContent` 渲染编辑器内容。
 
 <ComponentPreview name="basic-editor-default-demo" padding="md" />
 
-### Styling
+### 样式
 
-Let's give our editor some styles: [Editor](/docs/components/editor) is a styled version of `PlateContent`.
+让我们给编辑器添加一些样式：[Editor](/docs/components/editor) 是 `PlateContent` 的样式版本。
 
 <ComponentPreview name="basic-editor-styling-demo" padding="md" />
 
-To keep things simple, we'll continue to use `PlateContent` in the following code snippets.
+为了保持简单，我们将在以下代码片段中继续使用 `PlateContent`。
 
 <Callout className="mt-4">
-  **Note**: `Editor` is just an example of a styled editor using Tailwind, and
-  if you're using it, make sure to follow the installation steps in the [Manual
-  Installation](/docs/components/installation/manual) guide. You can create your
-  own styled version of `PlateContent`.
+  **注意**: `Editor` 只是一个使用 Tailwind 的样式编辑器的示例，如果你使用它，请确保按照 [手动安装](/docs/components/installation/manual)
+   指南中的安装步骤进行操作。你可以创建自己的 `PlateContent` 样式版本。
   <ComponentSource name="editor" />
 </Callout>
 
-### Initializing Editor's Value
+### 初始化编辑器内容
 
-Let's specify the initial content of the editor: a single paragraph.
+让我们指定编辑器的初始内容：一个段落。
 
 ```tsx showLineNumbers {3-12,16}
 // ...
@@ -110,15 +108,14 @@ export default function BasicEditor() {
 ```
 
 <Callout className="mt-4">
-  **Note**: Plate uses the **`type`** property to enable plugins to render nodes
-  by type.
+  **注意**: Plate 使用 **`type`** 属性来启用插件按类型渲染节点。
 </Callout>
 
 <ComponentPreview name="basic-editor-value-demo" padding="md" />
 
-### Implementing Change Handler
+### 实现 Change Handler
 
-At this stage, it's crucial to monitor editor modifications in order to store the values appropriately. The **`onChange`** prop will serve this purpose. You can also persist the editor's state by saving the value to local storage or a database and loading it back when needed.
+在这一阶段，监控编辑器修改以适当存储值至关重要。**`onChange`** 属性将用于此目的。你还可以通过将值保存到本地存储或数据库并根据需要加载它来持久化编辑器状态。
 
 ```tsx showLineNumbers {4-5,8,14-17}
 // ...
@@ -135,7 +132,7 @@ export default function BasicEditor() {
     <Plate
       editor={editor}
       onChange={({ value }) => {
-        // For performance, debounce your saving logic
+        // 为了性能，请对你的保存逻辑进行防抖处理
         localStorage.setItem('editorContent', JSON.stringify(value));
       }}
     >
@@ -150,10 +147,10 @@ export default function BasicEditor() {
 ### Plugins
 
 <Callout className="my-4">
-  See the full list of plugins in the [Plugins](/docs/plugins) section.
+  查看 [Plugins](/docs/plugins) 部分中的完整插件列表。
 </Callout>
 
-Let's use a few basic plugins.
+让我们使用一些基本的插件。
 
 ```tsx showLineNumbers {3-9,17-23}
 // ...
@@ -192,23 +189,19 @@ export default function BasicEditor() {
 
 <ComponentPreview name="basic-plugins-default-demo" padding="md" />
 
-The plugins are functioning correctly. However, since we haven't specified any custom components for rendering, the editor is using the default (unstyled) components. Specifically, the default element component is a **`div`**, and the default leaf component is a **`span`**.
+插件功能正常。然而，由于我们没有为渲染指定任何自定义组件，编辑器使用默认（未样式化）组件。具体来说，默认元素组件是一个 **`div`**，默认叶组件是一个 **`span`**。
 
 <Callout className="mt-4">
-  **Note**: You don't need to add core plugins such as **`ReactPlugin`**,
-  **`HistoryPlugin`** and **`ParagraphPlugin`** as **`usePlateEditor`** already
-  does it.
+  **注意**: 你不需要添加核心插件，如 **`ReactPlugin`**、**`HistoryPlugin`** 和 **`ParagraphPlugin`**，因为 **`usePlateEditor`** 已经为你做了。
 </Callout>
 
 ### Components
 
 <Callout className="mt-4">
-  **Note**: Plate plugins are packaged unstyled, implying that you have complete
-  control over markup and styling, hence you can integrate your own design
-  system or [Plate UI](/docs/components).
+  **注意**: Plate 插件是未样式化的，这意味着你可以完全控制标记和样式，因此你可以集成你自己的设计系统或 [Plate UI](/docs/components)。
 </Callout>
 
-To plug-in all the components in one place, use the **`override.components`** option in **`usePlateEditor`**. We'll use the **`withProps`** helper to pass additional props to the components with Tailwind CSS classes.
+为了在一个地方插件所有组件，使用 **`override.components`** 选项在 **`usePlateEditor`** 中。我们将使用 **`withProps`** 助手传递额外的 Tailwind CSS 类。
 
 ```tsx showLineNumbers {3,6-7,20-47}
 // ...
@@ -270,9 +263,9 @@ export default function BasicEditor() {
 
 <ComponentPreview name="basic-plugins-components-demo" padding="md" />
 
-### Initializing Editor's Value with HTML String
+### 使用 HTML 字符串初始化编辑器内容
 
-You can also specify the initial content of the editor using an HTML string and the corresponding plugins.
+你还可以使用 HTML 字符串和相应的插件指定编辑器的初始内容。
 
 ```tsx showLineNumbers {3,8}
 // ...
@@ -293,8 +286,8 @@ export default function BasicEditor() {
 }
 ```
 
-### That's it!
+### 就这样！
 
-You can now play around with the [Playground](/#playground) and start building your own editor.
+你现在可以玩转 [Playground](/#playground) 并开始构建你自己的编辑器。
 
 </Steps>

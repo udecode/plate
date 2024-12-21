@@ -11,24 +11,24 @@ docs:
 
 <PackageInfo>
 
-## Features
+## 功能
 
-- Renders ghost text suggestions as you type
-- Two trigger modes:
-  - Shortcut (`Ctrl+Space`). Press again for alternative suggestions.
-  - Debounce mode: automatically triggers after a space at paragraph ends
-- Accept suggestions with Tab or word-by-word with `Cmd+→`
-- Built-in support for Vercel AI SDK completion API
+- 在输入时渲染 ghost text suggestions
+- 两种触发模式：
+  - 快捷键 (`Ctrl+Space`). 再次按下以获取替代建议。
+  - 防抖模式：在段落末尾自动触发
+- 使用 Tab 或逐词接受建议，使用 `Cmd+→`
+- 内置支持 Vercel AI SDK 完成 API
 
 </PackageInfo>
 
-## Installation
+## 安装
 
 ```bash
 npm install @udecode/plate-ai @udecode/plate-markdown
 ```
 
-## Usage
+## 使用
 
 ```tsx
 import { CopilotPlugin } from '@udecode/plate-ai/react';
@@ -89,41 +89,43 @@ ${prompt}
 
 - [GhostText](/docs/components/ghost-text)
 
-## Tab Key Handling
+## Tab 键处理
 
-The Copilot plugin uses the Tab key to accept suggestions. To avoid conflicts with other plugins that use Tab (like `IndentPlugin` or `TabbablePlugin`), ensure `CopilotPlugin` is placed before them in your plugin configuration. This allows Copilot to handle Tab key events first when suggestions are present.
+Copilot 插件使用 Tab 键接受建议。为了避免与其他使用 Tab 的插件（如 `IndentPlugin` 或 `TabbablePlugin`）发生冲突，确保 `CopilotPlugin` 在您的插件配置中位于它们之前。这使得 Copilot 在有建议时优先处理 Tab 键事件。
 
 ```tsx
 const plugins = [
   // ...otherPlugins,
   CopilotPlugin,
-  // Place tab-using plugins after Copilot
+  // 将使用 Tab 的插件放在 Copilot 之后
   IndentPlugin,
   TabbablePlugin,
 ];
 ```
 
-## Examples
+## 示例
 
 ### Plate UI
 
-Refer to the preview above.
+请参阅上面的预览。
 
 ### Plate Plus
 
 <ComponentPreviewPro name="copilot-pro" />
 
-## Keyboard Shortcuts
+## 键盘快捷键
 
 <KeyTable>
   <KeyTableItem hotkey="Ctrl + Space">
-    Trigger suggestion. Press again for alternative suggestions.
+    触发建议。再次按下以获取替代建议。
   </KeyTableItem>
-  <KeyTableItem hotkey="Tab">Accept the entire suggestion.</KeyTableItem>
+  <KeyTableItem hotkey="Tab">接受整个建议。</KeyTableItem>
   <KeyTableItem hotkey="Cmd + →">
-    Accept the next word of the suggestion.
+    接受建议的下一个单词。
   </KeyTableItem>
-  <KeyTableItem hotkey="Escape">Dismiss the current suggestion.</KeyTableItem>
+  <KeyTableItem hotkey="Escape">
+    取消当前建议。
+  </KeyTableItem>
 </KeyTable>
 
 ## Plugins
@@ -132,19 +134,18 @@ Refer to the preview above.
 
 <APIOptions>
 <APIItem name="autoTriggerQuery" type="(options: { editor: PlateEditor }) => boolean" optional>
-  Additional conditions to auto trigger copilot. Default checks:
-  - Block above is not empty
-  - Block above ends with a space
-  - No existing suggestion
+  自动触发 copilot 的条件。默认检查：
+  - 上面的块不为空
+  - 上面的块以空格结尾
+  - 没有现有的建议
 </APIItem>
 
 <APIItem name="completeOptions" type="Partial<CompleteOptions>">
-  AI completion configuration options. See [AI SDK useCompletion
-  Parameters](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-completion#parameters).
+  AI 完成配置选项。请参阅 [AI SDK useCompletion 参数](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-completion#parameters)。
 </APIItem>
 
 <APIItem name="debounceDelay" type="number" optional>
-  Delay for debouncing auto-triggered suggestions. **Default:** `0`
+  防抖延迟。**默认:** `0`
 </APIItem>
 
 <APIItem
@@ -152,7 +153,7 @@ Refer to the preview above.
   type="(options: { text: string }) => { firstWord: string; remainingText: string }"
   optional
 >
-  Function to extract the next word from suggestion text.
+  从建议文本中提取下一个单词的函数。
 </APIItem>
 
 <APIItem
@@ -160,18 +161,17 @@ Refer to the preview above.
   type="(options: { editor: PlateEditor }) => string"
   optional
 >
-  Function to generate the prompt for AI completion. **Default:** Uses markdown
-  serialization of ancestor node
+  生成 AI 补全提示的函数。**默认：**使用祖先节点的 markdown 序列化
 </APIItem>
 
 <APIItem name="renderGhostText" type="(() => React.ReactNode) | null" optional>
-  Component to render ghost text suggestions.
+  渲染幽灵文本建议的组件。
 </APIItem>
 
 <APIItem name="triggerQuery" type="(options: { editor: PlateEditor }) => boolean" optional>
-  Conditions to trigger copilot. Default checks:
-  - Selection is not expanded
-  - Selection is at block end
+  触发 copilot 的条件。默认检查：
+  - 选择未展开
+  - 选择在块末尾
 </APIItem>
 </APIOptions>
 
@@ -179,32 +179,32 @@ Refer to the preview above.
 
 ### editor.api.copilot.accept()
 
-Accepts the current suggestion.
+接受当前建议。
 
 ### editor.api.copilot.acceptNextWord()
 
-Accepts the next word of the suggestion.
+接受建议的下一个单词。
 
 ### editor.api.copilot.reset()
 
-Resets the plugin state:
+重置插件状态：
 
-- Aborts any ongoing API request
-- Clears the current completion
-- Clears suggestion node ID and text
+- 中止任何正在进行的 API 请求
+- 清除当前补全
+- 清除建议节点 ID 和文本
 
 ### editor.api.copilot.setBlockSuggestion()
 
-Sets suggestion text for a block.
+为块设置建议文本。
 
 <APIParameters>
   <APIItem name="options" type="object">
     <APISubList>
       <APISubListItem parent="options" name="text" type="string">
-        The suggestion text to set.
+        要设置的建议文本。
       </APISubListItem>
       <APISubListItem parent="options" name="id" type="string" optional>
-        Target block ID. Defaults to current block if not provided.
+        目标块 ID。如果未提供，默认为当前块。
       </APISubListItem>
     </APISubList>
   </APIItem>
@@ -212,12 +212,12 @@ Sets suggestion text for a block.
 
 ### editor.api.copilot.stop()
 
-Stops ongoing suggestion requests:
+停止正在进行的建议请求：
 
-- Cancels debounced trigger calls
-- Aborts current API request
-- Resets abort controller
+- 取消防抖触发调用
+- 中止当前 API 请求
+- 重置中止控制器
 
 ### editor.api.copilot.triggerSuggestion()
 
-Triggers a new suggestion request. Can be debounced based on plugin configuration.
+触发新的建议请求。可以根据插件配置进行防抖。

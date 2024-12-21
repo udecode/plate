@@ -6,19 +6,19 @@ title: Soft Break
 
 <PackageInfo>
 
-## Features
+## 功能
 
-- Allows insertion of line breaks within a text block without starting a new block.
+- 允许在文本块中插入换行符，而无需开始新块。
 
 </PackageInfo>
 
-## Installation
+## 安装
 
 ```bash
 npm install @udecode/plate-break
 ```
 
-## Usage
+## 用法
 
 ```tsx
 import { SoftBreakPlugin } from '@udecode/plate-break/react';
@@ -44,28 +44,28 @@ const plugins = [
 ];
 ```
 
-## Keyboard Shortcuts
-
+## 键盘快捷键
+    
 <KeyTable>
   <KeyTableItem hotkey="Shift + Enter">
-    Insert a line break within a block of text without starting a new block.
+    在文本块中插入换行符，而无需开始新块。
   </KeyTableItem>
 </KeyTable>
 
-## Plugins
+## 插件
 
 ### SoftBreakPlugin
 
 <APIOptions>
 
 <APIItem name="rules" type="object[]" optional>
-An array of rule objects specifying the hotkey to activate the soft break and an optional filter query.
+一个规则对象数组，用于指定激活软换行的快捷键和可选的过滤查询。
 <APISubList>
 <APISubListItem parent="rules" name="hotkey" type="string">
-The key combination that activates the soft break.
+激活软换行的按键组合。
 </APISubListItem>
 <APISubListItem parent="rules" name="query" type="QueryNodeOptions" optional>
-Filter options to determine the block types where the rule applies.
+用于确定规则适用的块类型的过滤选项。
 </APISubListItem>
 </APISubList>
 </APIItem>

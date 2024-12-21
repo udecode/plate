@@ -1,17 +1,17 @@
 ---
-title: Theming
-description: Using CSS Variables or Tailwind CSS for theming.
+title: 主题
+description: 使用 CSS 变量或 Tailwind CSS 实用类进行主题化。
 ---
 
-You can choose between using CSS variables or Tailwind CSS utility classes for theming.
+你可以选择使用 CSS 变量或 Tailwind CSS 实用类进行主题化。
 
-## Utility classes
+## 实用类
 
 ```tsx /bg-zinc-950/ /text-zinc-50/ /dark:bg-white/ /dark:text-zinc-950/
 <div className="bg-zinc-950 dark:bg-white" />
 ```
 
-To use utility classes for theming set `tailwind.cssVariables` to `false` in your `components.json` file.
+要使用实用类进行主题化，请将 `tailwind.cssVariables` 设置为 `false` 在你的 `components.json` 文件中。
 
 ```json {8} title="components.json"
 {
@@ -36,7 +36,7 @@ To use utility classes for theming set `tailwind.cssVariables` to `false` in you
 <div className="bg-background text-foreground" />
 ```
 
-To use CSS variables for theming set `tailwind.cssVariables` to `true` in your `components.json` file.
+要使用 CSS 变量进行主题化，请将 `tailwind.cssVariables` 设置为 `true` 在你的 `components.json` 文件中。
 
 ```json {8} title="components.json"
 {
@@ -55,13 +55,13 @@ To use CSS variables for theming set `tailwind.cssVariables` to `true` in your `
 }
 ```
 
-### Convention
+### 约定
 
-We use a simple `background` and `foreground` convention for colors. The `background` variable is used for the background color of the component and the `foreground` variable is used for the text color.
+我们使用一个简单的 `background` 和 `foreground` 约定来设置颜色。`background` 变量用于组件的背景颜色，`foreground` 变量用于文本颜色。
 
 <Callout className="mt-4">
 
-The `background` suffix is omitted when the variable is used for the background color of the component.
+当变量用于组件的背景颜色时，`background` 后缀被省略。
 
 </Callout>
 
@@ -72,7 +72,7 @@ Given the following CSS variables:
 --primary-foreground: 210 40% 98%;
 ```
 
-The `background` color of the following component will be `hsl(var(--primary))` and the `foreground` color will be `hsl(var(--primary-foreground))`.
+以下组件的 `background` 颜色将是 `hsl(var(--primary))`，`foreground` 颜色将是 `hsl(var(--primary-foreground))`。
 
 ```tsx
 <div className="bg-primary text-primary-foreground">Hello</div>
@@ -80,13 +80,13 @@ The `background` color of the following component will be `hsl(var(--primary))` 
 
 <Callout>
 
-**CSS variables must be defined without color space function**. See the [Tailwind CSS documentation](https://tailwindcss.com/docs/customizing-colors#using-css-variables) for more information.
+**CSS 变量必须不带颜色空间函数定义**。更多信息请参阅 [Tailwind CSS 文档](https://tailwindcss.com/docs/customizing-colors#using-css-variables)。
 
 </Callout>
 
-### List of variables
+### 变量列表
 
-Here's the list of variables available for customization:
+以下是可自定义的变量列表：
 
 <Steps>
 
@@ -150,7 +150,7 @@ Here's the list of variables available for customization:
 
 ### Adding new colors
 
-To add new colors, you need to add them to your CSS file and to your `tailwind.config.js` file.
+要添加新颜色，你需要将它们添加到你的 CSS 文件和 `tailwind.config.js` 文件中。
 
 ```css title="app/globals.css"
 :root {
@@ -177,14 +177,14 @@ module.exports = {
 }
 ```
 
-You can now use the `warning` utility class in your components.
+你现在可以在你的组件中使用 `warning` 实用类。
 
 ```tsx /bg-warning/ /text-warning-foreground/
 <div className="bg-warning text-warning-foreground" />
 ```
 
-### Other color formats
+### 其他颜色格式
 
-I recommend using [HSL colors](https://www.smashingmagazine.com/2021/07/hsl-colors-css/) for theming but you can also use other color formats if you prefer.
+我推荐使用 [HSL 颜色](https://www.smashingmagazine.com/2021/07/hsl-colors-css/) 进行主题化，但如果你愿意，也可以使用其他颜色格式。
 
-See the [Tailwind CSS documentation](https://tailwindcss.com/docs/customizing-colors#using-css-variables) for more information on using `rgb`, `rgba` or `hsl` colors.
+更多信息请参阅 [Tailwind CSS 文档](https://tailwindcss.com/docs/customizing-colors#using-css-variables)。

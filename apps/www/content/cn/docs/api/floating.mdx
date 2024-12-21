@@ -1,21 +1,21 @@
 ---
 title: Floating
-description: API reference for floating UI components and hooks.
+description: 浮动 UI 组件和钩子的 API 参考。
 ---
 
 <PackageInfo>
 
-## Features
+## 特性
 
-- Virtual floating elements that follow cursor position
-- Floating toolbar that appears on text selection
-- Built on top of Floating UI
-- Customizable positioning and behavior
-- Automatic updates on scroll and resize
+- 跟随光标位置的虚拟浮动元素
+- 在文本选择时出现的浮动工具栏
+- 基于 Floating UI 构建
+- 可自定义的定位和行为
+- 在滚动和调整大小时自动更新
 
 </PackageInfo>
 
-## Installation
+## 安装
 
 ```bash
 npm install @udecode/plate-floating
@@ -25,22 +25,22 @@ npm install @udecode/plate-floating
 
 ### useVirtualFloating
 
-Creates a floating element with a controlled virtual element, typically used to follow cursor position.
+创建一个带有受控虚拟元素的浮动元素，通常用于跟随光标位置。
 
 <APIParameters>
   <APIItem name="options" type="UseVirtualFloatingOptions">
-    Options for the virtual floating element.
+    虚拟浮动元素的选项。
     <APISubList>
       <APISubListItem parent="options" name="getBoundingClientRect" type="() => ClientRectObject" optional>
-        Function to get the bounding client rect.
-        - **Default:** Returns a zero-sized rect at (0,0)
+        获取边界客户端矩形的函数。
+        - **默认值:** 返回一个零大小的矩形，位于 (0,0)
       </APISubListItem>
       <APISubListItem parent="options" name="open" type="boolean" optional>
-        Controls visibility of the floating element.
+        控制浮动元素的可见性。
       </APISubListItem>
       <APISubListItem parent="options" name="whileElementsMounted" type="function" optional>
-        Callback when elements are mounted.
-        - **Default:** `autoUpdate` (updates on scroll and resize)
+        元素挂载时的回调函数。
+        - **默认值:** `autoUpdate` (在滚动和调整大小时更新)
       </APISubListItem>
     </APISubList>
   </APIItem>
@@ -48,35 +48,35 @@ Creates a floating element with a controlled virtual element, typically used to 
 
 <APIReturns>
   <APIItem name="style" type="React.CSSProperties">
-    Style object to apply to the floating element.
+    应用于浮动元素的样式对象。
   </APIItem>
   <APIItem name="virtualElementRef" type="React.MutableRefObject">
-    Reference to the virtual element.
+    虚拟元素的引用。
   </APIItem>
   <APIItem name="refs" type="object">
-    References for floating UI positioning.
+    用于浮动 UI 定位的引用。
   </APIItem>
   <APIItem name="update" type="() => void">
-    Function to manually update positioning.
+    手动更新定位的函数。
   </APIItem>
 </APIReturns>
 
 ### useFloatingToolbar
 
-Creates a floating toolbar that appears when text is selected in the editor.
+创建一个浮动工具栏，当在编辑器中选择文本时出现。
 
 <APIParameters>
   <APIItem name="state" type="FloatingToolbarState">
-    State options for the floating toolbar.
+    浮动工具栏的状态选项。
     <APISubList>
       <APISubListItem parent="state" name="floatingOptions" type="UseVirtualFloatingOptions" optional>
-        Options passed to useVirtualFloating.
+        传递给 useVirtualFloating 的选项。
       </APISubListItem>
       <APISubListItem parent="state" name="hideToolbar" type="boolean" optional>
-        Force hide the toolbar.
+        强制隐藏工具栏。
       </APISubListItem>
       <APISubListItem parent="state" name="showWhenReadOnly" type="boolean" optional>
-        Show toolbar in read-only mode.
+        在只读模式下显示工具栏。
       </APISubListItem>
     </APISubList>
   </APIItem>
@@ -84,16 +84,16 @@ Creates a floating toolbar that appears when text is selected in the editor.
 
 <APIReturns>
   <APIItem name="clickOutsideRef" type="React.RefObject">
-    Ref to detect clicks outside the toolbar.
+    用于检测工具栏外部点击的引用。
   </APIItem>
   <APIItem name="hidden" type="boolean">
-    Whether the toolbar should be hidden.
+    工具栏是否应该隐藏。
   </APIItem>
   <APIItem name="props" type="object">
-    Props to spread on the toolbar element.
+    要传递给工具栏元素的属性。
   </APIItem>
   <APIItem name="ref" type="React.RefObject">
-    Ref to attach to the toolbar element.
+    要附加到工具栏元素的引用。
   </APIItem>
 </APIReturns>
 
@@ -101,64 +101,64 @@ Creates a floating toolbar that appears when text is selected in the editor.
 
 ### getBoundingClientRect
 
-Gets the bounding client rectangle for a location or array of locations in the editor.
+获取编辑器中位置或位置数组的边界客户端矩形。
 
 <APIParameters>
   <APIItem name="editor" type="TEditor">
-    The editor instance.
+    编辑器实例。
   </APIItem>
   <APIItem name="at" type="Location | Location[]" optional>
-    The location(s) to get the bounding rectangle for. If not provided, uses the current editor selection.
+    要获取边界矩形的位置。如果未提供，则使用当前编辑器选择。
   </APIItem>
 </APIParameters>
 
 <APIReturns>
   <APIItem type="DOMRect | undefined">
-    The merged bounding client rectangle of all specified locations, or undefined if no valid rectangles found.
+    所有指定位置的合并边界客户端矩形，如果未找到有效矩形则为 undefined。
   </APIItem>
 </APIReturns>
 
 ### getDOMSelectionBoundingClientRect
 
-Gets the bounding client rectangle of the current DOM selection.
+获取当前 DOM 选择的边界客户端矩形。
 
 <APIReturns>
   <APIItem type="ClientRectObject">
-    The bounding client rectangle of the DOM selection. Returns a zero-sized rect at (0,0) if no selection exists.
+    DOM 选择的边界客户端矩形。如果不存在选择，则返回位于 (0,0) 的零大小矩形。
   </APIItem>
 </APIReturns>
 
 ### getRangeBoundingClientRect
 
-Gets the bounding client rectangle for a specific Slate range.
+获取特定 Slate 范围的边界客户端矩形。
 
 <APIParameters>
   <APIItem name="editor" type="TEditor">
-    The editor instance.
+    编辑器实例。
   </APIItem>
   <APIItem name="at" type="Range | null">
-    The Slate range to get the bounding rectangle for.
+    要获取边界矩形的 Slate 范围。
   </APIItem>
 </APIParameters>
 
 <APIReturns>
   <APIItem type="ClientRectObject">
-    The bounding client rectangle of the range. Returns a zero-sized rect at (0,0) if the range is null or invalid.
+    范围的边界客户端矩形。如果范围为 null 或无效，则返回位于 (0,0) 的零大小矩形。
   </APIItem>
 </APIReturns>
 
 ### getSelectionBoundingClientRect
 
-Gets the bounding client rectangle of the current editor selection.
+获取当前编辑器选择的边界客户端矩形。
 
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
-    The editor instance.
+    编辑器实例。
   </APIItem>
 </APIParameters>
 
 <APIReturns>
   <APIItem type="ClientRectObject">
-    The bounding client rectangle of the selection. Returns a zero-sized rect at (0,0) if the selection is not expanded.
+    选择的边界客户端矩形。如果选择未展开，则返回位于 (0,0) 的零大小矩形。
   </APIItem>
 </APIReturns>

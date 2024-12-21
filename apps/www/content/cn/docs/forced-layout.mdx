@@ -6,19 +6,19 @@ title: Forced Layout
 
 <PackageInfo>
 
-## Features
+## 功能特性
 
-- Automatically ensures the use of specified elements as required to maintain document structure (e.g., first block should be an H1 element).
+- 自动确保使用指定的元素作为必需元素以维护文档结构（例如，第一个块应为 H1 元素）。
 
 </PackageInfo>
 
-## Installation
+## 安装
 
 ```bash
 npm install @udecode/plate-normalizers @udecode/plate-trailing-block
 ```
 
-## Usage
+## 使用
 
 ```tsx
 import { NormalizersPlugin } from '@udecode/plate-normalizers/react';
@@ -37,33 +37,33 @@ const plugins = [
 ];
 ```
 
-## Plugins
+## 插件
 
 ### TrailingBlockPlugin
 
 <APIOptions>
 <APIItem name="level" type="number" optional>
-Level where the trailing node should be, the first level being 0.
+Trailing node 所在的级别，第一个级别为 0。
 
-- **Default:** `0`
+- **默认值:** `0`
 </APIItem>
 
 <APIItem name="type" type="string" optional>
-Type of the trailing block.
+Trailing block 的类型。
 
-- **Default:** `editor.getType(ParagraphPlugin)`
+- **默认值:** `editor.getType(ParagraphPlugin)`
 </APIItem>
 </APIOptions>
 
-The `TrailingBlockPlugin` also extends `QueryNodeOptions`, which includes additional options for querying nodes.
+`TrailingBlockPlugin` 还扩展了 `QueryNodeOptions`，它包括用于查询节点的附加选项。
 
 ### NormalizeTypesPlugin
 
 <APIOptions>
 <APIItem name="rules" type="Rule[]" optional>
-An array of rule objects for normalizing types.
+用于规范化类型的规则数组。
 
-- **Default:** `[]`
+- **默认值:** `[]`
 </APIItem>
 </APIOptions>
 
@@ -71,14 +71,14 @@ An array of rule objects for normalizing types.
 
 <APIAttributes>
 <APIItem name="path" type="Path">
-Path where the rule applies.
+规则应用的路径。
 </APIItem>
 
 <APIItem name="strictType" type="string" optional>
-Force the type of the node at the given path.
+强制指定路径处的节点类型。
 </APIItem>
 
 <APIItem name="type" type="string" optional>
-Type of the inserted node at the given path if `strictType` is not provided.
+如果未提供 `strictType`，则插入节点在给定路径处的类型。
 </APIItem>
 </APIAttributes>

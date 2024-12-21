@@ -6,19 +6,19 @@ title: Exit Break
 
 <PackageInfo>
 
-## Features
+## 功能
 
-- Exit large text blocks with a single hotkey.
+- 使用单个快捷键退出大文本块。
 
 </PackageInfo>
 
-## Installation
+## 安装
 
 ```bash
 npm install @udecode/plate-break
 ```
 
-## Usage
+## 使用
 
 ```tsx
 import { ExitBreakPlugin } from '@udecode/plate-break/react';
@@ -51,18 +51,18 @@ const plugins = [
 ];
 ```
 
-## Keyboard Shortcuts
+## 快捷键
 
 <KeyTable>
   <KeyTableItem hotkey="Cmd + Enter">
-    Start a new block after the selected block.
+    在选中的块之后开始一个新块。
   </KeyTableItem>
   <KeyTableItem hotkey="Cmd + Shift + Enter">
-    Start a new block before the selected block.
+    在选中的块之前开始一个新块。
   </KeyTableItem>
 </KeyTable>
 
-## Plugins
+## 插件
 
 ### ExitBreakPlugin
 
@@ -70,28 +70,28 @@ const plugins = [
 
 <APIItem name="rules" type="ExitBreakRule[]" optional>
 
-An array of rule objects each containing the following properties:
+一个包含以下属性的规则对象数组：
 
 <APISubList>
 <APISubListItem parent="rules" name="hotkey" type="string">
-Hotkey to trigger exit break.
+触发退出断开的快捷键。
 </APISubListItem>
 <APISubListItem parent="rules" name="query" type="QueryNodeOptions & {start?: boolean, end?: boolean}" optional>
-Object determining the conditions under which to exit.
+决定在什么条件下退出。
 
-- Extends `QueryNodeOptions`:
+- 扩展 `QueryNodeOptions`:
 
 <APISubList>
 
 <APISubListItem parent="query" name="start" type="boolean" optional>
 
-Start of the block.
+块的开始。
 
 </APISubListItem>
 
 <APISubListItem parent="query" name="end" type="boolean" optional>
 
-End of the block.
+块的结束。
 
 </APISubListItem>
 
@@ -99,16 +99,16 @@ End of the block.
 
 </APISubListItem>
 <APISubListItem parent="rules" name="level" type="number" optional>
-Path level where to exit.
+退出路径级别。
 
-- **Default:** `1`
+- **默认值：** `1`
 
 </APISubListItem>
 <APISubListItem parent="rules" name="before" type="boolean" optional>
-If true, exit before the selected block.
+如果为 true，则在选中的块之前退出。
 </APISubListItem>
 <APISubListItem parent="rules" name="defaultType" type="string" optional>
-The default type of the node to be inserted upon exit.
+退出时插入的节点的默认类型。
 </APISubListItem>
 </APISubList>
 </APIItem>
@@ -118,39 +118,39 @@ The default type of the node to be inserted upon exit.
 
 ### exitBreak
 
-Exit a large block using a shortcut.
+使用快捷键退出大文本块。
 
 <APIParameters>
 <APIItem name="editor" type="PlateEditor">
-The editor instance.
+编辑器实例。
 </APIItem>
 <APIItem name="options" type="Omit<ExitBreakRule, 'hotkey'>">
-The options for the exit break operation.
+退出断开操作的选项。
 <APISubList>
 <APISubListItem parent="options" name="level" type="number" optional>
-Path level where to exit.
+退出路径级别。
 
-- **Default:** `0`
+- **默认值：** `0`
 
 </APISubListItem>
 <APISubListItem parent="options" name="relative" type="boolean" optional>
-If true, exit relative to the selection.
+如果为 true，则相对于选中的块退出。
 
-- **Default:** `false`
+- **默认值：** `false`
 
 </APISubListItem>
 <APISubListItem parent="options" name="defaultType" type="function" optional>
-The default type of the node to be inserted upon exit.
+退出时插入的节点的默认类型。
 
-- **Default:** `editor.getType(ParagraphPlugin)`
+- **默认值：** `editor.getType(ParagraphPlugin)`
 
 </APISubListItem>
 <APISubListItem parent="options" name="query" type="object" optional>
-Object determining the conditions under which to exit.
+决定在什么条件下退出。
 
 </APISubListItem>
 <APISubListItem parent="options" name="before" type="boolean" optional>
-If true, exit before the selected block.
+如果为 true，则在选中的块之前退出。
 </APISubListItem>
 </APISubList>
 
@@ -159,25 +159,25 @@ If true, exit before the selected block.
 
 <APIReturns>
   <APIItem type="boolean">
-    Indicates whether the exit break was successful.
+    是否成功退出断开。
   </APIItem>
 </APIReturns>
 
 ### exitBreakAtEdges
 
-Checks if the selection is at the edge of its parent block and performs an "exit break" operation if specified.
+检查选中的块是否在块的边缘，并在指定的情况下执行退出断开操作。
 
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
-    The editor instance.
+    编辑器实例。
   </APIItem>
   <APIItem name="options" type="object">
     <APISubList>
       <APISubListItem parent="options" name="start" type="boolean" optional>
-        If true, check if the selection is at the start of its parent block.
+        如果为 true，则检查选中的块是否在块的开始。
       </APISubListItem>
       <APISubListItem parent="options" name="end" type="boolean" optional>
-        If true, check if the selection is at the end of its parent block.
+        如果为 true，则检查选中的块是否在块的结束。
       </APISubListItem>
     </APISubList>
   </APIItem>
@@ -185,12 +185,12 @@ Checks if the selection is at the edge of its parent block and performs an "exit
 
 <APIReturns>
   <APIItem name="queryEdge" type="boolean">
-    Indicates whether the edge of the selection was queried.
+    是否查询了块的边缘。
   </APIItem>
   <APIItem name="isEdge" type="boolean">
-    Indicates whether the selection is at the edge of its parent block.
+    选中的块是否在块的边缘。
   </APIItem>
   <APIItem name="isStart" type="boolean">
-    Indicates whether the selection is at the start of its parent block.
+    选中的块是否在块的开始。
   </APIItem>
 </APIReturns>

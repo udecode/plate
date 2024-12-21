@@ -13,20 +13,20 @@ docs:
 
 <PackageInfo>
 
-## Features
+## 功能
 
-- Provides smart autocompletion for mentioning users or applying tags.
-- Invoke combobox with `@` or `#` and select suggestion.
+- 提供智能自动完成功能，用于提及用户或应用标签。
+- 使用 `@` 或 `#` 调用组合框并选择建议。
 
 </PackageInfo>
 
-## Installation
+## 安装
 
 ```bash
 npm install @udecode/plate-mention
 ```
 
-## Usage
+## 用法
 
 ```tsx
 import { MentionPlugin } from '@udecode/plate-mention/react';
@@ -37,39 +37,39 @@ const plugins = [
 ];
 ```
 
-## Plugins
+## 插件
 
 ### MentionPlugin
 
-Extends [TriggerComboboxPlugin](/docs/combobox#options)
+继承 [TriggerComboboxPlugin](/docs/combobox#options)
 
 <APIOptions>
 <APIItem name="insertSpaceAfterMention" type="boolean" optional>
-  Whether to insert a space after the mention.
+  是否在提及后插入空格。
 </APIItem>
 </APIOptions>
 
 ### MentionInputPlugin
 
-Plugin for mention input functionality.
+提及输入功能的插件。
 
 ## API
 
 ### editor.api.insert.mention
 
-Override this API method to customize how mentions are inserted.
+重写此 API 方法以自定义提及的插入方式。
 
 ### getMentionOnSelectItem
 
-Gets the handler for selecting an item in the mention combobox.
+获取提及组合框中选择项目的处理程序。
 
 <APIParameters>
 <APIItem name="options" type="object" optional>
 <APISubList>
 <APISubListItem parent="options" name="key" type="string" optional>
-The plugin key of the mention plugin.
+提及插件的插件键。
 
-- **Default:** `MentionPlugin.key`
+- **默认值：** `MentionPlugin.key`
 
 </APISubListItem>
 </APISubList>
@@ -78,6 +78,6 @@ The plugin key of the mention plugin.
 
 <APIReturns>
   <APIItem type="MentionOnSelectItem">
-    The handler for selecting an item in the mention combobox.
+    提及组合框中选择项目的处理程序。
   </APIItem>
 </APIReturns>

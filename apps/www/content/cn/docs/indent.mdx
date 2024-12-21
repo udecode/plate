@@ -11,24 +11,25 @@ docs:
 
 <PackageInfo>
 
-## Features
+## 功能特点
 
-- **Core Functionality**:
-  - Indent/outdent any block element
-  - Tab/Shift+Tab keyboard shortcuts
-  - Clean DOM structure
+- **核心功能**:
 
-- **Customization**:
-  - Define target block types
-  - Set indentation size and units
-  - Control maximum depth
-  - Custom CSS styling
+  - 缩进/减少任何块级元素的缩进
+  - Tab/Shift+Tab 键盘快捷键
+  - 清晰的 DOM 结构
 
-For list-specific features, see the [Indent List plugin](/docs/indent-list).
+- **自定义选项**:
+  - 定义目标块类型
+  - 设置缩进大小和单位
+  - 控制最大缩进深度
+  - 自定义 CSS 样式
+
+关于列表特定功能，请参见 [缩进列表插件](/docs/indent-list)。
 
 </PackageInfo>
 
-## Installation
+## 安装
 
 ```bash
 npm install @udecode/plate-indent
@@ -53,25 +54,25 @@ const plugins = [
 ];
 ```
 
-## Plugins
+## 插件
 
 ### IndentPlugin
 
 <APIOptions>
 <APIItem name="offset" type="number" optional>
-The indentation offset used in `(offset * element.indent) + unit`.
+在 `(offset * element.indent) + unit` 中使用的缩进偏移量。
 
-- **Default:** `40`
+- **默认值:** `40`
 
 </APIItem>
 <APIItem name="unit" type="string" optional>
-The indentation unit used in `(offset * element.indent) + unit`.
+在 `(offset * element.indent) + unit` 中使用的缩进单位。
 
-- **Default:** `'px'`
+- **默认值:** `'px'`
 
 </APIItem>
 <APIItem name="indentMax" type="number" optional>
-The maximum number of indentations that can be applied to an element.
+可以应用于元素的最大缩进次数。
 </APIItem>
 </APIOptions>
 
@@ -79,40 +80,44 @@ The maximum number of indentations that can be applied to an element.
 
 ### indent
 
-Indents the selected block(s) in the editor.
+缩进编辑器中选中的块。
 
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
-    The editor instance.
+    编辑器实例。
   </APIItem>
-  <APIItem name="options" type="SetIndentOptions" optional></APIItem>
+  <APIItem name="options" type="SetIndentOptions" optional>
+    选项
+  </APIItem>
 </APIParameters>
 
 ### outdent
 
-Decrease the indentation of the selected blocks.
+减少选中块的缩进。
 
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
-    The editor instance.
+    编辑器实例。
   </APIItem>
-  <APIItem name="options" type="SetIndentOptions" optional></APIItem>
+  <APIItem name="options" type="SetIndentOptions" optional>
+    选项
+  </APIItem>
 </APIParameters>
 
 ### setIndent
 
-Add offset to the indentation of the selected blocks.
+为选中块的缩进添加偏移量。
 
 <APIParameters>
 <APIItem name="editor" type="PlateEditor">
-The editor instance.
+编辑器实例。
 </APIItem>
 <APIItem name="options" type="SetIndentOptions" optional>
 <APISubList>
 <APISubListItem parent="options" name="offset" type="number" optional>
-The indentation offset used in `(offset * element.indent) + unit`.
+在 `(offset * element.indent) + unit` 中使用的缩进偏移量。
 
-- **Default:** `1`
+- **默认值:** `1`
 
 </APISubListItem>
 <APISubListItem
@@ -121,7 +126,7 @@ The indentation offset used in `(offset * element.indent) + unit`.
   type="GetNodeEntriesOptions & UnhangRangeOptions"
   optional
 >
-Options to get the nodes to indent.
+获取要缩进的节点的选项。
 </APISubListItem>
 <APISubListItem
   parent="options"
@@ -129,7 +134,7 @@ Options to get the nodes to indent.
   types="object"
   optional
 >
-Additional props to set on the nodes to indent.
+要在缩进节点上设置的其他属性。
 </APISubListItem>
 <APISubListItem
   parent="options"
@@ -137,9 +142,9 @@ Additional props to set on the nodes to indent.
   types="string[]"
   optional
 >
-Additional props to unset on the nodes to indent.
+要在缩进节点上取消设置的其他属性。
 
-- **Default:** `[]`
+- **默认值:** `[]`
 
 </APISubListItem>
 </APISubList>
@@ -149,40 +154,37 @@ Additional props to unset on the nodes to indent.
 
 ### SetIndentOptions
 
-Used to provide options for setting the indentation of a block of text.
+用于提供设置文本块缩进的选项。
 
 <APIState>
   <APIItem name="offset" type="number">
-    Defines the change in indentation. A value of 1 increases the indentation
-    (indents the block), whereas a value of -1 decreases the indentation
-    (outdents the block). By default, the offset is set to 1.
+    定义缩进的变化。值为 1 时增加缩进（缩进块），值为 -1 时减少缩进（减少缩进）。默认情况下，偏移量设置为 1。
   </APIItem>
   <APIItem
     name="getNodesOptions"
     type="GetNodeEntriesOptions&lt;V&gt; &amp; UnhangRangeOptions"
   >
-    Additional `getNodes` options.
+    额外的 `getNodes` 选项。
   </APIItem>
   <APIItem name="setNodesProps" type="function">
-    Additional `setNodes` options.
+    额外的 `setNodes` 选项。
   </APIItem>
   <APIItem name="unsetNodesProps" type="string[]">
-    A list of property names that should be unset when the indentation is 0.
+    当缩进为 0 时应取消设置的属性名称列表。
   </APIItem>
 </APIState>
 
-## API Components
+## API 组件
 
 ### useIndentButton
 
-A behavior hook for the indent button component.
+缩进按钮组件的行为钩子。
 
 <APIReturns>
   <APIItem name="props" type="object">
     <APISubList>
       <APISubListItem parent="props" name="onClick" type="function">
-        A callback function to handle the click event of the button. It indents
-        the selected content in the editor and focuses the editor.
+        处理按钮点击事件的回调函数。它会缩进编辑器中选中的内容并使编辑器获得焦点。
       </APISubListItem>
     </APISubList>
   </APIItem>
@@ -190,14 +192,13 @@ A behavior hook for the indent button component.
 
 ### useOutdentButton
 
-A behavior hook for the outdent button component.
+减少缩进按钮组件的行为钩子。
 
 <APIReturns>
   <APIItem name="props" type="object">
     <APISubList>
       <APISubListItem parent="props" name="onClick" type="function">
-        A callback function to handle the click event of the button. It outdents
-        the selected content in the editor and focuses the editor.
+        处理按钮点击事件的回调函数。它会减少编辑器中选中内容的缩进并使编辑器获得焦点。
       </APISubListItem>
     </APISubList>
   </APIItem>

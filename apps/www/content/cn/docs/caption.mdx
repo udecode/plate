@@ -9,19 +9,19 @@ docs:
 
 <PackageInfo>
 
-## Features
+## 功能
 
-- Arrow navigation should select caption within a block.
+- 箭头导航应选择块内的标题。
 
 </PackageInfo>
 
-## Installation
+## 安装
 
 ```bash
 npm install @udecode/plate-caption
 ```
 
-## Usage
+## 使用
 
 ```tsx
 import { CaptionPlugin } from '@udecode/plate-caption/react';
@@ -56,25 +56,25 @@ const plugins = [
 ];
 ```
 
-## Plugins
+## 插件
 
 ### CaptionPlugin
 
 <APIOptions>
   <APIItem name="plugins" type="string[]" required>
-    The plugin keys of the blocks that have caption.
+    具有标题的块的插件键。
   </APIItem>
   <APIItem name="focusEndPath" type="Path" optional>
-    Path to focus at the end of the caption.
+    聚焦到标题末尾的路径。
   </APIItem>
   <APIItem name="focusStartPath" type="Path" optional>
-    Path to focus at the start of the caption.
+    聚焦到标题开头的路径。
   </APIItem>
   <APIItem name="visibleId" type="string" optional>
-    ID of the visible caption.
+    可见标题的 ID。
   </APIItem>
   <APIItem name="isVisible" type="boolean" optional>
-    Whether the caption is visible.
+    标题是否可见。
   </APIItem>
 </APIOptions>
 
@@ -83,10 +83,10 @@ const plugins = [
 ### TCaptionElement
 
 <APIAttributes>
-Extends `TElement`.
+扩展 `TElement`.
 
 <APIItem name="caption" type="TDescendant[]" optional>
-Caption value.
+标题值。
 </APIItem>
 </APIAttributes>
 
@@ -98,8 +98,7 @@ Caption value.
   <APIItem name="options" type="object" optional>
     <APISubList>
       <APISubListItem parent="options" name="readOnly" type="boolean" optional>
-        A boolean value indicating whether the caption component is in read-only
-        mode.
+        标题组件是否处于只读模式。
       </APISubListItem>
     </APISubList>
   </APIItem>
@@ -111,14 +110,13 @@ Caption value.
         type="string"
         optional
       >
-        The string representing the caption.
+        标题字符串。
       </APISubListItem>
       <APISubListItem parent="state" name="selected" type="boolean" optional>
-        A boolean value indicating whether the caption component is selected.
+        标题组件是否被选中。
       </APISubListItem>
       <APISubListItem parent="state" name="readOnly" type="boolean" optional>
-        A boolean value indicating whether the caption component is in read-only
-        mode.
+        标题组件是否处于只读模式。
       </APISubListItem>
     </APISubList>
   </APIItem>
@@ -130,29 +128,27 @@ Caption value.
   <APIItem name="state">
     <APISubList>
       <APISubListItem parent="state" name="textareaRef" type="Ref">
-        A reference to the `textarea` element associated with the caption
-        component.
+        标题组件关联的 `textarea` 元素的引用。
       </APISubListItem>
       <APISubListItem
         parent="state"
         name="captionValue"
         type="TextareaAutosizeProps['value']"
       >
-        The value of the caption displayed in the `textarea`.
+        标题组件显示的 `textarea` 的值。
       </APISubListItem>
       <APISubListItem
         parent="state"
         name="setCaptionValue"
         type="(value: TextareaAutosizeProps['value']) => void"
       >
-        `captionValue` setter.
+        `captionValue` 设置器。
       </APISubListItem>
       <APISubListItem parent="state" name="readOnly" type="boolean">
-        A boolean value indicating whether the caption component is in read-only
-        mode.
+        标题组件是否处于只读模式。
       </APISubListItem>
       <APISubListItem parent="state" name="element" type="TCaptionElement">
-        The caption element.
+        标题元素。
       </APISubListItem>
     </APISubList>
   </APIItem>

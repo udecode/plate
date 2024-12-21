@@ -1,15 +1,15 @@
 ---
 title: Plugin Methods
-description: Explore the various methods available for extending Plate plugins.
+description: 探索扩展 Plate 插件的各种方法。
 ---
 
 ## Configuration Methods
 
-When extending plugins, all properties are deeply merged by default, with two exceptions: arrays are replaced entirely, and the `options` object is shallow merged.
+当扩展插件时，所有属性默认情况下都是深度合并的，有两个例外：数组完全替换，`options` 对象是浅合并。
 
 ### .configure
 
-The `.configure` method allows you to override the plugin's configuration.
+`.configure` 方法允许您覆盖插件的配置。
 
 ```ts
 const ConfiguredPlugin = MyPlugin.configure({
@@ -19,7 +19,7 @@ const ConfiguredPlugin = MyPlugin.configure({
 });
 ```
 
-You can also use a function to access the current configuration:
+您还可以使用一个函数来访问当前配置：
 
 ```ts
 const ConfiguredPlugin = MyPlugin.configure(({ getOptions }) => ({
@@ -30,14 +30,14 @@ const ConfiguredPlugin = MyPlugin.configure(({ getOptions }) => ({
 }));
 ```
 
-- It's used to modify existing properties of the plugin.
-- It doesn't add new properties to the plugin.
-- The last configuration applied is the one used by the editor.
-- It doesn't return an extended type, maintaining the original plugin type.
+- 用于修改插件的现有属性。
+- 它不会向插件添加新属性。
+- 最后应用的配置是编辑器使用的配置。
+- 它不会返回扩展类型，保持原始插件类型。
 
 ### .configurePlugin
 
-The `.configurePlugin` method allows you to configure the properties of a nested plugin:
+`.configurePlugin` 方法允许您配置嵌套插件的属性：
 
 ```ts
 const TablePlugin = createPlatePlugin({
@@ -50,14 +50,14 @@ const TablePlugin = createPlatePlugin({
 });
 ```
 
-- It's used to configure nested plugins within a parent plugin.
-- Like `.configure`, it modifies existing properties but doesn't add new ones.
-- It's useful for adjusting the behavior of sub-plugins without extending their types.
+- 用于配置嵌套插件。
+- 像 `.configure` 一样，它修改现有属性，但不添加新属性。
+- 用于调整子插件的行为，而无需扩展其类型。
 
 
 ### .extend
 
-The `.extend` method allows you to extend the plugin's configuration and functionality.
+`.extend` 方法允许您扩展插件的配置和功能。
 
 ```ts
 const ExtendedPlugin = MyPlugin.extend({
@@ -67,7 +67,7 @@ const ExtendedPlugin = MyPlugin.extend({
 });
 ```
 
-You can also use a function to access the current configuration and editor:
+您还可以使用一个函数来访问当前配置和编辑器：
 
 ```ts
 const ExtendedPlugin = MyPlugin.extend(({ editor, plugin }) => ({
@@ -82,13 +82,13 @@ const ExtendedPlugin = MyPlugin.extend(({ editor, plugin }) => ({
 }));
 ```
 
-- It's used to add new properties or modify existing ones in the plugin.
-- It returns a new plugin instance with extended types.
-- It's chainable, allowing multiple extensions to be applied sequentially.
+- 用于向插件添加新属性或修改现有属性。
+- 返回一个带有扩展类型的插件实例。
+- 是可链式的，允许多个扩展依次应用。
 
 ### .extendPlugin
 
-The `.extendPlugin` method allows you to extend the configuration and functionality of a nested plugin:
+`.extendPlugin` 方法允许您扩展嵌套插件的配置和功能：
 
 ```ts
 const TablePlugin = createPlatePlugin({
@@ -106,24 +106,24 @@ const TablePlugin = createPlatePlugin({
 });
 ```
 
-- It's used to extend nested plugins within a parent plugin.
-- It can add new properties and modify existing ones in the nested plugin.
-- It returns a new parent plugin instance with the extended nested plugin.
+- 用于扩展嵌套插件。
+- 可以添加新属性并修改现有属性。
+- 返回一个带有扩展嵌套插件的新父插件实例。
 
 
 ### Difference between .configure and .extend
 
-While both methods can be used to modify plugin configuration, they have some key differences:
+虽然这两种方法都可以用于修改插件配置，但它们有一些关键区别：
 
-1. Chaining: `.extend` is chainable, while `.configure` is not.
-2. Type extension: `.extend` returns a new plugin instance with extended types, while `.configure` maintains the original type.
-3. New properties: `.extend` can add new properties to the plugin configuration, while `.configure` only modifies existing ones.
+1. 可链性：`.extend` 是可链式的，而 `.configure` 不是。
+2. 类型扩展：`.extend` 返回一个带有扩展类型的插件实例，而 `.configure` 保持原始类型。
+3. 新属性：`.extend` 可以向插件配置添加新属性，而 `.configure` 仅修改现有属性。
 
-Choose the appropriate method based on whether you need to extend the plugin's type and functionality (use `.extend`) or simply modify existing configuration (use `.configure`).
+根据您需要扩展插件的类型和功能（使用 `.extend`）还是仅修改现有配置（使用 `.configure`），选择合适的方法。
 
 ### .extendOptions
 
-The `extendOptions` method allows you to extend the plugin options with selectors.
+`extendOptions` 方法允许您使用选择器扩展插件选项。
 
 ```ts
 const CounterPlugin = createPlatePlugin({
@@ -137,7 +137,7 @@ const CounterPlugin = createPlatePlugin({
 }));
 ```
 
-You can then use these extended options in your components or other plugin methods:
+您可以在组件或其他插件方法中使用这些扩展选项：
 
 ```tsx
 const CounterComponent = () => {
@@ -157,13 +157,13 @@ const CounterComponent = () => {
 };
 ```
 
-- It allows you to create derived state or computed values from plugin options.
-- Extended options are accessible using the `getOption` and `useOption` methods, just like regular options.
-- Extended options are recomputed whenever the underlying options change.
+- 允许您从插件选项创建派生状态或计算值。
+- 扩展选项可以通过 `getOption` 和 `useOption` 方法访问，就像常规选项一样。
+- 扩展选项在底层选项更改时重新计算。
 
 ### .withComponent
 
-The `withComponent` method allows you to set or replace the component associated with a plugin.
+`withComponent` 方法允许您设置或替换与插件关联的组件。
 
 ```ts
 const ParagraphPlugin = createPlatePlugin({
@@ -177,11 +177,11 @@ const ParagraphPlugin = createPlatePlugin({
 
 ## API and Transforms
 
-Plugins can define their own API methods and transforms that will be merged into the editor's API and transforms. This is done using the `extendApi`, `extendEditorApi`, `extendTransforms`, and `extendEditorTransforms` methods.
+插件可以定义自己的 API 方法和 transforms，这些方法和 transforms 将合并到编辑器的 API 和 transforms 中。这是使用 `extendApi`, `extendEditorApi`, `extendTransforms`, 和 `extendEditorTransforms` 方法完成的。
 
 ### .extendApi
 
-Use `extendApi` to add plugin-specific API methods:
+使用 `extendApi` 添加插件特定的 API 方法：
 
 ```ts
 const MyPlugin = createPlatePlugin({
@@ -190,13 +190,13 @@ const MyPlugin = createPlatePlugin({
   pluginMethod: () => 'plugin method result',
 }));
 
-// Access the plugin's API
+// 访问插件的 API
 editor.api.myPlugin.api.pluginMethod();
 ```
 
 ### .extendEditorApi
 
-Use `extendEditorApi` to add root-level API methods:
+使用 `extendEditorApi` 添加根级 API 方法：
 
 ```ts
 const MyPlugin = createPlatePlugin({
@@ -205,63 +205,63 @@ const MyPlugin = createPlatePlugin({
   editorMethod: () => getOptions().someOption,
 }));
 
-// Access the plugin's API
+// 访问插件的 API
 editor.api.editorMethod();
 ```
 
 ### .extendTransforms
 
-Use `extendTransforms` to add plugin-specific transform methods:
+使用 `extendTransforms` 添加插件特定的 transform 方法：
 
 ```ts
 const MyPlugin = createPlatePlugin({
   key: 'myPlugin',
 }).extendTransforms(() => ({
   pluginTransform: () => {
-    // Custom transform logic
+    // 自定义 transform 逻辑
   },
 }));
 
-// Access the plugin's transform
+// 访问插件的 transform
 editor.tf.myPlugin.pluginTransform();
 
-// NOTE: `editor.tf` in a short alias to `editor.transforms`
+// NOTE: `editor.tf` 是 `editor.transforms` 的简写
 editor.transforms.myPlugin.pluginTransform();
 ```
 
 ### .extendEditorTransforms
 
-Use `extendEditorTransforms` to add root-level transform methods:
+使用 `extendEditorTransforms` 添加根级 transform 方法：
 
 ```ts
 const MyPlugin = createPlatePlugin({
   key: 'myPlugin',
 }).extendEditorTransforms(({ editor }) => ({
   editorTransform: () => {
-    // Custom editor transform logic
+    // 自定义编辑器 transform 逻辑
   },
 }));
 
-// Access the plugin's transform
+// 访问插件的 transform
 editor.tf.editorTransform();
 ```
 
-### Difference between API and Transforms
+### API 和 Transforms 的区别
 
-While there is currently no core difference between API and Transforms in Plate, they serve distinct purposes and are designed with future extensibility in mind:
+虽然 Plate 中 API 和 Transforms 之间目前没有核心区别，但它们具有不同的用途，并且设计时考虑了未来的可扩展性：
 
 - **Transforms:** 
-  - Store all Slate transforms and editor operations here. Structured to potentially support middlewares in the future, allowing for more complex transform pipelines and devtools.
-  - Typically used for operations that modify the editor state, such as inserting, deleting, or transforming content.
-  - Example: `editor.tf.toggle.block()`, `editor.tf.toggle.mark({ key: 'bold' })`
+  - 存储所有 Slate transforms 和编辑器操作。结构化以支持中间件，允许更复杂的 transform 管道和 devtools。
+  - 通常用于修改编辑器状态的操作，例如插入、删除或转换内容。
+  - 示例：`editor.tf.toggle.block()`, `editor.tf.toggle.mark({ key: 'bold' })`
 
 - **API:** 
-  - Store all queries, utility functions, and other methods that don't directly modify the editor state.
-  - Example: `editor.api.save()`, `editor.api.debug.log()`
+  - 存储所有查询、实用函数和其他不直接修改编辑器状态的方法。
+  - 示例：`editor.api.save()`, `editor.api.debug.log()`
 
-### Chaining Extensions
+### 链式扩展
 
-You can chain these methods to create a comprehensive plugin:
+您可以链式调用这些方法来创建一个全面的插件：
 
 ```ts
 const MyPlugin = createPlatePlugin({
@@ -293,9 +293,9 @@ editor.tf.myPlugin.pluginTransform();
 editor.tf.editorTransform();
 ```
 
-## Convert a Slate Plugin to a Plate Plugin
+## 将 Slate 插件转换为 Plate 插件
 
-To convert a typed Slate plugin to a Plate plugin, you can use `toPlatePlugin`:
+要将 Slate 插件转换为 Plate 插件，可以使用 `toPlatePlugin`：
 
 ```ts
 const CodeBlockPlugin = toPlatePlugin(createSlatePlugin({ key: 'code_block' }), {

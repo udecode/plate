@@ -1,15 +1,15 @@
 ---
 title: Plugin Context
-description: Understanding and utilizing the Plugin Context in Plate plugins.
+description: 了解和使用 Plate 插件中的 Plugin Context。
 ---
 
-The Plugin Context is an object available in all plugin methods, providing access to the editor instance, plugin configuration, and utility functions.
+Plugin Context 是一个在所有插件方法中可用的对象，提供对编辑器实例、插件配置和实用函数的访问。
 
-## Accessing Plugin Context
+## 访问 Plugin Context
 
 ### Plugin Methods
 
-The Plugin Context is available as the first parameter in all plugin methods:
+Plugin Context 作为所有插件方法的第一个参数可用：
 
 ```ts
 const MyPlugin = createPlatePlugin({
@@ -25,7 +25,7 @@ const MyPlugin = createPlatePlugin({
 
 ### getEditorPlugin
 
-This function is particularly useful when you need to access the context of another plugin. It allows for cross-plugin communication and interaction, enabling more complex and interconnected plugin behaviors.
+此函数在需要访问另一个插件的上下文时特别有用。它允许跨插件通信和交互，从而实现更复杂和相互关联的插件行为。
 
 ```ts
 const MyPlugin = createPlatePlugin({
@@ -40,7 +40,7 @@ const MyPlugin = createPlatePlugin({
 
 ### useEditorPlugin
 
-In React components, you can use the `useEditorPlugin` hook to access the Plugin Context:
+在 React 组件中，您可以使用 `useEditorPlugin` 钩子来访问 Plugin Context：
 
 ```ts
 const MyComponent = () => {
@@ -50,11 +50,11 @@ const MyComponent = () => {
 };
 ```
 
-## Plugin Context Properties
+## Plugin Context 属性
 
 ### editor
 
-The current `PlateEditor` instance:
+当前的 `PlateEditor` 实例：
 
 ```ts
 const MyPlugin = createPlatePlugin({
@@ -69,7 +69,7 @@ const MyPlugin = createPlatePlugin({
 
 ### plugin
 
-The current plugin configuration:
+当前插件配置：
 
 ```ts
 const MyPlugin = createPlatePlugin({
@@ -84,7 +84,7 @@ const MyPlugin = createPlatePlugin({
 
 ### getOption
 
-A function to get a specific option value for the plugin:
+获取插件特定选项值的函数：
 
 ```ts
 const MyPlugin = createPlatePlugin({
@@ -101,7 +101,7 @@ const MyPlugin = createPlatePlugin({
 
 ### getOptions
 
-A function to get all options for the plugin:
+获取插件所有选项的函数：
 
 ```ts
 const MyPlugin = createPlatePlugin({
@@ -118,7 +118,7 @@ const MyPlugin = createPlatePlugin({
 
 ### setOption
 
-A function to set a specific option value for the plugin:
+设置插件特定选项值的函数：
 
 ```ts
 const MyPlugin = createPlatePlugin({
@@ -134,7 +134,7 @@ const MyPlugin = createPlatePlugin({
 
 ### setOptions
 
-A function to set multiple options for the plugin:
+设置插件多个选项的函数：
 
 ```ts
 const MyPlugin = createPlatePlugin({
@@ -153,7 +153,7 @@ const MyPlugin = createPlatePlugin({
 
 ### useOption
 
-A hook to subscribe to a specific option value in a React component:
+在 React 组件中订阅特定选项值的hook：
 
 ```ts
 const MyPlugin = createPlatePlugin({
@@ -168,7 +168,7 @@ const MyPlugin = createPlatePlugin({
 
 ### type
 
-The node type associated with the plugin:
+  与插件关联的节点类型：
 
 ```ts
 const MyPlugin = createPlatePlugin({

@@ -1,13 +1,13 @@
 ---
 title: Slate React
-description: API reference for @udecode/slate-react.
+description: udecode/slate-react的 API 参考。
 ---
 
-`@udecode/slate-react` extends Slate React API with generic types.
+`@udecode/slate-react` 使用泛型类型扩展了 Slate React API。
 
 ## React Editor
 
-Find the corresponding documentation in the [Slate React docs](https://docs.slatejs.org/libraries/slate-react/react-editor).
+在 [Slate React 文档](https://docs.slatejs.org/libraries/slate-react/react-editor) 中查找相应的文档。
 
 ### `SlateProps`
 
@@ -63,19 +63,19 @@ Find the corresponding documentation in the [Slate React docs](https://docs.slat
 
 ### focusEditorEdge
 
-Focuses the editor at a specified edge (start or end).
+在指定的边缘（开始或结束）聚焦编辑器。
 
 <APIParameters>
   <APIItem name="editor" type="TEditor">
-    The editor instance.
+    编辑器实例。
   </APIItem>
   <APIItem name="options" type="object" optional>
     <APISubList>
       <APISubListItem parent="options" name="edge" type="'start' | 'end'" optional>
-        The edge to focus on. 
-        - 'start': Focus at the beginning of the editor.
-        - 'end': Focus at the end of the editor.
-        Default is 'start'.
+        要聚焦的边缘。
+        - 'start': 在编辑器开始处聚焦。
+        - 'end': 在编辑器结束处聚焦。
+        默认值为 'start'。
       </APISubListItem>
     </APISubList>
   </APIItem>
@@ -83,19 +83,19 @@ Focuses the editor at a specified edge (start or end).
 
 ### setNode
 
-Sets properties on a specific node in the editor.
+在编辑器中设置特定节点的属性。
 
 <APIParameters>
   <APIItem name="editor" type="TEditor">
-    The editor instance.
+    编辑器实例。
   </APIItem>
   <APIItem name="node" type="NodeOf<E>">
-    The node to update.
+    要更新的节点。
   </APIItem>
   <APIItem name="props" type="Partial<TNodeProps<N>>">
-    The properties to set on the node.
+    要在节点上设置的属性。
   </APIItem>
   <APIItem name="options" type="Omit<SetNodesOptions<E>, 'at'>" optional>
-    Options for setting nodes, excluding the 'at' property.
+    设置节点的选项，不包括 'at' 属性。
   </APIItem>
 </APIParameters>

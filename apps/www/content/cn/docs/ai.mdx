@@ -24,15 +24,15 @@ docs:
 
 </PackageInfo>
 
-## Installation
+## 安装
 
 ```bash
 npm install @udecode/plate-ai @udecode/plate-selection @udecode/plate-markdown @udecode/plate-basic-marks
 ```
 
-## Usage
+## 使用
 
-### Plugins
+### 插件
 
 ```tsx
 import { withProps } from '@udecode/cn';
@@ -188,92 +188,92 @@ const plugins = [
 
 ### AI SDK
 
-This plugin is depending on the [ai](https://npmjs.com/package/ai) package:
+这个插件依赖于 [ai](https://npmjs.com/package/ai) 包:
 
-- Setup a [route handler](https://sdk.vercel.ai/docs/getting-started/nextjs-app-router#create-a-route-handler) using [streamText](https://sdk.vercel.ai/docs/ai-sdk-core/generating-text#streamtext).
-- Wire up [useChat](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat) in your [AI menu](/docs/components/ai-menu) component.
+- 设置一个 [route handler](https://sdk.vercel.ai/docs/getting-started/nextjs-app-router#create-a-route-handler) 使用 [streamText](https://sdk.vercel.ai/docs/ai-sdk-core/generating-text#streamtext).
+- 在 [AI menu](/docs/components/ai-menu) 组件中连接 [useChat](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat).
 
 
-## Keyboard Shortcuts
+## 键盘快捷键
 
 <KeyTable>
   <KeyTableItem hotkey="Space">
-    Open AI menu in empty block (cursor mode)
+    在空块中打开 AI 菜单 (光标模式)
   </KeyTableItem>
   <KeyTableItem hotkey="Cmd + J">
-    Open AI menu (cursor or selection mode)
+    打开 AI 菜单 (光标或选择模式)
   </KeyTableItem>
-  <KeyTableItem hotkey="Escape">Close AI menu</KeyTableItem>
+  <KeyTableItem hotkey="Escape">关闭 AI 菜单</KeyTableItem>
 </KeyTable>
 
 ## Examples
 
 ### Plate UI
 
-Refer to the preview above.
+查看上面的预览。
 
 ### Plate Plus
 
 <ComponentPreviewPro name="ai-pro" />
 
-## Plugins
+## 插件
 
 ### AIPlugin
 
-Extends the editor with AI transforms.
+为编辑器扩展 AI 转换功能。
 
 ### AIChatPlugin
 
-Enables chat operations and streaming text generation in the editor.
+在编辑器中启用聊天操作和流式文本生成。
 
 <APIOptions>
 <APIItem name="chat" type="UseChatHelpers">
-  Chat helpers returned by [useChat](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat).
+  由 [useChat](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat) 返回的聊天助手。
 </APIItem>
 
 <APIItem name="createAIEditor" type="() => PlateEditor" optional>
   
-Function to create editor instance for preview mode.
+创建预览模式编辑器实例的函数。
 
-- **Default:** Creates a basic editor with id 'ai'
+- **默认值:** 创建一个基础编辑器，id 为 'ai'
 
 </APIItem>
 
 <APIItem name="mode" type="'chat' | 'insert'" optional>
 
-Specifies how assistant messages are handled:
+指定如何处理助手消息：
 
-- `'chat'`: Shows preview with accept/reject options (default)
-- `'insert'`: Directly inserts content into editor
-- **Default:** `'chat'`
+- `'chat'`: 显示预览并提供接受/拒绝选项（默认）
+- `'insert'`: 直接将内容插入编辑器
+- **默认值:** `'chat'`
 
 </APIItem>
 
 <APIItem name="open" type="boolean" optional>
 
-Whether the AI chat is open.
+AI 聊天是否打开。
 
-- **Default:** `false`
+- **默认值:** `false`
 
 </APIItem>
 
 <APIItem name="promptTemplate" type="(props: EditorPromptParams) => string" optional>
   
-Template for generating prompts. Supports placeholders:
+生成提示的模板。支持以下占位符：
 
-- `{block}`: Markdown of blocks in selection
-- `{editor}`: Markdown of entire editor content
-- `{selection}`: Markdown of current selection
-- `{prompt}`: Actual user prompt
-- **Default:** `'{prompt}'`
+- `{block}`: 选中块的 Markdown
+- `{editor}`: 整个编辑器内容的 Markdown
+- `{selection}`: 当前选择的 Markdown
+- `{prompt}`: 实际用户提示
+- **默认值:** `'{prompt}'`
 
 </APIItem>
 
 <APIItem name="systemTemplate" type="(props: EditorPromptParams) => string | void" optional>
 
-Template for system messages. Supports same placeholders as `promptTemplate`.
+系统消息的模板。支持与 `promptTemplate` 相同的占位符。
 
-- **Default:** `undefined`
+- **默认值:** `undefined`
 
 </APIItem>
 </APIOptions>
@@ -282,61 +282,61 @@ Template for system messages. Supports same placeholders as `promptTemplate`.
 
 ### api.aiChat.accept()
 
-Accepts the current AI suggestion:
+接受当前的 AI 建议：
 
-- Removes AI marks from the content
-- Hides the AI chat interface
-- Focuses the editor
+- 移除内容中的 AI 标记
+- 隐藏 AI 聊天界面
+- 聚焦编辑器
 
 ### api.aiChat.insertBelow()
 
-Inserts AI content below the current block.
+在当前块下方插入 AI 内容。
 
 <APIParameters>
   <APIItem name="sourceEditor" type="PlateEditor">
-    Editor containing the content to insert.
+    包含要插入内容的编辑器。
   </APIItem>
 </APIParameters>
 
-Handles both block selection and normal selection modes:
+同时处理块选择和普通选择模式：
 
-- In block selection: Inserts after the last selected block
-- In normal selection: Inserts after the current block
+- 在块选择中：在最后选中的块后插入
+- 在普通选择中：在当前块后插入
 
 ### api.aiChat.replaceSelection()
 
-Replaces the current selection with AI content.
+用 AI 内容替换当前选择。
 
 <APIParameters>
   <APIItem name="sourceEditor" type="PlateEditor">
-    Editor containing the content to replace with.
+    包含要替换内容的编辑器。
   </APIItem>
   <APIItem name="options" type="object" optional>
     <APISubList>
       <APISubListItem parent="options" name="forceUniformFormatting" type="boolean" optional>
-        When true, applies the first block's formatting to all inserted blocks. Defaults to false.
+        当为 true 时，将第一个块的格式应用到所有插入的块。默认为 false。
       </APISubListItem>
     </APISubList>
   </APIItem>
 </APIParameters>
 
-Handles different selection modes:
+处理不同的选择模式：
 
-- Single block selection: Replaces the selected block, applying its formatting to all inserted content
-- Multiple block selection: Replaces all selected blocks, preserving the original formatting unless `forceUniformFormatting` is enabled
-- Normal selection: Replaces the current selection while maintaining surrounding context
+- 单块选择：替换选中的块，将其格式应用到所有插入的内容
+- 多块选择：替换所有选中的块，除非启用 `forceUniformFormatting`，否则保留原始格式
+- 普通选择：替换当前选择，同时保持周围上下文
 
 ### api.aiChat.reset()
 
-Resets the chat state:
+重置聊天状态：
 
-- Stops any ongoing generation
-- Clears chat messages
-- Removes all AI nodes from the editor
+- 停止任何正在进行的生成
+- 清除聊天消息
+- 从编辑器中移除所有 AI 节点
 
 ### api.aiChat.submit()
 
-Submits a prompt to generate AI content.
+提交提示以生成 AI 内容。
 
 <APIParameters>
   <APIItem name="options" type="object" optional>
@@ -347,34 +347,34 @@ Submits a prompt to generate AI content.
         type="'chat' | 'insert'"
         optional
       >
-        Mode to use. Defaults to 'chat' for selection, 'insert' otherwise.
+        使用的模式。选择时默认为 'chat'，否则为 'insert'。
       </APISubListItem>
       <APISubListItem parent="options" name="prompt" type="string" optional>
-        Custom prompt. Uses chat input if not provided.
+        自定义提示。如果未提供则使用聊天输入。
       </APISubListItem>
       <APISubListItem parent="options" name="system" type="string" optional>
-        Custom system message.
+        自定义系统消息。
       </APISubListItem>
     </APISubList>
   </APIItem>
 </APIParameters>
 
-In insert mode, undoes previous AI changes before submitting.
+在插入模式下，提交前撤销之前的 AI 更改。
 
 ## Transforms
 
 ### tf.ai.insertNodes()
 
-Inserts AI-generated nodes with the AI mark.
+插入带有 AI 标记的 AI 生成节点。
 
 <APIParameters>
   <APIItem name="nodes" type="TDescendant[]">
-    Nodes to insert with AI mark.
+    要插入的带 AI 标记的节点。
   </APIItem>
   <APIItem name="options" type="object" optional>
     <APISubList>
       <APISubListItem parent="options" name="target" type="Path" optional>
-        Target path. Defaults to current selection.
+        目标路径。默认为当前选择。
       </APISubListItem>
     </APISubList>
   </APIItem>
@@ -382,13 +382,13 @@ Inserts AI-generated nodes with the AI mark.
 
 ### tf.ai.removeMarks()
 
-Removes AI marks from nodes in the specified location.
+移除指定位置节点中的 AI 标记。
 
 <APIParameters>
   <APIItem name="options" type="object" optional>
     <APISubList>
       <APISubListItem parent="options" name="at" type="Location" optional>
-        Location to remove marks from. Defaults to entire document.
+        要移除标记的位置。默认为整个文档。
       </APISubListItem>
     </APISubList>
   </APIItem>
@@ -396,13 +396,13 @@ Removes AI marks from nodes in the specified location.
 
 ### tf.ai.removeNodes()
 
-Removes nodes that have the AI mark.
+移除带有 AI 标记的节点。
 
 <APIParameters>
   <APIItem name="options" type="object" optional>
     <APISubList>
       <APISubListItem parent="options" name="at" type="Path" optional>
-        Path to remove nodes from. Defaults to entire document.
+        要移除节点的路径。默认为整个文档。
       </APISubListItem>
     </APISubList>
   </APIItem>
@@ -410,7 +410,7 @@ Removes nodes that have the AI mark.
 
 ### tf.ai.undo()
 
-Special undo operation for AI changes:
+AI 更改的特殊撤销操作：
 
-- Undoes the last operation if it was AI-generated
-- Removes the redo stack entry to prevent redoing AI operations
+- 如果最后一个操作是 AI 生成的，则撤销它
+- 移除重做栈entry以防止重做 AI 操作

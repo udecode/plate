@@ -9,9 +9,9 @@ docs:
 
 <PackageInfo>
 
-## Features
+## 功能特性
 
-- Integrates Excalidraw library for creation of drawings and diagrams.
+- 集成 Excalidraw 库用于创建绘图和图表。
 
 </PackageInfo>
 
@@ -36,63 +36,63 @@ const plugins = [
 ];
 ```
 
-## Plugins
+## 插件
 
 ### ExcalidrawPlugin
 
-Adds Excalidraw functionality to the editor.
+为编辑器添加 Excalidraw 功能。
 
 ## API
 
 #### insertExcalidraw
 
-Inserts an Excalidraw element into the editor.
+在编辑器中插入一个 Excalidraw 元素。
 
 <APIParameters>
 <APIItem name="editor" type="PlateEditor">
-  The editor instance.
+  编辑器实例。
 </APIItem>
 <APIItem
   name="props"
   type="TNodeProps<TExcalidrawElement>"
   optional
 >
-The props for the Excalidraw element.
+Excalidraw 元素的属性。
 </APIItem>
 <APIItem name="options" type="InsertNodesOptions" optional>
-  The options for inserting the Excalidraw element.
+  插入 Excalidraw 元素的选项。
 </APIItem>
 </APIParameters>
 
-## API Components
+## API 组件
 
 ### useExcalidrawElement
 
-A behavior hook for the Excalidraw component.
+Excalidraw 组件的行为 hook。
 
 <APIState>
 <APIItem name="element" type="TExcalidrawElement">
-The Excalidraw element.
+Excalidraw 元素。
 </APIItem>
 <APIItem name="libraryItems" type="LibraryItems" optional>
-The library items to be displayed in the Excalidraw component.
+要在 Excalidraw 组件中显示的库项目。
 
-- **Default:** `[]`
+- **默认值：** `[]`
 
 </APIItem>
 <APIItem name="scrollToContent" type="boolean" optional>
-Determines whether to scroll to the content inside the Excalidraw component.
+决定是否滚动到 Excalidraw 组件内的内容。
 
-- **Default:** `true`
+- **默认值：** `true`
 
 </APIItem>
 </APIState>
 
 <APIReturns>
   <APIItem name="Excalidraw" type="any">
-    The Excalidraw component.
+    Excalidraw 组件。
   </APIItem>
   <APIItem name="excalidrawProps" type="ExcalidrawProps">
-    The props to be passed to the Excalidraw component.
+    要传递给 Excalidraw 组件的属性。
   </APIItem>
 </APIReturns>

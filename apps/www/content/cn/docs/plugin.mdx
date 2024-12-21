@@ -1,18 +1,18 @@
 ---
 title: Plugin Configuration
-description: How to configure and customize Plate plugins.
+description: 如何配置和自定义 Plate 插件。
 ---
 
-Plate plugins are highly configurable, allowing you to customize their behavior to suit your needs. This guide will walk you through the most common configuration options and how to use them.
+Plate 插件具有高度的可配置性，允许您根据需要自定义其行为。本指南将带您了解最常见的配置选项及其使用方法。
 
-- [Getting Started: Components](/docs/getting-started#components) - Instructions for adding plugins to your editor
-- [PlatePlugin API](/docs/api/core/plate-plugin) - The complete API reference for creating plugins
+- [入门：组件](/docs/getting-started#components) - 向编辑器添加插件的说明
+- [PlatePlugin API](/docs/api/core/plate-plugin) - 创建插件的完整 API 参考
 
-## Basic Plugin Configuration
+## 基本插件配置
 
-### New Plugin
+### 新插件
 
-The most basic plugin configuration requires only a `key`:
+最基本的插件配置只需要一个 `key`：
 
 ```ts
 const MyPlugin = createPlatePlugin({
@@ -20,11 +20,11 @@ const MyPlugin = createPlatePlugin({
 });
 ```
 
-While this plugin doesn't do anything yet, it's a starting point for more complex configurations.
+虽然这个插件目前什么也没做，但它是一个更复杂配置的起点。
 
-### Existing Plugin
+### 现有插件
 
-The `.configure` method allows you to configure an existing plugin:
+`.configure` 方法允许您配置现有插件：
 
 ```ts
 const ConfiguredPlugin = MyPlugin.configure({
@@ -36,12 +36,11 @@ const ConfiguredPlugin = MyPlugin.configure({
 
 ## Node Plugins
 
-Node plugins are used to define new types of nodes in your editor using the `node` property. These can be elements (either block or inline) or leaf nodes (for text-level formatting).
-
+Node 插件用于在编辑器中定义新的节点类型，使用 `node` 属性。这些可以是元素（块级或内联）或叶子节点（用于文本级格式化）。
 
 ### Elements
 
-To create a new type of element, use the `node.isElement` option:
+要创建新的元素类型，请使用 `node.isElement` 选项：
 
 ```ts
 const ParagraphPlugin = createPlatePlugin({
@@ -53,7 +52,7 @@ const ParagraphPlugin = createPlatePlugin({
 });
 ```
 
-You can associate a component with your element. See [Plugin Components](/docs/plugin-components) for more information.
+你可以将组件与元素关联。更多信息请参见 [Plugin Components](/docs/plugin-components)。
 
 ```ts
 const ParagraphPlugin = createPlatePlugin({
@@ -68,7 +67,7 @@ const ParagraphPlugin = createPlatePlugin({
 
 ### Inline, Void, and Leaf Nodes
 
-For inline elements, void elements, or leaf nodes, use the appropriate node options:
+对于内联元素、空元素或叶子节点，请使用适当的节点选项：
 
 ```ts
 const LinkPlugin = createPlatePlugin({
@@ -99,13 +98,13 @@ const BoldPlugin = createPlatePlugin({
 
 ## Behavioral Plugins
 
-Rather than render an element or a mark, you may want to customize the behavior of your editor. Various plugin options are available to modify the behavior of Plate.
+你可能会想自定义编辑器的行为，而不是渲染一个元素或标记。有多种插件选项可以修改 Plate 的行为。
 
 ### Event Handlers
 
-The recommended way to respond to user-generated events from inside a plugin is with the `handlers` plugin option. A handler should be a function that takes a `PlatePluginContext & { event }` object.
+在插件中响应用户生成事件的推荐方法是使用 `handlers` 插件选项。一个处理器应该是一个接受 `PlatePluginContext & { event }` 对象的函数。
 
-The `onChange` handler, which is called when the editor value changes, is an exception to this rule; the context object includes the changed `value` instead of `event`.
+`onChange` 处理器，当编辑器值发生变化时被调用，是一个例外；上下文对象包含变化的 `value` 而不是 `event`。
 
 ```ts showLineNumbers
 const ExamplePlugin = createPlatePlugin({
@@ -123,7 +122,7 @@ const ExamplePlugin = createPlatePlugin({
 
 ### Inject Props
 
-You may want to inject a class name or CSS property into any node having a certain property. For example, the following plugin sets the `textAlign` CSS property on paragraphs with an `align` property.
+你可能想将一个类名或 CSS 属性注入到具有特定属性的任何节点中。例如，以下插件为具有 `align` 属性的段落设置了 `textAlign` CSS 属性。
 
 ```ts showLineNumbers
 const AlignPlugin = createPlatePlugin({
@@ -136,7 +135,7 @@ const AlignPlugin = createPlatePlugin({
       validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
     },
     targetPlugins: [ParagraphPlugin.key],
-    // This is injected into all `targetPlugins`. In this example, ParagraphPlugin will be able to deserialize `textAlign` style.
+    // 这会被注入到所有的 `targetPlugins` 中。在这个例子中，ParagraphPlugin 将能够反序列化 `textAlign` 样式。
     targetPluginToInject: ({ editor, plugin }) => ({
       parsers: {
         html: {
@@ -154,7 +153,7 @@ const AlignPlugin = createPlatePlugin({
 });
 ```
 
-A paragraph node affected by the above plugin would look like this:
+一个受上述插件影响的段落节点看起来像这样：
 
 ```ts showLineNumbers {3}
 {
@@ -166,9 +165,9 @@ A paragraph node affected by the above plugin would look like this:
 
 ### Extend Editor (Advanced)
 
-Occasionally, you'll need to override the built-in editor methods provided by Slate to work around bugs or add complex functionality. To do this, you can use the `extendEditor` plugin option to directly mutate properties of the `editor` object after its creation.
+偶尔，你需要覆盖 Slate 提供的内置编辑器方法，以解决 bug 或添加复杂功能。为此，你可以使用 `extendEditor` 插件选项，在创建后直接修改 `editor` 对象的属性。
 
-One common application of this technique is to create custom [normalizers](https://docs.slatejs.org/concepts/11-normalizing).
+一个常见的应用是创建自定义 [normalizers](https://docs.slatejs.org/concepts/11-normalizing)。
 
 ```ts showLineNumbers {20}
 const CustomNormalizerPlugin = createPlatePlugin({
@@ -177,10 +176,10 @@ const CustomNormalizerPlugin = createPlatePlugin({
     const { normalizeNode } = editor;
 
     editor.normalizeNode = ([node, path]) => {
-      // Custom normalization logic here
+      // 自定义规范化逻辑
       // ...
 
-      // Call other normalizers
+      // 调用其他规范化器
       normalizeNode([node, path]);
     };
 
@@ -189,11 +188,11 @@ const CustomNormalizerPlugin = createPlatePlugin({
 });
 ```
 
-## Advanced Plugin Configuration
+## 高级插件配置
 
-### Plugin Store
+### 插件Store
 
-Each plugin has its own store, which can be used to manage plugin-specific state.
+每个插件都有自己的存储，可以用于管理插件特定的状态。
 
 ```ts
 const MyPlugin = createPlatePlugin({
@@ -210,20 +209,20 @@ const MyPlugin = createPlatePlugin({
 }));
 ```
 
-You can access and update the store using the following methods:
+你可以使用以下方法访问和更新存储：
 
 ```ts
-// Get the current value
+// 获取当前值
 const count = editor.getOption(MyPlugin, 'count');
 
-// Set a new value
+// 设置新值
 editor.setOption(MyPlugin, 'count', 5);
 
-// Update the value based on the previous state
+// 基于前一个状态更新值
 editor.setOption(MyPlugin, 'count', (prev) => prev + 1);
 ```
 
-In React components, you can use the `useOption` hook to subscribe to store changes:
+在 React 组件中，你可以使用 `useOption` 钩子来订阅存储变化：
 
 ```tsx
 const MyComponent = () => {
@@ -232,12 +231,12 @@ const MyComponent = () => {
 };
 ```
 
-See more in [Plugin Context](/docs/plugin-context) and [Editor Methods](/docs/editor-methods) guides.
+更多信息请参见 [Plugin Context](/docs/plugin-context) 和 [Editor Methods](/docs/editor-methods) 指南。
 
 
 ### Dependencies
 
-You can specify plugin dependencies using the `dependencies` property. This ensures that the required plugins are loaded before the current plugin.
+你可以使用 `dependencies` 属性指定插件依赖。这确保了在当前插件之前加载所需的插件。
 
 ```ts
 const MyPlugin = createPlatePlugin({
@@ -248,7 +247,7 @@ const MyPlugin = createPlatePlugin({
 
 ### Enabled Flag
 
-The `enabled` property allows you to conditionally enable or disable a plugin:
+`enabled` 属性允许你有条件地启用或禁用插件：
 
 ```ts
 const MyPlugin = createPlatePlugin({
@@ -259,7 +258,7 @@ const MyPlugin = createPlatePlugin({
 
 ### Nested Plugins
 
-Plate supports nested plugins, allowing you to create plugin hierarchies. Use the `plugins` property to define child plugins:
+Plate 支持嵌套插件，允许你创建插件层次结构。使用 `plugins` 属性定义子插件：
 
 ```ts
 const ParentPlugin = createPlatePlugin({
@@ -273,7 +272,7 @@ const ParentPlugin = createPlatePlugin({
 
 ### Plugin Priority
 
-The `priority` property determines the order in which plugins are registered and executed. Plugins with higher priority values are processed first:
+`priority` 属性决定了插件的注册和执行顺序。优先级值较高的插件先被处理：
 
 ```ts
 const HighPriorityPlugin = createPlatePlugin({
@@ -287,11 +286,11 @@ const LowPriorityPlugin = createPlatePlugin({
 });
 ```
 
-This is particularly useful when you need to ensure certain plugins are initialized or run before others.
+这在你需要确保某些插件在其他插件之前初始化或运行时特别有用。
 
 ### Custom Parsers
 
-The `parsers` property accepts string keys to build your own parsers:
+`parsers` 属性接受字符串键来构建自己的解析器：
 
 ```ts
 const MyPlugin = createPlatePlugin({
@@ -309,17 +308,17 @@ const MyPlugin = createPlatePlugin({
 });
 ```
 
-Core plugins includes `html` and `htmlReact` parsers.
+核心插件包括 `html` 和 `htmlReact` 解析器。
 
 ## Typed Plugins
 
-Using above methods, plugin types are automatically inferred from the given configuration.
+使用上述方法，插件类型会自动从给定的配置中推断。
 
-If you need to pass an explicit type as generic, you can use `createTPlatePlugin`.
+如果你需要传递一个明确的类型作为泛型，你可以使用 `createTPlatePlugin`。
 
 ### Using createTPlatePlugin
 
-The `createTPlatePlugin` function allows you to create a typed plugin:
+`createTPlatePlugin` 函数允许你创建一个类型化插件：
 
 ```ts
 type CodeBlockConfig = PluginConfig<
@@ -361,29 +360,29 @@ const CodeBlockPlugin = createTPlatePlugin<CodeBlockConfig>({
 
 ### Using Typed Plugins
 
-When using typed plugins, you get full type checking and autocompletion ✨
+使用类型化插件时，你将获得完整的类型检查和自动完成功能 ✨
 
 ```ts
 const editor = createPlateEditor({
   plugins: [ExtendedCodeBlockPlugin],
 });
 
-// Type-safe access to options
+// 类型安全的选项访问
 const options = editor.getOptions(ExtendedCodeBlockPlugin);
 options.syntax;
 options.syntaxPopularFirst;
 options.hotkey;
 
-// Type-safe API
+// 类型安全的 API
 editor.api.toggleSyntax();
 editor.api.plugin.getSyntaxState();
 editor.api.plugin2.setLanguage('python');
 editor.api.plugin.getLanguage();
 
-// Type-safe Transforms
+// 类型安全的 transforms
 editor.tf.insert.codeBlock({ language: 'typescript' });
 ```
 
-## See also
+## 另请参阅
 
-See the [PlatePlugin API](/docs/api/core/plate-plugin) for more plugin options.
+- [PlatePlugin API](/docs/api/core/plate-plugin) - 更多插件选项

@@ -8,21 +8,21 @@ title: Serializing CSV
 
 ## Features
 
-- Convert CSV content to a Slate value.
+- 将 CSV 内容转换为 Slate 值。
 
 <Callout className="my-4">
-  **Note**: Converting a Slate value to CSV is not yet supported.
+  **注意**: 将 Slate 值转换为 CSV 尚不支持。
 </Callout>
 
 </PackageInfo>
 
-## Installation
+## 安装
 
 ```bash
 npm install @udecode/plate-csv
 ```
 
-## Usage
+## 使用
 
 ### CSV -> Slate
 
@@ -35,7 +35,7 @@ const plugins = [
 ];
 ```
 
-## Plugins
+## 插件
 
 ### CsvPlugin
 
@@ -43,18 +43,18 @@ const plugins = [
 
 <APIItem name="errorTolerance" type="number" optional>
 
-The tolerance for errors in the CSV data, represented as a percentage in decimal form. This value is calculated as the ratio of errors to the total number of rows.
+CSV 数据中错误的容忍度，以小数形式表示的百分比。该值是通过错误数与总行数的比率计算得出的。
 
-- **Default:** **`0.25`** (This indicates that up to 25% of the rows can contain errors.)
+- **默认值：** **`0.25`**（表示最多可以容忍 25% 的行包含错误。）
 
 </APIItem>
 <APIItem name="parseOptions" type="ParseConfig" optional>
 
-Options to be passed to the PapaParse library for parsing CSV data.
+传递给 PapaParse 库用于解析 CSV 数据的选项。
 
-- **Default:** **`{ header: true }`** (Indicating that the first row of the CSV data should be treated as a header.)
+- **默认值：** **`{ header: true }`**（表示 CSV 数据的第一行应被视为表头。）
 
-Refer to [PapaParse documentation](https://www.papaparse.com/docs#config) for more details about these options.
+更多关于这些选项的详细信息，请参考 [PapaParse 文档](https://www.papaparse.com/docs#config)。
 
 </APIItem>
 </APIOptions>
@@ -63,40 +63,39 @@ Refer to [PapaParse documentation](https://www.papaparse.com/docs#config) for mo
 
 ### editor.api.csv.deserialize
 
-Takes a CSV (Comma Separated Values) string and converts it into a Slate compatible format. This function uses the `papaparse` library to parse the CSV data.
+接收 CSV（逗号分隔值）字符串并将其转换为 Slate 兼容格式。此函数使用 `papaparse` 库来解析 CSV 数据。
 
 <APIParameters>
 <APIItem name="editor" type="PlateEditor">
-The editor instance.
+编辑器实例。
 </APIItem>
 <APIItem name="data" type="string">
-The CSV data string to be deserialized.
+要反序列化的 CSV 数据字符串。
 </APIItem>
 <APIItem name="errorTolerance" type="number" optional>
-Percentage in decimal form, from 0 to a very large number, 0 for no errors allowed. Percentage is based on number of errors compared to number of rows.
+以小数形式表示的百分比，从 0 到一个很大的数字，0 表示不允许有错误。百分比基于错误数与行数的比较。
 
-- **Default:** `0.25`
+- **默认值：** `0.25`
 
 </APIItem>
 <APIItem name="parseOptions" type="ParseConfig">
 
-Options to be passed to the PapaParse library for parsing CSV data.
+传递给 PapaParse 库用于解析 CSV 数据的选项。
 
-- **Default:** **`{ header: true }`** (Indicating that the first row of the CSV data should be treated as a header.)
+- **默认值：** **`{ header: true }`**（表示 CSV 数据的第一行应被视为表头。）
 
-Refer to [PapaParse documentation](https://www.papaparse.com/docs#config) for more details about these options.
+更多关于这些选项的详细信息，请参考 [PapaParse 文档](https://www.papaparse.com/docs#config)。
 
 </APIItem>
 </APIParameters>
 
 <APIReturns>
   <APIItem type="TDescendant[]">
-    Returns an array of `TDescendant` objects that represent the structure of
-    the CSV data in a Slate compatible format. If parsing of the CSV data fails
-    or the data is not valid, this function returns `undefined`.
+    返回一个 `TDescendant` 对象数组，表示 CSV 数据在 Slate 兼容格式下的结构。
+    如果 CSV 数据解析失败或数据无效，此函数返回 `undefined`。
   </APIItem>
 </APIReturns>
 
-This function creates a table representation of the CSV data. If the CSV file includes headers, they are added as the first row of the table. Each subsequent row represents the values from the CSV file. If the CSV file does not include headers, each row of data is represented as a row in the table.
+此函数创建 CSV 数据的表格表示。如果 CSV 文件包含表头，它们会被添加为表格的第一行。后续每一行代表 CSV 文件中的值。如果 CSV 文件不包含表头，数据的每一行都会表示为表格中的一行。
 
-Please note that the function assumes the usage of specific plugins corresponding to `ParagraphPlugin.key`, `TablePlugin.key`, `TableCellHeaderPlugin.key`, `TableRowPlugin.key`, and `TableCellPlugin.key`.
+请注意，该函数假定使用了对应于 `ParagraphPlugin.key`、`TablePlugin.key`、`TableCellHeaderPlugin.key`、`TableRowPlugin.key` 和 `TableCellPlugin.key` 的特定插件。

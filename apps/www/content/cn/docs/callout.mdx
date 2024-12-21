@@ -7,22 +7,21 @@ docs:
 
 <PackageInfo>
 
-## Features
+## 功能
 
-- Customizable callout blocks for highlighting important information
-- Support for different callout variants (e.g., info, warning, error)
-- Ability to set custom icons or emojis for callouts
+- 可自定义的标注块，用于突出显示重要信息
+- 支持不同的标注变体（例如：信息、警告、错误）
+- 能够为标注设置自定义图标或表情符号
 
 </PackageInfo>
 
-## Installation
-
+## 安装
 
 ```bash
 npm install @udecode/plate-callout
 ```
 
-## Usage
+## 使用
 
 ```tsx
 import { CalloutPlugin } from '@udecode/plate-callout/react';
@@ -44,7 +43,7 @@ const components = {
 
 - [CalloutElement](https://pro.platejs.org/docs/components/callout-element) (Plus)
 
-## Examples
+## 示例
 
 ### Plate UI
 
@@ -54,30 +53,30 @@ Work in progress.
 
 <ComponentPreviewPro name="callout-pro" />
 
-## Plugins
+## 插件
 
 ### CalloutPlugin
 
-Callout element plugin.
+标注元素插件。
 
 ## Transforms
 
 ### editor.tf.insert.callout
 
-Inserts a callout element into the editor.
+插入标注元素。
 
 <APIParameters>
   <APIItem name="editor" type="SlateEditor">
-    The editor instance.
+    编辑器实例。
   </APIItem>
   <APIItem name="options" type="object" optional>
-    Options for inserting the callout.
+    插入标注的选项。
     <APISubList>
       <APISubListItem parent="options" name="variant" type="string" optional>
-        The variant of the callout to insert.
+        要插入的标注变体。
       </APISubListItem>
       <APISubListItem parent="options" name="...InsertNodesOptions" type="InsertNodesOptions<E>">
-        Other options from `InsertNodesOptions`.
+        来自 `InsertNodesOptions` 的其他选项。
       </APISubListItem>
     </APISubList>
   </APIItem>
@@ -87,17 +86,17 @@ Inserts a callout element into the editor.
 
 ### useCalloutEmojiPicker
 
-This hook manages the emoji picker functionality for callouts.
+此钩子管理标注的表情选择器功能。
 
 <APIParameters>
   <APIItem name="options" type="UseCalloutEmojiPickerOptions">
-    Options for the callout emoji picker.
+    标注表情选择器的选项。
     <APISubList>
       <APISubListItem parent="options" name="isOpen" type="boolean">
-        Whether the emoji picker is open.
+        表情选择器是否打开。
       </APISubListItem>
       <APISubListItem parent="options" name="setIsOpen" type="(isOpen: boolean) => void">
-        Function to set the open state of the emoji picker.
+        设置表情选择器打开状态的函数。
       </APISubListItem>
     </APISubList>
   </APIItem>
@@ -105,27 +104,27 @@ This hook manages the emoji picker functionality for callouts.
 
 <APIReturns>
   <APIItem name="emojiToolbarDropdownProps" type="object">
-    Props for the emoji toolbar dropdown.
+    表情工具栏下拉菜单的属性。
     <APISubList>
       <APISubListItem parent="emojiToolbarDropdownProps" name="isOpen" type="boolean">
-        Whether the emoji picker is open.
+        表情选择器是否打开。
       </APISubListItem>
       <APISubListItem parent="emojiToolbarDropdownProps" name="setIsOpen" type="(v: boolean) => void">
-        Function to set the open state of the emoji picker, respecting read-only mode.
+        设置表情选择器打开状态的函数，会遵循只读模式。
       </APISubListItem>
     </APISubList>
   </APIItem>
   <APIItem name="props" type="object">
-    Props for the emoji picker component.
+    表情选择器组件的属性。
     <APISubList>
       <APISubListItem parent="props" name="isOpen" type="boolean">
-        Whether the emoji picker is open.
+        表情选择器是否打开。
       </APISubListItem>
       <APISubListItem parent="props" name="setIsOpen" type="(isOpen: boolean) => void">
-        Function to set the open state of the emoji picker.
+        设置表情选择器打开状态的函数。
       </APISubListItem>
       <APISubListItem parent="props" name="onSelectEmoji" type="(options: { emojiValue?: any; icon?: any }) => void">
-        Function called when an emoji is selected. It updates the callout's icon and closes the picker.
+        选择表情时调用的函数。它会更新标注的图标并关闭选择器。
       </APISubListItem>
     </APISubList>
   </APIItem>

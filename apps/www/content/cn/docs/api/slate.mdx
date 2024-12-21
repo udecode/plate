@@ -1,13 +1,13 @@
 ---
 title: Slate
-description: API reference for @udecode/slate.
+description: udecode/slate的 API 参考。
 ---
 
-`@udecode/slate` extends Slate API with generic types.
+`@udecode/slate` 使用泛型类型扩展了 Slate API。
 
-## Editor
+## 编辑器
 
-Find the corresponding documentation in the [Slate docs](https://docs.slatejs.org/api/transforms).
+在 [Slate 文档](https://docs.slatejs.org/api/transforms) 中查找相应的文档。
 
 ### `addMark`
 
@@ -119,7 +119,7 @@ Find the corresponding documentation in the [Slate docs](https://docs.slatejs.or
 
 ## Element
 
-Find the corresponding documentation in the [Slate docs](https://docs.slatejs.org/api/nodes/element).
+在 [Slate 文档](https://docs.slatejs.org/api/nodes/element) 中查找相应的文档。
 
 ### `elementMatches`
 
@@ -133,7 +133,7 @@ Find the corresponding documentation in the [Slate docs](https://docs.slatejs.or
 
 ## History
 
-Find the corresponding documentation in the [Slate docs](https://docs.slatejs.org/libraries/slate-history).
+在 [Slate 文档](https://docs.slatejs.org/libraries/slate-history) 中查找相应的文档。
 
 ### `isHistoryEditor`
 
@@ -147,7 +147,7 @@ Find the corresponding documentation in the [Slate docs](https://docs.slatejs.or
 
 ## Node
 
-Find the corresponding documentation in the [Slate docs](https://docs.slatejs.org/api/nodes/node).
+在 [Slate 文档](https://docs.slatejs.org/api/nodes/node) 中查找相应的文档。
 
 ### `TDescendant`
 
@@ -209,7 +209,7 @@ Find the corresponding documentation in the [Slate docs](https://docs.slatejs.or
 
 ## Range
 
-Find the corresponding documentation in the [Slate docs](https://docs.slatejs.org/api/locations/range).
+在 [Slate 文档](https://docs.slatejs.org/api/locations/range) 中查找相应的文档。
 
 ### `isCollapsed`
 
@@ -217,7 +217,7 @@ Find the corresponding documentation in the [Slate docs](https://docs.slatejs.or
 
 ## Text
 
-Find the corresponding documentation in the [Slate docs](https://docs.slatejs.org/api/nodes/text).
+在 [Slate 文档](https://docs.slatejs.org/api/nodes/text) 中查找相应的文档。
 
 ### `isText`
 
@@ -231,7 +231,7 @@ Find the corresponding documentation in the [Slate docs](https://docs.slatejs.or
 
 ## Transforms
 
-Find the corresponding documentation in the [Slate docs](https://docs.slatejs.org/api/transforms).
+在 [Slate 文档](https://docs.slatejs.org/api/transforms) 中查找相应的文档。
 
 ### `moveNodes`
 
@@ -275,7 +275,7 @@ Find the corresponding documentation in the [Slate docs](https://docs.slatejs.or
 
 ### QueryNodeOptions
 
-An interface used to query node entries.
+用于查询节点entry的接口。
 
 <APIAttributes>
 <APIItem
@@ -284,31 +284,31 @@ An interface used to query node entries.
   optional
 >
 
-A function to filter node entries.
+用于过滤节点entry的函数。
 
-- The function should take a node entry as a parameter and return a boolean.
+- 该函数应接收一个节点entry作为参数并返回一个布尔值。
 
 </APIItem>
 <APIItem name="allow" type="string[] | string | null" optional>
 
-List of types that are valid.
+有效类型列表。
 
-- If empty or undefined, all types are allowed.
+- 如果为空或未定义，则允许所有类型。
 
 </APIItem>
 <APIItem name="exclude" type="string[] | string | null" optional>
 
-List of types that are invalid.
+无效类型列表。
 
 </APIItem>
 <APIItem name="level" type="number[] | number | null" optional>
 
-Valid path levels.
+有效的路径层级。
 
 </APIItem>
 <APIItem name="maxLevel" type="number | null" optional>
 
-Paths above this level are invalid.
+高于此层级的路径无效。
 
 </APIItem>
 </APIAttributes>

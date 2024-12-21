@@ -9,20 +9,20 @@ docs:
 
 <PackageInfo>
 
-## Features
+## 功能
 
-- Insert and display dates within your text using inline date elements.
-- These dates can be easily selected and modified using a calendar interface.
+- 在文本中插入和显示日期，使用内联日期元素。
+- 这些日期可以轻松选择和修改，使用日历界面。
 
 </PackageInfo>
 
-## Installation
+## 安装
 
 ```bash
 npm install @udecode/plate-date
 ```
 
-## Usage
+## 使用
 
 ```tsx
 import { DatePlugin } from '@udecode/plate-date/react';
@@ -33,37 +33,37 @@ const plugins = [
 ];
 ```
 
-## Plugins
+## 插件
 
 ### DatePlugin
 
-Add Date Plugin to your document.
+添加日期插件到您的文档。
 
 ## API
 
 ### isPointNextToNode
 
-Check if a point is next to a specific node type.
+检查一个点是否靠近特定节点类型。
 
 <APIParameters>
 
 <APIItem name="editor" type="PlateEditor">
-The editor instance.
+编辑器实例。
 </APIItem>
 
 <APIItem name="nodeType" type="string">
-The type of node to check for adjacency. This should be a string representing the node type, such as 'date' for inline date elements.
+要检查的节点类型。这应该是一个表示节点类型的字符串，例如 'date' 用于内联日期元素。
 </APIItem>
 
 <APIItem name="options" type="object">
-The options for checking adjacency:
+检查邻接的选项：
 
 <APISubList>
 <APISubListItem parent="options" name="at" type="Point" optional>
-An optional Point object specifying the position to check from. If not provided, the current selection anchor will be used.
+一个可选的 Point 对象，指定要检查的位置。如果未提供，则使用当前选择锚点。
 </APISubListItem>
 <APISubListItem parent="options" name="reverse" type="boolean">
-A boolean indicating the direction to check. If true, checks the previous node; if false, checks the next node.
+一个布尔值，指示要检查的方向。如果为 true，则检查前一个节点；如果为 false，则检查下一个节点。
 </APISubListItem>
 </APISubList>
 
@@ -71,20 +71,20 @@ A boolean indicating the direction to check. If true, checks the previous node; 
 
 </APIParameters>
 
-## Plugin Transforms
+## 插件转换
 
 ### editor.tf.insert.date
 
-Insert a date into the editor.
+插入一个日期到编辑器中。
 
 <APIParameters>
 
 <APIItem name="date" type="string" optional>
-The date string to insert, in the format 'YYYY-MM-DD' (e.g., '2024-04-22'). If not provided, the current date will be used as the default.
+要插入的日期字符串，格式为 'YYYY-MM-DD'（例如，'2024-04-22'）。如果未提供，则使用当前日期作为默认值。
 </APIItem>
 
 <APIItem name="options" type="InsertNodesOptions" optional>
-The options for inserting nodes.
+插入节点的选项。
 </APIItem>
 
 </APIParameters>
