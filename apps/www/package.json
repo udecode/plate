@@ -142,6 +142,7 @@
     "cmdk": "^1.0.0",
     "contentlayer2": "^0.4.6",
     "date-fns": "^3.6.0",
+    "dotenv": "16.4.7",
     "framer-motion": "^11.5.4",
     "fzf": "0.5.2",
     "html2canvas": "^1.4.1",

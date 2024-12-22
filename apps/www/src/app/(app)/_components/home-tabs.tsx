@@ -11,10 +11,26 @@ import { settingsStore } from '@/components/context/settings-store';
 import { PlaygroundPreview } from '@/components/playground-preview';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/registry/default/plate-ui/button';
+import { getI18nContent } from '@/utils/getI18nConent';
+
+const i18n = {
+  Chinese: {
+    customize: '定制',
+    installation: '安装',
+    playground: '操场',
+  },
+  English: {
+    customize: 'Customize',
+    installation: 'Installation',
+    playground: 'Playground',
+  },
+};
 
 const InstallationTab = dynamic(() => import('./installation-tab'));
 
 export default function HomeTabs() {
+  const content = getI18nContent(i18n);
+
   const active = settingsStore.use.showSettings();
   const homeTab = settingsStore.use.homeTab();
   const [builder, setBuilder] = useQueryState(
@@ -45,8 +61,8 @@ export default function HomeTabs() {
         }}
       >
         <TabsList>
-          <TabsTrigger value="playground">Playground</TabsTrigger>
-          <TabsTrigger value="installation">Installation</TabsTrigger>
+          <TabsTrigger value="playground">{content.playground}</TabsTrigger>
+          <TabsTrigger value="installation">{content.installation}</TabsTrigger>
         </TabsList>
 
         <Button
@@ -66,7 +82,7 @@ export default function HomeTabs() {
           }}
         >
           <Settings2 className="size-4" />
-          Customize
+          {content.customize}
         </Button>
 
         <TabsContent className="pt-2" value="playground">

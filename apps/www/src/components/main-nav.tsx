@@ -7,12 +7,29 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { siteConfig } from '@/config/site';
+import { getI18nContent } from '@/utils/getI18nConent';
 
 import { Icons } from './icons';
+
+const i18n = {
+  Chinese: {
+    components: '组件',
+    docs: '文档',
+    editors: '编辑器',
+    templates: '模板',
+  },
+  English: {
+    components: 'Components',
+    docs: 'Docs',
+    editors: 'Editors',
+    templates: 'Templates',
+  },
+};
 
 export function MainNav() {
   const pathname = usePathname();
   const isUI = pathname?.includes('/docs/components');
+  const content = getI18nContent(i18n);
 
   return (
     <div className="mr-4 hidden md:flex">
@@ -32,7 +49,7 @@ export function MainNav() {
           )}
           href="/docs"
         >
-          Docs
+          {content.docs}
         </Link>
         <Link
           className={cn(
@@ -43,7 +60,7 @@ export function MainNav() {
           )}
           href="/docs/components/introduction"
         >
-          Components
+          {content.components}
         </Link>
         <Link
           className={cn(
@@ -54,7 +71,7 @@ export function MainNav() {
           )}
           href="/editors"
         >
-          Editors
+          {content.editors}
         </Link>
         <Link
           className={cn(
@@ -62,7 +79,7 @@ export function MainNav() {
           )}
           href={siteConfig.links.platePro}
         >
-          Templates
+          {content.templates}
           <Icons.arrowUpRight className="absolute -right-3 top-0 size-2.5 text-muted-foreground" />
         </Link>
       </nav>

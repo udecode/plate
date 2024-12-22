@@ -14,6 +14,8 @@ import { visit } from 'unist-util-visit';
 import { rehypeComponent } from './src/lib/rehype-component';
 import { rehypeNpmCommand } from './src/lib/rehype-npm-command';
 
+import 'dotenv/config';
+
 /** @type {import('contentlayer2/source-files').ComputedFields} */
 const computedFields = {
   slug: {
@@ -94,8 +96,21 @@ export const Doc = defineDocumentType(() => ({
   name: 'Doc',
 }));
 
+const getContentDirPath = () => {
+  const languageToPath = {
+    Chinese: './content/cn',
+    English: './content/en',
+    Japanese: './content/jp',
+    Korean: './content/kr',
+  };
+
+  const language = process.env.NEXT_PUBLIC_LANGUAGE;
+
+  return languageToPath[language] ?? './content/en';
+};
+
 export default makeSource({
-  contentDirPath: './content/cn',
+  contentDirPath: getContentDirPath(),
   documentTypes: [Doc],
   mdx: {
     rehypePlugins: [

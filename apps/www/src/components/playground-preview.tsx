@@ -10,6 +10,7 @@ import { cn } from '@udecode/cn';
 
 import { useLiftMode } from '@/hooks/use-lift-mode';
 import PlaygroundDemo from '@/registry/default/example/playground-demo';
+import { getI18nContent } from '@/utils/getI18nConent';
 
 import { PlaygroundPreviewToolbar } from './playground-preview-toolbar';
 import { ThemeWrapper } from './theme-wrapper';
@@ -19,8 +20,17 @@ import {
   ResizablePanelGroup,
 } from './ui/resizable';
 
+const i18n = {
+  Chinese: {
+    description: 'AI 编辑器',
+  },
+  English: {
+    description: 'An AI editor',
+  },
+};
+
 const block: any = {
-  description: 'An AI editor',
+  description: getI18nContent(i18n).description,
   name: 'editor-ai',
   src: '/blocks/playground',
 };

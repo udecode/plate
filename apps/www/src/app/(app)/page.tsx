@@ -14,6 +14,7 @@ import { SiteFooter } from '@/components/site-footer';
 import { ThemesButton } from '@/components/themes-button';
 import { siteConfig } from '@/config/site';
 import { Button } from '@/registry/default/plate-ui/button';
+import { getI18nContent } from '@/utils/getI18nConent';
 
 import { AnnouncementButton } from './_components/announcement-button';
 
@@ -23,8 +24,25 @@ const CustomizerDrawer = dynamic(
   () => import('@/components/customizer-drawer')
 );
 
+const i18n = {
+  Chinese: {
+    buildYourRichTextEditor: '构建你的富文本编辑器',
+    description: '框架 · 插件 · 组件 · 主题',
+    getStarted: '开始使用',
+    github: 'GitHub',
+    potionDescription: '一个 Notion-like AI 模板。',
+  },
+  English: {
+    buildYourRichTextEditor: 'Build your rich-text editor',
+    description: 'Framework · Plugins · Components · Themes',
+    getStarted: 'Get Started',
+    github: 'GitHub',
+    potionDescription: 'A Notion-like AI template.',
+  },
+};
+
 const block = {
-  description: 'A Notion-like AI template.',
+  description: getI18nContent(i18n).potionDescription,
   descriptionSrc: siteConfig.links.potionTemplate,
   isPro: true,
   meta: {
@@ -35,6 +53,8 @@ const block = {
 };
 
 export default function IndexPage() {
+  const content = getI18nContent(i18n);
+
   return (
     <>
       <div className="relative">
@@ -43,15 +63,15 @@ export default function IndexPage() {
             <AnnouncementButton />
 
             <div className="flex w-full items-center justify-between">
-              <PageHeaderHeading>Build your rich-text editor</PageHeaderHeading>
+              <PageHeaderHeading>
+                {content.buildYourRichTextEditor}
+              </PageHeaderHeading>
               <ThemesButton />
             </div>
-            <PageHeaderDescription>
-              Framework · Plugins · Components · Themes
-            </PageHeaderDescription>
+            <PageHeaderDescription>{content.description}</PageHeaderDescription>
             <section className="flex w-full items-center space-x-2 py-2">
               <Button asChild size="xs">
-                <Link href="/docs">Get Started</Link>
+                <Link href="/docs">{content.getStarted}</Link>
               </Button>
               <Button asChild size="xs" variant="ghost">
                 <Link
@@ -59,7 +79,7 @@ export default function IndexPage() {
                   rel="noreferrer"
                   target="_blank"
                 >
-                  GitHub
+                  {content.github}
                 </Link>
               </Button>
             </section>
