@@ -30,7 +30,7 @@ const i18n = {
     description: '框架 · 插件 · 组件 · 主题',
     getStarted: '开始使用',
     github: 'GitHub',
-    potionDescription: '一个 Notion-like AI 模板。',
+    potionDescription: '一个类似 Notion 的 AI 模板。',
   },
   English: {
     buildYourRichTextEditor: 'Build your rich-text editor',

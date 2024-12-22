@@ -68,47 +68,9 @@ import { settingsStore } from '@/components/context/settings-store';
 import { copilotPlugins } from '@/registry/default/components/editor/plugins/copilot-plugins';
 import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
-import { aiValue } from '@/registry/default/example/values/ai-value';
-import { alignValue } from '@/registry/default/example/values/align-value';
-import { autoformatValue } from '@/registry/default/example/values/autoformat-value';
-import { basicElementsValue } from '@/registry/default/example/values/basic-elements-value';
-import { basicMarksValue } from '@/registry/default/example/values/basic-marks-value';
-import { blockMenuValue } from '@/registry/default/example/values/block-menu-value';
-import { blockSelectionValue } from '@/registry/default/example/values/block-selection-value';
-import { columnValue } from '@/registry/default/example/values/column-value';
-import { commentsValue } from '@/registry/default/example/values/comments-value';
-import { copilotValue } from '@/registry/default/example/values/copilot-value';
-import { cursorOverlayValue } from '@/registry/default/example/values/cursor-overlay-value';
-import { dateValue } from '@/registry/default/example/values/date-value';
-import { deserializeCsvValue } from '@/registry/default/example/values/deserialize-csv-value';
-import { deserializeDocxValue } from '@/registry/default/example/values/deserialize-docx-value';
-import { deserializeHtmlValue } from '@/registry/default/example/values/deserialize-html-value';
-import { deserializeMdValue } from '@/registry/default/example/values/deserialize-md-value';
-import { emojiValue } from '@/registry/default/example/values/emoji-value';
-import {
-  exitBreakValue,
-  trailingBlockValue,
-} from '@/registry/default/example/values/exit-break-value';
-import { fontValue } from '@/registry/default/example/values/font-value';
-import { highlightValue } from '@/registry/default/example/values/highlight-value';
-import { horizontalRuleValue } from '@/registry/default/example/values/horizontal-rule-value';
-import { indentListValue } from '@/registry/default/example/values/indent-list-value';
-import { indentValue } from '@/registry/default/example/values/indent-value';
-import { kbdValue } from '@/registry/default/example/values/kbd-value';
-import { lineHeightValue } from '@/registry/default/example/values/line-height-value';
-import { linkValue } from '@/registry/default/example/values/link-value';
-import {
-  listValue,
-  todoListValue,
-} from '@/registry/default/example/values/list-value';
-import { mediaValue } from '@/registry/default/example/values/media-value';
-import { mentionValue } from '@/registry/default/example/values/mention-value';
-import { slashCommandValue } from '@/registry/default/example/values/slash-command-value';
-import { softBreakValue } from '@/registry/default/example/values/soft-break-value';
-import { tableValue } from '@/registry/default/example/values/table-value';
-import { tocPlaygroundValue } from '@/registry/default/example/values/toc-value';
-import { toggleValue } from '@/registry/default/example/values/toggle-value';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
+
+import { getI18nValues } from './values/getI18nValues';
 
 export default function PlaygroundDemo({ className }: { className?: string }) {
   const value = usePlaygroundValue();
@@ -147,76 +109,78 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
 }
 
 const usePlaygroundValue = (): Value => {
+  const values = getI18nValues();
+
   return useMemo(() => {
     const enabled = settingsStore.get.checkedPlugins();
 
-    let value: any[] = [...basicElementsValue, ...basicMarksValue];
+    let value: any[] = [...values.basicElements, ...values.basicMarks];
 
     value = [{ children: [{ text: 'Playground' }], type: 'h1' }];
 
     // TOC
-    if (enabled.toc) value.push(...tocPlaygroundValue);
+    if (enabled.toc) value.push(...values.toc);
 
     // AI
     value.push({ children: [{ text: 'AI' }], type: 'h1' });
 
-    if (enabled.ai) value.push(...aiValue);
-    if (enabled.copilot) value.push(...copilotValue);
+    if (enabled.ai) value.push(...values.ai);
+    if (enabled.copilot) value.push(...values.copilot);
 
     // Standard Markdown nodes
     value.push(
       { children: [{ text: 'Nodes' }], type: 'h1' },
-      ...basicElementsValue,
-      ...basicMarksValue
+      ...values.basicElements,
+      ...values.basicMarks
     );
 
-    if (enabled.list) value.push(...listValue);
-    if (enabled.action_item) value.push(...todoListValue);
-    if (enabled.a) value.push(...linkValue);
-    if (enabled.hr) value.push(...horizontalRuleValue);
-    if (enabled.table) value.push(...tableValue);
+    if (enabled.list) value.push(...values.list);
+    if (enabled.action_item) value.push(...values.todoList);
+    if (enabled.a) value.push(...values.link);
+    if (enabled.hr) value.push(...values.horizontalRule);
+    if (enabled.table) value.push(...values.table);
     if (enabled.img || enabled.media_embed || enabled.media_placeholder)
-      value.push(...mediaValue);
-    if (enabled.column) value.push(...columnValue);
-    if (enabled.mention) value.push(...mentionValue);
-    if (enabled.date) value.push(...dateValue);
-    if (enabled.emoji) value.push(...emojiValue);
-    if (enabled.color || enabled.backgroundColor) value.push(...fontValue);
-    if (enabled.highlight) value.push(...highlightValue);
-    if (enabled.kbd) value.push(...kbdValue);
-    if (enabled.comment) value.push(...commentsValue);
+      value.push(...values.media);
+    if (enabled.column) value.push(...values.column);
+    if (enabled.mention) value.push(...values.mention);
+    if (enabled.date) value.push(...values.date);
+    if (enabled.emoji) value.push(...values.emoji);
+    if (enabled.color || enabled.backgroundColor) value.push(...values.font);
+    if (enabled.highlight) value.push(...values.highlight);
+    if (enabled.kbd) value.push(...values.kbd);
+    if (enabled.comment) value.push(...values.comments);
 
     // Layout and structure
     value.push({ children: [{ text: 'Layout' }], type: 'h1' });
 
-    if (enabled.align) value.push(...alignValue);
-    if (enabled.lineHeight) value.push(...lineHeightValue);
-    if (enabled.indent) value.push(...indentValue);
-    if (enabled.listStyleType) value.push(...indentListValue);
-    if (enabled.toggle) value.push(...toggleValue);
+    if (enabled.align) value.push(...values.align);
+    if (enabled.lineHeight) value.push(...values.lineHeight);
+    if (enabled.indent) value.push(...values.indent);
+    if (enabled.listStyleType) value.push(...values.indentList);
+    if (enabled.toggle) value.push(...values.toggle);
 
     // Functionality
     value.push({ children: [{ text: 'Functionality' }], type: 'h1' });
 
-    if (enabled.slash_command) value.push(...slashCommandValue);
-    if (enabled.blockSelection) value.push(...blockSelectionValue);
-    if (enabled.blockMenu) value.push(...blockMenuValue);
-    if (enabled.autoformat) value.push(...autoformatValue);
-    if (enabled.softBreak) value.push(...softBreakValue);
-    if (enabled.exitBreak) value.push(...exitBreakValue);
-    if (enabled.cursorOverlay) value.push(...cursorOverlayValue);
-    if (enabled.trailingBlock) value.push(...trailingBlockValue);
+    if (enabled.slash_command) value.push(...values.slashCommand);
+    if (enabled.blockSelection) value.push(...values.blockSelection);
+    if (enabled.blockMenu) value.push(...values.blockMenu);
+    if (enabled.autoformat) value.push(...values.autoformat);
+    if (enabled.softBreak) value.push(...values.softBreak);
+    if (enabled.exitBreak) value.push(...values.exitBreak);
+    if (enabled.cursorOverlay) value.push(...values.cursorOverlay);
+    if (enabled.trailingBlock) value.push(...values.trailingBlock);
 
     // Deserialization
     value.push({ children: [{ text: 'Deserialization' }], type: 'h1' });
 
-    if (enabled.html) value.push(...deserializeHtmlValue);
-    if (enabled.markdown) value.push(...deserializeMdValue);
-    if (enabled.docx) value.push(...deserializeDocxValue);
-    if (enabled.csv) value.push(...deserializeCsvValue);
+    if (enabled.html) value.push(...values.deserializeHtml);
+    if (enabled.markdown) value.push(...values.deserializeMd);
+    if (enabled.docx) value.push(...values.deserializeDocx);
+    if (enabled.csv) value.push(...values.deserializeCsv);
 
     return value;
-  }, []);
+  }, [values]);
 };
 
 function usePlaygroundEnabled(id?: string) {

@@ -8,7 +8,7 @@ import { editorPlugins } from '@/registry/default/components/editor/plugins/edit
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 
-import { DEMO_VALUES } from './values/demo-values';
+import { DEMO_VALUES } from './values/en/demo-values';
 
 export default function Demo({ id }: { id: string }) {
   const editor = useCreateEditor({

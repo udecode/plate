@@ -11,7 +11,7 @@ import { useFocused, useSelected } from 'slate-react';
 
 import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
-import { tabbableValue } from '@/registry/default/example/values/tabbable-value';
+import { tabbableValue } from '@/registry/default/example/values/en/tabbable-value';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 import { PlateElement } from '@/registry/default/plate-ui/plate-element';
 

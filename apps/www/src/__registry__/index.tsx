@@ -2355,7 +2355,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/ai-value.tsx",
+        path: "src/registry/default/example/values/en/ai-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -2383,7 +2383,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/align-value.tsx",
+        path: "src/registry/default/example/values/en/align-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -2411,7 +2411,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/autoformat-value.tsx",
+        path: "src/registry/default/example/values/en/autoformat-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -2439,7 +2439,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/basic-elements-value.tsx",
+        path: "src/registry/default/example/values/en/basic-elements-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -2467,7 +2467,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/basic-marks-value.tsx",
+        path: "src/registry/default/example/values/en/basic-marks-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -2495,15 +2495,15 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/basic-nodes-value.tsx",
+        path: "src/registry/default/example/values/en/basic-nodes-value.tsx",
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/basic-elements-value.tsx",
+        path: "src/registry/default/example/values/en/basic-elements-value.tsx",
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/basic-marks-value.tsx",
+        path: "src/registry/default/example/values/en/basic-marks-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -2531,7 +2531,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/block-menu-value.tsx",
+        path: "src/registry/default/example/values/en/block-menu-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -2559,7 +2559,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/block-selection-value.tsx",
+        path: "src/registry/default/example/values/en/block-selection-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -2587,7 +2587,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/column-value.tsx",
+        path: "src/registry/default/example/values/en/column-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -2615,7 +2615,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/comments-value.tsx",
+        path: "src/registry/default/example/values/en/comments-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -2643,7 +2643,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/copilot-value.tsx",
+        path: "src/registry/default/example/values/en/copilot-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -2671,7 +2671,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/cursor-overlay-value.tsx",
+        path: "src/registry/default/example/values/en/cursor-overlay-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -2699,7 +2699,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/date-value.tsx",
+        path: "src/registry/default/example/values/en/date-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -2727,7 +2727,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/dnd-value.tsx",
+        path: "src/registry/default/example/values/en/dnd-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -2755,7 +2755,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/emoji-value.tsx",
+        path: "src/registry/default/example/values/en/emoji-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -2783,7 +2783,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/exit-break-value.tsx",
+        path: "src/registry/default/example/values/en/exit-break-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -2811,7 +2811,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/excalidraw-value.tsx",
+        path: "src/registry/default/example/values/en/excalidraw-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -2839,7 +2839,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/find-replace-value.tsx",
+        path: "src/registry/default/example/values/en/find-replace-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -2867,7 +2867,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/floating-toolbar-value.tsx",
+        path: "src/registry/default/example/values/en/floating-toolbar-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -2895,7 +2895,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/font-value.tsx",
+        path: "src/registry/default/example/values/en/font-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -2923,7 +2923,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/highlight-value.tsx",
+        path: "src/registry/default/example/values/en/highlight-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -2951,7 +2951,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/horizontal-rule-value.tsx",
+        path: "src/registry/default/example/values/en/horizontal-rule-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -2979,7 +2979,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/indent-value.tsx",
+        path: "src/registry/default/example/values/en/indent-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -3007,7 +3007,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/indent-list-value.tsx",
+        path: "src/registry/default/example/values/en/indent-list-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -3035,7 +3035,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/kbd-value.tsx",
+        path: "src/registry/default/example/values/en/kbd-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -3063,7 +3063,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/line-height-value.tsx",
+        path: "src/registry/default/example/values/en/line-height-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -3091,7 +3091,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/link-value.tsx",
+        path: "src/registry/default/example/values/en/link-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -3119,7 +3119,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/list-value.tsx",
+        path: "src/registry/default/example/values/en/list-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -3155,7 +3155,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/media-value.tsx",
+        path: "src/registry/default/example/values/en/media-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -3183,7 +3183,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/mention-value.tsx",
+        path: "src/registry/default/example/values/en/mention-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -3211,7 +3211,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/basic-elements-value.tsx",
+        path: "src/registry/default/example/values/en/basic-elements-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -3239,7 +3239,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/deserialize-csv-value.tsx",
+        path: "src/registry/default/example/values/en/deserialize-csv-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -3267,7 +3267,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/deserialize-docx-value.tsx",
+        path: "src/registry/default/example/values/en/deserialize-docx-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -3295,7 +3295,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/deserialize-html-value.tsx",
+        path: "src/registry/default/example/values/en/deserialize-html-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -3323,7 +3323,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/deserialize-md-value.tsx",
+        path: "src/registry/default/example/values/en/deserialize-md-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -3367,7 +3367,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/single-line-value.tsx",
+        path: "src/registry/default/example/values/en/single-line-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -3395,7 +3395,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/slash-command-value.tsx",
+        path: "src/registry/default/example/values/en/slash-command-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -3423,7 +3423,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/soft-break-value.tsx",
+        path: "src/registry/default/example/values/en/soft-break-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -3451,7 +3451,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/tabbable-value.tsx",
+        path: "src/registry/default/example/values/en/tabbable-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -3479,7 +3479,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/table-value.tsx",
+        path: "src/registry/default/example/values/en/table-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -3507,7 +3507,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/table-value.tsx",
+        path: "src/registry/default/example/values/en/table-value.tsx",
         type: "registry:example",
         target: ""
       },{
@@ -3535,7 +3535,7 @@ export const Index: Record<string, any> = {
         type: "registry:example",
         target: ""
       },{
-        path: "src/registry/default/example/values/toc-value.tsx",
+        path: "src/registry/default/example/values/en/toc-value.tsx",
         type: "registry:example",
         target: ""
       },{

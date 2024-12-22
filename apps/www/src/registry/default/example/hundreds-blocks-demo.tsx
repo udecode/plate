@@ -17,7 +17,7 @@ import {
 } from 'slate-react';
 
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
-import { createHugeDocumentValue } from '@/registry/default/example/values/huge-document-value';
+import { createHugeDocumentValue } from '@/registry/default/example/values/en/huge-document-value';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 
 const value = createHugeDocumentValue();

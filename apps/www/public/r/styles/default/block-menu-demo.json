@@ -10,14 +10,14 @@
   },
   "files": [
     {
-      "content": "'use client';\n\nimport React from 'react';\n\nimport { Plate } from '@udecode/plate-common/react';\n\nimport { editorPlugins } from '@/components/editor/plugins/editor-plugins';\nimport { useCreateEditor } from '@/components/editor/use-create-editor';\nimport { Editor, EditorContainer } from '@/components/plate-ui/editor';\n\nimport { DEMO_VALUES } from './values/demo-values';\n\nexport default function Demo({ id }: { id: string }) {\n  const editor = useCreateEditor({\n    plugins: [...editorPlugins],\n    value: DEMO_VALUES[id],\n  });\n\n  return (\n    <Plate editor={editor}>\n      <EditorContainer variant=\"demo\">\n        <Editor />\n      </EditorContainer>\n    </Plate>\n  );\n}\n",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { Plate } from '@udecode/plate-common/react';\n\nimport { editorPlugins } from '@/components/editor/plugins/editor-plugins';\nimport { useCreateEditor } from '@/components/editor/use-create-editor';\nimport { Editor, EditorContainer } from '@/components/plate-ui/editor';\n\nimport { DEMO_VALUES } from './values/en/demo-values';\n\nexport default function Demo({ id }: { id: string }) {\n  const editor = useCreateEditor({\n    plugins: [...editorPlugins],\n    value: DEMO_VALUES[id],\n  });\n\n  return (\n    <Plate editor={editor}>\n      <EditorContainer variant=\"demo\">\n        <Editor />\n      </EditorContainer>\n    </Plate>\n  );\n}\n",
       "path": "example/demo.tsx",
       "target": "components/demo.tsx",
       "type": "registry:example"
     },
     {
       "content": "import { jsx } from '@udecode/plate-test-utils';\n\njsx;\n\nexport const blockMenuValue: any = (\n  <fragment>\n    <hh2>Block Menu</hh2>\n\n    <hp>Open the block menu:</hp>\n    {/* <hp indent={1} listStyleType=\"disc\">\n      <htext>Click on a drag handle to open the block menu.</htext>\n    </hp> */}\n    <hp indent={1} listStyleType=\"disc\">\n      <htext>\n        Right-click any unselected block to open the context menu. If you\n        right-click within a selected block, you'll see the browser's native\n        context menu instead.\n      </htext>\n    </hp>\n    <hp>Available options in the block menu:</hp>\n    {/* <hp indent={1} listStyleType=\"disc\">\n      <htext>Comment the block text.</htext>\n    </hp> */}\n    <hp indent={1} listStyleType=\"disc\">\n      <htext>Ask AI to edit the block.</htext>\n    </hp>\n    <hp indent={1} listStyleType=\"disc\">\n      <htext>Delete the block.</htext>\n    </hp>\n    <hp indent={1} listStyleType=\"disc\">\n      <htext>Duplicate the block.</htext>\n    </hp>\n    <hp indent={1} listStyleType=\"disc\">\n      <htext>Turn the block type into another block type.</htext>\n    </hp>\n    {/* <hp indent={1} listStyleType=\"disc\">\n      <htext>Color: update the block text color or background color.</htext>\n    </hp> */}\n  </fragment>\n);\n",
-      "path": "example/values/block-menu-value.tsx",
+      "path": "example/values/en/block-menu-value.tsx",
       "target": "components/block-menu-value.tsx",
       "type": "registry:example"
     },

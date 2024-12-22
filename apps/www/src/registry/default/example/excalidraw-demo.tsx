@@ -7,7 +7,7 @@ import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
 
 import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
-import { excalidrawValue } from '@/registry/default/example/values/excalidraw-value';
+import { excalidrawValue } from '@/registry/default/example/values/en/excalidraw-value';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 import { ExcalidrawElement } from '@/registry/default/plate-ui/excalidraw-element';
 

@@ -9,9 +9,9 @@ import { ImagePlugin } from '@udecode/plate-media/react';
 
 import { deletePlugins } from '@/registry/default/components/editor/plugins/delete-plugins';
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
-import { basicElementsValue } from '@/registry/default/example/values/basic-elements-value';
-import { basicMarksValue } from '@/registry/default/example/values/basic-marks-value';
-import { imageValue } from '@/registry/default/example/values/media-value';
+import { basicElementsValue } from '@/registry/default/example/values/en/basic-elements-value';
+import { basicMarksValue } from '@/registry/default/example/values/en/basic-marks-value';
+import { imageValue } from '@/registry/default/example/values/en/media-value';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
 import { Separator } from '@/registry/default/plate-ui/separator';

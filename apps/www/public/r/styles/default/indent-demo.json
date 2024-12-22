@@ -1,14 +1,14 @@
 {
   "files": [
     {
-      "content": "'use client';\n\nimport React from 'react';\n\nimport { Plate } from '@udecode/plate-common/react';\n\nimport { editorPlugins } from '@/components/editor/plugins/editor-plugins';\nimport { useCreateEditor } from '@/components/editor/use-create-editor';\nimport { Editor, EditorContainer } from '@/components/plate-ui/editor';\n\nimport { DEMO_VALUES } from './values/demo-values';\n\nexport default function Demo({ id }: { id: string }) {\n  const editor = useCreateEditor({\n    plugins: [...editorPlugins],\n    value: DEMO_VALUES[id],\n  });\n\n  return (\n    <Plate editor={editor}>\n      <EditorContainer variant=\"demo\">\n        <Editor />\n      </EditorContainer>\n    </Plate>\n  );\n}\n",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { Plate } from '@udecode/plate-common/react';\n\nimport { editorPlugins } from '@/components/editor/plugins/editor-plugins';\nimport { useCreateEditor } from '@/components/editor/use-create-editor';\nimport { Editor, EditorContainer } from '@/components/plate-ui/editor';\n\nimport { DEMO_VALUES } from './values/en/demo-values';\n\nexport default function Demo({ id }: { id: string }) {\n  const editor = useCreateEditor({\n    plugins: [...editorPlugins],\n    value: DEMO_VALUES[id],\n  });\n\n  return (\n    <Plate editor={editor}>\n      <EditorContainer variant=\"demo\">\n        <Editor />\n      </EditorContainer>\n    </Plate>\n  );\n}\n",
       "path": "example/demo.tsx",
       "target": "components/demo.tsx",
       "type": "registry:example"
     },
     {
       "content": "import { jsx } from '@udecode/plate-test-utils';\n\njsx;\n\nexport const indentValue: any = (\n  <fragment>\n    <hh2>Indentation</hh2>\n    <hp indent={1}>\n      Easily control the indentation of specific blocks to highlight important\n      information and improve visual structure.\n    </hp>\n    <hp indent={2}>\n      For instance, this paragraph looks like it belongs to the previous one.\n    </hp>\n  </fragment>\n);\n",
-      "path": "example/values/indent-value.tsx",
+      "path": "example/values/en/indent-value.tsx",
       "target": "components/indent-value.tsx",
       "type": "registry:example"
     },
