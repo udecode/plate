@@ -106,7 +106,7 @@ import { tocValue as tocValueEn } from './en/toc-value';
 import { toggleValue as toggleValueEn } from './en/toggle-value';
 
 const i18n = {
-  Chinese: {
+  cn: {
     ai: aiValueZh,
     align: alignValueZh,
     autoformat: autoformatValueZh,
@@ -156,7 +156,7 @@ const i18n = {
     toggle: toggleValueZh,
     trailingBlock: trailingBlockValueZh,
   },
-  English: {
+  en: {
     ai: aiValueEn,
     align: alignValueEn,
     autoformat: autoformatValueEn,

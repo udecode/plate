@@ -7,12 +7,12 @@ import { getI18nContent } from '@/utils/getI18nConent';
 import { siteConfig } from '../config/site';
 
 const i18n = {
-  Chinese: {
+  cn: {
     buildYourEditor: '构建你的编辑器',
     getAccess: '获取全部访问权限',
     productionReady: '生产就绪的 AI 模板和可重用的组件。',
   },
-  English: {
+  en: {
     buildYourEditor: 'Build your editor',
     getAccess: 'Get all-access',
     productionReady: 'Production-ready AI template and reusable components.',

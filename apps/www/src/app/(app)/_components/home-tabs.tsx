@@ -14,12 +14,12 @@ import { Button } from '@/registry/default/plate-ui/button';
 import { getI18nContent } from '@/utils/getI18nConent';
 
 const i18n = {
-  Chinese: {
+  cn: {
     customize: '定制',
     installation: '安装',
     playground: '操场',
   },
-  English: {
+  en: {
     customize: 'Customize',
     installation: 'Installation',
     playground: 'Playground',

@@ -12,13 +12,13 @@ import { getI18nContent } from '@/utils/getI18nConent';
 import { Icons } from './icons';
 
 const i18n = {
-  Chinese: {
+  cn: {
     components: '组件',
     docs: '文档',
     editors: '编辑器',
     templates: '模板',
   },
-  English: {
+  en: {
     components: 'Components',
     docs: 'Docs',
     editors: 'Editors',

@@ -66,7 +66,7 @@ import { basicMarksValue } from '@/registry/default/example/values/en/basic-mark
 import { getI18nContent } from '@/utils/getI18nConent';
 
 const i18n = {
-  Chinese: {
+  cn: {
     creatingDesc: '要在服务器上使用 Plate，你可以使用 ',
     creatingDesc2:
       ' 函数。这允许你在没有 DOM 环境的情况下创建和操作 Slate 文档。',
@@ -79,7 +79,7 @@ const i18n = {
     exampleTitle: '示例：在 React Server Component 中生成 Markdown',
     title: '在服务器环境中使用 Plate',
   },
-  English: {
+  en: {
     creatingDesc: 'To use Plate on the server, you can leverage the ',
     creatingDesc2:
       ' function. This allows you to create and manipulate Slate documents without a DOM environment.',

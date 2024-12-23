@@ -8,10 +8,10 @@ import { Button } from '@/registry/default/plate-ui/button';
 import { getI18nContent } from '@/utils/getI18nConent';
 
 const i18n = {
-  Chinese: {
+  cn: {
     description: 'AI, Copilot, 上传, 数学, 以及更多',
   },
-  English: {
+  en: {
     description: 'AI, Copilot, Upload, Math, and more',
   },
 };

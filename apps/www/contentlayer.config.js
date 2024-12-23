@@ -98,10 +98,8 @@ export const Doc = defineDocumentType(() => ({
 
 const getContentDirPath = () => {
   const languageToPath = {
-    Chinese: './content/cn',
-    English: './content/en',
-    Japanese: './content/jp',
-    Korean: './content/kr',
+    cn: './content/cn',
+    en: './content/en',
   };
 
   const language = process.env.NEXT_PUBLIC_LANGUAGE;

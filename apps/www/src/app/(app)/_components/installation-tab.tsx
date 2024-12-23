@@ -32,7 +32,7 @@ import { getI18nContent } from '@/utils/getI18nConent';
 import { InstallationCode } from './installation-code';
 
 const i18n = {
-  Chinese: {
+  cn: {
     addComponents: '添加组件',
     addEditorPage:
       '这将在你的项目中添加一个 `/editor` 页面，并包含所有必要的组件作为起点。',
@@ -64,7 +64,7 @@ const i18n = {
     thenAddComponents: '。然后，添加你选择的组件：',
     useCommand: '使用以下命令将 AI 编辑器添加到你的项目：',
   },
-  English: {
+  en: {
     addComponents: 'Add Components',
     addEditorPage:
       'This will add an `/editor` page to your project along with all necessary components as a starting point.',

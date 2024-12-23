@@ -21,10 +21,10 @@ import {
 } from './ui/resizable';
 
 const i18n = {
-  Chinese: {
+  cn: {
     description: 'AI 编辑器',
   },
-  English: {
+  en: {
     description: 'An AI editor',
   },
 };

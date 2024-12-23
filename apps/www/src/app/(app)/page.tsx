@@ -25,14 +25,14 @@ const CustomizerDrawer = dynamic(
 );
 
 const i18n = {
-  Chinese: {
+  cn: {
     buildYourRichTextEditor: '构建你的富文本编辑器',
     description: '框架 · 插件 · 组件 · 主题',
     getStarted: '开始使用',
     github: 'GitHub',
     potionDescription: '一个类似 Notion 的 AI 模板。',
   },
-  English: {
+  en: {
     buildYourRichTextEditor: 'Build your rich-text editor',
     description: 'Framework · Plugins · Components · Themes',
     getStarted: 'Get Started',

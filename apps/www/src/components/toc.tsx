@@ -13,10 +13,10 @@ interface TocProps {
 }
 
 const i18n = {
-  Chinese: {
+  cn: {
     onThisPage: '目录',
   },
-  English: {
+  en: {
     onThisPage: 'On This Page',
   },
 };
