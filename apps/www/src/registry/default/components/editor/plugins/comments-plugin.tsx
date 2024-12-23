@@ -2,10 +2,12 @@
 
 import { CommentsPlugin } from '@udecode/plate-comments/react';
 
+import { commentsData } from '@/registry/default/example/values/comments-value';
 import { CommentsPopover } from '@/registry/default/plate-ui/comments-popover';
 
 export const commentsPlugin = CommentsPlugin.configure({
   options: {
+    comments: commentsData,
     myUserId: '1',
     users: {
       1: {
