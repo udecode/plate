@@ -9,6 +9,6 @@ export const removeBlockSelectionNodes = (editor: SlateEditor) => {
 
   editor.removeNodes({
     at: [],
-    match: (n) => selectedIds.has((n as any).id),
+    match: (n: any) => n.id && selectedIds.has((n as any).id),
   });
 };
