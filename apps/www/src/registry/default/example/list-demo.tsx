@@ -16,7 +16,7 @@ import { autoformatListPlugin } from '@/registry/default/components/editor/plugi
 import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';
 import { FixedToolbarListPlugin } from '@/registry/default/components/editor/plugins/fixed-toolbar-list-plugin';
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
-import { listValue } from '@/registry/default/example/values/en/list-value';
+import { listValue } from '@/registry/default/example/values/list-value';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 import { ListElement } from '@/registry/default/plate-ui/list-element';
 import { TodoListElement } from '@/registry/default/plate-ui/todo-list-element';

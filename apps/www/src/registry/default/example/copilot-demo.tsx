@@ -6,7 +6,7 @@ import { Plate } from '@udecode/plate-common/react';
 
 import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
-import { copilotValue } from '@/registry/default/example/values/en/copilot-value';
+import { copilotValue } from '@/registry/default/example/values/copilot-value';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 
 import { copilotPlugins } from '../components/editor/plugins/copilot-plugins';

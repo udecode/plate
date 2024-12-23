@@ -65,12 +65,11 @@ import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
 import { settingsStore } from '@/components/context/settings-store';
+import { getI18nValues } from '@/i18n/getI18nValues';
 import { copilotPlugins } from '@/registry/default/components/editor/plugins/copilot-plugins';
 import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
-
-import { getI18nValues } from './values/getI18nValues';
 
 export default function PlaygroundDemo({ className }: { className?: string }) {
   const value = usePlaygroundValue();

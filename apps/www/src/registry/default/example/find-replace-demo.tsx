@@ -7,7 +7,7 @@ import { FindReplacePlugin } from '@udecode/plate-find-replace';
 
 import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
-import { findReplaceValue } from '@/registry/default/example/values/en/find-replace-value';
+import { findReplaceValue } from '@/registry/default/example/values/find-replace-value';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
 import { Input } from '@/registry/default/plate-ui/input';

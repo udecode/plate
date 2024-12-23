@@ -14,7 +14,7 @@ import { type TRenderLeafProps, Plate  } from "@udecode/plate-common/react";
 import Prism from 'prismjs';
 
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
-import { previewMdValue } from '@/registry/default/example/values/en/preview-md-value';
+import { previewMdValue } from '@/registry/default/example/values/preview-md-value';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 
 import 'prismjs/components/prism-markdown.js';
