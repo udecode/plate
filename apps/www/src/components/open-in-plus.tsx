@@ -1,8 +1,8 @@
 import { cn } from '@udecode/cn';
 import Link from 'next/link';
 
+import { getI18nContent } from '@/i18n/getI18nContent';
 import { Button } from '@/registry/default/plate-ui/button';
-import { getI18nContent } from '@/utils/getI18nConent';
 
 import { siteConfig } from '../config/site';
 

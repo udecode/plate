@@ -25,9 +25,9 @@ import {
   customizerItems,
   orderedPluginKeys,
 } from '@/config/customizer-items';
+import { getI18nContent } from '@/i18n/getI18nContent';
 import { useMounted } from '@/registry/default/hooks/use-mounted';
 import { Label } from '@/registry/default/plate-ui/label';
-import { getI18nContent } from '@/utils/getI18nConent';
 
 import { InstallationCode } from './installation-code';
 

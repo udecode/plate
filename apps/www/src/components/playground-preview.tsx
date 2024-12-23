@@ -9,8 +9,8 @@ import type { ImperativePanelHandle } from 'react-resizable-panels';
 import { cn } from '@udecode/cn';
 
 import { useLiftMode } from '@/hooks/use-lift-mode';
+import { getI18nContent } from '@/i18n/getI18nContent';
 import PlaygroundDemo from '@/registry/default/example/playground-demo';
-import { getI18nContent } from '@/utils/getI18nConent';
 
 import { PlaygroundPreviewToolbar } from './playground-preview-toolbar';
 import { ThemeWrapper } from './theme-wrapper';

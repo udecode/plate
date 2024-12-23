@@ -6,7 +6,7 @@ import type { TableOfContents } from '@/lib/toc';
 
 import { cn } from '@udecode/cn';
 
-import { getI18nContent } from '@/utils/getI18nConent';
+import { getI18nContent } from '@/i18n/getI18nContent';
 
 interface TocProps {
   toc: TableOfContents;

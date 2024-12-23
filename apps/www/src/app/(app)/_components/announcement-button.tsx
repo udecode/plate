@@ -4,8 +4,8 @@ import * as React from 'react';
 
 import { ArrowRightIcon } from 'lucide-react';
 
+import { getI18nContent } from '@/i18n/getI18nContent';
 import { Button } from '@/registry/default/plate-ui/button';
-import { getI18nContent } from '@/utils/getI18nConent';
 
 const i18n = {
   cn: {

@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { siteConfig } from '@/config/site';
-import { getI18nContent } from '@/utils/getI18nConent';
+import { getI18nContent } from '@/i18n/getI18nContent';
 
 import { Icons } from './icons';
 

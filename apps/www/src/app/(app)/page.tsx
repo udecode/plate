@@ -13,8 +13,8 @@ import {
 import { SiteFooter } from '@/components/site-footer';
 import { ThemesButton } from '@/components/themes-button';
 import { siteConfig } from '@/config/site';
+import { getI18nContent } from '@/i18n/getI18nContent';
 import { Button } from '@/registry/default/plate-ui/button';
-import { getI18nContent } from '@/utils/getI18nConent';
 
 import { AnnouncementButton } from './_components/announcement-button';
 

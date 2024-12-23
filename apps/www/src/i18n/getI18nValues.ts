@@ -103,7 +103,7 @@ import { tableValue as tableValueEn } from '@/registry/default/example/values/ta
 import { tocValue as tocValueEn } from '@/registry/default/example/values/toc-value';
 import { toggleValue as toggleValueEn } from '@/registry/default/example/values/toggle-value';
 
-import { getI18nContent } from './getI18nConent';
+import { getI18nContent } from './getI18nContent';
 
 const i18n = {
   cn: {

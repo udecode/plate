@@ -10,8 +10,8 @@ import { parseAsBoolean, useQueryState } from 'nuqs';
 import { settingsStore } from '@/components/context/settings-store';
 import { PlaygroundPreview } from '@/components/playground-preview';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { getI18nContent } from '@/i18n/getI18nContent';
 import { Button } from '@/registry/default/plate-ui/button';
-import { getI18nContent } from '@/utils/getI18nConent';
 
 const i18n = {
   cn: {
