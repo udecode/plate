@@ -1,4 +1,8 @@
-import type { SlateEditor } from '@udecode/plate-common';
+import {
+  type SlateEditor,
+  isBlockWithId,
+  removeNodes,
+} from '@udecode/plate-common';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 
@@ -7,8 +11,8 @@ export const removeBlockSelectionNodes = (editor: SlateEditor) => {
 
   if (!selectedIds) return;
 
-  editor.removeNodes({
+  removeNodes(editor, {
     at: [],
-    match: (n) => selectedIds.has((n as any).id),
+    match: (n) => isBlockWithId(editor, n) && selectedIds.has(n.id),
   });
 };

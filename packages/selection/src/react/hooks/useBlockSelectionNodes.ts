@@ -5,6 +5,7 @@ import {
   type TElement,
   getFragmentProp,
   getNodeEntries,
+  isBlockWithId,
 } from '@udecode/plate-common';
 import { useEditorPlugin } from '@udecode/plate-common/react';
 
@@ -18,7 +19,7 @@ export function useBlockSelectionNodes() {
     return [
       ...getNodeEntries<TElement>(editor, {
         at: [],
-        match: (n) => selectedIds?.has(n.id),
+        match: (n) => isBlockWithId(editor, n) && selectedIds?.has(n.id),
       }),
     ];
   }, [editor, selectedIds]);

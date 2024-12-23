@@ -2,7 +2,7 @@ import {
   type GetNodeEntriesOptions,
   type TEditor,
   getNodeEntries,
-  isBlock,
+  isBlockWithId,
 } from '@udecode/plate-common';
 
 /** Get blocks with an id */
@@ -11,7 +11,7 @@ export const getBlocksWithId = <E extends TEditor>(
   options: GetNodeEntriesOptions<E>
 ) => {
   const _nodes = getNodeEntries(editor, {
-    match: (n) => isBlock(editor, n) && !!n.id,
+    match: (n) => isBlockWithId(editor, n),
     ...options,
   });
 

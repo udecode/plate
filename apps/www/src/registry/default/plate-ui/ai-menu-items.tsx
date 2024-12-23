@@ -25,6 +25,7 @@ import {
   ListMinus,
   ListPlus,
   PenLine,
+  SmileIcon,
   Wand,
   X,
 } from 'lucide-react';
@@ -77,6 +78,16 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     onSelect: ({ editor }) => {
       editor.getTransforms(AIPlugin).ai.undo();
       editor.getApi(AIChatPlugin).aiChat.hide();
+    },
+  },
+  emojify: {
+    icon: <SmileIcon />,
+    label: 'Emojify',
+    value: 'emojify',
+    onSelect: ({ editor }) => {
+      void editor.getApi(AIChatPlugin).aiChat.submit({
+        prompt: 'Emojify',
+      });
     },
   },
   explain: {
@@ -225,6 +236,7 @@ const menuStateItems: Record<
     {
       items: [
         aiChatItems.improveWriting,
+        aiChatItems.emojify,
         aiChatItems.makeLonger,
         aiChatItems.makeShorter,
         aiChatItems.fixSpelling,
@@ -245,14 +257,13 @@ const menuStateItems: Record<
 };
 
 export const AIMenuItems = ({
-  aiEditorRef,
   setValue,
 }: {
-  aiEditorRef: React.MutableRefObject<SlateEditor | null>;
   setValue: (value: string) => void;
 }) => {
   const { editor, useOption } = useEditorPlugin(AIChatPlugin);
   const { messages } = useOption('chat');
+  const aiEditor = useOption('aiEditor')!;
   const isSelecting = useIsSelecting();
 
   const menuState = useMemo(() => {
@@ -286,7 +297,7 @@ export const AIMenuItems = ({
               value={menuItem.value}
               onSelect={() => {
                 menuItem.onSelect?.({
-                  aiEditor: aiEditorRef.current!,
+                  aiEditor,
                   editor: editor,
                 });
               }}

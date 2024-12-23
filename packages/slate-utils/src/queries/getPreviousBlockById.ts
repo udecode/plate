@@ -11,6 +11,8 @@ import {
   queryNode,
 } from '@udecode/slate';
 
+import { isBlockWithId } from './isElementWithId';
+
 /**
  * Find the block before a block by id. If not found, find the first block by id
  * and return [null, its previous path]
@@ -63,7 +65,7 @@ export const getPreviousBlockById = <
   const _entries = getNodeEntries<TElement>(editor, {
     at: [],
     match: (n) => {
-      return isBlock(editor, n) && !!n.id && queryNode([n, []], query);
+      return isBlockWithId(editor, n) && queryNode([n, []], query);
     },
     mode: 'highest',
   });

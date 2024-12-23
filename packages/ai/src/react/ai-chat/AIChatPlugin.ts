@@ -6,7 +6,6 @@ import {
   type PluginConfig,
   type SlateEditor,
   bindFirst,
-  createSlateEditor,
 } from '@udecode/plate-common';
 import { createTPlatePlugin, focusEditor } from '@udecode/plate-common/react';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
@@ -27,8 +26,10 @@ import { submitAIChat } from './utils/submitAIChat';
 import { withAIChat } from './withAIChat';
 
 export type AIChatOptions = {
+  /** @private The Editor used to generate the AI response. */
+  aiEditor: SlateEditor | null;
+
   chat: Partial<UseChatHelpers>;
-  createAIEditor: () => SlateEditor;
   /**
    * Specifies how the assistant message is handled:
    *
@@ -83,11 +84,8 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
   dependencies: ['ai'],
   extendEditor: withAIChat,
   options: {
+    aiEditor: null,
     chat: { messages: [] } as any,
-    createAIEditor: () =>
-      createSlateEditor({
-        id: 'ai',
-      }),
     mode: 'chat',
     open: false,
     promptTemplate: () => '{prompt}',

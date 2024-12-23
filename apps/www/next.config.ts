@@ -40,6 +40,16 @@ const nextConfig = async (phase: string) => {
     // https://nextjs.org/docs/api-reference/next.config.js/react-strict-mod
     reactStrictMode: true,
 
+    // eslint-disable-next-line @typescript-eslint/require-await
+    async rewrites() {
+      return [
+        {
+          destination: '/:path*?locale=cn', // Rewrite it to the corresponding path without /cn
+          source: '/cn/:path*', // Match any path under /cn
+        },
+      ];
+    },
+
     // typescript: {
     //   ignoreBuildErrors: true,
     // },

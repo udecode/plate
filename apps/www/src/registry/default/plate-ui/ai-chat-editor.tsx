@@ -1,9 +1,9 @@
 'use client';
 
-import React, { memo } from 'react';
+import React, { memo, useCallback, useEffect, useMemo } from 'react';
 
 import { withProps } from '@udecode/cn';
-import { AIChatPlugin, useLastAssistantMessage } from '@udecode/plate-ai/react';
+import { AIChatPlugin } from '@udecode/plate-ai/react';
 import {
   BaseBoldPlugin,
   BaseCodePlugin,
@@ -17,16 +17,27 @@ import {
   BaseCodeLinePlugin,
   BaseCodeSyntaxPlugin,
 } from '@udecode/plate-code-block';
-import { useEditorPlugin } from '@udecode/plate-common/react';
 import {
   type SlateEditor,
   BaseParagraphPlugin,
   SlateLeaf,
+  createSlateEditor,
 } from '@udecode/plate-common';
-import { HEADING_KEYS } from '@udecode/plate-heading';
+import { useEditorPlugin } from '@udecode/plate-common/react';
+import {
+  BaseHeadingPlugin,
+  HEADING_KEYS,
+  HEADING_LEVELS,
+} from '@udecode/plate-heading';
 import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
+import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
 import { BaseLinkPlugin } from '@udecode/plate-link';
-import { deserializeMd } from '@udecode/plate-markdown';
+import { MarkdownPlugin, deserializeMd } from '@udecode/plate-markdown';
+
+import {
+  TodoLiStatic,
+  TodoMarkerStatic,
+} from '@/registry/default/plate-ui/indent-todo-marker-static';
 
 import { BlockquoteElementStatic } from './blockquote-element-static';
 import { CodeBlockElementStatic } from './code-block-element-static';
@@ -39,7 +50,7 @@ import { HrElementStatic } from './hr-element-static';
 import { LinkElementStatic } from './link-element-static';
 import { ParagraphElementStatic } from './paragraph-element-static';
 
-const staticComponents = {
+const components = {
   [BaseBlockquotePlugin.key]: BlockquoteElementStatic,
   [BaseBoldPlugin.key]: withProps(SlateLeaf, { as: 'strong' }),
   [BaseCodeBlockPlugin.key]: CodeBlockElementStatic,
@@ -57,45 +68,69 @@ const staticComponents = {
   [HEADING_KEYS.h3]: withProps(HeadingElementStatic, { variant: 'h3' }),
 };
 
-export const AIChatEditor = memo(
-  ({
-    aiEditorRef,
-  }: {
-    aiEditorRef: React.MutableRefObject<SlateEditor | null>;
-  }) => {
-    const { getOptions } = useEditorPlugin(AIChatPlugin);
-    const lastAssistantMessage = useLastAssistantMessage();
-    const content = lastAssistantMessage?.content ?? '';
+const plugins = [
+  BaseBlockquotePlugin,
+  BaseBoldPlugin,
+  BaseCodeBlockPlugin,
+  BaseCodeLinePlugin,
+  BaseCodePlugin,
+  BaseCodeSyntaxPlugin,
+  BaseItalicPlugin,
+  BaseStrikethroughPlugin,
+  BaseUnderlinePlugin,
+  BaseHeadingPlugin,
+  BaseHorizontalRulePlugin,
+  BaseLinkPlugin,
+  BaseParagraphPlugin,
+  BaseIndentListPlugin.extend({
+    inject: {
+      targetPlugins: [
+        BaseParagraphPlugin.key,
+        ...HEADING_LEVELS,
+        BaseBlockquotePlugin.key,
+        BaseCodeBlockPlugin.key,
+      ],
+    },
+    options: {
+      listStyleTypes: {
+        todo: {
+          liComponent: TodoLiStatic,
+          markerComponent: TodoMarkerStatic,
+          type: 'todo',
+        },
+      },
+    },
+  }),
+  MarkdownPlugin.configure({ options: { indentList: true } }),
+];
 
-    const aiEditor = React.useMemo(() => {
-      const editor = getOptions().createAIEditor();
+export const AIChatEditor = memo(({ content }: { content: string }) => {
+  const { setOption } = useEditorPlugin(AIChatPlugin);
 
-      const fragment = deserializeMd(editor, content);
-      editor.children =
-        fragment.length > 0 ? fragment : editor.api.create.value();
+  const valueGetter = useCallback(
+    (editor: SlateEditor) => {
+      return deserializeMd(editor, content);
+    },
+    [content]
+  );
 
-      return editor;
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+  const aiEditor = useMemo(
+    () => createSlateEditor({ plugins, value: valueGetter }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
 
-    React.useEffect(() => {
-      if (aiEditor && content) {
-        aiEditorRef.current = aiEditor;
+  useEffect(() => {
+    setOption('aiEditor', aiEditor);
+    console.log('...');
+  }, [aiEditor, setOption]);
 
-        setTimeout(() => {
-          aiEditor.tf.setValue(deserializeMd(aiEditor, content));
-        }, 0);
-      }
-    }, [aiEditor, aiEditorRef, content]);
-
-    if (!content) return null;
-
-    return (
-      <EditorStatic
-        variant="aiChat"
-        components={staticComponents}
-        editor={aiEditor}
-      />
-    );
-  }
-);
+  return (
+    <EditorStatic
+      variant="aiChat"
+      value={valueGetter}
+      components={components}
+      editor={aiEditor}
+    />
+  );
+});

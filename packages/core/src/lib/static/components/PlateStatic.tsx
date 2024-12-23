@@ -7,6 +7,7 @@ import {
   type TElement,
   type TNodeEntry,
   type TText,
+  type Value,
   findNodePath,
   getRange,
   isElement,
@@ -15,6 +16,7 @@ import {
 } from '@udecode/slate';
 import clsx from 'clsx';
 import { type DecoratedRange, Range, Text } from 'slate';
+import { isElementDecorationsEqual, isTextDecorationsEqual } from 'slate-dom';
 
 import type { SlateEditor } from '../../editor';
 import type { NodeComponents } from '../../plugin';
@@ -24,7 +26,7 @@ import { pipeRenderElementStatic } from '../pipeRenderElementStatic';
 import { pipeRenderLeafStatic } from '../pluginRenderLeafStatic';
 import { pipeDecorate } from '../utils/pipeDecorate';
 
-function ElementStatic({
+function BaseElementStatic({
   components,
   decorate,
   decorations,
@@ -96,7 +98,17 @@ function ElementStatic({
   );
 }
 
-function LeafStatic({
+export const ElementStatic = React.memo(BaseElementStatic, (prev, next) => {
+  return (
+    prev.editor === next.editor &&
+    prev.components === next.components &&
+    prev.element === next.element &&
+    prev.decorate === next.decorate &&
+    isElementDecorationsEqual(prev.decorations, next.decorations)
+  );
+});
+
+function BaseLeafStatic({
   components,
   decorations,
   editor,
@@ -132,6 +144,15 @@ function LeafStatic({
     </span>
   );
 }
+
+export const LeafStatic = React.memo(BaseLeafStatic, (prev, next) => {
+  return (
+    prev.editor === next.editor &&
+    prev.components === next.components &&
+    prev.leaf === next.leaf &&
+    isTextDecorationsEqual(next.decorations, prev.decorations)
+  );
+});
 
 const defaultDecorate: (entry: TNodeEntry) => DecoratedRange[] = () => [];
 
@@ -195,10 +216,28 @@ export type PlateStaticProps = {
   components: NodeComponents;
   editor: SlateEditor;
   style?: React.CSSProperties;
+  /**
+   * The Slate value to render. If provided, we will set editor.children = value
+   * on each render (i.e. the data being rendered). Can be either a Value or a
+   * function that takes editor and returns Value.
+   */
+  value?: ((editor: SlateEditor) => Value) | Value;
 } & React.HTMLAttributes<HTMLDivElement>;
 
 export function PlateStatic(props: PlateStaticProps) {
-  const { className, components, editor, ...rest } = props;
+  const { className, components, editor, value, ...rest } = props;
+
+  // Whenever `value` changes, update `editor.children`
+  // so that the static renderer can display it
+  React.useEffect(() => {
+    if (value) {
+      const newValue = typeof value === 'function' ? value(editor) : value;
+
+      if (editor.children !== newValue) {
+        editor.children = newValue;
+      }
+    }
+  }, [value, editor]);
 
   const decorate = pipeDecorate(editor);
 

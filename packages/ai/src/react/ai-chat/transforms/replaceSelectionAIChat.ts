@@ -1,9 +1,12 @@
 import {
   type SlateEditor,
   type TElement,
+  type TNodeEntry,
+  findNode,
   getFirstNodeText,
   getNodeProps,
   isEditorEmpty,
+  isRangeContainsPath,
   isText,
   withNewBatch,
 } from '@udecode/plate-common';
@@ -15,6 +18,52 @@ import {
 import cloneDeep from 'lodash/cloneDeep.js';
 
 import type { AIChatPluginConfig } from '../AIChatPlugin';
+
+const createFormattedBlocks = ({
+  blocks,
+  format,
+  sourceBlock,
+}: {
+  blocks: TElement[];
+  format: 'all' | 'none' | 'single';
+  sourceBlock: TNodeEntry;
+}) => {
+  if (format === 'none') return cloneDeep(blocks);
+
+  const [sourceNode] = sourceBlock;
+  const firstTextEntry = getFirstNodeText(sourceNode as TElement);
+
+  if (!firstTextEntry) return null;
+
+  const blockProps = getNodeProps(sourceNode);
+  const textProps = getNodeProps(firstTextEntry[0]);
+
+  const applyTextFormatting = (node: any): any => {
+    if (isText(node)) {
+      return { ...textProps, ...node };
+    }
+    if (node.children) {
+      return {
+        ...node,
+        children: node.children.map(applyTextFormatting),
+      };
+    }
+
+    return node;
+  };
+
+  return blocks.map((block, index) => {
+    if (format === 'single' && index > 0) {
+      return block;
+    }
+
+    return {
+      ...block,
+      ...blockProps,
+      children: block.children.map(applyTextFormatting),
+    };
+  });
+};
 
 export const replaceSelectionAIChat = (
   editor: PlateEditor,
@@ -32,6 +81,30 @@ export const replaceSelectionAIChat = (
 
   // If no blocks selected, treat it like a normal selection replacement
   if (!isBlockSelecting) {
+    const firstBlock = findNode(editor, {
+      block: true,
+      mode: 'lowest',
+    });
+
+    if (firstBlock) {
+      const isFullySelected = isRangeContainsPath(editor, firstBlock[1]);
+
+      if (isFullySelected && format !== 'none') {
+        const formattedBlocks = createFormattedBlocks({
+          blocks: cloneDeep(sourceEditor.children),
+          format,
+          sourceBlock: firstBlock,
+        });
+
+        if (!formattedBlocks) return;
+
+        editor.insertFragment(formattedBlocks);
+        focusEditor(editor);
+
+        return;
+      }
+    }
+
     editor.insertFragment(sourceEditor.children);
     focusEditor(editor);
 
@@ -47,6 +120,8 @@ export const replaceSelectionAIChat = (
   if (format === 'none' || (format === 'single' && selectedBlocks.length > 1)) {
     editor.withoutNormalizing(() => {
       removeBlockSelectionNodes(editor);
+
+      console.log(sourceEditor.children, selectedBlocks[0][1]);
 
       withNewBatch(editor, () => {
         editor
@@ -68,45 +143,22 @@ export const replaceSelectionAIChat = (
   // Apply formatting from first block when:
   // - formatting is 'all', or
   // - only one block is selected
-  const [firstBlockNode, firstBlockPath] = selectedBlocks[0];
-  const firstBlockProps = getNodeProps(firstBlockNode);
+  const [, firstBlockPath] = selectedBlocks[0];
+  const formattedBlocks = createFormattedBlocks({
+    blocks: cloneDeep(sourceEditor.children),
+    format,
+    sourceBlock: selectedBlocks[0],
+  });
 
-  // Get formatting from first text node
-  const firstTextEntry = getFirstNodeText(firstBlockNode as TElement);
-
-  if (!firstTextEntry) return;
-
-  const textProps = getNodeProps(firstTextEntry[0]);
-
-  // Apply text props recursively to text nodes
-  const applyTextProps = (node: any): any => {
-    if (isText(node)) {
-      return { ...textProps, ...node };
-    }
-    if (node.children) {
-      return {
-        ...node,
-        children: node.children.map(applyTextProps),
-      };
-    }
-
-    return node;
-  };
+  if (!formattedBlocks) return;
 
   editor.withoutNormalizing(() => {
     removeBlockSelectionNodes(editor);
 
     withNewBatch(editor, () => {
-      // Create new blocks with first block's formatting
-      const newBlocks = cloneDeep(sourceEditor.children).map((block) => ({
-        ...block,
-        ...firstBlockProps,
-        children: block.children.map(applyTextProps),
-      }));
-
       editor
         .getTransforms(BlockSelectionPlugin)
-        .blockSelection.insertBlocksAndSelect(newBlocks, {
+        .blockSelection.insertBlocksAndSelect(formattedBlocks, {
           at: firstBlockPath,
         });
     });
