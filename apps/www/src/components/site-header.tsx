@@ -7,6 +7,7 @@ import { Button } from '@/registry/default/plate-ui/button';
 
 import { CommandMenu } from './command-menu';
 import { Icons } from './icons';
+import { LanguagesDropdownMenu } from './languages-dropdown-menu';
 import { MainNav } from './main-nav';
 import { MobileNav } from './mobile-nav';
 
@@ -80,6 +81,7 @@ export function SiteHeader() {
               </Link>
             </Button>
             <ModeSwitcher />
+            <LanguagesDropdownMenu />
           </nav>
         </div>
       </div>

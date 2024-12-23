@@ -1,6 +1,10 @@
 export const siteConfig = {
   author: 'zbeyens',
   description: 'The rich-text editor framework for React.',
+  languages: {
+    cn: 'https://cn.platejs.org',
+    en: 'https://platejs.org',
+  },
   links: {
     discord: 'https://discord.gg/mAZRuBzGM3',
     github: 'https://github.com/udecode/plate',
