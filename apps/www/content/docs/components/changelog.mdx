@@ -10,6 +10,13 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 
 ## December 2024 #17
 
+### December 23 #17.5
+
+- `table-element`: fix selection
+- before: `isSelectingCell && '[&_*::selection]:bg-none'`
+- after: `isSelectingCell && '[&_*::selection]:!bg-transparent'`
+
+
 ### December 21 #17.4
 
 Update `tailwind.config.cjs` for better font support in the HTML export:
