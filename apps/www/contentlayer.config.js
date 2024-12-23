@@ -103,6 +103,7 @@ const getContentDirPath = () => {
   };
 
   const language = process.env.NEXT_PUBLIC_LANGUAGE;
+  console.log('🚀 ~ getContentDirPath ~ language:', language);
 
   return languageToPath[language] ?? './content/en';
 };
