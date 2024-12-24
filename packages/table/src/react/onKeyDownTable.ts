@@ -1,10 +1,14 @@
+import { TableRowPlugin } from '@udecode/plate/react';
 import {
   type TElement,
+  collapseSelection,
   getAboveNode,
+  isExpanded,
   isHotkey,
   select,
 } from '@udecode/plate-common';
 import { type KeyboardHandler, Hotkeys } from '@udecode/plate-common/react';
+import { type BaseEditor, Editor } from 'slate';
 
 import {
   type TableConfig,
@@ -21,6 +25,30 @@ export const onKeyDownTable: KeyboardHandler<TableConfig> = ({
   type,
 }) => {
   if (event.defaultPrevented) return;
+
+  const compositeKeyCode = 229;
+
+  if (
+    event.which === compositeKeyCode &&
+    editor.selection &&
+    isExpanded(editor.selection)
+  ) {
+    // fix the exception of inputting Chinese when selecting multiple cells
+    const trElements = Array.from(
+      Editor.nodes(editor as BaseEditor, {
+        at: editor.selection,
+        match: (n) => n.type === TableRowPlugin.key,
+      })
+    );
+
+    if (trElements.length > 0) {
+      collapseSelection(editor, {
+        edge: 'end',
+      });
+
+      return;
+    }
+  }
 
   const isKeyDown: any = {
     'shift+down': isHotkey('shift+down', event),
