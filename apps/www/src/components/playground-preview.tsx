@@ -9,6 +9,7 @@ import type { ImperativePanelHandle } from 'react-resizable-panels';
 import { cn } from '@udecode/cn';
 
 import { useLiftMode } from '@/hooks/use-lift-mode';
+import { useLocale } from '@/hooks/useLocale';
 import PlaygroundDemo from '@/registry/default/example/playground-demo';
 
 import { PlaygroundPreviewToolbar } from './playground-preview-toolbar';
@@ -19,10 +20,13 @@ import {
   ResizablePanelGroup,
 } from './ui/resizable';
 
-const block: any = {
-  description: 'An AI editor',
-  name: 'editor-ai',
-  src: '/blocks/playground',
+const i18n = {
+  cn: {
+    description: 'AI 编辑器',
+  },
+  en: {
+    description: 'An AI editor',
+  },
 };
 
 // TODO: sync
@@ -33,6 +37,15 @@ export function PlaygroundPreview({
 }: {
   block?: Block;
 } & ComponentProps<'div'>) {
+  const locale = useLocale();
+  const content = i18n[locale as keyof typeof i18n];
+
+  const block: any = {
+    description: content.description,
+    name: 'editor-ai',
+    src: '/blocks/playground',
+  };
+
   const { isLiftMode } = useLiftMode(block.name);
   // const [isLoading, setIsLoading] = React.useState(true);
   const ref = React.useRef<ImperativePanelHandle>(null);
@@ -73,7 +86,9 @@ export function PlaygroundPreview({
         >
           <div className="chunk-mode relative z-20 w-full bg-background">
             <ThemeWrapper>
-              <PlaygroundDemo className="h-[650px]" />
+              <React.Suspense fallback={null}>
+                <PlaygroundDemo className="h-[650px]" />
+              </React.Suspense>
             </ThemeWrapper>
           </div>
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 
 import type { SidebarNavItem } from '@/types/nav';
 
@@ -12,7 +12,48 @@ import { H3 } from '@/components/typography';
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { getDocIcon } from '@/config/docs-icons';
 import { categoryNavGroups, docSections } from '@/config/docs-utils';
+import { useLocale } from '@/hooks/useLocale';
+import { hrefWithLocale } from '@/lib/withLocale';
 import { Input } from '@/registry/default/plate-ui/input';
+
+export function NavItemCard({
+  category,
+  item,
+}: {
+  category: string;
+  item: SidebarNavItem;
+}) {
+  const locale = useLocale();
+  const Icon = getDocIcon(item, category);
+
+  return (
+    <Link
+      key={item.href}
+      className="rounded-lg"
+      href={hrefWithLocale(item.href!, locale)}
+    >
+      <Card className="h-full bg-muted/30 transition-shadow duration-200 hover:shadow-md">
+        <CardContent className="flex gap-2 p-2">
+          {Icon && (
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-lg border bg-white">
+              <Icon className="size-5 text-neutral-800" />
+            </div>
+          )}
+          <div className="space-y-0">
+            <CardTitle className="mt-0.5 line-clamp-1 text-base font-medium">
+              {item.title}
+            </CardTitle>
+            {item.description && (
+              <p className="line-clamp-1 text-sm text-muted-foreground">
+                {item.description}
+              </p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
+  );
+}
 
 export function NavItemsGrid({
   category,
@@ -62,39 +103,17 @@ export function NavItemsGrid({
         {filteredItems.map((group, index) => (
           <div key={index}>
             {group.title && <H3 className="mb-4">{group.title}</H3>}
-            <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
-              {group.items?.map((item) => {
-                const Icon = getDocIcon(item, category);
-
-                return (
-                  <Link
+            <Suspense fallback={null}>
+              <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
+                {group.items?.map((item) => (
+                  <NavItemCard
                     key={item.href}
-                    className="rounded-lg"
-                    href={item.href!}
-                  >
-                    <Card className="h-full bg-muted/30 transition-shadow duration-200 hover:shadow-md">
-                      <CardContent className="flex gap-2 p-2">
-                        {Icon && (
-                          <div className="flex size-12 shrink-0 items-center justify-center rounded-lg border bg-white">
-                            <Icon className="size-5 text-neutral-800" />
-                          </div>
-                        )}
-                        <div className="space-y-0">
-                          <CardTitle className="mt-0.5 line-clamp-1 text-base font-medium">
-                            {item.title}
-                          </CardTitle>
-                          {item.description && (
-                            <p className="line-clamp-1 text-sm text-muted-foreground">
-                              {item.description}
-                            </p>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                );
-              })}
-            </div>
+                    category={category}
+                    item={item}
+                  />
+                ))}
+              </div>
+            </Suspense>
           </div>
         ))}
       </div>

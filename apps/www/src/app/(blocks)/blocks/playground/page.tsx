@@ -1,3 +1,5 @@
+import { Suspense } from 'react';
+
 import type { Block } from '@/registry/schema';
 
 import { cn } from '@udecode/cn';
@@ -18,7 +20,9 @@ export default function PlaygroundPage() {
       className={cn('themes-wrapper bg-background', block.container?.className)}
     >
       {/* <BlockWrapper block={block}> */}
-      <PlaygroundDemo className="h-dvh" />
+      <Suspense fallback={null}>
+        <PlaygroundDemo className="h-dvh" />
+      </Suspense>
       {/* {chunks?.map((chunk, index) => (
           <BlockChunk
             key={chunk.name}

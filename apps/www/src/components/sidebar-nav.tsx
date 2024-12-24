@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { Suspense, useState } from 'react';
 
 import type { DocsConfig } from '@/config/docs';
 import type { SidebarNavItem } from '@/types/nav';
@@ -17,6 +17,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { useLocale } from '@/hooks/useLocale';
+import { hrefWithLocale } from '@/lib/withLocale';
 import { Input } from '@/registry/default/plate-ui/input';
 
 export interface DocsSidebarNavProps {
@@ -118,15 +120,17 @@ export function DocsSidebarNav({ config }: DocsSidebarNavProps) {
                     )}
                   </div>
                 </AccordionTrigger>
-                <AccordionContent className="mt-1">
-                  {section?.items?.length && (
-                    <DocsSidebarNavItems
-                      className="[&_a]:px-0"
-                      items={section.items}
-                      pathname={pathname}
-                    />
-                  )}
-                </AccordionContent>
+                <Suspense fallback={null}>
+                  <AccordionContent className="mt-1">
+                    {section?.items?.length && (
+                      <DocsSidebarNavItems
+                        className="[&_a]:px-0"
+                        items={section.items}
+                        pathname={pathname}
+                      />
+                    )}
+                  </AccordionContent>
+                </Suspense>
               </AccordionItem>
             );
           }
@@ -154,10 +158,12 @@ export function DocsSidebarNav({ config }: DocsSidebarNavProps) {
                 )}
               </h4>
               {section?.items?.length && (
-                <DocsSidebarNavItems
-                  items={section.items}
-                  pathname={pathname}
-                />
+                <Suspense fallback={null}>
+                  <DocsSidebarNavItems
+                    items={section.items}
+                    pathname={pathname}
+                  />
+                </Suspense>
               )}
             </div>
           );
@@ -178,6 +184,8 @@ export function DocsSidebarNavItems({
   items,
   pathname,
 }: DocsSidebarNavItemsProps) {
+  const locale = useLocale();
+
   return items?.length ? (
     <div
       className={cn(
@@ -192,11 +200,11 @@ export function DocsSidebarNavItems({
               className={cn(
                 'group flex w-full items-center px-2 py-1 font-normal text-foreground underline-offset-2 hover:underline',
                 item.disabled && 'cursor-not-allowed opacity-60',
-                pathname === item.href
+                pathname === item.href || pathname === `/cn${item.href}`
                   ? 'font-medium text-foreground'
                   : 'text-muted-foreground'
               )}
-              href={item.href}
+              href={hrefWithLocale(item.href, locale)}
               rel={item.external ? 'noreferrer' : ''}
               target={item.external ? '_blank' : ''}
             >

@@ -1,0 +1,205 @@
+---
+title: Indent
+docs:
+  - route: /docs/components/indent-toolbar-button
+    title: Indent Toolbar Button
+  - route: /docs/components/outdent-toolbar-button
+    title: Outdent Toolbar Button
+---
+
+<ComponentPreview name="indent-demo" />
+
+<PackageInfo>
+
+## 功能特点
+
+- **核心功能**:
+
+  - 缩进/减少任何块级元素的缩进
+  - Tab/Shift+Tab 键盘快捷键
+  - 清晰的 DOM 结构
+
+- **自定义选项**:
+  - 定义目标块类型
+  - 设置缩进大小和单位
+  - 控制最大缩进深度
+  - 自定义 CSS 样式
+
+关于列表特定功能，请参见 [缩进列表插件](/docs/indent-list)。
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-indent
+```
+
+## Usage
+
+```tsx
+import { IndentPlugin } from '@udecode/plate-indent/react';
+import { HEADING_KEYS } from '@udecode/plate-heading';
+import { HeadingPlugin } from '@udecode/plate-heading/react';
+import { ParagraphPlugin } from '@udecode/plate-common/react';
+
+const plugins = [
+  // ...otherPlugins,
+  HeadingPlugin,
+  IndentPlugin.configure({
+    inject: {
+      targetPlugins: [ParagraphPlugin.key, HEADING_KEYS.h1],
+    },
+  }),
+];
+```
+
+## 插件
+
+### IndentPlugin
+
+<APIOptions>
+<APIItem name="offset" type="number" optional>
+在 `(offset * element.indent) + unit` 中使用的缩进偏移量。
+
+- **默认值:** `40`
+
+</APIItem>
+<APIItem name="unit" type="string" optional>
+在 `(offset * element.indent) + unit` 中使用的缩进单位。
+
+- **默认值:** `'px'`
+
+</APIItem>
+<APIItem name="indentMax" type="number" optional>
+可以应用于元素的最大缩进次数。
+</APIItem>
+</APIOptions>
+
+## API
+
+### indent
+
+缩进编辑器中选中的块。
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    编辑器实例。
+  </APIItem>
+  <APIItem name="options" type="SetIndentOptions" optional>
+    选项
+  </APIItem>
+</APIParameters>
+
+### outdent
+
+减少选中块的缩进。
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    编辑器实例。
+  </APIItem>
+  <APIItem name="options" type="SetIndentOptions" optional>
+    选项
+  </APIItem>
+</APIParameters>
+
+### setIndent
+
+为选中块的缩进添加偏移量。
+
+<APIParameters>
+<APIItem name="editor" type="PlateEditor">
+编辑器实例。
+</APIItem>
+<APIItem name="options" type="SetIndentOptions" optional>
+<APISubList>
+<APISubListItem parent="options" name="offset" type="number" optional>
+在 `(offset * element.indent) + unit` 中使用的缩进偏移量。
+
+- **默认值:** `1`
+
+</APISubListItem>
+<APISubListItem
+  parent="options"
+  name="getNodesOptions"
+  type="GetNodeEntriesOptions & UnhangRangeOptions"
+  optional
+>
+获取要缩进的节点的选项。
+</APISubListItem>
+<APISubListItem
+  parent="options"
+  name="setNodesProps"
+  types="object"
+  optional
+>
+要在缩进节点上设置的其他属性。
+</APISubListItem>
+<APISubListItem
+  parent="options"
+  name="unsetNodesProps"
+  types="string[]"
+  optional
+>
+要在缩进节点上取消设置的其他属性。
+
+- **默认值:** `[]`
+
+</APISubListItem>
+</APISubList>
+
+</APIItem>
+</APIParameters>
+
+### SetIndentOptions
+
+用于提供设置文本块缩进的选项。
+
+<APIState>
+  <APIItem name="offset" type="number">
+    定义缩进的变化。值为 1 时增加缩进（缩进块），值为 -1 时减少缩进（减少缩进）。默认情况下，偏移量设置为 1。
+  </APIItem>
+  <APIItem
+    name="getNodesOptions"
+    type="GetNodeEntriesOptions&lt;V&gt; &amp; UnhangRangeOptions"
+  >
+    额外的 `getNodes` 选项。
+  </APIItem>
+  <APIItem name="setNodesProps" type="function">
+    额外的 `setNodes` 选项。
+  </APIItem>
+  <APIItem name="unsetNodesProps" type="string[]">
+    当缩进为 0 时应取消设置的属性名称列表。
+  </APIItem>
+</APIState>
+
+## API 组件
+
+### useIndentButton
+
+缩进按钮组件的行为钩子。
+
+<APIReturns>
+  <APIItem name="props" type="object">
+    <APISubList>
+      <APISubListItem parent="props" name="onClick" type="function">
+        处理按钮点击事件的回调函数。它会缩进编辑器中选中的内容并使编辑器获得焦点。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+
+### useOutdentButton
+
+减少缩进按钮组件的行为钩子。
+
+<APIReturns>
+  <APIItem name="props" type="object">
+    <APISubList>
+      <APISubListItem parent="props" name="onClick" type="function">
+        处理按钮点击事件的回调函数。它会减少编辑器中选中内容的缩进并使编辑器获得焦点。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
