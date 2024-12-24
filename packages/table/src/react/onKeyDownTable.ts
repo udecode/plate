@@ -3,12 +3,12 @@ import {
   type TElement,
   collapseSelection,
   getAboveNode,
+  getNodeEntries,
   isExpanded,
   isHotkey,
   select,
 } from '@udecode/plate-common';
 import { type KeyboardHandler, Hotkeys } from '@udecode/plate-common/react';
-import { type BaseEditor, Editor } from 'slate';
 
 import {
   type TableConfig,
@@ -35,10 +35,9 @@ export const onKeyDownTable: KeyboardHandler<TableConfig> = ({
   ) {
     // fix the exception of inputting Chinese when selecting multiple cells
     const trElements = Array.from(
-      Editor.nodes(editor as BaseEditor, {
+      getNodeEntries(editor, {
         at: editor.selection,
-        // @ts-ignore
-        match: (n) => n.type === TableRowPlugin.key,
+        match: { type: TableRowPlugin.key },
       })
     );
 
