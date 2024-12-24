@@ -17,12 +17,21 @@ export function LanguagesDropdownMenu() {
   const handleClick = (locale?: string) => {
     const url = new URL(window.location.href);
 
-    if (pathname) {
-      url.pathname = pathname;
-    }
     if (locale) {
+      if (pathname?.includes(locale)) {
+        return;
+      }
+
+      url.pathname = `/${locale}${pathname}`;
       url.searchParams.set('locale', locale);
     } else {
+      if (!pathname?.includes('cn')) return;
+      if (pathname) {
+        const isHomePage = pathname.split('/').filter((p) => !!p).length === 1;
+
+        url.pathname = isHomePage ? '/' : (pathname.split('/').at(-1) ?? '/');
+      }
+
       url.searchParams.delete('locale');
     }
 
