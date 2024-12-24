@@ -39,7 +39,8 @@ const i18n = {
     potionDescription: 'A Notion-like AI template.',
   },
 };
-type SearchParams = Promise<{
+
+export type SearchParams = Promise<{
   locale: string;
 }>;
 

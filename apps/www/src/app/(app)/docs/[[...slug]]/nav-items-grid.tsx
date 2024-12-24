@@ -13,6 +13,7 @@ import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { getDocIcon } from '@/config/docs-icons';
 import { categoryNavGroups, docSections } from '@/config/docs-utils';
 import { useLocale } from '@/hooks/useLocale';
+import { hrefWithLocale } from '@/lib/withLocale';
 import { Input } from '@/registry/default/plate-ui/input';
 
 export function NavItemsGrid({
@@ -72,7 +73,7 @@ export function NavItemsGrid({
                   <Link
                     key={item.href}
                     className="rounded-lg"
-                    href={`${item.href}${locale === 'en' ? '' : `?locale=${locale}`}`}
+                    href={hrefWithLocale(item.href!, locale)}
                   >
                     <Card className="h-full bg-muted/30 transition-shadow duration-200 hover:shadow-md">
                       <CardContent className="flex gap-2 p-2">

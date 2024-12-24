@@ -8,6 +8,7 @@ import { usePathname } from 'next/navigation';
 
 import { siteConfig } from '@/config/site';
 import { useLocale } from '@/hooks/useLocale';
+import { hrefWithLocale } from '@/lib/withLocale';
 
 import { Icons } from './icons';
 
@@ -36,7 +37,7 @@ export function MainNav() {
     <div className="mr-4 hidden md:flex">
       <Link
         className="mr-4 flex items-center gap-2 lg:mr-6"
-        href={`/${locale === 'en' ? '' : `?locale=${locale}`}`}
+        href={hrefWithLocale('/', locale)}
       >
         <Icons.minus className="size-6" />
         <span className="hidden items-center font-bold lg:inline-flex">
@@ -51,7 +52,7 @@ export function MainNav() {
               ? 'font-medium text-foreground'
               : 'text-foreground/80'
           )}
-          href={`/docs${locale === 'en' ? '' : `?locale=${locale}`}`}
+          href={hrefWithLocale('/docs', locale)}
         >
           {content.docs}
         </Link>
@@ -62,7 +63,7 @@ export function MainNav() {
               ? 'font-medium text-foreground'
               : 'text-foreground/80'
           )}
-          href="/docs/components/introduction"
+          href={hrefWithLocale('/docs/components/introduction', locale)}
         >
           {content.components}
         </Link>
@@ -73,7 +74,7 @@ export function MainNav() {
               ? 'font-medium text-foreground'
               : 'text-foreground/80'
           )}
-          href="/editors"
+          href={hrefWithLocale('/editors', locale)}
         >
           {content.editors}
         </Link>
