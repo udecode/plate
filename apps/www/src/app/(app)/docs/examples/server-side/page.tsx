@@ -1,3 +1,4 @@
+import type { SearchParams } from '@/app/(app)/page';
 import type { TCodeBlockElement } from '@udecode/plate-code-block';
 import type { TElement } from '@udecode/plate-common';
 
@@ -93,12 +94,16 @@ const i18n = {
   },
 };
 
-export default function RSCPage({
+type SearchParams = Promise<{
+  locale: string;
+}>;
+
+export default async function RSCPage({
   searchParams,
 }: {
-  searchParams: { locale: string };
+  searchParams: SearchParams;
 }) {
-  const locale = searchParams.locale || 'en';
+  const locale = (await searchParams).locale || 'en';
   const content = i18n[locale as keyof typeof i18n];
   const editor = createSlateEditor({
     plugins: [
