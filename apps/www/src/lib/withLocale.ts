@@ -1,3 +1,3 @@
 export const hrefWithLocale = (href: string, locale: string) => {
-  return `${href}${locale === 'en' ? '' : `?locale=${locale}`}`;
+  return `${locale === 'en' ? '' : `/cn`}${href}${locale === 'en' ? '' : `?locale=${locale}`}`;
 };

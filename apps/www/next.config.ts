@@ -40,14 +40,14 @@ const nextConfig = async (phase: string) => {
     reactStrictMode: true,
 
     // eslint-disable-next-line @typescript-eslint/require-await
-    // rewrites: async () => {
-    //   return [
-    //     {
-    //       destination: '/:path*?locale=cn', // Rewrite it to the corresponding path without /cn
-    //       source: '/cn/:path*', // Match any path under /cn
-    //     },
-    //   ];
-    // },
+    rewrites: async () => {
+      return [
+        {
+          destination: '/:path*?locale=cn', // Rewrite it to the corresponding path without /cn
+          source: '/cn/:path*', // Match any path under /cn
+        },
+      ];
+    },
 
     // typescript: {
     //   ignoreBuildErrors: true,
