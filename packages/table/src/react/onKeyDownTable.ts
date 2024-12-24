@@ -13,6 +13,7 @@ import { type KeyboardHandler, Hotkeys } from '@udecode/plate-common/react';
 import {
   type TableConfig,
   KEY_SHIFT_EDGES,
+  getCellTypes,
   getNextTableCell,
   getPreviousTableCell,
   getTableEntries,
@@ -38,7 +39,7 @@ export const onKeyDownTable: KeyboardHandler<TableConfig> = ({
     const tdEntries = Array.from(
       getNodeEntries(editor, {
         at: editor.selection,
-        match: { type: TableCellPlugin.key },
+        match: { type: getCellTypes(editor) },
       })
     );
 
