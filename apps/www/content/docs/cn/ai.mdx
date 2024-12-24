@@ -1,0 +1,441 @@
+---
+title: AI
+docs:
+  - route: https://pro.platejs.org/docs/examples/ai
+    title: AI
+---
+
+<ComponentPreview name="ai-demo" />
+
+<PackageInfo>
+
+## 功能特性
+
+- 预定义命令的组合框菜单：
+  - 生成：继续写作、添加摘要、解释
+  - 编辑：改进写作、加长或缩短、修正拼写和语法、简化语言
+- 三种触发模式：
+  - 光标模式：在块末尾触发
+  - 选择模式：使用选中的文本触发
+  - 块选择模式：使用选中的块触发
+- 在预览或直接编辑器插入中流式响应
+- Markdown 支持
+- 内置支持 Vercel AI SDK chat API
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-ai @udecode/plate-selection @udecode/plate-markdown @udecode/plate-basic-marks
+```
+
+## 使用方法
+
+### 插件
+
+```tsx
+import { AIChatPlugin, AIPlugin } from '@udecode/plate-ai/react';
+import {
+  BaseBoldPlugin,
+  BaseCodePlugin,
+  BaseItalicPlugin,
+  BaseStrikethroughPlugin,
+  BaseUnderlinePlugin,
+} from '@udecode/plate-basic-marks';
+import { BaseBlockquotePlugin } from '@udecode/plate-block-quote';
+import {
+  BaseCodeBlockPlugin,
+  BaseCodeLinePlugin,
+  BaseCodeSyntaxPlugin,
+} from '@udecode/plate-code-block';
+import { BaseParagraphPlugin, createSlateEditor } from '@udecode/plate-common';
+import { BaseHeadingPlugin, HEADING_LEVELS } from '@udecode/plate-heading';
+import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
+import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
+import { BaseLinkPlugin } from '@udecode/plate-link';
+import { MarkdownPlugin } from '@udecode/plate-markdown';
+```
+
+```tsx
+export const createAIEditor = () => {
+  const editor = createSlateEditor({
+    id: 'ai',
+    plugins: [
+      BaseBlockquotePlugin,
+      BaseBoldPlugin,
+      BaseCodeBlockPlugin,
+      BaseCodeLinePlugin,
+      BaseCodePlugin,
+      BaseCodeSyntaxPlugin,
+      BaseItalicPlugin,
+      BaseStrikethroughPlugin,
+      BaseUnderlinePlugin,
+      BaseHeadingPlugin,
+      BaseHorizontalRulePlugin,
+      BaseLinkPlugin,
+      BaseParagraphPlugin,
+      BaseIndentListPlugin.extend({
+        inject: {
+          targetPlugins: [
+            BaseParagraphPlugin.key,
+            ...HEADING_LEVELS,
+            BaseBlockquotePlugin.key,
+            BaseCodeBlockPlugin.key,
+          ],
+        },
+        options: {
+          listStyleTypes: {
+            todo: {
+              liComponent: TodoLiStatic,
+              markerComponent: TodoMarkerStatic,
+              type: 'todo',
+            },
+          },
+        },
+      }),
+      MarkdownPlugin.configure({ options: { indentList: true } }),
+    ],
+  });
+
+
+  return editor;
+};
+
+const systemCommon = `\
+You are an advanced AI-powered note-taking assistant, designed to enhance productivity and creativity in note management.
+Respond directly to user prompts with clear, concise, and relevant content. Maintain a neutral, helpful tone.
+
+Rules:
+- <Document> is the entire note the user is working on.
+- <Reminder> is a reminder of how you should reply to INSTRUCTIONS. It does not apply to questions.
+- Anything else is the user prompt.
+- Your response should be tailored to the user's prompt, providing precise assistance to optimize note management.
+- For INSTRUCTIONS: Follow the <Reminder> exactly. Provide ONLY the content to be inserted or replaced. No explanations or comments.
+- For QUESTIONS: Provide a helpful and concise answer. You may include brief explanations if necessary.
+- CRITICAL: Distinguish between INSTRUCTIONS and QUESTIONS. Instructions typically ask you to modify or add content. Questions ask for information or clarification.
+`;
+
+const systemDefault = `\
+${systemCommon}
+- <Block> is the current block of text the user is working on.
+- Ensure your output can seamlessly fit into the existing <Block> structure.
+- CRITICAL: Provide only a single block of text. DO NOT create multiple paragraphs or separate blocks.
+<Block>
+{block}
+</Block>
+`;
+
+const systemSelecting = `\
+${systemCommon}
+- <Block> is the block of text containing the user's selection, providing context.
+- Ensure your output can seamlessly fit into the existing <Block> structure.
+- <Selection> is the specific text the user has selected in the block and wants to modify or ask about.
+- Consider the context provided by <Block>, but only modify <Selection>. Your response should be a direct replacement for <Selection>.
+<Block>
+{block}
+</Block>
+<Selection>
+{selection}
+</Selection>
+`;
+
+const systemBlockSelecting = `\
+${systemCommon}
+- <Selection> represents the full blocks of text the user has selected and wants to modify or ask about.
+- Your response should be a direct replacement for the entire <Selection>.
+- Maintain the overall structure and formatting of the selected blocks, unless explicitly instructed otherwise.
+- CRITICAL: Provide only the content to replace <Selection>. Do not add additional blocks or change the block structure unless specifically requested.
+<Selection>
+{block}
+</Selection>
+`;
+
+const userDefault = `<Reminder>
+CRITICAL: DO NOT use block formatting. You can only use inline formatting.
+CRITICAL: DO NOT start new lines or paragraphs.
+NEVER write <Block>.
+</Reminder>
+{prompt}`;
+
+const userSelecting = `<Reminder>
+If this is a question, provide a helpful and concise answer about <Selection>.
+If this is an instruction, provide ONLY the text to replace <Selection>. No explanations.
+Ensure it fits seamlessly within <Block>. If <Block> is empty, write ONE random sentence.
+NEVER write <Block> or <Selection>.
+</Reminder>
+{prompt} about <Selection>`;
+
+const userBlockSelecting = `<Reminder>
+If this is a question, provide a helpful and concise answer about <Selection>.
+If this is an instruction, provide ONLY the content to replace the entire <Selection>. No explanations.
+Maintain the overall structure unless instructed otherwise.
+NEVER write <Block> or <Selection>.
+</Reminder>
+{prompt} about <Selection>`;
+
+export const PROMPT_TEMPLATES = {
+  systemBlockSelecting,
+  systemDefault,
+  systemSelecting,
+  userBlockSelecting,
+  userDefault,
+  userSelecting,
+};
+
+const plugins = [
+  // ...otherPlugins,
+  MarkdownPlugin.configure({ options: { indentList: true } }),
+  AIPlugin,
+  AIChatPlugin.configure({
+    options: {
+      createAIEditor,
+      promptTemplate: ({ isBlockSelecting, isSelecting }) => {
+        return isBlockSelecting
+          ? PROMPT_TEMPLATES.userBlockSelecting
+          : isSelecting
+            ? PROMPT_TEMPLATES.userSelecting
+            : PROMPT_TEMPLATES.userDefault;
+      },
+      systemTemplate: ({ isBlockSelecting, isSelecting }) => {
+        return isBlockSelecting
+          ? PROMPT_TEMPLATES.systemBlockSelecting
+          : isSelecting
+            ? PROMPT_TEMPLATES.systemSelecting
+            : PROMPT_TEMPLATES.systemDefault;
+      },
+    },
+    render: { afterEditable: () => <AIMenu /> },
+  }),
+];
+```
+
+- [AIMenu](/docs/components/ai-menu)
+
+### AI SDK
+
+此插件依赖于 [ai](https://npmjs.com/package/ai) 包:
+
+- 使用 [streamText](https://sdk.vercel.ai/docs/ai-sdk-core/generating-text#streamtext) 设置一个[路由处理程序](https://sdk.vercel.ai/docs/getting-started/nextjs-app-router#create-a-route-handler)。
+- 在你的 [AI 菜单](/docs/components/ai-menu) 组件中连接 [useChat](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat)。
+
+## 键盘快捷键
+
+<KeyTable>
+  <KeyTableItem hotkey="Space">
+    在空白块中打开 AI 菜单（光标模式）
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + J">
+    打开 AI 菜单（光标或选择模式）
+  </KeyTableItem>
+  <KeyTableItem hotkey="Escape">关闭 AI 菜单</KeyTableItem>
+</KeyTable>
+
+## 示例
+
+### Plate UI
+
+参考上面的预览。
+
+### Plate Plus
+
+<ComponentPreviewPro name="ai-pro" />
+
+## 插件
+
+### AIPlugin
+
+使编辑器扩展 AI 转换功能。
+
+### AIChatPlugin
+
+在编辑器中启用聊天操作和流式文本生成。
+
+<APIOptions>
+<APIItem name="chat" type="UseChatHelpers">
+  由 [useChat](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat) 返回的聊天助手。
+</APIItem>
+
+<APIItem name="createAIEditor" type="() => PlateEditor" optional>
+  
+创建预览模式编辑器实例的函数。
+
+- **默认值：** 创建一个带有 id 'ai' 的基础编辑器
+
+</APIItem>
+
+<APIItem name="mode" type="'chat' | 'insert'" optional>
+
+指定如何处理助手消息：
+
+- `'chat'`：显示带有接受/拒绝选项的预览（默认）
+- `'insert'`：直接将内容插入编辑器
+- **默认值：** `'chat'`
+
+</APIItem>
+
+<APIItem name="open" type="boolean" optional>
+
+AI 聊天是否打开。
+
+- **默认值：** `false`
+
+</APIItem>
+
+<APIItem name="promptTemplate" type="(props: EditorPromptParams) => string" optional>
+  
+生成提示的模板。支持占位符：
+
+- `{block}`：选择中块的 Markdown
+- `{editor}`：整个编辑器内容的 Markdown
+- `{selection}`：当前选择的 Markdown
+- `{prompt}`：实际用户提示
+- **默认值：** `'{prompt}'`
+
+</APIItem>
+
+<APIItem name="systemTemplate" type="(props: EditorPromptParams) => string | void" optional>
+
+系统消息的模板。支持与 `promptTemplate` 相同的占位符。
+
+- **默认值：** `undefined`
+
+</APIItem>
+</APIOptions>
+
+## API
+
+### api.aiChat.accept()
+
+接受当前 AI 建议：
+
+- 从内容中移除 AI 标记
+- 隐藏 AI 聊天界面
+- 聚焦编辑器
+
+### api.aiChat.insertBelow()
+
+在当前块下方插入 AI 内容。
+
+<APIParameters>
+  <APIItem name="sourceEditor" type="PlateEditor">
+    包含要插入内容的编辑器。
+  </APIItem>
+</APIParameters>
+
+处理块选择和普通选择模式：
+
+- 在块选择中：在最后选择的块后插入
+- 在普通选择中：在当前块后插入
+
+### api.aiChat.replaceSelection()
+
+用 AI 内容替换当前选择。
+
+<APIParameters>
+  <APIItem name="sourceEditor" type="PlateEditor">
+    包含要替换内容的编辑器。
+  </APIItem>
+  <APIItem name="options" type="object" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="forceUniformFormatting" type="boolean" optional>
+        当为 true 时，将第一个块的格式应用于所有插入的块。默认为 false。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+处理不同的选择模式：
+
+- 单块选择：替换选中的块，将其格式应用于所有插入的内容
+- 多块选择：替换所有选中的块，除非启用 `forceUniformFormatting`，否则保留原始格式
+- 普通选择：替换当前选择，同时保持周围上下文
+
+### api.aiChat.reset()
+
+重置聊天状态：
+
+- 停止任何正在进行的生成
+- 清除聊天消息
+- 从编辑器中移除所有 AI 节点
+
+### api.aiChat.submit()
+
+提交提示以生成 AI 内容。
+
+<APIParameters>
+  <APIItem name="options" type="object" optional>
+    <APISubList>
+      <APISubListItem
+        parent="options"
+        name="mode"
+        type="'chat' | 'insert'"
+        optional
+      >
+        要使用的模式。选择时默认为 'chat'，否则为 'insert'。
+      </APISubListItem>
+      <APISubListItem parent="options" name="prompt" type="string" optional>
+        自定义提示。如果未提供则使用聊天输入。
+      </APISubListItem>
+      <APISubListItem parent="options" name="system" type="string" optional>
+        自定义系统消息。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+在插入模式下，在提交前撤销之前的 AI 更改。
+
+## 转换
+
+### tf.ai.insertNodes()
+
+插入带有 AI 标记的 AI 生成节点。
+
+<APIParameters>
+  <APIItem name="nodes" type="TDescendant[]">
+    要插入带有 AI 标记的节点。
+  </APIItem>
+  <APIItem name="options" type="object" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="target" type="Path" optional>
+        目标路径。默认为当前选择。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### tf.ai.removeMarks()
+
+从指定位置的节点中移除 AI 标记。
+
+<APIParameters>
+  <APIItem name="options" type="object" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="at" type="Location" optional>
+        要移除标记的位置。默认为整个文档。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### tf.ai.removeNodes()
+
+移除带有 AI 标记的节点。
+
+<APIParameters>
+  <APIItem name="options" type="object" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="at" type="Path" optional>
+        要移除节点的路径。默认为整个文档。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### tf.ai.undo()
+
+AI 更改的特殊撤销操作：
+
+- 如果最后一个操作是 AI 生成的，则撤销它
+- 移除重做栈条目以防止重做 AI 操作

@@ -1,0 +1,181 @@
+---
+title: Column
+docs:
+  - route: /docs/components/column-element
+    title: Column Element
+  - route: /docs/components/column-group-element
+    title: Column Group Element
+---
+
+<ComponentPreview name="column-demo" />
+
+<PackageInfo>
+
+## Features
+
+- 向文档添加列。
+- 使用 `column-group-element` 工具栏选择多种列布局。
+- [ ] 可调整列大小
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-layout
+```
+
+## Usage
+
+```tsx
+import { ColumnPlugin, ColumnItemPlugin } from '@udecode/plate-layout/react';
+
+const plugins = [
+  // ...otherPlugins,
+  ColumnPlugin,
+];
+```
+
+## Plugins
+
+### ColumnPlugin
+
+向文档添加列插件。
+
+### ColumnItemPlugin
+
+向文档添加列项插件。
+
+## API
+
+### TColumnGroupElement
+
+<APIAttributes>
+Extends `TElement`.
+
+</APIAttributes>
+
+### TColumnElement
+
+<APIAttributes>
+Extends `TElement`.
+
+<APIItem name="width" type="string" optional>
+  列宽度以 `%` 结尾。
+</APIItem>
+</APIAttributes>
+
+### insertColumnGroup
+
+插入一个包含两个空列的列组。
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    编辑器实例。
+  </APIItem>
+  <APIItem name="options" type="InsertNodesOptions & { columns?: number[] | number }">
+    - `columns`: 列宽度数组或等宽列数（默认：2）
+    - 其他 `InsertNodesOptions` 以控制插入行为
+  </APIItem>
+</APIParameters>
+
+### insertColumn
+
+插入一个空列。你可以通过 `options.width` 设置宽度，默认是 "33%"。
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    编辑器实例。
+  </APIItem>
+  <APIItem name="options" type="InsertNodesOptions & { width?: string }">
+    插入行为和宽度设置。
+  </APIItem>
+</APIParameters>
+
+### moveMiddleColumn
+
+将中间列向左或向右移动，通过 `options.direction` 设置。如果中间节点为空，返回 false 并删除它。
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    编辑器实例。
+  </APIItem>
+  <APIItem name="nodeEntry" type="NodeEntry">
+    列元素的节点入口。
+  </APIItem>
+  <APIItem name="options" type="{ direction: 'left' | 'right' }">
+    控制中间列的移动方向。
+  </APIItem>
+</APIParameters>
+
+### toggleColumnGroup
+
+将一个块转换为列组布局或更新现有列组的布局。
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    编辑器实例。
+  </APIItem>
+  <APIItem name="options" type="object">
+    <APISubList>
+      <APISubListItem parent="options" name="at" type="Location" optional>
+        切换列组的位置。
+      </APISubListItem>
+      <APISubListItem parent="options" name="columns" type="number" optional>
+        创建等宽列的数量（默认：2）
+      </APISubListItem>
+      <APISubListItem parent="options" name="widths" type="string[]" optional>
+        列宽度数组（例如：['50%', '50%']）。优先级高于 `columns`。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+行为：
+- 如果目标块不是列组，则将其包裹在新的列组中，并使用指定的列数
+- 如果目标块已经是列组，则使用 `setColumns` 更新其列布局
+- 原始内容成为第一个列的内容
+- 额外的列创建为空段落
+
+### setColumns
+
+更新现有列组的列布局，通过修改列数和宽度。
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="object">
+    <APISubList>
+      <APISubListItem parent="options" name="at" type="Path">
+        The path to the column group element.
+      </APISubListItem>
+      <APISubListItem parent="options" name="columns" type="number" optional>
+        Number of equal-width columns to create.
+      </APISubListItem>
+      <APISubListItem parent="options" name="widths" type="string[]" optional>
+        Array of column widths (e.g., ['33%', '67%']). Takes precedence over `columns`.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+行为：
+- 增加列数时：
+  - 保留现有列内容
+  - 添加新空列，指定宽度
+- 减少列数时：
+  - 将删除列的内容合并到剩余列中
+  - 更新剩余列的宽度
+- 保持相同数量的列时：
+  - 仅更新列宽度
+
+## API Components
+
+### useDebouncePopoverOpen
+
+<APIReturns>
+
+<APIItem type="boolean">控制 `popover` 是否打开</APIItem>
+
+</APIReturns>

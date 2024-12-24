@@ -1,0 +1,225 @@
+---
+title: Multi Select
+docs:
+  - route: /docs/components/tag-element
+  - route: /docs/components/select-editor
+---
+
+<ComponentPreview name="select-editor-demo" />
+
+<PackageInfo>
+
+## 功能
+
+与传统的基于输入框的多选组件不同，该组件基于 Plate 编辑器构建，提供以下功能：
+
+- 完整的历史记录支持（撤销/重做）
+- 标签之间和标签内的原生光标导航
+- 支持选择一个或多个标签
+- 复制/粘贴标签
+- 拖放重新排序标签
+- 只读模式
+- 防止重复标签
+- 创建新标签，不区分大小写
+- 搜索文本清理
+- 空格修剪
+- 使用 [cmdk](https://github.com/pacocoursey/cmdk) 的模糊搜索
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-tag
+```
+
+## 用法
+
+```tsx
+import { MultiSelectPlugin } from '@udecode/plate-tag/react';
+import { TagElement } from '@/components/plate-ui/tag-element';
+import {
+  SelectEditor,
+  SelectEditorContent,
+  SelectEditorInput,
+  SelectEditorCombobox,
+  type SelectItem,
+} from '@/components/plate-ui/select-editor';
+
+// Define your items
+const ITEMS: SelectItem[] = [
+  { value: 'React' },
+  { value: 'TypeScript' },
+  { value: 'JavaScript' },
+];
+
+export default function MySelectEditor() {
+  const [value, setValue] = React.useState<SelectItem[]>([ITEMS[0]]);
+
+  return (
+    <SelectEditor
+      value={value}
+      onValueChange={setValue}
+      items={ITEMS}
+    >
+      <SelectEditorContent>
+        <SelectEditorInput placeholder="Select items..." />
+        <SelectEditorCombobox />
+      </SelectEditorContent>
+    </SelectEditor>
+  );
+}
+```
+
+- [TagElement](/docs/components/tag-element)
+- [SelectEditor](/docs/components/select-editor)
+
+## 插件
+
+### TagPlugin
+
+内联空元素插件。
+
+### MultiSelectPlugin
+
+继承 [TagPlugin](/docs/tag-element#options)
+
+## API
+
+### editor.tf.insert.tag
+
+在当前选择位置插入一个新的多选元素。
+
+<APIParameters>
+<APIItem name="props" type="TagLike">
+多选元素的属性：
+<APISubList>
+<APISubListItem parent="props" name="value" type="string">
+多选元素的唯一值。
+</APISubListItem>
+</APISubList>
+</APIItem>
+</APIParameters>
+
+## Hooks
+
+### useSelectedItems
+
+获取编辑器中当前选中的标签项。
+
+<APIReturns>
+  <APIItem type="TagLike[]">
+    当前选中的标签项数组，每个标签项包含一个值和任何其他属性。
+  </APIItem>
+</APIReturns>
+
+### getSelectedItems
+
+获取编辑器中所有标签项。
+
+<APIParameters>
+<APIItem name="editor" type="SlateEditor">
+  编辑器实例。
+</APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="TagLike[]">
+    编辑器中的标签项数组。
+  </APIItem>
+</APIReturns>
+
+### isEqualTags
+
+比较两个标签集是否相等，忽略顺序。
+
+<APIParameters>
+<APIItem name="editor" type="SlateEditor">
+  编辑器实例。
+</APIItem>
+<APIItem name="newTags" type="TagLike[]" optional>
+  要与当前编辑器标签进行比较的新标签集。
+</APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="boolean">
+    `true` 如果两个集合包含相同的值，`false` 否则。
+  </APIItem>
+</APIReturns>
+
+### useSelectableItems
+
+获取可以被选择的项目，通过搜索并排除已经选中的项目。
+
+<APIParameters>
+<APIItem name="options" type="object">
+<APISubList>
+<APISubListItem parent="options" name="allowNew" type="boolean" optional>
+是否允许创建新项目。
+
+- **默认值:** `true`
+</APISubListItem>
+<APISubListItem parent="options" name="filter" type="(value: string, search: string) => boolean" optional>
+自定义项目过滤函数。
+</APISubListItem>
+<APISubListItem parent="options" name="items" type="T[]" optional>
+可用项目的数组。
+</APISubListItem>
+<APISubListItem parent="options" name="newItemFilter" type="(search: string) => boolean" optional>
+新项目的过滤函数。
+</APISubListItem>
+<APISubListItem parent="options" name="newItemPosition" type="'end' | 'start'" optional>
+新项目的列表位置。
+
+- **默认值:** `'end'`
+</APISubListItem>
+</APISubList>
+</APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="T[]">
+    过滤后的选择项目数组。
+  </APIItem>
+</APIReturns>
+
+### useSelectEditorCombobox
+
+处理组合框行为，包括文本清理和项目选择。
+
+<APIParameters>
+<APIItem name="options" type="object">
+<APISubList>
+<APISubListItem parent="options" name="open" type="boolean">
+组合框是否打开。
+</APISubListItem>
+<APISubListItem parent="options" name="selectFirstItem" type="() => void">
+选择组合框中第一个项目的函数。
+</APISubListItem>
+<APISubListItem parent="options" name="onValueChange" type="(items: TagLike[]) => void" optional>
+当选择的项目发生变化时回调。
+</APISubListItem>
+</APISubList>
+</APIItem>
+</APIParameters>
+
+## Types
+
+### TTagElement
+
+```ts
+type TTagElement = TElement & {
+  value: string;
+  [key: string]: unknown;
+};
+```
+
+### TagLike
+
+```ts
+type TagLike = {
+  value: string;
+  [key: string]: unknown;
+};
+```

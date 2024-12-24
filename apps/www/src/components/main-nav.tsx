@@ -7,16 +7,38 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { siteConfig } from '@/config/site';
+import { useLocale } from '@/hooks/useLocale';
+import { hrefWithLocale } from '@/lib/withLocale';
 
 import { Icons } from './icons';
+
+const i18n = {
+  cn: {
+    components: '组件',
+    docs: '文档',
+    editors: '编辑器',
+    templates: '模板',
+  },
+  en: {
+    components: 'Components',
+    docs: 'Docs',
+    editors: 'Editors',
+    templates: 'Templates',
+  },
+};
 
 export function MainNav() {
   const pathname = usePathname();
   const isUI = pathname?.includes('/docs/components');
+  const locale = useLocale();
+  const content = i18n[locale as keyof typeof i18n];
 
   return (
     <div className="mr-4 hidden md:flex">
-      <Link className="mr-4 flex items-center gap-2 lg:mr-6" href="/">
+      <Link
+        className="mr-4 flex items-center gap-2 lg:mr-6"
+        href={hrefWithLocale('/', locale)}
+      >
         <Icons.minus className="size-6" />
         <span className="hidden items-center font-bold lg:inline-flex">
           {siteConfig.name} {isUI && 'UI'}
@@ -26,35 +48,35 @@ export function MainNav() {
         <Link
           className={cn(
             'transition-colors hover:text-foreground/80',
-            pathname === '/docs'
+            pathname === '/docs' || pathname === '/cn/docs'
               ? 'font-medium text-foreground'
               : 'text-foreground/80'
           )}
-          href="/docs"
+          href={hrefWithLocale('/docs', locale)}
         >
-          Docs
+          {content.docs}
         </Link>
         <Link
           className={cn(
             'transition-colors hover:text-foreground/80',
-            pathname?.startsWith('/docs/components')
+            pathname?.includes('/docs/components')
               ? 'font-medium text-foreground'
               : 'text-foreground/80'
           )}
-          href="/docs/components/introduction"
+          href={hrefWithLocale('/docs/components/introduction', locale)}
         >
-          Components
+          {content.components}
         </Link>
         <Link
           className={cn(
             'transition-colors hover:text-foreground/80',
-            pathname?.startsWith('/editors')
+            pathname?.includes('/editors')
               ? 'font-medium text-foreground'
               : 'text-foreground/80'
           )}
-          href="/editors"
+          href={hrefWithLocale('/editors', locale)}
         >
-          Editors
+          {content.editors}
         </Link>
         <Link
           className={cn(
@@ -62,7 +84,7 @@ export function MainNav() {
           )}
           href={siteConfig.links.platePro}
         >
-          Templates
+          {content.templates}
           <Icons.arrowUpRight className="absolute -right-3 top-0 size-2.5 text-muted-foreground" />
         </Link>
       </nav>
