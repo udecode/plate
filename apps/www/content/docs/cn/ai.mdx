@@ -9,18 +9,18 @@ docs:
 
 <PackageInfo>
 
-## Features
+## 功能特性
 
-- Combobox menu with predefined commands:
-  - Generate: continue writing, add summary, explain
-  - Edit: improve writing, make it longer or shorter, fix spelling & grammar, simplify language
-- Three trigger modes:
-  - Cursor mode: trigger at block end
-  - Selection mode: trigger with selected text
-  - Block selection mode: trigger with selected blocks
-- Streaming responses in preview or direct editor insertion
-- Markdown support
-- Built-in support for Vercel AI SDK chat API
+- 预定义命令的组合框菜单：
+  - 生成：继续写作、添加摘要、解释
+  - 编辑：改进写作、加长或缩短、修正拼写和语法、简化语言
+- 三种触发模式：
+  - 光标模式：在块末尾触发
+  - 选择模式：使用选中的文本触发
+  - 块选择模式：使用选中的块触发
+- 在预览或直接编辑器插入中流式响应
+- Markdown 支持
+- 内置支持 Vercel AI SDK chat API
 
 </PackageInfo>
 
@@ -30,48 +30,74 @@ docs:
 npm install @udecode/plate-ai @udecode/plate-selection @udecode/plate-markdown @udecode/plate-basic-marks
 ```
 
-## 使用
+## 使用方法
 
 ### 插件
 
 ```tsx
-import { withProps } from '@udecode/cn';
 import { AIChatPlugin, AIPlugin } from '@udecode/plate-ai/react';
 import {
-  BoldPlugin,
-  CodePlugin,
-  ItalicPlugin,
-  StrikethroughPlugin,
-  UnderlinePlugin,
-} from '@udecode/plate-basic-marks/react';
-import { PlateLeaf, createPlateEditor } from '@udecode/plate-common/react';
-import { LinkPlugin } from '@udecode/plate-link/react';
+  BaseBoldPlugin,
+  BaseCodePlugin,
+  BaseItalicPlugin,
+  BaseStrikethroughPlugin,
+  BaseUnderlinePlugin,
+} from '@udecode/plate-basic-marks';
+import { BaseBlockquotePlugin } from '@udecode/plate-block-quote';
+import {
+  BaseCodeBlockPlugin,
+  BaseCodeLinePlugin,
+  BaseCodeSyntaxPlugin,
+} from '@udecode/plate-code-block';
+import { BaseParagraphPlugin, createSlateEditor } from '@udecode/plate-common';
+import { BaseHeadingPlugin, HEADING_LEVELS } from '@udecode/plate-heading';
+import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
+import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
+import { BaseLinkPlugin } from '@udecode/plate-link';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
 ```
 
 ```tsx
 export const createAIEditor = () => {
-  const editor = createPlateEditor({
+  const editor = createSlateEditor({
     id: 'ai',
-    override: {
-      components: {
-        [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),
-        [CodePlugin.key]: CodeLeaf,
-        [ItalicPlugin.key]: withProps(PlateLeaf, { as: 'em' }),
-        [LinkPlugin.key]: LinkElement,
-        [StrikethroughPlugin.key]: withProps(PlateLeaf, { as: 's' }),
-        [UnderlinePlugin.key]: withProps(PlateLeaf, { as: 'u' }),
-      },
-    },
     plugins: [
-      BoldPlugin,
-      ItalicPlugin,
-      UnderlinePlugin,
-      StrikethroughPlugin,
-      CodePlugin,
+      BaseBlockquotePlugin,
+      BaseBoldPlugin,
+      BaseCodeBlockPlugin,
+      BaseCodeLinePlugin,
+      BaseCodePlugin,
+      BaseCodeSyntaxPlugin,
+      BaseItalicPlugin,
+      BaseStrikethroughPlugin,
+      BaseUnderlinePlugin,
+      BaseHeadingPlugin,
+      BaseHorizontalRulePlugin,
+      BaseLinkPlugin,
+      BaseParagraphPlugin,
+      BaseIndentListPlugin.extend({
+        inject: {
+          targetPlugins: [
+            BaseParagraphPlugin.key,
+            ...HEADING_LEVELS,
+            BaseBlockquotePlugin.key,
+            BaseCodeBlockPlugin.key,
+          ],
+        },
+        options: {
+          listStyleTypes: {
+            todo: {
+              liComponent: TodoLiStatic,
+              markerComponent: TodoMarkerStatic,
+              type: 'todo',
+            },
+          },
+        },
+      }),
+      MarkdownPlugin.configure({ options: { indentList: true } }),
     ],
-    value: [{ children: [{ text: '' }], type: 'p' }],
   });
+
 
   return editor;
 };
@@ -188,29 +214,28 @@ const plugins = [
 
 ### AI SDK
 
-这个插件依赖于 [ai](https://npmjs.com/package/ai) 包:
+此插件依赖于 [ai](https://npmjs.com/package/ai) 包:
 
-- 设置一个 [route handler](https://sdk.vercel.ai/docs/getting-started/nextjs-app-router#create-a-route-handler) 使用 [streamText](https://sdk.vercel.ai/docs/ai-sdk-core/generating-text#streamtext).
-- 在 [AI menu](/docs/components/ai-menu) 组件中连接 [useChat](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat).
-
+- 使用 [streamText](https://sdk.vercel.ai/docs/ai-sdk-core/generating-text#streamtext) 设置一个[路由处理程序](https://sdk.vercel.ai/docs/getting-started/nextjs-app-router#create-a-route-handler)。
+- 在你的 [AI 菜单](/docs/components/ai-menu) 组件中连接 [useChat](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat)。
 
 ## 键盘快捷键
 
 <KeyTable>
   <KeyTableItem hotkey="Space">
-    在空块中打开 AI 菜单 (光标模式)
+    在空白块中打开 AI 菜单（光标模式）
   </KeyTableItem>
   <KeyTableItem hotkey="Cmd + J">
-    打开 AI 菜单 (光标或选择模式)
+    打开 AI 菜单（光标或选择模式）
   </KeyTableItem>
   <KeyTableItem hotkey="Escape">关闭 AI 菜单</KeyTableItem>
 </KeyTable>
 
-## Examples
+## 示例
 
 ### Plate UI
 
-查看上面的预览。
+参考上面的预览。
 
 ### Plate Plus
 
@@ -220,7 +245,7 @@ const plugins = [
 
 ### AIPlugin
 
-为编辑器扩展 AI 转换功能。
+使编辑器扩展 AI 转换功能。
 
 ### AIChatPlugin
 
@@ -235,7 +260,7 @@ const plugins = [
   
 创建预览模式编辑器实例的函数。
 
-- **默认值:** 创建一个基础编辑器，id 为 'ai'
+- **默认值：** 创建一个带有 id 'ai' 的基础编辑器
 
 </APIItem>
 
@@ -243,9 +268,9 @@ const plugins = [
 
 指定如何处理助手消息：
 
-- `'chat'`: 显示预览并提供接受/拒绝选项（默认）
-- `'insert'`: 直接将内容插入编辑器
-- **默认值:** `'chat'`
+- `'chat'`：显示带有接受/拒绝选项的预览（默认）
+- `'insert'`：直接将内容插入编辑器
+- **默认值：** `'chat'`
 
 </APIItem>
 
@@ -253,19 +278,19 @@ const plugins = [
 
 AI 聊天是否打开。
 
-- **默认值:** `false`
+- **默认值：** `false`
 
 </APIItem>
 
 <APIItem name="promptTemplate" type="(props: EditorPromptParams) => string" optional>
   
-生成提示的模板。支持以下占位符：
+生成提示的模板。支持占位符：
 
-- `{block}`: 选中块的 Markdown
-- `{editor}`: 整个编辑器内容的 Markdown
-- `{selection}`: 当前选择的 Markdown
-- `{prompt}`: 实际用户提示
-- **默认值:** `'{prompt}'`
+- `{block}`：选择中块的 Markdown
+- `{editor}`：整个编辑器内容的 Markdown
+- `{selection}`：当前选择的 Markdown
+- `{prompt}`：实际用户提示
+- **默认值：** `'{prompt}'`
 
 </APIItem>
 
@@ -273,7 +298,7 @@ AI 聊天是否打开。
 
 系统消息的模板。支持与 `promptTemplate` 相同的占位符。
 
-- **默认值:** `undefined`
+- **默认值：** `undefined`
 
 </APIItem>
 </APIOptions>
@@ -282,9 +307,9 @@ AI 聊天是否打开。
 
 ### api.aiChat.accept()
 
-接受当前的 AI 建议：
+接受当前 AI 建议：
 
-- 移除内容中的 AI 标记
+- 从内容中移除 AI 标记
 - 隐藏 AI 聊天界面
 - 聚焦编辑器
 
@@ -298,9 +323,9 @@ AI 聊天是否打开。
   </APIItem>
 </APIParameters>
 
-同时处理块选择和普通选择模式：
+处理块选择和普通选择模式：
 
-- 在块选择中：在最后选中的块后插入
+- 在块选择中：在最后选择的块后插入
 - 在普通选择中：在当前块后插入
 
 ### api.aiChat.replaceSelection()
@@ -314,7 +339,7 @@ AI 聊天是否打开。
   <APIItem name="options" type="object" optional>
     <APISubList>
       <APISubListItem parent="options" name="forceUniformFormatting" type="boolean" optional>
-        当为 true 时，将第一个块的格式应用到所有插入的块。默认为 false。
+        当为 true 时，将第一个块的格式应用于所有插入的块。默认为 false。
       </APISubListItem>
     </APISubList>
   </APIItem>
@@ -322,7 +347,7 @@ AI 聊天是否打开。
 
 处理不同的选择模式：
 
-- 单块选择：替换选中的块，将其格式应用到所有插入的内容
+- 单块选择：替换选中的块，将其格式应用于所有插入的内容
 - 多块选择：替换所有选中的块，除非启用 `forceUniformFormatting`，否则保留原始格式
 - 普通选择：替换当前选择，同时保持周围上下文
 
@@ -347,7 +372,7 @@ AI 聊天是否打开。
         type="'chat' | 'insert'"
         optional
       >
-        使用的模式。选择时默认为 'chat'，否则为 'insert'。
+        要使用的模式。选择时默认为 'chat'，否则为 'insert'。
       </APISubListItem>
       <APISubListItem parent="options" name="prompt" type="string" optional>
         自定义提示。如果未提供则使用聊天输入。
@@ -359,9 +384,9 @@ AI 聊天是否打开。
   </APIItem>
 </APIParameters>
 
-在插入模式下，提交前撤销之前的 AI 更改。
+在插入模式下，在提交前撤销之前的 AI 更改。
 
-## Transforms
+## 转换
 
 ### tf.ai.insertNodes()
 
@@ -369,7 +394,7 @@ AI 聊天是否打开。
 
 <APIParameters>
   <APIItem name="nodes" type="TDescendant[]">
-    要插入的带 AI 标记的节点。
+    要插入带有 AI 标记的节点。
   </APIItem>
   <APIItem name="options" type="object" optional>
     <APISubList>
@@ -382,7 +407,7 @@ AI 聊天是否打开。
 
 ### tf.ai.removeMarks()
 
-移除指定位置节点中的 AI 标记。
+从指定位置的节点中移除 AI 标记。
 
 <APIParameters>
   <APIItem name="options" type="object" optional>
@@ -413,4 +438,4 @@ AI 聊天是否打开。
 AI 更改的特殊撤销操作：
 
 - 如果最后一个操作是 AI 生成的，则撤销它
-- 移除重做栈entry以防止重做 AI 操作
+- 移除重做栈条目以防止重做 AI 操作

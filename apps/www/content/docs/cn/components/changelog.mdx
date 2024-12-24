@@ -1,24 +1,24 @@
 ---
 title: Changelog
-description: Latest component updates and announcements.
+description: 最新组件更新和公告。
 toc: true
 ---
 
-Since Plate UI is not a component library, a changelog is maintained here.
+由于 Plate UI 不是一个组件库，因此在此维护更新日志。
 
-Use the [CLI](https://platejs.org/docs/components/cli) to install the latest version of the components.
+使用 [CLI](https://platejs.org/docs/components/cli) 安装最新版本的组件。
 
-## December 2024 #17
+## 2024年12月 #17
 
-### December 20 #17.3
+### 12月20日 #17.3
 
 - `insertColumnGroup`, `toggleColumnGroup`: use `columns` option instead of `layout` 
 - Remove `with-draggables`. Add [`DraggableAboveNodes`](https://github.com/udecode/plate/pull/3878/files#diff-493c12ebed9c3ef9fd8c3a723909b18ad439a448c0132d2d93e5341ee0888ad2) to `draggable`. Add to `DndPlugin` config:
 ```tsx
 DndPlugin.configure({ render: { aboveNodes: DraggableAboveNodes } }),
 ```
-- `column-element`, `image-element`, `media-video-element`: Remove `useDraggableState`. Use `const { isDragging, previewRef, handleRef } = useDraggable`
-- `column-group-element`: Remove `useColumnState`. Use instead:
+- `column-element`、`image-element`、`media-video-element`：移除 `useDraggableState`。使用 `const { isDragging, previewRef, handleRef } = useDraggable`
+- `column-group-element`：移除 `useColumnState`。改用：
 ```tsx
 const columnGroupElement = useElement<TColumnGroupElement>(ColumnPlugin.key);
 
@@ -29,7 +29,7 @@ const onColumnChange = (widths: string[]) => {
   });
 };
 ```
-- `export-toolbar-button`: add `exportToHtml`
+- `export-toolbar-button`: 增加 `exportToHtml`
 
 ### 12月19日 #17.2
 
