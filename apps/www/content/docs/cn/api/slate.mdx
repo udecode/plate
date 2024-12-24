@@ -1,0 +1,314 @@
+---
+title: Slate
+description: udecode/slate的 API 参考。
+---
+
+`@udecode/slate` 使用泛型类型扩展了 Slate API。
+
+## 编辑器
+
+在 [Slate 文档](https://docs.slatejs.org/api/transforms) 中查找相应的文档。
+
+### `addMark`
+
+### `createPathRef`
+
+### `createPointRef`
+
+### `createRangeRef`
+
+### `deleteBackward`
+
+### `deleteForward`
+
+### `deleteFragment`
+
+### `deleteMerge`
+
+### `getAboveNode`
+
+### `getEdgePoints`
+
+### `getEditorString`
+
+### `getEndPoint`
+
+### `getFirstNode`
+
+### `getFragment`
+
+### `getLastNode`
+
+### `getLeafNode`
+
+### `getLevels`
+
+### `getMarks`
+
+### `getNextNode`
+
+### `getNodeEntries`
+
+### `getNodeEntry`
+
+### `getParentNode`
+
+### `getPath`
+
+### `getPathRefs`
+
+### `getPoint`
+
+### `getPointAfter`
+
+### `getPointBefore`
+
+### `getPointRefs`
+
+### `getPositions`
+
+### `getPreviousNode`
+
+### `getRange`
+
+### `getRangeRefs`
+
+### `getStartPoint`
+
+### `getVoidNode`
+
+### `hasBlocks`
+
+### `hasInlines`
+
+### `hasTexts`
+
+### `index`
+
+### `insertBreak`
+
+### `insertNode`
+
+### `isBlock`
+
+### `isEdgePoint`
+
+### `isEditor`
+
+### `isEditorNormalizing`
+
+### `isElementEmpty`
+
+### `isEndPoint`
+
+### `isInline`
+
+### `isStartPoint`
+
+### `isVoid`
+
+### `normalizeEditor`
+
+### `removeEditorMark`
+
+### `TEditor`
+
+### `unhangRange`
+
+### `withoutNormalizing`
+
+## Element
+
+在 [Slate 文档](https://docs.slatejs.org/api/nodes/element) 中查找相应的文档。
+
+### `elementMatches`
+
+### `index`
+
+### `isElement`
+
+### `isElementList`
+
+### `TElement`
+
+## History
+
+在 [Slate 文档](https://docs.slatejs.org/libraries/slate-history) 中查找相应的文档。
+
+### `isHistoryEditor`
+
+### `isHistoryMerging`
+
+### `isHistorySaving`
+
+### `withoutMergingHistory`
+
+### `withoutSavingHistory`
+
+## Node
+
+在 [Slate 文档](https://docs.slatejs.org/api/nodes/node) 中查找相应的文档。
+
+### `TDescendant`
+
+### `getNodeDescendants`
+
+### `getNodeLastNode`
+
+### `getNodeString`
+
+### `getNodeFirstNode`
+
+### `hasNode`
+
+### `isNode`
+
+### `getNodeFragment`
+
+### `getNodeLeaf`
+
+### `getNodeLevels`
+
+### `isNodeList`
+
+### `getNodeProps`
+
+### `TAncestor`
+
+### `getNode`
+
+### `getNodeTexts`
+
+### `getNodes`
+
+### `getNodeChildren`
+
+### `getNodeAncestor`
+
+### `TNodeEntry`
+
+### `TNode`
+
+### `nodeMatches`
+
+### `getNodeChild`
+
+### `getNodeElements`
+
+### `getNodeAncestors`
+
+### `getNodeDescendant`
+
+### `getCommonNode`
+
+### `isAncestor`
+
+### `hasSingleChild`
+
+### `getNodeParent`
+
+## Range
+
+在 [Slate 文档](https://docs.slatejs.org/api/locations/range) 中查找相应的文档。
+
+### `isCollapsed`
+
+### `isExpanded`
+
+## Text
+
+在 [Slate 文档](https://docs.slatejs.org/api/nodes/text) 中查找相应的文档。
+
+### `isText`
+
+### `isTextList`
+
+### `textEquals`
+
+### `textMatches`
+
+### `TText`
+
+## Transforms
+
+在 [Slate 文档](https://docs.slatejs.org/api/transforms) 中查找相应的文档。
+
+### `moveNodes`
+
+### `moveSelection`
+
+### `removeNodes`
+
+### `select`
+
+### `insertText`
+
+### `insertNodes`
+
+### `deleteText`
+
+### `setPoint`
+
+### `setNodes`
+
+### `unwrapNodes`
+
+### `deselect`
+
+### `mergeNodes`
+
+### `collapseSelection`
+
+### `unsetNodes`
+
+### `setSelection`
+
+### `splitNodes`
+
+### `insertFragment`
+
+### `wrapNodes`
+
+### `liftNodes`
+
+## Types
+
+### QueryNodeOptions
+
+用于查询节点entry的接口。
+
+<APIAttributes>
+<APIItem
+  name="filter"
+  type="(entry: TNodeEntry) => boolean"
+  optional
+>
+
+用于过滤节点entry的函数。
+
+- 该函数应接收一个节点entry作为参数并返回一个布尔值。
+
+</APIItem>
+<APIItem name="allow" type="string[] | string | null" optional>
+
+有效类型列表。
+
+- 如果为空或未定义，则允许所有类型。
+
+</APIItem>
+<APIItem name="exclude" type="string[] | string | null" optional>
+
+无效类型列表。
+
+</APIItem>
+<APIItem name="level" type="number[] | number | null" optional>
+
+有效的路径层级。
+
+</APIItem>
+<APIItem name="maxLevel" type="number | null" optional>
+
+高于此层级的路径无效。
+
+</APIItem>
+</APIAttributes>

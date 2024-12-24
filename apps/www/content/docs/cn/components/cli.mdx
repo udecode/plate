@@ -1,0 +1,146 @@
+---
+title: CLI
+description: 使用 CLI 将 Plate UI 组件添加到你的项目中。
+---
+
+## init
+
+使用 `init` 命令为新的 Plate UI 项目初始化配置和依赖。
+
+The `init` command installs dependencies, configures `tailwind.config.js`, and CSS variables for the project.
+
+```bash
+npx shadcx@latest init plate
+```
+
+你将被问到一些问题来配置 `components.json`：
+
+```txt showLineNumbers
+Which color would you like to use as base color? › Slate
+Do you want to use CSS variables for colors? › yes
+```
+
+### Options
+
+```txt
+Usage: shadcx init [options] [registry]
+
+initialize your project and install dependencies
+
+Options:
+  -d, --defaults    use default values i.e slate and css variables. (default: false)
+  -f, --force       force overwrite of existing components.json. (default: false)
+  -y, --yes         skip confirmation prompt. (default: false)
+  -c, --cwd <cwd>   the working directory. defaults to the current directory.
+  -a, --all         add all available components. (default: false)
+  -n, --name <name> registry name. (default: plate)
+  -s, --silent      mute output (default: false)
+  --src-dir         use the src directory when creating a new project (default: false)
+  --pm <pm>         package manager to use (npm, pnpm, yarn, bun)
+  -h, --help        display help for command
+```
+
+## add
+
+使用 `add` 命令将 Plate UI 组件和依赖添加到你的项目中。
+
+```bash
+# 使用前缀语法
+npx shadcx@latest add plate/editor plate/toolbar
+
+# 或混合使用（从第一个前缀找到的注册表）
+npx shadcx@latest add plate/editor toolbar
+
+# 使用 registry 选项
+npx shadcx@latest add editor toolbar -r plate
+```
+
+你会看到一个组件列表供你选择：
+
+```txt
+Which components would you like to add? › Space to select. A to toggle all.
+Enter to submit.
+
+◯  align-dropdown-menu
+◯  avatar
+◯  blockquote-element
+◯  button
+◯  checkbox
+◯  code-leaf
+◯  code-line-element
+◯  code-syntax-leaf
+◯  combobox
+```
+
+### Options
+
+```txt
+Usage: shadcx add [options] [components...]
+
+add a component to your project
+
+Arguments:
+  components         the components to add.
+
+Options:
+  -y, --yes         skip confirmation prompt. (default: false)
+  -o, --overwrite   overwrite existing files. (default: false)
+  -c, --cwd <cwd>   the working directory. defaults to the current directory.
+  -p, --path <path> the path to add the component to.
+  -a, --all         add all available components (default: false)
+  -s, --silent      mute output (default: false)
+  --src-dir         use the src directory when creating a new project (default: false)
+  -r, --registry    registry name or url
+  -l, --list        list all available registries (default: false)
+  -h, --help        display help for command
+```
+
+## Monorepo
+
+在 monorepo 中，你可以使用 `-c` 或 `--cwd` 选项指定你的工作区路径。
+
+```bash
+npx shadcx@latest init plate -c ./apps/www
+```
+
+或者
+
+```bash
+npx shadcx@latest add plate/editor -c ./apps/www
+```
+
+## Example components.json
+
+以下是一个为 [shadcn/ui](https://ui.shadcn.com/) 和 Plate UI 配置的 `components.json` 文件示例：
+
+```json
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "default",
+  "rsc": true,
+  "tsx": true,
+  "tailwind": {
+    "baseColor": "slate",
+    "config": "tailwind.config.ts",
+    "css": "src/app/globals.css",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "aliases": {
+    "components": "@/components",
+    "hooks": "@/hooks",
+    "lib": "@/lib",
+    "ui": "@/components/ui",
+    "utils": "@/lib/utils"
+  },
+  "iconLibrary": "lucide",
+  "registries": {
+    "plate": {
+      "aliases": {
+        "ui": "@/components/plate-ui"
+      },
+      "url": "https://platejs.org/r"
+    }
+  }
+}
+```

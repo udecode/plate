@@ -1,0 +1,206 @@
+---
+title: Plugin Shortcuts
+description: 了解如何在 Plate 插件中配置和使用键盘快捷键。
+---
+
+本指南介绍了 Plate 插件中键盘快捷键的配置和使用，让你能够为各种编辑器操作创建自定义快捷键。
+
+## 插件快捷键
+
+Plate 为常见操作提供了一组默认快捷键。
+
+### 文本格式化
+
+- **BoldPlugin**
+  - `toggleBold`: `Mod+B`
+
+- **ItalicPlugin**
+  - `toggleItalic`: `Mod+I`
+
+- **UnderlinePlugin**
+  - `toggleUnderline`: `Mod+U`
+
+- **StrikethroughPlugin**
+  - `toggleStrikethrough`: `Mod+Shift+X`
+
+- **CodePlugin**
+  - `toggleCode`: `Mod+E`
+
+- **SubscriptPlugin**
+  - `toggleSubscript`: `Mod+,`
+
+- **SuperscriptPlugin**
+  - `toggleSuperscript`: `Mod+.`
+
+- **HighlightPlugin**
+  - `toggleHighlight`: `Mod+Shift+H`
+
+## 块级格式化
+
+- **ParagraphPlugin**
+  - `toggleParagraph`: `Mod+Alt+0` 或 `Mod+Shift+0`
+
+- **BlockquotePlugin**
+  - `toggleBlockquote`: `Mod+Shift+.`
+
+- **HeadingPlugin**
+  - `toggleHeading1`: `Mod+Alt+1` 或 `Mod+Shift+1`
+  - `toggleHeading2`: `Mod+Alt+2` 或 `Mod+Shift+2`
+  - `toggleHeading3`: `Mod+Alt+3` 或 `Mod+Shift+3`
+
+- **CodeBlockPlugin**
+  - `toggleCodeBlock`: `Mod+Alt+8`
+
+## 列表
+
+- **ListPlugin**
+  - `toggleBulletedList`: `Mod+Alt+5`
+  - `toggleNumberedList`: `Mod+Alt+6`
+
+- **TodoListPlugin**
+  - `toggleTodoList`: `Mod+Alt+4` 或 `Mod+Shift+4`
+
+## 评论
+
+- **CommentsPlugin**
+  - `toggleComment`: `Mod+Shift+M`
+
+### 注意事项
+
+- `Mod` 在 macOS 上代表 `Cmd`，在 Windows/Linux 上代表 `Ctrl`。
+- 快捷键可以根据需要在 Plate 配置中自定义或扩展。
+
+## 为插件添加快捷键
+
+你可以使用 `shortcuts` 选项为插件添加快捷键。每个快捷键都用一个唯一的键定义，包含处理函数、按键组合和其他可选属性。
+
+以下是一个基本示例：
+
+```ts
+const ParagraphPlugin = createPlatePlugin({
+  key: 'p',
+  shortcuts: {
+    toggleParagraph: {
+      handler: ({ editor }) => {
+        editor.toggleBlock({ type: 'p' });
+      },
+      keys: ['mod+opt+0', 'mod+shift+0'],
+    },
+  },
+});
+```
+在这个示例中，按下 `Cmd+Option+0` 或 `Cmd+Shift+0`（在 Mac 上）或 `Ctrl+Alt+0` 或 `Ctrl+Shift+0`（在 Windows/Linux 上）将切换段落块。
+
+## 快捷键属性
+
+每个快捷键可以具有以下属性：
+
+- `handler`: 当快捷键触发时调用的函数。
+- `keys`: 表示按键组合的字符串或字符串数组。
+- `priority`: （可选）表示快捷键优先级的数字。
+- `preventDefault`: （可选）一个布尔值，用于阻止浏览器默认行为。
+
+## 多个快捷键
+
+你可以为单个插件定义多个快捷键：
+
+```ts
+const FormattingPlugin = createPlatePlugin({
+  key: 'formatting',
+  shortcuts: {
+    toggleBold: {
+      handler: ({ editor }) => {
+        editor.toggleMark('bold');
+      },
+      keys: 'mod+b',
+    },
+    toggleItalic: {
+      handler: ({ editor }) => {
+        editor.toggleMark('italic');
+      },
+      keys: 'mod+i',
+    },
+  },
+});
+```
+
+## 快捷键优先级
+
+当多个插件定义了相同按键组合的快捷键时，可以使用 `priority` 属性来确定哪个插件优先：
+
+```ts
+const HighPriorityPlugin = createPlatePlugin({
+  key: 'highPriority',
+  shortcuts: {
+    myShortcut: {
+      handler: () => console.info('High priority'),
+      keys: 'mod+k',
+      priority: 100,
+    },
+  },
+});
+
+const LowPriorityPlugin = createPlatePlugin({
+  key: 'lowPriority',
+  shortcuts: {
+    myShortcut: {
+      handler: () => console.info('Low priority'),
+      keys: 'mod+k',
+      priority: 50,
+    },
+  },
+});
+```
+
+在这个示例中，当按下 `Cmd+K`（在 Mac 上）或 `Ctrl+K`（在 Windows/Linux 上）时，`HighPriorityPlugin` 的快捷键将被触发。
+
+## 禁用快捷键
+
+你可以通过将快捷键的值设置为 `null` 来禁用特定快捷键：
+
+```ts
+const MyPlugin = ParagraphPlugin.configure({
+  shortcuts: {
+    myShortcut: null,
+  },
+});
+```
+
+## 扩展快捷键
+
+你可以使用 `extend` 方法扩展或覆盖快捷键：
+
+```ts
+const ExtendedPlugin = BasePlugin.extend({
+  shortcuts: {
+    newShortcut: {
+      handler: () => console.info('New shortcut'),
+      keys: 'mod+shift+n',
+    },
+  },
+});
+```
+
+## 根插件快捷键
+
+你也可以在创建编辑器时定义根级别的快捷键：
+
+```ts
+const editor = createPlateEditor({
+  plugins: [/* your plugins */],
+  shortcuts: {
+    globalShortcut: {
+      handler: () => console.info('Global shortcut triggered'),
+      keys: 'mod+g',
+    },
+  },
+});
+```
+
+根级别的快捷键默认具有最高优先级。
+
+## 最佳实践
+
+- 考虑使用 `preventDefault` 选项来避免与浏览器默认快捷键冲突。
+- 在应用程序中注意现有的快捷键，以避免冲突。
+- 当你需要细粒度控制哪个快捷键被触发时，使用 `priority` 属性。
