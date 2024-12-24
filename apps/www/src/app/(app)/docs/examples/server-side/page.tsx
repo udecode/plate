@@ -1,4 +1,3 @@
-import type { SearchParams } from '@/app/(app)/page';
 import type { TCodeBlockElement } from '@udecode/plate-code-block';
 import type { TElement } from '@udecode/plate-common';
 
