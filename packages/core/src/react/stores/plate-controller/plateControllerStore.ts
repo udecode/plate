@@ -12,9 +12,9 @@ export const {
   usePlateControllerStore,
 } = createAtomStore(
   {
-    activeId: atom(null as string | null),
-    editorStores: atom({} as Record<string, JotaiStore | null>),
-    primaryEditorIds: atom([] as string[]),
+    activeId: atom<string | null>(null),
+    editorStores: atom<Record<string, JotaiStore | null>>({}),
+    primaryEditorIds: atom<string[]>([]),
   },
   {
     name: 'plateController',
