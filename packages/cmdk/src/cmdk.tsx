@@ -246,7 +246,6 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
     const propsRef = useAsRef(props);
     const {
       children,
-      disablePointerSelection = false,
       filter,
       label,
       loop,
@@ -664,9 +663,9 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
         selectFirstItem,
         selectItem: updateSelectedToIndex,
         selectLastItem: last,
-        selectNextGroup: (e) => updateSelectedByGroup(1),
+        selectNextGroup: () => updateSelectedByGroup(1),
         selectNextItem: next,
-        selectPrevGroup: (e) => updateSelectedByGroup(-1),
+        selectPrevGroup: () => updateSelectedByGroup(-1),
         selectPrevItem: prev,
         setSearch,
       };

@@ -1,8 +1,8 @@
 import {
-  type OmitFirst,
-  type PluginConfig,
   bindFirst,
   createTSlatePlugin,
+  type OmitFirst,
+  type PluginConfig,
 } from '@udecode/plate-common';
 
 import { removeAIMarks, undoAI } from './transforms';
