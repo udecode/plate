@@ -37,11 +37,12 @@ export const onKeyDownTable: KeyboardHandler<TableConfig> = ({
     const trElements = Array.from(
       Editor.nodes(editor as BaseEditor, {
         at: editor.selection,
+        // @ts-ignore
         match: (n) => n.type === TableRowPlugin.key,
       })
     );
 
-    if (trElements.length > 0) {
+    if (trElements.length > 1) {
       collapseSelection(editor, {
         edge: 'end',
       });
