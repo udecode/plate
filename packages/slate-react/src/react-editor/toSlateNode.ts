@@ -7,5 +7,5 @@ import { ReactEditor } from 'slate-react';
 export const toSlateNode = (editor: TEditor, domNode: DOMNode) => {
   try {
     return ReactEditor.toSlateNode(editor as any, domNode) as TNode;
-  } catch (error) {}
+  } catch {}
 };

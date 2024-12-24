@@ -6,5 +6,5 @@ import { ReactEditor } from 'slate-react';
 export const findEditorDocumentOrShadowRoot = (editor: TEditor) => {
   try {
     return ReactEditor.findDocumentOrShadowRoot(editor as any);
-  } catch (error) {}
+  } catch {}
 };

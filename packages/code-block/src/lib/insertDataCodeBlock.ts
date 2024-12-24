@@ -35,7 +35,7 @@ export function insertDataCodeBlock(editor: SlateEditor) {
         });
 
         return;
-      } catch (error) {}
+      } catch {}
     }
 
     insertData(data);

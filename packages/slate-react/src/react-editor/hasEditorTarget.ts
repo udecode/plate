@@ -9,7 +9,7 @@ export const hasEditorTarget = (
 ): target is Node => {
   try {
     return ReactEditor.hasTarget(editor as any, target);
-  } catch (error) {}
+  } catch {}
 
   return false;
 };

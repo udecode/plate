@@ -9,7 +9,7 @@ export const hasEditorSelectableTarget = (
 ) => {
   try {
     return ReactEditor.hasSelectableTarget(editor as any, target);
-  } catch (error) {}
+  } catch {}
 
   return false;
 };

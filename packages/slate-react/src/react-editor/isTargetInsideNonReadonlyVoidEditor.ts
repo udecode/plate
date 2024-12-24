@@ -9,7 +9,7 @@ export const isTargetInsideNonReadonlyVoid = (
 ) => {
   try {
     return ReactEditor.isTargetInsideNonReadonlyVoid(editor as any, target);
-  } catch (error) {}
+  } catch {}
 
   return false;
 };

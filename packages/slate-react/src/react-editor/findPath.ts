@@ -7,5 +7,5 @@ import { ReactEditor } from 'slate-react';
 export const findPath = (editor: TEditor, node: TNode): Path | undefined => {
   try {
     return ReactEditor.findPath(editor as any, node);
-  } catch (error) {}
+  } catch {}
 };

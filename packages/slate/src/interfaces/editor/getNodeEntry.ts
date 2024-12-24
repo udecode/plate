@@ -12,5 +12,5 @@ export const getNodeEntry = <N extends NodeOf<E>, E extends TEditor = TEditor>(
 ): TNodeEntry<N> | undefined => {
   try {
     return Editor.node(editor as any, at, options) as any;
-  } catch (error) {}
+  } catch {}
 };

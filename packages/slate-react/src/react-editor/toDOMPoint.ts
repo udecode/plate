@@ -7,5 +7,5 @@ import { ReactEditor } from 'slate-react';
 export const toDOMPoint = (editor: TEditor, point: Point) => {
   try {
     return ReactEditor.toDOMPoint(editor as any, point);
-  } catch (error) {}
+  } catch {}
 };

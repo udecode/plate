@@ -15,5 +15,5 @@ export const getParentNode = <
 ): TNodeEntry<N> | undefined => {
   try {
     return Editor.parent(editor as any, at, options) as any;
-  } catch (error) {}
+  } catch {}
 };

@@ -6,5 +6,5 @@ import { ReactEditor } from 'slate-react';
 export const findNodeKey = (editor: TEditor, node: TNode) => {
   try {
     return ReactEditor.findKey(editor as any, node);
-  } catch (error) {}
+  } catch {}
 };

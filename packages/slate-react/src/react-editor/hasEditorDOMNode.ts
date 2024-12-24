@@ -11,7 +11,7 @@ export const hasEditorDOMNode = (
 ) => {
   try {
     return ReactEditor.hasDOMNode(editor as any, target, options);
-  } catch (error) {}
+  } catch {}
 
   return false;
 };

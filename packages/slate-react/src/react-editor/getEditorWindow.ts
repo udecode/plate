@@ -6,5 +6,5 @@ import { ReactEditor } from 'slate-react';
 export const getEditorWindow = (editor: TEditor) => {
   try {
     return ReactEditor.getWindow(editor as any);
-  } catch (error) {}
+  } catch {}
 };

@@ -64,7 +64,6 @@ export const createPrimitiveComponent = <
         {
           asChild,
           className: classNameProp,
-          getClassName,
           options,
           state: stateProp,
           ...props

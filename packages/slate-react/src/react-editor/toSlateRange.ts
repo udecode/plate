@@ -10,5 +10,5 @@ export const toSlateRange = (
 ) => {
   try {
     return ReactEditor.toSlateRange(editor as any, domRange, options);
-  } catch (error) {}
+  } catch {}
 };

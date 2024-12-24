@@ -7,5 +7,5 @@ import { ReactEditor } from 'slate-react';
 export const toDOMRange = (editor: TEditor, range: Range) => {
   try {
     return ReactEditor.toDOMRange(editor as any, range);
-  } catch (error) {}
+  } catch {}
 };
