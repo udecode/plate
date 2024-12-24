@@ -96,19 +96,8 @@ export const Doc = defineDocumentType(() => ({
   name: 'Doc',
 }));
 
-const getContentDirPath = () => {
-  const languageToPath = {
-    cn: './content/cn',
-    en: './content/en',
-  };
-
-  const language = process.env.NEXT_PUBLIC_LANGUAGE;
-
-  return languageToPath[language] ?? './content/en';
-};
-
 export default makeSource({
-  contentDirPath: getContentDirPath(),
+  contentDirPath: './content',
   documentTypes: [Doc],
   mdx: {
     rehypePlugins: [

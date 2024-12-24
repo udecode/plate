@@ -64,13 +64,27 @@ interface DocPageProps {
   params: Promise<{
     slug: string[];
   }>;
+  searchParams: Promise<{
+    locale: string;
+  }>;
 }
 
 const registryNames = new Set(registry.map((item) => item.name));
 
-function getDocFromParams({ params }: { params: { slug: string[] } }) {
-  const slug = params.slug?.join('/') || '';
-  const doc = allDocs.find((_doc) => _doc.slugAsParams === slug);
+function getDocFromParams({
+  locale,
+  params,
+}: {
+  locale: string;
+  params: { slug: string[] };
+}) {
+  const slugPath = params.slug?.join('/') || '';
+
+  const fullPath = `${locale}${slugPath ? '/' + slugPath : ''}`;
+
+  const doc = allDocs.find((document) => {
+    return document.slugAsParams === fullPath;
+  });
 
   if (!doc) {
     return null;
@@ -89,10 +103,10 @@ export function generateStaticParams() {
 
 export default async function DocPage(props: DocPageProps) {
   const params = await props.params;
-
+  const searchParams = await props.searchParams;
   const category = slugToCategory(params.slug);
 
-  const doc = getDocFromParams({ params });
+  const doc = getDocFromParams({ locale: searchParams.locale ?? 'en', params });
 
   const packageInfo: PackageInfoType = {
     gzip: '',
