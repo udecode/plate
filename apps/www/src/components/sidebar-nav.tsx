@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { Suspense, useState } from 'react';
 
 import type { DocsConfig } from '@/config/docs';
 import type { SidebarNavItem } from '@/types/nav';
@@ -18,7 +18,6 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { useLocale } from '@/hooks/useLocale';
-import { hrefWithLocale } from '@/lib/withLocale';
 import { Input } from '@/registry/default/plate-ui/input';
 
 export interface DocsSidebarNavProps {
@@ -120,15 +119,17 @@ export function DocsSidebarNav({ config }: DocsSidebarNavProps) {
                     )}
                   </div>
                 </AccordionTrigger>
-                <AccordionContent className="mt-1">
-                  {section?.items?.length && (
-                    <DocsSidebarNavItems
-                      className="[&_a]:px-0"
-                      items={section.items}
-                      pathname={pathname}
-                    />
-                  )}
-                </AccordionContent>
+                <Suspense fallback={null}>
+                  <AccordionContent className="mt-1">
+                    {section?.items?.length && (
+                      <DocsSidebarNavItems
+                        className="[&_a]:px-0"
+                        items={section.items}
+                        pathname={pathname}
+                      />
+                    )}
+                  </AccordionContent>
+                </Suspense>
               </AccordionItem>
             );
           }
@@ -156,10 +157,12 @@ export function DocsSidebarNav({ config }: DocsSidebarNavProps) {
                 )}
               </h4>
               {section?.items?.length && (
-                <DocsSidebarNavItems
-                  items={section.items}
-                  pathname={pathname}
-                />
+                <Suspense fallback={null}>
+                  <DocsSidebarNavItems
+                    items={section.items}
+                    pathname={pathname}
+                  />
+                </Suspense>
               )}
             </div>
           );
@@ -200,7 +203,7 @@ export function DocsSidebarNavItems({
                   ? 'font-medium text-foreground'
                   : 'text-muted-foreground'
               )}
-              href={hrefWithLocale(item.href!, locale)}
+              href={`${item.href}${locale === 'en' ? '' : `?locale=${locale}`}`}
               rel={item.external ? 'noreferrer' : ''}
               target={item.external ? '_blank' : ''}
             >

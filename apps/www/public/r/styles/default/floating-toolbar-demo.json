@@ -10,14 +10,14 @@
   },
   "files": [
     {
-      "content": "'use client';\n\nimport React from 'react';\n\nimport { Plate } from '@udecode/plate-common/react';\n\nimport { editorPlugins } from '@/components/editor/plugins/editor-plugins';\nimport { useCreateEditor } from '@/components/editor/use-create-editor';\nimport { Editor, EditorContainer } from '@/components/plate-ui/editor';\n\nimport { DEMO_VALUES } from './values/en/demo-values';\n\nexport default function Demo({ id }: { id: string }) {\n  const editor = useCreateEditor({\n    plugins: [...editorPlugins],\n    value: DEMO_VALUES[id],\n  });\n\n  return (\n    <Plate editor={editor}>\n      <EditorContainer variant=\"demo\">\n        <Editor />\n      </EditorContainer>\n    </Plate>\n  );\n}\n",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { Plate } from '@udecode/plate-common/react';\n\nimport { editorPlugins } from '@/components/editor/plugins/editor-plugins';\nimport { useCreateEditor } from '@/components/editor/use-create-editor';\nimport { Editor, EditorContainer } from '@/components/plate-ui/editor';\n\nimport { DEMO_VALUES } from './values/demo-values';\n\nexport default function Demo({ id }: { id: string }) {\n  const editor = useCreateEditor({\n    plugins: [...editorPlugins],\n    value: DEMO_VALUES[id],\n  });\n\n  return (\n    <Plate editor={editor}>\n      <EditorContainer variant=\"demo\">\n        <Editor />\n      </EditorContainer>\n    </Plate>\n  );\n}\n",
       "path": "example/demo.tsx",
       "target": "components/demo.tsx",
       "type": "registry:example"
     },
     {
       "content": "import { jsx } from '@udecode/plate-test-utils';\n\njsx;\n\nexport const floatingToolbarValue: any = (\n  <fragment>\n    <hh2>Floating Toolbar</hh2>\n    <hp>\n      The floating toolbar provides quick access to formatting options and\n      actions for selected text.\n    </hp>\n    <hp>How to use the floating toolbar:</hp>\n    <hp indent={1} listStyleType=\"disc\">\n      <htext>Select any text to invoke the floating toolbar.</htext>\n    </hp>\n    <hp>With the floating toolbar, you can:</hp>\n    <hp indent={1} listStyleType=\"disc\">\n      <htext>Ask AI for assistance</htext>\n    </hp>\n    <hp indent={1} listStyleType=\"disc\">\n      <htext>Add a comment to the selected text</htext>\n    </hp>\n    <hp indent={1} listStyleType=\"disc\">\n      <htext>Turn a block type into another one</htext>\n    </hp>\n    <hp indent={1} listStyleType=\"disc\">\n      <htext>\n        Apply text formatting: bold, italic, underline, strikethrough, code\n      </htext>\n    </hp>\n    <hp>\n      <htext>\n        Try selecting some text below to see the floating toolbar in action:\n      </htext>\n    </hp>\n    <hp>\n      <htext bold>Bold text</htext>\n      <htext>, </htext>\n      <htext italic>italic text</htext>\n      <htext>, </htext>\n      <htext underline>underlined text</htext>\n      <htext>, and </htext>\n      <htext bold italic underline>\n        combined formatting\n      </htext>\n      <htext>.</htext>\n    </hp>\n  </fragment>\n);\n",
-      "path": "example/values/en/floating-toolbar-value.tsx",
+      "path": "example/values/floating-toolbar-value.tsx",
       "target": "components/floating-toolbar-value.tsx",
       "type": "registry:example"
     },

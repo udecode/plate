@@ -60,50 +60,16 @@ import { Code } from '@/components/code';
 import { Link } from '@/components/link';
 import { Markdown } from '@/components/markdown';
 import { H2, H3, P } from '@/components/typography';
-import { exampleNavMap } from '@/config/docs-examples';
 import { basicElementsValue } from '@/registry/default/example/values/basic-elements-value';
 import { basicMarksValue } from '@/registry/default/example/values/basic-marks-value';
 
-const i18n = {
-  cn: {
-    creatingDesc: '要在服务器上使用 Plate，你可以使用 ',
-    creatingDesc2:
-      ' 函数。这允许你在没有 DOM 环境的情况下创建和操作 Slate 文档。',
-    creatingTitle: '创建服务器端编辑器',
-    description:
-      'Plate 可以在服务器端环境中使用，实现无需浏览器的内容操作。这对于生成静态内容、在服务器上处理编辑器内容或使用 React Server Components 等场景特别有用。',
-    exampleDesc: '这是 Plate 在 React Server Component 中',
-    exampleDesc2: '从 Slate 值生成 Markdown',
-    exampleDesc3: '的输出：',
-    exampleTitle: '示例：在 React Server Component 中生成 Markdown',
-    title: '在服务器环境中使用 Plate',
-  },
-  en: {
-    creatingDesc: 'To use Plate on the server, you can leverage the ',
-    creatingDesc2:
-      ' function. This allows you to create and manipulate Slate documents without a DOM environment.',
-    creatingTitle: 'Creating a Server-Side Editor',
-    description:
-      'Plate can be utilized in server-side environments, enabling operations like content manipulation without a browser. This is particularly useful for scenarios such as generating static content, processing editor content on the server, or working with React Server Components.',
-    exampleDesc: "Here's the output of Plate ",
-    exampleDesc2: 'generating Markdown from a Slate value',
-    exampleDesc3: ' within a React Server Component:',
-    exampleTitle: 'Example: Generating Markdown in a React Server Component',
-    title: 'Using Plate in a Server Environment',
-  },
-};
+export default function RSCPage() {
+  const mockDoc = {
+    description: 'Server-side rendering.',
+    title: 'Server-Side',
+    // ... other necessary properties
+  };
 
-type SearchParams = Promise<{
-  locale: string;
-}>;
-
-export default async function RSCPage({
-  searchParams,
-}: {
-  searchParams: SearchParams;
-}) {
-  const locale = (await searchParams).locale || 'en';
-  const content = i18n[locale as keyof typeof i18n];
   const editor = createSlateEditor({
     plugins: [
       BaseHeadingPlugin,
@@ -272,26 +238,30 @@ export default async function RSCPage({
   });
 
   return (
-    <DocContent
-      category="example"
-      doc={exampleNavMap['/docs/examples/server-side']}
-      toc={{}}
-    >
-      <H2>{content.title}</H2>
-      <P>{content.description}</P>
-
-      <H3>{content.creatingTitle}</H3>
+    <DocContent category="example" doc={mockDoc} toc={{}}>
+      <H2>Using Plate in a Server Environment</H2>
       <P>
-        {content.creatingDesc}
-        <Code>createSlateEditor</Code>
-        {content.creatingDesc2}
+        Plate can be utilized in server-side environments, enabling operations
+        like content manipulation without a browser. This is particularly useful
+        for scenarios such as generating static content, processing editor
+        content on the server, or working with React Server Components.
       </P>
 
-      <H3>{content.exampleTitle}</H3>
+      <H3>Creating a Server-Side Editor</H3>
+      <P>
+        To use Plate on the server, you can leverage the{' '}
+        <Code>createSlateEditor</Code>
+        function. This allows you to create and manipulate Slate documents
+        without a DOM environment.
+      </P>
+
+      <H3>Example: Generating Markdown in a React Server Component</H3>
       <P className="mb-8">
-        {content.exampleDesc}
-        <Link href="/docs/markdown">{content.exampleDesc2}</Link>
-        {content.exampleDesc3}
+        Here's the output of Plate{' '}
+        <Link href="/docs/markdown">
+          generating Markdown from a Slate value
+        </Link>{' '}
+        within a React Server Component:
       </P>
 
       <Markdown className="rounded-sm border p-4 py-6">{md}</Markdown>

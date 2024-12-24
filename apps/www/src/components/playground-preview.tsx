@@ -86,7 +86,9 @@ export function PlaygroundPreview({
         >
           <div className="chunk-mode relative z-20 w-full bg-background">
             <ThemeWrapper>
-              <PlaygroundDemo className="h-[650px]" />
+              <React.Suspense fallback={null}>
+                <PlaygroundDemo className="h-[650px]" />
+              </React.Suspense>
             </ThemeWrapper>
           </div>
 

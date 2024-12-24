@@ -14,14 +14,14 @@
   },
   "files": [
     {
-      "content": "'use client';\n\nimport React from 'react';\n\nimport { Plate } from '@udecode/plate-common/react';\n\nimport { editorPlugins } from '@/components/editor/plugins/editor-plugins';\nimport { useCreateEditor } from '@/components/editor/use-create-editor';\nimport { copilotValue } from '@/components/values/en/copilot-value';\nimport { Editor, EditorContainer } from '@/components/plate-ui/editor';\n\nimport { copilotPlugins } from '../components/editor/plugins/copilot-plugins';\n\nexport default function CopilotDemo() {\n  const editor = useCreateEditor({\n    plugins: [...copilotPlugins, ...editorPlugins],\n    value: copilotValue,\n  });\n\n  return (\n    <Plate editor={editor}>\n      <EditorContainer variant=\"demo\">\n        <Editor />\n      </EditorContainer>\n    </Plate>\n  );\n}\n",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { Plate } from '@udecode/plate-common/react';\n\nimport { editorPlugins } from '@/components/editor/plugins/editor-plugins';\nimport { useCreateEditor } from '@/components/editor/use-create-editor';\nimport { copilotValue } from '@/components/values/copilot-value';\nimport { Editor, EditorContainer } from '@/components/plate-ui/editor';\n\nimport { copilotPlugins } from '../components/editor/plugins/copilot-plugins';\n\nexport default function CopilotDemo() {\n  const editor = useCreateEditor({\n    plugins: [...copilotPlugins, ...editorPlugins],\n    value: copilotValue,\n  });\n\n  return (\n    <Plate editor={editor}>\n      <EditorContainer variant=\"demo\">\n        <Editor />\n      </EditorContainer>\n    </Plate>\n  );\n}\n",
       "path": "example/copilot-demo.tsx",
       "target": "components/copilot-demo.tsx",
       "type": "registry:example"
     },
     {
       "content": "import { jsx } from '@udecode/plate-test-utils';\n\njsx;\n\nexport const copilotValue: any = (\n  <fragment>\n    <hh2>Copilot</hh2>\n    <hp indent={1} listStyleType=\"decimal\">\n      <htext>Position your cursor at the</htext>\n      <htext bold> end of a paragraph </htext>\n      <htext>where you want to add or modify text.</htext>\n    </hp>\n    <hp indent={1} listStart={2} listStyleType=\"decimal\">\n      <htext>Press Control + Space to trigger Copilot</htext>\n    </hp>\n    <hp indent={1} listStart={3} listStyleType=\"decimal\">\n      <htext>Copilot will</htext>\n      <htext bold> automatically</htext>\n      <htext> suggest completions as you type.</htext>\n    </hp>\n    <hp indent={1} listStart={4} listStyleType=\"decimal\">\n      <htext>Choose from the suggested completions:</htext>\n    </hp>\n    <hp indent={2} listStyleType=\"disc\">\n      <htext bold>Tab</htext>:\n      <htext>Accept the entire suggested completion</htext>\n    </hp>\n    <hp indent={2} listStyleType=\"disc\">\n      <htext bold>Command + Right Arrow</htext>\n      <htext>: Complete one character at a time</htext>\n    </hp>\n    <hp indent={2} listStyleType=\"disc\">\n      <htext bold>Escape</htext>\n      <htext>: Cancel the Copilot</htext>\n    </hp>\n  </fragment>\n);\n",
-      "path": "example/values/en/copilot-value.tsx",
+      "path": "example/values/copilot-value.tsx",
       "target": "components/copilot-value.tsx",
       "type": "registry:example"
     },

@@ -1,3 +1,5 @@
+import { Suspense } from 'react';
+
 /* eslint-disable turbo/no-undeclared-env-vars */
 import Link from 'next/link';
 
@@ -34,7 +36,9 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-[51] w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 dark:border-border">
       <div className="container flex h-14 items-center justify-between px-4">
-        <MainNav />
+        <Suspense fallback={null}>
+          <MainNav />
+        </Suspense>
         <MobileNav />
 
         {/* <nav className="hidden items-center gap-4 text-sm md:flex lg:gap-6">

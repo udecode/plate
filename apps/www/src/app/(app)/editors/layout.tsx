@@ -1,3 +1,5 @@
+import { Suspense } from 'react';
+
 import type { Metadata } from 'next';
 
 import { EditorDescription } from './editor-description';
@@ -15,7 +17,9 @@ export default function BlocksLayout({
 }) {
   return (
     <div className="container relative">
-      <EditorDescription />
+      <Suspense fallback={null}>
+        <EditorDescription />
+      </Suspense>
       <section id="blocks" className="scroll-mt-24">
         {children}
       </section>
