@@ -80,10 +80,14 @@ export const remarkDefaultElementRules: RemarkElementRules = {
           indent = 1
         ) => {
           _node.children?.forEach((listItem) => {
+            const defaultType = options.editor.getType({ key: 'p' });
+            const todoListType = options.editor.getType({ key: 'action_item' }) ?? defaultType
+            const listItemType = [false, true].includes(listItem.checked) ? todoListType : defaultType;
             if (!listItem.children) {
               listItems.push({
                 children: remarkTransformElementChildren(listItem, options),
-                type: options.editor.getType({ key: 'p' }),
+                checked: listItem.checked,
+                type: listItemType,
               });
 
               return listItems;
@@ -98,7 +102,8 @@ export const remarkDefaultElementRules: RemarkElementRules = {
               ),
               indent,
               listStyleType,
-              type: options.editor.getType({ key: 'p' }),
+              checked: listItem.checked,
+              type: listItemType,
             });
 
             subLists.forEach((subList) => {
