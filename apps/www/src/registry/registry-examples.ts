@@ -306,7 +306,10 @@ export const docExamples: Registry = [
     },
     files: [
       { path: 'example/demo.tsx', type: 'registry:example' },
-      { path: 'example/values/autoformat-value.tsx', type: 'registry:example' },
+      {
+        path: 'example/values/autoformat-value.tsx',
+        type: 'registry:example',
+      },
       {
         path: 'components/editor/use-create-editor.ts',
         type: 'registry:example',
@@ -430,7 +433,10 @@ export const docExamples: Registry = [
     },
     files: [
       { path: 'example/demo.tsx', type: 'registry:example' },
-      { path: 'example/values/block-menu-value.tsx', type: 'registry:example' },
+      {
+        path: 'example/values/block-menu-value.tsx',
+        type: 'registry:example',
+      },
       {
         path: 'components/editor/use-create-editor.ts',
         type: 'registry:example',
@@ -505,7 +511,10 @@ export const docExamples: Registry = [
     },
     files: [
       { path: 'example/demo.tsx', type: 'registry:example' },
-      { path: 'example/values/comments-value.tsx', type: 'registry:example' },
+      {
+        path: 'example/values/comments-value.tsx',
+        type: 'registry:example',
+      },
       {
         path: 'components/editor/use-create-editor.ts',
         type: 'registry:example',
@@ -675,7 +684,10 @@ export const docExamples: Registry = [
     },
     files: [
       { path: 'example/demo.tsx', type: 'registry:example' },
-      { path: 'example/values/exit-break-value.tsx', type: 'registry:example' },
+      {
+        path: 'example/values/exit-break-value.tsx',
+        type: 'registry:example',
+      },
       {
         path: 'components/editor/use-create-editor.ts',
         type: 'registry:example',
@@ -696,7 +708,10 @@ export const docExamples: Registry = [
     // },
     files: [
       { path: 'example/excalidraw-demo.tsx', type: 'registry:example' },
-      { path: 'example/values/excalidraw-value.tsx', type: 'registry:example' },
+      {
+        path: 'example/values/excalidraw-value.tsx',
+        type: 'registry:example',
+      },
       {
         path: 'components/editor/use-create-editor.ts',
         type: 'registry:example',
@@ -808,7 +823,10 @@ export const docExamples: Registry = [
     // },
     files: [
       { path: 'example/demo.tsx', type: 'registry:example' },
-      { path: 'example/values/highlight-value.tsx', type: 'registry:example' },
+      {
+        path: 'example/values/highlight-value.tsx',
+        type: 'registry:example',
+      },
       {
         path: 'components/editor/use-create-editor.ts',
         type: 'registry:example',
@@ -1257,7 +1275,10 @@ export const docExamples: Registry = [
     },
     files: [
       { path: 'example/demo.tsx', type: 'registry:example' },
-      { path: 'example/values/soft-break-value.tsx', type: 'registry:example' },
+      {
+        path: 'example/values/soft-break-value.tsx',
+        type: 'registry:example',
+      },
       {
         path: 'components/editor/use-create-editor.ts',
         type: 'registry:example',
@@ -1274,7 +1295,10 @@ export const docExamples: Registry = [
   {
     files: [
       { path: 'example/tabbable-demo.tsx', type: 'registry:example' },
-      { path: 'example/values/tabbable-value.tsx', type: 'registry:example' },
+      {
+        path: 'example/values/tabbable-value.tsx',
+        type: 'registry:example',
+      },
       {
         path: 'components/editor/use-create-editor.ts',
         type: 'registry:example',

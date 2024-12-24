@@ -25,7 +25,6 @@ const nextConfig = async (phase: string) => {
         },
       ],
     },
-
     outputFileTracingIncludes: {
       '/api/registry/*': ['./src/registry/**/*'],
       '/blocks/slate-to-html': ['./public/tailwind.css', './public/prism.css'],
@@ -39,6 +38,20 @@ const nextConfig = async (phase: string) => {
     // Configure domains to allow for optimized image loading.
     // https://nextjs.org/docs/api-reference/next.config.js/react-strict-mod
     reactStrictMode: true,
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    rewrites: async () => {
+      return [
+        {
+          destination: '/?locale=cn',
+          source: '/cn',
+        },
+        {
+          destination: '/:path*?locale=cn', // Rewrite it to the corresponding path without /cn
+          source: '/cn/:path*', // Match any path under /cn
+        },
+      ];
+    },
 
     // typescript: {
     //   ignoreBuildErrors: true,

@@ -23,18 +23,46 @@ const CustomizerDrawer = dynamic(
   () => import('@/components/customizer-drawer')
 );
 
-const block = {
-  description: 'A Notion-like AI template.',
-  descriptionSrc: siteConfig.links.potionTemplate,
-  isPro: true,
-  meta: {
-    iframeHeight: 800,
+const i18n = {
+  cn: {
+    buildYourRichTextEditor: '构建你的富文本编辑器',
+    description: '框架 · 插件 · 组件 · 主题',
+    getStarted: '开始使用',
+    github: 'GitHub',
+    potionDescription: '一个类似 Notion 的 AI 模板。',
   },
-  name: 'potion',
-  src: siteConfig.links.potionIframe,
+  en: {
+    buildYourRichTextEditor: 'Build your rich-text editor',
+    description: 'Framework · Plugins · Components · Themes',
+    getStarted: 'Get Started',
+    github: 'GitHub',
+    potionDescription: 'A Notion-like AI template.',
+  },
 };
 
-export default function IndexPage() {
+export type SearchParams = Promise<{
+  locale: string;
+}>;
+
+export default async function IndexPage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
+  const locale = ((await searchParams).locale || 'en') as keyof typeof i18n;
+  const content = i18n[locale];
+
+  const block = {
+    description: content.potionDescription,
+    descriptionSrc: siteConfig.links.potionTemplate,
+    isPro: true,
+    meta: {
+      iframeHeight: 800,
+    },
+    name: 'potion',
+    src: siteConfig.links.potionIframe,
+  };
+
   return (
     <>
       <div className="relative">
@@ -43,15 +71,15 @@ export default function IndexPage() {
             <AnnouncementButton />
 
             <div className="flex w-full items-center justify-between">
-              <PageHeaderHeading>Build your rich-text editor</PageHeaderHeading>
+              <PageHeaderHeading>
+                {content.buildYourRichTextEditor}
+              </PageHeaderHeading>
               <ThemesButton />
             </div>
-            <PageHeaderDescription>
-              Framework · Plugins · Components · Themes
-            </PageHeaderDescription>
+            <PageHeaderDescription>{content.description}</PageHeaderDescription>
             <section className="flex w-full items-center space-x-2 py-2">
               <Button asChild size="xs">
-                <Link href="/docs">Get Started</Link>
+                <Link href="/docs">{content.getStarted}</Link>
               </Button>
               <Button asChild size="xs" variant="ghost">
                 <Link
@@ -59,7 +87,7 @@ export default function IndexPage() {
                   rel="noreferrer"
                   target="_blank"
                 >
-                  GitHub
+                  {content.github}
                 </Link>
               </Button>
             </section>

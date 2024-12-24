@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import Balancer from 'react-wrap-balancer';
 
 import type { TableOfContents } from '@/lib/toc';
@@ -147,9 +147,7 @@ export function DocContent({
             ))}
           </div>
         ) : null}
-
         <div className="pb-12 pt-8">{children}</div>
-
         {doc && <DocsPager doc={doc as any} />}
       </div>
 
@@ -162,7 +160,9 @@ export function DocContent({
               </div>
             </ScrollArea>
             <div className="mt-2 shrink-0">
-              <OpenInPlus />
+              <Suspense fallback={null}>
+                <OpenInPlus />
+              </Suspense>
             </div>
           </div>
         </div>

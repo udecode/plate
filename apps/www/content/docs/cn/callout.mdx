@@ -1,0 +1,142 @@
+---
+title: Callout
+docs:
+  - route: https://pro.platejs.org/docs/components/callout-element
+    title: Callout Element
+---
+
+<PackageInfo>
+
+## 功能
+
+- 可自定义的标注块，用于突出显示重要信息
+- 支持不同的标注变体（例如：信息、警告、错误）
+- 能够为标注设置自定义图标或表情符号
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-callout
+```
+
+## 使用
+
+```tsx
+import { CalloutPlugin } from '@udecode/plate-callout/react';
+```
+
+```tsx
+const plugins = [
+  // ...otherPlugins,
+  CalloutPlugin,
+]
+```
+
+```tsx
+const components = {
+  // ...otherComponents,
+  [CalloutPlugin.key]: CalloutElement,
+}
+```
+
+- [CalloutElement](https://pro.platejs.org/docs/components/callout-element) (Plus)
+
+## 示例
+
+### Plate UI
+
+Work in progress.
+
+### Plate Plus
+
+<ComponentPreviewPro name="callout-pro" />
+
+## 插件
+
+### CalloutPlugin
+
+标注元素插件。
+
+## Transforms
+
+### editor.tf.insert.callout
+
+插入标注元素。
+
+<APIParameters>
+  <APIItem name="editor" type="SlateEditor">
+    编辑器实例。
+  </APIItem>
+  <APIItem name="options" type="object" optional>
+    插入标注的选项。
+    <APISubList>
+      <APISubListItem parent="options" name="variant" type="string" optional>
+        要插入的标注变体。
+      </APISubListItem>
+      <APISubListItem parent="options" name="...InsertNodesOptions" type="InsertNodesOptions<E>">
+        来自 `InsertNodesOptions` 的其他选项。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+## Hooks
+
+### useCalloutEmojiPicker
+
+此钩子管理标注的表情选择器功能。
+
+<APIParameters>
+  <APIItem name="options" type="UseCalloutEmojiPickerOptions">
+    标注表情选择器的选项。
+    <APISubList>
+      <APISubListItem parent="options" name="isOpen" type="boolean">
+        表情选择器是否打开。
+      </APISubListItem>
+      <APISubListItem parent="options" name="setIsOpen" type="(isOpen: boolean) => void">
+        设置表情选择器打开状态的函数。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem name="emojiToolbarDropdownProps" type="object">
+    表情工具栏下拉菜单的属性。
+    <APISubList>
+      <APISubListItem parent="emojiToolbarDropdownProps" name="isOpen" type="boolean">
+        表情选择器是否打开。
+      </APISubListItem>
+      <APISubListItem parent="emojiToolbarDropdownProps" name="setIsOpen" type="(v: boolean) => void">
+        设置表情选择器打开状态的函数，会遵循只读模式。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+  <APIItem name="props" type="object">
+    表情选择器组件的属性。
+    <APISubList>
+      <APISubListItem parent="props" name="isOpen" type="boolean">
+        表情选择器是否打开。
+      </APISubListItem>
+      <APISubListItem parent="props" name="setIsOpen" type="(isOpen: boolean) => void">
+        设置表情选择器打开状态的函数。
+      </APISubListItem>
+      <APISubListItem parent="props" name="onSelectEmoji" type="(options: { emojiValue?: any; icon?: any }) => void">
+        选择表情时调用的函数。它会更新标注的图标并关闭选择器。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+
+## Types
+
+### TCalloutElement
+
+```typescript
+interface TCalloutElement extends TElement {
+  variant?: string;
+  icon?: string;
+}
+```
