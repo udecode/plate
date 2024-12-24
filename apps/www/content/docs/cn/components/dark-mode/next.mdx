@@ -9,13 +9,13 @@ description: 为您的 Next.js 应用添加深色模式。
 
 ### Install next-themes
 
-Start by installing `next-themes`:
+首先安装 `next-themes`：
 
 ```bash
 npm install next-themes
 ```
 
-### Create a theme provider
+### 创建一个主题 provider
 
 ```tsx title="components/theme-provider.tsx"
 'use client';
@@ -31,7 +31,7 @@ export function ThemeProvider({
 }
 ```
 
-### Wrap your root layout
+### 包裹你的root layout 文件
 
 将 `ThemeProvider` 添加到您的 root layout 中。
 
@@ -59,7 +59,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
 }
 ```
 
-### Add a mode toggle
+### 添加一个模式切换按钮
 
 在您的网站上放置一个模式切换按钮，用于在浅色和深色模式之间切换。
 

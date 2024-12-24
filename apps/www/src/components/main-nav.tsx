@@ -48,7 +48,7 @@ export function MainNav() {
         <Link
           className={cn(
             'transition-colors hover:text-foreground/80',
-            pathname === '/docs'
+            pathname === '/docs' || pathname === '/cn/docs'
               ? 'font-medium text-foreground'
               : 'text-foreground/80'
           )}
@@ -59,7 +59,7 @@ export function MainNav() {
         <Link
           className={cn(
             'transition-colors hover:text-foreground/80',
-            pathname?.startsWith('/docs/components')
+            pathname?.includes('/docs/components')
               ? 'font-medium text-foreground'
               : 'text-foreground/80'
           )}
@@ -70,7 +70,7 @@ export function MainNav() {
         <Link
           className={cn(
             'transition-colors hover:text-foreground/80',
-            pathname?.startsWith('/editors')
+            pathname?.includes('/editors')
               ? 'font-medium text-foreground'
               : 'text-foreground/80'
           )}
