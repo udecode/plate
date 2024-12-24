@@ -43,6 +43,10 @@ const nextConfig = async (phase: string) => {
     rewrites: async () => {
       return [
         {
+          destination: '/?locale=cn',
+          source: '/cn',
+        },
+        {
           destination: '/:path*?locale=cn', // Rewrite it to the corresponding path without /cn
           source: '/cn/:path*', // Match any path under /cn
         },
