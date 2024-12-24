@@ -1,4 +1,4 @@
-import { TableRowPlugin } from '@udecode/plate/react';
+import { TableCellPlugin } from '@udecode/plate/react';
 import {
   type TElement,
   collapseSelection,
@@ -29,19 +29,20 @@ export const onKeyDownTable: KeyboardHandler<TableConfig> = ({
   const compositeKeyCode = 229;
 
   if (
+    // This exception only occurs when IME composition is triggered, and can be identified by this keycode
     event.which === compositeKeyCode &&
     editor.selection &&
     isExpanded(editor.selection)
   ) {
     // fix the exception of inputting Chinese when selecting multiple cells
-    const trElements = Array.from(
+    const tdEntries = Array.from(
       getNodeEntries(editor, {
         at: editor.selection,
-        match: { type: TableRowPlugin.key },
+        match: { type: TableCellPlugin.key },
       })
     );
 
-    if (trElements.length > 1) {
+    if (tdEntries.length > 1) {
       collapseSelection(editor, {
         edge: 'end',
       });
