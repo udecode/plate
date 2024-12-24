@@ -1,4 +1,3 @@
-import { TableCellPlugin } from '@udecode/plate/react';
 import {
   type TElement,
   collapseSelection,
