@@ -85,7 +85,11 @@ export const useOnClickOutside = (
   callbackRef.current = callback;
 
   const ref: UseOnClickOutsideReturn = React.useCallback(
-    (el) => setRefsState((prevState) => [...prevState, { current: el }]),
+    (el) =>
+      setRefsState((prevState) => [
+        ...prevState,
+        { current: el } as React.RefObject<HTMLElement>,
+      ]),
     []
   );
 

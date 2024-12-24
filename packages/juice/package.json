@@ -44,7 +44,7 @@
     "typecheck": "INIT_CWD=\"$PWD\" pnpm -w run p:typecheck"
   },
   "dependencies": {
-    "juice": "^8.1.0"
+    "juice": "^11.0.0"
   },
   "devDependencies": {
     "@udecode/plate-common": "workspace:^"

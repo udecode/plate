@@ -14,13 +14,13 @@ import { cn } from './cn';
  *   that are only used for variants.
  */
 export function withVariants<
-  T extends React.ComponentType<any> | keyof HTMLElementTagNameMap,
+  T extends React.ComponentType<Record<string, unknown>>,
   V extends ReturnType<typeof cva>,
 >(Component: T, variants: V, onlyVariantsProps?: (keyof VariantProps<V>)[]) {
   const ComponentWithClassName = Component as React.FC<{ className: string }>;
 
   return React.forwardRef<
-    React.ElementRef<T>,
+    React.ComponentRef<T>,
     React.ComponentPropsWithoutRef<T> & VariantProps<V>
   >(function ExtendComponent(allProps, ref) {
     const { className, ...props } = allProps as any;

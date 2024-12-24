@@ -6,7 +6,7 @@ export function useMemoOnce<T>(
 ): T {
   const initialized = React.useRef(false);
   const prevDepsRef = React.useRef(deps);
-  const memoizedValueRef = React.useRef<T>();
+  const memoizedValueRef = React.useRef<T>(null) as React.RefObject<T>;
 
   if (
     !initialized.current ||

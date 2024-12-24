@@ -244,18 +244,7 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
     ); // id → { value, keywords }
     const listeners = useLazyRef<Set<() => void>>(() => new Set()); // [...rerenders]
     const propsRef = useAsRef(props);
-    const {
-      children,
-      disablePointerSelection = false,
-      filter,
-      label,
-      loop,
-      shouldFilter,
-      value,
-      vimBindings = true,
-      onValueChange,
-      ...etc
-    } = props;
+    const { label, value, vimBindings = true, ...etc } = props;
 
     const listId = useId();
     const labelId = useId();
@@ -664,9 +653,9 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
         selectFirstItem,
         selectItem: updateSelectedToIndex,
         selectLastItem: last,
-        selectNextGroup: (e) => updateSelectedByGroup(1),
+        selectNextGroup: () => updateSelectedByGroup(1),
         selectNextItem: next,
-        selectPrevGroup: (e) => updateSelectedByGroup(-1),
+        selectPrevGroup: () => updateSelectedByGroup(-1),
         selectPrevItem: prev,
         setSearch,
       };
@@ -779,7 +768,9 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
 const Item = React.forwardRef<HTMLDivElement, ItemProps>(
   (props, forwardedRef) => {
     const id = useId();
-    const ref = React.useRef<HTMLDivElement>(null);
+    const ref = React.useRef<HTMLDivElement>(
+      null
+    ) as React.RefObject<HTMLElement>;
     const groupContext = React.useContext(GroupContext);
     const context = useCommand();
     const propsRef = useAsRef(props);
@@ -865,9 +856,11 @@ const Item = React.forwardRef<HTMLDivElement, ItemProps>(
  */
 const Group = React.forwardRef<HTMLDivElement, GroupProps>(
   (props, forwardedRef) => {
-    const { children, forceMount, heading, ...etc } = props;
+    const { forceMount, heading, ...etc } = props;
     const id = useId();
-    const ref = React.useRef<HTMLDivElement>(null);
+    const ref = React.useRef<HTMLDivElement>(
+      null
+    ) as React.RefObject<HTMLElement>;
     const headingRef = React.useRef<HTMLDivElement>(null);
     const headingId = useId();
     const context = useCommand();
@@ -885,7 +878,11 @@ const Group = React.forwardRef<HTMLDivElement, GroupProps>(
       return context.group(id);
     }, []);
 
-    useValue(id, ref, [props.value, props.heading, headingRef]);
+    useValue(id, ref, [
+      props.value,
+      props.heading,
+      headingRef as React.RefObject<HTMLDivElement>,
+    ]);
 
     const contextValue = React.useMemo(
       () => ({ id, forceMount }),
@@ -1012,7 +1009,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
  */
 const List = React.forwardRef<HTMLDivElement, ListProps>(
   (props, forwardedRef) => {
-    const { children, label = 'Suggestions', ...etc } = props;
+    const { label = 'Suggestions', ...etc } = props;
     const ref = React.useRef<HTMLDivElement>(null);
     const height = React.useRef<HTMLDivElement>(null);
     const context = useCommand();
@@ -1115,7 +1112,7 @@ const Empty = React.forwardRef<HTMLDivElement, EmptyProps>(
  */
 const Loading = React.forwardRef<HTMLDivElement, LoadingProps>(
   (props, forwardedRef) => {
-    const { children, label = 'Loading...', progress, ...etc } = props;
+    const { label = 'Loading...', progress, ...etc } = props;
 
     return (
       <Primitive.div
@@ -1207,7 +1204,7 @@ const useLayoutEffect =
   typeof window === 'undefined' ? React.useEffect : React.useLayoutEffect;
 
 function useLazyRef<T>(fn: () => T) {
-  const ref = React.useRef<T>();
+  const ref = React.useRef<T>(null) as React.RefObject<T>;
 
   if (ref.current === undefined) {
     ref.current = fn();
@@ -1247,7 +1244,7 @@ function useValue(
   deps: (React.ReactNode | React.RefObject<HTMLElement> | string)[],
   aliases: string[] = []
 ) {
-  const valueRef = React.useRef<string>();
+  const valueRef = React.useRef<string>('');
   const context = useCommand();
 
   useLayoutEffect(() => {
@@ -1270,7 +1267,7 @@ function useValue(
 
     context.value(id, value!, keywords);
     ref.current?.setAttribute(VALUE_ATTR, value!);
-    valueRef.current = value;
+    valueRef.current = value ?? '';
   });
 
   return valueRef;
@@ -1305,13 +1302,13 @@ function renderChildren(children: React.ReactElement) {
 
 function SlottableWithNestedChildren(
   { asChild, children }: { asChild?: boolean; children?: React.ReactNode },
-  render: (child: React.ReactNode) => JSX.Element
+  render: (child: React.ReactNode) => React.JSX.Element
 ) {
   if (asChild && React.isValidElement(children)) {
     return React.cloneElement(
       renderChildren(children),
       { ref: (children as any).ref },
-      render(children.props.children)
+      render((children.props as { children: React.ReactNode }).children)
     );
   }
 

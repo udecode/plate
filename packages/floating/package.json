@@ -45,7 +45,7 @@
   },
   "dependencies": {
     "@floating-ui/core": "^1.6.8",
-    "@floating-ui/react": "^0.26.28"
+    "@floating-ui/react": "^0.27.2"
   },
   "devDependencies": {
     "@udecode/plate-common": "workspace:^"

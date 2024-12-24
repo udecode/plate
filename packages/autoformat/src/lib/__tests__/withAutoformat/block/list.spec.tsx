@@ -1,5 +1,3 @@
-/** @jsx jsxt */
-
 import { createSlateEditor } from '@udecode/plate-common';
 import { jsxt } from '@udecode/plate-test-utils';
 import { autoformatPlugin } from 'www/src/registry/default/components/editor/plugins/autoformat-plugin';
@@ -23,7 +21,7 @@ describe('when -space', () => {
           hello
         </hp>
       </fragment>
-    ) as any;
+    );
 
     const output = (
       <fragment>
@@ -33,7 +31,7 @@ describe('when -space', () => {
           </hli>
         </hul>
       </fragment>
-    ) as any;
+    );
 
     const editor = createSlateEditor({
       plugins: [autoformatPlugin],
@@ -56,7 +54,7 @@ describe('when 1.space', () => {
           hello
         </hp>
       </fragment>
-    ) as any;
+    );
 
     const output = (
       <fragment>
@@ -66,7 +64,7 @@ describe('when 1.space', () => {
           </hli>
         </hol>
       </fragment>
-    ) as any;
+    );
 
     const editor = createSlateEditor({
       plugins: [autoformatPlugin],
@@ -89,13 +87,13 @@ describe('when [].space', () => {
           hello
         </hp>
       </fragment>
-    ) as any;
+    );
 
     const output = (
       <fragment>
         <htodoli>hello</htodoli>
       </fragment>
-    ) as any;
+    );
 
     const editor = createSlateEditor({
       plugins: [autoformatPlugin],
@@ -118,13 +116,13 @@ describe('when [x].space', () => {
           hello
         </hp>
       </fragment>
-    ) as any;
+    );
 
     const output = (
       <fragment>
         <htodoli checked>hello</htodoli>
       </fragment>
-    ) as any;
+    );
 
     const editor = createSlateEditor({
       plugins: [autoformatPlugin],
@@ -147,20 +145,20 @@ describe('when +space', () => {
           hello
         </hp>
       </fragment>
-    ) as any;
+    );
 
     const output = (
       <fragment>
         <htoggle>hello</htoggle>
       </fragment>
-    ) as any;
+    );
 
     // See useHooksToggle.ts, we overload the plugin with a `setOpenIds` function until there's a JOTAI layer in plate-core,
     //   so here we need to remove the `preformat` property of the autoformat rule that uses this overload.
 
     const autoformatPluginRulesWitoutTogglePreformat =
       autoformatPlugin.options.rules!.map((rule) => {
-        const { preFormat, ...rest } = rule as AutoformatBlockRule;
+        const { preFormat: _, ...rest } = rule as AutoformatBlockRule;
 
         if (rule.match === '+ ') return rest;
 
@@ -169,7 +167,7 @@ describe('when +space', () => {
 
     const autoformatPluginWitoutTogglePreformat: AutoformatPluginOptions = {
       ...autoformatPlugin.options,
-      rules: autoformatPluginRulesWitoutTogglePreformat as any,
+      rules: autoformatPluginRulesWitoutTogglePreformat,
     };
 
     const editor = createSlateEditor({

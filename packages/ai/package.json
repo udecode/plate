@@ -51,12 +51,12 @@
   },
   "dependencies": {
     "@udecode/plate-markdown": "41.0.0",
-    "@udecode/plate-selection": "41.0.0",
+    "@udecode/plate-selection": "41.0.6",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
     "@udecode/plate-combobox": "41.0.0",
-    "ai": "^3.4.33"
+    "ai": "^4.0.22"
   },
   "peerDependencies": {
     "@udecode/plate-common": ">=41.0.0",

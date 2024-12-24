@@ -2,6 +2,8 @@
   "extends": "../../config/tsconfig.build.json",
   "compilerOptions": {
     "declarationDir": "./dist",
+    "declaration": true,
+    "noEmit": false,
     "outDir": "./dist",
     "paths": {
       "@viselect/vanilla": [

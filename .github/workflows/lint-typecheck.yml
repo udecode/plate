@@ -56,8 +56,7 @@ jobs:
           version: 9.15.1
           run_install: false
 
-      - name: Use Node.js ${{ matrix.node-version }}
-      - name: Setup Node.js
+      - name: Use Node.js 22
         uses: actions/setup-node@v4
         with:
           node-version: 22

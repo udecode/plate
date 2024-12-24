@@ -2,10 +2,10 @@ import React from 'react';
 
 type ElementType<P = any> =
   | {
-      [K in keyof JSX.IntrinsicElements]: P extends JSX.IntrinsicElements[K]
+      [K in keyof React.JSX.IntrinsicElements]: P extends React.JSX.IntrinsicElements[K]
         ? K
         : never;
-    }[keyof JSX.IntrinsicElements]
+    }[keyof React.JSX.IntrinsicElements]
   | React.ComponentType<P>;
 
 type ForwardRefComponent<T, P = {}> = React.ForwardRefExoticComponent<
@@ -14,8 +14,8 @@ type ForwardRefComponent<T, P = {}> = React.ForwardRefExoticComponent<
 
 type InferElementRef<T> =
   T extends ElementType<any>
-    ? T extends keyof JSX.IntrinsicElements
-      ? JSX.IntrinsicElements[T] extends React.DetailedHTMLProps<
+    ? T extends keyof React.JSX.IntrinsicElements
+      ? React.JSX.IntrinsicElements[T] extends React.DetailedHTMLProps<
           React.HTMLAttributes<infer R>,
           any
         >

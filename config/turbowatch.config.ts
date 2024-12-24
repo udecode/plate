@@ -23,7 +23,7 @@ const allPackages = foundPackageJson.reduce<PathToPackageNameMap>(
 
       acc.set(current, packageName);
       return acc;
-    } catch (_) {}
+    } catch {}
 
     return acc;
   },

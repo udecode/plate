@@ -50,7 +50,7 @@
     "typecheck": "INIT_CWD=\"$PWD\" pnpm -w run p:typecheck"
   },
   "dependencies": {
-    "katex": "0.16.11"
+    "katex": "0.16.18"
   },
   "devDependencies": {
     "@types/katex": "0.16.7",

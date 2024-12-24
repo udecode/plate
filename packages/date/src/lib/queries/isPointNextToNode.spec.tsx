@@ -9,7 +9,7 @@ import { isPointNextToNode } from './isPointNextToNode';
 jsxt;
 
 describe('isPointNextToNode', () => {
-  const createEditor = (input: JSX.Element): SlateEditor =>
+  const createEditor = (input: React.JSX.Element): SlateEditor =>
     input as any as SlateEditor;
 
   describe('when point is next to a node of specified type', () => {
