@@ -1,7 +1,7 @@
 import { cn } from '@udecode/cn';
 import Link from 'next/link';
 
-import { getI18nContent } from '@/i18n/getI18nContent';
+import { useLocale } from '@/hooks/useLocale';
 import { Button } from '@/registry/default/plate-ui/button';
 
 import { siteConfig } from '../config/site';
@@ -20,7 +20,8 @@ const i18n = {
 };
 
 export function OpenInPlus({ className }: { className?: string }) {
-  const content = getI18nContent(i18n);
+  const locale = useLocale();
+  const content = i18n[locale as keyof typeof i18n];
 
   return (
     <div

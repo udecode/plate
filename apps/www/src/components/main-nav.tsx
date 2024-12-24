@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { siteConfig } from '@/config/site';
-import { getI18nContent } from '@/i18n/getI18nContent';
+import { useLocale } from '@/hooks/useLocale';
 
 import { Icons } from './icons';
 
@@ -29,11 +29,15 @@ const i18n = {
 export function MainNav() {
   const pathname = usePathname();
   const isUI = pathname?.includes('/docs/components');
-  const content = getI18nContent(i18n);
+  const locale = useLocale();
+  const content = i18n[locale as keyof typeof i18n];
 
   return (
     <div className="mr-4 hidden md:flex">
-      <Link className="mr-4 flex items-center gap-2 lg:mr-6" href="/">
+      <Link
+        className="mr-4 flex items-center gap-2 lg:mr-6"
+        href={`/${locale === 'en' ? '' : `?locale=${locale}`}`}
+      >
         <Icons.minus className="size-6" />
         <span className="hidden items-center font-bold lg:inline-flex">
           {siteConfig.name} {isUI && 'UI'}
@@ -47,7 +51,7 @@ export function MainNav() {
               ? 'font-medium text-foreground'
               : 'text-foreground/80'
           )}
-          href="/docs"
+          href={`/docs${locale === 'en' ? '' : `?locale=${locale}`}`}
         >
           {content.docs}
         </Link>

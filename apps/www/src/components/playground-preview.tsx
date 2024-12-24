@@ -9,7 +9,7 @@ import type { ImperativePanelHandle } from 'react-resizable-panels';
 import { cn } from '@udecode/cn';
 
 import { useLiftMode } from '@/hooks/use-lift-mode';
-import { getI18nContent } from '@/i18n/getI18nContent';
+import { useLocale } from '@/hooks/useLocale';
 import PlaygroundDemo from '@/registry/default/example/playground-demo';
 
 import { PlaygroundPreviewToolbar } from './playground-preview-toolbar';
@@ -29,12 +29,6 @@ const i18n = {
   },
 };
 
-const block: any = {
-  description: getI18nContent(i18n).description,
-  name: 'editor-ai',
-  src: '/blocks/playground',
-};
-
 // TODO: sync
 export function PlaygroundPreview({
   children,
@@ -43,6 +37,15 @@ export function PlaygroundPreview({
 }: {
   block?: Block;
 } & ComponentProps<'div'>) {
+  const locale = useLocale();
+  const content = i18n[locale as keyof typeof i18n];
+
+  const block: any = {
+    description: content.description,
+    name: 'editor-ai',
+    src: '/blocks/playground',
+  };
+
   const { isLiftMode } = useLiftMode(block.name);
   // const [isLoading, setIsLoading] = React.useState(true);
   const ref = React.useRef<ImperativePanelHandle>(null);

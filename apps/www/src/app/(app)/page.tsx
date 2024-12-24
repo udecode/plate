@@ -13,7 +13,6 @@ import {
 import { SiteFooter } from '@/components/site-footer';
 import { ThemesButton } from '@/components/themes-button';
 import { siteConfig } from '@/config/site';
-import { getI18nContent } from '@/i18n/getI18nContent';
 import { Button } from '@/registry/default/plate-ui/button';
 
 import { AnnouncementButton } from './_components/announcement-button';
@@ -40,20 +39,28 @@ const i18n = {
     potionDescription: 'A Notion-like AI template.',
   },
 };
+type SearchParams = Promise<{
+  locale: string;
+}>;
 
-const block = {
-  description: getI18nContent(i18n).potionDescription,
-  descriptionSrc: siteConfig.links.potionTemplate,
-  isPro: true,
-  meta: {
-    iframeHeight: 800,
-  },
-  name: 'potion',
-  src: siteConfig.links.potionIframe,
-};
+export default async function IndexPage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
+  const locale = ((await searchParams).locale || 'en') as keyof typeof i18n;
+  const content = i18n[locale];
 
-export default function IndexPage() {
-  const content = getI18nContent(i18n);
+  const block = {
+    description: content.potionDescription,
+    descriptionSrc: siteConfig.links.potionTemplate,
+    isPro: true,
+    meta: {
+      iframeHeight: 800,
+    },
+    name: 'potion',
+    src: siteConfig.links.potionIframe,
+  };
 
   return (
     <>

@@ -1,10 +1,8 @@
 'use client';
 
 import { LanguagesIcon } from 'lucide-react';
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { siteConfig } from '@/config/site';
 import { Button } from '@/registry/default/plate-ui/button';
 import {
   DropdownMenu,
@@ -16,6 +14,21 @@ import {
 export function LanguagesDropdownMenu() {
   const pathname = usePathname();
 
+  const handleClick = (locale?: string) => {
+    const url = new URL(window.location.href);
+
+    if (pathname) {
+      url.pathname = pathname;
+    }
+    if (locale) {
+      url.searchParams.set('locale', locale);
+    } else {
+      url.searchParams.delete('locale');
+    }
+
+    window.location.href = url.toString();
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -25,21 +38,21 @@ export function LanguagesDropdownMenu() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="z-[60] py-1">
-        <DropdownMenuItem>
-          <Link
+        <DropdownMenuItem asChild>
+          <div
             className="m-0 w-full cursor-pointer"
-            href={`${siteConfig.languages.en}${pathname}`}
+            onClick={() => handleClick()}
           >
             English
-          </Link>
+          </div>
         </DropdownMenuItem>
-        <DropdownMenuItem>
-          <Link
+        <DropdownMenuItem asChild>
+          <div
             className="w-full cursor-pointer"
-            href={`${siteConfig.languages.cn}${pathname}`}
+            onClick={() => handleClick('cn')}
           >
             中文
-          </Link>
+          </div>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

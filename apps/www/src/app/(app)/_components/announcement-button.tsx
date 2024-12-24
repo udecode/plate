@@ -4,9 +4,8 @@ import * as React from 'react';
 
 import { ArrowRightIcon } from 'lucide-react';
 
-import { getI18nContent } from '@/i18n/getI18nContent';
+import { useLocale } from '@/hooks/useLocale';
 import { Button } from '@/registry/default/plate-ui/button';
-
 const i18n = {
   cn: {
     description: 'AI, Copilot, 上传, 数学, 以及更多',
@@ -17,7 +16,8 @@ const i18n = {
 };
 
 export function AnnouncementButton() {
-  const content = getI18nContent(i18n);
+  const locale = useLocale();
+  const content = i18n[locale as keyof typeof i18n];
 
   return (
     <Button

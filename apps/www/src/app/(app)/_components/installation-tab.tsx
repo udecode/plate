@@ -25,7 +25,7 @@ import {
   customizerItems,
   orderedPluginKeys,
 } from '@/config/customizer-items';
-import { getI18nContent } from '@/i18n/getI18nContent';
+import { useLocale } from '@/hooks/useLocale';
 import { useMounted } from '@/registry/default/hooks/use-mounted';
 import { Label } from '@/registry/default/plate-ui/label';
 
@@ -134,7 +134,8 @@ function getEditorCodeGeneratorResult({
 }
 
 export default function InstallationTab() {
-  const content = getI18nContent(i18n);
+  const locale = useLocale();
+  const content = i18n[locale as keyof typeof i18n];
   const checkedPlugins = settingsStore.use.checkedPlugins();
   const checkedComponents = settingsStore.use.checkedComponents();
   const mounted = useMounted();

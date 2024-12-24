@@ -61,7 +61,6 @@ import { Link } from '@/components/link';
 import { Markdown } from '@/components/markdown';
 import { H2, H3, P } from '@/components/typography';
 import { exampleNavMap } from '@/config/docs-examples';
-import { getI18nContent } from '@/i18n/getI18nContent';
 import { basicElementsValue } from '@/registry/default/example/values/basic-elements-value';
 import { basicMarksValue } from '@/registry/default/example/values/basic-marks-value';
 
@@ -94,8 +93,13 @@ const i18n = {
   },
 };
 
-export default function RSCPage() {
-  const content = getI18nContent(i18n);
+export default function RSCPage({
+  searchParams,
+}: {
+  searchParams: { locale: string };
+}) {
+  const locale = searchParams.locale || 'en';
+  const content = i18n[locale as keyof typeof i18n];
   const editor = createSlateEditor({
     plugins: [
       BaseHeadingPlugin,

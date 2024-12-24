@@ -12,6 +12,7 @@ import { H3 } from '@/components/typography';
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { getDocIcon } from '@/config/docs-icons';
 import { categoryNavGroups, docSections } from '@/config/docs-utils';
+import { useLocale } from '@/hooks/useLocale';
 import { Input } from '@/registry/default/plate-ui/input';
 
 export function NavItemsGrid({
@@ -21,6 +22,7 @@ export function NavItemsGrid({
   category: string;
   showFilter?: boolean;
 }) {
+  const locale = useLocale();
   const [filter, setFilter] = useState('');
   const items: SidebarNavItem[] = (categoryNavGroups as any)[category];
 
@@ -70,7 +72,7 @@ export function NavItemsGrid({
                   <Link
                     key={item.href}
                     className="rounded-lg"
-                    href={item.href!}
+                    href={`${item.href}${locale === 'en' ? '' : `?locale=${locale}`}`}
                   >
                     <Card className="h-full bg-muted/30 transition-shadow duration-200 hover:shadow-md">
                       <CardContent className="flex gap-2 p-2">

@@ -65,6 +65,7 @@ import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
 import { settingsStore } from '@/components/context/settings-store';
+import { useLocale } from '@/hooks/useLocale';
 import { getI18nValues } from '@/i18n/getI18nValues';
 import { copilotPlugins } from '@/registry/default/components/editor/plugins/copilot-plugins';
 import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';
@@ -108,7 +109,8 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
 }
 
 const usePlaygroundValue = (): Value => {
-  const values = getI18nValues();
+  const locale = useLocale();
+  const values = getI18nValues(locale);
 
   return useMemo(() => {
     const enabled = settingsStore.get.checkedPlugins();

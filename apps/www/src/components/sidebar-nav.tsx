@@ -17,6 +17,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { useLocale } from '@/hooks/useLocale';
 import { Input } from '@/registry/default/plate-ui/input';
 
 export interface DocsSidebarNavProps {
@@ -178,6 +179,8 @@ export function DocsSidebarNavItems({
   items,
   pathname,
 }: DocsSidebarNavItemsProps) {
+  const locale = useLocale();
+
   return items?.length ? (
     <div
       className={cn(
@@ -196,7 +199,7 @@ export function DocsSidebarNavItems({
                   ? 'font-medium text-foreground'
                   : 'text-muted-foreground'
               )}
-              href={item.href}
+              href={`${item.href}${locale === 'en' ? '' : `?locale=${locale}`}`}
               rel={item.external ? 'noreferrer' : ''}
               target={item.external ? '_blank' : ''}
             >

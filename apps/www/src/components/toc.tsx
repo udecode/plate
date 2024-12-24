@@ -6,7 +6,7 @@ import type { TableOfContents } from '@/lib/toc';
 
 import { cn } from '@udecode/cn';
 
-import { getI18nContent } from '@/i18n/getI18nContent';
+import { useLocale } from '@/hooks/useLocale';
 
 interface TocProps {
   toc: TableOfContents;
@@ -22,7 +22,8 @@ const i18n = {
 };
 
 export function DashboardTableOfContents({ toc }: TocProps) {
-  const content = getI18nContent(i18n);
+  const locale = useLocale();
+  const content = i18n[locale as keyof typeof i18n];
 
   const itemIds = React.useMemo(
     () =>
