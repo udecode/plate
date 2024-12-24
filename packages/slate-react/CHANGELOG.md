@@ -1,5 +1,11 @@
 # @udecode/slate-react
 
+## 41.0.5
+
+### Patch Changes
+
+- [`e57256d45ab53c7fb1cb76b8824e815301ee10c0`](https://github.com/udecode/plate/commit/e57256d45ab53c7fb1cb76b8824e815301ee10c0) by [@zbeyens](https://github.com/zbeyens) – Type
+
 ## 41.0.0
 
 ### Major Changes

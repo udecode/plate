@@ -332,15 +332,15 @@ export function ExportToolbarButton({ children, ...props }: DropdownMenuProps) {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=JetBrains+Mono:wght@400..700&display=swap"
           rel="stylesheet"
         />
         ${tailwindCss}
         ${prismCss}
         <style>
           :root {
-            --font-sans: 'Inter', sans-serif;
-            --font-mono: 'JetBrains Mono', monospace;
+            --font-sans: 'Inter', 'Inter Fallback';
+            --font-mono: 'JetBrains Mono', 'JetBrains Mono Fallback';
           }
         </style>
       </head>

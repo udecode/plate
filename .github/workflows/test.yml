@@ -43,19 +43,21 @@ on:
 
 jobs:
   test:
-    name: ${{ matrix.command }}
+    name: Unit Tests
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [18.18.x]
+
+    # Add concurrency to cancel redundant runs
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: ♻️ Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 22
 
       - name: 📥 Monorepo install
         uses: ./.github/actions/yarn-nm-install
@@ -68,21 +70,20 @@ jobs:
             ${{ github.workspace }}/**/tsconfig.tsbuildinfo
           key: packages-cache-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
 
-      - name: 🏗 Run build
+      - name: 🏗 Build
         run: yarn build
 
-      - name: 🧪 Unit tests
+      - name: 🧪 Run tests
         run: yarn test
 
   notify-test-failure:
     name: Discord Notification
     runs-on: ubuntu-latest
-    needs:
-      - test
+    needs: [test]
     if: ${{ github.event_name == 'push' && failure() }}
 
     steps:
-      - name: Notify
+      - name: 🔔 Send Discord Notification
         uses: nobrayner/discord-webhook@v1
         with:
           github-token: ${{ secrets.X_GITHUB_READ_ACTIONS_TOKEN }}

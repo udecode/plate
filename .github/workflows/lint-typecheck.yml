@@ -39,21 +39,23 @@ on:
       - 'scripts'
       - 'patches'
 
+# Add concurrency to cancel redundant runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint-typecheck:
-    name: ${{ matrix.command }}
+    name: Lint and Typecheck
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [18.18.x]
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 22
 
       - name: 📥 Monorepo install
         uses: ./.github/actions/yarn-nm-install
@@ -66,24 +68,23 @@ jobs:
             ${{ github.workspace }}/**/tsconfig.tsbuildinfo
           key: packages-cache-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
 
-      - name: 🏗 Run build
+      - name: 🏗 Build
         run: yarn build
 
-      - name: 🔬 Linter
+      - name: 🔬 Lint
         run: yarn lint
 
       - name: 🕵️ Typecheck
         run: yarn typecheck:all
 
-  notify-lint-typecheck-failure:
+  notify-failure:
     name: Discord Notification
     runs-on: ubuntu-latest
-    needs:
-      - lint-typecheck
+    needs: [lint-typecheck]
     if: ${{ github.event_name == 'push' && failure() }}
 
     steps:
-      - name: Notify
+      - name: Send Discord Notification
         uses: nobrayner/discord-webhook@v1
         with:
           github-token: ${{ secrets.X_GITHUB_READ_ACTIONS_TOKEN }}

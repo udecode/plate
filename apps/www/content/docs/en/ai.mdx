@@ -35,43 +35,69 @@ npm install @udecode/plate-ai @udecode/plate-selection @udecode/plate-markdown @
 ### Plugins
 
 ```tsx
-import { withProps } from '@udecode/cn';
 import { AIChatPlugin, AIPlugin } from '@udecode/plate-ai/react';
 import {
-  BoldPlugin,
-  CodePlugin,
-  ItalicPlugin,
-  StrikethroughPlugin,
-  UnderlinePlugin,
-} from '@udecode/plate-basic-marks/react';
-import { PlateLeaf, createPlateEditor } from '@udecode/plate-common/react';
-import { LinkPlugin } from '@udecode/plate-link/react';
+  BaseBoldPlugin,
+  BaseCodePlugin,
+  BaseItalicPlugin,
+  BaseStrikethroughPlugin,
+  BaseUnderlinePlugin,
+} from '@udecode/plate-basic-marks';
+import { BaseBlockquotePlugin } from '@udecode/plate-block-quote';
+import {
+  BaseCodeBlockPlugin,
+  BaseCodeLinePlugin,
+  BaseCodeSyntaxPlugin,
+} from '@udecode/plate-code-block';
+import { BaseParagraphPlugin, createSlateEditor } from '@udecode/plate-common';
+import { BaseHeadingPlugin, HEADING_LEVELS } from '@udecode/plate-heading';
+import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
+import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
+import { BaseLinkPlugin } from '@udecode/plate-link';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
 ```
 
 ```tsx
 export const createAIEditor = () => {
-  const editor = createPlateEditor({
+  const editor = createSlateEditor({
     id: 'ai',
-    override: {
-      components: {
-        [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),
-        [CodePlugin.key]: CodeLeaf,
-        [ItalicPlugin.key]: withProps(PlateLeaf, { as: 'em' }),
-        [LinkPlugin.key]: LinkElement,
-        [StrikethroughPlugin.key]: withProps(PlateLeaf, { as: 's' }),
-        [UnderlinePlugin.key]: withProps(PlateLeaf, { as: 'u' }),
-      },
-    },
     plugins: [
-      BoldPlugin,
-      ItalicPlugin,
-      UnderlinePlugin,
-      StrikethroughPlugin,
-      CodePlugin,
+      BaseBlockquotePlugin,
+      BaseBoldPlugin,
+      BaseCodeBlockPlugin,
+      BaseCodeLinePlugin,
+      BaseCodePlugin,
+      BaseCodeSyntaxPlugin,
+      BaseItalicPlugin,
+      BaseStrikethroughPlugin,
+      BaseUnderlinePlugin,
+      BaseHeadingPlugin,
+      BaseHorizontalRulePlugin,
+      BaseLinkPlugin,
+      BaseParagraphPlugin,
+      BaseIndentListPlugin.extend({
+        inject: {
+          targetPlugins: [
+            BaseParagraphPlugin.key,
+            ...HEADING_LEVELS,
+            BaseBlockquotePlugin.key,
+            BaseCodeBlockPlugin.key,
+          ],
+        },
+        options: {
+          listStyleTypes: {
+            todo: {
+              liComponent: TodoLiStatic,
+              markerComponent: TodoMarkerStatic,
+              type: 'todo',
+            },
+          },
+        },
+      }),
+      MarkdownPlugin.configure({ options: { indentList: true } }),
     ],
-    value: [{ children: [{ text: '' }], type: 'p' }],
   });
+
 
   return editor;
 };
