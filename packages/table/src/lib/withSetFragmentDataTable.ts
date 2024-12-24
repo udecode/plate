@@ -148,7 +148,7 @@ export const withSetFragmentDataTable: ExtendEditor<TableConfig> = ({
     data.setData('text/html', divElement.innerHTML);
 
     // set slate fragment
-    const selectedFragmentStr = JSON.stringify(tableNode);
+    const selectedFragmentStr = JSON.stringify([tableNode]);
     const encodedFragment = window.btoa(
       encodeURIComponent(selectedFragmentStr)
     );
