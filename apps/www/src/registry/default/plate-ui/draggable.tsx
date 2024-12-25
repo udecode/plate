@@ -108,10 +108,7 @@ export const Draggable = withRef<'div', PlateRenderElementProps>(
         className={cn(
           'relative',
           isDragging && 'opacity-50',
-          STRUCTURAL_TYPES.includes(element.type)
-            ? 'group/structural'
-            : 'group',
-          className
+          STRUCTURAL_TYPES.includes(element.type) ? 'group/structural' : 'group'
         )}
       >
         <Gutter>

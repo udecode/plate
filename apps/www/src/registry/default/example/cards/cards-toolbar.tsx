@@ -11,7 +11,6 @@ import {
   FontBackgroundColorPlugin,
   FontColorPlugin,
 } from '@udecode/plate-font/react';
-import { ListStyleType } from '@udecode/plate-indent-list';
 import {
   AudioPlugin,
   FilePlugin,
@@ -33,7 +32,10 @@ import { ColorDropdownMenu } from '@/registry/default/plate-ui/color-dropdown-me
 import { CommentToolbarButton } from '@/registry/default/plate-ui/comment-toolbar-button';
 import { EmojiDropdownMenu } from '@/registry/default/plate-ui/emoji-dropdown-menu';
 import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
-import { IndentListToolbarButton } from '@/registry/default/plate-ui/indent-list-toolbar-button';
+import {
+  BulletedIndentListToolbarButton,
+  NumberedIndentListToolbarButton,
+} from '@/registry/default/plate-ui/indent-list-toolbar-button';
 import { IndentToolbarButton } from '@/registry/default/plate-ui/indent-toolbar-button';
 import { InsertDropdownMenu } from '@/registry/default/plate-ui/insert-dropdown-menu';
 import { LineHeightDropdownMenu } from '@/registry/default/plate-ui/line-height-dropdown-menu';
@@ -111,8 +113,8 @@ export function CardsToolbar() {
 
             <LineHeightDropdownMenu />
 
-            <IndentListToolbarButton nodeType={ListStyleType.Disc} />
-            <IndentListToolbarButton nodeType={ListStyleType.Decimal} />
+            <BulletedIndentListToolbarButton />
+            <NumberedIndentListToolbarButton />
 
             <OutdentToolbarButton />
             <IndentToolbarButton />

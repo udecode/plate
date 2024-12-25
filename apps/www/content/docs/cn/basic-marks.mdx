@@ -1,0 +1,136 @@
+---
+title: Basic Marks
+docs:
+  - route: /docs/components/mark-toolbar-button
+    title: 标记工具栏按钮
+---
+
+<ComponentPreview name="basic-marks-demo" />
+
+<PackageInfo>
+
+## 功能
+
+- 包括常用的文本样式功能：粗体、斜体、下划线、删除线、上标、下标和代码。
+
+</PackageInfo>
+
+**插件：**
+
+- `BoldPlugin` 用于 `bold` 标记
+- `ItalicPlugin` 用于 `italic` 标记
+- `UnderlinePlugin` 用于 `underline` 标记
+- `StrikethroughPlugin` 用于 `strikethrough` 标记
+- `SubscriptPlugin` 用于 `subscript` 标记
+- `SuperscriptPlugin` 用于 `superscript` 标记
+- `CodePlugin` 用于 `code` 标记
+
+## Installation
+
+```bash
+npm install @udecode/plate-basic-marks
+```
+
+## Usage
+
+```tsx
+import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
+
+const plugins = [
+  // ...otherPlugins,
+  BasicMarksPlugin,
+];
+```
+
+## 键盘快捷键
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + B">
+    切换所选文本的粗体格式。
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + I">
+    切换所选文本的斜体格式。
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + U">
+    切换所选文本的下划线格式。
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + E">
+    切换所选文本的代码格式。
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Shift + X">
+    切换所选文本的删除线格式。
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + ,">
+    切换所选文本的下标格式。
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + .">
+    切换所选文本的上标格式。
+  </KeyTableItem>
+</KeyTable>
+
+## 插件
+
+### BasicMarksPlugin
+
+### BoldPlugin
+
+<APIOptions>
+<APIItem name="clear" type="string | string[]" optional>
+要删除的节点属性。
+
+</APIItem>
+</APIOptions>
+
+### CodePlugin
+
+<APIOptions>
+<APIItem name="clear" type="string | string[]" optional>
+要删除的节点属性。
+
+</APIItem>
+</APIOptions>
+
+### ItalicPlugin
+
+<APIOptions>
+<APIItem name="clear" type="string | string[]" optional>
+要删除的节点属性。
+
+</APIItem>
+</APIOptions>
+
+### UnderlinePlugin
+
+<APIOptions>
+<APIItem name="clear" type="string | string[]" optional>
+要删除的节点属性。
+
+</APIItem>
+</APIOptions>
+
+### StrikethroughPlugin
+
+<APIOptions>
+<APIItem name="clear" type="string | string[]" optional>
+要删除的节点属性。
+
+</APIItem>
+</APIOptions>
+
+### SubscriptPlugin
+
+<APIOptions>
+<APIItem name="clear" type="string | string[]" optional>
+要删除的节点属性。
+
+</APIItem>
+</APIOptions>
+
+### SuperscriptPlugin
+
+<APIOptions>
+<APIItem name="clear" type="string | string[]" optional>
+要删除的节点属性。
+
+</APIItem>
+</APIOptions>

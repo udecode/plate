@@ -9804,6 +9804,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"dotenv@npm:16.4.7":
+  version: 16.4.7
+  resolution: "dotenv@npm:16.4.7"
+  checksum: 10c0/be9f597e36a8daf834452daa1f4cc30e5375a5968f98f46d89b16b983c567398a330580c88395069a77473943c06b877d1ca25b4afafcdd6d4adb549e8293462
+  languageName: node
+  linkType: hard
+
 "dotenv@npm:^16.4.5":
   version: 16.4.5
   resolution: "dotenv@npm:16.4.5"
@@ -22447,6 +22454,7 @@ __metadata:
     concurrently: "npm:^9.0.1"
     contentlayer2: "npm:^0.4.6"
     date-fns: "npm:^3.6.0"
+    dotenv: "npm:16.4.7"
     framer-motion: "npm:^11.5.4"
     fzf: "npm:0.5.2"
     glob: "npm:^11.0.0"

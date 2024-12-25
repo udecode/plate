@@ -1,0 +1,62 @@
+---
+title: Trailing Block
+---
+
+<ComponentPreview name="basic-elements-demo" />
+
+<PackageInfo>
+
+## 功能
+
+- 确保在文档末尾始终存在特定类型的块。
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-trailing-block
+```
+
+## Usage
+
+```tsx
+import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
+```
+
+```tsx
+const plugins = [
+  // ...其他插件,
+  TrailingBlockPlugin.configure({
+    options: {
+      level: 0,
+      type: 'p',
+    },
+  }),
+];
+```
+
+## Plugins
+
+### TrailingBlockPlugin
+
+<APIOptions>
+<APIItem parent="options" name="level" type="number" optional>
+  尾随节点应该所在的层级，第一层为 0。
+  - **默认值:** `0` (根层级)
+</APIItem>
+<APIItem parent="options" name="type" type="string" optional>
+  尾随块的类型。
+  - **默认值:** `editor.getType(ParagraphPlugin)`
+</APIItem>
+<APIItem parent="options" name="allow" type="string[]" optional>
+  匹配这些类型中任意一个的节点过滤器。
+  - **默认值:** `[]` (所有类型)
+</APIItem>
+<APIItem parent="options" name="exclude" type="string[]" optional>
+  不匹配这些类型中任意一个的节点过滤器。
+</APIItem>
+<APIItem parent="options" name="filter" type="(node: TNode) => boolean" optional>
+  自定义过滤函数。
+</APIItem>
+</APIOptions>

@@ -1,8 +1,5 @@
 {
-  "dependencies": [
-    "@udecode/plate-table",
-    "@radix-ui/react-dropdown-menu"
-  ],
+  "dependencies": ["@udecode/plate-table", "@radix-ui/react-dropdown-menu"],
   "doc": {
     "description": "A menu for table manipulation and formatting.",
     "docs": [
@@ -10,9 +7,7 @@
         "route": "/docs/table"
       }
     ],
-    "examples": [
-      "table-demo"
-    ]
+    "examples": ["table-demo"]
   },
   "files": [
     {
@@ -29,9 +24,6 @@
     }
   ],
   "name": "table-dropdown-menu",
-  "registryDependencies": [
-    "dropdown-menu",
-    "toolbar"
-  ],
+  "registryDependencies": ["dropdown-menu", "toolbar"],
   "type": "registry:ui"
 }

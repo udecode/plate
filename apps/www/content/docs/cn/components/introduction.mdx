@@ -1,0 +1,92 @@
+---
+title: 介绍
+description: 使用 shadcn/ui、Radix UI 和 Tailwind CSS 构建的可重用组件。
+---
+
+这**不是**一个组件库。它是一个可重用组件的集合，你可以复制和粘贴到你的应用程序中。
+
+**你所说的“不是组件库”是什么意思？**
+
+我们指的是你不要把它作为依赖安装。它不是通过 npm 可用或分发的。
+
+选择你需要的组件。将代码复制并粘贴到你的项目中，并根据需要进行定制。代码是你的。
+
+_使用此作为构建你自己的组件库的参考。_
+
+## FAQ
+
+<Accordion type="multiple">
+
+<AccordionItem value="faq-0">
+<AccordionTrigger>
+
+它是一个 [shadcn/ui](https://ui.shadcn.com/) 的替代品吗？
+
+</AccordionTrigger>
+<AccordionContent>
+
+不，它不是 [shadcn/ui](https://ui.shadcn.com/) 的替代品。
+相反，Plate UI 是一个扩展的组件集合，建立在 [shadcn/ui](https://ui.shadcn.com/) 和 [Radix UI](https://www.radix-ui.com/) 之上，专门为 **富文本编辑器** 设计。对于应用程序的其他部分，你应该继续使用其他组件，如 [shadcn/ui](https://ui.shadcn.com/)。
+
+Plate UI 遵循与 [shadcn/ui](https://ui.shadcn.com/) 相同的惯例、用法和模式，这意味着你可以无缝集成现有的 [shadcn/ui](https://ui.shadcn.com/) 组件，而不是替换它们。
+
+Next to [shadcn/ui](https://ui.shadcn.com/), Plate UI is the first published component registry.
+
+</AccordionContent>
+
+</AccordionItem>
+
+<AccordionItem value="faq-1">
+<AccordionTrigger>
+为什么复制/粘贴而不是作为依赖包？
+</AccordionTrigger>
+<AccordionContent>
+这个想法是让你拥有和控制代码，让你决定组件是如何构建和样式的。
+
+开始使用一些合理的默认值，然后根据需要定制组件。
+
+将组件打包到 npm 包中的一个缺点是样式与实现耦合。_组件的设计应该与其实现分开。_
+
+</AccordionContent>
+
+</AccordionItem>
+
+<AccordionItem value="faq-2">
+<AccordionTrigger>
+    你计划发布它作为 npm 包吗？
+  </AccordionTrigger>
+  <AccordionContent>
+    不。我们没有计划将它作为 npm 包发布。
+  </AccordionContent>
+</AccordionItem>
+<AccordionItem value="faq-3">
+<AccordionTrigger>
+Which frameworks are supported?
+</AccordionTrigger>
+<AccordionContent>
+
+[Plate](/docs) 和任何支持 React 的框架。[Next.js](/docs/components/installation/next), [Remix](/docs/components/remix) 等等。
+
+</AccordionContent>
+</AccordionItem>
+
+<AccordionItem value="faq-4">
+	<AccordionTrigger>
+		我可以在我的项目中使用它吗？
+	</AccordionTrigger>
+	<AccordionContent>
+		是的。免费用于个人和商业项目。不需要署名，但分享你的编辑器应用程序 [这里](https://github.com/udecode/plate/issues/818) 是受欢迎的！
+
+    </AccordionContent>
+
+</AccordionItem>
+
+</Accordion>
+
+## 致谢
+
+- [shadcn/ui](https://ui.shadcn.com/) - 用于 UI、文档和 CLI。
+- [Radix UI](https://radix-ui.com) - 用于原语(primitive)。
+- [Vercel](https://vercel.com) - 用于托管。
+- [Shu Ding](https://shud.in) - 排版样式是基于他在 Nextra 上的工作。
+- [cmdk](https://cmdk.paco.me) - 用于 `<Command />` 组件。

@@ -14,9 +14,7 @@
         "route": "https://pro.platejs.org/docs/components/table-element"
       }
     ],
-    "examples": [
-      "table-demo"
-    ]
+    "examples": ["table-demo"]
   },
   "files": [
     {
@@ -39,9 +37,6 @@
     }
   ],
   "name": "table-element",
-  "registryDependencies": [
-    "dropdown-menu",
-    "plate-element"
-  ],
+  "registryDependencies": ["dropdown-menu", "plate-element"],
   "type": "registry:ui"
 }
