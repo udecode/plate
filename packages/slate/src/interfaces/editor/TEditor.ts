@@ -2,6 +2,7 @@ import type { Modify, UnknownObject } from '@udecode/utils';
 import type { Editor, Path, Range } from 'slate';
 import type { HistoryEditor } from 'slate-history';
 
+import type { FindNodeOptions } from '../../queries';
 import type { TOperation } from '../../types/TOperation';
 import type { TElement } from '../element/TElement';
 import type { TDescendant } from '../node/TDescendant';
@@ -30,6 +31,11 @@ export type TEditor<V extends Value = Value> = {
     data: DataTransfer,
     originEvent?: 'copy' | 'cut' | 'drag'
   ) => void;
+  /**
+   * Find the path of a node. Overridden by `withPlate` to use React.findPath
+   * (memo). Default is `findNodePath` (traversal).
+   */
+  findPath: (node: TNode, options?: FindNodeOptions) => Path | undefined;
   hasRange: (editor: TEditor<V>, range: Range) => boolean;
   hasTarget: (editor: TEditor<V>, target: EventTarget | null) => target is Node;
   insertData: (data: DataTransfer) => void;
