@@ -140,8 +140,6 @@ export function FixedToolbarButtons() {
 
             <NumberedIndentListToolbarButton />
             <BulletedIndentListToolbarButton />
-            {/* <IndentListToolbarButton nodeType={ListStyleType.Disc} /> */}
-            {/* <IndentListToolbarButton nodeType={ListStyleType.Decimal} /> */}
             <IndentTodoToolbarButton />
             <ToggleToolbarButton />
           </ToolbarGroup>

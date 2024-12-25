@@ -56,7 +56,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
   const [table, setTable] = useState(
     Array.from({ length: COLS }, () => Array.from({ length: COLS }).fill(0))
   );
-  const [info, setInfo] = useState({ colCount: 0, rowCount: 0 });
+  const [size, setSize] = useState({ colCount: 0, rowCount: 0 });
 
   const onCellMove = useCallback(
     (rowIndex: number, colIndex: number) => {
@@ -69,15 +69,16 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
         }
       }
 
-      setInfo({ colCount: colIndex + 1, rowCount: rowIndex + 1 });
+      setSize({ colCount: colIndex + 1, rowCount: rowIndex + 1 });
       setTable(newTables);
     },
     [table]
   );
 
   const onInsertTable = useCallback(() => {
-    insertTable(editor, info);
-  }, [editor, info]);
+    insertTable(editor, size);
+    focusEditor(editor);
+  }, [editor, size]);
 
   return (
     <DropdownMenu modal={false} {...openState} {...props}>
@@ -119,7 +120,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
                 </div>
 
                 <div className="text-center text-xs text-current">
-                  {info.rowCount} x {info.colCount}
+                  {size.rowCount} x {size.colCount}
                 </div>
               </div>
             </DropdownMenuSubContent>
