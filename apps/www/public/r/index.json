@@ -1195,6 +1195,10 @@
         "type": "registry:ui"
       },
       {
+        "path": "plate-ui/table-icons.tsx",
+        "type": "registry:ui"
+      },
+      {
         "path": "plate-ui/table-element-static.tsx",
         "type": "registry:ui"
       }
@@ -3173,6 +3177,10 @@
     "files": [
       {
         "path": "plate-ui/table-dropdown-menu.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/table-icons.tsx",
         "type": "registry:ui"
       }
     ],

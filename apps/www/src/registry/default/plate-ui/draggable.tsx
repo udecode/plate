@@ -99,8 +99,8 @@ export const Draggable = withRef<'div', PlateRenderElementProps>(
     const { children, editor, element, path } = props;
     const { isDragging, previewRef, handleRef } = useDraggable({ element });
 
-    const isInColumn = path?.length === 3;
-    const isInTable = path?.length === 4;
+    const isInColumn = path.length === 3;
+    const isInTable = path.length === 4;
 
     return (
       <div
@@ -163,8 +163,8 @@ const Gutter = React.forwardRef<
 
   const isNodeType = (keys: string[] | string) => isType(editor, element, keys);
 
-  const isInColumn = path?.length === 3;
-  const isInTable = path?.length === 4;
+  const isInColumn = path.length === 3;
+  const isInTable = path.length === 4;
 
   return (
     <div

@@ -3,6 +3,7 @@ import {
   type TSelection,
   type Value,
   createTEditor,
+  findNodePath,
   getEndPoint,
   getStartPoint,
   normalizeEditor,
@@ -107,6 +108,7 @@ export const withSlate = <
   editor.key = editor.key ?? nanoid();
   editor.isFallback = false;
 
+  editor.findPath = (node, options) => findNodePath(editor, node, options);
   editor.getApi = () => editor.api as any;
   editor.getTransforms = () => editor.transforms as any;
   editor.getPlugin = (plugin) => getSlatePlugin(editor, plugin) as any;
