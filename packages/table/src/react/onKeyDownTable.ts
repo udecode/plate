@@ -1,6 +1,9 @@
 import {
   type TElement,
+  collapseSelection,
   getAboveNode,
+  getNodeEntries,
+  isExpanded,
   isHotkey,
   select,
 } from '@udecode/plate-common';
@@ -9,6 +12,7 @@ import { type KeyboardHandler, Hotkeys } from '@udecode/plate-common/react';
 import {
   type TableConfig,
   KEY_SHIFT_EDGES,
+  getCellTypes,
   getNextTableCell,
   getPreviousTableCell,
   getTableEntries,
@@ -21,6 +25,31 @@ export const onKeyDownTable: KeyboardHandler<TableConfig> = ({
   type,
 }) => {
   if (event.defaultPrevented) return;
+
+  const compositeKeyCode = 229;
+
+  if (
+    // This exception only occurs when IME composition is triggered, and can be identified by this keycode
+    event.which === compositeKeyCode &&
+    editor.selection &&
+    isExpanded(editor.selection)
+  ) {
+    // fix the exception of inputting Chinese when selecting multiple cells
+    const tdEntries = Array.from(
+      getNodeEntries(editor, {
+        at: editor.selection,
+        match: { type: getCellTypes(editor) },
+      })
+    );
+
+    if (tdEntries.length > 1) {
+      collapseSelection(editor, {
+        edge: 'end',
+      });
+
+      return;
+    }
+  }
 
   const isKeyDown: any = {
     'shift+down': isHotkey('shift+down', event),

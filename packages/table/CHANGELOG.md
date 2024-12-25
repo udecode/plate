@@ -1,5 +1,17 @@
 # @udecode/plate-table
 
+## 41.0.9
+
+### Patch Changes
+
+- [#3909](https://github.com/udecode/plate/pull/3909) by [@Croc-ye](https://github.com/Croc-ye) – fix: copying form mulitple cells does not retain font attributes
+
+## 41.0.7
+
+### Patch Changes
+
+- [#3908](https://github.com/udecode/plate/pull/3908) by [@Croc-ye](https://github.com/Croc-ye) – fix: exception of inputting Chinese when selecting multiple cells
+
 ## 41.0.0
 
 ### Major Changes

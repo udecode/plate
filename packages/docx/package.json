@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-docx",
-  "version": "41.0.0",
+  "version": "41.0.9",
   "description": "Docx serializer plugin for Plate",
   "keywords": [
     "docx",
@@ -50,7 +50,7 @@
     "@udecode/plate-indent": "41.0.0",
     "@udecode/plate-indent-list": "41.0.0",
     "@udecode/plate-media": "41.0.0",
-    "@udecode/plate-table": "41.0.0",
+    "@udecode/plate-table": "41.0.9",
     "validator": "^13.12.0"
   },
   "devDependencies": {
