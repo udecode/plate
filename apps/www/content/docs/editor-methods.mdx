@@ -106,13 +106,21 @@ You can also use `editor.isFallback` to check if the editor is a fallback instan
 
 ## API Methods
 
+### findPath
+
+Find the path of a node. Default is `findNodePath` (traversal). Overridden by `withPlate` to use `ReactEditor.findPath` (memo).
+
+```ts
+const path = editor.findPath(node);
+```
+
 ### getApi
 
 Retrieve the typed API for the editor:
 
 ```ts
 const api = editor.getApi(TablePlugin);
-api.api.create.cell(); // Type-safe API method
+api.api.create.tableCell(); // Type-safe API method
 ```
 
 ### getTransforms
