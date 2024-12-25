@@ -12,7 +12,6 @@
     "allowSyntheticDefaultImports": true,
     "noEmit": true,
     "noImplicitAny": true,
-    "removeComments": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "sourceMap": true,
