@@ -172,8 +172,10 @@ export const ToolbarSplitButton = React.forwardRef<
 
 export const ToolbarSplitButtonPrimary = React.forwardRef<
   React.ElementRef<typeof ToolbarToggleItem>,
-  Omit<React.ComponentPropsWithoutRef<typeof ToolbarToggleItem>, 'value'>
->(({ children, className, size, variant, ...props }, ref) => {
+  Omit<React.ComponentPropsWithoutRef<typeof ToolbarToggleItem>, 'value'> & {
+    pressed?: boolean;
+  }
+>(({ children, className, pressed, size, variant, ...props }, ref) => {
   return (
     <span
       ref={ref}
@@ -184,8 +186,10 @@ export const ToolbarSplitButtonPrimary = React.forwardRef<
         }),
         'rounded-r-none',
         'group-data-[pressed=true]:bg-accent group-data-[pressed=true]:text-accent-foreground',
+        pressed && 'bg-accent text-accent-foreground',
         className
       )}
+      data-pressed={pressed}
       {...props}
     >
       {children}
