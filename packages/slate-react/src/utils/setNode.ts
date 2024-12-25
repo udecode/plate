@@ -5,15 +5,13 @@ import type {
   TNodeProps,
 } from '@udecode/slate';
 
-import { findPath } from '../react-editor';
-
 export const setNode = <N extends NodeOf<E>, E extends TEditor = TEditor>(
   editor: E,
   node: N,
   props: Partial<TNodeProps<N>>,
   options?: Omit<SetNodesOptions<E>, 'at'>
 ) => {
-  const path = findPath(editor, node);
+  const path = editor.findPath(node);
 
   if (!path) return;
 

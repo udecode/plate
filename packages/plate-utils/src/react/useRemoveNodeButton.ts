@@ -1,6 +1,5 @@
 import { useEditorRef } from '@udecode/plate-core/react';
 import { type TElement, removeNodes } from '@udecode/slate';
-import { findPath } from '@udecode/slate-react';
 
 export const useRemoveNodeButton = ({ element }: { element: TElement }) => {
   const editor = useEditorRef();
@@ -8,7 +7,7 @@ export const useRemoveNodeButton = ({ element }: { element: TElement }) => {
   return {
     props: {
       onClick: () => {
-        const path = findPath(editor, element);
+        const path = editor.findPath(element);
 
         removeNodes(editor, { at: path });
       },
