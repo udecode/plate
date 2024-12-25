@@ -35,7 +35,6 @@ export const useResizableState = ({
 
   const setNodeWidth = React.useCallback(
     (w: number) => {
-      if (!path) return;
       if (w === nodeWidth) {
         // Focus the node if not resized
         select(editor, path);

@@ -5,15 +5,13 @@ import type {
   TNodeProps,
 } from '../interfaces';
 
-import { findNodePath } from '../queries';
-
 export const setNode = <N extends NodeOf<E>, E extends TEditor = TEditor>(
   editor: E,
   node: N,
   props: Partial<TNodeProps<N>>,
   options?: Omit<SetNodesOptions<E>, 'at'>
 ) => {
-  const path = findNodePath(editor, node);
+  const path = editor.findPath(node);
 
   if (!path) return;
 
