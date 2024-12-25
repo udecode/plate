@@ -24,7 +24,7 @@ import {
   ToolbarSplitButtonSecondary,
 } from './toolbar';
 
-export function NumberedListToolbarButton() {
+export function NumberedIndentListToolbarButton() {
   const editor = useEditorRef();
   const openState = useOpenState();
 
@@ -112,7 +112,7 @@ export function NumberedListToolbarButton() {
   );
 }
 
-export function BulletedListToolbarButton() {
+export function BulletedIndentListToolbarButton() {
   const editor = useEditorRef();
   const openState = useOpenState();
 

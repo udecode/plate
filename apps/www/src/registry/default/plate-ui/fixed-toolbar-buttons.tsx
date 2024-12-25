@@ -44,8 +44,8 @@ import { EmojiDropdownMenu } from './emoji-dropdown-menu';
 import { ExportToolbarButton } from './export-toolbar-button';
 import { RedoToolbarButton, UndoToolbarButton } from './history-toolbar-button';
 import {
-  BulletedListToolbarButton,
-  NumberedListToolbarButton,
+  BulletedIndentListToolbarButton,
+  NumberedIndentListToolbarButton,
 } from './indent-list-toolbar-button';
 import { IndentTodoToolbarButton } from './indent-todo-toolbar-button';
 import { IndentToolbarButton } from './indent-toolbar-button';
@@ -138,8 +138,8 @@ export function FixedToolbarButtons() {
           <ToolbarGroup>
             <AlignDropdownMenu />
 
-            <NumberedListToolbarButton />
-            <BulletedListToolbarButton />
+            <NumberedIndentListToolbarButton />
+            <BulletedIndentListToolbarButton />
             {/* <IndentListToolbarButton nodeType={ListStyleType.Disc} /> */}
             {/* <IndentListToolbarButton nodeType={ListStyleType.Decimal} /> */}
             <IndentTodoToolbarButton />
