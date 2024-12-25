@@ -43,11 +43,7 @@ import {
   insertText,
   moveSelection,
 } from '@udecode/plate-common';
-import {
-  findPath,
-  useComposedRef,
-  useEditorRef,
-} from '@udecode/plate-common/react';
+import { useComposedRef, useEditorRef } from '@udecode/plate-common/react';
 import { cva } from 'class-variance-authority';
 
 type FilterFn = (
@@ -129,7 +125,7 @@ const InlineCombobox = ({
   const [insertPoint, setInsertPoint] = useState<PointRef | null>(null);
 
   useEffect(() => {
-    const path = findPath(editor, element);
+    const path = editor.findPath(element);
 
     if (!path) return;
 
