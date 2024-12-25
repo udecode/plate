@@ -17,12 +17,12 @@ import {
   BaseCodeLinePlugin,
   BaseCodeSyntaxPlugin,
 } from '@udecode/plate-code-block';
-import { useEditorPlugin } from '@udecode/plate-common/react';
 import {
   type SlateEditor,
   BaseParagraphPlugin,
   SlateLeaf,
 } from '@udecode/plate-common';
+import { useEditorPlugin } from '@udecode/plate-common/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { BaseLinkPlugin } from '@udecode/plate-link';

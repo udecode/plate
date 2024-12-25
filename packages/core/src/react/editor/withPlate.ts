@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import { type TEditor, type Value, createTEditor } from '@udecode/slate';
+import { findPath } from '@udecode/slate-react';
 
 import type { AnyPlatePlugin } from '../plugin';
 import type { PlateApiPlugin } from '../plugins';
@@ -58,6 +59,13 @@ export const withPlate = <
     ...options,
     plugins: [...getPlateCorePlugins(), ...plugins],
   } as any) as unknown as TPlateEditor<V, InferPlugins<P[]>>;
+
+  const { findPath: findPathBase } = editor;
+
+  editor.findPath = (node, options) =>
+    options
+      ? findPathBase(node, options)
+      : (findPath(editor, node) ?? findPathBase(node, options));
 
   editor.useOptions = ((plugin: any, selector: any, equalityFn: any) => {
     const store = editor.getOptionsStore(plugin);
