@@ -98,10 +98,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
               <span>Table</span>
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent className="m-0 p-0">
-              <DropdownMenuItem
-                className="m-0 !flex flex-col p-0"
-                onSelect={onInsertTable}
-              >
+              <div className="m-0 !flex flex-col p-0" onClick={onInsertTable}>
                 <div className="grid size-[130px] grid-cols-8 gap-0.5 p-1">
                   {table.map((rows, rowIndex) =>
                     rows.map((value, columIndex) => {
@@ -110,7 +107,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
                           key={`(${rowIndex},${columIndex})`}
                           className={cn(
                             'col-span-1 size-3 border border-solid bg-secondary',
-                            !!value && 'border-brand'
+                            !!value && 'border-current'
                           )}
                           onMouseMove={() => {
                             onCellMove(rowIndex, columIndex);
@@ -124,7 +121,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
                 <div className="text-center text-xs text-current">
                   {info.rowCount} x {info.colCount}
                 </div>
-              </DropdownMenuItem>
+              </div>
             </DropdownMenuSubContent>
           </DropdownMenuSub>
 
