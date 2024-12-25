@@ -161,10 +161,12 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
           const next = new Set(prev);
 
           if (added) {
-            extractSelectableIds(added).forEach((id) => next.add(id));
+            extractSelectableIds(added).forEach((id) => id && next.add(id));
           }
           if (removed) {
-            extractSelectableIds(removed).forEach((id) => next.delete(id));
+            extractSelectableIds(removed).forEach(
+              (id) => id && next.delete(id)
+            );
           }
 
           setOption('selectedIds', next);
