@@ -4,13 +4,14 @@ import {
   type SlateEditor,
   type TNodeEntry,
   createPathRef,
+  getEditorPlugin,
   removeNodes,
 } from '@udecode/plate-common';
 
 import {
   type TTableCellElement,
+  BaseTablePlugin,
   getCellRowIndexByPath,
-  getRowSpan,
   getTableMergedColumnCount,
 } from '..';
 import { getTableGridAbove } from '../queries';
@@ -19,6 +20,7 @@ export const deleteRowWhenExpanded = (
   editor: SlateEditor,
   [table, tablePath]: TNodeEntry<TTableCellElement>
 ) => {
+  const { api } = getEditorPlugin(editor, BaseTablePlugin);
   const columnCount = getTableMergedColumnCount(table);
 
   const cells = getTableGridAbove(editor, {
@@ -48,7 +50,7 @@ export const deleteRowWhenExpanded = (
         return;
       }
 
-      const rowSpan = getRowSpan(cell);
+      const rowSpan = api.table.getRowSpan(cell);
 
       rowSpanCarry = rowSpan && rowSpan > 1 ? rowSpan - 1 : 0;
       acrossRow += rowSpan ?? 1;

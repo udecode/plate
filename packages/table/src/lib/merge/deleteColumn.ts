@@ -20,21 +20,19 @@ import {
   getCellIndices,
   getCellPath,
   getCellTypes,
-  getColSpan,
 } from '..';
 import { BaseTablePlugin } from '../BaseTablePlugin';
 import { deleteColumnWhenExpanded } from './deleteColumnWhenExpanded';
 
 export const deleteTableMergeColumn = (editor: SlateEditor) => {
-  const { getOptions, type } = getEditorPlugin(editor, BaseTablePlugin);
+  const { api } = getEditorPlugin(editor, BaseTablePlugin);
+  const type = editor.getType(BaseTablePlugin);
 
   if (
     someNode(editor, {
       match: { type },
     })
   ) {
-    const { _cellIndices: cellIndices } = getOptions();
-
     const tableEntry = getAboveNode<TTableElement>(editor, {
       match: { type },
     });
@@ -55,11 +53,11 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
 
     const selectedCell = selectedCellEntry[0] as TTableCellElement;
 
-    const { col: deletingColIndex } = getCellIndices(
-      cellIndices!,
-      selectedCell
-    )!;
-    const colsDeleteNumber = getColSpan(selectedCell);
+    const { col: deletingColIndex } = getCellIndices(editor, {
+      cellNode: selectedCell,
+      tableNode: table,
+    })!;
+    const colsDeleteNumber = api.table.getColSpan(selectedCell);
 
     const endingColIndex = deletingColIndex + colsDeleteNumber - 1;
 
@@ -87,8 +85,11 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
         if (!cur) return acc;
 
         const currentCell = cur as TTableCellElement;
-        const { col: curColIndex } = getCellIndices(cellIndices!, currentCell)!;
-        const curColSpan = getColSpan(currentCell);
+        const { col: curColIndex } = getCellIndices(editor, {
+          cellNode: currentCell,
+          tableNode: table,
+        })!;
+        const curColSpan = api.table.getColSpan(currentCell);
 
         if (curColIndex < deletingColIndex && curColSpan > 1) {
           acc.squizeColSpanCells.push(currentCell);
@@ -108,11 +109,11 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
     squizeColSpanCells.forEach((cur) => {
       const curCell = cur as TTableCellElement;
 
-      const { col: curColIndex, row: curColRowIndex } = getCellIndices(
-        cellIndices!,
-        curCell
-      )!;
-      const curColSpan = getColSpan(curCell);
+      const { col: curColIndex, row: curColRowIndex } = getCellIndices(editor, {
+        cellNode: curCell,
+        tableNode: table,
+      });
+      const curColSpan = api.table.getColSpan(curCell);
 
       const curCellPath = getCellPath(
         editor,
@@ -154,10 +155,10 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
       const paths: Path[][] = [];
       affectedCells.forEach((cur) => {
         const curCell = cur as TTableCellElement;
-        const { col: curColIndex, row: curRowIndex } = getCellIndices(
-          cellIndices!,
-          curCell
-        )!;
+        const { col: curColIndex, row: curRowIndex } = getCellIndices(editor, {
+          cellNode: curCell,
+          tableNode: table,
+        });
 
         if (
           !squizeColSpanCells.includes(curCell) &&

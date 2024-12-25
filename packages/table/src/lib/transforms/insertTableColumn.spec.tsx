@@ -71,7 +71,7 @@ describe('insertTableColumn', () => {
         ...editorOptions,
       });
 
-      insertTableColumn(editor);
+      insertTableColumn(editor, { select: true });
 
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);
@@ -98,7 +98,7 @@ describe('insertTableColumn', () => {
         ...editorOptions,
       });
 
-      insertTableColumn(editor, { fromCell: [0, 1, 0] });
+      insertTableColumn(editor, { fromCell: [0, 1, 0], select: true });
 
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);
@@ -126,7 +126,35 @@ describe('insertTableColumn', () => {
         ...editorOptions,
       });
 
-      insertTableColumn(editor, { at: [0, 0, 0] });
+      insertTableColumn(editor, { at: [0, 0, 0], select: true });
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+
+    it('should insert column before the current column', () => {
+      const input = makeTableWithCols({
+        cursorPath: [1, 1],
+        rowCols: [
+          ['11', '12'],
+          ['21', '22'],
+        ],
+      });
+
+      const output = makeTableWithCols({
+        cursorPath: [1, 1],
+        rowCols: [
+          ['11', '', '12'],
+          ['21', '', '22'],
+        ],
+      });
+
+      const editor = createPlateEditor({
+        editor: input,
+        ...editorOptions,
+      });
+
+      insertTableColumn(editor, { before: true, select: true });
 
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);
@@ -298,6 +326,35 @@ describe('insertTableColumn', () => {
 
         expect(editor.children).toEqual(output.children);
       });
+    });
+
+    it('should insert column before and adjust column sizes', () => {
+      const input = makeTableWithCols({
+        colSizes: [20, 30],
+        cursorPath: [1, 1],
+        rowCols: [
+          ['11', '12'],
+          ['21', '22'],
+        ],
+      });
+
+      const output = makeTableWithCols({
+        colSizes: [20, 30, 30],
+        cursorPath: [1, 1],
+        rowCols: [
+          ['11', '', '12'],
+          ['21', '', '22'],
+        ],
+      });
+
+      const editor = createPlateEditor({
+        editor: input,
+        ...editorOptions,
+      });
+
+      insertTableColumn(editor, { before: true });
+
+      expect(editor.children).toEqual(output.children);
     });
   });
 });

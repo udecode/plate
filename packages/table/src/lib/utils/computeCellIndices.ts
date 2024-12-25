@@ -1,4 +1,4 @@
-import type { SlateEditor } from '@udecode/plate-common';
+import { type SlateEditor, getEditorPlugin } from '@udecode/plate-common';
 
 import type {
   TTableCellElement,
@@ -7,15 +7,25 @@ import type {
 } from '../types';
 
 import { BaseTablePlugin } from '../BaseTablePlugin';
-import { getColSpan } from '../queries';
-import { getRowSpan } from '../queries/getRowSpan';
+import { getTableRowIndex } from '../queries';
+import { getTableColumnIndex } from '../queries/getTableColumnIndex';
 
 export function computeCellIndices(
   editor: SlateEditor,
-  tableNode: TTableElement,
-  cellNode?: TTableCellElement
+  {
+    cellNode,
+    tableNode,
+  }: {
+    tableNode: TTableElement;
+    cellNode?: TTableCellElement;
+  }
 ) {
-  const options = editor.getOptions(BaseTablePlugin);
+  const { api, getOptions, setOption } = getEditorPlugin<
+    typeof BaseTablePlugin
+  >(editor, {
+    key: 'table',
+  });
+  const { _cellIndices } = getOptions();
 
   const skipCells: boolean[][] = [];
   let targetIndices: { col: number; row: number } | undefined;
@@ -30,7 +40,8 @@ export function computeCellIndices(
       }
 
       const currentIndices = { col: colIndex, row: rowIndex };
-      options._cellIndices?.set(cellElement, currentIndices);
+      _cellIndices!.set(cellElement, currentIndices);
+      editor.setOption(BaseTablePlugin, '_cellIndices', _cellIndices);
 
       if (cellElement === cellNode) {
         targetIndices = currentIndices;
@@ -38,8 +49,8 @@ export function computeCellIndices(
         break;
       }
 
-      const colSpan = getColSpan(cellElement);
-      const rowSpan = getRowSpan(cellElement);
+      const colSpan = api.table.getColSpan(cellElement);
+      const rowSpan = api.table.getRowSpan(cellElement);
 
       for (let r = 0; r < rowSpan; r++) {
         skipCells[rowIndex + r] = skipCells[rowIndex + r] || [];
@@ -55,5 +66,15 @@ export function computeCellIndices(
     if (targetIndices) break;
   }
 
-  return targetIndices;
+  if (!targetIndices && cellNode) {
+    const defaultColIndex = getTableColumnIndex(editor, cellNode);
+    const defaultRowIndex = getTableRowIndex(editor, cellNode);
+
+    _cellIndices!.set(cellNode, { col: defaultColIndex, row: defaultRowIndex });
+    setOption('_cellIndices', _cellIndices);
+
+    return { col: defaultColIndex, row: defaultRowIndex };
+  }
+
+  return targetIndices!;
 }

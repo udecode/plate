@@ -2,24 +2,19 @@ import {
   type ExtendEditor,
   type TElement,
   findNode,
-  findNodePath,
   getEndPoint,
   getStartPoint,
   select,
   withoutNormalizing,
 } from '@udecode/plate-common';
 
-import {
-  type TTableCellElement,
-  type TTableElement,
-  type TableConfig,
-  getColSpan,
-  getRowSpan,
-} from '.';
+import type { TTableCellElement, TTableElement, TableConfig } from '.';
+
 import { BaseTableCellHeaderPlugin, BaseTablePlugin } from './BaseTablePlugin';
 import { getTableGridAbove } from './queries';
 
 export const withSetFragmentDataTable: ExtendEditor<TableConfig> = ({
+  api,
   editor,
   plugin,
 }) => {
@@ -85,7 +80,7 @@ export const withSetFragmentDataTable: ExtendEditor<TableConfig> = ({
           // need to clean data before every iteration
           data.clearData();
 
-          const cellPath = findNodePath(editor, cell)!;
+          const cellPath = editor.findPath(cell)!;
 
           // select cell by cell
           select(editor, {
@@ -101,9 +96,9 @@ export const withSetFragmentDataTable: ExtendEditor<TableConfig> = ({
 
           const cellElement = document.createElement('td');
 
-          const colSpan = getColSpan(cell);
+          const colSpan = api.table.getColSpan(cell);
           cellElement.colSpan = colSpan;
-          const rowSpan = getRowSpan(cell);
+          const rowSpan = api.table.getRowSpan(cell);
           cellElement.rowSpan = rowSpan;
 
           cellElement.innerHTML = data.getData('text/html');

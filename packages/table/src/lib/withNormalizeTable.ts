@@ -10,9 +10,9 @@ import {
   wrapNodeChildren,
 } from '@udecode/plate-common';
 
-import type { TTableElement, TableConfig } from './types';
+import type { TTableElement } from './types';
 
-import { BaseTableRowPlugin } from './BaseTablePlugin';
+import { type TableConfig, BaseTableRowPlugin } from './BaseTablePlugin';
 import { getCellTypes } from './utils/index';
 
 /**

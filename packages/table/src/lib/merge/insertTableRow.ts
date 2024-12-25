@@ -3,6 +3,8 @@ import {
   findNode,
   getBlockAbove,
   getEditorPlugin,
+  getLastChildPath,
+  getNode,
   getParentNode,
   insertElements,
   setNodes,
@@ -19,30 +21,39 @@ import type {
 
 import { BaseTablePlugin, BaseTableRowPlugin } from '../BaseTablePlugin';
 import { getTableColumnCount } from '../queries';
-import { getColSpan } from '../queries/getColSpan';
-import { getRowSpan } from '../queries/getRowSpan';
 import { getCellTypes } from '../utils';
-import { computeCellIndices } from './computeCellIndices';
+import { getCellIndices } from '../utils/getCellIndices';
 import { findCellByIndexes } from './findCellByIndexes';
-import { getCellIndices } from './getCellIndices';
 import { getCellPath } from './getCellPath';
 
 export const insertTableMergeRow = (
   editor: SlateEditor,
   {
     at,
+    before,
     fromRow,
     header,
+    select: shouldSelect,
   }: {
     /** Exact path of the row to insert the column at. Will overrule `fromRow`. */
     at?: Path;
-    disableSelect?: boolean;
+    /** Insert the row before the current row instead of after */
+    before?: boolean;
     fromRow?: Path;
     header?: boolean;
+    select?: boolean;
   } = {}
 ) => {
-  const { api, getOptions, type } = getEditorPlugin(editor, BaseTablePlugin);
-  const { _cellIndices: cellIndices } = getOptions();
+  const { api, type } = getEditorPlugin(editor, BaseTablePlugin);
+
+  if (at && !fromRow) {
+    const table = getNode<TTableElement>(editor, at);
+
+    if (table?.type === editor.getType(BaseTablePlugin)) {
+      fromRow = getLastChildPath([table, at]);
+      at = undefined;
+    }
+  }
 
   const trEntry = fromRow
     ? findNode(editor, {
@@ -75,10 +86,11 @@ export const insertTableMergeRow = (
 
   const [cellNode, cellPath] = cellEntry;
   const cellElement = cellNode as TTableCellElement;
-  const cellRowSpan = getRowSpan(cellElement);
-  const { row: cellRowIndex } =
-    getCellIndices(cellIndices!, cellElement) ||
-    computeCellIndices(editor, tableNode, cellElement)!;
+  const cellRowSpan = api.table.getRowSpan(cellElement);
+  const { row: cellRowIndex } = getCellIndices(editor, {
+    cellNode: cellElement,
+    tableNode: tableNode,
+  });
 
   const rowPath = cellPath.at(-2)!;
   const tablePath = cellPath.slice(0, -2)!;
@@ -92,9 +104,11 @@ export const insertTableMergeRow = (
     checkingRowIndex = cellRowIndex - 1;
     nextRowPath = at;
   } else {
-    nextRowIndex = cellRowIndex + cellRowSpan;
-    checkingRowIndex = cellRowIndex + cellRowSpan - 1;
-    nextRowPath = [...tablePath, rowPath + cellRowSpan];
+    nextRowIndex = before ? cellRowIndex : cellRowIndex + cellRowSpan;
+    checkingRowIndex = before
+      ? cellRowIndex - 1
+      : cellRowIndex + cellRowSpan - 1;
+    nextRowPath = [...tablePath, before ? rowPath : rowPath + cellRowSpan];
   }
 
   const firstRow = nextRowIndex === 0;
@@ -119,12 +133,13 @@ export const insertTableMergeRow = (
     if (!cur) return;
 
     const curCell = cur as TTableCellElement;
-    const { col: curColIndex, row: curRowIndex } =
-      getCellIndices(cellIndices!, curCell) ||
-      computeCellIndices(editor, tableNode, curCell)!;
+    const { col: curColIndex, row: curRowIndex } = getCellIndices(editor, {
+      cellNode: curCell,
+      tableNode: tableNode,
+    });
 
-    const curRowSpan = getRowSpan(curCell);
-    const curColSpan = getColSpan(curCell);
+    const curRowSpan = api.table.getRowSpan(curCell);
+    const curColSpan = api.table.getColSpan(curCell);
     const currentCellPath = getCellPath(
       editor,
       tableEntry,
@@ -148,7 +163,7 @@ export const insertTableMergeRow = (
       // add new
       const row = getParentNode(editor, currentCellPath)!;
       const rowElement = row[0] as TTableRowElement;
-      const emptyCell = api.create.cell!({ header, row: rowElement });
+      const emptyCell = api.create.tableCell({ header, row: rowElement });
 
       newRowChildren.push({
         ...emptyCell,
@@ -167,7 +182,7 @@ export const insertTableMergeRow = (
       },
       {
         at: nextRowPath,
-        // select: !disableSelect
+        select: shouldSelect,
       }
     );
   });

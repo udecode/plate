@@ -4,6 +4,8 @@ import {
   findNode,
   getBlockAbove,
   getEditorPlugin,
+  getLastChildPath,
+  getNode,
   insertElements,
   setNodes,
   withoutNormalizing,
@@ -21,25 +23,33 @@ export const insertTableColumn = (
   options: {
     /** Exact path of the cell to insert the column at. Will overrule `fromCell`. */
     at?: Path;
-
-    /** Disable selection after insertion. */
-    disableSelect?: boolean;
-
+    /** Insert the column before the current column instead of after */
+    before?: boolean;
     /** Path of the cell to insert the column from. */
     fromCell?: Path;
-
     header?: boolean;
+    select?: boolean;
   } = {}
 ) => {
   const { api, getOptions, type } = getEditorPlugin(editor, BaseTablePlugin);
 
-  const { enableMerging, initialTableWidth, minColumnWidth } = getOptions();
+  const { disableMerge, initialTableWidth, minColumnWidth } = getOptions();
 
-  if (enableMerging) {
+  if (!disableMerge) {
     return insertTableMergeColumn(editor, options);
   }
 
-  const { at, disableSelect, fromCell, header } = options;
+  const { before, header, select: shouldSelect } = options;
+  let { at, fromCell } = options;
+
+  if (at && !fromCell) {
+    const table = getNode<TTableElement>(editor, at);
+
+    if (table?.type === editor.getType(BaseTablePlugin)) {
+      fromCell = getLastChildPath([table.children[0], at.concat([0])]);
+      at = undefined;
+    }
+  }
 
   const cellEntry = fromCell
     ? findNode(editor, {
@@ -70,8 +80,8 @@ export const insertTableColumn = (
     nextCellPath = at;
     nextColIndex = at.at(-1)!;
   } else {
-    nextCellPath = Path.next(cellPath);
-    nextColIndex = cellPath.at(-1)! + 1;
+    nextCellPath = before ? cellPath : Path.next(cellPath);
+    nextColIndex = before ? cellPath.at(-1)! : cellPath.at(-1)! + 1;
   }
 
   const currentRowIndex = cellPath.at(-2);
@@ -96,12 +106,12 @@ export const insertTableColumn = (
 
       insertElements(
         editor,
-        api.create.cell!({
+        api.create.tableCell({
           header: isHeaderRow,
         }),
         {
           at: insertCellPath,
-          select: !disableSelect && rowIndex === currentRowIndex,
+          select: shouldSelect && rowIndex === currentRowIndex,
         }
       );
     });

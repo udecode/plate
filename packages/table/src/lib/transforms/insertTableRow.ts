@@ -4,11 +4,15 @@ import {
   findNode,
   getBlockAbove,
   getEditorPlugin,
+  getLastChildPath,
+  getNode,
   insertElements,
   select,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
+
+import type { TTableElement } from '../types';
 
 import {
   BaseTableCellHeaderPlugin,
@@ -21,22 +25,37 @@ import { getCellTypes } from '../utils/index';
 export const insertTableRow = (
   editor: SlateEditor,
   options: {
-    /** Exact path of the row to insert the column at. Will overrule `fromRow`. */
+    /**
+     * Exact path of the row to insert the column at. Pass the table path to
+     * insert at the end of the table. Will overrule `fromRow`.
+     */
     at?: Path;
-    disableSelect?: boolean;
+    /** Insert the row before the current row instead of after */
+    before?: boolean;
     fromRow?: Path;
     header?: boolean;
+    select?: boolean;
   } = {}
 ) => {
   const { api, getOptions, type } = getEditorPlugin(editor, BaseTablePlugin);
 
-  const { enableMerging } = getOptions();
+  const { disableMerge } = getOptions();
 
-  if (enableMerging) {
+  if (!disableMerge) {
     return insertTableMergeRow(editor, options);
   }
 
-  const { at, disableSelect, fromRow, header } = options;
+  const { before, header, select: shouldSelect } = options;
+  let { at, fromRow } = options;
+
+  if (at && !fromRow) {
+    const table = getNode<TTableElement>(editor, at);
+
+    if (table?.type === editor.getType(BaseTablePlugin)) {
+      fromRow = getLastChildPath([table, at]);
+      at = undefined;
+    }
+  }
 
   const trEntry = fromRow
     ? findNode(editor, {
@@ -68,7 +87,7 @@ export const insertTableRow = (
             n.children[i].type === editor.getType(BaseTableCellHeaderPlugin)
         );
 
-      return api.create.cell!({
+      return api.create.tableCell({
         header: header ?? isHeaderColumn,
       });
     }),
@@ -77,11 +96,11 @@ export const insertTableRow = (
 
   withoutNormalizing(editor, () => {
     insertElements(editor, getEmptyRowNode(), {
-      at: Path.isPath(at) ? at : Path.next(trPath),
+      at: Path.isPath(at) ? at : before ? trPath : Path.next(trPath),
     });
   });
 
-  if (!disableSelect) {
+  if (shouldSelect) {
     const cellEntry = getBlockAbove(editor, {
       match: { type: getCellTypes(editor) },
     });
@@ -93,7 +112,9 @@ export const insertTableRow = (
     if (Path.isPath(at)) {
       nextCellPath[nextCellPath.length - 2] = at.at(-2)!;
     } else {
-      nextCellPath[nextCellPath.length - 2] += 1;
+      nextCellPath[nextCellPath.length - 2] = before
+        ? nextCellPath.at(-2)!
+        : nextCellPath.at(-2)! + 1;
     }
 
     select(editor, nextCellPath);

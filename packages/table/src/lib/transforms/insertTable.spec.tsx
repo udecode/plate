@@ -6,62 +6,42 @@ import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { BaseTablePlugin } from '../BaseTablePlugin';
-import { insertTableRow } from './insertTableRow';
+import { insertTable } from './insertTable';
 
 jsxt;
 
-describe('insertTableRow', () => {
-  describe('when inserting a table row', () => {
-    it('should insert a tr with empty cells', () => {
+describe('insertTable', () => {
+  describe('when inserting a table', () => {
+    it('should insert a table at current selection', () => {
       const input = (
         <editor>
-          <htable>
-            <htr>
-              <htd>
-                <hp>11</hp>
-              </htd>
-              <htd>
-                <hp>12</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>
-                  21
-                  <cursor />
-                </hp>
-              </htd>
-              <htd>
-                <hp>22</hp>
-              </htd>
-            </htr>
-          </htable>
+          <hp>
+            test
+            <cursor />
+          </hp>
         </editor>
       ) as any as SlateEditor;
 
       const output = (
         <editor>
+          <hp>test</hp>
           <htable>
             <htr>
               <htd>
-                <hp>11</hp>
+                <hp>
+                  <cursor />
+                </hp>
               </htd>
               <htd>
-                <hp>12</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>21</hp>
-              </htd>
-              <htd>
-                <hp>22</hp>
+                <hp>
+                  <htext />
+                </hp>
               </htd>
             </htr>
             <htr>
               <htd>
                 <hp>
-                  <cursor />
+                  <htext />
                 </hp>
               </htd>
               <htd>
@@ -79,38 +59,20 @@ describe('insertTableRow', () => {
         plugins: [BaseTablePlugin],
       });
 
-      insertTableRow(editor, { select: true });
+      insertTable(editor, { colCount: 2, rowCount: 2 }, { select: true });
 
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);
     });
-  });
 
-  describe('when inserting a table row at specific path', () => {
-    it('should insert a tr with empty cells', () => {
+    it('should insert a table at specified path', () => {
       const input = (
         <editor>
-          <htable>
-            <htr>
-              <htd>
-                <hp>11</hp>
-              </htd>
-              <htd>
-                <hp>12</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>
-                  21
-                  <cursor />
-                </hp>
-              </htd>
-              <htd>
-                <hp>22</hp>
-              </htd>
-            </htr>
-          </htable>
+          <hp>test</hp>
+          <hp>
+            another
+            <cursor />
+          </hp>
         </editor>
       ) as any as SlateEditor;
 
@@ -131,62 +93,47 @@ describe('insertTableRow', () => {
             </htr>
             <htr>
               <htd>
-                <hp>11</hp>
+                <hp>
+                  <htext />
+                </hp>
               </htd>
               <htd>
-                <hp>12</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>21</hp>
-              </htd>
-              <htd>
-                <hp>22</hp>
+                <hp>
+                  <htext />
+                </hp>
               </htd>
             </htr>
           </htable>
+          <hp>test</hp>
+          <hp>another</hp>
         </editor>
       ) as any as SlateEditor;
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [
-          BaseTablePlugin.configure({
-            // newCellChildren: [{ text: '' }]
-          }),
-        ],
+        plugins: [BaseTablePlugin],
       });
 
-      insertTableRow(editor, { at: [0, 0], select: true });
+      insertTable(
+        editor,
+        { colCount: 2, rowCount: 2 },
+        { at: [0], select: true }
+      );
 
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);
     });
-  });
 
-  describe('when inserting a table row before', () => {
-    it('should insert a tr with empty cells before the current row', () => {
+    it('should insert a table after current table when no path specified', () => {
       const input = (
         <editor>
           <htable>
             <htr>
               <htd>
-                <hp>11</hp>
-              </htd>
-              <htd>
-                <hp>12</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
                 <hp>
-                  21
+                  existing
                   <cursor />
                 </hp>
-              </htd>
-              <htd>
-                <hp>22</hp>
               </htd>
             </htr>
           </htable>
@@ -198,12 +145,11 @@ describe('insertTableRow', () => {
           <htable>
             <htr>
               <htd>
-                <hp>11</hp>
-              </htd>
-              <htd>
-                <hp>12</hp>
+                <hp>existing</hp>
               </htd>
             </htr>
+          </htable>
+          <htable>
             <htr>
               <htd>
                 <hp>
@@ -218,10 +164,14 @@ describe('insertTableRow', () => {
             </htr>
             <htr>
               <htd>
-                <hp>21</hp>
+                <hp>
+                  <htext />
+                </hp>
               </htd>
               <htd>
-                <hp>22</hp>
+                <hp>
+                  <htext />
+                </hp>
               </htd>
             </htr>
           </htable>
@@ -233,9 +183,83 @@ describe('insertTableRow', () => {
         plugins: [BaseTablePlugin],
       });
 
-      insertTableRow(editor, { before: true, select: true });
+      insertTable(editor, { colCount: 2, rowCount: 2 }, { select: true });
 
       expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+
+    it('should respect specified path even when inside a table', () => {
+      const input = (
+        <editor>
+          <hp>before</hp>
+          <htable>
+            <htr>
+              <htd>
+                <hp>
+                  existing
+                  <cursor />
+                </hp>
+              </htd>
+            </htr>
+          </htable>
+          <hp>after</hp>
+        </editor>
+      ) as any as SlateEditor;
+
+      const output = (
+        <editor>
+          <hp>before</hp>
+          <htable>
+            <htr>
+              <htd>
+                <hp>
+                  <cursor />
+                </hp>
+              </htd>
+              <htd>
+                <hp>
+                  <htext />
+                </hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>
+                  <htext />
+                </hp>
+              </htd>
+              <htd>
+                <hp>
+                  <htext />
+                </hp>
+              </htd>
+            </htr>
+          </htable>
+          <htable>
+            <htr>
+              <htd>
+                <hp>existing</hp>
+              </htd>
+            </htr>
+          </htable>
+          <hp>after</hp>
+        </editor>
+      ) as any as SlateEditor;
+
+      const editor = createPlateEditor({
+        editor: input,
+        plugins: [BaseTablePlugin],
+      });
+
+      insertTable(
+        editor,
+        { colCount: 2, rowCount: 2 },
+        { at: [1], select: true }
+      );
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
     });
   });
 });

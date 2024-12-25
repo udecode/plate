@@ -4,7 +4,8 @@ import type {
   TElement,
 } from '@udecode/plate-common';
 
-import type { TTableRowElement, TableConfig } from './types';
+import type { TableConfig } from './BaseTablePlugin';
+import type { TTableRowElement } from './types';
 
 import { getTableGridAbove } from './queries/getTableGridAbove';
 

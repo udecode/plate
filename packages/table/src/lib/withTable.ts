@@ -1,6 +1,6 @@
 import type { ExtendEditor } from '@udecode/plate-common';
 
-import type { TableConfig } from './types';
+import type { TableConfig } from './BaseTablePlugin';
 
 import { withDeleteTable } from './withDeleteTable';
 import { withGetFragmentTable } from './withGetFragmentTable';

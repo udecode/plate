@@ -6,8 +6,7 @@ import type {
   TTableRowElement,
 } from '../types';
 
-import { BaseTablePlugin } from '../BaseTablePlugin';
-import { getCellIndices } from './getCellIndices';
+import { getCellIndices } from '../utils/getCellIndices';
 
 export const getCellPath = (
   editor: SlateEditor,
@@ -15,13 +14,15 @@ export const getCellPath = (
   curRowIndex: number,
   curColIndex: number
 ) => {
-  const { _cellIndices: cellIndices } = editor.getOptions(BaseTablePlugin);
   const [tableNode, tablePath] = tableEntry;
 
   const rowElem = tableNode.children[curRowIndex] as TTableRowElement;
   const foundColIndex = rowElem.children.findIndex((c) => {
     const cE = c as TTableCellElement;
-    const { col: colIndex } = getCellIndices(cellIndices!, cE)!;
+    const { col: colIndex } = getCellIndices(editor, {
+      cellNode: cE,
+      tableNode: tableNode,
+    })!;
 
     return colIndex === curColIndex;
   });

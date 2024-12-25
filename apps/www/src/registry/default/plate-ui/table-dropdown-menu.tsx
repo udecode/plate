@@ -10,21 +10,20 @@ import {
   useEditorPlugin,
   useEditorSelector,
 } from '@udecode/plate-common/react';
+import { TablePlugin, useTableMergeState } from '@udecode/plate-table/react';
 import {
-  deleteColumn,
-  deleteRow,
-  deleteTable,
-  insertTable,
-  insertTableRow,
-} from '@udecode/plate-table';
-import { TablePlugin } from '@udecode/plate-table/react';
-import {
-  Minus,
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  ArrowUp,
+  Combine,
   Plus,
-  RectangleHorizontal,
-  RectangleVertical,
+  RectangleHorizontalIcon,
+  RectangleVerticalIcon,
   Table,
   Trash,
+  Ungroup,
+  XIcon,
 } from 'lucide-react';
 
 import {
@@ -47,8 +46,8 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
   );
 
   const { editor, tf } = useEditorPlugin(TablePlugin);
-
   const openState = useOpenState();
+  const mergeState = useTableMergeState();
 
   return (
     <DropdownMenu modal={false} {...openState} {...props}>
@@ -72,7 +71,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
               <DropdownMenuItem
                 className="min-w-[180px]"
                 onSelect={() => {
-                  insertTable(editor, {}, { select: true });
+                  tf.insert.table({}, { select: true });
                   focusEditor(editor);
                 }}
               >
@@ -83,7 +82,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
                 className="min-w-[180px]"
                 disabled={!tableSelected}
                 onSelect={() => {
-                  deleteTable(editor);
+                  tf.remove.table();
                   focusEditor(editor);
                 }}
               >
@@ -95,10 +94,21 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
 
           <DropdownMenuSub>
             <DropdownMenuSubTrigger disabled={!tableSelected}>
-              <RectangleVertical />
+              <RectangleVerticalIcon className="rotate-90" />
               <span>Column</span>
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
+              <DropdownMenuItem
+                className="min-w-[180px]"
+                disabled={!tableSelected}
+                onSelect={() => {
+                  tf.insert.tableColumn({ before: true });
+                  focusEditor(editor);
+                }}
+              >
+                <ArrowLeft />
+                Insert column before
+              </DropdownMenuItem>
               <DropdownMenuItem
                 className="min-w-[180px]"
                 disabled={!tableSelected}
@@ -107,18 +117,18 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
                   focusEditor(editor);
                 }}
               >
-                <Plus />
+                <ArrowRight />
                 Insert column after
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="min-w-[180px]"
                 disabled={!tableSelected}
                 onSelect={() => {
-                  deleteColumn(editor);
+                  tf.remove.tableColumn();
                   focusEditor(editor);
                 }}
               >
-                <Minus />
+                <XIcon />
                 Delete column
               </DropdownMenuItem>
             </DropdownMenuSubContent>
@@ -126,7 +136,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
 
           <DropdownMenuSub>
             <DropdownMenuSubTrigger disabled={!tableSelected}>
-              <RectangleHorizontal />
+              <RectangleHorizontalIcon />
               <span>Row</span>
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
@@ -134,23 +144,65 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
                 className="min-w-[180px]"
                 disabled={!tableSelected}
                 onSelect={() => {
-                  insertTableRow(editor);
+                  tf.insert.tableRow({ before: true });
                   focusEditor(editor);
                 }}
               >
-                <Plus />
+                <ArrowUp />
+                Insert row before
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="min-w-[180px]"
+                disabled={!tableSelected}
+                onSelect={() => {
+                  tf.insert.tableRow();
+                  focusEditor(editor);
+                }}
+              >
+                <ArrowDown />
                 Insert row after
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="min-w-[180px]"
                 disabled={!tableSelected}
                 onSelect={() => {
-                  deleteRow(editor);
+                  tf.remove.tableRow();
                   focusEditor(editor);
                 }}
               >
-                <Minus />
+                <XIcon />
                 Delete row
+              </DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger disabled={!tableSelected}>
+              <Combine />
+              <span>Merge</span>
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuItem
+                className="min-w-[180px]"
+                disabled={!mergeState.canMerge}
+                onSelect={() => {
+                  tf.table.merge();
+                  focusEditor(editor);
+                }}
+              >
+                <Combine />
+                Merge cells
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="min-w-[180px]"
+                disabled={!mergeState.canSplit}
+                onSelect={() => {
+                  tf.table.split();
+                  focusEditor(editor);
+                }}
+              >
+                <Ungroup />
+                Split cell
               </DropdownMenuItem>
             </DropdownMenuSubContent>
           </DropdownMenuSub>

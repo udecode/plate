@@ -107,7 +107,6 @@ export const withInsertFragmentTable: ExtendEditor<TableConfig> = ({
                     return;
                   } else {
                     tf.insert.tableRow({
-                      disableSelect: true,
                       fromRow,
                     });
                   }
@@ -129,7 +128,6 @@ export const withInsertFragmentTable: ExtendEditor<TableConfig> = ({
                       return;
                     } else {
                       tf.insert.tableColumn({
-                        disableSelect: true,
                         fromCell,
                       });
                     }

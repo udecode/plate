@@ -1,17 +1,13 @@
 import React from 'react';
 
-import {
-  findPath,
-  useEditorPlugin,
-  useElement,
-} from '@udecode/plate-common/react';
+import { useEditorPlugin, useElement } from '@udecode/plate-common/react';
 import {
   type ResizeEvent,
   type ResizeHandle,
   resizeLengthClampStatic,
 } from '@udecode/plate-resizable';
 
-import type { TableCellElementState } from './useTableCellElementState';
+import type { TableCellElementState } from './useTableCellElement';
 
 import {
   type TTableElement,
@@ -24,7 +20,6 @@ import {
   useOverrideColSize,
   useOverrideMarginLeft,
   useOverrideRowSize,
-  useTableStore,
 } from '../../stores';
 import { useTableColSizes } from '../TableElement/useTableColSizes';
 import { roundCellSizeToStep } from './roundCellSizeToStep';
@@ -38,35 +33,14 @@ export type TableCellElementResizableOptions = {
   stepY?: number;
 } & Pick<TableCellElementState, 'colIndex' | 'colSpan' | 'rowIndex'>;
 
-export const useTableCellElementResizableState = ({
+export const useTableCellElementResizable = ({
   colIndex,
   colSpan,
   rowIndex,
   step,
   stepX = step,
   stepY = step,
-}: TableCellElementResizableOptions) => {
-  const { getOptions } = useEditorPlugin(TablePlugin);
-  const { disableMarginLeft } = getOptions();
-
-  return {
-    colIndex,
-    colSpan,
-    disableMarginLeft,
-    rowIndex,
-    stepX,
-    stepY,
-  };
-};
-
-export const useTableCellElementResizable = ({
-  colIndex,
-  colSpan,
-  disableMarginLeft,
-  rowIndex,
-  stepX,
-  stepY,
-}: ReturnType<typeof useTableCellElementResizableState>): {
+}: TableCellElementResizableOptions): {
   bottomProps: React.ComponentPropsWithoutRef<typeof ResizeHandle>;
   hiddenLeft: boolean;
   leftProps: React.ComponentPropsWithoutRef<typeof ResizeHandle>;
@@ -75,16 +49,13 @@ export const useTableCellElementResizable = ({
   const { editor, getOptions } = useEditorPlugin(TablePlugin);
   const element = useElement();
   const tableElement = useElement<TTableElement>(TablePlugin.key);
-  const { minColumnWidth = 0 } = getOptions();
+  const { disableMarginLeft, minColumnWidth = 0 } = getOptions();
 
   let initialWidth: number | undefined;
 
   if (colSpan > 1) {
     initialWidth = tableElement.colSizes?.[colIndex];
   }
-
-  const [hoveredColIndex, setHoveredColIndex] =
-    useTableStore().use.hoveredColIndex();
 
   const colSizesWithoutOverrides = useTableColSizes(tableElement, {
     disableOverrides: true,
@@ -101,7 +72,7 @@ export const useTableCellElementResizable = ({
       setTableColSize(
         editor,
         { colIndex, width },
-        { at: findPath(editor, element)! }
+        { at: editor.findPath(element)! }
       );
 
       // Prevent flickering
@@ -116,7 +87,7 @@ export const useTableCellElementResizable = ({
       setTableRowSize(
         editor,
         { height, rowIndex },
-        { at: findPath(editor, element)! }
+        { at: editor.findPath(element)! }
       );
 
       // Prevent flickering
@@ -130,7 +101,7 @@ export const useTableCellElementResizable = ({
       setTableMarginLeft(
         editor,
         { marginLeft },
-        { at: findPath(editor, element)! }
+        { at: editor.findPath(element)! }
       );
 
       // Prevent flickering
@@ -224,20 +195,6 @@ export const useTableCellElementResizable = ({
     ]
   );
 
-  /* eslint-disable @typescript-eslint/no-shadow */
-  const getHandleHoverProps = (colIndex: number) => ({
-    onHover: () => {
-      if (hoveredColIndex === null) {
-        setHoveredColIndex(colIndex);
-      }
-    },
-    onHoverEnd: () => {
-      if (hoveredColIndex === colIndex) {
-        setHoveredColIndex(null);
-      }
-    },
-  });
-
   const hasLeftHandle = colIndex === 0 && !disableMarginLeft;
 
   return {
@@ -252,7 +209,6 @@ export const useTableCellElementResizable = ({
       options: {
         direction: 'left',
         onResize: handleResizeLeft,
-        ...getHandleHoverProps(-1),
       },
     },
     rightProps: {
@@ -260,7 +216,6 @@ export const useTableCellElementResizable = ({
         direction: 'right',
         initialSize: initialWidth,
         onResize: handleResizeRight,
-        ...getHandleHoverProps(colIndex),
       },
     },
   };
