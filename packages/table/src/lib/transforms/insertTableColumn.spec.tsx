@@ -17,6 +17,10 @@ type MakeTableWithColsOptions = {
   cursorPath?: [number, number];
 };
 
+const tablePlugin = BaseTablePlugin.configure({
+  options: { disableMerge: true },
+});
+
 const makeTableWithCols = ({
   colSizes,
   cursorPath,
@@ -46,7 +50,7 @@ const makeTableWithCols = ({
 describe('insertTableColumn', () => {
   describe('without initialTableWidth', () => {
     const editorOptions = {
-      plugins: [BaseTablePlugin],
+      plugins: [tablePlugin],
     };
 
     it('should insert at last column', () => {
@@ -164,8 +168,9 @@ describe('insertTableColumn', () => {
   describe('with initialTableWidth', () => {
     const editorOptions = {
       plugins: [
-        BaseTablePlugin.configure({
+        tablePlugin.configure({
           options: {
+            disableMerge: true,
             initialTableWidth: 100,
             minColumnWidth: 10,
           },

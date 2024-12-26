@@ -16,13 +16,13 @@ import {
   type TTableCellElement,
   type TTableElement,
   BaseTableRowPlugin,
-  findCellByIndexes,
   getCellIndices,
-  getCellPath,
   getCellTypes,
 } from '..';
 import { BaseTablePlugin } from '../BaseTablePlugin';
 import { deleteColumnWhenExpanded } from './deleteColumnWhenExpanded';
+import { findCellByIndexes } from './findCellByIndexes';
+import { getCellPath } from './getCellPath';
 
 export const deleteTableMergeColumn = (editor: SlateEditor) => {
   const { api } = getEditorPlugin(editor, BaseTablePlugin);

@@ -231,7 +231,7 @@ export function TablePicker() {
     <div
       className="m-0 !flex flex-col p-0"
       onClick={() => {
-        tf.insert.table(tablePicker.size);
+        tf.insert.table(tablePicker.size, { select: true });
         focusEditor(editor);
       }}
     >

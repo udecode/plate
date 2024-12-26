@@ -1,6 +1,7 @@
 import {
   type InsertNodesOptions,
   type SlateEditor,
+  findNode,
   getBlockAbove,
   getStartPoint,
   insertNodes,
@@ -9,8 +10,8 @@ import {
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
-import type { TTableElement } from '../types';
 import type { GetEmptyTableNodeOptions } from '../api/getEmptyTableNode';
+import type { TTableElement } from '../types';
 
 import { type TableConfig, BaseTablePlugin } from '../BaseTablePlugin';
 
@@ -21,7 +22,7 @@ import { type TableConfig, BaseTablePlugin } from '../BaseTablePlugin';
 export const insertTable = <E extends SlateEditor>(
   editor: E,
   { colCount = 2, header, rowCount = 2 }: GetEmptyTableNodeOptions = {},
-  options: InsertNodesOptions<E> = {}
+  { select: shouldSelect, ...options }: InsertNodesOptions<E> = {}
 ) => {
   const { api } = editor.getPlugin<TableConfig>({ key: 'table' });
   const type = editor.getType(BaseTablePlugin);
@@ -58,12 +59,14 @@ export const insertTable = <E extends SlateEditor>(
 
     // Use specified path or insert at current selection
     insertNodes<TTableElement>(editor, newTable, {
-      nextBlock: true,
+      nextBlock: !options.at,
+      select: shouldSelect,
       ...(options as any),
     });
 
-    if (editor.selection) {
-      const tableEntry = getBlockAbove(editor, {
+    if (shouldSelect) {
+      const tableEntry = findNode(editor, {
+        at: options.at,
         match: { type },
       });
 

@@ -10,6 +10,10 @@ import { insertTable } from './insertTable';
 
 jsxt;
 
+const tablePlugin = BaseTablePlugin.configure({
+  options: { disableMerge: true },
+});
+
 describe('insertTable', () => {
   describe('when inserting a table', () => {
     it('should insert a table at current selection', () => {
@@ -56,7 +60,7 @@ describe('insertTable', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [BaseTablePlugin],
+        plugins: [tablePlugin],
       });
 
       insertTable(editor, { colCount: 2, rowCount: 2 }, { select: true });
@@ -111,7 +115,7 @@ describe('insertTable', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [BaseTablePlugin],
+        plugins: [tablePlugin],
       });
 
       insertTable(
@@ -180,7 +184,7 @@ describe('insertTable', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [BaseTablePlugin],
+        plugins: [tablePlugin],
       });
 
       insertTable(editor, { colCount: 2, rowCount: 2 }, { select: true });
@@ -249,7 +253,7 @@ describe('insertTable', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [BaseTablePlugin],
+        plugins: [tablePlugin],
       });
 
       insertTable(
@@ -257,6 +261,71 @@ describe('insertTable', () => {
         { colCount: 2, rowCount: 2 },
         { at: [1], select: true }
       );
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+
+    it('should insert a table after current table when inside a table', () => {
+      const input = (
+        <editor>
+          <htable>
+            <htr>
+              <htd>
+                <hp>
+                  existing
+                  <cursor />
+                </hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any as SlateEditor;
+
+      const output = (
+        <editor>
+          <htable>
+            <htr>
+              <htd>
+                <hp>existing</hp>
+              </htd>
+            </htr>
+          </htable>
+          <htable>
+            <htr>
+              <htd>
+                <hp>
+                  <cursor />
+                </hp>
+              </htd>
+              <htd>
+                <hp>
+                  <htext />
+                </hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>
+                  <htext />
+                </hp>
+              </htd>
+              <htd>
+                <hp>
+                  <htext />
+                </hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any as SlateEditor;
+
+      const editor = createPlateEditor({
+        editor: input,
+        plugins: [tablePlugin],
+      });
+
+      insertTable(editor, { colCount: 2, rowCount: 2 }, { select: true });
 
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);

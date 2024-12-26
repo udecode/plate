@@ -110,7 +110,7 @@ export const TableFloatingToolbar = withRef<typeof PopoverContent>(
     const { canMerge, canSplit } = useTableMergeState();
 
     return (
-      <Popover open modal={false}>
+      <Popover open={canMerge || canSplit || collapsed} modal={false}>
         <PopoverAnchor asChild>{children}</PopoverAnchor>
         <PopoverContent
           ref={ref}

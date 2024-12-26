@@ -10,6 +10,10 @@ import { insertTableRow } from './insertTableRow';
 
 jsxt;
 
+const tablePlugin = BaseTablePlugin.configure({
+  options: { disableMerge: true },
+});
+
 describe('insertTableRow', () => {
   describe('when inserting a table row', () => {
     it('should insert a tr with empty cells', () => {
@@ -76,7 +80,7 @@ describe('insertTableRow', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [BaseTablePlugin],
+        plugins: [tablePlugin],
       });
 
       insertTableRow(editor, { select: true });
@@ -151,11 +155,7 @@ describe('insertTableRow', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [
-          BaseTablePlugin.configure({
-            // newCellChildren: [{ text: '' }]
-          }),
-        ],
+        plugins: [tablePlugin],
       });
 
       insertTableRow(editor, { at: [0, 0], select: true });
@@ -230,7 +230,7 @@ describe('insertTableRow', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [BaseTablePlugin],
+        plugins: [tablePlugin],
       });
 
       insertTableRow(editor, { before: true, select: true });
