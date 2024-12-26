@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 
 import { unsetNodes } from '@udecode/plate-common';
 import { useEditorRef, useNodePath } from '@udecode/plate-common/react';
@@ -17,7 +17,13 @@ import { useTableStore } from '../../stores';
  */
 export const useTableColSizes = (
   tableNode: TTableElement,
-  { disableOverrides = false } = {}
+  {
+    disableOverrides = false,
+    transformColSizes,
+  }: {
+    disableOverrides?: boolean;
+    transformColSizes?: (colSizes: number[]) => number[];
+  } = {}
 ): number[] => {
   const editor = useEditorRef();
   const colSizeOverrides = useTableStore().get.colSizeOverrides();
@@ -25,10 +31,18 @@ export const useTableColSizes = (
 
   const { enableUnsetSingleColSize } = editor.getOptions(TablePlugin);
 
-  const overriddenColSizes = getTableOverriddenColSizes(
-    tableNode,
-    disableOverrides ? undefined : colSizeOverrides
-  );
+  const overriddenColSizes = useMemo(() => {
+    const colSizes = getTableOverriddenColSizes(
+      tableNode,
+      disableOverrides ? undefined : colSizeOverrides
+    );
+
+    if (transformColSizes) {
+      return transformColSizes(colSizes);
+    }
+
+    return colSizes;
+  }, [tableNode, disableOverrides, colSizeOverrides, transformColSizes]);
 
   const colCount = getTableColumnCount(tableNode);
 

@@ -1,7 +1,7 @@
 import type { Path } from 'slate';
 
 import { type TEditor, type TNode, setSelection } from '@udecode/slate';
-import { findPath, focusEditor } from '@udecode/slate-react';
+import { focusEditor } from '@udecode/slate-react';
 import {
   getNextNodeStartPoint,
   getPreviousNodeEndPoint,
@@ -22,7 +22,7 @@ export const selectSiblingNodePoint = (
   } = {}
 ) => {
   if (node) {
-    at = findPath(editor, node);
+    at = editor.findPath(node);
   }
   if (!at) return;
 

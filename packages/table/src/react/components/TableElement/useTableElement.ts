@@ -1,31 +1,16 @@
-import React from 'react';
-
 import { collapseSelection } from '@udecode/plate-common';
 import { useEditorRef, useElement } from '@udecode/plate-common/react';
 
-import { type TTableElement, computeCellIndices } from '../../../lib';
+import type { TTableElement } from '../../../lib';
+
 import { TablePlugin } from '../../TablePlugin';
 import { useTableStore } from '../../stores';
 import { useSelectedCells } from './useSelectedCells';
-import { useTableColSizes } from './useTableColSizes';
 
-export interface TableElementState {
-  colSizes: number[];
-  isSelectingCell: boolean;
-  marginLeft: number;
-  minColumnWidth: number;
-}
-
-export const useTableElementState = ({
-  transformColSizes,
-}: {
-  /** Transform node column sizes */
-  transformColSizes?: (colSizes: number[]) => number[];
-} = {}): TableElementState => {
+export const useTableElement = () => {
   const editor = useEditorRef();
 
-  const { disableMarginLeft, enableMerging, minColumnWidth } =
-    editor.getOptions(TablePlugin);
+  const { disableMarginLeft } = editor.getOptions(TablePlugin);
 
   const element = useElement<TTableElement>();
   const selectedCells = useTableStore().get.selectedCells();
@@ -35,41 +20,11 @@ export const useTableElementState = ({
     ? 0
     : (marginLeftOverride ?? element.marginLeft ?? 0);
 
-  let colSizes = useTableColSizes(element);
-
-  React.useEffect(() => {
-    if (enableMerging) {
-      computeCellIndices(editor, element);
-    }
-  }, [editor, element, enableMerging]);
-
-  if (transformColSizes) {
-    colSizes = transformColSizes(colSizes);
-  }
-  // add a last col to fill the remaining space
-  if (!colSizes.includes(0)) {
-    colSizes.push('100%' as any);
-  }
-
-  return {
-    colSizes,
-    isSelectingCell: !!selectedCells,
-    marginLeft,
-    minColumnWidth: minColumnWidth!,
-  };
-};
-
-export const useTableElement = () => {
-  const editor = useEditorRef();
-  const selectedCells = useTableStore().get.selectedCells();
-
   useSelectedCells();
 
   return {
-    colGroupProps: {
-      contentEditable: false,
-      style: { width: '100%' },
-    },
+    isSelectingCell: !!selectedCells,
+    marginLeft,
     props: {
       onMouseDown: () => {
         // until cell dnd is supported, we collapse the selection on mouse down

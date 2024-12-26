@@ -14,6 +14,7 @@ export * from './withNormalizeTable';
 export * from './withSelectionTable';
 export * from './withSetFragmentDataTable';
 export * from './withTable';
+export * from './api/index';
 export * from './merge/index';
 export * from './queries/index';
 export * from './transforms/index';

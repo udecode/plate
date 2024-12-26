@@ -12,27 +12,21 @@ import {
 
 import type { TTableElement } from '../types';
 
-import {
-  BaseTableCellHeaderPlugin,
-  BaseTableCellPlugin,
-  BaseTablePlugin,
-  BaseTableRowPlugin,
-} from '../BaseTablePlugin';
+import { type TableConfig, BaseTableRowPlugin } from '../BaseTablePlugin';
 import { deleteTableMergeColumn } from '../merge/deleteColumn';
 import { deleteColumnWhenExpanded } from '../merge/deleteColumnWhenExpanded';
+import { getCellTypes } from '../utils';
 
 export const deleteColumn = (editor: SlateEditor) => {
-  const { getOptions, type } = getEditorPlugin(editor, BaseTablePlugin);
-  const { enableMerging } = getOptions();
+  const { getOptions, type } = getEditorPlugin<TableConfig>(editor, {
+    key: 'table',
+  });
+  const { disableMerge } = getOptions();
 
-  if (enableMerging) {
+  if (!disableMerge) {
     return deleteTableMergeColumn(editor);
   }
-  if (
-    !someNode(editor, {
-      match: { type },
-    })
-  ) {
+  if (!someNode(editor, { match: { type } })) {
     return;
   }
 
@@ -45,12 +39,7 @@ export const deleteColumn = (editor: SlateEditor) => {
     return deleteColumnWhenExpanded(editor, tableEntry);
 
   const tdEntry = getAboveNode(editor, {
-    match: {
-      type: [
-        editor.getType(BaseTableCellPlugin),
-        editor.getType(BaseTableCellHeaderPlugin),
-      ],
-    },
+    match: { type: getCellTypes(editor) },
   });
   const trEntry = getAboveNode(editor, {
     match: { type: editor.getType(BaseTableRowPlugin) },
@@ -84,9 +73,7 @@ export const deleteColumn = (editor: SlateEditor) => {
         )
           return;
 
-        removeNodes(editor, {
-          at: pathToDelete,
-        });
+        removeNodes(editor, { at: pathToDelete });
       });
 
       const { colSizes } = tableNode;
@@ -97,12 +84,8 @@ export const deleteColumn = (editor: SlateEditor) => {
 
         setNodes<TTableElement>(
           editor,
-          {
-            colSizes: newColSizes,
-          },
-          {
-            at: tablePath,
-          }
+          { colSizes: newColSizes },
+          { at: tablePath }
         );
       }
     });

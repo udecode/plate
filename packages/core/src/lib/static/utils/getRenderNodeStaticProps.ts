@@ -1,6 +1,5 @@
 import type { AnyObject } from '@udecode/utils';
 
-import { findNodePath } from '@udecode/slate';
 import clsx from 'clsx';
 
 import type { SlateEditor } from '../../editor';
@@ -38,7 +37,7 @@ export const getRenderNodeStaticProps = ({
   nodeProps = pipeInjectNodeProps(
     editor,
     nodeProps,
-    (node) => findNodePath(editor, node)!
+    (node) => editor.findPath(node)!
   );
 
   if (nodeProps.style && Object.keys(nodeProps.style).length === 0) {

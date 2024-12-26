@@ -12,21 +12,13 @@ import {
 } from '@udecode/plate-common';
 import cloneDeep from 'lodash/cloneDeep.js';
 
-import {
-  type TTableCellElement,
-  type TTableElement,
-  computeCellIndices,
-  getCellIndices,
-  getColSpan,
-  getRowSpan,
-} from '..';
+import { type TTableCellElement, type TTableElement, getCellIndices } from '..';
 import { BaseTableCellHeaderPlugin, BaseTablePlugin } from '../BaseTablePlugin';
 import { getTableGridAbove } from '../queries';
 
 /** Merges multiple selected cells into one. */
 export const mergeTableCells = (editor: SlateEditor) => {
-  const { api, getOptions, type } = getEditorPlugin(editor, BaseTablePlugin);
-  const { _cellIndices } = getOptions();
+  const { api, type } = getEditorPlugin(editor, BaseTablePlugin);
 
   withoutNormalizing(editor, () => {
     const tableEntry = getBlockAbove(editor, {
@@ -48,25 +40,26 @@ export const mergeTableCells = (editor: SlateEditor) => {
 
       // count only those cells that are in the first selected row.
       if (rowIndex === cellEntries[0][1].at(-2)!) {
-        const cellColSpan = getColSpan(cell as TTableCellElement);
+        const cellColSpan = api.table.getColSpan(cell as TTableCellElement);
         colSpan += cellColSpan;
       }
     }
 
     // calculate the rowSpan which is the number of vertical cells that a cell should span.
     let rowSpan = 0;
-    const { col } = getCellIndices(
-      _cellIndices!,
-      cellEntries[0][0] as TTableCellElement
-    )!;
+    const { col } = getCellIndices(editor, {
+      cellNode: cellEntries[0][0] as TTableCellElement,
+      tableNode: tableEntry[0] as TTableElement,
+    });
     cellEntries.forEach((entry) => {
       const cell = entry[0] as TTableCellElement;
-      const { col: curCol } =
-        _cellIndices?.get(cell) ||
-        computeCellIndices(editor, tableEntry[0] as TTableElement, cell)!;
+      const { col: curCol } = getCellIndices(editor, {
+        cellNode: cell,
+        tableNode: tableEntry[0] as TTableElement,
+      });
 
       if (col === curCol) {
-        rowSpan += getRowSpan(cell);
+        rowSpan += api.table.getRowSpan(cell);
       }
     });
 
@@ -111,7 +104,7 @@ export const mergeTableCells = (editor: SlateEditor) => {
     // Create a new cell to replace the merged cells, with
     // calculated colSpan and rowSpan attributes and combined content
     const mergedCell = {
-      ...api.create.cell!({
+      ...api.create.tableCell({
         children: mergingCellChildren,
         header:
           cellEntries[0][0].type === editor.getType(BaseTableCellHeaderPlugin),

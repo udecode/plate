@@ -8,7 +8,9 @@ import {
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
-import { getCellTypes, getEmptyTableNode } from '../../lib/utils';
+import type { TableConfig } from '../BaseTablePlugin';
+
+import { getCellTypes } from '../../lib/utils';
 import {
   type GetTableGridByRangeOptions,
   getTableGridByRange,
@@ -22,6 +24,8 @@ export const getTableGridAbove = <E extends SlateEditor>(
   editor: E,
   { format = 'table', ...options }: GetTableGridAboveOptions<E> = {}
 ): TElementEntry[] => {
+  const { api } = editor.getPlugin<TableConfig>({ key: 'table' });
+
   const edges = getEdgeBlocksAbove<TElement>(editor, {
     match: {
       type: getCellTypes(editor),
@@ -48,7 +52,7 @@ export const getTableGridAbove = <E extends SlateEditor>(
       });
     }
     if (format === 'table') {
-      const table = getEmptyTableNode(editor, { rowCount: 1 });
+      const table = api.create.table({ rowCount: 1 });
       table.children[0].children = [start[0]];
 
       return [[table, start[1].slice(0, -2)]];

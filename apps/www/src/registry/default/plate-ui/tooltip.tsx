@@ -5,6 +5,8 @@ import React from 'react';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import { withCn, withProps } from '@udecode/cn';
 
+import { Button } from './button';
+
 export const TooltipProvider = withProps(TooltipPrimitive.Provider, {
   delayDuration: 0,
   disableHoverableContent: true,
@@ -49,6 +51,7 @@ export function withTooltip<
       tooltip,
       tooltipContentProps,
       tooltipProps,
+      tooltipTriggerProps,
       ...props
     },
     ref
@@ -69,7 +72,9 @@ export function withTooltip<
           skipDelayDuration={skipDelayDuration}
         >
           <Tooltip {...tooltipProps}>
-            <TooltipTrigger asChild>{component}</TooltipTrigger>
+            <TooltipTrigger asChild {...tooltipTriggerProps}>
+              {component}
+            </TooltipTrigger>
 
             <TooltipPortal>
               <TooltipContent {...tooltipContentProps}>
@@ -84,3 +89,5 @@ export function withTooltip<
     return component;
   });
 }
+
+export const TooltipButton = withTooltip(Button);

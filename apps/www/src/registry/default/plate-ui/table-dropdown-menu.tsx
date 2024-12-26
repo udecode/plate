@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
@@ -11,21 +11,18 @@ import {
   useEditorPlugin,
   useEditorSelector,
 } from '@udecode/plate-common/react';
+import { TablePlugin, useTableMergeState } from '@udecode/plate-table/react';
 import {
-  deleteColumn,
-  deleteRow,
-  deleteTable,
-  insertTable,
-  insertTableRow,
-} from '@udecode/plate-table';
-import { TablePlugin } from '@udecode/plate-table/react';
-import {
-  Minus,
-  Plus,
-  RectangleHorizontal,
-  RectangleVertical,
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  ArrowUp,
+  Combine,
+  Grid3x3Icon,
   Table,
-  Trash,
+  Trash2Icon,
+  Ungroup,
+  XIcon,
 } from 'lucide-react';
 
 import {
@@ -41,8 +38,6 @@ import {
 } from './dropdown-menu';
 import { ToolbarButton } from './toolbar';
 
-const COLS = 8;
-
 export function TableDropdownMenu(props: DropdownMenuProps) {
   const tableSelected = useEditorSelector(
     (editor) => someNode(editor, { match: { type: TablePlugin.key } }),
@@ -50,35 +45,8 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
   );
 
   const { editor, tf } = useEditorPlugin(TablePlugin);
-
   const openState = useOpenState();
-
-  const [table, setTable] = useState(
-    Array.from({ length: COLS }, () => Array.from({ length: COLS }).fill(0))
-  );
-  const [size, setSize] = useState({ colCount: 0, rowCount: 0 });
-
-  const onCellMove = useCallback(
-    (rowIndex: number, colIndex: number) => {
-      const newTables = [...table];
-
-      for (let i = 0; i < newTables.length; i++) {
-        for (let j = 0; j < newTables[i].length; j++) {
-          newTables[i][j] =
-            i >= 0 && i <= rowIndex && j >= 0 && j <= colIndex ? 1 : 0;
-        }
-      }
-
-      setSize({ colCount: colIndex + 1, rowCount: rowIndex + 1 });
-      setTable(newTables);
-    },
-    [table]
-  );
-
-  const onInsertTable = useCallback(() => {
-    insertTable(editor, size);
-    focusEditor(editor);
-  }, [editor, size]);
+  const mergeState = useTableMergeState();
 
   return (
     <DropdownMenu modal={false} {...openState} {...props}>
@@ -95,43 +63,104 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
         <DropdownMenuGroup>
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>
-              <Table />
+              <Grid3x3Icon />
               <span>Table</span>
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent className="m-0 p-0">
-              <div className="m-0 !flex flex-col p-0" onClick={onInsertTable}>
-                <div className="grid size-[130px] grid-cols-8 gap-0.5 p-1">
-                  {table.map((rows, rowIndex) =>
-                    rows.map((value, columIndex) => {
-                      return (
-                        <div
-                          key={`(${rowIndex},${columIndex})`}
-                          className={cn(
-                            'col-span-1 size-3 border border-solid bg-secondary',
-                            !!value && 'border-current'
-                          )}
-                          onMouseMove={() => {
-                            onCellMove(rowIndex, columIndex);
-                          }}
-                        />
-                      );
-                    })
-                  )}
-                </div>
-
-                <div className="text-center text-xs text-current">
-                  {size.rowCount} x {size.colCount}
-                </div>
-              </div>
+              <TablePicker />
             </DropdownMenuSubContent>
           </DropdownMenuSub>
 
           <DropdownMenuSub>
             <DropdownMenuSubTrigger disabled={!tableSelected}>
-              <RectangleVertical />
+              <div className="size-4" />
+              <span>Cell</span>
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuItem
+                className="min-w-[180px]"
+                disabled={!mergeState.canMerge}
+                onSelect={() => {
+                  tf.table.merge();
+                  focusEditor(editor);
+                }}
+              >
+                <Combine />
+                Merge cells
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="min-w-[180px]"
+                disabled={!mergeState.canSplit}
+                onSelect={() => {
+                  tf.table.split();
+                  focusEditor(editor);
+                }}
+              >
+                <Ungroup />
+                Split cell
+              </DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger disabled={!tableSelected}>
+              <div className="size-4" />
+              <span>Row</span>
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuItem
+                className="min-w-[180px]"
+                disabled={!tableSelected}
+                onSelect={() => {
+                  tf.insert.tableRow({ before: true });
+                  focusEditor(editor);
+                }}
+              >
+                <ArrowUp />
+                Insert row before
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="min-w-[180px]"
+                disabled={!tableSelected}
+                onSelect={() => {
+                  tf.insert.tableRow();
+                  focusEditor(editor);
+                }}
+              >
+                <ArrowDown />
+                Insert row after
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="min-w-[180px]"
+                disabled={!tableSelected}
+                onSelect={() => {
+                  tf.remove.tableRow();
+                  focusEditor(editor);
+                }}
+              >
+                <XIcon />
+                Delete row
+              </DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger disabled={!tableSelected}>
+              <div className="size-4" />
               <span>Column</span>
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
+              <DropdownMenuItem
+                className="min-w-[180px]"
+                disabled={!tableSelected}
+                onSelect={() => {
+                  tf.insert.tableColumn({ before: true });
+                  focusEditor(editor);
+                }}
+              >
+                <ArrowLeft />
+                Insert column before
+              </DropdownMenuItem>
               <DropdownMenuItem
                 className="min-w-[180px]"
                 disabled={!tableSelected}
@@ -140,66 +169,94 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
                   focusEditor(editor);
                 }}
               >
-                <Plus />
+                <ArrowRight />
                 Insert column after
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="min-w-[180px]"
                 disabled={!tableSelected}
                 onSelect={() => {
-                  deleteColumn(editor);
+                  tf.remove.tableColumn();
                   focusEditor(editor);
                 }}
               >
-                <Minus />
+                <XIcon />
                 Delete column
               </DropdownMenuItem>
             </DropdownMenuSubContent>
           </DropdownMenuSub>
 
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger disabled={!tableSelected}>
-              <RectangleHorizontal />
-              <span>Row</span>
-            </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent>
-              <DropdownMenuItem
-                className="min-w-[180px]"
-                disabled={!tableSelected}
-                onSelect={() => {
-                  insertTableRow(editor);
-                  focusEditor(editor);
-                }}
-              >
-                <Plus />
-                Insert row after
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="min-w-[180px]"
-                disabled={!tableSelected}
-                onSelect={() => {
-                  deleteRow(editor);
-                  focusEditor(editor);
-                }}
-              >
-                <Minus />
-                Delete row
-              </DropdownMenuItem>
-            </DropdownMenuSubContent>
-            <DropdownMenuItem
-              className="min-w-[180px]"
-              disabled={!tableSelected}
-              onSelect={() => {
-                deleteTable(editor);
-                focusEditor(editor);
-              }}
-            >
-              <Trash />
-              Delete table
-            </DropdownMenuItem>
-          </DropdownMenuSub>
+          <DropdownMenuItem
+            className="min-w-[180px]"
+            disabled={!tableSelected}
+            onSelect={() => {
+              tf.remove.table();
+              focusEditor(editor);
+            }}
+          >
+            <Trash2Icon />
+            Delete table
+          </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+export function TablePicker() {
+  const { editor, tf } = useEditorPlugin(TablePlugin);
+
+  const [tablePicker, setTablePicker] = useState({
+    grid: Array.from({ length: 8 }, () => Array.from({ length: 8 }).fill(0)),
+    size: { colCount: 0, rowCount: 0 },
+  });
+
+  const onCellMove = (rowIndex: number, colIndex: number) => {
+    const newGrid = [...tablePicker.grid];
+
+    for (let i = 0; i < newGrid.length; i++) {
+      for (let j = 0; j < newGrid[i].length; j++) {
+        newGrid[i][j] =
+          i >= 0 && i <= rowIndex && j >= 0 && j <= colIndex ? 1 : 0;
+      }
+    }
+
+    setTablePicker({
+      grid: newGrid,
+      size: { colCount: colIndex + 1, rowCount: rowIndex + 1 },
+    });
+  };
+
+  return (
+    <div
+      className="m-0 !flex flex-col p-0"
+      onClick={() => {
+        tf.insert.table(tablePicker.size, { select: true });
+        focusEditor(editor);
+      }}
+    >
+      <div className="grid size-[130px] grid-cols-8 gap-0.5 p-1">
+        {tablePicker.grid.map((rows, rowIndex) =>
+          rows.map((value, columIndex) => {
+            return (
+              <div
+                key={`(${rowIndex},${columIndex})`}
+                className={cn(
+                  'col-span-1 size-3 border border-solid bg-secondary',
+                  !!value && 'border-current'
+                )}
+                onMouseMove={() => {
+                  onCellMove(rowIndex, columIndex);
+                }}
+              />
+            );
+          })
+        )}
+      </div>
+
+      <div className="text-center text-xs text-current">
+        {tablePicker.size.rowCount} x {tablePicker.size.colCount}
+      </div>
+    </div>
   );
 }

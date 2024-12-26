@@ -4,8 +4,8 @@ import {
   type SlateEditor,
   type TDescendant,
   findNode,
-  findNodePath,
   getEditorPlugin,
+  getNode,
   insertElements,
   removeNodes,
   withoutNormalizing,
@@ -15,10 +15,7 @@ import {
   type TTableCellElement,
   type TTableElement,
   type TTableRowElement,
-  computeCellIndices,
   getCellIndices,
-  getColSpan,
-  getRowSpan,
 } from '..';
 import {
   BaseTableCellHeaderPlugin,
@@ -27,9 +24,8 @@ import {
 } from '../BaseTablePlugin';
 import { getTableGridAbove } from '../queries';
 
-export const unmergeTableCells = (editor: SlateEditor) => {
-  const { api, getOptions } = getEditorPlugin(editor, BaseTablePlugin);
-  const { _cellIndices: cellIndices } = getOptions();
+export const splitTableCell = (editor: SlateEditor) => {
+  const { api } = getEditorPlugin(editor, BaseTablePlugin);
   const tableRowType = editor.getType(BaseTableRowPlugin);
 
   withoutNormalizing(editor, () => {
@@ -39,7 +35,7 @@ export const unmergeTableCells = (editor: SlateEditor) => {
     // creating new object per iteration is essential here
     const createEmptyCell = (children?: TDescendant[]) => {
       return {
-        ...api.create.cell!({
+        ...api.create.tableCell({
           children,
           header: cellElem.type === editor.getType(BaseTableCellHeaderPlugin),
         }),
@@ -49,11 +45,12 @@ export const unmergeTableCells = (editor: SlateEditor) => {
     };
 
     const tablePath = path.slice(0, -2);
+    const tableNode = getNode<TTableElement>(editor, tablePath)!;
 
     const cellPath = path.slice(-2);
     const [rowPath, colPath] = cellPath;
-    const colSpan = getColSpan(cellElem as TTableCellElement);
-    const rowSpan = getRowSpan(cellElem as TTableCellElement);
+    const colSpan = api.table.getColSpan(cellElem as TTableCellElement);
+    const rowSpan = api.table.getRowSpan(cellElem as TTableCellElement);
 
     // Generate an array of column paths from the colspan
     const colPaths: number[] = [];
@@ -65,10 +62,10 @@ export const unmergeTableCells = (editor: SlateEditor) => {
     // Remove the original merged cell from the editor
     removeNodes(editor, { at: path });
 
-    const { col } = getCellIndices(
-      cellIndices!,
-      cellElem as TTableCellElement
-    )!;
+    const { col } = getCellIndices(editor, {
+      cellNode: cellElem as TTableCellElement,
+      tableNode,
+    });
 
     const getClosestColPathForRow = (row: number, targetCol: number) => {
       const rowEntry = findNode(editor, {
@@ -87,13 +84,16 @@ export const unmergeTableCells = (editor: SlateEditor) => {
 
       rowEl.children.forEach((cell) => {
         const cellElement = cell as TTableCellElement;
-        const { col: cellCol } = getCellIndices(cellIndices!, cellElement)!;
+        const { col: cellCol } = getCellIndices(editor, {
+          cellNode: cellElement,
+          tableNode,
+        });
 
         const diff = Math.abs(cellCol - targetCol);
 
         if (diff < smallestDiff) {
           smallestDiff = diff;
-          closestColPath = findNodePath(editor, cellElement)!;
+          closestColPath = editor.findPath(cellElement)!;
           isDirectionLeft = cellCol < targetCol;
         }
       });
@@ -151,15 +151,6 @@ export const unmergeTableCells = (editor: SlateEditor) => {
           { at: _rowPath }
         );
       }
-    }
-
-    // Recalculate the split cells
-    const tableElement = findNode<TTableElement>(editor, {
-      at: tablePath,
-    })?.[0];
-
-    if (tableElement) {
-      computeCellIndices(editor, tableElement);
     }
   });
 };

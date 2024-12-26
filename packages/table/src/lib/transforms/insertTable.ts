@@ -1,59 +1,78 @@
 import {
   type InsertNodesOptions,
   type SlateEditor,
+  findNode,
   getBlockAbove,
-  getEditorPlugin,
   getStartPoint,
   insertNodes,
   select,
-  someNode,
   withoutNormalizing,
 } from '@udecode/plate-common';
+import { Path } from 'slate';
 
+import type { GetEmptyTableNodeOptions } from '../api/getEmptyTableNode';
 import type { TTableElement } from '../types';
 
-import { BaseTablePlugin } from '../BaseTablePlugin';
-import {
-  type GetEmptyTableNodeOptions,
-  getEmptyTableNode,
-} from '../utils/getEmptyTableNode';
+import { type TableConfig, BaseTablePlugin } from '../BaseTablePlugin';
 
-/** Insert table if selection not in table. Select start of table. */
+/**
+ * Insert table. If selection in table and no 'at' specified, insert after
+ * current table. Select start of new table.
+ */
 export const insertTable = <E extends SlateEditor>(
   editor: E,
   { colCount = 2, header, rowCount = 2 }: GetEmptyTableNodeOptions = {},
-  options: InsertNodesOptions<E> = {}
+  { select: shouldSelect, ...options }: InsertNodesOptions<E> = {}
 ) => {
-  const { type } = getEditorPlugin(editor, BaseTablePlugin);
+  const { api } = editor.getPlugin<TableConfig>({ key: 'table' });
+  const type = editor.getType(BaseTablePlugin);
 
   withoutNormalizing(editor, () => {
-    if (
-      !someNode(editor, {
-        match: { type },
-      })
-    ) {
-      insertNodes<TTableElement>(
-        editor,
-        getEmptyTableNode(editor, {
-          colCount,
-          header,
-          rowCount,
-        }),
-        {
-          nextBlock: true,
-          ...(options as any),
-        }
-      );
+    const newTable = api.create.table({
+      colCount,
+      header,
+      rowCount,
+    });
 
-      if (editor.selection) {
-        const tableEntry = getBlockAbove(editor, {
-          match: { type },
+    if (!options.at) {
+      const currentTableEntry = getBlockAbove(editor, {
+        match: { type },
+      });
+
+      if (currentTableEntry) {
+        // Insert after current table
+        const [, tablePath] = currentTableEntry;
+        const insertPath = Path.next(tablePath);
+
+        insertNodes<TTableElement>(editor, newTable, {
+          at: insertPath,
+          ...(options as any),
         });
 
-        if (!tableEntry) return;
+        if (editor.selection) {
+          select(editor, getStartPoint(editor, insertPath));
+        }
 
-        select(editor, getStartPoint(editor, tableEntry[1]));
+        return;
       }
+    }
+
+    // Use specified path or insert at current selection
+    insertNodes<TTableElement>(editor, newTable, {
+      nextBlock: !options.at,
+      select: shouldSelect,
+      ...(options as any),
+    });
+
+    if (shouldSelect) {
+      const tableEntry = findNode(editor, {
+        at: options.at,
+        match: { type },
+      });
+
+      if (!tableEntry) return;
+
+      select(editor, getStartPoint(editor, tableEntry[1]));
     }
   });
 };

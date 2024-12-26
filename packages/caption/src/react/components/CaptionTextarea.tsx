@@ -10,7 +10,6 @@ import {
 } from '@udecode/plate-common';
 import {
   createPrimitiveComponent,
-  findPath,
   focusEditor,
   setNode,
   useEditorRef,
@@ -35,7 +34,7 @@ export const useCaptionTextareaFocus = (
 
   React.useEffect(() => {
     if (focusCaptionPath && textareaRef.current) {
-      const path = findPath(editor, element);
+      const path = editor.findPath(element);
 
       if (path && Path.equals(path, focusCaptionPath)) {
         textareaRef.current.focus();
@@ -126,7 +125,7 @@ export const useCaptionTextarea = ({
   const onKeyDown: TextareaAutosizeProps['onKeyDown'] = (e) => {
     // select image
     if (isHotkey('up', e)) {
-      const path = findPath(editor, element);
+      const path = editor.findPath(element);
 
       if (!path) return;
 
@@ -136,7 +135,7 @@ export const useCaptionTextarea = ({
     }
     // select next block
     if (isHotkey('down', e)) {
-      const path = findPath(editor, element);
+      const path = editor.findPath(element);
 
       if (!path) return;
 

@@ -45,7 +45,6 @@ import {
   MediaEmbedPlugin,
   VideoPlugin,
 } from '@udecode/plate-media/react';
-import { insertTable } from '@udecode/plate-table';
 import {
   TableCellPlugin,
   TablePlugin,
@@ -99,7 +98,8 @@ const insertBlockMap: Record<
       select: true,
       type: MediaEmbedPlugin.key,
     }),
-  [TablePlugin.key]: (editor) => insertTable(editor, {}, { select: true }),
+  [TablePlugin.key]: (editor) =>
+    editor.getTransforms(TablePlugin).insert.table({}, { select: true }),
   [TocPlugin.key]: (editor) => insertToc(editor, { select: true }),
   [VideoPlugin.key]: (editor) =>
     insertVideoPlaceholder(editor, { select: true }),

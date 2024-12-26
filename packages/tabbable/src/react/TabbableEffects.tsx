@@ -1,7 +1,6 @@
 import React from 'react';
 
 import {
-  findPath,
   focusEditor,
   toDOMNode,
   toSlateNode,
@@ -75,7 +74,7 @@ export function TabbableEffects() {
 
           return {
             domNode,
-            path: findPath(editor, slateNode),
+            path: editor.findPath(slateNode),
             slateNode,
           } as TabbableEntry;
         })

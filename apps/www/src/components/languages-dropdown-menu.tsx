@@ -27,9 +27,10 @@ export function LanguagesDropdownMenu() {
     } else {
       if (!pathname?.includes('cn')) return;
       if (pathname) {
-        const isHomePage = pathname.split('/').filter((p) => !!p).length === 1;
-
-        url.pathname = isHomePage ? '/' : (pathname.split('/').at(-1) ?? '/');
+        const segments = pathname.split('/').filter((p) => !!p);
+        const newSegments = segments.filter((segment) => segment !== 'cn');
+        url.pathname =
+          newSegments.length > 0 ? `/${newSegments.join('/')}` : '/';
       }
 
       url.searchParams.delete('locale');

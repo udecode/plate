@@ -11,12 +11,7 @@ import {
   removeNodes,
   withoutSavingHistory,
 } from '@udecode/plate-common';
-import {
-  findPath,
-  useEditorPlugin,
-  withHOC,
-  withRef,
-} from '@udecode/plate-common/react';
+import { useEditorPlugin, withHOC, withRef } from '@udecode/plate-common/react';
 import {
   AudioPlugin,
   FilePlugin,
@@ -108,7 +103,7 @@ export const MediaPlaceholderElement = withHOC(
       useEffect(() => {
         if (!uploadedFile) return;
 
-        const path = findPath(editor, element);
+        const path = editor.findPath(element);
 
         withoutSavingHistory(editor, () => {
           removeNodes(editor, { at: path });

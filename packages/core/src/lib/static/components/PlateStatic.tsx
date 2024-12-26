@@ -7,7 +7,6 @@ import {
   type TElement,
   type TNodeEntry,
   type TText,
-  findNodePath,
   getRange,
   isElement,
   isInline,
@@ -151,7 +150,7 @@ function Children({
   return (
     <React.Fragment>
       {children.map((child, i) => {
-        const p = findNodePath(editor, child);
+        const p = editor.findPath(child);
 
         let ds: DecoratedRange[] = [];
 

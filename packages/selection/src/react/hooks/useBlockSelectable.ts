@@ -22,7 +22,7 @@ export const useBlockSelectable = () => {
     props: {
       className: 'slate-selectable',
       onContextMenu: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        if (!element || !path) return;
+        if (!element) return;
 
         const { enableContextMenu } = getOptions();
 

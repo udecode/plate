@@ -9,8 +9,7 @@ import {
 
 import type { TTableElement } from '../../lib/types';
 
-import { BaseTablePlugin } from '../../lib/BaseTablePlugin';
-import { getEmptyTableNode } from '../../lib/utils';
+import { type TableConfig, BaseTablePlugin } from '../../lib/BaseTablePlugin';
 import { getTableMergeGridByRange } from '../merge/getTableGridByRange';
 
 export interface GetTableGridByRangeOptions {
@@ -30,9 +29,10 @@ export const getTableGridByRange = (
   editor: SlateEditor,
   { at, format = 'table' }: GetTableGridByRangeOptions
 ): TElementEntry[] => {
-  const { enableMerging } = editor.getOptions(BaseTablePlugin);
+  const { api } = editor.getPlugin<TableConfig>({ key: 'table' });
+  const { disableMerge } = editor.getOptions(BaseTablePlugin);
 
-  if (enableMerging) {
+  if (!disableMerge) {
     return getTableMergeGridByRange(editor, { at, format });
   }
 
@@ -54,7 +54,7 @@ export const getTableGridByRange = (
   const relativeRowIndex = endRowIndex - startRowIndex;
   const relativeColIndex = endColIndex - startColIndex;
 
-  const table: TTableElement = getEmptyTableNode(editor, {
+  const table: TTableElement = api.create.table({
     children: [],
     colCount: relativeColIndex + 1,
     rowCount: relativeRowIndex + 1,

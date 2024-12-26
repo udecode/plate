@@ -18,7 +18,6 @@ import {
   ColumnPlugin,
   useDebouncePopoverOpen,
 } from '@udecode/plate-layout/react';
-import { findNodePath } from '@udecode/plate-common';
 import { type LucideProps, Trash2Icon } from 'lucide-react';
 import { useReadOnly } from 'slate-react';
 
@@ -52,7 +51,7 @@ export function ColumnFloatingToolbar({ children }: React.PropsWithChildren) {
 
   const onColumnChange = (widths: string[]) => {
     setColumns(editor, {
-      at: findNodePath(editor, columnGroupElement),
+      at: editor.findPath(columnGroupElement),
       widths,
     });
   };

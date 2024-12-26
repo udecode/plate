@@ -10,6 +10,10 @@ import { insertTableRow } from './insertTableRow';
 
 jsxt;
 
+const tablePlugin = BaseTablePlugin.configure({
+  options: { disableMerge: true },
+});
+
 describe('insertTableRow', () => {
   describe('when inserting a table row', () => {
     it('should insert a tr with empty cells', () => {
@@ -76,10 +80,10 @@ describe('insertTableRow', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [BaseTablePlugin],
+        plugins: [tablePlugin],
       });
 
-      insertTableRow(editor);
+      insertTableRow(editor, { select: true });
 
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);
@@ -151,17 +155,87 @@ describe('insertTableRow', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [
-          BaseTablePlugin.configure({
-            // newCellChildren: [{ text: '' }]
-          }),
-        ],
+        plugins: [tablePlugin],
       });
 
-      insertTableRow(editor, { at: [0, 0] });
+      insertTableRow(editor, { at: [0, 0], select: true });
 
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);
+    });
+  });
+
+  describe('when inserting a table row before', () => {
+    it('should insert a tr with empty cells before the current row', () => {
+      const input = (
+        <editor>
+          <htable>
+            <htr>
+              <htd>
+                <hp>11</hp>
+              </htd>
+              <htd>
+                <hp>12</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>
+                  21
+                  <cursor />
+                </hp>
+              </htd>
+              <htd>
+                <hp>22</hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any as SlateEditor;
+
+      const output = (
+        <editor>
+          <htable>
+            <htr>
+              <htd>
+                <hp>11</hp>
+              </htd>
+              <htd>
+                <hp>12</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>
+                  <cursor />
+                </hp>
+              </htd>
+              <htd>
+                <hp>
+                  <htext />
+                </hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>21</hp>
+              </htd>
+              <htd>
+                <hp>22</hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any as SlateEditor;
+
+      const editor = createPlateEditor({
+        editor: input,
+        plugins: [tablePlugin],
+      });
+
+      insertTableRow(editor, { before: true, select: true });
+
+      expect(editor.children).toEqual(output.children);
     });
   });
 });

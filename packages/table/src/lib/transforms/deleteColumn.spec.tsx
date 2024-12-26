@@ -10,6 +10,10 @@ import { deleteColumn } from './deleteColumn';
 
 jsxt;
 
+const tablePlugin = BaseTablePlugin.configure({
+  options: { disableMerge: true },
+});
+
 describe('deleteColumn', () => {
   describe('when 2x2', () => {
     it('should delete column', () => {
@@ -58,7 +62,7 @@ describe('deleteColumn', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [BaseTablePlugin],
+        plugins: [tablePlugin],
       });
 
       deleteColumn(editor);
@@ -111,7 +115,7 @@ describe('deleteColumn', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [BaseTablePlugin],
+        plugins: [tablePlugin],
       });
 
       deleteColumn(editor);
@@ -164,7 +168,7 @@ describe('deleteColumn', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [BaseTablePlugin],
+        plugins: [tablePlugin],
       });
 
       deleteColumn(editor);
@@ -223,7 +227,7 @@ describe('deleteColumn', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [BaseTablePlugin],
+        plugins: [tablePlugin],
       });
 
       deleteColumn(editor);

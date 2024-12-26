@@ -1,4 +1,14 @@
-import type { BorderDirection, BorderStyle, TTableCellElement } from '../types';
+import { type SlateEditor, getParentNode } from '@udecode/plate-common';
+
+import type {
+  BorderDirection,
+  BorderStyle,
+  TTableCellElement,
+  TTableElement,
+  TTableRowElement,
+} from '../types';
+
+import { getCellIndices } from '../utils/getCellIndices';
 
 export interface BorderStylesDefault {
   bottom: Required<BorderStyle>;
@@ -8,21 +18,30 @@ export interface BorderStylesDefault {
 }
 
 export const getTableCellBorders = (
-  element: TTableCellElement,
+  editor: SlateEditor,
   {
     defaultBorder = {
       color: 'rgb(209 213 219)',
       size: 1,
       style: 'solid',
     },
-    isFirstCell,
-    isFirstRow,
+    element,
   }: {
+    element: TTableCellElement;
     defaultBorder?: Required<BorderStyle>;
-    isFirstCell?: boolean;
-    isFirstRow?: boolean;
-  } = {}
+  }
 ): BorderStylesDefault => {
+  const cellPath = editor.findPath(element)!;
+  const [rowNode, rowPath] = getParentNode<TTableRowElement>(editor, cellPath)!;
+  const [tableNode] = getParentNode<TTableElement>(editor, rowPath)!;
+
+  const { col } = getCellIndices(editor, {
+    cellNode: element,
+    tableNode,
+  });
+  const isFirstCell = col === 0;
+  const isFirstRow = tableNode.children?.[0] === rowNode;
+
   const getBorder = (dir: BorderDirection) => {
     const border = element.borders?.[dir];
 

@@ -16,14 +16,14 @@ export const useSelectedCells = () => {
   const editor = useEditorRef();
 
   const [selectedCells, setSelectedCells] = useTableStore().use.selectedCells();
-  const setSelectedTable = useTableStore().set.selectedTable();
+  const setSelectedTables = useTableStore().set.selectedTables();
 
   React.useEffect(() => {
     if (!selected || readOnly) {
       setSelectedCells(null);
-      setSelectedTable(null);
+      setSelectedTables(null);
     }
-  }, [selected, editor, setSelectedCells, readOnly, setSelectedTable]);
+  }, [selected, editor, setSelectedCells, readOnly, setSelectedTables]);
 
   React.useEffect(() => {
     if (readOnly) return;
@@ -37,11 +37,11 @@ export const useSelectedCells = () => {
 
       if (JSON.stringify(cells) !== JSON.stringify(selectedCells)) {
         setSelectedCells(cells);
-        setSelectedTable(tables);
+        setSelectedTables(tables);
       }
     } else if (selectedCells) {
       setSelectedCells(null);
-      setSelectedTable(null);
+      setSelectedTables(null);
     }
   }, [
     editor,
@@ -49,6 +49,6 @@ export const useSelectedCells = () => {
     readOnly,
     selectedCells,
     setSelectedCells,
-    setSelectedTable,
+    setSelectedTables,
   ]);
 };

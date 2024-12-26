@@ -11,6 +11,10 @@ import { BaseTablePlugin } from './BaseTablePlugin';
 
 jsxt;
 
+const tablePlugin = BaseTablePlugin.configure({
+  options: { disableMerge: true },
+});
+
 describe('withInsertFragmentTable', () => {
   // https://github.com/udecode/editor-protocol/issues/13
   describe('when inserting table 2x1 into cell 11', () => {
@@ -83,7 +87,7 @@ describe('withInsertFragmentTable', () => {
 
       const editor = createSlateEditor({
         editor: input,
-        plugins: [BaseTablePlugin],
+        plugins: [tablePlugin],
       });
 
       editor.insertFragment(fragment);
@@ -159,7 +163,7 @@ describe('withInsertFragmentTable', () => {
 
       const editor = createSlateEditor({
         editor: input,
-        plugins: [BaseTablePlugin],
+        plugins: [tablePlugin],
       });
 
       editor.insertFragment(fragment);
@@ -240,7 +244,7 @@ describe('withInsertFragmentTable', () => {
 
       const editor = createSlateEditor({
         editor: input,
-        plugins: [BaseTablePlugin],
+        plugins: [tablePlugin],
       });
 
       editor.deleteFragment();
@@ -325,7 +329,7 @@ describe('withInsertFragmentTable', () => {
 
       const editor = createSlateEditor({
         editor: input,
-        plugins: [BaseTablePlugin],
+        plugins: [tablePlugin],
       });
 
       editor.insertFragment(fragment);
@@ -441,9 +445,9 @@ describe('withInsertFragmentTable', () => {
       const editor = createSlateEditor({
         editor: input,
         plugins: [
-          BaseTablePlugin.extendEditorApi(() => ({
+          tablePlugin.extendEditorApi(() => ({
             create: {
-              cell: () => ({
+              tableCell: () => ({
                 children: [{ text: '' }],
                 custom: true,
                 type: 'td',
@@ -541,7 +545,7 @@ describe('withInsertFragmentTable', () => {
       const editor = createSlateEditor({
         editor: input,
         plugins: [
-          BaseTablePlugin.configure({
+          tablePlugin.configure({
             options: {
               disableExpandOnInsert: true,
             },
@@ -613,7 +617,7 @@ describe('withInsertFragmentTable', () => {
 
       const editor = createSlateEditor({
         editor: input,
-        plugins: [BaseTablePlugin],
+        plugins: [tablePlugin],
       });
 
       editor.insertFragment(fragment);
@@ -672,7 +676,7 @@ describe('withInsertFragmentTable', () => {
 
       const editor = createSlateEditor({
         editor: input,
-        plugins: [BaseTablePlugin],
+        plugins: [tablePlugin],
       });
 
       editor.insertFragment(fragment);

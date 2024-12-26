@@ -16,7 +16,7 @@ export default function TableMergeDemo() {
       ...editorPlugins,
       TablePlugin.configure({
         options: {
-          enableMerging: false,
+          disableMerge: true,
         },
       }),
     ],

@@ -5,7 +5,6 @@ import {
   type TElement,
   type TElementEntry,
   findNode,
-  findNodePath,
   getEditorPlugin,
 } from '@udecode/plate-common';
 
@@ -17,10 +16,8 @@ import type {
 
 import { BaseTablePlugin } from '../BaseTablePlugin';
 import { getCellTypes } from '../utils';
-import { getEmptyTableNode } from '../utils/getEmptyTableNode';
-import { computeCellIndices } from './computeCellIndices';
+import { getCellIndices } from '../utils/getCellIndices';
 import { findCellByIndexes } from './findCellByIndexes';
-import { getCellIndices } from './getCellIndices';
 import { getCellIndicesWithSpans } from './getCellIndicesWithSpans';
 
 type FormatType = 'all' | 'cell' | 'table';
@@ -54,9 +51,7 @@ export const getTableMergeGridByRange = <T extends FormatType>(
   editor: SlateEditor,
   { at, format }: GetTableGridByRangeOptions<T>
 ): GetTableGridReturnType<T> => {
-  const { api, getOptions, type } = getEditorPlugin(editor, BaseTablePlugin);
-
-  const { _cellIndices: cellIndices } = getOptions();
+  const { api, type } = getEditorPlugin(editor, BaseTablePlugin);
 
   const startCellEntry = findNode<TTableCellElement>(editor, {
     at: at.anchor.path,
@@ -80,14 +75,18 @@ export const getTableMergeGridByRange = <T extends FormatType>(
   const realTable = tableEntry[0];
 
   const { col: _startColIndex, row: _startRowIndex } = getCellIndicesWithSpans(
-    getCellIndices(cellIndices!, startCell) ||
-      computeCellIndices(editor, realTable, startCell)!,
+    getCellIndices(editor, {
+      cellNode: startCell,
+      tableNode: realTable,
+    }),
     startCell
   );
 
   const { col: _endColIndex, row: _endRowIndex } = getCellIndicesWithSpans(
-    getCellIndices(cellIndices!, endCell) ||
-      computeCellIndices(editor, realTable, endCell)!,
+    getCellIndices(editor, {
+      cellNode: endCell,
+      tableNode: realTable,
+    }),
     endCell
   );
 
@@ -99,7 +98,7 @@ export const getTableMergeGridByRange = <T extends FormatType>(
   const relativeRowIndex = endRowIndex - startRowIndex;
   const relativeColIndex = endColIndex - startColIndex;
 
-  let table: TTableElement = getEmptyTableNode(editor, {
+  let table: TTableElement = api.create.table({
     children: [],
     colCount: relativeColIndex + 1,
     rowCount: relativeRowIndex + 1,
@@ -119,9 +118,10 @@ export const getTableMergeGridByRange = <T extends FormatType>(
       break;
     }
 
-    const indicies =
-      getCellIndices(cellIndices!, cell) ||
-      computeCellIndices(editor, realTable, cell)!;
+    const indicies = getCellIndices(editor, {
+      cellNode: cell,
+      tableNode: realTable,
+    });
     const { col: cellColWithSpan, row: cellRowWithSpan } =
       getCellIndicesWithSpans(indicies, cell);
     const { col: cellCol, row: cellRow } = indicies;
@@ -149,7 +149,7 @@ export const getTableMergeGridByRange = <T extends FormatType>(
       colIndex = startColIndex;
       const newRelativeRowIndex = endRowIndex - startRowIndex;
       const newRelativeColIndex = endColIndex - startColIndex;
-      table = getEmptyTableNode(editor, {
+      table = api.create.table({
         children: [],
         colCount: newRelativeColIndex + 1,
         rowCount: newRelativeRowIndex + 1,
@@ -164,7 +164,7 @@ export const getTableMergeGridByRange = <T extends FormatType>(
         .children as TElement[];
       rows[colIndex - startColIndex] = cell;
 
-      const cellPath = findNodePath(editor, cell)!;
+      const cellPath = editor.findPath(cell)!;
 
       cellEntries.push([cell, cellPath]);
     }

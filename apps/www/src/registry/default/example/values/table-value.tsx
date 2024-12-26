@@ -111,7 +111,7 @@ export const tableMergeValue: any = (
   <fragment>
     <hh3>Table Merge</hh3>
     <hp>
-      You can enable merging using <htext code>enableMerging: true</htext>{' '}
+      You can disable merging using <htext code>disableMerge: true</htext>{' '}
       option. Try it out:
     </hp>
     {createTable(true)}

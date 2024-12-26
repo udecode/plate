@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 
-import type { Value } from '@udecode/slate';
+import type { Value } from '@udecode/plate-common';
 
 import { AIChatPlugin, CopilotPlugin } from '@udecode/plate-ai/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
