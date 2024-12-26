@@ -10,10 +10,62 @@ toc: true
 
 ## 2024年12月 #17
 
+
+### 12月25日 #17.6
+
+- `indent-list-toolbar-button`: 移除 `IndentListToolbarButton`，改用 `NumberedIndentListToolbarButton` 和 `BulletedIndentListToolbarButton`。
+- `table-dropdown-menu`: 新的插入表格界面。
+
+### 12月23日 #17.5
+
+- `table-element`: 修复选择
+- 修改前: `isSelectingCell && '[&_*::selection]:bg-none'`
+- 修改后: `isSelectingCell && '[&_*::selection]:!bg-transparent'`
+
+
+### 12月21日 #17.4
+
+更新 `tailwind.config.cjs` 以提供更好的 HTML 导出字体支持：
+
+```ts
+fontFamily: {
+  heading: [
+    'var(--font-heading)',
+    'ui-sans-serif',
+    '-apple-system',
+    'BlinkMacSystemFont',
+    'Segoe UI Variable Display',
+    'Segoe UI',
+    'Helvetica',
+    'Apple Color Emoji',
+    'Arial',
+    'sans-serif',
+    'Segoe UI Emoji',
+    'Segoe UI Symbol',
+    'Noto Color Emoji',
+  ],
+  mono: ['var(--font-mono)', ...fontFamily.mono],
+  sans: [
+    'var(--font-sans)',
+    'ui-sans-serif',
+    '-apple-system',
+    'BlinkMacSystemFont',
+    'Segoe UI Variable Display',
+    'Segoe UI',
+    'Helvetica',
+    'Apple Color Emoji',
+    'Arial',
+    'sans-serif',
+    'Segoe UI Emoji',
+    'Segoe UI Symbol',
+    'Noto Color Emoji',
+  ],
+```
+
 ### 12月20日 #17.3
 
-- `insertColumnGroup`, `toggleColumnGroup`: use `columns` option instead of `layout` 
-- Remove `with-draggables`. Add [`DraggableAboveNodes`](https://github.com/udecode/plate/pull/3878/files#diff-493c12ebed9c3ef9fd8c3a723909b18ad439a448c0132d2d93e5341ee0888ad2) to `draggable`. Add to `DndPlugin` config:
+- `insertColumnGroup`、`toggleColumnGroup`：使用 `columns` 选项替代 `layout`
+- 移除 `with-draggables`。将 [`DraggableAboveNodes`](https://github.com/udecode/plate/pull/3878/files#diff-493c12ebed9c3ef9fd8c3a723909b18ad439a448c0132d2d93e5341ee0888ad2) 添加到 `draggable`。添加到 `DndPlugin` 配置中：
 ```tsx
 DndPlugin.configure({ render: { aboveNodes: DraggableAboveNodes } }),
 ```
