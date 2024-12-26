@@ -49,7 +49,10 @@ export const useTableCellElement = (): TableCellElementState => {
     [api.table, colSizes, element]
   );
 
-  const borders = getTableCellBorders(editor, { element });
+  const borders = React.useMemo(
+    () => getTableCellBorders(editor, { element }),
+    [editor, element]
+  );
 
   React.useEffect(() => {
     setIndices(

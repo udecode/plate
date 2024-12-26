@@ -60,6 +60,11 @@ export const useTableCellElementResizable = ({
   const colSizesWithoutOverrides = useTableColSizes(tableElement, {
     disableOverrides: true,
   });
+  const colSizesWithoutOverridesRef = React.useRef(colSizesWithoutOverrides);
+  React.useEffect(() => {
+    colSizesWithoutOverridesRef.current = colSizesWithoutOverrides;
+  }, [colSizesWithoutOverrides]);
+
   const { marginLeft = 0 } = tableElement;
 
   const overrideColSize = useOverrideColSize();
@@ -112,7 +117,7 @@ export const useTableCellElementResizable = ({
 
   const handleResizeRight = React.useCallback(
     ({ delta, finished, initialSize: currentInitial }: ResizeEvent) => {
-      const nextInitial = colSizesWithoutOverrides[colIndex + 1];
+      const nextInitial = colSizesWithoutOverridesRef.current[colIndex + 1];
 
       const complement = (width: number) =>
         currentInitial + nextInitial - width;
@@ -132,14 +137,7 @@ export const useTableCellElementResizable = ({
 
       if (nextNew) fn(colIndex + 1, nextNew);
     },
-    [
-      colIndex,
-      colSizesWithoutOverrides,
-      minColumnWidth,
-      overrideColSize,
-      setColSize,
-      stepX,
-    ]
+    [colIndex, minColumnWidth, overrideColSize, setColSize, stepX]
   );
 
   const handleResizeBottom = React.useCallback(
@@ -160,7 +158,7 @@ export const useTableCellElementResizable = ({
 
   const handleResizeLeft = React.useCallback(
     (event: ResizeEvent) => {
-      const initial = colSizesWithoutOverrides[colIndex];
+      const initial = colSizesWithoutOverridesRef.current[colIndex];
 
       const complement = (width: number) => initial + marginLeft - width;
 
@@ -184,7 +182,6 @@ export const useTableCellElementResizable = ({
     },
     [
       colIndex,
-      colSizesWithoutOverrides,
       marginLeft,
       minColumnWidth,
       overrideColSize,
@@ -198,25 +195,34 @@ export const useTableCellElementResizable = ({
   const hasLeftHandle = colIndex === 0 && !disableMarginLeft;
 
   return {
-    bottomProps: {
-      options: {
-        direction: 'bottom',
-        onResize: handleResizeBottom,
-      },
-    },
+    bottomProps: React.useMemo(
+      () => ({
+        options: {
+          direction: 'bottom',
+          onResize: handleResizeBottom,
+        },
+      }),
+      [handleResizeBottom]
+    ),
     hiddenLeft: !hasLeftHandle,
-    leftProps: {
-      options: {
-        direction: 'left',
-        onResize: handleResizeLeft,
-      },
-    },
-    rightProps: {
-      options: {
-        direction: 'right',
-        initialSize: initialWidth,
-        onResize: handleResizeRight,
-      },
-    },
+    leftProps: React.useMemo(
+      () => ({
+        options: {
+          direction: 'left',
+          onResize: handleResizeLeft,
+        },
+      }),
+      [handleResizeLeft]
+    ),
+    rightProps: React.useMemo(
+      () => ({
+        options: {
+          direction: 'right',
+          initialSize: initialWidth,
+          onResize: handleResizeRight,
+        },
+      }),
+      [initialWidth, handleResizeRight]
+    ),
   };
 };
