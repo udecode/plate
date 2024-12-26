@@ -4,8 +4,7 @@ export function intersectsScroll(
   a: DOMRect,
   b: DOMRect,
   // TODO
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  mode: Intersection = 'touch',
+  _: Intersection = 'touch',
   container: HTMLElement
 ): boolean {
   const containerRect = container.getBoundingClientRect();
