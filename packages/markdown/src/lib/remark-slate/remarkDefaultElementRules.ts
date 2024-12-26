@@ -79,7 +79,7 @@ export const remarkDefaultElementRules: RemarkElementRules = {
           listItems: TElement[] = [],
           indent = 1
         ) => {
-          _node.children?.forEach((listItem) => {
+          _node.children?.forEach((listItem, index) => {
             if (!listItem.children) {
               listItems.push({
                 children: remarkTransformElementChildren(listItem, options),
@@ -98,6 +98,7 @@ export const remarkDefaultElementRules: RemarkElementRules = {
               ),
               indent,
               listStyleType,
+              listStart: index + 1,
               type: options.editor.getType({ key: 'p' }),
             });
 
