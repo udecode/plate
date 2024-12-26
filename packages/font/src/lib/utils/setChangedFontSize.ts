@@ -1,6 +1,6 @@
 import { type SlateEditor, setMarks } from '@udecode/plate-common';
 
-import { FontSizePlugin } from '../../react';
+import { BaseFontSizePlugin } from '../BaseFontSizePlugin';
 
 export const setChangedFontSize = (
   editor: SlateEditor,
@@ -9,7 +9,7 @@ export const setChangedFontSize = (
   const { fontSize, increase } = options;
 
   setMarks(editor, {
-    [FontSizePlugin.key]: getChangedFontSize({ fontSize, increase }),
+    [BaseFontSizePlugin.key]: getChangedFontSize({ fontSize, increase }),
   });
 };
 
