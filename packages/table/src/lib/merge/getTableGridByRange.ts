@@ -75,18 +75,12 @@ export const getTableMergeGridByRange = <T extends FormatType>(
   const realTable = tableEntry[0];
 
   const { col: _startColIndex, row: _startRowIndex } = getCellIndicesWithSpans(
-    getCellIndices(editor, {
-      cellNode: startCell,
-      tableNode: realTable,
-    }),
+    getCellIndices(editor, startCell),
     startCell
   );
 
   const { col: _endColIndex, row: _endRowIndex } = getCellIndicesWithSpans(
-    getCellIndices(editor, {
-      cellNode: endCell,
-      tableNode: realTable,
-    }),
+    getCellIndices(editor, endCell),
     endCell
   );
 
@@ -118,10 +112,7 @@ export const getTableMergeGridByRange = <T extends FormatType>(
       break;
     }
 
-    const indicies = getCellIndices(editor, {
-      cellNode: cell,
-      tableNode: realTable,
-    });
+    const indicies = getCellIndices(editor, cell);
     const { col: cellColWithSpan, row: cellRowWithSpan } =
       getCellIndicesWithSpans(indicies, cell);
     const { col: cellCol, row: cellRow } = indicies;

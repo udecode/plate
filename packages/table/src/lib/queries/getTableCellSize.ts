@@ -5,6 +5,7 @@ import {
 } from '@udecode/plate-common';
 
 import {
+  type CellIndices,
   type TTableCellElement,
   type TTableElement,
   type TTableRowElement,
@@ -17,9 +18,14 @@ import {
 export const getTableCellSize = (
   editor: SlateEditor,
   {
+    cellIndices,
     colSizes: colSizesProp,
     element,
-  }: { element: TTableCellElement; colSizes?: number[] }
+  }: {
+    element: TTableCellElement;
+    cellIndices?: CellIndices;
+    colSizes?: number[];
+  }
 ) => {
   const { api } = getEditorPlugin<TableConfig>(editor, {
     key: 'table',
@@ -32,10 +38,7 @@ export const getTableCellSize = (
   const colSizes = colSizesProp ?? getTableOverriddenColSizes(tableNode);
   const colSpan = api.table.getColSpan(element);
 
-  const { col } = getCellIndices(editor, {
-    cellNode: element,
-    tableNode,
-  });
+  const { col } = cellIndices ?? getCellIndices(editor, element);
 
   const width = (colSizes ?? [])
     .slice(col, col + colSpan)

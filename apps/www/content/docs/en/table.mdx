@@ -1118,9 +1118,6 @@ specific border type.
 Custom hook that returns the column sizes of a table with overrides applied. If the `colCount` of the table updates to 1 and the `enableUnsetSingleColSize` option is enabled, it unsets the `colSizes` node.
 
 <APIParameters>
-<APIItem name="tableNode" type="TTableElement">
-The table node.
-</APIItem>
 <APIItem name="options" type="object" optional>
 Additional options.
 <APISubList>
@@ -1190,6 +1187,56 @@ A hook for a table cell element that provides state and functionality for table 
   </APIItem>
   <APIItem name="width" type="number | string">
     The width of the cell.
+  </APIItem>
+</APIReturns>
+
+### useTableCellBorders
+
+A hook that returns the border styles for a table cell.
+
+<APIParameters>
+  None
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="BorderStylesDefault">
+    An object containing the border styles for the cell:
+    <APISubList>
+      <APISubListItem parent="return" name="bottom" type="Required<BorderStyle>">
+        The bottom border style.
+      </APISubListItem>
+      <APISubListItem parent="return" name="right" type="Required<BorderStyle>">
+        The right border style.
+      </APISubListItem>
+      <APISubListItem parent="return" name="left" type="Required<BorderStyle>" optional>
+        The left border style. Only present for cells in the first column.
+      </APISubListItem>
+      <APISubListItem parent="return" name="top" type="Required<BorderStyle>" optional>
+        The top border style. Only present for cells in the first row.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+
+### useTableCellSize
+
+A hook that returns the size (width and minimum height) of a table cell.
+
+<APIParameters>
+  None
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="object">
+    An object containing:
+    <APISubList>
+      <APISubListItem parent="return" name="width" type="number">
+        The total width of the cell, calculated by summing the widths of all columns it spans.
+      </APISubListItem>
+      <APISubListItem parent="return" name="minHeight" type="number | undefined">
+        The minimum height of the cell, derived from the row's size property.
+      </APISubListItem>
+    </APISubList>
   </APIItem>
 </APIReturns>
 

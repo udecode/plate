@@ -2,7 +2,6 @@ import {
   type PluginConfig,
   type QueryNodeOptions,
   type TDescendant,
-  type Value,
   createTSlatePlugin,
   isBlock,
   isElement,
@@ -90,16 +89,15 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
       const lastNode = editor.children.at(-1);
 
       if (firstNode?.id && lastNode?.id) {
-        return editor.children as Value;
+        return;
       }
     }
 
     const addNodeId = (entry: [TDescendant, number[]]) => {
       const [node, path] = entry;
-      const newNode = { ...node };
 
       if (
-        !newNode[idKey!] &&
+        !node[idKey!] &&
         queryNode([node, path], {
           allow,
           exclude,
@@ -117,22 +115,22 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
           },
         })
       ) {
-        newNode[idKey!] = getOptions().idCreator!();
+        node[idKey!] = getOptions().idCreator!();
       }
-      // Recursively process children if they exist
-      if ((newNode.children as any)?.length > 0) {
-        newNode.children = (newNode.children as any).map(
-          (child: any, index: number) => addNodeId([child, [...path, index]])
-        );
+      // Process children in place if they exist
+      if ((node.children as any)?.length > 0) {
+        (node.children as any).forEach((child: any, index: number) => {
+          addNodeId([child, [...path, index]]);
+        });
       }
 
-      return newNode;
+      return node;
     };
 
-    // Process top-level nodes
-    return editor.children.map((node, index) =>
-      addNodeId([node, [index]])
-    ) as Value;
+    // Process top-level nodes in place
+    editor.children.forEach((node, index) => {
+      addNodeId([node, [index]]);
+    });
   },
   options: {
     filter: () => true,

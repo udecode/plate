@@ -87,10 +87,7 @@ export const insertTableMergeRow = (
   const [cellNode, cellPath] = cellEntry;
   const cellElement = cellNode as TTableCellElement;
   const cellRowSpan = api.table.getRowSpan(cellElement);
-  const { row: cellRowIndex } = getCellIndices(editor, {
-    cellNode: cellElement,
-    tableNode: tableNode,
-  });
+  const { row: cellRowIndex } = getCellIndices(editor, cellElement);
 
   const rowPath = cellPath.at(-2)!;
   const tablePath = cellPath.slice(0, -2)!;
@@ -133,10 +130,10 @@ export const insertTableMergeRow = (
     if (!cur) return;
 
     const curCell = cur as TTableCellElement;
-    const { col: curColIndex, row: curRowIndex } = getCellIndices(editor, {
-      cellNode: curCell,
-      tableNode: tableNode,
-    });
+    const { col: curColIndex, row: curRowIndex } = getCellIndices(
+      editor,
+      curCell
+    );
 
     const curRowSpan = api.table.getRowSpan(curCell);
     const curColSpan = api.table.getColSpan(curCell);

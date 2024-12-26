@@ -5,6 +5,7 @@ import {
   type TElement,
   createSlateEditor,
 } from '@udecode/plate-common';
+import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { BaseTablePlugin } from './BaseTablePlugin';
@@ -87,7 +88,7 @@ describe('withInsertFragmentTable', () => {
 
       const editor = createSlateEditor({
         editor: input,
-        plugins: [tablePlugin],
+        plugins: [NodeIdPlugin, tablePlugin],
       });
 
       editor.insertFragment(fragment);
@@ -163,7 +164,7 @@ describe('withInsertFragmentTable', () => {
 
       const editor = createSlateEditor({
         editor: input,
-        plugins: [tablePlugin],
+        plugins: [NodeIdPlugin, tablePlugin],
       });
 
       editor.insertFragment(fragment);
@@ -244,7 +245,7 @@ describe('withInsertFragmentTable', () => {
 
       const editor = createSlateEditor({
         editor: input,
-        plugins: [tablePlugin],
+        plugins: [NodeIdPlugin, tablePlugin],
       });
 
       editor.deleteFragment();
@@ -329,7 +330,7 @@ describe('withInsertFragmentTable', () => {
 
       const editor = createSlateEditor({
         editor: input,
-        plugins: [tablePlugin],
+        plugins: [NodeIdPlugin, tablePlugin],
       });
 
       editor.insertFragment(fragment);
@@ -617,7 +618,7 @@ describe('withInsertFragmentTable', () => {
 
       const editor = createSlateEditor({
         editor: input,
-        plugins: [tablePlugin],
+        plugins: [NodeIdPlugin, tablePlugin],
       });
 
       editor.insertFragment(fragment);
@@ -676,7 +677,7 @@ describe('withInsertFragmentTable', () => {
 
       const editor = createSlateEditor({
         editor: input,
-        plugins: [tablePlugin],
+        plugins: [NodeIdPlugin, tablePlugin],
       });
 
       editor.insertFragment(fragment);

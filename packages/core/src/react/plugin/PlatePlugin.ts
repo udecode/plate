@@ -51,16 +51,14 @@ import type { PlateRenderLeafProps } from './PlateRenderLeafProps';
 export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
   BasePlugin<C> &
     Nullable<{
-      /** Normalize initial value before passing it into the editor. */
-      normalizeInitialValue?: (
-        ctx: PlatePluginContext<WithAnyKey<C>> & { value: Value }
-      ) => Value;
-
       /** @see {@link Decorate} */
       decorate?: Decorate<WithAnyKey<C>>;
 
       /** @see {@link ExtendEditor} */
       extendEditor?: ExtendEditor<WithAnyKey<C>>;
+
+      /** Normalize initial value before passing it into the editor. */
+      normalizeInitialValue?: NormalizeInitialValue<WithAnyKey<C>>;
 
       /** @see {@link UseHooks} */
       useHooks?: UseHooks<WithAnyKey<C>>;
@@ -643,6 +641,10 @@ export type HtmlReactSerializer<C extends AnyPluginConfig = PluginConfig> = {
 export type Decorate<C extends AnyPluginConfig = PluginConfig> = (
   ctx: PlatePluginContext<C> & { entry: TNodeEntry }
 ) => TDecoratedRange[] | undefined;
+
+export type NormalizeInitialValue<C extends AnyPluginConfig = PluginConfig> = (
+  ctx: PlatePluginContext<C> & { value: Value }
+) => void;
 
 /** Properties used by Plate to inject props into any {@link NodeComponent}. */
 export type InjectNodeProps<C extends AnyPluginConfig = PluginConfig> =

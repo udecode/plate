@@ -35,11 +35,9 @@ import type { HandlerReturnType } from './HandlerReturnType';
 export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> =
   BasePlugin<C> &
     Nullable<{
-      normalizeInitialValue?: (
-        ctx: SlatePluginContext<WithAnyKey<C>> & { value: Value }
-      ) => Value;
       decorate?: Decorate<WithAnyKey<C>>;
       extendEditor?: ExtendEditor<WithAnyKey<C>>;
+      normalizeInitialValue?: NormalizeInitialValue<WithAnyKey<C>>;
     }> &
     SlatePluginMethods<C> & {
       inject: Nullable<{
@@ -430,6 +428,10 @@ export type HtmlSerializer<C extends AnyPluginConfig = PluginConfig> =
 export type Decorate<C extends AnyPluginConfig = PluginConfig> = (
   ctx: SlatePluginContext<C> & { entry: TNodeEntry }
 ) => DecoratedRange[] | undefined;
+
+export type NormalizeInitialValue<C extends AnyPluginConfig = PluginConfig> = (
+  ctx: SlatePluginContext<C> & { value: Value }
+) => void;
 
 export type InjectNodeProps<C extends AnyPluginConfig = PluginConfig> =
   BaseInjectProps & {

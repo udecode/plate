@@ -3,6 +3,7 @@
 import type { SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
+import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { BaseTablePlugin } from '.';
@@ -37,7 +38,7 @@ describe('withGetFragmentTable', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [BaseTablePlugin],
+        plugins: [NodeIdPlugin, BaseTablePlugin],
       });
 
       const fragment = editor.getFragment();
@@ -74,7 +75,7 @@ describe('withGetFragmentTable', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [BaseTablePlugin],
+        plugins: [NodeIdPlugin, BaseTablePlugin],
       });
 
       const fragment = editor.getFragment();

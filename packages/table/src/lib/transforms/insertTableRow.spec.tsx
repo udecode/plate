@@ -3,6 +3,7 @@
 import type { SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
+import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { BaseTablePlugin } from '../BaseTablePlugin';
@@ -80,7 +81,7 @@ describe('insertTableRow', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [tablePlugin],
+        plugins: [NodeIdPlugin, tablePlugin],
       });
 
       insertTableRow(editor, { select: true });
@@ -155,7 +156,7 @@ describe('insertTableRow', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [tablePlugin],
+        plugins: [NodeIdPlugin, tablePlugin],
       });
 
       insertTableRow(editor, { at: [0, 0], select: true });
@@ -230,7 +231,7 @@ describe('insertTableRow', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [tablePlugin],
+        plugins: [NodeIdPlugin, tablePlugin],
       });
 
       insertTableRow(editor, { before: true, select: true });

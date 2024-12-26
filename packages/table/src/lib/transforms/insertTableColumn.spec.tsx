@@ -4,6 +4,7 @@
 import type { TEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
+import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { BaseTablePlugin } from '../BaseTablePlugin';
@@ -50,7 +51,7 @@ const makeTableWithCols = ({
 describe('insertTableColumn', () => {
   describe('without initialTableWidth', () => {
     const editorOptions = {
-      plugins: [tablePlugin],
+      plugins: [NodeIdPlugin, tablePlugin],
     };
 
     it('should insert at last column', () => {
@@ -168,6 +169,7 @@ describe('insertTableColumn', () => {
   describe('with initialTableWidth', () => {
     const editorOptions = {
       plugins: [
+        NodeIdPlugin,
         tablePlugin.configure({
           options: {
             disableMerge: true,

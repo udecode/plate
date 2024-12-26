@@ -1,19 +1,13 @@
-import React, { useState } from 'react';
-
 import { useEditorPlugin, useElement } from '@udecode/plate-common/react';
 
-import {
-  type BorderStylesDefault,
-  type TTableCellElement,
-  type TTableElement,
-  computeCellIndices,
-  getCellIndices,
-  getTableCellBorders,
-} from '../../../lib';
+import type { BorderStylesDefault, TTableCellElement } from '../../../lib';
+
 import { TablePlugin } from '../../TablePlugin';
+import { useCellIndices } from '../../hooks/useCellIndices';
 import { useTableStore } from '../../stores';
-import { useTableColSizes } from '../TableElement';
 import { useIsCellSelected } from './useIsCellSelected';
+import { useTableCellBorders } from './useTableCellBorders';
+import { useTableCellSize } from './useTableCellSize';
 
 export type TableCellElementState = {
   borders: BorderStylesDefault;
@@ -27,48 +21,23 @@ export type TableCellElementState = {
 };
 
 export const useTableCellElement = (): TableCellElementState => {
-  const { api, editor } = useEditorPlugin(TablePlugin);
+  const { api } = useEditorPlugin(TablePlugin);
   const element = useElement<TTableCellElement>();
-  const colSpan = api.table.getColSpan(element);
-  const rowSpan = api.table.getRowSpan(element);
   const isCellSelected = useIsCellSelected(element);
   const selectedCells = useTableStore().get.selectedCells();
-  const tableElement = useElement<TTableElement>(TablePlugin.key);
   const rowSizeOverrides = useTableStore().get.rowSizeOverrides();
-  const [indices, setIndices] = useState(() =>
-    getCellIndices(editor, {
-      cellNode: element,
-      tableNode: tableElement,
-    })
-  );
-
-  const colSizes = useTableColSizes(tableElement);
-
-  const { minHeight, width } = React.useMemo(
-    () => api.table.getCellSize({ colSizes, element }),
-    [api.table, colSizes, element]
-  );
-
-  const borders = React.useMemo(
-    () => getTableCellBorders(editor, { element }),
-    [editor, element]
-  );
-
-  React.useEffect(() => {
-    setIndices(
-      computeCellIndices(editor, {
-        cellNode: element,
-        tableNode: tableElement,
-      })
-    );
-  }, [editor, element, tableElement]);
+  const { minHeight, width } = useTableCellSize();
+  const borders = useTableCellBorders();
 
   /**
    * Row size: if rowSpan > 1, we might look up the rowSize for the bottom row
    * or you can do something simpler if row-spanning is unusual in your app.
    */
-  const endingRowIndex = indices.row + rowSpan - 1;
-  const endingColIndex = indices.col + colSpan - 1;
+  const { col, row } = useCellIndices();
+  const colSpan = api.table.getColSpan(element);
+  const rowSpan = api.table.getRowSpan(element);
+  const endingRowIndex = row + rowSpan - 1;
+  const endingColIndex = col + colSpan - 1;
 
   return {
     borders,

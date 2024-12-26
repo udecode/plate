@@ -2,6 +2,7 @@
 '@udecode/plate-table': major
 ---
 
+- `TablePlugin` now depends on `NodeIdPlugin`
 - `TablePlugin` merging is now enabled by default:
   - Rename `enableMerging` to `disableMerge`
   - **Migration**:

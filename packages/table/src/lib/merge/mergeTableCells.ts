@@ -3,7 +3,6 @@ import {
   type TDescendant,
   type TNodeEntry,
   collapseSelection,
-  getBlockAbove,
   getEditorPlugin,
   insertElements,
   isElementEmpty,
@@ -12,20 +11,15 @@ import {
 } from '@udecode/plate-common';
 import cloneDeep from 'lodash/cloneDeep.js';
 
-import { type TTableCellElement, type TTableElement, getCellIndices } from '..';
+import { type TTableCellElement, getCellIndices } from '..';
 import { BaseTableCellHeaderPlugin, BaseTablePlugin } from '../BaseTablePlugin';
 import { getTableGridAbove } from '../queries';
 
 /** Merges multiple selected cells into one. */
 export const mergeTableCells = (editor: SlateEditor) => {
-  const { api, type } = getEditorPlugin(editor, BaseTablePlugin);
+  const { api } = getEditorPlugin(editor, BaseTablePlugin);
 
   withoutNormalizing(editor, () => {
-    const tableEntry = getBlockAbove(editor, {
-      at: editor.selection?.anchor.path,
-      match: { type },
-    })!;
-
     const cellEntries = getTableGridAbove(editor, {
       format: 'cell',
     }) as TNodeEntry<TTableCellElement>[];
@@ -40,23 +34,17 @@ export const mergeTableCells = (editor: SlateEditor) => {
 
       // count only those cells that are in the first selected row.
       if (rowIndex === cellEntries[0][1].at(-2)!) {
-        const cellColSpan = api.table.getColSpan(cell as TTableCellElement);
+        const cellColSpan = api.table.getColSpan(cell);
         colSpan += cellColSpan;
       }
     }
 
     // calculate the rowSpan which is the number of vertical cells that a cell should span.
     let rowSpan = 0;
-    const { col } = getCellIndices(editor, {
-      cellNode: cellEntries[0][0] as TTableCellElement,
-      tableNode: tableEntry[0] as TTableElement,
-    });
+    const { col } = getCellIndices(editor, cellEntries[0][0]);
     cellEntries.forEach((entry) => {
-      const cell = entry[0] as TTableCellElement;
-      const { col: curCol } = getCellIndices(editor, {
-        cellNode: cell,
-        tableNode: tableEntry[0] as TTableElement,
-      });
+      const cell = entry[0];
+      const { col: curCol } = getCellIndices(editor, cell);
 
       if (col === curCol) {
         rowSpan += api.table.getRowSpan(cell);

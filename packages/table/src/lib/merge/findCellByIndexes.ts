@@ -15,18 +15,13 @@ export const findCellByIndexes = (
     (current) => current.children
   ) as TTableCellElement[];
 
-  const foundCell = allCells.find((cell) => {
-    const cellElement = cell as TTableCellElement;
-
-    const indices = getCellIndices(editor, {
-      cellNode: cellElement,
-      tableNode: table,
-    });
+  const foundCell = allCells.find((cellNode) => {
+    const indices = getCellIndices(editor, cellNode);
 
     const { col: _startColIndex, row: _startRowIndex } = indices;
     const { col: _endColIndex, row: _endRowIndex } = getCellIndicesWithSpans(
       indices,
-      cellElement
+      cellNode
     );
 
     if (

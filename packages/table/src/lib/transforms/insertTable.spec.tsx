@@ -3,6 +3,7 @@
 import type { SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
+import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { BaseTablePlugin } from '../BaseTablePlugin';
@@ -60,7 +61,7 @@ describe('insertTable', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [tablePlugin],
+        plugins: [NodeIdPlugin, tablePlugin],
       });
 
       insertTable(editor, { colCount: 2, rowCount: 2 }, { select: true });
@@ -115,7 +116,7 @@ describe('insertTable', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [tablePlugin],
+        plugins: [NodeIdPlugin, tablePlugin],
       });
 
       insertTable(
@@ -184,7 +185,7 @@ describe('insertTable', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [tablePlugin],
+        plugins: [NodeIdPlugin, tablePlugin],
       });
 
       insertTable(editor, { colCount: 2, rowCount: 2 }, { select: true });
@@ -253,7 +254,7 @@ describe('insertTable', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [tablePlugin],
+        plugins: [NodeIdPlugin, tablePlugin],
       });
 
       insertTable(
@@ -322,7 +323,7 @@ describe('insertTable', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [tablePlugin],
+        plugins: [NodeIdPlugin, tablePlugin],
       });
 
       insertTable(editor, { colCount: 2, rowCount: 2 }, { select: true });

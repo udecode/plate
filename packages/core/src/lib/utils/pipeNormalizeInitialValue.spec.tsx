@@ -11,8 +11,6 @@ describe('pipeNormalizeInitialValue', () => {
       key,
       normalizeInitialValue: ({ value: initialValue }: any) => {
         initialValue[0].count += 1;
-
-        return initialValue;
       },
     });
 

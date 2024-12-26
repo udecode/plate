@@ -5,6 +5,7 @@ import {
   type TElement,
   createSlateEditor,
 } from '@udecode/plate-common';
+import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { BaseTablePlugin } from '../BaseTablePlugin';
@@ -17,7 +18,7 @@ const createTablePluginWithOptions = () => BaseTablePlugin;
 const createEditorInstance = (input: any) => {
   return createSlateEditor({
     editor: input,
-    plugins: [createTablePluginWithOptions()],
+    plugins: [NodeIdPlugin, createTablePluginWithOptions()],
   });
 };
 

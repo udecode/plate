@@ -57,18 +57,18 @@ export const insertTableMergeColumn = (
   }
 
   const cellEntry = fromCell
-    ? findNode(editor, {
+    ? findNode<TTableCellElement>(editor, {
         at: fromCell,
         match: { type: getCellTypes(editor) },
       })
-    : getBlockAbove(editor, {
+    : getBlockAbove<TTableCellElement>(editor, {
         match: { type: getCellTypes(editor) },
       });
 
   if (!cellEntry) return;
 
   const [, cellPath] = cellEntry;
-  const cell = cellEntry[0] as TTableCellElement;
+  const cell = cellEntry[0];
 
   const tableEntry = getBlockAbove<TTableElement>(editor, {
     at: cellPath,
@@ -79,10 +79,7 @@ export const insertTableMergeColumn = (
 
   const [tableNode, tablePath] = tableEntry;
 
-  const { col: cellColIndex } = getCellIndices(editor, {
-    cellNode: cell,
-    tableNode: tableNode,
-  });
+  const { col: cellColIndex } = getCellIndices(editor, cell);
   const cellColSpan = api.table.getColSpan(cell);
 
   let nextColIndex: number;
@@ -116,12 +113,11 @@ export const insertTableMergeColumn = (
   });
   const affectedCells = Array.from(affectedCellsSet) as TTableCellElement[];
 
-  affectedCells.forEach((cur) => {
-    const curCell = cur as TTableCellElement;
-    const { col: curColIndex, row: curRowIndex } = getCellIndices(editor, {
-      cellNode: curCell,
-      tableNode: tableNode,
-    });
+  affectedCells.forEach((curCell) => {
+    const { col: curColIndex, row: curRowIndex } = getCellIndices(
+      editor,
+      curCell
+    );
     const curRowSpan = api.table.getRowSpan(curCell);
     const curColSpan = api.table.getColSpan(curCell);
 

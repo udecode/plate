@@ -19,10 +19,7 @@ export const getCellPath = (
   const rowElem = tableNode.children[curRowIndex] as TTableRowElement;
   const foundColIndex = rowElem.children.findIndex((c) => {
     const cE = c as TTableCellElement;
-    const { col: colIndex } = getCellIndices(editor, {
-      cellNode: cE,
-      tableNode: tableNode,
-    })!;
+    const { col: colIndex } = getCellIndices(editor, cE);
 
     return colIndex === curColIndex;
   });

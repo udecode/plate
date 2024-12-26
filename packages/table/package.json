@@ -50,6 +50,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
+    "@udecode/plate-node-id": "41.0.0",
     "@udecode/plate-resizable": "41.0.0",
     "lodash": "^4.17.21"
   },

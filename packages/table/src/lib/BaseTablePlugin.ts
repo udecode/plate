@@ -7,11 +7,13 @@ import {
   createSlatePlugin,
   createTSlatePlugin,
 } from '@udecode/plate-common';
+import { NodeIdPlugin } from '@udecode/plate-node-id';
 
-import type { TTableCellElement, TableStoreCellAttributes } from './types';
+import type { TTableCellElement } from './types';
 
 import { getEmptyCellNode, getEmptyRowNode, getEmptyTableNode } from './api';
 import { mergeTableCells, splitTableCell } from './merge';
+import { normalizeInitialValueTable } from './normalizeInitialValueTable';
 import {
   getColSpan,
   getRowSpan,
@@ -91,8 +93,9 @@ export const BaseTableCellHeaderPlugin = createSlatePlugin({
 export type TableConfig = PluginConfig<
   'table',
   {
-    /** @private Keeps Track of cell indices. */
-    _cellIndices?: TableStoreCellAttributes;
+    /** @private Keeps Track of cell indices by id. */
+    _cellIndices: Record<string, { col: number; row: number }>;
+    _versionCellIndices: number;
 
     /** Disable expanding the table when inserting cells. */
     disableExpandOnInsert?: boolean;
@@ -167,10 +170,13 @@ type TableTransforms = {
 /** Enables support for tables. */
 export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
   key: 'table',
+  dependencies: [NodeIdPlugin.key],
   extendEditor: withTable,
   node: { isElement: true },
+  normalizeInitialValue: normalizeInitialValueTable,
   options: {
-    _cellIndices: new WeakMap(),
+    _cellIndices: {},
+    _versionCellIndices: 1,
     disableMerge: false,
     minColumnWidth: 48,
   },

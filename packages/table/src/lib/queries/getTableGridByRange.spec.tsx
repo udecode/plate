@@ -5,6 +5,7 @@ import {
   type TElement,
   createSlateEditor,
 } from '@udecode/plate-common';
+import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { BaseTablePlugin } from '../../lib/BaseTablePlugin';
@@ -38,7 +39,7 @@ describe('getTableGridByRange', () => {
 
       const editor = createSlateEditor({
         editor: input,
-        plugins: [BaseTablePlugin],
+        plugins: [NodeIdPlugin, BaseTablePlugin],
       });
 
       const table = getTableGridAbove(editor)[0][0];
@@ -83,7 +84,7 @@ describe('getTableGridByRange', () => {
 
       const editor = createSlateEditor({
         editor: input,
-        plugins: [BaseTablePlugin],
+        plugins: [NodeIdPlugin, BaseTablePlugin],
       });
 
       const table = getTableGridAbove(editor)[0][0];
@@ -126,7 +127,7 @@ describe('getTableGridByRange', () => {
 
       const editor = createSlateEditor({
         editor: input,
-        plugins: [BaseTablePlugin],
+        plugins: [NodeIdPlugin, BaseTablePlugin],
       });
 
       const table = getTableGridAbove(editor)[0][0];
@@ -172,7 +173,7 @@ describe('getTableGridByRange', () => {
 
       const editor = createSlateEditor({
         editor: input,
-        plugins: [BaseTablePlugin],
+        plugins: [NodeIdPlugin, BaseTablePlugin],
       });
 
       const table = getTableGridAbove(editor)[0][0];
@@ -219,7 +220,7 @@ describe('getTableGridByRange', () => {
 
       const editor = createSlateEditor({
         editor: input,
-        plugins: [BaseTablePlugin],
+        plugins: [NodeIdPlugin, BaseTablePlugin],
       });
 
       const table = getTableGridAbove(editor)[0][0];
@@ -266,7 +267,7 @@ describe('getTableGridByRange', () => {
 
       const editor = createSlateEditor({
         editor: input,
-        plugins: [BaseTablePlugin],
+        plugins: [NodeIdPlugin, BaseTablePlugin],
       });
 
       const table = getTableGridAbove(editor)[0][0];
@@ -313,7 +314,7 @@ describe('getTableGridByRange', () => {
 
       const editor = createSlateEditor({
         editor: input,
-        plugins: [BaseTablePlugin],
+        plugins: [NodeIdPlugin, BaseTablePlugin],
       });
 
       const table = getTableGridAbove(editor)[0][0];
@@ -360,7 +361,7 @@ describe('getTableGridByRange', () => {
 
       const editor = createSlateEditor({
         editor: input,
-        plugins: [BaseTablePlugin],
+        plugins: [NodeIdPlugin, BaseTablePlugin],
       });
 
       const table = getTableGridAbove(editor)[0][0];

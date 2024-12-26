@@ -57,9 +57,7 @@ export const useTableCellElementResizable = ({
     initialWidth = tableElement.colSizes?.[colIndex];
   }
 
-  const colSizesWithoutOverrides = useTableColSizes(tableElement, {
-    disableOverrides: true,
-  });
+  const colSizesWithoutOverrides = useTableColSizes({ disableOverrides: true });
   const colSizesWithoutOverridesRef = React.useRef(colSizesWithoutOverrides);
   React.useEffect(() => {
     colSizesWithoutOverridesRef.current = colSizesWithoutOverrides;

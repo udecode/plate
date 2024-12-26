@@ -7,8 +7,6 @@ import {
   isExpanded,
   removeNodes,
   setNodes,
-  someNode,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 import cloneDeep from 'lodash/cloneDeep.js';
 
@@ -25,21 +23,19 @@ import { findCellByIndexes } from './findCellByIndexes';
 import { getCellPath } from './getCellPath';
 
 export const deleteTableMergeColumn = (editor: SlateEditor) => {
-  const { api } = getEditorPlugin(editor, BaseTablePlugin);
   const type = editor.getType(BaseTablePlugin);
+  const tableEntry = getAboveNode<TTableElement>(editor, {
+    match: { type },
+  });
 
-  if (
-    someNode(editor, {
-      match: { type },
-    })
-  ) {
-    const tableEntry = getAboveNode<TTableElement>(editor, {
-      match: { type },
-    });
+  if (!tableEntry) return;
 
-    if (!tableEntry) return;
-    if (isExpanded(editor.selection))
+  editor.withoutNormalizing(() => {
+    const { api } = getEditorPlugin(editor, BaseTablePlugin);
+
+    if (isExpanded(editor.selection)) {
       return deleteColumnWhenExpanded(editor, tableEntry);
+    }
 
     const table = tableEntry[0] as TTableElement;
 
@@ -53,10 +49,7 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
 
     const selectedCell = selectedCellEntry[0] as TTableCellElement;
 
-    const { col: deletingColIndex } = getCellIndices(editor, {
-      cellNode: selectedCell,
-      tableNode: table,
-    })!;
+    const { col: deletingColIndex } = getCellIndices(editor, selectedCell);
     const colsDeleteNumber = api.table.getColSpan(selectedCell);
 
     const endingColIndex = deletingColIndex + colsDeleteNumber - 1;
@@ -85,10 +78,7 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
         if (!cur) return acc;
 
         const currentCell = cur as TTableCellElement;
-        const { col: curColIndex } = getCellIndices(editor, {
-          cellNode: currentCell,
-          tableNode: table,
-        })!;
+        const { col: curColIndex } = getCellIndices(editor, currentCell);
         const curColSpan = api.table.getColSpan(currentCell);
 
         if (curColIndex < deletingColIndex && curColSpan > 1) {
@@ -109,10 +99,10 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
     squizeColSpanCells.forEach((cur) => {
       const curCell = cur as TTableCellElement;
 
-      const { col: curColIndex, row: curColRowIndex } = getCellIndices(editor, {
-        cellNode: curCell,
-        tableNode: table,
-      });
+      const { col: curColIndex, row: curColRowIndex } = getCellIndices(
+        editor,
+        curCell
+      );
       const curColSpan = api.table.getColSpan(curCell);
 
       const curCellPath = getCellPath(
@@ -155,10 +145,10 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
       const paths: Path[][] = [];
       affectedCells.forEach((cur) => {
         const curCell = cur as TTableCellElement;
-        const { col: curColIndex, row: curRowIndex } = getCellIndices(editor, {
-          cellNode: curCell,
-          tableNode: table,
-        });
+        const { col: curColIndex, row: curRowIndex } = getCellIndices(
+          editor,
+          curCell
+        );
 
         if (
           !squizeColSpanCells.includes(curCell) &&
@@ -180,29 +170,27 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
         }
       });
 
-      withoutNormalizing(editor, () => {
-        paths.forEach((cellPaths) => {
-          const pathToDelete = cellPaths[0];
-          cellPaths.forEach(() => {
-            removeNodes(editor, {
-              at: pathToDelete,
-            });
+      paths.forEach((cellPaths) => {
+        const pathToDelete = cellPaths[0];
+        cellPaths.forEach(() => {
+          removeNodes(editor, {
+            at: pathToDelete,
           });
         });
-
-        const { colSizes } = tableNode;
-
-        if (colSizes) {
-          const newColSizes = [...colSizes];
-          newColSizes.splice(deletingColIndex, 1);
-
-          setNodes<TTableElement>(
-            editor,
-            { colSizes: newColSizes },
-            { at: tablePath }
-          );
-        }
       });
+
+      const { colSizes } = tableNode;
+
+      if (colSizes) {
+        const newColSizes = [...colSizes];
+        newColSizes.splice(deletingColIndex, 1);
+
+        setNodes<TTableElement>(
+          editor,
+          { colSizes: newColSizes },
+          { at: tablePath }
+        );
+      }
     }
-  }
+  });
 };

@@ -8,37 +8,34 @@ import type {
   TTableRowElement,
 } from '../types';
 
-import { getCellIndices } from '../utils/getCellIndices';
+import { type CellIndices, getCellIndices } from '../utils/getCellIndices';
 
 export interface BorderStylesDefault {
-  bottom: Required<BorderStyle>;
-  right: Required<BorderStyle>;
-  left?: Required<BorderStyle>;
-  top?: Required<BorderStyle>;
+  bottom: BorderStyle;
+  right: BorderStyle;
+  left?: BorderStyle;
+  top?: BorderStyle;
 }
 
 export const getTableCellBorders = (
   editor: SlateEditor,
   {
+    cellIndices,
     defaultBorder = {
-      color: 'rgb(209 213 219)',
       size: 1,
-      style: 'solid',
     },
     element,
   }: {
     element: TTableCellElement;
-    defaultBorder?: Required<BorderStyle>;
+    cellIndices?: CellIndices;
+    defaultBorder?: BorderStyle;
   }
 ): BorderStylesDefault => {
   const cellPath = editor.findPath(element)!;
   const [rowNode, rowPath] = getParentNode<TTableRowElement>(editor, cellPath)!;
   const [tableNode] = getParentNode<TTableElement>(editor, rowPath)!;
 
-  const { col } = getCellIndices(editor, {
-    cellNode: element,
-    tableNode,
-  });
+  const { col } = cellIndices ?? getCellIndices(editor, element);
   const isFirstCell = col === 0;
   const isFirstRow = tableNode.children?.[0] === rowNode;
 

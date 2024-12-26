@@ -6,8 +6,6 @@ import {
   isExpanded,
   removeNodes,
   setNodes,
-  someNode,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 
 import type { TTableElement } from '../types';
@@ -23,44 +21,43 @@ export const deleteColumn = (editor: SlateEditor) => {
   });
   const { disableMerge } = getOptions();
 
-  if (!disableMerge) {
-    return deleteTableMergeColumn(editor);
-  }
-  if (!someNode(editor, { match: { type } })) {
-    return;
-  }
-
   const tableEntry = getAboveNode<TTableElement>(editor, {
     match: { type },
   });
 
   if (!tableEntry) return;
-  if (isExpanded(editor.selection))
-    return deleteColumnWhenExpanded(editor, tableEntry);
 
-  const tdEntry = getAboveNode(editor, {
-    match: { type: getCellTypes(editor) },
-  });
-  const trEntry = getAboveNode(editor, {
-    match: { type: editor.getType(BaseTableRowPlugin) },
-  });
+  editor.withoutNormalizing(() => {
+    if (!disableMerge) {
+      deleteTableMergeColumn(editor);
 
-  if (
-    tdEntry &&
-    trEntry &&
-    tableEntry &&
-    // Cannot delete the last cell
-    trEntry[0].children.length > 1
-  ) {
-    const [tableNode, tablePath] = tableEntry;
+      return;
+    }
+    if (isExpanded(editor.selection))
+      return deleteColumnWhenExpanded(editor, tableEntry);
 
-    const tdPath = tdEntry[1];
-    const colIndex = tdPath.at(-1)!;
+    const tdEntry = getAboveNode(editor, {
+      match: { type: getCellTypes(editor) },
+    });
+    const trEntry = getAboveNode(editor, {
+      match: { type: editor.getType(BaseTableRowPlugin) },
+    });
 
-    const pathToDelete = tdPath.slice();
-    const replacePathPos = pathToDelete.length - 2;
+    if (
+      tdEntry &&
+      trEntry &&
+      tableEntry &&
+      // Cannot delete the last cell
+      trEntry[0].children.length > 1
+    ) {
+      const [tableNode, tablePath] = tableEntry;
 
-    withoutNormalizing(editor, () => {
+      const tdPath = tdEntry[1];
+      const colIndex = tdPath.at(-1)!;
+
+      const pathToDelete = tdPath.slice();
+      const replacePathPos = pathToDelete.length - 2;
+
       tableNode.children.forEach((row, rowIdx) => {
         pathToDelete[replacePathPos] = rowIdx;
 
@@ -88,6 +85,10 @@ export const deleteColumn = (editor: SlateEditor) => {
           { at: tablePath }
         );
       }
-    });
-  }
+    }
+  });
+
+  // computeCellIndices(editor, {
+  //   tableNode: tableEntry[0],
+  // });
 };

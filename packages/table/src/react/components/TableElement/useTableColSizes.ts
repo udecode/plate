@@ -1,7 +1,11 @@
 import React, { useMemo } from 'react';
 
 import { unsetNodes } from '@udecode/plate-common';
-import { useEditorRef, useNodePath } from '@udecode/plate-common/react';
+import {
+  useEditorRef,
+  useElement,
+  useNodePath,
+} from '@udecode/plate-common/react';
 
 import {
   type TTableElement,
@@ -15,17 +19,15 @@ import { useTableStore } from '../../stores';
  * Returns colSizes with overrides applied. Unset node.colSizes if `colCount`
  * updates to 1.
  */
-export const useTableColSizes = (
-  tableNode: TTableElement,
-  {
-    disableOverrides = false,
-    transformColSizes,
-  }: {
-    disableOverrides?: boolean;
-    transformColSizes?: (colSizes: number[]) => number[];
-  } = {}
-): number[] => {
+export const useTableColSizes = ({
+  disableOverrides = false,
+  transformColSizes,
+}: {
+  disableOverrides?: boolean;
+  transformColSizes?: (colSizes: number[]) => number[];
+} = {}): number[] => {
   const editor = useEditorRef();
+  const tableNode = useElement<TTableElement>(TablePlugin.key);
   const colSizeOverrides = useTableStore().get.colSizeOverrides();
   const path = useNodePath(tableNode);
 

@@ -5,6 +5,7 @@ import {
   type PlateEditor,
   createPlateEditor,
 } from '@udecode/plate-common/react';
+import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { BaseTablePlugin } from './BaseTablePlugin';
@@ -56,7 +57,7 @@ describe('withDeleteTable', () => {
       const plugin = BaseTablePlugin;
       let editor = createPlateEditor({
         editor: input,
-        plugins: [plugin],
+        plugins: [NodeIdPlugin, plugin],
       });
 
       editor = withDeleteTable(getEditorPlugin(editor, plugin) as any) as any;
@@ -112,7 +113,7 @@ describe('withDeleteTable', () => {
       const plugin = BaseTablePlugin;
       let editor = createPlateEditor({
         editor: input,
-        plugins: [plugin],
+        plugins: [NodeIdPlugin, plugin],
       });
 
       editor = withDeleteTable(getEditorPlugin(editor, plugin)) as any;
@@ -188,7 +189,7 @@ describe('withDeleteTable', () => {
       const plugin = BaseTablePlugin;
       editor = createPlateEditor({
         editor: input,
-        plugins: [plugin],
+        plugins: [NodeIdPlugin, plugin],
       });
 
       editor = withDeleteTable(getEditorPlugin(editor, plugin));

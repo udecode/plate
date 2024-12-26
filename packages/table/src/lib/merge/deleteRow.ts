@@ -50,10 +50,7 @@ export const deleteTableMergeRow = (editor: SlateEditor) => {
     if (!selectedCellEntry) return;
 
     const selectedCell = selectedCellEntry[0] as TTableCellElement;
-    const { row: deletingRowIndex } = getCellIndices(editor, {
-      cellNode: selectedCell,
-      tableNode: table,
-    });
+    const { row: deletingRowIndex } = getCellIndices(editor, selectedCell);
     const rowsDeleteNumber = api.table.getRowSpan(selectedCell);
     const endingRowIndex = deletingRowIndex + rowsDeleteNumber - 1;
 
@@ -79,10 +76,7 @@ export const deleteTableMergeRow = (editor: SlateEditor) => {
         if (!cur) return acc;
 
         const currentCell = cur as TTableCellElement;
-        const { row: curRowIndex } = getCellIndices(editor, {
-          cellNode: currentCell,
-          tableNode: table,
-        })!;
+        const { row: curRowIndex } = getCellIndices(editor, currentCell);
         const curRowSpan = api.table.getRowSpan(currentCell);
 
         // if (!curRowIndex || !curRowSpan) return acc;
@@ -115,19 +109,13 @@ export const deleteTableMergeRow = (editor: SlateEditor) => {
       for (let index = 0; index < moveToNextRowCells.length; index++) {
         const curRowCell = moveToNextRowCells[index] as TTableCellElement;
         const { col: curRowCellColIndex, row: curRowCellRowIndex } =
-          getCellIndices(editor, {
-            cellNode: curRowCell,
-            tableNode: table,
-          })!;
+          getCellIndices(editor, curRowCell);
         const curRowCellRowSpan = api.table.getRowSpan(curRowCell);
 
         // search for anchor cell where to place current cell
         const startingCellIndex = nextRow.children.findIndex((curC) => {
           const cell = curC as TTableCellElement;
-          const { col: curColIndex } = getCellIndices(editor, {
-            cellNode: cell,
-            tableNode: table,
-          })!;
+          const { col: curColIndex } = getCellIndices(editor, cell);
 
           return curColIndex >= curRowCellColIndex;
         });
@@ -157,10 +145,7 @@ export const deleteTableMergeRow = (editor: SlateEditor) => {
         const startingCell = nextRow.children[
           startingCellIndex
         ] as TTableCellElement;
-        const { col: startingColIndex } = getCellIndices(editor, {
-          cellNode: startingCell,
-          tableNode: table,
-        })!;
+        const { col: startingColIndex } = getCellIndices(editor, startingCell);
 
         // consider already inserted cell by adding index each time to the col path
         let incrementBy = index;
@@ -196,10 +181,7 @@ export const deleteTableMergeRow = (editor: SlateEditor) => {
 
     squizeRowSpanCells.forEach((cur) => {
       const curRowCell = cur as TTableCellElement;
-      const { row: curRowCellRowIndex } = getCellIndices(editor, {
-        cellNode: curRowCell,
-        tableNode: table,
-      })!;
+      const { row: curRowCellRowIndex } = getCellIndices(editor, curRowCell);
       const curRowCellRowSpan = api.table.getRowSpan(curRowCell);
 
       const curCellPath = editor.findPath(curRowCell)!;

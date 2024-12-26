@@ -1,14 +1,15 @@
-import { type SlateEditor, getEditorPlugin } from '@udecode/plate-common';
+import {
+  type SlateEditor,
+  getAboveNode,
+  getEditorPlugin,
+} from '@udecode/plate-common';
 
+import type { BaseTablePlugin } from '../BaseTablePlugin';
 import type {
   TTableCellElement,
   TTableElement,
   TTableRowElement,
 } from '../types';
-
-import { BaseTablePlugin } from '../BaseTablePlugin';
-import { getTableRowIndex } from '../queries';
-import { getTableColumnIndex } from '../queries/getTableColumnIndex';
 
 export function computeCellIndices(
   editor: SlateEditor,
@@ -16,16 +17,24 @@ export function computeCellIndices(
     cellNode,
     tableNode,
   }: {
-    tableNode: TTableElement;
     cellNode?: TTableCellElement;
+    tableNode?: TTableElement;
   }
 ) {
-  const { api, getOptions, setOption } = getEditorPlugin<
-    typeof BaseTablePlugin
-  >(editor, {
+  if (!tableNode) {
+    if (!cellNode) return;
+
+    tableNode = getAboveNode<TTableElement>(editor, {
+      at: editor.findPath(cellNode),
+    })?.[0];
+
+    if (!tableNode) return;
+  }
+
+  const { api, getOptions } = getEditorPlugin<typeof BaseTablePlugin>(editor, {
     key: 'table',
   });
-  const { _cellIndices } = getOptions();
+  const cellIndices = getOptions()._cellIndices!;
 
   const skipCells: boolean[][] = [];
   let targetIndices: { col: number; row: number } | undefined;
@@ -40,8 +49,7 @@ export function computeCellIndices(
       }
 
       const currentIndices = { col: colIndex, row: rowIndex };
-      _cellIndices!.set(cellElement, currentIndices);
-      editor.setOption(BaseTablePlugin, '_cellIndices', _cellIndices);
+      cellIndices[cellElement.id!] = currentIndices;
 
       if (cellElement === cellNode) {
         targetIndices = currentIndices;
@@ -66,15 +74,5 @@ export function computeCellIndices(
     if (targetIndices) break;
   }
 
-  if (!targetIndices && cellNode) {
-    const defaultColIndex = getTableColumnIndex(editor, cellNode);
-    const defaultRowIndex = getTableRowIndex(editor, cellNode);
-
-    _cellIndices!.set(cellNode, { col: defaultColIndex, row: defaultRowIndex });
-    setOption('_cellIndices', _cellIndices);
-
-    return { col: defaultColIndex, row: defaultRowIndex };
-  }
-
-  return targetIndices!;
+  return targetIndices;
 }

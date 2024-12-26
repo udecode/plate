@@ -1,7 +1,9 @@
 import {
   type ExtendEditor,
   type TElement,
+  findNode,
   getBlockAbove,
+  getNodeEntries,
   getParentNode,
   isElement,
   isText,
@@ -10,10 +12,10 @@ import {
   wrapNodeChildren,
 } from '@udecode/plate-common';
 
-import type { TTableElement } from './types';
+import type { TTableCellElement, TTableElement } from './types';
 
 import { type TableConfig, BaseTableRowPlugin } from './BaseTablePlugin';
-import { getCellTypes } from './utils/index';
+import { computeCellIndices, getCellTypes } from './utils/index';
 
 /**
  * Normalize table:
@@ -23,9 +25,10 @@ import { getCellTypes } from './utils/index';
 export const withNormalizeTable: ExtendEditor<TableConfig> = ({
   editor,
   getOptions,
+  setOption,
   type,
 }) => {
-  const { normalizeNode } = editor;
+  const { apply, normalizeNode } = editor;
 
   editor.normalizeNode = ([node, path]) => {
     const { initialTableWidth } = getOptions();
@@ -120,6 +123,57 @@ export const withNormalizeTable: ExtendEditor<TableConfig> = ({
     }
 
     return normalizeNode([node, path]);
+  };
+
+  editor.apply = (operation) => {
+    const isTableOperation =
+      (operation.type === 'remove_node' || operation.type === 'insert_node') &&
+      operation.node.type &&
+      [
+        editor.getType(BaseTableRowPlugin),
+        type,
+        ...getCellTypes(editor),
+      ].includes(operation.node.type as string);
+
+    // Cleanup cell indices when removing a table cell
+    if (operation.type === 'remove_node') {
+      const cells = [
+        ...getNodeEntries<TTableCellElement>(editor, {
+          at: operation.path,
+          match: { type: getCellTypes(editor) },
+        }),
+      ];
+
+      const cellIndices = getOptions()._cellIndices;
+
+      cells.forEach(([cell]) => {
+        delete cellIndices[cell.id as string];
+      });
+    }
+
+    apply(operation);
+
+    console.log('operation', operation);
+
+    let table: TTableElement | undefined;
+
+    if (
+      isTableOperation &&
+      // There is no new indices when removing a table
+      !(operation.type === 'remove_node' && operation.node.type === type)
+    ) {
+      table = findNode<TTableElement>(editor, {
+        at: operation.path,
+        match: { type },
+      })?.[0];
+
+      if (table) {
+        computeCellIndices(editor, {
+          tableNode: table,
+        });
+        setOption('_versionCellIndices', getOptions()._versionCellIndices + 1);
+      }
+    }
   };
 
   return editor;

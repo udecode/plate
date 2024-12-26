@@ -58,8 +58,6 @@ import { Toolbar, ToolbarButton, ToolbarGroup } from './toolbar';
 export const TableElement = withHOC(
   TableProvider,
   withRef<typeof PlateElement>(({ children, className, ...props }, ref) => {
-    const { editor, element } = props;
-    const { tf } = useEditorPlugin(TablePlugin);
     const readOnly = useReadOnly();
     const selected = useSelected();
     const {

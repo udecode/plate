@@ -3,6 +3,7 @@
 import type { SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
+import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { BaseTablePlugin } from '../BaseTablePlugin';
@@ -20,7 +21,7 @@ describe('setBorderSize', () => {
   const createEditorInstance = (input: any) => {
     return createPlateEditor({
       editor: input,
-      plugins: [createTablePluginWithOptions()],
+      plugins: [NodeIdPlugin, createTablePluginWithOptions()],
     });
   };
 

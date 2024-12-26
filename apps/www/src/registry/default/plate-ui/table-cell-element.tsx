@@ -2,7 +2,10 @@
 
 import React from 'react';
 
-import type { BorderStylesDefault } from '@udecode/plate-table';
+import type {
+  BorderStylesDefault,
+  TTableCellElement,
+} from '@udecode/plate-table';
 
 import { cn, withProps, withRef } from '@udecode/cn';
 import { useEditorPlugin, useElement } from '@udecode/plate-common/react';
@@ -115,7 +118,7 @@ const TableCellElementMemo = React.memo(
       const readOnly = useReadOnly();
       const isSelectingRow = useBlockSelected(rowId);
 
-      const element = useElement();
+      const element = useElement<TTableCellElement>();
 
       return (
         <PlateElement

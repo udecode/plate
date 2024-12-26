@@ -6,11 +6,6 @@ export type CreateCellOptions = {
   row?: TTableRowElement;
 };
 
-export type TableStoreCellAttributes = WeakMap<
-  TTableCellElement,
-  { col: number; row: number }
->;
-
 export interface BorderStyle {
   color?: string;
   size?: number;
@@ -28,6 +23,7 @@ export interface TTableRowElement extends TElement {
 }
 
 export interface TTableCellElement extends TElement {
+  id?: string;
   attributes?: {
     colspan?: string;
     rowspan?: string;
