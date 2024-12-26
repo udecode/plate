@@ -36,6 +36,10 @@ import { KbdPlugin } from '@udecode/plate-kbd/react';
 import { ColumnItemPlugin, ColumnPlugin } from '@udecode/plate-layout/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import {
+  EquationPlugin,
+  InlineEquationPlugin,
+} from '@udecode/plate-math/react';
+import {
   AudioPlugin,
   FilePlugin,
   ImagePlugin,
@@ -92,6 +96,8 @@ import { TableRowElement } from '@/registry/default/plate-ui/table-row-element';
 import { TocElement } from '@/registry/default/plate-ui/toc-element';
 import { ToggleElement } from '@/registry/default/plate-ui/toggle-element';
 
+import { EquationElement } from '../../plate-ui/equation-element';
+import { InlineEquationElement } from '../../plate-ui/inline-equation-element';
 import { editorPlugins, viewPlugins } from './plugins/editor-plugins';
 
 export const viewComponents = {
@@ -106,6 +112,7 @@ export const viewComponents = {
   [ColumnPlugin.key]: ColumnGroupElement,
   [CommentsPlugin.key]: CommentLeaf,
   [DatePlugin.key]: DateElement,
+  [EquationPlugin.key]: EquationElement,
   [FilePlugin.key]: MediaFileElement,
   [HEADING_KEYS.h1]: withProps(HeadingElement, { variant: 'h1' }),
   [HEADING_KEYS.h2]: withProps(HeadingElement, { variant: 'h2' }),
@@ -116,6 +123,7 @@ export const viewComponents = {
   [HighlightPlugin.key]: HighlightLeaf,
   [HorizontalRulePlugin.key]: HrElement,
   [ImagePlugin.key]: ImageElement,
+  [InlineEquationPlugin.key]: InlineEquationElement,
   [ItalicPlugin.key]: withProps(PlateLeaf, { as: 'em' }),
   [KbdPlugin.key]: KbdLeaf,
   [LinkPlugin.key]: LinkElement,

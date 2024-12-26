@@ -11,6 +11,10 @@ import { DatePlugin } from '@udecode/plate-date/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { TocPlugin } from '@udecode/plate-heading/react';
 import { INDENT_LIST_KEYS, ListStyleType } from '@udecode/plate-indent-list';
+import {
+  EquationPlugin,
+  InlineEquationPlugin,
+} from '@udecode/plate-math/react';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 import {
@@ -25,6 +29,7 @@ import {
   ListOrdered,
   PilcrowIcon,
   Quote,
+  RadicalIcon,
   SparklesIcon,
   Square,
   Table,
@@ -167,6 +172,11 @@ const groups: Group[] = [
         label: '3 columns',
         value: 'action_three_columns',
       },
+      {
+        icon: <RadicalIcon />,
+        label: 'Equation',
+        value: EquationPlugin.key,
+      },
     ].map((item) => ({
       ...item,
       onSelect: (editor, value) => {
@@ -183,6 +193,11 @@ const groups: Group[] = [
         keywords: ['time'],
         label: 'Date',
         value: DatePlugin.key,
+      },
+      {
+        icon: <RadicalIcon />,
+        label: 'Equation',
+        value: InlineEquationPlugin.key,
       },
     ].map((item) => ({
       ...item,

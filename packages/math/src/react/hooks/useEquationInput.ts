@@ -22,7 +22,6 @@ export const useEquationInput = ({
   const editor = useEditorRef();
   const element = useElement<TEquationElement>();
   const inputRef = useRef<HTMLTextAreaElement>(null);
-
   const [expressionInput, setExpressionInput] = React.useState<string>(
     element.texExpression
   );
@@ -79,9 +78,6 @@ export const useEquationInput = ({
         } else if (isHotkey('escape')(e)) {
           e.preventDefault();
           onDismiss();
-        } else if (isHotkey('meta+z')(e)) {
-          e.preventDefault();
-          editor.undo();
         } else if (isHotkey('meta+y')(e) || isHotkey('meta+shift+z')(e)) {
           e.preventDefault();
           editor.redo();
