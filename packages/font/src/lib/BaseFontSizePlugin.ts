@@ -11,7 +11,7 @@ export type BaseFontSizeConfig = PluginConfig<
   {},
   {
     fontSize: {
-      setChangedFontSize: (fontSize: string) => void;
+      setMark: (fontSize: string) => void;
     };
   }
 >;
