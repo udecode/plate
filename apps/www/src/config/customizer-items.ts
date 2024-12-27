@@ -464,6 +464,13 @@ export const customizerItems: Record<string, SettingPlugin> = {
     reactImport: true,
     route: getPluginNavItem('emoji').href,
   },
+  [EquationPlugin.key]: {
+    id: EquationPlugin.key,
+    label: 'Equation',
+    npmPackage: '@udecode/plate-math',
+    pluginFactory: 'EquationPlugin',
+    route: getPluginNavItem('equation').href,
+  },
   [ExcalidrawPlugin.key]: {
     id: ExcalidrawPlugin.key,
     badges: [customizerBadges.element, customizerBadges.void],
@@ -1293,6 +1300,7 @@ export const customizerList = [
       customizerItems[TodoListPlugin.key],
       customizerItems[DatePlugin.key],
       customizerItems[TocPlugin.key],
+      customizerItems[EquationPlugin.key],
     ],
     label: 'Nodes',
   },
@@ -1428,6 +1436,7 @@ export const orderedPluginKeys = [
   JuicePlugin.key,
 ];
 
+import { EquationPlugin } from '@udecode/plate-math/react';
 import { uniqBy } from 'lodash';
 
 export const allPlugins = customizerList.flatMap((group) => group.children);

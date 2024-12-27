@@ -1582,6 +1582,70 @@
   },
   {
     "dependencies": [
+      "@udecode/plate-math"
+    ],
+    "doc": {
+      "description": "A toolbar button for inserting and editing inline equations.",
+      "docs": [
+        {
+          "route": "https://platejs.org/docs/equation",
+          "title": "Equation"
+        }
+      ],
+      "examples": [
+        "equation-demo",
+        "floating-toolbar-demo"
+      ]
+    },
+    "files": [
+      {
+        "path": "plate-ui/inline-equation-toolbar-button.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "inline-equation-toolbar-button",
+    "registryDependencies": [
+      "toolbar"
+    ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
+      "@udecode/plate-math"
+    ],
+    "doc": {
+      "description": "Displays a LaTeX equation element with an editable popover for inputting and rendering mathematical expressions.",
+      "docs": [
+        {
+          "route": "https://platejs.org/docs/equation",
+          "title": "Equation"
+        }
+      ],
+      "examples": [
+        "equation-demo"
+      ]
+    },
+    "files": [
+      {
+        "path": "plate-ui/equation-element.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/equation-popover.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "equation-element",
+    "registryDependencies": [
+      "block-context-menu",
+      "plate-element",
+      "popover",
+      "textarea"
+    ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
       "@udecode/plate-ai",
       "@udecode/plate-markdown",
       "@udecode/plate-selection",

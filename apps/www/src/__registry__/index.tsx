@@ -981,6 +981,42 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
+    "inline-equation-toolbar-button": {
+      name: "inline-equation-toolbar-button",
+      description: "",
+      type: "registry:ui",
+      registryDependencies: ["toolbar"],
+      files: [{
+        path: "src/registry/default/plate-ui/inline-equation-toolbar-button.tsx",
+        type: "registry:ui",
+        target: ""
+      }],
+      component: React.lazy(() => import("@/registry/default/plate-ui/inline-equation-toolbar-button.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
+    "equation-element": {
+      name: "equation-element",
+      description: "",
+      type: "registry:ui",
+      registryDependencies: ["block-context-menu","plate-element","popover","textarea"],
+      files: [{
+        path: "src/registry/default/plate-ui/equation-element.tsx",
+        type: "registry:ui",
+        target: ""
+      },{
+        path: "src/registry/default/plate-ui/equation-popover.tsx",
+        type: "registry:ui",
+        target: ""
+      }],
+      component: React.lazy(() => import("@/registry/default/plate-ui/equation-element.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
     "ai-menu": {
       name: "ai-menu",
       description: "",
@@ -2747,6 +2783,34 @@ export const Index: Record<string, any> = {
     },
     "emoji-demo": {
       name: "emoji-demo",
+      description: "",
+      type: "registry:example",
+      registryDependencies: [],
+      files: [{
+        path: "src/registry/default/example/demo.tsx",
+        type: "registry:example",
+        target: ""
+      },{
+        path: "src/registry/default/example/values/emoji-value.tsx",
+        type: "registry:example",
+        target: ""
+      },{
+        path: "src/registry/default/components/editor/use-create-editor.ts",
+        type: "registry:example",
+        target: ""
+      },{
+        path: "src/registry/default/components/editor/plugins/editor-plugins.tsx",
+        type: "registry:example",
+        target: ""
+      }],
+      component: React.lazy(() => import("@/registry/default/example/demo.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
+    "equation-demo": {
+      name: "equation-demo",
       description: "",
       type: "registry:example",
       registryDependencies: [],
