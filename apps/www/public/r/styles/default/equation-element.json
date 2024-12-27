@@ -30,10 +30,7 @@
   ],
   "name": "equation-element",
   "registryDependencies": [
-    "block-context-menu",
-    "plate-element",
-    "popover",
-    "textarea"
+    "popover"
   ],
   "type": "registry:ui"
 }

@@ -32,6 +32,7 @@ const plugins: Registry = [
       'align-plugin',
       'autoformat-plugin',
       'block-menu-plugins',
+      'equation-plugins',
       'cursor-overlay-plugin',
       'comments-plugin',
       'delete-plugins',
@@ -84,6 +85,21 @@ const plugins: Registry = [
       'hr-element',
       'link-element',
       'paragraph-element',
+    ],
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['@udecode/plate-math'],
+    files: [
+      {
+        path: 'components/editor/plugins/equation-plugins.ts',
+        type: 'registry:component',
+      },
+    ],
+    name: 'equation-plugins',
+    registryDependencies: [
+      'equation-element',
+      'inline-equation-toolbar-button',
     ],
     type: 'registry:component',
   },

@@ -3,4 +3,4 @@ import {
   InlineEquationPlugin,
 } from '@udecode/plate-math/react';
 
-export const mathPlugins = [InlineEquationPlugin, EquationPlugin];
+export const equationPlugins = [InlineEquationPlugin, EquationPlugin];
