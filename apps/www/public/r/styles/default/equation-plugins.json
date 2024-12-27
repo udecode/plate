@@ -4,7 +4,7 @@
   ],
   "files": [
     {
-      "content": "import {\n  EquationPlugin,\n  InlineEquationPlugin,\n} from '@udecode/plate-math/react';\n\nexport const equationPlugins = [InlineEquationPlugin, EquationPlugin];\n",
+      "content": "'use client';\nimport {\n  EquationPlugin,\n  InlineEquationPlugin,\n} from '@udecode/plate-math/react';\n\nexport const equationPlugins = [InlineEquationPlugin, EquationPlugin];\n",
       "path": "components/editor/plugins/equation-plugins.ts",
       "target": "components/editor/plugins/equation-plugins.ts",
       "type": "registry:component"
