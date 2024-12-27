@@ -105,10 +105,9 @@ export function FontSizeToolbarButton() {
               handleInputChange();
             }}
             onChange={(e) => setInputValue(e.target.value)}
-            onFocus={(e) => {
+            onFocus={() => {
               setIsFocused(true);
               setInputValue(toUnitLess(cursorFontSize));
-              e.target.select();
             }}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
