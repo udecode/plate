@@ -8,6 +8,7 @@ import { cn, withRef } from '@udecode/cn';
 import { useElement } from '@udecode/plate-common/react';
 import { useEquationElement } from '@udecode/plate-math/react';
 import { RadicalIcon } from 'lucide-react';
+import { useSelected } from 'slate-react';
 
 import { EquationPopoverContent } from './equation-popover';
 import { PlateElement } from './plate-element';
@@ -17,7 +18,8 @@ export const InlineEquationElement = withRef<typeof PlateElement>(
   ({ children, className, ...props }, ref) => {
     const element = useElement<TEquationElement>();
     const katexRef = useRef<HTMLDivElement | null>(null);
-    const [open, setOpen] = useState(false);
+    const selected = useSelected();
+    const [open, setOpen] = useState(selected);
 
     useEquationElement({
       element,
@@ -75,6 +77,7 @@ export const InlineEquationElement = withRef<typeof PlateElement>(
 
           <EquationPopoverContent
             className="my-auto"
+            open={open}
             placeholder="E = mc^2"
             setOpen={setOpen}
             isInline

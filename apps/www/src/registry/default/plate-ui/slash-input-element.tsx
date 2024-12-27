@@ -173,6 +173,7 @@ const groups: Group[] = [
         value: 'action_three_columns',
       },
       {
+        focusEditor: false,
         icon: <RadicalIcon />,
         label: 'Equation',
         value: EquationPlugin.key,
@@ -195,6 +196,7 @@ const groups: Group[] = [
         value: DatePlugin.key,
       },
       {
+        focusEditor: false,
         icon: <RadicalIcon />,
         label: 'Equation',
         value: InlineEquationPlugin.key,
