@@ -1081,7 +1081,7 @@ export const uiNodes: Registry = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@udecode/plate-math'],
+    dependencies: ['@udecode/plate-math', 'react-textarea-autosize'],
     doc: {
       description:
         'Displays a LaTeX equation element with an editable popover for inputting and rendering mathematical expressions.',

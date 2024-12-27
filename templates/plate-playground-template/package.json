@@ -75,6 +75,7 @@
     "@udecode/plate-toggle": "41.0.0",
     "@udecode/plate-trailing-block": "41.0.0",
     "@uploadthing/react": "7.1.0",
+    "react-textarea-autosize": "^8.5.5",
     "ai": "^4.0.21",
     "class-variance-authority": "0.7.1",
     "clsx": "^2.1.1",
