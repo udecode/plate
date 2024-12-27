@@ -14,16 +14,6 @@ export interface TEquationElement extends TElement {
 
 export const BaseEquationPlugin = createSlatePlugin({
   key: 'equation',
-  extendEditor: ({ editor, type }) => {
-    console.log('🚀 ~ type:', type);
-    const { isSelectable } = editor;
-
-    editor.isSelectable = (element) => {
-      return (element as TElement).type !== type && isSelectable(element);
-    };
-
-    return editor;
-  },
   node: { isElement: true, isVoid: true },
 }).extendEditorTransforms(({ editor }) => ({
   insert: {
