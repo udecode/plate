@@ -51,7 +51,8 @@ export const EquationElement = withRef<typeof PlateElement>(
                 'group flex cursor-pointer select-none items-center justify-center rounded-sm hover:bg-primary/10',
                 element.texExpression.length === 0
                   ? 'bg-muted p-3 pr-9'
-                  : 'px-2 py-1'
+                  : 'px-2 py-1',
+                selected && 'bg-primary/10'
               )}
               contentEditable={false}
               role="button"

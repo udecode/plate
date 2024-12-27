@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 
-import { isHotkey } from '@udecode/plate-common';
+import { isHotkey, withMerging } from '@udecode/plate-common';
 import {
   selectSiblingNodePoint,
   setNode,
@@ -45,8 +45,10 @@ export const useEquationInput = ({
   }, [open]);
 
   useEffect(() => {
-    setNode<TEquationElement>(editor, element, {
-      texExpression: expressionInput || '',
+    withMerging(editor, () => {
+      setNode<TEquationElement>(editor, element, {
+        texExpression: expressionInput || '',
+      });
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expressionInput]);
