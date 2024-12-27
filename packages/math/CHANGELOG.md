@@ -1,5 +1,11 @@
 # @udecode/plate-math
 
+## 41.0.11
+
+### Patch Changes
+
+- [#3923](https://github.com/udecode/plate/pull/3923) by [@wststone](https://github.com/wststone) – fix: equation input undo history not working.
+
 ## 41.0.4
 
 ### Patch Changes
