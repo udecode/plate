@@ -78,9 +78,6 @@ export const useEquationInput = ({
         } else if (isHotkey('escape')(e)) {
           e.preventDefault();
           onDismiss();
-        } else if (isHotkey('meta+y')(e) || isHotkey('meta+shift+z')(e)) {
-          e.preventDefault();
-          editor.redo();
         }
         if (isInline) {
           const { selectionEnd, selectionStart, value } =

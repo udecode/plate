@@ -71,10 +71,12 @@ import { ColumnGroupElement } from '@/registry/default/plate-ui/column-group-ele
 import { CommentLeaf } from '@/registry/default/plate-ui/comment-leaf';
 import { DateElement } from '@/registry/default/plate-ui/date-element';
 import { EmojiInputElement } from '@/registry/default/plate-ui/emoji-input-element';
+import { EquationElement } from '@/registry/default/plate-ui/equation-element';
 import { HeadingElement } from '@/registry/default/plate-ui/heading-element';
 import { HighlightLeaf } from '@/registry/default/plate-ui/highlight-leaf';
 import { HrElement } from '@/registry/default/plate-ui/hr-element';
 import { ImageElement } from '@/registry/default/plate-ui/image-element';
+import { InlineEquationElement } from '@/registry/default/plate-ui/inline-equation-element';
 import { KbdLeaf } from '@/registry/default/plate-ui/kbd-leaf';
 import { LinkElement } from '@/registry/default/plate-ui/link-element';
 import { MediaAudioElement } from '@/registry/default/plate-ui/media-audio-element';
@@ -96,8 +98,6 @@ import { TableRowElement } from '@/registry/default/plate-ui/table-row-element';
 import { TocElement } from '@/registry/default/plate-ui/toc-element';
 import { ToggleElement } from '@/registry/default/plate-ui/toggle-element';
 
-import { EquationElement } from '../../plate-ui/equation-element';
-import { InlineEquationElement } from '../../plate-ui/inline-equation-element';
 import { editorPlugins, viewPlugins } from './plugins/editor-plugins';
 
 export const viewComponents = {
