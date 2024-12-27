@@ -4,19 +4,17 @@ import {
   createTSlatePlugin,
 } from '@udecode/plate-common';
 
-import { type getChangedFontSizeOptions, setChangedFontSize } from './utils';
+import { setFontSize } from './utils';
 
 export type BaseFontSizeConfig = PluginConfig<
   'fontSize',
-  FontSizeSelectors,
+  {},
   {
     fontSize: {
-      setChangedFontSize: (options: getChangedFontSizeOptions) => void;
+      setChangedFontSize: (fontSize: string) => void;
     };
   }
 >;
-
-type FontSizeSelectors = {};
 
 export const BaseFontSizePlugin = createTSlatePlugin({
   key: 'fontSize',
@@ -44,5 +42,5 @@ export const BaseFontSizePlugin = createTSlatePlugin({
     },
   }))
   .extendApi(({ editor }) => ({
-    setChangedFontSize: bindFirst(setChangedFontSize, editor),
+    setMark: bindFirst(setFontSize, editor),
   }));
