@@ -38,6 +38,8 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuPortal,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
@@ -138,30 +140,36 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
         </ToolbarButton>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent
-        className="ignore-click-outside/toolbar min-w-0"
-        align="start"
-      >
-        <DropdownMenuRadioGroup
-          value={value}
-          onValueChange={(type) => {
-            setBlockType(editor, type);
-            focusEditor(editor);
-          }}
-          label="Turn into"
-        >
-          {turnIntoItems.map(({ icon, label, value: itemValue }) => (
-            <DropdownMenuRadioItem
-              key={itemValue}
-              className="min-w-[180px]"
-              value={itemValue}
-            >
-              {icon}
-              {label}
-            </DropdownMenuRadioItem>
-          ))}
-        </DropdownMenuRadioGroup>
-      </DropdownMenuContent>
+      <DropdownMenuPortal>
+        <DropdownMenuGroup>
+          <DropdownMenuContent
+            className="ignore-click-outside/toolbar min-w-0"
+            align="start"
+          >
+            <DropdownMenuGroup>
+              <DropdownMenuRadioGroup
+                value={value}
+                onValueChange={(type) => {
+                  setBlockType(editor, type);
+                  focusEditor(editor);
+                }}
+                label="Turn into"
+              >
+                {turnIntoItems.map(({ icon, label, value: itemValue }) => (
+                  <DropdownMenuRadioItem
+                    key={itemValue}
+                    className="min-w-[180px]"
+                    value={itemValue}
+                  >
+                    {icon}
+                    {label}
+                  </DropdownMenuRadioItem>
+                ))}
+              </DropdownMenuRadioGroup>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenuGroup>
+      </DropdownMenuPortal>
     </DropdownMenu>
   );
 }

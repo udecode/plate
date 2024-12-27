@@ -48,12 +48,12 @@ export const EquationElement = withRef<typeof PlateElement>(
           <PopoverTrigger asChild>
             <div
               className={cn(
-                'group flex cursor-pointer select-none items-center justify-center rounded-sm hover:bg-primary/10',
+                'group flex cursor-pointer select-none items-center justify-center rounded-sm hover:bg-primary/10 data-[selected=true]:bg-primary/10',
                 element.texExpression.length === 0
                   ? 'bg-muted p-3 pr-9'
-                  : 'px-2 py-1',
-                selected && 'bg-primary/10'
+                  : 'px-2 py-1'
               )}
+              data-selected={selected}
               contentEditable={false}
               role="button"
             >

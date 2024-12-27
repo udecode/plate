@@ -198,7 +198,7 @@ const groups: Group[] = [
       {
         focusEditor: false,
         icon: <RadicalIcon />,
-        label: 'Equation',
+        label: 'Inline Equation',
         value: InlineEquationPlugin.key,
       },
     ].map((item) => ({

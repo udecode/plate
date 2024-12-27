@@ -16,10 +16,6 @@ import { JuicePlugin } from '@udecode/plate-juice';
 import { KbdPlugin } from '@udecode/plate-kbd/react';
 import { ColumnPlugin } from '@udecode/plate-layout/react';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
-import {
-  EquationPlugin,
-  InlineEquationPlugin,
-} from '@udecode/plate-math/react';
 import { SlashPlugin } from '@udecode/plate-slash-command/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
@@ -40,6 +36,7 @@ import { exitBreakPlugin } from './exit-break-plugin';
 import { indentListPlugins } from './indent-list-plugins';
 import { lineHeightPlugin } from './line-height-plugin';
 import { linkPlugin } from './link-plugin';
+import { mathPlugins } from './math-plugins';
 import { mediaPlugins } from './media-plugins';
 import { mentionPlugin } from './mention-plugin';
 import { resetBlockTypePlugin } from './reset-block-type-plugin';
@@ -57,8 +54,7 @@ export const viewPlugins = [
   TogglePlugin,
   tocPlugin,
   ...mediaPlugins,
-  InlineEquationPlugin,
-  EquationPlugin,
+  ...mathPlugins,
   CalloutPlugin,
   ColumnPlugin,
 
