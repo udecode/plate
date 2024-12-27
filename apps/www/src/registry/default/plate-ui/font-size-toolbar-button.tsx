@@ -123,10 +123,6 @@ export function FontSizeToolbarButton() {
         </PopoverTrigger>
         <PopoverContent
           className="w-10 px-px py-1"
-          onCloseAutoFocus={(e) => {
-            e.preventDefault();
-            focusEditor(editor);
-          }}
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
           {FONT_SIZES.map((size) => (
