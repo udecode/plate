@@ -10,7 +10,11 @@ import {
   ColorDropdownMenuItems,
 } from './color-dropdown-menu-items';
 import { ColorCustom } from './colors-custom';
-import { DropdownMenuGroup, DropdownMenuItem } from './dropdown-menu';
+import {
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+} from './dropdown-menu';
 
 export const ColorPickerContent = withRef<
   'div',
@@ -38,7 +42,8 @@ export const ColorPickerContent = withRef<
   ) => {
     return (
       <div ref={ref} className={cn('flex flex-col', className)} {...props}>
-        <DropdownMenuGroup label="Custom Colors">
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>Custom Colors</DropdownMenuLabel>
           <ColorCustom
             color={color}
             className="px-2"
@@ -48,7 +53,8 @@ export const ColorPickerContent = withRef<
             updateCustomColor={updateCustomColor}
           />
         </DropdownMenuGroup>
-        <DropdownMenuGroup label="Default Colors">
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>Default Colors</DropdownMenuLabel>
           <ColorDropdownMenuItems
             color={color}
             className="px-2"
