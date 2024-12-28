@@ -1,5 +1,12 @@
 # @udecode/plate-utils
 
+## 41.0.13
+
+### Patch Changes
+
+- [#3932](https://github.com/udecode/plate/pull/3932) by [@felixfeng33](https://github.com/felixfeng33) – Each `PlateElement` and `SlateElement` comes with a default `position: relative` style.
+  Remove `relative` className from all components
+
 ## 41.0.5
 
 ## 41.0.2
