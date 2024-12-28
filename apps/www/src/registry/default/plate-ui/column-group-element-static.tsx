@@ -11,8 +11,8 @@ export function ColumnGroupElementStatic({
   ...props
 }: SlateElementProps) {
   return (
-    <SlateElement className={cn(className, 'my-2')} {...props}>
-      <div className={cn('flex size-full gap-4 rounded')}>{children}</div>
+    <SlateElement className={cn(className, 'mb-2')} {...props}>
+      <div className={cn('flex size-full rounded')}>{children}</div>
     </SlateElement>
   );
 }

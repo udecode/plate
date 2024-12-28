@@ -3,6 +3,7 @@
 import React from 'react';
 
 import { cn, withRef } from '@udecode/cn';
+import { findNodePath } from '@udecode/plate-common';
 import {
   useEditorRef,
   useElement,
@@ -18,7 +19,6 @@ import {
   ColumnPlugin,
   useDebouncePopoverOpen,
 } from '@udecode/plate-layout/react';
-import { findNodePath } from '@udecode/plate-common';
 import { type LucideProps, Trash2Icon } from 'lucide-react';
 import { useReadOnly } from 'slate-react';
 

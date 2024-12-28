@@ -38,7 +38,7 @@ export function TableCellElementStatic({
       as={isHeader ? 'th' : 'td'}
       className={cn(
         className,
-        'relative h-full overflow-visible bg-background p-0',
+        'h-full overflow-visible bg-background p-0',
         element.background ? 'bg-[--cellBackground]' : 'bg-background',
         cn(
           isHeader && 'text-left font-normal [&_>_*]:m-0',

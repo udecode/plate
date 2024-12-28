@@ -23,7 +23,7 @@ export const MediaFileElement = withHOC(
       return (
         <PlateElement
           ref={ref}
-          className={cn(className, 'relative my-px rounded-sm')}
+          className={cn(className, 'my-px rounded-sm')}
           {...props}
         >
           <a
