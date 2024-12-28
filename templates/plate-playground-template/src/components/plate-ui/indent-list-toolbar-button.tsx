@@ -41,15 +41,16 @@ export function NumberedIndentListToolbarButton() {
   );
 
   return (
-    <ToolbarSplitButton pressed={openState.open} tooltip="Numbered List">
+    <ToolbarSplitButton pressed={openState.open}>
       <ToolbarSplitButtonPrimary
         className="data-[state=on]:bg-accent data-[state=on]:text-accent-foreground"
-        onClick={() => {
+        onClick={() =>
           toggleIndentList(editor, {
             listStyleType: ListStyleType.Decimal,
-          });
-        }}
+          })
+        }
         data-state={pressed ? 'on' : 'off'}
+        tooltip="Numbered List"
       >
         <ListOrdered className="size-4" />
       </ToolbarSplitButtonPrimary>
@@ -128,7 +129,7 @@ export function BulletedIndentListToolbarButton() {
   );
 
   return (
-    <ToolbarSplitButton pressed={openState.open} tooltip="Bulleted List">
+    <ToolbarSplitButton pressed={openState.open}>
       <ToolbarSplitButtonPrimary
         className="data-[state=on]:bg-accent data-[state=on]:text-accent-foreground"
         onClick={() => {
@@ -137,6 +138,7 @@ export function BulletedIndentListToolbarButton() {
           });
         }}
         data-state={pressed ? 'on' : 'off'}
+        tooltip="Bulleted List"
       >
         <List className="size-4" />
       </ToolbarSplitButtonPrimary>
