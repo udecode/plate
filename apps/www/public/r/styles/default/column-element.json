@@ -25,7 +25,7 @@
       "type": "registry:ui"
     },
     {
-      "content": "import React from 'react';\n\nimport type { SlateElementProps } from '@udecode/plate-common';\nimport type { TColumnElement } from '@udecode/plate-layout';\n\nimport { cn } from '@udecode/cn';\nimport { SlateElement } from '@udecode/plate-common';\n\nexport function ColumnElementStatic({\n  children,\n  className,\n  ...props\n}: SlateElementProps) {\n  const { width } = props.element as TColumnElement;\n\n  return (\n    <SlateElement\n      className={cn(className, 'border border-transparent p-1.5')}\n      style={{ width: width ?? '100%' }}\n      {...props}\n    >\n      {children}\n    </SlateElement>\n  );\n}\n",
+      "content": "import React from 'react';\n\nimport type { SlateElementProps } from '@udecode/plate-common';\nimport type { TColumnElement } from '@udecode/plate-layout';\n\nimport { cn } from '@udecode/cn';\nimport { SlateElement } from '@udecode/plate-common';\n\nexport function ColumnElementStatic({\n  children,\n  className,\n  ...props\n}: SlateElementProps) {\n  const { width } = props.element as TColumnElement;\n\n  return (\n    <div className=\"group/column relative\" style={{ width: width ?? '100%' }}>\n      <SlateElement\n        className={cn(\n          className,\n          'h-full px-2 pt-2 group-first/column:pl-0 group-last/column:pr-0'\n        )}\n        {...props}\n      >\n        <div className={cn('relative h-full border border-transparent p-1.5')}>\n          {children}\n        </div>\n      </SlateElement>\n    </div>\n  );\n}\n",
       "path": "plate-ui/column-element-static.tsx",
       "target": "components/plate-ui/column-element-static.tsx",
       "type": "registry:ui"
