@@ -19,7 +19,36 @@ export const DropdownMenu = DropdownMenuPrimitive.Root;
 
 export const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
 
-export const DropdownMenuGroup = withCn(DropdownMenuPrimitive.Group, 'py-1.5');
+export const DropdownMenuGroup = React.forwardRef<
+  HTMLDivElement,
+  { label?: React.ReactNode } & React.ComponentPropsWithoutRef<
+    typeof DropdownMenuPrimitive.Group
+  >
+>(({ label, ...props }, ref) => {
+  return (
+    <>
+      <DropdownMenuSeparator
+        className={cn(
+          'hidden',
+          'mb-0 shrink-0 peer-has-[[role=menuitem]]/menu-group:block peer-has-[[role=menuitemcheckbox]]/menu-group:block peer-has-[[role=option]]/menu-group:block'
+        )}
+      />
+
+      <DropdownMenuPrimitive.Group
+        ref={ref}
+        {...props}
+        className={cn(
+          'hidden',
+          'peer/menu-group group/menu-group my-1.5 has-[[role=menuitem]]:block has-[[role=menuitemcheckbox]]:block has-[[role=option]]:block',
+          props.className
+        )}
+      >
+        {label && <DropdownMenuLabel>{label}</DropdownMenuLabel>}
+        {props.children}
+      </DropdownMenuPrimitive.Group>
+    </>
+  );
+});
 
 export const DropdownMenuPortal = DropdownMenuPrimitive.Portal;
 

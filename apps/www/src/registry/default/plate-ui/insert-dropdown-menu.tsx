@@ -59,9 +59,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
-  DropdownMenuPortal,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
+  DropdownMenuItem,
   DropdownMenuTrigger,
   useOpenState,
 } from './dropdown-menu';
@@ -253,44 +251,28 @@ export function InsertDropdownMenu(props: DropdownMenuProps) {
         </ToolbarButton>
       </DropdownMenuTrigger>
 
-      <DropdownMenuPortal>
-        <DropdownMenuGroup>
-          <DropdownMenuContent
-            className="ignore-click-outside/toolbar max-h-[500px] min-w-0 overflow-y-auto"
-            align="start"
-          >
-            {groups.map(({ group, items: nestedItems }) => (
-              <DropdownMenuGroup key={group}>
-                <DropdownMenuRadioGroup
-                  onValueChange={(value) => {
-                    const item = nestedItems.find((i) => i.value === value);
-
-                    if (item) {
-                      const { focusEditor: isFocusEditor = true, onSelect } =
-                        item;
-
-                      onSelect(editor, value);
-                      isFocusEditor && focusEditor(editor);
-                    }
-                  }}
-                  label={group}
-                >
-                  {nestedItems.map(({ icon, label, value }) => (
-                    <DropdownMenuRadioItem
-                      key={value}
-                      className="min-w-[180px]"
-                      value={value}
-                    >
-                      {icon}
-                      {label}
-                    </DropdownMenuRadioItem>
-                  ))}
-                </DropdownMenuRadioGroup>
-              </DropdownMenuGroup>
+      <DropdownMenuContent
+        className="flex max-h-[500px] min-w-0 flex-col overflow-y-auto"
+        align="start"
+      >
+        {groups.map(({ group, items: nestedItems }) => (
+          <DropdownMenuGroup key={group} label={group}>
+            {nestedItems.map(({ icon, label, value, onSelect }) => (
+              <DropdownMenuItem
+                key={value}
+                className="min-w-[180px]"
+                onSelect={() => {
+                  onSelect(editor, value);
+                  focusEditor(editor);
+                }}
+              >
+                {icon}
+                {label}
+              </DropdownMenuItem>
             ))}
-          </DropdownMenuContent>
-        </DropdownMenuGroup>
-      </DropdownMenuPortal>
+          </DropdownMenuGroup>
+        ))}
+      </DropdownMenuContent>
     </DropdownMenu>
   );
 }
