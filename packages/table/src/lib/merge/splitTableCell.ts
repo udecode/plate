@@ -5,8 +5,10 @@ import {
   type TDescendant,
   findNode,
   getEditorPlugin,
+  getEndPoint,
   insertElements,
   removeNodes,
+  select,
   withoutNormalizing,
 } from '@udecode/plate-common';
 
@@ -26,10 +28,10 @@ export const splitTableCell = (editor: SlateEditor) => {
   const { api } = getEditorPlugin(editor, BaseTablePlugin);
   const tableRowType = editor.getType(BaseTableRowPlugin);
 
-  withoutNormalizing(editor, () => {
-    const cellEntries = getTableGridAbove(editor, { format: 'cell' });
-    const [[cellElem, path]] = cellEntries;
+  const cellEntries = getTableGridAbove(editor, { format: 'cell' });
+  const [[cellElem, path]] = cellEntries;
 
+  withoutNormalizing(editor, () => {
     // creating new object per iteration is essential here
     const createEmptyCell = (children?: TDescendant[]) => {
       return {
@@ -56,10 +58,10 @@ export const splitTableCell = (editor: SlateEditor) => {
       colPaths.push(colPath + i);
     }
 
+    const { col } = getCellIndices(editor, cellElem);
+
     // Remove the original merged cell from the editor
     removeNodes(editor, { at: path });
-
-    const { col } = getCellIndices(editor, cellElem);
 
     const getClosestColPathForRow = (row: number, targetCol: number) => {
       const rowEntry = findNode(editor, {
@@ -144,4 +146,6 @@ export const splitTableCell = (editor: SlateEditor) => {
       }
     }
   });
+
+  select(editor, getEndPoint(editor, path));
 };

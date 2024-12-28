@@ -2,13 +2,13 @@
 
 import React from 'react';
 
-import type {
-  BorderStylesDefault,
-  TTableCellElement,
-} from '@udecode/plate-table';
+import type { TTableCellElement } from '@udecode/plate-table';
 
 import { cn, withProps, withRef } from '@udecode/cn';
-import { useEditorPlugin, useElement } from '@udecode/plate-common/react';
+import {
+  useEditorPlugin,
+  useElementSelector,
+} from '@udecode/plate-common/react';
 import { useBlockSelected } from '@udecode/plate-selection/react';
 import {
   TablePlugin,
@@ -29,7 +29,14 @@ export const TableCellElement = withRef<
     isHeader?: boolean;
   }
 >(({ children, className, isHeader, style, ...props }, ref) => {
-  const rowElement = useElement(TableRowPlugin.key);
+  const { api } = useEditorPlugin(TablePlugin);
+  const readOnly = useReadOnly();
+  const element = props.element as TTableCellElement;
+
+  const rowId = useElementSelector(([node]) => node.id as string, [], {
+    key: TableRowPlugin.key,
+  });
+  const isSelectingRow = useBlockSelected(rowId);
 
   const {
     borders,
@@ -49,175 +56,101 @@ export const TableCellElement = withRef<
       rowIndex,
     });
 
+  // console.log(getNodeString(props.element));
+
   return (
-    <TableCellElementMemo
+    <PlateElement
       ref={ref}
-      selected={selected}
-      borders={borders}
-      bottomProps={bottomProps}
-      colIndex={colIndex}
-      colSpan={colSpan}
-      hiddenLeft={hiddenLeft}
-      isSelectingCell={isSelectingCell}
-      leftProps={leftProps}
-      minHeight={minHeight}
-      rightProps={rightProps}
-      rowId={rowElement.id as string}
-      rowIndex={rowIndex}
-      width={width}
+      as={isHeader ? 'th' : 'td'}
+      className={cn(
+        className,
+        'relative h-full overflow-visible border-none bg-background p-0',
+        element.background ? 'bg-[--cellBackground]' : 'bg-background',
+
+        cn(
+          isHeader && 'text-left [&_>_*]:m-0',
+          'before:size-full',
+          selected && 'before:z-10 before:bg-muted',
+          "before:absolute before:box-border before:select-none before:content-['']",
+          borders &&
+            cn(
+              borders.bottom?.size && `before:border-b before:border-b-border`,
+              borders.right?.size && `before:border-r before:border-r-border`,
+              borders.left?.size && `before:border-l before:border-l-border`,
+              borders.top?.size && `before:border-t before:border-t-border`
+            )
+        )
+      )}
+      style={
+        {
+          '--cellBackground': element.background,
+          maxWidth: width || 240,
+          minWidth: width || 120,
+          ...style,
+        } as React.CSSProperties
+      }
+      {...{
+        colSpan: api.table.getColSpan(element),
+        rowSpan: api.table.getRowSpan(element),
+      }}
       {...props}
     >
-      {children}
-    </TableCellElementMemo>
+      <div
+        className="relative z-20 box-border h-full px-4 py-2"
+        style={{ minHeight }}
+      >
+        {children}
+      </div>
+
+      {!isSelectingCell && (
+        <div
+          className="group absolute top-0 size-full select-none"
+          contentEditable={false}
+          suppressContentEditableWarning={true}
+        >
+          {!readOnly && (
+            <>
+              <ResizeHandle
+                {...rightProps}
+                className="-right-1 -top-2 h-[calc(100%_+_8px)] w-2"
+                data-col={colIndex}
+              />
+              <ResizeHandle {...bottomProps} className="-bottom-1 h-2" />
+              {!hiddenLeft && (
+                <ResizeHandle
+                  {...leftProps}
+                  className="-left-1 top-0 w-2"
+                  data-resizer-left={colIndex === 0 ? 'true' : undefined}
+                />
+              )}
+
+              <div
+                className={cn(
+                  'absolute top-0 z-30 hidden h-full w-1 bg-ring',
+                  'right-[-1.5px]',
+                  columnResizeVariants({ colIndex: colIndex as any })
+                )}
+              />
+              {colIndex === 0 && (
+                <div
+                  className={cn(
+                    'absolute top-0 z-30 h-full w-1 bg-ring',
+                    'left-[-1.5px]',
+                    'hidden animate-in fade-in group-has-[[data-resizer-left]:hover]/table:block group-has-[[data-resizer-left][data-resizing="true"]]/table:block'
+                  )}
+                />
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {isSelectingRow && (
+        <div className={blockSelectionVariants()} contentEditable={false} />
+      )}
+    </PlateElement>
   );
 });
-
-const TableCellElementMemo = React.memo(
-  React.forwardRef<
-    React.ComponentRef<typeof PlateElement>,
-    React.ComponentPropsWithoutRef<typeof PlateElement> & {
-      borders: BorderStylesDefault;
-      bottomProps: React.ComponentPropsWithoutRef<typeof ResizeHandle>;
-      colIndex: number;
-      colSpan: number;
-      hiddenLeft: boolean;
-      isSelectingCell: boolean;
-      leftProps: React.ComponentPropsWithoutRef<typeof ResizeHandle>;
-      rightProps: React.ComponentPropsWithoutRef<typeof ResizeHandle>;
-      rowId: string;
-      rowIndex: number;
-      selected: boolean;
-      width: number | string;
-      isHeader?: boolean;
-      minHeight?: number | string;
-    }
-  >(
-    (
-      {
-        borders,
-        bottomProps,
-        children,
-        className,
-        colIndex,
-        hiddenLeft,
-        isHeader,
-        isSelectingCell,
-        leftProps,
-        minHeight,
-        rightProps,
-        rowId,
-        rowIndex,
-        selected,
-        style,
-        width,
-        ...props
-      },
-      ref
-    ) => {
-      const { api } = useEditorPlugin(TablePlugin);
-      const readOnly = useReadOnly();
-      const isSelectingRow = useBlockSelected(rowId);
-
-      const element = useElement<TTableCellElement>();
-
-      return (
-        <PlateElement
-          ref={ref}
-          as={isHeader ? 'th' : 'td'}
-          className={cn(
-            className,
-            'relative h-full overflow-visible border-none bg-background p-0',
-            element.background ? 'bg-[--cellBackground]' : 'bg-background',
-
-            cn(
-              isHeader && 'text-left [&_>_*]:m-0',
-              'before:size-full',
-              selected && 'before:z-10 before:bg-muted',
-              "before:absolute before:box-border before:select-none before:content-['']",
-              borders &&
-                cn(
-                  borders.bottom?.size &&
-                    `before:border-b before:border-b-border`,
-                  borders.right?.size &&
-                    `before:border-r before:border-r-border`,
-                  borders.left?.size &&
-                    `before:border-l before:border-l-border`,
-                  borders.top?.size && `before:border-t before:border-t-border`
-                )
-            )
-          )}
-          style={
-            {
-              '--cellBackground': element.background,
-              maxWidth: width || 240,
-              minWidth: width || 120,
-              ...style,
-            } as React.CSSProperties
-          }
-          {...{
-            colSpan: api.table.getColSpan(element),
-            rowSpan: api.table.getRowSpan(element),
-          }}
-          {...props}
-        >
-          <div
-            className="relative z-20 box-border h-full px-4 py-2"
-            style={{ minHeight }}
-          >
-            {children}
-          </div>
-
-          {!isSelectingCell && (
-            <div
-              className="group absolute top-0 size-full select-none"
-              contentEditable={false}
-              suppressContentEditableWarning={true}
-            >
-              {!readOnly && (
-                <>
-                  <ResizeHandle
-                    {...rightProps}
-                    className="-right-1 -top-2 h-[calc(100%_+_8px)] w-2"
-                    data-col={colIndex}
-                  />
-                  <ResizeHandle {...bottomProps} className="-bottom-1 h-2" />
-                  {!hiddenLeft && (
-                    <ResizeHandle
-                      {...leftProps}
-                      className="-left-1 top-0 w-2"
-                      data-resizer-left={colIndex === 0 ? 'true' : undefined}
-                    />
-                  )}
-
-                  <div
-                    className={cn(
-                      'absolute top-0 z-30 hidden h-full w-1 bg-ring',
-                      'right-[-1.5px]',
-                      columnResizeVariants({ colIndex: colIndex as any })
-                    )}
-                  />
-                  {colIndex === 0 && (
-                    <div
-                      className={cn(
-                        'absolute top-0 z-30 h-full w-1 bg-ring',
-                        'left-[-1.5px]',
-                        'hidden animate-in fade-in group-has-[[data-resizer-left]:hover]/table:block group-has-[[data-resizer-left][data-resizing="true"]]/table:block'
-                      )}
-                    />
-                  )}
-                </>
-              )}
-            </div>
-          )}
-
-          {isSelectingRow && (
-            <div className={blockSelectionVariants()} contentEditable={false} />
-          )}
-        </PlateElement>
-      );
-    }
-  )
-);
 
 export const TableCellHeaderElement = withProps(TableCellElement, {
   isHeader: true,

@@ -1,17 +1,7 @@
-import React, { useMemo } from 'react';
+import { useElementSelector } from '@udecode/plate-common/react';
+import { Path } from 'slate';
 
-import { unsetNodes } from '@udecode/plate-common';
-import {
-  useEditorRef,
-  useElement,
-  useNodePath,
-} from '@udecode/plate-common/react';
-
-import {
-  type TTableElement,
-  getTableColumnCount,
-  getTableOverriddenColSizes,
-} from '../../../lib';
+import { getTableOverriddenColSizes } from '../../../lib';
 import { TablePlugin } from '../../TablePlugin';
 import { useTableStore } from '../../stores';
 
@@ -26,39 +16,27 @@ export const useTableColSizes = ({
   disableOverrides?: boolean;
   transformColSizes?: (colSizes: number[]) => number[];
 } = {}): number[] => {
-  const editor = useEditorRef();
-  const tableNode = useElement<TTableElement>(TablePlugin.key);
   const colSizeOverrides = useTableStore().get.colSizeOverrides();
-  const path = useNodePath(tableNode);
 
-  const { enableUnsetSingleColSize } = editor.getOptions(TablePlugin);
+  const overriddenColSizes = useElementSelector(
+    ([tableNode]) => {
+      const colSizes = getTableOverriddenColSizes(
+        tableNode,
+        disableOverrides ? undefined : colSizeOverrides
+      );
 
-  const overriddenColSizes = useMemo(() => {
-    const colSizes = getTableOverriddenColSizes(
-      tableNode,
-      disableOverrides ? undefined : colSizeOverrides
-    );
+      if (transformColSizes) {
+        return transformColSizes(colSizes);
+      }
 
-    if (transformColSizes) {
-      return transformColSizes(colSizes);
+      return colSizes;
+    },
+    [disableOverrides, colSizeOverrides, transformColSizes],
+    {
+      key: TablePlugin.key,
+      equalityFn: (a, b) => !!a && !!b && Path.equals(a, b),
     }
-
-    return colSizes;
-  }, [tableNode, disableOverrides, colSizeOverrides, transformColSizes]);
-
-  const colCount = getTableColumnCount(tableNode);
-
-  React.useEffect(() => {
-    if (
-      enableUnsetSingleColSize &&
-      colCount < 2 &&
-      tableNode.colSizes?.length
-    ) {
-      unsetNodes(editor, 'colSizes', {
-        at: path,
-      });
-    }
-  }, [colCount, enableUnsetSingleColSize, editor, tableNode, path]);
+  );
 
   return overriddenColSizes;
 };

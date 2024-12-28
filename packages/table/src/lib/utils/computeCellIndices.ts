@@ -17,12 +17,10 @@ export function computeCellIndices(
   {
     all,
     cellNode,
-    setInTimeout,
     tableNode,
   }: {
     all?: boolean;
     cellNode?: TTableCellElement;
-    setInTimeout?: boolean;
     tableNode?: TTableElement;
   }
 ) {
@@ -96,13 +94,7 @@ export function computeCellIndices(
   }
 
   if (hasIndicesChanged) {
-    if (setInTimeout) {
-      setTimeout(() => {
-        setOption('_cellIndices', cellIndices);
-      }, 0);
-    } else {
-      setOption('_cellIndices', cellIndices);
-    }
+    setOption('_cellIndices', cellIndices);
   }
 
   return targetIndices;

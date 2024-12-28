@@ -124,6 +124,7 @@ export const TableFloatingToolbar = withRef<typeof PopoverContent>(
               {canMerge && (
                 <ToolbarButton
                   onClick={() => tf.table.merge()}
+                  onMouseDown={(e) => e.preventDefault()}
                   tooltip="Merge cells"
                 >
                   <CombineIcon />
@@ -132,6 +133,7 @@ export const TableFloatingToolbar = withRef<typeof PopoverContent>(
               {canSplit && (
                 <ToolbarButton
                   onClick={() => tf.table.split()}
+                  onMouseDown={(e) => e.preventDefault()}
                   tooltip="Split cell"
                 >
                   <SquareSplitHorizontalIcon />

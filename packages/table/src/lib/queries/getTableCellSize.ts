@@ -19,12 +19,14 @@ export const getTableCellSize = (
   editor: SlateEditor,
   {
     cellIndices,
-    colSizes: colSizesProp,
+    colSizes,
     element,
+    rowSize,
   }: {
     element: TTableCellElement;
     cellIndices?: CellIndices;
     colSizes?: number[];
+    rowSize?: number;
   }
 ) => {
   const { api } = getEditorPlugin<TableConfig>(editor, {
@@ -32,10 +34,16 @@ export const getTableCellSize = (
   });
   const path = editor.findPath(element)!;
 
-  const [rowElement, rowPath] = getParentNode<TTableRowElement>(editor, path)!;
-  const [tableNode] = getParentNode<TTableElement>(editor, rowPath)!;
+  if (!rowSize) {
+    const [rowElement] = getParentNode<TTableRowElement>(editor, path)!;
+    rowSize = rowElement.size;
+  }
+  if (!colSizes) {
+    const [, rowPath] = getParentNode<TTableRowElement>(editor, path)!;
+    const [tableNode] = getParentNode<TTableElement>(editor, rowPath)!;
+    colSizes = getTableOverriddenColSizes(tableNode);
+  }
 
-  const colSizes = colSizesProp ?? getTableOverriddenColSizes(tableNode);
   const colSpan = api.table.getColSpan(element);
 
   const { col } = cellIndices ?? getCellIndices(editor, element);
@@ -44,5 +52,5 @@ export const getTableCellSize = (
     .slice(col, col + colSpan)
     .reduce((total, w) => total + (w || 0), 0);
 
-  return { minHeight: rowElement?.size, width };
+  return { minHeight: rowSize, width };
 };

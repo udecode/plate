@@ -2,6 +2,8 @@
 '@udecode/plate-table': major
 ---
 
+Major performance improvement: all table cells were re-rendering on a single cell change. This is now fixed.
+
 - `TablePlugin` now depends on `NodeIdPlugin`
 - `TablePlugin` merging is now enabled by default:
   - Rename `enableMerging` to `disableMerge`

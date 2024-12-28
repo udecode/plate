@@ -8,6 +8,7 @@ import {
   isElement,
   isText,
   setNodes,
+  unsetNodes,
   unwrapNodes,
   wrapNodeChildren,
 } from '@udecode/plate-common';
@@ -15,6 +16,7 @@ import {
 import type { TTableCellElement, TTableElement } from './types';
 
 import { type TableConfig, BaseTableRowPlugin } from './BaseTablePlugin';
+import { getTableColumnCount } from './queries';
 import { computeCellIndices, getCellTypes } from './utils/index';
 
 /**
@@ -30,11 +32,13 @@ export const withNormalizeTable: ExtendEditor<TableConfig> = ({
 }) => {
   const { apply, normalizeNode } = editor;
 
-  editor.normalizeNode = ([node, path]) => {
-    const { initialTableWidth } = getOptions();
+  editor.normalizeNode = ([n, path]) => {
+    const { enableUnsetSingleColSize, initialTableWidth } = getOptions();
 
-    if (isElement(node)) {
-      if (node.type === type) {
+    if (isElement(n)) {
+      if (n.type === type) {
+        const node = n as TTableElement;
+
         if (
           !node.children.some(
             (child) =>
@@ -43,6 +47,18 @@ export const withNormalizeTable: ExtendEditor<TableConfig> = ({
           )
         ) {
           editor.removeNodes({ at: path });
+
+          return;
+        }
+        if (
+          node.colSizes &&
+          node.colSizes.length > 0 &&
+          enableUnsetSingleColSize &&
+          getTableColumnCount(node) < 2
+        ) {
+          unsetNodes(editor, 'colSizes', {
+            at: path,
+          });
 
           return;
         }
@@ -85,7 +101,7 @@ export const withNormalizeTable: ExtendEditor<TableConfig> = ({
           }
         }
       }
-      if (node.type === editor.getType(BaseTableRowPlugin)) {
+      if (n.type === editor.getType(BaseTableRowPlugin)) {
         const parentEntry = getParentNode(editor, path);
 
         if (parentEntry?.[0].type !== type) {
@@ -96,7 +112,9 @@ export const withNormalizeTable: ExtendEditor<TableConfig> = ({
           return;
         }
       }
-      if (getCellTypes(editor).includes(node.type)) {
+      if (getCellTypes(editor).includes(n.type)) {
+        const node = n as TTableCellElement;
+
         const cellIndices = getOption('cellIndices', node.id as string);
 
         if (node.id && !cellIndices) {
@@ -131,7 +149,7 @@ export const withNormalizeTable: ExtendEditor<TableConfig> = ({
       }
     }
 
-    return normalizeNode([node, path]);
+    return normalizeNode([n, path]);
   };
 
   editor.apply = (operation) => {

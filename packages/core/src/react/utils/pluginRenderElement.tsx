@@ -85,7 +85,12 @@ export const pluginRenderElement = (
 
     if (element.type === plugin.node.type) {
       return (
-        <ElementProvider element={element} path={path} scope={plugin.key}>
+        <ElementProvider
+          element={element}
+          entry={[element, path]}
+          path={path}
+          scope={plugin.key}
+        >
           <ElementContent
             editor={editor}
             nodeProps={nodeProps}

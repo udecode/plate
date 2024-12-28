@@ -1,0 +1,34 @@
+import React from 'react';
+
+import type { TElement, TNodeEntry } from '@udecode/slate';
+
+import { selectAtom } from 'jotai/utils';
+
+import { elementStore, useElementStore } from './useElementStore';
+
+interface UseElementSelectorOptions<T> {
+  key?: string;
+  equalityFn?: (a: T, b: T) => boolean;
+}
+
+export const useElementSelector = <T>(
+  selector: <N extends TElement>(state: TNodeEntry<N>, prev?: T) => T,
+  deps: React.DependencyList,
+  {
+    key,
+    equalityFn = (a: T, b: T) => a === b,
+  }: UseElementSelectorOptions<T> = {}
+): T => {
+  const selectorAtom = React.useMemo(
+    () =>
+      selectAtom(
+        elementStore.atom.entry,
+        (entry, prev) => selector(entry, prev),
+        equalityFn
+      ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    deps
+  );
+
+  return useElementStore(key).get.atom(selectorAtom);
+};

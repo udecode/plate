@@ -20,6 +20,7 @@ v42
 - `table-row-element`: remove `hideBorder` prop
 - `table-cell-element`, `table-cell-element-static`: 
   - column hover/resizing state is now using Tailwind instead of JS
+  - **Major performance improvement**: all table cells were re-rendering on a single cell change. This is now fixed.
   - React.memo
 - `table-dropdown-menu`:
   - dynamic table insert
@@ -28,6 +29,7 @@ v42
 - `tooltip`: add `TooltipButton`
 - `indent-list-toolbar-button`: Remove `IndentListToolbarButton` use `NumberedIndentListToolbarButton` and `BulletedIndentListToolbarButton` instead.
 - `table-dropdown-menu`: new insert table interface.
+- `column-group-element`: fix `ColumnFloatingToolbar` onColumnChange
 
 ### December 23 #17.5
 

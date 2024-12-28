@@ -12,9 +12,10 @@ export const useCellIndices = () => {
 
   return React.useMemo(() => {
     if (!cellIndices) {
+      console.log('computeCellIndices', element.id);
+
       return computeCellIndices(editor, {
         cellNode: element,
-        setInTimeout: true,
       })!;
     }
 

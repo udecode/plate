@@ -5,7 +5,7 @@ import React from 'react';
 import type { TColumnElement } from '@udecode/plate-layout';
 
 import { cn, useComposedRef, withRef } from '@udecode/cn';
-import { useElement, withHOC } from '@udecode/plate-common/react';
+import { withHOC } from '@udecode/plate-common/react';
 import { useDraggable, useDropLine } from '@udecode/plate-dnd';
 import { ResizableProvider } from '@udecode/plate-resizable';
 import { GripHorizontal } from 'lucide-react';
@@ -26,7 +26,7 @@ export const ColumnElement = withHOC(
   ResizableProvider,
   withRef<typeof PlateElement>(({ children, className, ...props }, ref) => {
     const readOnly = useReadOnly();
-    const { width } = useElement<TColumnElement>();
+    const { width } = props.element as TColumnElement;
 
     const { isDragging, previewRef, handleRef } = useDraggable({
       canDropNode: ({ dragEntry, dropEntry }) =>

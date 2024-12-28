@@ -2,11 +2,12 @@ import {
   type SlateEditor,
   type TDescendant,
   type TNodeEntry,
-  collapseSelection,
   getEditorPlugin,
+  getEndPoint,
   insertElements,
   isElementEmpty,
   removeNodes,
+  select,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import cloneDeep from 'lodash/cloneDeep.js';
@@ -19,11 +20,11 @@ import { getTableGridAbove } from '../queries';
 export const mergeTableCells = (editor: SlateEditor) => {
   const { api } = getEditorPlugin(editor, BaseTablePlugin);
 
-  withoutNormalizing(editor, () => {
-    const cellEntries = getTableGridAbove(editor, {
-      format: 'cell',
-    }) as TNodeEntry<TTableCellElement>[];
+  const cellEntries = getTableGridAbove(editor, {
+    format: 'cell',
+  }) as TNodeEntry<TTableCellElement>[];
 
+  withoutNormalizing(editor, () => {
     // calculate the colSpan which is the number of horizontal cells that a cell should span.
     let colSpan = 0;
 
@@ -103,6 +104,7 @@ export const mergeTableCells = (editor: SlateEditor) => {
 
     // insert the new merged cell in place of the first cell in the selection
     insertElements(editor, mergedCell, { at: cellEntries[0][1] });
-    collapseSelection(editor);
   });
+
+  select(editor, getEndPoint(editor, cellEntries[0][1]));
 };

@@ -1,6 +1,10 @@
 import React from 'react';
 
-import { useEditorPlugin, useElement } from '@udecode/plate-common/react';
+import {
+  useEditorPlugin,
+  useElement,
+  useElementSelector,
+} from '@udecode/plate-common/react';
 import {
   type ResizeEvent,
   type ResizeHandle,
@@ -48,22 +52,25 @@ export const useTableCellElementResizable = ({
 } => {
   const { editor, getOptions } = useEditorPlugin(TablePlugin);
   const element = useElement();
-  const tableElement = useElement<TTableElement>(TablePlugin.key);
   const { disableMarginLeft, minColumnWidth = 0 } = getOptions();
 
-  let initialWidth: number | undefined;
-
-  if (colSpan > 1) {
-    initialWidth = tableElement.colSizes?.[colIndex];
-  }
+  const initialWidth = useElementSelector(
+    ([node]) =>
+      colSpan > 1 ? (node as TTableElement).colSizes?.[colIndex] : undefined,
+    [colSpan, colIndex],
+    { key: TablePlugin.key }
+  );
+  const marginLeft = useElementSelector(
+    ([node]) => (node as TTableElement).marginLeft ?? 0,
+    [],
+    { key: TablePlugin.key }
+  );
 
   const colSizesWithoutOverrides = useTableColSizes({ disableOverrides: true });
   const colSizesWithoutOverridesRef = React.useRef(colSizesWithoutOverrides);
   React.useEffect(() => {
     colSizesWithoutOverridesRef.current = colSizesWithoutOverrides;
   }, [colSizesWithoutOverrides]);
-
-  const { marginLeft = 0 } = tableElement;
 
   const overrideColSize = useOverrideColSize();
   const overrideRowSize = useOverrideRowSize();
