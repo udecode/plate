@@ -32,6 +32,10 @@ import { KbdPlugin } from '@udecode/plate-kbd/react';
 import { ColumnItemPlugin, ColumnPlugin } from '@udecode/plate-layout/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import {
+  EquationPlugin,
+  InlineEquationPlugin,
+} from '@udecode/plate-math/react';
+import {
   AudioPlugin,
   FilePlugin,
   ImagePlugin,
@@ -67,11 +71,13 @@ import { ColumnGroupElement } from '@/components/plate-ui/column-group-element';
 import { CommentLeaf } from '@/components/plate-ui/comment-leaf';
 import { DateElement } from '@/components/plate-ui/date-element';
 import { EmojiInputElement } from '@/components/plate-ui/emoji-input-element';
+import { EquationElement } from '@/components/plate-ui/equation-element';
 import { ExcalidrawElement } from '@/components/plate-ui/excalidraw-element';
 import { HeadingElement } from '@/components/plate-ui/heading-element';
 import { HighlightLeaf } from '@/components/plate-ui/highlight-leaf';
 import { HrElement } from '@/components/plate-ui/hr-element';
 import { ImageElement } from '@/components/plate-ui/image-element';
+import { InlineEquationElement } from '@/components/plate-ui/inline-equation-element';
 import { KbdLeaf } from '@/components/plate-ui/kbd-leaf';
 import { LinkElement } from '@/components/plate-ui/link-element';
 import { MediaAudioElement } from '@/components/plate-ui/media-audio-element';
@@ -110,6 +116,7 @@ export const useCreateEditor = () => {
         [CommentsPlugin.key]: CommentLeaf,
         [DatePlugin.key]: DateElement,
         [EmojiInputPlugin.key]: EmojiInputElement,
+        [EquationPlugin.key]: EquationElement,
         [ExcalidrawPlugin.key]: ExcalidrawElement,
         [FilePlugin.key]: MediaFileElement,
         [HEADING_KEYS.h1]: withProps(HeadingElement, { variant: 'h1' }),
@@ -121,6 +128,7 @@ export const useCreateEditor = () => {
         [HighlightPlugin.key]: HighlightLeaf,
         [HorizontalRulePlugin.key]: HrElement,
         [ImagePlugin.key]: ImageElement,
+        [InlineEquationPlugin.key]: InlineEquationElement,
         [ItalicPlugin.key]: withProps(PlateLeaf, { as: 'em' }),
         [KbdPlugin.key]: KbdLeaf,
         [LinkPlugin.key]: LinkElement,

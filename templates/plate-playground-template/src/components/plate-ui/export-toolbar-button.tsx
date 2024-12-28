@@ -50,6 +50,10 @@ import { BaseColumnItemPlugin, BaseColumnPlugin } from '@udecode/plate-layout';
 import { BaseLineHeightPlugin } from '@udecode/plate-line-height';
 import { BaseLinkPlugin } from '@udecode/plate-link';
 import {
+  BaseEquationPlugin,
+  BaseInlineEquationPlugin,
+} from '@udecode/plate-math';
+import {
   BaseAudioPlugin,
   BaseFilePlugin,
   BaseImagePlugin,
@@ -113,6 +117,8 @@ import {
   useOpenState,
 } from './dropdown-menu';
 import { EditorStatic } from './editor-static';
+import { EquationElementStatic } from './equation-element-static';
+import { InlineEquationElementStatic } from './inline-equation-element-static';
 import { ToolbarButton } from './toolbar';
 
 const siteUrl = 'https://platejs.org';
@@ -197,10 +203,12 @@ export function ExportToolbarButton({ children, ...props }: DropdownMenuProps) {
       [BaseColumnPlugin.key]: ColumnGroupElementStatic,
       [BaseCommentsPlugin.key]: CommentLeafStatic,
       [BaseDatePlugin.key]: DateElementStatic,
+      [BaseEquationPlugin.key]: EquationElementStatic,
       [BaseFilePlugin.key]: MediaFileElementStatic,
       [BaseHighlightPlugin.key]: HighlightLeafStatic,
       [BaseHorizontalRulePlugin.key]: HrElementStatic,
       [BaseImagePlugin.key]: ImageElementStatic,
+      [BaseInlineEquationPlugin.key]: InlineEquationElementStatic,
       [BaseItalicPlugin.key]: withProps(SlateLeaf, { as: 'em' }),
       [BaseKbdPlugin.key]: KbdLeafStatic,
       [BaseLinkPlugin.key]: LinkElementStatic,
@@ -245,6 +253,8 @@ export function ExportToolbarButton({ children, ...props }: DropdownMenuProps) {
         BaseUnderlinePlugin,
         BaseBlockquotePlugin,
         BaseDatePlugin,
+        BaseEquationPlugin,
+        BaseInlineEquationPlugin,
         BaseCodeBlockPlugin.configure({
           options: {
             prism: Prism,
@@ -322,6 +332,7 @@ export function ExportToolbarButton({ children, ...props }: DropdownMenuProps) {
 
     const prismCss = `<link rel="stylesheet" href="${siteUrl}/prism.css">`;
     const tailwindCss = `<link rel="stylesheet" href="${siteUrl}/tailwind.css">`;
+    const katexCss = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.18/dist/katex.css" integrity="sha384-9PvLvaiSKCPkFKB1ZsEoTjgnJn+O3KvEwtsz37/XrkYft3DTk2gHdYvd9oWgW3tV" crossorigin="anonymous">`;
 
     const html = `<!DOCTYPE html>
     <html lang="en">
@@ -337,6 +348,7 @@ export function ExportToolbarButton({ children, ...props }: DropdownMenuProps) {
         />
         ${tailwindCss}
         ${prismCss}
+        ${katexCss}
         <style>
           :root {
             --font-sans: 'Inter', 'Inter Fallback';
