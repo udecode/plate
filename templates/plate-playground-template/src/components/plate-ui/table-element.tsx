@@ -217,7 +217,7 @@ export const TableElement = withHOC(
             ref={ref}
             className={cn(
               'my-4 ml-px mr-0 table h-px w-[calc(100%-6px)] table-fixed border-collapse',
-              isSelectingCell && '[&_*::selection]:bg-none'
+              isSelectingCell && '[&_*::selection]:!bg-transparent'
             )}
             {...tableProps}
           >

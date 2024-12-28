@@ -140,13 +140,16 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
 
       <DropdownMenuContent
         className="ignore-click-outside/toolbar min-w-0"
+        onCloseAutoFocus={(e) => {
+          e.preventDefault();
+          focusEditor(editor);
+        }}
         align="start"
       >
         <DropdownMenuRadioGroup
           value={value}
           onValueChange={(type) => {
             setBlockType(editor, type);
-            focusEditor(editor);
           }}
           label="Turn into"
         >

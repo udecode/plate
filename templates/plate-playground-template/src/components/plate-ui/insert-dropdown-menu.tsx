@@ -192,6 +192,12 @@ const groups: Group[] = [
         label: '3 columns',
         value: 'action_three_columns',
       },
+      // {
+      //   focusEditor: false,
+      //   icon: <RadicalIcon />,
+      //   label: 'Equation',
+      //   value: EquationPlugin.key,
+      // },
     ].map((item) => ({
       ...item,
       onSelect: (editor, value) => {
@@ -213,6 +219,12 @@ const groups: Group[] = [
         label: 'Date',
         value: DatePlugin.key,
       },
+      // {
+      //   focusEditor: false,
+      //   icon: <RadicalIcon />,
+      //   label: 'Inline Equation',
+      //   value: InlineEquationPlugin.key,
+      // },
     ].map((item) => ({
       ...item,
       onSelect: (editor, value) => {

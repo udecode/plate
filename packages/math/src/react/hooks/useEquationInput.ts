@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 
-import { isHotkey } from '@udecode/plate-common';
+import { isHotkey, withMerging } from '@udecode/plate-common';
 import {
   selectSiblingNodePoint,
   setNode,
@@ -22,7 +22,6 @@ export const useEquationInput = ({
   const editor = useEditorRef();
   const element = useElement<TEquationElement>();
   const inputRef = useRef<HTMLTextAreaElement>(null);
-
   const [expressionInput, setExpressionInput] = React.useState<string>(
     element.texExpression
   );
@@ -46,9 +45,17 @@ export const useEquationInput = ({
   }, [open]);
 
   useEffect(() => {
-    setNode<TEquationElement>(editor, element, {
-      texExpression: expressionInput || '',
-    });
+    const setExpression = () => {
+      setNode<TEquationElement>(editor, element, {
+        texExpression: expressionInput || '',
+      });
+    };
+    // When the cursor is inside an inline equation, the popover needs to open.
+    // However, during an undo operation, the cursor focuses on the inline equation, triggering the popover to open, which disrupts the normal undo process.
+    // So we need to remove the inline equation focus in one times undo.
+    // block equation will not block the undo process because it will not open the popover by focus.
+    // The disadvantage of this approach for block equation is that the popover cannot be opened using the keyboard.
+    isInline ? withMerging(editor, setExpression) : setExpression();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expressionInput]);
 
@@ -79,12 +86,6 @@ export const useEquationInput = ({
         } else if (isHotkey('escape')(e)) {
           e.preventDefault();
           onDismiss();
-        } else if (isHotkey('meta+z')(e)) {
-          e.preventDefault();
-          editor.undo();
-        } else if (isHotkey('meta+y')(e) || isHotkey('meta+shift+z')(e)) {
-          e.preventDefault();
-          editor.redo();
         }
         if (isInline) {
           const { selectionEnd, selectionStart, value } =

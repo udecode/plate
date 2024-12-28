@@ -18,6 +18,7 @@ import { deserializeMdValue } from './deserialize-md-value';
 import { dndValue } from './dnd-value';
 import { editableVoidsValue } from './editable-voids-value';
 import { emojiValue } from './emoji-value';
+import { equationValue } from './equation-value';
 import { excalidrawValue } from './excalidraw-value';
 import { exitBreakValue } from './exit-break-value';
 import { findReplaceValue } from './find-replace-value';
@@ -65,6 +66,8 @@ const values = {
   docx: deserializeDocxValue,
   'editable-voids': editableVoidsValue,
   emoji: emojiValue,
+  // upload: uploadValue,
+  equation: equationValue,
   // equation: equationValue,
   excalidraw: excalidrawValue,
   'exit-break': exitBreakValue,
@@ -98,7 +101,6 @@ const values = {
   table: tableValue,
   toc: tocValue,
   toggle: toggleValue,
-  // upload: uploadValue,
 };
 
 export const DEMO_VALUES = Object.entries(values).reduce(
