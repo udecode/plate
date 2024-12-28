@@ -1,5 +1,12 @@
 # @udecode/plate-font
 
+## 41.0.12
+
+### Patch Changes
+
+- [#3922](https://github.com/udecode/plate/pull/3922) by [@felixfeng33](https://github.com/felixfeng33) – Add api `api.fontSize.setMark`.
+  Add utils `toUnitLess`.
+
 ## 41.0.0
 
 ## 40.0.0

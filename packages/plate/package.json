@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate",
-  "version": "41.0.10",
+  "version": "41.0.12",
   "description": "Plate – a plugin system for slate",
   "keywords": [
     "contentEditable",
@@ -71,7 +71,7 @@
     "@udecode/plate-docx": "41.0.10",
     "@udecode/plate-find-replace": "41.0.0",
     "@udecode/plate-floating": "41.0.0",
-    "@udecode/plate-font": "41.0.0",
+    "@udecode/plate-font": "41.0.12",
     "@udecode/plate-heading": "41.0.0",
     "@udecode/plate-highlight": "41.0.0",
     "@udecode/plate-horizontal-rule": "41.0.0",
