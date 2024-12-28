@@ -24,8 +24,8 @@ import { computeCellIndices, getCellTypes } from './utils/index';
  */
 export const withNormalizeTable: ExtendEditor<TableConfig> = ({
   editor,
+  getOption,
   getOptions,
-  setOption,
   type,
 }) => {
   const { apply, normalizeNode } = editor;
@@ -97,6 +97,15 @@ export const withNormalizeTable: ExtendEditor<TableConfig> = ({
         }
       }
       if (getCellTypes(editor).includes(node.type)) {
+        const cellIndices = getOption('cellIndices', node.id as string);
+
+        if (node.id && !cellIndices) {
+          computeCellIndices(editor, {
+            all: true,
+            cellNode: node,
+          });
+        }
+
         const { children } = node;
 
         const parentEntry = getParentNode(editor, path);
@@ -127,7 +136,7 @@ export const withNormalizeTable: ExtendEditor<TableConfig> = ({
 
   editor.apply = (operation) => {
     const isTableOperation =
-      (operation.type === 'remove_node' || operation.type === 'insert_node') &&
+      operation.type === 'remove_node' &&
       operation.node.type &&
       [
         editor.getType(BaseTableRowPlugin),
@@ -136,7 +145,7 @@ export const withNormalizeTable: ExtendEditor<TableConfig> = ({
       ].includes(operation.node.type as string);
 
     // Cleanup cell indices when removing a table cell
-    if (operation.type === 'remove_node') {
+    if (isTableOperation) {
       const cells = [
         ...getNodeEntries<TTableCellElement>(editor, {
           at: operation.path,
@@ -153,14 +162,12 @@ export const withNormalizeTable: ExtendEditor<TableConfig> = ({
 
     apply(operation);
 
-    console.log('operation', operation);
-
     let table: TTableElement | undefined;
 
     if (
       isTableOperation &&
       // There is no new indices when removing a table
-      !(operation.type === 'remove_node' && operation.node.type === type)
+      operation.node.type !== type
     ) {
       table = findNode<TTableElement>(editor, {
         at: operation.path,
@@ -171,7 +178,6 @@ export const withNormalizeTable: ExtendEditor<TableConfig> = ({
         computeCellIndices(editor, {
           tableNode: table,
         });
-        setOption('_versionCellIndices', getOptions()._versionCellIndices + 1);
       }
     }
   };

@@ -3,20 +3,24 @@
 import type { SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { BaseTablePlugin } from '..';
+import { getTestTablePlugins } from '../withNormalizeTable.spec';
 import { isTableBorderHidden } from './isTableBorderHidden';
 
 jsxt;
 
-const createTablePluginWithOptions = () => BaseTablePlugin;
-
-const createEditorInstance = (input: any) => {
+const createEditorInstance = ({
+  children,
+  selection,
+}: {
+  children?: any;
+  selection?: any;
+}) => {
   return createPlateEditor({
-    editor: input,
-    plugins: [NodeIdPlugin, createTablePluginWithOptions()],
+    plugins: getTestTablePlugins(),
+    selection,
+    value: children,
   });
 };
 
@@ -86,7 +90,7 @@ describe('isTableBorderHidden', () => {
   });
 
   it('should return false if no matching cell is found', () => {
-    const emptyEditor = createEditorInstance([]);
+    const emptyEditor = createEditorInstance({ children: [] });
     const hidden = isTableBorderHidden(emptyEditor, 'left');
     expect(hidden).toBe(false);
   });

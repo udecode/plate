@@ -4,37 +4,50 @@ import {
   getEditorPlugin,
 } from '@udecode/plate-common';
 
-import type { BaseTablePlugin } from '../BaseTablePlugin';
 import type {
   TTableCellElement,
   TTableElement,
   TTableRowElement,
 } from '../types';
 
+import { BaseTablePlugin } from '../BaseTablePlugin';
+
 export function computeCellIndices(
   editor: SlateEditor,
   {
+    all,
     cellNode,
+    setInTimeout,
     tableNode,
   }: {
+    all?: boolean;
     cellNode?: TTableCellElement;
+    setInTimeout?: boolean;
     tableNode?: TTableElement;
   }
 ) {
+  const { api, getOptions, setOption } = getEditorPlugin<
+    typeof BaseTablePlugin
+  >(editor, {
+    key: 'table',
+  });
+
   if (!tableNode) {
     if (!cellNode) return;
 
     tableNode = getAboveNode<TTableElement>(editor, {
       at: editor.findPath(cellNode),
+      match: { type: editor.getType(BaseTablePlugin) },
     })?.[0];
 
     if (!tableNode) return;
   }
 
-  const { api, getOptions } = getEditorPlugin<typeof BaseTablePlugin>(editor, {
-    key: 'table',
-  });
-  const cellIndices = getOptions()._cellIndices!;
+  const { _cellIndices: prevIndices } = getOptions();
+
+  // Store previous indices to check for changes
+  const cellIndices = { ...prevIndices };
+  let hasIndicesChanged = false;
 
   const skipCells: boolean[][] = [];
   let targetIndices: { col: number; row: number } | undefined;
@@ -49,12 +62,22 @@ export function computeCellIndices(
       }
 
       const currentIndices = { col: colIndex, row: rowIndex };
+      const prevIndicesForCell = prevIndices[cellElement.id!];
+
+      // Check if indices changed for this cell
+      if (
+        prevIndicesForCell?.col !== currentIndices.col ||
+        prevIndicesForCell?.row !== currentIndices.row
+      ) {
+        hasIndicesChanged = true;
+      }
+
       cellIndices[cellElement.id!] = currentIndices;
 
-      if (cellElement === cellNode) {
+      if (cellElement.id === cellNode?.id) {
         targetIndices = currentIndices;
 
-        break;
+        if (!all) break;
       }
 
       const colSpan = api.table.getColSpan(cellElement);
@@ -70,8 +93,16 @@ export function computeCellIndices(
 
       colIndex += colSpan;
     }
+  }
 
-    if (targetIndices) break;
+  if (hasIndicesChanged) {
+    if (setInTimeout) {
+      setTimeout(() => {
+        setOption('_cellIndices', cellIndices);
+      }, 0);
+    } else {
+      setOption('_cellIndices', cellIndices);
+    }
   }
 
   return targetIndices;

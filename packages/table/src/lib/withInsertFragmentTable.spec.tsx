@@ -5,254 +5,258 @@ import {
   type TElement,
   createSlateEditor,
 } from '@udecode/plate-common';
-import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { BaseTablePlugin } from './BaseTablePlugin';
+import { getTestTablePlugins } from './withNormalizeTable.spec';
 
 jsxt;
-
-const tablePlugin = BaseTablePlugin.configure({
-  options: { disableMerge: true },
-});
 
 describe('withInsertFragmentTable', () => {
   // https://github.com/udecode/editor-protocol/issues/13
   describe('when inserting table 2x1 into cell 11', () => {
-    it('first table column should be replaced by the inserted table column', () => {
-      const input = (
-        <editor>
-          <htable>
-            <htr>
-              <htd>
-                <hp>
-                  11
-                  <cursor />
-                </hp>
-              </htd>
-              <htd>
-                <hp>12</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>21</hp>
-              </htd>
-              <htd>
-                <hp>22</hp>
-              </htd>
-            </htr>
-          </htable>
-        </editor>
-      ) as any as SlateEditor;
+    it.each([{ disableMerge: true }, { disableMerge: false }])(
+      'first table column should be replaced by the inserted table column (disableMerge: $disableMerge)',
+      ({ disableMerge }) => {
+        const input = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>
+                    11
+                    <cursor />
+                  </hp>
+                </htd>
+                <htd>
+                  <hp>12</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>21</hp>
+                </htd>
+                <htd>
+                  <hp>22</hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as any as SlateEditor;
 
-      const fragment = (
-        <fragment>
-          <htable>
-            <htr>
-              <htd>
-                <hp>a</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>b</hp>
-              </htd>
-            </htr>
-          </htable>
-        </fragment>
-      ) as any as TElement[];
+        const fragment = (
+          <fragment>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>a</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>b</hp>
+                </htd>
+              </htr>
+            </htable>
+          </fragment>
+        ) as any as TElement[];
 
-      const output = (
-        <editor>
-          <htable>
-            <htr>
-              <htd>
-                <hp>a</hp>
-              </htd>
-              <htd>
-                <hp>12</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>b</hp>
-              </htd>
-              <htd>
-                <hp>22</hp>
-              </htd>
-            </htr>
-          </htable>
-        </editor>
-      ) as any as SlateEditor;
+        const output = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>a</hp>
+                </htd>
+                <htd>
+                  <hp>12</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>b</hp>
+                </htd>
+                <htd>
+                  <hp>22</hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as any as SlateEditor;
 
-      const editor = createSlateEditor({
-        editor: input,
-        plugins: [NodeIdPlugin, tablePlugin],
-      });
+        const editor = createSlateEditor({
+          editor: input,
+          plugins: getTestTablePlugins({ disableMerge }),
+        });
 
-      editor.insertFragment(fragment);
+        editor.insertFragment(fragment);
 
-      expect(editor.children).toEqual(output.children);
-    });
+        expect(editor.children).toMatchObject(output.children);
+      }
+    );
   });
 
   // https://github.com/udecode/editor-protocol/issues/14
   describe('when inserting table 1x2 into cell 11', () => {
-    it('first table row should be replaced by the inserted table row', () => {
-      const input = (
-        <editor>
-          <htable>
-            <htr>
-              <htd>
-                11
-                <cursor />
-              </htd>
-              <htd>
-                <hp>12</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>21</hp>
-              </htd>
-              <htd>
-                <hp>22</hp>
-              </htd>
-            </htr>
-          </htable>
-        </editor>
-      ) as any as SlateEditor;
+    it.each([{ disableMerge: true }, { disableMerge: false }])(
+      'first table row should be replaced by the inserted table row (disableMerge: $disableMerge)',
+      ({ disableMerge }) => {
+        const input = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  11
+                  <cursor />
+                </htd>
+                <htd>
+                  <hp>12</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>21</hp>
+                </htd>
+                <htd>
+                  <hp>22</hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as any as SlateEditor;
 
-      const fragment = (
-        <fragment>
-          <htable>
-            <htr>
-              <htd>
-                <hp>a</hp>
-              </htd>
-              <htd>
-                <hp>b</hp>
-              </htd>
-            </htr>
-          </htable>
-        </fragment>
-      ) as any as TElement[];
+        const fragment = (
+          <fragment>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>a</hp>
+                </htd>
+                <htd>
+                  <hp>b</hp>
+                </htd>
+              </htr>
+            </htable>
+          </fragment>
+        ) as any as TElement[];
 
-      const output = (
-        <editor>
-          <htable>
-            <htr>
-              <htd>
-                <hp>a</hp>
-              </htd>
-              <htd>
-                <hp>b</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>21</hp>
-              </htd>
-              <htd>
-                <hp>22</hp>
-              </htd>
-            </htr>
-          </htable>
-        </editor>
-      ) as any as SlateEditor;
+        const output = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>a</hp>
+                </htd>
+                <htd>
+                  <hp>b</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>21</hp>
+                </htd>
+                <htd>
+                  <hp>22</hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as any as SlateEditor;
 
-      const editor = createSlateEditor({
-        editor: input,
-        plugins: [NodeIdPlugin, tablePlugin],
-      });
+        const editor = createSlateEditor({
+          editor: input,
+          plugins: getTestTablePlugins({ disableMerge }),
+        });
 
-      editor.insertFragment(fragment);
+        editor.insertFragment(fragment);
 
-      expect(editor.children).toEqual(output.children);
-    });
+        expect(editor.children).toMatchObject(output.children);
+      }
+    );
   });
 
   // https://github.com/udecode/editor-protocol/issues/24
   describe('Insert a table when selecting table cells', () => {
-    it('replace these cells', () => {
-      const input = (
-        <editor>
-          <htable>
-            <htr>
-              <htd>
-                <anchor />
-                11
-              </htd>
-              <htd>
-                <hp>12</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>21</hp>
-              </htd>
-              <htd>
-                22
-                <focus />
-              </htd>
-            </htr>
-          </htable>
-        </editor>
-      ) as any as SlateEditor;
+    it.each([{ disableMerge: true }, { disableMerge: false }])(
+      'replace these cells (disableMerge: $disableMerge)',
+      ({ disableMerge }) => {
+        const input = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <anchor />
+                  11
+                </htd>
+                <htd>
+                  <hp>12</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>21</hp>
+                </htd>
+                <htd>
+                  22
+                  <focus />
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as any as SlateEditor;
 
-      const fragment = (
-        <fragment>
-          <htable>
-            <htr>
-              <htd>
-                <hp>a</hp>
-              </htd>
-              <htd>
-                <hp>b</hp>
-              </htd>
-            </htr>
-          </htable>
-        </fragment>
-      ) as any as TElement[];
+        const fragment = (
+          <fragment>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>a</hp>
+                </htd>
+                <htd>
+                  <hp>b</hp>
+                </htd>
+              </htr>
+            </htable>
+          </fragment>
+        ) as any as TElement[];
 
-      const output = (
-        <editor>
-          <htable>
-            <htr>
-              <htd>
-                <hp>a</hp>
-              </htd>
-              <htd>
-                <hp>b</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>
-                  <htext />
-                </hp>
-              </htd>
-              <htd>
-                <hp>
-                  <htext />
-                </hp>
-              </htd>
-            </htr>
-          </htable>
-        </editor>
-      ) as any as SlateEditor;
+        const output = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>a</hp>
+                </htd>
+                <htd>
+                  <hp>b</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>
+                    <htext />
+                  </hp>
+                </htd>
+                <htd>
+                  <hp>
+                    <htext />
+                  </hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as any as SlateEditor;
 
-      const editor = createSlateEditor({
-        editor: input,
-        plugins: [NodeIdPlugin, tablePlugin],
-      });
+        const editor = createSlateEditor({
+          editor: input,
+          plugins: getTestTablePlugins({ disableMerge }),
+        });
 
-      editor.deleteFragment();
-      editor.insertFragment(fragment);
+        editor.deleteFragment();
+        editor.insertFragment(fragment);
 
-      expect(editor.children).toEqual(output.children);
-    });
+        expect(editor.children).toMatchObject(output.children);
+      }
+    );
   });
 
   // https://github.com/udecode/editor-protocol/issues/20
@@ -330,12 +334,12 @@ describe('withInsertFragmentTable', () => {
 
       const editor = createSlateEditor({
         editor: input,
-        plugins: [NodeIdPlugin, tablePlugin],
+        plugins: getTestTablePlugins(),
       });
 
       editor.insertFragment(fragment);
 
-      expect(editor.children).toEqual(output.children);
+      expect(editor.children).toMatchObject(output.children);
 
       expect(editor.selection).toEqual(output.selection);
     });
@@ -343,110 +347,124 @@ describe('withInsertFragmentTable', () => {
 
   // https://github.com/udecode/editor-protocol/issues/32
   describe('when insert table 2x2 into cell 22', () => {
-    it('should expand the table', () => {
-      const input = (
-        <editor>
-          <htable>
-            <htr>
-              <htd>
-                <hp>11</hp>
-              </htd>
-              <htd>
-                <hp>12</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>21</hp>
-              </htd>
-              <htd>
-                <hp>
-                  22
-                  <cursor />
-                </hp>
-              </htd>
-            </htr>
-          </htable>
-        </editor>
-      ) as any as SlateEditor;
+    const cases = [
+      {
+        name: 'default',
+        options: {},
+      },
+      {
+        name: 'with disableMerge: true',
+        options: { disableMerge: true },
+      },
+      {
+        name: 'with disableMerge: false',
+        options: { disableMerge: false },
+      },
+    ];
 
-      const fragment = (
-        <fragment>
-          <htable>
-            <htr>
-              <htd>
-                <hp>aa</hp>
-              </htd>
-              <htd>
-                <hp>ab</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>ba</hp>
-              </htd>
-              <htd>
-                <hp>bb</hp>
-              </htd>
-            </htr>
-          </htable>
-        </fragment>
-      ) as any as TElement[];
+    cases.forEach(({ name, options }) => {
+      it(name, () => {
+        const input = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>11</hp>
+                </htd>
+                <htd>
+                  <hp>12</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>21</hp>
+                </htd>
+                <htd>
+                  <hp>
+                    22
+                    <cursor />
+                  </hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as any as SlateEditor;
 
-      const output = (
-        <editor>
-          <htable>
-            <htr>
-              <htd>
-                <hp>11</hp>
-              </htd>
-              <htd>
-                <hp>12</hp>
-              </htd>
-              <htd custom>
-                <hp>
-                  <htext />
-                </hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>21</hp>
-              </htd>
-              <htd>
-                <hp>
-                  <anchor />
-                  aa
-                </hp>
-              </htd>
-              <htd custom>
-                <hp>ab</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd custom>
-                <hp>
-                  <htext />
-                </hp>
-              </htd>
-              <htd custom>
-                <hp>ba</hp>
-              </htd>
-              <htd custom>
-                <hp>
-                  bb
-                  <focus />
-                </hp>
-              </htd>
-            </htr>
-          </htable>
-        </editor>
-      ) as any as SlateEditor;
+        const fragment = (
+          <fragment>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>aa</hp>
+                </htd>
+                <htd>
+                  <hp>ab</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>ba</hp>
+                </htd>
+                <htd>
+                  <hp>bb</hp>
+                </htd>
+              </htr>
+            </htable>
+          </fragment>
+        ) as any as TElement[];
 
-      const editor = createSlateEditor({
-        editor: input,
-        plugins: [
-          tablePlugin.extendEditorApi(() => ({
+        const output = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>11</hp>
+                </htd>
+                <htd>
+                  <hp>12</hp>
+                </htd>
+                <htd custom>
+                  <hp>
+                    <htext />
+                  </hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>21</hp>
+                </htd>
+                <htd>
+                  <hp>
+                    <anchor />
+                    aa
+                  </hp>
+                </htd>
+                <htd custom>
+                  <hp>ab</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd custom>
+                  <hp>
+                    <htext />
+                  </hp>
+                </htd>
+                <htd custom>
+                  <hp>ba</hp>
+                </htd>
+                <htd custom>
+                  <hp>
+                    bb
+                    <focus />
+                  </hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as any as SlateEditor;
+
+        const plugins = getTestTablePlugins(options, (plugin) =>
+          plugin.extendEditorApi(() => ({
             create: {
               tableCell: () => ({
                 children: [{ text: '' }],
@@ -454,14 +472,19 @@ describe('withInsertFragmentTable', () => {
                 type: 'td',
               }),
             },
-          })),
-        ],
+          }))
+        );
+
+        const editor = createSlateEditor({
+          editor: input,
+          plugins,
+        });
+
+        editor.insertFragment(fragment);
+
+        expect(editor.children).toMatchObject(output.children);
+        expect(editor.selection).toEqual(output.selection);
       });
-
-      editor.insertFragment(fragment);
-
-      expect(editor.children).toEqual(output.children);
-      expect(editor.selection).toEqual(output.selection);
     });
   });
 
@@ -545,18 +568,14 @@ describe('withInsertFragmentTable', () => {
 
       const editor = createSlateEditor({
         editor: input,
-        plugins: [
-          tablePlugin.configure({
-            options: {
-              disableExpandOnInsert: true,
-            },
-          }),
-        ],
+        plugins: getTestTablePlugins({
+          disableExpandOnInsert: true,
+        }),
       });
 
       editor.insertFragment(fragment);
 
-      expect(editor.children).toEqual(output.children);
+      expect(editor.children).toMatchObject(output.children);
 
       expect(editor.selection).toEqual(output.selection);
     });
@@ -618,71 +637,74 @@ describe('withInsertFragmentTable', () => {
 
       const editor = createSlateEditor({
         editor: input,
-        plugins: [NodeIdPlugin, tablePlugin],
+        plugins: getTestTablePlugins(),
       });
 
       editor.insertFragment(fragment);
 
-      expect(editor.children).toEqual(output.children);
+      expect(editor.children).toMatchObject(output.children);
     });
   });
 
   // https://github.com/udecode/editor-protocol/issues/64
   describe('when inserting blocks inside a table', () => {
-    it('should insert the blocks without removing the cells', () => {
-      const input = (
-        <editor>
-          <htable>
-            <htr>
-              <htd>
-                <hp>
-                  <anchor />
-                  11
-                </hp>
-              </htd>
-              <htd>
-                <hp>
-                  12
-                  <focus />
-                </hp>
-              </htd>
-            </htr>
-          </htable>
-        </editor>
-      ) as any as SlateEditor;
+    it.each([{ disableMerge: true }, { disableMerge: false }])(
+      'should insert the blocks without removing the cells (disableMerge: $disableMerge)',
+      ({ disableMerge }) => {
+        const input = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>
+                    <anchor />
+                    11
+                  </hp>
+                </htd>
+                <htd>
+                  <hp>
+                    12
+                    <focus />
+                  </hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as any as SlateEditor;
 
-      const fragment = (
-        <fragment>
-          <hp>o11a</hp>
-          <hp>o11b</hp>
-        </fragment>
-      ) as any as TElement[];
+        const fragment = (
+          <fragment>
+            <hp>o11a</hp>
+            <hp>o11b</hp>
+          </fragment>
+        ) as any as TElement[];
 
-      const output = (
-        <editor>
-          <htable>
-            <htr>
-              <htd>
-                <hp>o11a</hp>
-                <hp>o11b</hp>
-              </htd>
-              <htd>
-                <hp>o11a</hp>
-                <hp>o11b</hp>
-              </htd>
-            </htr>
-          </htable>
-        </editor>
-      ) as any as SlateEditor;
+        const output = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>o11a</hp>
+                  <hp>o11b</hp>
+                </htd>
+                <htd>
+                  <hp>o11a</hp>
+                  <hp>o11b</hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as any as SlateEditor;
 
-      const editor = createSlateEditor({
-        editor: input,
-        plugins: [NodeIdPlugin, tablePlugin],
-      });
+        const editor = createSlateEditor({
+          editor: input,
+          plugins: getTestTablePlugins({ disableMerge }),
+        });
 
-      editor.insertFragment(fragment);
+        editor.insertFragment(fragment);
 
-      expect(editor.children).toEqual(output.children);
-    });
+        expect(editor.children).toMatchObject(output.children);
+      }
+    );
   });
 });

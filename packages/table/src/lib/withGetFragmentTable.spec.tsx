@@ -3,84 +3,89 @@
 import type { SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { BaseTablePlugin } from '.';
 import { getTableGridAbove } from './queries/getTableGridAbove';
+import { getTestTablePlugins } from './withNormalizeTable.spec';
 
 jsxt;
 
 describe('withGetFragmentTable', () => {
   // https://github.com/udecode/editor-protocol/issues/19
   describe('when copying cells 11-21', () => {
-    it('should copy a table 2x1 with 11-21 cells', () => {
-      const input = (
-        <editor>
-          <htable>
-            <htr>
-              <htd>
-                11
-                <anchor />
-              </htd>
-              <htd>12</htd>
-            </htr>
-            <htr>
-              <htd>
-                21
-                <focus />
-              </htd>
-              <htd>22</htd>
-            </htr>
-          </htable>
-        </editor>
-      ) as any as SlateEditor;
+    it.each([{ disableMerge: true }, { disableMerge: false }])(
+      'should copy a table 2x1 with 11-21 cells (disableMerge: $disableMerge)',
+      ({ disableMerge }) => {
+        const input = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  11
+                  <anchor />
+                </htd>
+                <htd>12</htd>
+              </htr>
+              <htr>
+                <htd>
+                  21
+                  <focus />
+                </htd>
+                <htd>22</htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as any as SlateEditor;
 
-      const editor = createPlateEditor({
-        editor: input,
-        plugins: [NodeIdPlugin, BaseTablePlugin],
-      });
+        const editor = createPlateEditor({
+          editor: input,
+          plugins: getTestTablePlugins({ disableMerge }),
+        });
 
-      const fragment = editor.getFragment();
+        const fragment = editor.getFragment();
 
-      expect(fragment).toEqual([getTableGridAbove(editor)[0][0]]);
-    });
+        expect(fragment).toMatchObject([getTableGridAbove(editor)[0][0]]);
+      }
+    );
   });
 
   // https://github.com/udecode/editor-protocol/issues/63
   describe('when copying a single cell with 2 blocks', () => {
-    it('should copy only the 2 blocks', () => {
-      const blocks = (
-        <fragment>
-          <hp>
-            <anchor />
-            11
-          </hp>
-          <hp>
-            12
-            <focus />
-          </hp>
-        </fragment>
-      );
+    it.each([{ disableMerge: true }, { disableMerge: false }])(
+      'should copy only the 2 blocks (disableMerge: $disableMerge)',
+      ({ disableMerge }) => {
+        const blocks = (
+          <fragment>
+            <hp>
+              <anchor />
+              11
+            </hp>
+            <hp>
+              12
+              <focus />
+            </hp>
+          </fragment>
+        );
 
-      const input = (
-        <editor>
-          <htable>
-            <htr>
-              <htd>{blocks}</htd>
-            </htr>
-          </htable>
-        </editor>
-      ) as any as SlateEditor;
+        const input = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>{blocks}</htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as any as SlateEditor;
 
-      const editor = createPlateEditor({
-        editor: input,
-        plugins: [NodeIdPlugin, BaseTablePlugin],
-      });
+        const editor = createPlateEditor({
+          editor: input,
+          plugins: getTestTablePlugins({ disableMerge }),
+        });
 
-      const fragment = editor.getFragment();
+        const fragment = editor.getFragment();
 
-      expect(fragment).toEqual(blocks);
-    });
+        expect(fragment).toMatchObject(blocks);
+      }
+    );
   });
 });

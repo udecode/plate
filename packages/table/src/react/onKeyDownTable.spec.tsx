@@ -6,7 +6,7 @@ import type { SlateEditor } from '@udecode/plate-common';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { createPlateTestEditor } from '../../../core/src/react/__tests__/createPlateTestEditor';
-import { TablePlugin } from './TablePlugin';
+import { getTestTablePlugins } from '../lib/withNormalizeTable.spec';
 
 jsxt;
 
@@ -330,7 +330,7 @@ describe('onKeyDownTable', () => {
 
       const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
         editor: input,
-        plugins: [TablePlugin],
+        plugins: getTestTablePlugins(),
       });
 
       await triggerKeyboardEvent('shift+ArrowDown');
@@ -395,7 +395,7 @@ describe('onKeyDownTable', () => {
 
       const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
         editor: input,
-        plugins: [TablePlugin],
+        plugins: getTestTablePlugins(),
       });
 
       await triggerKeyboardEvent('shift+ArrowUp');
@@ -455,7 +455,7 @@ describe('onKeyDownTable', () => {
 
       const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
         editor: input,
-        plugins: [TablePlugin],
+        plugins: getTestTablePlugins(),
       });
 
       await triggerKeyboardEvent('shift+ArrowRight');
@@ -515,7 +515,7 @@ describe('onKeyDownTable', () => {
 
       const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
         editor: input,
-        plugins: [TablePlugin],
+        plugins: getTestTablePlugins(),
       });
 
       await triggerKeyboardEvent('shift+ArrowLeft');

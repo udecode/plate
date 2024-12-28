@@ -1,7 +1,9 @@
-import type { SlateEditor } from '@udecode/plate-common';
+import { type SlateEditor, getEditorPlugin } from '@udecode/plate-common';
 
 import type { TableConfig } from '../BaseTablePlugin';
 import type { TTableCellElement } from '../types';
+
+import { computeCellIndices } from './computeCellIndices';
 
 export type CellIndices = {
   col: number;
@@ -12,19 +14,23 @@ export const getCellIndices = (
   editor: SlateEditor,
   element: TTableCellElement
 ): CellIndices => {
-  const cellIndices = editor.getOptions<TableConfig>({
+  const { getOption } = getEditorPlugin<TableConfig>(editor, {
     key: 'table',
-  })._cellIndices;
+  });
 
-  const indices = cellIndices[element.id!];
+  let indices = getOption('cellIndices', element.id!);
 
   if (!indices) {
-    editor.api.debug.warn(
-      'No cell indices found for element. Make sure all table cells have an id.',
-      'TABLE_CELL_INDICES'
-    );
+    indices = computeCellIndices(editor, {
+      cellNode: element,
+    })!;
 
-    return { col: 0, row: 0 };
+    if (!indices) {
+      editor.api.debug.warn(
+        'No cell indices found for element. Make sure all table cells have an id.',
+        'TABLE_CELL_INDICES'
+      );
+    }
   }
 
   return indices;

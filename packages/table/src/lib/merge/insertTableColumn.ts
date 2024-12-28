@@ -118,6 +118,7 @@ export const insertTableMergeColumn = (
       editor,
       curCell
     );
+
     const curRowSpan = api.table.getRowSpan(curCell);
     const curColSpan = api.table.getColSpan(curCell);
 

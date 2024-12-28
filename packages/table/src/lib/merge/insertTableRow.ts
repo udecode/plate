@@ -7,6 +7,7 @@ import {
   getNode,
   getParentNode,
   insertElements,
+  select,
   setNodes,
   withoutNormalizing,
 } from '@udecode/plate-common';
@@ -179,8 +180,20 @@ export const insertTableMergeRow = (
       },
       {
         at: nextRowPath,
-        select: shouldSelect,
+        select: false,
       }
     );
+
+    if (shouldSelect) {
+      const cellEntry = findNode(editor, {
+        at: nextRowPath,
+        match: { type: getCellTypes(editor) },
+      });
+
+      if (cellEntry) {
+        const [, nextCellPath] = cellEntry;
+        select(editor, nextCellPath);
+      }
+    }
   });
 };

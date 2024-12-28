@@ -34,7 +34,7 @@ export const withGetFragmentTable: ExtendEditor<TableConfig> = ({
         const hasOneCell = rowCount <= 1 && colCount <= 1;
 
         if (hasOneCell) {
-          const cell = rows[0].children[0] as TTableCellElement;
+          const cell = rows[0] as TTableCellElement;
           const cellChildren = api.table.getCellChildren!(cell);
           newFragment.push(...(cellChildren[0].children as TElement[]));
 

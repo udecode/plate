@@ -7,9 +7,9 @@ import {
   createSlatePlugin,
   createTSlatePlugin,
 } from '@udecode/plate-common';
-import { NodeIdPlugin } from '@udecode/plate-node-id';
 
 import type { TTableCellElement } from './types';
+import type { CellIndices } from './utils';
 
 import { getEmptyCellNode, getEmptyRowNode, getEmptyTableNode } from './api';
 import { mergeTableCells, splitTableCell } from './merge';
@@ -95,7 +95,6 @@ export type TableConfig = PluginConfig<
   {
     /** @private Keeps Track of cell indices by id. */
     _cellIndices: Record<string, { col: number; row: number }>;
-    _versionCellIndices: number;
 
     /** Disable expanding the table when inserting cells. */
     disableExpandOnInsert?: boolean;
@@ -129,10 +128,14 @@ export type TableConfig = PluginConfig<
      * @default 48
      */
     minColumnWidth?: number;
-  },
+  } & TableSelectors,
   TableApi,
   TableTransforms
 >;
+
+type TableSelectors = {
+  cellIndices?: (id: string) => CellIndices;
+};
 
 type TableApi = {
   create: {
@@ -170,13 +173,12 @@ type TableTransforms = {
 /** Enables support for tables. */
 export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
   key: 'table',
-  dependencies: [NodeIdPlugin.key],
+  // dependencies: [NodeIdPlugin.key],
   extendEditor: withTable,
   node: { isElement: true },
   normalizeInitialValue: normalizeInitialValueTable,
   options: {
     _cellIndices: {},
-    _versionCellIndices: 1,
     disableMerge: false,
     minColumnWidth: 48,
   },
@@ -189,6 +191,9 @@ export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
   },
   plugins: [BaseTableRowPlugin, BaseTableCellPlugin, BaseTableCellHeaderPlugin],
 })
+  .extendOptions<TableSelectors>(({ getOptions }) => ({
+    cellIndices: (id) => getOptions()._cellIndices[id],
+  }))
   .extendEditorApi<TableApi>(({ editor }) => ({
     create: {
       table: bindFirst(getEmptyTableNode, editor),

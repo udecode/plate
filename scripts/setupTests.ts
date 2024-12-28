@@ -8,8 +8,10 @@ global.TextEncoder = TextEncoder;
 jest.spyOn(global.console, 'warn').mockImplementation(() => jest.fn());
 jest.spyOn(global.console, 'error').mockImplementation(() => jest.fn());
 
+let id = 1;
+
 jest.mock('nanoid', () => ({
-  nanoid: () => '1',
+  nanoid: () => `${id++}`,
 }));
 
 jest.mock('@udecode/plate-core', () => ({
