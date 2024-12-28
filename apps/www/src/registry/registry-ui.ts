@@ -1096,10 +1096,35 @@ export const uiNodes: Registry = [
     },
     files: [
       { path: 'plate-ui/equation-element.tsx', type: 'registry:ui' },
+      { path: 'plate-ui/equation-element-static.tsx', type: 'registry:ui' },
       { path: 'plate-ui/equation-popover.tsx', type: 'registry:ui' },
     ],
     name: 'equation-element',
     registryDependencies: ['popover'],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@udecode/plate-math'],
+    doc: {
+      description:
+        'An inline LaTeX equation element with an editable popover for inputting and rendering mathematical expressions.',
+      docs: [
+        {
+          route: 'https://platejs.org/docs/equation',
+          title: 'Equation',
+        },
+      ],
+      examples: ['equation-demo'],
+    },
+    files: [
+      { path: 'plate-ui/inline-equation-element.tsx', type: 'registry:ui' },
+      {
+        path: 'plate-ui/inline-equation-element-static.tsx',
+        type: 'registry:ui',
+      },
+    ],
+    name: 'inline-equation-element',
+    registryDependencies: ['plate-element', 'popover'],
     type: 'registry:ui',
   },
   {

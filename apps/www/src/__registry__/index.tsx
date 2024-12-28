@@ -219,11 +219,35 @@ export const Index: Record<string, any> = {
         type: "registry:ui",
         target: ""
       },{
+        path: "src/registry/default/plate-ui/equation-element-static.tsx",
+        type: "registry:ui",
+        target: ""
+      },{
         path: "src/registry/default/plate-ui/equation-popover.tsx",
         type: "registry:ui",
         target: ""
       }],
       component: React.lazy(() => import("@/registry/default/plate-ui/equation-element.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
+    "inline-equation-element": {
+      name: "inline-equation-element",
+      description: "",
+      type: "registry:ui",
+      registryDependencies: ["plate-element","popover"],
+      files: [{
+        path: "src/registry/default/plate-ui/inline-equation-element.tsx",
+        type: "registry:ui",
+        target: ""
+      },{
+        path: "src/registry/default/plate-ui/inline-equation-element-static.tsx",
+        type: "registry:ui",
+        target: ""
+      }],
+      component: React.lazy(() => import("@/registry/default/plate-ui/inline-equation-element.tsx")),
       source: "",
       category: "",
       subcategory: "",
@@ -4097,7 +4121,7 @@ export const Index: Record<string, any> = {
       name: "editor-ai",
       description: "An AI editor",
       type: "registry:block",
-      registryDependencies: ["api-ai","api-uploadthing","plate-types","editor-plugins","copilot-plugins","floating-toolbar-plugin","fixed-toolbar-plugin","ai-menu","ghost-text","comments-popover","cursor-overlay","editor","block-context-menu","ai-leaf","blockquote-element","code-block-element","code-leaf","code-line-element","code-syntax-leaf","column-element","column-group-element","comment-leaf","date-element","draggable","equation-element","emoji-input-element","excalidraw-element","heading-element","highlight-leaf","hr-element","image-element","kbd-leaf","link-element","media-audio-element","media-embed-element","media-file-element","media-placeholder-element","media-video-element","mention-element","mention-input-element","paragraph-element","placeholder","slash-input-element","table-cell-element","table-element","table-row-element","toc-element","toggle-element"],
+      registryDependencies: ["api-ai","api-uploadthing","plate-types","editor-plugins","copilot-plugins","floating-toolbar-plugin","fixed-toolbar-plugin","ai-menu","ghost-text","comments-popover","cursor-overlay","editor","block-context-menu","ai-leaf","blockquote-element","code-block-element","code-leaf","code-line-element","code-syntax-leaf","column-element","column-group-element","comment-leaf","date-element","draggable","equation-element","inline-equation-element","emoji-input-element","excalidraw-element","heading-element","highlight-leaf","hr-element","image-element","kbd-leaf","link-element","media-audio-element","media-embed-element","media-file-element","media-placeholder-element","media-video-element","mention-element","mention-input-element","paragraph-element","placeholder","slash-input-element","table-cell-element","table-element","table-row-element","toc-element","toggle-element"],
       files: [{
         path: "src/registry/default/block/editor-ai/page.tsx",
         type: "registry:page",

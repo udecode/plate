@@ -80,6 +80,7 @@ import { basicMarksValue } from '@/registry/default/example/values/basic-marks-v
 import { columnValue } from '@/registry/default/example/values/column-value';
 import { commentsValue } from '@/registry/default/example/values/comments-value';
 import { dateValue } from '@/registry/default/example/values/date-value';
+import { equationValue } from '@/registry/default/example/values/equation-value';
 import { fontValue } from '@/registry/default/example/values/font-value';
 import { highlightValue } from '@/registry/default/example/values/highlight-value';
 import { horizontalRuleValue } from '@/registry/default/example/values/horizontal-rule-value';
@@ -204,7 +205,7 @@ export default async function SlateToHtmlBlock() {
     ...linkValue,
     ...horizontalRuleValue,
     ...tableValue,
-    ...mediaValue,
+    ...equationValue,
     ...columnValue,
     ...mentionValue,
     ...dateValue,
@@ -216,6 +217,7 @@ export default async function SlateToHtmlBlock() {
     ...lineHeightValue,
     ...indentValue,
     ...indentListValue,
+    ...mediaValue,
   ];
 
   const editor = createSlateEditor({

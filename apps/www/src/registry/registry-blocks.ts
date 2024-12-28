@@ -92,6 +92,7 @@ export const blocks: Registry = [
       'date-element',
       'draggable',
       'equation-element',
+      'inline-equation-element',
       'emoji-input-element',
       'excalidraw-element',
       'heading-element',

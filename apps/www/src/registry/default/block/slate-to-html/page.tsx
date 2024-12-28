@@ -80,6 +80,7 @@ import { basicMarksValue } from '@/registry/default/example/values/basic-marks-v
 import { columnValue } from '@/registry/default/example/values/column-value';
 import { commentsValue } from '@/registry/default/example/values/comments-value';
 import { dateValue } from '@/registry/default/example/values/date-value';
+import { equationValue } from '@/registry/default/example/values/equation-value';
 import { fontValue } from '@/registry/default/example/values/font-value';
 import { highlightValue } from '@/registry/default/example/values/highlight-value';
 import { horizontalRuleValue } from '@/registry/default/example/values/horizontal-rule-value';
@@ -133,8 +134,6 @@ import { TableElementStatic } from '@/registry/default/plate-ui/table-element-st
 import { TableRowElementStatic } from '@/registry/default/plate-ui/table-row-element-static';
 import { TocElementStatic } from '@/registry/default/plate-ui/toc-element-static';
 import { ToggleElementStatic } from '@/registry/default/plate-ui/toggle-element-static';
-
-import { equationValue } from '../../example/values/equation-value';
 
 export const description = 'Slate to HTML';
 
