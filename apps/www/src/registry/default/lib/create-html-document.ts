@@ -1,5 +1,6 @@
 export function createHtmlDocument({
   editorHtml,
+  katexCDN,
   prismCss,
   tailwindCss,
   theme,
@@ -7,6 +8,7 @@ export function createHtmlDocument({
   editorHtml: string;
   prismCss: string;
   tailwindCss: string;
+  katexCDN?: string;
   theme?: string;
 }): string {
   return `<!DOCTYPE html>
@@ -17,6 +19,7 @@ export function createHtmlDocument({
     <meta name="color-scheme" content="light dark" />
     <style>${tailwindCss}</style>
     <style>${prismCss}</style>
+    ${katexCDN}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
