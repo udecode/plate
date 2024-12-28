@@ -19,6 +19,10 @@ import { TocPlugin } from '@udecode/plate-heading/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { INDENT_LIST_KEYS, ListStyleType } from '@udecode/plate-indent-list';
 import { LinkPlugin } from '@udecode/plate-link/react';
+import {
+  EquationPlugin,
+  InlineEquationPlugin,
+} from '@udecode/plate-math/react';
 import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
@@ -40,6 +44,7 @@ import {
   PilcrowIcon,
   PlusIcon,
   QuoteIcon,
+  RadicalIcon,
   SquareIcon,
   TableIcon,
   TableOfContentsIcon,
@@ -192,12 +197,12 @@ const groups: Group[] = [
         label: '3 columns',
         value: 'action_three_columns',
       },
-      // {
-      //   focusEditor: false,
-      //   icon: <RadicalIcon />,
-      //   label: 'Equation',
-      //   value: EquationPlugin.key,
-      // },
+      {
+        focusEditor: false,
+        icon: <RadicalIcon />,
+        label: 'Equation',
+        value: EquationPlugin.key,
+      },
     ].map((item) => ({
       ...item,
       onSelect: (editor, value) => {
@@ -219,12 +224,12 @@ const groups: Group[] = [
         label: 'Date',
         value: DatePlugin.key,
       },
-      // {
-      //   focusEditor: false,
-      //   icon: <RadicalIcon />,
-      //   label: 'Inline Equation',
-      //   value: InlineEquationPlugin.key,
-      // },
+      {
+        focusEditor: false,
+        icon: <RadicalIcon />,
+        label: 'Inline Equation',
+        value: InlineEquationPlugin.key,
+      },
     ].map((item) => ({
       ...item,
       onSelect: (editor, value) => {
