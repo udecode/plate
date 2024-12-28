@@ -360,6 +360,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       'color-dropdown-menu',
       'comment-toolbar-button',
       'emoji-dropdown-menu',
+      'font-size-toolbar-button',
       'history-toolbar-button',
       'indent-list-toolbar-button',
       'indent-todo-toolbar-button',
@@ -1150,6 +1151,20 @@ export const uiNodes: Registry = [
     files: [{ path: 'plate-ui/excalidraw-element.tsx', type: 'registry:ui' }],
     name: 'excalidraw-element',
     registryDependencies: ['plate-element'],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@udecode/plate-font'],
+    doc: {
+      description: 'A toolbar control for adjusting font size.',
+      docs: [{ route: '/docs/font' }],
+      examples: ['list-demo'],
+    },
+    files: [
+      { path: 'plate-ui/font-size-toolbar-button.tsx', type: 'registry:ui' },
+    ],
+    name: 'font-size-toolbar-button',
+    registryDependencies: ['toolbar'],
     type: 'registry:ui',
   },
   {
