@@ -153,11 +153,7 @@ export const MediaPlaceholderElement = withHOC(
       }, [isReplaced]);
 
       return (
-        <PlateElement
-          ref={ref}
-          className={cn(className, 'relative my-1')}
-          {...props}
-        >
+        <PlateElement ref={ref} className={cn(className, 'my-1')} {...props}>
           {(!loading || !isImage) && (
             <div
               className={cn(

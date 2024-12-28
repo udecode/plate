@@ -43,6 +43,11 @@ export const usePlateElement = (props: PlateElementProps) => {
       ...elementToAttributes?.(element),
       className: clsx(props.className, nodeProps?.className),
       'data-block-id': block ? element.id : undefined,
+      style: {
+        position: 'relative',
+        ...props.style,
+        ...nodeProps?.style,
+      },
     },
     ref: useComposedRef(props.ref, attributes.ref),
   };

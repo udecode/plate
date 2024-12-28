@@ -17,7 +17,7 @@ describe('serializePlateStatic with attributes', () => {
     });
 
     expect(html).toEqual(
-      '<div data-slate-editor="true" data-slate-node="value"><div data-slate-node="element"><span data-slate-node="text"><span data-slate-leaf="true"><strong data-slate-leaf="true"><span data-slate-string="true">Right Aligned Heading</span></strong></span></span></div></div>'
+      '<div data-slate-editor="true" data-slate-node="value"><div data-slate-node="element" style="position:relative"><span data-slate-node="text"><span data-slate-leaf="true"><strong data-slate-leaf="true"><span data-slate-string="true">Right Aligned Heading</span></strong></span></span></div></div>'
     );
   });
 });

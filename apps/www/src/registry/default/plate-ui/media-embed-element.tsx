@@ -39,11 +39,7 @@ export const MediaEmbedElement = withHOC(
 
     return (
       <MediaPopover plugin={MediaEmbedPlugin}>
-        <PlateElement
-          ref={ref}
-          className={cn(className, 'relative py-2.5')}
-          {...props}
-        >
+        <PlateElement ref={ref} className={cn(className, 'py-2.5')} {...props}>
           <figure
             className="group relative m-0 w-full cursor-default"
             contentEditable={false}

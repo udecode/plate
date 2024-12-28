@@ -44,7 +44,7 @@ export function TocElementStatic({
   const headingList = getHeadingList(editor);
 
   return (
-    <SlateElement className={cn(className, 'relative mb-1 p-0')} {...props}>
+    <SlateElement className={cn(className, 'mb-1 p-0')} {...props}>
       <div>
         {headingList.length > 0 ? (
           headingList.map((item) => (

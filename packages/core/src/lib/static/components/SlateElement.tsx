@@ -30,6 +30,11 @@ export const SlateElement = (props: SlateElementProps) => {
     ...elementToAttributes?.(element),
     className: clsx(props.className, nodeProps?.className),
     'data-block-id': block ? element.id : undefined,
+    style: {
+      position: 'relative',
+      ...props.style,
+      ...nodeProps?.style,
+    },
   };
 
   const Element = (as ?? 'div') as any;

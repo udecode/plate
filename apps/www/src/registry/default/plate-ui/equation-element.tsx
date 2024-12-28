@@ -39,11 +39,7 @@ export const EquationElement = withRef<typeof PlateElement>(
     });
 
     return (
-      <PlateElement
-        ref={ref}
-        className={cn('relative my-1', className)}
-        {...props}
-      >
+      <PlateElement ref={ref} className={cn('my-1', className)} {...props}>
         <Popover open={open} onOpenChange={setOpen} modal={false}>
           <PopoverTrigger asChild>
             <div
