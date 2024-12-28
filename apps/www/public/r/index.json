@@ -346,7 +346,8 @@
   },
   {
     "dependencies": [
-      "@udecode/plate-math"
+      "@udecode/plate-math",
+      "react-textarea-autosize"
     ],
     "doc": {
       "description": "Displays a LaTeX equation element with an editable popover for inputting and rendering mathematical expressions.",
