@@ -33,7 +33,8 @@ describe('ResetNodePlugin', () => {
 
     it('should reset', () => {
       const editor = createSlateEditor({
-        editor: input,
+        value: input.children,
+    selection: input.selection,
         plugins: [BaseResetNodePlugin],
       });
 
@@ -68,7 +69,8 @@ describe('ResetNodePlugin', () => {
 
     it('should reset', () => {
       const editor = createSlateEditor({
-        editor: input,
+        value: input.children,
+    selection: input.selection,
         plugins: [BaseResetNodePlugin],
       });
 
@@ -99,7 +101,8 @@ describe('ResetNodePlugin', () => {
 
     it('should reset', () => {
       const editor = createSlateEditor({
-        editor: input,
+        value: input.children,
+    selection: input.selection,
         plugins: [BaseResetNodePlugin],
       });
 

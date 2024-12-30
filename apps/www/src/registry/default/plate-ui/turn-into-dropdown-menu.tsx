@@ -8,7 +8,6 @@ import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import {
   ParagraphPlugin,
-  focusEditor,
   useEditorRef,
   useSelectionFragmentProp,
 } from '@udecode/plate-common/react';

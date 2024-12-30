@@ -1,7 +1,7 @@
 import type { Modify } from '@udecode/utils';
 import type { TextInsertFragmentOptions } from 'slate/dist/interfaces/transforms/text';
 
-import { Transforms } from 'slate';
+import { insertFragment as insertFragmentBase } from 'slate';
 
 import type { QueryAt, QueryVoids } from '../../types';
 import type { TEditor } from '../editor/TEditor';
@@ -17,7 +17,7 @@ export const insertFragment = <
   fragment: N[],
   options?: Modify<TextInsertFragmentOptions, QueryAt & QueryVoids>
 ) => {
-  Transforms.insertFragment(editor as any, fragment, {
+  insertFragmentBase(editor as any, fragment, {
     ...options,
     at: getAt(editor, options?.at),
   });

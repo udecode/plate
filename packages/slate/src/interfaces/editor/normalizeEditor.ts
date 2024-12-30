@@ -1,4 +1,4 @@
-import { Editor } from 'slate';
+import { normalize } from 'slate';
 
 import type { TOperation } from '../../types';
 import type { TEditor } from './TEditor';
@@ -11,4 +11,4 @@ export interface EditorNormalizeOptions {
 export const normalizeEditor = (
   editor: TEditor,
   options?: EditorNormalizeOptions
-) => Editor.normalize(editor as any, options);
+) => normalize(editor as any, options);

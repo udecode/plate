@@ -1,4 +1,10 @@
-import { type Path, type Point, type Span, Editor, Range } from 'slate';
+import {
+  type Path,
+  type Point,
+  type Span,
+  Range,
+  unhangRange as unhangRangeBase,
+} from 'slate';
 
 import type { TEditor } from './TEditor';
 
@@ -20,7 +26,7 @@ export const unhangRange = <
   const { unhang = true, voids } = options;
 
   if (Range.isRange(range) && unhang) {
-    return Editor.unhangRange(editor as any, range, { voids }) as R;
+    return unhangRangeBase(editor as any, range, { voids }) as R;
   }
 
   return range;

@@ -19,7 +19,8 @@ const testInsertText = (
   listConfig: Parameters<typeof ListPlugin.configure>[0] = {}
 ) => {
   const editor = createPlateEditor({
-    editor: input,
+    value: input.children,
+    selection: input.selection,
     plugins: [ParagraphPlugin, ListPlugin.configure(listConfig), LinkPlugin],
   });
 
@@ -30,7 +31,8 @@ const testInsertText = (
 
 const testDeleteBackward = (input: any, expected: any) => {
   const editor = createPlateEditor({
-    editor: input,
+    value: input.children,
+    selection: input.selection,
     plugins: [ParagraphPlugin, ListPlugin],
   });
 
@@ -41,7 +43,8 @@ const testDeleteBackward = (input: any, expected: any) => {
 
 const testDeleteForward = (input: any, expected: any) => {
   const editor = createPlateEditor({
-    editor: input,
+    value: input.children,
+    selection: input.selection,
     plugins: [ParagraphPlugin, ListPlugin],
   });
 

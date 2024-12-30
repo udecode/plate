@@ -33,7 +33,8 @@ describe('outdent code line', () => {
       ) as any as SlateEditor;
 
       const editor = createPlateEditor({
-        editor: input,
+        value: input.children,
+    selection: input.selection,
         plugins: [CodeBlockPlugin],
       });
 
@@ -42,7 +43,7 @@ describe('outdent code line', () => {
 
       outdentCodeLine(editor, { codeBlock, codeLine });
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 
@@ -65,7 +66,8 @@ describe('outdent code line', () => {
       ) as any as SlateEditor;
 
       const editor = createPlateEditor({
-        editor: input,
+        value: input.children,
+    selection: input.selection,
         plugins: [CodeBlockPlugin],
       });
 
@@ -74,7 +76,7 @@ describe('outdent code line', () => {
 
       outdentCodeLine(editor, { codeBlock, codeLine });
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 });

@@ -1,12 +1,4 @@
-import {
-  type Location,
-  type Node,
-  Editor,
-  Path,
-  Range,
-  Text,
-  Transforms,
-} from 'slate';
+import { type Location, type Node, Editor, Path, Range, Text } from 'slate';
 
 import type { TEditor } from '../interfaces/editor/TEditor';
 
@@ -65,7 +57,7 @@ export const addRangeMarks = (
       }
     }
     if (isExpandedRange || markAcceptingVoidSelected) {
-      Transforms.setNodes(editor as any, props, {
+      editor.setNodes(props, {
         at,
         match,
         split: true,

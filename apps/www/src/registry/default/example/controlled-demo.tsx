@@ -4,7 +4,6 @@ import React from 'react';
 
 import {
   Plate,
-  focusEditor,
   focusEditorEdge,
   usePlateEditor,
 } from '@udecode/plate-common/react';

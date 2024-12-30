@@ -31,7 +31,8 @@ describe('insert empty code block', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: [CodeBlockPlugin],
     });
 
@@ -39,7 +40,7 @@ describe('insert empty code block', () => {
       insertNodesOptions: { select: true },
     });
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 
   it('should insert empty code block below selected non-empty line', () => {
@@ -64,7 +65,8 @@ describe('insert empty code block', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: [CodeBlockPlugin],
     });
 
@@ -72,7 +74,7 @@ describe('insert empty code block', () => {
       insertNodesOptions: { select: true },
     });
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 
   it('should insert empty code block below expanded selection', () => {
@@ -106,7 +108,8 @@ describe('insert empty code block', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: [CodeBlockPlugin],
     });
 
@@ -114,6 +117,6 @@ describe('insert empty code block', () => {
       insertNodesOptions: { select: true },
     });
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 });

@@ -1,5 +1,4 @@
 import { type TEditor, type TElement, getFragment } from '../interfaces';
-
 import { unwrapStructuralNodes } from '../utils/unwrapStructuralNodes';
 
 export type GetSelectionFragmentOptions = {

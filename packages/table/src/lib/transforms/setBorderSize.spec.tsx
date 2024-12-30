@@ -17,7 +17,8 @@ jsxt;
 describe('setBorderSize', () => {
   const createEditorInstance = (input: any) => {
     return createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: getTestTablePlugins(),
     });
   };

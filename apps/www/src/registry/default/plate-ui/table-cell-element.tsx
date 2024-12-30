@@ -56,8 +56,6 @@ export const TableCellElement = withRef<
       rowIndex,
     });
 
-  // console.log(getNodeString(props.element));
-
   return (
     <PlateElement
       ref={ref}

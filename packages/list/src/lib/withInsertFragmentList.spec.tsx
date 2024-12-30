@@ -13,7 +13,8 @@ jsxt;
 
 const editorTest = (input: any, fragment: any, expected: any) => {
   const editor = createSlateEditor({
-    editor: input,
+    value: input.children,
+    selection: input.selection,
     plugins: [ListPlugin],
   });
 

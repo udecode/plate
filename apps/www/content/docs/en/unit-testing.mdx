@@ -76,7 +76,8 @@ it('should use custom hotkey for bold', async () => {
   ) as any as PlateEditor;
 
   const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-    editor: input,
+    value: input.children,
+    selection: input.selection,
     plugins: [
       BoldPlugin.configure({
         handlers: {
@@ -119,7 +120,8 @@ it('should collapse selection on backspace', async () => {
   ) as any as PlateEditor;
 
   const [editor] = await createPlateTestEditor({
-    editor: input,
+    value: input.children,
+    selection: input.selection,
   });
 
   editor.deleteBackward('character');
@@ -152,7 +154,8 @@ it('should extend selection on shift+ArrowRight', async () => {
   ) as any as PlateEditor;
 
   const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-    editor: input,
+    value: input.children,
+    selection: input.selection,
   });
 
   await triggerKeyboardEvent('shift+ArrowRight');
@@ -201,7 +204,8 @@ describe('Table plugin', () => {
     ) as any as PlateEditor;
 
     const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: [TablePlugin],
     });
 
@@ -238,7 +242,8 @@ it('should use custom hotkey for bold', async () => {
   ) as any as PlateEditor;
 
   const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-    editor: input,
+    value: input.children,
+    selection: input.selection,
     plugins: [
       BoldPlugin.configure({
         shortcuts: {

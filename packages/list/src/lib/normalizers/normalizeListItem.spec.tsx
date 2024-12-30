@@ -38,7 +38,8 @@ describe('clean up list items', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: [ListPlugin],
     });
 
@@ -47,6 +48,6 @@ describe('clean up list items', () => {
 
     editor.normalizeNode([node!, path]);
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 });

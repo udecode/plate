@@ -1,5 +1,5 @@
-import { Editor } from 'slate';
+import { pathRefs } from 'slate';
 
 import type { TEditor } from './TEditor';
 
-export const getPathRefs = (editor: TEditor) => Editor.pathRefs(editor as any);
+export const getPathRefs = (editor: TEditor) => pathRefs(editor as any);

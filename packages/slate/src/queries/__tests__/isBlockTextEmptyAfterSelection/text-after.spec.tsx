@@ -27,9 +27,9 @@ const output = false;
 
 it('should be', () => {
   const editor = createPlateEditor({
-    editor: input,
+    editor: input as any,
     plugins: [LinkPlugin],
   });
 
-  expect(isBlockTextEmptyAfterSelection(editor)).toEqual(output);
+  expect(isBlockTextEmptyAfterSelection(editor as any)).toEqual(output);
 });

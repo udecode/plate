@@ -1,7 +1,8 @@
 import type { Path } from 'slate';
 
-import { type TEditor, getNode } from '../interfaces';
 import last from 'lodash/last.js';
+
+import { type TEditor, getNode } from '../interfaces';
 
 export const getPreviousSiblingNode = (editor: TEditor, path: Path) => {
   const index = last(path)!;

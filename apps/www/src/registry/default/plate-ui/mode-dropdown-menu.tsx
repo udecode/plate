@@ -5,7 +5,6 @@ import React from 'react';
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
 import {
-  focusEditor,
   useEditorReadOnly,
   useEditorRef,
   usePlateStore,

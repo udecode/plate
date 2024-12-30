@@ -28,12 +28,13 @@ describe('when type (h1) is not in types', () => {
 
   it('should not align', () => {
     const editor = createSlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: [BaseAlignPlugin],
     });
 
     setAlign(editor, { value: 'center' });
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 });

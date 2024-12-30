@@ -29,7 +29,8 @@ describe('delete marked text at block start', () => {
     ) as any;
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
     });
 
     editor.deleteBackward('character');
@@ -59,7 +60,8 @@ describe('delete marked text at block start', () => {
     ) as any;
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
     });
 
     editor.deleteForward('character');
@@ -89,7 +91,8 @@ describe('delete marked text at block start', () => {
     ) as any;
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
     });
 
     editor.deleteBackward('character');
@@ -114,7 +117,8 @@ describe('editor.tf.setValue', () => {
     ) as any;
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
     });
 
     editor.tf.setValue('<p>new content</p>');
@@ -138,7 +142,8 @@ describe('editor.tf.setValue', () => {
     ) as any;
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
     });
 
     editor.tf.setValue();

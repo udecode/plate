@@ -1,6 +1,6 @@
 import type { Modify } from '@udecode/utils';
 
-import { type EditorBeforeOptions, Editor } from 'slate';
+import { type EditorBeforeOptions, before } from 'slate';
 
 import type { At, QueryTextUnit, QueryVoids } from '../../types';
 import type { TEditor } from './TEditor';
@@ -18,6 +18,6 @@ export const getPointBefore = (
   options?: GetPointBeforeOptions
 ) => {
   try {
-    return Editor.before(editor as any, getAt(editor, at)!, options as any);
+    return before(editor as any, getAt(editor, at)!, options as any);
   } catch {}
 };

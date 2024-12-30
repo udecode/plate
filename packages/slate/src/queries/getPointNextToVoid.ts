@@ -1,11 +1,11 @@
+import { type Point, Path } from 'slate';
+
 import {
   type TEditor,
   getPointAfter,
   getPointBefore,
   getVoidNode,
 } from '../interfaces';
-import { type Point, Path } from 'slate';
-
 import { getBlockAbove } from './getBlockAbove';
 
 /**

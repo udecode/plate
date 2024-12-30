@@ -168,7 +168,6 @@ describe('when inserting nodes', () => {
       ) as any;
 
       const editor = createSlateEditor({
-        editor: input,
         plugins: [
           NodeIdPlugin.configure({
             options: {
@@ -178,6 +177,8 @@ describe('when inserting nodes', () => {
             },
           }),
         ],
+        selection: input.selection,
+        value: input.children,
       });
 
       editor.insertNode(
@@ -193,7 +194,7 @@ describe('when inserting nodes', () => {
       editor.undo();
       editor.redo();
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 
@@ -218,7 +219,6 @@ describe('when inserting nodes', () => {
       ) as any;
 
       const editor = createSlateEditor({
-        editor: input,
         plugins: [
           NodeIdPlugin.configure({
             options: {
@@ -228,6 +228,8 @@ describe('when inserting nodes', () => {
             },
           }),
         ],
+        selection: input.selection,
+        value: input.children,
       });
 
       editor.insertNode(
@@ -241,7 +243,7 @@ describe('when inserting nodes', () => {
       editor.undo();
       editor.redo();
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 
@@ -268,7 +270,6 @@ describe('when inserting nodes', () => {
       ) as any;
 
       const editor = createSlateEditor({
-        editor: input,
         plugins: [
           NodeIdPlugin.configure({
             options: {
@@ -283,6 +284,8 @@ describe('when inserting nodes', () => {
             },
           }),
         ],
+        selection: input.selection,
+        value: input.children,
       });
 
       editor.insertNode(
@@ -298,7 +301,7 @@ describe('when inserting nodes', () => {
       editor.undo();
       editor.redo();
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 
@@ -323,7 +326,6 @@ describe('when inserting nodes', () => {
       ) as any;
 
       const editor = createSlateEditor({
-        editor: input,
         plugins: [
           NodeIdPlugin.configure({
             options: {
@@ -332,6 +334,8 @@ describe('when inserting nodes', () => {
             },
           }),
         ],
+        selection: input.selection,
+        value: input.children,
       });
 
       editor.insertNode(
@@ -345,7 +349,7 @@ describe('when inserting nodes', () => {
       editor.undo();
       editor.redo();
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 
@@ -372,7 +376,6 @@ describe('when inserting nodes', () => {
       ) as any;
 
       const editor = createSlateEditor({
-        editor: input,
         plugins: [
           NodeIdPlugin.configure({
             options: {
@@ -381,6 +384,8 @@ describe('when inserting nodes', () => {
             },
           }),
         ],
+        selection: input.selection,
+        value: input.children,
       });
 
       editor.insertNode(
@@ -391,7 +396,7 @@ describe('when inserting nodes', () => {
         ) as any
       );
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 
@@ -415,7 +420,6 @@ describe('when inserting nodes', () => {
       ) as any;
 
       const editor = createSlateEditor({
-        editor: input,
         plugins: [
           NodeIdPlugin.configure({
             options: {
@@ -424,6 +428,8 @@ describe('when inserting nodes', () => {
             },
           }),
         ],
+        selection: input.selection,
+        value: input.children,
       });
 
       insertNodes(
@@ -441,7 +447,7 @@ describe('when inserting nodes', () => {
       editor.undo();
       editor.redo();
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 
@@ -465,10 +471,11 @@ describe('when inserting nodes', () => {
       ) as any;
 
       const editor = createSlateEditor({
-        editor: input,
         plugins: [
           NodeIdPlugin.configure({ options: { idCreator: getIdFactory() } }),
         ],
+        selection: input.selection,
+        value: input.children,
       });
 
       insertNodes(
@@ -486,7 +493,7 @@ describe('when inserting nodes', () => {
       editor.undo();
       editor.redo();
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 
@@ -507,7 +514,6 @@ describe('when inserting nodes', () => {
       ) as any;
 
       const editor = createSlateEditor({
-        editor: input,
         plugins: [
           NodeIdPlugin.configure({
             options: {
@@ -517,6 +523,8 @@ describe('when inserting nodes', () => {
             },
           }),
         ],
+        selection: input.selection,
+        value: input.children,
       });
 
       insertNodes(
@@ -534,7 +542,7 @@ describe('when inserting nodes', () => {
       editor.undo();
       editor.redo();
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 
@@ -558,7 +566,6 @@ describe('when inserting nodes', () => {
       ) as any;
 
       const editor = createSlateEditor({
-        editor: input,
         plugins: [
           NodeIdPlugin.configure({
             options: {
@@ -567,6 +574,8 @@ describe('when inserting nodes', () => {
             },
           }),
         ],
+        selection: input.selection,
+        value: input.children,
       });
 
       insertNodes(
@@ -587,7 +596,7 @@ describe('when inserting nodes', () => {
         ) as any
       );
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 });
@@ -605,13 +614,14 @@ describe('when splitting nodes', () => {
       ) as any;
 
       const editor = createSlateEditor({
-        editor: input,
         plugins: [NodeIdPlugin],
+        selection: input.selection,
+        value: input.children,
       });
 
       splitNodes(editor);
 
-      expect(input.children[1].id).toBeDefined();
+      expect(editor.children[1].id).toBeDefined();
     });
   });
 
@@ -634,7 +644,6 @@ describe('when splitting nodes', () => {
       ) as any;
 
       const editor = createSlateEditor({
-        editor: input,
         plugins: [
           NodeIdPlugin.configure({
             options: {
@@ -643,6 +652,8 @@ describe('when splitting nodes', () => {
             },
           }),
         ],
+        selection: input.selection,
+        value: input.children,
       });
 
       splitNodes(editor);
@@ -652,7 +663,7 @@ describe('when splitting nodes', () => {
       editor.undo();
       editor.redo();
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 
@@ -675,10 +686,11 @@ describe('when splitting nodes', () => {
       ) as any;
 
       const editor = createSlateEditor({
-        editor: input,
         plugins: [
           NodeIdPlugin.configure({ options: { idCreator: getIdFactory() } }),
         ],
+        selection: input.selection,
+        value: input.children,
       });
 
       splitNodes(editor);
@@ -688,7 +700,7 @@ describe('when splitting nodes', () => {
       editor.undo();
       editor.redo();
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 
@@ -711,7 +723,6 @@ describe('when splitting nodes', () => {
       ) as any;
 
       const editor = createSlateEditor({
-        editor: input,
         plugins: [
           NodeIdPlugin.configure({
             options: {
@@ -720,6 +731,8 @@ describe('when splitting nodes', () => {
             },
           }),
         ],
+        selection: input.selection,
+        value: input.children,
       });
 
       splitNodes(editor);
@@ -729,7 +742,7 @@ describe('when splitting nodes', () => {
       editor.undo();
       editor.redo();
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 
@@ -754,7 +767,6 @@ describe('when splitting nodes', () => {
       ) as any;
 
       const editor = createSlateEditor({
-        editor: input,
         plugins: [
           NodeIdPlugin.configure({
             options: {
@@ -764,6 +776,8 @@ describe('when splitting nodes', () => {
             },
           }),
         ],
+        selection: input.selection,
+        value: input.children,
       });
 
       splitNodes(editor);
@@ -771,7 +785,7 @@ describe('when splitting nodes', () => {
       editor.undo();
       editor.redo();
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 });
@@ -798,7 +812,6 @@ describe('when merging nodes', () => {
       ) as any;
 
       const editor = createSlateEditor({
-        editor: input,
         plugins: [
           NodeIdPlugin.configure({
             options: {
@@ -808,12 +821,14 @@ describe('when merging nodes', () => {
             },
           }),
         ],
+        selection: input.selection,
+        value: input.children,
       });
 
       mergeNodes(editor, { at: [0, 1] });
       editor.undo();
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 
@@ -834,10 +849,11 @@ describe('when merging nodes', () => {
       ) as any;
 
       const editor = createSlateEditor({
-        editor: input,
         plugins: [
           NodeIdPlugin.configure({ options: { idCreator: getIdFactory() } }),
         ],
+        selection: input.selection,
+        value: input.children,
       });
 
       mergeNodes(editor, { at: [1] });
@@ -845,7 +861,7 @@ describe('when merging nodes', () => {
       editor.redo();
       editor.undo();
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 
@@ -873,7 +889,6 @@ describe('when merging nodes', () => {
       ) as any;
 
       const editor = createSlateEditor({
-        editor: input,
         plugins: [
           NodeIdPlugin.configure({
             options: {
@@ -882,6 +897,8 @@ describe('when merging nodes', () => {
             },
           }),
         ],
+        selection: input.selection,
+        value: input.children,
       });
 
       editor.insertBreak();
@@ -893,7 +910,7 @@ describe('when merging nodes', () => {
         ) as any
       );
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 
@@ -919,7 +936,6 @@ describe('when merging nodes', () => {
       ) as any;
 
       const editor = createSlateEditor({
-        editor: input,
         plugins: [
           NodeIdPlugin.configure({
             options: {
@@ -927,6 +943,8 @@ describe('when merging nodes', () => {
             },
           }),
         ],
+        selection: input.selection,
+        value: input.children,
       });
 
       editor.insertNodes([
@@ -938,7 +956,7 @@ describe('when merging nodes', () => {
         <hp _id={12}>test</hp>,
       ]);
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 });

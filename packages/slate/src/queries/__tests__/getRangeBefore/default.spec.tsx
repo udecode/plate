@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import type { TEditor } from '../../../interfaces';;
-
 import { jsxt } from '@udecode/plate-test-utils';
+
+import type { TEditor } from '../../../interfaces';
 
 import { getRangeBefore } from '../../getRangeBefore';
 

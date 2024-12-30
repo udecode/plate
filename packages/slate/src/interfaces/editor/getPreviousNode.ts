@@ -1,6 +1,6 @@
 import type { Modify } from '@udecode/utils';
 
-import { type EditorPreviousOptions, Editor } from 'slate';
+import { type EditorPreviousOptions, previous } from 'slate';
 
 import type { QueryMode, QueryOptions, QueryVoids } from '../../types';
 import type { NodeOf, TNode } from '../node/TNode';
@@ -21,4 +21,4 @@ export const getPreviousNode = <
   editor: E,
   options?: GetPreviousNodeOptions<ValueOf<E>>
 ): TNodeEntry<N> | undefined =>
-  Editor.previous(editor as any, getQueryOptions(editor, options)) as any;
+  previous(editor as any, getQueryOptions(editor, options)) as any;

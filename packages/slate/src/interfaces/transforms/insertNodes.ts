@@ -1,7 +1,12 @@
 import type { Modify } from '@udecode/utils';
 import type { NodeInsertNodesOptions } from 'slate/dist/interfaces/transforms/node';
 
-import { Path, Transforms, removeNodes, withoutNormalizing } from 'slate';
+import {
+  Path,
+  insertNodes as insertNodesBase,
+  removeNodes,
+  withoutNormalizing,
+} from 'slate';
 
 import type { QueryNodeOptions } from '../../types';
 import type { QueryMode, QueryOptions } from '../../types/QueryOptions';
@@ -87,6 +92,6 @@ export const insertNodes = <
       }
     }
 
-    Transforms.insertNodes(editor as any, nodes, options as any);
+    insertNodesBase(editor as any, nodes, options as any);
   });
 };

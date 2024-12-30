@@ -1,6 +1,6 @@
 import type { Modify } from '@udecode/utils';
 
-import { Transforms } from 'slate';
+import { wrapNodes as wrapNodesBase } from 'slate';
 
 import type {
   QueryMode,
@@ -14,7 +14,7 @@ import { getQueryOptions } from '../../utils';
 import { unhangRange } from '../editor/unhangRange';
 
 export type WrapNodesOptions<V extends Value = Value> = Modify<
-  NonNullable<Parameters<typeof Transforms.wrapNodes>[2]>,
+  NonNullable<Parameters<typeof wrapNodesBase>[2]>,
   QueryOptions<V> &
     QueryMode &
     QueryVoids & {
@@ -40,5 +40,5 @@ export const wrapNodes = <N extends ElementOf<E>, E extends TEditor = TEditor>(
     unhangRange(editor, options.at as any, options);
   }
 
-  Transforms.wrapNodes(editor as any, element as any, options as any);
+  wrapNodesBase(editor as any, element as any, options as any);
 };

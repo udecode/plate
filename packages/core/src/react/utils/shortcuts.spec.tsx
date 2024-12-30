@@ -29,7 +29,6 @@ it('should use custom hotkey for bold', async () => {
   ) as any as PlateEditor;
 
   const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-    editor: input,
     plugins: [
       BoldPlugin.configure({
         handlers: {
@@ -41,6 +40,8 @@ it('should use custom hotkey for bold', async () => {
         },
       }),
     ],
+    selection: input.selection,
+    value: input.children,
   });
 
   await triggerKeyboardEvent('mod+b');

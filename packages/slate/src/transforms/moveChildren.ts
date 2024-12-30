@@ -1,3 +1,5 @@
+import { Path } from 'slate';
+
 import {
   type NodeEntryOf,
   type TEditor,
@@ -6,7 +8,6 @@ import {
   isBlock,
   moveNodes,
 } from '../interfaces';
-import { Path } from 'slate';
 
 export interface MoveChildrenOptions<E extends TEditor = TEditor> {
   /** Parent node of the children to move. */

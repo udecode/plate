@@ -5,7 +5,6 @@ import {
   isUrl,
   setNodes,
 } from '@udecode/plate-common';
-;
 
 import type {
   MediaPluginOptions,

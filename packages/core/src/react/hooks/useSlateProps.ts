@@ -2,10 +2,10 @@ import React from 'react';
 
 import type { TSelection, Value } from '@udecode/slate';
 import type { UnknownObject } from '@udecode/utils';
+import type { ReactEditor } from 'slate-react';
 
 import { useEditorRef, usePlateSelectors } from '../stores';
 import { pipeOnChange } from '../utils/pipeOnChange';
-import type { ReactEditor } from 'slate-react';
 
 interface SlateProps extends UnknownObject {
   children: React.ReactNode;

@@ -55,7 +55,8 @@ describe('when inserting html', () => {
       const plugins = [HeadingPlugin];
 
       const editor = createPlateEditor({
-        editor: input,
+        value: input.children,
+    selection: input.selection,
         plugins,
       });
 
@@ -87,7 +88,8 @@ describe('when inserting html', () => {
       const plugins = [HeadingPlugin];
 
       const editor = createPlateEditor({
-        editor: input,
+        value: input.children,
+    selection: input.selection,
         plugins,
       });
 
@@ -120,7 +122,8 @@ describe('when inserting html', () => {
     const plugins = [BaseParagraphPlugin];
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins,
     });
 
@@ -162,7 +165,8 @@ describe('when inserting empty html', () => {
     const plugins = [BoldPlugin];
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins,
     });
 
@@ -202,7 +206,8 @@ describe('when inserting an iframe without src', () => {
     const plugins = [MediaEmbedPlugin];
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins,
     });
 
@@ -245,7 +250,8 @@ describe('when inserting link with href', () => {
     const plugins = [BaseParagraphPlugin, LinkPlugin];
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins,
     });
 
@@ -282,12 +288,13 @@ describe('when inserting plain text', () => {
     jest.spyOn(JSON, 'parse').mockReturnValue(<fragment>inserted</fragment>);
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: [],
     });
 
     editor.insertData(data as any);
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 });

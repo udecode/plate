@@ -1,6 +1,5 @@
-import { Editor } from 'slate';
+import { rangeRefs } from 'slate';
 
 import type { TEditor } from './TEditor';
 
-export const getRangeRefs = (editor: TEditor) =>
-  Editor.rangeRefs(editor as any);
+export const getRangeRefs = (editor: TEditor) => rangeRefs(editor as any);

@@ -1,10 +1,4 @@
-import {
-  type TEditor,
-  getParentNode,
-  isEndPoint,
-  isText,
-} from '../interfaces';
-
+import { type TEditor, getParentNode, isEndPoint, isText } from '../interfaces';
 import { getBlockAbove } from './getBlockAbove';
 import { getNextSiblingNodes } from './getNextSiblingNodes';
 

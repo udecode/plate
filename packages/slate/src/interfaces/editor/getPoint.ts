@@ -1,4 +1,4 @@
-import { type EditorPointOptions, Editor } from 'slate';
+import { type EditorPointOptions, point } from 'slate';
 
 import type { At } from '../../types';
 import type { TEditor } from './TEditor';
@@ -11,6 +11,6 @@ export const getPoint = (
   options?: EditorPointOptions
 ) => {
   try {
-    return Editor.point(editor as any, getAt(editor, at)!, options as any);
+    return point(editor as any, getAt(editor, at)!, options as any);
   } catch {}
 };

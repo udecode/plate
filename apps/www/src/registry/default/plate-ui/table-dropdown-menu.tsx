@@ -7,7 +7,6 @@ import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import { cn } from '@udecode/cn';
 import { someNode } from '@udecode/plate-common';
 import {
-  focusEditor,
   useEditorPlugin,
   useEditorSelector,
 } from '@udecode/plate-common/react';

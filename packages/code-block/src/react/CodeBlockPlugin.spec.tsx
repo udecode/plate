@@ -34,7 +34,8 @@ describe('code block deserialization', () => {
       ) as any as SlateEditor;
 
       const editor = createPlateEditor({
-        editor: input,
+        value: input.children,
+    selection: input.selection,
         plugins: [
           BaseParagraphPlugin,
           CodeBlockPlugin,
@@ -77,7 +78,8 @@ describe('code block deserialization', () => {
       ) as any as SlateEditor;
 
       const editor = createPlateEditor({
-        editor: input,
+        value: input.children,
+    selection: input.selection,
         plugins: [BaseParagraphPlugin, CodeBlockPlugin],
       });
 
@@ -117,7 +119,8 @@ describe('code block deserialization', () => {
       ) as any as SlateEditor;
 
       const editor = createPlateEditor({
-        editor: input,
+        value: input.children,
+    selection: input.selection,
         plugins: [BaseParagraphPlugin, CodeBlockPlugin],
       });
 

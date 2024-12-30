@@ -30,7 +30,8 @@ const output = (
 
 it('should be', () => {
   const editor = createSlateEditor({
-    editor: input,
+    value: input.children,
+    selection: input.selection,
     plugins: [
       NormalizeTypesPlugin.configure({
         options: {
@@ -48,5 +49,5 @@ it('should be', () => {
 
   editor.normalizeNode([input, []]);
 
-  expect(input.children).toEqual(output.children);
+  expect(editor.children).toEqual(output.children);
 });

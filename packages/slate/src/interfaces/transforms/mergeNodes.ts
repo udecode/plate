@@ -3,7 +3,7 @@ import type { Modify } from '@udecode/utils';
 import {
   type Element,
   type Text,
-  type Transforms,
+  type mergeNodes as mergeNodesBase,
   Editor,
   Path,
   Range,
@@ -47,7 +47,7 @@ export type MergeNodesOptions<V extends Value, E extends TEditor = TEditor> = {
    */
   removeEmptyAncestor?: (editor: E, options: { at: Path }) => void;
 } & Modify<
-  NonNullable<Parameters<typeof Transforms.mergeNodes>[1]>,
+  NonNullable<Parameters<typeof mergeNodesBase>[1]>,
   QueryOptions<V> & QueryMode & QueryVoids
 >;
 

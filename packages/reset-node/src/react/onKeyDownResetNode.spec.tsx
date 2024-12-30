@@ -73,7 +73,8 @@ describe('onKeyDownResetNode', () => {
       ) as any;
 
       const editor = createPlateEditor({
-        editor: input,
+        value: input.children,
+    selection: input.selection,
         plugins: [plugin],
       });
 
@@ -113,7 +114,8 @@ describe('onKeyDownResetNode', () => {
       ) as any;
 
       const editor = createPlateEditor({
-        editor: input,
+        value: input.children,
+    selection: input.selection,
         plugins: [plugin],
       });
 
@@ -176,7 +178,8 @@ describe('onKeyDownResetNode', () => {
       ) as any;
 
       const editor = createPlateEditor({
-        editor: input,
+        value: input.children,
+    selection: input.selection,
         plugins: [plugin],
       });
 
@@ -220,7 +223,8 @@ describe('onKeyDownResetNode', () => {
       ) as any;
 
       const editor = createPlateEditor({
-        editor: input,
+        value: input.children,
+    selection: input.selection,
         plugins: [plugin],
       });
 
@@ -260,7 +264,8 @@ describe('onKeyDownResetNode', () => {
       ) as any;
 
       const editor = createPlateEditor({
-        editor: input,
+        value: input.children,
+    selection: input.selection,
         plugins: [plugin],
       });
 
@@ -304,7 +309,8 @@ describe('onKeyDownResetNode', () => {
       ) as any;
 
       const editor = createPlateEditor({
-        editor: input,
+        value: input.children,
+    selection: input.selection,
         plugins: [plugin],
       });
 
@@ -361,7 +367,8 @@ describe('onKeyDownResetNode', () => {
       ) as any;
 
       const editor = createPlateEditor({
-        editor: input,
+        value: input.children,
+    selection: input.selection,
         plugins: [plugin],
       });
 
@@ -409,7 +416,8 @@ describe('onKeyDownResetNode', () => {
       ) as any;
 
       const editor = createPlateEditor({
-        editor: input,
+        value: input.children,
+    selection: input.selection,
         plugins: [plugin],
       });
 

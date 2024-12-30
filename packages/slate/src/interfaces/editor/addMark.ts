@@ -1,6 +1,6 @@
-import { Editor } from 'slate';
+import { addMark as addMarkBase } from 'slate';
 
 import type { TEditor } from './TEditor';
 
 export const addMark = (editor: TEditor, key: string, value: any) =>
-  Editor.addMark(editor as any, key, value);
+  addMarkBase(editor as any, key, value);

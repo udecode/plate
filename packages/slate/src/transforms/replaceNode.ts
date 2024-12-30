@@ -1,3 +1,5 @@
+import type { ReplaceNodeChildrenOptions } from './replaceNodeChildren';
+
 import {
   type ElementOrTextOf,
   type TEditor,
@@ -5,8 +7,6 @@ import {
   removeNodes,
   withoutNormalizing,
 } from '../interfaces';
-
-import type { ReplaceNodeChildrenOptions } from './replaceNodeChildren';
 
 export const replaceNode = <
   N extends ElementOrTextOf<E>,

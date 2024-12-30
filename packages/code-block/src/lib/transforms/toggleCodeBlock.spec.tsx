@@ -35,13 +35,14 @@ describe('toggle on', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: [CodeBlockPlugin],
     });
 
     toggleCodeBlock(editor);
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 
   it('should turn a p with a selection to code block', () => {
@@ -68,13 +69,14 @@ describe('toggle on', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: [CodeBlockPlugin],
     });
 
     toggleCodeBlock(editor);
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 
   it('should turn multiple p to a code block', () => {
@@ -107,12 +109,13 @@ describe('toggle on', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: [CodeBlockPlugin],
     });
 
     toggleCodeBlock(editor);
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 });

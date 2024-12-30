@@ -1,4 +1,4 @@
-import { type LeafEdge, Editor } from 'slate';
+import { type LeafEdge, parent } from 'slate';
 
 import type { At } from '../../types';
 import type { AncestorOf } from '../node/TAncestor';
@@ -21,6 +21,6 @@ export const getParentNode = <
   options?: GetParentNodeOptions
 ): TNodeEntry<N> | undefined => {
   try {
-    return Editor.parent(editor as any, getAt(editor, at)!, options) as any;
+    return parent(editor as any, getAt(editor, at)!, options) as any;
   } catch (error) {}
 };

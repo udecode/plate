@@ -1,6 +1,6 @@
 import type { Modify } from '@udecode/utils';
 
-import { type EditorLevelsOptions, Editor } from 'slate';
+import { type EditorLevelsOptions, levels } from 'slate';
 
 import type { QueryOptions, QueryVoids } from '../../types';
 import type { NodeOf, TNode } from '../node/TNode';
@@ -18,5 +18,5 @@ export const getLevels = <N extends NodeOf<E>, E extends TEditor = TEditor>(
   editor: E,
   options?: GetLevelsOptions<ValueOf<E>>
 ): Generator<TNodeEntry<N>, void, undefined> => {
-  return Editor.levels(editor as any, getQueryOptions(editor, options)) as any;
+  return levels(editor as any, getQueryOptions(editor, options)) as any;
 };

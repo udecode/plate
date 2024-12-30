@@ -64,7 +64,7 @@ describe('withLink', () => {
 
           editor.insertData(data);
 
-          expect(input.children).toEqual(output.children);
+          expect(editor.children).toEqual(output.children);
         });
       });
 
@@ -104,7 +104,7 @@ describe('withLink', () => {
 
           editor.insertData(data);
 
-          expect(input.children).toEqual(output.children);
+          expect(editor.children).toEqual(output.children);
         });
       });
 
@@ -136,7 +136,7 @@ describe('withLink', () => {
           const data: any = { getData: () => urlOutput };
           editor.insertData(data);
 
-          expect(input.children).toEqual(output.children);
+          expect(editor.children).toEqual(output.children);
         });
       });
     });
@@ -177,7 +177,7 @@ describe('withLink', () => {
 
           editor.insertData(data);
 
-          expect(input.children).toEqual(output.children);
+          expect(editor.children).toEqual(output.children);
         });
       });
     });
@@ -209,7 +209,7 @@ describe('withLink', () => {
 
           editor.insertText(text);
 
-          expect(input.children).toEqual(output.children);
+          expect(editor.children).toEqual(output.children);
         });
       });
 
@@ -237,7 +237,7 @@ describe('withLink', () => {
 
           editor.insertText(text);
 
-          expect(input.children).toEqual(output.children);
+          expect(editor.children).toEqual(output.children);
         });
       });
 
@@ -267,7 +267,7 @@ describe('withLink', () => {
 
           editor.insertText(text);
 
-          expect(input.children).toEqual(output.children);
+          expect(editor.children).toEqual(output.children);
         });
       });
 
@@ -304,7 +304,7 @@ describe('withLink', () => {
 
           editor.insertText(text);
 
-          expect(input.children).toEqual(output.children);
+          expect(editor.children).toEqual(output.children);
         });
       });
 
@@ -336,7 +336,7 @@ describe('withLink', () => {
 
           editor.insertBreak();
 
-          expect(input.children).toEqual(output.children);
+          expect(editor.children).toEqual(output.children);
         });
       });
 
@@ -367,7 +367,7 @@ describe('withLink', () => {
 
           editor.insertText(text);
 
-          expect(input.children).toEqual(output.children);
+          expect(editor.children).toEqual(output.children);
         });
       });
 
@@ -394,7 +394,8 @@ describe('withLink', () => {
 
         it('should insert link', () => {
           const editor = createPlateEditor({
-            editor: input,
+            value: input.children,
+    selection: input.selection,
             plugins: [
               BaseLinkPlugin.configure({
                 options: {
@@ -408,7 +409,7 @@ describe('withLink', () => {
 
           editor.insertText(text);
 
-          expect(input.children).toEqual(output.children);
+          expect(editor.children).toEqual(output.children);
         });
       });
     });
@@ -442,7 +443,7 @@ describe('withLink', () => {
 
         editor.insertText(text);
 
-        expect(input.children).toEqual(output.children);
+        expect(editor.children).toEqual(output.children);
       });
     });
 
@@ -473,7 +474,7 @@ describe('withLink', () => {
 
         editor.insertData(data);
 
-        expect(input.children).toEqual(output.children);
+        expect(editor.children).toEqual(output.children);
       });
     });
 
@@ -513,7 +514,7 @@ describe('withLink', () => {
 
         editor.insertData(data);
 
-        expect(input.children).toEqual(output.children);
+        expect(editor.children).toEqual(output.children);
       });
     });
   });
@@ -546,7 +547,7 @@ describe('withLink', () => {
         // Delete the selected text
         editor.deleteFragment();
 
-        expect(input.children).toEqual(output.children);
+        expect(editor.children).toEqual(output.children);
       });
     });
 
@@ -582,7 +583,7 @@ describe('withLink', () => {
         // Trigger normalization
         editor.normalize();
 
-        expect(input.children).toEqual(output.children);
+        expect(editor.children).toEqual(output.children);
       });
     });
   });

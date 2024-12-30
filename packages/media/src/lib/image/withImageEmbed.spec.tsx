@@ -38,6 +38,6 @@ describe('withImageEmbed', () => {
     };
     editor.insertData(data as any);
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 });

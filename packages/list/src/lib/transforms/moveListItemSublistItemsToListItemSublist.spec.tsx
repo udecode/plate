@@ -70,7 +70,8 @@ describe('when there is toListItem sublist', () => {
 
   it('should', () => {
     const editor = createSlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
     });
 
     const fromListItem = findNode(editor, { match: { id: '12' } }) as any;
@@ -132,7 +133,8 @@ describe('when there is no list in toListItem', () => {
 
   it('should', () => {
     const editor = createSlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
     });
 
     const fromListItem = findNode(editor, { match: { id: '12' } }) as any;

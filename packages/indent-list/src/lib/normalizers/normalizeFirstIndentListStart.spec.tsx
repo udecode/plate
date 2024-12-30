@@ -31,7 +31,8 @@ const output = (
 
 it('should be', async () => {
   const editor = createPlateEditor({
-    editor: input,
+    value: input.children,
+    selection: input.selection,
     plugins: [BaseParagraphPlugin, IndentPlugin, BaseIndentListPlugin],
     shouldNormalizeEditor: true,
   });

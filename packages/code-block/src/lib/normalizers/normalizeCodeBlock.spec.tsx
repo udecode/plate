@@ -29,7 +29,8 @@ describe('clean up code block', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: [CodeBlockPlugin],
     });
 
@@ -38,6 +39,6 @@ describe('clean up code block', () => {
 
     editor.normalizeNode([node!, path]);
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 });

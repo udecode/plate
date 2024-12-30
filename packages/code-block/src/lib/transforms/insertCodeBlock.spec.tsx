@@ -38,13 +38,14 @@ describe('insert code block', () => {
       ) as any as SlateEditor;
 
       const editor = createPlateEditor({
-        editor: input,
+        value: input.children,
+    selection: input.selection,
         plugins: [CodeBlockPlugin],
       });
 
       insertCodeBlock(editor);
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 
@@ -76,13 +77,14 @@ describe('insert code block', () => {
       ) as any as SlateEditor;
 
       const editor = createPlateEditor({
-        editor: input,
+        value: input.children,
+    selection: input.selection,
         plugins: [CodeBlockPlugin],
       });
 
       insertCodeBlock(editor);
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 
@@ -115,13 +117,14 @@ describe('insert code block', () => {
       ) as any as SlateEditor;
 
       const editor = createPlateEditor({
-        editor: input,
+        value: input.children,
+    selection: input.selection,
         plugins: [CodeBlockPlugin],
       });
 
       insertCodeBlock(editor);
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 });

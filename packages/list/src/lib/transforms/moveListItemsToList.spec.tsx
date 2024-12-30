@@ -57,7 +57,8 @@ const output = (
 
 it('should', () => {
   const editor = createSlateEditor({
-    editor: input,
+    value: input.children,
+    selection: input.selection,
   });
 
   const fromListItem = findNode(editor, { match: { id: '2' } }) as any;

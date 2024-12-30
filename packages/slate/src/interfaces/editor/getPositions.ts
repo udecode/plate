@@ -1,6 +1,6 @@
 import type { Modify } from '@udecode/utils';
 
-import { type EditorPositionsOptions, Editor } from 'slate';
+import { type EditorPositionsOptions, positions } from 'slate';
 
 import type { QueryAt, QueryTextUnit, QueryVoids } from '../../types';
 import type { TEditor } from './TEditor';
@@ -26,7 +26,7 @@ export const getPositions = (
   editor: TEditor,
   options?: Modify<EditorPositionsOptions, QueryAt>
 ) =>
-  Editor.positions(editor as any, {
+  positions(editor as any, {
     ...options,
     at: getAt(editor, options?.at),
   });

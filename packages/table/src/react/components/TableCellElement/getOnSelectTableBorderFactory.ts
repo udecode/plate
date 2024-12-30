@@ -1,7 +1,5 @@
 import type { SlateEditor, TElement } from '@udecode/plate-common';
 
-;
-
 import {
   type BorderDirection,
   isTableBorderHidden,

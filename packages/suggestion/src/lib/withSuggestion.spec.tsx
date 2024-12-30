@@ -32,7 +32,8 @@ describe('withSuggestion', () => {
         ) as any as SlateEditor;
 
         const editor = createSlateEditor({
-          editor: input,
+          value: input.children,
+    selection: input.selection,
           plugins: [BaseSuggestionPlugin],
         });
         editor.setOption(BaseSuggestionPlugin, 'isSuggesting', false);
@@ -65,7 +66,8 @@ describe('withSuggestion', () => {
           // ) as any) as SlateEditor;
 
           const editor = createSlateEditor({
-            editor: input,
+            value: input.children,
+    selection: input.selection,
             plugins: [BaseSuggestionPlugin],
           });
           editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
@@ -106,7 +108,8 @@ describe('withSuggestion', () => {
       //     ) as any) as SlateEditor;
       //
       //     const editor = createSlateEditor({
-      //       editor: input,
+      //       value: input.children,
+//    selection: input.selection,
       //       plugins: [SuggestionPlugin],
       //     });
       //     editor.getOptions(SuggestionPlugin).isSuggesting = true;
@@ -141,7 +144,8 @@ describe('withSuggestion', () => {
         ) as any as SlateEditor;
 
         const editor = createSlateEditor({
-          editor: input,
+          value: input.children,
+    selection: input.selection,
           plugins: [BaseSuggestionPlugin],
         });
         editor.setOption(BaseSuggestionPlugin, 'isSuggesting', false);
@@ -178,7 +182,8 @@ describe('withSuggestion', () => {
           ) as any as SlateEditor;
 
           const editor = createSlateEditor({
-            editor: input,
+            value: input.children,
+    selection: input.selection,
             plugins: [BaseSuggestionPlugin],
           });
           editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
@@ -201,7 +206,8 @@ describe('withSuggestion', () => {
           ) as any as SlateEditor;
 
           const editor = createSlateEditor({
-            editor: input,
+            value: input.children,
+    selection: input.selection,
             plugins: [BaseSuggestionPlugin],
           });
           editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
@@ -233,7 +239,8 @@ describe('withSuggestion', () => {
           ) as any as SlateEditor;
 
           const editor = createSlateEditor({
-            editor: input,
+            value: input.children,
+    selection: input.selection,
             plugins: [BaseSuggestionPlugin],
           });
           editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
@@ -276,7 +283,8 @@ describe('withSuggestion', () => {
           // ) as any) as SlateEditor;
 
           const editor = createSlateEditor({
-            editor: input,
+            value: input.children,
+    selection: input.selection,
             plugins: [BaseSuggestionPlugin],
           });
           editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
@@ -321,7 +329,8 @@ describe('withSuggestion', () => {
         ) as any as SlateEditor;
 
         const editor = createSlateEditor({
-          editor: input,
+          value: input.children,
+    selection: input.selection,
           plugins: [BaseSuggestionPlugin],
         });
 

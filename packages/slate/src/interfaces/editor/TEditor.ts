@@ -9,7 +9,7 @@ import type {
 } from 'slate';
 import type { DOMEditor, DOMEditorInterface } from 'slate-dom';
 
-import type { FindNodeOptions } from '../../queries';
+import type { FindPathOptions } from '../../queries';
 import type { HistoryEditor } from '../../slate-history';
 import type { At } from '../../types';
 import type { TOperation } from '../../types/TOperation';
@@ -494,7 +494,7 @@ export type TEditor<V extends Value = Value> = {
      */
     findPath: <N extends NodeIn<V>>(
       node: N,
-      options?: FindNodeOptions<V>
+      options?: FindPathOptions
     ) => Path | undefined;
     /** Find a Slate node from a native DOM `element` */
     toSlateNode: <N extends NodeIn<V>>(

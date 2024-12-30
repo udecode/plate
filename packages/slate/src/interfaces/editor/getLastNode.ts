@@ -1,4 +1,4 @@
-import { Editor } from 'slate';
+import { last } from 'slate';
 
 import type { At } from '../../types';
 import type { NodeEntryOf } from '../node/TNodeEntry';
@@ -11,6 +11,6 @@ export const getLastNode = <E extends TEditor>(
   at: At
 ): NodeEntryOf<E> | undefined => {
   try {
-    return Editor.last(editor as any, getAt(editor, at)!) as any;
+    return last(editor as any, getAt(editor, at)!) as any;
   } catch {}
 };

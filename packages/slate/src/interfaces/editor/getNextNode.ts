@@ -1,6 +1,6 @@
 import type { Modify } from '@udecode/utils';
 
-import { type EditorNextOptions, Editor } from 'slate';
+import { type EditorNextOptions, next } from 'slate';
 
 import type { QueryMode, QueryOptions, QueryVoids } from '../../types';
 import type { TDescendant } from '../node';
@@ -19,5 +19,5 @@ export const getNextNode = <N extends NodeOf<E>, E extends TEditor = TEditor>(
   editor: E,
   options?: GetNextNodeOptions<ValueOf<E>>
 ): TNodeEntry<N> | undefined => {
-  return Editor.next(editor as any, getQueryOptions(editor, options)) as any;
+  return next(editor as any, getQueryOptions(editor, options)) as any;
 };

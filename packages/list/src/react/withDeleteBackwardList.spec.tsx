@@ -36,7 +36,8 @@ describe('li > lic * 2 with selection at second child start', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: [ListPlugin],
     });
 
@@ -76,7 +77,8 @@ describe('li with selection at start', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: [ListPlugin],
     });
 
@@ -136,7 +138,8 @@ describe('list + sublist where second item has multiple children', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: [ListPlugin],
     });
 

@@ -32,7 +32,8 @@ describe('toggleIndentList', () => {
       ) as any as SlateEditor;
 
       const editor = createPlateEditor({
-        editor: input,
+        value: input.children,
+    selection: input.selection,
         plugins: [BaseIndentListPlugin, IndentPlugin],
       });
 
@@ -60,7 +61,8 @@ describe('toggleIndentList', () => {
         ) as any as SlateEditor;
 
         const editor = createPlateEditor({
-          editor: input,
+          value: input.children,
+    selection: input.selection,
           plugins: [BaseIndentListPlugin, IndentPlugin],
         });
 
@@ -90,7 +92,8 @@ describe('toggleIndentList', () => {
       ) as any as SlateEditor;
 
       const editor = createPlateEditor({
-        editor: input,
+        value: input.children,
+    selection: input.selection,
         plugins: [BaseIndentListPlugin, IndentPlugin],
       });
 
@@ -169,7 +172,8 @@ describe('toggleIndentList', () => {
       ) as any as SlateEditor;
 
       const editor = createPlateEditor({
-        editor: input,
+        value: input.children,
+    selection: input.selection,
         plugins: [BaseIndentListPlugin, IndentPlugin],
       });
 
@@ -213,7 +217,8 @@ describe('toggleIndentList', () => {
         ) as any as SlateEditor;
 
         const editor = createPlateEditor({
-          editor: input,
+          value: input.children,
+    selection: input.selection,
           plugins: [BaseIndentListPlugin, IndentPlugin],
         });
 
@@ -256,7 +261,8 @@ describe('toggleIndentList', () => {
         ) as any as SlateEditor;
 
         const editor = createPlateEditor({
-          editor: input,
+          value: input.children,
+    selection: input.selection,
           plugins: [BaseIndentListPlugin, IndentPlugin],
         });
 
@@ -299,7 +305,8 @@ describe('toggleIndentList', () => {
         ) as any as SlateEditor;
 
         const editor = createPlateEditor({
-          editor: input,
+          value: input.children,
+    selection: input.selection,
           plugins: [BaseIndentListPlugin, IndentPlugin],
         });
 
@@ -344,7 +351,8 @@ describe('toggleIndentList', () => {
         ) as any as SlateEditor;
 
         const editor = createPlateEditor({
-          editor: input,
+          value: input.children,
+    selection: input.selection,
           plugins: [indentListPluginPage, IndentPlugin],
         });
 

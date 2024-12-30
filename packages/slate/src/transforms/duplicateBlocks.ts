@@ -1,6 +1,6 @@
-import type { TEditor, TNodeEntry } from '../interfaces';
-
 import { Path } from 'slate';
+
+import type { TEditor, TNodeEntry } from '../interfaces';
 
 export const duplicateBlocks = (editor: TEditor, blocks: TNodeEntry[]) => {
   const lastBlock = blocks.at(-1);

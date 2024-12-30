@@ -27,7 +27,8 @@ const output = (
 
 it('should align center', () => {
   const editor = createSlateEditor({
-    editor: input,
+    value: input.children,
+    selection: input.selection,
     plugins: [BaseAlignPlugin],
   });
 

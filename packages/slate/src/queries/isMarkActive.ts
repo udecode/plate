@@ -1,6 +1,6 @@
-import type { TEditor } from '../interfaces';
-
 import { isDefined } from '@udecode/utils';
+
+import type { TEditor } from '../interfaces';
 
 import { getMark } from './getMark';
 

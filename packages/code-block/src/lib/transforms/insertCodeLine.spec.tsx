@@ -37,12 +37,13 @@ describe('insert code line', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: [CodeBlockPlugin],
     });
 
     insertCodeLine(editor, 4);
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 });

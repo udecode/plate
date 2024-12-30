@@ -1,4 +1,4 @@
-import { Transforms } from 'slate';
+import { insertText as insertTextBase } from 'slate';
 
 import type { QueryAt, QueryVoids } from '../../types';
 import type { TEditor } from '../editor/TEditor';
@@ -10,7 +10,7 @@ export const insertText = (
   text: string,
   options?: QueryAt & QueryVoids
 ) => {
-  Transforms.insertText(editor as any, text, {
+  insertTextBase(editor as any, text, {
     ...options,
     at: getAt(editor, options?.at),
   });

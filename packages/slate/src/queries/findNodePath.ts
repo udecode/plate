@@ -1,19 +1,21 @@
-import type { TEditor, TNode, ValueOf } from '../interfaces';
+import type { TEditor, TNode, Value } from '../interfaces';
 
-import { getQueryOptions } from '../utils';
 import { type FindNodeOptions, findNode } from './findNode';
+
+export type FindPathOptions = Omit<
+  FindNodeOptions<Value>,
+  'at' | 'block' | 'match'
+>;
 
 export const findNodePath = <E extends TEditor = TEditor>(
   editor: E,
   node: TNode,
-  options: FindNodeOptions<ValueOf<E>> = {}
+  options: FindPathOptions = {}
 ) => {
-  const { match } = getQueryOptions(editor, options);
-
   const nodeEntry = findNode(editor, {
-    at: [],
-    match: (n) => n === node && (!match || match(n)),
     ...options,
+    at: [],
+    match: (n) => n === node,
   });
 
   return nodeEntry?.[1];

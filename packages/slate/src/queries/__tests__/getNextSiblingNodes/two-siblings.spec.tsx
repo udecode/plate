@@ -31,11 +31,12 @@ const output = [<htext />, <htext>last</htext>];
 
 it('should be', () => {
   const editor = createPlateEditor({
-    editor: input,
     plugins: [LinkPlugin],
+    selection: input.selection,
+    value: input.children,
   });
 
-  const above = getBlockAbove(editor) as any;
+  const above = getBlockAbove(editor as any) as any;
 
   expect(
     getNextSiblingNodes(above, (input.selection as Range).anchor.path)

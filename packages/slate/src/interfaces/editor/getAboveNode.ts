@@ -1,4 +1,4 @@
-import { Editor } from 'slate';
+import { above } from 'slate';
 
 import type { QueryMode, QueryOptions, QueryVoids } from '../../types';
 import type { AncestorOf } from '../node/TAncestor';
@@ -18,5 +18,5 @@ export const getAboveNode = <
   editor: E,
   options?: GetAboveNodeOptions<ValueOf<E>>
 ): TNodeEntry<N> | undefined => {
-  return Editor.above(editor as any, getQueryOptions(editor, options)) as any;
+  return above(editor as any, getQueryOptions(editor, options)) as any;
 };

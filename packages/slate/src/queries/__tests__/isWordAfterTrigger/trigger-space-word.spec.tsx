@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
-import type { TEditor } from '../../../interfaces';;
-
 import { jsxt } from '@udecode/plate-test-utils';
 import { Range } from 'slate';
+
+import type { TEditor } from '../../../interfaces';
 
 import { isWordAfterTrigger } from '../../isWordAfterTrigger';
 

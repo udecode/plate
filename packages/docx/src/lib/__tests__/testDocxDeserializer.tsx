@@ -59,7 +59,8 @@ export const testDocxDeserializer = ({
 }) => {
   it('should deserialize', () => {
     const actual = createSlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       override: {
         plugins: overridePlugins,
       },

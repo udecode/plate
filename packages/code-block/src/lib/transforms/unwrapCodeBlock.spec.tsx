@@ -36,13 +36,14 @@ describe('unwrap code block', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: [CodeBlockPlugin],
     });
 
     unwrapCodeBlock(editor);
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 
   it('should turn multiple code blocks to multiple p', () => {
@@ -83,13 +84,14 @@ describe('unwrap code block', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: [CodeBlockPlugin],
     });
 
     unwrapCodeBlock(editor);
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 
   describe('when not inside code block', () => {
@@ -125,13 +127,14 @@ describe('unwrap code block', () => {
       ) as any as SlateEditor;
 
       const editor = createPlateEditor({
-        editor: input,
+        value: input.children,
+    selection: input.selection,
         plugins: [CodeBlockPlugin],
       });
 
       unwrapCodeBlock(editor);
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 });

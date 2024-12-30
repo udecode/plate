@@ -1,4 +1,4 @@
-import { type LeafEdge, Editor } from 'slate';
+import { type LeafEdge, node } from 'slate';
 
 import type { At } from '../../types';
 import type { NodeOf } from '../node/TNode';
@@ -18,6 +18,6 @@ export const getNodeEntry = <N extends NodeOf<E>, E extends TEditor = TEditor>(
   options?: GetNodeEntryOptions
 ): TNodeEntry<N> | undefined => {
   try {
-    return Editor.node(editor as any, getAt(editor, at)!, options) as any;
+    return node(editor as any, getAt(editor, at)!, options) as any;
   } catch (error) {}
 };

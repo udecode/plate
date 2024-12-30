@@ -2,7 +2,6 @@ import {
   type AnyObject,
   type GetNodeEntriesOptions,
   type SlateEditor,
-  type UnhangRangeOptions,
   getNodeEntries,
   setElements,
   unsetNodes,
@@ -13,7 +12,7 @@ import { BaseIndentPlugin } from '../BaseIndentPlugin';
 
 export interface SetIndentOptions {
   /** GetNodeEntries options */
-  getNodesOptions?: GetNodeEntriesOptions & UnhangRangeOptions;
+  getNodesOptions?: GetNodeEntriesOptions;
 
   /**
    * 1 to indent -1 to outdent

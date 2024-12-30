@@ -13,7 +13,6 @@ import {
   createRangeRef,
   deleteFragment,
   deleteText,
-  deselectEditor,
   findEditorDocumentOrShadowRoot,
   findEventRange,
   findNodeKey,
@@ -73,6 +72,7 @@ import {
   mergeNodes,
   moveNodes,
   moveSelection,
+  normalizeEditor,
   removeNodes,
   select,
   setNodes,
@@ -88,6 +88,7 @@ import {
   unhangRange,
   unsetNodes,
   unwrapNodes,
+  withoutNormalizing,
   wrapNodes,
 } from './interfaces';
 import { findNodePath } from './queries';
@@ -112,11 +113,19 @@ export const createTEditor = <V extends Value>() => {
 
   // Editor
   editor.addMark = bindFirst(addMark, editor);
+  // deleteBackward
+  // deleteForward
   editor.deleteFragment = bindFirst(deleteFragment, editor);
-  // editor.getFragment = bindFirst(getFragment, editor as TEditor);
+  // getFragment
   editor.insertBreak = bindFirst(insertBreak, editor);
+  // insertSoftBreak
   editor.insertFragment = bindFirst(insertFragment, editor);
   editor.insertNode = bindFirst(insertNode, editor);
+  // insertText
+  // normalizeNode
+  // removeMark
+  // getDirtyPaths
+  // shouldNormalize
 
   // EditorInterface
   editor.above = bindFirst(getAboveNode, editor) as any;
@@ -130,6 +139,7 @@ export const createTEditor = <V extends Value>() => {
   editor.getMarks = bindFirst(getMarks, editor);
   editor.hasBlocks = bindFirst(hasBlocks, editor);
   editor.hasInlines = bindFirst(hasInlines, editor);
+  // hasPath
   editor.hasTexts = bindFirst(hasTexts, editor);
   editor.isBlock = bindFirst(isBlock, editor);
   editor.isEdge = bindFirst(isEdgePoint, editor);
@@ -143,6 +153,7 @@ export const createTEditor = <V extends Value>() => {
   editor.next = bindFirst(getNextNode, editor) as any;
   editor.node = bindFirst(getNodeEntry, editor) as any;
   editor.nodes = bindFirst(getNodeEntries, editor) as any;
+  editor.normalize = bindFirst(normalizeEditor, editor);
   editor.parent = bindFirst(getParentNode, editor) as any;
   editor.path = bindFirst(getPath, editor);
   editor.pathRef = bindFirst(createPathRef, editor);
@@ -155,10 +166,13 @@ export const createTEditor = <V extends Value>() => {
   editor.range = bindFirst(getRange, editor);
   editor.rangeRef = bindFirst(createRangeRef, editor);
   editor.rangeRefs = bindFirst(getRangeRefs, editor);
+  // setNormalizing
   editor.start = bindFirst(getStartPoint, editor);
   editor.string = bindFirst(getEditorString, editor);
   editor.unhangRange = bindFirst(unhangRange, editor);
   editor.void = bindFirst(getVoidNode, editor) as any;
+  editor.withoutNormalizing = bindFirst(withoutNormalizing, editor as any);
+  // shouldMergeNodesRemovePrevNode
 
   // Node transforms
   editor.insertNodes = bindFirst(insertNodes, editor);
@@ -178,6 +192,7 @@ export const createTEditor = <V extends Value>() => {
 
   // Selection transforms
   editor.collapse = bindFirst(collapseSelection, editor);
+  // deselect
   editor.move = bindFirst(moveSelection, editor);
   editor.select = bindFirst(select, editor);
   editor.setPoint = bindFirst(setPoint, editor);
@@ -227,7 +242,6 @@ export const createTEditor = <V extends Value>() => {
 
   // DOMEditorInterface
   editor.blur = bindFirst(blurEditor, editor);
-  editor.deselect = bindFirst(deselectEditor, editor);
   editor.hasDOMNode = bindFirst(hasEditorDOMNode, editor);
   editor.isComposing = bindFirst(isComposing, editor);
   editor.isFocused = bindFirst(isEditorFocused, editor);

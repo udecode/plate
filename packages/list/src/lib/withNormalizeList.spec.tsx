@@ -13,13 +13,14 @@ jsxt;
 
 const testNormalize = (input: SlateEditor, output: SlateEditor): void => {
   const editor = createSlateEditor({
-    editor: input,
+    value: input.children,
+    selection: input.selection,
     plugins: [ListPlugin],
   });
 
   normalizeEditor(editor, { force: true });
 
-  expect(input.children).toEqual(output.children);
+  expect(editor.children).toEqual(output.children);
 };
 
 describe('merge lists', () => {

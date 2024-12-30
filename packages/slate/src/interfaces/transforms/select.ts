@@ -1,4 +1,4 @@
-import { Transforms } from 'slate';
+import { select as selectBase } from 'slate';
 
 import type { At } from '../../types/At';
 import type { TEditor } from '../editor/TEditor';
@@ -10,5 +10,5 @@ export const select = (editor: TEditor, target: At) => {
 
   if (!at) return;
 
-  Transforms.select(editor as any, at);
+  selectBase(editor as any, at);
 };

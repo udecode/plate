@@ -1,6 +1,6 @@
 import type { Modify } from '@udecode/utils';
 
-import { type EditorVoidOptions, Editor } from 'slate';
+import { type EditorVoidOptions, getVoid } from 'slate';
 
 import type { QueryAt, QueryMode, QueryVoids } from '../../types';
 import type { ElementOf } from '../element/TElement';
@@ -21,7 +21,7 @@ export const getVoidNode = <
   editor: E,
   options?: GetVoidNodeOptions
 ): TNodeEntry<N> | undefined =>
-  Editor.void(editor as any, {
+  getVoid(editor as any, {
     ...options,
     at: getAt(editor, options?.at),
   }) as any;

@@ -88,7 +88,8 @@ describe('normalizeIndentListStart', () => {
 
     it('should be', async () => {
       const editor = createPlateEditor({
-        editor: input,
+        value: input.children,
+    selection: input.selection,
         plugins: [ParagraphPlugin, IndentPlugin, BaseIndentListPlugin],
         shouldNormalizeEditor: true,
       });
@@ -147,7 +148,8 @@ describe('normalizeIndentListStart', () => {
 
     it('should be', async () => {
       const editor = createPlateEditor({
-        editor: input,
+        value: input.children,
+    selection: input.selection,
         plugins: [ParagraphPlugin, IndentPlugin, indentListPluginPage],
         shouldNormalizeEditor: true,
       }) as any;
@@ -195,7 +197,8 @@ describe('normalizeIndentListStart', () => {
 
     it('should be', async () => {
       const editor = createPlateEditor({
-        editor: input,
+        value: input.children,
+    selection: input.selection,
         plugins: [ParagraphPlugin, IndentPlugin, indentListPluginPage],
         shouldNormalizeEditor: true,
       }) as any;

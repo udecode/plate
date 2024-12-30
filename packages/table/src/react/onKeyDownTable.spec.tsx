@@ -59,7 +59,8 @@ describe('onKeyDownTable', () => {
   //     ) as any) as SlateEditor;
   //
   //     const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-  //       editor: input,
+  //       value: input.children,
+  //    selection: input.selection,
   //       plugins: [TablePlugin],
   //     });
   //
@@ -113,7 +114,8 @@ describe('onKeyDownTable', () => {
   //     ) as any) as SlateEditor;
   //
   //     const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-  //       editor: input,
+  //       value: input.children,
+  //    selection: input.selection,
   //       plugins: [TablePlugin],
   //     });
   //
@@ -162,7 +164,8 @@ describe('onKeyDownTable', () => {
   //     ) as any) as SlateEditor;
   //
   //     const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-  //       editor: input,
+  //       value: input.children,
+  //    selection: input.selection,
   //       plugins: [TablePlugin],
   //     });
   //
@@ -213,7 +216,8 @@ describe('onKeyDownTable', () => {
   //     ) as any) as SlateEditor;
   //
   //     const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-  //       editor: input,
+  //       value: input.children,
+  //    selection: input.selection,
   //       plugins: [TablePlugin],
   //     });
   //
@@ -264,7 +268,8 @@ describe('onKeyDownTable', () => {
   //     ) as any) as SlateEditor;
   //
   //     const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-  //       editor: input,
+  //       value: input.children,
+  //    selection: input.selection,
   //       plugins: [TablePlugin],
   //     });
   //
@@ -329,8 +334,9 @@ describe('onKeyDownTable', () => {
       ) as any as SlateEditor;
 
       const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-        editor: input,
         plugins: getTestTablePlugins(),
+        selection: input.selection,
+        value: input.children,
       });
 
       await triggerKeyboardEvent('shift+ArrowDown');
@@ -394,8 +400,9 @@ describe('onKeyDownTable', () => {
       ) as any as SlateEditor;
 
       const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-        editor: input,
         plugins: getTestTablePlugins(),
+        selection: input.selection,
+        value: input.children,
       });
 
       await triggerKeyboardEvent('shift+ArrowUp');
@@ -454,8 +461,9 @@ describe('onKeyDownTable', () => {
       ) as any as SlateEditor;
 
       const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-        editor: input,
         plugins: getTestTablePlugins(),
+        selection: input.selection,
+        value: input.children,
       });
 
       await triggerKeyboardEvent('shift+ArrowRight');
@@ -514,8 +522,9 @@ describe('onKeyDownTable', () => {
       ) as any as SlateEditor;
 
       const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-        editor: input,
         plugins: getTestTablePlugins(),
+        selection: input.selection,
+        value: input.children,
       });
 
       await triggerKeyboardEvent('shift+ArrowLeft');

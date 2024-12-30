@@ -1,4 +1,4 @@
-import { Editor } from 'slate';
+import { string } from 'slate';
 
 import type { At } from '../../types/At';
 import type { QueryVoids } from '../../types/index';
@@ -18,7 +18,7 @@ export const getEditorString = (
   if (!at) return '';
 
   try {
-    return Editor.string(editor as any, at, options);
+    return string(editor as any, at, options);
   } catch {
     return '';
   }

@@ -1,6 +1,6 @@
 import type { Modify } from '@udecode/utils';
 
-import { Transforms } from 'slate';
+import { moveNodes as moveNodesBase } from 'slate';
 
 import type {
   QueryMode,
@@ -12,7 +12,7 @@ import type { TEditor, Value, ValueOf } from '../editor/TEditor';
 import { getQueryOptions } from '../../utils';
 
 export type MoveNodesOptions<V extends Value = Value> = Modify<
-  NonNullable<Parameters<typeof Transforms.moveNodes>[1]>,
+  NonNullable<Parameters<typeof moveNodesBase>[1]>,
   QueryOptions<V> & QueryMode & QueryVoids
 >;
 
@@ -20,5 +20,5 @@ export const moveNodes = <E extends TEditor>(
   editor: E,
   options?: MoveNodesOptions<ValueOf<E>>
 ) => {
-  return Transforms.moveNodes(editor as any, getQueryOptions(editor, options));
+  return moveNodesBase(editor as any, getQueryOptions(editor, options));
 };

@@ -41,7 +41,8 @@ describe('indent code line', () => {
       ) as any as SlateEditor;
 
       const editor = createPlateEditor({
-        editor: input,
+        value: input.children,
+    selection: input.selection,
         plugins: [CodeBlockPlugin],
       });
 
@@ -50,7 +51,7 @@ describe('indent code line', () => {
 
       indentCodeLine(editor, { codeBlock, codeLine });
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 
@@ -82,7 +83,8 @@ describe('indent code line', () => {
         ) as any as SlateEditor;
 
         const editor = createPlateEditor({
-          editor: input,
+          value: input.children,
+    selection: input.selection,
           plugins: [CodeBlockPlugin],
         });
 
@@ -91,7 +93,7 @@ describe('indent code line', () => {
 
         indentCodeLine(editor, { codeBlock, codeLine });
 
-        expect(input.children).toEqual(output.children);
+        expect(editor.children).toEqual(output.children);
       });
     });
 
@@ -122,7 +124,8 @@ describe('indent code line', () => {
         ) as any as SlateEditor;
 
         const editor = createPlateEditor({
-          editor: input,
+          value: input.children,
+    selection: input.selection,
           plugins: [CodeBlockPlugin],
         });
 
@@ -131,7 +134,7 @@ describe('indent code line', () => {
 
         indentCodeLine(editor, { codeBlock, codeLine });
 
-        expect(input.children).toEqual(output.children);
+        expect(editor.children).toEqual(output.children);
       });
     });
   });

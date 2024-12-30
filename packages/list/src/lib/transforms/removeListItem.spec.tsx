@@ -96,5 +96,5 @@ it('should', () => {
     removeListItem(editor, { list, listItem });
   }
 
-  expect(input.children).toEqual(output.children);
+  expect(editor.children).toEqual(output.children);
 });

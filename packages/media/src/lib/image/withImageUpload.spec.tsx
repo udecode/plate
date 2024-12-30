@@ -23,7 +23,8 @@ describe('withImageUpload', () => {
 
     it('should insert image from the file(s)', () => {
       const editor = createPlateEditor({
-        editor: input,
+        value: input.children,
+    selection: input.selection,
         plugins: [BaseImagePlugin],
       });
 
@@ -37,7 +38,7 @@ describe('withImageUpload', () => {
       };
       editor.insertData(data as any);
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 
@@ -58,7 +59,8 @@ describe('withImageUpload', () => {
       jest.spyOn(JSON, 'parse').mockReturnValue(<fragment>image.png</fragment>);
 
       const editor = createPlateEditor({
-        editor: input,
+        value: input.children,
+    selection: input.selection,
         plugins: [BaseImagePlugin],
       });
 
@@ -67,7 +69,7 @@ describe('withImageUpload', () => {
       };
       editor.insertData(data as any);
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 
@@ -86,7 +88,8 @@ describe('withImageUpload', () => {
 
     it('should insert image from the file(s)', () => {
       const editor = createPlateEditor({
-        editor: input,
+        value: input.children,
+    selection: input.selection,
         plugins: [BaseImagePlugin],
       });
 
@@ -96,7 +99,7 @@ describe('withImageUpload', () => {
       };
       editor.insertData(data as any);
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 

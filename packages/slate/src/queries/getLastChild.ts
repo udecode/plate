@@ -1,10 +1,11 @@
+import { Path } from 'slate';
+
 import {
   type ChildOf,
   type TNode,
   type TNodeEntry,
   isText,
 } from '../interfaces';
-import { Path } from 'slate';
 
 /** Get the last child of a node or null if no children. */
 export const getLastChild = <N extends ChildOf<R>, R extends TNode>(

@@ -2,8 +2,6 @@ import { useMemo } from 'react';
 
 import type { PlateEditor } from '@udecode/plate-core/react';
 
-import { toDOMNode } from '@udecode/slate';
-
 import { useLastBlock } from './useLastBlock';
 
 interface UseLastBlockDOMNodeOptions {

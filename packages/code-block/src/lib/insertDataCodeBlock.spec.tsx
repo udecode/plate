@@ -14,7 +14,8 @@ const editorTest = (input: any, data: DataTransfer, expected: any) => {
   const plugins = [BaseParagraphPlugin, CodeBlockPlugin];
 
   const editor = createPlateEditor({
-    editor: input,
+    value: input.children,
+    selection: input.selection,
     plugins,
   });
 

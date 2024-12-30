@@ -9,7 +9,6 @@ import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import {
   type PlateEditor,
   ParagraphPlugin,
-  focusEditor,
   useEditorRef,
 } from '@udecode/plate-common/react';
 import { DatePlugin } from '@udecode/plate-date/react';

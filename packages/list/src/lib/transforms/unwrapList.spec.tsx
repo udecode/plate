@@ -42,13 +42,14 @@ describe('li list unwrapping', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: [ListPlugin],
     });
 
     unwrapList(editor);
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 
   it('should unwrap a nested list ul > single li, collapsed selection', () => {
@@ -81,13 +82,14 @@ describe('li list unwrapping', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: [ListPlugin],
     });
 
     unwrapList(editor);
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 
   it('should unwrap a nested list ul > multiple li', () => {
@@ -123,13 +125,14 @@ describe('li list unwrapping', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: [ListPlugin],
     });
 
     unwrapList(editor);
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 
   it('should unwrap a nested list ul > multiple li, collapsed selection', () => {
@@ -171,12 +174,13 @@ describe('li list unwrapping', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: [ListPlugin],
     });
 
     unwrapList(editor);
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 });

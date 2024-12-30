@@ -1,6 +1,6 @@
 import type { EditorLeafOptions } from 'slate/dist/interfaces/editor';
 
-import { Editor } from 'slate';
+import { leaf } from 'slate';
 
 import type { At } from '../../types';
 import type { TextEntryOf } from '../node/TNodeEntry';
@@ -14,6 +14,6 @@ export const getLeafNode = <E extends TEditor>(
   options?: EditorLeafOptions
 ): TextEntryOf<E> | undefined => {
   try {
-    return Editor.leaf(editor as any, getAt(editor, at)!, options) as any;
+    return leaf(editor as any, getAt(editor, at)!, options) as any;
   } catch {}
 };

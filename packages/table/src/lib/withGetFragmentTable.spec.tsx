@@ -38,8 +38,9 @@ describe('withGetFragmentTable', () => {
         ) as any as SlateEditor;
 
         const editor = createPlateEditor({
-          editor: input,
           plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          value: input.children,
         });
 
         const fragment = editor.getFragment();
@@ -78,8 +79,9 @@ describe('withGetFragmentTable', () => {
         ) as any as SlateEditor;
 
         const editor = createPlateEditor({
-          editor: input,
           plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          value: input.children,
         });
 
         const fragment = editor.getFragment();

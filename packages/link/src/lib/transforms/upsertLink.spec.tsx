@@ -42,7 +42,7 @@ describe('upsertLink', () => {
         const editor = createEditor(input);
         upsertLink(editor, { url });
 
-        expect(input.children).toEqual(output.children);
+        expect(editor.children).toEqual(output.children);
       });
     });
 
@@ -69,7 +69,7 @@ describe('upsertLink', () => {
         const editor = createEditor(input);
         upsertLink(editor, { text: 'another', url });
 
-        expect(input.children).toEqual(output.children);
+        expect(editor.children).toEqual(output.children);
       });
     });
 
@@ -99,7 +99,7 @@ describe('upsertLink', () => {
         const editor = createEditor(input);
         upsertLink(editor, { insertTextInLink: true, url });
 
-        expect(input.children).toEqual(output.children);
+        expect(editor.children).toEqual(output.children);
       });
     });
 
@@ -129,7 +129,7 @@ describe('upsertLink', () => {
         const editor = createEditor(input);
         upsertLink(editor, { text: 'insert link', url });
 
-        expect(input.children).toEqual(output.children);
+        expect(editor.children).toEqual(output.children);
       });
     });
 
@@ -160,7 +160,7 @@ describe('upsertLink', () => {
         const editor = createEditor(input);
         upsertLink(editor, { url: urlOutput });
 
-        expect(input.children).toEqual(output.children);
+        expect(editor.children).toEqual(output.children);
       });
     });
 
@@ -196,7 +196,7 @@ describe('upsertLink', () => {
         const editor = createEditor(input);
         upsertLink(editor, { text: 'edit link', url });
 
-        expect(input.children).toEqual(output.children);
+        expect(editor.children).toEqual(output.children);
       });
     });
 
@@ -225,7 +225,7 @@ describe('upsertLink', () => {
         const editor = createEditor(input);
         upsertLink(editor, { insertTextInLink: true, url });
 
-        expect(input.children).toEqual(output.children);
+        expect(editor.children).toEqual(output.children);
       });
     });
 
@@ -255,7 +255,7 @@ describe('upsertLink', () => {
         const editor = createEditor(input);
         upsertLink(editor, { text: '', url });
 
-        expect(input.children).toEqual(output.children);
+        expect(editor.children).toEqual(output.children);
       });
     });
   });
@@ -285,7 +285,7 @@ describe('upsertLink', () => {
         const editor = createEditor(input);
         upsertLink(editor, { text: 'insert link', url });
 
-        expect(input.children).toEqual(output.children);
+        expect(editor.children).toEqual(output.children);
       });
     });
 
@@ -313,7 +313,7 @@ describe('upsertLink', () => {
         const editor = createEditor(input);
         upsertLink(editor, { text: 'another', url });
 
-        expect(input.children).toEqual(output.children);
+        expect(editor.children).toEqual(output.children);
       });
     });
 
@@ -345,7 +345,7 @@ describe('upsertLink', () => {
         const editor = createEditor(input);
         upsertLink(editor, { url });
 
-        expect(input.children).toEqual(output.children);
+        expect(editor.children).toEqual(output.children);
       });
     });
 
@@ -373,7 +373,7 @@ describe('upsertLink', () => {
         const editor = createEditor(input);
         upsertLink(editor, { url: urlOutput });
 
-        expect(input.children).toEqual(output.children);
+        expect(editor.children).toEqual(output.children);
       });
     });
 
@@ -407,7 +407,7 @@ describe('upsertLink', () => {
         const editor = createEditor(input);
         upsertLink(editor, { url: urlOutput });
 
-        expect(input.children).toEqual(output.children);
+        expect(editor.children).toEqual(output.children);
       });
     });
   });
@@ -435,7 +435,7 @@ describe('upsertLink', () => {
         url: 'invalid',
       });
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 
@@ -464,7 +464,7 @@ describe('upsertLink', () => {
         url: 'invalid',
       });
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 });

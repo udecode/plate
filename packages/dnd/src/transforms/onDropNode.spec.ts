@@ -25,7 +25,7 @@ jest.mock('../utils', () => ({
 }));
 
 describe('onDropNode', () => {
-  const editor = { selection: {} } as unknown as PlateEditor;
+  const editor = { focus: jest.fn(), selection: {} } as unknown as PlateEditor;
   const monitor = {} as DropTargetMonitor;
   const nodeRef = {};
   const dragItem: ElementDragItemNode = { id: 'drag' };

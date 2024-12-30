@@ -29,7 +29,8 @@ describe('when last node is invalid', () => {
 
   it('should be', () => {
     const editor = createSlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: [
         TrailingBlockPlugin.configure({
           options: {
@@ -42,7 +43,7 @@ describe('when last node is invalid', () => {
 
     editor.normalizeNode([input, []]);
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 });
 
@@ -70,7 +71,8 @@ describe('when level = 1', () => {
 
   it('should be', () => {
     const editor = createSlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: [
         TrailingBlockPlugin.configure({
           options: {
@@ -83,7 +85,7 @@ describe('when level = 1', () => {
 
     editor.normalizeNode([input, []]);
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 });
 
@@ -104,7 +106,8 @@ describe('when using query', () => {
 
   it('should be', () => {
     const editor = createSlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: [
         TrailingBlockPlugin.configure({
           options: {
@@ -118,7 +121,7 @@ describe('when using query', () => {
 
     editor.normalizeNode([input, []]);
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 });
 
@@ -141,13 +144,14 @@ describe('when the last node is valid', () => {
 
   it('should be', () => {
     const editor = createSlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: [TrailingBlockPlugin],
     });
 
     editor.normalizeNode([input, []]);
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 });
 
@@ -164,7 +168,8 @@ describe('when editor has no children', () => {
 
   it('should be', () => {
     const editor = createSlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: [TrailingBlockPlugin],
     });
 

@@ -1,4 +1,4 @@
-import { Editor } from 'slate';
+import { insertNode as insertNodeBase } from 'slate';
 
 import type { ElementOrTextOf } from '../element/TElement';
 import type { InsertNodesOptions } from '../transforms';
@@ -11,8 +11,4 @@ export const insertNode = <E extends TEditor>(
   node: ElementOrTextOf<E>,
   options?: InsertNodesOptions<ValueOf<E>>
 ) =>
-  Editor.insertNode(
-    editor as any,
-    node as any,
-    getQueryOptions(editor, options)
-  );
+  insertNodeBase(editor as any, node as any, getQueryOptions(editor, options));

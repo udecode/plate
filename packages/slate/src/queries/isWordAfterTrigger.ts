@@ -1,12 +1,13 @@
 import type { Point } from 'slate';
 
+import { escapeRegExp } from '@udecode/utils';
+
 import {
   type TEditor,
   getEditorString,
   getPointBefore,
   getRange,
 } from '../interfaces';
-import { escapeRegExp } from '@udecode/utils';
 
 /**
  * Is the word at the point after a trigger (punctuation character)

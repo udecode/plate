@@ -35,7 +35,8 @@ describe('p (empty) + list when selection not in list', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: [ListPlugin],
     });
 
@@ -68,7 +69,8 @@ describe('p /w text + list when selection not in list', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: [ListPlugin],
     });
 
@@ -107,7 +109,8 @@ describe('p /w text + list when selection not in list', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: [ListPlugin],
     });
 
@@ -162,7 +165,8 @@ describe('p /w text + list when selection not in list', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: [ListPlugin],
     });
 
@@ -218,7 +222,8 @@ describe('list + list when selection is at the end of the first list', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: [ListPlugin],
     });
 
@@ -266,7 +271,8 @@ describe('list where second item has multiple children', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: [ListPlugin],
     });
 
@@ -326,7 +332,8 @@ describe('list + sublist where second item has multiple children', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: [ListPlugin],
     });
 

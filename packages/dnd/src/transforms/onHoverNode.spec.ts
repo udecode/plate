@@ -35,6 +35,7 @@ jest.mock('./onDropNode', () => ({
 
 describe('onHoverNode', () => {
   const editor = {
+    focus: jest.fn(),
     getOptions: jest.fn(),
     selection: {},
     setOption: jest.fn(),

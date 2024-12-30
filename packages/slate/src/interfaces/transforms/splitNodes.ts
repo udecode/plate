@@ -1,6 +1,6 @@
 import type { Modify } from '@udecode/utils';
 
-import { Transforms } from 'slate';
+import { splitNodes as splitNodesBase } from 'slate';
 
 import type {
   QueryMode,
@@ -12,7 +12,7 @@ import type { TEditor, Value, ValueOf } from '../editor/TEditor';
 import { getQueryOptions } from '../../utils';
 
 export type SplitNodesOptions<V extends Value = Value> = Modify<
-  NonNullable<Parameters<typeof Transforms.splitNodes>[1]>,
+  NonNullable<Parameters<typeof splitNodesBase>[1]>,
   QueryOptions<V> & QueryMode & QueryVoids
 >;
 
@@ -20,5 +20,5 @@ export const splitNodes = <E extends TEditor>(
   editor: E,
   options?: SplitNodesOptions<ValueOf<E>>
 ) => {
-  return Transforms.splitNodes(editor as any, getQueryOptions(editor, options));
+  return splitNodesBase(editor as any, getQueryOptions(editor, options));
 };

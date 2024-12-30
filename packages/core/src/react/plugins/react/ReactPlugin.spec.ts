@@ -1,13 +1,13 @@
-import { focusEditorEdge, isEditorFocused } from '@udecode/slate';
+import { focusEditorEdge } from '@udecode/slate';
 
 import type { PlateEditor } from '../../editor/PlateEditor';
 
-import { createPlateEditor } from '../../../react';
+import { createPlateEditor } from '../../../react/editor/withPlate';
 
 // Mock the slate-react functions
 jest.mock('@udecode/slate', () => ({
+  ...jest.requireActual('@udecode/slate'),
   focusEditorEdge: jest.fn(),
-  isEditorFocused: jest.fn(),
 }));
 
 describe('ReactPlugin', () => {
@@ -15,15 +15,15 @@ describe('ReactPlugin', () => {
 
   beforeEach(() => {
     editor = createPlateEditor();
+    editor.isFocused = jest.fn();
 
     // Reset mocks
-    (isEditorFocused as jest.Mock).mockReset();
+    (editor.isFocused as jest.Mock).mockReset();
     (focusEditorEdge as jest.Mock).mockReset();
   });
 
   it('should override reset method', () => {
-    // Mock isEditorFocused to return true
-    (isEditorFocused as jest.Mock).mockReturnValue(true);
+    (editor.isFocused as jest.Mock).mockReturnValue(true);
 
     editor.tf.reset();
 
@@ -31,8 +31,7 @@ describe('ReactPlugin', () => {
   });
 
   it('should not focus editor if it was not focused before reset', () => {
-    // Mock isEditorFocused to return false
-    (isEditorFocused as jest.Mock).mockReturnValue(false);
+    (editor.isFocused as jest.Mock).mockReturnValue(false);
 
     editor.tf.reset();
 
