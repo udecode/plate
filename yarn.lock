@@ -6589,8 +6589,6 @@ __metadata:
     "@udecode/react-hotkeys": "npm:37.0.0"
     "@udecode/react-utils": "npm:40.2.8"
     "@udecode/slate": "npm:41.0.0"
-    "@udecode/slate-react": "npm:41.0.5"
-    "@udecode/slate-utils": "npm:41.0.0"
     "@udecode/utils": "npm:37.0.0"
   peerDependencies:
     react: ">=16.8.0"
@@ -6610,8 +6608,6 @@ __metadata:
     "@udecode/react-hotkeys": "npm:37.0.0"
     "@udecode/react-utils": "npm:40.2.8"
     "@udecode/slate": "npm:41.0.0"
-    "@udecode/slate-react": "npm:41.0.5"
-    "@udecode/slate-utils": "npm:41.0.0"
     "@udecode/utils": "npm:37.0.0"
     clsx: "npm:^2.1.1"
     html-entities: "npm:^2.5.2"
@@ -7381,8 +7377,6 @@ __metadata:
     "@udecode/plate-core": "npm:41.0.5"
     "@udecode/react-utils": "npm:40.2.8"
     "@udecode/slate": "npm:41.0.0"
-    "@udecode/slate-react": "npm:41.0.5"
-    "@udecode/slate-utils": "npm:41.0.0"
     "@udecode/utils": "npm:37.0.0"
     clsx: "npm:^2.1.1"
     lodash: "npm:^4.17.21"
@@ -7494,7 +7488,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/slate-react@npm:41.0.5, @udecode/slate-react@workspace:^, @udecode/slate-react@workspace:packages/slate-react":
+"@udecode/slate-react@workspace:packages/slate-react":
   version: 0.0.0-use.local
   resolution: "@udecode/slate-react@workspace:packages/slate-react"
   dependencies:
@@ -7510,7 +7504,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/slate-utils@npm:41.0.0, @udecode/slate-utils@workspace:^, @udecode/slate-utils@workspace:packages/slate-utils":
+"@udecode/slate-utils@workspace:packages/slate-utils":
   version: 0.0.0-use.local
   resolution: "@udecode/slate-utils@workspace:packages/slate-utils"
   dependencies:
@@ -7529,8 +7523,10 @@ __metadata:
   dependencies:
     "@udecode/utils": "npm:37.0.0"
     is-plain-object: "npm:^5.0.0"
+    lodash: "npm:^4.17.21"
   peerDependencies:
     slate: ">=0.112.0"
+    slate-dom: ">=0.111.0"
     slate-history: ">=0.93.0"
   languageName: unknown
   linkType: soft
@@ -22443,8 +22439,6 @@ __metadata:
     "@udecode/react-hotkeys": "workspace:^"
     "@udecode/react-utils": "workspace:^"
     "@udecode/slate": "workspace:^"
-    "@udecode/slate-react": "workspace:^"
-    "@udecode/slate-utils": "workspace:^"
     "@udecode/utils": "workspace:^"
     "@uploadthing/react": "npm:7.1.0"
     "@vercel/og": "npm:^0.6.2"

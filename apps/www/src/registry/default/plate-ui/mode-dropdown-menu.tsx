@@ -72,7 +72,7 @@ export function ModeDropdownMenu(props: DropdownMenuProps) {
               return;
             }
             if (newValue === 'editing') {
-              focusEditor(editor);
+              editor.focus();
 
               return;
             }

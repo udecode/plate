@@ -28,7 +28,7 @@ import {
   createSlateEditor,
   serializeHtml,
 } from '@udecode/plate-common';
-import { toDOMNode, useEditorRef } from '@udecode/plate-common/react';
+import { useEditorRef } from '@udecode/plate-common/react';
 import { BaseDatePlugin } from '@udecode/plate-date';
 import {
   BaseFontBackgroundColorPlugin,
@@ -130,7 +130,7 @@ export function ExportToolbarButton({ children, ...props }: DropdownMenuProps) {
       'body > div:last-child img { display: inline-block !important; }'
     );
 
-    const canvas = await html2canvas(toDOMNode(editor, editor)!);
+    const canvas = await html2canvas(editor.toDOMNode(editor)!);
     style.remove();
 
     return canvas;

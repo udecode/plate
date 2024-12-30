@@ -1,3 +1,5 @@
+import type { PlateEditor } from '@udecode/plate-common/react';
+
 import {
   type SlateEditor,
   type TElement,
@@ -7,7 +9,6 @@ import {
   isText,
   withNewBatch,
 } from '@udecode/plate-common';
-import { type PlateEditor, focusEditor } from '@udecode/plate-common/react';
 import {
   BlockSelectionPlugin,
   removeBlockSelectionNodes,
@@ -33,7 +34,7 @@ export const replaceSelectionAIChat = (
   // If no blocks selected, treat it like a normal selection replacement
   if (!isBlockSelecting) {
     editor.insertFragment(sourceEditor.children);
-    focusEditor(editor);
+    editor.focus();
 
     return;
   }
@@ -60,7 +61,7 @@ export const replaceSelectionAIChat = (
       });
     });
 
-    focusEditor(editor);
+    editor.focus();
 
     return;
   }
@@ -112,5 +113,5 @@ export const replaceSelectionAIChat = (
     });
   });
 
-  focusEditor(editor);
+  editor.focus();
 };

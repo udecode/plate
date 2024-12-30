@@ -1,7 +1,7 @@
+import type { PlateEditor } from '@udecode/plate-common/react';
 import type { DropTargetMonitor } from 'react-dnd';
 
 import { collapseSelection, isExpanded } from '@udecode/plate-common';
-import { type PlateEditor, focusEditor } from '@udecode/plate-common/react';
 
 import type { UseDropNodeOptions } from '../hooks/useDropNode';
 import type { DragItemNode } from '../types';
@@ -56,7 +56,7 @@ export const onHoverNode = (
     editor.setOption(DndPlugin, 'dropTarget', newDropTarget);
   }
   if (direction && isExpanded(editor.selection)) {
-    focusEditor(editor);
+    editor.focus();
     collapseSelection(editor);
   }
 };

@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from '@udecode/plate-core';
-
 import { jsxt } from '@udecode/plate-test-utils';
+
+import type { TEditor } from '../interfaces';
 
 import { findNode } from './findNode';
 
@@ -20,7 +20,7 @@ describe('when the cursor is in a list item paragraph', () => {
         </hli>
       </hul>
     </editor>
-  ) as any as SlateEditor;
+  ) as any as TEditor;
 
   const _listNode = (
     <hul>
@@ -61,7 +61,7 @@ describe('when the cursor is not in a list item and a path is provided instead',
         2<cursor />
       </hp>
     </editor>
-  ) as any as SlateEditor;
+  ) as any as TEditor;
 
   const _listNode = (
     <hul>

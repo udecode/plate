@@ -57,6 +57,6 @@ export const toggleColumnGroup = (
       nodes,
     });
 
-    select(editor, getStartPoint(editor, path.concat([0])));
+    select(editor, getStartPoint(editor, path.concat([0]))!);
   }
 };

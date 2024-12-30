@@ -8,7 +8,7 @@ import {
   bindFirst,
   createSlateEditor,
 } from '@udecode/plate-common';
-import { createTPlatePlugin, focusEditor } from '@udecode/plate-common/react';
+import { createTPlatePlugin } from '@udecode/plate-common/react';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 
 import type { AIBatch } from '../../lib';
@@ -135,7 +135,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
         // TODO
         // editor.getApi(BlockSelectionPlugin).blockSelection.focus();
       } else {
-        focusEditor(editor);
+        editor.focus();
       }
 
       const lastBatch = editor.history.undos.at(-1) as AIBatch;

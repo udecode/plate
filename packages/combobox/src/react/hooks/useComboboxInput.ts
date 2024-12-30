@@ -7,11 +7,7 @@ import {
 } from 'react';
 
 import { Hotkeys, isHotkey, removeNodes } from '@udecode/plate-common';
-import {
-  focusEditor,
-  useEditorRef,
-  useElement,
-} from '@udecode/plate-common/react';
+import { useEditorRef, useElement } from '@udecode/plate-common/react';
 import { useSelected } from 'slate-react';
 
 import type {
@@ -69,7 +65,7 @@ export const useComboboxInput = ({
       removeNodes(editor, { at: path });
 
       if (shouldFocusEditor) {
-        focusEditor(editor);
+        editor.focus();
       }
     },
     [editor, element]
@@ -149,7 +145,7 @@ export const useComboboxInput = ({
         if (forwardUndoRedoToEditor && (isUndo || isRedo)) {
           event.preventDefault();
           editor[isUndo ? 'undo' : 'redo']();
-          focusEditor(editor);
+          editor.focus();
         }
       },
     },

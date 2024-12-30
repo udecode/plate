@@ -2,19 +2,23 @@ import type { Modify } from '@udecode/utils';
 
 import { Transforms } from 'slate';
 
-import type { NodeMatchOption } from '../../types/NodeMatchOption';
-import type { TEditor } from '../editor/TEditor';
+import type {
+  QueryMode,
+  QueryOptions,
+  QueryVoids,
+} from '../../types/QueryOptions';
+import type { TEditor, Value, ValueOf } from '../editor/TEditor';
 
-export type LiftNodesOptions<E extends TEditor = TEditor> = Modify<
+import { getQueryOptions } from '../../utils';
+
+export type LiftNodesOptions<V extends Value = Value> = Modify<
   NonNullable<Parameters<typeof Transforms.liftNodes>[1]>,
-  NodeMatchOption<E>
+  QueryOptions<V> & QueryMode & QueryVoids
 >;
 
-/**
- * Lift nodes at a specific location upwards in the document tree, splitting
- * their parent in two if necessary.
- */
 export const liftNodes = <E extends TEditor>(
   editor: E,
-  options?: LiftNodesOptions<E>
-) => Transforms.liftNodes(editor as any, options as any);
+  options?: LiftNodesOptions<ValueOf<E>>
+) => {
+  return Transforms.liftNodes(editor as any, getQueryOptions(editor, options));
+};

@@ -3,7 +3,6 @@ import {
   type TSelection,
   type Value,
   createTEditor,
-  findNodePath,
   getEndPoint,
   getStartPoint,
   normalizeEditor,
@@ -108,7 +107,6 @@ export const withSlate = <
   editor.key = editor.key ?? nanoid();
   editor.isFallback = false;
 
-  editor.findPath = (node, options) => findNodePath(editor, node, options);
   editor.getApi = () => editor.api as any;
   editor.getTransforms = () => editor.transforms as any;
   editor.getPlugin = (plugin) => getSlatePlugin(editor, plugin) as any;
@@ -171,6 +169,7 @@ export const withSlate = <
     }
   };
 
+  // Plugin initialization code
   const corePlugins = getCorePlugins({
     maxLength,
     plugins,
@@ -206,7 +205,7 @@ export const withSlate = <
     const edge = autoSelect === 'start' ? 'start' : 'end';
     const target =
       edge === 'start' ? getStartPoint(editor, []) : getEndPoint(editor, []);
-    select(editor, target);
+    select(editor, target!);
   }
   if (editor.children.length > 0) {
     pipeNormalizeInitialValue(editor);

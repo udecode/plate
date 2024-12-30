@@ -1,10 +1,16 @@
-import { type EditorPathOptions, type Location, Editor } from 'slate';
+import { type EditorPathOptions, Editor } from 'slate';
 
+import type { At } from '../../types';
 import type { TEditor } from './TEditor';
 
-/** Get the path of a location. */
+import { getAt } from '../../utils';
+
 export const getPath = (
   editor: TEditor,
-  at: Location,
+  at: At,
   options?: EditorPathOptions
-) => Editor.path(editor as any, at, options as any);
+) => {
+  try {
+    return Editor.path(editor as any, getAt(editor, at)!, options as any);
+  } catch {}
+};

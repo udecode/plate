@@ -10,10 +10,10 @@ import {
   BaseMediaEmbedPlugin,
 } from '../BaseMediaEmbedPlugin';
 
-export const insertMediaEmbed = <E extends SlateEditor>(
-  editor: E,
+export const insertMediaEmbed = (
+  editor: SlateEditor,
   { url = '' }: Partial<TMediaEmbedElement>,
-  options: InsertNodesOptions<E> = {}
+  options: InsertNodesOptions = {}
 ): void => {
   if (!editor.selection) return;
 

@@ -18,8 +18,8 @@ export const getCommentFragment = (editor: SlateEditor, id: string) => {
   const lastNodePath = nodes.at(-1)![1];
 
   const range: Range = {
-    anchor: getStartPoint(editor, firstNodePath),
-    focus: getEndPoint(editor, lastNodePath),
+    anchor: getStartPoint(editor, firstNodePath)!,
+    focus: getEndPoint(editor, lastNodePath)!,
   };
 
   return getFragment(editor, range);

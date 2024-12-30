@@ -1,6 +1,6 @@
 import type { JSHandle } from '@playwright/test';
-import type { getNode } from '@udecode/plate-common';
-import type { PlateEditor, toDOMNode } from '@udecode/plate-common/react';
+import type { getNode, toDOMNode } from '@udecode/plate-common';
+import type { PlateEditor } from '@udecode/plate-common/react';
 
 export interface TPlatePlaywrightAdapter {
   EDITABLE_TO_EDITOR: WeakMap<HTMLElement, PlateEditor>;

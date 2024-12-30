@@ -1,24 +1,14 @@
-import {
-  type EditorUnhangRangeOptions,
-  type Path,
-  type Point,
-  type Span,
-  Editor,
-  Range,
-} from 'slate';
+import { type Path, type Point, type Span, Editor, Range } from 'slate';
 
 import type { TEditor } from './TEditor';
 
 export type UnhangRangeOptions = {
+  /** @default true */
   unhang?: boolean;
-} & EditorUnhangRangeOptions;
+  /** Allow placing the end of the selection in a void node */
+  voids?: boolean;
+};
 
-/**
- * Convert a range into a non-hanging one if:
- *
- * - `unhang` is true,
- * - `at` (default: selection) is a range.
- */
 export const unhangRange = <
   E extends TEditor,
   R extends Path | Point | Range | Span | null | undefined,

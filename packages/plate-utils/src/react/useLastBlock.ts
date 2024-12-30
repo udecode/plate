@@ -1,5 +1,5 @@
 import { useEditorSelector } from '@udecode/plate-core/react';
-import { getBlocks } from '@udecode/slate-utils';
+import { getBlocks } from '@udecode/slate';
 
 export const useLastBlock = ({
   deps,

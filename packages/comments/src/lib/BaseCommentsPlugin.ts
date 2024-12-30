@@ -1,7 +1,9 @@
 import {
+  type OmitFirst,
   type PluginConfig,
   type Value,
   type WithPartial,
+  bindFirst,
   createTSlatePlugin,
   getNodeString,
   nanoid,
@@ -9,6 +11,7 @@ import {
 
 import type { CommentUser, TComment } from './types';
 
+import { insertComment } from './transforms/insertComment';
 import { withComments } from './withComments';
 
 export type BaseCommentsConfig = PluginConfig<
@@ -29,6 +32,11 @@ export type BaseCommentsConfig = PluginConfig<
   } & CommentsSelectors,
   {
     comment: CommentsApi;
+  },
+  {
+    insert: {
+      comment: OmitFirst<typeof insertComment>;
+    };
   }
 >;
 
@@ -144,4 +152,7 @@ export const BaseCommentsPlugin = createTSlatePlugin<BaseCommentsConfig>({
         draft.comments[id] = { ...draft.comments[id], ...value };
       });
     },
+  }))
+  .extendEditorTransforms(({ editor }) => ({
+    insert: { comment: bindFirst(insertComment, editor) },
   }));

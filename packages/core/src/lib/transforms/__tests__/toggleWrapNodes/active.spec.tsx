@@ -2,7 +2,7 @@
 
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { jsxt } from '@udecode/plate-test-utils';
-import { toggleWrapNodes } from '@udecode/slate-utils';
+import { toggleWrapNodes } from '@udecode/slate';
 
 jsxt;
 

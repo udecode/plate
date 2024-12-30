@@ -19,10 +19,10 @@ import { type TableConfig, BaseTablePlugin } from '../BaseTablePlugin';
  * Insert table. If selection in table and no 'at' specified, insert after
  * current table. Select start of new table.
  */
-export const insertTable = <E extends SlateEditor>(
-  editor: E,
+export const insertTable = (
+  editor: SlateEditor,
   { colCount = 2, header, rowCount = 2 }: GetEmptyTableNodeOptions = {},
-  { select: shouldSelect, ...options }: InsertNodesOptions<E> = {}
+  { select: shouldSelect, ...options }: InsertNodesOptions = {}
 ) => {
   const { api } = editor.getPlugin<TableConfig>({ key: 'table' });
   const type = editor.getType(BaseTablePlugin);
@@ -50,7 +50,7 @@ export const insertTable = <E extends SlateEditor>(
         });
 
         if (editor.selection) {
-          select(editor, getStartPoint(editor, insertPath));
+          select(editor, getStartPoint(editor, insertPath)!);
         }
 
         return;
@@ -72,7 +72,7 @@ export const insertTable = <E extends SlateEditor>(
 
       if (!tableEntry) return;
 
-      select(editor, getStartPoint(editor, tableEntry[1]));
+      select(editor, getStartPoint(editor, tableEntry[1])!);
     }
   });
 };

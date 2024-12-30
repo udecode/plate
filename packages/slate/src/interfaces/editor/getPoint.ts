@@ -1,10 +1,16 @@
-import { type EditorPointOptions, type Location, Editor } from 'slate';
+import { type EditorPointOptions, Editor } from 'slate';
 
+import type { At } from '../../types';
 import type { TEditor } from './TEditor';
 
-/** Get the start or end point of a location. */
+import { getAt } from '../../utils';
+
 export const getPoint = (
   editor: TEditor,
-  at: Location,
+  at: At,
   options?: EditorPointOptions
-) => Editor.point(editor as any, at, options);
+) => {
+  try {
+    return Editor.point(editor as any, getAt(editor, at)!, options as any);
+  } catch {}
+};

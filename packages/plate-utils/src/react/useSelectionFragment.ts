@@ -4,7 +4,7 @@ import {
   type GetSelectionFragmentOptions,
   getFragmentProp,
   getSelectionFragment,
-} from '@udecode/slate-utils';
+} from '@udecode/slate';
 
 export const useSelectionFragment = (options?: GetSelectionFragmentOptions) => {
   return useEditorSelector((editor) => {

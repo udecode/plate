@@ -1,12 +1,12 @@
 import type { KeyboardHandler } from '@udecode/plate-common/react';
 
 import {
+  Hotkeys,
   isCollapsed,
   select,
   someNode,
   unhangRange,
 } from '@udecode/plate-common';
-import { Hotkeys } from '@udecode/plate-common/react';
 import { Range } from 'slate';
 
 import { type ListConfig, BaseListItemPlugin } from '../lib';

@@ -1,9 +1,8 @@
 import React from 'react';
 
-import type { TRenderElementProps } from '@udecode/slate-react';
-
 import type { SlateEditor } from '../editor';
 import type { AnyEditorPlugin, NodeComponents } from '../plugin';
+import type { TRenderElementProps } from '../types/TRenderElementProps';
 
 import { SlateElement } from './components/SlateElement';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps';

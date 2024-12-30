@@ -8,9 +8,9 @@ import type { TColumnElement } from '../types';
 
 import { BaseColumnItemPlugin } from '../BaseColumnPlugin';
 
-export const insertColumn = <E extends SlateEditor>(
-  editor: E,
-  { width = '33%', ...options }: { width?: string } & InsertNodesOptions<E> = {}
+export const insertColumn = (
+  editor: SlateEditor,
+  { width = '33%', ...options }: { width?: string } & InsertNodesOptions = {}
 ) => {
   insertNodes<TColumnElement>(
     editor,

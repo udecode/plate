@@ -32,7 +32,7 @@ export const toggleIndentList = <
   E extends SlateEditor = SlateEditor,
 >(
   editor: E,
-  options: IndentListOptions<E>,
+  options: IndentListOptions,
   getSiblingIndentListOptions?: GetSiblingIndentListOptions<N, E>
 ) => {
   const { listStyleType } = options;

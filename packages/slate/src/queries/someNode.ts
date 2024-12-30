@@ -1,4 +1,4 @@
-import type { NodeOf, TEditor } from '../interfaces';
+import type { NodeOf, TEditor, ValueOf } from '../interfaces';
 
 import { type FindNodeOptions, findNode } from './findNode';
 
@@ -8,7 +8,7 @@ import { type FindNodeOptions, findNode } from './findNode';
  */
 export const someNode = <N extends NodeOf<E>, E extends TEditor = TEditor>(
   editor: E,
-  options: FindNodeOptions<E>
+  options: FindNodeOptions<ValueOf<E>>
 ) => {
   return !!findNode<N, E>(editor, options);
 };

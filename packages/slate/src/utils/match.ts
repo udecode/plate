@@ -3,6 +3,7 @@ import type { NodeOf, TNode } from '../interfaces/node/TNode';
 import type { TPath } from '../types/interfaces';
 
 import { isBlock } from '../interfaces/editor/isBlock';
+import { getAt } from './getAt';
 
 export type PredicateObj = Record<string, any[] | any>;
 
@@ -48,10 +49,11 @@ export const getQueryOptions = <E extends TEditor>(
   editor: E,
   options: any = {}
 ) => {
-  const { block, match: _match } = options;
+  const { at, block, match: _match } = options;
 
   return {
     ...options,
+    at: getAt(editor, at),
     match:
       _match || block
         ? (n: NodeOf<E>, path: TPath) =>
@@ -59,10 +61,3 @@ export const getQueryOptions = <E extends TEditor>(
         : undefined,
   };
 };
-
-export type ENodeMatch<N extends TNode> = Predicate<N>;
-
-export interface ENodeMatchOptions<E extends TEditor = TEditor> {
-  block?: boolean;
-  match?: ENodeMatch<NodeOf<E>>;
-}

@@ -8,12 +8,12 @@ import {
 
 import { BaseLineHeightPlugin } from '../BaseLineHeightPlugin';
 
-export const setLineHeight = <E extends SlateEditor>(
-  editor: E,
+export const setLineHeight = (
+  editor: SlateEditor,
   {
     setNodesOptions,
     value,
-  }: { value: number; setNodesOptions?: SetNodesOptions<E> }
+  }: { value: number; setNodesOptions?: SetNodesOptions }
 ): void => {
   const { defaultNodeValue, nodeKey } =
     editor.getInjectProps(BaseLineHeightPlugin);

@@ -9,7 +9,7 @@ import {
   SuperscriptPlugin,
 } from '@udecode/plate-basic-marks/react';
 import { collapseSelection } from '@udecode/plate-common';
-import { focusEditor, useEditorRef } from '@udecode/plate-common/react';
+import { useEditorRef } from '@udecode/plate-common/react';
 import { KbdPlugin } from '@udecode/plate-kbd/react';
 import {
   KeyboardIcon,
@@ -49,7 +49,7 @@ export function MoreDropdownMenu(props: DropdownMenuProps) {
             onSelect={() => {
               editor.tf.toggle.mark({ key: KbdPlugin.key });
               collapseSelection(editor, { edge: 'end' });
-              focusEditor(editor);
+              editor.focus();
             }}
           >
             <KeyboardIcon />
@@ -62,7 +62,7 @@ export function MoreDropdownMenu(props: DropdownMenuProps) {
                 key: SuperscriptPlugin.key,
                 clear: [SubscriptPlugin.key, SuperscriptPlugin.key],
               });
-              focusEditor(editor);
+              editor.focus();
             }}
           >
             <SuperscriptIcon />
@@ -75,7 +75,7 @@ export function MoreDropdownMenu(props: DropdownMenuProps) {
                 key: SubscriptPlugin.key,
                 clear: [SuperscriptPlugin.key, SubscriptPlugin.key],
               });
-              focusEditor(editor);
+              editor.focus();
             }}
           >
             <SubscriptIcon />

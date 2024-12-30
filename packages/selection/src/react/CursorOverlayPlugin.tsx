@@ -5,7 +5,6 @@ import type { PluginConfig } from '@udecode/plate-common';
 import {
   type DOMHandler,
   createTPlatePlugin,
-  findEventRange,
   useEditorPlugin,
 } from '@udecode/plate-common/react';
 
@@ -113,7 +112,7 @@ export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
 
         if (types.some((type) => type.startsWith('Files'))) return;
 
-        const range = findEventRange(editor, event);
+        const range = editor.findEventRange(event);
 
         if (!range) return;
 

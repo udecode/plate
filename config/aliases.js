@@ -48,7 +48,5 @@ module.exports = {
   '@udecode/react-hotkeys': 'react-hotkeys',
   '@udecode/react-utils': 'react-utils',
   '@udecode/slate': 'slate',
-  '@udecode/slate-react': 'slate-react',
-  '@udecode/slate-utils': 'slate-utils',
   '@udecode/utils': 'utils',
 };

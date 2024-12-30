@@ -132,8 +132,6 @@
     "@udecode/react-hotkeys": "workspace:^",
     "@udecode/react-utils": "workspace:^",
     "@udecode/slate": "workspace:^",
-    "@udecode/slate-react": "workspace:^",
-    "@udecode/slate-utils": "workspace:^",
     "@udecode/utils": "workspace:^",
     "@uploadthing/react": "7.1.0",
     "@vercel/og": "^0.6.2",

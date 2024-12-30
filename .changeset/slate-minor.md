@@ -1,0 +1,45 @@
+---
+'@udecode/slate': minor
+---
+
+- Merged `@udecode/slate-react` and `@udecode/slate-utils` queries and transforms into this package.
+- `insertNode`: add `options` parameter.
+- Add `| TNode` to `at` type of the following method options:
+  - `getAboveNode`
+  - `getEdgePoints`
+  - `getEditorString`
+  - `getEndPoint`
+  - `getFirstNode`
+  - `getFragment`
+  - `getLastNode`
+  - `getLeafNode`
+  - `getLevels`
+  - `getNextNode`
+  - `getNodeEntries`
+  - `getNodeEntry`
+  - `getParentNode`
+  - `getPath`
+  - `getPoint`
+  - `getPointAfter`
+  - `getPointBefore`
+  - `getPositions`
+  - `getPreviousNode`
+  - `getRange`
+  - `getStartPoint`
+  - `getVoidNode`
+  - `insertNode`
+  - `deleteText`
+  - `focusEditor`
+  - `insertFragment`
+  - `insertNodes`
+  - `insertText`
+  - `liftNodes`
+  - `mergeNodes`
+  - `moveNodes`
+  - `removeNodes`
+  - `select`
+  - `setNodes`
+  - `splitNodes`
+  - `unsetNodes`
+  - `unwrapNodes`
+  - `wrapNodes`

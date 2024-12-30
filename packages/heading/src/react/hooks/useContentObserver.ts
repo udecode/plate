@@ -1,11 +1,7 @@
 import React from 'react';
 
 import { getNode } from '@udecode/plate-common';
-import {
-  toDOMNode,
-  useEditorRef,
-  useEditorSelector,
-} from '@udecode/plate-common/react';
+import { useEditorRef, useEditorSelector } from '@udecode/plate-common/react';
 
 import { getHeadingList } from '../../internal/getHeadingList';
 
@@ -67,7 +63,7 @@ export const useContentObserver = ({
 
       if (!node) return;
 
-      const element = toDOMNode(editor, node);
+      const element = editor.toDOMNode(node);
 
       return element && observer.observe(element);
     });

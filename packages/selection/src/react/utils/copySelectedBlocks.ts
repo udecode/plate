@@ -1,6 +1,5 @@
 import {
   type SlateEditor,
-  deselect,
   getEndPoint,
   getStartPoint,
   select,
@@ -30,8 +29,8 @@ export const copySelectedBlocks = (editor: SlateEditor) => {
         selectedEntries.forEach(([, path]) => {
           // select block by block
           select(editor, {
-            anchor: getStartPoint(editor, path),
-            focus: getEndPoint(editor, path),
+            anchor: getStartPoint(editor, path)!,
+            focus: getEndPoint(editor, path)!,
           });
 
           // set data from selection
@@ -47,7 +46,7 @@ export const copySelectedBlocks = (editor: SlateEditor) => {
         });
 
         // deselect and select back selectedIds
-        deselect(editor);
+        editor.deselect();
         editor.setOption(BlockSelectionPlugin, 'selectedIds', selectedIds);
       });
 

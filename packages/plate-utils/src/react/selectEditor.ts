@@ -6,7 +6,6 @@ import {
   getStartPoint,
   select,
 } from '@udecode/slate';
-import { focusEditor } from '@udecode/slate-react';
 
 export interface SelectEditorOptions {
   /** Specific location if edge is not defined. */
@@ -25,16 +24,16 @@ export const selectEditor = (
   { at, edge, focus }: SelectEditorOptions
 ) => {
   if (focus) {
-    focusEditor(editor);
+    editor.focus();
   }
 
   let location = at as Location;
 
   if (edge === 'start') {
-    location = getStartPoint(editor, []);
+    location = getStartPoint(editor, [])!;
   }
   if (edge === 'end') {
-    location = getEndPoint(editor, []);
+    location = getEndPoint(editor, [])!;
   }
   if (location) {
     select(editor, location);

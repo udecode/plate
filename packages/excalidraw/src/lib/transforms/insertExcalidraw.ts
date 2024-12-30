@@ -11,10 +11,10 @@ import {
   BaseExcalidrawPlugin,
 } from '../BaseExcalidrawPlugin';
 
-export const insertExcalidraw = <E extends SlateEditor>(
-  editor: E,
+export const insertExcalidraw = (
+  editor: SlateEditor,
   props: TNodeProps<TExcalidrawElement> = {},
-  options: InsertNodesOptions<E> = {}
+  options: InsertNodesOptions = {}
 ): void => {
   if (!editor.selection) return;
 

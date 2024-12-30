@@ -1,7 +1,9 @@
-import { type Location, Editor } from 'slate';
+import { Editor } from 'slate';
 
+import type { At } from '../../types';
 import type { TEditor } from './TEditor';
 
-/** Get a range of a location. */
-export const getRange = (editor: TEditor, at: Location, to?: Location) =>
-  Editor.range(editor as any, at, to);
+import { getAt } from '../../utils';
+
+export const getRange = (editor: TEditor, at: At, to?: At) =>
+  Editor.range(editor as any, getAt(editor, at)!, getAt(editor, to));

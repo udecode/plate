@@ -6,10 +6,10 @@ import {
 
 import { type TImageElement, BaseImagePlugin } from '../BaseImagePlugin';
 
-export const insertImage = <E extends SlateEditor>(
-  editor: E,
+export const insertImage = (
+  editor: SlateEditor,
   url: ArrayBuffer | string,
-  options: InsertNodesOptions<E> = {}
+  options: InsertNodesOptions = {}
 ) => {
   const text = { text: '' };
   const image: TImageElement = {

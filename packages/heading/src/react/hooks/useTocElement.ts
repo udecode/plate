@@ -2,7 +2,6 @@ import React from 'react';
 
 import { getNode } from '@udecode/plate-common';
 import {
-  toDOMNode,
   useEditorPlugin,
   useEditorSelector,
   useScrollRef,
@@ -65,7 +64,7 @@ export const useTocElement = ({
 
         if (!node) return;
 
-        const el = toDOMNode(editor, node);
+        const el = editor.toDOMNode(node);
 
         if (!el) return;
 

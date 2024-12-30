@@ -1,7 +1,5 @@
 import React from 'react';
 
-import type { TEditableProps } from '@udecode/slate-react';
-
 import {
   type TDescendant,
   type TElement,
@@ -17,6 +15,7 @@ import { type DecoratedRange, Range, Text } from 'slate';
 
 import type { SlateEditor } from '../../editor';
 import type { NodeComponents } from '../../plugin';
+import type { TEditableProps } from '../../types/TEditableProps';
 import type { SlateRenderElementProps } from '../types';
 
 import { pipeRenderElementStatic } from '../pipeRenderElementStatic';

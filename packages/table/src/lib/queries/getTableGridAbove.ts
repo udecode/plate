@@ -1,7 +1,6 @@
 import {
   type GetAboveNodeOptions,
   type SlateEditor,
-  type TEditor,
   type TElement,
   type TElementEntry,
   getEdgeBlocksAbove,
@@ -16,13 +15,13 @@ import {
   getTableGridByRange,
 } from './getTableGridByRange';
 
-export type GetTableGridAboveOptions<E extends TEditor = TEditor> =
-  GetAboveNodeOptions<E> & Pick<GetTableGridByRangeOptions, 'format'>;
+export type GetTableGridAboveOptions = GetAboveNodeOptions &
+  Pick<GetTableGridByRangeOptions, 'format'>;
 
 /** Get sub table above anchor and focus. Format: tables or cells. */
-export const getTableGridAbove = <E extends SlateEditor>(
-  editor: E,
-  { format = 'table', ...options }: GetTableGridAboveOptions<E> = {}
+export const getTableGridAbove = (
+  editor: SlateEditor,
+  { format = 'table', ...options }: GetTableGridAboveOptions = {}
 ): TElementEntry[] => {
   const { api } = editor.getPlugin<TableConfig>({ key: 'table' });
 

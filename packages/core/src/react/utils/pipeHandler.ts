@@ -1,7 +1,6 @@
 import type React from 'react';
 
-import type { TEditableProps } from '@udecode/slate-react';
-
+import type { TEditableProps } from '../../lib';
 import type { PlateEditor } from '../editor/PlateEditor';
 import type { DOMHandlers } from '../plugin/DOMHandlers';
 

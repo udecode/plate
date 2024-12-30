@@ -1,8 +1,8 @@
 import type { TNodeEntry } from '@udecode/slate';
-import type { TEditableProps } from '@udecode/slate-react';
 import type { Range } from 'slate';
 
 import type { SlateEditor } from '../../editor';
+import type { TEditableProps } from '../../types/TEditableProps';
 
 import { getEditorPlugin } from '../../plugin';
 

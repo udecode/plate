@@ -1,7 +1,12 @@
-import { type Location, Editor } from 'slate';
+import { Editor } from 'slate';
 
+import type { At } from '../../types';
 import type { TEditor } from './TEditor';
 
-/** Get the start point of a location. */
-export const getStartPoint = (editor: TEditor, at: Location) =>
-  Editor.start(editor as any, at);
+import { getAt } from '../../utils';
+
+export const getStartPoint = (editor: TEditor, at: At) => {
+  try {
+    return Editor.start(editor as any, getAt(editor, at)!);
+  } catch {}
+};

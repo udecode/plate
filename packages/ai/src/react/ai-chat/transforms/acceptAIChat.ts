@@ -1,8 +1,4 @@
-import {
-  type PlateEditor,
-  focusEditor,
-  getEditorPlugin,
-} from '@udecode/plate-common/react';
+import { type PlateEditor, getEditorPlugin } from '@udecode/plate-common/react';
 
 import type { AIChatPluginConfig } from '../AIChatPlugin';
 
@@ -17,5 +13,5 @@ export const acceptAIChat = (editor: PlateEditor) => {
   });
 
   editor.getApi<AIChatPluginConfig>({ key: 'ai' }).aiChat.hide();
-  focusEditor(editor);
+  editor.focus();
 };

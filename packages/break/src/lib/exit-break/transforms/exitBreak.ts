@@ -27,7 +27,7 @@ export const exitBreak = (
   if (isStart) before = true;
   if (queryEdge && !isEdge) return;
 
-  const selectionPath = getPath(editor, editor.selection);
+  const selectionPath = getPath(editor, editor.selection)!;
 
   const slicedPath = relative
     ? selectionPath.slice(0, -level)

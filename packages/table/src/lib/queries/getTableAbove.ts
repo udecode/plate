@@ -6,9 +6,9 @@ import {
 
 import { BaseTablePlugin } from '../BaseTablePlugin';
 
-export const getTableAbove = <E extends SlateEditor>(
-  editor: E,
-  options?: GetAboveNodeOptions<E>
+export const getTableAbove = (
+  editor: SlateEditor,
+  options?: GetAboveNodeOptions
 ) =>
   getBlockAbove(editor, {
     match: {

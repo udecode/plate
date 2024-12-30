@@ -6,13 +6,12 @@ import {
   getEndPoint,
   getNextNode,
   getPreviousNode,
+  isEditorReadOnly,
   isHotkey,
   removeNodes,
 } from '@udecode/plate-common';
 import {
   type EditableSiblingComponent,
-  focusEditor,
-  isEditorReadOnly,
   useEditorPlugin,
   useEditorRef,
 } from '@udecode/plate-common/react';
@@ -86,7 +85,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
           const [, path] = entry;
 
           // focus the end of that block
-          focusEditor(editor, getEndPoint(editor, path));
+          editor.focus(getEndPoint(editor, path));
           e.preventDefault();
         }
       }
@@ -150,7 +149,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
             match: (n) => selectedIds!.has(n.id),
           });
 
-          focusEditor(editor);
+          editor.focus();
         }
       }
     },

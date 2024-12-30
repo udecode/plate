@@ -1,29 +1,37 @@
 import type { Modify } from '@udecode/utils';
 
-import { type EditorNodesOptions, Editor } from 'slate';
+import { type EditorNodesOptions, type Span, Editor } from 'slate';
 
+import type { At, QueryMode, QueryOptions } from '../../types';
 import type { NodeOf, TNode } from '../node/TNode';
 import type { TNodeEntry } from '../node/TNodeEntry';
-import type { TEditor } from './TEditor';
+import type { TEditor, Value, ValueOf } from './TEditor';
 
-import { type ENodeMatchOptions, getQueryOptions } from '../../utils/match';
+import { getQueryOptions } from '../../utils/match';
 import { type UnhangRangeOptions, unhangRange } from './unhangRange';
 
-export type GetNodeEntriesOptions<E extends TEditor = TEditor> = Modify<
+export type GetNodeEntriesOptions<V extends Value = Value> = Modify<
   NonNullable<EditorNodesOptions<TNode>>,
-  ENodeMatchOptions<E>
+  Omit<QueryOptions<V>, 'at'> &
+    QueryMode & {
+      /** Where to start at. @default editor.selection */
+      at?: At | Span;
+    }
 > &
   UnhangRangeOptions;
 
-/** Iterate through all of the nodes in the Editor. */
 export const getNodeEntries = <
   N extends NodeOf<E>,
   E extends TEditor = TEditor,
 >(
   editor: E,
-  options?: GetNodeEntriesOptions<E>
+  options?: GetNodeEntriesOptions<ValueOf<E>>
 ): Generator<TNodeEntry<N>, void, undefined> => {
-  unhangRange(editor, options?.at, options);
+  options = getQueryOptions(editor, options);
 
-  return Editor.nodes(editor as any, getQueryOptions(editor, options)) as any;
+  if (options?.at) {
+    unhangRange(editor, options.at as any, options);
+  }
+
+  return Editor.nodes(editor as any, options as any) as any;
 };

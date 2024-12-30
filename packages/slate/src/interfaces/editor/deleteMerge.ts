@@ -57,9 +57,9 @@ export const deleteMerge = (
         const opts = { distance, unit };
         const target = reverse
           ? getPointBefore(editor as any, at, opts) ||
-            getStartPoint(editor as any, [])
+            getStartPoint(editor as any, [])!
           : getPointAfter(editor as any, at, opts) ||
-            getEndPoint(editor as any, []);
+            getEndPoint(editor as any, [])!;
         at = { anchor: at, focus: target };
         hanging = true;
       }
@@ -143,7 +143,7 @@ export const deleteMerge = (
 
     if (!isSingleText && !startVoid) {
       const point = startRef.current!;
-      const [node] = getLeafNode(editor as any, point);
+      const [node] = getLeafNode(editor as any, point)!;
       const { path } = point;
       const { offset } = start;
       const text = node.text.slice(offset);
@@ -157,7 +157,7 @@ export const deleteMerge = (
 
     if (!endVoid) {
       const point = endRef.current!;
-      const [node] = getLeafNode(editor as any, point);
+      const [node] = getLeafNode(editor as any, point)!;
       const { path } = point;
       const offset = isSingleText ? start.offset : 0;
       const text = node.text.slice(offset, end.offset);

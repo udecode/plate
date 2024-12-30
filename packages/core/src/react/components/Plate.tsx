@@ -1,7 +1,6 @@
 import React, { useId } from 'react';
 
-import type { TEditableProps } from '@udecode/slate-react';
-
+import type { TEditableProps } from '../../lib/types/TEditableProps';
 import type { PlateEditor } from '../editor/PlateEditor';
 
 import { usePlateInstancesWarn } from '../../internal/usePlateInstancesWarn';

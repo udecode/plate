@@ -1,14 +1,18 @@
 import { Editor } from 'slate';
 
 import type { ElementOrTextOf } from '../element/TElement';
-import type { TEditor } from './TEditor';
+import type { InsertNodesOptions } from '../transforms';
+import type { TEditor, ValueOf } from './TEditor';
 
-/**
- * Insert a node at the current selection.
- *
- * If the selection is currently expanded, it will be deleted first.
- */
+import { getQueryOptions } from '../../utils';
+
 export const insertNode = <E extends TEditor>(
   editor: E,
-  node: ElementOrTextOf<E> | ElementOrTextOf<E>[]
-) => Editor.insertNode(editor as any, node as any);
+  node: ElementOrTextOf<E>,
+  options?: InsertNodesOptions<ValueOf<E>>
+) =>
+  Editor.insertNode(
+    editor as any,
+    node as any,
+    getQueryOptions(editor, options)
+  );

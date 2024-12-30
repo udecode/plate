@@ -1,9 +1,8 @@
-import type { ElementOf } from '@udecode/slate';
-
 import {
+  type ElementOf,
   type ReplaceNodeChildrenOptions,
   replaceNodeChildren,
-} from '@udecode/slate-utils';
+} from '@udecode/slate';
 
 import type { SlateEditor } from '../editor';
 

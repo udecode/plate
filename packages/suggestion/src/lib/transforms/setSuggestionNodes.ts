@@ -3,6 +3,7 @@ import {
   type SlateEditor,
   type TNodeProps,
   addRangeMarks,
+  getAt,
   getNodeEntries,
   isInline,
   nanoid,
@@ -21,7 +22,8 @@ export const setSuggestionNodes = (
     suggestionId?: string;
   } & SetNodesOptions
 ) => {
-  const { at = editor.selection, suggestionId = nanoid() } = options ?? {};
+  const at = getAt(editor, options?.at) ?? editor.selection;
+  const { suggestionId = nanoid() } = options ?? {};
 
   // TODO: get all inline nodes to be set
   const _nodeEntries = getNodeEntries(editor, {

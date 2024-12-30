@@ -1,8 +1,13 @@
-import { type EditorNormalizeOptions, Editor } from 'slate';
+import { Editor } from 'slate';
 
+import type { TOperation } from '../../types';
 import type { TEditor } from './TEditor';
 
-/** Normalize any dirty objects in the editor. */
+export interface EditorNormalizeOptions {
+  force?: boolean;
+  operation?: TOperation;
+}
+
 export const normalizeEditor = (
   editor: TEditor,
   options?: EditorNormalizeOptions

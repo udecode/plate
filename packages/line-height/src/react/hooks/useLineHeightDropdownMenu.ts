@@ -3,11 +3,7 @@ import {
   getBlockAbove,
   isCollapsed,
 } from '@udecode/plate-common';
-import {
-  focusEditor,
-  useEditorRef,
-  useEditorSelector,
-} from '@udecode/plate-common/react';
+import { useEditorRef, useEditorSelector } from '@udecode/plate-common/react';
 
 import { BaseLineHeightPlugin, setLineHeight } from '../../index';
 
@@ -48,7 +44,7 @@ export const useLineHeightDropdownMenu = ({
         setLineHeight(editor, {
           value: Number(newValue),
         });
-        focusEditor(editor);
+        editor.focus();
       },
     },
   };

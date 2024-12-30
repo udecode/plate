@@ -72,8 +72,8 @@ export const moveSelectionFromCell = (
 
       if (hasNode(editor, anchorPath) && hasNode(editor, focusPath)) {
         select(editor, {
-          anchor: getStartPoint(editor, anchorPath),
-          focus: getStartPoint(editor, focusPath),
+          anchor: getStartPoint(editor, anchorPath)!,
+          focus: getStartPoint(editor, focusPath)!,
         });
       }
 
@@ -98,18 +98,18 @@ export const moveSelectionFromCell = (
     nextCellPath[nextCellPath.length - 2] += offset;
 
     if (hasNode(editor, nextCellPath)) {
-      select(editor, getStartPoint(editor, nextCellPath));
+      select(editor, getStartPoint(editor, nextCellPath)!);
     } else {
       const tablePath = cellPath.slice(0, -2);
 
       if (reverse) {
         withoutNormalizing(editor, () => {
-          select(editor, getStartPoint(editor, tablePath));
+          select(editor, getStartPoint(editor, tablePath)!);
           moveSelection(editor, { reverse: true });
         });
       } else {
         withoutNormalizing(editor, () => {
-          select(editor, getEndPoint(editor, tablePath));
+          select(editor, getEndPoint(editor, tablePath)!);
           moveSelection(editor);
         });
       }

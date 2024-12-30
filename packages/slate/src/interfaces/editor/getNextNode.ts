@@ -2,21 +2,22 @@ import type { Modify } from '@udecode/utils';
 
 import { type EditorNextOptions, Editor } from 'slate';
 
+import type { QueryMode, QueryOptions, QueryVoids } from '../../types';
 import type { TDescendant } from '../node';
-import type { NodeOf, TNodeMatch } from '../node/TNode';
+import type { NodeOf } from '../node/TNode';
 import type { TNodeEntry } from '../node/TNodeEntry';
-import type { TEditor } from './TEditor';
+import type { TEditor, Value, ValueOf } from './TEditor';
 
-export type GetNextNodeOptions<E extends TEditor = TEditor> = Modify<
+import { getQueryOptions } from '../../utils';
+
+export type GetNextNodeOptions<V extends Value = Value> = Modify<
   NonNullable<EditorNextOptions<TDescendant>>,
-  {
-    match?: TNodeMatch<NodeOf<E>>;
-  }
+  QueryOptions<V> & QueryMode & QueryVoids
 >;
 
-/** Get the matching node in the branch of the document after a location. */
 export const getNextNode = <N extends NodeOf<E>, E extends TEditor = TEditor>(
   editor: E,
-  options?: GetNextNodeOptions<E>
-): TNodeEntry<N> | undefined =>
-  Editor.next(editor as any, options as any) as any;
+  options?: GetNextNodeOptions<ValueOf<E>>
+): TNodeEntry<N> | undefined => {
+  return Editor.next(editor as any, getQueryOptions(editor, options)) as any;
+};

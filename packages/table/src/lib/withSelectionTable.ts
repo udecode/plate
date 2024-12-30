@@ -76,7 +76,7 @@ export const withSelectionTable: ExtendEditor<TableConfig> = ({
             const isBackward = Range.isBackward(newSelection);
 
             if (isBackward) {
-              const startPoint = getStartPoint(editor, focusPath);
+              const startPoint = getStartPoint(editor, focusPath)!;
               const pointBefore = getPointBefore(editor, startPoint);
               op.newProperties.focus = pointBefore ?? startPoint;
             } else {

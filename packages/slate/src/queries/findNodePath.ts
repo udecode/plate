@@ -1,4 +1,4 @@
-import type { TEditor, TNode } from '../interfaces';
+import type { TEditor, TNode, ValueOf } from '../interfaces';
 
 import { getQueryOptions } from '../utils';
 import { type FindNodeOptions, findNode } from './findNode';
@@ -6,7 +6,7 @@ import { type FindNodeOptions, findNode } from './findNode';
 export const findNodePath = <E extends TEditor = TEditor>(
   editor: E,
   node: TNode,
-  options: FindNodeOptions<E> = {}
+  options: FindNodeOptions<ValueOf<E>> = {}
 ) => {
   const { match } = getQueryOptions(editor, options);
 

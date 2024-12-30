@@ -1,9 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 
-import { isHotkey } from '@udecode/plate-common';
+import { isHotkey, setNodes } from '@udecode/plate-common';
 import {
   selectSiblingNodePoint,
-  setNode,
   useEditorRef,
   useElement,
 } from '@udecode/plate-common/react';
@@ -46,9 +45,13 @@ export const useEquationInput = ({
   }, [open]);
 
   useEffect(() => {
-    setNode<TEquationElement>(editor, element, {
-      texExpression: expressionInput || '',
-    });
+    setNodes(
+      editor,
+      {
+        texExpression: expressionInput || '',
+      },
+      { at: element }
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expressionInput]);
 
@@ -58,9 +61,13 @@ export const useEquationInput = ({
 
   const onDismiss = () => {
     if (isInline) {
-      setNode(editor, element, {
-        texExpression: initialExpressionRef.current,
-      });
+      setNodes(
+        editor,
+        {
+          texExpression: initialExpressionRef.current,
+        },
+        { at: element }
+      );
     }
 
     onClose?.();

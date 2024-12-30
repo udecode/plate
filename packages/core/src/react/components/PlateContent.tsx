@@ -1,8 +1,10 @@
 import React, { useRef } from 'react';
 
 import { useComposedRef } from '@udecode/react-utils';
-import { type TEditableProps, focusEditorEdge } from '@udecode/slate-react';
+import { focusEditorEdge } from '@udecode/slate';
 import { Editable } from 'slate-react';
+
+import type { TEditableProps } from '../../lib/types/TEditableProps';
 
 import { useEditableProps } from '../hooks';
 import { type PlateStoreState, useEditorRef } from '../stores';

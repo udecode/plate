@@ -9,9 +9,14 @@ import {
   Range,
 } from 'slate';
 
-import type { NodeMatchOption } from '../../types/NodeMatchOption';
-import type { TEditor } from '../editor/TEditor';
+import type {
+  QueryMode,
+  QueryOptions,
+  QueryVoids,
+} from '../../types/QueryOptions';
+import type { TEditor, Value, ValueOf } from '../editor/TEditor';
 
+import { getQueryOptions } from '../../utils';
 import { createPathRef } from '../editor/createPathRef';
 import { createPointRef } from '../editor/createPointRef';
 import { getAboveNode } from '../editor/getAboveNode';
@@ -29,7 +34,7 @@ import { moveNodes } from './moveNodes';
 import { removeNodes } from './removeNodes';
 import { select } from './select';
 
-export type MergeNodesOptions<E extends TEditor = TEditor> = {
+export type MergeNodesOptions<V extends Value, E extends TEditor = TEditor> = {
   /**
    * Default: if the node isn't already the next sibling of the previous node,
    * move it so that it is before merging.
@@ -43,17 +48,15 @@ export type MergeNodesOptions<E extends TEditor = TEditor> = {
   removeEmptyAncestor?: (editor: E, options: { at: Path }) => void;
 } & Modify<
   NonNullable<Parameters<typeof Transforms.mergeNodes>[1]>,
-  NodeMatchOption<E>
+  QueryOptions<V> & QueryMode & QueryVoids
 >;
 
-/**
- * Merge a node at a location with the previous node of the same depth, removing
- * any empty containing nodes after the merge if necessary.
- */
 export const mergeNodes = <E extends TEditor>(
   editor: E,
-  options: MergeNodesOptions<E> = {}
+  options: MergeNodesOptions<ValueOf<E>, E> = {}
 ): void => {
+  options = getQueryOptions(editor, options);
+
   withoutNormalizing(editor as any, () => {
     let { at = editor.selection, match } = options;
     const {

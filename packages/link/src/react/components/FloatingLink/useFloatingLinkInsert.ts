@@ -1,7 +1,6 @@
 import React from 'react';
 
 import {
-  focusEditor,
   useComposedRef,
   useEditorPlugin,
   useEditorReadOnly,
@@ -72,7 +71,7 @@ export const useFloatingLinkInsert = ({
     () => {
       if (getOptions().mode === 'insert') {
         api.floatingLink.hide();
-        focusEditor(editor, editor.selection!);
+        editor.focus(editor.selection!);
       }
     },
     {

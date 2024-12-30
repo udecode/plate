@@ -1,20 +1,20 @@
-import type { EditorStringOptions } from 'slate/dist/interfaces/editor';
+import { Editor } from 'slate';
 
-import { type Location, Editor } from 'slate';
-
+import type { At } from '../../types/At';
+import type { QueryVoids } from '../../types/index';
 import type { TEditor } from './TEditor';
 
-/**
- * Get the text string content of a location.
- *
- * Note: by default the text of void nodes is considered to be an empty string,
- * regardless of content, unless you pass in true for the voids option
- */
+import { getAt } from '../../utils/getAt';
+
+export type GetEditorStringOptions = QueryVoids;
+
 export const getEditorString = (
   editor: TEditor,
-  at: Location | null | undefined,
-  options?: EditorStringOptions
+  at: At | null | undefined,
+  options?: GetEditorStringOptions
 ) => {
+  at = getAt(editor, at);
+
   if (!at) return '';
 
   try {

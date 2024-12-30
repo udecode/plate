@@ -1,6 +1,5 @@
 import { useEditorRef, useEditorSelector } from '@udecode/plate-core/react';
-import { focusEditor } from '@udecode/slate-react';
-import { isMarkActive } from '@udecode/slate-utils';
+import { isMarkActive } from '@udecode/slate';
 
 export const useMarkToolbarButtonState = ({
   clear,
@@ -31,7 +30,7 @@ export const useMarkToolbarButton = (
       pressed: state.pressed,
       onClick: () => {
         editor.tf.toggle.mark({ key: state.nodeType, clear: state.clear });
-        focusEditor(editor);
+        editor.focus();
       },
       onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();

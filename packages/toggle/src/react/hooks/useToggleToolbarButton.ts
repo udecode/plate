@@ -1,9 +1,5 @@
 import { collapseSelection } from '@udecode/plate-common';
-import {
-  focusEditor,
-  useEditorRef,
-  useEditorSelector,
-} from '@udecode/plate-common/react';
+import { useEditorRef, useEditorSelector } from '@udecode/plate-common/react';
 
 import { someToggle } from '../../lib';
 import { TogglePlugin } from '../TogglePlugin';
@@ -29,7 +25,7 @@ export const useToggleToolbarButton = ({
         openNextToggles(editor);
         editor.tf.toggle.block({ type: TogglePlugin.key });
         collapseSelection(editor);
-        focusEditor(editor);
+        editor.focus();
       },
       onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();

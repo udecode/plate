@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@udecode/plate-test-utils';
-import { selectEndOfBlockAboveSelection } from '@udecode/slate-utils';
+import { selectEndOfBlockAboveSelection } from '@udecode/slate';
 
 import type { SlateEditor } from '../../../editor';
 

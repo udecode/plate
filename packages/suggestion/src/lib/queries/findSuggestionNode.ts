@@ -1,6 +1,7 @@
 import {
   type FindNodeOptions,
   type SlateEditor,
+  type ValueOf,
   findNode,
 } from '@udecode/plate-common';
 
@@ -10,7 +11,7 @@ import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 
 export const findSuggestionNode = <E extends SlateEditor>(
   editor: E,
-  { match, ...options }: FindNodeOptions<E> = {}
+  { match, ...options }: FindNodeOptions<ValueOf<E>> = {}
 ) =>
   findNode<TSuggestionText>(editor, {
     match: (n, p) =>

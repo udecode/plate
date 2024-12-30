@@ -9,9 +9,9 @@ import {
   BaseEquationPlugin,
 } from '../BaseEquationPlugin';
 
-export const insertEquation = <E extends SlateEditor>(
-  editor: E,
-  options?: InsertNodesOptions<E>
+export const insertEquation = (
+  editor: SlateEditor,
+  options?: InsertNodesOptions
 ) => {
   insertNodes<TEquationElement>(
     editor,

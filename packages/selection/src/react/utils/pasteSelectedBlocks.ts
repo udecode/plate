@@ -1,12 +1,10 @@
 import {
   type SlateEditor,
-  deselect,
   getEditorPlugin,
   getStartPoint,
   insertNodes,
   isElementEmpty,
 } from '@udecode/plate-common';
-import { focusEditor, insertData } from '@udecode/plate-common/react';
 import { Path } from 'slate';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
@@ -21,7 +19,7 @@ export const pasteSelectedBlocks = (editor: SlateEditor, e: ClipboardEvent) => {
     const entry = entries.at(-1)!;
     const [node, path] = entry;
 
-    focusEditor(editor, getStartPoint(editor, path));
+    editor.focus(getStartPoint(editor, path));
 
     if (!isElementEmpty(editor, node as any)) {
       const at = Path.next(path);
@@ -34,10 +32,10 @@ export const pasteSelectedBlocks = (editor: SlateEditor, e: ClipboardEvent) => {
 
     // quick fix until we find a way to merge history
     // withoutMergingHistory(editor, () => {
-    insertData(editor, e.clipboardData!);
+    editor.insertData(e.clipboardData!);
     // });
     // insertData is focusing the editor so deselect
-    deselect(editor);
+    editor.deselect();
 
     selectInsertedBlocks(editor);
   }

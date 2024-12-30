@@ -1,5 +1,4 @@
 import { type TEditor, getRange } from '@udecode/plate-common';
-import { toDOMRange } from '@udecode/plate-common/react';
 import { type Location, type Range, Path } from 'slate';
 
 import { mergeClientRects } from './mergeClientRects';
@@ -17,7 +16,7 @@ export const getBoundingClientRect = (
   })();
 
   const clientRects = atRanges
-    .map((range) => toDOMRange(editor, range)?.getBoundingClientRect())
+    .map((range) => editor.toDOMRange(range)?.getBoundingClientRect())
     .filter(Boolean) as DOMRect[];
 
   if (clientRects.length === 0) return undefined;

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { deselectEditor, useEditorPlugin } from '@udecode/plate-common/react';
+import { useEditorPlugin } from '@udecode/plate-common/react';
 
 import { SelectionArea } from '../../internal';
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
@@ -26,7 +26,7 @@ export const useSelectionArea = () => {
       .on('start', ({ event }) => {
         setOption('isSelectionAreaVisible', true);
 
-        deselectEditor(editor);
+        editor.deselect();
 
         if (!event?.shiftKey) {
           selection.clearSelection();

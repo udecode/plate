@@ -1,5 +1,8 @@
+import type { KeyboardHandler } from '@udecode/plate-common/react';
+
 import {
   type TElement,
+  Hotkeys,
   getNodeEntries,
   getParentNode,
   isHotkey,
@@ -8,7 +11,6 @@ import {
   select,
   withoutNormalizing,
 } from '@udecode/plate-common';
-import { type KeyboardHandler, Hotkeys } from '@udecode/plate-common/react';
 
 import { BaseCodeLinePlugin } from '../lib';
 import { getCodeLineEntry } from '../lib/queries/getCodeLineEntry';

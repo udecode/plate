@@ -1,5 +1,4 @@
 import { type TEditor, getNodeEntries, isText } from '@udecode/plate-common';
-import { toDOMNode, toDOMRange } from '@udecode/plate-common/react';
 import { Path, Range } from 'slate';
 
 import type { SelectionRect } from '../types';
@@ -17,7 +16,7 @@ export const getSelectionRects = (
   }
 ): SelectionRect[] => {
   const [start, end] = Range.edges(range);
-  const domRange = toDOMRange(editor, range);
+  const domRange = editor.toDOMRange(range);
 
   if (!domRange) {
     return [];
@@ -30,7 +29,7 @@ export const getSelectionRects = (
   });
 
   for (const [textNode, textPath] of textEntries) {
-    const domNode = toDOMNode(editor, textNode);
+    const domNode = editor.toDOMNode(textNode);
 
     // Fix: failed to execute 'selectNode' on 'Range': the given Node has no parent
     if (!domNode?.parentElement) {

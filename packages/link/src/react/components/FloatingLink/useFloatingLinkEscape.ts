@@ -1,8 +1,4 @@
-import {
-  focusEditor,
-  useEditorPlugin,
-  useHotkeys,
-} from '@udecode/plate-common/react';
+import { useEditorPlugin, useHotkeys } from '@udecode/plate-common/react';
 
 import { LinkPlugin } from '../../LinkPlugin';
 
@@ -22,12 +18,12 @@ export const useFloatingLinkEscape = () => {
 
       if (mode === 'edit' && isEditing) {
         api.floatingLink.show('edit', editor.id);
-        focusEditor(editor, editor.selection!);
+        editor.focus(editor.selection!);
 
         return;
       }
       if (mode === 'insert') {
-        focusEditor(editor, editor.selection!);
+        editor.focus(editor.selection!);
       }
 
       api.floatingLink.hide();

@@ -1,11 +1,11 @@
-import { focusEditorEdge, isEditorFocused } from '@udecode/slate-react';
+import { focusEditorEdge, isEditorFocused } from '@udecode/slate';
 
 import type { PlateEditor } from '../../editor/PlateEditor';
 
 import { createPlateEditor } from '../../../react';
 
 // Mock the slate-react functions
-jest.mock('@udecode/slate-react', () => ({
+jest.mock('@udecode/slate', () => ({
   focusEditorEdge: jest.fn(),
   isEditorFocused: jest.fn(),
 }));

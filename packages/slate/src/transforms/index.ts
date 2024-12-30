@@ -3,6 +3,25 @@
  */
 
 export * from './addRangeMarks';
+export * from './duplicateBlocks';
+export * from './focusEditorEdge';
+export * from './insertElements';
+export * from './insertEmptyElement';
+export * from './moveChildren';
+export * from './removeEditorText';
+export * from './removeEmptyPreviousBlock';
+export * from './removeMark';
+export * from './removeNodeChildren';
+export * from './removeSelectionMark';
+export * from './replaceNode';
+export * from './replaceNodeChildren';
+export * from './selectEndOfBlockAboveSelection';
+export * from './selectNodes';
+export * from './setBlockAboveNode';
+export * from './setBlockNodes';
 export * from './setElements';
-export * from './setNode';
+export * from './setMarks';
+export * from './toggleMark';
+export * from './toggleWrapNodes';
 export * from './unhangCharacterRange';
+export * from './wrapNodeChildren';

@@ -1,7 +1,6 @@
 import {
   type InsertNodesOptions,
   type SlateEditor,
-  type TEditor,
   type UnwrapNodesOptions,
   type WrapNodesOptions,
   findNode,
@@ -24,13 +23,13 @@ import { unwrapLink } from './unwrapLink';
 import { upsertLinkText } from './upsertLinkText';
 import { wrapLink } from './wrapLink';
 
-export type UpsertLinkOptions<E extends TEditor = TEditor> = {
-  insertNodesOptions?: InsertNodesOptions<E>;
+export type UpsertLinkOptions = {
+  insertNodesOptions?: InsertNodesOptions;
   /** If true, insert text when selection is in url. */
   insertTextInLink?: boolean;
   skipValidation?: boolean;
-  unwrapNodesOptions?: UnwrapNodesOptions<E>;
-  wrapNodesOptions?: WrapNodesOptions<E>;
+  unwrapNodesOptions?: UnwrapNodesOptions;
+  wrapNodesOptions?: WrapNodesOptions;
 } & CreateLinkNodeOptions;
 
 /**
@@ -40,8 +39,8 @@ export type UpsertLinkOptions<E extends TEditor = TEditor> = {
  * - Remove link node, get link text Then:
  * - Insert link node
  */
-export const upsertLink = <E extends SlateEditor>(
-  editor: E,
+export const upsertLink = (
+  editor: SlateEditor,
   {
     insertNodesOptions,
     insertTextInLink,
@@ -49,7 +48,7 @@ export const upsertLink = <E extends SlateEditor>(
     target,
     text,
     url,
-  }: UpsertLinkOptions<E>
+  }: UpsertLinkOptions
 ) => {
   const at = editor.selection;
 

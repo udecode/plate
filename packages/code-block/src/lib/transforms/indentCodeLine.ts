@@ -26,7 +26,7 @@ export const indentCodeLine = (
   { codeLine, indentDepth = 2 }: IndentCodeLineOptions
 ) => {
   const [, codeLinePath] = codeLine;
-  const codeLineStart = getStartPoint(editor, codeLinePath);
+  const codeLineStart = getStartPoint(editor, codeLinePath)!;
   const indent = ' '.repeat(indentDepth);
 
   if (!isExpanded(editor.selection)) {

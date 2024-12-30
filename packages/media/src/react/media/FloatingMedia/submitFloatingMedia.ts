@@ -5,7 +5,7 @@ import {
   isUrl,
   setNodes,
 } from '@udecode/plate-common';
-import { focusEditor } from '@udecode/plate-common/react';
+;
 
 import type {
   MediaPluginOptions,
@@ -50,7 +50,7 @@ export const submitFloatingMedia = (
 
   floatingMediaActions.reset();
 
-  focusEditor(editor, editor.selection!);
+  editor.focus(editor.selection!);
 
   return true;
 };

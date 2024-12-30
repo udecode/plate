@@ -1,8 +1,4 @@
 import type { TElement, TText } from '@udecode/slate';
-import type {
-  TRenderElementProps,
-  TRenderLeafProps,
-} from '@udecode/slate-react';
 import type { AnyObject } from '@udecode/utils';
 
 import type {
@@ -10,6 +6,8 @@ import type {
   PluginConfig,
   SlatePluginContext,
 } from '../plugin';
+import type { TRenderElementProps } from '../types/TRenderElementProps';
+import type { TRenderLeafProps } from '../types/TRenderLeafProps';
 
 export type SlateRenderElementProps<
   N extends TElement = TElement,

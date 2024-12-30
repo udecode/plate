@@ -122,7 +122,7 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
               editor
                 .getTransforms(BlockSelectionPlugin)
                 .blockSelection.removeNodes();
-              focusEditor(editor);
+              editor.focus();
             }}
           >
             Delete

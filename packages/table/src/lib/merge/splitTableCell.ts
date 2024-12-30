@@ -147,5 +147,5 @@ export const splitTableCell = (editor: SlateEditor) => {
     }
   });
 
-  select(editor, getEndPoint(editor, path));
+  select(editor, getEndPoint(editor, path)!);
 };

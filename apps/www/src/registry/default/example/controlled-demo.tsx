@@ -51,7 +51,7 @@ export default function ControlledEditorDemo() {
           onClick={() => {
             editor.tf.reset();
 
-            focusEditor(editor);
+            editor.focus();
           }}
         >
           Reset Editor

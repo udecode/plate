@@ -3,23 +3,26 @@ import {
   type NodeOf,
   type TEditor,
   type TNodeEntry,
+  type Value,
+  type ValueOf,
   getNodeEntries,
 } from '../interfaces';
 import { getQueryOptions } from '../utils';
 
-export type FindNodeOptions<E extends TEditor = TEditor> =
-  GetNodeEntriesOptions<E>;
+export type FindNodeOptions<V extends Value = Value> = GetNodeEntriesOptions<V>;
 
 /** Find node matching the condition. */
 export const findNode = <N extends NodeOf<E>, E extends TEditor = TEditor>(
   editor: E,
-  options: FindNodeOptions<E> = {}
+  options: FindNodeOptions<ValueOf<E>> = {}
 ): TNodeEntry<N> | undefined => {
+  options = getQueryOptions(editor, options);
+
   // Slate throws when things aren't found so we wrap in a try catch and return undefined on throw.
   try {
     const nodeEntries = getNodeEntries<N, E>(editor, {
-      at: editor.selection || [],
-      ...getQueryOptions(editor, options),
+      ...options,
+      at: options.at || editor.selection || [],
     });
 
     // eslint-disable-next-line no-unreachable-loop

@@ -9,11 +9,7 @@ import {
   getEndPoint,
   getNodeString,
 } from '@udecode/plate-common';
-import {
-  type PlateEditor,
-  focusEditor,
-  useEditorPlugin,
-} from '@udecode/plate-common/react';
+import { type PlateEditor, useEditorPlugin } from '@udecode/plate-common/react';
 import { useIsSelecting } from '@udecode/plate-selection/react';
 import {
   Album,
@@ -44,7 +40,7 @@ export const aiChatItems = {
     value: 'accept',
     onSelect: ({ editor }) => {
       editor.getTransforms(AIChatPlugin).aiChat.accept();
-      focusEditor(editor, getEndPoint(editor, editor.selection!));
+      editor.focus(getEndPoint(editor, editor.selection!));
     },
   },
   continueWrite: {

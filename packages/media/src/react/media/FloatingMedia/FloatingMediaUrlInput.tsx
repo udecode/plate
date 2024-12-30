@@ -4,7 +4,6 @@ import type { WithRequiredKey } from '@udecode/plate-common';
 
 import {
   createPrimitiveComponent,
-  focusEditor,
   useEditorRef,
   useElement,
   useHotkeys,
@@ -44,7 +43,7 @@ export const useFloatingMediaUrlInputState = ({
     () => {
       if (floatingMediaSelectors.isEditing()) {
         floatingMediaActions.reset();
-        focusEditor(editor, editor.selection!);
+        editor.focus(editor.selection!);
       }
     },
     {

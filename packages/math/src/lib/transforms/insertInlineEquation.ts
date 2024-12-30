@@ -9,10 +9,10 @@ import type { TEquationElement } from '../BaseEquationPlugin';
 
 import { BaseInlineEquationPlugin } from '../BaseInlineEquationPlugin';
 
-export const insertInlineEquation = <E extends SlateEditor>(
-  editor: E,
+export const insertInlineEquation = (
+  editor: SlateEditor,
   texExpression?: string,
-  options?: InsertNodesOptions<E>
+  options?: InsertNodesOptions
 ) => {
   insertNodes<TEquationElement>(
     editor,

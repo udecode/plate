@@ -3,7 +3,6 @@ import type { PlateEditor } from '@udecode/plate-common/react';
 import type { DropTargetMonitor } from 'react-dnd';
 
 import { collapseSelection, isExpanded } from '@udecode/plate-common';
-import { focusEditor } from '@udecode/plate-common/react';
 
 import type { DragItemNode } from '../types';
 
@@ -92,7 +91,7 @@ describe('onHoverNode', () => {
     });
 
     expect(collapseSelection).toHaveBeenCalledWith(editor);
-    expect(focusEditor).toHaveBeenCalledWith(editor);
+    expect(editor.focus).toHaveBeenCalled();
   });
 
   it('should handle horizontal orientation', () => {

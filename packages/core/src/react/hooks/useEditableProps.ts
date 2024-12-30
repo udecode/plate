@@ -1,12 +1,11 @@
 import React from 'react';
 
-import type { TEditableProps } from '@udecode/slate-react';
-
 import { useMemoOnce } from '@udecode/react-utils';
 import clsx from 'clsx';
 import omit from 'lodash/omit.js';
 import { useDeepCompareMemo } from 'use-deep-compare';
 
+import type { TEditableProps } from '../../lib';
 import type { PlateProps } from '../components';
 
 import { pipeDecorate } from '../../lib/static/utils/pipeDecorate';

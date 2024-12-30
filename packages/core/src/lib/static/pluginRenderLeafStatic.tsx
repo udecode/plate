@@ -1,9 +1,8 @@
 import React from 'react';
 
-import type { TRenderLeafProps } from '@udecode/slate-react';
-
 import type { SlateEditor } from '../editor';
 import type { NodeComponents, SlatePlugin } from '../plugin';
+import type { TRenderLeafProps } from '../types/TRenderLeafProps';
 
 import { SlateLeaf } from './components/SlateLeaf';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps';

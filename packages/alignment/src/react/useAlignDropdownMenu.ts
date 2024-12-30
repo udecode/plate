@@ -1,9 +1,5 @@
 import { getNodeEntries, isBlock, isDefined } from '@udecode/plate-common';
-import {
-  focusEditor,
-  useEditorRef,
-  useEditorSelector,
-} from '@udecode/plate-common/react';
+import { useEditorRef, useEditorSelector } from '@udecode/plate-common/react';
 
 import { type Alignment, BaseAlignPlugin, setAlign } from '../index';
 
@@ -55,7 +51,7 @@ export const useAlignDropdownMenu = ({
           value: newValue as Alignment,
         });
 
-        focusEditor(editor);
+        editor.focus();
       },
     },
   };

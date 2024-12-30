@@ -1,5 +1,8 @@
+import type { KeyboardHandler } from '@udecode/plate-common/react';
+
 import {
   type TElement,
+  Hotkeys,
   collapseSelection,
   getAboveNode,
   getNodeEntries,
@@ -7,7 +10,6 @@ import {
   isHotkey,
   select,
 } from '@udecode/plate-common';
-import { type KeyboardHandler, Hotkeys } from '@udecode/plate-common/react';
 
 import {
   type TableConfig,

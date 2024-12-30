@@ -58,7 +58,9 @@ export const withNodeId: ExtendEditor<NodeIdConfig> = ({
   };
 
   editor.insertNodes = (_nodes, options) => {
-    const nodes = castArray<TNode>(_nodes as any).filter((node) => !!node);
+    const nodes = castArray<TDescendant>(_nodes as any).filter(
+      (node) => !!node
+    );
 
     if (nodes.length === 0) return;
 

@@ -10,14 +10,14 @@ import type { Alignment } from '../types';
 
 import { BaseAlignPlugin } from '../BaseAlignPlugin';
 
-export const setAlign = <E extends SlateEditor>(
-  editor: E,
+export const setAlign = (
+  editor: SlateEditor,
   {
     setNodesOptions,
     value,
   }: {
     value: Alignment;
-    setNodesOptions?: SetNodesOptions<E>;
+    setNodesOptions?: SetNodesOptions;
   }
 ) => {
   const { defaultNodeValue, nodeKey } = editor.getInjectProps(BaseAlignPlugin);

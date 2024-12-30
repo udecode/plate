@@ -10,8 +10,6 @@ import {
 } from '@udecode/plate-common';
 import {
   createPrimitiveComponent,
-  focusEditor,
-  setNode,
   useEditorRef,
   useElement,
 } from '@udecode/plate-common/react';
@@ -61,9 +59,10 @@ export const useCaptionTextareaState = () => {
 
   const updateEditorCaptionValue = useCallback(
     (newValue: string) => {
-      setNode<TCaptionElement>(editor, element, {
-        caption: [{ text: newValue }],
-      });
+      editor.setNodes<TCaptionElement>(
+        { caption: [{ text: newValue }] },
+        { at: element }
+      );
     },
     [editor, element]
   );
@@ -131,7 +130,7 @@ export const useCaptionTextarea = ({
 
       e.preventDefault();
 
-      focusEditor(editor, path);
+      editor.focus(path);
     }
     // select next block
     if (isHotkey('down', e)) {
@@ -145,7 +144,7 @@ export const useCaptionTextarea = ({
 
       e.preventDefault();
 
-      focusEditor(editor, nextNodePath);
+      editor.focus(nextNodePath);
     }
   };
 

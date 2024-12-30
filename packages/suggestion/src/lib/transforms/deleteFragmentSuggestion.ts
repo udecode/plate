@@ -14,7 +14,7 @@ export const deleteFragmentSuggestion = (
   withoutNormalizing(editor, () => {
     const selection = editor.selection!;
 
-    const [start, end] = getEdgePoints(editor, selection);
+    const [start, end] = getEdgePoints(editor, selection)!;
 
     if (reverse) {
       collapseSelection(editor, { edge: 'end' });

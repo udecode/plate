@@ -1,8 +1,7 @@
 import type { TNodeEntry, TSelection, ValueOf } from '@udecode/slate';
-import type { TEditableProps } from '@udecode/slate-react';
 import type { Range } from 'slate';
 
-import type { Nullable } from '../../../lib';
+import type { Nullable, TEditableProps } from '../../../lib';
 import type { PlateEditor } from '../../editor';
 
 export type PlateChangeKey =

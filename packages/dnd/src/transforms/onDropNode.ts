@@ -1,7 +1,7 @@
+import type { PlateEditor } from '@udecode/plate-common/react';
 import type { DropTargetMonitor } from 'react-dnd';
 
 import { type TElement, findNode, moveNodes } from '@udecode/plate-common';
-import { type PlateEditor, focusEditor } from '@udecode/plate-common/react';
 import { Path } from 'slate';
 
 import type { UseDropNodeOptions } from '../hooks';
@@ -51,7 +51,7 @@ export const getDropPath = (
   const [, dragPath] = dragEntry;
   const [, hoveredPath] = dropEntry;
 
-  focusEditor(editor);
+  editor.focus();
 
   let dropPath: Path | undefined;
 

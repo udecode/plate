@@ -1,14 +1,17 @@
-import type { TextInsertTextOptions } from 'slate/dist/interfaces/transforms/text';
-
 import { Transforms } from 'slate';
 
+import type { QueryAt, QueryVoids } from '../../types';
 import type { TEditor } from '../editor/TEditor';
 
-/** Insert a string of text in the Editor. */
+import { getAt } from '../../utils/getAt';
+
 export const insertText = (
   editor: TEditor,
   text: string,
-  options?: TextInsertTextOptions
+  options?: QueryAt & QueryVoids
 ) => {
-  Transforms.insertText(editor as any, text, options);
+  Transforms.insertText(editor as any, text, {
+    ...options,
+    at: getAt(editor, options?.at),
+  });
 };

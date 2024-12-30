@@ -55,8 +55,6 @@
     "@udecode/react-hotkeys": "37.0.0",
     "@udecode/react-utils": "40.2.8",
     "@udecode/slate": "41.0.0",
-    "@udecode/slate-react": "41.0.5",
-    "@udecode/slate-utils": "41.0.0",
     "@udecode/utils": "37.0.0"
   },
   "peerDependencies": {

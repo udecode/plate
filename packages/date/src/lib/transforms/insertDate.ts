@@ -6,9 +6,9 @@ import {
 
 import { type TDateElement, BaseDatePlugin } from '../BaseDatePlugin';
 
-export const insertDate = <E extends SlateEditor>(
+export const insertDate = (
   editor: SlateEditor,
-  { date, ...options }: { date?: string } & InsertNodesOptions<E> = {}
+  { date, ...options }: { date?: string } & InsertNodesOptions = {}
 ) => {
   insertNodes<TDateElement | { text: string }>(
     editor,

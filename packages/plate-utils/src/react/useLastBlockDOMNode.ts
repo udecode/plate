@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 
 import type { PlateEditor } from '@udecode/plate-core/react';
 
-import { toDOMNode } from '@udecode/slate-react';
+import { toDOMNode } from '@udecode/slate';
 
 import { useLastBlock } from './useLastBlock';
 
@@ -18,7 +18,7 @@ export const useLastBlockDOMNode = (
   const lastBlock = useLastBlock({ deps, enabled });
 
   const anchorElement = useMemo(
-    () => (lastBlock ? toDOMNode(editor, lastBlock) : null)!,
+    () => (lastBlock ? editor.toDOMNode(lastBlock) : null)!,
     [editor, lastBlock]
   );
 

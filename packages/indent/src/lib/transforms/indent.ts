@@ -3,9 +3,6 @@ import type { SlateEditor } from '@udecode/plate-common';
 import { type SetIndentOptions, setIndent } from './setIndent';
 
 /** Increase the indentation of the selected blocks. */
-export const indent = <E extends SlateEditor>(
-  editor: E,
-  options?: SetIndentOptions<E>
-) => {
+export const indent = (editor: SlateEditor, options?: SetIndentOptions) => {
   setIndent(editor, { offset: 1, ...options });
 };

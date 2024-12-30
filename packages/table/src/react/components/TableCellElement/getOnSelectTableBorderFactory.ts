@@ -1,6 +1,6 @@
 import type { SlateEditor, TElement } from '@udecode/plate-common';
 
-import { focusEditor } from '@udecode/plate-common/react';
+;
 
 import {
   type BorderDirection,
@@ -24,6 +24,6 @@ export const getOnSelectTableBorderFactory =
     }
 
     setTimeout(() => {
-      focusEditor(editor);
+      editor.focus();
     }, 50);
   };

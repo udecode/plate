@@ -71,7 +71,7 @@ export const findTabDestination = (
     }
 
     return {
-      path: getPoint(editor, activeTabbableEntry.path).path,
+      path: getPoint(editor, activeTabbableEntry.path)!.path,
       type: 'path',
     };
   }

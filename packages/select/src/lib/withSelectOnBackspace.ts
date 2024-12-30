@@ -38,7 +38,7 @@ export const withSelectOnBackspace: ExtendEditor<SelectOnBackspaceConfig> = ({
         });
 
         if (!!prevCell && pointBefore) {
-          const point = getPoint(editor, selection as Slate.Location);
+          const point = getPoint(editor, selection as Slate.Location)!;
           const selectedNode = getNode(editor, point.path);
 
           if (

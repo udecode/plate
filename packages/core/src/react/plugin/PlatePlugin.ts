@@ -13,7 +13,6 @@ import type {
   TText,
   Value,
 } from '@udecode/slate';
-import type { TEditableProps } from '@udecode/slate-react';
 import type { AnyObject } from '@udecode/utils';
 import type { StoreApi } from 'zustand-x';
 
@@ -40,6 +39,7 @@ import type {
   SlatePlugin,
   SlatePluginConfig,
   SlatePluginContext,
+  TEditableProps,
   WithAnyKey,
 } from '../../lib';
 import type { PlateEditor } from '../editor/PlateEditor';

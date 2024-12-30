@@ -1,11 +1,7 @@
 import type { Path } from 'slate';
 
 import { type TEditor, type TNode, setSelection } from '@udecode/slate';
-import { focusEditor } from '@udecode/slate-react';
-import {
-  getNextNodeStartPoint,
-  getPreviousNodeEndPoint,
-} from '@udecode/slate-utils';
+import { getNextNodeStartPoint, getPreviousNodeEndPoint } from '@udecode/slate';
 
 export const selectSiblingNodePoint = (
   editor: TEditor,
@@ -38,6 +34,6 @@ export const selectSiblingNodePoint = (
   });
 
   if (focus) {
-    focusEditor(editor);
+    editor.focus();
   }
 };

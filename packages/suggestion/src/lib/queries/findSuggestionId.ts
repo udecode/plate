@@ -24,7 +24,7 @@ export const findSuggestionId = (editor: SlateEditor, at: Location) => {
     let end: Point;
 
     try {
-      [start, end] = getEdgePoints(editor, at);
+      [start, end] = getEdgePoints(editor, at)!;
     } catch {
       return;
     }

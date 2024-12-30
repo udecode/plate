@@ -6,7 +6,7 @@ import {
   getNodeString,
   removeNodes,
 } from '@udecode/plate-common';
-import { findEventRange, toTPlatePlugin } from '@udecode/plate-common/react';
+import { toTPlatePlugin } from '@udecode/plate-common/react';
 
 import type { AllowedFileType } from './internal/mimes';
 import type { MediaItemConfig, UploadError } from './type';
@@ -155,7 +155,7 @@ export const PlaceholderPlugin = toTPlatePlugin<
          * drop location. Find the location from the event and upload the files
          * at that location.
          */
-        const at = findEventRange(editor, event);
+        const at = editor.findEventRange(event);
 
         if (!at) return false;
 

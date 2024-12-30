@@ -1,11 +1,11 @@
 import type { Path } from 'slate';
 
-import type { TEditor } from '../editor/TEditor';
+import type { TEditor, Value } from '../editor/TEditor';
 import type { ElementOf } from '../element/TElement';
-import type { TextOf } from '../text/TText';
+import type { TextIn, TextOf } from '../text/TText';
 import type { AncestorOf } from './TAncestor';
 import type { ChildOf, DescendantOf } from './TDescendant';
-import type { NodeOf, TNode } from './TNode';
+import type { NodeIn, NodeOf, TNode } from './TNode';
 
 /**
  * `TNodeEntry` objects are returned when iterating over the nodes in a Slate
@@ -16,6 +16,8 @@ export type TNodeEntry<N extends TNode = TNode> = [N, Path];
 
 /** Node entry from an editor. */
 export type NodeEntryOf<E extends TEditor> = TNodeEntry<NodeOf<E>>;
+
+export type NodeEntryIn<V extends Value> = TNodeEntry<NodeIn<V>>;
 
 /** Element entry from a node. */
 export type TElementEntry<N extends TNode = TNode> = TNodeEntry<ElementOf<N>>;
@@ -28,6 +30,8 @@ export type TTextEntry<N extends TNode = TNode> = TNodeEntry<TextOf<N>>;
 
 /** Text node entry of a value. */
 export type TextEntryOf<E extends TEditor> = TNodeEntry<TextOf<E>>;
+
+export type TextEntryIn<V extends Value> = TNodeEntry<TextIn<V>>;
 
 /** Ancestor entry from a node. */
 export type TAncestorEntry<N extends TNode = TNode> = TNodeEntry<AncestorOf<N>>;

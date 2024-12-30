@@ -3,7 +3,7 @@ import {
   isRangeAcrossBlocks,
   isRangeInSameBlock,
   isSelectionExpanded,
-} from '@udecode/slate-utils';
+} from '@udecode/slate';
 
 export function useSelectionCollapsed() {
   return useEditorSelector((editor) => !isSelectionExpanded(editor), []);

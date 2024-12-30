@@ -64,8 +64,8 @@ export const withInsertFragmentTable: ExtendEditor<TableConfig> = ({
           });
 
           select(editor, {
-            anchor: getStartPoint(editor, cellEntries[0][1]),
-            focus: getEndPoint(editor, cellEntries.at(-1)![1]),
+            anchor: getStartPoint(editor, cellEntries[0][1])!,
+            focus: getEndPoint(editor, cellEntries.at(-1)![1])!,
           });
 
           return;
@@ -151,8 +151,8 @@ export const withInsertFragmentTable: ExtendEditor<TableConfig> = ({
 
             if (lastCellPath) {
               select(editor, {
-                anchor: getStartPoint(editor, startCellPath),
-                focus: getEndPoint(editor, lastCellPath),
+                anchor: getStartPoint(editor, startCellPath)!,
+                focus: getEndPoint(editor, lastCellPath)!,
               });
             }
           });

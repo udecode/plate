@@ -47,6 +47,7 @@ export * from './isEdgePoint';
 export * from './isEditor';
 export * from './isEditorNormalizing';
 export * from './isElementEmpty';
+export * from './isElementReadOnly';
 export * from './isEndPoint';
 export * from './isInline';
 export * from './isMarkableVoid';

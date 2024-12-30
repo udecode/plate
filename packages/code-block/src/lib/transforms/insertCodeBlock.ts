@@ -18,9 +18,9 @@ import {
  * Insert a code block: set the node to code line and wrap it with a code block.
  * If the cursor is not at the block start, insert break before.
  */
-export const insertCodeBlock = <E extends SlateEditor>(
-  editor: E,
-  insertNodesOptions: Omit<InsertNodesOptions<E>, 'match'> = {}
+export const insertCodeBlock = (
+  editor: SlateEditor,
+  insertNodesOptions: Omit<InsertNodesOptions, 'match'> = {}
 ) => {
   if (!editor.selection || isExpanded(editor.selection)) return;
 

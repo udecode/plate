@@ -1,7 +1,6 @@
 import { isSelectionExpanded } from '@udecode/plate-common';
 import {
   type PlateEditor,
-  isEditorFocused,
   useEditorPlugin,
   useEditorSelector,
 } from '@udecode/plate-common/react';
@@ -10,7 +9,7 @@ import { isSelecting } from '../../lib';
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 
 export const isSelectingOrFocused = (editor: PlateEditor) => {
-  return isSelecting(editor) || isEditorFocused(editor);
+  return isSelecting(editor) || editor.isFocused();
 };
 
 export const useIsSelecting = () => {

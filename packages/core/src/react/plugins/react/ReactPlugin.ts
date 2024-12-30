@@ -1,4 +1,4 @@
-import { focusEditorEdge, isEditorFocused } from '@udecode/slate-react';
+import { focusEditorEdge } from '@udecode/slate';
 
 import { createSlatePlugin } from '../../../lib';
 import { withPlateReact } from './withPlateReact';
@@ -12,7 +12,7 @@ export const ReactPlugin = createSlatePlugin({
 
   return {
     reset: () => {
-      const isFocused = isEditorFocused(editor);
+      const isFocused = editor.isFocused();
 
       reset();
 

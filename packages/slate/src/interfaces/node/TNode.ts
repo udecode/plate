@@ -1,6 +1,6 @@
 import type { Path } from 'slate';
 
-import type { TEditor } from '../editor/TEditor';
+import type { TEditor, Value } from '../editor/TEditor';
 import type { ElementOf, TElement } from '../element/TElement';
 import type { TText, TextOf } from '../text/TText';
 
@@ -8,6 +8,9 @@ export type TNode = TEditor | TElement | TText;
 
 /** A utility type to get all the node types from a root node type. */
 export type NodeOf<N extends TNode> = ElementOf<N> | N | TextOf<N>;
+
+/** A utility type to get all possible node types from a Value type */
+export type NodeIn<V extends Value> = NodeOf<V[number]> | TEditor;
 
 /** Convenience type for returning the props of a node. */
 export type TNodeProps<N extends TNode> = N extends TEditor

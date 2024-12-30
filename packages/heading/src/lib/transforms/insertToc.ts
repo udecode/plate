@@ -7,9 +7,9 @@ import {
 
 import { BaseTocPlugin } from '../BaseTocPlugin';
 
-export const insertToc = <E extends SlateEditor>(
-  editor: E,
-  options?: InsertNodesOptions<E>
+export const insertToc = (
+  editor: SlateEditor,
+  options?: InsertNodesOptions
 ) => {
   insertNodes<TElement>(
     editor,

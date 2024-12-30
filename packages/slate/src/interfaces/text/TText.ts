@@ -4,7 +4,7 @@ import type {
   UnknownObject,
 } from '@udecode/utils';
 
-import type { TEditor } from '../editor/TEditor';
+import type { TEditor, Value } from '../editor/TEditor';
 import type { TElement } from '../element/TElement';
 import type { TNode, TNodeProps } from '../node/TNode';
 
@@ -30,10 +30,14 @@ export type TextOf<N extends TNode> = TEditor extends N
           ? N
           : never;
 
+export type TextIn<V extends Value> = TextOf<V[number]>;
+
 /** A utility type to get all the mark types from a root node type. */
 export type MarksOf<N extends TNode> = Simplify<
   UnionToIntersection<TNodeProps<TextOf<N>>>
 >;
+
+export type MarksIn<V extends Value> = MarksOf<V[number]>;
 
 export type MarkKeysOf<N extends TNode> =
   {} extends MarksOf<N> ? unknown : keyof MarksOf<N>;

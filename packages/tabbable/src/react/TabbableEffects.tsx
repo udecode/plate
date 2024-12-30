@@ -1,12 +1,6 @@
 import React from 'react';
 
-import {
-  focusEditor,
-  toDOMNode,
-  toSlateNode,
-  useEditorReadOnly,
-  useEditorRef,
-} from '@udecode/plate-common/react';
+import { useEditorReadOnly, useEditorRef } from '@udecode/plate-common/react';
 import { Path } from 'slate';
 import { tabbable } from 'tabbable';
 
@@ -25,7 +19,7 @@ export function TabbableEffects() {
     const { globalEventListener, insertTabbableEntries, isTabbable, query } =
       editor.getOptions(BaseTabbablePlugin);
 
-    const editorDOMNode = toDOMNode(editor, editor);
+    const editorDOMNode = editor.toDOMNode(editor);
 
     if (!editorDOMNode) return;
 
@@ -68,7 +62,7 @@ export function TabbableEffects() {
        */
       const defaultTabbableEntries = tabbableDOMNodes
         .map((domNode) => {
-          const slateNode = toSlateNode(editor, domNode);
+          const slateNode = editor.toSlateNode(domNode);
 
           if (!slateNode) return;
 
@@ -118,7 +112,7 @@ export function TabbableEffects() {
             break;
           }
           case 'path': {
-            focusEditor(editor, {
+            editor.focus({
               anchor: { offset: 0, path: tabDestination.path },
               focus: { offset: 0, path: tabDestination.path },
             });

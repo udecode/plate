@@ -1,11 +1,7 @@
 import React from 'react';
 
 import { getMark, removeMark, select, setMarks } from '@udecode/plate-common';
-import {
-  focusEditor,
-  useEditorRef,
-  useEditorSelector,
-} from '@udecode/plate-common/react';
+import { useEditorRef, useEditorSelector } from '@udecode/plate-common/react';
 
 export const useColorDropdownMenuState = ({
   closeOnSelect = true,
@@ -48,7 +44,7 @@ export const useColorDropdownMenuState = ({
         setSelectedColor(value);
 
         select(editor, editor.selection);
-        focusEditor(editor);
+        editor.focus();
 
         setMarks(editor, { [nodeType]: value });
       }
@@ -67,7 +63,7 @@ export const useColorDropdownMenuState = ({
   const clearColor = React.useCallback(() => {
     if (editor.selection) {
       select(editor, editor.selection);
-      focusEditor(editor);
+      editor.focus();
 
       if (selectedColor) {
         removeMark(editor, { key: nodeType });

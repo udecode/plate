@@ -1,10 +1,16 @@
-import { type Location, Editor } from 'slate';
+import { Editor } from 'slate';
 
+import type { At } from '../../types';
 import type { ElementOrTextOf } from '../element/TElement';
 import type { TEditor } from './TEditor';
 
-/** Get the fragment at a location. */
+import { getAt } from '../../utils';
+
 export const getFragment = <E extends TEditor>(
   editor: E,
-  at: Location
-): ElementOrTextOf<E>[] => Editor.fragment(editor as any, at) as any;
+  at: At
+): ElementOrTextOf<E>[] | undefined => {
+  try {
+    return Editor.fragment(editor as any, getAt(editor, at)!) as any;
+  } catch {}
+};

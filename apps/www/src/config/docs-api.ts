@@ -327,7 +327,6 @@ export const docsApi: SidebarNavItem[] = [
       'hasEditorEditableTarget',
       'toSlatePoint',
       'findPath',
-      'SlateProps',
       'toSlateRange',
       'toDOMPoint',
     ],

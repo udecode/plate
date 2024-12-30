@@ -6,7 +6,7 @@ import {
   removeSelectionMark,
   replaceNodeChildren,
   toggleMark,
-} from '@udecode/slate-utils';
+} from '@udecode/slate';
 import { type OmitFirst, bindFirst } from '@udecode/utils';
 
 import {

@@ -49,8 +49,8 @@ export const useFloatingLinkEditState = ({
       const [, path] = entry;
 
       return getRangeBoundingClientRect(editor, {
-        anchor: getStartPoint(editor, path),
-        focus: getEndPoint(editor, path),
+        anchor: getStartPoint(editor, path)!,
+        focus: getEndPoint(editor, path)!,
       });
     }
 

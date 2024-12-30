@@ -13,11 +13,7 @@ import {
   isHotkey,
   isSelectionAtBlockEnd,
 } from '@udecode/plate-common';
-import {
-  toDOMNode,
-  useEditorPlugin,
-  useHotkeys,
-} from '@udecode/plate-common/react';
+import { useEditorPlugin, useHotkeys } from '@udecode/plate-common/react';
 import {
   BlockSelectionPlugin,
   useIsSelecting,
@@ -63,7 +59,7 @@ export function AIMenu() {
   useEditorChat({
     chat,
     onOpenBlockSelection: (blocks: TNodeEntry[]) => {
-      show(toDOMNode(editor, blocks.at(-1)![0])!);
+      show(editor.toDOMNode(blocks.at(-1)![0])!);
     },
     onOpenChange: (open) => {
       if (!open) {
@@ -80,10 +76,10 @@ export function AIMenu() {
           .blockSelection.addSelectedRow(ancestor.id as string);
       }
 
-      show(toDOMNode(editor, ancestor)!);
+      show(editor.toDOMNode(ancestor)!);
     },
     onOpenSelection: () => {
-      show(toDOMNode(editor, getBlocks(editor).at(-1)![0])!);
+      show(editor.toDOMNode(getBlocks(editor).at(-1)![0])!);
     },
   });
 

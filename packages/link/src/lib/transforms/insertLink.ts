@@ -10,10 +10,10 @@ import type { TLinkElement } from '../types';
 import { type CreateLinkNodeOptions, createLinkNode } from '../utils';
 
 /** Insert a link node. */
-export const insertLink = <E extends SlateEditor>(
-  editor: E,
+export const insertLink = (
+  editor: SlateEditor,
   createLinkNodeOptions: CreateLinkNodeOptions,
-  options?: InsertNodesOptions<E>
+  options?: InsertNodesOptions
 ) => {
   insertNodes<TLinkElement | TText>(
     editor,

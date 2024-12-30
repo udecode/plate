@@ -106,5 +106,5 @@ export const mergeTableCells = (editor: SlateEditor) => {
     insertElements(editor, mergedCell, { at: cellEntries[0][1] });
   });
 
-  select(editor, getEndPoint(editor, cellEntries[0][1]));
+  select(editor, getEndPoint(editor, cellEntries[0][1])!);
 };

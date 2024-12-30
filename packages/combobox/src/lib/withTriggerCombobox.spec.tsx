@@ -1,13 +1,13 @@
 /** @jsx jsxt */
 
-import {
-  type TriggerComboboxPluginOptions,
-  withTriggerCombobox,
-} from '@udecode/plate-combobox';
 import { createSlatePlugin } from '@udecode/plate-common';
 import { createSlateEditor } from '@udecode/plate-common';
 import { ParagraphPlugin } from '@udecode/plate-common/react';
 import { jsxt } from '@udecode/plate-test-utils';
+
+import type { TriggerComboboxPluginOptions } from './types';
+
+import { withTriggerCombobox } from './withTriggerCombobox';
 
 const ExampleComboboxPlugin = createSlatePlugin<
   string,

@@ -49,7 +49,7 @@ export const preventDeleteTableCell = (
       // Prevent deleting cell at the start or end of a cell
       const [, cellPath] = cellEntry;
 
-      const start = getPoint(editor, cellPath);
+      const start = getPoint(editor, cellPath)!;
 
       if (selection && Point.equals(selection.anchor, start)) {
         return true;
@@ -110,8 +110,8 @@ export const withDeleteTable: ExtendEditor<TableConfig> = ({
 
           // set back the selection
           select(editor, {
-            anchor: getStartPoint(editor, cellEntries[0][1]),
-            focus: getEndPoint(editor, cellEntries.at(-1)![1]),
+            anchor: getStartPoint(editor, cellEntries[0][1])!,
+            focus: getEndPoint(editor, cellEntries.at(-1)![1])!,
           });
         });
 

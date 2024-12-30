@@ -1,8 +1,7 @@
 import { useEffect } from 'react';
 
-import { getNode } from '@udecode/plate-common';
+import { getNode, toDOMNode } from '@udecode/plate-common';
 import { type PlateEditor, useEditorRef } from '@udecode/plate-common/react';
-import { toDOMNode } from '@udecode/plate-common/react';
 
 import type { TPlatePlaywrightAdapter } from './types';
 
@@ -20,7 +19,7 @@ export const usePlaywrightAdapter = () => {
   useEffect(() => {
     window.platePlaywrightAdapter = platePlaywrightAdapter;
 
-    const editable = toDOMNode(editor, editor)!;
+    const editable = editor.toDOMNode(editor)!;
     EDITABLE_TO_EDITOR.set(editable, editor);
 
     return () => {

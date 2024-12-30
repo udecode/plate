@@ -1,4 +1,4 @@
-import type { TEditor, TElement, TNodeProps } from '../interfaces';
+import type { TEditor, TElement, TNodeProps, Value } from '../interfaces';
 
 import {
   type SetNodesOptions,
@@ -8,5 +8,5 @@ import {
 export const setElements = (
   editor: TEditor,
   props: Partial<TNodeProps<TElement>>,
-  options?: SetNodesOptions
+  options?: SetNodesOptions<Value>
 ) => setNodes<TElement>(editor, props, options);

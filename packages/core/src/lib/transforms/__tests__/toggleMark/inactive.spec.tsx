@@ -2,7 +2,7 @@
 
 import { BoldPlugin } from '@udecode/plate-basic-marks/react';
 import { jsxt } from '@udecode/plate-test-utils';
-import { toggleMark } from '@udecode/slate-utils';
+import { toggleMark } from '@udecode/slate';
 
 jsxt;
 

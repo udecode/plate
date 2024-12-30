@@ -2,7 +2,6 @@ import {
   type AnyObject,
   type GetNodeEntriesOptions,
   type SlateEditor,
-  type TEditor,
   type UnhangRangeOptions,
   getNodeEntries,
   setElements,
@@ -12,9 +11,9 @@ import {
 
 import { BaseIndentPlugin } from '../BaseIndentPlugin';
 
-export interface SetIndentOptions<E extends TEditor = TEditor> {
+export interface SetIndentOptions {
   /** GetNodeEntries options */
-  getNodesOptions?: GetNodeEntriesOptions<E> & UnhangRangeOptions;
+  getNodesOptions?: GetNodeEntriesOptions & UnhangRangeOptions;
 
   /**
    * 1 to indent -1 to outdent
@@ -31,14 +30,14 @@ export interface SetIndentOptions<E extends TEditor = TEditor> {
 }
 
 /** Add offset to the indentation of the selected blocks. */
-export const setIndent = <E extends SlateEditor>(
-  editor: E,
+export const setIndent = (
+  editor: SlateEditor,
   {
     getNodesOptions,
     offset = 1,
     setNodesProps,
     unsetNodesProps = [],
-  }: SetIndentOptions<E>
+  }: SetIndentOptions
 ) => {
   const { nodeKey } = editor.getInjectProps(BaseIndentPlugin);
 

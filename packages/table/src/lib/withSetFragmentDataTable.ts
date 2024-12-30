@@ -84,8 +84,8 @@ export const withSetFragmentDataTable: ExtendEditor<TableConfig> = ({
 
           // select cell by cell
           select(editor, {
-            anchor: getStartPoint(editor, cellPath),
-            focus: getEndPoint(editor, cellPath),
+            anchor: getStartPoint(editor, cellPath)!,
+            focus: getEndPoint(editor, cellPath)!,
           });
 
           // set data from selection

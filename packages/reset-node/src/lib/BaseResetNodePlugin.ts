@@ -30,8 +30,8 @@ export const BaseResetNodePlugin = createTSlatePlugin<ResetNodeConfig>({
 
         if (!selection) return;
 
-        const start = getStartPoint(editor, []);
-        const end = getEndPoint(editor, []);
+        const start = getStartPoint(editor, [])!;
+        const end = getEndPoint(editor, [])!;
 
         if (
           (Point.equals(selection.anchor, start) &&
@@ -57,7 +57,7 @@ export const BaseResetNodePlugin = createTSlatePlugin<ResetNodeConfig>({
         const { selection } = editor;
 
         if (selection && isCollapsed(selection)) {
-          const start = getStartPoint(editor, []);
+          const start = getStartPoint(editor, [])!;
 
           if (Point.equals(selection.anchor, start)) {
             const node = getNode<TElement>(editor, [0])!;
