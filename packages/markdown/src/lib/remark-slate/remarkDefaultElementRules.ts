@@ -91,16 +91,21 @@ export const remarkDefaultElementRules: RemarkElementRules = {
 
             const [paragraph, ...subLists] = listItem.children;
 
-            listItems.push({
+            const transformedListItem: TElement = {
               children: remarkTransformElementChildren(
                 paragraph || '',
                 options
               ),
               indent,
               listStyleType,
-              listStart: index + 1,
               type: options.editor.getType({ key: 'p' }),
-            });
+            };
+
+            if (node.ordered) {
+              transformedListItem.listStart = index + 1;
+            }
+
+            listItems.push(transformedListItem);
 
             subLists.forEach((subList) => {
               if (subList.type === 'list') {
