@@ -23,9 +23,9 @@ describe('withImageUpload', () => {
 
     it('should insert image from the file(s)', () => {
       const editor = createPlateEditor({
-        value: input.children,
-    selection: input.selection,
         plugins: [BaseImagePlugin],
+        selection: input.selection,
+        value: input.children,
       });
 
       const data = {
@@ -59,9 +59,9 @@ describe('withImageUpload', () => {
       jest.spyOn(JSON, 'parse').mockReturnValue(<fragment>image.png</fragment>);
 
       const editor = createPlateEditor({
-        value: input.children,
-    selection: input.selection,
         plugins: [BaseImagePlugin],
+        selection: input.selection,
+        value: input.children,
       });
 
       const data = {
@@ -88,9 +88,9 @@ describe('withImageUpload', () => {
 
     it('should insert image from the file(s)', () => {
       const editor = createPlateEditor({
-        value: input.children,
-    selection: input.selection,
         plugins: [BaseImagePlugin],
+        selection: input.selection,
+        value: input.children,
       });
 
       const data = {

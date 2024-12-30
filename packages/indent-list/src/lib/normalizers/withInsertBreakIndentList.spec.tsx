@@ -40,9 +40,9 @@ describe('withInsertBreakIndentList', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      value: input.children,
-    selection: input.selection,
       plugins: [BaseParagraphPlugin, IndentPlugin, BaseIndentListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     editor.insertBreak();
@@ -72,9 +72,9 @@ describe('withInsertBreakIndentList', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      value: input.children,
-    selection: input.selection,
       plugins: [BaseParagraphPlugin, IndentPlugin, BaseIndentListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     editor.insertBreak();
@@ -110,9 +110,9 @@ describe('withInsertBreakIndentList', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      value: input.children,
-    selection: input.selection,
       plugins: [BaseParagraphPlugin, IndentPlugin, BaseIndentListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     editor.insertBreak();

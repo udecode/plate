@@ -31,9 +31,9 @@ describe('insert empty code block', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      value: input.children,
-    selection: input.selection,
       plugins: [CodeBlockPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     insertEmptyCodeBlock(editor, {
@@ -65,9 +65,9 @@ describe('insert empty code block', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      value: input.children,
-    selection: input.selection,
       plugins: [CodeBlockPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     insertEmptyCodeBlock(editor, {
@@ -108,9 +108,9 @@ describe('insert empty code block', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      value: input.children,
-    selection: input.selection,
       plugins: [CodeBlockPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     insertEmptyCodeBlock(editor, {

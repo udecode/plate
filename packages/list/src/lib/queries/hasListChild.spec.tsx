@@ -31,8 +31,8 @@ describe('when there is a sublist', () => {
 
   it('should be', () => {
     const editor = createSlateEditor({
+      selection: input.selection,
       value: input.children,
-    selection: input.selection,
     });
 
     const listItem = findNode(editor, { match: { id: '2' } });
@@ -54,8 +54,8 @@ describe('when there is no sublist', () => {
 
   it('should be', () => {
     const editor = createSlateEditor({
+      selection: input.selection,
       value: input.children,
-    selection: input.selection,
     });
 
     const listItem = findNode(editor, { match: { id: '2' } });

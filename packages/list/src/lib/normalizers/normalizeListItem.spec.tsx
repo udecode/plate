@@ -38,9 +38,9 @@ describe('clean up list items', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      value: input.children,
-    selection: input.selection,
       plugins: [ListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     const path = [0, 0];

@@ -35,9 +35,9 @@ describe('p (empty) + list when selection not in list', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      value: input.children,
-    selection: input.selection,
       plugins: [ListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     editor.deleteForward('character');
@@ -69,9 +69,9 @@ describe('p /w text + list when selection not in list', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      value: input.children,
-    selection: input.selection,
       plugins: [ListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     editor.deleteForward('character');
@@ -109,9 +109,9 @@ describe('p /w text + list when selection not in list', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      value: input.children,
-    selection: input.selection,
       plugins: [ListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     editor.deleteForward('character');
@@ -165,9 +165,9 @@ describe('p /w text + list when selection not in list', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      value: input.children,
-    selection: input.selection,
       plugins: [ListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     editor.deleteForward('character');
@@ -222,9 +222,9 @@ describe('list + list when selection is at the end of the first list', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      value: input.children,
-    selection: input.selection,
       plugins: [ListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     editor.deleteForward('character');
@@ -271,9 +271,9 @@ describe('list where second item has multiple children', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      value: input.children,
-    selection: input.selection,
       plugins: [ListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     editor.deleteForward('character');
@@ -332,9 +332,9 @@ describe('list + sublist where second item has multiple children', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      value: input.children,
-    selection: input.selection,
       plugins: [ListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     editor.deleteForward('character');

@@ -12,9 +12,9 @@ jsxt;
 
 const editorTest = (input: any, fragment: any, expected: any) => {
   const editor = createPlateEditor({
-    value: input.children,
-    selection: input.selection,
     plugins: [BaseParagraphPlugin, CodeBlockPlugin],
+    selection: input.selection,
+    value: input.children,
   });
 
   editor.insertFragment(fragment);

@@ -28,10 +28,10 @@ describe('normalizeIndentList', () => {
       ) as any as SlateEditor;
 
       const editor = createPlateEditor({
-        value: input.children,
-    selection: input.selection,
         plugins: [BaseIndentListPlugin, IndentPlugin],
+        selection: input.selection,
         shouldNormalizeEditor: true,
+        value: input.children,
       });
 
       expect(editor.children).toEqual(output.children);

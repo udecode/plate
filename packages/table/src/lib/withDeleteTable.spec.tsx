@@ -56,9 +56,9 @@ describe('withDeleteTable', () => {
         ) as any as PlateEditor;
 
         let editor = createPlateEditor({
-          value: input.children,
-    selection: input.selection,
           plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          value: input.children,
         });
 
         editor = withDeleteTable(
@@ -117,9 +117,9 @@ describe('withDeleteTable', () => {
         ) as any as SlateEditor;
 
         let editor = createPlateEditor({
-          value: input.children,
-    selection: input.selection,
           plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          value: input.children,
         });
 
         editor = withDeleteTable(
@@ -199,9 +199,9 @@ describe('withDeleteTable', () => {
           ) as any as SlateEditor;
 
           editor = createPlateEditor({
-            value: input.children,
-    selection: input.selection,
             plugins: getTestTablePlugins({ disableMerge }),
+            selection: input.selection,
+            value: input.children,
           });
 
           editor = withDeleteTable(

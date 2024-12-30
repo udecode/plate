@@ -31,8 +31,6 @@ const output = (
 
 it('should be', () => {
   const editor = createSlateEditor({
-    value: input.children,
-    selection: input.selection,
     plugins: [
       RemoveEmptyNodesPlugin.configure({
         options: {
@@ -40,6 +38,8 @@ it('should be', () => {
         },
       }),
     ],
+    selection: input.selection,
+    value: input.children,
   });
 
   editor.normalizeNode([(input.children[0] as any).children[0], [0, 0]]);

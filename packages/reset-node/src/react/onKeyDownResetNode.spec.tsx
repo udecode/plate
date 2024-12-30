@@ -73,9 +73,9 @@ describe('onKeyDownResetNode', () => {
       ) as any;
 
       const editor = createPlateEditor({
-        value: input.children,
-    selection: input.selection,
         plugins: [plugin],
+        selection: input.selection,
+        value: input.children,
       });
 
       jest
@@ -114,9 +114,9 @@ describe('onKeyDownResetNode', () => {
       ) as any;
 
       const editor = createPlateEditor({
-        value: input.children,
-    selection: input.selection,
         plugins: [plugin],
+        selection: input.selection,
+        value: input.children,
       });
 
       jest
@@ -178,9 +178,9 @@ describe('onKeyDownResetNode', () => {
       ) as any;
 
       const editor = createPlateEditor({
-        value: input.children,
-    selection: input.selection,
         plugins: [plugin],
+        selection: input.selection,
+        value: input.children,
       });
 
       jest
@@ -223,9 +223,9 @@ describe('onKeyDownResetNode', () => {
       ) as any;
 
       const editor = createPlateEditor({
-        value: input.children,
-    selection: input.selection,
         plugins: [plugin],
+        selection: input.selection,
+        value: input.children,
       });
 
       jest
@@ -264,9 +264,9 @@ describe('onKeyDownResetNode', () => {
       ) as any;
 
       const editor = createPlateEditor({
-        value: input.children,
-    selection: input.selection,
         plugins: [plugin],
+        selection: input.selection,
+        value: input.children,
       });
 
       jest
@@ -309,9 +309,9 @@ describe('onKeyDownResetNode', () => {
       ) as any;
 
       const editor = createPlateEditor({
-        value: input.children,
-    selection: input.selection,
         plugins: [plugin],
+        selection: input.selection,
+        value: input.children,
       });
 
       jest
@@ -367,9 +367,9 @@ describe('onKeyDownResetNode', () => {
       ) as any;
 
       const editor = createPlateEditor({
-        value: input.children,
-    selection: input.selection,
         plugins: [plugin],
+        selection: input.selection,
+        value: input.children,
       });
 
       jest
@@ -416,9 +416,9 @@ describe('onKeyDownResetNode', () => {
       ) as any;
 
       const editor = createPlateEditor({
-        value: input.children,
-    selection: input.selection,
         plugins: [plugin],
+        selection: input.selection,
+        value: input.children,
       });
 
       jest

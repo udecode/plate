@@ -29,9 +29,9 @@ describe('clean up code block', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      value: input.children,
-    selection: input.selection,
       plugins: [CodeBlockPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     const path = [0];

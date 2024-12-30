@@ -39,9 +39,9 @@ describe('getTableGridByRange', () => {
         ) as any as TElement[];
 
         const editor = createSlateEditor({
-          value: input.children,
-    selection: input.selection,
           plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          value: input.children,
         });
 
         const table = getTableGridAbove(editor)[0][0];
@@ -88,9 +88,9 @@ describe('getTableGridByRange', () => {
         ) as any as TElement;
 
         const editor = createSlateEditor({
-          value: input.children,
-    selection: input.selection,
           plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          value: input.children,
         });
 
         const table = getTableGridAbove(editor)[0][0];
@@ -135,9 +135,9 @@ describe('getTableGridByRange', () => {
         ) as any as TElement;
 
         const editor = createSlateEditor({
-          value: input.children,
-    selection: input.selection,
           plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          value: input.children,
         });
 
         const table = getTableGridAbove(editor)[0][0];
@@ -185,9 +185,9 @@ describe('getTableGridByRange', () => {
         ) as any as TElement;
 
         const editor = createSlateEditor({
-          value: input.children,
-    selection: input.selection,
           plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          value: input.children,
         });
 
         const table = getTableGridAbove(editor)[0][0];
@@ -236,9 +236,9 @@ describe('getTableGridByRange', () => {
         ) as any as TElement;
 
         const editor = createSlateEditor({
-          value: input.children,
-    selection: input.selection,
           plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          value: input.children,
         });
 
         const table = getTableGridAbove(editor)[0][0];
@@ -287,9 +287,9 @@ describe('getTableGridByRange', () => {
         ) as any as TElement;
 
         const editor = createSlateEditor({
-          value: input.children,
-    selection: input.selection,
           plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          value: input.children,
         });
 
         const table = getTableGridAbove(editor)[0][0];
@@ -338,9 +338,9 @@ describe('getTableGridByRange', () => {
         ) as any as TElement;
 
         const editor = createSlateEditor({
-          value: input.children,
-    selection: input.selection,
           plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          value: input.children,
         });
 
         const table = getTableGridAbove(editor)[0][0];
@@ -389,9 +389,9 @@ describe('getTableGridByRange', () => {
         ) as any as TElement;
 
         const editor = createSlateEditor({
-          value: input.children,
-    selection: input.selection,
           plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          value: input.children,
         });
 
         const table = getTableGridAbove(editor)[0][0];

@@ -55,9 +55,9 @@ it('should indent single list item (start of item)', () => {
 
   const event = new KeyboardEvent('keydown', { key: 'Tab' }) as any;
   const editor = createPlateEditor({
-    value: input.children,
-    selection: input.selection,
     plugins: [ListPlugin],
+    selection: input.selection,
+    value: input.children,
   });
 
   onKeyDownList({
@@ -113,9 +113,9 @@ it('should indent single list item (end of item)', () => {
 
   const event = new KeyboardEvent('keydown', { key: 'Tab' }) as any;
   const editor = createPlateEditor({
-    value: input.children,
-    selection: input.selection,
     plugins: [ListPlugin],
+    selection: input.selection,
+    value: input.children,
   });
 
   onKeyDownList({
@@ -185,9 +185,9 @@ it('should indent multiple list items (start/end)', () => {
 
   const event = new KeyboardEvent('keydown', { key: 'Tab' }) as any;
   const editor = createPlateEditor({
-    value: input.children,
-    selection: input.selection,
     plugins: [ListPlugin],
+    selection: input.selection,
+    value: input.children,
   });
 
   onKeyDownList({
@@ -260,9 +260,9 @@ it('should un-indent multiple list items (start/end)', () => {
     shiftKey: true,
   }) as any;
   const editor = createPlateEditor({
-    value: input.children,
-    selection: input.selection,
     plugins: [ListPlugin],
+    selection: input.selection,
+    value: input.children,
   });
 
   onKeyDownList({
@@ -337,9 +337,9 @@ it('should un-indent multiple list items (start/out)', () => {
     shiftKey: true,
   }) as any;
   const editor = createPlateEditor({
-    value: input.children,
-    selection: input.selection,
     plugins: [ListPlugin],
+    selection: input.selection,
+    value: input.children,
   });
 
   onKeyDownList({
@@ -406,9 +406,9 @@ it('should unhang before indentation', () => {
     key: 'Tab',
   }) as any;
   const editor = createPlateEditor({
-    value: input.children,
-    selection: input.selection,
     plugins: [ListPlugin],
+    selection: input.selection,
+    value: input.children,
   });
 
   onKeyDownList({
@@ -429,9 +429,9 @@ it('should NOT not adjust selection length when unhanging ranges', () => {
     </editor>
   ) as any;
   const editor = createPlateEditor({
-    value: input.children,
-    selection: input.selection,
     plugins: [ListPlugin],
+    selection: input.selection,
+    value: input.children,
   });
 
   const selectionBefore = editor.selection;
@@ -498,11 +498,11 @@ it('should convert top-level list item into body upon unindent if enableResetOnS
     shiftKey: true,
   }) as any;
   const editor = createPlateEditor({
-    value: input.children,
-    selection: input.selection,
     plugins: [
       ListPlugin.configure({ options: { enableResetOnShiftTab: true } }),
     ],
+    selection: input.selection,
+    value: input.children,
   });
 
   onKeyDownList({
@@ -553,11 +553,11 @@ it('should convert top-level (first) list item into body upon unindent if enable
     shiftKey: true,
   }) as any;
   const editor = createPlateEditor({
-    value: input.children,
-    selection: input.selection,
     plugins: [
       ListPlugin.configure({ options: { enableResetOnShiftTab: true } }),
     ],
+    selection: input.selection,
+    value: input.children,
   });
 
   onKeyDownList({
@@ -608,11 +608,11 @@ it('should convert top-level (last) list item into body upon unindent if enableR
     shiftKey: true,
   }) as any;
   const editor = createPlateEditor({
-    value: input.children,
-    selection: input.selection,
     plugins: [
       ListPlugin.configure({ options: { enableResetOnShiftTab: true } }),
     ],
+    selection: input.selection,
+    value: input.children,
   });
 
   onKeyDownList({
@@ -666,9 +666,9 @@ it('should NOT convert top-level list item into body upon unindent if enableRese
     shiftKey: true,
   }) as any;
   const editor = createPlateEditor({
-    value: input.children,
-    selection: input.selection,
     plugins: [ListPlugin],
+    selection: input.selection,
+    value: input.children,
   });
 
   onKeyDownList({

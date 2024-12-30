@@ -59,8 +59,6 @@ export const testDocxDeserializer = ({
 }) => {
   it('should deserialize', () => {
     const actual = createSlateEditor({
-      value: input.children,
-    selection: input.selection,
       override: {
         plugins: overridePlugins,
       },
@@ -78,6 +76,8 @@ export const testDocxDeserializer = ({
         DocxPlugin,
         JuicePlugin,
       ],
+      selection: input.selection,
+      value: input.children,
     });
 
     actual.insertData(

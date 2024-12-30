@@ -25,7 +25,7 @@ describe('addSuggestionMark', () => {
   //
   //     const editor = createSlateEditor({
   //       value: input.children,
-//    selection: input.selection,
+  //    selection: input.selection,
   //     });
   //     editor.activeSuggestionId = 'active_suggestion_id';
   //
@@ -48,8 +48,8 @@ describe('addSuggestionMark', () => {
         ) as any as SlateEditor;
 
         const editor = createSlateEditor({
+          selection: input.selection,
           value: input.children,
-    selection: input.selection,
         });
 
         addSuggestionMark(editor);

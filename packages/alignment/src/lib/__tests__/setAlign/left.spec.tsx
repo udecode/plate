@@ -27,9 +27,9 @@ const output = (
 
 it('should remove align prop', () => {
   const editor = createSlateEditor({
-    value: input.children,
-    selection: input.selection,
     plugins: [BaseAlignPlugin],
+    selection: input.selection,
+    value: input.children,
   });
 
   setAlign(editor, { value: 'start' });

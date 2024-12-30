@@ -38,9 +38,9 @@ describe('On keydown', () => {
     ) as any as PlateEditor;
 
     const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-      value: input.children,
-    selection: input.selection,
       plugins: [BaseDatePlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     await triggerKeyboardEvent('ArrowRight');
@@ -76,9 +76,9 @@ describe('On keydown', () => {
     ) as any as PlateEditor;
 
     const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-      value: input.children,
-    selection: input.selection,
       plugins: [BaseDatePlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     await triggerKeyboardEvent('ArrowLeft');
@@ -123,9 +123,9 @@ describe('On keydown', () => {
     ) as any as PlateEditor;
 
     const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-      value: input.children,
-    selection: input.selection,
       plugins: [BaseDatePlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     await triggerKeyboardEvent('ArrowRight');

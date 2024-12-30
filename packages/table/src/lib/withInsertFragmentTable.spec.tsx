@@ -84,9 +84,9 @@ describe('withInsertFragmentTable', () => {
         ) as any as SlateEditor;
 
         const editor = createSlateEditor({
-          value: input.children,
-    selection: input.selection,
           plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          value: input.children,
         });
 
         editor.insertFragment(fragment);
@@ -164,9 +164,9 @@ describe('withInsertFragmentTable', () => {
         ) as any as SlateEditor;
 
         const editor = createSlateEditor({
-          value: input.children,
-    selection: input.selection,
           plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          value: input.children,
         });
 
         editor.insertFragment(fragment);
@@ -249,9 +249,9 @@ describe('withInsertFragmentTable', () => {
         ) as any as SlateEditor;
 
         const editor = createSlateEditor({
-          value: input.children,
-    selection: input.selection,
           plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          value: input.children,
         });
 
         editor.deleteFragment();
@@ -336,9 +336,9 @@ describe('withInsertFragmentTable', () => {
       ) as any as SlateEditor;
 
       const editor = createSlateEditor({
-        value: input.children,
-    selection: input.selection,
         plugins: getTestTablePlugins(),
+        selection: input.selection,
+        value: input.children,
       });
 
       editor.insertFragment(fragment);
@@ -480,9 +480,9 @@ describe('withInsertFragmentTable', () => {
         );
 
         const editor = createSlateEditor({
-          value: input.children,
-    selection: input.selection,
           plugins,
+          selection: input.selection,
+          value: input.children,
         });
 
         editor.insertFragment(fragment);
@@ -572,11 +572,11 @@ describe('withInsertFragmentTable', () => {
       ) as any as SlateEditor;
 
       const editor = createSlateEditor({
-        value: input.children,
-    selection: input.selection,
         plugins: getTestTablePlugins({
           disableExpandOnInsert: true,
         }),
+        selection: input.selection,
+        value: input.children,
       });
 
       editor.insertFragment(fragment);
@@ -642,9 +642,9 @@ describe('withInsertFragmentTable', () => {
       ) as any as SlateEditor;
 
       const editor = createSlateEditor({
-        value: input.children,
-    selection: input.selection,
         plugins: getTestTablePlugins(),
+        selection: input.selection,
+        value: input.children,
       });
 
       editor.insertFragment(fragment);
@@ -704,9 +704,9 @@ describe('withInsertFragmentTable', () => {
         ) as any as SlateEditor;
 
         const editor = createSlateEditor({
-          value: input.children,
-    selection: input.selection,
           plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          value: input.children,
         });
 
         editor.insertFragment(fragment);

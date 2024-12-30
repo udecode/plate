@@ -77,9 +77,9 @@ describe('insertTableRow', () => {
         ) as any as SlateEditor;
 
         const editor = createPlateEditor({
-          value: input.children,
-    selection: input.selection,
           plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          value: input.children,
         });
 
         insertTableRow(editor, { select: true });
@@ -156,9 +156,9 @@ describe('insertTableRow', () => {
         ) as any as SlateEditor;
 
         const editor = createPlateEditor({
-          value: input.children,
-    selection: input.selection,
           plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          value: input.children,
         });
 
         insertTableRow(editor, { at: [0, 0], select: true });
@@ -235,9 +235,9 @@ describe('insertTableRow', () => {
         ) as any as SlateEditor;
 
         const editor = createPlateEditor({
-          value: input.children,
-    selection: input.selection,
           plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          value: input.children,
         });
 
         insertTableRow(editor, { before: true, select: true });

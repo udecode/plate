@@ -33,9 +33,9 @@ describe('p (empty) + codeblock when selection not in code block', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      value: input.children,
-    selection: input.selection,
       plugins: [DeletePlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     editor.deleteForward('character');
@@ -69,9 +69,9 @@ describe('p (not empty) + code block when selection not in code block', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      value: input.children,
-    selection: input.selection,
       plugins: [DeletePlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     editor.deleteForward('character');

@@ -33,9 +33,9 @@ describe('when indented list and empty', () => {
 
     const event = new KeyboardEvent('keydown', { key: 'Enter' }) as any;
     const editor = createPlateEditor({
-      value: input.children,
-    selection: input.selection,
       plugins: [ParagraphPlugin, IndentPlugin, IndentListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     onKeyDownIndentList({
@@ -83,9 +83,9 @@ describe('when indented and empty but not list', () => {
 
     const event = new KeyboardEvent('keydown', { key: 'Enter' }) as any;
     const editor = createPlateEditor({
-      value: input.children,
-    selection: input.selection,
       plugins: [ParagraphPlugin, IndentPlugin, IndentListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     onKeyDownIndentList({

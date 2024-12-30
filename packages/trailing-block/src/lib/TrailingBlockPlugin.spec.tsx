@@ -29,8 +29,6 @@ describe('when last node is invalid', () => {
 
   it('should be', () => {
     const editor = createSlateEditor({
-      value: input.children,
-    selection: input.selection,
       plugins: [
         TrailingBlockPlugin.configure({
           options: {
@@ -39,6 +37,8 @@ describe('when last node is invalid', () => {
           },
         }),
       ],
+      selection: input.selection,
+      value: input.children,
     });
 
     editor.normalizeNode([input, []]);
@@ -71,8 +71,6 @@ describe('when level = 1', () => {
 
   it('should be', () => {
     const editor = createSlateEditor({
-      value: input.children,
-    selection: input.selection,
       plugins: [
         TrailingBlockPlugin.configure({
           options: {
@@ -81,6 +79,8 @@ describe('when level = 1', () => {
           },
         }),
       ],
+      selection: input.selection,
+      value: input.children,
     });
 
     editor.normalizeNode([input, []]);
@@ -106,8 +106,6 @@ describe('when using query', () => {
 
   it('should be', () => {
     const editor = createSlateEditor({
-      value: input.children,
-    selection: input.selection,
       plugins: [
         TrailingBlockPlugin.configure({
           options: {
@@ -117,6 +115,8 @@ describe('when using query', () => {
           },
         }),
       ],
+      selection: input.selection,
+      value: input.children,
     });
 
     editor.normalizeNode([input, []]);
@@ -144,9 +144,9 @@ describe('when the last node is valid', () => {
 
   it('should be', () => {
     const editor = createSlateEditor({
-      value: input.children,
-    selection: input.selection,
       plugins: [TrailingBlockPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     editor.normalizeNode([input, []]);
@@ -168,9 +168,9 @@ describe('when editor has no children', () => {
 
   it('should be', () => {
     const editor = createSlateEditor({
-      value: input.children,
-    selection: input.selection,
       plugins: [TrailingBlockPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     editor.normalizeNode([editor, []]);

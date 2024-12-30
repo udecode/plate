@@ -37,9 +37,9 @@ describe('insert code line', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      value: input.children,
-    selection: input.selection,
       plugins: [CodeBlockPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     insertCodeLine(editor, 4);

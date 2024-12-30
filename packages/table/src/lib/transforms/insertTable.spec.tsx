@@ -57,9 +57,9 @@ describe('insertTable', () => {
         ) as any as SlateEditor;
 
         const editor = createPlateEditor({
-          value: input.children,
-    selection: input.selection,
           plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          value: input.children,
         });
 
         insertTable(editor, { colCount: 2, rowCount: 2 }, { select: true });
@@ -116,9 +116,9 @@ describe('insertTable', () => {
         ) as any as SlateEditor;
 
         const editor = createPlateEditor({
-          value: input.children,
-    selection: input.selection,
           plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          value: input.children,
         });
 
         insertTable(
@@ -189,9 +189,9 @@ describe('insertTable', () => {
         ) as any as SlateEditor;
 
         const editor = createPlateEditor({
-          value: input.children,
-    selection: input.selection,
           plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          value: input.children,
         });
 
         insertTable(editor, { colCount: 2, rowCount: 2 }, { select: true });
@@ -262,9 +262,9 @@ describe('insertTable', () => {
         ) as any as SlateEditor;
 
         const editor = createPlateEditor({
-          value: input.children,
-    selection: input.selection,
           plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          value: input.children,
         });
 
         insertTable(
@@ -335,9 +335,9 @@ describe('insertTable', () => {
         ) as any as SlateEditor;
 
         const editor = createPlateEditor({
-          value: input.children,
-    selection: input.selection,
           plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          value: input.children,
         });
 
         insertTable(editor, { colCount: 2, rowCount: 2 }, { select: true });

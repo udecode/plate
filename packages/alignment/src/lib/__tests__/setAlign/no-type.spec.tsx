@@ -28,9 +28,9 @@ describe('when type (h1) is not in types', () => {
 
   it('should not align', () => {
     const editor = createSlateEditor({
-      value: input.children,
-    selection: input.selection,
       plugins: [BaseAlignPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     setAlign(editor, { value: 'center' });

@@ -394,8 +394,6 @@ describe('withLink', () => {
 
         it('should insert link', () => {
           const editor = createPlateEditor({
-            value: input.children,
-    selection: input.selection,
             plugins: [
               BaseLinkPlugin.configure({
                 options: {
@@ -405,6 +403,8 @@ describe('withLink', () => {
                 },
               }),
             ],
+            selection: input.selection,
+            value: input.children,
           });
 
           editor.insertText(text);

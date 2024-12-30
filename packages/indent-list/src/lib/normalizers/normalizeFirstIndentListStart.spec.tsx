@@ -31,10 +31,10 @@ const output = (
 
 it('should be', async () => {
   const editor = createPlateEditor({
-    value: input.children,
-    selection: input.selection,
     plugins: [BaseParagraphPlugin, IndentPlugin, BaseIndentListPlugin],
+    selection: input.selection,
     shouldNormalizeEditor: true,
+    value: input.children,
   });
 
   expect(editor.children).toEqual(output.children);

@@ -55,9 +55,9 @@ describe('when inserting html', () => {
       const plugins = [HeadingPlugin];
 
       const editor = createPlateEditor({
-        value: input.children,
-    selection: input.selection,
         plugins,
+        selection: input.selection,
+        value: input.children,
       });
 
       editor.insertData(dataTransfer);
@@ -88,9 +88,9 @@ describe('when inserting html', () => {
       const plugins = [HeadingPlugin];
 
       const editor = createPlateEditor({
-        value: input.children,
-    selection: input.selection,
         plugins,
+        selection: input.selection,
+        value: input.children,
       });
 
       editor.insertData(dataTransfer as any);
@@ -122,9 +122,9 @@ describe('when inserting html', () => {
     const plugins = [BaseParagraphPlugin];
 
     const editor = createPlateEditor({
-      value: input.children,
-    selection: input.selection,
       plugins,
+      selection: input.selection,
+      value: input.children,
     });
 
     editor.insertData(
@@ -165,9 +165,9 @@ describe('when inserting empty html', () => {
     const plugins = [BoldPlugin];
 
     const editor = createPlateEditor({
-      value: input.children,
-    selection: input.selection,
       plugins,
+      selection: input.selection,
+      value: input.children,
     });
 
     editor.insertData(dataTransfer as any);
@@ -206,9 +206,9 @@ describe('when inserting an iframe without src', () => {
     const plugins = [MediaEmbedPlugin];
 
     const editor = createPlateEditor({
-      value: input.children,
-    selection: input.selection,
       plugins,
+      selection: input.selection,
+      value: input.children,
     });
 
     editor.insertData(data as any);
@@ -250,9 +250,9 @@ describe('when inserting link with href', () => {
     const plugins = [BaseParagraphPlugin, LinkPlugin];
 
     const editor = createPlateEditor({
-      value: input.children,
-    selection: input.selection,
       plugins,
+      selection: input.selection,
+      value: input.children,
     });
 
     editor.insertData(data as any);
@@ -288,9 +288,9 @@ describe('when inserting plain text', () => {
     jest.spyOn(JSON, 'parse').mockReturnValue(<fragment>inserted</fragment>);
 
     const editor = createPlateEditor({
-      value: input.children,
-    selection: input.selection,
       plugins: [],
+      selection: input.selection,
+      value: input.children,
     });
 
     editor.insertData(data as any);

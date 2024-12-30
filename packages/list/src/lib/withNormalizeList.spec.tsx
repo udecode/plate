@@ -13,9 +13,9 @@ jsxt;
 
 const testNormalize = (input: SlateEditor, output: SlateEditor): void => {
   const editor = createSlateEditor({
-    value: input.children,
-    selection: input.selection,
     plugins: [ListPlugin],
+    selection: input.selection,
+    value: input.children,
   });
 
   normalizeEditor(editor, { force: true });
