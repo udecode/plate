@@ -191,14 +191,14 @@ const html = await serializeHtml(editor, { components });
 
 ### 使用方法
 
-The `editor.api.html.deserialize` function allows you to convert HTML content into Slate value:
+`editor.api.html.deserialize` 函数允许你将 HTML 内容转换为 Slate 值：
 
 ```typescript
 import { createPlateEditor } from '@udecode/plate-common/react';
 
 const editor = createPlateEditor({
   plugins: [
-    // all plugins that you want to deserialize
+    // 所有你想要反序列化的插件
   ]
 })
 editor.children = editor.api.html.deserialize('<p>Hello, world!</p>')
