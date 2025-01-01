@@ -5,8 +5,6 @@ import {
   type TEditor,
   type TElement,
   getNode,
-  isBlock,
-  moveNodes,
 } from '../interfaces';
 
 export interface MoveChildrenOptions<E extends TEditor = TEditor> {
@@ -36,7 +34,7 @@ export const moveChildren = <E extends TEditor>(
   const parentNode = Path.isPath(at) ? getNode(editor, parentPath) : at[0];
 
   if (!parentNode) return moved;
-  if (!isBlock(editor, parentNode)) return moved;
+  if (!editor.api.isBlock(parentNode)) return moved;
 
   for (
     let i = (parentNode.children as TElement[]).length - 1;
@@ -47,7 +45,7 @@ export const moveChildren = <E extends TEditor>(
     const childNode = getNode(editor, childPath);
 
     if (!match || (childNode && match([childNode, childPath]))) {
-      moveNodes(editor, { at: childPath, to });
+      editor.tf.moveNodes({ at: childPath, to });
       moved++;
     }
   }

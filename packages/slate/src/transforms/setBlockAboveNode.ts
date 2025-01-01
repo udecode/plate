@@ -20,7 +20,7 @@ export const setBlockAboveNode = <
 
   if (!at) return;
 
-  editor.setNodes(props, {
+  editor.tf.setNodes(props, {
     ...options,
     at: getBlockAbove(editor)![1],
   } as any);

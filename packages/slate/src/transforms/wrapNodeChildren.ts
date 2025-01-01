@@ -8,8 +8,6 @@ import {
   type ValueOf,
   type WrapNodesOptions,
   getNode,
-  withoutNormalizing,
-  wrapNodes,
 } from '../interfaces';
 import { moveChildren } from './moveChildren';
 
@@ -32,10 +30,10 @@ export const wrapNodeChildren = <
 
   if (!node?.children) return;
 
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     const firstChildPath = path.concat([0]);
 
-    wrapNodes(editor, element, {
+    editor.tf.wrapNodes(element, {
       ...options,
       at: firstChildPath,
     });

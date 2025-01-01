@@ -1,4 +1,4 @@
-import { type TEditor, isElementEmpty } from '../interfaces';
+import type { TEditor } from '../interfaces';
 
 /**
  * Whether the editor is empty. An editor is empty if it has only one empty
@@ -7,6 +7,6 @@ import { type TEditor, isElementEmpty } from '../interfaces';
 export const isEditorEmpty = (editor: TEditor) => {
   return (
     editor.children.length === 1 &&
-    isElementEmpty(editor, editor.children[0] as any)
+    editor.api.isEmpty(editor.children[0] as any)
   );
 };

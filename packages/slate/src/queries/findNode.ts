@@ -1,12 +1,12 @@
-import {
-  type GetNodeEntriesOptions,
-  type NodeOf,
-  type TEditor,
-  type TNodeEntry,
-  type Value,
-  type ValueOf,
-  getNodeEntries,
+import type {
+  GetNodeEntriesOptions,
+  NodeOf,
+  TEditor,
+  TNodeEntry,
+  Value,
+  ValueOf,
 } from '../interfaces';
+
 import { getQueryOptions } from '../utils';
 
 export type FindNodeOptions<V extends Value = Value> = GetNodeEntriesOptions<V>;
@@ -20,7 +20,7 @@ export const findNode = <N extends NodeOf<E>, E extends TEditor = TEditor>(
 
   // Slate throws when things aren't found so we wrap in a try catch and return undefined on throw.
   try {
-    const nodeEntries = getNodeEntries<N, E>(editor, {
+    const nodeEntries = editor.api.nodes<N>({
       ...options,
       at: options.at || editor.selection || [],
     });

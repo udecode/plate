@@ -1,4 +1,4 @@
-import { type TEditor, getParentNode, isEndPoint, isText } from '../interfaces';
+import { type TEditor, isText } from '../interfaces';
 import { getBlockAbove } from './getBlockAbove';
 import { getNextSiblingNodes } from './getNextSiblingNodes';
 
@@ -16,13 +16,13 @@ export const isBlockTextEmptyAfterSelection = (editor: TEditor) => {
 
   const cursor = editor.selection.focus;
 
-  const selectionParentEntry = getParentNode(editor, editor.selection);
+  const selectionParentEntry = editor.api.parent(editor.selection);
 
   if (!selectionParentEntry) return false;
 
   const [, selectionParentPath] = selectionParentEntry;
 
-  if (!isEndPoint(editor, cursor, selectionParentPath)) return false;
+  if (!editor.api.isEnd(cursor, selectionParentPath)) return false;
 
   const siblingNodes = getNextSiblingNodes(blockAbove, cursor.path);
 
@@ -33,7 +33,7 @@ export const isBlockTextEmptyAfterSelection = (editor: TEditor) => {
       }
     }
   } else {
-    return isEndPoint(editor, cursor, blockAbove[1]);
+    return editor.api.isEnd(cursor, blockAbove[1]);
   }
 
   return true;

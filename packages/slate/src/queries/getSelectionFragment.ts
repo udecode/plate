@@ -1,4 +1,5 @@
-import { type TEditor, type TElement, getFragment } from '../interfaces';
+import type { TEditor, TElement } from '../interfaces';
+
 import { unwrapStructuralNodes } from '../utils/unwrapStructuralNodes';
 
 export type GetSelectionFragmentOptions = {
@@ -11,7 +12,7 @@ export const getSelectionFragment = (
 ) => {
   if (!editor.selection) return [];
 
-  const fragment = getFragment(editor, editor.selection!) as TElement[];
+  const fragment = editor.api.fragment(editor.selection!) as TElement[];
 
   if (fragment.length === 0) return [];
 

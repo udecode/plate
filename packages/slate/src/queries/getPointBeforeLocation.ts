@@ -4,12 +4,8 @@ import type { Location, Point } from 'slate';
 import castArray from 'lodash/castArray.js';
 import map from 'lodash/map.js';
 
-import {
-  type TEditor,
-  getEditorString,
-  getPoint,
-  getPointBefore,
-} from '../interfaces';
+import type { TEditor } from '../interfaces';
+
 import { isRangeAcrossBlocks } from './isRangeAcrossBlocks';
 
 export interface BeforeOptions {
@@ -59,7 +55,7 @@ export const getPointBeforeLocation = (
   options?: PointBeforeOptions
 ) => {
   if (!options || (!options.match && !options.matchString)) {
-    return getPointBefore(editor, at, options);
+    return editor.api.before(at, options);
   }
 
   const unitOffset = !options.unit || options.unit === 'offset';
@@ -74,7 +70,7 @@ export const getPointBeforeLocation = (
 
   matchStrings.some((matchString) => {
     let beforeAt = at;
-    let previousBeforePoint = getPoint(editor, at, { edge: 'end' })!;
+    let previousBeforePoint = editor.api.point(at, { edge: 'end' })!;
 
     const stackLength = matchString.length + 1;
     const stack: any[] = Array.from({ length: stackLength });
@@ -82,7 +78,7 @@ export const getPointBeforeLocation = (
     let count = 0;
 
     while (true) {
-      const beforePoint = getPointBefore(editor, beforeAt, options);
+      const beforePoint = editor.api.before(beforeAt, options);
 
       // not found
       if (!beforePoint) return;
@@ -98,7 +94,7 @@ export const getPointBeforeLocation = (
         return;
       }
 
-      const beforeString = getEditorString(editor, {
+      const beforeString = editor.api.string({
         anchor: beforePoint,
         focus: previousBeforePoint,
       });

@@ -1,4 +1,4 @@
-import type { Value } from '@udecode/slate';
+import type { TEditorApi, TEditorTransforms, Value } from '@udecode/slate';
 import type { UnionToIntersection } from '@udecode/utils';
 import type { EqualityChecker } from 'zustand-x';
 
@@ -28,6 +28,9 @@ export type PlateEditor = {
     optionKey: K,
     value: PlateStoreState[K]
   ) => void;
+
+  transforms: TEditorTransforms &
+    UnionToIntersection<InferTransforms<PlateCorePlugin>>;
 
   useOption: {
     <
@@ -60,7 +63,7 @@ export type PlateEditor = {
     <C extends AnyPluginConfig>(plugin: WithRequiredKey<C>): InferOptions<C>;
   };
 
-  api: UnionToIntersection<InferApi<PlateCorePlugin>>;
+  api: TEditorApi & UnionToIntersection<InferApi<PlateCorePlugin>>;
 
   pluginList: AnyEditorPlatePlugin[];
 
@@ -69,9 +72,7 @@ export type PlateEditor = {
   shortcuts: Shortcuts;
 
   // Alias for transforms
-  tf: PlateEditor['transforms'];
-
-  transforms: UnionToIntersection<InferTransforms<PlateCorePlugin>>;
+  tf: TEditorTransforms & UnionToIntersection<InferTransforms<PlateCorePlugin>>;
 
   uid?: string;
 } & BaseEditor;
@@ -80,10 +81,12 @@ export type TPlateEditor<
   V extends Value = Value,
   P extends AnyPluginConfig = PlateCorePlugin,
 > = PlateEditor & {
-  api: UnionToIntersection<InferApi<P | PlateCorePlugin>>;
+  tf: TEditorTransforms<V> &
+    UnionToIntersection<InferTransforms<P | PlateCorePlugin>>;
+  transforms: TEditorTransforms<V> &
+    UnionToIntersection<InferTransforms<P | PlateCorePlugin>>;
+  api: TEditorApi<V> & UnionToIntersection<InferApi<P | PlateCorePlugin>>;
   children: V;
   pluginList: P[];
   plugins: { [K in P['key']]: Extract<P, { key: K }> };
-  tf: UnionToIntersection<InferTransforms<P | PlateCorePlugin>>;
-  transforms: UnionToIntersection<InferTransforms<P | PlateCorePlugin>>;
 };

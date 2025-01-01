@@ -13,9 +13,6 @@ import {
   type TNodeEntry,
   type ValueOf,
   getNodeDescendants,
-  getNodeEntry,
-  getPath,
-  isVoid,
 } from '../interfaces';
 import { match } from '../utils';
 
@@ -44,8 +41,8 @@ export const findDescendant = <
     if (Span.isSpan(at)) {
       [from, to] = at;
     } else if (Range.isRange(at)) {
-      const first = getPath(editor, at, { edge: 'start' });
-      const last = getPath(editor, at, { edge: 'end' });
+      const first = editor.api.path(at, { edge: 'start' });
+      const last = editor.api.path(at, { edge: 'end' });
       from = reverse ? last : first;
       to = reverse ? first : last;
     }
@@ -53,12 +50,12 @@ export const findDescendant = <
     let root: NodeEntryOf<E> = [editor, []];
 
     if (Path.isPath(at)) {
-      root = getNodeEntry(editor, at) as any;
+      root = editor.api.node(at) as any;
     }
 
     const nodeEntries = getNodeDescendants<N>(root[0], {
       from,
-      pass: ([n]) => (voids ? false : isVoid(editor, n)),
+      pass: ([n]) => (voids ? false : editor.isVoid(n)),
       reverse,
       to,
     });

@@ -1,11 +1,7 @@
 import { type Point, Path } from 'slate';
 
-import {
-  type TEditor,
-  getPointAfter,
-  getPointBefore,
-  getVoidNode,
-} from '../interfaces';
+import type { TEditor } from '../interfaces';
+
 import { getBlockAbove } from './getBlockAbove';
 
 /**
@@ -23,15 +19,13 @@ export const getPointNextToVoid = (
     after?: boolean;
   }
 ) => {
-  const startVoid = getVoidNode(editor, { at, mode: 'highest' });
+  const startVoid = editor.api.void({ at, mode: 'highest' });
 
   if (startVoid) {
     const blockAbove = getBlockAbove(editor, { at });
 
     if (blockAbove) {
-      const nextPoint = after
-        ? getPointAfter(editor, at)
-        : getPointBefore(editor, at);
+      const nextPoint = after ? editor.api.after(at) : editor.api.before(at);
 
       if (
         nextPoint &&

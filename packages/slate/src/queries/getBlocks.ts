@@ -1,9 +1,8 @@
-import {
-  type ElementOf,
-  type GetNodeEntriesOptions,
-  type TEditor,
-  type ValueOf,
-  getNodeEntries,
+import type {
+  ElementOf,
+  GetNodeEntriesOptions,
+  TEditor,
+  ValueOf,
 } from '../interfaces';
 
 export const getBlocks = <N extends ElementOf<E>, E extends TEditor = TEditor>(
@@ -11,7 +10,7 @@ export const getBlocks = <N extends ElementOf<E>, E extends TEditor = TEditor>(
   options?: GetNodeEntriesOptions<ValueOf<E>>
 ) => {
   return [
-    ...getNodeEntries<N, E>(editor, {
+    ...editor.api.nodes<N>({
       ...options,
       block: true,
     }),

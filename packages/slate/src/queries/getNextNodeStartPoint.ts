@@ -1,14 +1,12 @@
 import type { Path } from 'slate';
 
-import { type TEditor, getNextNode, getStartPoint } from '../interfaces';
+import type { TEditor } from '../interfaces';
 
 /** Get the start point of the next node. */
 export const getNextNodeStartPoint = (editor: TEditor, at: Path) => {
-  const nextEntry = getNextNode(editor, {
-    at,
-  });
+  const nextEntry = editor.api.next({ at });
 
   if (!nextEntry) return;
 
-  return getStartPoint(editor, nextEntry[1]);
+  return editor.api.start(nextEntry[1]);
 };

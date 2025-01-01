@@ -20,7 +20,7 @@ export const toggleMark = (
 ) => {
   if (!editor.selection) return;
 
-  editor.withoutNormalizing(() => {
+  editor.tf.withoutNormalizing(() => {
     const isActive = isMarkActive(editor, key);
 
     if (isActive) {

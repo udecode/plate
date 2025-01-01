@@ -1,4 +1,4 @@
-import { type TEditor, type TNodeEntry, getRange } from '../interfaces';
+import type { TEditor, TNodeEntry } from '../interfaces';
 
 /** Get node entries range. */
 export const getNodesRange = (editor: TEditor, nodeEntries: TNodeEntry[]) => {
@@ -7,5 +7,5 @@ export const getNodesRange = (editor: TEditor, nodeEntries: TNodeEntry[]) => {
   const firstBlockPath = nodeEntries[0][1];
   const lastBlockPath = nodeEntries.at(-1)![1];
 
-  return getRange(editor, firstBlockPath, lastBlockPath);
+  return editor.api.range(firstBlockPath, lastBlockPath);
 };

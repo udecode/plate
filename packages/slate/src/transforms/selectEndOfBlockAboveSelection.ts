@@ -1,11 +1,10 @@
 import type { Path } from 'slate';
 
-import { type TEditor, getEndPoint, select } from '../interfaces';
-import { getBlockAbove } from '../queries';
+import type { TEditor } from '../interfaces';
 
 /** Select the end point of the block above the selection. */
 export const selectEndOfBlockAboveSelection = (editor: TEditor) => {
-  const path = getBlockAbove(editor)?.[1];
+  const path = editor.api.above()?.[1];
 
-  path && select(editor, getEndPoint(editor, path as Path)!);
+  path && editor.tf.select(editor.api.end(path as Path)!);
 };

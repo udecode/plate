@@ -22,5 +22,9 @@ export const setNodes = <N extends NodeOf<E>, E extends TEditor = TEditor>(
   props: Partial<TNodeProps<N>>,
   options?: SetNodesOptions<ValueOf<E>>
 ) => {
-  return setNodesBase(editor as any, props, getQueryOptions(editor, options));
+  return setNodesBase(
+    editor as any,
+    props as any,
+    getQueryOptions(editor, options)
+  );
 };

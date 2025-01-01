@@ -1,9 +1,5 @@
-import {
-  type GetAboveNodeOptions,
-  type TEditor,
-  type ValueOf,
-  getStartPoint,
-} from '../interfaces';
+import type { GetAboveNodeOptions, TEditor, ValueOf } from '../interfaces';
+
 import { getBlockAbove } from './getBlockAbove';
 import { getPointFromLocation } from './getPointFromLocation';
 
@@ -19,7 +15,7 @@ export const getRangeFromBlockStart = <E extends TEditor>(
 
   if (!path) return;
 
-  const start = getStartPoint(editor, path)!;
+  const start = editor.api.start(path)!;
 
   const focus = getPointFromLocation(editor, options);
 

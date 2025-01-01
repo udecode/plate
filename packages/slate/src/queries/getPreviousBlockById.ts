@@ -1,14 +1,6 @@
+import type { ElementOf, TEditor, TElement, TNodeEntry } from '../interfaces';
 import type { QueryNodeOptions } from '../types';
 
-import {
-  type ElementOf,
-  type TEditor,
-  type TElement,
-  type TNodeEntry,
-  getNodeEntries,
-  getPreviousNode,
-  isBlock,
-} from '../interfaces';
 import { queryNode } from '../utils';
 import { findNode } from './findNode';
 
@@ -29,19 +21,19 @@ export const getPreviousBlockById = <
   });
 
   if (entry) {
-    const prevEntry = getPreviousNode<TElement>(editor, { at: entry[1] });
+    const prevEntry = editor.api.previous({ at: entry[1] });
 
-    if (prevEntry?.[0].id && isBlock(editor, prevEntry[0])) {
+    if (prevEntry?.[0].id && editor.api.isBlock(prevEntry[0])) {
       return prevEntry as TNodeEntry<N>;
     }
   }
 
   let found = false;
-  const _nodes = getNodeEntries<N>(editor, {
+  const _nodes = editor.api.nodes<N>({
     at: [],
     match: (n) => {
       // filter nodes that are not blocks and without id.
-      if (!isBlock(editor, n) || !n.id) return false;
+      if (!editor.api.isBlock(n) || !n.id) return false;
       // find the block then take the previous one.
       if (n.id === id) {
         found = true;
@@ -61,10 +53,10 @@ export const getPreviousBlockById = <
   }
   if (!found) return;
 
-  const _entries = getNodeEntries<TElement>(editor, {
+  const _entries = editor.api.nodes<TElement>({
     at: [],
     match: (n) => {
-      return isBlock(editor, n) && !!n.id && queryNode([n, []], query);
+      return editor.api.isBlock(n) && !!n.id && queryNode([n, []], query);
     },
     mode: 'highest',
   });

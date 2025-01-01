@@ -16,11 +16,11 @@ export const setBlockNodes = <
   props: Partial<TNodeProps<N>>,
   options?: GetNodeEntriesOptions<ValueOf<E>>
 ) => {
-  editor.withoutNormalizing(() => {
+  editor.tf.withoutNormalizing(() => {
     const blocks = getBlocks(editor, options);
 
     blocks.forEach(([, path]) => {
-      editor.setNodes<N>(props as any, {
+      editor.tf.setNodes<N>(props as any, {
         at: path,
       });
     });

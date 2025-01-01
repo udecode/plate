@@ -5,7 +5,6 @@ import {
   isSelectionAtBlockStart,
   removeSelectionMark,
   replaceNodeChildren,
-  toggleMark,
 } from '@udecode/slate';
 import { type OmitFirst, bindFirst } from '@udecode/utils';
 
@@ -30,7 +29,6 @@ export type SlateNextConfig = PluginConfig<
   {
     toggle: {
       block: OmitFirst<typeof toggleBlock>;
-      mark: OmitFirst<typeof toggleMark>;
     };
   }
 >;
@@ -127,6 +125,5 @@ export const SlateNextPlugin = createTSlatePlugin<SlateNextConfig>({
     },
     toggle: {
       block: bindFirst(toggleBlock, editor),
-      mark: bindFirst(toggleMark, editor),
     },
   }));

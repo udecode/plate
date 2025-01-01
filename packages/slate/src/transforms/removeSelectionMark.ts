@@ -1,13 +1,13 @@
-import { type TEditor, getMarks, removeEditorMark } from '../interfaces';
+import type { TEditor } from '../interfaces';
 
 /** Remove selection marks. */
 export const removeSelectionMark = (editor: TEditor) => {
-  const marks = getMarks(editor);
+  const marks = editor.api.marks();
 
   if (!marks) return;
 
   // remove all marks
   Object.keys(marks).forEach((key) => {
-    removeEditorMark(editor, key);
+    editor.tf.removeMark(key);
   });
 };

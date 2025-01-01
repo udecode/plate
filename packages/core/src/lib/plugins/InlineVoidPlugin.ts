@@ -24,11 +24,11 @@ export const withInlineVoid: ExtendEditor = ({ editor }) => {
   });
 
   editor.isInline = (element) => {
-    return inlineTypes.includes(element.type) ? true : isInline(element);
+    return inlineTypes.includes(element.type as any) ? true : isInline(element);
   };
 
   editor.isVoid = (element) => {
-    return voidTypes.includes(element.type) ? true : isVoid(element);
+    return voidTypes.includes(element.type as any) ? true : isVoid(element);
   };
 
   editor.markableVoid = (element) => {

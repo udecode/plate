@@ -10,7 +10,7 @@ export type TNode = TEditor | TElement | TText;
 export type NodeOf<N extends TNode> = ElementOf<N> | N | TextOf<N>;
 
 /** A utility type to get all possible node types from a Value type */
-export type NodeIn<V extends Value> = NodeOf<V[number]> | TEditor;
+export type NodeIn<V extends Value> = NodeOf<TEditor | V[number]>;
 
 /** Convenience type for returning the props of a node. */
 export type TNodeProps<N extends TNode> = N extends TEditor

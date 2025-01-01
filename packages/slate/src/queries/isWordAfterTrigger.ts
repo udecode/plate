@@ -2,12 +2,7 @@ import type { Point } from 'slate';
 
 import { escapeRegExp } from '@udecode/utils';
 
-import {
-  type TEditor,
-  getEditorString,
-  getPointBefore,
-  getRange,
-} from '../interfaces';
+import type { TEditor } from '../interfaces';
 
 /**
  * Is the word at the point after a trigger (punctuation character)
@@ -18,16 +13,16 @@ export const isWordAfterTrigger = (
   { at, trigger }: { at: Point; trigger: string }
 ) => {
   // Point at the start of previous word (excluding punctuation)
-  const wordBefore = getPointBefore(editor, at, { unit: 'word' });
+  const wordBefore = editor.api.before(at, { unit: 'word' });
 
   // Point before wordBefore
-  const before = wordBefore && getPointBefore(editor, wordBefore);
+  const before = wordBefore && editor.api.before(wordBefore);
 
   // Range from before to start
-  const beforeRange = before && getRange(editor, before, at);
+  const beforeRange = before && editor.api.range(before, at);
 
   // Before text
-  const beforeText = getEditorString(editor, beforeRange);
+  const beforeText = editor.api.string(beforeRange);
 
   // Starts with char and ends with word characters
   const escapedTrigger = escapeRegExp(trigger);

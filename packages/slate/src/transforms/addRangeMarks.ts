@@ -1,8 +1,7 @@
-import { type Location, type Node, Editor, Path, Range, Text } from 'slate';
+import { type Location, Path, Range, Text } from 'slate';
 
+import type { TNode } from '../interfaces';
 import type { TEditor } from '../interfaces/editor/TEditor';
-
-import { getRange } from '../interfaces';
 
 /** Add marks to each node of a range. */
 export const addRangeMarks = (
@@ -16,15 +15,15 @@ export const addRangeMarks = (
 ) => {
   if (at) {
     if (Path.isPath(at)) {
-      at = getRange(editor as any, at);
+      at = editor.api.range(at);
     }
 
-    const match = (node: Node, path: Path) => {
+    const match = (node: TNode, path: Path) => {
       if (!Text.isText(node)) {
         return false; // marks can only be applied to text
       }
 
-      const parentEntry = Editor.parent(editor as any, path);
+      const parentEntry = editor.api.parent(path);
 
       if (!parentEntry) return false;
 
@@ -39,14 +38,14 @@ export const addRangeMarks = (
     let markAcceptingVoidSelected = false;
 
     if (!isExpandedRange) {
-      const selectedEntry = Editor.node(editor as any, at);
+      const selectedEntry = editor.api.node(at);
 
       if (!selectedEntry) return;
 
       const [selectedNode, selectedPath] = selectedEntry;
 
       if (selectedNode && match(selectedNode, selectedPath)) {
-        const parentEntry = Editor.parent(editor as any, selectedPath);
+        const parentEntry = editor.api.parent(selectedPath);
 
         if (!parentEntry) return;
 
@@ -57,7 +56,7 @@ export const addRangeMarks = (
       }
     }
     if (isExpandedRange || markAcceptingVoidSelected) {
-      editor.setNodes(props, {
+      editor.tf.setNodes(props, {
         at,
         match,
         split: true,

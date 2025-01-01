@@ -7,7 +7,7 @@ export const duplicateBlocks = (editor: TEditor, blocks: TNodeEntry[]) => {
 
   if (!lastBlock) return;
 
-  editor.insertNodes(blocks.map((item) => item[0]) as any, {
+  editor.tf.insertNodes(blocks.map((item) => item[0]) as any, {
     at: Path.next(lastBlock[1]),
   });
 };

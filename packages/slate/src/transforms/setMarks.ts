@@ -12,7 +12,7 @@ export const setMarks = <E extends TEditor>(
 ) => {
   if (!editor.selection) return;
 
-  editor.withoutNormalizing(() => {
+  editor.tf.withoutNormalizing(() => {
     const clears = castArray<string>(clear);
     removeMark(editor, { key: clears });
     removeMark(editor, { key: Object.keys(marks) });

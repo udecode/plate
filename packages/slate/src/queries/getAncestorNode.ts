@@ -1,6 +1,6 @@
 import type { Path } from 'slate';
 
-import { type TEditor, getNodeEntry } from '../interfaces';
+import type { TEditor } from '../interfaces';
 
 /** Get the top-level block. */
 export const getAncestorNode = (editor: TEditor, path?: Path) => {
@@ -10,5 +10,5 @@ export const getAncestorNode = (editor: TEditor, path?: Path) => {
 
   if (typeof at !== 'number') return;
 
-  return getNodeEntry(editor, [at]);
+  return editor.api.node([at]);
 };

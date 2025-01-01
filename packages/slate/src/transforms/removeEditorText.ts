@@ -2,7 +2,7 @@ import {
   type RemoveNodesOptions,
   type TEditor,
   type ValueOf,
-  removeNodes,
+  isText,
 } from '../interfaces';
 import { getQueryOptions } from '../utils';
 
@@ -13,11 +13,13 @@ export const removeEditorText = <E extends TEditor>(
 ) => {
   const match = getQueryOptions(editor, options).match;
 
-  removeNodes(editor, {
+  editor.tf.removeNodes({
     at: [],
     ...options,
     match: (n, p) => {
-      return (n.text as string)?.length > 0 && (!match || match(n, p));
+      return (
+        isText(n) && (n.text as string)?.length > 0 && (!match || match(n, p))
+      );
     },
   });
 };

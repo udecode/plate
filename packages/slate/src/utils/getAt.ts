@@ -7,7 +7,7 @@ export const getAt = <T>(
   at?: T | TNode | null
 ): T | undefined => {
   if (at && isPlainObject(at) && isNode(at)) {
-    return editor.findPath(at) as any;
+    return editor.api.findPath(at) as any;
   }
 
   return (at as T) ?? undefined;

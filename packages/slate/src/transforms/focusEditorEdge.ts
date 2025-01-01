@@ -1,4 +1,4 @@
-import { type TEditor, getEndPoint, getStartPoint } from '../interfaces';
+import type { TEditor } from '../interfaces';
 
 /** Focus an editor edge. */
 export const focusEditorEdge = (
@@ -9,8 +9,7 @@ export const focusEditorEdge = (
     edge?: 'end' | 'start';
   } = {}
 ) => {
-  const target =
-    edge === 'start' ? getStartPoint(editor, []) : getEndPoint(editor, []);
+  const target = edge === 'start' ? editor.api.start([]) : editor.api.end([]);
 
-  editor.focus(target);
+  editor.tf.focus(target);
 };

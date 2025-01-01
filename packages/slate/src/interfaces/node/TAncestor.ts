@@ -20,4 +20,4 @@ export type AncestorOf<N extends TNode> = TEditor extends N
         ? ElementOf<N> | N
         : never;
 
-export type AncestorIn<V extends Value> = AncestorOf<V[number]>;
+export type AncestorIn<V extends Value> = AncestorOf<TEditor | V[number]>;

@@ -9,13 +9,18 @@ import type { ElementOrTextOf } from '../element/TElement';
 
 import { getAt } from '../../utils/getAt';
 
+export type InsertFragmentOptions = Modify<
+  TextInsertFragmentOptions,
+  QueryAt & QueryVoids
+>;
+
 export const insertFragment = <
   N extends ElementOrTextOf<E>,
   E extends TEditor = TEditor,
 >(
   editor: E,
   fragment: N[],
-  options?: Modify<TextInsertFragmentOptions, QueryAt & QueryVoids>
+  options?: InsertFragmentOptions
 ) => {
   insertFragmentBase(editor as any, fragment, {
     ...options,

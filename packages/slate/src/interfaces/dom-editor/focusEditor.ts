@@ -4,13 +4,12 @@ import type { At } from '../../types';
 import type { TEditor } from '../editor';
 
 import { withoutNormalizing } from '../editor';
-import { select } from '../transforms';
 
 export const focusEditor = (editor: TEditor, target?: At) => {
   if (target) {
     withoutNormalizing(editor, () => {
-      editor.deselect();
-      select(editor, target);
+      editor.tf.deselect();
+      editor.tf.select(target);
     });
   }
 

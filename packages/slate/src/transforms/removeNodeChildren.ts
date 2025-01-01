@@ -5,8 +5,6 @@ import {
   type TEditor,
   type ValueOf,
   getNodeChildren,
-  removeNodes,
-  withoutNormalizing,
 } from '../interfaces';
 
 /** Remove node children. */
@@ -15,11 +13,11 @@ export const removeNodeChildren = <E extends TEditor>(
   path: Path,
   options?: Omit<RemoveNodesOptions<ValueOf<E>>, 'at'>
 ) => {
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     for (const [, childPath] of getNodeChildren(editor, path, {
       reverse: true,
     })) {
-      removeNodes(editor, { ...options, at: childPath });
+      editor.tf.removeNodes({ ...options, at: childPath });
     }
   });
 };

@@ -4,7 +4,6 @@ import {
   type TEditor,
   type TNode,
   type TNodeEntry,
-  getLastNode,
   isAncestor,
 } from '../interfaces';
 
@@ -35,7 +34,7 @@ export const getLastNodeByLevel = <
 
   if (!lastNode) return;
 
-  const [, lastPath] = getLastNode(editor, [])!;
+  const [, lastPath] = editor.api.last([])!;
 
   return [getLastChild(lastNode, level - 1) as N, lastPath.slice(0, level + 1)];
 };

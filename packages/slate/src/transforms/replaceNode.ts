@@ -1,12 +1,5 @@
+import type { ElementOrTextOf, TEditor } from '../interfaces';
 import type { ReplaceNodeChildrenOptions } from './replaceNodeChildren';
-
-import {
-  type ElementOrTextOf,
-  type TEditor,
-  insertNodes,
-  removeNodes,
-  withoutNormalizing,
-} from '../interfaces';
 
 export const replaceNode = <
   N extends ElementOrTextOf<E>,
@@ -15,10 +8,10 @@ export const replaceNode = <
   editor: E,
   { at, insertOptions, nodes, removeOptions }: ReplaceNodeChildrenOptions<N, E>
 ) => {
-  withoutNormalizing(editor, () => {
-    removeNodes(editor, { ...removeOptions, at });
+  editor.tf.withoutNormalizing(() => {
+    editor.tf.removeNodes({ ...removeOptions, at });
 
-    insertNodes(editor, nodes, {
+    editor.tf.insertNodes(nodes, {
       ...insertOptions,
       at,
     });

@@ -1,10 +1,9 @@
-import {
-  type ElementOf,
-  type InsertNodesOptions,
-  type TEditor,
-  type TElement,
-  type ValueOf,
-  insertNodes,
+import type {
+  ElementOf,
+  InsertNodesOptions,
+  TEditor,
+  TElement,
+  ValueOf,
 } from '../interfaces';
 
 export const insertElements = <E extends TEditor>(
@@ -12,5 +11,5 @@ export const insertElements = <E extends TEditor>(
   nodes: TElement | TElement[],
   options?: InsertNodesOptions<ValueOf<E>>
 ) => {
-  insertNodes(editor, nodes as ElementOf<E> | ElementOf<E>[], options);
+  editor.tf.insertNodes(nodes as ElementOf<E> | ElementOf<E>[], options);
 };

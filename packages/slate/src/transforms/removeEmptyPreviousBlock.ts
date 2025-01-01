@@ -1,11 +1,11 @@
-import {
-  type GetAboveNodeOptions,
-  type TEditor,
-  type TElement,
-  type TNodeEntry,
-  type ValueOf,
-  isElementEmpty,
+import type {
+  GetAboveNodeOptions,
+  TEditor,
+  TElement,
+  TNodeEntry,
+  ValueOf,
 } from '../interfaces';
+
 import { getBlockAbove, getPreviousSiblingNode } from '../queries';
 
 export const removeEmptyPreviousBlock = <E extends TEditor>(
@@ -20,7 +20,7 @@ export const removeEmptyPreviousBlock = <E extends TEditor>(
     | TNodeEntry
     | undefined;
 
-  if (prevEntry && isElementEmpty(editor, prevEntry[0] as TElement)) {
-    editor.removeNodes({ at: prevEntry[1] });
+  if (prevEntry && editor.api.isEmpty(prevEntry[0] as TElement)) {
+    editor.tf.removeNodes({ at: prevEntry[1] });
   }
 };

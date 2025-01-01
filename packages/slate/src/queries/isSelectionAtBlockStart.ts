@@ -3,7 +3,6 @@ import {
   type TEditor,
   type ValueOf,
   isExpanded,
-  isStartPoint,
 } from '../interfaces';
 import { getBlockAbove } from './getBlockAbove';
 
@@ -25,8 +24,7 @@ export const isSelectionAtBlockStart = <E extends TEditor>(
   if (!path) return false;
 
   return (
-    isStartPoint(editor, selection.focus, path) ||
-    (isExpanded(editor.selection) &&
-      isStartPoint(editor, selection.anchor, path))
+    editor.api.isStart(selection.focus, path) ||
+    (isExpanded(editor.selection) && editor.api.isStart(selection.anchor, path))
   );
 };

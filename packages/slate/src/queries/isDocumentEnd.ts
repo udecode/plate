@@ -1,15 +1,15 @@
 import { Path } from 'slate';
 
-import { type TEditor, getEndPoint, isEndPoint } from '../interfaces';
+import type { TEditor } from '../interfaces';
 
 export const isDocumentEnd = (editor: TEditor) => {
   if (editor.selection) {
     const point = editor.selection.focus;
-    const endPoint = getEndPoint(editor, [])!;
+    const endPoint = editor.api.end([])!;
 
     return (
       endPoint.offset === 0 &&
-      isEndPoint(editor, point, point) &&
+      editor.api.isEnd(point, point) &&
       Path.equals(Path.next(Path.parent(point.path)), endPoint.path)
     );
   }

@@ -1,14 +1,12 @@
 import type { Path } from 'slate';
 
-import { type TEditor, getEndPoint, getPreviousNode } from '../interfaces';
+import type { TEditor } from '../interfaces';
 
 /** Get the end point of the previous node. */
 export const getPreviousNodeEndPoint = (editor: TEditor, at: Path) => {
-  const prevEntry = getPreviousNode(editor, {
-    at,
-  });
+  const prevEntry = editor.api.previous({ at });
 
   if (!prevEntry) return;
 
-  return getEndPoint(editor, prevEntry[1]);
+  return editor.api.end(prevEntry[1]);
 };

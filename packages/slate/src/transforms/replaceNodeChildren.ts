@@ -1,14 +1,13 @@
 import type { Path } from 'slate';
 
-import {
-  type ElementOrTextOf,
-  type InsertNodesOptions,
-  type RemoveNodesOptions,
-  type TEditor,
-  type ValueOf,
-  insertNodes,
-  withoutNormalizing,
+import type {
+  ElementOrTextOf,
+  InsertNodesOptions,
+  RemoveNodesOptions,
+  TEditor,
+  ValueOf,
 } from '../interfaces';
+
 import { removeNodeChildren } from './removeNodeChildren';
 
 export interface ReplaceNodeChildrenOptions<
@@ -29,10 +28,10 @@ export const replaceNodeChildren = <
   editor: E,
   { at, insertOptions, nodes, removeOptions }: ReplaceNodeChildrenOptions<N, E>
 ) => {
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     removeNodeChildren(editor, at, removeOptions);
 
-    insertNodes(editor, nodes, {
+    editor.tf.insertNodes(nodes, {
       ...insertOptions,
       at: at.concat([0]),
     });

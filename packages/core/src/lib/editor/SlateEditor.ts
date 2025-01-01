@@ -1,4 +1,10 @@
-import type { TEditor, TRange, Value } from '@udecode/slate';
+import type {
+  TBaseEditor,
+  TEditorApi,
+  TEditorTransforms,
+  TRange,
+  Value,
+} from '@udecode/slate';
 import type { UnionToIntersection } from '@udecode/utils';
 import type { KeyboardEventLike } from 'is-hotkey';
 import type { SetImmerState, StoreApi } from 'zustand-x';
@@ -18,10 +24,8 @@ import type {
 } from '../plugin/SlatePlugin';
 import type { CorePlugin } from '../plugins';
 
-export type BaseEditor = TEditor & {
+export type BaseEditor = TBaseEditor & {
   key: any;
-
-  id: any;
 
   getApi: <C extends AnyPluginConfig = PluginConfig>(
     plugin?: WithRequiredKey<C>
@@ -93,26 +97,29 @@ export type BaseEditor = TEditor & {
 };
 
 export type SlateEditor = BaseEditor & {
-  api: UnionToIntersection<InferApi<CorePlugin>>;
+  transforms: TEditorTransforms &
+    UnionToIntersection<InferTransforms<CorePlugin>>;
+  api: TEditorApi & UnionToIntersection<InferApi<CorePlugin>>;
+
   pluginList: AnyEditorPlugin[];
 
   plugins: Record<string, AnyEditorPlugin>;
-
   // Alias for transforms
-  tf: SlateEditor['transforms'];
-  transforms: UnionToIntersection<InferTransforms<CorePlugin>>;
+  tf: TEditorTransforms & UnionToIntersection<InferTransforms<CorePlugin>>;
 };
 
 export type TSlateEditor<
   V extends Value = Value,
   P extends AnyPluginConfig = CorePlugin,
 > = SlateEditor & {
-  api: UnionToIntersection<InferApi<CorePlugin | P>>;
+  tf: TEditorTransforms<V> &
+    UnionToIntersection<InferTransforms<CorePlugin | P>>;
+  transforms: TEditorTransforms<V> &
+    UnionToIntersection<InferTransforms<CorePlugin | P>>;
+  api: TEditorApi<V> & UnionToIntersection<InferApi<CorePlugin | P>>;
   children: V;
   pluginList: P[];
   plugins: { [K in P['key']]: Extract<P, { key: K }> };
-  tf: UnionToIntersection<InferTransforms<CorePlugin | P>>;
-  transforms: UnionToIntersection<InferTransforms<CorePlugin | P>>;
 };
 
 export type InferPlugins<T extends AnyPluginConfig[]> = T[number];

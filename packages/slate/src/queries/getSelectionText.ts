@@ -1,5 +1,5 @@
-import { type TEditor, getEditorString } from '../interfaces';
+import type { TEditor } from '../interfaces';
 
 /** Get the selected text. Return empty string if no selection. */
 export const getSelectionText = (editor: TEditor) =>
-  getEditorString(editor, editor.selection);
+  editor.api.string(editor.selection);

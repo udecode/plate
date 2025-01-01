@@ -31,7 +31,7 @@ export const match = <T extends TNode>(
     return Object.entries(predicate).every(([key, value]) => {
       const values = castArray<any>(value);
 
-      return values.includes(obj[key]);
+      return values.includes((obj as any)[key]);
     });
   }
 

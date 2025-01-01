@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { bindFirst } from '@udecode/utils';
-import { createEditor } from 'slate';
+import { createEditor, hasPath, insertSoftBreak, removeMark } from 'slate';
 
 import type { TEditor, Value } from './interfaces/editor/TEditor';
 
@@ -11,8 +11,12 @@ import {
   createPathRef,
   createPointRef,
   createRangeRef,
+  deleteBackward,
+  deleteForward,
   deleteFragment,
   deleteText,
+  deselect,
+  deselectEditor,
   findEditorDocumentOrShadowRoot,
   findEventRange,
   findNodeKey,
@@ -57,6 +61,7 @@ import {
   insertFragment,
   insertNode,
   insertNodes,
+  insertText,
   isBlock,
   isComposing,
   isEdgePoint,
@@ -93,6 +98,7 @@ import {
 } from './interfaces';
 import { findNodePath } from './queries';
 import { HistoryEditor } from './slate-history';
+import { toggleMark } from './transforms';
 
 const noop: {
   (name: string): () => void;
@@ -112,158 +118,151 @@ export const createTEditor = <V extends Value>() => {
   const editor = createEditor() as any as TEditor;
 
   // Editor
-  editor.addMark = bindFirst(addMark, editor);
   // deleteBackward
   // deleteForward
-  editor.deleteFragment = bindFirst(deleteFragment, editor);
   // getFragment
-  editor.insertBreak = bindFirst(insertBreak, editor);
-  // insertSoftBreak
-  editor.insertFragment = bindFirst(insertFragment, editor);
-  editor.insertNode = bindFirst(insertNode, editor);
   // insertText
   // normalizeNode
-  // removeMark
   // getDirtyPaths
+  // setNormalizing
+  // shouldMergeNodesRemovePrevNode
   // shouldNormalize
 
-  // EditorInterface
-  editor.above = bindFirst(getAboveNode, editor) as any;
-  editor.after = bindFirst(getPointAfter, editor);
-  editor.before = bindFirst(getPointBefore, editor);
-  editor.edges = bindFirst(getEdgePoints, editor);
-  editor.elementReadOnly = bindFirst(isElementReadOnly, editor);
-  editor.end = bindFirst(getEndPoint, editor);
-  editor.first = bindFirst(getFirstNode, editor);
-  editor.fragment = bindFirst(getFragment, editor);
-  editor.getMarks = bindFirst(getMarks, editor);
-  editor.hasBlocks = bindFirst(hasBlocks, editor);
-  editor.hasInlines = bindFirst(hasInlines, editor);
-  // hasPath
-  editor.hasTexts = bindFirst(hasTexts, editor);
-  editor.isBlock = bindFirst(isBlock, editor);
-  editor.isEdge = bindFirst(isEdgePoint, editor);
-  editor.isEmpty = bindFirst(isElementEmpty, editor);
-  editor.isEnd = bindFirst(isEndPoint, editor);
-  editor.isNormalizing = bindFirst(isEditorNormalizing, editor);
-  editor.isStart = bindFirst(isStartPoint, editor);
-  editor.last = bindFirst(getLastNode, editor);
-  editor.leaf = bindFirst(getLeafNode, editor);
-  editor.levels = bindFirst(getLevels, editor) as any;
-  editor.next = bindFirst(getNextNode, editor) as any;
-  editor.node = bindFirst(getNodeEntry, editor) as any;
-  editor.nodes = bindFirst(getNodeEntries, editor) as any;
-  editor.normalize = bindFirst(normalizeEditor, editor);
-  editor.parent = bindFirst(getParentNode, editor) as any;
-  editor.path = bindFirst(getPath, editor);
-  editor.pathRef = bindFirst(createPathRef, editor);
-  editor.pathRefs = bindFirst(getPathRefs, editor);
-  editor.point = bindFirst(getPoint, editor);
-  editor.pointRef = bindFirst(createPointRef, editor);
-  editor.pointRefs = bindFirst(getPointRefs, editor);
-  editor.positions = bindFirst(getPositions, editor);
-  editor.previous = bindFirst(getPreviousNode, editor) as any;
-  editor.range = bindFirst(getRange, editor);
-  editor.rangeRef = bindFirst(createRangeRef, editor);
-  editor.rangeRefs = bindFirst(getRangeRefs, editor);
-  // setNormalizing
-  editor.start = bindFirst(getStartPoint, editor);
-  editor.string = bindFirst(getEditorString, editor);
-  editor.unhangRange = bindFirst(unhangRange, editor);
-  editor.void = bindFirst(getVoidNode, editor) as any;
-  editor.withoutNormalizing = bindFirst(withoutNormalizing, editor as any);
-  // shouldMergeNodesRemovePrevNode
+  editor.api = {
+    above: bindFirst(getAboveNode, editor) as any,
+    after: bindFirst(getPointAfter, editor),
+    before: bindFirst(getPointBefore, editor),
+    edges: bindFirst(getEdgePoints, editor),
+    elementReadOnly: bindFirst(isElementReadOnly, editor),
+    end: bindFirst(getEndPoint, editor),
+    findDocumentOrShadowRoot: bindFirst(findEditorDocumentOrShadowRoot, editor),
+    findEventRange: bindFirst(findEventRange, editor),
+    findKey: bindFirst(findNodeKey, editor),
+    findPath: (node: any, options: any) =>
+      options
+        ? findNodePath(editor, node, options)
+        : (findPath(editor, node) ?? findNodePath(editor, node, options)),
+    first: bindFirst(getFirstNode, editor),
+    fragment: bindFirst(getFragment, editor),
+    getWindow: bindFirst(getEditorWindow, editor),
+    hasBlocks: bindFirst(hasBlocks, editor),
+    hasDOMNode: bindFirst(hasEditorDOMNode, editor),
+    hasEditableTarget: bindFirst(hasEditorEditableTarget, editor) as any,
+    hasInlines: bindFirst(hasInlines, editor),
+    hasPath: bindFirst(hasPath, editor as any),
+    hasRange: bindFirst(hasEditorRange, editor),
+    hasSelectableTarget: bindFirst(hasEditorSelectableTarget, editor) as any,
+    hasTarget: bindFirst(hasEditorTarget, editor) as any,
+    hasTexts: bindFirst(hasTexts, editor),
+    isBlock: bindFirst(isBlock, editor),
+    isComposing: bindFirst(isComposing, editor),
+    isEdge: bindFirst(isEdgePoint, editor),
+    isEmpty: bindFirst(isElementEmpty, editor),
+    isEnd: bindFirst(isEndPoint, editor),
+    isFocused: bindFirst(isEditorFocused, editor),
+    isMerging: bindFirst(HistoryEditor.isMerging, editor as any) as any,
+    isNormalizing: bindFirst(isEditorNormalizing, editor),
+    isReadOnly: bindFirst(isEditorReadOnly, editor),
+    isSaving: bindFirst(HistoryEditor.isSaving, editor as any) as any,
+    isSplittingOnce: bindFirst(HistoryEditor.isSplittingOnce, editor as any),
+    isStart: bindFirst(isStartPoint, editor),
+    isTargetInsideNonReadonlyVoid: bindFirst(
+      isTargetInsideNonReadonlyVoid,
+      editor
+    ),
+    last: bindFirst(getLastNode, editor),
+    leaf: bindFirst(getLeafNode, editor),
+    levels: bindFirst(getLevels, editor) as any,
+    marks: bindFirst(getMarks, editor),
+    next: bindFirst(getNextNode, editor) as any,
+    node: bindFirst(getNodeEntry, editor) as any,
+    nodes: bindFirst(getNodeEntries, editor) as any,
+    parent: bindFirst(getParentNode, editor) as any,
+    path: bindFirst(getPath, editor),
+    pathRef: bindFirst(createPathRef, editor),
+    pathRefs: bindFirst(getPathRefs, editor),
+    point: bindFirst(getPoint, editor),
+    pointRef: bindFirst(createPointRef, editor),
+    pointRefs: bindFirst(getPointRefs, editor),
+    positions: bindFirst(getPositions, editor),
+    previous: bindFirst(getPreviousNode, editor) as any,
+    range: bindFirst(getRange, editor),
+    rangeRef: bindFirst(createRangeRef, editor),
+    rangeRefs: bindFirst(getRangeRefs, editor),
+    start: bindFirst(getStartPoint, editor),
+    string: bindFirst(getEditorString, editor),
+    toDOMNode: bindFirst(toDOMNode, editor),
+    toDOMPoint: bindFirst(toDOMPoint, editor),
+    toDOMRange: bindFirst(toDOMRange, editor),
+    toSlateNode: bindFirst(toSlateNode, editor) as any,
+    toSlatePoint: bindFirst(toSlatePoint, editor),
+    toSlateRange: bindFirst(toSlateRange, editor),
+    unhangRange: bindFirst(unhangRange, editor),
+    void: bindFirst(getVoidNode, editor) as any,
+  } as any;
 
-  // Node transforms
-  editor.insertNodes = bindFirst(insertNodes, editor);
-  editor.liftNodes = bindFirst(liftNodes, editor);
-  editor.mergeNodes = bindFirst(mergeNodes, editor);
-  editor.moveNodes = bindFirst(moveNodes, editor);
-  editor.removeNodes = bindFirst(removeNodes, editor);
-  editor.setNodes = bindFirst(setNodes, editor);
-  editor.splitNodes = bindFirst(splitNodes, editor);
-  editor.unsetNodes = bindFirst(unsetNodes, editor);
-  editor.unwrapNodes = bindFirst(unwrapNodes, editor);
-  editor.wrapNodes = bindFirst(wrapNodes, editor);
+  const { marks, ...apiToMerge } = editor.api;
 
-  // Text transforms
-  editor.delete = bindFirst(deleteText, editor);
-  editor.insertFragment = bindFirst(insertFragment, editor);
+  Object.assign(editor, apiToMerge);
 
-  // Selection transforms
-  editor.collapse = bindFirst(collapseSelection, editor);
-  // deselect
-  editor.move = bindFirst(moveSelection, editor);
-  editor.select = bindFirst(select, editor);
-  editor.setPoint = bindFirst(setPoint, editor);
-  editor.setSelection = bindFirst(setSelection, editor);
+  const transforms: TEditor<V>['transforms'] = {
+    addMark: bindFirst(addMark, editor),
+    blur: bindFirst(blurEditor, editor),
+    collapse: bindFirst(collapseSelection, editor),
+    delete: bindFirst(deleteText, editor),
+    deleteBackward: bindFirst(deleteBackward, editor),
+    deleteForward: bindFirst(deleteForward, editor),
+    deleteFragment: bindFirst(deleteFragment, editor),
+    deselect: bindFirst(deselect, editor),
+    deselectDOM: bindFirst(deselectEditor, editor),
+    focus: bindFirst(focusEditor, editor),
+    insertBreak: bindFirst(insertBreak, editor),
+    insertData: noop('insertData'),
+    insertFragment: bindFirst(insertFragment, editor),
+    insertFragmentData: noop('insertFragmentData', false),
+    insertNode: bindFirst(insertNode, editor),
+    insertNodes: bindFirst(insertNodes, editor),
+    insertSoftBreak: bindFirst(insertSoftBreak, editor as any),
+    insertText: bindFirst(insertText, editor),
+    insertTextData: noop('insertTextData', false),
+    liftNodes: bindFirst(liftNodes, editor),
+    mergeNodes: bindFirst(mergeNodes, editor),
+    move: bindFirst(moveSelection, editor),
+    moveNodes: bindFirst(moveNodes, editor),
+    normalize: bindFirst(normalizeEditor, editor),
+    removeMark: bindFirst(removeMark, editor as any),
+    removeNodes: bindFirst(removeNodes, editor),
+    select: bindFirst(select, editor),
+    setFragmentData: noop('setFragmentData'),
+    setNodes: bindFirst(setNodes, editor),
+    setPoint: bindFirst(setPoint, editor),
+    setSelection: bindFirst(setSelection, editor),
+    setSplittingOnce: bindFirst(HistoryEditor.setSplittingOnce, editor as any),
+    splitNodes: bindFirst(splitNodes, editor),
+    toggle: {
+      mark: bindFirst(toggleMark, editor as any),
+    },
+    unsetNodes: bindFirst(unsetNodes, editor),
+    unwrapNodes: bindFirst(unwrapNodes, editor),
+    withMerging: bindFirst(HistoryEditor.withMerging, editor as any),
+    withNewBatch: bindFirst(HistoryEditor.withNewBatch, editor as any),
+    withoutMerging: bindFirst(HistoryEditor.withoutMerging, editor as any),
+    withoutNormalizing: bindFirst(withoutNormalizing, editor as any),
+    withoutSaving: bindFirst(HistoryEditor.withoutSaving, editor as any),
+    wrapNodes: bindFirst(wrapNodes, editor),
+  };
+
+  editor.tf = transforms;
+  editor.transforms = transforms;
+
+  const { deleteBackward: _1, deleteForward: _2, ...tfToMerge } = transforms;
+  Object.assign(editor, tfToMerge);
 
   // HistoryEditor
   editor.history = { redos: [], undos: [] };
   editor.undo = noop('undo');
   editor.redo = noop('redo');
   editor.writeHistory = noop('writeHistory');
-
-  // HistoryEditorInterface
-  editor.isMerging = bindFirst(HistoryEditor.isMerging, editor as any) as any;
-  editor.isSaving = bindFirst(HistoryEditor.isSaving, editor as any) as any;
-  editor.isSplittingOnce = bindFirst(
-    HistoryEditor.isSplittingOnce,
-    editor as any
-  );
-  editor.setSplittingOnce = bindFirst(
-    HistoryEditor.setSplittingOnce,
-    editor as any
-  );
-  editor.withMerging = bindFirst(HistoryEditor.withMerging, editor as any);
-  editor.withNewBatch = bindFirst(HistoryEditor.withNewBatch, editor as any);
-  editor.withoutMerging = bindFirst(
-    HistoryEditor.withoutMerging,
-    editor as any
-  );
-  editor.withoutSaving = bindFirst(HistoryEditor.withoutSaving, editor as any);
-
-  // DOMEditor
-  editor.hasEditableTarget = bindFirst(hasEditorEditableTarget, editor) as any;
-  editor.hasRange = bindFirst(hasEditorRange, editor);
-  editor.hasSelectableTarget = bindFirst(
-    hasEditorSelectableTarget,
-    editor
-  ) as any;
-  editor.hasTarget = bindFirst(hasEditorTarget, editor) as any;
-  editor.insertData = noop('insertData');
-  editor.insertFragmentData = noop('insertFragmentData') as any;
-  editor.insertTextData = noop('insertTextData', false);
-  editor.isTargetInsideNonReadonlyVoid = bindFirst(
-    isTargetInsideNonReadonlyVoid,
-    editor
-  );
-  editor.setFragmentData = noop('setFragmentData');
-
-  // DOMEditorInterface
-  editor.blur = bindFirst(blurEditor, editor);
-  editor.hasDOMNode = bindFirst(hasEditorDOMNode, editor);
-  editor.isComposing = bindFirst(isComposing, editor);
-  editor.isFocused = bindFirst(isEditorFocused, editor);
-  editor.isReadOnly = bindFirst(isEditorReadOnly, editor);
-  editor.findDocumentOrShadowRoot = bindFirst(
-    findEditorDocumentOrShadowRoot,
-    editor
-  );
-  editor.findEventRange = bindFirst(findEventRange, editor);
-  editor.findKey = bindFirst(findNodeKey, editor);
-  editor.findPath = (node, options) =>
-    options
-      ? findNodePath(editor, node, options)
-      : (findPath(editor, node) ?? findNodePath(editor, node, options));
-  editor.focus = bindFirst(focusEditor, editor);
-  editor.getWindow = bindFirst(getEditorWindow, editor);
-  editor.toDOMNode = bindFirst(toDOMNode, editor);
-  editor.toDOMPoint = bindFirst(toDOMPoint, editor);
-  editor.toDOMRange = bindFirst(toDOMRange, editor);
-  editor.toSlateNode = bindFirst(toSlateNode, editor) as any;
-  editor.toSlatePoint = bindFirst(toSlatePoint, editor);
-  editor.toSlateRange = bindFirst(toSlateRange, editor);
 
   return editor as TEditor<V>;
 };

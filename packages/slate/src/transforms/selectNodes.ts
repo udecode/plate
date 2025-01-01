@@ -1,4 +1,5 @@
-import { type TEditor, type TNodeEntry, setSelection } from '../interfaces';
+import type { TEditor, TNodeEntry } from '../interfaces';
+
 import { getNodesRange } from '../queries';
 
 export const selectNodes = (editor: TEditor, nodes: TNodeEntry[]) => {
@@ -6,5 +7,5 @@ export const selectNodes = (editor: TEditor, nodes: TNodeEntry[]) => {
 
   if (!range) return;
 
-  setSelection(editor, range);
+  editor.tf.setSelection(range);
 };

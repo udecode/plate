@@ -1,7 +1,6 @@
 import {
   type GetNodeEntriesOptions,
   type TElement,
-  type ValueOf,
   someNode,
 } from '@udecode/slate';
 
@@ -14,10 +13,10 @@ import { type ToggleBlockOptions, BaseParagraphPlugin } from '../plugins';
  * type, it will be changed to that type. Otherwise, it will be changed to the
  * default type.
  */
-export const toggleBlock = <E extends SlateEditor = SlateEditor>(
-  editor: E,
+export const toggleBlock = (
+  editor: SlateEditor,
   options: ToggleBlockOptions,
-  editorNodesOptions?: Omit<GetNodeEntriesOptions<ValueOf<E>>, 'match'>
+  editorNodesOptions?: Omit<GetNodeEntriesOptions, 'match'>
 ) => {
   const { defaultType = editor.getType(BaseParagraphPlugin), type } = options;
 

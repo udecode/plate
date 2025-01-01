@@ -1,6 +1,7 @@
 import type { Location, Range } from 'slate';
 
-import { type TEditor, getPoint } from '../interfaces';
+import type { TEditor } from '../interfaces';
+
 import {
   type PointBeforeOptions,
   getPointBeforeLocation,
@@ -18,7 +19,7 @@ export const getRangeBefore = (
 
   if (!anchor) return;
 
-  const focus = getPoint(editor, at, { edge: 'end' })!;
+  const focus = editor.api.point(at, { edge: 'end' })!;
 
   return {
     anchor,
