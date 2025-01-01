@@ -1,9 +1,22 @@
 import type { HtmlDeserializer } from '@udecode/plate-common';
 
-import { BaseCodeBlockPlugin, BaseCodeLinePlugin } from './BaseCodeBlockPlugin';
+import {
+  BaseCodeBlockPlugin,
+  BaseCodeLinePlugin,
+} from '../BaseCodeBlockPlugin';
+import {
+  htmlDeserializerCodeBlockStatic,
+  rulesStaticCodeBlock,
+} from './htmlDeserializerCodeBlockStatic';
 
 export const htmlDeserializerCodeBlock: HtmlDeserializer = {
   parse: ({ element }) => {
+    const staticCodeBlock = htmlDeserializerCodeBlockStatic(element);
+
+    if (staticCodeBlock) {
+      return staticCodeBlock;
+    }
+
     const languageSelectorText =
       [...element.childNodes].find(
         (node: ChildNode) => node.nodeName === 'SELECT'
@@ -38,5 +51,6 @@ export const htmlDeserializerCodeBlock: HtmlDeserializer = {
         fontFamily: 'Consolas',
       },
     },
+    ...(rulesStaticCodeBlock as any),
   ],
 };
