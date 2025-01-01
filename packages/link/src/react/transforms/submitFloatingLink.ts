@@ -36,7 +36,7 @@ export const submitFloatingLink = (editor: SlateEditor) => {
   });
 
   setTimeout(() => {
-    editor.focus(editor.selection!);
+    editor.tf.focus(editor.selection!);
   }, 0);
 
   return true;

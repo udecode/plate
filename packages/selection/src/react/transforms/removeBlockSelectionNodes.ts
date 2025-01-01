@@ -7,7 +7,7 @@ export const removeBlockSelectionNodes = (editor: SlateEditor) => {
 
   if (!selectedIds) return;
 
-  editor.removeNodes({
+  editor.tf.removeNodes({
     at: [],
     match: (n: any) => n.id && selectedIds.has((n as any).id),
   });

@@ -135,7 +135,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
         // TODO
         // editor.getApi(BlockSelectionPlugin).blockSelection.focus();
       } else {
-        editor.focus();
+        editor.tf.focus();
       }
 
       const lastBatch = editor.history.undos.at(-1) as AIBatch;

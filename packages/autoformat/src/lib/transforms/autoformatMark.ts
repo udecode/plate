@@ -70,7 +70,7 @@ export const autoformatMark = (
     marks.forEach((mark) => {
       editor.addMark(mark, true);
     });
-    collapseSelection(editor, { edge: 'end' });
+    editor.tf.collapse({ edge: 'end' });
     removeMark(editor, { key: marks as any, shouldChange: false });
 
     deleteText(editor, {

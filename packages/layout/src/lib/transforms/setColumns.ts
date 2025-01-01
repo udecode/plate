@@ -28,7 +28,7 @@ export const setColumns = (
     widths?: string[];
   }
 ) => {
-  editor.withoutNormalizing(() => {
+  editor.tf.withoutNormalizing(() => {
     if (!at) return;
 
     widths = widths ?? columnsToWidths({ columns });

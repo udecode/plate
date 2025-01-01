@@ -32,7 +32,7 @@ export const useCaptionTextareaFocus = (
 
   React.useEffect(() => {
     if (focusCaptionPath && textareaRef.current) {
-      const path = editor.findPath(element);
+      const path = editor.api.findPath(element);
 
       if (path && Path.equals(path, focusCaptionPath)) {
         textareaRef.current.focus();
@@ -59,7 +59,7 @@ export const useCaptionTextareaState = () => {
 
   const updateEditorCaptionValue = useCallback(
     (newValue: string) => {
-      editor.setNodes<TCaptionElement>(
+      editor.tf.setNodes<TCaptionElement>(
         { caption: [{ text: newValue }] },
         { at: element }
       );
@@ -124,17 +124,17 @@ export const useCaptionTextarea = ({
   const onKeyDown: TextareaAutosizeProps['onKeyDown'] = (e) => {
     // select image
     if (isHotkey('up', e)) {
-      const path = editor.findPath(element);
+      const path = editor.api.findPath(element);
 
       if (!path) return;
 
       e.preventDefault();
 
-      editor.focus(path);
+      editor.tf.focus(path);
     }
     // select next block
     if (isHotkey('down', e)) {
-      const path = editor.findPath(element);
+      const path = editor.api.findPath(element);
 
       if (!path) return;
 
@@ -144,7 +144,7 @@ export const useCaptionTextarea = ({
 
       e.preventDefault();
 
-      editor.focus(nextNodePath);
+      editor.tf.focus(nextNodePath);
     }
   };
 

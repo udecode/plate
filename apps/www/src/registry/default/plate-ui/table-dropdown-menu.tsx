@@ -81,7 +81,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
                 disabled={!mergeState.canMerge}
                 onSelect={() => {
                   tf.table.merge();
-                  editor.focus();
+                  editor.tf.focus();
                 }}
               >
                 <Combine />
@@ -92,7 +92,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
                 disabled={!mergeState.canSplit}
                 onSelect={() => {
                   tf.table.split();
-                  editor.focus();
+                  editor.tf.focus();
                 }}
               >
                 <Ungroup />
@@ -112,7 +112,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
                 disabled={!tableSelected}
                 onSelect={() => {
                   tf.insert.tableRow({ before: true });
-                  editor.focus();
+                  editor.tf.focus();
                 }}
               >
                 <ArrowUp />
@@ -123,7 +123,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
                 disabled={!tableSelected}
                 onSelect={() => {
                   tf.insert.tableRow();
-                  editor.focus();
+                  editor.tf.focus();
                 }}
               >
                 <ArrowDown />
@@ -134,7 +134,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
                 disabled={!tableSelected}
                 onSelect={() => {
                   tf.remove.tableRow();
-                  editor.focus();
+                  editor.tf.focus();
                 }}
               >
                 <XIcon />
@@ -154,7 +154,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
                 disabled={!tableSelected}
                 onSelect={() => {
                   tf.insert.tableColumn({ before: true });
-                  editor.focus();
+                  editor.tf.focus();
                 }}
               >
                 <ArrowLeft />
@@ -165,7 +165,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
                 disabled={!tableSelected}
                 onSelect={() => {
                   tf.insert.tableColumn();
-                  editor.focus();
+                  editor.tf.focus();
                 }}
               >
                 <ArrowRight />
@@ -176,7 +176,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
                 disabled={!tableSelected}
                 onSelect={() => {
                   tf.remove.tableColumn();
-                  editor.focus();
+                  editor.tf.focus();
                 }}
               >
                 <XIcon />
@@ -190,7 +190,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
             disabled={!tableSelected}
             onSelect={() => {
               tf.remove.table();
-              editor.focus();
+              editor.tf.focus();
             }}
           >
             <Trash2Icon />
@@ -231,7 +231,7 @@ export function TablePicker() {
       className="m-0 !flex flex-col p-0"
       onClick={() => {
         tf.insert.table(tablePicker.size, { select: true });
-        editor.focus();
+        editor.tf.focus();
       }}
     >
       <div className="grid size-[130px] grid-cols-8 gap-0.5 p-1">

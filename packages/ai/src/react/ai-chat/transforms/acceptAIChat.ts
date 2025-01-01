@@ -13,5 +13,5 @@ export const acceptAIChat = (editor: PlateEditor) => {
   });
 
   editor.getApi<AIChatPluginConfig>({ key: 'ai' }).aiChat.hide();
-  editor.focus();
+  editor.tf.focus();
 };

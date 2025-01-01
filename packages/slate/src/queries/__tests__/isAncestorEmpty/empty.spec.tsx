@@ -2,17 +2,20 @@
 
 import { jsxt } from '@udecode/plate-test-utils';
 
-import type { TEditor } from '../../../interfaces';
-
+import { createTEditor } from '../../../createTEditor';
 import { isAncestorEmpty } from '../../isAncestorEmpty';
 
 jsxt;
 
-const input = (
-  <hp>
-    <cursor />
-  </hp>
-) as any as TEditor;
+const input = createTEditor(
+  (
+    <editor>
+      <hp>
+        <cursor />
+      </hp>
+    </editor>
+  ) as any
+);
 
 const output = true;
 

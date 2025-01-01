@@ -17,14 +17,14 @@ export const deleteFragmentSuggestion = (
     const [start, end] = getEdgePoints(editor, selection)!;
 
     if (reverse) {
-      collapseSelection(editor, { edge: 'end' });
+      editor.tf.collapse({ edge: 'end' });
       deleteSuggestion(
         editor,
         { anchor: end, focus: start },
         { reverse: true }
       );
     } else {
-      collapseSelection(editor, { edge: 'start' });
+      editor.tf.collapse({ edge: 'start' });
       deleteSuggestion(editor, { anchor: start, focus: end });
     }
   });

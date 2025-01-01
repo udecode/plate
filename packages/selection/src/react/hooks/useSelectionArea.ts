@@ -26,7 +26,7 @@ export const useSelectionArea = () => {
       .on('start', ({ event }) => {
         setOption('isSelectionAreaVisible', true);
 
-        editor.deselect();
+        editor.tf.deselect();
 
         if (!event?.shiftKey) {
           selection.clearSelection();

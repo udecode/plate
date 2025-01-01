@@ -11,7 +11,7 @@ export const getRangeBoundingClientRect = (
 ): ClientRectObject => {
   if (!at) return getDefaultBoundingClientRect();
 
-  const domRange = editor.toDOMRange(at);
+  const domRange = editor.api.toDOMRange(at);
 
   if (!domRange) return getDefaultBoundingClientRect();
 

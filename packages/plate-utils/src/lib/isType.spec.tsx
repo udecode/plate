@@ -1,16 +1,19 @@
 /** @jsx jsxt */
-import { type SlateEditor, createSlateEditor } from '@udecode/plate-core';
+import { createSlateEditor } from '@udecode/plate-core';
 import { jsxt } from '@udecode/plate-test-utils';
+import { createTEditor } from '@udecode/slate';
 
 import { isType } from './isType';
 
 jsxt;
 
-const editor = (
-  <editor>
-    <hp>test</hp>
-  </editor>
-) as any as SlateEditor;
+const editor = createTEditor(
+  (
+    <editor>
+      <hp>test</hp>
+    </editor>
+  ) as any
+);
 
 it('should return true when type matches', () => {
   expect(

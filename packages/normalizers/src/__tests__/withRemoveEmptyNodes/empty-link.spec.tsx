@@ -1,8 +1,6 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from '@udecode/plate-common';
-
-import { createSlateEditor } from '@udecode/plate-common';
+import { createSlateEditor, createTEditor } from '@udecode/plate-common';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
@@ -10,16 +8,18 @@ import { RemoveEmptyNodesPlugin } from '../../lib/RemoveEmptyNodesPlugin';
 
 jsxt;
 
-const input = (
-  <editor>
-    <hp>
-      <ha url="http://google.com">
-        <htext />
-      </ha>
-      <cursor />
-    </hp>
-  </editor>
-) as any as SlateEditor;
+const input = createTEditor(
+  (
+    <editor>
+      <hp>
+        <ha url="http://google.com">
+          <htext />
+        </ha>
+        <cursor />
+      </hp>
+    </editor>
+  ) as any
+);
 
 const output = (
   <editor>

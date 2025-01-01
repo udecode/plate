@@ -2,21 +2,22 @@
 
 import { jsxt } from '@udecode/plate-test-utils';
 
-import type { TEditor } from '../../../interfaces';
-
+import { createTEditor } from '../../../createTEditor';
 import { getRangeFromBlockStart } from '../../getRangeFromBlockStart';
 
 jsxt;
 
-const input = (
-  <editor>
-    <hp>
-      te
-      <cursor />
-      st
-    </hp>
-  </editor>
-) as any as TEditor;
+const input = createTEditor(
+  (
+    <editor>
+      <hp>
+        te
+        <cursor />
+        st
+      </hp>
+    </editor>
+  ) as any
+);
 
 const output: ReturnType<typeof getRangeFromBlockStart> = {
   anchor: { offset: 0, path: [0, 0] },

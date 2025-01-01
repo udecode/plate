@@ -63,7 +63,7 @@ export const useContentObserver = ({
 
       if (!node) return;
 
-      const element = editor.toDOMNode(node);
+      const element = editor.api.toDOMNode(node);
 
       return element && observer.observe(element);
     });

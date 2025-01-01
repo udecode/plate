@@ -17,7 +17,6 @@ const node = (
     </hli>
   </editor>
 ) as any;
-
 const props = { a: 1 };
 
 const output = (

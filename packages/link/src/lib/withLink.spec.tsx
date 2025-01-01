@@ -539,7 +539,7 @@ describe('withLink', () => {
         const editor = createEditor(input);
 
         // Select the entire link text
-        editor.select({
+        editor.tf.select({
           anchor: { offset: 0, path: [0, 1, 0] },
           focus: { offset: 9, path: [0, 1, 0] },
         });
@@ -572,7 +572,7 @@ describe('withLink', () => {
         const editor = createEditor(input);
 
         // Select the entire link text
-        editor.select({
+        editor.tf.select({
           anchor: { offset: 0, path: [0, 1, 0] },
           focus: { offset: 9, path: [0, 1, 0] },
         });
@@ -581,7 +581,7 @@ describe('withLink', () => {
         editor.insertText('\u200B');
 
         // Trigger normalization
-        editor.normalize();
+        editor.tf.normalize();
 
         expect(editor.children).toEqual(output.children);
       });

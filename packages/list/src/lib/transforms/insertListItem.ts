@@ -109,7 +109,7 @@ export const insertListItem = (editor: SlateEditor): boolean => {
           to: nextListItemPath,
         });
         select(editor, nextListItemPath);
-        collapseSelection(editor, {
+        editor.tf.collapse({
           edge: 'start',
         });
       });

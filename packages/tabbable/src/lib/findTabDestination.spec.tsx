@@ -14,25 +14,27 @@ import {
 jsxt;
 
 describe('findTabDestination', () => {
+  const e = (
+    <editor>
+      <hp>Line 1</hp>
+      <element type="my-void" void>
+        <htext />
+      </element>
+      <hp>Line 2</hp>
+      <hp>Line 3</hp>
+      <element type="my-void" void>
+        <htext />
+        <cursor />
+      </element>
+      <element type="my-void" void>
+        <htext />
+      </element>
+      <hp>Line 4</hp>
+    </editor>
+  ) as any as SlateEditor;
   const editor = createSlateEditor({
-    editor: (
-      <editor>
-        <hp>Line 1</hp>
-        <element type="my-void" void>
-          <htext />
-        </element>
-        <hp>Line 2</hp>
-        <hp>Line 3</hp>
-        <element type="my-void" void>
-          <htext />
-          <cursor />
-        </element>
-        <element type="my-void" void>
-          <htext />
-        </element>
-        <hp>Line 4</hp>
-      </editor>
-    ) as any as SlateEditor,
+    selection: e.selection,
+    value: e.children,
   });
 
   const voidPath1 = [1];

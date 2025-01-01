@@ -46,7 +46,7 @@ export const withNormalizeTable: ExtendEditor<TableConfig> = ({
               child.type === editor.getType(BaseTableRowPlugin)
           )
         ) {
-          editor.removeNodes({ at: path });
+          editor.tf.removeNodes({ at: path });
 
           return;
         }

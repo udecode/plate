@@ -239,7 +239,7 @@ export const withSuggestion: ExtendEditor<SuggestionConfig> = ({
 //         return;
 //       }
 //
-//       const path = editor.findPath(node);
+//       const path = editor.api.findPath(node);
 //       if (!path) return;
 //
 //       const id = findSuggestionId(editor, path) ?? nanoid();

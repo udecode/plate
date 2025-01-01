@@ -14,7 +14,7 @@ import type { TEditor, Value, ValueOf } from '../editor/TEditor';
 import type { ElementOrTextIn, ElementOrTextOf } from '../element/TElement';
 
 import { getQueryOptions, queryNode } from '../../utils';
-import { getAboveNode, getEndPoint, isInline } from '../editor';
+import { getAboveNode, getEndPoint } from '../editor';
 import { type TDescendant, getNodeString } from '../node';
 
 export type InsertNodesOptions<V extends Value = Value> = {
@@ -64,7 +64,7 @@ export const insertNodes = <
 
           const children = node.children as TDescendant[];
 
-          if (children.some((n) => isInline(editor, n))) return false;
+          if (children.some((n) => editor.isInline(n))) return false;
 
           return !filter || filter([node, path]);
         };

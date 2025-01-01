@@ -37,7 +37,7 @@ export const withColumn: ExtendEditor = ({ editor }) => {
       }
       // If only one column remains, unwrap the group (optional logic)
       if (node.children.length < 2) {
-        editor.withoutNormalizing(() => {
+        editor.tf.withoutNormalizing(() => {
           unwrapNodes(editor, { at: path });
           unwrapNodes(editor, { at: path });
         });
@@ -46,7 +46,7 @@ export const withColumn: ExtendEditor = ({ editor }) => {
       }
 
       // PERF: only run when the number of columns changes
-      editor.withoutNormalizing(() => {
+      editor.tf.withoutNormalizing(() => {
         // Add new width normalization logic
         const totalColumns = node.children.length;
         let widths = node.children.map((col) => {

@@ -125,7 +125,7 @@ const InlineCombobox = ({
   const [insertPoint, setInsertPoint] = useState<PointRef | null>(null);
 
   useEffect(() => {
-    const path = editor.findPath(element);
+    const path = editor.api.findPath(element);
 
     if (!path) return;
 

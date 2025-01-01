@@ -58,14 +58,14 @@ export const useComboboxInput = ({
 
   const removeInput = useCallback(
     (shouldFocusEditor = false) => {
-      const path = editor.findPath(element);
+      const path = editor.api.findPath(element);
 
       if (!path) return;
 
       removeNodes(editor, { at: path });
 
       if (shouldFocusEditor) {
-        editor.focus();
+        editor.tf.focus();
       }
     },
     [editor, element]
@@ -145,7 +145,7 @@ export const useComboboxInput = ({
         if (forwardUndoRedoToEditor && (isUndo || isRedo)) {
           event.preventDefault();
           editor[isUndo ? 'undo' : 'redo']();
-          editor.focus();
+          editor.tf.focus();
         }
       },
     },

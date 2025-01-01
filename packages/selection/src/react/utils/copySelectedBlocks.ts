@@ -46,7 +46,7 @@ export const copySelectedBlocks = (editor: SlateEditor) => {
         });
 
         // deselect and select back selectedIds
-        editor.deselect();
+        editor.tf.deselect();
         editor.setOption(BlockSelectionPlugin, 'selectedIds', selectedIds);
       });
 

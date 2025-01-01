@@ -1,9 +1,9 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
-import type { PlateEditor } from '@udecode/plate-common/react';
 import type { DropTargetMonitor } from 'react-dnd';
 
 import { moveNodes } from '@udecode/plate-common';
 import { findNode } from '@udecode/plate-common';
+/* eslint-disable @typescript-eslint/no-require-imports */
+import { createPlateEditor } from '@udecode/plate-common/react';
 
 import type { ElementDragItemNode } from '../types';
 
@@ -25,7 +25,8 @@ jest.mock('../utils', () => ({
 }));
 
 describe('onDropNode', () => {
-  const editor = { focus: jest.fn(), selection: {} } as unknown as PlateEditor;
+  const editor = createPlateEditor();
+  editor.tf.focus = jest.fn();
   const monitor = {} as DropTargetMonitor;
   const nodeRef = {};
   const dragItem: ElementDragItemNode = { id: 'drag' };

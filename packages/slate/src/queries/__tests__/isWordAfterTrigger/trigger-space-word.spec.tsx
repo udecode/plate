@@ -3,20 +3,21 @@
 import { jsxt } from '@udecode/plate-test-utils';
 import { Range } from 'slate';
 
-import type { TEditor } from '../../../interfaces';
-
+import { createTEditor } from '../../../createTEditor';
 import { isWordAfterTrigger } from '../../isWordAfterTrigger';
 
 jsxt;
 
-const input = (
-  <editor>
-    <hp>
-      @ test
-      <cursor /> test2
-    </hp>
-  </editor>
-) as any as TEditor;
+const input = createTEditor(
+  (
+    <editor>
+      <hp>
+        @ test
+        <cursor /> test2
+      </hp>
+    </editor>
+  ) as any
+);
 
 const at = Range.start(input.selection as Range);
 

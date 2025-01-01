@@ -2,22 +2,23 @@
 
 import { jsxt } from '@udecode/plate-test-utils';
 
-import type { TEditor } from '../../../interfaces';
-
+import { createTEditor } from '../../../createTEditor';
 import { getBlockAbove } from '../../getBlockAbove';
 
 jsxt;
 
-const input = (
-  <editor>
-    <hh1>
-      <hp>
-        test
-        <cursor />
-      </hp>
-    </hh1>
-  </editor>
-) as any as TEditor;
+const input = createTEditor(
+  (
+    <editor>
+      <hh1>
+        <hp>
+          test
+          <cursor />
+        </hp>
+      </hh1>
+    </editor>
+  ) as any
+);
 
 const output = <hp>test</hp>;
 

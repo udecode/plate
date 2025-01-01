@@ -44,7 +44,7 @@ export const useColorDropdownMenuState = ({
         setSelectedColor(value);
 
         select(editor, editor.selection);
-        editor.focus();
+        editor.tf.focus();
 
         setMarks(editor, { [nodeType]: value });
       }
@@ -63,7 +63,7 @@ export const useColorDropdownMenuState = ({
   const clearColor = React.useCallback(() => {
     if (editor.selection) {
       select(editor, editor.selection);
-      editor.focus();
+      editor.tf.focus();
 
       if (selectedColor) {
         removeMark(editor, { key: nodeType });

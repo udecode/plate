@@ -27,7 +27,7 @@ export const deleteColumn = (editor: SlateEditor) => {
 
   if (!tableEntry) return;
 
-  editor.withoutNormalizing(() => {
+  editor.tf.withoutNormalizing(() => {
     if (!disableMerge) {
       deleteTableMergeColumn(editor);
 

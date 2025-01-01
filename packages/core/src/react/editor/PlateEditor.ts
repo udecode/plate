@@ -20,9 +20,17 @@ import type { EXPOSED_STORE_KEYS, PlateStoreState } from '../stores';
 import type { PlateCorePlugin } from './withPlate';
 
 export type PlateEditor = {
+  getApi: <C extends AnyPluginConfig = PluginConfig>(
+    plugin?: WithRequiredKey<C>
+  ) => PlateEditor['api'] & InferApi<C>;
+
   getPlugin: <C extends AnyPluginConfig = PluginConfig>(
     plugin: WithRequiredKey<C>
   ) => C extends { node: any } ? C : EditorPlatePlugin<C>;
+
+  getTransforms: <C extends AnyPluginConfig = PluginConfig>(
+    plugin?: WithRequiredKey<C>
+  ) => PlateEditor['tf'] & InferTransforms<C>;
 
   setPlateState: <K extends (typeof EXPOSED_STORE_KEYS)[number]>(
     optionKey: K,
@@ -81,6 +89,12 @@ export type TPlateEditor<
   V extends Value = Value,
   P extends AnyPluginConfig = PlateCorePlugin,
 > = PlateEditor & {
+  getApi: <C extends AnyPluginConfig = PluginConfig>(
+    plugin?: WithRequiredKey<C>
+  ) => TPlateEditor<V>['api'] & InferApi<C>;
+  getTransforms: <C extends AnyPluginConfig = PluginConfig>(
+    plugin?: WithRequiredKey<C>
+  ) => TPlateEditor<V>['tf'] & InferTransforms<C>;
   tf: TEditorTransforms<V> &
     UnionToIntersection<InferTransforms<P | PlateCorePlugin>>;
   transforms: TEditorTransforms<V> &

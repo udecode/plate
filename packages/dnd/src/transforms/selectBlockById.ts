@@ -12,5 +12,5 @@ export const selectBlockById = (editor: TEditor, id: string) => {
   if (!path) return;
 
   select(editor, getRange(editor, path));
-  editor.focus();
+  editor.tf.focus();
 };

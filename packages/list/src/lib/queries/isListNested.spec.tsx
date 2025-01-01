@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { findNode } from '@udecode/plate-common';
+import { createTEditor, findNode } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
@@ -9,26 +9,28 @@ import { isListNested } from './isListNested';
 jsxt;
 
 describe('when the list is nested', () => {
-  const input = (
-    <editor>
-      <hul id="1">
-        <hli id="2">
-          <hp>2</hp>
-          <hul id="21">
-            <hli>
-              <hp>21</hp>
-            </hli>
-            <hli>
-              <hp>
-                22
-                <cursor />
-              </hp>
-            </hli>
-          </hul>
-        </hli>
-      </hul>
-    </editor>
-  ) as any;
+  const input = createTEditor(
+    (
+      <editor>
+        <hul id="1">
+          <hli id="2">
+            <hp>2</hp>
+            <hul id="21">
+              <hli>
+                <hp>21</hp>
+              </hli>
+              <hli>
+                <hp>
+                  22
+                  <cursor />
+                </hp>
+              </hli>
+            </hul>
+          </hli>
+        </hul>
+      </editor>
+    ) as any
+  );
 
   it('should be', () => {
     const editor = createPlateEditor({ editor: input });
@@ -40,15 +42,17 @@ describe('when the list is nested', () => {
 });
 
 describe('when the list is not nested', () => {
-  const input = (
-    <editor>
-      <hul id="1">
-        <hli id="2">
-          <hp>2</hp>
-        </hli>
-      </hul>
-    </editor>
-  ) as any;
+  const input = createTEditor(
+    (
+      <editor>
+        <hul id="1">
+          <hli id="2">
+            <hp>2</hp>
+          </hli>
+        </hul>
+      </editor>
+    ) as any
+  );
 
   it('should be', () => {
     const editor = createPlateEditor({ editor: input });

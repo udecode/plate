@@ -19,7 +19,7 @@ export const pasteSelectedBlocks = (editor: SlateEditor, e: ClipboardEvent) => {
     const entry = entries.at(-1)!;
     const [node, path] = entry;
 
-    editor.focus(getStartPoint(editor, path));
+    editor.tf.focus(getStartPoint(editor, path));
 
     if (!isElementEmpty(editor, node as any)) {
       const at = Path.next(path);
@@ -35,7 +35,7 @@ export const pasteSelectedBlocks = (editor: SlateEditor, e: ClipboardEvent) => {
     editor.insertData(e.clipboardData!);
     // });
     // insertData is focusing the editor so deselect
-    editor.deselect();
+    editor.tf.deselect();
 
     selectInsertedBlocks(editor);
   }

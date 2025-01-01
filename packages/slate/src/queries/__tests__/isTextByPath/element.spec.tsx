@@ -2,17 +2,18 @@
 
 import { jsxt } from '@udecode/plate-test-utils';
 
-import type { TEditor } from '../../../interfaces';
-
+import { createTEditor } from '../../../createTEditor';
 import { isTextByPath } from '../../isTextByPath';
 
 jsxt;
 
-const editor = (
-  <editor>
-    <hp>test</hp>
-  </editor>
-) as any as TEditor;
+const editor = createTEditor(
+  (
+    <editor>
+      <hp>test</hp>
+    </editor>
+  ) as any
+);
 
 const path = [0];
 

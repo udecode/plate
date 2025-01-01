@@ -15,15 +15,15 @@ describe('ReactPlugin', () => {
 
   beforeEach(() => {
     editor = createPlateEditor();
-    editor.isFocused = jest.fn();
+    editor.api.isFocused = jest.fn();
 
     // Reset mocks
-    (editor.isFocused as jest.Mock).mockReset();
+    (editor.api.isFocused as jest.Mock).mockReset();
     (focusEditorEdge as jest.Mock).mockReset();
   });
 
   it('should override reset method', () => {
-    (editor.isFocused as jest.Mock).mockReturnValue(true);
+    (editor.api.isFocused as jest.Mock).mockReturnValue(true);
 
     editor.tf.reset();
 
@@ -31,7 +31,7 @@ describe('ReactPlugin', () => {
   });
 
   it('should not focus editor if it was not focused before reset', () => {
-    (editor.isFocused as jest.Mock).mockReturnValue(false);
+    (editor.api.isFocused as jest.Mock).mockReturnValue(false);
 
     editor.tf.reset();
 

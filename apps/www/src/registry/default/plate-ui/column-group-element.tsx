@@ -41,7 +41,7 @@ export function ColumnFloatingToolbar({ children }: React.PropsWithChildren) {
 
   const onColumnChange = (widths: string[]) => {
     setColumns(editor, {
-      at: editor.findPath(element),
+      at: editor.api.findPath(element),
       widths,
     });
   };

@@ -1,11 +1,13 @@
 import type {
   TDescendant,
+  TEditorApi,
+  TEditorTransforms,
   TElement,
   TNodeEntry,
   TText,
   Value,
 } from '@udecode/slate';
-import type { AnyObject } from '@udecode/utils';
+import type { AnyObject, DeepPartial } from '@udecode/utils';
 import type { DecoratedRange } from 'slate';
 
 import type { SlateEditor } from '../editor';
@@ -179,17 +181,20 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       ((...args: any[]) => any) | Record<string, (...args: any[]) => any>
     > = Record<string, never>,
   >(
-    extension: (ctx: SlatePluginContext<C>) => EA & {
-      [K in keyof InferApi<C>]?: InferApi<C>[K] extends (...args: any[]) => any
-        ? (...args: Parameters<InferApi<C>[K]>) => ReturnType<InferApi<C>[K]>
-        : InferApi<C>[K] extends Record<string, (...args: any[]) => any>
-          ? {
-              [N in keyof InferApi<C>[K]]?: (
-                ...args: Parameters<InferApi<C>[K][N]>
-              ) => ReturnType<InferApi<C>[K][N]>;
-            }
-          : never;
-    }
+    extension: (ctx: SlatePluginContext<C>) => DeepPartial<TEditorApi> &
+      EA & {
+        [K in keyof InferApi<C>]?: InferApi<C>[K] extends (
+          ...args: any[]
+        ) => any
+          ? (...args: Parameters<InferApi<C>[K]>) => ReturnType<InferApi<C>[K]>
+          : InferApi<C>[K] extends Record<string, (...args: any[]) => any>
+            ? {
+                [N in keyof InferApi<C>[K]]?: (
+                  ...args: Parameters<InferApi<C>[K][N]>
+                ) => ReturnType<InferApi<C>[K][N]>;
+              }
+            : never;
+      }
   ) => SlatePlugin<
     PluginConfig<
       C['key'],
@@ -213,21 +218,27 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       ((...args: any[]) => any) | Record<string, (...args: any[]) => any>
     > = Record<string, never>,
   >(
-    extension: (ctx: SlatePluginContext<C>) => ET & {
-      [K in keyof InferTransforms<C>]?: InferTransforms<C>[K] extends (
-        ...args: any[]
-      ) => any
-        ? (
-            ...args: Parameters<InferTransforms<C>[K]>
-          ) => ReturnType<InferTransforms<C>[K]>
-        : InferTransforms<C>[K] extends Record<string, (...args: any[]) => any>
-          ? {
-              [N in keyof InferTransforms<C>[K]]?: (
-                ...args: Parameters<InferTransforms<C>[K][N]>
-              ) => ReturnType<InferTransforms<C>[K][N]>;
-            }
-          : never;
-    }
+    extension: (
+      ctx: SlatePluginContext<C>
+    ) => DeepPartialTransforms<TEditorTransforms> &
+      ET & {
+        [K in keyof InferTransforms<C>]?: InferTransforms<C>[K] extends (
+          ...args: any[]
+        ) => any
+          ? (
+              ...args: Parameters<InferTransforms<C>[K]>
+            ) => ReturnType<InferTransforms<C>[K]>
+          : InferTransforms<C>[K] extends Record<
+                string,
+                (...args: any[]) => any
+              >
+            ? {
+                [N in keyof InferTransforms<C>[K]]?: (
+                  ...args: Parameters<InferTransforms<C>[K][N]>
+                ) => ReturnType<InferTransforms<C>[K][N]>;
+              }
+            : never;
+      }
   ) => SlatePlugin<
     PluginConfig<
       C['key'],
@@ -473,3 +484,9 @@ export interface NodeStaticWrapperComponentProps<
 > extends SlateRenderElementProps<TElement, C> {
   key: string;
 }
+
+type DeepPartialTransforms<T> = {
+  [K in keyof T]?: T[K] extends (...args: any[]) => any
+    ? T[K]
+    : DeepPartialTransforms<T[K]>;
+};

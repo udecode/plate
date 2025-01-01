@@ -4,7 +4,7 @@ import type { Range } from 'slate';
 
 import { jsxt } from '@udecode/plate-test-utils';
 
-import type { TDescendant, TEditor } from '../../../interfaces';
+import type { TDescendant } from '../../../interfaces';
 
 import { createTEditor } from '../../../createTEditor';
 import { getBlockAbove } from '../../getBlockAbove';
@@ -12,17 +12,19 @@ import { getNextSiblingNodes } from '../../getNextSiblingNodes';
 
 jsxt;
 
-const input = (
-  <editor>
-    <hp>
-      <htext>first</htext>
-      <ha>
-        test
-        <cursor />
-      </ha>
-    </hp>
-  </editor>
-) as any as TEditor;
+const input = createTEditor(
+  (
+    <editor>
+      <hp>
+        <htext>first</htext>
+        <ha>
+          test
+          <cursor />
+        </ha>
+      </hp>
+    </editor>
+  ) as any
+);
 
 const output: TDescendant[] = [];
 

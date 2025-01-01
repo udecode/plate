@@ -22,6 +22,6 @@ export const getOnSelectTableBorderFactory =
     }
 
     setTimeout(() => {
-      editor.focus();
+      editor.tf.focus();
     }, 50);
   };

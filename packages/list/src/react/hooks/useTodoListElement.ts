@@ -32,7 +32,7 @@ export const useTodoListElement = (
       onCheckedChange: (value: boolean) => {
         if (readOnly) return;
 
-        editor.setNodes<TTodoListItemElement>(
+        editor.tf.setNodes<TTodoListItemElement>(
           { checked: value },
           { at: element }
         );

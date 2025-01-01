@@ -86,7 +86,7 @@ export const splitTableCell = (editor: SlateEditor) => {
 
         if (diff < smallestDiff) {
           smallestDiff = diff;
-          closestColPath = editor.findPath(cellElement)!;
+          closestColPath = editor.api.findPath(cellElement)!;
           isDirectionLeft = cellCol < targetCol;
         }
       });

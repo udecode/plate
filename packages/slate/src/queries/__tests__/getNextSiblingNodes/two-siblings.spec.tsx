@@ -6,26 +6,27 @@ import { createPlateEditor } from '@udecode/plate-common/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
-import type { TEditor } from '../../../interfaces';
-
+import { createTEditor } from '../../../createTEditor';
 import { getBlockAbove } from '../../getBlockAbove';
 import { getNextSiblingNodes } from '../../getNextSiblingNodes';
 
 jsxt;
 
-const input = (
-  <editor>
-    <hp>
-      <htext>first</htext>
-      <ha>
-        test
-        <cursor />
-      </ha>
-      <htext />
-      <htext>last</htext>
-    </hp>
-  </editor>
-) as any as TEditor;
+const input = createTEditor(
+  (
+    <editor>
+      <hp>
+        <htext>first</htext>
+        <ha>
+          test
+          <cursor />
+        </ha>
+        <htext />
+        <htext>last</htext>
+      </hp>
+    </editor>
+  ) as any
+);
 
 const output = [<htext />, <htext>last</htext>];
 

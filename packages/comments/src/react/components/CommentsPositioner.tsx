@@ -30,7 +30,7 @@ export const useCommentsPositionerState = () => {
   React.useEffect(() => {
     if (!node) return;
 
-    const domNode = editor.toDOMNode(node);
+    const domNode = editor.api.toDOMNode(node);
 
     if (!domNode) return;
 

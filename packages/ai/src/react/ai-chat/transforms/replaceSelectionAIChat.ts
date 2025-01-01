@@ -34,7 +34,7 @@ export const replaceSelectionAIChat = (
   // If no blocks selected, treat it like a normal selection replacement
   if (!isBlockSelecting) {
     editor.insertFragment(sourceEditor.children);
-    editor.focus();
+    editor.tf.focus();
 
     return;
   }
@@ -46,7 +46,7 @@ export const replaceSelectionAIChat = (
   // If format is 'none' or multiple blocks with 'single',
   // just insert the content as is
   if (format === 'none' || (format === 'single' && selectedBlocks.length > 1)) {
-    editor.withoutNormalizing(() => {
+    editor.tf.withoutNormalizing(() => {
       removeBlockSelectionNodes(editor);
 
       withNewBatch(editor, () => {
@@ -61,7 +61,7 @@ export const replaceSelectionAIChat = (
       });
     });
 
-    editor.focus();
+    editor.tf.focus();
 
     return;
   }
@@ -94,7 +94,7 @@ export const replaceSelectionAIChat = (
     return node;
   };
 
-  editor.withoutNormalizing(() => {
+  editor.tf.withoutNormalizing(() => {
     removeBlockSelectionNodes(editor);
 
     withNewBatch(editor, () => {
@@ -113,5 +113,5 @@ export const replaceSelectionAIChat = (
     });
   });
 
-  editor.focus();
+  editor.tf.focus();
 };

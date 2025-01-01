@@ -2,20 +2,23 @@
 
 import { jsxt } from '@udecode/plate-test-utils';
 
+import { createTEditor } from '../../../createTEditor';
 import { getLastNodeByLevel } from '../../getLastNodeByLevel';
 
 jsxt;
 
-const input = (
-  <editor>
-    <hh1>
-      <hp>test</hp>
-    </hh1>
-    <hh1>
-      <hp>test2</hp>
-    </hh1>
-  </editor>
-) as any;
+const input = createTEditor(
+  (
+    <editor>
+      <hh1>
+        <hp>test</hp>
+      </hh1>
+      <hh1>
+        <hp>test2</hp>
+      </hh1>
+    </editor>
+  ) as any
+);
 
 const output = <hp>test2</hp>;
 

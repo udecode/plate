@@ -145,7 +145,7 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
           value={value}
           onValueChange={(type) => {
             setBlockType(editor, type);
-            editor.focus();
+            editor.tf.focus();
           }}
           label="Turn into"
         >

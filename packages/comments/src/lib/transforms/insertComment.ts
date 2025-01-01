@@ -37,7 +37,7 @@ export const insertComment = (editor: SlateEditor) => {
   );
 
   try {
-    editor.deselect();
+    editor.tf.deselect();
   } catch {}
 
   setTimeout(() => {

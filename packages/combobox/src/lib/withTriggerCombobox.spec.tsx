@@ -53,11 +53,15 @@ const plugins = [
   }),
 ];
 
-const createEditorWithCombobox = (chidren: any) =>
-  createSlateEditor({
-    editor: (<editor>{chidren}</editor>) as any,
+const createEditorWithCombobox = (chidren: any) => {
+  const editor = (<editor>{chidren}</editor>) as any;
+
+  return createSlateEditor({
     plugins,
+    selection: editor.selection,
+    value: editor.children,
   });
+};
 
 jsxt;
 

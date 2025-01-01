@@ -1,3 +1,4 @@
+import { assignLegacyApi, assignLegacyTransforms } from '@udecode/slate';
 import { isDefined } from '@udecode/utils';
 import merge from 'lodash/merge.js';
 import { createZustandStore } from 'zustand-x';
@@ -23,9 +24,6 @@ export const resolvePlugins = (
 ) => {
   editor.pluginList = [];
   editor.plugins = {};
-  editor.api = {} as any;
-  editor.transforms = {} as any;
-  editor.tf = editor.transforms;
   editor.shortcuts = {} as any;
 
   const resolvedPlugins = resolveAndSortPlugins(editor, plugins);
@@ -107,6 +105,7 @@ const resolvePluginApis = (editor: SlateEditor) => {
               // Editor-wide transform
               merge(editor.transforms, newExtensions);
               merge(plugin.transforms, newExtensions);
+              assignLegacyTransforms(editor, newExtensions);
             }
           } else {
             // Handle APIs
@@ -125,6 +124,7 @@ const resolvePluginApis = (editor: SlateEditor) => {
               // Editor-wide API
               merge(editor.api, newExtensions);
               merge(plugin.api, newExtensions);
+              assignLegacyApi(editor, editor.api);
             }
           }
         }

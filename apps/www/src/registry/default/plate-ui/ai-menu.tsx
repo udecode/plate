@@ -59,7 +59,7 @@ export function AIMenu() {
   useEditorChat({
     chat,
     onOpenBlockSelection: (blocks: TNodeEntry[]) => {
-      show(editor.toDOMNode(blocks.at(-1)![0])!);
+      show(editor.api.toDOMNode(blocks.at(-1)![0])!);
     },
     onOpenChange: (open) => {
       if (!open) {
@@ -76,10 +76,10 @@ export function AIMenu() {
           .blockSelection.addSelectedRow(ancestor.id as string);
       }
 
-      show(editor.toDOMNode(ancestor)!);
+      show(editor.api.toDOMNode(ancestor)!);
     },
     onOpenSelection: () => {
-      show(editor.toDOMNode(getBlocks(editor).at(-1)![0])!);
+      show(editor.api.toDOMNode(getBlocks(editor).at(-1)![0])!);
     },
   });
 

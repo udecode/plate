@@ -38,7 +38,7 @@ export const useExcalidrawElement = ({
       scrollToContent,
     },
     // onChange: (elements: readonly ExcalidrawElementType[], state: AppState) => {
-    // const path = editor.findPath(element);
+    // const path = editor.api.findPath(element);
 
     // FIXME: setNodes triggers render loop as onChange is triggered on rerender
     // in the meantime, the prop can be used to save the data outside slate

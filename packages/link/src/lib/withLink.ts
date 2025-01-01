@@ -85,7 +85,7 @@ export const withLink: ExtendEditor<BaseLinkConfig> = ({
       });
 
       // collapse selection
-      collapseSelection(editor, { edge: 'end' });
+      editor.tf.collapse({ edge: 'end' });
     });
   };
 

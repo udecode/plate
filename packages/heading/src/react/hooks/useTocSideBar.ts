@@ -86,7 +86,7 @@ export const useTocSideBar = ({
 
       if (!node) return;
 
-      const el = editor.toDOMNode(node);
+      const el = editor.api.toDOMNode(node);
 
       if (!el) return;
 

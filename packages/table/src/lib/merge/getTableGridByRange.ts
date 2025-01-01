@@ -155,7 +155,7 @@ export const getTableMergeGridByRange = <T extends FormatType>(
         .children as TElement[];
       rows[colIndex - startColIndex] = cell;
 
-      const cellPath = editor.findPath(cell)!;
+      const cellPath = editor.api.findPath(cell)!;
 
       cellEntries.push([cell, cellPath]);
     }

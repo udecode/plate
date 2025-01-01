@@ -108,7 +108,39 @@ export type Value = TElement[];
 /** A helper type for getting the value of an editor. */
 export type ValueOf<E extends TEditor> = E['children'];
 
-export type TEditorApi<V extends Value = Value> = Pick<Editor, 'hasPath'> & {
+export type TEditorApi<V extends Value = Value> = Pick<
+  Editor,
+  'hasPath' | 'setNormalizing' | 'shouldMergeNodesRemovePrevNode'
+> & {
+  /** Get the dirty paths of the editor. */
+  getDirtyPaths: <N extends DescendantIn<V>>(
+    operation: TOperation<N>
+  ) => Path[];
+  /** Override this method to prevent normalizing the editor. */
+  shouldNormalize: (options: {
+    dirtyPaths: Path[];
+    initialDirtyPathsLength: number;
+    iteration: number;
+    operation?: TOperation;
+  }) => boolean;
+  /**
+   * Returns the fragment at the current selection. Used when cutting or
+   * copying, as an example, to get the fragment at the current selection.
+   */
+  getFragment: () => DescendantIn<V>[];
+  /** Check if a value is a read-only `Element` object. */
+  isElementReadOnly: <N extends ElementIn<V>>(element: N) => boolean;
+  /** Check if a value is an inline `Element` object. */
+  isInline: <N extends DescendantIn<V>>(element: N) => boolean;
+  /** Check if a value is a selectable `Element` object. */
+  isSelectable: <N extends ElementIn<V>>(element: N) => boolean;
+  /** Check if a value is a void `Element` object. */
+  isVoid: <N extends DescendantIn<V>>(element: N) => boolean;
+  /** Check if a value is a markable `Element` object. */
+  markableVoid: <N extends ElementIn<V>>(element: N) => boolean;
+  /** Called when there is a change in the editor. */
+  onChange: (options?: { operation?: TOperation }) => void;
+} & {
   /** Get the matching ancestor above a location in the document. */
   above: <N extends AncestorIn<V>>(
     options?: GetAboveNodeOptions<V>
@@ -415,6 +447,8 @@ export type TEditorTransforms<V extends Value = Value> = {
   moveNodes: (options?: MoveNodesOptions<V>) => void;
   /** Normalize any dirty objects in the editor. */
   normalize: (options?: EditorNormalizeOptions) => void;
+  /** Redo to the next saved state. */
+  redo: HistoryEditor['redo'];
   /**
    * Remove a custom property from all of the leaf text nodes within non-void
    * nodes or void nodes that `editor.markableVoid()` allows in the current
@@ -434,6 +468,8 @@ export type TEditorTransforms<V extends Value = Value> = {
    * the selection.
    */
   splitNodes: (options?: SplitNodesOptions<V>) => void;
+  /** Undo to the previous saved state. */
+  undo: HistoryEditor['undo'];
   /**
    * Unwrap nodes at the specified location. If necessary, the parent node is
    * split. If no location is specified, use the selection.
@@ -445,6 +481,11 @@ export type TEditorTransforms<V extends Value = Value> = {
    * @returns True if normalized.
    */
   withoutNormalizing: OmitFirst<typeof withoutNormalizing>;
+  /**
+   * Push a batch of operations as either `undos` or `redos` onto `editor.undos`
+   * or `editor.redos`
+   */
+  writeHistory: HistoryEditor['writeHistory'];
 } /** Text Transforms */ & {
   /** Delete text in the document. */
   delete: OmitFirst<typeof deleteText>;
@@ -536,6 +577,14 @@ export type TEditorTransforms<V extends Value = Value> = {
   toggle: {
     mark: OmitFirst<typeof toggleMark>;
   };
+} & {
+  /** Normalize a Node according to the schema. */
+  normalizeNode: <N extends NodeIn<V>>(
+    entry: TNodeEntry<N>,
+    options?: { operation?: TOperation }
+  ) => void;
+  /** Apply an operation in the editor. */
+  apply: <N extends DescendantIn<V>>(operation: TOperation<N>) => void;
 };
 
 export type TBaseEditor<V extends Value = Value> = {
@@ -543,119 +592,47 @@ export type TBaseEditor<V extends Value = Value> = {
   children: V;
   marks: Record<string, any> | null;
   operations: TOperation[];
+  selection: Range | null;
 } & Pick<
-  // Editor, // Modify<
-  Editor,
-  'selection' | 'setNormalizing' | 'shouldMergeNodesRemovePrevNode'
+  TEditorApi<V>,
+  | 'getDirtyPaths'
+  | 'getFragment'
+  | 'isElementReadOnly'
+  | 'isInline'
+  | 'isSelectable'
+  | 'isVoid'
+  | 'markableVoid'
+  | 'onChange'
+  | 'setNormalizing'
+  | 'shouldMergeNodesRemovePrevNode'
+  | 'shouldNormalize'
 > & {
-    /** Get the dirty paths of the editor. */
-    getDirtyPaths: <N extends DescendantIn<V>>(
-      operation: TOperation<N>
-    ) => Path[];
-    /** Normalize a Node according to the schema. */
-    normalizeNode: <N extends NodeIn<V>>(
-      entry: TNodeEntry<N>,
-      options?: { operation?: TOperation }
-    ) => void;
-    /** Override this method to prevent normalizing the editor. */
-    shouldNormalize: (options: {
-      dirtyPaths: Path[];
-      initialDirtyPathsLength: number;
-      iteration: number;
-      operation?: TOperation;
-    }) => boolean;
-    /**
-     * Add a custom property to the leaf text nodes in the current selection.
-     *
-     * If the selection is currently collapsed, the marks will be added to the
-     * `editor.marks` property instead, and applied when text is inserted next.
-     */
-    addMark: TEditorTransforms<V>['addMark'];
-    /** Apply an operation in the editor. */
-    apply: <N extends DescendantIn<V>>(operation: TOperation<N>) => void;
     /** Delete content in the editor backward from the current selection. */
     deleteBackward: OmitFirst<typeof deleteBackwardBase>;
     /** Delete content in the editor forward from the current selection. */
     deleteForward: OmitFirst<typeof deleteForwardBase>;
-    /** Delete the content of the current selection. */
-    deleteFragment: TEditorTransforms<V>['deleteFragment'];
-    /**
-     * Returns the fragment at the current selection. Used when cutting or
-     * copying, as an example, to get the fragment at the current selection.
-     */
-    getFragment: () => DescendantIn<V>[];
-    /** Insert a block break at the current selection. */
-    insertBreak: TEditorTransforms<V>['insertBreak'];
-    /**
-     * Insert of fragment of nodes at the specified location or (if not defined)
-     * the current selection or (if not defined) the end of the document.
-     */
-    insertFragment: TEditorTransforms<V>['insertFragment'];
-    /**
-     * Insert a soft break at the current selection. If the selection is
-     * currently expanded, delete it first.
-     */
-    insertSoftBreak: TEditorTransforms<V>['insertSoftBreak'];
-
-    /** Check if a value is a read-only `Element` object. */
-    isElementReadOnly: <N extends ElementIn<V>>(element: N) => boolean;
-    /** Check if a value is an inline `Element` object. */
-    isInline: <N extends DescendantIn<V>>(element: N) => boolean;
-    /** Check if a value is a selectable `Element` object. */
-    isSelectable: <N extends ElementIn<V>>(element: N) => boolean;
-    /** Check if a value is a void `Element` object. */
-    isVoid: <N extends DescendantIn<V>>(element: N) => boolean;
-    /** Check if a value is a markable `Element` object. */
-    markableVoid: <N extends ElementIn<V>>(element: N) => boolean;
-    /**
-     * Remove a custom property from all of the leaf text nodes within non-void
-     * nodes or void nodes that `editor.markableVoid()` allows in the current
-     * selection.
-     *
-     * If the selection is currently collapsed, the removal will be stored on
-     * `editor.marks` and applied to the text inserted next.
-     */
-    removeMark: TEditorTransforms<V>['removeMark'];
-    /** Called when there is a change in the editor. */
-    onChange: (options?: { operation?: TOperation }) => void;
-  } & {
-    /**
-     * Insert data from a `DataTransfer` into the editor. This is a proxy method
-     * to call in this order `insertFragmentData(editor: ReactEditor, data:
-     * DataTransfer)` and then `insertTextData(editor: ReactEditor, data:
-     * DataTransfer)`.
-     */
-    insertData: TEditorTransforms<V>['insertData'];
-    /**
-     * Insert fragment data from a `DataTransfer` into the editor. Returns true
-     * if some content has been effectively inserted.
-     */
-    insertFragmentData: TEditorTransforms<V>['insertFragmentData'];
-    /**
-     * Insert text data from a `DataTransfer` into the editor. Returns true if
-     * some content has been effectively inserted.
-     */
-    insertTextData: TEditorTransforms<V>['insertTextData'];
-    /** Sets data from the currently selected fragment on a `DataTransfer`. */
-    setFragmentData: TEditorTransforms<V>['setFragmentData'];
-  } & Pick<HistoryEditor, 'history'> & {
-    /** Redo to the next saved state. */
-    redo: HistoryEditor['redo'];
-    /** Undo to the previous saved state. */
-    undo: HistoryEditor['undo'];
-    /**
-     * Push a batch of operations as either `undos` or `redos` onto
-     * `editor.undos` or `editor.redos`
-     */
-    writeHistory: HistoryEditor['writeHistory'];
-  } & UnknownObject & {
-    delete: TEditorTransforms<V>['delete'];
-    findPath: TEditorApi<V>['findPath'];
-    isComposing: TEditorApi<V>['isComposing'];
-    isFocused: TEditorApi<V>['isFocused'];
-    setNodes: TEditorTransforms<V>['setNodes'];
-  };
-// >;
+  } & Pick<
+    TEditorTransforms<V>,
+    | 'addMark'
+    | 'apply'
+    | 'delete'
+    | 'deleteFragment'
+    | 'insertBreak'
+    | 'insertFragment'
+    | 'insertNode'
+    | 'insertNodes'
+    | 'insertSoftBreak'
+    | 'insertText'
+    | 'normalizeNode'
+    | 'removeMark'
+  > &
+  Pick<
+    TEditorTransforms<V>,
+    'insertData' | 'insertFragmentData' | 'insertTextData' | 'setFragmentData'
+  > &
+  Pick<HistoryEditor, 'history'> &
+  Pick<TEditorTransforms<V>, 'redo' | 'undo' | 'writeHistory'> &
+  UnknownObject;
 
 export type TEditor<V extends Value = Value> = TBaseEditor<V> & {
   api: TEditorApi<V>;

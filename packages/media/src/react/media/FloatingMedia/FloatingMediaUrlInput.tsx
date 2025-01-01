@@ -43,7 +43,7 @@ export const useFloatingMediaUrlInputState = ({
     () => {
       if (floatingMediaSelectors.isEditing()) {
         floatingMediaActions.reset();
-        editor.focus(editor.selection!);
+        editor.tf.focus(editor.selection!);
       }
     },
     {

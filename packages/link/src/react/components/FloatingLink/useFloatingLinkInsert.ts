@@ -71,7 +71,7 @@ export const useFloatingLinkInsert = ({
     () => {
       if (getOptions().mode === 'insert') {
         api.floatingLink.hide();
-        editor.focus(editor.selection!);
+        editor.tf.focus(editor.selection!);
       }
     },
     {

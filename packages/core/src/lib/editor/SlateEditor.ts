@@ -27,10 +27,6 @@ import type { CorePlugin } from '../plugins';
 export type BaseEditor = TBaseEditor & {
   key: any;
 
-  getApi: <C extends AnyPluginConfig = PluginConfig>(
-    plugin?: WithRequiredKey<C>
-  ) => InferApi<C>;
-
   getInjectProps: <C extends AnyPluginConfig = PluginConfig>(
     plugin: WithRequiredKey<C>
   ) => InjectNodeProps<C>;
@@ -56,10 +52,6 @@ export type BaseEditor = TBaseEditor & {
   getPlugin: <C extends AnyPluginConfig = PluginConfig>(
     plugin: WithRequiredKey<C>
   ) => C extends { node: any } ? C : EditorPlugin<C>;
-
-  getTransforms: <C extends AnyPluginConfig = PluginConfig>(
-    plugin?: WithRequiredKey<C>
-  ) => InferTransforms<C>;
 
   setOption: <C extends AnyPluginConfig, K extends keyof InferOptions<C>>(
     plugin: WithRequiredKey<C>,
@@ -97,12 +89,16 @@ export type BaseEditor = TBaseEditor & {
 };
 
 export type SlateEditor = BaseEditor & {
+  getApi: <C extends AnyPluginConfig = PluginConfig>(
+    plugin?: WithRequiredKey<C>
+  ) => SlateEditor['api'] & InferApi<C>;
+  getTransforms: <C extends AnyPluginConfig = PluginConfig>(
+    plugin?: WithRequiredKey<C>
+  ) => SlateEditor['tf'] & InferTransforms<C>;
   transforms: TEditorTransforms &
     UnionToIntersection<InferTransforms<CorePlugin>>;
   api: TEditorApi & UnionToIntersection<InferApi<CorePlugin>>;
-
   pluginList: AnyEditorPlugin[];
-
   plugins: Record<string, AnyEditorPlugin>;
   // Alias for transforms
   tf: TEditorTransforms & UnionToIntersection<InferTransforms<CorePlugin>>;
@@ -112,6 +108,12 @@ export type TSlateEditor<
   V extends Value = Value,
   P extends AnyPluginConfig = CorePlugin,
 > = SlateEditor & {
+  getApi: <C extends AnyPluginConfig = PluginConfig>(
+    plugin?: WithRequiredKey<C>
+  ) => TSlateEditor<V>['api'] & InferApi<C>;
+  getTransforms: <C extends AnyPluginConfig = PluginConfig>(
+    plugin?: WithRequiredKey<C>
+  ) => TSlateEditor<V>['tf'] & InferTransforms<C>;
   tf: TEditorTransforms<V> &
     UnionToIntersection<InferTransforms<CorePlugin | P>>;
   transforms: TEditorTransforms<V> &

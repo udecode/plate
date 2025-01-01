@@ -4,7 +4,7 @@ import { Path } from 'slate';
 
 /** Get table row index of a cell node. */
 export const getTableRowIndex = (editor: TEditor, cellNode: TElement) => {
-  const path = editor.findPath(cellNode);
+  const path = editor.api.findPath(cellNode);
 
   if (!path) return 0;
 

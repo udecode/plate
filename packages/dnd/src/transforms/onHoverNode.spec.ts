@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
-import type { PlateEditor } from '@udecode/plate-common/react';
 import type { DropTargetMonitor } from 'react-dnd';
 
-import { collapseSelection, isExpanded } from '@udecode/plate-common';
+import { isExpanded } from '@udecode/plate-common';
+import { createPlateEditor } from '@udecode/plate-common/react';
 
 import type { DragItemNode } from '../types';
 
@@ -11,13 +11,7 @@ import { onHoverNode } from './onHoverNode';
 
 jest.mock('@udecode/plate-common', () => ({
   ...jest.requireActual('@udecode/plate-common'),
-  collapseSelection: jest.fn(),
   isExpanded: jest.fn(),
-}));
-
-jest.mock('@udecode/plate-common/react', () => ({
-  ...jest.requireActual('@udecode/plate-common/react'),
-  focusEditor: jest.fn(),
 }));
 
 jest.mock('../utils', () => ({
@@ -34,12 +28,13 @@ jest.mock('./onDropNode', () => ({
 }));
 
 describe('onHoverNode', () => {
-  const editor = {
-    focus: jest.fn(),
-    getOptions: jest.fn(),
-    selection: {},
-    setOption: jest.fn(),
-  } as unknown as PlateEditor;
+  const editor = createPlateEditor();
+  editor.getOptions = jest.fn();
+  editor.selection = null;
+  editor.setOption = jest.fn();
+  editor.tf.collapse = jest.fn();
+  editor.tf.focus = jest.fn();
+
   const monitor = {} as DropTargetMonitor;
   const nodeRef = {};
   const dragItem: DragItemNode = { id: 'drag' };
@@ -91,8 +86,8 @@ describe('onHoverNode', () => {
       nodeRef,
     });
 
-    expect(collapseSelection).toHaveBeenCalledWith(editor);
-    expect(editor.focus).toHaveBeenCalled();
+    expect(editor.tf.collapse).toHaveBeenCalled();
+    expect(editor.tf.focus).toHaveBeenCalled();
   });
 
   it('should handle horizontal orientation', () => {

@@ -24,8 +24,8 @@ export const useToggleToolbarButton = ({
       onClick: () => {
         openNextToggles(editor);
         editor.tf.toggle.block({ type: TogglePlugin.key });
-        collapseSelection(editor);
-        editor.focus();
+        editor.tf.collapse();
+        editor.tf.focus();
       },
       onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();

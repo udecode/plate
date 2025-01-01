@@ -10,9 +10,9 @@ export const setSelection = async (
 ) => {
   await page.evaluate(
     ([editor, at]) => {
-      const range = editor.range(at);
+      const range = editor.api.range(at);
       console.info(range);
-      editor.setSelection(range);
+      editor.tf.setSelection(range);
     },
     [editorHandle, at] as const
   );

@@ -85,7 +85,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
           const [, path] = entry;
 
           // focus the end of that block
-          editor.focus(getEndPoint(editor, path));
+          editor.tf.focus(getEndPoint(editor, path));
           e.preventDefault();
         }
       }
@@ -149,7 +149,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
             match: (n) => selectedIds!.has(n.id),
           });
 
-          editor.focus();
+          editor.tf.focus();
         }
       }
     },

@@ -19,7 +19,7 @@ export function TabbableEffects() {
     const { globalEventListener, insertTabbableEntries, isTabbable, query } =
       editor.getOptions(BaseTabbablePlugin);
 
-    const editorDOMNode = editor.toDOMNode(editor);
+    const editorDOMNode = editor.api.toDOMNode(editor);
 
     if (!editorDOMNode) return;
 
@@ -62,13 +62,13 @@ export function TabbableEffects() {
        */
       const defaultTabbableEntries = tabbableDOMNodes
         .map((domNode) => {
-          const slateNode = editor.toSlateNode(domNode);
+          const slateNode = editor.api.toSlateNode(domNode);
 
           if (!slateNode) return;
 
           return {
             domNode,
-            path: editor.findPath(slateNode),
+            path: editor.api.findPath(slateNode),
             slateNode,
           } as TabbableEntry;
         })
@@ -112,7 +112,7 @@ export function TabbableEffects() {
             break;
           }
           case 'path': {
-            editor.focus({
+            editor.tf.focus({
               anchor: { offset: 0, path: tabDestination.path },
               focus: { offset: 0, path: tabDestination.path },
             });

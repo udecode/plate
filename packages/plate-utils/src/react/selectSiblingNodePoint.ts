@@ -18,7 +18,7 @@ export const selectSiblingNodePoint = (
   } = {}
 ) => {
   if (node) {
-    at = editor.findPath(node);
+    at = editor.api.findPath(node);
   }
   if (!at) return;
 
@@ -34,6 +34,6 @@ export const selectSiblingNodePoint = (
   });
 
   if (focus) {
-    editor.focus();
+    editor.tf.focus();
   }
 };

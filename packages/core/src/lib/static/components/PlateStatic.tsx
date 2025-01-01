@@ -149,7 +149,7 @@ function Children({
   return (
     <React.Fragment>
       {children.map((child, i) => {
-        const p = editor.findPath(child);
+        const p = editor.api.findPath(child);
 
         let ds: DecoratedRange[] = [];
 

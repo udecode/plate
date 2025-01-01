@@ -45,7 +45,7 @@ export const onKeyDownTable: KeyboardHandler<TableConfig> = ({
     );
 
     if (tdEntries.length > 1) {
-      collapseSelection(editor, {
+      editor.tf.collapse({
         edge: 'end',
       });
 

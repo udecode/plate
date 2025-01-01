@@ -2,22 +2,23 @@
 
 import { jsxt } from '@udecode/plate-test-utils';
 
-import type { TEditor } from '../../../interfaces';
-
+import { createTEditor } from '../../../createTEditor';
 import { getPointFromLocation } from '../../getPointFromLocation';
 
 jsxt;
 
-const input = (
-  <editor>
-    <hp>
-      tes
-      <anchor />
-      tt
-      <focus />
-    </hp>
-  </editor>
-) as any as TEditor;
+const input = createTEditor(
+  (
+    <editor>
+      <hp>
+        tes
+        <anchor />
+        tt
+        <focus />
+      </hp>
+    </editor>
+  ) as any
+);
 
 const output = {
   offset: 5,

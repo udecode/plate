@@ -24,7 +24,7 @@ export const selectEditor = (
   { at, edge, focus }: SelectEditorOptions
 ) => {
   if (focus) {
-    editor.focus();
+    editor.tf.focus();
   }
 
   let location = at as Location;

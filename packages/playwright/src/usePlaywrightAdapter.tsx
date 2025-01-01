@@ -19,7 +19,7 @@ export const usePlaywrightAdapter = () => {
   useEffect(() => {
     window.platePlaywrightAdapter = platePlaywrightAdapter;
 
-    const editable = editor.toDOMNode(editor)!;
+    const editable = editor.api.toDOMNode(editor)!;
     EDITABLE_TO_EDITOR.set(editable, editor);
 
     return () => {

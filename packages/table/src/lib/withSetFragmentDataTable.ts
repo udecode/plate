@@ -80,7 +80,7 @@ export const withSetFragmentDataTable: ExtendEditor<TableConfig> = ({
           // need to clean data before every iteration
           data.clearData();
 
-          const cellPath = editor.findPath(cell)!;
+          const cellPath = editor.api.findPath(cell)!;
 
           // select cell by cell
           select(editor, {

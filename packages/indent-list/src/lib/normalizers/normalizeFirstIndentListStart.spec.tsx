@@ -1,8 +1,6 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from '@udecode/plate-common';
-
-import { BaseParagraphPlugin } from '@udecode/plate-common';
+import { BaseParagraphPlugin, createTEditor } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
 import { jsxt } from '@udecode/plate-test-utils';
@@ -11,14 +9,16 @@ import { BaseIndentListPlugin } from '../BaseIndentListPlugin';
 
 jsxt;
 
-const input = (
-  <editor>
-    <hp>1</hp>
-    <hp indent={1} listStart={1} listStyleType="disc">
-      2
-    </hp>
-  </editor>
-) as any as SlateEditor;
+const input = createTEditor(
+  (
+    <editor>
+      <hp>1</hp>
+      <hp indent={1} listStart={1} listStyleType="disc">
+        2
+      </hp>
+    </editor>
+  ) as any
+);
 
 const output = (
   <editor>
@@ -27,7 +27,7 @@ const output = (
       2
     </hp>
   </editor>
-) as any as SlateEditor;
+) as any;
 
 it('should be', async () => {
   const editor = createPlateEditor({

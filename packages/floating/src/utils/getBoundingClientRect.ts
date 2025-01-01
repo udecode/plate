@@ -16,7 +16,7 @@ export const getBoundingClientRect = (
   })();
 
   const clientRects = atRanges
-    .map((range) => editor.toDOMRange(range)?.getBoundingClientRect())
+    .map((range) => editor.api.toDOMRange(range)?.getBoundingClientRect())
     .filter(Boolean) as DOMRect[];
 
   if (clientRects.length === 0) return undefined;

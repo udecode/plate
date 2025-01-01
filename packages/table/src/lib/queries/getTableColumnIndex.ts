@@ -6,7 +6,7 @@ import {
 
 /** Get table column index of a cell node. */
 export const getTableColumnIndex = (editor: TEditor, cellNode: TElement) => {
-  const path = editor.findPath(cellNode);
+  const path = editor.api.findPath(cellNode);
 
   if (!path) return -1;
 

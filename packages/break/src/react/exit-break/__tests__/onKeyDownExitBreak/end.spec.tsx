@@ -1,5 +1,6 @@
 /** @jsx jsxt */
 
+import { createTEditor } from '@udecode/plate-common';
 import {
   createPlateEditor,
   getEditorPlugin,
@@ -12,16 +13,18 @@ import { onKeyDownExitBreak } from '../../onKeyDownExitBreak';
 
 jsxt;
 
-const input = (
-  <editor>
-    <hp>
-      te
-      <anchor />
-      st
-      <focus />
-    </hp>
-  </editor>
-) as any;
+const input = createTEditor(
+  (
+    <editor>
+      <hp>
+        te
+        <anchor />
+        st
+        <focus />
+      </hp>
+    </editor>
+  ) as any
+);
 
 const event = new KeyboardEvent('keydown') as any;
 

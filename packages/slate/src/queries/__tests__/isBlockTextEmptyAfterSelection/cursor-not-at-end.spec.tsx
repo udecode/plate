@@ -2,24 +2,25 @@
 
 import { jsxt } from '@udecode/plate-test-utils';
 
-import type { TEditor } from '../../../interfaces';
-
+import { createTEditor } from '../../../createTEditor';
 import { isBlockTextEmptyAfterSelection } from '../../isBlockTextEmptyAfterSelection';
 
 jsxt;
 
-const input = (
-  <editor>
-    <hp>
-      <htext>first</htext>
-      <ha>
-        tes
-        <cursor />t
-      </ha>
-      <htext />
-    </hp>
-  </editor>
-) as any as TEditor;
+const input = createTEditor(
+  (
+    <editor>
+      <hp>
+        <htext>first</htext>
+        <ha>
+          tes
+          <cursor />t
+        </ha>
+        <htext />
+      </hp>
+    </editor>
+  ) as any
+);
 
 const output = false;
 

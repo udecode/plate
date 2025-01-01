@@ -1,5 +1,6 @@
 /** @jsx jsxt */
 
+import { createTEditor } from '@udecode/plate-common';
 import {
   createPlateEditor,
   getEditorPlugin,
@@ -11,14 +12,16 @@ import { onKeyDownSoftBreak } from '../../onKeyDownSoftBreak';
 
 jsxt;
 
-const input = (
-  <editor>
-    <hp>
-      test
-      <cursor />
-    </hp>
-  </editor>
-) as any;
+const input = createTEditor(
+  (
+    <editor>
+      <hp>
+        test
+        <cursor />
+      </hp>
+    </editor>
+  ) as any
+);
 
 const event = new KeyboardEvent('keydown') as any;
 

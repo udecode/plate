@@ -30,6 +30,6 @@ export const insertAINodes = (
       at: getEndPoint(editor, target || editor.selection!.focus.path),
       select: true,
     });
-    collapseSelection(editor, { edge: 'end' });
+    editor.tf.collapse({ edge: 'end' });
   });
 };

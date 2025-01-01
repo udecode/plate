@@ -71,7 +71,7 @@ export function ModeDropdownMenu(props: DropdownMenuProps) {
               return;
             }
             if (newValue === 'editing') {
-              editor.focus();
+              editor.tf.focus();
 
               return;
             }

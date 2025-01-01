@@ -245,7 +245,7 @@ export function InsertDropdownMenu(props: DropdownMenuProps) {
                 className="min-w-[180px]"
                 onSelect={() => {
                   onSelect(editor, value);
-                  editor.focus();
+                  editor.tf.focus();
                 }}
               >
                 {icon}

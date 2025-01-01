@@ -4,24 +4,25 @@ import { createPlateEditor } from '@udecode/plate-common/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
-import type { TEditor } from '../../../interfaces';
-
+import { createTEditor } from '../../../createTEditor';
 import { isBlockTextEmptyAfterSelection } from '../../isBlockTextEmptyAfterSelection';
 
 jsxt;
 
-const input = (
-  <editor>
-    <hp>
-      <htext>first</htext>
-      <ha>
-        test
-        <cursor />
-      </ha>
-      last
-    </hp>
-  </editor>
-) as any as TEditor;
+const input = createTEditor(
+  (
+    <editor>
+      <hp>
+        <htext>first</htext>
+        <ha>
+          test
+          <cursor />
+        </ha>
+        last
+      </hp>
+    </editor>
+  ) as any
+);
 
 const output = false;
 

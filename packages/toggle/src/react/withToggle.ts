@@ -68,7 +68,7 @@ export const withToggle: ExtendEditor<ToggleConfig> = ({
     const toggleId = currentBlockEntry[0].id as string;
     const isOpen = getOption('isOpen', toggleId);
 
-    editor.withoutNormalizing(() => {
+    editor.tf.withoutNormalizing(() => {
       if (isOpen) {
         insertBreak();
         editor.tf.toggle.block({ type: BaseTogglePlugin.key });

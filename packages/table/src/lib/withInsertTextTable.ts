@@ -20,7 +20,7 @@ export const withInsertTextTable: ExtendEditor<TableConfig> = ({ editor }) => {
         });
 
         if (cellEntries.length > 1) {
-          collapseSelection(editor, {
+          editor.tf.collapse({
             edge: 'focus',
           });
         }

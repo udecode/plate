@@ -33,7 +33,7 @@ export const toggleBlock = (
 
   if (isActive && type === defaultType) return;
 
-  editor.setNodes<TElement>(
+  editor.getTransforms().setNodes<TElement>(
     {
       type: isActive ? defaultType : type,
     },

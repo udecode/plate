@@ -51,7 +51,7 @@ export const getDropPath = (
   const [, dragPath] = dragEntry;
   const [, hoveredPath] = dropEntry;
 
-  editor.focus();
+  editor.tf.focus();
 
   let dropPath: Path | undefined;
 

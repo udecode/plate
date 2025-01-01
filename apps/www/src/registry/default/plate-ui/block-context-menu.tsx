@@ -118,7 +118,7 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
               editor
                 .getTransforms(BlockSelectionPlugin)
                 .blockSelection.removeNodes();
-              editor.focus();
+              editor.tf.focus();
             }}
           >
             Delete

@@ -44,7 +44,7 @@ export const getRenderNodeProps = ({
   nodeProps = pipeInjectNodeProps(
     editor,
     nodeProps,
-    (node) => editor.findPath(node)!
+    (node) => editor.api.findPath(node)!
   ) as PlateRenderNodeProps;
 
   if (nodeProps.style && Object.keys(nodeProps.style).length === 0) {

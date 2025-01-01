@@ -13,7 +13,8 @@ import type { TableConfig } from '.';
 import { getTableGridAbove } from './queries';
 
 export const withMarkTable: ExtendEditor<TableConfig> = ({ editor }) => {
-  const { addMark, getMarks, removeMark } = editor;
+  const { addMark, removeMark } = editor;
+  const { marks } = editor.api;
 
   editor.addMark = (key, value) => {
     const { selection } = editor;
@@ -59,14 +60,14 @@ export const withMarkTable: ExtendEditor<TableConfig> = ({ editor }) => {
     });
   };
 
-  editor.getMarks = () => {
+  editor.api.marks = () => {
     const { selection } = editor;
 
-    if (!selection || isCollapsed(selection)) return getMarks();
+    if (!selection || isCollapsed(selection)) return marks();
 
     const matchesCell = getTableGridAbove(editor, { format: 'cell' });
 
-    if (matchesCell.length === 0) return getMarks();
+    if (matchesCell.length === 0) return marks();
 
     const totalMarks: Record<string, any> = {};
 

@@ -23,7 +23,7 @@ export const selectBlocksBySelectionOrId = (
 
   if (isBlockSelected) {
     select(editor, getNodesRange(editor, blockEntries) as Range);
-    editor.focus();
+    editor.tf.focus();
   } else {
     selectBlockById(editor, id);
   }

@@ -51,7 +51,7 @@ export const useAlignDropdownMenu = ({
           value: newValue as Alignment,
         });
 
-        editor.focus();
+        editor.tf.focus();
       },
     },
   };

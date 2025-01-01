@@ -38,14 +38,14 @@ const createClipboardData = (html: string, rtf?: string): DataTransfer =>
 
 describe('when insertData disc and decimal from gdocs', () => {
   it('should ', () => {
+    const e = (
+      <editor>
+        <hp>
+          <cursor />
+        </hp>
+      </editor>
+    ) as any;
     const editor = createPlateEditor({
-      editor: (
-        <editor>
-          <hp>
-            <cursor />
-          </hp>
-        </editor>
-      ) as any,
       plugins: [
         ImagePlugin,
         HorizontalRulePlugin,
@@ -61,7 +61,11 @@ describe('when insertData disc and decimal from gdocs', () => {
         DocxPlugin,
         JuicePlugin,
       ],
+      selection: e.selection,
+      value: e.children,
     });
+
+    console.log('editor', editor.api);
 
     editor.insertData(
       createClipboardData(

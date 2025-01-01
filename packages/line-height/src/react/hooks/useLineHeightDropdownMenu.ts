@@ -44,7 +44,7 @@ export const useLineHeightDropdownMenu = ({
         setLineHeight(editor, {
           value: Number(newValue),
         });
-        editor.focus();
+        editor.tf.focus();
       },
     },
   };

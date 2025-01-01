@@ -103,7 +103,7 @@ export const MediaPlaceholderElement = withHOC(
       useEffect(() => {
         if (!uploadedFile) return;
 
-        const path = editor.findPath(element);
+        const path = editor.api.findPath(element);
 
         withoutSavingHistory(editor, () => {
           removeNodes(editor, { at: path });

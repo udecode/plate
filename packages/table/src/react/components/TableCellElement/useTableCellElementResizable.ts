@@ -82,7 +82,7 @@ export const useTableCellElementResizable = ({
       setTableColSize(
         editor,
         { colIndex, width },
-        { at: editor.findPath(element)! }
+        { at: editor.api.findPath(element)! }
       );
 
       // Prevent flickering
@@ -97,7 +97,7 @@ export const useTableCellElementResizable = ({
       setTableRowSize(
         editor,
         { height, rowIndex },
-        { at: editor.findPath(element)! }
+        { at: editor.api.findPath(element)! }
       );
 
       // Prevent flickering
@@ -111,7 +111,7 @@ export const useTableCellElementResizable = ({
       setTableMarginLeft(
         editor,
         { marginLeft },
-        { at: editor.findPath(element)! }
+        { at: editor.api.findPath(element)! }
       );
 
       // Prevent flickering

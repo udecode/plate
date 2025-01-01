@@ -57,9 +57,9 @@ export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
   }))
   .extend(() => ({
     extendEditor: ({ api, editor, getOptions }) => {
-      const { setSelection } = editor;
+      const { setSelection } = editor.tf;
 
-      editor.setSelection = (...args) => {
+      editor.tf.setSelection = (...args) => {
         if (getOptions().cursors?.selection) {
           setTimeout(() => {
             api.cursorOverlay.addCursor('selection', {
@@ -112,7 +112,7 @@ export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
 
         if (types.some((type) => type.startsWith('Files'))) return;
 
-        const range = editor.findEventRange(event);
+        const range = editor.api.findEventRange(event);
 
         if (!range) return;
 

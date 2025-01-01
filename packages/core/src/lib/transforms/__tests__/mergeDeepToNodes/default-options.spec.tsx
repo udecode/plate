@@ -1,20 +1,19 @@
 /** @jsx jsxt */
 
-import type { TNode } from '@udecode/slate';
-
 import { jsxt } from '@udecode/plate-test-utils';
-
-import type { SlateEditor } from '../../../editor';
+import { type TNode, createTEditor } from '@udecode/slate';
 
 import { mergeDeepToNodes } from '../../../utils';
 
 jsxt;
 
-const editor = (
-  <editor>
-    <hp>test</hp>
-  </editor>
-) as any as SlateEditor;
+const editor = createTEditor(
+  (
+    <editor>
+      <hp>test</hp>
+    </editor>
+  ) as any
+);
 
 const props = { a: 1 };
 

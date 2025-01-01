@@ -36,7 +36,8 @@ export const withCopilot: ExtendEditor<CopilotPluginConfig> = ({
   getOptions,
   setOption,
 }) => {
-  const { apply, insertText, redo, setSelection, undo, writeHistory } = editor;
+  const { apply, insertText, redo, undo, writeHistory } = editor;
+  const { setSelection } = editor.tf;
 
   const debounceDelay = getOptions().debounceDelay;
 
@@ -131,14 +132,14 @@ export const withCopilot: ExtendEditor<CopilotPluginConfig> = ({
 
   let prevSelection: Range | null = null;
 
-  editor.setSelection = (selection) => {
+  editor.tf.setSelection = (selection) => {
     setSelection(selection);
 
     if (
       editor.selection &&
       (!prevSelection || !Range.equals(prevSelection, editor.selection)) &&
       getOptions().autoTriggerQuery!({ editor }) &&
-      editor.isFocused()
+      editor.api.isFocused()
     ) {
       void api.copilot.triggerSuggestion();
     }

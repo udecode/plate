@@ -1,6 +1,17 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { bindFirst } from '@udecode/utils';
-import { createEditor, hasPath, insertSoftBreak, removeMark } from 'slate';
+import {
+  apply,
+  createEditor,
+  getDirtyPaths,
+  hasPath,
+  insertSoftBreak,
+  normalizeNode,
+  removeMark,
+  setNormalizing,
+  shouldMergeNodesRemovePrevNode,
+  shouldNormalize,
+} from 'slate';
 
 import type { TEditor, Value } from './interfaces/editor/TEditor';
 
@@ -99,6 +110,10 @@ import {
 import { findNodePath } from './queries';
 import { HistoryEditor } from './slate-history';
 import { toggleMark } from './transforms';
+import {
+  assignLegacyApi,
+  assignLegacyTransforms,
+} from './utils/assignLegacyTransforms';
 
 const noop: {
   (name: string): () => void;
@@ -114,19 +129,25 @@ const noop: {
     return returnValue;
   };
 
-export const createTEditor = <V extends Value>() => {
+export const createTEditor = <V extends Value>({
+  children,
+  selection,
+}: {
+  children?: V;
+  selection?: TEditor['selection'];
+} = {}) => {
   const editor = createEditor() as any as TEditor;
+
+  if (children) {
+    editor.children = children;
+  }
+  if (selection) {
+    editor.selection = selection;
+  }
 
   // Editor
   // deleteBackward
   // deleteForward
-  // getFragment
-  // insertText
-  // normalizeNode
-  // getDirtyPaths
-  // setNormalizing
-  // shouldMergeNodesRemovePrevNode
-  // shouldNormalize
 
   editor.api = {
     above: bindFirst(getAboveNode, editor) as any,
@@ -144,6 +165,8 @@ export const createTEditor = <V extends Value>() => {
         : (findPath(editor, node) ?? findNodePath(editor, node, options)),
     first: bindFirst(getFirstNode, editor),
     fragment: bindFirst(getFragment, editor),
+    getDirtyPaths: bindFirst(getDirtyPaths, editor as any),
+    getFragment: bindFirst(getFragment, editor),
     getWindow: bindFirst(getEditorWindow, editor),
     hasBlocks: bindFirst(hasBlocks, editor),
     hasDOMNode: bindFirst(hasEditorDOMNode, editor),
@@ -157,22 +180,27 @@ export const createTEditor = <V extends Value>() => {
     isBlock: bindFirst(isBlock, editor),
     isComposing: bindFirst(isComposing, editor),
     isEdge: bindFirst(isEdgePoint, editor),
+    isElementReadOnly: editor.isElementReadOnly,
     isEmpty: bindFirst(isElementEmpty, editor),
     isEnd: bindFirst(isEndPoint, editor),
     isFocused: bindFirst(isEditorFocused, editor),
+    isInline: editor.isInline,
     isMerging: bindFirst(HistoryEditor.isMerging, editor as any) as any,
     isNormalizing: bindFirst(isEditorNormalizing, editor),
     isReadOnly: bindFirst(isEditorReadOnly, editor),
     isSaving: bindFirst(HistoryEditor.isSaving, editor as any) as any,
+    isSelectable: editor.isSelectable,
     isSplittingOnce: bindFirst(HistoryEditor.isSplittingOnce, editor as any),
     isStart: bindFirst(isStartPoint, editor),
     isTargetInsideNonReadonlyVoid: bindFirst(
       isTargetInsideNonReadonlyVoid,
       editor
     ),
+    isVoid: editor.isVoid,
     last: bindFirst(getLastNode, editor),
     leaf: bindFirst(getLeafNode, editor),
     levels: bindFirst(getLevels, editor) as any,
+    markableVoid: editor.markableVoid,
     marks: bindFirst(getMarks, editor),
     next: bindFirst(getNextNode, editor) as any,
     node: bindFirst(getNodeEntry, editor) as any,
@@ -189,6 +217,12 @@ export const createTEditor = <V extends Value>() => {
     range: bindFirst(getRange, editor),
     rangeRef: bindFirst(createRangeRef, editor),
     rangeRefs: bindFirst(getRangeRefs, editor),
+    setNormalizing: bindFirst(setNormalizing, editor as any),
+    shouldMergeNodesRemovePrevNode: bindFirst(
+      shouldMergeNodesRemovePrevNode,
+      editor as any
+    ),
+    shouldNormalize: bindFirst(shouldNormalize, editor as any),
     start: bindFirst(getStartPoint, editor),
     string: bindFirst(getEditorString, editor),
     toDOMNode: bindFirst(toDOMNode, editor),
@@ -199,14 +233,12 @@ export const createTEditor = <V extends Value>() => {
     toSlateRange: bindFirst(toSlateRange, editor),
     unhangRange: bindFirst(unhangRange, editor),
     void: bindFirst(getVoidNode, editor) as any,
-  } as any;
-
-  const { marks, ...apiToMerge } = editor.api;
-
-  Object.assign(editor, apiToMerge);
+    onChange: editor.onChange,
+  };
 
   const transforms: TEditor<V>['transforms'] = {
     addMark: bindFirst(addMark, editor),
+    apply: bindFirst(apply, editor as any),
     blur: bindFirst(blurEditor, editor),
     collapse: bindFirst(collapseSelection, editor),
     delete: bindFirst(deleteText, editor),
@@ -230,6 +262,8 @@ export const createTEditor = <V extends Value>() => {
     move: bindFirst(moveSelection, editor),
     moveNodes: bindFirst(moveNodes, editor),
     normalize: bindFirst(normalizeEditor, editor),
+    normalizeNode: bindFirst(normalizeNode, editor as any),
+    redo: noop('redo'),
     removeMark: bindFirst(removeMark, editor as any),
     removeNodes: bindFirst(removeNodes, editor),
     select: bindFirst(select, editor),
@@ -242,6 +276,7 @@ export const createTEditor = <V extends Value>() => {
     toggle: {
       mark: bindFirst(toggleMark, editor as any),
     },
+    undo: noop('undo'),
     unsetNodes: bindFirst(unsetNodes, editor),
     unwrapNodes: bindFirst(unwrapNodes, editor),
     withMerging: bindFirst(HistoryEditor.withMerging, editor as any),
@@ -250,19 +285,16 @@ export const createTEditor = <V extends Value>() => {
     withoutNormalizing: bindFirst(withoutNormalizing, editor as any),
     withoutSaving: bindFirst(HistoryEditor.withoutSaving, editor as any),
     wrapNodes: bindFirst(wrapNodes, editor),
+    writeHistory: noop('writeHistory'),
   };
 
   editor.tf = transforms;
   editor.transforms = transforms;
 
-  const { deleteBackward: _1, deleteForward: _2, ...tfToMerge } = transforms;
-  Object.assign(editor, tfToMerge);
+  assignLegacyApi(editor, editor.api);
+  assignLegacyTransforms(editor, transforms);
 
-  // HistoryEditor
   editor.history = { redos: [], undos: [] };
-  editor.undo = noop('undo');
-  editor.redo = noop('redo');
-  editor.writeHistory = noop('writeHistory');
 
   return editor as TEditor<V>;
 };

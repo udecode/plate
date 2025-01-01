@@ -1,6 +1,7 @@
 /** @jsx jsxt */
 
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
+import { createTEditor } from '@udecode/plate-common';
 import {
   createPlateEditor,
   getEditorPlugin,
@@ -13,16 +14,18 @@ import { onKeyDownSoftBreak } from '../../onKeyDownSoftBreak';
 
 jsxt;
 
-const input = (
-  <editor>
-    <hp>paragraph</hp>
-    <hcodeblock>
-      code
-      <cursor />
-      block
-    </hcodeblock>
-  </editor>
-) as any;
+const input = createTEditor(
+  (
+    <editor>
+      <hp>paragraph</hp>
+      <hcodeblock>
+        code
+        <cursor />
+        block
+      </hcodeblock>
+    </editor>
+  ) as any
+);
 
 const event = new KeyboardEvent('keydown') as any;
 

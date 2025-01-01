@@ -10,7 +10,7 @@ export const useNodePath = (node: TNode) => {
 
   return useMemoizedSelector(
     () => {
-      return editor.findPath(node);
+      return editor.api.findPath(node);
     },
     [editor, node],
     (a, b) => {

@@ -12,7 +12,7 @@ export const ReactPlugin = createSlatePlugin({
 
   return {
     reset: () => {
-      const isFocused = editor.isFocused();
+      const isFocused = editor.api.isFocused();
 
       reset();
 

@@ -2,18 +2,21 @@
 
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { type TEditor, getNode } from '../../../interfaces';
+import { createTEditor } from '../../../createTEditor';
+import { getNode } from '../../../interfaces';
 
 jsxt;
 
-const input = (
-  <editor>
-    <hp>
-      test
-      <cursor />
-    </hp>
-  </editor>
-) as any as TEditor;
+const input = createTEditor(
+  (
+    <editor>
+      <hp>
+        test
+        <cursor />
+      </hp>
+    </editor>
+  ) as any
+);
 
 it('should be', () => {
   expect(getNode(input, [0])).toBeDefined();

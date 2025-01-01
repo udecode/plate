@@ -16,7 +16,7 @@ export const getSelectionRects = (
   }
 ): SelectionRect[] => {
   const [start, end] = Range.edges(range);
-  const domRange = editor.toDOMRange(range);
+  const domRange = editor.api.toDOMRange(range);
 
   if (!domRange) {
     return [];
@@ -29,7 +29,7 @@ export const getSelectionRects = (
   });
 
   for (const [textNode, textPath] of textEntries) {
-    const domNode = editor.toDOMNode(textNode);
+    const domNode = editor.api.toDOMNode(textNode);
 
     // Fix: failed to execute 'selectNode' on 'Range': the given Node has no parent
     if (!domNode?.parentElement) {

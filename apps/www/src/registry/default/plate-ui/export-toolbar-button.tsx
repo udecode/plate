@@ -130,7 +130,7 @@ export function ExportToolbarButton({ children, ...props }: DropdownMenuProps) {
       'body > div:last-child img { display: inline-block !important; }'
     );
 
-    const canvas = await html2canvas(editor.toDOMNode(editor)!);
+    const canvas = await html2canvas(editor.api.toDOMNode(editor)!);
     style.remove();
 
     return canvas;

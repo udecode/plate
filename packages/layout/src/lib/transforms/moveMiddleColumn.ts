@@ -35,7 +35,7 @@ export const moveMiddleColumn = <N extends TNode>(
     // Check emptiness using Node.string
     const isEmpty = getNodeString(middleChildNode) === '';
 
-    const middleChildPathRef = editor.pathRef(path.concat(DESCENDANT_PATH));
+    const middleChildPathRef = editor.api.pathRef(path.concat(DESCENDANT_PATH));
 
     if (isEmpty) {
       removeNodes(editor, { at: middleChildPathRef.current! });

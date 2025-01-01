@@ -16,7 +16,7 @@ export const useLastBlockDOMNode = (
   const lastBlock = useLastBlock({ deps, enabled });
 
   const anchorElement = useMemo(
-    () => (lastBlock ? editor.toDOMNode(lastBlock) : null)!,
+    () => (lastBlock ? editor.api.toDOMNode(lastBlock) : null)!,
     [editor, lastBlock]
   );
 

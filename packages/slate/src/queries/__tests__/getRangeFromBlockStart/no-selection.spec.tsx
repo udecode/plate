@@ -2,17 +2,18 @@
 
 import { jsxt } from '@udecode/plate-test-utils';
 
-import type { TEditor } from '../../../interfaces';
-
+import { createTEditor } from '../../../createTEditor';
 import { getRangeFromBlockStart } from '../../getRangeFromBlockStart';
 
 jsxt;
 
-const input = (
-  <editor>
-    <hp>test</hp>
-  </editor>
-) as any as TEditor;
+const input = createTEditor(
+  (
+    <editor>
+      <hp>test</hp>
+    </editor>
+  ) as any
+);
 
 const output = undefined;
 

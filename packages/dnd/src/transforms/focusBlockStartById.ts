@@ -9,5 +9,5 @@ export const focusBlockStartById = (editor: TEditor, id: string) => {
   if (!path) return;
 
   select(editor, getStartPoint(editor, path)!);
-  editor.focus();
+  editor.tf.focus();
 };

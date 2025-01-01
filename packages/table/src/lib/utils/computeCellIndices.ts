@@ -34,7 +34,7 @@ export function computeCellIndices(
     if (!cellNode) return;
 
     tableNode = getAboveNode<TTableElement>(editor, {
-      at: editor.findPath(cellNode),
+      at: editor.api.findPath(cellNode),
       match: { type: editor.getType(BaseTablePlugin) },
     })?.[0];
 

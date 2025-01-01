@@ -19,5 +19,5 @@ export const removeBlocksAndFocus = <E extends TEditor = TEditor>(
   const nodeEntries = getBlocksWithId(editor, options);
 
   removeNodes(editor, { at: getNodesRange(editor, nodeEntries) });
-  editor.focus();
+  editor.tf.focus();
 };

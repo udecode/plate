@@ -34,7 +34,7 @@ export const useCalloutEmojiPicker = ({
       onSelectEmoji: (emojiValue: any) => {
         const icon = emojiValue.skins?.[0]?.native ?? emojiValue.icon;
 
-        editor.setNodes<TCalloutElement>(
+        editor.tf.setNodes<TCalloutElement>(
           {
             icon,
           },

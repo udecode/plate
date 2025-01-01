@@ -30,7 +30,7 @@ export const useIndentTodoListElement = (
       onCheckedChange: (value: boolean) => {
         if (readOnly) return;
 
-        const path = editor.findPath(element);
+        const path = editor.api.findPath(element);
 
         if (!path) return;
 

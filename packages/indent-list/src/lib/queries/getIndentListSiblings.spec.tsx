@@ -4,6 +4,7 @@ import {
   type SlateEditor,
   type TDescendant,
   type TElement,
+  createTEditor,
   getBlockAbove,
 } from '@udecode/plate-common';
 import { jsxt } from '@udecode/plate-test-utils';
@@ -29,7 +30,9 @@ describe('getIndentListSiblings', () => {
         </fragment>
       ) as any as TDescendant[];
 
-      const editor = (<editor>{input}</editor>) as any as SlateEditor;
+      const editor = createTEditor(
+        (<editor>{input}</editor>) as any as SlateEditor
+      );
 
       const entry = getBlockAbove<TElement>(editor);
 
@@ -89,7 +92,9 @@ describe('getIndentListSiblings', () => {
         </fragment>
       ) as any as TDescendant[];
 
-      const editor = (<editor>{input}</editor>) as any as SlateEditor;
+      const editor = createTEditor(
+        (<editor>{input}</editor>) as any as SlateEditor
+      );
 
       const entry = getBlockAbove<TElement>(editor);
 

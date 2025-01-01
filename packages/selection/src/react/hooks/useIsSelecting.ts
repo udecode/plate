@@ -9,7 +9,7 @@ import { isSelecting } from '../../lib';
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 
 export const isSelectingOrFocused = (editor: PlateEditor) => {
-  return isSelecting(editor) || editor.isFocused();
+  return isSelecting(editor) || editor.api.isFocused();
 };
 
 export const useIsSelecting = () => {

@@ -155,7 +155,7 @@ export const PlaceholderPlugin = toTPlatePlugin<
          * drop location. Find the location from the event and upload the files
          * at that location.
          */
-        const at = editor.findEventRange(event);
+        const at = editor.api.findEventRange(event);
 
         if (!at) return false;
 

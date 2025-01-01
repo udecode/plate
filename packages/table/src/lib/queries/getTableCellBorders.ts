@@ -31,7 +31,7 @@ export const getTableCellBorders = (
     defaultBorder?: BorderStyle;
   }
 ): BorderStylesDefault => {
-  const cellPath = editor.findPath(element)!;
+  const cellPath = editor.api.findPath(element)!;
   const [rowNode, rowPath] = getParentNode<TTableRowElement>(editor, cellPath)!;
   const [tableNode] = getParentNode<TTableElement>(editor, rowPath)!;
 

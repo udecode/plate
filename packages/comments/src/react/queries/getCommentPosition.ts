@@ -7,13 +7,13 @@ import type { TCommentText } from '../../lib/types';
 import { getElementAbsolutePosition } from '../../lib';
 
 export const getCommentPosition = (editor: SlateEditor, node: TCommentText) => {
-  const DOMNode = editor.toDOMNode(node);
+  const DOMNode = editor.api.toDOMNode(node);
 
   if (!DOMNode) return;
 
   const DOMNodePosition = getElementAbsolutePosition(DOMNode);
 
-  const editorDOMNode = editor.toDOMNode(editor);
+  const editorDOMNode = editor.api.toDOMNode(editor);
 
   if (!editorDOMNode) return;
 

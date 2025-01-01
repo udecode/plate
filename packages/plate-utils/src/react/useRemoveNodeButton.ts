@@ -7,7 +7,7 @@ export const useRemoveNodeButton = ({ element }: { element: TElement }) => {
   return {
     props: {
       onClick: () => {
-        const path = editor.findPath(element);
+        const path = editor.api.findPath(element);
 
         removeNodes(editor, { at: path });
       },

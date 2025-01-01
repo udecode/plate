@@ -1,6 +1,10 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, findNode } from '@udecode/plate-common';
+import {
+  type SlateEditor,
+  createTEditor,
+  findNode,
+} from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
@@ -8,45 +12,47 @@ import { removeListItem } from './removeListItem';
 
 jsxt;
 
-const input = (
-  <editor>
-    <hul id="1">
-      <hli id="11">
-        <hp>1</hp>
-        <hul>
-          <hli>
-            <hp>11</hp>
-          </hli>
-          <hli>
-            <hp>12</hp>
-          </hli>
-        </hul>
-      </hli>
-      <hli id="12">
-        <hp>2</hp>
-        <hul>
-          <hli>
-            <hp>21</hp>
-          </hli>
-          <hli>
-            <hp>22</hp>
-          </hli>
-        </hul>
-      </hli>
-      <hli id="13">
-        <hp>3</hp>
-        <hul>
-          <hli>
-            <hp>31</hp>
-          </hli>
-          <hli>
-            <hp>32</hp>
-          </hli>
-        </hul>
-      </hli>
-    </hul>
-  </editor>
-) as any as SlateEditor;
+const input = createTEditor(
+  (
+    <editor>
+      <hul id="1">
+        <hli id="11">
+          <hp>1</hp>
+          <hul>
+            <hli>
+              <hp>11</hp>
+            </hli>
+            <hli>
+              <hp>12</hp>
+            </hli>
+          </hul>
+        </hli>
+        <hli id="12">
+          <hp>2</hp>
+          <hul>
+            <hli>
+              <hp>21</hp>
+            </hli>
+            <hli>
+              <hp>22</hp>
+            </hli>
+          </hul>
+        </hli>
+        <hli id="13">
+          <hp>3</hp>
+          <hul>
+            <hli>
+              <hp>31</hp>
+            </hli>
+            <hli>
+              <hp>32</hp>
+            </hli>
+          </hul>
+        </hli>
+      </hul>
+    </editor>
+  ) as any as SlateEditor
+);
 
 const output = (
   <editor>
@@ -84,7 +90,7 @@ const output = (
       </hli>
     </hul>
   </editor>
-) as any as SlateEditor;
+) as any;
 
 it('should', () => {
   const editor = createPlateEditor({ editor: input });

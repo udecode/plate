@@ -65,9 +65,9 @@ export type BlockSelectionApi = {
 export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
   key: 'blockSelection',
   extendEditor: ({ api, editor, getOptions }) => {
-    const { setSelection } = editor;
+    const { setSelection } = editor.tf;
 
-    editor.setSelection = (...args) => {
+    editor.tf.setSelection = (...args) => {
       if (
         getOptions().selectedIds!.size > 0 &&
         !editor.getOption(BlockMenuPlugin, 'openId')
