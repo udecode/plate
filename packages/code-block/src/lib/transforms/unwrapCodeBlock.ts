@@ -7,7 +7,6 @@ import {
   getNodeEntries,
   setElements,
   unwrapNodes,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 
 import { BaseCodeBlockPlugin } from '../BaseCodeBlockPlugin';
@@ -18,7 +17,7 @@ export const unwrapCodeBlock = (editor: SlateEditor) => {
   const codeBlockType = editor.getType(BaseCodeBlockPlugin);
   const defaultType = editor.getType(BaseParagraphPlugin);
 
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     const codeBlockEntries = getNodeEntries(editor, {
       at: editor.selection as Location,
       match: { type: codeBlockType },

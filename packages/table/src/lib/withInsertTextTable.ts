@@ -1,6 +1,6 @@
 import type { ExtendEditor } from '@udecode/plate-common';
 
-import { collapseSelection, isExpanded } from '@udecode/plate-common';
+import { isExpanded } from '@udecode/plate-common';
 
 import { type TableConfig, getTableAbove } from '.';
 import { getTableGridAbove } from './queries';

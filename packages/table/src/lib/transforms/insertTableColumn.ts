@@ -8,7 +8,6 @@ import {
   getNode,
   insertElements,
   setNodes,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
@@ -86,7 +85,7 @@ export const insertTableColumn = (
 
   const currentRowIndex = cellPath.at(-2);
 
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     // for each row, insert a new cell
     tableNode.children.forEach((row, rowIndex) => {
       const insertCellPath = [...nextCellPath];

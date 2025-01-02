@@ -1,4 +1,4 @@
-import { type SlateEditor, withoutNormalizing } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import { BaseCommentsPlugin } from '../BaseCommentsPlugin';
 import { findCommentNode } from '../queries/index';
@@ -11,7 +11,7 @@ export const removeCommentMark = (editor: SlateEditor) => {
 
   const keys = getCommentKeys(nodeEntry[0]);
 
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     keys.forEach((key) => {
       editor.removeMark(key);
     });

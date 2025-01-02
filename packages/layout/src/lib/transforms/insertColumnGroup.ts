@@ -4,7 +4,6 @@ import {
   findNode,
   insertNodes,
   select,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 
 import type { TColumnGroupElement } from '../types';
@@ -23,7 +22,7 @@ export const insertColumnGroup = (
 ) => {
   const width = 100 / columns;
 
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     insertNodes<TColumnGroupElement>(
       editor,
       {

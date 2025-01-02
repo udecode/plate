@@ -3,7 +3,6 @@ import {
   type TDescendant,
   applyDeepToNodes,
   nanoid,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 
 import { BaseSuggestionPlugin, SUGGESTION_KEYS } from '../BaseSuggestionPlugin';
@@ -21,7 +20,7 @@ export const insertFragmentSuggestion = (
     insertFragment?: (fragment: TDescendant[]) => void;
   } = {}
 ) => {
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     deleteFragmentSuggestion(editor);
 
     const id = findSuggestionId(editor, editor.selection!) ?? nanoid();

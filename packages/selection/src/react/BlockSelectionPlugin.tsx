@@ -64,22 +64,6 @@ export type BlockSelectionApi = {
 
 export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
   key: 'blockSelection',
-  extendEditor: ({ api, editor, getOptions }) => {
-    const { setSelection } = editor.tf;
-
-    editor.tf.setSelection = (...args) => {
-      if (
-        getOptions().selectedIds!.size > 0 &&
-        !editor.getOption(BlockMenuPlugin, 'openId')
-      ) {
-        api.blockSelection.unselect();
-      }
-
-      setSelection(...args);
-    };
-
-    return editor;
-  },
   inject: {
     isBlock: true,
     nodeProps: {
@@ -224,4 +208,18 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
     setIndent: bindFirst(setBlockSelectionIndent, editor),
     setNodes: bindFirst(setBlockSelectionNodes, editor),
     setTexts: bindFirst(setBlockSelectionTexts, editor),
-  }));
+  }))
+  .extendEditorTransforms(
+    ({ api, editor, getOptions, tf: { setSelection } }) => ({
+      setSelection(props) {
+        if (
+          getOptions().selectedIds!.size > 0 &&
+          !editor.getOption(BlockMenuPlugin, 'openId')
+        ) {
+          api.blockSelection.unselect();
+        }
+
+        setSelection(props);
+      },
+    })
+  );

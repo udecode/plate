@@ -6,7 +6,6 @@ import {
   findNode,
   isElement,
   setNodes,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 
 import type { BorderDirection, BorderStyle, TTableCellElement } from '../types';
@@ -162,7 +161,7 @@ export const setBorderSize = (
     );
   }
   if (border === 'all') {
-    withoutNormalizing(editor, () => {
+    editor.tf.withoutNormalizing(() => {
       setBorderSize(editor, size, { at, border: 'top' });
       setBorderSize(editor, size, { at, border: 'bottom' });
       setBorderSize(editor, size, { at, border: 'left' });

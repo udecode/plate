@@ -8,7 +8,6 @@ import {
   isStartPoint,
   select,
   splitNodes,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path, Range } from 'slate';
 
@@ -36,7 +35,7 @@ export const insertTodoListItem = (
 
   let success = false;
 
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     if (!Range.isCollapsed(editor.selection!)) {
       deleteText(editor);
     }
@@ -81,7 +80,7 @@ export const insertTodoListItem = (
       );
       select(editor, nextParagraphPath);
     } else {
-      withoutNormalizing(editor, () => {
+      editor.tf.withoutNormalizing(() => {
         splitNodes(editor);
       });
     }

@@ -9,7 +9,6 @@ import {
   isFirstChild,
   isSelectionAtBlockStart,
   removeNodes,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 import {
   type ExtendEditor,
@@ -53,7 +52,7 @@ export const withDeleteBackwardList: ExtendEditor<ListConfig> = ({
             match: (node) => node.type === editor.getType(BaseListItemPlugin),
           })
         ) {
-          withoutNormalizing(editor, () => {
+          editor.tf.withoutNormalizing(() => {
             moved = removeFirstListItem(editor, { list, listItem });
 
             if (moved) return true;

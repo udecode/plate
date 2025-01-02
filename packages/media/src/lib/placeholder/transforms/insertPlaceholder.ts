@@ -2,7 +2,6 @@ import {
   type InsertNodesOptions,
   type SlateEditor,
   insertNodes,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 
 import { BaseAudioPlugin } from '../../BaseAudioPlugin';
@@ -19,7 +18,7 @@ export const insertPlaceholder = (
   mediaType: string,
   options?: InsertNodesOptions
 ) => {
-  withoutNormalizing(editor, () =>
+  editor.tf.withoutNormalizing(() =>
     insertNodes<TPlaceholderElement>(
       editor,
       {

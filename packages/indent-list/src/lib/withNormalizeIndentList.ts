@@ -1,8 +1,4 @@
-import {
-  type ExtendEditor,
-  type TElement,
-  withoutNormalizing,
-} from '@udecode/plate-common';
+import type { ExtendEditor, TElement } from '@udecode/plate-common';
 
 import type { BaseIndentListConfig } from './BaseIndentListPlugin';
 
@@ -16,7 +12,7 @@ export const withNormalizeIndentList: ExtendEditor<BaseIndentListConfig> = ({
   const { normalizeNode } = editor;
 
   editor.normalizeNode = ([node, path]) => {
-    const normalized = withoutNormalizing(editor, () => {
+    const normalized = editor.tf.withoutNormalizing(() => {
       if (normalizeIndentListNotIndented(editor, [node, path])) return true;
       if (
         normalizeIndentListStart(

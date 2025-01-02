@@ -9,7 +9,6 @@ import {
   isExpanded,
   setElements,
   unsetNodes,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 
@@ -70,7 +69,7 @@ export const toggleIndentList = <
     });
 
     if (eqListStyleType) {
-      withoutNormalizing(editor, () => {
+      editor.tf.withoutNormalizing(() => {
         entries.forEach((entry) => {
           const [node, path] = entry;
 

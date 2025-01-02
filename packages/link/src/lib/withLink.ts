@@ -1,6 +1,5 @@
 import {
   type ExtendEditor,
-  collapseSelection,
   getAboveNode,
   getEditorPlugin,
   getEditorString,
@@ -14,7 +13,6 @@ import {
   isStartPoint,
   select,
   someNode,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 import {
   RemoveEmptyNodesPlugin,
@@ -45,7 +43,7 @@ export const withLink: ExtendEditor<BaseLinkConfig> = ({
   const wrapLink = () => {
     const { getUrlHref, isUrl, rangeBeforeOptions } = getOptions();
 
-    withoutNormalizing(editor, () => {
+    editor.tf.withoutNormalizing(() => {
       const selection = editor.selection!;
 
       // get the range from first space before the cursor

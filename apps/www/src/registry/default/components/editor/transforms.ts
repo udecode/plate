@@ -16,7 +16,6 @@ import {
   removeEmptyPreviousBlock,
   setNodes,
   unsetNodes,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 import { insertDate } from '@udecode/plate-date';
 import { DatePlugin } from '@udecode/plate-date/react';
@@ -116,7 +115,7 @@ const insertInlineMap: Record<
 };
 
 export const insertBlock = (editor: PlateEditor, type: string) => {
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     if (type in insertBlockMap) {
       insertBlockMap[type](editor, type);
     } else {
@@ -174,7 +173,7 @@ export const setBlockType = (
   type: string,
   { at }: { at?: Path } = {}
 ) => {
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     const setEntry = (entry: TNodeEntry<TElement>) => {
       const [node, path] = entry;
 

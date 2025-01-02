@@ -7,7 +7,6 @@ import {
   getParentNode,
   insertElements,
   setNodes,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 import { getEditorPlugin } from '@udecode/plate-common';
 import cloneDeep from 'lodash/cloneDeep.js';
@@ -162,7 +161,7 @@ export const insertTableMergeColumn = (
     }
   });
 
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     const { colSizes } = tableNode;
 
     if (colSizes) {

@@ -8,7 +8,6 @@ import {
   getNode,
   insertElements,
   select,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
@@ -94,7 +93,7 @@ export const insertTableRow = (
     type: editor.getType(BaseTableRowPlugin),
   });
 
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     insertElements(editor, getEmptyRowNode(), {
       at: Path.isPath(at) ? at : before ? trPath : Path.next(trPath),
     });

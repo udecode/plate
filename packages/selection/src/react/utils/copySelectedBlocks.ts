@@ -3,7 +3,6 @@ import {
   getEndPoint,
   getStartPoint,
   select,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 import copyToClipboard from 'copy-to-clipboard';
 
@@ -25,7 +24,7 @@ export const copySelectedBlocks = (editor: SlateEditor) => {
       let textPlain = '';
       const div = document.createElement('div');
 
-      withoutNormalizing(editor, () => {
+      editor.tf.withoutNormalizing(() => {
         selectedEntries.forEach(([, path]) => {
           // select block by block
           select(editor, {

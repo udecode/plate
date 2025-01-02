@@ -1,7 +1,6 @@
 import {
   type SlateEditor,
   type TElement,
-  collapseSelection,
   deleteText,
   getAboveNode,
   getMarks,
@@ -12,7 +11,6 @@ import {
   moveNodes,
   select,
   splitNodes,
-  withoutNormalizing,
   wrapNodes,
 } from '@udecode/plate-common';
 import { Path, Range } from 'slate';
@@ -47,7 +45,7 @@ export const insertListItem = (editor: SlateEditor): boolean => {
 
   let success = false;
 
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     if (!Range.isCollapsed(editor.selection!)) {
       deleteText(editor);
     }
@@ -94,7 +92,7 @@ export const insertListItem = (editor: SlateEditor): boolean => {
       );
       select(editor, nextListItemPath);
     } else {
-      withoutNormalizing(editor, () => {
+      editor.tf.withoutNormalizing(() => {
         splitNodes(editor);
         wrapNodes<TElement>(
           editor,

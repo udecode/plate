@@ -6,7 +6,6 @@ import {
   isEndPoint,
   isExpanded,
   setNodes,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 
 import {
@@ -37,7 +36,7 @@ export const withInsertBreakIndentList: ExtendEditor<BaseIndentListConfig> = ({
       return insertBreak();
     }
 
-    withoutNormalizing(editor, () => {
+    editor.tf.withoutNormalizing(() => {
       insertBreak();
 
       const newEntry = getAboveNode<TElement>(editor);

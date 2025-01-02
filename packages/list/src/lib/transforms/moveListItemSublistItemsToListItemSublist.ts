@@ -8,7 +8,6 @@ import {
   getParentNode,
   insertElements,
   moveChildren,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
@@ -41,7 +40,7 @@ export const moveListItemSublistItemsToListItemSublist = (
   const [, toListItemPath] = toListItem;
   let moved = 0;
 
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     const fromListItemSublist = findDescendant<TElement>(editor, {
       at: fromListItemPath,
       match: {

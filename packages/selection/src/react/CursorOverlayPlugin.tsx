@@ -55,11 +55,9 @@ export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
       editor.setOption(plugin, 'cursors', newCursors);
     },
   }))
-  .extend(() => ({
-    extendEditor: ({ api, editor, getOptions }) => {
-      const { setSelection } = editor.tf;
-
-      editor.tf.setSelection = (...args) => {
+  .extendEditorTransforms(
+    ({ api, editor, getOptions, tf: { setSelection } }) => ({
+      setSelection(props) {
         if (getOptions().cursors?.selection) {
           setTimeout(() => {
             api.cursorOverlay.addCursor('selection', {
@@ -68,11 +66,11 @@ export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
           }, 0);
         }
 
-        setSelection(...args);
-      };
-
-      return editor;
-    },
+        setSelection(props);
+      },
+    })
+  )
+  .extend(() => ({
     useHooks: ({ api, setOption }) => {
       const { editor } = useEditorPlugin(BlockSelectionPlugin);
       const isSelecting = editor.useOption(BlockSelectionPlugin, 'isSelecting');

@@ -8,12 +8,14 @@ import type {
 import type {
   TDecoratedRange,
   TDescendant,
+  TEditorApi,
+  TEditorTransforms,
   TElement,
   TNodeEntry,
   TText,
   Value,
 } from '@udecode/slate';
-import type { AnyObject } from '@udecode/utils';
+import type { AnyObject, Deep2Partial } from '@udecode/utils';
 import type { StoreApi } from 'zustand-x';
 
 import type {
@@ -306,17 +308,20 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       ((...args: any[]) => any) | Record<string, (...args: any[]) => any>
     > = Record<string, never>,
   >(
-    extension: (ctx: PlatePluginContext<C>) => EA & {
-      [K in keyof InferApi<C>]?: InferApi<C>[K] extends (...args: any[]) => any
-        ? (...args: Parameters<InferApi<C>[K]>) => ReturnType<InferApi<C>[K]>
-        : InferApi<C>[K] extends Record<string, (...args: any[]) => any>
-          ? {
-              [N in keyof InferApi<C>[K]]?: (
-                ...args: Parameters<InferApi<C>[K][N]>
-              ) => ReturnType<InferApi<C>[K][N]>;
-            }
-          : never;
-    }
+    extension: (ctx: PlatePluginContext<C>) => Deep2Partial<TEditorApi> &
+      EA & {
+        [K in keyof InferApi<C>]?: InferApi<C>[K] extends (
+          ...args: any[]
+        ) => any
+          ? (...args: Parameters<InferApi<C>[K]>) => ReturnType<InferApi<C>[K]>
+          : InferApi<C>[K] extends Record<string, (...args: any[]) => any>
+            ? {
+                [N in keyof InferApi<C>[K]]?: (
+                  ...args: Parameters<InferApi<C>[K][N]>
+                ) => ReturnType<InferApi<C>[K][N]>;
+              }
+            : never;
+      }
   ) => PlatePlugin<
     PluginConfig<
       C['key'],
@@ -340,21 +345,25 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       ((...args: any[]) => any) | Record<string, (...args: any[]) => any>
     > = Record<string, never>,
   >(
-    extension: (ctx: PlatePluginContext<C>) => ET & {
-      [K in keyof InferTransforms<C>]?: InferTransforms<C>[K] extends (
-        ...args: any[]
-      ) => any
-        ? (
-            ...args: Parameters<InferTransforms<C>[K]>
-          ) => ReturnType<InferTransforms<C>[K]>
-        : InferTransforms<C>[K] extends Record<string, (...args: any[]) => any>
-          ? {
-              [N in keyof InferTransforms<C>[K]]?: (
-                ...args: Parameters<InferTransforms<C>[K][N]>
-              ) => ReturnType<InferTransforms<C>[K][N]>;
-            }
-          : never;
-    }
+    extension: (ctx: PlatePluginContext<C>) => Deep2Partial<TEditorTransforms> &
+      ET & {
+        [K in keyof InferTransforms<C>]?: InferTransforms<C>[K] extends (
+          ...args: any[]
+        ) => any
+          ? (
+              ...args: Parameters<InferTransforms<C>[K]>
+            ) => ReturnType<InferTransforms<C>[K]>
+          : InferTransforms<C>[K] extends Record<
+                string,
+                (...args: any[]) => any
+              >
+            ? {
+                [N in keyof InferTransforms<C>[K]]?: (
+                  ...args: Parameters<InferTransforms<C>[K][N]>
+                ) => ReturnType<InferTransforms<C>[K][N]>;
+              }
+            : never;
+      }
   ) => PlatePlugin<
     PluginConfig<
       C['key'],

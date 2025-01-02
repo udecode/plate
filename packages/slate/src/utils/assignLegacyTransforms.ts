@@ -11,7 +11,6 @@ const LEGACY_TRANSFORMS = new Set([
   'deselect',
   'focus',
   'insertBreak',
-  // 'normalizeNode',
   'insertData',
   'insertFragment',
   'insertFragmentData',
@@ -25,6 +24,7 @@ const LEGACY_TRANSFORMS = new Set([
   'move',
   'moveNodes',
   'normalize',
+  'normalizeNode',
   'redo',
   'removeMark',
   'removeNodes',
@@ -71,8 +71,8 @@ const LEGACY_API = new Set([
   'last',
   'leaf',
   'levels',
-  // 'markableVoid',
-  'marks',
+  'markableVoid',
+  // 'marks',
   'next',
   'node',
   'nodes',
@@ -101,6 +101,8 @@ const LEGACY_API = new Set([
 ]);
 
 export const assignLegacyTransforms = (editor: TEditor, transforms: any) => {
+  if (!transforms) return;
+
   const legacyTransforms = Object.entries(transforms).reduce(
     (acc, [key, value]) => {
       if (LEGACY_TRANSFORMS.has(key)) {
@@ -113,12 +115,23 @@ export const assignLegacyTransforms = (editor: TEditor, transforms: any) => {
   );
 
   Object.assign(editor, legacyTransforms);
+
+  if (transforms.deleteBackward) {
+    editor.deleteBackward = (unit) => {
+      return transforms.deleteBackward({ unit });
+    };
+  }
+  if (transforms.deleteForward) {
+    editor.deleteForward = (unit) => {
+      return transforms.deleteForward({ unit });
+    };
+  }
 };
 
 export const assignLegacyApi = (editor: TEditor, api: any) => {
-  const { marks, ...apiToMerge } = api;
+  if (!api) return;
 
-  const legacyApi = Object.entries(apiToMerge).reduce(
+  const legacyApi = Object.entries(api).reduce(
     (acc, [key, value]) => {
       if (LEGACY_API.has(key)) {
         acc[key] = value;
@@ -131,7 +144,7 @@ export const assignLegacyApi = (editor: TEditor, api: any) => {
 
   Object.assign(editor, legacyApi);
 
-  if (marks) {
-    editor.getMarks = marks;
+  if (api.marks) {
+    editor.getMarks = api.marks;
   }
 };

@@ -1,9 +1,4 @@
-import {
-  type SlateEditor,
-  collapseSelection,
-  getEdgePoints,
-  withoutNormalizing,
-} from '@udecode/plate-common';
+import { type SlateEditor, getEdgePoints } from '@udecode/plate-common';
 
 import { deleteSuggestion } from './deleteSuggestion';
 
@@ -11,7 +6,7 @@ export const deleteFragmentSuggestion = (
   editor: SlateEditor,
   { reverse }: { reverse?: boolean } = {}
 ) => {
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     const selection = editor.selection!;
 
     const [start, end] = getEdgePoints(editor, selection)!;

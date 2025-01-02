@@ -22,6 +22,7 @@ import {
   createTPlatePlugin,
 } from '@udecode/plate-common/react';
 import { serializeMdNodes } from '@udecode/plate-markdown';
+import { Range } from 'slate';
 
 import type { CompleteOptions } from './utils/callCompletionApi';
 
@@ -216,6 +217,29 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
       belowNodes: renderCopilotBelowNodes,
     },
   })
+  .extendEditorTransforms(
+    ({ api, editor, getOptions, tf: { setSelection } }) => {
+      let prevSelection: Range | null = null;
+
+      return {
+        setSelection(props) {
+          setSelection(props);
+
+          if (
+            editor.selection &&
+            (!prevSelection ||
+              !Range.equals(prevSelection, editor.selection)) &&
+            getOptions().autoTriggerQuery!({ editor }) &&
+            editor.api.isFocused()
+          ) {
+            void api.copilot.triggerSuggestion();
+          }
+
+          prevSelection = editor.selection;
+        },
+      };
+    }
+  )
   .extend(({ api, getOptions }) => {
     return {
       shortcuts: {

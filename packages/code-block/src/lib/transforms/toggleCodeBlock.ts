@@ -3,8 +3,6 @@ import {
   type TElement,
   setElements,
   someNode,
-  withoutNormalizing,
-  wrapNodes,
 } from '@udecode/plate-common';
 
 import {
@@ -23,7 +21,7 @@ export const toggleCodeBlock = (editor: SlateEditor) => {
     match: { type: codeBlockType },
   });
 
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     unwrapCodeBlock(editor);
 
     if (!isActive) {
@@ -36,7 +34,7 @@ export const toggleCodeBlock = (editor: SlateEditor) => {
         type: codeBlockType,
       };
 
-      wrapNodes<TElement>(editor, codeBlock);
+      editor.tf.wrapNodes<TElement>(codeBlock);
     }
   });
 };

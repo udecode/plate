@@ -13,7 +13,6 @@ import {
   getPointAfter,
   isSelectionAtBlockEnd,
   removeNodes,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 import { type TextUnit, Path } from 'slate';
 
@@ -237,7 +236,7 @@ export const withDeleteForwardList: ExtendEditor<ListConfig> = ({ editor }) => {
         return skipDefaultDelete;
       }
 
-      withoutNormalizing(editor, () => {
+      editor.tf.withoutNormalizing(() => {
         const res = getListItemEntry(editor, {});
 
         if (!res) {

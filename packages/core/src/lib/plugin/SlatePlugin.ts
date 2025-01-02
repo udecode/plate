@@ -7,7 +7,7 @@ import type {
   TText,
   Value,
 } from '@udecode/slate';
-import type { AnyObject, DeepPartial } from '@udecode/utils';
+import type { AnyObject, Deep2Partial } from '@udecode/utils';
 import type { DecoratedRange } from 'slate';
 
 import type { SlateEditor } from '../editor';
@@ -181,7 +181,7 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       ((...args: any[]) => any) | Record<string, (...args: any[]) => any>
     > = Record<string, never>,
   >(
-    extension: (ctx: SlatePluginContext<C>) => DeepPartial<TEditorApi> &
+    extension: (ctx: SlatePluginContext<C>) => Deep2Partial<TEditorApi> &
       EA & {
         [K in keyof InferApi<C>]?: InferApi<C>[K] extends (
           ...args: any[]
@@ -218,9 +218,7 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       ((...args: any[]) => any) | Record<string, (...args: any[]) => any>
     > = Record<string, never>,
   >(
-    extension: (
-      ctx: SlatePluginContext<C>
-    ) => DeepPartialTransforms<TEditorTransforms> &
+    extension: (ctx: SlatePluginContext<C>) => Deep2Partial<TEditorTransforms> &
       ET & {
         [K in keyof InferTransforms<C>]?: InferTransforms<C>[K] extends (
           ...args: any[]
@@ -484,9 +482,3 @@ export interface NodeStaticWrapperComponentProps<
 > extends SlateRenderElementProps<TElement, C> {
   key: string;
 }
-
-type DeepPartialTransforms<T> = {
-  [K in keyof T]?: T[K] extends (...args: any[]) => any
-    ? T[K]
-    : DeepPartialTransforms<T[K]>;
-};

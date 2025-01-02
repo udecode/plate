@@ -587,13 +587,7 @@ export type TEditorTransforms<V extends Value = Value> = {
   apply: <N extends DescendantIn<V>>(operation: TOperation<N>) => void;
 };
 
-export type TBaseEditor<V extends Value = Value> = {
-  id: any;
-  children: V;
-  marks: Record<string, any> | null;
-  operations: TOperation[];
-  selection: Range | null;
-} & Pick<
+export type LegacyEditorApi<V extends Value = Value> = Pick<
   TEditorApi<V>,
   | 'getDirtyPaths'
   | 'getFragment'
@@ -606,32 +600,45 @@ export type TBaseEditor<V extends Value = Value> = {
   | 'setNormalizing'
   | 'shouldMergeNodesRemovePrevNode'
   | 'shouldNormalize'
-> & {
-    /** Delete content in the editor backward from the current selection. */
-    deleteBackward: OmitFirst<typeof deleteBackwardBase>;
-    /** Delete content in the editor forward from the current selection. */
-    deleteForward: OmitFirst<typeof deleteForwardBase>;
-  } & Pick<
-    TEditorTransforms<V>,
-    | 'addMark'
-    | 'apply'
-    | 'delete'
-    | 'deleteFragment'
-    | 'insertBreak'
-    | 'insertFragment'
-    | 'insertNode'
-    | 'insertNodes'
-    | 'insertSoftBreak'
-    | 'insertText'
-    | 'normalizeNode'
-    | 'removeMark'
-  > &
+>;
+
+export type LegacyEditorTransforms<V extends Value = Value> = {
+  /** Delete content in the editor backward from the current selection. */
+  deleteBackward: OmitFirst<typeof deleteBackwardBase>;
+  /** Delete content in the editor forward from the current selection. */
+  deleteForward: OmitFirst<typeof deleteForwardBase>;
+} & Pick<
+  TEditorTransforms<V>,
+  | 'addMark'
+  | 'apply'
+  | 'delete'
+  | 'deleteFragment'
+  | 'insertBreak'
+  | 'insertFragment'
+  | 'insertNode'
+  | 'insertNodes'
+  | 'insertSoftBreak'
+  | 'insertText'
+  | 'normalizeNode'
+  | 'removeMark'
+> &
   Pick<
     TEditorTransforms<V>,
     'insertData' | 'insertFragmentData' | 'insertTextData' | 'setFragmentData'
   > &
-  Pick<HistoryEditor, 'history'> &
-  Pick<TEditorTransforms<V>, 'redo' | 'undo' | 'writeHistory'> &
+  Pick<TEditorTransforms<V>, 'redo' | 'undo' | 'writeHistory'>;
+
+export type LegacyEditorMethods<V extends Value = Value> = LegacyEditorApi<V> &
+  LegacyEditorTransforms<V>;
+
+export type TBaseEditor<V extends Value = Value> = {
+  id: any;
+  children: V;
+  marks: Record<string, any> | null;
+  operations: TOperation[];
+  selection: Range | null;
+} & Pick<HistoryEditor, 'history'> &
+  LegacyEditorMethods<V> &
   UnknownObject;
 
 export type TEditor<V extends Value = Value> = TBaseEditor<V> & {

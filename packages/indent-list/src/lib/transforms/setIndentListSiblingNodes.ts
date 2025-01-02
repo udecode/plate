@@ -3,7 +3,6 @@ import {
   type ElementOf,
   type TEditor,
   unsetNodes,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 
@@ -32,7 +31,7 @@ export const setIndentListSiblingNodes = <
     listStyleType?: string;
   }
 ) => {
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     const siblings = getIndentListSiblings(
       editor,
       entry,

@@ -3,11 +3,9 @@ import { DOMEditor } from 'slate-dom';
 import type { At } from '../../types';
 import type { TEditor } from '../editor';
 
-import { withoutNormalizing } from '../editor';
-
 export const focusEditor = (editor: TEditor, target?: At) => {
   if (target) {
-    withoutNormalizing(editor, () => {
+    editor.tf.withoutNormalizing(() => {
       editor.tf.deselect();
       editor.tf.select(target);
     });

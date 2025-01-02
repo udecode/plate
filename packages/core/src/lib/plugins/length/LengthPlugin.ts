@@ -1,4 +1,4 @@
-import { getEditorString, withoutNormalizing } from '@udecode/slate';
+import { getEditorString } from '@udecode/slate';
 
 import type { LengthConfig } from '../getCorePlugins';
 
@@ -11,7 +11,7 @@ export const withLength: ExtendEditor<LengthConfig> = ({
   const { apply } = editor;
 
   editor.apply = (operation) => {
-    withoutNormalizing(editor, () => {
+    editor.tf.withoutNormalizing(() => {
       apply(operation);
 
       const options = getOptions();

@@ -4,6 +4,7 @@
 
 export * from './BaseTablePlugin';
 export * from './constants';
+export * from './normalizeInitialValueTable';
 export * from './types';
 export * from './withDeleteTable';
 export * from './withGetFragmentTable';

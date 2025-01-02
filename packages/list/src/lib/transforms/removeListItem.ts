@@ -9,7 +9,6 @@ import {
   insertElements,
   isExpanded,
   removeNodes,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
@@ -43,7 +42,7 @@ export const removeListItem = (
 
   let success = false;
 
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     /**
      * If there is a previous li, we need to move sub-lis to the previous li. As
      * we need to delete first, we will:

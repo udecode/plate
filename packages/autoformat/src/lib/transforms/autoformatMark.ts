@@ -2,7 +2,6 @@ import type { Point, Range } from 'slate';
 
 import {
   type TEditor,
-  collapseSelection,
   deleteText,
   getEditorString,
   removeMark,

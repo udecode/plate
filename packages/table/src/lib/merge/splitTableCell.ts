@@ -9,7 +9,6 @@ import {
   insertElements,
   removeNodes,
   select,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 
 import {
@@ -31,7 +30,7 @@ export const splitTableCell = (editor: SlateEditor) => {
   const cellEntries = getTableGridAbove(editor, { format: 'cell' });
   const [[cellElem, path]] = cellEntries;
 
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     // creating new object per iteration is essential here
     const createEmptyCell = (children?: TDescendant[]) => {
       return {

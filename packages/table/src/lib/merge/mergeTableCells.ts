@@ -8,7 +8,6 @@ import {
   isElementEmpty,
   removeNodes,
   select,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 import cloneDeep from 'lodash/cloneDeep.js';
 
@@ -24,7 +23,7 @@ export const mergeTableCells = (editor: SlateEditor) => {
     format: 'cell',
   }) as TNodeEntry<TTableCellElement>[];
 
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     // calculate the colSpan which is the number of horizontal cells that a cell should span.
     let colSpan = 0;
 

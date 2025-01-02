@@ -8,7 +8,6 @@ import {
   isInline,
   nanoid,
   setNodes,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 
 import type { TSuggestionText } from '../types';
@@ -32,7 +31,7 @@ export const setSuggestionNodes = (
   });
   const nodeEntries = [..._nodeEntries];
 
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     const props: TNodeProps<TSuggestionText> = getSuggestionProps(
       editor,
       suggestionId,

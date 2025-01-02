@@ -1,16 +1,18 @@
 'use client';
 
-/* eslint-disable prettier/prettier */
 import React from 'react';
 
 import { cn } from '@udecode/cn';
-import { BasicElementsPlugin } from "@udecode/plate-basic-elements/react";
-import { BasicMarksPlugin } from "@udecode/plate-basic-marks/react";
+import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
+import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
 import {
   type Decorate,
-  type TText, createSlatePlugin, isText
-} from "@udecode/plate-common";
-import { type TRenderLeafProps, Plate  } from "@udecode/plate-common/react";
+  type TRenderLeafProps,
+  type TText,
+  createSlatePlugin,
+  isText,
+} from '@udecode/plate-common';
+import { Plate } from '@udecode/plate-common/react';
 import Prism from 'prismjs';
 
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
@@ -19,48 +21,45 @@ import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 
 import 'prismjs/components/prism-markdown.js';
 
-/**
- * Decorate texts with markdown preview.
- */
-const decoratePreview: Decorate =
-  ({entry: [node, path]}) => {
-    const ranges: any[] = [];
+/** Decorate texts with markdown preview. */
+const decoratePreview: Decorate = ({ entry: [node, path] }) => {
+  const ranges: any[] = [];
 
-    if (!isText(node)) {
-      return ranges;
-    }
-
-    const getLength = (token: any) => {
-      if (typeof token === 'string') {
-        return token.length;
-      }
-      if (typeof token.content === 'string') {
-        return token.content.length;
-      }
-
-      return token.content.reduce((l: any, t: any) => l + getLength(t), 0);
-    };
-
-    const tokens = Prism.tokenize(node.text, Prism.languages.markdown);
-    let start = 0;
-
-    for (const token of tokens) {
-      const length = getLength(token);
-      const end = start + length;
-
-      if (typeof token !== 'string') {
-        ranges.push({
-          anchor: { offset: start, path },
-          focus: { offset: end, path },
-          [token.type]: true,
-        });
-      }
-
-      start = end;
-    }
-
+  if (!isText(node)) {
     return ranges;
+  }
+
+  const getLength = (token: any) => {
+    if (typeof token === 'string') {
+      return token.length;
+    }
+    if (typeof token.content === 'string') {
+      return token.content.length;
+    }
+
+    return token.content.reduce((l: any, t: any) => l + getLength(t), 0);
   };
+
+  const tokens = Prism.tokenize(node.text, Prism.languages.markdown);
+  let start = 0;
+
+  for (const token of tokens) {
+    const length = getLength(token);
+    const end = start + length;
+
+    if (typeof token !== 'string') {
+      ranges.push({
+        anchor: { offset: start, path },
+        focus: { offset: end, path },
+        [token.type]: true,
+      });
+    }
+
+    start = end;
+  }
+
+  return ranges;
+};
 
 function PreviewLeaf({
   attributes,
@@ -98,21 +97,24 @@ function PreviewLeaf({
   );
 }
 
-
 export default function PreviewMdDemo() {
   const editor = useCreateEditor({
-    plugins: [BasicElementsPlugin, BasicMarksPlugin, createSlatePlugin({
-      key: 'preview-markdown',
-      decorate: decoratePreview,
-    })],
+    plugins: [
+      BasicElementsPlugin,
+      BasicMarksPlugin,
+      createSlatePlugin({
+        key: 'preview-markdown',
+        decorate: decoratePreview,
+      }),
+    ],
     value: previewMdValue,
-  })
-  
+  });
+
   return (
-      <Plate editor={editor}>
-        <EditorContainer>
-          <Editor renderLeaf={PreviewLeaf} />
-        </EditorContainer>
-      </Plate>
+    <Plate editor={editor}>
+      <EditorContainer>
+        <Editor renderLeaf={PreviewLeaf} />
+      </EditorContainer>
+    </Plate>
   );
 }

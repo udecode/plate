@@ -5,7 +5,6 @@ import {
   getEndPoint,
   getStartPoint,
   select,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 
 import type { TTableCellElement, TTableElement, TableConfig } from '.';
@@ -66,7 +65,7 @@ export const withSetFragmentDataTable: ExtendEditor<TableConfig> = ({
       return;
     }
 
-    withoutNormalizing(editor, () => {
+    editor.tf.withoutNormalizing(() => {
       tableRows.forEach((row) => {
         const rowCells = row.children as TTableCellElement[];
 

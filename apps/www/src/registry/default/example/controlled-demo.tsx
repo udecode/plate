@@ -2,11 +2,8 @@
 
 import React from 'react';
 
-import {
-  Plate,
-  focusEditorEdge,
-  usePlateEditor,
-} from '@udecode/plate-common/react';
+import { focusEditorEdge } from '@udecode/plate-common';
+import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 
 import { Button } from '@/registry/default/plate-ui/button';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';

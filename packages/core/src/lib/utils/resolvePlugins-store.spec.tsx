@@ -191,7 +191,7 @@ describe('PlatePlugin useOptions', () => {
     const editor = createPlateEditor({ plugins: [p1] });
 
     const { getByTestId } = render(
-      <TestComponent editor={editor} plugin={p1} />
+      <TestComponent editor={editor} plugin={p1 as any} />
     );
 
     // Initial render
@@ -282,7 +282,7 @@ describe('PlatePlugin useOptions', () => {
       const editor = createPlateEditor({ plugins: [p1] });
 
       const { getByTestId } = render(
-        <TestComponent editor={editor} plugin={p1} />
+        <TestComponent editor={editor} plugin={p1 as any} />
       );
 
       expect(getByTestId('test-component')).toHaveTextContent('1');

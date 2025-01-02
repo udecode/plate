@@ -1,4 +1,3 @@
-import { collapseSelection } from '@udecode/plate-common';
 import { useEditorPlugin, useElement } from '@udecode/plate-common/react';
 
 import type { TTableElement } from '../../../lib';

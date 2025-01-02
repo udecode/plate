@@ -5,11 +5,12 @@ import { type ExtendEditor, createSlatePlugin } from '../plugin';
  * options, using `editor.isInline`, `editor.markableVoid` and `editor.isVoid`
  */
 export const withInlineVoid: ExtendEditor = ({ editor }) => {
-  const { isInline, isVoid, markableVoid } = editor;
+  const { isInline, isSelectable, isVoid, markableVoid } = editor;
 
   const voidTypes: string[] = [];
   const inlineTypes: string[] = [];
   const markableVoidTypes: string[] = [];
+  const nonSelectableTypes: string[] = [];
 
   editor.pluginList.forEach((plugin) => {
     if (plugin.node.isInline) {
@@ -20,6 +21,9 @@ export const withInlineVoid: ExtendEditor = ({ editor }) => {
     }
     if (plugin.node.isMarkableVoid) {
       markableVoidTypes.push(plugin.node.type);
+    }
+    if (plugin.node.isSelectable === false) {
+      nonSelectableTypes.push(plugin.node.type);
     }
   });
 
@@ -35,6 +39,12 @@ export const withInlineVoid: ExtendEditor = ({ editor }) => {
     return markableVoidTypes.includes(element.type)
       ? true
       : markableVoid(element);
+  };
+
+  editor.isSelectable = (element) => {
+    return nonSelectableTypes.includes(element.type)
+      ? false
+      : isSelectable(element);
   };
 
   return editor;

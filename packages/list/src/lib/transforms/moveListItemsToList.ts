@@ -6,7 +6,6 @@ import {
   findDescendant,
   getLastChildPath,
   moveChildren,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
@@ -57,7 +56,7 @@ export const moveListItemsToList = (
   let fromListPath: Path | undefined;
   let moved;
 
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     if (fromListItem) {
       const fromListItemSublist = findDescendant(editor, {
         at: fromListItem[1],

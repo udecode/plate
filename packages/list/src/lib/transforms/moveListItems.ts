@@ -4,7 +4,6 @@ import {
   createPathRef,
   getNodeEntries,
   getParentNode,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 import { type PathRef, Path } from 'slate';
 
@@ -64,7 +63,7 @@ export const moveListItems = (
     ? highestLicPathRefs
     : highestLicPathRefs.reverse();
 
-  return withoutNormalizing(editor, () => {
+  return editor.tf.withoutNormalizing(() => {
     let moved = false;
 
     licPathRefsToMove.forEach((licPathRef) => {

@@ -145,10 +145,6 @@ export const createTEditor = <V extends Value>({
     editor.selection = selection;
   }
 
-  // Editor
-  // deleteBackward
-  // deleteForward
-
   editor.api = {
     above: bindFirst(getAboveNode, editor) as any,
     after: bindFirst(getPointAfter, editor),

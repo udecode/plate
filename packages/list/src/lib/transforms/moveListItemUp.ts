@@ -7,7 +7,6 @@ import {
   insertElements,
   isLastChild,
   moveNodes,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
@@ -134,7 +133,7 @@ export const moveListItemUp = (
 
   let moved: boolean | undefined = false;
 
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     moved = move();
   });
 

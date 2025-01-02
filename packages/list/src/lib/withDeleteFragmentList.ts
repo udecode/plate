@@ -10,7 +10,6 @@ import {
   getParentNode,
   getStartPoint,
   removeNodes,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 
 import { type ListConfig, BaseListItemPlugin } from './BaseListPlugin';
@@ -36,7 +35,7 @@ export const withDeleteFragmentList: ExtendEditor<ListConfig> = ({
     const deleteFragmentList = () => {
       let deleted = false;
 
-      withoutNormalizing(editor, () => {
+      editor.tf.withoutNormalizing(() => {
         // Selection should be across list items
         if (!isAcrossListItems(editor)) return;
 

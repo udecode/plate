@@ -10,7 +10,6 @@ import {
   resetEditorChildren,
   setNodes,
   unsetNodes,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 import { Point } from 'slate';
 
@@ -65,7 +64,7 @@ export const BaseResetNodePlugin = createTSlatePlugin<ResetNodeConfig>({
             const { children, ...props } = editor.api.create.block({}, [0]);
 
             // replace props
-            withoutNormalizing(editor, () => {
+            editor.tf.withoutNormalizing(() => {
               // missing id will cause block selection not working and other issues
               const { id, ...nodeProps } = getNodeProps(node);
 

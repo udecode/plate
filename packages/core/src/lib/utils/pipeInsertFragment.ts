@@ -1,4 +1,4 @@
-import { type TDescendant, withoutNormalizing } from '@udecode/slate';
+import type { TDescendant } from '@udecode/slate';
 
 import type { SlateEditor } from '../editor';
 import type { ParserOptions } from '../plugin/BasePlugin';
@@ -12,7 +12,7 @@ export const pipeInsertFragment = (
   injectedPlugins: Partial<AnyEditorPlugin>[],
   { fragment, ...options }: ParserOptions & { fragment: TDescendant[] }
 ) => {
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     injectedPlugins.some((p) => {
       return (
         p.parser?.preInsert?.({

@@ -6,7 +6,6 @@ import {
   getStartPoint,
   insertNodes,
   select,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
@@ -27,7 +26,7 @@ export const insertTable = (
   const { api } = editor.getPlugin<TableConfig>({ key: 'table' });
   const type = editor.getType(BaseTablePlugin);
 
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     const newTable = api.create.table({
       colCount,
       header,

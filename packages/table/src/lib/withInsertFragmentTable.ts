@@ -7,7 +7,6 @@ import {
   hasNode,
   replaceNodeChildren,
   select,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 import cloneDeep from 'lodash/cloneDeep.js';
 
@@ -85,7 +84,7 @@ export const withInsertFragmentTable: ExtendEditor<TableConfig> = ({
         });
 
         if (cellEntry) {
-          withoutNormalizing(editor, () => {
+          editor.tf.withoutNormalizing(() => {
             const [, startCellPath] = cellEntry;
             const cellPath = [...startCellPath];
 

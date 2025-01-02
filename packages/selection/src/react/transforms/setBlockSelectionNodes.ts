@@ -6,7 +6,6 @@ import {
   type TNodeProps,
   type TText,
   setNodes,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
@@ -16,7 +15,7 @@ export const setBlockSelectionNodes = (
   props: Partial<TNodeProps<TElement>>,
   options?: SetNodesOptions
 ) => {
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     const blocks = editor
       .getApi(BlockSelectionPlugin)
       .blockSelection.getNodes();
@@ -37,7 +36,7 @@ export const setBlockSelectionIndent = (
 ) => {
   const api = editor.getApi(BlockSelectionPlugin);
 
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     const blocks = api.blockSelection.getNodes();
 
     blocks.forEach(([node, path]) => {

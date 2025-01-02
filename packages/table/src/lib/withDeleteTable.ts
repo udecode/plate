@@ -12,7 +12,6 @@ import {
   moveSelection,
   replaceNodeChildren,
   select,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 import { Point } from 'slate';
 
@@ -100,7 +99,7 @@ export const withDeleteTable: ExtendEditor<TableConfig> = ({
       const cellEntries = getTableGridAbove(editor, { format: 'cell' });
 
       if (cellEntries.length > 1) {
-        withoutNormalizing(editor, () => {
+        editor.tf.withoutNormalizing(() => {
           cellEntries.forEach(([, cellPath]) => {
             replaceNodeChildren<TElement>(editor, {
               at: cellPath,

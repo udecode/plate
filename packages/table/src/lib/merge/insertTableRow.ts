@@ -9,7 +9,6 @@ import {
   insertElements,
   select,
   setNodes,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 import cloneDeep from 'lodash/cloneDeep.js';
 import { Path } from 'slate';
@@ -171,7 +170,7 @@ export const insertTableMergeRow = (
     }
   });
 
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     insertElements(
       editor,
       {

@@ -3,7 +3,6 @@ import type { KeyboardHandler } from '@udecode/plate-common/react';
 import {
   type TElement,
   Hotkeys,
-  collapseSelection,
   getAboveNode,
   getNodeEntries,
   isExpanded,

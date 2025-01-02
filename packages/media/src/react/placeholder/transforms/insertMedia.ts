@@ -5,7 +5,6 @@ import {
   insertNodes,
   nanoid,
   withoutMergingHistory,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
@@ -99,7 +98,7 @@ export const insertMedia = (
         withHistoryMark(editor, insert);
       });
     } else {
-      withoutNormalizing(editor, insert);
+      editor.tf.withoutNormalizing(insert);
     }
   });
 };

@@ -9,7 +9,6 @@ import {
   isSelectionAtBlockEnd,
   isSelectionAtBlockStart,
   select,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 
 import { BaseCodeLinePlugin } from '../lib';
@@ -40,7 +39,7 @@ export const onKeyDownCodeBlock: KeyboardHandler = ({ editor, event }) => {
 
       if (!codeBlock) return;
 
-      withoutNormalizing(editor, () => {
+      editor.tf.withoutNormalizing(() => {
         for (const codeLine of codeLines) {
           if (isUntab) {
             outdentCodeLine(editor, { codeBlock, codeLine });

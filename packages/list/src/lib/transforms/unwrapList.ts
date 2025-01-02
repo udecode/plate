@@ -9,7 +9,6 @@ import {
   isElement,
   setElements,
   unwrapNodes,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 
 import {
@@ -44,7 +43,7 @@ export const unwrapList = (editor: SlateEditor, { at }: { at?: Path } = {}) => {
     return false;
   };
 
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     do {
       const licEntry = getBlockAbove(editor, {
         at,

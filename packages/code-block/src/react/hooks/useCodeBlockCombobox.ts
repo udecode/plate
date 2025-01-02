@@ -35,7 +35,10 @@ export const useCodeBlockCombobox = ({
   return {
     commandItemProps: {
       onSelect: (_value: string) => {
-        editor.tf.setNodes<TCodeBlockElement>({ lang: _value }, { at: element });
+        editor.tf.setNodes<TCodeBlockElement>(
+          { lang: _value },
+          { at: element }
+        );
         setValue(_value);
       },
     },

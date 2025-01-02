@@ -1,4 +1,9 @@
-import type { TElement, TText } from '@udecode/slate';
+import type {
+  TEditorApi,
+  TEditorTransforms,
+  TElement,
+  TText,
+} from '@udecode/slate';
 import type { AnyObject } from '@udecode/utils';
 import type { SetImmerState, StoreApi } from 'zustand-x';
 
@@ -187,6 +192,13 @@ export type BasePluginNode = {
   isMarkableVoid?: boolean;
 
   /**
+   * Whether the node is selectable.
+   *
+   * @default true
+   */
+  isSelectable?: boolean;
+
+  /**
    * Property used by `inlineVoid` core plugin to set elements of this `type` as
    * void.
    */
@@ -354,9 +366,9 @@ export type BasePluginContext<C extends AnyPluginConfig = PluginConfig> = {
     (options: Parameters<SetImmerState<InferOptions<C>>>[0]): void;
     (options: Partial<InferOptions<C>>): void;
   };
-  api: C['api'];
+  api: C['api'] & TEditorApi;
   getOptions: () => InferOptions<C>;
-  tf: C['transforms'];
+  tf: C['transforms'] & TEditorTransforms;
   type: string;
 };
 

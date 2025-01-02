@@ -5,7 +5,6 @@ import {
   type TNodeEntry,
   getNode,
   setElements,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 
 import type { GetSiblingIndentListOptions } from '../queries/getSiblingIndentList';
@@ -52,7 +51,7 @@ export const normalizeIndentListStart = <
   entry: ElementEntryOf<E>,
   options?: Partial<GetSiblingIndentListOptions<N, E>>
 ) => {
-  return withoutNormalizing(editor, () => {
+  return editor.tf.withoutNormalizing(() => {
     const [node] = entry;
     const listStyleType = (node as any)[BaseIndentListPlugin.key];
 

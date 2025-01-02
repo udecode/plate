@@ -8,7 +8,6 @@ import {
   hasNode,
   moveSelection,
   select,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 
 import { getTableGridAbove } from '../queries/getTableGridAbove';
@@ -103,12 +102,12 @@ export const moveSelectionFromCell = (
       const tablePath = cellPath.slice(0, -2);
 
       if (reverse) {
-        withoutNormalizing(editor, () => {
+        editor.tf.withoutNormalizing(() => {
           select(editor, getStartPoint(editor, tablePath)!);
           moveSelection(editor, { reverse: true });
         });
       } else {
-        withoutNormalizing(editor, () => {
+        editor.tf.withoutNormalizing(() => {
           select(editor, getEndPoint(editor, tablePath)!);
           moveSelection(editor);
         });

@@ -1,9 +1,9 @@
 import type { ExtendEditor, PlateEditor } from '@udecode/plate-common/react';
+import type { BaseOperation } from 'slate';
 
 import { withoutMergingHistory } from '@udecode/plate-common';
 import { serializeInlineMd } from '@udecode/plate-markdown';
 import debounce from 'lodash/debounce.js';
-import { type BaseOperation, Range } from 'slate';
 
 import type { CopilotPluginConfig } from './CopilotPlugin';
 
@@ -37,7 +37,6 @@ export const withCopilot: ExtendEditor<CopilotPluginConfig> = ({
   setOption,
 }) => {
   const { apply, insertText, redo, undo, writeHistory } = editor;
-  const { setSelection } = editor.tf;
 
   const debounceDelay = getOptions().debounceDelay;
 
@@ -128,23 +127,6 @@ export const withCopilot: ExtendEditor<CopilotPluginConfig> = ({
     }
 
     insertText(text);
-  };
-
-  let prevSelection: Range | null = null;
-
-  editor.tf.setSelection = (selection) => {
-    setSelection(selection);
-
-    if (
-      editor.selection &&
-      (!prevSelection || !Range.equals(prevSelection, editor.selection)) &&
-      getOptions().autoTriggerQuery!({ editor }) &&
-      editor.api.isFocused()
-    ) {
-      void api.copilot.triggerSuggestion();
-    }
-
-    prevSelection = editor.selection;
   };
 
   return editor;

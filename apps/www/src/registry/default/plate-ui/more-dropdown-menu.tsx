@@ -8,7 +8,6 @@ import {
   SubscriptPlugin,
   SuperscriptPlugin,
 } from '@udecode/plate-basic-marks/react';
-import { collapseSelection } from '@udecode/plate-common';
 import { useEditorRef } from '@udecode/plate-common/react';
 import { KbdPlugin } from '@udecode/plate-kbd/react';
 import {

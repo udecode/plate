@@ -1,7 +1,6 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from '@udecode/plate-common';
-
+import { createTEditor } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
@@ -13,16 +12,18 @@ jsxt;
 describe('insert code block', () => {
   describe('when selection is at start of block', () => {
     it('should turn line to code block', () => {
-      const input = (
-        <editor>
-          <hp>line 1</hp>
-          <hp>
-            <cursor />
-            line 2
-          </hp>
-          <hp>line 3</hp>
-        </editor>
-      ) as any as SlateEditor;
+      const input = createTEditor(
+        (
+          <editor>
+            <hp>line 1</hp>
+            <hp>
+              <cursor />
+              line 2
+            </hp>
+            <hp>line 3</hp>
+          </editor>
+        ) as any
+      );
 
       const output = (
         <editor>
@@ -35,7 +36,7 @@ describe('insert code block', () => {
           </hcodeblock>
           <hp>line 3</hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any;
 
       const editor = createPlateEditor({
         plugins: [CodeBlockPlugin],
@@ -51,16 +52,18 @@ describe('insert code block', () => {
 
   describe('when selection is not at start of block', () => {
     it('should split line at selection and turn latter line to code block', () => {
-      const input = (
-        <editor>
-          <hp>line 1</hp>
-          <hp>
-            before <cursor />
-            after
-          </hp>
-          <hp>line 3</hp>
-        </editor>
-      ) as any as SlateEditor;
+      const input = createTEditor(
+        (
+          <editor>
+            <hp>line 1</hp>
+            <hp>
+              before <cursor />
+              after
+            </hp>
+            <hp>line 3</hp>
+          </editor>
+        ) as any
+      );
 
       const output = (
         <editor>
@@ -74,7 +77,7 @@ describe('insert code block', () => {
           </hcodeblock>
           <hp>line 3</hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any;
 
       const editor = createPlateEditor({
         plugins: [CodeBlockPlugin],
@@ -90,18 +93,20 @@ describe('insert code block', () => {
 
   describe('when selection is expanded', () => {
     it('should do nothing', () => {
-      const input = (
-        <editor>
-          <hp>line 1</hp>
-          <hp>
-            before <anchor />
-            selection
-            <focus />
-            after
-          </hp>
-          <hp>line 3</hp>
-        </editor>
-      ) as any as SlateEditor;
+      const input = createTEditor(
+        (
+          <editor>
+            <hp>line 1</hp>
+            <hp>
+              before <anchor />
+              selection
+              <focus />
+              after
+            </hp>
+            <hp>line 3</hp>
+          </editor>
+        ) as any
+      );
 
       const output = (
         <editor>
@@ -114,7 +119,7 @@ describe('insert code block', () => {
           </hp>
           <hp>line 3</hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any;
 
       const editor = createPlateEditor({
         plugins: [CodeBlockPlugin],

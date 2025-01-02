@@ -15,7 +15,6 @@ import {
   nanoid,
   removeNodes,
   unhangCharacterRange,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 import { type Range, Point } from 'slate';
 
@@ -38,7 +37,7 @@ export const deleteSuggestion = (
     reverse?: boolean;
   } = {}
 ) => {
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     const { anchor: from, focus: to } = at;
 
     const suggestionId = findSuggestionId(editor, from) ?? nanoid();

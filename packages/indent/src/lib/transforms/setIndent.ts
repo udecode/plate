@@ -5,7 +5,6 @@ import {
   getNodeEntries,
   setElements,
   unsetNodes,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 
 import { BaseIndentPlugin } from '../BaseIndentPlugin';
@@ -47,7 +46,7 @@ export const setIndent = (
   });
   const nodes = Array.from(_nodes);
 
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     nodes.forEach(([node, path]) => {
       const blockIndent = (node[nodeKey!] as number) ?? 0;
       const newIndent = blockIndent + offset;

@@ -1,6 +1,10 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, getNode } from '@udecode/plate-common';
+import {
+  type SlateEditor,
+  createTEditor,
+  getNode,
+} from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
@@ -10,14 +14,16 @@ jsxt;
 
 describe('clean up code block', () => {
   it('should turn children of code block to code lines', () => {
-    const input = (
-      <editor>
-        <hcodeblock>
-          <hp>line 1</hp>
-          <hcodeline>line 2</hcodeline>
-        </hcodeblock>
-      </editor>
-    ) as any as SlateEditor;
+    const input = createTEditor(
+      (
+        <editor>
+          <hcodeblock>
+            <hp>line 1</hp>
+            <hcodeline>line 2</hcodeline>
+          </hcodeblock>
+        </editor>
+      ) as any
+    );
 
     const output = (
       <editor>

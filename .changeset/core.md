@@ -1,5 +1,5 @@
 ---
-'@udecode/plate-core': patch
+'@udecode/plate-core': minor
 ---
 
 - `useNodePath` is now memoized: it will re-render only when the actual path changes (`Path.equals`). This includes `usePath` and `path` element prop.
@@ -10,3 +10,6 @@ const rowSize = useElementSelector(([node]) => node.size, [], {
   key: TableRowPlugin.key,
 });
 ```
+
+- New plugin attribute: `SlatePlugin.node.isSelectable`. Set it as false to prevent the node from being selected.
+- Plugin context `tf` and `api` now have `TEditor` methods.

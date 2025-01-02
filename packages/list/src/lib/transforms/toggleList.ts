@@ -10,7 +10,6 @@ import {
   isElement,
   isRangeAcrossBlocks,
   setElements,
-  withoutNormalizing,
   wrapNodes,
 } from '@udecode/plate-common';
 import { Range } from 'slate';
@@ -26,7 +25,7 @@ import { getListItemEntry, getListTypes } from '../queries/index';
 import { unwrapList } from './unwrapList';
 
 export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     if (!editor.selection) {
       return;
     }

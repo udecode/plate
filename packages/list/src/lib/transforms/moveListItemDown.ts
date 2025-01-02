@@ -5,7 +5,6 @@ import {
   getNodeEntry,
   match,
   moveNodes,
-  withoutNormalizing,
   wrapNodes,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
@@ -50,7 +49,7 @@ export const moveListItemDown = (
       sublist ? [1, sublist.children.length] : [1]
     );
 
-    withoutNormalizing(editor, () => {
+    editor.tf.withoutNormalizing(() => {
       if (!sublist) {
         // Create new sublist
         wrapNodes<TElement>(

@@ -5,7 +5,6 @@ import {
   isElement,
   splitNodes,
   unwrapNodes,
-  withoutNormalizing,
 } from '@udecode/plate-common';
 
 import { BaseLinkPlugin } from '../BaseLinkPlugin';
@@ -17,7 +16,7 @@ export const unwrapLink = (
     split?: boolean;
   } & UnwrapNodesOptions
 ) => {
-  return withoutNormalizing(editor, () => {
+  return editor.tf.withoutNormalizing(() => {
     if (options?.split) {
       const linkAboveAnchor = getAboveNode(editor, {
         at: editor.selection?.anchor,
