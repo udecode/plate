@@ -4,10 +4,8 @@ import {
   type TNodeProps,
   addRangeMarks,
   getAt,
-  getNodeEntries,
-  isInline,
+  isElement,
   nanoid,
-  setNodes,
 } from '@udecode/plate-common';
 
 import type { TSuggestionText } from '../types';
@@ -25,8 +23,8 @@ export const setSuggestionNodes = (
   const { suggestionId = nanoid() } = options ?? {};
 
   // TODO: get all inline nodes to be set
-  const _nodeEntries = getNodeEntries(editor, {
-    match: (n) => isInline(editor, n),
+  const _nodeEntries = editor.api.nodes({
+    match: (n) => isElement(n) && editor.api.isInline(n),
     ...options,
   });
   const nodeEntries = [..._nodeEntries];
@@ -43,13 +41,9 @@ export const setSuggestionNodes = (
     });
 
     nodeEntries.forEach(([, path]) => {
-      setNodes<TSuggestionText>(editor, props, {
+      editor.tf.setNodes<TSuggestionText>(props, {
         at: path,
-        match: (n) => {
-          if (!isInline(editor, n)) return false;
-
-          return true;
-        },
+        match: (n) => isElement(n) && editor.api.isInline(n),
         ...options,
       });
     });

@@ -189,7 +189,6 @@ export const docsApi: SidebarNavItem[] = [
       'deleteForward',
       'deleteFragment',
       'deleteMerge',
-      'getAboveNode',
       'getEdgePoints',
       'getEditorString',
       'getEndPoint',

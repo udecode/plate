@@ -19,7 +19,7 @@ export const withNodeId: ExtendEditor<NodeIdConfig> = ({
   editor,
   getOptions,
 }) => {
-  const { apply, insertNode, insertNodes } = editor;
+  const { apply, insertNode } = editor;
 
   const idPropsCreator = () => ({
     [getOptions().idKey ?? '']: getOptions().idCreator!(),
@@ -66,7 +66,7 @@ export const withNodeId: ExtendEditor<NodeIdConfig> = ({
 
     const { disableInsertOverrides, idKey = '' } = getOptions();
 
-    insertNodes(
+    editor.tf.insertNodes(
       nodes.map((node) => {
         if (!disableInsertOverrides && node[idKey]) {
           node._id = node[idKey];

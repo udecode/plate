@@ -1,4 +1,4 @@
-import { type SlateEditor, insertNodes } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import { BaseCodeBlockPlugin, BaseCodeLinePlugin } from './BaseCodeBlockPlugin';
 
@@ -30,7 +30,7 @@ export function insertDataCodeBlock(editor: SlateEditor) {
           type: codeBlockType,
         };
 
-        insertNodes(editor, node, {
+        editor.tf.insertNodes(node, {
           select: true,
         });
 

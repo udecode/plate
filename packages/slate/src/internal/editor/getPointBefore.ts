@@ -1,16 +1,10 @@
-import type { Modify } from '@udecode/utils';
+import { before } from 'slate';
 
-import { type EditorBeforeOptions, before } from 'slate';
-
-import type { At, QueryTextUnit, QueryVoids } from '../../types';
 import type { TEditor } from '../../interfaces/editor/TEditor';
+import type { GetPointBeforeOptions } from '../../interfaces/editor/editor-types';
+import type { At } from '../../types';
 
 import { getAt } from '../../utils';
-
-export type GetPointBeforeOptions = Modify<
-  EditorBeforeOptions,
-  QueryTextUnit & QueryVoids
->;
 
 export const getPointBefore = (
   editor: TEditor,

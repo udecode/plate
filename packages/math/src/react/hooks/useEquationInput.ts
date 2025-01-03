@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 
-import { isHotkey, setNodes } from '@udecode/plate-common';
+import { isHotkey } from '@udecode/plate-common';
 import {
   selectSiblingNodePoint,
   useEditorRef,
@@ -45,8 +45,7 @@ export const useEquationInput = ({
   }, [open]);
 
   useEffect(() => {
-    setNodes(
-      editor,
+    editor.tf.setNodes(
       {
         texExpression: expressionInput || '',
       },
@@ -61,8 +60,7 @@ export const useEquationInput = ({
 
   const onDismiss = () => {
     if (isInline) {
-      setNodes(
-        editor,
+      editor.tf.setNodes(
         {
           texExpression: initialExpressionRef.current,
         },

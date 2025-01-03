@@ -181,20 +181,7 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       ((...args: any[]) => any) | Record<string, (...args: any[]) => any>
     > = Record<string, never>,
   >(
-    extension: (ctx: SlatePluginContext<C>) => Deep2Partial<TEditorApi> &
-      EA & {
-        [K in keyof InferApi<C>]?: InferApi<C>[K] extends (
-          ...args: any[]
-        ) => any
-          ? (...args: Parameters<InferApi<C>[K]>) => ReturnType<InferApi<C>[K]>
-          : InferApi<C>[K] extends Record<string, (...args: any[]) => any>
-            ? {
-                [N in keyof InferApi<C>[K]]?: (
-                  ...args: Parameters<InferApi<C>[K][N]>
-                ) => ReturnType<InferApi<C>[K][N]>;
-              }
-            : never;
-      }
+    extension: ExtendEditorApi<C, EA>
   ) => SlatePlugin<
     PluginConfig<
       C['key'],
@@ -218,25 +205,7 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       ((...args: any[]) => any) | Record<string, (...args: any[]) => any>
     > = Record<string, never>,
   >(
-    extension: (ctx: SlatePluginContext<C>) => Deep2Partial<TEditorTransforms> &
-      ET & {
-        [K in keyof InferTransforms<C>]?: InferTransforms<C>[K] extends (
-          ...args: any[]
-        ) => any
-          ? (
-              ...args: Parameters<InferTransforms<C>[K]>
-            ) => ReturnType<InferTransforms<C>[K]>
-          : InferTransforms<C>[K] extends Record<
-                string,
-                (...args: any[]) => any
-              >
-            ? {
-                [N in keyof InferTransforms<C>[K]]?: (
-                  ...args: Parameters<InferTransforms<C>[K][N]>
-                ) => ReturnType<InferTransforms<C>[K][N]>;
-              }
-            : never;
-      }
+    extension: ExtendEditorTransforms<C, ET>
   ) => SlatePlugin<
     PluginConfig<
       C['key'],
@@ -339,6 +308,42 @@ export type SlatePluginConfig<
 >;
 
 // -----------------------------------------------------------------------------
+
+export type ExtendEditorApi<
+  C extends AnyPluginConfig = PluginConfig,
+  EA = {},
+> = (ctx: SlatePluginContext<C>) => EA &
+  Deep2Partial<TEditorApi> & {
+    [K in keyof InferApi<C>]?: InferApi<C>[K] extends (...args: any[]) => any
+      ? (...args: Parameters<InferApi<C>[K]>) => ReturnType<InferApi<C>[K]>
+      : InferApi<C>[K] extends Record<string, (...args: any[]) => any>
+        ? {
+            [N in keyof InferApi<C>[K]]?: (
+              ...args: Parameters<InferApi<C>[K][N]>
+            ) => ReturnType<InferApi<C>[K][N]>;
+          }
+        : never;
+  };
+
+export type ExtendEditorTransforms<
+  C extends AnyPluginConfig = PluginConfig,
+  EA = {},
+> = (ctx: SlatePluginContext<C>) => EA &
+  Deep2Partial<TEditorTransforms> & {
+    [K in keyof InferTransforms<C>]?: InferTransforms<C>[K] extends (
+      ...args: any[]
+    ) => any
+      ? (
+          ...args: Parameters<InferTransforms<C>[K]>
+        ) => ReturnType<InferTransforms<C>[K]>
+      : InferTransforms<C>[K] extends Record<string, (...args: any[]) => any>
+        ? {
+            [N in keyof InferTransforms<C>[K]]?: (
+              ...args: Parameters<InferTransforms<C>[K][N]>
+            ) => ReturnType<InferTransforms<C>[K][N]>;
+          }
+        : never;
+  };
 
 export type AnySlatePlugin = SlatePlugin<AnyPluginConfig>;
 

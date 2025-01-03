@@ -1,10 +1,5 @@
-import type {
-  AncestorOf,
-  GetAboveNodeOptions,
-  TEditor,
-  TNodeEntry,
-  ValueOf,
-} from '../interfaces';
+import type { AncestorOf, TEditor, TNodeEntry, ValueOf } from '../interfaces';
+import type { GetAboveNodeOptions } from '../interfaces/editor/editor-types';
 
 import { getBlockAbove } from './getBlockAbove';
 

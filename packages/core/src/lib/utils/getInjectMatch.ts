@@ -1,6 +1,6 @@
 import type { Path } from 'slate';
 
-import { type TNode, getAboveNode, isBlock, isElement } from '@udecode/slate';
+import { type TNode, isElement } from '@udecode/slate';
 
 import type { SlateEditor } from '../editor';
 import type { EditorPlugin } from '../plugin';
@@ -27,7 +27,7 @@ export const getInjectMatch = <E extends SlateEditor>(
     const element = isElement(node) ? node : undefined;
 
     if (_isElement && element) return false;
-    if (_isBlock && (!element || !isBlock(editor, element))) return false;
+    if (_isBlock && (!element || !editor.api.isBlock(element))) return false;
     if (isLeaf && element) return false;
     if (element?.type) {
       // Exclude plugins
@@ -49,7 +49,7 @@ export const getInjectMatch = <E extends SlateEditor>(
       }
       if (excludeBelowPlugins) {
         const excludeTypes = getKeysByTypes(editor, excludeBelowPlugins);
-        const isBelow = getAboveNode(editor, {
+        const isBelow = editor.api.above({
           at: path,
           match: (n) => isElement(n) && excludeTypes.includes(n.type),
         });

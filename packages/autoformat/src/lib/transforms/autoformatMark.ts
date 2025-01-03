@@ -1,12 +1,6 @@
 import type { Point, Range } from 'slate';
 
-import {
-  type TEditor,
-  deleteText,
-  getEditorString,
-  removeMark,
-  select,
-} from '@udecode/plate-common';
+import { type TEditor, removeMark } from '@udecode/plate-common';
 import castArray from 'lodash/castArray.js';
 
 import type { AutoformatMarkRule } from '../types';
@@ -48,13 +42,13 @@ export const autoformatMark = (
     } as Range;
 
     if (!ignoreTrim) {
-      const matchText = getEditorString(editor, matchRange);
+      const matchText = editor.api.string(matchRange);
 
       if (matchText.trim() !== matchText) continue;
     }
     // delete end match
     if (end) {
-      deleteText(editor, {
+      editor.tf.delete({
         at: {
           anchor: beforeEndMatchPoint,
           focus: selection.anchor,
@@ -65,14 +59,14 @@ export const autoformatMark = (
     const marks = castArray(type);
 
     // add mark to the text between the matches
-    select(editor, matchRange as Range);
+    editor.tf.select(matchRange as Range);
     marks.forEach((mark) => {
       editor.addMark(mark, true);
     });
     editor.tf.collapse({ edge: 'end' });
     removeMark(editor, { key: marks as any, shouldChange: false });
 
-    deleteText(editor, {
+    editor.tf.delete({
       at: {
         anchor: beforeStartMatchPoint as Point,
         focus: afterStartMatchPoint as Point,

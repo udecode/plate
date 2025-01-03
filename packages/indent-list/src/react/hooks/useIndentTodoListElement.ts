@@ -1,4 +1,5 @@
-import { type TElement, setNodes } from '@udecode/plate-common';
+import type { TElement } from '@udecode/plate-common';
+
 import { useEditorRef } from '@udecode/plate-common/react';
 import { useReadOnly } from 'slate-react';
 
@@ -34,7 +35,7 @@ export const useIndentTodoListElement = (
 
         if (!path) return;
 
-        setNodes(editor, { checked: value }, { at: path });
+        editor.tf.setNodes({ checked: value }, { at: path });
       },
       onMouseDown: (e: any) => {
         e.preventDefault();

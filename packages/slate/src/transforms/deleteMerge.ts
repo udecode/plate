@@ -5,7 +5,6 @@ import type { TNodeEntry } from '../interfaces/node/TNodeEntry';
 
 import { createPathRef } from '../internal/editor/createPathRef';
 import { createPointRef } from '../internal/editor/createPointRef';
-import { getAboveNode } from '../internal/editor/getAboveNode';
 import { getEndPoint } from '../internal/editor/getEndPoint';
 import { getLeafNode } from '../internal/editor/getLeafNode';
 import { getNodeEntries } from '../internal/editor/getNodeEntries';
@@ -16,8 +15,6 @@ import { getVoidNode } from '../internal/editor/getVoidNode';
 import { isBlock } from '../internal/editor/isBlock';
 import { isVoid } from '../internal/editor/isVoid';
 import { withoutNormalizing } from '../internal/editor/withoutNormalizing';
-import { mergeNodes } from '../internal/transforms/mergeNodes';
-import { removeNodes } from '../internal/transforms/removeNodes';
 import { select } from '../internal/transforms/select';
 
 export const deleteMerge = (
@@ -65,7 +62,7 @@ export const deleteMerge = (
       }
     }
     if (Path.isPath(at)) {
-      removeNodes(editor, { at, voids });
+      editor.tf.removeNodes({ at, voids });
 
       return;
     }
@@ -77,12 +74,12 @@ export const deleteMerge = (
     }
 
     let [start, end] = Range.edges(at);
-    const startBlock = getAboveNode(editor, {
+    const startBlock = editor.api.above({
       at: start,
       match: (n) => isBlock(editor as any, n),
       voids,
     });
-    const endBlock = getAboveNode(editor, {
+    const endBlock = editor.api.above({
       at: end,
       match: (n) => isBlock(editor as any, n),
       voids,
@@ -152,7 +149,7 @@ export const deleteMerge = (
 
     for (const pathRef of pathRefs) {
       const path = pathRef.unref()!;
-      removeNodes(editor, { at: path, voids });
+      editor.tf.removeNodes({ at: path, voids });
     }
 
     if (!endVoid) {
@@ -165,7 +162,7 @@ export const deleteMerge = (
     }
     if (!isSingleText && isAcrossBlocks && endRef.current && startRef.current) {
       // DIFF: allow custom mergeNodes
-      mergeNodes(editor as any, {
+      editor.tf.mergeNodes({
         at: endRef.current,
         hanging: true,
         voids,

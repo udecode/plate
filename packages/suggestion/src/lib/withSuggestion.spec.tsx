@@ -1,6 +1,7 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, normalizeEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
+
 import { createSlateEditor } from '@udecode/plate-common';
 import { jsxt } from '@udecode/plate-test-utils';
 
@@ -334,7 +335,7 @@ describe('withSuggestion', () => {
           value: input.children,
         });
 
-        normalizeEditor(editor, {
+        editor.tf.normalize({
           force: true,
         });
 

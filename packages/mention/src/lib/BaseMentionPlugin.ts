@@ -2,11 +2,7 @@ import {
   type TriggerComboboxPluginOptions,
   withTriggerCombobox,
 } from '@udecode/plate-combobox';
-import {
-  type PluginConfig,
-  createSlatePlugin,
-  insertNodes,
-} from '@udecode/plate-common';
+import { type PluginConfig, createSlatePlugin } from '@udecode/plate-common';
 
 import type { TMentionElement } from './types';
 
@@ -46,7 +42,7 @@ export const BaseMentionPlugin = createSlatePlugin({
 }).extendEditorTransforms<MentionConfig['transforms']>(({ editor, type }) => ({
   insert: {
     mention: ({ key, value }) => {
-      insertNodes<TMentionElement>(editor, {
+      editor.tf.insertNodes<TMentionElement>({
         key,
         children: [{ text: '' }],
         type,

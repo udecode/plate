@@ -2,7 +2,6 @@ import type { TEditor } from '../interfaces/editor/TEditor';
 import type { NodeOf, TNode } from '../interfaces/node/TNode';
 import type { TPath } from '../types/interfaces';
 
-import { isBlock } from '../interfaces/editor/isBlock';
 import { getAt } from './getAt';
 
 export type PredicateObj = Record<string, any[] | any>;
@@ -57,7 +56,7 @@ export const getQueryOptions = <E extends TEditor>(
     match:
       _match || block
         ? (n: NodeOf<E>, path: TPath) =>
-            match(n, path, _match) && (!block || isBlock(editor, n))
+            match(n, path, _match) && (!block || editor.api.isBlock(n))
         : undefined,
   };
 };

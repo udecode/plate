@@ -1,5 +1,4 @@
 import { type SlateEditor, isHotkey } from '@udecode/plate-core';
-import { moveSelection } from '@udecode/slate';
 import { Range } from 'slate';
 
 export interface MoveSelectionByOffsetOptions {
@@ -22,13 +21,13 @@ export const moveSelectionByOffset = (
   }
   if (isHotkey('left', event)) {
     event.preventDefault();
-    moveSelection(editor, { reverse: true, unit: 'offset' });
+    editor.tf.move({ reverse: true, unit: 'offset' });
 
     return true;
   }
   if (isHotkey('right', event)) {
     event.preventDefault();
-    moveSelection(editor, { unit: 'offset' });
+    editor.tf.move({ unit: 'offset' });
 
     return true;
   }

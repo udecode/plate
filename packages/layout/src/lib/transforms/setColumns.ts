@@ -1,14 +1,6 @@
 import type { Path } from 'slate';
 
-import {
-  type SlateEditor,
-  getNode,
-  getNodeEntry,
-  insertNodes,
-  moveChildren,
-  removeNodes,
-  setNodes,
-} from '@udecode/plate-common';
+import { type SlateEditor, getNode, moveChildren } from '@udecode/plate-common';
 
 import type { TColumnElement, TColumnGroupElement } from '../types';
 
@@ -50,7 +42,7 @@ export const setColumns = (
     if (currentCount === targetCount) {
       // Same number of columns: just set widths directly
       widths.forEach((width, i) => {
-        setNodes<TColumnElement>(editor, { width }, { at: at.concat([i]) });
+        editor.tf.setNodes<TColumnElement>({ width }, { at: at.concat([i]) });
       });
 
       return;
@@ -69,11 +61,11 @@ export const setColumns = (
           width: widths![currentCount + i] || `${100 / targetCount}%`,
         }));
 
-      insertNodes(editor, newColumns, { at: insertPath });
+      editor.tf.insertNodes(newColumns, { at: insertPath });
 
       // Just ensure final widths match exactly
       widths.forEach((width, i) => {
-        setNodes<TColumnElement>(editor, { width }, { at: at.concat([i]) });
+        editor.tf.setNodes<TColumnElement>({ width }, { at: at.concat([i]) });
       });
 
       return;
@@ -91,7 +83,7 @@ export const setColumns = (
       // Move content from columns beyond keepIndex into keepIndex column
       for (let i = currentCount - 1; i > keepColumnIndex; i--) {
         const columnPath = at.concat([i]);
-        const columnEntry = getNodeEntry<TColumnElement>(editor, columnPath);
+        const columnEntry = editor.api.node<TColumnElement>(columnPath);
 
         if (!columnEntry) continue;
 
@@ -104,12 +96,12 @@ export const setColumns = (
       // Remove the now-empty extra columns
       // Removing from the end to avoid path shifts
       for (let i = currentCount - 1; i > keepColumnIndex; i--) {
-        removeNodes(editor, { at: at.concat([i]) });
+        editor.tf.removeNodes({ at: at.concat([i]) });
       }
 
       // Set the final widths
       widths.forEach((width, i) => {
-        setNodes<TColumnElement>(editor, { width }, { at: at.concat([i]) });
+        editor.tf.setNodes<TColumnElement>({ width }, { at: at.concat([i]) });
       });
     }
   });

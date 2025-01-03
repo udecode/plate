@@ -1,10 +1,4 @@
-import {
-  type SlateEditor,
-  getEditorPlugin,
-  getStartPoint,
-  insertNodes,
-  isElementEmpty,
-} from '@udecode/plate-common';
+import { type SlateEditor, getEditorPlugin } from '@udecode/plate-common';
 import { Path } from 'slate';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
@@ -19,12 +13,12 @@ export const pasteSelectedBlocks = (editor: SlateEditor, e: ClipboardEvent) => {
     const entry = entries.at(-1)!;
     const [node, path] = entry;
 
-    editor.tf.focus(getStartPoint(editor, path));
+    editor.tf.focus(editor.api.start(path));
 
-    if (!isElementEmpty(editor, node as any)) {
+    if (!editor.api.isEmpty(node as any)) {
       const at = Path.next(path);
 
-      insertNodes(editor, editor.api.create.block({}, at), {
+      editor.tf.insertNodes(editor.api.create.block({}, at), {
         at,
         select: true,
       });

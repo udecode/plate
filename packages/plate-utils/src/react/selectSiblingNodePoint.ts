@@ -1,6 +1,6 @@
+import type { TEditor, TNode } from '@udecode/slate';
 import type { Path } from 'slate';
 
-import { type TEditor, type TNode, setSelection } from '@udecode/slate';
 import { getNextNodeStartPoint, getPreviousNodeEndPoint } from '@udecode/slate';
 
 export const selectSiblingNodePoint = (
@@ -28,7 +28,7 @@ export const selectSiblingNodePoint = (
 
   if (!point) return;
 
-  setSelection(editor, {
+  editor.tf.setSelection({
     anchor: point,
     focus: point,
   });

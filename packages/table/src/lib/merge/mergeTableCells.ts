@@ -3,11 +3,7 @@ import {
   type TDescendant,
   type TNodeEntry,
   getEditorPlugin,
-  getEndPoint,
   insertElements,
-  isElementEmpty,
-  removeNodes,
-  select,
 } from '@udecode/plate-common';
 import cloneDeep from 'lodash/cloneDeep.js';
 
@@ -61,7 +57,7 @@ export const mergeTableCells = (editor: SlateEditor) => {
 
       if (
         cellChildren.length !== 1 ||
-        !isElementEmpty(editor, cellChildren[0] as any)
+        !editor.api.isEmpty(cellChildren[0] as any)
       ) {
         mergingCellChildren.push(...cloneDeep(cellChildren));
       }
@@ -85,7 +81,7 @@ export const mergeTableCells = (editor: SlateEditor) => {
     // once cell removed, next cell in the row will settle down on that path
     Object.values(cols).forEach((paths) => {
       paths?.forEach(() => {
-        removeNodes(editor, { at: paths[0] });
+        editor.tf.removeNodes({ at: paths[0] });
       });
     });
 
@@ -105,5 +101,5 @@ export const mergeTableCells = (editor: SlateEditor) => {
     insertElements(editor, mergedCell, { at: cellEntries[0][1] });
   });
 
-  select(editor, getEndPoint(editor, cellEntries[0][1])!);
+  editor.tf.select(editor.api.end(cellEntries[0][1])!);
 };

@@ -7,13 +7,7 @@ import {
 } from 'slate';
 
 import type { TEditor } from '../../interfaces/editor/TEditor';
-
-export type UnhangRangeOptions = {
-  /** @default true */
-  unhang?: boolean;
-  /** Allow placing the end of the selection in a void node */
-  voids?: boolean;
-};
+import type { UnhangRangeOptions } from '../../interfaces/editor/editor-types';
 
 export const unhangRange = <
   E extends TEditor,

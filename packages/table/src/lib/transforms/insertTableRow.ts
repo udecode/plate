@@ -7,7 +7,6 @@ import {
   getLastChildPath,
   getNode,
   insertElements,
-  select,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
@@ -116,6 +115,6 @@ export const insertTableRow = (
         : nextCellPath.at(-2)! + 1;
     }
 
-    select(editor, nextCellPath);
+    editor.tf.select(nextCellPath);
   }
 };

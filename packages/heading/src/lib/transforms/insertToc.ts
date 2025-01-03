@@ -1,8 +1,7 @@
-import {
-  type InsertNodesOptions,
-  type SlateEditor,
-  type TElement,
-  insertNodes,
+import type {
+  InsertNodesOptions,
+  SlateEditor,
+  TElement,
 } from '@udecode/plate-common';
 
 import { BaseTocPlugin } from '../BaseTocPlugin';
@@ -11,8 +10,7 @@ export const insertToc = (
   editor: SlateEditor,
   options?: InsertNodesOptions
 ) => {
-  insertNodes<TElement>(
-    editor,
+  editor.tf.insertNodes<TElement>(
     {
       children: [{ text: '' }],
       type: editor.getType(BaseTocPlugin),

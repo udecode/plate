@@ -1,9 +1,5 @@
-import {
-  type SlateEditor,
-  getEndPoint,
-  getStartPoint,
-  select,
-} from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
+
 import copyToClipboard from 'copy-to-clipboard';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
@@ -27,9 +23,9 @@ export const copySelectedBlocks = (editor: SlateEditor) => {
       editor.tf.withoutNormalizing(() => {
         selectedEntries.forEach(([, path]) => {
           // select block by block
-          select(editor, {
-            anchor: getStartPoint(editor, path)!,
-            focus: getEndPoint(editor, path)!,
+          editor.tf.select({
+            anchor: editor.api.start(path)!,
+            focus: editor.api.end(path)!,
           });
 
           // set data from selection

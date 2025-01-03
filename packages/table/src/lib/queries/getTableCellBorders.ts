@@ -1,4 +1,4 @@
-import { type SlateEditor, getParentNode } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import type {
   BorderDirection,
@@ -32,8 +32,8 @@ export const getTableCellBorders = (
   }
 ): BorderStylesDefault => {
   const cellPath = editor.api.findPath(element)!;
-  const [rowNode, rowPath] = getParentNode<TTableRowElement>(editor, cellPath)!;
-  const [tableNode] = getParentNode<TTableElement>(editor, rowPath)!;
+  const [rowNode, rowPath] = editor.api.parent<TTableRowElement>(cellPath)!;
+  const [tableNode] = editor.api.parent<TTableElement>(rowPath)!;
 
   const { col } = cellIndices ?? getCellIndices(editor, element);
   const isFirstCell = col === 0;

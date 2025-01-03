@@ -1,12 +1,10 @@
 import type { Path } from 'slate';
 
+import type { ElementOrTextOf, TEditor, ValueOf } from '../interfaces';
 import type {
-  ElementOrTextOf,
   InsertNodesOptions,
   RemoveNodesOptions,
-  TEditor,
-  ValueOf,
-} from '../interfaces';
+} from '../interfaces/editor/editor-types';
 
 import { removeNodeChildren } from './removeNodeChildren';
 

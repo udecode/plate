@@ -4,7 +4,7 @@ import React, { useCallback, useState } from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { insertNodes, isUrl } from '@udecode/plate-common';
+import { isUrl } from '@udecode/plate-common';
 import { useEditorRef } from '@udecode/plate-common/react';
 import {
   AudioPlugin,
@@ -178,7 +178,7 @@ function MediaUrlDialogContent({
     if (!isUrl(url)) return toast.error('Invalid URL');
 
     setOpen(false);
-    insertNodes(editor, {
+    editor.tf.insertNodes({
       children: [{ text: '' }],
       name: nodeType === FilePlugin.key ? url.split('/').pop() : undefined,
       type: nodeType,

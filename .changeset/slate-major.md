@@ -15,8 +15,10 @@
   - `editor.hasRange`,
   - `editor.hasTarget`,
 - Remove `setNode` in favor of `setNodes`. `at` option can now be a `TNode` so you don't need to use `at: editor.findPath(node)`.
-- `getEndPoint`, `getEdgePoints`, `getFirstNode`, `getFragment`, `getLastNode`, `getLeafNode`, `getPath`, `getPoint`, `getStartPoint` can return `undefined` if not found
+- Remove `setElements` in favor of `setNodes`.
 
 Types:
 
 - Query and transform options now use generic `V extends Value` instead of `E extends TEditor`.
+- `getEndPoint`, `getEdgePoints`, `getFirstNode`, `getFragment`, `getLastNode`, `getLeafNode`, `getPath`, `getPoint`, `getStartPoint` can return `undefined` if not found
+- Replace `NodeOf` type with `DescendantOf` in `editor.tf.setNodes` `editor.tf.unsetNodes`, `editor.api.previous`, `editor.api.node`, `editor.api.nodes`, `editor.api.last`

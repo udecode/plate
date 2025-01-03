@@ -1,9 +1,6 @@
-import {
-  type RemoveNodesOptions,
-  type TEditor,
-  type ValueOf,
-  isText,
-} from '../interfaces';
+import type { RemoveNodesOptions } from '../interfaces/editor/editor-types';
+
+import { type TEditor, type ValueOf, isText } from '../interfaces';
 import { getQueryOptions } from '../utils';
 
 /** Remove non-empty editor text nodes */

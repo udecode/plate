@@ -1,11 +1,8 @@
 import {
   type SlateEditor,
   type TElement,
-  getAboveNode,
   getEditorPlugin,
   isExpanded,
-  removeNodes,
-  setNodes,
 } from '@udecode/plate-common';
 
 import type { TTableElement } from '../types';
@@ -21,7 +18,7 @@ export const deleteColumn = (editor: SlateEditor) => {
   });
   const { disableMerge } = getOptions();
 
-  const tableEntry = getAboveNode<TTableElement>(editor, {
+  const tableEntry = editor.api.above<TTableElement>({
     match: { type },
   });
 
@@ -36,10 +33,10 @@ export const deleteColumn = (editor: SlateEditor) => {
     if (isExpanded(editor.selection))
       return deleteColumnWhenExpanded(editor, tableEntry);
 
-    const tdEntry = getAboveNode(editor, {
+    const tdEntry = editor.api.above({
       match: { type: getCellTypes(editor) },
     });
-    const trEntry = getAboveNode(editor, {
+    const trEntry = editor.api.above({
       match: { type: editor.getType(BaseTableRowPlugin) },
     });
 
@@ -70,7 +67,7 @@ export const deleteColumn = (editor: SlateEditor) => {
         )
           return;
 
-        removeNodes(editor, { at: pathToDelete });
+        editor.tf.removeNodes({ at: pathToDelete });
       });
 
       const { colSizes } = tableNode;
@@ -79,8 +76,7 @@ export const deleteColumn = (editor: SlateEditor) => {
         const newColSizes = [...colSizes];
         newColSizes.splice(colIndex, 1);
 
-        setNodes<TTableElement>(
-          editor,
+        editor.tf.setNodes<TTableElement>(
           { colSizes: newColSizes },
           { at: tablePath }
         );

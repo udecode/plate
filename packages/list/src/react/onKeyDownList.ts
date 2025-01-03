@@ -1,12 +1,6 @@
 import type { KeyboardHandler } from '@udecode/plate-common/react';
 
-import {
-  Hotkeys,
-  isCollapsed,
-  select,
-  someNode,
-  unhangRange,
-} from '@udecode/plate-common';
+import { Hotkeys, isCollapsed, someNode } from '@udecode/plate-common';
 import { Range } from 'slate';
 
 import { type ListConfig, BaseListItemPlugin } from '../lib';
@@ -35,11 +29,13 @@ export const onKeyDownList: KeyboardHandler<ListConfig> = ({
 
       // This is a workaround for a Slate bug
       // See: https://github.com/ianstormtaylor/slate/pull/5039
-      const unHungRange = unhangRange(editor, { anchor, focus });
+      const unhangRange = editor.api.unhangRange({ anchor, focus }) as
+        | Range
+        | undefined;
 
-      if (unHungRange) {
-        workRange = unHungRange;
-        select(editor, unHungRange);
+      if (unhangRange) {
+        workRange = unhangRange;
+        editor.tf.select(unhangRange);
       }
     }
 

@@ -9,6 +9,45 @@ import type {
 } from 'slate';
 import type { DOMEditor, DOMEditorInterface } from 'slate-dom';
 
+import type { addMark } from '../../internal/editor/addMark';
+import type { createPathRef } from '../../internal/editor/createPathRef';
+import type { createPointRef } from '../../internal/editor/createPointRef';
+import type { createRangeRef } from '../../internal/editor/createRangeRef';
+import type { deleteBackward } from '../../internal/editor/deleteBackward';
+import type { deleteForward } from '../../internal/editor/deleteForward';
+import type { deleteFragment } from '../../internal/editor/deleteFragment';
+import type { getEdgePoints } from '../../internal/editor/getEdgePoints';
+import type { getEditorString } from '../../internal/editor/getEditorString';
+import type { getEndPoint } from '../../internal/editor/getEndPoint';
+import type { getPath } from '../../internal/editor/getPath';
+import type { getPathRefs } from '../../internal/editor/getPathRefs';
+import type { getPoint } from '../../internal/editor/getPoint';
+import type { getPointAfter } from '../../internal/editor/getPointAfter';
+import type { getPointBefore } from '../../internal/editor/getPointBefore';
+import type { getPointRefs } from '../../internal/editor/getPointRefs';
+import type { getPositions } from '../../internal/editor/getPositions';
+import type { getRange } from '../../internal/editor/getRange';
+import type { getRangeRefs } from '../../internal/editor/getRangeRefs';
+import type { getStartPoint } from '../../internal/editor/getStartPoint';
+import type { hasBlocks } from '../../internal/editor/hasBlocks';
+import type { hasInlines } from '../../internal/editor/hasInlines';
+import type { hasTexts } from '../../internal/editor/hasTexts';
+import type { insertBreak } from '../../internal/editor/insertBreak';
+import type { isBlock } from '../../internal/editor/isBlock';
+import type { isEdgePoint } from '../../internal/editor/isEdgePoint';
+import type { isEditorNormalizing } from '../../internal/editor/isEditorNormalizing';
+import type { isElementEmpty } from '../../internal/editor/isElementEmpty';
+import type { isElementReadOnly } from '../../internal/editor/isElementReadOnly';
+import type { isEndPoint } from '../../internal/editor/isEndPoint';
+import type { isStartPoint } from '../../internal/editor/isStartPoint';
+import type { unhangRange } from '../../internal/editor/unhangRange';
+import type { withoutNormalizing } from '../../internal/editor/withoutNormalizing';
+import type { collapseSelection } from '../../internal/transforms/collapseSelection';
+import type { deleteText } from '../../internal/transforms/deleteText';
+import type { moveSelection } from '../../internal/transforms/moveSelection';
+import type { select } from '../../internal/transforms/select';
+import type { setPoint } from '../../internal/transforms/setPoint';
+import type { setSelection } from '../../internal/transforms/setSelection';
 import type { FindPathOptions } from '../../queries';
 import type { HistoryEditor } from '../../slate-history';
 import type { toggleMark } from '../../transforms';
@@ -32,16 +71,19 @@ import type {
   toSlateRange,
 } from '../dom-editor';
 import type { ElementIn, ElementOrTextIn, TElement } from '../element/TElement';
-import type {
-  AncestorIn,
-  DescendantIn,
-  NodeEntryIn,
-  TNodeEntry,
-  TextEntryIn,
-} from '../node';
+import type { AncestorIn, DescendantIn, TNodeEntry } from '../node';
 import type { NodeIn, TNodeProps } from '../node/TNode';
-import type { MarksIn } from '../text';
+import type { MarksIn, TextIn } from '../text';
 import type {
+  EditorNormalizeOptions,
+  GetAboveNodeOptions,
+  GetLevelsOptions,
+  GetNextNodeOptions,
+  GetNodeEntriesOptions,
+  GetNodeEntryOptions,
+  GetParentNodeOptions,
+  GetPreviousNodeOptions,
+  GetVoidNodeOptions,
   InsertFragmentOptions,
   InsertNodesOptions,
   LiftNodesOptions,
@@ -53,55 +95,7 @@ import type {
   UnsetNodesOptions,
   UnwrapNodesOptions,
   WrapNodesOptions,
-  collapseSelection,
-  deleteText,
-  moveSelection,
-  select,
-  setPoint,
-  setSelection,
-} from '../transforms';
-import type { addMark } from './addMark';
-import type { createPathRef } from './createPathRef';
-import type { createPointRef } from './createPointRef';
-import type { createRangeRef } from './createRangeRef';
-import type { deleteBackward } from './deleteBackward';
-import type { deleteForward } from './deleteForward';
-import type { deleteFragment } from './deleteFragment';
-import type { GetAboveNodeOptions } from './getAboveNode';
-import type { getEdgePoints } from './getEdgePoints';
-import type { getEditorString } from './getEditorString';
-import type { getEndPoint } from './getEndPoint';
-import type { GetLevelsOptions } from './getLevels';
-import type { GetNextNodeOptions } from './getNextNode';
-import type { GetNodeEntriesOptions } from './getNodeEntries';
-import type { GetNodeEntryOptions } from './getNodeEntry';
-import type { GetParentNodeOptions } from './getParentNode';
-import type { getPath } from './getPath';
-import type { getPathRefs } from './getPathRefs';
-import type { getPoint } from './getPoint';
-import type { getPointAfter } from './getPointAfter';
-import type { getPointBefore } from './getPointBefore';
-import type { getPointRefs } from './getPointRefs';
-import type { getPositions } from './getPositions';
-import type { GetPreviousNodeOptions } from './getPreviousNode';
-import type { getRange } from './getRange';
-import type { getRangeRefs } from './getRangeRefs';
-import type { getStartPoint } from './getStartPoint';
-import type { GetVoidNodeOptions } from './getVoidNode';
-import type { hasBlocks } from './hasBlocks';
-import type { hasInlines } from './hasInlines';
-import type { hasTexts } from './hasTexts';
-import type { insertBreak } from './insertBreak';
-import type { isBlock } from './isBlock';
-import type { isEdgePoint } from './isEdgePoint';
-import type { isEditorNormalizing } from './isEditorNormalizing';
-import type { isElementEmpty } from './isElementEmpty';
-import type { isElementReadOnly } from './isElementReadOnly';
-import type { isEndPoint } from './isEndPoint';
-import type { isStartPoint } from './isStartPoint';
-import type { EditorNormalizeOptions } from './normalizeEditor';
-import type { unhangRange } from './unhangRange';
-import type { withoutNormalizing } from './withoutNormalizing';
+} from './editor-types';
 
 export type Value = TElement[];
 
@@ -127,7 +121,7 @@ export type TEditorApi<V extends Value = Value> = Pick<
    * Returns the fragment at the current selection. Used when cutting or
    * copying, as an example, to get the fragment at the current selection.
    */
-  getFragment: () => DescendantIn<V>[];
+  getFragment: (at?: At) => ElementOrTextIn<V>[];
   /** Check if a value is a read-only `Element` object. */
   isElementReadOnly: <N extends ElementIn<V>>(element: N) => boolean;
   /** Check if a value is an inline `Element` object. */
@@ -145,6 +139,11 @@ export type TEditorApi<V extends Value = Value> = Pick<
   above: <N extends AncestorIn<V>>(
     options?: GetAboveNodeOptions<V>
   ) => TNodeEntry<N> | undefined;
+  /** Get the leaf text node at a location. */
+  leaf: <N extends TextIn<V>>(
+    at: At,
+    options?: EditorLeafOptions
+  ) => TNodeEntry<N> | undefined;
   /** Iterate through all of the levels at a location. */
   levels: <N extends NodeIn<V>>(
     options?: GetLevelsOptions<V>
@@ -155,11 +154,11 @@ export type TEditorApi<V extends Value = Value> = Pick<
    * Note: To find the next Point, and not the next Node, use the `Editor.after`
    * method
    */
-  next: <N extends NodeIn<V>>(
+  next: <N extends DescendantIn<V>>(
     options?: GetNextNodeOptions<V>
   ) => TNodeEntry<N> | undefined;
   /** Get the node at a location. */
-  node: <N extends NodeIn<V>>(
+  node: <N extends DescendantIn<V>>(
     at: At,
     options?: GetNodeEntryOptions
   ) => TNodeEntry<N> | undefined;
@@ -169,7 +168,7 @@ export type TEditorApi<V extends Value = Value> = Pick<
    * objects that represent the nodes that include `at`. At the top of the
    * hierarchy is the `Editor` object itself.
    */
-  nodes: <N extends NodeIn<V>>(
+  nodes: <N extends DescendantIn<V>>(
     options?: GetNodeEntriesOptions<V>
   ) => Generator<TNodeEntry<N>, void, undefined>;
   /** Get the parent node of a location. */
@@ -183,7 +182,7 @@ export type TEditorApi<V extends Value = Value> = Pick<
    * Note: To find the previous Point, and not the previous Node, use the
    * `Editor.before` method
    */
-  previous: <N extends NodeIn<V>>(
+  previous: <N extends DescendantIn<V>>(
     options?: GetPreviousNodeOptions<V>
   ) => TNodeEntry<N> | undefined;
   /** Match a void node in the current branch of the editor. */
@@ -211,9 +210,9 @@ export type TEditorApi<V extends Value = Value> = Pick<
   /** Get the end point of a location. */
   end: OmitFirst<typeof getEndPoint>;
   /** Get the first node at a location. */
-  first: (at: At) => NodeEntryIn<V> | undefined;
+  first: <N extends DescendantIn<V>>(at: At) => TNodeEntry<N> | undefined;
   /** Get the fragment at a location. */
-  fragment: (at: At) => ElementOrTextIn<V>[] | undefined;
+  fragment: <N extends ElementOrTextIn<V>>(at: At) => N[] | undefined;
   /** Check if a node has block children. */
   hasBlocks: OmitFirst<typeof hasBlocks>;
   /** Check if a node has inline and text children. */
@@ -233,9 +232,7 @@ export type TEditorApi<V extends Value = Value> = Pick<
   /** Check if a point is the start point of a location. */
   isStart: OmitFirst<typeof isStartPoint>;
   /** Get the last node at a location. */
-  last: (at: At) => NodeEntryIn<V> | undefined;
-  /** Get the leaf text node at a location. */
-  leaf: (at: At, options?: EditorLeafOptions) => TextEntryIn<V> | undefined;
+  last: <N extends DescendantIn<V>>(at: At) => TNodeEntry<N> | undefined;
   /** Get the marks that would be added to text at the current selection. */
   marks: () => MarksIn<V> | null;
   /** Get the path of a location. */
@@ -357,6 +354,9 @@ export type TEditorApi<V extends Value = Value> = Pick<
   /** Get the saving flag's current value. */
   isSaving: OmitFirst<typeof HistoryEditor.isSaving>;
   isSplittingOnce: OmitFirst<typeof HistoryEditor.isSplittingOnce>;
+} & {
+  /** Get the highest block in the editor. */
+  highestBlock: <N extends V[number]>(at?: Path) => TNodeEntry<N> | undefined;
 };
 
 export type TEditorTransforms<V extends Value = Value> = {
@@ -367,6 +367,14 @@ export type TEditorTransforms<V extends Value = Value> = {
   insertFragment: <N extends ElementOrTextIn<V>>(
     fragment: N[],
     options?: InsertFragmentOptions
+  ) => void;
+  /**
+   * Atomically insert `node` at the specified location or (if not defined) the
+   * current selection or (if not defined) the end of the document.
+   */
+  insertNode: <N extends DescendantIn<V>>(
+    node: N,
+    options?: InsertNodesOptions<V>
   ) => void;
   /**
    * Atomically inserts `nodes` at the specified location or (if not defined)
@@ -383,7 +391,7 @@ export type TEditorTransforms<V extends Value = Value> = {
    * If `props` contains `undefined` values, the node's corresponding property
    * will also be set to `undefined` as opposed to ignored.
    */
-  setNodes: <N extends NodeIn<V>>(
+  setNodes: <N extends DescendantIn<V>>(
     props: Partial<TNodeProps<N>>,
     options?: SetNodesOptions<V>
   ) => void;
@@ -391,7 +399,7 @@ export type TEditorTransforms<V extends Value = Value> = {
    * Unset properties of nodes at the specified location. If no location is
    * specified, use the selection.
    */
-  unsetNodes: <N extends NodeIn<V>>(
+  unsetNodes: <N extends DescendantIn<V>>(
     props: (keyof TNodeProps<N>)[] | keyof TNodeProps<N>,
     options?: UnsetNodesOptions<V>
   ) => void;
@@ -418,11 +426,6 @@ export type TEditorTransforms<V extends Value = Value> = {
   deleteFragment: OmitFirst<typeof deleteFragment>;
   /** Insert a block break at the current selection. */
   insertBreak: OmitFirst<typeof insertBreak>;
-  /**
-   * Atomically insert `node` at the specified location or (if not defined) the
-   * current selection or (if not defined) the end of the document.
-   */
-  insertNode: <N extends ElementOrTextIn<V>>(node: N) => void;
   /**
    * Insert a soft break at the current selection. If the selection is currently
    * expanded, delete it first.

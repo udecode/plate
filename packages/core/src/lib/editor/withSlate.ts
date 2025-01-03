@@ -3,10 +3,6 @@ import {
   type TSelection,
   type Value,
   createTEditor,
-  getEndPoint,
-  getStartPoint,
-  normalizeEditor,
-  select,
 } from '@udecode/slate';
 import { nanoid } from 'nanoid';
 
@@ -203,15 +199,14 @@ export const withSlate = <
     editor.selection = selection;
   } else if (autoSelect) {
     const edge = autoSelect === 'start' ? 'start' : 'end';
-    const target =
-      edge === 'start' ? getStartPoint(editor, []) : getEndPoint(editor, []);
-    select(editor, target!);
+    const target = edge === 'start' ? editor.api.start([]) : editor.api.end([]);
+    editor.tf.select(target!);
   }
   if (editor.children.length > 0) {
     pipeNormalizeInitialValue(editor);
   }
   if (shouldNormalizeEditor) {
-    normalizeEditor(editor, { force: true });
+    editor.tf.normalize({ force: true });
   }
 
   return editor as any;

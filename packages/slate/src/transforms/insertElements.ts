@@ -1,10 +1,5 @@
-import type {
-  ElementOf,
-  InsertNodesOptions,
-  TEditor,
-  TElement,
-  ValueOf,
-} from '../interfaces';
+import type { ElementOf, TEditor, TElement, ValueOf } from '../interfaces';
+import type { InsertNodesOptions } from '../interfaces/editor/editor-types';
 
 export const insertElements = <E extends TEditor>(
   editor: E,

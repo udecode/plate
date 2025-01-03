@@ -2,7 +2,6 @@ import {
   type ExtendEditor,
   getNodeString,
   isElement,
-  removeNodes,
 } from '@udecode/plate-common';
 import castArray from 'lodash/castArray.js';
 
@@ -24,7 +23,7 @@ export const withRemoveEmptyNodes: ExtendEditor<RemoveEmptyNodesConfig> = ({
       types.includes(node.type) &&
       getNodeString(node) === ''
     ) {
-      removeNodes(editor, { at: path });
+      editor.tf.removeNodes({ at: path });
 
       return;
     }

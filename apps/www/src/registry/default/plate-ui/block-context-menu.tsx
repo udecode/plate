@@ -4,7 +4,6 @@ import { useCallback, useState } from 'react';
 
 import { AIChatPlugin } from '@udecode/plate-ai/react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import { unsetNodes } from '@udecode/plate-common';
 import { ParagraphPlugin, useEditorPlugin } from '@udecode/plate-common/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { IndentListPlugin } from '@udecode/plate-indent-list/react';
@@ -41,7 +40,9 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
         .blockSelection.getNodes()
         .forEach(([node, path]) => {
           if (node[IndentListPlugin.key]) {
-            unsetNodes(editor, [IndentListPlugin.key, 'indent'], { at: path });
+            editor.tf.unsetNodes([IndentListPlugin.key, 'indent'], {
+              at: path,
+            });
           }
 
           editor.tf.toggle.block({ type }, { at: path });

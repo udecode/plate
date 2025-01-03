@@ -5,12 +5,9 @@ import {
   findNode,
   getBlockAbove,
   getCommonNode,
-  getNodeEntries,
   isCollapsed,
   isElement,
   isRangeAcrossBlocks,
-  setElements,
-  wrapNodes,
 } from '@udecode/plate-common';
 import { Range } from 'slate';
 
@@ -42,8 +39,7 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
         if (list[0].type === type) {
           unwrapList(editor);
         } else {
-          setElements(
-            editor,
+          editor.tf.setNodes(
             { type },
             {
               at: editor.selection,
@@ -55,9 +51,9 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
         }
       } else {
         const list = { children: [], type };
-        wrapNodes<TElement>(editor, list);
+        editor.tf.wrapNodes<TElement>(list);
 
-        const _nodes = getNodeEntries(editor, {
+        const _nodes = editor.api.nodes({
           match: { type: editor.getType(BaseParagraphPlugin) },
         });
         const nodes = Array.from(_nodes);
@@ -67,7 +63,7 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
         });
 
         if (!blockAbove) {
-          setElements(editor, {
+          editor.tf.setNodes({
             type: editor.getType(BaseListItemContentPlugin),
           });
         }
@@ -78,7 +74,7 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
         };
 
         for (const [, path] of nodes) {
-          wrapNodes<TElement>(editor, listItem, {
+          editor.tf.wrapNodes<TElement>(listItem, {
             at: path,
           });
         }
@@ -114,8 +110,7 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
             startList![1].length,
             endList![1].length
           );
-          setElements(
-            editor,
+          editor.tf.setNodes(
             { type },
             {
               at: editor.selection,
@@ -129,7 +124,7 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
         }
       } else {
         const rootPathLength = commonEntry[1].length;
-        const _nodes = getNodeEntries<TElement>(editor, {
+        const _nodes = editor.api.nodes<TElement>({
           mode: 'all',
         });
         const nodes = Array.from(_nodes).filter(
@@ -138,8 +133,7 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
 
         nodes.forEach((n) => {
           if (getListTypes(editor).includes(n[0].type)) {
-            setElements(
-              editor,
+            editor.tf.setNodes(
               { type },
               {
                 at: n[1],
@@ -150,8 +144,7 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
             );
           } else {
             if (!validLiChildrenTypes?.includes(n[0].type)) {
-              setElements(
-                editor,
+              editor.tf.setNodes(
                 { type: editor.getType(BaseListItemContentPlugin) },
                 { at: n[1] }
               );
@@ -161,12 +154,12 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
               children: [],
               type: editor.getType(BaseListItemPlugin),
             };
-            wrapNodes<TElement>(editor, listItem, {
+            editor.tf.wrapNodes<TElement>(listItem, {
               at: n[1],
             });
 
             const list = { children: [], type };
-            wrapNodes<TElement>(editor, list, { at: n[1] });
+            editor.tf.wrapNodes<TElement>(list, { at: n[1] });
           }
         });
       }

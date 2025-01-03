@@ -3,7 +3,6 @@ import type { Path } from 'slate';
 import {
   type TEditor,
   type TNodeEntry,
-  getNodeEntry,
   getPreviousPath,
 } from '@udecode/plate-common';
 
@@ -23,7 +22,7 @@ export const getPreviousTableCell = (
     return getCellInPreviousTableRow(editor, currentRowPath);
   }
 
-  const cell = getNodeEntry(editor, prevPath);
+  const cell = editor.api.node(prevPath);
 
   if (cell) return cell;
 };

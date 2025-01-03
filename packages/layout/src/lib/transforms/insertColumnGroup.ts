@@ -2,8 +2,6 @@ import {
   type InsertNodesOptions,
   type SlateEditor,
   findNode,
-  insertNodes,
-  select,
 } from '@udecode/plate-common';
 
 import type { TColumnGroupElement } from '../types';
@@ -23,8 +21,7 @@ export const insertColumnGroup = (
   const width = 100 / columns;
 
   editor.tf.withoutNormalizing(() => {
-    insertNodes<TColumnGroupElement>(
-      editor,
+    editor.tf.insertNodes<TColumnGroupElement>(
       {
         children: Array(columns)
           .fill(null)
@@ -46,7 +43,7 @@ export const insertColumnGroup = (
 
       if (!entry) return;
 
-      select(editor, entry[1].concat([0]));
+      editor.tf.select(entry[1].concat([0]));
     }
   });
 };

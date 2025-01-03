@@ -1,15 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import {
-  findNode,
-  getEndPoint,
-  getNextNode,
-  getPreviousNode,
-  isEditorReadOnly,
-  isHotkey,
-  removeNodes,
-} from '@udecode/plate-common';
+import { findNode, isEditorReadOnly, isHotkey } from '@udecode/plate-common';
 import {
   type EditableSiblingComponent,
   useEditorPlugin,
@@ -85,12 +77,12 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
           const [, path] = entry;
 
           // focus the end of that block
-          editor.tf.focus(getEndPoint(editor, path));
+          editor.tf.focus(editor.api.end(path));
           e.preventDefault();
         }
       }
       if (isHotkey(['backspace', 'delete'])(e) && !isReadonly) {
-        removeNodes(editor, {
+        editor.tf.removeNodes({
           at: [],
           match: (n) => !!n.id && selectedIds!.has(n.id),
         });
@@ -102,12 +94,12 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
           at: [],
           match: (n) => n.id && n.id === firstId,
         });
-        const prev = getPreviousNode(editor, {
+        const prev = editor.api.previous({
           at: node?.[1],
         });
 
         const prevId = prev?.[0].id;
-        api.blockSelection.addSelectedRow(prevId);
+        api.blockSelection.addSelectedRow(prevId as string);
       }
       if (isHotkey('down')(e)) {
         const lastId = [...selectedIds!].pop();
@@ -115,11 +107,11 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
           at: [],
           match: (n) => n.id && n.id === lastId,
         });
-        const next = getNextNode(editor, {
+        const next = editor.api.next({
           at: node?.[1],
         });
         const nextId = next?.[0].id;
-        api.blockSelection.addSelectedRow(nextId);
+        api.blockSelection.addSelectedRow(nextId as string);
       }
     },
     [editor, selectedIds, api, getOptions, getOption]
@@ -144,7 +136,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
         copySelectedBlocks(editor);
 
         if (!isEditorReadOnly(editor)) {
-          removeNodes(editor, {
+          editor.tf.removeNodes({
             at: [],
             match: (n) => selectedIds!.has(n.id),
           });

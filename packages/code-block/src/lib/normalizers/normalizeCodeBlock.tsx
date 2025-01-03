@@ -1,10 +1,8 @@
 import {
   type SlateEditor,
-  type TElement,
   type TNodeEntry,
   getChildren,
   isElement,
-  setNodes,
 } from '@udecode/plate-common';
 
 import {
@@ -35,11 +33,7 @@ export const normalizeCodeBlock = (editor: SlateEditor) => {
       );
 
       if (nonCodeLine) {
-        setNodes<TElement>(
-          editor,
-          { type: codeLineType },
-          { at: nonCodeLine[1] }
-        );
+        editor.tf.setNodes({ type: codeLineType }, { at: nonCodeLine[1] });
       }
     }
   };

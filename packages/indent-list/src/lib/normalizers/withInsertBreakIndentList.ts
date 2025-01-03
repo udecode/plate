@@ -1,11 +1,8 @@
 import {
   type ExtendEditor,
   type TElement,
-  getAboveNode,
   isDefined,
-  isEndPoint,
   isExpanded,
-  setNodes,
 } from '@udecode/plate-common';
 
 import {
@@ -20,7 +17,7 @@ export const withInsertBreakIndentList: ExtendEditor<BaseIndentListConfig> = ({
   const { insertBreak } = editor;
 
   editor.insertBreak = () => {
-    const nodeEntry = getAboveNode(editor);
+    const nodeEntry = editor.api.above();
 
     if (!nodeEntry) return insertBreak();
 
@@ -31,7 +28,7 @@ export const withInsertBreakIndentList: ExtendEditor<BaseIndentListConfig> = ({
       node[BaseIndentListPlugin.key] !== INDENT_LIST_KEYS.todo ||
       // https://github.com/udecode/plate/issues/3340
       isExpanded(editor.selection) ||
-      !isEndPoint(editor, editor.selection?.focus, path)
+      !editor.api.isEnd(editor.selection?.focus, path)
     ) {
       return insertBreak();
     }
@@ -39,11 +36,10 @@ export const withInsertBreakIndentList: ExtendEditor<BaseIndentListConfig> = ({
     editor.tf.withoutNormalizing(() => {
       insertBreak();
 
-      const newEntry = getAboveNode<TElement>(editor);
+      const newEntry = editor.api.above<TElement>();
 
       if (newEntry) {
-        setNodes<TElement>(
-          editor,
+        editor.tf.setNodes(
           {
             checked: false,
           },

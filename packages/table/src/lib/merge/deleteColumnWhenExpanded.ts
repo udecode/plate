@@ -1,10 +1,5 @@
-import {
-  type SlateEditor,
-  type TNodeEntry,
-  createPathRef,
-  getAboveNode,
-  removeNodes,
-} from '@udecode/plate-common';
+import type { SlateEditor, TNodeEntry } from '@udecode/plate-common';
+
 import { type PathRef, Node, Range } from 'slate';
 
 import { type TTableCellElement, BaseTableRowPlugin } from '..';
@@ -21,12 +16,12 @@ export const deleteColumnWhenExpanded = (
     tableEntry[0].children.length - 1
   ) as TTableCellElement;
 
-  const firstSelectionRow = getAboveNode(editor, {
+  const firstSelectionRow = editor.api.above({
     at: start,
     match: (n) => n.type === BaseTableRowPlugin.key,
   });
 
-  const lastSelectionRow = getAboveNode(editor, {
+  const lastSelectionRow = editor.api.above({
     at: end,
     match: (n) => n.type === BaseTableRowPlugin.key,
   });
@@ -47,10 +42,10 @@ const deleteSelection = (editor: SlateEditor) => {
   const pathRefs: PathRef[] = [];
 
   cells.forEach(([_cell, cellPath]) => {
-    pathRefs.push(createPathRef(editor, cellPath));
+    pathRefs.push(editor.api.pathRef(cellPath));
   });
 
   pathRefs.forEach((pathRef) => {
-    removeNodes(editor, { at: pathRef.unref()! });
+    editor.tf.removeNodes({ at: pathRef.unref()! });
   });
 };

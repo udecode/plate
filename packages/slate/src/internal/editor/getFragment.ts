@@ -1,8 +1,8 @@
 import { fragment, getFragment as getFragmentBase } from 'slate';
 
-import type { At } from '../../types';
-import type { ElementOrTextOf } from '../../interfaces/element/TElement';
 import type { TEditor } from '../../interfaces/editor/TEditor';
+import type { ElementOrTextOf } from '../../interfaces/element/TElement';
+import type { At } from '../../types';
 
 import { getAt } from '../../utils';
 

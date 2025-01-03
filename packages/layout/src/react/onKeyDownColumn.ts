@@ -1,12 +1,6 @@
 import type { KeyboardHandler } from '@udecode/plate-common/react';
 
-import {
-  getAboveNode,
-  getAncestorNode,
-  isHotkey,
-  isSelectionCoverBlock,
-  select,
-} from '@udecode/plate-common';
+import { isHotkey, isSelectionCoverBlock } from '@udecode/plate-common';
 import { Path } from 'slate';
 
 import { ColumnPlugin } from './ColumnPlugin';
@@ -17,8 +11,8 @@ export const onKeyDownColumn: KeyboardHandler = ({ editor, event }) => {
   const at = editor.selection;
 
   if (isHotkey('mod+a', event) && at) {
-    const aboveNode = getAboveNode(editor);
-    const ancestorNode = getAncestorNode(editor);
+    const aboveNode = editor.api.above();
+    const ancestorNode = editor.api.highestBlock();
 
     if (!ancestorNode) return;
     if (!aboveNode) return;
@@ -36,7 +30,7 @@ export const onKeyDownColumn: KeyboardHandler = ({ editor, event }) => {
     }
     if (targetPath.length === 0) return;
 
-    select(editor, targetPath);
+    editor.tf.select(targetPath);
 
     event.preventDefault();
     event.stopPropagation();

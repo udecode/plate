@@ -1,7 +1,7 @@
 import type { PlateEditor } from '@udecode/plate-common/react';
 import type { DropTargetMonitor } from 'react-dnd';
 
-import { type TElement, findNode, moveNodes } from '@udecode/plate-common';
+import { type TElement, findNode } from '@udecode/plate-common';
 import { Path } from 'slate';
 
 import type { UseDropNodeOptions } from '../hooks';
@@ -107,7 +107,7 @@ export const onDropNode = (
 
   const { dragPath, to } = result;
 
-  moveNodes(editor, {
+  editor.tf.moveNodes({
     at: dragPath,
     to,
   });

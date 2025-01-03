@@ -1,11 +1,6 @@
 /** @jsx jsxt */
 
-import {
-  createSlatePlugin,
-  getEditorString,
-  insertText,
-  wrapNodes,
-} from '@udecode/plate-common';
+import { createSlatePlugin } from '@udecode/plate-common';
 import { createSlateEditor } from '@udecode/plate-common';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { jsxt } from '@udecode/plate-test-utils';
@@ -40,11 +35,10 @@ it('autoformats a block with a single character trigger', () => {
             {
               format: (editor) => {
                 const linkInputRange = editor.selection!.focus.path;
-                const linkInputText = getEditorString(editor, linkInputRange);
+                const linkInputText = editor.api.string(linkInputRange);
                 const [, text, url] = /\[(.+)]\((.*)/.exec(linkInputText)!;
-                insertText(editor, text, { at: linkInputRange });
-                wrapNodes(
-                  editor,
+                editor.tf.insertText(text, { at: linkInputRange });
+                editor.tf.wrapNodes(
                   { children: [], type: LinkPlugin.key, url },
                   { at: linkInputRange }
                 );

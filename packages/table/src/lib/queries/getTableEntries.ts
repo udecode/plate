@@ -1,10 +1,6 @@
 import type { Location } from 'slate';
 
-import {
-  type SlateEditor,
-  findNode,
-  getAboveNode,
-} from '@udecode/plate-common';
+import { type SlateEditor, findNode } from '@udecode/plate-common';
 
 import { BaseTablePlugin, BaseTableRowPlugin } from '../BaseTablePlugin';
 import { getCellTypes } from '../utils';
@@ -30,7 +26,7 @@ export const getTableEntries = (
 
   const [, cellPath] = cellEntry;
 
-  const rowEntry = getAboveNode(editor, {
+  const rowEntry = editor.api.above({
     at: cellPath,
     match: { type: editor.getType(BaseTableRowPlugin) },
   });
@@ -39,7 +35,7 @@ export const getTableEntries = (
 
   const [, rowPath] = rowEntry;
 
-  const tableEntry = getAboveNode(editor, {
+  const tableEntry = editor.api.above({
     at: rowPath,
     match: { type: editor.getType(BaseTablePlugin) },
   });

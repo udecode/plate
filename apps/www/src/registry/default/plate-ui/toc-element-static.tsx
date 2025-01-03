@@ -7,11 +7,7 @@ import type {
 } from '@udecode/plate-common';
 
 import { cn } from '@udecode/cn';
-import {
-  SlateElement,
-  getNodeEntries,
-  getNodeString,
-} from '@udecode/plate-common';
+import { SlateElement, getNodeString } from '@udecode/plate-common';
 import {
   type Heading,
   BaseTocPlugin,
@@ -87,7 +83,7 @@ const getHeadingList = (editor?: SlateEditor) => {
 
   const headingList: Heading[] = [];
 
-  const values = getNodeEntries(editor, {
+  const values = editor.api.nodes<TElement>({
     at: [],
     match: (n) => isHeading(n),
   });
@@ -95,10 +91,10 @@ const getHeadingList = (editor?: SlateEditor) => {
   if (!values) return [];
 
   Array.from(values, ([node, path]) => {
-    const { type } = node as TElement;
+    const { type } = node;
     const title = getNodeString(node);
     const depth = headingDepth[type];
-    const id = node.id;
+    const id = node.id as string;
     title && headingList.push({ id, depth, path, title, type });
   });
 

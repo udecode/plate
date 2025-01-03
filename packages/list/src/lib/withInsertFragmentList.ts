@@ -15,7 +15,6 @@ import {
   getNodes,
   insertElements,
   isElement,
-  removeNodes,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
@@ -150,7 +149,7 @@ export const withInsertFragmentList: ExtendEditor<ListConfig> = ({
           at: Path.next(licPath),
           select: true,
         });
-        removeNodes(editor, {
+        editor.tf.removeNodes({
           at: licPath,
         });
 

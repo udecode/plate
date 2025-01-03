@@ -2,11 +2,9 @@ import {
   type SlateEditor,
   type TElement,
   type TElementEntry,
-  getAboveNode,
   getNode,
   insertElements,
   isLastChild,
-  moveNodes,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
@@ -29,7 +27,7 @@ export const moveListItemUp = (
     const [listNode, listPath] = list;
     const [liNode, liPath] = listItem;
 
-    const liParent = getAboveNode<TElement>(editor, {
+    const liParent = editor.api.above<TElement>({
       at: listPath,
       match: { type: editor.getType(BaseListItemPlugin) },
     });
@@ -123,7 +121,7 @@ export const moveListItemUp = (
     const movedUpLiPath = Path.next(liParentPath);
 
     // Move li one level up: next to the li parent.
-    moveNodes(editor, {
+    editor.tf.moveNodes({
       at: liPath,
       to: movedUpLiPath,
     });

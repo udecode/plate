@@ -3,7 +3,6 @@ import type { PathRef } from 'slate';
 import {
   type ExtendEditor,
   type TElement,
-  createPathRef,
   getNode,
 } from '@udecode/plate-common';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
@@ -106,7 +105,7 @@ export const withIndentList: ExtendEditor<BaseIndentListConfig> = ({
         );
 
         if (nextNodeEntryBefore) {
-          nextIndentListPathRef = createPathRef(editor, nextNodeEntryBefore[1]);
+          nextIndentListPathRef = editor.api.pathRef(nextNodeEntryBefore[1]);
         }
       }
     }
@@ -134,7 +133,7 @@ export const withIndentList: ExtendEditor<BaseIndentListConfig> = ({
         );
 
         if (nextNodeEntryBefore) {
-          nextIndentListPathRef = createPathRef(editor, nextNodeEntryBefore[1]);
+          nextIndentListPathRef = editor.api.pathRef(nextNodeEntryBefore[1]);
         }
       }
     }

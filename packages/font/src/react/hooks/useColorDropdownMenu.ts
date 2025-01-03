@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { getMark, removeMark, select, setMarks } from '@udecode/plate-common';
+import { getMark, removeMark, setMarks } from '@udecode/plate-common';
 import { useEditorRef, useEditorSelector } from '@udecode/plate-common/react';
 
 export const useColorDropdownMenuState = ({
@@ -43,7 +43,7 @@ export const useColorDropdownMenuState = ({
       if (editor.selection) {
         setSelectedColor(value);
 
-        select(editor, editor.selection);
+        editor.tf.select(editor.selection);
         editor.tf.focus();
 
         setMarks(editor, { [nodeType]: value });
@@ -62,7 +62,7 @@ export const useColorDropdownMenuState = ({
 
   const clearColor = React.useCallback(() => {
     if (editor.selection) {
-      select(editor, editor.selection);
+      editor.tf.select(editor.selection);
       editor.tf.focus();
 
       if (selectedColor) {

@@ -1,13 +1,7 @@
 import {
   type SlateEditor,
-  deleteText,
-  getAboveNode,
-  getMarks,
   insertElements,
   isBlockTextEmptyAfterSelection,
-  isStartPoint,
-  select,
-  splitNodes,
 } from '@udecode/plate-common';
 import { Path, Range } from 'slate';
 
@@ -27,7 +21,7 @@ export const insertTodoListItem = (
     return false;
   }
 
-  const todoEntry = getAboveNode(editor, { match: { type: todoType } });
+  const todoEntry = editor.api.above({ match: { type: todoType } });
 
   if (!todoEntry) return false;
 
@@ -37,14 +31,10 @@ export const insertTodoListItem = (
 
   editor.tf.withoutNormalizing(() => {
     if (!Range.isCollapsed(editor.selection!)) {
-      deleteText(editor);
+      editor.tf.delete();
     }
 
-    const isStart = isStartPoint(
-      editor,
-      editor.selection!.focus,
-      paragraphPath
-    );
+    const isStart = editor.api.isStart(editor.selection!.focus, paragraphPath);
     const isEnd = isBlockTextEmptyAfterSelection(editor);
 
     const nextParagraphPath = Path.next(paragraphPath);
@@ -68,7 +58,7 @@ export const insertTodoListItem = (
     /** If not end, split the nodes */
     if (isEnd) {
       /** If end, insert a list item after and select it */
-      const marks = getMarks(editor) || {};
+      const marks = editor.api.marks() || {};
       insertElements(
         editor,
         {
@@ -78,10 +68,10 @@ export const insertTodoListItem = (
         },
         { at: nextParagraphPath }
       );
-      select(editor, nextParagraphPath);
+      editor.tf.select(nextParagraphPath);
     } else {
       editor.tf.withoutNormalizing(() => {
-        splitNodes(editor);
+        editor.tf.splitNodes();
       });
     }
 

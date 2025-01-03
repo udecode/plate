@@ -42,7 +42,7 @@ export const useExcalidrawElement = ({
 
     // FIXME: setNodes triggers render loop as onChange is triggered on rerender
     // in the meantime, the prop can be used to save the data outside slate
-    // setNodes(editor, { data: { elements, state } }, { at: path });
+    // editor.tf.setNodes({ data: { elements, state } }, { at: path });
     // },
   };
 

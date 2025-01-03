@@ -1,12 +1,10 @@
-import type { PlateEditor } from '@udecode/plate-common/react';
-
-import {
-  type SetNodesOptions,
-  type TElement,
-  type TNodeProps,
-  type TText,
-  setNodes,
+import type {
+  SetNodesOptions,
+  TElement,
+  TNodeProps,
+  TText,
 } from '@udecode/plate-common';
+import type { PlateEditor } from '@udecode/plate-common/react';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 
@@ -21,7 +19,7 @@ export const setBlockSelectionNodes = (
       .blockSelection.getNodes();
 
     blocks.forEach(([, path]) => {
-      setNodes<TElement & { id: string }>(editor, props, {
+      editor.tf.setNodes(props, {
         ...options,
         at: path,
       });
@@ -44,8 +42,7 @@ export const setBlockSelectionIndent = (
 
       const currentIndent = prevIndent + indent;
 
-      setNodes<TElement & { id: string }>(
-        editor,
+      editor.tf.setNodes(
         { indent: currentIndent < 0 ? 0 : currentIndent },
         {
           ...options,

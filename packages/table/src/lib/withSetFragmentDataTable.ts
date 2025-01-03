@@ -2,9 +2,6 @@ import {
   type ExtendEditor,
   type TElement,
   findNode,
-  getEndPoint,
-  getStartPoint,
-  select,
 } from '@udecode/plate-common';
 
 import type { TTableCellElement, TTableElement, TableConfig } from '.';
@@ -82,9 +79,9 @@ export const withSetFragmentDataTable: ExtendEditor<TableConfig> = ({
           const cellPath = editor.api.findPath(cell)!;
 
           // select cell by cell
-          select(editor, {
-            anchor: getStartPoint(editor, cellPath)!,
-            focus: getEndPoint(editor, cellPath)!,
+          editor.tf.select({
+            anchor: editor.api.start(cellPath)!,
+            focus: editor.api.end(cellPath)!,
           });
 
           // set data from selection
@@ -131,7 +128,7 @@ export const withSetFragmentDataTable: ExtendEditor<TableConfig> = ({
       }
 
       // select back original cells
-      select(editor, initialSelection!);
+      editor.tf.select(initialSelection!);
 
       divElement.append(tableElement);
     });

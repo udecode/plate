@@ -5,7 +5,7 @@ import React from 'react';
 import { cn } from '@udecode/cn';
 import { BoldPlugin, ItalicPlugin } from '@udecode/plate-basic-marks/react';
 import { SoftBreakPlugin } from '@udecode/plate-break/react';
-import { type Value, createSlatePlugin, isInline } from '@udecode/plate-common';
+import { type Value, createSlatePlugin } from '@udecode/plate-common';
 import {
   ParagraphPlugin,
   createPlatePlugin,
@@ -125,9 +125,8 @@ const InlineVoidElement = ({ children, ...props }: PlateElementProps) => {
 const DiffPlugin = toPlatePlugin(
   createSlatePlugin({
     key: 'diff',
-    extendEditor: withGetFragmentExcludeDiff,
     node: { isLeaf: true },
-  }),
+  }).extendEditorApi(withGetFragmentExcludeDiff),
   {
     render: {
       aboveNodes:
@@ -145,7 +144,7 @@ const DiffPlugin = toPlatePlugin(
             } as any
           )[diffOperation.type];
 
-          const Component = isInline(editor, element) ? 'span' : 'div';
+          const Component = editor.api.isInline(element) ? 'span' : 'div';
 
           return (
             <Component

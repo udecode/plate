@@ -1,17 +1,19 @@
-import { type TText, addRangeMarks } from '@udecode/plate-common';
+import {
+  type TEditor,
+  type TOperation,
+  type TText,
+  addRangeMarks,
+} from '@udecode/plate-common';
 import isEqual from 'lodash/isEqual.js';
 import uniqWith from 'lodash/uniqWith.js';
 import {
-  type BaseEditor,
   type InsertTextOperation,
   type MergeNodeOperation,
-  type Operation,
   type PointRef,
   type RangeRef,
   type RemoveTextOperation,
   type SetNodeOperation,
   type SplitNodeOperation,
-  Editor,
   Node,
   Path,
   Point,
@@ -41,7 +43,7 @@ export interface ChangeTrackingEditor {
   recordingOperations: boolean;
 }
 
-export const withChangeTracking = <E extends BaseEditor>(
+export const withChangeTracking = <E extends TEditor>(
   editor: E,
   options: ComputeDiffOptions
 ): ChangeTrackingEditor & E => {
@@ -60,10 +62,10 @@ export const withChangeTracking = <E extends BaseEditor>(
   return e;
 };
 
-const applyWithChangeTracking = <E extends BaseEditor>(
+const applyWithChangeTracking = <E extends TEditor>(
   editor: ChangeTrackingEditor & E,
   apply: E['apply'],
-  op: Operation
+  op: TOperation
 ) => {
   if (!editor.recordingOperations) {
     return apply(op);
@@ -104,7 +106,7 @@ const applyWithChangeTracking = <E extends BaseEditor>(
   });
 };
 
-const applyInsertText = <E extends BaseEditor>(
+const applyInsertText = <E extends TEditor>(
   editor: ChangeTrackingEditor & E,
   apply: E['apply'],
   op: InsertTextOperation
@@ -116,7 +118,7 @@ const applyInsertText = <E extends BaseEditor>(
   const startPoint = { offset: op.offset, path: op.path };
   const endPoint = { offset: op.offset + op.text.length, path: op.path };
   const range = { anchor: startPoint, focus: endPoint };
-  const rangeRef = Editor.rangeRef(editor, range);
+  const rangeRef = editor.api.rangeRef(range);
 
   editor.insertedTexts.push({
     node: {
@@ -127,7 +129,7 @@ const applyInsertText = <E extends BaseEditor>(
   });
 };
 
-const applyRemoveText = <E extends BaseEditor>(
+const applyRemoveText = <E extends TEditor>(
   editor: ChangeTrackingEditor & E,
   apply: E['apply'],
   op: RemoveTextOperation
@@ -137,7 +139,7 @@ const applyRemoveText = <E extends BaseEditor>(
   apply(op);
 
   const point = { offset: op.offset, path: op.path };
-  const pointRef = Editor.pointRef(editor, point, {
+  const pointRef = editor.api.pointRef(point, {
     affinity: 'backward',
   });
 
@@ -150,7 +152,7 @@ const applyRemoveText = <E extends BaseEditor>(
   });
 };
 
-const applyMergeNode = <E extends BaseEditor>(
+const applyMergeNode = <E extends TEditor>(
   editor: ChangeTrackingEditor & E,
   apply: E['apply'],
   op: MergeNodeOperation
@@ -165,9 +167,9 @@ const applyMergeNode = <E extends BaseEditor>(
   apply(op);
 
   const startPoint = { offset: prevNode.text.length, path: prevNodePath };
-  const endPoint = Editor.end(editor, prevNodePath);
+  const endPoint = editor.api.end(prevNodePath)!;
   const range = { anchor: startPoint, focus: endPoint };
-  const rangeRef = Editor.rangeRef(editor, range);
+  const rangeRef = editor.api.rangeRef(range);
 
   editor.propsChanges.push({
     newProperties,
@@ -176,7 +178,7 @@ const applyMergeNode = <E extends BaseEditor>(
   });
 };
 
-const applySplitNode = <E extends BaseEditor>(
+const applySplitNode = <E extends TEditor>(
   editor: ChangeTrackingEditor & E,
   apply: E['apply'],
   op: SplitNodeOperation
@@ -188,8 +190,8 @@ const applySplitNode = <E extends BaseEditor>(
   apply(op);
 
   const newNodePath = Path.next(op.path);
-  const newNodeRange = Editor.range(editor, newNodePath);
-  const rangeRef = Editor.rangeRef(editor, newNodeRange);
+  const newNodeRange = editor.api.range(newNodePath)!;
+  const rangeRef = editor.api.rangeRef(newNodeRange);
 
   editor.propsChanges.push({
     newProperties,
@@ -198,15 +200,15 @@ const applySplitNode = <E extends BaseEditor>(
   });
 };
 
-const applySetNode = <E extends BaseEditor>(
+const applySetNode = <E extends TEditor>(
   editor: ChangeTrackingEditor & E,
   apply: E['apply'],
   op: SetNodeOperation
 ) => {
   apply(op);
 
-  const range = Editor.range(editor, op.path);
-  const rangeRef = Editor.rangeRef(editor, range);
+  const range = editor.api.range(op.path)!;
+  const rangeRef = editor.api.rangeRef(range);
 
   editor.propsChanges.push({
     newProperties: op.newProperties,
@@ -215,7 +217,7 @@ const applySetNode = <E extends BaseEditor>(
   });
 };
 
-const commitChangesToDiffs = <E extends BaseEditor>(
+const commitChangesToDiffs = <E extends TEditor>(
   editor: ChangeTrackingEditor & E,
   { getDeleteProps, getInsertProps, getUpdateProps }: ComputeDiffOptions
 ) => {
@@ -237,7 +239,7 @@ const commitChangesToDiffs = <E extends BaseEditor>(
       const point = pointRef.current;
 
       if (point) {
-        editor.insertNode(
+        editor.tf.insertNode(
           {
             ...node,
             ...getDeleteProps(node),

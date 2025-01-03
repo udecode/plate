@@ -2,7 +2,6 @@ import type { Range } from 'slate';
 
 import {
   type ExtendEditor,
-  getAboveNode,
   getNodeString,
   getPluginTypes,
   isCollapsed,
@@ -45,7 +44,7 @@ export const withCaption: ExtendEditor<CaptionConfig> = ({
       ) {
         const types = getPluginTypes(editor, plugins!);
 
-        const entry = getAboveNode(editor, {
+        const entry = editor.api.above({
           at: newSelection,
           match: { type: types },
         });

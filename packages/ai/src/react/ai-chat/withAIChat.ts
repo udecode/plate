@@ -1,14 +1,5 @@
 import type { ExtendEditor } from '@udecode/plate-common/react';
 
-import {
-  type TElement,
-  getAncestorNode,
-  getEditorString,
-  getPointBefore,
-  getRange,
-  isElementEmpty,
-} from '@udecode/plate-common';
-
 import type { AIChatPluginConfig } from './AIChatPlugin';
 
 import { AIPlugin } from '../ai/AIPlugin';
@@ -59,13 +50,8 @@ export const withAIChat: ExtendEditor<AIChatPluginConfig> = ({
       }
 
       // Make sure an input is created at the beginning of line or after a whitespace
-      const previousChar = getEditorString(
-        editor,
-        getRange(
-          editor,
-          editor.selection,
-          getPointBefore(editor, editor.selection)
-        )
+      const previousChar = editor.api.string(
+        editor.api.range(editor.selection, editor.api.before(editor.selection))
       );
 
       const matchesPreviousCharPattern =
@@ -73,10 +59,9 @@ export const withAIChat: ExtendEditor<AIChatPluginConfig> = ({
 
       if (!matchesPreviousCharPattern) return;
 
-      const nodeEntry = getAncestorNode(editor);
+      const nodeEntry = editor.api.highestBlock();
 
-      if (!nodeEntry || !isElementEmpty(editor, nodeEntry[0] as TElement))
-        return;
+      if (!nodeEntry || !editor.api.isEmpty(nodeEntry[0])) return;
 
       api.aiChat.show();
 

@@ -1,8 +1,7 @@
-import {
-  type InsertNodesOptions,
-  type SlateEditor,
-  type TText,
-  insertNodes,
+import type {
+  InsertNodesOptions,
+  SlateEditor,
+  TText,
 } from '@udecode/plate-common';
 
 import type { TLinkElement } from '../types';
@@ -15,8 +14,7 @@ export const insertLink = (
   createLinkNodeOptions: CreateLinkNodeOptions,
   options?: InsertNodesOptions
 ) => {
-  insertNodes<TLinkElement | TText>(
-    editor,
+  editor.tf.insertNodes<TLinkElement | TText>(
     [createLinkNode(editor, createLinkNodeOptions)],
     options as any
   );

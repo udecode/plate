@@ -1,7 +1,7 @@
 import type { Decorate } from '@udecode/plate-common';
 import type { Range } from 'slate';
 
-import { getNodeString, getParentNode } from '@udecode/plate-common';
+import { getNodeString } from '@udecode/plate-common';
 
 import type { TCodeBlockElement } from './types';
 
@@ -34,7 +34,7 @@ export const decorateCodeLine: Decorate = ({
     return ranges;
   }
 
-  const codeBlock = getParentNode<TCodeBlockElement>(editor, path);
+  const codeBlock = editor.api.parent<TCodeBlockElement>(path);
 
   if (!codeBlock) {
     return ranges;

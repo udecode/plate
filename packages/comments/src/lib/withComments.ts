@@ -1,4 +1,4 @@
-import { type ExtendEditor, unsetNodes } from '@udecode/plate-common';
+import type { ExtendEditor } from '@udecode/plate-common';
 
 import {
   type BaseCommentsConfig,
@@ -21,7 +21,7 @@ export const withComments: ExtendEditor<BaseCommentsConfig> = ({ editor }) => {
 
     // Unset CommentsPlugin.key prop when there is no comments
     if (node[BaseCommentsPlugin.key] && getCommentCount(node as any) < 1) {
-      unsetNodes(editor, BaseCommentsPlugin.key, { at: path });
+      editor.tf.unsetNodes(BaseCommentsPlugin.key, { at: path });
 
       return;
     }

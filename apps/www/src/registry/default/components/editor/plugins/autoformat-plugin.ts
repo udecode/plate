@@ -27,13 +27,7 @@ import {
   CodeBlockPlugin,
   CodeLinePlugin,
 } from '@udecode/plate-code-block/react';
-import {
-  getParentNode,
-  insertNodes,
-  isElement,
-  isType,
-  setNodes,
-} from '@udecode/plate-common';
+import { isElement, isType } from '@udecode/plate-common';
 import { ParagraphPlugin } from '@udecode/plate-common/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
@@ -47,7 +41,7 @@ import { TogglePlugin, openNextToggles } from '@udecode/plate-toggle/react';
 
 export const format = (editor: SlateEditor, customFormatting: any) => {
   if (editor.selection) {
-    const parentEntry = getParentNode(editor, editor.selection);
+    const parentEntry = editor.api.parent(editor.selection);
 
     if (!parentEntry) return;
 
@@ -192,8 +186,8 @@ export const autoformatBlocks: AutoformatRule[] = [
   },
   {
     format: (editor) => {
-      setNodes(editor, { type: HorizontalRulePlugin.key });
-      insertNodes(editor, {
+      editor.tf.setNodes({ type: HorizontalRulePlugin.key });
+      editor.tf.insertNodes({
         children: [{ text: '' }],
         type: ParagraphPlugin.key,
       });
@@ -230,7 +224,7 @@ export const autoformatIndentLists: AutoformatRule[] = [
       toggleIndentList(editor, {
         listStyleType: INDENT_LIST_KEYS.todo,
       });
-      setNodes(editor, {
+      editor.tf.setNodes({
         checked: false,
         listStyleType: INDENT_LIST_KEYS.todo,
       });
@@ -244,7 +238,7 @@ export const autoformatIndentLists: AutoformatRule[] = [
       toggleIndentList(editor, {
         listStyleType: INDENT_LIST_KEYS.todo,
       });
-      setNodes(editor, {
+      editor.tf.setNodes({
         checked: true,
         listStyleType: INDENT_LIST_KEYS.todo,
       });

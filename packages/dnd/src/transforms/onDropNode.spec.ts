@@ -1,6 +1,5 @@
 import type { DropTargetMonitor } from 'react-dnd';
 
-import { moveNodes } from '@udecode/plate-common';
 import { findNode } from '@udecode/plate-common';
 /* eslint-disable @typescript-eslint/no-require-imports */
 import { createPlateEditor } from '@udecode/plate-common/react';
@@ -26,6 +25,7 @@ jest.mock('../utils', () => ({
 
 describe('onDropNode', () => {
   const editor = createPlateEditor();
+  editor.tf.moveNodes = jest.fn();
   editor.tf.focus = jest.fn();
   const monitor = {} as DropTargetMonitor;
   const nodeRef = {};
@@ -42,7 +42,7 @@ describe('onDropNode', () => {
 
       onDropNode(editor, { id: 'hover', dragItem, monitor, nodeRef });
 
-      expect(moveNodes).not.toHaveBeenCalled();
+      expect(editor.tf.moveNodes).not.toHaveBeenCalled();
     });
   });
 
@@ -54,7 +54,7 @@ describe('onDropNode', () => {
 
       onDropNode(editor, { id: 'hover', dragItem, monitor, nodeRef });
 
-      expect(moveNodes).not.toHaveBeenCalled();
+      expect(editor.tf.moveNodes).not.toHaveBeenCalled();
     });
 
     it('should do nothing if hover node is not found', () => {
@@ -66,7 +66,7 @@ describe('onDropNode', () => {
 
       onDropNode(editor, { id: 'hover', dragItem, monitor, nodeRef });
 
-      expect(moveNodes).not.toHaveBeenCalled();
+      expect(editor.tf.moveNodes).not.toHaveBeenCalled();
     });
   });
 
@@ -80,7 +80,7 @@ describe('onDropNode', () => {
 
       onDropNode(editor, { id: 'hover', dragItem, monitor, nodeRef });
 
-      expect(moveNodes).toHaveBeenCalledWith(editor, {
+      expect(editor.tf.moveNodes).toHaveBeenCalledWith({
         at: [0],
         to: [1],
       });
@@ -95,7 +95,7 @@ describe('onDropNode', () => {
 
       onDropNode(editor, { id: 'hover', dragItem, monitor, nodeRef });
 
-      expect(moveNodes).toHaveBeenCalledWith(editor, {
+      expect(editor.tf.moveNodes).toHaveBeenCalledWith({
         at: [2],
         to: [1],
       });
@@ -110,7 +110,7 @@ describe('onDropNode', () => {
 
       onDropNode(editor, { id: 'hover', dragItem, monitor, nodeRef });
 
-      expect(moveNodes).not.toHaveBeenCalled();
+      expect(editor.tf.moveNodes).not.toHaveBeenCalled();
     });
 
     it('should not move if already in position for top', () => {
@@ -122,7 +122,7 @@ describe('onDropNode', () => {
 
       onDropNode(editor, { id: 'hover', dragItem, monitor, nodeRef });
 
-      expect(moveNodes).not.toHaveBeenCalled();
+      expect(editor.tf.moveNodes).not.toHaveBeenCalled();
     });
   });
 
@@ -142,7 +142,7 @@ describe('onDropNode', () => {
         orientation: 'horizontal',
       });
 
-      expect(moveNodes).toHaveBeenCalledWith(editor, {
+      expect(editor.tf.moveNodes).toHaveBeenCalledWith({
         at: [2, 0],
         to: [2, 1],
       });
@@ -163,7 +163,7 @@ describe('onDropNode', () => {
         orientation: 'horizontal',
       });
 
-      expect(moveNodes).toHaveBeenCalledWith(editor, {
+      expect(editor.tf.moveNodes).toHaveBeenCalledWith({
         at: [2, 2],
         to: [2, 1],
       });
@@ -184,7 +184,7 @@ describe('onDropNode', () => {
         orientation: 'horizontal',
       });
 
-      expect(moveNodes).not.toHaveBeenCalled();
+      expect(editor.tf.moveNodes).not.toHaveBeenCalled();
     });
 
     it('should not move if already in position for left', () => {
@@ -202,7 +202,7 @@ describe('onDropNode', () => {
         orientation: 'horizontal',
       });
 
-      expect(moveNodes).not.toHaveBeenCalled();
+      expect(editor.tf.moveNodes).not.toHaveBeenCalled();
     });
   });
 });

@@ -2,11 +2,8 @@ import type { Path } from 'slate';
 
 import {
   type SlateEditor,
-  getAboveNode,
   getEditorPlugin,
   isExpanded,
-  removeNodes,
-  setNodes,
 } from '@udecode/plate-common';
 import cloneDeep from 'lodash/cloneDeep.js';
 
@@ -24,7 +21,7 @@ import { getCellPath } from './getCellPath';
 
 export const deleteTableMergeColumn = (editor: SlateEditor) => {
   const type = editor.getType(BaseTablePlugin);
-  const tableEntry = getAboveNode<TTableElement>(editor, {
+  const tableEntry = editor.api.above<TTableElement>({
     match: { type },
   });
 
@@ -39,7 +36,7 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
 
     const table = tableEntry[0] as TTableElement;
 
-    const selectedCellEntry = getAboveNode(editor, {
+    const selectedCellEntry = editor.api.above({
       match: {
         type: getCellTypes(editor),
       },
@@ -124,10 +121,10 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
         newCell.attributes.colspan = colSpan.toString();
       }
 
-      setNodes<TTableCellElement>(editor, newCell, { at: curCellPath });
+      editor.tf.setNodes<TTableCellElement>(newCell, { at: curCellPath });
     });
 
-    const trEntry = getAboveNode(editor, {
+    const trEntry = editor.api.above({
       match: { type: editor.getType(BaseTableRowPlugin) },
     });
 
@@ -173,7 +170,7 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
       paths.forEach((cellPaths) => {
         const pathToDelete = cellPaths[0];
         cellPaths.forEach(() => {
-          removeNodes(editor, {
+          editor.tf.removeNodes({
             at: pathToDelete,
           });
         });
@@ -185,8 +182,7 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
         const newColSizes = [...colSizes];
         newColSizes.splice(deletingColIndex, 1);
 
-        setNodes<TTableElement>(
-          editor,
+        editor.tf.setNodes<TTableElement>(
           { colSizes: newColSizes },
           { at: tablePath }
         );

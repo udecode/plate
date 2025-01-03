@@ -1,11 +1,8 @@
-import {
-  type ExtendEditor,
-  type PluginConfig,
-  type SlateEditor,
-  type TElement,
-  getEditorString,
-  getPointBefore,
-  getRange,
+import type {
+  ExtendEditor,
+  PluginConfig,
+  SlateEditor,
+  TElement,
 } from '@udecode/plate-common';
 
 import type { TriggerComboboxPluginOptions } from './types';
@@ -41,13 +38,8 @@ export const withTriggerCombobox: ExtendEditor<
     }
 
     // Make sure an input is created at the beginning of line or after a whitespace
-    const previousChar = getEditorString(
-      editor,
-      getRange(
-        editor,
-        editor.selection,
-        getPointBefore(editor, editor.selection)
-      )
+    const previousChar = editor.api.string(
+      editor.api.range(editor.selection, editor.api.before(editor.selection))
     );
 
     const matchesPreviousCharPattern =

@@ -1,11 +1,5 @@
+import type { TEditor } from '@udecode/slate';
 import type { Location } from 'slate';
-
-import {
-  type TEditor,
-  getEndPoint,
-  getStartPoint,
-  select,
-} from '@udecode/slate';
 
 export interface SelectEditorOptions {
   /** Specific location if edge is not defined. */
@@ -30,12 +24,12 @@ export const selectEditor = (
   let location = at as Location;
 
   if (edge === 'start') {
-    location = getStartPoint(editor, [])!;
+    location = editor.api.start([])!;
   }
   if (edge === 'end') {
-    location = getEndPoint(editor, [])!;
+    location = editor.api.end([])!;
   }
   if (location) {
-    select(editor, location);
+    editor.tf.select(location);
   }
 };

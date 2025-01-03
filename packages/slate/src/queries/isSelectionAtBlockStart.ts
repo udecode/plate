@@ -1,9 +1,6 @@
-import {
-  type GetAboveNodeOptions,
-  type TEditor,
-  type ValueOf,
-  isExpanded,
-} from '../interfaces';
+import type { GetAboveNodeOptions } from '../interfaces/editor/editor-types';
+
+import { type TEditor, type ValueOf, isExpanded } from '../interfaces';
 import { getBlockAbove } from './getBlockAbove';
 
 /**

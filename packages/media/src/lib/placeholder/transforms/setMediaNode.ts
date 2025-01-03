@@ -1,8 +1,4 @@
-import {
-  type SetNodesOptions,
-  type SlateEditor,
-  setNodes,
-} from '@udecode/plate-common';
+import type { SetNodesOptions, SlateEditor } from '@udecode/plate-common';
 
 type props = {
   type: string;
@@ -20,4 +16,4 @@ export const setMediaNode = (
   editor: SlateEditor,
   props: props,
   options?: SetNodesOptions
-) => setNodes(editor, props, options);
+) => editor.tf.setNodes(props, options);

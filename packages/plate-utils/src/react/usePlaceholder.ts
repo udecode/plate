@@ -1,10 +1,5 @@
 import { useEditorRef } from '@udecode/plate-core/react';
-import {
-  type QueryNodeOptions,
-  isCollapsed,
-  isElementEmpty,
-  queryNode,
-} from '@udecode/slate';
+import { type QueryNodeOptions, isCollapsed, queryNode } from '@udecode/slate';
 import { useComposing, useFocused, useSelected } from 'slate-react';
 
 import type { PlateElementProps } from './PlateElement';
@@ -26,7 +21,7 @@ export const usePlaceholderState = ({
   const composing = useComposing();
   const editor = useEditorRef();
 
-  const isEmptyBlock = isElementEmpty(editor, element) && !composing;
+  const isEmptyBlock = editor.api.isEmpty(element) && !composing;
 
   const enabled =
     isEmptyBlock &&

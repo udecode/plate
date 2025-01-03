@@ -1,4 +1,5 @@
-import type { InsertNodesOptions, TEditor, ValueOf } from '../interfaces';
+import type { TEditor, ValueOf } from '../interfaces';
+import type { InsertNodesOptions } from '../interfaces/editor/editor-types';
 
 import { getQueryOptions } from '../utils';
 import { insertElements } from './insertElements';

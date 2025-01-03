@@ -2,7 +2,6 @@ import {
   type MoveChildrenOptions,
   type SlateEditor,
   type TElementEntry,
-  deleteText,
   findDescendant,
   getLastChildPath,
   moveChildren,
@@ -96,7 +95,7 @@ export const moveListItemsToList = (
 
     // Remove the empty list
     if (deleteFromList) {
-      deleteText(editor, { at: fromListPath });
+      editor.tf.delete({ at: fromListPath });
     }
   });
 

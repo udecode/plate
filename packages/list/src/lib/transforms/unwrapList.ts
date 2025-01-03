@@ -3,12 +3,9 @@ import type { Path } from 'slate';
 import {
   type SlateEditor,
   BaseParagraphPlugin,
-  getAboveNode,
   getBlockAbove,
   getCommonNode,
   isElement,
-  setElements,
-  unwrapNodes,
 } from '@udecode/plate-common';
 
 import {
@@ -21,7 +18,7 @@ import { getListTypes } from '../queries/index';
 
 export const unwrapList = (editor: SlateEditor, { at }: { at?: Path } = {}) => {
   const ancestorListTypeCheck = () => {
-    if (getAboveNode(editor, { match: { at, type: getListTypes(editor) } })) {
+    if (editor.api.above({ match: { at, type: getListTypes(editor) } })) {
       return true;
     }
     // The selection's common node might be a list type
@@ -51,19 +48,19 @@ export const unwrapList = (editor: SlateEditor, { at }: { at?: Path } = {}) => {
       });
 
       if (licEntry) {
-        setElements(editor, {
+        editor.tf.setNodes({
           at,
           type: editor.getType(BaseParagraphPlugin),
         });
       }
 
-      unwrapNodes(editor, {
+      editor.tf.unwrapNodes({
         at,
         match: { type: editor.getType(BaseListItemPlugin) },
         split: true,
       });
 
-      unwrapNodes(editor, {
+      editor.tf.unwrapNodes({
         at,
         match: {
           type: [

@@ -3,11 +3,8 @@ import type { KeyboardHandler } from '@udecode/plate-common/react';
 import {
   type TElement,
   Hotkeys,
-  getAboveNode,
-  getNodeEntries,
   isExpanded,
   isHotkey,
-  select,
 } from '@udecode/plate-common';
 
 import {
@@ -37,7 +34,7 @@ export const onKeyDownTable: KeyboardHandler<TableConfig> = ({
   ) {
     // fix the exception of inputting Chinese when selecting multiple cells
     const tdEntries = Array.from(
-      getNodeEntries(editor, {
+      editor.api.nodes({
         at: editor.selection,
         match: { type: getCellTypes(editor) },
       })
@@ -89,7 +86,7 @@ export const onKeyDownTable: KeyboardHandler<TableConfig> = ({
 
       if (previousCell) {
         const [, previousCellPath] = previousCell;
-        select(editor, previousCellPath);
+        editor.tf.select(previousCellPath);
       }
     } else if (isTab) {
       // move right with tab
@@ -97,7 +94,7 @@ export const onKeyDownTable: KeyboardHandler<TableConfig> = ({
 
       if (nextCell) {
         const [, nextCellPath] = nextCell;
-        select(editor, nextCellPath);
+        editor.tf.select(nextCellPath);
       }
     }
 
@@ -105,14 +102,14 @@ export const onKeyDownTable: KeyboardHandler<TableConfig> = ({
     event.stopPropagation();
   }
   if (isHotkey('mod+a', event)) {
-    const res = getAboveNode<TElement>(editor, { match: { type } });
+    const res = editor.api.above<TElement>({ match: { type } });
 
     if (!res) return;
 
     const [, tablePath] = res;
 
     // select the whole table
-    select(editor, tablePath);
+    editor.tf.select(tablePath);
 
     event.preventDefault();
     event.stopPropagation();

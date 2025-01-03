@@ -8,7 +8,6 @@ import {
 } from '@udecode/plate-code-block';
 import {
   BaseParagraphPlugin,
-  getEditorString,
   getRangeFromBlockStart,
 } from '@udecode/plate-common';
 import { createSlateEditor } from '@udecode/plate-common';
@@ -92,10 +91,7 @@ describe('when ``` at block start, but customising with query we get the most re
                   }
 
                   const matchRange = getRangeFromBlockStart(editor) as Range;
-                  const textFromBlockStart = getEditorString(
-                    editor,
-                    matchRange
-                  );
+                  const textFromBlockStart = editor.api.string(matchRange);
                   const currentNodeText =
                     (textFromBlockStart || '') + rule.text;
 

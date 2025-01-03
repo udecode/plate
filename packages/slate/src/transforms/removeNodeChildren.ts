@@ -1,11 +1,8 @@
 import type { Path } from 'slate';
 
-import {
-  type RemoveNodesOptions,
-  type TEditor,
-  type ValueOf,
-  getNodeChildren,
-} from '../interfaces';
+import type { RemoveNodesOptions } from '../interfaces/editor/editor-types';
+
+import { type TEditor, type ValueOf, getNodeChildren } from '../interfaces';
 
 /** Remove node children. */
 export const removeNodeChildren = <E extends TEditor>(

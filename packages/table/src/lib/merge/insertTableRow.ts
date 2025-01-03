@@ -5,10 +5,7 @@ import {
   getEditorPlugin,
   getLastChildPath,
   getNode,
-  getParentNode,
   insertElements,
-  select,
-  setNodes,
 } from '@udecode/plate-common';
 import cloneDeep from 'lodash/cloneDeep.js';
 import { Path } from 'slate';
@@ -155,10 +152,10 @@ export const insertTableMergeRow = (
       }
 
       // make higher
-      setNodes<TTableCellElement>(editor, newCell, { at: currentCellPath });
+      editor.tf.setNodes<TTableCellElement>(newCell, { at: currentCellPath });
     } else {
       // add new
-      const row = getParentNode(editor, currentCellPath)!;
+      const row = editor.api.parent(currentCellPath)!;
       const rowElement = row[0] as TTableRowElement;
       const emptyCell = api.create.tableCell({ header, row: rowElement });
 
@@ -191,7 +188,7 @@ export const insertTableMergeRow = (
 
       if (cellEntry) {
         const [, nextCellPath] = cellEntry;
-        select(editor, nextCellPath);
+        editor.tf.select(nextCellPath);
       }
     }
   });

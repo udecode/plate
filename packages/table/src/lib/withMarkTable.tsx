@@ -1,12 +1,6 @@
-import type { ExtendEditor, TElement } from '@udecode/plate-common';
+import type { ExtendEditor } from '@udecode/plate-common';
 
-import {
-  getNodeEntries,
-  isCollapsed,
-  isText,
-  setNodes,
-  unsetNodes,
-} from '@udecode/plate-common';
+import { isCollapsed, isText } from '@udecode/plate-common';
 
 import type { TableConfig } from '.';
 
@@ -26,8 +20,7 @@ export const withMarkTable: ExtendEditor<TableConfig> = ({ editor }) => {
     if (matchesCell.length <= 1) return addMark(key, value);
 
     matchesCell.forEach(([_cell, cellPath]) => {
-      setNodes<TElement>(
-        editor,
+      editor.tf.setNodes(
         {
           [key]: value,
         },
@@ -51,7 +44,7 @@ export const withMarkTable: ExtendEditor<TableConfig> = ({ editor }) => {
     if (matchesCell.length === 0) return removeMark(key);
 
     matchesCell.forEach(([_cell, cellPath]) => {
-      unsetNodes(editor, key, {
+      editor.tf.unsetNodes(key, {
         at: cellPath,
         match: (n) => isText(n),
         split: true,
@@ -72,7 +65,7 @@ export const withMarkTable: ExtendEditor<TableConfig> = ({ editor }) => {
     const totalMarks: Record<string, any> = {};
 
     matchesCell.forEach(([_cell, cellPath]) => {
-      const textNodeEntry = getNodeEntries(editor, {
+      const textNodeEntry = editor.api.nodes({
         at: cellPath,
         match: (n) => isText(n),
       });

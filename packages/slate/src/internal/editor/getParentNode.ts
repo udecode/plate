@@ -1,16 +1,12 @@
-import { type LeafEdge, parent } from 'slate';
+import { parent } from 'slate';
 
-import type { At } from '../../types';
+import type { TEditor } from '../../interfaces/editor/TEditor';
+import type { GetParentNodeOptions } from '../../interfaces/editor/editor-types';
 import type { AncestorOf } from '../../interfaces/node/TAncestor';
 import type { TNodeEntry } from '../../interfaces/node/TNodeEntry';
-import type { TEditor } from '../../interfaces/editor/TEditor';
+import type { At } from '../../types';
 
 import { getAt } from '../../utils';
-
-export type GetParentNodeOptions = {
-  depth?: number;
-  edge?: LeafEdge;
-};
 
 export const getParentNode = <
   N extends AncestorOf<E>,

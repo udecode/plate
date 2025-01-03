@@ -1,11 +1,6 @@
 import type { ExtendEditor } from '@udecode/plate-common/react';
 
-import {
-  type SlateEditor,
-  getBlockAbove,
-  isNode,
-  moveNodes,
-} from '@udecode/plate-common';
+import { type SlateEditor, getBlockAbove, isNode } from '@udecode/plate-common';
 import { type TIndentElement, indent } from '@udecode/plate-indent';
 
 import type { ToggleConfig } from './TogglePlugin';
@@ -86,7 +81,7 @@ export const withToggle: ExtendEditor<ToggleConfig> = ({
           const afterLastEntryEncloseInToggle = [
             lastEntryEnclosedInToggle[1][0] + 1,
           ];
-          moveNodes(editor, {
+          editor.tf.moveNodes({
             at: newlyInsertedTogglePath,
             to: afterLastEntryEncloseInToggle,
           });

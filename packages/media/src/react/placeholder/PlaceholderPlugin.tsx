@@ -2,9 +2,7 @@ import {
   type ExtendConfig,
   type InsertNodesOptions,
   bindFirst,
-  getAncestorNode,
   getNodeString,
-  removeNodes,
 } from '@udecode/plate-common';
 import { toTPlatePlugin } from '@udecode/plate-common/react';
 
@@ -173,13 +171,13 @@ export const PlaceholderPlugin = toTPlatePlugin<
           event.stopPropagation();
 
           let inserted = false;
-          const ancestor = getAncestorNode(editor);
+          const ancestor = editor.api.highestBlock();
 
           if (ancestor) {
             const [node, path] = ancestor;
 
             if (getNodeString(node).length === 0) {
-              removeNodes(editor, { at: path });
+              editor.tf.removeNodes({ at: path });
               tf.insert.media(files, { at: path, nextBlock: false });
               inserted = true;
             }

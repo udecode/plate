@@ -2,7 +2,6 @@ import {
   type SlateEditor,
   findNode,
   getEditorPlugin,
-  getEditorString,
 } from '@udecode/plate-common';
 
 import type { TLinkElement } from '../../lib';
@@ -20,7 +19,7 @@ export const triggerFloatingLinkEdit = (editor: SlateEditor) => {
 
   const [link, path] = entry;
 
-  let text = getEditorString(editor, path);
+  let text = editor.api.string(path);
 
   setOption('url', link.url);
   setOption('newTab', link.target === '_blank');

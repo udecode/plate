@@ -1,10 +1,6 @@
 /** @jsx jsxt */
 
-import {
-  type Value,
-  createSlateEditor,
-  normalizeEditor,
-} from '@udecode/plate-common';
+import { type Value, createSlateEditor } from '@udecode/plate-common';
 import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { jsxt } from '@udecode/plate-test-utils';
 
@@ -71,7 +67,7 @@ describe('withNormalizeTable', () => {
           value: input,
         });
 
-        normalizeEditor(editor, {
+        editor.tf.normalize({
           force: true,
         });
         expect(editor.children).toMatchObject(output);
@@ -157,7 +153,7 @@ describe('withNormalizeTable', () => {
           value: input,
         });
 
-        normalizeEditor(editor, {
+        editor.tf.normalize({
           force: true,
         });
         expect(editor.children).toMatchObject(output);
@@ -243,7 +239,7 @@ describe('withNormalizeTable', () => {
           value: input,
         });
 
-        normalizeEditor(editor, {
+        editor.tf.normalize({
           force: true,
         });
         expect(editor.children).toMatchObject(output);
@@ -329,7 +325,7 @@ describe('withNormalizeTable', () => {
           value: input,
         });
 
-        normalizeEditor(editor, {
+        editor.tf.normalize({
           force: true,
         });
         expect(editor.children).toMatchObject(output);
@@ -383,7 +379,7 @@ describe('withNormalizeTable', () => {
           value: input,
         });
 
-        normalizeEditor(editor, {
+        editor.tf.normalize({
           force: true,
         });
         expect(editor.children).toMatchObject(output);

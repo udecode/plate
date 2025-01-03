@@ -4,7 +4,6 @@ import {
   type TEditor,
   type TNodeEntry,
   getNode,
-  setElements,
 } from '@udecode/plate-common';
 
 import type { GetSiblingIndentListOptions } from '../queries/getSiblingIndentList';
@@ -31,8 +30,7 @@ export const normalizeNextIndentListStart = (
   const listStart = restart == null ? prevListStart + 1 : restart;
 
   if (currListStart !== listStart) {
-    setElements(
-      editor,
+    editor.tf.setNodes(
       { [INDENT_LIST_KEYS.listStart]: listStart },
       { at: path }
     );

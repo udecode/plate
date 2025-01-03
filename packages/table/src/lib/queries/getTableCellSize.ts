@@ -1,8 +1,4 @@
-import {
-  type SlateEditor,
-  getEditorPlugin,
-  getParentNode,
-} from '@udecode/plate-common';
+import { type SlateEditor, getEditorPlugin } from '@udecode/plate-common';
 
 import {
   type CellIndices,
@@ -35,12 +31,12 @@ export const getTableCellSize = (
   const path = editor.api.findPath(element)!;
 
   if (!rowSize) {
-    const [rowElement] = getParentNode<TTableRowElement>(editor, path)!;
+    const [rowElement] = editor.api.parent<TTableRowElement>(path)!;
     rowSize = rowElement.size;
   }
   if (!colSizes) {
-    const [, rowPath] = getParentNode<TTableRowElement>(editor, path)!;
-    const [tableNode] = getParentNode<TTableElement>(editor, rowPath)!;
+    const [, rowPath] = editor.api.parent<TTableRowElement>(path)!;
+    const [tableNode] = editor.api.parent<TTableElement>(rowPath)!;
     colSizes = getTableOverriddenColSizes(tableNode);
   }
 

@@ -1,17 +1,11 @@
 import {
   type ExtendEditor,
-  getAboveNode,
   getEditorPlugin,
-  getEditorString,
   getNextNodeStartPoint,
   getPreviousNodeEndPoint,
   getRangeBefore,
   getRangeFromBlockStart,
-  insertNodes,
   isCollapsed,
-  isEndPoint,
-  isStartPoint,
-  select,
   someNode,
 } from '@udecode/plate-common';
 import {
@@ -68,14 +62,14 @@ export const withLink: ExtendEditor<BaseLinkConfig> = ({
       // if word before the cursor has a link, exit
       if (hasLink) return;
 
-      let beforeWordText = getEditorString(editor, beforeWordRange);
+      let beforeWordText = editor.api.string(beforeWordRange);
       beforeWordText = getUrlHref?.(beforeWordText) ?? beforeWordText;
 
       // if word before is not an url, exit
       if (!isUrl!(beforeWordText)) return;
 
       // select the word to wrap link
-      select(editor, beforeWordRange);
+      editor.tf.select(beforeWordRange);
 
       // wrap link
       upsertLink(editor, {
@@ -128,7 +122,7 @@ export const withLink: ExtendEditor<BaseLinkConfig> = ({
       const range = operation.newProperties as Range | null;
 
       if (range?.focus && range.anchor && isCollapsed(range)) {
-        const entry = getAboveNode(editor, {
+        const entry = editor.api.above({
           at: range,
           match: { type },
         });
@@ -138,10 +132,10 @@ export const withLink: ExtendEditor<BaseLinkConfig> = ({
 
           let newPoint: Point | undefined;
 
-          if (isStartPoint(editor, range.focus, path)) {
+          if (editor.api.isStart(range.focus, path)) {
             newPoint = getPreviousNodeEndPoint(editor, path);
           }
-          if (isEndPoint(editor, range.focus, path)) {
+          if (editor.api.isEnd(range.focus, path)) {
             newPoint = getNextNodeStartPoint(editor, path);
           }
           if (newPoint) {
@@ -162,21 +156,17 @@ export const withLink: ExtendEditor<BaseLinkConfig> = ({
     if (node.type === type) {
       const range = editor.selection as Range | null;
 
-      if (
-        range &&
-        isCollapsed(range) &&
-        isEndPoint(editor, range.focus, path)
-      ) {
+      if (range && isCollapsed(range) && editor.api.isEnd(range.focus, path)) {
         const nextPoint = getNextNodeStartPoint(editor, path);
 
         // select next text node if any
         if (nextPoint) {
-          select(editor, nextPoint);
+          editor.tf.select(nextPoint);
         } else {
           // insert text node then select
           const nextPath = Path.next(path);
-          insertNodes(editor, { text: '' } as any, { at: nextPath });
-          select(editor, nextPath);
+          editor.tf.insertNodes({ text: '' } as any, { at: nextPath });
+          editor.tf.select(nextPath);
         }
       }
     }

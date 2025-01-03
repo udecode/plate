@@ -1,11 +1,6 @@
 /* eslint-disable jest/no-conditional-expect */
 import { BoldPlugin } from '@udecode/plate-basic-marks/react';
-import {
-  type Value,
-  createTEditor,
-  getEndPoint,
-  getStartPoint,
-} from '@udecode/slate';
+import { type Value, createTEditor } from '@udecode/slate';
 
 import { ParagraphPlugin, PlateApiPlugin, ReactPlugin } from '../../react';
 import { withPlate } from '../../react/editor/withPlate';
@@ -406,8 +401,8 @@ describe('withPlate', () => {
       value,
     });
     const expectedStartSelection = {
-      anchor: getStartPoint(editorWithAutoSelectStart, []),
-      focus: getStartPoint(editorWithAutoSelectStart, []),
+      anchor: editorWithAutoSelectStart.api.start([]),
+      focus: editorWithAutoSelectStart.api.start([]),
     };
     expect(editorWithAutoSelectStart.selection).toEqual(expectedStartSelection);
 
@@ -417,8 +412,8 @@ describe('withPlate', () => {
       value,
     });
     const expectedEndSelection = {
-      anchor: getEndPoint(editorWithAutoSelectEnd, []),
-      focus: getEndPoint(editorWithAutoSelectEnd, []),
+      anchor: editorWithAutoSelectEnd.api.end([]),
+      focus: editorWithAutoSelectEnd.api.end([]),
     };
     expect(editorWithAutoSelectEnd.selection).toEqual(expectedEndSelection);
 

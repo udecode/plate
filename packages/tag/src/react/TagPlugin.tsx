@@ -1,8 +1,6 @@
 import {
   isText,
-  moveSelection,
   removeEditorText,
-  removeNodes,
   replaceNode,
   someNode,
 } from '@udecode/plate-common';
@@ -25,7 +23,7 @@ export const MultiSelectPlugin = TagPlugin.extend({
           match: (n) => n.type === type,
         })
       ) {
-        moveSelection(editor);
+        editor.tf.move();
       }
     };
 
@@ -56,7 +54,7 @@ export const MultiSelectPlugin = TagPlugin.extend({
             n.type === type && n.value === node.value && !Path.equals(p, path),
         })
       ) {
-        removeNodes(editor, {
+        editor.tf.removeNodes({
           at: path,
         });
 

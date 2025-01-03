@@ -9,7 +9,6 @@ import {
   type PluginConfig,
   type TElement,
   bindFirst,
-  getAncestorNode,
   getBlockAbove,
   getNodeString,
   isBlockAboveEmpty,
@@ -71,7 +70,7 @@ export type CopilotPluginConfig = PluginConfig<
     /**
      * Get the prompt for AI completion.
      *
-     * @default serializeMdNodes(getAncestorNode(editor))
+     * @default serializeMdNodes(editor.api.highestBlock())
      */
     getPrompt?: (options: { editor: PlateEditor }) => string;
     /** Render the ghost text. */
@@ -140,7 +139,7 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
     error: null,
     getNextWord: getNextWord,
     getPrompt: ({ editor }) => {
-      const contextEntry = getAncestorNode(editor);
+      const contextEntry = editor.api.highestBlock();
 
       if (!contextEntry) return '';
 

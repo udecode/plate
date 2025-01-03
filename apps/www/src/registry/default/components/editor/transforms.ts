@@ -11,11 +11,7 @@ import {
   type TNodeEntry,
   getBlockAbove,
   getBlocks,
-  getNodeEntry,
-  insertNodes,
   removeEmptyPreviousBlock,
-  setNodes,
-  unsetNodes,
 } from '@udecode/plate-common';
 import { insertDate } from '@udecode/plate-date';
 import { DatePlugin } from '@udecode/plate-date/react';
@@ -62,8 +58,7 @@ export const STRUCTURAL_TYPES: string[] = [
 const ACTION_THREE_COLUMNS = 'action_three_columns';
 
 const insertList = (editor: PlateEditor, type: string) => {
-  insertNodes(
-    editor,
+  editor.tf.insertNodes(
     editor.api.create.block({
       indent: 1,
       listStyleType: type,
@@ -125,7 +120,7 @@ export const insertBlock = (editor: PlateEditor, type: string) => {
 
       const at = Path.next(path);
 
-      insertNodes(editor, editor.api.create.block({ type }), {
+      editor.tf.insertNodes(editor.api.create.block({ type }), {
         at,
         select: true,
       });
@@ -146,8 +141,7 @@ const setList = (
   type: string,
   entry: TNodeEntry<TElement>
 ) => {
-  setNodes(
-    editor,
+  editor.tf.setNodes(
     editor.api.create.block({
       indent: 1,
       listStyleType: type,
@@ -178,18 +172,18 @@ export const setBlockType = (
       const [node, path] = entry;
 
       if (node[IndentListPlugin.key]) {
-        unsetNodes(editor, [IndentListPlugin.key, 'indent'], { at: path });
+        editor.tf.unsetNodes([IndentListPlugin.key, 'indent'], { at: path });
       }
       if (type in setBlockMap) {
         return setBlockMap[type](editor, type, entry);
       }
       if (node.type !== type) {
-        editor.tf.setNodes<TElement>({ type }, { at: path });
+        editor.tf.setNodes({ type }, { at: path });
       }
     };
 
     if (at) {
-      const entry = getNodeEntry<TElement>(editor, at);
+      const entry = editor.api.node<TElement>(at);
 
       if (entry) {
         setEntry(entry);

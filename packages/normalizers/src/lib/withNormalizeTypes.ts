@@ -4,7 +4,6 @@ import {
   getNode,
   insertElements,
   isElement,
-  setElements,
 } from '@udecode/plate-common';
 
 import type { NormalizeTypesConfig } from './NormalizeTypesPlugin';
@@ -28,7 +27,7 @@ export const withNormalizeTypes: ExtendEditor<NormalizeTypesConfig> = ({
               const { children, ...props } = editor.api.create.block({
                 type: strictType,
               });
-              setElements(editor, props, {
+              editor.tf.setNodes(props, {
                 at: path,
               });
 

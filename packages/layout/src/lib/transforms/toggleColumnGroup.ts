@@ -3,9 +3,7 @@ import {
   type SlateEditor,
   type TElement,
   getBlockAbove,
-  getStartPoint,
   replaceNode,
-  select,
 } from '@udecode/plate-common';
 
 import { BaseColumnItemPlugin, BaseColumnPlugin } from '../BaseColumnPlugin';
@@ -57,6 +55,6 @@ export const toggleColumnGroup = (
       nodes,
     });
 
-    select(editor, getStartPoint(editor, path.concat([0]))!);
+    editor.tf.select(editor.api.start(path.concat([0]))!);
   }
 };

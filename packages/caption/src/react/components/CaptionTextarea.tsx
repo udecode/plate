@@ -2,12 +2,7 @@ import React, { useCallback, useState } from 'react';
 
 import type { TextareaAutosizeProps } from 'react-textarea-autosize';
 
-import {
-  type TElement,
-  getNodeString,
-  getPointAfter,
-  isHotkey,
-} from '@udecode/plate-common';
+import { type TElement, getNodeString, isHotkey } from '@udecode/plate-common';
 import {
   createPrimitiveComponent,
   useEditorRef,
@@ -138,7 +133,7 @@ export const useCaptionTextarea = ({
 
       if (!path) return;
 
-      const nextNodePath = getPointAfter(editor, path);
+      const nextNodePath = editor.api.after(path);
 
       if (!nextNodePath) return;
 

@@ -6,7 +6,7 @@ import {
   useRef,
 } from 'react';
 
-import { Hotkeys, isHotkey, removeNodes } from '@udecode/plate-common';
+import { Hotkeys, isHotkey } from '@udecode/plate-common';
 import { useEditorRef, useElement } from '@udecode/plate-common/react';
 import { useSelected } from 'slate-react';
 
@@ -62,7 +62,7 @@ export const useComboboxInput = ({
 
       if (!path) return;
 
-      removeNodes(editor, { at: path });
+      editor.tf.removeNodes({ at: path });
 
       if (shouldFocusEditor) {
         editor.tf.focus();

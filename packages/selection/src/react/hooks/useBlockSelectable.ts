@@ -1,6 +1,7 @@
 import type React from 'react';
 
-import { getAboveNode, isVoid } from '@udecode/plate-common';
+import type { TElement } from '@udecode/plate-common';
+
 import {
   useEditorPlugin,
   useElement,
@@ -28,7 +29,7 @@ export const useBlockSelectable = () => {
 
         if (!enableContextMenu) return;
         if (editor.selection?.focus) {
-          const nodeEntry = getAboveNode(editor);
+          const nodeEntry = editor.api.above<TElement>();
 
           if (nodeEntry && Path.isCommon(path, nodeEntry[1])) {
             const id = nodeEntry[0].id as string | undefined;
@@ -41,7 +42,11 @@ export const useBlockSelectable = () => {
              * When "block selected or is void or has openContextMenu props",
              * right click can always open the context menu.
              */
-            if (!isSelected && !isVoid(editor, nodeEntry[0]) && !isOpenAlways) {
+            if (
+              !isSelected &&
+              !editor.api.isVoid(nodeEntry[0]) &&
+              !isOpenAlways
+            ) {
               return event.stopPropagation();
             }
           }

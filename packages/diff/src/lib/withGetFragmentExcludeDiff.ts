@@ -1,12 +1,11 @@
-import type { ExtendEditor, TDescendant } from '@udecode/plate-common';
+import type { ExtendEditorApi, TDescendant } from '@udecode/plate-common';
 
 import cloneDeep from 'lodash/cloneDeep.js';
 
-// Uses BaseEditor to be compatible with non-Plate editors
-export const withGetFragmentExcludeDiff: ExtendEditor = ({ editor }) => {
-  const { getFragment } = editor;
-
-  editor.getFragment = () => {
+export const withGetFragmentExcludeDiff: ExtendEditorApi = ({
+  api: { getFragment },
+}) => ({
+  getFragment() {
     const fragment = cloneDeep(getFragment());
 
     const removeDiff = (node: TDescendant) => {
@@ -19,7 +18,5 @@ export const withGetFragmentExcludeDiff: ExtendEditor = ({ editor }) => {
     fragment.forEach(removeDiff);
 
     return fragment;
-  };
-
-  return editor;
-};
+  },
+});

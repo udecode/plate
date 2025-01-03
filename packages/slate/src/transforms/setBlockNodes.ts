@@ -1,10 +1,5 @@
-import type {
-  ElementOf,
-  GetNodeEntriesOptions,
-  TEditor,
-  TNodeProps,
-  ValueOf,
-} from '../interfaces';
+import type { ElementOf, TEditor, TNodeProps, ValueOf } from '../interfaces';
+import type { GetNodeEntriesOptions } from '../interfaces/editor/editor-types';
 
 import { getBlocks } from '../queries/getBlocks';
 

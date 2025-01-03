@@ -1,6 +1,6 @@
 import type { TEditor } from '@udecode/plate-common';
 
-import { findNode, getStartPoint, select } from '@udecode/plate-common';
+import { findNode } from '@udecode/plate-common';
 
 /** Select the start of a block by id and focus the editor. */
 export const focusBlockStartById = (editor: TEditor, id: string) => {
@@ -8,6 +8,6 @@ export const focusBlockStartById = (editor: TEditor, id: string) => {
 
   if (!path) return;
 
-  select(editor, getStartPoint(editor, path)!);
+  editor.tf.select(editor.api.start(path)!);
   editor.tf.focus();
 };

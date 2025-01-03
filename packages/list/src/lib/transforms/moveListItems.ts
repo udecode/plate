@@ -1,10 +1,5 @@
-import {
-  type GetNodeEntriesOptions,
-  type SlateEditor,
-  createPathRef,
-  getNodeEntries,
-  getParentNode,
-} from '@udecode/plate-common';
+import type { GetNodeEntriesOptions, SlateEditor } from '@udecode/plate-common';
+
 import { type PathRef, Path } from 'slate';
 
 import { BaseListItemContentPlugin } from '../BaseListPlugin';
@@ -27,7 +22,7 @@ export const moveListItems = (
     increase = true,
   }: MoveListItemsOptions = {}
 ) => {
-  const _nodes = getNodeEntries(editor, {
+  const _nodes = editor.api.nodes({
     at,
     match: {
       type: editor.getType(BaseListItemContentPlugin),
@@ -55,7 +50,7 @@ export const moveListItems = (
 
     if (!isAncestor) {
       highestLicPaths.push(licPath);
-      highestLicPathRefs.push(createPathRef(editor, licPath));
+      highestLicPathRefs.push(editor.api.pathRef(licPath));
     }
   });
 
@@ -71,11 +66,11 @@ export const moveListItems = (
 
       if (!licPath) return;
 
-      const listItem = getParentNode(editor, licPath);
+      const listItem = editor.api.parent(licPath);
 
       if (!listItem) return;
 
-      const parentList = getParentNode(editor, listItem[1]);
+      const parentList = editor.api.parent(listItem[1]);
 
       if (!parentList) return;
 

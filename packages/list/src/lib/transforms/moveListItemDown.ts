@@ -2,10 +2,7 @@ import {
   type SlateEditor,
   type TElement,
   type TElementEntry,
-  getNodeEntry,
   match,
-  moveNodes,
-  wrapNodes,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
@@ -34,10 +31,7 @@ export const moveListItemDown = (
   }
 
   // Previous sibling is the new parent
-  const previousSiblingItem = getNodeEntry<TElement>(
-    editor,
-    previousListItemPath
-  );
+  const previousSiblingItem = editor.api.node(previousListItemPath);
 
   if (previousSiblingItem) {
     const [previousNode, previousPath] = previousSiblingItem;
@@ -52,15 +46,14 @@ export const moveListItemDown = (
     editor.tf.withoutNormalizing(() => {
       if (!sublist) {
         // Create new sublist
-        wrapNodes<TElement>(
-          editor,
+        editor.tf.wrapNodes<TElement>(
           { children: [], type: listNode.type },
           { at: listItemPath }
         );
       }
 
       // Move the current item to the sublist
-      moveNodes(editor, {
+      editor.tf.moveNodes({
         at: listItemPath,
         to: newPath,
       });

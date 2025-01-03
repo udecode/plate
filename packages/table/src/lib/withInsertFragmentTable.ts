@@ -1,13 +1,7 @@
 import type { ExtendEditor, TElement } from '@udecode/plate-common';
 import type { Path } from 'slate';
 
-import {
-  getEndPoint,
-  getStartPoint,
-  hasNode,
-  replaceNodeChildren,
-  select,
-} from '@udecode/plate-common';
+import { hasNode, replaceNodeChildren } from '@udecode/plate-common';
 import cloneDeep from 'lodash/cloneDeep.js';
 
 import {
@@ -62,9 +56,9 @@ export const withInsertFragmentTable: ExtendEditor<TableConfig> = ({
             }
           });
 
-          select(editor, {
-            anchor: getStartPoint(editor, cellEntries[0][1])!,
-            focus: getEndPoint(editor, cellEntries.at(-1)![1])!,
+          editor.tf.select({
+            anchor: editor.api.start(cellEntries[0][1])!,
+            focus: editor.api.end(cellEntries.at(-1)![1])!,
           });
 
           return;
@@ -149,9 +143,9 @@ export const withInsertFragmentTable: ExtendEditor<TableConfig> = ({
             });
 
             if (lastCellPath) {
-              select(editor, {
-                anchor: getStartPoint(editor, startCellPath)!,
-                focus: getEndPoint(editor, lastCellPath)!,
+              editor.tf.select({
+                anchor: editor.api.start(startCellPath)!,
+                focus: editor.api.end(lastCellPath)!,
               });
             }
           });

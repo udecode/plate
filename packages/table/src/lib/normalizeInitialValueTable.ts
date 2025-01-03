@@ -1,7 +1,4 @@
-import {
-  type NormalizeInitialValue,
-  getNodeEntries,
-} from '@udecode/plate-common';
+import type { NormalizeInitialValue } from '@udecode/plate-common';
 
 import type { TableConfig } from './BaseTablePlugin';
 import type { TTableElement } from './types';
@@ -12,7 +9,7 @@ export const normalizeInitialValueTable: NormalizeInitialValue<TableConfig> = ({
   editor,
   type,
 }) => {
-  const tables = getNodeEntries<TTableElement>(editor, {
+  const tables = editor.api.nodes<TTableElement>({
     at: [],
     match: { type },
   });

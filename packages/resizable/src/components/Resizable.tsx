@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { select, setNodes } from '@udecode/plate-common';
 import { useEditorRef, useElement, usePath } from '@udecode/plate-common/react';
 
 import type { ResizeEvent, ResizeLength } from '../types';
@@ -37,9 +36,9 @@ export const useResizableState = ({
     (w: number) => {
       if (w === nodeWidth) {
         // Focus the node if not resized
-        select(editor, path);
+        editor.tf.select(path);
       } else {
-        setNodes<TResizableElement>(editor, { width: w }, { at: path });
+        editor.tf.setNodes<TResizableElement>({ width: w }, { at: path });
       }
     },
     [editor, nodeWidth, path]

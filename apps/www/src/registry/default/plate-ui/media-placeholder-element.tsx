@@ -6,11 +6,7 @@ import type { ReactNode } from 'react';
 import type { TPlaceholderElement } from '@udecode/plate-media';
 
 import { cn } from '@udecode/cn';
-import {
-  insertNodes,
-  removeNodes,
-  withoutSavingHistory,
-} from '@udecode/plate-common';
+import { withoutSavingHistory } from '@udecode/plate-common';
 import { useEditorPlugin, withHOC, withRef } from '@udecode/plate-common/react';
 import {
   AudioPlugin,
@@ -106,7 +102,7 @@ export const MediaPlaceholderElement = withHOC(
         const path = editor.api.findPath(element);
 
         withoutSavingHistory(editor, () => {
-          removeNodes(editor, { at: path });
+          editor.tf.removeNodes({ at: path });
 
           const node = {
             children: [{ text: '' }],
@@ -119,7 +115,7 @@ export const MediaPlaceholderElement = withHOC(
             url: uploadedFile.url,
           };
 
-          insertNodes(editor, node, { at: path });
+          editor.tf.insertNodes(node, { at: path });
 
           updateUploadHistory(editor, node);
         });

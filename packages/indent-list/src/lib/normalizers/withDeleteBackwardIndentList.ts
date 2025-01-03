@@ -1,6 +1,5 @@
 import {
   type ExtendEditor,
-  getAboveNode,
   getNodeString,
   isCollapsed,
   isDefined,
@@ -18,7 +17,7 @@ export const withDeleteBackwardIndentList: ExtendEditor<
   const { deleteBackward } = editor;
 
   editor.deleteBackward = (unit) => {
-    const nodeEntry = getAboveNode(editor);
+    const nodeEntry = editor.api.above();
 
     if (!nodeEntry) return deleteBackward(unit);
 

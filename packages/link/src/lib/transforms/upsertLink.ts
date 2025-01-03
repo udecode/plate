@@ -4,14 +4,10 @@ import {
   type UnwrapNodesOptions,
   type WrapNodesOptions,
   findNode,
-  getAboveNode,
-  getEditorString,
   getNodeLeaf,
   getNodeProps,
   isDefined,
   isExpanded,
-  removeNodes,
-  setNodes,
 } from '@udecode/plate-common';
 
 import type { TLinkElement } from '../types';
@@ -54,7 +50,7 @@ export const upsertLink = (
 
   if (!at) return;
 
-  const linkAbove = getAboveNode<TLinkElement>(editor, {
+  const linkAbove = editor.api.above<TLinkElement>({
     at,
     match: { type: editor.getType(BaseLinkPlugin) },
   });
@@ -73,8 +69,7 @@ export const upsertLink = (
   // edit the link url and/or target
   if (linkAbove) {
     if (url !== linkAbove[0]?.url || target !== linkAbove[0]?.target) {
-      setNodes<TLinkElement>(
-        editor,
+      editor.tf.setNodes<TLinkElement>(
         { target, url },
         {
           at: linkAbove[1],
@@ -98,7 +93,7 @@ export const upsertLink = (
   let shouldReplaceText = false;
 
   if (linkPath && text?.length) {
-    const linkText = getEditorString(editor, linkPath);
+    const linkText = editor.api.string(linkPath);
 
     if (text !== linkText) {
       shouldReplaceText = true;
@@ -126,7 +121,7 @@ export const upsertLink = (
     return true;
   }
   if (shouldReplaceText) {
-    removeNodes(editor, {
+    editor.tf.removeNodes({
       at: linkPath,
     });
   }

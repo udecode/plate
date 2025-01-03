@@ -7,7 +7,6 @@ import {
   getLastChildPath,
   getNode,
   insertElements,
-  setNodes,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
@@ -142,8 +141,7 @@ export const insertTableColumn = (
         }
       }
 
-      setNodes<TTableElement>(
-        editor,
+      editor.tf.setNodes<TTableElement>(
         {
           colSizes: newColSizes,
         },

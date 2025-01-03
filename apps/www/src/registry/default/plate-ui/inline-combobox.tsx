@@ -14,6 +14,7 @@ import React, {
   useState,
 } from 'react';
 
+import type { TElement } from '@udecode/plate-common';
 import type { PointRef } from 'slate';
 
 import {
@@ -36,13 +37,6 @@ import {
   useComboboxInput,
   useHTMLInputCursorState,
 } from '@udecode/plate-combobox/react';
-import {
-  type TElement,
-  createPointRef,
-  getPointBefore,
-  insertText,
-  moveSelection,
-} from '@udecode/plate-common';
 import { useComposedRef, useEditorRef } from '@udecode/plate-common/react';
 import { cva } from 'class-variance-authority';
 
@@ -129,11 +123,11 @@ const InlineCombobox = ({
 
     if (!path) return;
 
-    const point = getPointBefore(editor, path);
+    const point = editor.api.before(path);
 
     if (!point) return;
 
-    const pointRef = createPointRef(editor, point);
+    const pointRef = editor.api.pointRef(point);
     setInsertPoint(pointRef);
 
     return () => {
@@ -147,12 +141,12 @@ const InlineCombobox = ({
     ref: inputRef,
     onCancelInput: (cause) => {
       if (cause !== 'backspace') {
-        insertText(editor, trigger + value, {
+        editor.tf.insertText(trigger + value, {
           at: insertPoint?.current ?? undefined,
         });
       }
       if (cause === 'arrowLeft' || cause === 'arrowRight') {
-        moveSelection(editor, {
+        editor.tf.move({
           distance: 1,
           reverse: cause === 'arrowLeft',
         });

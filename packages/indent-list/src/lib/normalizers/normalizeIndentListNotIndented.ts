@@ -2,7 +2,6 @@ import {
   type TEditor,
   type TNodeEntry,
   isDefined,
-  unsetNodes,
 } from '@udecode/plate-common';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 
@@ -20,9 +19,12 @@ export const normalizeIndentListNotIndented = (
     !isDefined(node[BaseIndentPlugin.key]) &&
     (node[BaseIndentListPlugin.key] || node[INDENT_LIST_KEYS.listStart])
   ) {
-    unsetNodes(editor, [BaseIndentListPlugin.key, INDENT_LIST_KEYS.listStart], {
-      at: path,
-    });
+    editor.tf.unsetNodes(
+      [BaseIndentListPlugin.key, INDENT_LIST_KEYS.listStart],
+      {
+        at: path,
+      }
+    );
 
     return true;
   }

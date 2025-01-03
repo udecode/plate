@@ -4,7 +4,7 @@ import type { TEditor, Value } from '../editor/TEditor';
 import type { ElementOf } from '../element/TElement';
 import type { TextIn, TextOf } from '../text/TText';
 import type { AncestorOf } from './TAncestor';
-import type { ChildOf, DescendantOf } from './TDescendant';
+import type { ChildOf, DescendantIn, DescendantOf } from './TDescendant';
 import type { NodeIn, NodeOf, TNode } from './TNode';
 
 /**
@@ -46,6 +46,8 @@ export type TDescendantEntry<N extends TNode = TNode> = TNodeEntry<
 
 /** Descendant entry of a value. */
 export type DescendantEntryOf<E extends TEditor> = TNodeEntry<DescendantOf<E>>;
+
+export type DescendantEntryIn<V extends Value> = TNodeEntry<DescendantIn<V>>;
 
 /** Child node entry from a node. */
 export type TNodeChildEntry<N extends TNode = TNode> = TNodeEntry<ChildOf<N>>;

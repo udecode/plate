@@ -4,7 +4,6 @@ import React from 'react';
 
 import { useCommandActions } from '@udecode/cmdk';
 import {
-  getEditorString,
   isHotkey,
   removeEditorText,
   replaceNodeChildren,
@@ -119,7 +118,7 @@ export function SelectEditorContent({
   return (
     <Plate
       onValueChange={({ editor }) => {
-        setSearch(getEditorString(editor, []));
+        setSearch(editor.api.string([]));
       }}
       editor={editor}
     >

@@ -3,7 +3,6 @@ import {
   type QueryNodeOptions,
   type TDescendant,
   createTSlatePlugin,
-  isBlock,
   isElement,
   nanoid,
   queryNode,
@@ -107,7 +106,7 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
             if (filterText && !isElement(node)) {
               return false;
             }
-            if (filterInline && isElement(node) && !isBlock(editor, node)) {
+            if (filterInline && isElement(node) && !editor.api.isBlock(node)) {
               return false;
             }
 

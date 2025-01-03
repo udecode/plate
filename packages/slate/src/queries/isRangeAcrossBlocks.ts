@@ -1,6 +1,7 @@
 import { Path, Range } from 'slate';
 
-import type { GetAboveNodeOptions, TEditor, ValueOf } from '../interfaces';
+import type { TEditor, ValueOf } from '../interfaces';
+import type { GetAboveNodeOptions } from '../interfaces/editor/editor-types';
 
 import { getBlockAbove } from './getBlockAbove';
 

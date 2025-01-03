@@ -1,8 +1,4 @@
-import {
-  type SlateEditor,
-  getEditorPlugin,
-  isBlock,
-} from '@udecode/plate-common';
+import { type SlateEditor, getEditorPlugin } from '@udecode/plate-common';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 
@@ -13,7 +9,11 @@ export const selectInsertedBlocks = (editor: SlateEditor) => {
   const ids = new Set<string>();
 
   editor.operations.forEach((op) => {
-    if (op.type === 'insert_node' && op.node.id && isBlock(editor, op.node)) {
+    if (
+      op.type === 'insert_node' &&
+      op.node.id &&
+      editor.api.isBlock(op.node)
+    ) {
       ids.add(op.node.id as string);
     }
   });

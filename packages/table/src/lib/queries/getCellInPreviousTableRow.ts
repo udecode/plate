@@ -4,7 +4,6 @@ import {
   type TEditor,
   type TElement,
   type TNodeEntry,
-  getNodeEntry,
   getPreviousPath,
 } from '@udecode/plate-common';
 
@@ -16,7 +15,7 @@ export const getCellInPreviousTableRow = (
 
   if (!prevPath) return;
 
-  const previousRow = getNodeEntry<TElement>(editor, prevPath);
+  const previousRow = editor.api.node<TElement>(prevPath);
 
   if (!previousRow) return;
 
@@ -28,6 +27,6 @@ export const getCellInPreviousTableRow = (
   );
 
   if (previousCell && previousCellPath) {
-    return getNodeEntry(editor, previousCellPath);
+    return editor.api.node(previousCellPath);
   }
 };

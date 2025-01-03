@@ -1,8 +1,5 @@
-import {
-  type SlateEditor,
-  getPoint,
-  getPointAfter,
-} from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
+
 import { Path } from 'slate';
 
 import type { TabDestination, TabbableEntry } from './types';
@@ -60,7 +57,7 @@ export const findTabDestination = (
      * tabbable entry specify custom before and after points.
      */
     if (direction === 'forward') {
-      const pointAfter = getPointAfter(editor, activeTabbableEntry.path);
+      const pointAfter = editor.api.after(activeTabbableEntry.path);
 
       if (!pointAfter) return null;
 
@@ -71,7 +68,7 @@ export const findTabDestination = (
     }
 
     return {
-      path: getPoint(editor, activeTabbableEntry.path)!.path,
+      path: editor.api.point(activeTabbableEntry.path)!.path,
       type: 'path',
     };
   }

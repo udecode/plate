@@ -1,16 +1,10 @@
-import type { Modify } from '@udecode/utils';
+import { after } from 'slate';
 
-import { type EditorAfterOptions, after } from 'slate';
-
-import type { At, QueryTextUnit, QueryVoids } from '../../types';
 import type { TEditor } from '../../interfaces/editor/TEditor';
+import type { GetPointAfterOptions } from '../../interfaces/editor/editor-types';
+import type { At } from '../../types';
 
 import { getAt } from '../../utils';
-
-export type GetPointAfterOptions = Modify<
-  EditorAfterOptions,
-  QueryTextUnit & QueryVoids
->;
 
 export const getPointAfter = (
   editor: TEditor,

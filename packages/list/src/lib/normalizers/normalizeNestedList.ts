@@ -1,11 +1,7 @@
 import {
   type SlateEditor,
-  type TElement,
   type TElementEntry,
-  getNodeEntry,
-  getParentNode,
   match,
-  moveNodes,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
@@ -20,7 +16,7 @@ export const normalizeNestedList = (
 ) => {
   const [, path] = nestedListItem;
 
-  const parentNode = getParentNode(editor, path);
+  const parentNode = editor.api.parent(path);
   const hasParentList =
     parentNode && match(parentNode[0], [], { type: getListTypes(editor) });
 
@@ -37,17 +33,14 @@ export const normalizeNestedList = (
   }
 
   // Previous sibling is the new parent
-  const previousSiblingItem = getNodeEntry<TElement>(
-    editor,
-    previousListItemPath
-  );
+  const previousSiblingItem = editor.api.node(previousListItemPath);
 
   if (previousSiblingItem) {
     const [, previousPath] = previousSiblingItem;
     const newPath = previousPath.concat([1]);
 
     // Move the current item to the sublist
-    moveNodes(editor, {
+    editor.tf.moveNodes({
       at: path,
       to: newPath,
     });

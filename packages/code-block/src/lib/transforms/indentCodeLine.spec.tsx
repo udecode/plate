@@ -4,7 +4,6 @@ import {
   type SlateEditor,
   type TElementEntry,
   createTEditor,
-  getNodeEntry,
 } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsxt } from '@udecode/plate-test-utils';
@@ -49,8 +48,8 @@ describe('indent code line', () => {
         value: input.children,
       });
 
-      const codeBlock = getNodeEntry(editor, [0]) as TElementEntry;
-      const codeLine = getNodeEntry(editor, [0, 0]) as TElementEntry;
+      const codeBlock = editor.api.node([0]) as TElementEntry;
+      const codeLine = editor.api.node([0, 0]) as TElementEntry;
 
       indentCodeLine(editor, { codeBlock, codeLine });
 
@@ -91,8 +90,8 @@ describe('indent code line', () => {
           value: input.children,
         });
 
-        const codeBlock = getNodeEntry(editor, [0]) as TElementEntry;
-        const codeLine = getNodeEntry(editor, [0, 0]) as TElementEntry;
+        const codeBlock = editor.api.node([0]) as TElementEntry;
+        const codeLine = editor.api.node([0, 0]) as TElementEntry;
 
         indentCodeLine(editor, { codeBlock, codeLine });
 
@@ -132,8 +131,8 @@ describe('indent code line', () => {
           value: input.children,
         });
 
-        const codeBlock = getNodeEntry(editor, [0]) as TElementEntry;
-        const codeLine = getNodeEntry(editor, [0, 0]) as TElementEntry;
+        const codeBlock = editor.api.node([0]) as TElementEntry;
+        const codeLine = editor.api.node([0, 0]) as TElementEntry;
 
         indentCodeLine(editor, { codeBlock, codeLine });
 

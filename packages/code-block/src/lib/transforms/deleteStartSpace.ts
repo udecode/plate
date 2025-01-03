@@ -1,11 +1,4 @@
-import {
-  type TEditor,
-  deleteText,
-  getEditorString,
-  getPointAfter,
-  getRange,
-  getStartPoint,
-} from '@udecode/plate-common';
+import type { TEditor } from '@udecode/plate-common';
 
 import type { OutdentCodeLineOptions } from './outdentCodeLine';
 
@@ -15,14 +8,14 @@ export const deleteStartSpace = (
   { codeLine }: OutdentCodeLineOptions
 ) => {
   const [, codeLinePath] = codeLine;
-  const codeLineStart = getStartPoint(editor, codeLinePath);
-  const codeLineEnd = codeLineStart && getPointAfter(editor, codeLineStart);
+  const codeLineStart = editor.api.start(codeLinePath);
+  const codeLineEnd = codeLineStart && editor.api.after(codeLineStart);
   const spaceRange =
-    codeLineEnd && getRange(editor, codeLineStart, codeLineEnd);
-  const spaceText = getEditorString(editor, spaceRange);
+    codeLineEnd && editor.api.range(codeLineStart, codeLineEnd);
+  const spaceText = editor.api.string(spaceRange);
 
   if (/\s/.test(spaceText)) {
-    deleteText(editor, { at: spaceRange });
+    editor.tf.delete({ at: spaceRange });
 
     return true;
   }

@@ -5,10 +5,7 @@ import {
   type TElement,
   type TNodeEntry,
   type TText,
-  getRange,
   isElement,
-  isInline,
-  isVoid,
 } from '@udecode/slate';
 import clsx from 'clsx';
 import { type DecoratedRange, Range, Text } from 'slate';
@@ -56,7 +53,7 @@ function ElementStatic({
     </Children>
   );
 
-  if (isVoid(editor, element)) {
+  if (editor.api.isVoid(element)) {
     attributes['data-slate-void'] = true;
     children = (
       <span
@@ -79,7 +76,7 @@ function ElementStatic({
       </span>
     );
   }
-  if (isInline(editor, element)) {
+  if (editor.api.isInline(element)) {
     attributes['data-slate-inline'] = true;
   }
 
@@ -154,7 +151,7 @@ function Children({
         let ds: DecoratedRange[] = [];
 
         if (p) {
-          const range = getRange(editor, p);
+          const range = editor.api.range(p);
           ds = decorate([child, p]);
 
           for (const dec of decorations) {

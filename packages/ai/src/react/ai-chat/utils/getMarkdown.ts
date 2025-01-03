@@ -1,10 +1,6 @@
 import type { PlateEditor } from '@udecode/plate-common/react';
 
-import {
-  getNodeEntries,
-  getSelectionFragment,
-  isBlock,
-} from '@udecode/plate-common';
+import { getSelectionFragment } from '@udecode/plate-common';
 import { serializeMd, serializeMdNodes } from '@udecode/plate-markdown';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 
@@ -19,8 +15,8 @@ export const getMarkdown = (
   if (type === 'block') {
     const blocks = editor.getOption(BlockSelectionPlugin, 'isSelectingSome')
       ? editor.getApi(BlockSelectionPlugin).blockSelection.getNodes()
-      : getNodeEntries(editor, {
-          match: (n) => isBlock(editor, n),
+      : editor.api.nodes({
+          match: (n) => editor.api.isBlock(n),
           mode: 'highest',
         });
 

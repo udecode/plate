@@ -1,7 +1,9 @@
 import castArray from 'lodash/castArray.js';
 import { Range } from 'slate';
 
-import { type SetNodesOptions, type TEditor, isText } from '../interfaces';
+import type { SetNodesOptions } from '../interfaces/editor/editor-types';
+
+import { type TEditor, isText } from '../interfaces';
 
 export interface RemoveMarkOptions
   extends Omit<SetNodesOptions, 'match' | 'split'> {

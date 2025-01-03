@@ -4,13 +4,9 @@ import {
   BaseParagraphPlugin,
   getChildren,
   getNode,
-  getParentNode,
   getPreviousPath,
   isElement,
   match,
-  removeNodes,
-  setElements,
-  wrapNodes,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
@@ -45,8 +41,7 @@ export const withNormalizeList: ExtendEditor<ListConfig> = ({
       );
 
       if (nonLiChild) {
-        return wrapNodes<TElement>(
-          editor,
+        return editor.tf.wrapNodes<TElement>(
           { children: [], type: liType },
           { at: nonLiChild[1] }
         );
@@ -58,7 +53,7 @@ export const withNormalizeList: ExtendEditor<ListConfig> = ({
         node.children.length === 0 ||
         !node.children.some((item) => item.type === liType)
       ) {
-        return removeNodes(editor, { at: path });
+        return editor.tf.removeNodes({ at: path });
       }
 
       const nextPath = Path.next(path);
@@ -100,9 +95,9 @@ export const withNormalizeList: ExtendEditor<ListConfig> = ({
     if (
       node.type === licType &&
       licType !== defaultType &&
-      getParentNode(editor, path)?.[0].type !== liType
+      editor.api.parent(path)?.[0].type !== liType
     ) {
-      setElements(editor, { type: defaultType }, { at: path });
+      editor.tf.setNodes({ type: defaultType }, { at: path });
 
       return;
     }

@@ -1,12 +1,4 @@
-import {
-  type ExtendEditor,
-  getNode,
-  getPointAfter,
-  getPointBefore,
-  removeNodes,
-  setNodes,
-  unsetNodes,
-} from '@udecode/plate-common';
+import { type ExtendEditor, getNode } from '@udecode/plate-common';
 
 import type { TSuggestionText } from './types';
 
@@ -79,7 +71,7 @@ export const withSuggestion: ExtendEditor<SuggestionConfig> = ({
   editor.deleteBackward = (unit) => {
     if (getOptions().isSuggesting) {
       const selection = editor.selection!;
-      const pointTarget = getPointBefore(editor, selection, {
+      const pointTarget = editor.api.before(selection, {
         unit,
       });
 
@@ -103,7 +95,7 @@ export const withSuggestion: ExtendEditor<SuggestionConfig> = ({
     if (getOptions().isSuggesting) {
       const selection = editor.selection!;
 
-      const pointTarget = getPointAfter(editor, selection, { unit });
+      const pointTarget = editor.api.after(selection, { unit });
 
       if (!pointTarget) return;
 
@@ -122,7 +114,7 @@ export const withSuggestion: ExtendEditor<SuggestionConfig> = ({
     const [node, path] = entry;
 
     if (node[BaseSuggestionPlugin.key]) {
-      const pointBefore = getPointBefore(editor, path);
+      const pointBefore = editor.api.before(path);
 
       // Merge with previous suggestion
       if (pointBefore) {
@@ -132,8 +124,7 @@ export const withSuggestion: ExtendEditor<SuggestionConfig> = ({
           (nodeBefore as any)?.[BaseSuggestionPlugin.key] &&
           (nodeBefore as any)[SUGGESTION_KEYS.id] !== node[SUGGESTION_KEYS.id]
         ) {
-          setNodes<TSuggestionText>(
-            editor,
+          editor.tf.setNodes<TSuggestionText>(
             { [SUGGESTION_KEYS.id]: (nodeBefore as any)[SUGGESTION_KEYS.id] },
             { at: path }
           );
@@ -144,8 +135,7 @@ export const withSuggestion: ExtendEditor<SuggestionConfig> = ({
       // Unset suggestion when there is no suggestion id
       if (!getSuggestionId(node)) {
         const keys = getSuggestionKeys(node);
-        unsetNodes(
-          editor,
+        editor.tf.unsetNodes(
           [BaseSuggestionPlugin.key, 'suggestionDeletion', ...keys],
           {
             at: path,
@@ -158,12 +148,12 @@ export const withSuggestion: ExtendEditor<SuggestionConfig> = ({
       if (getSuggestionKeys(node).length === 0) {
         if (node.suggestionDeletion) {
           // Unset deletions
-          unsetNodes(editor, [BaseSuggestionPlugin.key, SUGGESTION_KEYS.id], {
+          editor.tf.unsetNodes([BaseSuggestionPlugin.key, SUGGESTION_KEYS.id], {
             at: path,
           });
         } else {
           // Remove additions
-          removeNodes(editor, { at: path });
+          editor.tf.removeNodes({ at: path });
         }
 
         return;
@@ -185,8 +175,7 @@ export const withSuggestion: ExtendEditor<SuggestionConfig> = ({
 //
 //       // const node = getNode(editor, path) as TSuggestionText;
 //       // if (node && node.suggestionId !== id) {
-//       insertNodes<TSuggestionText>(
-//         editor,
+//        editor.tf.insertNodes<TSuggestionText>(
 //         { text, [SuggestionPlugin.key]: true, [SUGGESTION_KEYS.id]: id },
 //         {
 //           at: {
@@ -225,7 +214,7 @@ export const withSuggestion: ExtendEditor<SuggestionConfig> = ({
 //       const id = findSuggestionId(editor, path) ?? nanoid();
 //       suggestionNode[SUGGESTION_KEYS.id] = id;
 //
-//       insertNodes(editor, cloneDeep(node) as any, { at: path });
+//       editor.tf.insertNodes(cloneDeep(node) as any, { at: path });
 //       return;
 //     }
 //     if (op.type === 'remove_node') {
@@ -289,15 +278,15 @@ export const withSuggestion: ExtendEditor<SuggestionConfig> = ({
 //     }
 //     if (op.type === 'move_node') {
 //       const node = getNode(editor, op.path);
-//       if (node && isBlock(editor, node) && !node[SuggestionPlugin.key]) {
+//       if (node && editor.api.isBlock(node) && !node[SuggestionPlugin.key]) {
 //         // TODO: ?
 //         return;
 //       }
 //     }
 //     if (op.type === 'merge_node') {
 //       const node = getNode(editor, op.path);
-//       if (node && isBlock(editor, node)) {
-//         // if (node && isBlock(editor, node) && !node[SuggestionPlugin.key]) {
+//       if (node && editor.api.isBlock(node)) {
+//         // if (node && editor.api.isBlock(node) && !node[SuggestionPlugin.key]) {
 //         // TODO: delete block suggestion
 //         return;
 //       }
@@ -305,7 +294,7 @@ export const withSuggestion: ExtendEditor<SuggestionConfig> = ({
 //     if (op.type === 'split_node') {
 //       const node = getNode(editor, op.path);
 //       // allow splitting suggestion blocks
-//       if (node && isBlock(editor, node) && !node[SuggestionPlugin.key]) {
+//       if (node && editor.api.isBlock(node) && !node[SuggestionPlugin.key]) {
 //         // TODO: insert block suggestion
 //         return;
 //       }

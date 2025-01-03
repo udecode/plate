@@ -1,8 +1,6 @@
 import {
   type SlateEditor,
   type TText,
-  getAboveNode,
-  getEditorString,
   replaceNodeChildren,
 } from '@udecode/plate-common';
 
@@ -19,14 +17,14 @@ export const upsertLinkText = (
   editor: SlateEditor,
   { text }: UpsertLinkOptions
 ) => {
-  const newLink = getAboveNode<TLinkElement>(editor, {
+  const newLink = editor.api.above<TLinkElement>({
     match: { type: editor.getType(BaseLinkPlugin) },
   });
 
   if (newLink) {
     const [newLinkNode, newLinkPath] = newLink;
 
-    if (text?.length && text !== getEditorString(editor, newLinkPath)) {
+    if (text?.length && text !== editor.api.string(newLinkPath)) {
       const firstText = newLinkNode.children[0];
 
       // remove link children

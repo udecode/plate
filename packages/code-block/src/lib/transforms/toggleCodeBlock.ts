@@ -1,7 +1,6 @@
 import {
   type SlateEditor,
   type TElement,
-  setElements,
   someNode,
 } from '@udecode/plate-common';
 
@@ -25,7 +24,7 @@ export const toggleCodeBlock = (editor: SlateEditor) => {
     unwrapCodeBlock(editor);
 
     if (!isActive) {
-      setElements(editor, {
+      editor.tf.setNodes({
         type: codeLineType,
       });
 

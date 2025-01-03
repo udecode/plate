@@ -2,7 +2,6 @@ import type { PlateEditor } from '@udecode/plate-common/react';
 
 import {
   type InsertNodesOptions,
-  insertNodes,
   nanoid,
   withoutMergingHistory,
 } from '@udecode/plate-common';
@@ -76,8 +75,7 @@ export const insertMedia = (
     api.placeholder.addUploadingFile(id, file);
 
     const insert = () => {
-      insertNodes<TPlaceholderElement>(
-        editor,
+      editor.tf.insertNodes<TPlaceholderElement>(
         {
           id,
           children: [{ text: '' }],

@@ -3,9 +3,6 @@ import {
   type SlateEditor,
   findNode,
   getBlockAbove,
-  getStartPoint,
-  insertNodes,
-  select,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
@@ -43,13 +40,13 @@ export const insertTable = (
         const [, tablePath] = currentTableEntry;
         const insertPath = Path.next(tablePath);
 
-        insertNodes<TTableElement>(editor, newTable, {
+        editor.tf.insertNodes<TTableElement>(newTable, {
           at: insertPath,
           ...(options as any),
         });
 
         if (editor.selection) {
-          select(editor, getStartPoint(editor, insertPath)!);
+          editor.tf.select(editor.api.start(insertPath)!);
         }
 
         return;
@@ -57,7 +54,7 @@ export const insertTable = (
     }
 
     // Use specified path or insert at current selection
-    insertNodes<TTableElement>(editor, newTable, {
+    editor.tf.insertNodes<TTableElement>(newTable, {
       nextBlock: !options.at,
       select: shouldSelect,
       ...(options as any),
@@ -71,7 +68,7 @@ export const insertTable = (
 
       if (!tableEntry) return;
 
-      select(editor, getStartPoint(editor, tableEntry[1])!);
+      editor.tf.select(editor.api.start(tableEntry[1])!);
     }
   });
 };

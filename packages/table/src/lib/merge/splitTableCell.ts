@@ -5,10 +5,7 @@ import {
   type TDescendant,
   findNode,
   getEditorPlugin,
-  getEndPoint,
   insertElements,
-  removeNodes,
-  select,
 } from '@udecode/plate-common';
 
 import {
@@ -60,7 +57,7 @@ export const splitTableCell = (editor: SlateEditor) => {
     const { col } = getCellIndices(editor, cellElem);
 
     // Remove the original merged cell from the editor
-    removeNodes(editor, { at: path });
+    editor.tf.removeNodes({ at: path });
 
     const getClosestColPathForRow = (row: number, targetCol: number) => {
       const rowEntry = findNode(editor, {
@@ -146,5 +143,5 @@ export const splitTableCell = (editor: SlateEditor) => {
     }
   });
 
-  select(editor, getEndPoint(editor, path)!);
+  editor.tf.select(editor.api.end(path)!);
 };

@@ -1,17 +1,8 @@
 import {
   type SlateEditor,
   type TElement,
-  deleteText,
-  getAboveNode,
-  getMarks,
-  getParentNode,
   insertElements,
   isBlockTextEmptyAfterSelection,
-  isStartPoint,
-  moveNodes,
-  select,
-  splitNodes,
-  wrapNodes,
 } from '@udecode/plate-common';
 import { Path, Range } from 'slate';
 
@@ -29,13 +20,13 @@ export const insertListItem = (editor: SlateEditor): boolean => {
     return false;
   }
 
-  const licEntry = getAboveNode(editor, { match: { type: licType } });
+  const licEntry = editor.api.above({ match: { type: licType } });
 
   if (!licEntry) return false;
 
   const [, paragraphPath] = licEntry;
 
-  const listItemEntry = getParentNode(editor, paragraphPath);
+  const listItemEntry = editor.api.parent(paragraphPath);
 
   if (!listItemEntry) return false;
 
@@ -47,14 +38,10 @@ export const insertListItem = (editor: SlateEditor): boolean => {
 
   editor.tf.withoutNormalizing(() => {
     if (!Range.isCollapsed(editor.selection!)) {
-      deleteText(editor);
+      editor.tf.delete();
     }
 
-    const isStart = isStartPoint(
-      editor,
-      editor.selection!.focus,
-      paragraphPath
-    );
+    const isStart = editor.api.isStart(editor.selection!.focus, paragraphPath);
     const isEnd = isBlockTextEmptyAfterSelection(editor);
 
     const nextParagraphPath = Path.next(paragraphPath);
@@ -81,7 +68,7 @@ export const insertListItem = (editor: SlateEditor): boolean => {
      */
     if (isEnd) {
       /** If end, insert a list item after and select it */
-      const marks = getMarks(editor) || {};
+      const marks = editor.api.marks() || {};
       insertElements(
         editor,
         {
@@ -90,23 +77,22 @@ export const insertListItem = (editor: SlateEditor): boolean => {
         },
         { at: nextListItemPath }
       );
-      select(editor, nextListItemPath);
+      editor.tf.select(nextListItemPath);
     } else {
       editor.tf.withoutNormalizing(() => {
-        splitNodes(editor);
-        wrapNodes<TElement>(
-          editor,
+        editor.tf.splitNodes();
+        editor.tf.wrapNodes<TElement>(
           {
             children: [],
             type: liType,
           },
           { at: nextParagraphPath }
         );
-        moveNodes(editor, {
+        editor.tf.moveNodes({
           at: nextParagraphPath,
           to: nextListItemPath,
         });
-        select(editor, nextListItemPath);
+        editor.tf.select(nextListItemPath);
         editor.tf.collapse({
           edge: 'start',
         });
@@ -114,7 +100,7 @@ export const insertListItem = (editor: SlateEditor): boolean => {
     }
     /** If there is a list in the list item, move it to the next list item */
     if (listItemNode.children.length > 1) {
-      moveNodes(editor, {
+      editor.tf.moveNodes({
         at: nextParagraphPath,
         to: nextListItemPath.concat(1),
       });

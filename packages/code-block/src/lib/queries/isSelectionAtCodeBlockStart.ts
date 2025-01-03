@@ -1,8 +1,4 @@
-import {
-  type SlateEditor,
-  isExpanded,
-  isStartPoint,
-} from '@udecode/plate-common';
+import { type SlateEditor, isExpanded } from '@udecode/plate-common';
 
 import { getCodeLineEntry } from './getCodeLineEntry';
 
@@ -16,5 +12,5 @@ export const isSelectionAtCodeBlockStart = (editor: SlateEditor) => {
 
   if (!codeBlock) return false;
 
-  return isStartPoint(editor, selection.anchor, codeBlock[1]);
+  return editor.api.isStart(selection.anchor, codeBlock[1]);
 };

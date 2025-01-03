@@ -1,8 +1,4 @@
-import {
-  type InsertNodesOptions,
-  type SlateEditor,
-  insertNodes,
-} from '@udecode/plate-common';
+import type { InsertNodesOptions, SlateEditor } from '@udecode/plate-common';
 
 import { BaseAudioPlugin } from '../../BaseAudioPlugin';
 import { BaseFilePlugin } from '../../BaseFilePlugin';
@@ -19,8 +15,7 @@ export const insertPlaceholder = (
   options?: InsertNodesOptions
 ) => {
   editor.tf.withoutNormalizing(() =>
-    insertNodes<TPlaceholderElement>(
-      editor,
+    editor.tf.insertNodes<TPlaceholderElement>(
       {
         children: [{ text: '' }],
         mediaType,

@@ -4,9 +4,7 @@ import {
   getBlockAbove,
   getLastChildPath,
   getNode,
-  getParentNode,
   insertElements,
-  setNodes,
 } from '@udecode/plate-common';
 import { getEditorPlugin } from '@udecode/plate-common';
 import cloneDeep from 'lodash/cloneDeep.js';
@@ -138,7 +136,7 @@ export const insertTableMergeColumn = (
         newCell.attributes.colspan = colSpan.toString();
       }
 
-      setNodes<TTableCellElement>(editor, newCell, { at: currentCellPath });
+      editor.tf.setNodes<TTableCellElement>(newCell, { at: currentCellPath });
     } else {
       const curRowPath = currentCellPath.slice(0, -1);
       const curColPath = currentCellPath.at(-1)!;
@@ -147,7 +145,7 @@ export const insertTableMergeColumn = (
         before ? curColPath : curColPath + placementCorrection,
       ];
 
-      const row = getParentNode(editor, currentCellPath)!;
+      const row = editor.api.parent(currentCellPath)!;
       const rowElement = row[0] as TTableRowElement;
       const emptyCell = {
         ...api.create.tableCell({ header, row: rowElement }),
@@ -189,8 +187,7 @@ export const insertTableMergeColumn = (
         }
       }
 
-      setNodes<TTableElement>(
-        editor,
+      editor.tf.setNodes<TTableElement>(
         {
           colSizes: newColSizes,
         },

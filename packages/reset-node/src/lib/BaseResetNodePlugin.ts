@@ -2,14 +2,10 @@ import {
   type PluginConfig,
   type TElement,
   createTSlatePlugin,
-  getEndPoint,
   getNode,
   getNodeProps,
-  getStartPoint,
   isCollapsed,
   resetEditorChildren,
-  setNodes,
-  unsetNodes,
 } from '@udecode/plate-common';
 import { Point } from 'slate';
 
@@ -29,8 +25,8 @@ export const BaseResetNodePlugin = createTSlatePlugin<ResetNodeConfig>({
 
         if (!selection) return;
 
-        const start = getStartPoint(editor, [])!;
-        const end = getEndPoint(editor, [])!;
+        const start = editor.api.start([])!;
+        const end = editor.api.end([])!;
 
         if (
           (Point.equals(selection.anchor, start) &&
@@ -56,7 +52,7 @@ export const BaseResetNodePlugin = createTSlatePlugin<ResetNodeConfig>({
         const { selection } = editor;
 
         if (selection && isCollapsed(selection)) {
-          const start = getStartPoint(editor, [])!;
+          const start = editor.api.start([])!;
 
           if (Point.equals(selection.anchor, start)) {
             const node = getNode<TElement>(editor, [0])!;
@@ -68,8 +64,8 @@ export const BaseResetNodePlugin = createTSlatePlugin<ResetNodeConfig>({
               // missing id will cause block selection not working and other issues
               const { id, ...nodeProps } = getNodeProps(node);
 
-              unsetNodes(editor, Object.keys(nodeProps), { at: [0] });
-              setNodes(editor, props, { at: [0] });
+              editor.tf.unsetNodes(Object.keys(nodeProps), { at: [0] });
+              editor.tf.setNodes(props, { at: [0] });
             });
 
             return;

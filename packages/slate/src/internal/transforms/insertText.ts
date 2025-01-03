@@ -1,7 +1,7 @@
 import { insertText as insertTextBase } from 'slate';
 
-import type { QueryAt, QueryVoids } from '../../types';
 import type { TEditor } from '../../interfaces';
+import type { QueryAt, QueryVoids } from '../../types';
 
 import { getAt } from '../../utils/getAt';
 

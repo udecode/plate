@@ -1,8 +1,9 @@
 import React from 'react';
 
+import type { Value } from '@udecode/slate';
+
 import { render } from '@testing-library/react';
 import { renderHook } from '@testing-library/react-hooks';
-import { type Value, isBlock, setNodes } from '@udecode/slate';
 import isEqual from 'lodash/isEqual';
 import memoize from 'lodash/memoize';
 
@@ -369,8 +370,8 @@ describe('Plate', () => {
   describe('when shouldNormalizeEditor false', () => {
     it('should not trigger normalize if shouldNormalizeEditor is not set to true', () => {
       const fn = jest.fn((e, [node, path]) => {
-        if (isBlock(e, node) && path?.length && !isEqual(node.path, path)) {
-          setNodes(e, { path }, { at: path });
+        if (e.api.isBlock(node) && path?.length && !isEqual(node.path, path)) {
+          e.tf.setNodes({ path }, { at: path });
         }
       });
 

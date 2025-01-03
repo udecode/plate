@@ -4,9 +4,7 @@ import {
   type TElement,
   isExpanded,
   isSelectionAtBlockStart,
-  setElements,
   someNode,
-  wrapNodes,
 } from '@udecode/plate-common';
 
 import {
@@ -39,8 +37,7 @@ export const insertCodeBlock = (
     editor.insertBreak();
   }
 
-  setElements(
-    editor,
+  editor.tf.setNodes(
     {
       children: [{ text: '' }],
       type: editor.getType(BaseCodeLinePlugin),
@@ -48,8 +45,7 @@ export const insertCodeBlock = (
     insertNodesOptions
   );
 
-  wrapNodes<TElement>(
-    editor,
+  editor.tf.wrapNodes<TElement>(
     {
       children: [],
       type: editor.getType(BaseCodeBlockPlugin),

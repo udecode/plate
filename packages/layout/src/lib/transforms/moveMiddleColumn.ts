@@ -5,9 +5,6 @@ import {
   getNode,
   getNodeDescendant,
   getNodeString,
-  moveNodes,
-  removeNodes,
-  unwrapNodes,
 } from '@udecode/plate-common';
 
 import type { TColumnElement } from '../types';
@@ -38,7 +35,7 @@ export const moveMiddleColumn = <N extends TNode>(
     const middleChildPathRef = editor.api.pathRef(path.concat(DESCENDANT_PATH));
 
     if (isEmpty) {
-      removeNodes(editor, { at: middleChildPathRef.current! });
+      editor.tf.removeNodes({ at: middleChildPathRef.current! });
 
       return false;
     }
@@ -49,8 +46,8 @@ export const moveMiddleColumn = <N extends TNode>(
 
     const firstLast = path.concat([0, firstNode.children.length]);
 
-    moveNodes(editor, { at: middleChildPathRef.current!, to: firstLast });
-    unwrapNodes(editor, { at: middleChildPathRef.current! });
+    editor.tf.moveNodes({ at: middleChildPathRef.current!, to: firstLast });
+    editor.tf.unwrapNodes({ at: middleChildPathRef.current! });
     middleChildPathRef.unref();
   }
 };

@@ -1,9 +1,7 @@
 import {
   type SlateEditor,
-  getAboveNode,
   getEditorPlugin,
   isExpanded,
-  removeNodes,
   someNode,
 } from '@udecode/plate-common';
 
@@ -25,7 +23,7 @@ export const deleteRow = (editor: SlateEditor) => {
       match: { type },
     })
   ) {
-    const currentTableItem = getAboveNode<TTableElement>(editor, {
+    const currentTableItem = editor.api.above<TTableElement>({
       match: { type },
     });
 
@@ -33,7 +31,7 @@ export const deleteRow = (editor: SlateEditor) => {
     if (isExpanded(editor.selection))
       return deleteRowWhenExpanded(editor, currentTableItem);
 
-    const currentRowItem = getAboveNode(editor, {
+    const currentRowItem = editor.api.above({
       match: { type: editor.getType(BaseTableRowPlugin) },
     });
 
@@ -43,7 +41,7 @@ export const deleteRow = (editor: SlateEditor) => {
       // Cannot delete the last row
       currentTableItem[0].children.length > 1
     ) {
-      removeNodes(editor, {
+      editor.tf.removeNodes({
         at: currentRowItem[1],
       });
     }

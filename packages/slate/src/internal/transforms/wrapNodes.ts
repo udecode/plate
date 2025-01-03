@@ -1,33 +1,10 @@
-import type { Modify } from '@udecode/utils';
-
 import { wrapNodes as wrapNodesBase } from 'slate';
 
-import type { TEditor, Value, ValueOf } from '../../interfaces';
+import type { TEditor, ValueOf } from '../../interfaces';
+import type { WrapNodesOptions } from '../../interfaces/editor/editor-types';
 import type { ElementOf } from '../../interfaces/element/TElement';
-import type {
-  QueryMode,
-  QueryOptions,
-  QueryVoids,
-} from '../../types/QueryOptions';
 
-import { unhangRange } from '../../internal/editor/unhangRange';
 import { getQueryOptions } from '../../utils';
-
-export type WrapNodesOptions<V extends Value = Value> = Modify<
-  NonNullable<Parameters<typeof wrapNodesBase>[2]>,
-  QueryOptions<V> &
-    QueryMode &
-    QueryVoids & {
-      /**
-       * Indicates that it's okay to split a node in order to wrap the location.
-       * For example, if `ipsum` was selected in a `Text` node with `lorem ipsum
-       * dolar`, `split: true` would wrap the word `ipsum` only, resulting in
-       * splitting the `Text` node. If `split: false`, the entire `Text` node
-       * `lorem ipsum dolar` would be wrapped.
-       */
-      split?: boolean;
-    }
->;
 
 export const wrapNodes = <N extends ElementOf<E>, E extends TEditor = TEditor>(
   editor: E,
@@ -37,7 +14,7 @@ export const wrapNodes = <N extends ElementOf<E>, E extends TEditor = TEditor>(
   options = getQueryOptions(editor, options);
 
   if (options?.at) {
-    unhangRange(editor, options.at as any, options);
+    editor.api.unhangRange(options.at as any, options);
   }
 
   wrapNodesBase(editor as any, element as any, options as any);

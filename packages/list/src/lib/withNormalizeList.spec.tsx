@@ -1,10 +1,6 @@
 /** @jsx jsxt */
 
-import {
-  type SlateEditor,
-  createSlateEditor,
-  normalizeEditor,
-} from '@udecode/plate-common';
+import { type SlateEditor, createSlateEditor } from '@udecode/plate-common';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { ListPlugin } from '../react';
@@ -18,7 +14,7 @@ const testNormalize = (input: SlateEditor, output: SlateEditor): void => {
     value: input.children,
   });
 
-  normalizeEditor(editor, { force: true });
+  editor.tf.normalize({ force: true });
 
   expect(editor.children).toEqual(output.children);
 };

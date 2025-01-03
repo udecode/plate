@@ -1,10 +1,7 @@
-import {
-  type AnyObject,
-  type GetNodeEntriesOptions,
-  type SlateEditor,
-  getNodeEntries,
-  setElements,
-  unsetNodes,
+import type {
+  AnyObject,
+  GetNodeEntriesOptions,
+  SlateEditor,
 } from '@udecode/plate-common';
 
 import { BaseIndentPlugin } from '../BaseIndentPlugin';
@@ -39,7 +36,7 @@ export const setIndent = (
 ) => {
   const { nodeKey } = editor.getInjectProps(BaseIndentPlugin);
 
-  const _nodes = getNodeEntries(editor, {
+  const _nodes = editor.api.nodes({
     block: true,
     mode: 'lowest',
     ...getNodesOptions,
@@ -54,11 +51,11 @@ export const setIndent = (
       const props = setNodesProps?.({ indent: newIndent }) ?? {};
 
       if (newIndent <= 0) {
-        unsetNodes(editor, [nodeKey!, ...unsetNodesProps], {
+        editor.tf.unsetNodes([nodeKey!, ...unsetNodesProps], {
           at: path,
         });
       } else {
-        setElements(editor, { [nodeKey!]: newIndent, ...props }, { at: path });
+        editor.tf.setNodes({ [nodeKey!]: newIndent, ...props }, { at: path });
       }
     });
   });

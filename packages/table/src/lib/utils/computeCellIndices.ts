@@ -1,8 +1,4 @@
-import {
-  type SlateEditor,
-  getAboveNode,
-  getEditorPlugin,
-} from '@udecode/plate-common';
+import { type SlateEditor, getEditorPlugin } from '@udecode/plate-common';
 
 import type {
   TTableCellElement,
@@ -33,7 +29,7 @@ export function computeCellIndices(
   if (!tableNode) {
     if (!cellNode) return;
 
-    tableNode = getAboveNode<TTableElement>(editor, {
+    tableNode = editor.api.above<TTableElement>({
       at: editor.api.findPath(cellNode),
       match: { type: editor.getType(BaseTablePlugin) },
     })?.[0];

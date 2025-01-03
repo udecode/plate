@@ -3,15 +3,9 @@ import {
   type SlateEditor,
   type TElement,
   getBlockAbove,
-  getEndPoint,
-  getPointAfter,
-  getPointBefore,
-  getStartPoint,
   isCollapsed,
   isRangeInSameBlock,
-  moveSelection,
   replaceNodeChildren,
-  select,
 } from '@udecode/plate-common';
 import { Point } from 'slate';
 
@@ -36,8 +30,8 @@ export const preventDeleteTableCell = (
 ) => {
   const { selection } = editor;
 
-  const getPoint = reverse ? getEndPoint : getStartPoint;
-  const getNextPoint = reverse ? getPointAfter : getPointBefore;
+  const getPoint = reverse ? editor.api.end : editor.api.start;
+  const getNextPoint = reverse ? editor.api.after : editor.api.before;
 
   if (isCollapsed(selection)) {
     const cellEntry = getBlockAbove(editor, {
@@ -48,14 +42,14 @@ export const preventDeleteTableCell = (
       // Prevent deleting cell at the start or end of a cell
       const [, cellPath] = cellEntry;
 
-      const start = getPoint(editor, cellPath)!;
+      const start = getPoint(cellPath)!;
 
       if (selection && Point.equals(selection.anchor, start)) {
         return true;
       }
     } else {
       // Prevent deleting cell when selection is before or after a table
-      const nextPoint = getNextPoint(editor, selection!, { unit });
+      const nextPoint = getNextPoint(selection!, { unit });
 
       const nextCellEntry = getBlockAbove(editor, {
         at: nextPoint,
@@ -63,7 +57,7 @@ export const preventDeleteTableCell = (
       });
 
       if (nextCellEntry) {
-        moveSelection(editor, { reverse: !reverse });
+        editor.tf.move({ reverse: !reverse });
 
         return true;
       }
@@ -108,9 +102,9 @@ export const withDeleteTable: ExtendEditor<TableConfig> = ({
           });
 
           // set back the selection
-          select(editor, {
-            anchor: getStartPoint(editor, cellEntries[0][1])!,
-            focus: getEndPoint(editor, cellEntries.at(-1)![1])!,
+          editor.tf.select({
+            anchor: editor.api.start(cellEntries[0][1])!,
+            focus: editor.api.end(cellEntries.at(-1)![1])!,
           });
         });
 

@@ -1,8 +1,5 @@
-import {
-  type TEditor,
-  type TNodeEntry,
-  getNodeEntry,
-} from '@udecode/plate-common';
+import type { TEditor, TNodeEntry } from '@udecode/plate-common';
+
 import { Path } from 'slate';
 
 import { getCellInNextTableRow } from './getCellInNextTableRow';
@@ -13,7 +10,7 @@ export const getNextTableCell = (
   currentPath: Path,
   currentRow: TNodeEntry
 ): TNodeEntry | undefined => {
-  const cell = getNodeEntry(editor, Path.next(currentPath));
+  const cell = editor.api.node(Path.next(currentPath));
 
   if (cell) return cell;
 

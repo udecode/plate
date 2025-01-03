@@ -1,18 +1,11 @@
-import type { Modify } from '@udecode/utils';
+import { getVoid } from 'slate';
 
-import { type EditorVoidOptions, getVoid } from 'slate';
-
-import type { QueryAt, QueryMode, QueryVoids } from '../../types';
+import type { TEditor } from '../../interfaces/editor/TEditor';
+import type { GetVoidNodeOptions } from '../../interfaces/editor/editor-types';
 import type { ElementOf } from '../../interfaces/element/TElement';
 import type { TNodeEntry } from '../../interfaces/node/TNodeEntry';
-import type { TEditor } from '../../interfaces/editor/TEditor';
 
 import { getAt } from '../../utils';
-
-export type GetVoidNodeOptions = Modify<
-  EditorVoidOptions,
-  QueryAt & QueryMode & QueryVoids
->;
 
 export const getVoidNode = <
   N extends ElementOf<E>,

@@ -3,11 +3,9 @@ import {
   type QueryNodeOptions,
   BaseParagraphPlugin,
   createTSlatePlugin,
-  getAboveNode,
   isBlockAboveEmpty,
   isSelectionExpanded,
   queryNode,
-  removeNodes,
 } from '@udecode/plate-common';
 
 export type DeleteConfig = PluginConfig<
@@ -30,7 +28,7 @@ export const DeletePlugin = createTSlatePlugin<DeleteConfig>({
 
     const { query } = getOptions();
 
-    const isValidNode = !query || queryNode(getAboveNode(editor), query);
+    const isValidNode = !query || queryNode(editor.api.above(), query);
 
     if (
       !isSelectionExpanded(editor) &&
@@ -38,7 +36,7 @@ export const DeletePlugin = createTSlatePlugin<DeleteConfig>({
       isValidNode
     ) {
       // Cursor is in query blocks and line is empty
-      removeNodes(editor as any);
+      editor.tf.removeNodes();
     } else {
       // When the line is not empty or other conditions are not met, fall back to default behavior
       deleteForward(options);

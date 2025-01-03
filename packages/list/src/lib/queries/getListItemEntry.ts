@@ -2,9 +2,7 @@ import {
   type SlateEditor,
   type TElement,
   type TElementEntry,
-  getAboveNode,
   getNode,
-  getParentNode,
   isCollapsed,
 } from '@udecode/plate-common';
 import { type Location, type Path, Range } from 'slate';
@@ -34,13 +32,13 @@ export const getListItemEntry = (
     const node = getNode<TElement>(editor, _at);
 
     if (node) {
-      const listItem = getAboveNode<TElement>(editor, {
+      const listItem = editor.api.above<TElement>({
         at: _at,
         match: { type: liType },
       });
 
       if (listItem) {
-        const list = getParentNode<TElement>(editor, listItem[1])!;
+        const list = editor.api.parent<TElement>(listItem[1])!;
 
         return { list, listItem };
       }

@@ -1,8 +1,4 @@
-import {
-  type SlateEditor,
-  findNode,
-  getNodeEntry,
-} from '@udecode/plate-common';
+import { type SlateEditor, findNode } from '@udecode/plate-common';
 import { Path } from 'slate';
 
 import type { TTableCellElement } from '../types';
@@ -32,5 +28,5 @@ export const getLeftTableCell = (
 
   const prevCellPath = Path.previous(cellPath);
 
-  return getNodeEntry<TTableCellElement>(editor, prevCellPath);
+  return editor.api.node<TTableCellElement>(prevCellPath);
 };

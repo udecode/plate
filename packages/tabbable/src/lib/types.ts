@@ -1,4 +1,4 @@
-import type { TNode, TPath } from '@udecode/plate-common';
+import type { TElement, TPath } from '@udecode/plate-common';
 
 export type TabDestinationPath = {
   path: TPath;
@@ -15,5 +15,5 @@ export type TabDestination = TabDestinationDOMNode | TabDestinationPath;
 export type TabbableEntry = {
   domNode: HTMLElement;
   path: TPath;
-  slateNode: TNode;
+  slateNode: TElement;
 };

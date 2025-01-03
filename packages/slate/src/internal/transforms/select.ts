@@ -1,7 +1,7 @@
 import { select as selectBase } from 'slate';
 
-import type { At } from '../../types/At';
 import type { TEditor } from '../../interfaces';
+import type { At } from '../../types/At';
 
 import { getAt } from '../../utils/getAt';
 

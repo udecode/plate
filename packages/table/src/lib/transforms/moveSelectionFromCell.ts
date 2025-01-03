@@ -3,11 +3,7 @@ import type { Location } from 'slate';
 import {
   type SlateEditor,
   getBlockAbove,
-  getEndPoint,
-  getStartPoint,
   hasNode,
-  moveSelection,
-  select,
 } from '@udecode/plate-common';
 
 import { getTableGridAbove } from '../queries/getTableGridAbove';
@@ -70,9 +66,9 @@ export const moveSelectionFromCell = (
       }
 
       if (hasNode(editor, anchorPath) && hasNode(editor, focusPath)) {
-        select(editor, {
-          anchor: getStartPoint(editor, anchorPath)!,
-          focus: getStartPoint(editor, focusPath)!,
+        editor.tf.select({
+          anchor: editor.api.start(anchorPath)!,
+          focus: editor.api.start(focusPath)!,
         });
       }
 
@@ -97,19 +93,19 @@ export const moveSelectionFromCell = (
     nextCellPath[nextCellPath.length - 2] += offset;
 
     if (hasNode(editor, nextCellPath)) {
-      select(editor, getStartPoint(editor, nextCellPath)!);
+      editor.tf.select(editor.api.start(nextCellPath)!);
     } else {
       const tablePath = cellPath.slice(0, -2);
 
       if (reverse) {
         editor.tf.withoutNormalizing(() => {
-          select(editor, getStartPoint(editor, tablePath)!);
-          moveSelection(editor, { reverse: true });
+          editor.tf.select(editor.api.start(tablePath)!);
+          editor.tf.move({ reverse: true });
         });
       } else {
         editor.tf.withoutNormalizing(() => {
-          select(editor, getEndPoint(editor, tablePath)!);
-          moveSelection(editor);
+          editor.tf.select(editor.api.end(tablePath)!);
+          editor.tf.move();
         });
       }
     }

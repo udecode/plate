@@ -4,11 +4,8 @@ import {
   type SlateEditor,
   type TElement,
   getBlockAbove,
-  getNodeEntries,
   isCollapsed,
   isExpanded,
-  setElements,
-  unsetNodes,
 } from '@udecode/plate-common';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 
@@ -61,7 +58,7 @@ export const toggleIndentList = <
     return;
   }
   if (isExpanded(editor.selection)) {
-    const _entries = getNodeEntries<TElement>(editor, { block: true });
+    const _entries = editor.api.nodes<TElement>({ block: true });
     const entries = [..._entries];
 
     const eqListStyleType = areEqListStyleType(editor, entries, {
@@ -75,17 +72,15 @@ export const toggleIndentList = <
 
           const indent = node[BaseIndentPlugin.key] as number;
 
-          unsetNodes(editor, BaseIndentListPlugin.key, { at: path });
+          editor.tf.unsetNodes(BaseIndentListPlugin.key, { at: path });
 
           if (indent > 1) {
-            setElements(
-              editor,
+            editor.tf.setNodes(
               { [BaseIndentPlugin.key]: indent - 1 },
               { at: path }
             );
           } else {
-            unsetNodes(
-              editor,
+            editor.tf.unsetNodes(
               [BaseIndentPlugin.key, INDENT_LIST_KEYS.checked],
               {
                 at: path,

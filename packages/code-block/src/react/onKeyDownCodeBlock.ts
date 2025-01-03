@@ -3,12 +3,9 @@ import type { KeyboardHandler } from '@udecode/plate-common/react';
 import {
   type TElement,
   Hotkeys,
-  getNodeEntries,
-  getParentNode,
   isHotkey,
   isSelectionAtBlockEnd,
   isSelectionAtBlockStart,
-  select,
 } from '@udecode/plate-common';
 
 import { BaseCodeLinePlugin } from '../lib';
@@ -27,7 +24,7 @@ export const onKeyDownCodeBlock: KeyboardHandler = ({ editor, event }) => {
   const isUntab = Hotkeys.isUntab(editor, event);
 
   if (isTab || isUntab) {
-    const _codeLines = getNodeEntries<TElement>(editor, {
+    const _codeLines = editor.api.nodes<TElement>({
       match: { type: editor.getType(BaseCodeLinePlugin) },
     });
     const codeLines = Array.from(_codeLines);
@@ -35,7 +32,7 @@ export const onKeyDownCodeBlock: KeyboardHandler = ({ editor, event }) => {
     if (codeLines.length > 0) {
       event.preventDefault();
       const [, firstLinePath] = codeLines[0];
-      const codeBlock = getParentNode<TElement>(editor, firstLinePath);
+      const codeBlock = editor.api.parent<TElement>(firstLinePath);
 
       if (!codeBlock) return;
 
@@ -64,7 +61,7 @@ export const onKeyDownCodeBlock: KeyboardHandler = ({ editor, event }) => {
       return;
 
     // select the whole code block
-    select(editor, codeBlockPath);
+    editor.tf.select(codeBlockPath);
 
     event.preventDefault();
     event.stopPropagation();

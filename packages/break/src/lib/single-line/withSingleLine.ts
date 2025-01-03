@@ -1,4 +1,4 @@
-import { type ExtendEditor, removeNodes } from '@udecode/plate-common';
+import type { ExtendEditor } from '@udecode/plate-common';
 
 export const withSingleLine: ExtendEditor = ({ editor }) => {
   const { normalizeNode } = editor;
@@ -7,7 +7,7 @@ export const withSingleLine: ExtendEditor = ({ editor }) => {
 
   editor.normalizeNode = (entry) => {
     if (entry[1].length === 0 && editor.children.length > 1) {
-      removeNodes(editor, {
+      editor.tf.removeNodes({
         at: [],
         match: (node, path) => path.length === 1 && path[0] > 0,
         mode: 'highest',

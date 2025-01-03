@@ -2,10 +2,8 @@ import {
   type SlateEditor,
   type TElement,
   type TElementEntry,
-  deleteText,
   findDescendant,
   getLastChildPath,
-  getParentNode,
   insertElements,
   moveChildren,
 } from '@udecode/plate-common';
@@ -62,7 +60,7 @@ export const moveListItemSublistItemsToListItemSublist = (
     let to: Path;
 
     if (!toListItemSublist) {
-      const fromList = getParentNode(editor, fromListItemPath);
+      const fromList = editor.api.parent(fromListItemPath);
 
       if (!fromList) return;
 
@@ -92,7 +90,7 @@ export const moveListItemSublistItemsToListItemSublist = (
     });
 
     // Remove the empty list
-    deleteText(editor, { at: fromListItemSublistPath });
+    editor.tf.delete({ at: fromListItemSublistPath });
   });
 
   return moved;

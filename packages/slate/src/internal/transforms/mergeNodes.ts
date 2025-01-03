@@ -1,20 +1,7 @@
-import type { Modify } from '@udecode/utils';
+import { type Element, type Text, Editor, Path, Range } from 'slate';
 
-import {
-  type Element,
-  type Text,
-  type mergeNodes as mergeNodesBase,
-  Editor,
-  Path,
-  Range,
-} from 'slate';
-
-import type { TEditor, Value, ValueOf } from '../../interfaces';
-import type {
-  QueryMode,
-  QueryOptions,
-  QueryVoids,
-} from '../../types/QueryOptions';
+import type { TEditor, ValueOf } from '../../interfaces';
+import type { MergeNodesOptions } from '../../interfaces/editor/editor-types';
 
 import { isElement } from '../../interfaces/element/isElement';
 import { hasSingleChild } from '../../interfaces/node/hasSingleChild';
@@ -23,33 +10,12 @@ import { createPathRef } from '../../internal/editor/createPathRef';
 import { createPointRef } from '../../internal/editor/createPointRef';
 import { getAboveNode } from '../../internal/editor/getAboveNode';
 import { getNodeEntries } from '../../internal/editor/getNodeEntries';
-import { getParentNode } from '../../internal/editor/getParentNode';
 import { getPreviousNode } from '../../internal/editor/getPreviousNode';
 import { isBlock } from '../../internal/editor/isBlock';
 import { isElementEmpty } from '../../internal/editor/isElementEmpty';
 import { withoutNormalizing } from '../../internal/editor/withoutNormalizing';
 import { getQueryOptions } from '../../utils';
-import { deleteText } from './deleteText';
-import { moveNodes } from './moveNodes';
-import { removeNodes } from './removeNodes';
 import { select } from './select';
-
-export type MergeNodesOptions<V extends Value, E extends TEditor = TEditor> = {
-  /**
-   * Default: if the node isn't already the next sibling of the previous node,
-   * move it so that it is before merging.
-   */
-  mergeNode?: (editor: E, options: { at: Path; to: Path }) => void;
-
-  /**
-   * Default: if there was going to be an empty ancestor of the node that was
-   * merged, we remove it from the tree.
-   */
-  removeEmptyAncestor?: (editor: E, options: { at: Path }) => void;
-} & Modify<
-  NonNullable<Parameters<typeof mergeNodesBase>[1]>,
-  QueryOptions<V> & QueryMode & QueryVoids
->;
 
 export const mergeNodes = <E extends TEditor>(
   editor: E,
@@ -72,7 +38,7 @@ export const mergeNodes = <E extends TEditor>(
     }
     if (match == null) {
       if (Path.isPath(at)) {
-        const [parent] = getParentNode(editor, at)!;
+        const [parent] = editor.api.parent(at)!;
         match = (n) => parent.children.includes(n as any);
       } else {
         match = (n) => isBlock(editor as any, n);
@@ -87,7 +53,7 @@ export const mergeNodes = <E extends TEditor>(
       } else {
         const [, end] = Range.edges(at);
         const pointRef = createPointRef(editor as any, end);
-        deleteText(editor, { at });
+        editor.tf.delete({ at });
         at = pointRef.unref()!;
 
         if (options.at == null) {
@@ -157,7 +123,7 @@ export const mergeNodes = <E extends TEditor>(
       !isPreviousSibling && // DIFF
       !mergeNode
     ) {
-      moveNodes(editor, { at: path, to: newPath, voids });
+      editor.tf.moveNodes({ at: path, to: newPath, voids });
     }
     // If there was going to be an empty ancestor of the node that was merged,
     // we remove it from the tree.
@@ -167,7 +133,7 @@ export const mergeNodes = <E extends TEditor>(
         const emptyPath = emptyRef.current;
         emptyPath && removeEmptyAncestor(editor as any, { at: emptyPath });
       } else {
-        removeNodes(editor, { at: emptyRef.current!, voids });
+        editor.tf.removeNodes({ at: emptyRef.current!, voids });
       }
       // DIFF: end
     }
@@ -183,7 +149,7 @@ export const mergeNodes = <E extends TEditor>(
       (isElement(prevNode) && isElementEmpty(editor as any, prevNode)) ||
       (isText(prevNode) && prevNode.text === '')
     ) {
-      removeNodes(editor, { at: prevPath, voids });
+      editor.tf.removeNodes({ at: prevPath, voids });
     } else {
       editor.apply({
         path: newPath,

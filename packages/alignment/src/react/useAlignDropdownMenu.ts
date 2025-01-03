@@ -1,4 +1,4 @@
-import { getNodeEntries, isBlock, isDefined } from '@udecode/plate-common';
+import { isDefined } from '@udecode/plate-common';
 import { useEditorRef, useEditorSelector } from '@udecode/plate-common/react';
 
 import { type Alignment, BaseAlignPlugin, setAlign } from '../index';
@@ -6,8 +6,8 @@ import { type Alignment, BaseAlignPlugin, setAlign } from '../index';
 export const useAlignDropdownMenuState = () => {
   const value: Alignment = useEditorSelector((editor) => {
     let commonAlignment: string | undefined;
-    const codeBlockEntries = getNodeEntries(editor, {
-      match: (n) => isBlock(editor, n),
+    const codeBlockEntries = editor.api.nodes({
+      match: (n) => editor.api.isBlock(n),
     });
     const nodes = Array.from(codeBlockEntries);
     nodes.forEach(([node]) => {

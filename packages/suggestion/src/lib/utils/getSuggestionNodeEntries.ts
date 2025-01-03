@@ -1,8 +1,7 @@
-import {
-  type GetNodeEntriesOptions,
-  type SlateEditor,
-  type ValueOf,
-  getNodeEntries,
+import type {
+  GetNodeEntriesOptions,
+  SlateEditor,
+  ValueOf,
 } from '@udecode/plate-common';
 
 import type { TSuggestionText } from '../types';
@@ -18,7 +17,7 @@ export const getSuggestionNodeEntries = <E extends SlateEditor>(
     match?: (suggestion: TSuggestionText) => boolean;
   } & GetNodeEntriesOptions<ValueOf<E>> = {}
 ) =>
-  getNodeEntries<TSuggestionText>(editor, {
+  editor.api.nodes<TSuggestionText>({
     at,
     match: (n) =>
       n.suggestionId === suggestionId && match(n as TSuggestionText),

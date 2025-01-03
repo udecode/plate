@@ -2,7 +2,6 @@ import {
   type GetAboveNodeOptions,
   type SlateEditor,
   findNode,
-  setNodes,
 } from '@udecode/plate-common';
 
 import type { TTableElement } from '../types';
@@ -23,5 +22,5 @@ export const setTableMarginLeft = (
 
   const [, tablePath] = table;
 
-  setNodes<TTableElement>(editor, { marginLeft }, { at: tablePath });
+  editor.tf.setNodes<TTableElement>({ marginLeft }, { at: tablePath });
 };

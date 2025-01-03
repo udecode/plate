@@ -1,4 +1,5 @@
-import { type TEditor, getRange } from '@udecode/plate-common';
+import type { TEditor } from '@udecode/plate-common';
+
 import { type Location, type Range, Path } from 'slate';
 
 import { mergeClientRects } from './mergeClientRects';
@@ -12,7 +13,7 @@ export const getBoundingClientRect = (
 
     const atArray = Array.isArray(at) && !Path.isPath(at) ? at : [at];
 
-    return atArray.map((location) => getRange(editor, location));
+    return atArray.map((location) => editor.api.range(location));
   })();
 
   const clientRects = atRanges

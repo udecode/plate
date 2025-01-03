@@ -1,14 +1,12 @@
-import { insertNode as insertNodeBase } from 'slate';
-
-import type { ElementOrTextOf } from '../../interfaces/element/TElement';
-import type { InsertNodesOptions } from '../transforms';
+import type { DescendantOf } from '../../interfaces';
 import type { TEditor, ValueOf } from '../../interfaces/editor/TEditor';
+import type { InsertNodesOptions } from '../../interfaces/editor/editor-types';
 
-import { getQueryOptions } from '../../utils';
-
-export const insertNode = <E extends TEditor>(
+export const insertNode = <
+  N extends DescendantOf<E>,
+  E extends TEditor = TEditor,
+>(
   editor: E,
-  node: ElementOrTextOf<E>,
+  node: N,
   options?: InsertNodesOptions<ValueOf<E>>
-) =>
-  insertNodeBase(editor as any, node as any, getQueryOptions(editor, options));
+) => editor.tf.insertNodes(node, options);

@@ -3,7 +3,7 @@ import type React from 'react';
 
 import type { PluginConfig, TElement, TNodeEntry } from '@udecode/plate-common';
 
-import { bindFirst, getNodeEntries } from '@udecode/plate-common';
+import { bindFirst } from '@udecode/plate-common';
 import { createTPlatePlugin } from '@udecode/plate-common/react';
 
 import type { ChangedElements, PartialSelectionOptions } from '../internal';
@@ -127,7 +127,7 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
         const selectedIds = getOption('selectedIds');
 
         return [
-          ...getNodeEntries<TElement>(editor, {
+          ...editor.api.nodes<TElement>({
             at: [],
             match: (n) => selectedIds?.has(n.id),
           }),

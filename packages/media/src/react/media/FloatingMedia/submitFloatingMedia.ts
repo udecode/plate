@@ -3,7 +3,6 @@ import {
   type SlateEditor,
   type WithRequiredKey,
   isUrl,
-  setNodes,
 } from '@udecode/plate-common';
 
 import type {
@@ -43,7 +42,7 @@ export const submitFloatingMedia = (
     url = transformUrl(url);
   }
 
-  setNodes<TMediaElement>(editor, {
+  editor.tf.setNodes<TMediaElement>({
     url,
   });
 

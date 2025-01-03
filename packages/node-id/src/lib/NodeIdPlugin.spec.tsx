@@ -1,12 +1,6 @@
 /** @jsx jsxt */
 
-import {
-  type SlateEditor,
-  createSlateEditor,
-  insertNodes,
-  mergeNodes,
-  splitNodes,
-} from '@udecode/plate-common';
+import { type SlateEditor, createSlateEditor } from '@udecode/plate-common';
 import { ParagraphPlugin } from '@udecode/plate-common/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { BulletedListPlugin, ListItemPlugin } from '@udecode/plate-list/react';
@@ -432,8 +426,7 @@ describe('when inserting nodes', () => {
         value: input.children,
       });
 
-      insertNodes(
-        editor,
+      editor.tf.insertNodes(
         (
           <fragment>
             <hp>inserted</hp>
@@ -478,8 +471,7 @@ describe('when inserting nodes', () => {
         value: input.children,
       });
 
-      insertNodes(
-        editor,
+      editor.tf.insertNodes(
         (
           <fragment>
             <hp>inserted</hp>
@@ -527,8 +519,7 @@ describe('when inserting nodes', () => {
         value: input.children,
       });
 
-      insertNodes(
-        editor,
+      editor.tf.insertNodes(
         (
           <fragment>
             <hp>inserted</hp>
@@ -578,8 +569,7 @@ describe('when inserting nodes', () => {
         value: input.children,
       });
 
-      insertNodes(
-        editor,
+      editor.tf.insertNodes(
         (
           <fragment>
             <hp id={11}>inserted</hp>
@@ -587,8 +577,7 @@ describe('when inserting nodes', () => {
         ) as any
       );
 
-      insertNodes(
-        editor,
+      editor.tf.insertNodes(
         (
           <fragment>
             <hp id={11}>inserted</hp>
@@ -619,7 +608,7 @@ describe('when splitting nodes', () => {
         value: input.children,
       });
 
-      splitNodes(editor);
+      editor.tf.splitNodes();
 
       expect(editor.children[1].id).toBeDefined();
     });
@@ -656,7 +645,7 @@ describe('when splitting nodes', () => {
         value: input.children,
       });
 
-      splitNodes(editor);
+      editor.tf.splitNodes();
 
       editor.undo();
       editor.redo();
@@ -693,7 +682,7 @@ describe('when splitting nodes', () => {
         value: input.children,
       });
 
-      splitNodes(editor);
+      editor.tf.splitNodes();
 
       editor.undo();
       editor.redo();
@@ -735,7 +724,7 @@ describe('when splitting nodes', () => {
         value: input.children,
       });
 
-      splitNodes(editor);
+      editor.tf.splitNodes();
 
       editor.undo();
       editor.redo();
@@ -780,7 +769,7 @@ describe('when splitting nodes', () => {
         value: input.children,
       });
 
-      splitNodes(editor);
+      editor.tf.splitNodes();
 
       editor.undo();
       editor.redo();
@@ -825,7 +814,7 @@ describe('when merging nodes', () => {
         value: input.children,
       });
 
-      mergeNodes(editor, { at: [0, 1] });
+      editor.tf.mergeNodes({ at: [0, 1] });
       editor.undo();
 
       expect(editor.children).toEqual(output.children);
@@ -856,7 +845,7 @@ describe('when merging nodes', () => {
         value: input.children,
       });
 
-      mergeNodes(editor, { at: [1] });
+      editor.tf.mergeNodes({ at: [1] });
       editor.undo();
       editor.redo();
       editor.undo();

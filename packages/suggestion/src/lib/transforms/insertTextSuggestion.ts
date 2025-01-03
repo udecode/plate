@@ -1,6 +1,5 @@
 import {
   type SlateEditor,
-  insertNodes,
   isSelectionExpanded,
   nanoid,
 } from '@udecode/plate-common';
@@ -19,8 +18,7 @@ export const insertTextSuggestion = (editor: SlateEditor, text: string) => {
       deleteFragmentSuggestion(editor);
     }
 
-    insertNodes<TSuggestionText>(
-      editor,
+    editor.tf.insertNodes<TSuggestionText>(
       {
         text,
         ...getSuggestionProps(editor, id),

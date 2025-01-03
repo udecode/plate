@@ -3,7 +3,6 @@ import {
   isExpanded,
   isText,
   nanoid,
-  setNodes,
 } from '@udecode/plate-common';
 
 import { BaseCommentsPlugin, getCommentKey } from '..';
@@ -30,8 +29,7 @@ export const insertComment = (editor: SlateEditor) => {
   //   );
   // });
 
-  setNodes(
-    editor,
+  editor.tf.setNodes(
     { [BaseCommentsPlugin.key]: true, [getCommentKey(id)]: true },
     { match: isText, split: true }
   );

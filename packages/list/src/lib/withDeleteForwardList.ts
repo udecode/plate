@@ -5,14 +5,8 @@ import {
   type TElementEntry,
   getBlockAbove,
   getChildren,
-  getEditorString,
   getNode,
-  getNodeEntries,
-  getNodeEntry,
-  getParentNode,
-  getPointAfter,
   isSelectionAtBlockEnd,
-  removeNodes,
 } from '@udecode/plate-common';
 import { type TextUnit, Path } from 'slate';
 
@@ -36,10 +30,7 @@ import {
 } from './transforms/index';
 
 const selectionIsNotInAListHandler = (editor: SlateEditor): boolean => {
-  const pointAfterSelection = getPointAfter(
-    editor,
-    editor.selection!.focus.path
-  );
+  const pointAfterSelection = editor.api.after(editor.selection!.focus);
 
   if (pointAfterSelection) {
     // there is a block after it
@@ -54,9 +45,9 @@ const selectionIsNotInAListHandler = (editor: SlateEditor): boolean => {
         at: editor.selection!.anchor,
       });
 
-      if (!getEditorString(editor, parentBlockEntity![1])) {
+      if (!editor.api.string(parentBlockEntity![1])) {
         // the selected block is empty
-        removeNodes(editor);
+        editor.tf.removeNodes();
 
         return true;
       }
@@ -85,7 +76,7 @@ const selectionIsInAListHandler = (
   // if it has no children
   if (!hasListChild(editor, listItem[0])) {
     const liType = editor.getType(BaseListItemPlugin);
-    const _nodes = getNodeEntries(editor, {
+    const _nodes = editor.api.nodes({
       at: listItem[1],
       match: (node, path) => {
         if (path.length === 0) {
@@ -104,7 +95,7 @@ const selectionIsInAListHandler = (
 
     if (!liWithSiblings) {
       // there are no more list item in the list
-      const pointAfterListItem = getPointAfter(editor, listItem[1]);
+      const pointAfterListItem = editor.api.after(listItem[1]);
 
       if (pointAfterListItem) {
         // there is a block after it
@@ -129,14 +120,13 @@ const selectionIsInAListHandler = (
       return false;
     }
 
-    const siblingListItem = getNodeEntry<TElement>(
-      editor,
+    const siblingListItem = editor.api.node<TElement>(
       Path.next(liWithSiblings)
     );
 
     if (!siblingListItem) return false;
 
-    const siblingList = getParentNode<TElement>(editor, siblingListItem[1]);
+    const siblingList = editor.api.parent<TElement>(siblingListItem[1]);
 
     if (
       siblingList &&
@@ -149,7 +139,7 @@ const selectionIsInAListHandler = (
       return true;
     }
 
-    const pointAfterListItem = getPointAfter(editor, editor.selection!.focus);
+    const pointAfterListItem = editor.api.after(editor.selection!.focus);
 
     if (
       !pointAfterListItem ||
@@ -166,7 +156,7 @@ const selectionIsInAListHandler = (
 
     // get closest lic ancestor of next selectable
     const licType = editor.getType(BaseListItemContentPlugin);
-    const _licNodes = getNodeEntries<TElement>(editor, {
+    const _licNodes = editor.api.nodes<TElement>({
       at: pointAfterListItem.path,
       match: (node) => node.type === licType,
       mode: 'lowest',
@@ -179,24 +169,20 @@ const selectionIsInAListHandler = (
     // manually run default delete
     defaultDelete(unit);
 
-    const leftoverListItem = getNodeEntry<TElement>(
-      editor,
+    const leftoverListItem = editor.api.node<TElement>(
       Path.parent(nextSelectableLic[1])
     )!;
 
     if (leftoverListItem && leftoverListItem[0].children.length === 0) {
       // remove the leftover empty list item
-      removeNodes(editor, { at: leftoverListItem[1] });
+      editor.tf.removeNodes({ at: leftoverListItem[1] });
     }
 
     return true;
   }
 
   // if it has children
-  const nestedList = getNodeEntry<TElement>(
-    editor,
-    Path.next([...listItem[1], 0])
-  );
+  const nestedList = editor.api.node<TElement>(Path.next([...listItem[1], 0]));
 
   if (!nestedList) return false;
 

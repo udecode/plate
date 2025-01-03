@@ -5,11 +5,8 @@ import * as React from 'react';
 import { AIChatPlugin, useEditorChat } from '@udecode/plate-ai/react';
 import {
   type SlateEditor,
-  type TElement,
   type TNodeEntry,
-  getAncestorNode,
   getBlocks,
-  isElementEmpty,
   isHotkey,
   isSelectionAtBlockEnd,
 } from '@udecode/plate-common';
@@ -68,9 +65,9 @@ export function AIMenu() {
       }
     },
     onOpenCursor: () => {
-      const ancestor = getAncestorNode(editor)?.[0] as TElement;
+      const ancestor = editor.api.highestBlock()![0];
 
-      if (!isSelectionAtBlockEnd(editor) && !isElementEmpty(editor, ancestor)) {
+      if (!isSelectionAtBlockEnd(editor) && !editor.api.isEmpty(ancestor)) {
         editor
           .getApi(BlockSelectionPlugin)
           .blockSelection.addSelectedRow(ancestor.id as string);

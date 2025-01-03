@@ -1,8 +1,4 @@
-import {
-  type SlateEditor,
-  type WrapNodesOptions,
-  wrapNodes,
-} from '@udecode/plate-common';
+import type { SlateEditor, WrapNodesOptions } from '@udecode/plate-common';
 
 import type { TLinkElement } from '../types';
 
@@ -18,8 +14,7 @@ export const wrapLink = (
   editor: SlateEditor,
   { target, url, ...options }: WrapLinkOptions
 ) => {
-  wrapNodes<TLinkElement>(
-    editor,
+  editor.tf.wrapNodes<TLinkElement>(
     {
       children: [],
       target,

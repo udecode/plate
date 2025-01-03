@@ -5,8 +5,6 @@ import {
   type SlateEditor,
   type TElement,
   type TNodeEntry,
-  getAboveNode,
-  getParentNode,
   isElement,
   someNode,
 } from '@udecode/plate-common';
@@ -25,17 +23,17 @@ export const getCodeLineEntry = <N extends ElementOf<E>, E extends SlateEditor>(
       match: { type: editor.getType(BaseCodeLinePlugin) },
     })
   ) {
-    const selectionParent = getParentNode(editor, at);
+    const selectionParent = editor.api.parent(at);
 
     if (!selectionParent) return;
 
     const [, parentPath] = selectionParent;
 
     const codeLine =
-      getAboveNode<TElement>(editor, {
+      editor.api.above<TElement>({
         at,
         match: { type: editor.getType(BaseCodeLinePlugin) },
-      }) || getParentNode<N>(editor, parentPath);
+      }) || editor.api.parent<N>(parentPath);
 
     if (!codeLine) return;
 
@@ -47,7 +45,7 @@ export const getCodeLineEntry = <N extends ElementOf<E>, E extends SlateEditor>(
     )
       return;
 
-    const codeBlock = getParentNode<N>(editor, codeLinePath);
+    const codeBlock = editor.api.parent<N>(codeLinePath);
 
     if (!codeBlock) return;
 

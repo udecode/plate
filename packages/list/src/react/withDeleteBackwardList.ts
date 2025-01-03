@@ -3,12 +3,8 @@ import {
   type TNodeEntry,
   BaseParagraphPlugin,
   deleteMerge,
-  getNodeEntries,
-  getNodeEntry,
-  getPointBefore,
   isFirstChild,
   isSelectionAtBlockStart,
-  removeNodes,
 } from '@udecode/plate-common';
 import {
   type ExtendEditor,
@@ -85,8 +81,7 @@ export const withDeleteBackwardList: ExtendEditor<ListConfig> = ({
               return;
             }
 
-            const pointBeforeListItem = getPointBefore(
-              editor,
+            const pointBeforeListItem = editor.api.before(
               editor.selection!.focus
             );
 
@@ -106,7 +101,7 @@ export const withDeleteBackwardList: ExtendEditor<ListConfig> = ({
             ) {
               // get closest lic ancestor of current selectable
               const licType = editor.getType(BaseListItemContentPlugin);
-              const _licNodes = getNodeEntries<TElement>(editor, {
+              const _licNodes = editor.api.nodes<TElement>({
                 at: listItem[1],
                 match: (node) => node.type === licType,
                 mode: 'lowest',
@@ -123,14 +118,13 @@ export const withDeleteBackwardList: ExtendEditor<ListConfig> = ({
 
             if (!currentLic || !hasMultipleChildren) return;
 
-            const leftoverListItem = getNodeEntry<TElement>(
-              editor,
+            const leftoverListItem = editor.api.node<TElement>(
               Path.parent(currentLic[1])
             )!;
 
             if (leftoverListItem && leftoverListItem[0].children.length === 0) {
               // remove the leftover empty list item
-              removeNodes(editor, { at: leftoverListItem[1] });
+              editor.tf.removeNodes({ at: leftoverListItem[1] });
             }
           });
         }

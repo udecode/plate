@@ -1,10 +1,5 @@
-import {
-  type SlateEditor,
-  getNodeEntry,
-  getRange,
-  isEndPoint,
-  isStartPoint,
-} from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
+
 import { type Point, Path } from 'slate';
 
 export const isPointNextToNode = (
@@ -25,15 +20,15 @@ export const isPointNextToNode = (
     throw new Error('No valid selection point found');
   }
 
-  const selectedRange = getRange(editor, at.path);
+  const selectedRange = editor.api.range(at.path);
   const boundary = (() => {
     let isStart = false;
     let isEnd = false;
 
-    if (isStartPoint(editor, at, selectedRange)) {
+    if (editor.api.isStart(at, selectedRange)) {
       isStart = true;
     }
-    if (isEndPoint(editor, at, selectedRange)) {
+    if (editor.api.isEnd(at, selectedRange)) {
       isEnd = true;
     }
     if (isStart && isEnd) {
@@ -69,7 +64,7 @@ export const isPointNextToNode = (
 
   if (!adjacentPath) return false;
 
-  const nextNodeEntry = getNodeEntry(editor, adjacentPath) ?? null;
+  const nextNodeEntry = editor.api.node(adjacentPath) ?? null;
 
   return !!(nextNodeEntry && nextNodeEntry[0].type === nodeType);
 };

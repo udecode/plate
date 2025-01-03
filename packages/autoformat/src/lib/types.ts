@@ -65,7 +65,7 @@ export interface AutoformatBlockRule extends AutoformatCommonRule {
   /**
    * Custom formatting function.
    *
-   * @default setNodes(editor, { type }, { match: (n) => isBlock(editor, n) })
+   * @default editor.tf.setNodes({ type }, { match: (n) => editor.api.isBlock(n) })
    */
   format?: (editor: SlateEditor) => void;
 

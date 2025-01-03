@@ -1,18 +1,11 @@
-import type { Modify } from '@udecode/utils';
+import { levels } from 'slate';
 
-import { type EditorLevelsOptions, levels } from 'slate';
-
-import type { QueryOptions, QueryVoids } from '../../types';
-import type { NodeOf, TNode } from '../../interfaces/node/TNode';
+import type { TEditor, ValueOf } from '../../interfaces/editor/TEditor';
+import type { GetLevelsOptions } from '../../interfaces/editor/editor-types';
+import type { NodeOf } from '../../interfaces/node/TNode';
 import type { TNodeEntry } from '../../interfaces/node/TNodeEntry';
-import type { TEditor, Value, ValueOf } from '../../interfaces/editor/TEditor';
 
 import { getQueryOptions } from '../../utils';
-
-export type GetLevelsOptions<V extends Value = Value> = Modify<
-  NonNullable<EditorLevelsOptions<TNode>>,
-  QueryOptions<V> & QueryVoids
->;
 
 export const getLevels = <N extends NodeOf<E>, E extends TEditor = TEditor>(
   editor: E,

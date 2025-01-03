@@ -3,13 +3,7 @@ import type { Range } from 'slate';
 import {
   type ExtendEditor,
   type SlateEditor,
-  createPathRef,
   deleteMerge,
-  getAboveNode,
-  getEndPoint,
-  getParentNode,
-  getStartPoint,
-  removeNodes,
 } from '@udecode/plate-common';
 
 import { type ListConfig, BaseListItemPlugin } from './BaseListPlugin';
@@ -18,9 +12,9 @@ import { hasListChild } from './queries/hasListChild';
 import { isAcrossListItems } from './queries/isAcrossListItems';
 
 const getLiStart = (editor: SlateEditor) => {
-  const start = getStartPoint(editor, editor.selection as Range);
+  const start = editor.api.start(editor.selection as Range);
 
-  return getAboveNode(editor, {
+  return editor.api.above({
     at: start,
     match: { type: editor.getType(BaseListItemPlugin) },
   });
@@ -43,14 +37,14 @@ export const withDeleteFragmentList: ExtendEditor<ListConfig> = ({
          * Check if the end li can be deleted (if it has no sublist). Store the
          * path ref to delete it after deleteMerge.
          */
-        const end = getEndPoint(editor, editor.selection as Range);
-        const liEnd = getAboveNode(editor, {
+        const end = editor.api.end(editor.selection as Range);
+        const liEnd = editor.api.above({
           at: end,
           match: { type: editor.getType(BaseListItemPlugin) },
         });
         const liEndCanBeDeleted = liEnd && !hasListChild(editor, liEnd[0]);
         const liEndPathRef = liEndCanBeDeleted
-          ? createPathRef(editor, liEnd![1])
+          ? editor.api.pathRef(liEnd![1])
           : undefined;
 
         // use deleteFragment when selection wrapped around list
@@ -68,7 +62,7 @@ export const withDeleteFragmentList: ExtendEditor<ListConfig> = ({
         if (liEndPathRef) {
           const liEndPath = liEndPathRef.unref()!;
 
-          const listStart = liStart && getParentNode(editor, liStart[1]);
+          const listStart = liStart && editor.api.parent(liStart[1]);
 
           const deletePath = getHighestEmptyList(editor, {
             diffListPath: listStart?.[1],
@@ -76,7 +70,7 @@ export const withDeleteFragmentList: ExtendEditor<ListConfig> = ({
           });
 
           if (deletePath) {
-            removeNodes(editor, { at: deletePath });
+            editor.tf.removeNodes({ at: deletePath });
           }
 
           deleted = true;

@@ -1,46 +1,20 @@
-import type { Modify } from '@udecode/utils';
-import type { NodeInsertNodesOptions } from 'slate/dist/interfaces/transforms/node';
-
 import {
   Path,
   insertNodes as insertNodesBase,
-  removeNodes,
   withoutNormalizing,
 } from 'slate';
 
+import type { InsertNodesOptions } from '../../interfaces/editor/editor-types';
 import type { QueryNodeOptions } from '../../types';
-import type { QueryMode, QueryOptions } from '../../types/QueryOptions';
 
 import {
-  type ElementOrTextIn,
   type ElementOrTextOf,
   type TDescendant,
   type TEditor,
-  type Value,
   type ValueOf,
   getNodeString,
 } from '../../interfaces';
 import { getQueryOptions, queryNode } from '../../utils';
-import { getAboveNode } from '../editor/getAboveNode';
-import { getEndPoint } from '../editor/getEndPoint';
-
-export type InsertNodesOptions<V extends Value = Value> = {
-  /**
-   * Insert the nodes after the currect block. Does not apply if the removeEmpty
-   * option caused the current block to be removed.
-   */
-  nextBlock?: boolean;
-
-  /**
-   * Remove the currect block if empty before inserting. Only applies to
-   * paragraphs by default, but can be customized by passing a QueryNodeOptions
-   * object.
-   */
-  removeEmpty?: QueryNodeOptions | boolean;
-} & Modify<
-  NodeInsertNodesOptions<ElementOrTextIn<V>>,
-  QueryOptions<V> & QueryMode
->;
 
 export const insertNodes = <
   N extends ElementOrTextOf<E>,
@@ -54,7 +28,7 @@ export const insertNodes = <
 
   withoutNormalizing(editor as any, () => {
     if (removeEmpty) {
-      const blockEntry = getAboveNode(editor, { at: options.at });
+      const blockEntry = editor.api.above({ at: options.at });
 
       if (blockEntry) {
         const queryNodeOptions: QueryNodeOptions =
@@ -77,7 +51,7 @@ export const insertNodes = <
         };
 
         if (queryNode(blockEntry, queryNodeOptions)) {
-          removeNodes(editor as any, { at: blockEntry[1] });
+          editor.tf.removeNodes({ at: blockEntry[1] });
           nextBlock = false;
         }
       }
@@ -86,9 +60,9 @@ export const insertNodes = <
       const { at = editor.selection } = options;
 
       if (at) {
-        const endPoint = getEndPoint(editor, at);
+        const endPoint = editor.api.end(at);
 
-        const blockEntry = getAboveNode(editor, {
+        const blockEntry = editor.api.above({
           at: endPoint,
           block: true,
         });

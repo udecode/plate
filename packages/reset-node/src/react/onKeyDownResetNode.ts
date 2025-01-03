@@ -1,11 +1,6 @@
 import type { KeyboardHandler } from '@udecode/plate-common/react';
 
-import {
-  isCollapsed,
-  isHotkey,
-  setElements,
-  someNode,
-} from '@udecode/plate-common';
+import { isCollapsed, isHotkey, someNode } from '@udecode/plate-common';
 
 import type { ResetNodeConfig } from '../lib/BaseResetNodePlugin';
 
@@ -36,7 +31,7 @@ export const onKeyDownResetNode: KeyboardHandler<ResetNodeConfig> = ({
       ) {
         event.preventDefault?.();
 
-        setElements(editor, { type: defaultType });
+        editor.tf.setNodes({ type: defaultType });
 
         if (onReset) {
           onReset(editor as any);

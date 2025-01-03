@@ -3,14 +3,9 @@ import type Slate from 'slate';
 import {
   type ExtendEditor,
   getNode,
-  getNodeEntries,
   getNodeString,
-  getPoint,
-  getPointBefore,
   isCollapsed,
   queryNode,
-  removeNodes,
-  select,
 } from '@udecode/plate-common';
 
 import type { SelectOnBackspaceConfig } from './SelectOnBackspacePlugin';
@@ -27,18 +22,18 @@ export const withSelectOnBackspace: ExtendEditor<SelectOnBackspaceConfig> = ({
     const { query, removeNodeIfEmpty } = getOptions();
 
     if (unit === 'character' && isCollapsed(selection)) {
-      const pointBefore = getPointBefore(editor, selection as Slate.Location, {
+      const pointBefore = editor.api.before(selection as Slate.Location, {
         unit,
       });
 
       if (pointBefore) {
-        const [prevCell] = getNodeEntries(editor, {
+        const [prevCell] = editor.api.nodes({
           at: pointBefore,
           match: (node) => queryNode([node, pointBefore.path], query),
         });
 
         if (!!prevCell && pointBefore) {
-          const point = getPoint(editor, selection as Slate.Location)!;
+          const point = editor.api.point(selection as Slate.Location)!;
           const selectedNode = getNode(editor, point.path);
 
           if (
@@ -47,11 +42,11 @@ export const withSelectOnBackspace: ExtendEditor<SelectOnBackspaceConfig> = ({
             !getNodeString(selectedNode as any)
           ) {
             // remove node if empty
-            removeNodes(editor);
+            editor.tf.removeNodes();
           }
 
           // don't delete image, set selection there
-          select(editor, pointBefore);
+          editor.tf.select(pointBefore);
         } else {
           deleteBackward(unit);
         }

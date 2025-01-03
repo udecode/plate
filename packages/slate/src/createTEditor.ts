@@ -16,98 +16,98 @@ import {
 import type { TEditor, Value } from './interfaces/editor/TEditor';
 
 import {
-  addMark,
   blurEditor,
-  collapseSelection,
-  createPathRef,
-  createPointRef,
-  createRangeRef,
-  deleteBackward,
-  deleteForward,
-  deleteFragment,
-  deleteText,
-  deselect,
   deselectEditor,
   findEditorDocumentOrShadowRoot,
   findEventRange,
   findNodeKey,
   findPath,
   focusEditor,
-  getAboveNode,
-  getEdgePoints,
-  getEditorString,
   getEditorWindow,
-  getEndPoint,
-  getFirstNode,
-  getFragment,
-  getLastNode,
-  getLeafNode,
-  getLevels,
-  getMarks,
-  getNextNode,
-  getNodeEntries,
-  getNodeEntry,
-  getParentNode,
-  getPath,
-  getPathRefs,
-  getPoint,
-  getPointAfter,
-  getPointBefore,
-  getPointRefs,
-  getPositions,
-  getPreviousNode,
-  getRange,
-  getRangeRefs,
-  getStartPoint,
-  getVoidNode,
-  hasBlocks,
   hasEditorDOMNode,
   hasEditorEditableTarget,
   hasEditorRange,
   hasEditorSelectableTarget,
   hasEditorTarget,
-  hasInlines,
-  hasTexts,
-  insertBreak,
-  insertFragment,
-  insertNode,
-  insertNodes,
-  insertText,
-  isBlock,
   isComposing,
-  isEdgePoint,
   isEditorFocused,
-  isEditorNormalizing,
   isEditorReadOnly,
-  isElementEmpty,
-  isElementReadOnly,
-  isEndPoint,
-  isStartPoint,
   isTargetInsideNonReadonlyVoid,
-  liftNodes,
-  mergeNodes,
-  moveNodes,
-  moveSelection,
-  normalizeEditor,
-  removeNodes,
-  select,
-  setNodes,
-  setPoint,
-  setSelection,
-  splitNodes,
   toDOMNode,
   toDOMPoint,
   toDOMRange,
   toSlateNode,
   toSlatePoint,
   toSlateRange,
-  unhangRange,
-  unsetNodes,
-  unwrapNodes,
-  withoutNormalizing,
-  wrapNodes,
 } from './interfaces';
-import { findNodePath } from './queries';
+import { addMark } from './internal/editor/addMark';
+import { createPathRef } from './internal/editor/createPathRef';
+import { createPointRef } from './internal/editor/createPointRef';
+import { createRangeRef } from './internal/editor/createRangeRef';
+import { deleteBackward } from './internal/editor/deleteBackward';
+import { deleteForward } from './internal/editor/deleteForward';
+import { deleteFragment } from './internal/editor/deleteFragment';
+import { getAboveNode } from './internal/editor/getAboveNode';
+import { getEdgePoints } from './internal/editor/getEdgePoints';
+import { getEditorString } from './internal/editor/getEditorString';
+import { getEndPoint } from './internal/editor/getEndPoint';
+import { getFirstNode } from './internal/editor/getFirstNode';
+import { getFragment } from './internal/editor/getFragment';
+import { getLastNode } from './internal/editor/getLastNode';
+import { getLeafNode } from './internal/editor/getLeafNode';
+import { getLevels } from './internal/editor/getLevels';
+import { getMarks } from './internal/editor/getMarks';
+import { getNextNode } from './internal/editor/getNextNode';
+import { getNodeEntries } from './internal/editor/getNodeEntries';
+import { getNodeEntry } from './internal/editor/getNodeEntry';
+import { getParentNode } from './internal/editor/getParentNode';
+import { getPath } from './internal/editor/getPath';
+import { getPathRefs } from './internal/editor/getPathRefs';
+import { getPoint } from './internal/editor/getPoint';
+import { getPointAfter } from './internal/editor/getPointAfter';
+import { getPointBefore } from './internal/editor/getPointBefore';
+import { getPointRefs } from './internal/editor/getPointRefs';
+import { getPositions } from './internal/editor/getPositions';
+import { getPreviousNode } from './internal/editor/getPreviousNode';
+import { getRange } from './internal/editor/getRange';
+import { getRangeRefs } from './internal/editor/getRangeRefs';
+import { getStartPoint } from './internal/editor/getStartPoint';
+import { getVoidNode } from './internal/editor/getVoidNode';
+import { hasBlocks } from './internal/editor/hasBlocks';
+import { hasInlines } from './internal/editor/hasInlines';
+import { hasTexts } from './internal/editor/hasTexts';
+import { insertBreak } from './internal/editor/insertBreak';
+import { insertNode } from './internal/editor/insertNode';
+import { isBlock } from './internal/editor/isBlock';
+import { isEdgePoint } from './internal/editor/isEdgePoint';
+import { isEditorNormalizing } from './internal/editor/isEditorNormalizing';
+import { isElementEmpty } from './internal/editor/isElementEmpty';
+import { isElementReadOnly } from './internal/editor/isElementReadOnly';
+import { isEndPoint } from './internal/editor/isEndPoint';
+import { isStartPoint } from './internal/editor/isStartPoint';
+import { normalizeEditor } from './internal/editor/normalizeEditor';
+import { unhangRange } from './internal/editor/unhangRange';
+import { withoutNormalizing } from './internal/editor/withoutNormalizing';
+import { getHighestBlock } from './internal/queries/getHighestBlock';
+import { collapseSelection } from './internal/transforms/collapseSelection';
+import { deleteText } from './internal/transforms/deleteText';
+import { deselect } from './internal/transforms/deselect';
+import { insertFragment } from './internal/transforms/insertFragment';
+import { insertNodes } from './internal/transforms/insertNodes';
+import { insertText } from './internal/transforms/insertText';
+import { liftNodes } from './internal/transforms/liftNodes';
+import { mergeNodes } from './internal/transforms/mergeNodes';
+import { moveNodes } from './internal/transforms/moveNodes';
+import { moveSelection } from './internal/transforms/moveSelection';
+import { removeNodes } from './internal/transforms/removeNodes';
+import { select } from './internal/transforms/select';
+import { setNodes } from './internal/transforms/setNodes';
+import { setPoint } from './internal/transforms/setPoint';
+import { setSelection } from './internal/transforms/setSelection';
+import { splitNodes } from './internal/transforms/splitNodes';
+import { unsetNodes } from './internal/transforms/unsetNodes';
+import { unwrapNodes } from './internal/transforms/unwrapNodes';
+import { wrapNodes } from './internal/transforms/wrapNodes';
 import { HistoryEditor } from './slate-history';
 import { toggleMark } from './transforms';
 import {
@@ -155,14 +155,11 @@ export const createTEditor = <V extends Value>({
     findDocumentOrShadowRoot: bindFirst(findEditorDocumentOrShadowRoot, editor),
     findEventRange: bindFirst(findEventRange, editor),
     findKey: bindFirst(findNodeKey, editor),
-    findPath: (node: any, options: any) =>
-      options
-        ? findNodePath(editor, node, options)
-        : (findPath(editor, node) ?? findNodePath(editor, node, options)),
-    first: bindFirst(getFirstNode, editor),
-    fragment: bindFirst(getFragment, editor),
+    findPath: bindFirst(findPath, editor),
+    first: bindFirst(getFirstNode, editor) as any,
+    fragment: bindFirst(getFragment, editor) as any,
     getDirtyPaths: bindFirst(getDirtyPaths, editor as any),
-    getFragment: bindFirst(getFragment, editor),
+    getFragment: bindFirst(getFragment, editor) as any,
     getWindow: bindFirst(getEditorWindow, editor),
     hasBlocks: bindFirst(hasBlocks, editor),
     hasDOMNode: bindFirst(hasEditorDOMNode, editor),
@@ -173,6 +170,7 @@ export const createTEditor = <V extends Value>({
     hasSelectableTarget: bindFirst(hasEditorSelectableTarget, editor) as any,
     hasTarget: bindFirst(hasEditorTarget, editor) as any,
     hasTexts: bindFirst(hasTexts, editor),
+    highestBlock: bindFirst(getHighestBlock, editor) as any,
     isBlock: bindFirst(isBlock, editor),
     isComposing: bindFirst(isComposing, editor),
     isEdge: bindFirst(isEdgePoint, editor),
@@ -193,8 +191,8 @@ export const createTEditor = <V extends Value>({
       editor
     ),
     isVoid: editor.isVoid,
-    last: bindFirst(getLastNode, editor),
-    leaf: bindFirst(getLeafNode, editor),
+    last: bindFirst(getLastNode, editor) as any,
+    leaf: bindFirst(getLeafNode, editor) as any,
     levels: bindFirst(getLevels, editor) as any,
     markableVoid: editor.markableVoid,
     marks: bindFirst(getMarks, editor),

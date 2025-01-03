@@ -1,8 +1,7 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from '@udecode/plate-core';
-
 import { jsxt } from '@udecode/plate-test-utils';
+import { createTEditor } from '@udecode/slate';
 
 import { selectEditor } from './selectEditor';
 
@@ -12,17 +11,19 @@ describe('selectEditor', () => {
   describe('when edge is end', () => {});
 
   it('should set the cursor at the end', () => {
-    const input = (
-      <editor>
-        <hp>
-          hello
-          <cursor />
-        </hp>
-        <element>
-          <hp>world</hp>
-        </element>
-      </editor>
-    ) as any as SlateEditor;
+    const input = createTEditor(
+      (
+        <editor>
+          <hp>
+            hello
+            <cursor />
+          </hp>
+          <element>
+            <hp>world</hp>
+          </element>
+        </editor>
+      ) as any
+    );
 
     const output = (
       <editor>
@@ -34,7 +35,7 @@ describe('selectEditor', () => {
           </hp>
         </element>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
     selectEditor(input, {
       edge: 'end',
@@ -46,17 +47,19 @@ describe('selectEditor', () => {
   describe('when edge is start', () => {});
 
   it('should set the cursor at the start', () => {
-    const input = (
-      <editor>
-        <hp>
-          hello
-          <cursor />
-        </hp>
-        <element>
-          <hp>world</hp>
-        </element>
-      </editor>
-    ) as any as SlateEditor;
+    const input = createTEditor(
+      (
+        <editor>
+          <hp>
+            hello
+            <cursor />
+          </hp>
+          <element>
+            <hp>world</hp>
+          </element>
+        </editor>
+      ) as any
+    );
 
     const output = (
       <editor>
@@ -68,7 +71,7 @@ describe('selectEditor', () => {
           <hp>world</hp>
         </element>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
     selectEditor(input, {
       edge: 'start',
@@ -80,17 +83,19 @@ describe('selectEditor', () => {
   describe('when at is defined', () => {});
 
   it('should set the cursor at', () => {
-    const input = (
-      <editor>
-        <hp>
-          hello
-          <cursor />
-        </hp>
-        <element>
-          <hp>world</hp>
-        </element>
-      </editor>
-    ) as any as SlateEditor;
+    const input = createTEditor(
+      (
+        <editor>
+          <hp>
+            hello
+            <cursor />
+          </hp>
+          <element>
+            <hp>world</hp>
+          </element>
+        </editor>
+      ) as any
+    );
 
     const output = (
       <editor>
@@ -102,7 +107,7 @@ describe('selectEditor', () => {
           <hp>world</hp>
         </element>
       </editor>
-    ) as any as SlateEditor;
+    ) as any;
 
     selectEditor(input, {
       at: {

@@ -1,12 +1,6 @@
 import type { KeyboardHandler } from '@udecode/plate-common/react';
 
-import {
-  deleteBackward,
-  getEditorString,
-  getPointBefore,
-  insertText,
-  isHotkey,
-} from '@udecode/plate-common';
+import { isHotkey } from '@udecode/plate-common';
 import { Range } from 'slate';
 
 import type { AutoformatConfig } from '../lib/BaseAutoformatPlugin';
@@ -40,7 +34,7 @@ export const onKeyDownAutoformat: KeyboardHandler<AutoformatConfig> = ({
   // before will be a point one character before | so:
   // Text|
   //    ^
-  const before = getPointBefore(editor, end, {
+  const before = editor.api.before(end, {
     distance: 1,
     unit: 'character',
   });
@@ -56,7 +50,7 @@ export const onKeyDownAutoformat: KeyboardHandler<AutoformatConfig> = ({
   // Text|
   //    ^
   // Between ^ and | is t
-  const char = getEditorString(editor, charRange);
+  const char = editor.api.string(charRange);
 
   if (!char) return false;
 
@@ -76,18 +70,18 @@ export const onKeyDownAutoformat: KeyboardHandler<AutoformatConfig> = ({
   event.preventDefault();
 
   // remove the shorthand character.
-  deleteBackward(editor, { unit: 'character' });
+  editor.tf.deleteBackward({ unit: 'character' });
 
   // put back the orignal characters. This could match to a single string or an array.
   const rule = matchers[0] as AutoformatTextRule;
 
   if (rule && typeof rule.match === 'string') {
-    insertText(editor, rule.match);
+    editor.tf.insertText(rule.match);
   } else {
     const matchArray = rule.match as string[];
 
     if (matchArray && matchArray.length > 0) {
-      insertText(editor, matchArray[0]);
+      editor.tf.insertText(matchArray[0]);
     }
   }
 

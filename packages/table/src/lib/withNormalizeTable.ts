@@ -3,13 +3,8 @@ import {
   type TElement,
   findNode,
   getBlockAbove,
-  getNodeEntries,
-  getParentNode,
   isElement,
   isText,
-  setNodes,
-  unsetNodes,
-  unwrapNodes,
   wrapNodeChildren,
 } from '@udecode/plate-common';
 
@@ -56,7 +51,7 @@ export const withNormalizeTable: ExtendEditor<TableConfig> = ({
           enableUnsetSingleColSize &&
           getTableColumnCount(node) < 2
         ) {
-          unsetNodes(editor, 'colSizes', {
+          editor.tf.unsetNodes('colSizes', {
             at: path,
           });
 
@@ -69,7 +64,7 @@ export const withNormalizeTable: ExtendEditor<TableConfig> = ({
         });
 
         if (tableEntry) {
-          unwrapNodes(editor, {
+          editor.tf.unwrapNodes({
             at: path,
           });
 
@@ -94,7 +89,7 @@ export const withNormalizeTable: ExtendEditor<TableConfig> = ({
               });
             }
             if (colSizes.length > 0) {
-              setNodes<TTableElement>(editor, { colSizes }, { at: path });
+              editor.tf.setNodes<TTableElement>({ colSizes }, { at: path });
 
               return;
             }
@@ -102,10 +97,10 @@ export const withNormalizeTable: ExtendEditor<TableConfig> = ({
         }
       }
       if (n.type === editor.getType(BaseTableRowPlugin)) {
-        const parentEntry = getParentNode(editor, path);
+        const parentEntry = editor.api.parent(path);
 
         if (parentEntry?.[0].type !== type) {
-          unwrapNodes(editor, {
+          editor.tf.unwrapNodes({
             at: path,
           });
 
@@ -126,10 +121,10 @@ export const withNormalizeTable: ExtendEditor<TableConfig> = ({
 
         const { children } = node;
 
-        const parentEntry = getParentNode(editor, path);
+        const parentEntry = editor.api.parent(path);
 
         if (parentEntry?.[0].type !== editor.getType(BaseTableRowPlugin)) {
-          unwrapNodes(editor, {
+          editor.tf.unwrapNodes({
             at: path,
           });
 
@@ -165,7 +160,7 @@ export const withNormalizeTable: ExtendEditor<TableConfig> = ({
     // Cleanup cell indices when removing a table cell
     if (isTableOperation) {
       const cells = [
-        ...getNodeEntries<TTableCellElement>(editor, {
+        ...editor.api.nodes<TTableCellElement>({
           at: operation.path,
           match: { type: getCellTypes(editor) },
         }),

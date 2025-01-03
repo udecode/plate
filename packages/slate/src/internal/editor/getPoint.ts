@@ -1,7 +1,7 @@
 import { type EditorPointOptions, point } from 'slate';
 
-import type { At } from '../../types';
 import type { TEditor } from '../../interfaces/editor/TEditor';
+import type { At } from '../../types';
 
 import { getAt } from '../../utils';
 

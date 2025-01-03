@@ -3,6 +3,7 @@
  */
 
 export * from './addRangeMarks';
+export * from './deleteMerge';
 export * from './duplicateBlocks';
 export * from './focusEditorEdge';
 export * from './insertElements';
@@ -19,7 +20,6 @@ export * from './selectEndOfBlockAboveSelection';
 export * from './selectNodes';
 export * from './setBlockAboveNode';
 export * from './setBlockNodes';
-export * from './setElements';
 export * from './setMarks';
 export * from './toggleMark';
 export * from './toggleWrapNodes';

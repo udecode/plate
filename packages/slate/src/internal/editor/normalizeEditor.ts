@@ -1,12 +1,7 @@
 import { normalize } from 'slate';
 
-import type { TOperation } from '../../types';
 import type { TEditor } from '../../interfaces/editor/TEditor';
-
-export interface EditorNormalizeOptions {
-  force?: boolean;
-  operation?: TOperation;
-}
+import type { EditorNormalizeOptions } from '../../interfaces/editor/editor-types';
 
 export const normalizeEditor = (
   editor: TEditor,

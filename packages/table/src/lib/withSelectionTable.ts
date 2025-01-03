@@ -1,12 +1,6 @@
 import type { ExtendEditor } from '@udecode/plate-common';
 
-import {
-  getBlockAbove,
-  getEndPoint,
-  getPointBefore,
-  getStartPoint,
-  isRangeAcrossBlocks,
-} from '@udecode/plate-common';
+import { getBlockAbove, isRangeAcrossBlocks } from '@udecode/plate-common';
 import { Range } from 'slate';
 
 import type { TableConfig } from '.';
@@ -55,13 +49,13 @@ export const withSelectionTable: ExtendEditor<TableConfig> = ({
           const isBackward = Range.isBackward(newSelection);
 
           if (isBackward) {
-            op.newProperties.focus = getStartPoint(editor, anchorPath);
+            op.newProperties.focus = editor.api.start(anchorPath);
           } else {
-            const pointBefore = getPointBefore(editor, anchorPath);
+            const pointBefore = editor.api.before(anchorPath);
 
             // if the table is the first block
             if (pointBefore) {
-              op.newProperties.focus = getEndPoint(editor, anchorPath);
+              op.newProperties.focus = editor.api.end(anchorPath);
             }
           }
         } else {
@@ -76,11 +70,11 @@ export const withSelectionTable: ExtendEditor<TableConfig> = ({
             const isBackward = Range.isBackward(newSelection);
 
             if (isBackward) {
-              const startPoint = getStartPoint(editor, focusPath)!;
-              const pointBefore = getPointBefore(editor, startPoint);
+              const startPoint = editor.api.start(focusPath)!;
+              const pointBefore = editor.api.before(startPoint);
               op.newProperties.focus = pointBefore ?? startPoint;
             } else {
-              op.newProperties.focus = getEndPoint(editor, focusPath);
+              op.newProperties.focus = editor.api.end(focusPath);
             }
           }
         }

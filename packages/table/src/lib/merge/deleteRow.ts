@@ -1,11 +1,8 @@
 import {
   type SlateEditor,
-  getAboveNode,
   getEditorPlugin,
   insertElements,
   isExpanded,
-  removeNodes,
-  setNodes,
   someNode,
 } from '@udecode/plate-common';
 import cloneDeep from 'lodash/cloneDeep.js';
@@ -33,7 +30,7 @@ export const deleteTableMergeRow = (editor: SlateEditor) => {
       match: { type },
     })
   ) {
-    const currentTableItem = getAboveNode<TTableElement>(editor, {
+    const currentTableItem = editor.api.above<TTableElement>({
       match: { type },
     });
 
@@ -43,7 +40,7 @@ export const deleteTableMergeRow = (editor: SlateEditor) => {
 
     const table = currentTableItem[0] as TTableElement;
 
-    const selectedCellEntry = getAboveNode(editor, {
+    const selectedCellEntry = editor.api.above({
       match: { type: getCellTypes(editor) },
     });
 
@@ -198,13 +195,13 @@ export const deleteTableMergeRow = (editor: SlateEditor) => {
         newCell.attributes.rowspan = rowSpan.toString();
       }
 
-      setNodes<TTableCellElement>(editor, newCell, { at: curCellPath });
+      editor.tf.setNodes<TTableCellElement>(newCell, { at: curCellPath });
     });
 
     const rowToDelete = table.children[deletingRowIndex] as TTableRowElement;
     const rowPath = editor.api.findPath(rowToDelete);
     Array.from({ length: rowsDeleteNumber }).forEach(() => {
-      removeNodes(editor, {
+      editor.tf.removeNodes({
         at: rowPath,
       });
     });

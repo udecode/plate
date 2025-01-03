@@ -5,7 +5,6 @@ import {
   type SlateEditor,
   findNode,
   isElement,
-  setNodes,
 } from '@udecode/plate-common';
 
 import type { BorderDirection, BorderStyle, TTableCellElement } from '../types';
@@ -55,8 +54,7 @@ export const setBorderSize = (
         top: borderStyle,
       };
 
-      setNodes<TTableCellElement>(
-        editor,
+      editor.tf.setNodes<TTableCellElement>(
         { borders: newBorders },
         {
           at: cellPath,
@@ -79,8 +77,7 @@ export const setBorderSize = (
     };
 
     // Update the bottom border of the cell above
-    setNodes<TTableCellElement>(
-      editor,
+    editor.tf.setNodes<TTableCellElement>(
       { borders: newBorders },
       {
         at: cellAbovePath,
@@ -94,8 +91,7 @@ export const setBorderSize = (
     };
 
     // Update the bottom border of the current cell
-    setNodes<TTableCellElement>(
-      editor,
+    editor.tf.setNodes<TTableCellElement>(
       { borders: newBorders },
       {
         at: cellPath,
@@ -112,8 +108,7 @@ export const setBorderSize = (
         left: borderStyle,
       };
 
-      setNodes<TTableCellElement>(
-        editor,
+      editor.tf.setNodes<TTableCellElement>(
         { borders: newBorders },
         {
           at: cellPath,
@@ -136,8 +131,7 @@ export const setBorderSize = (
     };
 
     // Update the bottom border of the cell above
-    setNodes<TTableCellElement>(
-      editor,
+    editor.tf.setNodes<TTableCellElement>(
       { borders: newBorders },
       {
         at: prevCellPath,
@@ -151,8 +145,7 @@ export const setBorderSize = (
     };
 
     // Update the right border of the current cell
-    setNodes<TTableCellElement>(
-      editor,
+    editor.tf.setNodes<TTableCellElement>(
       { borders: newBorders },
       {
         at: cellPath,

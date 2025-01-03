@@ -2,8 +2,6 @@ import {
   type SetNodesOptions,
   type SlateEditor,
   getInjectMatch,
-  setElements,
-  unsetNodes,
 } from '@udecode/plate-common';
 
 import type { Alignment } from '../types';
@@ -25,13 +23,12 @@ export const setAlign = (
   const match = getInjectMatch(editor, editor.getPlugin(BaseAlignPlugin));
 
   if (value === defaultNodeValue) {
-    unsetNodes(editor, nodeKey!, {
+    editor.tf.unsetNodes(nodeKey!, {
       match,
       ...setNodesOptions,
     });
   } else {
-    setElements(
-      editor,
+    editor.tf.setNodes(
       { [nodeKey!]: value },
       {
         match: match as any,

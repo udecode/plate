@@ -7,9 +7,11 @@ import {
   type TDescendant,
   type TOperation,
   type TText,
+  BaseParagraphPlugin,
+  createTEditor,
   isText,
 } from '@udecode/plate-common';
-import { Path, createEditor, withoutNormalizing } from 'slate';
+import { Path } from 'slate';
 
 import type { ComputeDiffOptions } from '../../lib/computeDiff';
 
@@ -62,10 +64,10 @@ export function transformDiffTexts(
   const texts = nodes.map((n) => inlineNodeCharMap.nodeToText(n));
   const nextTexts = nextNodes.map((n) => inlineNodeCharMap.nodeToText(n));
 
-  const nodesEditor = withChangeTracking(createEditor(), options);
-  nodesEditor.children = [{ children: texts }];
+  const nodesEditor = withChangeTracking(createTEditor(), options);
+  nodesEditor.children = [{ children: texts, type: BaseParagraphPlugin.key }];
 
-  withoutNormalizing(nodesEditor, () => {
+  nodesEditor.tf.withoutNormalizing(() => {
     // Start with the first node in the array, assuming all nodes are to be merged into one
     let node = texts[0];
 

@@ -2,7 +2,6 @@ import {
   type GetAboveNodeOptions,
   type SlateEditor,
   findNode,
-  setNodes,
 } from '@udecode/plate-common';
 
 import type { TTableElement } from '../types';
@@ -30,5 +29,5 @@ export const setTableColSize = (
 
   colSizes[colIndex] = width;
 
-  setNodes<TTableElement>(editor, { colSizes }, { at: tablePath });
+  editor.tf.setNodes<TTableElement>({ colSizes }, { at: tablePath });
 };

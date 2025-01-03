@@ -1,5 +1,3 @@
-import { getEditorString } from '@udecode/slate';
-
 import type { LengthConfig } from '../getCorePlugins';
 
 import { type ExtendEditor, createTSlatePlugin } from '../../plugin';
@@ -17,7 +15,7 @@ export const withLength: ExtendEditor<LengthConfig> = ({
       const options = getOptions();
 
       if (options.maxLength) {
-        const length = getEditorString(editor, []).length;
+        const length = editor.api.string([]).length;
 
         // Make sure to remove overflow of text beyond character limit
         if (length > options.maxLength) {

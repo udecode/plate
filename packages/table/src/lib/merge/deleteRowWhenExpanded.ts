@@ -3,9 +3,7 @@ import type { PathRef } from 'slate';
 import {
   type SlateEditor,
   type TNodeEntry,
-  createPathRef,
   getEditorPlugin,
-  removeNodes,
 } from '@udecode/plate-common';
 
 import {
@@ -64,11 +62,11 @@ export const deleteRowWhenExpanded = (
 
     for (let i = firsRowIndex; i < firsRowIndex + acrossRow; i++) {
       const removedPath = tablePath.concat(i);
-      pathRefs.push(createPathRef(editor, removedPath));
+      pathRefs.push(editor.api.pathRef(removedPath));
     }
 
     pathRefs.forEach((item) => {
-      removeNodes(editor, { at: item.unref()! });
+      editor.tf.removeNodes({ at: item.unref()! });
     });
   }
 };

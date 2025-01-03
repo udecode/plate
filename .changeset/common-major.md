@@ -2,31 +2,108 @@
 '@udecode/plate-common': major
 ---
 
-- Import from `@udecode/plate-common` instead of `@udecode/plate-common/react`, or use `editor.<method>`:
-  - `blurEditor`
-  - `deselectEditor`
-  - `findEditorDocumentOrShadowRoot`
-  - `findEventRange`
-  - `findNodeKey`
-  - `findPath`
-  - `focusEditor`
-  - `focusEditorEdge`
-  - `getEditorWindow`
-  - `hasEditorDOMNode`
-  - `hasEditorEditableTarget`
-  - `hasEditorSelectableTarget`
-  - `hasEditorTarget`
-  - `insertData`
-  - `isComposing`
-  - `isEditorFocused`
-  - `isEditorReadOnly`
-  - `isTargetinsideNonReadonlyVoidEditor`
-  - `setFragmentData`
-  - `toDOMNode`
-  - `toDOMPoint`
-  - `toDOMRange`
-  - `toSlateNode`
-  - `toSlatePoint`
-  - `toSlateRange`
+- The following editor functions are not exported from `@udecode/plate-common` anymore. Those have been moved into `editor.api` or `editor.tf`. For example, `focusEditor(editor)` is now `editor.tf.focus()`.
+
+  - `addMark` -> `editor.tf.addMark`
+  - `blurEditor` -> `editor.tf.blur`
+  - `collapseSelection` -> `editor.tf.collapse`
+  - `createPathRef` -> `editor.api.pathRef`
+  - `createPointRef` -> `editor.api.pointRef`
+  - `createRangeRef` -> `editor.api.rangeRef`
+  - `deleteBackward` -> `editor.tf.deleteBackward`
+  - `deleteForward` -> `editor.tf.deleteForward`
+  - `deleteFragment` -> `editor.tf.deleteFragment`
+  - `deleteText` -> `editor.tf.delete`
+  - `deselect` -> `editor.tf.deselect`
+  - `deselectEditor` -> `editor.tf.deselectDOM`
+  - `findEditorDocumentOrShadowRoot` -> `editor.api.findDocumentOrShadowRoot`
+  - `findEventRange` -> `editor.api.findEventRange`
+  - `findNodeKey` -> `editor.api.findKey`
+  - `findPath` -> `editor.api.findPath`
+  - `focusEditor` -> `editor.tf.focus`
+  - `getAboveNode` -> `editor.api.above`
+  - `getAncestorNode` -> `editor.api.highestBlock`
+  - `getEdgePoints` -> `editor.api.edges`
+  - `getEditorString` -> `editor.api.string`
+  - `getEditorWindow` -> `editor.api.getWindow`
+  - `getEndPoint` -> `editor.api.end`
+  - `getFirstNode` -> `editor.api.first`
+  - `getFragment` -> `editor.api.fragment`
+  - `getLastNode` -> `editor.api.last`
+  - `getLeafNode` -> `editor.api.leaf`
+  - `getLevels` -> `editor.api.levels`
+  - `getMarks` -> `editor.api.marks`
+  - `getNextNode` -> `editor.api.next`
+  - `getNodeEntries` -> `editor.api.nodes`
+  - `getNodeEntry` -> `editor.api.node`
+  - `getParentNode` -> `editor.api.parent`
+  - `getPath` -> `editor.api.path`
+  - `getPathRefs` -> `editor.api.pathRefs`
+  - `getPoint` -> `editor.api.point`
+  - `getPointAfter` -> `editor.api.after`
+  - `getPointBefore` -> `editor.api.before`
+  - `getPointRefs` -> `editor.api.pointRefs`
+  - `getPositions` -> `editor.api.positions`
+  - `getPreviousNode` -> `editor.api.previous`
+  - `getRange` -> `editor.api.range`
+  - `getRangeRefs` -> `editor.api.rangeRefs`
+  - `getStartPoint` -> `editor.api.start`
+  - `getVoidNode` -> `editor.api.void`
+  - `hasBlocks` -> `editor.api.hasBlocks`
+  - `hasEditorDOMNode` -> `editor.api.hasDOMNode`
+  - `hasEditorEditableTarget` -> `editor.api.hasEditableTarget`
+  - `hasEditorSelectableTarget` -> `editor.api.hasSelectableTarget`
+  - `hasEditorTarget` -> `editor.api.hasTarget`
+  - `hasInlines` -> `editor.api.hasInlines`
+  - `hasTexts` -> `editor.api.hasTexts`
+  - `insertBreak` -> `editor.tf.insertBreak`
+  - `insertData` -> `editor.tf.insertData`
+  - `insertFragment` -> `editor.tf.insertFragment`
+  - `insertNode` -> `editor.tf.insertNode`
+  - `insertNodes` -> `editor.tf.insertNodes`
+  - `insertText` -> `editor.tf.insertText`
+  - `isBlock` -> `editor.api.isBlock`
+  - `isComposing` -> `editor.api.isComposing`
+  - `isEdgePoint` -> `editor.api.isEdge`
+  - `isEditor` -> `editor.api.isEditor`
+  - `isEditorFocused` -> `editor.api.isFocused`
+  - `isEditorNormalizing` -> `editor.api.isNormalizing`
+  - `isEditorReadOnly` -> `editor.api.isReadOnly`
+  - `isElementEmpty` -> `editor.api.isEmpty`
+  - `isElementReadOnly` -> `editor.api.elementReadOnly`
+  - `isEndPoint` -> `editor.api.isEnd`
+  - `isInline` -> `editor.api.isInline`
+  - `isMarkableVoid` -> `editor.api.markableVoid`
+  - `isStartPoint` -> `editor.api.isStart`
+  - `isTargetinsideNonReadonlyVoidEditor` -> `editor.api.isTargetInsideNonReadonlyVoid`
+  - `isVoid` -> `editor.api.isVoid`
+  - `liftNodes` -> `editor.tf.liftNodes`
+  - `mergeNodes` -> `editor.tf.mergeNodes`
+  - `moveNodes` -> `editor.tf.moveNodes`
+  - `moveSelection` -> `editor.tf.move`
+  - `normalizeEditor` -> `editor.tf.normalize`
+  - `removeEditorMark` -> `editor.tf.removeMark`
+  - `removeNodes` -> `editor.tf.removeNodes`
+  - `select` -> `editor.tf.select`
+  - `setFragmentData` -> `editor.tf.setFragmentData`
+  - `setNodes` -> `editor.tf.setNodes`
+  - `setPoint` -> `editor.tf.setPoint`
+  - `setSelection` -> `editor.tf.setSelection`
+  - `splitNodes` -> `editor.tf.splitNodes`
+  - `toDOMNode` -> `editor.api.toDOMNode`
+  - `toDOMPoint` -> `editor.api.toDOMPoint`
+  - `toDOMRange` -> `editor.api.toDOMRange`
+  - `toSlateNode` -> `editor.api.toSlateNode`
+  - `toSlatePoint` -> `editor.api.toSlatePoint`
+  - `toSlateRange` -> `editor.api.toSlateRange`
+  - `unhangRange` -> `editor.api.unhangRange`
+  - `unsetNodes` -> `editor.tf.unsetNodes`
+  - `unwrapNodes` -> `editor.tf.unwrapNodes`
+  - `withoutNormalizing` -> `editor.tf.withoutNormalizing`
+  - `wrapNodes` -> `editor.tf.wrapNodes`
+
+- Moved from `@udecode/plate-common` to `@udecode/plate-react`:
+
   - `Hotkeys`
+
 - Many `with*` functions have been moved (removed) to the plugin implementation.

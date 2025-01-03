@@ -4,7 +4,6 @@ import {
   type GetFragmentPropOptions,
   type TElement,
   getFragmentProp,
-  getNodeEntries,
 } from '@udecode/plate-common';
 import { useEditorPlugin } from '@udecode/plate-common/react';
 
@@ -16,7 +15,7 @@ export function useBlockSelectionNodes() {
 
   return useMemo(() => {
     return [
-      ...getNodeEntries<TElement>(editor, {
+      ...editor.api.nodes<TElement>({
         at: [],
         match: (n) => selectedIds?.has(n.id),
       }),

@@ -1,12 +1,13 @@
 import type { Modify } from '@udecode/utils';
 import type { Path } from 'slate';
 
+import type { WrapNodesOptions } from '../interfaces/editor/editor-types';
+
 import {
   type ElementOf,
   type TEditor,
   type TElement,
   type ValueOf,
-  type WrapNodesOptions,
   getNode,
 } from '../interfaces';
 import { moveChildren } from './moveChildren';

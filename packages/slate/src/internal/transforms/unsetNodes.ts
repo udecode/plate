@@ -1,23 +1,15 @@
-import type { Modify } from '@udecode/utils';
-
 import { unsetNodes as unsetNodesBase } from 'slate';
 
-import type { TEditor, Value, ValueOf } from '../../interfaces';
-import type { NodeOf, TNodeProps } from '../../interfaces/node/TNode';
-import type {
-  QueryMode,
-  QueryOptions,
-  QueryVoids,
-} from '../../types/QueryOptions';
+import type { DescendantOf, TEditor, ValueOf } from '../../interfaces';
+import type { UnsetNodesOptions } from '../../interfaces/editor/editor-types';
+import type { TNodeProps } from '../../interfaces/node/TNode';
 
 import { getQueryOptions } from '../../utils';
 
-export type UnsetNodesOptions<V extends Value = Value> = Modify<
-  NonNullable<Parameters<typeof unsetNodesBase>[2]>,
-  QueryOptions<V> & QueryMode & QueryVoids
->;
-
-export const unsetNodes = <N extends NodeOf<E>, E extends TEditor = TEditor>(
+export const unsetNodes = <
+  N extends DescendantOf<E>,
+  E extends TEditor = TEditor,
+>(
   editor: E,
   props: (keyof TNodeProps<N>)[] | keyof TNodeProps<N>,
   options?: UnsetNodesOptions<ValueOf<E>>

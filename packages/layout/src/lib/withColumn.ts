@@ -1,12 +1,7 @@
 import {
   type ExtendEditor,
-  getAboveNode,
   isCollapsed,
   isElement,
-  isStartPoint,
-  removeNodes,
-  setNodes,
-  unwrapNodes,
 } from '@udecode/plate-common';
 
 import type { TColumnElement, TColumnGroupElement } from './types';
@@ -31,15 +26,15 @@ export const withColumn: ExtendEditor = ({ editor }) => {
             child.type === editor.getType(BaseColumnItemPlugin)
         )
       ) {
-        removeNodes(editor, { at: path });
+        editor.tf.removeNodes({ at: path });
 
         return;
       }
       // If only one column remains, unwrap the group (optional logic)
       if (node.children.length < 2) {
         editor.tf.withoutNormalizing(() => {
-          unwrapNodes(editor, { at: path });
-          unwrapNodes(editor, { at: path });
+          editor.tf.unwrapNodes({ at: path });
+          editor.tf.unwrapNodes({ at: path });
         });
 
         return;
@@ -66,8 +61,7 @@ export const withColumn: ExtendEditor = ({ editor }) => {
           // Update the columns with the new widths
           widths.forEach((w, i) => {
             const columnPath = path.concat([i]);
-            setNodes<TColumnElement>(
-              editor,
+            editor.tf.setNodes<TColumnElement>(
               { width: `${w}%` },
               { at: columnPath }
             );
@@ -80,7 +74,7 @@ export const withColumn: ExtendEditor = ({ editor }) => {
       const node = n as TColumnElement;
 
       if (node.children.length === 0) {
-        removeNodes(editor, { at: path });
+        editor.tf.removeNodes({ at: path });
 
         return;
       }
@@ -91,7 +85,7 @@ export const withColumn: ExtendEditor = ({ editor }) => {
 
   editor.deleteBackward = (unit) => {
     if (isCollapsed(editor.selection)) {
-      const entry = getAboveNode(editor, {
+      const entry = editor.api.above({
         match: (n) => isElement(n) && n.type === BaseColumnItemPlugin.key,
       });
 
@@ -100,7 +94,7 @@ export const withColumn: ExtendEditor = ({ editor }) => {
 
         if (node.children.length > 1) return deleteBackward(unit);
 
-        const isStart = isStartPoint(editor, editor.selection?.anchor, path);
+        const isStart = editor.api.isStart(editor.selection?.anchor, path);
 
         if (isStart) return;
       }
@@ -118,7 +112,7 @@ export const withColumn: ExtendEditor = ({ editor }) => {
 //   if (currentLayout) {
 //     const currentChildrenCnt = currentLayout.length;
 
-//     const groupPathRef = createPathRef(editor, path);
+//     const groupPathRef = editor.api.pathRef(path);
 
 //     if (prevChildrenCnt === 2 && currentChildrenCnt === 3) {
 //       const lastChildPath = getLastChildPath(entry);

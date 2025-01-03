@@ -1,19 +1,9 @@
 import {
   type SlateEditor,
   type TElement,
-  createPointRef,
-  deleteText,
   findNode,
-  getEditorString,
-  getPointAfter,
-  getPointBefore,
-  isBlock,
-  isElementEmpty,
   isRangeAcrossBlocks,
-  isStartPoint,
-  moveSelection,
   nanoid,
-  removeNodes,
   unhangCharacterRange,
 } from '@udecode/plate-common';
 import { type Range, Point } from 'slate';
@@ -42,7 +32,7 @@ export const deleteSuggestion = (
 
     const suggestionId = findSuggestionId(editor, from) ?? nanoid();
 
-    const toRef = createPointRef(editor, to);
+    const toRef = editor.api.pointRef(to);
 
     let pointCurrent: Point | undefined;
 
@@ -62,8 +52,7 @@ export const deleteSuggestion = (
         })
       ) {
         // always 0 when across blocks
-        const str = getEditorString(
-          editor,
+        const str = editor.api.string(
           reverse
             ? {
                 anchor: pointTarget,
@@ -78,9 +67,9 @@ export const deleteSuggestion = (
         if (str.length === 0) break;
       }
 
-      const getPoint = reverse ? getPointBefore : getPointAfter;
+      const getPoint = reverse ? editor.api.before : editor.api.after;
 
-      const pointNext = getPoint(editor, pointCurrent, {
+      const pointNext = getPoint(pointCurrent, {
         unit: 'character',
       });
 
@@ -101,7 +90,7 @@ export const deleteSuggestion = (
       const entryBlock = findNode<TElement>(editor, {
         at: pointCurrent,
         match: (n) =>
-          isBlock(editor, n) &&
+          editor.api.isBlock(n) &&
           n[BaseSuggestionPlugin.key] &&
           !n.suggestionDeletion &&
           n[getSuggestionCurrentUserKey(editor)],
@@ -109,10 +98,10 @@ export const deleteSuggestion = (
 
       if (
         entryBlock &&
-        isStartPoint(editor, pointCurrent, entryBlock[1]) &&
-        isElementEmpty(editor, entryBlock[0] as any)
+        editor.api.isStart(pointCurrent, entryBlock[1]) &&
+        editor.api.isEmpty(entryBlock[0] as any)
       ) {
-        removeNodes(editor, {
+        editor.tf.removeNodes({
           at: entryBlock[1],
         });
 
@@ -120,7 +109,7 @@ export const deleteSuggestion = (
       }
       // move selection if still the same
       if (Point.equals(pointCurrent, editor.selection!.anchor)) {
-        moveSelection(editor, {
+        editor.tf.move({
           reverse,
           unit: 'character',
         });
@@ -142,7 +131,7 @@ export const deleteSuggestion = (
       });
 
       if (entryText) {
-        deleteText(editor, { at: range, unit: 'character' });
+        editor.tf.delete({ at: range, unit: 'character' });
 
         continue;
       }

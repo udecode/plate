@@ -1,9 +1,6 @@
+import type { ExtendEditor } from '@udecode/plate-common';
+
 import { getInjectMatch } from '@udecode/plate-common';
-import {
-  type ExtendEditor,
-  setElements,
-  unsetNodes,
-} from '@udecode/plate-common';
 
 import type { IndentConfig, TIndentElement } from './BaseIndentPlugin';
 
@@ -29,12 +26,12 @@ export const withIndent: ExtendEditor<IndentConfig> = ({
     if (type) {
       if (match(element, path)) {
         if (indentMax && element.indent && element.indent > indentMax) {
-          setElements(editor, { indent: indentMax }, { at: path });
+          editor.tf.setNodes({ indent: indentMax }, { at: path });
 
           return;
         }
       } else if (element.indent) {
-        unsetNodes(editor, 'indent', { at: path });
+        editor.tf.unsetNodes('indent', { at: path });
 
         return;
       }

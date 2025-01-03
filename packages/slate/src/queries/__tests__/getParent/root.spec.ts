@@ -1,6 +1,5 @@
 import { createTEditor } from '../../../createTEditor';
-import { getParentNode } from '../../../interfaces';
 
 it('should be', () => {
-  expect(getParentNode(createTEditor(), [])).toEqual(undefined);
+  expect(createTEditor().api.parent([])).toEqual(undefined);
 });

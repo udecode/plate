@@ -2,13 +2,10 @@ import {
   type SlateEditor,
   type TElement,
   type TElementEntry,
-  createPathRef,
   deleteMerge,
-  getNodeEntry,
   getPreviousPath,
   insertElements,
   isExpanded,
-  removeNodes,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
@@ -54,7 +51,7 @@ export const removeListItem = (
      * 5. Remove tempLi
      */
     if (previousLiPath) {
-      const previousLi = getNodeEntry<TElement>(editor, previousLiPath);
+      const previousLi = editor.api.node<TElement>(previousLiPath);
 
       if (!previousLi) return;
 
@@ -74,11 +71,11 @@ export const removeListItem = (
         { at: tempLiPath }
       );
 
-      const tempLi = getNodeEntry<TElement>(editor, tempLiPath);
+      const tempLi = editor.api.node<TElement>(tempLiPath);
 
       if (!tempLi) return;
 
-      const tempLiPathRef = createPathRef(editor, tempLi[1]);
+      const tempLiPathRef = editor.api.pathRef(tempLi[1]);
 
       // 2
       moveListItemSublistItemsToListItemSublist(editor, {
@@ -100,7 +97,7 @@ export const removeListItem = (
       });
 
       // 5
-      removeNodes(editor, { at: tempLiPath });
+      editor.tf.removeNodes({ at: tempLiPath });
 
       success = true;
 
