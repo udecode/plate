@@ -1,9 +1,4 @@
-import {
-  type SlateEditor,
-  getBlockAbove,
-  isElement,
-  isSelectionAtBlockEnd,
-} from '@udecode/plate-common';
+import { type SlateEditor, isElement } from '@udecode/plate-common';
 
 import { isInClosedToggle } from '../queries';
 
@@ -13,19 +8,19 @@ export const moveNextSelectableAfterCurrentBlock = (editor: SlateEditor) => {
 
   if (!selection) return;
 
-  const aboveBlock = getBlockAbove(editor);
+  const aboveBlock = editor.api.block();
 
   if (!aboveBlock) return;
-  if (!isSelectionAtBlockEnd(editor)) return;
+  if (!editor.api.isAt({ end: true })) return;
 
   const afterPoint = editor.api.after(selection);
 
   if (!afterPoint) return;
 
-  const blockAfter = getBlockAbove(editor, { at: afterPoint });
+  const blockAfter = editor.api.block({ at: afterPoint });
 
   if (!blockAfter) return;
-  if (!isInClosedToggle(editor, blockAfter[0].id)) return; // We're already before a selectable then
+  if (!isInClosedToggle(editor, blockAfter[0].id as string)) return; // We're already before a selectable then
 
   const nextSelectableBlock = editor.api.next({
     match: (node) =>

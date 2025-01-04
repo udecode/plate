@@ -1,11 +1,6 @@
 import type { KeyboardHandler } from '@udecode/plate-common/react';
 
-import {
-  type TElement,
-  Hotkeys,
-  isExpanded,
-  isHotkey,
-} from '@udecode/plate-common';
+import { type TElement, Hotkeys, isHotkey } from '@udecode/plate-common';
 
 import {
   type TableConfig,
@@ -30,7 +25,7 @@ export const onKeyDownTable: KeyboardHandler<TableConfig> = ({
     // This exception only occurs when IME composition is triggered, and can be identified by this keycode
     event.which === compositeKeyCode &&
     editor.selection &&
-    isExpanded(editor.selection)
+    editor.api.isExpanded()
   ) {
     // fix the exception of inputting Chinese when selecting multiple cells
     const tdEntries = Array.from(

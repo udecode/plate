@@ -7,7 +7,6 @@ import {
   type TElement,
   type TElementEntry,
   type TText,
-  findNode,
   getCommonNode,
   getNode,
   getNodeString,
@@ -184,7 +183,7 @@ export const withInsertFragmentList: ExtendEditor<ListConfig> = ({
   };
 
   editor.insertFragment = (fragment) => {
-    let liEntry = findNode<TElement>(editor, {
+    let liEntry = editor.api.find<TElement>({
       match: { type: listItemType },
       mode: 'lowest',
     });
@@ -200,7 +199,7 @@ export const withInsertFragmentList: ExtendEditor<ListConfig> = ({
     insertFragment([{ text: '' }] as any);
 
     // refetch to find the currently selected LI after the deletion above is performed
-    liEntry = findNode<TElement>(editor, {
+    liEntry = editor.api.find<TElement>({
       match: { type: listItemType },
       mode: 'lowest',
     });
@@ -213,7 +212,7 @@ export const withInsertFragmentList: ExtendEditor<ListConfig> = ({
       );
     }
 
-    const licEntry = findNode<TElement>(editor, {
+    const licEntry = editor.api.find<TElement>({
       match: { type: listItemContentType },
       mode: 'lowest',
     });

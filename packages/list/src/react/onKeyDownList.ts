@@ -1,6 +1,6 @@
 import type { KeyboardHandler } from '@udecode/plate-common/react';
 
-import { Hotkeys, isCollapsed, someNode } from '@udecode/plate-common';
+import { Hotkeys } from '@udecode/plate-common';
 import { Range } from 'slate';
 
 import { type ListConfig, BaseListItemPlugin } from '../lib';
@@ -22,7 +22,7 @@ export const onKeyDownList: KeyboardHandler<ListConfig> = ({
     const { selection } = editor;
 
     // Unhang the expanded selection
-    if (!isCollapsed(editor.selection)) {
+    if (!editor.api.isCollapsed()) {
       const { anchor, focus } = Range.isBackward(selection)
         ? { anchor: { ...selection.focus }, focus: { ...selection.anchor } }
         : { anchor: { ...selection.anchor }, focus: { ...selection.focus } };
@@ -40,7 +40,7 @@ export const onKeyDownList: KeyboardHandler<ListConfig> = ({
     }
 
     // check if we're in a list context.
-    const listSelected = someNode(editor, {
+    const listSelected = editor.api.some({
       match: { type: editor.getType(BaseListItemPlugin) },
     });
 

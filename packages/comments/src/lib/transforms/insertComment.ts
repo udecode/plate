@@ -1,7 +1,7 @@
 import {
   type SlateEditor,
+  TextApi,
   isExpanded,
-  isText,
   nanoid,
 } from '@udecode/plate-common';
 
@@ -31,7 +31,7 @@ export const insertComment = (editor: SlateEditor) => {
 
   editor.tf.setNodes(
     { [BaseCommentsPlugin.key]: true, [getCommentKey(id)]: true },
-    { match: isText, split: true }
+    { match: TextApi.isText, split: true }
   );
 
   try {

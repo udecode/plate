@@ -2,7 +2,6 @@ import {
   type SlateEditor,
   getEditorPlugin,
   isExpanded,
-  someNode,
 } from '@udecode/plate-common';
 
 import { type TTableElement, type TableConfig, BaseTableRowPlugin } from '..';
@@ -19,7 +18,7 @@ export const deleteRow = (editor: SlateEditor) => {
     return deleteTableMergeRow(editor);
   }
   if (
-    someNode(editor, {
+    editor.api.some({
       match: { type },
     })
   ) {

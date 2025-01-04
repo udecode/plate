@@ -1,11 +1,7 @@
 import type { TDescendant, TElement, TRange, Value } from '@udecode/slate';
 import type { Path } from 'slate';
 
-import {
-  isSelectionAtBlockStart,
-  removeSelectionMark,
-  replaceNodeChildren,
-} from '@udecode/slate';
+import { removeSelectionMark, replaceNodeChildren } from '@udecode/slate';
 import { type OmitFirst, bindFirst } from '@udecode/utils';
 
 import {
@@ -40,7 +36,7 @@ export const withSlateNext: ExtendEditor<SlateNextConfig> = ({ editor }) => {
   editor.currentKeyboardEvent = null;
 
   const resetMarks = () => {
-    if (isSelectionAtBlockStart(editor)) {
+    if (editor.api.isAt({ start: true })) {
       removeSelectionMark(editor);
     }
   };

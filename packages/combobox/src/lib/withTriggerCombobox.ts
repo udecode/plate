@@ -39,7 +39,7 @@ export const withTriggerCombobox: ExtendEditor<
 
     // Make sure an input is created at the beginning of line or after a whitespace
     const previousChar = editor.api.string(
-      editor.api.range(editor.selection, editor.api.before(editor.selection))
+      editor.api.range('before', editor.selection)
     );
 
     const matchesPreviousCharPattern =

@@ -3,7 +3,6 @@ import type { Path } from 'slate';
 import {
   type SlateEditor,
   BaseParagraphPlugin,
-  getBlockAbove,
   getCommonNode,
   isElement,
 } from '@udecode/plate-common';
@@ -18,7 +17,7 @@ import { getListTypes } from '../queries/index';
 
 export const unwrapList = (editor: SlateEditor, { at }: { at?: Path } = {}) => {
   const ancestorListTypeCheck = () => {
-    if (editor.api.above({ match: { at, type: getListTypes(editor) } })) {
+    if (editor.api.above({ at, match: { type: getListTypes(editor) } })) {
       return true;
     }
     // The selection's common node might be a list type
@@ -42,7 +41,7 @@ export const unwrapList = (editor: SlateEditor, { at }: { at?: Path } = {}) => {
 
   editor.tf.withoutNormalizing(() => {
     do {
-      const licEntry = getBlockAbove(editor, {
+      const licEntry = editor.api.block({
         at,
         match: { type: editor.getType(BaseListItemContentPlugin) },
       });

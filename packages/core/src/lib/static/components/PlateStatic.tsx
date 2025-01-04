@@ -151,7 +151,7 @@ function Children({
         let ds: DecoratedRange[] = [];
 
         if (p) {
-          const range = editor.api.range(p);
+          const range = editor.api.range(p)!;
           ds = decorate([child, p]);
 
           for (const dec of decorations) {

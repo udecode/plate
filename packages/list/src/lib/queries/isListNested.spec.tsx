@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { createTEditor, findNode } from '@udecode/plate-common';
+import { createTEditor } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
@@ -35,7 +35,7 @@ describe('when the list is nested', () => {
   it('should be', () => {
     const editor = createPlateEditor({ editor: input });
 
-    const list = findNode(editor, { match: { id: '21' } });
+    const list = editor.api.find({ match: { id: '21' } });
 
     expect(isListNested(editor, list?.[1] as any)).toBeTruthy();
   });
@@ -57,7 +57,7 @@ describe('when the list is not nested', () => {
   it('should be', () => {
     const editor = createPlateEditor({ editor: input });
 
-    const list = findNode(editor, { match: { id: '1' } });
+    const list = editor.api.find({ match: { id: '1' } });
 
     expect(isListNested(editor, list?.[1] as any)).toBeFalsy();
   });

@@ -1,9 +1,8 @@
 import type { TElement } from '../interfaces';
-import type { GetSelectionFragmentOptions } from '../queries/getSelectionFragment';
 
 export const unwrapStructuralNodes = (
   nodes: TElement[],
-  { structuralTypes }: GetSelectionFragmentOptions = {}
+  { structuralTypes }: { structuralTypes?: string[] } = {}
 ) => {
   const unwrap = (nodes: TElement[], acc: TElement[] = []): TElement[] => {
     nodes.forEach((node) => {

@@ -2,8 +2,7 @@
 
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { createTEditor } from '../createTEditor';
-import { findNode } from './findNode';
+import { createTEditor } from '../../createTEditor';
 
 jsxt;
 
@@ -44,7 +43,7 @@ describe('when the cursor is in a list item paragraph', () => {
   ) as any;
 
   it('should be', () => {
-    const res = findNode(input, { match: { type: 'p' } });
+    const res = input.api.find({ match: { type: 'p' } });
 
     expect(res).toEqual([{ children: [{ text: '1' }], type: 'p' }, [0, 0, 0]]);
   });
@@ -87,7 +86,7 @@ describe('when the cursor is not in a list item and a path is provided instead',
   ) as any;
 
   it('should be', () => {
-    const res = findNode(input, { at: [0, 0, 0, 0], match: { type: 'p' } });
+    const res = input.api.find({ at: [0, 0, 0, 0], match: { type: 'p' } });
 
     expect(res).toEqual([{ children: [{ text: '1' }], type: 'p' }, [0, 0, 0]]);
   });

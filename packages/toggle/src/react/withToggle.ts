@@ -1,6 +1,6 @@
 import type { ExtendEditor } from '@udecode/plate-common/react';
 
-import { type SlateEditor, getBlockAbove, isNode } from '@udecode/plate-common';
+import { type SlateEditor, isNode } from '@udecode/plate-common';
 import { type TIndentElement, indent } from '@udecode/plate-indent';
 
 import type { ToggleConfig } from './TogglePlugin';
@@ -51,7 +51,7 @@ export const withToggle: ExtendEditor<ToggleConfig> = ({
     //     - Add a new paragraph after the last sibling enclosed in the toggle
     //     - Focus on that paragraph
     // Note: We are relying on the default behaviour of `insertBreak` which inserts a toggle right after the current toggle with the same indent
-    const currentBlockEntry = getBlockAbove<TIndentElement>(editor);
+    const currentBlockEntry = editor.api.block<TIndentElement>();
 
     if (
       !currentBlockEntry ||

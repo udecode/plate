@@ -1,4 +1,3 @@
-import { isCollapsed } from '@udecode/plate-common';
 import { useEditorSelector } from '@udecode/plate-common/react';
 import { useReadOnly, useSelected } from 'slate-react';
 
@@ -7,7 +6,7 @@ export const useDebouncePopoverOpen = () => {
   const selected = useSelected();
 
   const selectionCollapsed = useEditorSelector(
-    (editor) => isCollapsed(editor.selection),
+    (editor) => editor.api.isCollapsed(),
     []
   );
 

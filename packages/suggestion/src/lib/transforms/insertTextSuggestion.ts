@@ -1,8 +1,4 @@
-import {
-  type SlateEditor,
-  isSelectionExpanded,
-  nanoid,
-} from '@udecode/plate-common';
+import { type SlateEditor, nanoid } from '@udecode/plate-common';
 
 import type { TSuggestionText } from '../types';
 
@@ -14,7 +10,7 @@ export const insertTextSuggestion = (editor: SlateEditor, text: string) => {
   editor.tf.withoutNormalizing(() => {
     const id = findSuggestionId(editor, editor.selection!) ?? nanoid();
 
-    if (isSelectionExpanded(editor)) {
+    if (editor.api.isExpanded()) {
       deleteFragmentSuggestion(editor);
     }
 

@@ -2,13 +2,9 @@
 
 import { useEffect } from 'react';
 
+import type { TNodeEntry } from '@udecode/plate-common';
 import type { UseChatHelpers } from 'ai/react';
 
-import {
-  type TNodeEntry,
-  isCollapsed,
-  isSelectionExpanded,
-} from '@udecode/plate-common';
 import { useEditorPlugin } from '@udecode/plate-common/react';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 
@@ -56,12 +52,12 @@ export const useEditorChat = ({
           return;
         }
       }
-      if (onOpenCursor && isCollapsed(editor.selection)) {
+      if (onOpenCursor && editor.api.isCollapsed()) {
         onOpenCursor();
 
         return;
       }
-      if (onOpenSelection && isSelectionExpanded(editor)) {
+      if (onOpenSelection && editor.api.isExpanded()) {
         onOpenSelection();
 
         return;

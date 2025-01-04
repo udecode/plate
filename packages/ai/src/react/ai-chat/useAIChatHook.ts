@@ -1,4 +1,3 @@
-import { getBlockAbove } from '@udecode/plate-common';
 import { useEditorPlugin } from '@udecode/plate-common/react';
 import { deserializeInlineMd } from '@udecode/plate-markdown';
 
@@ -28,7 +27,7 @@ export const useAIChatHooks = () => {
     onFinish: ({ content }) => {
       if (mode !== 'insert') return;
 
-      const blockAbove = getBlockAbove(editor);
+      const blockAbove = editor.api.block();
 
       if (!blockAbove) return;
 

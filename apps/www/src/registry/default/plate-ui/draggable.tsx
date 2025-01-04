@@ -6,7 +6,7 @@ import React, { useMemo } from 'react';
 import { cn, withRef } from '@udecode/cn';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import { isType, someNode } from '@udecode/plate-common';
+import { isType } from '@udecode/plate-common';
 import {
   type NodeWrapperComponent,
   type PlateRenderElementProps,
@@ -62,7 +62,7 @@ export const DraggableAboveNodes: NodeWrapperComponent = (props) => {
       return true;
     }
     if (path.length === 3 && !isType(editor, element, UNDRAGGABLE_KEYS)) {
-      const block = someNode(editor, {
+      const block = editor.api.some({
         at: path,
         match: {
           type: editor.getType(ColumnPlugin),
@@ -74,7 +74,7 @@ export const DraggableAboveNodes: NodeWrapperComponent = (props) => {
       }
     }
     if (path.length === 4 && !isType(editor, element, UNDRAGGABLE_KEYS)) {
-      const block = someNode(editor, {
+      const block = editor.api.some({
         at: path,
         match: {
           type: editor.getType(TablePlugin),

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { getMark, removeMark, setMarks } from '@udecode/plate-common';
+import { removeMark, setMarks } from '@udecode/plate-common';
 import { useEditorRef, useEditorSelector } from '@udecode/plate-common/react';
 
 export const useColorDropdownMenuState = ({
@@ -24,7 +24,7 @@ export const useColorDropdownMenuState = ({
 
   const color = useEditorSelector(
     // eslint-disable-next-line @typescript-eslint/no-shadow
-    (editor) => getMark(editor, nodeType) as string,
+    (editor) => editor.api.mark(nodeType) as string,
     [nodeType]
   );
 

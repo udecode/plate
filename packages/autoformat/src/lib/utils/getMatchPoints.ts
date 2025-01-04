@@ -1,6 +1,5 @@
+import type { TEditor } from '@udecode/plate-common';
 import type { Point, Range } from 'slate';
-
-import { type TEditor, getPointBeforeLocation } from '@udecode/plate-common';
 
 import type { MatchRange } from '../types';
 
@@ -20,7 +19,7 @@ export const getMatchPoints = (editor: TEditor, { end, start }: MatchRange) => {
   let beforeEndMatchPoint = selection.anchor;
 
   if (end) {
-    beforeEndMatchPoint = getPointBeforeLocation(editor, selection, {
+    beforeEndMatchPoint = editor.api.before(selection, {
       matchString: end,
     });
 
@@ -31,7 +30,7 @@ export const getMatchPoints = (editor: TEditor, { end, start }: MatchRange) => {
   let beforeStartMatchPoint: Point | undefined;
 
   if (start) {
-    afterStartMatchPoint = getPointBeforeLocation(editor, beforeEndMatchPoint, {
+    afterStartMatchPoint = editor.api.before(beforeEndMatchPoint, {
       afterMatch: true,
       matchString: start,
       skipInvalid: true,
@@ -39,14 +38,10 @@ export const getMatchPoints = (editor: TEditor, { end, start }: MatchRange) => {
 
     if (!afterStartMatchPoint) return;
 
-    beforeStartMatchPoint = getPointBeforeLocation(
-      editor,
-      beforeEndMatchPoint,
-      {
-        matchString: start,
-        skipInvalid: true,
-      }
-    );
+    beforeStartMatchPoint = editor.api.before(beforeEndMatchPoint, {
+      matchString: start,
+      skipInvalid: true,
+    });
 
     if (!isPreviousCharacterEmpty(editor, beforeStartMatchPoint as Point))
       return;

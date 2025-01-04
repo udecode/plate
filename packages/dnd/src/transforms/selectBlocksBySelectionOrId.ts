@@ -1,7 +1,4 @@
 import type { PlateEditor } from '@udecode/plate-common/react';
-import type { Range } from 'slate';
-
-import { getNodesRange } from '@udecode/plate-common';
 
 import { getBlocksWithId } from '../queries/getBlocksWithId';
 import { selectBlockById } from './selectBlockById';
@@ -22,7 +19,7 @@ export const selectBlocksBySelectionOrId = (
   );
 
   if (isBlockSelected) {
-    editor.tf.select(getNodesRange(editor, blockEntries) as Range);
+    editor.tf.select(editor.api.nodesRange(blockEntries)!);
     editor.tf.focus();
   } else {
     selectBlockById(editor, id);

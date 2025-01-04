@@ -1,8 +1,8 @@
 import {
   type TDescendant,
   type TText,
+  TextApi,
   getNodeProps,
-  isText,
 } from '@udecode/plate-common';
 
 export class InlineNodeCharMap {
@@ -27,7 +27,7 @@ export class InlineNodeCharMap {
     replacementNode: TDescendant
   ): TDescendant[] {
     return haystack.flatMap((haystackNode) => {
-      if (!isText(haystackNode)) return [haystackNode];
+      if (!TextApi.isText(haystackNode)) return [haystackNode];
 
       // 'Hello NEEDLE world NEEDLE' -> ['Hello ', ' world ', '']
       const splitText = haystackNode.text.split(needle);
@@ -57,13 +57,13 @@ export class InlineNodeCharMap {
       );
 
       // Remove empty text nodes
-      return nodeList.filter((n) => !isText(n) || n.text.length > 0);
+      return nodeList.filter((n) => !TextApi.isText(n) || n.text.length > 0);
     });
   }
 
   // Replace non-text nodes with a text node containing a unique char
   public nodeToText(node: TDescendant): TText {
-    if (isText(node)) return node;
+    if (TextApi.isText(node)) return node;
 
     const c = this._charGenerator.next().value;
     this._charToNode.set(c, node);

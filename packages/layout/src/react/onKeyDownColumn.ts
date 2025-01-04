@@ -1,6 +1,6 @@
 import type { KeyboardHandler } from '@udecode/plate-common/react';
 
-import { isHotkey, isSelectionCoverBlock } from '@udecode/plate-common';
+import { isHotkey } from '@udecode/plate-common';
 import { Path } from 'slate';
 
 import { ColumnPlugin } from './ColumnPlugin';
@@ -25,7 +25,7 @@ export const onKeyDownColumn: KeyboardHandler = ({ editor, event }) => {
 
     let targetPath = Path.parent(abovePath);
 
-    if (isSelectionCoverBlock(editor)) {
+    if (editor.api.isAt({ block: true, end: true, start: true })) {
       targetPath = Path.parent(targetPath);
     }
     if (targetPath.length === 0) return;

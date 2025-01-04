@@ -1,6 +1,6 @@
 import type { RemoveNodesOptions } from '../interfaces/editor/editor-types';
 
-import { type TEditor, type ValueOf, isText } from '../interfaces';
+import { type TEditor, type ValueOf, TextApi } from '../interfaces';
 import { getQueryOptions } from '../utils';
 
 /** Remove non-empty editor text nodes */
@@ -15,7 +15,9 @@ export const removeEditorText = <E extends TEditor>(
     ...options,
     match: (n, p) => {
       return (
-        isText(n) && (n.text as string)?.length > 0 && (!match || match(n, p))
+        TextApi.isText(n) &&
+        (n.text as string)?.length > 0 &&
+        (!match || match(n, p))
       );
     },
   });

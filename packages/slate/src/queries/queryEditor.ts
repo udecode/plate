@@ -3,10 +3,6 @@ import castArray from 'lodash/castArray.js';
 import type { TEditor } from '../interfaces';
 import type { QueryEditorOptions } from '../types';
 
-import { isSelectionAtBlockEnd } from './isSelectionAtBlockEnd';
-import { isSelectionAtBlockStart } from './isSelectionAtBlockStart';
-import { someNode } from './someNode';
-
 /** Query the editor state. */
 export const queryEditor = <E extends TEditor>(
   editor: E,
@@ -21,15 +17,15 @@ export const queryEditor = <E extends TEditor>(
 ) => {
   if (
     (filter && !filter(editor)) ||
-    (selectionAtBlockStart && !isSelectionAtBlockStart(editor)) ||
-    (selectionAtBlockEnd && !isSelectionAtBlockEnd(editor))
+    (selectionAtBlockStart && !editor.api.isAt({ start: true })) ||
+    (selectionAtBlockEnd && !editor.api.isAt({ end: true }))
   ) {
     return false;
   }
 
   const allows = castArray(allow);
 
-  if (allows.length > 0 && !someNode(editor, { at, match: { type: allows } })) {
+  if (allows.length > 0 && !editor.api.some({ at, match: { type: allows } })) {
     return false;
   }
 
@@ -37,7 +33,7 @@ export const queryEditor = <E extends TEditor>(
 
   if (
     excludes.length > 0 &&
-    someNode(editor, { at, match: { type: excludes } })
+    editor.api.some({ at, match: { type: excludes } })
   ) {
     return false;
   }

@@ -31,24 +31,27 @@ import type { getRangeRefs } from '../../internal/editor/getRangeRefs';
 import type { getStartPoint } from '../../internal/editor/getStartPoint';
 import type { hasBlocks } from '../../internal/editor/hasBlocks';
 import type { hasInlines } from '../../internal/editor/hasInlines';
+import type { hasMark } from '../../internal/editor/hasMark';
 import type { hasTexts } from '../../internal/editor/hasTexts';
 import type { insertBreak } from '../../internal/editor/insertBreak';
+import type { isAt } from '../../internal/editor/isAt';
 import type { isBlock } from '../../internal/editor/isBlock';
 import type { isEdgePoint } from '../../internal/editor/isEdgePoint';
 import type { isEditorNormalizing } from '../../internal/editor/isEditorNormalizing';
-import type { isElementEmpty } from '../../internal/editor/isElementEmpty';
 import type { isElementReadOnly } from '../../internal/editor/isElementReadOnly';
+import type { isEmpty } from '../../internal/editor/isEmpty';
 import type { isEndPoint } from '../../internal/editor/isEndPoint';
 import type { isStartPoint } from '../../internal/editor/isStartPoint';
+import type { isText } from '../../internal/editor/isText';
 import type { unhangRange } from '../../internal/editor/unhangRange';
 import type { withoutNormalizing } from '../../internal/editor/withoutNormalizing';
+import type { someNode } from '../../internal/queries/someNode';
 import type { collapseSelection } from '../../internal/transforms/collapseSelection';
 import type { deleteText } from '../../internal/transforms/deleteText';
 import type { moveSelection } from '../../internal/transforms/moveSelection';
 import type { select } from '../../internal/transforms/select';
 import type { setPoint } from '../../internal/transforms/setPoint';
 import type { setSelection } from '../../internal/transforms/setSelection';
-import type { FindPathOptions } from '../../queries';
 import type { HistoryEditor } from '../../slate-history';
 import type { toggleMark } from '../../transforms';
 import type { At } from '../../types';
@@ -76,7 +79,10 @@ import type { NodeIn, TNodeProps } from '../node/TNode';
 import type { MarksIn, TextIn } from '../text';
 import type {
   EditorNormalizeOptions,
+  FindNodeOptions,
+  FindPathOptions,
   GetAboveNodeOptions,
+  GetFragmentOptions,
   GetLevelsOptions,
   GetNextNodeOptions,
   GetNodeEntriesOptions,
@@ -106,10 +112,17 @@ export type TEditorApi<V extends Value = Value> = Pick<
   Editor,
   'hasPath' | 'setNormalizing' | 'shouldMergeNodesRemovePrevNode'
 > & {
+  /** Get the fragment at a location or selection. */
+  fragment: <N extends ElementOrTextIn<V>>(
+    at?: At | null,
+    options?: GetFragmentOptions
+  ) => N[];
+
   /** Get the dirty paths of the editor. */
   getDirtyPaths: <N extends DescendantIn<V>>(
     operation: TOperation<N>
   ) => Path[];
+
   /** Override this method to prevent normalizing the editor. */
   shouldNormalize: (options: {
     dirtyPaths: Path[];
@@ -117,21 +130,22 @@ export type TEditorApi<V extends Value = Value> = Pick<
     iteration: number;
     operation?: TOperation;
   }) => boolean;
+
   /**
    * Returns the fragment at the current selection. Used when cutting or
    * copying, as an example, to get the fragment at the current selection.
    */
   getFragment: (at?: At) => ElementOrTextIn<V>[];
+
   /** Check if a value is a read-only `Element` object. */
   isElementReadOnly: <N extends ElementIn<V>>(element: N) => boolean;
-  /** Check if a value is an inline `Element` object. */
-  isInline: <N extends DescendantIn<V>>(element: N) => boolean;
-  /** Check if a value is a selectable `Element` object. */
-  isSelectable: <N extends ElementIn<V>>(element: N) => boolean;
+
   /** Check if a value is a void `Element` object. */
-  isVoid: <N extends DescendantIn<V>>(element: N) => boolean;
+  isVoid: <N extends ElementIn<V>>(element: N) => boolean;
+
   /** Check if a value is a markable `Element` object. */
   markableVoid: <N extends ElementIn<V>>(element: N) => boolean;
+
   /** Called when there is a change in the editor. */
   onChange: (options?: { operation?: TOperation }) => void;
 } & {
@@ -144,10 +158,12 @@ export type TEditorApi<V extends Value = Value> = Pick<
     at: At,
     options?: EditorLeafOptions
   ) => TNodeEntry<N> | undefined;
+
   /** Iterate through all of the levels at a location. */
   levels: <N extends NodeIn<V>>(
     options?: GetLevelsOptions<V>
   ) => Generator<TNodeEntry<N>, void, undefined>;
+
   /**
    * Get the matching node in the branch of the document after a location.
    *
@@ -197,7 +213,7 @@ export type TEditorApi<V extends Value = Value> = Pick<
    */
   after: OmitFirst<typeof getPointAfter>;
   /**
-   * Get the point before a location.
+   * Returns the point before a location with optional matching criteria.
    *
    * If there is no point before the location (e.g. we are at the top of the
    * document) returns `undefined`.
@@ -217,14 +233,26 @@ export type TEditorApi<V extends Value = Value> = Pick<
   hasBlocks: OmitFirst<typeof hasBlocks>;
   /** Check if a node has inline and text children. */
   hasInlines: OmitFirst<typeof hasInlines>;
+  /** Check if mark is active at selection */
+  hasMark: OmitFirst<typeof hasMark>;
   /** Check if a node has text children. */
   hasTexts: OmitFirst<typeof hasTexts>;
   /** Check if a value is a block `Element` object. */
   isBlock: OmitFirst<typeof isBlock>;
   /** Check if a point is an edge of a location. */
   isEdge: OmitFirst<typeof isEdgePoint>;
-  /** Check if an element is empty, accounting for void nodes. */
-  isEmpty: OmitFirst<typeof isElementEmpty>;
+  /**
+   * Check if an element is empty, accounting for void nodes.
+   *
+   * @example
+   *   ```ts
+   *   editor.api.isEmpty() // Check if editor is empty
+   *   editor.api.isEmpty(at) // Check if nodes at location are empty
+   *   editor.api.isEmpty(at, { after: true }) // Check if text after location is empty
+   *   editor.api.isEmpty(at, { block: true }) // Check if block above location is empty
+   *   ```;
+   */
+  isEmpty: OmitFirst<typeof isEmpty>;
   /** Check if a point is the end point of a location. */
   isEnd: OmitFirst<typeof isEndPoint>;
   /** Check if the editor is currently normalizing after each operation. */
@@ -261,7 +289,16 @@ export type TEditorApi<V extends Value = Value> = Pick<
    * their content unless the voids option is set, then iteration will occur.
    */
   positions: OmitFirst<typeof getPositions>;
-  /** Get a range of a location. */
+  /**
+   * Get a range from a location to another location.
+   *
+   * @example
+   *   ```ts
+   *   editor.api.range(at, to) // From a location to another location
+   *   editor.api.range('start', at) // From block start to a location
+   *   editor.api.range('before', at, { before }) // From the point before a location
+   *   ```;
+   */
   range: OmitFirst<typeof getRange>;
   /**
    * Create a mutable ref for a `Range` object, which will stay in sync as new
@@ -277,7 +314,14 @@ export type TEditorApi<V extends Value = Value> = Pick<
    *
    * Note: by default the text of void nodes is considered to be an empty
    * string, regardless of content, unless you pass in true for the voids
-   * option
+   * option.
+   *
+   * @example
+   *   ```ts
+   *   editor.api.string() // Get selection string
+   *   editor.api.string([]) // Get whole editor string
+   *   editor.api.string(at) // Get string at location
+   *   ```;
    */
   string: OmitFirst<typeof getEditorString>;
   /**
@@ -355,8 +399,87 @@ export type TEditorApi<V extends Value = Value> = Pick<
   isSaving: OmitFirst<typeof HistoryEditor.isSaving>;
   isSplittingOnce: OmitFirst<typeof HistoryEditor.isSplittingOnce>;
 } & {
+  /** Get the closest block above a location (default: selection). */
+  block: <N extends ElementIn<V>>(
+    options?: GetAboveNodeOptions<V>
+  ) => TNodeEntry<N> | undefined;
+
+  /** Returns all matching blocks. */
+  blocks: <N extends ElementIn<V>>(
+    options?: GetNodeEntriesOptions<V>
+  ) => TNodeEntry<N>[];
+
+  /** Returns the first matching descendant. */
+  descendant: <N extends DescendantIn<V>>(
+    options: FindNodeOptions<V>
+  ) => TNodeEntry<N> | undefined;
+
+  /** Returns the edge blocks above a location (default: selection). */
+  edgeBlocks: <N1 extends ElementIn<V>, N2 extends ElementIn<V> = N1>(
+    options?: GetAboveNodeOptions<V>
+  ) => [TNodeEntry<N1>, TNodeEntry<N2>] | null;
+
+  /** Returns the first matching node. */
+  find: <N extends DescendantIn<V>>(
+    options?: FindNodeOptions<V>
+  ) => TNodeEntry<N> | undefined;
+
+  /** Returns the last node at a given level. */
+  lastByLevel: <N extends ElementOrTextIn<V>>(
+    level: number
+  ) => TNodeEntry<N> | undefined;
+
+  /** Returns the selection mark value by key. */
+  mark: <K extends keyof MarksIn<V>>(
+    key: K
+  ) => MarksIn<V>[K] | null | undefined;
+
   /** Get the highest block in the editor. */
   highestBlock: <N extends V[number]>(at?: Path) => TNodeEntry<N> | undefined;
+
+  /**
+   * Check if a location (point/range) is at a specific position.
+   *
+   * @example
+   *   ```ts
+   *   // For ranges:
+   *   editor.api.isAt({ text: true }) // Check if range is in single text node
+   *   editor.api.isAt({ block: true }) // Check if range is in single block
+   *   editor.api.isAt({ blocks: true }) // Check if range is across multiple blocks
+   *   editor.api.isAt({ start: true }) // Check if range starts at block start
+   *   editor.api.isAt({ end: true }) // Check if range ends at block end
+   *
+   *   // For points:
+   *   editor.api.isAt({ word: true }) // Check relative to word boundaries
+   *   editor.api.isAt({ start: true }) // Check if at start
+   *   editor.api.isAt({ end: true }) // Check if at end
+   *   ```;
+   */
+  isAt: OmitFirst<typeof isAt>;
+
+  /** Check if the selection is collapsed */
+  isCollapsed: () => boolean;
+
+  /** Check if selection is at editor end */
+  isEditorEnd: () => boolean;
+
+  /** Check if the selection is expanded */
+  isExpanded: () => boolean;
+  /** Check if a value is an inline `Element` object. */
+  isInline: <N extends DescendantIn<V>>(element: N) => boolean;
+
+  /** Check if a value is a selectable `Element` object. */
+  isSelectable: <N extends ElementIn<V>>(element: N) => boolean;
+
+  /** Check if a node at a location is a Text node */
+  isText: OmitFirst<typeof isText>;
+  /** Returns the range spanning the given node entries. */
+  nodesRange: (nodes: TNodeEntry[]) => Range | undefined;
+  /**
+   * Check if any node at a location (default: selection) matches the given
+   * criteria
+   */
+  some: OmitFirst<typeof someNode>;
 };
 
 export type TEditorTransforms<V extends Value = Value> = {
@@ -638,7 +761,7 @@ export type TBaseEditor<V extends Value = Value> = {
   id: any;
   children: V;
   marks: Record<string, any> | null;
-  operations: TOperation[];
+  operations: TOperation<DescendantIn<V>>[];
   selection: Range | null;
 } & Pick<HistoryEditor, 'history'> &
   LegacyEditorMethods<V> &

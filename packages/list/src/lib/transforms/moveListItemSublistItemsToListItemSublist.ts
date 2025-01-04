@@ -2,7 +2,6 @@ import {
   type SlateEditor,
   type TElement,
   type TElementEntry,
-  findDescendant,
   getLastChildPath,
   insertElements,
   moveChildren,
@@ -39,7 +38,7 @@ export const moveListItemSublistItemsToListItemSublist = (
   let moved = 0;
 
   editor.tf.withoutNormalizing(() => {
-    const fromListItemSublist = findDescendant<TElement>(editor, {
+    const fromListItemSublist = editor.api.descendant<TElement>({
       at: fromListItemPath,
       match: {
         type: getListTypes(editor),
@@ -50,7 +49,7 @@ export const moveListItemSublistItemsToListItemSublist = (
 
     const [, fromListItemSublistPath] = fromListItemSublist;
 
-    const toListItemSublist = findDescendant<TElement>(editor, {
+    const toListItemSublist = editor.api.descendant<TElement>({
       at: toListItemPath,
       match: {
         type: getListTypes(editor),

@@ -1,8 +1,7 @@
-import {
-  type FindNodeOptions,
-  type SlateEditor,
-  type ValueOf,
-  findNode,
+import type {
+  FindNodeOptions,
+  SlateEditor,
+  ValueOf,
 } from '@udecode/plate-common';
 
 import type { TSuggestionText } from '../types';
@@ -13,7 +12,7 @@ export const findSuggestionNode = <E extends SlateEditor>(
   editor: E,
   { match, ...options }: FindNodeOptions<ValueOf<E>> = {}
 ) =>
-  findNode<TSuggestionText>(editor, {
+  editor.api.find<TSuggestionText>({
     match: (n, p) =>
       n[BaseSuggestionPlugin.key] && (!match || (match as any)(n, p)),
     ...options,

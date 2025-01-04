@@ -1,4 +1,4 @@
-import { type ExtendEditor, isCollapsed } from '@udecode/plate-common';
+import type { ExtendEditor } from '@udecode/plate-common';
 
 import type { AutoformatConfig } from './BaseAutoformatPlugin';
 
@@ -17,7 +17,7 @@ export const withAutoformat: ExtendEditor<AutoformatConfig> = ({
   const { insertText } = editor;
 
   editor.insertText = (text) => {
-    if (!isCollapsed(editor.selection)) return insertText(text);
+    if (!editor.api.isCollapsed()) return insertText(text);
 
     for (const rule of getOptions().rules!) {
       const { insertTrigger, mode = 'text', query } = rule;

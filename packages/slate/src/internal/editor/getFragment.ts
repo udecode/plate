@@ -1,25 +1,31 @@
 import { fragment, getFragment as getFragmentBase } from 'slate';
 
 import type { TEditor } from '../../interfaces/editor/TEditor';
+import type { GetFragmentOptions } from '../../interfaces/editor/editor-types';
 import type { ElementOrTextOf } from '../../interfaces/element/TElement';
 import type { At } from '../../types';
 
 import { getAt } from '../../utils';
+import { unwrapStructuralNodes } from '../../utils/unwrapStructuralNodes';
 
-/**
- * Get the fragment at a location. If no location is provided, get the fragment
- * at the current selection.
- */
 export const getFragment = <E extends TEditor>(
   editor: E,
-  at?: At
+  at?: At | null,
+  options?: GetFragmentOptions
 ): ElementOrTextOf<E>[] => {
+  if (at === null) return [];
+
   try {
-    if (at === undefined) {
-      return getFragmentBase(editor as any) as any;
+    const result =
+      at === undefined
+        ? (getFragmentBase(editor as any) as any)
+        : (fragment(editor as any, getAt(editor, at)!) as any);
+
+    if (result.length > 0 && options?.structuralTypes) {
+      return unwrapStructuralNodes(result, options) as any;
     }
 
-    return fragment(editor as any, getAt(editor, at)!) as any;
+    return result;
   } catch {
     return [];
   }

@@ -3,7 +3,7 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import { type TDescendant, isElement, isText } from '@udecode/plate-common';
+import { type TDescendant, TextApi, isElement } from '@udecode/plate-common';
 import isEqual from 'lodash/isEqual.js';
 
 import type { ComputeDiffOptions } from '../../lib/computeDiff';
@@ -99,5 +99,9 @@ export function isEqualNodeChildren(value: TDescendant, other: TDescendant) {
     return true;
   }
 
-  return isText(value) && isText(other) && isEqual(value.text, other.text);
+  return (
+    TextApi.isText(value) &&
+    TextApi.isText(other) &&
+    isEqual(value.text, other.text)
+  );
 }

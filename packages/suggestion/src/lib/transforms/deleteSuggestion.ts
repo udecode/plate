@@ -1,8 +1,6 @@
 import {
   type SlateEditor,
   type TElement,
-  findNode,
-  isRangeAcrossBlocks,
   nanoid,
   unhangCharacterRange,
 } from '@udecode/plate-common';
@@ -47,8 +45,9 @@ export const deleteSuggestion = (
       if (!pointTarget) break;
       // don't delete across blocks
       if (
-        !isRangeAcrossBlocks(editor, {
+        !editor.api.isAt({
           at: { anchor: pointCurrent, focus: pointTarget },
+          blocks: true,
         })
       ) {
         // always 0 when across blocks
@@ -87,7 +86,7 @@ export const deleteSuggestion = (
       range = unhangCharacterRange(editor, range);
 
       // if the current point is in block addition suggestion, delete block
-      const entryBlock = findNode<TElement>(editor, {
+      const entryBlock = editor.api.find<TElement>({
         at: pointCurrent,
         match: (n) =>
           editor.api.isBlock(n) &&
@@ -115,11 +114,7 @@ export const deleteSuggestion = (
         });
       }
       // skip if the range is across blocks
-      if (
-        isRangeAcrossBlocks(editor, {
-          at: range,
-        })
-      ) {
+      if (editor.api.isAt({ at: range, blocks: true })) {
         continue;
       }
 

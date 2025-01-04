@@ -1,6 +1,6 @@
 import type { KeyboardHandler } from '@udecode/plate-common/react';
 
-import { isCollapsed, isHotkey, someNode } from '@udecode/plate-common';
+import { isHotkey } from '@udecode/plate-common';
 
 import type { ResetNodeConfig } from '../lib/BaseResetNodePlugin';
 
@@ -21,13 +21,13 @@ export const onKeyDownResetNode: KeyboardHandler<ResetNodeConfig> = ({
   let reset;
 
   if (!editor.selection) return;
-  if (isCollapsed(editor.selection)) {
+  if (editor.api.isCollapsed()) {
     rules.forEach(({ defaultType, hotkey, predicate, types, onReset }) => {
       if (
         hotkey &&
         isHotkey(hotkey, event as any) &&
         predicate(editor as any) &&
-        someNode(editor, { match: { type: types } })
+        editor.api.some({ match: { type: types } })
       ) {
         event.preventDefault?.();
 

@@ -1,12 +1,7 @@
 import {
   type ExtendEditor,
   getEditorPlugin,
-  getNextNodeStartPoint,
-  getPreviousNodeEndPoint,
-  getRangeBefore,
-  getRangeFromBlockStart,
   isCollapsed,
-  someNode,
 } from '@udecode/plate-common';
 import {
   RemoveEmptyNodesPlugin,
@@ -41,20 +36,20 @@ export const withLink: ExtendEditor<BaseLinkConfig> = ({
       const selection = editor.selection!;
 
       // get the range from first space before the cursor
-      let beforeWordRange = getRangeBefore(
-        editor,
-        selection,
-        rangeBeforeOptions
-      );
+      let beforeWordRange = editor.api.range('before', selection, {
+        before: rangeBeforeOptions,
+      });
+
+      console.log(beforeWordRange, editor.selection, rangeBeforeOptions);
 
       // if no space found before, get the range from block start
       if (!beforeWordRange) {
-        beforeWordRange = getRangeFromBlockStart(editor);
+        beforeWordRange = editor.api.range('start', editor.selection);
       }
       // if no word found before the cursor, exit
       if (!beforeWordRange) return;
 
-      const hasLink = someNode(editor, {
+      const hasLink = editor.api.some({
         at: beforeWordRange,
         match: { type },
       });
@@ -82,14 +77,14 @@ export const withLink: ExtendEditor<BaseLinkConfig> = ({
   };
 
   editor.insertBreak = () => {
-    if (!isCollapsed(editor.selection)) return insertBreak();
+    if (!editor.api.isCollapsed()) return insertBreak();
 
     wrapLink();
     insertBreak();
   };
 
   editor.insertText = (text) => {
-    if (text === ' ' && isCollapsed(editor.selection)) {
+    if (text === ' ' && editor.api.isCollapsed()) {
       wrapLink();
     }
 
@@ -133,10 +128,10 @@ export const withLink: ExtendEditor<BaseLinkConfig> = ({
           let newPoint: Point | undefined;
 
           if (editor.api.isStart(range.focus, path)) {
-            newPoint = getPreviousNodeEndPoint(editor, path);
+            newPoint = editor.api.end(path, { previous: true });
           }
           if (editor.api.isEnd(range.focus, path)) {
-            newPoint = getNextNodeStartPoint(editor, path);
+            newPoint = editor.api.start(path, { next: true });
           }
           if (newPoint) {
             operation.newProperties = {
@@ -157,7 +152,7 @@ export const withLink: ExtendEditor<BaseLinkConfig> = ({
       const range = editor.selection as Range | null;
 
       if (range && isCollapsed(range) && editor.api.isEnd(range.focus, path)) {
-        const nextPoint = getNextNodeStartPoint(editor, path);
+        const nextPoint = editor.api.start(path, { next: true });
 
         // select next text node if any
         if (nextPoint) {

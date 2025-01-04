@@ -1,8 +1,6 @@
 import type { ElementOf, TEditor, TNodeProps, ValueOf } from '../interfaces';
 import type { GetNodeEntriesOptions } from '../interfaces/editor/editor-types';
 
-import { getBlocks } from '../queries/getBlocks';
-
 export const setBlockNodes = <
   N extends ElementOf<E>,
   E extends TEditor = TEditor,
@@ -12,7 +10,7 @@ export const setBlockNodes = <
   options?: GetNodeEntriesOptions<ValueOf<E>>
 ) => {
   editor.tf.withoutNormalizing(() => {
-    const blocks = getBlocks(editor, options);
+    const blocks = editor.api.blocks(options);
 
     blocks.forEach(([, path]) => {
       editor.tf.setNodes<N>(props as any, {

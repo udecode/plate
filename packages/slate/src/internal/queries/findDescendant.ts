@@ -1,13 +1,12 @@
 import { Path, Range, Span } from 'slate';
 
-import type { FindNodeOptions } from '../../queries/findNode';
-
 /**
  * Iterate through all of the nodes in the editor and return the first match. If
  * no match is found, return undefined.
  */
 import {
   type DescendantOf,
+  type FindNodeOptions,
   type NodeEntryOf,
   type TEditor,
   type TNodeEntry,
@@ -16,7 +15,6 @@ import {
 } from '../../interfaces';
 import { match } from '../../utils';
 
-/** Get the first descendant node matching the condition. */
 export const findDescendant = <
   N extends DescendantOf<E>,
   E extends TEditor = TEditor,
@@ -55,7 +53,7 @@ export const findDescendant = <
 
     const nodeEntries = getNodeDescendants<N>(root[0], {
       from,
-      pass: ([n]) => (voids ? false : editor.isVoid(n)),
+      pass: ([n]) => (voids ? false : editor.isVoid(n as any)),
       reverse,
       to,
     });

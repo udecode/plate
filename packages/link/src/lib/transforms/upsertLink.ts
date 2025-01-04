@@ -3,7 +3,6 @@ import {
   type SlateEditor,
   type UnwrapNodesOptions,
   type WrapNodesOptions,
-  findNode,
   getNodeLeaf,
   getNodeProps,
   isDefined,
@@ -83,7 +82,7 @@ export const upsertLink = (
   }
 
   // selection contains at one edge edge or between the edges
-  const linkEntry = findNode<TLinkElement>(editor, {
+  const linkEntry = editor.api.find<TLinkElement>({
     at,
     match: { type: editor.getType(BaseLinkPlugin) },
   });

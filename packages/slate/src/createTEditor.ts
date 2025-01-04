@@ -29,9 +29,11 @@ import {
   hasEditorRange,
   hasEditorSelectableTarget,
   hasEditorTarget,
+  isCollapsed,
   isComposing,
   isEditorFocused,
   isEditorReadOnly,
+  isExpanded,
   isTargetInsideNonReadonlyVoid,
   toDOMNode,
   toDOMPoint,
@@ -75,20 +77,33 @@ import { getStartPoint } from './internal/editor/getStartPoint';
 import { getVoidNode } from './internal/editor/getVoidNode';
 import { hasBlocks } from './internal/editor/hasBlocks';
 import { hasInlines } from './internal/editor/hasInlines';
+import { hasMark } from './internal/editor/hasMark';
 import { hasTexts } from './internal/editor/hasTexts';
 import { insertBreak } from './internal/editor/insertBreak';
 import { insertNode } from './internal/editor/insertNode';
+import { isAt } from './internal/editor/isAt';
 import { isBlock } from './internal/editor/isBlock';
 import { isEdgePoint } from './internal/editor/isEdgePoint';
 import { isEditorNormalizing } from './internal/editor/isEditorNormalizing';
-import { isElementEmpty } from './internal/editor/isElementEmpty';
 import { isElementReadOnly } from './internal/editor/isElementReadOnly';
+import { isEmpty } from './internal/editor/isEmpty';
 import { isEndPoint } from './internal/editor/isEndPoint';
 import { isStartPoint } from './internal/editor/isStartPoint';
+import { isText } from './internal/editor/isText';
 import { normalizeEditor } from './internal/editor/normalizeEditor';
+import { some } from './internal/editor/some';
 import { unhangRange } from './internal/editor/unhangRange';
 import { withoutNormalizing } from './internal/editor/withoutNormalizing';
+import { findDescendant } from './internal/queries/findDescendant';
+import { findNode } from './internal/queries/findNode';
+import { getBlockAbove } from './internal/queries/getBlockAbove';
+import { getBlocks } from './internal/queries/getBlocks';
+import { getEdgeBlocksAbove } from './internal/queries/getEdgeBlocksAbove';
 import { getHighestBlock } from './internal/queries/getHighestBlock';
+import { getLastNodeByLevel } from './internal/queries/getLastNodeByLevel';
+import { getMark } from './internal/queries/getMark';
+import { getNodesRange } from './internal/queries/getNodesRange';
+import { isEditorEnd } from './internal/queries/isEditorEnd';
 import { collapseSelection } from './internal/transforms/collapseSelection';
 import { deleteText } from './internal/transforms/deleteText';
 import { deselect } from './internal/transforms/deselect';
@@ -149,9 +164,14 @@ export const createTEditor = <V extends Value>({
     above: bindFirst(getAboveNode, editor) as any,
     after: bindFirst(getPointAfter, editor),
     before: bindFirst(getPointBefore, editor),
+    block: bindFirst(getBlockAbove, editor) as any,
+    blocks: bindFirst(getBlocks, editor) as any,
+    descendant: bindFirst(findDescendant, editor) as any,
+    edgeBlocks: bindFirst(getEdgeBlocksAbove, editor) as any,
     edges: bindFirst(getEdgePoints, editor),
     elementReadOnly: bindFirst(isElementReadOnly, editor),
     end: bindFirst(getEndPoint, editor),
+    find: bindFirst(findNode, editor) as any,
     findDocumentOrShadowRoot: bindFirst(findEditorDocumentOrShadowRoot, editor),
     findEventRange: bindFirst(findEventRange, editor),
     findKey: bindFirst(findNodeKey, editor),
@@ -165,18 +185,23 @@ export const createTEditor = <V extends Value>({
     hasDOMNode: bindFirst(hasEditorDOMNode, editor),
     hasEditableTarget: bindFirst(hasEditorEditableTarget, editor) as any,
     hasInlines: bindFirst(hasInlines, editor),
+    hasMark: bindFirst(hasMark, editor),
     hasPath: bindFirst(hasPath, editor as any),
     hasRange: bindFirst(hasEditorRange, editor),
     hasSelectableTarget: bindFirst(hasEditorSelectableTarget, editor) as any,
     hasTarget: bindFirst(hasEditorTarget, editor) as any,
     hasTexts: bindFirst(hasTexts, editor),
     highestBlock: bindFirst(getHighestBlock, editor) as any,
+    isAt: bindFirst(isAt, editor),
     isBlock: bindFirst(isBlock, editor),
+    isCollapsed: () => isCollapsed(editor.selection),
     isComposing: bindFirst(isComposing, editor),
     isEdge: bindFirst(isEdgePoint, editor),
+    isEditorEnd: bindFirst(isEditorEnd, editor),
     isElementReadOnly: editor.isElementReadOnly,
-    isEmpty: bindFirst(isElementEmpty, editor),
+    isEmpty: bindFirst(isEmpty, editor),
     isEnd: bindFirst(isEndPoint, editor),
+    isExpanded: () => isExpanded(editor.selection),
     isFocused: bindFirst(isEditorFocused, editor),
     isInline: editor.isInline,
     isMerging: bindFirst(HistoryEditor.isMerging, editor as any) as any,
@@ -190,15 +215,19 @@ export const createTEditor = <V extends Value>({
       isTargetInsideNonReadonlyVoid,
       editor
     ),
+    isText: bindFirst(isText, editor),
     isVoid: editor.isVoid,
     last: bindFirst(getLastNode, editor) as any,
+    lastByLevel: bindFirst(getLastNodeByLevel, editor) as any,
     leaf: bindFirst(getLeafNode, editor) as any,
     levels: bindFirst(getLevels, editor) as any,
+    mark: bindFirst(getMark, editor),
     markableVoid: editor.markableVoid,
     marks: bindFirst(getMarks, editor),
     next: bindFirst(getNextNode, editor) as any,
     node: bindFirst(getNodeEntry, editor) as any,
     nodes: bindFirst(getNodeEntries, editor) as any,
+    nodesRange: bindFirst(getNodesRange, editor),
     parent: bindFirst(getParentNode, editor) as any,
     path: bindFirst(getPath, editor),
     pathRef: bindFirst(createPathRef, editor),
@@ -217,6 +246,7 @@ export const createTEditor = <V extends Value>({
       editor as any
     ),
     shouldNormalize: bindFirst(shouldNormalize, editor as any),
+    some: bindFirst(some, editor),
     start: bindFirst(getStartPoint, editor),
     string: bindFirst(getEditorString, editor),
     toDOMNode: bindFirst(toDOMNode, editor),

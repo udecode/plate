@@ -1,6 +1,6 @@
 import {
+  type GetPointBeforeOptions,
   type PluginConfig,
-  type RangeBeforeOptions,
   createTSlatePlugin,
   isUrl,
 } from '@udecode/plate-common';
@@ -65,14 +65,13 @@ export type BaseLinkConfig = PluginConfig<
      * Allow custom config for rangeBeforeOptions.
      *
      * @example
-     *   default
      *   {
-     *   matchString: ' ',
-     *   skipInvalid: true,
-     *   afterMatch: true,
+     *     "matchString": " ",
+     *     "skipInvalid": true,
+     *     "afterMatch": true
      *   }
      */
-    rangeBeforeOptions?: RangeBeforeOptions;
+    rangeBeforeOptions?: GetPointBeforeOptions;
 
     /**
      * Transform the content of the URL input before validating it. Useful for
@@ -111,6 +110,7 @@ export const BaseLinkPlugin = createTSlatePlugin<BaseLinkConfig>({
     keepSelectedTextOnPaste: true,
     rangeBeforeOptions: {
       afterMatch: true,
+      matchBlockStart: true,
       matchString: ' ',
       skipInvalid: true,
     },

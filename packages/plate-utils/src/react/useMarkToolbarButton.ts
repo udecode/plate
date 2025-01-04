@@ -1,5 +1,4 @@
 import { useEditorRef, useEditorSelector } from '@udecode/plate-core/react';
-import { isMarkActive } from '@udecode/slate';
 
 export const useMarkToolbarButtonState = ({
   clear,
@@ -9,7 +8,7 @@ export const useMarkToolbarButtonState = ({
   clear?: string[] | string;
 }) => {
   const pressed = useEditorSelector(
-    (editor) => isMarkActive(editor, nodeType),
+    (editor) => editor.api.hasMark(nodeType),
     [nodeType]
   );
 

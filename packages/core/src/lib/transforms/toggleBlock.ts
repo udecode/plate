@@ -1,8 +1,4 @@
-import {
-  type GetNodeEntriesOptions,
-  type TElement,
-  someNode,
-} from '@udecode/slate';
+import type { GetNodeEntriesOptions, TElement } from '@udecode/slate';
 
 import type { SlateEditor } from '../editor';
 
@@ -24,7 +20,7 @@ export const toggleBlock = (
 
   if (!type || !at) return;
 
-  const isActive = someNode(editor, {
+  const isActive = editor.api.some({
     ...editorNodesOptions,
     match: {
       type: type,

@@ -2,9 +2,7 @@ import {
   type ExtendEditor,
   type SlateEditor,
   type TElement,
-  getBlockAbove,
   isCollapsed,
-  isRangeInSameBlock,
   replaceNodeChildren,
 } from '@udecode/plate-common';
 import { Point } from 'slate';
@@ -30,11 +28,10 @@ export const preventDeleteTableCell = (
 ) => {
   const { selection } = editor;
 
-  const getPoint = reverse ? editor.api.end : editor.api.start;
   const getNextPoint = reverse ? editor.api.after : editor.api.before;
 
   if (isCollapsed(selection)) {
-    const cellEntry = getBlockAbove(editor, {
+    const cellEntry = editor.api.block({
       match: { type: getCellTypes(editor) },
     });
 
@@ -42,16 +39,18 @@ export const preventDeleteTableCell = (
       // Prevent deleting cell at the start or end of a cell
       const [, cellPath] = cellEntry;
 
-      const start = getPoint(cellPath)!;
+      const start = reverse
+        ? editor.api.end(cellPath)
+        : editor.api.start(cellPath);
 
-      if (selection && Point.equals(selection.anchor, start)) {
+      if (selection && Point.equals(selection.anchor, start!)) {
         return true;
       }
     } else {
       // Prevent deleting cell when selection is before or after a table
       const nextPoint = getNextPoint(selection!, { unit });
 
-      const nextCellEntry = getBlockAbove(editor, {
+      const nextCellEntry = editor.api.block({
         at: nextPoint,
         match: { type: getCellTypes(editor) },
       });
@@ -85,11 +84,7 @@ export const withDeleteTable: ExtendEditor<TableConfig> = ({
   };
 
   editor.deleteFragment = (direction) => {
-    if (
-      isRangeInSameBlock(editor, {
-        match: (n) => n.type === type,
-      })
-    ) {
+    if (editor.api.isAt({ block: true, match: (n) => n.type === type })) {
       const cellEntries = getTableGridAbove(editor, { format: 'cell' });
 
       if (cellEntries.length > 1) {

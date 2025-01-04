@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { findNode, isEditorReadOnly, isHotkey } from '@udecode/plate-common';
+import { isEditorReadOnly, isHotkey } from '@udecode/plate-common';
 import {
   type EditableSiblingComponent,
   useEditorPlugin,
@@ -68,7 +68,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
       if (!getOption('isSelectingSome')) return;
       if (isHotkey('enter')(e)) {
         // get the first block in the selection
-        const entry = findNode(editor, {
+        const entry = editor.api.find({
           at: [],
           match: (n) => n.id && selectedIds!.has(n.id),
         });
@@ -90,7 +90,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
       // TODO: skip toggle child
       if (isHotkey('up')(e)) {
         const firstId = [...selectedIds!][0];
-        const node = findNode(editor, {
+        const node = editor.api.find({
           at: [],
           match: (n) => n.id && n.id === firstId,
         });
@@ -103,7 +103,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
       }
       if (isHotkey('down')(e)) {
         const lastId = [...selectedIds!].pop();
-        const node = findNode(editor, {
+        const node = editor.api.find({
           at: [],
           match: (n) => n.id && n.id === lastId,
         });

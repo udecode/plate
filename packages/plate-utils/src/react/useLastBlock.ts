@@ -1,5 +1,4 @@
 import { useEditorSelector } from '@udecode/plate-core/react';
-import { getBlocks } from '@udecode/slate';
 
 export const useLastBlock = ({
   deps,
@@ -9,7 +8,7 @@ export const useLastBlock = ({
   deps?: React.DependencyList;
 }) => {
   return useEditorSelector(
-    (editor) => (enabled ? getBlocks(editor).at(-1)![0] : null),
+    (editor) => (enabled ? editor.api.blocks().at(-1)![0] : null),
     [enabled, ...(deps || [])]
   );
 };

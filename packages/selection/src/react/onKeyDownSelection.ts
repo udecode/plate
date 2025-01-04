@@ -1,10 +1,6 @@
 import type { KeyboardHandler } from '@udecode/plate-common/react';
 
-import {
-  isHotkey,
-  isRangeInSameBlock,
-  isSelectionCoverBlock,
-} from '@udecode/plate-common';
+import { isHotkey } from '@udecode/plate-common';
 
 import type { BlockSelectionConfig } from './BlockSelectionPlugin';
 
@@ -22,11 +18,11 @@ export const onKeyDownSelection: KeyboardHandler<BlockSelectionConfig> = ({
 
     const [, path] = ancestorNode;
 
-    if (isSelectionCoverBlock(editor)) {
+    if (editor.api.isAt({ block: true, end: true, start: true })) {
       return api.blockSelection.selectedAll();
     }
     // TODO： should select the blocks then selected all should exclude table and columns
-    if (!isRangeInSameBlock(editor)) {
+    if (!editor.api.isAt({ block: true })) {
       return api.blockSelection.selectedAll();
     }
 

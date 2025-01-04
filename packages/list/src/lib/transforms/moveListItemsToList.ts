@@ -2,7 +2,6 @@ import {
   type MoveChildrenOptions,
   type SlateEditor,
   type TElementEntry,
-  findDescendant,
   getLastChildPath,
   moveChildren,
 } from '@udecode/plate-common';
@@ -57,7 +56,7 @@ export const moveListItemsToList = (
 
   editor.tf.withoutNormalizing(() => {
     if (fromListItem) {
-      const fromListItemSublist = findDescendant(editor, {
+      const fromListItemSublist = editor.api.descendant({
         at: fromListItem[1],
         match: {
           type: getListTypes(editor),

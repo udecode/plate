@@ -1,8 +1,7 @@
-import {
-  type GetNodeEntriesOptions,
-  type TEditor,
-  type ValueOf,
-  getNodesRange,
+import type {
+  GetNodeEntriesOptions,
+  TEditor,
+  ValueOf,
 } from '@udecode/plate-common';
 
 import { getBlocksWithId } from '../queries/getBlocksWithId';
@@ -16,6 +15,6 @@ export const removeBlocksAndFocus = <E extends TEditor = TEditor>(
 
   const nodeEntries = getBlocksWithId(editor, options);
 
-  editor.tf.removeNodes({ at: getNodesRange(editor, nodeEntries) });
+  editor.tf.removeNodes({ at: editor.api.nodesRange(nodeEntries) });
   editor.tf.focus();
 };

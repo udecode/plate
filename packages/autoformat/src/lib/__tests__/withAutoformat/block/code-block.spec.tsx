@@ -1,15 +1,10 @@
 /** @jsx jsxt */
 
-import type { Range } from 'slate';
-
 import {
   BaseCodeBlockPlugin,
   insertEmptyCodeBlock,
 } from '@udecode/plate-code-block';
-import {
-  BaseParagraphPlugin,
-  getRangeFromBlockStart,
-} from '@udecode/plate-common';
+import { BaseParagraphPlugin } from '@udecode/plate-common';
 import { createSlateEditor } from '@udecode/plate-common';
 import { jsxt } from '@udecode/plate-test-utils';
 import { autoformatPlugin } from 'www/src/registry/default/components/editor/plugins/autoformat-plugin';
@@ -90,7 +85,10 @@ describe('when ``` at block start, but customising with query we get the most re
                     return false;
                   }
 
-                  const matchRange = getRangeFromBlockStart(editor) as Range;
+                  const matchRange = editor.api.range(
+                    'start',
+                    editor.selection
+                  );
                   const textFromBlockStart = editor.api.string(matchRange);
                   const currentNodeText =
                     (textFromBlockStart || '') + rule.text;

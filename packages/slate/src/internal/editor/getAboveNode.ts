@@ -14,5 +14,9 @@ export const getAboveNode = <
   editor: E,
   options?: GetAboveNodeOptions<ValueOf<E>>
 ): TNodeEntry<N> | undefined => {
-  return above(editor as any, getQueryOptions(editor, options)) as any;
+  try {
+    return above(editor as any, getQueryOptions(editor, options)) as any;
+  } catch (error) {
+    return undefined;
+  }
 };

@@ -1,10 +1,4 @@
-import {
-  type SlateEditor,
-  type TRange,
-  isHotkey,
-  isRangeAcrossBlocks,
-  isRangeInSameBlock,
-} from '@udecode/plate-common';
+import { type SlateEditor, type TRange, isHotkey } from '@udecode/plate-common';
 
 import { KEY_SHIFT_EDGES, getCellTypes } from '..';
 import { moveSelectionFromCell } from './moveSelectionFromCell';
@@ -32,11 +26,12 @@ export const overrideSelectionFromCell = (
     ) ||
     !editor.selection?.focus ||
     !newSelection?.focus ||
-    !isRangeAcrossBlocks(editor, {
+    !editor.api.isAt({
       at: {
         anchor: editor.selection.focus,
         focus: newSelection.focus,
       },
+      blocks: true,
       match: { type: getCellTypes(editor) },
     })
   ) {
@@ -49,10 +44,7 @@ export const overrideSelectionFromCell = (
   // if the previous selection was in many cells, return
   if (
     edge &&
-    !isRangeInSameBlock(editor, {
-      at: editor.selection,
-      match: { type: getCellTypes(editor) },
-    })
+    !editor.api.isAt({ block: true, match: { type: getCellTypes(editor) } })
   ) {
     return;
   }

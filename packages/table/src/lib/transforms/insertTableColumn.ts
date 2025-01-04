@@ -1,8 +1,6 @@
 import {
   type SlateEditor,
   type TElement,
-  findNode,
-  getBlockAbove,
   getEditorPlugin,
   getLastChildPath,
   getNode,
@@ -50,11 +48,11 @@ export const insertTableColumn = (
   }
 
   const cellEntry = fromCell
-    ? findNode(editor, {
+    ? editor.api.find({
         at: fromCell,
         match: { type: getCellTypes(editor) },
       })
-    : getBlockAbove(editor, {
+    : editor.api.block({
         match: { type: getCellTypes(editor) },
       });
 
@@ -62,7 +60,7 @@ export const insertTableColumn = (
 
   const [, cellPath] = cellEntry;
 
-  const tableEntry = getBlockAbove<TTableElement>(editor, {
+  const tableEntry = editor.api.block<TTableElement>({
     at: cellPath,
     match: { type },
   });

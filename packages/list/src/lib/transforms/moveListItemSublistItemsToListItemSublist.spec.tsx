@@ -1,10 +1,6 @@
 /** @jsx jsxt */
 
-import {
-  type SlateEditor,
-  createSlateEditor,
-  findNode,
-} from '@udecode/plate-common';
+import { type SlateEditor, createSlateEditor } from '@udecode/plate-common';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
@@ -74,8 +70,8 @@ describe('when there is toListItem sublist', () => {
       value: input.children,
     });
 
-    const fromListItem = findNode(editor, { match: { id: '12' } }) as any;
-    const toListItem = findNode(editor, { match: { id: '11' } }) as any;
+    const fromListItem = editor.api.find({ match: { id: '12' } }) as any;
+    const toListItem = editor.api.find({ match: { id: '11' } }) as any;
 
     if (fromListItem && toListItem) {
       moveListItemSublistItemsToListItemSublist(editor, {
@@ -137,8 +133,8 @@ describe('when there is no list in toListItem', () => {
       value: input.children,
     });
 
-    const fromListItem = findNode(editor, { match: { id: '12' } }) as any;
-    const toListItem = findNode(editor, { match: { id: '11' } }) as any;
+    const fromListItem = editor.api.find({ match: { id: '12' } }) as any;
+    const toListItem = editor.api.find({ match: { id: '11' } }) as any;
 
     if (fromListItem && toListItem) {
       moveListItemSublistItemsToListItemSublist(editor, {

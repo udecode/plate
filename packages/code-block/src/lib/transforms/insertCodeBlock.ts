@@ -1,10 +1,7 @@
-import {
-  type InsertNodesOptions,
-  type SlateEditor,
-  type TElement,
-  isExpanded,
-  isSelectionAtBlockStart,
-  someNode,
+import type {
+  InsertNodesOptions,
+  SlateEditor,
+  TElement,
 } from '@udecode/plate-common';
 
 import {
@@ -20,20 +17,20 @@ export const insertCodeBlock = (
   editor: SlateEditor,
   insertNodesOptions: Omit<InsertNodesOptions, 'match'> = {}
 ) => {
-  if (!editor.selection || isExpanded(editor.selection)) return;
+  if (!editor.selection || editor.api.isExpanded()) return;
 
   const matchCodeElements = (node: TElement) =>
     node.type === editor.getType(BaseCodeBlockPlugin) ||
     node.type === editor.getType(BaseCodeLinePlugin);
 
   if (
-    someNode(editor, {
+    editor.api.some({
       match: matchCodeElements,
     })
   ) {
     return;
   }
-  if (!isSelectionAtBlockStart(editor)) {
+  if (!editor.api.isAt({ start: true })) {
     editor.insertBreak();
   }
 

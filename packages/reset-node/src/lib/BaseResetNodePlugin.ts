@@ -4,7 +4,6 @@ import {
   createTSlatePlugin,
   getNode,
   getNodeProps,
-  isCollapsed,
   resetEditorChildren,
 } from '@udecode/plate-common';
 import { Point } from 'slate';
@@ -51,7 +50,7 @@ export const BaseResetNodePlugin = createTSlatePlugin<ResetNodeConfig>({
       if (!getOptions().disableFirstBlockReset) {
         const { selection } = editor;
 
-        if (selection && isCollapsed(selection)) {
+        if (selection && editor.api.isCollapsed()) {
           const start = editor.api.start([])!;
 
           if (Point.equals(selection.anchor, start)) {

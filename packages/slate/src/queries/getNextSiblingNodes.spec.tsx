@@ -6,9 +6,8 @@ import { createPlateEditor } from '@udecode/plate-common/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { createTEditor } from '../../../createTEditor';
-import { getBlockAbove } from '../../../internal/queries/getBlockAbove';
-import { getNextSiblingNodes } from '../../../queries/getNextSiblingNodes';
+import { createTEditor } from '../createTEditor';
+import { getNextSiblingNodes } from './getNextSiblingNodes';
 
 jsxt;
 
@@ -33,7 +32,7 @@ describe('getNextSiblingNodes', () => {
       editor.selection = input.selection;
       editor.children = input.children;
 
-      const above = getBlockAbove(editor) as any;
+      const above = editor.api.block() as any;
       expect(
         getNextSiblingNodes(above, (input.selection as Range).anchor.path)
       ).toEqual([]);
@@ -66,7 +65,7 @@ describe('getNextSiblingNodes', () => {
         value: input.children,
       });
 
-      const above = getBlockAbove(editor as any) as any;
+      const above = editor.api.block()!;
 
       expect(
         getNextSiblingNodes(above, (input.selection as Range).anchor.path)

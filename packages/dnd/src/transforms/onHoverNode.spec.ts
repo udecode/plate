@@ -79,6 +79,11 @@ describe('onHoverNode', () => {
 
     (isExpanded as jest.Mock).mockReturnValue(true);
 
+    editor.selection = {
+      anchor: { offset: 0, path: [0] },
+      focus: { offset: 0, path: [1] },
+    };
+
     onHoverNode(editor, {
       id: 'hover',
       dragItem,

@@ -1,7 +1,7 @@
+import type { TElement } from '@udecode/plate-common';
 import type { PlateEditor } from '@udecode/plate-common/react';
 import type { DropTargetMonitor } from 'react-dnd';
 
-import { type TElement, findNode } from '@udecode/plate-common';
 import { Path } from 'slate';
 
 import type { UseDropNodeOptions } from '../hooks';
@@ -34,14 +34,14 @@ export const getDropPath = (
 
   if (!direction) return;
 
-  const dragEntry = findNode<TElement>(editor, {
+  const dragEntry = editor.api.find<TElement>({
     at: [],
     match: { id: dragItem.id },
   });
 
   if (!dragEntry) return;
 
-  const dropEntry = findNode<TElement>(editor, { at: [], match: { id } });
+  const dropEntry = editor.api.find<TElement>({ at: [], match: { id } });
 
   if (!dropEntry) return;
   if (canDropNode && !canDropNode({ dragEntry, dragItem, dropEntry, editor })) {

@@ -3,7 +3,7 @@ import { Range } from 'slate';
 
 import type { SetNodesOptions } from '../interfaces/editor/editor-types';
 
-import { type TEditor, isText } from '../interfaces';
+import { type TEditor, isTextNode } from '../interfaces';
 
 export interface RemoveMarkOptions
   extends Omit<SetNodesOptions, 'match' | 'split'> {
@@ -31,10 +31,10 @@ export const removeMark = (
   key = castArray(key);
 
   if (selection) {
-    if (Range.isRange(selection) && Range.isExpanded(selection)) {
+    if (Range.isRange(selection) && editor.api.isExpanded()) {
       editor.tf.unsetNodes(key as any, {
         at: selection,
-        match: isText,
+        match: isTextNode,
         split: true,
         ...rest,
       });

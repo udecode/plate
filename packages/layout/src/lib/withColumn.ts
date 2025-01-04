@@ -1,8 +1,4 @@
-import {
-  type ExtendEditor,
-  isCollapsed,
-  isElement,
-} from '@udecode/plate-common';
+import { type ExtendEditor, isElement } from '@udecode/plate-common';
 
 import type { TColumnElement, TColumnGroupElement } from './types';
 
@@ -84,7 +80,7 @@ export const withColumn: ExtendEditor = ({ editor }) => {
   };
 
   editor.deleteBackward = (unit) => {
-    if (isCollapsed(editor.selection)) {
+    if (editor.api.isCollapsed()) {
       const entry = editor.api.above({
         match: (n) => isElement(n) && n.type === BaseColumnItemPlugin.key,
       });

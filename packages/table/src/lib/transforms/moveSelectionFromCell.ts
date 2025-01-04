@@ -1,10 +1,6 @@
 import type { Location } from 'slate';
 
-import {
-  type SlateEditor,
-  getBlockAbove,
-  hasNode,
-} from '@udecode/plate-common';
+import { type SlateEditor, hasNode } from '@udecode/plate-common';
 
 import { getTableGridAbove } from '../queries/getTableGridAbove';
 import { getCellTypes } from '../utils/getCellType';
@@ -78,7 +74,7 @@ export const moveSelectionFromCell = (
     return;
   }
 
-  const cellEntry = getBlockAbove(editor, {
+  const cellEntry = editor.api.block({
     at,
     match: { type: getCellTypes(editor) },
   });

@@ -1,6 +1,5 @@
 import type { ExtendEditor } from '@udecode/plate-common';
 
-import { getBlockAbove, isRangeAcrossBlocks } from '@udecode/plate-common';
 import { Range } from 'slate';
 
 import type { TableConfig } from '.';
@@ -33,12 +32,13 @@ export const withSelectionTable: ExtendEditor<TableConfig> = ({
 
       if (
         Range.isRange(newSelection) &&
-        isRangeAcrossBlocks(editor, {
+        editor.api.isAt({
           at: newSelection,
+          blocks: true,
           match: (n) => n.type === type,
         })
       ) {
-        const anchorEntry = getBlockAbove(editor, {
+        const anchorEntry = editor.api.block({
           at: newSelection.anchor,
           match: (n) => n.type === type,
         });
@@ -59,7 +59,7 @@ export const withSelectionTable: ExtendEditor<TableConfig> = ({
             }
           }
         } else {
-          const focusEntry = getBlockAbove(editor, {
+          const focusEntry = editor.api.block({
             at: newSelection.focus,
             match: (n) => n.type === type,
           });

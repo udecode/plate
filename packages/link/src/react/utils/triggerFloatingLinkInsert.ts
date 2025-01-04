@@ -1,9 +1,4 @@
-import {
-  type SlateEditor,
-  getEditorPlugin,
-  isRangeAcrossBlocks,
-  someNode,
-} from '@udecode/plate-common';
+import { type SlateEditor, getEditorPlugin } from '@udecode/plate-common';
 
 import { LinkPlugin } from '../LinkPlugin';
 
@@ -34,9 +29,9 @@ export const triggerFloatingLinkInsert = (
 
   if (mode) return;
   if (!focused) return;
-  if (isRangeAcrossBlocks(editor, { at: editor.selection })) return;
+  if (editor.api.isAt({ blocks: true })) return;
 
-  const hasLink = someNode(editor, {
+  const hasLink = editor.api.some({
     match: { type },
   });
 

@@ -1,9 +1,4 @@
-import {
-  isText,
-  removeEditorText,
-  replaceNode,
-  someNode,
-} from '@udecode/plate-common';
+import { TextApi, removeEditorText, replaceNode } from '@udecode/plate-common';
 import { toPlatePlugin } from '@udecode/plate-common/react';
 import { Path } from 'slate';
 
@@ -19,7 +14,7 @@ export const MultiSelectPlugin = TagPlugin.extend({
       deleteBackward(unit);
 
       if (
-        someNode(editor, {
+        editor.api.some({
           match: (n) => n.type === type,
         })
       ) {
@@ -33,12 +28,12 @@ export const MultiSelectPlugin = TagPlugin.extend({
       // Remove text not in selection or if selection contains an tag
       removeEditorText(editor, {
         match: (_, p) =>
-          someNode(editor, {
+          editor.api.some({
             match: { type },
           }) ||
-          !someNode(editor, {
+          !editor.api.some({
             match: (t, textPath) => {
-              return isText(t) && Path.equals(textPath, p);
+              return TextApi.isText(t) && Path.equals(textPath, p);
             },
           }),
       });
@@ -48,7 +43,7 @@ export const MultiSelectPlugin = TagPlugin.extend({
       // Duplicate tag removal
       if (
         node.type === type &&
-        someNode(editor, {
+        editor.api.some({
           at: [],
           match: (n, p) =>
             n.type === type && n.value === node.value && !Path.equals(p, path),
@@ -61,7 +56,7 @@ export const MultiSelectPlugin = TagPlugin.extend({
         return;
       }
       // Trim leading whitespace
-      if (isText(node) && node.text) {
+      if (TextApi.isText(node) && node.text) {
         const trimmedText = node.text.trimStart();
 
         if (trimmedText !== node.text) {

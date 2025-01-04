@@ -1,8 +1,4 @@
-import {
-  type InsertNodesOptions,
-  type SlateEditor,
-  findNode,
-} from '@udecode/plate-common';
+import type { InsertNodesOptions, SlateEditor } from '@udecode/plate-common';
 
 import type { TColumnGroupElement } from '../types';
 
@@ -36,7 +32,7 @@ export const insertColumnGroup = (
     );
 
     if (selectProp) {
-      const entry = findNode(editor, {
+      const entry = editor.api.find({
         at: options.at,
         match: { type: editor.getType(BaseColumnPlugin) },
       });

@@ -7,7 +7,6 @@ import {
   defaultsDeepToNodes,
   isDefined,
   queryNode,
-  someNode,
 } from '@udecode/plate-common';
 import castArray from 'lodash/castArray.js';
 import cloneDeep from 'lodash/cloneDeep.js';
@@ -38,7 +37,7 @@ export const withNodeId: ExtendEditor<NodeIdConfig> = ({
 
     if (
       !reuseId ||
-      someNode(editor, { at: [], match: { [idKey]: node[idKey] } })
+      editor.api.some({ at: [], match: { [idKey]: node[idKey] } })
     ) {
       delete node[idKey];
     }
@@ -51,7 +50,7 @@ export const withNodeId: ExtendEditor<NodeIdConfig> = ({
       const id = node._id;
       delete node._id;
 
-      if (!someNode(editor, { at: [], match: { [idKey]: id } })) {
+      if (!editor.api.some({ at: [], match: { [idKey]: id } })) {
         node[idKey] = id;
       }
     }
@@ -153,7 +152,7 @@ export const withNodeId: ExtendEditor<NodeIdConfig> = ({
         if (
           !reuseId ||
           id === undefined ||
-          someNode(editor, {
+          editor.api.some({
             at: [],
             match: { [idKey]: id },
           })

@@ -9,8 +9,8 @@ import {
   type Decorate,
   type TRenderLeafProps,
   type TText,
+  TextApi,
   createSlatePlugin,
-  isText,
 } from '@udecode/plate-common';
 import { Plate } from '@udecode/plate-common/react';
 import Prism from 'prismjs';
@@ -25,7 +25,7 @@ import 'prismjs/components/prism-markdown.js';
 const decoratePreview: Decorate = ({ entry: [node, path] }) => {
   const ranges: any[] = [];
 
-  if (!isText(node)) {
+  if (!TextApi.isText(node)) {
     return ranges;
   }
 

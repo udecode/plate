@@ -1,10 +1,6 @@
 import type { ResetNodeConfig } from '@udecode/plate-reset-node';
 
-import {
-  BaseParagraphPlugin,
-  createTSlatePlugin,
-  isBlockAboveEmpty,
-} from '@udecode/plate-common';
+import { BaseParagraphPlugin, createTSlatePlugin } from '@udecode/plate-common';
 import {
   type ExtendEditor,
   getEditorPlugin,
@@ -35,7 +31,7 @@ export const withInsertBreakList: ExtendEditor<ListConfig> = ({ editor }) => {
         const { list, listItem } = res;
 
         // If selected li is empty, move it up.
-        if (isBlockAboveEmpty(editor)) {
+        if (editor.api.isEmpty(editor.selection, { block: true })) {
           moved = moveListItemUp(editor, {
             list,
             listItem,
@@ -53,7 +49,9 @@ export const withInsertBreakList: ExtendEditor<ListConfig> = ({ editor }) => {
               rules: [
                 {
                   defaultType: editor.getType(BaseParagraphPlugin),
-                  predicate: () => !moved && isBlockAboveEmpty(editor),
+                  predicate: () =>
+                    !moved &&
+                    editor.api.isEmpty(editor.selection, { block: true }),
                   types: [editor.getType(BaseListItemPlugin)],
                   onReset: (_editor) => unwrapList(_editor),
                 },

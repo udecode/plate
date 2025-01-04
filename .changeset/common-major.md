@@ -2,7 +2,7 @@
 '@udecode/plate-common': major
 ---
 
-- The following editor functions are not exported from `@udecode/plate-common` anymore. Those have been moved into `editor.api` or `editor.tf`. For example, `focusEditor(editor)` is now `editor.tf.focus()`.
+- The following editor functions have been removed/moved into `editor.api` or `editor.tf`. For example, `focusEditor(editor)` is now `editor.tf.focus()`.
 
   - `addMark` -> `editor.tf.addMark`
   - `blurEditor` -> `editor.tf.blur`
@@ -19,6 +19,7 @@
   - `findEditorDocumentOrShadowRoot` -> `editor.api.findDocumentOrShadowRoot`
   - `findEventRange` -> `editor.api.findEventRange`
   - `findNodeKey` -> `editor.api.findKey`
+  - `findNodePath` -> `editor.api.findPath`
   - `findPath` -> `editor.api.findPath`
   - `focusEditor` -> `editor.tf.focus`
   - `getAboveNode` -> `editor.api.above`
@@ -101,7 +102,42 @@
   - `unwrapNodes` -> `editor.tf.unwrapNodes`
   - `withoutNormalizing` -> `editor.tf.withoutNormalizing`
   - `wrapNodes` -> `editor.tf.wrapNodes`
+  - `findDescendant` -> `editor.api.descendant`
+  - `findNode` -> `editor.api.find`
+  - `getBlockAbove` -> `editor.api.block`
+  - `getBlocks` -> `editor.api.blocks`
+  - `getEdgeBlocksAbove` -> `editor.api.edgeBlocks`
+  - `getLastNodeByLevel` -> `editor.api.lastByLevel`
+  - `getMark` -> `editor.api.mark`
+  - `getNextNodeStartPoint` -> `editor.api.start(at, { next: true })`
+  - `getNodesRange` -> `editor.api.nodesRange`
+  - `getPointBeforeLocation` -> `editor.api.before`
+  - `getPreviousBlockById` -> `editor.api.previous({ id, block: true })`
+  - `getPreviousNodeEndPoint` -> `editor.api.end({ previous: true })`
+  - `getPreviousSiblingNode` -> `editor.api.previous({ at, sibling: true })`
+  - `getRangeBefore` -> `editor.api.range('before', to, { before })`
+  - `getRangeFromBlockStart` -> `editor.api.range('start', to)`
+  - `getSelectionFragment` -> `editor.api.fragment(editor.selection, { structuralTypes })`
+  - `getSelectionText` -> `editor.api.string()`
+  - `isAncestorEmpty` -> `editor.api.isEmpty`
+  - `isBlockAboveEmpty` -> `editor.api.isEmpty(editor.selection, { block: true })`
+  - `isBlockTextEmptyAfterSelection` -> `editor.api.isEmpty(editor.selection, { after: true })`
+  - `isDocumentEnd` -> `editor.api.isEditorEnd`
+  - `isEditorEmpty` -> `editor.api.isEmpty()`
+  - `isRangeAcrossBlocks` -> `editor.api.isAt({ at, blocks: true })`
+  - `isRangeInSameBlock` -> `editor.api.isAt({ at, block: true })`
+  - `isRangeInSingleText` -> `editor.api.isAt({ at, text: true })`
+  - `isSelectionAtBlockEnd` -> `editor.api.isAt({ end: true })`
+  - `isSelectionAtBlockStart` -> `editor.api.isAt({ start: true })`
+  - `isSelectionCoverBlock` -> `editor.api.isAt({ block: true, start: true, end: true })`
+  - `isPointAtWordEnd` -> `editor.api.isAt({ at, word: true, end: true })`
+  - `isSelectionExpanded` -> `editor.api.isExpanded()`
+  - `isCollapsed(editor.selection)` -> `editor.api.isCollapsed()`
+  - `isTextByPath` -> `editor.api.isText(at)`
+  - `someNode` -> `editor.api.some(options)`
+  - `isMarkActive` -> `editor.api.hasMark(key)`
 
+- Remove unused `isWordAfterTrigger`
 - Moved from `@udecode/plate-common` to `@udecode/plate-react`:
 
   - `Hotkeys`

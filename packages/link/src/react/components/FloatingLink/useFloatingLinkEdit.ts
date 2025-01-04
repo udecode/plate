@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { someNode } from '@udecode/plate-common';
 import {
   useComposedRef,
   useEditorPlugin,
@@ -83,7 +82,7 @@ export const useFloatingLinkEdit = ({
   React.useEffect(() => {
     if (
       editor.selection &&
-      someNode(editor, {
+      editor.api.some({
         match: { type: editor.getType(LinkPlugin) },
       })
     ) {

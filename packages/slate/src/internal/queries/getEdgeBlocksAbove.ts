@@ -1,12 +1,14 @@
-import type { AncestorOf, TEditor, TNodeEntry, ValueOf } from '../interfaces';
-import type { GetAboveNodeOptions } from '../interfaces/editor/editor-types';
+import type { GetAboveNodeOptions } from '../../interfaces/editor/editor-types';
+import type {
+  ElementOf,
+  TEditor,
+  TNodeEntry,
+  ValueOf,
+} from '../../interfaces/index';
 
-import { getBlockAbove } from '../internal/queries/getBlockAbove';
-
-/** Get the edge blocks above a location (default: selection). */
 export const getEdgeBlocksAbove = <
-  N1 extends AncestorOf<E>,
-  N2 extends AncestorOf<E> = N1,
+  N1 extends ElementOf<E>,
+  N2 extends ElementOf<E> = N1,
   E extends TEditor = TEditor,
 >(
   editor: E,
@@ -18,14 +20,14 @@ export const getEdgeBlocksAbove = <
 
   const [start, end] = editor.api.edges(at ?? editor.selection)!;
 
-  const startBlock = getBlockAbove<N1>(editor, {
+  const startBlock = editor.api.block<N1>({
     at: start,
     ...options,
   } as any);
 
   if (!startBlock) return null;
 
-  const endBlock = getBlockAbove<N2>(editor, {
+  const endBlock = editor.api.block<N2>({
     at: end,
     ...options,
   } as any);

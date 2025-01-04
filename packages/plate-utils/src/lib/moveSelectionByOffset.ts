@@ -1,5 +1,4 @@
 import { type SlateEditor, isHotkey } from '@udecode/plate-core';
-import { Range } from 'slate';
 
 export interface MoveSelectionByOffsetOptions {
   query?: (editor: SlateEditor) => boolean;
@@ -16,7 +15,7 @@ export const moveSelectionByOffset = (
 ) => {
   const { selection } = editor;
 
-  if (!selection || Range.isExpanded(selection) || !query(editor)) {
+  if (!selection || editor.api.isExpanded() || !query(editor)) {
     return false;
   }
   if (isHotkey('left', event)) {

@@ -3,7 +3,6 @@ import type { Path } from 'slate';
 import {
   type SlateEditor,
   type TDescendant,
-  findNode,
   getEditorPlugin,
   insertElements,
 } from '@udecode/plate-common';
@@ -60,7 +59,7 @@ export const splitTableCell = (editor: SlateEditor) => {
     editor.tf.removeNodes({ at: path });
 
     const getClosestColPathForRow = (row: number, targetCol: number) => {
-      const rowEntry = findNode(editor, {
+      const rowEntry = editor.api.find({
         at: [...tablePath, row],
         match: { type: tableRowType },
       });
@@ -106,7 +105,7 @@ export const splitTableCell = (editor: SlateEditor) => {
       const pathForNextRows = getClosestColPathForRow(currentRowPath, col);
       const newRowChildren: TTableRowElement[] = [];
       const _rowPath = [...tablePath, currentRowPath];
-      const rowEntry = findNode(editor, {
+      const rowEntry = editor.api.find({
         at: _rowPath,
         match: { type: tableRowType },
       });

@@ -6,7 +6,6 @@ import {
   type TElement,
   type TNodeEntry,
   isElement,
-  someNode,
 } from '@udecode/plate-common';
 
 import { BaseCodeLinePlugin } from '../BaseCodeBlockPlugin';
@@ -18,7 +17,7 @@ export const getCodeLineEntry = <N extends ElementOf<E>, E extends SlateEditor>(
 ) => {
   if (
     at &&
-    someNode(editor, {
+    editor.api.some({
       at,
       match: { type: editor.getType(BaseCodeLinePlugin) },
     })

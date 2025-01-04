@@ -5,7 +5,6 @@ import React, { useState } from 'react';
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
 import { cn } from '@udecode/cn';
-import { someNode } from '@udecode/plate-common';
 import {
   useEditorPlugin,
   useEditorSelector,
@@ -39,7 +38,7 @@ import { ToolbarButton } from './toolbar';
 
 export function TableDropdownMenu(props: DropdownMenuProps) {
   const tableSelected = useEditorSelector(
-    (editor) => someNode(editor, { match: { type: TablePlugin.key } }),
+    (editor) => editor.api.some({ match: { type: TablePlugin.key } }),
     []
   );
 

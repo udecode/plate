@@ -2,10 +2,8 @@
 
 import React, { useEffect } from 'react';
 
-import {
-  type WithRequiredKey,
-  isSelectionExpanded,
-} from '@udecode/plate-common';
+import type { WithRequiredKey } from '@udecode/plate-common';
+
 import {
   useEditorSelector,
   useElement,
@@ -35,7 +33,7 @@ export function MediaPopover({ children, plugin }: MediaPopoverProps) {
   const selected = useSelected();
 
   const selectionCollapsed = useEditorSelector(
-    (editor) => !isSelectionExpanded(editor),
+    (editor) => !editor.api.isExpanded(),
     []
   );
   const isOpen = !readOnly && selected && selectionCollapsed;

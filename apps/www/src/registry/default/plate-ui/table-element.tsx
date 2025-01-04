@@ -7,7 +7,6 @@ import type { TTableElement } from '@udecode/plate-table';
 
 import { PopoverAnchor } from '@radix-ui/react-popover';
 import { cn, withRef } from '@udecode/cn';
-import { isSelectionExpanded } from '@udecode/plate-common';
 import {
   useEditorPlugin,
   useEditorSelector,
@@ -101,7 +100,7 @@ export const TableFloatingToolbar = withRef<typeof PopoverContent>(
     const element = useElement<TTableElement>();
     const { props: buttonProps } = useRemoveNodeButton({ element });
     const collapsed = useEditorSelector(
-      (editor) => !isSelectionExpanded(editor),
+      (editor) => !editor.api.isExpanded(),
       []
     );
 

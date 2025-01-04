@@ -10,6 +10,7 @@ import type {
   EditorVoidOptions,
   LeafEdge,
   Path,
+  Point,
   Span,
   liftNodes as liftNodesBase,
   mergeNodes as mergeNodesBase,
@@ -81,7 +82,40 @@ export type GetPointAfterOptions = Modify<
 export type GetPointBeforeOptions = Modify<
   EditorBeforeOptions,
   QueryTextUnit & QueryVoids
->;
+> & {
+  /** Lookup before the location until this predicate is true */
+  match?: (value: {
+    at: At;
+    beforePoint: Point;
+    beforeString: string;
+  }) => boolean;
+
+  /**
+   * If true, get the point after the matching point. If false, get the matching
+   * point.
+   */
+  afterMatch?: boolean;
+
+  /** Return block start point if no match found */
+  matchBlockStart?: boolean;
+
+  /**
+   * If true, `matchString` will be interpreted as regex expression(s).
+   * Otherwise, it will be compared by string equality.
+   *
+   * @default false
+   */
+  matchByRegex?: boolean;
+
+  /** Lookup before the location for `matchString`. */
+  matchString?: string[] | string;
+
+  /**
+   * If true, lookup until the start of the editor value. If false, lookup until
+   * the first invalid character.
+   */
+  skipInvalid?: boolean;
+};
 
 export type GetPositionsOptions = Modify<
   EditorPositionsOptions,
@@ -100,7 +134,12 @@ export type GetPositionsOptions = Modify<
 
 export type GetPreviousNodeOptions<V extends Value = Value> = Modify<
   NonNullable<EditorPreviousOptions<TNode>>,
-  QueryOptions<V> & QueryMode & QueryVoids
+  QueryOptions<V> &
+    QueryMode &
+    QueryVoids & {
+      /** Get the previous sibling node */
+      sibling?: boolean;
+    }
 >;
 
 export type GetVoidNodeOptions = Modify<
@@ -210,3 +249,44 @@ export type WrapNodesOptions<V extends Value = Value> = Modify<
       split?: boolean;
     }
 >;
+
+export type FindNodeOptions<V extends Value = Value> = GetNodeEntriesOptions<V>;
+
+export type FindPathOptions = Omit<
+  FindNodeOptions<Value>,
+  'at' | 'block' | 'match'
+>;
+
+export type GetEndPointOptions = {
+  /** Get the end point of the previous node */
+  previous?: boolean;
+};
+
+export type GetStartPointOptions = {
+  /** Get the start point of the next node */
+  next?: boolean;
+};
+
+export type GetRangeOptions = {
+  /** Get range from before to the end point of `at` */
+  before?: GetPointBeforeOptions | boolean;
+
+  /**
+   * Get range from the start of the block above a location (default: selection)
+   * to the location
+   */
+  blockStart?: boolean;
+};
+
+export type GetFragmentOptions = {
+  /** Types of structural nodes to unwrap */
+  structuralTypes?: string[];
+};
+
+export type IsElementEmptyOptions = {
+  /** Check if text after selection is empty */
+  after?: boolean;
+
+  /** Check if block above location is empty */
+  block?: boolean;
+} & Omit<GetNodeEntriesOptions, 'at' | 'block'>;

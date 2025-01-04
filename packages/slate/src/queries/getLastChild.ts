@@ -4,7 +4,7 @@ import {
   type ChildOf,
   type TNode,
   type TNodeEntry,
-  isText,
+  TextApi,
 } from '../interfaces';
 
 /** Get the last child of a node or null if no children. */
@@ -13,7 +13,7 @@ export const getLastChild = <N extends ChildOf<R>, R extends TNode>(
 ): TNodeEntry<N> | null => {
   const [node, path] = nodeEntry;
 
-  if (isText(node)) return null;
+  if (TextApi.isText(node)) return null;
   if (node.children.length === 0) return null;
 
   const children = node.children as N[];

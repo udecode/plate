@@ -1,8 +1,6 @@
 import type { TEditor, TNode } from '@udecode/slate';
 import type { Path } from 'slate';
 
-import { getNextNodeStartPoint, getPreviousNodeEndPoint } from '@udecode/slate';
-
 export const selectSiblingNodePoint = (
   editor: TEditor,
   {
@@ -23,8 +21,8 @@ export const selectSiblingNodePoint = (
   if (!at) return;
 
   const point = reverse
-    ? getPreviousNodeEndPoint(editor, at)
-    : getNextNodeStartPoint(editor, at);
+    ? editor.api.end(at, { previous: true })
+    : editor.api.start(at, { next: true });
 
   if (!point) return;
 

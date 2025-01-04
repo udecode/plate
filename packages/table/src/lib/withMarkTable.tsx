@@ -1,6 +1,4 @@
-import type { ExtendEditor } from '@udecode/plate-common';
-
-import { isCollapsed, isText } from '@udecode/plate-common';
+import { type ExtendEditor, TextApi } from '@udecode/plate-common';
 
 import type { TableConfig } from '.';
 
@@ -13,7 +11,7 @@ export const withMarkTable: ExtendEditor<TableConfig> = ({ editor }) => {
   editor.addMark = (key, value) => {
     const { selection } = editor;
 
-    if (!selection || isCollapsed(selection)) return addMark(key, value);
+    if (!selection || editor.api.isCollapsed()) return addMark(key, value);
 
     const matchesCell = getTableGridAbove(editor, { format: 'cell' });
 
@@ -26,7 +24,7 @@ export const withMarkTable: ExtendEditor<TableConfig> = ({ editor }) => {
         },
         {
           at: cellPath,
-          match: (n) => isText(n),
+          match: (n) => TextApi.isText(n),
           split: true,
           voids: true,
         }
@@ -37,7 +35,7 @@ export const withMarkTable: ExtendEditor<TableConfig> = ({ editor }) => {
   editor.removeMark = (key) => {
     const { selection } = editor;
 
-    if (!selection || isCollapsed(selection)) return removeMark(key);
+    if (!selection || editor.api.isCollapsed()) return removeMark(key);
 
     const matchesCell = getTableGridAbove(editor, { format: 'cell' });
 
@@ -46,7 +44,7 @@ export const withMarkTable: ExtendEditor<TableConfig> = ({ editor }) => {
     matchesCell.forEach(([_cell, cellPath]) => {
       editor.tf.unsetNodes(key, {
         at: cellPath,
-        match: (n) => isText(n),
+        match: (n) => TextApi.isText(n),
         split: true,
         voids: true,
       });
@@ -56,7 +54,7 @@ export const withMarkTable: ExtendEditor<TableConfig> = ({ editor }) => {
   editor.api.marks = () => {
     const { selection } = editor;
 
-    if (!selection || isCollapsed(selection)) return marks();
+    if (!selection || editor.api.isCollapsed()) return marks();
 
     const matchesCell = getTableGridAbove(editor, { format: 'cell' });
 
@@ -67,7 +65,7 @@ export const withMarkTable: ExtendEditor<TableConfig> = ({ editor }) => {
     matchesCell.forEach(([_cell, cellPath]) => {
       const textNodeEntry = editor.api.nodes({
         at: cellPath,
-        match: (n) => isText(n),
+        match: (n) => TextApi.isText(n),
       });
 
       Array.from(textNodeEntry, (item) => item[0]).forEach((item) => {

@@ -2,7 +2,6 @@ import {
   type SlateEditor,
   type TDescendant,
   type TElement,
-  getBlockAbove,
   getNodeString,
 } from '@udecode/plate-common';
 
@@ -25,7 +24,7 @@ export const insertFragmentCodeBlock = (editor: SlateEditor) => {
   }
 
   return (fragment: TDescendant[]) => {
-    const [blockAbove] = getBlockAbove<TElement>(editor) ?? [];
+    const [blockAbove] = editor.api.block<TElement>() ?? [];
 
     if (
       blockAbove &&

@@ -1,25 +1,24 @@
-import {
-  type SlateEditor,
-  isCollapsed,
-  isRangeAcrossBlocks,
-  someNode,
-} from '@udecode/plate-common';
+import type { Range } from 'slate';
+
+import { type SlateEditor, isCollapsed } from '@udecode/plate-common';
 
 import { BaseListItemPlugin } from '../BaseListPlugin';
 
 /** Is selection across blocks with list items */
-export const isAcrossListItems = (editor: SlateEditor) => {
-  const { selection } = editor;
-
-  if (!selection || isCollapsed(selection)) {
+export const isAcrossListItems = (
+  editor: SlateEditor,
+  at: Range | null = editor.selection
+) => {
+  if (!at || isCollapsed(at)) {
     return false;
   }
 
-  const isAcrossBlocks = isRangeAcrossBlocks(editor);
+  const isAcrossBlocks = editor.api.isAt({ at, blocks: true });
 
   if (!isAcrossBlocks) return false;
 
-  return someNode(editor, {
+  return editor.api.some({
+    at,
     match: { type: editor.getType(BaseListItemPlugin) },
   });
 };

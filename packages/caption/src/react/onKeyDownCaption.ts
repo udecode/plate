@@ -1,6 +1,6 @@
 import type { KeyboardHandler } from '@udecode/plate-common/react';
 
-import { getBlockAbove, getPluginTypes, isHotkey } from '@udecode/plate-common';
+import { getPluginTypes, isHotkey } from '@udecode/plate-common';
 
 import type { CaptionConfig } from '../lib/BaseCaptionPlugin';
 
@@ -16,7 +16,7 @@ export const onKeyDownCaption: KeyboardHandler<CaptionConfig> = ({
   if (isHotkey('down', event)) {
     const types = getPluginTypes(editor, getOptions().plugins!);
 
-    const entry = getBlockAbove(editor, {
+    const entry = editor.api.block({
       match: { type: types },
     });
 

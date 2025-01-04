@@ -15,7 +15,7 @@ export const addRangeMarks = (
 ) => {
   if (at) {
     if (Path.isPath(at)) {
-      at = editor.api.range(at);
+      at = editor.api.range(at)!;
     }
 
     const match = (node: TNode, path: Path) => {

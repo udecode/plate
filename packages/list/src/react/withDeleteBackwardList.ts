@@ -4,7 +4,6 @@ import {
   BaseParagraphPlugin,
   deleteMerge,
   isFirstChild,
-  isSelectionAtBlockStart,
 } from '@udecode/plate-common';
 import {
   type ExtendEditor,
@@ -44,8 +43,9 @@ export const withDeleteBackwardList: ExtendEditor<ListConfig> = ({
         const { list, listItem } = res;
 
         if (
-          isSelectionAtBlockStart(editor, {
+          editor.api.isAt({
             match: (node) => node.type === editor.getType(BaseListItemPlugin),
+            start: true,
           })
         ) {
           editor.tf.withoutNormalizing(() => {
@@ -66,7 +66,7 @@ export const withDeleteBackwardList: ExtendEditor<ListConfig> = ({
                         {
                           defaultType: editor.getType(BaseParagraphPlugin),
                           hotkey: 'backspace',
-                          predicate: () => isSelectionAtBlockStart(editor),
+                          predicate: () => editor.api.isAt({ start: true }),
                           types: [editor.getType(BaseListItemPlugin)],
                           onReset: (e) => unwrapList(e),
                         },
@@ -88,18 +88,13 @@ export const withDeleteBackwardList: ExtendEditor<ListConfig> = ({
             let currentLic: TNodeEntry<TElement> | undefined;
             let hasMultipleChildren = false;
 
-            // check if closest lic ancestor has multiple children
             if (
               pointBeforeListItem &&
-              isAcrossListItems({
-                ...editor,
-                selection: {
-                  anchor: editor.selection!.anchor,
-                  focus: pointBeforeListItem,
-                },
+              isAcrossListItems(editor, {
+                anchor: editor.selection!.anchor,
+                focus: pointBeforeListItem,
               })
             ) {
-              // get closest lic ancestor of current selectable
               const licType = editor.getType(BaseListItemContentPlugin);
               const _licNodes = editor.api.nodes<TElement>({
                 at: listItem[1],
@@ -123,7 +118,6 @@ export const withDeleteBackwardList: ExtendEditor<ListConfig> = ({
             )!;
 
             if (leftoverListItem && leftoverListItem[0].children.length === 0) {
-              // remove the leftover empty list item
               editor.tf.removeNodes({ at: leftoverListItem[1] });
             }
           });

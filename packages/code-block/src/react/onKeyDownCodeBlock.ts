@@ -1,12 +1,6 @@
 import type { KeyboardHandler } from '@udecode/plate-common/react';
 
-import {
-  type TElement,
-  Hotkeys,
-  isHotkey,
-  isSelectionAtBlockEnd,
-  isSelectionAtBlockStart,
-} from '@udecode/plate-common';
+import { type TElement, Hotkeys, isHotkey } from '@udecode/plate-common';
 
 import { BaseCodeLinePlugin } from '../lib';
 import { getCodeLineEntry } from '../lib/queries/getCodeLineEntry';
@@ -57,7 +51,7 @@ export const onKeyDownCodeBlock: KeyboardHandler = ({ editor, event }) => {
     const { codeBlock } = res;
     const [, codeBlockPath] = codeBlock;
 
-    if (isSelectionAtBlockEnd(editor) && isSelectionAtBlockStart(editor))
+    if (editor.api.isAt({ end: true }) && editor.api.isAt({ start: true }))
       return;
 
     // select the whole code block

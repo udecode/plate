@@ -2,7 +2,6 @@ import {
   type ReplaceNodeChildrenOptions,
   type SlateEditor,
   type TElement,
-  getBlockAbove,
   replaceNode,
 } from '@udecode/plate-common';
 
@@ -21,8 +20,8 @@ export const toggleColumnGroup = (
     widths?: string[];
   } = {}
 ) => {
-  const entry = getBlockAbove(editor, { at });
-  const columnGroupEntry = getBlockAbove(editor, {
+  const entry = editor.api.block({ at });
+  const columnGroupEntry = editor.api.block({
     at,
     match: { type: editor.getType(BaseColumnPlugin) },
   });

@@ -1,5 +1,7 @@
 /** @jsx jsxt */
 
+import type { SlateEditor } from '@udecode/plate-common';
+
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import {
   BaseCodeBlockPlugin,
@@ -7,10 +9,6 @@ import {
   isSelectionAtCodeBlockStart,
   unwrapCodeBlock,
 } from '@udecode/plate-code-block';
-import {
-  isBlockAboveEmpty,
-  isSelectionAtBlockStart,
-} from '@udecode/plate-common';
 import { ParagraphPlugin } from '@udecode/plate-common/react';
 import {
   createPlateEditor,
@@ -30,12 +28,13 @@ jsxt;
 describe('onKeyDownResetNode', () => {
   const enterRule = {
     hotkey: 'Enter',
-    predicate: isBlockAboveEmpty,
+    predicate: (editor: SlateEditor) =>
+      editor.api.isEmpty(editor.selection, { block: true }),
   };
 
   const backspaceRule = {
     hotkey: 'Backspace',
-    predicate: isSelectionAtBlockStart,
+    predicate: (editor: SlateEditor) => editor.api.isAt({ start: true }),
   };
 
   describe('when inside a blockquote', () => {

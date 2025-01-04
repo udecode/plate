@@ -3,8 +3,6 @@ import {
   type QueryNodeOptions,
   BaseParagraphPlugin,
   createTSlatePlugin,
-  isBlockAboveEmpty,
-  isSelectionExpanded,
   queryNode,
 } from '@udecode/plate-common';
 
@@ -31,8 +29,8 @@ export const DeletePlugin = createTSlatePlugin<DeleteConfig>({
     const isValidNode = !query || queryNode(editor.api.above(), query);
 
     if (
-      !isSelectionExpanded(editor) &&
-      isBlockAboveEmpty(editor) &&
+      !editor.api.isExpanded() &&
+      editor.api.isEmpty(editor.selection, { block: true }) &&
       isValidNode
     ) {
       // Cursor is in query blocks and line is empty

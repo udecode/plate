@@ -1,4 +1,5 @@
-import { type SlateEditor, findNode } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
+
 import { Path } from 'slate';
 
 import type { TTableCellElement } from '../types';
@@ -15,7 +16,7 @@ export const getTopTableCell = (
   } = {}
 ) => {
   if (!cellPath) {
-    cellPath = findNode<TTableCellElement>(editor, {
+    cellPath = editor.api.find<TTableCellElement>({
       match: { type: getCellTypes(editor) },
     })?.[1];
 

@@ -1,4 +1,4 @@
-import { type SlateEditor, isExpanded } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import { getCodeLineEntry } from './getCodeLineEntry';
 
@@ -6,7 +6,7 @@ import { getCodeLineEntry } from './getCodeLineEntry';
 export const isSelectionAtCodeBlockStart = (editor: SlateEditor) => {
   const { selection } = editor;
 
-  if (!selection || isExpanded(selection)) return false;
+  if (!selection || editor.api.isExpanded()) return false;
 
   const { codeBlock } = getCodeLineEntry(editor) ?? {};
 

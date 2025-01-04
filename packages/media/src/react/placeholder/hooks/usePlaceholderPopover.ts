@@ -1,4 +1,3 @@
-import { isSelectionExpanded } from '@udecode/plate-common';
 import {
   useEditorRef,
   useEditorSelector,
@@ -16,7 +15,7 @@ export const usePlaceholderPopoverState = () => {
   const focused = useFocused();
 
   const selectionCollapsed = useEditorSelector(
-    (editor) => !isSelectionExpanded(editor),
+    (editor) => !editor.api.isExpanded(),
     []
   );
 

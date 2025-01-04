@@ -1,5 +1,4 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { isSelectionExpanded } from '@udecode/plate-common';
 import {
   useEditorPlugin,
   useEditorSelector,
@@ -23,7 +22,10 @@ export const useTableMergeState = () => {
 
   const readOnly = useReadOnly();
   const selected = useSelected();
-  const selectionExpanded = useEditorSelector(isSelectionExpanded, []);
+  const selectionExpanded = useEditorSelector(
+    (editor) => editor.api.isExpanded(),
+    []
+  );
 
   const collapsed = !readOnly && selected && !selectionExpanded;
   const selectedTables = useTableStore().get.selectedTables();

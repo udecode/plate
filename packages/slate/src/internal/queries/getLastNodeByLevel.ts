@@ -5,7 +5,7 @@ import {
   type TNode,
   type TNodeEntry,
   isAncestor,
-} from '../interfaces';
+} from '../../interfaces/index';
 
 const getLastChild = <N extends ChildOf<R>, R extends TNode>(
   node: R,
@@ -20,7 +20,6 @@ const getLastChild = <N extends ChildOf<R>, R extends TNode>(
   return getLastChild(lastNode, level - 1) as N;
 };
 
-/** Get the last node at a given level. */
 export const getLastNodeByLevel = <
   N extends ElementOrTextOf<E>,
   E extends TEditor = TEditor,

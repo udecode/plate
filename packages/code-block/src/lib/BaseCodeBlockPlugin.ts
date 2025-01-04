@@ -3,7 +3,6 @@ import {
   HtmlPlugin,
   createSlatePlugin,
   createTSlatePlugin,
-  someNode,
 } from '@udecode/plate-common';
 
 import type { Prism } from './types';
@@ -43,7 +42,7 @@ export const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
           query: ({ editor }) => {
             const codeLineType = editor.getType(BaseCodeLinePlugin);
 
-            return !someNode(editor, {
+            return !editor.api.some({
               match: { type: codeLineType },
             });
           },

@@ -3,10 +3,7 @@ import type { Range } from 'slate';
 import {
   type SlateEditor,
   BaseParagraphPlugin,
-  getRangeBefore,
-  getRangeFromBlockStart,
   isElement,
-  someNode,
 } from '@udecode/plate-common';
 import castArray from 'lodash/castArray.js';
 
@@ -45,10 +42,10 @@ export const autoformatBlock = (
     let matchRange: Range | undefined;
 
     if (triggerAtBlockStart) {
-      matchRange = getRangeFromBlockStart(editor) as Range;
+      matchRange = editor.api.range('start', editor.selection);
 
       // Don't autoformat if there is void nodes.
-      const hasVoidNode = someNode(editor, {
+      const hasVoidNode = editor.api.some({
         at: matchRange,
         match: (n) => isElement(n) && editor.api.isVoid(n),
       });
@@ -63,16 +60,18 @@ export const autoformatBlock = (
 
       if (!isMatched) continue;
     } else {
-      matchRange = getRangeBefore(editor, editor.selection as Range, {
-        matchByRegex,
-        matchString: end,
+      matchRange = editor.api.range('before', editor.selection!, {
+        before: {
+          matchByRegex,
+          matchString: end,
+        },
       });
 
       if (!matchRange) continue;
     }
     if (!allowSameTypeAbove) {
       // Don't autoformat if already in a block of the same type.
-      const isBelowSameBlockType = someNode(editor, { match: { type } });
+      const isBelowSameBlockType = editor.api.some({ match: { type } });
 
       if (isBelowSameBlockType) continue;
     }

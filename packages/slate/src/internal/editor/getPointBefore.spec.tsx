@@ -2,7 +2,7 @@
 
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { createTEditor } from '../../../createTEditor';
+import { createTEditor } from '../../createTEditor';
 
 jsxt;
 
@@ -50,6 +50,33 @@ describe('getPointBefore', () => {
             skipInvalid: true,
           })
         ).toEqual({ offset: 5, path: [0, 0] });
+      });
+    });
+
+    describe('when there is no space', () => {
+      const editor = createTEditor(
+        (
+          <editor>
+            <hp>
+              http://google.com
+              <cursor />
+            </hp>
+          </editor>
+        ) as any
+      );
+
+      it('should return start', () => {
+        expect(
+          editor.api.before(editor.selection!, {
+            afterMatch: true,
+            matchBlockStart: true,
+            matchString: ' ',
+            skipInvalid: true,
+          })
+        ).toEqual({
+          offset: 0,
+          path: [0, 0],
+        });
       });
     });
 

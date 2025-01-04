@@ -1,10 +1,6 @@
 /** @jsx jsxt */
 
-import {
-  type SlateEditor,
-  createTEditor,
-  findNode,
-} from '@udecode/plate-common';
+import { type SlateEditor, createTEditor } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
@@ -95,8 +91,8 @@ const output = (
 it('should', () => {
   const editor = createPlateEditor({ editor: input });
 
-  const list = findNode(input, { match: { id: '1' } }) as any;
-  const listItem = findNode(input, { match: { id: '13' } }) as any;
+  const list = input.api.find({ match: { id: '1' } }) as any;
+  const listItem = input.api.find({ match: { id: '13' } }) as any;
 
   if (list && listItem) {
     removeListItem(editor, { list, listItem });

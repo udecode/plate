@@ -3,10 +3,8 @@ import {
   type SlateEditor,
   type TElement,
   type TElementEntry,
-  getBlockAbove,
   getChildren,
   getNode,
-  isSelectionAtBlockEnd,
 } from '@udecode/plate-common';
 import { type TextUnit, Path } from 'slate';
 
@@ -41,7 +39,7 @@ const selectionIsNotInAListHandler = (editor: SlateEditor): boolean => {
     if (nextSiblingListRes) {
       // the next block is a list
       const { listItem } = nextSiblingListRes;
-      const parentBlockEntity = getBlockAbove(editor, {
+      const parentBlockEntity = editor.api.block({
         at: editor.selection!.anchor,
       });
 
@@ -143,12 +141,9 @@ const selectionIsInAListHandler = (
 
     if (
       !pointAfterListItem ||
-      !isAcrossListItems({
-        ...editor,
-        selection: {
-          anchor: editor.selection!.anchor,
-          focus: pointAfterListItem,
-        },
+      !isAcrossListItems(editor, {
+        anchor: editor.selection!.anchor,
+        focus: pointAfterListItem,
       })
     ) {
       return false;
@@ -218,7 +213,7 @@ export const withDeleteForwardList: ExtendEditor<ListConfig> = ({ editor }) => {
       if (!editor?.selection) {
         return skipDefaultDelete;
       }
-      if (!isSelectionAtBlockEnd(editor)) {
+      if (!editor.api.isAt({ end: true })) {
         return skipDefaultDelete;
       }
 

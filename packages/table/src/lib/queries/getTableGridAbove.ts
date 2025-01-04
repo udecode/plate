@@ -1,10 +1,9 @@
-import {
-  type GetAboveNodeOptions,
-  type SlateEditor,
-  type TElement,
-  type TElementEntry,
-  getEdgeBlocksAbove,
+import type {
+  GetAboveNodeOptions,
+  SlateEditor,
+  TElementEntry,
 } from '@udecode/plate-common';
+
 import { Path } from 'slate';
 
 import type { TableConfig } from '../BaseTablePlugin';
@@ -25,7 +24,7 @@ export const getTableGridAbove = (
 ): TElementEntry[] => {
   const { api } = editor.getPlugin<TableConfig>({ key: 'table' });
 
-  const edges = getEdgeBlocksAbove<TElement>(editor, {
+  const edges = editor.api.edgeBlocks({
     match: {
       type: getCellTypes(editor),
     },

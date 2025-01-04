@@ -1,9 +1,9 @@
 import type { TNode } from './TNode';
 
-import { isText } from '../text/isText';
+import { TextApi } from '../text';
 
 export const hasSingleChild = <N extends TNode>(node: N): boolean => {
-  if (isText(node)) {
+  if (TextApi.isText(node)) {
     return true;
   }
 

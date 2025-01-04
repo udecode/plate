@@ -1,6 +1,5 @@
-import type { FindNodeOptions, TEditor, ValueOf } from '../interfaces';
-
-import { findNode } from '../internal/queries/findNode';
+/* eslint-disable unicorn/prefer-array-some */
+import type { FindNodeOptions, TEditor, ValueOf } from '../../interfaces/index';
 
 /**
  * Iterate through all of the nodes in the editor and break early for the first
@@ -10,5 +9,5 @@ export const someNode = <E extends TEditor = TEditor>(
   editor: E,
   options: FindNodeOptions<ValueOf<E>>
 ) => {
-  return !!findNode(editor, options);
+  return !!editor.api.find(options);
 };

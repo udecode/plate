@@ -3,8 +3,6 @@ import {
   type SlateEditor,
   BaseParagraphPlugin,
   insertElements,
-  isBlockAboveEmpty,
-  isExpanded,
 } from '@udecode/plate-common';
 
 import { insertCodeBlock } from './insertCodeBlock';
@@ -26,7 +24,10 @@ export const insertEmptyCodeBlock = (
   }: CodeBlockInsertOptions = {}
 ) => {
   if (!editor.selection) return;
-  if (isExpanded(editor.selection) || !isBlockAboveEmpty(editor)) {
+  if (
+    editor.api.isExpanded() ||
+    !editor.api.isEmpty(editor.selection, { block: true })
+  ) {
     insertElements(
       editor,
       editor.api.create.block({ children: [{ text: '' }], type: defaultType }),

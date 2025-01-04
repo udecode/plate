@@ -1,6 +1,5 @@
 import {
   type ExtendEditor,
-  getLastNodeByLevel,
   insertElements,
   queryNode,
 } from '@udecode/plate-common';
@@ -22,7 +21,7 @@ export const withTrailingBlock: ExtendEditor<TrailingBlockConfig> = ({
     const { level, type, ...query } = getOptions();
 
     if (currentPath.length === 0) {
-      const lastChild = getLastNodeByLevel(editor, level!);
+      const lastChild = editor.api.lastByLevel(level!);
 
       const lastChildNode = lastChild?.[0];
 

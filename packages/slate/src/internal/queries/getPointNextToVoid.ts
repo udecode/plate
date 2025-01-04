@@ -1,8 +1,6 @@
 import { type Point, Path } from 'slate';
 
-import type { TEditor } from '../interfaces';
-
-import { getBlockAbove } from '../internal/queries/getBlockAbove';
+import type { TEditor } from '../../interfaces/index';
 
 /**
  * If the start point is inside an inline void, get the point before or after
@@ -22,7 +20,7 @@ export const getPointNextToVoid = (
   const startVoid = editor.api.void({ at, mode: 'highest' });
 
   if (startVoid) {
-    const blockAbove = getBlockAbove(editor, { at });
+    const blockAbove = editor.api.block({ at });
 
     if (blockAbove) {
       const nextPoint = after ? editor.api.after(at) : editor.api.before(at);

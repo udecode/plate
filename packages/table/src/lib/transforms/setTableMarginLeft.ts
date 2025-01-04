@@ -1,8 +1,4 @@
-import {
-  type GetAboveNodeOptions,
-  type SlateEditor,
-  findNode,
-} from '@udecode/plate-common';
+import type { GetAboveNodeOptions, SlateEditor } from '@udecode/plate-common';
 
 import type { TTableElement } from '../types';
 
@@ -13,7 +9,7 @@ export const setTableMarginLeft = (
   { marginLeft }: { marginLeft: number },
   options: GetAboveNodeOptions = {}
 ) => {
-  const table = findNode<TTableElement>(editor, {
+  const table = editor.api.find<TTableElement>({
     match: { type: BaseTablePlugin.key },
     ...options,
   });

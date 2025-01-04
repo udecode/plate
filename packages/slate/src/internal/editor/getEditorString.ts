@@ -8,15 +8,13 @@ import { getAt } from '../../utils/getAt';
 
 export const getEditorString = (
   editor: TEditor,
-  at: At | null | undefined,
+  at: At | null = editor.selection,
   options?: GetEditorStringOptions
 ) => {
-  at = getAt(editor, at);
-
   if (!at) return '';
 
   try {
-    return string(editor as any, at, options);
+    return string(editor as any, getAt(editor, at)!, options);
   } catch {
     return '';
   }

@@ -1,4 +1,3 @@
-import { isSelectionExpanded } from '@udecode/plate-common';
 import {
   type PlateEditor,
   useEditorPlugin,
@@ -16,7 +15,7 @@ export const useIsSelecting = () => {
   const isSelectingSome =
     useEditorPlugin(BlockSelectionPlugin).useOption('isSelectingSome');
   const selectionExpanded = useEditorSelector((editor) => {
-    return isSelectionExpanded(editor);
+    return editor.api.isExpanded();
   }, []);
 
   return selectionExpanded || isSelectingSome;

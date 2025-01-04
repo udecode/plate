@@ -8,8 +8,8 @@ import {
   type TOperation,
   type TText,
   BaseParagraphPlugin,
+  TextApi,
   createTEditor,
-  isText,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
@@ -39,7 +39,7 @@ export function transformDiffTexts(
     // Do not use any char that is present in the text
     skipChars: nodes
       .concat(nextNodes)
-      .filter(isText)
+      .filter(TextApi.isText)
       .map((n) => n.text)
       .join(''),
   });

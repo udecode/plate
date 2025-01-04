@@ -1,6 +1,6 @@
+import type { SlateEditor } from '@udecode/plate-common';
 import type { PlateEditor } from '@udecode/plate-common/react';
 
-import { type SlateEditor, isEditorEmpty } from '@udecode/plate-common';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 import cloneDeep from 'lodash/cloneDeep.js';
 import { Path, Range } from 'slate';
@@ -11,7 +11,7 @@ export const insertBelowAIChat = (
   editor: PlateEditor,
   sourceEditor: SlateEditor
 ) => {
-  if (!sourceEditor || isEditorEmpty(sourceEditor)) return;
+  if (!sourceEditor || sourceEditor.api.isEmpty()) return;
 
   const isBlockSelecting = editor.getOption(
     BlockSelectionPlugin,

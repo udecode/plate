@@ -1,8 +1,4 @@
-import {
-  type SlateEditor,
-  findNode,
-  getEditorPlugin,
-} from '@udecode/plate-common';
+import { type SlateEditor, getEditorPlugin } from '@udecode/plate-common';
 
 import type { TLinkElement } from '../../lib';
 
@@ -11,7 +7,7 @@ import { LinkPlugin } from '../LinkPlugin';
 export const triggerFloatingLinkEdit = (editor: SlateEditor) => {
   const { setOption } = getEditorPlugin(editor, LinkPlugin);
 
-  const entry = findNode<TLinkElement>(editor, {
+  const entry = editor.api.find<TLinkElement>({
     match: { type: editor.getType(LinkPlugin) },
   });
 

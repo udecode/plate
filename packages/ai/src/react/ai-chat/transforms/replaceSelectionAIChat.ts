@@ -3,10 +3,9 @@ import type { PlateEditor } from '@udecode/plate-common/react';
 import {
   type SlateEditor,
   type TElement,
+  TextApi,
   getFirstNodeText,
   getNodeProps,
-  isEditorEmpty,
-  isText,
   withNewBatch,
 } from '@udecode/plate-common';
 import {
@@ -22,7 +21,7 @@ export const replaceSelectionAIChat = (
   sourceEditor: SlateEditor,
   { format = 'single' }: { format?: 'all' | 'none' | 'single' } = {}
 ) => {
-  if (!sourceEditor || isEditorEmpty(sourceEditor)) return;
+  if (!sourceEditor || sourceEditor.api.isEmpty()) return;
 
   const isBlockSelecting = editor.getOption(
     BlockSelectionPlugin,
@@ -81,7 +80,7 @@ export const replaceSelectionAIChat = (
 
   // Apply text props recursively to text nodes
   const applyTextProps = (node: any): any => {
-    if (isText(node)) {
+    if (TextApi.isText(node)) {
       return { ...textProps, ...node };
     }
     if (node.children) {

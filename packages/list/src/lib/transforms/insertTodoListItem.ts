@@ -1,9 +1,5 @@
-import {
-  type SlateEditor,
-  insertElements,
-  isBlockTextEmptyAfterSelection,
-} from '@udecode/plate-common';
-import { Path, Range } from 'slate';
+import { type SlateEditor, insertElements } from '@udecode/plate-common';
+import { Path } from 'slate';
 
 import { type TodoListConfig, BaseTodoListPlugin } from '../BaseTodoListPlugin';
 
@@ -30,12 +26,12 @@ export const insertTodoListItem = (
   let success = false;
 
   editor.tf.withoutNormalizing(() => {
-    if (!Range.isCollapsed(editor.selection!)) {
+    if (!editor.api.isCollapsed()) {
       editor.tf.delete();
     }
 
     const isStart = editor.api.isStart(editor.selection!.focus, paragraphPath);
-    const isEnd = isBlockTextEmptyAfterSelection(editor);
+    const isEnd = editor.api.isEmpty(editor.selection, { after: true });
 
     const nextParagraphPath = Path.next(paragraphPath);
 

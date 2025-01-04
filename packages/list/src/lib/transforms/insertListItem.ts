@@ -2,9 +2,8 @@ import {
   type SlateEditor,
   type TElement,
   insertElements,
-  isBlockTextEmptyAfterSelection,
 } from '@udecode/plate-common';
-import { Path, Range } from 'slate';
+import { Path } from 'slate';
 
 import {
   BaseListItemContentPlugin,
@@ -37,12 +36,12 @@ export const insertListItem = (editor: SlateEditor): boolean => {
   let success = false;
 
   editor.tf.withoutNormalizing(() => {
-    if (!Range.isCollapsed(editor.selection!)) {
+    if (!editor.api.isCollapsed()) {
       editor.tf.delete();
     }
 
     const isStart = editor.api.isStart(editor.selection!.focus, paragraphPath);
-    const isEnd = isBlockTextEmptyAfterSelection(editor);
+    const isEnd = editor.api.isEmpty(editor.selection, { after: true });
 
     const nextParagraphPath = Path.next(paragraphPath);
     const nextListItemPath = Path.next(listItemPath);

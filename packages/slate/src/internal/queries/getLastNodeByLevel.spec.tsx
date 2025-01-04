@@ -2,8 +2,7 @@
 
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { createTEditor } from '../../../createTEditor';
-import { getLastNodeByLevel } from '../../../internal/queries/getLastNodeByLevel';
+import { createTEditor } from '../../createTEditor';
 
 jsxt;
 
@@ -23,5 +22,5 @@ const input = createTEditor(
 const output = <hp>test2</hp>;
 
 it('should be', () => {
-  expect(getLastNodeByLevel(input, 1)).toEqual([output, [1, 0]]);
+  expect(input.api.lastByLevel(1)).toEqual([output, [1, 0]]);
 });

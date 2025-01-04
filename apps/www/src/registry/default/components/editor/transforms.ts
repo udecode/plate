@@ -9,8 +9,6 @@ import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import {
   type TElement,
   type TNodeEntry,
-  getBlockAbove,
-  getBlocks,
   removeEmptyPreviousBlock,
 } from '@udecode/plate-common';
 import { insertDate } from '@udecode/plate-date';
@@ -114,7 +112,7 @@ export const insertBlock = (editor: PlateEditor, type: string) => {
     if (type in insertBlockMap) {
       insertBlockMap[type](editor, type);
     } else {
-      const path = getBlockAbove(editor)?.[1];
+      const path = editor.api.block()?.[1];
 
       if (!path) return;
 
@@ -192,7 +190,7 @@ export const setBlockType = (
       }
     }
 
-    const entries = getBlocks(editor, { mode: 'lowest' });
+    const entries = editor.api.blocks({ mode: 'lowest' });
 
     entries.forEach((entry) => setEntry(entry));
   });

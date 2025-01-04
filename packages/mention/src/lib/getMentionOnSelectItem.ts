@@ -1,8 +1,4 @@
-import {
-  type SlateEditor,
-  getBlockAbove,
-  getEditorPlugin,
-} from '@udecode/plate-common';
+import { type SlateEditor, getEditorPlugin } from '@udecode/plate-common';
 
 import type { TMentionItemBase } from './types';
 
@@ -27,7 +23,7 @@ export const getMentionOnSelectItem =
     // move the selection after the element
     editor.tf.move({ unit: 'offset' });
 
-    const pathAbove = getBlockAbove(editor)?.[1];
+    const pathAbove = editor.api.block()?.[1];
 
     const isBlockEnd =
       editor.selection &&

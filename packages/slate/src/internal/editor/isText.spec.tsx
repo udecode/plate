@@ -2,12 +2,11 @@
 
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { createTEditor } from '../createTEditor';
-import { isTextByPath } from './isTextByPath';
+import { createTEditor } from '../../createTEditor';
 
 jsxt;
 
-describe('isTextByPath', () => {
+describe('isText', () => {
   const editor = createTEditor(
     (
       <editor>
@@ -19,14 +18,14 @@ describe('isTextByPath', () => {
   describe('when element path', () => {
     it('should return false', () => {
       const path = [0];
-      expect(isTextByPath(editor, path)).toBe(false);
+      expect(editor.api.isText(path)).toBe(false);
     });
   });
 
   describe('when text path', () => {
     it('should return true', () => {
       const path = [0, 0];
-      expect(isTextByPath(editor, path)).toBe(true);
+      expect(editor.api.isText(path)).toBe(true);
     });
   });
 });

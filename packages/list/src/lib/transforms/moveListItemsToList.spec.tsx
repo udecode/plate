@@ -1,10 +1,6 @@
 /** @jsx jsxt */
 
-import {
-  createSlateEditor,
-  createTEditor,
-  findNode,
-} from '@udecode/plate-common';
+import { createSlateEditor, createTEditor } from '@udecode/plate-common';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { moveListItemsToList } from './moveListItemsToList';
@@ -63,8 +59,8 @@ it('should', () => {
     value: input.children,
   });
 
-  const fromListItem = findNode(editor, { match: { id: '2' } }) as any;
-  const toList = findNode(editor, { match: { id: '1' } }) as any;
+  const fromListItem = editor.api.find({ match: { id: '2' } }) as any;
+  const toList = editor.api.find({ match: { id: '1' } }) as any;
 
   if (fromListItem && toList) {
     moveListItemsToList(editor, { fromListItem, toList });

@@ -2,12 +2,8 @@ import {
   type SlateEditor,
   type TElement,
   BaseParagraphPlugin,
-  findNode,
-  getBlockAbove,
   getCommonNode,
-  isCollapsed,
   isElement,
-  isRangeAcrossBlocks,
 } from '@udecode/plate-common';
 import { Range } from 'slate';
 
@@ -29,7 +25,7 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
 
     const { validLiChildrenTypes } = editor.getOptions(BaseListPlugin);
 
-    if (isCollapsed(editor.selection) || !isRangeAcrossBlocks(editor)) {
+    if (editor.api.isCollapsed() || !editor.api.isAt({ blocks: true })) {
       // selection is collapsed
       const res = getListItemEntry(editor);
 
@@ -58,7 +54,7 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
         });
         const nodes = Array.from(_nodes);
 
-        const blockAbove = getBlockAbove(editor, {
+        const blockAbove = editor.api.block({
           match: { type: validLiChildrenTypes },
         });
 
@@ -96,12 +92,12 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
         if ((commonEntry[0] as TElement).type === type) {
           unwrapList(editor);
         } else {
-          const startList = findNode(editor, {
+          const startList = editor.api.find({
             at: Range.start(editor.selection),
             match: { type: getListTypes(editor) },
             mode: 'lowest',
           });
-          const endList = findNode(editor, {
+          const endList = editor.api.find({
             at: Range.end(editor.selection),
             match: { type: getListTypes(editor) },
             mode: 'lowest',

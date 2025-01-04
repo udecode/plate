@@ -1,7 +1,6 @@
-import type { AncestorOf, TEditor, ValueOf } from '../interfaces';
-import type { GetAboveNodeOptions } from '../interfaces/editor/editor-types';
+import type { GetAboveNodeOptions } from '../../interfaces/editor/editor-types';
+import type { AncestorOf, TEditor, ValueOf } from '../../interfaces/index';
 
-/** Get the block above a location (default: selection). */
 export const getBlockAbove = <
   N extends AncestorOf<E>,
   E extends TEditor = TEditor,

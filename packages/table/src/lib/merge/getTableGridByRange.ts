@@ -4,7 +4,6 @@ import {
   type SlateEditor,
   type TElement,
   type TElementEntry,
-  findNode,
   getEditorPlugin,
 } from '@udecode/plate-common';
 
@@ -53,11 +52,11 @@ export const getTableMergeGridByRange = <T extends FormatType>(
 ): GetTableGridReturnType<T> => {
   const { api, type } = getEditorPlugin(editor, BaseTablePlugin);
 
-  const startCellEntry = findNode<TTableCellElement>(editor, {
+  const startCellEntry = editor.api.find<TTableCellElement>({
     at: at.anchor.path,
     match: { type: getCellTypes(editor) },
   })!;
-  const endCellEntry = findNode<TTableCellElement>(editor, {
+  const endCellEntry = editor.api.find<TTableCellElement>({
     at: at.focus.path,
     match: { type: getCellTypes(editor) },
   })!;
@@ -68,7 +67,7 @@ export const getTableMergeGridByRange = <T extends FormatType>(
   const startCellPath = at.anchor.path;
   const tablePath = startCellPath.slice(0, -2);
 
-  const tableEntry = findNode<TTableElement>(editor, {
+  const tableEntry = editor.api.find<TTableElement>({
     at: tablePath,
     match: { type },
   })!;

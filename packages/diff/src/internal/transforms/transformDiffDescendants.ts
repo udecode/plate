@@ -3,7 +3,7 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import { type TDescendant, isText } from '@udecode/plate-common';
+import { type TDescendant, TextApi } from '@udecode/plate-common';
 import isEqual from 'lodash/isEqual.js';
 
 import type { ComputeDiffOptions } from '../../lib/computeDiff';
@@ -73,7 +73,7 @@ export function transformDiffDescendants(
   };
 
   const isInlineList = (nodes: TDescendant[]) =>
-    nodes.every((node) => isText(node) || isInline(node));
+    nodes.every((node) => TextApi.isText(node) || isInline(node));
 
   while (i < diff.length) {
     const chunk = diff[i];

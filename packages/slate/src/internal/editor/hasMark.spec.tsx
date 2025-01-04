@@ -2,12 +2,11 @@
 
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { createTEditor } from '../createTEditor';
-import { isMarkActive } from './isMarkActive';
+import { createTEditor } from '../../createTEditor';
 
 jsxt;
 
-describe('isMarkActive', () => {
+describe('hasMark', () => {
   describe('when mark is active', () => {
     it('should return true', () => {
       const editor = createTEditor(
@@ -22,7 +21,7 @@ describe('isMarkActive', () => {
         ) as any
       );
 
-      expect(isMarkActive(editor, 'bold')).toBe(true);
+      expect(editor.api.hasMark('bold')).toBe(true);
     });
   });
 
@@ -39,7 +38,7 @@ describe('isMarkActive', () => {
         ) as any
       );
 
-      expect(isMarkActive(editor, 'bold')).toBe(false);
+      expect(editor.api.hasMark('bold')).toBe(false);
     });
   });
 });

@@ -1,7 +1,6 @@
 import {
   type ExtendEditor,
   getNodeString,
-  isCollapsed,
   isDefined,
 } from '@udecode/plate-common';
 
@@ -23,7 +22,7 @@ export const withDeleteBackwardIndentList: ExtendEditor<
 
     const listNode = nodeEntry[0];
 
-    if (isCollapsed(editor.selection) && getNodeString(listNode))
+    if (editor.api.isCollapsed() && getNodeString(listNode))
       return deleteBackward(unit);
     if (isDefined(listNode[BaseIndentListPlugin.key])) {
       return outdentList(editor);

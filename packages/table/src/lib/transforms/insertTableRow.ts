@@ -1,8 +1,6 @@
 import {
   type SlateEditor,
   type TElement,
-  findNode,
-  getBlockAbove,
   getEditorPlugin,
   getLastChildPath,
   getNode,
@@ -56,11 +54,11 @@ export const insertTableRow = (
   }
 
   const trEntry = fromRow
-    ? findNode(editor, {
+    ? editor.api.find({
         at: fromRow,
         match: { type: editor.getType(BaseTableRowPlugin) },
       })
-    : getBlockAbove(editor, {
+    : editor.api.block({
         match: { type: editor.getType(BaseTableRowPlugin) },
       });
 
@@ -68,7 +66,7 @@ export const insertTableRow = (
 
   const [trNode, trPath] = trEntry;
 
-  const tableEntry = getBlockAbove(editor, {
+  const tableEntry = editor.api.block({
     at: trPath,
     match: { type },
   });
@@ -99,7 +97,7 @@ export const insertTableRow = (
   });
 
   if (shouldSelect) {
-    const cellEntry = getBlockAbove(editor, {
+    const cellEntry = editor.api.block({
       match: { type: getCellTypes(editor) },
     });
 

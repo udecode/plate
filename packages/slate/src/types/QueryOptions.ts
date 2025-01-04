@@ -6,6 +6,9 @@ import type { Predicate } from '../utils';
 import type { At } from './At';
 
 export type QueryOptions<V extends Value = Value> = {
+  /** Match the node by id. `true` will match all nodes with an id. */
+  id?: boolean | string;
+
   /** Match block nodes. */
   block?: boolean;
 

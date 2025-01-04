@@ -2,7 +2,6 @@ import {
   type ExtendEditor,
   type TElement,
   isDefined,
-  isExpanded,
 } from '@udecode/plate-common';
 
 import {
@@ -27,7 +26,7 @@ export const withInsertBreakIndentList: ExtendEditor<BaseIndentListConfig> = ({
       !isDefined(node[BaseIndentListPlugin.key]) ||
       node[BaseIndentListPlugin.key] !== INDENT_LIST_KEYS.todo ||
       // https://github.com/udecode/plate/issues/3340
-      isExpanded(editor.selection) ||
+      editor.api.isExpanded() ||
       !editor.api.isEnd(editor.selection?.focus, path)
     ) {
       return insertBreak();

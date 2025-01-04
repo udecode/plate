@@ -20,7 +20,7 @@ export const isPointNextToNode = (
     throw new Error('No valid selection point found');
   }
 
-  const selectedRange = editor.api.range(at.path);
+  const selectedRange = editor.api.range(at.path)!;
   const boundary = (() => {
     let isStart = false;
     let isEnd = false;

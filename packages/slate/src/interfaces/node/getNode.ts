@@ -2,7 +2,7 @@ import type { Path } from 'slate';
 
 import type { NodeOf, TNode } from './TNode';
 
-import { isText } from '../text';
+import { TextApi } from '../text';
 
 /**
  * Get the descendant node referred to by a specific path. If the path is an
@@ -19,7 +19,7 @@ export const getNode = <N extends NodeOf<R>, R extends TNode = TNode>(
     for (let i = 0; i < path.length; i++) {
       const p = path[i];
 
-      if (isText(root) || !root.children[p]) {
+      if (TextApi.isText(root) || !root.children[p]) {
         return null;
       }
 

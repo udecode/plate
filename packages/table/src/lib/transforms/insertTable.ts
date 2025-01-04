@@ -1,9 +1,5 @@
-import {
-  type InsertNodesOptions,
-  type SlateEditor,
-  findNode,
-  getBlockAbove,
-} from '@udecode/plate-common';
+import type { InsertNodesOptions, SlateEditor } from '@udecode/plate-common';
+
 import { Path } from 'slate';
 
 import type { GetEmptyTableNodeOptions } from '../api/getEmptyTableNode';
@@ -31,7 +27,7 @@ export const insertTable = (
     });
 
     if (!options.at) {
-      const currentTableEntry = getBlockAbove(editor, {
+      const currentTableEntry = editor.api.block({
         match: { type },
       });
 
@@ -61,7 +57,7 @@ export const insertTable = (
     });
 
     if (shouldSelect) {
-      const tableEntry = findNode(editor, {
+      const tableEntry = editor.api.find({
         at: options.at,
         match: { type },
       });

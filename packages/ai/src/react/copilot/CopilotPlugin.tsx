@@ -9,11 +9,8 @@ import {
   type PluginConfig,
   type TElement,
   bindFirst,
-  getBlockAbove,
   getNodeString,
-  isBlockAboveEmpty,
   isExpanded,
-  isSelectionAtBlockEnd,
 } from '@udecode/plate-common';
 import {
   type PlateEditor,
@@ -121,11 +118,11 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
         return false;
       }
 
-      const isEmpty = isBlockAboveEmpty(editor);
+      const isEmpty = editor.api.isEmpty(editor.selection, { block: true });
 
       if (isEmpty) return false;
 
-      const blockAbove = getBlockAbove(editor);
+      const blockAbove = editor.api.block();
 
       if (!blockAbove) return false;
 
@@ -153,7 +150,7 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
     triggerQuery: ({ editor }) => {
       if (isExpanded(editor.selection)) return false;
 
-      const isEnd = isSelectionAtBlockEnd(editor);
+      const isEnd = editor.api.isAt({ end: true });
 
       if (!isEnd) return false;
 
@@ -178,7 +175,7 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
       acceptNextWord: bindFirst(acceptCopilotNextWord, editor),
       setBlockSuggestion: ({ id = getOptions().suggestionNodeId, text }) => {
         if (!id) {
-          id = getBlockAbove(editor)![0].id;
+          id = editor.api.block()![0].id as string;
         }
 
         setOptions({

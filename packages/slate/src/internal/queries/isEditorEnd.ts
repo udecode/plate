@@ -1,6 +1,6 @@
 import { Path } from 'slate';
 
-import type { TEditor } from '../interfaces';
+import type { TEditor } from '../../interfaces/index';
 
 export const isEditorEnd = (editor: TEditor) => {
   if (editor.selection) {

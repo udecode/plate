@@ -1,6 +1,6 @@
+import type { TElement } from '@udecode/plate-common';
 import type { PlateEditor } from '@udecode/plate-common/react';
 
-import { getSelectionFragment } from '@udecode/plate-common';
 import { serializeMd, serializeMdNodes } from '@udecode/plate-markdown';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 
@@ -25,7 +25,7 @@ export const getMarkdown = (
     return serializeMdNodes(nodes as any);
   }
   if (type === 'selection') {
-    const fragment = getSelectionFragment(editor);
+    const fragment = editor.api.fragment<TElement>();
 
     // Remove any block formatting
     if (fragment.length === 1) {

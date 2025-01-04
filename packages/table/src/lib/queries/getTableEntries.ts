@@ -1,6 +1,5 @@
+import type { SlateEditor } from '@udecode/plate-common';
 import type { Location } from 'slate';
-
-import { type SlateEditor, findNode } from '@udecode/plate-common';
 
 import { BaseTablePlugin, BaseTableRowPlugin } from '../BaseTablePlugin';
 import { getCellTypes } from '../utils';
@@ -15,7 +14,7 @@ export const getTableEntries = (
 ) => {
   if (!at) return;
 
-  const cellEntry = findNode(editor, {
+  const cellEntry = editor.api.find({
     at,
     match: {
       type: getCellTypes(editor),

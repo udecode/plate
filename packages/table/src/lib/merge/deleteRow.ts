@@ -3,7 +3,6 @@ import {
   getEditorPlugin,
   insertElements,
   isExpanded,
-  someNode,
 } from '@udecode/plate-common';
 import cloneDeep from 'lodash/cloneDeep.js';
 
@@ -26,7 +25,7 @@ export const deleteTableMergeRow = (editor: SlateEditor) => {
   });
 
   if (
-    someNode(editor, {
+    editor.api.some({
       match: { type },
     })
   ) {

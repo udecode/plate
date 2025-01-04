@@ -3,7 +3,8 @@
  */
 
 export * from './TText';
-export * from './isText';
+export * from './TextApi';
 export * from './isTextList';
+export * from './isTextNode';
 export * from './textEquals';
 export * from './textMatches';

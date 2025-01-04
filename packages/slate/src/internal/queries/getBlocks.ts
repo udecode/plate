@@ -1,5 +1,5 @@
-import type { ElementOf, TEditor, ValueOf } from '../interfaces';
-import type { GetNodeEntriesOptions } from '../interfaces/editor/editor-types';
+import type { GetNodeEntriesOptions } from '../../interfaces/editor/editor-types';
+import type { ElementOf, TEditor, ValueOf } from '../../interfaces/index';
 
 export const getBlocks = <N extends ElementOf<E>, E extends TEditor = TEditor>(
   editor: E,

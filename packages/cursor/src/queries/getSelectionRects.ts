@@ -1,4 +1,4 @@
-import { type TEditor, isText } from '@udecode/plate-common';
+import { type TEditor, TextApi } from '@udecode/plate-common';
 import { Path, Range } from 'slate';
 
 import type { SelectionRect } from '../types';
@@ -25,7 +25,7 @@ export const getSelectionRects = (
   const selectionRects: SelectionRect[] = [];
   const textEntries = editor.api.nodes({
     at: range,
-    match: isText,
+    match: TextApi.isText,
   });
 
   for (const [textNode, textPath] of textEntries) {

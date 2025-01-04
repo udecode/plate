@@ -1,20 +1,19 @@
 import { type Element, type Text, Editor, Path, Range } from 'slate';
 
-import type { TEditor, ValueOf } from '../../interfaces';
 import type { MergeNodesOptions } from '../../interfaces/editor/editor-types';
 
+import { type TEditor, type ValueOf, TextApi } from '../../interfaces';
 import { isElement } from '../../interfaces/element/isElement';
 import { hasSingleChild } from '../../interfaces/node/hasSingleChild';
-import { isText } from '../../interfaces/text/isText';
 import { createPathRef } from '../../internal/editor/createPathRef';
 import { createPointRef } from '../../internal/editor/createPointRef';
 import { getAboveNode } from '../../internal/editor/getAboveNode';
 import { getNodeEntries } from '../../internal/editor/getNodeEntries';
 import { getPreviousNode } from '../../internal/editor/getPreviousNode';
 import { isBlock } from '../../internal/editor/isBlock';
-import { isElementEmpty } from '../../internal/editor/isElementEmpty';
 import { withoutNormalizing } from '../../internal/editor/withoutNormalizing';
 import { getQueryOptions } from '../../utils';
+import { isEmpty } from '../editor/isEmpty';
 import { select } from './select';
 
 export const mergeNodes = <E extends TEditor>(
@@ -102,7 +101,7 @@ export const mergeNodes = <E extends TEditor>(
 
     // Ensure that the nodes are equivalent, and figure out what the position
     // and extra properties of the merge will be.
-    if (isText(node) && isText(prevNode)) {
+    if (TextApi.isText(node) && TextApi.isText(prevNode)) {
       const { text, ...rest } = node;
       position = prevNode.text.length;
       properties = rest as Partial<Text>;
@@ -146,8 +145,8 @@ export const mergeNodes = <E extends TEditor>(
       mergeNode(editor as any, { at: path, to: newPath });
       // DIFF: end
     } else if (
-      (isElement(prevNode) && isElementEmpty(editor as any, prevNode)) ||
-      (isText(prevNode) && prevNode.text === '')
+      (isElement(prevNode) && isEmpty(editor as any, prevNode)) ||
+      (TextApi.isText(prevNode) && prevNode.text === '')
     ) {
       editor.tf.removeNodes({ at: prevPath, voids });
     } else {

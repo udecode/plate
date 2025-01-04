@@ -1,17 +1,13 @@
 import type {
   DescendantOf,
+  FindNodeOptions,
   TEditor,
   TNodeEntry,
-  Value,
   ValueOf,
-} from '../interfaces';
-import type { GetNodeEntriesOptions } from '../interfaces/editor/editor-types';
+} from '../../interfaces';
 
-import { getQueryOptions } from '../utils';
+import { getQueryOptions } from '../../utils';
 
-export type FindNodeOptions<V extends Value = Value> = GetNodeEntriesOptions<V>;
-
-/** Find node matching the condition. */
 export const findNode = <
   N extends DescendantOf<E>,
   E extends TEditor = TEditor,

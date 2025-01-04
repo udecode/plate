@@ -1,4 +1,4 @@
-import { type SlateEditor, findNode } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import type { BorderDirection, TTableCellElement } from '../types';
 
@@ -26,7 +26,7 @@ export const isTableBorderHidden = (
   }
 
   return (
-    findNode<TTableCellElement>(editor, {
+    editor.api.find<TTableCellElement>({
       match: { type: getCellTypes(editor) },
     })?.[0].borders?.[border]?.size === 0
   );

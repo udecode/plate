@@ -4,7 +4,6 @@ import { jsxt } from '@udecode/plate-test-utils';
 import { Path } from 'slate';
 
 import { createTEditor } from '../createTEditor';
-import { findNode } from '../queries';
 import { moveChildren } from './moveChildren';
 
 jsxt;
@@ -55,8 +54,8 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  const atPath = findNode(input, { match: { id: '2' } })?.[1];
-  const toPath = findNode(input, { match: { id: '12' } })?.[1];
+  const atPath = input.api.find({ match: { id: '2' } })?.[1];
+  const toPath = input.api.find({ match: { id: '12' } })?.[1];
 
   const moved =
     atPath &&

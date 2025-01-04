@@ -1,4 +1,4 @@
-import { type TDescendant, isElement, isText } from '@udecode/slate';
+import { type TDescendant, TextApi, isElement } from '@udecode/slate';
 import { jsx } from 'slate-hyperscript';
 
 import type { SlateEditor } from '../../../editor';
@@ -25,7 +25,7 @@ export const htmlElementToLeaf = (
           mergeDeepToNodes({
             node: child,
             query: {
-              filter: ([n]) => isText(n),
+              filter: ([n]) => TextApi.isText(n),
             },
             source: node,
           });
@@ -36,7 +36,7 @@ export const htmlElementToLeaf = (
         const attributes = { ...node };
 
         // attributes should not override child attributes
-        if (isText(child) && child.text) {
+        if (TextApi.isText(child) && child.text) {
           Object.keys(attributes).forEach((key) => {
             if (attributes[key] && child[key]) {
               attributes[key] = child[key];

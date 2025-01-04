@@ -3,7 +3,6 @@ import type { Path } from 'slate';
 import {
   type SetNodesOptions,
   type SlateEditor,
-  findNode,
   isElement,
 } from '@udecode/plate-common';
 
@@ -24,7 +23,7 @@ export const setBorderSize = (
     border?: BorderDirection | 'all';
   } = {}
 ) => {
-  const cellEntry = findNode<TTableCellElement>(editor, {
+  const cellEntry = editor.api.find<TTableCellElement>({
     at,
     match: { type: getCellTypes(editor) },
   });

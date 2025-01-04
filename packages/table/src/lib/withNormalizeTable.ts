@@ -1,10 +1,8 @@
 import {
   type ExtendEditor,
   type TElement,
-  findNode,
-  getBlockAbove,
+  TextApi,
   isElement,
-  isText,
   wrapNodeChildren,
 } from '@udecode/plate-common';
 
@@ -58,7 +56,7 @@ export const withNormalizeTable: ExtendEditor<TableConfig> = ({
           return;
         }
 
-        const tableEntry = getBlockAbove(editor, {
+        const tableEntry = editor.api.block({
           at: path,
           match: { type: type },
         });
@@ -130,7 +128,7 @@ export const withNormalizeTable: ExtendEditor<TableConfig> = ({
 
           return;
         }
-        if (isText(children[0])) {
+        if (TextApi.isText(children[0])) {
           wrapNodeChildren<TElement>(
             editor,
             editor.api.create.block({}, path),
@@ -182,7 +180,7 @@ export const withNormalizeTable: ExtendEditor<TableConfig> = ({
       // There is no new indices when removing a table
       operation.node.type !== type
     ) {
-      table = findNode<TTableElement>(editor, {
+      table = editor.api.find<TTableElement>({
         at: operation.path,
         match: { type },
       })?.[0];

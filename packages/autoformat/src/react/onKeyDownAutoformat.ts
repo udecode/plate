@@ -22,7 +22,7 @@ export const onKeyDownAutoformat: KeyboardHandler<AutoformatConfig> = ({
   // Abort if selection is not collapsed i.e. we're not deleting single character.
   const { selection } = editor;
 
-  if (!selection || !Range.isCollapsed(selection)) return;
+  if (!selection || !editor.api.isCollapsed()) return;
 
   // Get start and end point of selection.
   // For example: Text|

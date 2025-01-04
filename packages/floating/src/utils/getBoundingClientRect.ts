@@ -13,7 +13,7 @@ export const getBoundingClientRect = (
 
     const atArray = Array.isArray(at) && !Path.isPath(at) ? at : [at];
 
-    return atArray.map((location) => editor.api.range(location));
+    return atArray.map((location) => editor.api.range(location)!);
   })();
 
   const clientRects = atRanges

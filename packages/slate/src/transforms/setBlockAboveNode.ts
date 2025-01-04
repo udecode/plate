@@ -1,8 +1,6 @@
 import type { ElementOf, TEditor, TNodeProps, ValueOf } from '../interfaces';
 import type { SetNodesOptions } from '../interfaces/editor/editor-types';
 
-import { getBlockAbove } from '../queries';
-
 export const setBlockAboveNode = <
   N extends ElementOf<E>,
   E extends TEditor = TEditor,
@@ -11,13 +9,13 @@ export const setBlockAboveNode = <
   props: Partial<TNodeProps<N>>,
   options?: Omit<SetNodesOptions<ValueOf<E>>, 'at'>
 ) => {
-  const at = getBlockAbove(editor)?.[1];
+  const at = editor.api.block()?.[1];
 
   if (!at) return;
 
   editor.tf.setNodes(props, {
     ...options,
-    at: getBlockAbove(editor)![1],
+    at: editor.api.block()![1],
   } as any);
 };
 

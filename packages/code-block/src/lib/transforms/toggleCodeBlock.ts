@@ -1,8 +1,4 @@
-import {
-  type SlateEditor,
-  type TElement,
-  someNode,
-} from '@udecode/plate-common';
+import type { SlateEditor, TElement } from '@udecode/plate-common';
 
 import {
   BaseCodeBlockPlugin,
@@ -16,7 +12,7 @@ export const toggleCodeBlock = (editor: SlateEditor) => {
   const codeBlockType = editor.getType(BaseCodeBlockPlugin);
   const codeLineType = editor.getType(BaseCodeLinePlugin);
 
-  const isActive = someNode(editor, {
+  const isActive = editor.api.some({
     match: { type: codeBlockType },
   });
 

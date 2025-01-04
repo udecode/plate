@@ -2,7 +2,6 @@ import castArray from 'lodash/castArray.js';
 
 import type { TEditor } from '../interfaces';
 
-import { isMarkActive } from '../queries';
 import { removeMark } from './removeMark';
 
 export interface ToggleMarkOptions {
@@ -21,7 +20,7 @@ export const toggleMark = (
   if (!editor.selection) return;
 
   editor.tf.withoutNormalizing(() => {
-    const isActive = isMarkActive(editor, key);
+    const isActive = editor.api.hasMark(key);
 
     if (isActive) {
       editor.removeMark(key);

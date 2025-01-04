@@ -4,7 +4,7 @@ import type { TText, TextOf } from '../text/TText';
 import type { TNode } from './TNode';
 
 import { isElement } from '../element/isElement';
-import { isText } from '../text/isText';
+import { TextApi } from '../text';
 
 /**
  * The `Descendant` union type represents nodes that are descendants in the
@@ -34,4 +34,4 @@ export type ChildOf<
 
 export const isDescendant: (value: any) => value is TDescendant = ((
   node: any
-) => isElement(node) || isText(node)) as any;
+) => isElement(node) || TextApi.isText(node)) as any;

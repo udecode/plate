@@ -2,7 +2,6 @@ import {
   type TElement,
   bindFirst,
   createSlatePlugin,
-  isSelectionExpanded,
 } from '@udecode/plate-common';
 
 import { isPointNextToNode } from './queries';
@@ -39,7 +38,7 @@ export const BaseDatePlugin = createSlatePlugin({
       unit === 'character' &&
       distance === 1 &&
       editor.selection &&
-      !isSelectionExpanded(editor)
+      !editor.api.isExpanded()
     ) {
       const isNextDate = isPointNextToNode(editor, {
         nodeType: type,

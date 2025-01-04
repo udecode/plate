@@ -3,8 +3,6 @@ import {
   type ElementOf,
   type SlateEditor,
   type TElement,
-  getBlockAbove,
-  isCollapsed,
   isExpanded,
 } from '@udecode/plate-common';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
@@ -36,8 +34,8 @@ export const toggleIndentList = <
   const { getSiblingIndentListOptions: _getSiblingIndentListOptions } =
     editor.getOptions(BaseIndentListPlugin);
 
-  if (isCollapsed(editor.selection)) {
-    const entry = getBlockAbove<TElement>(editor);
+  if (editor.api.isCollapsed()) {
+    const entry = editor.api.block<TElement>();
 
     if (!entry) return;
     if (toggleIndentListSet(editor, entry, { listStyleType })) {

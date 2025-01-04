@@ -4,7 +4,6 @@ import {
   type ExtendEditor,
   getNode,
   getNodeString,
-  isCollapsed,
   queryNode,
 } from '@udecode/plate-common';
 
@@ -21,8 +20,8 @@ export const withSelectOnBackspace: ExtendEditor<SelectOnBackspaceConfig> = ({
     const { selection } = editor;
     const { query, removeNodeIfEmpty } = getOptions();
 
-    if (unit === 'character' && isCollapsed(selection)) {
-      const pointBefore = editor.api.before(selection as Slate.Location, {
+    if (unit === 'character' && editor.api.isCollapsed()) {
+      const pointBefore = editor.api.before(selection!, {
         unit,
       });
 

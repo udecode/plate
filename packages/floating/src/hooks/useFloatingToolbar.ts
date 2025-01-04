@@ -1,10 +1,6 @@
 import React from 'react';
 
-import {
-  getSelectionText,
-  isSelectionExpanded,
-  mergeProps,
-} from '@udecode/plate-common';
+import { mergeProps } from '@udecode/plate-common';
 import {
   useEditorReadOnly,
   useEditorRef,
@@ -36,8 +32,11 @@ export const useFloatingToolbarState = ({
   focusedEditorId: string | null;
 } & FloatingToolbarState) => {
   const editor = useEditorRef();
-  const selectionExpanded = useEditorSelector(isSelectionExpanded, []);
-  const selectionText = useEditorSelector(getSelectionText, []);
+  const selectionExpanded = useEditorSelector(
+    () => editor.api.isExpanded(),
+    []
+  );
+  const selectionText = useEditorSelector(() => editor.api.string(), []);
   const readOnly = useEditorReadOnly();
 
   const focused = useFocused();

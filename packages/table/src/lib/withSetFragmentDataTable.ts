@@ -1,8 +1,4 @@
-import {
-  type ExtendEditor,
-  type TElement,
-  findNode,
-} from '@udecode/plate-common';
+import type { ExtendEditor, TElement } from '@udecode/plate-common';
 
 import type { TTableCellElement, TTableElement, TableConfig } from '.';
 
@@ -107,7 +103,7 @@ export const withSetFragmentDataTable: ExtendEditor<TableConfig> = ({
         textTsv += `${cellStrings.join('\t')}\n`;
       });
 
-      const _tableEntry = findNode<TTableElement>(editor, {
+      const _tableEntry = editor.api.find<TTableElement>({
         at: tablePath,
         match: { type: BaseTablePlugin.key },
       });
