@@ -2,8 +2,8 @@ import type { Path } from 'slate';
 
 import { DOMEditor } from 'slate-dom';
 
-import type { FindPathOptions, TEditor } from '../editor';
-import type { NodeOf } from '../node';
+import type { FindPathOptions, TEditor } from '../../interfaces/editor';
+import type { NodeOf } from '../../interfaces/node';
 
 import { findNodePath } from '../../internal/queries/findNodePath';
 

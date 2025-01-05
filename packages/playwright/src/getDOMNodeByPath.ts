@@ -16,8 +16,8 @@ export const getDOMNodeByPath = async (
   const adapterHandle = await getAdapter(page);
 
   return page.evaluateHandle(
-    ([adapter, editor, node]) => {
-      const domNode = adapter.toDOMNode(editor, node);
+    ([, editor, node]) => {
+      const domNode = editor.api.toDOMNode(node);
 
       if (!domNode)
         throw new Error(`getDOMNodeByPath: DOM node not found at path ${path}`);

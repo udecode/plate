@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-import { getNode, toDOMNode } from '@udecode/plate-common';
+import { getNode } from '@udecode/plate-common';
 import { type PlateEditor, useEditorRef } from '@udecode/plate-common/react';
 
 import type { TPlatePlaywrightAdapter } from './types';
@@ -10,7 +10,6 @@ const EDITABLE_TO_EDITOR = new WeakMap<HTMLElement, PlateEditor>();
 const platePlaywrightAdapter: TPlatePlaywrightAdapter = {
   EDITABLE_TO_EDITOR,
   getNode,
-  toDOMNode,
 };
 
 export const usePlaywrightAdapter = () => {

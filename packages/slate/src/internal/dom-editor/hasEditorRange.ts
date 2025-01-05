@@ -2,7 +2,7 @@ import type { Range } from 'slate';
 
 import { DOMEditor } from 'slate-dom';
 
-import type { TEditor } from '../editor';
+import type { TEditor } from '../../interfaces/editor';
 
 export const hasEditorRange = (editor: TEditor, range: Range): boolean => {
   try {

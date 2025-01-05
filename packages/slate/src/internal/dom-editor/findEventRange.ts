@@ -1,6 +1,6 @@
 import { DOMEditor } from 'slate-dom';
 
-import type { TEditor } from '../editor';
+import type { TEditor } from '../../interfaces/editor';
 
 export const findEventRange = (editor: TEditor, event: any) => {
   try {

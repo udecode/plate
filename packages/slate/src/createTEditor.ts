@@ -15,33 +15,30 @@ import {
 
 import type { TEditor, Value } from './interfaces/editor/TEditor';
 
-import {
-  blurEditor,
-  deselectEditor,
-  findEditorDocumentOrShadowRoot,
-  findEventRange,
-  findNodeKey,
-  findPath,
-  focusEditor,
-  getEditorWindow,
-  hasEditorDOMNode,
-  hasEditorEditableTarget,
-  hasEditorRange,
-  hasEditorSelectableTarget,
-  hasEditorTarget,
-  isCollapsed,
-  isComposing,
-  isEditorFocused,
-  isEditorReadOnly,
-  isExpanded,
-  isTargetInsideNonReadonlyVoid,
-  toDOMNode,
-  toDOMPoint,
-  toDOMRange,
-  toSlateNode,
-  toSlatePoint,
-  toSlateRange,
-} from './interfaces';
+import { isCollapsed, isExpanded } from './interfaces';
+import { blurEditor } from './internal/dom-editor/blurEditor';
+import { deselectEditor } from './internal/dom-editor/deselectEditor';
+import { findEditorDocumentOrShadowRoot } from './internal/dom-editor/findEditorDocumentOrShadowRoot';
+import { findEventRange } from './internal/dom-editor/findEventRange';
+import { findNodeKey } from './internal/dom-editor/findNodeKey';
+import { findPath } from './internal/dom-editor/findPath';
+import { focusEditor } from './internal/dom-editor/focusEditor';
+import { getEditorWindow } from './internal/dom-editor/getEditorWindow';
+import { hasEditorDOMNode } from './internal/dom-editor/hasEditorDOMNode';
+import { hasEditorEditableTarget } from './internal/dom-editor/hasEditorEditableTarget';
+import { hasEditorRange } from './internal/dom-editor/hasEditorRange';
+import { hasEditorSelectableTarget } from './internal/dom-editor/hasEditorSelectableTarget';
+import { hasEditorTarget } from './internal/dom-editor/hasEditorTarget';
+import { isComposing } from './internal/dom-editor/isComposing';
+import { isEditorFocused } from './internal/dom-editor/isEditorFocused';
+import { isEditorReadOnly } from './internal/dom-editor/isEditorReadOnly';
+import { isTargetInsideNonReadonlyVoid } from './internal/dom-editor/isTargetInsideNonReadonlyVoid';
+import { toDOMNode } from './internal/dom-editor/toDOMNode';
+import { toDOMPoint } from './internal/dom-editor/toDOMPoint';
+import { toDOMRange } from './internal/dom-editor/toDOMRange';
+import { toSlateNode } from './internal/dom-editor/toSlateNode';
+import { toSlatePoint } from './internal/dom-editor/toSlatePoint';
+import { toSlateRange } from './internal/dom-editor/toSlateRange';
 import { addMark } from './internal/editor/addMark';
 import { createPathRef } from './internal/editor/createPathRef';
 import { createPointRef } from './internal/editor/createPointRef';

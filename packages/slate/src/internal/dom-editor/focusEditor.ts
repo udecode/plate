@@ -1,7 +1,7 @@
 import { DOMEditor } from 'slate-dom';
 
 import type { At } from '../../types';
-import type { TEditor } from '../editor';
+import type { TEditor } from '../../interfaces/editor';
 
 export const focusEditor = (editor: TEditor, target?: At) => {
   if (target) {

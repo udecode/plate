@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { isEditorReadOnly, isHotkey } from '@udecode/plate-common';
+import { isHotkey } from '@udecode/plate-common';
 import {
   type EditableSiblingComponent,
   useEditorPlugin,
@@ -48,7 +48,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
 
   const handleKeyDown = React.useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
-      const isReadonly = isEditorReadOnly(editor);
+      const isReadonly = editor.api.isReadOnly();
       getOptions().onKeyDownSelecting?.(e.nativeEvent);
 
       // selecting commands
@@ -135,7 +135,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
       if (getOption('isSelectingSome')) {
         copySelectedBlocks(editor);
 
-        if (!isEditorReadOnly(editor)) {
+        if (!editor.api.isReadOnly()) {
           editor.tf.removeNodes({
             at: [],
             match: (n) => selectedIds!.has(n.id),
@@ -152,7 +152,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
     (e: React.ClipboardEvent<HTMLInputElement>) => {
       e.preventDefault();
 
-      if (!isEditorReadOnly(editor)) {
+      if (!editor.api.isReadOnly()) {
         pasteSelectedBlocks(editor, e.nativeEvent);
       }
     },
