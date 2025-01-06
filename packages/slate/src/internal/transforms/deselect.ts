@@ -1,7 +1,7 @@
 import { deselect as deselectBase } from 'slate';
 
-import type { TEditor } from '../../interfaces';
+import type { Editor } from '../../interfaces';
 
-export const deselect = (editor: TEditor) => {
+export const deselect = (editor: Editor) => {
   deselectBase(editor as any);
 };

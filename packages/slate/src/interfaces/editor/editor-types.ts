@@ -37,7 +37,7 @@ import type {
 } from '../../types';
 import type { ElementOrTextIn } from '../element/index';
 import type { TDescendant, TNode } from '../node/index';
-import type { TEditor, Value } from './TEditor';
+import type { Editor, Value } from './editor';
 
 export type GetAboveNodeOptions<V extends Value = Value> = QueryOptions<V> &
   QueryMode &
@@ -187,7 +187,7 @@ export type LiftNodesOptions<V extends Value = Value> = Modify<
   QueryOptions<V> & QueryMode & QueryVoids
 >;
 
-export type MergeNodesOptions<V extends Value, E extends TEditor = TEditor> = {
+export type MergeNodesOptions<V extends Value, E extends Editor = Editor> = {
   /**
    * Default: if the node isn't already the next sibling of the previous node,
    * move it so that it is before merging.

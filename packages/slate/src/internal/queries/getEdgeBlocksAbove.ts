@@ -1,7 +1,7 @@
 import type { GetAboveNodeOptions } from '../../interfaces/editor/editor-types';
 import type {
   ElementOf,
-  TEditor,
+  Editor,
   TNodeEntry,
   ValueOf,
 } from '../../interfaces/index';
@@ -9,7 +9,7 @@ import type {
 export const getEdgeBlocksAbove = <
   N1 extends ElementOf<E>,
   N2 extends ElementOf<E> = N1,
-  E extends TEditor = TEditor,
+  E extends Editor = Editor,
 >(
   editor: E,
   { at: _at, ...options }: GetAboveNodeOptions<ValueOf<E>> = {}

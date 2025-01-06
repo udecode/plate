@@ -2,6 +2,7 @@
 '@udecode/plate-common': major
 ---
 
+- Remove `"slate-history"` from your dependencies. Since the code is relatively small, we're maintaining it in Plate.
 - The following editor functions have been removed/moved into `editor.api` or `editor.tf`. For example, `focusEditor(editor)` is now `editor.tf.focus()`.
 
   - `addMark` -> `editor.tf.addMark`

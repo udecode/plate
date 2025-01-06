@@ -1,9 +1,9 @@
 import { normalize } from 'slate';
 
-import type { TEditor } from '../../interfaces/editor/TEditor';
+import type { Editor } from '../../interfaces/editor/editor';
 import type { EditorNormalizeOptions } from '../../interfaces/editor/editor-types';
 
 export const normalizeEditor = (
-  editor: TEditor,
+  editor: Editor,
   options?: EditorNormalizeOptions
 ) => normalize(editor as any, options);

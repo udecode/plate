@@ -2,11 +2,11 @@
 
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { createTEditor } from '../../createTEditor';
+import { createEditor } from '../../createEditor';
 
 jsxt;
 
-const input = createTEditor(
+const input = createEditor(
   (
     <editor>
       <hh1>

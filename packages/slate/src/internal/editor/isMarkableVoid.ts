@@ -1,7 +1,7 @@
-import type { TEditor } from '../../interfaces/editor/TEditor';
+import type { Editor } from '../../interfaces/editor/editor';
 
 import { isElement } from '../../interfaces/element';
 
-export const isMarkableVoid = (editor: TEditor, value: any): boolean => {
+export const isMarkableVoid = (editor: Editor, value: any): boolean => {
   return isElement(value) && editor.markableVoid(value);
 };

@@ -1,9 +1,9 @@
 import isPlainObject from 'lodash/isPlainObject.js';
 
-import { type TEditor, type TNode, isNode } from '../interfaces';
+import { type Editor, type TNode, isNode } from '../interfaces';
 
 export const getAt = <T>(
-  editor: TEditor,
+  editor: Editor,
   at?: T | TNode | null
 ): T | undefined => {
   if (at && isPlainObject(at) && isNode(at)) {

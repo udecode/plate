@@ -1,6 +1,6 @@
 import { DOMEditor } from 'slate-dom';
 
-import type { TEditor } from '../../interfaces/editor';
+import type { Editor } from '../../interfaces/editor';
 
-export const insertData = (editor: TEditor, data: DataTransfer) =>
+export const insertData = (editor: Editor, data: DataTransfer) =>
   DOMEditor.insertData(editor as any, data);

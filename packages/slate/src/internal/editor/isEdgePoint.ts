@@ -1,6 +1,6 @@
 import { type Location, type Point, isEdge } from 'slate';
 
-import type { TEditor } from '../../interfaces/editor/TEditor';
+import type { Editor } from '../../interfaces/editor/editor';
 
-export const isEdgePoint = (editor: TEditor, point: Point, at: Location) =>
+export const isEdgePoint = (editor: Editor, point: Point, at: Location) =>
   isEdge(editor as any, point, at);

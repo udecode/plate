@@ -1,7 +1,7 @@
 import {
   type ElementEntryOf,
   type ElementOf,
-  type TEditor,
+  type Editor,
   type TNodeEntry,
   getNode,
   getPreviousPath,
@@ -15,7 +15,7 @@ import {
 /** Get the previous indent list node. */
 export const getPreviousIndentList = <
   N extends ElementOf<E>,
-  E extends TEditor = TEditor,
+  E extends Editor = Editor,
 >(
   editor: E,
   entry: ElementEntryOf<E>,

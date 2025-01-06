@@ -1,6 +1,6 @@
-import type { FindPathOptions, TEditor, TNode } from '../../interfaces';
+import type { FindPathOptions, Editor, TNode } from '../../interfaces';
 
-export const findNodePath = <E extends TEditor = TEditor>(
+export const findNodePath = <E extends Editor = Editor>(
   editor: E,
   node: TNode,
   options: FindPathOptions = {}

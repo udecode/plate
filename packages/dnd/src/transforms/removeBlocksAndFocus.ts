@@ -1,13 +1,13 @@
 import type {
   GetNodeEntriesOptions,
-  TEditor,
+  Editor,
   ValueOf,
 } from '@udecode/plate-common';
 
 import { getBlocksWithId } from '../queries/getBlocksWithId';
 
 /** Remove blocks with an id and focus the editor. */
-export const removeBlocksAndFocus = <E extends TEditor = TEditor>(
+export const removeBlocksAndFocus = <E extends Editor = Editor>(
   editor: E,
   options: GetNodeEntriesOptions<ValueOf<E>>
 ) => {

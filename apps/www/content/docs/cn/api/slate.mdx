@@ -111,7 +111,7 @@ description: udecode/slate的 API 参考。
 
 ### `removeEditorMark`
 
-### `TEditor`
+### `Editor`
 
 ### `unhangRange`
 
@@ -372,7 +372,7 @@ description: udecode/slate的 API 参考。
 遍历编辑器中的所有节点并返回第一个匹配项。如果没有找到匹配项，则返回 undefined。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     要搜索后代节点的编辑器。
   </APIItem>
   <APIItem name="options" type="FindNodeOptions">
@@ -390,7 +390,7 @@ description: udecode/slate的 API 参考。
 - **默认值：** 选区。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     要搜索块的编辑器。
   </APIItem>
   <APIItem name="options" type="GetAboveNodeOptions">
@@ -408,7 +408,7 @@ description: udecode/slate的 API 参考。
 从编辑器中检索块级节点entry。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     要搜索块级节点的编辑器。
   </APIItem>
   <APIItem name="options" type="GetNodeEntriesOptions<V>" optional>
@@ -442,7 +442,7 @@ description: udecode/slate的 API 参考。
 - **默认值：** 选区。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     要搜索边缘块的编辑器。
   </APIItem>
   <APIItem name="options" type="GetAboveNodeOptions">
@@ -521,7 +521,7 @@ description: udecode/slate的 API 参考。
 检索编辑器中指定层级的最后一个节点。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     要搜索最后一个节点的编辑器。
   </APIItem>
   <APIItem name="level" type="number">
@@ -537,7 +537,7 @@ description: udecode/slate的 API 参考。
 在编辑器中通过键检索选区标记的值。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     选区标记所在的编辑器。
   </APIItem>
   <APIItem name="key" type="string">
@@ -553,7 +553,7 @@ description: udecode/slate的 API 参考。
 检索编辑器中指定路径的下一个节点的起始点。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     要搜索下一个节点的编辑器。
   </APIItem>
   <APIItem name="at" type="Path">
@@ -585,7 +585,7 @@ description: udecode/slate的 API 参考。
 检索编辑器的操作。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     要获取其操作的编辑器。
   </APIItem>
 </APIParameters>
@@ -598,7 +598,7 @@ description: udecode/slate的 API 参考。
 返回位置之前的点，并提供额外选项来自定义行为。如果未提供选项或者既未定义 **`match`** 也未定义 **`matchString`**，它将默认使用 **`getPointBefore`**。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     要在位置之前查找点的编辑器。
   </APIItem>
   <APIItem name="at" type="Location">
@@ -617,7 +617,7 @@ description: udecode/slate的 API 参考。
 从位置返回点（**默认值：** 选区）。如果位置是范围，则获取锚点。如果位置是路径，则获取该路径上偏移量为 0 的点。
 
 <APIParameters>
-<APIItem name="editor" type="TEditor">
+<APIItem name="editor" type="Editor">
 要查找点的编辑器。
 </APIItem>
 <APIItem name="options" type="object">
@@ -650,7 +650,7 @@ description: udecode/slate的 API 参考。
 如果起始点在内联空节点内，则返回其前面或后面的点。
 
 <APIParameters>
-<APIItem name="editor" type="TEditor">
+<APIItem name="editor" type="Editor">
 要查找空节点旁边的点的编辑器。
 </APIItem>
 <APIItem name="options" type="object">
@@ -679,7 +679,7 @@ description: udecode/slate的 API 参考。
 通过 ID 查找块之前的块。如果未找到，则通过 ID 查找第一个块并返回 **`[null, 其前面的路径]`**。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     要查找前一个块的编辑器。
   </APIItem>
   <APIItem name="id" type="string">
@@ -698,7 +698,7 @@ description: udecode/slate的 API 参考。
 获取前一个节点的结束点。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     要查找前一个节点结束点的编辑器。
   </APIItem>
   <APIItem name="at" type="Path">
@@ -727,7 +727,7 @@ description: udecode/slate的 API 参考。
 从给定路径获取前一个兄弟节点。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="path" type="Path">
@@ -743,7 +743,7 @@ description: udecode/slate的 API 参考。
 获取给定位置之前的点到位置结束点的范围。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="at" type="Location">
@@ -762,7 +762,7 @@ description: udecode/slate的 API 参考。
 获取从位置上方块的开始到位置的范围。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="options" type="Omit<GetAboveNodeOptions, 'match'>" optional>
@@ -778,7 +778,7 @@ description: udecode/slate的 API 参考。
 检索当前选区的片段，可选择解包结构节点。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     要获取选区片段的编辑器。
   </APIItem>
   <APIItem name="options" type="GetSelectionFragmentOptions" optional>
@@ -799,7 +799,7 @@ description: udecode/slate的 API 参考。
 从编辑器获取选中的文本。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
 </APIParameters>
@@ -812,7 +812,7 @@ description: udecode/slate的 API 参考。
 检查祖先节点是否为空（具有空文本且没有内联子节点）。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="node" type="TAncestor">
@@ -830,7 +830,7 @@ description: udecode/slate的 API 参考。
 检查选区上方的块是否为空。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
 </APIParameters>
@@ -845,7 +845,7 @@ description: udecode/slate的 API 参考。
 检查选区后块中的文本是否为空。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
 </APIParameters>
@@ -860,7 +860,7 @@ description: udecode/slate的 API 参考。
 检查选区是否在文档末尾。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
 </APIParameters>
@@ -890,7 +890,7 @@ description: udecode/slate的 API 参考。
 检查选区中是否激活了标记。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="type" type="string">
@@ -908,7 +908,7 @@ description: udecode/slate的 API 参考。
 检查点是否在单词末尾。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="at" type="Point">
@@ -924,7 +924,7 @@ description: udecode/slate的 API 参考。
 确定范围（**默认值：** 选区）是否跨越多个块。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="at" type="Range | null" optional>
@@ -940,7 +940,7 @@ description: udecode/slate的 API 参考。
 确定范围是否在同一个块内。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="at" type="Range | null" optional>
@@ -969,7 +969,7 @@ description: udecode/slate的 API 参考。
 检查选区焦点是否在其父块的末尾。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="options" type="GetAboveNodeOptions" optional>
@@ -985,7 +985,7 @@ description: udecode/slate的 API 参考。
 检查选区锚点或焦点是否在其父块的开始。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="options" type="GetAboveNodeOptions" optional>
@@ -1001,7 +1001,7 @@ description: udecode/slate的 API 参考。
 检查选区是否展开。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
 </APIParameters>
@@ -1016,7 +1016,7 @@ description: udecode/slate的 API 参考。
 检查给定路径的节点是否是文本节点。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="path" type="Path">
@@ -1034,7 +1034,7 @@ description: udecode/slate的 API 参考。
 检查给定点的单词是否在触发器（标点符号）之后。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="at" type="Point">
@@ -1053,7 +1053,7 @@ description: udecode/slate的 API 参考。
 查询编辑器状态。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="options" type="QueryEditorOptions" optional>
@@ -1071,7 +1071,7 @@ description: udecode/slate的 API 参考。
 在指定的边缘（开始或结束）聚焦编辑器。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="options" type="object" optional>
@@ -1091,7 +1091,7 @@ description: udecode/slate的 API 参考。
 复制给定的块并将它们插入到选区中最后一个块之后。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="blocks" type="TNodeEntry[]">
@@ -1104,7 +1104,7 @@ description: udecode/slate的 API 参考。
 在文档中的位置插入节点。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="nodes" type="TElement | TElement[]">
@@ -1120,7 +1120,7 @@ description: udecode/slate的 API 参考。
 在文档中的位置插入空元素。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="type" type="string">
@@ -1136,7 +1136,7 @@ description: udecode/slate的 API 参考。
 将节点的子节点移动到路径。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="options" type="MoveChildrenOptions">
@@ -1154,7 +1154,7 @@ description: udecode/slate的 API 参考。
 从编辑器中删除所有非空文本节点。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="options" type="RemoveNodesOptions<V>" optional>
@@ -1167,7 +1167,7 @@ description: udecode/slate的 API 参考。
 删除标记，如果选区折叠则触发 `onChange`。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="options" type="RemoveMarkOptions">
@@ -1180,7 +1180,7 @@ description: udecode/slate的 API 参考。
 删除节点的所有子节点。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="path" type="Path">
@@ -1196,7 +1196,7 @@ description: udecode/slate的 API 参考。
 从选区中删除所有标记。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
 </APIParameters>
@@ -1206,7 +1206,7 @@ description: udecode/slate的 API 参考。
 替换节点的子节点：先删除后插入。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="options" type="ReplaceNodeChildrenOptions">
@@ -1219,7 +1219,7 @@ description: udecode/slate的 API 参考。
 选择选区上方块的结束点。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
 </APIParameters>
@@ -1229,7 +1229,7 @@ description: udecode/slate的 API 参考。
 选择包含给定节点的范围。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="nodes" type="TNodeEntry[]">
@@ -1242,7 +1242,7 @@ description: udecode/slate的 API 参考。
 在当前选区上方的块上设置属性。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="props" type="Partial<TNodeProps<N>>">
@@ -1258,7 +1258,7 @@ description: udecode/slate的 API 参考。
 在当前选区上方块内的最低级节点上设置属性。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="props" type="Partial<TNodeProps<N>>">
@@ -1274,7 +1274,7 @@ description: udecode/slate的 API 参考。
 在所有匹配给定选项的块节点上设置属性。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="props" type="Partial<TNodeProps<N>>">
@@ -1290,7 +1290,7 @@ description: udecode/slate的 API 参考。
 在选中的文本上设置标记。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="marks" type="MarksOf<E>">
@@ -1306,7 +1306,7 @@ description: udecode/slate的 API 参考。
 在选区中添加或删除标记。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="options" type="ToggleMarkOptions">
@@ -1319,7 +1319,7 @@ description: udecode/slate的 API 参考。
 如果选区中存在该节点类型则解除包装，否则进行包装。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="type" type="string">
@@ -1332,7 +1332,7 @@ description: udecode/slate的 API 参考。
 将节点的子节点包装到单个元素中。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="element" type="N">

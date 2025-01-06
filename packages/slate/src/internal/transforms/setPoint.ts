@@ -2,10 +2,10 @@ import type { SelectionSetPointOptions } from 'slate/dist/interfaces/transforms/
 
 import { type Point, setPoint as setPointBase } from 'slate';
 
-import type { TEditor } from '../../interfaces';
+import type { Editor } from '../../interfaces';
 
 export const setPoint = (
-  editor: TEditor,
+  editor: Editor,
   props: Partial<Point>,
   options?: SelectionSetPointOptions
 ) => {

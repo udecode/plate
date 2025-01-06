@@ -3,12 +3,12 @@
 import { jsxt } from '@udecode/plate-test-utils';
 import { Path } from 'slate';
 
-import { createTEditor } from '../createTEditor';
+import { createEditor } from '../createEditor';
 import { moveChildren } from './moveChildren';
 
 jsxt;
 
-const input = createTEditor(
+const input = createEditor(
   (
     <editor>
       <hul>

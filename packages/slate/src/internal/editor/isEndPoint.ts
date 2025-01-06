@@ -1,9 +1,9 @@
 import { type Location, type Point, isEnd } from 'slate';
 
-import type { TEditor } from '../../interfaces/editor/TEditor';
+import type { Editor } from '../../interfaces/editor/editor';
 
 export const isEndPoint = (
-  editor: TEditor,
+  editor: Editor,
   point: Point | null | undefined,
   at: Location
 ) => !!point && isEnd(editor as any, point, at);

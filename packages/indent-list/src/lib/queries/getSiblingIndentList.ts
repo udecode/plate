@@ -2,7 +2,7 @@ import {
   type ElementEntryOf,
   type ElementOf,
   type ElementOrTextOf,
-  type TEditor,
+  type Editor,
   type TNode,
   type TNodeEntry,
   isDefined,
@@ -16,7 +16,7 @@ import {
 
 export interface GetSiblingIndentListOptions<
   N extends ElementOf<E>,
-  E extends TEditor = TEditor,
+  E extends Editor = Editor,
 > {
   getNextEntry?: (
     entry: TNodeEntry<ElementOrTextOf<E>>
@@ -40,7 +40,7 @@ export interface GetSiblingIndentListOptions<
  */
 export const getSiblingIndentList = <
   N extends ElementOf<E>,
-  E extends TEditor = TEditor,
+  E extends Editor = Editor,
 >(
   editor: E,
   [node, path]: ElementEntryOf<E>,

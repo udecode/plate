@@ -1,13 +1,13 @@
 /** @jsx jsxt */
 
-import { createSlateEditor, createTEditor } from '@udecode/plate-common';
+import { createSlateEditor, createEditor } from '@udecode/plate-common';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { moveListItemsToList } from './moveListItemsToList';
 
 jsxt;
 
-const input = createTEditor(
+const input = createEditor(
   (
     <editor>
       <hul id="1">

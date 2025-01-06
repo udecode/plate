@@ -1,7 +1,7 @@
 import { hasInlines as hasInlinesBase } from 'slate';
 
-import type { TEditor } from '../../interfaces/editor/TEditor';
+import type { Editor } from '../../interfaces/editor/editor';
 import type { TElement } from '../../interfaces/element/TElement';
 
-export const hasInlines = (editor: TEditor, element: TElement) =>
+export const hasInlines = (editor: Editor, element: TElement) =>
   hasInlinesBase(editor as any, element);

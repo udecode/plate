@@ -2,13 +2,13 @@
 
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { createTEditor } from '../../createTEditor';
+import { createEditor } from '../../createEditor';
 
 jsxt;
 
 describe('range', () => {
   describe('when getting range between two locations', () => {
-    const input = createTEditor(
+    const input = createEditor(
       (
         <editor>
           <hp>
@@ -41,7 +41,7 @@ describe('range', () => {
 
 describe('before', () => {
   describe('default', () => {
-    const input = createTEditor(
+    const input = createEditor(
       (
         <editor>
           <hp>
@@ -69,7 +69,7 @@ describe('before', () => {
   });
 
   describe('when at start', () => {
-    const input = createTEditor(
+    const input = createEditor(
       (
         <editor>
           <hp>
@@ -93,7 +93,7 @@ describe('before', () => {
 
 describe('from block start', () => {
   describe('when no block', () => {
-    const input = createTEditor(
+    const input = createEditor(
       (
         <editor>
           te
@@ -109,7 +109,7 @@ describe('from block start', () => {
   });
 
   describe('when no selection', () => {
-    const input = createTEditor(
+    const input = createEditor(
       (
         <editor>
           <hp>test</hp>
@@ -123,7 +123,7 @@ describe('from block start', () => {
   });
 
   describe('when selection', () => {
-    const input = createTEditor(
+    const input = createEditor(
       (
         <editor>
           <hp>

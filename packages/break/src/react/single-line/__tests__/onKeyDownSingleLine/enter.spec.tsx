@@ -1,13 +1,13 @@
 /** @jsx jsxt */
 
-import { createTEditor } from '@udecode/plate-common';
+import { createEditor } from '@udecode/plate-common';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { onKeyDownSingleLine } from '../../onKeyDownSingleLine';
 
 jsxt;
 
-const input = createTEditor(
+const input = createEditor(
   (
     <editor>
       <hp>

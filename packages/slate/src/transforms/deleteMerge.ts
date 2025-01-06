@@ -1,6 +1,12 @@
-import { type Location, Editor, Path, Point, Range } from 'slate';
+import {
+  type Location,
+  Editor as EditorInterface,
+  Path,
+  Point,
+  Range,
+} from 'slate';
 
-import type { TEditor } from '../interfaces/editor/TEditor';
+import type { Editor } from '../interfaces/editor/editor';
 import type { TNodeEntry } from '../interfaces/node/TNodeEntry';
 
 import { createPathRef } from '../internal/editor/createPathRef';
@@ -18,7 +24,7 @@ import { withoutNormalizing } from '../internal/editor/withoutNormalizing';
 import { select } from '../internal/transforms/select';
 
 export const deleteMerge = (
-  editor: TEditor,
+  editor: Editor,
   options: {
     at?: Location;
     distance?: number;
@@ -70,7 +76,7 @@ export const deleteMerge = (
       return;
     }
     if (!hanging) {
-      at = Editor.unhangRange(editor as any, at, { voids });
+      at = EditorInterface.unhangRange(editor as any, at, { voids });
     }
 
     let [start, end] = Range.edges(at);

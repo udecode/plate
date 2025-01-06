@@ -2,7 +2,7 @@
 
 import {
   type SlateEditor,
-  createTEditor,
+  createEditor,
   getNode,
 } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
@@ -14,7 +14,7 @@ jsxt;
 
 describe('clean up code block', () => {
   it('should turn children of code block to code lines', () => {
-    const input = createTEditor(
+    const input = createEditor(
       (
         <editor>
           <hcodeblock>

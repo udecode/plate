@@ -1,5 +1,5 @@
 import {
-  type TEditor,
+  type Editor,
   type TElementEntry,
   isExpanded,
 } from '@udecode/plate-common';
@@ -18,7 +18,7 @@ export interface IndentCodeLineOptions {
  *   spaces.
  */
 export const indentCodeLine = (
-  editor: TEditor,
+  editor: Editor,
   { codeLine, indentDepth = 2 }: IndentCodeLineOptions
 ) => {
   const [, codeLinePath] = codeLine;

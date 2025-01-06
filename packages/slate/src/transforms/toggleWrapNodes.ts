@@ -1,7 +1,7 @@
-import type { TEditor, TElement } from '../interfaces';
+import type { Editor, TElement } from '../interfaces';
 
 /** Unwrap if the node type is in selection. Wrap otherwise. */
-export const toggleWrapNodes = (editor: TEditor, type: string) => {
+export const toggleWrapNodes = (editor: Editor, type: string) => {
   if (editor.api.some({ match: { type } })) {
     editor.tf.unwrapNodes({ match: { type } });
   } else {

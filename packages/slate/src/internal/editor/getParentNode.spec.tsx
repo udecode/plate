@@ -2,14 +2,14 @@
 
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { createTEditor } from '../../createTEditor';
+import { createEditor } from '../../createEditor';
 
 jsxt;
 
 describe('getParentNode', () => {
   describe('when not root path', () => {
     it('should return parent with empty path', () => {
-      const editor = createTEditor(
+      const editor = createEditor(
         (
           <editor>
             <hp>
@@ -26,7 +26,7 @@ describe('getParentNode', () => {
 
   describe('when root path', () => {
     it('should return undefined', () => {
-      const editor = createTEditor(
+      const editor = createEditor(
         (
           <editor>
             <hp>

@@ -2,14 +2,14 @@
 
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { jsxt } from '@udecode/plate-test-utils';
-import { createTEditor } from '@udecode/slate';
+import { createEditor } from '@udecode/slate';
 
 import { createPlateEditor } from '../../react';
 
 jsxt;
 
 describe('active', () => {
-  const input = createTEditor(
+  const input = createEditor(
     (
       <editor>
         <hblockquote>
@@ -20,7 +20,7 @@ describe('active', () => {
     ) as any
   );
 
-  const output = createTEditor(
+  const output = createEditor(
     (
       <editor>
         <hdefault>
@@ -40,7 +40,7 @@ describe('active', () => {
 });
 
 describe('inactive', () => {
-  const input = createTEditor(
+  const input = createEditor(
     (
       <editor>
         <hp>
@@ -51,7 +51,7 @@ describe('inactive', () => {
     ) as any
   );
 
-  const output = createTEditor(
+  const output = createEditor(
     (
       <editor>
         <hblockquote>

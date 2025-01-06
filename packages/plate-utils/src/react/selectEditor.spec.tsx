@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@udecode/plate-test-utils';
-import { createTEditor } from '@udecode/slate';
+import { createEditor } from '@udecode/slate';
 
 import { selectEditor } from './selectEditor';
 
@@ -11,7 +11,7 @@ describe('selectEditor', () => {
   describe('when edge is end', () => {});
 
   it('should set the cursor at the end', () => {
-    const input = createTEditor(
+    const input = createEditor(
       (
         <editor>
           <hp>
@@ -47,7 +47,7 @@ describe('selectEditor', () => {
   describe('when edge is start', () => {});
 
   it('should set the cursor at the start', () => {
-    const input = createTEditor(
+    const input = createEditor(
       (
         <editor>
           <hp>
@@ -83,7 +83,7 @@ describe('selectEditor', () => {
   describe('when at is defined', () => {});
 
   it('should set the cursor at', () => {
-    const input = createTEditor(
+    const input = createEditor(
       (
         <editor>
           <hp>

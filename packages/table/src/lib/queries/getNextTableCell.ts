@@ -1,11 +1,11 @@
-import type { TEditor, TNodeEntry } from '@udecode/plate-common';
+import type { Editor, TNodeEntry } from '@udecode/plate-common';
 
 import { Path } from 'slate';
 
 import { getCellInNextTableRow } from './getCellInNextTableRow';
 
 export const getNextTableCell = (
-  editor: TEditor,
+  editor: Editor,
   currentCell: TNodeEntry,
   currentPath: Path,
   currentRow: TNodeEntry

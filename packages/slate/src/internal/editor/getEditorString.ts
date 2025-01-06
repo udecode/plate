@@ -1,13 +1,13 @@
 import { string } from 'slate';
 
-import type { TEditor } from '../../interfaces/editor/TEditor';
+import type { Editor } from '../../interfaces/editor/editor';
 import type { GetEditorStringOptions } from '../../interfaces/editor/editor-types';
 import type { At } from '../../types/At';
 
 import { getAt } from '../../utils/getAt';
 
 export const getEditorString = (
-  editor: TEditor,
+  editor: Editor,
   at: At | null = editor.selection,
   options?: GetEditorStringOptions
 ) => {

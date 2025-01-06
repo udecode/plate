@@ -3,7 +3,7 @@
 import { jsxt } from '@udecode/plate-test-utils';
 import { Range } from 'slate';
 
-import { createTEditor } from '../../createTEditor';
+import { createEditor } from '../../createEditor';
 
 jsxt;
 
@@ -11,7 +11,7 @@ describe('isAt', () => {
   describe('when checking range position', () => {
     describe('when checking text', () => {
       it('should be true when range is in single text node', () => {
-        const input = createTEditor(
+        const input = createEditor(
           (
             <editor>
               <hp>
@@ -27,7 +27,7 @@ describe('isAt', () => {
       });
 
       it('should be false when range spans multiple text nodes', () => {
-        const input = createTEditor(
+        const input = createEditor(
           (
             <editor>
               <hp>
@@ -48,7 +48,7 @@ describe('isAt', () => {
       describe('when selection is in the same block', () => {
         describe('when one text', () => {
           it('should be false for blocks check', () => {
-            const input = createTEditor(
+            const input = createEditor(
               (
                 <editor>
                   <hp>
@@ -64,7 +64,7 @@ describe('isAt', () => {
           });
 
           it('should be true for block check', () => {
-            const input = createTEditor(
+            const input = createEditor(
               (
                 <editor>
                   <hp>
@@ -82,7 +82,7 @@ describe('isAt', () => {
 
         describe('when focus is inline element', () => {
           it('should be false for blocks check', () => {
-            const input = createTEditor(
+            const input = createEditor(
               (
                 <editor>
                   <hp>
@@ -107,7 +107,7 @@ describe('isAt', () => {
 
       describe('when selection spans multiple blocks', () => {
         it('should be true for blocks check', () => {
-          const input = createTEditor(
+          const input = createEditor(
             (
               <editor>
                 <hp>
@@ -126,7 +126,7 @@ describe('isAt', () => {
         });
 
         it('should be false for block check', () => {
-          const input = createTEditor(
+          const input = createEditor(
             (
               <editor>
                 <hp>
@@ -148,7 +148,7 @@ describe('isAt', () => {
 
     describe('when checking block boundaries', () => {
       it('should be true when range starts at block start', () => {
-        const input = createTEditor(
+        const input = createEditor(
           (
             <editor>
               <hp>
@@ -164,7 +164,7 @@ describe('isAt', () => {
       });
 
       it('should be true when range ends at block end', () => {
-        const input = createTEditor(
+        const input = createEditor(
           (
             <editor>
               <hp>
@@ -180,7 +180,7 @@ describe('isAt', () => {
       });
 
       it('should be true when range covers entire block', () => {
-        const input = createTEditor(
+        const input = createEditor(
           (
             <editor>
               <hp>
@@ -202,7 +202,7 @@ describe('isAt', () => {
   describe('when checking point position', () => {
     describe('when checking word end', () => {
       it('should be true when at word end', () => {
-        const editor = createTEditor(
+        const editor = createEditor(
           (
             <editor>
               <hp>
@@ -221,7 +221,7 @@ describe('isAt', () => {
       });
 
       it('should be false when not at word end', () => {
-        const editor = createTEditor(
+        const editor = createEditor(
           (
             <editor>
               <hp>
@@ -240,7 +240,7 @@ describe('isAt', () => {
       });
 
       it('should be true at end of text', () => {
-        const editor = createTEditor(
+        const editor = createEditor(
           (
             <editor>
               <hp>

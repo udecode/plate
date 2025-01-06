@@ -1,12 +1,12 @@
 import { first } from 'slate';
 
 import type { DescendantOf, TNodeEntry } from '../../interfaces';
-import type { TEditor } from '../../interfaces/editor/TEditor';
+import type { Editor } from '../../interfaces/editor/editor';
 import type { At } from '../../types';
 
 import { getAt } from '../../utils';
 
-export const getFirstNode = <N extends DescendantOf<E>, E extends TEditor>(
+export const getFirstNode = <N extends DescendantOf<E>, E extends Editor>(
   editor: E,
   at: At
 ): TNodeEntry<N> | undefined => {

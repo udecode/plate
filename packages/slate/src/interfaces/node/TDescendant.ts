@@ -1,4 +1,4 @@
-import type { TEditor, Value } from '../editor/TEditor';
+import type { Editor, Value } from '../editor/editor';
 import type { ElementOf, TElement } from '../element/TElement';
 import type { TText, TextOf } from '../text/TText';
 import type { TNode } from './TNode';
@@ -14,7 +14,7 @@ import { TextApi } from '../text';
 export type TDescendant = TElement | TText;
 
 /** A utility type to get all the descendant node types from a root node type. */
-export type DescendantOf<N extends TNode> = N extends TEditor
+export type DescendantOf<N extends TNode> = N extends Editor
   ? ElementOf<N> | TextOf<N>
   : N extends TElement
     ? ElementOf<N['children'][number]> | TextOf<N>
@@ -26,7 +26,7 @@ export type DescendantIn<V extends Value> = DescendantOf<V[number]>;
 export type ChildOf<
   N extends TNode,
   I extends number = number,
-> = N extends TEditor
+> = N extends Editor
   ? N['children'][I]
   : N extends TElement
     ? N['children'][I]

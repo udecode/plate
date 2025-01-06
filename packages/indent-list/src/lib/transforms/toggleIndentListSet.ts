@@ -1,4 +1,4 @@
-import type { TEditor, TNodeEntry } from '@udecode/plate-common';
+import type { Editor, TNodeEntry } from '@udecode/plate-common';
 
 import {
   BaseIndentListPlugin,
@@ -9,7 +9,7 @@ import { type IndentListOptions, indentList, indentTodo } from './indentList';
 
 /** Set indent list if not set. */
 export const toggleIndentListSet = (
-  editor: TEditor,
+  editor: Editor,
   [node, _path]: TNodeEntry,
   { listStyleType = ListStyleType.Disc, ...options }: IndentListOptions
 ) => {

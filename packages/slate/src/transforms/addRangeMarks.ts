@@ -1,11 +1,11 @@
 import { type Location, Path, Range, Text } from 'slate';
 
 import type { TNode } from '../interfaces';
-import type { TEditor } from '../interfaces/editor/TEditor';
+import type { Editor } from '../interfaces/editor/editor';
 
 /** Add marks to each node of a range. */
 export const addRangeMarks = (
-  editor: TEditor,
+  editor: Editor,
   props: any,
   {
     at = editor.selection,

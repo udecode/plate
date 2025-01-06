@@ -1,7 +1,7 @@
 import { hasBlocks as hasBlocksBase } from 'slate';
 
-import type { TEditor } from '../../interfaces/editor/TEditor';
+import type { Editor } from '../../interfaces/editor/editor';
 import type { TElement } from '../../interfaces/element/TElement';
 
-export const hasBlocks = (editor: TEditor, element: TElement) =>
+export const hasBlocks = (editor: Editor, element: TElement) =>
   hasBlocksBase(editor as any, element);

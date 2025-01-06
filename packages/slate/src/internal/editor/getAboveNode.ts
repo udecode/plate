@@ -1,6 +1,6 @@
 import { above } from 'slate';
 
-import type { TEditor, ValueOf } from '../../interfaces/editor/TEditor';
+import type { Editor, ValueOf } from '../../interfaces/editor/editor';
 import type { GetAboveNodeOptions } from '../../interfaces/editor/editor-types';
 import type { AncestorOf } from '../../interfaces/node/TAncestor';
 import type { TNodeEntry } from '../../interfaces/node/TNodeEntry';
@@ -9,7 +9,7 @@ import { getQueryOptions } from '../../utils/match';
 
 export const getAboveNode = <
   N extends AncestorOf<E>,
-  E extends TEditor = TEditor,
+  E extends Editor = Editor,
 >(
   editor: E,
   options?: GetAboveNodeOptions<ValueOf<E>>

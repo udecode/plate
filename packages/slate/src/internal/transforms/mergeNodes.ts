@@ -1,8 +1,14 @@
-import { type Element, type Text, Editor, Path, Range } from 'slate';
+import {
+  type Element,
+  type Text,
+  Editor as EditorInterface,
+  Path,
+  Range,
+} from 'slate';
 
 import type { MergeNodesOptions } from '../../interfaces/editor/editor-types';
 
-import { type TEditor, type ValueOf, TextApi } from '../../interfaces';
+import { type Editor, type ValueOf, TextApi } from '../../interfaces';
 import { isElement } from '../../interfaces/element/isElement';
 import { hasSingleChild } from '../../interfaces/node/hasSingleChild';
 import { createPathRef } from '../../internal/editor/createPathRef';
@@ -16,7 +22,7 @@ import { getQueryOptions } from '../../utils';
 import { isEmpty } from '../editor/isEmpty';
 import { select } from './select';
 
-export const mergeNodes = <E extends TEditor>(
+export const mergeNodes = <E extends Editor>(
   editor: E,
   options: MergeNodesOptions<ValueOf<E>, E> = {}
 ): void => {
@@ -44,7 +50,7 @@ export const mergeNodes = <E extends TEditor>(
       }
     }
     if (!hanging && Range.isRange(at)) {
-      at = Editor.unhangRange(editor as any, at);
+      at = EditorInterface.unhangRange(editor as any, at);
     }
     if (Range.isRange(at)) {
       if (Range.isCollapsed(at)) {
@@ -79,7 +85,7 @@ export const mergeNodes = <E extends TEditor>(
     const newPath = Path.next(prevPath);
     const commonPath = Path.common(path, prevPath);
     const isPreviousSibling = Path.isSibling(path, prevPath);
-    const _levels = Editor.levels(editor as any, { at: path });
+    const _levels = EditorInterface.levels(editor as any, { at: path });
     const levels = new Set(
       Array.from(_levels, ([n]) => n)
         .slice(commonPath.length)

@@ -58,7 +58,7 @@ import type {
   TNodeEntry,
 } from '../node/index';
 import type { MarksIn, TextIn } from '../text/index';
-import type { Value } from './TEditor';
+import type { Value } from './editor';
 import type {
   FindNodeOptions,
   FindPathOptions,
@@ -73,7 +73,7 @@ import type {
   GetVoidNodeOptions,
 } from './editor-types';
 
-export type TEditorApi<V extends Value = Value> = Pick<
+export type EditorApi<V extends Value = Value> = Pick<
   Editor,
   'hasPath' | 'setNormalizing' | 'shouldMergeNodesRemovePrevNode'
 > & {

@@ -1,10 +1,10 @@
 import castArray from 'lodash/castArray.js';
 
-import type { TEditor } from '../interfaces';
+import type { Editor } from '../interfaces';
 import type { QueryEditorOptions } from '../types';
 
 /** Query the editor state. */
-export const queryEditor = <E extends TEditor>(
+export const queryEditor = <E extends Editor>(
   editor: E,
   {
     allow,

@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createTEditor } from '@udecode/plate-common';
+import { type SlateEditor, createEditor } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
@@ -9,7 +9,7 @@ import { getListItemEntry } from './getListItemEntry';
 jsxt;
 
 describe('when the cursor is in a list item paragraph', () => {
-  const input = createTEditor(
+  const input = createEditor(
     (
       <editor>
         <hul>
@@ -57,7 +57,7 @@ describe('when the cursor is in a list item paragraph', () => {
 });
 
 describe('when the cursor is in a nested list item paragraph', () => {
-  const input = createTEditor(
+  const input = createEditor(
     (
       <editor>
         <hul>
@@ -110,7 +110,7 @@ describe('when the cursor is in a nested list item paragraph', () => {
 });
 
 describe('when the selection range includes root list item', () => {
-  const input = createTEditor(
+  const input = createEditor(
     (
       <editor>
         <hul>
@@ -180,7 +180,7 @@ describe('when the selection range includes root list item', () => {
 });
 
 describe('when the cursor is not in a list item', () => {
-  const input = createTEditor(
+  const input = createEditor(
     (
       <editor>
         <hul>

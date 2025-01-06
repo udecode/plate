@@ -2,12 +2,12 @@
 
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { createTEditor } from '../../createTEditor';
+import { createEditor } from '../../createEditor';
 
 jsxt;
 
 describe('isText', () => {
-  const editor = createTEditor(
+  const editor = createEditor(
     (
       <editor>
         <hp>test</hp>

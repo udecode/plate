@@ -3,12 +3,12 @@
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { createTEditor, toggleWrapNodes } from '..';
+import { createEditor, toggleWrapNodes } from '..';
 
 jsxt;
 
 describe('active', () => {
-  const input = createTEditor(
+  const input = createEditor(
     (
       <editor>
         <hcodeblock>
@@ -21,7 +21,7 @@ describe('active', () => {
     ) as any
   );
 
-  const output = createTEditor(
+  const output = createEditor(
     (
       <editor>
         <hp>
@@ -40,7 +40,7 @@ describe('active', () => {
 });
 
 describe('not active', () => {
-  const input = createTEditor(
+  const input = createEditor(
     (
       <editor>
         <hp>
@@ -51,7 +51,7 @@ describe('not active', () => {
     ) as any
   );
 
-  const output = createTEditor(
+  const output = createEditor(
     (
       <editor>
         <hcodeblock>

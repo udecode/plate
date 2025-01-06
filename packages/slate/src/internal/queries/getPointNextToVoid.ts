@@ -1,13 +1,13 @@
 import { type Point, Path } from 'slate';
 
-import type { TEditor } from '../../interfaces/index';
+import type { Editor } from '../../interfaces/index';
 
 /**
  * If the start point is inside an inline void, get the point before or after
  * it.
  */
 export const getPointNextToVoid = (
-  editor: TEditor,
+  editor: Editor,
   {
     after,
     at,

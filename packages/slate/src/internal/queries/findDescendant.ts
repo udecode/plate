@@ -8,7 +8,7 @@ import {
   type DescendantOf,
   type FindNodeOptions,
   type NodeEntryOf,
-  type TEditor,
+  type Editor,
   type TNodeEntry,
   type ValueOf,
   getNodeDescendants,
@@ -17,7 +17,7 @@ import { match } from '../../utils';
 
 export const findDescendant = <
   N extends DescendantOf<E>,
-  E extends TEditor = TEditor,
+  E extends Editor = Editor,
 >(
   editor: E,
   options: FindNodeOptions<ValueOf<E>>

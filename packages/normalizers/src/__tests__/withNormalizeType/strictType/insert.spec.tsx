@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { createSlateEditor, createTEditor } from '@udecode/plate-common';
+import { createSlateEditor, createEditor } from '@udecode/plate-common';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { jsxt } from '@udecode/plate-test-utils';
 
@@ -8,7 +8,7 @@ import { NormalizeTypesPlugin } from '../../../lib/NormalizeTypesPlugin';
 
 jsxt;
 
-const input = createTEditor(
+const input = createEditor(
   (
     <editor>
       <hh1>test</hh1>

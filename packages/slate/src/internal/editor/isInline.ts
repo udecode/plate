@@ -1,6 +1,6 @@
-import type { TEditor } from '../../interfaces/editor/TEditor';
+import type { Editor } from '../../interfaces/editor/editor';
 
 import { isElement } from '../../interfaces/element';
 
-export const isInline = (editor: TEditor, value: any): boolean =>
+export const isInline = (editor: Editor, value: any): boolean =>
   isElement(value) && editor.isInline(value);

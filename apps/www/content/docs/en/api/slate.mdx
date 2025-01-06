@@ -111,7 +111,7 @@ Find the corresponding documentation in the [Slate docs](https://docs.slatejs.or
 
 ### `removeEditorMark`
 
-### `TEditor`
+### `Editor`
 
 ### `unhangRange`
 
@@ -372,7 +372,7 @@ Paths above this level are invalid.
 Iterates through all nodes in the editor and returns the first match. If no match is found, returns undefined.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor to search for the descendant node.
   </APIItem>
   <APIItem name="options" type="FindNodeOptions">
@@ -392,7 +392,7 @@ Returns the block above a specified location
 - **Default:** Selection.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor to search for the block.
   </APIItem>
   <APIItem name="options" type="GetAboveNodeOptions">
@@ -410,7 +410,7 @@ Returns the block above the specified location.
 Retrieves block-level node entries from the editor.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor to search for block-level nodes.
   </APIItem>
   <APIItem name="options" type="GetNodeEntriesOptions<V>" optional>
@@ -444,7 +444,7 @@ Returns the edge blocks above a specified location.
 - **Default:** Selection.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor to search for the edge blocks.
   </APIItem>
   <APIItem name="options" type="GetAboveNodeOptions">
@@ -524,7 +524,7 @@ Returns the last child of a node or `null` if no children.
 Retrieves the last node at a specified level in the editor.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor to search for the last node.
   </APIItem>
   <APIItem name="level" type="number">
@@ -541,7 +541,7 @@ Retrieves the last node at a specified level in the editor.
 Retrieves the value of the selection mark by key in the editor.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor where the selection mark is located.
   </APIItem>
   <APIItem name="key" type="string">
@@ -558,7 +558,7 @@ Retrieves the value of the selection mark by key in the editor.
 Retrieves the start point of the next node at a specified path in the editor.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor to search for the next node.
   </APIItem>
   <APIItem name="at" type="Path">
@@ -592,7 +592,7 @@ Retrieves the sibling nodes following a specified path in the ancestor node.
 Retrieves the operations of the editor.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor to get its operations.
   </APIItem>
 </APIParameters>
@@ -605,7 +605,7 @@ Retrieves the operations of the editor.
 Returns the point before a location, with additional options to customize the behavior. If no options are provided or neither **`match`** nor **`matchString`** are defined, it will default to using **`getPointBefore`**.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor where to find the point before a location.
   </APIItem>
   <APIItem name="at" type="Location">
@@ -624,7 +624,7 @@ Returns the point before a location, with additional options to customize the be
 Returns the point from a location (**Default:** selection). If the location is a range, it gets the anchor point. If the location is a path, it gets the point at this path with offset 0.
 
 <APIParameters>
-<APIItem name="editor" type="TEditor">
+<APIItem name="editor" type="Editor">
 The editor where to find the point.
 </APIItem>
 <APIItem name="options" type="object">
@@ -657,7 +657,7 @@ Returns the point from the location.
 If the start point is inside an inline void, returns the point before or after it.
 
 <APIParameters>
-<APIItem name="editor" type="TEditor">
+<APIItem name="editor" type="Editor">
 The editor where to find the point next to the void.
 </APIItem>
 <APIItem name="options" type="object">
@@ -686,7 +686,7 @@ Returns the point next to the void.
 Finds the block before a block by ID. If not found, it finds the first block by ID and returns **`[null, its previous path]`**.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor where to find the previous block.
   </APIItem>
   <APIItem name="id" type="string">
@@ -705,7 +705,7 @@ Finds the block before a block by ID. If not found, it finds the first block by 
 Gets the end point of the previous node.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor where to find the previous node's end point.
   </APIItem>
   <APIItem name="at" type="Path">
@@ -734,7 +734,7 @@ Generates the previous path based on the given path.
 Gets the previous sibling node from the given path.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
   <APIItem name="path" type="Path">
@@ -751,7 +751,7 @@ Gets the previous sibling node from the given path.
 Gets the range from the point before a given location to the end point of the location.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
   <APIItem name="at" type="Location">
@@ -771,7 +771,7 @@ Gets the range from the point before a given location to the end point of the lo
 Gets the range from the start of the block above a location to the location.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
   <APIItem name="options" type="Omit<GetAboveNodeOptions, 'match'>" optional>
@@ -788,7 +788,7 @@ Gets the range from the start of the block above a location to the location.
 Retrieves the fragment of the current selection, optionally unwrapping structural nodes.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor to get the selection fragment from.
   </APIItem>
   <APIItem name="options" type="GetSelectionFragmentOptions" optional>
@@ -809,7 +809,7 @@ Retrieves the fragment of the current selection, optionally unwrapping structura
 Gets the selected text from the editor.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
 </APIParameters>
@@ -822,7 +822,7 @@ Gets the selected text from the editor.
 Checks whether an ancestor node is empty (has empty text and no inline children).
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
   <APIItem name="node" type="TAncestor">
@@ -840,7 +840,7 @@ True if the ancestor node is empty, false otherwise.
 Checks whether the block above the selection is empty.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
 </APIParameters>
@@ -855,7 +855,7 @@ True if the block above the selection is empty, false otherwise.
 Checks whether the text in the block after the selection is empty.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
 </APIParameters>
@@ -870,7 +870,7 @@ True if the text in the block after the selection is empty, false otherwise.
 Checks whether the selection is at the end of the document.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
 </APIParameters>
@@ -900,7 +900,7 @@ True if the node is the first child of its parent, false otherwise.
 Checks whether a mark is active in the selection.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
   <APIItem name="type" type="string">
@@ -918,7 +918,7 @@ True if the mark is active in the selection.
 Checks whether a point is at the end of a word.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
   <APIItem name="at" type="Point">
@@ -934,7 +934,7 @@ Checks whether a point is at the end of a word.
 Determines whether the range (**Default:** selection) is across blocks.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
   <APIItem name="at" type="Range | null" optional>
@@ -951,7 +951,7 @@ Determines whether the range (**Default:** selection) is across blocks.
 Determines whether the range is within the same block.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
   <APIItem name="at" type="Range | null" optional>
@@ -980,7 +980,7 @@ Checks whether a range is within a single text path.
 Checks whether the selection focus is at the end of its parent block.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
   <APIItem name="options" type="GetAboveNodeOptions" optional>
@@ -997,7 +997,7 @@ Checks whether the selection focus is at the end of its parent block.
 Checks whether the selection anchor or focus is at the start of its parent block.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
   <APIItem name="options" type="GetAboveNodeOptions" optional>
@@ -1014,7 +1014,7 @@ Checks whether the selection anchor or focus is at the start of its parent block
 Checks whether the selection is expanded.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
 </APIParameters>
@@ -1029,7 +1029,7 @@ True if the selection is expanded, false otherwise.
 Checks whether the node at a given path is a text node.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
   <APIItem name="path" type="Path">
@@ -1047,7 +1047,7 @@ True if the node is a text node, false otherwise.
 Checks whether the word at a given point is after a trigger (punctuation character).
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
   <APIItem name="at" type="Point">
@@ -1068,7 +1068,7 @@ Checks whether the word at a given point is after a trigger (punctuation charact
 Queries the editor state.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
   <APIItem name="options" type="QueryEditorOptions" optional>
@@ -1088,7 +1088,7 @@ Queries the editor state.
 Duplicates the given blocks and inserts them after the last block in the selection.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
   <APIItem name="blocks" type="TNodeEntry[]">
@@ -1101,7 +1101,7 @@ Duplicates the given blocks and inserts them after the last block in the selecti
 Inserts nodes at a location in the document.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
   <APIItem name="nodes" type="TElement | TElement[]">
@@ -1117,7 +1117,7 @@ Inserts nodes at a location in the document.
 Inserts an empty element at a location in the document.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
   <APIItem name="type" type="string">
@@ -1133,7 +1133,7 @@ Inserts an empty element at a location in the document.
 Moves the children of a node to a path.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
   <APIItem name="options" type="MoveChildrenOptions">
@@ -1152,7 +1152,7 @@ The number of children moved.
 Removes all non-empty text nodes from the editor.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
   <APIItem name="options" type="RemoveNodesOptions<V>" optional>
@@ -1165,7 +1165,7 @@ Removes all non-empty text nodes from the editor.
 Removes a mark and triggers `onChange` if the selection is collapsed.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
   <APIItem name="options" type="RemoveMarkOptions">
@@ -1179,7 +1179,7 @@ Removes a mark and triggers `onChange` if the selection is collapsed.
 Removes all children of a node.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
   <APIItem name="path" type="Path">
@@ -1195,7 +1195,7 @@ Removes all children of a node.
 Removes all marks from the selection.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
 </APIParameters>
@@ -1205,7 +1205,7 @@ Removes all marks from the selection.
 Replaces the children of a node: removes then inserts them.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
   <APIItem name="options" type="ReplaceNodeChildrenOptions">
@@ -1219,7 +1219,7 @@ Replaces the children of a node: removes then inserts them.
 Selects the end point of the block above the selection.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
 </APIParameters>
@@ -1229,7 +1229,7 @@ Selects the end point of the block above the selection.
 Selects the range encompassing the given nodes.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
   <APIItem name="nodes" type="TNodeEntry[]">
@@ -1242,7 +1242,7 @@ Selects the range encompassing the given nodes.
 Sets properties on the block above the current selection.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
   <APIItem name="props" type="Partial<TNodeProps<N>>">
@@ -1258,7 +1258,7 @@ Sets properties on the block above the current selection.
 Sets properties on the lowest-level nodes within the block above the current selection.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
   <APIItem name="props" type="Partial<TNodeProps<N>>">
@@ -1274,7 +1274,7 @@ Sets properties on the lowest-level nodes within the block above the current sel
 Sets properties on all block nodes that match the given options.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
   <APIItem name="props" type="Partial<TNodeProps<N>>">
@@ -1290,7 +1290,7 @@ Sets properties on all block nodes that match the given options.
 Sets marks to selected text.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
   <APIItem name="marks" type="MarksOf<E>">
@@ -1306,7 +1306,7 @@ Sets marks to selected text.
 Adds or removes marks in the selection.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
   <APIItem name="options" type="ToggleMarkOptions">
@@ -1319,7 +1319,7 @@ Adds or removes marks in the selection.
 Unwraps a node if the node type is in selection, otherwise wraps it.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
   <APIItem name="type" type="string">
@@ -1332,7 +1332,7 @@ Unwraps a node if the node type is in selection, otherwise wraps it.
 Wraps the children of a node into a single element.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
   <APIItem name="element" type="N">
@@ -1402,7 +1402,7 @@ A new `TElement` node.
 Focuses the editor at a specified edge (start or end).
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
   <APIItem name="options" type="object" optional>

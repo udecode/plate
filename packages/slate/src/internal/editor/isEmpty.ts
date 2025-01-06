@@ -1,6 +1,6 @@
 import { Path, isEmpty as isEmptyBase } from 'slate';
 
-import type { TEditor } from '../../interfaces/editor/TEditor';
+import type { Editor } from '../../interfaces/editor/editor';
 import type { IsElementEmptyOptions } from '../../interfaces/editor/editor-types';
 import type { At } from '../../types';
 
@@ -8,7 +8,7 @@ import { TextApi, isNode } from '../../interfaces';
 import { getNextSiblingNodes } from '../../queries/getNextSiblingNodes';
 import { isEditor } from './isEditor';
 
-export const isEmpty = <E extends TEditor>(
+export const isEmpty = <E extends Editor>(
   editor: E,
   target: At | null = [],
   options?: IsElementEmptyOptions

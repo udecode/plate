@@ -1,4 +1,4 @@
-import type { ElementEntryOf, ElementOf, TEditor } from '@udecode/plate-common';
+import type { ElementEntryOf, ElementOf, Editor } from '@udecode/plate-common';
 
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 
@@ -15,7 +15,7 @@ import { setIndentListNode, setIndentTodoNode } from './setIndentListNode';
 /** Set indent list to entry + siblings. */
 export const setIndentListSiblingNodes = <
   N extends ElementOf<E>,
-  E extends TEditor = TEditor,
+  E extends Editor = Editor,
 >(
   editor: E,
   entry: ElementEntryOf<E>,

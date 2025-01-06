@@ -1,13 +1,13 @@
 import { start } from 'slate';
 
-import type { TEditor } from '../../interfaces/editor/TEditor';
+import type { Editor } from '../../interfaces/editor/editor';
 import type { GetStartPointOptions } from '../../interfaces/editor/editor-types';
 import type { At } from '../../types';
 
 import { getAt } from '../../utils';
 
 export const getStartPoint = (
-  editor: TEditor,
+  editor: Editor,
   at: At,
   options: GetStartPointOptions = {}
 ) => {

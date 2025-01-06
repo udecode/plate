@@ -1,6 +1,6 @@
 import { type Location, Path, Point, Range } from 'slate';
 
-import type { TEditor, ValueOf } from '../../interfaces/editor/TEditor';
+import type { Editor, ValueOf } from '../../interfaces/editor/editor';
 import type { GetAboveNodeOptions } from '../../interfaces/editor/editor-types';
 
 import { isExpanded } from '../../interfaces';
@@ -22,7 +22,7 @@ import { isExpanded } from '../../interfaces';
  * - If start=true, check if at start
  * - If end=true, check if at end
  */
-export const isAt = <E extends TEditor>(
+export const isAt = <E extends Editor>(
   editor: E,
   {
     at = editor.selection,

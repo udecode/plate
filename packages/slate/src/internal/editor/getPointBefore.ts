@@ -3,14 +3,14 @@ import castArray from 'lodash/castArray.js';
 import map from 'lodash/map.js';
 import { before } from 'slate';
 
-import type { TEditor } from '../../interfaces/editor/TEditor';
+import type { Editor } from '../../interfaces/editor/editor';
 import type { GetPointBeforeOptions } from '../../interfaces/editor/editor-types';
 import type { At } from '../../types';
 
 import { getAt } from '../../utils';
 
 export const getPointBefore = (
-  editor: TEditor,
+  editor: Editor,
   at: At,
   options?: GetPointBeforeOptions
 ) => {

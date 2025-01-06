@@ -12,4 +12,4 @@ const rowSize = useElementSelector(([node]) => node.size, [], {
 ```
 
 - New plugin attribute: `SlatePlugin.node.isSelectable`. Set it as false to prevent the node from being selected.
-- Plugin context `tf` and `api` now have `TEditor` methods.
+- Plugin context `tf` and `api` now have `Editor` methods.

@@ -1,6 +1,6 @@
 import { parent } from 'slate';
 
-import type { TEditor } from '../../interfaces/editor/TEditor';
+import type { Editor } from '../../interfaces/editor/editor';
 import type { GetParentNodeOptions } from '../../interfaces/editor/editor-types';
 import type { AncestorOf } from '../../interfaces/node/TAncestor';
 import type { TNodeEntry } from '../../interfaces/node/TNodeEntry';
@@ -10,7 +10,7 @@ import { getAt } from '../../utils';
 
 export const getParentNode = <
   N extends AncestorOf<E>,
-  E extends TEditor = TEditor,
+  E extends Editor = Editor,
 >(
   editor: E,
   at: At,

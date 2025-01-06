@@ -1,6 +1,6 @@
 import { removeMark } from 'slate';
 
-import type { TEditor } from '../../interfaces/editor/TEditor';
+import type { Editor } from '../../interfaces/editor/editor';
 
-export const removeEditorMark = (editor: TEditor, key: string) =>
+export const removeEditorMark = (editor: Editor, key: string) =>
   removeMark(editor as any, key);

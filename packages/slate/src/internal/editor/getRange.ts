@@ -1,14 +1,14 @@
 import { Range, range } from 'slate';
 
 import type { GetPointBeforeOptions } from '../../interfaces';
-import type { TEditor } from '../../interfaces/editor/TEditor';
+import type { Editor } from '../../interfaces/editor/editor';
 import type { At, TRange } from '../../types';
 
 import { getPointFromLocation } from '../../queries/getPointFromLocation';
 import { getAt } from '../../utils';
 
 export const getRange = (
-  editor: TEditor,
+  editor: Editor,
   at: At | 'before' | 'start',
   to?: At | null,
   options?: { before?: GetPointBeforeOptions }

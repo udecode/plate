@@ -1,5 +1,5 @@
 import { isEditor as isEditorBase } from 'slate';
 
-import type { TEditor } from '../../interfaces/editor/TEditor';
+import type { Editor } from '../../interfaces/editor/editor';
 
-export const isEditor = (value: any): value is TEditor => isEditorBase(value);
+export const isEditor = (value: any): value is Editor => isEditorBase(value);

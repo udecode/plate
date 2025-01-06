@@ -26,7 +26,7 @@ import type {
   TNodeEntry,
   TNodeProps,
 } from '../node/index';
-import type { Value } from './TEditor';
+import type { Value } from './editor';
 import type {
   EditorNormalizeOptions,
   InsertFragmentOptions,
@@ -42,7 +42,7 @@ import type {
   WrapNodesOptions,
 } from './editor-types';
 
-export type TEditorTransforms<V extends Value = Value> = {
+export type EditorTransforms<V extends Value = Value> = {
   /**
    * Insert of fragment of nodes at the specified location or (if not defined)
    * the current selection or (if not defined) the end of the document.

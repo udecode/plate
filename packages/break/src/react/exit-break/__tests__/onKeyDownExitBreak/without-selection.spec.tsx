@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { createTEditor } from '@udecode/plate-common';
+import { createEditor } from '@udecode/plate-common';
 import { getEditorPlugin } from '@udecode/plate-common/react';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import * as isHotkey from '@udecode/plate-core';
@@ -11,7 +11,7 @@ import { onKeyDownExitBreak } from '../../onKeyDownExitBreak';
 
 jsxt;
 
-const input = createTEditor(
+const input = createEditor(
   (
     <editor>
       <hp>test</hp>

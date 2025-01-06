@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { createTEditor } from '@udecode/plate-common';
+import { createEditor } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
@@ -10,7 +10,7 @@ jsxt;
 
 describe('isCodeBlockEmpty', () => {
   it('should be false when not in a code block', () => {
-    const input = createTEditor(
+    const input = createEditor(
       (
         <editor>
           <hp>
@@ -30,7 +30,7 @@ describe('isCodeBlockEmpty', () => {
   });
 
   it('should be false when in a code block with multiple lines', () => {
-    const input = createTEditor(
+    const input = createEditor(
       (
         <editor>
           <hcodeblock>
@@ -50,7 +50,7 @@ describe('isCodeBlockEmpty', () => {
   });
 
   it('should be false when in a non-empty code line', () => {
-    const input = createTEditor(
+    const input = createEditor(
       (
         <editor>
           <hcodeblock>
@@ -67,7 +67,7 @@ describe('isCodeBlockEmpty', () => {
   });
 
   it('should be true when in an empty code line', () => {
-    const input = createTEditor(
+    const input = createEditor(
       (
         <editor>
           <hcodeblock>

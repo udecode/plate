@@ -1,6 +1,6 @@
 /* eslint-disable jest/no-conditional-expect */
 import { BoldPlugin } from '@udecode/plate-basic-marks/react';
-import { type Value, createTEditor } from '@udecode/slate';
+import { type Value, createEditor } from '@udecode/slate';
 
 import { ParagraphPlugin, PlateApiPlugin, ReactPlugin } from '../../react';
 import { withPlate } from '../../react/editor/withPlate';
@@ -41,7 +41,7 @@ const coreKeys = [
 describe('withPlate', () => {
   describe('when default plugins', () => {
     it('should have core plugins', () => {
-      const editor = withPlate(createTEditor(), { id: '1' });
+      const editor = withPlate(createEditor(), { id: '1' });
 
       expect(editor.id).toBe('1');
       expect(editor.history).toBeDefined();
@@ -63,7 +63,7 @@ describe('withPlate', () => {
   describe('when plugins is an array', () => {
     it('should add custom plugins to core plugins', () => {
       const customPlugin = createSlatePlugin({ key: 'custom' });
-      const editor = withPlate(createTEditor(), {
+      const editor = withPlate(createEditor(), {
         id: '1',
         plugins: [customPlugin],
       });
@@ -78,7 +78,7 @@ describe('withPlate', () => {
 
   describe('when plugins is an empty array', () => {
     it('should only have core plugins', () => {
-      const editor = withPlate<Value, SlatePlugin>(createTEditor(), {
+      const editor = withPlate<Value, SlatePlugin>(createEditor(), {
         id: '1',
         plugins: [],
       });
@@ -100,7 +100,7 @@ describe('withPlate', () => {
         ],
       });
 
-      const editor = withPlate(createTEditor(), {
+      const editor = withPlate(createEditor(), {
         id: '1',
         plugins: [
           parentPlugin
@@ -137,7 +137,7 @@ describe('withPlate', () => {
       const HeadingPlugin = createPlatePlugin({ key: 'h1' });
       const customComponent = () => null;
 
-      const editor = withPlate(createTEditor(), {
+      const editor = withPlate(createEditor(), {
         id: '1',
         override: {
           components: {
@@ -161,7 +161,7 @@ describe('withPlate', () => {
       });
 
       // Test with low priority override
-      let editor = withPlate(createTEditor(), {
+      let editor = withPlate(createEditor(), {
         id: '1',
         plugins: [HeadingPlugin],
       });
@@ -170,7 +170,7 @@ describe('withPlate', () => {
       expect(h1Plugin.render.node).toBe(originalComponent);
 
       // Test with high priority override
-      editor = withPlate(createTEditor(), {
+      editor = withPlate(createEditor(), {
         id: '1',
         override: {
           components: {
@@ -192,7 +192,7 @@ describe('withPlate', () => {
         node: { type: 'originalType' },
       });
 
-      const editor = withPlate(createTEditor(), {
+      const editor = withPlate(createEditor(), {
         id: '1',
         override: {
           plugins: {
@@ -216,7 +216,7 @@ describe('withPlate', () => {
         node: { type: 'additional' },
       });
 
-      const editor = withPlate(createTEditor(), {
+      const editor = withPlate(createEditor(), {
         id: '1',
         plugins: [ParagraphPlugin, ReactPlugin, additionalPlugin],
       });
@@ -260,7 +260,7 @@ describe('withPlate', () => {
 
   describe('when editor already has plugins', () => {
     it('should not duplicate core plugins', () => {
-      const existingEditor = createTEditor();
+      const existingEditor = createEditor();
       existingEditor.plugins = [
         createSlatePlugin({ key: 'dom' }),
         createSlatePlugin({ key: 'history' }),
@@ -274,7 +274,7 @@ describe('withPlate', () => {
     });
 
     it('should add missing core plugins', () => {
-      const existingEditor = createTEditor();
+      const existingEditor = createEditor();
       existingEditor.pluginList = [
         createSlatePlugin({ key: 'dom' }),
         createSlatePlugin({ key: 'history' }),
@@ -290,7 +290,7 @@ describe('withPlate', () => {
 
     it('should not preserve custom plugins', () => {
       const customPlugin = createSlatePlugin({ key: 'custom' });
-      const existingEditor = createTEditor();
+      const existingEditor = createEditor();
       existingEditor.plugins = [
         createSlatePlugin({ key: 'dom' }),
         createSlatePlugin({ key: 'history' }),
@@ -307,7 +307,7 @@ describe('withPlate', () => {
 
   describe('when using override.enabled', () => {
     it('should disable specified core plugins', () => {
-      const editor = withPlate(createTEditor(), {
+      const editor = withPlate(createEditor(), {
         id: '1',
         override: {
           enabled: {
@@ -327,7 +327,7 @@ describe('withPlate', () => {
       const customPlugin1 = createSlatePlugin({ key: 'custom1' });
       const customPlugin2 = createSlatePlugin({ key: 'custom2' });
 
-      const editor = withPlate(createTEditor(), {
+      const editor = withPlate(createEditor(), {
         id: '1',
         override: {
           enabled: {
@@ -343,7 +343,7 @@ describe('withPlate', () => {
     });
 
     it('should not affect plugins not specified in override.enabled', () => {
-      const editor = withPlate(createTEditor(), {
+      const editor = withPlate(createEditor(), {
         id: '1',
         override: {
           enabled: {
@@ -363,7 +363,7 @@ describe('withPlate', () => {
 
   describe('when configuring core plugins', () => {
     it('should correctly configure the length plugin', () => {
-      const editor = withSlate(createTEditor(), {
+      const editor = withSlate(createEditor(), {
         id: '1',
         rootPlugin: (plugin) =>
           plugin.configurePlugin(LengthPlugin, {
@@ -379,7 +379,7 @@ describe('withPlate', () => {
   });
 
   it('should handle value, selection, and autoSelect options correctly', () => {
-    const editor = createTEditor();
+    const editor = createEditor();
     const value = [{ children: [{ text: 'Hello' }], type: 'paragraph' }];
     const selection = {
       anchor: { offset: 2, path: [0, 0] },
@@ -396,7 +396,7 @@ describe('withPlate', () => {
     expect(result.selection).toEqual(selection);
 
     // Test autoSelect start
-    const editorWithAutoSelectStart = withSlate(createTEditor(), {
+    const editorWithAutoSelectStart = withSlate(createEditor(), {
       autoSelect: 'start',
       value,
     });
@@ -407,7 +407,7 @@ describe('withPlate', () => {
     expect(editorWithAutoSelectStart.selection).toEqual(expectedStartSelection);
 
     // Test autoSelect end
-    const editorWithAutoSelectEnd = withSlate(createTEditor(), {
+    const editorWithAutoSelectEnd = withSlate(createEditor(), {
       autoSelect: 'end',
       value,
     });
@@ -418,13 +418,13 @@ describe('withPlate', () => {
     expect(editorWithAutoSelectEnd.selection).toEqual(expectedEndSelection);
 
     // Test empty children
-    const editorWithEmptyChildren = withSlate(createTEditor());
+    const editorWithEmptyChildren = withSlate(createEditor());
     expect(editorWithEmptyChildren.children).toEqual(
       editorWithEmptyChildren.api.create.value()
     );
 
     // Test pipeNormalizeInitialValue and normalizeEditor
-    const editor2 = withSlate(createTEditor(), {
+    const editor2 = withSlate(createEditor(), {
       shouldNormalizeEditor: true,
       value: [],
     });
@@ -445,7 +445,7 @@ describe('withPlate', () => {
     it('should deserialize HTML string into Slate value', () => {
       const htmlString = '<p>Hello, <b>world!</b></p>';
 
-      const editor = withSlate(createTEditor(), {
+      const editor = withSlate(createEditor(), {
         id: '1',
         plugins: [BoldPlugin],
         value: htmlString,

@@ -1,6 +1,6 @@
-import type { TEditor, TNodeEntry } from '../../interfaces/index';
+import type { Editor, TNodeEntry } from '../../interfaces/index';
 
-export const getNodesRange = (editor: TEditor, nodes: TNodeEntry[]) => {
+export const getNodesRange = (editor: Editor, nodes: TNodeEntry[]) => {
   if (nodes.length === 0) return;
 
   const firstBlockPath = nodes[0][1];

@@ -1,5 +1,5 @@
 import {
-  type TEditor,
+  type Editor,
   type TNodeEntry,
   isDefined,
 } from '@udecode/plate-common';
@@ -11,7 +11,7 @@ import { INDENT_LIST_KEYS } from '../BaseIndentListPlugin';
  * start (1).
  */
 export const normalizeFirstIndentListStart = (
-  editor: TEditor,
+  editor: Editor,
   [node, path]: TNodeEntry
 ) => {
   if (isDefined(node[INDENT_LIST_KEYS.listStart])) {

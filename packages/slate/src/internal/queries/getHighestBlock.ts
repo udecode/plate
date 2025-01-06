@@ -1,10 +1,10 @@
 import type { Path } from 'slate';
 
-import type { ChildOf, TEditor } from '../../interfaces';
+import type { ChildOf, Editor } from '../../interfaces';
 
 export const getHighestBlock = <
   N extends ChildOf<E>,
-  E extends TEditor = TEditor,
+  E extends Editor = Editor,
 >(
   editor: E,
   path?: Path

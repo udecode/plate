@@ -6,7 +6,7 @@ import { createPlateEditor } from '@udecode/plate-common/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { createTEditor } from '../createTEditor';
+import { createEditor } from '../createEditor';
 import { getNextSiblingNodes } from './getNextSiblingNodes';
 
 jsxt;
@@ -14,7 +14,7 @@ jsxt;
 describe('getNextSiblingNodes', () => {
   describe('when no siblings', () => {
     it('should return empty array', () => {
-      const input = createTEditor(
+      const input = createEditor(
         (
           <editor>
             <hp>
@@ -28,7 +28,7 @@ describe('getNextSiblingNodes', () => {
         ) as any
       );
 
-      const editor = createTEditor();
+      const editor = createEditor();
       editor.selection = input.selection;
       editor.children = input.children;
 
@@ -41,7 +41,7 @@ describe('getNextSiblingNodes', () => {
 
   describe('when has siblings', () => {
     it('should return sibling nodes', () => {
-      const input = createTEditor(
+      const input = createEditor(
         (
           <editor>
             <hp>

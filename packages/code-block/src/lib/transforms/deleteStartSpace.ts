@@ -1,10 +1,10 @@
-import type { TEditor } from '@udecode/plate-common';
+import type { Editor } from '@udecode/plate-common';
 
 import type { OutdentCodeLineOptions } from './outdentCodeLine';
 
 /** If there is a whitespace character at the start of the code line, delete it. */
 export const deleteStartSpace = (
-  editor: TEditor,
+  editor: Editor,
   { codeLine }: OutdentCodeLineOptions
 ) => {
   const [, codeLinePath] = codeLine;

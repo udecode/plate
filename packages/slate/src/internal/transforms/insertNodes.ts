@@ -10,7 +10,7 @@ import type { QueryNodeOptions } from '../../types';
 import {
   type ElementOrTextOf,
   type TDescendant,
-  type TEditor,
+  type Editor,
   type ValueOf,
   getNodeString,
 } from '../../interfaces';
@@ -18,7 +18,7 @@ import { getQueryOptions, queryNode } from '../../utils';
 
 export const insertNodes = <
   N extends ElementOrTextOf<E>,
-  E extends TEditor = TEditor,
+  E extends Editor = Editor,
 >(
   editor: E,
   nodes: N | N[],

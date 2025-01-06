@@ -1,9 +1,9 @@
-import type { TEditor } from '@udecode/plate-common';
+import type { Editor } from '@udecode/plate-common';
 
 import type { IndentCodeLineOptions } from '../transforms/indentCodeLine';
 
 export const getIndentDepth = (
-  editor: TEditor,
+  editor: Editor,
   { codeLine }: IndentCodeLineOptions
 ) => {
   const [, codeLinePath] = codeLine;

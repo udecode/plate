@@ -1,9 +1,9 @@
-import type { ElementOf, TEditor, TNodeProps, ValueOf } from '../interfaces';
+import type { ElementOf, Editor, TNodeProps, ValueOf } from '../interfaces';
 import type { SetNodesOptions } from '../interfaces/editor/editor-types';
 
 export const setBlockAboveNode = <
   N extends ElementOf<E>,
-  E extends TEditor = TEditor,
+  E extends Editor = Editor,
 >(
   editor: E,
   props: Partial<TNodeProps<N>>,
@@ -21,7 +21,7 @@ export const setBlockAboveNode = <
 
 export const setBlockAboveTexts = <
   N extends ElementOf<E>,
-  E extends TEditor = TEditor,
+  E extends Editor = Editor,
 >(
   editor: E,
   props: Partial<TNodeProps<N>>,

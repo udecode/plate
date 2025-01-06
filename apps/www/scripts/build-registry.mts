@@ -507,7 +507,6 @@ async function buildStylesIndex() {
       "slate",
       "slate-dom",
       "slate-react",
-      "slate-history",
       "slate-hyperscript",
     ]
 

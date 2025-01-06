@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { createSlateEditor, createTEditor } from '@udecode/plate-common';
+import { createSlateEditor, createEditor } from '@udecode/plate-common';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { BaseAlignPlugin } from '../../BaseAlignPlugin';
@@ -8,7 +8,7 @@ import { setAlign } from '../../transforms';
 
 jsxt;
 
-const input = createTEditor(
+const input = createEditor(
   (
     <editor>
       <hp align="center">

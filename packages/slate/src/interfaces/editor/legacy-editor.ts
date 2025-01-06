@@ -4,12 +4,12 @@ import type {
   deleteForward as deleteForwardBase,
 } from 'slate';
 
-import type { Value } from './TEditor';
-import type { TEditorApi } from './TEditorApi';
-import type { TEditorTransforms } from './TEditorTransforms';
+import type { Value } from './editor';
+import type { EditorApi } from './editor-api';
+import type { EditorTransforms } from './editor-transforms';
 
 export type LegacyEditorApi<V extends Value = Value> = Pick<
-  TEditorApi<V>,
+  EditorApi<V>,
   | 'getDirtyPaths'
   | 'getFragment'
   | 'isElementReadOnly'
@@ -29,7 +29,7 @@ export type LegacyEditorTransforms<V extends Value = Value> = {
   /** Delete content in the editor forward from the current selection. */
   deleteForward: OmitFirst<typeof deleteForwardBase>;
 } & Pick<
-  TEditorTransforms<V>,
+  EditorTransforms<V>,
   | 'addMark'
   | 'apply'
   | 'delete'
@@ -44,10 +44,10 @@ export type LegacyEditorTransforms<V extends Value = Value> = {
   | 'removeMark'
 > &
   Pick<
-    TEditorTransforms<V>,
+    EditorTransforms<V>,
     'insertData' | 'insertFragmentData' | 'insertTextData' | 'setFragmentData'
   > &
-  Pick<TEditorTransforms<V>, 'redo' | 'undo' | 'writeHistory'>;
+  Pick<EditorTransforms<V>, 'redo' | 'undo' | 'writeHistory'>;
 
 export type LegacyEditorMethods<V extends Value = Value> = LegacyEditorApi<V> &
   LegacyEditorTransforms<V>;

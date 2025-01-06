@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { type TEditor, type Value, createTEditor } from '@udecode/slate';
+import { type Editor, type Value, createEditor } from '@udecode/slate';
 
 import type { AnyPlatePlugin } from '../plugin';
 import type { PlateApiPlugin } from '../plugins';
@@ -51,7 +51,7 @@ export const withPlate = <
   V extends Value = Value,
   P extends AnyPluginConfig = PlateCorePlugin,
 >(
-  e: TEditor,
+  e: Editor,
   { plugins = [], ...options }: WithPlateOptions<V, P> = {}
 ): TPlateEditor<V, InferPlugins<P[]>> => {
   const editor = withSlate<V, P>(e, {
@@ -110,7 +110,7 @@ export type CreatePlateEditorOptions<
    *
    * @default createEditor()
    */
-  editor?: TEditor;
+  editor?: Editor;
 };
 
 /**
@@ -175,7 +175,7 @@ export const createPlateEditor = <
   V extends Value = Value,
   P extends AnyPluginConfig = PlateCorePlugin,
 >({
-  editor = createTEditor(),
+  editor = createEditor(),
   ...options
 }: CreatePlateEditorOptions<V, P> = {}): TPlateEditor<V, InferPlugins<P[]>> => {
   return withPlate<V, P>(editor, options);

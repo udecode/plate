@@ -1,9 +1,9 @@
-import type { ElementOrTextOf, TEditor } from '../interfaces';
+import type { ElementOrTextOf, Editor } from '../interfaces';
 import type { ReplaceNodeChildrenOptions } from './replaceNodeChildren';
 
 export const replaceNode = <
   N extends ElementOrTextOf<E>,
-  E extends TEditor = TEditor,
+  E extends Editor = Editor,
 >(
   editor: E,
   { at, insertOptions, nodes, removeOptions }: ReplaceNodeChildrenOptions<N, E>

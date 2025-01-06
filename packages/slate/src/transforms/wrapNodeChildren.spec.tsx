@@ -1,4 +1,4 @@
-import { createTEditor } from '../createTEditor';
+import { createEditor } from '../createEditor';
 import { wrapNodeChildren } from './wrapNodeChildren';
 
 describe('wrapNodeChildren', () => {
@@ -66,7 +66,7 @@ describe('wrapNodeChildren', () => {
       },
     ];
 
-    const editor = createTEditor();
+    const editor = createEditor();
     editor.children = initialValue;
 
     wrapNodeChildren(

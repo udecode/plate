@@ -1,5 +1,5 @@
 import {
-  type TEditor,
+  type Editor,
   type TNodeEntry,
   isDefined,
 } from '@udecode/plate-common';
@@ -12,7 +12,7 @@ import {
 
 /** Unset IndentListPlugin.key, listStart if BaseIndentPlugin.key is not defined. */
 export const normalizeIndentListNotIndented = (
-  editor: TEditor,
+  editor: Editor,
   [node, path]: TNodeEntry
 ) => {
   if (

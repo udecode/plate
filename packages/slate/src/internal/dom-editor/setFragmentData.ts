@@ -1,6 +1,6 @@
 import { DOMEditor } from 'slate-dom';
 
-import type { TEditor } from '../../interfaces/editor';
+import type { Editor } from '../../interfaces/editor';
 
-export const setFragmentData = (editor: TEditor, data: DataTransfer) =>
+export const setFragmentData = (editor: Editor, data: DataTransfer) =>
   DOMEditor.setFragmentData(editor as any, data);

@@ -5,7 +5,7 @@ import type { WrapNodesOptions } from '../interfaces/editor/editor-types';
 
 import {
   type ElementOf,
-  type TEditor,
+  type Editor,
   type TElement,
   type ValueOf,
   getNode,
@@ -20,7 +20,7 @@ import { moveChildren } from './moveChildren';
  */
 export const wrapNodeChildren = <
   N extends ElementOf<E>,
-  E extends TEditor = TEditor,
+  E extends Editor = Editor,
 >(
   editor: E,
   element: N,

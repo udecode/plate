@@ -2,10 +2,10 @@ import type { SelectionCollapseOptions } from 'slate/dist/interfaces/transforms/
 
 import { collapse } from 'slate';
 
-import type { TEditor } from '../../interfaces';
+import type { Editor } from '../../interfaces';
 
 export const collapseSelection = (
-  editor: TEditor,
+  editor: Editor,
   options?: SelectionCollapseOptions
 ) => {
   collapse(editor as any, options);

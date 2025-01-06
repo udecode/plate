@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createTEditor } from '@udecode/plate-common';
+import { type SlateEditor, createEditor } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
@@ -11,7 +11,7 @@ jsxt;
 
 describe('insert code line', () => {
   it('should insert code line below selected line', () => {
-    const input = createTEditor(
+    const input = createEditor(
       (
         <editor>
           <hcodeblock>

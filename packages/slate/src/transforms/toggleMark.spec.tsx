@@ -3,12 +3,12 @@
 import { BoldPlugin, ItalicPlugin } from '@udecode/plate-basic-marks/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { createTEditor, toggleMark } from '..';
+import { createEditor, toggleMark } from '..';
 
 jsxt;
 
 describe('active', () => {
-  const input = createTEditor(
+  const input = createEditor(
     (
       <editor>
         <hp>
@@ -39,7 +39,7 @@ describe('active', () => {
 });
 
 describe('clear', () => {
-  const input = createTEditor(
+  const input = createEditor(
     (
       <editor>
         <hp>
@@ -53,7 +53,7 @@ describe('clear', () => {
     ) as any
   );
 
-  const output = createTEditor(
+  const output = createEditor(
     (
       <editor>
         <hp>
@@ -71,7 +71,7 @@ describe('clear', () => {
 });
 
 describe('inactive', () => {
-  const input = createTEditor(
+  const input = createEditor(
     (
       <editor>
         <hp>test</hp>
@@ -83,7 +83,7 @@ describe('inactive', () => {
     ) as any
   );
 
-  const output = createTEditor(
+  const output = createEditor(
     (
       <editor>
         <hp>

@@ -1,11 +1,11 @@
 import type {
   GetNodeEntriesOptions,
-  TEditor,
+  Editor,
   ValueOf,
 } from '@udecode/plate-common';
 
 /** Get blocks with an id */
-export const getBlocksWithId = <E extends TEditor>(
+export const getBlocksWithId = <E extends Editor>(
   editor: E,
   options: GetNodeEntriesOptions<ValueOf<E>>
 ) => {

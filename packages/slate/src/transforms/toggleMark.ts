@@ -1,6 +1,6 @@
 import castArray from 'lodash/castArray.js';
 
-import type { TEditor } from '../interfaces';
+import type { Editor } from '../interfaces';
 
 import { removeMark } from './removeMark';
 
@@ -14,7 +14,7 @@ export interface ToggleMarkOptions {
 
 /** Add or remove marks in the selection. */
 export const toggleMark = (
-  editor: TEditor,
+  editor: Editor,
   { key, clear }: ToggleMarkOptions
 ) => {
   if (!editor.selection) return;

@@ -1,4 +1,4 @@
-import type { TEditor, TNodeEntry } from '@udecode/slate';
+import type { Editor, TNodeEntry } from '@udecode/slate';
 import type { Range } from 'slate';
 import type { DOMRange } from 'slate-dom';
 
@@ -25,7 +25,7 @@ export type TEditableProps = {
   renderElement?: RenderElementFn;
   renderLeaf?: RenderLeafFn;
   role?: string;
-  scrollSelectionIntoView?: (editor: TEditor, domRange: DOMRange) => void;
+  scrollSelectionIntoView?: (editor: Editor, domRange: DOMRange) => void;
   style?: React.CSSProperties;
   onDOMBeforeInput?: (event: InputEvent) => void;
 } & React.TextareaHTMLAttributes<HTMLDivElement>;

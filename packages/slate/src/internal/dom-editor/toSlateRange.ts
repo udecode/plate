@@ -1,9 +1,9 @@
 import { DOMEditor } from 'slate-dom';
 
-import type { TEditor } from '../../interfaces/editor';
+import type { Editor } from '../../interfaces/editor';
 
 export const toSlateRange = (
-  editor: TEditor,
+  editor: Editor,
   domRange: Parameters<typeof DOMEditor.toSlateRange>[1],
   options: Omit<Parameters<typeof DOMEditor.toSlateRange>[2], 'supressThrow'>
 ) => {

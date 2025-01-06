@@ -1,7 +1,7 @@
 import {
   type ChildOf,
   type ElementOrTextOf,
-  type TEditor,
+  type Editor,
   type TNode,
   type TNodeEntry,
   isAncestor,
@@ -22,7 +22,7 @@ const getLastChild = <N extends ChildOf<R>, R extends TNode>(
 
 export const getLastNodeByLevel = <
   N extends ElementOrTextOf<E>,
-  E extends TEditor = TEditor,
+  E extends Editor = Editor,
 >(
   editor: E,
   level: number

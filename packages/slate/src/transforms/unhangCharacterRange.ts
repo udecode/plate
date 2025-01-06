@@ -1,9 +1,9 @@
 import { Path, Range } from 'slate';
 
-import type { TEditor } from '../interfaces';
+import type { Editor } from '../interfaces';
 
 /** Unhang the range of length 1 so both edges are in the same text node. */
-export const unhangCharacterRange = (editor: TEditor, at: Range) => {
+export const unhangCharacterRange = (editor: Editor, at: Range) => {
   let [start, end] = Range.edges(at);
 
   if (!Path.equals(start.path, end.path)) {

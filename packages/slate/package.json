@@ -48,8 +48,7 @@
   },
   "peerDependencies": {
     "slate": ">=0.112.0",
-    "slate-dom": ">=0.111.0",
-    "slate-history": ">=0.93.0"
+    "slate-dom": ">=0.111.0"
   },
   "publishConfig": {
     "access": "public"

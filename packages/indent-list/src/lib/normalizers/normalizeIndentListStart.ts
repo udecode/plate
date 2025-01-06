@@ -1,7 +1,7 @@
 import {
   type ElementEntryOf,
   type ElementOf,
-  type TEditor,
+  type Editor,
   type TNodeEntry,
   getNode,
 } from '@udecode/plate-common';
@@ -17,7 +17,7 @@ import { getPreviousIndentList } from '../queries/getPreviousIndentList';
 import { normalizeFirstIndentListStart } from './normalizeFirstIndentListStart';
 
 export const normalizeNextIndentListStart = (
-  editor: TEditor,
+  editor: Editor,
   entry: TNodeEntry,
   prevEntry?: TNodeEntry
 ) => {
@@ -43,7 +43,7 @@ export const normalizeNextIndentListStart = (
 
 export const normalizeIndentListStart = <
   N extends ElementOf<E>,
-  E extends TEditor = TEditor,
+  E extends Editor = Editor,
 >(
   editor: E,
   entry: ElementEntryOf<E>,

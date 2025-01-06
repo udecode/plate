@@ -151,7 +151,6 @@
     "shadcx": "workspace:^",
     "slate": "0.112.0",
     "slate-dom": "0.111.0",
-    "slate-history": "0.110.3",
     "slate-hyperscript": "0.100.0",
     "slate-react": "0.111.0",
     "slate-test-utils": "1.3.2",

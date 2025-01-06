@@ -1,10 +1,10 @@
-import { type TEditor, TextApi } from '@udecode/plate-common';
+import { type Editor, TextApi } from '@udecode/plate-common';
 import { Path, Range } from 'slate';
 
 import type { SelectionRect } from '../types';
 
 export const getSelectionRects = (
-  editor: TEditor,
+  editor: Editor,
   {
     range,
     xOffset,

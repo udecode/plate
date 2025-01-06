@@ -1,6 +1,6 @@
 import { isNormalizing } from 'slate';
 
-import type { TEditor } from '../../interfaces/editor/TEditor';
+import type { Editor } from '../../interfaces/editor/editor';
 
-export const isEditorNormalizing = (editor: TEditor) =>
+export const isEditorNormalizing = (editor: Editor) =>
   isNormalizing(editor as any);

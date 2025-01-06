@@ -4,7 +4,7 @@ import type {
   UnknownObject,
 } from '@udecode/utils';
 
-import type { TEditor, Value } from '../editor/TEditor';
+import type { Editor, Value } from '../editor/editor';
 import type { TElement } from '../element/TElement';
 import type { TNode, TNodeProps } from '../node/TNode';
 
@@ -18,11 +18,11 @@ export type TText = {
 } & UnknownObject;
 
 /** A utility type to get all the text node types from a root node type. */
-export type TextOf<N extends TNode> = TEditor extends N
+export type TextOf<N extends TNode> = Editor extends N
   ? TText
   : TElement extends N
     ? TText
-    : N extends TEditor
+    : N extends Editor
       ? TextOf<N['children'][number]>
       : N extends TElement
         ? Extract<N['children'][number], TText> | TextOf<N['children'][number]>

@@ -9,7 +9,7 @@ import {
   type TText,
   BaseParagraphPlugin,
   TextApi,
-  createTEditor,
+  createEditor,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
@@ -64,7 +64,7 @@ export function transformDiffTexts(
   const texts = nodes.map((n) => inlineNodeCharMap.nodeToText(n));
   const nextTexts = nextNodes.map((n) => inlineNodeCharMap.nodeToText(n));
 
-  const nodesEditor = withChangeTracking(createTEditor(), options);
+  const nodesEditor = withChangeTracking(createEditor(), options);
   nodesEditor.children = [{ children: texts, type: BaseParagraphPlugin.key }];
 
   nodesEditor.tf.withoutNormalizing(() => {

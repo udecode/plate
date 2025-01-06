@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { createTEditor } from '@udecode/plate-common';
+import { createEditor } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
@@ -10,7 +10,7 @@ jsxt;
 
 describe('isSelectionAtCodeBlockStart', () => {
   it('should be false when not in a code block', () => {
-    const input = createTEditor(
+    const input = createEditor(
       (
         <editor>
           <hp>
@@ -32,7 +32,7 @@ describe('isSelectionAtCodeBlockStart', () => {
   });
 
   it('should be false when on a non-first line of a code block', () => {
-    const input = createTEditor(
+    const input = createEditor(
       (
         <editor>
           <hcodeblock>
@@ -54,7 +54,7 @@ describe('isSelectionAtCodeBlockStart', () => {
   });
 
   it('should be false when not at the start of a code line', () => {
-    const input = createTEditor(
+    const input = createEditor(
       (
         <editor>
           <hcodeblock>
@@ -73,7 +73,7 @@ describe('isSelectionAtCodeBlockStart', () => {
   });
 
   it('should be true when at the start of the first line of a code block', () => {
-    const input = createTEditor(
+    const input = createEditor(
       (
         <editor>
           <hcodeblock>

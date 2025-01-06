@@ -1,11 +1,11 @@
 import castArray from 'lodash/castArray.js';
 
-import type { MarksOf, TEditor } from '../interfaces';
+import type { MarksOf, Editor } from '../interfaces';
 
 import { removeMark } from './removeMark';
 
 /** Set marks to selected text. */
-export const setMarks = <E extends TEditor>(
+export const setMarks = <E extends Editor>(
   editor: E,
   marks: MarksOf<E>,
   clear: string[] | string = []

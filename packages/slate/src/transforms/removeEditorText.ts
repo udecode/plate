@@ -1,10 +1,10 @@
 import type { RemoveNodesOptions } from '../interfaces/editor/editor-types';
 
-import { type TEditor, type ValueOf, TextApi } from '../interfaces';
+import { type Editor, type ValueOf, TextApi } from '../interfaces';
 import { getQueryOptions } from '../utils';
 
 /** Remove non-empty editor text nodes */
-export const removeEditorText = <E extends TEditor>(
+export const removeEditorText = <E extends Editor>(
   editor: E,
   options: RemoveNodesOptions<ValueOf<E>> = {}
 ) => {

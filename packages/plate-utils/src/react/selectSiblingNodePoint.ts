@@ -1,8 +1,8 @@
-import type { TEditor, TNode } from '@udecode/slate';
+import type { Editor, TNode } from '@udecode/slate';
 import type { Path } from 'slate';
 
 export const selectSiblingNodePoint = (
-  editor: TEditor,
+  editor: Editor,
   {
     at,
     focus = true,

@@ -1,10 +1,10 @@
 import type { DescendantOf } from '../../interfaces';
-import type { TEditor, ValueOf } from '../../interfaces/editor/TEditor';
+import type { Editor, ValueOf } from '../../interfaces/editor/editor';
 import type { InsertNodesOptions } from '../../interfaces/editor/editor-types';
 
 export const insertNode = <
   N extends DescendantOf<E>,
-  E extends TEditor = TEditor,
+  E extends Editor = Editor,
 >(
   editor: E,
   node: N,

@@ -1,4 +1,4 @@
-import type { TEditor } from '@udecode/plate-common';
+import type { Editor } from '@udecode/plate-common';
 import type { Path } from 'slate';
 
 import { BaseIndentPlugin } from '@udecode/plate-indent';
@@ -10,7 +10,7 @@ import {
 import { ListStyleType } from '../types';
 
 export const setIndentListNode = (
-  editor: TEditor,
+  editor: Editor,
   {
     at,
     indent = 0,
@@ -33,7 +33,7 @@ export const setIndentListNode = (
 };
 
 export const setIndentTodoNode = (
-  editor: TEditor,
+  editor: Editor,
   {
     at,
     indent = 0,

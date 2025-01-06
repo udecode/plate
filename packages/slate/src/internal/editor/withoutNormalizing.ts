@@ -1,9 +1,9 @@
 import { withoutNormalizing as withoutNormalizingBase } from 'slate';
 
-import type { TEditor } from '../../interfaces/editor/TEditor';
+import type { Editor } from '../../interfaces/editor/editor';
 
 export const withoutNormalizing = (
-  editor: TEditor,
+  editor: Editor,
   fn: () => boolean | void
 ) => {
   let normalized = false;

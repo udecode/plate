@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { createTEditor } from '@udecode/plate-common';
+import { createEditor } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
@@ -39,7 +39,7 @@ describe('withLink', () => {
     describe('when inserting url text', () => {
       // https://github.com/udecode/editor-protocol/issues/34
       describe('when in a paragraph', () => {
-        const input = createTEditor(
+        const input = createEditor(
           (
             <editor>
               <hp>
@@ -73,7 +73,7 @@ describe('withLink', () => {
 
       // https://github.com/udecode/editor-protocol/issues/36
       describe('when only one edge in a link', () => {
-        const input = createTEditor(
+        const input = createEditor(
           (
             <editor>
               <hp>
@@ -115,7 +115,7 @@ describe('withLink', () => {
 
       // https://github.com/udecode/editor-protocol/issues/37
       describe('when selection contains a link without the edges inside', () => {
-        const input = createTEditor(
+        const input = createEditor(
           (
             <editor>
               <hp>
@@ -152,7 +152,7 @@ describe('withLink', () => {
       // https://github.com/udecode/editor-protocol/issues/38
       describe('when in a link', () => {
         it('should run default insertText', () => {
-          const input = createTEditor(
+          const input = createEditor(
             (
               <editor>
                 <hp>
@@ -194,7 +194,7 @@ describe('withLink', () => {
     describe('when inserting space', () => {
       // https://github.com/udecode/editor-protocol/issues/41
       describe('when after link', () => {
-        const input = createTEditor(
+        const input = createEditor(
           (
             <editor>
               <hp>
@@ -226,7 +226,7 @@ describe('withLink', () => {
 
       // https://github.com/udecode/editor-protocol/issues/40
       describe('when after non-url text', () => {
-        const input = createTEditor(
+        const input = createEditor(
           (
             <editor>
               <hp>
@@ -256,7 +256,7 @@ describe('withLink', () => {
 
       // https://github.com/udecode/editor-protocol/issues/39
       describe('when after url text', () => {
-        const input = createTEditor(
+        const input = createEditor(
           (
             <editor>
               <hp>
@@ -287,7 +287,7 @@ describe('withLink', () => {
       });
 
       describe('when cursor is after link in next block', () => {
-        const input = createTEditor(
+        const input = createEditor(
           (
             <editor>
               <hp>
@@ -326,7 +326,7 @@ describe('withLink', () => {
       });
 
       describe('when creating new block', () => {
-        const input = createTEditor(
+        const input = createEditor(
           (
             <editor>
               <hp>
@@ -361,7 +361,7 @@ describe('withLink', () => {
 
       // https://github.com/udecode/editor-protocol/issues/42
       describe('when after url at start of block', () => {
-        const input = createTEditor(
+        const input = createEditor(
           (
             <editor>
               <hp>
@@ -393,7 +393,7 @@ describe('withLink', () => {
       });
 
       describe('when getUrlHref', () => {
-        const input = createTEditor(
+        const input = createEditor(
           (
             <editor>
               <hp>
@@ -439,7 +439,7 @@ describe('withLink', () => {
 
     // https://github.com/udecode/editor-protocol/issues/62
     describe('when url with bold mark', () => {
-      const input = createTEditor(
+      const input = createEditor(
         (
           <editor>
             <hp>
@@ -473,7 +473,7 @@ describe('withLink', () => {
     });
 
     describe('pasting a link keeps the selected text but turns it into a link', () => {
-      const input = createTEditor(
+      const input = createEditor(
         (
           <editor>
             <hp>
@@ -506,7 +506,7 @@ describe('withLink', () => {
     });
 
     describe('pasting a link do not keep the selected text and turns it into a link', () => {
-      const input = createTEditor(
+      const input = createEditor(
         (
           <editor>
             <hp>
@@ -550,7 +550,7 @@ describe('withLink', () => {
 
   describe('withRemoveEmptyNodes', () => {
     describe('when link becomes empty', () => {
-      const input = createTEditor(
+      const input = createEditor(
         (
           <editor>
             <hp>
@@ -583,7 +583,7 @@ describe('withLink', () => {
     });
 
     describe('when link becomes empty but contains zero-width space', () => {
-      const input = createTEditor(
+      const input = createEditor(
         (
           <editor>
             <hp>

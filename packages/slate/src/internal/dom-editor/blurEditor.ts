@@ -1,5 +1,5 @@
 import { DOMEditor } from 'slate-dom';
 
-import type { TEditor } from '../../interfaces/editor';
+import type { Editor } from '../../interfaces/editor';
 
-export const blurEditor = (editor: TEditor) => DOMEditor.blur(editor as any);
+export const blurEditor = (editor: Editor) => DOMEditor.blur(editor as any);

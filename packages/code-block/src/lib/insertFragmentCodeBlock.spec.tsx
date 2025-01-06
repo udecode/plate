@@ -2,7 +2,7 @@
 
 import type { TDescendant } from '@udecode/plate-common';
 
-import { BaseParagraphPlugin, createTEditor } from '@udecode/plate-common';
+import { BaseParagraphPlugin, createEditor } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
@@ -25,7 +25,7 @@ const editorTest = (input: any, fragment: any, expected: any) => {
 describe('pasting a code block', () => {
   describe('when selection outside of code block', () => {
     it('should paste the code block', () => {
-      const input = createTEditor(
+      const input = createEditor(
         (
           <editor>
             <hcodeblock>
@@ -71,7 +71,7 @@ describe('pasting a code block', () => {
 
   describe('when selection inside of code block', () => {
     it('should insert code lines as a fragment', () => {
-      const input = createTEditor(
+      const input = createEditor(
         (
           <editor>
             <hcodeblock>
@@ -115,7 +115,7 @@ describe('pasting a code block', () => {
 
 describe('pasting non-code block elements', () => {
   it('should extract text and insert as code lines', () => {
-    const input = createTEditor(
+    const input = createEditor(
       (
         <editor>
           <hcodeblock>

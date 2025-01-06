@@ -1,6 +1,6 @@
 import type { Path } from 'slate';
 
-import type { AncestorEntryOf, ElementOrTextOf, TEditor } from '../interfaces';
+import type { AncestorEntryOf, ElementOrTextOf, Editor } from '../interfaces';
 
 /**
  * Get the next sibling nodes after a path.
@@ -8,7 +8,7 @@ import type { AncestorEntryOf, ElementOrTextOf, TEditor } from '../interfaces';
  * @param ancestorEntry Ancestor of the sibling nodes
  * @param path Path of the reference node
  */
-export const getNextSiblingNodes = <E extends TEditor>(
+export const getNextSiblingNodes = <E extends Editor>(
   ancestorEntry: AncestorEntryOf<E>,
   path: Path
 ): ElementOrTextOf<E>[] => {

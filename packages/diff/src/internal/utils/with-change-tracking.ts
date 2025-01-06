@@ -1,5 +1,5 @@
 import {
-  type TEditor,
+  type Editor,
   type TOperation,
   type TText,
   addRangeMarks,
@@ -43,7 +43,7 @@ export interface ChangeTrackingEditor {
   recordingOperations: boolean;
 }
 
-export const withChangeTracking = <E extends TEditor>(
+export const withChangeTracking = <E extends Editor>(
   editor: E,
   options: ComputeDiffOptions
 ): ChangeTrackingEditor & E => {
@@ -62,7 +62,7 @@ export const withChangeTracking = <E extends TEditor>(
   return e;
 };
 
-const applyWithChangeTracking = <E extends TEditor>(
+const applyWithChangeTracking = <E extends Editor>(
   editor: ChangeTrackingEditor & E,
   apply: E['apply'],
   op: TOperation
@@ -106,7 +106,7 @@ const applyWithChangeTracking = <E extends TEditor>(
   });
 };
 
-const applyInsertText = <E extends TEditor>(
+const applyInsertText = <E extends Editor>(
   editor: ChangeTrackingEditor & E,
   apply: E['apply'],
   op: InsertTextOperation
@@ -129,7 +129,7 @@ const applyInsertText = <E extends TEditor>(
   });
 };
 
-const applyRemoveText = <E extends TEditor>(
+const applyRemoveText = <E extends Editor>(
   editor: ChangeTrackingEditor & E,
   apply: E['apply'],
   op: RemoveTextOperation
@@ -152,7 +152,7 @@ const applyRemoveText = <E extends TEditor>(
   });
 };
 
-const applyMergeNode = <E extends TEditor>(
+const applyMergeNode = <E extends Editor>(
   editor: ChangeTrackingEditor & E,
   apply: E['apply'],
   op: MergeNodeOperation
@@ -178,7 +178,7 @@ const applyMergeNode = <E extends TEditor>(
   });
 };
 
-const applySplitNode = <E extends TEditor>(
+const applySplitNode = <E extends Editor>(
   editor: ChangeTrackingEditor & E,
   apply: E['apply'],
   op: SplitNodeOperation
@@ -200,7 +200,7 @@ const applySplitNode = <E extends TEditor>(
   });
 };
 
-const applySetNode = <E extends TEditor>(
+const applySetNode = <E extends Editor>(
   editor: ChangeTrackingEditor & E,
   apply: E['apply'],
   op: SetNodeOperation
@@ -217,7 +217,7 @@ const applySetNode = <E extends TEditor>(
   });
 };
 
-const commitChangesToDiffs = <E extends TEditor>(
+const commitChangesToDiffs = <E extends Editor>(
   editor: ChangeTrackingEditor & E,
   { getDeleteProps, getInsertProps, getUpdateProps }: ComputeDiffOptions
 ) => {

@@ -2,10 +2,10 @@ import type { SelectionMoveOptions } from 'slate/dist/interfaces/transforms/sele
 
 import { move } from 'slate';
 
-import type { TEditor } from '../../interfaces';
+import type { Editor } from '../../interfaces';
 
 export const moveSelection = (
-  editor: TEditor,
+  editor: Editor,
   options?: SelectionMoveOptions
 ) => {
   move(editor as any, options);

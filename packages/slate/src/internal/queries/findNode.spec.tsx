@@ -2,12 +2,12 @@
 
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { createTEditor } from '../../createTEditor';
+import { createEditor } from '../../createEditor';
 
 jsxt;
 
 describe('when the cursor is in a list item paragraph', () => {
-  const input = createTEditor(
+  const input = createEditor(
     (
       <editor>
         <hul>
@@ -50,7 +50,7 @@ describe('when the cursor is in a list item paragraph', () => {
 });
 
 describe('when the cursor is not in a list item and a path is provided instead', () => {
-  const input = createTEditor(
+  const input = createEditor(
     (
       <editor>
         <hul>

@@ -230,7 +230,7 @@ export const docsApi: SidebarNavItem[] = [
       'isVoid',
       'normalizeEditor',
       'removeEditorMark',
-      'TEditor',
+      'Editor',
       'unhangRange',
       'withoutNormalizing',
       'elementMatches',

@@ -2,10 +2,10 @@ import type { DOMPoint } from 'slate-dom';
 
 import { DOMEditor } from 'slate-dom';
 
-import type { TEditor } from '../../interfaces/editor';
+import type { Editor } from '../../interfaces/editor';
 
 export const toSlatePoint = (
-  editor: TEditor,
+  editor: Editor,
   domPoint: DOMPoint,
   options: Omit<Parameters<typeof DOMEditor.toSlatePoint>[2], 'suppressThrow'>
 ) => {

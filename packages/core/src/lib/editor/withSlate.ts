@@ -1,8 +1,8 @@
 import {
-  type TEditor,
+  type Editor,
   type TSelection,
   type Value,
-  createTEditor,
+  createEditor,
 } from '@udecode/slate';
 import { nanoid } from 'nanoid';
 
@@ -83,7 +83,7 @@ export const withSlate = <
   V extends Value = Value,
   P extends AnyPluginConfig = CorePlugin,
 >(
-  e: TEditor,
+  e: Editor,
   {
     id,
     autoSelect,
@@ -221,7 +221,7 @@ export type CreateSlateEditorOptions<
    *
    * @default createEditor()
    */
-  editor?: TEditor;
+  editor?: Editor;
 };
 
 /**
@@ -235,7 +235,7 @@ export const createSlateEditor = <
   V extends Value = Value,
   P extends AnyPluginConfig = CorePlugin,
 >({
-  editor = createTEditor(),
+  editor = createEditor(),
   ...options
 }: CreateSlateEditorOptions<V, P> = {}) => {
   return withSlate<V, P>(editor, options);

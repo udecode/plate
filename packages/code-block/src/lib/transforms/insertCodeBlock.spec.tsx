@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { createTEditor } from '@udecode/plate-common';
+import { createEditor } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
@@ -12,7 +12,7 @@ jsxt;
 describe('insert code block', () => {
   describe('when selection is at start of block', () => {
     it('should turn line to code block', () => {
-      const input = createTEditor(
+      const input = createEditor(
         (
           <editor>
             <hp>line 1</hp>
@@ -52,7 +52,7 @@ describe('insert code block', () => {
 
   describe('when selection is not at start of block', () => {
     it('should split line at selection and turn latter line to code block', () => {
-      const input = createTEditor(
+      const input = createEditor(
         (
           <editor>
             <hp>line 1</hp>
@@ -93,7 +93,7 @@ describe('insert code block', () => {
 
   describe('when selection is expanded', () => {
     it('should do nothing', () => {
-      const input = createTEditor(
+      const input = createEditor(
         (
           <editor>
             <hp>line 1</hp>

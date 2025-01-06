@@ -1,6 +1,6 @@
 import type { Path } from 'slate';
 
-import type { ElementOrTextOf, TEditor, ValueOf } from '../interfaces';
+import type { ElementOrTextOf, Editor, ValueOf } from '../interfaces';
 import type {
   InsertNodesOptions,
   RemoveNodesOptions,
@@ -10,7 +10,7 @@ import { removeNodeChildren } from './removeNodeChildren';
 
 export interface ReplaceNodeChildrenOptions<
   N extends ElementOrTextOf<E>,
-  E extends TEditor = TEditor,
+  E extends Editor = Editor,
 > {
   at: Path;
   nodes: N | N[];
@@ -21,7 +21,7 @@ export interface ReplaceNodeChildrenOptions<
 /** Replace node children: remove then insert. */
 export const replaceNodeChildren = <
   N extends ElementOrTextOf<E>,
-  E extends TEditor = TEditor,
+  E extends Editor = Editor,
 >(
   editor: E,
   { at, insertOptions, nodes, removeOptions }: ReplaceNodeChildrenOptions<N, E>

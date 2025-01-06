@@ -1,5 +1,5 @@
 import { insertBreak as insertBreakBase } from 'slate';
 
-import type { TEditor } from '../../interfaces/editor/TEditor';
+import type { Editor } from '../../interfaces/editor/editor';
 
-export const insertBreak = (editor: TEditor) => insertBreakBase(editor as any);
+export const insertBreak = (editor: Editor) => insertBreakBase(editor as any);

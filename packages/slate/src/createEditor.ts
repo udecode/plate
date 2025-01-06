@@ -2,7 +2,7 @@
 import { bindFirst } from '@udecode/utils';
 import {
   apply,
-  createEditor,
+  createEditor as createSlateEditor,
   getDirtyPaths,
   hasPath,
   insertSoftBreak,
@@ -13,7 +13,7 @@ import {
   shouldNormalize,
 } from 'slate';
 
-import type { TEditor, Value } from './interfaces/editor/TEditor';
+import type { Editor, Value } from './interfaces/editor/editor';
 
 import { isCollapsed, isExpanded } from './interfaces';
 import { blurEditor } from './internal/dom-editor/blurEditor';
@@ -141,14 +141,14 @@ const noop: {
     return returnValue;
   };
 
-export const createTEditor = <V extends Value>({
+export const createEditor = <V extends Value>({
   children,
   selection,
 }: {
   children?: V;
-  selection?: TEditor['selection'];
+  selection?: Editor['selection'];
 } = {}) => {
-  const editor = createEditor() as any as TEditor;
+  const editor = createSlateEditor() as any as Editor;
 
   if (children) {
     editor.children = children;
@@ -257,7 +257,7 @@ export const createTEditor = <V extends Value>({
     onChange: editor.onChange,
   };
 
-  const transforms: TEditor<V>['transforms'] = {
+  const transforms: Editor<V>['transforms'] = {
     addMark: bindFirst(addMark, editor),
     apply: bindFirst(apply, editor as any),
     blur: bindFirst(blurEditor, editor),
@@ -317,5 +317,5 @@ export const createTEditor = <V extends Value>({
 
   editor.history = { redos: [], undos: [] };
 
-  return editor as TEditor<V>;
+  return editor as Editor<V>;
 };

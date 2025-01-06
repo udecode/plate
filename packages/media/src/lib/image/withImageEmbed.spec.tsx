@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { createTEditor, getEditorPlugin } from '@udecode/plate-common';
+import { createEditor, getEditorPlugin } from '@udecode/plate-common';
 import { createSlateEditor } from '@udecode/plate-common';
 import { jsxt } from '@udecode/plate-test-utils';
 
@@ -10,7 +10,7 @@ import { withImageEmbed } from './withImageEmbed';
 jsxt;
 
 describe('withImageEmbed', () => {
-  const input = createTEditor(
+  const input = createEditor(
     (
       <editor>
         <hp>test</hp>

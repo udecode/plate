@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import { createTEditor } from '@udecode/plate-common';
+import { createEditor } from '@udecode/plate-common';
 import {
   createPlateEditor,
   getEditorPlugin,
@@ -14,7 +14,7 @@ import { onKeyDownSoftBreak } from '../../onKeyDownSoftBreak';
 
 jsxt;
 
-const input = createTEditor(
+const input = createEditor(
   (
     <editor>
       <hp>paragraph</hp>

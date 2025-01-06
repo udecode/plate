@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-key */
 /** @jsx jsxt */
 
-import type { SlateEditor, TEditor, TElement } from '@udecode/plate-common';
+import type { SlateEditor, Editor, TElement } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsxt } from '@udecode/plate-test-utils';
@@ -42,7 +42,7 @@ const makeTableWithCols = ({
         ))}
       </htable>
     </editor>
-  ) as unknown as TEditor;
+  ) as unknown as Editor;
 
 describe('insertTableColumn', () => {
   describe('without initialTableWidth', () => {

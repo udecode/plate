@@ -1,4 +1,4 @@
-import { createTEditor } from '../../createTEditor';
+import { createEditor } from '../../createEditor';
 
 const nodesFixture5 = [
   {
@@ -55,7 +55,7 @@ const nodesFixtureWithList = [
 describe('when getting previous node by id', () => {
   describe('when not first block', () => {
     it('should return the previous block', () => {
-      const e = createTEditor();
+      const e = createEditor();
       e.children = nodesFixture5;
       expect(e.api.previous({ id: '3', block: true })?.[0]).toEqual(
         nodesFixture5[1]
@@ -65,7 +65,7 @@ describe('when getting previous node by id', () => {
 
   describe('when first block', () => {
     it('should return [null, [-1]]', () => {
-      const e = createTEditor();
+      const e = createEditor();
       e.children = nodesFixture5;
       expect(e.api.previous({ id: '1', block: true })).toEqual([null, [-1]]);
     });
@@ -73,7 +73,7 @@ describe('when getting previous node by id', () => {
 
   describe('when not found', () => {
     it('should return undefined', () => {
-      const e = createTEditor();
+      const e = createEditor();
       e.children = nodesFixture5;
       expect(e.api.previous({ id: '11', block: true })?.[0]).toBeUndefined();
     });
@@ -81,7 +81,7 @@ describe('when getting previous node by id', () => {
 
   describe('when list', () => {
     it('should return previous block', () => {
-      const e = createTEditor();
+      const e = createEditor();
       e.children = nodesFixtureWithList;
       expect(e.api.previous({ id: '2', block: true })?.[0]).toEqual(
         nodesFixtureWithList[0]
@@ -131,7 +131,7 @@ describe('sibling', () => {
   describe('when getting previous sibling node', () => {
     describe('when has previous sibling', () => {
       it('should return the previous sibling', () => {
-        const editor = createTEditor();
+        const editor = createEditor();
         editor.children = nodesFixture;
 
         const result = editor.api.previous({ at: [1], sibling: true });
@@ -143,7 +143,7 @@ describe('sibling', () => {
 
     describe('when is first child', () => {
       it('should return undefined', () => {
-        const editor = createTEditor();
+        const editor = createEditor();
         editor.children = nodesFixture;
 
         const result = editor.api.previous({ at: [0], sibling: true });
@@ -154,7 +154,7 @@ describe('sibling', () => {
 
     describe('when nested nodes', () => {
       it('should return previous sibling at correct level', () => {
-        const editor = createTEditor();
+        const editor = createEditor();
         editor.children = nestedNodesFixture;
 
         const result = editor.api.previous({ at: [0, 1], sibling: true });
@@ -166,7 +166,7 @@ describe('sibling', () => {
 
     describe('when path is invalid', () => {
       it('should return undefined', () => {
-        const editor = createTEditor();
+        const editor = createEditor();
         editor.children = nodesFixture;
 
         const result = editor.api.previous({ at: undefined, sibling: true });

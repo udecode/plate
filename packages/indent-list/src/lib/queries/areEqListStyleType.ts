@@ -1,4 +1,4 @@
-import type { TEditor, TNodeEntry } from '@udecode/plate-common';
+import type { Editor, TNodeEntry } from '@udecode/plate-common';
 
 import {
   BaseIndentListPlugin,
@@ -7,7 +7,7 @@ import {
 import { ListStyleType } from '../types';
 
 export const areEqListStyleType = (
-  editor: TEditor,
+  editor: Editor,
   entries: TNodeEntry[],
   {
     listStyleType = ListStyleType.Disc,

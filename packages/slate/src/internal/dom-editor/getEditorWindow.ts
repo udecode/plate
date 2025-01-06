@@ -1,8 +1,8 @@
 import { DOMEditor } from 'slate-dom';
 
-import type { TEditor } from '../../interfaces/editor';
+import type { Editor } from '../../interfaces/editor';
 
-export const getEditorWindow = (editor: TEditor) => {
+export const getEditorWindow = (editor: Editor) => {
   try {
     return DOMEditor.getWindow(editor as any);
   } catch (error) {}

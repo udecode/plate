@@ -1,7 +1,7 @@
-import type { TEditor } from '@udecode/plate-common';
+import type { Editor } from '@udecode/plate-common';
 
 /** Select the block above the selection by id and focus the editor. */
-export const selectBlockById = (editor: TEditor, id: string) => {
+export const selectBlockById = (editor: Editor, id: string) => {
   const path = editor.api.find({ at: [], match: { id } })?.[1];
 
   if (!path) return;

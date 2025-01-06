@@ -2,12 +2,12 @@ import { Path } from 'slate';
 
 import {
   type NodeEntryOf,
-  type TEditor,
+  type Editor,
   type TElement,
   getNode,
 } from '../interfaces';
 
-export interface MoveChildrenOptions<E extends TEditor = TEditor> {
+export interface MoveChildrenOptions<E extends Editor = Editor> {
   /** Parent node of the children to move. */
   at: NodeEntryOf<E> | Path;
 
@@ -25,7 +25,7 @@ export interface MoveChildrenOptions<E extends TEditor = TEditor> {
 }
 
 /** Move the children of a node to a path. Returns the number of children moved. */
-export const moveChildren = <E extends TEditor>(
+export const moveChildren = <E extends Editor>(
   editor: E,
   { at, fromStartIndex = 0, match, to }: MoveChildrenOptions<E>
 ) => {

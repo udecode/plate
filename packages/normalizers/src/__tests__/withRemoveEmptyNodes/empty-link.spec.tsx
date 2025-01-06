@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { createSlateEditor, createTEditor } from '@udecode/plate-common';
+import { createSlateEditor, createEditor } from '@udecode/plate-common';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
@@ -8,7 +8,7 @@ import { RemoveEmptyNodesPlugin } from '../../lib/RemoveEmptyNodesPlugin';
 
 jsxt;
 
-const input = createTEditor(
+const input = createEditor(
   (
     <editor>
       <hp>

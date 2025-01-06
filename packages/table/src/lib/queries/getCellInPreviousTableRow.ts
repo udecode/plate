@@ -1,14 +1,14 @@
 import type { Path } from 'slate';
 
 import {
-  type TEditor,
+  type Editor,
   type TElement,
   type TNodeEntry,
   getPreviousPath,
 } from '@udecode/plate-common';
 
 export const getCellInPreviousTableRow = (
-  editor: TEditor,
+  editor: Editor,
   currentRowPath: Path
 ): TNodeEntry | undefined => {
   const prevPath = getPreviousPath(currentRowPath);

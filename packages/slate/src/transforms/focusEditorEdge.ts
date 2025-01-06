@@ -1,8 +1,8 @@
-import type { TEditor } from '../interfaces';
+import type { Editor } from '../interfaces';
 
 /** Focus an editor edge. */
 export const focusEditorEdge = (
-  editor: TEditor,
+  editor: Editor,
   {
     edge = 'start',
   }: {

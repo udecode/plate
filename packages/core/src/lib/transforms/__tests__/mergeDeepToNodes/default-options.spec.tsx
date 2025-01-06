@@ -1,13 +1,13 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@udecode/plate-test-utils';
-import { type TNode, createTEditor } from '@udecode/slate';
+import { type TNode, createEditor } from '@udecode/slate';
 
 import { mergeDeepToNodes } from '../../../utils';
 
 jsxt;
 
-const editor = createTEditor(
+const editor = createEditor(
   (
     <editor>
       <hp>test</hp>

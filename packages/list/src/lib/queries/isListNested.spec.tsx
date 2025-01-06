@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { createTEditor } from '@udecode/plate-common';
+import { createEditor } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
@@ -9,7 +9,7 @@ import { isListNested } from './isListNested';
 jsxt;
 
 describe('when the list is nested', () => {
-  const input = createTEditor(
+  const input = createEditor(
     (
       <editor>
         <hul id="1">
@@ -42,7 +42,7 @@ describe('when the list is nested', () => {
 });
 
 describe('when the list is not nested', () => {
-  const input = createTEditor(
+  const input = createEditor(
     (
       <editor>
         <hul id="1">

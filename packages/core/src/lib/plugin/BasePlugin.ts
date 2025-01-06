@@ -1,6 +1,6 @@
 import type {
-  TEditorApi,
-  TEditorTransforms,
+  EditorApi,
+  EditorTransforms,
   TElement,
   TText,
 } from '@udecode/slate';
@@ -366,9 +366,9 @@ export type BasePluginContext<C extends AnyPluginConfig = PluginConfig> = {
     (options: Parameters<SetImmerState<InferOptions<C>>>[0]): void;
     (options: Partial<InferOptions<C>>): void;
   };
-  api: C['api'] & TEditorApi;
+  api: C['api'] & EditorApi;
   getOptions: () => InferOptions<C>;
-  tf: C['transforms'] & TEditorTransforms;
+  tf: C['transforms'] & EditorTransforms;
   type: string;
 };
 

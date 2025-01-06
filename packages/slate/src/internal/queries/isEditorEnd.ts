@@ -1,8 +1,8 @@
 import { Path } from 'slate';
 
-import type { TEditor } from '../../interfaces/index';
+import type { Editor } from '../../interfaces/index';
 
-export const isEditorEnd = (editor: TEditor) => {
+export const isEditorEnd = (editor: Editor) => {
   if (editor.selection) {
     const point = editor.selection.focus;
     const endPoint = editor.api.end([])!;

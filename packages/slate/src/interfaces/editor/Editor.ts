@@ -5,13 +5,13 @@ import type { HistoryEditor } from '../../slate-history';
 import type { TOperation } from '../../types/TOperation';
 import type { TElement } from '../element/TElement';
 import type { DescendantIn } from '../node';
-import type { LegacyEditorMethods } from './LegacyEditorMethods';
-import type { TEditorApi } from './TEditorApi';
-import type { TEditorTransforms } from './TEditorTransforms';
+import type { LegacyEditorMethods } from './legacy-editor';
+import type { EditorApi } from './editor-api';
+import type { EditorTransforms } from './editor-transforms';
 
 export type Value = TElement[];
 
-export type TBaseEditor<V extends Value = Value> = {
+export type BaseEditor<V extends Value = Value> = {
   id: any;
   children: V;
   marks: Record<string, any> | null;
@@ -21,11 +21,11 @@ export type TBaseEditor<V extends Value = Value> = {
   LegacyEditorMethods<V> &
   UnknownObject;
 
-export type TEditor<V extends Value = Value> = TBaseEditor<V> & {
-  api: TEditorApi<V>;
-  tf: TEditorTransforms<V>;
-  transforms: TEditorTransforms<V>;
+export type Editor<V extends Value = Value> = BaseEditor<V> & {
+  api: EditorApi<V>;
+  tf: EditorTransforms<V>;
+  transforms: EditorTransforms<V>;
 };
 
 /** A helper type for getting the value of an editor. */
-export type ValueOf<E extends TEditor> = E['children'];
+export type ValueOf<E extends Editor> = E['children'];

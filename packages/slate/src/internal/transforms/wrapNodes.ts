@@ -1,12 +1,12 @@
 import { wrapNodes as wrapNodesBase } from 'slate';
 
-import type { TEditor, ValueOf } from '../../interfaces';
+import type { Editor, ValueOf } from '../../interfaces';
 import type { WrapNodesOptions } from '../../interfaces/editor/editor-types';
 import type { ElementOf } from '../../interfaces/element/TElement';
 
 import { getQueryOptions } from '../../utils';
 
-export const wrapNodes = <N extends ElementOf<E>, E extends TEditor = TEditor>(
+export const wrapNodes = <N extends ElementOf<E>, E extends Editor = Editor>(
   editor: E,
   element: N,
   options?: WrapNodesOptions<ValueOf<E>>

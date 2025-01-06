@@ -1,7 +1,7 @@
 import { marks } from 'slate';
 
-import type { TEditor } from '../../interfaces/editor/TEditor';
+import type { Editor } from '../../interfaces/editor/editor';
 import type { MarksOf } from '../../interfaces/text/TText';
 
-export const getMarks = <E extends TEditor>(editor: E) =>
+export const getMarks = <E extends Editor>(editor: E) =>
   marks(editor as any) as MarksOf<E> | null;

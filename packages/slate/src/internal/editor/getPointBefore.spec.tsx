@@ -2,14 +2,14 @@
 
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { createTEditor } from '../../createTEditor';
+import { createEditor } from '../../createEditor';
 
 jsxt;
 
 describe('getPointBefore', () => {
   describe('default', () => {
     it('should get point before cursor', () => {
-      const editor = createTEditor(
+      const editor = createEditor(
         (
           <editor>
             <hp>
@@ -32,7 +32,7 @@ describe('getPointBefore', () => {
   describe('when afterMatch=true', () => {
     describe('when character match', () => {
       it('should get point after matched character', () => {
-        const editor = createTEditor(
+        const editor = createEditor(
           (
             <editor>
               <hp>
@@ -54,7 +54,7 @@ describe('getPointBefore', () => {
     });
 
     describe('when there is no space', () => {
-      const editor = createTEditor(
+      const editor = createEditor(
         (
           <editor>
             <hp>
@@ -82,7 +82,7 @@ describe('getPointBefore', () => {
 
     describe('when string match', () => {
       it('should get point after matched string', () => {
-        const editor = createTEditor(
+        const editor = createEditor(
           (
             <editor>
               <hp>
@@ -105,7 +105,7 @@ describe('getPointBefore', () => {
 
     describe('when match function', () => {
       it('should get point after match', () => {
-        const editor = createTEditor(
+        const editor = createEditor(
           (
             <editor>
               <hp>
@@ -129,7 +129,7 @@ describe('getPointBefore', () => {
 
   describe('when skipInvalid=true', () => {
     it('should get point before space', () => {
-      const editor = createTEditor(
+      const editor = createEditor(
         (
           <editor>
             <hp>
@@ -150,7 +150,7 @@ describe('getPointBefore', () => {
 
     describe('when character not found', () => {
       it('should return undefined', () => {
-        const editor = createTEditor(
+        const editor = createEditor(
           (
             <editor>
               <hp>
@@ -172,7 +172,7 @@ describe('getPointBefore', () => {
 
     describe('when searching across blocks', () => {
       it('should return undefined if not found', () => {
-        const editor = createTEditor(
+        const editor = createEditor(
           (
             <editor>
               <hp>find z</hp>
@@ -196,7 +196,7 @@ describe('getPointBefore', () => {
 
   describe('when unit=word', () => {
     it('should get point before word', () => {
-      const editor = createTEditor(
+      const editor = createEditor(
         (
           <editor>
             <hp>
@@ -221,7 +221,7 @@ describe('getPointBefore', () => {
   describe('when matchString', () => {
     describe('when multiple characters', () => {
       it('should get point before matched string', () => {
-        const editor = createTEditor(
+        const editor = createEditor(
           (
             <editor>
               <hp>
@@ -242,7 +242,7 @@ describe('getPointBefore', () => {
 
     describe('when array of strings', () => {
       it('should get point before first matched string', () => {
-        const editor = createTEditor(
+        const editor = createEditor(
           (
             <editor>
               <hp>

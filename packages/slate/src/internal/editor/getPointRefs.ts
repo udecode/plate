@@ -1,5 +1,5 @@
 import { pointRefs } from 'slate';
 
-import type { TEditor } from '../../interfaces/editor/TEditor';
+import type { Editor } from '../../interfaces/editor/editor';
 
-export const getPointRefs = (editor: TEditor) => pointRefs(editor as any);
+export const getPointRefs = (editor: Editor) => pointRefs(editor as any);

@@ -2,10 +2,10 @@ import type { DOMNode } from 'slate-dom';
 
 import { DOMEditor } from 'slate-dom';
 
-import type { TEditor } from '../../interfaces/editor';
+import type { Editor } from '../../interfaces/editor';
 
 export const hasEditorDOMNode = (
-  editor: TEditor,
+  editor: Editor,
   target: DOMNode,
   options?: Parameters<typeof DOMEditor.hasDOMNode>[2]
 ) => {

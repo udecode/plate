@@ -3,7 +3,7 @@ import { Range } from 'slate';
 
 import type { SetNodesOptions } from '../interfaces/editor/editor-types';
 
-import { type TEditor, isTextNode } from '../interfaces';
+import { type Editor, isTextNode } from '../interfaces';
 
 export interface RemoveMarkOptions
   extends Omit<SetNodesOptions, 'match' | 'split'> {
@@ -24,7 +24,7 @@ export interface RemoveMarkOptions
 
 /** Remove mark and trigger `onChange` if collapsed selection. */
 export const removeMark = (
-  editor: TEditor,
+  editor: Editor,
   { key, at, shouldChange = true, ...rest }: RemoveMarkOptions
 ) => {
   const selection = at ?? editor.selection;

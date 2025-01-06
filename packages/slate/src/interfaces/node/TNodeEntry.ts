@@ -1,6 +1,6 @@
 import type { Path } from 'slate';
 
-import type { TEditor, Value } from '../editor/TEditor';
+import type { Editor, Value } from '../editor/editor';
 import type { ElementOf } from '../element/TElement';
 import type { TextIn, TextOf } from '../text/TText';
 import type { AncestorOf } from './TAncestor';
@@ -15,7 +15,7 @@ import type { NodeIn, NodeOf, TNode } from './TNode';
 export type TNodeEntry<N extends TNode = TNode> = [N, Path];
 
 /** Node entry from an editor. */
-export type NodeEntryOf<E extends TEditor> = TNodeEntry<NodeOf<E>>;
+export type NodeEntryOf<E extends Editor> = TNodeEntry<NodeOf<E>>;
 
 export type NodeEntryIn<V extends Value> = TNodeEntry<NodeIn<V>>;
 
@@ -23,13 +23,13 @@ export type NodeEntryIn<V extends Value> = TNodeEntry<NodeIn<V>>;
 export type TElementEntry<N extends TNode = TNode> = TNodeEntry<ElementOf<N>>;
 
 /** Element entry of a value. */
-export type ElementEntryOf<E extends TEditor> = TNodeEntry<ElementOf<E>>;
+export type ElementEntryOf<E extends Editor> = TNodeEntry<ElementOf<E>>;
 
 /** Text node entry from a node. */
 export type TTextEntry<N extends TNode = TNode> = TNodeEntry<TextOf<N>>;
 
 /** Text node entry of a value. */
-export type TextEntryOf<E extends TEditor> = TNodeEntry<TextOf<E>>;
+export type TextEntryOf<E extends Editor> = TNodeEntry<TextOf<E>>;
 
 export type TextEntryIn<V extends Value> = TNodeEntry<TextIn<V>>;
 
@@ -37,7 +37,7 @@ export type TextEntryIn<V extends Value> = TNodeEntry<TextIn<V>>;
 export type TAncestorEntry<N extends TNode = TNode> = TNodeEntry<AncestorOf<N>>;
 
 /** Ancestor entry from an editor. */
-export type AncestorEntryOf<E extends TEditor> = TAncestorEntry<E>;
+export type AncestorEntryOf<E extends Editor> = TAncestorEntry<E>;
 
 /** Descendant entry from a node. */
 export type TDescendantEntry<N extends TNode = TNode> = TNodeEntry<
@@ -45,7 +45,7 @@ export type TDescendantEntry<N extends TNode = TNode> = TNodeEntry<
 >;
 
 /** Descendant entry of a value. */
-export type DescendantEntryOf<E extends TEditor> = TNodeEntry<DescendantOf<E>>;
+export type DescendantEntryOf<E extends Editor> = TNodeEntry<DescendantOf<E>>;
 
 export type DescendantEntryIn<V extends Value> = TNodeEntry<DescendantIn<V>>;
 

@@ -1,4 +1,4 @@
-import type { TEditor } from '../interfaces/editor/TEditor';
+import type { Editor } from '../interfaces/editor/editor';
 import type { NodeOf, TNode } from '../interfaces/node/TNode';
 import type { TPath } from '../types/interfaces';
 
@@ -44,7 +44,7 @@ export const match = <T extends TNode>(
  *   node value. Example: { type: ['1', '2'] } will match the nodes having one
  *   of these 2 types.
  */
-export const getQueryOptions = <E extends TEditor>(
+export const getQueryOptions = <E extends Editor>(
   editor: E,
   { id, ...options }: any = {}
 ) => {

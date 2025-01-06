@@ -1,4 +1,4 @@
-import type { TEditor } from '@udecode/slate';
+import type { Editor } from '@udecode/slate';
 import type { Location } from 'slate';
 
 export interface SelectEditorOptions {
@@ -14,7 +14,7 @@ export interface SelectEditorOptions {
 
 /** Select an editor at a target or an edge (start, end). */
 export const selectEditor = (
-  editor: TEditor,
+  editor: Editor,
   { at, edge, focus }: SelectEditorOptions
 ) => {
   if (focus) {

@@ -4,14 +4,14 @@ import { createPlateEditor } from '@udecode/plate-common/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { createTEditor } from '../../createTEditor';
+import { createEditor } from '../../createEditor';
 
 jsxt;
 
 describe('isEmpty', () => {
   describe('when no target (editor)', () => {
     it('should be true when editor has one empty element', () => {
-      const editor = createTEditor(
+      const editor = createEditor(
         (
           <editor>
             <hp />
@@ -23,7 +23,7 @@ describe('isEmpty', () => {
     });
 
     it('should be false when editor has multiple elements', () => {
-      const editor = createTEditor(
+      const editor = createEditor(
         (
           <editor>
             <hp>test</hp>
@@ -38,7 +38,7 @@ describe('isEmpty', () => {
 
   describe('when target is editor', () => {
     it('should be true when editor has one empty element', () => {
-      const editor = createTEditor(
+      const editor = createEditor(
         (
           <editor>
             <hp />
@@ -52,7 +52,7 @@ describe('isEmpty', () => {
 
   describe('when target is path', () => {
     it('should get block above and check if empty', () => {
-      const editor = createTEditor(
+      const editor = createEditor(
         (
           <editor>
             <hp>
@@ -69,7 +69,7 @@ describe('isEmpty', () => {
   describe('when after=true', () => {
     describe('when no selection', () => {
       it('should be false', () => {
-        const editor = createTEditor(
+        const editor = createEditor(
           (
             <editor>
               <hp>
@@ -90,7 +90,7 @@ describe('isEmpty', () => {
 
     describe('when cursor not at end', () => {
       it('should be false', () => {
-        const editor = createTEditor(
+        const editor = createEditor(
           (
             <editor>
               <hp>
@@ -113,7 +113,7 @@ describe('isEmpty', () => {
 
     describe('when empty text after', () => {
       it('should be true', () => {
-        const editor = createTEditor(
+        const editor = createEditor(
           (
             <editor>
               <hp>
@@ -138,7 +138,7 @@ describe('isEmpty', () => {
 
     describe('when no text after', () => {
       it('should be true', () => {
-        const input = createTEditor(
+        const input = createEditor(
           (
             <editor>
               <hp>
@@ -165,7 +165,7 @@ describe('isEmpty', () => {
 
     describe('when text after', () => {
       it('should be false', () => {
-        const input = createTEditor(
+        const input = createEditor(
           (
             <editor>
               <hp>
@@ -194,7 +194,7 @@ describe('isEmpty', () => {
 
   describe('when block=true', () => {
     it('should check if block above is empty', () => {
-      const editor = createTEditor(
+      const editor = createEditor(
         (
           <editor>
             <hp>

@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { createSlateEditor, createTEditor } from '@udecode/plate-common';
+import { createSlateEditor, createEditor } from '@udecode/plate-common';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { isPointNextToNode } from './isPointNextToNode';
@@ -10,7 +10,7 @@ jsxt;
 describe('isPointNextToNode', () => {
   const createEditor = (input: JSX.Element) =>
     createSlateEditor({
-      editor: createTEditor(input as any),
+      editor: createEditor(input as any),
     });
 
   describe('when point is next to a node of specified type', () => {

@@ -1,7 +1,7 @@
 import {
   type ElementEntryOf,
   type ElementOf,
-  type TEditor,
+  type Editor,
   type TNodeEntry,
   getNode,
 } from '@udecode/plate-common';
@@ -15,7 +15,7 @@ import {
 /** Get the next indent list. */
 export const getNextIndentList = <
   N extends ElementOf<E>,
-  E extends TEditor = TEditor,
+  E extends Editor = Editor,
 >(
   editor: E,
   entry: ElementEntryOf<E>,

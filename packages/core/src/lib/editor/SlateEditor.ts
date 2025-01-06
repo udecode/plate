@@ -1,7 +1,7 @@
 import type {
-  TBaseEditor,
-  TEditorApi,
-  TEditorTransforms,
+  BaseEditor,
+  EditorApi,
+  EditorTransforms,
   TRange,
   Value,
 } from '@udecode/slate';
@@ -24,7 +24,7 @@ import type {
 } from '../plugin/SlatePlugin';
 import type { CorePlugin } from '../plugins';
 
-export type BaseEditor = TBaseEditor & {
+export type BaseEditor = BaseEditor & {
   key: any;
 
   getInjectProps: <C extends AnyPluginConfig = PluginConfig>(
@@ -95,13 +95,13 @@ export type SlateEditor = BaseEditor & {
   getTransforms: <C extends AnyPluginConfig = PluginConfig>(
     plugin?: WithRequiredKey<C>
   ) => SlateEditor['tf'] & InferTransforms<C>;
-  transforms: TEditorTransforms &
+  transforms: EditorTransforms &
     UnionToIntersection<InferTransforms<CorePlugin>>;
-  api: TEditorApi & UnionToIntersection<InferApi<CorePlugin>>;
+  api: EditorApi & UnionToIntersection<InferApi<CorePlugin>>;
   pluginList: AnyEditorPlugin[];
   plugins: Record<string, AnyEditorPlugin>;
   // Alias for transforms
-  tf: TEditorTransforms & UnionToIntersection<InferTransforms<CorePlugin>>;
+  tf: EditorTransforms & UnionToIntersection<InferTransforms<CorePlugin>>;
 };
 
 export type TSlateEditor<
@@ -114,11 +114,11 @@ export type TSlateEditor<
   getTransforms: <C extends AnyPluginConfig = PluginConfig>(
     plugin?: WithRequiredKey<C>
   ) => TSlateEditor<V>['tf'] & InferTransforms<C>;
-  tf: TEditorTransforms<V> &
+  tf: EditorTransforms<V> &
     UnionToIntersection<InferTransforms<CorePlugin | P>>;
-  transforms: TEditorTransforms<V> &
+  transforms: EditorTransforms<V> &
     UnionToIntersection<InferTransforms<CorePlugin | P>>;
-  api: TEditorApi<V> & UnionToIntersection<InferApi<CorePlugin | P>>;
+  api: EditorApi<V> & UnionToIntersection<InferApi<CorePlugin | P>>;
   children: V;
   pluginList: P[];
   plugins: { [K in P['key']]: Extract<P, { key: K }> };

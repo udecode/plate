@@ -6380,7 +6380,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -6397,7 +6396,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -6415,7 +6413,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -6435,7 +6432,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -6452,7 +6448,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -6469,7 +6464,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -6486,7 +6480,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -6503,7 +6496,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -6521,7 +6513,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -6539,7 +6530,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -6556,7 +6546,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -6574,7 +6563,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -6595,7 +6583,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -6626,7 +6613,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -6646,7 +6632,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -6663,7 +6648,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -6679,7 +6663,6 @@ __metadata:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
     slate: ">=0.94.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.99.0"
   languageName: unknown
@@ -6698,7 +6681,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -6719,7 +6701,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -6742,7 +6723,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -6761,7 +6741,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -6779,7 +6758,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -6796,7 +6774,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -6815,7 +6792,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -6833,7 +6809,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -6850,7 +6825,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -6867,7 +6841,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -6884,7 +6857,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -6904,7 +6876,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -6921,7 +6892,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -6939,7 +6909,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -6956,7 +6925,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -6973,7 +6941,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -6990,7 +6957,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -7009,7 +6975,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -7028,7 +6993,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -7049,7 +7013,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -7068,7 +7031,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -7086,7 +7048,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -7104,7 +7065,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -7122,7 +7082,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -7140,7 +7099,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -7158,7 +7116,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -7175,7 +7132,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -7192,7 +7148,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -7209,7 +7164,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -7227,7 +7181,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -7245,7 +7198,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -7264,7 +7216,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -7282,7 +7233,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -7302,7 +7252,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-react: ">=0.111.0"
   languageName: unknown
   linkType: soft
@@ -7318,7 +7267,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -7347,7 +7295,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -7364,7 +7311,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -7384,7 +7330,6 @@ __metadata:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.110.0"
   languageName: unknown
@@ -7404,7 +7349,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -7460,7 +7404,6 @@ __metadata:
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.111.0"
   languageName: unknown
@@ -7499,7 +7442,6 @@ __metadata:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
     slate: ">=0.112.0"
-    slate-history: ">=0.93.0"
     slate-react: ">=0.111.0"
   languageName: unknown
   linkType: soft
@@ -7513,7 +7455,6 @@ __metadata:
     lodash: "npm:^4.17.21"
   peerDependencies:
     slate: ">=0.112.0"
-    slate-history: ">=0.93.0"
   languageName: unknown
   linkType: soft
 
@@ -7527,7 +7468,6 @@ __metadata:
   peerDependencies:
     slate: ">=0.112.0"
     slate-dom: ">=0.111.0"
-    slate-history: ">=0.93.0"
   languageName: unknown
   linkType: soft
 
@@ -17347,7 +17287,6 @@ __metadata:
     shadcx: "workspace:^"
     slate: "npm:0.112.0"
     slate-dom: "npm:0.111.0"
-    slate-history: "npm:0.110.3"
     slate-hyperscript: "npm:0.100.0"
     slate-react: "npm:0.111.0"
     slate-test-utils: "npm:1.3.2"
@@ -19643,17 +19582,6 @@ __metadata:
   peerDependencies:
     slate: ">=0.99.0"
   checksum: 10c0/e803f154f89302b48bb344720560442f631e0a56468243c8d256ca909bdd10ea7afb1ad5637af8f775d0409d1e7c44faa4d0640ce8e30731a3657e52d3a9a55b
-  languageName: node
-  linkType: hard
-
-"slate-history@npm:0.110.3":
-  version: 0.110.3
-  resolution: "slate-history@npm:0.110.3"
-  dependencies:
-    is-plain-object: "npm:^5.0.0"
-  peerDependencies:
-    slate: ">=0.65.3"
-  checksum: 10c0/cd427263daa257840598118d9f2e7a5d239640505f30a0024b61f0491b0a70a41209a27662bf1adb65f60b4aa482c00d44356f89f0360ba5ed63a37e17534a6f
   languageName: node
   linkType: hard
 
@@ -22492,7 +22420,6 @@ __metadata:
     shiki: "npm:^1.17.5"
     slate: "npm:0.112.0"
     slate-dom: "npm:0.111.0"
-    slate-history: "npm:0.110.3"
     slate-hyperscript: "npm:0.100.0"
     slate-react: "npm:0.111.0"
     slate-test-utils: "npm:1.3.2"

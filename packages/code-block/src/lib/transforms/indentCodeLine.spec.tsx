@@ -3,7 +3,7 @@
 import {
   type SlateEditor,
   type TElementEntry,
-  createTEditor,
+  createEditor,
 } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsxt } from '@udecode/plate-test-utils';
@@ -16,7 +16,7 @@ jsxt;
 describe('indent code line', () => {
   describe('when the selection is expanded', () => {
     it('should indent', () => {
-      const input = createTEditor(
+      const input = createEditor(
         (
           <editor>
             <hcodeblock>

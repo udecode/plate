@@ -1,4 +1,4 @@
-import type { TEditor } from '@udecode/slate';
+import type { Editor } from '@udecode/slate';
 
 import { IS_APPLE } from '@udecode/utils';
 import { type KeyboardEventLike, isKeyHotkey } from 'is-hotkey';
@@ -70,7 +70,7 @@ export const createHotkey = (key: string) => {
 const createComposing =
   (key: string) =>
   (
-    editor: TEditor,
+    editor: Editor,
     event: React.KeyboardEvent,
     {
       composing,

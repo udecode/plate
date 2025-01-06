@@ -3,14 +3,14 @@
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { getPointFromLocation } from '.';
-import { createTEditor } from '../createTEditor';
+import { createEditor } from '../createEditor';
 
 jsxt;
 
 describe('getPointFromLocation', () => {
   describe('when path', () => {
     it('should return point with offset 0', () => {
-      createTEditor(
+      createEditor(
         (
           <editor>
             <hp>
@@ -30,7 +30,7 @@ describe('getPointFromLocation', () => {
 
   describe('when point', () => {
     it('should return the same point', () => {
-      createTEditor(
+      createEditor(
         (
           <editor>
             <hp>
@@ -52,7 +52,7 @@ describe('getPointFromLocation', () => {
 
   describe('when range', () => {
     it('should return anchor point by default', () => {
-      const editor = createTEditor(
+      const editor = createEditor(
         (
           <editor>
             <hp>
@@ -71,7 +71,7 @@ describe('getPointFromLocation', () => {
 
     describe('when focus=true', () => {
       it('should return focus point', () => {
-        const editor = createTEditor(
+        const editor = createEditor(
           (
             <editor>
               <hp>

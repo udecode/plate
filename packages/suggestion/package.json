@@ -16,6 +16,7 @@
     "url": "https://github.com/udecode/plate.git",
     "directory": "packages/suggestion"
   },
+  "license": "MIT",
   "sideEffects": false,
   "exports": {
     ".": {
@@ -61,12 +62,10 @@
     "react-dom": ">=16.8.0",
     "slate": ">=0.112.0",
     "slate-dom": ">=0.111.0",
-    "slate-history": ">=0.93.0",
     "slate-hyperscript": ">=0.66.0",
     "slate-react": ">=0.111.0"
   },
   "publishConfig": {
     "access": "public"
-  },
-  "license": "MIT"
+  }
 }

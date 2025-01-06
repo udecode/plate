@@ -1,7 +1,7 @@
-import type { TEditor } from '@udecode/plate-common';
+import type { Editor } from '@udecode/plate-common';
 import type { Location } from 'slate';
 
-export const isPreviousCharacterEmpty = (editor: TEditor, at: Location) => {
+export const isPreviousCharacterEmpty = (editor: Editor, at: Location) => {
   const range = editor.api.range('before', at);
 
   if (range) {

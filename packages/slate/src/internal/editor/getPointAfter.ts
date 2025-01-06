@@ -1,13 +1,13 @@
 import { after } from 'slate';
 
-import type { TEditor } from '../../interfaces/editor/TEditor';
+import type { Editor } from '../../interfaces/editor/editor';
 import type { GetPointAfterOptions } from '../../interfaces/editor/editor-types';
 import type { At } from '../../types';
 
 import { getAt } from '../../utils';
 
 export const getPointAfter = (
-  editor: TEditor,
+  editor: Editor,
   at: At,
   options?: GetPointAfterOptions
 ) => {

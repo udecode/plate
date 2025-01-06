@@ -2,13 +2,13 @@
 
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { createTEditor } from '../../createTEditor';
+import { createEditor } from '../../createEditor';
 import { getNode } from './getNode';
 
 jsxt;
 
 describe('getNode', () => {
-  const input = createTEditor(
+  const input = createEditor(
     (
       <editor>
         <hp>

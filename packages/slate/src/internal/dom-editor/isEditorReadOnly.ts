@@ -1,6 +1,6 @@
 import { DOMEditor } from 'slate-dom';
 
-import type { TEditor } from '../../interfaces/editor';
+import type { Editor } from '../../interfaces/editor';
 
-export const isEditorReadOnly = (editor: TEditor) =>
+export const isEditorReadOnly = (editor: Editor) =>
   DOMEditor.isReadOnly(editor as any);

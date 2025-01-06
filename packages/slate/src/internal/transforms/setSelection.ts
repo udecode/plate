@@ -1,7 +1,7 @@
 import { type Range, setSelection as setSelectionBase } from 'slate';
 
-import type { TEditor } from '../../interfaces';
+import type { Editor } from '../../interfaces';
 
-export const setSelection = (editor: TEditor, props: Partial<Range>) => {
+export const setSelection = (editor: Editor, props: Partial<Range>) => {
   setSelectionBase(editor as any, props);
 };

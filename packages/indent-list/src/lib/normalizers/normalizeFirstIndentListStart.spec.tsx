@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { BaseParagraphPlugin, createTEditor } from '@udecode/plate-common';
+import { BaseParagraphPlugin, createEditor } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
 import { jsxt } from '@udecode/plate-test-utils';
@@ -9,7 +9,7 @@ import { BaseIndentListPlugin } from '../BaseIndentListPlugin';
 
 jsxt;
 
-const input = createTEditor(
+const input = createEditor(
   (
     <editor>
       <hp>1</hp>

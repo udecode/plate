@@ -1,11 +1,11 @@
 import { moveNodes as moveNodesBase } from 'slate';
 
-import type { TEditor, ValueOf } from '../../interfaces';
+import type { Editor, ValueOf } from '../../interfaces';
 import type { MoveNodesOptions } from '../../interfaces/editor/editor-types';
 
 import { getQueryOptions } from '../../utils';
 
-export const moveNodes = <E extends TEditor>(
+export const moveNodes = <E extends Editor>(
   editor: E,
   options?: MoveNodesOptions<ValueOf<E>>
 ) => {

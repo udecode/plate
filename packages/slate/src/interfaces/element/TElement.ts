@@ -1,6 +1,6 @@
 import type { UnknownObject } from '@udecode/utils';
 
-import type { TEditor, Value } from '../editor/TEditor';
+import type { Editor, Value } from '../editor/editor';
 import type { TDescendant } from '../node/TDescendant';
 import type { TNode } from '../node/TNode';
 import type { TextIn, TextOf } from '../text/TText';
@@ -16,7 +16,7 @@ export type TElement = {
 } & UnknownObject;
 
 /** Element or text of an editor. */
-export type ElementOrTextOf<E extends TEditor> = ElementOf<E> | TextOf<E>;
+export type ElementOrTextOf<E extends Editor> = ElementOf<E> | TextOf<E>;
 
 export type ElementOrTextIn<V extends Value> = ElementIn<V> | TextIn<V>;
 
@@ -27,11 +27,11 @@ export type ElementOrTextIn<V extends Value> = ElementIn<V> | TextIn<V>;
 // export type TElementEntry = [TElement, Path];
 
 /** A utility type to get all the element nodes type from a root node. */
-export type ElementOf<N extends TNode> = TEditor extends N
+export type ElementOf<N extends TNode> = Editor extends N
   ? TElement
   : TElement extends N
     ? TElement
-    : N extends TEditor
+    : N extends Editor
       ?
           | ElementOf<N['children'][number]>
           | Extract<N['children'][number], TElement>

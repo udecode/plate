@@ -1,6 +1,6 @@
 import { DOMEditor } from 'slate-dom';
 
-import type { TEditor } from '../../interfaces/editor';
+import type { Editor } from '../../interfaces/editor';
 
-export const isEditorFocused = (editor: TEditor) =>
+export const isEditorFocused = (editor: Editor) =>
   DOMEditor.isFocused(editor as any);

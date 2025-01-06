@@ -1,13 +1,13 @@
 /** @jsx jsxt */
 import { createSlateEditor } from '@udecode/plate-core';
 import { jsxt } from '@udecode/plate-test-utils';
-import { createTEditor } from '@udecode/slate';
+import { createEditor } from '@udecode/slate';
 
 import { isType } from './isType';
 
 jsxt;
 
-const editor = createTEditor(
+const editor = createEditor(
   (
     <editor>
       <hp>test</hp>

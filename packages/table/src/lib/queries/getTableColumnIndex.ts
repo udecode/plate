@@ -1,7 +1,7 @@
-import type { TEditor, TElement } from '@udecode/plate-common';
+import type { Editor, TElement } from '@udecode/plate-common';
 
 /** Get table column index of a cell node. */
-export const getTableColumnIndex = (editor: TEditor, cellNode: TElement) => {
+export const getTableColumnIndex = (editor: Editor, cellNode: TElement) => {
   const path = editor.api.findPath(cellNode);
 
   if (!path) return -1;

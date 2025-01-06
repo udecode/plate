@@ -6,11 +6,11 @@ import {
   unhangRange as unhangRangeBase,
 } from 'slate';
 
-import type { TEditor } from '../../interfaces/editor/TEditor';
+import type { Editor } from '../../interfaces/editor/editor';
 import type { UnhangRangeOptions } from '../../interfaces/editor/editor-types';
 
 export const unhangRange = <
-  E extends TEditor,
+  E extends Editor,
   R extends Path | Point | Range | Span | null | undefined,
 >(
   editor: E,

@@ -8,8 +8,8 @@ import type {
 import type {
   TDecoratedRange,
   TDescendant,
-  TEditorApi,
-  TEditorTransforms,
+  EditorApi,
+  EditorTransforms,
   TElement,
   TNodeEntry,
   TText,
@@ -308,7 +308,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       ((...args: any[]) => any) | Record<string, (...args: any[]) => any>
     > = Record<string, never>,
   >(
-    extension: (ctx: PlatePluginContext<C>) => Deep2Partial<TEditorApi> &
+    extension: (ctx: PlatePluginContext<C>) => Deep2Partial<EditorApi> &
       EA & {
         [K in keyof InferApi<C>]?: InferApi<C>[K] extends (
           ...args: any[]
@@ -345,7 +345,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       ((...args: any[]) => any) | Record<string, (...args: any[]) => any>
     > = Record<string, never>,
   >(
-    extension: (ctx: PlatePluginContext<C>) => Deep2Partial<TEditorTransforms> &
+    extension: (ctx: PlatePluginContext<C>) => Deep2Partial<EditorTransforms> &
       ET & {
         [K in keyof InferTransforms<C>]?: InferTransforms<C>[K] extends (
           ...args: any[]

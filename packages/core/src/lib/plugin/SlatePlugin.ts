@@ -1,7 +1,7 @@
 import type {
   TDescendant,
-  TEditorApi,
-  TEditorTransforms,
+  EditorApi,
+  EditorTransforms,
   TElement,
   TNodeEntry,
   TText,
@@ -313,7 +313,7 @@ export type ExtendEditorApi<
   C extends AnyPluginConfig = PluginConfig,
   EA = {},
 > = (ctx: SlatePluginContext<C>) => EA &
-  Deep2Partial<TEditorApi> & {
+  Deep2Partial<EditorApi> & {
     [K in keyof InferApi<C>]?: InferApi<C>[K] extends (...args: any[]) => any
       ? (...args: Parameters<InferApi<C>[K]>) => ReturnType<InferApi<C>[K]>
       : InferApi<C>[K] extends Record<string, (...args: any[]) => any>
@@ -329,7 +329,7 @@ export type ExtendEditorTransforms<
   C extends AnyPluginConfig = PluginConfig,
   EA = {},
 > = (ctx: SlatePluginContext<C>) => EA &
-  Deep2Partial<TEditorTransforms> & {
+  Deep2Partial<EditorTransforms> & {
     [K in keyof InferTransforms<C>]?: InferTransforms<C>[K] extends (
       ...args: any[]
     ) => any

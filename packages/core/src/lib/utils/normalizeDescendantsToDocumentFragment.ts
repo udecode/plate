@@ -1,6 +1,6 @@
 import {
   type TDescendant,
-  type TEditor,
+  type Editor,
   TextApi,
   isElement,
 } from '@udecode/slate';
@@ -10,7 +10,7 @@ import type { SlateEditor } from '../editor';
 import { BaseParagraphPlugin } from '../plugins';
 
 const isInlineNode =
-  (editor: Pick<TEditor, 'isInline'>) => (node: TDescendant) =>
+  (editor: Pick<Editor, 'isInline'>) => (node: TDescendant) =>
     TextApi.isText(node) || (isElement(node) && editor.isInline(node));
 
 const makeBlockLazy = (type: string) => (): TDescendant => ({

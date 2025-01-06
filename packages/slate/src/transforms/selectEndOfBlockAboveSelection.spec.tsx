@@ -2,11 +2,11 @@
 
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { createTEditor, selectEndOfBlockAboveSelection } from '..';
+import { createEditor, selectEndOfBlockAboveSelection } from '..';
 
 jsxt;
 
-const input = createTEditor(
+const input = createEditor(
   (
     <editor>
       <hp>

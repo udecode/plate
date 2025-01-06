@@ -1,6 +1,6 @@
 import type { Point, Range } from 'slate';
 
-import { type TEditor, removeMark } from '@udecode/plate-common';
+import { type Editor, removeMark } from '@udecode/plate-common';
 import castArray from 'lodash/castArray.js';
 
 import type { AutoformatMarkRule } from '../types';
@@ -13,7 +13,7 @@ export interface AutoformatMarkOptions extends AutoformatMarkRule {
 }
 
 export const autoformatMark = (
-  editor: TEditor,
+  editor: Editor,
   { ignoreTrim, match: _match, text, trigger, type }: AutoformatMarkOptions
 ) => {
   if (!type) return false;

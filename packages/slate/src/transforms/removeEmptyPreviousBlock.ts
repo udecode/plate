@@ -1,7 +1,7 @@
-import type { TEditor, ValueOf } from '../interfaces';
+import type { Editor, ValueOf } from '../interfaces';
 import type { GetAboveNodeOptions } from '../interfaces/editor/editor-types';
 
-export const removeEmptyPreviousBlock = <E extends TEditor>(
+export const removeEmptyPreviousBlock = <E extends Editor>(
   editor: E,
   options: GetAboveNodeOptions<ValueOf<E>> = {}
 ) => {
