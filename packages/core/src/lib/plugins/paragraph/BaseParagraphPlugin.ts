@@ -13,6 +13,10 @@ export const BaseParagraphPlugin = createSlatePlugin({
           {
             validNodeName: 'P',
           },
+          {
+            validClassName: 'slate-p',
+            validNodeName: 'DIV',
+          },
         ],
       },
     },

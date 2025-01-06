@@ -6,7 +6,7 @@ import {
 } from '../BaseCodeBlockPlugin';
 import {
   htmlDeserializerCodeBlockStatic,
-  rulesStaticCodeBlock,
+  staticRules,
 } from './htmlDeserializerCodeBlockStatic';
 
 export const htmlDeserializerCodeBlock: HtmlDeserializer = {
@@ -51,6 +51,6 @@ export const htmlDeserializerCodeBlock: HtmlDeserializer = {
         fontFamily: 'Consolas',
       },
     },
-    ...(rulesStaticCodeBlock as any),
+    ...(staticRules as any),
   ],
 };

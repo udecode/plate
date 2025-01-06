@@ -9,7 +9,7 @@ import {
   BaseCodeLinePlugin,
 } from '../BaseCodeBlockPlugin';
 
-export const rulesStaticCodeBlock: HtmlDeserializer['rules'] = [
+export const staticRules: HtmlDeserializer['rules'] = [
   {
     validClassName: 'slate-code_block',
     validNodeName: 'DIV',
