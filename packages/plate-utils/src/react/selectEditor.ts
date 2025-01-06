@@ -1,5 +1,4 @@
-import type { TLocation } from '@udecode/plate';
-import type { Editor } from '@udecode/slate';
+import type { Editor, TLocation } from '@udecode/slate';
 
 export interface SelectEditorOptions {
   /** Specific location if edge is not defined. */

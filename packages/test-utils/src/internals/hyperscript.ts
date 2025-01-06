@@ -1,4 +1,4 @@
-import { type TElement, createEditor as makeEditor } from '@udecode/plate';
+import { type TElement, createEditor as makeEditor } from '@udecode/slate';
 
 import {
   createAnchor,

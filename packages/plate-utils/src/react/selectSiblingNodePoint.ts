@@ -1,5 +1,4 @@
-import type { Path } from '@udecode/plate';
-import type { Editor, TNode } from '@udecode/slate';
+import type { Editor, Path, TNode } from '@udecode/slate';
 
 export const selectSiblingNodePoint = (
   editor: Editor,

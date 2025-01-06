@@ -45,10 +45,8 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
+    "@udecode/slate": "41.0.0",
     "slate-hyperscript": "0.100.0"
-  },
-  "peerDependencies": {
-    "@udecode/plate": ">=41.0.5"
   },
   "publishConfig": {
     "access": "public"
