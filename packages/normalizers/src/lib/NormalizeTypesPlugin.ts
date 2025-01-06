@@ -1,7 +1,6 @@
-import type { Path } from 'slate';
-
 import {
   type ErrorHandler,
+  type Path,
   type PluginConfig,
   createTSlatePlugin,
 } from '@udecode/plate-common';

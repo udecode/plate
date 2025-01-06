@@ -6,5 +6,4 @@ export * from './At';
 export * from './QueryEditorOptions';
 export * from './QueryNodeOptions';
 export * from './QueryOptions';
-export * from './TOperation';
-export * from './interfaces';
+export * from './types';

@@ -1,9 +1,12 @@
-import { type Location, Path, Point, Range } from 'slate';
-
 import type { Editor, ValueOf } from '../../interfaces/editor/editor';
-import type { GetAboveNodeOptions } from '../../interfaces/editor/editor-types';
 
-import { isExpanded } from '../../interfaces';
+import {
+  type EditorAboveOptions,
+  type TLocation,
+  PathApi,
+  PointApi,
+  RangeApi,
+} from '../../interfaces';
 
 /**
  * Check if a location (point/range) is at a specific position.
@@ -35,7 +38,7 @@ export const isAt = <E extends Editor>(
     ...options
   }: {
     /** The location to check. Defaults to current selection */
-    at?: Location | null;
+    at?: TLocation | null;
     /** Check if range is in single block */
     block?: boolean;
     /** Check if range is across multiple blocks */
@@ -48,11 +51,11 @@ export const isAt = <E extends Editor>(
     text?: boolean;
     /** Check if point is at word boundary (only with end=true) */
     word?: boolean;
-  } & Omit<GetAboveNodeOptions<ValueOf<E>>, 'at' | 'block'> = {}
+  } & Omit<EditorAboveOptions<ValueOf<E>>, 'at' | 'block'> = {}
 ) => {
   if (!at) return false;
   // Handle Point
-  if (Point.isPoint(at)) {
+  if (PointApi.isPoint(at)) {
     if (word && end) {
       const after = editor.api.after(at);
 
@@ -67,12 +70,12 @@ export const isAt = <E extends Editor>(
     return false;
   }
   // Handle Range
-  if (Range.isRange(at)) {
-    const [startPoint, endPoint] = Range.edges(at);
+  if (RangeApi.isRange(at)) {
+    const [startPoint, endPoint] = RangeApi.edges(at);
 
     // Check if range is in single text node
     if (text) {
-      return Path.equals(startPoint.path, endPoint.path);
+      return PathApi.equals(startPoint.path, endPoint.path);
     }
 
     const startBlock = editor.api.block({ at: startPoint, ...options });
@@ -83,18 +86,18 @@ export const isAt = <E extends Editor>(
       if (!startBlock && !endBlock) return false;
       if (!startBlock || !endBlock) return true;
 
-      return !Path.equals(startBlock[1], endBlock[1]);
+      return !PathApi.equals(startBlock[1], endBlock[1]);
     }
     if (!startBlock || !endBlock) return false;
     // Check if range is in single block
     if (block) {
-      return Path.equals(startBlock[1], endBlock[1]);
+      return PathApi.equals(startBlock[1], endBlock[1]);
     }
     // Check block boundaries
     if (start) {
       return (
         editor.api.isStart(startPoint, startBlock[1]) ||
-        (isExpanded(at) && editor.api.isStart(endPoint, startBlock[1]))
+        (RangeApi.isExpanded(at) && editor.api.isStart(endPoint, startBlock[1]))
       );
     }
     if (end) {

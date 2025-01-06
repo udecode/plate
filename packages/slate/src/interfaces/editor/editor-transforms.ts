@@ -1,8 +1,8 @@
 import type { OmitFirst } from '@udecode/utils';
-import type { Editor } from 'slate';
 import type { DOMEditor } from 'slate-dom';
 
 import type { blurEditor } from '../../internal/dom-editor/blurEditor';
+import type { deselectEditor } from '../../internal/dom-editor/deselectEditor';
 import type { focusEditor } from '../../internal/dom-editor/focusEditor';
 import type { addMark } from '../../internal/editor/addMark';
 import type { deleteBackward } from '../../internal/editor/deleteBackward';
@@ -16,31 +16,25 @@ import type { moveSelection } from '../../internal/transforms/moveSelection';
 import type { select } from '../../internal/transforms/select';
 import type { setPoint } from '../../internal/transforms/setPoint';
 import type { setSelection } from '../../internal/transforms/setSelection';
-import type { HistoryEditor } from '../../slate-history/index';
+import type { HistoryApi } from '../../slate-history/index';
 import type { toggleMark } from '../../transforms/index';
-import type { TOperation } from '../../types/index';
-import type { ElementIn, ElementOrTextIn } from '../element/index';
 import type {
-  DescendantIn,
-  NodeIn,
-  TNodeEntry,
-  TNodeProps,
-} from '../node/index';
-import type { Value } from './editor';
-import type {
-  EditorNormalizeOptions,
-  InsertFragmentOptions,
-  InsertNodesOptions,
-  LiftNodesOptions,
-  MergeNodesOptions,
-  MoveNodesOptions,
-  RemoveNodesOptions,
-  SetNodesOptions,
-  SplitNodesOptions,
-  UnsetNodesOptions,
-  UnwrapNodesOptions,
-  WrapNodesOptions,
-} from './editor-types';
+  QueryAt,
+  QueryMode,
+  QueryNodeOptions,
+  QueryOptions,
+  QueryTextUnit,
+  QueryVoids,
+  TextUnit,
+} from '../../types/index';
+import type { ElementIn, ElementOrTextIn } from '../element';
+import type { TLocation } from '../location';
+import type { Descendant, DescendantIn, NodeIn, NodeProps } from '../node';
+import type { NodeEntry } from '../node-entry';
+import type { Operation } from '../operation';
+import type { Path } from '../path';
+import type { Editor, Value } from './editor';
+import type { EditorNormalizeOptions } from './editor-api';
 
 export type EditorTransforms<V extends Value = Value> = {
   /**
@@ -75,7 +69,7 @@ export type EditorTransforms<V extends Value = Value> = {
    * will also be set to `undefined` as opposed to ignored.
    */
   setNodes: <N extends DescendantIn<V>>(
-    props: Partial<TNodeProps<N>>,
+    props: Partial<NodeProps<N>>,
     options?: SetNodesOptions<V>
   ) => void;
   /**
@@ -83,7 +77,7 @@ export type EditorTransforms<V extends Value = Value> = {
    * specified, use the selection.
    */
   unsetNodes: <N extends DescendantIn<V>>(
-    props: (keyof TNodeProps<N>)[] | keyof TNodeProps<N>,
+    props: (keyof NodeProps<N>)[] | keyof NodeProps<N>,
     options?: UnsetNodesOptions<V>
   ) => void;
   /**
@@ -113,7 +107,7 @@ export type EditorTransforms<V extends Value = Value> = {
    * Insert a soft break at the current selection. If the selection is currently
    * expanded, delete it first.
    */
-  insertSoftBreak: Editor['insertSoftBreak'];
+  insertSoftBreak: () => void;
   /**
    * Lift nodes at the specified location upwards in the document tree. If
    * necessary, the parent node is split. If no location is specified, use the
@@ -134,7 +128,7 @@ export type EditorTransforms<V extends Value = Value> = {
   /** Normalize any dirty objects in the editor. */
   normalize: (options?: EditorNormalizeOptions) => void;
   /** Redo to the next saved state. */
-  redo: HistoryEditor['redo'];
+  redo: () => void;
   /**
    * Remove a custom property from all of the leaf text nodes within non-void
    * nodes or void nodes that `editor.markableVoid()` allows in the current
@@ -143,7 +137,7 @@ export type EditorTransforms<V extends Value = Value> = {
    * If the selection is currently collapsed, the removal will be stored on
    * `editor.marks` and applied to the text inserted next.
    */
-  removeMark: OmitFirst<typeof Editor.removeMark>;
+  removeMark: (key: string) => void;
   /**
    * Remove nodes at the specified location in the document. If no location is
    * specified, remove the nodes in the selection.
@@ -155,7 +149,7 @@ export type EditorTransforms<V extends Value = Value> = {
    */
   splitNodes: (options?: SplitNodesOptions<V>) => void;
   /** Undo to the previous saved state. */
-  undo: HistoryEditor['undo'];
+  undo: () => void;
   /**
    * Unwrap nodes at the specified location. If necessary, the parent node is
    * split. If no location is specified, use the selection.
@@ -171,7 +165,7 @@ export type EditorTransforms<V extends Value = Value> = {
    * Push a batch of operations as either `undos` or `redos` onto `editor.undos`
    * or `editor.redos`
    */
-  writeHistory: HistoryEditor['writeHistory'];
+  writeHistory: (stack: 'redos' | 'undos', batch: any) => void;
 } /** Text Transforms */ & {
   /** Delete text in the document. */
   delete: OmitFirst<typeof deleteText>;
@@ -179,7 +173,7 @@ export type EditorTransforms<V extends Value = Value> = {
    * Insert a string of text at the specified location or (if not defined) the
    * current selection or (if not defined) the end of the document.
    */
-  insertText: OmitFirst<typeof Editor.insertText>;
+  insertText: (text: string, options?: InsertTextOptions) => void;
 } /** Selection Transforms */ & {
   /** Collapse the selection to a single point. */
   collapse: OmitFirst<typeof collapseSelection>;
@@ -197,7 +191,7 @@ export type EditorTransforms<V extends Value = Value> = {
   setPoint: OmitFirst<typeof setPoint>;
   /**
    * Set new properties on an active selection. Since the value is a
-   * `Partial<Range>`, this method can only handle updates to an existing
+   * `Partial<TRange>`, this method can only handle updates to an existing
    * selection. If there is no active selection the operation will be void. Use
    * `select` if you'd like to create a selection when there is none.
    */
@@ -206,7 +200,7 @@ export type EditorTransforms<V extends Value = Value> = {
   /** Blur the editor */
   blur: OmitFirst<typeof blurEditor>;
   /** Deselect the editor. */
-  deselectDOM: OmitFirst<typeof DOMEditor.deselect>;
+  deselectDOM: OmitFirst<typeof deselectEditor>;
   /**
    * Focus the editor.
    *
@@ -219,8 +213,8 @@ export type EditorTransforms<V extends Value = Value> = {
   focus: OmitFirst<typeof focusEditor>;
   /**
    * Insert data from a `DataTransfer` into the editor. This is a proxy method
-   * to call in this order `insertFragmentData(editor: ReactEditor, data:
-   * DataTransfer)` and then `insertTextData(editor: ReactEditor, data:
+   * to call in this order `insertFragmentData(editor: Editor, data:
+   * DataTransfer)` and then `insertTextData(editor: Editor, data:
    * DataTransfer)`.
    */
   insertData: DOMEditor['insertData'];
@@ -237,28 +231,28 @@ export type EditorTransforms<V extends Value = Value> = {
   /** Sets data from the currently selected fragment on a `DataTransfer`. */
   setFragmentData: DOMEditor['setFragmentData'];
 } & {
-  setSplittingOnce: OmitFirst<typeof HistoryEditor.setSplittingOnce>;
+  setSplittingOnce: OmitFirst<typeof HistoryApi.setSplittingOnce>;
   /**
    * Apply a series of changes inside a synchronous `fn`, These operations will
    * be merged into the previous history.
    */
-  withMerging: OmitFirst<typeof HistoryEditor.withMerging>;
+  withMerging: OmitFirst<typeof HistoryApi.withMerging>;
   /**
    * Apply a series of changes inside a synchronous `fn`, ensuring that the
    * first operation starts a new batch in the history. Subsequent operations
    * will be merged as usual.
    */
-  withNewBatch: OmitFirst<typeof HistoryEditor.withNewBatch>;
+  withNewBatch: OmitFirst<typeof HistoryApi.withNewBatch>;
   /**
    * Apply a series of changes inside a synchronous `fn`, without merging any of
    * the new operations into previous save point in the history.
    */
-  withoutMerging: OmitFirst<typeof HistoryEditor.withoutMerging>;
+  withoutMerging: OmitFirst<typeof HistoryApi.withoutMerging>;
   /**
    * Apply a series of changes inside a synchronous `fn`, without saving any of
    * their operations into the history.
    */
-  withoutSaving: OmitFirst<typeof HistoryEditor.withoutSaving>;
+  withoutSaving: OmitFirst<typeof HistoryApi.withoutSaving>;
 } & {
   toggle: {
     mark: OmitFirst<typeof toggleMark>;
@@ -266,9 +260,140 @@ export type EditorTransforms<V extends Value = Value> = {
 } & {
   /** Normalize a Node according to the schema. */
   normalizeNode: <N extends NodeIn<V>>(
-    entry: TNodeEntry<N>,
-    options?: { operation?: TOperation }
+    entry: NodeEntry<N>,
+    options?: { operation?: Operation }
   ) => void;
   /** Apply an operation in the editor. */
-  apply: <N extends DescendantIn<V>>(operation: TOperation<N>) => void;
+  apply: <N extends DescendantIn<V>>(operation: Operation<N>) => void;
 };
+
+export type InsertFragmentOptions = {
+  batchDirty?: boolean;
+  hanging?: boolean;
+} & QueryAt &
+  QueryVoids;
+
+export type InsertNodesOptions<V extends Value = Value> = {
+  batchDirty?: boolean;
+
+  hanging?: boolean;
+
+  /**
+   * Insert the nodes after the currect block. Does not apply if the removeEmpty
+   * option caused the current block to be removed.
+   */
+  nextBlock?: boolean;
+
+  /**
+   * Remove the currect block if empty before inserting. Only applies to
+   * paragraphs by default, but can be customized by passing a QueryNodeOptions
+   * object.
+   */
+  removeEmpty?: QueryNodeOptions | boolean;
+
+  /** If true, select the inserted nodes. */
+  select?: boolean;
+} & QueryOptions<V> &
+  QueryMode &
+  QueryVoids;
+
+export type LiftNodesOptions<V extends Value = Value> = QueryOptions<V> &
+  QueryMode &
+  QueryVoids;
+
+export type MergeNodesOptions<V extends Value, E extends Editor = Editor> = {
+  hanging?: boolean;
+
+  /**
+   * Default: if the node isn't already the next sibling of the previous node,
+   * move it so that it is before merging.
+   */
+  mergeNode?: (editor: E, options: { at: Path; to: Path }) => void;
+
+  /**
+   * Default: if there was going to be an empty ancestor of the node that was
+   * merged, we remove it from the tree.
+   */
+  removeEmptyAncestor?: (editor: E, options: { at: Path }) => void;
+} & QueryOptions<V> &
+  QueryMode &
+  QueryVoids;
+
+export type MoveNodesOptions<V extends Value = Value> = {
+  to: Path;
+} & QueryOptions<V> &
+  QueryMode &
+  QueryVoids;
+
+export type RemoveNodesOptions<V extends Value = Value> = {
+  hanging?: boolean;
+} & QueryOptions<V> &
+  QueryMode &
+  QueryVoids;
+
+type PropsCompare = (
+  prop: Partial<Descendant>,
+  node: Partial<Descendant>
+) => boolean;
+type PropsMerge = (
+  prop: Partial<Descendant>,
+  node: Partial<Descendant>
+) => object;
+
+export type SetNodesOptions<V extends Value = Value> = {
+  compare?: PropsCompare;
+  hanging?: boolean;
+  merge?: PropsMerge;
+  split?: boolean;
+} & QueryOptions<V> &
+  QueryMode &
+  QueryVoids;
+
+export type SplitNodesOptions<V extends Value = Value> = {
+  always?: boolean;
+  height?: number;
+} & QueryOptions<V> &
+  QueryMode &
+  QueryVoids;
+
+export type UnsetNodesOptions<V extends Value = Value> = {
+  hanging?: boolean;
+  split?: boolean;
+} & QueryOptions<V> &
+  QueryMode &
+  QueryVoids;
+
+export type UnwrapNodesOptions<V extends Value = Value> = {
+  hanging?: boolean;
+  split?: boolean;
+} & QueryOptions<V> &
+  QueryMode &
+  QueryVoids;
+
+export type WrapNodesOptions<V extends Value = Value> = {
+  hanging?: boolean;
+  /**
+   * Indicates that it's okay to split a node in order to wrap the location. For
+   * example, if `ipsum` was selected in a `Text` node with `lorem ipsum dolar`,
+   * `split: true` would wrap the word `ipsum` only, resulting in splitting the
+   * `Text` node. If `split: false`, the entire `Text` node `lorem ipsum dolar`
+   * would be wrapped.
+   */
+  split?: boolean;
+} & QueryOptions<V> &
+  QueryMode &
+  QueryVoids;
+
+export type InsertTextOptions = {
+  at?: TLocation;
+  voids?: boolean;
+};
+
+export type DeleteTextOptions = {
+  distance?: number;
+  hanging?: boolean;
+  reverse?: boolean;
+  unit?: TextUnit;
+} & QueryAt &
+  QueryVoids &
+  QueryTextUnit;

@@ -6,7 +6,11 @@ import type { TMentionElement } from '@udecode/plate-mention';
 
 import { cn, withRef } from '@udecode/cn';
 import { IS_APPLE, getHandler } from '@udecode/plate-common';
-import { useFocused, useReadOnly, useSelected } from 'slate-react';
+import {
+  useFocused,
+  useReadOnly,
+  useSelected,
+} from '@udecode/plate-common/react';
 
 import { useMounted } from '@/registry/default/hooks/use-mounted';
 

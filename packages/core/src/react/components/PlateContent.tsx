@@ -2,11 +2,11 @@ import React, { useRef } from 'react';
 
 import { useComposedRef } from '@udecode/react-utils';
 import { focusEditorEdge } from '@udecode/slate';
-import { Editable } from 'slate-react';
 
-import type { TEditableProps } from '../../lib/types/TEditableProps';
+import type { EditableProps } from '../../lib/types/EditableProps';
 
 import { useEditableProps } from '../hooks';
+import { Editable } from '../slate-react';
 import { type PlateStoreState, useEditorRef } from '../stores';
 import { EditorHotkeysEffect } from './EditorHotkeysEffect';
 import { EditorMethodsEffect } from './EditorMethodsEffect';
@@ -15,7 +15,7 @@ import { EditorStateEffect } from './EditorStateEffect';
 import { PlateControllerEffect } from './PlateControllerEffect';
 import { PlateSlate } from './PlateSlate';
 
-export type PlateContentProps = Omit<TEditableProps, 'decorate'> & {
+export type PlateContentProps = Omit<EditableProps, 'decorate'> & {
   /** Autofocus when it becomes editable (readOnly false -> readOnly true) */
   autoFocusOnEditable?: boolean;
   decorate?: PlateStoreState['decorate'];

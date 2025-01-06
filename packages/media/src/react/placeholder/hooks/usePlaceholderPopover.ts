@@ -2,8 +2,10 @@ import {
   useEditorRef,
   useEditorSelector,
   useElement,
+  useFocused,
+  useReadOnly,
+  useSelected,
 } from '@udecode/plate-common/react';
-import { useFocused, useReadOnly, useSelected } from 'slate-react';
 
 import { type TPlaceholderElement, BasePlaceholderPlugin } from '../../../lib';
 import { usePlaceholderStore } from '../placeholderStore';

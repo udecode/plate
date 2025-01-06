@@ -4,7 +4,7 @@ import map from 'lodash/map.js';
 import { before } from 'slate';
 
 import type { Editor } from '../../interfaces/editor/editor';
-import type { GetPointBeforeOptions } from '../../interfaces/editor/editor-types';
+import type { EditorBeforeOptions } from '../../interfaces/index';
 import type { At } from '../../types';
 
 import { getAt } from '../../utils';
@@ -12,7 +12,7 @@ import { getAt } from '../../utils';
 export const getPointBefore = (
   editor: Editor,
   at: At,
-  options?: GetPointBeforeOptions
+  options?: EditorBeforeOptions
 ) => {
   if (!options || (!options.match && !options.matchString)) {
     try {

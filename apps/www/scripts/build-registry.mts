@@ -504,9 +504,6 @@ async function buildStylesIndex() {
       "lucide-react",
       "@udecode/cn",
       "@udecode/plate-common",
-      "slate",
-      "slate-dom",
-      "slate-react",
       "slate-hyperscript",
     ]
 

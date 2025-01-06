@@ -1,5 +1,4 @@
-import type { SlateEditor } from '@udecode/plate-common';
-import type { Location } from 'slate';
+import type { SlateEditor, TLocation } from '@udecode/plate-common';
 
 import { BaseTablePlugin, BaseTableRowPlugin } from '../BaseTablePlugin';
 import { getCellTypes } from '../utils';
@@ -10,7 +9,7 @@ import { getCellTypes } from '../utils';
  */
 export const getTableEntries = (
   editor: SlateEditor,
-  { at = editor.selection }: { at?: Location | null } = {}
+  { at = editor.selection }: { at?: TLocation | null } = {}
 ) => {
   if (!at) return;
 

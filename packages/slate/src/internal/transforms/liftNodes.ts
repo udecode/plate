@@ -1,7 +1,6 @@
 import { liftNodes as liftNodesBase } from 'slate';
 
-import type { Editor, ValueOf } from '../../interfaces';
-import type { LiftNodesOptions } from '../../interfaces/editor/editor-types';
+import type { Editor, LiftNodesOptions, ValueOf } from '../../interfaces';
 
 import { getQueryOptions } from '../../utils';
 

@@ -1,4 +1,4 @@
-import type { Editor } from '../interfaces';
+import type { Editor } from '../../interfaces';
 
 const LEGACY_TRANSFORMS = new Set([
   'addMark',

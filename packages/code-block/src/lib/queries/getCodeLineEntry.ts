@@ -1,11 +1,10 @@
-import type { Location } from 'slate';
-
 import {
   type ElementOf,
+  type NodeEntry,
   type SlateEditor,
   type TElement,
-  type TNodeEntry,
-  isElement,
+  type TLocation,
+  ElementApi,
 } from '@udecode/plate-common';
 
 import { BaseCodeLinePlugin } from '../BaseCodeBlockPlugin';
@@ -13,7 +12,7 @@ import { BaseCodeLinePlugin } from '../BaseCodeBlockPlugin';
 /** If at (default = selection) is in ul>li>p, return li and ul node entries. */
 export const getCodeLineEntry = <N extends ElementOf<E>, E extends SlateEditor>(
   editor: E,
-  { at = editor.selection }: { at?: Location | null } = {}
+  { at = editor.selection }: { at?: TLocation | null } = {}
 ) => {
   if (
     at &&
@@ -39,7 +38,7 @@ export const getCodeLineEntry = <N extends ElementOf<E>, E extends SlateEditor>(
     const [codeLineNode, codeLinePath] = codeLine;
 
     if (
-      isElement(codeLineNode) &&
+      ElementApi.isElement(codeLineNode) &&
       codeLineNode.type !== editor.getType(BaseCodeLinePlugin)
     )
       return;
@@ -50,7 +49,7 @@ export const getCodeLineEntry = <N extends ElementOf<E>, E extends SlateEditor>(
 
     return {
       codeBlock,
-      codeLine: codeLine as TNodeEntry<N>,
+      codeLine: codeLine as NodeEntry<N>,
     };
   }
 };

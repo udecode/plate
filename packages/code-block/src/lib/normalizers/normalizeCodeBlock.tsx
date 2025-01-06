@@ -1,8 +1,8 @@
 import {
+  type NodeEntry,
   type SlateEditor,
-  type TNodeEntry,
+  ElementApi,
   getChildren,
-  isElement,
 } from '@udecode/plate-common';
 
 import {
@@ -17,10 +17,10 @@ export const normalizeCodeBlock = (editor: SlateEditor) => {
 
   const { normalizeNode } = editor;
 
-  return ([node, path]: TNodeEntry) => {
+  return ([node, path]: NodeEntry) => {
     normalizeNode([node, path]);
 
-    if (!isElement(node)) {
+    if (!ElementApi.isElement(node)) {
       return;
     }
 

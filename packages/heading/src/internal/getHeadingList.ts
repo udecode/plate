@@ -1,7 +1,7 @@
 import {
   type SlateEditor,
   type TElement,
-  getNodeString,
+  NodeApi,
 } from '@udecode/plate-common';
 
 import type { Heading } from '../lib/types';
@@ -37,7 +37,7 @@ export const getHeadingList = (editor: SlateEditor) => {
 
   Array.from(values, ([node, path]) => {
     const { type } = node;
-    const title = getNodeString(node);
+    const title = NodeApi.string(node);
     const depth = headingDepth[type];
     const id = node.id as string;
     title && headingList.push({ id, depth, path, title, type });

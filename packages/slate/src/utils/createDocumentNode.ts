@@ -1,10 +1,10 @@
-import type { TDescendant } from '../interfaces';
+import type { Descendant } from '../interfaces/node';
 
 export const createDocumentNode = (
   type = 'p',
   text = '',
-  remaining: TDescendant[] = []
-): TDescendant[] => [
+  remaining: Descendant[] = []
+): Descendant[] => [
   {
     children: [
       {

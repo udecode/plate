@@ -1,7 +1,6 @@
+import type { Operation } from '@udecode/plate-common';
 import type { ExtendEditor, PlateEditor } from '@udecode/plate-common/react';
-import type { BaseOperation } from 'slate';
 
-import { withoutMergingHistory } from '@udecode/plate-common';
 import { serializeInlineMd } from '@udecode/plate-markdown';
 import debounce from 'lodash/debounce.js';
 
@@ -13,7 +12,7 @@ type CopilotBatch = PlateEditor['history']['undos'][number] & {
   shouldAbort: boolean;
 };
 
-const getPatchString = (operations: BaseOperation[]) => {
+const getPatchString = (operations: Operation[]) => {
   let string = '';
 
   for (const operation of operations) {
@@ -116,7 +115,7 @@ export const withCopilot: ExtendEditor<CopilotPluginConfig> = ({
     // When using IME input, it’s possible to enter two characters at once.
     if (suggestionText?.startsWith(text)) {
       withoutAbort(editor, () => {
-        withoutMergingHistory(editor, () => {
+        editor.tf.withoutMerging(() => {
           const newText = suggestionText?.slice(text.length);
           setOption('suggestionText', newText);
           insertText(text);

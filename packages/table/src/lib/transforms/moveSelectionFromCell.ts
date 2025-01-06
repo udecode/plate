@@ -1,6 +1,8 @@
-import type { Location } from 'slate';
-
-import { type SlateEditor, hasNode } from '@udecode/plate-common';
+import {
+  type SlateEditor,
+  type TLocation,
+  NodeApi,
+} from '@udecode/plate-common';
 
 import { getTableGridAbove } from '../queries/getTableGridAbove';
 import { getCellTypes } from '../utils/getCellType';
@@ -14,7 +16,7 @@ export const moveSelectionFromCell = (
     fromOneCell,
     reverse,
   }: {
-    at?: Location;
+    at?: TLocation;
 
     /** Expand cell selection to an edge. */
     edge?: 'bottom' | 'left' | 'right' | 'top';
@@ -61,7 +63,7 @@ export const moveSelectionFromCell = (
         // No default
       }
 
-      if (hasNode(editor, anchorPath) && hasNode(editor, focusPath)) {
+      if (NodeApi.has(editor, anchorPath) && NodeApi.has(editor, focusPath)) {
         editor.tf.select({
           anchor: editor.api.start(anchorPath)!,
           focus: editor.api.start(focusPath)!,
@@ -88,7 +90,7 @@ export const moveSelectionFromCell = (
 
     nextCellPath[nextCellPath.length - 2] += offset;
 
-    if (hasNode(editor, nextCellPath)) {
+    if (NodeApi.has(editor, nextCellPath)) {
       editor.tf.select(editor.api.start(nextCellPath)!);
     } else {
       const tablePath = cellPath.slice(0, -2);

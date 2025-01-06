@@ -1,9 +1,9 @@
 import {
   type SlateEditor,
   type TElement,
+  PathApi,
   insertElements,
 } from '@udecode/plate-common';
-import { Path } from 'slate';
 
 import {
   BaseListItemContentPlugin,
@@ -43,8 +43,8 @@ export const insertListItem = (editor: SlateEditor): boolean => {
     const isStart = editor.api.isStart(editor.selection!.focus, paragraphPath);
     const isEnd = editor.api.isEmpty(editor.selection, { after: true });
 
-    const nextParagraphPath = Path.next(paragraphPath);
-    const nextListItemPath = Path.next(listItemPath);
+    const nextParagraphPath = PathApi.next(paragraphPath);
+    const nextListItemPath = PathApi.next(listItemPath);
 
     /** If start, insert a list item before */
     if (isStart) {

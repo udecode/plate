@@ -30,7 +30,7 @@ import {
   CodeBlockPlugin,
   CodeLinePlugin,
 } from '@udecode/plate-code-block/react';
-import { isElement, isType } from '@udecode/plate-common';
+import { ElementApi, isType } from '@udecode/plate-common';
 import { ParagraphPlugin } from '@udecode/plate-common/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
@@ -56,7 +56,7 @@ export const format = (editor: SlateEditor, customFormatting: any) => {
     const [node] = parentEntry;
 
     if (
-      isElement(node) &&
+      ElementApi.isElement(node) &&
       !isType(editor, node, CodeBlockPlugin.key) &&
       !isType(editor, node, CodeLinePlugin.key)
     ) {

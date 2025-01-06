@@ -2,7 +2,7 @@
 
 import { ListItemPlugin } from '@udecode/plate-list/react';
 import { jsxt } from '@udecode/plate-test-utils';
-import { isElement } from '@udecode/slate';
+import { ElementApi } from '@udecode/slate';
 
 import { BaseParagraphPlugin } from '../../../plugins';
 import { mergeDeepToNodes } from '../../../utils';
@@ -32,7 +32,7 @@ it('should set props to all elements', () => {
   mergeDeepToNodes({
     node,
     query: {
-      filter: ([n]) => isElement(n),
+      filter: ([n]) => ElementApi.isElement(n),
     },
     source: props,
   });

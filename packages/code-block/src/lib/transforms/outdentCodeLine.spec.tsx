@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import type { SlateEditor, TElementEntry } from '@udecode/plate-common';
+import type { ElementEntry, SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsxt } from '@udecode/plate-test-utils';
@@ -35,8 +35,8 @@ describe('outdent code line', () => {
         value: input.children,
       });
 
-      const codeBlock = editor.api.node([0]) as TElementEntry;
-      const codeLine = editor.api.node([0, 0]) as TElementEntry;
+      const codeBlock = editor.api.node([0]) as ElementEntry;
+      const codeLine = editor.api.node([0, 0]) as ElementEntry;
 
       outdentCodeLine(editor, { codeBlock, codeLine });
 
@@ -68,8 +68,8 @@ describe('outdent code line', () => {
         value: input.children,
       });
 
-      const codeBlock = editor.api.node([0]) as TElementEntry;
-      const codeLine = editor.api.node([0, 0]) as TElementEntry;
+      const codeBlock = editor.api.node([0]) as ElementEntry;
+      const codeLine = editor.api.node([0, 0]) as ElementEntry;
 
       outdentCodeLine(editor, { codeBlock, codeLine });
 

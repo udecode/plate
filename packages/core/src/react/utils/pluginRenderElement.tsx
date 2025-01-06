@@ -1,11 +1,10 @@
 import React from 'react';
 
-import { DefaultElement } from 'slate-react';
-
 import type { PlateEditor } from '../editor/PlateEditor';
 import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
 import type { PlateRenderElementProps } from '../plugin/PlateRenderElementProps';
 
+import { DefaultElement } from '../slate-react';
 import { useElement } from '../stores';
 import { ElementProvider } from '../stores/element/useElementStore';
 import { getRenderNodeProps } from './getRenderNodeProps';

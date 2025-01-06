@@ -1,9 +1,8 @@
-import type { Editor, ValueOf } from '../interfaces';
-import type { GetAboveNodeOptions } from '../interfaces/editor/editor-types';
+import type { Editor, EditorAboveOptions, ValueOf } from '../interfaces';
 
 export const removeEmptyPreviousBlock = <E extends Editor>(
   editor: E,
-  options: GetAboveNodeOptions<ValueOf<E>> = {}
+  options: EditorAboveOptions<ValueOf<E>> = {}
 ) => {
   const entry = editor.api.block(options);
 

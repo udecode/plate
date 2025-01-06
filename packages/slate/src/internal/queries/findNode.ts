@@ -1,20 +1,17 @@
 import type {
   DescendantOf,
-  FindNodeOptions,
   Editor,
-  TNodeEntry,
+  EditorFindOptions,
+  NodeEntry,
   ValueOf,
 } from '../../interfaces';
 
 import { getQueryOptions } from '../../utils';
 
-export const findNode = <
-  N extends DescendantOf<E>,
-  E extends Editor = Editor,
->(
+export const findNode = <N extends DescendantOf<E>, E extends Editor = Editor>(
   editor: E,
-  options: FindNodeOptions<ValueOf<E>> = {}
-): TNodeEntry<N> | undefined => {
+  options: EditorFindOptions<ValueOf<E>> = {}
+): NodeEntry<N> | undefined => {
   options = getQueryOptions(editor, options);
 
   // Slate throws when things aren't found so we wrap in a try catch and return undefined on throw.

@@ -1,7 +1,6 @@
 import { removeNodes as removeNodesBase } from 'slate';
 
-import type { Editor, ValueOf } from '../../interfaces';
-import type { RemoveNodesOptions } from '../../interfaces/editor/editor-types';
+import type { Editor, RemoveNodesOptions, ValueOf } from '../../interfaces';
 
 import { getQueryOptions } from '../../utils';
 

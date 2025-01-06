@@ -1,31 +1,41 @@
 import type { UnknownObject } from '@udecode/utils';
-import type { Range } from 'slate';
 
-import type { HistoryEditor } from '../../slate-history';
-import type { TOperation } from '../../types/TOperation';
-import type { TElement } from '../element/TElement';
+import type { History } from '../../slate-history/history';
+import type { TElement } from '../element';
 import type { DescendantIn } from '../node';
-import type { LegacyEditorMethods } from './legacy-editor';
+import type { Operation } from '../operation';
+import type { TRange } from '../range';
 import type { EditorApi } from './editor-api';
 import type { EditorTransforms } from './editor-transforms';
+import type { LegacyEditorMethods } from './legacy-editor';
 
 export type Value = TElement[];
 
-export type BaseEditor<V extends Value = Value> = {
+export type EditorBase<V extends Value = Value> = {
+  /** Unique identifier for the editor. */
   id: any;
+  /** Value of the editor. */
   children: V;
-  marks: Record<string, any> | null;
-  operations: TOperation<DescendantIn<V>>[];
-  selection: Range | null;
-} & Pick<HistoryEditor, 'history'> &
-  LegacyEditorMethods<V> &
+  /** Contains the undos and redos of the editor. */
+  history: History;
+  /** Marks that are currently applied to the editor. */
+  marks: EditorMarks | null;
+  /** Operations that have been applied to the editor. */
+  operations: Operation<DescendantIn<V>>[];
+  /** The current selection of the editor. */
+  selection: EditorSelection;
+} & LegacyEditorMethods<V> &
   UnknownObject;
 
-export type Editor<V extends Value = Value> = BaseEditor<V> & {
+export type Editor<V extends Value = Value> = EditorBase<V> & {
   api: EditorApi<V>;
   tf: EditorTransforms<V>;
   transforms: EditorTransforms<V>;
 };
+
+export type EditorSelection = TRange | null;
+
+export type EditorMarks = Record<string, any>;
 
 /** A helper type for getting the value of an editor. */
 export type ValueOf<E extends Editor> = E['children'];

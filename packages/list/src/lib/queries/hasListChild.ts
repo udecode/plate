@@ -1,7 +1,7 @@
-import { type SlateEditor, type TAncestor, match } from '@udecode/plate-common';
+import { type Ancestor, type SlateEditor, match } from '@udecode/plate-common';
 
 import { getListTypes } from './getListTypes';
 
 /** Is there a list child in the node. */
-export const hasListChild = (editor: SlateEditor, node: TAncestor) =>
+export const hasListChild = (editor: SlateEditor, node: Ancestor) =>
   node.children.some((n) => match(n, [], { type: getListTypes(editor) }));

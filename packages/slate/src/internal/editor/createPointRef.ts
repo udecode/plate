@@ -1,8 +1,9 @@
 import type { EditorPointRefOptions } from 'slate/dist/interfaces/editor';
 
-import { type Point, pointRef } from 'slate';
+import { pointRef } from 'slate';
 
 import type { Editor } from '../../interfaces/editor/editor';
+import type { Point } from '../../interfaces/point';
 
 export const createPointRef = (
   editor: Editor,

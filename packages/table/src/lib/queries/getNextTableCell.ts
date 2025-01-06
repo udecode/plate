@@ -1,16 +1,19 @@
-import type { Editor, TNodeEntry } from '@udecode/plate-common';
-
-import { Path } from 'slate';
+import {
+  type Editor,
+  type NodeEntry,
+  type Path,
+  PathApi,
+} from '@udecode/plate-common';
 
 import { getCellInNextTableRow } from './getCellInNextTableRow';
 
 export const getNextTableCell = (
   editor: Editor,
-  currentCell: TNodeEntry,
+  currentCell: NodeEntry,
   currentPath: Path,
-  currentRow: TNodeEntry
-): TNodeEntry | undefined => {
-  const cell = editor.api.node(Path.next(currentPath));
+  currentRow: NodeEntry
+): NodeEntry | undefined => {
+  const cell = editor.api.node(PathApi.next(currentPath));
 
   if (cell) return cell;
 

@@ -1,4 +1,4 @@
-import type { ElementOrTextOf, Editor } from '../interfaces';
+import type { Editor, ElementOrTextOf } from '../interfaces';
 import type { ReplaceNodeChildrenOptions } from './replaceNodeChildren';
 
 export const replaceNode = <

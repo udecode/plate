@@ -1,11 +1,12 @@
 import {
+  type ElementEntry,
+  type Path,
   type SlateEditor,
   type TElement,
-  type TElementEntry,
-  getNode,
-  isCollapsed,
+  type TLocation,
+  NodeApi,
+  RangeApi,
 } from '@udecode/plate-common';
-import { type Location, type Path, Range } from 'slate';
 
 import { BaseTodoListPlugin } from '../BaseTodoListPlugin';
 
@@ -15,21 +16,21 @@ import { BaseTodoListPlugin } from '../BaseTodoListPlugin';
  */
 export const getTodoListItemEntry = (
   editor: SlateEditor,
-  { at = editor.selection }: { at?: Location | null } = {}
-): { list: TElementEntry; listItem: TElementEntry } | undefined => {
+  { at = editor.selection }: { at?: TLocation | null } = {}
+): { list: ElementEntry; listItem: ElementEntry } | undefined => {
   const todoType = editor.getType(BaseTodoListPlugin);
 
   let _at: Path;
 
-  if (Range.isRange(at) && !isCollapsed(at)) {
+  if (RangeApi.isRange(at) && !RangeApi.isCollapsed(at)) {
     _at = at.focus.path;
-  } else if (Range.isRange(at)) {
+  } else if (RangeApi.isRange(at)) {
     _at = at.anchor.path;
   } else {
     _at = at as Path;
   }
   if (_at) {
-    const node = getNode<TElement>(editor, _at);
+    const node = NodeApi.get<TElement>(editor, _at);
 
     if (node) {
       const listItem = editor.api.above<TElement>({

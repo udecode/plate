@@ -2,10 +2,10 @@ import type { PlateEditor } from '@udecode/plate-common/react';
 
 import {
   type InsertNodesOptions,
+  type Path,
+  PathApi,
   nanoid,
-  withoutMergingHistory,
 } from '@udecode/plate-common';
-import { Path } from 'slate';
 
 import { type TPlaceholderElement, BasePlaceholderPlugin } from '../../../lib';
 import { PlaceholderPlugin } from '../PlaceholderPlugin';
@@ -67,7 +67,7 @@ export const insertMedia = (
         currentAt = at;
       }
     } else {
-      currentAt = currentAt ? Path.next(currentAt) : undefined;
+      currentAt = currentAt ? PathApi.next(currentAt) : undefined;
     }
 
     const id = nanoid();
@@ -92,7 +92,7 @@ export const insertMedia = (
     );
 
     if (disableEmptyPlaceholder) {
-      withoutMergingHistory(editor, () => {
+      editor.tf.withoutMerging(() => {
         withHistoryMark(editor, insert);
       });
     } else {

@@ -1,14 +1,15 @@
 import {
   type ExtendEditor,
+  type Path,
   type TElement,
   BaseParagraphPlugin,
+  ElementApi,
+  NodeApi,
+  PathApi,
   getChildren,
-  getNode,
   getPreviousPath,
-  isElement,
   match,
 } from '@udecode/plate-common';
-import { Path } from 'slate';
 
 import {
   type ListConfig,
@@ -32,7 +33,7 @@ export const withNormalizeList: ExtendEditor<ListConfig> = ({
     const licType = editor.getType(BaseListItemContentPlugin);
     const defaultType = editor.getType(BaseParagraphPlugin);
 
-    if (!isElement(node)) {
+    if (!ElementApi.isElement(node)) {
       return normalizeNode([node, path]);
     }
     if (isListRoot(editor, node)) {
@@ -56,8 +57,8 @@ export const withNormalizeList: ExtendEditor<ListConfig> = ({
         return editor.tf.removeNodes({ at: path });
       }
 
-      const nextPath = Path.next(path);
-      const nextNode = getNode<TElement>(editor, nextPath);
+      const nextPath = PathApi.next(path);
+      const nextNode = NodeApi.get<TElement>(editor, nextPath)!;
 
       // Has a list afterwards with the same type
       if (nextNode?.type === node.type) {
@@ -69,7 +70,7 @@ export const withNormalizeList: ExtendEditor<ListConfig> = ({
       }
 
       const prevPath = getPreviousPath(path) as Path;
-      const prevNode = getNode<TElement>(editor, prevPath);
+      const prevNode = NodeApi.get<TElement>(editor, prevPath);
 
       // Has a list before with the same type
       if (prevNode?.type === node.type) {

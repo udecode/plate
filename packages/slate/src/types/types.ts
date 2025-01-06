@@ -1,9 +1,4 @@
-import type {
-  Location as SlateLocation,
-  Range as SlateRange,
-  Selection as SlateSelection,
-  Span as SlateSpan,
-} from 'slate';
+import type { Selection as SlateSelection, Span as SlateSpan } from 'slate';
 
 export type LeafEdge = 'end' | 'start';
 
@@ -24,10 +19,6 @@ export type TextDirection = 'backward' | 'forward';
 export type TextUnit = 'block' | 'character' | 'line' | 'word';
 
 export type TextUnitAdjustment = TextUnit | 'offset';
-
-export type TLocation = SlateLocation;
-
-export type TRange = SlateRange;
 
 export type TSelection = SlateSelection;
 

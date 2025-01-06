@@ -1,17 +1,20 @@
-import type { Editor } from '@udecode/plate-common';
-
-import { type Location, type Range, Path } from 'slate';
+import {
+  type Editor,
+  type TLocation,
+  type TRange,
+  PathApi,
+} from '@udecode/plate-common';
 
 import { mergeClientRects } from './mergeClientRects';
 
 export const getBoundingClientRect = (
   editor: Editor,
-  at?: Location | Location[]
+  at?: TLocation | TLocation[]
 ): DOMRect | undefined => {
-  const atRanges: Range[] = (() => {
-    if (!at) return [editor.selection].filter(Boolean) as Range[];
+  const atRanges: TRange[] = (() => {
+    if (!at) return [editor.selection].filter(Boolean) as TRange[];
 
-    const atArray = Array.isArray(at) && !Path.isPath(at) ? at : [at];
+    const atArray = Array.isArray(at) && !PathApi.isPath(at) ? at : [at];
 
     return atArray.map((location) => editor.api.range(location)!);
   })();

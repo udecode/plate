@@ -1,4 +1,7 @@
-import { type Element, createEditor as makeEditor } from 'slate';
+import {
+  type TElement,
+  createEditor as makeEditor,
+} from '@udecode/plate-common';
 
 import {
   createAnchor,
@@ -110,7 +113,7 @@ const createFactory = <T extends HyperscriptCreators>(creators: T) => {
 /** Normalize a dictionary of element shorthands into creator functions. */
 
 const normalizeElements = (elements: HyperscriptShorthands) => {
-  const creators: HyperscriptCreators<Element> = {};
+  const creators: HyperscriptCreators<TElement> = {};
 
   for (const tagName in elements) {
     const props = elements[tagName];

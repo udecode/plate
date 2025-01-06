@@ -1,12 +1,8 @@
-import {
-  type Editor,
-  type TElementEntry,
-  isExpanded,
-} from '@udecode/plate-common';
+import type { Editor, ElementEntry } from '@udecode/plate-common';
 
 export interface IndentCodeLineOptions {
-  codeBlock: TElementEntry;
-  codeLine: TElementEntry;
+  codeBlock: ElementEntry;
+  codeLine: ElementEntry;
   indentDepth?: number;
 }
 
@@ -25,7 +21,7 @@ export const indentCodeLine = (
   const codeLineStart = editor.api.start(codeLinePath)!;
   const indent = ' '.repeat(indentDepth);
 
-  if (!isExpanded(editor.selection)) {
+  if (!editor.api.isExpanded()) {
     const cursor = editor.selection?.anchor;
     const range = editor.api.range(codeLineStart, cursor);
     const text = editor.api.string(range);

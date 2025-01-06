@@ -1,6 +1,9 @@
-import type { SlateEditor } from '@udecode/plate-common';
-
-import { type Point, Path } from 'slate';
+import {
+  type Path,
+  type Point,
+  type SlateEditor,
+  PathApi,
+} from '@udecode/plate-common';
 
 export const isPointNextToNode = (
   editor: SlateEditor,
@@ -48,10 +51,10 @@ export const isPointNextToNode = (
 
   const adjacentPathFn = (path: Path) => {
     try {
-      if (reverse && boundary === 'start') return Path.previous(path);
-      if (!reverse && boundary === 'end') return Path.next(path);
+      if (reverse && boundary === 'start') return PathApi.previous(path);
+      if (!reverse && boundary === 'end') return PathApi.next(path);
       if (boundary === 'single') {
-        return reverse ? Path.previous(path) : Path.next(path);
+        return reverse ? PathApi.previous(path) : PathApi.next(path);
       }
     } catch (error) {
       return null;

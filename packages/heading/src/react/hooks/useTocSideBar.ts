@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { getNode } from '@udecode/plate-common';
+import { NodeApi } from '@udecode/plate-common';
 import {
   useEditorPlugin,
   useEditorSelector,
@@ -82,7 +82,7 @@ export const useTocSideBar = ({
     ) => {
       e.preventDefault();
       const { id, path } = item;
-      const node = getNode(editor, path);
+      const node = NodeApi.get(editor, path);
 
       if (!node) return;
 

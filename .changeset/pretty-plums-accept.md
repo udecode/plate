@@ -2,4 +2,4 @@
 '@udecode/plate-date': major
 ---
 
-remove withDate
+remove `withDate`

@@ -1,9 +1,9 @@
 import {
+  type Editor,
   type ElementEntryOf,
   type ElementOf,
-  type Editor,
-  type TNodeEntry,
-  getNode,
+  type NodeEntry,
+  NodeApi,
   getPreviousPath,
 } from '@udecode/plate-common';
 
@@ -20,14 +20,14 @@ export const getPreviousIndentList = <
   editor: E,
   entry: ElementEntryOf<E>,
   options?: Partial<GetSiblingIndentListOptions<N, E>>
-): TNodeEntry<N> | undefined => {
+): NodeEntry<N> | undefined => {
   return getSiblingIndentList(editor, entry, {
     getPreviousEntry: ([, currPath]) => {
       const prevPath = getPreviousPath(currPath);
 
       if (!prevPath) return;
 
-      const prevNode = getNode<N>(editor, prevPath);
+      const prevNode = NodeApi.get<N>(editor, prevPath);
 
       if (!prevNode) return;
 

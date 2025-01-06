@@ -1,5 +1,4 @@
-import { useEditorRef } from '@udecode/plate-common/react';
-import { useReadOnly } from 'slate-react';
+import { useEditorRef, useReadOnly } from '@udecode/plate-common/react';
 
 import type { TTodoListItemElement } from '../../lib';
 

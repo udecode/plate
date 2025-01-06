@@ -5,11 +5,11 @@ import React from 'react';
 import type { TColumnElement } from '@udecode/plate-layout';
 
 import { cn, useComposedRef, withRef } from '@udecode/cn';
+import { PathApi } from '@udecode/plate-common';
 import { useElement, withHOC } from '@udecode/plate-common/react';
 import { useDraggable, useDropLine } from '@udecode/plate-dnd';
 import { ResizableProvider } from '@udecode/plate-resizable';
 import { GripHorizontal } from 'lucide-react';
-import { Path } from 'slate';
 import { useReadOnly } from 'slate-react';
 
 import { Button } from './button';
@@ -30,7 +30,10 @@ export const ColumnElement = withHOC(
 
     const { isDragging, previewRef, handleRef } = useDraggable({
       canDropNode: ({ dragEntry, dropEntry }) =>
-        Path.equals(Path.parent(dragEntry[1]), Path.parent(dropEntry[1])),
+        PathApi.equals(
+          PathApi.parent(dragEntry[1]),
+          PathApi.parent(dropEntry[1])
+        ),
       element: props.element,
       orientation: 'horizontal',
       type: 'column',

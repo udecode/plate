@@ -1,10 +1,10 @@
 import {
+  type Descendant,
   type SlateEditor,
-  type TDescendant,
-  isElement,
+  ElementApi,
 } from '@udecode/plate-common';
 
 import { getListTypes } from './getListTypes';
 
-export const isListRoot = (editor: SlateEditor, node: TDescendant): boolean =>
-  isElement(node) && getListTypes(editor).includes(node.type);
+export const isListRoot = (editor: SlateEditor, node: Descendant): boolean =>
+  ElementApi.isElement(node) && getListTypes(editor).includes(node.type);

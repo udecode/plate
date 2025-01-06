@@ -1,10 +1,9 @@
-import type {
-  GetAboveNodeOptions,
-  SlateEditor,
-  TElementEntry,
+import {
+  type EditorAboveOptions,
+  type ElementEntry,
+  type SlateEditor,
+  PathApi,
 } from '@udecode/plate-common';
-
-import { Path } from 'slate';
 
 import type { TableConfig } from '../BaseTablePlugin';
 
@@ -14,14 +13,14 @@ import {
   getTableGridByRange,
 } from './getTableGridByRange';
 
-export type GetTableGridAboveOptions = GetAboveNodeOptions &
+export type GetTableGridAboveOptions = EditorAboveOptions &
   Pick<GetTableGridByRangeOptions, 'format'>;
 
 /** Get sub table above anchor and focus. Format: tables or cells. */
 export const getTableGridAbove = (
   editor: SlateEditor,
   { format = 'table', ...options }: GetTableGridAboveOptions = {}
-): TElementEntry[] => {
+): ElementEntry[] => {
   const { api } = editor.getPlugin<TableConfig>({ key: 'table' });
 
   const edges = editor.api.edgeBlocks({
@@ -34,7 +33,7 @@ export const getTableGridAbove = (
   if (edges) {
     const [start, end] = edges;
 
-    if (!Path.equals(start[1], end[1])) {
+    if (!PathApi.equals(start[1], end[1])) {
       return getTableGridByRange(editor, {
         at: {
           anchor: {

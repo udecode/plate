@@ -1,4 +1,4 @@
-import type { TNode, TNodeEntry } from '../interfaces';
+import type { NodeEntry, TNode } from '../interfaces';
 import type { QueryNodeOptions } from '../types/QueryNodeOptions';
 
 function castArray<T>(value: T | T[]): T[] {
@@ -7,7 +7,7 @@ function castArray<T>(value: T | T[]): T[] {
 
 /** Query the node entry. */
 export const queryNode = <N extends TNode>(
-  entry?: TNodeEntry<N>,
+  entry?: NodeEntry<N>,
   { allow, exclude, filter, level, maxLevel }: QueryNodeOptions = {}
 ) => {
   if (!entry) return false;

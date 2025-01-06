@@ -1,7 +1,8 @@
 import {
+  type NodeEntry,
   type TElement,
-  type TNodeEntry,
   BaseParagraphPlugin,
+  PathApi,
   deleteMerge,
   isFirstChild,
 } from '@udecode/plate-common';
@@ -14,7 +15,6 @@ import {
   SIMULATE_BACKSPACE,
   onKeyDownResetNode,
 } from '@udecode/plate-reset-node/react';
-import { Path } from 'slate';
 
 import type { ListConfig } from '../lib/BaseListPlugin';
 
@@ -85,7 +85,7 @@ export const withDeleteBackwardList: ExtendEditor<ListConfig> = ({
               editor.selection!.focus
             );
 
-            let currentLic: TNodeEntry<TElement> | undefined;
+            let currentLic: NodeEntry<TElement> | undefined;
             let hasMultipleChildren = false;
 
             if (
@@ -114,7 +114,7 @@ export const withDeleteBackwardList: ExtendEditor<ListConfig> = ({
             if (!currentLic || !hasMultipleChildren) return;
 
             const leftoverListItem = editor.api.node<TElement>(
-              Path.parent(currentLic[1])
+              PathApi.parent(currentLic[1])
             )!;
 
             if (leftoverListItem && leftoverListItem[0].children.length === 0) {

@@ -1,9 +1,9 @@
 import {
+  type Editor,
   type ElementEntryOf,
   type ElementOf,
-  type Editor,
-  type TNodeEntry,
-  getNode,
+  type NodeEntry,
+  NodeApi,
 } from '@udecode/plate-common';
 
 import type { GetSiblingIndentListOptions } from '../queries/getSiblingIndentList';
@@ -18,8 +18,8 @@ import { normalizeFirstIndentListStart } from './normalizeFirstIndentListStart';
 
 export const normalizeNextIndentListStart = (
   editor: Editor,
-  entry: TNodeEntry,
-  prevEntry?: TNodeEntry
+  entry: NodeEntry,
+  prevEntry?: NodeEntry
 ) => {
   const [node, path] = entry;
   const [prevNode] = prevEntry ?? [null];
@@ -79,7 +79,7 @@ export const normalizeIndentListStart = <
       if (normalizeNext) normalized = true;
 
       // get the node again after setNodes
-      prevEntry = [getNode<N>(editor, currEntry[1])!, currEntry[1]];
+      prevEntry = [NodeApi.get<N>(editor, currEntry[1])!, currEntry[1]];
       currEntry = getNextIndentList(editor, currEntry, options);
 
       if (!currEntry) break;

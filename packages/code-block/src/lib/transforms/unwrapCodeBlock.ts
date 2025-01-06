@@ -1,7 +1,6 @@
-import type { Location } from 'slate';
-
 import {
   type SlateEditor,
+  type TLocation,
   BaseParagraphPlugin,
   getChildren,
 } from '@udecode/plate-common';
@@ -16,7 +15,7 @@ export const unwrapCodeBlock = (editor: SlateEditor) => {
 
   editor.tf.withoutNormalizing(() => {
     const codeBlockEntries = editor.api.nodes({
-      at: editor.selection as Location,
+      at: editor.selection as TLocation,
       match: { type: codeBlockType },
     });
 

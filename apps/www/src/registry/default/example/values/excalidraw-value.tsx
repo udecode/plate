@@ -4,10 +4,10 @@ import { jsx } from '@udecode/plate-test-utils';
 
 jsx;
 
-import type { TNodeProps } from '@udecode/plate-common';
+import type { NodeProps } from '@udecode/plate-common';
 import type { TExcalidrawElement } from '@udecode/plate-excalidraw';
 
-export const excalidrawInitialData: TNodeProps<TExcalidrawElement> = {
+export const excalidrawInitialData: NodeProps<TExcalidrawElement> = {
   data: {
     elements: [
       {

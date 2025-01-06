@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
 import {
+  type Descendant,
   type SlateEditor,
-  type TDescendant,
   type TElement,
   createEditor,
 } from '@udecode/plate-common';
@@ -27,7 +27,7 @@ describe('getIndentListSiblings', () => {
             1
           </hp>
         </fragment>
-      ) as any as TDescendant[];
+      ) as any as Descendant[];
 
       const editor = createEditor(
         (<editor>{input}</editor>) as any as SlateEditor
@@ -74,7 +74,7 @@ describe('getIndentListSiblings', () => {
             21
           </hp>
         </fragment>
-      ) as any as TDescendant[];
+      ) as any as Descendant[];
 
       const output = (
         <fragment>
@@ -89,7 +89,7 @@ describe('getIndentListSiblings', () => {
             23
           </hp>
         </fragment>
-      ) as any as TDescendant[];
+      ) as any as Descendant[];
 
       const editor = createEditor(
         (<editor>{input}</editor>) as any as SlateEditor

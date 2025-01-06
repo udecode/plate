@@ -3,8 +3,7 @@
 import React from 'react';
 
 import { cn, withRef } from '@udecode/cn';
-import { PlateElement } from '@udecode/plate-common/react';
-import { useSelected } from 'slate-react';
+import { PlateElement, useSelected } from '@udecode/plate-common/react';
 
 export const TableRowElement = withRef<typeof PlateElement>(
   ({ children, className, ...props }, ref) => {

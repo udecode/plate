@@ -1,4 +1,4 @@
-import type { Path } from 'slate';
+import type { Path } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
 

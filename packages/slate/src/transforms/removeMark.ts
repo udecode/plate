@@ -1,9 +1,12 @@
 import castArray from 'lodash/castArray.js';
-import { Range } from 'slate';
 
-import type { SetNodesOptions } from '../interfaces/editor/editor-types';
-
-import { type Editor, isTextNode } from '../interfaces';
+import {
+  type Editor,
+  type SetNodesOptions,
+  type TRange,
+  RangeApi,
+  TextApi,
+} from '../interfaces';
 
 export interface RemoveMarkOptions
   extends Omit<SetNodesOptions, 'match' | 'split'> {
@@ -11,7 +14,7 @@ export interface RemoveMarkOptions
   key: string[] | string;
 
   /** Range where the mark(s) will be removed */
-  at?: Range;
+  at?: TRange;
 
   /**
    * When location is not a Range, setting this to false can prevent the
@@ -31,10 +34,10 @@ export const removeMark = (
   key = castArray(key);
 
   if (selection) {
-    if (Range.isRange(selection) && editor.api.isExpanded()) {
+    if (RangeApi.isRange(selection) && editor.api.isExpanded()) {
       editor.tf.unsetNodes(key as any, {
         at: selection,
-        match: isTextNode,
+        match: TextApi.isText,
         split: true,
         ...rest,
       });

@@ -6,13 +6,13 @@ import type {
   PluginConfig,
   SlatePluginContext,
 } from '../plugin';
-import type { TRenderElementProps } from '../types/TRenderElementProps';
-import type { TRenderLeafProps } from '../types/TRenderLeafProps';
+import type { RenderElementProps } from '../types/RenderElementProps';
+import type { RenderLeafProps } from '../types/RenderLeafProps';
 
 export type SlateRenderElementProps<
   N extends TElement = TElement,
   C extends AnyPluginConfig = PluginConfig,
-> = SlateRenderNodeProps<C> & TRenderElementProps<N>;
+> = SlateRenderNodeProps<C> & RenderElementProps<N>;
 
 export type SlateRenderNodeProps<C extends AnyPluginConfig = PluginConfig> =
   SlatePluginContext<C> & {
@@ -25,7 +25,7 @@ export type SlateRenderNodeProps<C extends AnyPluginConfig = PluginConfig> =
 export type SlateRenderLeafProps<
   N extends TText = TText,
   C extends AnyPluginConfig = PluginConfig,
-> = SlateRenderNodeProps<C> & TRenderLeafProps<N>;
+> = SlateRenderNodeProps<C> & RenderLeafProps<N>;
 
 export type BoxStaticProps = React.ComponentProps<'div'> & {
   as?: React.ElementType;

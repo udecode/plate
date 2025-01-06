@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { createSlateEditor, createEditor } from '@udecode/plate-common';
+import { createEditor, createSlateEditor } from '@udecode/plate-common';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { BaseAlignPlugin } from '../../BaseAlignPlugin';

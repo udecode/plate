@@ -1,7 +1,10 @@
 import { insertFragment as insertFragmentBase } from 'slate';
 
-import type { ElementOrTextOf, Editor } from '../../interfaces';
-import type { InsertFragmentOptions } from '../../interfaces/editor/editor-types';
+import type {
+  Editor,
+  ElementOrTextOf,
+  InsertFragmentOptions,
+} from '../../interfaces';
 
 import { getAt } from '../../utils/getAt';
 

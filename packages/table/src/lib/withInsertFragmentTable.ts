@@ -1,7 +1,6 @@
-import type { ExtendEditor, TElement } from '@udecode/plate-common';
-import type { Path } from 'slate';
+import type { ExtendEditor, Path, TElement } from '@udecode/plate-common';
 
-import { hasNode, replaceNodeChildren } from '@udecode/plate-common';
+import { NodeApi, replaceNodeChildren } from '@udecode/plate-common';
 import cloneDeep from 'lodash/cloneDeep.js';
 
 import {
@@ -95,7 +94,7 @@ export const withInsertFragmentTable: ExtendEditor<TableConfig> = ({
                 const fromRow = cellPath.slice(0, -1);
                 cellPath[cellPath.length - 2] += 1;
 
-                if (!hasNode(editor, cellPath)) {
+                if (!NodeApi.has(editor, cellPath)) {
                   if (getOptions().disableExpandOnInsert) {
                     return;
                   } else {
@@ -116,7 +115,7 @@ export const withInsertFragmentTable: ExtendEditor<TableConfig> = ({
                   const fromCell = [...cellPath];
                   cellPath[cellPath.length - 1] += 1;
 
-                  if (!hasNode(editor, cellPath)) {
+                  if (!NodeApi.has(editor, cellPath)) {
                     if (getOptions().disableExpandOnInsert) {
                       return;
                     } else {

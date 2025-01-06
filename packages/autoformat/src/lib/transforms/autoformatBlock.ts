@@ -1,9 +1,8 @@
-import type { Range } from 'slate';
-
 import {
   type SlateEditor,
+  type TRange,
   BaseParagraphPlugin,
-  isElement,
+  ElementApi,
 } from '@udecode/plate-common';
 import castArray from 'lodash/castArray.js';
 
@@ -39,7 +38,7 @@ export const autoformatBlock = (
 
     if (!triggers.includes(text)) continue;
 
-    let matchRange: Range | undefined;
+    let matchRange: TRange | undefined;
 
     if (triggerAtBlockStart) {
       matchRange = editor.api.range('start', editor.selection);
@@ -47,7 +46,7 @@ export const autoformatBlock = (
       // Don't autoformat if there is void nodes.
       const hasVoidNode = editor.api.some({
         at: matchRange,
-        match: (n) => isElement(n) && editor.api.isVoid(n),
+        match: (n) => ElementApi.isElement(n) && editor.api.isVoid(n),
       });
 
       if (hasVoidNode) continue;

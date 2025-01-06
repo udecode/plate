@@ -1,4 +1,4 @@
-import { type TDescendant, TextApi, isElement } from '@udecode/slate';
+import { type Descendant, ElementApi, TextApi } from '@udecode/slate';
 import { jsx } from 'slate-hyperscript';
 
 import type { SlateEditor } from '../../../editor';
@@ -8,7 +8,7 @@ import { deserializeHtmlNodeChildren } from './deserializeHtmlNodeChildren';
 import { pipeDeserializeHtmlLeaf } from './pipeDeserializeHtmlLeaf';
 
 /**
- * Deserialize HTML to TDescendant[] with marks on Text. Build the leaf from the
+ * Deserialize HTML to Descendant[] with marks on Text. Build the leaf from the
  * leaf deserializers of each plugin.
  */
 export const htmlElementToLeaf = (
@@ -18,9 +18,9 @@ export const htmlElementToLeaf = (
   const node = pipeDeserializeHtmlLeaf(editor, element);
 
   return deserializeHtmlNodeChildren(editor, element).reduce(
-    (arr: TDescendant[], child) => {
+    (arr: Descendant[], child) => {
       if (!child) return arr;
-      if (isElement(child)) {
+      if (ElementApi.isElement(child)) {
         if (Object.keys(node).length > 0) {
           mergeDeepToNodes({
             node: child,
@@ -50,5 +50,5 @@ export const htmlElementToLeaf = (
       return arr;
     },
     []
-  ) as TDescendant[];
+  ) as Descendant[];
 };

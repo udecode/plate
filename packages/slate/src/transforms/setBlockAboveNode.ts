@@ -1,12 +1,17 @@
-import type { ElementOf, Editor, TNodeProps, ValueOf } from '../interfaces';
-import type { SetNodesOptions } from '../interfaces/editor/editor-types';
+import type {
+  Editor,
+  ElementOf,
+  NodeProps,
+  SetNodesOptions,
+  ValueOf,
+} from '../interfaces';
 
 export const setBlockAboveNode = <
   N extends ElementOf<E>,
   E extends Editor = Editor,
 >(
   editor: E,
-  props: Partial<TNodeProps<N>>,
+  props: Partial<NodeProps<N>>,
   options?: Omit<SetNodesOptions<ValueOf<E>>, 'at'>
 ) => {
   const at = editor.api.block()?.[1];
@@ -24,7 +29,7 @@ export const setBlockAboveTexts = <
   E extends Editor = Editor,
 >(
   editor: E,
-  props: Partial<TNodeProps<N>>,
+  props: Partial<NodeProps<N>>,
   options?: Omit<SetNodesOptions<ValueOf<E>>, 'at'>
 ) => {
   setBlockAboveNode(editor, props, { ...options, mode: 'lowest' });

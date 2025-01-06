@@ -1,10 +1,11 @@
-import { Path } from 'slate';
+import type { Path } from '../interfaces/path';
 
 import {
-  type NodeEntryOf,
   type Editor,
+  type NodeEntryOf,
   type TElement,
-  getNode,
+  NodeApi,
+  PathApi,
 } from '../interfaces';
 
 export interface MoveChildrenOptions<E extends Editor = Editor> {
@@ -30,8 +31,10 @@ export const moveChildren = <E extends Editor>(
   { at, fromStartIndex = 0, match, to }: MoveChildrenOptions<E>
 ) => {
   let moved = 0;
-  const parentPath = Path.isPath(at) ? at : at[1];
-  const parentNode = Path.isPath(at) ? getNode(editor, parentPath) : at[0];
+  const parentPath = PathApi.isPath(at) ? at : at[1];
+  const parentNode = PathApi.isPath(at)
+    ? NodeApi.get(editor, parentPath)
+    : at[0];
 
   if (!parentNode) return moved;
   if (!editor.api.isBlock(parentNode)) return moved;
@@ -42,7 +45,7 @@ export const moveChildren = <E extends Editor>(
     i--
   ) {
     const childPath = [...parentPath, i];
-    const childNode = getNode(editor, childPath);
+    const childNode = NodeApi.get(editor, childPath);
 
     if (!match || (childNode && match([childNode, childPath]))) {
       editor.tf.moveNodes({ at: childPath, to });

@@ -1,11 +1,11 @@
 import {
+  type Editor,
   type ElementEntryOf,
   type ElementOf,
-  type Editor,
-  type TNodeEntry,
-  getNode,
+  type NodeEntry,
+  NodeApi,
+  PathApi,
 } from '@udecode/plate-common';
-import { Path } from 'slate';
 
 import {
   type GetSiblingIndentListOptions,
@@ -20,11 +20,11 @@ export const getNextIndentList = <
   editor: E,
   entry: ElementEntryOf<E>,
   options?: Partial<GetSiblingIndentListOptions<N, E>>
-): TNodeEntry<N> | undefined => {
+): NodeEntry<N> | undefined => {
   return getSiblingIndentList(editor, entry, {
     getNextEntry: ([, currPath]) => {
-      const nextPath = Path.next(currPath);
-      const nextNode = getNode<N>(editor, nextPath);
+      const nextPath = PathApi.next(currPath);
+      const nextNode = NodeApi.get<N>(editor, nextPath);
 
       if (!nextNode) return;
 

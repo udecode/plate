@@ -8,7 +8,7 @@ export const hasEditorEditableTarget = (
 ): target is Node => {
   try {
     return DOMEditor.hasEditableTarget(editor as any, target);
-  } catch (error) {}
+  } catch {}
 
   return false;
 };

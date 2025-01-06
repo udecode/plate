@@ -7,7 +7,9 @@ import type { WithRequiredKey } from '@udecode/plate-common';
 import {
   useEditorSelector,
   useElement,
+  useReadOnly,
   useRemoveNodeButton,
+  useSelected,
 } from '@udecode/plate-common/react';
 import {
   FloatingMedia as FloatingMediaPrimitive,
@@ -15,7 +17,6 @@ import {
   useFloatingMediaSelectors,
 } from '@udecode/plate-media/react';
 import { Link, Trash2Icon } from 'lucide-react';
-import { useReadOnly, useSelected } from 'slate-react';
 
 import { Button, buttonVariants } from './button';
 import { CaptionButton } from './caption';

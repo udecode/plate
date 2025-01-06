@@ -1,4 +1,4 @@
-import type { GetAboveNodeOptions, SlateEditor } from '@udecode/plate-common';
+import type { EditorAboveOptions, SlateEditor } from '@udecode/plate-common';
 
 import type { TTableElement } from '../types';
 
@@ -8,7 +8,7 @@ import { getTableColumnCount } from '../queries/getTableColumnCount';
 export const setTableColSize = (
   editor: SlateEditor,
   { colIndex, width }: { colIndex: number; width: number },
-  options: GetAboveNodeOptions = {}
+  options: EditorAboveOptions = {}
 ) => {
   const table = editor.api.find<TTableElement>({
     match: { type: BaseTablePlugin.key },

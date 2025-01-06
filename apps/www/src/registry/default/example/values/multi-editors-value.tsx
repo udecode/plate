@@ -1,5 +1,5 @@
 /** @jsxRuntime classic */
-import type { TDescendant } from '@udecode/plate-common';
+import type { Descendant } from '@udecode/plate-common';
 
 /** @jsx jsx */
 import { jsx } from '@udecode/plate-test-utils';
@@ -7,10 +7,10 @@ import { jsx } from '@udecode/plate-test-utils';
 jsx;
 
 export const createMultiEditorsValue = () => {
-  const multiEditors: TDescendant[][] = [];
+  const multiEditors: Descendant[][] = [];
 
   for (let h = 0; h < 300; h++) {
-    const multiEditor: TDescendant[] = [];
+    const multiEditor: Descendant[] = [];
     multiEditor.push(
       (<hh1>Amet duis nisi ea enim laborum laboris.</hh1>) as any
     );

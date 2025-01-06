@@ -1,11 +1,12 @@
 import {
+  type ElementEntry,
   type MoveChildrenOptions,
+  type Path,
   type SlateEditor,
-  type TElementEntry,
+  PathApi,
   getLastChildPath,
   moveChildren,
 } from '@udecode/plate-common';
-import { Path } from 'slate';
 
 import { getListTypes } from '../queries/getListTypes';
 
@@ -18,17 +19,17 @@ export interface MergeListItemIntoListOptions {
   deleteFromList?: boolean;
 
   /** List items of the list will be moved. */
-  fromList?: TElementEntry;
+  fromList?: ElementEntry;
 
   /** List items of the sublist of this node will be moved. */
-  fromListItem?: TElementEntry;
+  fromListItem?: ElementEntry;
 
   fromStartIndex?: MoveChildrenOptions['fromStartIndex'];
 
   to?: Path;
 
   /** List items will be moved in this list. */
-  toList?: TElementEntry;
+  toList?: ElementEntry;
 
   /** List position where to move the list items. */
   toListIndex?: number | null;
@@ -79,7 +80,7 @@ export const moveListItemsToList = (
     if (toList) {
       if (toListIndex === null) {
         const lastChildPath = getLastChildPath(toList);
-        to = Path.next(lastChildPath);
+        to = PathApi.next(lastChildPath);
       } else {
         to = toList[1].concat([toListIndex]);
       }

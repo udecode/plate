@@ -6,12 +6,12 @@ import { cn, withRef } from '@udecode/cn';
 import {
   useEditorRef,
   useElement,
+  useReadOnly,
   useRemoveNodeButton,
 } from '@udecode/plate-common/react';
 import { type TColumnElement, setColumns } from '@udecode/plate-layout';
 import { useDebouncePopoverOpen } from '@udecode/plate-layout/react';
 import { type LucideProps, Trash2Icon } from 'lucide-react';
-import { useReadOnly } from 'slate-react';
 
 import { Button } from './button';
 import { PlateElement } from './plate-element';

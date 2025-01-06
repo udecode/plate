@@ -1,8 +1,9 @@
 import type { EditorPathRefOptions } from 'slate/dist/interfaces/editor';
 
-import { type Path, pathRef } from 'slate';
+import { pathRef } from 'slate';
 
 import type { Editor } from '../../interfaces/editor/editor';
+import type { Path } from '../../interfaces/path';
 
 export const createPathRef = (
   editor: Editor,

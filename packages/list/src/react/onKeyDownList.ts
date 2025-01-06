@@ -1,7 +1,7 @@
+import type { TRange } from '@udecode/plate-common';
 import type { KeyboardHandler } from '@udecode/plate-common/react';
 
-import { Hotkeys } from '@udecode/plate-common';
-import { Range } from 'slate';
+import { Hotkeys, RangeApi } from '@udecode/plate-common';
 
 import { type ListConfig, BaseListItemPlugin } from '../lib';
 import { moveListItems } from '../lib/transforms/index';
@@ -23,14 +23,14 @@ export const onKeyDownList: KeyboardHandler<ListConfig> = ({
 
     // Unhang the expanded selection
     if (!editor.api.isCollapsed()) {
-      const { anchor, focus } = Range.isBackward(selection)
+      const { anchor, focus } = RangeApi.isBackward(selection)
         ? { anchor: { ...selection.focus }, focus: { ...selection.anchor } }
         : { anchor: { ...selection.anchor }, focus: { ...selection.focus } };
 
       // This is a workaround for a Slate bug
       // See: https://github.com/ianstormtaylor/slate/pull/5039
       const unhangRange = editor.api.unhangRange({ anchor, focus }) as
-        | Range
+        | TRange
         | undefined;
 
       if (unhangRange) {

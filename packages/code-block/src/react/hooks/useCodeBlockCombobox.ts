@@ -1,7 +1,10 @@
 import React from 'react';
 
-import { useEditorRef, useElement } from '@udecode/plate-common/react';
-import { useReadOnly } from 'slate-react';
+import {
+  useEditorRef,
+  useElement,
+  useReadOnly,
+} from '@udecode/plate-common/react';
 
 import { type TCodeBlockElement, BaseCodeBlockPlugin } from '../../lib';
 

@@ -254,7 +254,7 @@ Adds a selected row to the block selection.
 Gets the selected blocks in the editor.
 
 <APIReturns>
-  <APIItem type="TNodeEntry[]">
+  <APIItem type="NodeEntry[]">
     An array of selected block entries.
   </APIItem>
 </APIReturns>
@@ -295,7 +295,7 @@ Unselects all blocks and sets the `isSelecting` flag to false.
 Duplicates the selected blocks.
 
 <APIParameters>
-  <APIItem name="blocks" type="TNodeEntry[]">
+  <APIItem name="blocks" type="NodeEntry[]">
     An array of node entries to duplicate.
   </APIItem>
 </APIParameters>
@@ -313,7 +313,7 @@ Selects the nodes returned by `getNodes()` and resets the selected IDs.
 Sets properties on the selected nodes.
 
 <APIParameters>
-  <APIItem name="props" type="Partial<TNodeProps<TElement>>">
+  <APIItem name="props" type="Partial<NodeProps<TElement>>">
     The properties to set on the selected nodes.
   </APIItem>
   <APIItem name="options" type="SetNodesOptions" optional>
@@ -326,7 +326,7 @@ Sets properties on the selected nodes.
 Sets text properties on the selected nodes.
 
 <APIParameters>
-  <APIItem name="props" type="Partial<TNodeProps<TText>>">
+  <APIItem name="props" type="Partial<NodeProps<TText>>">
     The text properties to set on the selected nodes.
   </APIItem>
   <APIItem name="options" type="Omit<SetNodesOptions, 'at'>" optional>

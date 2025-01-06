@@ -1,6 +1,6 @@
 import {
+  type Descendant,
   type SlateEditor,
-  type TDescendant,
   applyDeepToNodes,
   nanoid,
 } from '@udecode/plate-common';
@@ -13,11 +13,11 @@ import { getSuggestionCurrentUserKey } from './getSuggestionProps';
 
 export const insertFragmentSuggestion = (
   editor: SlateEditor,
-  fragment: TDescendant[],
+  fragment: Descendant[],
   {
     insertFragment = editor.insertFragment,
   }: {
-    insertFragment?: (fragment: TDescendant[]) => void;
+    insertFragment?: (fragment: Descendant[]) => void;
   } = {}
 ) => {
   editor.tf.withoutNormalizing(() => {

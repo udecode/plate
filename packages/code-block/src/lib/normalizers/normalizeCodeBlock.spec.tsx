@@ -1,10 +1,6 @@
 /** @jsx jsxt */
 
-import {
-  type SlateEditor,
-  createEditor,
-  getNode,
-} from '@udecode/plate-common';
+import { type SlateEditor, NodeApi, createEditor } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
@@ -41,7 +37,7 @@ describe('clean up code block', () => {
     });
 
     const path = [0];
-    const node = getNode(editor, path);
+    const node = NodeApi.get(editor, path);
 
     editor.normalizeNode([node!, path]);
 

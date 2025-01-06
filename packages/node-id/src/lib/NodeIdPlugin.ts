@@ -1,9 +1,9 @@
 import {
+  type Descendant,
   type PluginConfig,
   type QueryNodeOptions,
-  type TDescendant,
+  ElementApi,
   createTSlatePlugin,
-  isElement,
   nanoid,
   queryNode,
 } from '@udecode/plate-common';
@@ -92,7 +92,7 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
       }
     }
 
-    const addNodeId = (entry: [TDescendant, number[]]) => {
+    const addNodeId = (entry: [Descendant, number[]]) => {
       const [node, path] = entry;
 
       if (
@@ -103,10 +103,14 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
           filter: (entry) => {
             const [node] = entry;
 
-            if (filterText && !isElement(node)) {
+            if (filterText && !ElementApi.isElement(node)) {
               return false;
             }
-            if (filterInline && isElement(node) && !editor.api.isBlock(node)) {
+            if (
+              filterInline &&
+              ElementApi.isElement(node) &&
+              !editor.api.isBlock(node)
+            ) {
               return false;
             }
 

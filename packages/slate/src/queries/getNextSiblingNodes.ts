@@ -1,6 +1,5 @@
-import type { Path } from 'slate';
-
-import type { AncestorEntryOf, ElementOrTextOf, Editor } from '../interfaces';
+import type { AncestorEntryOf, Editor, ElementOrTextOf } from '../interfaces';
+import type { Path } from '../interfaces/path';
 
 /**
  * Get the next sibling nodes after a path.

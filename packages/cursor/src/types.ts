@@ -1,7 +1,6 @@
 import type React from 'react';
 
-import type { UnknownObject } from '@udecode/plate-common';
-import type { Range } from 'slate';
+import type { TRange, UnknownObject } from '@udecode/plate-common';
 
 export type SelectionRect = {
   height: number;
@@ -19,7 +18,7 @@ export type CaretPosition = {
 };
 
 export type CursorState<TCursorData extends UnknownObject = UnknownObject> = {
-  selection: Range | null;
+  selection: TRange | null;
   key?: any;
   data?: TCursorData;
 };

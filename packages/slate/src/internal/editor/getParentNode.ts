@@ -1,9 +1,9 @@
 import { parent } from 'slate';
 
 import type { Editor } from '../../interfaces/editor/editor';
-import type { GetParentNodeOptions } from '../../interfaces/editor/editor-types';
-import type { AncestorOf } from '../../interfaces/node/TAncestor';
-import type { TNodeEntry } from '../../interfaces/node/TNodeEntry';
+import type { EditorParentOptions } from '../../interfaces/index';
+import type { AncestorOf } from '../../interfaces/node';
+import type { NodeEntry } from '../../interfaces/node-entry';
 import type { At } from '../../types';
 
 import { getAt } from '../../utils';
@@ -14,9 +14,9 @@ export const getParentNode = <
 >(
   editor: E,
   at: At,
-  options?: GetParentNodeOptions
-): TNodeEntry<N> | undefined => {
+  options?: EditorParentOptions
+): NodeEntry<N> | undefined => {
   try {
     return parent(editor as any, getAt(editor, at)!, options) as any;
-  } catch (error) {}
+  } catch {}
 };

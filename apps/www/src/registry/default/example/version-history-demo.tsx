@@ -10,6 +10,7 @@ import {
   ParagraphPlugin,
   createPlatePlugin,
   toPlatePlugin,
+  useSelected,
 } from '@udecode/plate-common/react';
 import {
   type PlateElementProps,
@@ -28,7 +29,6 @@ import {
   withGetFragmentExcludeDiff,
 } from '@udecode/plate-diff';
 import { cloneDeep } from 'lodash';
-import { useSelected } from 'slate-react';
 
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
 import { Button } from '@/registry/default/plate-ui/button';

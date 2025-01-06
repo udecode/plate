@@ -8,7 +8,7 @@ export const isTargetInsideNonReadonlyVoid = (
 ) => {
   try {
     return DOMEditor.isTargetInsideNonReadonlyVoid(editor as any, target);
-  } catch (error) {}
+  } catch {}
 
   return false;
 };

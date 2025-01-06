@@ -1,39 +1,22 @@
-import { type TextDirection, Path as SlatePath } from 'slate';
+import { Path as SlatePath } from 'slate';
 
 import type {
-  TInsertNodeOperation,
-  TMergeNodeOperation,
-  TMoveNodeOperation,
-  TOperation,
-  TRemoveNodeOperation,
-  TSplitNodeOperation,
-} from '../types';
+  InsertNodeOperation,
+  MergeNodeOperation,
+  MoveNodeOperation,
+  Operation,
+  RemoveNodeOperation,
+  SplitNodeOperation,
+} from '../interfaces/operation';
+import type { TextDirection } from '../types';
+import type { Descendant } from './node';
 
 /**
  * `Path` arrays are a list of indexes that describe a node's exact position in
  * a Slate node tree. Although they are usually relative to the root `Editor`
  * object, they can be relative to any `Node` object.
  */
-export type Path = SlatePath;
-
-/**
- * `Path` arrays are a list of indexes that describe a node's exact position in
- * a Slate node tree. Although they are usually relative to the root `Editor`
- * object, they can be relative to any `Node` object.
- */
-export type TPath = SlatePath;
-
-export interface PathAncestorsOptions {
-  reverse?: boolean;
-}
-
-export interface PathLevelsOptions {
-  reverse?: boolean;
-}
-
-export interface PathTransformOptions {
-  affinity?: TextDirection | null;
-}
+export type Path = number[];
 
 /** Path retrieval, check and transform methods. */
 export const PathApi: {
@@ -44,19 +27,19 @@ export const PathApi: {
    * NOTE: This _must_ be kept in sync with the implementation of 'transform'
    * below
    */
-  operationCanTransformPath: (
-    operation: TOperation
+  operationCanTransformPath: <N extends Descendant>(
+    operation: Operation<N>
   ) => operation is
-    | TInsertNodeOperation
-    | TMergeNodeOperation
-    | TMoveNodeOperation
-    | TRemoveNodeOperation
-    | TSplitNodeOperation;
+    | InsertNodeOperation<N>
+    | MergeNodeOperation<N>
+    | MoveNodeOperation
+    | RemoveNodeOperation<N>
+    | SplitNodeOperation<N>;
 
   /** Transform a path by an operation. */
   transform: (
     path: Path,
-    operation: TOperation,
+    operation: Operation,
     options?: PathTransformOptions
   ) => Path | null;
 
@@ -135,7 +118,7 @@ export const PathApi: {
   /** Given a path, get the path to the next sibling node. */
   next: (path: Path) => Path;
 
-  /** /** Given a path, return a new path referring to the parent node above it. */
+  /** Given a path, return a new path referring to the parent node above it. */
   parent: (path: Path) => Path;
 
   /** Given a path, get the path to the previous sibling node. */
@@ -144,3 +127,25 @@ export const PathApi: {
   /** Get a path relative to an ancestor. */
   relative: (path: Path, ancestor: Path) => Path;
 } = SlatePath as any;
+
+/**
+ * `Path` arrays are a list of indexes that describe a node's exact position in
+ * a Slate node tree. Although they are usually relative to the root `Editor`
+ * object, they can be relative to any `Node` object.
+ */
+export type TPath = SlatePath;
+
+export interface PathAncestorsOptions {
+  /** If true, the paths are returned in reverse order. */
+  reverse?: boolean;
+}
+
+export interface PathLevelsOptions {
+  /** If true, the paths are returned in reverse order. */
+  reverse?: boolean;
+}
+
+export interface PathTransformOptions {
+  /** The affinity of the transform. */
+  affinity?: TextDirection | null;
+}

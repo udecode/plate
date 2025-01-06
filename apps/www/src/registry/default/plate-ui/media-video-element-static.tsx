@@ -5,7 +5,7 @@ import type { SlateElementProps } from '@udecode/plate-common';
 import type { TVideoElement } from '@udecode/plate-media';
 
 import { cn } from '@udecode/cn';
-import { SlateElement, getNodeString } from '@udecode/plate-common';
+import { NodeApi, SlateElement } from '@udecode/plate-common';
 
 export function MediaVideoElementStatic({
   children,
@@ -34,7 +34,7 @@ export function MediaVideoElementStatic({
             src={url}
             controls
           />
-          {caption && <figcaption>{getNodeString(caption[0])}</figcaption>}
+          {caption && <figcaption>{NodeApi.string(caption[0])}</figcaption>}
         </figure>
       </div>
       {children}

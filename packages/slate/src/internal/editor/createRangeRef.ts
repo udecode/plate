@@ -1,11 +1,12 @@
 import type { EditorRangeRefOptions } from 'slate/dist/interfaces/editor';
 
-import { type Range, rangeRef } from 'slate';
+import { rangeRef } from 'slate';
 
 import type { Editor } from '../../interfaces/editor/editor';
+import type { TRange } from '../../interfaces/range';
 
 export const createRangeRef = (
   editor: Editor,
-  range: Range,
+  range: TRange,
   options?: EditorRangeRefOptions
 ) => rangeRef(editor as any, range, options as any);

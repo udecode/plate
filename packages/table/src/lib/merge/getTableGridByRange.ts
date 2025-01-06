@@ -1,9 +1,8 @@
-import type { Range } from 'slate';
-
 import {
+  type ElementEntry,
   type SlateEditor,
   type TElement,
-  type TElementEntry,
+  type TRange,
   getEditorPlugin,
 } from '@udecode/plate-common';
 
@@ -22,16 +21,16 @@ import { getCellIndicesWithSpans } from './getCellIndicesWithSpans';
 type FormatType = 'all' | 'cell' | 'table';
 
 interface TableGridEntries {
-  cellEntries: TElementEntry[];
-  tableEntries: TElementEntry[];
+  cellEntries: ElementEntry[];
+  tableEntries: ElementEntry[];
 }
 
 type GetTableGridReturnType<T> = T extends 'all'
   ? TableGridEntries
-  : TElementEntry[];
+  : ElementEntry[];
 
 interface GetTableGridByRangeOptions<T extends FormatType> {
-  at: Range;
+  at: TRange;
 
   /**
    * Format of the output:
@@ -97,7 +96,7 @@ export const getTableMergeGridByRange = <T extends FormatType>(
     rowCount: relativeRowIndex + 1,
   });
 
-  let cellEntries: TElementEntry[] = [];
+  let cellEntries: ElementEntry[] = [];
   let cellsSet = new WeakSet();
 
   let rowIndex = startRowIndex;

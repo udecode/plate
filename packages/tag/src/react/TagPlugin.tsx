@@ -1,6 +1,10 @@
-import { TextApi, removeEditorText, replaceNode } from '@udecode/plate-common';
+import {
+  PathApi,
+  TextApi,
+  removeEditorText,
+  replaceNode,
+} from '@udecode/plate-common';
 import { toPlatePlugin } from '@udecode/plate-common/react';
-import { Path } from 'slate';
 
 import { BaseTagPlugin } from '../lib';
 
@@ -33,7 +37,7 @@ export const MultiSelectPlugin = TagPlugin.extend({
           }) ||
           !editor.api.some({
             match: (t, textPath) => {
-              return TextApi.isText(t) && Path.equals(textPath, p);
+              return TextApi.isText(t) && PathApi.equals(textPath, p);
             },
           }),
       });
@@ -46,7 +50,9 @@ export const MultiSelectPlugin = TagPlugin.extend({
         editor.api.some({
           at: [],
           match: (n, p) =>
-            n.type === type && n.value === node.value && !Path.equals(p, path),
+            n.type === type &&
+            n.value === node.value &&
+            !PathApi.equals(p, path),
         })
       ) {
         editor.tf.removeNodes({

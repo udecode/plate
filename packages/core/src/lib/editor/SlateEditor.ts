@@ -1,6 +1,6 @@
 import type {
-  BaseEditor,
   EditorApi,
+  EditorBase,
   EditorTransforms,
   TRange,
   Value,
@@ -24,7 +24,7 @@ import type {
 } from '../plugin/SlatePlugin';
 import type { CorePlugin } from '../plugins';
 
-export type BaseEditor = BaseEditor & {
+export type BaseEditor = EditorBase & {
   key: any;
 
   getInjectProps: <C extends AnyPluginConfig = PluginConfig>(

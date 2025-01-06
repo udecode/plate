@@ -1,6 +1,10 @@
-import { useEditorRef } from '@udecode/plate-core/react';
+import {
+  useComposing,
+  useEditorRef,
+  useFocused,
+  useSelected,
+} from '@udecode/plate-core/react';
 import { type QueryNodeOptions, queryNode } from '@udecode/slate';
-import { useComposing, useFocused, useSelected } from 'slate-react';
 
 import type { PlateElementProps } from './PlateElement';
 

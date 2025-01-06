@@ -1,5 +1,9 @@
-import { type TElement, getNode, getPreviousPath } from '@udecode/plate-common';
-import { Path } from 'slate';
+import {
+  type TElement,
+  NodeApi,
+  PathApi,
+  getPreviousPath,
+} from '@udecode/plate-common';
 
 import { type GetSiblingIndentListOptions, BaseIndentListPlugin } from '../lib';
 
@@ -8,12 +12,12 @@ export const indentListPluginPage = BaseIndentListPlugin.extend(
     options: {
       getSiblingIndentListOptions: {
         getNextEntry: ([, path]: any) => {
-          const nextPath = Path.next(path);
-          const nextNode = getNode<TElement>(editor, nextPath);
+          const nextPath = PathApi.next(path);
+          const nextNode = NodeApi.get<TElement>(editor, nextPath);
 
           if (!nextNode) {
             const nextPagePath = [path[0] + 1];
-            const nextPageNode = getNode<TElement>(editor, nextPagePath);
+            const nextPageNode = NodeApi.get<TElement>(editor, nextPagePath);
 
             if (!nextPageNode) return;
 
@@ -30,7 +34,7 @@ export const indentListPluginPage = BaseIndentListPlugin.extend(
 
             const prevPagePath = [path[0] - 1];
 
-            const node = getNode<TElement>(editor, prevPagePath);
+            const node = NodeApi.get<TElement>(editor, prevPagePath);
 
             if (!node) return;
 
@@ -39,7 +43,7 @@ export const indentListPluginPage = BaseIndentListPlugin.extend(
             return [lastNode, prevPagePath.concat(node.children.length - 1)];
           }
 
-          const prevNode = getNode(editor, prevPath);
+          const prevNode = NodeApi.get(editor, prevPath);
 
           if (!prevNode) return;
 

@@ -1,8 +1,7 @@
-import type { PathRef } from 'slate';
-
 import {
+  type NodeEntry,
+  type PathRef,
   type SlateEditor,
-  type TNodeEntry,
   getEditorPlugin,
 } from '@udecode/plate-common';
 
@@ -16,14 +15,14 @@ import { getTableGridAbove } from '../queries';
 
 export const deleteRowWhenExpanded = (
   editor: SlateEditor,
-  [table, tablePath]: TNodeEntry<TTableCellElement>
+  [table, tablePath]: NodeEntry<TTableCellElement>
 ) => {
   const { api } = getEditorPlugin(editor, BaseTablePlugin);
   const columnCount = getTableMergedColumnCount(table);
 
   const cells = getTableGridAbove(editor, {
     format: 'cell',
-  }) as TNodeEntry<TTableCellElement>[];
+  }) as NodeEntry<TTableCellElement>[];
 
   const firsRowIndex = getCellRowIndexByPath(cells[0][1]);
 

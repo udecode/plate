@@ -1,6 +1,4 @@
-import type { Editor, TElement } from '@udecode/plate-common';
-
-import { Path } from 'slate';
+import { type Editor, type TElement, PathApi } from '@udecode/plate-common';
 
 /** Get table row index of a cell node. */
 export const getTableRowIndex = (editor: Editor, cellNode: TElement) => {
@@ -8,7 +6,7 @@ export const getTableRowIndex = (editor: Editor, cellNode: TElement) => {
 
   if (!path) return 0;
 
-  const rowPath = Path.parent(path);
+  const rowPath = PathApi.parent(path);
 
   return rowPath.at(-1)!;
 };

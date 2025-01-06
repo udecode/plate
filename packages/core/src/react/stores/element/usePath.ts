@@ -1,4 +1,4 @@
-import type { Path } from 'slate';
+import type { Path } from '@udecode/slate';
 
 import { useEditorRef } from '../plate';
 import { useElementStore } from './useElementStore';

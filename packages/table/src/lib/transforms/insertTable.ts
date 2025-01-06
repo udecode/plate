@@ -1,6 +1,8 @@
-import type { InsertNodesOptions, SlateEditor } from '@udecode/plate-common';
-
-import { Path } from 'slate';
+import {
+  type InsertNodesOptions,
+  type SlateEditor,
+  PathApi,
+} from '@udecode/plate-common';
 
 import type { GetEmptyTableNodeOptions } from '../api/getEmptyTableNode';
 import type { TTableElement } from '../types';
@@ -34,7 +36,7 @@ export const insertTable = (
       if (currentTableEntry) {
         // Insert after current table
         const [, tablePath] = currentTableEntry;
-        const insertPath = Path.next(tablePath);
+        const insertPath = PathApi.next(tablePath);
 
         editor.tf.insertNodes<TTableElement>(newTable, {
           at: insertPath,

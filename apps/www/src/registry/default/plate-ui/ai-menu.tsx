@@ -4,8 +4,8 @@ import * as React from 'react';
 
 import { AIChatPlugin, useEditorChat } from '@udecode/plate-ai/react';
 import {
+  type NodeEntry,
   type SlateEditor,
-  type TNodeEntry,
   isHotkey,
 } from '@udecode/plate-common';
 import { useEditorPlugin, useHotkeys } from '@udecode/plate-common/react';
@@ -53,7 +53,7 @@ export function AIMenu() {
 
   useEditorChat({
     chat,
-    onOpenBlockSelection: (blocks: TNodeEntry[]) => {
+    onOpenBlockSelection: (blocks: NodeEntry[]) => {
       show(editor.api.toDOMNode(blocks.at(-1)![0])!);
     },
     onOpenChange: (open) => {

@@ -1,6 +1,5 @@
-import type { Path } from 'slate';
-
 import type { ChildOf, Editor } from '../../interfaces';
+import type { Path } from '../../interfaces/path';
 
 export const getHighestBlock = <
   N extends ChildOf<E>,

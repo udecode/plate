@@ -5,9 +5,9 @@ import {
   useEditorReadOnly,
   useEditorRef,
   useEditorSelector,
+  useFocused,
   useOnClickOutside,
 } from '@udecode/plate-common/react';
-import { useFocused } from 'slate-react';
 
 import {
   type UseVirtualFloatingOptions,

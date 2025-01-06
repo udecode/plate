@@ -1,19 +1,16 @@
-import { Editor, Operation, Path, Transforms } from 'slate';
-
-import { HistoryEditor } from './history-editor';
+import {
+  type Editor,
+  type Operation,
+  OperationApi,
+  PathApi,
+} from '../interfaces/index';
 
 /**
  * The `withHistory` plugin keeps track of the operation history of a Slate
  * editor as operations are applied to it, using undo and redo stacks.
- *
- * If you are using TypeScript, you must extend Slate's CustomTypes to use this
- * plugin.
- *
- * See https://docs.slatejs.org/concepts/11-typescript to learn how.
  */
-
 export const withHistory = <T extends Editor>(editor: T) => {
-  const e = editor as T & HistoryEditor;
+  const e = editor;
   const { apply } = e;
   e.history = { redos: [], undos: [] };
 
@@ -25,11 +22,11 @@ export const withHistory = <T extends Editor>(editor: T) => {
       const batch = redos.at(-1)!;
 
       if (batch.selectionBefore) {
-        Transforms.setSelection(e, batch.selectionBefore);
+        e.tf.setSelection(batch.selectionBefore);
       }
 
-      HistoryEditor.withoutSaving(e, () => {
-        Editor.withoutNormalizing(e, () => {
+      e.tf.withoutSaving(() => {
+        e.tf.withoutNormalizing(() => {
           for (const op of batch.operations) {
             e.apply(op);
           }
@@ -48,16 +45,18 @@ export const withHistory = <T extends Editor>(editor: T) => {
     if (undos.length > 0) {
       const batch = undos.at(-1)!;
 
-      HistoryEditor.withoutSaving(e, () => {
-        Editor.withoutNormalizing(e, () => {
-          const inverseOps = batch.operations.map(Operation.inverse).reverse();
+      e.tf.withoutSaving(() => {
+        e.tf.withoutNormalizing(() => {
+          const inverseOps = batch.operations
+            .map(OperationApi.inverse)
+            .reverse();
 
           for (const op of inverseOps) {
             e.apply(op);
           }
 
           if (batch.selectionBefore) {
-            Transforms.setSelection(e, batch.selectionBefore);
+            e.tf.setSelection(batch.selectionBefore);
           }
         });
       });
@@ -72,8 +71,8 @@ export const withHistory = <T extends Editor>(editor: T) => {
     const { undos } = history;
     const lastBatch = undos.at(-1);
     const lastOp = lastBatch?.operations.at(-1);
-    let save = HistoryEditor.isSaving(e);
-    let merge = HistoryEditor.isMerging(e);
+    let save = e.api.isSaving();
+    let merge = e.api.isMerging();
 
     if (save == null) {
       save = shouldSave(op, lastOp);
@@ -88,9 +87,9 @@ export const withHistory = <T extends Editor>(editor: T) => {
           merge = shouldMerge(op, lastOp);
         }
       }
-      if (HistoryEditor.isSplittingOnce(e)) {
+      if (e.api.isSplittingOnce()) {
         merge = false;
-        HistoryEditor.setSplittingOnce(e, undefined);
+        e.tf.setSplittingOnce(undefined);
       }
       if (lastBatch && merge) {
         lastBatch.operations.push(op);
@@ -127,7 +126,7 @@ const shouldMerge = (op: Operation, prev: Operation | undefined): boolean => {
     op.type === 'insert_text' &&
     prev.type === 'insert_text' &&
     op.offset === prev.offset + prev.text.length &&
-    Path.equals(op.path, prev.path)
+    PathApi.equals(op.path, prev.path)
   ) {
     return true;
   }
@@ -136,7 +135,7 @@ const shouldMerge = (op: Operation, prev: Operation | undefined): boolean => {
     op.type === 'remove_text' &&
     prev.type === 'remove_text' &&
     op.offset + op.text.length === prev.offset &&
-    Path.equals(op.path, prev.path)
+    PathApi.equals(op.path, prev.path)
   ) {
     return true;
   }

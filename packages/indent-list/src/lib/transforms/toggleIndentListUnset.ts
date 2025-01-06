@@ -1,4 +1,4 @@
-import type { Editor, TNodeEntry } from '@udecode/plate-common';
+import type { Editor, NodeEntry } from '@udecode/plate-common';
 
 import {
   BaseIndentListPlugin,
@@ -10,7 +10,7 @@ import { outdentList } from './outdentList';
 /** Unset list style type if already set. */
 export const toggleIndentListUnset = (
   editor: Editor,
-  [node, path]: TNodeEntry,
+  [node, path]: NodeEntry,
   {
     listStyleType = ListStyleType.Disc,
   }: {

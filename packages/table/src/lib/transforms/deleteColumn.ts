@@ -2,7 +2,6 @@ import {
   type SlateEditor,
   type TElement,
   getEditorPlugin,
-  isExpanded,
 } from '@udecode/plate-common';
 
 import type { TTableElement } from '../types';
@@ -30,7 +29,7 @@ export const deleteColumn = (editor: SlateEditor) => {
 
       return;
     }
-    if (isExpanded(editor.selection))
+    if (editor.api.isExpanded())
       return deleteColumnWhenExpanded(editor, tableEntry);
 
     const tdEntry = editor.api.above({

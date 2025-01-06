@@ -1,8 +1,4 @@
-import {
-  type ExtendEditor,
-  getNodeString,
-  isElement,
-} from '@udecode/plate-common';
+import { type ExtendEditor, ElementApi, NodeApi } from '@udecode/plate-common';
 import castArray from 'lodash/castArray.js';
 
 import type { RemoveEmptyNodesConfig } from './RemoveEmptyNodesPlugin';
@@ -18,10 +14,10 @@ export const withRemoveEmptyNodes: ExtendEditor<RemoveEmptyNodesConfig> = ({
     const types = castArray(getOptions().types ?? []);
 
     if (
-      isElement(node) &&
+      ElementApi.isElement(node) &&
       node.type &&
       types.includes(node.type) &&
-      getNodeString(node) === ''
+      NodeApi.string(node) === ''
     ) {
       editor.tf.removeNodes({ at: path });
 

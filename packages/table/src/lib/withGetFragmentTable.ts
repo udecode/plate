@@ -1,8 +1,4 @@
-import type {
-  ExtendEditor,
-  TDescendant,
-  TElement,
-} from '@udecode/plate-common';
+import type { Descendant, ExtendEditor, TElement } from '@udecode/plate-common';
 
 import type { TableConfig } from './BaseTablePlugin';
 import type { TTableCellElement, TTableRowElement } from './types';
@@ -20,7 +16,7 @@ export const withGetFragmentTable: ExtendEditor<TableConfig> = ({
   editor.getFragment = (): any[] => {
     const fragment = getFragment();
 
-    const newFragment: TDescendant[] = [];
+    const newFragment: Descendant[] = [];
 
     fragment.forEach((node) => {
       if (node.type === type) {

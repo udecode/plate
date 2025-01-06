@@ -9,6 +9,7 @@ import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import {
   type TElement,
   type TNodeEntry,
+  PathApi,
   getBlockAbove,
   getBlocks,
   getNodeEntry,
@@ -124,7 +125,7 @@ export const insertBlock = (editor: PlateEditor, type: string) => {
 
       if (!path) return;
 
-      const at = Path.next(path);
+      const at = PathApi.next(path);
 
       insertNodes(editor, editor.api.create.block({ type }), {
         at,

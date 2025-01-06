@@ -1,5 +1,8 @@
-import { useEditorSelector } from '@udecode/plate-common/react';
-import { useReadOnly, useSelected } from 'slate-react';
+import {
+  useEditorSelector,
+  useReadOnly,
+  useSelected,
+} from '@udecode/plate-common/react';
 
 export const useDebouncePopoverOpen = () => {
   const readOnly = useReadOnly();

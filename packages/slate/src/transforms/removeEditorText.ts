@@ -1,6 +1,9 @@
-import type { RemoveNodesOptions } from '../interfaces/editor/editor-types';
-
-import { type Editor, type ValueOf, TextApi } from '../interfaces';
+import {
+  type Editor,
+  type RemoveNodesOptions,
+  type ValueOf,
+  TextApi,
+} from '../interfaces';
 import { getQueryOptions } from '../utils';
 
 /** Remove non-empty editor text nodes */

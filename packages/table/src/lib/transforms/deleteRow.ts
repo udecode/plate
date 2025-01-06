@@ -1,8 +1,4 @@
-import {
-  type SlateEditor,
-  getEditorPlugin,
-  isExpanded,
-} from '@udecode/plate-common';
+import { type SlateEditor, getEditorPlugin } from '@udecode/plate-common';
 
 import { type TTableElement, type TableConfig, BaseTableRowPlugin } from '..';
 import { deleteRowWhenExpanded } from '../merge';
@@ -27,7 +23,7 @@ export const deleteRow = (editor: SlateEditor) => {
     });
 
     if (!currentTableItem) return;
-    if (isExpanded(editor.selection))
+    if (editor.api.isExpanded())
       return deleteRowWhenExpanded(editor, currentTableItem);
 
     const currentRowItem = editor.api.above({

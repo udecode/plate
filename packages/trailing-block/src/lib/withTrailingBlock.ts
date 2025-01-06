@@ -1,9 +1,9 @@
 import {
   type ExtendEditor,
+  PathApi,
   insertElements,
   queryNode,
 } from '@udecode/plate-common';
-import { Path } from 'slate';
 
 import type { TrailingBlockConfig } from './TrailingBlockPlugin';
 
@@ -29,7 +29,7 @@ export const withTrailingBlock: ExtendEditor<TrailingBlockConfig> = ({
         !lastChildNode ||
         (lastChildNode.type !== type && queryNode(lastChild, query))
       ) {
-        const at = lastChild ? Path.next(lastChild[1]) : [0];
+        const at = lastChild ? PathApi.next(lastChild[1]) : [0];
 
         insertElements(editor, editor.api.create.block({ type }, at), { at });
 

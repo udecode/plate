@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@udecode/plate-test-utils';
-import { Range } from 'slate';
 
 import { createEditor } from '../../createEditor';
+import { RangeApi } from '../../interfaces/index';
 
 jsxt;
 
@@ -214,7 +214,7 @@ describe('isAt', () => {
           ) as any
         );
 
-        const point = Range.start(editor.selection as Range);
+        const point = RangeApi.start(editor.selection!);
         expect(editor.api.isAt({ at: point, end: true, word: true })).toBe(
           true
         );
@@ -233,7 +233,7 @@ describe('isAt', () => {
           ) as any
         );
 
-        const point = Range.start(editor.selection as Range);
+        const point = RangeApi.start(editor.selection!);
         expect(editor.api.isAt({ at: point, end: true, word: true })).toBe(
           false
         );
@@ -251,7 +251,7 @@ describe('isAt', () => {
           ) as any
         );
 
-        const point = Range.start(editor.selection as Range);
+        const point = RangeApi.start(editor.selection!);
         expect(editor.api.isAt({ at: point, end: true, word: true })).toBe(
           true
         );

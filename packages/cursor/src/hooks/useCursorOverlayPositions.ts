@@ -1,7 +1,6 @@
 import React from 'react';
 
-import type { UnknownObject } from '@udecode/plate-common';
-import type { Range } from 'slate';
+import type { TRange, UnknownObject } from '@udecode/plate-common';
 
 import {
   useEditorRef,
@@ -26,7 +25,7 @@ export const useCursorOverlayPositions = <TCursorData extends UnknownObject>({
 }: CursorOverlayProps<TCursorData> = {}) => {
   const editor = useEditorRef();
 
-  const selectionRectCache = React.useRef<WeakMap<Range, SelectionRect[]>>(
+  const selectionRectCache = React.useRef<WeakMap<TRange, SelectionRect[]>>(
     new WeakMap()
   );
 

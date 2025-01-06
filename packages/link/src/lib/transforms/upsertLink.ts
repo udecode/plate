@@ -3,10 +3,9 @@ import {
   type SlateEditor,
   type UnwrapNodesOptions,
   type WrapNodesOptions,
-  getNodeLeaf,
-  getNodeProps,
+  NodeApi,
+  RangeApi,
   isDefined,
-  isExpanded,
 } from '@udecode/plate-common';
 
 import type { TLinkElement } from '../types';
@@ -98,7 +97,7 @@ export const upsertLink = (
       shouldReplaceText = true;
     }
   }
-  if (isExpanded(at)) {
+  if (RangeApi.isExpanded(at)) {
     // anchor and focus in link
     if (linkAbove) {
       unwrapLink(editor, {
@@ -125,14 +124,14 @@ export const upsertLink = (
     });
   }
 
-  const props = getNodeProps(linkNode ?? ({} as any));
+  const props = NodeApi.extractProps(linkNode ?? ({} as any));
 
   const path = editor.selection?.focus.path;
 
   if (!path) return;
 
   // link text should have the focused leaf marks
-  const leaf = getNodeLeaf(editor, path);
+  const leaf = NodeApi.leaf(editor, path);
 
   // if text is empty, text is url
   if (!text?.length) {

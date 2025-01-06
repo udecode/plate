@@ -1,13 +1,15 @@
 import {
   type ExtendEditor,
+  type Point,
+  type TRange,
+  PathApi,
+  RangeApi,
   getEditorPlugin,
-  isCollapsed,
 } from '@udecode/plate-common';
 import {
   RemoveEmptyNodesPlugin,
   withRemoveEmptyNodes,
 } from '@udecode/plate-normalizers';
-import { type Point, type Range, Path } from 'slate';
 
 import type { BaseLinkConfig } from './BaseLinkPlugin';
 
@@ -39,8 +41,6 @@ export const withLink: ExtendEditor<BaseLinkConfig> = ({
       let beforeWordRange = editor.api.range('before', selection, {
         before: rangeBeforeOptions,
       });
-
-      console.log(beforeWordRange, editor.selection, rangeBeforeOptions);
 
       // if no space found before, get the range from block start
       if (!beforeWordRange) {
@@ -114,9 +114,9 @@ export const withLink: ExtendEditor<BaseLinkConfig> = ({
   // TODO: plugin
   editor.apply = (operation) => {
     if (operation.type === 'set_selection') {
-      const range = operation.newProperties as Range | null;
+      const range = operation.newProperties as TRange | null;
 
-      if (range?.focus && range.anchor && isCollapsed(range)) {
+      if (range?.focus && range.anchor && RangeApi.isCollapsed(range)) {
         const entry = editor.api.above({
           at: range,
           match: { type },
@@ -149,9 +149,13 @@ export const withLink: ExtendEditor<BaseLinkConfig> = ({
   // TODO: plugin
   editor.normalizeNode = ([node, path]) => {
     if (node.type === type) {
-      const range = editor.selection as Range | null;
+      const range = editor.selection;
 
-      if (range && isCollapsed(range) && editor.api.isEnd(range.focus, path)) {
+      if (
+        range &&
+        editor.api.isCollapsed() &&
+        editor.api.isEnd(range.focus, path)
+      ) {
         const nextPoint = editor.api.start(path, { next: true });
 
         // select next text node if any
@@ -159,7 +163,7 @@ export const withLink: ExtendEditor<BaseLinkConfig> = ({
           editor.tf.select(nextPoint);
         } else {
           // insert text node then select
-          const nextPath = Path.next(path);
+          const nextPath = PathApi.next(path);
           editor.tf.insertNodes({ text: '' } as any, { at: nextPath });
           editor.tf.select(nextPath);
         }

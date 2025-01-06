@@ -1,8 +1,8 @@
 import {
+  type Descendant,
   type HtmlDeserializer,
   type OmitFirst,
   type PluginConfig,
-  type TDescendant,
   bindFirst,
   createSlatePlugin,
   createTSlatePlugin,
@@ -146,7 +146,7 @@ type TableApi = {
   };
   table: {
     getCellBorders: OmitFirst<typeof getTableCellBorders>;
-    getCellChildren: (cell: TTableCellElement) => TDescendant[];
+    getCellChildren: (cell: TTableCellElement) => Descendant[];
     getCellSize: OmitFirst<typeof getTableCellSize>;
     getColSpan: typeof getColSpan;
     getRowSpan: typeof getRowSpan;

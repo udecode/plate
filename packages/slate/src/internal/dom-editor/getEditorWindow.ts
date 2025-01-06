@@ -5,5 +5,5 @@ import type { Editor } from '../../interfaces/editor';
 export const getEditorWindow = (editor: Editor) => {
   try {
     return DOMEditor.getWindow(editor as any);
-  } catch (error) {}
+  } catch {}
 };

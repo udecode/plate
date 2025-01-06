@@ -1,8 +1,7 @@
-import type { TNodeEntry } from '@udecode/slate';
-import type { Range } from 'slate';
+import type { NodeEntry, TRange } from '@udecode/slate';
 
 import type { SlateEditor } from '../../editor';
-import type { TEditableProps } from '../../types/TEditableProps';
+import type { EditableProps } from '../../types/EditableProps';
 
 import { getEditorPlugin } from '../../plugin';
 
@@ -13,17 +12,17 @@ import { getEditorPlugin } from '../../plugin';
 export const pipeDecorate = (
   editor: SlateEditor,
   decorateProp?:
-    | ((ctx: { editor: SlateEditor; entry: TNodeEntry }) => Range[] | undefined)
+    | ((ctx: { editor: SlateEditor; entry: NodeEntry }) => TRange[] | undefined)
     | null
-): TEditableProps['decorate'] => {
+): EditableProps['decorate'] => {
   const relevantPlugins = editor.pluginList.filter((plugin) => plugin.decorate);
 
   if (relevantPlugins.length === 0 && !decorateProp) return;
 
-  return (entry: TNodeEntry) => {
-    let ranges: Range[] = [];
+  return (entry: NodeEntry) => {
+    let ranges: TRange[] = [];
 
-    const addRanges = (newRanges?: Range[]) => {
+    const addRanges = (newRanges?: TRange[]) => {
       if (newRanges?.length) ranges = [...ranges, ...newRanges];
     };
 

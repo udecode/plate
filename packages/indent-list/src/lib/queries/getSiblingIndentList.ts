@@ -1,10 +1,10 @@
 import {
+  type Editor,
   type ElementEntryOf,
   type ElementOf,
   type ElementOrTextOf,
-  type Editor,
+  type NodeEntry,
   type TNode,
-  type TNodeEntry,
   isDefined,
 } from '@udecode/plate-common';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
@@ -19,11 +19,11 @@ export interface GetSiblingIndentListOptions<
   E extends Editor = Editor,
 > {
   getNextEntry?: (
-    entry: TNodeEntry<ElementOrTextOf<E>>
-  ) => TNodeEntry<N> | undefined;
+    entry: NodeEntry<ElementOrTextOf<E>>
+  ) => NodeEntry<N> | undefined;
   getPreviousEntry?: (
-    entry: TNodeEntry<ElementOrTextOf<E>>
-  ) => TNodeEntry<N> | undefined;
+    entry: NodeEntry<ElementOrTextOf<E>>
+  ) => NodeEntry<N> | undefined;
   breakOnEqIndentNeqListStyleType?: boolean;
   breakOnListRestart?: boolean;
   breakOnLowerIndent?: boolean;
@@ -54,7 +54,7 @@ export const getSiblingIndentList = <
     getPreviousEntry,
     query,
   }: GetSiblingIndentListOptions<N, E>
-): TNodeEntry<N> | undefined => {
+): NodeEntry<N> | undefined => {
   if (!getPreviousEntry && !getNextEntry) return;
 
   const getSiblingEntry = getNextEntry ?? getPreviousEntry!;

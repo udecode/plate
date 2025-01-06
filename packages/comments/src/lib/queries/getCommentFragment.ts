@@ -1,5 +1,4 @@
-import type { SlateEditor } from '@udecode/plate-common';
-import type { Range } from 'slate';
+import type { SlateEditor, TRange } from '@udecode/plate-common';
 
 import { getCommentNodesById } from './getCommentNodesById';
 
@@ -11,7 +10,7 @@ export const getCommentFragment = (editor: SlateEditor, id: string) => {
   const firstNodePath = nodes[0][1];
   const lastNodePath = nodes.at(-1)![1];
 
-  const range: Range = {
+  const range: TRange = {
     anchor: editor.api.start(firstNodePath)!,
     focus: editor.api.end(lastNodePath)!,
   };

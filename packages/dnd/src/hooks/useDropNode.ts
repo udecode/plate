@@ -4,7 +4,7 @@ import {
   useDrop,
 } from 'react-dnd';
 
-import type { TElement, TNodeEntry } from '@udecode/plate-common';
+import type { NodeEntry, TElement } from '@udecode/plate-common';
 import type { PlateEditor } from '@udecode/plate-common/react';
 
 import type {
@@ -18,9 +18,9 @@ import { getDropPath, onDropNode } from '../transforms/onDropNode';
 import { onHoverNode } from '../transforms/onHoverNode';
 
 export type CanDropCallback = (args: {
-  dragEntry: TNodeEntry<TElement>;
+  dragEntry: NodeEntry<TElement>;
   dragItem: DragItemNode;
-  dropEntry: TNodeEntry<TElement>;
+  dropEntry: NodeEntry<TElement>;
   editor: PlateEditor;
 }) => boolean;
 

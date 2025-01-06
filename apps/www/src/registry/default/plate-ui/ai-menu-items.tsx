@@ -3,7 +3,7 @@
 import { useEffect, useMemo } from 'react';
 
 import { AIChatPlugin, AIPlugin } from '@udecode/plate-ai/react';
-import { type SlateEditor, getNodeString } from '@udecode/plate-common';
+import { type SlateEditor, NodeApi } from '@udecode/plate-common';
 import { type PlateEditor, useEditorPlugin } from '@udecode/plate-common/react';
 import { useIsSelecting } from '@udecode/plate-selection/react';
 import {
@@ -47,7 +47,7 @@ export const aiChatItems = {
 
       if (!ancestorNode) return;
 
-      const isEmpty = getNodeString(ancestorNode[0]).trim().length === 0;
+      const isEmpty = NodeApi.string(ancestorNode[0]).trim().length === 0;
 
       void editor.getApi(AIChatPlugin).aiChat.submit({
         mode: 'insert',

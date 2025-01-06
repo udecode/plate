@@ -1,8 +1,7 @@
-import type { Range } from 'slate';
-
 import {
   type ExtendEditor,
   type SlateEditor,
+  type TRange,
   deleteMerge,
 } from '@udecode/plate-common';
 
@@ -12,7 +11,7 @@ import { hasListChild } from './queries/hasListChild';
 import { isAcrossListItems } from './queries/isAcrossListItems';
 
 const getLiStart = (editor: SlateEditor) => {
-  const start = editor.api.start(editor.selection as Range);
+  const start = editor.api.start(editor.selection as TRange);
 
   return editor.api.above({
     at: start,
@@ -37,7 +36,7 @@ export const withDeleteFragmentList: ExtendEditor<ListConfig> = ({
          * Check if the end li can be deleted (if it has no sublist). Store the
          * path ref to delete it after deleteMerge.
          */
-        const end = editor.api.end(editor.selection as Range);
+        const end = editor.api.end(editor.selection as TRange);
         const liEnd = editor.api.above({
           at: end,
           match: { type: editor.getType(BaseListItemPlugin) },

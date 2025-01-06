@@ -1,9 +1,13 @@
-import type { GetNodeEntriesOptions } from '../../interfaces/editor/editor-types';
-import type { ElementOf, Editor, ValueOf } from '../../interfaces/index';
+import type {
+  Editor,
+  EditorNodesOptions,
+  ElementOf,
+  ValueOf,
+} from '../../interfaces/index';
 
 export const getBlocks = <N extends ElementOf<E>, E extends Editor = Editor>(
   editor: E,
-  options?: GetNodeEntriesOptions<ValueOf<E>>
+  options?: EditorNodesOptions<ValueOf<E>>
 ) => {
   return [
     ...editor.api.nodes<N>({

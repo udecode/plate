@@ -1,4 +1,4 @@
-import type { TDescendant, TText } from '@udecode/plate-common';
+import type { Descendant, TText } from '@udecode/plate-common';
 
 import type { MdastNode, RemarkPluginOptions } from './types';
 
@@ -7,8 +7,8 @@ import { remarkTransformNode } from './remarkTransformNode';
 export const remarkSplitLineBreaksCompiler = (
   node: MdastNode,
   options: RemarkPluginOptions
-): TDescendant[] => {
-  const results: TDescendant[] = [];
+): Descendant[] => {
+  const results: Descendant[] = [];
   let startLine = node.position!.start.line;
 
   const addEmptyParagraphs = (count: number) => {

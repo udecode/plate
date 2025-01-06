@@ -1,14 +1,15 @@
 import {
+  type Descendant,
+  type ElementEntry,
+  type NodeEntry,
+  type PathRef,
   type SlateEditor,
-  type TDescendant,
   type TElement,
-  type TElementEntry,
-  type TNodeEntry,
+  PathApi,
   getChildren,
   insertEmptyElement,
   match,
 } from '@udecode/plate-common';
-import { type PathRef, Path } from 'slate';
 
 import {
   type ListPluginOptions,
@@ -30,10 +31,10 @@ export const getDeepInlineChildren = (
   {
     children,
   }: {
-    children: TNodeEntry<TDescendant>[];
+    children: NodeEntry<Descendant>[];
   }
 ) => {
-  const inlineChildren: TNodeEntry<TDescendant>[] = [];
+  const inlineChildren: NodeEntry<Descendant>[] = [];
 
   for (const child of children) {
     if (editor.api.isBlock(child[0])) {
@@ -59,7 +60,7 @@ export const normalizeListItem = (
   {
     listItem,
     validLiChildrenTypes = [],
-  }: { listItem: TElementEntry } & ListPluginOptions
+  }: { listItem: ElementEntry } & ListPluginOptions
 ) => {
   let changed = false;
 
@@ -78,7 +79,7 @@ export const normalizeListItem = (
     .filter(([child]) => !allValidLiChildrenTypes.has(child.type))
     .map(([, childPath]) => editor.api.pathRef(childPath));
 
-  const firstLiChild: TElementEntry | undefined = liChildren[0];
+  const firstLiChild: ElementEntry | undefined = liChildren[0];
   const [firstLiChildNode, firstLiChildPath] = firstLiChild ?? [];
 
   // If li has no child or inline child, insert lic
@@ -137,7 +138,7 @@ export const normalizeListItem = (
 
   if (licChildren.length > 0) {
     const blockPathRefs: PathRef[] = [];
-    const inlineChildren: TNodeEntry[] = [];
+    const inlineChildren: NodeEntry[] = [];
 
     // Check that lic has no block children
     for (const licChild of licChildren) {
@@ -154,7 +155,7 @@ export const normalizeListItem = (
       );
     }
 
-    const to = Path.next(licChildren.at(-1)![1]);
+    const to = PathApi.next(licChildren.at(-1)![1]);
 
     // Move lic nested inline children to its children
     inlineChildren.reverse().forEach(([, path]) => {

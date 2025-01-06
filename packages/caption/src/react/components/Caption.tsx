@@ -4,8 +4,9 @@ import {
   createPrimitiveComponent,
   useEditorRef,
   useElement,
+  useReadOnly,
+  useSelected,
 } from '@udecode/plate-common/react';
-import { useReadOnly, useSelected } from 'slate-react';
 
 import { CaptionPlugin } from '../CaptionPlugin';
 import { useCaptionString } from '../hooks/useCaptionString';

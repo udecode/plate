@@ -1,6 +1,6 @@
 import type {
   AnyObject,
-  GetNodeEntriesOptions,
+  EditorNodesOptions,
   SlateEditor,
 } from '@udecode/plate-common';
 
@@ -8,7 +8,7 @@ import { BaseIndentPlugin } from '../BaseIndentPlugin';
 
 export interface SetIndentOptions {
   /** GetNodeEntries options */
-  getNodesOptions?: GetNodeEntriesOptions;
+  getNodesOptions?: EditorNodesOptions;
 
   /**
    * 1 to indent -1 to outdent

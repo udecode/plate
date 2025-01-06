@@ -6,12 +6,12 @@ import type {
   Keys,
 } from '@udecode/react-hotkeys';
 import type {
-  TDecoratedRange,
-  TDescendant,
+  DecoratedRange,
+  Descendant,
   EditorApi,
   EditorTransforms,
+  NodeEntry,
   TElement,
-  TNodeEntry,
   TText,
   Value,
 } from '@udecode/slate';
@@ -28,6 +28,7 @@ import type {
   BasePluginContext,
   BaseSerializer,
   BaseTransformOptions,
+  EditableProps,
   GetInjectNodePropsOptions,
   GetInjectNodePropsReturnType,
   HandlerReturnType,
@@ -41,7 +42,6 @@ import type {
   SlatePlugin,
   SlatePluginConfig,
   SlatePluginContext,
-  TEditableProps,
   WithAnyKey,
 } from '../../lib';
 import type { PlateEditor } from '../editor/PlateEditor';
@@ -558,7 +558,7 @@ export type Parser<C extends AnyPluginConfig = PluginConfig> = {
   /** Deserialize data to fragment */
   deserialize?: (
     options: ParserOptions & PlatePluginContext<C>
-  ) => TDescendant[] | undefined;
+  ) => Descendant[] | undefined;
 
   /**
    * Function called on `editor.insertData` just before `editor.insertFragment`.
@@ -569,13 +569,13 @@ export type Parser<C extends AnyPluginConfig = PluginConfig> = {
    * @returns If true, the next handlers will be skipped.
    */
   preInsert?: (
-    options: ParserOptions & PlatePluginContext<C> & { fragment: TDescendant[] }
+    options: ParserOptions & PlatePluginContext<C> & { fragment: Descendant[] }
   ) => HandlerReturnType;
 
   /** Transform the fragment to insert. */
   transformFragment?: (
-    options: ParserOptions & PlatePluginContext<C> & { fragment: TDescendant[] }
-  ) => TDescendant[];
+    options: ParserOptions & PlatePluginContext<C> & { fragment: Descendant[] }
+  ) => Descendant[];
 
   /** Format to get data. Example data types are text/plain and text/uri-list. */
   format?: string[] | string;
@@ -603,15 +603,15 @@ export type Deserializer<C extends AnyPluginConfig = PluginConfig> =
   BaseDeserializer & {
     parse?: (
       options: PlatePluginContext<C> & { element: any }
-    ) => Partial<TDescendant> | undefined | void;
+    ) => Partial<Descendant> | undefined | void;
 
     query?: (options: PlatePluginContext<C> & { element: any }) => boolean;
   };
 
 export type Serializer<C extends AnyPluginConfig = PluginConfig> =
   BaseSerializer & {
-    parser?: (options: PlatePluginContext<C> & { node: TDescendant }) => any;
-    query?: (options: PlatePluginContext<C> & { node: TDescendant }) => boolean;
+    parser?: (options: PlatePluginContext<C> & { node: Descendant }) => any;
+    query?: (options: PlatePluginContext<C> & { node: Descendant }) => boolean;
   };
 
 export type HtmlDeserializer<C extends AnyPluginConfig = PluginConfig> =
@@ -621,15 +621,15 @@ export type HtmlDeserializer<C extends AnyPluginConfig = PluginConfig> =
         element: HTMLElement;
         node: AnyObject;
       }
-    ) => Partial<TDescendant> | undefined | void;
+    ) => Partial<Descendant> | undefined | void;
     query?: (
       options: PlatePluginContext<C> & { element: HTMLElement }
     ) => boolean;
   };
 
 export type HtmlSerializer<C extends AnyPluginConfig = PluginConfig> = {
-  parse?: (options: PlatePluginContext<C> & { node: TDescendant }) => string;
-  query?: (options: PlatePluginContext<C> & { node: TDescendant }) => boolean;
+  parse?: (options: PlatePluginContext<C> & { node: Descendant }) => string;
+  query?: (options: PlatePluginContext<C> & { node: Descendant }) => boolean;
 };
 
 export type HtmlReactSerializer<C extends AnyPluginConfig = PluginConfig> = {
@@ -648,8 +648,8 @@ export type HtmlReactSerializer<C extends AnyPluginConfig = PluginConfig> = {
  * returned ranges are merged with the ranges called by other plugins.
  */
 export type Decorate<C extends AnyPluginConfig = PluginConfig> = (
-  ctx: PlatePluginContext<C> & { entry: TNodeEntry }
-) => TDecoratedRange[] | undefined;
+  ctx: PlatePluginContext<C> & { entry: NodeEntry }
+) => DecoratedRange[] | undefined;
 
 export type NormalizeInitialValue<C extends AnyPluginConfig = PluginConfig> = (
   ctx: PlatePluginContext<C> & { value: Value }
@@ -715,7 +715,7 @@ export type UseHooks<C extends AnyPluginConfig = PluginConfig> = (
 ) => void;
 
 export type EditableSiblingComponent = (
-  editableProps: TEditableProps
+  editableProps: EditableProps
 ) => React.ReactElement | null;
 
 export interface NodeWrapperComponentProps<

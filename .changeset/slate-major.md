@@ -2,25 +2,234 @@
 '@udecode/slate': major
 ---
 
-- Rename `createEditor` to `createEditor`.
-- `createEditor` (`Editor`) now overrides all methods with this package methods. For example, `editor.setNodes` is now using `setNodes` from this package instead of `slate` one. As a reminder, this package forked most `slate`, `slate-dom` and `slate-history` queries/transforms to enhance the types, add options and suppress throwing errors. The following interfaces from `slate` are overridden:
-  - `Editor`, `EditorInterface`
-  - `Transforms`
-  - `HistoryEditor` (noop, unchanged), `HistoryEditorInterface`
-  - `DOMEditor` (noop, unchanged), `DOMEditorInterface`
-- `editor.findPath` now returns `DOMEditor.findPath` (memo) and falls back to `findNodePath` (traversal method, less performant) if not found. We now **recommend to always use** `editor.findPath` over `findNodePath` / `findPath`.
-- Remove first parameter (`editor`) from:
-  - `editor.hasEditableTarget`,
-  - `editor.hasSelectableTarget`,
-  - `editor.isTargetInsideNonReadonlyVoid`,
-  - `editor.hasRange`,
-  - `editor.hasTarget`,
-- Remove `setNode` in favor of `setNodes`. `at` option can now be a `TNode` so you don't need to use `at: editor.findPath(node)`.
-- Remove `setElements` in favor of `setNodes`.
+- Removed `slate`, `slate-dom`, `slate-react`, and `slate-history` from dependencies (now part of `@udecode/plate-common`). All exports remain the same or have equivalents (see below).
+- Renamed `createTEditor` to `createEditor`.
+- `createEditor` now returns an editor (`Editor`) with all queries under `editor.api` and transforms under `editor.tf`. You can see or override them at a glance. For example, we now use `editor.tf.setNodes` instead of importing `setNodes`. This marks the completion of generic typing and the removal of error throws from `slate`, `slate-dom`, and `slate-history` queries/transforms, without forking implementations. We’ve also reduced the number of queries/transforms by merging a bunch of them.
+
+The following interfaces from `slate` and `slate-dom` are now part of `Editor`:
+
+- `Editor`, `EditorInterface`
+- `Transforms`
+- `HistoryEditor` (noop, unchanged), `HistoryEditorInterface`
+- `DOMEditor` (noop, unchanged), `DOMEditorInterface`
+
+- `editor.findPath` now returns `DOMEditor.findPath` (memo) and falls back to `findNodePath` (traversal, less performant) if not found.
+- Removed the first parameter (`editor`) from:
+  - `editor.hasEditableTarget`
+  - `editor.hasSelectableTarget`
+  - `editor.isTargetInsideNonReadonlyVoid`
+  - `editor.hasRange`
+  - `editor.hasTarget`
+- Removed `setNode` in favor of `setNodes` (you can now pass a `TNode` to `at` directly).
+- Removed `setElements` in favor of `setNodes`.
+- Removed `isWordAfterTrigger`.
+- Replaced `Path` from slate with `Path` (type) and `PathApi` (static methods).
+- Replaced `Operation` from slate with `Operation` (type) and `OperationApi` (static methods).
+- Replaced `Point` from slate with `Point` (type) and `PointApi` (static methods).
+- Replaced `Text` from slate with `TText` (type) and `TextApi` (static methods).
+- Replaced `Range` from slate with `TRange` (type) and `RangeApi` (static methods).
+- Replaced `Location` from slate with `TLocation` (type) and `LocationApi` (static methods).
+- Replaced `Span` from slate with `Span` (type) and `SpanApi` (static methods).
+- Replaced `Node` from slate with `TNode` (type) and `NodeApi` (static methods).
+
+Moved or renamed editor functions:
+
+- For example, `focusEditor(editor)` is now `editor.tf.focus()`.
+
+  - `addMark` -> `editor.tf.addMark`
+  - `blurEditor` -> `editor.tf.blur`
+  - `collapseSelection` -> `editor.tf.collapse`
+  - `createPathRef` -> `editor.api.pathRef`
+  - `createPointRef` -> `editor.api.pointRef`
+  - `createRangeRef` -> `editor.api.rangeRef`
+  - `deleteBackward` -> `editor.tf.deleteBackward`
+  - `deleteForward` -> `editor.tf.deleteForward`
+  - `deleteFragment` -> `editor.tf.deleteFragment`
+  - `deleteText` -> `editor.tf.delete`
+  - `deselect` -> `editor.tf.deselect`
+  - `deselectEditor` -> `editor.tf.deselectDOM`
+  - `findEditorDocumentOrShadowRoot` -> `editor.api.findDocumentOrShadowRoot`
+  - `findEventRange` -> `editor.api.findEventRange`
+  - `findNodeKey` -> `editor.api.findKey`
+  - `findNodePath` -> `editor.api.findPath`
+  - `findPath` -> `editor.api.findPath`
+  - `focusEditor` -> `editor.tf.focus`
+  - `getAboveNode` -> `editor.api.above`
+  - `getAncestorNode` -> `editor.api.highestBlock`
+  - `getEdgePoints` -> `editor.api.edges`
+  - `getEditorString` -> `editor.api.string`
+  - `getEditorWindow` -> `editor.api.getWindow`
+  - `getEndPoint` -> `editor.api.end`
+  - `getFirstNode` -> `editor.api.first`
+  - `getFragment` -> `editor.api.fragment`
+  - `getLastNode` -> `editor.api.last`
+  - `getLeafNode` -> `editor.api.leaf`
+  - `getLevels` -> `editor.api.levels`
+  - `getMarks` -> `editor.api.marks`
+  - `getNextNode` -> `editor.api.next`
+  - `getNodeEntries` -> `editor.api.nodes`
+  - `getNodeEntry` -> `editor.api.node`
+  - `getParentNode` -> `editor.api.parent`
+  - `getPath` -> `editor.api.path`
+  - `getPathRefs` -> `editor.api.pathRefs`
+  - `getPoint` -> `editor.api.point`
+  - `getPointAfter` -> `editor.api.after`
+  - `getPointBefore` -> `editor.api.before`
+  - `getPointRefs` -> `editor.api.pointRefs`
+  - `getPositions` -> `editor.api.positions`
+  - `getPreviousNode` -> `editor.api.previous`
+  - `getRange` -> `editor.api.range`
+  - `getRangeRefs` -> `editor.api.rangeRefs`
+  - `getStartPoint` -> `editor.api.start`
+  - `getVoidNode` -> `editor.api.void`
+  - `hasBlocks` -> `editor.api.hasBlocks`
+  - `hasEditorDOMNode` -> `editor.api.hasDOMNode`
+  - `hasEditorEditableTarget` -> `editor.api.hasEditableTarget`
+  - `hasEditorSelectableTarget` -> `editor.api.hasSelectableTarget`
+  - `hasEditorTarget` -> `editor.api.hasTarget`
+  - `hasInlines` -> `editor.api.hasInlines`
+  - `hasTexts` -> `editor.api.hasTexts`
+  - `insertBreak` -> `editor.tf.insertBreak`
+  - `insertData` -> `editor.tf.insertData`
+  - `insertFragment` -> `editor.tf.insertFragment`
+  - `insertNode` -> `editor.tf.insertNode`
+  - `insertNodes` -> `editor.tf.insertNodes`
+  - `insertText` -> `editor.tf.insertText`
+  - `isBlock` -> `editor.api.isBlock`
+  - `isComposing` -> `editor.api.isComposing`
+  - `isEdgePoint` -> `editor.api.isEdge`
+  - `isEditor` -> `editor.api.isEditor`
+  - `isEditorFocused` -> `editor.api.isFocused`
+  - `isEditorNormalizing` -> `editor.api.isNormalizing`
+  - `isEditorReadOnly` -> `editor.api.isReadOnly`
+  - `isElementEmpty` -> `editor.api.isEmpty`
+  - `isElementReadOnly` -> `editor.api.elementReadOnly`
+  - `isEndPoint` -> `editor.api.isEnd`
+  - `isInline` -> `editor.api.isInline`
+  - `isMarkableVoid` -> `editor.api.markableVoid`
+  - `isStartPoint` -> `editor.api.isStart`
+  - `isTargetinsideNonReadonlyVoidEditor` -> `editor.api.isTargetInsideNonReadonlyVoid`
+  - `isVoid` -> `editor.api.isVoid`
+  - `liftNodes` -> `editor.tf.liftNodes`
+  - `mergeNodes` -> `editor.tf.mergeNodes`
+  - `moveNodes` -> `editor.tf.moveNodes`
+  - `moveSelection` -> `editor.tf.move`
+  - `normalizeEditor` -> `editor.tf.normalize`
+  - `removeEditorMark` -> `editor.tf.removeMark`
+  - `removeNodes` -> `editor.tf.removeNodes`
+  - `select` -> `editor.tf.select`
+  - `setFragmentData` -> `editor.tf.setFragmentData`
+  - `setNodes` -> `editor.tf.setNodes`
+  - `setPoint` -> `editor.tf.setPoint`
+  - `setSelection` -> `editor.tf.setSelection`
+  - `splitNodes` -> `editor.tf.splitNodes`
+  - `toDOMNode` -> `editor.api.toDOMNode`
+  - `toDOMPoint` -> `editor.api.toDOMPoint`
+  - `toDOMRange` -> `editor.api.toDOMRange`
+  - `toSlateNode` -> `editor.api.toSlateNode`
+  - `toSlatePoint` -> `editor.api.toSlatePoint`
+  - `toSlateRange` -> `editor.api.toSlateRange`
+  - `unhangRange` -> `editor.api.unhangRange`
+  - `unsetNodes` -> `editor.tf.unsetNodes`
+  - `unwrapNodes` -> `editor.tf.unwrapNodes`
+  - `withoutNormalizing` -> `editor.tf.withoutNormalizing`
+  - `wrapNodes` -> `editor.tf.wrapNodes`
+  - `findDescendant` -> `editor.api.descendant`
+  - `findNode` -> `editor.api.find`
+  - `getBlockAbove` -> `editor.api.block`
+  - `getBlocks` -> `editor.api.blocks`
+  - `getEdgeBlocksAbove` -> `editor.api.edgeBlocks`
+  - `getLastNodeByLevel` -> `editor.api.lastByLevel`
+  - `getMark` -> `editor.api.mark`
+  - `getNextNodeStartPoint` -> `editor.api.start(at, { next: true })`
+  - `getNodesRange` -> `editor.api.nodesRange`
+  - `getPointBeforeLocation` -> `editor.api.before`
+  - `getPreviousBlockById` -> `editor.api.previous({ id, block: true })`
+  - `getPreviousNodeEndPoint` -> `editor.api.end({ previous: true })`
+  - `getPreviousSiblingNode` -> `editor.api.previous({ at, sibling: true })`
+  - `getRangeBefore` -> `editor.api.range('before', to, { before })`
+  - `getRangeFromBlockStart` -> `editor.api.range('start', to)`
+  - `getSelectionFragment` -> `editor.api.fragment(editor.selection, { structuralTypes })`
+  - `getSelectionText` -> `editor.api.string()`
+  - `isAncestorEmpty` -> `editor.api.isEmpty`
+  - `isBlockAboveEmpty` -> `editor.api.isEmpty(editor.selection, { block: true })`
+  - `isBlockTextEmptyAfterSelection` -> `editor.api.isEmpty(editor.selection, { after: true })`
+  - `isDocumentEnd` -> `editor.api.isEditorEnd`
+  - `isEditorEmpty` -> `editor.api.isEmpty()`
+  - `isRangeAcrossBlocks` -> `editor.api.isAt({ at, blocks: true })`
+  - `isRangeInSameBlock` -> `editor.api.isAt({ at, block: true })`
+  - `isRangeInSingleText` -> `editor.api.isAt({ at, text: true })`
+  - `isSelectionAtBlockEnd` -> `editor.api.isAt({ end: true })`
+  - `isSelectionAtBlockStart` -> `editor.api.isAt({ start: true })`
+  - `isSelectionCoverBlock` -> `editor.api.isAt({ block: true, start: true, end: true })`
+  - `isPointAtWordEnd` -> `editor.api.isAt({ at, word: true, end: true })`
+  - `isSelectionExpanded` -> `editor.api.isExpanded()`
+  - `isExpanded(editor.selection)` -> `editor.api.isCollapsed()`
+  - `isCollapsed(editor.selection)` -> `editor.api.isCollapsed()`
+  - `isTextByPath` -> `editor.api.isText(at)`
+  - `someNode` -> `editor.api.some(options)`
+  - `isMarkActive` -> `editor.api.hasMark(key)`
+
+- Moved to `NodeApi.`:
+  - `getCommonNode` -> `NodeApi.common`
+  - `getNode` -> `NodeApi.get`
+  - `getNodeAncestor` -> `NodeApi.ancestor`
+  - `getNodeAncestors` -> `NodeApi.ancestors`
+  - `getNodeChild` -> `NodeApi.child`
+  - `getNodeChildren` -> `NodeApi.children`
+  - `getNodeDescendant` -> `NodeApi.descendant`
+  - `getNodeDescendants` -> `NodeApi.descendants`
+  - `getNodeElements` -> `NodeApi.elements`
+  - `getNodeFirstNode` -> `NodeApi.first`
+  - `getNodeFragment` -> `NodeApi.fragment`
+  - `getNodeLastNode` -> `NodeApi.last`
+  - `getNodeLeaf` -> `NodeApi.leaf`
+  - `getNodeLevels` -> `NodeApi.levels`
+  - `getNodeParent` -> `NodeApi.parent`
+  - `getNodeProps` -> `NodeApi.extractProps`
+  - `getNodes` -> `NodeApi.nodes`
+  - `getNodeString` -> `NodeApi.string`
+  - `getNodeTexts` -> `NodeApi.texts`
+  - `hasNode` -> `NodeApi.has`
+  - `hasSingleChild` -> `NodeApi.hasSingleChild`
+  - `isAncestor` -> `NodeApi.isAncestor`
+  - `isDescendant` -> `NodeApi.isDescendant`
+  - `isNode` -> `NodeApi.isNode`
+  - `isNodeList` -> `NodeApi.isNodeList`
+  - `nodeMatches` -> `NodeApi.matches`
+- Moved to `ElementApi.`:
+  - `elementMatches` -> `ElementApi.matches`
+  - `isElement` -> `ElementApi.isElement`
+  - `isElementList` -> `ElementApi.isElementList`
+- Moved to `TextApi.`:
+
+  - `isText` -> `TextApi.isText(at)`
+
+- Moved to `RangeApi.`:
+
+  - `isCollapsed` -> `RangeApi.isCollapsed`
+  - `isExpanded` -> `RangeApi.isExpanded`
+
+- Moved from `@udecode/plate/react` to `@udecode/plate`:
+
+  - `Hotkeys`
 
 Types:
 
-- Rename `TEditor` to `Editor`. Make sure to not import `slate` one.
-- Query and transform options now use generic `V extends Value` instead of `E extends Editor`.
-- `getEndPoint`, `getEdgePoints`, `getFirstNode`, `getFragment`, `getLastNode`, `getLeafNode`, `getPath`, `getPoint`, `getStartPoint` can return `undefined` if not found
+- Rename the following types:
+  - `TEditor` -> `Editor`
+  - `TOperation` -> `Operation`
+  - `TPath` -> `Path`
+  - `TNodeProps` -> `NodeProps`
+  - `TNodeChildEntry` -> `NodeChildEntry`
+  - `TNodeEntry` -> `NodeEntry`
+  - `TDescendant` -> `Descendant`
+  - `TDescendantEntry` -> `DescendantEntry`
+  - `TAncestor` -> `Ancestor`
+  - `TAncestorEntry` -> `AncestorEntry`
+  - `TElementEntry` -> `ElementEntry`
+  - `TTextEntry` -> `TextEntry`
+- Query/transform options now use generic `V extends Value` instead of `E extends Editor`.
+- `getEndPoint`, `getEdgePoints`, `getFirstNode`, `getFragment`, `getLastNode`, `getLeafNode`, `getPath`, `getPoint`, `getStartPoint` can return `undefined` if not found (suppressing error throws).
+- `NodeApi.ancestor`, `NodeApi.child`, `NodeApi.common`, `NodeApi.descendant`, `NodeApi.first`, `NodeApi.get`, `NodeApi.last`, `NodeApi.leaf`, `NodeApi.parent`, `NodeApi.getIf` return `undefined` if not found instead of throwing
 - Replace `NodeOf` type with `DescendantOf` in `editor.tf.setNodes` `editor.tf.unsetNodes`, `editor.api.previous`, `editor.api.node`, `editor.api.nodes`, `editor.api.last`

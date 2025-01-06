@@ -1,12 +1,13 @@
 import {
+  type ElementEntry,
   type ExtendEditor,
   type SlateEditor,
   type TElement,
-  type TElementEntry,
+  type TextUnit,
+  NodeApi,
+  PathApi,
   getChildren,
-  getNode,
 } from '@udecode/plate-common';
-import { type TextUnit, Path } from 'slate';
 
 import type { ListConfig } from './BaseListPlugin';
 
@@ -65,7 +66,7 @@ const selectionIsNotInAListHandler = (editor: SlateEditor): boolean => {
 
 const selectionIsInAListHandler = (
   editor: SlateEditor,
-  res: { list: TElementEntry; listItem: TElementEntry },
+  res: { list: ElementEntry; listItem: ElementEntry },
   defaultDelete: (unit: TextUnit) => void,
   unit: 'block' | 'character' | 'line' | 'word'
 ): boolean => {
@@ -83,7 +84,7 @@ const selectionIsInAListHandler = (
 
         const isNodeLi = (node as TElement).type === liType;
         const isSiblingOfNodeLi =
-          getNode<TElement>(editor, Path.next(path))?.type === liType;
+          NodeApi.get<TElement>(editor, PathApi.next(path))?.type === liType;
 
         return isNodeLi && isSiblingOfNodeLi;
       },
@@ -119,7 +120,7 @@ const selectionIsInAListHandler = (
     }
 
     const siblingListItem = editor.api.node<TElement>(
-      Path.next(liWithSiblings)
+      PathApi.next(liWithSiblings)
     );
 
     if (!siblingListItem) return false;
@@ -165,7 +166,7 @@ const selectionIsInAListHandler = (
     defaultDelete(unit);
 
     const leftoverListItem = editor.api.node<TElement>(
-      Path.parent(nextSelectableLic[1])
+      PathApi.parent(nextSelectableLic[1])
     )!;
 
     if (leftoverListItem && leftoverListItem[0].children.length === 0) {
@@ -177,7 +178,9 @@ const selectionIsInAListHandler = (
   }
 
   // if it has children
-  const nestedList = editor.api.node<TElement>(Path.next([...listItem[1], 0]));
+  const nestedList = editor.api.node<TElement>(
+    PathApi.next([...listItem[1], 0])
+  );
 
   if (!nestedList) return false;
 

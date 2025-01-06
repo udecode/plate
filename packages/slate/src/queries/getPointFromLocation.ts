@@ -1,6 +1,6 @@
-import { Path, Point, Range } from 'slate';
-
 import type { At } from '../types/index';
+
+import { type Point, PathApi, PointApi, RangeApi } from '../interfaces/index';
 
 /**
  * Get the point from a location. If the location is a range, get the anchor
@@ -16,9 +16,9 @@ export const getPointFromLocation = ({
 } = {}) => {
   let point: Point | undefined;
 
-  if (Range.isRange(at)) point = focus ? at.focus : at.anchor;
-  if (Point.isPoint(at)) point = at;
-  if (Path.isPath(at)) point = { offset: 0, path: at };
+  if (RangeApi.isRange(at)) point = focus ? at.focus : at.anchor;
+  if (PointApi.isPoint(at)) point = at;
+  if (PathApi.isPath(at)) point = { offset: 0, path: at };
 
   return point;
 };

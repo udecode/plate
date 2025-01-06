@@ -1,5 +1,8 @@
-import { type SlateEditor, getEditorPlugin } from '@udecode/plate-common';
-import { Path } from 'slate';
+import {
+  type SlateEditor,
+  PathApi,
+  getEditorPlugin,
+} from '@udecode/plate-common';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 import { selectInsertedBlocks } from './selectInsertedBlocks';
@@ -16,7 +19,7 @@ export const pasteSelectedBlocks = (editor: SlateEditor, e: ClipboardEvent) => {
     editor.tf.focus(editor.api.start(path));
 
     if (!editor.api.isEmpty(node as any)) {
-      const at = Path.next(path);
+      const at = PathApi.next(path);
 
       editor.tf.insertNodes(editor.api.create.block({}, at), {
         at,
@@ -25,7 +28,7 @@ export const pasteSelectedBlocks = (editor: SlateEditor, e: ClipboardEvent) => {
     }
 
     // quick fix until we find a way to merge history
-    // withoutMergingHistory(editor, () => {
+    // editor.tf.withoutMerging(() => {
     editor.insertData(e.clipboardData!);
     // });
     // insertData is focusing the editor so deselect

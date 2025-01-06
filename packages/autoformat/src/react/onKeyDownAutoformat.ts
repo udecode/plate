@@ -1,7 +1,6 @@
 import type { KeyboardHandler } from '@udecode/plate-common/react';
 
-import { isHotkey } from '@udecode/plate-common';
-import { Range } from 'slate';
+import { RangeApi, isHotkey } from '@udecode/plate-common';
 
 import type { AutoformatConfig } from '../lib/BaseAutoformatPlugin';
 import type { AutoformatRule, AutoformatTextRule } from '../lib/types';
@@ -28,7 +27,7 @@ export const onKeyDownAutoformat: KeyboardHandler<AutoformatConfig> = ({
   // For example: Text|
   //                  ^ cursor at the moment of pressing the hotkey
   // start, end will be equal to the location of the |
-  const [start, end] = Range.edges(selection);
+  const [start, end] = RangeApi.edges(selection);
 
   // Get location before the cursor.
   // before will be a point one character before | so:

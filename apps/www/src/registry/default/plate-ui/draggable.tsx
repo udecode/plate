@@ -17,6 +17,7 @@ import {
   useElement,
   usePath,
 } from '@udecode/plate-common/react';
+import { useReadOnly, useSelected } from '@udecode/plate-common/react';
 import { useDraggable, useDropLine } from '@udecode/plate-dnd';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
@@ -34,7 +35,6 @@ import {
 } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { GripVertical } from 'lucide-react';
-import { useReadOnly, useSelected } from 'slate-react';
 
 import { STRUCTURAL_TYPES } from '@/registry/default/components/editor/transforms';
 

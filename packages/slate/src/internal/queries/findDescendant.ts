@@ -1,17 +1,19 @@
-import { Path, Range, Span } from 'slate';
-
 /**
  * Iterate through all of the nodes in the editor and return the first match. If
  * no match is found, return undefined.
  */
 import {
   type DescendantOf,
-  type FindNodeOptions,
-  type NodeEntryOf,
   type Editor,
-  type TNodeEntry,
+  type EditorFindOptions,
+  type NodeEntry,
+  type NodeEntryOf,
+  type Path,
   type ValueOf,
-  getNodeDescendants,
+  NodeApi,
+  PathApi,
+  RangeApi,
+  SpanApi,
 } from '../../interfaces';
 import { match } from '../../utils';
 
@@ -20,8 +22,8 @@ export const findDescendant = <
   E extends Editor = Editor,
 >(
   editor: E,
-  options: FindNodeOptions<ValueOf<E>>
-): TNodeEntry<N> | undefined => {
+  options: EditorFindOptions<ValueOf<E>>
+): NodeEntry<N> | undefined => {
   // Slate throws when things aren't found so we wrap in a try catch and return undefined on throw.
   try {
     const {
@@ -36,9 +38,9 @@ export const findDescendant = <
     let from;
     let to;
 
-    if (Span.isSpan(at)) {
+    if (SpanApi.isSpan(at)) {
       [from, to] = at;
-    } else if (Range.isRange(at)) {
+    } else if (RangeApi.isRange(at)) {
       const first = editor.api.path(at, { edge: 'start' });
       const last = editor.api.path(at, { edge: 'end' });
       from = reverse ? last : first;
@@ -47,11 +49,11 @@ export const findDescendant = <
 
     let root: NodeEntryOf<E> = [editor, []];
 
-    if (Path.isPath(at)) {
+    if (PathApi.isPath(at)) {
       root = editor.api.node(at) as any;
     }
 
-    const nodeEntries = getNodeDescendants<N>(root[0], {
+    const nodeEntries = NodeApi.descendants<N>(root[0], {
       from,
       pass: ([n]) => (voids ? false : editor.isVoid(n as any)),
       reverse,

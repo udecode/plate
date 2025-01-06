@@ -1,17 +1,21 @@
-import type { SlateEditor, TNodeEntry } from '@udecode/plate-common';
-
-import { type PathRef, Node, Range } from 'slate';
+import {
+  type NodeEntry,
+  type PathRef,
+  type SlateEditor,
+  NodeApi,
+  RangeApi,
+} from '@udecode/plate-common';
 
 import { type TTableCellElement, BaseTableRowPlugin } from '..';
 import { getTableGridAbove } from '../queries';
 
 export const deleteColumnWhenExpanded = (
   editor: SlateEditor,
-  tableEntry: TNodeEntry<TTableCellElement>
+  tableEntry: NodeEntry<TTableCellElement>
 ) => {
-  const [start, end] = Range.edges(editor.selection!);
-  const firstRow = Node.child(tableEntry[0], 0) as TTableCellElement;
-  const lastRow = Node.child(
+  const [start, end] = RangeApi.edges(editor.selection!);
+  const firstRow = NodeApi.child(tableEntry[0], 0) as TTableCellElement;
+  const lastRow = NodeApi.child(
     tableEntry[0],
     tableEntry[0].children.length - 1
   ) as TTableCellElement;
@@ -37,7 +41,7 @@ export const deleteColumnWhenExpanded = (
 const deleteSelection = (editor: SlateEditor) => {
   const cells = getTableGridAbove(editor, {
     format: 'cell',
-  }) as TNodeEntry<TTableCellElement>[];
+  }) as NodeEntry<TTableCellElement>[];
 
   const pathRefs: PathRef[] = [];
 

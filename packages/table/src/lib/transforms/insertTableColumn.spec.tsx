@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-key */
 /** @jsx jsxt */
 
-import type { SlateEditor, Editor, TElement } from '@udecode/plate-common';
+import type { Editor, SlateEditor, TElement } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsxt } from '@udecode/plate-test-utils';

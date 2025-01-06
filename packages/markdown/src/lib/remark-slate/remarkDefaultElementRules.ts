@@ -1,4 +1,4 @@
-import type { TDescendant, TElement, TText } from '@udecode/plate-common';
+import type { Descendant, TElement, TText } from '@udecode/plate-common';
 
 import type { MdastNode, RemarkElementRules } from './types';
 
@@ -142,7 +142,7 @@ export const remarkDefaultElementRules: RemarkElementRules = {
               child.type === options.editor.getType({ key: 'p' })
                 ? options.editor.getType({ key: 'lic' })
                 : child.type,
-          }) as TDescendant
+          }) as Descendant
       ),
       type: options.editor.getType({ key: 'li' }),
     }),
@@ -158,7 +158,7 @@ export const remarkDefaultElementRules: RemarkElementRules = {
       const splitBlockTypes = new Set([options.editor.getType({ key: 'img' })]);
 
       const elements: TElement[] = [];
-      let inlineNodes: TDescendant[] = [];
+      let inlineNodes: Descendant[] = [];
 
       const flushInlineNodes = () => {
         if (inlineNodes.length > 0) {

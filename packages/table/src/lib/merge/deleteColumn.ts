@@ -1,9 +1,7 @@
-import type { Path } from 'slate';
-
 import {
+  type Path,
   type SlateEditor,
   getEditorPlugin,
-  isExpanded,
 } from '@udecode/plate-common';
 import cloneDeep from 'lodash/cloneDeep.js';
 
@@ -30,7 +28,7 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
   editor.tf.withoutNormalizing(() => {
     const { api } = getEditorPlugin(editor, BaseTablePlugin);
 
-    if (isExpanded(editor.selection)) {
+    if (editor.api.isExpanded()) {
       return deleteColumnWhenExpanded(editor, tableEntry);
     }
 

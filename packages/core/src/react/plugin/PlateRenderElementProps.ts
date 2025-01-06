@@ -1,10 +1,9 @@
-import type { TElement } from '@udecode/slate';
-import type { Path } from 'slate';
+import type { Path, TElement } from '@udecode/slate';
 
 import type {
   AnyPluginConfig,
   PluginConfig,
-  TRenderElementProps,
+  RenderElementProps,
 } from '../../lib';
 import type { PlateRenderNodeProps } from './PlateRenderNodeProps';
 
@@ -13,6 +12,6 @@ export type PlateRenderElementProps<
   N extends TElement = TElement,
   C extends AnyPluginConfig = PluginConfig,
 > = PlateRenderNodeProps<C> &
-  TRenderElementProps<N> & {
+  RenderElementProps<N> & {
     path: Path;
   };

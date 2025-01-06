@@ -1,9 +1,9 @@
-import type { FindPathOptions, Editor, TNode } from '../../interfaces';
+import type { Editor, EditorFindPathOptions, TNode } from '../../interfaces';
 
 export const findNodePath = <E extends Editor = Editor>(
   editor: E,
   node: TNode,
-  options: FindPathOptions = {}
+  options: EditorFindPathOptions = {}
 ) => {
   const nodeEntry = editor.api.find({
     ...options,

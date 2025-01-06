@@ -1,5 +1,5 @@
 import {
-  type GetPointBeforeOptions,
+  type EditorBeforeOptions,
   type PluginConfig,
   createTSlatePlugin,
   isUrl,
@@ -71,7 +71,7 @@ export type BaseLinkConfig = PluginConfig<
      *     "afterMatch": true
      *   }
      */
-    rangeBeforeOptions?: GetPointBeforeOptions;
+    rangeBeforeOptions?: EditorBeforeOptions;
 
     /**
      * Transform the content of the URL input before validating it. Useful for

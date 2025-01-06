@@ -7,7 +7,7 @@ import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
 import {
   type Decorate,
-  type TRenderLeafProps,
+  type RenderLeafProps,
   type TText,
   TextApi,
   createSlatePlugin,
@@ -65,7 +65,7 @@ function PreviewLeaf({
   attributes,
   children,
   leaf,
-}: TRenderLeafProps<
+}: RenderLeafProps<
   {
     blockquote?: boolean;
     bold?: boolean;

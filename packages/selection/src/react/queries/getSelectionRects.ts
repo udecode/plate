@@ -1,5 +1,10 @@
-import { type Editor, TextApi } from '@udecode/plate-common';
-import { Path, Range } from 'slate';
+import {
+  type Editor,
+  type TRange,
+  PathApi,
+  RangeApi,
+  TextApi,
+} from '@udecode/plate-common';
 
 import type { SelectionRect } from '../types';
 
@@ -10,12 +15,12 @@ export const getSelectionRects = (
     xOffset,
     yOffset,
   }: {
-    range: Range;
+    range: TRange;
     xOffset: number;
     yOffset: number;
   }
 ): SelectionRect[] => {
-  const [start, end] = Range.edges(range);
+  const [start, end] = RangeApi.edges(range);
   const domRange = editor.api.toDOMRange(range);
 
   if (!domRange) {
@@ -36,8 +41,8 @@ export const getSelectionRects = (
       return [];
     }
 
-    const isStartNode = Path.equals(textPath, start.path);
-    const isEndNode = Path.equals(textPath, end.path);
+    const isStartNode = PathApi.equals(textPath, start.path);
+    const isEndNode = PathApi.equals(textPath, end.path);
 
     let clientRects: DOMRectList | null = null;
 

@@ -1,6 +1,5 @@
-import type { NodeEntry } from 'slate';
-
 import {
+  type NodeEntry,
   type SlateEditor,
   type TElement,
   isDefined,

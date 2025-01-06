@@ -1,8 +1,11 @@
-import type { Path } from 'slate';
+import type { Path } from '../interfaces/path';
 
-import type { RemoveNodesOptions } from '../interfaces/editor/editor-types';
-
-import { type Editor, type ValueOf, getNodeChildren } from '../interfaces';
+import {
+  type Editor,
+  type RemoveNodesOptions,
+  type ValueOf,
+  NodeApi,
+} from '../interfaces';
 
 /** Remove node children. */
 export const removeNodeChildren = <E extends Editor>(
@@ -11,7 +14,7 @@ export const removeNodeChildren = <E extends Editor>(
   options?: Omit<RemoveNodesOptions<ValueOf<E>>, 'at'>
 ) => {
   editor.tf.withoutNormalizing(() => {
-    for (const [, childPath] of getNodeChildren(editor, path, {
+    for (const [, childPath] of NodeApi.children(editor, path, {
       reverse: true,
     })) {
       editor.tf.removeNodes({ ...options, at: childPath });

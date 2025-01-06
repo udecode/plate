@@ -1,9 +1,9 @@
 import {
   type ExtendEditor,
   type TElement,
-  getNode,
+  ElementApi,
+  NodeApi,
   insertElements,
-  isElement,
 } from '@udecode/plate-common';
 
 import type { NormalizeTypesConfig } from './NormalizeTypesPlugin';
@@ -20,10 +20,14 @@ export const withNormalizeTypes: ExtendEditor<NormalizeTypesConfig> = ({
     if (currentPath.length === 0) {
       const endCurrentNormalizationPass = rules!.some(
         ({ path, strictType, type }) => {
-          const node = getNode<TElement>(editor, path);
+          const node = NodeApi.get<TElement>(editor, path);
 
           if (node) {
-            if (strictType && isElement(node) && node.type !== strictType) {
+            if (
+              strictType &&
+              ElementApi.isElement(node) &&
+              node.type !== strictType
+            ) {
               const { children, ...props } = editor.api.create.block({
                 type: strictType,
               });

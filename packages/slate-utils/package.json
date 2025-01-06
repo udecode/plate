@@ -46,9 +46,6 @@
     "@udecode/utils": "37.0.0",
     "lodash": "^4.17.21"
   },
-  "peerDependencies": {
-    "slate": ">=0.112.0"
-  },
   "publishConfig": {
     "access": "public"
   }

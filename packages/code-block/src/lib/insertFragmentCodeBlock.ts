@@ -1,8 +1,8 @@
 import {
+  type Descendant,
   type SlateEditor,
-  type TDescendant,
   type TElement,
-  getNodeString,
+  NodeApi,
 } from '@udecode/plate-common';
 
 import { BaseCodeBlockPlugin, BaseCodeLinePlugin } from './BaseCodeBlockPlugin';
@@ -18,12 +18,12 @@ export const insertFragmentCodeBlock = (editor: SlateEditor) => {
 
   function convertNodeToCodeLine(node: TElement): TElement {
     return {
-      children: [{ text: getNodeString(node) }],
+      children: [{ text: NodeApi.string(node) }],
       type: codeLineType,
     };
   }
 
-  return (fragment: TDescendant[]) => {
+  return (fragment: Descendant[]) => {
     const [blockAbove] = editor.api.block<TElement>() ?? [];
 
     if (

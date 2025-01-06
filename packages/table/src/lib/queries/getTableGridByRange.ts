@@ -1,10 +1,9 @@
-import type { Range } from 'slate';
-
 import {
+  type ElementEntry,
   type SlateEditor,
   type TElement,
-  type TElementEntry,
-  getNode,
+  type TRange,
+  NodeApi,
 } from '@udecode/plate-common';
 
 import type { TTableElement } from '../../lib/types';
@@ -13,7 +12,7 @@ import { type TableConfig, BaseTablePlugin } from '../../lib/BaseTablePlugin';
 import { getTableMergeGridByRange } from '../merge/getTableGridByRange';
 
 export interface GetTableGridByRangeOptions {
-  at: Range;
+  at: TRange;
 
   /**
    * Format of the output:
@@ -28,7 +27,7 @@ export interface GetTableGridByRangeOptions {
 export const getTableGridByRange = (
   editor: SlateEditor,
   { at, format = 'table' }: GetTableGridByRangeOptions
-): TElementEntry[] => {
+): ElementEntry[] => {
   const { api } = editor.getPlugin<TableConfig>({ key: 'table' });
   const { disableMerge } = editor.getOptions(BaseTablePlugin);
 
@@ -63,13 +62,13 @@ export const getTableGridByRange = (
   let rowIndex = startRowIndex;
   let colIndex = startColIndex;
 
-  const cellEntries: TElementEntry[] = [];
+  const cellEntries: ElementEntry[] = [];
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
     const cellPath = tablePath.concat([rowIndex, colIndex]);
 
-    const cell = getNode<TElement>(editor, cellPath);
+    const cell = NodeApi.get<TElement>(editor, cellPath);
 
     if (!cell) break;
 

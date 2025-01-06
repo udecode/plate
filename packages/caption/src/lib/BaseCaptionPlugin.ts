@@ -1,6 +1,6 @@
 import {
+  type Path,
   type PluginConfig,
-  type TPath,
   type WithRequiredKey,
   createTSlatePlugin,
 } from '@udecode/plate-common';
@@ -11,9 +11,9 @@ export type CaptionConfig = PluginConfig<
   'caption',
   {
     /** When defined, focus end of caption textarea with the same path. */
-    focusEndPath: TPath | null;
+    focusEndPath: Path | null;
     /** When defined, focus start of caption textarea with the same path. */
-    focusStartPath: TPath | null;
+    focusStartPath: Path | null;
     // isVisible?: (elementId: string) => boolean;
     /** Plugins to enable caption. */
     plugins: WithRequiredKey[];

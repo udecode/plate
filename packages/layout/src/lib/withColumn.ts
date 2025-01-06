@@ -1,4 +1,4 @@
-import { type ExtendEditor, isElement } from '@udecode/plate-common';
+import { type ExtendEditor, ElementApi } from '@udecode/plate-common';
 
 import type { TColumnElement, TColumnGroupElement } from './types';
 
@@ -11,14 +11,14 @@ export const withColumn: ExtendEditor = ({ editor }) => {
     const [n, path] = entry;
 
     // If it's a column group, ensure it has valid children
-    if (isElement(n) && n.type === BaseColumnPlugin.key) {
+    if (ElementApi.isElement(n) && n.type === BaseColumnPlugin.key) {
       const node = n as TColumnGroupElement;
 
       // If no columns found, unwrap the column group
       if (
         !node.children.some(
           (child) =>
-            isElement(child) &&
+            ElementApi.isElement(child) &&
             child.type === editor.getType(BaseColumnItemPlugin)
         )
       ) {
@@ -66,7 +66,7 @@ export const withColumn: ExtendEditor = ({ editor }) => {
       });
     }
     // If it's a column, ensure it has at least one block (optional)
-    if (isElement(n) && n.type === BaseColumnItemPlugin.key) {
+    if (ElementApi.isElement(n) && n.type === BaseColumnItemPlugin.key) {
       const node = n as TColumnElement;
 
       if (node.children.length === 0) {
@@ -82,7 +82,8 @@ export const withColumn: ExtendEditor = ({ editor }) => {
   editor.deleteBackward = (unit) => {
     if (editor.api.isCollapsed()) {
       const entry = editor.api.above({
-        match: (n) => isElement(n) && n.type === BaseColumnItemPlugin.key,
+        match: (n) =>
+          ElementApi.isElement(n) && n.type === BaseColumnItemPlugin.key,
       });
 
       if (entry) {

@@ -2,7 +2,6 @@ import {
   type SlateEditor,
   getEditorPlugin,
   insertElements,
-  isExpanded,
 } from '@udecode/plate-common';
 import cloneDeep from 'lodash/cloneDeep.js';
 
@@ -34,7 +33,7 @@ export const deleteTableMergeRow = (editor: SlateEditor) => {
     });
 
     if (!currentTableItem) return;
-    if (isExpanded(editor.selection))
+    if (editor.api.isExpanded())
       return deleteRowWhenExpanded(editor, currentTableItem);
 
     const table = currentTableItem[0] as TTableElement;

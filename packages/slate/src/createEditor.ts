@@ -15,7 +15,7 @@ import {
 
 import type { Editor, Value } from './interfaces/editor/editor';
 
-import { isCollapsed, isExpanded } from './interfaces';
+import { RangeApi } from './interfaces';
 import { blurEditor } from './internal/dom-editor/blurEditor';
 import { deselectEditor } from './internal/dom-editor/deselectEditor';
 import { findEditorDocumentOrShadowRoot } from './internal/dom-editor/findEditorDocumentOrShadowRoot';
@@ -120,12 +120,12 @@ import { splitNodes } from './internal/transforms/splitNodes';
 import { unsetNodes } from './internal/transforms/unsetNodes';
 import { unwrapNodes } from './internal/transforms/unwrapNodes';
 import { wrapNodes } from './internal/transforms/wrapNodes';
-import { HistoryEditor } from './slate-history';
-import { toggleMark } from './transforms';
 import {
   assignLegacyApi,
   assignLegacyTransforms,
-} from './utils/assignLegacyTransforms';
+} from './internal/utils/assignLegacyTransforms';
+import { HistoryApi } from './slate-history/history';
+import { toggleMark } from './transforms';
 
 const noop: {
   (name: string): () => void;
@@ -191,22 +191,22 @@ export const createEditor = <V extends Value>({
     highestBlock: bindFirst(getHighestBlock, editor) as any,
     isAt: bindFirst(isAt, editor),
     isBlock: bindFirst(isBlock, editor),
-    isCollapsed: () => isCollapsed(editor.selection),
+    isCollapsed: () => RangeApi.isCollapsed(editor.selection),
     isComposing: bindFirst(isComposing, editor),
     isEdge: bindFirst(isEdgePoint, editor),
     isEditorEnd: bindFirst(isEditorEnd, editor),
     isElementReadOnly: editor.isElementReadOnly,
     isEmpty: bindFirst(isEmpty, editor),
     isEnd: bindFirst(isEndPoint, editor),
-    isExpanded: () => isExpanded(editor.selection),
+    isExpanded: () => RangeApi.isExpanded(editor.selection),
     isFocused: bindFirst(isEditorFocused, editor),
     isInline: editor.isInline,
-    isMerging: bindFirst(HistoryEditor.isMerging, editor as any) as any,
+    isMerging: bindFirst(HistoryApi.isMerging, editor as any) as any,
     isNormalizing: bindFirst(isEditorNormalizing, editor),
     isReadOnly: bindFirst(isEditorReadOnly, editor),
-    isSaving: bindFirst(HistoryEditor.isSaving, editor as any) as any,
+    isSaving: bindFirst(HistoryApi.isSaving, editor as any) as any,
     isSelectable: editor.isSelectable,
-    isSplittingOnce: bindFirst(HistoryEditor.isSplittingOnce, editor as any),
+    isSplittingOnce: bindFirst(HistoryApi.isSplittingOnce, editor as any),
     isStart: bindFirst(isStartPoint, editor),
     isTargetInsideNonReadonlyVoid: bindFirst(
       isTargetInsideNonReadonlyVoid,
@@ -292,7 +292,7 @@ export const createEditor = <V extends Value>({
     setNodes: bindFirst(setNodes, editor),
     setPoint: bindFirst(setPoint, editor),
     setSelection: bindFirst(setSelection, editor),
-    setSplittingOnce: bindFirst(HistoryEditor.setSplittingOnce, editor as any),
+    setSplittingOnce: bindFirst(HistoryApi.setSplittingOnce, editor as any),
     splitNodes: bindFirst(splitNodes, editor),
     toggle: {
       mark: bindFirst(toggleMark, editor as any),
@@ -300,11 +300,11 @@ export const createEditor = <V extends Value>({
     undo: noop('undo'),
     unsetNodes: bindFirst(unsetNodes, editor),
     unwrapNodes: bindFirst(unwrapNodes, editor),
-    withMerging: bindFirst(HistoryEditor.withMerging, editor as any),
-    withNewBatch: bindFirst(HistoryEditor.withNewBatch, editor as any),
-    withoutMerging: bindFirst(HistoryEditor.withoutMerging, editor as any),
+    withMerging: bindFirst(HistoryApi.withMerging, editor as any),
+    withNewBatch: bindFirst(HistoryApi.withNewBatch, editor as any),
+    withoutMerging: bindFirst(HistoryApi.withoutMerging, editor as any),
     withoutNormalizing: bindFirst(withoutNormalizing, editor as any),
-    withoutSaving: bindFirst(HistoryEditor.withoutSaving, editor as any),
+    withoutSaving: bindFirst(HistoryApi.withoutSaving, editor as any),
     wrapNodes: bindFirst(wrapNodes, editor),
     writeHistory: noop('writeHistory'),
   };

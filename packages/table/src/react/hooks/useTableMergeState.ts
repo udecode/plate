@@ -2,8 +2,9 @@
 import {
   useEditorPlugin,
   useEditorSelector,
+  useReadOnly,
+  useSelected,
 } from '@udecode/plate-common/react';
-import { useReadOnly, useSelected } from 'slate-react';
 
 import {
   type TTableCellElement,

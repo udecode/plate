@@ -1,6 +1,6 @@
 import {
+  type Descendant,
   type SlateEditor,
-  type TDescendant,
   type ValueOf,
   nanoid,
 } from '@udecode/plate-common';
@@ -10,8 +10,8 @@ import { getSuggestionProps } from './transforms';
 
 export function diffToSuggestions<E extends SlateEditor>(
   editor: E,
-  doc0: TDescendant[],
-  doc1: TDescendant[],
+  doc0: Descendant[],
+  doc1: Descendant[],
   {
     getDeleteProps = () =>
       getSuggestionProps(editor, nanoid(), {

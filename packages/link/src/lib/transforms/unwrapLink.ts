@@ -1,7 +1,7 @@
 import {
   type SlateEditor,
   type UnwrapNodesOptions,
-  isElement,
+  ElementApi,
 } from '@udecode/plate-common';
 
 import { BaseLinkPlugin } from '../BaseLinkPlugin';
@@ -25,7 +25,8 @@ export const unwrapLink = (
         editor.tf.splitNodes({
           at: editor.selection?.anchor,
           match: (n) =>
-            isElement(n) && n.type === editor.getType(BaseLinkPlugin),
+            ElementApi.isElement(n) &&
+            n.type === editor.getType(BaseLinkPlugin),
         });
         unwrapLink(editor, {
           at: editor.selection?.anchor,
@@ -44,7 +45,8 @@ export const unwrapLink = (
         editor.tf.splitNodes({
           at: editor.selection?.focus,
           match: (n) =>
-            isElement(n) && n.type === editor.getType(BaseLinkPlugin),
+            ElementApi.isElement(n) &&
+            n.type === editor.getType(BaseLinkPlugin),
         });
         unwrapLink(editor, {
           at: editor.selection?.focus,

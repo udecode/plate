@@ -1,8 +1,11 @@
 import { wrapNodes as wrapNodesBase } from 'slate';
 
-import type { Editor, ValueOf } from '../../interfaces';
-import type { WrapNodesOptions } from '../../interfaces/editor/editor-types';
-import type { ElementOf } from '../../interfaces/element/TElement';
+import type {
+  Editor,
+  ElementOf,
+  ValueOf,
+  WrapNodesOptions,
+} from '../../interfaces';
 
 import { getQueryOptions } from '../../utils';
 

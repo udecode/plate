@@ -1,7 +1,7 @@
 import { start } from 'slate';
 
 import type { Editor } from '../../interfaces/editor/editor';
-import type { GetStartPointOptions } from '../../interfaces/editor/editor-types';
+import type { EditorStartOptions } from '../../interfaces/index';
 import type { At } from '../../types';
 
 import { getAt } from '../../utils';
@@ -9,7 +9,7 @@ import { getAt } from '../../utils';
 export const getStartPoint = (
   editor: Editor,
   at: At,
-  options: GetStartPointOptions = {}
+  options: EditorStartOptions = {}
 ) => {
   try {
     if (options.next) {

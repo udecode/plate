@@ -1,9 +1,8 @@
-import type { PathRef } from 'slate';
-
 import {
   type ExtendEditor,
+  type PathRef,
   type TElement,
-  getNode,
+  NodeApi,
 } from '@udecode/plate-common';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 
@@ -49,7 +48,7 @@ export const withIndentList: ExtendEditor<BaseIndentListConfig> = ({
     let nodeBefore: TElement | null = null;
 
     if (operation.type === 'set_node') {
-      nodeBefore = getNode<TElement>(editor, path);
+      nodeBefore = NodeApi.get<TElement>(editor, path)!;
     }
     // If there is a previous indent list, the inserted indent list style type should be the same.
     // Only for lower-roman and upper-roman as it overlaps with lower-alpha and upper-alpha.
@@ -95,7 +94,7 @@ export const withIndentList: ExtendEditor<BaseIndentListConfig> = ({
       operation.type === 'merge_node' &&
       (operation.properties as any)[BaseIndentListPlugin.key]
     ) {
-      const node = getNode<TElement>(editor, path);
+      const node = NodeApi.get<TElement>(editor, path);
 
       if (node) {
         const nextNodeEntryBefore = getNextIndentList<TElement>(
@@ -123,7 +122,7 @@ export const withIndentList: ExtendEditor<BaseIndentListConfig> = ({
         listReStart + 1;
       (operation.properties as any)[INDENT_LIST_KEYS.listRestart] = undefined;
 
-      const node = getNode<TElement>(editor, path);
+      const node = NodeApi.get<TElement>(editor, path);
 
       if (node) {
         const nextNodeEntryBefore = getNextIndentList<TElement>(
@@ -144,7 +143,7 @@ export const withIndentList: ExtendEditor<BaseIndentListConfig> = ({
       const nextPath = nextIndentListPathRef.unref();
 
       if (nextPath) {
-        const nextNode = getNode<TElement>(editor, nextPath);
+        const nextNode = NodeApi.get<TElement>(editor, nextPath);
 
         if (nextNode) {
           normalizeIndentListStart<TElement>(
@@ -159,7 +158,7 @@ export const withIndentList: ExtendEditor<BaseIndentListConfig> = ({
       const { properties } = operation;
 
       if ((properties as any)[BaseIndentListPlugin.key]) {
-        const node = getNode<TElement>(editor, path);
+        const node = NodeApi.get<TElement>(editor, path);
 
         if (!node) return;
 
@@ -192,7 +191,7 @@ export const withIndentList: ExtendEditor<BaseIndentListConfig> = ({
           const nextPath = nextIndentListPathRef.unref();
 
           if (nextPath) {
-            const nextNode = getNode<TElement>(editor, nextPath);
+            const nextNode = NodeApi.get<TElement>(editor, nextPath);
 
             if (nextNode) {
               normalizeIndentListStart<TElement>(
@@ -215,7 +214,7 @@ export const withIndentList: ExtendEditor<BaseIndentListConfig> = ({
 
       // Remove list style type
       if (prevListStyleType && !listStyleType) {
-        const node = getNode(editor, path);
+        const node = NodeApi.get(editor, path);
 
         if (!node) return;
 
@@ -238,7 +237,7 @@ export const withIndentList: ExtendEditor<BaseIndentListConfig> = ({
         (prevListStyleType || listStyleType) &&
         prevListStyleType !== listStyleType
       ) {
-        const node = getNode<TElement>(editor, path);
+        const node = NodeApi.get<TElement>(editor, path);
 
         if (!node) return;
 
@@ -303,7 +302,7 @@ export const withIndentList: ExtendEditor<BaseIndentListConfig> = ({
 
       // Update indent
       if (prevIndent !== indent) {
-        const node = getNode<TElement>(editor, path);
+        const node = NodeApi.get<TElement>(editor, path);
 
         if (!node) return;
 

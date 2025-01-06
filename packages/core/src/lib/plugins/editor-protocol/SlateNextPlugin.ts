@@ -1,5 +1,4 @@
-import type { TDescendant, TElement, TRange, Value } from '@udecode/slate';
-import type { Path } from 'slate';
+import type { Descendant, Path, TElement, TRange, Value } from '@udecode/slate';
 
 import { removeSelectionMark, replaceNodeChildren } from '@udecode/slate';
 import { type OmitFirst, bindFirst } from '@udecode/utils';
@@ -104,7 +103,7 @@ export const SlateNextPlugin = createTSlatePlugin<SlateNextConfig>({
       resetEditor(editor);
     },
     setValue: <V extends Value>(value?: V | string) => {
-      let children: TDescendant[] = value as any;
+      let children: Descendant[] = value as any;
 
       if (typeof value === 'string') {
         children = editor.api.html.deserialize({

@@ -1,14 +1,14 @@
 import type { Modify } from '@udecode/utils';
-import type { Path } from 'slate';
 
-import type { WrapNodesOptions } from '../interfaces/editor/editor-types';
+import type { Path } from '../interfaces/path';
 
 import {
-  type ElementOf,
   type Editor,
+  type ElementOf,
   type TElement,
   type ValueOf,
-  getNode,
+  type WrapNodesOptions,
+  NodeApi,
 } from '../interfaces';
 import { moveChildren } from './moveChildren';
 
@@ -27,7 +27,7 @@ export const wrapNodeChildren = <
   options: Modify<WrapNodesOptions<ValueOf<E>>, { at: Path }>
 ) => {
   const path = options?.at;
-  const node = getNode<TElement>(editor, path);
+  const node = NodeApi.get<TElement>(editor, path);
 
   if (!node?.children) return;
 

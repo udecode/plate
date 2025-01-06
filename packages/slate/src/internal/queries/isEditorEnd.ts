@@ -1,6 +1,4 @@
-import { Path } from 'slate';
-
-import type { Editor } from '../../interfaces/index';
+import { type Editor, PathApi } from '../../interfaces/index';
 
 export const isEditorEnd = (editor: Editor) => {
   if (editor.selection) {
@@ -10,7 +8,7 @@ export const isEditorEnd = (editor: Editor) => {
     return (
       endPoint.offset === 0 &&
       editor.api.isEnd(point, point) &&
-      Path.equals(Path.next(Path.parent(point.path)), endPoint.path)
+      PathApi.equals(PathApi.next(PathApi.parent(point.path)), endPoint.path)
     );
   }
 

@@ -1,11 +1,10 @@
-import type { Path } from 'slate';
-
 import {
+  type NodeEntry,
   type NodeOf,
+  type Path,
   type QueryNodeOptions,
   type TNode,
-  type TNodeEntry,
-  isAncestor,
+  NodeApi,
   queryNode,
 } from '@udecode/slate';
 
@@ -32,7 +31,7 @@ export const applyDeepToNodes = <N extends TNode>({
   query,
   source,
 }: ApplyDeepToNodesOptions<N>) => {
-  const entry: TNodeEntry<N> = [node, path];
+  const entry: NodeEntry<N> = [node, path];
 
   if (queryNode<N>(entry, query)) {
     if (source instanceof Function) {
@@ -41,7 +40,7 @@ export const applyDeepToNodes = <N extends TNode>({
       apply(node, source);
     }
   }
-  if (!isAncestor(node)) return;
+  if (!NodeApi.isAncestor(node)) return;
 
   node.children.forEach((child, index) => {
     applyDeepToNodes({

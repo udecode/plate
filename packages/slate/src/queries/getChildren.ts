@@ -1,19 +1,19 @@
-import type { Path } from 'slate';
+import type { Path } from '../interfaces/path';
 
 import {
   type ChildOf,
+  type NodeEntry,
   type TNode,
-  type TNodeEntry,
-  isAncestor,
+  NodeApi,
 } from '../interfaces';
 
-/** Get children node entries of a node entry. TODO: try Node.children */
+/** Get children node entries of a node entry. TODO: try NodeApi.children */
 export const getChildren = <N extends ChildOf<R>, R extends TNode = TNode>(
-  nodeEntry: TNodeEntry<R>
-): TNodeEntry<N>[] => {
+  nodeEntry: NodeEntry<R>
+): NodeEntry<N>[] => {
   const [node, path] = nodeEntry;
 
-  if (isAncestor(node)) {
+  if (NodeApi.isAncestor(node)) {
     const { children } = node;
 
     return children.map((child, index) => {

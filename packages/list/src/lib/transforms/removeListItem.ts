@@ -1,13 +1,12 @@
 import {
+  type ElementEntry,
   type SlateEditor,
   type TElement,
-  type TElementEntry,
+  PathApi,
   deleteMerge,
   getPreviousPath,
   insertElements,
-  isExpanded,
 } from '@udecode/plate-common';
-import { Path } from 'slate';
 
 import {
   BaseListItemContentPlugin,
@@ -18,8 +17,8 @@ import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublist
 import { moveListItemsToList } from './moveListItemsToList';
 
 export interface RemoveListItemOptions {
-  list: TElementEntry;
-  listItem: TElementEntry;
+  list: ElementEntry;
+  listItem: ElementEntry;
   reverse?: boolean;
 }
 
@@ -31,7 +30,7 @@ export const removeListItem = (
   const [liNode, liPath] = listItem;
 
   // Stop if the list item has no sublist
-  if (isExpanded(editor.selection) || !hasListChild(editor, liNode)) {
+  if (editor.api.isExpanded() || !hasListChild(editor, liNode)) {
     return false;
   }
 
@@ -56,7 +55,7 @@ export const removeListItem = (
       if (!previousLi) return;
 
       // 1
-      let tempLiPath = Path.next(liPath);
+      let tempLiPath = PathApi.next(liPath);
       insertElements(
         editor,
         {

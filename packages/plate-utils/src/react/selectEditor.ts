@@ -1,9 +1,9 @@
+import type { TLocation } from '@udecode/plate-common';
 import type { Editor } from '@udecode/slate';
-import type { Location } from 'slate';
 
 export interface SelectEditorOptions {
   /** Specific location if edge is not defined. */
-  at?: Location;
+  at?: TLocation;
 
   /** Start or end of the editor. */
   edge?: 'end' | 'start';
@@ -21,7 +21,7 @@ export const selectEditor = (
     editor.tf.focus();
   }
 
-  let location = at as Location;
+  let location = at as TLocation;
 
   if (edge === 'start') {
     location = editor.api.start([])!;

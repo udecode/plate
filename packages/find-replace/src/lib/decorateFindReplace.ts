@@ -1,7 +1,6 @@
-import type { Decorate } from '@udecode/plate-common';
-import type { Range } from 'slate';
+import type { Decorate, TRange } from '@udecode/plate-common';
 
-import { TextApi, isElement } from '@udecode/plate-common';
+import { ElementApi, TextApi } from '@udecode/plate-common';
 
 import type { FindReplaceConfig } from './FindReplacePlugin';
 
@@ -12,7 +11,13 @@ export const decorateFindReplace: Decorate<FindReplaceConfig> = ({
 }) => {
   const { search } = getOptions();
 
-  if (!(search && isElement(node) && node.children.every(TextApi.isText))) {
+  if (
+    !(
+      search &&
+      ElementApi.isElement(node) &&
+      node.children.every(TextApi.isText)
+    )
+  ) {
     return [];
   }
 
@@ -96,4 +101,4 @@ export const decorateFindReplace: Decorate<FindReplaceConfig> = ({
 
 type SearchRange = {
   search: string;
-} & Range;
+} & TRange;

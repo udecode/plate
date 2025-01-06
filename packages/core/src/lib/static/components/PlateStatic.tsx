@@ -1,18 +1,20 @@
 import React from 'react';
 
 import {
-  type TDescendant,
+  type DecoratedRange,
+  type Descendant,
+  type NodeEntry,
   type TElement,
-  type TNodeEntry,
   type TText,
-  isElement,
+  ElementApi,
+  RangeApi,
+  TextApi,
 } from '@udecode/slate';
 import clsx from 'clsx';
-import { type DecoratedRange, Range, Text } from 'slate';
 
 import type { SlateEditor } from '../../editor';
 import type { NodeComponents } from '../../plugin';
-import type { TEditableProps } from '../../types/TEditableProps';
+import type { EditableProps } from '../../types/EditableProps';
 import type { SlateRenderElementProps } from '../types';
 
 import { pipeRenderElementStatic } from '../pipeRenderElementStatic';
@@ -27,7 +29,7 @@ function ElementStatic({
   element = { children: [], type: '' },
 }: {
   components: NodeComponents;
-  decorate: TEditableProps['decorate'];
+  decorate: EditableProps['decorate'];
   decorations: DecoratedRange[];
   editor: SlateEditor;
   element: TElement;
@@ -106,7 +108,7 @@ function LeafStatic({
     components,
   });
 
-  const leaves = Text.decorations(leaf, decorations);
+  const leaves = TextApi.decorations(leaf, decorations);
 
   return (
     <span data-slate-node="text">
@@ -128,7 +130,7 @@ function LeafStatic({
   );
 }
 
-const defaultDecorate: (entry: TNodeEntry) => DecoratedRange[] = () => [];
+const defaultDecorate: (entry: NodeEntry) => DecoratedRange[] = () => [];
 
 function Children({
   children = [],
@@ -137,9 +139,9 @@ function Children({
   decorations,
   editor,
 }: {
-  children: TDescendant[];
+  children: Descendant[];
   components: NodeComponents;
-  decorate: TEditableProps['decorate'];
+  decorate: EditableProps['decorate'];
   decorations: DecoratedRange[];
   editor: SlateEditor;
 }) {
@@ -155,7 +157,7 @@ function Children({
           ds = decorate([child, p]);
 
           for (const dec of decorations) {
-            const d = Range.intersection(dec, range);
+            const d = RangeApi.intersection(dec, range);
 
             if (d) {
               ds.push(d);
@@ -163,7 +165,7 @@ function Children({
           }
         }
 
-        return isElement(child) ? (
+        return ElementApi.isElement(child) ? (
           <ElementStatic
             key={i}
             components={components}

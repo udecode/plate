@@ -1,8 +1,7 @@
-import type { Path } from 'slate';
-
 import {
+  type Descendant,
+  type Path,
   type SlateEditor,
-  type TDescendant,
   getEditorPlugin,
   insertElements,
 } from '@udecode/plate-common';
@@ -28,7 +27,7 @@ export const splitTableCell = (editor: SlateEditor) => {
 
   editor.tf.withoutNormalizing(() => {
     // creating new object per iteration is essential here
-    const createEmptyCell = (children?: TDescendant[]) => {
+    const createEmptyCell = (children?: Descendant[]) => {
       return {
         ...api.create.tableCell({
           children,

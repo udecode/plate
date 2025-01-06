@@ -1,12 +1,13 @@
 import {
+  type Path,
   type SlateEditor,
   type TElement,
+  NodeApi,
+  PathApi,
   getEditorPlugin,
   getLastChildPath,
-  getNode,
   insertElements,
 } from '@udecode/plate-common';
-import { Path } from 'slate';
 
 import type { TTableElement } from '../types';
 
@@ -45,7 +46,7 @@ export const insertTableRow = (
   let { at, fromRow } = options;
 
   if (at && !fromRow) {
-    const table = getNode<TTableElement>(editor, at);
+    const table = NodeApi.get<TTableElement>(editor, at);
 
     if (table?.type === editor.getType(BaseTablePlugin)) {
       fromRow = getLastChildPath([table, at]);
@@ -92,7 +93,7 @@ export const insertTableRow = (
 
   editor.tf.withoutNormalizing(() => {
     insertElements(editor, getEmptyRowNode(), {
-      at: Path.isPath(at) ? at : before ? trPath : Path.next(trPath),
+      at: PathApi.isPath(at) ? at : before ? trPath : PathApi.next(trPath),
     });
   });
 
@@ -105,7 +106,7 @@ export const insertTableRow = (
 
     const [, nextCellPath] = cellEntry;
 
-    if (Path.isPath(at)) {
+    if (PathApi.isPath(at)) {
       nextCellPath[nextCellPath.length - 2] = at.at(-2)!;
     } else {
       nextCellPath[nextCellPath.length - 2] = before

@@ -149,7 +149,7 @@ description: udecode/slate的 API 参考。
 
 在 [Slate 文档](https://docs.slatejs.org/api/nodes/node) 中查找相应的文档。
 
-### `TDescendant`
+### `Descendant`
 
 ### `getNodeDescendants`
 
@@ -173,7 +173,7 @@ description: udecode/slate的 API 参考。
 
 ### `getNodeProps`
 
-### `TAncestor`
+### `Ancestor`
 
 ### `getNode`
 
@@ -185,7 +185,7 @@ description: udecode/slate的 API 参考。
 
 ### `getNodeAncestor`
 
-### `TNodeEntry`
+### `NodeEntry`
 
 ### `TNode`
 
@@ -280,7 +280,7 @@ description: udecode/slate的 API 参考。
 <APIAttributes>
 <APIItem
   name="filter"
-  type="(entry: TNodeEntry) => boolean"
+  type="(entry: NodeEntry) => boolean"
   optional
 >
 
@@ -393,7 +393,7 @@ description: udecode/slate的 API 参考。
   <APIItem name="editor" type="Editor">
     要搜索块的编辑器。
   </APIItem>
-  <APIItem name="options" type="GetAboveNodeOptions">
+  <APIItem name="options" type="EditorAboveOptions">
     查找位置上方块的选项。
   </APIItem>
 </APIParameters>
@@ -411,7 +411,7 @@ description: udecode/slate的 API 参考。
   <APIItem name="editor" type="Editor">
     要搜索块级节点的编辑器。
   </APIItem>
-  <APIItem name="options" type="GetNodeEntriesOptions<V>" optional>
+  <APIItem name="options" type="EditorNodesOptions<V>" optional>
     获取节点entry的选项。
   </APIItem>
 </APIParameters>
@@ -425,7 +425,7 @@ description: udecode/slate的 API 参考。
 返回节点entry的子节点entry。
 
 <APIParameters>
-  <APIItem name="nodeEntry" type="TNodeEntry">
+  <APIItem name="nodeEntry" type="NodeEntry">
     要获取其子节点的节点entry。
   </APIItem>
 </APIParameters>
@@ -445,7 +445,7 @@ description: udecode/slate的 API 参考。
   <APIItem name="editor" type="Editor">
     要搜索边缘块的编辑器。
   </APIItem>
-  <APIItem name="options" type="GetAboveNodeOptions">
+  <APIItem name="options" type="EditorAboveOptions">
     查找位置上方边缘块的选项。
   </APIItem>
 </APIParameters>
@@ -508,7 +508,7 @@ description: udecode/slate的 API 参考。
 返回节点的最后一个子节点，如果没有子节点则返回 `null`。
 
 <APIParameters>
-  <APIItem name="nodeEntry" type="TNodeEntry">
+  <APIItem name="nodeEntry" type="NodeEntry">
     要获取其最后一个子节点的节点entry。
   </APIItem>
 </APIParameters>
@@ -590,7 +590,7 @@ description: udecode/slate的 API 参考。
   </APIItem>
 </APIParameters>
 <APIReturns>
-  返回编辑器的操作作为 `TOperation` 数组。
+  返回编辑器的操作作为 `Operation` 数组。
 </APIReturns>
 
 ### getPointBeforeLocation
@@ -765,7 +765,7 @@ description: udecode/slate的 API 参考。
   <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
-  <APIItem name="options" type="Omit<GetAboveNodeOptions, 'match'>" optional>
+  <APIItem name="options" type="Omit<EditorAboveOptions, 'match'>" optional>
     获取位置上方块的选项。
   </APIItem>
 </APIParameters>
@@ -815,7 +815,7 @@ description: udecode/slate的 API 参考。
   <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
-  <APIItem name="node" type="TAncestor">
+  <APIItem name="node" type="Ancestor">
     要检查的祖先节点。
   </APIItem>
 </APIParameters>
@@ -972,7 +972,7 @@ description: udecode/slate的 API 参考。
   <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
-  <APIItem name="options" type="GetAboveNodeOptions" optional>
+  <APIItem name="options" type="EditorAboveOptions" optional>
     选项对象。
   </APIItem>
 </APIParameters>
@@ -988,7 +988,7 @@ description: udecode/slate的 API 参考。
   <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
-  <APIItem name="options" type="GetAboveNodeOptions" optional>
+  <APIItem name="options" type="EditorAboveOptions" optional>
     选项对象。
   </APIItem>
 </APIParameters>
@@ -1094,7 +1094,7 @@ description: udecode/slate的 API 参考。
   <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
-  <APIItem name="blocks" type="TNodeEntry[]">
+  <APIItem name="blocks" type="NodeEntry[]">
     表示要复制的块的节点entry数组。
   </APIItem>
 </APIParameters>
@@ -1232,7 +1232,7 @@ description: udecode/slate的 API 参考。
   <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
-  <APIItem name="nodes" type="TNodeEntry[]">
+  <APIItem name="nodes" type="NodeEntry[]">
     要选择的节点entry数组。
   </APIItem>
 </APIParameters>
@@ -1245,7 +1245,7 @@ description: udecode/slate的 API 参考。
   <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
-  <APIItem name="props" type="Partial<TNodeProps<N>>">
+  <APIItem name="props" type="Partial<NodeProps<N>>">
     要在块上设置的属性。
   </APIItem>
   <APIItem name="options" type="Omit<SetNodesOptions<V>, 'at'>" optional>
@@ -1261,7 +1261,7 @@ description: udecode/slate的 API 参考。
   <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
-  <APIItem name="props" type="Partial<TNodeProps<N>>">
+  <APIItem name="props" type="Partial<NodeProps<N>>">
     要在文本节点上设置的属性。
   </APIItem>
   <APIItem name="options" type="Omit<SetNodesOptions<V>, 'at'>" optional>
@@ -1277,10 +1277,10 @@ description: udecode/slate的 API 参考。
   <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
-  <APIItem name="props" type="Partial<TNodeProps<N>>">
+  <APIItem name="props" type="Partial<NodeProps<N>>">
     要在匹配的块节点上设置的属性。
   </APIItem>
-  <APIItem name="options" type="GetNodeEntriesOptions<V>" optional>
+  <APIItem name="options" type="EditorNodesOptions<V>" optional>
     获取要更新的节点entry的选项。
   </APIItem>
 </APIParameters>
@@ -1362,7 +1362,7 @@ description: udecode/slate的 API 参考。
 - **默认值：** 空字符串。
 
 </APIItem>
-<APIItem name="remaining" type="TDescendant[]" optional>
+<APIItem name="remaining" type="Descendant[]" optional>
 剩余的节点。
 
 - **默认值：** 空数组。
@@ -1370,7 +1370,7 @@ description: udecode/slate的 API 参考。
 </APIItem>
 </APIParameters>
 <APIReturns>
-一个 `TDescendant` 节点数组，以新创建的节点开始。
+一个 `Descendant` 节点数组，以新创建的节点开始。
 </APIReturns>
 
 ### createNode

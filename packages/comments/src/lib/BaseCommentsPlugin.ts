@@ -3,9 +3,9 @@ import {
   type PluginConfig,
   type Value,
   type WithPartial,
+  NodeApi,
   bindFirst,
   createTSlatePlugin,
-  getNodeString,
   nanoid,
 } from '@udecode/plate-common';
 
@@ -96,7 +96,7 @@ export const BaseCommentsPlugin = createTSlatePlugin<BaseCommentsConfig>({
     newText: () => {
       const { newValue } = getOptions();
 
-      return getNodeString(newValue?.[0]);
+      return NodeApi.string(newValue?.[0]);
     },
     userById: (id) => {
       if (!id) return null;

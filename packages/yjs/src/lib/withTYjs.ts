@@ -1,4 +1,4 @@
-import type { SlateEditor, TOperation } from '@udecode/plate-common';
+import type { Operation, SlateEditor } from '@udecode/plate-common';
 import type * as Y from 'yjs';
 
 import { type YjsEditor, withYjs } from '@slate-yjs/core';
@@ -14,7 +14,7 @@ export type WithYjsOptions = {
 };
 
 export type YjsEditorProps = {
-  storeLocalChange: (op: TOperation) => void;
+  storeLocalChange: (op: Operation) => void;
 } & Pick<
   YjsEditor,
   | 'applyRemoteEvents'

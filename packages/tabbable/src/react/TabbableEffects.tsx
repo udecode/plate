@@ -1,7 +1,7 @@
 import React from 'react';
 
+import { PathApi } from '@udecode/plate-common';
 import { useEditorReadOnly, useEditorRef } from '@udecode/plate-common/react';
-import { Path } from 'slate';
 import { tabbable } from 'tabbable';
 
 import type { TabbableEntry } from '../lib/types';
@@ -81,7 +81,7 @@ export function TabbableEffects() {
       const tabbableEntries = [
         ...insertedTabbableEntries,
         ...defaultTabbableEntries,
-      ].sort((a, b) => Path.compare(a.path, b.path));
+      ].sort((a, b) => PathApi.compare(a.path, b.path));
 
       /**
        * TODO: Refactor everything ABOVE this line into a util function and test

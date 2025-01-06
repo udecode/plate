@@ -1,6 +1,9 @@
-import type { Path } from 'slate';
-
-import { type SlateEditor, getNode, moveChildren } from '@udecode/plate-common';
+import {
+  type Path,
+  type SlateEditor,
+  NodeApi,
+  moveChildren,
+} from '@udecode/plate-common';
 
 import type { TColumnElement, TColumnGroupElement } from '../types';
 
@@ -30,7 +33,7 @@ export const setColumns = (
       return;
     }
 
-    const columnGroup = getNode<TColumnGroupElement>(editor, at);
+    const columnGroup = NodeApi.get<TColumnGroupElement>(editor, at);
 
     if (!columnGroup) return;
 
@@ -74,7 +77,10 @@ export const setColumns = (
       // Need fewer columns than we have: merge extra columns into the last kept column
       const keepColumnIndex = targetCount - 1;
       const keepColumnPath = at.concat([keepColumnIndex]);
-      const keepColumnNode = getNode<TColumnElement>(editor, keepColumnPath);
+      const keepColumnNode = NodeApi.get<TColumnElement>(
+        editor,
+        keepColumnPath
+      );
 
       if (!keepColumnNode) return;
 

@@ -1,10 +1,13 @@
-import { Path, previous } from 'slate';
+import { previous } from 'slate';
 
-import type { DescendantOf } from '../../interfaces';
 import type { Editor, ValueOf } from '../../interfaces/editor/editor';
-import type { GetPreviousNodeOptions } from '../../interfaces/editor/editor-types';
-import type { TNodeEntry } from '../../interfaces/node/TNodeEntry';
+import type { NodeEntry } from '../../interfaces/node-entry';
 
+import {
+  type DescendantOf,
+  type EditorPreviousOptions,
+  PathApi,
+} from '../../interfaces';
 import { getQueryOptions } from '../../utils';
 
 export const getPreviousNode = <
@@ -12,9 +15,9 @@ export const getPreviousNode = <
   E extends Editor = Editor,
 >(
   editor: E,
-  options?: GetPreviousNodeOptions<ValueOf<E>>
-): TNodeEntry<N> | undefined => {
-  const getPrevious = (o: GetPreviousNodeOptions<ValueOf<E>>) => {
+  options?: EditorPreviousOptions<ValueOf<E>>
+): NodeEntry<N> | undefined => {
+  const getPrevious = (o: EditorPreviousOptions<ValueOf<E>>) => {
     try {
       return previous(editor as any, getQueryOptions(editor, o)) as any;
     } catch {}
@@ -26,10 +29,10 @@ export const getPreviousNode = <
     if (!path) return;
 
     try {
-      const previousPath = Path.previous(path);
+      const previousPath = PathApi.previous(path);
       const previousNode = editor.api.node(previousPath);
 
-      return previousNode as TNodeEntry<N>;
+      return previousNode as NodeEntry<N>;
     } catch {
       return;
     }

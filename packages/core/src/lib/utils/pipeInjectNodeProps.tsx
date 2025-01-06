@@ -1,5 +1,4 @@
-import type { TElement, TText } from '@udecode/slate';
-import type { Path } from 'slate';
+import type { Path, TElement, TText } from '@udecode/slate';
 
 import clsx from 'clsx';
 

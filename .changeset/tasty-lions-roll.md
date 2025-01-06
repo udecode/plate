@@ -2,4 +2,4 @@
 '@udecode/react-utils': patch
 ---
 
-- New hook `useMemoizedSelector`: re-render only when the selector result changes.
+- Added a new hook, `useMemoizedSelector`, which re-renders only when the selector’s result changes.

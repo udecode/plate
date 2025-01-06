@@ -1,4 +1,4 @@
-import type { Path } from 'slate';
+import type { Path } from '@udecode/plate-common';
 
 export interface Heading {
   id: string;

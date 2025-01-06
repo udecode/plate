@@ -1,9 +1,10 @@
 import {
+  type ElementEntry,
+  type Path,
   type SlateEditor,
-  type TElementEntry,
+  PathApi,
   match,
 } from '@udecode/plate-common';
-import { Path } from 'slate';
 
 import { getListTypes } from '../queries/index';
 
@@ -12,7 +13,7 @@ import { getListTypes } from '../queries/index';
 // In other words, a nested list as a direct children of a list should be moved into a previous list item sibling
 export const normalizeNestedList = (
   editor: SlateEditor,
-  { nestedListItem }: { nestedListItem: TElementEntry }
+  { nestedListItem }: { nestedListItem: ElementEntry }
 ) => {
   const [, path] = nestedListItem;
 
@@ -27,7 +28,7 @@ export const normalizeNestedList = (
   let previousListItemPath: Path;
 
   try {
-    previousListItemPath = Path.previous(path);
+    previousListItemPath = PathApi.previous(path);
   } catch (error) {
     return false;
   }

@@ -1,7 +1,7 @@
 import { end } from 'slate';
 
 import type { Editor } from '../../interfaces/editor/editor';
-import type { GetEndPointOptions } from '../../interfaces/editor/editor-types';
+import type { EditorEndOptions } from '../../interfaces/index';
 import type { At } from '../../types/At';
 
 import { getAt } from '../../utils/getAt';
@@ -9,7 +9,7 @@ import { getAt } from '../../utils/getAt';
 export const getEndPoint = (
   editor: Editor,
   at: At,
-  options: GetEndPointOptions = {}
+  options: EditorEndOptions = {}
 ) => {
   try {
     if (options.previous) {

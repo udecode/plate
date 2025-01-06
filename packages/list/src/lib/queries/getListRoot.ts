@@ -1,9 +1,11 @@
 import type {
+  ElementEntry,
+  Path,
+  Point,
   SlateEditor,
   TElement,
-  TElementEntry,
+  TRange,
 } from '@udecode/plate-common';
-import type { Path, Point, Range } from 'slate';
 
 import {
   BaseBulletedListPlugin,
@@ -13,8 +15,8 @@ import {
 /** Searches upward for the root list element */
 export const getListRoot = (
   editor: SlateEditor,
-  at: Path | Point | Range | null = editor.selection
-): TElementEntry | undefined => {
+  at: Path | Point | TRange | null = editor.selection
+): ElementEntry | undefined => {
   if (!at) return;
 
   const parentList = editor.api.above<TElement>({

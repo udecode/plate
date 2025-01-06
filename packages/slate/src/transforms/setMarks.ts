@@ -1,6 +1,6 @@
 import castArray from 'lodash/castArray.js';
 
-import type { MarksOf, Editor } from '../interfaces';
+import type { Editor, MarksOf } from '../interfaces';
 
 import { removeMark } from './removeMark';
 

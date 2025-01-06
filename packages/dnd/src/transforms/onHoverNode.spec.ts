@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 import type { DropTargetMonitor } from 'react-dnd';
 
-import { isExpanded } from '@udecode/plate-common';
+import { RangeApi } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 
 import type { DragItemNode } from '../types';
@@ -11,7 +11,10 @@ import { onHoverNode } from './onHoverNode';
 
 jest.mock('@udecode/plate-common', () => ({
   ...jest.requireActual('@udecode/plate-common'),
-  isExpanded: jest.fn(),
+  RangeApi: {
+    ...jest.requireActual('@udecode/plate-common').RangeApi,
+    isExpanded: jest.fn(),
+  },
 }));
 
 jest.mock('../utils', () => ({
@@ -54,7 +57,7 @@ describe('onHoverNode', () => {
       to: [1],
     });
 
-    (isExpanded as jest.Mock).mockReturnValue(false);
+    (RangeApi.isExpanded as jest.Mock).mockReturnValue(false);
 
     onHoverNode(editor, {
       id: 'hover',
@@ -77,7 +80,7 @@ describe('onHoverNode', () => {
       to: [1],
     });
 
-    (isExpanded as jest.Mock).mockReturnValue(true);
+    (RangeApi.isExpanded as jest.Mock).mockReturnValue(true);
 
     editor.selection = {
       anchor: { offset: 0, path: [0] },
@@ -103,7 +106,7 @@ describe('onHoverNode', () => {
       to: [1],
     });
 
-    (isExpanded as jest.Mock).mockReturnValue(false);
+    (RangeApi.isExpanded as jest.Mock).mockReturnValue(false);
 
     onHoverNode(editor, {
       id: 'hover',

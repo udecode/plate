@@ -1,6 +1,6 @@
-import type { Editor, TNodeEntry } from '../interfaces';
+import type { Editor, NodeEntry } from '../interfaces';
 
-export const selectNodes = (editor: Editor, nodes: TNodeEntry[]) => {
+export const selectNodes = (editor: Editor, nodes: NodeEntry[]) => {
   const range = editor.api.nodesRange(nodes);
 
   if (!range) return;

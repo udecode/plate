@@ -1,7 +1,7 @@
 import type {
   InsertNodesOptions,
+  NodeProps,
   SlateEditor,
-  TNodeProps,
 } from '@udecode/plate-common';
 
 import {
@@ -11,7 +11,7 @@ import {
 
 export const insertExcalidraw = (
   editor: SlateEditor,
-  props: TNodeProps<TExcalidrawElement> = {},
+  props: NodeProps<TExcalidrawElement> = {},
   options: InsertNodesOptions = {}
 ): void => {
   if (!editor.selection) return;

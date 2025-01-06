@@ -1,11 +1,4 @@
-import type Slate from 'slate';
-
-import {
-  type ExtendEditor,
-  getNode,
-  getNodeString,
-  queryNode,
-} from '@udecode/plate-common';
+import { type ExtendEditor, NodeApi, queryNode } from '@udecode/plate-common';
 
 import type { SelectOnBackspaceConfig } from './SelectOnBackspacePlugin';
 
@@ -32,13 +25,13 @@ export const withSelectOnBackspace: ExtendEditor<SelectOnBackspaceConfig> = ({
         });
 
         if (!!prevCell && pointBefore) {
-          const point = editor.api.point(selection as Slate.Location)!;
-          const selectedNode = getNode(editor, point.path);
+          const point = editor.api.point(selection!)!;
+          const selectedNode = NodeApi.get(editor, point.path);
 
           if (
             removeNodeIfEmpty &&
             selectedNode &&
-            !getNodeString(selectedNode as any)
+            !NodeApi.string(selectedNode as any)
           ) {
             // remove node if empty
             editor.tf.removeNodes();

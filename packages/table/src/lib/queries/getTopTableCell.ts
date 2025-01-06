@@ -1,6 +1,4 @@
-import type { SlateEditor } from '@udecode/plate-common';
-
-import { Path } from 'slate';
+import { type Path, type SlateEditor, PathApi } from '@udecode/plate-common';
 
 import type { TTableCellElement } from '../types';
 
@@ -30,7 +28,7 @@ export const getTopTableCell = (
   if (rowIndex === 0) return;
 
   const cellAbovePath = [
-    ...Path.parent(Path.parent(cellPath)),
+    ...PathApi.parent(PathApi.parent(cellPath)),
     rowIndex - 1,
     cellIndex,
   ];

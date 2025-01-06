@@ -2,10 +2,10 @@ import {
   type SlateEditor,
   type TElement,
   BaseParagraphPlugin,
-  getCommonNode,
-  isElement,
+  ElementApi,
+  NodeApi,
+  RangeApi,
 } from '@udecode/plate-common';
-import { Range } from 'slate';
 
 import {
   BaseBulletedListPlugin,
@@ -40,7 +40,8 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
             {
               at: editor.selection,
               match: (n) =>
-                isElement(n) && getListTypes(editor).includes(n.type),
+                ElementApi.isElement(n) &&
+                getListTypes(editor).includes(n.type),
               mode: 'lowest',
             }
           );
@@ -78,12 +79,12 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
     } else {
       // selection is a range
 
-      const [startPoint, endPoint] = Range.edges(editor.selection!);
-      const commonEntry = getCommonNode<TElement>(
+      const [startPoint, endPoint] = RangeApi.edges(editor.selection!);
+      const commonEntry = NodeApi.common<TElement>(
         editor,
         startPoint.path,
         endPoint.path
-      );
+      )!;
 
       if (
         getListTypes(editor).includes(commonEntry[0].type) ||
@@ -93,12 +94,12 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
           unwrapList(editor);
         } else {
           const startList = editor.api.find({
-            at: Range.start(editor.selection),
+            at: RangeApi.start(editor.selection),
             match: { type: getListTypes(editor) },
             mode: 'lowest',
           });
           const endList = editor.api.find({
-            at: Range.end(editor.selection),
+            at: RangeApi.end(editor.selection),
             match: { type: getListTypes(editor) },
             mode: 'lowest',
           });
@@ -111,7 +112,7 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
             {
               at: editor.selection,
               match: (n, path) =>
-                isElement(n) &&
+                ElementApi.isElement(n) &&
                 getListTypes(editor).includes(n.type) &&
                 path.length >= rangeLength,
               mode: 'all',
@@ -134,7 +135,8 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
               {
                 at: n[1],
                 match: (_n) =>
-                  isElement(_n) && getListTypes(editor).includes(_n.type),
+                  ElementApi.isElement(_n) &&
+                  getListTypes(editor).includes(_n.type),
                 mode: 'all',
               }
             );

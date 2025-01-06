@@ -1,10 +1,12 @@
 import {
+  type Point,
   type SlateEditor,
   type TElement,
+  type TRange,
+  PointApi,
   nanoid,
   unhangCharacterRange,
 } from '@udecode/plate-common';
-import { type Range, Point } from 'slate';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { findSuggestionId } from '../queries/findSuggestionId';
@@ -18,7 +20,7 @@ import { setSuggestionNodes } from './setSuggestionNodes';
  */
 export const deleteSuggestion = (
   editor: SlateEditor,
-  at: Range,
+  at: TRange,
   {
     reverse,
   }: {
@@ -107,7 +109,7 @@ export const deleteSuggestion = (
         continue;
       }
       // move selection if still the same
-      if (Point.equals(pointCurrent, editor.selection!.anchor)) {
+      if (PointApi.equals(pointCurrent, editor.selection!.anchor)) {
         editor.tf.move({
           reverse,
           unit: 'character',

@@ -202,7 +202,7 @@ the current selection.
 </APIParameters>
 
 <APIReturns>
-  <APIItem type="TElementEntry | undefined">
+  <APIItem type="ElementEntry | undefined">
     The nearest `li` and `ul`/`ol` wrapping node entries.
   </APIItem>
 </APIReturns>
@@ -225,7 +225,7 @@ Searches upward for the root list element.
 </APIParameters>
 
 <APIReturns>
-  <APIItem type="TElementEntry | undefined">
+  <APIItem type="ElementEntry | undefined">
     The root list element entry.
   </APIItem>
 </APIReturns>
@@ -252,7 +252,7 @@ Checks if a node has a list child.
   <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
-  <APIItem name="node" type="TAncestor">
+  <APIItem name="node" type="Ancestor">
     The node to check.
   </APIItem>
 </APIParameters>
@@ -400,10 +400,10 @@ Moves a list item down to the next list item.
   </APIItem>
   <APIItem name="options" type="MoveListItemDownOptions" optional>
     <APISubList>
-      <APISubListItem parent="options" name="list" type="TElementEntry">
+      <APISubListItem parent="options" name="list" type="ElementEntry">
         The entry of the list node.
       </APISubListItem>
-      <APISubListItem parent="options" name="listItem" type="TElementEntry">
+      <APISubListItem parent="options" name="listItem" type="ElementEntry">
         The entry of the list item node to move.
       </APISubListItem>
     </APISubList>
@@ -430,10 +430,10 @@ The editor instance.
   optional
 >
 <APISubList>
-<APISubListItem parent="options" name="fromListItem" type="TElementEntry">
+<APISubListItem parent="options" name="fromListItem" type="ElementEntry">
 The entry of the list item containing the sublist items to move.
 </APISubListItem>
-<APISubListItem parent="options" name="toListItem" type="TElementEntry">
+<APISubListItem parent="options" name="toListItem" type="ElementEntry">
 The entry of the list item where the sublist items will be moved.
 </APISubListItem>
 <APISubListItem parent="options" name="start" type="boolean" optional>
@@ -461,10 +461,10 @@ Moves a list item up.
   </APIItem>
   <APIItem name="options" type="MoveListItemUpOptions" optional>
     <APISubList>
-      <APISubListItem parent="options" name="list" type="TElementEntry">
+      <APISubListItem parent="options" name="list" type="ElementEntry">
         The entry of the list containing the list item to move.
       </APISubListItem>
-      <APISubListItem parent="options" name="listItem" type="TElementEntry">
+      <APISubListItem parent="options" name="listItem" type="ElementEntry">
         The entry of the list item to move.
       </APISubListItem>
     </APISubList>
@@ -541,7 +541,7 @@ The editor instance.
 <APISubListItem
   parent="options"
   name="fromList"
-  type="TElementEntry"
+  type="ElementEntry"
   optional
 >
 The list whose list items will be moved.
@@ -549,7 +549,7 @@ The list whose list items will be moved.
 <APISubListItem
   parent="options"
   name="fromListItem"
-  type="TElementEntry"
+  type="ElementEntry"
   optional
 >
 The list item whose sublist items will be moved.
@@ -569,7 +569,7 @@ it overrides the `toList` and `toListIndex` options.
 <APISubListItem
   parent="options"
   name="toList"
-  type="TElementEntry"
+  type="ElementEntry"
   optional
 >
 The list where the list items will be moved to.
@@ -648,10 +648,10 @@ Removes the first list item if the list is not nested and the list item is not t
   </APIItem>
   <APIItem name="options" type="Object">
     <APISubList>
-      <APISubListItem parent="options" name="list" type="TElementEntry">
+      <APISubListItem parent="options" name="list" type="ElementEntry">
         The list entry containing the list item.
       </APISubListItem>
-      <APISubListItem parent="options" name="listItem" type="TElementEntry">
+      <APISubListItem parent="options" name="listItem" type="ElementEntry">
         The list item entry to be removed.
       </APISubListItem>
     </APISubList>
@@ -674,10 +674,10 @@ The editor instance.
 </APIItem>
 <APIItem name="options" type="RemoveListItemOptions" optional>
 <APISubList>
-<APISubListItem parent="options" name="list" type="TElementEntry">
+<APISubListItem parent="options" name="list" type="ElementEntry">
 The list entry containing the list item.
 </APISubListItem>
-<APISubListItem parent="options" name="listItem" type="TElementEntry">
+<APISubListItem parent="options" name="listItem" type="ElementEntry">
 The list item entry to be removed.
 </APISubListItem>
 <APISubListItem parent="options" name="reverse" type="boolean" optional>

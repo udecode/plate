@@ -5,7 +5,7 @@ import clsx from 'clsx';
 import omit from 'lodash/omit.js';
 import { useDeepCompareMemo } from 'use-deep-compare';
 
-import type { TEditableProps } from '../../lib';
+import type { EditableProps } from '../../lib';
 import type { PlateProps } from '../components';
 
 import { pipeDecorate } from '../../lib/static/utils/pipeDecorate';
@@ -19,8 +19,8 @@ export const useEditableProps = ({
   disabled,
   readOnly: readOnlyProp,
   ...editableProps
-}: Omit<TEditableProps, 'decorate'> &
-  Pick<PlateProps, 'decorate'> = {}): TEditableProps => {
+}: Omit<EditableProps, 'decorate'> &
+  Pick<PlateProps, 'decorate'> = {}): EditableProps => {
   const { id } = editableProps;
 
   const editor = useEditorRef(id);
@@ -55,8 +55,8 @@ export const useEditableProps = ({
     return pipeRenderLeaf(editor, storeRenderLeaf ?? editableProps?.renderLeaf);
   }, [editableProps?.renderLeaf, editor, storeRenderLeaf]);
 
-  const props: TEditableProps = useDeepCompareMemo(() => {
-    const _props: TEditableProps = {
+  const props: EditableProps = useDeepCompareMemo(() => {
+    const _props: EditableProps = {
       decorate,
       renderElement,
       renderLeaf,

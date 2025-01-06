@@ -1,6 +1,6 @@
 import React, { useId } from 'react';
 
-import type { TEditableProps } from '../../lib/types/TEditableProps';
+import type { EditableProps } from '../../lib/types/EditableProps';
 import type { PlateEditor } from '../editor/PlateEditor';
 
 import { usePlateInstancesWarn } from '../../internal/usePlateInstancesWarn';
@@ -22,9 +22,9 @@ export interface PlateProps<E extends PlateEditor = PlateEditor>
 
   editor: E | null;
 
-  renderElement?: TEditableProps['renderElement'];
+  renderElement?: EditableProps['renderElement'];
 
-  renderLeaf?: TEditableProps['renderLeaf'];
+  renderLeaf?: EditableProps['renderLeaf'];
 
   suppressInstanceWarning?: boolean;
 }

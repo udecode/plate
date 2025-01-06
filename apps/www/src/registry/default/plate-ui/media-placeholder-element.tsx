@@ -6,7 +6,6 @@ import type { ReactNode } from 'react';
 import type { TPlaceholderElement } from '@udecode/plate-media';
 
 import { cn } from '@udecode/cn';
-import { withoutSavingHistory } from '@udecode/plate-common';
 import { useEditorPlugin, withHOC, withRef } from '@udecode/plate-common/react';
 import {
   AudioPlugin,
@@ -101,7 +100,7 @@ export const MediaPlaceholderElement = withHOC(
 
         const path = editor.api.findPath(element);
 
-        withoutSavingHistory(editor, () => {
+        editor.tf.withoutSaving(() => {
           editor.tf.removeNodes({ at: path });
 
           const node = {

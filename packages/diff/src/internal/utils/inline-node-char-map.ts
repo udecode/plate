@@ -1,13 +1,13 @@
 import {
-  type TDescendant,
+  type Descendant,
   type TText,
+  NodeApi,
   TextApi,
-  getNodeProps,
 } from '@udecode/plate-common';
 
 export class InlineNodeCharMap {
   private _charGenerator: Generator<string>;
-  private _charToNode = new Map<string, TDescendant>();
+  private _charToNode = new Map<string, Descendant>();
 
   constructor({ charGenerator }: { charGenerator: Generator<string> }) {
     this._charGenerator = charGenerator;
@@ -22,10 +22,10 @@ export class InlineNodeCharMap {
   }
 
   private replaceCharWithNode(
-    haystack: TDescendant[],
+    haystack: Descendant[],
     needle: string,
-    replacementNode: TDescendant
-  ): TDescendant[] {
+    replacementNode: Descendant
+  ): Descendant[] {
     return haystack.flatMap((haystackNode) => {
       if (!TextApi.isText(haystackNode)) return [haystackNode];
 
@@ -38,7 +38,7 @@ export class InlineNodeCharMap {
       // Add props from the text node to the original node
       const replacementWithProps = {
         ...replacementNode,
-        ...getNodeProps(haystackNode),
+        ...NodeApi.extractProps(haystackNode),
       };
 
       const nodesForTexts = splitText.map((text) => ({
@@ -62,7 +62,7 @@ export class InlineNodeCharMap {
   }
 
   // Replace non-text nodes with a text node containing a unique char
-  public nodeToText(node: TDescendant): TText {
+  public nodeToText(node: Descendant): TText {
     if (TextApi.isText(node)) return node;
 
     const c = this._charGenerator.next().value;
@@ -72,8 +72,8 @@ export class InlineNodeCharMap {
   }
 
   // Replace chars in text node with original nodes
-  public textToNode(initialTextNode: TText): TDescendant[] {
-    let outputNodes: TDescendant[] = [initialTextNode];
+  public textToNode(initialTextNode: TText): Descendant[] {
+    let outputNodes: Descendant[] = [initialTextNode];
 
     for (const [c, originalNode] of this._charToNode) {
       outputNodes = this.replaceCharWithNode(outputNodes, c, originalNode);

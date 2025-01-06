@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@udecode/plate-test-utils';
-import { Path } from 'slate';
 
 import { createEditor } from '../createEditor';
+import { PathApi } from '../interfaces/index';
 import { moveChildren } from './moveChildren';
 
 jsxt;
@@ -60,7 +60,7 @@ it('should be', () => {
   const moved =
     atPath &&
     toPath &&
-    moveChildren(input, { at: atPath, to: Path.next(toPath) });
+    moveChildren(input, { at: atPath, to: PathApi.next(toPath) });
 
   expect(input.children).toEqual(output.children);
   expect(moved).toBe(2);

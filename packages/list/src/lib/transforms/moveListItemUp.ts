@@ -1,12 +1,12 @@
 import {
+  type ElementEntry,
   type SlateEditor,
   type TElement,
-  type TElementEntry,
-  getNode,
+  NodeApi,
+  PathApi,
   insertElements,
   isLastChild,
 } from '@udecode/plate-common';
-import { Path } from 'slate';
 
 import { BaseListItemPlugin } from '../BaseListPlugin';
 import { hasListChild } from '../queries/hasListChild';
@@ -14,8 +14,8 @@ import { moveListItemsToList } from './moveListItemsToList';
 import { unwrapList } from './unwrapList';
 
 export interface MoveListItemUpOptions {
-  list: TElementEntry;
-  listItem: TElementEntry;
+  list: ElementEntry;
+  listItem: ElementEntry;
 }
 
 /** Move a list item up. */
@@ -36,7 +36,7 @@ export const moveListItemUp = (
       let toListPath;
 
       try {
-        toListPath = Path.next(listPath);
+        toListPath = PathApi.next(listPath);
       } catch (error) {
         return;
       }
@@ -56,7 +56,7 @@ export const moveListItemUp = (
         );
       }
       if (condA) {
-        const toListNode = getNode<TElement>(editor, toListPath);
+        const toListNode = NodeApi.get<TElement>(editor, toListPath);
 
         if (!toListNode) return;
 
@@ -68,7 +68,7 @@ export const moveListItemUp = (
       }
       // If there is siblings li, move them to the new list
       if (condB) {
-        const toListNode = getNode<TElement>(editor, toListPath);
+        const toListNode = NodeApi.get<TElement>(editor, toListPath);
 
         if (!toListNode) return;
 
@@ -105,7 +105,7 @@ export const moveListItemUp = (
         );
       }
 
-      const toListNode = getNode<TElement>(editor, toListPath);
+      const toListNode = NodeApi.get<TElement>(editor, toListPath);
 
       if (!toListNode) return;
 
@@ -118,7 +118,7 @@ export const moveListItemUp = (
       });
     }
 
-    const movedUpLiPath = Path.next(liParentPath);
+    const movedUpLiPath = PathApi.next(liParentPath);
 
     // Move li one level up: next to the li parent.
     editor.tf.moveNodes({

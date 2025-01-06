@@ -8,9 +8,10 @@ import {
   type OmitFirst,
   type PluginConfig,
   type TElement,
+  type TRange,
+  NodeApi,
+  RangeApi,
   bindFirst,
-  getNodeString,
-  isExpanded,
 } from '@udecode/plate-common';
 import {
   type PlateEditor,
@@ -18,7 +19,6 @@ import {
   createTPlatePlugin,
 } from '@udecode/plate-common/react';
 import { serializeMdNodes } from '@udecode/plate-markdown';
-import { Range } from 'slate';
 
 import type { CompleteOptions } from './utils/callCompletionApi';
 
@@ -126,7 +126,7 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
 
       if (!blockAbove) return false;
 
-      const blockString = getNodeString(blockAbove[0]);
+      const blockString = NodeApi.string(blockAbove[0]);
 
       return blockString.at(-1) === ' ';
     },
@@ -148,7 +148,7 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
     suggestionNodeId: null,
     suggestionText: null,
     triggerQuery: ({ editor }) => {
-      if (isExpanded(editor.selection)) return false;
+      if (editor.api.isExpanded()) return false;
 
       const isEnd = editor.api.isAt({ end: true });
 
@@ -215,7 +215,7 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
   })
   .extendEditorTransforms(
     ({ api, editor, getOptions, tf: { setSelection } }) => {
-      let prevSelection: Range | null = null;
+      let prevSelection: TRange | null = null;
 
       return {
         setSelection(props) {
@@ -224,7 +224,7 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
           if (
             editor.selection &&
             (!prevSelection ||
-              !Range.equals(prevSelection, editor.selection)) &&
+              !RangeApi.equals(prevSelection, editor.selection)) &&
             getOptions().autoTriggerQuery!({ editor }) &&
             editor.api.isFocused()
           ) {

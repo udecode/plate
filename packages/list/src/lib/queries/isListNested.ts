@@ -1,5 +1,4 @@
-import type { SlateEditor, TElement } from '@udecode/plate-common';
-import type { Path } from 'slate';
+import type { Path, SlateEditor, TElement } from '@udecode/plate-common';
 
 import { BaseListItemPlugin } from '../BaseListPlugin';
 

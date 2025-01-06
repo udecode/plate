@@ -1,7 +1,6 @@
 import { moveNodes as moveNodesBase } from 'slate';
 
-import type { Editor, ValueOf } from '../../interfaces';
-import type { MoveNodesOptions } from '../../interfaces/editor/editor-types';
+import type { Editor, MoveNodesOptions, ValueOf } from '../../interfaces';
 
 import { getQueryOptions } from '../../utils';
 

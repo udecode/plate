@@ -1,9 +1,13 @@
 'use client';
 
 import { cn, withRef } from '@udecode/cn';
-import { PlateElement } from '@udecode/plate-common/react';
+import {
+  PlateElement,
+  useFocused,
+  useReadOnly,
+  useSelected,
+} from '@udecode/plate-common/react';
 import Link from 'next/link';
-import { useFocused, useReadOnly, useSelected } from 'slate-react';
 
 export const TagElement = withRef<typeof PlateElement>(
   ({ children, className, ...props }, ref) => {

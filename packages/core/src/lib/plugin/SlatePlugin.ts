@@ -1,14 +1,14 @@
 import type {
-  TDescendant,
+  DecoratedRange,
+  Descendant,
   EditorApi,
   EditorTransforms,
+  NodeEntry,
   TElement,
-  TNodeEntry,
   TText,
   Value,
 } from '@udecode/slate';
 import type { AnyObject, Deep2Partial } from '@udecode/utils';
-import type { DecoratedRange } from 'slate';
 
 import type { SlateEditor } from '../editor';
 import type { SlateRenderElementProps, SlateRenderLeafProps } from '../static';
@@ -369,13 +369,13 @@ export type SlatePluginContext<C extends AnyPluginConfig = PluginConfig> =
 export type Parser<C extends AnyPluginConfig = PluginConfig> = {
   deserialize?: (
     options: ParserOptions & SlatePluginContext<C>
-  ) => TDescendant[] | undefined;
+  ) => Descendant[] | undefined;
   preInsert?: (
-    options: ParserOptions & SlatePluginContext<C> & { fragment: TDescendant[] }
+    options: ParserOptions & SlatePluginContext<C> & { fragment: Descendant[] }
   ) => HandlerReturnType;
   transformFragment?: (
-    options: ParserOptions & SlatePluginContext<C> & { fragment: TDescendant[] }
-  ) => TDescendant[];
+    options: ParserOptions & SlatePluginContext<C> & { fragment: Descendant[] }
+  ) => Descendant[];
   format?: string[] | string;
   mimeTypes?: string[];
   query?: (options: ParserOptions & SlatePluginContext<C>) => boolean;
@@ -396,7 +396,7 @@ export type Deserializer<C extends AnyPluginConfig = PluginConfig> =
   BaseDeserializer & {
     parse?: (
       options: AnyObject & SlatePluginContext<C> & { element: any }
-    ) => Partial<TDescendant> | undefined | void;
+    ) => Partial<Descendant> | undefined | void;
 
     query?: (
       options: AnyObject & SlatePluginContext<C> & { element: any }
@@ -406,10 +406,10 @@ export type Deserializer<C extends AnyPluginConfig = PluginConfig> =
 export type Serializer<C extends AnyPluginConfig = PluginConfig> =
   BaseSerializer & {
     parse?: (
-      options: AnyObject & SlatePluginContext<C> & { node: TDescendant }
+      options: AnyObject & SlatePluginContext<C> & { node: Descendant }
     ) => any;
     query?: (
-      options: AnyObject & SlatePluginContext<C> & { node: TDescendant }
+      options: AnyObject & SlatePluginContext<C> & { node: Descendant }
     ) => boolean;
   };
 
@@ -420,7 +420,7 @@ export type HtmlDeserializer<C extends AnyPluginConfig = PluginConfig> =
         element: HTMLElement;
         node: AnyObject;
       }
-    ) => Partial<TDescendant> | undefined | void;
+    ) => Partial<Descendant> | undefined | void;
     query?: (
       options: SlatePluginContext<C> & { element: HTMLElement }
     ) => boolean;
@@ -428,8 +428,8 @@ export type HtmlDeserializer<C extends AnyPluginConfig = PluginConfig> =
 
 export type HtmlSerializer<C extends AnyPluginConfig = PluginConfig> =
   BaseSerializer & {
-    parse?: (options: SlatePluginContext<C> & { node: TDescendant }) => string;
-    query?: (options: SlatePluginContext<C> & { node: TDescendant }) => boolean;
+    parse?: (options: SlatePluginContext<C> & { node: Descendant }) => string;
+    query?: (options: SlatePluginContext<C> & { node: Descendant }) => boolean;
   };
 
 // -----------------------------------------------------------------------------
@@ -440,7 +440,7 @@ export type HtmlSerializer<C extends AnyPluginConfig = PluginConfig> =
  * returned ranges are merged with the ranges called by other plugins.
  */
 export type Decorate<C extends AnyPluginConfig = PluginConfig> = (
-  ctx: SlatePluginContext<C> & { entry: TNodeEntry }
+  ctx: SlatePluginContext<C> & { entry: NodeEntry }
 ) => DecoratedRange[] | undefined;
 
 export type NormalizeInitialValue<C extends AnyPluginConfig = PluginConfig> = (

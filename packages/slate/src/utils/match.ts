@@ -1,12 +1,12 @@
 import type { Editor } from '../interfaces/editor/editor';
-import type { NodeOf, TNode } from '../interfaces/node/TNode';
-import type { TPath } from '../types/interfaces';
+import type { Path } from '../interfaces/index';
+import type { NodeOf, TNode } from '../interfaces/node';
 
 import { getAt } from './getAt';
 
 export type PredicateObj = Record<string, any[] | any>;
 
-export type PredicateFn<T extends TNode> = (obj: T, path: TPath) => boolean;
+export type PredicateFn<T extends TNode> = (obj: T, path: Path) => boolean;
 
 export type Predicate<T extends TNode> = PredicateFn<T> | PredicateObj;
 
@@ -22,7 +22,7 @@ function castArray<T>(value: T | T[]): T[] {
  */
 export const match = <T extends TNode>(
   obj: T,
-  path: TPath,
+  path: Path,
   predicate?: Predicate<T>
 ): boolean => {
   if (!predicate) return true;
@@ -55,7 +55,7 @@ export const getQueryOptions = <E extends Editor>(
     at: getAt(editor, at),
     match:
       _match || block || id
-        ? (n: NodeOf<E>, path: TPath) =>
+        ? (n: NodeOf<E>, path: Path) =>
             match(n, path, _match) &&
             (!block || editor.api.isBlock(n)) &&
             (!id || (id === true && !!n.id) || n.id === id)

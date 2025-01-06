@@ -4,6 +4,7 @@ import {
   useComposedRef,
   useEditorPlugin,
   useEditorReadOnly,
+  useFocused,
   useHotkeys,
   useOnClickOutside,
 } from '@udecode/plate-common/react';
@@ -11,7 +12,6 @@ import {
   type UseVirtualFloatingOptions,
   getDOMSelectionBoundingClientRect,
 } from '@udecode/plate-floating';
-import { useFocused } from 'slate-react';
 
 import { LinkPlugin } from '../../LinkPlugin';
 import { triggerFloatingLinkInsert } from '../../utils/triggerFloatingLinkInsert';

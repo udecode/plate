@@ -1,5 +1,4 @@
-import type { TElement, TElementEntry } from '@udecode/slate';
-import type { Path } from 'slate';
+import type { ElementEntry, Path, TElement } from '@udecode/slate';
 
 import type { Nullable } from '../../../lib';
 
@@ -9,7 +8,7 @@ export const SCOPE_ELEMENT = 'element';
 
 export type ElementStoreState = {
   element: TElement;
-  entry: TElementEntry;
+  entry: ElementEntry;
   path: Path;
 };
 

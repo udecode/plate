@@ -1,16 +1,17 @@
 import {
+  type ElementEntry,
+  type Path,
   type SlateEditor,
   type TElement,
-  type TElementEntry,
+  PathApi,
   match,
 } from '@udecode/plate-common';
-import { Path } from 'slate';
 
 import { getListTypes } from '../queries/index';
 
 export interface MoveListItemDownOptions {
-  list: TElementEntry;
-  listItem: TElementEntry;
+  list: ElementEntry;
+  listItem: ElementEntry;
 }
 
 export const moveListItemDown = (
@@ -25,7 +26,7 @@ export const moveListItemDown = (
   let previousListItemPath: Path;
 
   try {
-    previousListItemPath = Path.previous(listItemPath);
+    previousListItemPath = PathApi.previous(listItemPath);
   } catch (error) {
     return;
   }

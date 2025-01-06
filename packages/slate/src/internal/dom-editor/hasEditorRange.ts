@@ -1,13 +1,12 @@
-import type { Range } from 'slate';
-
 import { DOMEditor } from 'slate-dom';
 
+import type { TRange } from '../../interfaces';
 import type { Editor } from '../../interfaces/editor';
 
-export const hasEditorRange = (editor: Editor, range: Range): boolean => {
+export const hasEditorRange = (editor: Editor, range: TRange): boolean => {
   try {
     return DOMEditor.hasRange(editor as any, range);
-  } catch (error) {}
+  } catch {}
 
   return false;
 };

@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import type { TDescendant } from '@udecode/plate-common';
+import type { Descendant } from '@udecode/plate-common';
 
 import { BaseParagraphPlugin, createEditor } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
@@ -48,7 +48,7 @@ describe('pasting a code block', () => {
             </hcodeline>
           </hcodeblock>
         </fragment>
-      ) as any as TDescendant[];
+      ) as any as Descendant[];
 
       const expected = (
         <editor>
@@ -94,7 +94,7 @@ describe('pasting a code block', () => {
             <hcodeline>!</hcodeline>
           </hcodeblock>
         </fragment>
-      ) as any as TDescendant[];
+      ) as any as Descendant[];
 
       const expected = (
         <editor>
@@ -136,7 +136,7 @@ describe('pasting non-code block elements', () => {
         <hp>world</hp>
         <hp>!</hp>
       </fragment>
-    ) as any as TDescendant[];
+    ) as any as Descendant[];
 
     const expected = (
       <editor>

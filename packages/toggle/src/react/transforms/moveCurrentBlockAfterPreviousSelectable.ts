@@ -1,4 +1,4 @@
-import { type SlateEditor, isElement } from '@udecode/plate-common';
+import { type SlateEditor, ElementApi } from '@udecode/plate-common';
 
 import { isInClosedToggle } from '../queries';
 
@@ -26,7 +26,8 @@ export const moveCurrentBlockAfterPreviousSelectable = (
 
   const previousSelectableBlock = editor.api.previous({
     match: (node) =>
-      isElement(node) && !isInClosedToggle(editor, node.id as string),
+      ElementApi.isElement(node) &&
+      !isInClosedToggle(editor, node.id as string),
   });
 
   if (!previousSelectableBlock) return false;

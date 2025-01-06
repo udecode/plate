@@ -1,8 +1,4 @@
-import {
-  type ExtendEditor,
-  getNodeString,
-  isDefined,
-} from '@udecode/plate-common';
+import { type ExtendEditor, NodeApi, isDefined } from '@udecode/plate-common';
 
 import {
   type BaseIndentListConfig,
@@ -22,7 +18,7 @@ export const withDeleteBackwardIndentList: ExtendEditor<
 
     const listNode = nodeEntry[0];
 
-    if (editor.api.isCollapsed() && getNodeString(listNode))
+    if (editor.api.isCollapsed() && NodeApi.string(listNode))
       return deleteBackward(unit);
     if (isDefined(listNode[BaseIndentListPlugin.key])) {
       return outdentList(editor);

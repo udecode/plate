@@ -1,17 +1,17 @@
 import {
   type ChildOf,
-  type ElementOrTextOf,
   type Editor,
+  type ElementOrTextOf,
+  type NodeEntry,
   type TNode,
-  type TNodeEntry,
-  isAncestor,
+  NodeApi,
 } from '../../interfaces/index';
 
 const getLastChild = <N extends ChildOf<R>, R extends TNode>(
   node: R,
   level: number
 ): N | R => {
-  if (!(level + 1) || !isAncestor(node)) return node;
+  if (!(level + 1) || !NodeApi.isAncestor(node)) return node;
 
   const { children } = node;
 
@@ -26,7 +26,7 @@ export const getLastNodeByLevel = <
 >(
   editor: E,
   level: number
-): TNodeEntry<N> | undefined => {
+): NodeEntry<N> | undefined => {
   const { children } = editor;
 
   const lastNode = children.at(-1);

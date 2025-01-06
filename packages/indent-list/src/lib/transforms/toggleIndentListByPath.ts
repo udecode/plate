@@ -1,6 +1,6 @@
 import {
+  type NodeEntry,
   type SlateEditor,
-  type TNodeEntry,
   BaseParagraphPlugin,
 } from '@udecode/plate-common';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
@@ -12,7 +12,7 @@ import {
 
 export const toggleIndentListByPath = (
   editor: SlateEditor,
-  [node, path]: TNodeEntry,
+  [node, path]: NodeEntry,
   listStyleType: string
 ) => {
   editor.tf.setNodes(
@@ -31,7 +31,7 @@ export const toggleIndentListByPath = (
 
 export const toggleIndentListByPathUnSet = (
   editor: SlateEditor,
-  [, path]: TNodeEntry
+  [, path]: NodeEntry
 ) =>
   editor.tf.unsetNodes(
     [BaseIndentListPlugin.key, BaseIndentPlugin.key, INDENT_LIST_KEYS.checked],

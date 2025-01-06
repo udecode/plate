@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { TElement, TNodeEntry } from '@udecode/slate';
+import type { NodeEntry, TElement } from '@udecode/slate';
 
 import { selectAtom } from 'jotai/utils';
 
@@ -12,7 +12,7 @@ interface UseElementSelectorOptions<T> {
 }
 
 export const useElementSelector = <T>(
-  selector: <N extends TElement>(state: TNodeEntry<N>, prev?: T) => T,
+  selector: <N extends TElement>(state: NodeEntry<N>, prev?: T) => T,
   deps: React.DependencyList,
   {
     key,

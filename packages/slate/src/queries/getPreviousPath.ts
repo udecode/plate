@@ -1,4 +1,4 @@
-import type { Path } from 'slate';
+import type { Path } from '../interfaces/path';
 
 export const getPreviousPath = (path: Path): Path | undefined => {
   if (path.length === 0) return;

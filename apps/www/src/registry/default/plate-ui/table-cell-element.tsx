@@ -8,6 +8,7 @@ import { cn, withProps, withRef } from '@udecode/cn';
 import {
   useEditorPlugin,
   useElementSelector,
+  useReadOnly,
 } from '@udecode/plate-common/react';
 import { useBlockSelected } from '@udecode/plate-selection/react';
 import {
@@ -17,7 +18,6 @@ import {
   useTableCellElementResizable,
 } from '@udecode/plate-table/react';
 import { cva } from 'class-variance-authority';
-import { useReadOnly } from 'slate-react';
 
 import { blockSelectionVariants } from './block-selection';
 import { PlateElement } from './plate-element';

@@ -1,13 +1,11 @@
-import type { Location } from 'slate';
-
-import type { Editor } from '../interfaces';
+import type { Editor, TLocation } from '../interfaces';
 import type { QueryNodeOptions } from './QueryNodeOptions';
 
 /** Query the editor state. */
 export interface QueryEditorOptions<E extends Editor = Editor>
   extends Pick<QueryNodeOptions, 'allow' | 'exclude'> {
   /** Location from where to lookup the node types (bottom-up) */
-  at?: Location;
+  at?: TLocation;
 
   /** Query the editor. */
   filter?: (editor: E) => boolean;

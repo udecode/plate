@@ -1,4 +1,4 @@
-import type { Path } from 'slate';
+import type { Path } from '@udecode/plate-common';
 
 import type { TTableCellElement } from '../types';
 

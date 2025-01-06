@@ -7,8 +7,10 @@ import { CalloutPlugin } from '@udecode/plate-callout/react';
 import { insertCodeBlock } from '@udecode/plate-code-block';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import {
+  type NodeEntry,
+  type Path,
   type TElement,
-  type TNodeEntry,
+  PathApi,
   removeEmptyPreviousBlock,
 } from '@udecode/plate-common';
 import { insertDate } from '@udecode/plate-date';
@@ -43,7 +45,6 @@ import {
   TablePlugin,
   TableRowPlugin,
 } from '@udecode/plate-table/react';
-import { Path } from 'slate';
 
 export const STRUCTURAL_TYPES: string[] = [
   ColumnPlugin.key,
@@ -116,7 +117,7 @@ export const insertBlock = (editor: PlateEditor, type: string) => {
 
       if (!path) return;
 
-      const at = Path.next(path);
+      const at = PathApi.next(path);
 
       editor.tf.insertNodes(editor.api.create.block({ type }), {
         at,
@@ -137,7 +138,7 @@ export const insertInlineElement = (editor: PlateEditor, type: string) => {
 const setList = (
   editor: PlateEditor,
   type: string,
-  entry: TNodeEntry<TElement>
+  entry: NodeEntry<TElement>
 ) => {
   editor.tf.setNodes(
     editor.api.create.block({
@@ -152,7 +153,7 @@ const setList = (
 
 const setBlockMap: Record<
   string,
-  (editor: PlateEditor, type: string, entry: TNodeEntry<TElement>) => void
+  (editor: PlateEditor, type: string, entry: NodeEntry<TElement>) => void
 > = {
   [ACTION_THREE_COLUMNS]: (editor) => toggleColumnGroup(editor, { columns: 3 }),
   [INDENT_LIST_KEYS.todo]: setList,
@@ -166,7 +167,7 @@ export const setBlockType = (
   { at }: { at?: Path } = {}
 ) => {
   editor.tf.withoutNormalizing(() => {
-    const setEntry = (entry: TNodeEntry<TElement>) => {
+    const setEntry = (entry: NodeEntry<TElement>) => {
       const [node, path] = entry;
 
       if (node[IndentListPlugin.key]) {

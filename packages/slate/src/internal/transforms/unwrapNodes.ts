@@ -1,7 +1,6 @@
 import { unwrapNodes as unwrapNodesBase } from 'slate';
 
-import type { Editor, ValueOf } from '../../interfaces';
-import type { UnwrapNodesOptions } from '../../interfaces/editor/editor-types';
+import type { Editor, UnwrapNodesOptions, ValueOf } from '../../interfaces';
 
 import { getQueryOptions } from '../../utils/match';
 

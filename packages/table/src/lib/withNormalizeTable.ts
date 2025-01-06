@@ -1,8 +1,8 @@
 import {
   type ExtendEditor,
   type TElement,
+  ElementApi,
   TextApi,
-  isElement,
   wrapNodeChildren,
 } from '@udecode/plate-common';
 
@@ -28,14 +28,14 @@ export const withNormalizeTable: ExtendEditor<TableConfig> = ({
   editor.normalizeNode = ([n, path]) => {
     const { enableUnsetSingleColSize, initialTableWidth } = getOptions();
 
-    if (isElement(n)) {
+    if (ElementApi.isElement(n)) {
       if (n.type === type) {
         const node = n as TTableElement;
 
         if (
           !node.children.some(
             (child) =>
-              isElement(child) &&
+              ElementApi.isElement(child) &&
               child.type === editor.getType(BaseTableRowPlugin)
           )
         ) {

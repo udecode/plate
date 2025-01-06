@@ -1,26 +1,25 @@
 import {
-  type TDescendant,
+  type Descendant,
   type Editor,
+  ElementApi,
   TextApi,
-  isElement,
 } from '@udecode/slate';
 
 import type { SlateEditor } from '../editor';
 
 import { BaseParagraphPlugin } from '../plugins';
 
-const isInlineNode =
-  (editor: Pick<Editor, 'isInline'>) => (node: TDescendant) =>
-    TextApi.isText(node) || (isElement(node) && editor.isInline(node));
+const isInlineNode = (editor: Pick<Editor, 'isInline'>) => (node: Descendant) =>
+  TextApi.isText(node) || (ElementApi.isElement(node) && editor.isInline(node));
 
-const makeBlockLazy = (type: string) => (): TDescendant => ({
+const makeBlockLazy = (type: string) => (): Descendant => ({
   children: [],
   type,
 });
 
 const hasDifferentChildNodes = (
-  descendants: TDescendant[],
-  isInline: (node: TDescendant) => boolean
+  descendants: Descendant[],
+  isInline: (node: Descendant) => boolean
 ): boolean => {
   return descendants.some((descendant, index, arr) => {
     const prevDescendant = arr[index - 1];
@@ -38,10 +37,10 @@ const hasDifferentChildNodes = (
  * and text nodes."
  */
 const normalizeDifferentNodeTypes = (
-  descendants: TDescendant[],
-  isInline: (node: TDescendant) => boolean,
-  makeDefaultBlock: () => TDescendant
-): TDescendant[] => {
+  descendants: Descendant[],
+  isInline: (node: Descendant) => boolean,
+  makeDefaultBlock: () => Descendant
+): Descendant[] => {
   const hasDifferentNodes = hasDifferentChildNodes(descendants, isInline);
 
   const { fragment } = descendants.reduce(
@@ -55,7 +54,7 @@ const normalizeDifferentNodeTypes = (
           memo.fragment.push(block);
         }
 
-        (block.children as TDescendant[]).push(node);
+        (block.children as Descendant[]).push(node);
       } else {
         memo.fragment.push(node);
         memo.precedingBlock = null;
@@ -64,8 +63,8 @@ const normalizeDifferentNodeTypes = (
       return memo;
     },
     {
-      fragment: [] as TDescendant[],
-      precedingBlock: null as TDescendant | null,
+      fragment: [] as Descendant[],
+      precedingBlock: null as Descendant | null,
     }
   );
 
@@ -76,19 +75,19 @@ const normalizeDifferentNodeTypes = (
  * Handles 1st constraint: "All Element nodes must contain at least one Text
  * descendant."
  */
-const normalizeEmptyChildren = (descendants: TDescendant[]): TDescendant[] => {
+const normalizeEmptyChildren = (descendants: Descendant[]): Descendant[] => {
   if (descendants.length === 0) {
-    return [{ text: '' } as TDescendant];
+    return [{ text: '' } as Descendant];
   }
 
   return descendants;
 };
 
 const normalize = (
-  descendants: TDescendant[],
-  isInline: (node: TDescendant) => boolean,
-  makeDefaultBlock: () => TDescendant
-): TDescendant[] => {
+  descendants: Descendant[],
+  isInline: (node: Descendant) => boolean,
+  makeDefaultBlock: () => Descendant
+): Descendant[] => {
   descendants = normalizeEmptyChildren(descendants);
   descendants = normalizeDifferentNodeTypes(
     descendants,
@@ -97,11 +96,11 @@ const normalize = (
   );
 
   descendants = descendants.map((node) => {
-    if (isElement(node)) {
+    if (ElementApi.isElement(node)) {
       return {
         ...node,
         children: normalize(
-          node.children as TDescendant[],
+          node.children as Descendant[],
           isInline,
           makeDefaultBlock
         ),
@@ -117,8 +116,8 @@ const normalize = (
 /** Normalize the descendants to a valid document fragment. */
 export const normalizeDescendantsToDocumentFragment = (
   editor: SlateEditor,
-  { descendants }: { descendants: TDescendant[] }
-): TDescendant[] => {
+  { descendants }: { descendants: Descendant[] }
+): Descendant[] => {
   const isInline = isInlineNode(editor);
   const defaultType = editor.getType(BaseParagraphPlugin);
   const makeDefaultBlock = makeBlockLazy(defaultType);

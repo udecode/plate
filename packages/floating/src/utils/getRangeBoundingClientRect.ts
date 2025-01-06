@@ -1,13 +1,12 @@
 import type { ClientRectObject } from '@floating-ui/core';
-import type { Editor } from '@udecode/plate-common';
-import type { Range } from 'slate';
+import type { Editor, TRange } from '@udecode/plate-common';
 
 import { getDefaultBoundingClientRect } from '../createVirtualElement';
 
 /** Get bounding client rect by slate range */
 export const getRangeBoundingClientRect = (
   editor: Editor,
-  at: Range | null
+  at: TRange | null
 ): ClientRectObject => {
   if (!at) return getDefaultBoundingClientRect();
 

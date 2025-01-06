@@ -1,8 +1,12 @@
 import { unsetNodes as unsetNodesBase } from 'slate';
 
-import type { DescendantOf, Editor, ValueOf } from '../../interfaces';
-import type { UnsetNodesOptions } from '../../interfaces/editor/editor-types';
-import type { TNodeProps } from '../../interfaces/node/TNode';
+import type {
+  DescendantOf,
+  Editor,
+  UnsetNodesOptions,
+  ValueOf,
+} from '../../interfaces';
+import type { NodeProps } from '../../interfaces/node';
 
 import { getQueryOptions } from '../../utils';
 
@@ -11,7 +15,7 @@ export const unsetNodes = <
   E extends Editor = Editor,
 >(
   editor: E,
-  props: (keyof TNodeProps<N>)[] | keyof TNodeProps<N>,
+  props: (keyof NodeProps<N>)[] | keyof NodeProps<N>,
   options?: UnsetNodesOptions<ValueOf<E>>
 ) => {
   return unsetNodesBase(

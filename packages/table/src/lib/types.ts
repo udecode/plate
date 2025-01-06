@@ -1,7 +1,7 @@
-import type { TDescendant, TElement } from '@udecode/plate-common';
+import type { Descendant, TElement } from '@udecode/plate-common';
 
 export type CreateCellOptions = {
-  children?: TDescendant[];
+  children?: Descendant[];
   header?: boolean;
   row?: TTableRowElement;
 };

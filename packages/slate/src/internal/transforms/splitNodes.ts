@@ -1,7 +1,6 @@
 import { splitNodes as splitNodesBase } from 'slate';
 
-import type { Editor, ValueOf } from '../../interfaces';
-import type { SplitNodesOptions } from '../../interfaces/editor/editor-types';
+import type { Editor, SplitNodesOptions, ValueOf } from '../../interfaces';
 
 import { getQueryOptions } from '../../utils';
 

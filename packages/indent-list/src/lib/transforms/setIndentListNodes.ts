@@ -1,4 +1,4 @@
-import type { Editor, TNodeEntry } from '@udecode/plate-common';
+import type { Editor, NodeEntry } from '@udecode/plate-common';
 
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 
@@ -15,7 +15,7 @@ import { setIndentListNode, setIndentTodoNode } from './setIndentListNode';
  */
 export const setIndentListNodes = (
   editor: Editor,
-  entries: TNodeEntry[],
+  entries: NodeEntry[],
   {
     listStyleType = ListStyleType.Disc,
   }: {

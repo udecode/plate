@@ -67,7 +67,7 @@ export type ElementOrTextIn<V extends Value> = ElementIn<V> | TextIn<V>;
  * `ElementEntry` objects refer to an `Element` and the `Path` where it can be
  * found inside a root node.
  */
-// export type TElementEntry = [TElement, Path];
+// export type ElementEntry = [TElement, Path];
 
 /** A utility type to get all the element nodes type from a root node. */
 export type ElementOf<N extends TNode> = Editor extends N

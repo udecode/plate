@@ -1,9 +1,9 @@
 import {
   type SlateEditor,
   BaseParagraphPlugin,
+  PathApi,
   insertElements,
 } from '@udecode/plate-common';
-import { Path } from 'slate';
 
 import type { ExitBreakRule } from '../types';
 
@@ -32,7 +32,7 @@ export const exitBreak = (
     ? selectionPath.slice(0, -level)
     : selectionPath.slice(0, level + 1);
 
-  const insertPath = before ? slicedPath : Path.next(slicedPath);
+  const insertPath = before ? slicedPath : PathApi.next(slicedPath);
 
   insertElements(
     editor,

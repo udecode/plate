@@ -1,5 +1,8 @@
-import { type SlateEditor, insertElements } from '@udecode/plate-common';
-import { Path } from 'slate';
+import {
+  type SlateEditor,
+  PathApi,
+  insertElements,
+} from '@udecode/plate-common';
 
 import { type TodoListConfig, BaseTodoListPlugin } from '../BaseTodoListPlugin';
 
@@ -33,7 +36,7 @@ export const insertTodoListItem = (
     const isStart = editor.api.isStart(editor.selection!.focus, paragraphPath);
     const isEnd = editor.api.isEmpty(editor.selection, { after: true });
 
-    const nextParagraphPath = Path.next(paragraphPath);
+    const nextParagraphPath = PathApi.next(paragraphPath);
 
     /** If start, insert a list item before */
     if (isStart) {

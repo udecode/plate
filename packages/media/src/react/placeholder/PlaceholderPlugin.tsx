@@ -1,8 +1,8 @@
 import {
   type ExtendConfig,
   type InsertNodesOptions,
+  NodeApi,
   bindFirst,
-  getNodeString,
 } from '@udecode/plate-common';
 import { toTPlatePlugin } from '@udecode/plate-common/react';
 
@@ -176,7 +176,7 @@ export const PlaceholderPlugin = toTPlatePlugin<
           if (ancestor) {
             const [node, path] = ancestor;
 
-            if (getNodeString(node).length === 0) {
+            if (NodeApi.string(node).length === 0) {
               editor.tf.removeNodes({ at: path });
               tf.insert.media(files, { at: path, nextBlock: false });
               inserted = true;

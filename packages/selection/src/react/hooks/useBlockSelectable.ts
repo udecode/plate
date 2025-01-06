@@ -1,13 +1,11 @@
 import type React from 'react';
 
-import type { TElement } from '@udecode/plate-common';
-
+import { type TElement, PathApi } from '@udecode/plate-common';
 import {
   useEditorPlugin,
   useElement,
   usePath,
 } from '@udecode/plate-common/react';
-import { Path } from 'slate';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 
@@ -31,7 +29,7 @@ export const useBlockSelectable = () => {
         if (editor.selection?.focus) {
           const nodeEntry = editor.api.above<TElement>();
 
-          if (nodeEntry && Path.isCommon(path, nodeEntry[1])) {
+          if (nodeEntry && PathApi.isCommon(path, nodeEntry[1])) {
             const id = nodeEntry[0].id as string | undefined;
             const isSelected = getOption('isSelected', id);
             const isOpenAlways =

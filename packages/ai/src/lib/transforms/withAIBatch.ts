@@ -1,9 +1,4 @@
-import {
-  type History,
-  type SlateEditor,
-  withMerging,
-  withNewBatch,
-} from '@udecode/plate-common';
+import type { History, SlateEditor } from '@udecode/plate-common';
 
 export type AIBatch = History['undos'][number] & { ai?: boolean };
 
@@ -17,9 +12,9 @@ export const withAIBatch = (
   } = {}
 ) => {
   if (split) {
-    withNewBatch(editor, fn);
+    editor.tf.withNewBatch(fn);
   } else {
-    withMerging(editor, fn);
+    editor.tf.withMerging(fn);
   }
 
   const lastBatch = editor.history.undos?.at(-1) as AIBatch | undefined;

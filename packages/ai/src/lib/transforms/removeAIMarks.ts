@@ -1,9 +1,8 @@
-import type { SlateEditor } from '@udecode/plate-common';
-import type { Location } from 'slate';
+import type { SlateEditor, TLocation } from '@udecode/plate-common';
 
 export const removeAIMarks = (
   editor: SlateEditor,
-  { at = [] }: { at?: Location } = {}
+  { at = [] }: { at?: TLocation } = {}
 ) => {
   editor.tf.unsetNodes('ai', {
     at,

@@ -28,7 +28,7 @@ jsxt;
 
 const url = 'http://google.com';
 
-const createEditor = (editor: any) =>
+const createTestEditor = (editor: any) =>
   createPlateEditor({
     editor,
     plugins: [BaseLinkPlugin],
@@ -63,7 +63,7 @@ describe('withLink', () => {
         ) as any;
 
         it('should insert link', () => {
-          const editor = createEditor(input);
+          const editor = createTestEditor(input);
 
           editor.insertData(data);
 
@@ -105,7 +105,7 @@ describe('withLink', () => {
         it('should insert link', () => {
           jest.spyOn(JSON, 'parse').mockReturnValue(<fragment>docs</fragment>);
 
-          const editor = createEditor(input);
+          const editor = createTestEditor(input);
 
           editor.insertData(data);
 
@@ -138,7 +138,7 @@ describe('withLink', () => {
         ) as any;
 
         it('should delete and insert link', () => {
-          const editor = createEditor(input);
+          const editor = createTestEditor(input);
 
           const data: any = { getData: () => urlOutput };
           editor.insertData(data);
@@ -182,7 +182,7 @@ describe('withLink', () => {
 
           jest.spyOn(JSON, 'parse').mockReturnValue(<fragment>docs</fragment>);
 
-          const editor = createEditor(input);
+          const editor = createTestEditor(input);
 
           editor.insertData(data);
 
@@ -216,7 +216,7 @@ describe('withLink', () => {
         ) as any;
 
         it('should insert text', () => {
-          const editor = createEditor(input);
+          const editor = createTestEditor(input);
 
           editor.insertText(text);
 
@@ -246,7 +246,7 @@ describe('withLink', () => {
         ) as any;
 
         it('should insert text', () => {
-          const editor = createEditor(input);
+          const editor = createTestEditor(input);
 
           editor.insertText(text);
 
@@ -278,7 +278,7 @@ describe('withLink', () => {
         ) as any;
 
         it('should wrap the url with a link', () => {
-          const editor = createEditor(input);
+          const editor = createTestEditor(input);
 
           editor.insertText(text);
 
@@ -317,7 +317,7 @@ describe('withLink', () => {
         ) as any;
 
         it('should run default insertText', () => {
-          const editor = createEditor(input);
+          const editor = createTestEditor(input);
 
           editor.insertText(text);
 
@@ -351,7 +351,7 @@ describe('withLink', () => {
         ) as any;
 
         it('should wrap the url with a link ha', () => {
-          const editor = createEditor(input);
+          const editor = createTestEditor(input);
 
           editor.insertBreak();
 
@@ -384,7 +384,7 @@ describe('withLink', () => {
         ) as any;
 
         it('should wrap the url with a link ha', () => {
-          const editor = createEditor(input);
+          const editor = createTestEditor(input);
 
           editor.insertText(text);
 
@@ -464,7 +464,7 @@ describe('withLink', () => {
       ) as any;
 
       it('should wrap the url with a link', () => {
-        const editor = createEditor(input);
+        const editor = createTestEditor(input);
 
         editor.insertText(text);
 
@@ -497,7 +497,7 @@ describe('withLink', () => {
       ) as any;
 
       it('should insert link', () => {
-        const editor = createEditor(input);
+        const editor = createTestEditor(input);
 
         editor.insertData(data);
 
@@ -567,7 +567,7 @@ describe('withLink', () => {
       ) as any;
 
       it('should remove the empty link node', () => {
-        const editor = createEditor(input);
+        const editor = createTestEditor(input);
 
         // Select the entire link text
         editor.tf.select({
@@ -602,7 +602,7 @@ describe('withLink', () => {
       ) as any;
 
       it('should not remove the link node', () => {
-        const editor = createEditor(input);
+        const editor = createTestEditor(input);
 
         // Select the entire link text
         editor.tf.select({

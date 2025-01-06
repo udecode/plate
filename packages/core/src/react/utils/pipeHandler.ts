@@ -1,6 +1,6 @@
 import type React from 'react';
 
-import type { TEditableProps } from '../../lib';
+import type { EditableProps } from '../../lib';
 import type { PlateEditor } from '../editor/PlateEditor';
 import type { DOMHandlers } from '../plugin/DOMHandlers';
 
@@ -75,7 +75,7 @@ export const pipeHandler = <K extends keyof DOMHandlers>(
   {
     editableProps,
     handlerKey,
-  }: { handlerKey: K; editableProps?: Omit<TEditableProps, 'decorate'> | null }
+  }: { handlerKey: K; editableProps?: Omit<EditableProps, 'decorate'> | null }
 ): ((event: any) => void) | undefined => {
   const propsHandler = editableProps?.[handlerKey] as (
     event: any

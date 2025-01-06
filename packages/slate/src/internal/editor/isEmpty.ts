@@ -1,20 +1,24 @@
-import { Path, isEmpty as isEmptyBase } from 'slate';
+import { isEmpty as isEmptyBase } from 'slate';
 
 import type { Editor } from '../../interfaces/editor/editor';
-import type { IsElementEmptyOptions } from '../../interfaces/editor/editor-types';
 import type { At } from '../../types';
 
-import { TextApi, isNode } from '../../interfaces';
+import {
+  type EditorEmptyOptions,
+  NodeApi,
+  PathApi,
+  TextApi,
+} from '../../interfaces';
 import { getNextSiblingNodes } from '../../queries/getNextSiblingNodes';
 import { isEditor } from './isEditor';
 
 export const isEmpty = <E extends Editor>(
   editor: E,
   target: At | null = [],
-  options?: IsElementEmptyOptions
+  options?: EditorEmptyOptions
 ) => {
   if (target === null) return true;
-  if ((Path.isPath(target) && target.length === 0) || isEditor(target)) {
+  if ((PathApi.isPath(target) && target.length === 0) || isEditor(target)) {
     return (
       editor.children.length === 1 &&
       isEmptyBase(editor as any, editor.children[0] as any)
@@ -48,7 +52,7 @@ export const isEmpty = <E extends Editor>(
 
     return true;
   }
-  if (Path.isPath(target)) {
+  if (PathApi.isPath(target)) {
     return isEmptyBase(editor as any, editor.api.node(target)?.[0] as any);
   }
   if (options?.block) {
@@ -58,7 +62,7 @@ export const isEmpty = <E extends Editor>(
 
     target = block[0];
   }
-  if (!isNode(target)) {
+  if (!NodeApi.isNode(target)) {
     const nodes = editor.api.nodes({ at: target, ...options });
 
     for (const node of nodes) {

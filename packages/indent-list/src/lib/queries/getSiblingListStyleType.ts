@@ -1,8 +1,8 @@
 import type {
   ElementOf,
+  NodeEntry,
   SlateEditor,
   TElement,
-  TNodeEntry,
 } from '@udecode/plate-common';
 
 import type { ListStyleType } from '../types';
@@ -24,14 +24,11 @@ export const getSiblingListStyleType = <E extends SlateEditor>(
     indent,
     ...options
   }: {
-    entry: TNodeEntry<TElement>;
+    entry: NodeEntry<TElement>;
     indent: number;
   } & GetIndentListSiblingsOptions<ElementOf<E>, E>
 ) => {
-  const siblingEntry: TNodeEntry<TElement> = [
-    { ...entry[0], indent },
-    entry[1],
-  ];
+  const siblingEntry: NodeEntry<TElement> = [{ ...entry[0], indent }, entry[1]];
 
   const siblings = getIndentListSiblings(editor, siblingEntry as any, {
     breakOnEqIndentNeqListStyleType: false,

@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 
-import type { TNodeEntry } from '@udecode/plate-common';
+import type { NodeEntry } from '@udecode/plate-common';
 import type { UseChatHelpers } from 'ai/react';
 
 import { useEditorPlugin } from '@udecode/plate-common/react';
@@ -12,7 +12,7 @@ import { AIChatPlugin } from '../AIChatPlugin';
 
 export type UseEditorChatOptions = {
   chat: UseChatHelpers;
-  onOpenBlockSelection?: (blocks: TNodeEntry[]) => void;
+  onOpenBlockSelection?: (blocks: NodeEntry[]) => void;
   onOpenChange?: (open: boolean) => void;
   onOpenCursor?: () => void;
   onOpenSelection?: () => void;

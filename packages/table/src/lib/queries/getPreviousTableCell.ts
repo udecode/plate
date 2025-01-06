@@ -1,8 +1,7 @@
-import type { Path } from 'slate';
-
 import {
   type Editor,
-  type TNodeEntry,
+  type NodeEntry,
+  type Path,
   getPreviousPath,
 } from '@udecode/plate-common';
 
@@ -10,10 +9,10 @@ import { getCellInPreviousTableRow } from './getCellInPreviousTableRow';
 
 export const getPreviousTableCell = (
   editor: Editor,
-  currentCell: TNodeEntry,
+  currentCell: NodeEntry,
   currentPath: Path,
-  currentRow: TNodeEntry
-): TNodeEntry | undefined => {
+  currentRow: NodeEntry
+): NodeEntry | undefined => {
   const prevPath = getPreviousPath(currentPath);
 
   if (!prevPath) {

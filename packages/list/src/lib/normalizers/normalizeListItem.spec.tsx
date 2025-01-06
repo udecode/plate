@@ -2,8 +2,8 @@
 
 import {
   type SlateEditor,
+  NodeApi,
   createSlateEditor,
-  getNode,
 } from '@udecode/plate-common';
 import { jsxt } from '@udecode/plate-test-utils';
 
@@ -44,7 +44,7 @@ describe('clean up list items', () => {
     });
 
     const path = [0, 0];
-    const node = getNode(editor, path);
+    const node = NodeApi.get(editor, path);
 
     editor.normalizeNode([node!, path]);
 

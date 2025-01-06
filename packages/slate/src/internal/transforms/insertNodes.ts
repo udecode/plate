@@ -1,18 +1,15 @@
-import {
-  Path,
-  insertNodes as insertNodesBase,
-  withoutNormalizing,
-} from 'slate';
+import { insertNodes as insertNodesBase } from 'slate';
 
-import type { InsertNodesOptions } from '../../interfaces/editor/editor-types';
 import type { QueryNodeOptions } from '../../types';
 
 import {
-  type ElementOrTextOf,
-  type TDescendant,
+  type Descendant,
   type Editor,
+  type ElementOrTextOf,
+  type InsertNodesOptions,
   type ValueOf,
-  getNodeString,
+  NodeApi,
+  PathApi,
 } from '../../interfaces';
 import { getQueryOptions, queryNode } from '../../utils';
 
@@ -26,7 +23,7 @@ export const insertNodes = <
 ) => {
   options = getQueryOptions(editor, options);
 
-  withoutNormalizing(editor as any, () => {
+  editor.tf.withoutNormalizing(() => {
     if (removeEmpty) {
       const blockEntry = editor.api.above({ at: options.at });
 
@@ -41,9 +38,9 @@ export const insertNodes = <
         const { filter } = queryNodeOptions;
 
         queryNodeOptions.filter = ([node, path]) => {
-          if (getNodeString(node)) return false;
+          if (NodeApi.string(node)) return false;
 
-          const children = node.children as TDescendant[];
+          const children = node.children as Descendant[];
 
           if (children.some((n) => editor.isInline(n))) return false;
 
@@ -68,7 +65,7 @@ export const insertNodes = <
         });
 
         if (blockEntry) {
-          options.at = Path.next(blockEntry[1]);
+          options.at = PathApi.next(blockEntry[1]);
         }
       }
     }

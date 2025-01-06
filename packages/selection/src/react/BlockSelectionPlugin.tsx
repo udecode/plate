@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import type React from 'react';
 
-import type { PluginConfig, TElement, TNodeEntry } from '@udecode/plate-common';
+import type { NodeEntry, PluginConfig, TElement } from '@udecode/plate-common';
 
 import { bindFirst } from '@udecode/plate-common';
 import { createTPlatePlugin } from '@udecode/plate-common/react';
@@ -56,7 +56,7 @@ export type BlockSelectionApi = {
     options: Partial<ChangedElements> & { ids?: string[] }
   ) => void;
   focus: () => void;
-  getNodes: () => TNodeEntry[];
+  getNodes: () => NodeEntry[];
   resetSelectedIds: () => void;
   selectedAll: () => void;
   unselect: () => void;

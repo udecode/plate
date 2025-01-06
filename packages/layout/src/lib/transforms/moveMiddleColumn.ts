@@ -1,10 +1,8 @@
 import {
+  type NodeEntry,
   type SlateEditor,
   type TNode,
-  type TNodeEntry,
-  getNode,
-  getNodeDescendant,
-  getNodeString,
+  NodeApi,
 } from '@udecode/plate-common';
 
 import type { TColumnElement } from '../types';
@@ -15,7 +13,7 @@ import type { TColumnElement } from '../types';
  */
 export const moveMiddleColumn = <N extends TNode>(
   editor: SlateEditor,
-  [node, path]: TNodeEntry<N>,
+  [node, path]: NodeEntry<N>,
   options?: {
     direction: 'left' | 'right';
   }
@@ -25,12 +23,12 @@ export const moveMiddleColumn = <N extends TNode>(
   if (direction === 'left') {
     const DESCENDANT_PATH = [1];
 
-    const middleChildNode = getNode<TColumnElement>(node, DESCENDANT_PATH);
+    const middleChildNode = NodeApi.get<TColumnElement>(node, DESCENDANT_PATH);
 
     if (!middleChildNode) return false;
 
-    // Check emptiness using Node.string
-    const isEmpty = getNodeString(middleChildNode) === '';
+    // Check emptiness using Api.string
+    const isEmpty = NodeApi.string(middleChildNode) === '';
 
     const middleChildPathRef = editor.api.pathRef(path.concat(DESCENDANT_PATH));
 
@@ -40,7 +38,7 @@ export const moveMiddleColumn = <N extends TNode>(
       return false;
     }
 
-    const firstNode = getNodeDescendant<TColumnElement>(node, [0]);
+    const firstNode = NodeApi.descendant<TColumnElement>(node, [0]);
 
     if (!firstNode) return false;
 

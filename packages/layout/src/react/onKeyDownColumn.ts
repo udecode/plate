@@ -1,7 +1,6 @@
 import type { KeyboardHandler } from '@udecode/plate-common/react';
 
-import { isHotkey } from '@udecode/plate-common';
-import { Path } from 'slate';
+import { PathApi, isHotkey } from '@udecode/plate-common';
 
 import { ColumnPlugin } from './ColumnPlugin';
 
@@ -23,10 +22,10 @@ export const onKeyDownColumn: KeyboardHandler = ({ editor, event }) => {
 
     const [, abovePath] = aboveNode;
 
-    let targetPath = Path.parent(abovePath);
+    let targetPath = PathApi.parent(abovePath);
 
     if (editor.api.isAt({ block: true, end: true, start: true })) {
-      targetPath = Path.parent(targetPath);
+      targetPath = PathApi.parent(targetPath);
     }
     if (targetPath.length === 0) return;
 

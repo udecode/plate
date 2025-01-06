@@ -11,5 +11,5 @@ export const toSlatePoint = (
 ) => {
   try {
     return DOMEditor.toSlatePoint(editor as any, domPoint, options as any);
-  } catch (error) {}
+  } catch {}
 };

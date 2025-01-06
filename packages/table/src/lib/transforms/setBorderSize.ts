@@ -1,9 +1,8 @@
-import type { Path } from 'slate';
-
 import {
+  type Path,
   type SetNodesOptions,
   type SlateEditor,
-  isElement,
+  ElementApi,
 } from '@udecode/plate-common';
 
 import type { BorderDirection, BorderStyle, TTableCellElement } from '../types';
@@ -41,7 +40,8 @@ export const setBorderSize = (
   };
 
   const setNodesOptions: SetNodesOptions = {
-    match: (n) => isElement(n) && getCellTypes(editor).includes(n.type),
+    match: (n) =>
+      ElementApi.isElement(n) && getCellTypes(editor).includes(n.type),
   };
 
   if (border === 'top') {

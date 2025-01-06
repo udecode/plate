@@ -1,14 +1,16 @@
-import {
-  type Location,
-  Editor as EditorInterface,
-  Path,
-  Point,
-  Range,
-} from 'slate';
+import { Editor as EditorInterface } from 'slate';
 
 import type { Editor } from '../interfaces/editor/editor';
-import type { TNodeEntry } from '../interfaces/node/TNodeEntry';
+import type { NodeEntry } from '../interfaces/node-entry';
 
+import {
+  type Path,
+  type TLocation,
+  type TRange,
+  PathApi,
+  PointApi,
+  RangeApi,
+} from '../interfaces/index';
 import { createPathRef } from '../internal/editor/createPathRef';
 import { createPointRef } from '../internal/editor/createPointRef';
 import { getEndPoint } from '../internal/editor/getEndPoint';
@@ -26,7 +28,7 @@ import { select } from '../internal/transforms/select';
 export const deleteMerge = (
   editor: Editor,
   options: {
-    at?: Location;
+    at?: TLocation;
     distance?: number;
     hanging?: boolean;
     reverse?: boolean;
@@ -42,15 +44,15 @@ export const deleteMerge = (
       unit = 'character',
       voids = false,
     } = options;
-    let { at = editor.selection, hanging = false } = options;
+    let { at = editor.selection!, hanging = false } = options;
 
     if (!at) {
       return;
     }
-    if (Range.isRange(at) && Range.isCollapsed(at)) {
+    if (RangeApi.isRange(at) && RangeApi.isCollapsed(at)) {
       at = at.anchor;
     }
-    if (Point.isPoint(at)) {
+    if (PointApi.isPoint(at)) {
       const furthestVoid = getVoidNode(editor as any, { at, mode: 'highest' });
 
       if (!voids && furthestVoid) {
@@ -67,19 +69,19 @@ export const deleteMerge = (
         hanging = true;
       }
     }
-    if (Path.isPath(at)) {
+    if (PathApi.isPath(at)) {
       editor.tf.removeNodes({ at, voids });
 
       return;
     }
-    if (Range.isCollapsed(at)) {
+    if (RangeApi.isCollapsed(at)) {
       return;
     }
     if (!hanging) {
       at = EditorInterface.unhangRange(editor as any, at, { voids });
     }
 
-    let [start, end] = Range.edges(at);
+    let [start, end] = RangeApi.edges(at as TRange);
     const startBlock = editor.api.above({
       at: start,
       match: (n) => isBlock(editor as any, n),
@@ -91,8 +93,8 @@ export const deleteMerge = (
       voids,
     });
     const isAcrossBlocks =
-      startBlock && endBlock && !Path.equals(startBlock[1], endBlock[1]);
-    const isSingleText = Path.equals(start.path, end.path);
+      startBlock && endBlock && !PathApi.equals(startBlock[1], endBlock[1]);
+    const isSingleText = PathApi.equals(start.path, end.path);
     const startVoid = voids
       ? null
       : getVoidNode(editor as any, { at: start, mode: 'highest' });
@@ -104,21 +106,25 @@ export const deleteMerge = (
     if (startVoid) {
       const before = getPointBefore(editor as any, start);
 
-      if (before && startBlock && Path.isAncestor(startBlock[1], before.path)) {
+      if (
+        before &&
+        startBlock &&
+        PathApi.isAncestor(startBlock[1], before.path)
+      ) {
         start = before;
       }
     }
     if (endVoid) {
       const after = getPointAfter(editor as any, end);
 
-      if (after && endBlock && Path.isAncestor(endBlock[1], after.path)) {
+      if (after && endBlock && PathApi.isAncestor(endBlock[1], after.path)) {
         end = after;
       }
     }
 
     // Get the highest nodes that are completely inside the range, as well as
     // the start and end nodes.
-    const matches: TNodeEntry[] = [];
+    const matches: NodeEntry[] = [];
     let lastPath: Path | undefined;
 
     const _nodes = getNodeEntries(editor as any, { at, voids });
@@ -126,12 +132,13 @@ export const deleteMerge = (
     for (const entry of _nodes) {
       const [node, path] = entry;
 
-      if (lastPath && Path.compare(path, lastPath) === 0) {
+      if (lastPath && PathApi.compare(path, lastPath) === 0) {
         continue;
       }
       if (
         (!voids && isVoid(editor as any, node)) ||
-        (!Path.isCommon(path, start.path) && !Path.isCommon(path, end.path))
+        (!PathApi.isCommon(path, start.path) &&
+          !PathApi.isCommon(path, end.path))
       ) {
         matches.push(entry as any);
         lastPath = path;

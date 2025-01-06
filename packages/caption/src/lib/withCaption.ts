@@ -1,10 +1,9 @@
-import type { Range } from 'slate';
-
 import {
   type ExtendEditor,
-  getNodeString,
+  type TRange,
+  NodeApi,
+  RangeApi,
   getPluginTypes,
-  isCollapsed,
   isHotkey,
 } from '@udecode/plate-common';
 
@@ -34,13 +33,13 @@ export const withCaption: ExtendEditor<CaptionConfig> = ({
       const newSelection = {
         ...editor.selection,
         ...operation.newProperties,
-      } as Range | null;
+      } as TRange | null;
 
       if (
         editor.currentKeyboardEvent &&
         isHotkey('up', editor.currentKeyboardEvent) &&
         newSelection &&
-        isCollapsed(newSelection)
+        RangeApi.isCollapsed(newSelection)
       ) {
         const types = getPluginTypes(editor, plugins!);
 
@@ -54,7 +53,7 @@ export const withCaption: ExtendEditor<CaptionConfig> = ({
 
           if (
             node.caption &&
-            getNodeString({ children: node.caption } as any).length > 0
+            NodeApi.string({ children: node.caption } as any).length > 0
           ) {
             setTimeout(() => {
               editor.setOption(BaseCaptionPlugin, 'focusEndPath', entry[1]);

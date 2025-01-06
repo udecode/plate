@@ -1,10 +1,11 @@
-import type { Path } from 'slate';
-
-import type { ElementOrTextOf, Editor, ValueOf } from '../interfaces';
 import type {
+  Editor,
+  ElementOrTextOf,
   InsertNodesOptions,
   RemoveNodesOptions,
-} from '../interfaces/editor/editor-types';
+  ValueOf,
+} from '../interfaces';
+import type { Path } from '../interfaces/path';
 
 import { removeNodeChildren } from './removeNodeChildren';
 

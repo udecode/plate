@@ -6,5 +6,5 @@ import type { Editor } from '../../interfaces/editor';
 export const findNodeKey = (editor: Editor, node: TNode) => {
   try {
     return DOMEditor.findKey(editor as any, node);
-  } catch (error) {}
+  } catch {}
 };

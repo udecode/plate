@@ -3,6 +3,8 @@ title: Slate
 description: API reference for @udecode/slate.
 ---
 
+v42 documentation is in progress.
+
 `@udecode/slate` extends Slate API with generic types.
 
 ## Editor
@@ -201,7 +203,7 @@ Find the corresponding documentation in the [Slate docs](https://docs.slatejs.or
 
 Find the corresponding documentation in the [Slate docs](https://docs.slatejs.org/api/nodes/node).
 
-### `TDescendant`
+### `Descendant`
 
 ### `getNodeDescendants`
 
@@ -225,7 +227,7 @@ Find the corresponding documentation in the [Slate docs](https://docs.slatejs.or
 
 ### `getNodeProps`
 
-### `TAncestor`
+### `Ancestor`
 
 ### `getNode`
 
@@ -237,7 +239,7 @@ Find the corresponding documentation in the [Slate docs](https://docs.slatejs.or
 
 ### `getNodeAncestor`
 
-### `TNodeEntry`
+### `NodeEntry`
 
 ### `TNode`
 
@@ -332,7 +334,7 @@ An interface used to query node entries.
 <APIAttributes>
 <APIItem
   name="filter"
-  type="(entry: TNodeEntry) => boolean"
+  type="(entry: NodeEntry) => boolean"
   optional
 >
 
@@ -395,7 +397,7 @@ Returns the block above a specified location
   <APIItem name="editor" type="Editor">
     The editor to search for the block.
   </APIItem>
-  <APIItem name="options" type="GetAboveNodeOptions">
+  <APIItem name="options" type="EditorAboveOptions">
     The options to find the block above a location.
   </APIItem>
 </APIParameters>
@@ -413,7 +415,7 @@ Retrieves block-level node entries from the editor.
   <APIItem name="editor" type="Editor">
     The editor to search for block-level nodes.
   </APIItem>
-  <APIItem name="options" type="GetNodeEntriesOptions<V>" optional>
+  <APIItem name="options" type="EditorNodesOptions<V>" optional>
     Options for getting node entries.
   </APIItem>
 </APIParameters>
@@ -427,7 +429,7 @@ Retrieves block-level node entries from the editor.
 Returns the children node entries of a node entry.
 
 <APIParameters>
-  <APIItem name="nodeEntry" type="TNodeEntry">
+  <APIItem name="nodeEntry" type="NodeEntry">
     The node entry to get its children.
   </APIItem>
 </APIParameters>
@@ -447,7 +449,7 @@ Returns the edge blocks above a specified location.
   <APIItem name="editor" type="Editor">
     The editor to search for the edge blocks.
   </APIItem>
-  <APIItem name="options" type="GetAboveNodeOptions">
+  <APIItem name="options" type="EditorAboveOptions">
     The options to find the edge blocks above a location.
   </APIItem>
 </APIParameters>
@@ -511,7 +513,7 @@ Gets the first text node from a node.
 Returns the last child of a node or `null` if no children.
 
 <APIParameters>
-  <APIItem name="nodeEntry" type="TNodeEntry">
+  <APIItem name="nodeEntry" type="NodeEntry">
     The node entry to get its last child.
   </APIItem>
 </APIParameters>
@@ -597,7 +599,7 @@ Retrieves the operations of the editor.
   </APIItem>
 </APIParameters>
 <APIReturns>
-  Returns the operations of the editor as `TOperation` array.
+  Returns the operations of the editor as `Operation` array.
 </APIReturns>
 
 ### getPointBeforeLocation
@@ -774,7 +776,7 @@ Gets the range from the start of the block above a location to the location.
   <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
-  <APIItem name="options" type="Omit<GetAboveNodeOptions, 'match'>" optional>
+  <APIItem name="options" type="Omit<EditorAboveOptions, 'match'>" optional>
     Options for getting the block above the location.
   </APIItem>
 </APIParameters>
@@ -825,7 +827,7 @@ Checks whether an ancestor node is empty (has empty text and no inline children)
   <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
-  <APIItem name="node" type="TAncestor">
+  <APIItem name="node" type="Ancestor">
     The ancestor node to check.
   </APIItem>
 </APIParameters>
@@ -983,7 +985,7 @@ Checks whether the selection focus is at the end of its parent block.
   <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
-  <APIItem name="options" type="GetAboveNodeOptions" optional>
+  <APIItem name="options" type="EditorAboveOptions" optional>
     The options object.
   </APIItem>
 </APIParameters>
@@ -1000,7 +1002,7 @@ Checks whether the selection anchor or focus is at the start of its parent block
   <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
-  <APIItem name="options" type="GetAboveNodeOptions" optional>
+  <APIItem name="options" type="EditorAboveOptions" optional>
     The options object.
   </APIItem>
 </APIParameters>
@@ -1091,7 +1093,7 @@ Duplicates the given blocks and inserts them after the last block in the selecti
   <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
-  <APIItem name="blocks" type="TNodeEntry[]">
+  <APIItem name="blocks" type="NodeEntry[]">
     An array of node entries representing the blocks to duplicate.
   </APIItem>
 </APIParameters>
@@ -1232,7 +1234,7 @@ Selects the range encompassing the given nodes.
   <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
-  <APIItem name="nodes" type="TNodeEntry[]">
+  <APIItem name="nodes" type="NodeEntry[]">
     An array of node entries to select.
   </APIItem>
 </APIParameters>
@@ -1245,7 +1247,7 @@ Sets properties on the block above the current selection.
   <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
-  <APIItem name="props" type="Partial<TNodeProps<N>>">
+  <APIItem name="props" type="Partial<NodeProps<N>>">
     The properties to set on the block.
   </APIItem>
   <APIItem name="options" type="Omit<SetNodesOptions<V>, 'at'>" optional>
@@ -1261,7 +1263,7 @@ Sets properties on the lowest-level nodes within the block above the current sel
   <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
-  <APIItem name="props" type="Partial<TNodeProps<N>>">
+  <APIItem name="props" type="Partial<NodeProps<N>>">
     The properties to set on the text nodes.
   </APIItem>
   <APIItem name="options" type="Omit<SetNodesOptions<V>, 'at'>" optional>
@@ -1277,10 +1279,10 @@ Sets properties on all block nodes that match the given options.
   <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
-  <APIItem name="props" type="Partial<TNodeProps<N>>">
+  <APIItem name="props" type="Partial<NodeProps<N>>">
     The properties to set on the matching block nodes.
   </APIItem>
-  <APIItem name="options" type="GetNodeEntriesOptions<V>" optional>
+  <APIItem name="options" type="EditorNodesOptions<V>" optional>
     Options for getting node entries to update.
   </APIItem>
 </APIParameters>
@@ -1362,7 +1364,7 @@ The text for the node.
 - **Default:** an empty string.
 
 </APIItem>
-<APIItem name="remaining" type="TDescendant[]" optional>
+<APIItem name="remaining" type="Descendant[]" optional>
 The remaining nodes.
 
 - **Default:** an empty array.
@@ -1370,7 +1372,7 @@ The remaining nodes.
 </APIItem>
 </APIParameters>
 <APIReturns>
-An array of `TDescendant` nodes, starting with the newly created node.
+An array of `Descendant` nodes, starting with the newly created node.
 </APIReturns>
 
 ### createNode

@@ -1,4 +1,4 @@
-import type { SlateEditor, TNodeEntry } from '@udecode/plate-common';
+import type { NodeEntry, SlateEditor } from '@udecode/plate-common';
 
 import type {
   TTableCellElement,
@@ -10,7 +10,7 @@ import { getCellIndices } from '../utils/getCellIndices';
 
 export const getCellPath = (
   editor: SlateEditor,
-  tableEntry: TNodeEntry<TTableElement>,
+  tableEntry: NodeEntry<TTableElement>,
   curRowIndex: number,
   curColIndex: number
 ) => {

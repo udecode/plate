@@ -1,6 +1,10 @@
-import type { GetNodeEntriesOptions, SlateEditor } from '@udecode/plate-common';
-
-import { type PathRef, Path } from 'slate';
+import {
+  type EditorNodesOptions,
+  type Path,
+  type PathRef,
+  type SlateEditor,
+  PathApi,
+} from '@udecode/plate-common';
 
 import { BaseListItemContentPlugin } from '../BaseListPlugin';
 import { isListNested } from '../queries/isListNested';
@@ -9,7 +13,7 @@ import { moveListItemUp } from './moveListItemUp';
 import { removeFirstListItem } from './removeFirstListItem';
 
 export type MoveListItemsOptions = {
-  at?: GetNodeEntriesOptions['at'];
+  at?: EditorNodesOptions['at'];
   enableResetOnShiftTab?: boolean;
   increase?: boolean;
 };
@@ -40,12 +44,12 @@ export const moveListItems = (
   // Filter out the nested lic, we just need to move the highest ones
   lics.forEach((lic) => {
     const licPath = lic[1];
-    const liPath = Path.parent(licPath);
+    const liPath = PathApi.parent(licPath);
 
     const isAncestor = highestLicPaths.some((path) => {
-      const highestLiPath = Path.parent(path);
+      const highestLiPath = PathApi.parent(path);
 
-      return Path.isAncestor(highestLiPath, liPath);
+      return PathApi.isAncestor(highestLiPath, liPath);
     });
 
     if (!isAncestor) {

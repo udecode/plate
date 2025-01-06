@@ -1,21 +1,22 @@
 import {
+  type ElementEntry,
+  type Path,
   type SlateEditor,
   type TElement,
-  type TElementEntry,
+  PathApi,
   getLastChildPath,
   insertElements,
   moveChildren,
 } from '@udecode/plate-common';
-import { Path } from 'slate';
 
 import { getListTypes } from '../queries/getListTypes';
 
 export interface MoveListItemSublistItemsToListItemSublistOptions {
   /** The list item to merge. */
-  fromListItem: TElementEntry;
+  fromListItem: ElementEntry;
 
   /** The list item where to merge. */
-  toListItem: TElementEntry;
+  toListItem: ElementEntry;
 
   /** Move to the start of the list instead of the end. */
   start?: boolean;
@@ -80,7 +81,7 @@ export const moveListItemSublistItemsToListItemSublist = (
       const [, toListItemSublistPath] = toListItemSublist;
       to = toListItemSublistPath.concat([0]);
     } else {
-      to = Path.next(getLastChildPath(toListItemSublist));
+      to = PathApi.next(getLastChildPath(toListItemSublist));
     }
 
     moved = moveChildren(editor, {

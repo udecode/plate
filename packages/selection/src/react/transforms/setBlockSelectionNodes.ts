@@ -1,7 +1,7 @@
 import type {
+  NodeProps,
   SetNodesOptions,
   TElement,
-  TNodeProps,
   TText,
 } from '@udecode/plate-common';
 import type { PlateEditor } from '@udecode/plate-common/react';
@@ -10,7 +10,7 @@ import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 
 export const setBlockSelectionNodes = (
   editor: PlateEditor,
-  props: Partial<TNodeProps<TElement>>,
+  props: Partial<NodeProps<TElement>>,
   options?: SetNodesOptions
 ) => {
   editor.tf.withoutNormalizing(() => {
@@ -55,7 +55,7 @@ export const setBlockSelectionIndent = (
 
 export const setBlockSelectionTexts = (
   editor: PlateEditor,
-  props: Partial<TNodeProps<TText>>,
+  props: Partial<NodeProps<TText>>,
   options?: Omit<SetNodesOptions, 'at'>
 ) => {
   setBlockSelectionNodes(editor, props, {

@@ -3,10 +3,9 @@ import type { PlateEditor } from '@udecode/plate-common/react';
 import {
   type SlateEditor,
   type TElement,
+  NodeApi,
   TextApi,
   getFirstNodeText,
-  getNodeProps,
-  withNewBatch,
 } from '@udecode/plate-common';
 import {
   BlockSelectionPlugin,
@@ -48,7 +47,7 @@ export const replaceSelectionAIChat = (
     editor.tf.withoutNormalizing(() => {
       removeBlockSelectionNodes(editor);
 
-      withNewBatch(editor, () => {
+      editor.tf.withNewBatch(() => {
         editor
           .getTransforms(BlockSelectionPlugin)
           .blockSelection.insertBlocksAndSelect(
@@ -69,14 +68,14 @@ export const replaceSelectionAIChat = (
   // - formatting is 'all', or
   // - only one block is selected
   const [firstBlockNode, firstBlockPath] = selectedBlocks[0];
-  const firstBlockProps = getNodeProps(firstBlockNode);
+  const firstBlockProps = NodeApi.extractProps(firstBlockNode);
 
   // Get formatting from first text node
   const firstTextEntry = getFirstNodeText(firstBlockNode as TElement);
 
   if (!firstTextEntry) return;
 
-  const textProps = getNodeProps(firstTextEntry[0]);
+  const textProps = NodeApi.extractProps(firstTextEntry[0]);
 
   // Apply text props recursively to text nodes
   const applyTextProps = (node: any): any => {
@@ -96,7 +95,7 @@ export const replaceSelectionAIChat = (
   editor.tf.withoutNormalizing(() => {
     removeBlockSelectionNodes(editor);
 
-    withNewBatch(editor, () => {
+    editor.tf.withNewBatch(() => {
       // Create new blocks with first block's formatting
       const newBlocks = cloneDeep(sourceEditor.children).map((block) => ({
         ...block,

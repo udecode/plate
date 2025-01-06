@@ -1,9 +1,8 @@
 import { nodes } from 'slate';
 
-import type { DescendantOf } from '../../interfaces';
+import type { DescendantOf, EditorNodesOptions } from '../../interfaces';
 import type { Editor, ValueOf } from '../../interfaces/editor/editor';
-import type { GetNodeEntriesOptions } from '../../interfaces/editor/editor-types';
-import type { TNodeEntry } from '../../interfaces/node/TNodeEntry';
+import type { NodeEntry } from '../../interfaces/node-entry';
 
 import { getQueryOptions } from '../../utils/match';
 
@@ -12,8 +11,8 @@ export const getNodeEntries = <
   E extends Editor = Editor,
 >(
   editor: E,
-  options?: GetNodeEntriesOptions<ValueOf<E>>
-): Generator<TNodeEntry<N>, void, undefined> => {
+  options?: EditorNodesOptions<ValueOf<E>>
+): Generator<NodeEntry<N>, void, undefined> => {
   options = getQueryOptions(editor, options);
 
   // if (options?.at) {

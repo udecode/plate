@@ -3,6 +3,7 @@
  */
 
 export * from './createEditor';
+export * from './slate-dom';
 export * from './interfaces/index';
 export * from './queries/index';
 export * from './slate-history/index';

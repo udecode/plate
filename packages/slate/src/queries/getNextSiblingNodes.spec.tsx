@@ -1,7 +1,5 @@
 /** @jsx jsxt */
 
-import type { Range } from 'slate';
-
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { jsxt } from '@udecode/plate-test-utils';
@@ -33,9 +31,9 @@ describe('getNextSiblingNodes', () => {
       editor.children = input.children;
 
       const above = editor.api.block() as any;
-      expect(
-        getNextSiblingNodes(above, (input.selection as Range).anchor.path)
-      ).toEqual([]);
+      expect(getNextSiblingNodes(above, input.selection!.anchor.path)).toEqual(
+        []
+      );
     });
   });
 
@@ -67,9 +65,9 @@ describe('getNextSiblingNodes', () => {
 
       const above = editor.api.block()!;
 
-      expect(
-        getNextSiblingNodes(above, (input.selection as Range).anchor.path)
-      ).toEqual(output);
+      expect(getNextSiblingNodes(above, input.selection!.anchor.path)).toEqual(
+        output
+      );
     });
   });
 });

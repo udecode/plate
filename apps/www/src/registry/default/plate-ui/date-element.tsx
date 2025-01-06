@@ -1,7 +1,7 @@
 'use client';
 
 import { cn, withRef } from '@udecode/cn';
-import { useReadOnly } from 'slate-react';
+import { useReadOnly } from '@udecode/plate-common/react';
 
 import { Calendar } from './calendar';
 import { PlateElement } from './plate-element';

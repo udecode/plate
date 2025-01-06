@@ -1,24 +1,22 @@
 import {
   type Editor,
-  type TOperation,
-  type TText,
-  addRangeMarks,
-} from '@udecode/plate-common';
-import isEqual from 'lodash/isEqual.js';
-import uniqWith from 'lodash/uniqWith.js';
-import {
   type InsertTextOperation,
   type MergeNodeOperation,
+  type Operation,
   type PointRef,
   type RangeRef,
   type RemoveTextOperation,
   type SetNodeOperation,
   type SplitNodeOperation,
-  Node,
-  Path,
-  Point,
-  Range,
-} from 'slate';
+  type TText,
+  NodeApi,
+  PathApi,
+  PointApi,
+  RangeApi,
+  addRangeMarks,
+} from '@udecode/plate-common';
+import isEqual from 'lodash/isEqual.js';
+import uniqWith from 'lodash/uniqWith.js';
 
 import type { ComputeDiffOptions } from '../../lib/computeDiff';
 
@@ -65,7 +63,7 @@ export const withChangeTracking = <E extends Editor>(
 const applyWithChangeTracking = <E extends Editor>(
   editor: ChangeTrackingEditor & E,
   apply: E['apply'],
-  op: TOperation
+  op: Operation
 ) => {
   if (!editor.recordingOperations) {
     return apply(op);
@@ -111,7 +109,7 @@ const applyInsertText = <E extends Editor>(
   apply: E['apply'],
   op: InsertTextOperation
 ) => {
-  const node = Node.get(editor, op.path) as TText;
+  const node = NodeApi.get(editor, op.path) as TText;
 
   apply(op);
 
@@ -134,7 +132,7 @@ const applyRemoveText = <E extends Editor>(
   apply: E['apply'],
   op: RemoveTextOperation
 ) => {
-  const node = Node.get(editor, op.path) as TText;
+  const node = NodeApi.get(editor, op.path) as TText;
 
   apply(op);
 
@@ -157,12 +155,12 @@ const applyMergeNode = <E extends Editor>(
   apply: E['apply'],
   op: MergeNodeOperation
 ) => {
-  const oldNode = Node.get(editor, op.path) as TText;
-  const properties = Node.extractProps(oldNode);
+  const oldNode = NodeApi.get(editor, op.path) as TText;
+  const properties = NodeApi.extractProps(oldNode);
 
-  const prevNodePath = Path.previous(op.path);
-  const prevNode = Node.get(editor, prevNodePath) as TText;
-  const newProperties = Node.extractProps(prevNode);
+  const prevNodePath = PathApi.previous(op.path);
+  const prevNode = NodeApi.get(editor, prevNodePath) as TText;
+  const newProperties = NodeApi.extractProps(prevNode);
 
   apply(op);
 
@@ -183,13 +181,13 @@ const applySplitNode = <E extends Editor>(
   apply: E['apply'],
   op: SplitNodeOperation
 ) => {
-  const oldNode = Node.get(editor, op.path) as TText;
-  const properties = Node.extractProps(oldNode);
+  const oldNode = NodeApi.get(editor, op.path) as TText;
+  const properties = NodeApi.extractProps(oldNode);
   const newProperties = op.properties;
 
   apply(op);
 
-  const newNodePath = Path.next(op.path);
+  const newNodePath = PathApi.next(op.path);
   const newNodeRange = editor.api.range(newNodePath)!;
   const rangeRef = editor.api.rangeRef(newNodeRange);
 
@@ -226,7 +224,7 @@ const commitChangesToDiffs = <E extends Editor>(
     const flatUpdates = flattenPropsChanges(editor).reverse();
 
     flatUpdates.forEach(({ newProperties, properties, range }) => {
-      const node = Node.get(editor, range.anchor.path) as TText;
+      const node = NodeApi.get(editor, range.anchor.path) as TText;
 
       addRangeMarks(
         editor as any,
@@ -288,8 +286,8 @@ const flattenPropsChanges = (editor: ChangeTrackingEditor) => {
   });
 
   const rangePoints = uniqWith(
-    unsortedRangePoints.sort(Point.compare),
-    Point.equals
+    unsortedRangePoints.sort(PointApi.compare),
+    PointApi.equals
   );
 
   if (rangePoints.length < 2) return [];
@@ -315,11 +313,11 @@ const flattenPropsChanges = (editor: ChangeTrackingEditor) => {
 
         if (!range) return false;
 
-        const intersection = Range.intersection(range, flatRange);
+        const intersection = RangeApi.intersection(range, flatRange);
 
         if (!intersection) return false;
 
-        return Range.isExpanded(intersection);
+        return RangeApi.isExpanded(intersection);
       });
 
     // If the range is part of an insertion, return null

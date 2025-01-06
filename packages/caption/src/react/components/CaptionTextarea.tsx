@@ -2,14 +2,18 @@ import React, { useCallback, useState } from 'react';
 
 import type { TextareaAutosizeProps } from 'react-textarea-autosize';
 
-import { type TElement, getNodeString, isHotkey } from '@udecode/plate-common';
+import {
+  type TElement,
+  NodeApi,
+  PathApi,
+  isHotkey,
+} from '@udecode/plate-common';
 import {
   createPrimitiveComponent,
   useEditorRef,
   useElement,
+  useReadOnly,
 } from '@udecode/plate-common/react';
-import { Path } from 'slate';
-import { useReadOnly } from 'slate-react';
 
 import type { TCaptionElement } from '../../lib';
 
@@ -29,7 +33,7 @@ export const useCaptionTextareaFocus = (
     if (focusCaptionPath && textareaRef.current) {
       const path = editor.api.findPath(element);
 
-      if (path && Path.equals(path, focusCaptionPath)) {
+      if (path && PathApi.equals(path, focusCaptionPath)) {
         textareaRef.current.focus();
         editor.setOption(CaptionPlugin, 'focusEndPath', null);
       }
@@ -49,7 +53,7 @@ export const useCaptionTextareaState = () => {
     const nodeCaption =
       element.caption ?? ([{ children: [{ text: '' }] }] as [TElement]);
 
-    return getNodeString(nodeCaption[0]);
+    return NodeApi.string(nodeCaption[0]);
   });
 
   const updateEditorCaptionValue = useCallback(

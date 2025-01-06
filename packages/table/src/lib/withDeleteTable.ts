@@ -2,10 +2,9 @@ import {
   type ExtendEditor,
   type SlateEditor,
   type TElement,
-  isCollapsed,
+  PointApi,
   replaceNodeChildren,
 } from '@udecode/plate-common';
-import { Point } from 'slate';
 
 import { type TableConfig, getCellTypes } from '.';
 import { getTableGridAbove } from './queries/getTableGridAbove';
@@ -30,7 +29,7 @@ export const preventDeleteTableCell = (
 
   const getNextPoint = reverse ? editor.api.after : editor.api.before;
 
-  if (isCollapsed(selection)) {
+  if (editor.api.isCollapsed()) {
     const cellEntry = editor.api.block({
       match: { type: getCellTypes(editor) },
     });
@@ -43,7 +42,7 @@ export const preventDeleteTableCell = (
         ? editor.api.end(cellPath)
         : editor.api.start(cellPath);
 
-      if (selection && Point.equals(selection.anchor, start!)) {
+      if (selection && PointApi.equals(selection.anchor, start!)) {
         return true;
       }
     } else {

@@ -1,5 +1,4 @@
-import type { Editor } from '@udecode/plate-common';
-import type { Point, Range } from 'slate';
+import type { Editor, Point } from '@udecode/plate-common';
 
 import type { MatchRange } from '../types';
 
@@ -14,7 +13,7 @@ export type GetMatchPointsReturnType =
   | undefined;
 
 export const getMatchPoints = (editor: Editor, { end, start }: MatchRange) => {
-  const selection = editor.selection as Range;
+  const selection = editor.selection!;
 
   let beforeEndMatchPoint = selection.anchor;
 

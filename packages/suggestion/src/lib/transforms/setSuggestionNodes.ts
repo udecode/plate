@@ -1,10 +1,10 @@
 import {
+  type NodeProps,
   type SetNodesOptions,
   type SlateEditor,
-  type TNodeProps,
+  ElementApi,
   addRangeMarks,
   getAt,
-  isElement,
   nanoid,
 } from '@udecode/plate-common';
 
@@ -20,17 +20,20 @@ export const setSuggestionNodes = (
   } & SetNodesOptions
 ) => {
   const at = getAt(editor, options?.at) ?? editor.selection;
+
+  if (!at) return;
+
   const { suggestionId = nanoid() } = options ?? {};
 
   // TODO: get all inline nodes to be set
   const _nodeEntries = editor.api.nodes({
-    match: (n) => isElement(n) && editor.api.isInline(n),
+    match: (n) => ElementApi.isElement(n) && editor.api.isInline(n),
     ...options,
   });
   const nodeEntries = [..._nodeEntries];
 
   editor.tf.withoutNormalizing(() => {
-    const props: TNodeProps<TSuggestionText> = getSuggestionProps(
+    const props: NodeProps<TSuggestionText> = getSuggestionProps(
       editor,
       suggestionId,
       options
@@ -43,7 +46,7 @@ export const setSuggestionNodes = (
     nodeEntries.forEach(([, path]) => {
       editor.tf.setNodes<TSuggestionText>(props, {
         at: path,
-        match: (n) => isElement(n) && editor.api.isInline(n),
+        match: (n) => ElementApi.isElement(n) && editor.api.isInline(n),
         ...options,
       });
     });

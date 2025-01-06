@@ -1,4 +1,4 @@
-import type { TNode, TNodeEntry } from '../interfaces';
+import type { NodeEntry, TNode } from '../interfaces';
 
 /** Filter nodes. */
 export interface QueryNodeOptions {
@@ -9,7 +9,7 @@ export interface QueryNodeOptions {
   exclude?: string[] | string | null;
 
   /** Query the node entry. */
-  filter?: <N extends TNode>(entry: TNodeEntry<N>) => boolean;
+  filter?: <N extends TNode>(entry: NodeEntry<N>) => boolean;
 
   /** Valid path levels. */
   level?: number[] | number | null;

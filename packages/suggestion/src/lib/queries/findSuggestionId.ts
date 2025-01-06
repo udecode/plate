@@ -1,5 +1,4 @@
-import type { SlateEditor } from '@udecode/plate-common';
-import type { Location, Point } from 'slate';
+import type { Point, SlateEditor, TLocation } from '@udecode/plate-common';
 
 import { SUGGESTION_KEYS } from '../BaseSuggestionPlugin';
 import { findSuggestionNode } from './findSuggestionNode';
@@ -8,7 +7,7 @@ import { findSuggestionNode } from './findSuggestionNode';
  * Find the suggestion id at the cursor point, the point before and after (if
  * offset = 0).
  */
-export const findSuggestionId = (editor: SlateEditor, at: Location) => {
+export const findSuggestionId = (editor: SlateEditor, at: TLocation) => {
   let entry = findSuggestionNode(editor, {
     at,
   });

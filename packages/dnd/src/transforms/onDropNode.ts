@@ -1,8 +1,7 @@
-import type { TElement } from '@udecode/plate-common';
 import type { PlateEditor } from '@udecode/plate-common/react';
 import type { DropTargetMonitor } from 'react-dnd';
 
-import { Path } from 'slate';
+import { type Path, type TElement, PathApi } from '@udecode/plate-common';
 
 import type { UseDropNodeOptions } from '../hooks';
 import type { ElementDragItemNode } from '../types';
@@ -62,20 +61,21 @@ export const getDropPath = (
     dropPath = hoveredPath;
 
     // If the dragged node is already right after hovered node, no change
-    if (Path.equals(dragPath, Path.next(dropPath))) return;
+    if (PathApi.equals(dragPath, PathApi.next(dropPath))) return;
   }
   if (direction === 'top' || direction === 'left') {
     // Insert before hovered node
     dropPath = [...hoveredPath.slice(0, -1), hoveredPath.at(-1)! - 1];
 
     // If the dragged node is already right before hovered node, no change
-    if (Path.equals(dragPath, dropPath)) return;
+    if (PathApi.equals(dragPath, dropPath)) return;
   }
 
   const _dropPath = dropPath as Path;
   const before =
-    Path.isBefore(dragPath, _dropPath) && Path.isSibling(dragPath, _dropPath);
-  const to = before ? _dropPath : Path.next(_dropPath);
+    PathApi.isBefore(dragPath, _dropPath) &&
+    PathApi.isSibling(dragPath, _dropPath);
+  const to = before ? _dropPath : PathApi.next(_dropPath);
 
   return { direction, dragPath, to };
 };

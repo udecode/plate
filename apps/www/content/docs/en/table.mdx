@@ -145,7 +145,7 @@ The row element. If `header` is not specified, it will determine if the cell is 
 <APISubListItem
   parent="options"
   name="children"
-  type="TDescendant[]"
+  type="Descendant[]"
   optional
 >
 The children of the new cell node.
@@ -264,7 +264,7 @@ The table cell element.
 </APIParameters>
 
 <APIReturns>
-<APIItem type="TDescendant[]">
+<APIItem type="Descendant[]">
 
 The children of the table cell.
 
@@ -360,19 +360,19 @@ Gets the next cell in the table.
   <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
-  <APIItem name="currentCell" type="TNodeEntry">
+  <APIItem name="currentCell" type="NodeEntry">
     The entry of the current cell.
   </APIItem>
   <APIItem name="currentPath" type="Path">
     The path of the current cell.
   </APIItem>
-  <APIItem name="currentRow" type="TNodeEntry">
+  <APIItem name="currentRow" type="NodeEntry">
     The entry of the current row.
   </APIItem>
 </APIParameters>
 
 <APIReturns>
-  <APIItem type="TNodeEntry | undefined">
+  <APIItem type="NodeEntry | undefined">
     The node entry of the cell in the next row, or `undefined` if the current
     row is the last row.
   </APIItem>
@@ -386,19 +386,19 @@ Gets the previous cell in the table.
   <APIItem name="editor" type="Editor<V>">
     The editor instance.
   </APIItem>
-  <APIItem name="currentCell" type="TNodeEntry">
+  <APIItem name="currentCell" type="NodeEntry">
     The entry of the current cell.
   </APIItem>
   <APIItem name="currentPath" type="Path">
     The path of the current cell.
   </APIItem>
-  <APIItem name="currentRow" type="TNodeEntry">
+  <APIItem name="currentRow" type="NodeEntry">
     The entry of the current row.
   </APIItem>
 </APIParameters>
 
 <APIReturns>
-  <APIItem type="TNodeEntry | undefined">
+  <APIItem type="NodeEntry | undefined">
     The node entry of the cell in the previous row, or `undefined` if the
     current row is the first row.
   </APIItem>
@@ -470,13 +470,13 @@ The location where the table cell is located.
 </APIParameters>
 
 <APIReturns>
-  <APIItem name="table" type="TNodeEntry | undefined">
+  <APIItem name="table" type="NodeEntry | undefined">
     The table node entry.
   </APIItem>
-  <APIItem name="row" type="TNodeEntry | undefined">
+  <APIItem name="row" type="NodeEntry | undefined">
     The row node entry.
   </APIItem>
-  <APIItem name="cell" type="TNodeEntry | undefined">
+  <APIItem name="cell" type="NodeEntry | undefined">
     The cell node entry.
   </APIItem>
 </APIReturns>
@@ -503,7 +503,7 @@ The format of the sub table to retrieve.
 </APIParameters>
 
 <APIReturns>
-  <APIItem type="TElementEntry[]">The sub table entries.</APIItem>
+  <APIItem type="ElementEntry[]">The sub table entries.</APIItem>
 </APIReturns>
 
 ### getTableGridByRange
@@ -536,7 +536,7 @@ The format of the output.
 </APIParameters>
 
 <APIReturns>
-  <APIItem type="TElementEntry[]">The sub table entries.</APIItem>
+  <APIItem type="ElementEntry[]">The sub table entries.</APIItem>
 </APIReturns>
 
 ### getTableRowIndex
@@ -575,7 +575,7 @@ Gets the cell above the current cell in the table.
 </APIParameters>
 
 <APIReturns>
-<APIItem type="TElementEntry | undefined">
+<APIItem type="ElementEntry | undefined">
 
 The cell node entry.
 
@@ -805,7 +805,7 @@ Sets the width of a specific column in a table.
       </APISubListItem>
     </APISubList>
   </APIItem>
-  <APIItem name="getAboveNodeOptions" type="GetAboveNodeOptions" optional>
+  <APIItem name="getAboveNodeOptions" type="EditorAboveOptions" optional>
     Additional options for finding the table node.
   </APIItem>
 </APIParameters>
@@ -825,7 +825,7 @@ Sets the margin left of a table.
       </APISubListItem>
     </APISubList>
   </APIItem>
-  <APIItem name="getAboveNodeOptions" type="GetAboveNodeOptions" optional>
+  <APIItem name="getAboveNodeOptions" type="EditorAboveOptions" optional>
     Additional options for finding the table node.
   </APIItem>
 </APIParameters>
@@ -848,7 +848,7 @@ Sets the size (height) of a table row.
       </APISubListItem>
     </APISubList>
   </APIItem>
-  <APIItem name="getAboveNodeOptions" type="GetAboveNodeOptions" optional>
+  <APIItem name="getAboveNodeOptions" type="EditorAboveOptions" optional>
     Additional options for finding the table node.
   </APIItem>
 </APIParameters>

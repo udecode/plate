@@ -3,7 +3,7 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import { type TDescendant, TextApi } from '@udecode/plate-common';
+import { type Descendant, TextApi } from '@udecode/plate-common';
 import isEqual from 'lodash/isEqual.js';
 
 import type { ComputeDiffOptions } from '../../lib/computeDiff';
@@ -26,15 +26,15 @@ export function transformDiffDescendants(
     1: string;
   }[],
   { stringCharMapping, ...options }: TransformDiffDescendantsOptions
-): TDescendant[] {
+): Descendant[] {
   const { getDeleteProps, getInsertProps, ignoreProps, isInline } = options;
 
   // Current index in the diff array
   let i = 0;
-  const children: TDescendant[] = [];
+  const children: Descendant[] = [];
 
-  let insertBuffer: TDescendant[] = [];
-  let deleteBuffer: TDescendant[] = [];
+  let insertBuffer: Descendant[] = [];
+  let deleteBuffer: Descendant[] = [];
 
   const flushBuffers = () => {
     // Return all deletions followed by all insertions
@@ -43,28 +43,28 @@ export function transformDiffDescendants(
     deleteBuffer = [];
   };
 
-  const insertNode = (node: TDescendant) =>
+  const insertNode = (node: Descendant) =>
     insertBuffer.push({
       ...node,
       ...getInsertProps(node),
     });
 
-  const deleteNode = (node: TDescendant) =>
+  const deleteNode = (node: Descendant) =>
     deleteBuffer.push({
       ...node,
       ...getDeleteProps(node),
     });
 
-  const passThroughNodes = (...nodes: TDescendant[]) => {
+  const passThroughNodes = (...nodes: Descendant[]) => {
     flushBuffers();
     children.push(...nodes);
   };
 
   const areNodeListsEquivalent = (
-    nodes0: TDescendant[],
-    nodes1: TDescendant[]
+    nodes0: Descendant[],
+    nodes1: Descendant[]
   ): boolean => {
-    const excludeIgnoreProps = (node: TDescendant) =>
+    const excludeIgnoreProps = (node: Descendant) =>
       copyWithout(node, ignoreProps || []);
     const nodesWithoutIgnore0 = nodes0.map(excludeIgnoreProps);
     const nodesWithoutIgnore1 = nodes1.map(excludeIgnoreProps);
@@ -72,7 +72,7 @@ export function transformDiffDescendants(
     return isEqual(nodesWithoutIgnore0, nodesWithoutIgnore1);
   };
 
-  const isInlineList = (nodes: TDescendant[]) =>
+  const isInlineList = (nodes: Descendant[]) =>
     nodes.every((node) => TextApi.isText(node) || isInline(node));
 
   while (i < diff.length) {

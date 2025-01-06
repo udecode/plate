@@ -1,6 +1,6 @@
-import { type Point, Path } from 'slate';
+import type { Point } from '../../interfaces/point';
 
-import type { Editor } from '../../interfaces/index';
+import { type Editor, PathApi } from '../../interfaces/index';
 
 /**
  * If the start point is inside an inline void, get the point before or after
@@ -28,7 +28,7 @@ export const getPointNextToVoid = (
       if (
         nextPoint &&
         blockAbove &&
-        Path.isAncestor(blockAbove[1], nextPoint.path)
+        PathApi.isAncestor(blockAbove[1], nextPoint.path)
       ) {
         at = nextPoint;
       }

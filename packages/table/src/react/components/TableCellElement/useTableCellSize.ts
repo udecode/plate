@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { TNodeEntry } from '@udecode/plate-common';
+import type { NodeEntry } from '@udecode/plate-common';
 
 import {
   useEditorPlugin,
@@ -21,7 +21,7 @@ export function useTableCellSize() {
   const colSizes = useTableColSizes();
   const cellIndices = useCellIndices();
   const rowSize = useElementSelector(
-    ([node]: TNodeEntry<TTableRowElement>) => node.size,
+    ([node]: NodeEntry<TTableRowElement>) => node.size,
     [],
     {
       key: TableRowPlugin.key,

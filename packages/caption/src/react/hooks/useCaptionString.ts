@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { getNodeString } from '@udecode/plate-common';
+import { NodeApi } from '@udecode/plate-common';
 import { useElement } from '@udecode/plate-common/react';
 
 import type { TCaptionElement } from '../../lib';
@@ -10,6 +10,6 @@ export const useCaptionString = () => {
     useElement<TCaptionElement>();
 
   return React.useMemo(() => {
-    return getNodeString(nodeCaption[0] as any) || '';
+    return NodeApi.string(nodeCaption[0] as any) || '';
   }, [nodeCaption]);
 };

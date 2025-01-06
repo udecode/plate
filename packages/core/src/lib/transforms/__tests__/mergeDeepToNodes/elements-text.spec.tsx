@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@udecode/plate-test-utils';
-import { isElement } from '@udecode/slate';
+import { ElementApi } from '@udecode/slate';
 
 import { mergeDeepToNodes } from '../../../utils';
 
@@ -17,7 +17,7 @@ it('should do nothing', () => {
   mergeDeepToNodes({
     node,
     query: {
-      filter: ([n]) => isElement(n),
+      filter: ([n]) => ElementApi.isElement(n),
     },
     source: props,
   });

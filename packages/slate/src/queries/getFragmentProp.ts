@@ -1,4 +1,4 @@
-import { type TElement, type TText, getNodeTexts } from '../interfaces';
+import { type TElement, type TText, NodeApi } from '../interfaces';
 
 export type GetFragmentPropOptions = {
   key?: string;
@@ -37,7 +37,7 @@ export function getFragmentProp(
       }
     }
     if (mode === 'text' || mode === 'all') {
-      const textEntries = Array.from(getNodeTexts(node));
+      const textEntries = Array.from(NodeApi.texts(node));
 
       for (const [text] of textEntries) {
         const textValue = getNodeValue(text);

@@ -1,6 +1,6 @@
 import type { ExtendEditor } from '@udecode/plate-common/react';
 
-import { type SlateEditor, isNode } from '@udecode/plate-common';
+import { type SlateEditor, NodeApi } from '@udecode/plate-common';
 import { type TIndentElement, indent } from '@udecode/plate-indent';
 
 import type { ToggleConfig } from './TogglePlugin';
@@ -20,7 +20,10 @@ export const withToggle: ExtendEditor<ToggleConfig> = ({
   const { deleteBackward, deleteForward, insertBreak, isSelectable } = editor;
 
   editor.isSelectable = (element) => {
-    if (isNode(element) && isInClosedToggle(editor, element.id as string))
+    if (
+      NodeApi.isNode(element) &&
+      isInClosedToggle(editor, element.id as string)
+    )
       return false;
 
     return isSelectable(element);

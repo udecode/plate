@@ -5,8 +5,8 @@ import type { Nullable } from '@udecode/plate-common';
 import {
   createAtomStore,
   createPrimitiveComponent,
+  useReadOnly,
 } from '@udecode/plate-common/react';
-import { useReadOnly } from 'slate-react';
 
 import type { ResizeDirection, ResizeEvent } from '../types';
 

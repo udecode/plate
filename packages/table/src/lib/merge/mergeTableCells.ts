@@ -1,7 +1,7 @@
 import {
+  type Descendant,
+  type NodeEntry,
   type SlateEditor,
-  type TDescendant,
-  type TNodeEntry,
   getEditorPlugin,
   insertElements,
 } from '@udecode/plate-common';
@@ -17,7 +17,7 @@ export const mergeTableCells = (editor: SlateEditor) => {
 
   const cellEntries = getTableGridAbove(editor, {
     format: 'cell',
-  }) as TNodeEntry<TTableCellElement>[];
+  }) as NodeEntry<TTableCellElement>[];
 
   editor.tf.withoutNormalizing(() => {
     // calculate the colSpan which is the number of horizontal cells that a cell should span.
@@ -48,7 +48,7 @@ export const mergeTableCells = (editor: SlateEditor) => {
     });
 
     // This will store the content of all cells we are merging
-    const mergingCellChildren: TDescendant[] = [];
+    const mergingCellChildren: Descendant[] = [];
 
     for (const cellEntry of cellEntries) {
       const [el] = cellEntry;

@@ -14,8 +14,7 @@ import React, {
   useState,
 } from 'react';
 
-import type { TElement } from '@udecode/plate-common';
-import type { PointRef } from 'slate';
+import type { PointRef, TElement } from '@udecode/plate-common';
 
 import {
   type ComboboxItemProps,

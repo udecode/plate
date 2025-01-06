@@ -1,9 +1,8 @@
-import type { TextUnitAdjustment } from 'slate';
-
 import type { Value } from '../interfaces';
-import type { NodeIn } from '../interfaces/node/TNode';
+import type { NodeIn } from '../interfaces/node';
 import type { Predicate } from '../utils';
 import type { At } from './At';
+import type { TextUnitAdjustment } from './types';
 
 export type QueryOptions<V extends Value = Value> = {
   /** Match the node by id. `true` will match all nodes with an id. */

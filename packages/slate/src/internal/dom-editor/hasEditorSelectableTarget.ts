@@ -8,7 +8,7 @@ export const hasEditorSelectableTarget = (
 ) => {
   try {
     return DOMEditor.hasSelectableTarget(editor as any, target);
-  } catch (error) {}
+  } catch {}
 
   return false;
 };

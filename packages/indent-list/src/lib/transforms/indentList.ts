@@ -1,5 +1,4 @@
-import type { SlateEditor } from '@udecode/plate-common';
-import type { Location } from 'slate';
+import type { SlateEditor, TLocation } from '@udecode/plate-common';
 
 import { setIndent } from '@udecode/plate-indent';
 
@@ -10,7 +9,7 @@ import {
 import { ListStyleType } from '../types';
 
 export interface IndentListOptions {
-  at?: Location;
+  at?: TLocation;
   listStyleType?: ListStyleType | string;
 }
 

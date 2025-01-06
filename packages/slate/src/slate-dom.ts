@@ -48,3 +48,5 @@ export {
   IS_WEBKIT,
   IS_WECHATBROWSER,
 } from 'slate-dom';
+
+export { isElementDecorationsEqual, isTextDecorationsEqual } from 'slate-dom';

@@ -5,9 +5,8 @@ import React from 'react';
 import type { PlateElementProps } from '@udecode/plate-common/react';
 
 import { cn } from '@udecode/cn';
-import { Plate } from '@udecode/plate-common/react';
+import { Plate, useFocused, useSelected } from '@udecode/plate-common/react';
 import { TabbablePlugin } from '@udecode/plate-tabbable/react';
-import { useFocused, useSelected } from 'slate-react';
 
 import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';

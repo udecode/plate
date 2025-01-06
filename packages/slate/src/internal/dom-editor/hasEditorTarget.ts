@@ -8,7 +8,7 @@ export const hasEditorTarget = (
 ): target is Node => {
   try {
     return DOMEditor.hasTarget(editor as any, target);
-  } catch (error) {}
+  } catch {}
 
   return false;
 };

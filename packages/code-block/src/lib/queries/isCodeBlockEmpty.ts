@@ -1,8 +1,4 @@
-import {
-  type SlateEditor,
-  getChildren,
-  getNodeString,
-} from '@udecode/plate-common';
+import { type SlateEditor, NodeApi, getChildren } from '@udecode/plate-common';
 
 import { getCodeLineEntry } from './getCodeLineEntry';
 
@@ -19,5 +15,5 @@ export const isCodeBlockEmpty = (editor: SlateEditor) => {
 
   const firstCodeLineNode = codeLines[0][0];
 
-  return !getNodeString(firstCodeLineNode);
+  return !NodeApi.string(firstCodeLineNode);
 };

@@ -1,8 +1,9 @@
 import {
+  type Descendant,
   type ExtendEditor,
-  type TDescendant,
+  type NodeEntry,
+  type NodeProps,
   type TNode,
-  type TNodeEntry,
   applyDeepToNodes,
   defaultsDeepToNodes,
   isDefined,
@@ -24,7 +25,7 @@ export const withNodeId: ExtendEditor<NodeIdConfig> = ({
     [getOptions().idKey ?? '']: getOptions().idCreator!(),
   });
 
-  const filterNode = (nodeEntry: TNodeEntry) => {
+  const filterNode = (nodeEntry: NodeEntry) => {
     const { filter, filterText } = getOptions();
 
     return (
@@ -32,7 +33,7 @@ export const withNodeId: ExtendEditor<NodeIdConfig> = ({
     );
   };
 
-  const removeIdFromNodeIfDuplicate = <N extends TDescendant>(node: N) => {
+  const removeIdFromNodeIfDuplicate = <N extends Descendant>(node: N) => {
     const { idKey = '', reuseId } = getOptions();
 
     if (
@@ -57,9 +58,7 @@ export const withNodeId: ExtendEditor<NodeIdConfig> = ({
   };
 
   editor.insertNodes = (_nodes, options) => {
-    const nodes = castArray<TDescendant>(_nodes as any).filter(
-      (node) => !!node
-    );
+    const nodes = castArray<Descendant>(_nodes as any).filter((node) => !!node);
 
     if (nodes.length === 0) return;
 
@@ -137,12 +136,12 @@ export const withNodeId: ExtendEditor<NodeIdConfig> = ({
       });
     }
     if (operation.type === 'split_node') {
-      const node = operation.properties as TNode;
+      const node = operation.properties as NodeProps<TNode>;
 
       let id = (operation.properties as any)[idKey];
 
       // only for elements (node with a type) or all nodes if `filterText=false`
-      if (queryNode([node, operation.path], query)) {
+      if (queryNode([node as any, operation.path], query)) {
         /**
          * Create a new id if:
          *

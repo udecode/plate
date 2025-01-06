@@ -1,10 +1,10 @@
-import {
-  type ElementEntryOf,
-  type ElementOf,
-  type SlateEditor,
-  type TElement,
-  isExpanded,
+import type {
+  ElementEntryOf,
+  ElementOf,
+  SlateEditor,
+  TElement,
 } from '@udecode/plate-common';
+
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 
 import type { GetSiblingIndentListOptions } from '../queries';
@@ -55,7 +55,7 @@ export const toggleIndentList = <
 
     return;
   }
-  if (isExpanded(editor.selection)) {
+  if (editor.api.isExpanded()) {
     const _entries = editor.api.nodes<TElement>({ block: true });
     const entries = [..._entries];
 

@@ -1,6 +1,8 @@
-import type { ExtendEditor } from '@udecode/plate-common';
-
-import { Range } from 'slate';
+import {
+  type ExtendEditor,
+  type TRange,
+  RangeApi,
+} from '@udecode/plate-common';
 
 import type { TableConfig } from '.';
 
@@ -28,10 +30,10 @@ export const withSelectionTable: ExtendEditor<TableConfig> = ({
       const newSelection = {
         ...editor.selection,
         ...op.newProperties,
-      } as Range | null;
+      } as TRange | null;
 
       if (
-        Range.isRange(newSelection) &&
+        RangeApi.isRange(newSelection) &&
         editor.api.isAt({
           at: newSelection,
           blocks: true,
@@ -46,7 +48,7 @@ export const withSelectionTable: ExtendEditor<TableConfig> = ({
         if (anchorEntry) {
           const [, anchorPath] = anchorEntry;
 
-          const isBackward = Range.isBackward(newSelection);
+          const isBackward = RangeApi.isBackward(newSelection);
 
           if (isBackward) {
             op.newProperties.focus = editor.api.start(anchorPath);
@@ -67,7 +69,7 @@ export const withSelectionTable: ExtendEditor<TableConfig> = ({
           if (focusEntry) {
             const [, focusPath] = focusEntry;
 
-            const isBackward = Range.isBackward(newSelection);
+            const isBackward = RangeApi.isBackward(newSelection);
 
             if (isBackward) {
               const startPoint = editor.api.start(focusPath)!;

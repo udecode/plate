@@ -1,5 +1,10 @@
-import type { ElementOf, Editor, TElement, ValueOf } from '../interfaces';
-import type { InsertNodesOptions } from '../interfaces/editor/editor-types';
+import type {
+  Editor,
+  ElementOf,
+  InsertNodesOptions,
+  TElement,
+  ValueOf,
+} from '../interfaces';
 
 export const insertElements = <E extends Editor>(
   editor: E,

@@ -1,8 +1,8 @@
-import type { GetAboveNodeOptions } from '../../interfaces/editor/editor-types';
 import type {
-  ElementOf,
   Editor,
-  TNodeEntry,
+  EditorAboveOptions,
+  ElementOf,
+  NodeEntry,
   ValueOf,
 } from '../../interfaces/index';
 
@@ -12,8 +12,8 @@ export const getEdgeBlocksAbove = <
   E extends Editor = Editor,
 >(
   editor: E,
-  { at: _at, ...options }: GetAboveNodeOptions<ValueOf<E>> = {}
-): [TNodeEntry<N1>, TNodeEntry<N2>] | null => {
+  { at: _at, ...options }: EditorAboveOptions<ValueOf<E>> = {}
+): [NodeEntry<N1>, NodeEntry<N2>] | null => {
   const at = _at ?? editor.selection;
 
   if (!at) return null;

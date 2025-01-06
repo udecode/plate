@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@udecode/plate-test-utils';
-import { isDescendant } from '@udecode/slate';
+import { NodeApi } from '@udecode/slate';
 
 import { mergeDeepToNodes } from '../../../utils';
 
@@ -17,7 +17,7 @@ it('should set props to the text node', () => {
   mergeDeepToNodes({
     node,
     query: {
-      filter: ([n]) => isDescendant(n),
+      filter: ([n]) => NodeApi.isDescendant(n),
     },
     source: props,
   });

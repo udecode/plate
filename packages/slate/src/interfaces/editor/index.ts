@@ -4,6 +4,5 @@
 
 export * from './editor-api';
 export * from './editor-transforms';
-export * from './editor-types';
 export * from './editor';
 export * from './legacy-editor';

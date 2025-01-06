@@ -1,6 +1,6 @@
 import type {
-  GetNodeEntriesOptions,
   Editor,
+  EditorNodesOptions,
   ValueOf,
 } from '@udecode/plate-common';
 
@@ -9,7 +9,7 @@ import { getBlocksWithId } from '../queries/getBlocksWithId';
 /** Remove blocks with an id and focus the editor. */
 export const removeBlocksAndFocus = <E extends Editor = Editor>(
   editor: E,
-  options: GetNodeEntriesOptions<ValueOf<E>>
+  options: EditorNodesOptions<ValueOf<E>>
 ) => {
   editor.api.unhangRange(options?.at as any, options);
 

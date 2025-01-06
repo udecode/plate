@@ -4,14 +4,14 @@
  */
 
 import {
-  type TDescendant,
-  type TOperation,
+  type Descendant,
+  type Operation,
   type TText,
   BaseParagraphPlugin,
+  PathApi,
   TextApi,
   createEditor,
 } from '@udecode/plate-common';
-import { Path } from 'slate';
 
 import type { ComputeDiffOptions } from '../../lib/computeDiff';
 
@@ -23,10 +23,10 @@ import { withChangeTracking } from '../utils/with-change-tracking';
 
 // Main function to transform an array of text nodes into another array of text nodes
 export function transformDiffTexts(
-  nodes: TDescendant[],
-  nextNodes: TDescendant[],
+  nodes: Descendant[],
+  nextNodes: Descendant[],
   options: ComputeDiffOptions
-): TDescendant[] {
+): Descendant[] {
   // Validate input - both arrays must have at least one node
   if (nodes.length === 0) throw new Error('must have at least one nodes');
   if (nextNodes.length === 0)
@@ -197,7 +197,7 @@ function splitTextNodes(
   node: TText,
   split: TText[],
   options: LineBreakCharsOptions
-): TOperation[] {
+): Operation[] {
   if (split.length === 0) {
     // If there are no target nodes, simply remove the original node
     return [
@@ -217,7 +217,7 @@ function splitTextNodes(
   }
 
   const nodeText = node.text;
-  const operations: TOperation[] = [];
+  const operations: Operation[] = [];
 
   // If the concatenated target text differs from the original, compute the necessary text transformations
   if (splitText !== nodeText) {
@@ -265,7 +265,7 @@ function splitTextNodes(
       type: 'split_node',
     });
 
-    splitPath = Path.next(splitPath);
+    splitPath = PathApi.next(splitPath);
     properties = getProperties(nextPart);
   }
 

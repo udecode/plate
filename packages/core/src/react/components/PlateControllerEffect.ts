@@ -1,8 +1,8 @@
 import React from 'react';
 
 import { focusAtom } from 'jotai-optics';
-import { useFocused } from 'slate-react';
 
+import { useFocused } from '../slate-react';
 import {
   plateControllerStore,
   useEditorId,

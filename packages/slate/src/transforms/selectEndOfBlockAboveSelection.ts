@@ -1,6 +1,5 @@
-import type { Path } from 'slate';
-
 import type { Editor } from '../interfaces';
+import type { Path } from '../interfaces/path';
 
 /** Select the end point of the block above the selection. */
 export const selectEndOfBlockAboveSelection = (editor: Editor) => {

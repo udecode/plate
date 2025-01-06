@@ -11,7 +11,9 @@ import {
   useEditorPlugin,
   useEditorSelector,
   useElement,
+  useReadOnly,
   useRemoveNodeButton,
+  useSelected,
   withHOC,
 } from '@udecode/plate-common/react';
 import {
@@ -32,7 +34,6 @@ import {
   Trash2Icon,
   XIcon,
 } from 'lucide-react';
-import { useReadOnly, useSelected } from 'slate-react';
 
 import {
   DropdownMenu,

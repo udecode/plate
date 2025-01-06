@@ -1,12 +1,13 @@
 import {
+  type Path,
   type SlateEditor,
+  NodeApi,
+  PathApi,
   getEditorPlugin,
   getLastChildPath,
-  getNode,
   insertElements,
 } from '@udecode/plate-common';
 import cloneDeep from 'lodash/cloneDeep.js';
-import { Path } from 'slate';
 
 import type {
   TTableCellElement,
@@ -42,7 +43,7 @@ export const insertTableMergeRow = (
   const { api, type } = getEditorPlugin(editor, BaseTablePlugin);
 
   if (at && !fromRow) {
-    const table = getNode<TTableElement>(editor, at);
+    const table = NodeApi.get<TTableElement>(editor, at);
 
     if (table?.type === editor.getType(BaseTablePlugin)) {
       fromRow = getLastChildPath([table, at]);
@@ -91,7 +92,7 @@ export const insertTableMergeRow = (
   let checkingRowIndex: number;
   let nextRowPath: number[];
 
-  if (Path.isPath(at)) {
+  if (PathApi.isPath(at)) {
     nextRowIndex = at.at(-1)!;
     checkingRowIndex = cellRowIndex - 1;
     nextRowPath = at;

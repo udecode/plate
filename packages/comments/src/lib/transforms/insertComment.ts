@@ -1,21 +1,14 @@
-import {
-  type SlateEditor,
-  TextApi,
-  isExpanded,
-  nanoid,
-} from '@udecode/plate-common';
+import { type SlateEditor, TextApi, nanoid } from '@udecode/plate-common';
 
 import { BaseCommentsPlugin, getCommentKey } from '..';
 
 export const insertComment = (editor: SlateEditor) => {
-  const { selection } = editor;
-
-  if (!isExpanded(selection)) return;
+  if (!editor.api.isExpanded()) return;
 
   const id = nanoid();
 
   // add comment prop to inline elements
-  // const entries = getNodes(editor, {
+  // const entries = NodeApi.nodes(editor, {
   //   // TODO
   // });
   //

@@ -1,6 +1,4 @@
-import type { SlateEditor } from '@udecode/plate-common';
-
-import { Path } from 'slate';
+import { type SlateEditor, PathApi } from '@udecode/plate-common';
 
 import type { TabDestination, TabbableEntry } from './types';
 
@@ -43,7 +41,7 @@ export const findTabDestination = (
      */
     if (
       nextTabbableEntry &&
-      Path.equals(activeTabbableEntry.path, nextTabbableEntry.path)
+      PathApi.equals(activeTabbableEntry.path, nextTabbableEntry.path)
     ) {
       return {
         domNode: nextTabbableEntry.domNode,
@@ -81,11 +79,11 @@ export const findTabDestination = (
   const nextTabbableEntry =
     direction === 'forward'
       ? tabbableEntries.find(
-          (entry) => !Path.isBefore(entry.path, selectionPath)
+          (entry) => !PathApi.isBefore(entry.path, selectionPath)
         )
       : [...tabbableEntries]
           .reverse()
-          .find((entry) => Path.isBefore(entry.path, selectionPath));
+          .find((entry) => PathApi.isBefore(entry.path, selectionPath));
 
   // If it exists, focus it
   if (nextTabbableEntry) {
