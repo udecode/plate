@@ -1,7 +1,4 @@
-import {
-  createSlatePlugin,
-  findHtmlParentElement,
-} from '@udecode/plate';
+import { createSlatePlugin, findHtmlParentElement } from '@udecode/plate';
 
 /** Enables support for code formatting */
 export const BaseCodePlugin = createSlatePlugin({

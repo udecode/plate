@@ -1,9 +1,9 @@
-import { withTriggerCombobox } from '@udecode/plate-combobox';
 import {
   type PluginConfig,
   createSlatePlugin,
   createTSlatePlugin,
 } from '@udecode/plate';
+import { withTriggerCombobox } from '@udecode/plate-combobox';
 
 import type { EmojiPluginOptions } from './types';
 

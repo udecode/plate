@@ -1,8 +1,4 @@
-import {
-  type SlateEditor,
-  type TElement,
-  NodeApi,
-} from '@udecode/plate';
+import { type SlateEditor, type TElement, NodeApi } from '@udecode/plate';
 
 import type { Heading } from '../lib/types';
 

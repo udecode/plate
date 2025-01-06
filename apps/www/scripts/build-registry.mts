@@ -504,7 +504,6 @@ async function buildStylesIndex() {
       "lucide-react",
       "@udecode/cn",
       "@udecode/plate",
-      "slate-hyperscript",
     ]
 
     // TODO: Remove this when we migrate to lucide-react.

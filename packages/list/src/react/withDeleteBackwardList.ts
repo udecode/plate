@@ -6,10 +6,7 @@ import {
   deleteMerge,
   isFirstChild,
 } from '@udecode/plate';
-import {
-  type ExtendEditor,
-  getEditorPlugin,
-} from '@udecode/plate/react';
+import { type ExtendEditor, getEditorPlugin } from '@udecode/plate/react';
 import { BaseResetNodePlugin } from '@udecode/plate-reset-node';
 import {
   SIMULATE_BACKSPACE,

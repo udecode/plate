@@ -1,8 +1,4 @@
-import {
-  type ExtendEditor,
-  type TElement,
-  isDefined,
-} from '@udecode/plate';
+import { type ExtendEditor, type TElement, isDefined } from '@udecode/plate';
 
 import {
   type BaseIndentListConfig,

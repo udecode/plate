@@ -7,8 +7,7 @@
     "class-variance-authority",
     "lucide-react",
     "@udecode/cn",
-    "@udecode/plate",
-    "slate-hyperscript"
+    "@udecode/plate"
   ],
   "registryDependencies": [],
   "tailwind": {

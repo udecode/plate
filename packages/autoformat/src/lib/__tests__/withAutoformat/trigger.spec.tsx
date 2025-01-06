@@ -1,14 +1,11 @@
 /** @jsx jsxt */
 
+import { createPlateEditor, getEditorPlugin } from '@udecode/plate/react';
 import {
   BoldPlugin,
   ItalicPlugin,
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
-import {
-  createPlateEditor,
-  getEditorPlugin,
-} from '@udecode/plate/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { onKeyDownAutoformat } from '../../../react/onKeyDownAutoformat';

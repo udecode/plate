@@ -1,8 +1,4 @@
-import type {
-  EditorNodesOptions,
-  SlateEditor,
-  ValueOf,
-} from '@udecode/plate';
+import type { EditorNodesOptions, SlateEditor, ValueOf } from '@udecode/plate';
 
 import type { TSuggestionText } from '../types';
 

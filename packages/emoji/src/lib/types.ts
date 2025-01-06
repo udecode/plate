@@ -1,6 +1,6 @@
 import type { Emoji } from '@emoji-mart/data';
-import type { TriggerComboboxPluginOptions } from '@udecode/plate-combobox';
 import type { Descendant } from '@udecode/plate';
+import type { TriggerComboboxPluginOptions } from '@udecode/plate-combobox';
 
 type ReverseMap<T> = T[keyof T];
 

@@ -2,7 +2,7 @@
 '@udecode/slate': major
 ---
 
-- Removed `slate`, `slate-dom`, `slate-react`, and `slate-history` from dependencies (now part of `@udecode/plate-common`). All exports remain the same or have equivalents (see below).
+- Removed `slate`, `slate-dom`, `slate-react`, `slate-history` and `slate-hyperscript` from dependencies (now part of `@udecode/plate`). All exports remain the same or have equivalents (see below).
 - Renamed `createTEditor` to `createEditor`.
 - `createEditor` now returns an editor (`Editor`) with all queries under `editor.api` and transforms under `editor.tf`. You can see or override them at a glance. For example, we now use `editor.tf.setNodes` instead of importing `setNodes`. This marks the completion of generic typing and the removal of error throws from `slate`, `slate-dom`, and `slate-history` queries/transforms, without forking implementations. We’ve also reduced the number of queries/transforms by merging a bunch of them.
 

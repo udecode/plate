@@ -1,13 +1,13 @@
 import {
-  type TriggerComboboxPluginOptions,
-  withTriggerCombobox,
-} from '@udecode/plate-combobox';
-import {
   type PluginConfig,
   type TElement,
   createSlatePlugin,
   createTSlatePlugin,
 } from '@udecode/plate';
+import {
+  type TriggerComboboxPluginOptions,
+  withTriggerCombobox,
+} from '@udecode/plate-combobox';
 
 export interface TSlashInputElement extends TElement {}
 

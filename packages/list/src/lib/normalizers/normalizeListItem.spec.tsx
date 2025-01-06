@@ -1,10 +1,6 @@
 /** @jsx jsxt */
 
-import {
-  type SlateEditor,
-  NodeApi,
-  createSlateEditor,
-} from '@udecode/plate';
+import { type SlateEditor, NodeApi, createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { ListPlugin } from '../../react';

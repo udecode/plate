@@ -1,8 +1,4 @@
-import {
-  type Path,
-  type SlateEditor,
-  getEditorPlugin,
-} from '@udecode/plate';
+import { type Path, type SlateEditor, getEditorPlugin } from '@udecode/plate';
 import cloneDeep from 'lodash/cloneDeep.js';
 
 import {

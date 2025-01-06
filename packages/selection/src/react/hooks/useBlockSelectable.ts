@@ -1,11 +1,7 @@
 import type React from 'react';
 
 import { type TElement, PathApi } from '@udecode/plate';
-import {
-  useEditorPlugin,
-  useElement,
-  usePath,
-} from '@udecode/plate/react';
+import { useEditorPlugin, useElement, usePath } from '@udecode/plate/react';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 

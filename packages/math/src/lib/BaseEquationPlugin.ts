@@ -1,8 +1,4 @@
-import {
-  type TElement,
-  bindFirst,
-  createSlatePlugin,
-} from '@udecode/plate';
+import { type TElement, bindFirst, createSlatePlugin } from '@udecode/plate';
 
 import { insertEquation } from './transforms';
 

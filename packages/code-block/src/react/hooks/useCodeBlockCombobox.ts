@@ -1,10 +1,6 @@
 import React from 'react';
 
-import {
-  useEditorRef,
-  useElement,
-  useReadOnly,
-} from '@udecode/plate/react';
+import { useEditorRef, useElement, useReadOnly } from '@udecode/plate/react';
 
 import { type TCodeBlockElement, BaseCodeBlockPlugin } from '../../lib';
 

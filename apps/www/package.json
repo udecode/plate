@@ -167,7 +167,6 @@
     "react-wrap-balancer": "^1.1.1",
     "remark-emoji": "5.0.1",
     "sass": "^1.78.0",
-    "slate-hyperscript": "0.100.0",
     "slate-test-utils": "1.3.2",
     "sonner": "^1.5.0",
     "swr": "2.2.6-beta.3",

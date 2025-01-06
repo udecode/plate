@@ -1,8 +1,4 @@
-import {
-  type SlateEditor,
-  PathApi,
-  insertElements,
-} from '@udecode/plate';
+import { type SlateEditor, PathApi, insertElements } from '@udecode/plate';
 
 import { type TodoListConfig, BaseTodoListPlugin } from '../BaseTodoListPlugin';
 

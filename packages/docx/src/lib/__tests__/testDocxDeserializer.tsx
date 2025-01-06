@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
+import { type SlatePlugin, createSlateEditor } from '@udecode/plate';
+import { ParagraphPlugin } from '@udecode/plate/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
-import { type SlatePlugin, createSlateEditor } from '@udecode/plate';
-import { ParagraphPlugin } from '@udecode/plate/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';

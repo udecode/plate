@@ -2,12 +2,7 @@ import React, { useCallback, useState } from 'react';
 
 import type { TextareaAutosizeProps } from 'react-textarea-autosize';
 
-import {
-  type TElement,
-  NodeApi,
-  PathApi,
-  isHotkey,
-} from '@udecode/plate';
+import { type TElement, NodeApi, PathApi, isHotkey } from '@udecode/plate';
 import {
   createPrimitiveComponent,
   useEditorRef,

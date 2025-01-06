@@ -1,10 +1,7 @@
 /** @jsx jsxt */
 
 import { type SlateEditor, getEditorPlugin } from '@udecode/plate';
-import {
-  type PlateEditor,
-  createPlateEditor,
-} from '@udecode/plate/react';
+import { type PlateEditor, createPlateEditor } from '@udecode/plate/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { withDeleteTable } from './withDeleteTable';

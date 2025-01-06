@@ -1,8 +1,4 @@
-import type {
-  InsertNodesOptions,
-  SlateEditor,
-  TElement,
-} from '@udecode/plate';
+import type { InsertNodesOptions, SlateEditor, TElement } from '@udecode/plate';
 
 import {
   BaseCodeBlockPlugin,

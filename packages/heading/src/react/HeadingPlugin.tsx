@@ -1,8 +1,4 @@
-import {
-  type PlatePlugin,
-  Key,
-  toPlatePlugin,
-} from '@udecode/plate/react';
+import { type PlatePlugin, Key, toPlatePlugin } from '@udecode/plate/react';
 
 import { BaseHeadingPlugin } from '../lib/BaseHeadingPlugin';
 

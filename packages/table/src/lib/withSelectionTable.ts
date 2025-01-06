@@ -1,8 +1,4 @@
-import {
-  type ExtendEditor,
-  type TRange,
-  RangeApi,
-} from '@udecode/plate';
+import { type ExtendEditor, type TRange, RangeApi } from '@udecode/plate';
 
 import type { TableConfig } from '.';
 

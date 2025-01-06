@@ -44,9 +44,11 @@
     "test:watch": "yarn p:test:watch",
     "typecheck": "yarn p:typecheck"
   },
+  "dependencies": {
+    "slate-hyperscript": "0.100.0"
+  },
   "peerDependencies": {
-    "@udecode/plate": ">=41.0.5",
-    "slate-hyperscript": ">=0.66.0"
+    "@udecode/plate": ">=41.0.5"
   },
   "publishConfig": {
     "access": "public"

@@ -6359,8 +6359,8 @@ __metadata:
     "@udecode/react-utils": "npm:40.2.8"
   peerDependencies:
     class-variance-authority: ">=0.7.0"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
     tailwind-merge: ">=2.2.0"
   languageName: unknown
   linkType: soft
@@ -6376,9 +6376,8 @@ __metadata:
     lodash: "npm:^4.17.21"
   peerDependencies:
     "@udecode/plate": ">=41.0.0"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6389,9 +6388,8 @@ __metadata:
     "@udecode/plate": "workspace:^"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6403,9 +6401,8 @@ __metadata:
     lodash: "npm:^4.17.21"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6419,9 +6416,8 @@ __metadata:
     "@udecode/plate-heading": "npm:41.0.0"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6432,9 +6428,8 @@ __metadata:
     "@udecode/plate": "workspace:^"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6445,9 +6440,8 @@ __metadata:
     "@udecode/plate": "workspace:^"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6458,9 +6452,8 @@ __metadata:
     "@udecode/plate": "workspace:^"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6471,9 +6464,8 @@ __metadata:
     "@udecode/plate": "workspace:^"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6485,9 +6477,8 @@ __metadata:
     react-textarea-autosize: "npm:^8.5.3"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6499,9 +6490,8 @@ __metadata:
     prismjs: "npm:^1.29.0"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6512,9 +6502,8 @@ __metadata:
     "@udecode/plate": "workspace:^"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6526,9 +6515,8 @@ __metadata:
     lodash: "npm:^4.17.21"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6549,14 +6537,14 @@ __metadata:
     lodash: "npm:^4.17.21"
     nanoid: "npm:^3.3.7"
     optics-ts: "npm:2.4.1"
+    slate-hyperscript: "npm:0.100.0"
     slate-react: "npm:0.111.0"
     use-deep-compare: "npm:^1.3.0"
     zustand: "npm:^4.5.5"
     zustand-x: "npm:^3.0.4"
   peerDependencies:
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6570,9 +6558,8 @@ __metadata:
     papaparse: "npm:^5.4.1"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6583,9 +6570,8 @@ __metadata:
     "@udecode/plate": "workspace:^"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6596,9 +6582,8 @@ __metadata:
     "@udecode/plate": "workspace:^"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6611,9 +6596,8 @@ __metadata:
     lodash: "npm:^4.17.21"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6626,11 +6610,10 @@ __metadata:
     raf: "npm:^3.4.1"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
+    react: ">=18.0.0"
     react-dnd: ">=14.0.0"
     react-dnd-html5-backend: ">=14.0.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6647,9 +6630,8 @@ __metadata:
     validator: "npm:^13.12.0"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6662,9 +6644,8 @@ __metadata:
     "@udecode/plate-combobox": "npm:41.0.0"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6676,9 +6657,8 @@ __metadata:
     "@udecode/plate": "workspace:^"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6689,9 +6669,8 @@ __metadata:
     "@udecode/plate": "workspace:^"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6704,9 +6683,8 @@ __metadata:
     "@udecode/plate": "workspace:^"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6718,9 +6696,8 @@ __metadata:
     lodash: "npm:^4.17.21"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6731,9 +6708,8 @@ __metadata:
     "@udecode/plate": "workspace:^"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6744,9 +6720,8 @@ __metadata:
     "@udecode/plate": "workspace:^"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6757,9 +6732,8 @@ __metadata:
     "@udecode/plate": "workspace:^"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6773,9 +6747,8 @@ __metadata:
     clsx: "npm:^2.1.1"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6786,9 +6759,8 @@ __metadata:
     "@udecode/plate": "workspace:^"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6800,9 +6772,8 @@ __metadata:
     juice: "npm:^8.1.0"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6813,9 +6784,8 @@ __metadata:
     "@udecode/plate": "workspace:^"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6826,9 +6796,8 @@ __metadata:
     "@udecode/plate": "workspace:^"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6839,9 +6808,8 @@ __metadata:
     "@udecode/plate": "workspace:^"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6854,9 +6822,8 @@ __metadata:
     "@udecode/plate-normalizers": "npm:41.0.0"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6869,9 +6836,8 @@ __metadata:
     lodash: "npm:^4.17.21"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6886,9 +6852,8 @@ __metadata:
     unified: "npm:^11.0.5"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6901,9 +6866,8 @@ __metadata:
     katex: "npm:0.16.11"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6915,9 +6879,8 @@ __metadata:
     js-video-url-parser: "npm:^0.5.1"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6929,9 +6892,8 @@ __metadata:
     "@udecode/plate-combobox": "npm:41.0.0"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6943,9 +6905,8 @@ __metadata:
     lodash: "npm:^4.17.21"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6957,9 +6918,8 @@ __metadata:
     lodash: "npm:^4.17.21"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6971,9 +6931,8 @@ __metadata:
   peerDependencies:
     "@playwright/test": ">=1.42.1"
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6984,9 +6943,8 @@ __metadata:
     "@udecode/plate": "workspace:^"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -6997,9 +6955,8 @@ __metadata:
     "@udecode/plate": "workspace:^"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -7010,9 +6967,8 @@ __metadata:
     "@udecode/plate": "workspace:^"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -7024,9 +6980,8 @@ __metadata:
     copy-to-clipboard: "npm:^3.3.3"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -7038,9 +6993,8 @@ __metadata:
     "@udecode/plate-combobox": "npm:41.0.0"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -7053,9 +7007,8 @@ __metadata:
     lodash: "npm:^4.17.21"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -7067,9 +7020,8 @@ __metadata:
     tabbable: "npm:^6.2.0"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -7083,8 +7035,8 @@ __metadata:
     lodash: "npm:^4.17.21"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -7095,18 +7047,18 @@ __metadata:
     "@udecode/plate": "workspace:^"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
 "@udecode/plate-test-utils@workspace:^, @udecode/plate-test-utils@workspace:packages/test-utils":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-test-utils@workspace:packages/test-utils"
+  dependencies:
+    slate-hyperscript: "npm:0.100.0"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    slate-hyperscript: ">=0.66.0"
   languageName: unknown
   linkType: soft
 
@@ -7120,9 +7072,8 @@ __metadata:
     lodash: "npm:^4.17.21"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -7133,9 +7084,8 @@ __metadata:
     "@udecode/plate": "workspace:^"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -7150,9 +7100,8 @@ __metadata:
     clsx: "npm:^2.1.1"
     lodash: "npm:^4.17.21"
   peerDependencies:
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -7166,9 +7115,8 @@ __metadata:
     yjs: "npm:^13.6.19"
   peerDependencies:
     "@udecode/plate": ">=41.0.5"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -7183,9 +7131,8 @@ __metadata:
     "@udecode/slate": "npm:41.0.0"
     "@udecode/utils": "npm:37.0.0"
   peerDependencies:
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate-hyperscript: ">=0.66.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -7193,8 +7140,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/react-hotkeys@workspace:packages/react-hotkeys"
   peerDependencies:
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -7206,8 +7153,8 @@ __metadata:
     "@udecode/utils": "npm:37.0.0"
     clsx: "npm:^2.1.1"
   peerDependencies:
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -7219,8 +7166,8 @@ __metadata:
     "@udecode/slate": "npm:41.0.0"
     "@udecode/utils": "npm:37.0.0"
   peerDependencies:
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -17060,7 +17007,6 @@ __metadata:
     react-test-renderer: "npm:18.3.1"
     rimraf: "npm:^6.0.1"
     shadcx: "workspace:^"
-    slate-hyperscript: "npm:0.100.0"
     slate-test-utils: "npm:1.3.2"
     tailwindcss: "npm:^3.4.11"
     ts-jest: "npm:^29.2.5"
@@ -22189,7 +22135,6 @@ __metadata:
     rimraf: "npm:^6.0.1"
     sass: "npm:^1.78.0"
     shiki: "npm:^1.17.5"
-    slate-hyperscript: "npm:0.100.0"
     slate-test-utils: "npm:1.3.2"
     sonner: "npm:^1.5.0"
     swr: "npm:2.2.6-beta.3"
