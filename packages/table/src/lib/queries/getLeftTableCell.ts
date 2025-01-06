@@ -1,4 +1,4 @@
-import { type Path, type SlateEditor, PathApi } from '@udecode/plate-common';
+import { type Path, type SlateEditor, PathApi } from '@udecode/plate';
 
 import type { TTableCellElement } from '../types';
 

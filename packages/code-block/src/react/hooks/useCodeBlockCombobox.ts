@@ -4,7 +4,7 @@ import {
   useEditorRef,
   useElement,
   useReadOnly,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 
 import { type TCodeBlockElement, BaseCodeBlockPlugin } from '../../lib';
 

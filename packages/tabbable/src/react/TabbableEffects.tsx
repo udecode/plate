@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { PathApi } from '@udecode/plate-common';
-import { useEditorReadOnly, useEditorRef } from '@udecode/plate-common/react';
+import { PathApi } from '@udecode/plate';
+import { useEditorReadOnly, useEditorRef } from '@udecode/plate/react';
 import { tabbable } from 'tabbable';
 
 import type { TabbableEntry } from '../lib/types';

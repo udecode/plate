@@ -3,7 +3,7 @@ import {
   type TLocation,
   BaseParagraphPlugin,
   getChildren,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { BaseCodeBlockPlugin } from '../BaseCodeBlockPlugin';
 

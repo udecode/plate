@@ -3,7 +3,7 @@ import {
   type TLocation,
   type TRange,
   PathApi,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { mergeClientRects } from './mergeClientRects';
 

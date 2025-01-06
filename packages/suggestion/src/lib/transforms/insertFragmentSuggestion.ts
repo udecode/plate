@@ -3,7 +3,7 @@ import {
   type SlateEditor,
   applyDeepToNodes,
   nanoid,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { BaseSuggestionPlugin, SUGGESTION_KEYS } from '../BaseSuggestionPlugin';
 import { findSuggestionId } from '../queries/findSuggestionId';

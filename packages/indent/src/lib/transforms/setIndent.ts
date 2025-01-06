@@ -2,7 +2,7 @@ import type {
   AnyObject,
   EditorNodesOptions,
   SlateEditor,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { BaseIndentPlugin } from '../BaseIndentPlugin';
 

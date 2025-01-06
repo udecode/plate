@@ -5,11 +5,11 @@ import {
   PathApi,
   deleteMerge,
   isFirstChild,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 import {
   type ExtendEditor,
   getEditorPlugin,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 import { BaseResetNodePlugin } from '@udecode/plate-reset-node';
 import {
   SIMULATE_BACKSPACE,

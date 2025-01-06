@@ -1,11 +1,11 @@
 import React from 'react';
 
-import { isDefined, removeEditorText } from '@udecode/plate-common';
+import { isDefined, removeEditorText } from '@udecode/plate';
 import {
   selectEditor,
   useEditorRef,
   useEditorString,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 
 import type { TagLike } from '../lib';
 

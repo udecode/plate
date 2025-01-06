@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import { createEditor, createSlateEditor } from '@udecode/plate-common';
-import { ParagraphPlugin } from '@udecode/plate-common/react';
+import { createEditor, createSlateEditor } from '@udecode/plate';
+import { ParagraphPlugin } from '@udecode/plate/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { jsxt } from '@udecode/plate-test-utils';
 

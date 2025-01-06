@@ -1,4 +1,4 @@
-import { type SlateEditor, getEditorPlugin } from '@udecode/plate-common';
+import { type SlateEditor, getEditorPlugin } from '@udecode/plate';
 
 import { upsertLink, validateUrl } from '../../lib';
 import { LinkPlugin } from '../LinkPlugin';

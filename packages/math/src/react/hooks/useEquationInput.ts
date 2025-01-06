@@ -1,11 +1,11 @@
 import React, { useEffect, useRef } from 'react';
 
-import { isHotkey } from '@udecode/plate-common';
+import { isHotkey } from '@udecode/plate';
 import {
   selectSiblingNodePoint,
   useEditorRef,
   useElement,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 
 import type { TEquationElement } from '../../lib';
 

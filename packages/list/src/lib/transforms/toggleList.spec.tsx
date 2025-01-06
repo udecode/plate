@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from '@udecode/plate-common';
+import { type SlateEditor, createSlateEditor } from '@udecode/plate';
 import { ImagePlugin } from '@udecode/plate-media/react';
 import { jsxt } from '@udecode/plate-test-utils';
 

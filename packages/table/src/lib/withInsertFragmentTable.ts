@@ -1,6 +1,6 @@
-import type { ExtendEditor, Path, TElement } from '@udecode/plate-common';
+import type { ExtendEditor, Path, TElement } from '@udecode/plate';
 
-import { NodeApi, replaceNodeChildren } from '@udecode/plate-common';
+import { NodeApi, replaceNodeChildren } from '@udecode/plate';
 import cloneDeep from 'lodash/cloneDeep.js';
 
 import {

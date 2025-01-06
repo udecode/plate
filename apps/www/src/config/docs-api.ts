@@ -2,10 +2,10 @@ import type { SidebarNavItem } from '@/types/nav';
 
 export const docsApi: SidebarNavItem[] = [
   {
-    description: 'Common utilities for Plate.',
+    description: 'Plate API.',
     headings: [],
-    href: '/docs/api/common',
-    title: 'Plate Common',
+    href: '/docs/api/plate',
+    title: 'Plate',
   },
   {
     description: 'Core utilities for Plate.',
@@ -61,8 +61,8 @@ export const docsApi: SidebarNavItem[] = [
           'renderLeaf',
           'value',
         ],
-        href: '/docs/api/core/plate',
-        title: 'Plate',
+        href: '/docs/api/core/plate-components',
+        title: 'Plate Components',
       },
       {
         headings: [
@@ -172,18 +172,6 @@ export const docsApi: SidebarNavItem[] = [
     headings: [],
     href: '/docs/api/slate',
     title: 'Slate',
-  },
-  {
-    description: 'Slate React utilities.',
-    headings: [],
-    href: '/docs/api/slate-react',
-    title: 'Slate React',
-  },
-  {
-    description: 'Additional utilities for Slate.',
-    headings: [],
-    href: '/docs/api/slate-utils',
-    title: 'Slate Utils',
   },
   {
     description: 'React utilities.',

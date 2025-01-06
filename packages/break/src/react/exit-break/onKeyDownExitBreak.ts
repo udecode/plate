@@ -1,6 +1,6 @@
-import type { KeyboardHandler } from '@udecode/plate-common/react';
+import type { KeyboardHandler } from '@udecode/plate/react';
 
-import { isHotkey, queryNode } from '@udecode/plate-common';
+import { isHotkey, queryNode } from '@udecode/plate';
 
 import type { ExitBreakConfig } from '../../lib/exit-break/types';
 

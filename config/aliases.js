@@ -1,5 +1,6 @@
 module.exports = {
   '@udecode/cn': 'cn',
+  '@udecode/plate': 'plate',
   '@udecode/plate-alignment': 'alignment',
   '@udecode/plate-autoformat': 'autoformat',
   '@udecode/plate-basic-elements': 'basic-elements',
@@ -9,7 +10,6 @@ module.exports = {
   '@udecode/plate-code-block': 'code-block',
   '@udecode/plate-combobox': 'combobox',
   '@udecode/plate-comments': 'comments',
-  '@udecode/plate-common': 'common',
   '@udecode/plate-core': 'core',
   '@udecode/plate-csv': 'csv',
   '@udecode/plate-diff': 'diff',

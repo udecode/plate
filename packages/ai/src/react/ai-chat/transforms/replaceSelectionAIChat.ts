@@ -1,4 +1,4 @@
-import type { PlateEditor } from '@udecode/plate-common/react';
+import type { PlateEditor } from '@udecode/plate/react';
 
 import {
   type SlateEditor,
@@ -6,7 +6,7 @@ import {
   NodeApi,
   TextApi,
   getFirstNodeText,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 import {
   BlockSelectionPlugin,
   removeBlockSelectionNodes,

@@ -7,7 +7,7 @@ import {
   PathApi,
   match,
   moveChildren,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { getListTypes } from '../queries/getListTypes';
 

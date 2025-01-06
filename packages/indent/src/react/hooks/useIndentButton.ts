@@ -1,4 +1,4 @@
-import { useEditorRef } from '@udecode/plate-common/react';
+import { useEditorRef } from '@udecode/plate/react';
 
 import { indent } from '../../index';
 

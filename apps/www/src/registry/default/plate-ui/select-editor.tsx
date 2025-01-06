@@ -7,13 +7,13 @@ import {
   isHotkey,
   removeEditorText,
   replaceNodeChildren,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 import {
   Plate,
   useEditorContainerRef,
   useEditorRef,
   usePlateEditor,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 import { isEqualTags } from '@udecode/plate-tag';
 import {
   MultiSelectPlugin,

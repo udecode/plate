@@ -3,7 +3,7 @@ import {
   type SlateEditor,
   type TElement,
   isDefined,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { BaseIndentListPlugin } from '../BaseIndentListPlugin';
 

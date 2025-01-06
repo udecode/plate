@@ -1,3 +1,4 @@
+import { ParagraphPlugin } from '@udecode/plate/react';
 import { AIChatPlugin, AIPlugin, CopilotPlugin } from '@udecode/plate-ai/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
@@ -23,7 +24,6 @@ import {
   CodeSyntaxPlugin,
 } from '@udecode/plate-code-block/react';
 import { CommentsPlugin } from '@udecode/plate-comments/react';
-import { ParagraphPlugin } from '@udecode/plate-common/react';
 import { CsvPlugin } from '@udecode/plate-csv';
 import { DatePlugin } from '@udecode/plate-date/react';
 import { DndPlugin } from '@udecode/plate-dnd';
@@ -820,7 +820,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     ],
     label: 'Paragraph',
     plateImports: ['ParagraphPlugin'],
-    // npmPackage: '@udecode/plate-common',
+    // npmPackage: '@udecode/plate',
     pluginFactory: 'ParagraphPlugin',
     reactImport: true,
     // route: getPluginNavItem('basic-nodes').href,

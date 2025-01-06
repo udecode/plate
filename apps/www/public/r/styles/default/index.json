@@ -7,11 +7,7 @@
     "class-variance-authority",
     "lucide-react",
     "@udecode/cn",
-    "@udecode/plate-common",
-    "slate",
-    "slate-dom",
-    "slate-react",
-    "slate-history",
+    "@udecode/plate",
     "slate-hyperscript"
   ],
   "registryDependencies": [],

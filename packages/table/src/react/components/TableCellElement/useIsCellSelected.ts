@@ -1,6 +1,6 @@
-import type { TElement } from '@udecode/plate-common';
+import type { TElement } from '@udecode/plate';
 
-import { useMemoizedSelector } from '@udecode/plate-common/react';
+import { useMemoizedSelector } from '@udecode/plate/react';
 
 import { useTableStore } from '../../stores';
 

@@ -1,4 +1,4 @@
-import { type ExtendEditor, NodeApi, isDefined } from '@udecode/plate-common';
+import { type ExtendEditor, NodeApi, isDefined } from '@udecode/plate';
 
 import {
   type BaseIndentListConfig,

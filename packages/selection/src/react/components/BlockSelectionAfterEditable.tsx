@@ -1,12 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { isHotkey } from '@udecode/plate-common';
+import { isHotkey } from '@udecode/plate';
 import {
   type EditableSiblingComponent,
   useEditorPlugin,
   useEditorRef,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 
 import type { BlockSelectionConfig } from '../BlockSelectionPlugin';
 

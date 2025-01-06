@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import type { EditorSelection } from '@udecode/plate-common';
+import type { EditorSelection } from '@udecode/plate';
 
 import type { EditorHandle } from './types';
 

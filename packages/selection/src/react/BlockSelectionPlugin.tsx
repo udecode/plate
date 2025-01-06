@@ -1,10 +1,10 @@
 import type { CSSProperties } from 'react';
 import type React from 'react';
 
-import type { NodeEntry, PluginConfig, TElement } from '@udecode/plate-common';
+import type { NodeEntry, PluginConfig, TElement } from '@udecode/plate';
 
-import { bindFirst } from '@udecode/plate-common';
-import { createTPlatePlugin } from '@udecode/plate-common/react';
+import { bindFirst } from '@udecode/plate';
+import { createTPlatePlugin } from '@udecode/plate/react';
 
 import type { ChangedElements, PartialSelectionOptions } from '../internal';
 

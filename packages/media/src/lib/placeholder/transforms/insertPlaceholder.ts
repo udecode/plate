@@ -1,4 +1,4 @@
-import type { InsertNodesOptions, SlateEditor } from '@udecode/plate-common';
+import type { InsertNodesOptions, SlateEditor } from '@udecode/plate';
 
 import { BaseAudioPlugin } from '../../BaseAudioPlugin';
 import { BaseFilePlugin } from '../../BaseFilePlugin';

@@ -3,7 +3,7 @@ import {
   PathApi,
   insertElements,
   queryNode,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { TrailingBlockConfig } from './TrailingBlockPlugin';
 

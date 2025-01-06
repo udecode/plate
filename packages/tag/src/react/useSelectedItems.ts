@@ -1,6 +1,6 @@
-import type { SlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
 
-import { useEditorSelector } from '@udecode/plate-common/react';
+import { useEditorSelector } from '@udecode/plate/react';
 
 import type { TTagElement } from '../lib';
 

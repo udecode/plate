@@ -1,4 +1,4 @@
-import { createTSlatePlugin } from '@udecode/plate-common';
+import { createTSlatePlugin } from '@udecode/plate';
 
 import type { ExitBreakConfig } from './types';
 

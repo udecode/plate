@@ -3,6 +3,14 @@
 import React, { useState } from 'react';
 
 import { withProps } from '@udecode/cn';
+import { type Value, replaceNodeChildren } from '@udecode/plate';
+import {
+  type PlateEditor,
+  ParagraphPlugin,
+  Plate,
+  PlateLeaf,
+  usePlateEditor,
+} from '@udecode/plate/react';
 import {
   BoldPlugin,
   CodePlugin,
@@ -18,14 +26,6 @@ import {
   CodeLinePlugin,
   CodeSyntaxPlugin,
 } from '@udecode/plate-code-block/react';
-import { type Value, replaceNodeChildren } from '@udecode/plate-common';
-import {
-  type PlateEditor,
-  ParagraphPlugin,
-  Plate,
-  PlateLeaf,
-  usePlateEditor,
-} from '@udecode/plate-common/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';

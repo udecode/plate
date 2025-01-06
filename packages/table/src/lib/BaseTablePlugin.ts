@@ -6,7 +6,7 @@ import {
   bindFirst,
   createSlatePlugin,
   createTSlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { TTableCellElement } from './types';
 import type { CellIndices } from './utils';

@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { NodeApi } from '@udecode/plate-common';
-import { useElement } from '@udecode/plate-common/react';
+import { NodeApi } from '@udecode/plate';
+import { useElement } from '@udecode/plate/react';
 
 import type { TCaptionElement } from '../../lib';
 

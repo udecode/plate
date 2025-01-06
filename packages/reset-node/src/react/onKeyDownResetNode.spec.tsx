@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
 
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import {
@@ -9,12 +9,12 @@ import {
   isSelectionAtCodeBlockStart,
   unwrapCodeBlock,
 } from '@udecode/plate-code-block';
-import { ParagraphPlugin } from '@udecode/plate-common/react';
+import { ParagraphPlugin } from '@udecode/plate/react';
 import {
   createPlateEditor,
   createTPlatePlugin,
   getEditorPlugin,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 import * as isHotkey from '@udecode/plate-core';
 import { BaseListItemPlugin, unwrapList } from '@udecode/plate-list';
 import { jsxt } from '@udecode/plate-test-utils';

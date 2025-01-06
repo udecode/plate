@@ -6,7 +6,7 @@ import {
   type NodeEntry,
   type TNode,
   isDefined,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 
 import {

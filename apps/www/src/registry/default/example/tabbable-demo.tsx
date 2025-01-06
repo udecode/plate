@@ -2,10 +2,10 @@
 
 import React from 'react';
 
-import type { PlateElementProps } from '@udecode/plate-common/react';
+import type { PlateElementProps } from '@udecode/plate/react';
 
 import { cn } from '@udecode/cn';
-import { Plate, useFocused, useSelected } from '@udecode/plate-common/react';
+import { Plate, useFocused, useSelected } from '@udecode/plate/react';
 import { TabbablePlugin } from '@udecode/plate-tabbable/react';
 
 import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';

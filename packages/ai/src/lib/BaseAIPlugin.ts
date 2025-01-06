@@ -3,7 +3,7 @@ import {
   type PluginConfig,
   bindFirst,
   createTSlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { removeAIMarks, undoAI } from './transforms';
 import { insertAINodes } from './transforms/insertAINodes';

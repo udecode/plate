@@ -5,7 +5,7 @@ import {
   type TElement,
   PathApi,
   match,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { getListTypes } from '../queries/index';
 

@@ -1,4 +1,4 @@
-import { type SlateEditor, PathApi } from '@udecode/plate-common';
+import { type SlateEditor, PathApi } from '@udecode/plate';
 
 import type { TabDestination, TabbableEntry } from './types';
 

@@ -1,9 +1,9 @@
 /* eslint-disable react/jsx-key */
 /** @jsx jsxt */
 
-import type { Editor, SlateEditor, TElement } from '@udecode/plate-common';
+import type { Editor, SlateEditor, TElement } from '@udecode/plate';
 
-import { createPlateEditor } from '@udecode/plate-common/react';
+import { createPlateEditor } from '@udecode/plate/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { getTestTablePlugins } from '../withNormalizeTable.spec';

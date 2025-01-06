@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import { createEditor } from '@udecode/plate-common';
-import { createPlateEditor } from '@udecode/plate-common/react';
+import { createEditor } from '@udecode/plate';
+import { createPlateEditor } from '@udecode/plate/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { isSelectionAtCodeBlockStart } from './isSelectionAtCodeBlockStart';

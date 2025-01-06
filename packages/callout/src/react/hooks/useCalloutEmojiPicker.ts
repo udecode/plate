@@ -2,7 +2,7 @@ import {
   useEditorReadOnly,
   useEditorRef,
   useElement,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 
 import { type TCalloutElement, CALLOUT_STORAGE_KEY } from '../../lib';
 

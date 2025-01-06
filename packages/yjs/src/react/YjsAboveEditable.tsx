@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { YjsEditor } from '@slate-yjs/core';
-import { useEditorPlugin } from '@udecode/plate-common/react';
+import { useEditorPlugin } from '@udecode/plate/react';
 
 import { type YjsConfig, BaseYjsPlugin } from '../lib/BaseYjsPlugin';
 

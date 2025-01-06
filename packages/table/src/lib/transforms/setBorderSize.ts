@@ -3,7 +3,7 @@ import {
   type SetNodesOptions,
   type SlateEditor,
   ElementApi,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { BorderDirection, BorderStyle, TTableCellElement } from '../types';
 

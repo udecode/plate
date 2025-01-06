@@ -1,11 +1,11 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
 
 import {
   ParagraphPlugin,
   createPlateEditor,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { jsxt } from '@udecode/plate-test-utils';
 

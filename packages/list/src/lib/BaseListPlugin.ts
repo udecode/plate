@@ -5,7 +5,7 @@ import {
   bindFirst,
   createSlatePlugin,
   createTSlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import {
   toggleBulletedList,

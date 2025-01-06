@@ -1,6 +1,6 @@
-import type { KeyboardHandler } from '@udecode/plate-common/react';
+import type { KeyboardHandler } from '@udecode/plate/react';
 
-import { type TElement, isHotkey } from '@udecode/plate-common';
+import { type TElement, isHotkey } from '@udecode/plate';
 
 import { outdentList } from '../lib';
 import { type IndentListConfig, IndentListPlugin } from './IndentListPlugin';

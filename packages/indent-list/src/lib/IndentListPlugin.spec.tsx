@@ -3,8 +3,8 @@
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
-import { ParagraphPlugin } from '@udecode/plate-common/react';
-import { createPlateEditor } from '@udecode/plate-common/react';
+import { ParagraphPlugin } from '@udecode/plate/react';
+import { createPlateEditor } from '@udecode/plate/react';
 import { DocxPlugin } from '@udecode/plate-docx';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';

@@ -5,7 +5,7 @@ import {
   type TElement,
   type TLocation,
   ElementApi,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { BaseCodeLinePlugin } from '../BaseCodeBlockPlugin';
 

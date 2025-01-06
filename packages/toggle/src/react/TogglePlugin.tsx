@@ -1,6 +1,6 @@
-import type { ExtendConfig } from '@udecode/plate-common';
+import type { ExtendConfig } from '@udecode/plate';
 
-import { toTPlatePlugin } from '@udecode/plate-common/react';
+import { toTPlatePlugin } from '@udecode/plate/react';
 
 import type { buildToggleIndex } from './toggleIndexAtom';
 

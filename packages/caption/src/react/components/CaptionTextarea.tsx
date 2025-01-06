@@ -7,13 +7,13 @@ import {
   NodeApi,
   PathApi,
   isHotkey,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 import {
   createPrimitiveComponent,
   useEditorRef,
   useElement,
   useReadOnly,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 
 import type { TCaptionElement } from '../../lib';
 

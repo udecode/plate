@@ -1,6 +1,6 @@
-import type { KeyboardHandler } from '@udecode/plate-common/react';
+import type { KeyboardHandler } from '@udecode/plate/react';
 
-import { isHotkey } from '@udecode/plate-common';
+import { isHotkey } from '@udecode/plate';
 
 import type { ResetNodeConfig } from '../lib/BaseResetNodePlugin';
 

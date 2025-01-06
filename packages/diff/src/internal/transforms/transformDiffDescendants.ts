@@ -3,7 +3,7 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import { type Descendant, TextApi } from '@udecode/plate-common';
+import { type Descendant, TextApi } from '@udecode/plate';
 import isEqual from 'lodash/isEqual.js';
 
 import type { ComputeDiffOptions } from '../../lib/computeDiff';

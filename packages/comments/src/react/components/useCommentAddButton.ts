@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useEditorPlugin } from '@udecode/plate-common/react';
+import { useEditorPlugin } from '@udecode/plate/react';
 
 import { CommentsPlugin } from '../CommentsPlugin';
 

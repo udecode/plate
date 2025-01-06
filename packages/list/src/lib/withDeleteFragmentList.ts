@@ -3,7 +3,7 @@ import {
   type SlateEditor,
   type TRange,
   deleteMerge,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { type ListConfig, BaseListItemPlugin } from './BaseListPlugin';
 import { getHighestEmptyList } from './queries/getHighestEmptyList';

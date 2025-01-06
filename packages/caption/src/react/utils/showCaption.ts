@@ -1,4 +1,4 @@
-import type { SlateEditor, TElement } from '@udecode/plate-common';
+import type { SlateEditor, TElement } from '@udecode/plate';
 
 import { CaptionPlugin } from '../CaptionPlugin';
 

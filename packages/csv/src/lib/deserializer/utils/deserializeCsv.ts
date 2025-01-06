@@ -4,7 +4,7 @@ import {
   type TElement,
   type TNode,
   BaseParagraphPlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 import papaparse from 'papaparse';
 
 import { type CsvParseOptions, CsvPlugin } from '../../CsvPlugin';

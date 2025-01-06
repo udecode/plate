@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { NodeApi } from '@udecode/plate-common';
-import { useEditorRef, useEditorSelector } from '@udecode/plate-common/react';
+import { NodeApi } from '@udecode/plate';
+import { useEditorRef, useEditorSelector } from '@udecode/plate/react';
 
 import { getHeadingList } from '../../internal/getHeadingList';
 

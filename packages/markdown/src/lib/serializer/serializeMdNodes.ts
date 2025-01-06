@@ -1,4 +1,4 @@
-import type { Descendant } from '@udecode/plate-common';
+import type { Descendant } from '@udecode/plate';
 
 import merge from 'lodash/merge.js';
 

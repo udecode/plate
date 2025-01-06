@@ -1,11 +1,11 @@
-import type { PlateEditor } from '@udecode/plate-common/react';
+import type { PlateEditor } from '@udecode/plate/react';
 
 import {
   type InsertNodesOptions,
   type Path,
   PathApi,
   nanoid,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { type TPlaceholderElement, BasePlaceholderPlugin } from '../../../lib';
 import { PlaceholderPlugin } from '../PlaceholderPlugin';

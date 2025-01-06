@@ -1,4 +1,4 @@
-import type { Descendant, ExtendEditorApi } from '@udecode/plate-common';
+import type { Descendant, ExtendEditorApi } from '@udecode/plate';
 
 import cloneDeep from 'lodash/cloneDeep.js';
 

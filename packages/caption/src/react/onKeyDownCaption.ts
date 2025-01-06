@@ -1,6 +1,6 @@
-import type { KeyboardHandler } from '@udecode/plate-common/react';
+import type { KeyboardHandler } from '@udecode/plate/react';
 
-import { getPluginTypes, isHotkey } from '@udecode/plate-common';
+import { getPluginTypes, isHotkey } from '@udecode/plate';
 
 import type { CaptionConfig } from '../lib/BaseCaptionPlugin';
 

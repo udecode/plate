@@ -53,10 +53,10 @@
     "copy-to-clipboard": "^3.3.3"
   },
   "devDependencies": {
-    "@udecode/plate-common": "workspace:^"
+    "@udecode/plate": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate-common": ">=41.0.5",
+    "@udecode/plate": ">=41.0.5",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate-hyperscript": ">=0.66.0"

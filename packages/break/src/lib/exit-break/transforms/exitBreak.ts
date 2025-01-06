@@ -3,7 +3,7 @@ import {
   BaseParagraphPlugin,
   PathApi,
   insertElements,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { ExitBreakRule } from '../types';
 

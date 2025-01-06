@@ -6,7 +6,7 @@ import {
   useFocused,
   useReadOnly,
   useSelected,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 import Link from 'next/link';
 
 export const TagElement = withRef<typeof PlateElement>(

@@ -1,4 +1,4 @@
-import type { Editor } from '@udecode/plate-common';
+import type { Editor } from '@udecode/plate';
 
 import type { IndentCodeLineOptions } from '../transforms/indentCodeLine';
 

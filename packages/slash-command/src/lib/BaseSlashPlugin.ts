@@ -7,7 +7,7 @@ import {
   type TElement,
   createSlatePlugin,
   createTSlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 export interface TSlashInputElement extends TElement {}
 

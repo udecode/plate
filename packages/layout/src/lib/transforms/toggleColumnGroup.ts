@@ -3,7 +3,7 @@ import {
   type SlateEditor,
   type TElement,
   replaceNode,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { BaseColumnItemPlugin, BaseColumnPlugin } from '../BaseColumnPlugin';
 import { columnsToWidths } from '../utils/columnsToWidths';

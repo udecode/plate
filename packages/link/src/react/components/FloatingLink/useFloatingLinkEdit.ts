@@ -7,7 +7,7 @@ import {
   useEditorVersion,
   useHotkeys,
   useOnClickOutside,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 import {
   getDOMSelectionBoundingClientRect,
   getRangeBoundingClientRect,

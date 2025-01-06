@@ -4,7 +4,7 @@ import {
   bindFirst,
   createTSlatePlugin,
   isUrl,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { deserializeMd } from './deserializer/utils';
 import {

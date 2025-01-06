@@ -4,7 +4,7 @@ import {
   type SlateEditor,
   getEditorPlugin,
   insertElements,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import {
   type TTableCellElement,

@@ -1,20 +1,20 @@
 import type { DropTargetMonitor } from 'react-dnd';
 
 /* eslint-disable @typescript-eslint/no-require-imports */
-import { createPlateEditor } from '@udecode/plate-common/react';
+import { createPlateEditor } from '@udecode/plate/react';
 
 import type { ElementDragItemNode } from '../types';
 
 import { onDropNode } from './onDropNode';
 
-jest.mock('@udecode/plate-common', () => ({
-  ...jest.requireActual('@udecode/plate-common'),
+jest.mock('@udecode/plate', () => ({
+  ...jest.requireActual('@udecode/plate'),
   findNode: jest.fn(),
   moveNodes: jest.fn(),
 }));
 
-jest.mock('@udecode/plate-common/react', () => ({
-  ...jest.requireActual('@udecode/plate-common/react'),
+jest.mock('@udecode/plate/react', () => ({
+  ...jest.requireActual('@udecode/plate/react'),
   focusEditor: jest.fn(),
 }));
 

@@ -1,4 +1,4 @@
-import type { EditorAboveOptions, SlateEditor } from '@udecode/plate-common';
+import type { EditorAboveOptions, SlateEditor } from '@udecode/plate';
 
 import type { TTableElement, TTableRowElement } from '../types';
 

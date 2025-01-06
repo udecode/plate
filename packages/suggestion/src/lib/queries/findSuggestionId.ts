@@ -1,4 +1,4 @@
-import type { Point, SlateEditor, TLocation } from '@udecode/plate-common';
+import type { Point, SlateEditor, TLocation } from '@udecode/plate';
 
 import { SUGGESTION_KEYS } from '../BaseSuggestionPlugin';
 import { findSuggestionNode } from './findSuggestionNode';

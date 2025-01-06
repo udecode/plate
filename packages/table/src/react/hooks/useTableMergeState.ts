@@ -4,7 +4,7 @@ import {
   useEditorSelector,
   useReadOnly,
   useSelected,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 
 import {
   type TTableCellElement,

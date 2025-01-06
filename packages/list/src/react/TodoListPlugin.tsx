@@ -1,4 +1,4 @@
-import { Key, toTPlatePlugin } from '@udecode/plate-common/react';
+import { Key, toTPlatePlugin } from '@udecode/plate/react';
 
 import { BaseTodoListPlugin } from '../lib/BaseTodoListPlugin';
 

@@ -128,13 +128,6 @@ export const PathApi: {
   relative: (path: Path, ancestor: Path) => Path;
 } = SlatePath as any;
 
-/**
- * `Path` arrays are a list of indexes that describe a node's exact position in
- * a Slate node tree. Although they are usually relative to the root `Editor`
- * object, they can be relative to any `Node` object.
- */
-export type TPath = SlatePath;
-
 export interface PathAncestorsOptions {
   /** If true, the paths are returned in reverse order. */
   reverse?: boolean;

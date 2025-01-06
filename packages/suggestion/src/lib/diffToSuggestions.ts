@@ -3,7 +3,7 @@ import {
   type SlateEditor,
   type ValueOf,
   nanoid,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 import { type ComputeDiffOptions, computeDiff } from '@udecode/plate-diff';
 
 import { getSuggestionProps } from './transforms';

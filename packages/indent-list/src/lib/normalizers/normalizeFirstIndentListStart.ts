@@ -1,4 +1,4 @@
-import { type Editor, type NodeEntry, isDefined } from '@udecode/plate-common';
+import { type Editor, type NodeEntry, isDefined } from '@udecode/plate';
 
 import { INDENT_LIST_KEYS } from '../BaseIndentListPlugin';
 

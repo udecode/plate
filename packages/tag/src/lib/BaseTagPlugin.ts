@@ -3,7 +3,7 @@ import {
   type TElement,
   type UnknownObject,
   createSlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 export type TagLike = { value: string } & UnknownObject;
 

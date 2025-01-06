@@ -4,13 +4,13 @@ import React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import {
   type PlateEditor,
   ParagraphPlugin,
   useEditorRef,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
+import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { DatePlugin } from '@udecode/plate-date/react';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';

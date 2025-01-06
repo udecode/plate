@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import type { PlateEditor } from '@udecode/plate-common/react';
+import type { PlateEditor } from '@udecode/plate/react';
 
 import { jsxt } from '@udecode/plate-test-utils';
 

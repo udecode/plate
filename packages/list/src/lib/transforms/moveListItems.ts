@@ -4,7 +4,7 @@ import {
   type PathRef,
   type SlateEditor,
   PathApi,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { BaseListItemContentPlugin } from '../BaseListPlugin';
 import { isListNested } from '../queries/isListNested';

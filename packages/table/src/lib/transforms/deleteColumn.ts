@@ -2,7 +2,7 @@ import {
   type SlateEditor,
   type TElement,
   getEditorPlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { TTableElement } from '../types';
 

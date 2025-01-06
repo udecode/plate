@@ -3,7 +3,7 @@ import {
   type SlateEditor,
   ElementApi,
   getChildren,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import {
   BaseCodeBlockPlugin,

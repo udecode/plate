@@ -8,7 +8,7 @@ import {
 import {
   createPlateEditor,
   getEditorPlugin,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { onKeyDownAutoformat } from '../../../react/onKeyDownAutoformat';

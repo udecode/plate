@@ -2,7 +2,7 @@ import {
   type SlateEditor,
   type TElement,
   NodeApi,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { Heading } from '../lib/types';
 

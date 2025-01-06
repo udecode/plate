@@ -9,7 +9,7 @@ import {
   useEditorPlugin,
   useElementSelector,
   useReadOnly,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 import { useBlockSelected } from '@udecode/plate-selection/react';
 import {
   TablePlugin,

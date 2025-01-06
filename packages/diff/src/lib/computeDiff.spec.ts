@@ -3,7 +3,7 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import { type TElement, type Value, NodeApi } from '@udecode/plate-common';
+import { type TElement, type Value, NodeApi } from '@udecode/plate';
 
 import { type ComputeDiffOptions, computeDiff } from './computeDiff';
 

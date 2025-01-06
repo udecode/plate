@@ -6,7 +6,7 @@ import type { ReactNode } from 'react';
 import type { TPlaceholderElement } from '@udecode/plate-media';
 
 import { cn } from '@udecode/cn';
-import { useEditorPlugin, withHOC, withRef } from '@udecode/plate-common/react';
+import { useEditorPlugin, withHOC, withRef } from '@udecode/plate/react';
 import {
   AudioPlugin,
   FilePlugin,

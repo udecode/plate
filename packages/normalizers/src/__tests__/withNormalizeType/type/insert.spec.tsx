@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { createEditor, createSlateEditor } from '@udecode/plate-common';
+import { createEditor, createSlateEditor } from '@udecode/plate';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { jsxt } from '@udecode/plate-test-utils';
 

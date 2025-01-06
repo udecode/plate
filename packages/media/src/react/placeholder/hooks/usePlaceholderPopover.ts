@@ -5,7 +5,7 @@ import {
   useFocused,
   useReadOnly,
   useSelected,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 
 import { type TPlaceholderElement, BasePlaceholderPlugin } from '../../../lib';
 import { usePlaceholderStore } from '../placeholderStore';

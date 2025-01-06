@@ -1,4 +1,4 @@
-import type { Descendant, TText, Value } from '@udecode/plate-common';
+import type { Descendant, TText, Value } from '@udecode/plate';
 
 export interface CommentUser {
   id: string;

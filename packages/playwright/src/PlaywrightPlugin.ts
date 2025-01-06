@@ -1,4 +1,4 @@
-import { createPlatePlugin } from '@udecode/plate-common/react';
+import { createPlatePlugin } from '@udecode/plate/react';
 
 import { usePlaywrightAdapter } from './usePlaywrightAdapter';
 

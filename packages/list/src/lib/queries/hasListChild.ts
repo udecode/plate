@@ -1,4 +1,4 @@
-import { type Ancestor, type SlateEditor, match } from '@udecode/plate-common';
+import { type Ancestor, type SlateEditor, match } from '@udecode/plate';
 
 import { getListTypes } from './getListTypes';
 

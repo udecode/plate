@@ -1,4 +1,4 @@
-import type { NodeEntry, SlateEditor } from '@udecode/plate-common';
+import type { NodeEntry, SlateEditor } from '@udecode/plate';
 
 import { BaseFontBackgroundColorPlugin } from '../BaseFontBackgroundColorPlugin';
 

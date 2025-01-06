@@ -5,7 +5,7 @@ import {
   ElementApi,
   NodeApi,
   RangeApi,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import {
   BaseBulletedListPlugin,

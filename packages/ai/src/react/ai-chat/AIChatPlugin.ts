@@ -7,8 +7,8 @@ import {
   type SlateEditor,
   bindFirst,
   createSlateEditor,
-} from '@udecode/plate-common';
-import { createTPlatePlugin } from '@udecode/plate-common/react';
+} from '@udecode/plate';
+import { createTPlatePlugin } from '@udecode/plate/react';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 
 import type { AIBatch } from '../../lib';

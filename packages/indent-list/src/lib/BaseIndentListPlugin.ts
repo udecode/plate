@@ -8,7 +8,7 @@ import {
   isHtmlBlockElement,
   postCleanHtml,
   traverseHtmlElements,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { GetSiblingIndentListOptions } from './queries/getSiblingIndentList';
 import type { ListStyleType } from './types';

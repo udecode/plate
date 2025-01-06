@@ -4,7 +4,7 @@ import {
   createPrimitiveComponent,
   useEditorRef,
   useEditorSelection,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 
 import type { TLinkElement } from '../../../lib';
 

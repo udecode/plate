@@ -1,12 +1,12 @@
 import React from 'react';
 
-import type { NodeEntry } from '@udecode/plate-common';
+import type { NodeEntry } from '@udecode/plate';
 
 import {
   useEditorPlugin,
   useElement,
   useElementSelector,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 
 import type { TTableRowElement } from '../../../lib';
 

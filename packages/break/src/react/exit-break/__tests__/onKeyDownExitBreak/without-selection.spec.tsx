@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import { createEditor } from '@udecode/plate-common';
-import { getEditorPlugin } from '@udecode/plate-common/react';
-import { createPlateEditor } from '@udecode/plate-common/react';
+import { createEditor } from '@udecode/plate';
+import { getEditorPlugin } from '@udecode/plate/react';
+import { createPlateEditor } from '@udecode/plate/react';
 import * as isHotkey from '@udecode/plate-core';
 import { jsxt } from '@udecode/plate-test-utils';
 

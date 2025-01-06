@@ -4,7 +4,7 @@ import {
   type ElementOf,
   type NodeEntry,
   NodeApi,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { GetSiblingIndentListOptions } from '../queries/getSiblingIndentList';
 

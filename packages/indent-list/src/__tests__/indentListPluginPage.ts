@@ -3,7 +3,7 @@ import {
   NodeApi,
   PathApi,
   getPreviousPath,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { type GetSiblingIndentListOptions, BaseIndentListPlugin } from '../lib';
 

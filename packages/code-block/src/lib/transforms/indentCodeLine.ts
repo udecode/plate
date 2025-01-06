@@ -1,4 +1,4 @@
-import type { Editor, ElementEntry } from '@udecode/plate-common';
+import type { Editor, ElementEntry } from '@udecode/plate';
 
 export interface IndentCodeLineOptions {
   codeBlock: ElementEntry;

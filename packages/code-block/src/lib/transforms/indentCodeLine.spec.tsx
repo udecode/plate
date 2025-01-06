@@ -4,8 +4,8 @@ import {
   type ElementEntry,
   type SlateEditor,
   createEditor,
-} from '@udecode/plate-common';
-import { createPlateEditor } from '@udecode/plate-common/react';
+} from '@udecode/plate';
+import { createPlateEditor } from '@udecode/plate/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';

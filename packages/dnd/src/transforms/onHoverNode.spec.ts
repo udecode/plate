@@ -1,18 +1,18 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 import type { DropTargetMonitor } from 'react-dnd';
 
-import { RangeApi } from '@udecode/plate-common';
-import { createPlateEditor } from '@udecode/plate-common/react';
+import { RangeApi } from '@udecode/plate';
+import { createPlateEditor } from '@udecode/plate/react';
 
 import type { DragItemNode } from '../types';
 
 import { DndPlugin } from '../DndPlugin';
 import { onHoverNode } from './onHoverNode';
 
-jest.mock('@udecode/plate-common', () => ({
-  ...jest.requireActual('@udecode/plate-common'),
+jest.mock('@udecode/plate', () => ({
+  ...jest.requireActual('@udecode/plate'),
   RangeApi: {
-    ...jest.requireActual('@udecode/plate-common').RangeApi,
+    ...jest.requireActual('@udecode/plate').RangeApi,
     isExpanded: jest.fn(),
   },
 }));

@@ -1,4 +1,4 @@
-import type { SlateEditor, TRange } from '@udecode/plate-common';
+import type { SlateEditor, TRange } from '@udecode/plate';
 
 import { getCommentNodesById } from './getCommentNodesById';
 

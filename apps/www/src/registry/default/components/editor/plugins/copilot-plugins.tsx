@@ -1,6 +1,6 @@
 'use client';
 
-import type { TElement } from '@udecode/plate-common';
+import type { TElement } from '@udecode/plate';
 
 import { faker } from '@faker-js/faker';
 import { CopilotPlugin } from '@udecode/plate-ai/react';

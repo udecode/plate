@@ -1,6 +1,6 @@
-import type { ExtendEditor } from '@udecode/plate-common/react';
+import type { ExtendEditor } from '@udecode/plate/react';
 
-import { type SlateEditor, NodeApi } from '@udecode/plate-common';
+import { type SlateEditor, NodeApi } from '@udecode/plate';
 import { type TIndentElement, indent } from '@udecode/plate-indent';
 
 import type { ToggleConfig } from './TogglePlugin';

@@ -307,7 +307,7 @@ export default function InstallationTab() {
           : ''
       }import { usePlateEditor, Plate${hasEditor ? '' : ', PlateContent'}${
         plateImports.length > 0 ? ', ' + plateImports : ''
-      } } from '@udecode/plate-common/react';`,
+      } } from '@udecode/plate/react';`,
       ...importsGroups,
       ...customImports,
       '',
@@ -498,7 +498,7 @@ export default function InstallationTab() {
             <InstallationCode
               code={[
                 `npm install react react-dom slate slate-dom slate-react slate-hyperscript`,
-                `npm install @udecode/plate-common`,
+                `npm install @udecode/plate`,
               ].join('\n')}
               bash
             >

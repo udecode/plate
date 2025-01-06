@@ -1,4 +1,4 @@
-import type { ExtendEditor } from '@udecode/plate-common';
+import type { ExtendEditor } from '@udecode/plate';
 
 import type { ImageConfig } from './BaseImagePlugin';
 

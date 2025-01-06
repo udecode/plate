@@ -1,4 +1,4 @@
-import type { Editor, Point } from '@udecode/plate-common';
+import type { Editor, Point } from '@udecode/plate';
 
 import type { MatchRange } from '../types';
 

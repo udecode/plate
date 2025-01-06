@@ -23,7 +23,7 @@ export const blocks: Registry = [
       '@udecode/plate-block-quote',
       '@udecode/plate-code-block',
       '@udecode/plate-comments',
-      '@udecode/plate-common',
+      '@udecode/plate',
       '@udecode/plate-date',
       '@udecode/plate-emoji',
       '@udecode/plate-excalidraw',

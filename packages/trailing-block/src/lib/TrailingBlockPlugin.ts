@@ -3,7 +3,7 @@ import {
   type QueryNodeOptions,
   BaseParagraphPlugin,
   createTSlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { withTrailingBlock } from './withTrailingBlock';
 

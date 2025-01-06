@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import type { ElementEntry, SlateEditor } from '@udecode/plate-common';
+import type { ElementEntry, SlateEditor } from '@udecode/plate';
 
-import { createPlateEditor } from '@udecode/plate-common/react';
+import { createPlateEditor } from '@udecode/plate/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';

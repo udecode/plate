@@ -1,4 +1,4 @@
-import { type SlateEditor, nanoid } from '@udecode/plate-common';
+import { type SlateEditor, nanoid } from '@udecode/plate';
 
 import type { TSuggestionText } from '../types';
 

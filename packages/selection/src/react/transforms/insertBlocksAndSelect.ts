@@ -1,6 +1,6 @@
-import type { PlateEditor } from '@udecode/plate-common/react';
+import type { PlateEditor } from '@udecode/plate/react';
 
-import { type Path, type TElement, nanoid } from '@udecode/plate-common';
+import { type Path, type TElement, nanoid } from '@udecode/plate';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 

@@ -1,4 +1,4 @@
-import { type ExtendEditor, ElementApi, NodeApi } from '@udecode/plate-common';
+import { type ExtendEditor, ElementApi, NodeApi } from '@udecode/plate';
 import castArray from 'lodash/castArray.js';
 
 import type { RemoveEmptyNodesConfig } from './RemoveEmptyNodesPlugin';

@@ -1,5 +1,5 @@
 import type { Emoji } from '@emoji-mart/data';
-import type { SlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
 
 import { BaseEmojiPlugin } from '../BaseEmojiPlugin';
 

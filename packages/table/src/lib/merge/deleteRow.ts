@@ -2,7 +2,7 @@ import {
   type SlateEditor,
   getEditorPlugin,
   insertElements,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 import cloneDeep from 'lodash/cloneDeep.js';
 
 import type { TableConfig } from '../BaseTablePlugin';

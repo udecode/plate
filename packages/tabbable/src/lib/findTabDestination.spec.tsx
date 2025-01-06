@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, NodeApi } from '@udecode/plate-common';
-import { createSlateEditor } from '@udecode/plate-common';
+import { type SlateEditor, NodeApi } from '@udecode/plate';
+import { createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import type { TabbableEntry } from './types';

@@ -12,7 +12,7 @@ import {
   NodeApi,
   PathApi,
   insertElements,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import {
   type ListConfig,

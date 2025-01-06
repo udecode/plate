@@ -3,7 +3,7 @@ import {
   type TElement,
   PathApi,
   insertElements,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import {
   BaseListItemContentPlugin,

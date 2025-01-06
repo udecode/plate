@@ -1,5 +1,6 @@
 'use client';
 
+import { ParagraphPlugin } from '@udecode/plate/react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { CalloutPlugin } from '@udecode/plate-callout/react';
 import {
@@ -8,7 +9,6 @@ import {
   unwrapCodeBlock,
 } from '@udecode/plate-code-block';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import { ParagraphPlugin } from '@udecode/plate-common/react';
 import { HEADING_LEVELS } from '@udecode/plate-heading';
 import { INDENT_LIST_KEYS, ListStyleType } from '@udecode/plate-indent-list';
 import { ResetNodePlugin } from '@udecode/plate-reset-node/react';

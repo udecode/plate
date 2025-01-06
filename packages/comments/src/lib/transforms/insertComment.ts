@@ -1,4 +1,4 @@
-import { type SlateEditor, TextApi, nanoid } from '@udecode/plate-common';
+import { type SlateEditor, TextApi, nanoid } from '@udecode/plate';
 
 import { BaseCommentsPlugin, getCommentKey } from '..';
 

@@ -1,11 +1,11 @@
 import React from 'react';
 
-import type { TRange, UnknownObject } from '@udecode/plate-common';
+import type { TRange, UnknownObject } from '@udecode/plate';
 
 import {
   useEditorRef,
   useIsomorphicLayoutEffect,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 
 import type { CursorOverlayProps } from '../components/CursorOverlay';
 import type { CursorState, SelectionRect } from '../types';

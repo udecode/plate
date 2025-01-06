@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { type Value, createSlateEditor } from '@udecode/plate-common';
+import { type Value, createSlateEditor } from '@udecode/plate';
 import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { jsxt } from '@udecode/plate-test-utils';
 

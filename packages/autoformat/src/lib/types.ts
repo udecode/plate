@@ -1,4 +1,4 @@
-import type { SlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
 
 import type { GetMatchPointsReturnType } from './utils/getMatchPoints';
 

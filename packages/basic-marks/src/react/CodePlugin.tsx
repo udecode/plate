@@ -1,4 +1,4 @@
-import { Key, toPlatePlugin } from '@udecode/plate-common/react';
+import { Key, toPlatePlugin } from '@udecode/plate/react';
 
 import { BaseCodePlugin } from '../lib/BaseCodePlugin';
 

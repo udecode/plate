@@ -1,5 +1,5 @@
-import { getEditorPlugin } from '@udecode/plate-common';
-import { createSlateEditor } from '@udecode/plate-common';
+import { getEditorPlugin } from '@udecode/plate';
+import { createSlateEditor } from '@udecode/plate';
 
 import { FindReplacePlugin } from '../../../FindReplacePlugin';
 

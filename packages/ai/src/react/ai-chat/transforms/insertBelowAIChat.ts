@@ -1,6 +1,6 @@
-import type { PlateEditor } from '@udecode/plate-common/react';
+import type { PlateEditor } from '@udecode/plate/react';
 
-import { type SlateEditor, PathApi, RangeApi } from '@udecode/plate-common';
+import { type SlateEditor, PathApi, RangeApi } from '@udecode/plate';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 import cloneDeep from 'lodash/cloneDeep.js';
 

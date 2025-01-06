@@ -2,7 +2,7 @@ import {
   type PluginConfig,
   type TElement,
   createTSlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { withTodoList } from './withTodoList';
 

@@ -3,16 +3,16 @@
 import React from 'react';
 
 import { cn } from '@udecode/cn';
-import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
-import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
 import {
   type Decorate,
   type RenderLeafProps,
   type TText,
   TextApi,
   createSlatePlugin,
-} from '@udecode/plate-common';
-import { Plate } from '@udecode/plate-common/react';
+} from '@udecode/plate';
+import { Plate } from '@udecode/plate/react';
+import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
+import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
 import Prism from 'prismjs';
 
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';

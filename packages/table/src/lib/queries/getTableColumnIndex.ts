@@ -1,4 +1,4 @@
-import type { Editor, TElement } from '@udecode/plate-common';
+import type { Editor, TElement } from '@udecode/plate';
 
 /** Get table column index of a cell node. */
 export const getTableColumnIndex = (editor: Editor, cellNode: TElement) => {

@@ -4,7 +4,7 @@ import {
   type Path,
   type TElement,
   getPreviousPath,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 export const getCellInPreviousTableRow = (
   editor: Editor,

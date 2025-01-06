@@ -26,11 +26,12 @@ The following interfaces from `slate` and `slate-dom` are now part of `Editor`:
 - Replaced `Path` from slate with `Path` (type) and `PathApi` (static methods).
 - Replaced `Operation` from slate with `Operation` (type) and `OperationApi` (static methods).
 - Replaced `Point` from slate with `Point` (type) and `PointApi` (static methods).
-- Replaced `Text` from slate with `TText` (type) and `TextApi` (static methods).
-- Replaced `Range` from slate with `TRange` (type) and `RangeApi` (static methods).
-- Replaced `Location` from slate with `TLocation` (type) and `LocationApi` (static methods).
+- Replaced `Text` from slate with `TText` (type) and `TextApi` (static methods). We also export `Text` type like `slate` but we don't recommend it as it's conflicting with the DOM type.
+- Replaced `Range` from slate with `TRange` (type) and `RangeApi` (static methods). We also export `Range` type like `slate` but we don't recommend it as it's conflicting with the DOM type.
+- Replaced `Location` from slate with `TLocation` (type) and `LocationApi` (static methods). We also export `Location` type like `slate` but we don't recommend it as it's conflicting with the DOM type.
 - Replaced `Span` from slate with `Span` (type) and `SpanApi` (static methods).
-- Replaced `Node` from slate with `TNode` (type) and `NodeApi` (static methods).
+- Replaced `Node` from slate with `TNode` (type) and `NodeApi` (static methods). We also export `Node` type like `slate` but we don't recommend it as it's conflicting with the DOM type.
+- Replaced `Element` from slate with `TElement` (type) and `ElementApi` (static methods). We also export `Element` type like `slate` but we don't recommend it as it's conflicting with the DOM type.
 
 Moved or renamed editor functions:
 

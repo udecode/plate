@@ -25,7 +25,7 @@ export function usePlateInstancesWarn(disabled?: boolean) {
           'Choose only one of these packages in your dependencies:\n' +
           '- @udecode/plate\n' +
           '- @udecode/plate-core\n' +
-          '- @udecode/plate-common\n\n'
+          '- @udecode/plate\n\n'
       );
     }
   }, [disabled]);

@@ -4,7 +4,7 @@ import {
   type SlateEditor,
   NodeApi,
   RangeApi,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { type TTableCellElement, BaseTableRowPlugin } from '..';
 import { getTableGridAbove } from '../queries';

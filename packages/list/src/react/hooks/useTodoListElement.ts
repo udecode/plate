@@ -1,4 +1,4 @@
-import { useEditorRef, useReadOnly } from '@udecode/plate-common/react';
+import { useEditorRef, useReadOnly } from '@udecode/plate/react';
 
 import type { TTodoListItemElement } from '../../lib';
 

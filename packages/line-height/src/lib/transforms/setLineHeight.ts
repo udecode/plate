@@ -2,7 +2,7 @@ import {
   type SetNodesOptions,
   type SlateEditor,
   getInjectMatch,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { BaseLineHeightPlugin } from '../BaseLineHeightPlugin';
 

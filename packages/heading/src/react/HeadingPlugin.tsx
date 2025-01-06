@@ -2,7 +2,7 @@ import {
   type PlatePlugin,
   Key,
   toPlatePlugin,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 
 import { BaseHeadingPlugin } from '../lib/BaseHeadingPlugin';
 

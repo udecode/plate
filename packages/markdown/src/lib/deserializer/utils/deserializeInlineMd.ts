@@ -1,5 +1,5 @@
-import type { Descendant } from '@udecode/plate-common';
-import type { PlateEditor } from '@udecode/plate-common/react';
+import type { Descendant } from '@udecode/plate';
+import type { PlateEditor } from '@udecode/plate/react';
 
 import { MarkdownPlugin } from '../../MarkdownPlugin';
 import { stripMarkdownBlocks } from './stripMarkdown';

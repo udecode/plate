@@ -1,4 +1,4 @@
-import { type PluginConfig, createTSlatePlugin } from '@udecode/plate-common';
+import { type PluginConfig, createTSlatePlugin } from '@udecode/plate';
 
 import type { AutoformatPluginOptions } from './types';
 

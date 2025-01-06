@@ -1,6 +1,6 @@
-import type { PluginConfig } from '@udecode/plate-common';
+import type { PluginConfig } from '@udecode/plate';
 
-import { createTPlatePlugin } from '@udecode/plate-common/react';
+import { createTPlatePlugin } from '@udecode/plate/react';
 
 import type { BlockSelectionConfig } from './BlockSelectionPlugin';
 

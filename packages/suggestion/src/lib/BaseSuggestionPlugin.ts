@@ -3,7 +3,7 @@ import {
   type WithPartial,
   createTSlatePlugin,
   nanoid,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { SuggestionUser, TSuggestion } from './types';
 

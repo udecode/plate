@@ -1,4 +1,4 @@
-import type { SlateEditor, TLocation } from '@udecode/plate-common';
+import type { SlateEditor, TLocation } from '@udecode/plate';
 
 import { setIndent } from '@udecode/plate-indent';
 

@@ -2,7 +2,7 @@ import {
   type InsertNodesOptions,
   type SlateEditor,
   PathApi,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { GetEmptyTableNodeOptions } from '../api/getEmptyTableNode';
 import type { TTableElement } from '../types';

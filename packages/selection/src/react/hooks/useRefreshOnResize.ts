@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { TRange } from '@udecode/plate-common';
+import type { TRange } from '@udecode/plate';
 
 import type { SelectionRect } from '../types';
 

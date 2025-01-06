@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
-import type { Path } from '@udecode/plate-common';
+import type { Path } from '@udecode/plate';
 
-import { ElementApi } from '@udecode/plate-common';
+import { ElementApi } from '@udecode/plate';
 
 import type { EditorHandle } from './types';
 

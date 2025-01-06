@@ -2,7 +2,7 @@ import type {
   Editor,
   EditorNodesOptions,
   ValueOf,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { getBlocksWithId } from '../queries/getBlocksWithId';
 

@@ -5,7 +5,7 @@ import {
   PointApi,
   createTSlatePlugin,
   resetEditorChildren,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { ResetNodePluginOptions } from './types';
 

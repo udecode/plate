@@ -1,4 +1,4 @@
-import { useEditorRef, useEditorSelector } from '@udecode/plate-common/react';
+import { useEditorRef, useEditorSelector } from '@udecode/plate/react';
 
 import { someToggle } from '../../lib';
 import { TogglePlugin } from '../TogglePlugin';

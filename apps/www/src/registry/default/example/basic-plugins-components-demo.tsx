@@ -2,18 +2,18 @@
 
 import { withProps } from '@udecode/cn';
 import {
+  Plate,
+  PlateElement,
+  PlateLeaf,
+  usePlateEditor,
+} from '@udecode/plate/react';
+import {
   BoldPlugin,
   CodePlugin,
   ItalicPlugin,
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import {
-  Plate,
-  PlateElement,
-  PlateLeaf,
-  usePlateEditor,
-} from '@udecode/plate-common/react';
 import { HeadingPlugin } from '@udecode/plate-heading/react';
 
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';

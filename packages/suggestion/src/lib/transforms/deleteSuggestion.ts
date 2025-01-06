@@ -6,7 +6,7 @@ import {
   PointApi,
   nanoid,
   unhangCharacterRange,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { findSuggestionId } from '../queries/findSuggestionId';

@@ -2,7 +2,7 @@ import type {
   EditorFindOptions,
   SlateEditor,
   ValueOf,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { TSuggestionText } from '../types';
 

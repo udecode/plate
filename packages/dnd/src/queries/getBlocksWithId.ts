@@ -2,7 +2,7 @@ import type {
   Editor,
   EditorNodesOptions,
   ValueOf,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 /** Get blocks with an id */
 export const getBlocksWithId = <E extends Editor>(

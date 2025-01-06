@@ -1,4 +1,4 @@
-import { type ExtendEditor, NodeApi } from '@udecode/plate-common';
+import { type ExtendEditor, NodeApi } from '@udecode/plate';
 
 import type { TSuggestionText } from './types';
 

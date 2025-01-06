@@ -1,7 +1,7 @@
 import {
   type TElement,
   createEditor as makeEditor,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import {
   createAnchor,

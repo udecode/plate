@@ -1,6 +1,6 @@
-import type { KeyboardHandler } from '@udecode/plate-common/react';
+import type { KeyboardHandler } from '@udecode/plate/react';
 
-import { RangeApi, isHotkey } from '@udecode/plate-common';
+import { RangeApi, isHotkey } from '@udecode/plate';
 
 import type { AutoformatConfig } from '../lib/BaseAutoformatPlugin';
 import type { AutoformatRule, AutoformatTextRule } from '../lib/types';

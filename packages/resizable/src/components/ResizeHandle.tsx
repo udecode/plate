@@ -1,12 +1,12 @@
 import React from 'react';
 
-import type { Nullable } from '@udecode/plate-common';
+import type { Nullable } from '@udecode/plate';
 
 import {
   createAtomStore,
   createPrimitiveComponent,
   useReadOnly,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 
 import type { ResizeDirection, ResizeEvent } from '../types';
 

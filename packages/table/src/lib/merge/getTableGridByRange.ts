@@ -4,7 +4,7 @@ import {
   type TElement,
   type TRange,
   getEditorPlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type {
   TTableCellElement,

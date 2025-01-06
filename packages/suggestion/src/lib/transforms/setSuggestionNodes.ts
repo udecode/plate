@@ -6,7 +6,7 @@ import {
   addRangeMarks,
   getAt,
   nanoid,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { TSuggestionText } from '../types';
 

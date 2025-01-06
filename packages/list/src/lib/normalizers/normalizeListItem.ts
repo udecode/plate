@@ -9,7 +9,7 @@ import {
   getChildren,
   insertEmptyElement,
   match,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import {
   type ListPluginOptions,

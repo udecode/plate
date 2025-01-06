@@ -2,7 +2,7 @@ import {
   type NodeEntry,
   type SlateEditor,
   BaseParagraphPlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 
 import {

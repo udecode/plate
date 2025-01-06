@@ -7,7 +7,7 @@ import {
   NodeApi,
   PathApi,
   getChildren,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { ListConfig } from './BaseListPlugin';
 

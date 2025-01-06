@@ -3,7 +3,7 @@ import {
   type PluginConfig,
   createTSlatePlugin,
   isUrl,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { TLinkElement } from './types';
 

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
-import { NodeApi } from '@udecode/plate-common';
-import { type PlateEditor, useEditorRef } from '@udecode/plate-common/react';
+import { NodeApi } from '@udecode/plate';
+import { type PlateEditor, useEditorRef } from '@udecode/plate/react';
 
 import type { TPlatePlaywrightAdapter } from './types';
 

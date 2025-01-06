@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { createEditor } from '@udecode/plate-common';
+import { createEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { onKeyDownSingleLine } from '../../onKeyDownSingleLine';

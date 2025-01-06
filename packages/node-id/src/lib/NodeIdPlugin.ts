@@ -6,7 +6,7 @@ import {
   createTSlatePlugin,
   nanoid,
   queryNode,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { withNodeId } from './withNodeId';
 

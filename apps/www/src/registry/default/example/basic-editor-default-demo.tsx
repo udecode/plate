@@ -2,11 +2,7 @@
 
 import React from 'react';
 
-import {
-  Plate,
-  PlateContent,
-  usePlateEditor,
-} from '@udecode/plate-common/react';
+import { Plate, PlateContent, usePlateEditor } from '@udecode/plate/react';
 
 export default function BasicEditorDefaultDemo() {
   const editor = usePlateEditor();

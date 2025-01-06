@@ -2,7 +2,7 @@ import {
   useEditorSelector,
   useReadOnly,
   useSelected,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 
 export const useDebouncePopoverOpen = () => {
   const readOnly = useReadOnly();

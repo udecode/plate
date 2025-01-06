@@ -1,7 +1,7 @@
 'use client';
 
+import { createZustandStore } from '@udecode/plate';
 import { SingleLinePlugin } from '@udecode/plate-break/react';
-import { createZustandStore } from '@udecode/plate-common';
 import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { SelectOnBackspacePlugin } from '@udecode/plate-select';
 

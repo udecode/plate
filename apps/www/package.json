@@ -87,7 +87,6 @@
     "@udecode/plate-code-block": "workspace:^",
     "@udecode/plate-combobox": "workspace:^",
     "@udecode/plate-comments": "workspace:^",
-    "@udecode/plate-common": "workspace:^",
     "@udecode/plate-core": "workspace:^",
     "@udecode/plate-csv": "workspace:^",
     "@udecode/plate-date": "workspace:^",

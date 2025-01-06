@@ -2,7 +2,7 @@ import type {
   InsertNodesOptions,
   SlateEditor,
   TText,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { TLinkElement } from '../types';
 

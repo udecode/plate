@@ -1,13 +1,13 @@
 import React from 'react';
 
-import { mergeProps } from '@udecode/plate-common';
+import { mergeProps } from '@udecode/plate';
 import {
   useEditorReadOnly,
   useEditorRef,
   useEditorSelector,
   useFocused,
   useOnClickOutside,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 
 import {
   type UseVirtualFloatingOptions,

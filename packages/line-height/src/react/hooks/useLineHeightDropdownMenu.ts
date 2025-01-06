@@ -1,6 +1,6 @@
-import type { TElement } from '@udecode/plate-common';
+import type { TElement } from '@udecode/plate';
 
-import { useEditorRef, useEditorSelector } from '@udecode/plate-common/react';
+import { useEditorRef, useEditorSelector } from '@udecode/plate/react';
 
 import { BaseLineHeightPlugin, setLineHeight } from '../../index';
 

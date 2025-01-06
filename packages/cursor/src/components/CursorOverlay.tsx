@@ -1,8 +1,8 @@
 import React from 'react';
 
-import type { ClassNames, UnknownObject } from '@udecode/plate-common';
+import type { ClassNames, UnknownObject } from '@udecode/plate';
 
-import { usePlateSelectors } from '@udecode/plate-common/react';
+import { usePlateSelectors } from '@udecode/plate/react';
 
 import type {
   CursorData,

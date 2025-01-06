@@ -1,5 +1,5 @@
-import type { Operation } from '@udecode/plate-common';
-import type { ExtendEditor, PlateEditor } from '@udecode/plate-common/react';
+import type { Operation } from '@udecode/plate';
+import type { ExtendEditor, PlateEditor } from '@udecode/plate/react';
 
 import { serializeInlineMd } from '@udecode/plate-markdown';
 import debounce from 'lodash/debounce.js';

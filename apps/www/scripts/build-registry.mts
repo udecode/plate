@@ -503,7 +503,7 @@ async function buildStylesIndex() {
       "class-variance-authority",
       "lucide-react",
       "@udecode/cn",
-      "@udecode/plate-common",
+      "@udecode/plate",
       "slate-hyperscript",
     ]
 

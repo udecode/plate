@@ -1,4 +1,4 @@
-import type { EditorFindOptions, SlateEditor } from '@udecode/plate-common';
+import type { EditorFindOptions, SlateEditor } from '@udecode/plate';
 
 import type { TCommentText } from '../types';
 

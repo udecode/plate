@@ -3,7 +3,7 @@ import {
   type TText,
   NodeApi,
   TextApi,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 export class InlineNodeCharMap {
   private _charGenerator: Generator<string>;

@@ -1,4 +1,4 @@
-import { type SlateEditor, insertElements } from '@udecode/plate-common';
+import { type SlateEditor, insertElements } from '@udecode/plate';
 
 import { BaseCodeLinePlugin } from '../BaseCodeBlockPlugin';
 

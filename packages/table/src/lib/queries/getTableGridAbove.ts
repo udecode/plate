@@ -3,7 +3,7 @@ import {
   type ElementEntry,
   type SlateEditor,
   PathApi,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { TableConfig } from '../BaseTablePlugin';
 

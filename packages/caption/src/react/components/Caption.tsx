@@ -6,7 +6,7 @@ import {
   useElement,
   useReadOnly,
   useSelected,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 
 import { CaptionPlugin } from '../CaptionPlugin';
 import { useCaptionString } from '../hooks/useCaptionString';

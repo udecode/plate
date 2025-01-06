@@ -4,7 +4,7 @@ import {
   useEditorRef,
   useReadOnly,
   useSelected,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 
 import { getTableGridAbove } from '../../../lib';
 import { useTableStore } from '../../stores';

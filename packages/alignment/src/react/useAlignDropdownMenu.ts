@@ -1,5 +1,5 @@
-import { isDefined } from '@udecode/plate-common';
-import { useEditorRef, useEditorSelector } from '@udecode/plate-common/react';
+import { isDefined } from '@udecode/plate';
+import { useEditorRef, useEditorSelector } from '@udecode/plate/react';
 
 import { type Alignment, BaseAlignPlugin, setAlign } from '../index';
 

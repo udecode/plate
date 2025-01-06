@@ -1,4 +1,4 @@
-import { type SlateEditor, nanoid } from '@udecode/plate-common';
+import { type SlateEditor, nanoid } from '@udecode/plate';
 
 import { BaseSuggestionPlugin, SUGGESTION_KEYS } from '../BaseSuggestionPlugin';
 import { findSuggestionId } from '../queries/findSuggestionId';

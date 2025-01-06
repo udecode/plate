@@ -1,4 +1,4 @@
-import type { Descendant, TElement } from '@udecode/plate-common';
+import type { Descendant, TElement } from '@udecode/plate';
 
 export type CreateCellOptions = {
   children?: Descendant[];

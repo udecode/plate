@@ -1,5 +1,5 @@
-import { type Value, NodeApi } from '@udecode/plate-common';
-import { createAtomStore, useEditorPlugin } from '@udecode/plate-common/react';
+import { type Value, NodeApi } from '@udecode/plate';
+import { createAtomStore, useEditorPlugin } from '@udecode/plate/react';
 
 import type { CommentUser, TComment } from '../../../lib/types';
 

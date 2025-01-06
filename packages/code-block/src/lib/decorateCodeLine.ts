@@ -1,6 +1,6 @@
-import type { Decorate, TRange } from '@udecode/plate-common';
+import type { Decorate, TRange } from '@udecode/plate';
 
-import { NodeApi } from '@udecode/plate-common';
+import { NodeApi } from '@udecode/plate';
 
 import type { TCodeBlockElement } from './types';
 

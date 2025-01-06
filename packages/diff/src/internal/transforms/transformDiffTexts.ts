@@ -11,7 +11,7 @@ import {
   PathApi,
   TextApi,
   createEditor,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { ComputeDiffOptions } from '../../lib/computeDiff';
 

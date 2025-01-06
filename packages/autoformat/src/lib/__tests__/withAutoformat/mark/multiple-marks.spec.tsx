@@ -5,7 +5,7 @@ import {
   ItalicPlugin,
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
-import { createSlateEditor } from '@udecode/plate-common';
+import { createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
 import { autoformatPlugin } from 'www/src/registry/default/components/editor/plugins/autoformat-plugin';
 

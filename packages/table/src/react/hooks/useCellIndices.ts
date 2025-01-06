@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useEditorPlugin, useElement } from '@udecode/plate-common/react';
+import { useEditorPlugin, useElement } from '@udecode/plate/react';
 
 import { type TTableCellElement, computeCellIndices } from '../../lib';
 import { TablePlugin } from '../TablePlugin';

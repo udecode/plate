@@ -1,6 +1,13 @@
 import React from 'react';
 
 import { withProps } from '@udecode/cn';
+import {
+  type Value,
+  BaseParagraphPlugin,
+  SlateLeaf,
+  createSlateEditor,
+  serializeHtml,
+} from '@udecode/plate';
 import { BaseAlignPlugin } from '@udecode/plate-alignment';
 import {
   BaseBoldPlugin,
@@ -18,13 +25,6 @@ import {
   BaseCodeSyntaxPlugin,
 } from '@udecode/plate-code-block';
 import { BaseCommentsPlugin } from '@udecode/plate-comments';
-import {
-  type Value,
-  BaseParagraphPlugin,
-  SlateLeaf,
-  createSlateEditor,
-  serializeHtml,
-} from '@udecode/plate-common';
 import { BaseDatePlugin } from '@udecode/plate-date';
 import {
   BaseFontBackgroundColorPlugin,

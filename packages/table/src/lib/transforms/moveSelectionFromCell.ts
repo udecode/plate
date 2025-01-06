@@ -2,7 +2,7 @@ import {
   type SlateEditor,
   type TLocation,
   NodeApi,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { getTableGridAbove } from '../queries/getTableGridAbove';
 import { getCellTypes } from '../utils/getCellType';

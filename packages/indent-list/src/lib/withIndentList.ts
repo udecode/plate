@@ -3,7 +3,7 @@ import {
   type PathRef,
   type TElement,
   NodeApi,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 
 import {

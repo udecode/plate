@@ -1,7 +1,7 @@
 import {
   createPrimitiveComponent,
   useEditorPlugin,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 
 import { type BaseCommentsConfig, unsetCommentNodesById } from '../../lib';
 import { CommentsPlugin } from '../CommentsPlugin';

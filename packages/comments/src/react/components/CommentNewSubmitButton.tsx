@@ -1,9 +1,9 @@
-import { nanoid } from '@udecode/plate-common';
+import { nanoid } from '@udecode/plate';
 import {
   createPrimitiveComponent,
   useEditorPlugin,
   useEditorRef,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 
 import { getCommentFragment } from '../../lib/queries/getCommentFragment';
 import { CommentsPlugin } from '../CommentsPlugin';

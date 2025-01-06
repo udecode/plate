@@ -1,4 +1,4 @@
-import { type ExtendEditor, NodeApi, queryNode } from '@udecode/plate-common';
+import { type ExtendEditor, NodeApi, queryNode } from '@udecode/plate';
 
 import type { SelectOnBackspaceConfig } from './SelectOnBackspacePlugin';
 

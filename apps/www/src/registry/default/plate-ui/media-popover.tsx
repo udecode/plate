@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 
-import type { WithRequiredKey } from '@udecode/plate-common';
+import type { WithRequiredKey } from '@udecode/plate';
 
 import {
   useEditorSelector,
@@ -10,7 +10,7 @@ import {
   useReadOnly,
   useRemoveNodeButton,
   useSelected,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 import {
   FloatingMedia as FloatingMediaPrimitive,
   floatingMediaActions,

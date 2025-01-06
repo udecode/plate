@@ -6,7 +6,7 @@ import {
   type TLocation,
   NodeApi,
   RangeApi,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { BaseTodoListPlugin } from '../BaseTodoListPlugin';
 

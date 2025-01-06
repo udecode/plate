@@ -2,7 +2,7 @@ import {
   type PluginConfig,
   type SlateEditor,
   createTSlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { Heading } from './types';
 

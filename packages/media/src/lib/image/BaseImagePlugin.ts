@@ -2,7 +2,7 @@ import {
   type PluginConfig,
   bindFirst,
   createTSlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { MediaPluginOptions, TMediaElement } from '../media';
 

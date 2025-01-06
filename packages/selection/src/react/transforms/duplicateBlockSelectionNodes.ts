@@ -1,10 +1,10 @@
-import type { PlateEditor } from '@udecode/plate-common/react';
+import type { PlateEditor } from '@udecode/plate/react';
 
 import {
   type NodeEntry,
   PathApi,
   duplicateBlocks,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 

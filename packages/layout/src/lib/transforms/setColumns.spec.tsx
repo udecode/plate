@@ -1,6 +1,6 @@
-import type { Path } from '@udecode/plate-common';
+import type { Path } from '@udecode/plate';
 
-import { createPlateEditor } from '@udecode/plate-common/react';
+import { createPlateEditor } from '@udecode/plate/react';
 
 import { BaseColumnItemPlugin, BaseColumnPlugin } from '../BaseColumnPlugin';
 import { setColumns } from './setColumns';

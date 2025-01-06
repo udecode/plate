@@ -1,4 +1,4 @@
-import type { Descendant, TElement, TText } from '@udecode/plate-common';
+import type { Descendant, TElement, TText } from '@udecode/plate';
 
 import type { MdastNode, RemarkElementRules } from './types';
 

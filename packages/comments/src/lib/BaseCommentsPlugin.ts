@@ -7,7 +7,7 @@ import {
   bindFirst,
   createTSlatePlugin,
   nanoid,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { CommentUser, TComment } from './types';
 

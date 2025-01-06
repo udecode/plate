@@ -2,7 +2,7 @@ import {
   type SlateEditor,
   type TText,
   replaceNodeChildren,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { TLinkElement } from '../types';
 import type { UpsertLinkOptions } from './upsertLink';

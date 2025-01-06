@@ -59,7 +59,7 @@
     "ai": "^3.4.10"
   },
   "peerDependencies": {
-    "@udecode/plate-common": ">=41.0.0",
+    "@udecode/plate": ">=41.0.0",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate-hyperscript": ">=0.66.0"

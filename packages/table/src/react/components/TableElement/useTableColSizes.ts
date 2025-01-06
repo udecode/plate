@@ -1,5 +1,5 @@
-import { PathApi } from '@udecode/plate-common';
-import { useElementSelector } from '@udecode/plate-common/react';
+import { PathApi } from '@udecode/plate';
+import { useElementSelector } from '@udecode/plate/react';
 
 import { getTableOverriddenColSizes } from '../../../lib';
 import { TablePlugin } from '../../TablePlugin';

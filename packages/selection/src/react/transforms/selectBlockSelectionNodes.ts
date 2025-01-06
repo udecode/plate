@@ -1,4 +1,4 @@
-import { type SlateEditor, selectNodes } from '@udecode/plate-common';
+import { type SlateEditor, selectNodes } from '@udecode/plate';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 

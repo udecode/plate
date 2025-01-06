@@ -1,4 +1,4 @@
-import type { SlateEditor, WrapNodesOptions } from '@udecode/plate-common';
+import type { SlateEditor, WrapNodesOptions } from '@udecode/plate';
 
 import type { TLinkElement } from '../types';
 

@@ -3,7 +3,7 @@ import {
   type PluginConfig,
   type WithRequiredKey,
   createTSlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { withCaption } from './withCaption';
 

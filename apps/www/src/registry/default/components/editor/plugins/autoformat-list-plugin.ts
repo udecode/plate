@@ -1,11 +1,13 @@
 'use client';
 
+import type { SlateEditor } from '@udecode/plate';
 import type {
   AutoformatBlockRule,
   AutoformatRule,
 } from '@udecode/plate-autoformat';
-import type { SlateEditor } from '@udecode/plate-common';
 
+import { ElementApi, isType } from '@udecode/plate';
+import { ParagraphPlugin } from '@udecode/plate/react';
 import {
   autoformatArrow,
   autoformatLegal,
@@ -30,8 +32,6 @@ import {
   CodeBlockPlugin,
   CodeLinePlugin,
 } from '@udecode/plate-code-block/react';
-import { ElementApi, isType } from '@udecode/plate-common';
-import { ParagraphPlugin } from '@udecode/plate-common/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';

@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react';
 
-import type { Value } from '@udecode/plate-common';
+import type { Value } from '@udecode/plate';
 
+import { Plate, usePlateEditor } from '@udecode/plate/react';
 import {
   BoldPlugin,
   CodePlugin,
@@ -11,7 +12,6 @@ import {
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 import { HeadingPlugin } from '@udecode/plate-heading/react';
 
 import {

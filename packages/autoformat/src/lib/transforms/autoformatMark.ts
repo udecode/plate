@@ -1,4 +1,4 @@
-import { type Editor, type TRange, removeMark } from '@udecode/plate-common';
+import { type Editor, type TRange, removeMark } from '@udecode/plate';
 import castArray from 'lodash/castArray.js';
 
 import type { AutoformatMarkRule } from '../types';

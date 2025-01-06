@@ -4,8 +4,8 @@ import {
   useDrop,
 } from 'react-dnd';
 
-import type { NodeEntry, TElement } from '@udecode/plate-common';
-import type { PlateEditor } from '@udecode/plate-common/react';
+import type { NodeEntry, TElement } from '@udecode/plate';
+import type { PlateEditor } from '@udecode/plate/react';
 
 import type {
   DragItemNode,

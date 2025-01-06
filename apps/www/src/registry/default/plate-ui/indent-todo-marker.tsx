@@ -1,9 +1,9 @@
 'use client';
 
-import type { SlateRenderElementProps } from '@udecode/plate-common';
+import type { SlateRenderElementProps } from '@udecode/plate';
 
 import { cn } from '@udecode/cn';
-import { useReadOnly } from '@udecode/plate-common/react';
+import { useReadOnly } from '@udecode/plate/react';
 import {
   useIndentTodoListElement,
   useIndentTodoListElementState,

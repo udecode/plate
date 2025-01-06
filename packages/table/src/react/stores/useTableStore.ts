@@ -1,8 +1,8 @@
 import React from 'react';
 
-import type { TElement } from '@udecode/plate-common';
+import type { TElement } from '@udecode/plate';
 
-import { atom, createAtomStore } from '@udecode/plate-common/react';
+import { atom, createAtomStore } from '@udecode/plate/react';
 
 import type { TableStoreSizeOverrides } from '../../lib';
 

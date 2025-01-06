@@ -1,4 +1,4 @@
-import { type ExtendEditor, TextApi } from '@udecode/plate-common';
+import { type ExtendEditor, TextApi } from '@udecode/plate';
 
 import type { TableConfig } from '.';
 

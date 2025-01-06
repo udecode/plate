@@ -4,8 +4,8 @@ import {
   type GetFragmentPropOptions,
   type TElement,
   getFragmentProp,
-} from '@udecode/plate-common';
-import { useEditorPlugin } from '@udecode/plate-common/react';
+} from '@udecode/plate';
+import { useEditorPlugin } from '@udecode/plate/react';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 

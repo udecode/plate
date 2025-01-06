@@ -2,15 +2,11 @@
 
 import React, { useCallback, useMemo, useState } from 'react';
 
-import type {
-  RenderElementProps,
-  TElement,
-  Value,
-} from '@udecode/plate-common';
+import type { RenderElementProps, TElement, Value } from '@udecode/plate';
 
+import { Editable, Plate, Slate, withReact } from '@udecode/plate/react';
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
-import { Editable, Plate, Slate, withReact } from '@udecode/plate-common/react';
 import { createEditor } from 'slate';
 
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';

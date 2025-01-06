@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { createPlateEditor } from '@udecode/plate-common/react';
+import { createPlateEditor } from '../../../plate/dist/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { jsxt } from '@udecode/plate-test-utils';
 

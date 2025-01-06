@@ -12,12 +12,12 @@ import {
   NodeApi,
   RangeApi,
   bindFirst,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 import {
   type PlateEditor,
   Key,
   createTPlatePlugin,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 import { serializeMdNodes } from '@udecode/plate-markdown';
 
 import type { CompleteOptions } from './utils/callCompletionApi';

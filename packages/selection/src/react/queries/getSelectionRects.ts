@@ -4,7 +4,7 @@ import {
   PathApi,
   RangeApi,
   TextApi,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { SelectionRect } from '../types';
 

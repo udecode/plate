@@ -5,7 +5,7 @@ import {
   RangeApi,
   getPluginTypes,
   isHotkey,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { type CaptionConfig, BaseCaptionPlugin } from './BaseCaptionPlugin';
 

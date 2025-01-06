@@ -1,4 +1,4 @@
-import type { Editor } from '@udecode/plate-common';
+import type { Editor } from '@udecode/plate';
 
 /**
  * Check if the selection is at the edge of its parent block. If it is and if

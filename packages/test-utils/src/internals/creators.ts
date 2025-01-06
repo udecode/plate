@@ -9,7 +9,7 @@ import {
   NodeApi,
   RangeApi,
   TextApi,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import {
   AnchorToken,

@@ -1,10 +1,10 @@
 import type { ResetNodeConfig } from '@udecode/plate-reset-node';
 
-import { BaseParagraphPlugin, createTSlatePlugin } from '@udecode/plate-common';
+import { BaseParagraphPlugin, createTSlatePlugin } from '@udecode/plate';
 import {
   type ExtendEditor,
   getEditorPlugin,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 import {
   SIMULATE_BACKSPACE,
   onKeyDownResetNode,

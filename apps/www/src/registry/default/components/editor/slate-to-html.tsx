@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import { Plate } from '@udecode/plate-common/react';
+import { Plate } from '@udecode/plate/react';
 import { useTheme } from 'next-themes';
 
 import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';

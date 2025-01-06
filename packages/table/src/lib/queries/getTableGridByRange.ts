@@ -4,7 +4,7 @@ import {
   type TElement,
   type TRange,
   NodeApi,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { TTableElement } from '../../lib/types';
 

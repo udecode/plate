@@ -1,4 +1,4 @@
-import type { Editor, TLocation } from '@udecode/plate-common';
+import type { Editor, TLocation } from '@udecode/plate';
 
 export const isPreviousCharacterEmpty = (editor: Editor, at: TLocation) => {
   const range = editor.api.range('before', at);

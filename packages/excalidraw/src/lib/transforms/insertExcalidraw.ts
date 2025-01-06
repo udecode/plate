@@ -2,7 +2,7 @@ import type {
   InsertNodesOptions,
   NodeProps,
   SlateEditor,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import {
   type TExcalidrawElement,

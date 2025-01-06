@@ -1,4 +1,4 @@
-import { type SlateEditor, type TRange, isHotkey } from '@udecode/plate-common';
+import { type SlateEditor, type TRange, isHotkey } from '@udecode/plate';
 
 import { KEY_SHIFT_EDGES, getCellTypes } from '..';
 import { moveSelectionFromCell } from './moveSelectionFromCell';

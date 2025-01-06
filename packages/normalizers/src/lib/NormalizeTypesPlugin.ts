@@ -3,7 +3,7 @@ import {
   type Path,
   type PluginConfig,
   createTSlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { withNormalizeTypes } from './withNormalizeTypes';
 

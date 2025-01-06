@@ -1,4 +1,4 @@
-import { Key, toPlatePlugin } from '@udecode/plate-common/react';
+import { Key, toPlatePlugin } from '@udecode/plate/react';
 
 import { BaseSubscriptPlugin } from '../lib/BaseSubscriptPlugin';
 import { SuperscriptPlugin } from './SuperscriptPlugin';

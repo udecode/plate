@@ -4,7 +4,7 @@ import {
   type TElement,
   PointApi,
   replaceNodeChildren,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { type TableConfig, getCellTypes } from '.';
 import { getTableGridAbove } from './queries/getTableGridAbove';

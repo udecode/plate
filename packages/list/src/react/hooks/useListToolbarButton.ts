@@ -1,4 +1,4 @@
-import { useEditorRef, useEditorSelector } from '@udecode/plate-common/react';
+import { useEditorRef, useEditorSelector } from '@udecode/plate/react';
 
 import { BaseBulletedListPlugin } from '../../lib/index';
 import { ListPlugin } from '../ListPlugin';

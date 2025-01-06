@@ -1,4 +1,4 @@
-import type { ExtendEditor, PlateEditor } from '@udecode/plate-common/react';
+import type { ExtendEditor, PlateEditor } from '@udecode/plate/react';
 
 import type { ListConfig } from '../lib/BaseListPlugin';
 

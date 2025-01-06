@@ -1,6 +1,6 @@
-import type { ExtendEditor } from '@udecode/plate-common';
+import type { ExtendEditor } from '@udecode/plate';
 
-import { getInjectMatch } from '@udecode/plate-common';
+import { getInjectMatch } from '@udecode/plate';
 
 import type { IndentConfig, TIndentElement } from './BaseIndentPlugin';
 

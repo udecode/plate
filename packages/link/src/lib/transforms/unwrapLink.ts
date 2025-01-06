@@ -2,7 +2,7 @@ import {
   type SlateEditor,
   type UnwrapNodesOptions,
   ElementApi,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { BaseLinkPlugin } from '../BaseLinkPlugin';
 

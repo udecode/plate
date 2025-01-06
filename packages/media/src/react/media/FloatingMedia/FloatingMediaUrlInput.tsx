@@ -1,13 +1,13 @@
 import React from 'react';
 
-import type { WithRequiredKey } from '@udecode/plate-common';
+import type { WithRequiredKey } from '@udecode/plate';
 
 import {
   createPrimitiveComponent,
   useEditorRef,
   useElement,
   useHotkeys,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 
 import type { TMediaElement } from '../../../lib/media/types';
 

@@ -1,4 +1,4 @@
-import { useEditorPlugin, useHotkeys } from '@udecode/plate-common/react';
+import { useEditorPlugin, useHotkeys } from '@udecode/plate/react';
 
 import { LinkPlugin } from '../../LinkPlugin';
 

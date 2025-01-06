@@ -8,7 +8,7 @@ import {
   useEditorId,
   useEditorRef,
   useEventEditorSelectors,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 import {
   type FloatingToolbarState,
   flip,

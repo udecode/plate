@@ -3,7 +3,7 @@ import {
   type PathRef,
   type SlateEditor,
   getEditorPlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import {
   type TTableCellElement,

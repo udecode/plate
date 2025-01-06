@@ -1,4 +1,4 @@
-import type { ExtendEditor } from '@udecode/plate-common/react';
+import type { ExtendEditor } from '@udecode/plate/react';
 
 import type { AIChatPluginConfig } from './AIChatPlugin';
 

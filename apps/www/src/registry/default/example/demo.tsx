@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Plate } from '@udecode/plate-common/react';
+import { Plate } from '@udecode/plate/react';
 
 import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';

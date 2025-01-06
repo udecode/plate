@@ -1,4 +1,4 @@
-import { type SlateEditor, type TRange, RangeApi } from '@udecode/plate-common';
+import { type SlateEditor, type TRange, RangeApi } from '@udecode/plate';
 
 import { BaseListItemPlugin } from '../BaseListPlugin';
 

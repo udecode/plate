@@ -1,5 +1,5 @@
-import type { TElement } from '@udecode/plate-common';
-import type { PlateEditor } from '@udecode/plate-common/react';
+import type { TElement } from '@udecode/plate';
+import type { PlateEditor } from '@udecode/plate/react';
 
 import { serializeMd, serializeMdNodes } from '@udecode/plate-markdown';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';

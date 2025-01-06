@@ -5,7 +5,7 @@ import {
   PathApi,
   RangeApi,
   getEditorPlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 import {
   RemoveEmptyNodesPlugin,
   withRemoveEmptyNodes,

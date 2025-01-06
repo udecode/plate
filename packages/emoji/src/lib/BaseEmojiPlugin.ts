@@ -3,7 +3,7 @@ import {
   type PluginConfig,
   createSlatePlugin,
   createTSlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { EmojiPluginOptions } from './types';
 

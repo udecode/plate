@@ -1,4 +1,4 @@
-import type { Editor, ElementEntry } from '@udecode/plate-common';
+import type { Editor, ElementEntry } from '@udecode/plate';
 
 import { deleteStartSpace } from './deleteStartSpace';
 

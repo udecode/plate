@@ -3,7 +3,7 @@ import {
   type TRange,
   BaseParagraphPlugin,
   ElementApi,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 import castArray from 'lodash/castArray.js';
 
 import type { AutoformatBlockRule } from '../types';

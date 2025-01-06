@@ -1,4 +1,4 @@
-import { type Editor, type TElement, PathApi } from '@udecode/plate-common';
+import { type Editor, type TElement, PathApi } from '@udecode/plate';
 
 /** Get table row index of a cell node. */
 export const getTableRowIndex = (editor: Editor, cellNode: TElement) => {

@@ -1,4 +1,4 @@
-import type { SlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
 
 import type { TTableElement } from '../types';
 import type { GetEmptyRowNodeOptions } from './getEmptyRowNode';

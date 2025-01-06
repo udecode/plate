@@ -1,6 +1,6 @@
-import type { TElement } from '@udecode/plate-common';
+import type { TElement } from '@udecode/plate';
 
-import { useEditorRef, useReadOnly } from '@udecode/plate-common/react';
+import { useEditorRef, useReadOnly } from '@udecode/plate/react';
 
 export const useIndentTodoListElementState = ({
   element,

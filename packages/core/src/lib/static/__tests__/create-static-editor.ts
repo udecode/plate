@@ -1,4 +1,4 @@
-import type { Value } from '@udecode/plate-common';
+import type { Value } from '@udecode/plate';
 
 import { withProps } from '@udecode/cn';
 import { BaseAlignPlugin } from '@udecode/plate-alignment';

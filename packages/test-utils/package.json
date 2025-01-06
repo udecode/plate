@@ -45,7 +45,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "peerDependencies": {
-    "@udecode/plate-common": ">=41.0.5",
+    "@udecode/plate": ">=41.0.5",
     "slate-hyperscript": ">=0.66.0"
   },
   "publishConfig": {

@@ -4,7 +4,7 @@ import {
   useEditorPlugin,
   useElement,
   useElementSelector,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 import {
   type ResizeEvent,
   type ResizeHandle,

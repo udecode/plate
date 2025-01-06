@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import { getEditorPlugin } from '@udecode/plate-common/react';
-import { createPlateEditor } from '@udecode/plate-common/react';
+import { getEditorPlugin } from '@udecode/plate/react';
+import { createPlateEditor } from '@udecode/plate/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { BulletedListPlugin, ListPlugin } from './ListPlugin';

@@ -6,7 +6,7 @@ import {
   NodeApi,
   RangeApi,
   isDefined,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { TLinkElement } from '../types';
 

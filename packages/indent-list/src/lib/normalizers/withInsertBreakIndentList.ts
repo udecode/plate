@@ -2,7 +2,7 @@ import {
   type ExtendEditor,
   type TElement,
   isDefined,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import {
   type BaseIndentListConfig,

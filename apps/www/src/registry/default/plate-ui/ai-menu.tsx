@@ -2,13 +2,9 @@
 
 import * as React from 'react';
 
+import { type NodeEntry, type SlateEditor, isHotkey } from '@udecode/plate';
+import { useEditorPlugin, useHotkeys } from '@udecode/plate/react';
 import { AIChatPlugin, useEditorChat } from '@udecode/plate-ai/react';
-import {
-  type NodeEntry,
-  type SlateEditor,
-  isHotkey,
-} from '@udecode/plate-common';
-import { useEditorPlugin, useHotkeys } from '@udecode/plate-common/react';
 import {
   BlockSelectionPlugin,
   useIsSelecting,

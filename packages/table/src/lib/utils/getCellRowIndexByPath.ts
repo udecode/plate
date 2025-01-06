@@ -1,4 +1,4 @@
-import type { Path } from '@udecode/plate-common';
+import type { Path } from '@udecode/plate';
 
 export const getCellRowIndexByPath = (cellPath: Path): number => {
   const index = cellPath.at(-2);

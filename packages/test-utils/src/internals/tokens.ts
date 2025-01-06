@@ -1,5 +1,5 @@
 // eslint-disable-next-line max-classes-per-file
-import type { Path, TNode, TText } from '@udecode/plate-common';
+import type { Path, TNode, TText } from '@udecode/plate';
 
 /** A weak map to hold anchor tokens. */
 

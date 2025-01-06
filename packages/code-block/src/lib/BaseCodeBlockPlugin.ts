@@ -3,7 +3,7 @@ import {
   HtmlPlugin,
   createSlatePlugin,
   createTSlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { Prism } from './types';
 

@@ -1,4 +1,4 @@
-import { type ExtendEditor, ElementApi } from '@udecode/plate-common';
+import { type ExtendEditor, ElementApi } from '@udecode/plate';
 
 import type { TColumnElement, TColumnGroupElement } from './types';
 

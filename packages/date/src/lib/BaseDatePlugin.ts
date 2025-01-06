@@ -2,7 +2,7 @@ import {
   type TElement,
   bindFirst,
   createSlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { isPointNextToNode } from './queries';
 import { insertDate } from './transforms';

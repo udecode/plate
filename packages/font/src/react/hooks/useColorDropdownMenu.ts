@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { removeMark, setMarks } from '@udecode/plate-common';
-import { useEditorRef, useEditorSelector } from '@udecode/plate-common/react';
+import { removeMark, setMarks } from '@udecode/plate';
+import { useEditorRef, useEditorSelector } from '@udecode/plate/react';
 
 export const useColorDropdownMenuState = ({
   closeOnSelect = true,

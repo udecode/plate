@@ -4,7 +4,7 @@ import {
   BaseParagraphPlugin,
   createTSlatePlugin,
   queryNode,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 export type DeleteConfig = PluginConfig<
   'delete',

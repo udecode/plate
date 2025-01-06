@@ -1,6 +1,6 @@
 import type React from 'react';
 
-import type { TRange, UnknownObject } from '@udecode/plate-common';
+import type { TRange, UnknownObject } from '@udecode/plate';
 
 export type SelectionRect = {
   height: number;

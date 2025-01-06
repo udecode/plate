@@ -3,7 +3,7 @@ import {
   type SlateEditor,
   type TNode,
   NodeApi,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { TColumnElement } from '../types';
 

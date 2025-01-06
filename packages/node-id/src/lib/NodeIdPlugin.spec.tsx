@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from '@udecode/plate-common';
-import { ParagraphPlugin } from '@udecode/plate-common/react';
+import { type SlateEditor, createSlateEditor } from '@udecode/plate';
+import { ParagraphPlugin } from '@udecode/plate/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { BulletedListPlugin, ListItemPlugin } from '@udecode/plate-list/react';
 import { jsxt } from '@udecode/plate-test-utils';

@@ -4,11 +4,11 @@ import React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
+import { useEditorRef } from '@udecode/plate/react';
 import {
   SubscriptPlugin,
   SuperscriptPlugin,
 } from '@udecode/plate-basic-marks/react';
-import { useEditorRef } from '@udecode/plate-common/react';
 import { KbdPlugin } from '@udecode/plate-kbd/react';
 import {
   KeyboardIcon,

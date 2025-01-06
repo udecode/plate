@@ -1,4 +1,4 @@
-import type { ElementEntry, SlateEditor } from '@udecode/plate-common';
+import type { ElementEntry, SlateEditor } from '@udecode/plate';
 
 import { isListNested } from '../queries/isListNested';
 import { moveListItemUp } from './moveListItemUp';

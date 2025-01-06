@@ -1,4 +1,4 @@
-import type { TElement } from '@udecode/plate-common';
+import type { TElement } from '@udecode/plate';
 import type { Token, languages, tokenize } from 'prismjs';
 
 export type Prism = {

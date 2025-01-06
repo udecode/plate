@@ -1,4 +1,4 @@
-import type { Descendant, ExtendEditor, TElement } from '@udecode/plate-common';
+import type { Descendant, ExtendEditor, TElement } from '@udecode/plate';
 
 import type { TableConfig } from './BaseTablePlugin';
 import type { TTableCellElement, TTableRowElement } from './types';

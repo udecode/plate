@@ -1,7 +1,7 @@
-import type { PlateEditor } from '@udecode/plate-common/react';
+import type { PlateEditor } from '@udecode/plate/react';
 import type { DropTargetMonitor } from 'react-dnd';
 
-import { type Path, type TElement, PathApi } from '@udecode/plate-common';
+import { type Path, type TElement, PathApi } from '@udecode/plate';
 
 import type { UseDropNodeOptions } from '../hooks';
 import type { ElementDragItemNode } from '../types';

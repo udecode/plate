@@ -14,7 +14,7 @@ import React, {
   useState,
 } from 'react';
 
-import type { PointRef, TElement } from '@udecode/plate-common';
+import type { PointRef, TElement } from '@udecode/plate';
 
 import {
   type ComboboxItemProps,
@@ -30,13 +30,13 @@ import {
   useComboboxStore,
 } from '@ariakit/react';
 import { cn, withCn } from '@udecode/cn';
+import { useComposedRef, useEditorRef } from '@udecode/plate/react';
 import { filterWords } from '@udecode/plate-combobox';
 import {
   type UseComboboxInputResult,
   useComboboxInput,
   useHTMLInputCursorState,
 } from '@udecode/plate-combobox/react';
-import { useComposedRef, useEditorRef } from '@udecode/plate-common/react';
 import { cva } from 'class-variance-authority';
 
 type FilterFn = (

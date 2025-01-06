@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
 
-import { createSlateEditor } from '@udecode/plate-common';
+import { createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { SUGGESTION_KEYS } from '../BaseSuggestionPlugin';

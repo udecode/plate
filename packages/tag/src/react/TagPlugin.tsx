@@ -3,8 +3,8 @@ import {
   TextApi,
   removeEditorText,
   replaceNode,
-} from '@udecode/plate-common';
-import { toPlatePlugin } from '@udecode/plate-common/react';
+} from '@udecode/plate';
+import { toPlatePlugin } from '@udecode/plate/react';
 
 import { BaseTagPlugin } from '../lib';
 

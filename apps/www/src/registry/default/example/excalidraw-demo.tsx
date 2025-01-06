@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Plate } from '@udecode/plate-common/react';
+import { Plate } from '@udecode/plate/react';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
 
 import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';

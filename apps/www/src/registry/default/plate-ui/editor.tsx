@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import type { PlateContentProps } from '@udecode/plate-common/react';
+import type { PlateContentProps } from '@udecode/plate/react';
 import type { VariantProps } from 'class-variance-authority';
 
 import { cn } from '@udecode/cn';
@@ -10,7 +10,7 @@ import {
   PlateContent,
   useEditorContainerRef,
   useEditorRef,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 import { cva } from 'class-variance-authority';
 
 const editorContainerVariants = cva(

@@ -1,7 +1,7 @@
-import type { TRange } from '@udecode/plate-common';
-import type { KeyboardHandler } from '@udecode/plate-common/react';
+import type { TRange } from '@udecode/plate';
+import type { KeyboardHandler } from '@udecode/plate/react';
 
-import { Hotkeys, RangeApi } from '@udecode/plate-common';
+import { Hotkeys, RangeApi } from '@udecode/plate';
 
 import { type ListConfig, BaseListItemPlugin } from '../lib';
 import { moveListItems } from '../lib/transforms/index';

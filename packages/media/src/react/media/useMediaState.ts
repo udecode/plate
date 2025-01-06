@@ -6,7 +6,7 @@ import {
   useFocused,
   useReadOnly,
   useSelected,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 
 import type { TMediaElement } from '../../lib/media/types';
 

@@ -5,7 +5,7 @@ import type {
   SlateEditor,
   TElement,
   TRange,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import {
   BaseBulletedListPlugin,

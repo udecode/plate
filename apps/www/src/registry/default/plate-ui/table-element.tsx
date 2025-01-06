@@ -15,7 +15,7 @@ import {
   useRemoveNodeButton,
   useSelected,
   withHOC,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 import {
   TablePlugin,
   TableProvider,

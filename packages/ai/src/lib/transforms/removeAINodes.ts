@@ -1,4 +1,4 @@
-import { type Path, type SlateEditor, TextApi } from '@udecode/plate-common';
+import { type Path, type SlateEditor, TextApi } from '@udecode/plate';
 
 export const removeAINodes = (
   editor: SlateEditor,

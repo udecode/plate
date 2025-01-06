@@ -2,8 +2,8 @@ import {
   type ExtendConfig,
   type OmitFirst,
   bindFirst,
-} from '@udecode/plate-common';
-import { toTPlatePlugin } from '@udecode/plate-common/react';
+} from '@udecode/plate';
+import { toTPlatePlugin } from '@udecode/plate/react';
 
 import { type BaseLinkConfig, BaseLinkPlugin } from '../lib';
 import { getLinkAttributes } from '../lib/utils';

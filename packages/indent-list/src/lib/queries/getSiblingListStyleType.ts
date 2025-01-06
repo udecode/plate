@@ -3,7 +3,7 @@ import type {
   NodeEntry,
   SlateEditor,
   TElement,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { ListStyleType } from '../types';
 

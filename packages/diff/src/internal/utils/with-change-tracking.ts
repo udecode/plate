@@ -14,7 +14,7 @@ import {
   PointApi,
   RangeApi,
   addRangeMarks,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 import isEqual from 'lodash/isEqual.js';
 import uniqWith from 'lodash/uniqWith.js';
 

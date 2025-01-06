@@ -1,4 +1,4 @@
-import type { InsertNodesOptions, SlateEditor } from '@udecode/plate-common';
+import type { InsertNodesOptions, SlateEditor } from '@udecode/plate';
 
 import type { TColumnElement } from '../types';
 

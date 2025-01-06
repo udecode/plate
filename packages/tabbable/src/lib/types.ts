@@ -1,4 +1,4 @@
-import type { Path, TElement } from '@udecode/plate-common';
+import type { Path, TElement } from '@udecode/plate';
 
 export type TabDestinationPath = {
   path: Path;

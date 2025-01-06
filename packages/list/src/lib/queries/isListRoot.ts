@@ -2,7 +2,7 @@ import {
   type Descendant,
   type SlateEditor,
   ElementApi,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { getListTypes } from './getListTypes';
 

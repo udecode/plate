@@ -4,7 +4,7 @@ import {
   ElementApi,
   TextApi,
   wrapNodeChildren,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { TTableCellElement, TTableElement } from './types';
 

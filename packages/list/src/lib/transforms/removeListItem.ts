@@ -6,7 +6,7 @@ import {
   deleteMerge,
   getPreviousPath,
   insertElements,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import {
   BaseListItemContentPlugin,

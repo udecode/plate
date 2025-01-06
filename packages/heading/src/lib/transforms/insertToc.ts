@@ -2,7 +2,7 @@ import type {
   InsertNodesOptions,
   SlateEditor,
   TElement,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { BaseTocPlugin } from '../BaseTocPlugin';
 

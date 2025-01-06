@@ -6,7 +6,7 @@ import {
   PathApi,
   insertElements,
   isLastChild,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { BaseListItemPlugin } from '../BaseListPlugin';
 import { hasListChild } from '../queries/hasListChild';

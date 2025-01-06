@@ -1,4 +1,4 @@
-import { type SlateEditor, NodeApi, getChildren } from '@udecode/plate-common';
+import { type SlateEditor, NodeApi, getChildren } from '@udecode/plate';
 
 import { getCodeLineEntry } from './getCodeLineEntry';
 

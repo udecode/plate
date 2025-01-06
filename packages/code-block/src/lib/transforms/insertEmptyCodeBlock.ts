@@ -3,7 +3,7 @@ import {
   type SlateEditor,
   BaseParagraphPlugin,
   insertElements,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { insertCodeBlock } from './insertCodeBlock';
 

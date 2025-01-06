@@ -1,4 +1,4 @@
-import type { TLocation } from '@udecode/plate-common';
+import type { TLocation } from '@udecode/plate';
 import type { Editor } from '@udecode/slate';
 
 export interface SelectEditorOptions {

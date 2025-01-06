@@ -1,4 +1,4 @@
-import { type Descendant, NodeApi } from '@udecode/plate-common';
+import { type Descendant, NodeApi } from '@udecode/plate';
 
 import { serializeMdNodes } from './serializeMdNodes';
 

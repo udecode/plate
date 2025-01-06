@@ -6,12 +6,12 @@ import {
   useRef,
 } from 'react';
 
-import { Hotkeys, isHotkey } from '@udecode/plate-common';
+import { Hotkeys, isHotkey } from '@udecode/plate';
 import {
   useEditorRef,
   useElement,
   useSelected,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 
 import type {
   CancelComboboxInputCause,

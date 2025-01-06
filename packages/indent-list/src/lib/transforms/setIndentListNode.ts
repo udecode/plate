@@ -1,4 +1,4 @@
-import type { Editor, Path } from '@udecode/plate-common';
+import type { Editor, Path } from '@udecode/plate';
 
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 

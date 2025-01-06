@@ -2,7 +2,7 @@ import {
   type ExtendEditor,
   getInjectedPlugins,
   pipeInsertDataQuery,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { ImageConfig } from './BaseImagePlugin';
 

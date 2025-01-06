@@ -3,12 +3,12 @@
 import React from 'react';
 
 import { cn } from '@udecode/cn';
+import { useEditorPlugin } from '@udecode/plate/react';
 import {
   CommentNewSubmitButton,
   CommentNewTextarea,
   CommentsPlugin,
 } from '@udecode/plate-comments/react';
-import { useEditorPlugin } from '@udecode/plate-common/react';
 
 import { buttonVariants } from './button';
 import { CommentAvatar } from './comment-avatar';

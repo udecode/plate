@@ -1,4 +1,4 @@
-import type { ExtendEditor } from '@udecode/plate-common';
+import type { ExtendEditor } from '@udecode/plate';
 
 export const withSingleLine: ExtendEditor = ({ editor }) => {
   const { normalizeNode } = editor;

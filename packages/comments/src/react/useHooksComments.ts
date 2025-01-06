@@ -1,4 +1,4 @@
-import { type UseHooks, useHotkeys } from '@udecode/plate-common/react';
+import { type UseHooks, useHotkeys } from '@udecode/plate/react';
 
 import type { CommentsConfig } from './CommentsPlugin';
 

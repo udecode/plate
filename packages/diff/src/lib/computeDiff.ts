@@ -3,7 +3,7 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import type { Descendant, SlateEditor, TElement } from '@udecode/plate-common';
+import type { Descendant, SlateEditor, TElement } from '@udecode/plate';
 
 import type { DiffProps } from './types';
 

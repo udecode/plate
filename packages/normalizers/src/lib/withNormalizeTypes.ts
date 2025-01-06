@@ -4,7 +4,7 @@ import {
   ElementApi,
   NodeApi,
   insertElements,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { NormalizeTypesConfig } from './NormalizeTypesPlugin';
 

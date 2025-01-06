@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Plate, usePlateEditor } from '@udecode/plate-common/react';
+import { Plate, usePlateEditor } from '@udecode/plate/react';
 
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 

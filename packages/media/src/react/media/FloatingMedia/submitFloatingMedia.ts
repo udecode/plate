@@ -3,7 +3,7 @@ import {
   type SlateEditor,
   type WithRequiredKey,
   isUrl,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type {
   MediaPluginOptions,
