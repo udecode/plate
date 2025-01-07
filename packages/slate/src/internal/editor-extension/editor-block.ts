@@ -14,7 +14,7 @@ export const block = <N extends ElementOf<E>, E extends Editor = Editor>(
 
     if (!target) return;
 
-    const index = editor.api.path(target as any)?.at(-1);
+    const index = editor.api.path(target as any)?.[0];
 
     if (index === undefined) return;
 

@@ -87,6 +87,7 @@ describe('block', () => {
     const input = createEditor(
       (
         <editor>
+          <hp>first</hp>
           <hul>
             <hli>
               <hp>
@@ -102,34 +103,19 @@ describe('block', () => {
       const res = input.api.block({ highest: true });
 
       expect(res).toEqual([
-        {
-          children: [
-            {
-              children: [{ children: [{ text: '1' }], type: 'p' }],
-              type: 'li',
-            },
-          ],
-          type: 'ul',
-        },
-        [0],
+        <hul>
+          <hli>
+            <hp>1</hp>
+          </hli>
+        </hul>,
+        [1],
       ]);
     });
 
     it('should get highest block at path', () => {
       const res = input.api.block({ at: [0, 0, 0], highest: true });
 
-      expect(res).toEqual([
-        {
-          children: [
-            {
-              children: [{ children: [{ text: '1' }], type: 'p' }],
-              type: 'li',
-            },
-          ],
-          type: 'ul',
-        },
-        [0],
-      ]);
+      expect(res).toEqual([<hp>first</hp>, [0]]);
     });
   });
 

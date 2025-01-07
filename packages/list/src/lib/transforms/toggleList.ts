@@ -107,6 +107,7 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
             startList![1].length,
             endList![1].length
           );
+
           editor.tf.setNodes(
             { type },
             {

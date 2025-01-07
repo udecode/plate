@@ -1,14 +1,12 @@
 import {
   type Path,
   type SlateEditor,
-  BaseParagraphPlugin,
   ElementApi,
   NodeApi,
 } from '@udecode/plate';
 
 import {
   BaseBulletedListPlugin,
-  BaseListItemContentPlugin,
   BaseListItemPlugin,
   BaseNumberedListPlugin,
 } from '../BaseListPlugin';
@@ -40,17 +38,18 @@ export const unwrapList = (editor: SlateEditor, { at }: { at?: Path } = {}) => {
 
   editor.tf.withoutNormalizing(() => {
     do {
-      const licEntry = editor.api.block({
-        at,
-        match: { type: editor.getType(BaseListItemContentPlugin) },
-      });
+      // const licEntry = editor.api.block({
+      //   at,
+      //   match: { type: editor.getType(BaseListItemContentPlugin) },
+      // });
 
-      if (licEntry) {
-        editor.tf.setNodes({
-          at,
-          type: editor.getType(BaseParagraphPlugin),
-        });
-      }
+      // Allow other LIC types
+      // if (licEntry) {
+      //   editor.tf.setNodes(
+      //     { type: editor.getType(BaseParagraphPlugin) },
+      //     { at }
+      //   );
+      // }
 
       editor.tf.unwrapNodes({
         at,
