@@ -144,7 +144,7 @@ const DiffPlugin = toPlatePlugin(
             } as any
           )[diffOperation.type];
 
-          const Component = editor.api.isInline(element) ? 'span' : 'div';
+          const Component = editor.isInline(element) ? 'span' : 'div';
 
           return (
             <Component

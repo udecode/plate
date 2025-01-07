@@ -55,7 +55,7 @@ function ElementStatic({
     </Children>
   );
 
-  if (editor.api.isVoid(element)) {
+  if (editor.isVoid(element)) {
     attributes['data-slate-void'] = true;
     children = (
       <span
@@ -78,7 +78,7 @@ function ElementStatic({
       </span>
     );
   }
-  if (editor.api.isInline(element)) {
+  if (editor.isInline(element)) {
     attributes['data-slate-inline'] = true;
   }
 

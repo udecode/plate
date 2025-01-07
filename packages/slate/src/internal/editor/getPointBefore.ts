@@ -1,7 +1,7 @@
 /* eslint-disable no-constant-condition */
 import castArray from 'lodash/castArray.js';
 import map from 'lodash/map.js';
-import { before } from 'slate';
+import { before as beforeBase } from 'slate';
 
 import type { Editor } from '../../interfaces/editor/editor';
 import type { EditorBeforeOptions } from '../../interfaces/index';
@@ -16,7 +16,7 @@ export const getPointBefore = (
 ) => {
   if (!options || (!options.match && !options.matchString)) {
     try {
-      return before(editor as any, getAt(editor, at)!, options as any);
+      return beforeBase(editor as any, getAt(editor, at)!, options as any);
     } catch {}
 
     return;
@@ -42,7 +42,7 @@ export const getPointBefore = (
     let count = 0;
 
     while (true) {
-      const beforePoint = before(
+      const beforePoint = beforeBase(
         editor as any,
         getAt(editor, beforeAt)!,
         options as any

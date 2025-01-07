@@ -16194,7 +16194,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nuqs@npm:^2.0.3":
+"nuqs@npm:^2.3.0":
   version: 2.3.0
   resolution: "nuqs@npm:2.3.0"
   dependencies:
@@ -22156,7 +22156,7 @@ __metadata:
     next: "npm:15.0.3"
     next-contentlayer2: "npm:^0.4.6"
     next-themes: "npm:^0.4.3"
-    nuqs: "npm:^2.0.3"
+    nuqs: "npm:^2.3.0"
     pdf-lib: "npm:^1.17.1"
     postcss: "npm:^8.4.45"
     prismjs: "npm:^1.29.0"

@@ -34,7 +34,8 @@ export const resolvePlugins = (
 
   resolvePluginStores(editor);
 
-  resolvePluginApis(editor);
+  // Sync overridden plugin methods to legacy editor methods
+  resolvePluginMethods(editor);
 
   // extendEditor
   editor.pluginList.forEach((plugin) => {
@@ -42,6 +43,9 @@ export const resolvePlugins = (
       editor = plugin.extendEditor(getEditorPlugin(editor, plugin) as any);
     }
   });
+
+  // Sync overridden legacy editor methods to api/tf
+  // syncLegacyMethods(editor);
 
   return editor;
 };
@@ -70,7 +74,7 @@ const resolvePluginStores = (editor: SlateEditor) => {
   });
 };
 
-const resolvePluginApis = (editor: SlateEditor) => {
+const resolvePluginMethods = (editor: SlateEditor) => {
   const shortcutsByPriority: any[] = [];
 
   editor.pluginList.forEach((plugin: any) => {

@@ -144,7 +144,7 @@ export const SelectEditorInput = React.forwardRef<
         if (isHotkey('enter', e)) {
           e.preventDefault();
           selectCurrentItem();
-          editor.tf.removeNodes({ at: [], empty: true, text: true });
+          editor.tf.removeNodes({ at: [], empty: false, text: true });
         }
         if (isHotkey('escape', e) || isHotkey('mod+enter', e)) {
           e.preventDefault();

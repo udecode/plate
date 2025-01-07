@@ -54,7 +54,7 @@ export const getMatch = <E extends Editor>(
     hasMatch = true;
     matchFn = combineMatch(matchFn, (n) => {
       return TextApi.isText(n)
-        ? n.text === ''
+        ? n.text.length > 0 === !empty
         : editor.api.isEmpty(n) === empty;
     });
   }

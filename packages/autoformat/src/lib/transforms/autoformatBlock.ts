@@ -46,7 +46,7 @@ export const autoformatBlock = (
       // Don't autoformat if there is void nodes.
       const hasVoidNode = editor.api.some({
         at: matchRange,
-        match: (n) => ElementApi.isElement(n) && editor.api.isVoid(n),
+        match: (n) => ElementApi.isElement(n) && editor.isVoid(n),
       });
 
       if (hasVoidNode) continue;

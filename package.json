@@ -68,6 +68,7 @@
     "sync:plate": "node templates/plate-playground-template/scripts/sync-plate.cjs",
     "sync:templates": "./scripts/sync-templates.sh \"templates/*\"",
     "test": "yarn g:test",
+    "test:nc": "yarn g:test -- --no-cache",
     "test:wa": "yarn g:test:wa",
     "test:watch": "yarn g:test:watch",
     "typecheck": "yarn g:typecheck",

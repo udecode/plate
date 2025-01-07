@@ -36,11 +36,7 @@ export const useBlockSelectable = () => {
              * When "block selected or is void or has openContextMenu props",
              * right click can always open the context menu.
              */
-            if (
-              !isSelected &&
-              !editor.api.isVoid(nodeEntry[0]) &&
-              !isOpenAlways
-            ) {
+            if (!isSelected && !editor.isVoid(nodeEntry[0]) && !isOpenAlways) {
               return event.stopPropagation();
             }
           }

@@ -164,7 +164,7 @@ The following interfaces from `slate` and `slate-dom` are now part of `Editor`:
   - `moveSelection` -> `editor.tf.move`
   - `normalizeEditor` -> `editor.tf.normalize`
   - `removeEditorMark` -> `editor.tf.removeMark`
-  - `removeEditorText` -> `editor.tf.removeNodes({ text: true, empty: true })`
+  - `removeEditorText` -> `editor.tf.removeNodes({ text: true, empty: false })`
   - `removeEmptyPreviousBlock` -> `editor.tf.removeNodes({ previousEmptyBlock: true })`
   - `removeMark(options)` -> `editor.tf.removeMarks(keys, options)`
   - `removeNodeChildren` -> `editor.tf.removeNodes({ at, children: true })`

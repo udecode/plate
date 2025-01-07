@@ -70,6 +70,16 @@ describe('getMatch', () => {
         false
       );
     });
+
+    it('should match non-empty nodes when false', () => {
+      const matchFn = getMatch(editor, { empty: false });
+      expect(matchFn!({ text: '' }, [])).toBe(false);
+      expect(matchFn!({ text: 'test' }, [])).toBe(true);
+      expect(matchFn!({ children: [], type: 'p' }, [])).toBe(false);
+      expect(matchFn!({ children: [{ text: 'test' }], type: 'p' }, [])).toBe(
+        true
+      );
+    });
   });
 
   describe('when block option is provided', () => {

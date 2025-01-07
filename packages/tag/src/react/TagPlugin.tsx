@@ -1,4 +1,4 @@
-import { PathApi, TextApi } from '@udecode/plate';
+import { type TText, PathApi, TextApi } from '@udecode/plate';
 import { toPlatePlugin } from '@udecode/plate/react';
 
 import { BaseTagPlugin } from '../lib';
@@ -24,21 +24,34 @@ export const MultiSelectPlugin = TagPlugin.extend({
     editor.onChange = (op) => {
       onChange(op);
 
-      // Remove text not in selection or if selection contains an tag
-      editor.tf.removeNodes({
-        at: [],
-        empty: true,
-        match: (_, p) =>
-          editor.api.some({
-            match: { type },
-          }) ||
-          !editor.api.some({
-            match: (t, textPath) => {
-              return TextApi.isText(t) && PathApi.equals(textPath, p);
-            },
-          }),
-        text: true,
+      const someTag = editor.api.some({
+        match: { type },
       });
+
+      if (someTag || !editor.selection) {
+        // Remove non-empty texts when selecting a tag or when no selection
+        editor.tf.removeNodes({
+          at: [],
+          empty: false,
+          text: true,
+        });
+      } else {
+        const texts = new Set(
+          Array.from(
+            editor.api.nodes<TText>({
+              text: true,
+            })
+          ).map(([text]) => text)
+        );
+
+        // Remove text not in selection
+        editor.tf.removeNodes({
+          at: [],
+          empty: false,
+          match: (text: TText) => !texts.has(text),
+          text: true,
+        });
+      }
     };
 
     editor.normalizeNode = ([node, path]) => {

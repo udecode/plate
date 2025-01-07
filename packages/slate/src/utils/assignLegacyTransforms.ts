@@ -179,3 +179,43 @@ export const assignLegacyApi = (editor: Editor, api: any) => {
     editor.getMarks = api.marks;
   }
 };
+
+/**
+ * Assigns editor's legacy methods to editor.api and editor.tf.
+ *
+ * NOTE: can't use yet because of recursion issues
+ */
+export const syncLegacyMethods = (editor: Editor) => {
+  // Assign to editor.api
+  LEGACY_API.forEach((key) => {
+    if (editor[key] && (editor.api as any)[key]) {
+      if (key === 'getMarks') {
+        // Special case for marks
+        (editor.api as any).marks = editor.getMarks;
+      } else {
+        (editor.api as any)[key] = (...args: any[]) =>
+          (editor[key] as any)(...args);
+      }
+    }
+  });
+
+  // Assign to editor.tf
+  LEGACY_TRANSFORMS.forEach((key) => {
+    if (editor[key] && (editor.tf as any)[key]) {
+      if (key === 'deleteBackward') {
+        // Special case for deleteBackward
+        (editor.tf as any).deleteBackward = (options: any) => {
+          return editor.deleteBackward(options?.unit ?? 'character');
+        };
+      } else if (key === 'deleteForward') {
+        // Special case for deleteForward
+        (editor.tf as any).deleteForward = (options: any) => {
+          return editor.deleteForward(options?.unit ?? 'character');
+        };
+      } else {
+        (editor.tf as any)[key] = (...args: any[]) =>
+          (editor[key] as any)(...args);
+      }
+    }
+  });
+};

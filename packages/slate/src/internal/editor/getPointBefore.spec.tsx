@@ -261,4 +261,30 @@ describe('getPointBefore', () => {
       });
     });
   });
+
+  describe('when moving before void node', () => {
+    it('should get point before void node', () => {
+      const editor = createEditor(
+        (
+          <editor>
+            <hp>
+              <htext />
+              <himg>
+                <htext />
+                <cursor />
+              </himg>
+            </hp>
+          </editor>
+        ) as any
+      );
+      const { isInline, isVoid } = editor;
+      editor.isInline = (n) => n.type === 'img' || isInline(n);
+      editor.isVoid = (n) => n.type === 'img' || isVoid(n);
+
+      expect(editor.api.before(editor.selection!.anchor)).toEqual({
+        offset: 0,
+        path: [0, 0],
+      });
+    });
+  });
 });

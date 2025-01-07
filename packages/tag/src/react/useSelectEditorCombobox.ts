@@ -30,7 +30,7 @@ export const useSelectEditorCombobox = ({
   // Remove text and select end of editor when combobox closes
   React.useEffect(() => {
     if (!open) {
-      editor.tf.removeNodes({ at: [], empty: true, text: true });
+      editor.tf.removeNodes({ at: [], empty: false, text: true });
       selectEditor(editor, { edge: 'end' });
     }
   }, [editor, open]);
