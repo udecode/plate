@@ -10,7 +10,7 @@ export const toggleBlock = (
   type: string,
   {
     defaultType = editor.getType(BaseParagraphPlugin),
-    findOptions,
+    someOptions,
     wrap,
     ...options
   }: ToggleBlockOptions = {}
@@ -21,7 +21,7 @@ export const toggleBlock = (
 
   const isActive = editor.api.some({
     at,
-    ...findOptions,
+    ...someOptions,
     match: { type },
   });
 

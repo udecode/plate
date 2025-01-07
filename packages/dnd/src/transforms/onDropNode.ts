@@ -33,14 +33,14 @@ export const getDropPath = (
 
   if (!direction) return;
 
-  const dragEntry = editor.api.find<TElement>({
+  const dragEntry = editor.api.node<TElement>({
     id: dragItem.id,
     at: [],
   });
 
   if (!dragEntry) return;
 
-  const dropEntry = editor.api.find<TElement>({ id, at: [] });
+  const dropEntry = editor.api.node<TElement>({ id, at: [] });
 
   if (!dropEntry) return;
   if (canDropNode && !canDropNode({ dragEntry, dragItem, dropEntry, editor })) {

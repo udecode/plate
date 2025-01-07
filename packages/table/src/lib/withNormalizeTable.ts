@@ -56,6 +56,7 @@ export const withNormalizeTable: ExtendEditor<TableConfig> = ({
         }
 
         const tableEntry = editor.api.block({
+          above: true,
           at: path,
           match: { type: type },
         });
@@ -176,7 +177,7 @@ export const withNormalizeTable: ExtendEditor<TableConfig> = ({
       // There is no new indices when removing a table
       operation.node.type !== type
     ) {
-      table = editor.api.find<TTableElement>({
+      table = editor.api.node<TTableElement>({
         at: operation.path,
         match: { type },
       })?.[0];

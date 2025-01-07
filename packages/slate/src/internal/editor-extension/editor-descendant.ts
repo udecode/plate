@@ -5,7 +5,7 @@
 import {
   type DescendantOf,
   type Editor,
-  type EditorFindOptions,
+  type EditorNodesOptions,
   type NodeEntry,
   type NodeEntryOf,
   type Path,
@@ -17,12 +17,12 @@ import {
 } from '../../interfaces';
 import { match } from '../../utils';
 
-export const findDescendant = <
+export const descendant = <
   N extends DescendantOf<E>,
   E extends Editor = Editor,
 >(
   editor: E,
-  options: EditorFindOptions<ValueOf<E>>
+  options: EditorNodesOptions<ValueOf<E>>
 ): NodeEntry<N> | undefined => {
   // Slate throws when things aren't found so we wrap in a try catch and return undefined on throw.
   try {

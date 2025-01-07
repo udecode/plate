@@ -1,5 +1,5 @@
 import {
-  type EditorFindOptions,
+  type EditorNodesOptions,
   type SlateEditor,
   type ValueOf,
   combineMatchOptions,
@@ -11,9 +11,9 @@ import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 
 export const findSuggestionNode = <E extends SlateEditor>(
   editor: E,
-  options: EditorFindOptions<ValueOf<E>> = {}
+  options: EditorNodesOptions<ValueOf<E>> = {}
 ) =>
-  editor.api.find<TSuggestionText>({
+  editor.api.node<TSuggestionText>({
     ...options,
     match: combineMatchOptions(
       editor,

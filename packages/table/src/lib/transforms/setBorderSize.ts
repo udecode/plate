@@ -22,7 +22,7 @@ export const setBorderSize = (
     border?: BorderDirection | 'all';
   } = {}
 ) => {
-  const cellEntry = editor.api.find<TTableCellElement>({
+  const cellEntry = editor.api.node<TTableCellElement>({
     at,
     match: { type: getCellTypes(editor) },
   });

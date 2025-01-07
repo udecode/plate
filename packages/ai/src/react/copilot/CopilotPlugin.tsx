@@ -67,7 +67,7 @@ export type CopilotPluginConfig = PluginConfig<
     /**
      * Get the prompt for AI completion.
      *
-     * @default serializeMdNodes(editor.api.highestBlock())
+     * @default serializeMdNodes(editor.api.block({ highest: true }))
      */
     getPrompt?: (options: { editor: PlateEditor }) => string;
     /** Render the ghost text. */
@@ -136,7 +136,7 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
     error: null,
     getNextWord: getNextWord,
     getPrompt: ({ editor }) => {
-      const contextEntry = editor.api.highestBlock();
+      const contextEntry = editor.api.block({ highest: true });
 
       if (!contextEntry) return '';
 

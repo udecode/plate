@@ -38,6 +38,7 @@ import { toDOMRange } from './internal/dom-editor/toDOMRange';
 import { toSlateNode } from './internal/dom-editor/toSlateNode';
 import { toSlatePoint } from './internal/dom-editor/toSlatePoint';
 import { toSlateRange } from './internal/dom-editor/toSlateRange';
+import { above } from './internal/editor/above';
 import { addMark } from './internal/editor/addMark';
 import { createPathRef } from './internal/editor/createPathRef';
 import { createPointRef } from './internal/editor/createPointRef';
@@ -45,39 +46,31 @@ import { createRangeRef } from './internal/editor/createRangeRef';
 import { deleteBackward } from './internal/editor/deleteBackward';
 import { deleteForward } from './internal/editor/deleteForward';
 import { deleteFragment } from './internal/editor/deleteFragment';
-import { getAboveNode } from './internal/editor/getAboveNode';
+import { node } from './internal/editor/editor-node';
+import { path } from './internal/editor/editor-path';
 import { getEdgePoints } from './internal/editor/getEdgePoints';
 import { getEditorString } from './internal/editor/getEditorString';
 import { getEndPoint } from './internal/editor/getEndPoint';
 import { getFirstNode } from './internal/editor/getFirstNode';
 import { getFragment } from './internal/editor/getFragment';
-import { getLastNode } from './internal/editor/getLastNode';
 import { getLeafNode } from './internal/editor/getLeafNode';
 import { getLevels } from './internal/editor/getLevels';
 import { getMarks } from './internal/editor/getMarks';
 import { getNextNode } from './internal/editor/getNextNode';
-import { getNodeEntries } from './internal/editor/getNodeEntries';
-import { getNodeEntry } from './internal/editor/getNodeEntry';
-import { getParentNode } from './internal/editor/getParentNode';
-import { getPath } from './internal/editor/getPath';
 import { getPathRefs } from './internal/editor/getPathRefs';
 import { getPoint } from './internal/editor/getPoint';
 import { getPointAfter } from './internal/editor/getPointAfter';
 import { getPointBefore } from './internal/editor/getPointBefore';
 import { getPointRefs } from './internal/editor/getPointRefs';
 import { getPositions } from './internal/editor/getPositions';
-import { getPreviousNode } from './internal/editor/getPreviousNode';
-import { getRange } from './internal/editor/getRange';
 import { getRangeRefs } from './internal/editor/getRangeRefs';
 import { getStartPoint } from './internal/editor/getStartPoint';
 import { getVoidNode } from './internal/editor/getVoidNode';
 import { hasBlocks } from './internal/editor/hasBlocks';
 import { hasInlines } from './internal/editor/hasInlines';
-import { hasMark } from './internal/editor/hasMark';
 import { hasTexts } from './internal/editor/hasTexts';
 import { insertBreak } from './internal/editor/insertBreak';
 import { insertNode } from './internal/editor/insertNode';
-import { isAt } from './internal/editor/isAt';
 import { isBlock } from './internal/editor/isBlock';
 import { isEdgePoint } from './internal/editor/isEdgePoint';
 import { isEditorNormalizing } from './internal/editor/isEditorNormalizing';
@@ -85,23 +78,27 @@ import { isElementReadOnly } from './internal/editor/isElementReadOnly';
 import { isEmpty } from './internal/editor/isEmpty';
 import { isEndPoint } from './internal/editor/isEndPoint';
 import { isStartPoint } from './internal/editor/isStartPoint';
-import { isText } from './internal/editor/isText';
+import { last } from './internal/editor/last';
+import { nodes } from './internal/editor/nodes';
 import { normalizeEditor } from './internal/editor/normalizeEditor';
+import { parent } from './internal/editor/parent';
+import { previous } from './internal/editor/previous';
+import { range } from './internal/editor/range';
 import { removeEditorMark } from './internal/editor/removeEditorMark';
-import { some } from './internal/editor/some';
 import { unhangRange } from './internal/editor/unhangRange';
 import { withoutNormalizing } from './internal/editor/withoutNormalizing';
-import { findDescendant } from './internal/editor-extension/findDescendant';
-import { findNode } from './internal/editor-extension/findNode';
-import { getBlockAbove } from './internal/editor-extension/getBlockAbove';
-import { getBlocks } from './internal/editor-extension/getBlocks';
-import { getEdgeBlocksAbove } from './internal/editor-extension/getEdgeBlocksAbove';
-import { getHighestBlock } from './internal/editor-extension/getHighestBlock';
-import { getLastNodeByLevel } from './internal/editor-extension/getLastNodeByLevel';
-import { getMark } from './internal/editor-extension/getMark';
-import { getNodesProp } from './internal/editor-extension/getNodesProp';
-import { getNodesRange } from './internal/editor-extension/getNodesRange';
+import { edgeBlocks } from './internal/editor-extension/edge-blocks';
+import { block } from './internal/editor-extension/editor-block';
+import { blocks } from './internal/editor-extension/editor-blocks';
+import { descendant } from './internal/editor-extension/editor-descendant';
+import { mark } from './internal/editor-extension/editor-mark';
+import { hasMark } from './internal/editor-extension/hasMark';
+import { isAt } from './internal/editor-extension/isAt';
 import { isEditorEnd } from './internal/editor-extension/isEditorEnd';
+import { isText } from './internal/editor-extension/isText';
+import { nodesRange } from './internal/editor-extension/nodes-range';
+import { prop } from './internal/editor-extension/prop';
+import { some } from './internal/editor-extension/some';
 import { collapseSelection } from './internal/transforms/collapseSelection';
 import { deleteText } from './internal/transforms/deleteText';
 import { deselect } from './internal/transforms/deselect';
@@ -163,20 +160,19 @@ export const createEditor = <V extends Value>({
   }
 
   editor.api = {
-    above: bindFirst(getAboveNode, editor) as any,
+    above: bindFirst(above, editor) as any,
     after: bindFirst(getPointAfter, editor),
     before: bindFirst(getPointBefore, editor),
-    block: bindFirst(getBlockAbove, editor) as any,
-    blocks: bindFirst(getBlocks, editor) as any,
+    block: bindFirst(block, editor) as any,
+    blocks: bindFirst(blocks, editor) as any,
     create: {
       block: (props) => ({ children: [{ text: '' }], type: 'p', ...props }),
     },
-    descendant: bindFirst(findDescendant, editor) as any,
-    edgeBlocks: bindFirst(getEdgeBlocksAbove, editor) as any,
+    descendant: bindFirst(descendant, editor) as any,
+    edgeBlocks: bindFirst(edgeBlocks, editor) as any,
     edges: bindFirst(getEdgePoints, editor),
     elementReadOnly: bindFirst(isElementReadOnly, editor),
     end: bindFirst(getEndPoint, editor),
-    find: bindFirst(findNode, editor) as any,
     findDocumentOrShadowRoot: bindFirst(findEditorDocumentOrShadowRoot, editor),
     findEventRange: bindFirst(findEventRange, editor),
     findKey: bindFirst(findNodeKey, editor),
@@ -196,7 +192,6 @@ export const createEditor = <V extends Value>({
     hasSelectableTarget: bindFirst(hasEditorSelectableTarget, editor) as any,
     hasTarget: bindFirst(hasEditorTarget, editor) as any,
     hasTexts: bindFirst(hasTexts, editor),
-    highestBlock: bindFirst(getHighestBlock, editor) as any,
     isAt: bindFirst(isAt, editor),
     isBlock: bindFirst(isBlock, editor),
     isCollapsed: () => RangeApi.isCollapsed(editor.selection),
@@ -222,28 +217,27 @@ export const createEditor = <V extends Value>({
     ),
     isText: bindFirst(isText, editor),
     isVoid: editor.isVoid,
-    last: bindFirst(getLastNode, editor) as any,
-    lastByLevel: bindFirst(getLastNodeByLevel, editor) as any,
+    last: bindFirst(last, editor) as any,
     leaf: bindFirst(getLeafNode, editor) as any,
     levels: bindFirst(getLevels, editor) as any,
-    mark: bindFirst(getMark, editor),
+    mark: bindFirst(mark, editor),
     markableVoid: editor.markableVoid,
     marks: bindFirst(getMarks, editor),
     next: bindFirst(getNextNode, editor) as any,
-    node: bindFirst(getNodeEntry, editor) as any,
-    nodes: bindFirst(getNodeEntries, editor) as any,
-    nodesRange: bindFirst(getNodesRange, editor),
-    parent: bindFirst(getParentNode, editor) as any,
-    path: bindFirst(getPath, editor),
+    node: bindFirst(node, editor) as any,
+    nodes: bindFirst(nodes, editor) as any,
+    nodesRange: bindFirst(nodesRange, editor),
+    parent: bindFirst(parent, editor) as any,
+    path: bindFirst(path, editor),
     pathRef: bindFirst(createPathRef, editor),
     pathRefs: bindFirst(getPathRefs, editor),
     point: bindFirst(getPoint, editor),
     pointRef: bindFirst(createPointRef, editor),
     pointRefs: bindFirst(getPointRefs, editor),
     positions: bindFirst(getPositions, editor),
-    previous: bindFirst(getPreviousNode, editor) as any,
-    prop: getNodesProp as any,
-    range: bindFirst(getRange, editor),
+    previous: bindFirst(previous, editor) as any,
+    prop: prop as any,
+    range: bindFirst(range, editor),
     rangeRef: bindFirst(createRangeRef, editor),
     rangeRefs: bindFirst(getRangeRefs, editor),
     setNormalizing: bindFirst(setNormalizing, editor as any),

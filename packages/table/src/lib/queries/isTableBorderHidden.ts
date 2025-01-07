@@ -26,7 +26,7 @@ export const isTableBorderHidden = (
   }
 
   return (
-    editor.api.find<TTableCellElement>({
+    editor.api.node<TTableCellElement>({
       match: { type: getCellTypes(editor) },
     })?.[0].borders?.[border]?.size === 0
   );

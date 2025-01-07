@@ -181,7 +181,7 @@ export const withInsertFragmentList: ExtendEditor<ListConfig> = ({
   };
 
   editor.insertFragment = (fragment) => {
-    let liEntry = editor.api.find<TElement>({
+    let liEntry = editor.api.node<TElement>({
       match: { type: listItemType },
       mode: 'lowest',
     });
@@ -197,7 +197,7 @@ export const withInsertFragmentList: ExtendEditor<ListConfig> = ({
     insertFragment([{ text: '' }] as any);
 
     // refetch to find the currently selected LI after the deletion above is performed
-    liEntry = editor.api.find<TElement>({
+    liEntry = editor.api.node<TElement>({
       match: { type: listItemType },
       mode: 'lowest',
     });
@@ -210,7 +210,7 @@ export const withInsertFragmentList: ExtendEditor<ListConfig> = ({
       );
     }
 
-    const licEntry = editor.api.find<TElement>({
+    const licEntry = editor.api.node<TElement>({
       match: { type: listItemContentType },
       mode: 'lowest',
     });

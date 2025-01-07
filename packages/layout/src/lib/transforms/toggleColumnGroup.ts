@@ -21,6 +21,7 @@ export const toggleColumnGroup = (
 ) => {
   const entry = editor.api.block({ at });
   const columnGroupEntry = editor.api.block({
+    above: true,
     at,
     match: { type: editor.getType(BaseColumnPlugin) },
   });

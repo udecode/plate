@@ -93,12 +93,12 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
         if ((commonEntry[0] as TElement).type === type) {
           unwrapList(editor);
         } else {
-          const startList = editor.api.find({
+          const startList = editor.api.node({
             at: RangeApi.start(editor.selection),
             match: { type: getListTypes(editor) },
             mode: 'lowest',
           });
-          const endList = editor.api.find({
+          const endList = editor.api.node({
             at: RangeApi.end(editor.selection),
             match: { type: getListTypes(editor) },
             mode: 'lowest',

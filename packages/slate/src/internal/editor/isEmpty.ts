@@ -24,7 +24,7 @@ export const isEmpty = <E extends Editor>(
     );
   }
   if (options?.after) {
-    const blockAbove = editor.api.block({ at: target });
+    const blockAbove = editor.api.block({ above: true, at: target });
 
     if (!blockAbove) return false;
 

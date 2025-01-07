@@ -87,7 +87,7 @@ export const deleteSuggestion = (
       range = editor.api.unhangRange(range, { character: true });
 
       // if the current point is in block addition suggestion, delete block
-      const entryBlock = editor.api.find<TElement>({
+      const entryBlock = editor.api.node<TElement>({
         at: pointCurrent,
         block: true,
         match: (n) =>

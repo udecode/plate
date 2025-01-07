@@ -1,4 +1,4 @@
-import { range } from 'slate';
+import { range as rangeBase } from 'slate';
 
 import type { Editor } from '../../interfaces/editor/editor';
 import type { At } from '../../types';
@@ -11,7 +11,7 @@ import {
 } from '../../interfaces';
 import { getAt } from '../../utils';
 
-export const getRange = (
+export const range = (
   editor: Editor,
   at: At | 'before' | 'start',
   to?: At | null,
@@ -43,5 +43,5 @@ export const getRange = (
     from = anchor ?? to;
   }
 
-  return range(editor as any, from as any, getAt(editor, to));
+  return rangeBase(editor as any, from as any, getAt(editor, to));
 };

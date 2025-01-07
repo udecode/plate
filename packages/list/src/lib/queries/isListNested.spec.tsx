@@ -35,7 +35,7 @@ describe('when the list is nested', () => {
   it('should be', () => {
     const editor = createPlateEditor({ editor: input });
 
-    const list = editor.api.find({ id: '21' });
+    const list = editor.api.node({ id: '21' });
 
     expect(isListNested(editor, list?.[1] as any)).toBeTruthy();
   });
@@ -57,7 +57,7 @@ describe('when the list is not nested', () => {
   it('should be', () => {
     const editor = createPlateEditor({ editor: input });
 
-    const list = editor.api.find({ id: '1' });
+    const list = editor.api.node({ id: '1' });
 
     expect(isListNested(editor, list?.[1] as any)).toBeFalsy();
   });

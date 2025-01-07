@@ -59,7 +59,7 @@ export const insertTable = (
     });
 
     if (shouldSelect) {
-      const tableEntry = editor.api.find({
+      const tableEntry = editor.api.node({
         at: options.at,
         match: { type },
       });

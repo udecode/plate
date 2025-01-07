@@ -6,7 +6,7 @@ import type {
   ValueOf,
 } from '../../interfaces/index';
 
-export const getEdgeBlocksAbove = <
+export const edgeBlocks = <
   N1 extends ElementOf<E>,
   N2 extends ElementOf<E> = N1,
   E extends Editor = Editor,

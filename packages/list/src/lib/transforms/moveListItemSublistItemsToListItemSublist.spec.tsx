@@ -70,8 +70,8 @@ describe('when there is toListItem sublist', () => {
       value: input.children,
     });
 
-    const fromListItem = editor.api.find({ id: '12', at: [] }) as any;
-    const toListItem = editor.api.find({ id: '11', at: [] }) as any;
+    const fromListItem = editor.api.node({ id: '12', at: [] }) as any;
+    const toListItem = editor.api.node({ id: '11', at: [] }) as any;
 
     if (fromListItem && toListItem) {
       moveListItemSublistItemsToListItemSublist(editor, {
@@ -133,8 +133,8 @@ describe('when there is no list in toListItem', () => {
       value: input.children,
     });
 
-    const fromListItem = editor.api.find({ id: '12', at: [] }) as any;
-    const toListItem = editor.api.find({ id: '11', at: [] }) as any;
+    const fromListItem = editor.api.node({ id: '12', at: [] }) as any;
+    const toListItem = editor.api.node({ id: '11', at: [] }) as any;
 
     if (fromListItem && toListItem) {
       moveListItemSublistItemsToListItemSublist(editor, {

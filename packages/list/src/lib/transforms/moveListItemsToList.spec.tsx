@@ -59,8 +59,8 @@ it('should', () => {
     value: input.children,
   });
 
-  const fromListItem = editor.api.find({ id: '2', at: [] }) as any;
-  const toList = editor.api.find({ id: '1', at: [] }) as any;
+  const fromListItem = editor.api.node({ id: '2', at: [] }) as any;
+  const toList = editor.api.node({ id: '1', at: [] }) as any;
 
   if (fromListItem && toList) {
     moveListItemsToList(editor, { fromListItem, toList });

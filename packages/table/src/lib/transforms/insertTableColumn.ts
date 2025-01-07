@@ -46,20 +46,17 @@ export const insertTableColumn = (
     }
   }
 
-  const cellEntry = fromCell
-    ? editor.api.find({
-        at: fromCell,
-        match: { type: getCellTypes(editor) },
-      })
-    : editor.api.block({
-        match: { type: getCellTypes(editor) },
-      });
+  const cellEntry = editor.api.block({
+    at: fromCell,
+    match: { type: getCellTypes(editor) },
+  });
 
   if (!cellEntry) return;
 
   const [, cellPath] = cellEntry;
 
   const tableEntry = editor.api.block<TTableElement>({
+    above: true,
     at: cellPath,
     match: { type },
   });

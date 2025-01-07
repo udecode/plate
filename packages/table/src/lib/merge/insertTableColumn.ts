@@ -51,7 +51,7 @@ export const insertTableMergeColumn = (
   }
 
   const cellEntry = fromCell
-    ? editor.api.find<TTableCellElement>({
+    ? editor.api.node<TTableCellElement>({
         at: fromCell,
         match: { type: getCellTypes(editor) },
       })
@@ -65,6 +65,7 @@ export const insertTableMergeColumn = (
   const cell = cellEntry[0];
 
   const tableEntry = editor.api.block<TTableElement>({
+    above: true,
     at: cellPath,
     match: { type },
   });

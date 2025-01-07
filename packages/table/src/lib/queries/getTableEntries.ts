@@ -13,7 +13,7 @@ export const getTableEntries = (
 ) => {
   if (!at) return;
 
-  const cellEntry = editor.api.find({
+  const cellEntry = editor.api.node({
     at,
     match: {
       type: getCellTypes(editor),

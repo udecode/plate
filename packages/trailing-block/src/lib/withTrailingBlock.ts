@@ -16,7 +16,7 @@ export const withTrailingBlock: ExtendEditor<TrailingBlockConfig> = ({
     const { level, type, ...query } = getOptions();
 
     if (currentPath.length === 0) {
-      const lastChild = editor.api.lastByLevel(level!);
+      const lastChild = editor.api.last([], { level });
 
       const lastChildNode = lastChild?.[0];
 

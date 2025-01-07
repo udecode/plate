@@ -171,7 +171,7 @@ export const PlaceholderPlugin = toTPlatePlugin<
           event.stopPropagation();
 
           let inserted = false;
-          const ancestor = editor.api.highestBlock();
+          const ancestor = editor.api.block({ highest: true });
 
           if (ancestor) {
             const [node, path] = ancestor;

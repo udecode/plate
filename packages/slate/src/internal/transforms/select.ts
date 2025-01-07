@@ -13,7 +13,7 @@ export const select = (
   const { edge } = options;
 
   if (edge) {
-    const path = editor.api.find({ at: target, block: true })?.[1];
+    const path = editor.api.node({ at: target, block: true })?.[1];
 
     if (!path) return;
 

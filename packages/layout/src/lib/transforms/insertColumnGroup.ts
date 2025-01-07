@@ -32,7 +32,7 @@ export const insertColumnGroup = (
     );
 
     if (selectProp) {
-      const entry = editor.api.find({
+      const entry = editor.api.node({
         at: options.at,
         match: { type: editor.getType(BaseColumnPlugin) },
       });

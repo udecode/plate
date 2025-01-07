@@ -42,7 +42,7 @@ export const copilotPlugins = [
       },
       debounceDelay: 500,
       getPrompt: ({ editor }) => {
-        const contextEntry = editor.api.highestBlock();
+        const contextEntry = editor.api.block({ highest: true });
 
         if (!contextEntry) return '';
 

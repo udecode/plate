@@ -11,7 +11,7 @@ export const onKeyDownColumn: KeyboardHandler = ({ editor, event }) => {
 
   if (isHotkey('mod+a', event) && at) {
     const aboveNode = editor.api.above();
-    const ancestorNode = editor.api.highestBlock();
+    const ancestorNode = editor.api.block({ highest: true });
 
     if (!ancestorNode) return;
     if (!aboveNode) return;

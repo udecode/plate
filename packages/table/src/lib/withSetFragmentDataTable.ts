@@ -103,7 +103,7 @@ export const withSetFragmentDataTable: ExtendEditor<TableConfig> = ({
         textTsv += `${cellStrings.join('\t')}\n`;
       });
 
-      const _tableEntry = editor.api.find<TTableElement>({
+      const _tableEntry = editor.api.node<TTableElement>({
         at: tablePath,
         match: { type: BaseTablePlugin.key },
       });

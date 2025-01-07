@@ -1,4 +1,4 @@
-import { previous } from 'slate';
+import { previous as previousBase } from 'slate';
 
 import type { Editor, ValueOf } from '../../interfaces/editor/editor';
 import type { NodeEntry } from '../../interfaces/node-entry';
@@ -10,16 +10,13 @@ import {
 } from '../../interfaces';
 import { getQueryOptions } from '../../utils';
 
-export const getPreviousNode = <
-  N extends DescendantOf<E>,
-  E extends Editor = Editor,
->(
+export const previous = <N extends DescendantOf<E>, E extends Editor = Editor>(
   editor: E,
   options?: EditorPreviousOptions<ValueOf<E>>
 ): NodeEntry<N> | undefined => {
   const getPrevious = (o: EditorPreviousOptions<ValueOf<E>>) => {
     try {
-      return previous(editor as any, getQueryOptions(editor, o)) as any;
+      return previousBase(editor as any, getQueryOptions(editor, o)) as any;
     } catch {}
   };
 
@@ -40,7 +37,7 @@ export const getPreviousNode = <
     return getPrevious(options as any);
   }
 
-  const block = editor.api.find({
+  const block = editor.api.node({
     id: options.id,
     at: [],
   });

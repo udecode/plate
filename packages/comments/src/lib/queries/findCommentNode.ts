@@ -1,4 +1,4 @@
-import type { EditorFindOptions, SlateEditor } from '@udecode/plate';
+import type { EditorNodesOptions, SlateEditor } from '@udecode/plate';
 
 import type { TCommentText } from '../types';
 
@@ -6,9 +6,9 @@ import { BaseCommentsPlugin } from '../BaseCommentsPlugin';
 
 export const findCommentNode = (
   editor: SlateEditor,
-  options?: EditorFindOptions
+  options?: EditorNodesOptions
 ) => {
-  return editor.api.find<TCommentText>({
+  return editor.api.node<TCommentText>({
     match: (n) => n[BaseCommentsPlugin.key],
     ...options,
   });

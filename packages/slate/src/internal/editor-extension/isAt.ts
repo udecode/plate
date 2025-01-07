@@ -78,8 +78,14 @@ export const isAt = <E extends Editor>(
       return PathApi.equals(startPoint.path, endPoint.path);
     }
 
-    const startBlock = editor.api.block({ at: startPoint, ...options });
-    const endBlock = editor.api.block({ at: endPoint, ...options });
+    const startBlock = editor.api.block({
+      at: startPoint,
+      ...options,
+    });
+    const endBlock = editor.api.block({
+      at: endPoint,
+      ...options,
+    });
 
     // Handle blocks edge cases
     if (blocks) {

@@ -59,7 +59,7 @@ export function AIMenu() {
       }
     },
     onOpenCursor: () => {
-      const ancestor = editor.api.highestBlock()![0];
+      const ancestor = editor.api.block({ highest: true })![0];
 
       if (!editor.api.isAt({ end: true }) && !editor.api.isEmpty(ancestor)) {
         editor

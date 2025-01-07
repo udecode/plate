@@ -15,13 +15,13 @@ import { createPathRef } from '../internal/editor/createPathRef';
 import { createPointRef } from '../internal/editor/createPointRef';
 import { getEndPoint } from '../internal/editor/getEndPoint';
 import { getLeafNode } from '../internal/editor/getLeafNode';
-import { getNodeEntries } from '../internal/editor/getNodeEntries';
 import { getPointAfter } from '../internal/editor/getPointAfter';
 import { getPointBefore } from '../internal/editor/getPointBefore';
 import { getStartPoint } from '../internal/editor/getStartPoint';
 import { getVoidNode } from '../internal/editor/getVoidNode';
 import { isBlock } from '../internal/editor/isBlock';
 import { isVoid } from '../internal/editor/isVoid';
+import { nodes } from '../internal/editor/nodes';
 import { withoutNormalizing } from '../internal/editor/withoutNormalizing';
 import { select } from '../internal/transforms/select';
 
@@ -127,7 +127,7 @@ export const deleteMerge = (
     const matches: NodeEntry[] = [];
     let lastPath: Path | undefined;
 
-    const _nodes = getNodeEntries(editor as any, { at, voids });
+    const _nodes = nodes(editor as any, { at, voids });
 
     for (const entry of _nodes) {
       const [node, path] = entry;

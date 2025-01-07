@@ -5,7 +5,7 @@ import type {
   ValueOf,
 } from '../../interfaces/index';
 
-export const getBlocks = <N extends ElementOf<E>, E extends Editor = Editor>(
+export const blocks = <N extends ElementOf<E>, E extends Editor = Editor>(
   editor: E,
   options?: EditorNodesOptions<ValueOf<E>>
 ) => {

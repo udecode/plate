@@ -1,4 +1,4 @@
-import type { EditorFindOptions, SetNodesOptions } from '@udecode/slate';
+import type { EditorNodesOptions, SetNodesOptions } from '@udecode/slate';
 
 import type { AnyPluginConfig, PluginConfig } from '../plugin/BasePlugin';
 import type { SlatePlugin } from '../plugin/SlatePlugin';
@@ -121,7 +121,7 @@ export type ToggleBlockOptions = {
   /** The default block type to revert to when untoggling. Defaults to paragraph. */
   defaultType?: string;
 
-  findOptions?: EditorFindOptions;
+  someOptions?: EditorNodesOptions;
 
   /**
    * If true, toggles wrapping the block with the specified type. Otherwise,

@@ -81,7 +81,7 @@ export const upsertLink = (
   }
 
   // selection contains at one edge edge or between the edges
-  const linkEntry = editor.api.find<TLinkElement>({
+  const linkEntry = editor.api.node<TLinkElement>({
     at,
     match: { type: editor.getType(BaseLinkPlugin) },
   });

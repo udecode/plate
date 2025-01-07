@@ -43,7 +43,7 @@ export const aiChatItems = {
     label: 'Continue writing',
     value: 'continueWrite',
     onSelect: ({ editor }) => {
-      const ancestorNode = editor.api.highestBlock();
+      const ancestorNode = editor.api.block({ highest: true });
 
       if (!ancestorNode) return;
 

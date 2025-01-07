@@ -14,7 +14,7 @@ export const getTopTableCell = (
   } = {}
 ) => {
   if (!cellPath) {
-    cellPath = editor.api.find<TTableCellElement>({
+    cellPath = editor.api.node<TTableCellElement>({
       match: { type: getCellTypes(editor) },
     })?.[1];
 

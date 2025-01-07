@@ -52,20 +52,17 @@ export const insertTableRow = (
     }
   }
 
-  const trEntry = fromRow
-    ? editor.api.find({
-        at: fromRow,
-        match: { type: editor.getType(BaseTableRowPlugin) },
-      })
-    : editor.api.block({
-        match: { type: editor.getType(BaseTableRowPlugin) },
-      });
+  const trEntry = editor.api.block({
+    at: fromRow,
+    match: { type: editor.getType(BaseTableRowPlugin) },
+  });
 
   if (!trEntry) return;
 
   const [trNode, trPath] = trEntry;
 
   const tableEntry = editor.api.block({
+    above: true,
     at: trPath,
     match: { type },
   });

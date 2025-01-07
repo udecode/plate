@@ -1,7 +1,7 @@
 /* eslint-disable unicorn/prefer-array-some */
 import type {
   Editor,
-  EditorFindOptions,
+  EditorNodesOptions,
   ValueOf,
 } from '../../interfaces/index';
 
@@ -9,9 +9,9 @@ import type {
  * Iterate through all of the nodes in the editor and break early for the first
  * truthy match. Otherwise returns false.
  */
-export const someNode = <E extends Editor = Editor>(
+export const some = <E extends Editor = Editor>(
   editor: E,
-  options: EditorFindOptions<ValueOf<E>>
+  options: EditorNodesOptions<ValueOf<E>>
 ) => {
-  return !!editor.api.find(options);
+  return !!editor.api.node(options);
 };

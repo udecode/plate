@@ -51,11 +51,11 @@ export const getTableMergeGridByRange = <T extends FormatType>(
 ): GetTableGridReturnType<T> => {
   const { api, type } = getEditorPlugin(editor, BaseTablePlugin);
 
-  const startCellEntry = editor.api.find<TTableCellElement>({
+  const startCellEntry = editor.api.node<TTableCellElement>({
     at: at.anchor.path,
     match: { type: getCellTypes(editor) },
   })!;
-  const endCellEntry = editor.api.find<TTableCellElement>({
+  const endCellEntry = editor.api.node<TTableCellElement>({
     at: at.focus.path,
     match: { type: getCellTypes(editor) },
   })!;
@@ -66,7 +66,7 @@ export const getTableMergeGridByRange = <T extends FormatType>(
   const startCellPath = at.anchor.path;
   const tablePath = startCellPath.slice(0, -2);
 
-  const tableEntry = editor.api.find<TTableElement>({
+  const tableEntry = editor.api.node<TTableElement>({
     at: tablePath,
     match: { type },
   })!;

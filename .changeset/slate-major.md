@@ -20,10 +20,10 @@ The following interfaces from `slate` and `slate-dom` are now part of `Editor`:
   - `editor.isTargetInsideNonReadonlyVoid`
   - `editor.hasRange`
   - `editor.hasTarget`
-- `editor.api.find` (previously `findNode`) `at` option is now `at ?? editor.selection` instead of `at ?? editor.selection ?? []`. That means if you want to lookup the entire document, you need to pass `[]` explicitly.
+- `editor.api.node(options)` (previously `findNode`) `at` option is now `at ?? editor.selection` instead of `at ?? editor.selection ?? []`. That means if you want to lookup the entire document, you need to pass `[]` explicitly.
 - Removed `setNode` in favor of `setNodes` (you can now pass a `TNode` to `at` directly).
 - Removed `setElements` in favor of `setNodes`.
-- Removed unused `isWordAfterTrigger`, `setBlockAboveNode`, `setBlockAboveTexts`, `setBlockNodes`.
+- Removed unused `isWordAfterTrigger`, `setBlockAboveNode`, `setBlockAboveTexts`, `setBlockNodes`, `getPointNextToVoid`.
 - Replaced `Path` from slate with `Path` (type) and `PathApi` (static methods).
 - Replaced `Operation` from slate with `Operation` (type) and `OperationApi` (static methods).
 - Replaced `Point` from slate with `Point` (type) and `PointApi` (static methods).
@@ -60,15 +60,15 @@ The following interfaces from `slate` and `slate-dom` are now part of `Editor`:
   - `findDescendant` -> `editor.api.descendant`
   - `findEditorDocumentOrShadowRoot` -> `editor.api.findDocumentOrShadowRoot`
   - `findEventRange` -> `editor.api.findEventRange`
-  - `findNode` -> `editor.api.find`
+  - `findNode(options)` -> `editor.api.node(options)`
   - `findNodeKey` -> `editor.api.findKey`
   - `findNodePath` -> `editor.api.findPath`
   - `findPath` -> `editor.api.findPath`
   - `focusEditor` -> `editor.tf.focus({ at })`
   - `focusEditorEdge` -> `editor.tf.focus({ at, edge: 'startEditor' | 'endEditor' })`
   - `getAboveNode` -> `editor.api.above`
-  - `getAncestorNode` -> `editor.api.highestBlock`
-  - `getBlockAbove` -> `editor.api.block`
+  - `getAncestorNode` -> `editor.api.block({ highest: true })`
+  - `getBlockAbove` -> `editor.api.block({ at, above: true })` or `editor.api.block()` if `at` is not a path
   - `getBlocks` -> `editor.api.blocks`
   - `getEdgeBlocksAbove` -> `editor.api.edgeBlocks`
   - `getEdgePoints` -> `editor.api.edges`
@@ -79,7 +79,7 @@ The following interfaces from `slate` and `slate-dom` are now part of `Editor`:
   - `getFragment` -> `editor.api.fragment`
   - `getFragmentProp(fragment, options)` -> `editor.api.prop({ nodes, ...options})`
   - `getLastNode` -> `editor.api.last`
-  - `getLastNodeByLevel` -> `editor.api.lastByLevel`
+  - `getLastNodeByLevel(level)` -> `editor.api.last([], { level })`
   - `getLeafNode` -> `editor.api.leaf`
   - `getLevels` -> `editor.api.levels`
   - `getMark` -> `editor.api.mark`
@@ -87,7 +87,7 @@ The following interfaces from `slate` and `slate-dom` are now part of `Editor`:
   - `getNextNode` -> `editor.api.next`
   - `getNextNodeStartPoint` -> `editor.api.start(at, { next: true })`
   - `getNodeEntries` -> `editor.api.nodes`
-  - `getNodeEntry` -> `editor.api.node`
+  - `getNodeEntry` -> `editor.api.node(at, options)`
   - `getNodesRange` -> `editor.api.nodesRange`
   - `getParentNode` -> `editor.api.parent`
   - `getPath` -> `editor.api.path`

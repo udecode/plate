@@ -1,6 +1,6 @@
 import { type EditorPropOptions, NodeApi } from '../../interfaces';
 
-export function getNodesProp({
+export function prop({
   key,
   defaultValue,
   getProp,

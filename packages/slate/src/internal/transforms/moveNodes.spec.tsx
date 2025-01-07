@@ -54,8 +54,8 @@ describe('moveNodes', () => {
         </editor>
       ) as any;
 
-      const at = input.api.find({ id: '2', at: [] })![1];
-      const to = PathApi.next(input.api.find({ id: '12', at: [] })![1]);
+      const at = input.api.node({ id: '2', at: [] })![1];
+      const to = PathApi.next(input.api.node({ id: '12', at: [] })![1]);
 
       const moved = input.tf.moveNodes({
         at,
@@ -118,8 +118,8 @@ describe('moveNodes', () => {
         </editor>
       ) as any;
 
-      const at = input.api.find({ id: '2', at: [] })![1];
-      const to = PathApi.next(input.api.find({ id: '12', at: [] })![1]);
+      const at = input.api.node({ id: '2', at: [] })![1];
+      const to = PathApi.next(input.api.node({ id: '12', at: [] })![1]);
 
       const moved = input.tf.moveNodes({
         at,
@@ -183,8 +183,8 @@ describe('moveNodes', () => {
         </editor>
       ) as any;
 
-      const at = input.api.find({ id: '2', at: [] })![1];
-      const to = PathApi.next(input.api.find({ id: '12', at: [] })![1]);
+      const at = input.api.node({ id: '2', at: [] })![1];
+      const to = PathApi.next(input.api.node({ id: '12', at: [] })![1]);
 
       const moved = input.tf.moveNodes({
         at,

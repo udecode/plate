@@ -59,7 +59,7 @@ export const withAIChat: ExtendEditor<AIChatPluginConfig> = ({
 
       if (!matchesPreviousCharPattern) return;
 
-      const nodeEntry = editor.api.highestBlock();
+      const nodeEntry = editor.api.block({ highest: true });
 
       if (!nodeEntry || !editor.api.isEmpty(nodeEntry[0])) return;
 

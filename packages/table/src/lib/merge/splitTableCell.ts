@@ -57,7 +57,7 @@ export const splitTableCell = (editor: SlateEditor) => {
     editor.tf.removeNodes({ at: path });
 
     const getClosestColPathForRow = (row: number, targetCol: number) => {
-      const rowEntry = editor.api.find({
+      const rowEntry = editor.api.node({
         at: [...tablePath, row],
         match: { type: tableRowType },
       });
@@ -103,7 +103,7 @@ export const splitTableCell = (editor: SlateEditor) => {
       const pathForNextRows = getClosestColPathForRow(currentRowPath, col);
       const newRowChildren: TTableRowElement[] = [];
       const _rowPath = [...tablePath, currentRowPath];
-      const rowEntry = editor.api.find({
+      const rowEntry = editor.api.node({
         at: _rowPath,
         match: { type: tableRowType },
       });

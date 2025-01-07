@@ -7,6 +7,7 @@ export const getTableAbove = (
   options?: EditorAboveOptions
 ) =>
   editor.api.block({
+    above: true,
     match: {
       type: editor.getType(BaseTablePlugin),
     },

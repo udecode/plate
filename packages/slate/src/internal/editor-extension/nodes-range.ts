@@ -1,6 +1,6 @@
 import type { Editor, NodeEntry } from '../../interfaces/index';
 
-export const getNodesRange = (editor: Editor, nodes: NodeEntry[]) => {
+export const nodesRange = (editor: Editor, nodes: NodeEntry[]) => {
   if (nodes.length === 0) return;
 
   const firstBlockPath = nodes[0][1];

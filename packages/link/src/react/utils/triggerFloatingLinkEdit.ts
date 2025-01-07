@@ -7,7 +7,7 @@ import { LinkPlugin } from '../LinkPlugin';
 export const triggerFloatingLinkEdit = (editor: SlateEditor) => {
   const { setOption } = getEditorPlugin(editor, LinkPlugin);
 
-  const entry = editor.api.find<TLinkElement>({
+  const entry = editor.api.node<TLinkElement>({
     match: { type: editor.getType(LinkPlugin) },
   });
 

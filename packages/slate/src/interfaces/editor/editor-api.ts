@@ -19,24 +19,21 @@ import type { toSlateRange } from '../../internal/dom-editor/toSlateRange';
 import type { createPathRef } from '../../internal/editor/createPathRef';
 import type { createPointRef } from '../../internal/editor/createPointRef';
 import type { createRangeRef } from '../../internal/editor/createRangeRef';
+import type { path } from '../../internal/editor/editor-path';
 import type { getEdgePoints } from '../../internal/editor/getEdgePoints';
 import type { getEditorString } from '../../internal/editor/getEditorString';
 import type { getEndPoint } from '../../internal/editor/getEndPoint';
-import type { getPath } from '../../internal/editor/getPath';
 import type { getPathRefs } from '../../internal/editor/getPathRefs';
 import type { getPoint } from '../../internal/editor/getPoint';
 import type { getPointAfter } from '../../internal/editor/getPointAfter';
 import type { getPointBefore } from '../../internal/editor/getPointBefore';
 import type { getPointRefs } from '../../internal/editor/getPointRefs';
 import type { getPositions } from '../../internal/editor/getPositions';
-import type { getRange } from '../../internal/editor/getRange';
 import type { getRangeRefs } from '../../internal/editor/getRangeRefs';
 import type { getStartPoint } from '../../internal/editor/getStartPoint';
 import type { hasBlocks } from '../../internal/editor/hasBlocks';
 import type { hasInlines } from '../../internal/editor/hasInlines';
-import type { hasMark } from '../../internal/editor/hasMark';
 import type { hasTexts } from '../../internal/editor/hasTexts';
-import type { isAt } from '../../internal/editor/isAt';
 import type { isBlock } from '../../internal/editor/isBlock';
 import type { isEdgePoint } from '../../internal/editor/isEdgePoint';
 import type { isEditorNormalizing } from '../../internal/editor/isEditorNormalizing';
@@ -44,12 +41,16 @@ import type { isElementReadOnly } from '../../internal/editor/isElementReadOnly'
 import type { isEmpty } from '../../internal/editor/isEmpty';
 import type { isEndPoint } from '../../internal/editor/isEndPoint';
 import type { isStartPoint } from '../../internal/editor/isStartPoint';
-import type { isText } from '../../internal/editor/isText';
+import type { range } from '../../internal/editor/range';
 import type { unhangRange } from '../../internal/editor/unhangRange';
-import type { someNode } from '../../internal/editor-extension/someNode';
+import type { hasMark } from '../../internal/editor-extension/hasMark';
+import type { isAt } from '../../internal/editor-extension/isAt';
+import type { isText } from '../../internal/editor-extension/isText';
+import type { some } from '../../internal/editor-extension/some';
 import type { HistoryApi } from '../../slate-history';
 import type {
   At,
+  AtOrDescendant,
   LeafEdge,
   RangeDirection,
   TextDirection,
@@ -123,6 +124,12 @@ export type EditorApi<V extends Value = Value> = {
   above: <N extends AncestorIn<V>>(
     options?: EditorAboveOptions<V>
   ) => NodeEntry<N> | undefined;
+  /** Get the last node at a location. */
+  last: <N extends DescendantIn<V>>(
+    at: At,
+    options?: EditorLastOptions
+  ) => NodeEntry<N> | undefined;
+
   /** Get the leaf text node at a location. */
   leaf: <N extends TextIn<V>>(
     at: At,
@@ -133,7 +140,6 @@ export type EditorApi<V extends Value = Value> = {
   levels: <N extends NodeIn<V>>(
     options?: EditorLevelsOptions<V>
   ) => Generator<NodeEntry<N>, void, undefined>;
-
   /**
    * Get the matching node in the branch of the document after a location.
    *
@@ -143,10 +149,19 @@ export type EditorApi<V extends Value = Value> = {
   next: <N extends DescendantIn<V>>(
     options?: EditorNextOptions<V>
   ) => NodeEntry<N> | undefined;
-  /** Get the node at a location. */
+  /**
+   * Get the node at a location or find the first node that matches options.
+   *
+   * @example
+   *   ```ts
+   *   editor.api.node([0]) // Get node at path [0]
+   *   editor.api.node({ at: [], id: '1' }) // Find first node with id '1'
+   *   editor.api.node({ at: path, block: true }) // Find first block at path
+   *   ```;
+   */
   node: <N extends DescendantIn<V>>(
-    at: At,
-    options?: EditorNodeOptions
+    atOrOptions: AtOrDescendant | EditorNodesOptions<V>,
+    nodeOptions?: EditorNodeOptions
   ) => NodeEntry<N> | undefined;
   /**
    * At any given `Location` or `Span` in the editor provided by `at` (default
@@ -231,12 +246,10 @@ export type EditorApi<V extends Value = Value> = {
   isNormalizing: OmitFirst<typeof isEditorNormalizing>;
   /** Check if a point is the start point of a location. */
   isStart: OmitFirst<typeof isStartPoint>;
-  /** Get the last node at a location. */
-  last: <N extends DescendantIn<V>>(at: At) => NodeEntry<N> | undefined;
   /** Get the marks that would be added to text at the current selection. */
   marks: () => MarksIn<V> | null;
   /** Get the path of a location. */
-  path: OmitFirst<typeof getPath>;
+  path: OmitFirst<typeof path>;
   /**
    * Create a mutable ref for a `Path` object, which will stay in sync as new
    * operations are applied to the editor.
@@ -271,7 +284,7 @@ export type EditorApi<V extends Value = Value> = {
    *   editor.api.range('before', at, { before }) // From the point before a location
    *   ```;
    */
-  range: OmitFirst<typeof getRange>;
+  range: OmitFirst<typeof range>;
   /**
    * Create a mutable ref for a `TRange` object, which will stay in sync as new
    * operations are applied to the editor.
@@ -373,9 +386,23 @@ export type EditorApi<V extends Value = Value> = {
   isSaving: OmitFirst<typeof HistoryApi.isSaving>;
   isSplittingOnce: OmitFirst<typeof HistoryApi.isSplittingOnce>;
 } & {
-  /** Get the closest block above a location (default: selection). */
+  /**
+   * Get the block at a location or find the first block that matches options.
+   * If `above` is true, get the block above the location, similar to
+   * `editor.api.above({ block: true })`. If `highest` is true, get the highest
+   * block at the location.
+   *
+   * @example
+   *   ```ts
+   *   editor.api.block() // Get block above selection
+   *   editor.api.block({ above: true }) // Get block above selection
+   *   editor.api.block({ at: [0, 0] }) // Get block at [0, 0]
+   *   editor.api.block({ at: [0, 0], above: true }) // Get block at [0]
+   *   editor.api.block({ highest: true }) // Get highest block at selection
+   *   ```;
+   */
   block: <N extends ElementIn<V>>(
-    options?: EditorAboveOptions<V>
+    options?: EditorBlockOptions<V>
   ) => NodeEntry<N> | undefined;
 
   /** Returns all matching blocks. */
@@ -390,7 +417,7 @@ export type EditorApi<V extends Value = Value> = {
 
   /** Returns the first matching descendant. */
   descendant: <N extends DescendantIn<V>>(
-    options: EditorFindOptions<V>
+    options: EditorNodesOptions<V>
   ) => NodeEntry<N> | undefined;
 
   /** Returns the edge blocks above a location (default: selection). */
@@ -398,23 +425,10 @@ export type EditorApi<V extends Value = Value> = {
     options?: EditorAboveOptions<V>
   ) => [NodeEntry<N1>, NodeEntry<N2>] | null;
 
-  /** Returns the first matching node. */
-  find: <N extends DescendantIn<V>>(
-    options?: EditorFindOptions<V>
-  ) => NodeEntry<N> | undefined;
-
-  /** Returns the last node at a given level. */
-  lastByLevel: <N extends ElementOrTextIn<V>>(
-    level: number
-  ) => NodeEntry<N> | undefined;
-
   /** Returns the selection mark value by key. */
   mark: <K extends keyof MarksIn<V>>(
     key: K
   ) => MarksIn<V>[K] | null | undefined;
-
-  /** Get the highest block in the editor. */
-  highestBlock: <N extends V[number]>(at?: Path) => NodeEntry<N> | undefined;
 
   /**
    * Check if a location (point/range) is at a specific position.
@@ -464,7 +478,7 @@ export type EditorApi<V extends Value = Value> = {
    * Check if any node at a location (default: selection) matches the given
    * criteria
    */
-  some: OmitFirst<typeof someNode>;
+  some: OmitFirst<typeof some>;
 };
 
 export type EditorAboveOptions<V extends Value = Value> = QueryOptions<V> &
@@ -556,6 +570,22 @@ export type EditorNodesOptions<V extends Value = Value> = {
   QueryMode &
   QueryVoids;
 
+export type EditorBlockOptions<V extends Value = Value> = Omit<
+  EditorNodesOptions<V>,
+  'block' | 'mode'
+> & {
+  /**
+   * If true, get the block above the location. This has no effect when `at` is
+   * not a block path.
+   */
+  above?: boolean;
+  /**
+   * If true, get the highest block at the location. This will return the block
+   * at the root level (path length 1).
+   */
+  highest?: boolean;
+};
+
 export type EditorNormalizeOptions = {
   force?: boolean;
   operation?: Operation;
@@ -610,10 +640,8 @@ export type EditorStringOptions = QueryVoids;
 
 export type EditorVoidOptions = QueryAt & QueryMode & QueryVoids;
 
-export type EditorFindOptions<V extends Value = Value> = EditorNodesOptions<V>;
-
 export type EditorFindPathOptions = Omit<
-  EditorFindOptions<Value>,
+  EditorNodesOptions<Value>,
   'at' | 'block' | 'match'
 >;
 
@@ -741,4 +769,9 @@ export type QueryMode = {
    *   nodes
    */
   mode?: 'all' | 'highest' | 'lowest';
+};
+
+export type EditorLastOptions = {
+  /** Get last node at this level (0-based). */
+  level?: number;
 };

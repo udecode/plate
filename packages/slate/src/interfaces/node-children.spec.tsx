@@ -132,7 +132,7 @@ describe('NodeApi.children', () => {
         const above = editor.api.block()!;
         const siblings = Array.from(
           NodeApi.children(editor, above[1], {
-            from: input.selection!.anchor.path.at(-1)! + 1,
+            from: 2,
           })
         ).map(([node]) => node);
 

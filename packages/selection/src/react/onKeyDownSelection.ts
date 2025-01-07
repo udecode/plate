@@ -12,7 +12,7 @@ export const onKeyDownSelection: KeyboardHandler<BlockSelectionConfig> = ({
   if (isHotkey('mod+a', event)) {
     if (event.defaultPrevented) return;
 
-    const ancestorNode = editor.api.highestBlock();
+    const ancestorNode = editor.api.block({ highest: true });
 
     if (!ancestorNode) return;
 
@@ -34,7 +34,7 @@ export const onKeyDownSelection: KeyboardHandler<BlockSelectionConfig> = ({
   if (isHotkey('escape', event)) {
     if (event.defaultPrevented) return;
 
-    const ancestorNode = editor.api.highestBlock();
+    const ancestorNode = editor.api.block({ highest: true });
     const id = ancestorNode?.[0].id;
 
     api.blockSelection.addSelectedRow(id as string);

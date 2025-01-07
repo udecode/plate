@@ -1,8 +1,10 @@
 import type { Selection as SlateSelection, Span as SlateSpan } from 'slate';
 
-import type { TLocation, TNode } from './interfaces';
+import type { Descendant, TLocation, TNode } from './interfaces';
 
 export type At = TLocation | TNode;
+
+export type AtOrDescendant = Descendant | TLocation;
 
 export type LeafEdge = 'end' | 'start';
 

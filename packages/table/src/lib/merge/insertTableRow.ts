@@ -49,20 +49,17 @@ export const insertTableMergeRow = (
     }
   }
 
-  const trEntry = fromRow
-    ? editor.api.find({
-        at: fromRow,
-        match: { type: editor.getType(BaseTableRowPlugin) },
-      })
-    : editor.api.block({
-        match: { type: editor.getType(BaseTableRowPlugin) },
-      });
+  const trEntry = editor.api.block({
+    at: fromRow,
+    match: { type: editor.getType(BaseTableRowPlugin) },
+  });
 
   if (!trEntry) return;
 
   const [, trPath] = trEntry;
 
   const tableEntry = editor.api.block<TTableElement>({
+    above: true,
     at: trPath,
     match: { type },
   });
@@ -71,7 +68,7 @@ export const insertTableMergeRow = (
 
   const tableNode = tableEntry[0] as TTableElement;
 
-  const cellEntry = editor.api.find({
+  const cellEntry = editor.api.node({
     at: fromRow,
     match: { type: getCellTypes(editor) },
   });
@@ -177,7 +174,7 @@ export const insertTableMergeRow = (
     );
 
     if (shouldSelect) {
-      const cellEntry = editor.api.find({
+      const cellEntry = editor.api.node({
         at: nextRowPath,
         match: { type: getCellTypes(editor) },
       });

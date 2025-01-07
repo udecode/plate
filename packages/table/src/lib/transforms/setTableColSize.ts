@@ -10,7 +10,7 @@ export const setTableColSize = (
   { colIndex, width }: { colIndex: number; width: number },
   options: EditorAboveOptions = {}
 ) => {
-  const table = editor.api.find<TTableElement>({
+  const table = editor.api.node<TTableElement>({
     match: { type: BaseTablePlugin.key },
     ...options,
   });
