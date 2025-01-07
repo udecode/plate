@@ -1,9 +1,4 @@
-import {
-  type Path,
-  type SlateEditor,
-  NodeApi,
-  moveChildren,
-} from '@udecode/plate';
+import { type Path, type SlateEditor, NodeApi } from '@udecode/plate';
 
 import type { TColumnElement, TColumnGroupElement } from '../types';
 
@@ -93,8 +88,9 @@ export const setColumns = (
 
         if (!columnEntry) continue;
 
-        moveChildren(editor, {
+        editor.tf.moveNodes({
           at: columnEntry[1],
+          children: true,
           to,
         });
       }

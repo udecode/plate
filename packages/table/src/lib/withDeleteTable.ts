@@ -1,10 +1,4 @@
-import {
-  type ExtendEditor,
-  type SlateEditor,
-  type TElement,
-  PointApi,
-  replaceNodeChildren,
-} from '@udecode/plate';
+import { type ExtendEditor, type SlateEditor, PointApi } from '@udecode/plate';
 
 import { type TableConfig, getCellTypes } from '.';
 import { getTableGridAbove } from './queries/getTableGridAbove';
@@ -89,9 +83,9 @@ export const withDeleteTable: ExtendEditor<TableConfig> = ({
       if (cellEntries.length > 1) {
         editor.tf.withoutNormalizing(() => {
           cellEntries.forEach(([, cellPath]) => {
-            replaceNodeChildren<TElement>(editor, {
+            editor.tf.replaceNodes(editor.api.create.block(), {
               at: cellPath,
-              nodes: editor.api.create.block(),
+              children: true,
             });
           });
 

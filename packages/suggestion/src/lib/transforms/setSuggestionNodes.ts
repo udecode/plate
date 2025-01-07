@@ -3,7 +3,6 @@ import {
   type SetNodesOptions,
   type SlateEditor,
   ElementApi,
-  addRangeMarks,
   getAt,
   nanoid,
 } from '@udecode/plate';
@@ -39,8 +38,9 @@ export const setSuggestionNodes = (
       options
     );
 
-    addRangeMarks(editor, props, {
+    editor.tf.setNodes(props, {
       at,
+      marks: true,
     });
 
     nodeEntries.forEach(([, path]) => {

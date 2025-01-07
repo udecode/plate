@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react';
 
+import type { Value } from '@udecode/plate';
+
 import { withProps } from '@udecode/cn';
-import { type Value, replaceNodeChildren } from '@udecode/plate';
 import {
   type PlateEditor,
   ParagraphPlugin,
@@ -260,9 +261,9 @@ function useResetEditorOnChange(
 ) {
   React.useEffect(() => {
     if (value.length > 0) {
-      replaceNodeChildren(editor, {
+      editor.tf.replaceNodes(cloneDeep(value), {
         at: [],
-        nodes: cloneDeep(value),
+        children: true,
       });
 
       editor.history.undos = [];

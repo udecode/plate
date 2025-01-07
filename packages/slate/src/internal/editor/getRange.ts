@@ -6,9 +6,9 @@ import type { At } from '../../types';
 import {
   type EditorBeforeOptions,
   type TRange,
+  PointApi,
   RangeApi,
 } from '../../interfaces';
-import { getPointFromLocation } from '../../queries/getPointFromLocation';
 import { getAt } from '../../utils';
 
 export const getRange = (
@@ -31,9 +31,7 @@ export const getRange = (
 
     if (!anchor) return;
 
-    const focus = getPointFromLocation({
-      at: to,
-    });
+    const focus = PointApi.get(to);
 
     if (!focus) return;
 

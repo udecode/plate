@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { removeMark, setMarks } from '@udecode/plate';
 import { useEditorRef, useEditorSelector } from '@udecode/plate/react';
 
 export const useColorDropdownMenuState = ({
@@ -46,7 +45,7 @@ export const useColorDropdownMenuState = ({
         editor.tf.select(editor.selection);
         editor.tf.focus();
 
-        setMarks(editor, { [nodeType]: value });
+        editor.tf.addMarks({ [nodeType]: value });
       }
     },
     [editor, nodeType]
@@ -66,7 +65,7 @@ export const useColorDropdownMenuState = ({
       editor.tf.focus();
 
       if (selectedColor) {
-        removeMark(editor, { key: nodeType });
+        editor.tf.removeMarks(nodeType);
       }
 
       closeOnSelect && onToggle();

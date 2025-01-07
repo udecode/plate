@@ -10,7 +10,7 @@ export const ItalicPlugin = toPlatePlugin(
         keys: [[Key.Mod, 'i']],
         preventDefault: true,
         handler: () => {
-          editor.tf.toggle.mark({ key: type });
+          editor.tf.toggleMark(type);
         },
       },
     },

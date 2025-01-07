@@ -1,9 +1,4 @@
-import {
-  type SlateEditor,
-  type TElement,
-  PathApi,
-  insertElements,
-} from '@udecode/plate';
+import { type SlateEditor, type TElement, PathApi } from '@udecode/plate';
 
 import {
   BaseListItemContentPlugin,
@@ -48,8 +43,7 @@ export const insertListItem = (editor: SlateEditor): boolean => {
 
     /** If start, insert a list item before */
     if (isStart) {
-      insertElements(
-        editor,
+      editor.tf.insertNodes(
         {
           children: [{ children: [{ text: '' }], type: licType }],
           type: liType,
@@ -68,8 +62,7 @@ export const insertListItem = (editor: SlateEditor): boolean => {
     if (isEnd) {
       /** If end, insert a list item after and select it */
       const marks = editor.api.marks() || {};
-      insertElements(
-        editor,
+      editor.tf.insertNodes(
         {
           children: [{ children: [{ text: '', ...marks }], type: licType }],
           type: liType,

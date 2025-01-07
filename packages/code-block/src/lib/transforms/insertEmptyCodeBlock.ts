@@ -2,7 +2,6 @@ import {
   type InsertNodesOptions,
   type SlateEditor,
   BaseParagraphPlugin,
-  insertElements,
 } from '@udecode/plate';
 
 import { insertCodeBlock } from './insertCodeBlock';
@@ -28,8 +27,7 @@ export const insertEmptyCodeBlock = (
     editor.api.isExpanded() ||
     !editor.api.isEmpty(editor.selection, { block: true })
   ) {
-    insertElements(
-      editor,
+    editor.tf.insertNodes(
       editor.api.create.block({ children: [{ text: '' }], type: defaultType }),
       {
         nextBlock: true,

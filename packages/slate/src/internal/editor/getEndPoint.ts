@@ -2,7 +2,7 @@ import { end } from 'slate';
 
 import type { Editor } from '../../interfaces/editor/editor';
 import type { EditorEndOptions } from '../../interfaces/index';
-import type { At } from '../../types/At';
+import type { At } from '../../types';
 
 import { getAt } from '../../utils/getAt';
 

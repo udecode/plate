@@ -5,8 +5,6 @@ import {
   NodeApi,
   PathApi,
   getEditorPlugin,
-  getLastChildPath,
-  insertElements,
 } from '@udecode/plate';
 
 import type { TTableElement } from '../types';
@@ -43,7 +41,7 @@ export const insertTableColumn = (
     const table = NodeApi.get<TTableElement>(editor, at);
 
     if (table?.type === editor.getType(BaseTablePlugin)) {
-      fromCell = getLastChildPath([table.children[0], at.concat([0])]);
+      fromCell = NodeApi.lastChild(editor, at.concat([0]))![1];
       at = undefined;
     }
   }
@@ -101,8 +99,7 @@ export const insertTableColumn = (
             )
           : header;
 
-      insertElements(
-        editor,
+      editor.tf.insertNodes(
         api.create.tableCell({
           header: isHeaderRow,
         }),

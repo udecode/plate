@@ -28,7 +28,7 @@ export const useMarkToolbarButton = (
     props: {
       pressed: state.pressed,
       onClick: () => {
-        editor.tf.toggle.mark({ key: state.nodeType, clear: state.clear });
+        editor.tf.toggleMark(state.nodeType, { remove: state.clear });
         editor.tf.focus();
       },
       onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {

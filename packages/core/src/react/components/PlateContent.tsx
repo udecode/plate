@@ -1,7 +1,6 @@
 import React, { useRef } from 'react';
 
 import { useComposedRef } from '@udecode/react-utils';
-import { focusEditorEdge } from '@udecode/slate';
 
 import type { EditableProps } from '../../lib/types/EditableProps';
 
@@ -117,7 +116,7 @@ const PlateContent = React.forwardRef(
 
     React.useEffect(() => {
       if (autoFocusOnEditable && prevReadOnly.current && !readOnly) {
-        focusEditorEdge(editor, { edge: 'end' });
+        editor.tf.focus({ edge: 'endEditor' });
       }
 
       prevReadOnly.current = readOnly;

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { isDefined, removeEditorText } from '@udecode/plate';
+import { isDefined } from '@udecode/plate';
 import {
   selectEditor,
   useEditorRef,
@@ -30,7 +30,7 @@ export const useSelectEditorCombobox = ({
   // Remove text and select end of editor when combobox closes
   React.useEffect(() => {
     if (!open) {
-      removeEditorText(editor);
+      editor.tf.removeNodes({ at: [], empty: true, text: true });
       selectEditor(editor, { edge: 'end' });
     }
   }, [editor, open]);

@@ -4,8 +4,6 @@ import {
   type TElement,
   PathApi,
   deleteMerge,
-  getPreviousPath,
-  insertElements,
 } from '@udecode/plate';
 
 import {
@@ -34,7 +32,7 @@ export const removeListItem = (
     return false;
   }
 
-  const previousLiPath = getPreviousPath(liPath);
+  const previousLiPath = PathApi.previous(liPath);
 
   let success = false;
 
@@ -56,8 +54,7 @@ export const removeListItem = (
 
       // 1
       let tempLiPath = PathApi.next(liPath);
-      insertElements(
-        editor,
+      editor.tf.insertNodes(
         {
           children: [
             {

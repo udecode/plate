@@ -18,7 +18,7 @@ export const HeadingPlugin = toPlatePlugin(BaseHeadingPlugin, ({ plugin }) => ({
             ],
             preventDefault: true,
             handler: () => {
-              editor.tf.toggle.block({ type });
+              editor.tf.toggleBlock(type);
             },
           },
         },

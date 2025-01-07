@@ -18,12 +18,12 @@ export const useFloatingLinkEscape = () => {
 
       if (mode === 'edit' && isEditing) {
         api.floatingLink.show('edit', editor.id);
-        editor.tf.focus(editor.selection!);
+        editor.tf.focus({ at: editor.selection! });
 
         return;
       }
       if (mode === 'insert') {
-        editor.tf.focus(editor.selection!);
+        editor.tf.focus({ at: editor.selection! });
       }
 
       api.floatingLink.hide();

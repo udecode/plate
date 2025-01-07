@@ -2,7 +2,7 @@ import {
   type SlateEditor,
   type TLocation,
   BaseParagraphPlugin,
-  getChildren,
+  NodeApi,
 } from '@udecode/plate';
 
 import { BaseCodeBlockPlugin } from '../BaseCodeBlockPlugin';
@@ -22,7 +22,7 @@ export const unwrapCodeBlock = (editor: SlateEditor) => {
     const reversedCodeBlockEntries = Array.from(codeBlockEntries).reverse();
 
     for (const codeBlockEntry of reversedCodeBlockEntries) {
-      const codeLineEntries = getChildren(codeBlockEntry);
+      const codeLineEntries = NodeApi.children(editor, codeBlockEntry[1]);
 
       for (const [, path] of codeLineEntries) {
         editor.tf.setNodes({ type: defaultType }, { at: path });

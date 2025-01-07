@@ -10,7 +10,7 @@ export const BlockquotePlugin = toPlatePlugin(
         keys: [[Key.Mod, Key.Shift, 'period']],
         preventDefault: true,
         handler: () => {
-          editor.tf.toggle.block({ type });
+          editor.tf.toggleBlock(type);
         },
       },
     },

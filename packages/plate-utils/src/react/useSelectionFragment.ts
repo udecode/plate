@@ -1,9 +1,6 @@
+import type { EditorPropOptions, TElement } from '@udecode/slate';
+
 import { useEditorSelector } from '@udecode/plate-core/react';
-import {
-  type GetFragmentPropOptions,
-  type TElement,
-  getFragmentProp,
-} from '@udecode/slate';
 
 export const useSelectionFragment = (options?: {
   structuralTypes?: string[];
@@ -16,12 +13,12 @@ export const useSelectionFragment = (options?: {
 export const useSelectionFragmentProp = ({
   structuralTypes,
   ...options
-}: { structuralTypes?: string[] } & GetFragmentPropOptions = {}) => {
+}: { structuralTypes?: string[] } & Omit<EditorPropOptions, 'nodes'> = {}) => {
   return useEditorSelector((editor) => {
     const fragment = editor.api.fragment<TElement>(editor.selection, {
       structuralTypes,
     });
 
-    return getFragmentProp(fragment, options);
+    return editor.api.prop({ nodes: fragment, ...options });
   }, []);
 };

@@ -1,6 +1,6 @@
 import type { ExtendEditor, Path, TElement } from '@udecode/plate';
 
-import { NodeApi, replaceNodeChildren } from '@udecode/plate';
+import { NodeApi } from '@udecode/plate';
 import cloneDeep from 'lodash/cloneDeep.js';
 
 import {
@@ -48,9 +48,9 @@ export const withInsertFragmentTable: ExtendEditor<TableConfig> = ({
             if (cellEntry) {
               const [, cellPath] = cellEntry;
 
-              replaceNodeChildren(editor, {
+              editor.tf.replaceNodes(cloneDeep(fragment) as any, {
                 at: cellPath,
-                nodes: cloneDeep(fragment) as any,
+                children: true,
               });
             }
           });
@@ -132,9 +132,9 @@ export const withInsertFragmentTable: ExtendEditor<TableConfig> = ({
                   cell
                 ) as TTableCellElement[];
 
-                replaceNodeChildren(editor, {
+                editor.tf.replaceNodes(cloneDeep(cellChildren as any), {
                   at: cellPath,
-                  nodes: cloneDeep(cellChildren as any),
+                  children: true,
                 });
 
                 lastCellPath = [...cellPath];

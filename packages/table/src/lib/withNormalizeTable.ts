@@ -3,7 +3,6 @@ import {
   type TElement,
   ElementApi,
   TextApi,
-  wrapNodeChildren,
 } from '@udecode/plate';
 
 import type { TTableCellElement, TTableElement } from './types';
@@ -129,13 +128,10 @@ export const withNormalizeTable: ExtendEditor<TableConfig> = ({
           return;
         }
         if (TextApi.isText(children[0])) {
-          wrapNodeChildren<TElement>(
-            editor,
-            editor.api.create.block({}, path),
-            {
-              at: path,
-            }
-          );
+          editor.tf.wrapNodes(editor.api.create.block({}, path), {
+            at: path,
+            children: true,
+          });
 
           return;
         }

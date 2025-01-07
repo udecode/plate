@@ -9,7 +9,6 @@ import {
   PathApi,
   TextApi,
 } from '../../interfaces';
-import { getNextSiblingNodes } from '../../queries/getNextSiblingNodes';
 import { isEditor } from './isEditor';
 
 export const isEmpty = <E extends Editor>(
@@ -29,16 +28,20 @@ export const isEmpty = <E extends Editor>(
 
     if (!blockAbove) return false;
 
-    const cursor = editor.api.point(target)!;
+    const point = editor.api.point(target)!;
     const selectionParentEntry = editor.api.parent(target);
 
     if (!selectionParentEntry) return false;
 
     const [, selectionParentPath] = selectionParentEntry;
 
-    if (!editor.api.isEnd(cursor, selectionParentPath)) return false;
+    if (!editor.api.isEnd(point, selectionParentPath)) return false;
 
-    const siblingNodes = getNextSiblingNodes(blockAbove, cursor.path);
+    const siblingNodes = Array.from(
+      NodeApi.children(editor, blockAbove[1], {
+        from: PathApi.lastIndex(point.path) + 1,
+      })
+    ).map(([node]) => node);
 
     if (siblingNodes.length > 0) {
       for (const siblingNode of siblingNodes) {
@@ -47,7 +50,7 @@ export const isEmpty = <E extends Editor>(
         }
       }
     } else {
-      return editor.api.isEnd(cursor, blockAbove[1]);
+      return editor.api.isEnd(point, blockAbove[1]);
     }
 
     return true;

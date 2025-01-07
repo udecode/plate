@@ -12,7 +12,7 @@ export const pasteSelectedBlocks = (editor: SlateEditor, e: ClipboardEvent) => {
     const entry = entries.at(-1)!;
     const [node, path] = entry;
 
-    editor.tf.focus(editor.api.start(path));
+    editor.tf.focus({ at: path, edge: 'start' });
 
     if (!editor.api.isEmpty(node as any)) {
       const at = PathApi.next(path);

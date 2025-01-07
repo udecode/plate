@@ -113,8 +113,10 @@ export function TabbableEffects() {
           }
           case 'path': {
             editor.tf.focus({
-              anchor: { offset: 0, path: tabDestination.path },
-              focus: { offset: 0, path: tabDestination.path },
+              at: {
+                anchor: { offset: 0, path: tabDestination.path },
+                focus: { offset: 0, path: tabDestination.path },
+              },
             });
 
             break;

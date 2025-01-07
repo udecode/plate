@@ -23,7 +23,7 @@ export const CodeBlockPlugin = toPlatePlugin(BaseCodeBlockPlugin, {
       keys: [[Key.Mod, Key.Alt, '8']],
       preventDefault: true,
       handler: () => {
-        editor.tf.toggle.block({ type });
+        editor.tf.toggleBlock(type);
       },
     },
   },

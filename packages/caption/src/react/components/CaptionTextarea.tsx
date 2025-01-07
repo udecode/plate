@@ -124,7 +124,7 @@ export const useCaptionTextarea = ({
 
       e.preventDefault();
 
-      editor.tf.focus(path);
+      editor.tf.focus({ at: path });
     }
     // select next block
     if (isHotkey('down', e)) {
@@ -138,7 +138,7 @@ export const useCaptionTextarea = ({
 
       e.preventDefault();
 
-      editor.tf.focus(nextNodePath);
+      editor.tf.focus({ at: nextNodePath });
     }
   };
 

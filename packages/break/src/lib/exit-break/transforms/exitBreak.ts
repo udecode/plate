@@ -1,9 +1,4 @@
-import {
-  type SlateEditor,
-  BaseParagraphPlugin,
-  PathApi,
-  insertElements,
-} from '@udecode/plate';
+import { type SlateEditor, BaseParagraphPlugin, PathApi } from '@udecode/plate';
 
 import type { ExitBreakRule } from '../types';
 
@@ -34,8 +29,7 @@ export const exitBreak = (
 
   const insertPath = before ? slicedPath : PathApi.next(slicedPath);
 
-  insertElements(
-    editor,
+  editor.tf.insertNodes(
     editor.api.create.block({ children: [{ text: '' }], type: defaultType }),
     {
       at: insertPath,

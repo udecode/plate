@@ -35,7 +35,7 @@ export const aiChatItems = {
     value: 'accept',
     onSelect: ({ editor }) => {
       editor.getTransforms(AIChatPlugin).aiChat.accept();
-      editor.tf.focus(editor.api.end(editor.selection!));
+      editor.tf.focus({ edge: 'end' });
     },
   },
   continueWrite: {

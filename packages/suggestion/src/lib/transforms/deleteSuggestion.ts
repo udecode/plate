@@ -5,7 +5,6 @@ import {
   type TRange,
   PointApi,
   nanoid,
-  unhangCharacterRange,
 } from '@udecode/plate';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
@@ -70,13 +69,13 @@ export const deleteSuggestion = (
 
       const getPoint = reverse ? editor.api.before : editor.api.after;
 
-      const pointNext = getPoint(pointCurrent, {
+      const pointNext: Point | undefined = getPoint(pointCurrent, {
         unit: 'character',
       });
 
       if (!pointNext) break;
 
-      let range = reverse
+      let range: TRange = reverse
         ? {
             anchor: pointNext,
             focus: pointCurrent,
@@ -85,13 +84,13 @@ export const deleteSuggestion = (
             anchor: pointCurrent,
             focus: pointNext,
           };
-      range = unhangCharacterRange(editor, range);
+      range = editor.api.unhangRange(range, { character: true });
 
       // if the current point is in block addition suggestion, delete block
       const entryBlock = editor.api.find<TElement>({
         at: pointCurrent,
+        block: true,
         match: (n) =>
-          editor.api.isBlock(n) &&
           n[BaseSuggestionPlugin.key] &&
           !n.suggestionDeletion &&
           n[getSuggestionCurrentUserKey(editor)],

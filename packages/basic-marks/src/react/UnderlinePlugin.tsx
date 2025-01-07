@@ -10,7 +10,7 @@ export const UnderlinePlugin = toPlatePlugin(
         keys: [[Key.Mod, 'u']],
         preventDefault: true,
         handler: () => {
-          editor.tf.toggle.mark({ key: type });
+          editor.tf.toggleMark(type);
         },
       },
     },

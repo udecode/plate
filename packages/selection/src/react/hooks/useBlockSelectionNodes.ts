@@ -1,11 +1,8 @@
 import { useMemo } from 'react';
 
-import {
-  type GetFragmentPropOptions,
-  type TElement,
-  getFragmentProp,
-} from '@udecode/plate';
-import { useEditorPlugin } from '@udecode/plate/react';
+import type { EditorPropOptions, TElement } from '@udecode/plate';
+
+import { useEditorPlugin, useEditorRef } from '@udecode/plate/react';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 
@@ -30,9 +27,13 @@ export function useBlockSelectionFragment() {
 }
 
 export function useBlockSelectionFragmentProp(
-  options?: GetFragmentPropOptions
+  options?: Omit<EditorPropOptions, 'nodes'>
 ) {
+  const editor = useEditorRef();
   const fragment = useBlockSelectionFragment();
 
-  return useMemo(() => getFragmentProp(fragment, options), [fragment, options]);
+  return useMemo(
+    () => editor.api.prop({ nodes: fragment, ...options }),
+    [editor.api, fragment, options]
+  );
 }

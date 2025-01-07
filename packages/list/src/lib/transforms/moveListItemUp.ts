@@ -4,8 +4,6 @@ import {
   type TElement,
   NodeApi,
   PathApi,
-  insertElements,
-  isLastChild,
 } from '@udecode/plate';
 
 import { BaseListItemPlugin } from '../BaseListPlugin';
@@ -42,12 +40,11 @@ export const moveListItemUp = (
       }
 
       const condA = hasListChild(editor, liNode);
-      const condB = !isLastChild(list, liPath);
+      const condB = !NodeApi.isLastChild(editor, liPath);
 
       if (condA || condB) {
         // Insert a new list next to `list`
-        insertElements(
-          editor,
+        editor.tf.insertNodes(
           {
             children: [],
             type: listNode.type,
@@ -92,11 +89,10 @@ export const moveListItemUp = (
     const toListPath = liPath.concat([1]);
 
     // If li has next siblings, we need to move them.
-    if (!isLastChild(list, liPath)) {
+    if (!NodeApi.isLastChild(editor, liPath)) {
       // If li has no sublist, insert one.
       if (!hasListChild(editor, liNode)) {
-        insertElements(
-          editor,
+        editor.tf.insertNodes(
           {
             children: [],
             type: listNode.type,

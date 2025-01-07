@@ -51,6 +51,9 @@ export const PathApi: {
    */
   ancestors: (path: Path, options?: PathAncestorsOptions) => Path[];
 
+  /** Get a path to a child at the given index. */
+  child: (path: Path, index: number) => Path;
+
   /** Get the common ancestor path of two paths. */
   common: (path: Path, another: Path) => Path;
 
@@ -75,6 +78,9 @@ export const PathApi: {
 
   /** Check if a path is exactly equal to another. */
   equals: (path: Path, another: Path) => boolean;
+
+  /** Get a path to the first child of a path. */
+  firstChild: (path: Path) => Path;
 
   /** Check if the path of previous sibling node exists */
   hasPrevious: (path: Path) => boolean;
@@ -106,6 +112,9 @@ export const PathApi: {
   /** Check if a path is a sibling of another. */
   isSibling: (path: Path, another: Path) => boolean;
 
+  /** Get the last index of a path. Returns -1 if path is empty. */
+  lastIndex: (path: Path) => number;
+
   /**
    * Get a list of paths at every level down to a path. Note: this is the same
    * as `PathApi.ancestors`, but including the path itself.
@@ -122,11 +131,39 @@ export const PathApi: {
   parent: (path: Path) => Path;
 
   /** Given a path, get the path to the previous sibling node. */
-  previous: (path: Path) => Path;
+  previous: (path: Path) => Path | undefined;
 
   /** Get a path relative to an ancestor. */
   relative: (path: Path, ancestor: Path) => Path;
-} = SlatePath as any;
+} = {
+  ...(SlatePath as any),
+  child: (path, index) => path.concat([index]),
+  firstChild: (path) => PathApi.child(path, 0),
+  lastIndex: (path) => path.at(-1) ?? -1,
+  next: (path) => {
+    try {
+      return SlatePath.next(path);
+    } catch {
+      return path;
+    }
+  },
+  parent: (path) => {
+    try {
+      return SlatePath.parent(path);
+    } catch {
+      return path;
+    }
+  },
+  previous: (path) => {
+    if (path.length === 0) return;
+
+    const last = path.at(-1)!;
+
+    if (last <= 0) return;
+
+    return path.slice(0, -1).concat(last - 1);
+  },
+} as const;
 
 export interface PathAncestorsOptions {
   /** If true, the paths are returned in reverse order. */

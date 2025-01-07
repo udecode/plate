@@ -8,7 +8,7 @@ export const CodePlugin = toPlatePlugin(BaseCodePlugin, ({ editor, type }) => ({
       keys: [[Key.Mod, 'e']],
       preventDefault: true,
       handler: () => {
-        editor.tf.toggle.mark({ key: type });
+        editor.tf.toggleMark(type);
       },
     },
   },

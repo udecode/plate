@@ -1,4 +1,5 @@
-import { type Editor, type TRange, removeMark } from '@udecode/plate';
+import type { Editor, TRange } from '@udecode/plate';
+
 import castArray from 'lodash/castArray.js';
 
 import type { AutoformatMarkRule } from '../types';
@@ -62,7 +63,7 @@ export const autoformatMark = (
       editor.addMark(mark, true);
     });
     editor.tf.collapse({ edge: 'end' });
-    removeMark(editor, { key: marks as any, shouldChange: false });
+    editor.tf.removeMarks(marks, { shouldChange: false });
 
     editor.tf.delete({
       at: {

@@ -4,7 +4,7 @@ import type { Path } from '../../interfaces';
 import type { Editor, EditorFindPathOptions } from '../../interfaces/editor';
 import type { NodeOf } from '../../interfaces/node';
 
-import { findNodePath } from '../../internal/queries/findNodePath';
+import { findNodePath } from '../editor-extension/findNodePath';
 
 export const findPath = <N extends NodeOf<E>, E extends Editor>(
   editor: E,

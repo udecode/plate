@@ -48,7 +48,7 @@ export const submitFloatingMedia = (
 
   floatingMediaActions.reset();
 
-  editor.tf.focus(editor.selection!);
+  editor.tf.focus({ at: editor.selection! });
 
   return true;
 };

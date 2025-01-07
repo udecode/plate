@@ -1,4 +1,3 @@
-import type { TRange } from '@udecode/plate';
 import type { KeyboardHandler } from '@udecode/plate/react';
 
 import { Hotkeys, RangeApi } from '@udecode/plate';
@@ -29,9 +28,7 @@ export const onKeyDownList: KeyboardHandler<ListConfig> = ({
 
       // This is a workaround for a Slate bug
       // See: https://github.com/ianstormtaylor/slate/pull/5039
-      const unhangRange = editor.api.unhangRange({ anchor, focus }) as
-        | TRange
-        | undefined;
+      const unhangRange = editor.api.unhangRange({ anchor, focus });
 
       if (unhangRange) {
         workRange = unhangRange;

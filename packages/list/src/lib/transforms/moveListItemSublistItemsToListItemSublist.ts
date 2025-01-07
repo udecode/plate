@@ -3,10 +3,8 @@ import {
   type Path,
   type SlateEditor,
   type TElement,
+  NodeApi,
   PathApi,
-  getLastChildPath,
-  insertElements,
-  moveChildren,
 } from '@udecode/plate';
 
 import { getListTypes } from '../queries/getListTypes';
@@ -36,7 +34,7 @@ export const moveListItemSublistItemsToListItemSublist = (
 ) => {
   const [, fromListItemPath] = fromListItem;
   const [, toListItemPath] = toListItem;
-  let moved = 0;
+  let moved: boolean | void = false;
 
   editor.tf.withoutNormalizing(() => {
     const fromListItemSublist = editor.api.descendant<TElement>({
@@ -70,8 +68,7 @@ export const moveListItemSublistItemsToListItemSublist = (
 
       const toListItemSublistPath = toListItemPath.concat([1]);
 
-      insertElements(
-        editor,
+      editor.tf.insertNodes(
         { children: [], type: fromListType as string },
         { at: toListItemSublistPath }
       );
@@ -81,11 +78,12 @@ export const moveListItemSublistItemsToListItemSublist = (
       const [, toListItemSublistPath] = toListItemSublist;
       to = toListItemSublistPath.concat([0]);
     } else {
-      to = PathApi.next(getLastChildPath(toListItemSublist));
+      to = PathApi.next(NodeApi.lastChild(editor, toListItemSublist[1])![1]);
     }
 
-    moved = moveChildren(editor, {
+    moved = editor.tf.moveNodes({
       at: fromListItemSublistPath,
+      children: true,
       to,
     });
 

@@ -3,14 +3,14 @@ import {
   type NodeEntry,
   type Path,
   type TElement,
-  getPreviousPath,
+  PathApi,
 } from '@udecode/plate';
 
 export const getCellInPreviousTableRow = (
   editor: Editor,
   currentRowPath: Path
 ): NodeEntry | undefined => {
-  const prevPath = getPreviousPath(currentRowPath);
+  const prevPath = PathApi.previous(currentRowPath);
 
   if (!prevPath) return;
 

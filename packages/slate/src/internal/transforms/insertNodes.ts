@@ -1,7 +1,5 @@
 import { insertNodes as insertNodesBase } from 'slate';
 
-import type { QueryNodeOptions } from '../../types';
-
 import {
   type Descendant,
   type Editor,
@@ -11,7 +9,7 @@ import {
   NodeApi,
   PathApi,
 } from '../../interfaces';
-import { getQueryOptions, queryNode } from '../../utils';
+import { type QueryNodeOptions, getQueryOptions, queryNode } from '../../utils';
 
 export const insertNodes = <
   N extends ElementOrTextOf<E>,

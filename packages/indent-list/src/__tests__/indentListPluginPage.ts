@@ -1,9 +1,4 @@
-import {
-  type TElement,
-  NodeApi,
-  PathApi,
-  getPreviousPath,
-} from '@udecode/plate';
+import { type TElement, NodeApi, PathApi } from '@udecode/plate';
 
 import { type GetSiblingIndentListOptions, BaseIndentListPlugin } from '../lib';
 
@@ -27,7 +22,7 @@ export const indentListPluginPage = BaseIndentListPlugin.extend(
           return [nextNode, nextPath];
         },
         getPreviousEntry: ([, path]: any) => {
-          const prevPath = getPreviousPath(path);
+          const prevPath = PathApi.previous(path);
 
           if (!prevPath) {
             if (path[0] === 0) return;

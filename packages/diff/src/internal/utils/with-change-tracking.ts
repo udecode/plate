@@ -13,7 +13,6 @@ import {
   PathApi,
   PointApi,
   RangeApi,
-  addRangeMarks,
 } from '@udecode/plate';
 import isEqual from 'lodash/isEqual.js';
 import uniqWith from 'lodash/uniqWith.js';
@@ -158,7 +157,7 @@ const applyMergeNode = <E extends Editor>(
   const oldNode = NodeApi.get(editor, op.path) as TText;
   const properties = NodeApi.extractProps(oldNode);
 
-  const prevNodePath = PathApi.previous(op.path);
+  const prevNodePath = PathApi.previous(op.path)!;
   const prevNode = NodeApi.get(editor, prevNodePath) as TText;
   const newProperties = NodeApi.extractProps(prevNode);
 
@@ -226,11 +225,10 @@ const commitChangesToDiffs = <E extends Editor>(
     flatUpdates.forEach(({ newProperties, properties, range }) => {
       const node = NodeApi.get(editor, range.anchor.path) as TText;
 
-      addRangeMarks(
-        editor as any,
-        getUpdateProps(node, properties, newProperties),
-        { at: range }
-      );
+      editor.tf.setNodes(getUpdateProps(node, properties, newProperties), {
+        at: range,
+        marks: true,
+      });
     });
 
     editor.removedTexts.forEach(({ node, pointRef }) => {
@@ -253,7 +251,10 @@ const commitChangesToDiffs = <E extends Editor>(
       const range = rangeRef.current;
 
       if (range) {
-        addRangeMarks(editor as any, getInsertProps(node), { at: range });
+        editor.tf.setNodes(getInsertProps(node), {
+          at: range,
+          marks: true,
+        });
       }
 
       rangeRef.unref();

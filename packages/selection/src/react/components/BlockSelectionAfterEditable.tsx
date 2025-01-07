@@ -77,7 +77,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
           const [, path] = entry;
 
           // focus the end of that block
-          editor.tf.focus(editor.api.end(path));
+          editor.tf.focus({ at: path, edge: 'end' });
           e.preventDefault();
         }
       }

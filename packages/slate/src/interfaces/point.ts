@@ -1,8 +1,10 @@
 import { Point as SlatePoint } from 'slate';
 
-import type { TextDirection } from '../types';
+import type { At, TextDirection } from '../types';
 import type { Operation } from './operation';
-import type { Path } from './path';
+
+import { type Path, PathApi } from './path';
+import { RangeApi } from './range';
 
 export type Point = {
   /** The index of the character in the text node. */
@@ -13,6 +15,20 @@ export type Point = {
 
 /** Point retrieval, check and transform methods. */
 export const PointApi: {
+  /**
+   * Get the point from a location. If the location is a range, get the anchor
+   * point (if `focus` is true, get the focus point). If the location is a path,
+   * get the point at this path with offset 0.
+   */
+  get: (
+    at?: At | null,
+    {
+      focus,
+    }?: {
+      focus?: boolean;
+    }
+  ) => Point | undefined;
+
   /** Transform a point by an operation. */
   transform: (
     point: Point,
@@ -37,7 +53,18 @@ export const PointApi: {
 
   /** Check if a value implements the `Point` interface. */
   isPoint: (value: any) => value is Point;
-} = SlatePoint as any;
+} = {
+  ...(SlatePoint as any),
+  get: (at, { focus } = {}) => {
+    let point: Point | undefined;
+
+    if (RangeApi.isRange(at)) point = focus ? at.focus : at.anchor;
+    if (PointApi.isPoint(at)) point = at;
+    if (PathApi.isPath(at)) point = { offset: 0, path: at };
+
+    return point;
+  },
+};
 
 export interface PointTransformOptions {
   affinity?: TextDirection | null;

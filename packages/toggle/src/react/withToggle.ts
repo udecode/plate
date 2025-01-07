@@ -69,7 +69,7 @@ export const withToggle: ExtendEditor<ToggleConfig> = ({
     editor.tf.withoutNormalizing(() => {
       if (isOpen) {
         insertBreak();
-        editor.tf.toggle.block({ type: BaseTogglePlugin.key });
+        editor.tf.toggleBlock(BaseTogglePlugin.key);
         indent(editor);
       } else {
         const lastEntryEnclosedInToggle = getLastEntryEnclosedInToggle(

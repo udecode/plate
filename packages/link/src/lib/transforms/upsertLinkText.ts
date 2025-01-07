@@ -1,8 +1,4 @@
-import {
-  type SlateEditor,
-  type TText,
-  replaceNodeChildren,
-} from '@udecode/plate';
+import type { SlateEditor, TText } from '@udecode/plate';
 
 import type { TLinkElement } from '../types';
 import type { UpsertLinkOptions } from './upsertLink';
@@ -28,13 +24,14 @@ export const upsertLinkText = (
       const firstText = newLinkNode.children[0];
 
       // remove link children
-      replaceNodeChildren<TText>(editor, {
-        at: newLinkPath,
-        insertOptions: {
+      editor.tf.replaceNodes<TText>(
+        { ...firstText, text },
+        {
+          at: newLinkPath,
+          children: true,
           select: true,
-        },
-        nodes: { ...firstText, text },
-      });
+        }
+      );
     }
   }
 };

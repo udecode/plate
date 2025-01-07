@@ -1,13 +1,10 @@
 import {
   type ExtendEditor,
-  type Path,
   type TElement,
   BaseParagraphPlugin,
   ElementApi,
   NodeApi,
   PathApi,
-  getChildren,
-  getPreviousPath,
   match,
 } from '@udecode/plate';
 
@@ -37,7 +34,7 @@ export const withNormalizeList: ExtendEditor<ListConfig> = ({
       return normalizeNode([node, path]);
     }
     if (isListRoot(editor, node)) {
-      const nonLiChild = getChildren([node, path]).find(
+      const nonLiChild = Array.from(NodeApi.children(editor, path)).find(
         ([child]) => child.type !== liType
       );
 
@@ -69,7 +66,7 @@ export const withNormalizeList: ExtendEditor<ListConfig> = ({
         });
       }
 
-      const prevPath = getPreviousPath(path) as Path;
+      const prevPath = PathApi.previous(path)!;
       const prevNode = NodeApi.get<TElement>(editor, prevPath);
 
       // Has a list before with the same type

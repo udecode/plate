@@ -1,9 +1,4 @@
-import {
-  type ExtendEditor,
-  PathApi,
-  insertElements,
-  queryNode,
-} from '@udecode/plate';
+import { type ExtendEditor, PathApi, queryNode } from '@udecode/plate';
 
 import type { TrailingBlockConfig } from './TrailingBlockPlugin';
 
@@ -31,7 +26,7 @@ export const withTrailingBlock: ExtendEditor<TrailingBlockConfig> = ({
       ) {
         const at = lastChild ? PathApi.next(lastChild[1]) : [0];
 
-        insertElements(editor, editor.api.create.block({ type }, at), { at });
+        editor.tf.insertNodes(editor.api.create.block({ type }, at), { at });
 
         return;
       }

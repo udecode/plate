@@ -1,19 +1,15 @@
-import {
-  type ElementOf,
-  type ReplaceNodeChildrenOptions,
-  replaceNodeChildren,
-} from '@udecode/slate';
+import type { ReplaceNodesOptions, ValueOf } from '@udecode/slate';
 
 import type { SlateEditor } from '../editor';
 
 /** Replace editor children by default block. */
 export const resetEditorChildren = <E extends SlateEditor = SlateEditor>(
   editor: E,
-  options?: Omit<ReplaceNodeChildrenOptions<ElementOf<E>, E>, 'at' | 'nodes'>
+  options?: Omit<ReplaceNodesOptions<ValueOf<E>>, 'at' | 'children'>
 ) => {
-  replaceNodeChildren<ElementOf<E>>(editor, {
+  editor.tf.replaceNodes(editor.api.create.value(), {
     at: [],
-    nodes: editor.api.create.value(),
+    children: true,
     ...options,
   } as any);
 };

@@ -5,9 +5,8 @@ import {
   type PathRef,
   type SlateEditor,
   type TElement,
+  NodeApi,
   PathApi,
-  getChildren,
-  insertEmptyElement,
   match,
 } from '@udecode/plate';
 
@@ -40,7 +39,7 @@ export const getDeepInlineChildren = (
     if (editor.api.isBlock(child[0])) {
       inlineChildren.push(
         ...getDeepInlineChildren(editor, {
-          children: getChildren(child),
+          children: Array.from(NodeApi.children(editor, child[1])),
         })
       );
     } else {
@@ -72,7 +71,9 @@ export const normalizeListItem = (
   ]);
 
   const [, liPath] = listItem;
-  const liChildren = getChildren<TElement>(listItem);
+  const liChildren = Array.from(
+    NodeApi.children<TElement>(editor, listItem[1])
+  );
 
   // Get invalid (type) li children path refs to be moved
   const invalidLiChildrenPathRefs = liChildren
@@ -84,9 +85,14 @@ export const normalizeListItem = (
 
   // If li has no child or inline child, insert lic
   if (!firstLiChild || !editor.api.isBlock(firstLiChildNode)) {
-    insertEmptyElement(editor, editor.getType(BaseListItemContentPlugin), {
-      at: liPath.concat([0]),
-    });
+    editor.tf.insertNodes(
+      editor.api.create.block({
+        type: editor.getType(BaseListItemContentPlugin),
+      }),
+      {
+        at: liPath.concat([0]),
+      }
+    );
 
     return true;
   }
@@ -105,7 +111,9 @@ export const normalizeListItem = (
       // the listItem has no lic so we move the children up a level
       const parent = editor.api.parent(listItem[1]);
       const sublist = firstLiChild;
-      const children = getChildren<TElement>(firstLiChild).reverse();
+      const children = Array.from(
+        NodeApi.children<TElement>(editor, firstLiChild[1])
+      ).reverse();
       children.forEach((c) => {
         moveListItemUp(editor, {
           list: sublist,
@@ -134,7 +142,7 @@ export const normalizeListItem = (
     changed = true;
   }
 
-  const licChildren = getChildren(firstLiChild);
+  const licChildren = Array.from(NodeApi.children(editor, firstLiChild[1]));
 
   if (licChildren.length > 0) {
     const blockPathRefs: PathRef[] = [];
@@ -150,7 +158,7 @@ export const normalizeListItem = (
 
       inlineChildren.push(
         ...getDeepInlineChildren(editor, {
-          children: getChildren(licChild),
+          children: Array.from(NodeApi.children(editor, licChild[1])),
         })
       );
     }

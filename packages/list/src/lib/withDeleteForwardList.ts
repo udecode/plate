@@ -6,7 +6,6 @@ import {
   type TextUnit,
   NodeApi,
   PathApi,
-  getChildren,
 } from '@udecode/plate';
 
 import type { ListConfig } from './BaseListPlugin';
@@ -184,7 +183,9 @@ const selectionIsInAListHandler = (
 
   if (!nestedList) return false;
 
-  const nestedListItem = getChildren<TElement>(nestedList)[0];
+  const nestedListItem = Array.from(
+    NodeApi.children<TElement>(editor, nestedList[1])
+  )[0];
 
   if (
     removeFirstListItem(editor, {

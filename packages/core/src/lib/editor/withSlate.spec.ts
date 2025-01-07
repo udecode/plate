@@ -2,7 +2,7 @@
 import { BoldPlugin } from '@udecode/plate-basic-marks/react';
 import { type Value, createEditor } from '@udecode/slate';
 
-import { ParagraphPlugin, PlateApiPlugin, ReactPlugin } from '../../react';
+import { ParagraphPlugin, ReactPlugin } from '../../react';
 import { withPlate } from '../../react/editor/withPlate';
 import { createPlatePlugin } from '../../react/plugin/createPlatePlugin';
 import { getPlugin } from '../../react/plugin/getPlugin';
@@ -17,7 +17,7 @@ import {
   InlineVoidPlugin,
   LengthPlugin,
   ParserPlugin,
-  SlateNextPlugin,
+  SlateExtensionPlugin,
   createSlatePlugin,
   withSlate,
 } from '../index';
@@ -25,7 +25,7 @@ import {
 const coreKeys = [
   'root',
   DebugPlugin.key,
-  SlateNextPlugin.key,
+  SlateExtensionPlugin.key,
   DOMPlugin.key,
   HistoryPlugin.key,
   InlineVoidPlugin.key,
@@ -35,7 +35,6 @@ const coreKeys = [
   AstPlugin.key,
   ParagraphPlugin.key,
   EventEditorPlugin.key,
-  PlateApiPlugin.key,
 ];
 
 describe('withPlate', () => {
@@ -52,10 +51,10 @@ describe('withPlate', () => {
       );
       expect(Object.keys(editor.plugins)).toEqual(coreKeys);
       expect(
-        (editor.getPlugin(SlateNextPlugin).handlers as any).onKeyDown
+        (editor.getPlugin(SlateExtensionPlugin).handlers as any).onKeyDown
       ).toBeDefined();
 
-      expect(editor.tf.toggle.block).toBeDefined();
+      expect(editor.tf.toggleBlock).toBeDefined();
       expect(editor.prevSelection).toBeNull();
     });
   });

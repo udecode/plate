@@ -4,7 +4,6 @@ import {
   BaseParagraphPlugin,
   PathApi,
   deleteMerge,
-  isFirstChild,
 } from '@udecode/plate';
 import { type ExtendEditor, getEditorPlugin } from '@udecode/plate/react';
 import { BaseResetNodePlugin } from '@udecode/plate-reset-node';
@@ -53,7 +52,10 @@ export const withDeleteBackwardList: ExtendEditor<ListConfig> = ({
             moved = removeListItem(editor, { list, listItem });
 
             if (moved) return true;
-            if (isFirstChild(listItem[1]) && !isListNested(editor, list[1])) {
+            if (
+              !PathApi.hasPrevious(listItem[1]) &&
+              !isListNested(editor, list[1])
+            ) {
               onKeyDownResetNode({
                 ...getEditorPlugin(
                   editor,

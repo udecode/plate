@@ -2,7 +2,7 @@ import {
   type Editor,
   type NodeEntry,
   type Path,
-  getPreviousPath,
+  PathApi,
 } from '@udecode/plate';
 
 import { getCellInPreviousTableRow } from './getCellInPreviousTableRow';
@@ -13,7 +13,7 @@ export const getPreviousTableCell = (
   currentPath: Path,
   currentRow: NodeEntry
 ): NodeEntry | undefined => {
-  const prevPath = getPreviousPath(currentPath);
+  const prevPath = PathApi.previous(currentPath);
 
   if (!prevPath) {
     const [, currentRowPath] = currentRow;

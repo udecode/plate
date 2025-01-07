@@ -8,7 +8,7 @@ export const BoldPlugin = toPlatePlugin(BaseBoldPlugin, ({ editor, type }) => ({
       keys: [[Key.Mod, 'b']],
       preventDefault: true,
       handler: () => {
-        editor.tf.toggle.mark({ key: type });
+        editor.tf.toggleMark(type);
       },
     },
   },

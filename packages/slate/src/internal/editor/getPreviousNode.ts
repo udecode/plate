@@ -28,14 +28,13 @@ export const getPreviousNode = <
 
     if (!path) return;
 
-    try {
-      const previousPath = PathApi.previous(path);
-      const previousNode = editor.api.node(previousPath);
+    const previousPath = PathApi.previous(path);
 
-      return previousNode as NodeEntry<N>;
-    } catch {
-      return;
-    }
+    if (!previousPath) return;
+
+    const previousNode = editor.api.node(previousPath);
+
+    return previousNode as NodeEntry<N>;
   }
   if (!(options?.id && options?.block)) {
     return getPrevious(options as any);

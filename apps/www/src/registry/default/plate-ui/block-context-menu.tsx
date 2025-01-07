@@ -45,7 +45,7 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
             });
           }
 
-          editor.tf.toggle.block({ type }, { at: path });
+          editor.tf.toggleBlock(type, { at: path });
         });
     },
     [editor]
@@ -128,9 +128,7 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
             onClick={() => {
               editor
                 .getTransforms(BlockSelectionPlugin)
-                .blockSelection.duplicate(
-                  editor.getApi(BlockSelectionPlugin).blockSelection.getNodes()
-                );
+                .blockSelection.duplicate();
             }}
           >
             Duplicate

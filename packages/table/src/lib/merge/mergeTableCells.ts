@@ -3,7 +3,6 @@ import {
   type NodeEntry,
   type SlateEditor,
   getEditorPlugin,
-  insertElements,
 } from '@udecode/plate';
 import cloneDeep from 'lodash/cloneDeep.js';
 
@@ -98,7 +97,7 @@ export const mergeTableCells = (editor: SlateEditor) => {
     };
 
     // insert the new merged cell in place of the first cell in the selection
-    insertElements(editor, mergedCell, { at: cellEntries[0][1] });
+    editor.tf.insertNodes(mergedCell, { at: cellEntries[0][1] });
   });
 
   editor.tf.select(editor.api.end(cellEntries[0][1])!);

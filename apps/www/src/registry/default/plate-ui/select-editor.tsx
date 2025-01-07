@@ -3,11 +3,7 @@
 import React from 'react';
 
 import { useCommandActions } from '@udecode/cmdk';
-import {
-  isHotkey,
-  removeEditorText,
-  replaceNodeChildren,
-} from '@udecode/plate';
+import { isHotkey } from '@udecode/plate';
 import {
   Plate,
   useEditorContainerRef,
@@ -108,9 +104,9 @@ export function SelectEditorContent({
 
   React.useEffect(() => {
     if (!isEqualTags(editor, value)) {
-      replaceNodeChildren(editor, {
+      editor.tf.replaceNodes(createEditorValue(value), {
         at: [],
-        nodes: createEditorValue(value),
+        children: true,
       });
     }
   }, [editor, value]);
@@ -148,7 +144,7 @@ export const SelectEditorInput = React.forwardRef<
         if (isHotkey('enter', e)) {
           e.preventDefault();
           selectCurrentItem();
-          removeEditorText(editor);
+          editor.tf.removeNodes({ at: [], empty: true, text: true });
         }
         if (isHotkey('escape', e) || isHotkey('mod+enter', e)) {
           e.preventDefault();

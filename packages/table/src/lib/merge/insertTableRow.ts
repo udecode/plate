@@ -4,8 +4,6 @@ import {
   NodeApi,
   PathApi,
   getEditorPlugin,
-  getLastChildPath,
-  insertElements,
 } from '@udecode/plate';
 import cloneDeep from 'lodash/cloneDeep.js';
 
@@ -46,7 +44,7 @@ export const insertTableMergeRow = (
     const table = NodeApi.get<TTableElement>(editor, at);
 
     if (table?.type === editor.getType(BaseTablePlugin)) {
-      fromRow = getLastChildPath([table, at]);
+      fromRow = NodeApi.lastChild(editor, at)![1];
       at = undefined;
     }
   }
@@ -167,8 +165,7 @@ export const insertTableMergeRow = (
   });
 
   editor.tf.withoutNormalizing(() => {
-    insertElements(
-      editor,
+    editor.tf.insertNodes(
       {
         children: newRowChildren,
         type: editor.getType(BaseTableRowPlugin),

@@ -1,3 +1,5 @@
+import type { EditorFindOptions, SetNodesOptions } from '@udecode/slate';
+
 import type { AnyPluginConfig, PluginConfig } from '../plugin/BasePlugin';
 import type { SlatePlugin } from '../plugin/SlatePlugin';
 
@@ -11,10 +13,10 @@ import { HistoryPlugin } from './HistoryPlugin';
 import { InlineVoidPlugin } from './InlineVoidPlugin';
 import { ParserPlugin } from './ParserPlugin';
 import { type DebugErrorType, type LogLevel, DebugPlugin } from './debug';
-import { SlateNextPlugin } from './editor-protocol';
 import { HtmlPlugin } from './html';
 import { LengthPlugin } from './length';
 import { BaseParagraphPlugin } from './paragraph';
+import { SlateExtensionPlugin } from './slate-extension';
 
 // Somehow needed to avoid cyclic dependency
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -39,7 +41,7 @@ export const getCorePlugins = ({
 }: GetCorePluginsOptions) => {
   let corePlugins = [
     DebugPlugin as SlatePlugin<DebugConfig>,
-    SlateNextPlugin,
+    SlateExtensionPlugin,
     DOMPlugin,
     HistoryPlugin,
     InlineVoidPlugin,
@@ -115,10 +117,15 @@ export type LengthConfig = PluginConfig<
   }
 >;
 
-export interface ToggleBlockOptions {
+export type ToggleBlockOptions = {
   /** The default block type to revert to when untoggling. Defaults to paragraph. */
   defaultType?: string;
 
-  /** The block type to apply or toggle. */
-  type?: string;
-}
+  findOptions?: EditorFindOptions;
+
+  /**
+   * If true, toggles wrapping the block with the specified type. Otherwise,
+   * toggles the block type directly.
+   */
+  wrap?: boolean;
+} & SetNodesOptions;

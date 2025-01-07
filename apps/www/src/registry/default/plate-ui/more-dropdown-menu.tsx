@@ -46,7 +46,7 @@ export function MoreDropdownMenu(props: DropdownMenuProps) {
         <DropdownMenuGroup>
           <DropdownMenuItem
             onSelect={() => {
-              editor.tf.toggle.mark({ key: KbdPlugin.key });
+              editor.tf.toggleMark(KbdPlugin.key);
               editor.tf.collapse({ edge: 'end' });
               editor.tf.focus();
             }}
@@ -57,9 +57,8 @@ export function MoreDropdownMenu(props: DropdownMenuProps) {
 
           <DropdownMenuItem
             onSelect={() => {
-              editor.tf.toggle.mark({
-                key: SuperscriptPlugin.key,
-                clear: [SubscriptPlugin.key, SuperscriptPlugin.key],
+              editor.tf.toggleMark(SuperscriptPlugin.key, {
+                remove: SubscriptPlugin.key,
               });
               editor.tf.focus();
             }}
@@ -70,9 +69,8 @@ export function MoreDropdownMenu(props: DropdownMenuProps) {
           </DropdownMenuItem>
           <DropdownMenuItem
             onSelect={() => {
-              editor.tf.toggle.mark({
-                key: SubscriptPlugin.key,
-                clear: [SuperscriptPlugin.key, SubscriptPlugin.key],
+              editor.tf.toggleMark(SubscriptPlugin.key, {
+                remove: SuperscriptPlugin.key,
               });
               editor.tf.focus();
             }}

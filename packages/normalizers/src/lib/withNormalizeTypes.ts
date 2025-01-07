@@ -3,7 +3,6 @@ import {
   type TElement,
   ElementApi,
   NodeApi,
-  insertElements,
 } from '@udecode/plate';
 
 import type { NormalizeTypesConfig } from './NormalizeTypesPlugin';
@@ -39,8 +38,7 @@ export const withNormalizeTypes: ExtendEditor<NormalizeTypesConfig> = ({
             }
           } else {
             try {
-              insertElements(
-                editor,
+              editor.tf.insertNodes(
                 editor.api.create.block({ type: strictType ?? type! }),
                 { at: path }
               );

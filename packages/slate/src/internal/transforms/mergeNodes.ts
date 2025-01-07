@@ -40,7 +40,7 @@ export const mergeNodes = <E extends Editor>(
       }
     }
     if (!hanging && RangeApi.isRange(at)) {
-      at = editor.api.unhangRange(at) as any;
+      at = editor.api.unhangRange(at);
     }
     if (RangeApi.isRange(at)) {
       if (RangeApi.isCollapsed(at)) {

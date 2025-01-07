@@ -1,38 +1,45 @@
-import type { EditorNodesOptions, TElement } from '@udecode/slate';
+import type { TElement } from '@udecode/slate';
 
 import type { SlateEditor } from '../editor';
+import type { ToggleBlockOptions } from '../plugins/getCorePlugins';
 
-import { type ToggleBlockOptions, BaseParagraphPlugin } from '../plugins';
+import { BaseParagraphPlugin } from '../plugins';
 
-/**
- * Toggle the type of the selected block. If the block is not of the specified
- * type, it will be changed to that type. Otherwise, it will be changed to the
- * default type.
- */
 export const toggleBlock = (
   editor: SlateEditor,
-  options: ToggleBlockOptions,
-  editorNodesOptions?: Omit<EditorNodesOptions, 'match'>
+  type: string,
+  {
+    defaultType = editor.getType(BaseParagraphPlugin),
+    findOptions,
+    wrap,
+    ...options
+  }: ToggleBlockOptions = {}
 ) => {
-  const { defaultType = editor.getType(BaseParagraphPlugin), type } = options;
+  const at = options.at ?? editor.selection;
 
-  const at = editorNodesOptions?.at ?? editor.selection;
-
-  if (!type || !at) return;
+  if (!at) return;
 
   const isActive = editor.api.some({
-    ...editorNodesOptions,
-    match: {
-      type: type,
-    },
+    at,
+    ...findOptions,
+    match: { type },
   });
 
+  if (wrap) {
+    if (isActive) {
+      editor.tf.unwrapNodes({ at, match: { type } });
+    } else {
+      editor.tf.wrapNodes({ children: [], type }, { at });
+    }
+
+    return;
+  }
   if (isActive && type === defaultType) return;
 
   editor.getTransforms().setNodes<TElement>(
     {
       type: isActive ? defaultType : type,
     },
-    { at: at as any }
+    { at: at as any, ...options }
   );
 };

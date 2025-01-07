@@ -3,7 +3,6 @@ import {
   type Path,
   type SlateEditor,
   getEditorPlugin,
-  insertElements,
 } from '@udecode/plate';
 
 import {
@@ -122,15 +121,14 @@ export const splitTableCell = (editor: SlateEditor) => {
           const currentColPath = i === 0 ? colPaths[j] : pathForNextRows;
           const pathForNewCell = [...tablePath, currentRowPath, currentColPath];
 
-          insertElements(editor, cellToInsert, { at: pathForNewCell });
+          editor.tf.insertNodes(cellToInsert, { at: pathForNewCell });
         } else {
           newRowChildren.push(cellToInsert);
         }
       }
 
       if (!rowEntry) {
-        insertElements(
-          editor,
+        editor.tf.insertNodes(
           {
             children: newRowChildren,
             type: editor.getType(BaseTableRowPlugin),

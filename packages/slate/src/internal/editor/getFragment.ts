@@ -1,12 +1,30 @@
 import { fragment, getFragment as getFragmentBase } from 'slate';
 
 import type { Editor } from '../../interfaces/editor/editor';
-import type { ElementOrTextOf } from '../../interfaces/element';
+import type { ElementOrTextOf, TElement } from '../../interfaces/element';
 import type { EditorFragmentOptions } from '../../interfaces/index';
 import type { At } from '../../types';
 
 import { getAt } from '../../utils';
-import { unwrapStructuralNodes } from '../../utils/unwrapStructuralNodes';
+
+const unwrapStructuralNodes = (
+  nodes: TElement[],
+  { structuralTypes }: { structuralTypes?: string[] } = {}
+) => {
+  const unwrap = (nodes: TElement[], acc: TElement[] = []): TElement[] => {
+    nodes.forEach((node) => {
+      if (structuralTypes?.includes(node.type)) {
+        return unwrap(node.children as TElement[], acc);
+      }
+
+      acc.push(node);
+    });
+
+    return acc;
+  };
+
+  return unwrap(nodes);
+};
 
 export const getFragment = <E extends Editor>(
   editor: E,

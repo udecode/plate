@@ -5,8 +5,6 @@ import {
   NodeApi,
   PathApi,
   getEditorPlugin,
-  getLastChildPath,
-  insertElements,
 } from '@udecode/plate';
 
 import type { TTableElement } from '../types';
@@ -49,7 +47,7 @@ export const insertTableRow = (
     const table = NodeApi.get<TTableElement>(editor, at);
 
     if (table?.type === editor.getType(BaseTablePlugin)) {
-      fromRow = getLastChildPath([table, at]);
+      fromRow = NodeApi.lastChild(editor, at)![1];
       at = undefined;
     }
   }
@@ -92,7 +90,7 @@ export const insertTableRow = (
   });
 
   editor.tf.withoutNormalizing(() => {
-    insertElements(editor, getEmptyRowNode(), {
+    editor.tf.insertNodes(getEmptyRowNode(), {
       at: PathApi.isPath(at) ? at : before ? trPath : PathApi.next(trPath),
     });
   });

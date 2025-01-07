@@ -7,7 +7,6 @@ import {
   type Path,
   type TElement,
   PathApi,
-  removeEmptyPreviousBlock,
 } from '@udecode/plate';
 import { insertCallout } from '@udecode/plate-callout';
 import { CalloutPlugin } from '@udecode/plate-callout/react';
@@ -125,7 +124,7 @@ export const insertBlock = (editor: PlateEditor, type: string) => {
       });
     }
 
-    removeEmptyPreviousBlock(editor);
+    editor.tf.removeNodes({ previousEmptyBlock: true });
   });
 };
 

@@ -22,7 +22,7 @@ The following interfaces from `slate` and `slate-dom` are now part of `Editor`:
   - `editor.hasTarget`
 - Removed `setNode` in favor of `setNodes` (you can now pass a `TNode` to `at` directly).
 - Removed `setElements` in favor of `setNodes`.
-- Removed `isWordAfterTrigger`.
+- Removed unused `isWordAfterTrigger`, `setBlockAboveNode`, `setBlockAboveTexts`, `setBlockNodes`.
 - Replaced `Path` from slate with `Path` (type) and `PathApi` (static methods).
 - Replaced `Operation` from slate with `Operation` (type) and `OperationApi` (static methods).
 - Replaced `Point` from slate with `Point` (type) and `PointApi` (static methods).
@@ -33,13 +33,19 @@ The following interfaces from `slate` and `slate-dom` are now part of `Editor`:
 - Replaced `Node` from slate with `TNode` (type) and `NodeApi` (static methods). We also export `Node` type like `slate` but we don't recommend it as it's conflicting with the DOM type.
 - Replaced `Element` from slate with `TElement` (type) and `ElementApi` (static methods). We also export `Element` type like `slate` but we don't recommend it as it's conflicting with the DOM type.
 
-Moved or renamed editor functions:
+- Signature change:
 
-- For example, `focusEditor(editor)` is now `editor.tf.focus()`.
+  - `editor.tf.toggle.block({ type, ...options })` -> `editor.tf.toggleBlock(type, options)`
+  - `editor.tf.toggle.mark({ key, clear })` -> `editor.tf.toggleMark(key, { remove: clear })`
+
+- Moved editor functions:
 
   - `addMark` -> `editor.tf.addMark`
+  - `addRangeMarks` -> `editor.tf.setNodes(props, { at, marks: true })`
   - `blurEditor` -> `editor.tf.blur`
   - `collapseSelection` -> `editor.tf.collapse`
+  - `createDocumentNode` -> `editor.api.create.value` (core)
+  - `createNode` -> `editor.api.create.block`
   - `createPathRef` -> `editor.api.pathRef`
   - `createPointRef` -> `editor.api.pointRef`
   - `createRangeRef` -> `editor.api.rangeRef`
@@ -49,38 +55,58 @@ Moved or renamed editor functions:
   - `deleteText` -> `editor.tf.delete`
   - `deselect` -> `editor.tf.deselect`
   - `deselectEditor` -> `editor.tf.deselectDOM`
+  - `duplicateBlocks` -> `editor.tf.duplicateNodes({ nodes })`
+  - `findDescendant` -> `editor.api.descendant`
   - `findEditorDocumentOrShadowRoot` -> `editor.api.findDocumentOrShadowRoot`
   - `findEventRange` -> `editor.api.findEventRange`
+  - `findNode` -> `editor.api.find`
   - `findNodeKey` -> `editor.api.findKey`
   - `findNodePath` -> `editor.api.findPath`
   - `findPath` -> `editor.api.findPath`
-  - `focusEditor` -> `editor.tf.focus`
+  - `focusEditor` -> `editor.tf.focus({ at })`
+  - `focusEditorEdge` -> `editor.tf.focus({ at, edge: 'startEditor' | 'endEditor' })`
   - `getAboveNode` -> `editor.api.above`
   - `getAncestorNode` -> `editor.api.highestBlock`
+  - `getBlockAbove` -> `editor.api.block`
+  - `getBlocks` -> `editor.api.blocks`
+  - `getEdgeBlocksAbove` -> `editor.api.edgeBlocks`
   - `getEdgePoints` -> `editor.api.edges`
   - `getEditorString` -> `editor.api.string`
   - `getEditorWindow` -> `editor.api.getWindow`
   - `getEndPoint` -> `editor.api.end`
   - `getFirstNode` -> `editor.api.first`
   - `getFragment` -> `editor.api.fragment`
+  - `getFragmentProp(fragment, options)` -> `editor.api.prop({ nodes, ...options})`
   - `getLastNode` -> `editor.api.last`
+  - `getLastNodeByLevel` -> `editor.api.lastByLevel`
   - `getLeafNode` -> `editor.api.leaf`
   - `getLevels` -> `editor.api.levels`
+  - `getMark` -> `editor.api.mark`
   - `getMarks` -> `editor.api.marks`
   - `getNextNode` -> `editor.api.next`
+  - `getNextNodeStartPoint` -> `editor.api.start(at, { next: true })`
   - `getNodeEntries` -> `editor.api.nodes`
   - `getNodeEntry` -> `editor.api.node`
+  - `getNodesRange` -> `editor.api.nodesRange`
   - `getParentNode` -> `editor.api.parent`
   - `getPath` -> `editor.api.path`
   - `getPathRefs` -> `editor.api.pathRefs`
   - `getPoint` -> `editor.api.point`
   - `getPointAfter` -> `editor.api.after`
   - `getPointBefore` -> `editor.api.before`
+  - `getPointBeforeLocation` -> `editor.api.before`
   - `getPointRefs` -> `editor.api.pointRefs`
   - `getPositions` -> `editor.api.positions`
+  - `getPreviousBlockById` -> `editor.api.previous({ id, block: true })`
   - `getPreviousNode` -> `editor.api.previous`
+  - `getPreviousNodeEndPoint` -> `editor.api.end({ previous: true })`
+  - `getPreviousSiblingNode` -> `editor.api.previous({ at, sibling: true })`
   - `getRange` -> `editor.api.range`
+  - `getRangeBefore` -> `editor.api.range('before', to, { before })`
+  - `getRangeFromBlockStart` -> `editor.api.range('start', to)`
   - `getRangeRefs` -> `editor.api.rangeRefs`
+  - `getSelectionFragment` -> `editor.api.fragment(editor.selection, { structuralTypes })`
+  - `getSelectionText` -> `editor.api.string()`
   - `getStartPoint` -> `editor.api.start`
   - `getVoidNode` -> `editor.api.void`
   - `hasBlocks` -> `editor.api.hasBlocks`
@@ -92,86 +118,91 @@ Moved or renamed editor functions:
   - `hasTexts` -> `editor.api.hasTexts`
   - `insertBreak` -> `editor.tf.insertBreak`
   - `insertData` -> `editor.tf.insertData`
+  - `insertElements` -> `editor.tf.insertNodes<TElement>`
+  - `insertEmptyElement` -> `editor.tf.insertNodes(editor.api.create.block({ type }))`
   - `insertFragment` -> `editor.tf.insertFragment`
   - `insertNode` -> `editor.tf.insertNode`
   - `insertNodes` -> `editor.tf.insertNodes`
   - `insertText` -> `editor.tf.insertText`
+  - `isAncestorEmpty` -> `editor.api.isEmpty`
   - `isBlock` -> `editor.api.isBlock`
+  - `isBlockAboveEmpty` -> `editor.api.isEmpty(editor.selection, { block: true })`
+  - `isBlockTextEmptyAfterSelection` -> `editor.api.isEmpty(editor.selection, { after: true })`
+  - `isCollapsed(editor.selection)` -> `editor.api.isCollapsed()`
   - `isComposing` -> `editor.api.isComposing`
+  - `isDocumentEnd` -> `editor.api.isEditorEnd`
   - `isEdgePoint` -> `editor.api.isEdge`
   - `isEditor` -> `editor.api.isEditor`
+  - `isEditorEmpty` -> `editor.api.isEmpty()`
   - `isEditorFocused` -> `editor.api.isFocused`
   - `isEditorNormalizing` -> `editor.api.isNormalizing`
   - `isEditorReadOnly` -> `editor.api.isReadOnly`
   - `isElementEmpty` -> `editor.api.isEmpty`
   - `isElementReadOnly` -> `editor.api.elementReadOnly`
   - `isEndPoint` -> `editor.api.isEnd`
+  - `isExpanded(editor.selection)` -> `editor.api.isCollapsed()`
   - `isInline` -> `editor.api.isInline`
   - `isMarkableVoid` -> `editor.api.markableVoid`
-  - `isStartPoint` -> `editor.api.isStart`
-  - `isTargetinsideNonReadonlyVoidEditor` -> `editor.api.isTargetInsideNonReadonlyVoid`
-  - `isVoid` -> `editor.api.isVoid`
-  - `liftNodes` -> `editor.tf.liftNodes`
-  - `mergeNodes` -> `editor.tf.mergeNodes`
-  - `moveNodes` -> `editor.tf.moveNodes`
-  - `moveSelection` -> `editor.tf.move`
-  - `normalizeEditor` -> `editor.tf.normalize`
-  - `removeEditorMark` -> `editor.tf.removeMark`
-  - `removeNodes` -> `editor.tf.removeNodes`
-  - `select` -> `editor.tf.select`
-  - `setFragmentData` -> `editor.tf.setFragmentData`
-  - `setNodes` -> `editor.tf.setNodes`
-  - `setPoint` -> `editor.tf.setPoint`
-  - `setSelection` -> `editor.tf.setSelection`
-  - `splitNodes` -> `editor.tf.splitNodes`
-  - `toDOMNode` -> `editor.api.toDOMNode`
-  - `toDOMPoint` -> `editor.api.toDOMPoint`
-  - `toDOMRange` -> `editor.api.toDOMRange`
-  - `toSlateNode` -> `editor.api.toSlateNode`
-  - `toSlatePoint` -> `editor.api.toSlatePoint`
-  - `toSlateRange` -> `editor.api.toSlateRange`
-  - `unhangRange` -> `editor.api.unhangRange`
-  - `unsetNodes` -> `editor.tf.unsetNodes`
-  - `unwrapNodes` -> `editor.tf.unwrapNodes`
-  - `withoutNormalizing` -> `editor.tf.withoutNormalizing`
-  - `wrapNodes` -> `editor.tf.wrapNodes`
-  - `findDescendant` -> `editor.api.descendant`
-  - `findNode` -> `editor.api.find`
-  - `getBlockAbove` -> `editor.api.block`
-  - `getBlocks` -> `editor.api.blocks`
-  - `getEdgeBlocksAbove` -> `editor.api.edgeBlocks`
-  - `getLastNodeByLevel` -> `editor.api.lastByLevel`
-  - `getMark` -> `editor.api.mark`
-  - `getNextNodeStartPoint` -> `editor.api.start(at, { next: true })`
-  - `getNodesRange` -> `editor.api.nodesRange`
-  - `getPointBeforeLocation` -> `editor.api.before`
-  - `getPreviousBlockById` -> `editor.api.previous({ id, block: true })`
-  - `getPreviousNodeEndPoint` -> `editor.api.end({ previous: true })`
-  - `getPreviousSiblingNode` -> `editor.api.previous({ at, sibling: true })`
-  - `getRangeBefore` -> `editor.api.range('before', to, { before })`
-  - `getRangeFromBlockStart` -> `editor.api.range('start', to)`
-  - `getSelectionFragment` -> `editor.api.fragment(editor.selection, { structuralTypes })`
-  - `getSelectionText` -> `editor.api.string()`
-  - `isAncestorEmpty` -> `editor.api.isEmpty`
-  - `isBlockAboveEmpty` -> `editor.api.isEmpty(editor.selection, { block: true })`
-  - `isBlockTextEmptyAfterSelection` -> `editor.api.isEmpty(editor.selection, { after: true })`
-  - `isDocumentEnd` -> `editor.api.isEditorEnd`
-  - `isEditorEmpty` -> `editor.api.isEmpty()`
+  - `isMarkActive` -> `editor.api.hasMark(key)`
+  - `isPointAtWordEnd` -> `editor.api.isAt({ at, word: true, end: true })`
   - `isRangeAcrossBlocks` -> `editor.api.isAt({ at, blocks: true })`
   - `isRangeInSameBlock` -> `editor.api.isAt({ at, block: true })`
   - `isRangeInSingleText` -> `editor.api.isAt({ at, text: true })`
   - `isSelectionAtBlockEnd` -> `editor.api.isAt({ end: true })`
   - `isSelectionAtBlockStart` -> `editor.api.isAt({ start: true })`
   - `isSelectionCoverBlock` -> `editor.api.isAt({ block: true, start: true, end: true })`
-  - `isPointAtWordEnd` -> `editor.api.isAt({ at, word: true, end: true })`
   - `isSelectionExpanded` -> `editor.api.isExpanded()`
-  - `isExpanded(editor.selection)` -> `editor.api.isCollapsed()`
-  - `isCollapsed(editor.selection)` -> `editor.api.isCollapsed()`
+  - `isStartPoint` -> `editor.api.isStart`
+  - `isTargetinsideNonReadonlyVoidEditor` -> `editor.api.isTargetInsideNonReadonlyVoid`
   - `isTextByPath` -> `editor.api.isText(at)`
+  - `isVoid` -> `editor.api.isVoid`
+  - `liftNodes` -> `editor.tf.liftNodes`
+  - `mergeNodes` -> `editor.tf.mergeNodes`
+  - `moveChildren` -> `editor.tf.moveNodes({ at, to, children: true, fromIndex, match: (node, path) => boolean })`
+  - `moveNodes` -> `editor.tf.moveNodes`
+  - `moveSelection` -> `editor.tf.move`
+  - `normalizeEditor` -> `editor.tf.normalize`
+  - `removeEditorMark` -> `editor.tf.removeMark`
+  - `removeEditorText` -> `editor.tf.removeNodes({ text: true, empty: true })`
+  - `removeEmptyPreviousBlock` -> `editor.tf.removeNodes({ previousEmptyBlock: true })`
+  - `removeMark(options)` -> `editor.tf.removeMarks(keys, options)`
+  - `removeNodeChildren` -> `editor.tf.removeNodes({ at, children: true })`
+  - `removeNodes` -> `editor.tf.removeNodes`
+  - `removeSelectionMark` -> `editor.tf.removeMarks()`
+  - `replaceNode(editor, { nodes, insertOptions, removeOptions })` -> `editor.tf.replaceNodes(nodes, { removeNodes, ...insertOptions })`
+  - `select` -> `editor.tf.select`
+  - `selectEndOfBlockAboveSelection` -> `editor.tf.select(editor.selection, { edge: 'end' })`
+  - `selectNodes` -> `editor.tf.select(editor.api.nodesRange(nodes))`
+  - `setFragmentData` -> `editor.tf.setFragmentData`
+  - `setMarks(marks, clear)` -> `editor.tf.addMarks(marks, { remove: string | string[] })`
+  - `setNodes` -> `editor.tf.setNodes`
+  - `setPoint` -> `editor.tf.setPoint`
+  - `setSelection` -> `editor.tf.setSelection`
   - `someNode` -> `editor.api.some(options)`
-  - `isMarkActive` -> `editor.api.hasMark(key)`
+  - `splitNodes` -> `editor.tf.splitNodes`
+  - `toDOMNode` -> `editor.api.toDOMNode`
+  - `toDOMPoint` -> `editor.api.toDOMPoint`
+  - `toDOMRange` -> `editor.api.toDOMRange`
+  - `toggleWrapNodes` -> `editor.tf.toggleBlock(type, { wrap: true })`
+  - `toSlateNode` -> `editor.api.toSlateNode`
+  - `toSlatePoint` -> `editor.api.toSlatePoint`
+  - `toSlateRange` -> `editor.api.toSlateRange`
+  - `unhangCharacterRange` -> `editor.api.unhangRange(range, { character: true })`
+  - `unhangRange` -> `editor.api.unhangRange`
+  - `unsetNodes` -> `editor.tf.unsetNodes`
+  - `unwrapNodes` -> `editor.tf.unwrapNodes`
+  - `withoutNormalizing` -> `editor.tf.withoutNormalizing`
+  - `wrapNodeChildren` -> `editor.tf.wrapNodes(element, { children: true })`
+  - `wrapNodes` -> `editor.tf.wrapNodes`
 
 - Moved to `NodeApi.`:
+  - `getNextSiblingNodes(parentEntry, path)` -> `NodeApi.children(editor, path, { from: path.at(-1) + 1 })`
+  - `getFirstNodeText` -> `NodeApi.firstText`
+  - `getFirstChild([node, path])` -> `NodeApi.firstChild(editor, path)`
+  - `getLastChild([node, path])` -> `NodeApi.lastChild(editor, path)`
+  - `getLastChildPath([node, path])` -> `NodeApi.lastChild(editor, path)`
+  - `isLastChild([node, path], childPath)` -> `NodeApi.isLastChild(editor, childPath)`
+  - `getChildren([node, path])` -> `Array.from(NodeApi.children(editor, path))`
   - `getCommonNode` -> `NodeApi.common`
   - `getNode` -> `NodeApi.get`
   - `getNodeAncestor` -> `NodeApi.ancestor`
@@ -211,6 +242,15 @@ Moved or renamed editor functions:
   - `isCollapsed` -> `RangeApi.isCollapsed`
   - `isExpanded` -> `RangeApi.isExpanded`
 
+- Moved to `PathApi.`:
+
+  - `isFirstChild` -> `!PathApi.hasPrevious`
+  - `getPreviousPath` -> `PathApi.previous`
+
+- Moved to `PointApi.`:
+
+  - `getPointFromLocation({ at, focus })` -> `PointApi.get(at, { focus })`
+
 - Moved from `@udecode/plate/react` to `@udecode/plate`:
 
   - `Hotkeys`
@@ -232,5 +272,13 @@ Types:
   - `TTextEntry` -> `TextEntry`
 - Query/transform options now use generic `V extends Value` instead of `E extends Editor`.
 - `getEndPoint`, `getEdgePoints`, `getFirstNode`, `getFragment`, `getLastNode`, `getLeafNode`, `getPath`, `getPoint`, `getStartPoint` can return `undefined` if not found (suppressing error throws).
-- `NodeApi.ancestor`, `NodeApi.child`, `NodeApi.common`, `NodeApi.descendant`, `NodeApi.first`, `NodeApi.get`, `NodeApi.last`, `NodeApi.leaf`, `NodeApi.parent`, `NodeApi.getIf` return `undefined` if not found instead of throwing
+- `NodeApi.ancestor`, `NodeApi.child`, `NodeApi.common`, `NodeApi.descendant`, `NodeApi.first`, `NodeApi.get`, `NodeApi.last`, `NodeApi.leaf`, `NodeApi.parent`, `NodeApi.getIf`, `PathApi.previous` return `undefined` if not found instead of throwing
 - Replace `NodeOf` type with `DescendantOf` in `editor.tf.setNodes` `editor.tf.unsetNodes`, `editor.api.previous`, `editor.api.node`, `editor.api.nodes`, `editor.api.last`
+
+- Enhanced `editor.tf.setNodes`:
+  - Added `marks` option to handle mark-specific operations
+  - When `marks: true`:
+    - Only applies to text nodes in non-void nodes or markable void nodes
+    - Automatically sets `split: true` and `voids: true`
+    - Handles both expanded ranges and collapsed selections in markable voids
+  - Replaces `addRangeMarks` functionality

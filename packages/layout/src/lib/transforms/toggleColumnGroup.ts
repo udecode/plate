@@ -1,8 +1,7 @@
-import {
-  type ReplaceNodeChildrenOptions,
-  type SlateEditor,
-  type TElement,
-  replaceNode,
+import type {
+  ReplaceNodesOptions,
+  SlateEditor,
+  TElement,
 } from '@udecode/plate';
 
 import { BaseColumnItemPlugin, BaseColumnPlugin } from '../BaseColumnPlugin';
@@ -15,7 +14,7 @@ export const toggleColumnGroup = (
     at,
     columns = 2,
     widths,
-  }: Partial<Omit<ReplaceNodeChildrenOptions<TElement>, 'nodes'>> & {
+  }: Partial<ReplaceNodesOptions> & {
     columns?: number;
     widths?: string[];
   } = {}
@@ -49,9 +48,8 @@ export const toggleColumnGroup = (
       type: BaseColumnPlugin.key,
     } as TElement;
 
-    replaceNode(editor, {
+    editor.tf.replaceNodes(nodes, {
       at: path,
-      nodes,
     });
 
     editor.tf.select(editor.api.start(path.concat([0]))!);

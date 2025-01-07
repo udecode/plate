@@ -4,7 +4,7 @@ import {
   type ElementOf,
   type NodeEntry,
   NodeApi,
-  getPreviousPath,
+  PathApi,
 } from '@udecode/plate';
 
 import {
@@ -23,7 +23,7 @@ export const getPreviousIndentList = <
 ): NodeEntry<N> | undefined => {
   return getSiblingIndentList(editor, entry, {
     getPreviousEntry: ([, currPath]) => {
-      const prevPath = getPreviousPath(currPath);
+      const prevPath = PathApi.previous(currPath);
 
       if (!prevPath) return;
 

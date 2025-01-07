@@ -25,7 +25,7 @@ export const getLeftTableCell = (
 
   if (!cellIndex) return;
 
-  const prevCellPath = PathApi.previous(cellPath);
+  const prevCellPath = PathApi.previous(cellPath)!;
 
   return editor.api.node<TTableCellElement>(prevCellPath);
 };

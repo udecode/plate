@@ -46,21 +46,18 @@ import type { isEndPoint } from '../../internal/editor/isEndPoint';
 import type { isStartPoint } from '../../internal/editor/isStartPoint';
 import type { isText } from '../../internal/editor/isText';
 import type { unhangRange } from '../../internal/editor/unhangRange';
-import type { someNode } from '../../internal/queries/someNode';
+import type { someNode } from '../../internal/editor-extension/someNode';
 import type { HistoryApi } from '../../slate-history';
 import type {
   At,
   LeafEdge,
-  QueryAt,
-  QueryMode,
-  QueryOptions,
-  QueryTextUnit,
-  QueryVoids,
   RangeDirection,
   TextDirection,
   TextUnit,
+  TextUnitAdjustment,
 } from '../../types';
-import type { ElementIn, ElementOrTextIn } from '../element';
+import type { Predicate } from '../../utils';
+import type { ElementIn, ElementOrTextIn, TElement } from '../element';
 import type { Span, TLocation } from '../location';
 import type { AncestorIn, DescendantIn, NodeIn } from '../node';
 import type { NodeEntry } from '../node-entry';
@@ -386,6 +383,11 @@ export type EditorApi<V extends Value = Value> = {
     options?: EditorNodesOptions<V>
   ) => NodeEntry<N>[];
 
+  create: {
+    /** Default block factory. */
+    block: (node?: Partial<TElement>, path?: Path) => TElement;
+  };
+
   /** Returns the first matching descendant. */
   descendant: <N extends DescendantIn<V>>(
     options: EditorFindOptions<V>
@@ -452,6 +454,12 @@ export type EditorApi<V extends Value = Value> = {
   isText: OmitFirst<typeof isText>;
   /** Returns the range spanning the given node entries. */
   nodesRange: (nodes: NodeEntry[]) => TRange | undefined;
+  /**
+   * Get a property value from a list of nodes. Returns undefined if the
+   * property value is not consistent across all nodes.
+   */
+  prop: (options: EditorPropOptions<V>) => string | undefined;
+
   /**
    * Check if any node at a location (default: selection) matches the given
    * criteria
@@ -609,6 +617,23 @@ export type EditorFindPathOptions = Omit<
   'at' | 'block' | 'match'
 >;
 
+export type EditorPropOptions<V extends Value = Value> = {
+  /** Nodes to get the property value from. */
+  nodes: TElement[];
+  /** Property key to get. */
+  key?: string;
+  /** Default value to return if property is not found. */
+  defaultValue?: string;
+  /** Function to get the property value from a node. */
+  getProp?: (node: DescendantIn<V>) => any;
+  /**
+   * - `'all'`: Get the property value from all nodes.
+   * - `'block'`: Get the property value from the first block node.
+   * - `'text'`: Get the property value from the first text node.
+   */
+  mode?: 'all' | 'block' | 'text';
+};
+
 export type EditorEndOptions = {
   /** Get the end point of the previous node */
   previous?: boolean;
@@ -644,8 +669,76 @@ export type EditorEmptyOptions = {
 } & Omit<EditorNodesOptions, 'at' | 'block'>;
 
 export type EditorUnhangRangeOptions = {
+  /**
+   * When true, unhang a range of length 1 so both edges are in the same text
+   * node. This is useful for handling ranges created by character-level
+   * operations.
+   */
+  character?: boolean;
   /** @default true */
   unhang?: boolean;
   /** Allow placing the end of the selection in a void node */
   voids?: boolean;
+};
+
+export type QueryOptions<V extends Value = Value> = {
+  /** Match the node by id. `true` will match all nodes with an id. */
+  id?: boolean | string;
+
+  /** Match block nodes. */
+  block?: boolean;
+
+  /** When true, match only empty nodes. When false, match only non-empty nodes */
+  empty?: boolean;
+
+  /** Match the node. */
+  match?: Predicate<NodeIn<V>>;
+
+  /** When true, match only text nodes */
+  text?: boolean;
+} & QueryAt;
+
+export type QueryAt = {
+  /** Where to start at. @default editor.selection */
+  at?: At;
+};
+
+export type QueryVoids = {
+  /** When `true` include void Nodes. */
+  voids?: boolean;
+};
+
+export type QueryTextUnit = {
+  /**
+   * - `offset`: Moves to the next offset `Point`. It will include the `Point` at
+   *   the end of a `Text` object and then move onto the first `Point` (at the
+   *   0th offset) of the next `Text` object. This may be counter-intuitive
+   *   because the end of a `Text` and the beginning of the next `Text` might be
+   *   thought of as the same position.
+   * - `character`: Moves to the next `character` but is not always the next
+   *   `index` in the string. This is because Unicode encodings may require
+   *   multiple bytes to create one character. Unlike `offset`, `character` will
+   *   not count the end of a `Text` and the beginning of the next `Text` as
+   *   separate positions to return. Warning: The character offsets for Unicode
+   *   characters does not appear to be reliable in some cases like a Smiley
+   *   Emoji will be identified as 2 characters.
+   * - `word`: Moves to the position immediately after the next `word`. In
+   *   `reverse` mode, moves to the position immediately before the previous
+   *   `word`.
+   * - `line` | `block`: Starts at the beginning position and then the position at
+   *   the end of the block. Then starts at the beginning of the next block and
+   *   then the end of the next block.
+   */
+  unit?: TextUnitAdjustment;
+};
+
+export type QueryMode = {
+  /**
+   * - `'all'` (default): Return all matching nodes
+   * - `'highest'`: in a hierarchy of nodes, only return the highest level
+   *   matching nodes
+   * - `'lowest'`: in a hierarchy of nodes, only return the lowest level matching
+   *   nodes
+   */
+  mode?: 'all' | 'highest' | 'lowest';
 };

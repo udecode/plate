@@ -1,6 +1,5 @@
 import {
   type ElementEntry,
-  type Path,
   type SlateEditor,
   type TElement,
   PathApi,
@@ -23,11 +22,9 @@ export const moveListItemDown = (
   const [listNode] = list;
   const [, listItemPath] = listItem;
 
-  let previousListItemPath: Path;
+  const previousListItemPath = PathApi.previous(listItemPath);
 
-  try {
-    previousListItemPath = PathApi.previous(listItemPath);
-  } catch (error) {
+  if (!previousListItemPath) {
     return;
   }
 

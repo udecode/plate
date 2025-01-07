@@ -2,7 +2,7 @@ import {
   type NodeEntry,
   type SlateEditor,
   ElementApi,
-  getChildren,
+  NodeApi,
 } from '@udecode/plate';
 
 import {
@@ -28,7 +28,7 @@ export const normalizeCodeBlock = (editor: SlateEditor) => {
 
     if (isCodeBlockRoot) {
       // Children should all be code lines
-      const nonCodeLine = getChildren([node, path]).find(
+      const nonCodeLine = Array.from(NodeApi.children(editor, path)).find(
         ([child]) => child.type !== codeLineType
       );
 

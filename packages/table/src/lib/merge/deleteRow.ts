@@ -1,8 +1,4 @@
-import {
-  type SlateEditor,
-  getEditorPlugin,
-  insertElements,
-} from '@udecode/plate';
+import { type SlateEditor, getEditorPlugin } from '@udecode/plate';
 import cloneDeep from 'lodash/cloneDeep.js';
 
 import type { TableConfig } from '../BaseTablePlugin';
@@ -130,7 +126,7 @@ export const deleteTableMergeRow = (editor: SlateEditor) => {
             newCell.attributes.rowspan = rowSpan.toString();
           }
 
-          insertElements(editor, newCell, {
+          editor.tf.insertNodes(newCell, {
             at: nextRowStartCellPath,
           });
 
@@ -168,7 +164,7 @@ export const deleteTableMergeRow = (editor: SlateEditor) => {
           newCell.attributes.rowspan = rowSpan.toString();
         }
 
-        insertElements(editor, newCell, {
+        editor.tf.insertNodes(newCell, {
           at: nextRowStartCellPath,
         });
       }

@@ -7,7 +7,6 @@ import {
   hasPath,
   insertSoftBreak,
   normalizeNode,
-  removeMark,
   setNormalizing,
   shouldMergeNodesRemovePrevNode,
   shouldNormalize,
@@ -88,19 +87,21 @@ import { isEndPoint } from './internal/editor/isEndPoint';
 import { isStartPoint } from './internal/editor/isStartPoint';
 import { isText } from './internal/editor/isText';
 import { normalizeEditor } from './internal/editor/normalizeEditor';
+import { removeEditorMark } from './internal/editor/removeEditorMark';
 import { some } from './internal/editor/some';
 import { unhangRange } from './internal/editor/unhangRange';
 import { withoutNormalizing } from './internal/editor/withoutNormalizing';
-import { findDescendant } from './internal/queries/findDescendant';
-import { findNode } from './internal/queries/findNode';
-import { getBlockAbove } from './internal/queries/getBlockAbove';
-import { getBlocks } from './internal/queries/getBlocks';
-import { getEdgeBlocksAbove } from './internal/queries/getEdgeBlocksAbove';
-import { getHighestBlock } from './internal/queries/getHighestBlock';
-import { getLastNodeByLevel } from './internal/queries/getLastNodeByLevel';
-import { getMark } from './internal/queries/getMark';
-import { getNodesRange } from './internal/queries/getNodesRange';
-import { isEditorEnd } from './internal/queries/isEditorEnd';
+import { findDescendant } from './internal/editor-extension/findDescendant';
+import { findNode } from './internal/editor-extension/findNode';
+import { getBlockAbove } from './internal/editor-extension/getBlockAbove';
+import { getBlocks } from './internal/editor-extension/getBlocks';
+import { getEdgeBlocksAbove } from './internal/editor-extension/getEdgeBlocksAbove';
+import { getHighestBlock } from './internal/editor-extension/getHighestBlock';
+import { getLastNodeByLevel } from './internal/editor-extension/getLastNodeByLevel';
+import { getMark } from './internal/editor-extension/getMark';
+import { getNodesProp } from './internal/editor-extension/getNodesProp';
+import { getNodesRange } from './internal/editor-extension/getNodesRange';
+import { isEditorEnd } from './internal/editor-extension/isEditorEnd';
 import { collapseSelection } from './internal/transforms/collapseSelection';
 import { deleteText } from './internal/transforms/deleteText';
 import { deselect } from './internal/transforms/deselect';
@@ -120,12 +121,16 @@ import { splitNodes } from './internal/transforms/splitNodes';
 import { unsetNodes } from './internal/transforms/unsetNodes';
 import { unwrapNodes } from './internal/transforms/unwrapNodes';
 import { wrapNodes } from './internal/transforms/wrapNodes';
+import { addMarks } from './internal/transforms-extension/addMarks';
+import { duplicateNodes } from './internal/transforms-extension/duplicateNodes';
+import { removeMarks } from './internal/transforms-extension/removeMarks';
+import { replaceNodes } from './internal/transforms-extension/replaceNodes';
+import { toggleMark } from './internal/transforms-extension/toggleMark';
+import { HistoryApi } from './slate-history/history';
 import {
   assignLegacyApi,
   assignLegacyTransforms,
-} from './internal/utils/assignLegacyTransforms';
-import { HistoryApi } from './slate-history/history';
-import { toggleMark } from './transforms';
+} from './utils/assignLegacyTransforms';
 
 const noop: {
   (name: string): () => void;
@@ -163,6 +168,9 @@ export const createEditor = <V extends Value>({
     before: bindFirst(getPointBefore, editor),
     block: bindFirst(getBlockAbove, editor) as any,
     blocks: bindFirst(getBlocks, editor) as any,
+    create: {
+      block: (props) => ({ children: [{ text: '' }], type: 'p', ...props }),
+    },
     descendant: bindFirst(findDescendant, editor) as any,
     edgeBlocks: bindFirst(getEdgeBlocksAbove, editor) as any,
     edges: bindFirst(getEdgePoints, editor),
@@ -234,6 +242,7 @@ export const createEditor = <V extends Value>({
     pointRefs: bindFirst(getPointRefs, editor),
     positions: bindFirst(getPositions, editor),
     previous: bindFirst(getPreviousNode, editor) as any,
+    prop: getNodesProp as any,
     range: bindFirst(getRange, editor),
     rangeRef: bindFirst(createRangeRef, editor),
     rangeRefs: bindFirst(getRangeRefs, editor),
@@ -259,6 +268,7 @@ export const createEditor = <V extends Value>({
 
   const transforms: Editor<V>['transforms'] = {
     addMark: bindFirst(addMark, editor),
+    addMarks: bindFirst(addMarks, editor),
     apply: bindFirst(apply, editor as any),
     blur: bindFirst(blurEditor, editor),
     collapse: bindFirst(collapseSelection, editor),
@@ -268,6 +278,7 @@ export const createEditor = <V extends Value>({
     deleteFragment: bindFirst(deleteFragment, editor),
     deselect: bindFirst(deselect, editor),
     deselectDOM: bindFirst(deselectEditor, editor),
+    duplicateNodes: bindFirst(duplicateNodes, editor),
     focus: bindFirst(focusEditor, editor),
     insertBreak: bindFirst(insertBreak, editor),
     insertData: noop('insertData'),
@@ -281,12 +292,14 @@ export const createEditor = <V extends Value>({
     liftNodes: bindFirst(liftNodes, editor),
     mergeNodes: bindFirst(mergeNodes, editor),
     move: bindFirst(moveSelection, editor),
-    moveNodes: bindFirst(moveNodes, editor),
+    moveNodes: bindFirst(moveNodes, editor) as any,
     normalize: bindFirst(normalizeEditor, editor),
     normalizeNode: bindFirst(normalizeNode, editor as any),
     redo: noop('redo'),
-    removeMark: bindFirst(removeMark, editor as any),
+    removeMark: bindFirst(removeEditorMark, editor as any),
+    removeMarks: bindFirst(removeMarks, editor as any),
     removeNodes: bindFirst(removeNodes, editor),
+    replaceNodes: bindFirst(replaceNodes, editor) as any,
     select: bindFirst(select, editor),
     setFragmentData: noop('setFragmentData'),
     setNodes: bindFirst(setNodes, editor),
@@ -294,9 +307,7 @@ export const createEditor = <V extends Value>({
     setSelection: bindFirst(setSelection, editor),
     setSplittingOnce: bindFirst(HistoryApi.setSplittingOnce, editor as any),
     splitNodes: bindFirst(splitNodes, editor),
-    toggle: {
-      mark: bindFirst(toggleMark, editor as any),
-    },
+    toggleMark: bindFirst(toggleMark, editor as any),
     undo: noop('undo'),
     unsetNodes: bindFirst(unsetNodes, editor),
     unwrapNodes: bindFirst(unwrapNodes, editor),
@@ -317,5 +328,5 @@ export const createEditor = <V extends Value>({
 
   editor.history = { redos: [], undos: [] };
 
-  return editor as Editor<V>;
+  return editor as unknown as Editor<V>;
 };

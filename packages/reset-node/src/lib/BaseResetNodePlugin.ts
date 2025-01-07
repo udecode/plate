@@ -33,7 +33,7 @@ export const BaseResetNodePlugin = createTSlatePlugin<ResetNodeConfig>({
             PointApi.equals(selection.anchor, end))
         ) {
           resetEditorChildren(editor, {
-            insertOptions: { select: true },
+            select: true,
           });
 
           return true;

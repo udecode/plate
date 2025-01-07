@@ -1,12 +1,6 @@
 import type { PlateEditor } from '@udecode/plate/react';
 
-import {
-  type SlateEditor,
-  type TElement,
-  NodeApi,
-  TextApi,
-  getFirstNodeText,
-} from '@udecode/plate';
+import { type SlateEditor, NodeApi, TextApi } from '@udecode/plate';
 import {
   BlockSelectionPlugin,
   removeBlockSelectionNodes,
@@ -71,7 +65,7 @@ export const replaceSelectionAIChat = (
   const firstBlockProps = NodeApi.extractProps(firstBlockNode);
 
   // Get formatting from first text node
-  const firstTextEntry = getFirstNodeText(firstBlockNode as TElement);
+  const firstTextEntry = NodeApi.firstText(firstBlockNode);
 
   if (!firstTextEntry) return;
 

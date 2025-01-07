@@ -22,7 +22,7 @@ export const useToggleToolbarButton = ({
       pressed,
       onClick: () => {
         openNextToggles(editor);
-        editor.tf.toggle.block({ type: TogglePlugin.key });
+        editor.tf.toggleBlock(TogglePlugin.key);
         editor.tf.collapse();
         editor.tf.focus();
       },

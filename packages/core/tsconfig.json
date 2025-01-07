@@ -1,10 +1,5 @@
 {
   "extends": "../../config/tsconfig.base.json",
-  "include": [
-    "src",
-    "../slate/src/transforms/selectEndOfBlockAboveSelection.spec.tsx",
-    "../slate/src/transforms/toggleMark.spec.tsx",
-    "../slate/src/transforms/toggleWrapNodes.spec.tsx"
-  ],
+  "include": ["src"],
   "exclude": []
 }

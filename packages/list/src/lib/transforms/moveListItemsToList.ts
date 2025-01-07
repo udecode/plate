@@ -1,11 +1,9 @@
 import {
   type ElementEntry,
-  type MoveChildrenOptions,
   type Path,
   type SlateEditor,
+  NodeApi,
   PathApi,
-  getLastChildPath,
-  moveChildren,
 } from '@udecode/plate';
 
 import { getListTypes } from '../queries/getListTypes';
@@ -24,7 +22,7 @@ export interface MergeListItemIntoListOptions {
   /** List items of the sublist of this node will be moved. */
   fromListItem?: ElementEntry;
 
-  fromStartIndex?: MoveChildrenOptions['fromStartIndex'];
+  fromStartIndex?: number;
 
   to?: Path;
 
@@ -53,7 +51,7 @@ export const moveListItemsToList = (
   }: MergeListItemIntoListOptions
 ) => {
   let fromListPath: Path | undefined;
-  let moved;
+  let moved: boolean | void = false;
 
   editor.tf.withoutNormalizing(() => {
     if (fromListItem) {
@@ -79,17 +77,20 @@ export const moveListItemsToList = (
     if (_to) to = _to;
     if (toList) {
       if (toListIndex === null) {
-        const lastChildPath = getLastChildPath(toList);
-        to = PathApi.next(lastChildPath);
+        const lastChildPath = NodeApi.lastChild(editor, toList[1])?.[1];
+        to = lastChildPath
+          ? PathApi.next(lastChildPath)
+          : toList[1].concat([0]);
       } else {
         to = toList[1].concat([toListIndex]);
       }
     }
     if (!to) return;
 
-    moved = moveChildren(editor, {
+    moved = editor.tf.moveNodes({
       at: fromListPath,
-      fromStartIndex,
+      children: true,
+      fromIndex: fromStartIndex,
       to,
     });
 

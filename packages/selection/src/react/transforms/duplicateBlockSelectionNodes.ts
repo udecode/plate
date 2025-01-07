@@ -1,18 +1,17 @@
 import type { PlateEditor } from '@udecode/plate/react';
 
-import { type NodeEntry, PathApi, duplicateBlocks } from '@udecode/plate';
+import { PathApi } from '@udecode/plate';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 
-export const duplicateBlockSelectionNodes = (
-  editor: PlateEditor,
-  blocks: NodeEntry[]
-) => {
-  duplicateBlocks(editor, blocks);
+export const duplicateBlockSelectionNodes = (editor: PlateEditor) => {
+  const blocks = editor.getApi(BlockSelectionPlugin).blockSelection.getNodes();
 
   const lastBlock = blocks.at(-1);
 
   if (!lastBlock) return;
+
+  editor.tf.duplicateNodes({ nodes: blocks });
 
   const path = PathApi.next(lastBlock[1]);
 

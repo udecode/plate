@@ -5,6 +5,7 @@ import type { NodeEntry } from './node-entry';
 import type { Path } from './path';
 import type { TRange } from './range';
 
+import { NodeExtension } from '../internal/editor-extension/node-extension';
 import { type ElementOf, type TElement, ElementApi } from './element';
 import { type TText, type TextOf, TextApi } from './text';
 
@@ -108,6 +109,18 @@ export const NodeApi: {
     path: Path
   ) => NodeEntry<N> | undefined;
 
+  /** Get the first child node entry of a node. */
+  firstChild: <N extends ChildOf<R, 0>, R extends TNode = TNode>(
+    root: R,
+    path: Path
+  ) => NodeEntry<N> | undefined;
+
+  /** Get the first text node entry of a node. */
+  firstText: <N extends TextOf<R>, R extends TNode = TNode>(
+    root: R,
+    options?: NodeTextsOptions<R>
+  ) => NodeEntry<N> | undefined;
+
   /** Get the sliced fragment represented by a range inside a root node. */
   fragment: <N extends ElementOf<R> | TextOf<R>, R extends TNode = TNode>(
     root: R,
@@ -125,6 +138,12 @@ export const NodeApi: {
 
   /** Get the last node entry in a root node from a path. */
   last: <N extends NodeOf<R>, R extends TNode = TNode>(
+    root: R,
+    path: Path
+  ) => NodeEntry<N> | undefined;
+
+  /** Get the last child node entry of a node. */
+  lastChild: <N extends ChildOf<R, -1>, R extends TNode = TNode>(
     root: R,
     path: Path
   ) => NodeEntry<N> | undefined;
@@ -187,6 +206,9 @@ export const NodeApi: {
   /** Check if a value implements the 'Descendant' interface. */
   isDescendant: <N extends Descendant>(value: any) => value is N;
 
+  /** Check if a node is the last child of its parent. */
+  isLastChild: (root: TNode, path: Path) => boolean;
+
   /** Check if a value implements the `TNode` interface. */
   isNode: <N extends TNode>(value: any) => value is N;
 
@@ -209,11 +231,6 @@ export const NodeApi: {
   ancestor: (...args) => {
     try {
       return SlateNode.ancestor(...args);
-    } catch {}
-  },
-  children: (...args) => {
-    try {
-      return SlateNode.children(...args);
     } catch {}
   },
   common: (...args) => {
@@ -267,6 +284,7 @@ export const NodeApi: {
       return SlateNode.parent(...args);
     } catch {}
   },
+  ...NodeExtension,
 };
 
 export interface NodeAncestorsOptions {
@@ -274,7 +292,11 @@ export interface NodeAncestorsOptions {
 }
 
 export interface NodeChildrenOptions {
+  /** Get children starting from this index (inclusive) */
+  from?: number;
   reverse?: boolean;
+  /** Get children up to this index (exclusive) */
+  to?: number;
 }
 
 export interface NodeDescendantsOptions<N extends TNode> {

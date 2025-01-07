@@ -1,4 +1,4 @@
-import { type SlateEditor, PathApi, insertElements } from '@udecode/plate';
+import { type SlateEditor, PathApi } from '@udecode/plate';
 
 import { type TodoListConfig, BaseTodoListPlugin } from '../BaseTodoListPlugin';
 
@@ -36,8 +36,7 @@ export const insertTodoListItem = (
 
     /** If start, insert a list item before */
     if (isStart) {
-      insertElements(
-        editor,
+      editor.tf.insertNodes(
         {
           checked: inheritCheckStateOnLineStartBreak ? todo.checked : false,
           children: [{ text: '' }],
@@ -54,8 +53,7 @@ export const insertTodoListItem = (
     if (isEnd) {
       /** If end, insert a list item after and select it */
       const marks = editor.api.marks() || {};
-      insertElements(
-        editor,
+      editor.tf.insertNodes(
         {
           checked: inheritCheckStateOnLineEndBreak ? todo.checked : false,
           children: [{ text: '', ...marks }],

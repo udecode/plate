@@ -16,25 +16,29 @@ import type { moveSelection } from '../../internal/transforms/moveSelection';
 import type { select } from '../../internal/transforms/select';
 import type { setPoint } from '../../internal/transforms/setPoint';
 import type { setSelection } from '../../internal/transforms/setSelection';
+import type { addMarks } from '../../internal/transforms-extension/addMarks';
+import type { duplicateNodes } from '../../internal/transforms-extension/duplicateNodes';
+import type { removeMarks } from '../../internal/transforms-extension/removeMarks';
+import type { toggleMark } from '../../internal/transforms-extension/toggleMark';
 import type { HistoryApi } from '../../slate-history/index';
-import type { toggleMark } from '../../transforms/index';
-import type {
-  QueryAt,
-  QueryMode,
-  QueryNodeOptions,
-  QueryOptions,
-  QueryTextUnit,
-  QueryVoids,
-  TextUnit,
-} from '../../types/index';
+import type { At, TextUnit } from '../../types';
+import type { QueryNodeOptions } from '../../utils';
 import type { ElementIn, ElementOrTextIn } from '../element';
 import type { TLocation } from '../location';
 import type { Descendant, DescendantIn, NodeIn, NodeProps } from '../node';
 import type { NodeEntry } from '../node-entry';
 import type { Operation } from '../operation';
 import type { Path } from '../path';
+import type { TRange } from '../range';
 import type { Editor, Value } from './editor';
-import type { EditorNormalizeOptions } from './editor-api';
+import type {
+  EditorNormalizeOptions,
+  QueryAt,
+  QueryMode,
+  QueryOptions,
+  QueryTextUnit,
+  QueryVoids,
+} from './editor-api';
 
 export type EditorTransforms<V extends Value = Value> = {
   /**
@@ -60,6 +64,20 @@ export type EditorTransforms<V extends Value = Value> = {
   insertNodes: <N extends ElementOrTextIn<V>>(
     nodes: N | N[],
     options?: InsertNodesOptions<V>
+  ) => void;
+  /**
+   * Replace nodes at a location with new nodes.
+   *
+   * @example
+   *   ```ts
+   *   editor.tf.replaceNodes(node, { at }) // Replace node at location
+   *   editor.tf.replaceNodes(node, { at, select: true }) // Replace node then select
+   *   editor.tf.replaceNodes(node, { at, children: true }) // Replace children at location
+   *   ```;
+   */
+  replaceNodes: <N extends ElementOrTextIn<V>>(
+    nodes: N | N[],
+    options?: ReplaceNodesOptions<V>
   ) => void;
   /**
    * Set properties of nodes at the specified location. If no location is
@@ -88,6 +106,7 @@ export type EditorTransforms<V extends Value = Value> = {
     element: N,
     options?: WrapNodesOptions<V>
   ) => void;
+
   /**
    * Add a custom property to the leaf text nodes in the current selection.
    *
@@ -95,12 +114,29 @@ export type EditorTransforms<V extends Value = Value> = {
    * `editor.marks` property instead, and applied when text is inserted next.
    */
   addMark: OmitFirst<typeof addMark>;
+  /**
+   * Add multiple marks to the leaf text nodes in the current selection. If
+   * marks with the same keys exist, they will be removed first.
+   *
+   * @example
+   *   ```ts
+   *   editor.tf.addMarks({ bold: true, italic: true })
+   *   editor.tf.addMarks({ bold: subscript }, { remove: 'superscript' })
+   *   editor.tf.addMarks({ bold: true }, { remove: ['italic', 'underline'] })
+   *   ```;
+   */
+  addMarks: OmitFirst<typeof addMarks>;
   /** Delete content in the editor backward from the current selection. */
   deleteBackward: OmitFirst<typeof deleteBackward>;
   /** Delete content in the editor forward from the current selection. */
   deleteForward: OmitFirst<typeof deleteForward>;
   /** Delete the content of the current selection. */
   deleteFragment: OmitFirst<typeof deleteFragment>;
+  /**
+   * Duplicate nodes at a location. By default duplicates nodes at the current
+   * selection. When `block: true`, duplicates the blocks above the location.
+   */
+  duplicateNodes: OmitFirst<typeof duplicateNodes>;
   /** Insert a block break at the current selection. */
   insertBreak: OmitFirst<typeof insertBreak>;
   /**
@@ -139,6 +175,31 @@ export type EditorTransforms<V extends Value = Value> = {
    */
   removeMark: (key: string) => void;
   /**
+   * Remove marks from text nodes.
+   *
+   * - If `keys` is provided: removes specific mark(s) from text nodes
+   * - If `at` is provided: removes from range
+   * - If `at` is not provided and selection is expanded: removes marks only if
+   *   `keys` is provided
+   * - If `at` is not provided and selection is collapsed: removes from
+   *   `editor.marks`
+   *
+   *   - If `keys` is provided: removes specific mark(s)
+   *   - If `keys` is not provided: removes all marks
+   *
+   * If the selection is currently collapsed, the removal will be stored on
+   * `editor.marks` and applied to the text inserted next.
+   *
+   * @example
+   *   ```ts
+   *   editor.tf.removeMarks() // Remove all marks from editor.marks
+   *   editor.tf.removeMarks('bold') // Remove bold mark at selection
+   *   editor.tf.removeMarks(['bold', 'italic']) // Remove multiple marks at selection
+   *   editor.tf.removeMarks('bold', { at: range }) // Remove bold in range
+   *   ```;
+   */
+  removeMarks: OmitFirst<typeof removeMarks>;
+  /**
    * Remove nodes at the specified location in the document. If no location is
    * specified, remove the nodes in the selection.
    */
@@ -148,6 +209,21 @@ export type EditorTransforms<V extends Value = Value> = {
    * the selection.
    */
   splitNodes: (options?: SplitNodesOptions<V>) => void;
+  /**
+   * Toggle a mark on the leaf text nodes in the current selection. If the mark
+   * exists, it will be removed. Otherwise, it will be added.
+   *
+   * When adding a mark, you can specify marks to remove first using the
+   * `remove` option. This is useful for mutually exclusive marks like
+   * subscript/superscript.
+   *
+   * @example
+   *   ```ts
+   *   editor.tf.toggleMark('bold') // Toggle bold mark
+   *   editor.tf.toggleMark('subscript', { remove: 'superscript' }) // Add subscript, remove superscript
+   *   ```;
+   */
+  toggleMark: OmitFirst<typeof toggleMark>;
   /** Undo to the previous saved state. */
   undo: () => void;
   /**
@@ -185,6 +261,13 @@ export type EditorTransforms<V extends Value = Value> = {
    * Set the selection to a new value specified by `target`. When a selection
    * already exists, this method is just a proxy for `setSelection` and will
    * update the existing value.
+   *
+   * @example
+   *   ```ts
+   *   editor.tf.select(at) // Select at location
+   *   editor.tf.select(at, { edge: 'end' }) // Select end of block above
+   *   editor.tf.select(at, { edge: 'start' }) // Select start of block above
+   *   ```;
    */
   select: OmitFirst<typeof select>;
   /** Set new properties on one of the selection's points. */
@@ -204,11 +287,16 @@ export type EditorTransforms<V extends Value = Value> = {
   /**
    * Focus the editor.
    *
-   * If `target` is defined:
+   * - If `at` is defined: select the location and focus
+   * - If `edge` is defined: select the location (default: editor) edge ('start' |
+   *   'end') and focus
    *
-   * - Deselect the editor (otherwise it will focus the start of the editor)
-   * - Select the editor
-   * - Focus the editor
+   * @example
+   *   ```ts
+   *   editor.tf.focus() // focus editor
+   *   editor.tf.focus({ edge: 'end' }) // end of selection if selection exists
+   *   editor.tf.focus({ edge: 'end' }) // end of editor if selection is null
+   *   ```;
    */
   focus: OmitFirst<typeof focusEditor>;
   /**
@@ -253,10 +341,6 @@ export type EditorTransforms<V extends Value = Value> = {
    * their operations into the history.
    */
   withoutSaving: OmitFirst<typeof HistoryApi.withoutSaving>;
-} & {
-  toggle: {
-    mark: OmitFirst<typeof toggleMark>;
-  };
 } & {
   /** Normalize a Node according to the schema. */
   normalizeNode: <N extends NodeIn<V>>(
@@ -321,12 +405,24 @@ export type MergeNodesOptions<V extends Value, E extends Editor = Editor> = {
 
 export type MoveNodesOptions<V extends Value = Value> = {
   to: Path;
+
+  /** Move only children of the node at location */
+  children?: boolean;
+
+  /** Start index of the children to move. Default: 0 */
+  fromIndex?: number;
 } & QueryOptions<V> &
   QueryMode &
   QueryVoids;
 
 export type RemoveNodesOptions<V extends Value = Value> = {
+  /** When true, remove all children of the node at the specified location */
+  children?: boolean;
+
   hanging?: boolean;
+
+  /** When true, remove the previous empty block if it exists */
+  previousEmptyBlock?: boolean;
 } & QueryOptions<V> &
   QueryMode &
   QueryVoids;
@@ -343,6 +439,11 @@ type PropsMerge = (
 export type SetNodesOptions<V extends Value = Value> = {
   compare?: PropsCompare;
   hanging?: boolean;
+  /**
+   * When true, only apply to text nodes in non-void nodes or markable void
+   * nodes
+   */
+  marks?: boolean;
   merge?: PropsMerge;
   split?: boolean;
 } & QueryOptions<V> &
@@ -371,7 +472,15 @@ export type UnwrapNodesOptions<V extends Value = Value> = {
   QueryVoids;
 
 export type WrapNodesOptions<V extends Value = Value> = {
+  /**
+   * When true, wrap node children into a single element:
+   *
+   * - Wraps the first child node into the element
+   * - Move the other child nodes next to the element children
+   */
+  children?: boolean;
   hanging?: boolean;
+
   /**
    * Indicates that it's okay to split a node in order to wrap the location. For
    * example, if `ipsum` was selected in a `Text` node with `lorem ipsum dolar`,
@@ -397,3 +506,56 @@ export type DeleteTextOptions = {
 } & QueryAt &
   QueryVoids &
   QueryTextUnit;
+
+export type DuplicateNodesOptions<V extends Value = Value> = {
+  /** Location to get nodes from and insert after. Default: selection */
+  at?: At;
+
+  /** If true, duplicate blocks above location. Ignored if `nodes` is provided */
+  block?: boolean;
+
+  /** Specific nodes to duplicate. If provided, ignores `block` option */
+  nodes?: NodeEntry[];
+} & Omit<InsertNodesOptions<V>, 'at' | 'block'>;
+
+export type RemoveMarksOptions = {
+  /** Range where the mark(s) will be removed. Default: selection */
+  at?: TRange;
+
+  /** When true, trigger onChange if collapsed selection */
+  shouldChange?: boolean;
+} & Omit<UnsetNodesOptions, 'match' | 'split'>;
+
+export type ReplaceNodesOptions<V extends Value = Value> = {
+  /** When true, replace all children of the node at the specified location */
+  children?: boolean;
+
+  /** Options for removing nodes */
+  removeNodes?: Omit<RemoveNodesOptions<V>, 'at'>;
+} & InsertNodesOptions<V>;
+
+export type SelectOptions = {
+  /** Select edge of the block above location */
+  edge?: 'end' | 'start';
+};
+
+export type FocusEditorOptions = {
+  /** Target location to select before focusing */
+  at?: At;
+
+  /** Focus at location or editor edge. Default location is at or selection. */
+  edge?: 'end' | 'endEditor' | 'start' | 'startEditor';
+
+  /** Number of times to retry focusing */
+  retries?: number;
+};
+
+export type AddMarksOptions = {
+  /** Marks to remove before adding new ones */
+  remove?: string[] | string;
+};
+
+export type ToggleMarkOptions = {
+  /** Mark keys to remove when adding the mark. */
+  remove?: string[] | string;
+};

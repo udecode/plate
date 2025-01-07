@@ -190,6 +190,101 @@ describe('isEmpty', () => {
         );
       });
     });
+
+    describe('when multiple siblings after cursor', () => {
+      it('should be false when any sibling has text', () => {
+        const editor = createEditor(
+          (
+            <editor>
+              <hp>
+                <htext>first</htext>
+                <ha>
+                  test
+                  <cursor />
+                </ha>
+                <htext />
+                <ha>not empty</ha>
+                <htext>also not empty</htext>
+              </hp>
+            </editor>
+          ) as any
+        );
+
+        editor.isInline = (element) => element.type === 'a';
+        expect(editor.api.isEmpty(editor.selection, { after: true })).toBe(
+          false
+        );
+      });
+
+      it('should be true when all siblings are empty', () => {
+        const editor = createEditor(
+          (
+            <editor>
+              <hp>
+                <htext>first</htext>
+                <ha>
+                  test
+                  <cursor />
+                </ha>
+                <htext />
+                <ha />
+                <htext />
+              </hp>
+            </editor>
+          ) as any
+        );
+
+        editor.isInline = (element) => element.type === 'a';
+        expect(editor.api.isEmpty(editor.selection, { after: true })).toBe(
+          true
+        );
+      });
+    });
+
+    describe('when cursor is at different positions', () => {
+      it('should handle cursor at start of node', () => {
+        const editor = createEditor(
+          (
+            <editor>
+              <hp>
+                <htext>first</htext>
+                <ha>
+                  <cursor />
+                  test
+                </ha>
+              </hp>
+            </editor>
+          ) as any
+        );
+
+        editor.isInline = (element) => element.type === 'a';
+        expect(editor.api.isEmpty(editor.selection, { after: true })).toBe(
+          false
+        );
+      });
+
+      it('should handle cursor at middle of node', () => {
+        const editor = createEditor(
+          (
+            <editor>
+              <hp>
+                <htext>first</htext>
+                <ha>
+                  te
+                  <cursor />
+                  st
+                </ha>
+              </hp>
+            </editor>
+          ) as any
+        );
+
+        editor.isInline = (element) => element.type === 'a';
+        expect(editor.api.isEmpty(editor.selection, { after: true })).toBe(
+          false
+        );
+      });
+    });
   });
 
   describe('when block=true', () => {

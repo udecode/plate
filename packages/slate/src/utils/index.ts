@@ -3,9 +3,8 @@
  */
 
 export * from './assignLegacyTransforms';
-export * from './createDocumentNode';
-export * from './createNode';
+export * from './deleteMerge';
 export * from './getAt';
 export * from './match';
+export * from './queryEditor';
 export * from './queryNode';
-export * from './unwrapStructuralNodes';

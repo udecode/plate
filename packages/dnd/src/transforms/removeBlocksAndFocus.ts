@@ -7,8 +7,6 @@ export const removeBlocksAndFocus = <E extends Editor = Editor>(
   editor: E,
   options: EditorNodesOptions<ValueOf<E>>
 ) => {
-  editor.api.unhangRange(options?.at as any, options);
-
   const nodeEntries = getBlocksWithId(editor, options);
 
   editor.tf.removeNodes({ at: editor.api.nodesRange(nodeEntries) });

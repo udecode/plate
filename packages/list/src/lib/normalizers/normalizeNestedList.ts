@@ -1,6 +1,5 @@
 import {
   type ElementEntry,
-  type Path,
   type SlateEditor,
   PathApi,
   match,
@@ -25,11 +24,9 @@ export const normalizeNestedList = (
     return false;
   }
 
-  let previousListItemPath: Path;
+  const previousListItemPath = PathApi.previous(path);
 
-  try {
-    previousListItemPath = PathApi.previous(path);
-  } catch (error) {
+  if (!previousListItemPath) {
     return false;
   }
 

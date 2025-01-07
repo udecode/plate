@@ -11,7 +11,6 @@ import {
   ElementApi,
   NodeApi,
   PathApi,
-  insertElements,
 } from '@udecode/plate';
 
 import {
@@ -143,7 +142,7 @@ export const withInsertFragmentList: ExtendEditor<ListConfig> = ({
         const li = NodeApi.get(editor, liPath);
         const [, ...currentSublists] = li!.children as TElement[];
         const [newLic, ...newSublists] = first.children as TElement[];
-        insertElements(editor, newLic, {
+        editor.tf.insertNodes(newLic, {
           at: PathApi.next(licPath),
           select: true,
         });
@@ -155,12 +154,12 @@ export const withInsertFragmentList: ExtendEditor<ListConfig> = ({
           if (currentSublists?.length) {
             // TODO: any better way to compile the path where the LIs of the newly inserted element will be inserted?
             const path = [...liPath, 1, 0];
-            insertElements(editor, newSublists[0].children as TElement[], {
+            editor.tf.insertNodes(newSublists[0].children as TElement[], {
               at: path,
               select: true,
             });
           } else {
-            insertElements(editor, newSublists, {
+            editor.tf.insertNodes(newSublists, {
               at: PathApi.next(licPath),
               select: true,
             });
@@ -232,7 +231,7 @@ export const withInsertFragmentList: ExtendEditor<ListConfig> = ({
 
     const [, liPath] = liEntry!;
 
-    return insertElements(editor, listItemNodes, {
+    return editor.tf.insertNodes(listItemNodes, {
       at: PathApi.next(liPath),
       select: true,
     });
