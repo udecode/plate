@@ -91,8 +91,8 @@ const output = (
 it('should', () => {
   const editor = createPlateEditor({ editor: input });
 
-  const list = input.api.find({ match: { id: '1' } }) as any;
-  const listItem = input.api.find({ match: { id: '13' } }) as any;
+  const list = input.api.find({ id: '1', at: [] }) as any;
+  const listItem = input.api.find({ id: '13', at: [] }) as any;
 
   if (list && listItem) {
     removeListItem(editor, { list, listItem });

@@ -35,7 +35,7 @@ describe('when there is a sublist', () => {
       value: input.children,
     });
 
-    const listItem = editor.api.find({ match: { id: '2' } });
+    const listItem = editor.api.find({ id: '2', at: [] });
 
     expect(hasListChild(editor, listItem?.[0] as any)).toBeTruthy();
   });
@@ -58,7 +58,7 @@ describe('when there is no sublist', () => {
       value: input.children,
     });
 
-    const listItem = editor.api.find({ match: { id: '2' } });
+    const listItem = editor.api.find({ id: '2', at: [] });
 
     expect(hasListChild(editor, listItem?.[0] as any)).toBeFalsy();
   });

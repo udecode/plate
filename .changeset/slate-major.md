@@ -20,6 +20,7 @@ The following interfaces from `slate` and `slate-dom` are now part of `Editor`:
   - `editor.isTargetInsideNonReadonlyVoid`
   - `editor.hasRange`
   - `editor.hasTarget`
+- `editor.api.find` (previously `findNode`) `at` option is now `at ?? editor.selection` instead of `at ?? editor.selection ?? []`. That means if you want to lookup the entire document, you need to pass `[]` explicitly.
 - Removed `setNode` in favor of `setNodes` (you can now pass a `TNode` to `at` directly).
 - Removed `setElements` in favor of `setNodes`.
 - Removed unused `isWordAfterTrigger`, `setBlockAboveNode`, `setBlockAboveTexts`, `setBlockNodes`.

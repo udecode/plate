@@ -42,6 +42,7 @@ export const getPreviousNode = <
 
   const block = editor.api.find({
     id: options.id,
+    at: [],
   });
 
   if (!block) return;

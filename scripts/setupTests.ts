@@ -18,8 +18,3 @@ jest.mock('@udecode/plate-core', () => ({
   __esModule: true,
   ...jest.requireActual('@udecode/plate-core'),
 }));
-
-// jest.mock('@udecode/plate-core/react', () => ({
-//   __esModule: true,
-//   ...jest.requireActual('@udecode/plate-core/react'),
-// }));

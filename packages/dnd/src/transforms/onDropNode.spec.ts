@@ -7,17 +7,6 @@ import type { ElementDragItemNode } from '../types';
 
 import { onDropNode } from './onDropNode';
 
-jest.mock('@udecode/plate', () => ({
-  ...jest.requireActual('@udecode/plate'),
-  findNode: jest.fn(),
-  moveNodes: jest.fn(),
-}));
-
-jest.mock('@udecode/plate/react', () => ({
-  ...jest.requireActual('@udecode/plate/react'),
-  focusEditor: jest.fn(),
-}));
-
 jest.mock('../utils', () => ({
   getHoverDirection: jest.fn(),
 }));
