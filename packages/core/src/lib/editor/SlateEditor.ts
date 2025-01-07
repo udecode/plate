@@ -7,7 +7,8 @@ import type {
 } from '@udecode/slate';
 import type { UnionToIntersection } from '@udecode/utils';
 import type { KeyboardEventLike } from 'is-hotkey';
-import type { SetImmerState, StoreApi } from 'zustand-x';
+import type { Draft } from 'mutative';
+import type { TStateApi } from 'zustand-x';
 
 import type {
   AnyPluginConfig,
@@ -47,7 +48,7 @@ export type BaseEditor = EditorBase & {
 
   getOptionsStore: <C extends AnyPluginConfig>(
     plugin: WithRequiredKey<C>
-  ) => StoreApi<C['key'], InferOptions<C>>;
+  ) => TStateApi<InferOptions<C>, [['zustand/mutative-x', never]]>;
 
   getPlugin: <C extends AnyPluginConfig = PluginConfig>(
     plugin: WithRequiredKey<C>
@@ -62,7 +63,7 @@ export type BaseEditor = EditorBase & {
   setOptions: {
     <C extends AnyPluginConfig>(
       plugin: WithRequiredKey<C>,
-      options: Parameters<SetImmerState<InferOptions<C>>>[0]
+      options: (state: Draft<Partial<InferOptions<C>>>) => void
     ): void;
     <C extends AnyPluginConfig>(
       plugin: WithRequiredKey<C>,

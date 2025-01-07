@@ -5,7 +5,8 @@ import type {
   TText,
 } from '@udecode/slate';
 import type { AnyObject } from '@udecode/utils';
-import type { SetImmerState, StoreApi } from 'zustand-x';
+import type { Draft } from 'mutative';
+import type { TStateApi } from 'zustand-x';
 
 import type { Nullable } from '../types';
 
@@ -80,7 +81,7 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
   options: InferOptions<C>;
 
   /** Store for managing plugin options. */
-  optionsStore: StoreApi<C['key'], C['options']>;
+  optionsStore: TStateApi<C['options'], [['zustand/mutative-x', never]]>;
 
   /**
    * Recursive plugin support to allow having multiple plugins in a single
@@ -363,7 +364,7 @@ export type BasePluginContext<C extends AnyPluginConfig = PluginConfig> = {
     value: InferOptions<C>[K]
   ) => void;
   setOptions: {
-    (options: Parameters<SetImmerState<InferOptions<C>>>[0]): void;
+    (options: (state: Draft<Partial<InferOptions<C>>>) => void): void;
     (options: Partial<InferOptions<C>>): void;
   };
   api: C['api'] & EditorApi;

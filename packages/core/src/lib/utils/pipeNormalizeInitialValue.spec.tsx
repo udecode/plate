@@ -140,7 +140,6 @@ describe('pipeNormalizeInitialValue', () => {
       it('should auto-select start when autoSelect is "start"', () => {
         const editor = createPlateEditor({
           autoSelect: 'start',
-          plugins,
           value: [{ children: [{ text: 'Test' }], type: 'p' }],
         });
 
@@ -153,7 +152,6 @@ describe('pipeNormalizeInitialValue', () => {
       it('should auto-select end when autoSelect is true', () => {
         const editor = createPlateEditor({
           autoSelect: true,
-          plugins,
           value: [{ children: [{ text: 'Test' }], type: 'p' }],
         });
 

@@ -72,7 +72,10 @@ const initialState: SettingsStoreValue = {
   version: 1,
 };
 
-export const settingsStore = createZustandStore('settings')(initialState)
+export const settingsStore = createZustandStore(initialState, {
+  mutative: true,
+  name: 'settings',
+})
   .extendActions((set) => ({
     resetComponents: ({
       exclude,
@@ -83,7 +86,7 @@ export const settingsStore = createZustandStore('settings')(initialState)
         draft.checkedComponents = getDefaultCheckedComponents();
 
         exclude?.forEach((item) => {
-          draft.checkedComponents[item] = false;
+          draft.checkedComponents![item] = false;
         });
       });
     },
@@ -97,18 +100,18 @@ export const settingsStore = createZustandStore('settings')(initialState)
         draft.checkedPlugins = getDefaultCheckedPlugins();
         exclude?.forEach((item) => {
           // draft.checkedPluginsNext[item] = false;
-          draft.checkedPlugins[item] = false;
+          draft.checkedPlugins![item] = false;
         });
       });
     },
     setCheckedComponentId: (id: string[] | string, checked: boolean) => {
       set.state((draft) => {
-        draft.checkedComponents[id as string] = checked;
+        draft.checkedComponents![id as string] = checked;
       });
     },
     setCheckedIdNext: (id: string[] | string, checked: boolean) => {
       set.state((draft) => {
-        draft.checkedPlugins[id as string] = checked;
+        draft.checkedPlugins![id as string] = checked;
 
         // draft.checkedPluginsNext = { ...draft.checkedPluginsNext };
 
@@ -136,8 +139,8 @@ export const settingsStore = createZustandStore('settings')(initialState)
       });
     },
   }))
-  .extendSelectors((get) => ({
-    checkedComponentId: (id?: string) => id && get.checkedComponents[id],
-    checkedId: (id: string) => get.checkedPlugins[id],
-    checkedIdNext: (id: string) => get.checkedPluginsNext[id],
+  .extendSelectors((_, get) => ({
+    checkedComponentId: (id?: string) => id && get.checkedComponents()[id],
+    checkedId: (id: string) => get.checkedPlugins()[id],
+    checkedIdNext: (id: string) => get.checkedPluginsNext()[id],
   }));

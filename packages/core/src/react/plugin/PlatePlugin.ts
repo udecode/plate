@@ -16,7 +16,7 @@ import type {
   Value,
 } from '@udecode/slate';
 import type { AnyObject, Deep2Partial } from '@udecode/utils';
-import type { StoreApi } from 'zustand-x';
+import type { TCreatedStoreType } from 'zustand-x';
 
 import type {
   AnyPluginConfig,
@@ -153,13 +153,16 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
         node?: NodeComponent;
       }>;
 
+      useOptionsStore: TCreatedStoreType<
+        C['options'],
+        [['zustand/mutative-x', never]]
+      >;
+
       /** @see {@link Parser} */
       parser: Nullable<Parser<WithAnyKey<C>>>;
 
       /** @see {@link Shortcuts} */
       shortcuts: Shortcuts;
-
-      useOptionsStore: StoreApi<C['key'], C['options']>;
 
       /**
        * Handlers called whenever the corresponding event occurs in the editor.

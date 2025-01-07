@@ -72,8 +72,8 @@
     "slate-hyperscript": "0.100.0",
     "slate-react": "0.111.0",
     "use-deep-compare": "^1.3.0",
-    "zustand": "^4.5.5",
-    "zustand-x": "^3.0.4"
+    "zustand": "^5.0.2",
+    "zustand-x": "5.0.0"
   },
   "peerDependencies": {
     "react": ">=18.0.0",

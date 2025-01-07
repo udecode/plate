@@ -117,7 +117,7 @@ export const BaseCommentsPlugin = createTSlatePlugin<BaseCommentsConfig>({
 
       if (newComment.userId) {
         setOptions((draft) => {
-          draft.comments[id] = newComment as TComment;
+          draft.comments![id] = newComment as TComment;
         });
       }
 
@@ -129,7 +129,7 @@ export const BaseCommentsPlugin = createTSlatePlugin<BaseCommentsConfig>({
       if (!myUserId) return;
 
       setOptions((draft) => {
-        draft.comments[id] = {
+        draft.comments![id] = {
           id,
           userId: myUserId,
         } as TComment;
@@ -139,7 +139,7 @@ export const BaseCommentsPlugin = createTSlatePlugin<BaseCommentsConfig>({
       if (!id) return;
 
       setOptions((draft) => {
-        delete draft.comments[id];
+        delete draft.comments![id];
       });
     },
     resetNewCommentValue: () => {
@@ -149,7 +149,7 @@ export const BaseCommentsPlugin = createTSlatePlugin<BaseCommentsConfig>({
       if (!id) return;
 
       setOptions((draft) => {
-        draft.comments[id] = { ...draft.comments[id], ...value };
+        draft.comments![id] = { ...draft.comments![id], ...value };
       });
     },
   }))

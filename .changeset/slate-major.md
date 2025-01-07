@@ -255,6 +255,10 @@ The following interfaces from `slate` and `slate-dom` are now part of `Editor`:
 
   - `Hotkeys`
 
+- Upgraded to `zustand@5` and `zustand-x@5`:
+  - Replace `createZustandStore('name')(initialState)` with `createZustandStore(initialState, { mutative: true, name: 'name' })`
+  - All plugin stores now use [zustand-mutative](https://github.com/mutativejs/zustand-mutative) for immutable state updates, which is faster than `immer`.
+
 Types:
 
 - Rename the following types:

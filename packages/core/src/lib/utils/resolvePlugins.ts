@@ -49,10 +49,9 @@ export const resolvePlugins = (
 const resolvePluginStores = (editor: SlateEditor) => {
   // Create zustand stores for each plugin
   editor.pluginList.forEach((plugin) => {
-    let store = createZustandStore(plugin.key)(plugin.options, {
-      immer: {
-        enableMapSet: true,
-      },
+    let store = createZustandStore(plugin.options, {
+      mutative: true,
+      name: plugin.key,
     });
 
     // Apply option extensions

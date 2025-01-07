@@ -159,9 +159,11 @@ export const withSlate = <
 
     if (!store) return;
     if (typeof options === 'object') {
-      (store.set as any).mergeState(options);
+      store.set.state((draft: any) => {
+        Object.assign(draft, options);
+      });
     } else if (typeof options === 'function') {
-      (store.set as any).state(options);
+      store.set.state(options);
     }
   };
 

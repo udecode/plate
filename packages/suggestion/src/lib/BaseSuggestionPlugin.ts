@@ -99,21 +99,21 @@ export const BaseSuggestionPlugin = createTSlatePlugin<SuggestionConfig>({
       };
 
       setOptions((draft) => {
-        draft.suggestions[id] = newSuggestion;
+        draft.suggestions![id] = newSuggestion;
       });
     },
     removeSuggestion: (id: string | null) => {
       if (!id) return;
 
       setOptions((draft) => {
-        delete draft.suggestions[id];
+        delete draft.suggestions![id];
       });
     },
     updateSuggestion: (id: string | null, value: Partial<TSuggestion>) => {
       if (!id) return;
 
       setOptions((draft) => {
-        draft.suggestions[id] = { ...draft.suggestions[id], ...value };
+        draft.suggestions![id] = { ...draft.suggestions![id], ...value };
       });
     },
   }));

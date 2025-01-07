@@ -1,6 +1,6 @@
 import type { EditorApi, EditorTransforms, Value } from '@udecode/slate';
 import type { UnionToIntersection } from '@udecode/utils';
-import type { EqualityChecker } from 'zustand-x';
+import type { TEqualityChecker } from 'zustand-x';
 
 import type {
   AnyPluginConfig,
@@ -66,7 +66,7 @@ export type PlateEditor = {
     <C extends AnyPluginConfig, U>(
       plugin: WithRequiredKey<C>,
       selector: (s: InferOptions<C>) => U,
-      equalityFn?: EqualityChecker<U>
+      equalityFn?: TEqualityChecker<U>
     ): U;
     <C extends AnyPluginConfig>(plugin: WithRequiredKey<C>): InferOptions<C>;
   };

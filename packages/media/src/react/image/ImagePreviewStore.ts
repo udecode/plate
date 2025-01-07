@@ -5,15 +5,21 @@ export interface PreviewItem {
   id?: string;
 }
 
-export const ImagePreviewStore = createZustandStore('imagePreview')({
-  boundingClientRect: {} as DOMRect,
-  currentPreview: null as PreviewItem | null,
-  isEditingScale: false,
-  openEditorId: null as string | null,
-  previewList: [] as PreviewItem[],
-  scale: 1 as number,
-  translate: { x: 0, y: 0 },
-})
+export const ImagePreviewStore = createZustandStore(
+  {
+    boundingClientRect: {} as DOMRect,
+    currentPreview: null as PreviewItem | null,
+    isEditingScale: false,
+    openEditorId: null as string | null,
+    previewList: [] as PreviewItem[],
+    scale: 1 as number,
+    translate: { x: 0, y: 0 },
+  },
+  {
+    mutative: true,
+    name: 'imagePreview',
+  }
+)
   .extendActions((set) => ({
     close: () => {
       set.currentPreview(null);
@@ -24,8 +30,8 @@ export const ImagePreviewStore = createZustandStore('imagePreview')({
       set.isEditingScale(false);
     },
   }))
-  .extendSelectors((state) => ({
-    isOpen: (editorId: string) => state.openEditorId === editorId,
+  .extendSelectors((_, get) => ({
+    isOpen: (editorId: string) => get.openEditorId() === editorId,
   }));
 
 export const imagePreviewActions = ImagePreviewStore.set;
