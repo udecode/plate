@@ -147,15 +147,15 @@ export const MediaPlaceholderElement = withHOC(
           {(!loading || !isImage) && (
             <div
               className={cn(
-                'bg-muted hover:bg-primary/10 flex cursor-pointer select-none items-center rounded-sm p-3 pr-9'
+                'flex cursor-pointer select-none items-center rounded-sm bg-muted p-3 pr-9 hover:bg-primary/10'
               )}
               onClick={() => !loading && openFilePicker()}
               contentEditable={false}
             >
-              <div className="text-muted-foreground/80 relative mr-3 flex [&_svg]:size-6">
+              <div className="relative mr-3 flex text-muted-foreground/80 [&_svg]:size-6">
                 {currentContent.icon}
               </div>
-              <div className="text-muted-foreground whitespace-nowrap text-sm">
+              <div className="whitespace-nowrap text-sm text-muted-foreground">
                 <div>
                   {loading ? uploadingFile?.name : currentContent.content}
                 </div>

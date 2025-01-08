@@ -8,7 +8,7 @@ import {
   BaseParagraphPlugin,
   SlateLeaf,
 } from '@udecode/plate';
-import { useEditorPlugin, useEditorPlugin } from '@udecode/plate/react';
+import { useEditorPlugin } from '@udecode/plate/react';
 import { AIChatPlugin, useLastAssistantMessage } from '@udecode/plate-ai/react';
 import {
   BaseBoldPlugin,

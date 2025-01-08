@@ -1,6 +1,10 @@
-import { createSlatePlugin } from '@udecode/plate';
+import {
+  type PluginConfig,
+  bindFirst,
+  createTSlatePlugin,
+} from '@udecode/plate';
 
-import { setFontSize } from './utils';
+import { setFontSize } from './transforms';
 
 export type BaseFontSizeConfig = PluginConfig<
   'fontSize',

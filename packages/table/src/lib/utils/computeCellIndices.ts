@@ -30,7 +30,7 @@ export function computeCellIndices(
     if (!cellNode) return;
 
     tableNode = editor.api.above<TTableElement>({
-      at: editor.api.findPath(cellNode),
+      at: cellNode,
       match: { type: editor.getType(BaseTablePlugin) },
     })?.[0];
 

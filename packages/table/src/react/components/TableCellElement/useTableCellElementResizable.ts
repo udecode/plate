@@ -79,11 +79,7 @@ export const useTableCellElementResizable = ({
   /* eslint-disable @typescript-eslint/no-shadow */
   const setColSize = React.useCallback(
     (colIndex: number, width: number) => {
-      setTableColSize(
-        editor,
-        { colIndex, width },
-        { at: editor.api.findPath(element)! }
-      );
+      setTableColSize(editor, { colIndex, width }, { at: element });
 
       // Prevent flickering
       setTimeout(() => overrideColSize(colIndex, null), 0);
@@ -94,11 +90,7 @@ export const useTableCellElementResizable = ({
   /* eslint-disable @typescript-eslint/no-shadow */
   const setRowSize = React.useCallback(
     (rowIndex: number, height: number) => {
-      setTableRowSize(
-        editor,
-        { height, rowIndex },
-        { at: editor.api.findPath(element)! }
-      );
+      setTableRowSize(editor, { height, rowIndex }, { at: element });
 
       // Prevent flickering
       setTimeout(() => overrideRowSize(rowIndex, null), 0);
@@ -108,11 +100,7 @@ export const useTableCellElementResizable = ({
 
   const setMarginLeft = React.useCallback(
     (marginLeft: number) => {
-      setTableMarginLeft(
-        editor,
-        { marginLeft },
-        { at: editor.api.findPath(element)! }
-      );
+      setTableMarginLeft(editor, { marginLeft }, { at: element });
 
       // Prevent flickering
       setTimeout(() => overrideMarginLeft(null), 0);

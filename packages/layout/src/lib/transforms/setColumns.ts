@@ -1,4 +1,4 @@
-import { type Path, type SlateEditor, NodeApi } from '@udecode/plate';
+import { type At, type SlateEditor, NodeApi } from '@udecode/plate';
 
 import type { TColumnElement, TColumnGroupElement } from '../types';
 
@@ -13,7 +13,7 @@ export const setColumns = (
     widths,
   }: {
     /** Column group path */
-    at?: Path;
+    at?: At;
     columns?: number;
     widths?: string[];
   }
@@ -28,11 +28,11 @@ export const setColumns = (
       return;
     }
 
-    const columnGroup = NodeApi.get<TColumnGroupElement>(editor, at);
+    const columnGroup = editor.api.node<TColumnGroupElement>(at);
 
     if (!columnGroup) return;
 
-    const { children } = columnGroup;
+    const [{ children }, path] = columnGroup;
 
     const currentCount = children.length;
     const targetCount = widths.length;
@@ -40,7 +40,7 @@ export const setColumns = (
     if (currentCount === targetCount) {
       // Same number of columns: just set widths directly
       widths.forEach((width, i) => {
-        editor.tf.setNodes<TColumnElement>({ width }, { at: at.concat([i]) });
+        editor.tf.setNodes<TColumnElement>({ width }, { at: path.concat([i]) });
       });
 
       return;
@@ -48,7 +48,7 @@ export const setColumns = (
     if (targetCount > currentCount) {
       // Need more columns than we have: insert extra columns at the end
       const columnsToAdd = targetCount - currentCount;
-      const insertPath = at.concat([currentCount]);
+      const insertPath = path.concat([currentCount]);
 
       // Insert the extra columns
       const newColumns = Array(columnsToAdd)
@@ -63,7 +63,7 @@ export const setColumns = (
 
       // Just ensure final widths match exactly
       widths.forEach((width, i) => {
-        editor.tf.setNodes<TColumnElement>({ width }, { at: at.concat([i]) });
+        editor.tf.setNodes<TColumnElement>({ width }, { at: path.concat([i]) });
       });
 
       return;
@@ -71,7 +71,7 @@ export const setColumns = (
     if (targetCount < currentCount) {
       // Need fewer columns than we have: merge extra columns into the last kept column
       const keepColumnIndex = targetCount - 1;
-      const keepColumnPath = at.concat([keepColumnIndex]);
+      const keepColumnPath = path.concat([keepColumnIndex]);
       const keepColumnNode = NodeApi.get<TColumnElement>(
         editor,
         keepColumnPath
@@ -83,7 +83,7 @@ export const setColumns = (
 
       // Move content from columns beyond keepIndex into keepIndex column
       for (let i = currentCount - 1; i > keepColumnIndex; i--) {
-        const columnPath = at.concat([i]);
+        const columnPath = path.concat([i]);
         const columnEntry = editor.api.node<TColumnElement>(columnPath);
 
         if (!columnEntry) continue;
@@ -98,12 +98,12 @@ export const setColumns = (
       // Remove the now-empty extra columns
       // Removing from the end to avoid path shifts
       for (let i = currentCount - 1; i > keepColumnIndex; i--) {
-        editor.tf.removeNodes({ at: at.concat([i]) });
+        editor.tf.removeNodes({ at: path.concat([i]) });
       }
 
       // Set the final widths
       widths.forEach((width, i) => {
-        editor.tf.setNodes<TColumnElement>({ width }, { at: at.concat([i]) });
+        editor.tf.setNodes<TColumnElement>({ width }, { at: path.concat([i]) });
       });
     }
   });

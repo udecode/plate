@@ -45,9 +45,12 @@ export const useEquationInput = ({
 
   useEffect(() => {
     const setExpression = () => {
-      editor.tf.setNodes<TEquationElement>(element, {
-        texExpression: expressionInput || '',
-      });
+      editor.tf.setNodes<TEquationElement>(
+        {
+          texExpression: expressionInput || '',
+        },
+        { at: element }
+      );
     };
     // When the cursor is inside an inline equation, the popover needs to open.
     // However, during an undo operation, the cursor focuses on the inline equation, triggering the popover to open, which disrupts the normal undo process.

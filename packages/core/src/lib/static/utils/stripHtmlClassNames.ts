@@ -23,8 +23,9 @@ export const stripHtmlClassNames = (
         .split(/\s+/)
         .filter((cn) => preserveRegExp.test(cn));
 
-    return classesToKeep.length === 0
-      ? ''
-      : ` class="${classesToKeep.join(' ')}"`;
-  });
+      return classesToKeep.length === 0
+        ? ''
+        : ` class="${classesToKeep.join(' ')}"`;
+    }
+  );
 };

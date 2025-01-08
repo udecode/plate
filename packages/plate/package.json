@@ -56,8 +56,8 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-core": "41.0.5",
-    "@udecode/plate-utils": "41.0.5",
+    "@udecode/plate-core": "41.0.13",
+    "@udecode/plate-utils": "41.0.13",
     "@udecode/react-hotkeys": "37.0.0",
     "@udecode/react-utils": "40.2.8",
     "@udecode/slate": "41.0.0",
