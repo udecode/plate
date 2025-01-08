@@ -5,40 +5,7 @@ description: API reference for the Editor API.
 
 The Editor API provides a set of helper functions for querying and manipulating the editor state.
 
-## `QueryOptions`
-
-Common options used across multiple query methods:
-
-<APIParameters>
-  <APIItem name="at" type="At" optional>
-    Location to start searching from. Defaults to current selection.
-  </APIItem>
-  <APIItem name="id" type="boolean | string" optional>
-    Match the node by id. `true` will match all nodes with an id.
-  </APIItem>
-  <APIItem name="block" type="boolean" optional>
-    Match block nodes.
-  </APIItem>
-  <APIItem name="empty" type="boolean" optional>
-    When true, match only empty nodes. When false, match only non-empty nodes.
-  </APIItem>
-  <APIItem name="match" type="Predicate<NodeIn<V>>" optional>
-    Match the node.
-  </APIItem>
-  <APIItem name="text" type="boolean" optional>
-    When true, match only text nodes.
-  </APIItem>
-</APIParameters>
-
-## `QueryMode`
-
-<APIParameters>
-  <APIItem name="mode" type="'all' | 'highest' | 'lowest'" optional>
-    - 'all' (default): Return all matching nodes
-    - 'highest': In a hierarchy of nodes, only return the highest level matching nodes
-    - 'lowest': In a hierarchy of nodes, only return the lowest level matching nodes
-  </APIItem>
-</APIParameters>
+## `editor.api`
 
 ### `above`
 
@@ -1407,3 +1374,40 @@ Check if an element is a markable void element.
 ```ts
 // Note: Using this incorrectly can leave the editor in an invalid state.
 ```
+
+## Options
+
+### `QueryOptions`
+
+Common options used across multiple query methods:
+
+<APIParameters>
+  <APIItem name="at" type="At" optional>
+    Location to start searching from. Defaults to current selection.
+  </APIItem>
+  <APIItem name="id" type="boolean | string" optional>
+    Match the node by id. `true` will match all nodes with an id.
+  </APIItem>
+  <APIItem name="block" type="boolean" optional>
+    Match block nodes.
+  </APIItem>
+  <APIItem name="empty" type="boolean" optional>
+    When true, match only empty nodes. When false, match only non-empty nodes.
+  </APIItem>
+  <APIItem name="match" type="Predicate<NodeIn<V>>" optional>
+    Match the node.
+  </APIItem>
+  <APIItem name="text" type="boolean" optional>
+    When true, match only text nodes.
+  </APIItem>
+</APIParameters>
+
+### `QueryMode`
+
+<APIParameters>
+  <APIItem name="mode" type="'all' | 'highest' | 'lowest'" optional>
+    - 'all' (default): Return all matching nodes
+    - 'highest': In a hierarchy of nodes, only return the highest level matching nodes
+    - 'lowest': In a hierarchy of nodes, only return the lowest level matching nodes
+  </APIItem>
+</APIParameters>

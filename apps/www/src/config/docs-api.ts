@@ -11,7 +11,69 @@ export const docsApi: SidebarNavItem[] = [
     description: 'Slate API.',
     headings: [],
     href: '/docs/api/slate',
-    items: [{}],
+    items: [
+      {
+        href: '/docs/api/slate/editor-api',
+        label: 'Draft',
+        title: 'Editor API',
+      },
+      {
+        href: '/docs/api/slate/editor-transforms',
+        label: 'Draft',
+        title: 'Editor Transforms',
+      },
+      {
+        href: '/docs/api/slate/element',
+        label: 'Draft',
+        title: 'Element',
+      },
+      {
+        href: '/docs/api/slate/location',
+        label: 'Draft',
+        title: 'Location',
+      },
+      {
+        href: '/docs/api/slate/location-ref',
+        label: 'Draft',
+        title: 'Location References',
+      },
+      {
+        href: '/docs/api/slate/node',
+        label: 'Draft',
+        title: 'Node',
+      },
+      {
+        href: '/docs/api/slate/node-entry',
+        label: 'Draft',
+        title: 'NodeEntry',
+      },
+      {
+        href: '/docs/api/slate/operation',
+        label: 'Draft',
+        title: 'Operation',
+      },
+      {
+        href: '/docs/api/slate/path',
+        label: 'Draft',
+        title: 'Path',
+      },
+      {
+        href: '/docs/api/slate/point',
+        label: 'Draft',
+        title: 'Point',
+      },
+      {
+        href: '/docs/api/slate/range',
+        label: 'Draft',
+        title: 'Range',
+      },
+      {
+        href: '/docs/api/slate/text',
+        label: 'Draft',
+        title: 'Text',
+      },
+    ],
+    label: 'v42',
     title: 'Slate',
   },
   {
@@ -73,21 +135,6 @@ export const docsApi: SidebarNavItem[] = [
       },
       {
         headings: [
-          'platecontroller-store',
-          'state',
-          'activeId',
-          'primaryEditorIds',
-          'editorStores',
-          'usage-patterns',
-          'specific-editor-by-id',
-          'active-editor',
-          'dealing-with-fallback-editors',
-        ],
-        href: '/docs/api/core/plate-controller',
-        title: 'PlateController',
-      },
-      {
-        headings: [
           'currentKeyboardEvent',
           'key',
           'plugins',
@@ -97,7 +144,7 @@ export const docsApi: SidebarNavItem[] = [
           'reset',
         ],
         href: '/docs/api/core/plate-editor',
-        title: 'PlateEditor',
+        title: 'Plate Editor',
       },
       {
         headings: [
@@ -158,12 +205,27 @@ export const docsApi: SidebarNavItem[] = [
           'extendEditor',
         ],
         href: '/docs/api/core/plate-plugin',
-        title: 'PlatePlugin',
+        title: 'Plate Plugin',
       },
       {
         headings: ['useEventEditorSelectors', 'useEventPlateId'],
-        href: '/docs/api/core/store',
-        title: 'Store',
+        href: '/docs/api/core/plate-store',
+        title: 'Plate Store',
+      },
+      {
+        headings: [
+          'platecontroller-store',
+          'state',
+          'activeId',
+          'primaryEditorIds',
+          'editorStores',
+          'usage-patterns',
+          'specific-editor-by-id',
+          'active-editor',
+          'dealing-with-fallback-editors',
+        ],
+        href: '/docs/api/core/plate-controller',
+        title: 'Plate Controller',
       },
     ],
     title: 'Plate Core',
@@ -173,12 +235,6 @@ export const docsApi: SidebarNavItem[] = [
     headings: [],
     href: '/docs/api/utils',
     title: 'Plate Utils',
-  },
-  {
-    description: 'Slate utilities.',
-    headings: [],
-    href: '/docs/api/slate',
-    title: 'Slate',
   },
   {
     description: 'React utilities.',
@@ -203,14 +259,12 @@ export const docsApi: SidebarNavItem[] = [
     description: 'API reference for @udecode/plate-floating',
     headings: [],
     href: '/docs/api/floating',
-    label: 'New',
     title: 'Floating',
   },
   {
     description: 'API reference for @udecode/plate-resizable',
     headings: [],
     href: '/docs/api/resizable',
-    label: 'New',
     title: 'Resizable',
   },
 ];
