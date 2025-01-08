@@ -31,7 +31,7 @@ export const withDeleteBackwardList: ExtendEditorTransforms<ListConfig> = ({
   editor,
   tf: { deleteBackward },
 }) => ({
-  deleteBackward(options) {
+  deleteBackward(unit) {
     const deleteBackwardList = () => {
       const res = getListItemEntry(editor, {});
       let moved: boolean | undefined = false;
@@ -107,7 +107,7 @@ export const withDeleteBackwardList: ExtendEditorTransforms<ListConfig> = ({
 
             deleteMerge(editor, {
               reverse: true,
-              unit: options?.unit,
+              unit,
             });
             moved = true;
 
@@ -129,6 +129,6 @@ export const withDeleteBackwardList: ExtendEditorTransforms<ListConfig> = ({
 
     if (deleteBackwardList()) return;
 
-    deleteBackward(options);
+    deleteBackward(unit);
   },
 });

@@ -54,7 +54,6 @@ import type {
   LeafEdge,
   RangeDirection,
   TextDirection,
-  TextUnit,
   TextUnitAdjustment,
 } from '../../types';
 import type { Predicate } from '../../utils';
@@ -524,10 +523,6 @@ export type EditorBeforeOptions = {
      */
     skipInvalid?: boolean;
   };
-
-export type EditorDirectedDeletionOptions = {
-  unit?: TextUnit;
-};
 
 export type EditorElementReadOnlyOptions = {
   at?: TLocation;

@@ -8,7 +8,7 @@ export const withColumn: ExtendEditorTransforms = ({
   editor,
   tf: { deleteBackward, normalizeNode },
 }) => ({
-  deleteBackward(options) {
+  deleteBackward(unit) {
     if (editor.api.isCollapsed()) {
       const entry = editor.api.above({
         match: (n) =>
@@ -18,7 +18,7 @@ export const withColumn: ExtendEditorTransforms = ({
       if (entry) {
         const [node, path] = entry;
 
-        if (node.children.length > 1) return deleteBackward(options);
+        if (node.children.length > 1) return deleteBackward(unit);
 
         const isStart = editor.api.isStart(editor.selection?.anchor, path);
 
@@ -26,7 +26,7 @@ export const withColumn: ExtendEditorTransforms = ({
       }
     }
 
-    deleteBackward(options);
+    deleteBackward(unit);
   },
 
   normalizeNode([n, path]) {

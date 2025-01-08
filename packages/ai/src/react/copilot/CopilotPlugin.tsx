@@ -19,6 +19,7 @@ import {
   createTPlatePlugin,
 } from '@udecode/plate/react';
 import { serializeMdNodes } from '@udecode/plate-markdown';
+import debounce from 'lodash/debounce.js';
 
 import type { CompleteOptions } from './utils/callCompletionApi';
 
@@ -171,31 +172,44 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
     isSuggested: (id) => getOptions().suggestionNodeId === id,
   }))
   .extendApi<Omit<CopilotApi, 'reset'>>(
-    ({ api, editor, getOptions, setOption, setOptions }) => ({
-      accept: bindFirst(acceptCopilot, editor),
-      acceptNextWord: bindFirst(acceptCopilotNextWord, editor),
-      setBlockSuggestion: ({ id = getOptions().suggestionNodeId, text }) => {
-        if (!id) {
-          id = editor.api.block()![0].id as string;
-        }
+    ({ api, editor, getOptions, setOption, setOptions }) => {
+      const debounceDelay = getOptions().debounceDelay;
 
-        setOptions({
-          suggestionNodeId: id,
-          suggestionText: text,
-        });
-      },
-      stop: () => {
-        const { abortController } = getOptions();
+      let triggerSuggestion = bindFirst(triggerCopilotSuggestion, editor);
 
-        (api.copilot.triggerSuggestion as DebouncedFunc<any>)?.cancel();
+      if (debounceDelay) {
+        triggerSuggestion = debounce(
+          bindFirst(triggerCopilotSuggestion, editor),
+          debounceDelay
+        ) as any;
+      }
 
-        if (abortController) {
-          abortController.abort();
-          setOption('abortController', null);
-        }
-      },
-      triggerSuggestion: bindFirst(triggerCopilotSuggestion, editor),
-    })
+      return {
+        accept: bindFirst(acceptCopilot, editor),
+        acceptNextWord: bindFirst(acceptCopilotNextWord, editor),
+        setBlockSuggestion: ({ id = getOptions().suggestionNodeId, text }) => {
+          if (!id) {
+            id = editor.api.block()![0].id as string;
+          }
+
+          setOptions({
+            suggestionNodeId: id,
+            suggestionText: text,
+          });
+        },
+        stop: () => {
+          const { abortController } = getOptions();
+
+          (api.copilot.triggerSuggestion as DebouncedFunc<any>)?.cancel();
+
+          if (abortController) {
+            abortController.abort();
+            setOption('abortController', null);
+          }
+        },
+        triggerSuggestion,
+      };
+    }
   )
   .extendApi(({ api, setOptions }) => ({
     reset: () => {

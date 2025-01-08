@@ -17,20 +17,20 @@ export const withToggle: ExtendEditorTransforms<ToggleConfig> = ({
   getOption,
   tf: { deleteBackward, deleteForward, insertBreak },
 }) => ({
-  deleteBackward(options) {
+  deleteBackward(unit) {
     if (
       moveCurrentBlockAfterPreviousSelectable(editor as SlateEditor) === false
     )
       return;
 
-    deleteBackward(options);
+    deleteBackward(unit);
   },
 
-  deleteForward(options) {
+  deleteForward(unit) {
     if (moveNextSelectableAfterCurrentBlock(editor as SlateEditor) === false)
       return;
 
-    deleteForward(options);
+    deleteForward(unit);
   },
 
   // If we are inserting a break in a toggle:

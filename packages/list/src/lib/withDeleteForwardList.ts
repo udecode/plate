@@ -162,7 +162,7 @@ const selectionIsInAListHandler = (
     if (nextSelectableLic[0].children.length < 2) return false;
 
     // manually run default delete
-    defaultDelete({ unit });
+    defaultDelete(unit);
 
     const leftoverListItem = editor.api.node<TElement>(
       PathApi.parent(nextSelectableLic[1])
@@ -211,7 +211,7 @@ export const withDeleteForwardList: ExtendEditorTransforms<ListConfig> = ({
   editor,
   tf: { deleteForward },
 }) => ({
-  deleteForward(options) {
+  deleteForward(unit) {
     const deleteForwardList = () => {
       let skipDefaultDelete = false;
 
@@ -235,7 +235,7 @@ export const withDeleteForwardList: ExtendEditorTransforms<ListConfig> = ({
           editor,
           res,
           deleteForward,
-          options?.unit
+          unit
         );
       });
 
@@ -244,6 +244,6 @@ export const withDeleteForwardList: ExtendEditorTransforms<ListConfig> = ({
 
     if (deleteForwardList()) return;
 
-    deleteForward(options);
+    deleteForward(unit);
   },
 });

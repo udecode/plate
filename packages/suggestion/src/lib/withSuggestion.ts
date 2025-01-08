@@ -26,10 +26,10 @@ export const withSuggestion: ExtendEditorTransforms<SuggestionConfig> = ({
     normalizeNode,
   },
 }) => ({
-  deleteBackward(options) {
+  deleteBackward(unit) {
     if (getOptions().isSuggesting) {
       const selection = editor.selection!;
-      const pointTarget = editor.api.before(selection, { unit: options?.unit });
+      const pointTarget = editor.api.before(selection, { unit });
 
       if (!pointTarget) return;
 
@@ -42,13 +42,13 @@ export const withSuggestion: ExtendEditorTransforms<SuggestionConfig> = ({
       return;
     }
 
-    deleteBackward(options);
+    deleteBackward(unit);
   },
 
-  deleteForward(options) {
+  deleteForward(unit) {
     if (getOptions().isSuggesting) {
       const selection = editor.selection!;
-      const pointTarget = editor.api.after(selection, { unit: options?.unit });
+      const pointTarget = editor.api.after(selection, { unit });
 
       if (!pointTarget) return;
 
@@ -60,7 +60,7 @@ export const withSuggestion: ExtendEditorTransforms<SuggestionConfig> = ({
       return;
     }
 
-    deleteForward(options);
+    deleteForward(unit);
   },
 
   deleteFragment(direction) {

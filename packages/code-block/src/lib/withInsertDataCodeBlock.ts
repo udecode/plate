@@ -10,8 +10,6 @@ export const withInsertDataCodeBlock: ExtendEditorTransforms = ({
     const text = data.getData('text/plain');
     const vscodeDataString = data.getData('vscode-editor-data');
 
-    console.log(text, vscodeDataString);
-
     if (vscodeDataString) {
       try {
         const vscodeData = JSON.parse(vscodeDataString);

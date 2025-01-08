@@ -569,10 +569,10 @@ export type Parser<C extends AnyPluginConfig = PluginConfig> = {
   ) => Descendant[] | undefined;
 
   /**
-   * Function called on `editor.tf.insertData` just before `editor.tf.insertFragment`.
-   * Default: if the block above the selection is empty and the first fragment
-   * node type is not inline, set the selected node type to the first fragment
-   * node type.
+   * Function called on `editor.tf.insertData` just before
+   * `editor.tf.insertFragment`. Default: if the block above the selection is
+   * empty and the first fragment node type is not inline, set the selected node
+   * type to the first fragment node type.
    *
    * @returns If true, the next handlers will be skipped.
    */

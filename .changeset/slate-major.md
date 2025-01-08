@@ -50,8 +50,8 @@ The following interfaces from `slate` and `slate-dom` are now part of `Editor`:
   - `createPathRef` -> `editor.api.pathRef`
   - `createPointRef` -> `editor.api.pointRef`
   - `createRangeRef` -> `editor.api.rangeRef`
-  - `deleteBackward` -> `editor.tf.deleteBackward`
-  - `deleteForward` -> `editor.tf.deleteForward`
+  - `deleteBackward({ unit })` -> `editor.tf.deleteBackward(unit)`
+  - `deleteForward({ unit })` -> `editor.tf.deleteForward(unit)`
   - `deleteFragment` -> `editor.tf.deleteFragment`
   - `deleteText` -> `editor.tf.delete`
   - `deselect` -> `editor.tf.deselect`

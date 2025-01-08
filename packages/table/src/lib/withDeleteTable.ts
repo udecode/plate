@@ -64,22 +64,22 @@ export const withDeleteTable: ExtendEditorTransforms<TableConfig> = ({
   tf: { deleteBackward, deleteForward, deleteFragment },
   type,
 }) => ({
-  deleteBackward(options) {
-    if (preventDeleteTableCell(editor, { unit: options?.unit })) return;
+  deleteBackward(unit) {
+    if (preventDeleteTableCell(editor, { unit: unit })) return;
 
-    deleteBackward(options);
+    deleteBackward(unit);
   },
 
-  deleteForward(options) {
+  deleteForward(unit) {
     if (
       preventDeleteTableCell(editor, {
         reverse: true,
-        unit: options?.unit,
+        unit: unit,
       })
     )
       return;
 
-    deleteForward(options);
+    deleteForward(unit);
   },
 
   deleteFragment(direction) {

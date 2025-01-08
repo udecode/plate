@@ -2,7 +2,6 @@ import type { Operation } from '@udecode/plate';
 import type { ExtendEditorTransforms, PlateEditor } from '@udecode/plate/react';
 
 import { serializeInlineMd } from '@udecode/plate-markdown';
-import debounce from 'lodash/debounce.js';
 
 import type { CopilotPluginConfig } from './CopilotPlugin';
 
@@ -35,15 +34,6 @@ export const withCopilot: ExtendEditorTransforms<CopilotPluginConfig> = ({
   setOption,
   tf: { apply, insertText, redo, undo, writeHistory },
 }) => {
-  const debounceDelay = getOptions().debounceDelay;
-
-  if (debounceDelay) {
-    api.copilot.triggerSuggestion = debounce(
-      api.copilot.triggerSuggestion,
-      debounceDelay
-    ) as any;
-  }
-
   return {
     apply(operation) {
       const { shouldAbort } = getOptions();

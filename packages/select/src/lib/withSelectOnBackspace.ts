@@ -10,13 +10,13 @@ import type { SelectOnBackspaceConfig } from './SelectOnBackspacePlugin';
 export const withSelectOnBackspace: ExtendEditorTransforms<
   SelectOnBackspaceConfig
 > = ({ editor, getOptions, tf: { deleteBackward } }) => ({
-  deleteBackward(options) {
+  deleteBackward(unit) {
     const { selection } = editor;
     const { query, removeNodeIfEmpty } = getOptions();
 
-    if (options?.unit === 'character' && editor.api.isCollapsed()) {
+    if (unit === 'character' && editor.api.isCollapsed()) {
       const pointBefore = editor.api.before(selection!, {
-        unit: options.unit,
+        unit: unit,
       });
 
       if (pointBefore) {
@@ -41,13 +41,13 @@ export const withSelectOnBackspace: ExtendEditorTransforms<
           // don't delete image, set selection there
           editor.tf.select(pointBefore);
         } else {
-          deleteBackward(options);
+          deleteBackward(unit);
         }
       } else {
-        deleteBackward(options);
+        deleteBackward(unit);
       }
     } else {
-      deleteBackward(options);
+      deleteBackward(unit);
     }
   },
 });

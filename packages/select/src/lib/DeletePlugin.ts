@@ -21,7 +21,7 @@ export const DeletePlugin = createTSlatePlugin<DeleteConfig>({
     },
   },
 }).extendEditorTransforms(({ editor, getOptions, tf: { deleteForward } }) => ({
-  deleteForward(options) {
+  deleteForward(unit) {
     if (!editor.selection) return;
 
     const { query } = getOptions();
@@ -37,7 +37,7 @@ export const DeletePlugin = createTSlatePlugin<DeleteConfig>({
       editor.tf.removeNodes();
     } else {
       // When the line is not empty or other conditions are not met, fall back to default behavior
-      deleteForward(options);
+      deleteForward(unit);
     }
   },
 }));

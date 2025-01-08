@@ -19,7 +19,7 @@ export const BaseResetNodePlugin = createTSlatePlugin<ResetNodeConfig>({
   },
 }).extendEditorTransforms(
   ({ editor, getOptions, tf: { deleteBackward, deleteFragment } }) => ({
-    deleteBackward(options) {
+    deleteBackward(unit) {
       if (!getOptions().disableFirstBlockReset) {
         const { selection } = editor;
 
@@ -45,7 +45,7 @@ export const BaseResetNodePlugin = createTSlatePlugin<ResetNodeConfig>({
         }
       }
 
-      deleteBackward(options);
+      deleteBackward(unit);
     },
 
     deleteFragment(direction) {

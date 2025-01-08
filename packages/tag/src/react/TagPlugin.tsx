@@ -42,8 +42,8 @@ export const MultiSelectPlugin = TagPlugin.extendEditorApi(
   })
 ).extendEditorTransforms(
   ({ editor, tf: { deleteBackward, normalizeNode }, type }) => ({
-    deleteBackward(options) {
-      deleteBackward(options);
+    deleteBackward(unit) {
+      deleteBackward(unit);
 
       if (
         editor.api.some({

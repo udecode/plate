@@ -14,20 +14,20 @@ export const withDeleteBackwardIndentList: ExtendEditorTransforms<
   BaseIndentListConfig
 > = ({ editor, tf: { deleteBackward } }) => {
   return {
-    deleteBackward(options) {
+    deleteBackward(unit) {
       const nodeEntry = editor.api.above();
 
-      if (!nodeEntry) return deleteBackward(options);
+      if (!nodeEntry) return deleteBackward(unit);
 
       const listNode = nodeEntry[0];
 
       if (editor.api.isCollapsed() && NodeApi.string(listNode))
-        return deleteBackward(options);
+        return deleteBackward(unit);
       if (isDefined(listNode[BaseIndentListPlugin.key])) {
         return outdentList(editor);
       }
 
-      return deleteBackward(options);
+      return deleteBackward(unit);
     },
   };
 };

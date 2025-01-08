@@ -74,7 +74,7 @@ export function transformDiffTexts(
     if (texts.length > 1) {
       // If there are multiple nodes, merge them into one, adding merge operations
       for (let i = 1; i < texts.length; i++) {
-        nodesEditor.apply({
+        nodesEditor.tf.apply({
           path: [0, 1],
           position: 0, // Required by type; not actually used here
           properties: {}, // Required by type; not actually used here
@@ -90,7 +90,7 @@ export function transformDiffTexts(
       deletedLineBreakChar: deletedLineBreakProxyChar,
       insertedLineBreakChar: insertedLineBreakProxyChar,
     })) {
-      nodesEditor.apply(op);
+      nodesEditor.tf.apply(op);
     }
 
     nodesEditor.commitChangesToDiffs();

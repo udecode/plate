@@ -158,36 +158,26 @@ describe('toPlatePlugin type tests', () => {
     }));
 
     const CodeBlockPlugin = toPlatePlugin(BaseCodeBlockPlugin, {
-      extendEditor: ({ api, editor }) => {
-        api.plugin.getSyntaxState();
-        // @ts-expect-error
-        api.plugin.getLanguage();
-
+      extendEditor: ({ editor }) => {
         return editor;
       },
       options: { hotkey: ['mod+opt+8', 'mod+shift+8'] },
       handlers: {},
-    })
-      .extendEditorApi(() => ({
-        plugin: {
-          getLanguage: () => 'javascript' as string,
-        },
-        plugin2: {
-          setLanguage: (_: string) => {},
-        },
-      }))
-      .extend({
-        extendEditor: ({ api, editor }) => {
-          api.plugin.getSyntaxState();
-          api.plugin.getLanguage();
-
-          return editor;
-        },
-      });
+    }).extendEditorApi(() => ({
+      plugin: {
+        getLanguage: () => 'javascript' as string,
+      },
+      plugin2: {
+        setLanguage: (_: string) => {},
+      },
+    }));
 
     const editor = createPlateEditor({
       plugins: [CodeBlockPlugin],
     });
+
+    editor.api.plugin.getSyntaxState();
+    editor.api.plugin.getLanguage();
 
     expect(editor.getOptions(CodeBlockPlugin)).toEqual({
       hotkey: ['mod+opt+8', 'mod+shift+8'],
@@ -354,9 +344,7 @@ describe('toTPlatePlugin type tests', () => {
         },
       }))
       .extend({
-        extendEditor: ({ api, editor }) => {
-          api.plugin.getLanguage!();
-
+        extendEditor: ({ editor }) => {
           return editor;
         },
       });
@@ -364,6 +352,8 @@ describe('toTPlatePlugin type tests', () => {
     const editor = createPlateEditor({
       plugins: [CodeBlockPlugin],
     });
+
+    editor.api.plugin.getLanguage();
 
     expect(editor.getOptions(CodeBlockPlugin)).toEqual({
       hotkey: ['mod+opt+8', 'mod+shift+8'],

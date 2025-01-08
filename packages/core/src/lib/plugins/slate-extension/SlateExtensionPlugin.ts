@@ -53,13 +53,13 @@ export const SlateExtensionPlugin = createTSlatePlugin<SlateExtensionConfig>({
 
           apply(operation);
         },
-        deleteBackward(options) {
-          deleteBackward(options);
+        deleteBackward(unit) {
+          deleteBackward(unit);
           resetMarks();
         },
 
-        deleteForward(options) {
-          deleteForward(options);
+        deleteForward(unit) {
+          deleteForward(unit);
           resetMarks();
         },
 

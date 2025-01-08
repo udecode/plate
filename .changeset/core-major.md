@@ -88,6 +88,8 @@ export const InlineVoidPlugin = createSlatePlugin({
 }).extendEditorApi(withInlineVoid);
 ```
 
+- Move `editor.redecorate` to `editor.api.redecorate`
+
 Types:
 
 - Rename `TRenderElementProps` to `RenderElementProps`
