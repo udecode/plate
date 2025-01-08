@@ -334,23 +334,6 @@ export default async function SlateToHtmlBlock() {
     theme,
   });
 
-  // const html2Slate = async (html: string) => {
-  //   const { JSDOM } = await import('jsdom');
-  //   const dom = new JSDOM(html);
-  //   const document = dom.window.document;
-
-  //   // 获取 <p> 元素
-  //   const pElement = document.querySelector('p');
-
-  //   if (pElement) {
-  //     console.log('🚀 ~ html2Slate ~ pElement:', pElement.textContent); // 获取 <p> 内容
-  //   } else {
-  //     console.log('No <p> element found!');
-  //   }
-  // };
-
-  // await html2Slate('<p>some HTML</p>');
-
   return (
     <div className="grid grid-cols-3 px-4">
       <div className="p-2">
