@@ -16,11 +16,7 @@
   },
   "files": [
     {
-<<<<<<< HEAD
       "content": "'use client';\n\nimport React from 'react';\n\nimport { cn, withRef } from '@udecode/cn';\nimport { PlateElement, useSelected } from '@udecode/plate/react';\n\nexport const TableRowElement = withRef<typeof PlateElement>(\n  ({ children, className, ...props }, ref) => {\n    const selected = useSelected();\n\n    return (\n      <PlateElement\n        ref={ref}\n        as=\"tr\"\n        className={cn(className, 'h-full')}\n        data-selected={selected ? 'true' : undefined}\n        {...props}\n      >\n        {children}\n      </PlateElement>\n    );\n  }\n);\n",
-=======
-      "content": "'use client';\n\nimport React from 'react';\n\nimport { cn, withRef } from '@udecode/cn';\nimport { PlateElement } from '@udecode/plate-common/react';\nimport { useSelected } from 'slate-react';\n\nexport const TableRowElement = withRef<typeof PlateElement>(\n  ({ children, className, ...props }, ref) => {\n    const selected = useSelected();\n\n    return (\n      <PlateElement\n        ref={ref}\n        as=\"tr\"\n        className={cn(className, 'h-full')}\n        data-selected={selected ? 'true' : undefined}\n        {...props}\n      >\n        {children}\n      </PlateElement>\n    );\n  }\n);\n",
->>>>>>> main
       "path": "plate-ui/table-row-element.tsx",
       "target": "components/plate-ui/table-row-element.tsx",
       "type": "registry:ui"
