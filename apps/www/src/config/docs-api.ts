@@ -8,6 +8,13 @@ export const docsApi: SidebarNavItem[] = [
     title: 'Plate',
   },
   {
+    description: 'Slate API.',
+    headings: [],
+    href: '/docs/api/slate',
+    items: [{}],
+    title: 'Slate',
+  },
+  {
     description: 'Core utilities for Plate.',
     headings: [
       'createAtomStore',
