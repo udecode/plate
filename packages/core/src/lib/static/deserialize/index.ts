@@ -3,3 +3,4 @@
  */
 
 export * from './checkUtils';
+export * from './htmlStringToEditorDOM';
