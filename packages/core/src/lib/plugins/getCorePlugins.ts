@@ -3,10 +3,6 @@ import type { EditorNodesOptions, SetNodesOptions } from '@udecode/slate';
 import type { AnyPluginConfig, PluginConfig } from '../plugin/BasePlugin';
 import type { SlatePlugin } from '../plugin/SlatePlugin';
 
-import {
-  createSlatePlugin,
-  createTSlatePlugin,
-} from '../plugin/createSlatePlugin';
 import { AstPlugin } from './AstPlugin';
 import { DOMPlugin } from './DOMPlugin';
 import { HistoryPlugin } from './HistoryPlugin';
@@ -17,13 +13,6 @@ import { HtmlPlugin } from './html';
 import { LengthPlugin } from './length';
 import { BaseParagraphPlugin } from './paragraph';
 import { SlateExtensionPlugin } from './slate-extension';
-
-// Somehow needed to avoid cyclic dependency
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _ = () => {
-  createSlatePlugin();
-  createTSlatePlugin();
-};
 
 export type CorePlugin = ReturnType<typeof getCorePlugins>[number];
 

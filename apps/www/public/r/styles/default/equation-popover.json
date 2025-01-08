@@ -1,0 +1,19 @@
+{
+  "dependencies": [
+    "@radix-ui/react-popover"
+  ],
+  "doc": {
+    "description": "A popover component with a content area."
+  },
+  "files": [
+    {
+      "content": "'use client';\n\nimport React, { useEffect } from 'react';\nimport TextareaAutosize, {\n  type TextareaAutosizeProps,\n} from 'react-textarea-autosize';\n\nimport type { TEquationElement } from '@udecode/plate-math';\n\nimport { cn } from '@udecode/cn';\nimport {\n  createPrimitiveComponent,\n  selectSiblingNodePoint,\n  useEditorRef,\n  useElement,\n} from '@udecode/plate-common/react';\nimport { useEquationInput } from '@udecode/plate-math/react';\nimport { BlockSelectionPlugin } from '@udecode/plate-selection/react';\nimport { CornerDownLeftIcon } from 'lucide-react';\nimport { useReadOnly, useSelected } from 'slate-react';\n\nimport { Button } from './button';\nimport { PopoverContent } from './popover';\n\nconst EquationInput = createPrimitiveComponent(TextareaAutosize)({\n  propsHook: useEquationInput,\n});\n\nconst EquationPopoverContent = ({\n  className,\n  isInline,\n  open,\n  setOpen,\n  ...props\n}: {\n  isInline: boolean;\n  open: boolean;\n  setOpen: (open: boolean) => void;\n} & TextareaAutosizeProps) => {\n  const editor = useEditorRef();\n  const readOnly = useReadOnly();\n  const element = useElement<TEquationElement>();\n  const selected = useSelected();\n\n  useEffect(() => {\n    if (isInline && selected) {\n      setOpen(true);\n    }\n  }, [selected, isInline, setOpen]);\n\n  if (readOnly) return null;\n\n  const onClose = () => {\n    setOpen(false);\n\n    if (isInline) {\n      selectSiblingNodePoint(editor, { node: element });\n    } else {\n      editor\n        .getApi(BlockSelectionPlugin)\n        .blockSelection.addSelectedRow(element.id as string);\n    }\n  };\n\n  return (\n    <PopoverContent\n      className=\"flex gap-2\"\n      onEscapeKeyDown={(e) => {\n        e.preventDefault();\n      }}\n      contentEditable={false}\n    >\n      <EquationInput\n        className={cn('max-h-[50vh] grow resize-none p-2 text-sm', className)}\n        state={{ isInline, open, onClose }}\n        autoFocus\n        {...props}\n      />\n\n      <Button variant=\"secondary\" className=\"px-3\" onClick={onClose}>\n        Done <CornerDownLeftIcon className=\"size-3.5\" />\n      </Button>\n    </PopoverContent>\n  );\n};\n\nexport { EquationPopoverContent };\n",
+      "path": "plate-ui/equation-popover.tsx",
+      "target": "components/plate-ui/equation-popover.tsx",
+      "type": "registry:ui"
+    }
+  ],
+  "name": "equation-popover",
+  "registryDependencies": [],
+  "type": "registry:ui"
+}

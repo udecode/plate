@@ -209,6 +209,66 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
+    "equation-element": {
+      name: "equation-element",
+      description: "",
+      type: "registry:ui",
+      registryDependencies: ["popover"],
+      files: [{
+        path: "src/registry/default/plate-ui/equation-element.tsx",
+        type: "registry:ui",
+        target: ""
+      },{
+        path: "src/registry/default/plate-ui/equation-element-static.tsx",
+        type: "registry:ui",
+        target: ""
+      },{
+        path: "src/registry/default/plate-ui/equation-popover.tsx",
+        type: "registry:ui",
+        target: ""
+      }],
+      component: React.lazy(() => import("@/registry/default/plate-ui/equation-element.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
+    "inline-equation-element": {
+      name: "inline-equation-element",
+      description: "",
+      type: "registry:ui",
+      registryDependencies: ["plate-element","popover"],
+      files: [{
+        path: "src/registry/default/plate-ui/inline-equation-element.tsx",
+        type: "registry:ui",
+        target: ""
+      },{
+        path: "src/registry/default/plate-ui/inline-equation-element-static.tsx",
+        type: "registry:ui",
+        target: ""
+      }],
+      component: React.lazy(() => import("@/registry/default/plate-ui/inline-equation-element.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
+    "inline-equation-toolbar-button": {
+      name: "inline-equation-toolbar-button",
+      description: "",
+      type: "registry:ui",
+      registryDependencies: ["toolbar"],
+      files: [{
+        path: "src/registry/default/plate-ui/inline-equation-toolbar-button.tsx",
+        type: "registry:ui",
+        target: ""
+      }],
+      component: React.lazy(() => import("@/registry/default/plate-ui/inline-equation-toolbar-button.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
     "emoji-input-element": {
       name: "emoji-input-element",
       description: "",
@@ -236,6 +296,22 @@ export const Index: Record<string, any> = {
         target: ""
       }],
       component: React.lazy(() => import("@/registry/default/plate-ui/excalidraw-element.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
+    "font-size-toolbar-button": {
+      name: "font-size-toolbar-button",
+      description: "",
+      type: "registry:ui",
+      registryDependencies: ["toolbar"],
+      files: [{
+        path: "src/registry/default/plate-ui/font-size-toolbar-button.tsx",
+        type: "registry:ui",
+        target: ""
+      }],
+      component: React.lazy(() => import("@/registry/default/plate-ui/font-size-toolbar-button.tsx")),
       source: "",
       category: "",
       subcategory: "",
@@ -1321,7 +1397,7 @@ export const Index: Record<string, any> = {
       name: "fixed-toolbar-buttons",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["toolbar","ai-toolbar-button","align-dropdown-menu","color-dropdown-menu","comment-toolbar-button","emoji-dropdown-menu","history-toolbar-button","indent-list-toolbar-button","indent-todo-toolbar-button","indent-toolbar-button","insert-dropdown-menu","line-height-dropdown-menu","link-toolbar-button","mark-toolbar-button","media-toolbar-button","mode-dropdown-menu","more-dropdown-menu","outdent-toolbar-button","table-dropdown-menu","toggle-toolbar-button","turn-into-dropdown-menu","export-toolbar-button"],
+      registryDependencies: ["toolbar","ai-toolbar-button","align-dropdown-menu","color-dropdown-menu","comment-toolbar-button","emoji-dropdown-menu","font-size-toolbar-button","history-toolbar-button","indent-list-toolbar-button","indent-todo-toolbar-button","indent-toolbar-button","insert-dropdown-menu","line-height-dropdown-menu","link-toolbar-button","mark-toolbar-button","media-toolbar-button","mode-dropdown-menu","more-dropdown-menu","outdent-toolbar-button","table-dropdown-menu","toggle-toolbar-button","turn-into-dropdown-menu","export-toolbar-button"],
       files: [{
         path: "src/registry/default/plate-ui/fixed-toolbar-buttons.tsx",
         type: "registry:ui",
@@ -1857,7 +1933,7 @@ export const Index: Record<string, any> = {
       name: "editor-plugins",
       description: "",
       type: "registry:component",
-      registryDependencies: ["ai-plugins","basic-nodes-plugins","align-plugin","autoformat-plugin","block-menu-plugins","cursor-overlay-plugin","comments-plugin","delete-plugins","dnd-plugins","exit-break-plugin","indent-list-plugins","line-height-plugin","link-plugin","media-plugins","mention-plugin","reset-block-type-plugin","soft-break-plugin","table-plugin","toc-plugin"],
+      registryDependencies: ["ai-plugins","basic-nodes-plugins","align-plugin","autoformat-plugin","block-menu-plugins","equation-plugins","cursor-overlay-plugin","comments-plugin","delete-plugins","dnd-plugins","exit-break-plugin","indent-list-plugins","line-height-plugin","link-plugin","media-plugins","mention-plugin","reset-block-type-plugin","soft-break-plugin","table-plugin","toc-plugin"],
       files: [{
         path: "src/registry/default/components/editor/plugins/editor-plugins.tsx",
         type: "registry:component",
@@ -1880,6 +1956,22 @@ export const Index: Record<string, any> = {
         target: ""
       }],
       component: React.lazy(() => import("@/registry/default/components/editor/plugins/ai-plugins.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
+    "equation-plugins": {
+      name: "equation-plugins",
+      description: "",
+      type: "registry:component",
+      registryDependencies: ["equation-element","inline-equation-toolbar-button"],
+      files: [{
+        path: "src/registry/default/components/editor/plugins/equation-plugins.ts",
+        type: "registry:component",
+        target: ""
+      }],
+      component: React.lazy(() => import("@/registry/default/components/editor/plugins/equation-plugins.ts")),
       source: "",
       category: "",
       subcategory: "",
@@ -2755,6 +2847,34 @@ export const Index: Record<string, any> = {
     },
     "emoji-demo": {
       name: "emoji-demo",
+      description: "",
+      type: "registry:example",
+      registryDependencies: [],
+      files: [{
+        path: "src/registry/default/example/demo.tsx",
+        type: "registry:example",
+        target: ""
+      },{
+        path: "src/registry/default/example/values/emoji-value.tsx",
+        type: "registry:example",
+        target: ""
+      },{
+        path: "src/registry/default/components/editor/use-create-editor.ts",
+        type: "registry:example",
+        target: ""
+      },{
+        path: "src/registry/default/components/editor/plugins/editor-plugins.tsx",
+        type: "registry:example",
+        target: ""
+      }],
+      component: React.lazy(() => import("@/registry/default/example/demo.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
+    "equation-demo": {
+      name: "equation-demo",
       description: "",
       type: "registry:example",
       registryDependencies: [],
@@ -4009,7 +4129,7 @@ export const Index: Record<string, any> = {
       name: "editor-ai",
       description: "An AI editor",
       type: "registry:block",
-      registryDependencies: ["api-ai","api-uploadthing","plate-types","editor-plugins","copilot-plugins","floating-toolbar-plugin","fixed-toolbar-plugin","ai-menu","ghost-text","comments-popover","cursor-overlay","editor","block-context-menu","ai-leaf","blockquote-element","code-block-element","code-leaf","code-line-element","code-syntax-leaf","column-element","column-group-element","comment-leaf","date-element","draggable","emoji-input-element","excalidraw-element","heading-element","highlight-leaf","hr-element","image-element","kbd-leaf","link-element","media-audio-element","media-embed-element","media-file-element","media-placeholder-element","media-video-element","mention-element","mention-input-element","paragraph-element","placeholder","slash-input-element","table-cell-element","table-element","table-row-element","toc-element","toggle-element"],
+      registryDependencies: ["api-ai","api-uploadthing","plate-types","editor-plugins","copilot-plugins","floating-toolbar-plugin","fixed-toolbar-plugin","ai-menu","ghost-text","comments-popover","cursor-overlay","editor","block-context-menu","ai-leaf","blockquote-element","code-block-element","code-leaf","code-line-element","code-syntax-leaf","column-element","column-group-element","comment-leaf","date-element","draggable","equation-element","inline-equation-element","emoji-input-element","excalidraw-element","heading-element","highlight-leaf","hr-element","image-element","kbd-leaf","link-element","media-audio-element","media-embed-element","media-file-element","media-placeholder-element","media-video-element","mention-element","mention-input-element","paragraph-element","placeholder","slash-input-element","table-cell-element","table-element","table-row-element","toc-element","toggle-element"],
       files: [{
         path: "src/registry/default/block/editor-ai/page.tsx",
         type: "registry:page",

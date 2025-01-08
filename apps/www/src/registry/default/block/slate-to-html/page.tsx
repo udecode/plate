@@ -46,6 +46,10 @@ import { BaseColumnItemPlugin, BaseColumnPlugin } from '@udecode/plate-layout';
 import { BaseLineHeightPlugin } from '@udecode/plate-line-height';
 import { BaseLinkPlugin } from '@udecode/plate-link';
 import {
+  BaseEquationPlugin,
+  BaseInlineEquationPlugin,
+} from '@udecode/plate-math';
+import {
   BaseAudioPlugin,
   BaseFilePlugin,
   BaseImagePlugin,
@@ -76,6 +80,7 @@ import { basicMarksValue } from '@/registry/default/example/values/basic-marks-v
 import { columnValue } from '@/registry/default/example/values/column-value';
 import { commentsValue } from '@/registry/default/example/values/comments-value';
 import { dateValue } from '@/registry/default/example/values/date-value';
+import { equationValue } from '@/registry/default/example/values/equation-value';
 import { fontValue } from '@/registry/default/example/values/font-value';
 import { highlightValue } from '@/registry/default/example/values/highlight-value';
 import { horizontalRuleValue } from '@/registry/default/example/values/horizontal-rule-value';
@@ -100,6 +105,7 @@ import { ColumnGroupElementStatic } from '@/registry/default/plate-ui/column-gro
 import { CommentLeafStatic } from '@/registry/default/plate-ui/comment-leaf-static';
 import { DateElementStatic } from '@/registry/default/plate-ui/date-element-static';
 import { EditorStatic } from '@/registry/default/plate-ui/editor-static';
+import { EquationElementStatic } from '@/registry/default/plate-ui/equation-element-static';
 import { HeadingElementStatic } from '@/registry/default/plate-ui/heading-element-static';
 import { HighlightLeafStatic } from '@/registry/default/plate-ui/highlight-leaf-static';
 import { HrElementStatic } from '@/registry/default/plate-ui/hr-element-static';
@@ -112,6 +118,7 @@ import {
   TodoLiStatic,
   TodoMarkerStatic,
 } from '@/registry/default/plate-ui/indent-todo-marker-static';
+import { InlineEquationElementStatic } from '@/registry/default/plate-ui/inline-equation-element-static';
 import { KbdLeafStatic } from '@/registry/default/plate-ui/kbd-leaf-static';
 import { LinkElementStatic } from '@/registry/default/plate-ui/link-element-static';
 import { MediaAudioElementStatic } from '@/registry/default/plate-ui/media-audio-element-static';
@@ -159,10 +166,12 @@ export default async function SlateToHtmlBlock() {
     [BaseColumnPlugin.key]: ColumnGroupElementStatic,
     [BaseCommentsPlugin.key]: CommentLeafStatic,
     [BaseDatePlugin.key]: DateElementStatic,
+    [BaseEquationPlugin.key]: EquationElementStatic,
     [BaseFilePlugin.key]: MediaFileElementStatic,
     [BaseHighlightPlugin.key]: HighlightLeafStatic,
     [BaseHorizontalRulePlugin.key]: HrElementStatic,
     [BaseImagePlugin.key]: ImageElementStatic,
+    [BaseInlineEquationPlugin.key]: InlineEquationElementStatic,
     [BaseItalicPlugin.key]: withProps(SlateLeaf, { as: 'em' }),
     [BaseKbdPlugin.key]: KbdLeafStatic,
     [BaseLinkPlugin.key]: LinkElementStatic,
@@ -196,7 +205,7 @@ export default async function SlateToHtmlBlock() {
     ...linkValue,
     ...horizontalRuleValue,
     ...tableValue,
-    ...mediaValue,
+    ...equationValue,
     ...columnValue,
     ...mentionValue,
     ...dateValue,
@@ -208,10 +217,13 @@ export default async function SlateToHtmlBlock() {
     ...lineHeightValue,
     ...indentValue,
     ...indentListValue,
+    ...mediaValue,
   ];
 
   const editor = createSlateEditor({
     plugins: [
+      BaseEquationPlugin,
+      BaseInlineEquationPlugin,
       BaseColumnPlugin,
       BaseColumnItemPlugin,
       BaseTocPlugin,
@@ -300,6 +312,8 @@ export default async function SlateToHtmlBlock() {
 
   const tailwindCss = await getCachedTailwindCss();
   const prismCss = await getCachedPrismCss();
+  const katexCDN = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.18/dist/katex.css" integrity="sha384-9PvLvaiSKCPkFKB1ZsEoTjgnJn+O3KvEwtsz37/XrkYft3DTk2gHdYvd9oWgW3tV" crossorigin="anonymous">`;
+
   // const cookieStore = await cookies();
   // const theme = cookieStore.get('theme')?.value;
   const theme = 'light';
@@ -314,6 +328,7 @@ export default async function SlateToHtmlBlock() {
   // Create the full HTML document
   const html = createHtmlDocument({
     editorHtml,
+    katexCDN,
     prismCss,
     tailwindCss,
     theme,

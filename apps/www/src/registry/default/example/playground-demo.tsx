@@ -145,6 +145,7 @@ const usePlaygroundValue = (): Value => {
     if (enabled.column) value.push(...values.column);
     if (enabled.mention) value.push(...values.mention);
     if (enabled.date) value.push(...values.date);
+    if (enabled.equation) value.push(...values.equation);
     if (enabled.emoji) value.push(...values.emoji);
     if (enabled.color || enabled.backgroundColor) value.push(...values.font);
     if (enabled.highlight) value.push(...values.highlight);

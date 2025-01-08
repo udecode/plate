@@ -139,13 +139,16 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
 
       <DropdownMenuContent
         className="ignore-click-outside/toolbar min-w-0"
+        onCloseAutoFocus={(e) => {
+          e.preventDefault();
+          editor.tf.focus();
+        }}
         align="start"
       >
         <DropdownMenuRadioGroup
           value={value}
           onValueChange={(type) => {
             setBlockType(editor, type);
-            editor.tf.focus();
           }}
           label="Turn into"
         >

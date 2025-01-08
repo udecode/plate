@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate",
-  "version": "41.0.13",
+  "version": "41.0.14",
   "description": "Plate – a framework for building rich text editors on the web",
   "keywords": [
     "contentEditable",

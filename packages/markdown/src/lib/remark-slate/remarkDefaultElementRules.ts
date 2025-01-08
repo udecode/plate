@@ -79,7 +79,7 @@ export const remarkDefaultElementRules: RemarkElementRules = {
           listItems: TElement[] = [],
           indent = 1
         ) => {
-          _node.children?.forEach((listItem) => {
+          _node.children?.forEach((listItem, index) => {
             if (!listItem.children) {
               listItems.push({
                 children: remarkTransformElementChildren(listItem, options),
@@ -91,7 +91,7 @@ export const remarkDefaultElementRules: RemarkElementRules = {
 
             const [paragraph, ...subLists] = listItem.children;
 
-            listItems.push({
+            const transformedListItem: TElement = {
               children: remarkTransformElementChildren(
                 paragraph || '',
                 options
@@ -99,7 +99,13 @@ export const remarkDefaultElementRules: RemarkElementRules = {
               indent,
               listStyleType,
               type: options.editor.getType({ key: 'p' }),
-            });
+            };
+
+            if (node.ordered) {
+              transformedListItem.listStart = index + 1;
+            }
+
+            listItems.push(transformedListItem);
 
             subLists.forEach((subList) => {
               if (subList.type === 'list') {

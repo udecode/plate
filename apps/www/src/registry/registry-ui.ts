@@ -360,6 +360,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       'color-dropdown-menu',
       'comment-toolbar-button',
       'emoji-dropdown-menu',
+      'font-size-toolbar-button',
       'history-toolbar-button',
       'indent-list-toolbar-button',
       'indent-todo-toolbar-button',
@@ -1084,6 +1085,75 @@ export const uiNodes: Registry = [
     type: 'registry:ui',
   },
   {
+    dependencies: ['@udecode/plate-math', 'react-textarea-autosize'],
+    doc: {
+      description:
+        'Displays a LaTeX equation element with an editable popover for inputting and rendering mathematical expressions.',
+      docs: [
+        {
+          route: 'https://platejs.org/docs/equation',
+          title: 'Equation',
+        },
+      ],
+      examples: ['equation-demo'],
+    },
+    files: [
+      { path: 'plate-ui/equation-element.tsx', type: 'registry:ui' },
+      { path: 'plate-ui/equation-element-static.tsx', type: 'registry:ui' },
+      { path: 'plate-ui/equation-popover.tsx', type: 'registry:ui' },
+    ],
+    name: 'equation-element',
+    registryDependencies: ['popover'],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@udecode/plate-math'],
+    doc: {
+      description:
+        'An inline LaTeX equation element with an editable popover for inputting and rendering mathematical expressions.',
+      docs: [
+        {
+          route: 'https://platejs.org/docs/equation',
+          title: 'Equation',
+        },
+      ],
+      examples: ['equation-demo'],
+    },
+    files: [
+      { path: 'plate-ui/inline-equation-element.tsx', type: 'registry:ui' },
+      {
+        path: 'plate-ui/inline-equation-element-static.tsx',
+        type: 'registry:ui',
+      },
+    ],
+    name: 'inline-equation-element',
+    registryDependencies: ['plate-element', 'popover'],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@udecode/plate-math'],
+    doc: {
+      description:
+        'A toolbar button for inserting and editing inline equations.',
+      docs: [
+        {
+          route: 'https://platejs.org/docs/equation',
+          title: 'Equation',
+        },
+      ],
+      examples: ['equation-demo', 'floating-toolbar-demo'],
+    },
+    files: [
+      {
+        path: 'plate-ui/inline-equation-toolbar-button.tsx',
+        type: 'registry:ui',
+      },
+    ],
+    name: 'inline-equation-toolbar-button',
+    registryDependencies: ['toolbar'],
+    type: 'registry:ui',
+  },
+  {
     dependencies: ['@udecode/plate-emoji'],
     doc: {
       description: 'An input component for emoji search and insertion.',
@@ -1109,6 +1179,20 @@ export const uiNodes: Registry = [
     files: [{ path: 'plate-ui/excalidraw-element.tsx', type: 'registry:ui' }],
     name: 'excalidraw-element',
     registryDependencies: ['plate-element'],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@udecode/plate-font'],
+    doc: {
+      description: 'A toolbar control for adjusting font size.',
+      docs: [{ route: '/docs/font' }],
+      examples: ['list-demo'],
+    },
+    files: [
+      { path: 'plate-ui/font-size-toolbar-button.tsx', type: 'registry:ui' },
+    ],
+    name: 'font-size-toolbar-button',
+    registryDependencies: ['toolbar'],
     type: 'registry:ui',
   },
   {

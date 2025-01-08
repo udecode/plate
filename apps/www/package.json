@@ -163,6 +163,7 @@
     "react-player": "2.16.0",
     "react-resizable-panels": "^2.0.22",
     "react-syntax-highlighter": "^15.5.0",
+    "react-textarea-autosize": "^8.5.5",
     "react-tweet": "^3.2.1",
     "react-wrap-balancer": "^1.1.1",
     "remark-emoji": "5.0.1",

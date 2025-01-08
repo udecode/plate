@@ -10,6 +10,8 @@ import {
   usePlateSelectors,
   usePlateStore,
 } from '../stores';
+import type { WritableAtom } from 'jotai/vanilla/atom';
+import type { JotaiStore } from 'jotai-x';
 
 export interface PlateControllerEffectProps {
   id?: string;
@@ -23,8 +25,13 @@ export const PlateControllerEffect = ({
 
   const currentStoreAtom = React.useMemo(
     () =>
-      focusAtom(plateControllerStore.atom.editorStores, (optic) =>
-        optic.prop(id)
+      focusAtom(
+        plateControllerStore.atom.editorStores as WritableAtom<
+          Record<string, JotaiStore | null>,
+          any,
+          any
+        >,
+        (optic) => optic.prop(id)
       ),
     [id]
   );

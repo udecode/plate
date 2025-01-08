@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-markdown",
-  "version": "41.0.0",
+  "version": "41.0.14",
   "description": "Markdown serializer plugin for Plate",
   "keywords": [
     "markdown",

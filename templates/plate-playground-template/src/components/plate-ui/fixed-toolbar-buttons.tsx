@@ -15,7 +15,6 @@ import {
   FontColorPlugin,
 } from '@udecode/plate-font/react';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
-import { ListStyleType } from '@udecode/plate-indent-list';
 import {
   AudioPlugin,
   FilePlugin,
@@ -43,8 +42,12 @@ import { ColorDropdownMenu } from './color-dropdown-menu';
 import { CommentToolbarButton } from './comment-toolbar-button';
 import { EmojiDropdownMenu } from './emoji-dropdown-menu';
 import { ExportToolbarButton } from './export-toolbar-button';
+import { FontSizeToolbarButton } from './font-size-toolbar-button';
 import { RedoToolbarButton, UndoToolbarButton } from './history-toolbar-button';
-import { IndentListToolbarButton } from './indent-list-toolbar-button';
+import {
+  BulletedIndentListToolbarButton,
+  NumberedIndentListToolbarButton,
+} from './indent-list-toolbar-button';
 import { IndentTodoToolbarButton } from './indent-todo-toolbar-button';
 import { IndentToolbarButton } from './indent-toolbar-button';
 import { InsertDropdownMenu } from './insert-dropdown-menu';
@@ -86,6 +89,7 @@ export function FixedToolbarButtons() {
           <ToolbarGroup>
             <InsertDropdownMenu />
             <TurnIntoDropdownMenu />
+            <FontSizeToolbarButton />
           </ToolbarGroup>
 
           <ToolbarGroup>
@@ -136,8 +140,8 @@ export function FixedToolbarButtons() {
           <ToolbarGroup>
             <AlignDropdownMenu />
 
-            <IndentListToolbarButton nodeType={ListStyleType.Disc} />
-            <IndentListToolbarButton nodeType={ListStyleType.Decimal} />
+            <NumberedIndentListToolbarButton />
+            <BulletedIndentListToolbarButton />
             <IndentTodoToolbarButton />
             <ToggleToolbarButton />
           </ToolbarGroup>

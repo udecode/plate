@@ -114,9 +114,8 @@ export function MediaToolbarButton({
           }
         }}
         pressed={openState.open}
-        tooltip={currentConfig.tooltip}
       >
-        <ToolbarSplitButtonPrimary>
+        <ToolbarSplitButtonPrimary tooltip={currentConfig.tooltip}>
           {currentConfig.icon}
         </ToolbarSplitButtonPrimary>
 

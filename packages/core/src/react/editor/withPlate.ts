@@ -59,6 +59,13 @@ export const withPlate = <
     plugins: [...getPlateCorePlugins(), ...plugins],
   } as any) as unknown as TPlateEditor<V, InferPlugins<P[]>>;
 
+  const { findPath: findPathBase } = editor;
+
+  editor.findPath = (node, options) =>
+    options
+      ? findPathBase(node, options)
+      : (findPath(editor, node) ?? findPathBase(node, options));
+
   editor.useOptions = ((plugin: any, selector: any, equalityFn: any) => {
     const store = editor.getOptionsStore(plugin);
 
