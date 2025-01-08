@@ -1,0 +1,156 @@
+---
+title: Element
+description: API reference for elements in Slate.
+---
+
+`Element` objects are a type of node in a Slate document that contain other element nodes or text nodes. They can be either "blocks" or "inlines" depending on the Slate editor's configuration.
+
+## Element
+
+Find the corresponding documentation in the [Slate docs](https://docs.slatejs.org/api/nodes/element).
+
+### `isElementType`
+
+Checks if a value implements the `TElement` interface and has elementKey with selected value.
+
+<APIParameters>
+  <APIItem name="value" type="any">
+    The value to check.
+  </APIItem>
+  <APIItem name="elementVal" type="string">
+    The value to match against.
+  </APIItem>
+  <APIItem name="elementKey" type="string" optional>
+    The key to check. Defaults to 'type'.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns `true` if the value is an element with matching type.
+</APIReturns>
+
+### `isAncestor`
+
+Checks if a value implements the 'Ancestor' interface.
+
+<APIParameters>
+  <APIItem name="value" type="any">
+    The value to check.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns `true` if the value is an ancestor node.
+</APIReturns>
+
+### `isElement`
+
+Checks if a value implements the `TElement` interface.
+
+<APIParameters>
+  <APIItem name="value" type="any">
+    The value to check.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns `true` if the value is an element.
+</APIReturns>
+
+### `isElementList`
+
+Checks if a value is an array of `TElement` objects.
+
+<APIParameters>
+  <APIItem name="value" type="any">
+    The value to check.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns `true` if the value is an array of elements.
+</APIReturns>
+
+### `isElementProps`
+
+Checks if a set of props is a partial of TElement.
+
+<APIParameters>
+  <APIItem name="props" type="any">
+    The props to check.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns `true` if the props match element properties.
+</APIReturns>
+
+### `matches`
+
+Checks if an element matches set of properties.
+
+<APIParameters>
+  <APIItem name="element" type="TElement">
+    The element to check.
+  </APIItem>
+  <APIItem name="props" type="Partial<TElement>">
+    The properties to match against.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns `true` if the element matches all properties (excluding children).
+</APIReturns>
+
+## Types
+
+### TElement
+
+The base element type.
+
+<APIAttributes>
+<APIItem name="TElement" type="object">
+  Properties:
+  - `children: Descendant[]` - Array of child nodes
+  - `type: string` - Element type identifier
+  - `[key: string]: unknown` - Additional custom properties
+</APIItem>
+</APIAttributes>
+
+### Element
+
+The concrete element type (same as TElement).
+
+### ElementOrTextOf
+
+A union type representing either an element or text node of an editor.
+
+<APIAttributes>
+<APIItem name="ElementOrTextOf<E>" type="ElementOf<E> | TextOf<E>">
+  Generic type for elements or text nodes from a specific editor type.
+</APIItem>
+</APIAttributes>
+
+### ElementOrTextIn
+
+A union type representing either an element or text node in a value.
+
+<APIAttributes>
+<APIItem name="ElementOrTextIn<V>" type="ElementIn<V> | TextIn<V>">
+  Generic type for elements or text nodes from a specific value type.
+</APIItem>
+</APIAttributes>
+
+### ElementOf
+
+A utility type to get all the element nodes type from a root node.
+
+<APIAttributes>
+<APIItem name="ElementOf<N>" type="type">
+  Generic type that extracts element types from a node type.
+</APIItem>
+</APIAttributes>
+
+### ElementIn
+
+A utility type to get element types from a value type.
+
+<APIAttributes>
+<APIItem name="ElementIn<V>" type="ElementOf<V[number]>">
+  Generic type that extracts element types from a value type.
+</APIItem>
+</APIAttributes>

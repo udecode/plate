@@ -1,0 +1,700 @@
+---
+title: Editor Transforms
+description: API reference for editor transformation operations in Slate.
+---
+
+Editor transforms are methods that modify the editor state. They are grouped into several categories: node operations, text operations, selection operations, DOM operations, and history operations.
+
+## Node Operations
+
+### `insertFragment`
+
+Insert a fragment of nodes at the specified location or current selection.
+
+<APIParameters>
+  <APIItem name="fragment" type="N[]">
+    The nodes to insert.
+  </APIItem>
+  <APIItem name="options" type="InsertFragmentOptions" optional>
+    Options for the insertion:
+    
+    <APISubListItem>
+      batchDirty: Whether to batch dirty operations
+    </APISubListItem>
+    <APISubListItem>
+      hanging: Whether the insertion is hanging
+    </APISubListItem>
+    <APISubListItem>
+      at: Location where to perform insertion
+    </APISubListItem>
+    <APISubListItem>
+      voids: Whether to allow insertion in void nodes
+    </APISubListItem>
+  </APIItem>
+</APIParameters>
+
+### `insertNode`
+
+Atomically insert a node at the specified location or current selection.
+
+<APIParameters>
+  <APIItem name="node" type="N">
+    The node to insert.
+  </APIItem>
+  <APIItem name="options" type="InsertNodesOptions<V>" optional>
+    Options for the insertion:
+    <APISubListItem>
+      batchDirty: Whether to batch dirty operations
+    </APISubListItem>
+    <APISubListItem>
+      hanging: Whether insertion is hanging
+    </APISubListItem>
+    <APISubListItem>
+      nextBlock: Insert after current block
+    </APISubListItem>
+    <APISubListItem>
+      removeEmpty: Remove current block if empty
+    </APISubListItem>
+    <APISubListItem>
+      select: Select inserted nodes
+    </APISubListItem>
+  </APIItem>
+</APIParameters>
+
+### `insertNodes`
+
+Atomically inserts multiple nodes at the specified location or current selection.
+
+<APIParameters>
+  <APIItem name="nodes" type="N | N[]">
+    A single node or array of nodes to insert.
+  </APIItem>
+  <APIItem name="options" type="InsertNodesOptions<V>" optional>
+    Options for insertion:
+    <APISubList>
+      <APISubListItem>
+        at: Location where to insert nodes
+      </APISubListItem>
+      <APISubListItem>
+        hanging: Whether insertion is hanging
+      </APISubListItem>
+      <APISubListItem>
+        nextBlock: Insert after current block
+      </APISubListItem>
+      <APISubListItem>
+        removeEmpty: Remove current block if empty
+      </APISubListItem>
+      <APISubListItem>
+        select: Select inserted nodes
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### `replaceNodes`
+
+Replace nodes at a location with new nodes.
+
+<APIParameters>
+  <APIItem name="nodes" type="N | N[]">
+    The replacement nodes.
+  </APIItem>
+  <APIItem name="options" type="ReplaceNodesOptions<V>" optional>
+    Options for the replacement:
+    <APISubList>
+      <APISubListItem>
+        children: When true, replace all children of the node at the specified location
+      </APISubListItem>
+      <APISubListItem>
+        removeNodes: Options for removing nodes before replacement
+      </APISubListItem>
+      <APISubListItem>
+        at: Location where to perform the replacement
+      </APISubListItem>
+      <APISubListItem>
+        select: When true, select the replaced nodes
+      </APISubListItem>
+      <APISubListItem>
+        hanging: Whether the operation is hanging
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### `setNodes`
+
+Set properties of nodes at the specified location.
+
+<APIParameters>
+  <APIItem name="props" type="Partial<NodeProps<N>>">
+    The properties to set.
+  </APIItem>
+  <APIItem name="options" type="SetNodesOptions<V>" optional>
+    Options for setting properties:
+    <APISubList>
+      <APISubListItem>
+        compare: Function to compare properties between nodes
+      </APISubListItem>
+      <APISubListItem>
+        hanging: Whether the operation is hanging
+      </APISubListItem>
+      <APISubListItem>
+        marks: When true, only apply to text nodes in non-void nodes or markable void nodes
+      </APISubListItem>
+      <APISubListItem>
+        merge: Function to merge properties between nodes
+      </APISubListItem>
+      <APISubListItem>
+        split: Whether to allow splitting nodes
+      </APISubListItem>
+      <APISubListItem>
+        at: Location where to set properties
+      </APISubListItem>
+      <APISubListItem>
+        match: Predicate to filter nodes
+      </APISubListItem>
+      <APISubListItem>
+        mode: The matching mode to use ('highest' | 'lowest')
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### `unsetNodes`
+
+Unset properties of nodes at the specified location.
+
+<APIParameters>
+  <APIItem name="props" type="(keyof NodeProps<N>)[] | keyof NodeProps<N>">
+    The properties to unset.
+  </APIItem>
+  <APIItem name="options" type="UnsetNodesOptions<V>" optional>
+    Options for unsetting properties:
+    <APISubList>
+      <APISubListItem>
+        hanging: Whether the operation is hanging
+      </APISubListItem>
+      <APISubListItem>
+        split: Whether to allow splitting nodes
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### `wrapNodes`
+
+Wrap nodes at the specified location in an element container.
+
+<APIParameters>
+  <APIItem name="element" type="N">
+    The wrapping element.
+  </APIItem>
+  <APIItem name="options" type="WrapNodesOptions<V>" optional>
+    Options for wrapping:
+    <APISubList>
+      <APISubListItem>
+        children: When true, wrap node children into a single element
+      </APISubListItem>
+      <APISubListItem>
+        hanging: Whether the operation is hanging
+      </APISubListItem>
+      <APISubListItem>
+        split: Whether to allow splitting nodes during wrapping
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### `unwrapNodes`
+
+Unwrap nodes at the specified location.
+
+<APIParameters>
+  <APIItem name="options" type="UnwrapNodesOptions<V>" optional>
+    Options for unwrapping:
+    <APISubList>
+      <APISubListItem>
+        hanging: Whether the operation is hanging
+      </APISubListItem>
+      <APISubListItem>
+        split: Whether to allow splitting nodes
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### `mergeNodes`
+
+Merge a node with the previous node at the same depth.
+
+<APIParameters>
+  <APIItem name="options" type="MergeNodesOptions<V>" optional>
+    Options for merging:
+    <APISubList>
+      <APISubListItem>
+        hanging: Whether the operation is hanging
+      </APISubListItem>
+      <APISubListItem>
+        mergeNode: Custom function to handle node merging
+      </APISubListItem>
+      <APISubListItem>
+        removeEmptyAncestor: Custom function to handle empty ancestor removal
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### `moveNodes`
+
+Move nodes from one location to another.
+
+<APIParameters>
+  <APIItem name="options" type="MoveNodesOptions<V>" optional>
+    Options for moving:
+    <APISubList>
+      <APISubListItem>
+        to: The destination path
+      </APISubListItem>
+      <APISubListItem>
+        children: Move only children of the node at location
+      </APISubListItem>
+      <APISubListItem>
+        fromIndex: Start index of the children to move (Default: 0)
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### `liftNodes`
+
+Lift nodes upwards in the document tree.
+
+<APIParameters>
+  <APIItem name="options" type="LiftNodesOptions<V>" optional>
+    Options for lifting nodes.
+  </APIItem>
+</APIParameters>
+
+## Text Operations
+
+### `insertText`
+
+Insert text at the specified location or current selection.
+
+<APIParameters>
+  <APIItem name="text" type="string">
+    The text to insert.
+  </APIItem>
+  <APIItem name="options" type="InsertTextOptions" optional>
+    Options for text insertion:
+    <APISubList>
+      <APISubListItem>
+        at: Location where to insert text
+      </APISubListItem>
+      <APISubListItem>
+        voids: Whether to allow insertion in void nodes
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### `deleteText`
+
+Delete text in the document.
+
+<APIParameters>
+  <APIItem name="options" type="DeleteTextOptions" optional>
+    Options for deletion:
+    <APISubList>
+      <APISubListItem>
+        distance: Number of units to delete
+      </APISubListItem>
+      <APISubListItem>
+        hanging: Whether deletion is hanging
+      </APISubListItem>
+      <APISubListItem>
+        reverse: Whether to delete backwards
+      </APISubListItem>
+      <APISubListItem>
+        unit: Unit of text to delete
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+## Selection Operations
+
+### `select`
+
+Set the selection to a new value.
+
+<APIParameters>
+  <APIItem name="target" type="Location">
+    The target location.
+  </APIItem>
+  <APIItem name="options" type="SelectOptions" optional>
+    Options for selection:
+    <APISubList>
+      <APISubListItem>
+        edge: Select edge of the block above location ('start' | 'end')
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### `setSelection`
+
+Set new properties on an active selection.
+
+<APIParameters>
+  <APIItem name="props" type="Partial<Range>">
+    The selection properties to set.
+  </APIItem>
+</APIParameters>
+
+## DOM Operations
+
+### `focus`
+
+Focus the editor.
+
+<APIParameters>
+  <APIItem name="options" type="FocusEditorOptions" optional>
+    Options for focusing:
+    <APISubList>
+      <APISubListItem>
+        at: Target location to select before focusing
+      </APISubListItem>
+      <APISubListItem>
+        edge: Focus at location or editor edge ('start' | 'end' | 'startEditor' | 'endEditor')
+      </APISubListItem>
+      <APISubListItem>
+        retries: Number of times to retry focusing
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+## History Operations
+
+### `withoutNormalizing`
+
+Call a function, deferring normalization until after it completes.
+
+<APIParameters>
+  <APIItem name="fn" type="() => void">
+    The function to execute.
+  </APIItem>
+</APIParameters>
+
+### `withMerging`
+
+Apply changes that will be merged into the previous history.
+
+<APIParameters>
+  <APIItem name="fn" type="() => void">
+    The function containing the changes.
+  </APIItem>
+</APIParameters>
+
+### `withNewBatch`
+
+Apply changes starting a new batch in the history.
+
+<APIParameters>
+  <APIItem name="fn" type="() => void">
+    The function containing the changes.
+  </APIItem>
+</APIParameters>
+
+### `addMark`
+
+Add a custom property to the leaf text nodes in the current selection.
+
+<APIParameters>
+  <APIItem name="key" type="string">
+    The mark key to add.
+  </APIItem>
+  <APIItem name="value" type="any">
+    The value to set for the mark.
+  </APIItem>
+</APIParameters>
+
+### `addMarks`
+
+Add multiple marks to the leaf text nodes in the current selection.
+
+<APIParameters>
+  <APIItem name="marks" type="Record<string, any>">
+    The marks to add.
+  </APIItem>
+  <APIItem name="options" type="AddMarksOptions" optional>
+    Options for adding marks:
+    <APISubList>
+      <APISubListItem>
+        remove: Marks to remove before adding new ones (string[] | string)
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### `removeMark`
+
+Remove a custom property from leaf text nodes in the current selection.
+
+<APIParameters>
+  <APIItem name="key" type="string">
+    The mark key to remove.
+  </APIItem>
+</APIParameters>
+
+### `removeMarks`
+
+Remove marks from text nodes.
+
+<APIParameters>
+  <APIItem name="keys" type="string[] | string" optional>
+    The mark keys to remove.
+  </APIItem>
+  <APIItem name="options" type="RemoveMarksOptions" optional>
+    Options for removing marks:
+    <APISubList>
+      <APISubListItem>
+        at: Range where the mark(s) will be removed (Default: selection)
+      </APISubListItem>
+      <APISubListItem>
+        shouldChange: When true, trigger onChange if collapsed selection
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### `toggleMark`
+
+Toggle a mark on the leaf text nodes in the current selection.
+
+<APIParameters>
+  <APIItem name="key" type="string">
+    The mark key to toggle.
+  </APIItem>
+  <APIItem name="value" type="any" optional>
+    The value to set when adding the mark.
+  </APIItem>
+  <APIItem name="options" type="ToggleMarkOptions" optional>
+    Options for toggling:
+    <APISubList>
+      <APISubListItem>
+        remove: Mark keys to remove when adding the mark
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### `deleteBackward`
+
+Delete content backward from the current selection.
+
+<APIParameters>
+  <APIItem name="options" type="DeleteTextOptions" optional>
+    Options for deletion:
+    <APISubList>
+      <APISubListItem>
+        unit: Unit of text to delete ('character' | 'word' | 'line' | 'block')
+      </APISubListItem>
+      <APISubListItem>
+        distance: Number of units to delete
+      </APISubListItem>
+      <APISubListItem>
+        reverse: Whether to delete backwards
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### `deleteForward`
+
+Delete content forward from the current selection.
+
+<APIParameters>
+  <APIItem name="options" type="DeleteTextOptions" optional>
+    Options for deletion:
+    <APISubList>
+      <APISubListItem>
+        unit: Unit of text to delete ('character' | 'word' | 'line' | 'block')
+      </APISubListItem>
+      <APISubListItem>
+        distance: Number of units to delete
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### `deleteFragment`
+
+Delete the content of the current selection.
+
+<APIParameters>
+  <APIItem name="options" type="DeleteFragmentOptions" optional>
+    Options for deletion:
+    <APISubList>
+      <APISubListItem>
+        direction: Direction of deletion ('forward' | 'backward')
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### `duplicateNodes`
+
+Duplicate nodes at a location.
+
+<APIParameters>
+  <APIItem name="options" type="DuplicateNodesOptions<V>" optional>
+    Options for duplication:
+    <APISubList>
+      <APISubListItem>
+        at: Location to get nodes from and insert after (Default: selection)
+      </APISubListItem>
+      <APISubListItem>
+        block: If true, duplicate blocks above location
+      </APISubListItem>
+      <APISubListItem>
+        nodes: Specific nodes to duplicate (ignores block option if provided)
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### `insertBreak`
+
+Insert a block break at the current selection.
+
+### `insertSoftBreak`
+
+Insert a soft break at the current selection.
+
+### `normalize`
+
+Normalize any dirty objects in the editor.
+
+<APIParameters>
+  <APIItem name="options" type="EditorNormalizeOptions" optional>
+    Options for normalization:
+    <APISubList>
+      <APISubListItem>
+        force: Whether to force normalization on all nodes
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### `redo`
+
+Redo to the next saved state.
+
+### `undo`
+
+Undo to the previous saved state.
+
+### `collapseSelection`
+
+Collapse the selection to a single point.
+
+<APIParameters>
+  <APIItem name="options" type="CollapseSelectionOptions" optional>
+    Options for collapsing:
+    <APISubList>
+      <APISubListItem>
+        edge: Which edge to collapse to ('start' | 'end')
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### `moveSelection`
+
+Move the selection in a direction.
+
+<APIParameters>
+  <APIItem name="options" type="MoveSelectionOptions" optional>
+    Options for moving:
+    <APISubList>
+      <APISubListItem>
+        distance: Number of units to move
+      </APISubListItem>
+      <APISubListItem>
+        unit: Unit to move by ('offset' | 'character' | 'word' | 'line')
+      </APISubListItem>
+      <APISubListItem>
+        reverse: Whether to move backwards
+      </APISubListItem>
+      <APISubListItem>
+        edge: Which edge to move ('anchor' | 'focus' | 'start' | 'end')
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### `setPoint`
+
+Set new properties on one of the selection's points.
+
+<APIParameters>
+  <APIItem name="props" type="Partial<Point>">
+    The point properties to set.
+  </APIItem>
+  <APIItem name="options" type="SetPointOptions" optional>
+    Options for setting point:
+    <APISubList>
+      <APISubListItem>
+        edge: Which edge to set ('anchor' | 'focus' | 'start' | 'end')
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### `blur`
+
+Blur the editor.
+
+### `deselect`
+
+Unset the selection.
+
+### `withoutSaving`
+
+Apply changes without saving to history.
+
+<APIParameters>
+  <APIItem name="fn" type="() => void">
+    The function containing the changes.
+  </APIItem>
+</APIParameters>
+
+### `withoutMerging`
+
+Apply changes without merging into previous history.
+
+<APIParameters>
+  <APIItem name="fn" type="() => void">
+    The function containing the changes.
+  </APIItem>
+</APIParameters>
+
+## History Operations
+
+### `HistoryEditor`
+
+The `HistoryEditor` interface extends the base `Editor` interface to handle history operations.
+
+<APIParameters>
+  <APIItem name="history" type="History">
+    The history of operations.
+  </APIItem>
+  <APIItem name="undo" type="() => void">
+    Undo the last operation.
+  </APIItem>
+  <APIItem name="redo" type="() => void">
+    Redo the last undone operation.
+  </APIItem>
+</APIParameters>

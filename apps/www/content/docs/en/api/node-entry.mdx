@@ -1,0 +1,151 @@
+---
+title: NodeEntry
+description: API reference for node entries in Slate.
+---
+
+`NodeEntry` objects are returned when iterating over the nodes in a Slate document tree. They consist of the node and its `Path` relative to the root node in the document. Node entries are represented as tuples of `[Node, Path]`.
+
+## Types
+
+### NodeEntry
+
+The base node entry type representing any node and its path in the document.
+
+<APIParameters>
+  <APIItem name="NodeEntry" type="[Node, Path]">
+    A tuple containing:
+    <APISubList>
+      <APISubListItem>
+        First element: The node itself
+      </APISubListItem>
+      <APISubListItem>
+        Second element: The path to the node
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### ElementEntry
+
+Refers to an `Element` node and its path in the document.
+
+<APIParameters>
+  <APIItem name="ElementEntry" type="[Element, Path]">
+    A tuple containing:
+    <APISubList>
+      <APISubListItem>
+        First element: An Element node
+      </APISubListItem>
+      <APISubListItem>
+        Second element: The path to the element
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### TextEntry
+
+Refers to a `Text` node and its path in the document.
+
+<APIParameters>
+  <APIItem name="TextEntry" type="[Text, Path]">
+    A tuple containing:
+    <APISubList>
+      <APISubListItem>
+        First element: A Text node
+      </APISubListItem>
+      <APISubListItem>
+        Second element: The path to the text node
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### AncestorEntry
+
+Represents an ancestor node (Editor or Element) and its path.
+
+<APIParameters>
+  <APIItem name="AncestorEntry" type="[Ancestor, Path]">
+    A tuple containing:
+    <APISubList>
+      <APISubListItem>
+        First element: An Editor or Element node
+      </APISubListItem>
+      <APISubListItem>
+        Second element: The path to the ancestor
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### DescendantEntry
+
+Represents a descendant node (Element or Text) and its path.
+
+<APIParameters>
+  <APIItem name="DescendantEntry" type="[Descendant, Path]">
+    A tuple containing:
+    <APISubList>
+      <APISubListItem>
+        First element: An Element or Text node
+      </APISubListItem>
+      <APISubListItem>
+        Second element: The path to the descendant
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### NodeChildEntry
+
+Represents a child node and its path relative to its parent.
+
+<APIParameters>
+  <APIItem name="NodeChildEntry" type="[Node, Path]">
+    A tuple containing:
+    <APISubList>
+      <APISubListItem>
+        First element: A child node
+      </APISubListItem>
+      <APISubListItem>
+        Second element: The path to the child
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+## Generic Types
+
+These types provide type safety when working with specific node types:
+
+<APIParameters>
+  <APIItem name="Value-Specific Entries" type="type">
+    <APISubList>
+      <APISubListItem>
+        NodeEntryOf<E>: Node entry from a specific editor type
+      </APISubListItem>
+      <APISubListItem>
+        NodeEntryIn<V>: Node entry from a specific value type
+      </APISubListItem>
+      <APISubListItem>
+        ElementEntryOf<E>: Element entry from a specific editor type
+      </APISubListItem>
+      <APISubListItem>
+        TextEntryOf<E>: Text entry from a specific editor type
+      </APISubListItem>
+      <APISubListItem>
+        TextEntryIn<V>: Text entry from a specific value type
+      </APISubListItem>
+      <APISubListItem>
+        AncestorEntryOf<E>: Ancestor entry from a specific editor type
+      </APISubListItem>
+      <APISubListItem>
+        DescendantEntryOf<E>: Descendant entry from a specific editor type
+      </APISubListItem>
+      <APISubListItem>
+        DescendantEntryIn<V>: Descendant entry from a specific value type
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
