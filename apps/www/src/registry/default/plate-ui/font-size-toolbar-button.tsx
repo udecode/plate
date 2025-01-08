@@ -1,11 +1,12 @@
 'use client';
+
 import { useState } from 'react';
 
 import type { TElement } from '@udecode/plate';
 
 import { cn } from '@udecode/cn';
 import { useEditorPlugin, useEditorSelector } from '@udecode/plate/react';
-import { BaseFontSizePlugin, toUnitLess } from '@udecode/plate-font';
+import { toUnitLess } from '@udecode/plate-font';
 import { FontSizePlugin } from '@udecode/plate-font/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { Minus, Plus } from 'lucide-react';
@@ -41,7 +42,7 @@ const FONT_SIZES = [
 export function FontSizeToolbarButton() {
   const [inputValue, setInputValue] = useState(DEFAULT_FONT_SIZE);
   const [isFocused, setIsFocused] = useState(false);
-  const { api, editor } = useEditorPlugin(BaseFontSizePlugin);
+  const { api, editor } = useEditorPlugin(FontSizePlugin);
 
   const cursorFontSize = useEditorSelector((editor) => {
     const fontSize = editor.api.marks()?.[FontSizePlugin.key];
