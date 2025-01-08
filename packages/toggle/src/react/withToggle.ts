@@ -1,59 +1,48 @@
-import type { ExtendEditor } from '@udecode/plate/react';
+import type { SlateEditor } from '@udecode/plate';
+import type { ExtendEditorTransforms } from '@udecode/plate/react';
 
-import { type SlateEditor, NodeApi } from '@udecode/plate';
 import { type TIndentElement, indent } from '@udecode/plate-indent';
 
 import type { ToggleConfig } from './TogglePlugin';
 
 import { BaseTogglePlugin } from '../lib/BaseTogglePlugin';
-import { getLastEntryEnclosedInToggle, isInClosedToggle } from './queries';
+import { getLastEntryEnclosedInToggle } from './queries';
 import {
   moveCurrentBlockAfterPreviousSelectable,
   moveNextSelectableAfterCurrentBlock,
 } from './transforms';
 
-// TODO react
-export const withToggle: ExtendEditor<ToggleConfig> = ({
+export const withToggle: ExtendEditorTransforms<ToggleConfig> = ({
   editor,
   getOption,
-}) => {
-  const { deleteBackward, deleteForward, insertBreak, isSelectable } = editor;
-
-  editor.isSelectable = (element) => {
-    if (
-      NodeApi.isNode(element) &&
-      isInClosedToggle(editor, element.id as string)
-    )
-      return false;
-
-    return isSelectable(element);
-  };
-
-  editor.deleteBackward = (unit) => {
+  tf: { deleteBackward, deleteForward, insertBreak },
+}) => ({
+  deleteBackward(options) {
     if (
       moveCurrentBlockAfterPreviousSelectable(editor as SlateEditor) === false
     )
       return;
 
-    deleteBackward(unit);
-  };
+    deleteBackward(options);
+  },
 
-  editor.deleteForward = (unit) => {
+  deleteForward(options) {
     if (moveNextSelectableAfterCurrentBlock(editor as SlateEditor) === false)
       return;
 
-    deleteForward(unit);
-  };
+    deleteForward(options);
+  },
 
-  editor.insertBreak = () => {
-    // If we are inserting a break in a toggle:
-    //   If the toggle is open
-    //     - Add a new paragraph right after the toggle
-    //     - Focus on that paragraph
-    //   If the the toggle is closed:
-    //     - Add a new paragraph after the last sibling enclosed in the toggle
-    //     - Focus on that paragraph
-    // Note: We are relying on the default behaviour of `insertBreak` which inserts a toggle right after the current toggle with the same indent
+  // If we are inserting a break in a toggle:
+  //   If the toggle is open
+  //     - Add a new paragraph right after the toggle
+  //     - Focus on that paragraph
+  //   If the the toggle is closed:
+  //     - Add a new paragraph after the last sibling enclosed in the toggle
+  //     - Focus on that paragraph
+  // Note: We are relying on the default behaviour of `insertBreak` which inserts a toggle right
+  // after the current toggle with the same indent
+  insertBreak() {
     const currentBlockEntry = editor.api.block<TIndentElement>();
 
     if (
@@ -91,7 +80,5 @@ export const withToggle: ExtendEditor<ToggleConfig> = ({
         }
       }
     });
-  };
-
-  return editor;
-};
+  },
+});

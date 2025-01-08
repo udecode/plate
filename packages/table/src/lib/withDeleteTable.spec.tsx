@@ -1,10 +1,10 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, getEditorPlugin } from '@udecode/plate';
+import type { SlateEditor } from '@udecode/plate';
+
 import { type PlateEditor, createPlateEditor } from '@udecode/plate/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { withDeleteTable } from './withDeleteTable';
 import { getTestTablePlugins } from './withNormalizeTable.spec';
 
 jsxt;
@@ -52,17 +52,13 @@ describe('withDeleteTable', () => {
           </editor>
         ) as any as PlateEditor;
 
-        let editor = createPlateEditor({
+        const editor = createPlateEditor({
           plugins: getTestTablePlugins({ disableMerge }),
           selection: input.selection,
           value: input.children,
         });
 
-        editor = withDeleteTable(
-          getEditorPlugin(editor, editor.plugins.table) as any
-        ) as any;
-
-        editor.deleteBackward('character');
+        editor.tf.deleteBackward();
 
         expect(editor.children).toMatchObject(output.children);
         expect(editor.selection).toEqual(output.selection);
@@ -113,17 +109,13 @@ describe('withDeleteTable', () => {
           </editor>
         ) as any as SlateEditor;
 
-        let editor = createPlateEditor({
+        const editor = createPlateEditor({
           plugins: getTestTablePlugins({ disableMerge }),
           selection: input.selection,
           value: input.children,
         });
 
-        editor = withDeleteTable(
-          getEditorPlugin(editor, editor.plugins.table)
-        ) as any;
-
-        editor.deleteForward('character');
+        editor.tf.deleteForward();
 
         expect(editor.children).toMatchObject(output.children);
         expect(editor.selection).toEqual(output.selection);
@@ -201,11 +193,7 @@ describe('withDeleteTable', () => {
             value: input.children,
           });
 
-          editor = withDeleteTable(
-            getEditorPlugin(editor, editor.plugins.table)
-          );
-
-          editor.deleteFragment();
+          editor.tf.deleteFragment();
         });
 
         it('should remove the cells content', () => {

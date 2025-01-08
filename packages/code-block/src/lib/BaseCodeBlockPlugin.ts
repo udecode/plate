@@ -34,7 +34,6 @@ export const BaseCodeSyntaxPlugin = createSlatePlugin({
 
 export const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
   key: 'code_block',
-  extendEditor: withCodeBlock,
   inject: {
     plugins: {
       [HtmlPlugin.key]: {
@@ -57,4 +56,4 @@ export const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
   },
   parsers: { html: { deserializer: htmlDeserializerCodeBlock } },
   plugins: [BaseCodeLinePlugin, BaseCodeSyntaxPlugin],
-});
+}).extendEditorTransforms(withCodeBlock);

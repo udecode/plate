@@ -1,4 +1,4 @@
-import { createEditor } from '../../createEditor';
+import { createEditor } from '../../create-editor';
 
 const nodesFixture5 = [
   {

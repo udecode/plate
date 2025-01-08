@@ -49,7 +49,7 @@ describe('when ignoreTrim is true', () => {
       value: input,
     });
 
-    editor.insertText('*');
+    editor.tf.insertText('*');
 
     expect(input.children).toEqual(output.children);
   });
@@ -91,7 +91,7 @@ describe('when ignoreTrim is false', () => {
         value: input,
       });
 
-      editor.insertText(' ');
+      editor.tf.insertText(' ');
 
       expect(input.children).toEqual(output.children);
     });

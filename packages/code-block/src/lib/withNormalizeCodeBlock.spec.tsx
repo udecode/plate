@@ -4,7 +4,7 @@ import { type SlateEditor, NodeApi, createEditor } from '@udecode/plate';
 import { createPlateEditor } from '@udecode/plate/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
+import { CodeBlockPlugin } from '../react/CodeBlockPlugin';
 
 jsxt;
 
@@ -39,7 +39,7 @@ describe('clean up code block', () => {
     const path = [0];
     const node = NodeApi.get(editor, path);
 
-    editor.normalizeNode([node!, path]);
+    editor.tf.normalizeNode([node!, path]);
 
     expect(editor.children).toEqual(output.children);
   });

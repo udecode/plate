@@ -4,7 +4,7 @@ import { LinkPlugin } from '@udecode/plate-link/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { createPlateEditor } from '../../../../plate/dist/react';
-import { createEditor } from '../../createEditor';
+import { createEditor } from '../../create-editor';
 
 jsxt;
 

@@ -45,7 +45,7 @@ describe('withInsertBreakIndentList', () => {
       value: input.children,
     });
 
-    editor.insertBreak();
+    editor.tf.insertBreak();
 
     expect(editor.children).toEqual(output.children);
   });
@@ -77,7 +77,7 @@ describe('withInsertBreakIndentList', () => {
       value: input.children,
     });
 
-    editor.insertBreak();
+    editor.tf.insertBreak();
 
     expect(editor.children).toEqual(output.children);
   });
@@ -115,7 +115,7 @@ describe('withInsertBreakIndentList', () => {
       value: input.children,
     });
 
-    editor.insertBreak();
+    editor.tf.insertBreak();
 
     expect(editor.children).toEqual(output.children);
   });

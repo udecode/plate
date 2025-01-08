@@ -55,7 +55,7 @@ it('autoformats a block with a single character trigger', () => {
     value: input,
   });
 
-  linkEditor.insertText(')');
+  linkEditor.tf.insertText(')');
 
   expect(input.children).toEqual(output.children);
 });

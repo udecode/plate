@@ -3,7 +3,6 @@
  */
 
 export * from './BaseImagePlugin';
-export * from './withImage';
 export * from './withImageEmbed';
 export * from './withImageUpload';
 export * from './transforms/index';

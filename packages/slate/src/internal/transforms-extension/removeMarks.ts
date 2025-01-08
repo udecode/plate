@@ -63,6 +63,6 @@ export const removeMarks = (
     }
 
     // Slate does not export FLUSHING so we need to call onChange manually
-    shouldChange && editor.onChange();
+    shouldChange && editor.api.onChange();
   }
 };

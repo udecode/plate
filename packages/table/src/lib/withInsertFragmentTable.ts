@@ -1,6 +1,9 @@
-import type { ExtendEditor, Path, TElement } from '@udecode/plate';
-
-import { NodeApi } from '@udecode/plate';
+import {
+  type ExtendEditorTransforms,
+  type Path,
+  type TElement,
+  NodeApi,
+} from '@udecode/plate';
 import cloneDeep from 'lodash/cloneDeep.js';
 
 import {
@@ -19,16 +22,14 @@ import { getTableGridAbove } from './queries/getTableGridAbove';
  * - Replace each cell above by the inserted table until out of bounds.
  * - Select the inserted cells.
  */
-export const withInsertFragmentTable: ExtendEditor<TableConfig> = ({
+export const withInsertFragmentTable: ExtendEditorTransforms<TableConfig> = ({
   api,
   editor,
   getOptions,
-  tf,
+  tf: { insert, insertFragment },
   type,
-}) => {
-  const { insertFragment } = editor;
-
-  editor.insertFragment = (fragment) => {
+}) => ({
+  insertFragment(fragment) {
     const insertedTable = fragment.find(
       (n) => (n as TElement).type === type
     ) as TTableElement | undefined;
@@ -98,7 +99,7 @@ export const withInsertFragmentTable: ExtendEditor<TableConfig> = ({
                   if (getOptions().disableExpandOnInsert) {
                     return;
                   } else {
-                    tf.insert.tableRow({
+                    insert.tableRow({
                       fromRow,
                     });
                   }
@@ -119,7 +120,7 @@ export const withInsertFragmentTable: ExtendEditor<TableConfig> = ({
                     if (getOptions().disableExpandOnInsert) {
                       return;
                     } else {
-                      tf.insert.tableColumn({
+                      insert.tableColumn({
                         fromCell,
                       });
                     }
@@ -156,14 +157,12 @@ export const withInsertFragmentTable: ExtendEditor<TableConfig> = ({
         fragment[0].type === BaseTablePlugin.key
       ) {
         // needed to insert as node, otherwise it will be inserted as text
-        editor.insertNode(fragment[0]);
+        editor.tf.insertNodes(fragment[0]);
 
         return;
       }
     }
 
     insertFragment(fragment);
-  };
-
-  return editor;
-};
+  },
+});

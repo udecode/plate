@@ -51,7 +51,7 @@ export const autoformatText = (
       format(editor, matched);
     } else {
       const formatEnd = Array.isArray(format) ? format[1] : format;
-      editor.insertText(formatEnd);
+      editor.tf.insertText(formatEnd);
 
       if (beforeStartMatchPoint) {
         const formatStart = Array.isArray(format) ? format[0] : format;

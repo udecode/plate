@@ -37,9 +37,9 @@ describe('when inserting ***', () => {
       value: input,
     });
 
-    editor.insertText('*');
-    editor.insertText('*');
-    editor.insertText('*');
+    editor.tf.insertText('*');
+    editor.tf.insertText('*');
+    editor.tf.insertText('*');
 
     expect(input.children).toEqual(output.children);
   });
@@ -84,12 +84,12 @@ describe('when inserting ***___', () => {
       value: input,
     });
 
-    editor.insertText('*');
-    editor.insertText('*');
-    editor.insertText('*');
-    editor.insertText('_');
-    editor.insertText('_');
-    editor.insertText('_');
+    editor.tf.insertText('*');
+    editor.tf.insertText('*');
+    editor.tf.insertText('*');
+    editor.tf.insertText('_');
+    editor.tf.insertText('_');
+    editor.tf.insertText('_');
 
     expect(input.children).toEqual(output.children);
   });

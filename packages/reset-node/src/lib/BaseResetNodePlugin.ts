@@ -14,38 +14,12 @@ export type ResetNodeConfig = PluginConfig<'resetNode', ResetNodePluginOptions>;
 /** Enables support for resetting block type from rules. */
 export const BaseResetNodePlugin = createTSlatePlugin<ResetNodeConfig>({
   key: 'resetNode',
-  extendEditor: ({ editor, getOptions }) => {
-    const { deleteBackward, deleteFragment } = editor;
-
-    editor.deleteFragment = (direction) => {
-      const deleteFragmentPlugin = () => {
-        const { selection } = editor;
-
-        if (!selection) return;
-
-        const start = editor.api.start([])!;
-        const end = editor.api.end([])!;
-
-        if (
-          (PointApi.equals(selection.anchor, start) &&
-            PointApi.equals(selection.focus, end)) ||
-          (PointApi.equals(selection.focus, start) &&
-            PointApi.equals(selection.anchor, end))
-        ) {
-          resetEditorChildren(editor, {
-            select: true,
-          });
-
-          return true;
-        }
-      };
-
-      if (!getOptions().disableEditorReset && deleteFragmentPlugin()) return;
-
-      deleteFragment(direction);
-    };
-
-    editor.deleteBackward = (unit) => {
+  options: {
+    rules: [],
+  },
+}).extendEditorTransforms(
+  ({ editor, getOptions, tf: { deleteBackward, deleteFragment } }) => ({
+    deleteBackward(options) {
       if (!getOptions().disableFirstBlockReset) {
         const { selection } = editor;
 
@@ -71,12 +45,35 @@ export const BaseResetNodePlugin = createTSlatePlugin<ResetNodeConfig>({
         }
       }
 
-      deleteBackward(unit);
-    };
+      deleteBackward(options);
+    },
 
-    return editor;
-  },
-  options: {
-    rules: [],
-  },
-});
+    deleteFragment(direction) {
+      const deleteFragmentPlugin = () => {
+        const { selection } = editor;
+
+        if (!selection) return;
+
+        const start = editor.api.start([])!;
+        const end = editor.api.end([])!;
+
+        if (
+          (PointApi.equals(selection.anchor, start) &&
+            PointApi.equals(selection.focus, end)) ||
+          (PointApi.equals(selection.focus, start) &&
+            PointApi.equals(selection.anchor, end))
+        ) {
+          resetEditorChildren(editor, {
+            select: true,
+          });
+
+          return true;
+        }
+      };
+
+      if (!getOptions().disableEditorReset && deleteFragmentPlugin()) return;
+
+      deleteFragment(direction);
+    },
+  })
+);

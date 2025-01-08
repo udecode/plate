@@ -29,7 +29,7 @@ export const exitBreakAtEdges = (
       isEdge = true;
     }
     if (isEdge && editor.api.isExpanded()) {
-      editor.deleteFragment();
+      editor.tf.deleteFragment();
     }
   }
 

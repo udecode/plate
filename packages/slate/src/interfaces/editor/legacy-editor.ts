@@ -47,7 +47,7 @@ export type LegacyEditorTransforms<V extends Value = Value> = {
     EditorTransforms<V>,
     'insertData' | 'insertFragmentData' | 'insertTextData' | 'setFragmentData'
   > &
-  Pick<EditorTransforms<V>, 'redo' | 'undo' | 'writeHistory'>;
+  Pick<EditorTransforms<V>, 'writeHistory'>;
 
 export type LegacyEditorMethods<V extends Value = Value> = LegacyEditorApi<V> &
   LegacyEditorTransforms<V>;

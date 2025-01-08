@@ -38,7 +38,7 @@ describe('p (empty) + codeblock when selection not in code block', () => {
       value: input.children,
     });
 
-    editor.deleteForward('character');
+    editor.tf.deleteForward();
 
     expect(editor.children).toEqual(expected.children);
   });
@@ -74,7 +74,7 @@ describe('p (not empty) + code block when selection not in code block', () => {
       value: input.children,
     });
 
-    editor.deleteForward('character');
+    editor.tf.deleteForward();
 
     expect(editor.children).toEqual(expected.children);
   });

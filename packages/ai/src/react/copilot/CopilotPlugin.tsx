@@ -166,6 +166,7 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
     },
   },
 })
+  .extendEditorTransforms(withCopilot)
   .extendOptions<Required<CopilotSelectors>>(({ getOptions }) => ({
     isSuggested: (id) => getOptions().suggestionNodeId === id,
   }))
@@ -208,7 +209,6 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
     },
   }))
   .extend({
-    extendEditor: withCopilot,
     render: {
       belowNodes: renderCopilotBelowNodes,
     },

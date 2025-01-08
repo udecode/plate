@@ -5,7 +5,6 @@ import { withBlockquote } from './withBlockquote';
 /** Enables support for block quotes, useful for quotations and passages. */
 export const BaseBlockquotePlugin = createSlatePlugin({
   key: 'blockquote',
-  extendEditor: withBlockquote,
   node: { isElement: true },
   parsers: {
     html: {
@@ -18,4 +17,4 @@ export const BaseBlockquotePlugin = createSlatePlugin({
       },
     },
   },
-});
+}).extendEditorApi(withBlockquote);

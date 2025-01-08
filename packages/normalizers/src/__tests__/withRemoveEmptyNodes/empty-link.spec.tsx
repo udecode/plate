@@ -42,7 +42,7 @@ it('should be', () => {
     value: input.children,
   });
 
-  editor.normalizeNode([(input.children[0] as any).children[0], [0, 0]]);
+  editor.tf.normalizeNode([(input.children[0] as any).children[0], [0, 0]]);
 
   expect(editor.children).toEqual(output.children);
 });

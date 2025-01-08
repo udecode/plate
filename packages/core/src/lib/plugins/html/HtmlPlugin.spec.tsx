@@ -60,7 +60,7 @@ describe('when inserting html', () => {
         value: input.children,
       });
 
-      editor.insertData(dataTransfer);
+      editor.tf.insertData(dataTransfer);
 
       expect(editor.children).toEqual(expected.children);
     });
@@ -93,7 +93,7 @@ describe('when inserting html', () => {
         value: input.children,
       });
 
-      editor.insertData(dataTransfer as any);
+      editor.tf.insertData(dataTransfer as any);
 
       expect(editor.children).toEqual(expected.children);
     });
@@ -127,7 +127,7 @@ describe('when inserting html', () => {
       value: input.children,
     });
 
-    editor.insertData(
+    editor.tf.insertData(
       makeDataTransfer(
         '<html><body><p>first element</p><p>second element</p>text node in the end</body></html>'
       )
@@ -170,7 +170,7 @@ describe('when inserting empty html', () => {
       value: input.children,
     });
 
-    editor.insertData(dataTransfer as any);
+    editor.tf.insertData(dataTransfer as any);
 
     expect(editor.children).toEqual(output.children);
   });
@@ -211,7 +211,7 @@ describe('when inserting an iframe without src', () => {
       value: input.children,
     });
 
-    editor.insertData(data as any);
+    editor.tf.insertData(data as any);
 
     expect(editor.children).toEqual(output.children);
   });
@@ -255,7 +255,7 @@ describe('when inserting link with href', () => {
       value: input.children,
     });
 
-    editor.insertData(data as any);
+    editor.tf.insertData(data as any);
 
     expect(editor.children).toEqual(output.children);
   });
@@ -293,7 +293,7 @@ describe('when inserting plain text', () => {
       value: input.children,
     });
 
-    editor.insertData(data as any);
+    editor.tf.insertData(data as any);
 
     expect(editor.children).toEqual(output.children);
   });

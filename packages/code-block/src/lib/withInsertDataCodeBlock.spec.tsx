@@ -19,7 +19,7 @@ const editorTest = (input: any, data: DataTransfer, expected: any) => {
     value: input.children,
   });
 
-  editor.insertData(data);
+  editor.tf.insertData(data);
 
   expect(editor.children).toEqual(expected.children);
 };

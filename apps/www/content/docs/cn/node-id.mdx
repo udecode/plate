@@ -114,7 +114,7 @@ const plugins = [
 </editor>
 
 // 插入节点（例如复制/粘贴）
-editor.insertNode(<hp id="10">inserted</hp>);
+editor.tf.insertNode(<hp id="10">inserted</hp>);
 // 结果：
 <editor>
   <hp id="10">test</hp>
@@ -122,7 +122,7 @@ editor.insertNode(<hp id="10">inserted</hp>);
 </editor>
 
 // 插入多个节点
-editor.insertNodes([
+editor.tf.insertNodes([
   <hp>inserted</hp>,
   <hp>test</hp>,
 ]);
@@ -158,13 +158,13 @@ editor.insertNodes([
 4. **撤销/重做**:
 ```tsx
 // 当 reuseId=true
-editor.insertNode(<hp id="1">text</hp>);
+editor.tf.insertNode(<hp id="1">text</hp>);
 editor.undo();
 editor.redo();
 // 如果 ID 未被使用，节点保持 id="1"
 
 // 当 reuseId=false
-editor.insertNode(<hp id="1">text</hp>);
+editor.tf.insertNode(<hp id="1">text</hp>);
 editor.undo();
 editor.redo();
 // 节点获得新的 id="2"

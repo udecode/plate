@@ -1,5 +1,5 @@
 import {
-  type ExtendEditor,
+  type ExtendEditorTransforms,
   type TElement,
   BaseParagraphPlugin,
   ElementApi,
@@ -19,13 +19,12 @@ import { getListTypes, isListRoot } from './queries';
 import { moveListItemsToList } from './transforms';
 
 /** Normalize list node to force the ul>li>p+ul structure. */
-export const withNormalizeList: ExtendEditor<ListConfig> = ({
+export const withNormalizeList: ExtendEditorTransforms<ListConfig> = ({
   editor,
   getOptions,
-}) => {
-  const { normalizeNode } = editor;
-
-  editor.normalizeNode = ([node, path]) => {
+  tf: { normalizeNode },
+}) => ({
+  normalizeNode([node, path]) {
     const liType = editor.getType(BaseListItemPlugin);
     const licType = editor.getType(BaseListItemContentPlugin);
     const defaultType = editor.getType(BaseParagraphPlugin);
@@ -71,7 +70,7 @@ export const withNormalizeList: ExtendEditor<ListConfig> = ({
 
       // Has a list before with the same type
       if (prevNode?.type === node.type) {
-        editor.normalizeNode([prevNode, prevPath]);
+        editor.tf.normalizeNode([prevNode, prevPath]);
 
         // early return since this node will no longer exists
         return;
@@ -101,7 +100,5 @@ export const withNormalizeList: ExtendEditor<ListConfig> = ({
     }
 
     normalizeNode([node, path]);
-  };
-
-  return editor;
-};
+  },
+});

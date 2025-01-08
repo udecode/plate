@@ -1,8 +1,18 @@
-import { type ExtendEditor, type TRange, RangeApi } from '@udecode/plate';
+import {
+  type ExtendEditorTransforms,
+  type TRange,
+  RangeApi,
+} from '@udecode/plate';
 
-import type { TableConfig } from '.';
+import type {
+  TTableCellElement,
+  TTableElement,
+  TTableRowElement,
+} from './types';
 
+import { type TableConfig, BaseTableRowPlugin } from './BaseTablePlugin';
 import { overrideSelectionFromCell } from './transforms/overrideSelectionFromCell';
+import { computeCellIndices, getCellTypes } from './utils';
 
 // TODO: tests
 
@@ -15,13 +25,13 @@ import { overrideSelectionFromCell } from './transforms/overrideSelectionFromCel
  * - If focus is in table, anchor in a block after: set focus to the point before
  *   start of table
  */
-export const withSelectionTable: ExtendEditor<TableConfig> = ({
+export const withApplyTable: ExtendEditorTransforms<TableConfig> = ({
   editor,
+  getOptions,
+  tf: { apply },
   type,
-}) => {
-  const { apply } = editor;
-
-  editor.apply = (op) => {
+}) => ({
+  apply(op) {
     if (op.type === 'set_selection' && op.newProperties) {
       const newSelection = {
         ...editor.selection,
@@ -43,7 +53,6 @@ export const withSelectionTable: ExtendEditor<TableConfig> = ({
 
         if (anchorEntry) {
           const [, anchorPath] = anchorEntry;
-
           const isBackward = RangeApi.isBackward(newSelection);
 
           if (isBackward) {
@@ -64,7 +73,6 @@ export const withSelectionTable: ExtendEditor<TableConfig> = ({
 
           if (focusEntry) {
             const [, focusPath] = focusEntry;
-
             const isBackward = RangeApi.isBackward(newSelection);
 
             if (isBackward) {
@@ -81,8 +89,50 @@ export const withSelectionTable: ExtendEditor<TableConfig> = ({
       overrideSelectionFromCell(editor, newSelection);
     }
 
-    apply(op);
-  };
+    const isTableOperation =
+      op.type === 'remove_node' &&
+      op.node.type &&
+      [
+        editor.getType(BaseTableRowPlugin),
+        type,
+        ...getCellTypes(editor),
+      ].includes(op.node.type as string);
 
-  return editor;
-};
+    // Cleanup cell indices when removing a table cell
+    if (isTableOperation) {
+      const cells = [
+        ...editor.api.nodes<TTableCellElement>({
+          at: op.path,
+          match: { type: getCellTypes(editor) },
+        }),
+      ];
+
+      const cellIndices = getOptions()._cellIndices;
+
+      cells.forEach(([cell]) => {
+        delete cellIndices[cell.id as string];
+      });
+    }
+
+    apply(op);
+
+    let table: TTableElement | undefined;
+
+    if (
+      isTableOperation &&
+      // There is no new indices when removing a table
+      op.node.type !== type
+    ) {
+      table = editor.api.node<TTableRowElement>({
+        at: op.path,
+        match: { type },
+      })?.[0];
+
+      if (table) {
+        computeCellIndices(editor, {
+          tableNode: table,
+        });
+      }
+    }
+  },
+});

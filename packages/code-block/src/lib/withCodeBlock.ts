@@ -1,15 +1,18 @@
-import type { ExtendEditor } from '@udecode/plate';
+import type { ExtendEditorTransforms } from '@udecode/plate';
 
 import type { CodeBlockConfig } from './BaseCodeBlockPlugin';
 
-import { insertDataCodeBlock } from './insertDataCodeBlock';
-import { insertFragmentCodeBlock } from './insertFragmentCodeBlock';
-import { normalizeCodeBlock } from './normalizers/normalizeCodeBlock';
 import { getCodeLineEntry, getIndentDepth } from './queries';
 import { indentCodeLine } from './transforms';
+import { withInsertDataCodeBlock } from './withInsertDataCodeBlock';
+import { withInsertFragmentCodeBlock } from './withInsertFragmentCodeBlock';
+import { withNormalizeCodeBlock } from './withNormalizeCodeBlock';
 
-export const withCodeBlock: ExtendEditor<CodeBlockConfig> = ({ editor }) => {
-  const { insertBreak } = editor;
+export const withCodeBlock: ExtendEditorTransforms<CodeBlockConfig> = (ctx) => {
+  const {
+    editor,
+    tf: { insertBreak },
+  } = ctx;
 
   const insertBreakCodeBlock = () => {
     if (!editor.selection) return;
@@ -35,17 +38,14 @@ export const withCodeBlock: ExtendEditor<CodeBlockConfig> = ({ editor }) => {
     return true;
   };
 
-  editor.insertBreak = () => {
-    if (insertBreakCodeBlock()) return;
+  return {
+    insertBreak() {
+      if (insertBreakCodeBlock()) return;
 
-    insertBreak();
+      insertBreak();
+    },
+    ...withInsertDataCodeBlock(ctx),
+    ...withInsertFragmentCodeBlock(ctx),
+    ...withNormalizeCodeBlock(ctx),
   };
-
-  editor.insertFragment = insertFragmentCodeBlock(editor);
-
-  editor.normalizeNode = normalizeCodeBlock(editor);
-
-  editor.insertData = insertDataCodeBlock(editor);
-
-  return editor;
 };

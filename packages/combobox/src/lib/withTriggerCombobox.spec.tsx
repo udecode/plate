@@ -14,14 +14,13 @@ const ExampleComboboxPlugin = createSlatePlugin<
   TriggerComboboxPluginOptions
 >({
   key: 'exampleCombobox',
-  extendEditor: withTriggerCombobox,
   plugins: [
     createSlatePlugin({
       key: 'mention_input',
       node: { isElement: true, isInline: true, isVoid: true },
     }),
   ],
-});
+}).extendEditorTransforms(withTriggerCombobox);
 
 const plugins = [
   ParagraphPlugin,
@@ -75,7 +74,7 @@ describe('withTriggerCombobox', () => {
           </hp>
         );
 
-        editor.insertText(trigger);
+        editor.tf.insertText(trigger);
 
         expect(editor.children).toEqual([
           <hp>
@@ -96,7 +95,7 @@ describe('withTriggerCombobox', () => {
           </hp>
         );
 
-        editor.insertText(trigger);
+        editor.tf.insertText(trigger);
 
         expect(editor.children).toEqual([
           <hp>
@@ -117,7 +116,7 @@ describe('withTriggerCombobox', () => {
           </hp>
         );
 
-        editor.insertText(trigger);
+        editor.tf.insertText(trigger);
 
         expect(editor.children).toEqual([
           <hp>
@@ -139,7 +138,7 @@ describe('withTriggerCombobox', () => {
           </hp>
         );
 
-        editor.insertText(trigger);
+        editor.tf.insertText(trigger);
 
         expect(editor.children).toEqual([
           <hp>
@@ -157,7 +156,7 @@ describe('withTriggerCombobox', () => {
           </hp>
         );
 
-        editor.insertText(trigger);
+        editor.tf.insertText(trigger);
 
         expect(editor.children).toEqual([
           <hp>
@@ -180,7 +179,7 @@ describe('withTriggerCombobox', () => {
           </hp>
         );
 
-        editor.insertText(trigger);
+        editor.tf.insertText(trigger);
 
         expect(editor.children).toEqual([
           <hp>
@@ -200,7 +199,7 @@ describe('withTriggerCombobox', () => {
       </hp>
     );
 
-    editor.insertText('a');
+    editor.tf.insertText('a');
 
     expect(editor.children).toEqual([<hp>a</hp>]);
   });
@@ -212,7 +211,7 @@ describe('withTriggerCombobox', () => {
       </hp>
     );
 
-    editor.insertText('@');
+    editor.tf.insertText('@');
 
     expect(editor.children).toEqual([
       <hp>

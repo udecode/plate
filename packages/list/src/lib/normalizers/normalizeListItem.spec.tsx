@@ -42,7 +42,7 @@ describe('clean up list items', () => {
     const path = [0, 0];
     const node = NodeApi.get(editor, path);
 
-    editor.normalizeNode([node!, path]);
+    editor.tf.normalizeNode([node!, path]);
 
     expect(editor.children).toEqual(output.children);
   });

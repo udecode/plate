@@ -1,4 +1,8 @@
-import { type ExtendEditor, PathApi, queryNode } from '@udecode/plate';
+import {
+  type ExtendEditorTransforms,
+  PathApi,
+  queryNode,
+} from '@udecode/plate';
 
 import type { TrailingBlockConfig } from './TrailingBlockPlugin';
 
@@ -6,13 +10,12 @@ import type { TrailingBlockConfig } from './TrailingBlockPlugin';
  * Add a trailing block when the last node type is not `type` and when the
  * editor has .
  */
-export const withTrailingBlock: ExtendEditor<TrailingBlockConfig> = ({
+export const withTrailingBlock: ExtendEditorTransforms<TrailingBlockConfig> = ({
   editor,
   getOptions,
-}) => {
-  const { normalizeNode } = editor;
-
-  editor.normalizeNode = ([currentNode, currentPath]) => {
+  tf: { normalizeNode },
+}) => ({
+  normalizeNode([currentNode, currentPath]) {
     const { level, type, ...query } = getOptions();
 
     if (currentPath.length === 0) {
@@ -33,7 +36,5 @@ export const withTrailingBlock: ExtendEditor<TrailingBlockConfig> = ({
     }
 
     return normalizeNode([currentNode, currentPath]);
-  };
-
-  return editor;
-};
+  },
+});

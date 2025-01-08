@@ -22,7 +22,7 @@ export const onKeyDownSoftBreak: KeyboardHandler<SoftBreakConfig> = ({
       event.preventDefault();
       event.stopPropagation();
 
-      editor.insertText('\n');
+      editor.tf.insertText('\n');
     }
   });
 };

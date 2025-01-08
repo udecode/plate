@@ -1,13 +1,16 @@
-import type { SlateEditor } from '@udecode/plate';
+import type { ExtendEditorTransforms } from '@udecode/plate';
 
 import { BaseCodeBlockPlugin, BaseCodeLinePlugin } from './BaseCodeBlockPlugin';
 
-export function insertDataCodeBlock(editor: SlateEditor) {
-  const { insertData } = editor;
-
-  return (data: DataTransfer) => {
+export const withInsertDataCodeBlock: ExtendEditorTransforms = ({
+  editor,
+  tf: { insertData },
+}) => ({
+  insertData(data) {
     const text = data.getData('text/plain');
     const vscodeDataString = data.getData('vscode-editor-data');
+
+    console.log(text, vscodeDataString);
 
     if (vscodeDataString) {
       try {
@@ -39,5 +42,5 @@ export function insertDataCodeBlock(editor: SlateEditor) {
     }
 
     insertData(data);
-  };
-}
+  },
+});

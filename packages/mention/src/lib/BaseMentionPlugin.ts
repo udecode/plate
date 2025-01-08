@@ -1,4 +1,8 @@
-import { type PluginConfig, createSlatePlugin } from '@udecode/plate';
+import {
+  type PluginConfig,
+  createSlatePlugin,
+  createTSlatePlugin,
+} from '@udecode/plate';
 import {
   type TriggerComboboxPluginOptions,
   withTriggerCombobox,
@@ -25,9 +29,8 @@ export const BaseMentionInputPlugin = createSlatePlugin({
 });
 
 /** Enables support for autocompleting @mentions. */
-export const BaseMentionPlugin = createSlatePlugin({
+export const BaseMentionPlugin = createTSlatePlugin<MentionConfig>({
   key: 'mention',
-  extendEditor: withTriggerCombobox,
   node: { isElement: true, isInline: true, isMarkableVoid: true, isVoid: true },
   options: {
     createComboboxInput: (trigger) => ({
@@ -39,15 +42,17 @@ export const BaseMentionPlugin = createSlatePlugin({
     triggerPreviousCharPattern: /^\s?$/,
   },
   plugins: [BaseMentionInputPlugin],
-}).extendEditorTransforms<MentionConfig['transforms']>(({ editor, type }) => ({
-  insert: {
-    mention: ({ key, value }) => {
-      editor.tf.insertNodes<TMentionElement>({
-        key,
-        children: [{ text: '' }],
-        type,
-        value,
-      });
+})
+  .extendEditorTransforms<MentionConfig['transforms']>(({ editor, type }) => ({
+    insert: {
+      mention: ({ key, value }) => {
+        editor.tf.insertNodes<TMentionElement>({
+          key,
+          children: [{ text: '' }],
+          type,
+          value,
+        });
+      },
     },
-  },
-}));
+  }))
+  .extendEditorTransforms(withTriggerCombobox as any);

@@ -25,7 +25,7 @@ export const pasteSelectedBlocks = (editor: SlateEditor, e: ClipboardEvent) => {
 
     // quick fix until we find a way to merge history
     // editor.tf.withoutMerging(() => {
-    editor.insertData(e.clipboardData!);
+    editor.tf.insertData(e.clipboardData!);
     // });
     // insertData is focusing the editor so deselect
     editor.tf.deselect();

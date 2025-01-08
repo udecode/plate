@@ -35,7 +35,6 @@ export type IndentConfig = PluginConfig<
 
 export const BaseIndentPlugin = createTSlatePlugin<IndentConfig>({
   key: 'indent',
-  extendEditor: withIndent,
   inject: {
     isBlock: true,
     nodeProps: {
@@ -53,4 +52,4 @@ export const BaseIndentPlugin = createTSlatePlugin<IndentConfig>({
     offset: 24,
     unit: 'px',
   },
-});
+}).extendEditorTransforms(withIndent);

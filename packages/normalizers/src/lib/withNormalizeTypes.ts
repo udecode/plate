@@ -1,5 +1,5 @@
 import {
-  type ExtendEditor,
+  type ExtendEditorTransforms,
   type TElement,
   ElementApi,
   NodeApi,
@@ -7,13 +7,10 @@ import {
 
 import type { NormalizeTypesConfig } from './NormalizeTypesPlugin';
 
-export const withNormalizeTypes: ExtendEditor<NormalizeTypesConfig> = ({
-  editor,
-  getOptions,
-}) => {
-  const { normalizeNode } = editor;
-
-  editor.normalizeNode = ([currentNode, currentPath]) => {
+export const withNormalizeTypes: ExtendEditorTransforms<
+  NormalizeTypesConfig
+> = ({ editor, getOptions, tf: { normalizeNode } }) => ({
+  normalizeNode([currentNode, currentPath]) {
     const { rules, onError } = getOptions();
 
     if (currentPath.length === 0) {
@@ -59,7 +56,5 @@ export const withNormalizeTypes: ExtendEditor<NormalizeTypesConfig> = ({
     }
 
     return normalizeNode([currentNode, currentPath]);
-  };
-
-  return editor;
-};
+  },
+});

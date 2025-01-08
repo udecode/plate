@@ -146,7 +146,7 @@ export const mergeNodes = <E extends Editor>(
     ) {
       editor.tf.removeNodes({ at: prevPath, voids });
     } else {
-      editor.apply({
+      editor.tf.apply({
         path: newPath,
         position,
         properties,

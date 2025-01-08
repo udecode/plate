@@ -2,11 +2,11 @@ import { DOMEditor } from 'slate-dom';
 
 import type { Path } from '../../interfaces';
 import type { Editor, EditorFindPathOptions } from '../../interfaces/editor';
-import type { NodeOf } from '../../interfaces/node';
+import type { TNode } from '../../interfaces/node';
 
-export const findPath = <N extends NodeOf<E>, E extends Editor>(
-  editor: E,
-  node: N,
+export const findPath = (
+  editor: Editor,
+  node: TNode,
   options?: EditorFindPathOptions
 ): Path | undefined => {
   const findNodePath = () => {

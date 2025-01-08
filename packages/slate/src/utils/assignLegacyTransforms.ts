@@ -1,4 +1,4 @@
-import type { Editor } from '../interfaces';
+import type { Editor, LegacyEditorMethods } from '../interfaces';
 
 const LEGACY_TRANSFORMS = new Set([
   'addMark',
@@ -134,6 +134,8 @@ const LEGACY_API = new Set([
 export const assignLegacyTransforms = (editor: Editor, transforms: any) => {
   if (!transforms) return;
 
+  const e = editor as Editor & LegacyEditorMethods;
+
   const legacyTransforms = Object.entries(transforms).reduce(
     (acc, [key, value]) => {
       if (LEGACY_TRANSFORMS.has(key)) {
@@ -145,15 +147,15 @@ export const assignLegacyTransforms = (editor: Editor, transforms: any) => {
     {} as Record<string, any>
   );
 
-  Object.assign(editor, legacyTransforms);
+  Object.assign(e, legacyTransforms);
 
   if (transforms.deleteBackward) {
-    editor.deleteBackward = (unit) => {
+    e.deleteBackward = (unit) => {
       return transforms.deleteBackward({ unit });
     };
   }
   if (transforms.deleteForward) {
-    editor.deleteForward = (unit) => {
+    e.deleteForward = (unit) => {
       return transforms.deleteForward({ unit });
     };
   }
@@ -161,6 +163,8 @@ export const assignLegacyTransforms = (editor: Editor, transforms: any) => {
 
 export const assignLegacyApi = (editor: Editor, api: any) => {
   if (!api) return;
+
+  const e = editor as Editor & LegacyEditorMethods;
 
   const legacyApi = Object.entries(api).reduce(
     (acc, [key, value]) => {
@@ -173,10 +177,10 @@ export const assignLegacyApi = (editor: Editor, api: any) => {
     {} as Record<string, any>
   );
 
-  Object.assign(editor, legacyApi);
+  Object.assign(e, legacyApi);
 
   if (api.marks) {
-    editor.getMarks = api.marks;
+    e.getMarks = api.marks;
   }
 };
 
@@ -186,35 +190,38 @@ export const assignLegacyApi = (editor: Editor, api: any) => {
  * NOTE: can't use yet because of recursion issues
  */
 export const syncLegacyMethods = (editor: Editor) => {
+  const e = editor as Editor & LegacyEditorMethods;
+
   // Assign to editor.api
   LEGACY_API.forEach((key) => {
-    if (editor[key] && (editor.api as any)[key]) {
+    if (e[key] && (e.api as any)[key]) {
       if (key === 'getMarks') {
         // Special case for marks
-        (editor.api as any).marks = editor.getMarks;
+        (e.api as any).marks = e.getMarks;
       } else {
-        (editor.api as any)[key] = (...args: any[]) =>
-          (editor[key] as any)(...args);
+        (e.api as any)[key] = e[key];
       }
     }
   });
 
   // Assign to editor.tf
   LEGACY_TRANSFORMS.forEach((key) => {
-    if (editor[key] && (editor.tf as any)[key]) {
+    if (e[key]) {
+      if (key === 'insertData') {
+        console.log(e.tf[key]);
+      }
       if (key === 'deleteBackward') {
         // Special case for deleteBackward
-        (editor.tf as any).deleteBackward = (options: any) => {
-          return editor.deleteBackward(options?.unit ?? 'character');
+        (e.tf as any).deleteBackward = (options: any) => {
+          return e.deleteBackward(options?.unit ?? 'character');
         };
       } else if (key === 'deleteForward') {
         // Special case for deleteForward
-        (editor.tf as any).deleteForward = (options: any) => {
-          return editor.deleteForward(options?.unit ?? 'character');
+        (e.tf as any).deleteForward = (options: any) => {
+          return e.deleteForward(options?.unit ?? 'character');
         };
       } else {
-        (editor.tf as any)[key] = (...args: any[]) =>
-          (editor[key] as any)(...args);
+        (e.tf as any)[key] = e[key];
       }
     }
   });

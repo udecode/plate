@@ -1,9 +1,9 @@
 import {
+  type EditorTransforms,
   type ElementEntry,
-  type ExtendEditor,
+  type ExtendEditorTransforms,
   type SlateEditor,
   type TElement,
-  type TextUnit,
   NodeApi,
   PathApi,
 } from '@udecode/plate';
@@ -66,8 +66,8 @@ const selectionIsNotInAListHandler = (editor: SlateEditor): boolean => {
 const selectionIsInAListHandler = (
   editor: SlateEditor,
   res: { list: ElementEntry; listItem: ElementEntry },
-  defaultDelete: (unit: TextUnit) => void,
-  unit: 'block' | 'character' | 'line' | 'word'
+  defaultDelete: EditorTransforms['deleteBackward'],
+  unit: 'block' | 'character' | 'line' | 'word' = 'character'
 ): boolean => {
   const { listItem } = res;
 
@@ -162,7 +162,7 @@ const selectionIsInAListHandler = (
     if (nextSelectableLic[0].children.length < 2) return false;
 
     // manually run default delete
-    defaultDelete(unit);
+    defaultDelete({ unit });
 
     const leftoverListItem = editor.api.node<TElement>(
       PathApi.parent(nextSelectableLic[1])
@@ -207,10 +207,11 @@ const selectionIsInAListHandler = (
   return false;
 };
 
-export const withDeleteForwardList: ExtendEditor<ListConfig> = ({ editor }) => {
-  const { deleteForward } = editor;
-
-  editor.deleteForward = (unit) => {
+export const withDeleteForwardList: ExtendEditorTransforms<ListConfig> = ({
+  editor,
+  tf: { deleteForward },
+}) => ({
+  deleteForward(options) {
     const deleteForwardList = () => {
       let skipDefaultDelete = false;
 
@@ -234,7 +235,7 @@ export const withDeleteForwardList: ExtendEditor<ListConfig> = ({ editor }) => {
           editor,
           res,
           deleteForward,
-          unit
+          options?.unit
         );
       });
 
@@ -243,8 +244,6 @@ export const withDeleteForwardList: ExtendEditor<ListConfig> = ({ editor }) => {
 
     if (deleteForwardList()) return;
 
-    deleteForward(unit);
-  };
-
-  return editor;
-};
+    deleteForward(options);
+  },
+});

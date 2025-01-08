@@ -117,7 +117,7 @@ describe('toggleColumnGroup', () => {
     expect(node.children).toHaveLength(3);
 
     // Insert content in the third column
-    editor.apply({
+    editor.tf.apply({
       node: { children: [{ text: 'Col3 extra text' }], type: 'p' },
       path: [0, 2, 1],
       type: 'insert_node',

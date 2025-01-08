@@ -33,8 +33,8 @@ describe('delete marked text at block start', () => {
       value: input.children,
     });
 
-    editor.deleteBackward('character');
-    editor.insertText('a');
+    editor.tf.deleteBackward();
+    editor.tf.insertText('a');
 
     expect(editor.children).toEqual(output.children);
   });
@@ -64,8 +64,8 @@ describe('delete marked text at block start', () => {
       value: input.children,
     });
 
-    editor.deleteForward('character');
-    editor.insertText('a');
+    editor.tf.deleteForward();
+    editor.tf.insertText('a');
 
     expect(editor.children).toEqual(output.children);
   });
@@ -95,8 +95,8 @@ describe('delete marked text at block start', () => {
       value: input.children,
     });
 
-    editor.deleteBackward('character');
-    editor.insertText('b');
+    editor.tf.deleteBackward();
+    editor.tf.insertText('b');
 
     expect(editor.children).toEqual(output.children);
   });

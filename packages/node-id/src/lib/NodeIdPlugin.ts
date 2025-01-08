@@ -14,9 +14,9 @@ export type NodeIdConfig = PluginConfig<
   'nodeId',
   {
     /**
-     * By default, when a node inserted using editor.insertNode(s) has an id, it
-     * will be used instead of the id generator, except if it already exists in
-     * the document. Set this option to true to disable this behavior.
+     * By default, when a node inserted using editor.tf.insertNode(s) has an id,
+     * it will be used instead of the id generator, except if it already exists
+     * in the document. Set this option to true to disable this behavior.
      */
     disableInsertOverrides?: boolean;
 
@@ -70,7 +70,6 @@ export type NodeIdConfig = PluginConfig<
 /** @see {@link withNodeId} */
 export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
   key: 'nodeId',
-  extendEditor: withNodeId,
   normalizeInitialValue: ({ editor, getOptions }) => {
     const {
       allow,
@@ -143,4 +142,4 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
     idKey: 'id',
     normalizeInitialValue: false,
   },
-});
+}).extendEditorTransforms(withNodeId);

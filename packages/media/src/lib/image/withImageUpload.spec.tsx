@@ -36,7 +36,7 @@ describe('withImageUpload', () => {
         ],
         getData: () => '',
       };
-      editor.insertData(data as any);
+      editor.tf.insertData(data as any);
 
       expect(editor.children).toEqual(output.children);
     });
@@ -67,7 +67,7 @@ describe('withImageUpload', () => {
       const data = {
         getData: () => '',
       };
-      editor.insertData(data as any);
+      editor.tf.insertData(data as any);
 
       expect(editor.children).toEqual(output.children);
     });
@@ -97,7 +97,7 @@ describe('withImageUpload', () => {
         files: [new File(['test'], 'not-an-image')],
         getData: () => '',
       };
-      editor.insertData(data as any);
+      editor.tf.insertData(data as any);
 
       expect(editor.children).toEqual(output.children);
     });
@@ -119,7 +119,7 @@ describe('withImageUpload', () => {
   //       }),
   //     ],
   //   };
-  //   editor.insertData(data as any);
+  //   editor.tf.insertData(data as any);
   //
   //   await new Promise((resolve) => setTimeout(resolve, 10));
   //

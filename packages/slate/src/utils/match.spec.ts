@@ -1,4 +1,4 @@
-import { createEditor } from '../createEditor';
+import { createEditor } from '../create-editor';
 import { getMatch, match } from './match';
 
 describe('match', () => {

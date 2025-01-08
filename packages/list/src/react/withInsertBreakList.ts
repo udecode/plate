@@ -1,7 +1,10 @@
 import type { ResetNodeConfig } from '@udecode/plate-reset-node';
 
 import { BaseParagraphPlugin, createTSlatePlugin } from '@udecode/plate';
-import { type ExtendEditor, getEditorPlugin } from '@udecode/plate/react';
+import {
+  type ExtendEditorTransforms,
+  getEditorPlugin,
+} from '@udecode/plate/react';
 import {
   SIMULATE_BACKSPACE,
   onKeyDownResetNode,
@@ -13,10 +16,11 @@ import { insertListItem } from '../lib/transforms/insertListItem';
 import { moveListItemUp } from '../lib/transforms/moveListItemUp';
 import { unwrapList } from '../lib/transforms/unwrapList';
 
-export const withInsertBreakList: ExtendEditor<ListConfig> = ({ editor }) => {
-  const { insertBreak } = editor;
-
-  editor.insertBreak = () => {
+export const withInsertBreakList: ExtendEditorTransforms<ListConfig> = ({
+  editor,
+  tf: { insertBreak },
+}) => ({
+  insertBreak() {
     const insertBreakList = () => {
       if (!editor.selection) return;
 
@@ -68,11 +72,8 @@ export const withInsertBreakList: ExtendEditor<ListConfig> = ({ editor }) => {
       }
     };
 
-    // TODO react
     if (insertBreakList()) return;
 
     insertBreak();
-  };
-
-  return editor;
-};
+  },
+});

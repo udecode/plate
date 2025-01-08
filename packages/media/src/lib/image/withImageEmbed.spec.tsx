@@ -1,11 +1,10 @@
 /** @jsx jsxt */
 
-import { createEditor, getEditorPlugin } from '@udecode/plate';
+import { createEditor } from '@udecode/plate';
 import { createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { BaseImagePlugin } from './BaseImagePlugin';
-import { withImageEmbed } from './withImageEmbed';
 
 jsxt;
 
@@ -28,17 +27,17 @@ describe('withImageEmbed', () => {
   ) as any;
 
   it('should insert image from the text', () => {
-    const editor = withImageEmbed(
-      getEditorPlugin(
-        createSlateEditor({ editor: input }),
-        BaseImagePlugin as any
-      )
-    );
+    const editor = createSlateEditor({
+      editor: input,
+      plugins: [BaseImagePlugin],
+    });
 
     const data = {
-      getData: () => 'https://i.imgur.com/removed.png',
+      getData: () => {
+        return 'https://i.imgur.com/removed.png';
+      },
     };
-    editor.insertData(data as any);
+    editor.tf.insertData(data as any);
 
     expect(editor.children).toEqual(output.children);
   });

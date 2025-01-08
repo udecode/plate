@@ -379,16 +379,12 @@ describe('Plate', () => {
         (): SlatePlugins => [
           createSlatePlugin({
             key: 'a',
-            extendEditor: ({ editor }) => {
-              const { normalizeNode } = editor;
-              editor.normalizeNode = (n) => {
-                fn(editor, n);
-                normalizeNode(n);
-              };
-
-              return editor;
+          }).extendEditorTransforms(({ editor, tf: { normalizeNode } }) => ({
+            normalizeNode(node) {
+              fn(editor, node);
+              normalizeNode(node);
             },
-          }),
+          })),
         ]
       )();
 

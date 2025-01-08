@@ -41,7 +41,7 @@ describe('li > lic * 2 with selection at second child start', () => {
       value: input.children,
     });
 
-    editor.deleteBackward('character');
+    editor.tf.deleteBackward();
 
     expect(editor.children).toEqual(expected.children);
   });
@@ -82,7 +82,7 @@ describe('li with selection at start', () => {
       value: input.children,
     });
 
-    editor.deleteBackward('character');
+    editor.tf.deleteBackward();
 
     expect(editor.children).toEqual(expected.children);
   });
@@ -143,7 +143,7 @@ describe('list + sublist where second item has multiple children', () => {
       value: input.children,
     });
 
-    editor.deleteBackward('character');
+    editor.tf.deleteBackward();
 
     expect(editor.children).toEqual(expected.children);
   });

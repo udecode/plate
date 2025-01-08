@@ -17,7 +17,7 @@ const editorTest = (input: any, fragment: any, expected: any) => {
     value: input.children,
   });
 
-  editor.insertFragment(fragment);
+  editor.tf.insertFragment(fragment);
 
   expect(editor.children).toEqual(expected.children);
 };

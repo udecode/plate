@@ -43,7 +43,7 @@ describe('withGetFragmentTable', () => {
           value: input.children,
         });
 
-        const fragment = editor.getFragment();
+        const fragment = editor.api.getFragment();
 
         expect(fragment).toMatchObject([getTableGridAbove(editor)[0][0]]);
       }
@@ -84,7 +84,7 @@ describe('withGetFragmentTable', () => {
           value: input.children,
         });
 
-        const fragment = editor.getFragment();
+        const fragment = editor.api.getFragment();
 
         expect(fragment).toMatchObject(blocks);
       }

@@ -1,6 +1,5 @@
 import {
-  type Descendant,
-  type SlateEditor,
+  type ExtendEditorTransforms,
   type TElement,
   NodeApi,
 } from '@udecode/plate';
@@ -11,20 +10,21 @@ function extractCodeLinesFromCodeBlock(node: TElement) {
   return node.children as TElement[];
 }
 
-export const insertFragmentCodeBlock = (editor: SlateEditor) => {
-  const { insertFragment } = editor;
-  const codeBlockType = editor.getType(BaseCodeBlockPlugin);
-  const codeLineType = editor.getType(BaseCodeLinePlugin);
-
-  function convertNodeToCodeLine(node: TElement): TElement {
-    return {
-      children: [{ text: NodeApi.string(node) }],
-      type: codeLineType,
-    };
-  }
-
-  return (fragment: Descendant[]) => {
+export const withInsertFragmentCodeBlock: ExtendEditorTransforms = ({
+  editor,
+  tf: { insertFragment },
+}) => ({
+  insertFragment(fragment) {
     const [blockAbove] = editor.api.block<TElement>() ?? [];
+    const codeBlockType = editor.getType(BaseCodeBlockPlugin);
+    const codeLineType = editor.getType(BaseCodeLinePlugin);
+
+    function convertNodeToCodeLine(node: TElement): TElement {
+      return {
+        children: [{ text: NodeApi.string(node) }],
+        type: codeLineType,
+      };
+    }
 
     if (
       blockAbove &&
@@ -42,5 +42,5 @@ export const insertFragmentCodeBlock = (editor: SlateEditor) => {
     }
 
     return insertFragment(fragment);
-  };
-};
+  },
+});

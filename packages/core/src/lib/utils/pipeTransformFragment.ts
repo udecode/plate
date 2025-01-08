@@ -6,7 +6,7 @@ import type { AnyEditorPlugin } from '../plugin/SlatePlugin';
 
 import { getEditorPlugin } from '../plugin';
 
-/** Pipe editor.insertData.transformFragment */
+/** Pipe editor.tf.insertData.transformFragment */
 export const pipeTransformFragment = (
   editor: SlateEditor,
   plugins: Partial<AnyEditorPlugin>[],

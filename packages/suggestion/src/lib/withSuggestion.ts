@@ -1,4 +1,4 @@
-import { type ExtendEditor, NodeApi } from '@udecode/plate';
+import { type ExtendEditorTransforms, NodeApi } from '@udecode/plate';
 
 import type { TSuggestionText } from './types';
 
@@ -13,11 +13,10 @@ import { insertFragmentSuggestion } from './transforms/insertFragmentSuggestion'
 import { insertTextSuggestion } from './transforms/insertTextSuggestion';
 import { getSuggestionId, getSuggestionKeys } from './utils/index';
 
-export const withSuggestion: ExtendEditor<SuggestionConfig> = ({
+export const withSuggestion: ExtendEditorTransforms<SuggestionConfig> = ({
   editor,
   getOptions,
-}) => {
-  const {
+  tf: {
     deleteBackward,
     deleteForward,
     deleteFragment,
@@ -25,77 +24,31 @@ export const withSuggestion: ExtendEditor<SuggestionConfig> = ({
     insertFragment,
     insertText,
     normalizeNode,
-  } = editor;
-
-  editor.insertBreak = () => {
-    if (getOptions().isSuggesting) {
-      // TODO: split node
-      insertTextSuggestion(editor, '\n');
-
-      return;
-    }
-
-    insertBreak();
-  };
-
-  editor.insertText = (text) => {
-    if (getOptions().isSuggesting) {
-      insertTextSuggestion(editor, text);
-
-      return;
-    }
-
-    insertText(text);
-  };
-
-  editor.insertFragment = (fragment) => {
-    if (getOptions().isSuggesting) {
-      insertFragmentSuggestion(editor, fragment, { insertFragment });
-
-      return;
-    }
-
-    insertFragment(fragment);
-  };
-
-  editor.deleteFragment = (direction) => {
-    if (getOptions().isSuggesting) {
-      deleteFragmentSuggestion(editor, { reverse: true });
-
-      return;
-    }
-
-    deleteFragment(direction);
-  };
-
-  editor.deleteBackward = (unit) => {
+  },
+}) => ({
+  deleteBackward(options) {
     if (getOptions().isSuggesting) {
       const selection = editor.selection!;
-      const pointTarget = editor.api.before(selection, {
-        unit,
-      });
+      const pointTarget = editor.api.before(selection, { unit: options?.unit });
 
       if (!pointTarget) return;
 
       deleteSuggestion(
         editor,
         { anchor: selection.anchor, focus: pointTarget },
-        {
-          reverse: true,
-        }
+        { reverse: true }
       );
 
       return;
     }
 
-    deleteBackward(unit);
-  };
+    deleteBackward(options);
+  },
 
-  editor.deleteForward = (unit) => {
+  deleteForward(options) {
     if (getOptions().isSuggesting) {
       const selection = editor.selection!;
-
-      const pointTarget = editor.api.after(selection, { unit });
+      const pointTarget = editor.api.after(selection, { unit: options?.unit });
 
       if (!pointTarget) return;
 
@@ -107,10 +60,51 @@ export const withSuggestion: ExtendEditor<SuggestionConfig> = ({
       return;
     }
 
-    deleteForward(unit);
-  };
+    deleteForward(options);
+  },
 
-  editor.normalizeNode = (entry) => {
+  deleteFragment(direction) {
+    if (getOptions().isSuggesting) {
+      deleteFragmentSuggestion(editor, { reverse: true });
+
+      return;
+    }
+
+    deleteFragment(direction);
+  },
+
+  insertBreak() {
+    if (getOptions().isSuggesting) {
+      // TODO: split node
+      insertTextSuggestion(editor, '\n');
+
+      return;
+    }
+
+    insertBreak();
+  },
+
+  insertFragment(fragment) {
+    if (getOptions().isSuggesting) {
+      insertFragmentSuggestion(editor, fragment, { insertFragment });
+
+      return;
+    }
+
+    insertFragment(fragment);
+  },
+
+  insertText(text) {
+    if (getOptions().isSuggesting) {
+      insertTextSuggestion(editor, text);
+
+      return;
+    }
+
+    insertText(text);
+  },
+
+  normalizeNode(entry) {
     const [node, path] = entry;
 
     if (node[BaseSuggestionPlugin.key]) {
@@ -137,9 +131,7 @@ export const withSuggestion: ExtendEditor<SuggestionConfig> = ({
         const keys = getSuggestionKeys(node);
         editor.tf.unsetNodes(
           [BaseSuggestionPlugin.key, 'suggestionDeletion', ...keys],
-          {
-            at: path,
-          }
+          { at: path }
         );
 
         return;
@@ -161,12 +153,10 @@ export const withSuggestion: ExtendEditor<SuggestionConfig> = ({
     }
 
     normalizeNode(entry);
-  };
+  },
+});
 
-  return editor;
-};
-
-// editor.apply = (op) => {
+// editor.tf.apply = (op) => {
 //   if (getOptions().isSuggesting) {
 //     if (op.type === 'insert_text') {
 //       const { text, path, offset } = op;

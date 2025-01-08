@@ -50,7 +50,6 @@ export type SuggestionPluginApi = {
 
 export const BaseSuggestionPlugin = createTSlatePlugin<SuggestionConfig>({
   key: 'suggestion',
-  extendEditor: withSuggestion,
   node: { isLeaf: true },
   options: {
     activeSuggestionId: null,
@@ -63,6 +62,7 @@ export const BaseSuggestionPlugin = createTSlatePlugin<SuggestionConfig>({
     onSuggestionUpdate: null,
   },
 })
+  .extendEditorTransforms(withSuggestion)
   .extendOptions(({ getOptions }) => ({
     currentSuggestionUser: (): SuggestionUser | null => {
       const { currentUserId, users } = getOptions();
@@ -83,9 +83,7 @@ export const BaseSuggestionPlugin = createTSlatePlugin<SuggestionConfig>({
     },
   }))
   .extendApi<Partial<SuggestionPluginApi>>(({ getOptions, setOptions }) => ({
-    addSuggestion: (
-      value: WithPartial<TSuggestion, 'createdAt' | 'id' | 'userId'>
-    ) => {
+    addSuggestion: (value) => {
       const { currentUserId } = getOptions();
 
       if (!currentUserId) return;
@@ -102,14 +100,14 @@ export const BaseSuggestionPlugin = createTSlatePlugin<SuggestionConfig>({
         draft.suggestions![id] = newSuggestion;
       });
     },
-    removeSuggestion: (id: string | null) => {
+    removeSuggestion: (id) => {
       if (!id) return;
 
       setOptions((draft) => {
         delete draft.suggestions![id];
       });
     },
-    updateSuggestion: (id: string | null, value: Partial<TSuggestion>) => {
+    updateSuggestion: (id, value) => {
       if (!id) return;
 
       setOptions((draft) => {

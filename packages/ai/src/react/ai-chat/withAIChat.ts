@@ -1,16 +1,16 @@
-import type { ExtendEditor } from '@udecode/plate/react';
+import type { ExtendEditorTransforms } from '@udecode/plate/react';
 
 import type { AIChatPluginConfig } from './AIChatPlugin';
 
 import { AIPlugin } from '../ai/AIPlugin';
 
-export const withAIChat: ExtendEditor<AIChatPluginConfig> = ({
+export const withAIChat: ExtendEditorTransforms<AIChatPluginConfig> = ({
   api,
   editor,
   getOptions,
+  tf: { insertText, normalizeNode },
 }) => {
   const tf = editor.getTransforms(AIPlugin);
-  const { insertText, normalizeNode } = editor;
 
   const matchesTrigger = (text: string) => {
     const { trigger } = getOptions();
@@ -25,53 +25,53 @@ export const withAIChat: ExtendEditor<AIChatPluginConfig> = ({
     return text === trigger;
   };
 
-  editor.normalizeNode = (entry) => {
-    const [node, path] = entry;
+  return {
+    insertText(text) {
+      const { triggerPreviousCharPattern, triggerQuery } = getOptions();
 
-    if (node[AIPlugin.key] && !getOptions().open) {
-      tf.ai.removeMarks({ at: path });
+      const fn = () => {
+        if (
+          !editor.selection ||
+          !matchesTrigger(text) ||
+          (triggerQuery && !triggerQuery(editor))
+        ) {
+          return;
+        }
 
-      return;
-    }
+        // Make sure an input is created at the beginning of line or after a whitespace
+        const previousChar = editor.api.string(
+          editor.api.range('before', editor.selection)
+        );
 
-    return normalizeNode(entry);
-  };
+        const matchesPreviousCharPattern =
+          triggerPreviousCharPattern?.test(previousChar);
 
-  editor.insertText = (text) => {
-    const { triggerPreviousCharPattern, triggerQuery } = getOptions();
+        if (!matchesPreviousCharPattern) return;
 
-    const fn = () => {
-      if (
-        !editor.selection ||
-        !matchesTrigger(text) ||
-        (triggerQuery && !triggerQuery(editor))
-      ) {
+        const nodeEntry = editor.api.block({ highest: true });
+
+        if (!nodeEntry || !editor.api.isEmpty(nodeEntry[0])) return;
+
+        api.aiChat.show();
+
+        return true;
+      };
+
+      if (fn()) return;
+
+      return insertText(text);
+    },
+
+    normalizeNode(entry) {
+      const [node, path] = entry;
+
+      if (node[AIPlugin.key] && !getOptions().open) {
+        tf.ai.removeMarks({ at: path });
+
         return;
       }
 
-      // Make sure an input is created at the beginning of line or after a whitespace
-      const previousChar = editor.api.string(
-        editor.api.range('before', editor.selection)
-      );
-
-      const matchesPreviousCharPattern =
-        triggerPreviousCharPattern?.test(previousChar);
-
-      if (!matchesPreviousCharPattern) return;
-
-      const nodeEntry = editor.api.block({ highest: true });
-
-      if (!nodeEntry || !editor.api.isEmpty(nodeEntry[0])) return;
-
-      api.aiChat.show();
-
-      return true;
-    };
-
-    if (fn()) return;
-
-    return insertText(text);
+      return normalizeNode(entry);
+    },
   };
-
-  return editor;
 };

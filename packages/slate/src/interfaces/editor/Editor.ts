@@ -24,8 +24,21 @@ export type EditorBase<V extends Value = Value> = {
   operations: Operation<DescendantIn<V>>[];
   /** The current selection of the editor. */
   selection: EditorSelection;
-} & LegacyEditorMethods<V> &
+} & EditorMethods<V> &
   UnknownObject;
+
+export type EditorMethods<V extends Value = Value> = Pick<
+  EditorTransforms<V>,
+  'redo' | 'undo'
+> &
+  Pick<
+    LegacyEditorMethods<V>,
+    | 'isElementReadOnly'
+    | 'isInline'
+    | 'isSelectable'
+    | 'isVoid'
+    | 'markableVoid'
+  >;
 
 export type Editor<V extends Value = Value> = EditorBase<V> & {
   api: EditorApi<V>;

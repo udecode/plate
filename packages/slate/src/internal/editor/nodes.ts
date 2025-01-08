@@ -62,7 +62,7 @@ export function* nodes<N extends DescendantOf<E>, E extends Editor = Editor>(
     from,
     pass: ([node]) => {
       if (!ElementApi.isElement(node)) return false;
-      if (!voids && (editor.isVoid(node) || editor.isElementReadOnly(node))) {
+      if (!voids && (editor.isVoid(node) || editor.api.isElementReadOnly(node))) {
         return true;
       }
       if (ignoreNonSelectable && !editor.isSelectable(node)) {

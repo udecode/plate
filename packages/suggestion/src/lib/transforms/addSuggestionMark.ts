@@ -9,9 +9,9 @@ export const addSuggestionMark = (editor: SlateEditor) => {
   const id = findSuggestionId(editor, editor.selection) ?? nanoid();
 
   if (!editor.marks?.[BaseSuggestionPlugin.key]) {
-    editor.addMark(BaseSuggestionPlugin.key, true);
+    editor.tf.addMark(BaseSuggestionPlugin.key, true);
   }
   if (!editor.marks?.[SUGGESTION_KEYS.id]) {
-    editor.addMark(SUGGESTION_KEYS.id, id);
+    editor.tf.addMark(SUGGESTION_KEYS.id, id);
   }
 };

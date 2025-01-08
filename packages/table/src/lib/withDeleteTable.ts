@@ -1,4 +1,8 @@
-import { type ExtendEditor, type SlateEditor, PointApi } from '@udecode/plate';
+import {
+  type ExtendEditorTransforms,
+  type SlateEditor,
+  PointApi,
+} from '@udecode/plate';
 
 import { type TableConfig, getCellTypes } from '.';
 import { getTableGridAbove } from './queries/getTableGridAbove';
@@ -20,7 +24,6 @@ export const preventDeleteTableCell = (
   }
 ) => {
   const { selection } = editor;
-
   const getNextPoint = reverse ? editor.api.after : editor.api.before;
 
   if (editor.api.isCollapsed()) {
@@ -31,7 +34,6 @@ export const preventDeleteTableCell = (
     if (cellEntry) {
       // Prevent deleting cell at the start or end of a cell
       const [, cellPath] = cellEntry;
-
       const start = reverse
         ? editor.api.end(cellPath)
         : editor.api.start(cellPath);
@@ -42,7 +44,6 @@ export const preventDeleteTableCell = (
     } else {
       // Prevent deleting cell when selection is before or after a table
       const nextPoint = getNextPoint(selection!, { unit });
-
       const nextCellEntry = editor.api.block({
         at: nextPoint,
         match: { type: getCellTypes(editor) },
@@ -58,25 +59,30 @@ export const preventDeleteTableCell = (
 };
 
 /** Prevent cell deletion. */
-export const withDeleteTable: ExtendEditor<TableConfig> = ({
+export const withDeleteTable: ExtendEditorTransforms<TableConfig> = ({
   editor,
+  tf: { deleteBackward, deleteForward, deleteFragment },
   type,
-}) => {
-  const { deleteBackward, deleteForward, deleteFragment } = editor;
+}) => ({
+  deleteBackward(options) {
+    if (preventDeleteTableCell(editor, { unit: options?.unit })) return;
 
-  editor.deleteBackward = (unit) => {
-    if (preventDeleteTableCell(editor, { unit })) return;
+    deleteBackward(options);
+  },
 
-    return deleteBackward(unit);
-  };
+  deleteForward(options) {
+    if (
+      preventDeleteTableCell(editor, {
+        reverse: true,
+        unit: options?.unit,
+      })
+    )
+      return;
 
-  editor.deleteForward = (unit) => {
-    if (preventDeleteTableCell(editor, { reverse: true, unit })) return;
+    deleteForward(options);
+  },
 
-    return deleteForward(unit);
-  };
-
-  editor.deleteFragment = (direction) => {
+  deleteFragment(direction) {
     if (editor.api.isAt({ block: true, match: (n) => n.type === type })) {
       const cellEntries = getTableGridAbove(editor, { format: 'cell' });
 
@@ -101,7 +107,5 @@ export const withDeleteTable: ExtendEditor<TableConfig> = ({
     }
 
     deleteFragment(direction);
-  };
-
-  return editor;
-};
+  },
+});

@@ -33,7 +33,7 @@ describe('when --space', () => {
       value: input,
     });
 
-    editor.insertText('-');
+    editor.tf.insertText('-');
 
     expect(input.children).toEqual(output.children);
   });
@@ -64,7 +64,7 @@ describe('when --space', () => {
       value: input,
     });
 
-    editor.insertText('-');
+    editor.tf.insertText('-');
 
     expect(input.children).toEqual(output.children);
   });
@@ -95,7 +95,7 @@ describe('when --space', () => {
       value: input,
     });
 
-    editor.insertText('-');
+    editor.tf.insertText('-');
 
     expect(input.children).toEqual(output.children);
   });
@@ -128,7 +128,7 @@ describe('when (tm)', () => {
       value: input,
     });
 
-    editor.insertText(')');
+    editor.tf.insertText(')');
 
     expect(input.children).toEqual(output.children);
   });
@@ -161,7 +161,7 @@ describe('when &sect', () => {
       value: input,
     });
 
-    editor.insertText(';');
+    editor.tf.insertText(';');
 
     expect(input.children).toEqual(output.children);
   });
@@ -194,7 +194,7 @@ describe('when //', () => {
       value: input,
     });
 
-    editor.insertText('/');
+    editor.tf.insertText('/');
 
     expect(input.children).toEqual(output.children);
   });
@@ -237,11 +237,11 @@ describe('when typing %%%', () => {
       value: input,
     });
 
-    editor.insertText('%');
+    editor.tf.insertText('%');
 
     expect(input.children).toEqual(output1.children);
 
-    editor.insertText('%');
+    editor.tf.insertText('%');
 
     expect(input.children).toEqual(output2.children);
   });
@@ -281,7 +281,7 @@ describe('when using quotes', () => {
       value: input,
     });
 
-    editor.insertText('"');
+    editor.tf.insertText('"');
 
     expect(input.children).toEqual(output.children);
   });

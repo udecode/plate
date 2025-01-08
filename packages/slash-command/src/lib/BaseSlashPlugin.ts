@@ -23,7 +23,6 @@ export const BaseSlashInputPlugin = createSlatePlugin({
 
 export const BaseSlashPlugin = createTSlatePlugin<SlashConfig>({
   key: 'slash_command',
-  extendEditor: withTriggerCombobox,
   options: {
     createComboboxInput: () => ({
       children: [{ text: '' }],
@@ -33,4 +32,4 @@ export const BaseSlashPlugin = createTSlatePlugin<SlashConfig>({
     triggerPreviousCharPattern: /^\s?$/,
   },
   plugins: [BaseSlashInputPlugin],
-});
+}).extendEditorTransforms(withTriggerCombobox);

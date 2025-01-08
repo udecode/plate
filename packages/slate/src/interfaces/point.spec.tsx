@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { createEditor } from '../createEditor';
+import { createEditor } from '../create-editor';
 import { PointApi } from './point';
 
 jsxt;

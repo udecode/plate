@@ -48,7 +48,7 @@ describe('normalizeIndentList', () => {
         value: input.children,
       });
 
-      editor.deleteBackward('character');
+      editor.tf.deleteBackward();
 
       expect(editor.children).toEqual(output.children);
     });

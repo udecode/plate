@@ -60,7 +60,7 @@ import type {
 import type { Predicate } from '../../utils';
 import type { ElementIn, ElementOrTextIn, TElement } from '../element';
 import type { Span, TLocation } from '../location';
-import type { AncestorIn, DescendantIn, NodeIn } from '../node';
+import type { AncestorIn, DescendantIn, NodeIn, TNode } from '../node';
 import type { NodeEntry } from '../node-entry';
 import type { Operation } from '../operation';
 import type { Path } from '../path';
@@ -332,14 +332,6 @@ export type EditorApi<V extends Value = Value> = {
    */
   unhangRange: OmitFirst<typeof unhangRange>;
 } & {
-  /**
-   * Find the path of Slate node. If DOM node is not found, it will use
-   * `findNodePath` (traversal method).
-   */
-  findPath: <N extends NodeIn<V>>(
-    node: N,
-    options?: EditorFindPathOptions
-  ) => Path | undefined;
   /** Check if the target is inside a non-readonly void element. */
   isTargetInsideNonReadonlyVoid: OmitFirst<
     typeof isTargetInsideNonReadonlyVoid
@@ -356,6 +348,11 @@ export type EditorApi<V extends Value = Value> = {
    * `{ id: string }`
    */
   findKey: OmitFirst<typeof findNodeKey>;
+  /**
+   * Find the path of Slate node. If DOM node is not found, it will use
+   * `findNodePath` (traversal method).
+   */
+  findPath: (node: TNode, options?: EditorFindPathOptions) => Path | undefined;
   getWindow: OmitFirst<typeof getEditorWindow>;
   /** Check if a DOM node is within the editor */
   hasDOMNode: OmitFirst<typeof hasEditorDOMNode>;

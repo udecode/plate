@@ -27,7 +27,7 @@ export const insertCodeBlock = (
     return;
   }
   if (!editor.api.isAt({ start: true })) {
-    editor.insertBreak();
+    editor.tf.insertBreak();
   }
 
   editor.tf.setNodes(

@@ -1,5 +1,5 @@
 import type { Operation } from '@udecode/plate';
-import type { ExtendEditor, PlateEditor } from '@udecode/plate/react';
+import type { ExtendEditorTransforms, PlateEditor } from '@udecode/plate/react';
 
 import { serializeInlineMd } from '@udecode/plate-markdown';
 import debounce from 'lodash/debounce.js';
@@ -18,7 +18,6 @@ const getPatchString = (operations: Operation[]) => {
   for (const operation of operations) {
     if (operation.type === 'insert_node') {
       const node = operation.node;
-
       const text = serializeInlineMd([node as any]);
       string += text;
     } else if (operation.type === 'insert_text') {
@@ -29,14 +28,13 @@ const getPatchString = (operations: Operation[]) => {
   return string;
 };
 
-export const withCopilot: ExtendEditor<CopilotPluginConfig> = ({
+export const withCopilot: ExtendEditorTransforms<CopilotPluginConfig> = ({
   api,
   editor,
   getOptions,
   setOption,
+  tf: { apply, insertText, redo, undo, writeHistory },
 }) => {
-  const { apply, insertText, redo, undo, writeHistory } = editor;
-
   const debounceDelay = getOptions().debounceDelay;
 
   if (debounceDelay) {
@@ -46,87 +44,86 @@ export const withCopilot: ExtendEditor<CopilotPluginConfig> = ({
     ) as any;
   }
 
-  // TODO
-  editor.undo = () => {
-    if (!getOptions().suggestionText) return undo();
+  return {
+    apply(operation) {
+      const { shouldAbort } = getOptions();
 
-    const lastUndos = editor.history.undos.at(-1) as CopilotBatch;
-    const oldText = getOptions().suggestionText;
+      if (shouldAbort) {
+        api.copilot.reset();
+      }
 
-    if (lastUndos && lastUndos.shouldAbort === false && oldText) {
-      withoutAbort(editor, () => {
-        const shouldInsertText = getPatchString(lastUndos.operations);
+      apply(operation);
+    },
 
-        const newText = shouldInsertText + oldText;
-        setOption('suggestionText', newText);
+    insertText(text) {
+      const suggestionText = getOptions().suggestionText;
 
-        undo();
-      });
-
-      return;
-    }
-
-    return undo();
-  };
-
-  editor.redo = () => {
-    if (!getOptions().suggestionText) return redo();
-
-    const topRedo = editor.history.redos.at(-1) as CopilotBatch;
-    const prevSuggestion = getOptions().suggestionText;
-
-    if (topRedo && topRedo.shouldAbort === false && prevSuggestion) {
-      withoutAbort(editor, () => {
-        const shouldRemoveText = getPatchString(topRedo.operations);
-
-        const newText = prevSuggestion.slice(shouldRemoveText.length);
-        setOption('suggestionText', newText);
-
-        redo();
-      });
-
-      return;
-    }
-
-    return redo();
-  };
-
-  editor.writeHistory = (stacks, batch) => {
-    if (!getOptions().isLoading) {
-      batch.shouldAbort = getOptions().shouldAbort;
-    }
-
-    return writeHistory(stacks, batch);
-  };
-
-  editor.apply = (operation) => {
-    const { shouldAbort } = getOptions();
-
-    if (shouldAbort) {
-      api.copilot.reset();
-    }
-
-    apply(operation);
-  };
-
-  editor.insertText = (text) => {
-    const suggestionText = getOptions().suggestionText;
-
-    // When using IME input, it’s possible to enter two characters at once.
-    if (suggestionText?.startsWith(text)) {
-      withoutAbort(editor, () => {
-        editor.tf.withoutMerging(() => {
-          const newText = suggestionText?.slice(text.length);
-          setOption('suggestionText', newText);
-          insertText(text);
+      // When using IME input, it's possible to enter two characters at once.
+      if (suggestionText?.startsWith(text)) {
+        withoutAbort(editor, () => {
+          editor.tf.withoutMerging(() => {
+            const newText = suggestionText?.slice(text.length);
+            setOption('suggestionText', newText);
+            insertText(text);
+          });
         });
-      });
 
-      return;
-    }
+        return;
+      }
 
-    insertText(text);
+      insertText(text);
+    },
+
+    redo() {
+      if (!getOptions().suggestionText) return redo();
+
+      const topRedo = editor.history.redos.at(-1) as CopilotBatch;
+      const prevSuggestion = getOptions().suggestionText;
+
+      if (topRedo && topRedo.shouldAbort === false && prevSuggestion) {
+        withoutAbort(editor, () => {
+          const shouldRemoveText = getPatchString(topRedo.operations);
+
+          const newText = prevSuggestion.slice(shouldRemoveText.length);
+          setOption('suggestionText', newText);
+
+          redo();
+        });
+
+        return;
+      }
+
+      return redo();
+    },
+
+    undo() {
+      if (!getOptions().suggestionText) return undo();
+
+      const lastUndos = editor.history.undos.at(-1) as CopilotBatch;
+      const oldText = getOptions().suggestionText;
+
+      if (lastUndos && lastUndos.shouldAbort === false && oldText) {
+        withoutAbort(editor, () => {
+          const shouldInsertText = getPatchString(lastUndos.operations);
+
+          const newText = shouldInsertText + oldText;
+          setOption('suggestionText', newText);
+
+          undo();
+        });
+
+        return;
+      }
+
+      return undo();
+    },
+
+    writeHistory(stacks, batch) {
+      if (!getOptions().isLoading) {
+        batch.shouldAbort = getOptions().shouldAbort;
+      }
+
+      return writeHistory(stacks, batch);
+    },
   };
-
-  return editor;
 };

@@ -1,15 +1,35 @@
-import { type ExtendEditor, ElementApi } from '@udecode/plate';
+import { type ExtendEditorTransforms, ElementApi } from '@udecode/plate';
 
 import type { TColumnElement, TColumnGroupElement } from './types';
 
 import { BaseColumnItemPlugin, BaseColumnPlugin } from './BaseColumnPlugin';
 
-export const withColumn: ExtendEditor = ({ editor }) => {
-  const { deleteBackward, normalizeNode } = editor;
+export const withColumn: ExtendEditorTransforms = ({
+  editor,
+  tf: { deleteBackward, normalizeNode },
+}) => ({
+  deleteBackward(options) {
+    if (editor.api.isCollapsed()) {
+      const entry = editor.api.above({
+        match: (n) =>
+          ElementApi.isElement(n) && n.type === BaseColumnItemPlugin.key,
+      });
 
-  editor.normalizeNode = (entry) => {
-    const [n, path] = entry;
+      if (entry) {
+        const [node, path] = entry;
 
+        if (node.children.length > 1) return deleteBackward(options);
+
+        const isStart = editor.api.isStart(editor.selection?.anchor, path);
+
+        if (isStart) return;
+      }
+    }
+
+    deleteBackward(options);
+  },
+
+  normalizeNode([n, path]) {
     // If it's a column group, ensure it has valid children
     if (ElementApi.isElement(n) && n.type === BaseColumnPlugin.key) {
       const node = n as TColumnGroupElement;
@@ -76,61 +96,6 @@ export const withColumn: ExtendEditor = ({ editor }) => {
       }
     }
 
-    return normalizeNode(entry);
-  };
-
-  editor.deleteBackward = (unit) => {
-    if (editor.api.isCollapsed()) {
-      const entry = editor.api.above({
-        match: (n) =>
-          ElementApi.isElement(n) && n.type === BaseColumnItemPlugin.key,
-      });
-
-      if (entry) {
-        const [node, path] = entry;
-
-        if (node.children.length > 1) return deleteBackward(unit);
-
-        const isStart = editor.api.isStart(editor.selection?.anchor, path);
-
-        if (isStart) return;
-      }
-    }
-
-    deleteBackward(unit);
-  };
-
-  return editor;
-};
-
-// const prevChildrenCnt = node.children.length;
-//   const currentLayout = node.layout;
-
-//   if (currentLayout) {
-//     const currentChildrenCnt = currentLayout.length;
-
-//     const groupPathRef = editor.api.pathRef(path);
-
-//     if (prevChildrenCnt === 2 && currentChildrenCnt === 3) {
-//       const lastChildPath = getLastChildPath(entry);
-
-//       insertColumn(editor, {
-//         at: lastChildPath,
-//       });
-
-//       setColumnWidth(editor, groupPathRef, currentLayout);
-
-//       return;
-//     }
-//     if (prevChildrenCnt === 3 && currentChildrenCnt === 2) {
-//       moveMiddleColumn(editor, entry, { direction: 'left' });
-//       setColumnWidth(editor, groupPathRef, currentLayout);
-
-//       return;
-//     }
-//     if (prevChildrenCnt === currentChildrenCnt) {
-//       setColumnWidth(editor, groupPathRef, currentLayout);
-
-//       return;
-//     }
-//   }
+    return normalizeNode([n, path]);
+  },
+});

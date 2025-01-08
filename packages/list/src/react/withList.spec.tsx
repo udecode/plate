@@ -21,7 +21,7 @@ const testInsertText = (
     value: input.children,
   });
 
-  editor.insertText('o');
+  editor.tf.insertText('o');
 
   expect(editor.children).toEqual(expected.children);
 };
@@ -33,7 +33,7 @@ const testDeleteBackward = (input: any, expected: any) => {
     value: input.children,
   });
 
-  editor.deleteBackward('character');
+  editor.tf.deleteBackward();
 
   expect(editor.children).toEqual(expected.children);
 };
@@ -45,7 +45,7 @@ const testDeleteForward = (input: any, expected: any) => {
     value: input.children,
   });
 
-  editor.deleteForward('character');
+  editor.tf.deleteForward();
 
   expect(editor.children).toEqual(expected.children);
 };

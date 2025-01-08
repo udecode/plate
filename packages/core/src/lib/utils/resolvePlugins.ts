@@ -1,4 +1,8 @@
-import { assignLegacyApi, assignLegacyTransforms } from '@udecode/slate';
+import {
+  assignLegacyApi,
+  assignLegacyTransforms,
+  syncLegacyMethods,
+} from '@udecode/slate';
 import { isDefined } from '@udecode/utils';
 import merge from 'lodash/merge.js';
 import { createZustandStore } from 'zustand-x';
@@ -45,7 +49,7 @@ export const resolvePlugins = (
   });
 
   // Sync overridden legacy editor methods to api/tf
-  // syncLegacyMethods(editor);
+  syncLegacyMethods(editor);
 
   return editor;
 };

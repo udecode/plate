@@ -56,7 +56,7 @@ export const upsertLink = (
   // anchor and focus in link -> insert text
   if (insertTextInLink && linkAbove) {
     // we don't want to insert marks in links
-    editor.insertText(url);
+    editor.tf.insertText(url);
 
     return true;
   }

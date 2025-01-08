@@ -73,8 +73,8 @@ describe('withInsertTextTable', () => {
           value: input.children,
         });
 
-        editor.deleteFragment();
-        editor.insertText('e');
+        editor.tf.deleteFragment();
+        editor.tf.insertText('e');
         expect(editor.children).toMatchObject(output.children);
       }
     );

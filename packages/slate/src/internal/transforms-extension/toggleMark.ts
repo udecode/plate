@@ -12,13 +12,13 @@ export const toggleMark = (
 
   editor.tf.withoutNormalizing(() => {
     if (editor.api.hasMark(key)) {
-      editor.removeMark(key);
+      editor.tf.removeMark(key);
 
       return;
     }
 
     editor.tf.removeMarks([...castArray<string>(remove), key]);
 
-    editor.addMark(key, true);
+    editor.tf.addMark(key, true);
   });
 };

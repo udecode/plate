@@ -1,21 +1,22 @@
-import { type ExtendEditor, NodeApi, queryNode } from '@udecode/plate';
+import {
+  type ExtendEditorTransforms,
+  NodeApi,
+  queryNode,
+} from '@udecode/plate';
 
 import type { SelectOnBackspaceConfig } from './SelectOnBackspacePlugin';
 
 /** Set a list of element types to select on backspace */
-export const withSelectOnBackspace: ExtendEditor<SelectOnBackspaceConfig> = ({
-  editor,
-  getOptions,
-}) => {
-  const { deleteBackward } = editor;
-
-  editor.deleteBackward = (unit: 'block' | 'character' | 'line' | 'word') => {
+export const withSelectOnBackspace: ExtendEditorTransforms<
+  SelectOnBackspaceConfig
+> = ({ editor, getOptions, tf: { deleteBackward } }) => ({
+  deleteBackward(options) {
     const { selection } = editor;
     const { query, removeNodeIfEmpty } = getOptions();
 
-    if (unit === 'character' && editor.api.isCollapsed()) {
+    if (options?.unit === 'character' && editor.api.isCollapsed()) {
       const pointBefore = editor.api.before(selection!, {
-        unit,
+        unit: options.unit,
       });
 
       if (pointBefore) {
@@ -40,15 +41,13 @@ export const withSelectOnBackspace: ExtendEditor<SelectOnBackspaceConfig> = ({
           // don't delete image, set selection there
           editor.tf.select(pointBefore);
         } else {
-          deleteBackward(unit);
+          deleteBackward(options);
         }
       } else {
-        deleteBackward(unit);
+        deleteBackward(options);
       }
     } else {
-      deleteBackward(unit);
+      deleteBackward(options);
     }
-  };
-
-  return editor;
-};
+  },
+});

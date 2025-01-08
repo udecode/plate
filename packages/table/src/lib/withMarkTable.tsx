@@ -1,57 +1,68 @@
-import { type ExtendEditor, TextApi } from '@udecode/plate';
+import {
+  type ExtendEditorApi,
+  type ExtendEditorTransforms,
+  TextApi,
+} from '@udecode/plate';
 
 import type { TableConfig } from '.';
 
 import { getTableGridAbove } from './queries';
 
-export const withMarkTable: ExtendEditor<TableConfig> = ({ editor }) => {
-  const { addMark, removeMark } = editor;
-  const { marks } = editor.api;
+export const withMarkTable: ExtendEditorTransforms<TableConfig> = ({
+  editor,
+  tf: { addMark, removeMark },
+}) => {
+  return {
+    addMark(key: string, value: any) {
+      const { selection } = editor;
 
-  editor.addMark = (key, value) => {
-    const { selection } = editor;
+      if (!selection || editor.api.isCollapsed()) return addMark(key, value);
 
-    if (!selection || editor.api.isCollapsed()) return addMark(key, value);
+      const matchesCell = getTableGridAbove(editor, { format: 'cell' });
 
-    const matchesCell = getTableGridAbove(editor, { format: 'cell' });
+      if (matchesCell.length <= 1) return addMark(key, value);
 
-    if (matchesCell.length <= 1) return addMark(key, value);
+      matchesCell.forEach(([_cell, cellPath]) => {
+        editor.tf.setNodes(
+          {
+            [key]: value,
+          },
+          {
+            at: cellPath,
+            match: (n) => TextApi.isText(n),
+            split: true,
+            voids: true,
+          }
+        );
+      });
+    },
 
-    matchesCell.forEach(([_cell, cellPath]) => {
-      editor.tf.setNodes(
-        {
-          [key]: value,
-        },
-        {
+    removeMark(key: string) {
+      const { selection } = editor;
+
+      if (!selection || editor.api.isCollapsed()) return removeMark(key);
+
+      const matchesCell = getTableGridAbove(editor, { format: 'cell' });
+
+      if (matchesCell.length === 0) return removeMark(key);
+
+      matchesCell.forEach(([_cell, cellPath]) => {
+        editor.tf.unsetNodes(key, {
           at: cellPath,
           match: (n) => TextApi.isText(n),
           split: true,
           voids: true,
-        }
-      );
-    });
-  };
-
-  editor.removeMark = (key) => {
-    const { selection } = editor;
-
-    if (!selection || editor.api.isCollapsed()) return removeMark(key);
-
-    const matchesCell = getTableGridAbove(editor, { format: 'cell' });
-
-    if (matchesCell.length === 0) return removeMark(key);
-
-    matchesCell.forEach(([_cell, cellPath]) => {
-      editor.tf.unsetNodes(key, {
-        at: cellPath,
-        match: (n) => TextApi.isText(n),
-        split: true,
-        voids: true,
+        });
       });
-    });
+    },
   };
+};
 
-  editor.api.marks = () => {
+export const withMarkTableApi: ExtendEditorApi<TableConfig> = ({
+  api: { marks },
+  editor,
+}) => ({
+  marks() {
     const { selection } = editor;
 
     if (!selection || editor.api.isCollapsed()) return marks();
@@ -82,7 +93,5 @@ export const withMarkTable: ExtendEditor<TableConfig> = ({ editor }) => {
     });
 
     return totalMarks;
-  };
-
-  return editor;
-};
+  },
+});

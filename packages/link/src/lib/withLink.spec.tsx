@@ -65,7 +65,7 @@ describe('withLink', () => {
         it('should insert link', () => {
           const editor = createTestEditor(input);
 
-          editor.insertData(data);
+          editor.tf.insertData(data);
 
           expect(editor.children).toEqual(output.children);
         });
@@ -107,7 +107,7 @@ describe('withLink', () => {
 
           const editor = createTestEditor(input);
 
-          editor.insertData(data);
+          editor.tf.insertData(data);
 
           expect(editor.children).toEqual(output.children);
         });
@@ -141,7 +141,7 @@ describe('withLink', () => {
           const editor = createTestEditor(input);
 
           const data: any = { getData: () => urlOutput };
-          editor.insertData(data);
+          editor.tf.insertData(data);
 
           expect(editor.children).toEqual(output.children);
         });
@@ -184,7 +184,7 @@ describe('withLink', () => {
 
           const editor = createTestEditor(input);
 
-          editor.insertData(data);
+          editor.tf.insertData(data);
 
           expect(editor.children).toEqual(output.children);
         });
@@ -218,7 +218,7 @@ describe('withLink', () => {
         it('should insert text', () => {
           const editor = createTestEditor(input);
 
-          editor.insertText(text);
+          editor.tf.insertText(text);
 
           expect(editor.children).toEqual(output.children);
         });
@@ -248,7 +248,7 @@ describe('withLink', () => {
         it('should insert text', () => {
           const editor = createTestEditor(input);
 
-          editor.insertText(text);
+          editor.tf.insertText(text);
 
           expect(editor.children).toEqual(output.children);
         });
@@ -280,7 +280,7 @@ describe('withLink', () => {
         it('should wrap the url with a link', () => {
           const editor = createTestEditor(input);
 
-          editor.insertText(text);
+          editor.tf.insertText(text);
 
           expect(editor.children).toEqual(output.children);
         });
@@ -319,7 +319,7 @@ describe('withLink', () => {
         it('should run default insertText', () => {
           const editor = createTestEditor(input);
 
-          editor.insertText(text);
+          editor.tf.insertText(text);
 
           expect(editor.children).toEqual(output.children);
         });
@@ -353,7 +353,7 @@ describe('withLink', () => {
         it('should wrap the url with a link ha', () => {
           const editor = createTestEditor(input);
 
-          editor.insertBreak();
+          editor.tf.insertBreak();
 
           expect(editor.children).toEqual(output.children);
         });
@@ -386,7 +386,7 @@ describe('withLink', () => {
         it('should wrap the url with a link ha', () => {
           const editor = createTestEditor(input);
 
-          editor.insertText(text);
+          editor.tf.insertText(text);
 
           expect(editor.children).toEqual(output.children);
         });
@@ -430,7 +430,7 @@ describe('withLink', () => {
             value: input.children,
           });
 
-          editor.insertText(text);
+          editor.tf.insertText(text);
 
           expect(editor.children).toEqual(output.children);
         });
@@ -466,7 +466,7 @@ describe('withLink', () => {
       it('should wrap the url with a link', () => {
         const editor = createTestEditor(input);
 
-        editor.insertText(text);
+        editor.tf.insertText(text);
 
         expect(editor.children).toEqual(output.children);
       });
@@ -499,7 +499,7 @@ describe('withLink', () => {
       it('should insert link', () => {
         const editor = createTestEditor(input);
 
-        editor.insertData(data);
+        editor.tf.insertData(data);
 
         expect(editor.children).toEqual(output.children);
       });
@@ -541,7 +541,7 @@ describe('withLink', () => {
           });
         const editor = createModifiedEditor(input);
 
-        editor.insertData(data);
+        editor.tf.insertData(data);
 
         expect(editor.children).toEqual(output.children);
       });
@@ -576,7 +576,7 @@ describe('withLink', () => {
         });
 
         // Delete the selected text
-        editor.deleteFragment();
+        editor.tf.deleteFragment();
 
         expect(editor.children).toEqual(output.children);
       });
@@ -611,7 +611,7 @@ describe('withLink', () => {
         });
 
         // Replace the selected text with a zero-width space
-        editor.insertText('\u200B');
+        editor.tf.insertText('\u200B');
 
         // Trigger normalization
         editor.tf.normalize();

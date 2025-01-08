@@ -51,7 +51,7 @@ describe('code block deserialization', () => {
         value: input.children,
       });
 
-      editor.insertData({
+      editor.tf.insertData({
         getData: () => `<pre><code>test</code></pre>`,
       } as any);
 
@@ -83,7 +83,7 @@ describe('code block deserialization', () => {
         value: input.children,
       });
 
-      editor.insertData({
+      editor.tf.insertData({
         getData: (format: string) =>
           format === 'text/html' && `<pre><code>test</code></pre>`,
       } as any);
@@ -124,7 +124,7 @@ describe('code block deserialization', () => {
         value: input.children,
       });
 
-      editor.deleteBackward('character');
+      editor.tf.deleteBackward();
       expect(editor.children).toEqual(output.children);
     });
   });

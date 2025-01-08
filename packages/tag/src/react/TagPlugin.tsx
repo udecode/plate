@@ -5,23 +5,9 @@ import { BaseTagPlugin } from '../lib';
 
 export const TagPlugin = toPlatePlugin(BaseTagPlugin);
 
-export const MultiSelectPlugin = TagPlugin.extend({
-  extendEditor: ({ editor, type }) => {
-    const { deleteBackward, normalizeNode, onChange } = editor;
-
-    editor.deleteBackward = (unit) => {
-      deleteBackward(unit);
-
-      if (
-        editor.api.some({
-          match: (n) => n.type === type,
-        })
-      ) {
-        editor.tf.move();
-      }
-    };
-
-    editor.onChange = (op) => {
+export const MultiSelectPlugin = TagPlugin.extendEditorApi(
+  ({ api: { onChange }, editor, type }) => ({
+    onChange(op) {
       onChange(op);
 
       const someTag = editor.api.some({
@@ -52,9 +38,23 @@ export const MultiSelectPlugin = TagPlugin.extend({
           text: true,
         });
       }
-    };
+    },
+  })
+).extendEditorTransforms(
+  ({ editor, tf: { deleteBackward, normalizeNode }, type }) => ({
+    deleteBackward(options) {
+      deleteBackward(options);
 
-    editor.normalizeNode = ([node, path]) => {
+      if (
+        editor.api.some({
+          match: (n) => n.type === type,
+        })
+      ) {
+        editor.tf.move();
+      }
+    },
+
+    normalizeNode([node, path]) {
       // Duplicate tag removal
       if (
         node.type === type &&
@@ -90,8 +90,6 @@ export const MultiSelectPlugin = TagPlugin.extend({
       }
 
       normalizeNode([node, path]);
-    };
-
-    return editor;
-  },
-});
+    },
+  })
+);

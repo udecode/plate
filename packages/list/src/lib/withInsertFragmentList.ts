@@ -4,7 +4,7 @@ import {
   type Descendant,
   type DescendantEntry,
   type ElementEntry,
-  type ExtendEditor,
+  type ExtendEditorTransforms,
   type Path,
   type TElement,
   type TText,
@@ -20,11 +20,10 @@ import {
 } from './BaseListPlugin';
 import { isListRoot } from './queries';
 
-export const withInsertFragmentList: ExtendEditor<ListConfig> = ({
+export const withInsertFragmentList: ExtendEditorTransforms<ListConfig> = ({
   editor,
+  tf: { insertFragment },
 }) => {
-  const { insertFragment } = editor;
-
   const listItemType = editor.getType(BaseListItemPlugin);
   const listItemContentType = editor.getType(BaseListItemContentPlugin);
 
@@ -180,62 +179,68 @@ export const withInsertFragmentList: ExtendEditor<ListConfig> = ({
     return { listItemNodes, textNode };
   };
 
-  editor.insertFragment = (fragment) => {
-    let liEntry = editor.api.node<TElement>({
-      match: { type: listItemType },
-      mode: 'lowest',
-    });
+  return {
+    insertFragment(fragment) {
+      let liEntry = editor.api.node<TElement>({
+        match: { type: listItemType },
+        mode: 'lowest',
+      });
 
-    // not inserting into a list item, delegate to other plugins
-    if (!liEntry) {
-      return insertFragment(
-        isListRoot(editor, fragment[0]) ? [{ text: '' }, ...fragment] : fragment
+      // not inserting into a list item, delegate to other plugins
+      if (!liEntry) {
+        return insertFragment(
+          isListRoot(editor, fragment[0])
+            ? [{ text: '' }, ...fragment]
+            : fragment
+        );
+      }
+
+      // delete selection (if necessary) so that it can check if needs to insert into an empty block
+      insertFragment([{ text: '' }] as any);
+
+      // refetch to find the currently selected LI after the deletion above is performed
+      liEntry = editor.api.node<TElement>({
+        match: { type: listItemType },
+        mode: 'lowest',
+      });
+
+      // Check again if liEntry is undefined after the deletion above.
+      // This prevents unexpected behavior when pasting while a list is highlighted
+      if (!liEntry) {
+        return insertFragment(
+          isListRoot(editor, fragment[0])
+            ? [{ text: '' }, ...fragment]
+            : fragment
+        );
+      }
+
+      const licEntry = editor.api.node<TElement>({
+        match: { type: listItemContentType },
+        mode: 'lowest',
+      });
+
+      if (!licEntry) {
+        return insertFragment(
+          isListRoot(editor, fragment[0])
+            ? [{ text: '' }, ...fragment]
+            : fragment
+        );
+      }
+
+      const { listItemNodes, textNode } = getTextAndListItemNodes(
+        fragment,
+        liEntry!,
+        licEntry
       );
-    }
 
-    // delete selection (if necessary) so that it can check if needs to insert into an empty block
-    insertFragment([{ text: '' }] as any);
+      insertFragment<TText>([textNode]); // insert text if needed
 
-    // refetch to find the currently selected LI after the deletion above is performed
-    liEntry = editor.api.node<TElement>({
-      match: { type: listItemType },
-      mode: 'lowest',
-    });
+      const [, liPath] = liEntry!;
 
-    // Check again if liEntry is undefined after the deletion above.
-    // This prevents unexpected behavior when pasting while a list is highlighted
-    if (!liEntry) {
-      return insertFragment(
-        isListRoot(editor, fragment[0]) ? [{ text: '' }, ...fragment] : fragment
-      );
-    }
-
-    const licEntry = editor.api.node<TElement>({
-      match: { type: listItemContentType },
-      mode: 'lowest',
-    });
-
-    if (!licEntry) {
-      return insertFragment(
-        isListRoot(editor, fragment[0]) ? [{ text: '' }, ...fragment] : fragment
-      );
-    }
-
-    const { listItemNodes, textNode } = getTextAndListItemNodes(
-      fragment,
-      liEntry!,
-      licEntry
-    );
-
-    insertFragment<TText>([textNode]); // insert text if needed
-
-    const [, liPath] = liEntry!;
-
-    return editor.tf.insertNodes(listItemNodes, {
-      at: PathApi.next(liPath),
-      select: true,
-    });
+      return editor.tf.insertNodes(listItemNodes, {
+        at: PathApi.next(liPath),
+        select: true,
+      });
+    },
   };
-
-  return editor;
 };

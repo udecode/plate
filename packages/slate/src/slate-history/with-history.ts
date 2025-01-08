@@ -1,5 +1,6 @@
 import {
   type Editor,
+  type LegacyEditorMethods,
   type Operation,
   OperationApi,
   PathApi,
@@ -10,7 +11,7 @@ import {
  * editor as operations are applied to it, using undo and redo stacks.
  */
 export const withHistory = <T extends Editor>(editor: T) => {
-  const e = editor;
+  const e = editor as Editor & LegacyEditorMethods;
   const { apply } = e;
   e.history = { redos: [], undos: [] };
 
@@ -115,7 +116,7 @@ export const withHistory = <T extends Editor>(editor: T) => {
     e.history[stack].push(batch);
   };
 
-  return e;
+  return e as T;
 };
 
 /** Check whether to merge an operation into the previous operation. */

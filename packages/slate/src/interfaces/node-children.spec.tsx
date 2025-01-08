@@ -4,7 +4,7 @@ import { createPlateEditor } from '@udecode/plate-core/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createEditor } from '../createEditor';
+import { createEditor } from '../create-editor';
 import { NodeApi } from './node';
 
 jsx;

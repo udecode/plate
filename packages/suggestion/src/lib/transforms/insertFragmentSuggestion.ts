@@ -15,7 +15,7 @@ export const insertFragmentSuggestion = (
   editor: SlateEditor,
   fragment: Descendant[],
   {
-    insertFragment = editor.insertFragment,
+    insertFragment = editor.tf.insertFragment,
   }: {
     insertFragment?: (fragment: Descendant[]) => void;
   } = {}

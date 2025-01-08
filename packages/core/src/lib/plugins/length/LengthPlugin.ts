@@ -1,14 +1,11 @@
 import type { LengthConfig } from '../getCorePlugins';
 
-import { type ExtendEditor, createTSlatePlugin } from '../../plugin';
+import { createTSlatePlugin } from '../../plugin';
 
-export const withLength: ExtendEditor<LengthConfig> = ({
-  editor,
-  getOptions,
-}) => {
-  const { apply } = editor;
-
-  editor.apply = (operation) => {
+export const LengthPlugin = createTSlatePlugin<LengthConfig>({
+  key: 'length',
+}).extendEditorTransforms(({ editor, getOptions, tf: { apply } }) => ({
+  apply(operation) {
     editor.tf.withoutNormalizing(() => {
       apply(operation);
 
@@ -21,7 +18,7 @@ export const withLength: ExtendEditor<LengthConfig> = ({
         if (length > options.maxLength) {
           const overflowLength = length - options.maxLength;
 
-          editor.delete({
+          editor.tf.delete({
             distance: overflowLength,
             reverse: true,
             unit: 'character',
@@ -29,12 +26,5 @@ export const withLength: ExtendEditor<LengthConfig> = ({
         }
       }
     });
-  };
-
-  return editor;
-};
-
-export const LengthPlugin = createTSlatePlugin<LengthConfig>({
-  key: 'length',
-  extendEditor: withLength,
-});
+  },
+}));

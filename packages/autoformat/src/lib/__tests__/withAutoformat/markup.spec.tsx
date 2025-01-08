@@ -51,7 +51,7 @@ describe('when match is an array', () => {
       value: input,
     });
 
-    editor.insertText('_');
+    editor.tf.insertText('_');
 
     expect(input.children).toEqual(output.children);
   });
@@ -96,7 +96,7 @@ describe('when match is a string', () => {
       value: input,
     });
 
-    editor.insertText('_');
+    editor.tf.insertText('_');
 
     expect(input.children).toEqual(output.children);
   });

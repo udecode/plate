@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createEditor } from '../../createEditor';
+import { createEditor } from '../../create-editor';
 
 jsx;
 
@@ -100,7 +100,7 @@ describe('removeMarks', () => {
       );
 
       const onChange = jest.fn();
-      editor.onChange = onChange;
+      editor.api.onChange = onChange;
       editor.marks = { bold: true };
 
       editor.tf.removeMarks('bold');
@@ -122,7 +122,7 @@ describe('removeMarks', () => {
       );
 
       const onChange = jest.fn();
-      editor.onChange = onChange;
+      editor.api.onChange = onChange;
       editor.marks = { bold: true };
 
       editor.tf.removeMarks('bold', { shouldChange: false });

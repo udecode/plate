@@ -14,7 +14,7 @@ import {
 
 import type { Editor, Value } from './interfaces/editor/editor';
 
-import { RangeApi } from './interfaces';
+import { type LegacyEditorMethods, RangeApi } from './interfaces';
 import { blurEditor } from './internal/dom-editor/blurEditor';
 import { deselectEditor } from './internal/dom-editor/deselectEditor';
 import { findEditorDocumentOrShadowRoot } from './internal/dom-editor/findEditorDocumentOrShadowRoot';
@@ -150,7 +150,7 @@ export const createEditor = <V extends Value>({
   children?: V;
   selection?: Editor['selection'];
 } = {}) => {
-  const editor = createSlateEditor() as any as Editor;
+  const editor = createSlateEditor() as any as Editor & LegacyEditorMethods;
 
   if (children) {
     editor.children = children;

@@ -6,8 +6,9 @@ import {
 
 import type { MediaPluginOptions, TMediaElement } from '../media';
 
-import { insertImageFromFiles } from './transforms/insertImageFromFiles';
-import { withImage } from './withImage';
+import { insertImageFromFiles } from './transforms';
+import { withImageEmbed } from './withImageEmbed';
+import { withImageUpload } from './withImageUpload';
 
 export interface TImageElement extends TMediaElement {
   initialHeight?: number;
@@ -37,13 +38,14 @@ export type ImageConfig = PluginConfig<
 /** Enables support for images. */
 export const BaseImagePlugin = createTSlatePlugin<ImageConfig>({
   key: 'img',
-  extendEditor: withImage,
   node: {
     dangerouslyAllowAttributes: ['alt', 'width', 'height'],
     isElement: true,
     isVoid: true,
   },
 })
+  .extendEditorTransforms(withImageUpload)
+  .extendEditorTransforms(withImageEmbed)
   .extendEditorTransforms(({ editor }) => ({
     insert: {
       imageFromFiles: bindFirst(insertImageFromFiles, editor),

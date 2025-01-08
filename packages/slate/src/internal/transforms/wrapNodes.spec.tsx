@@ -1,4 +1,4 @@
-import { createEditor } from '../../createEditor';
+import { createEditor } from '../../create-editor';
 
 describe('wrapNodes', () => {
   describe('when children is true', () => {

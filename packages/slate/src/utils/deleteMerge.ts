@@ -4,6 +4,7 @@ import type { Editor } from '../interfaces/editor/editor';
 import type { NodeEntry } from '../interfaces/node-entry';
 
 import {
+  type LegacyEditorMethods,
   type Path,
   type TLocation,
   type TRange,
@@ -37,14 +38,16 @@ export const deleteMerge = (
     voids?: boolean;
   } = {}
 ): void => {
-  withoutNormalizing(editor as any, () => {
+  const e = editor as Editor & LegacyEditorMethods;
+
+  withoutNormalizing(e as any, () => {
     const {
       distance = 1,
       reverse = false,
       unit = 'character',
       voids = false,
     } = options;
-    let { at = editor.selection!, hanging = false } = options;
+    let { at = e.selection!, hanging = false } = options;
 
     if (!at) {
       return;
@@ -53,7 +56,7 @@ export const deleteMerge = (
       at = at.anchor;
     }
     if (PointApi.isPoint(at)) {
-      const furthestVoid = getVoidNode(editor as any, { at, mode: 'highest' });
+      const furthestVoid = getVoidNode(e as any, { at, mode: 'highest' });
 
       if (!voids && furthestVoid) {
         const [, voidPath] = furthestVoid;
@@ -61,16 +64,14 @@ export const deleteMerge = (
       } else {
         const opts = { distance, unit };
         const target = reverse
-          ? getPointBefore(editor as any, at, opts) ||
-            getStartPoint(editor as any, [])!
-          : getPointAfter(editor as any, at, opts) ||
-            getEndPoint(editor as any, [])!;
+          ? getPointBefore(e as any, at, opts) || getStartPoint(e as any, [])!
+          : getPointAfter(e as any, at, opts) || getEndPoint(e as any, [])!;
         at = { anchor: at, focus: target };
         hanging = true;
       }
     }
     if (PathApi.isPath(at)) {
-      editor.tf.removeNodes({ at, voids });
+      e.tf.removeNodes({ at, voids });
 
       return;
     }
@@ -78,18 +79,18 @@ export const deleteMerge = (
       return;
     }
     if (!hanging) {
-      at = EditorInterface.unhangRange(editor as any, at, { voids });
+      at = EditorInterface.unhangRange(e as any, at, { voids });
     }
 
     let [start, end] = RangeApi.edges(at as TRange);
-    const startBlock = editor.api.above({
+    const startBlock = e.api.above({
       at: start,
-      match: (n) => isBlock(editor as any, n),
+      match: (n) => isBlock(e as any, n),
       voids,
     });
-    const endBlock = editor.api.above({
+    const endBlock = e.api.above({
       at: end,
-      match: (n) => isBlock(editor as any, n),
+      match: (n) => isBlock(e as any, n),
       voids,
     });
     const isAcrossBlocks =
@@ -97,14 +98,14 @@ export const deleteMerge = (
     const isSingleText = PathApi.equals(start.path, end.path);
     const startVoid = voids
       ? null
-      : getVoidNode(editor as any, { at: start, mode: 'highest' });
+      : getVoidNode(e as any, { at: start, mode: 'highest' });
     const endVoid = voids
       ? null
-      : getVoidNode(editor as any, { at: end, mode: 'highest' });
+      : getVoidNode(e as any, { at: end, mode: 'highest' });
 
     // If the start or end points are inside an inline void, nudge them out.
     if (startVoid) {
-      const before = getPointBefore(editor as any, start);
+      const before = getPointBefore(e as any, start);
 
       if (
         before &&
@@ -115,7 +116,7 @@ export const deleteMerge = (
       }
     }
     if (endVoid) {
-      const after = getPointAfter(editor as any, end);
+      const after = getPointAfter(e as any, end);
 
       if (after && endBlock && PathApi.isAncestor(endBlock[1], after.path)) {
         end = after;
@@ -127,7 +128,7 @@ export const deleteMerge = (
     const matches: NodeEntry[] = [];
     let lastPath: Path | undefined;
 
-    const _nodes = nodes(editor as any, { at, voids });
+    const _nodes = nodes(e as any, { at, voids });
 
     for (const entry of _nodes) {
       const [node, path] = entry;
@@ -136,7 +137,7 @@ export const deleteMerge = (
         continue;
       }
       if (
-        (!voids && isVoid(editor as any, node)) ||
+        (!voids && isVoid(e as any, node)) ||
         (!PathApi.isCommon(path, start.path) &&
           !PathApi.isCommon(path, end.path))
       ) {
@@ -145,37 +146,35 @@ export const deleteMerge = (
       }
     }
 
-    const pathRefs = Array.from(matches, ([, p]) =>
-      createPathRef(editor as any, p)
-    );
-    const startRef = createPointRef(editor as any, start);
-    const endRef = createPointRef(editor as any, end);
+    const pathRefs = Array.from(matches, ([, p]) => createPathRef(e as any, p));
+    const startRef = createPointRef(e as any, start);
+    const endRef = createPointRef(e as any, end);
 
     if (!isSingleText && !startVoid) {
       const point = startRef.current!;
-      const [node] = getLeafNode(editor as any, point)!;
+      const [node] = getLeafNode(e as any, point)!;
       const { path } = point;
       const { offset } = start;
       const text = node.text.slice(offset);
-      editor.apply({ offset, path, text, type: 'remove_text' });
+      e.apply({ offset, path, text, type: 'remove_text' });
     }
 
     for (const pathRef of pathRefs) {
       const path = pathRef.unref()!;
-      editor.tf.removeNodes({ at: path, voids });
+      e.tf.removeNodes({ at: path, voids });
     }
 
     if (!endVoid) {
       const point = endRef.current!;
-      const [node] = getLeafNode(editor as any, point)!;
+      const [node] = getLeafNode(e as any, point)!;
       const { path } = point;
       const offset = isSingleText ? start.offset : 0;
       const text = node.text.slice(offset, end.offset);
-      editor.apply({ offset, path, text, type: 'remove_text' });
+      e.apply({ offset, path, text, type: 'remove_text' });
     }
     if (!isSingleText && isAcrossBlocks && endRef.current && startRef.current) {
       // DIFF: allow custom mergeNodes
-      editor.tf.mergeNodes({
+      e.tf.mergeNodes({
         at: endRef.current,
         hanging: true,
         voids,
@@ -185,7 +184,7 @@ export const deleteMerge = (
     const point = endRef.unref() || startRef.unref();
 
     if (options.at == null && point) {
-      select(editor as any, point);
+      select(e as any, point);
     }
   });
 };

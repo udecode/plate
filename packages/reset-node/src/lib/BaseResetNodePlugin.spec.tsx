@@ -38,7 +38,7 @@ describe('ResetNodePlugin', () => {
         value: input.children,
       });
 
-      editor.deleteFragment();
+      editor.tf.deleteFragment();
 
       expect(editor.children).toEqual(output.children);
     });
@@ -74,7 +74,7 @@ describe('ResetNodePlugin', () => {
         value: input.children,
       });
 
-      editor.deleteFragment();
+      editor.tf.deleteFragment();
 
       expect(editor.children).toEqual(output.children);
     });
@@ -106,7 +106,7 @@ describe('ResetNodePlugin', () => {
         value: input.children,
       });
 
-      editor.deleteBackward('character');
+      editor.tf.deleteBackward();
 
       expect(editor.children).toEqual(output.children);
     });

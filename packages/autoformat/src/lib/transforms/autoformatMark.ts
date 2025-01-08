@@ -60,7 +60,7 @@ export const autoformatMark = (
     // add mark to the text between the matches
     editor.tf.select(matchRange as TRange);
     marks.forEach((mark) => {
-      editor.addMark(mark, true);
+      editor.tf.addMark(mark, true);
     });
     editor.tf.collapse({ edge: 'end' });
     editor.tf.removeMarks(marks, { shouldChange: false });

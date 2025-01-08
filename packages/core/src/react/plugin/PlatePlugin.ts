@@ -81,7 +81,7 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
         /**
          * Property that can be used by a plugin to allow other plugins to
          * inject code. For example, if multiple plugins have defined
-         * `inject.editor.insertData.transformData` for `key=HtmlPlugin.key`,
+         * `inject.editor.tf.insertData.transformData` for `key=HtmlPlugin.key`,
          * `insertData` plugin will call all of these `transformData` for
          * `HtmlPlugin.key` plugin. Differs from `override.plugins` as this is
          * not overriding any plugin.
@@ -311,20 +311,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       ((...args: any[]) => any) | Record<string, (...args: any[]) => any>
     > = Record<string, never>,
   >(
-    extension: (ctx: PlatePluginContext<C>) => Deep2Partial<EditorApi> &
-      EA & {
-        [K in keyof InferApi<C>]?: InferApi<C>[K] extends (
-          ...args: any[]
-        ) => any
-          ? (...args: Parameters<InferApi<C>[K]>) => ReturnType<InferApi<C>[K]>
-          : InferApi<C>[K] extends Record<string, (...args: any[]) => any>
-            ? {
-                [N in keyof InferApi<C>[K]]?: (
-                  ...args: Parameters<InferApi<C>[K][N]>
-                ) => ReturnType<InferApi<C>[K][N]>;
-              }
-            : never;
-      }
+    extension: ExtendEditorApi<C, EA>
   ) => PlatePlugin<
     PluginConfig<
       C['key'],
@@ -348,25 +335,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       ((...args: any[]) => any) | Record<string, (...args: any[]) => any>
     > = Record<string, never>,
   >(
-    extension: (ctx: PlatePluginContext<C>) => Deep2Partial<EditorTransforms> &
-      ET & {
-        [K in keyof InferTransforms<C>]?: InferTransforms<C>[K] extends (
-          ...args: any[]
-        ) => any
-          ? (
-              ...args: Parameters<InferTransforms<C>[K]>
-            ) => ReturnType<InferTransforms<C>[K]>
-          : InferTransforms<C>[K] extends Record<
-                string,
-                (...args: any[]) => any
-              >
-            ? {
-                [N in keyof InferTransforms<C>[K]]?: (
-                  ...args: Parameters<InferTransforms<C>[K][N]>
-                ) => ReturnType<InferTransforms<C>[K][N]>;
-              }
-            : never;
-      }
+    extension: ExtendEditorTransforms<C, ET>
   ) => PlatePlugin<
     PluginConfig<
       C['key'],
@@ -484,6 +453,42 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   __resolved?: boolean;
 };
 
+export type ExtendEditorApi<
+  C extends AnyPluginConfig = PluginConfig,
+  EA = {},
+> = (ctx: PlatePluginContext<C>) => EA &
+  Deep2Partial<EditorApi> & {
+    [K in keyof InferApi<C>]?: InferApi<C>[K] extends (...args: any[]) => any
+      ? (...args: Parameters<InferApi<C>[K]>) => ReturnType<InferApi<C>[K]>
+      : InferApi<C>[K] extends Record<string, (...args: any[]) => any>
+        ? {
+            [N in keyof InferApi<C>[K]]?: (
+              ...args: Parameters<InferApi<C>[K][N]>
+            ) => ReturnType<InferApi<C>[K][N]>;
+          }
+        : never;
+  };
+
+export type ExtendEditorTransforms<
+  C extends AnyPluginConfig = PluginConfig,
+  ET = {},
+> = (ctx: PlatePluginContext<C>) => ET &
+  Deep2Partial<EditorTransforms> & {
+    [K in keyof InferTransforms<C>]?: InferTransforms<C>[K] extends (
+      ...args: any[]
+    ) => any
+      ? (
+          ...args: Parameters<InferTransforms<C>[K]>
+        ) => ReturnType<InferTransforms<C>[K]>
+      : InferTransforms<C>[K] extends Record<string, (...args: any[]) => any>
+        ? {
+            [N in keyof InferTransforms<C>[K]]?: (
+              ...args: Parameters<InferTransforms<C>[K][N]>
+            ) => ReturnType<InferTransforms<C>[K][N]>;
+          }
+        : never;
+  };
+
 export type PlatePluginConfig<
   K extends string = any,
   O = {},
@@ -564,7 +569,7 @@ export type Parser<C extends AnyPluginConfig = PluginConfig> = {
   ) => Descendant[] | undefined;
 
   /**
-   * Function called on `editor.insertData` just before `editor.insertFragment`.
+   * Function called on `editor.tf.insertData` just before `editor.tf.insertFragment`.
    * Default: if the block above the selection is empty and the first fragment
    * node type is not inline, set the selected node type to the first fragment
    * node type.

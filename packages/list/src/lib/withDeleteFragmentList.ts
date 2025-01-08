@@ -1,5 +1,5 @@
 import {
-  type ExtendEditor,
+  type ExtendEditorTransforms,
   type SlateEditor,
   type TRange,
   deleteMerge,
@@ -19,12 +19,11 @@ const getLiStart = (editor: SlateEditor) => {
   });
 };
 
-export const withDeleteFragmentList: ExtendEditor<ListConfig> = ({
+export const withDeleteFragmentList: ExtendEditorTransforms<ListConfig> = ({
   editor,
-}) => {
-  const { deleteFragment } = editor;
-
-  editor.deleteFragment = (direction) => {
+  tf: { deleteFragment },
+}) => ({
+  deleteFragment(direction) {
     const deleteFragmentList = () => {
       let deleted = false;
 
@@ -60,7 +59,6 @@ export const withDeleteFragmentList: ExtendEditor<ListConfig> = ({
 
         if (liEndPathRef) {
           const liEndPath = liEndPathRef.unref()!;
-
           const listStart = liStart && editor.api.parent(liStart[1]);
 
           const deletePath = getHighestEmptyList(editor, {
@@ -82,7 +80,5 @@ export const withDeleteFragmentList: ExtendEditor<ListConfig> = ({
     if (deleteFragmentList()) return;
 
     deleteFragment(direction);
-  };
-
-  return editor;
-};
+  },
+});

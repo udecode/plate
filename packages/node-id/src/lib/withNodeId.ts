@@ -1,6 +1,6 @@
 import {
   type Descendant,
-  type ExtendEditor,
+  type ExtendEditorTransforms,
   type NodeEntry,
   type NodeProps,
   type TNode,
@@ -15,12 +15,11 @@ import cloneDeep from 'lodash/cloneDeep.js';
 import type { NodeIdConfig } from './NodeIdPlugin';
 
 /** Enables support for inserting nodes with an id key. */
-export const withNodeId: ExtendEditor<NodeIdConfig> = ({
+export const withNodeId: ExtendEditorTransforms<NodeIdConfig> = ({
   editor,
   getOptions,
+  tf: { apply, insertNode, insertNodes },
 }) => {
-  const { apply, insertNode } = editor;
-
   const idPropsCreator = () => ({
     [getOptions().idKey ?? '']: getOptions().idCreator!(),
   });
@@ -57,124 +56,126 @@ export const withNodeId: ExtendEditor<NodeIdConfig> = ({
     }
   };
 
-  editor.insertNodes = (_nodes, options) => {
-    const nodes = castArray<Descendant>(_nodes as any).filter((node) => !!node);
+  return {
+    apply(operation) {
+      const {
+        allow,
+        disableInsertOverrides,
+        exclude,
+        idCreator,
+        idKey = '',
+        reuseId,
+      } = getOptions();
 
-    if (nodes.length === 0) return;
+      const query = {
+        allow,
+        exclude,
+        filter: filterNode,
+      };
 
-    const { disableInsertOverrides, idKey = '' } = getOptions();
+      if (operation.type === 'insert_node') {
+        // clone to be able to write (read-only)
+        const node = cloneDeep(operation.node);
 
-    editor.tf.insertNodes(
-      nodes.map((node) => {
-        if (!disableInsertOverrides && node[idKey]) {
-          node._id = node[idKey];
-        }
-
-        return node;
-      }),
-      options
-    );
-  };
-
-  editor.insertNode = (node) => {
-    const { disableInsertOverrides, idKey = '' } = getOptions();
-
-    if (!disableInsertOverrides && node[idKey]) {
-      node._id = node[idKey];
-    }
-
-    insertNode(node);
-  };
-
-  editor.apply = (operation) => {
-    const {
-      allow,
-      disableInsertOverrides,
-      exclude,
-      idCreator,
-      idKey = '',
-      reuseId,
-    } = getOptions();
-
-    const query = {
-      allow,
-      exclude,
-      filter: filterNode,
-    };
-
-    if (operation.type === 'insert_node') {
-      // clone to be able to write (read-only)
-      const node = cloneDeep(operation.node);
-
-      // Delete ids from node that are already being used
-      applyDeepToNodes({
-        apply: removeIdFromNodeIfDuplicate,
-        node,
-        query,
-        source: {},
-      });
-
-      defaultsDeepToNodes({
-        node,
-        path: operation.path,
-        query,
-        source: idPropsCreator,
-      });
-
-      if (!disableInsertOverrides) {
+        // Delete ids from node that are already being used
         applyDeepToNodes({
-          apply: overrideIdIfSet,
+          apply: removeIdFromNodeIfDuplicate,
           node,
           query,
           source: {},
         });
-      }
 
-      return apply({
-        ...operation,
-        node,
-      });
-    }
-    if (operation.type === 'split_node') {
-      const node = operation.properties as NodeProps<TNode>;
+        defaultsDeepToNodes({
+          node,
+          path: operation.path,
+          query,
+          source: idPropsCreator,
+        });
 
-      let id = (operation.properties as any)[idKey];
-
-      // only for elements (node with a type) or all nodes if `filterText=false`
-      if (queryNode([node as any, operation.path], query)) {
-        /**
-         * Create a new id if:
-         *
-         * - The id in the new node is already being used in the editor or,
-         * - The node has no id
-         */
-        if (
-          !reuseId ||
-          id === undefined ||
-          editor.api.some({
-            at: [],
-            match: { [idKey]: id },
-          })
-        ) {
-          id = idCreator!();
+        if (!disableInsertOverrides) {
+          applyDeepToNodes({
+            apply: overrideIdIfSet,
+            node,
+            query,
+            source: {},
+          });
         }
 
         return apply({
           ...operation,
-          properties: {
-            ...operation.properties,
-            [idKey]: id,
-          },
+          node,
         });
       }
-      // if the node is allowed, we don't want to use the same id
-      if (id) {
-        delete (operation.properties as any)[idKey];
+      if (operation.type === 'split_node') {
+        const node = operation.properties as NodeProps<TNode>;
+        let id = (operation.properties as any)[idKey];
+
+        // only for elements (node with a type) or all nodes if `filterText=false`
+
+        if (queryNode([node as any, operation.path], query)) {
+          /**
+           * Create a new id if:
+           *
+           * - The id in the new node is already being used in the editor or,
+           * - The node has no id
+           */
+          if (
+            !reuseId ||
+            id === undefined ||
+            editor.api.some({
+              at: [],
+              match: { [idKey]: id },
+            })
+          ) {
+            id = idCreator!();
+          }
+
+          return apply({
+            ...operation,
+            properties: {
+              ...operation.properties,
+              [idKey]: id,
+            },
+          });
+        }
+        // if the node is allowed, we don't want to use the same id
+        if (id) {
+          delete (operation.properties as any)[idKey];
+        }
       }
-    }
 
-    return apply(operation);
+      return apply(operation);
+    },
+
+    insertNode(node) {
+      const { disableInsertOverrides, idKey = '' } = getOptions();
+
+      if (!disableInsertOverrides && node[idKey]) {
+        node._id = node[idKey];
+      }
+
+      insertNode(node);
+    },
+
+    insertNodes(_nodes, options) {
+      const nodes = castArray<Descendant>(_nodes as any).filter(
+        (node) => !!node
+      );
+
+      if (nodes.length === 0) return;
+
+      const { disableInsertOverrides, idKey = '' } = getOptions();
+
+      insertNodes(
+        nodes.map((node) => {
+          if (!disableInsertOverrides && node[idKey]) {
+            node._id = node[idKey];
+          }
+
+          return node;
+        }),
+        options
+      );
+    },
   };
-
-  return editor;
 };

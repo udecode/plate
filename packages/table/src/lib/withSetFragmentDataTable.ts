@@ -1,21 +1,17 @@
-import type { ExtendEditor, TElement } from '@udecode/plate';
+import type { ExtendEditorTransforms, TElement } from '@udecode/plate';
 
 import type { TTableCellElement, TTableElement, TableConfig } from '.';
 
 import { BaseTableCellHeaderPlugin, BaseTablePlugin } from './BaseTablePlugin';
 import { getTableGridAbove } from './queries';
 
-export const withSetFragmentDataTable: ExtendEditor<TableConfig> = ({
+export const withSetFragmentDataTable: ExtendEditorTransforms<TableConfig> = ({
   api,
   editor,
   plugin,
-}) => {
-  const { setFragmentData } = editor;
-
-  editor.setFragmentData = (
-    data: DataTransfer,
-    originEvent?: 'copy' | 'cut' | 'drag' | undefined
-  ) => {
+  tf: { setFragmentData },
+}) => ({
+  setFragmentData(data, originEvent) {
     const tableEntry = getTableGridAbove(editor, {
       format: 'table',
     })?.[0];
@@ -61,7 +57,6 @@ export const withSetFragmentDataTable: ExtendEditor<TableConfig> = ({
     editor.tf.withoutNormalizing(() => {
       tableRows.forEach((row) => {
         const rowCells = row.children as TTableCellElement[];
-
         const cellStrings: string[] = [];
         const rowElement =
           row.type === editor.getType(BaseTableCellHeaderPlugin)
@@ -140,7 +135,5 @@ export const withSetFragmentDataTable: ExtendEditor<TableConfig> = ({
       encodeURIComponent(selectedFragmentStr)
     );
     data.setData('application/x-slate-fragment', encodedFragment);
-  };
-
-  return editor;
-};
+  },
+});

@@ -60,7 +60,6 @@ export type CommentsApi = {
 
 export const BaseCommentsPlugin = createTSlatePlugin<BaseCommentsConfig>({
   key: 'comment',
-  extendEditor: withComments,
   node: { isLeaf: true },
   options: {
     activeCommentId: null,
@@ -155,4 +154,5 @@ export const BaseCommentsPlugin = createTSlatePlugin<BaseCommentsConfig>({
   }))
   .extendEditorTransforms(({ editor }) => ({
     insert: { comment: bindFirst(insertComment, editor) },
-  }));
+  }))
+  .extendEditorTransforms(withComments);

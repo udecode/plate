@@ -1,8 +1,4 @@
-import {
-  type ExtendEditor,
-  createSlatePlugin,
-  getEditorPlugin,
-} from '../plugin';
+import { createSlatePlugin, getEditorPlugin } from '../plugin';
 import {
   getInjectedPlugins,
   pipeInsertDataQuery,
@@ -11,10 +7,10 @@ import {
   pipeTransformFragment,
 } from '../utils';
 
-export const withParser: ExtendEditor = ({ editor }) => {
-  const { insertData } = editor;
-
-  editor.insertData = (dataTransfer) => {
+export const ParserPlugin = createSlatePlugin({
+  key: 'parser',
+}).extendEditorTransforms(({ editor, tf: { insertData } }) => ({
+  insertData(dataTransfer: DataTransfer) {
     const inserted = [...editor.pluginList].reverse().some((plugin) => {
       const parser = plugin.parser;
 
@@ -80,12 +76,5 @@ export const withParser: ExtendEditor = ({ editor }) => {
     if (inserted) return;
 
     insertData(dataTransfer);
-  };
-
-  return editor;
-};
-
-export const ParserPlugin = createSlatePlugin({
-  key: 'parser',
-  extendEditor: withParser,
-});
+  },
+}));

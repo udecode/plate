@@ -1,15 +1,10 @@
 import {
-  type ExtendEditor,
+  type ExtendEditorTransforms,
   type Point,
   type TRange,
   PathApi,
   RangeApi,
-  getEditorPlugin,
 } from '@udecode/plate';
-import {
-  RemoveEmptyNodesPlugin,
-  withRemoveEmptyNodes,
-} from '@udecode/plate-normalizers';
 
 import type { BaseLinkConfig } from './BaseLinkPlugin';
 
@@ -23,14 +18,12 @@ import { upsertLink } from './transforms/index';
  * On insert data: Paste a string inside a link element will edit its children
  * text but not its url.
  */
-
-export const withLink: ExtendEditor<BaseLinkConfig> = ({
+export const withLink: ExtendEditorTransforms<BaseLinkConfig> = ({
   editor,
   getOptions,
+  tf: { apply, insertBreak, insertData, insertText, normalizeNode },
   type,
 }) => {
-  const { apply, insertBreak, insertData, insertText, normalizeNode } = editor;
-
   const wrapLink = () => {
     const { getUrlHref, isUrl, rangeBeforeOptions } = getOptions();
 
@@ -76,111 +69,100 @@ export const withLink: ExtendEditor<BaseLinkConfig> = ({
     });
   };
 
-  editor.insertBreak = () => {
-    if (!editor.api.isCollapsed()) return insertBreak();
+  return {
+    apply(operation) {
+      if (operation.type === 'set_selection') {
+        const range = operation.newProperties as TRange | null;
 
-    wrapLink();
-    insertBreak();
-  };
+        if (range?.focus && range.anchor && RangeApi.isCollapsed(range)) {
+          const entry = editor.api.above({
+            at: range,
+            match: { type },
+          });
 
-  editor.insertText = (text) => {
-    if (text === ' ' && editor.api.isCollapsed()) {
+          if (entry) {
+            const [, path] = entry;
+
+            let newPoint: Point | undefined;
+
+            if (editor.api.isStart(range.focus, path)) {
+              newPoint = editor.api.end(path, { previous: true });
+            }
+            if (editor.api.isEnd(range.focus, path)) {
+              newPoint = editor.api.start(path, { next: true });
+            }
+            if (newPoint) {
+              operation.newProperties = {
+                anchor: newPoint,
+                focus: newPoint,
+              };
+            }
+          }
+        }
+      }
+
+      apply(operation);
+    },
+
+    insertBreak() {
+      if (!editor.api.isCollapsed()) return insertBreak();
+
       wrapLink();
-    }
+      insertBreak();
+    },
 
-    insertText(text);
-  };
+    insertData(data) {
+      const { getUrlHref, keepSelectedTextOnPaste } = getOptions();
 
-  editor.insertData = (data: DataTransfer) => {
-    const { getUrlHref, keepSelectedTextOnPaste } = getOptions();
+      const text = data.getData('text/plain');
+      const textHref = getUrlHref?.(text);
 
-    const text = data.getData('text/plain');
-    const textHref = getUrlHref?.(text);
-
-    if (text) {
-      const value = textHref || text;
-      const inserted = upsertLink(editor, {
-        insertTextInLink: true,
-        text: keepSelectedTextOnPaste ? undefined : value,
-        url: value,
-      });
-
-      if (inserted) return;
-    }
-
-    insertData(data);
-  };
-
-  // TODO: plugin
-  editor.apply = (operation) => {
-    if (operation.type === 'set_selection') {
-      const range = operation.newProperties as TRange | null;
-
-      if (range?.focus && range.anchor && RangeApi.isCollapsed(range)) {
-        const entry = editor.api.above({
-          at: range,
-          match: { type },
+      if (text) {
+        const value = textHref || text;
+        const inserted = upsertLink(editor, {
+          insertTextInLink: true,
+          text: keepSelectedTextOnPaste ? undefined : value,
+          url: value,
         });
 
-        if (entry) {
-          const [, path] = entry;
+        if (inserted) return;
+      }
 
-          let newPoint: Point | undefined;
+      insertData(data);
+    },
 
-          if (editor.api.isStart(range.focus, path)) {
-            newPoint = editor.api.end(path, { previous: true });
-          }
-          if (editor.api.isEnd(range.focus, path)) {
-            newPoint = editor.api.start(path, { next: true });
-          }
-          if (newPoint) {
-            operation.newProperties = {
-              anchor: newPoint,
-              focus: newPoint,
-            };
+    insertText(text) {
+      if (text === ' ' && editor.api.isCollapsed()) {
+        wrapLink();
+      }
+
+      insertText(text);
+    },
+
+    normalizeNode([node, path]) {
+      if (node.type === type) {
+        const range = editor.selection;
+
+        if (
+          range &&
+          editor.api.isCollapsed() &&
+          editor.api.isEnd(range.focus, path)
+        ) {
+          const nextPoint = editor.api.start(path, { next: true });
+
+          // select next text node if any
+          if (nextPoint) {
+            editor.tf.select(nextPoint);
+          } else {
+            // insert text node then select
+            const nextPath = PathApi.next(path);
+            editor.tf.insertNodes({ text: '' } as any, { at: nextPath });
+            editor.tf.select(nextPath);
           }
         }
       }
-    }
 
-    apply(operation);
+      normalizeNode([node, path]);
+    },
   };
-
-  // TODO: plugin
-  editor.normalizeNode = ([node, path]) => {
-    if (node.type === type) {
-      const range = editor.selection;
-
-      if (
-        range &&
-        editor.api.isCollapsed() &&
-        editor.api.isEnd(range.focus, path)
-      ) {
-        const nextPoint = editor.api.start(path, { next: true });
-
-        // select next text node if any
-        if (nextPoint) {
-          editor.tf.select(nextPoint);
-        } else {
-          // insert text node then select
-          const nextPath = PathApi.next(path);
-          editor.tf.insertNodes({ text: '' } as any, { at: nextPath });
-          editor.tf.select(nextPath);
-        }
-      }
-    }
-
-    normalizeNode([node, path]);
-  };
-
-  editor = withRemoveEmptyNodes(
-    getEditorPlugin(
-      editor,
-      RemoveEmptyNodesPlugin.configure({
-        options: { types: type },
-      })
-    )
-  );
-
-  return editor;
 };

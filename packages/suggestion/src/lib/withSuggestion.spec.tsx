@@ -39,7 +39,7 @@ describe('withSuggestion', () => {
         });
         editor.setOption(BaseSuggestionPlugin, 'isSuggesting', false);
 
-        editor.insertText('test');
+        editor.tf.insertText('test');
 
         expect(editor.children).toEqual(output.children);
       });
@@ -73,7 +73,7 @@ describe('withSuggestion', () => {
           });
           editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
 
-          editor.insertText('test');
+          editor.tf.insertText('test');
 
           expect(
             editor.children[0].children[1][BaseSuggestionPlugin.key]
@@ -115,7 +115,7 @@ describe('withSuggestion', () => {
       //     });
       //     editor.getOptions(SuggestionPlugin).isSuggesting = true;
       //
-      //     editor.insertText('test');
+      //     editor.tf.insertText('test');
       //
       //     expect(editor.children).toEqual(output.children);
       //   });
@@ -151,7 +151,7 @@ describe('withSuggestion', () => {
         });
         editor.setOption(BaseSuggestionPlugin, 'isSuggesting', false);
 
-        editor.deleteBackward('character');
+        editor.tf.deleteBackward();
 
         expect(editor.children).toEqual(output.children);
       });
@@ -189,7 +189,7 @@ describe('withSuggestion', () => {
           });
           editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
 
-          editor.deleteBackward('character');
+          editor.tf.deleteBackward();
 
           expect(editor.children).toEqual(output.children);
         });
@@ -213,7 +213,7 @@ describe('withSuggestion', () => {
           });
           editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
 
-          editor.deleteBackward('character');
+          editor.tf.deleteBackward();
 
           expect(
             editor.children[0].children[1][BaseSuggestionPlugin.key]
@@ -246,7 +246,7 @@ describe('withSuggestion', () => {
           });
           editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
 
-          editor.deleteBackward('character');
+          editor.tf.deleteBackward();
 
           expect(
             editor.children[0].children[1][BaseSuggestionPlugin.key]
@@ -290,7 +290,7 @@ describe('withSuggestion', () => {
           });
           editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
 
-          editor.deleteBackward('line');
+          editor.tf.deleteBackward({ unit: 'line' });
 
           expect(
             editor.children[0].children[0][BaseSuggestionPlugin.key]

@@ -29,13 +29,14 @@ type CaptionSelectors = {
 /** Enables support for caption. */
 export const BaseCaptionPlugin = createTSlatePlugin<CaptionConfig>({
   key: 'caption',
-  extendEditor: withCaption,
   options: {
     focusEndPath: null,
     focusStartPath: null,
     plugins: [],
     visibleId: null,
   },
-}).extendOptions<CaptionSelectors>(({ getOptions }) => ({
-  isVisible: (elementId) => getOptions().visibleId === elementId,
-}));
+})
+  .extendOptions<CaptionSelectors>(({ getOptions }) => ({
+    isVisible: (elementId) => getOptions().visibleId === elementId,
+  }))
+  .extendEditorTransforms(withCaption);

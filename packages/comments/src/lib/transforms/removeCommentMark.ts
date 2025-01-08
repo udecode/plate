@@ -13,9 +13,9 @@ export const removeCommentMark = (editor: SlateEditor) => {
 
   editor.tf.withoutNormalizing(() => {
     keys.forEach((key) => {
-      editor.removeMark(key);
+      editor.tf.removeMark(key);
     });
 
-    editor.removeMark(BaseCommentsPlugin.key);
+    editor.tf.removeMark(BaseCommentsPlugin.key);
   });
 };

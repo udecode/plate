@@ -5,7 +5,10 @@ import {
   PathApi,
   deleteMerge,
 } from '@udecode/plate';
-import { type ExtendEditor, getEditorPlugin } from '@udecode/plate/react';
+import {
+  type ExtendEditorTransforms,
+  getEditorPlugin,
+} from '@udecode/plate/react';
 import { BaseResetNodePlugin } from '@udecode/plate-reset-node';
 import {
   SIMULATE_BACKSPACE,
@@ -24,15 +27,13 @@ import { unwrapList } from '../lib/transforms';
 import { removeFirstListItem } from '../lib/transforms/removeFirstListItem';
 import { removeListItem } from '../lib/transforms/removeListItem';
 
-export const withDeleteBackwardList: ExtendEditor<ListConfig> = ({
+export const withDeleteBackwardList: ExtendEditorTransforms<ListConfig> = ({
   editor,
-}) => {
-  const { deleteBackward } = editor;
-
-  editor.deleteBackward = (unit) => {
+  tf: { deleteBackward },
+}) => ({
+  deleteBackward(options) {
     const deleteBackwardList = () => {
       const res = getListItemEntry(editor, {});
-
       let moved: boolean | undefined = false;
 
       if (res) {
@@ -74,7 +75,7 @@ export const withDeleteBackwardList: ExtendEditor<ListConfig> = ({
                   })
                 ),
                 event: SIMULATE_BACKSPACE,
-              });
+              } as any);
               moved = true;
 
               return;
@@ -106,7 +107,7 @@ export const withDeleteBackwardList: ExtendEditor<ListConfig> = ({
 
             deleteMerge(editor, {
               reverse: true,
-              unit,
+              unit: options?.unit,
             });
             moved = true;
 
@@ -128,8 +129,6 @@ export const withDeleteBackwardList: ExtendEditor<ListConfig> = ({
 
     if (deleteBackwardList()) return;
 
-    deleteBackward(unit);
-  };
-
-  return editor;
-};
+    deleteBackward(options);
+  },
+});

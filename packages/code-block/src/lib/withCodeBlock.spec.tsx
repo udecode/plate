@@ -43,7 +43,7 @@ describe('insert break', () => {
         value: input.children,
       });
 
-      editor.insertBreak();
+      editor.tf.insertBreak();
 
       expect(editor.children).toEqual(output.children);
     });

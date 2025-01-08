@@ -29,8 +29,8 @@ it('should autoformat', () => {
     value: input,
   });
 
-  editor.insertText('*');
-  editor.insertText('*');
+  editor.tf.insertText('*');
+  editor.tf.insertText('*');
 
   expect(input.children).toEqual(output.children);
 });

@@ -166,24 +166,14 @@ A paragraph node affected by the above plugin would look like this:
 
 ### Extend Editor (Advanced)
 
-Occasionally, you'll need to override the built-in editor methods provided by Slate to work around bugs or add complex functionality. To do this, you can use the `extendEditor` plugin option to directly mutate properties of the `editor` object after its creation.
-
-One common application of this technique is to create custom [normalizers](https://docs.slatejs.org/concepts/11-normalizing).
+You can extend the editor for complex functionality. To do this, you can use the `extendEditor` plugin option to directly mutate properties of the `editor` object after its creation.
 
 ```ts showLineNumbers {20}
 const CustomNormalizerPlugin = createPlatePlugin({
   key: 'customNormalizer',
   extendEditor: ({ editor }) => {
-    const { normalizeNode } = editor;
-
-    editor.normalizeNode = ([node, path]) => {
-      // Custom normalization logic here
-      // ...
-
-      // Call other normalizers
-      normalizeNode([node, path]);
-    };
-
+    editor.customState = true;
+    
     return editor;
   },
 });
@@ -353,7 +343,7 @@ const CodeBlockPlugin = createTPlatePlugin<CodeBlockConfig>({
 })).extendEditorTransforms<CodeBlockConfig['transforms']>(() => ({
   insert: {
     codeBlock: ({ editor, getOptions }) => {
-      editor.insertBlock({ type: 'code_block', language: getOptions().language });
+      editor.tf.insertBlock({ type: 'code_block', language: getOptions().language });
     },
   },
 }));

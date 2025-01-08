@@ -1,4 +1,4 @@
-import type { ExtendEditor } from '@udecode/plate';
+import type { ExtendEditorTransforms } from '@udecode/plate';
 
 import type { ImageConfig } from './BaseImagePlugin';
 
@@ -6,13 +6,12 @@ import { insertImage } from './transforms/insertImage';
 import { isImageUrl } from './utils/isImageUrl';
 
 /** If inserted text is image url, insert image instead. */
-export const withImageEmbed: ExtendEditor<ImageConfig> = ({
+export const withImageEmbed: ExtendEditorTransforms<ImageConfig> = ({
   editor,
   getOptions,
-}) => {
-  const { insertData } = editor;
-
-  editor.insertData = (dataTransfer: DataTransfer) => {
+  tf: { insertData },
+}) => ({
+  insertData(dataTransfer) {
     if (getOptions().disableEmbedInsert) {
       return insertData(dataTransfer);
     }
@@ -26,7 +25,5 @@ export const withImageEmbed: ExtendEditor<ImageConfig> = ({
     }
 
     insertData(dataTransfer);
-  };
-
-  return editor;
-};
+  },
+});

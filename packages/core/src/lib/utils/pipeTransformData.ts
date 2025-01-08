@@ -4,7 +4,7 @@ import type { AnyEditorPlugin } from '../plugin/SlatePlugin';
 
 import { getEditorPlugin } from '../plugin';
 
-/** Pipe editor.insertData.transformData */
+/** Pipe editor.tf.insertData.transformData */
 export const pipeTransformData = (
   editor: SlateEditor,
   plugins: Partial<AnyEditorPlugin>[],

@@ -20,6 +20,5 @@ export type TodoListConfig = PluginConfig<
 
 export const BaseTodoListPlugin = createTSlatePlugin<TodoListConfig>({
   key: 'action_item',
-  extendEditor: withTodoList,
   node: { isElement: true },
-});
+}).extendEditorTransforms(withTodoList);

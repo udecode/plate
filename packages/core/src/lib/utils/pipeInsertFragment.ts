@@ -23,6 +23,6 @@ export const pipeInsertFragment = (
       );
     });
 
-    editor.insertFragment(fragment);
+    editor.tf.insertFragment(fragment);
   });
 };

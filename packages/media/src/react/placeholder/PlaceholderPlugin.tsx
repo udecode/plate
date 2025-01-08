@@ -42,24 +42,6 @@ export const PlaceholderPlugin = toTPlatePlugin<
     { placeholder: PlaceholderApi }
   >
 >(BasePlaceholderPlugin, {
-  extendEditor: ({ editor }) => {
-    const { writeHistory } = editor;
-
-    editor.writeHistory = (stack, batch) => {
-      if (isHistoryMarking(editor)) {
-        const newBatch = {
-          ...batch,
-          [PlaceholderPlugin.key]: true,
-        };
-
-        return writeHistory(stack, newBatch);
-      }
-
-      writeHistory(stack, batch);
-    };
-
-    return editor;
-  },
   options: {
     disableEmptyPlaceholder: false,
     disableFileDrop: false,
@@ -107,6 +89,22 @@ export const PlaceholderPlugin = toTPlatePlugin<
     uploadingFiles: {},
   },
 })
+  .extendEditorTransforms(({ editor, tf: { writeHistory } }) => ({
+    writeHistory(stack, batch) {
+      if (isHistoryMarking(editor)) {
+        const newBatch = {
+          ...batch,
+          [PlaceholderPlugin.key]: true,
+        };
+
+        writeHistory(stack, newBatch);
+
+        return;
+      }
+
+      return writeHistory(stack, batch);
+    },
+  }))
   .extendEditorTransforms(({ editor }) => ({
     insert: {
       media: bindFirst(insertMedia, editor),

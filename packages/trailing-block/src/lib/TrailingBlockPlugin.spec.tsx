@@ -41,7 +41,7 @@ describe('when last node is invalid', () => {
       value: input.children,
     });
 
-    editor.normalizeNode([input, []]);
+    editor.tf.normalizeNode([input, []]);
 
     expect(editor.children).toEqual(output.children);
   });
@@ -83,7 +83,7 @@ describe('when level = 1', () => {
       value: input.children,
     });
 
-    editor.normalizeNode([input, []]);
+    editor.tf.normalizeNode([input, []]);
 
     expect(editor.children).toEqual(output.children);
   });
@@ -119,7 +119,7 @@ describe('when using query', () => {
       value: input.children,
     });
 
-    editor.normalizeNode([input, []]);
+    editor.tf.normalizeNode([input, []]);
 
     expect(editor.children).toEqual(output.children);
   });
@@ -149,7 +149,7 @@ describe('when the last node is valid', () => {
       value: input.children,
     });
 
-    editor.normalizeNode([input, []]);
+    editor.tf.normalizeNode([input, []]);
 
     expect(editor.children).toEqual(output.children);
   });
@@ -173,7 +173,7 @@ describe('when editor has no children', () => {
       value: input.children,
     });
 
-    editor.normalizeNode([editor, []]);
+    editor.tf.normalizeNode([editor, []]);
 
     expect(editor.children).toEqual(output.children);
   });

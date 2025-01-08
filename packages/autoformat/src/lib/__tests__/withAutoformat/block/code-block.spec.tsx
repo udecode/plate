@@ -37,8 +37,8 @@ describe('when ``` at block start', () => {
       value: input,
     });
 
-    editor.insertText('`');
-    editor.insertText('new');
+    editor.tf.insertText('`');
+    editor.tf.insertText('new');
 
     expect(input.children).toEqual(output.children);
   });
@@ -105,8 +105,8 @@ describe('when ``` at block start, but customising with query we get the most re
       value: input,
     });
 
-    codeEditor.insertText('`');
-    codeEditor.insertText('inside code-block');
+    codeEditor.tf.insertText('`');
+    codeEditor.tf.insertText('inside code-block');
 
     expect(input.children).toEqual(output.children);
   });
@@ -138,8 +138,8 @@ describe('when ```', () => {
       value: input,
     });
 
-    editor.insertText('`');
-    editor.insertText('new');
+    editor.tf.insertText('`');
+    editor.tf.insertText('new');
 
     expect(input.children).toEqual(output.children);
   });

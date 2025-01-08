@@ -25,7 +25,7 @@ export const replaceSelectionAIChat = (
 
   // If no blocks selected, treat it like a normal selection replacement
   if (!isBlockSelecting) {
-    editor.insertFragment(sourceEditor.children);
+    editor.tf.insertFragment(sourceEditor.children);
     editor.tf.focus();
 
     return;

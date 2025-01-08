@@ -1,12 +1,13 @@
-import type { ExtendEditor } from '@udecode/plate';
+import type { ExtendEditorTransforms } from '@udecode/plate';
 
 import { type TableConfig, getTableAbove } from '.';
 import { getTableGridAbove } from './queries';
 
-export const withInsertTextTable: ExtendEditor<TableConfig> = ({ editor }) => {
-  const { insertText } = editor;
-
-  editor.insertText = (text) => {
+export const withInsertTextTable: ExtendEditorTransforms<TableConfig> = ({
+  editor,
+  tf: { insertText },
+}) => ({
+  insertText(text) {
     if (editor.api.isExpanded()) {
       const entry = getTableAbove(editor, {
         at: editor.selection?.anchor,
@@ -26,7 +27,5 @@ export const withInsertTextTable: ExtendEditor<TableConfig> = ({ editor }) => {
     }
 
     insertText(text);
-  };
-
-  return editor;
-};
+  },
+});

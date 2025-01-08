@@ -1,17 +1,16 @@
-import type { ExtendEditor } from '@udecode/plate';
+import type { ExtendEditorTransforms } from '@udecode/plate';
 
 import type { TodoListConfig } from './BaseTodoListPlugin';
 
 import { getTodoListItemEntry } from './queries';
 import { insertTodoListItem } from './transforms';
 
-export const withTodoList: ExtendEditor<TodoListConfig> = ({
+export const withTodoList: ExtendEditorTransforms<TodoListConfig> = ({
   editor,
   getOptions,
-}) => {
-  const { insertBreak } = editor;
-
-  editor.insertBreak = () => {
+  tf: { insertBreak },
+}) => ({
+  insertBreak() {
     const insertBreakTodoList = () => {
       if (!editor.selection) return;
 
@@ -28,7 +27,5 @@ export const withTodoList: ExtendEditor<TodoListConfig> = ({
     if (insertBreakTodoList()) return;
 
     insertBreak();
-  };
-
-  return editor;
-};
+  },
+});

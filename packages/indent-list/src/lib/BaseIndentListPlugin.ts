@@ -45,7 +45,6 @@ export type BaseIndentListConfig = PluginConfig<
 
 export const BaseIndentListPlugin = createTSlatePlugin<BaseIndentListConfig>({
   key: 'listStyleType',
-  extendEditor: withIndentList,
   inject: {
     plugins: {
       [HtmlPlugin.key]: {
@@ -108,4 +107,4 @@ export const BaseIndentListPlugin = createTSlatePlugin<BaseIndentListConfig>({
   render: {
     belowNodes: renderIndentListBelowNodes,
   },
-});
+}).extendEditorTransforms(withIndentList);

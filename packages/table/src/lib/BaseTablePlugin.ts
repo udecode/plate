@@ -28,7 +28,7 @@ import {
   insertTableColumn,
   insertTableRow,
 } from './transforms/index';
-import { withTable } from './withTable';
+import { withTableApi, withTableTransforms } from './withTable';
 
 export const BaseTableRowPlugin = createSlatePlugin({
   key: 'tr',
@@ -174,7 +174,6 @@ type TableTransforms = {
 export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
   key: 'table',
   // dependencies: [NodeIdPlugin.key],
-  extendEditor: withTable,
   node: { isElement: true },
   normalizeInitialValue: normalizeInitialValueTable,
   options: {
@@ -223,7 +222,9 @@ export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
       merge: bindFirst(mergeTableCells, editor),
       split: bindFirst(splitTableCell, editor),
     },
-  }));
+  }))
+  .extendEditorTransforms(withTableTransforms)
+  .extendEditorApi(withTableApi);
 
 const getParse = (type: string): HtmlDeserializer['parse'] => {
   return ({ element }) => {

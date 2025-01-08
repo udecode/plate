@@ -1,5 +1,5 @@
 import {
-  type ExtendEditor,
+  type ExtendEditorTransforms,
   type TElement,
   ElementApi,
   TextApi,
@@ -16,15 +16,14 @@ import { computeCellIndices, getCellTypes } from './utils/index';
  *
  * - Wrap cell children in a paragraph if they are texts.
  */
-export const withNormalizeTable: ExtendEditor<TableConfig> = ({
+export const withNormalizeTable: ExtendEditorTransforms<TableConfig> = ({
   editor,
   getOption,
   getOptions,
+  tf: { normalizeNode },
   type,
-}) => {
-  const { apply, normalizeNode } = editor;
-
-  editor.normalizeNode = ([n, path]) => {
+}) => ({
+  normalizeNode([n, path]) {
     const { enableUnsetSingleColSize, initialTableWidth } = getOptions();
 
     if (ElementApi.isElement(n)) {
@@ -107,7 +106,6 @@ export const withNormalizeTable: ExtendEditor<TableConfig> = ({
       }
       if (getCellTypes(editor).includes(n.type)) {
         const node = n as TTableCellElement;
-
         const cellIndices = getOption('cellIndices', node.id as string);
 
         if (node.id && !cellIndices) {
@@ -118,7 +116,6 @@ export const withNormalizeTable: ExtendEditor<TableConfig> = ({
         }
 
         const { children } = node;
-
         const parentEntry = editor.api.parent(path);
 
         if (parentEntry?.[0].type !== editor.getType(BaseTableRowPlugin)) {
@@ -139,56 +136,6 @@ export const withNormalizeTable: ExtendEditor<TableConfig> = ({
       }
     }
 
-    return normalizeNode([n, path]);
-  };
-
-  editor.apply = (operation) => {
-    const isTableOperation =
-      operation.type === 'remove_node' &&
-      operation.node.type &&
-      [
-        editor.getType(BaseTableRowPlugin),
-        type,
-        ...getCellTypes(editor),
-      ].includes(operation.node.type as string);
-
-    // Cleanup cell indices when removing a table cell
-    if (isTableOperation) {
-      const cells = [
-        ...editor.api.nodes<TTableCellElement>({
-          at: operation.path,
-          match: { type: getCellTypes(editor) },
-        }),
-      ];
-
-      const cellIndices = getOptions()._cellIndices;
-
-      cells.forEach(([cell]) => {
-        delete cellIndices[cell.id as string];
-      });
-    }
-
-    apply(operation);
-
-    let table: TTableElement | undefined;
-
-    if (
-      isTableOperation &&
-      // There is no new indices when removing a table
-      operation.node.type !== type
-    ) {
-      table = editor.api.node<TTableElement>({
-        at: operation.path,
-        match: { type },
-      })?.[0];
-
-      if (table) {
-        computeCellIndices(editor, {
-          tableNode: table,
-        });
-      }
-    }
-  };
-
-  return editor;
-};
+    normalizeNode([n, path]);
+  },
+});

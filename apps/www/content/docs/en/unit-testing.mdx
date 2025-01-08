@@ -124,7 +124,7 @@ it('should collapse selection on backspace', async () => {
     selection: input.selection,
   });
 
-  editor.deleteBackward('character');
+  editor.tf.deleteBackward();
 
   expect(editor.children).toEqual(output.children);
   expect(editor.selection).toEqual(output.selection);

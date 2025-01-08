@@ -81,7 +81,6 @@ export type AIChatPluginConfig = PluginConfig<
 export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
   key: 'aiChat',
   dependencies: ['ai'],
-  extendEditor: withAIChat,
   options: {
     chat: { messages: [] } as any,
     createAIEditor: () =>
@@ -156,4 +155,5 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     accept: bindFirst(acceptAIChat, editor),
     insertBelow: bindFirst(insertBelowAIChat, editor),
     replaceSelection: bindFirst(replaceSelectionAIChat, editor),
-  }));
+  }))
+  .extendEditorTransforms(withAIChat);

@@ -1,6 +1,6 @@
 import type { TRange } from '../../interfaces/range';
 
-import { createEditor } from '../../createEditor';
+import { createEditor } from '../../create-editor';
 
 describe('unhangRange', () => {
   const editor = createEditor();

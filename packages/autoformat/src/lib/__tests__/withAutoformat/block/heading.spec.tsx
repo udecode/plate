@@ -45,7 +45,7 @@ describe('when #space', () => {
       value: input,
     });
 
-    editor.insertText(' ');
+    editor.tf.insertText(' ');
 
     expect(input.children).toEqual(output.children);
   });
@@ -74,7 +74,7 @@ describe('when ##space', () => {
       value: input,
     });
 
-    editor.insertText(' ');
+    editor.tf.insertText(' ');
 
     expect(input.children).toEqual(output.children);
   });

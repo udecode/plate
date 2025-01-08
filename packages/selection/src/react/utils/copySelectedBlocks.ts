@@ -29,7 +29,7 @@ export const copySelectedBlocks = (editor: SlateEditor) => {
           });
 
           // set data from selection
-          editor.setFragmentData(data);
+          editor.tf.setFragmentData(data);
 
           // get plain text
           textPlain += `${data.getData('text/plain')}\n`;

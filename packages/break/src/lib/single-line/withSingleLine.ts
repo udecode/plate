@@ -1,11 +1,14 @@
-import type { ExtendEditor } from '@udecode/plate';
+import type { ExtendEditorTransforms } from '@udecode/plate';
 
-export const withSingleLine: ExtendEditor = ({ editor }) => {
-  const { normalizeNode } = editor;
+export const withSingleLine: ExtendEditorTransforms = ({
+  editor,
+  tf: { normalizeNode },
+}) => ({
+  insertBreak() {
+    return null;
+  },
 
-  editor.insertBreak = () => null;
-
-  editor.normalizeNode = (entry) => {
+  normalizeNode(entry) {
     if (entry[1].length === 0 && editor.children.length > 1) {
       editor.tf.removeNodes({
         at: [],
@@ -17,7 +20,5 @@ export const withSingleLine: ExtendEditor = ({ editor }) => {
     }
 
     normalizeNode(entry);
-  };
-
-  return editor;
-};
+  },
+});

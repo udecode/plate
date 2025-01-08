@@ -1,4 +1,4 @@
-import type { Descendant, ExtendEditor, TElement } from '@udecode/plate';
+import type { Descendant, ExtendEditorApi, TElement } from '@udecode/plate';
 
 import type { TableConfig } from './BaseTablePlugin';
 import type { TTableCellElement, TTableRowElement } from './types';
@@ -6,22 +6,19 @@ import type { TTableCellElement, TTableRowElement } from './types';
 import { getTableGridAbove } from './queries/getTableGridAbove';
 
 /** If selection is in a table, get subtable above. */
-export const withGetFragmentTable: ExtendEditor<TableConfig> = ({
+export const withGetFragmentTable: ExtendEditorApi<TableConfig> = ({
   api,
+  api: { getFragment },
   editor,
   type,
-}) => {
-  const { getFragment } = editor;
-
-  editor.getFragment = (): any[] => {
+}) => ({
+  getFragment() {
     const fragment = getFragment();
-
     const newFragment: Descendant[] = [];
 
     fragment.forEach((node) => {
       if (node.type === type) {
         const rows = node.children as TTableRowElement[];
-
         const rowCount = rows.length;
 
         if (!rowCount) return;
@@ -50,7 +47,5 @@ export const withGetFragmentTable: ExtendEditor<TableConfig> = ({
     });
 
     return newFragment;
-  };
-
-  return editor;
-};
+  },
+});

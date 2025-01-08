@@ -89,7 +89,7 @@ describe('withInsertFragmentTable', () => {
           value: input.children,
         });
 
-        editor.insertFragment(fragment);
+        editor.tf.insertFragment(fragment);
 
         expect(editor.children).toMatchObject(output.children);
       }
@@ -169,7 +169,7 @@ describe('withInsertFragmentTable', () => {
           value: input.children,
         });
 
-        editor.insertFragment(fragment);
+        editor.tf.insertFragment(fragment);
 
         expect(editor.children).toMatchObject(output.children);
       }
@@ -254,8 +254,8 @@ describe('withInsertFragmentTable', () => {
           value: input.children,
         });
 
-        editor.deleteFragment();
-        editor.insertFragment(fragment);
+        editor.tf.deleteFragment();
+        editor.tf.insertFragment(fragment);
 
         expect(editor.children).toMatchObject(output.children);
       }
@@ -341,7 +341,7 @@ describe('withInsertFragmentTable', () => {
         value: input.children,
       });
 
-      editor.insertFragment(fragment);
+      editor.tf.insertFragment(fragment);
 
       expect(editor.children).toMatchObject(output.children);
 
@@ -485,7 +485,7 @@ describe('withInsertFragmentTable', () => {
           value: input.children,
         });
 
-        editor.insertFragment(fragment);
+        editor.tf.insertFragment(fragment);
 
         expect(editor.children).toMatchObject(output.children);
         expect(editor.selection).toEqual(output.selection);
@@ -579,7 +579,7 @@ describe('withInsertFragmentTable', () => {
         value: input.children,
       });
 
-      editor.insertFragment(fragment);
+      editor.tf.insertFragment(fragment);
 
       expect(editor.children).toMatchObject(output.children);
 
@@ -647,7 +647,7 @@ describe('withInsertFragmentTable', () => {
         value: input.children,
       });
 
-      editor.insertFragment(fragment);
+      editor.tf.insertFragment(fragment);
 
       expect(editor.children).toMatchObject(output.children);
     });
@@ -709,7 +709,7 @@ describe('withInsertFragmentTable', () => {
           value: input.children,
         });
 
-        editor.insertFragment(fragment);
+        editor.tf.insertFragment(fragment);
 
         expect(editor.children).toMatchObject(output.children);
       }

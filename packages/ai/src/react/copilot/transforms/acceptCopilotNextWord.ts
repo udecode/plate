@@ -20,7 +20,7 @@ export const acceptCopilotNextWord = (editor: PlateEditor) => {
     });
 
     withoutAbort(editor, () => {
-      editor.insertFragment(deserializeInlineMd(editor, firstWord));
+      editor.tf.insertFragment(deserializeInlineMd(editor, firstWord));
     });
   }
 };

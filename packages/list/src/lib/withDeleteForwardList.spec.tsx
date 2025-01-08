@@ -40,7 +40,7 @@ describe('p (empty) + list when selection not in list', () => {
       value: input.children,
     });
 
-    editor.deleteForward('character');
+    editor.tf.deleteForward();
 
     expect(editor.children).toEqual(expected.children);
   });
@@ -74,7 +74,7 @@ describe('p /w text + list when selection not in list', () => {
       value: input.children,
     });
 
-    editor.deleteForward('character');
+    editor.tf.deleteForward();
 
     expect(editor.children).toEqual(expected.children);
   });
@@ -114,7 +114,7 @@ describe('p /w text + list when selection not in list', () => {
       value: input.children,
     });
 
-    editor.deleteForward('character');
+    editor.tf.deleteForward();
 
     expect(editor.children).toEqual(expected.children);
   });
@@ -170,7 +170,7 @@ describe('p /w text + list when selection not in list', () => {
       value: input.children,
     });
 
-    editor.deleteForward('character');
+    editor.tf.deleteForward();
 
     expect(editor.children).toEqual(expected.children);
   });
@@ -227,7 +227,7 @@ describe('list + list when selection is at the end of the first list', () => {
       value: input.children,
     });
 
-    editor.deleteForward('character');
+    editor.tf.deleteForward();
 
     expect(editor.children).toEqual(expected.children);
   });
@@ -276,7 +276,7 @@ describe('list where second item has multiple children', () => {
       value: input.children,
     });
 
-    editor.deleteForward('character');
+    editor.tf.deleteForward();
 
     expect(editor.children).toEqual(expected.children);
   });
@@ -337,7 +337,7 @@ describe('list + sublist where second item has multiple children', () => {
       value: input.children,
     });
 
-    editor.deleteForward('character');
+    editor.tf.deleteForward();
 
     expect(editor.children).toEqual(expected.children);
   });

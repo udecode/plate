@@ -1,5 +1,5 @@
 import {
-  type ExtendEditor,
+  type ExtendEditorTransforms,
   getInjectedPlugins,
   pipeInsertDataQuery,
 } from '@udecode/plate';
@@ -12,14 +12,13 @@ import { insertImageFromFiles } from './transforms';
  * Allows for pasting images from clipboard. Not yet: dragging and dropping
  * images, selecting them through a file system dialog.
  */
-export const withImageUpload: ExtendEditor<ImageConfig> = ({
+export const withImageUpload: ExtendEditorTransforms<ImageConfig> = ({
   editor,
   getOptions,
   plugin,
-}) => {
-  const { insertData } = editor;
-
-  editor.insertData = (dataTransfer: DataTransfer) => {
+  tf: { insertData },
+}) => ({
+  insertData(dataTransfer) {
     if (getOptions().disableUploadInsert) {
       return insertData(dataTransfer);
     }
@@ -43,7 +42,5 @@ export const withImageUpload: ExtendEditor<ImageConfig> = ({
     } else {
       return insertData(dataTransfer);
     }
-  };
-
-  return editor;
-};
+  },
+});

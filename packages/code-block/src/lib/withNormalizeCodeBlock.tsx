@@ -1,29 +1,25 @@
 import {
-  type NodeEntry,
-  type SlateEditor,
+  type ExtendEditorTransforms,
   ElementApi,
   NodeApi,
 } from '@udecode/plate';
 
-import {
-  BaseCodeBlockPlugin,
-  BaseCodeLinePlugin,
-} from '../BaseCodeBlockPlugin';
+import { BaseCodeBlockPlugin, BaseCodeLinePlugin } from './BaseCodeBlockPlugin';
 
 /** Normalize code block node to force the pre>code>div.codeline structure. */
-export const normalizeCodeBlock = (editor: SlateEditor) => {
-  const codeBlockType = editor.getType(BaseCodeBlockPlugin);
-  const codeLineType = editor.getType(BaseCodeLinePlugin);
-
-  const { normalizeNode } = editor;
-
-  return ([node, path]: NodeEntry) => {
+export const withNormalizeCodeBlock: ExtendEditorTransforms = ({
+  editor,
+  tf: { normalizeNode },
+}) => ({
+  normalizeNode([node, path]) {
     normalizeNode([node, path]);
 
     if (!ElementApi.isElement(node)) {
       return;
     }
 
+    const codeBlockType = editor.getType(BaseCodeBlockPlugin);
+    const codeLineType = editor.getType(BaseCodeLinePlugin);
     const isCodeBlockRoot = node.type === codeBlockType;
 
     if (isCodeBlockRoot) {
@@ -36,5 +32,5 @@ export const normalizeCodeBlock = (editor: SlateEditor) => {
         editor.tf.setNodes({ type: codeLineType }, { at: nonCodeLine[1] });
       }
     }
-  };
-};
+  },
+});

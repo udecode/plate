@@ -41,7 +41,6 @@ Create your main plugin with `withTriggerCombobox`:
 ```ts
 const MyPlugin = createPlatePlugin({
   key: 'my_plugin',
-  extendEditor: withTriggerCombobox,
   // Plugin node options
   node: {
     isElement: true,
@@ -60,7 +59,7 @@ const MyPlugin = createPlatePlugin({
   },
   // Include the input plugin
   plugins: [ComboboxInputPlugin],
-});
+}).extendEditorTransforms(withTriggerCombobox);
 ```
 
 </Step>

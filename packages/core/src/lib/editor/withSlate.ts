@@ -102,6 +102,8 @@ export const withSlate = <
   editor.id = id ?? editor.id;
   editor.key = editor.key ?? nanoid();
   editor.isFallback = false;
+  editor.prevSelection = null;
+  editor.currentKeyboardEvent = null;
 
   editor.getApi = () => editor.api as any;
   editor.getTransforms = () => editor.transforms as any;
