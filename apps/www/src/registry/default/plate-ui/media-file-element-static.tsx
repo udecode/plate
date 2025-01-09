@@ -12,12 +12,16 @@ export const MediaFileElementStatic = ({
   className,
   ...props
 }: SlateElementProps) => {
-  const { name, url } = props.element as TFileElement;
+  const { align, isUpload, name, url, width } = props.element as TFileElement;
 
   return (
     <SlateElement className={cn(className, 'my-px rounded-sm')} {...props}>
       <a
         className="group relative m-0 flex cursor-pointer items-center rounded px-0.5 py-[3px] hover:bg-muted"
+        data-plate-prevent-deserialization
+        data-slate-align={align}
+        data-slate-is-upload={String(isUpload)}
+        data-slate-width={width}
         contentEditable={false}
         download={name}
         href={url}
@@ -28,7 +32,7 @@ export const MediaFileElementStatic = ({
         <div className="flex items-center gap-1 p-1">
           <FileUp className="size-5" />
 
-          <div>{name}</div>
+          <div data-plate-prevent-deserialization>{name}</div>
         </div>
 
         {/* <Caption align="left">

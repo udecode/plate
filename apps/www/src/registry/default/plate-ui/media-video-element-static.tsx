@@ -15,6 +15,7 @@ export function MediaVideoElementStatic({
   const {
     align = 'center',
     caption,
+    isUpload,
     url,
     width,
   } = props.element as TVideoElement &
@@ -31,6 +32,9 @@ export function MediaVideoElementStatic({
         >
           <video
             className={cn('w-full max-w-full object-cover px-0', 'rounded-sm')}
+            data-slate-align={align}
+            data-slate-is-upload={String(isUpload)}
+            data-slate-width={width}
             src={url}
             controls
           />
