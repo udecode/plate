@@ -5,99 +5,130 @@ description: API reference for operations in Slate.
 
 `Operation` objects define the low-level instructions that Slate editors use to apply changes to their internal state. Representing all changes as operations is what allows Slate editors to easily implement history, collaboration, and other features.
 
-## Operation
-
-Find the corresponding documentation in the [Slate docs](https://docs.slatejs.org/concepts/05-operations).
+## Operation API
 
 ### `isNodeOperation`
 
-Checks if a value is a `NodeOperation` object.
+Check if a value is a `NodeOperation` object.
 
 <APIParameters>
   <APIItem name="value" type="any">
     The value to check.
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns `true` if the value is a node operation.
+  Returns `boolean` - `true` if the value is a node operation.
 </APIReturns>
 
 ### `inverse`
 
-Inverts an operation, returning a new operation that will exactly undo the original when applied.
+```ts
+/**
+ * Invert an operation, returning a new operation that will exactly undo the
+ * original when applied.
+ */
+```
 
 <APIParameters>
   <APIItem name="op" type="Operation">
     The operation to invert.
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns a new operation that undoes the original operation.
+  Returns `Operation` - A new operation that undoes the original operation.
 </APIReturns>
 
 ### `isOperation`
 
-Checks if a value is an `Operation` object.
+Check if a value is an `Operation` object.
 
 <APIParameters>
   <APIItem name="value" type="any">
     The value to check.
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns `true` if the value is an operation.
+  Returns `boolean` - `true` if the value is an operation.
 </APIReturns>
 
 ### `isOperationList`
 
-Checks if a value is a list of `Operation` objects.
+Check if a value is a list of `Operation` objects.
 
 <APIParameters>
   <APIItem name="value" type="any">
     The value to check.
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns `true` if the value is an array of operations.
+  Returns `boolean` - `true` if the value is an array of operations.
 </APIReturns>
 
 ### `isSelectionOperation`
 
-Checks if a value is a `SelectionOperation` object.
+Check if a value is a `SelectionOperation` object.
 
 <APIParameters>
   <APIItem name="value" type="any">
     The value to check.
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns `true` if the value is a selection operation.
+  Returns `boolean` - `true` if the value is a selection operation.
 </APIReturns>
 
 ### `isTextOperation`
 
-Checks if a value is a `TextOperation` object.
+Check if a value is a `TextOperation` object.
 
 <APIParameters>
   <APIItem name="value" type="any">
     The value to check.
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns `true` if the value is a text operation.
+  Returns `boolean` - `true` if the value is a text operation.
 </APIReturns>
 
 ## Types
 
-### Operation
+### `Operation`
 
-The base operation type that represents any change to the editor state. Operations can be one of three types:
+```ts
+/**
+ * `Operation` objects define the low-level instructions that Slate editors use
+ * to apply changes to their internal state. Representing all changes as
+ * operations is what allows Slate editors to easily implement history,
+ * collaboration, and other features.
+ */
+type Operation<N extends Descendant = Descendant> =
+  | NodeOperation<N>
+  | SelectionOperation
+  | TextOperation;
+```
 
+Operations can be one of three types:
 - **NodeOperation**: Operations that modify nodes (insert, merge, move, remove, set, split)
 - **SelectionOperation**: Operations that modify the selection state
 - **TextOperation**: Operations that modify text content (insert, remove)
 
-### NodeOperation
+### `NodeOperation`
+
+```ts
+type NodeOperation<N extends Descendant = Descendant> =
+  | InsertNodeOperation<N>
+  | MergeNodeOperation<N>
+  | MoveNodeOperation
+  | RemoveNodeOperation<N>
+  | SetNodeOperation<N>
+  | SplitNodeOperation<N>;
+```
 
 <APIAttributes>
 <APIItem name="InsertNodeOperation" type="object">
@@ -135,7 +166,11 @@ The base operation type that represents any change to the editor state. Operatio
 </APIItem>
 </APIAttributes>
 
-### TextOperation
+### `TextOperation`
+
+```ts
+type TextOperation = InsertTextOperation | RemoveTextOperation;
+```
 
 <APIAttributes>
 <APIItem name="InsertTextOperation" type="object">
@@ -152,7 +187,11 @@ The base operation type that represents any change to the editor state. Operatio
 </APIItem>
 </APIAttributes>
 
-### SelectionOperation
+### `SelectionOperation`
+
+```ts
+type SelectionOperation = SetSelectionOperation;
+```
 
 <APIAttributes>
 <APIItem name="SetSelectionOperation" type="object">
