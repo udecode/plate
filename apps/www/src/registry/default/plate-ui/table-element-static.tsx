@@ -24,6 +24,7 @@ export const TableElementStatic = ({
         className={cn(
           'my-4 ml-px mr-0 table h-px w-[calc(100%-6px)] table-fixed border-collapse'
         )}
+        data-plate-prevent-deserialization
       >
         <colgroup style={{ width: '100%' }}>
           {colSizes?.map((width, index) => (

@@ -92,12 +92,12 @@ export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
             return { colSizes, marginLeft: 20, type };
           }
           // prevent table static elements from being parsed multiple times
-          if (
-            isPluginStatic(element.parentElement!, type) &&
-            element.tagName === 'TABLE'
-          ) {
-            return;
-          }
+          // if (
+          //   isPluginStatic(element.parentElement!, type) &&
+          //   element.tagName === 'TABLE'
+          // ) {
+          //   return;
+          // }
 
           return { type };
         },
