@@ -3,60 +3,77 @@ title: Location
 description: API reference for locations in Slate.
 ---
 
-The `Location` interface is a union of the ways to refer to a specific location in a Slate document: paths, points, or ranges. Methods often accept a `Location` instead of requiring only a `Path`, `Point`, or `Range`. This eliminates the need for developers to manage converting between the different interfaces in their own code base.
-
-## Location
-
-Find the corresponding documentation in the [Slate docs](https://docs.slatejs.org/api/locations).
+```ts
+/**
+ * The `TLocation` interface is a union of the ways to refer to a specific
+ * location in a Slate document: paths, points or ranges.
+ *
+ * Methods will often accept a `Location` instead of requiring only a `Path`,
+ * `Point` or `TRange`. This eliminates the need for developers to manage
+ * converting between the different interfaces in their own code base.
+ */
+```
 
 ### `isAt`
 
-Checks if a value implements the `At` interface.
+Check if a value implements the `At` interface.
 
 <APIParameters>
   <APIItem name="value" type="any">
     The value to check.
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns `true` if the value is either a Location or a Node.
+  Returns `boolean` - `true` if the value is either a Location or a Node.
 </APIReturns>
 
 ### `isLocation`
 
-Checks if a value implements the `Location` interface.
+Check if a value implements the `Location` interface.
 
 <APIParameters>
   <APIItem name="value" type="any">
     The value to check.
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns `true` if the value is a Path, Point, or Range.
+  Returns `boolean` - `true` if the value is a Path, Point, or Range.
 </APIReturns>
 
 ## Span
 
-The `Span` interface is a low-level way to refer to locations in nodes without using `Point` which requires leaf text nodes to be present. It is represented as a tuple of two paths.
+```ts
+/**
+ * The `Span` interface is a low-level way to refer to locations in nodes
+ * without using `Point` which requires leaf text nodes to be present.
+ */
+type Span = [Path, Path];
+```
 
 ### `isSpan`
 
-Checks if a value implements the `Span` interface.
+Check if a value implements the `Span` interface.
 
 <APIParameters>
   <APIItem name="value" type="any">
     The value to check.
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns `true` if the value is a valid Span (tuple of two paths).
+  Returns `boolean` - `true` if the value is a valid Span.
 </APIReturns>
 
 ## Types
 
-### TLocation
+### `TLocation`
 
-The base location type that can be either a Path, Point, or Range.
+```ts
+/** Base location type that can be a Path, Point, or Range */
+type TLocation = Path | Point | TRange;
+```
 
 <APIParameters>
   <APIItem name="TLocation" type="Path | Point | TRange">
@@ -75,9 +92,19 @@ The base location type that can be either a Path, Point, or Range.
   </APIItem>
 </APIParameters>
 
-### Location
+### `Location`
 
-The concrete location type (same as TLocation but using concrete types).
+```ts
+/**
+ * The `Location` interface is a union of the ways to refer to a specific
+ * location in a Slate document: paths, points or ranges.
+ *
+ * Methods will often accept a `Location` instead of requiring only a `Path`,
+ * `Point` or `Range`. This eliminates the need for developers to manage
+ * converting between the different interfaces in their own code base.
+ */
+type Location = Path | Point | Range;
+```
 
 <APIParameters>
   <APIItem name="Location" type="Path | Point | Range">
@@ -91,24 +118,6 @@ The concrete location type (same as TLocation but using concrete types).
       </APISubListItem>
       <APISubListItem>
         Range: An object with `anchor` and `focus` points
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIParameters>
-
-### Span
-
-A low-level location representation.
-
-<APIParameters>
-  <APIItem name="Span" type="[Path, Path]">
-    A tuple containing:
-    <APISubList>
-      <APISubListItem>
-        First element: Starting path
-      </APISubListItem>
-      <APISubListItem>
-        Second element: Ending path
       </APISubListItem>
     </APISubList>
   </APIItem>

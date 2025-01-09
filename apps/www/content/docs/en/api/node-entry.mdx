@@ -3,13 +3,22 @@ title: NodeEntry
 description: API reference for node entries in Slate.
 ---
 
-`NodeEntry` objects are returned when iterating over the nodes in a Slate document tree. They consist of the node and its `Path` relative to the root node in the document. Node entries are represented as tuples of `[Node, Path]`.
+```ts
+/**
+ * `NodeEntry` objects are returned when iterating over the nodes in a Slate
+ * document tree. They consist of the node and its `Path` relative to the root
+ * node in the document.
+ */
+```
 
 ## Types
 
-### NodeEntry
+### `NodeEntry`
 
-The base node entry type representing any node and its path in the document.
+```ts
+/** Base node entry type for any node and its path */
+type NodeEntry<N extends TNode = TNode> = [N, Path];
+```
 
 <APIParameters>
   <APIItem name="NodeEntry" type="[Node, Path]">
@@ -25,9 +34,15 @@ The base node entry type representing any node and its path in the document.
   </APIItem>
 </APIParameters>
 
-### ElementEntry
+### `ElementEntry`
 
-Refers to an `Element` node and its path in the document.
+```ts
+/**
+ * `ElementEntry` objects refer to an `Element` and the `Path` where it can be
+ * found inside a root node.
+ */
+type ElementEntry<N extends TNode = TNode> = NodeEntry<ElementOf<N>>;
+```
 
 <APIParameters>
   <APIItem name="ElementEntry" type="[Element, Path]">
@@ -43,9 +58,15 @@ Refers to an `Element` node and its path in the document.
   </APIItem>
 </APIParameters>
 
-### TextEntry
+### `TextEntry`
 
-Refers to a `Text` node and its path in the document.
+```ts
+/**
+ * `TextEntry` objects refer to a `Text` and the `Path` where it can be found
+ * inside an element node.
+ */
+type TextEntry<N extends TNode = TNode> = NodeEntry<TextOf<N>>;
+```
 
 <APIParameters>
   <APIItem name="TextEntry" type="[Text, Path]">
@@ -61,9 +82,12 @@ Refers to a `Text` node and its path in the document.
   </APIItem>
 </APIParameters>
 
-### AncestorEntry
+### `AncestorEntry`
 
-Represents an ancestor node (Editor or Element) and its path.
+```ts
+/** Ancestor entry from a node. */
+type AncestorEntry<N extends TNode = TNode> = NodeEntry<AncestorOf<N>>;
+```
 
 <APIParameters>
   <APIItem name="AncestorEntry" type="[Ancestor, Path]">
@@ -79,9 +103,12 @@ Represents an ancestor node (Editor or Element) and its path.
   </APIItem>
 </APIParameters>
 
-### DescendantEntry
+### `DescendantEntry`
 
-Represents a descendant node (Element or Text) and its path.
+```ts
+/** Descendant entry from a node. */
+type DescendantEntry<N extends TNode = TNode> = NodeEntry<DescendantOf<N>>;
+```
 
 <APIParameters>
   <APIItem name="DescendantEntry" type="[Descendant, Path]">
@@ -97,9 +124,12 @@ Represents a descendant node (Element or Text) and its path.
   </APIItem>
 </APIParameters>
 
-### NodeChildEntry
+### `NodeChildEntry`
 
-Represents a child node and its path relative to its parent.
+```ts
+/** Child node entry from a node. */
+type NodeChildEntry<N extends TNode = TNode> = NodeEntry<ChildOf<N>>;
+```
 
 <APIParameters>
   <APIItem name="NodeChildEntry" type="[Node, Path]">
@@ -123,28 +153,28 @@ These types provide type safety when working with specific node types:
   <APIItem name="Value-Specific Entries" type="type">
     <APISubList>
       <APISubListItem>
-        NodeEntryOf<E>: Node entry from a specific editor type
+        `NodeEntryOf{E}`: Node entry from a specific editor type
       </APISubListItem>
       <APISubListItem>
-        NodeEntryIn<V>: Node entry from a specific value type
+        `NodeEntryIn{V}`: Node entry from a specific value type
       </APISubListItem>
       <APISubListItem>
-        ElementEntryOf<E>: Element entry from a specific editor type
+        `ElementEntryOf{E}`: Element entry from a specific editor type
       </APISubListItem>
       <APISubListItem>
-        TextEntryOf<E>: Text entry from a specific editor type
+        `TextEntryOf{E}`: Text entry from a specific editor type
       </APISubListItem>
       <APISubListItem>
-        TextEntryIn<V>: Text entry from a specific value type
+        `TextEntryIn{V}`: Text entry from a specific value type
       </APISubListItem>
       <APISubListItem>
-        AncestorEntryOf<E>: Ancestor entry from a specific editor type
+        `AncestorEntryOf{E}`: Ancestor entry from a specific editor type
       </APISubListItem>
       <APISubListItem>
-        DescendantEntryOf<E>: Descendant entry from a specific editor type
+        `DescendantEntryOf{E}`: Descendant entry from a specific editor type
       </APISubListItem>
       <APISubListItem>
-        DescendantEntryIn<V>: Descendant entry from a specific value type
+        `DescendantEntryIn{V}`: Descendant entry from a specific value type
       </APISubListItem>
     </APISubList>
   </APIItem>
