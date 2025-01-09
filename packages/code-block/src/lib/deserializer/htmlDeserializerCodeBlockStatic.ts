@@ -1,20 +1,9 @@
-import {
-  type HtmlDeserializer,
-  getSlateElements,
-  isPluginStatic,
-} from '@udecode/plate-common';
+import { getSlateElements, isPluginStatic } from '@udecode/plate-common';
 
 import {
   BaseCodeBlockPlugin,
   BaseCodeLinePlugin,
 } from '../BaseCodeBlockPlugin';
-
-export const staticRules: HtmlDeserializer['rules'] = [
-  {
-    validClassName: 'slate-code_block',
-    validNodeName: 'DIV',
-  },
-];
 
 export const htmlDeserializerCodeBlockStatic = (element: HTMLElement) => {
   if (isPluginStatic(element, BaseCodeBlockPlugin.key)) {
@@ -31,15 +20,18 @@ export const htmlDeserializerCodeBlockStatic = (element: HTMLElement) => {
     if (staticCodeLines) {
       const codeLines = staticCodeLines.map((line) => {
         return {
-          children: [{ text: line.textContent }],
           type: BaseCodeLinePlugin.key,
+          // eslint-disable-next-line perfectionist/sort-objects
+          children: [{ text: line.textContent }],
         };
       });
 
       return {
-        children: codeLines,
-        lang,
         type: BaseCodeBlockPlugin.key,
+        // eslint-disable-next-line perfectionist/sort-objects
+        lang,
+        // eslint-disable-next-line perfectionist/sort-objects
+        children: codeLines,
       };
     }
   }

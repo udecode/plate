@@ -66,11 +66,14 @@ import {
   BaseTableRowPlugin,
 } from '@udecode/plate-table';
 import { BaseTogglePlugin } from '@udecode/plate-toggle';
+import { isEqual } from 'lodash';
 import Prism from 'prismjs';
 
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
 import { basicNodesValue } from '@/registry/default/example/values/basic-nodes-value';
+import { indentListValue } from '@/registry/default/example/values/indent-list-value';
 import { linkValue } from '@/registry/default/example/values/link-value';
+import { tableValue } from '@/registry/default/example/values/table-value';
 import { BlockquoteElementStatic } from '@/registry/default/plate-ui/blockquote-element-static';
 import { Button } from '@/registry/default/plate-ui/button';
 import { CodeBlockElementStatic } from '@/registry/default/plate-ui/code-block-element-static';
@@ -114,12 +117,13 @@ import { TocElementStatic } from '@/registry/default/plate-ui/toc-element-static
 import { ToggleElementStatic } from '@/registry/default/plate-ui/toggle-element-static';
 
 const siteUrl = 'https://platejs.org';
+const createValue = () => {
+  return [...basicNodesValue, ...indentListValue, ...linkValue, ...tableValue];
+};
 
 export function ClientComponent() {
-  // console.log(linkValue, 'fj');
-
   const editor = useCreateEditor({
-    value: [...linkValue, ...basicNodesValue],
+    value: createValue(),
   });
   const exportToHtml = async () => {
     const components = {
@@ -295,6 +299,8 @@ export function ClientComponent() {
     return html;
   };
 
+  console.log(createValue(), 'A');
+
   const handleFileSelect = async () => {
     const html = await exportToHtml();
 
@@ -303,6 +309,10 @@ export function ClientComponent() {
     const r = editor.api.html.deserialize({
       element: editorNode,
     });
+
+    console.log(r, 'B');
+
+    console.log(isEqual(r, createValue()), 'fj');
 
     insertNodes(editor, r);
   };

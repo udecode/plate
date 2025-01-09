@@ -91,12 +91,20 @@ export const BaseIndentListPlugin = createTSlatePlugin<BaseIndentListConfig>({
     html: {
       deserializer: {
         isElement: true,
-        parse: ({ editor, element, getOptions }) => ({
-          // gdoc uses aria-level attribute
-          indent: Number(element.getAttribute('aria-level')),
-          listStyleType: getOptions().getListStyleType?.(element),
-          type: editor.getType(BaseParagraphPlugin),
-        }),
+        parse: ({ editor, element, getOptions }) => {
+          const parent = element.parentElement;
+
+          const isPlateStatic = parent?.dataset.slateIndentList === 'true';
+
+          if (isPlateStatic) return;
+
+          return {
+            // gdoc uses aria-level attribute
+            indent: Number(element.getAttribute('aria-level')),
+            listStyleType: getOptions().getListStyleType?.(element),
+            type: editor.getType(BaseParagraphPlugin),
+          };
+        },
         rules: [
           {
             validNodeName: 'LI',

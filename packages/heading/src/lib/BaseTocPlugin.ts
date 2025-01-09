@@ -22,16 +22,4 @@ export const BaseTocPlugin = createTSlatePlugin<TocConfig>({
     isScroll: true,
     topOffset: 80,
   },
-  parsers: {
-    html: {
-      deserializer: {
-        rules: [
-          {
-            validClassName: 'slate-toc',
-            validNodeName: 'DIV',
-          },
-        ],
-      },
-    },
-  },
 });

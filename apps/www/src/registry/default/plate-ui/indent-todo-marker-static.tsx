@@ -24,12 +24,18 @@ export const TodoLiStatic = ({
   element,
 }: SlateRenderElementProps) => {
   return (
-    <span
+    <li
       className={cn(
+        'list-none',
         (element.checked as boolean) && 'text-muted-foreground line-through'
       )}
+      // deserialize
+      // data-slate-checked={element.checked}
+      // data-slate-indent={element.indent}
+      // data-slate-list-start={element.listStart}
+      // data-slate-list-style-type={element.listStyleType}
     >
       {children}
-    </span>
+    </li>
   );
 };

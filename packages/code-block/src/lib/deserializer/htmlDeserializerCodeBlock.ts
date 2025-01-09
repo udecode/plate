@@ -4,10 +4,7 @@ import {
   BaseCodeBlockPlugin,
   BaseCodeLinePlugin,
 } from '../BaseCodeBlockPlugin';
-import {
-  htmlDeserializerCodeBlockStatic,
-  staticRules,
-} from './htmlDeserializerCodeBlockStatic';
+import { htmlDeserializerCodeBlockStatic } from './htmlDeserializerCodeBlockStatic';
 
 export const htmlDeserializerCodeBlock: HtmlDeserializer = {
   parse: ({ element }) => {
@@ -51,6 +48,5 @@ export const htmlDeserializerCodeBlock: HtmlDeserializer = {
         fontFamily: 'Consolas',
       },
     },
-    ...(staticRules as any),
   ],
 };

@@ -61,7 +61,12 @@ export const renderIndentListBelowNodes: NodeStaticWrapperComponent = (
         listOptions;
 
       return (
-        <List className={className} style={style} start={listStart}>
+        <List
+          className={className}
+          style={style}
+          data-slate-indent-list
+          start={listStart}
+        >
           <Marker {...props} />
           {/* FIX: cursor position issue */}
           {Li ? <Li {...props}>{children}</Li> : <li>{children}</li>}

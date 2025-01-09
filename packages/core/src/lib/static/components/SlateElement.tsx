@@ -29,7 +29,12 @@ export const SlateElement = (props: SlateElementProps) => {
     ...nodeProps,
     ...elementToAttributes?.(element),
     className: clsx(props.className, nodeProps?.className),
+    // deserialize
     'data-block-id': block ? element.id : undefined,
+    'data-slate-checked': element.checked,
+    'data-slate-indent': element.indent,
+    'data-slate-list-start': element.listStart,
+    'data-slate-list-style-type': element.listStyleType,
     style: {
       position: 'relative',
       ...props.style,

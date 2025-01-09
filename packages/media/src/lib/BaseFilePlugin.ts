@@ -21,12 +21,6 @@ export const BaseFilePlugin = createSlatePlugin({
             url: a.getAttribute('href'),
           };
         },
-        rules: [
-          {
-            validClassName: 'slate-file',
-            validNodeName: 'DIV',
-          },
-        ],
       },
     },
   },

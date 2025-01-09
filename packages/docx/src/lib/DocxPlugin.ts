@@ -16,11 +16,34 @@ import { getTextListStyleType } from './docx-cleaner/utils/getTextListStyleType'
 import { isDocxContent } from './docx-cleaner/utils/isDocxContent';
 import { isDocxList } from './docx-cleaner/utils/isDocxList';
 
+const isIndentListStatic = (element: HTMLElement) => {
+  return !!element.dataset.slateListStyleType;
+};
+
 const getParse =
   (type: string): HtmlDeserializer['parse'] =>
   ({ element }) => {
     const node: any = { type };
 
+    if (isIndentListStatic(element)) {
+      const { slateChecked, slateIndent, slateListStart, slateListStyleType } =
+        element.dataset;
+
+      if (slateChecked !== undefined) {
+        node.checked = slateChecked === 'true';
+      }
+      if (slateIndent !== undefined) {
+        node.indent = Number(slateIndent);
+      }
+      if (slateListStart !== undefined) {
+        node.listStart = Number(slateListStart);
+      }
+      if (slateListStyleType !== undefined) {
+        node.listStyleType = slateListStyleType;
+      }
+
+      return node;
+    }
     if (isDocxList(element)) {
       node.indent = getDocxListIndent(element);
 

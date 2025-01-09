@@ -11,6 +11,41 @@ import type { Nullable } from '../../../types';
 import { getEditorPlugin } from '../../../plugin';
 import { getInjectedPlugins } from '../../../utils/getInjectedPlugins';
 
+/**
+ * Get a deserializer and add default rules for deserializing plate static
+ * elements
+ */
+const getDeserializedWithStaticRules = (plugin: AnyEditorPlugin) => {
+  const isElement = plugin.node.isElement;
+
+  let deserializer = plugin.parsers?.html?.deserializer;
+
+  if (!isElement) return deserializer;
+
+  const rules = deserializer?.rules ?? [];
+
+  // Check if rules already contain slate-xxx className
+  const hasSlateRule = rules.some((rule) =>
+    rule.validClassName?.includes(`slate-${plugin.key}`)
+  );
+
+  const staticRules = hasSlateRule
+    ? rules
+    : [
+        {
+          validClassName: `slate-${plugin.key}`,
+          validNodeName: 'DIV',
+        },
+        ...rules,
+      ];
+
+  if (!deserializer) deserializer = { rules: staticRules };
+
+  deserializer.rules = staticRules;
+
+  return deserializer;
+};
+
 /** Get a deserializer by type, node names, class names and styles. */
 export const pluginDeserializeHtml = (
   editor: SlateEditor,
@@ -22,10 +57,9 @@ export const pluginDeserializeHtml = (
 ): (Nullable<HtmlDeserializer> & { node: AnyObject }) | undefined => {
   const {
     node: { isElement: isElementRoot, isLeaf: isLeafRoot, type },
-    parsers,
   } = plugin;
 
-  const deserializer = parsers?.html?.deserializer;
+  const deserializer = getDeserializedWithStaticRules(plugin);
 
   if (!deserializer) return;
 
