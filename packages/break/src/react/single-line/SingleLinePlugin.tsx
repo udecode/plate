@@ -1,4 +1,4 @@
-import { toPlatePlugin } from '@udecode/plate-common/react';
+import { toPlatePlugin } from '@udecode/plate/react';
 
 import { BaseSingleLinePlugin } from '../../lib/single-line/BaseSingleLinePlugin';
 import { onKeyDownSingleLine } from './onKeyDownSingleLine';

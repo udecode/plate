@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
 
-import { ParagraphPlugin } from '@udecode/plate-common/react';
-import { createPlateEditor } from '@udecode/plate-common/react';
+import { ParagraphPlugin } from '@udecode/plate/react';
+import { createPlateEditor } from '@udecode/plate/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
@@ -88,9 +88,10 @@ describe('normalizeIndentListStart', () => {
 
     it('should be', async () => {
       const editor = createPlateEditor({
-        editor: input,
         plugins: [ParagraphPlugin, IndentPlugin, BaseIndentListPlugin],
+        selection: input.selection,
         shouldNormalizeEditor: true,
+        value: input.children,
       });
 
       expect(editor.children).toEqual(output.children);
@@ -147,9 +148,10 @@ describe('normalizeIndentListStart', () => {
 
     it('should be', async () => {
       const editor = createPlateEditor({
-        editor: input,
         plugins: [ParagraphPlugin, IndentPlugin, indentListPluginPage],
+        selection: input.selection,
         shouldNormalizeEditor: true,
+        value: input.children,
       }) as any;
 
       expect(editor.children).toEqual(output.children);
@@ -195,9 +197,10 @@ describe('normalizeIndentListStart', () => {
 
     it('should be', async () => {
       const editor = createPlateEditor({
-        editor: input,
         plugins: [ParagraphPlugin, IndentPlugin, indentListPluginPage],
+        selection: input.selection,
         shouldNormalizeEditor: true,
+        value: input.children,
       }) as any;
 
       expect(editor.children).toEqual(output.children);

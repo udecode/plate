@@ -3,6 +3,8 @@ title: Plate Core
 description: API reference for @udecode/plate-core.
 ---
 
+v42 documentation is in progress.
+
 ## API
 
 ### createPlateEditor
@@ -487,3 +489,26 @@ Manages editor events such as focus and blur.
 
 ### PlateApiPlugin
 Provides the core API for Plate editor functionality.
+
+## Utils
+
+### isType
+
+Checks whether a node matches the provided type.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor<V>">
+    The editor in which the node is present.
+  </APIItem>
+  <APIItem name="node" type="any">
+    The node to be checked.
+  </APIItem>
+  <APIItem name="key" type="string | string[]" optional>
+    The type or types to match the node against. Can be a string or an array of
+    strings.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  A boolean indicating whether the node's type matches the provided type or
+  types.
+</APIReturns>

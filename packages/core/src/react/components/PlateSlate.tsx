@@ -1,8 +1,7 @@
 import React from 'react';
 
-import { Slate } from 'slate-react';
-
 import { useSlateProps } from '../hooks';
+import { Slate } from '../slate-react';
 import { useEditorRef } from '../stores/plate';
 
 /**

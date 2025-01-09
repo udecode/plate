@@ -2,7 +2,7 @@ import {
   type PluginConfig,
   type QueryNodeOptions,
   createTSlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 export interface SoftBreakRule {
   hotkey: string;

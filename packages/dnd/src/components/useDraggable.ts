@@ -1,8 +1,8 @@
 import React from 'react';
 
-import type { TElement } from '@udecode/plate-common';
+import type { TElement } from '@udecode/plate';
 
-import { useEditorRef } from '@udecode/plate-common/react';
+import { useEditorRef } from '@udecode/plate/react';
 
 import { type UseDndNodeOptions, DRAG_ITEM_BLOCK, useDndNode } from '..';
 

@@ -3,6 +3,5 @@
  */
 
 export * from './BaseDatePlugin';
-export * from './withDate';
 export * from './queries/index';
 export * from './transforms/index';

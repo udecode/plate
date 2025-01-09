@@ -1,18 +1,17 @@
 import React from 'react';
 
 import {
-  focusEditor,
   useComposedRef,
   useEditorPlugin,
   useEditorReadOnly,
+  useFocused,
   useHotkeys,
   useOnClickOutside,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 import {
   type UseVirtualFloatingOptions,
   getDOMSelectionBoundingClientRect,
 } from '@udecode/plate-floating';
-import { useFocused } from 'slate-react';
 
 import { LinkPlugin } from '../../LinkPlugin';
 import { triggerFloatingLinkInsert } from '../../utils/triggerFloatingLinkInsert';
@@ -72,7 +71,7 @@ export const useFloatingLinkInsert = ({
     () => {
       if (getOptions().mode === 'insert') {
         api.floatingLink.hide();
-        focusEditor(editor, editor.selection!);
+        editor.tf.focus({ at: editor.selection! });
       }
     },
     {

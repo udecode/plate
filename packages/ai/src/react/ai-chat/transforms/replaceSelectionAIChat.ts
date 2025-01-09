@@ -1,13 +1,6 @@
-import {
-  type SlateEditor,
-  type TElement,
-  getFirstNodeText,
-  getNodeProps,
-  isEditorEmpty,
-  isText,
-  withNewBatch,
-} from '@udecode/plate-common';
-import { type PlateEditor, focusEditor } from '@udecode/plate-common/react';
+import type { PlateEditor } from '@udecode/plate/react';
+
+import { type SlateEditor, NodeApi, TextApi } from '@udecode/plate';
 import {
   BlockSelectionPlugin,
   removeBlockSelectionNodes,
@@ -21,7 +14,7 @@ export const replaceSelectionAIChat = (
   sourceEditor: SlateEditor,
   { format = 'single' }: { format?: 'all' | 'none' | 'single' } = {}
 ) => {
-  if (!sourceEditor || isEditorEmpty(sourceEditor)) return;
+  if (!sourceEditor || sourceEditor.api.isEmpty()) return;
 
   const isBlockSelecting = editor.getOption(
     BlockSelectionPlugin,
@@ -32,8 +25,8 @@ export const replaceSelectionAIChat = (
 
   // If no blocks selected, treat it like a normal selection replacement
   if (!isBlockSelecting) {
-    editor.insertFragment(sourceEditor.children);
-    focusEditor(editor);
+    editor.tf.insertFragment(sourceEditor.children);
+    editor.tf.focus();
 
     return;
   }
@@ -45,10 +38,10 @@ export const replaceSelectionAIChat = (
   // If format is 'none' or multiple blocks with 'single',
   // just insert the content as is
   if (format === 'none' || (format === 'single' && selectedBlocks.length > 1)) {
-    editor.withoutNormalizing(() => {
+    editor.tf.withoutNormalizing(() => {
       removeBlockSelectionNodes(editor);
 
-      withNewBatch(editor, () => {
+      editor.tf.withNewBatch(() => {
         editor
           .getTransforms(BlockSelectionPlugin)
           .blockSelection.insertBlocksAndSelect(
@@ -60,7 +53,7 @@ export const replaceSelectionAIChat = (
       });
     });
 
-    focusEditor(editor);
+    editor.tf.focus();
 
     return;
   }
@@ -69,18 +62,18 @@ export const replaceSelectionAIChat = (
   // - formatting is 'all', or
   // - only one block is selected
   const [firstBlockNode, firstBlockPath] = selectedBlocks[0];
-  const firstBlockProps = getNodeProps(firstBlockNode);
+  const firstBlockProps = NodeApi.extractProps(firstBlockNode);
 
   // Get formatting from first text node
-  const firstTextEntry = getFirstNodeText(firstBlockNode as TElement);
+  const firstTextEntry = NodeApi.firstText(firstBlockNode);
 
   if (!firstTextEntry) return;
 
-  const textProps = getNodeProps(firstTextEntry[0]);
+  const textProps = NodeApi.extractProps(firstTextEntry[0]);
 
   // Apply text props recursively to text nodes
   const applyTextProps = (node: any): any => {
-    if (isText(node)) {
+    if (TextApi.isText(node)) {
       return { ...textProps, ...node };
     }
     if (node.children) {
@@ -93,10 +86,10 @@ export const replaceSelectionAIChat = (
     return node;
   };
 
-  editor.withoutNormalizing(() => {
+  editor.tf.withoutNormalizing(() => {
     removeBlockSelectionNodes(editor);
 
-    withNewBatch(editor, () => {
+    editor.tf.withNewBatch(() => {
       // Create new blocks with first block's formatting
       const newBlocks = cloneDeep(sourceEditor.children).map((block) => ({
         ...block,
@@ -112,5 +105,5 @@ export const replaceSelectionAIChat = (
     });
   });
 
-  focusEditor(editor);
+  editor.tf.focus();
 };

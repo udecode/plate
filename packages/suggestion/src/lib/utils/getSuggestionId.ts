@@ -1,4 +1,4 @@
-import type { TNode } from '@udecode/plate-common';
+import type { TNode } from '@udecode/plate';
 
 import { SUGGESTION_KEYS } from '../BaseSuggestionPlugin';
 

@@ -16,7 +16,7 @@ title: Serializing HTML
 
 ```tsx
 // ...
-import { createSlateEditor, serializeHtml } from '@udecode/plate-common';
+import { createSlateEditor, serializeHtml } from '@udecode/plate';
 import { EditorStatic } from '@/components/plate-ui/editor-static';
 
 // 创建一个编辑器并配置所有需要的插件
@@ -88,7 +88,7 @@ const fullHtml = `<!DOCTYPE html>
 // 使用静态组件，这些组件不依赖于 'use client'，
 // 它们只是返回纯 HTML。
 
-import { createSlateEditor, serializeHtml } from '@udecode/plate-common';
+import { createSlateEditor, serializeHtml } from '@udecode/plate';
 
 // 导入静态版本的组件
 import { ParagraphElementStatic } from '@/components/plate-ui/paragraph-element-static';
@@ -194,7 +194,7 @@ const html = await serializeHtml(editor, { components });
 The `editor.api.html.deserialize` function allows you to convert HTML content into Slate value:
 
 ```typescript
-import { createPlateEditor } from '@udecode/plate-common/react';
+import { createPlateEditor } from '@udecode/plate/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -379,7 +379,7 @@ export const IndentListPlugin = createTSlatePlugin<IndentListConfig>({
 </APISubListItem>
 </APIParameters>
 <APIReturns>
-<APIItem type="TDescendant[]">
+<APIItem type="Descendant[]">
 
 反序列化后的 Slate 值。
 </APIItem>

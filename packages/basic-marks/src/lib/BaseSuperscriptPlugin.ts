@@ -1,4 +1,4 @@
-import { createSlatePlugin } from '@udecode/plate-common';
+import { createSlatePlugin } from '@udecode/plate';
 
 /** Enables support for superscript formatting. */
 export const BaseSuperscriptPlugin = createSlatePlugin({

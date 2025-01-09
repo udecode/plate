@@ -1,10 +1,6 @@
 /** @jsx jsxt */
 
-import {
-  type SlateEditor,
-  createSlateEditor,
-  normalizeEditor,
-} from '@udecode/plate-common';
+import { type SlateEditor, createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { ListPlugin } from '../react';
@@ -13,13 +9,14 @@ jsxt;
 
 const testNormalize = (input: SlateEditor, output: SlateEditor): void => {
   const editor = createSlateEditor({
-    editor: input,
     plugins: [ListPlugin],
+    selection: input.selection,
+    value: input.children,
   });
 
-  normalizeEditor(editor, { force: true });
+  editor.tf.normalize({ force: true });
 
-  expect(input.children).toEqual(output.children);
+  expect(editor.children).toEqual(output.children);
 };
 
 describe('merge lists', () => {

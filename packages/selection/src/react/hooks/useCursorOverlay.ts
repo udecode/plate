@@ -1,13 +1,12 @@
 import React from 'react';
 
-import type { UnknownObject } from '@udecode/plate-common';
-import type { Range } from 'slate';
+import type { TRange, UnknownObject } from '@udecode/plate';
 
 import {
   useEditorContainerRef,
   useEditorRef,
   useIsomorphicLayoutEffect,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 
 import type { CursorOverlayState, CursorState, SelectionRect } from '../types';
 
@@ -51,7 +50,7 @@ export const useCursorOverlay = <TCursorData extends UnknownObject>({
     'cursors'
   ) as Record<string, CursorState<TCursorData>>;
 
-  const selectionRectCache = React.useRef<WeakMap<Range, SelectionRect[]>>(
+  const selectionRectCache = React.useRef<WeakMap<TRange, SelectionRect[]>>(
     new WeakMap()
   );
 

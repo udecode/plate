@@ -1,12 +1,4 @@
-import {
-  type SlateEditor,
-  getBlockAbove,
-  getPointBefore,
-  getPreviousNode,
-  isElement,
-  isSelectionAtBlockStart,
-  moveNodes,
-} from '@udecode/plate-common';
+import { type SlateEditor, ElementApi } from '@udecode/plate';
 
 import { isInClosedToggle } from '../queries';
 
@@ -18,29 +10,30 @@ export const moveCurrentBlockAfterPreviousSelectable = (
 
   if (!selection) return;
 
-  const aboveBlock = getBlockAbove(editor);
+  const aboveBlock = editor.api.block();
 
   if (!aboveBlock) return;
-  if (!isSelectionAtBlockStart(editor)) return;
+  if (!editor.api.isAt({ start: true })) return;
 
-  const beforePoint = getPointBefore(editor, selection);
+  const beforePoint = editor.api.before(selection);
 
   if (!beforePoint) return;
 
-  const blockBefore = getBlockAbove(editor, { at: beforePoint });
+  const blockBefore = editor.api.block({ at: beforePoint });
 
   if (!blockBefore) return;
-  if (!isInClosedToggle(editor, blockBefore[0].id)) return; // We're already after a selectable then
+  if (!isInClosedToggle(editor, blockBefore[0].id as string)) return; // We're already after a selectable then
 
-  const previousSelectableBlock = getPreviousNode(editor, {
+  const previousSelectableBlock = editor.api.previous({
     match: (node) =>
-      isElement(node) && !isInClosedToggle(editor, node.id as string),
+      ElementApi.isElement(node) &&
+      !isInClosedToggle(editor, node.id as string),
   });
 
   if (!previousSelectableBlock) return false;
 
   const afterSelectableBlock = [previousSelectableBlock[1][0] + 1];
-  moveNodes(editor, {
+  editor.tf.moveNodes({
     at: aboveBlock[1],
     to: afterSelectableBlock,
   });

@@ -3,7 +3,7 @@ import {
   type SlatePlugin,
   createSlatePlugin,
   createTSlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { HEADING_LEVELS } from './constants';
 

@@ -3,12 +3,15 @@
 
 'use client';
 
-import { type FC, memo } from 'react';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import React, { type FC, memo } from 'react';
+import { type SyntaxHighlighterProps, Prism } from 'react-syntax-highlighter';
 
 import { cn } from '@udecode/cn';
 
 import { CopyButton, CopyNpmCommandButton } from './copy-button';
+
+const SyntaxHighlighter =
+  Prism as unknown as typeof React.Component<SyntaxHighlighterProps>;
 
 const CodeBlock: FC<{
   language: string;

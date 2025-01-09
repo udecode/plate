@@ -1,14 +1,13 @@
 import React from 'react';
 
-import type { WithRequiredKey } from '@udecode/plate-common';
+import type { WithRequiredKey } from '@udecode/plate';
 
 import {
   createPrimitiveComponent,
-  focusEditor,
   useEditorRef,
   useElement,
   useHotkeys,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 
 import type { TMediaElement } from '../../../lib/media/types';
 
@@ -44,7 +43,7 @@ export const useFloatingMediaUrlInputState = ({
     () => {
       if (floatingMediaSelectors.isEditing()) {
         floatingMediaActions.reset();
-        focusEditor(editor, editor.selection!);
+        editor.tf.focus({ at: editor.selection! });
       }
     },
     {

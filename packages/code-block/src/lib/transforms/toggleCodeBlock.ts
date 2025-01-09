@@ -1,11 +1,4 @@
-import {
-  type SlateEditor,
-  type TElement,
-  setElements,
-  someNode,
-  withoutNormalizing,
-  wrapNodes,
-} from '@udecode/plate-common';
+import type { SlateEditor, TElement } from '@udecode/plate';
 
 import {
   BaseCodeBlockPlugin,
@@ -19,15 +12,15 @@ export const toggleCodeBlock = (editor: SlateEditor) => {
   const codeBlockType = editor.getType(BaseCodeBlockPlugin);
   const codeLineType = editor.getType(BaseCodeLinePlugin);
 
-  const isActive = someNode(editor, {
+  const isActive = editor.api.some({
     match: { type: codeBlockType },
   });
 
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     unwrapCodeBlock(editor);
 
     if (!isActive) {
-      setElements(editor, {
+      editor.tf.setNodes({
         type: codeLineType,
       });
 
@@ -36,7 +29,7 @@ export const toggleCodeBlock = (editor: SlateEditor) => {
         type: codeBlockType,
       };
 
-      wrapNodes<TElement>(editor, codeBlock);
+      editor.tf.wrapNodes<TElement>(codeBlock);
     }
   });
 };

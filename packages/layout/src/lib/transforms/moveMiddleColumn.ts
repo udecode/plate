@@ -1,14 +1,9 @@
 import {
+  type NodeEntry,
   type SlateEditor,
   type TNode,
-  type TNodeEntry,
-  getNode,
-  getNodeDescendant,
-  getNodeString,
-  moveNodes,
-  removeNodes,
-  unwrapNodes,
-} from '@udecode/plate-common';
+  NodeApi,
+} from '@udecode/plate';
 
 import type { TColumnElement } from '../types';
 
@@ -18,7 +13,7 @@ import type { TColumnElement } from '../types';
  */
 export const moveMiddleColumn = <N extends TNode>(
   editor: SlateEditor,
-  [node, path]: TNodeEntry<N>,
+  [node, path]: NodeEntry<N>,
   options?: {
     direction: 'left' | 'right';
   }
@@ -28,29 +23,29 @@ export const moveMiddleColumn = <N extends TNode>(
   if (direction === 'left') {
     const DESCENDANT_PATH = [1];
 
-    const middleChildNode = getNode<TColumnElement>(node, DESCENDANT_PATH);
+    const middleChildNode = NodeApi.get<TColumnElement>(node, DESCENDANT_PATH);
 
     if (!middleChildNode) return false;
 
-    // Check emptiness using Node.string
-    const isEmpty = getNodeString(middleChildNode) === '';
+    // Check emptiness using Api.string
+    const isEmpty = NodeApi.string(middleChildNode) === '';
 
-    const middleChildPathRef = editor.pathRef(path.concat(DESCENDANT_PATH));
+    const middleChildPathRef = editor.api.pathRef(path.concat(DESCENDANT_PATH));
 
     if (isEmpty) {
-      removeNodes(editor, { at: middleChildPathRef.current! });
+      editor.tf.removeNodes({ at: middleChildPathRef.current! });
 
       return false;
     }
 
-    const firstNode = getNodeDescendant<TColumnElement>(node, [0]);
+    const firstNode = NodeApi.descendant<TColumnElement>(node, [0]);
 
     if (!firstNode) return false;
 
     const firstLast = path.concat([0, firstNode.children.length]);
 
-    moveNodes(editor, { at: middleChildPathRef.current!, to: firstLast });
-    unwrapNodes(editor, { at: middleChildPathRef.current! });
+    editor.tf.moveNodes({ at: middleChildPathRef.current!, to: firstLast });
+    editor.tf.unwrapNodes({ at: middleChildPathRef.current! });
     middleChildPathRef.unref();
   }
 };

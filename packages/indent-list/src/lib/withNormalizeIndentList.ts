@@ -1,37 +1,34 @@
-import {
-  type ExtendEditor,
-  type TElement,
-  withoutNormalizing,
-} from '@udecode/plate-common';
+import type { OverrideEditor, TElement } from '@udecode/plate';
 
 import type { BaseIndentListConfig } from './BaseIndentListPlugin';
 
 import { normalizeIndentListNotIndented } from './normalizers/normalizeIndentListNotIndented';
 import { normalizeIndentListStart } from './normalizers/normalizeIndentListStart';
 
-export const withNormalizeIndentList: ExtendEditor<BaseIndentListConfig> = ({
+export const withNormalizeIndentList: OverrideEditor<BaseIndentListConfig> = ({
   editor,
   getOptions,
+  tf: { normalizeNode },
 }) => {
-  const { normalizeNode } = editor;
+  return {
+    transforms: {
+      normalizeNode([node, path]) {
+        const normalized = editor.tf.withoutNormalizing(() => {
+          if (normalizeIndentListNotIndented(editor, [node, path])) return true;
+          if (
+            normalizeIndentListStart(
+              editor,
+              [node as TElement, path],
+              getOptions().getSiblingIndentListOptions
+            )
+          )
+            return true;
+        });
 
-  editor.normalizeNode = ([node, path]) => {
-    const normalized = withoutNormalizing(editor, () => {
-      if (normalizeIndentListNotIndented(editor, [node, path])) return true;
-      if (
-        normalizeIndentListStart(
-          editor,
-          [node as TElement, path],
-          getOptions().getSiblingIndentListOptions
-        )
-      )
-        return true;
-    });
+        if (normalized) return;
 
-    if (normalized) return;
-
-    return normalizeNode([node, path]);
+        return normalizeNode([node, path]);
+      },
+    },
   };
-
-  return editor;
 };

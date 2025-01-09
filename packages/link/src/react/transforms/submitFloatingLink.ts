@@ -1,5 +1,4 @@
-import { type SlateEditor, getEditorPlugin } from '@udecode/plate-common';
-import { focusEditor } from '@udecode/plate-common/react';
+import { type SlateEditor, getEditorPlugin } from '@udecode/plate';
 
 import { upsertLink, validateUrl } from '../../lib';
 import { LinkPlugin } from '../LinkPlugin';
@@ -37,7 +36,7 @@ export const submitFloatingLink = (editor: SlateEditor) => {
   });
 
   setTimeout(() => {
-    focusEditor(editor, editor.selection!);
+    editor.tf.focus({ at: editor.selection! });
   }, 0);
 
   return true;

@@ -1,8 +1,9 @@
 import {
-  type FindNodeOptions,
+  type EditorNodesOptions,
   type SlateEditor,
-  findNode,
-} from '@udecode/plate-common';
+  type ValueOf,
+  combineMatchOptions,
+} from '@udecode/plate';
 
 import type { TSuggestionText } from '../types';
 
@@ -10,10 +11,13 @@ import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 
 export const findSuggestionNode = <E extends SlateEditor>(
   editor: E,
-  { match, ...options }: FindNodeOptions<E> = {}
+  options: EditorNodesOptions<ValueOf<E>> = {}
 ) =>
-  findNode<TSuggestionText>(editor, {
-    match: (n, p) =>
-      n[BaseSuggestionPlugin.key] && (!match || (match as any)(n, p)),
+  editor.api.node<TSuggestionText>({
     ...options,
+    match: combineMatchOptions(
+      editor,
+      (n) => (n as any)[BaseSuggestionPlugin.key],
+      options
+    ),
   });

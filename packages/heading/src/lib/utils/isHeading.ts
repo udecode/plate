@@ -1,4 +1,4 @@
-import type { TNode } from '@udecode/plate-common';
+import type { TNode } from '@udecode/plate';
 
 import { HEADING_LEVELS } from '../constants';
 

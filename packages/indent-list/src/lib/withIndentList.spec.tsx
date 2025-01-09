@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
 
-import { createPlateEditor } from '@udecode/plate-common/react';
+import { createPlateEditor } from '@udecode/plate/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
@@ -42,12 +42,13 @@ describe('normalizeIndentList', () => {
       ) as any as SlateEditor;
 
       const editor = createPlateEditor({
-        editor: input,
         plugins: [BaseIndentListPlugin, IndentPlugin],
+        selection: input.selection,
         shouldNormalizeEditor: true,
+        value: input.children,
       });
 
-      editor.deleteBackward('character');
+      editor.tf.deleteBackward();
 
       expect(editor.children).toEqual(output.children);
     });

@@ -1,8 +1,11 @@
 import React from 'react';
 
-import { focusAtom } from 'jotai-optics';
-import { useFocused } from 'slate-react';
+import type { WritableAtom } from 'jotai/vanilla/atom';
+import type { JotaiStore } from 'jotai-x';
 
+import { focusAtom } from 'jotai-optics';
+
+import { useFocused } from '../slate-react';
 import {
   plateControllerStore,
   useEditorId,
@@ -10,8 +13,6 @@ import {
   usePlateSelectors,
   usePlateStore,
 } from '../stores';
-import type { WritableAtom } from 'jotai/vanilla/atom';
-import type { JotaiStore } from 'jotai-x';
 
 export interface PlateControllerEffectProps {
   id?: string;

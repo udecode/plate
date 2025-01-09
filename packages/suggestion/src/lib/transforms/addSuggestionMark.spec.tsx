@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
 
-import { createSlateEditor } from '@udecode/plate-common';
+import { createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { SUGGESTION_KEYS } from '../BaseSuggestionPlugin';
@@ -24,7 +24,8 @@ describe('addSuggestionMark', () => {
   //     ) as any) as SlateEditor;
   //
   //     const editor = createSlateEditor({
-  //       editor: input,
+  //       value: input.children,
+  //    selection: input.selection,
   //     });
   //     editor.activeSuggestionId = 'active_suggestion_id';
   //
@@ -47,7 +48,8 @@ describe('addSuggestionMark', () => {
         ) as any as SlateEditor;
 
         const editor = createSlateEditor({
-          editor: input,
+          selection: input.selection,
+          value: input.children,
         });
 
         addSuggestionMark(editor);

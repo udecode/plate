@@ -164,7 +164,7 @@ export function PluginsTabContent() {
                 // settingsStore.set.homeTab('installation');
                 settingsStore.set.showSettings(false);
                 settingsStore.set.state((draft) => {
-                  draft.version = draft.version + 1;
+                  draft.version = draft.version! + 1;
                 });
               }}
             >

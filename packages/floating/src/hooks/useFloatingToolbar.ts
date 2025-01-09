@@ -1,17 +1,13 @@
 import React from 'react';
 
-import {
-  getSelectionText,
-  isSelectionExpanded,
-  mergeProps,
-} from '@udecode/plate-common';
+import { mergeProps } from '@udecode/plate';
 import {
   useEditorReadOnly,
   useEditorRef,
   useEditorSelector,
+  useFocused,
   useOnClickOutside,
-} from '@udecode/plate-common/react';
-import { useFocused } from 'slate-react';
+} from '@udecode/plate/react';
 
 import {
   type UseVirtualFloatingOptions,
@@ -36,8 +32,11 @@ export const useFloatingToolbarState = ({
   focusedEditorId: string | null;
 } & FloatingToolbarState) => {
   const editor = useEditorRef();
-  const selectionExpanded = useEditorSelector(isSelectionExpanded, []);
-  const selectionText = useEditorSelector(getSelectionText, []);
+  const selectionExpanded = useEditorSelector(
+    () => editor.api.isExpanded(),
+    []
+  );
+  const selectionText = useEditorSelector(() => editor.api.string(), []);
   const readOnly = useEditorReadOnly();
 
   const focused = useFocused();

@@ -3,9 +3,7 @@ import {
   type SlateEditor,
   type WithRequiredKey,
   isUrl,
-  setNodes,
-} from '@udecode/plate-common';
-import { focusEditor } from '@udecode/plate-common/react';
+} from '@udecode/plate';
 
 import type {
   MediaPluginOptions,
@@ -44,13 +42,13 @@ export const submitFloatingMedia = (
     url = transformUrl(url);
   }
 
-  setNodes<TMediaElement>(editor, {
+  editor.tf.setNodes<TMediaElement>({
     url,
   });
 
   floatingMediaActions.reset();
 
-  focusEditor(editor, editor.selection!);
+  editor.tf.focus({ at: editor.selection! });
 
   return true;
 };

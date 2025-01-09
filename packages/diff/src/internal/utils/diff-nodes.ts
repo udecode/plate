@@ -3,7 +3,7 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import { type TDescendant, isElement, isText } from '@udecode/plate-common';
+import { type Descendant, ElementApi, TextApi } from '@udecode/plate';
 import isEqual from 'lodash/isEqual.js';
 
 import type { ComputeDiffOptions } from '../../lib/computeDiff';
@@ -11,19 +11,22 @@ import type { ComputeDiffOptions } from '../../lib/computeDiff';
 import { copyWithout } from './copy-without';
 
 export function diffNodes(
-  originNodes: TDescendant[],
-  targetNodes: TDescendant[],
+  originNodes: Descendant[],
+  targetNodes: Descendant[],
   { elementsAreRelated }: ComputeDiffOptions
 ) {
   const result: NodeRelatedItem[] = [];
-  let relatedNode: TDescendant | undefined;
-  const leftTargetNodes: TDescendant[] = [...targetNodes];
+  let relatedNode: Descendant | undefined;
+  const leftTargetNodes: Descendant[] = [...targetNodes];
 
-  originNodes.forEach((originNode: TDescendant) => {
+  originNodes.forEach((originNode: Descendant) => {
     let childrenUpdated = false;
     let nodeUpdated = false;
-    relatedNode = leftTargetNodes.find((targetNode: TDescendant) => {
-      if (isElement(originNode) && isElement(targetNode)) {
+    relatedNode = leftTargetNodes.find((targetNode: Descendant) => {
+      if (
+        ElementApi.isElement(originNode) &&
+        ElementApi.isElement(targetNode)
+      ) {
         const relatedResult =
           elementsAreRelated?.(originNode, targetNode) ?? null;
 
@@ -72,32 +75,36 @@ export function diffNodes(
 }
 
 export type NodeRelatedItem = {
-  originNode: TDescendant;
+  originNode: Descendant;
   childrenUpdated?: boolean;
   delete?: boolean;
   insert?: boolean;
   nodeUpdated?: boolean;
-  relatedNode?: TDescendant;
+  relatedNode?: Descendant;
 };
 
-export function isEqualNode(value: TDescendant, other: TDescendant) {
+export function isEqualNode(value: Descendant, other: Descendant) {
   return (
-    isElement(value) &&
-    isElement(other) &&
+    ElementApi.isElement(value) &&
+    ElementApi.isElement(other) &&
     value.children !== null &&
     other.children !== null &&
     isEqual(copyWithout(value, ['children']), copyWithout(other, ['children']))
   );
 }
 
-export function isEqualNodeChildren(value: TDescendant, other: TDescendant) {
+export function isEqualNodeChildren(value: Descendant, other: Descendant) {
   if (
-    isElement(value) &&
-    isElement(other) &&
+    ElementApi.isElement(value) &&
+    ElementApi.isElement(other) &&
     isEqual(value.children, other.children)
   ) {
     return true;
   }
 
-  return isText(value) && isText(other) && isEqual(value.text, other.text);
+  return (
+    TextApi.isText(value) &&
+    TextApi.isText(other) &&
+    isEqual(value.text, other.text)
+  );
 }

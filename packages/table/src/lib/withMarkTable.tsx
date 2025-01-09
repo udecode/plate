@@ -1,96 +1,90 @@
-import type { ExtendEditor, TElement } from '@udecode/plate-common';
-
-import {
-  getNodeEntries,
-  isCollapsed,
-  isText,
-  setNodes,
-  unsetNodes,
-} from '@udecode/plate-common';
+import { type OverrideEditor, TextApi } from '@udecode/plate';
 
 import type { TableConfig } from '.';
 
 import { getTableGridAbove } from './queries';
 
-export const withMarkTable: ExtendEditor<TableConfig> = ({ editor }) => {
-  const { addMark, getMarks, removeMark } = editor;
+export const withMarkTable: OverrideEditor<TableConfig> = ({
+  api: { marks },
+  editor,
+  tf: { addMark, removeMark },
+}) => ({
+  api: {
+    marks() {
+      const { selection } = editor;
 
-  editor.addMark = (key, value) => {
-    const { selection } = editor;
+      if (!selection || editor.api.isCollapsed()) return marks();
 
-    if (!selection || isCollapsed(selection)) return addMark(key, value);
+      const matchesCell = getTableGridAbove(editor, { format: 'cell' });
 
-    const matchesCell = getTableGridAbove(editor, { format: 'cell' });
+      if (matchesCell.length === 0) return marks();
 
-    if (matchesCell.length <= 1) return addMark(key, value);
+      const totalMarks: Record<string, any> = {};
 
-    matchesCell.forEach(([_cell, cellPath]) => {
-      setNodes<TElement>(
-        editor,
-        {
-          [key]: value,
-        },
-        {
+      matchesCell.forEach(([_cell, cellPath]) => {
+        const textNodeEntry = editor.api.nodes({
           at: cellPath,
-          match: (n) => isText(n),
-          split: true,
-          voids: true,
-        }
-      );
-    });
-  };
+          match: (n) => TextApi.isText(n),
+        });
 
-  editor.removeMark = (key) => {
-    const { selection } = editor;
+        Array.from(textNodeEntry, (item) => item[0]).forEach((item) => {
+          const keys = Object.keys(item);
 
-    if (!selection || isCollapsed(selection)) return removeMark(key);
+          if (keys.length === 1) return;
 
-    const matchesCell = getTableGridAbove(editor, { format: 'cell' });
+          keys.splice(keys.indexOf('text'), 1);
 
-    if (matchesCell.length === 0) return removeMark(key);
-
-    matchesCell.forEach(([_cell, cellPath]) => {
-      unsetNodes(editor, key, {
-        at: cellPath,
-        match: (n) => isText(n),
-        split: true,
-        voids: true,
-      });
-    });
-  };
-
-  editor.getMarks = () => {
-    const { selection } = editor;
-
-    if (!selection || isCollapsed(selection)) return getMarks();
-
-    const matchesCell = getTableGridAbove(editor, { format: 'cell' });
-
-    if (matchesCell.length === 0) return getMarks();
-
-    const totalMarks: Record<string, any> = {};
-
-    matchesCell.forEach(([_cell, cellPath]) => {
-      const textNodeEntry = getNodeEntries(editor, {
-        at: cellPath,
-        match: (n) => isText(n),
-      });
-
-      Array.from(textNodeEntry, (item) => item[0]).forEach((item) => {
-        const keys = Object.keys(item);
-
-        if (keys.length === 1) return;
-
-        keys.splice(keys.indexOf('text'), 1);
-
-        keys.forEach((k) => {
-          totalMarks[k] = item[k];
+          keys.forEach((k) => {
+            totalMarks[k] = item[k];
+          });
         });
       });
-    });
 
-    return totalMarks;
-  };
+      return totalMarks;
+    },
+  },
+  transforms: {
+    addMark(key: string, value: any) {
+      const { selection } = editor;
 
-  return editor;
-};
+      if (!selection || editor.api.isCollapsed()) return addMark(key, value);
+
+      const matchesCell = getTableGridAbove(editor, { format: 'cell' });
+
+      if (matchesCell.length <= 1) return addMark(key, value);
+
+      matchesCell.forEach(([_cell, cellPath]) => {
+        editor.tf.setNodes(
+          {
+            [key]: value,
+          },
+          {
+            at: cellPath,
+            match: (n) => TextApi.isText(n),
+            split: true,
+            voids: true,
+          }
+        );
+      });
+    },
+
+    removeMark(key: string) {
+      const { selection } = editor;
+
+      if (!selection || editor.api.isCollapsed()) return removeMark(key);
+
+      const matchesCell = getTableGridAbove(editor, { format: 'cell' });
+
+      if (matchesCell.length === 0) return removeMark(key);
+
+      matchesCell.forEach(([_cell, cellPath]) => {
+        editor.tf.unsetNodes(key, {
+          at: cellPath,
+          match: (n) => TextApi.isText(n),
+          split: true,
+          voids: true,
+        });
+      });
+    },
+  },
+});

@@ -1,14 +1,7 @@
 import type { ResetNodeConfig } from '@udecode/plate-reset-node';
 
-import {
-  BaseParagraphPlugin,
-  createTSlatePlugin,
-  isBlockAboveEmpty,
-} from '@udecode/plate-common';
-import {
-  type ExtendEditor,
-  getEditorPlugin,
-} from '@udecode/plate-common/react';
+import { BaseParagraphPlugin, createTSlatePlugin } from '@udecode/plate';
+import { type OverrideEditor, getEditorPlugin } from '@udecode/plate/react';
 import {
   SIMULATE_BACKSPACE,
   onKeyDownResetNode,
@@ -20,64 +13,66 @@ import { insertListItem } from '../lib/transforms/insertListItem';
 import { moveListItemUp } from '../lib/transforms/moveListItemUp';
 import { unwrapList } from '../lib/transforms/unwrapList';
 
-export const withInsertBreakList: ExtendEditor<ListConfig> = ({ editor }) => {
-  const { insertBreak } = editor;
+export const withInsertBreakList: OverrideEditor<ListConfig> = ({
+  editor,
+  tf: { insertBreak },
+}) => ({
+  transforms: {
+    insertBreak() {
+      const insertBreakList = () => {
+        if (!editor.selection) return;
 
-  editor.insertBreak = () => {
-    const insertBreakList = () => {
-      if (!editor.selection) return;
+        const res = getListItemEntry(editor, {});
+        let moved: boolean | undefined;
 
-      const res = getListItemEntry(editor, {});
-      let moved: boolean | undefined;
+        // If selection is in a li
+        if (res) {
+          const { list, listItem } = res;
 
-      // If selection is in a li
-      if (res) {
-        const { list, listItem } = res;
+          // If selected li is empty, move it up.
+          if (editor.api.isEmpty(editor.selection, { block: true })) {
+            moved = moveListItemUp(editor, {
+              list,
+              listItem,
+            });
 
-        // If selected li is empty, move it up.
-        if (isBlockAboveEmpty(editor)) {
-          moved = moveListItemUp(editor, {
-            list,
-            listItem,
-          });
-
-          if (moved) return true;
+            if (moved) return true;
+          }
         }
-      }
 
-      const didReset = onKeyDownResetNode({
-        ...getEditorPlugin(
-          editor,
-          createTSlatePlugin<ResetNodeConfig>({
-            options: {
-              rules: [
-                {
-                  defaultType: editor.getType(BaseParagraphPlugin),
-                  predicate: () => !moved && isBlockAboveEmpty(editor),
-                  types: [editor.getType(BaseListItemPlugin)],
-                  onReset: (_editor) => unwrapList(_editor),
-                },
-              ],
-            },
-          })
-        ),
-        event: SIMULATE_BACKSPACE,
-      });
+        const didReset = onKeyDownResetNode({
+          ...getEditorPlugin(
+            editor,
+            createTSlatePlugin<ResetNodeConfig>({
+              options: {
+                rules: [
+                  {
+                    defaultType: editor.getType(BaseParagraphPlugin),
+                    predicate: () =>
+                      !moved &&
+                      editor.api.isEmpty(editor.selection, { block: true }),
+                    types: [editor.getType(BaseListItemPlugin)],
+                    onReset: (_editor) => unwrapList(_editor),
+                  },
+                ],
+              },
+            })
+          ),
+          event: SIMULATE_BACKSPACE,
+        });
 
-      if (didReset) return true;
-      /** If selection is in li > p, insert li. */
-      if (!moved) {
-        const inserted = insertListItem(editor);
+        if (didReset) return true;
+        /** If selection is in li > p, insert li. */
+        if (!moved) {
+          const inserted = insertListItem(editor);
 
-        if (inserted) return true;
-      }
-    };
+          if (inserted) return true;
+        }
+      };
 
-    // TODO react
-    if (insertBreakList()) return;
+      if (insertBreakList()) return;
 
-    insertBreak();
-  };
-
-  return editor;
-};
+      insertBreak();
+    },
+  },
+});

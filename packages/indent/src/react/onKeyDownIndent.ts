@@ -1,6 +1,6 @@
-import type { KeyboardHandler } from '@udecode/plate-common/react';
+import type { KeyboardHandler } from '@udecode/plate/react';
 
-import { Hotkeys } from '@udecode/plate-common/react';
+import { Hotkeys } from '@udecode/plate';
 
 import type { IndentConfig } from '../lib/BaseIndentPlugin';
 

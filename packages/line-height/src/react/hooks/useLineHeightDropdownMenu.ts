@@ -1,13 +1,6 @@
-import {
-  type TElement,
-  getBlockAbove,
-  isCollapsed,
-} from '@udecode/plate-common';
-import {
-  focusEditor,
-  useEditorRef,
-  useEditorSelector,
-} from '@udecode/plate-common/react';
+import type { TElement } from '@udecode/plate';
+
+import { useEditorRef, useEditorSelector } from '@udecode/plate/react';
 
 import { BaseLineHeightPlugin, setLineHeight } from '../../index';
 
@@ -18,8 +11,8 @@ export const useLineHeightDropdownMenuState = () => {
 
   // eslint-disable-next-line @typescript-eslint/no-shadow
   const value: string | undefined = useEditorSelector((editor) => {
-    if (isCollapsed(editor.selection)) {
-      const entry = getBlockAbove<TElement>(editor);
+    if (editor.api.isCollapsed()) {
+      const entry = editor.api.block<TElement>();
 
       if (entry) {
         return (
@@ -48,7 +41,7 @@ export const useLineHeightDropdownMenu = ({
         setLineHeight(editor, {
           value: Number(newValue),
         });
-        focusEditor(editor);
+        editor.tf.focus();
       },
     },
   };

@@ -2,7 +2,7 @@ import {
   isHtmlComment,
   removeHtmlNodesBetweenComments,
   traverseHtmlElements,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 /** Remove HTML nodes between comments in the next sibling after BR. */
 export const cleanDocxBrComments = (rootNode: Node): void => {

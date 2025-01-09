@@ -69,7 +69,7 @@ import { IndentPlugin } from '@udecode/plate-indent/react';
 import { IndentListPlugin } from '@udecode/plate-indent-list/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HeadingPlugin } from '@udecode/plate-heading/react';
-import { ParagraphPlugin } from '@udecode/plate-common/react';
+import { ParagraphPlugin } from '@udecode/plate/react';
 
 const plugins = [
   // ...otherPlugins,
@@ -134,7 +134,7 @@ const plugins = [
 </APIParameters>
 
 <APIReturns>
-  <APIItem type="TNodeEntry | undefined">
+  <APIItem type="NodeEntry | undefined">
     The entry of the next sibling with an indent list, or `undefined` if not
     found.
   </APIItem>
@@ -159,7 +159,7 @@ Gets the previous sibling entry with an indent list.
 </APIParameters>
 
 <APIReturns>
-  <APIItem type="TNodeEntry | undefined">
+  <APIItem type="NodeEntry | undefined">
     The entry of the previous sibling with an indent list, or `undefined` if not
     found.
   </APIItem>

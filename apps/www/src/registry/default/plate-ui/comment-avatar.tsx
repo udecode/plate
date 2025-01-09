@@ -2,8 +2,8 @@
 
 import React from 'react';
 
+import { useEditorPlugin } from '@udecode/plate/react';
 import { CommentsPlugin } from '@udecode/plate-comments/react';
-import { useEditorPlugin } from '@udecode/plate-common/react';
 
 import { Avatar, AvatarFallback, AvatarImage } from './avatar';
 

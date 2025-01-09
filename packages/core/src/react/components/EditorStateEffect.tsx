@@ -1,7 +1,7 @@
 /* eslint-disable react/display-name */
 import React from 'react';
 
-import { type Selection, Range } from 'slate';
+import { type EditorSelection, RangeApi } from '@udecode/slate';
 import { useSlate } from 'slate-react';
 
 import { useIncrementVersion } from '../stores';
@@ -33,9 +33,9 @@ export const EditorStateEffect = React.memo(({ id }: { id?: string }) => {
   return null;
 });
 
-const isSelectionEqual = (a: Selection, b: Selection) => {
+const isSelectionEqual = (a: EditorSelection, b: EditorSelection) => {
   if (!a && !b) return true;
   if (!a || !b) return false;
 
-  return Range.equals(a, b);
+  return RangeApi.equals(a, b);
 };

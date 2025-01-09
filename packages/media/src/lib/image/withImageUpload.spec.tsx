@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { createPlateEditor } from '@udecode/plate-common/react';
+import { createPlateEditor } from '@udecode/plate/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { BaseImagePlugin } from './BaseImagePlugin';
@@ -23,8 +23,9 @@ describe('withImageUpload', () => {
 
     it('should insert image from the file(s)', () => {
       const editor = createPlateEditor({
-        editor: input,
         plugins: [BaseImagePlugin],
+        selection: input.selection,
+        value: input.children,
       });
 
       const data = {
@@ -35,9 +36,9 @@ describe('withImageUpload', () => {
         ],
         getData: () => '',
       };
-      editor.insertData(data as any);
+      editor.tf.insertData(data as any);
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 
@@ -58,16 +59,17 @@ describe('withImageUpload', () => {
       jest.spyOn(JSON, 'parse').mockReturnValue(<fragment>image.png</fragment>);
 
       const editor = createPlateEditor({
-        editor: input,
         plugins: [BaseImagePlugin],
+        selection: input.selection,
+        value: input.children,
       });
 
       const data = {
         getData: () => '',
       };
-      editor.insertData(data as any);
+      editor.tf.insertData(data as any);
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 
@@ -86,17 +88,18 @@ describe('withImageUpload', () => {
 
     it('should insert image from the file(s)', () => {
       const editor = createPlateEditor({
-        editor: input,
         plugins: [BaseImagePlugin],
+        selection: input.selection,
+        value: input.children,
       });
 
       const data = {
         files: [new File(['test'], 'not-an-image')],
         getData: () => '',
       };
-      editor.insertData(data as any);
+      editor.tf.insertData(data as any);
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 
@@ -116,7 +119,7 @@ describe('withImageUpload', () => {
   //       }),
   //     ],
   //   };
-  //   editor.insertData(data as any);
+  //   editor.tf.insertData(data as any);
   //
   //   await new Promise((resolve) => setTimeout(resolve, 10));
   //

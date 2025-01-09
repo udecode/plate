@@ -1,13 +1,11 @@
-import type { Path } from 'slate';
-
-import { type SlateEditor, isText, removeNodes } from '@udecode/plate-common';
+import { type Path, type SlateEditor, TextApi } from '@udecode/plate';
 
 export const removeAINodes = (
   editor: SlateEditor,
   { at = [] }: { at?: Path } = {}
 ) => {
-  removeNodes(editor, {
+  editor.tf.removeNodes({
     at,
-    match: (n) => isText(n) && !!(n as any).ai,
+    match: (n) => TextApi.isText(n) && !!(n as any).ai,
   });
 };

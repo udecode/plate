@@ -1,15 +1,14 @@
 import React from 'react';
 
-import type { TRenderLeafProps } from '@udecode/slate-react';
-
 import type { SlateEditor } from '../editor';
 import type { NodeComponents, SlatePlugin } from '../plugin';
+import type { RenderLeafProps } from '../types/RenderLeafProps';
 
 import { SlateLeaf } from './components/SlateLeaf';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps';
 
 export type SlateRenderLeaf = (
-  props: TRenderLeafProps
+  props: RenderLeafProps
 ) => React.ReactElement | undefined;
 
 export const pluginRenderLeafStatic = (

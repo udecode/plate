@@ -1,6 +1,6 @@
-import { type TElement, findNodePath, setNodes } from '@udecode/plate-common';
-import { useEditorRef } from '@udecode/plate-common/react';
-import { useReadOnly } from 'slate-react';
+import type { TElement } from '@udecode/plate';
+
+import { useEditorRef, useReadOnly } from '@udecode/plate/react';
 
 export const useIndentTodoListElementState = ({
   element,
@@ -30,11 +30,11 @@ export const useIndentTodoListElement = (
       onCheckedChange: (value: boolean) => {
         if (readOnly) return;
 
-        const path = findNodePath(editor, element);
+        const path = editor.api.findPath(element);
 
         if (!path) return;
 
-        setNodes(editor, { checked: value }, { at: path });
+        editor.tf.setNodes({ checked: value }, { at: path });
       },
       onMouseDown: (e: any) => {
         e.preventDefault();

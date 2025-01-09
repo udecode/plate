@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
 
-import { createPlateEditor } from '@udecode/plate-common/react';
+import { createPlateEditor } from '@udecode/plate/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
@@ -36,13 +36,14 @@ describe('unwrap code block', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
       plugins: [CodeBlockPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     unwrapCodeBlock(editor);
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 
   it('should turn multiple code blocks to multiple p', () => {
@@ -83,13 +84,14 @@ describe('unwrap code block', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
       plugins: [CodeBlockPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     unwrapCodeBlock(editor);
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 
   describe('when not inside code block', () => {
@@ -125,13 +127,14 @@ describe('unwrap code block', () => {
       ) as any as SlateEditor;
 
       const editor = createPlateEditor({
-        editor: input,
         plugins: [CodeBlockPlugin],
+        selection: input.selection,
+        value: input.children,
       });
 
       unwrapCodeBlock(editor);
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 });

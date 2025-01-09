@@ -8,7 +8,7 @@ import {
   isHtmlBlockElement,
   postCleanHtml,
   traverseHtmlElements,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { GetSiblingIndentListOptions } from './queries/getSiblingIndentList';
 import type { ListStyleType } from './types';
@@ -45,7 +45,6 @@ export type BaseIndentListConfig = PluginConfig<
 
 export const BaseIndentListPlugin = createTSlatePlugin<BaseIndentListConfig>({
   key: 'listStyleType',
-  extendEditor: withIndentList,
   inject: {
     plugins: {
       [HtmlPlugin.key]: {
@@ -108,4 +107,4 @@ export const BaseIndentListPlugin = createTSlatePlugin<BaseIndentListConfig>({
   render: {
     belowNodes: renderIndentListBelowNodes,
   },
-});
+}).overrideEditor(withIndentList);

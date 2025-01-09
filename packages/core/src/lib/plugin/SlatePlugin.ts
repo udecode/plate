@@ -1,16 +1,17 @@
 import type {
-  TDescendant,
+  DecoratedRange,
+  Descendant,
+  EditorApi,
+  EditorTransforms,
+  NodeEntry,
   TElement,
-  TNodeEntry,
   TText,
   Value,
 } from '@udecode/slate';
-import type { AnyObject } from '@udecode/utils';
-import type { DecoratedRange } from 'slate';
+import type { AnyObject, Deep2Partial, Nullable } from '@udecode/utils';
 
 import type { SlateEditor } from '../editor';
 import type { SlateRenderElementProps, SlateRenderLeafProps } from '../static';
-import type { Nullable } from '../types/misc';
 import type {
   AnyPluginConfig,
   BaseDeserializer,
@@ -35,11 +36,9 @@ import type { HandlerReturnType } from './HandlerReturnType';
 export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> =
   BasePlugin<C> &
     Nullable<{
-      normalizeInitialValue?: (
-        ctx: SlatePluginContext<WithAnyKey<C>> & { value: Value }
-      ) => Value;
       decorate?: Decorate<WithAnyKey<C>>;
       extendEditor?: ExtendEditor<WithAnyKey<C>>;
+      normalizeInitialValue?: NormalizeInitialValue<WithAnyKey<C>>;
     }> &
     SlatePluginMethods<C> & {
       inject: Nullable<{
@@ -181,17 +180,7 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       ((...args: any[]) => any) | Record<string, (...args: any[]) => any>
     > = Record<string, never>,
   >(
-    extension: (ctx: SlatePluginContext<C>) => EA & {
-      [K in keyof InferApi<C>]?: InferApi<C>[K] extends (...args: any[]) => any
-        ? (...args: Parameters<InferApi<C>[K]>) => ReturnType<InferApi<C>[K]>
-        : InferApi<C>[K] extends Record<string, (...args: any[]) => any>
-          ? {
-              [N in keyof InferApi<C>[K]]?: (
-                ...args: Parameters<InferApi<C>[K][N]>
-              ) => ReturnType<InferApi<C>[K][N]>;
-            }
-          : never;
-    }
+    extension: ExtendEditorApi<C, EA>
   ) => SlatePlugin<
     PluginConfig<
       C['key'],
@@ -215,21 +204,7 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       ((...args: any[]) => any) | Record<string, (...args: any[]) => any>
     > = Record<string, never>,
   >(
-    extension: (ctx: SlatePluginContext<C>) => ET & {
-      [K in keyof InferTransforms<C>]?: InferTransforms<C>[K] extends (
-        ...args: any[]
-      ) => any
-        ? (
-            ...args: Parameters<InferTransforms<C>[K]>
-          ) => ReturnType<InferTransforms<C>[K]>
-        : InferTransforms<C>[K] extends Record<string, (...args: any[]) => any>
-          ? {
-              [N in keyof InferTransforms<C>[K]]?: (
-                ...args: Parameters<InferTransforms<C>[K][N]>
-              ) => ReturnType<InferTransforms<C>[K][N]>;
-            }
-          : never;
-    }
+    extension: ExtendEditorTransforms<C, ET>
   ) => SlatePlugin<
     PluginConfig<
       C['key'],
@@ -308,6 +283,8 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
 
   clone: () => SlatePlugin<C>;
 
+  overrideEditor: (override: OverrideEditor<C>) => SlatePlugin<C>;
+
   __resolved?: boolean;
 };
 
@@ -333,6 +310,73 @@ export type SlatePluginConfig<
 
 // -----------------------------------------------------------------------------
 
+export type OverrideEditor<C extends AnyPluginConfig = PluginConfig> = (
+  ctx: SlatePluginContext<C>
+) => {
+  api?: Deep2Partial<EditorApi> & {
+    [K in keyof InferApi<C>]?: InferApi<C>[K] extends (...args: any[]) => any
+      ? (...args: Parameters<InferApi<C>[K]>) => ReturnType<InferApi<C>[K]>
+      : InferApi<C>[K] extends Record<string, (...args: any[]) => any>
+        ? {
+            [N in keyof InferApi<C>[K]]?: (
+              ...args: Parameters<InferApi<C>[K][N]>
+            ) => ReturnType<InferApi<C>[K][N]>;
+          }
+        : never;
+  };
+  transforms?: Deep2Partial<EditorTransforms> & {
+    [K in keyof InferTransforms<C>]?: InferTransforms<C>[K] extends (
+      ...args: any[]
+    ) => any
+      ? (
+          ...args: Parameters<InferTransforms<C>[K]>
+        ) => ReturnType<InferTransforms<C>[K]>
+      : InferTransforms<C>[K] extends Record<string, (...args: any[]) => any>
+        ? {
+            [N in keyof InferTransforms<C>[K]]?: (
+              ...args: Parameters<InferTransforms<C>[K][N]>
+            ) => ReturnType<InferTransforms<C>[K][N]>;
+          }
+        : never;
+  };
+};
+
+export type ExtendEditorApi<
+  C extends AnyPluginConfig = PluginConfig,
+  EA = {},
+> = (ctx: SlatePluginContext<C>) => EA &
+  Deep2Partial<EditorApi> & {
+    [K in keyof InferApi<C>]?: InferApi<C>[K] extends (...args: any[]) => any
+      ? (...args: Parameters<InferApi<C>[K]>) => ReturnType<InferApi<C>[K]>
+      : InferApi<C>[K] extends Record<string, (...args: any[]) => any>
+        ? {
+            [N in keyof InferApi<C>[K]]?: (
+              ...args: Parameters<InferApi<C>[K][N]>
+            ) => ReturnType<InferApi<C>[K][N]>;
+          }
+        : never;
+  };
+
+export type ExtendEditorTransforms<
+  C extends AnyPluginConfig = PluginConfig,
+  EA = {},
+> = (ctx: SlatePluginContext<C>) => EA &
+  Deep2Partial<EditorTransforms> & {
+    [K in keyof InferTransforms<C>]?: InferTransforms<C>[K] extends (
+      ...args: any[]
+    ) => any
+      ? (
+          ...args: Parameters<InferTransforms<C>[K]>
+        ) => ReturnType<InferTransforms<C>[K]>
+      : InferTransforms<C>[K] extends Record<string, (...args: any[]) => any>
+        ? {
+            [N in keyof InferTransforms<C>[K]]?: (
+              ...args: Parameters<InferTransforms<C>[K][N]>
+            ) => ReturnType<InferTransforms<C>[K][N]>;
+          }
+        : never;
+  };
+
 export type AnySlatePlugin = SlatePlugin<AnyPluginConfig>;
 
 export type SlatePlugins = AnySlatePlugin[];
@@ -357,13 +401,13 @@ export type SlatePluginContext<C extends AnyPluginConfig = PluginConfig> =
 export type Parser<C extends AnyPluginConfig = PluginConfig> = {
   deserialize?: (
     options: ParserOptions & SlatePluginContext<C>
-  ) => TDescendant[] | undefined;
+  ) => Descendant[] | undefined;
   preInsert?: (
-    options: ParserOptions & SlatePluginContext<C> & { fragment: TDescendant[] }
+    options: ParserOptions & SlatePluginContext<C> & { fragment: Descendant[] }
   ) => HandlerReturnType;
   transformFragment?: (
-    options: ParserOptions & SlatePluginContext<C> & { fragment: TDescendant[] }
-  ) => TDescendant[];
+    options: ParserOptions & SlatePluginContext<C> & { fragment: Descendant[] }
+  ) => Descendant[];
   format?: string[] | string;
   mimeTypes?: string[];
   query?: (options: ParserOptions & SlatePluginContext<C>) => boolean;
@@ -384,7 +428,7 @@ export type Deserializer<C extends AnyPluginConfig = PluginConfig> =
   BaseDeserializer & {
     parse?: (
       options: AnyObject & SlatePluginContext<C> & { element: any }
-    ) => Partial<TDescendant> | undefined | void;
+    ) => Partial<Descendant> | undefined | void;
 
     query?: (
       options: AnyObject & SlatePluginContext<C> & { element: any }
@@ -394,10 +438,10 @@ export type Deserializer<C extends AnyPluginConfig = PluginConfig> =
 export type Serializer<C extends AnyPluginConfig = PluginConfig> =
   BaseSerializer & {
     parse?: (
-      options: AnyObject & SlatePluginContext<C> & { node: TDescendant }
+      options: AnyObject & SlatePluginContext<C> & { node: Descendant }
     ) => any;
     query?: (
-      options: AnyObject & SlatePluginContext<C> & { node: TDescendant }
+      options: AnyObject & SlatePluginContext<C> & { node: Descendant }
     ) => boolean;
   };
 
@@ -408,7 +452,7 @@ export type HtmlDeserializer<C extends AnyPluginConfig = PluginConfig> =
         element: HTMLElement;
         node: AnyObject;
       }
-    ) => Partial<TDescendant> | undefined | void;
+    ) => Partial<Descendant> | undefined | void;
     query?: (
       options: SlatePluginContext<C> & { element: HTMLElement }
     ) => boolean;
@@ -416,8 +460,8 @@ export type HtmlDeserializer<C extends AnyPluginConfig = PluginConfig> =
 
 export type HtmlSerializer<C extends AnyPluginConfig = PluginConfig> =
   BaseSerializer & {
-    parse?: (options: SlatePluginContext<C> & { node: TDescendant }) => string;
-    query?: (options: SlatePluginContext<C> & { node: TDescendant }) => boolean;
+    parse?: (options: SlatePluginContext<C> & { node: Descendant }) => string;
+    query?: (options: SlatePluginContext<C> & { node: Descendant }) => boolean;
   };
 
 // -----------------------------------------------------------------------------
@@ -428,8 +472,12 @@ export type HtmlSerializer<C extends AnyPluginConfig = PluginConfig> =
  * returned ranges are merged with the ranges called by other plugins.
  */
 export type Decorate<C extends AnyPluginConfig = PluginConfig> = (
-  ctx: SlatePluginContext<C> & { entry: TNodeEntry }
+  ctx: SlatePluginContext<C> & { entry: NodeEntry }
 ) => DecoratedRange[] | undefined;
+
+export type NormalizeInitialValue<C extends AnyPluginConfig = PluginConfig> = (
+  ctx: SlatePluginContext<C> & { value: Value }
+) => void;
 
 export type InjectNodeProps<C extends AnyPluginConfig = PluginConfig> =
   BaseInjectProps & {

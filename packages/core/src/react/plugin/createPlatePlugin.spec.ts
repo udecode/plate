@@ -1,8 +1,6 @@
-import {
-  type NodeComponent,
-  type PluginConfig,
-  resolvePluginTest,
-} from '../../lib';
+import type { NodeComponent, PluginConfig } from '../../lib';
+
+import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest';
 import { createPlatePlugin } from './createPlatePlugin';
 
 describe('withComponent method', () => {

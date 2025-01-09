@@ -108,7 +108,7 @@ const plugins = [
 <APISubListItem
   parent="options"
   name="children"
-  type="TDescendant[]"
+  type="Descendant[]"
   optional
 >
 新单元格节点的子元素。
@@ -137,7 +137,7 @@ const plugins = [
 </APIParameters>
 
 <APIReturns>
-<APIItem type="TDescendant[]">
+<APIItem type="Descendant[]">
 
 表格单元格的子元素。
 
@@ -235,7 +235,7 @@ const plugins = [
 获取下一行中的单元格。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="currentRowPath" type="Path">
@@ -245,7 +245,7 @@ const plugins = [
 
 <APIReturns>
 
-<APIItem type="TNodeEntry | undefined">
+<APIItem type="NodeEntry | undefined">
   下一行中单元格的节点entry，如果当前行是最后一行则返回 `undefined`。
 </APIItem>
 
@@ -256,7 +256,7 @@ const plugins = [
 获取上一行中单元格的节点entry，给定当前行的路径。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="currentRowPath" type="Path">
@@ -266,7 +266,7 @@ const plugins = [
 
 <APIReturns>
 
-<APIItem type="TNodeEntry | undefined">
+<APIItem type="NodeEntry | undefined">
   上一行中单元格的节点entry，如果当前行是第一行则返回 `undefined`。
 </APIItem>
 
@@ -310,7 +310,7 @@ const plugins = [
 <APISubListItem
   parent="options"
   name="children"
-  type="TDescendant[]"
+  type="Descendant[]"
   optional
 >
 新单元格节点的子元素。
@@ -416,7 +416,7 @@ const plugins = [
 </APIParameters>
 
 <APIReturns>
-  <APIItem type="TNodeEntry | undefined">
+  <APIItem type="NodeEntry | undefined">
     当前单元格左侧单元格的节点entry，如果当前单元格是行中的第一个单元格则返回 `undefined`。
   </APIItem>
 </APIReturns>
@@ -426,22 +426,22 @@ const plugins = [
 获取表格中的下一个单元格。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
-  <APIItem name="currentCell" type="TNodeEntry">
+  <APIItem name="currentCell" type="NodeEntry">
     当前单元格的entry。
   </APIItem>
   <APIItem name="currentPath" type="Path">
     当前单元格的路径。
   </APIItem>
-  <APIItem name="currentRow" type="TNodeEntry">
+  <APIItem name="currentRow" type="NodeEntry">
     当前行的entry。
   </APIItem>
 </APIParameters>
 
 <APIReturns>
-  <APIItem type="TNodeEntry | undefined">
+  <APIItem type="NodeEntry | undefined">
     下一行中单元格的节点entry，如果当前行是最后一行则返回 `undefined`。
   </APIItem>
 </APIReturns>
@@ -451,22 +451,22 @@ const plugins = [
 获取表格中的上一个单元格。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor<V>">
+  <APIItem name="editor" type="Editor<V>">
     编辑器实例。
   </APIItem>
-  <APIItem name="currentCell" type="TNodeEntry">
+  <APIItem name="currentCell" type="NodeEntry">
     当前单元格的entry。
   </APIItem>
   <APIItem name="currentPath" type="Path">
     当前单元格的路径。
   </APIItem>
-  <APIItem name="currentRow" type="TNodeEntry">
+  <APIItem name="currentRow" type="NodeEntry">
     当前行的entry。
   </APIItem>
 </APIParameters>
 
 <APIReturns>
-  <APIItem type="TNodeEntry | undefined">
+  <APIItem type="NodeEntry | undefined">
     上一行中单元格的节点entry，如果当前行是第一行则返回 `undefined`。
   </APIItem>
 </APIReturns>
@@ -479,11 +479,11 @@ const plugins = [
   <APIItem name="editor" type="PlateEditor">
     编辑器实例。
   </APIItem>
-  <APIItem name="options" type="GetAboveNodeOptions" optional></APIItem>
+  <APIItem name="options" type="EditorAboveOptions" optional></APIItem>
 </APIParameters>
 
 <APIReturns>
-  <APIItem type="TNodeEntry | undefined">
+  <APIItem type="NodeEntry | undefined">
     当前选择上方的表格节点entry，如果不存在则返回 `undefined`。
   </APIItem>
 </APIReturns>
@@ -511,7 +511,7 @@ const plugins = [
 获取表格中单元格节点的列索引。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="cellNode" type="TElement">
@@ -554,13 +554,13 @@ const plugins = [
 </APIParameters>
 
 <APIReturns>
-  <APIItem name="table" type="TNodeEntry | undefined">
+  <APIItem name="table" type="NodeEntry | undefined">
     表格节点entry。
   </APIItem>
-  <APIItem name="row" type="TNodeEntry | undefined">
+  <APIItem name="row" type="NodeEntry | undefined">
     行节点entry。
   </APIItem>
-  <APIItem name="cell" type="TNodeEntry | undefined">
+  <APIItem name="cell" type="NodeEntry | undefined">
     单元格节点entry。
   </APIItem>
 </APIReturns>
@@ -587,7 +587,7 @@ const plugins = [
 </APIParameters>
 
 <APIReturns>
-  <APIItem type="TElementEntry[]">子表格entry。</APIItem>
+  <APIItem type="ElementEntry[]">子表格entry。</APIItem>
 </APIReturns>
 
 ### getTableGridByRange
@@ -620,7 +620,7 @@ const plugins = [
 </APIParameters>
 
 <APIReturns>
-  <APIItem type="TElementEntry[]">子表格entry。</APIItem>
+  <APIItem type="ElementEntry[]">子表格entry。</APIItem>
 </APIReturns>
 
 ### getTableOverriddenColSizes
@@ -647,7 +647,7 @@ const plugins = [
 获取表格中单元格节点的行索引。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="cellNode" type="TElement">
@@ -677,7 +677,7 @@ const plugins = [
 </APIParameters>
 
 <APIReturns>
-<APIItem type="TElementEntry | undefined">
+<APIItem type="ElementEntry | undefined">
 
 单元格节点entry。
 
@@ -883,7 +883,7 @@ const plugins = [
 设置表格中特定列的宽度。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="options" type="object">
@@ -896,7 +896,7 @@ const plugins = [
       </APISubListItem>
     </APISubList>
   </APIItem>
-  <APIItem name="getAboveNodeOptions" type="GetAboveNodeOptions" optional>
+  <APIItem name="getAboveNodeOptions" type="EditorAboveOptions" optional>
     用于查找表格节点的其他选项。
   </APIItem>
 </APIParameters>
@@ -906,7 +906,7 @@ const plugins = [
 设置表格的左边距。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="options" type="object">
@@ -916,7 +916,7 @@ const plugins = [
       </APISubListItem>
     </APISubList>
   </APIItem>
-  <APIItem name="getAboveNodeOptions" type="GetAboveNodeOptions" optional>
+  <APIItem name="getAboveNodeOptions" type="EditorAboveOptions" optional>
     用于查找表格节点的其他选项。
   </APIItem>
 </APIParameters>
@@ -926,7 +926,7 @@ const plugins = [
 设置表格行的大小（高度）。
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="options" type="object">
@@ -939,7 +939,7 @@ const plugins = [
       </APISubListItem>
     </APISubList>
   </APIItem>
-  <APIItem name="getAboveNodeOptions" type="GetAboveNodeOptions" optional>
+  <APIItem name="getAboveNodeOptions" type="EditorAboveOptions" optional>
     用于查找表格节点的其他选项。
   </APIItem>
 </APIParameters>

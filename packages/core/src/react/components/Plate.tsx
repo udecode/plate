@@ -1,10 +1,9 @@
 import React, { useId } from 'react';
 
-import type { TEditableProps } from '@udecode/slate-react';
-
+import type { EditableProps } from '../../lib/types/EditableProps';
 import type { PlateEditor } from '../editor/PlateEditor';
 
-import { usePlateInstancesWarn } from '../../internal/usePlateInstancesWarn';
+import { usePlateInstancesWarn } from '../../internal/hooks/usePlateInstancesWarn';
 import { type PlateStoreState, PlateStoreProvider } from '../stores';
 
 export interface PlateProps<E extends PlateEditor = PlateEditor>
@@ -23,9 +22,9 @@ export interface PlateProps<E extends PlateEditor = PlateEditor>
 
   editor: E | null;
 
-  renderElement?: TEditableProps['renderElement'];
+  renderElement?: EditableProps['renderElement'];
 
-  renderLeaf?: TEditableProps['renderLeaf'];
+  renderLeaf?: EditableProps['renderLeaf'];
 
   suppressInstanceWarning?: boolean;
 }

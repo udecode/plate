@@ -1,4 +1,4 @@
-import { createSlatePlugin } from '@udecode/plate-common';
+import { createSlatePlugin } from '@udecode/plate';
 
 /** Enables support for code formatting */
 export const BaseKbdPlugin = createSlatePlugin({

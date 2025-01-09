@@ -1,7 +1,8 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, normalizeEditor } from '@udecode/plate-common';
-import { createSlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
+
+import { createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { SUGGESTION_KEYS } from './BaseSuggestionPlugin';
@@ -32,12 +33,13 @@ describe('withSuggestion', () => {
         ) as any as SlateEditor;
 
         const editor = createSlateEditor({
-          editor: input,
           plugins: [BaseSuggestionPlugin],
+          selection: input.selection,
+          value: input.children,
         });
         editor.setOption(BaseSuggestionPlugin, 'isSuggesting', false);
 
-        editor.insertText('test');
+        editor.tf.insertText('test');
 
         expect(editor.children).toEqual(output.children);
       });
@@ -65,12 +67,13 @@ describe('withSuggestion', () => {
           // ) as any) as SlateEditor;
 
           const editor = createSlateEditor({
-            editor: input,
             plugins: [BaseSuggestionPlugin],
+            selection: input.selection,
+            value: input.children,
           });
           editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
 
-          editor.insertText('test');
+          editor.tf.insertText('test');
 
           expect(
             editor.children[0].children[1][BaseSuggestionPlugin.key]
@@ -106,12 +109,13 @@ describe('withSuggestion', () => {
       //     ) as any) as SlateEditor;
       //
       //     const editor = createSlateEditor({
-      //       editor: input,
+      //       value: input.children,
+      //    selection: input.selection,
       //       plugins: [SuggestionPlugin],
       //     });
       //     editor.getOptions(SuggestionPlugin).isSuggesting = true;
       //
-      //     editor.insertText('test');
+      //     editor.tf.insertText('test');
       //
       //     expect(editor.children).toEqual(output.children);
       //   });
@@ -141,12 +145,13 @@ describe('withSuggestion', () => {
         ) as any as SlateEditor;
 
         const editor = createSlateEditor({
-          editor: input,
           plugins: [BaseSuggestionPlugin],
+          selection: input.selection,
+          value: input.children,
         });
         editor.setOption(BaseSuggestionPlugin, 'isSuggesting', false);
 
-        editor.deleteBackward('character');
+        editor.tf.deleteBackward();
 
         expect(editor.children).toEqual(output.children);
       });
@@ -178,12 +183,13 @@ describe('withSuggestion', () => {
           ) as any as SlateEditor;
 
           const editor = createSlateEditor({
-            editor: input,
             plugins: [BaseSuggestionPlugin],
+            selection: input.selection,
+            value: input.children,
           });
           editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
 
-          editor.deleteBackward('character');
+          editor.tf.deleteBackward();
 
           expect(editor.children).toEqual(output.children);
         });
@@ -201,12 +207,13 @@ describe('withSuggestion', () => {
           ) as any as SlateEditor;
 
           const editor = createSlateEditor({
-            editor: input,
             plugins: [BaseSuggestionPlugin],
+            selection: input.selection,
+            value: input.children,
           });
           editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
 
-          editor.deleteBackward('character');
+          editor.tf.deleteBackward();
 
           expect(
             editor.children[0].children[1][BaseSuggestionPlugin.key]
@@ -233,12 +240,13 @@ describe('withSuggestion', () => {
           ) as any as SlateEditor;
 
           const editor = createSlateEditor({
-            editor: input,
             plugins: [BaseSuggestionPlugin],
+            selection: input.selection,
+            value: input.children,
           });
           editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
 
-          editor.deleteBackward('character');
+          editor.tf.deleteBackward();
 
           expect(
             editor.children[0].children[1][BaseSuggestionPlugin.key]
@@ -276,12 +284,13 @@ describe('withSuggestion', () => {
           // ) as any) as SlateEditor;
 
           const editor = createSlateEditor({
-            editor: input,
             plugins: [BaseSuggestionPlugin],
+            selection: input.selection,
+            value: input.children,
           });
           editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
 
-          editor.deleteBackward('line');
+          editor.tf.deleteBackward('line');
 
           expect(
             editor.children[0].children[0][BaseSuggestionPlugin.key]
@@ -321,11 +330,12 @@ describe('withSuggestion', () => {
         ) as any as SlateEditor;
 
         const editor = createSlateEditor({
-          editor: input,
           plugins: [BaseSuggestionPlugin],
+          selection: input.selection,
+          value: input.children,
         });
 
-        normalizeEditor(editor, {
+        editor.tf.normalize({
           force: true,
         });
 

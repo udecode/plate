@@ -23,7 +23,7 @@
       "type": "registry:ui"
     },
     {
-      "content": "import React from 'react';\n\nimport type { SlateElementProps } from '@udecode/plate-common';\n\nimport { cn } from '@udecode/cn';\nimport { SlateElement } from '@udecode/plate-common';\n\nexport const BlockquoteElementStatic = ({\n  children,\n  className,\n  ...props\n}: SlateElementProps) => {\n  return (\n    <SlateElement\n      as=\"blockquote\"\n      className={cn(className, 'my-1 border-l-2 pl-6 italic')}\n      {...props}\n    >\n      {children}\n    </SlateElement>\n  );\n};\n",
+      "content": "import React from 'react';\n\nimport type { SlateElementProps } from '@udecode/plate';\n\nimport { cn } from '@udecode/cn';\nimport { SlateElement } from '@udecode/plate';\n\nexport const BlockquoteElementStatic = ({\n  children,\n  className,\n  ...props\n}: SlateElementProps) => {\n  return (\n    <SlateElement\n      as=\"blockquote\"\n      className={cn(className, 'my-1 border-l-2 pl-6 italic')}\n      {...props}\n    >\n      {children}\n    </SlateElement>\n  );\n};\n",
       "path": "plate-ui/blockquote-element-static.tsx",
       "target": "components/plate-ui/blockquote-element-static.tsx",
       "type": "registry:ui"

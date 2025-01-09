@@ -1,4 +1,4 @@
-import type { TDescendant } from '@udecode/slate';
+import type { Descendant } from '@udecode/slate';
 
 import { jsx } from 'slate-hyperscript';
 
@@ -12,12 +12,12 @@ jsx;
 export const htmlBodyToFragment = (
   editor: SlateEditor,
   element: HTMLElement
-): TDescendant[] | undefined => {
+): Descendant[] | undefined => {
   if (element.nodeName === 'BODY') {
     return jsx(
       'fragment',
       {},
       deserializeHtmlNodeChildren(editor, element)
-    ) as TDescendant[];
+    ) as Descendant[];
   }
 };

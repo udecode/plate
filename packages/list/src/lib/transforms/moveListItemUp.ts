@@ -1,15 +1,10 @@
 import {
+  type ElementEntry,
   type SlateEditor,
   type TElement,
-  type TElementEntry,
-  getAboveNode,
-  getNode,
-  insertElements,
-  isLastChild,
-  moveNodes,
-  withoutNormalizing,
-} from '@udecode/plate-common';
-import { Path } from 'slate';
+  NodeApi,
+  PathApi,
+} from '@udecode/plate';
 
 import { BaseListItemPlugin } from '../BaseListPlugin';
 import { hasListChild } from '../queries/hasListChild';
@@ -17,8 +12,8 @@ import { moveListItemsToList } from './moveListItemsToList';
 import { unwrapList } from './unwrapList';
 
 export interface MoveListItemUpOptions {
-  list: TElementEntry;
-  listItem: TElementEntry;
+  list: ElementEntry;
+  listItem: ElementEntry;
 }
 
 /** Move a list item up. */
@@ -30,7 +25,7 @@ export const moveListItemUp = (
     const [listNode, listPath] = list;
     const [liNode, liPath] = listItem;
 
-    const liParent = getAboveNode<TElement>(editor, {
+    const liParent = editor.api.above<TElement>({
       at: listPath,
       match: { type: editor.getType(BaseListItemPlugin) },
     });
@@ -39,18 +34,17 @@ export const moveListItemUp = (
       let toListPath;
 
       try {
-        toListPath = Path.next(listPath);
+        toListPath = PathApi.next(listPath);
       } catch (error) {
         return;
       }
 
       const condA = hasListChild(editor, liNode);
-      const condB = !isLastChild(list, liPath);
+      const condB = !NodeApi.isLastChild(editor, liPath);
 
       if (condA || condB) {
         // Insert a new list next to `list`
-        insertElements(
-          editor,
+        editor.tf.insertNodes(
           {
             children: [],
             type: listNode.type,
@@ -59,7 +53,7 @@ export const moveListItemUp = (
         );
       }
       if (condA) {
-        const toListNode = getNode<TElement>(editor, toListPath);
+        const toListNode = NodeApi.get<TElement>(editor, toListPath);
 
         if (!toListNode) return;
 
@@ -71,7 +65,7 @@ export const moveListItemUp = (
       }
       // If there is siblings li, move them to the new list
       if (condB) {
-        const toListNode = getNode<TElement>(editor, toListPath);
+        const toListNode = NodeApi.get<TElement>(editor, toListPath);
 
         if (!toListNode) return;
 
@@ -95,11 +89,10 @@ export const moveListItemUp = (
     const toListPath = liPath.concat([1]);
 
     // If li has next siblings, we need to move them.
-    if (!isLastChild(list, liPath)) {
+    if (!NodeApi.isLastChild(editor, liPath)) {
       // If li has no sublist, insert one.
       if (!hasListChild(editor, liNode)) {
-        insertElements(
-          editor,
+        editor.tf.insertNodes(
           {
             children: [],
             type: listNode.type,
@@ -108,7 +101,7 @@ export const moveListItemUp = (
         );
       }
 
-      const toListNode = getNode<TElement>(editor, toListPath);
+      const toListNode = NodeApi.get<TElement>(editor, toListPath);
 
       if (!toListNode) return;
 
@@ -121,10 +114,10 @@ export const moveListItemUp = (
       });
     }
 
-    const movedUpLiPath = Path.next(liParentPath);
+    const movedUpLiPath = PathApi.next(liParentPath);
 
     // Move li one level up: next to the li parent.
-    moveNodes(editor, {
+    editor.tf.moveNodes({
       at: liPath,
       to: movedUpLiPath,
     });
@@ -134,7 +127,7 @@ export const moveListItemUp = (
 
   let moved: boolean | undefined = false;
 
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     moved = move();
   });
 

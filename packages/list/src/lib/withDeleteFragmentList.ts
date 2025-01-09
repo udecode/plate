@@ -1,17 +1,9 @@
-import type { Range } from 'slate';
-
 import {
-  type ExtendEditor,
+  type OverrideEditor,
   type SlateEditor,
-  createPathRef,
+  type TRange,
   deleteMerge,
-  getAboveNode,
-  getEndPoint,
-  getParentNode,
-  getStartPoint,
-  removeNodes,
-  withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { type ListConfig, BaseListItemPlugin } from './BaseListPlugin';
 import { getHighestEmptyList } from './queries/getHighestEmptyList';
@@ -19,78 +11,76 @@ import { hasListChild } from './queries/hasListChild';
 import { isAcrossListItems } from './queries/isAcrossListItems';
 
 const getLiStart = (editor: SlateEditor) => {
-  const start = getStartPoint(editor, editor.selection as Range);
+  const start = editor.api.start(editor.selection as TRange);
 
-  return getAboveNode(editor, {
+  return editor.api.above({
     at: start,
     match: { type: editor.getType(BaseListItemPlugin) },
   });
 };
 
-export const withDeleteFragmentList: ExtendEditor<ListConfig> = ({
+export const withDeleteFragmentList: OverrideEditor<ListConfig> = ({
   editor,
-}) => {
-  const { deleteFragment } = editor;
+  tf: { deleteFragment },
+}) => ({
+  transforms: {
+    deleteFragment(direction) {
+      const deleteFragmentList = () => {
+        let deleted = false;
 
-  editor.deleteFragment = (direction) => {
-    const deleteFragmentList = () => {
-      let deleted = false;
+        editor.tf.withoutNormalizing(() => {
+          // Selection should be across list items
+          if (!isAcrossListItems(editor)) return;
 
-      withoutNormalizing(editor, () => {
-        // Selection should be across list items
-        if (!isAcrossListItems(editor)) return;
-
-        /**
-         * Check if the end li can be deleted (if it has no sublist). Store the
-         * path ref to delete it after deleteMerge.
-         */
-        const end = getEndPoint(editor, editor.selection as Range);
-        const liEnd = getAboveNode(editor, {
-          at: end,
-          match: { type: editor.getType(BaseListItemPlugin) },
-        });
-        const liEndCanBeDeleted = liEnd && !hasListChild(editor, liEnd[0]);
-        const liEndPathRef = liEndCanBeDeleted
-          ? createPathRef(editor, liEnd![1])
-          : undefined;
-
-        // use deleteFragment when selection wrapped around list
-        if (!getLiStart(editor) || !liEnd) {
-          deleted = false;
-
-          return;
-        }
-
-        /** Delete fragment and move end block children to start block */
-        deleteMerge(editor);
-
-        const liStart = getLiStart(editor);
-
-        if (liEndPathRef) {
-          const liEndPath = liEndPathRef.unref()!;
-
-          const listStart = liStart && getParentNode(editor, liStart[1]);
-
-          const deletePath = getHighestEmptyList(editor, {
-            diffListPath: listStart?.[1],
-            liPath: liEndPath,
+          /**
+           * Check if the end li can be deleted (if it has no sublist). Store
+           * the path ref to delete it after deleteMerge.
+           */
+          const end = editor.api.end(editor.selection as TRange);
+          const liEnd = editor.api.above({
+            at: end,
+            match: { type: editor.getType(BaseListItemPlugin) },
           });
+          const liEndCanBeDeleted = liEnd && !hasListChild(editor, liEnd[0]);
+          const liEndPathRef = liEndCanBeDeleted
+            ? editor.api.pathRef(liEnd![1])
+            : undefined;
 
-          if (deletePath) {
-            removeNodes(editor, { at: deletePath });
+          // use deleteFragment when selection wrapped around list
+          if (!getLiStart(editor) || !liEnd) {
+            deleted = false;
+
+            return;
           }
 
-          deleted = true;
-        }
-      });
+          /** Delete fragment and move end block children to start block */
+          deleteMerge(editor);
 
-      return deleted;
-    };
+          const liStart = getLiStart(editor);
 
-    if (deleteFragmentList()) return;
+          if (liEndPathRef) {
+            const liEndPath = liEndPathRef.unref()!;
+            const listStart = liStart && editor.api.parent(liStart[1]);
 
-    deleteFragment(direction);
-  };
+            const deletePath = getHighestEmptyList(editor, {
+              diffListPath: listStart?.[1],
+              liPath: liEndPath,
+            });
 
-  return editor;
-};
+            if (deletePath) {
+              editor.tf.removeNodes({ at: deletePath });
+            }
+
+            deleted = true;
+          }
+        });
+
+        return deleted;
+      };
+
+      if (deleteFragmentList()) return;
+
+      deleteFragment(direction);
+    },
+  },
+});

@@ -1,8 +1,6 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from '@udecode/plate-common';
-
-import { createSlateEditor } from '@udecode/plate-common';
+import { createEditor, createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { BaseAlignPlugin } from '../../BaseAlignPlugin';
@@ -10,25 +8,28 @@ import { setAlign } from '../../transforms';
 
 jsxt;
 
-const input = (
-  <editor>
-    <hp>
-      test
-      <cursor />
-    </hp>
-  </editor>
-) as any as SlateEditor;
+const input = createEditor(
+  (
+    <editor>
+      <hp>
+        test
+        <cursor />
+      </hp>
+    </editor>
+  ) as any
+);
 
 const output = (
   <editor>
     <hp align="center">test</hp>
   </editor>
-) as any as SlateEditor;
+) as any;
 
 it('should align center', () => {
   const editor = createSlateEditor({
-    editor: input,
     plugins: [BaseAlignPlugin],
+    selection: input.selection,
+    value: input.children,
   });
 
   setAlign(editor, { value: 'center' });

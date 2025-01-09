@@ -1,12 +1,12 @@
-import type { TEditor } from '../interfaces/editor/TEditor';
-import type { NodeOf, TNode } from '../interfaces/node/TNode';
-import type { TPath } from '../types/interfaces';
+import type { Editor } from '../interfaces/editor/editor';
+import type { NodeOf, TNode } from '../interfaces/node';
 
-import { isBlock } from '../interfaces/editor/isBlock';
+import { type Path, TextApi } from '../interfaces/index';
+import { getAt } from './getAt';
 
-export type PredicateObj = Record<string, any[] | any>;
+type PredicateObj = Record<string, any[] | any>;
 
-export type PredicateFn<T extends TNode> = (obj: T, path: TPath) => boolean;
+type PredicateFn<T extends TNode> = (obj: T, path: Path) => boolean;
 
 export type Predicate<T extends TNode> = PredicateFn<T> | PredicateObj;
 
@@ -22,7 +22,7 @@ function castArray<T>(value: T | T[]): T[] {
  */
 export const match = <T extends TNode>(
   obj: T,
-  path: TPath,
+  path: Path,
   predicate?: Predicate<T>
 ): boolean => {
   if (!predicate) return true;
@@ -30,11 +30,54 @@ export const match = <T extends TNode>(
     return Object.entries(predicate).every(([key, value]) => {
       const values = castArray<any>(value);
 
-      return values.includes(obj[key]);
+      return values.includes((obj as any)[key]);
     });
   }
 
   return predicate(obj, path);
+};
+
+export const getMatch = <E extends Editor>(
+  editor: E,
+  { id, block, empty, match: matchObjOrFn, text }: any = {}
+) => {
+  let hasMatch = false;
+  let matchFn: PredicateFn<NodeOf<E>> = () => true;
+
+  // If text option is true/false, match only text/non-text nodes
+  if (text !== undefined) {
+    hasMatch = true;
+    matchFn = combineMatch(matchFn, (n) => TextApi.isText(n) === text);
+  }
+  // If empty option is true/false, match only empty/non-empty nodes
+  if (empty !== undefined) {
+    hasMatch = true;
+    matchFn = combineMatch(matchFn, (n) => {
+      return TextApi.isText(n)
+        ? n.text.length > 0 === !empty
+        : editor.api.isEmpty(n) === empty;
+    });
+  }
+  if (block !== undefined) {
+    hasMatch = true;
+    matchFn = combineMatch(matchFn, (n) => editor.api.isBlock(n) === block);
+  }
+  if (id !== undefined) {
+    hasMatch = true;
+    matchFn = combineMatch(matchFn, (n) => {
+      return (id === true && !!n.id) || n.id === id;
+    });
+  }
+  // Handle object predicate matching first
+  if (typeof matchObjOrFn === 'object') {
+    hasMatch = true;
+    matchFn = combineMatch(matchFn, (n, p) => match(n, p, matchObjOrFn));
+  } else if (typeof matchObjOrFn === 'function') {
+    hasMatch = true;
+    matchFn = combineMatch(matchFn, matchObjOrFn);
+  }
+
+  return hasMatch ? matchFn : undefined;
 };
 
 /**
@@ -44,25 +87,37 @@ export const match = <T extends TNode>(
  *   node value. Example: { type: ['1', '2'] } will match the nodes having one
  *   of these 2 types.
  */
-export const getQueryOptions = <E extends TEditor>(
-  editor: E,
-  options: any = {}
+export const getQueryOptions = (
+  editor: Editor,
+  { id, empty, match, text, ...options }: any = {}
 ) => {
-  const { block, match: _match } = options;
+  const { at, block } = options;
 
   return {
     ...options,
-    match:
-      _match || block
-        ? (n: NodeOf<E>, path: TPath) =>
-            match(n, path, _match) && (!block || isBlock(editor, n))
-        : undefined,
+    at: getAt(editor, at),
+    match: getMatch(editor, { id, block, empty, match, text }),
   };
 };
 
-export type ENodeMatch<N extends TNode> = Predicate<N>;
+export const combineMatch = <T extends TNode>(
+  match1: PredicateFn<T>,
+  match2?: PredicateFn<T>
+): PredicateFn<T> => {
+  return (node: T, path: Path) => {
+    return match1(node, path) && (!match2 || match2(node, path));
+  };
+};
 
-export interface ENodeMatchOptions<E extends TEditor = TEditor> {
-  block?: boolean;
-  match?: ENodeMatch<NodeOf<E>>;
-}
+/** Combine two match predicates into one. */
+export const combineMatchOptions = <E extends Editor>(
+  editor: E,
+  match1?: PredicateFn<NodeOf<E>>,
+  options?: any
+): PredicateFn<NodeOf<E>> => {
+  return (node: NodeOf<E>, path: Path) => {
+    const match2 = getMatch(editor, options);
+
+    return (!match1 || match1(node, path)) && (!match2 || match2(node, path));
+  };
+};

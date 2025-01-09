@@ -1,6 +1,6 @@
-import type { ExtendConfig } from '@udecode/plate-common';
+import type { ExtendConfig } from '@udecode/plate';
 
-import { toPlatePlugin } from '@udecode/plate-common/react';
+import { toPlatePlugin } from '@udecode/plate/react';
 
 import { type BaseAIPluginConfig, BaseAIPlugin } from '../../lib';
 

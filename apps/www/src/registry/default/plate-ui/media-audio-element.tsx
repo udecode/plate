@@ -3,7 +3,7 @@
 import React from 'react';
 
 import { cn, withRef } from '@udecode/cn';
-import { withHOC } from '@udecode/plate-common/react';
+import { withHOC } from '@udecode/plate/react';
 import { useMediaState } from '@udecode/plate-media/react';
 import { ResizableProvider } from '@udecode/plate-resizable';
 

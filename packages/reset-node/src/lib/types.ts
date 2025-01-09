@@ -1,4 +1,4 @@
-import type { SlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
 
 export interface ResetNodePluginRule {
   /** Additional condition to the rule. */

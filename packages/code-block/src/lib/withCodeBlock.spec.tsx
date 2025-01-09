@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
 
-import { createPlateEditor } from '@udecode/plate-common/react';
+import { createPlateEditor } from '@udecode/plate/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { CodeBlockPlugin } from '../react/CodeBlockPlugin';
@@ -38,13 +38,14 @@ describe('insert break', () => {
       ) as any as SlateEditor;
 
       const editor = createPlateEditor({
-        editor: input,
         plugins: [CodeBlockPlugin],
+        selection: input.selection,
+        value: input.children,
       });
 
-      editor.insertBreak();
+      editor.tf.insertBreak();
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 });

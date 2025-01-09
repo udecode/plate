@@ -1,10 +1,10 @@
 import type { CSSProperties } from 'react';
 import type React from 'react';
 
-import type { PluginConfig, TElement, TNodeEntry } from '@udecode/plate-common';
+import type { NodeEntry, PluginConfig, TElement } from '@udecode/plate';
 
-import { bindFirst, getNodeEntries } from '@udecode/plate-common';
-import { createTPlatePlugin } from '@udecode/plate-common/react';
+import { bindFirst } from '@udecode/plate';
+import { createTPlatePlugin } from '@udecode/plate/react';
 
 import type { ChangedElements, PartialSelectionOptions } from '../internal';
 
@@ -56,7 +56,7 @@ export type BlockSelectionApi = {
     options: Partial<ChangedElements> & { ids?: string[] }
   ) => void;
   focus: () => void;
-  getNodes: () => TNodeEntry[];
+  getNodes: () => NodeEntry[];
   resetSelectedIds: () => void;
   selectedAll: () => void;
   unselect: () => void;
@@ -64,22 +64,6 @@ export type BlockSelectionApi = {
 
 export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
   key: 'blockSelection',
-  extendEditor: ({ api, editor, getOptions }) => {
-    const { setSelection } = editor;
-
-    editor.setSelection = (...args) => {
-      if (
-        getOptions().selectedIds!.size > 0 &&
-        !editor.getOption(BlockMenuPlugin, 'openId')
-      ) {
-        api.blockSelection.unselect();
-      }
-
-      setSelection(...args);
-    };
-
-    return editor;
-  },
   inject: {
     isBlock: true,
     nodeProps: {
@@ -143,7 +127,7 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
         const selectedIds = getOption('selectedIds');
 
         return [
-          ...getNodeEntries<TElement>(editor, {
+          ...editor.api.nodes<TElement>({
             at: [],
             match: (n) => selectedIds?.has(n.id),
           }),
@@ -224,4 +208,18 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
     setIndent: bindFirst(setBlockSelectionIndent, editor),
     setNodes: bindFirst(setBlockSelectionNodes, editor),
     setTexts: bindFirst(setBlockSelectionTexts, editor),
+  }))
+  .overrideEditor(({ api, editor, getOptions, tf: { setSelection } }) => ({
+    transforms: {
+      setSelection(props) {
+        if (
+          getOptions().selectedIds!.size > 0 &&
+          !editor.getOption(BlockMenuPlugin, 'openId')
+        ) {
+          api.blockSelection.unselect();
+        }
+
+        setSelection(props);
+      },
+    },
   }));

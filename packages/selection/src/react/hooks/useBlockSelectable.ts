@@ -1,12 +1,7 @@
 import type React from 'react';
 
-import { getAboveNode, isVoid } from '@udecode/plate-common';
-import {
-  useEditorPlugin,
-  useElement,
-  usePath,
-} from '@udecode/plate-common/react';
-import { Path } from 'slate';
+import { type TElement, PathApi } from '@udecode/plate';
+import { useEditorPlugin, useElement, usePath } from '@udecode/plate/react';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 
@@ -22,15 +17,15 @@ export const useBlockSelectable = () => {
     props: {
       className: 'slate-selectable',
       onContextMenu: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        if (!element || !path) return;
+        if (!element) return;
 
         const { enableContextMenu } = getOptions();
 
         if (!enableContextMenu) return;
         if (editor.selection?.focus) {
-          const nodeEntry = getAboveNode(editor);
+          const nodeEntry = editor.api.above<TElement>();
 
-          if (nodeEntry && Path.isCommon(path, nodeEntry[1])) {
+          if (nodeEntry && PathApi.isCommon(path, nodeEntry[1])) {
             const id = nodeEntry[0].id as string | undefined;
             const isSelected = getOption('isSelected', id);
             const isOpenAlways =
@@ -41,7 +36,7 @@ export const useBlockSelectable = () => {
              * When "block selected or is void or has openContextMenu props",
              * right click can always open the context menu.
              */
-            if (!isSelected && !isVoid(editor, nodeEntry[0]) && !isOpenAlways) {
+            if (!isSelected && !editor.isVoid(nodeEntry[0]) && !isOpenAlways) {
               return event.stopPropagation();
             }
           }

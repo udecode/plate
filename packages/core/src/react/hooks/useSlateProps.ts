@@ -1,10 +1,19 @@
 import React from 'react';
 
-import type { TSelection, Value } from '@udecode/slate';
-import type { SlateProps } from '@udecode/slate-react';
+import type { Editor, TSelection, Value } from '@udecode/slate';
+import type { UnknownObject } from '@udecode/utils';
 
 import { useEditorRef, usePlateSelectors } from '../stores';
 import { pipeOnChange } from '../utils/pipeOnChange';
+
+interface SlateProps extends UnknownObject {
+  children: React.ReactNode;
+  editor: Editor;
+  initialValue: Value;
+  onChange?: (value: Value) => void;
+  onSelectionChange?: (selection: TSelection) => void;
+  onValueChange?: (value: Value) => void;
+}
 
 /** Get Slate props stored in a global store. */
 export const useSlateProps = ({

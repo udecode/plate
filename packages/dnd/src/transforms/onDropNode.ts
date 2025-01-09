@@ -1,8 +1,7 @@
+import type { PlateEditor } from '@udecode/plate/react';
 import type { DropTargetMonitor } from 'react-dnd';
 
-import { type TElement, findNode, moveNodes } from '@udecode/plate-common';
-import { type PlateEditor, focusEditor } from '@udecode/plate-common/react';
-import { Path } from 'slate';
+import { type Path, type TElement, PathApi } from '@udecode/plate';
 
 import type { UseDropNodeOptions } from '../hooks';
 import type { ElementDragItemNode } from '../types';
@@ -34,14 +33,14 @@ export const getDropPath = (
 
   if (!direction) return;
 
-  const dragEntry = findNode<TElement>(editor, {
+  const dragEntry = editor.api.node<TElement>({
+    id: dragItem.id,
     at: [],
-    match: { id: dragItem.id },
   });
 
   if (!dragEntry) return;
 
-  const dropEntry = findNode<TElement>(editor, { at: [], match: { id } });
+  const dropEntry = editor.api.node<TElement>({ id, at: [] });
 
   if (!dropEntry) return;
   if (canDropNode && !canDropNode({ dragEntry, dragItem, dropEntry, editor })) {
@@ -51,7 +50,7 @@ export const getDropPath = (
   const [, dragPath] = dragEntry;
   const [, hoveredPath] = dropEntry;
 
-  focusEditor(editor);
+  editor.tf.focus();
 
   let dropPath: Path | undefined;
 
@@ -62,20 +61,21 @@ export const getDropPath = (
     dropPath = hoveredPath;
 
     // If the dragged node is already right after hovered node, no change
-    if (Path.equals(dragPath, Path.next(dropPath))) return;
+    if (PathApi.equals(dragPath, PathApi.next(dropPath))) return;
   }
   if (direction === 'top' || direction === 'left') {
     // Insert before hovered node
     dropPath = [...hoveredPath.slice(0, -1), hoveredPath.at(-1)! - 1];
 
     // If the dragged node is already right before hovered node, no change
-    if (Path.equals(dragPath, dropPath)) return;
+    if (PathApi.equals(dragPath, dropPath)) return;
   }
 
   const _dropPath = dropPath as Path;
   const before =
-    Path.isBefore(dragPath, _dropPath) && Path.isSibling(dragPath, _dropPath);
-  const to = before ? _dropPath : Path.next(_dropPath);
+    PathApi.isBefore(dragPath, _dropPath) &&
+    PathApi.isSibling(dragPath, _dropPath);
+  const to = before ? _dropPath : PathApi.next(_dropPath);
 
   return { direction, dragPath, to };
 };
@@ -107,7 +107,7 @@ export const onDropNode = (
 
   const { dragPath, to } = result;
 
-  moveNodes(editor, {
+  editor.tf.moveNodes({
     at: dragPath,
     to,
   });

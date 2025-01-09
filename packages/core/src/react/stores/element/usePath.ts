@@ -1,8 +1,10 @@
+import type { Path } from '@udecode/slate';
+
 import { useEditorRef } from '../plate';
 import { useElementStore } from './useElementStore';
 
 /** Get the memoized path of the closest element. */
-export const usePath = (pluginKey?: string) => {
+export const usePath = (pluginKey?: string): Path => {
   const editor = useEditorRef();
   const value = useElementStore(pluginKey).get.path();
 
@@ -12,7 +14,7 @@ export const usePath = (pluginKey?: string) => {
       'USE_ELEMENT_CONTEXT'
     );
 
-    return undefined;
+    return undefined as any;
   }
 
   return value;

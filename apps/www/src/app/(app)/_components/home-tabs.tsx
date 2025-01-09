@@ -49,9 +49,10 @@ export default function HomeTabs() {
     if (active) {
       void setBuilder(true);
     } else {
-      void setBuilder(null);
+      void setBuilder(false);
     }
-  }, [active, setBuilder]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active]);
 
   return (
     <div>

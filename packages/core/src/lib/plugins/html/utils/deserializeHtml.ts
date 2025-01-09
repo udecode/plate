@@ -1,4 +1,4 @@
-import type { TDescendant } from '@udecode/slate';
+import type { Descendant } from '@udecode/slate';
 
 import type { SlateEditor } from '../../../editor';
 
@@ -17,7 +17,7 @@ export const deserializeHtml = (
     element: HTMLElement | string;
     collapseWhiteSpace?: boolean;
   }
-): TDescendant[] => {
+): Descendant[] => {
   // for serializer
   if (typeof element === 'string') {
     element = htmlStringToDOMNode(element);
@@ -26,7 +26,7 @@ export const deserializeHtml = (
     element = collapseWhiteSpace(element);
   }
 
-  const fragment = deserializeHtmlElement(editor, element) as TDescendant[];
+  const fragment = deserializeHtmlElement(editor, element) as Descendant[];
 
   return normalizeDescendantsToDocumentFragment(editor, {
     descendants: fragment,

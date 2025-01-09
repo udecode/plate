@@ -1,31 +1,28 @@
-import {
-  type InsertNodesOptions,
-  type SlateEditor,
-  type TNodeProps,
-  getParentNode,
-  insertNodes,
-} from '@udecode/plate-common';
+import type {
+  InsertNodesOptions,
+  NodeProps,
+  SlateEditor,
+} from '@udecode/plate';
 
 import {
   type TExcalidrawElement,
   BaseExcalidrawPlugin,
 } from '../BaseExcalidrawPlugin';
 
-export const insertExcalidraw = <E extends SlateEditor>(
-  editor: E,
-  props: TNodeProps<TExcalidrawElement> = {},
-  options: InsertNodesOptions<E> = {}
+export const insertExcalidraw = (
+  editor: SlateEditor,
+  props: NodeProps<TExcalidrawElement> = {},
+  options: InsertNodesOptions = {}
 ): void => {
   if (!editor.selection) return;
 
-  const selectionParentEntry = getParentNode(editor, editor.selection);
+  const selectionParentEntry = editor.api.parent(editor.selection);
 
   if (!selectionParentEntry) return;
 
   const [, path] = selectionParentEntry;
 
-  insertNodes<TExcalidrawElement>(
-    editor,
+  editor.tf.insertNodes<TExcalidrawElement>(
     {
       children: [{ text: '' }],
       type: editor.getType(BaseExcalidrawPlugin),

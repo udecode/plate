@@ -2,8 +2,9 @@
 
 import React, { useMemo } from 'react';
 
-import type { Value } from '@udecode/slate';
+import type { Value } from '@udecode/plate';
 
+import { ParagraphPlugin, Plate } from '@udecode/plate/react';
 import { AIChatPlugin, CopilotPlugin } from '@udecode/plate-ai/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
@@ -25,7 +26,6 @@ import {
 import { CaptionPlugin } from '@udecode/plate-caption/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { CommentsPlugin } from '@udecode/plate-comments/react';
-import { ParagraphPlugin, Plate } from '@udecode/plate-common/react';
 import { DndPlugin } from '@udecode/plate-dnd';
 import { DocxPlugin } from '@udecode/plate-docx';
 import { EmojiPlugin } from '@udecode/plate-emoji/react';

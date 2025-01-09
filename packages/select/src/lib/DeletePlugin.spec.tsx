@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
 
-import { createSlateEditor } from '@udecode/plate-common';
+import { createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { DeletePlugin } from './DeletePlugin';
@@ -33,11 +33,12 @@ describe('p (empty) + codeblock when selection not in code block', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      editor: input,
       plugins: [DeletePlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
-    editor.deleteForward('character');
+    editor.tf.deleteForward();
 
     expect(editor.children).toEqual(expected.children);
   });
@@ -68,11 +69,12 @@ describe('p (not empty) + code block when selection not in code block', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      editor: input,
       plugins: [DeletePlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
-    editor.deleteForward('character');
+    editor.tf.deleteForward();
 
     expect(editor.children).toEqual(expected.children);
   });

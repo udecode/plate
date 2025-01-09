@@ -1,23 +1,26 @@
-import { type ExtendEditor, removeNodes } from '@udecode/plate-common';
+import type { OverrideEditor } from '@udecode/plate';
 
-export const withSingleLine: ExtendEditor = ({ editor }) => {
-  const { normalizeNode } = editor;
+export const withSingleLine: OverrideEditor = ({
+  editor,
+  tf: { normalizeNode },
+}) => ({
+  transforms: {
+    insertBreak() {
+      return null;
+    },
 
-  editor.insertBreak = () => null;
+    normalizeNode(entry) {
+      if (entry[1].length === 0 && editor.children.length > 1) {
+        editor.tf.removeNodes({
+          at: [],
+          match: (node, path) => path.length === 1 && path[0] > 0,
+          mode: 'highest',
+        });
 
-  editor.normalizeNode = (entry) => {
-    if (entry[1].length === 0 && editor.children.length > 1) {
-      removeNodes(editor, {
-        at: [],
-        match: (node, path) => path.length === 1 && path[0] > 0,
-        mode: 'highest',
-      });
+        return;
+      }
 
-      return;
-    }
-
-    normalizeNode(entry);
-  };
-
-  return editor;
-};
+      normalizeNode(entry);
+    },
+  },
+});

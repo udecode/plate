@@ -1,19 +1,13 @@
 import React from 'react';
 
 import {
-  getAboveNode,
-  getEndPoint,
-  getStartPoint,
-  someNode,
-} from '@udecode/plate-common';
-import {
   useComposedRef,
   useEditorPlugin,
   useEditorReadOnly,
   useEditorVersion,
   useHotkeys,
   useOnClickOutside,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 import {
   getDOMSelectionBoundingClientRect,
   getRangeBoundingClientRect,
@@ -41,7 +35,7 @@ export const useFloatingLinkEditState = ({
   const open = useOption('isOpen', editor.id);
 
   const getBoundingClientRect = React.useCallback(() => {
-    const entry = getAboveNode(editor, {
+    const entry = editor.api.above({
       match: { type },
     });
 
@@ -49,8 +43,8 @@ export const useFloatingLinkEditState = ({
       const [, path] = entry;
 
       return getRangeBoundingClientRect(editor, {
-        anchor: getStartPoint(editor, path),
-        focus: getEndPoint(editor, path),
+        anchor: editor.api.start(path)!,
+        focus: editor.api.end(path)!,
       });
     }
 
@@ -88,7 +82,7 @@ export const useFloatingLinkEdit = ({
   React.useEffect(() => {
     if (
       editor.selection &&
-      someNode(editor, {
+      editor.api.some({
         match: { type: editor.getType(LinkPlugin) },
       })
     ) {

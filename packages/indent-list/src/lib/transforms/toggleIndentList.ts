@@ -1,16 +1,10 @@
-import {
-  type ElementEntryOf,
-  type ElementOf,
-  type SlateEditor,
-  type TElement,
-  getBlockAbove,
-  getNodeEntries,
-  isCollapsed,
-  isExpanded,
-  setElements,
-  unsetNodes,
-  withoutNormalizing,
-} from '@udecode/plate-common';
+import type {
+  ElementEntryOf,
+  ElementOf,
+  SlateEditor,
+  TElement,
+} from '@udecode/plate';
+
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 
 import type { GetSiblingIndentListOptions } from '../queries';
@@ -32,7 +26,7 @@ export const toggleIndentList = <
   E extends SlateEditor = SlateEditor,
 >(
   editor: E,
-  options: IndentListOptions<E>,
+  options: IndentListOptions,
   getSiblingIndentListOptions?: GetSiblingIndentListOptions<N, E>
 ) => {
   const { listStyleType } = options;
@@ -40,8 +34,8 @@ export const toggleIndentList = <
   const { getSiblingIndentListOptions: _getSiblingIndentListOptions } =
     editor.getOptions(BaseIndentListPlugin);
 
-  if (isCollapsed(editor.selection)) {
-    const entry = getBlockAbove<TElement>(editor);
+  if (editor.api.isCollapsed()) {
+    const entry = editor.api.block<TElement>();
 
     if (!entry) return;
     if (toggleIndentListSet(editor, entry, { listStyleType })) {
@@ -61,8 +55,8 @@ export const toggleIndentList = <
 
     return;
   }
-  if (isExpanded(editor.selection)) {
-    const _entries = getNodeEntries<TElement>(editor, { block: true });
+  if (editor.api.isExpanded()) {
+    const _entries = editor.api.nodes<TElement>({ block: true });
     const entries = [..._entries];
 
     const eqListStyleType = areEqListStyleType(editor, entries, {
@@ -70,23 +64,21 @@ export const toggleIndentList = <
     });
 
     if (eqListStyleType) {
-      withoutNormalizing(editor, () => {
+      editor.tf.withoutNormalizing(() => {
         entries.forEach((entry) => {
           const [node, path] = entry;
 
           const indent = node[BaseIndentPlugin.key] as number;
 
-          unsetNodes(editor, BaseIndentListPlugin.key, { at: path });
+          editor.tf.unsetNodes(BaseIndentListPlugin.key, { at: path });
 
           if (indent > 1) {
-            setElements(
-              editor,
+            editor.tf.setNodes(
               { [BaseIndentPlugin.key]: indent - 1 },
               { at: path }
             );
           } else {
-            unsetNodes(
-              editor,
+            editor.tf.unsetNodes(
               [BaseIndentPlugin.key, INDENT_LIST_KEYS.checked],
               {
                 at: path,

@@ -1,51 +1,36 @@
-import type { Path } from 'slate';
-
-import {
-  type SlateEditor,
-  getAboveNode,
-  getEditorPlugin,
-  isExpanded,
-  removeNodes,
-  setNodes,
-  someNode,
-  withoutNormalizing,
-} from '@udecode/plate-common';
+import { type Path, type SlateEditor, getEditorPlugin } from '@udecode/plate';
 import cloneDeep from 'lodash/cloneDeep.js';
 
 import {
   type TTableCellElement,
   type TTableElement,
   BaseTableRowPlugin,
-  findCellByIndexes,
   getCellIndices,
-  getCellPath,
   getCellTypes,
-  getColSpan,
 } from '..';
 import { BaseTablePlugin } from '../BaseTablePlugin';
 import { deleteColumnWhenExpanded } from './deleteColumnWhenExpanded';
+import { findCellByIndexes } from './findCellByIndexes';
+import { getCellPath } from './getCellPath';
 
 export const deleteTableMergeColumn = (editor: SlateEditor) => {
-  const { getOptions, type } = getEditorPlugin(editor, BaseTablePlugin);
+  const type = editor.getType(BaseTablePlugin);
+  const tableEntry = editor.api.above<TTableElement>({
+    match: { type },
+  });
 
-  if (
-    someNode(editor, {
-      match: { type },
-    })
-  ) {
-    const { _cellIndices: cellIndices } = getOptions();
+  if (!tableEntry) return;
 
-    const tableEntry = getAboveNode<TTableElement>(editor, {
-      match: { type },
-    });
+  editor.tf.withoutNormalizing(() => {
+    const { api } = getEditorPlugin(editor, BaseTablePlugin);
 
-    if (!tableEntry) return;
-    if (isExpanded(editor.selection))
+    if (editor.api.isExpanded()) {
       return deleteColumnWhenExpanded(editor, tableEntry);
+    }
 
     const table = tableEntry[0] as TTableElement;
 
-    const selectedCellEntry = getAboveNode(editor, {
+    const selectedCellEntry = editor.api.above({
       match: {
         type: getCellTypes(editor),
       },
@@ -55,11 +40,8 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
 
     const selectedCell = selectedCellEntry[0] as TTableCellElement;
 
-    const { col: deletingColIndex } = getCellIndices(
-      cellIndices!,
-      selectedCell
-    )!;
-    const colsDeleteNumber = getColSpan(selectedCell);
+    const { col: deletingColIndex } = getCellIndices(editor, selectedCell);
+    const colsDeleteNumber = api.table.getColSpan(selectedCell);
 
     const endingColIndex = deletingColIndex + colsDeleteNumber - 1;
 
@@ -87,8 +69,8 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
         if (!cur) return acc;
 
         const currentCell = cur as TTableCellElement;
-        const { col: curColIndex } = getCellIndices(cellIndices!, currentCell)!;
-        const curColSpan = getColSpan(currentCell);
+        const { col: curColIndex } = getCellIndices(editor, currentCell);
+        const curColSpan = api.table.getColSpan(currentCell);
 
         if (curColIndex < deletingColIndex && curColSpan > 1) {
           acc.squizeColSpanCells.push(currentCell);
@@ -109,10 +91,10 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
       const curCell = cur as TTableCellElement;
 
       const { col: curColIndex, row: curColRowIndex } = getCellIndices(
-        cellIndices!,
+        editor,
         curCell
-      )!;
-      const curColSpan = getColSpan(curCell);
+      );
+      const curColSpan = api.table.getColSpan(curCell);
 
       const curCellPath = getCellPath(
         editor,
@@ -133,10 +115,10 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
         newCell.attributes.colspan = colSpan.toString();
       }
 
-      setNodes<TTableCellElement>(editor, newCell, { at: curCellPath });
+      editor.tf.setNodes<TTableCellElement>(newCell, { at: curCellPath });
     });
 
-    const trEntry = getAboveNode(editor, {
+    const trEntry = editor.api.above({
       match: { type: editor.getType(BaseTableRowPlugin) },
     });
 
@@ -155,9 +137,9 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
       affectedCells.forEach((cur) => {
         const curCell = cur as TTableCellElement;
         const { col: curColIndex, row: curRowIndex } = getCellIndices(
-          cellIndices!,
+          editor,
           curCell
-        )!;
+        );
 
         if (
           !squizeColSpanCells.includes(curCell) &&
@@ -179,29 +161,26 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
         }
       });
 
-      withoutNormalizing(editor, () => {
-        paths.forEach((cellPaths) => {
-          const pathToDelete = cellPaths[0];
-          cellPaths.forEach(() => {
-            removeNodes(editor, {
-              at: pathToDelete,
-            });
+      paths.forEach((cellPaths) => {
+        const pathToDelete = cellPaths[0];
+        cellPaths.forEach(() => {
+          editor.tf.removeNodes({
+            at: pathToDelete,
           });
         });
-
-        const { colSizes } = tableNode;
-
-        if (colSizes) {
-          const newColSizes = [...colSizes];
-          newColSizes.splice(deletingColIndex, 1);
-
-          setNodes<TTableElement>(
-            editor,
-            { colSizes: newColSizes },
-            { at: tablePath }
-          );
-        }
       });
+
+      const { colSizes } = tableNode;
+
+      if (colSizes) {
+        const newColSizes = [...colSizes];
+        newColSizes.splice(deletingColIndex, 1);
+
+        editor.tf.setNodes<TTableElement>(
+          { colSizes: newColSizes },
+          { at: tablePath }
+        );
+      }
     }
-  }
+  });
 };

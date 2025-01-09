@@ -1,13 +1,4 @@
-import {
-  type InsertNodesOptions,
-  type SlateEditor,
-  type TElement,
-  isExpanded,
-  isSelectionAtBlockStart,
-  setElements,
-  someNode,
-  wrapNodes,
-} from '@udecode/plate-common';
+import type { InsertNodesOptions, SlateEditor, TElement } from '@udecode/plate';
 
 import {
   BaseCodeBlockPlugin,
@@ -18,29 +9,28 @@ import {
  * Insert a code block: set the node to code line and wrap it with a code block.
  * If the cursor is not at the block start, insert break before.
  */
-export const insertCodeBlock = <E extends SlateEditor>(
-  editor: E,
-  insertNodesOptions: Omit<InsertNodesOptions<E>, 'match'> = {}
+export const insertCodeBlock = (
+  editor: SlateEditor,
+  insertNodesOptions: Omit<InsertNodesOptions, 'match'> = {}
 ) => {
-  if (!editor.selection || isExpanded(editor.selection)) return;
+  if (!editor.selection || editor.api.isExpanded()) return;
 
   const matchCodeElements = (node: TElement) =>
     node.type === editor.getType(BaseCodeBlockPlugin) ||
     node.type === editor.getType(BaseCodeLinePlugin);
 
   if (
-    someNode(editor, {
+    editor.api.some({
       match: matchCodeElements,
     })
   ) {
     return;
   }
-  if (!isSelectionAtBlockStart(editor)) {
-    editor.insertBreak();
+  if (!editor.api.isAt({ start: true })) {
+    editor.tf.insertBreak();
   }
 
-  setElements(
-    editor,
+  editor.tf.setNodes(
     {
       children: [{ text: '' }],
       type: editor.getType(BaseCodeLinePlugin),
@@ -48,8 +38,7 @@ export const insertCodeBlock = <E extends SlateEditor>(
     insertNodesOptions
   );
 
-  wrapNodes<TElement>(
-    editor,
+  editor.tf.wrapNodes<TElement>(
     {
       children: [],
       type: editor.getType(BaseCodeBlockPlugin),

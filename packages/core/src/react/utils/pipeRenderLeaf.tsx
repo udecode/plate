@@ -1,7 +1,6 @@
 import React from 'react';
 
-import type { TEditableProps } from '@udecode/slate-react';
-
+import type { EditableProps } from '../../lib';
 import type { PlateEditor } from '../editor/PlateEditor';
 
 import { DefaultLeaf } from '../components';
@@ -11,8 +10,8 @@ import { type RenderLeaf, pluginRenderLeaf } from './pluginRenderLeaf';
 /** @see {@link RenderLeaf} */
 export const pipeRenderLeaf = (
   editor: PlateEditor,
-  renderLeafProp?: TEditableProps['renderLeaf']
-): TEditableProps['renderLeaf'] => {
+  renderLeafProp?: EditableProps['renderLeaf']
+): EditableProps['renderLeaf'] => {
   const renderLeafs: RenderLeaf[] = [];
 
   editor.pluginList.forEach((plugin) => {

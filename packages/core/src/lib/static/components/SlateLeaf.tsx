@@ -1,7 +1,6 @@
 import React from 'react';
 
-import type { TText } from '@udecode/slate';
-import type { DecoratedRange } from 'slate';
+import type { DecoratedRange, TText } from '@udecode/slate';
 
 import clsx from 'clsx';
 

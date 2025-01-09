@@ -8,8 +8,8 @@ import type {
   SlatePlugins,
 } from './SlatePlugin';
 
-import { mergePlugins } from '../../internal/mergePlugins';
-import { isFunction } from '../utils/misc/isFunction';
+import { isFunction } from '../../internal/utils/isFunction';
+import { mergePlugins } from '../../internal/utils/mergePlugins';
 
 type SlatePluginConfig<K extends string = any, O = {}, A = {}, T = {}> = Omit<
   Partial<
@@ -232,6 +232,21 @@ export function createSlatePlugin<
     newPlugin.__apiExtensions = [
       ...(newPlugin.__apiExtensions as any),
       { extension, isPluginSpecific: true, isTransform: true },
+    ];
+
+    return createSlatePlugin(newPlugin) as any;
+  };
+
+  plugin.overrideEditor = (extension) => {
+    const newPlugin = { ...plugin };
+    newPlugin.__apiExtensions = [
+      ...(newPlugin.__apiExtensions as any),
+      {
+        extension,
+        isOverride: true,
+        isPluginSpecific: false,
+        isTransform: true,
+      },
     ];
 
     return createSlatePlugin(newPlugin) as any;

@@ -1,24 +1,18 @@
-import {
-  type InsertNodesOptions,
-  type SlateEditor,
-  getSelectionText,
-  insertNodes,
-} from '@udecode/plate-common';
+import type { InsertNodesOptions, SlateEditor } from '@udecode/plate';
 
 import type { TEquationElement } from '../BaseEquationPlugin';
 
 import { BaseInlineEquationPlugin } from '../BaseInlineEquationPlugin';
 
-export const insertInlineEquation = <E extends SlateEditor>(
-  editor: E,
+export const insertInlineEquation = (
+  editor: SlateEditor,
   texExpression?: string,
-  options?: InsertNodesOptions<E>
+  options?: InsertNodesOptions
 ) => {
-  insertNodes<TEquationElement>(
-    editor,
+  editor.tf.insertNodes<TEquationElement>(
     {
       children: [{ text: '' }],
-      texExpression: texExpression ?? getSelectionText(editor),
+      texExpression: texExpression ?? editor.api.string(editor.selection),
       type: editor.getType(BaseInlineEquationPlugin),
     },
     options as any

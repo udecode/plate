@@ -1,17 +1,8 @@
-import type { Path } from 'slate';
-
-import {
-  type SlateEditor,
-  type TDescendant,
-  collapseSelection,
-  getEndPoint,
-  insertNodes,
-  withoutNormalizing,
-} from '@udecode/plate-common';
+import type { Descendant, Path, SlateEditor } from '@udecode/plate';
 
 export const insertAINodes = (
   editor: SlateEditor,
-  nodes: TDescendant[],
+  nodes: Descendant[],
   {
     target,
   }: {
@@ -25,11 +16,11 @@ export const insertAINodes = (
     ai: true,
   }));
 
-  withoutNormalizing(editor, () => {
-    insertNodes(editor, aiNodes, {
-      at: getEndPoint(editor, target || editor.selection!.focus.path),
+  editor.tf.withoutNormalizing(() => {
+    editor.tf.insertNodes(aiNodes, {
+      at: editor.api.end(target || editor.selection!.focus.path),
       select: true,
     });
-    collapseSelection(editor, { edge: 'end' });
+    editor.tf.collapse({ edge: 'end' });
   });
 };

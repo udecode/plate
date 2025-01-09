@@ -3,7 +3,7 @@ import {
   type SlatePlugin,
   HtmlPlugin,
   createSlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { cleanDocx } from './docx-cleaner/cleanDocx';
 import {

@@ -1,7 +1,7 @@
 import {
   createPrimitiveComponent,
   useEditorPlugin,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 
 import { CommentsPlugin } from '../CommentsPlugin';
 import { useComment } from '../stores/comment/CommentProvider';

@@ -2,7 +2,7 @@ import {
   type PluginConfig,
   BaseParagraphPlugin,
   createTSlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { IndentConfig } from './BaseIndentPlugin';
 

@@ -1,7 +1,6 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from '@udecode/plate-common';
-
+import { createEditor, createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { isPointNextToNode } from './isPointNextToNode';
@@ -9,12 +8,14 @@ import { isPointNextToNode } from './isPointNextToNode';
 jsxt;
 
 describe('isPointNextToNode', () => {
-  const createEditor = (input: JSX.Element): SlateEditor =>
-    input as any as SlateEditor;
+  const createTestEditor = (input: JSX.Element) =>
+    createSlateEditor({
+      editor: createEditor(input as any),
+    });
 
   describe('when point is next to a node of specified type', () => {
     it('should return true', () => {
-      const editor = createEditor(
+      const editor = createTestEditor(
         <editor>
           <hp>
             <htext>test</htext>
@@ -32,7 +33,7 @@ describe('isPointNextToNode', () => {
 
   describe('when point is not next to a node of specified type', () => {
     it('should return false', () => {
-      const editor = createEditor(
+      const editor = createTestEditor(
         <editor>
           <hp>
             <htext>test</htext>
@@ -51,7 +52,7 @@ describe('isPointNextToNode', () => {
 
   describe('when reverse option is true', () => {
     it('should check the previous node', () => {
-      const editor = createEditor(
+      const editor = createTestEditor(
         <editor>
           <hp>
             <hdate>
@@ -71,7 +72,7 @@ describe('isPointNextToNode', () => {
 
   describe('when at option is provided', () => {
     it('should check from the specified point', () => {
-      const editor = createEditor(
+      const editor = createTestEditor(
         <editor>
           <hp>
             <htext>test</htext>

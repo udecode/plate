@@ -1,24 +1,19 @@
-import {
-  type SlateEditor,
-  getAboveNode,
-  removeNodes,
-  someNode,
-} from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
 
 import { BaseTablePlugin } from '../BaseTablePlugin';
 
 export const deleteTable = (editor: SlateEditor) => {
   if (
-    someNode(editor, {
+    editor.api.some({
       match: { type: editor.getType(BaseTablePlugin) },
     })
   ) {
-    const tableItem = getAboveNode(editor, {
+    const tableItem = editor.api.above({
       match: { type: editor.getType(BaseTablePlugin) },
     });
 
     if (tableItem) {
-      removeNodes(editor, {
+      editor.tf.removeNodes({
         at: tableItem[1],
       });
     }

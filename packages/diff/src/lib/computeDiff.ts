@@ -3,7 +3,7 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import type { SlateEditor, TDescendant, TElement } from '@udecode/plate-common';
+import type { Descendant, SlateEditor, TElement } from '@udecode/plate';
 
 import type { DiffProps } from './types';
 
@@ -13,12 +13,12 @@ import { StringCharMapping } from '../internal/utils/string-char-mapping';
 
 export interface ComputeDiffOptions {
   getUpdateProps: (
-    node: TDescendant,
+    node: Descendant,
     properties: any,
     newProperties: any
   ) => any;
-  getDeleteProps: (node: TDescendant) => any;
-  getInsertProps: (node: TDescendant) => any;
+  getDeleteProps: (node: Descendant) => any;
+  getInsertProps: (node: Descendant) => any;
   isInline: SlateEditor['isInline'];
   elementsAreRelated?: (
     element: TElement,
@@ -29,8 +29,8 @@ export interface ComputeDiffOptions {
 }
 
 export const computeDiff = (
-  doc0: TDescendant[],
-  doc1: TDescendant[],
+  doc0: Descendant[],
+  doc1: Descendant[],
   {
     getDeleteProps = defaultGetDeleteProps,
     getInsertProps = defaultGetInsertProps,
@@ -39,7 +39,7 @@ export const computeDiff = (
     isInline = () => false,
     ...options
   }: Partial<ComputeDiffOptions> = {}
-): TDescendant[] => {
+): Descendant[] => {
   const stringCharMapping = new StringCharMapping();
 
   const m0 = stringCharMapping.nodesToString(doc0);
@@ -82,7 +82,7 @@ export const defaultGetDeleteProps = (): DiffProps => ({
 });
 
 export const defaultGetUpdateProps = (
-  _node: TDescendant,
+  _node: Descendant,
   properties: any,
   newProperties: any
 ): DiffProps => ({

@@ -1,7 +1,6 @@
 import React from 'react';
 
-import { setNode, useEditorRef, useElement } from '@udecode/plate-common/react';
-import { useReadOnly } from 'slate-react';
+import { useEditorRef, useElement, useReadOnly } from '@udecode/plate/react';
 
 import { type TCodeBlockElement, BaseCodeBlockPlugin } from '../../lib';
 
@@ -35,7 +34,10 @@ export const useCodeBlockCombobox = ({
   return {
     commandItemProps: {
       onSelect: (_value: string) => {
-        setNode<TCodeBlockElement>(editor, element, { lang: _value });
+        editor.tf.setNodes<TCodeBlockElement>(
+          { lang: _value },
+          { at: element }
+        );
         setValue(_value);
       },
     },

@@ -1,9 +1,9 @@
 ---
-title: PlatePlugin
+title: Plate Plugin
 description: API reference for Plate plugins.
 ---
 
-Plate plugins are objects passed to `Plate` [plugins](/docs/api/core/plate#plugins) prop.
+Plate plugins are objects passed to `Plate` [plugins](/docs/api/core/plate-components#plugins) prop.
 
 ## Generic Types
 
@@ -112,11 +112,16 @@ Indicates if this plugin's elements should be treated as inline.
 <APISubListItem parent="node" name="isLeaf" type="boolean" optional>
 Indicates if this plugin's nodes should be rendered as leaves.
 </APISubListItem>
-<APISubListItem parent="node" name="isVoid" type="boolean" optional>
-Indicates if this plugin's elements should be treated as void.
-</APISubListItem>
 <APISubListItem parent="node" name="isMarkableVoid" type="boolean" optional>
 Indicates if this plugin's void elements should be markable.
+</APISubListItem>
+<APISubListItem parent="node" name="isSelectable" type="boolean" optional>
+Indicates if this plugin's nodes should be selectable.
+
+- **Default:** `true`
+</APISubListItem>
+<APISubListItem parent="node" name="isVoid" type="boolean" optional>
+Indicates if this plugin's elements should be treated as void.
 </APISubListItem>
 <APISubListItem parent="node" name="type" type="string" optional>
 Specifies the type identifier for this plugin's nodes.

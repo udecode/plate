@@ -1,4 +1,4 @@
-import { type PlateEditor, useEditorRef } from '@udecode/plate-common/react';
+import { type PlateEditor, useEditorRef } from '@udecode/plate/react';
 
 import { AIChatPlugin } from '../AIChatPlugin';
 

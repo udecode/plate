@@ -1,23 +1,26 @@
-import { type TEditor, getRange } from '@udecode/plate-common';
-import { toDOMRange } from '@udecode/plate-common/react';
-import { type Location, type Range, Path } from 'slate';
+import {
+  type Editor,
+  type TLocation,
+  type TRange,
+  PathApi,
+} from '@udecode/plate';
 
 import { mergeClientRects } from './mergeClientRects';
 
 export const getBoundingClientRect = (
-  editor: TEditor,
-  at?: Location | Location[]
+  editor: Editor,
+  at?: TLocation | TLocation[]
 ): DOMRect | undefined => {
-  const atRanges: Range[] = (() => {
-    if (!at) return [editor.selection].filter(Boolean) as Range[];
+  const atRanges: TRange[] = (() => {
+    if (!at) return [editor.selection].filter(Boolean) as TRange[];
 
-    const atArray = Array.isArray(at) && !Path.isPath(at) ? at : [at];
+    const atArray = Array.isArray(at) && !PathApi.isPath(at) ? at : [at];
 
-    return atArray.map((location) => getRange(editor, location));
+    return atArray.map((location) => editor.api.range(location)!);
   })();
 
   const clientRects = atRanges
-    .map((range) => toDOMRange(editor, range)?.getBoundingClientRect())
+    .map((range) => editor.api.toDOMRange(range)?.getBoundingClientRect())
     .filter(Boolean) as DOMRect[];
 
   if (clientRects.length === 0) return undefined;

@@ -2,9 +2,8 @@ import React from 'react';
 
 import {
   createPrimitiveComponent,
-  toDOMNode,
   useEditorPlugin,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 
 import { CommentsPlugin } from '../CommentsPlugin';
 import { getCommentPosition } from '../queries';
@@ -31,7 +30,7 @@ export const useCommentsPositionerState = () => {
   React.useEffect(() => {
     if (!node) return;
 
-    const domNode = toDOMNode(editor, node);
+    const domNode = editor.api.toDOMNode(node);
 
     if (!domNode) return;
 

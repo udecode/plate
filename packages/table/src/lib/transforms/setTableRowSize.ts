@@ -1,20 +1,15 @@
-import {
-  type GetAboveNodeOptions,
-  type TEditor,
-  findNode,
-  setNodes,
-} from '@udecode/plate-common';
+import type { EditorAboveOptions, SlateEditor } from '@udecode/plate';
 
 import type { TTableElement, TTableRowElement } from '../types';
 
 import { BaseTablePlugin } from '../BaseTablePlugin';
 
-export const setTableRowSize = <E extends TEditor>(
-  editor: E,
+export const setTableRowSize = (
+  editor: SlateEditor,
   { height, rowIndex }: { height: number; rowIndex: number },
-  options: GetAboveNodeOptions<E> = {}
+  options: EditorAboveOptions = {}
 ) => {
-  const table = findNode<TTableElement>(editor, {
+  const table = editor.api.node<TTableElement>({
     match: { type: BaseTablePlugin.key },
     ...options,
   });
@@ -24,5 +19,5 @@ export const setTableRowSize = <E extends TEditor>(
   const [, tablePath] = table;
   const tableRowPath = [...tablePath, rowIndex];
 
-  setNodes<TTableRowElement>(editor, { size: height }, { at: tableRowPath });
+  editor.tf.setNodes<TTableRowElement>({ size: height }, { at: tableRowPath });
 };

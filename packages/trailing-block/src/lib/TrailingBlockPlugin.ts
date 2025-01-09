@@ -3,7 +3,7 @@ import {
   type QueryNodeOptions,
   BaseParagraphPlugin,
   createTSlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { withTrailingBlock } from './withTrailingBlock';
 
@@ -21,12 +21,13 @@ export type TrailingBlockConfig = PluginConfig<
 /** @see {@link withTrailingBlock} */
 export const TrailingBlockPlugin = createTSlatePlugin<TrailingBlockConfig>({
   key: 'trailingBlock',
-  extendEditor: withTrailingBlock,
   options: {
     level: 0,
   },
-}).extend(({ editor }) => ({
-  options: {
-    type: editor.getType(BaseParagraphPlugin),
-  },
-}));
+})
+  .overrideEditor(withTrailingBlock)
+  .extend(({ editor }) => ({
+    options: {
+      type: editor.getType(BaseParagraphPlugin),
+    },
+  }));

@@ -1,12 +1,10 @@
 import {
+  type Editor,
   type ElementEntryOf,
   type ElementOf,
-  type TEditor,
-  type TNodeEntry,
-  getNode,
-  setElements,
-  withoutNormalizing,
-} from '@udecode/plate-common';
+  type NodeEntry,
+  NodeApi,
+} from '@udecode/plate';
 
 import type { GetSiblingIndentListOptions } from '../queries/getSiblingIndentList';
 
@@ -19,9 +17,9 @@ import { getPreviousIndentList } from '../queries/getPreviousIndentList';
 import { normalizeFirstIndentListStart } from './normalizeFirstIndentListStart';
 
 export const normalizeNextIndentListStart = (
-  editor: TEditor,
-  entry: TNodeEntry,
-  prevEntry?: TNodeEntry
+  editor: Editor,
+  entry: NodeEntry,
+  prevEntry?: NodeEntry
 ) => {
   const [node, path] = entry;
   const [prevNode] = prevEntry ?? [null];
@@ -32,8 +30,7 @@ export const normalizeNextIndentListStart = (
   const listStart = restart == null ? prevListStart + 1 : restart;
 
   if (currListStart !== listStart) {
-    setElements(
-      editor,
+    editor.tf.setNodes(
       { [INDENT_LIST_KEYS.listStart]: listStart },
       { at: path }
     );
@@ -46,13 +43,13 @@ export const normalizeNextIndentListStart = (
 
 export const normalizeIndentListStart = <
   N extends ElementOf<E>,
-  E extends TEditor = TEditor,
+  E extends Editor = Editor,
 >(
   editor: E,
   entry: ElementEntryOf<E>,
   options?: Partial<GetSiblingIndentListOptions<N, E>>
 ) => {
-  return withoutNormalizing(editor, () => {
+  return editor.tf.withoutNormalizing(() => {
     const [node] = entry;
     const listStyleType = (node as any)[BaseIndentListPlugin.key];
 
@@ -82,7 +79,7 @@ export const normalizeIndentListStart = <
       if (normalizeNext) normalized = true;
 
       // get the node again after setNodes
-      prevEntry = [getNode<N>(editor, currEntry[1])!, currEntry[1]];
+      prevEntry = [NodeApi.get<N>(editor, currEntry[1])!, currEntry[1]];
       currEntry = getNextIndentList(editor, currEntry, options);
 
       if (!currEntry) break;

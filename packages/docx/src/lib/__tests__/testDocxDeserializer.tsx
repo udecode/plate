@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
+import { type SlatePlugin, createSlateEditor } from '@udecode/plate';
+import { ParagraphPlugin } from '@udecode/plate/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
-import { type SlatePlugin, createSlateEditor } from '@udecode/plate-common';
-import { ParagraphPlugin } from '@udecode/plate-common/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
@@ -59,7 +59,6 @@ export const testDocxDeserializer = ({
 }) => {
   it('should deserialize', () => {
     const actual = createSlateEditor({
-      editor: input,
       override: {
         plugins: overridePlugins,
       },
@@ -77,9 +76,11 @@ export const testDocxDeserializer = ({
         DocxPlugin,
         JuicePlugin,
       ],
+      selection: input.selection,
+      value: input.children,
     });
 
-    actual.insertData(
+    actual.tf.insertData(
       createClipboardData(readTestFile(`../__tests__/${filename}.html`))
     );
 

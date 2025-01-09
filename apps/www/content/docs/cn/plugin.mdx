@@ -167,22 +167,12 @@ const AlignPlugin = createPlatePlugin({
 
 偶尔，你需要覆盖 Slate 提供的内置编辑器方法，以解决 bug 或添加复杂功能。为此，你可以使用 `extendEditor` 插件选项，在创建后直接修改 `editor` 对象的属性。
 
-一个常见的应用是创建自定义 [normalizers](https://docs.slatejs.org/concepts/11-normalizing)。
-
 ```ts showLineNumbers {20}
 const CustomNormalizerPlugin = createPlatePlugin({
   key: 'customNormalizer',
   extendEditor: ({ editor }) => {
-    const { normalizeNode } = editor;
-
-    editor.normalizeNode = ([node, path]) => {
-      // 自定义规范化逻辑
-      // ...
-
-      // 调用其他规范化器
-      normalizeNode([node, path]);
-    };
-
+    editor.customState = true;
+    
     return editor;
   },
 });
@@ -352,7 +342,7 @@ const CodeBlockPlugin = createTPlatePlugin<CodeBlockConfig>({
 })).extendEditorTransforms<CodeBlockConfig['transforms']>(() => ({
   insert: {
     codeBlock: ({ editor, getOptions }) => {
-      editor.insertBlock({ type: 'code_block', language: getOptions().language });
+      editor.tf.insertBlock({ type: 'code_block', language: getOptions().language });
     },
   },
 }));

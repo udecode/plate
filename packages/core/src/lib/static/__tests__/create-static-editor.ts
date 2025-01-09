@@ -1,3 +1,5 @@
+import type { Value } from '@udecode/plate';
+
 import { withProps } from '@udecode/cn';
 import { BaseAlignPlugin } from '@udecode/plate-alignment';
 import {
@@ -18,7 +20,6 @@ import {
   BaseCodeSyntaxPlugin,
 } from '@udecode/plate-code-block';
 import { BaseCommentsPlugin } from '@udecode/plate-comments';
-import { type Value, SlateLeaf } from '@udecode/plate-common';
 import { BaseDatePlugin } from '@udecode/plate-date';
 import {
   BaseFontBackgroundColorPlugin,
@@ -90,7 +91,7 @@ import { TableRowElementStatic } from 'www/src/registry/default/plate-ui/table-r
 import { TocElementStatic } from 'www/src/registry/default/plate-ui/toc-element-static';
 import { ToggleElementStatic } from 'www/src/registry/default/plate-ui/toggle-element-static';
 
-import { BaseParagraphPlugin } from '../..';
+import { BaseParagraphPlugin, SlateLeaf } from '../..';
 import { createSlateEditor } from '../../editor';
 
 export const createStaticEditor = (value: Value) => {

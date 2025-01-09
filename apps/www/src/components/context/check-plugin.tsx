@@ -1,6 +1,6 @@
 import type { WithRequiredKey } from '@udecode/plate-core';
 
-import { useEditorRef } from '@udecode/plate-common/react';
+import { useEditorRef } from '@udecode/plate/react';
 
 import { settingsStore } from './settings-store';
 

@@ -1,13 +1,5 @@
-import type { Point, Range } from 'slate';
+import type { Editor, TRange } from '@udecode/plate';
 
-import {
-  type TEditor,
-  collapseSelection,
-  deleteText,
-  getEditorString,
-  removeMark,
-  select,
-} from '@udecode/plate-common';
 import castArray from 'lodash/castArray.js';
 
 import type { AutoformatMarkRule } from '../types';
@@ -20,12 +12,12 @@ export interface AutoformatMarkOptions extends AutoformatMarkRule {
 }
 
 export const autoformatMark = (
-  editor: TEditor,
+  editor: Editor,
   { ignoreTrim, match: _match, text, trigger, type }: AutoformatMarkOptions
 ) => {
   if (!type) return false;
 
-  const selection = editor.selection as Range;
+  const selection = editor.selection!;
   const matches = castArray(_match);
 
   for (const match of matches) {
@@ -43,19 +35,19 @@ export const autoformatMark = (
     const { afterStartMatchPoint, beforeEndMatchPoint, beforeStartMatchPoint } =
       matched;
 
-    const matchRange = {
-      anchor: afterStartMatchPoint,
+    const matchRange: TRange = {
+      anchor: afterStartMatchPoint!,
       focus: beforeEndMatchPoint,
-    } as Range;
+    };
 
     if (!ignoreTrim) {
-      const matchText = getEditorString(editor, matchRange);
+      const matchText = editor.api.string(matchRange);
 
       if (matchText.trim() !== matchText) continue;
     }
     // delete end match
     if (end) {
-      deleteText(editor, {
+      editor.tf.delete({
         at: {
           anchor: beforeEndMatchPoint,
           focus: selection.anchor,
@@ -66,17 +58,17 @@ export const autoformatMark = (
     const marks = castArray(type);
 
     // add mark to the text between the matches
-    select(editor, matchRange as Range);
+    editor.tf.select(matchRange as TRange);
     marks.forEach((mark) => {
-      editor.addMark(mark, true);
+      editor.tf.addMark(mark, true);
     });
-    collapseSelection(editor, { edge: 'end' });
-    removeMark(editor, { key: marks as any, shouldChange: false });
+    editor.tf.collapse({ edge: 'end' });
+    editor.tf.removeMarks(marks, { shouldChange: false });
 
-    deleteText(editor, {
+    editor.tf.delete({
       at: {
-        anchor: beforeStartMatchPoint as Point,
-        focus: afterStartMatchPoint as Point,
+        anchor: beforeStartMatchPoint!,
+        focus: afterStartMatchPoint!,
       },
     });
 

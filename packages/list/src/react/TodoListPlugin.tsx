@@ -1,4 +1,4 @@
-import { Key, toTPlatePlugin } from '@udecode/plate-common/react';
+import { Key, toTPlatePlugin } from '@udecode/plate/react';
 
 import { BaseTodoListPlugin } from '../lib/BaseTodoListPlugin';
 
@@ -14,7 +14,7 @@ export const TodoListPlugin = toTPlatePlugin(
         ],
         preventDefault: true,
         handler: () => {
-          editor.tf.toggle.block({ type });
+          editor.tf.toggleBlock(type);
         },
       },
     },

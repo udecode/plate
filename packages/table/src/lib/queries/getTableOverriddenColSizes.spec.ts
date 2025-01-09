@@ -21,9 +21,9 @@ describe('getTableOverriddenColSizes', () => {
     it('should return all zeros', () => {
       const tableElement = makeTableElement(3);
       const overrides = new Map<number, number>();
-      expect(getTableOverriddenColSizes(tableElement, overrides)).toEqual([
-        0, 0, 0,
-      ]);
+      expect(getTableOverriddenColSizes(tableElement, overrides)).toMatchObject(
+        [0, 0, 0]
+      );
     });
 
     it('should apply overrides', () => {
@@ -32,9 +32,9 @@ describe('getTableOverriddenColSizes', () => {
         [0, 100],
         [2, 200],
       ]);
-      expect(getTableOverriddenColSizes(tableElement, overrides)).toEqual([
-        100, 0, 200,
-      ]);
+      expect(getTableOverriddenColSizes(tableElement, overrides)).toMatchObject(
+        [100, 0, 200]
+      );
     });
   });
 
@@ -42,9 +42,9 @@ describe('getTableOverriddenColSizes', () => {
     it('should return colSizes', () => {
       const tableElement = makeTableElement(3, [100, 200, 300]);
       const overrides = new Map<number, number>();
-      expect(getTableOverriddenColSizes(tableElement, overrides)).toEqual([
-        100, 200, 300,
-      ]);
+      expect(getTableOverriddenColSizes(tableElement, overrides)).toMatchObject(
+        [100, 200, 300]
+      );
     });
 
     it('should apply overrides', () => {
@@ -53,9 +53,9 @@ describe('getTableOverriddenColSizes', () => {
         [0, 1000],
         [2, 2000],
       ]);
-      expect(getTableOverriddenColSizes(tableElement, overrides)).toEqual([
-        1000, 200, 2000,
-      ]);
+      expect(getTableOverriddenColSizes(tableElement, overrides)).toMatchObject(
+        [1000, 200, 2000]
+      );
     });
   });
 });

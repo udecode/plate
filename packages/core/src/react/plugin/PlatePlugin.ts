@@ -6,16 +6,17 @@ import type {
   Keys,
 } from '@udecode/react-hotkeys';
 import type {
-  TDecoratedRange,
-  TDescendant,
+  DecoratedRange,
+  Descendant,
+  EditorApi,
+  EditorTransforms,
+  NodeEntry,
   TElement,
-  TNodeEntry,
   TText,
   Value,
 } from '@udecode/slate';
-import type { TEditableProps } from '@udecode/slate-react';
-import type { AnyObject } from '@udecode/utils';
-import type { StoreApi } from 'zustand-x';
+import type { AnyObject, Deep2Partial, Nullable } from '@udecode/utils';
+import type { TCreatedStoreType } from 'zustand-x';
 
 import type {
   AnyPluginConfig,
@@ -27,6 +28,7 @@ import type {
   BasePluginContext,
   BaseSerializer,
   BaseTransformOptions,
+  EditableProps,
   GetInjectNodePropsOptions,
   GetInjectNodePropsReturnType,
   HandlerReturnType,
@@ -34,7 +36,6 @@ import type {
   InferOptions,
   InferTransforms,
   NodeComponent,
-  Nullable,
   ParserOptions,
   PluginConfig,
   SlatePlugin,
@@ -51,16 +52,14 @@ import type { PlateRenderLeafProps } from './PlateRenderLeafProps';
 export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
   BasePlugin<C> &
     Nullable<{
-      /** Normalize initial value before passing it into the editor. */
-      normalizeInitialValue?: (
-        ctx: PlatePluginContext<WithAnyKey<C>> & { value: Value }
-      ) => Value;
-
       /** @see {@link Decorate} */
       decorate?: Decorate<WithAnyKey<C>>;
 
       /** @see {@link ExtendEditor} */
       extendEditor?: ExtendEditor<WithAnyKey<C>>;
+
+      /** Normalize initial value before passing it into the editor. */
+      normalizeInitialValue?: NormalizeInitialValue<WithAnyKey<C>>;
 
       /** @see {@link UseHooks} */
       useHooks?: UseHooks<WithAnyKey<C>>;
@@ -81,7 +80,7 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
         /**
          * Property that can be used by a plugin to allow other plugins to
          * inject code. For example, if multiple plugins have defined
-         * `inject.editor.insertData.transformData` for `key=HtmlPlugin.key`,
+         * `inject.editor.tf.insertData.transformData` for `key=HtmlPlugin.key`,
          * `insertData` plugin will call all of these `transformData` for
          * `HtmlPlugin.key` plugin. Differs from `override.plugins` as this is
          * not overriding any plugin.
@@ -153,13 +152,16 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
         node?: NodeComponent;
       }>;
 
+      useOptionsStore: TCreatedStoreType<
+        C['options'],
+        [['zustand/mutative-x', never]]
+      >;
+
       /** @see {@link Parser} */
       parser: Nullable<Parser<WithAnyKey<C>>>;
 
       /** @see {@link Shortcuts} */
       shortcuts: Shortcuts;
-
-      useOptionsStore: StoreApi<C['key'], C['options']>;
 
       /**
        * Handlers called whenever the corresponding event occurs in the editor.
@@ -308,17 +310,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       ((...args: any[]) => any) | Record<string, (...args: any[]) => any>
     > = Record<string, never>,
   >(
-    extension: (ctx: PlatePluginContext<C>) => EA & {
-      [K in keyof InferApi<C>]?: InferApi<C>[K] extends (...args: any[]) => any
-        ? (...args: Parameters<InferApi<C>[K]>) => ReturnType<InferApi<C>[K]>
-        : InferApi<C>[K] extends Record<string, (...args: any[]) => any>
-          ? {
-              [N in keyof InferApi<C>[K]]?: (
-                ...args: Parameters<InferApi<C>[K][N]>
-              ) => ReturnType<InferApi<C>[K][N]>;
-            }
-          : never;
-    }
+    extension: ExtendEditorApi<C, EA>
   ) => PlatePlugin<
     PluginConfig<
       C['key'],
@@ -342,21 +334,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       ((...args: any[]) => any) | Record<string, (...args: any[]) => any>
     > = Record<string, never>,
   >(
-    extension: (ctx: PlatePluginContext<C>) => ET & {
-      [K in keyof InferTransforms<C>]?: InferTransforms<C>[K] extends (
-        ...args: any[]
-      ) => any
-        ? (
-            ...args: Parameters<InferTransforms<C>[K]>
-          ) => ReturnType<InferTransforms<C>[K]>
-        : InferTransforms<C>[K] extends Record<string, (...args: any[]) => any>
-          ? {
-              [N in keyof InferTransforms<C>[K]]?: (
-                ...args: Parameters<InferTransforms<C>[K][N]>
-              ) => ReturnType<InferTransforms<C>[K][N]>;
-            }
-          : never;
-    }
+    extension: ExtendEditorTransforms<C, ET>
   ) => PlatePlugin<
     PluginConfig<
       C['key'],
@@ -462,6 +440,8 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
 
   clone: () => PlatePlugin<C>;
 
+  overrideEditor: (override: OverrideEditor<C>) => PlatePlugin<C>;
+
   /**
    * Set {@link NodeComponent} for the plugin.
    *
@@ -473,6 +453,42 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
 
   __resolved?: boolean;
 };
+
+export type ExtendEditorApi<
+  C extends AnyPluginConfig = PluginConfig,
+  EA = {},
+> = (ctx: PlatePluginContext<C>) => EA &
+  Deep2Partial<EditorApi> & {
+    [K in keyof InferApi<C>]?: InferApi<C>[K] extends (...args: any[]) => any
+      ? (...args: Parameters<InferApi<C>[K]>) => ReturnType<InferApi<C>[K]>
+      : InferApi<C>[K] extends Record<string, (...args: any[]) => any>
+        ? {
+            [N in keyof InferApi<C>[K]]?: (
+              ...args: Parameters<InferApi<C>[K][N]>
+            ) => ReturnType<InferApi<C>[K][N]>;
+          }
+        : never;
+  };
+
+export type ExtendEditorTransforms<
+  C extends AnyPluginConfig = PluginConfig,
+  ET = {},
+> = (ctx: PlatePluginContext<C>) => ET &
+  Deep2Partial<EditorTransforms> & {
+    [K in keyof InferTransforms<C>]?: InferTransforms<C>[K] extends (
+      ...args: any[]
+    ) => any
+      ? (
+          ...args: Parameters<InferTransforms<C>[K]>
+        ) => ReturnType<InferTransforms<C>[K]>
+      : InferTransforms<C>[K] extends Record<string, (...args: any[]) => any>
+        ? {
+            [N in keyof InferTransforms<C>[K]]?: (
+              ...args: Parameters<InferTransforms<C>[K][N]>
+            ) => ReturnType<InferTransforms<C>[K][N]>;
+          }
+        : never;
+  };
 
 export type PlatePluginConfig<
   K extends string = any,
@@ -551,24 +567,24 @@ export type Parser<C extends AnyPluginConfig = PluginConfig> = {
   /** Deserialize data to fragment */
   deserialize?: (
     options: ParserOptions & PlatePluginContext<C>
-  ) => TDescendant[] | undefined;
+  ) => Descendant[] | undefined;
 
   /**
-   * Function called on `editor.insertData` just before `editor.insertFragment`.
-   * Default: if the block above the selection is empty and the first fragment
-   * node type is not inline, set the selected node type to the first fragment
-   * node type.
+   * Function called on `editor.tf.insertData` just before
+   * `editor.tf.insertFragment`. Default: if the block above the selection is
+   * empty and the first fragment node type is not inline, set the selected node
+   * type to the first fragment node type.
    *
    * @returns If true, the next handlers will be skipped.
    */
   preInsert?: (
-    options: ParserOptions & PlatePluginContext<C> & { fragment: TDescendant[] }
+    options: ParserOptions & PlatePluginContext<C> & { fragment: Descendant[] }
   ) => HandlerReturnType;
 
   /** Transform the fragment to insert. */
   transformFragment?: (
-    options: ParserOptions & PlatePluginContext<C> & { fragment: TDescendant[] }
-  ) => TDescendant[];
+    options: ParserOptions & PlatePluginContext<C> & { fragment: Descendant[] }
+  ) => Descendant[];
 
   /** Format to get data. Example data types are text/plain and text/uri-list. */
   format?: string[] | string;
@@ -596,15 +612,15 @@ export type Deserializer<C extends AnyPluginConfig = PluginConfig> =
   BaseDeserializer & {
     parse?: (
       options: PlatePluginContext<C> & { element: any }
-    ) => Partial<TDescendant> | undefined | void;
+    ) => Partial<Descendant> | undefined | void;
 
     query?: (options: PlatePluginContext<C> & { element: any }) => boolean;
   };
 
 export type Serializer<C extends AnyPluginConfig = PluginConfig> =
   BaseSerializer & {
-    parser?: (options: PlatePluginContext<C> & { node: TDescendant }) => any;
-    query?: (options: PlatePluginContext<C> & { node: TDescendant }) => boolean;
+    parser?: (options: PlatePluginContext<C> & { node: Descendant }) => any;
+    query?: (options: PlatePluginContext<C> & { node: Descendant }) => boolean;
   };
 
 export type HtmlDeserializer<C extends AnyPluginConfig = PluginConfig> =
@@ -614,15 +630,15 @@ export type HtmlDeserializer<C extends AnyPluginConfig = PluginConfig> =
         element: HTMLElement;
         node: AnyObject;
       }
-    ) => Partial<TDescendant> | undefined | void;
+    ) => Partial<Descendant> | undefined | void;
     query?: (
       options: PlatePluginContext<C> & { element: HTMLElement }
     ) => boolean;
   };
 
 export type HtmlSerializer<C extends AnyPluginConfig = PluginConfig> = {
-  parse?: (options: PlatePluginContext<C> & { node: TDescendant }) => string;
-  query?: (options: PlatePluginContext<C> & { node: TDescendant }) => boolean;
+  parse?: (options: PlatePluginContext<C> & { node: Descendant }) => string;
+  query?: (options: PlatePluginContext<C> & { node: Descendant }) => boolean;
 };
 
 export type HtmlReactSerializer<C extends AnyPluginConfig = PluginConfig> = {
@@ -641,8 +657,12 @@ export type HtmlReactSerializer<C extends AnyPluginConfig = PluginConfig> = {
  * returned ranges are merged with the ranges called by other plugins.
  */
 export type Decorate<C extends AnyPluginConfig = PluginConfig> = (
-  ctx: PlatePluginContext<C> & { entry: TNodeEntry }
-) => TDecoratedRange[] | undefined;
+  ctx: PlatePluginContext<C> & { entry: NodeEntry }
+) => DecoratedRange[] | undefined;
+
+export type NormalizeInitialValue<C extends AnyPluginConfig = PluginConfig> = (
+  ctx: PlatePluginContext<C> & { value: Value }
+) => void;
 
 /** Properties used by Plate to inject props into any {@link NodeComponent}. */
 export type InjectNodeProps<C extends AnyPluginConfig = PluginConfig> =
@@ -704,7 +724,7 @@ export type UseHooks<C extends AnyPluginConfig = PluginConfig> = (
 ) => void;
 
 export type EditableSiblingComponent = (
-  editableProps: TEditableProps
+  editableProps: EditableProps
 ) => React.ReactElement | null;
 
 export interface NodeWrapperComponentProps<
@@ -742,3 +762,34 @@ export type Shortcut = HotkeysOptions & {
 };
 
 export type Shortcuts = Record<string, Shortcut | null>;
+
+export type OverrideEditor<C extends AnyPluginConfig = PluginConfig> = (
+  ctx: PlatePluginContext<C>
+) => {
+  api?: Deep2Partial<EditorApi> & {
+    [K in keyof InferApi<C>]?: InferApi<C>[K] extends (...args: any[]) => any
+      ? (...args: Parameters<InferApi<C>[K]>) => ReturnType<InferApi<C>[K]>
+      : InferApi<C>[K] extends Record<string, (...args: any[]) => any>
+        ? {
+            [N in keyof InferApi<C>[K]]?: (
+              ...args: Parameters<InferApi<C>[K][N]>
+            ) => ReturnType<InferApi<C>[K][N]>;
+          }
+        : never;
+  };
+  transforms?: Deep2Partial<EditorTransforms> & {
+    [K in keyof InferTransforms<C>]?: InferTransforms<C>[K] extends (
+      ...args: any[]
+    ) => any
+      ? (
+          ...args: Parameters<InferTransforms<C>[K]>
+        ) => ReturnType<InferTransforms<C>[K]>
+      : InferTransforms<C>[K] extends Record<string, (...args: any[]) => any>
+        ? {
+            [N in keyof InferTransforms<C>[K]]?: (
+              ...args: Parameters<InferTransforms<C>[K][N]>
+            ) => ReturnType<InferTransforms<C>[K][N]>;
+          }
+        : never;
+  };
+};

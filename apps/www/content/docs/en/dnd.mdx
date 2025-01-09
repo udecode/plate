@@ -81,7 +81,7 @@ Returns an array of blocks that have an ID.
   <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
-  <APIItem name="options" type="GetNodeEntriesOptions">
+  <APIItem name="options" type="EditorNodesOptions">
     The options for getting node entries.
   </APIItem>
 </APIParameters>
@@ -206,7 +206,7 @@ A custom hook that combines the `useDragNode` and `useDropNode` hooks to enable 
       <APISubListItem parent="options" name="orientation" type="'horizontal' | 'vertical'" optional>
         The orientation of drag and drop. Defaults to `'vertical'`.
       </APISubListItem>
-      <APISubListItem parent="options" name="canDropNode" type="(args: { dragEntry: TNodeEntry; dragItem: DragItemNode; dropEntry: TNodeEntry; editor: PlateEditor }) => boolean" optional>
+      <APISubListItem parent="options" name="canDropNode" type="(args: { dragEntry: NodeEntry; dragItem: DragItemNode; dropEntry: NodeEntry; editor: PlateEditor }) => boolean" optional>
         Callback to determine if a node can be dropped at the current location.
       </APISubListItem>
       <APISubListItem parent="options" name="preview" type="previewOptions">

@@ -1,11 +1,11 @@
 /** @jsx jsxt */
 
+import { createSlateEditor } from '@udecode/plate';
 import {
   BoldPlugin,
   ItalicPlugin,
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
-import { createSlateEditor } from '@udecode/plate-common';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { BaseAutoformatPlugin } from '../../BaseAutoformatPlugin';
@@ -51,7 +51,7 @@ describe('when match is an array', () => {
       value: input,
     });
 
-    editor.insertText('_');
+    editor.tf.insertText('_');
 
     expect(input.children).toEqual(output.children);
   });
@@ -96,7 +96,7 @@ describe('when match is a string', () => {
       value: input,
     });
 
-    editor.insertText('_');
+    editor.tf.insertText('_');
 
     expect(input.children).toEqual(output.children);
   });

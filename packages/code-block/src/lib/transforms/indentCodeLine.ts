@@ -1,16 +1,8 @@
-import {
-  type TEditor,
-  type TElementEntry,
-  getEditorString,
-  getRange,
-  getStartPoint,
-  insertText,
-  isExpanded,
-} from '@udecode/plate-common';
+import type { Editor, ElementEntry } from '@udecode/plate';
 
 export interface IndentCodeLineOptions {
-  codeBlock: TElementEntry;
-  codeLine: TElementEntry;
+  codeBlock: ElementEntry;
+  codeLine: ElementEntry;
   indentDepth?: number;
 }
 
@@ -22,24 +14,24 @@ export interface IndentCodeLineOptions {
  *   spaces.
  */
 export const indentCodeLine = (
-  editor: TEditor,
+  editor: Editor,
   { codeLine, indentDepth = 2 }: IndentCodeLineOptions
 ) => {
   const [, codeLinePath] = codeLine;
-  const codeLineStart = getStartPoint(editor, codeLinePath);
+  const codeLineStart = editor.api.start(codeLinePath)!;
   const indent = ' '.repeat(indentDepth);
 
-  if (!isExpanded(editor.selection)) {
+  if (!editor.api.isExpanded()) {
     const cursor = editor.selection?.anchor;
-    const range = getRange(editor, codeLineStart, cursor);
-    const text = getEditorString(editor, range);
+    const range = editor.api.range(codeLineStart, cursor);
+    const text = editor.api.string(range);
 
     if (/\S/.test(text)) {
-      insertText(editor, indent, { at: editor.selection! });
+      editor.tf.insertText(indent, { at: editor.selection! });
 
       return;
     }
   }
 
-  insertText(editor, indent, { at: codeLineStart });
+  editor.tf.insertText(indent, { at: codeLineStart });
 };

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useEditorRef } from '@udecode/plate-common/react';
+import { useEditorRef } from '@udecode/plate/react';
 
 import { DndPlugin } from '../../DndPlugin';
 import { type ScrollerProps, Scroller } from './Scroller';

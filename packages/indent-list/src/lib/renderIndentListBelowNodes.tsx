@@ -4,7 +4,7 @@ import type {
   NodeStaticWrapperComponent,
   NodeStaticWrapperComponentProps,
   NodeStaticWrapperComponentReturnType,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { clsx } from 'clsx';
 

@@ -1,9 +1,9 @@
-import { withTriggerCombobox } from '@udecode/plate-combobox';
 import {
   type PluginConfig,
   createSlatePlugin,
   createTSlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
+import { withTriggerCombobox } from '@udecode/plate-combobox';
 
 import type { EmojiPluginOptions } from './types';
 
@@ -16,7 +16,6 @@ export const BaseEmojiInputPlugin = createSlatePlugin({
 
 export const BaseEmojiPlugin = createTSlatePlugin<EmojiInputConfig>({
   key: 'emoji',
-  extendEditor: withTriggerCombobox,
   options: {
     createComboboxInput: () => ({
       children: [{ text: '' }],
@@ -27,4 +26,4 @@ export const BaseEmojiPlugin = createTSlatePlugin<EmojiInputConfig>({
     triggerPreviousCharPattern: /^\s?$/,
   },
   plugins: [BaseEmojiInputPlugin],
-});
+}).overrideEditor(withTriggerCombobox);

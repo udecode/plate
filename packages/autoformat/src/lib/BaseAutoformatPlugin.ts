@@ -1,4 +1,4 @@
-import { type PluginConfig, createTSlatePlugin } from '@udecode/plate-common';
+import { type PluginConfig, createTSlatePlugin } from '@udecode/plate';
 
 import type { AutoformatPluginOptions } from './types';
 
@@ -12,8 +12,7 @@ export type AutoformatConfig = PluginConfig<
 /** @see {@link withAutoformat} */
 export const BaseAutoformatPlugin = createTSlatePlugin<AutoformatConfig>({
   key: 'autoformat',
-  extendEditor: withAutoformat,
   options: {
     rules: [],
   },
-});
+}).overrideEditor(withAutoformat);

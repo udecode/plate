@@ -1,10 +1,10 @@
 /** @jsx jsxt */
 
 import {
+  type Descendant,
   type SlateEditor,
-  type TDescendant,
   createSlateEditor,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { ListPlugin } from '../react';
@@ -13,11 +13,12 @@ jsxt;
 
 const editorTest = (input: any, fragment: any, expected: any) => {
   const editor = createSlateEditor({
-    editor: input,
     plugins: [ListPlugin],
+    selection: input.selection,
+    value: input.children,
   });
 
-  editor.insertFragment(fragment);
+  editor.tf.insertFragment(fragment);
 
   expect(editor.children).toEqual(expected.children);
 };
@@ -57,7 +58,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </fragment>
-      ) as any as TDescendant[];
+      ) as any as Descendant[];
 
       const expected = (
         <editor>
@@ -121,7 +122,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </fragment>
-      ) as any as TDescendant[];
+      ) as any as Descendant[];
 
       const expected = (
         <editor>
@@ -191,7 +192,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </fragment>
-      ) as any as TDescendant[];
+      ) as any as Descendant[];
 
       const expected = (
         <editor>
@@ -256,7 +257,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </fragment>
-      ) as any as TDescendant[];
+      ) as any as Descendant[];
 
       const expected = (
         <editor>
@@ -321,7 +322,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </fragment>
-      ) as any as TDescendant[];
+      ) as any as Descendant[];
 
       const expected = (
         <editor>
@@ -378,7 +379,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </fragment>
-      ) as any as TDescendant[];
+      ) as any as Descendant[];
 
       const expected = (
         <editor>
@@ -431,7 +432,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </fragment>
-      ) as any as TDescendant[];
+      ) as any as Descendant[];
 
       const expected = (
         <editor>
@@ -483,7 +484,7 @@ describe('when pasting ul > 2 li fragment', () => {
           <hp>three</hp>
           <hp>four</hp>
         </fragment>
-      ) as any as TDescendant[];
+      ) as any as Descendant[];
 
       const expected = (
         <editor>
@@ -536,7 +537,7 @@ describe('when pasting ul > 2 li fragment', () => {
         <fragment>
           <hp>three</hp>
         </fragment>
-      ) as any as TDescendant[];
+      ) as any as Descendant[];
 
       const expected = (
         <editor>
@@ -585,7 +586,7 @@ describe('when pasting ul > 2 li fragment', () => {
         <fragment>
           <hp>three</hp>
         </fragment>
-      ) as any as TDescendant[];
+      ) as any as Descendant[];
 
       const expected = (
         <editor>
@@ -640,7 +641,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </fragment>
-      ) as any as TDescendant[];
+      ) as any as Descendant[];
 
       const expected = (
         <editor>
@@ -700,7 +701,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </fragment>
-      ) as any as TDescendant[];
+      ) as any as Descendant[];
 
       const expected = (
         <editor>
@@ -749,7 +750,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </fragment>
-      ) as any as TDescendant[];
+      ) as any as Descendant[];
 
       const expected = (
         <editor>
@@ -789,7 +790,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </fragment>
-      ) as any as TDescendant[];
+      ) as any as Descendant[];
 
       const expected = (
         <editor>
@@ -839,7 +840,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </fragment>
-      ) as any as TDescendant[];
+      ) as any as Descendant[];
 
       const expected = (
         <editor>

@@ -1,28 +1,25 @@
-import type { PlateEditor } from '@udecode/plate-common/react';
-
-import {
-  type SetNodesOptions,
-  type TElement,
-  type TNodeProps,
-  type TText,
-  setNodes,
-  withoutNormalizing,
-} from '@udecode/plate-common';
+import type {
+  NodeProps,
+  SetNodesOptions,
+  TElement,
+  TText,
+} from '@udecode/plate';
+import type { PlateEditor } from '@udecode/plate/react';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 
 export const setBlockSelectionNodes = (
   editor: PlateEditor,
-  props: Partial<TNodeProps<TElement>>,
+  props: Partial<NodeProps<TElement>>,
   options?: SetNodesOptions
 ) => {
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     const blocks = editor
       .getApi(BlockSelectionPlugin)
       .blockSelection.getNodes();
 
     blocks.forEach(([, path]) => {
-      setNodes<TElement & { id: string }>(editor, props, {
+      editor.tf.setNodes(props, {
         ...options,
         at: path,
       });
@@ -37,7 +34,7 @@ export const setBlockSelectionIndent = (
 ) => {
   const api = editor.getApi(BlockSelectionPlugin);
 
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     const blocks = api.blockSelection.getNodes();
 
     blocks.forEach(([node, path]) => {
@@ -45,8 +42,7 @@ export const setBlockSelectionIndent = (
 
       const currentIndent = prevIndent + indent;
 
-      setNodes<TElement & { id: string }>(
-        editor,
+      editor.tf.setNodes(
         { indent: currentIndent < 0 ? 0 : currentIndent },
         {
           ...options,
@@ -59,7 +55,7 @@ export const setBlockSelectionIndent = (
 
 export const setBlockSelectionTexts = (
   editor: PlateEditor,
-  props: Partial<TNodeProps<TText>>,
+  props: Partial<NodeProps<TText>>,
   options?: Omit<SetNodesOptions, 'at'>
 ) => {
   setBlockSelectionNodes(editor, props, {

@@ -48,19 +48,14 @@
     "raf": "^3.4.1"
   },
   "devDependencies": {
-    "@udecode/plate-common": "workspace:^"
+    "@udecode/plate": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate-common": ">=41.0.13",
-    "react": ">=16.8.0",
+    "@udecode/plate": ">=41.0.14",
+    "react": ">=18.0.0",
     "react-dnd": ">=14.0.0",
     "react-dnd-html5-backend": ">=14.0.0",
-    "react-dom": ">=16.8.0",
-    "slate": ">=0.112.0",
-    "slate-dom": ">=0.111.0",
-    "slate-history": ">=0.93.0",
-    "slate-hyperscript": ">=0.66.0",
-    "slate-react": ">=0.111.0"
+    "react-dom": ">=18.0.0"
   },
   "publishConfig": {
     "access": "public"

@@ -1,20 +1,16 @@
 import {
+  type ElementEntry,
   type SlateEditor,
   type TElement,
-  type TElementEntry,
-  getNodeEntry,
+  PathApi,
   match,
-  moveNodes,
-  withoutNormalizing,
-  wrapNodes,
-} from '@udecode/plate-common';
-import { Path } from 'slate';
+} from '@udecode/plate';
 
 import { getListTypes } from '../queries/index';
 
 export interface MoveListItemDownOptions {
-  list: TElementEntry;
-  listItem: TElementEntry;
+  list: ElementEntry;
+  listItem: ElementEntry;
 }
 
 export const moveListItemDown = (
@@ -26,19 +22,14 @@ export const moveListItemDown = (
   const [listNode] = list;
   const [, listItemPath] = listItem;
 
-  let previousListItemPath: Path;
+  const previousListItemPath = PathApi.previous(listItemPath);
 
-  try {
-    previousListItemPath = Path.previous(listItemPath);
-  } catch (error) {
+  if (!previousListItemPath) {
     return;
   }
 
   // Previous sibling is the new parent
-  const previousSiblingItem = getNodeEntry<TElement>(
-    editor,
-    previousListItemPath
-  );
+  const previousSiblingItem = editor.api.node(previousListItemPath);
 
   if (previousSiblingItem) {
     const [previousNode, previousPath] = previousSiblingItem;
@@ -50,18 +41,17 @@ export const moveListItemDown = (
       sublist ? [1, sublist.children.length] : [1]
     );
 
-    withoutNormalizing(editor, () => {
+    editor.tf.withoutNormalizing(() => {
       if (!sublist) {
         // Create new sublist
-        wrapNodes<TElement>(
-          editor,
+        editor.tf.wrapNodes<TElement>(
           { children: [], type: listNode.type },
           { at: listItemPath }
         );
       }
 
       // Move the current item to the sublist
-      moveNodes(editor, {
+      editor.tf.moveNodes({
         at: listItemPath,
         to: newPath,
       });

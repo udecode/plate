@@ -2,12 +2,7 @@
 
 import React from 'react';
 
-import {
-  Plate,
-  focusEditor,
-  focusEditorEdge,
-  usePlateEditor,
-} from '@udecode/plate-common/react';
+import { Plate, usePlateEditor } from '@udecode/plate/react';
 
 import { Button } from '@/registry/default/plate-ui/button';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
@@ -41,7 +36,7 @@ export default function ControlledEditorDemo() {
               },
             ]);
 
-            focusEditorEdge(editor, { edge: 'end' });
+            editor.tf.focus({ edge: 'endEditor' });
           }}
         >
           Replace Value
@@ -51,7 +46,7 @@ export default function ControlledEditorDemo() {
           onClick={() => {
             editor.tf.reset();
 
-            focusEditor(editor);
+            editor.tf.focus();
           }}
         >
           Reset Editor

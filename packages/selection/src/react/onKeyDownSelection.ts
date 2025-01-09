@@ -1,12 +1,6 @@
-import type { KeyboardHandler } from '@udecode/plate-common/react';
+import type { KeyboardHandler } from '@udecode/plate/react';
 
-import {
-  getAncestorNode,
-  isHotkey,
-  isRangeInSameBlock,
-  isSelectionCoverBlock,
-  select,
-} from '@udecode/plate-common';
+import { isHotkey } from '@udecode/plate';
 
 import type { BlockSelectionConfig } from './BlockSelectionPlugin';
 
@@ -18,21 +12,21 @@ export const onKeyDownSelection: KeyboardHandler<BlockSelectionConfig> = ({
   if (isHotkey('mod+a', event)) {
     if (event.defaultPrevented) return;
 
-    const ancestorNode = getAncestorNode(editor);
+    const ancestorNode = editor.api.block({ highest: true });
 
     if (!ancestorNode) return;
 
     const [, path] = ancestorNode;
 
-    if (isSelectionCoverBlock(editor)) {
+    if (editor.api.isAt({ block: true, end: true, start: true })) {
       return api.blockSelection.selectedAll();
     }
     // TODO： should select the blocks then selected all should exclude table and columns
-    if (!isRangeInSameBlock(editor)) {
+    if (!editor.api.isAt({ block: true })) {
       return api.blockSelection.selectedAll();
     }
 
-    select(editor, path);
+    editor.tf.select(path);
 
     event.preventDefault();
     event.stopPropagation();
@@ -40,10 +34,10 @@ export const onKeyDownSelection: KeyboardHandler<BlockSelectionConfig> = ({
   if (isHotkey('escape', event)) {
     if (event.defaultPrevented) return;
 
-    const ancestorNode = getAncestorNode(editor);
+    const ancestorNode = editor.api.block({ highest: true });
     const id = ancestorNode?.[0].id;
 
-    api.blockSelection.addSelectedRow(id);
+    api.blockSelection.addSelectedRow(id as string);
 
     event.preventDefault();
     event.stopPropagation();
