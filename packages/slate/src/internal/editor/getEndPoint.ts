@@ -1,6 +1,6 @@
 import { end } from 'slate';
 
-import type { Editor } from '../../interfaces/editor/editor';
+import type { Editor } from '../../interfaces/editor/editor-type';
 import type { EditorEndOptions } from '../../interfaces/index';
 import type { At } from '../../types';
 

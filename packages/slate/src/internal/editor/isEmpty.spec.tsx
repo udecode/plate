@@ -4,6 +4,8 @@ import { createPlateEditor } from '@udecode/plate-core/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
+import type { Editor, LegacyEditorMethods } from '../../interfaces';
+
 import { createEditor } from '../../create-editor';
 
 jsxt;
@@ -78,7 +80,7 @@ describe('isEmpty', () => {
               </hp>
             </editor>
           ) as any
-        );
+        ) as Editor & LegacyEditorMethods;
 
         editor.isInline = (element) => element.type === 'a';
 
@@ -103,7 +105,7 @@ describe('isEmpty', () => {
               </hp>
             </editor>
           ) as any
-        );
+        ) as Editor & LegacyEditorMethods;
 
         expect(editor.api.isEmpty(editor.selection, { after: true })).toBe(
           false
@@ -126,7 +128,7 @@ describe('isEmpty', () => {
               </hp>
             </editor>
           ) as any
-        );
+        ) as Editor & LegacyEditorMethods;
 
         editor.isInline = (element) => element.type === 'a';
 
@@ -150,7 +152,7 @@ describe('isEmpty', () => {
               </hp>
             </editor>
           ) as any
-        );
+        ) as Editor & LegacyEditorMethods;
 
         const editor = createPlateEditor({
           editor: input as any,
@@ -178,7 +180,7 @@ describe('isEmpty', () => {
               </hp>
             </editor>
           ) as any
-        );
+        ) as Editor & LegacyEditorMethods;
 
         const editor = createPlateEditor({
           editor: input as any,
@@ -208,7 +210,7 @@ describe('isEmpty', () => {
               </hp>
             </editor>
           ) as any
-        );
+        ) as Editor & LegacyEditorMethods;
 
         editor.isInline = (element) => element.type === 'a';
         expect(editor.api.isEmpty(editor.selection, { after: true })).toBe(
@@ -232,7 +234,7 @@ describe('isEmpty', () => {
               </hp>
             </editor>
           ) as any
-        );
+        ) as Editor & LegacyEditorMethods;
 
         editor.isInline = (element) => element.type === 'a';
         expect(editor.api.isEmpty(editor.selection, { after: true })).toBe(
@@ -255,7 +257,7 @@ describe('isEmpty', () => {
               </hp>
             </editor>
           ) as any
-        );
+        ) as Editor & LegacyEditorMethods;
 
         editor.isInline = (element) => element.type === 'a';
         expect(editor.api.isEmpty(editor.selection, { after: true })).toBe(
@@ -277,7 +279,7 @@ describe('isEmpty', () => {
               </hp>
             </editor>
           ) as any
-        );
+        ) as Editor & LegacyEditorMethods;
 
         editor.isInline = (element) => element.type === 'a';
         expect(editor.api.isEmpty(editor.selection, { after: true })).toBe(

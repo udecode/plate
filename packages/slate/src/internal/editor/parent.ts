@@ -1,6 +1,6 @@
 import { parent as parentBase } from 'slate';
 
-import type { Editor } from '../../interfaces/editor/editor';
+import type { Editor } from '../../interfaces/editor/editor-type';
 import type { EditorParentOptions } from '../../interfaces/index';
 import type { AncestorOf } from '../../interfaces/node';
 import type { NodeEntry } from '../../interfaces/node-entry';

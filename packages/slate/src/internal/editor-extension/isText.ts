@@ -1,4 +1,4 @@
-import type { Editor } from '../../interfaces/editor/editor';
+import type { Editor } from '../../interfaces/editor/editor-type';
 import type { At } from '../../types';
 
 import { TextApi } from '../../interfaces';

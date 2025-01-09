@@ -20,7 +20,7 @@ export const pluginDeserializeHtml = (
   }: { element: HTMLElement; deserializeLeaf?: boolean }
 ): (Nullable<HtmlDeserializer> & { node: AnyObject }) | undefined => {
   const {
-    node: { isElement: isElementRoot, isLeaf: isLeafRoot, type },
+    node: { isElement: isElementRoot, isLeaf: isLeafRoot },
     parsers,
   } = plugin;
 
@@ -117,9 +117,9 @@ export const pluginDeserializeHtml = (
   }
   if (!parse) {
     if (isElement) {
-      parse = () => ({ type: type });
+      parse = ({ type }) => ({ type: type });
     } else if (isLeaf) {
-      parse = () => ({ [type!]: true });
+      parse = ({ type }) => ({ [type!]: true });
     } else {
       return;
     }

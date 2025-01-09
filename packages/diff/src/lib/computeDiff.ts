@@ -3,7 +3,7 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import type { Descendant, SlateEditor, TElement } from '@udecode/plate';
+import type { Descendant, EditorApi, TElement } from '@udecode/plate';
 
 import type { DiffProps } from './types';
 
@@ -19,7 +19,7 @@ export interface ComputeDiffOptions {
   ) => any;
   getDeleteProps: (node: Descendant) => any;
   getInsertProps: (node: Descendant) => any;
-  isInline: SlateEditor['isInline'];
+  isInline: EditorApi['isInline'];
   elementsAreRelated?: (
     element: TElement,
     nextElement: TElement

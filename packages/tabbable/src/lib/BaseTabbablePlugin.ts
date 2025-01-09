@@ -25,7 +25,7 @@ export type TabblableConfig = PluginConfig<
     /**
      * Determine whether an element should be included in the tabbable list.
      *
-     * @default: (editor, tabbableEntry) => editor.isVoid(tabbableEntry.slateNode)
+     * @default: (editor, tabbableEntry) => editor.api.isVoid(tabbableEntry.slateNode)
      */
     isTabbable?: (entry: TabbableEntry) => boolean;
 
@@ -48,6 +48,6 @@ export const BaseTabbablePlugin = createTSlatePlugin<TabblableConfig>({
 }).extend(({ editor }) => ({
   options: {
     isTabbable: (tabbableEntry: TabbableEntry) =>
-      editor.isVoid(tabbableEntry.slateNode),
+      editor.api.isVoid(tabbableEntry.slateNode),
   },
 }));

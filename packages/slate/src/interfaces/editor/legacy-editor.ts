@@ -4,7 +4,7 @@ import type {
   deleteForward as deleteForwardBase,
 } from 'slate';
 
-import type { Value } from './editor';
+import type { Value } from './editor-type';
 import type { EditorApi } from './editor-api';
 import type { EditorTransforms } from './editor-transforms';
 

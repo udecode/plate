@@ -1,4 +1,4 @@
-import type { Editor, ValueOf } from '../../interfaces/editor/editor';
+import type { Editor, ValueOf } from '../../interfaces/editor/editor-type';
 
 import {
   type EditorAboveOptions,

@@ -1,7 +1,7 @@
 import { getVoid } from 'slate';
 
 import type { EditorVoidOptions, ElementOf } from '../../interfaces';
-import type { Editor } from '../../interfaces/editor/editor';
+import type { Editor } from '../../interfaces/editor/editor-type';
 import type { NodeEntry } from '../../interfaces/node-entry';
 
 import { getAt } from '../../utils';

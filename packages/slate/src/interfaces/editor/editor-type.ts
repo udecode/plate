@@ -7,7 +7,6 @@ import type { Operation } from '../operation';
 import type { TRange } from '../range';
 import type { EditorApi } from './editor-api';
 import type { EditorTransforms } from './editor-transforms';
-import type { LegacyEditorMethods } from './legacy-editor';
 
 export type Value = TElement[];
 
@@ -30,15 +29,7 @@ export type EditorBase<V extends Value = Value> = {
 export type EditorMethods<V extends Value = Value> = Pick<
   EditorTransforms<V>,
   'redo' | 'undo'
-> &
-  Pick<
-    LegacyEditorMethods<V>,
-    | 'isElementReadOnly'
-    | 'isInline'
-    | 'isSelectable'
-    | 'isVoid'
-    | 'markableVoid'
-  >;
+>;
 
 export type Editor<V extends Value = Value> = EditorBase<V> & {
   api: EditorApi<V>;

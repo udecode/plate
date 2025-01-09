@@ -3,7 +3,11 @@
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { createEditor } from '../../create-editor';
-import { RangeApi } from '../../interfaces/index';
+import {
+  type Editor,
+  type LegacyEditorMethods,
+  RangeApi,
+} from '../../interfaces/index';
 
 jsxt;
 
@@ -96,7 +100,7 @@ describe('isAt', () => {
                   </hp>
                 </editor>
               ) as any
-            );
+            ) as Editor & LegacyEditorMethods;
 
             input.isInline = (element) => element.type === 'a';
 

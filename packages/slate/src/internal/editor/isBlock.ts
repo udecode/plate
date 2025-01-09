@@ -1,6 +1,6 @@
 import { isBlock as isBlockBase } from 'slate';
 
-import type { Editor } from '../../interfaces/editor/editor';
+import type { Editor } from '../../interfaces/editor/editor-type';
 
 import { type TElement, ElementApi } from '../../interfaces/element';
 

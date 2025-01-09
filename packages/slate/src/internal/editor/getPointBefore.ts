@@ -3,7 +3,7 @@ import castArray from 'lodash/castArray.js';
 import map from 'lodash/map.js';
 import { before as beforeBase } from 'slate';
 
-import type { Editor } from '../../interfaces/editor/editor';
+import type { Editor } from '../../interfaces/editor/editor-type';
 import type { EditorBeforeOptions } from '../../interfaces/index';
 import type { At } from '../../types';
 

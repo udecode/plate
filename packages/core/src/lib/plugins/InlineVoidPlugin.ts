@@ -2,7 +2,8 @@ import { type OverrideEditor, createSlatePlugin } from '../plugin';
 
 /**
  * Merge and register all the inline types and void types from the plugins and
- * options, using `editor.isInline`, `editor.markableVoid` and `editor.isVoid`
+ * options, using `editor.api.isInline`, `editor.api.markableVoid` and
+ * `editor.api.isVoid`
  */
 export const withInlineVoid: OverrideEditor = ({
   api: { isInline, isSelectable, isVoid, markableVoid },

@@ -55,7 +55,7 @@ export const descendant = <
 
     const nodeEntries = NodeApi.descendants<N>(root[0], {
       from,
-      pass: ([n]) => (voids ? false : editor.isVoid(n as any)),
+      pass: ([n]) => (voids ? false : editor.api.isVoid(n as any)),
       reverse,
       to,
     });
