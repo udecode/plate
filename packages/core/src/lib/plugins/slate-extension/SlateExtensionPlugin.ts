@@ -1,32 +1,10 @@
 import type { Descendant, TRange, Value } from '@udecode/slate';
 
-import { type OmitFirst, bindFirst } from '@udecode/utils';
-
-import { type PluginConfig, createTSlatePlugin } from '../../plugin';
-import { resetEditor, toggleBlock } from '../../transforms';
+import { createSlatePlugin } from '../../plugin';
 import { BaseParagraphPlugin } from '../paragraph';
 
-export type SlateExtensionConfig = PluginConfig<
-  'slateExtension',
-  {},
-  {
-    create: {
-      value: () => Value;
-    };
-    reset: () => void;
-  },
-  {
-    /**
-     * Toggle the type of the selected block. If the block is not of the
-     * specified type, it will be changed to that type. Otherwise, it will be
-     * changed to the default type.
-     */
-    toggleBlock: OmitFirst<typeof toggleBlock>;
-  }
->;
-
 /** Opinionated extension of slate default behavior. */
-export const SlateExtensionPlugin = createTSlatePlugin<SlateExtensionConfig>({
+export const SlateExtensionPlugin = createSlatePlugin({
   key: 'slateExtension',
 })
   .overrideEditor(
@@ -80,9 +58,6 @@ export const SlateExtensionPlugin = createTSlatePlugin<SlateExtensionConfig>({
     }
   )
   .extendEditorTransforms(({ editor }) => ({
-    reset: () => {
-      resetEditor(editor);
-    },
     setValue: <V extends Value>(value?: V | string) => {
       let children: Descendant[] = value as any;
 
@@ -98,11 +73,5 @@ export const SlateExtensionPlugin = createTSlatePlugin<SlateExtensionConfig>({
         at: [],
         children: true,
       });
-    },
-    toggleBlock: bindFirst(toggleBlock, editor),
-  }))
-  .extendEditorApi(({ api }) => ({
-    create: {
-      value: (): Value => [api.create.block()],
     },
   }));

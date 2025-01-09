@@ -9,13 +9,13 @@ import { createZustandStore } from 'zustand-x';
 
 import type { SlateEditor } from '../editor';
 
-import { mergePlugins } from '../../internal/mergePlugins';
+import { resolvePlugin } from '../../internal/plugin/resolvePlugin';
+import { mergePlugins } from '../../internal/utils/mergePlugins';
 import {
   type SlatePlugin,
   type SlatePlugins,
   getEditorPlugin,
 } from '../plugin';
-import { resolvePlugin } from './resolvePlugin';
 
 /**
  * Initialize and configure the editor's plugin system. This function sets up

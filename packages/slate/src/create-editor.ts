@@ -19,22 +19,22 @@ import {
   type LegacyEditorMethods,
   RangeApi,
 } from './interfaces';
-import { blurEditor } from './internal/dom-editor/blurEditor';
-import { deselectEditor } from './internal/dom-editor/deselectEditor';
-import { findEditorDocumentOrShadowRoot } from './internal/dom-editor/findEditorDocumentOrShadowRoot';
+import { blur } from './internal/dom-editor/blur';
+import { deselectDOM } from './internal/dom-editor/deselectDOM';
+import { findDocumentOrShadowRoot } from './internal/dom-editor/findDocumentOrShadowRoot';
 import { findEventRange } from './internal/dom-editor/findEventRange';
-import { findNodeKey } from './internal/dom-editor/findNodeKey';
+import { findKey } from './internal/dom-editor/findKey';
 import { findPath } from './internal/dom-editor/findPath';
-import { focusEditor } from './internal/dom-editor/focusEditor';
-import { getEditorWindow } from './internal/dom-editor/getEditorWindow';
-import { hasEditorDOMNode } from './internal/dom-editor/hasEditorDOMNode';
-import { hasEditorEditableTarget } from './internal/dom-editor/hasEditorEditableTarget';
-import { hasEditorRange } from './internal/dom-editor/hasEditorRange';
-import { hasEditorSelectableTarget } from './internal/dom-editor/hasEditorSelectableTarget';
-import { hasEditorTarget } from './internal/dom-editor/hasEditorTarget';
+import { focus } from './internal/dom-editor/focus';
+import { getWindow } from './internal/dom-editor/getWindow';
+import { hasDOMNode } from './internal/dom-editor/hasDOMNode';
+import { hasEditableTarget } from './internal/dom-editor/hasEditableTarget';
+import { hasRange } from './internal/dom-editor/hasRange';
+import { hasSelectableTarget } from './internal/dom-editor/hasSelectableTarget';
+import { hasTarget } from './internal/dom-editor/hasTarget';
 import { isComposing } from './internal/dom-editor/isComposing';
-import { isEditorFocused } from './internal/dom-editor/isEditorFocused';
-import { isEditorReadOnly } from './internal/dom-editor/isEditorReadOnly';
+import { isFocused } from './internal/dom-editor/isFocused';
+import { isReadOnly } from './internal/dom-editor/isReadOnly';
 import { isTargetInsideNonReadonlyVoid } from './internal/dom-editor/isTargetInsideNonReadonlyVoid';
 import { toDOMNode } from './internal/dom-editor/toDOMNode';
 import { toDOMPoint } from './internal/dom-editor/toDOMPoint';
@@ -105,7 +105,6 @@ import { prop } from './internal/editor-extension/prop';
 import { some } from './internal/editor-extension/some';
 import { collapseSelection } from './internal/transforms/collapseSelection';
 import { deleteText } from './internal/transforms/deleteText';
-import { deselect } from './internal/transforms/deselect';
 import { insertFragment } from './internal/transforms/insertFragment';
 import { insertNodes } from './internal/transforms/insertNodes';
 import { insertText } from './internal/transforms/insertText';
@@ -126,6 +125,8 @@ import { addMarks } from './internal/transforms-extension/addMarks';
 import { duplicateNodes } from './internal/transforms-extension/duplicateNodes';
 import { removeMarks } from './internal/transforms-extension/removeMarks';
 import { replaceNodes } from './internal/transforms-extension/replaceNodes';
+import { reset } from './internal/transforms-extension/reset';
+import { toggleBlock } from './internal/transforms-extension/toggleBlock';
 import { toggleMark } from './internal/transforms-extension/toggleMark';
 import { HistoryApi } from './slate-history/history';
 import { syncLegacyMethods } from './utils/assignLegacyTransforms';
@@ -193,7 +194,7 @@ export const createEditor = <V extends Value>({
     before: bindFirst(getPointBefore, editor),
     collapse: bindFirst(collapseSelection, editor),
     delete: bindFirst(deleteText, editor),
-    deselect: bindFirst(deselect, editor),
+    deselect: bindFirst(deselectDOM, editor),
     edges: bindFirst(getEdgePoints, editor),
     elementReadOnly: bindFirst(isElementReadOnly, editor),
     end: bindFirst(getEndPoint, editor),
@@ -274,28 +275,29 @@ export const createEditor = <V extends Value>({
     blocks: bindFirst(blocks, editor) as any,
     create: {
       block: (props) => ({ children: [{ text: '' }], type: 'p', ...props }),
+      value: () => [api.create!.block()],
     },
     descendant: bindFirst(descendant, editor) as any,
     edgeBlocks: bindFirst(edgeBlocks, editor) as any,
-    findDocumentOrShadowRoot: bindFirst(findEditorDocumentOrShadowRoot, editor),
+    findDocumentOrShadowRoot: bindFirst(findDocumentOrShadowRoot, editor),
     findEventRange: bindFirst(findEventRange, editor),
-    findKey: bindFirst(findNodeKey, editor),
+    findKey: bindFirst(findKey, editor),
     findPath: bindFirst(findPath, editor),
-    getWindow: bindFirst(getEditorWindow, editor),
-    hasDOMNode: bindFirst(hasEditorDOMNode, editor),
-    hasEditableTarget: bindFirst(hasEditorEditableTarget, editor) as any,
+    getWindow: bindFirst(getWindow, editor),
+    hasDOMNode: bindFirst(hasDOMNode, editor),
+    hasEditableTarget: bindFirst(hasEditableTarget, editor) as any,
     hasMark: bindFirst(hasMark, editor) as any,
-    hasRange: bindFirst(hasEditorRange, editor),
-    hasSelectableTarget: bindFirst(hasEditorSelectableTarget, editor) as any,
-    hasTarget: bindFirst(hasEditorTarget, editor) as any,
+    hasRange: bindFirst(hasRange, editor),
+    hasSelectableTarget: bindFirst(hasSelectableTarget, editor) as any,
+    hasTarget: bindFirst(hasTarget, editor) as any,
     isAt: bindFirst(isAt, editor),
     isCollapsed: () => RangeApi.isCollapsed(editor.selection),
     isComposing: bindFirst(isComposing, editor),
     isEditorEnd: bindFirst(isEditorEnd, editor),
     isExpanded: () => RangeApi.isExpanded(editor.selection),
-    isFocused: bindFirst(isEditorFocused, editor),
+    isFocused: bindFirst(isFocused, editor),
     isMerging: bindFirst(HistoryApi.isMerging, editor as any) as any,
-    isReadOnly: bindFirst(isEditorReadOnly, editor),
+    isReadOnly: bindFirst(isReadOnly, editor),
     isSaving: bindFirst(HistoryApi.isSaving, editor as any) as any,
     isSplittingOnce: bindFirst(HistoryApi.isSplittingOnce, editor as any),
     isTargetInsideNonReadonlyVoid: bindFirst(
@@ -317,13 +319,15 @@ export const createEditor = <V extends Value>({
 
   const transforms: Partial<Editor<V>['transforms']> = {
     addMarks: bindFirst(addMarks, editor),
-    blur: bindFirst(blurEditor, editor),
-    deselectDOM: bindFirst(deselectEditor, editor),
+    blur: bindFirst(blur, editor),
+    deselectDOM: bindFirst(deselectDOM, editor),
     duplicateNodes: bindFirst(duplicateNodes, editor),
-    focus: bindFirst(focusEditor, editor),
+    focus: bindFirst(focus, editor),
     removeMarks: bindFirst(removeMarks, editor as any),
     replaceNodes: bindFirst(replaceNodes, editor) as any,
+    reset: bindFirst(reset, editor),
     setSplittingOnce: bindFirst(HistoryApi.setSplittingOnce, editor as any),
+    toggleBlock: bindFirst(toggleBlock, editor),
     toggleMark: bindFirst(toggleMark, editor as any),
     withMerging: bindFirst(HistoryApi.withMerging, editor as any),
     withNewBatch: bindFirst(HistoryApi.withNewBatch, editor as any),

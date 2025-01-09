@@ -1,7 +1,7 @@
 import type { OverrideEditor, PlateEditor } from '@udecode/plate/react';
 
+import { type Operation, type TRange, RangeApi } from '@udecode/plate';
 import { serializeInlineMd } from '@udecode/plate-markdown';
-import { type Operation, type TRange, RangeApi } from '@udecode/slate';
 
 import type { CopilotPluginConfig } from './CopilotPlugin';
 

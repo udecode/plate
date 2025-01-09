@@ -1,11 +1,9 @@
+import { pipeInsertFragment } from '../../internal/plugin/pipeInsertFragment';
+import { pipeTransformData } from '../../internal/plugin/pipeTransformData';
+import { pipeTransformFragment } from '../../internal/plugin/pipeTransformFragment';
 import { createSlatePlugin, getEditorPlugin } from '../plugin';
-import {
-  getInjectedPlugins,
-  pipeInsertDataQuery,
-  pipeInsertFragment,
-  pipeTransformData,
-  pipeTransformFragment,
-} from '../utils';
+import { getInjectedPlugins } from '../utils';
+import { pipeInsertDataQuery } from '../utils/pipeInsertDataQuery';
 
 export const ParserPlugin = createSlatePlugin({
   key: 'parser',

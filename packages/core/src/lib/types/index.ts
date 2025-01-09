@@ -5,4 +5,3 @@
 export * from './EditableProps';
 export * from './RenderElementProps';
 export * from './RenderLeafProps';
-export * from './misc/index';

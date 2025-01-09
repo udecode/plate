@@ -1,11 +1,7 @@
 import React from 'react';
 
 import { isDefined } from '@udecode/plate';
-import {
-  selectEditor,
-  useEditorRef,
-  useEditorString,
-} from '@udecode/plate/react';
+import { useEditorRef, useEditorString } from '@udecode/plate/react';
 
 import type { TagLike } from '../lib';
 
@@ -31,7 +27,7 @@ export const useSelectEditorCombobox = ({
   React.useEffect(() => {
     if (!open) {
       editor.tf.removeNodes({ at: [], empty: false, text: true });
-      selectEditor(editor, { edge: 'end' });
+      editor.tf.select([], { edge: 'end' });
     }
   }, [editor, open]);
 

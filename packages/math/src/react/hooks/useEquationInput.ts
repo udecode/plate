@@ -1,11 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 
 import { isHotkey } from '@udecode/plate';
-import {
-  selectSiblingNodePoint,
-  useEditorRef,
-  useElement,
-} from '@udecode/plate/react';
+import { useEditorRef, useElement } from '@udecode/plate/react';
 
 import type { TEquationElement } from '../../lib';
 
@@ -102,9 +98,8 @@ export const useEquationInput = ({
             selectionEnd === 0 &&
             isHotkey('ArrowLeft')(e)
           ) {
-            selectSiblingNodePoint(editor, {
-              node: element,
-              reverse: true,
+            editor.tf.select(element, {
+              previous: true,
             });
           }
           // at the right edge
@@ -113,7 +108,7 @@ export const useEquationInput = ({
             selectionStart === value.length &&
             isHotkey('ArrowRight')(e)
           ) {
-            selectSiblingNodePoint(editor, { node: element });
+            editor.tf.select(element, { next: true });
           }
         }
       },

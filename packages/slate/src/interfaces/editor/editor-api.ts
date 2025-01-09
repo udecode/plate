@@ -1,14 +1,14 @@
 import type { OmitFirst } from '@udecode/utils';
 
-import type { findEditorDocumentOrShadowRoot } from '../../internal/dom-editor/findEditorDocumentOrShadowRoot';
+import type { findDocumentOrShadowRoot } from '../../internal/dom-editor/findDocumentOrShadowRoot';
 import type { findEventRange } from '../../internal/dom-editor/findEventRange';
-import type { findNodeKey } from '../../internal/dom-editor/findNodeKey';
-import type { getEditorWindow } from '../../internal/dom-editor/getEditorWindow';
-import type { hasEditorDOMNode } from '../../internal/dom-editor/hasEditorDOMNode';
-import type { hasEditorRange } from '../../internal/dom-editor/hasEditorRange';
+import type { findKey } from '../../internal/dom-editor/findKey';
+import type { getWindow } from '../../internal/dom-editor/getWindow';
+import type { hasDOMNode } from '../../internal/dom-editor/hasDOMNode';
+import type { hasRange } from '../../internal/dom-editor/hasRange';
 import type { isComposing } from '../../internal/dom-editor/isComposing';
-import type { isEditorFocused } from '../../internal/dom-editor/isEditorFocused';
-import type { isEditorReadOnly } from '../../internal/dom-editor/isEditorReadOnly';
+import type { isFocused } from '../../internal/dom-editor/isFocused';
+import type { isReadOnly } from '../../internal/dom-editor/isReadOnly';
 import type { isTargetInsideNonReadonlyVoid } from '../../internal/dom-editor/isTargetInsideNonReadonlyVoid';
 import type { toDOMNode } from '../../internal/dom-editor/toDOMNode';
 import type { toDOMPoint } from '../../internal/dom-editor/toDOMPoint';
@@ -339,32 +339,32 @@ export type EditorApi<V extends Value = Value> = {
   toSlateNode: <N extends NodeIn<V>>(
     domNode: Parameters<typeof toSlateNode>[1]
   ) => N | undefined;
-  findDocumentOrShadowRoot: OmitFirst<typeof findEditorDocumentOrShadowRoot>;
+  findDocumentOrShadowRoot: OmitFirst<typeof findDocumentOrShadowRoot>;
   /** Get the target range from a DOM `event` */
   findEventRange: OmitFirst<typeof findEventRange>;
   /**
    * Find a key for a Slate node. Returns an instance of `Key` which looks like
    * `{ id: string }`
    */
-  findKey: OmitFirst<typeof findNodeKey>;
+  findKey: OmitFirst<typeof findKey>;
   /**
    * Find the path of Slate node. If DOM node is not found, it will use
    * `findNodePath` (traversal method).
    */
   findPath: (node: TNode, options?: EditorFindPathOptions) => Path | undefined;
-  getWindow: OmitFirst<typeof getEditorWindow>;
+  getWindow: OmitFirst<typeof getWindow>;
   /** Check if a DOM node is within the editor */
-  hasDOMNode: OmitFirst<typeof hasEditorDOMNode>;
+  hasDOMNode: OmitFirst<typeof hasDOMNode>;
   hasEditableTarget: (target: EventTarget | null) => target is Node;
-  hasRange: OmitFirst<typeof hasEditorRange>;
+  hasRange: OmitFirst<typeof hasRange>;
   hasSelectableTarget: (target: EventTarget | null) => target is Node;
   hasTarget: (target: EventTarget | null) => target is Node;
   /** Check if the user is currently composing inside the editor */
   isComposing: OmitFirst<typeof isComposing>;
   /** Check if the editor is focused */
-  isFocused: OmitFirst<typeof isEditorFocused>;
+  isFocused: OmitFirst<typeof isFocused>;
   /** Check if the editor is in read-only mode */
-  isReadOnly: OmitFirst<typeof isEditorReadOnly>;
+  isReadOnly: OmitFirst<typeof isReadOnly>;
   /** Find the native DOM element from a Slate node */
   toDOMNode: OmitFirst<typeof toDOMNode>;
   /** Find a native DOM selection point from a Slate point */
@@ -409,6 +409,9 @@ export type EditorApi<V extends Value = Value> = {
   create: {
     /** Default block factory. */
     block: (node?: Partial<TElement>, path?: Path) => TElement;
+
+    /** Default value factory. */
+    value: () => Value;
   };
 
   /** Returns the first matching descendant. */

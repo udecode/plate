@@ -8,11 +8,10 @@ import type {
   TText,
   Value,
 } from '@udecode/slate';
-import type { AnyObject, Deep2Partial } from '@udecode/utils';
+import type { AnyObject, Deep2Partial, Nullable } from '@udecode/utils';
 
 import type { SlateEditor } from '../editor';
 import type { SlateRenderElementProps, SlateRenderLeafProps } from '../static';
-import type { Nullable } from '../types/misc';
 import type {
   AnyPluginConfig,
   BaseDeserializer,

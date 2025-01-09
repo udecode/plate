@@ -15,7 +15,7 @@ import type {
   TText,
   Value,
 } from '@udecode/slate';
-import type { AnyObject, Deep2Partial } from '@udecode/utils';
+import type { AnyObject, Deep2Partial, Nullable } from '@udecode/utils';
 import type { TCreatedStoreType } from 'zustand-x';
 
 import type {
@@ -36,7 +36,6 @@ import type {
   InferOptions,
   InferTransforms,
   NodeComponent,
-  Nullable,
   ParserOptions,
   PluginConfig,
   SlatePlugin,

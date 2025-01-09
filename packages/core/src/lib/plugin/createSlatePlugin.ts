@@ -8,8 +8,8 @@ import type {
   SlatePlugins,
 } from './SlatePlugin';
 
-import { mergePlugins } from '../../internal/mergePlugins';
-import { isFunction } from '../utils/misc/isFunction';
+import { isFunction } from '../../internal/utils/isFunction';
+import { mergePlugins } from '../../internal/utils/mergePlugins';
 
 type SlatePluginConfig<K extends string = any, O = {}, A = {}, T = {}> = Omit<
   Partial<

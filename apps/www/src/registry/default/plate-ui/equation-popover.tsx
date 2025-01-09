@@ -10,7 +10,6 @@ import type { TEquationElement } from '@udecode/plate-math';
 import { cn } from '@udecode/cn';
 import {
   createPrimitiveComponent,
-  selectSiblingNodePoint,
   useEditorRef,
   useElement,
 } from '@udecode/plate/react';
@@ -54,7 +53,7 @@ const EquationPopoverContent = ({
     setOpen(false);
 
     if (isInline) {
-      selectSiblingNodePoint(editor, { node: element });
+      editor.tf.select(element, { next: true });
     } else {
       editor
         .getApi(BlockSelectionPlugin)

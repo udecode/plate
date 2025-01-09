@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { ClassNames, UnknownObject } from '@udecode/plate';
+import type { UnknownObject } from '@udecode/plate';
 
 import { usePlateSelectors } from '@udecode/plate/react';
 
@@ -13,37 +13,38 @@ import type {
 
 import { useCursorOverlayPositions } from '../hooks/useCursorOverlayPositions';
 
-export interface CursorProps<TCursorData extends UnknownObject = UnknownObject>
-  extends CursorOverlayState<TCursorData>,
-    ClassNames<{
+export type CursorProps<TCursorData extends UnknownObject = UnknownObject> =
+  CursorOverlayState<TCursorData> & {
+    id: string;
+
+    classNames?: Partial<{
       caret: string;
       selectionRect: string;
-    }> {
-  id: string;
+    }>;
 
-  /**
-   * Custom caret component. For example, you could display a label next to the
-   * caret.
-   *
-   * @default styled div
-   */
-  onRenderCaret?: React.FC<
-    Pick<CursorProps<TCursorData>, 'caretPosition' | 'data'>
-  >;
+    /** Whether to disable the caret. */
+    disableCaret?: boolean;
 
-  /** Overrides `Caret` component */
-  onRenderSelectionRect?: React.FC<
-    {
-      selectionRect: SelectionRect;
-    } & Pick<CursorProps<TCursorData>, 'data'>
-  >;
+    /** Whether to disable the selection rects. */
+    disableSelection?: boolean;
 
-  /** Whether to disable the caret. */
-  disableCaret?: boolean;
+    /**
+     * Custom caret component. For example, you could display a label next to
+     * the caret.
+     *
+     * @default styled div
+     */
+    onRenderCaret?: React.FC<
+      Pick<CursorProps<TCursorData>, 'caretPosition' | 'data'>
+    >;
 
-  /** Whether to disable the selection rects. */
-  disableSelection?: boolean;
-}
+    /** Overrides `Caret` component */
+    onRenderSelectionRect?: React.FC<
+      {
+        selectionRect: SelectionRect;
+      } & Pick<CursorProps<TCursorData>, 'data'>
+    >;
+  };
 
 export interface CursorOverlayProps<
   TCursorData extends UnknownObject = UnknownObject,

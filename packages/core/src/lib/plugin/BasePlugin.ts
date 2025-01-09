@@ -4,11 +4,9 @@ import type {
   TElement,
   TText,
 } from '@udecode/slate';
-import type { AnyObject } from '@udecode/utils';
+import type { AnyObject, Nullable } from '@udecode/utils';
 import type { Draft } from 'mutative';
 import type { TStateApi } from 'zustand-x';
-
-import type { Nullable } from '../types';
 
 export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
   /** Unique identifier for this plugin. */

@@ -1,5 +1,6 @@
 import type { ExtendEditor, PlatePlugin } from './PlatePlugin';
 
+import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest';
 import {
   type ExtendConfig,
   type NodeComponent,
@@ -7,7 +8,6 @@ import {
   type SlatePlugin,
   createSlatePlugin,
   createTSlatePlugin,
-  resolvePluginTest,
 } from '../../lib';
 import { createPlateEditor } from '../editor';
 import { toPlatePlugin, toTPlatePlugin } from './toPlatePlugin';

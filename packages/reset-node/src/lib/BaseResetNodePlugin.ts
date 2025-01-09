@@ -4,7 +4,6 @@ import {
   NodeApi,
   PointApi,
   createTSlatePlugin,
-  resetEditorChildren,
 } from '@udecode/plate';
 
 import type { ResetNodePluginOptions } from './types';
@@ -64,7 +63,8 @@ export const BaseResetNodePlugin = createTSlatePlugin<ResetNodeConfig>({
             (PointApi.equals(selection.focus, start) &&
               PointApi.equals(selection.anchor, end))
           ) {
-            resetEditorChildren(editor, {
+            editor.tf.reset({
+              children: true,
               select: true,
             });
 

@@ -195,6 +195,10 @@ The following interfaces from `slate` and `slate-dom` are now part of `Editor`:
   - `withoutNormalizing` -> `editor.tf.withoutNormalizing`
   - `wrapNodeChildren` -> `editor.tf.wrapNodes(element, { children: true })`
   - `wrapNodes` -> `editor.tf.wrapNodes`
+  - `resetEditor` -> `editor.tf.reset`
+  - `resetEditorChildren` -> `editor.tf.reset({ children: true })`
+  - `selectEditor` -> `editor.tf.select([], { focus, edge })`
+  - `selectSiblingNodePoint` -> `editor.tf.select(at, { next, previous })`
 
 - Moved to `NodeApi.`:
   - `getNextSiblingNodes(parentEntry, path)` -> `NodeApi.children(editor, path, { from: path.at(-1) + 1 })`

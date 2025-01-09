@@ -1,8 +1,7 @@
-import type { AnyObject } from '@udecode/utils';
+import type { AnyObject, Nullable } from '@udecode/utils';
 
 import type { SlateEditor } from '../../../editor';
 import type { HtmlDeserializer } from '../../../plugin/SlatePlugin';
-import type { Nullable } from '../../../types/misc/Nullable';
 
 import { pluginDeserializeHtml } from './pluginDeserializeHtml';
 
