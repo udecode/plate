@@ -1,5 +1,7 @@
 # @udecode/plate-font
 
+## 42.0.0
+
 ## 41.0.12
 
 ### Patch Changes

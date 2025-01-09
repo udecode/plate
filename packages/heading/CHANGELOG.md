@@ -1,5 +1,7 @@
 # @udecode/plate-heading
 
+## 42.0.0
+
 ## 41.0.0
 
 ## 40.2.6

@@ -1,5 +1,12 @@
 # @udecode/plate-utils
 
+## 42.0.0
+
+### Major Changes
+
+- [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) –
+  - Removed unused `moveSelectionByOffset`, `getLastBlockDOMNode`, `useLastBlock`, `useLastBlockDOMNode`
+
 ## 41.0.13
 
 ### Patch Changes
