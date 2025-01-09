@@ -327,10 +327,6 @@ To convert a typed Slate plugin to a Plate plugin, you can use `toPlatePlugin`:
 
 ```ts
 const CodeBlockPlugin = toPlatePlugin(createSlatePlugin({ key: 'code_block' }), {
-  extendEditor: ({ api, editor }) => {
-    api.plugin.getSyntaxState();
-    return editor;
-  },
   handlers: {},
   options: { hotkey: ['mod+opt+8', 'mod+shift+8'] },
 });
