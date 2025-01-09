@@ -71,8 +71,6 @@ import Prism from 'prismjs';
 
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
 import { basicNodesValue } from '@/registry/default/example/values/basic-nodes-value';
-import { indentListValue } from '@/registry/default/example/values/indent-list-value';
-import { linkValue } from '@/registry/default/example/values/link-value';
 import { tableValue } from '@/registry/default/example/values/table-value';
 import { BlockquoteElementStatic } from '@/registry/default/plate-ui/blockquote-element-static';
 import { Button } from '@/registry/default/plate-ui/button';
@@ -118,7 +116,7 @@ import { ToggleElementStatic } from '@/registry/default/plate-ui/toggle-element-
 
 const siteUrl = 'https://platejs.org';
 const createValue = () => {
-  return [...basicNodesValue, ...indentListValue, ...linkValue, ...tableValue];
+  return [...tableValue, ...basicNodesValue];
 };
 
 export function ClientComponent() {
@@ -320,7 +318,7 @@ export function ClientComponent() {
   return (
     <div className="flex flex-col items-center gap-4 p-8">
       <Button onClick={handleFileSelect}>Import HTML</Button>
-      <Plate editor={editor}>
+      <Plate onValueChange={(v) => console.log(v, 'Update')} editor={editor}>
         <EditorContainer>
           <Editor variant="demo" className="pb-[20vh]" spellCheck={false} />
         </EditorContainer>

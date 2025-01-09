@@ -3,6 +3,7 @@ import {
   bindFirst,
   createSlatePlugin,
   createTSlatePlugin,
+  isPluginStatic,
 } from '@udecode/plate-common';
 
 import type { TableApi, TableConfig } from './types';
@@ -84,6 +85,22 @@ export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
   parsers: {
     html: {
       deserializer: {
+        parse: ({ element, type }) => {
+          if (isPluginStatic(element, type)) {
+            const colSizes = JSON.parse(element.dataset.colSizes as string);
+
+            return { colSizes, marginLeft: 20, type };
+          }
+          // prevent table static elements from being parsed multiple times
+          if (
+            isPluginStatic(element.parentElement!, type) &&
+            element.tagName === 'TABLE'
+          ) {
+            return;
+          }
+
+          return { type };
+        },
         rules: [{ validNodeName: 'TABLE' }],
       },
     },
