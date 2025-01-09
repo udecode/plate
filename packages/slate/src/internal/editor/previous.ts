@@ -1,6 +1,6 @@
 import { previous as previousBase } from 'slate';
 
-import type { Editor, ValueOf } from '../../interfaces/editor/editor';
+import type { Editor, ValueOf } from '../../interfaces/editor/editor-type';
 import type { NodeEntry } from '../../interfaces/node-entry';
 
 import {

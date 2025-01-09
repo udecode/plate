@@ -1,5 +1,5 @@
 import type { DescendantOf, InsertNodesOptions } from '../../interfaces';
-import type { Editor, ValueOf } from '../../interfaces/editor/editor';
+import type { Editor, ValueOf } from '../../interfaces/editor/editor-type';
 
 export const insertNode = <
   N extends DescendantOf<E>,

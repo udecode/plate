@@ -37,8 +37,8 @@ export const setNodes = <N extends DescendantOf<E>, E extends Editor = Editor>(
       const [parentNode] = parentEntry;
 
       return (
-        !editor.isVoid(parentNode as any) ||
-        editor.markableVoid(parentNode as any)
+        !editor.api.isVoid(parentNode as any) ||
+        editor.api.markableVoid(parentNode as any)
       );
     };
 
@@ -59,7 +59,7 @@ export const setNodes = <N extends DescendantOf<E>, E extends Editor = Editor>(
 
         const [parentNode] = parentEntry;
         markAcceptingVoidSelected =
-          parentNode && editor.markableVoid(parentNode as any);
+          parentNode && editor.api.markableVoid(parentNode as any);
       }
     }
     if (isExpandedRange || markAcceptingVoidSelected) {

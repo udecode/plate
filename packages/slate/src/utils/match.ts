@@ -1,4 +1,4 @@
-import type { Editor } from '../interfaces/editor/editor';
+import type { Editor } from '../interfaces/editor/editor-type';
 import type { NodeOf, TNode } from '../interfaces/node';
 
 import { type Path, TextApi } from '../interfaces/index';

@@ -9,7 +9,7 @@ import {
   Text as SlateText,
 } from 'slate';
 
-import type { Editor, Value } from './editor/editor';
+import type { Editor, Value } from './editor/editor-type';
 import type { TElement } from './element';
 import type { NodeProps, TNode } from './node';
 

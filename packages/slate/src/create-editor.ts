@@ -12,7 +12,7 @@ import {
   shouldNormalize,
 } from 'slate';
 
-import type { Editor, Value } from './interfaces/editor/editor';
+import type { Editor, Value } from './interfaces/editor/editor-type';
 
 import {
   type EditorApi,
@@ -105,6 +105,7 @@ import { prop } from './internal/editor-extension/prop';
 import { some } from './internal/editor-extension/some';
 import { collapseSelection } from './internal/transforms/collapseSelection';
 import { deleteText } from './internal/transforms/deleteText';
+import { deselect } from './internal/transforms/deselect';
 import { insertFragment } from './internal/transforms/insertFragment';
 import { insertNodes } from './internal/transforms/insertNodes';
 import { insertText } from './internal/transforms/insertText';
@@ -194,7 +195,8 @@ export const createEditor = <V extends Value>({
     before: bindFirst(getPointBefore, editor),
     collapse: bindFirst(collapseSelection, editor),
     delete: bindFirst(deleteText, editor),
-    deselect: bindFirst(deselectDOM, editor),
+    deselect: bindFirst(deselect, editor),
+    deselectDOM: bindFirst(deselectDOM, editor),
     edges: bindFirst(getEdgePoints, editor),
     elementReadOnly: bindFirst(isElementReadOnly, editor),
     end: bindFirst(getEndPoint, editor),

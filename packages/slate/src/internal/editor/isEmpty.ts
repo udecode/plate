@@ -1,6 +1,6 @@
 import { isEmpty as isEmptyBase } from 'slate';
 
-import type { Editor } from '../../interfaces/editor/editor';
+import type { Editor } from '../../interfaces/editor/editor-type';
 import type { At } from '../../types';
 
 import {

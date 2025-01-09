@@ -25,7 +25,9 @@ export const removeMarks = (
 
     const [parentNode] = editor.api.parent<TElement>(editor.api.path(node)!)!;
 
-    return !editor.isVoid(parentNode) || editor.markableVoid(parentNode);
+    return (
+      !editor.api.isVoid(parentNode) || editor.api.markableVoid(parentNode)
+    );
   };
 
   const expandedSelection = RangeApi.isExpanded(selection);
@@ -36,7 +38,8 @@ export const removeMarks = (
 
     if (selectedNode && match(selectedNode)) {
       const [parentNode] = editor.api.parent<TElement>(selectedPath)!;
-      markAcceptingVoidSelected = parentNode && editor.markableVoid(parentNode);
+      markAcceptingVoidSelected =
+        parentNode && editor.api.markableVoid(parentNode);
     }
   }
   if (keys && (expandedSelection || markAcceptingVoidSelected)) {

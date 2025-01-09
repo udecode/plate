@@ -36,16 +36,16 @@ A custom editor interface that extends the base **`Editor`** interface and inclu
 ## API Methods
 
 <APIParameters>
-  <APIItem name="getApi" type="<C extends AnyPluginConfig = PluginConfig>(plugin?: WithRequiredKey<C>) => InferApi<C>">
+  <APIItem name="getApi" type="(plugin: PlatePlugin) => EditorApi & PlatePlugin['api']">
     Retrieve the typed API for a plugin.
   </APIItem>
-  <APIItem name="getTransforms" type="<C extends AnyPluginConfig = PluginConfig>(plugin?: WithRequiredKey<C>) => InferTransforms<C>">
+  <APIItem name="getTransforms" type="(plugin: PlatePlugin) => EditorTransforms & PlatePlugin['transforms']">
     Get the typed transforms for a plugin.
   </APIItem>
-  <APIItem name="getPlugin" type="<C extends AnyPluginConfig = PluginConfig>(plugin: WithRequiredKey<C>) => C extends { node: any } ? C : EditorPlatePlugin<C>">
+  <APIItem name="getPlugin" type="(plugin: PlatePlugin) => PlatePlugin">
     Retrieve the editor plugin instance by its key or base plugin.
   </APIItem>
-  <APIItem name="getType" type="(plugin: WithRequiredKey) => string">
+  <APIItem name="getType" type="(plugin: PlatePlugin) => string">
     Get the node type associated with a plugin.
   </APIItem>
 </APIParameters>
@@ -53,19 +53,19 @@ A custom editor interface that extends the base **`Editor`** interface and inclu
 ## Option Methods
 
 <APIParameters>
-  <APIItem name="getOption" type="<C extends AnyPluginConfig, K extends keyof InferOptions<C>, F extends InferOptions<C>[K]>(plugin: WithRequiredKey<C>, optionKey: K, ...args: F extends (...args: infer A) => any ? A : never) => F extends (...args: any[]) => infer R ? R : F">
+  <APIItem name="getOption" type="(plugin: PlatePlugin, optionKey: string) => any">
     Get a specific option value for a plugin.
   </APIItem>
-  <APIItem name="getOptions" type="<C extends AnyPluginConfig = PluginConfig>(plugin: WithRequiredKey<C>) => InferOptions<C>">
+  <APIItem name="getOptions" type="(plugin: PlatePlugin) => any">
     Get all options for a plugin.
   </APIItem>
-  <APIItem name="setOption" type="<C extends AnyPluginConfig, K extends keyof InferOptions<C>>(plugin: WithRequiredKey<C>, optionKey: K, value: InferOptions<C>[K]) => void">
+  <APIItem name="setOption" type="(plugin: PlatePlugin, optionKey: string, value: any) => void">
     Set a specific option value for a plugin.
   </APIItem>
-  <APIItem name="setOptions" type="<C extends AnyPluginConfig>(plugin: WithRequiredKey<C>, options: Parameters<SetImmerState<InferOptions<C>>>[0] | Partial<InferOptions<C>>) => void">
+  <APIItem name="setOptions" type="(plugin: PlatePlugin, options: (draft: object) => void | Partial<object>) => void">
     Set multiple options for a plugin.
   </APIItem>
-  <APIItem name="getOptionsStore" type="<C extends AnyPluginConfig>(plugin: WithRequiredKey<C>) => StoreApi<C['key'], InferOptions<C>>">
+  <APIItem name="getOptionsStore" type="(plugin: PlatePlugin) => any">
     Get the zustand-x options store for a plugin.
   </APIItem>
 </APIParameters>
@@ -73,10 +73,10 @@ A custom editor interface that extends the base **`Editor`** interface and inclu
 ## React Hooks
 
 <APIParameters>
-  <APIItem name="useOption" type="<C extends AnyPluginConfig, K extends keyof InferOptions<C>, F extends InferOptions<C>[K], Args extends Parameters<((...args: any[]) => any) & F>>(plugin: WithRequiredKey<C>, optionKey: K, ...args: Args) => F extends (...args: any[]) => any ? ReturnType<F> : F">
+  <APIItem name="useOption" type="(plugin: PlatePlugin, optionKey: string) => any">
     Subscribe to a specific option value in a React component.
   </APIItem>
-  <APIItem name="useOptions" type="<C extends AnyPluginConfig, U>(plugin: WithRequiredKey<C>, selector?: (s: InferOptions<C>) => U, equalityFn?: EqualityChecker<U>) => U | InferOptions<C>">
+  <APIItem name="useOptions" type="(plugin: PlatePlugin) => any">
     Subscribe to plugin options or a derived value from options in a React component.
   </APIItem>
 </APIParameters>
@@ -84,7 +84,7 @@ A custom editor interface that extends the base **`Editor`** interface and inclu
 ## Plate Store Methods
 
 <APIParameters>
-  <APIItem name="setPlateState" type="<K extends (typeof EXPOSED_STORE_KEYS)[number]>(optionKey: K, value: PlateStoreState[K]) => void">
+  <APIItem name="setPlateState" type="(optionKey: string, value: PlateStoreState[K]) => void">
     Update the global Plate state.
   </APIItem>
 </APIParameters>
@@ -108,17 +108,6 @@ A custom editor interface that extends the base **`Editor`** interface and inclu
   </APIItem>
 </APIParameters>
 
-### SlateNextPlugin
-
-<APIParameters>
-  <APIItem name="editor.tf.toggle.block" type="(options: ToggleBlockOptions) => void">
-    Toggle a block element.
-  </APIItem>
-  <APIItem name="editor.tf.toggle.mark" type="(options: ToggleMarkOptions) => void">
-    Toggle a mark on the selected text.
-  </APIItem>
-</APIParameters>
-
 ### HtmlPlugin
 
 <APIParameters>
@@ -135,7 +124,7 @@ A custom editor interface that extends the base **`Editor`** interface and inclu
   </APIItem>
 </APIParameters>
 
-### PlateApiPlugin
+### SlateReactExtensionPlugin
 
 <APIParameters>
   <APIItem name="editor.api.redecorate" type="() => void">

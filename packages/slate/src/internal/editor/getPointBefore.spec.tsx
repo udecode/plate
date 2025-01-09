@@ -2,7 +2,10 @@
 
 import { jsxt } from '@udecode/plate-test-utils';
 
+import type { Editor, LegacyEditorMethods } from '../../interfaces';
+
 import { createEditor } from '../../create-editor';
+import { syncLegacyMethods } from '../../utils';
 
 jsxt;
 
@@ -276,10 +279,11 @@ describe('getPointBefore', () => {
             </hp>
           </editor>
         ) as any
-      );
+      ) as Editor & LegacyEditorMethods;
       const { isInline, isVoid } = editor;
       editor.isInline = (n) => n.type === 'img' || isInline(n);
       editor.isVoid = (n) => n.type === 'img' || isVoid(n);
+      syncLegacyMethods(editor);
 
       expect(editor.api.before(editor.selection!.anchor)).toEqual({
         offset: 0,

@@ -1,4 +1,4 @@
-import type { Editor, Value } from './editor/editor';
+import type { Editor, Value } from './editor/editor-type';
 import type { ElementOf } from './element';
 import type {
   AncestorOf,

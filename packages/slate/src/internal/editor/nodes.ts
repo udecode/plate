@@ -1,4 +1,4 @@
-import type { Editor, ValueOf } from '../../interfaces/editor/editor';
+import type { Editor, ValueOf } from '../../interfaces/editor/editor-type';
 import type { NodeEntry } from '../../interfaces/node-entry';
 
 import {
@@ -64,11 +64,11 @@ export function* nodes<N extends DescendantOf<E>, E extends Editor = Editor>(
       if (!ElementApi.isElement(node)) return false;
       if (
         !voids &&
-        (editor.isVoid(node) || editor.api.isElementReadOnly(node))
+        (editor.api.isVoid(node) || editor.api.isElementReadOnly(node))
       ) {
         return true;
       }
-      if (ignoreNonSelectable && !editor.isSelectable(node)) {
+      if (ignoreNonSelectable && !editor.api.isSelectable(node)) {
         return true;
       }
 
@@ -85,7 +85,7 @@ export function* nodes<N extends DescendantOf<E>, E extends Editor = Editor>(
     if (
       ignoreNonSelectable &&
       ElementApi.isElement(node) &&
-      !editor.isSelectable(node)
+      !editor.api.isSelectable(node)
     ) {
       continue;
     }

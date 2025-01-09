@@ -1,7 +1,7 @@
 import { next } from 'slate';
 
 import type { DescendantOf, EditorNextOptions } from '../../interfaces';
-import type { Editor, ValueOf } from '../../interfaces/editor/editor';
+import type { Editor, ValueOf } from '../../interfaces/editor/editor-type';
 import type { NodeEntry } from '../../interfaces/node-entry';
 
 import { getQueryOptions } from '../../utils';

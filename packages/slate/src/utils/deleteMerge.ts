@@ -1,6 +1,6 @@
 import { Editor as EditorInterface } from 'slate';
 
-import type { Editor } from '../interfaces/editor/editor';
+import type { Editor } from '../interfaces/editor/editor-type';
 import type { NodeEntry } from '../interfaces/node-entry';
 
 import {
@@ -21,7 +21,6 @@ import { getPointBefore } from '../internal/editor/getPointBefore';
 import { getStartPoint } from '../internal/editor/getStartPoint';
 import { getVoidNode } from '../internal/editor/getVoidNode';
 import { isBlock } from '../internal/editor/isBlock';
-import { isVoid } from '../internal/editor/isVoid';
 import { nodes } from '../internal/editor/nodes';
 import { withoutNormalizing } from '../internal/editor/withoutNormalizing';
 import { select } from '../internal/transforms/select';
@@ -137,7 +136,7 @@ export const deleteMerge = (
         continue;
       }
       if (
-        (!voids && isVoid(e as any, node)) ||
+        (!voids && e.api.isVoid(node as any)) ||
         (!PathApi.isCommon(path, start.path) &&
           !PathApi.isCommon(path, end.path))
       ) {

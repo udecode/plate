@@ -9,8 +9,9 @@ import type { SlateEditor } from '../editor';
 
 import { BaseParagraphPlugin } from '../plugins';
 
-const isInlineNode = (editor: Pick<Editor, 'isInline'>) => (node: Descendant) =>
-  TextApi.isText(node) || (ElementApi.isElement(node) && editor.isInline(node));
+const isInlineNode = (editor: Editor) => (node: Descendant) =>
+  TextApi.isText(node) ||
+  (ElementApi.isElement(node) && editor.api.isInline(node));
 
 const makeBlockLazy = (type: string) => (): Descendant => ({
   children: [],

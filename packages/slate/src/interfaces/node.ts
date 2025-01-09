@@ -1,6 +1,6 @@
 import { Node as SlateNode } from 'slate';
 
-import type { Editor, Value } from './editor/editor';
+import type { Editor, Value } from './editor/editor-type';
 import type { NodeEntry } from './node-entry';
 import type { Path } from './path';
 import type { TRange } from './range';

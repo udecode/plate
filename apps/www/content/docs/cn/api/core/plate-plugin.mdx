@@ -39,27 +39,27 @@ const MyPlugin = createPlatePlugin<MyPluginConfig>({
 Plate 用于存储插件的唯一标识符，通过 `editor.plugins` 键。
 </APIItem>
 
-<APIItem name="api" type="UnionToIntersection<InferApi<C>>">
+<APIItem name="api" type="Record<string, Function>">
 插件提供的 API 函数对象。这些函数通过 `editor.api[key]` 访问。
 </APIItem>
 
-<APIItem name="transforms" type="UnionToIntersection<InferTransforms<C>>">
+<APIItem name="transforms" type="Record<string, Function>">
 插件提供的变换函数，用于修改编辑器状态。这些函数通过 `editor.tf[key]` 访问。
 </APIItem>
 
-<APIItem name="options" type="InferOptions<C>">
+<APIItem name="options" type="Record<string, any>">
 插件作为选项使用的扩展属性。
 </APIItem>
 
-<APIItem name="handlers" type="Nullable<DOMHandlers<WithAnyKey<C>> & { onChange?: OnChange<WithAnyKey<C>> }>">
+<APIItem name="handlers" type="{ onChange?: (editor: PlateEditor) => void } & Record<string, Function>">
 各种编辑器事件的事件处理程序，包括 `onChange`。
 </APIItem>
 
-<APIItem name="inject" type="Nullable<{...}>">
+<APIItem name="inject" type="object">
 定义插件如何将功能注入其他插件或编辑器。
 
 <APISubList>
-<APISubListItem parent="inject" name="nodeProps" type="InjectNodeProps<WithAnyKey<C>>" optional>
+<APISubListItem parent="inject" name="nodeProps" type="Record<string, any>" optional>
 Plate 用于将属性注入任何节点组件的属性。
 </APISubListItem>
 
@@ -84,7 +84,7 @@ Plate 用于将属性注入任何节点组件的属性。
 <APISubListItem parent="inject" name="maxLevel" type="number" optional>
 节点属性注入的最大嵌套级别。深度大于此级别的节点将不会接收注入的属性。
 </APISubListItem>
-<APISubListItem parent="inject" name="plugins" type="Record<string, Partial<EditorPlatePlugin<AnyPluginConfig>>>" optional>
+<APISubListItem parent="inject" name="plugins" type="Record<string, Partial<PlatePlugin>>" optional>
 插件可以使用的属性，用于允许其他插件注入代码。
 </APISubListItem>
 <APISubListItem parent="inject" name="targetPluginToInject" type="function" optional>
@@ -98,7 +98,7 @@ Plate 用于将属性注入任何节点组件的属性。
 </APISubList>
 </APIItem>
 
-<APIItem name="node" type="BasePluginNode">
+<APIItem name="node" type="object">
 定义插件的节点特定配置。
 
 <APISubList>
@@ -164,14 +164,14 @@ HTML React 序列化器配置。
 </APISubList>
 </APIItem>
 
-<APIItem name="render" type="Nullable<{...}>">
-定义编辑器各个部分的渲染函数。
+<APIItem name="render" type="object">
+定义插件如何渲染组件。
 
 <APISubList>
-<APISubListItem parent="render" name="aboveEditable" type="React.FC<{ children: React.ReactNode }>" optional>
+<APISubListItem parent="render" name="aboveEditable" type="Component" optional>
 在 `Editable` 组件上方但在 `Slate` 包装器内渲染组件。
 </APISubListItem>
-<APISubListItem parent="render" name="aboveNodes" type="NodeWrapperComponent<WithAnyKey<C>>" optional>
+<APISubListItem parent="render" name="aboveNodes" type="Component" optional>
 在所有其他插件的 `node` 组件上方渲染组件。
 </APISubListItem>
 <APISubListItem parent="render" name="aboveSlate" type="React.FC<{ children: React.ReactNode }>" optional>
@@ -222,15 +222,25 @@ HTML React 序列化器配置。
 Plate 用来装饰编辑器范围的属性。
 </APIItem>
 
-<APIItem name="useHooks" type="UseHooks<WithAnyKey<C>>" optional>
-Hook called when the editor is initialized.
+<APIItem name="extendEditor" type="ExtendEditor<WithAnyKey<C>>" optional>
+用于扩展编辑器实例的函数。主要用于集成需要直接编辑器变更的传统 Slate 插件。每个插件只允许一个 `extendEditor`。
+
+```ts
+extendEditor: ({ editor }) => {
+  // 示例：集成传统 Slate 插件
+  return withYjs(editor);
+}}
+</APIItem>
+
+<APIItem name="useHooks" type="() => void" optional>
+当编辑器初始化时调用的钩子。
 </APIItem>
 </APIAttributes>
 
 ## Plugin Methods
 
 <APIAttributes>
-<APIItem name="configure" type="function">
+<APIItem name="configure" type="(config: PlatePluginConfig | ((ctx: PlatePluginContext) => PlatePluginConfig)) => PlatePlugin">
 创建一个具有更新选项的新插件实例。
 
 ```ts
@@ -238,14 +248,14 @@ Hook called when the editor is initialized.
 ```
 </APIItem>
 
-<APIItem name="extend" type="function">
+<APIItem name="extend" type="(config: Partial<PlatePlugin> | ((ctx: PlatePluginContext) => Partial<PlatePlugin>)) => PlatePlugin">
 创建一个具有附加配置的新插件实例。可以接受一个对象或一个函数。
 
 ```ts
 (extendConfig: Partial<PlatePlugin> | ((ctx: PlatePluginContext<AnyPluginConfig>) => Partial<PlatePlugin>)) => PlatePlugin
 ```
 </APIItem>
-<APIItem name="extendPlugin" type="function">
+<APIItem name="extendPlugin" type="(key: string, config: Partial<PlatePlugin> | ((ctx: PlatePluginContext) => Partial<PlatePlugin>)) => PlatePlugin">
 扩展一个现有的嵌套插件或添加一个新的插件，如果未找到。支持深度嵌套。
 
 ```ts
@@ -261,7 +271,7 @@ Hook called when the editor is initialized.
 ```
 </APIItem>
 
-<APIItem name="extendApi" type="function">
+<APIItem name="extendApi" type="(api: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin">
 扩展插件的 API。
 
 ```ts
@@ -269,7 +279,7 @@ Hook called when the editor is initialized.
 ```
 </APIItem>
 
-<APIItem name="extendEditorApi" type="function">
+<APIItem name="extendEditorApi" type="(api: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin">
 使用插件特定的方法扩展编辑器的 API。
 
 ```ts
@@ -277,15 +287,15 @@ Hook called when the editor is initialized.
 ```
 </APIItem>
 
-<APIItem name="extendTransforms" type="function">
-使用插件特定的方法扩展插件的变换。
+<APIItem name="extendTransforms" type="(transforms: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin">
+扩展插件的变换。
 
 ```ts
 (transforms: (ctx: PlatePluginContext<AnyPluginConfig>) => any) => PlatePlugin<C>
 ```
 </APIItem>
 
-<APIItem name="extendEditorTransforms" type="function">
+<APIItem name="extendEditorTransforms" type="(transforms: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin">
 使用插件特定的方法扩展编辑器的变换。
 
 ```ts
@@ -293,12 +303,38 @@ Hook called when the editor is initialized.
 ```
 </APIItem>
 
-<APIItem name="extendOptions" type="function">
+<APIItem name="extendOptions" type="(options: (ctx: PlatePluginContext) => Record<string, any>) => PlatePlugin">
 使用选择器扩展插件选项。
 
 ```ts
 (options: (ctx: PlatePluginContext<AnyPluginConfig>) => any) => PlatePlugin<C>
 ```
+</APIItem>
+
+<APIItem name="overrideEditor" type="function">
+创建一个具有覆盖编辑器方法的新插件实例。通过 `tf` 和 `api` 参数提供对原始方法的访问。可以多次调用以层叠不同的覆盖。
+
+```ts
+overrideEditor(({ editor, tf: { deleteForward }, api: { isInline } }) => ({
+  transforms: {
+    // 覆盖 transforms
+    deleteForward(options) {
+      deleteForward(options);
+    },
+  },
+  api: {
+    // 覆盖 API 方法
+    isInline(element) {
+      return isInline(element);
+    },
+  },
+})) => PlatePlugin<C>
+```
+
+- 修改编辑器行为的首选方法
+- 对原始方法的类型安全访问
+- 在 transforms 和 API 之间清晰分离
+- 可以多次链式调用
 </APIItem>
 </APIAttributes>
 

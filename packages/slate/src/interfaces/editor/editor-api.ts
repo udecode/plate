@@ -66,7 +66,7 @@ import type { Path } from '../path';
 import type { Point } from '../point';
 import type { TRange } from '../range';
 import type { MarksIn, TextIn } from '../text';
-import type { Value } from './editor';
+import type { Value } from './editor-type';
 
 export type EditorApi<V extends Value = Value> = {
   /** Get the fragment at a location or selection. */
