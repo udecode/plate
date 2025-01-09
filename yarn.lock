@@ -6315,6 +6315,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@udecode/plate-common@workspace:packages/common":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-common@workspace:packages/common"
+  peerDependencies:
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
+  languageName: unknown
+  linkType: soft
+
 "@udecode/plate-core@npm:41.0.13, @udecode/plate-core@workspace:^, @udecode/plate-core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-core@workspace:packages/core"
@@ -6946,6 +6955,24 @@ __metadata:
     "@radix-ui/react-slot": "npm:^1.1.0"
     "@udecode/utils": "npm:37.0.0"
     clsx: "npm:^2.1.1"
+  peerDependencies:
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
+  languageName: unknown
+  linkType: soft
+
+"@udecode/slate-react@workspace:packages/slate-utils":
+  version: 0.0.0-use.local
+  resolution: "@udecode/slate-react@workspace:packages/slate-utils"
+  peerDependencies:
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
+  languageName: unknown
+  linkType: soft
+
+"@udecode/slate-utils@workspace:packages/slate-react":
+  version: 0.0.0-use.local
+  resolution: "@udecode/slate-utils@workspace:packages/slate-react"
   peerDependencies:
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
