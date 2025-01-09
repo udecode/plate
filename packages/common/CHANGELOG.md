@@ -1,5 +1,14 @@
 # @udecode/plate
 
+## 42.0.0
+
+### Major Changes
+
+- [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) – This package is now deprecated and will be renamed to `@udecode/plate`. Migration:
+
+  - Remove `@udecode/plate-common` and install `@udecode/plate`
+  - Replace all `'@udecode/plate-common'` with `'@udecode/plate'`,
+
 ## 41.0.14
 
 ## 41.0.13

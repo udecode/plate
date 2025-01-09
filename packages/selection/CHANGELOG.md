@@ -1,5 +1,11 @@
 # @udecode/plate-selection
 
+## 42.0.0
+
+### Major Changes
+
+- [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) – Remove first parameter of editor.api.blockSelection.duplicate
+
 ## 41.0.8
 
 ### Patch Changes

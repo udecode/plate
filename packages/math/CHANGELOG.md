@@ -1,5 +1,7 @@
 # @udecode/plate-math
 
+## 42.0.0
+
 ## 41.0.11
 
 ### Patch Changes

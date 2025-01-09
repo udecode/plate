@@ -1,5 +1,11 @@
 # @udecode/plate
 
+## 42.0.0
+
+### Major Changes
+
+- [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) – This package is now deprecated. Use `@udecode/slate` or `@udecode/plate` instead.
+
 ## 41.0.14
 
 ## 41.0.13
