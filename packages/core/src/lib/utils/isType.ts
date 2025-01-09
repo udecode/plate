@@ -1,6 +1,6 @@
-import type { SlateEditor } from '@udecode/plate-core';
-
 import castArray from 'lodash/castArray.js';
+
+import type { SlateEditor } from '../editor';
 
 /** Does the node match the type provided. */
 export const isType = (

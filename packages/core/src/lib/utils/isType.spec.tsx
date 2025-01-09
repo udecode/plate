@@ -1,8 +1,8 @@
 /** @jsx jsxt */
-import { createSlateEditor } from '@udecode/plate-core';
 import { jsxt } from '@udecode/plate-test-utils';
 import { createEditor } from '@udecode/slate';
 
+import { createSlateEditor } from '../editor';
 import { isType } from './isType';
 
 jsxt;
