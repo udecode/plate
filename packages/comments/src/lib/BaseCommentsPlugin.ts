@@ -103,6 +103,7 @@ export const BaseCommentsPlugin = createTSlatePlugin<BaseCommentsConfig>({
       return getOptions().users[id];
     },
   }))
+  .overrideEditor(withComments)
   .extendApi<Partial<CommentsApi>>(({ getOptions, setOptions }) => ({
     addComment: (value) => {
       const { myUserId } = getOptions();
@@ -154,5 +155,4 @@ export const BaseCommentsPlugin = createTSlatePlugin<BaseCommentsConfig>({
   }))
   .extendEditorTransforms(({ editor }) => ({
     insert: { comment: bindFirst(insertComment, editor) },
-  }))
-  .extendEditorTransforms(withComments);
+  }));

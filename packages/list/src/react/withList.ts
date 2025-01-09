@@ -1,4 +1,4 @@
-import type { ExtendEditorTransforms } from '@udecode/plate/react';
+import type { OverrideEditor } from '@udecode/plate/react';
 
 import type { ListConfig } from '../lib/BaseListPlugin';
 
@@ -9,11 +9,13 @@ import { withNormalizeList } from '../lib/withNormalizeList';
 import { withDeleteBackwardList } from './withDeleteBackwardList';
 import { withInsertBreakList } from './withInsertBreakList';
 
-export const withList: ExtendEditorTransforms<ListConfig> = (ctx) => ({
-  ...withInsertBreakList(ctx),
-  ...withDeleteBackwardList(ctx),
-  ...withDeleteForwardList(ctx as any),
-  ...withDeleteFragmentList(ctx as any),
-  ...withInsertFragmentList(ctx as any),
-  ...withNormalizeList(ctx as any),
+export const withList: OverrideEditor<ListConfig> = (ctx) => ({
+  transforms: {
+    ...withInsertBreakList(ctx).transforms,
+    ...withDeleteBackwardList(ctx).transforms,
+    ...withDeleteForwardList(ctx as any).transforms,
+    ...withDeleteFragmentList(ctx as any).transforms,
+    ...withInsertFragmentList(ctx as any).transforms,
+    ...withNormalizeList(ctx as any).transforms,
+  },
 });

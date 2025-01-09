@@ -17,63 +17,65 @@ export const BaseResetNodePlugin = createTSlatePlugin<ResetNodeConfig>({
   options: {
     rules: [],
   },
-}).extendEditorTransforms(
+}).overrideEditor(
   ({ editor, getOptions, tf: { deleteBackward, deleteFragment } }) => ({
-    deleteBackward(unit) {
-      if (!getOptions().disableFirstBlockReset) {
-        const { selection } = editor;
+    transforms: {
+      deleteBackward(unit) {
+        if (!getOptions().disableFirstBlockReset) {
+          const { selection } = editor;
 
-        if (selection && editor.api.isCollapsed()) {
-          const start = editor.api.start([])!;
+          if (selection && editor.api.isCollapsed()) {
+            const start = editor.api.start([])!;
 
-          if (PointApi.equals(selection.anchor, start)) {
-            const node = NodeApi.get<TElement>(editor, [0])!;
+            if (PointApi.equals(selection.anchor, start)) {
+              const node = NodeApi.get<TElement>(editor, [0])!;
 
-            const { children, ...props } = editor.api.create.block({}, [0]);
+              const { children, ...props } = editor.api.create.block({}, [0]);
 
-            // replace props
-            editor.tf.withoutNormalizing(() => {
-              // missing id will cause block selection not working and other issues
-              const { id, ...nodeProps } = NodeApi.extractProps(node);
+              // replace props
+              editor.tf.withoutNormalizing(() => {
+                // missing id will cause block selection not working and other issues
+                const { id, ...nodeProps } = NodeApi.extractProps(node);
 
-              editor.tf.unsetNodes(Object.keys(nodeProps), { at: [0] });
-              editor.tf.setNodes(props, { at: [0] });
-            });
+                editor.tf.unsetNodes(Object.keys(nodeProps), { at: [0] });
+                editor.tf.setNodes(props, { at: [0] });
+              });
 
-            return;
+              return;
+            }
           }
         }
-      }
 
-      deleteBackward(unit);
-    },
+        deleteBackward(unit);
+      },
 
-    deleteFragment(direction) {
-      const deleteFragmentPlugin = () => {
-        const { selection } = editor;
+      deleteFragment(direction) {
+        const deleteFragmentPlugin = () => {
+          const { selection } = editor;
 
-        if (!selection) return;
+          if (!selection) return;
 
-        const start = editor.api.start([])!;
-        const end = editor.api.end([])!;
+          const start = editor.api.start([])!;
+          const end = editor.api.end([])!;
 
-        if (
-          (PointApi.equals(selection.anchor, start) &&
-            PointApi.equals(selection.focus, end)) ||
-          (PointApi.equals(selection.focus, start) &&
-            PointApi.equals(selection.anchor, end))
-        ) {
-          resetEditorChildren(editor, {
-            select: true,
-          });
+          if (
+            (PointApi.equals(selection.anchor, start) &&
+              PointApi.equals(selection.focus, end)) ||
+            (PointApi.equals(selection.focus, start) &&
+              PointApi.equals(selection.anchor, end))
+          ) {
+            resetEditorChildren(editor, {
+              select: true,
+            });
 
-          return true;
-        }
-      };
+            return true;
+          }
+        };
 
-      if (!getOptions().disableEditorReset && deleteFragmentPlugin()) return;
+        if (!getOptions().disableEditorReset && deleteFragmentPlugin()) return;
 
-      deleteFragment(direction);
+        deleteFragment(direction);
+      },
     },
   })
 );

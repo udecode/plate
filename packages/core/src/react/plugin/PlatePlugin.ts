@@ -441,6 +441,8 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
 
   clone: () => PlatePlugin<C>;
 
+  overrideEditor: (override: OverrideEditor<C>) => PlatePlugin<C>;
+
   /**
    * Set {@link NodeComponent} for the plugin.
    *
@@ -761,3 +763,34 @@ export type Shortcut = HotkeysOptions & {
 };
 
 export type Shortcuts = Record<string, Shortcut | null>;
+
+export type OverrideEditor<C extends AnyPluginConfig = PluginConfig> = (
+  ctx: PlatePluginContext<C>
+) => {
+  api?: Deep2Partial<EditorApi> & {
+    [K in keyof InferApi<C>]?: InferApi<C>[K] extends (...args: any[]) => any
+      ? (...args: Parameters<InferApi<C>[K]>) => ReturnType<InferApi<C>[K]>
+      : InferApi<C>[K] extends Record<string, (...args: any[]) => any>
+        ? {
+            [N in keyof InferApi<C>[K]]?: (
+              ...args: Parameters<InferApi<C>[K][N]>
+            ) => ReturnType<InferApi<C>[K][N]>;
+          }
+        : never;
+  };
+  transforms?: Deep2Partial<EditorTransforms> & {
+    [K in keyof InferTransforms<C>]?: InferTransforms<C>[K] extends (
+      ...args: any[]
+    ) => any
+      ? (
+          ...args: Parameters<InferTransforms<C>[K]>
+        ) => ReturnType<InferTransforms<C>[K]>
+      : InferTransforms<C>[K] extends Record<string, (...args: any[]) => any>
+        ? {
+            [N in keyof InferTransforms<C>[K]]?: (
+              ...args: Parameters<InferTransforms<C>[K][N]>
+            ) => ReturnType<InferTransforms<C>[K][N]>;
+          }
+        : never;
+  };
+};

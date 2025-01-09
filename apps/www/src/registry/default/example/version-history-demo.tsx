@@ -126,7 +126,7 @@ const DiffPlugin = toPlatePlugin(
   createSlatePlugin({
     key: 'diff',
     node: { isLeaf: true },
-  }).extendEditorApi(withGetFragmentExcludeDiff),
+  }).overrideEditor(withGetFragmentExcludeDiff),
   {
     render: {
       aboveNodes:

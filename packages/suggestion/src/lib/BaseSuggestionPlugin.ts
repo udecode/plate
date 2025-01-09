@@ -62,7 +62,7 @@ export const BaseSuggestionPlugin = createTSlatePlugin<SuggestionConfig>({
     onSuggestionUpdate: null,
   },
 })
-  .extendEditorTransforms(withSuggestion)
+  .overrideEditor(withSuggestion)
   .extendOptions(({ getOptions }) => ({
     currentSuggestionUser: (): SuggestionUser | null => {
       const { currentUserId, users } = getOptions();

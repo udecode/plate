@@ -40,7 +40,7 @@ export const ListPlugin = toPlatePlugin(BaseListPlugin, {
     ListItemContentPlugin,
   ],
 })
-  .extendEditorTransforms(withList)
+  .overrideEditor(withList)
   .extend(({ editor }) => ({
     shortcuts: {
       toggleBulletedList: {

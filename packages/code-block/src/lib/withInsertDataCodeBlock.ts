@@ -1,44 +1,42 @@
-import type { ExtendEditorTransforms } from '@udecode/plate';
+import type { OverrideEditor } from '@udecode/plate';
 
 import { BaseCodeBlockPlugin, BaseCodeLinePlugin } from './BaseCodeBlockPlugin';
 
-export const withInsertDataCodeBlock: ExtendEditorTransforms = ({
+export const withInsertDataCodeBlock: OverrideEditor = ({
   editor,
   tf: { insertData },
 }) => ({
-  insertData(data) {
-    const text = data.getData('text/plain');
-    const vscodeDataString = data.getData('vscode-editor-data');
+  transforms: {
+    insertData(data) {
+      const text = data.getData('text/plain');
+      const vscodeDataString = data.getData('vscode-editor-data');
 
-    if (vscodeDataString) {
-      try {
-        const vscodeData = JSON.parse(vscodeDataString);
+      if (vscodeDataString) {
+        try {
+          const vscodeData = JSON.parse(vscodeDataString);
 
-        const lines = text.split('\n');
-        const codeLineType = editor.getType(BaseCodeLinePlugin);
-        const codeBlockType = editor.getType(BaseCodeBlockPlugin);
+          const lines = text.split('\n');
+          const codeLineType = editor.getType(BaseCodeLinePlugin);
+          const codeBlockType = editor.getType(BaseCodeBlockPlugin);
 
-        const node = {
-          children: lines.map((line) => ({
-            children: [
-              {
-                text: line,
-              },
-            ],
-            type: codeLineType,
-          })),
-          lang: vscodeData?.mode,
-          type: codeBlockType,
-        };
+          const node = {
+            children: lines.map((line) => ({
+              children: [{ text: line }],
+              type: codeLineType,
+            })),
+            lang: vscodeData?.mode,
+            type: codeBlockType,
+          };
 
-        editor.tf.insertNodes(node, {
-          select: true,
-        });
+          editor.tf.insertNodes(node, {
+            select: true,
+          });
 
-        return;
-      } catch (error) {}
-    }
+          return;
+        } catch (error) {}
+      }
 
-    insertData(data);
+      insertData(data);
+    },
   },
 });

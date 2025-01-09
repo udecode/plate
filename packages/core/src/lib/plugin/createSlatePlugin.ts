@@ -237,6 +237,21 @@ export function createSlatePlugin<
     return createSlatePlugin(newPlugin) as any;
   };
 
+  plugin.overrideEditor = (extension) => {
+    const newPlugin = { ...plugin };
+    newPlugin.__apiExtensions = [
+      ...(newPlugin.__apiExtensions as any),
+      {
+        extension,
+        isOverride: true,
+        isPluginSpecific: false,
+        isTransform: true,
+      },
+    ];
+
+    return createSlatePlugin(newPlugin) as any;
+  };
+
   plugin.extend = (extendConfig) => {
     let newPlugin = { ...plugin };
 

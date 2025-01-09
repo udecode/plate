@@ -246,6 +246,34 @@ const MyPlugin = createPlatePlugin({
 editor.tf.editorTransform();
 ```
 
+### .overrideEditor
+
+The `overrideEditor` method is used specifically for overriding existing editor methods without altering the plugin's type:
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+}).overrideEditor(({ editor, tf: { insertText }, api: { isInline } }) => ({
+  transforms: {
+    insertText(text) {
+      // Override insertText behavior
+      insertText(text);
+    },
+  },
+  api: {
+    isInline(element) {
+      // Override isInline behavior
+      return isInline(element);
+    },
+  },
+}));
+```
+
+- Used specifically for overriding existing editor methods
+- Returns the overridden methods wrapped in `transforms` or `api` objects
+- Cannot add new methods (use `extendEditorTransforms` or `extendEditorApi` instead)
+- Provides access to original methods through the context
+
 ### Difference between API and Transforms
 
 While there is currently no core difference between API and Transforms in Plate, they serve distinct purposes and are designed with future extensibility in mind:

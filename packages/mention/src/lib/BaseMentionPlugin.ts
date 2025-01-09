@@ -55,4 +55,4 @@ export const BaseMentionPlugin = createTSlatePlugin<MentionConfig>({
       },
     },
   }))
-  .extendEditorTransforms(withTriggerCombobox as any);
+  .overrideEditor(withTriggerCombobox as any);

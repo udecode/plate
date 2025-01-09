@@ -59,7 +59,7 @@ const MyPlugin = createPlatePlugin({
   },
   // Include the input plugin
   plugins: [ComboboxInputPlugin],
-}).extendEditorTransforms(withTriggerCombobox);
+}).overrideEditor(withTriggerCombobox);
 ```
 
 </Step>

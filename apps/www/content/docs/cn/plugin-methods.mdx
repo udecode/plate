@@ -307,3 +307,31 @@ const CodeBlockPlugin = toPlatePlugin(createSlatePlugin({ key: 'code_block' }), 
   options: { hotkey: ['mod+opt+8', 'mod+shift+8'] },
 });
 ```
+
+### .overrideEditor
+
+`overrideEditor` 方法专门用于覆盖现有的编辑器方法：
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+}).overrideEditor(({ editor, tf: { insertText }, api: { isInline } }) => ({
+  transforms: {
+    insertText(text) {
+      // 覆盖 insertText 行为
+      insertText(text);
+    },
+  },
+  api: {
+    isInline(element) {
+      // 覆盖 isInline 行为
+      return isInline(element);
+    },
+  },
+}));
+```
+
+- 专门用于覆盖现有的编辑器方法
+- 返回的覆盖方法需要包装在 `transforms` 或 `api` 对象中
+- 不能添加新方法（请改用 `extendEditorTransforms` 或 `extendEditorApi`）
+- 通过上下文提供对原始方法的访问

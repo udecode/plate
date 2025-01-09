@@ -52,4 +52,4 @@ export const BaseIndentPlugin = createTSlatePlugin<IndentConfig>({
     offset: 24,
     unit: 'px',
   },
-}).extendEditorTransforms(withIndent);
+}).overrideEditor(withIndent);

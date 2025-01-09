@@ -29,7 +29,7 @@ export type SlateExtensionConfig = PluginConfig<
 export const SlateExtensionPlugin = createTSlatePlugin<SlateExtensionConfig>({
   key: 'slateExtension',
 })
-  .extendEditorTransforms(
+  .overrideEditor(
     ({
       editor,
       tf: { apply, deleteBackward, deleteForward, deleteFragment },
@@ -41,67 +41,68 @@ export const SlateExtensionPlugin = createTSlatePlugin<SlateExtensionConfig>({
       };
 
       return {
-        apply(operation) {
-          if (operation.type === 'set_selection') {
-            const { properties } = operation;
-            editor.prevSelection = properties as TRange | null;
+        api: {
+          create: {
+            block: (node) => ({
+              children: [{ text: '' }],
+              type: editor.getType(BaseParagraphPlugin),
+              ...node,
+            }),
+          },
+        },
+        transforms: {
+          apply(operation) {
+            if (operation.type === 'set_selection') {
+              const { properties } = operation;
+              editor.prevSelection = properties as TRange | null;
+              apply(operation);
+              editor.currentKeyboardEvent = null;
+
+              return;
+            }
+
             apply(operation);
-            editor.currentKeyboardEvent = null;
-
-            return;
-          }
-
-          apply(operation);
+          },
+          deleteBackward(unit) {
+            deleteBackward(unit);
+            resetMarks();
+          },
+          deleteForward(unit) {
+            deleteForward(unit);
+            resetMarks();
+          },
+          deleteFragment(options) {
+            deleteFragment(options);
+            resetMarks();
+          },
         },
-        deleteBackward(unit) {
-          deleteBackward(unit);
-          resetMarks();
-        },
-
-        deleteForward(unit) {
-          deleteForward(unit);
-          resetMarks();
-        },
-
-        deleteFragment(options) {
-          deleteFragment(options);
-          resetMarks();
-        },
-        reset: () => {
-          resetEditor(editor);
-        },
-        setValue: <V extends Value>(value?: V | string) => {
-          let children: Descendant[] = value as any;
-
-          if (typeof value === 'string') {
-            children = editor.api.html.deserialize({
-              element: value,
-            });
-          } else if (!value || value.length === 0) {
-            children = editor.api.create.value();
-          }
-
-          editor.tf.replaceNodes(children, {
-            at: [],
-            children: true,
-          });
-        },
-        toggleBlock: bindFirst(toggleBlock, editor),
       };
     }
   )
-  .extendEditorApi(({ editor }) => ({
-    create: {
-      block: (node) => ({
-        children: [{ text: '' }],
-        type: editor.getType(BaseParagraphPlugin),
-        ...node,
-      }),
+  .extendEditorTransforms(({ editor }) => ({
+    reset: () => {
+      resetEditor(editor);
     },
+    setValue: <V extends Value>(value?: V | string) => {
+      let children: Descendant[] = value as any;
+
+      if (typeof value === 'string') {
+        children = editor.api.html.deserialize({
+          element: value,
+        });
+      } else if (!value || value.length === 0) {
+        children = editor.api.create.value();
+      }
+
+      editor.tf.replaceNodes(children, {
+        at: [],
+        children: true,
+      });
+    },
+    toggleBlock: bindFirst(toggleBlock, editor),
   }))
   .extendEditorApi(({ api }) => ({
     create: {
-      /** Editor children factory. */
       value: (): Value => [api.create.block()],
     },
   }));

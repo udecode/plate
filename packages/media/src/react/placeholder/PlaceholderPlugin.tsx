@@ -89,20 +89,22 @@ export const PlaceholderPlugin = toTPlatePlugin<
     uploadingFiles: {},
   },
 })
-  .extendEditorTransforms(({ editor, tf: { writeHistory } }) => ({
-    writeHistory(stack, batch) {
-      if (isHistoryMarking(editor)) {
-        const newBatch = {
-          ...batch,
-          [PlaceholderPlugin.key]: true,
-        };
+  .overrideEditor(({ editor, tf: { writeHistory } }) => ({
+    transforms: {
+      writeHistory(stack, batch) {
+        if (isHistoryMarking(editor)) {
+          const newBatch = {
+            ...batch,
+            [PlaceholderPlugin.key]: true,
+          };
 
-        writeHistory(stack, newBatch);
+          writeHistory(stack, newBatch);
 
-        return;
-      }
+          return;
+        }
 
-      return writeHistory(stack, batch);
+        return writeHistory(stack, batch);
+      },
     },
   }))
   .extendEditorTransforms(({ editor }) => ({

@@ -28,7 +28,7 @@ import {
   insertTableColumn,
   insertTableRow,
 } from './transforms/index';
-import { withTableApi, withTableTransforms } from './withTable';
+import { withTable } from './withTable';
 
 export const BaseTableRowPlugin = createSlatePlugin({
   key: 'tr',
@@ -223,8 +223,7 @@ export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
       split: bindFirst(splitTableCell, editor),
     },
   }))
-  .extendEditorTransforms(withTableTransforms)
-  .extendEditorApi(withTableApi);
+  .overrideEditor(withTable);
 
 const getParse = (type: string): HtmlDeserializer['parse'] => {
   return ({ element }) => {

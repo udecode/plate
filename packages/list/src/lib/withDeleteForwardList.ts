@@ -1,7 +1,7 @@
 import {
   type EditorTransforms,
   type ElementEntry,
-  type ExtendEditorTransforms,
+  type OverrideEditor,
   type SlateEditor,
   type TElement,
   NodeApi,
@@ -207,43 +207,45 @@ const selectionIsInAListHandler = (
   return false;
 };
 
-export const withDeleteForwardList: ExtendEditorTransforms<ListConfig> = ({
+export const withDeleteForwardList: OverrideEditor<ListConfig> = ({
   editor,
   tf: { deleteForward },
 }) => ({
-  deleteForward(unit) {
-    const deleteForwardList = () => {
-      let skipDefaultDelete = false;
+  transforms: {
+    deleteForward(unit) {
+      const deleteForwardList = () => {
+        let skipDefaultDelete = false;
 
-      if (!editor?.selection) {
-        return skipDefaultDelete;
-      }
-      if (!editor.api.isAt({ end: true })) {
-        return skipDefaultDelete;
-      }
-
-      editor.tf.withoutNormalizing(() => {
-        const res = getListItemEntry(editor, {});
-
-        if (!res) {
-          skipDefaultDelete = selectionIsNotInAListHandler(editor);
-
-          return;
+        if (!editor?.selection) {
+          return skipDefaultDelete;
+        }
+        if (!editor.api.isAt({ end: true })) {
+          return skipDefaultDelete;
         }
 
-        skipDefaultDelete = selectionIsInAListHandler(
-          editor,
-          res,
-          deleteForward,
-          unit
-        );
-      });
+        editor.tf.withoutNormalizing(() => {
+          const res = getListItemEntry(editor, {});
 
-      return skipDefaultDelete;
-    };
+          if (!res) {
+            skipDefaultDelete = selectionIsNotInAListHandler(editor);
 
-    if (deleteForwardList()) return;
+            return;
+          }
 
-    deleteForward(unit);
+          skipDefaultDelete = selectionIsInAListHandler(
+            editor,
+            res,
+            deleteForward,
+            unit
+          );
+        });
+
+        return skipDefaultDelete;
+      };
+
+      if (deleteForwardList()) return;
+
+      deleteForward(unit);
+    },
   },
 });

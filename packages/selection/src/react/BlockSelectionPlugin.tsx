@@ -209,8 +209,8 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
     setNodes: bindFirst(setBlockSelectionNodes, editor),
     setTexts: bindFirst(setBlockSelectionTexts, editor),
   }))
-  .extendEditorTransforms(
-    ({ api, editor, getOptions, tf: { setSelection } }) => ({
+  .overrideEditor(({ api, editor, getOptions, tf: { setSelection } }) => ({
+    transforms: {
       setSelection(props) {
         if (
           getOptions().selectedIds!.size > 0 &&
@@ -221,5 +221,5 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
 
         setSelection(props);
       },
-    })
-  );
+    },
+  }));

@@ -95,6 +95,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     triggerPreviousCharPattern: /^\s?$/,
   },
 })
+  .overrideEditor(withAIChat)
   .extend(() => ({
     useHooks: useAIChatHooks,
   }))
@@ -155,5 +156,4 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     accept: bindFirst(acceptAIChat, editor),
     insertBelow: bindFirst(insertBelowAIChat, editor),
     replaceSelection: bindFirst(replaceSelectionAIChat, editor),
-  }))
-  .extendEditorTransforms(withAIChat);
+  }));

@@ -89,10 +89,22 @@ const resolvePluginMethods = (editor: SlateEditor, plugin: any) => {
   // Apply API and transform extensions
   if (plugin.__apiExtensions && plugin.__apiExtensions.length > 0) {
     plugin.__apiExtensions.forEach(
-      ({ extension, isPluginSpecific, isTransform }: any) => {
+      ({ extension, isOverride, isPluginSpecific, isTransform }: any) => {
         const newExtensions = extension(getEditorPlugin(editor, plugin) as any);
 
-        if (isTransform) {
+        if (isOverride) {
+          // Handle combined API and transforms override
+          if (newExtensions.api) {
+            merge(editor.api, newExtensions.api);
+            merge(plugin.api, newExtensions.api);
+            assignLegacyApi(editor, editor.api);
+          }
+          if (newExtensions.transforms) {
+            merge(editor.transforms, newExtensions.transforms);
+            merge(plugin.transforms, newExtensions.transforms);
+            assignLegacyTransforms(editor, newExtensions.transforms);
+          }
+        } else if (isTransform) {
           // Handle transforms
           if (isPluginSpecific) {
             // Plugin-specific transform

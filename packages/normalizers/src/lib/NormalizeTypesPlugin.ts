@@ -36,4 +36,4 @@ export const NormalizeTypesPlugin = createTSlatePlugin<NormalizeTypesConfig>({
   options: {
     rules: [],
   },
-}).extendEditorTransforms(withNormalizeTypes);
+}).overrideEditor(withNormalizeTypes);

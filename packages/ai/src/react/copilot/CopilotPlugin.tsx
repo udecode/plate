@@ -8,9 +8,7 @@ import {
   type OmitFirst,
   type PluginConfig,
   type TElement,
-  type TRange,
   NodeApi,
-  RangeApi,
   bindFirst,
 } from '@udecode/plate';
 import {
@@ -167,7 +165,7 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
     },
   },
 })
-  .extendEditorTransforms(withCopilot)
+  .overrideEditor(withCopilot)
   .extendOptions<Required<CopilotSelectors>>(({ getOptions }) => ({
     isSuggested: (id) => getOptions().suggestionNodeId === id,
   }))
@@ -227,29 +225,6 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
       belowNodes: renderCopilotBelowNodes,
     },
   })
-  .extendEditorTransforms(
-    ({ api, editor, getOptions, tf: { setSelection } }) => {
-      let prevSelection: TRange | null = null;
-
-      return {
-        setSelection(props) {
-          setSelection(props);
-
-          if (
-            editor.selection &&
-            (!prevSelection ||
-              !RangeApi.equals(prevSelection, editor.selection)) &&
-            getOptions().autoTriggerQuery!({ editor }) &&
-            editor.api.isFocused()
-          ) {
-            void api.copilot.triggerSuggestion();
-          }
-
-          prevSelection = editor.selection;
-        },
-      };
-    }
-  )
   .extend(({ api, getOptions }) => {
     return {
       shortcuts: {
