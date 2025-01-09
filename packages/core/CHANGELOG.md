@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 42.0.1
+
+### Patch Changes
+
+- [#3948](https://github.com/udecode/plate/pull/3948) by [@zbeyens](https://github.com/zbeyens) – Fix: deserialization should work with custom node types
+
 ## 42.0.0
 
 ### Major Changes

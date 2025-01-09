@@ -1,5 +1,13 @@
 # @udecode/slate
 
+## 42.0.1
+
+### Patch Changes
+
+- [#3948](https://github.com/udecode/plate/pull/3948) by [@zbeyens](https://github.com/zbeyens) –
+  - Fix `deselect`, `deselectDOM` methods
+  - Remove all `LegacyEditorMethods` from `Editor`
+
 ## 42.0.0
 
 ### Major Changes
