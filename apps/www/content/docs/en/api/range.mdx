@@ -5,13 +5,17 @@ description: API reference for ranges in Slate.
 
 `Range` objects are a set of points that refer to a specific span of a Slate document. They can define a span inside a single node or span across multiple nodes. A range consists of two points: an anchor (start) and a focus (end).
 
-## Range
+## Range API
 
 Find the corresponding documentation in the [Slate docs](https://docs.slatejs.org/api/locations/range).
 
 ### `transform`
 
-Transforms a range by an operation.
+Transform a range by an operation.
+
+```ts
+// Returns the transformed range, or null if the range was deleted
+```
 
 <APIParameters>
   <APIItem name="range" type="TRange">
@@ -28,13 +32,19 @@ Transforms a range by an operation.
     </APISubList>
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns the transformed range, or `null` if the range was deleted.
+  Returns `TRange | null` - The transformed range, or `null` if the range was deleted.
 </APIReturns>
 
 ### `edges`
 
-Gets the start and end points of a range, in the order in which they appear in the document.
+```ts
+/**
+ * Get the start and end points of a range, in the order in which they appear
+ * in the document.
+ */
+```
 
 <APIParameters>
   <APIItem name="range" type="TRange">
@@ -48,26 +58,28 @@ Gets the start and end points of a range, in the order in which they appear in t
     </APISubList>
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns a tuple of `[Point, Point]` representing the start and end points.
+  Returns `[Point, Point]` - A tuple of points representing the start and end points.
 </APIReturns>
 
 ### `end`
 
-Gets the end point of a range.
+Get the end point of a range.
 
 <APIParameters>
   <APIItem name="range" type="TRange">
     The range to get the end point from.
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns the end point of the range.
+  Returns `Point` - The end point of the range.
 </APIReturns>
 
 ### `equals`
 
-Checks if a range is exactly equal to another.
+Check if a range is exactly equal to another.
 
 <APIParameters>
   <APIItem name="range" type="TRange">
@@ -77,13 +89,14 @@ Checks if a range is exactly equal to another.
     The second range to compare.
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns `true` if the ranges are equal, `false` otherwise.
+  Returns `boolean` - `true` if the ranges are exactly equal, `false` otherwise.
 </APIReturns>
 
 ### `includes`
 
-Checks if a range includes a path, a point or part of another range.
+Check if a range includes a path, a point or part of another range.
 
 <APIParameters>
   <APIItem name="range" type="TRange">
@@ -93,13 +106,14 @@ Checks if a range includes a path, a point or part of another range.
     The target to check for inclusion.
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns `true` if the range includes the target, `false` otherwise.
+  Returns `boolean` - `true` if the range includes the target, `false` otherwise.
 </APIReturns>
 
 ### `intersection`
 
-Gets the intersection of a range with another.
+Get the intersection of a range with another.
 
 <APIParameters>
   <APIItem name="range" type="TRange">
@@ -109,104 +123,138 @@ Gets the intersection of a range with another.
     The second range.
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns the intersecting range, or `null` if there is no intersection.
+  Returns `TRange | null` - The intersecting range, or `null` if there is no intersection.
 </APIReturns>
 
 ### `isBackward`
 
-Checks if a range is backward, meaning that its anchor point appears in the document _after_ its focus point.
+```ts
+/**
+ * Check if a range is backward, meaning that its anchor point appears in the
+ * document _after_ its focus point.
+ */
+```
 
 <APIParameters>
   <APIItem name="range" type="TRange">
     The range to check.
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns `true` if the range is backward, `false` otherwise.
+  Returns `boolean` - `true` if the range is backward, `false` otherwise.
 </APIReturns>
 
 ### `isCollapsed`
 
-Checks if a range is collapsed, meaning that both its anchor and focus points refer to the exact same position in the document.
+```ts
+/**
+ * Check if a range is collapsed, meaning that both its anchor and focus
+ * points refer to the exact same position in the document.
+ */
+```
 
 <APIParameters>
   <APIItem name="range" type="TRange | null" optional>
     The range to check.
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns `true` if the range exists and is collapsed, `false` otherwise.
+  Returns `boolean` - `true` if the range exists and is collapsed, `false` otherwise.
 </APIReturns>
 
 ### `isExpanded`
 
-Checks if a range is expanded. This is the opposite of `isCollapsed` and is provided for legibility.
+```ts
+/**
+ * Check if a range is expanded.
+ *
+ * This is the opposite of [[RangeApi.isCollapsed]] and is provided for
+ * legibility.
+ */
+```
 
 <APIParameters>
   <APIItem name="range" type="TRange | null" optional>
     The range to check.
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns `true` if the range exists and is expanded, `false` otherwise.
+  Returns `boolean` - `true` if the range exists and is expanded, `false` otherwise.
 </APIReturns>
 
 ### `isForward`
 
-Checks if a range is forward. This is the opposite of `isBackward` and is provided for legibility.
+```ts
+/**
+ * Check if a range is forward.
+ *
+ * This is the opposite of [[RangeApi.isBackward]] and is provided for
+ * legibility.
+ */
+```
 
 <APIParameters>
   <APIItem name="range" type="TRange">
     The range to check.
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns `true` if the range is forward, `false` otherwise.
+  Returns `boolean` - `true` if the range is forward, `false` otherwise.
 </APIReturns>
 
 ### `isRange`
 
-Checks if a value implements the `TRange` interface.
+Check if a value implements the `TRange` interface.
 
 <APIParameters>
   <APIItem name="value" type="any">
     The value to check.
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns `true` if the value is a range, `false` otherwise.
+  Returns `boolean` - `true` if the value is a range, `false` otherwise.
 </APIReturns>
 
 ### `points`
 
-Iterates through all of the point entries in a range.
+```ts
+/** Iterate through all of the point entries in a range. */
+```
 
 <APIParameters>
   <APIItem name="range" type="TRange">
     The range to iterate through.
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns a generator that yields point entries.
+  Returns `Generator<PointEntry, void, undefined>` - A generator that yields point entries.
 </APIReturns>
 
 ### `start`
 
-Gets the start point of a range.
+Get the start point of a range.
 
 <APIParameters>
   <APIItem name="range" type="TRange">
     The range to get the start point from.
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns the start point of the range.
+  Returns `Point` - The start point of the range.
 </APIReturns>
 
 ### `surrounds`
 
-Checks if a range completely includes another range.
+Check if a range completely includes another range.
 
 <APIParameters>
   <APIItem name="range" type="TRange">
@@ -216,41 +264,56 @@ Checks if a range completely includes another range.
     The target range that might be surrounded.
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns `true` if the range surrounds the target, `false` otherwise.
+  Returns `boolean` - `true` if the range surrounds the target, `false` otherwise.
 </APIReturns>
 
 ## Types
 
-### TRange
+### `TRange`
 
-The base range type that represents a span in a Slate document.
+```ts
+/**
+ * `TRange` objects are a set of points that refer to a specific span of a Slate
+ * document. They can define a span inside a single node or a can span across
+ * multiple nodes.
+ */
+```
 
 <APIAttributes>
-<APIItem name="anchor" type="Point">
-  The start point of the range.
-</APIItem>
-<APIItem name="focus" type="Point">
-  The end point of the range.
-</APIItem>
+  <APIItem name="anchor" type="Point">
+    The start point of the range.
+  </APIItem>
+  <APIItem name="focus" type="Point">
+    The end point of the range.
+  </APIItem>
 </APIAttributes>
 
-### RangeEdgesOptions
+### `RangeEdgesOptions`
 
-Options for getting the edges of a range.
+```ts
+interface RangeEdgesOptions {
+  reverse?: boolean;
+}
+```
 
 <APIAttributes>
-<APIItem name="reverse" type="boolean" optional>
-  If true, returns the points in reverse order.
-</APIItem>
+  <APIItem name="reverse" type="boolean" optional>
+    If true, returns the points in reverse order.
+  </APIItem>
 </APIAttributes>
 
-### RangeTransformOptions
+### `RangeTransformOptions`
 
-Options for transforming a range.
+```ts
+interface RangeTransformOptions {
+  affinity?: RangeDirection | null;
+}
+```
 
 <APIAttributes>
-<APIItem name="affinity" type="RangeDirection | null" optional>
-  The direction to prefer when transforming the range.
-</APIItem>
+  <APIItem name="affinity" type="RangeDirection | null" optional>
+    The direction to prefer when transforming the range.
+  </APIItem>
 </APIAttributes>

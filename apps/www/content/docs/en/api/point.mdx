@@ -5,13 +5,17 @@ description: API reference for points in Slate.
 
 A `Point` represents a specific location in a Slate document. It consists of a path to a text node and an offset within that text node's content.
 
-## Point
-
-Find the corresponding documentation in the [Slate docs](https://docs.slatejs.org/api/locations/point).
+## Point API
 
 ### `get`
 
-Gets the point from a location. If the location is a range, gets the anchor point (or focus point if specified). If the location is a path, gets the point at this path with offset 0.
+```ts
+/**
+ * Get the point from a location. If the location is a range, get the anchor
+ * point (if `focus` is true, get the focus point). If the location is a path,
+ * get the point at this path with offset 0.
+ */
+```
 
 <APIParameters>
   <APIItem name="at" type="At | null" optional>
@@ -25,13 +29,18 @@ Gets the point from a location. If the location is a range, gets the anchor poin
     </APISubList>
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns the point at the specified location, or `undefined` if not found.
+  Returns `Point | undefined` - The point at the specified location, or `undefined` if not found.
 </APIReturns>
 
 ### `transform`
 
-Transforms a point by an operation.
+Transform a point by an operation.
+
+```ts
+// Returns the transformed point, or null if the point was deleted
+```
 
 <APIParameters>
   <APIItem name="point" type="Point">
@@ -48,13 +57,19 @@ Transforms a point by an operation.
     </APISubList>
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns the transformed point, or `null` if the point was deleted.
+  Returns `Point | null` - The transformed point, or `null` if the point was deleted.
 </APIReturns>
 
 ### `compare`
 
-Compares a point to another, returning an integer indicating whether the point was before, at, or after the other.
+```ts
+/**
+ * Compare a point to another, returning an integer indicating whether the
+ * point was before, at, or after the other.
+ */
+```
 
 <APIParameters>
   <APIItem name="point" type="Point">
@@ -64,16 +79,14 @@ Compares a point to another, returning an integer indicating whether the point w
     The second point to compare.
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns:
-  - `-1` if the first point is before the second
-  - `0` if the points are at the same location
-  - `1` if the first point is after the second
+  Returns `-1 | 0 | 1` - `-1` if before, `0` if at same location, `1` if after.
 </APIReturns>
 
 ### `equals`
 
-Checks if a point is exactly equal to another.
+Check if a point is exactly equal to another.
 
 <APIParameters>
   <APIItem name="point" type="Point">
@@ -83,13 +96,14 @@ Checks if a point is exactly equal to another.
     The second point to compare.
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns `true` if the points are equal, `false` otherwise.
+  Returns `boolean` - `true` if the points are equal, `false` otherwise.
 </APIReturns>
 
 ### `isAfter`
 
-Checks if a point is after another.
+Check if a point is after another.
 
 <APIParameters>
   <APIItem name="point" type="Point">
@@ -99,13 +113,14 @@ Checks if a point is after another.
     The point to compare against.
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns `true` if the first point is after the second, `false` otherwise.
+  Returns `boolean` - `true` if the first point is after the second, `false` otherwise.
 </APIReturns>
 
 ### `isBefore`
 
-Checks if a point is before another.
+Check if a point is before another.
 
 <APIParameters>
   <APIItem name="point" type="Point">
@@ -115,57 +130,80 @@ Checks if a point is before another.
     The point to compare against.
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns `true` if the first point is before the second, `false` otherwise.
+  Returns `boolean` - `true` if the first point is before the second, `false` otherwise.
 </APIReturns>
 
 ### `isPoint`
 
-Checks if a value implements the `Point` interface.
+Check if a value implements the `Point` interface.
 
 <APIParameters>
   <APIItem name="value" type="any">
     The value to check.
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns `true` if the value is a point, `false` otherwise.
+  Returns `boolean` - `true` if the value is a point, `false` otherwise.
 </APIReturns>
 
 ## Types
 
-### Point
+### `Point`
 
-The base point type that represents a specific location in a Slate document.
+```ts
+/**
+ * A Point represents a specific location in a Slate document. It consists of a
+ * path to a text node and an offset within that text node's content.
+ */
+type Point = {
+  /** The index of the character in the text node. */
+  offset: number;
+  /** The path to the text node. */
+  path: Path;
+};
+```
 
 <APIAttributes>
-<APIItem name="offset" type="number">
-  The index of the character in the text node.
-</APIItem>
-<APIItem name="path" type="Path">
-  The path to the text node.
-</APIItem>
+  <APIItem name="offset" type="number">
+    The index of the character in the text node.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    The path to the text node.
+  </APIItem>
 </APIAttributes>
 
-### PointTransformOptions
+### `PointTransformOptions`
 
-Options for transforming a point.
+```ts
+interface PointTransformOptions {
+  affinity?: TextDirection | null;
+}
+```
 
 <APIAttributes>
-<APIItem name="affinity" type="TextDirection | null" optional>
-  The direction to prefer when transforming the point.
-</APIItem>
+  <APIItem name="affinity" type="TextDirection | null" optional>
+    The direction to prefer when transforming the point.
+  </APIItem>
 </APIAttributes>
 
-### PointEntry
+### `PointEntry`
 
-A tuple type returned when iterating over points in a range.
+```ts
+/**
+ * `PointEntry` objects are returned when iterating over `Point` objects that
+ * belong to a range.
+ */
+type PointEntry = [Point, 'anchor' | 'focus'];
+```
 
 <APIAttributes>
-<APIItem name="[0]" type="Point">
-  The point location.
-</APIItem>
-<APIItem name="[1]" type="'anchor' | 'focus'">
-  Indicates whether this point is the anchor or focus of a range.
-</APIItem>
+  <APIItem name="[0]" type="Point">
+    The point location.
+  </APIItem>
+  <APIItem name="[1]" type="'anchor' | 'focus'">
+    Indicates whether this point is the anchor or focus of a range.
+  </APIItem>
 </APIAttributes>
