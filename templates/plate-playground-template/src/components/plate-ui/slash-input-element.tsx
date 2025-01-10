@@ -6,7 +6,7 @@ import { withRef } from '@udecode/cn';
 import { AIChatPlugin } from '@udecode/plate-ai/react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import { type PlateEditor, ParagraphPlugin } from '@udecode/plate-common/react';
+import { type PlateEditor, ParagraphPlugin } from '@udecode/plate/react';
 import { DatePlugin } from '@udecode/plate-date/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { TocPlugin } from '@udecode/plate-heading/react';

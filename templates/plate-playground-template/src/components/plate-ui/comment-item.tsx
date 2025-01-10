@@ -7,7 +7,7 @@ import {
   CommentsPlugin,
   useCommentItemContentState,
 } from '@udecode/plate-comments/react';
-import { useEditorPlugin } from '@udecode/plate-common/react';
+import { useEditorPlugin } from '@udecode/plate/react';
 import { formatDistance } from 'date-fns';
 
 import { CommentAvatar } from './comment-avatar';

@@ -3,7 +3,7 @@
 import React from 'react';
 
 import { cn } from '@udecode/cn';
-import { isCollapsed } from '@udecode/plate-common';
+import { isCollapsed } from '@udecode/plate';
 import {
   type CursorData,
   type CursorOverlayState,

@@ -3,7 +3,7 @@ import React from 'react';
 import type { TEquationElement } from '@udecode/plate-math';
 
 import { cn } from '@udecode/cn';
-import { type SlateElementProps, SlateElement } from '@udecode/plate-common';
+import { type SlateElementProps, SlateElement } from '@udecode/plate';
 import { getEquationHtml } from '@udecode/plate-math';
 
 export function EquationElementStatic({

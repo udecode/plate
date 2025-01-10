@@ -1,6 +1,6 @@
 'use client';
 
-import type { SlateRenderElementProps } from '@udecode/plate-common';
+import type { SlateRenderElementProps } from '@udecode/plate';
 
 import { cn } from '@udecode/cn';
 import {

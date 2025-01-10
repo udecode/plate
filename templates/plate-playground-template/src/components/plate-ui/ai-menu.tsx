@@ -12,12 +12,12 @@ import {
   isElementEmpty,
   isHotkey,
   isSelectionAtBlockEnd,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 import {
   toDOMNode,
   useEditorPlugin,
   useHotkeys,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 import {
   BlockSelectionPlugin,
   useIsSelecting,

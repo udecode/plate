@@ -8,8 +8,8 @@ import type {
   CodeLinePlugin,
 } from '@udecode/plate-code-block/react';
 import type { TCommentText } from '@udecode/plate-comments';
-import type { TElement, TText } from '@udecode/plate-common';
-import type { ParagraphPlugin } from '@udecode/plate-common/react';
+import type { TElement, TText } from '@udecode/plate';
+import type { ParagraphPlugin } from '@udecode/plate/react';
 import type { TExcalidrawElement } from '@udecode/plate-excalidraw';
 import type { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
 import type { HEADING_KEYS } from '@udecode/plate-heading';

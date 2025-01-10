@@ -42,12 +42,12 @@ import {
   getPointBefore,
   insertText,
   moveSelection,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 import {
   findPath,
   useComposedRef,
   useEditorRef,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 import { cva } from 'class-variance-authority';
 
 type FilterFn = (

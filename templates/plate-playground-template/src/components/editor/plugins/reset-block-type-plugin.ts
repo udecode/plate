@@ -11,8 +11,8 @@ import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import {
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
-} from '@udecode/plate-common';
-import { ParagraphPlugin } from '@udecode/plate-common/react';
+} from '@udecode/plate';
+import { ParagraphPlugin } from '@udecode/plate/react';
 import { HEADING_LEVELS } from '@udecode/plate-heading';
 import { INDENT_LIST_KEYS, ListStyleType } from '@udecode/plate-indent-list';
 import { ResetNodePlugin } from '@udecode/plate-reset-node/react';

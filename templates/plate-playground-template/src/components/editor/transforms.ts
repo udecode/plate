@@ -1,6 +1,6 @@
 'use client';
 
-import type { PlateEditor } from '@udecode/plate-common/react';
+import type { PlateEditor } from '@udecode/plate/react';
 
 import { insertCallout } from '@udecode/plate-callout';
 import { CalloutPlugin } from '@udecode/plate-callout/react';
@@ -18,7 +18,7 @@ import {
   setNodes,
   unsetNodes,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 import { insertDate } from '@udecode/plate-date';
 import { DatePlugin } from '@udecode/plate-date/react';
 import { insertToc } from '@udecode/plate-heading';

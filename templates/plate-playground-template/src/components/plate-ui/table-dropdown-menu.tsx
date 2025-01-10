@@ -5,12 +5,12 @@ import React, { useCallback, useState } from 'react';
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
 import { cn } from '@udecode/cn';
-import { someNode } from '@udecode/plate-common';
+import { someNode } from '@udecode/plate';
 import {
   focusEditor,
   useEditorPlugin,
   useEditorSelector,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 import {
   deleteColumn,
   deleteRow,

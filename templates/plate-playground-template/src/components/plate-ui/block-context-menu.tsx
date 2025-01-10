@@ -4,12 +4,12 @@ import { useCallback, useState } from 'react';
 
 import { AIChatPlugin } from '@udecode/plate-ai/react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import { unsetNodes } from '@udecode/plate-common';
+import { unsetNodes } from '@udecode/plate';
 import {
   ParagraphPlugin,
   focusEditor,
   useEditorPlugin,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { IndentListPlugin } from '@udecode/plate-indent-list/react';
 import {

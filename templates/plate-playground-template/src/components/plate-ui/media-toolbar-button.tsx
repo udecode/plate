@@ -4,8 +4,8 @@ import React, { useCallback, useState } from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { insertNodes, isUrl } from '@udecode/plate-common';
-import { useEditorRef } from '@udecode/plate-common/react';
+import { insertNodes, isUrl } from '@udecode/plate';
+import { useEditorRef } from '@udecode/plate/react';
 import {
   AudioPlugin,
   FilePlugin,

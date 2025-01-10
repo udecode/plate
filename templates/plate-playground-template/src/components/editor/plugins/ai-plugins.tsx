@@ -16,7 +16,7 @@ import {
   BaseCodeLinePlugin,
   BaseCodeSyntaxPlugin,
 } from '@udecode/plate-code-block';
-import { BaseParagraphPlugin, createSlateEditor } from '@udecode/plate-common';
+import { BaseParagraphPlugin, createSlateEditor } from '@udecode/plate';
 import { BaseHeadingPlugin, HEADING_LEVELS } from '@udecode/plate-heading';
 import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { BaseIndentListPlugin } from '@udecode/plate-indent-list';

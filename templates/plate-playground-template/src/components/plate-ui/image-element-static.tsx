@@ -1,11 +1,11 @@
 import React from 'react';
 
 import type { TCaptionElement } from '@udecode/plate-caption';
-import type { SlateElementProps } from '@udecode/plate-common';
+import type { SlateElementProps } from '@udecode/plate';
 import type { TImageElement } from '@udecode/plate-media';
 
 import { cn } from '@udecode/cn';
-import { SlateElement, getNodeString } from '@udecode/plate-common';
+import { SlateElement, getNodeString } from '@udecode/plate';
 
 export function ImageElementStatic({
   children,

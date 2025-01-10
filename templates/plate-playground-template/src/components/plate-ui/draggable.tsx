@@ -5,7 +5,7 @@ import React, { useMemo } from 'react';
 import { cn, withRef } from '@udecode/cn';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import { isType, someNode } from '@udecode/plate-common';
+import { isType, someNode } from '@udecode/plate';
 import {
   type NodeWrapperComponent,
   type PlateRenderElementProps,
@@ -15,7 +15,7 @@ import {
   useEditorRef,
   useElement,
   usePath,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 import { useDraggable, useDropLine } from '@udecode/plate-dnd';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';

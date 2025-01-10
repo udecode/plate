@@ -1,7 +1,7 @@
 'use client';
 
 import type { AutoformatRule } from '@udecode/plate-autoformat';
-import type { SlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
 
 import {
   autoformatArrow,
@@ -33,8 +33,8 @@ import {
   isElement,
   isType,
   setNodes,
-} from '@udecode/plate-common';
-import { ParagraphPlugin } from '@udecode/plate-common/react';
+} from '@udecode/plate';
+import { ParagraphPlugin } from '@udecode/plate/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';

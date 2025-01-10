@@ -2,12 +2,12 @@
 import { useState } from 'react';
 
 import { cn } from '@udecode/cn';
-import { type TElement, getAboveNode, getMarks } from '@udecode/plate-common';
+import { type TElement, getAboveNode, getMarks } from '@udecode/plate';
 import {
   focusEditor,
   useEditorPlugin,
   useEditorSelector,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 import { BaseFontSizePlugin, toUnitLess } from '@udecode/plate-font';
 import { FontSizePlugin } from '@udecode/plate-font/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';

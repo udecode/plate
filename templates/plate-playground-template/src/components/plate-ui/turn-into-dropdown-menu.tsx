@@ -11,7 +11,7 @@ import {
   focusEditor,
   useEditorRef,
   useSelectionFragmentProp,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { INDENT_LIST_KEYS, ListStyleType } from '@udecode/plate-indent-list';
 import { TogglePlugin } from '@udecode/plate-toggle/react';

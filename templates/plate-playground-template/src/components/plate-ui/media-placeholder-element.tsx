@@ -10,13 +10,13 @@ import {
   insertNodes,
   removeNodes,
   withoutSavingHistory,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 import {
   findPath,
   useEditorPlugin,
   withHOC,
   withRef,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 import {
   AudioPlugin,
   FilePlugin,

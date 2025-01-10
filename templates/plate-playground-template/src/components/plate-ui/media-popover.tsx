@@ -5,12 +5,12 @@ import React, { useEffect } from 'react';
 import {
   type WithRequiredKey,
   isSelectionExpanded,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 import {
   useEditorSelector,
   useElement,
   useRemoveNodeButton,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 import {
   FloatingMedia as FloatingMediaPrimitive,
   floatingMediaActions,

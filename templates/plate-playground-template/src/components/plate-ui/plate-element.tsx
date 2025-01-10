@@ -2,10 +2,10 @@
 
 import React from 'react';
 
-import type { PlateElementProps } from '@udecode/plate-common/react';
+import type { PlateElementProps } from '@udecode/plate/react';
 
 import { cn } from '@udecode/cn';
-import { PlateElement as PlateElementPrimitive } from '@udecode/plate-common/react';
+import { PlateElement as PlateElementPrimitive } from '@udecode/plate/react';
 
 import { BlockSelection } from './block-selection';
 

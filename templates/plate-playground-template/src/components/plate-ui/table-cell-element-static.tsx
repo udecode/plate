@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { SlateElementProps } from '@udecode/plate-common';
+import type { SlateElementProps } from '@udecode/plate';
 
 import { cn } from '@udecode/cn';
 import {
@@ -8,7 +8,7 @@ import {
   findNode,
   getParentNode,
   isElement,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 import { getTableCellBorders } from '@udecode/plate-table';
 
 export function TableCellElementStatic({

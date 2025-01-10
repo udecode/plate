@@ -5,7 +5,7 @@ import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import { Tweet } from 'react-tweet';
 
 import { cn, withRef } from '@udecode/cn';
-import { withHOC } from '@udecode/plate-common/react';
+import { withHOC } from '@udecode/plate/react';
 import { parseTwitterUrl, parseVideoUrl } from '@udecode/plate-media';
 import { MediaEmbedPlugin, useMediaState } from '@udecode/plate-media/react';
 import { ResizableProvider, useResizableStore } from '@udecode/plate-resizable';

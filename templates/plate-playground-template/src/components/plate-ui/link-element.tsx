@@ -5,7 +5,7 @@ import React from 'react';
 import type { TLinkElement } from '@udecode/plate-link';
 
 import { cn, withRef } from '@udecode/cn';
-import { useElement } from '@udecode/plate-common/react';
+import { useElement } from '@udecode/plate/react';
 import { useLink } from '@udecode/plate-link/react';
 
 import { PlateElement } from './plate-element';

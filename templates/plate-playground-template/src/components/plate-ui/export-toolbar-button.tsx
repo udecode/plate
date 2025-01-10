@@ -27,8 +27,8 @@ import {
   SlateLeaf,
   createSlateEditor,
   serializeHtml,
-} from '@udecode/plate-common';
-import { toDOMNode, useEditorRef } from '@udecode/plate-common/react';
+} from '@udecode/plate';
+import { toDOMNode, useEditorRef } from '@udecode/plate/react';
 import { BaseDatePlugin } from '@udecode/plate-date';
 import {
   BaseFontBackgroundColorPlugin,

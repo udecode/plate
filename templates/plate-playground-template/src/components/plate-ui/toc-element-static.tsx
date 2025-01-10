@@ -4,14 +4,14 @@ import type {
   SlateEditor,
   SlateElementProps,
   TElement,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { cn } from '@udecode/cn';
 import {
   SlateElement,
   getNodeEntries,
   getNodeString,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 import {
   type Heading,
   BaseTocPlugin,

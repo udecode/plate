@@ -20,7 +20,7 @@ import {
   ParagraphPlugin,
   PlateLeaf,
   usePlateEditor,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 import { DatePlugin } from '@udecode/plate-date/react';
 import { EmojiInputPlugin } from '@udecode/plate-emoji/react';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';

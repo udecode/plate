@@ -9,7 +9,7 @@ import {
   useEditorReadOnly,
   useEditorRef,
   usePlateStore,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 import { Eye, Pen } from 'lucide-react';
 
 import {

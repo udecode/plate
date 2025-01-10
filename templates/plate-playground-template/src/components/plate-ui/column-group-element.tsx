@@ -7,7 +7,7 @@ import {
   useEditorRef,
   useElement,
   useRemoveNodeButton,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 import {
   type TColumnElement,
   type TColumnGroupElement,
@@ -18,7 +18,7 @@ import {
   ColumnPlugin,
   useDebouncePopoverOpen,
 } from '@udecode/plate-layout/react';
-import { findNodePath } from '@udecode/plate-common';
+import { findNodePath } from '@udecode/plate';
 import { type LucideProps, Trash2Icon } from 'lucide-react';
 import { useReadOnly } from 'slate-react';
 

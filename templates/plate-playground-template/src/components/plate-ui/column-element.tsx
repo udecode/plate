@@ -5,8 +5,8 @@ import React from 'react';
 import type { TColumnElement } from '@udecode/plate-layout';
 
 import { cn, useComposedRef, withRef } from '@udecode/cn';
-import { PathApi } from '@udecode/plate-common';
-import { useElement, withHOC } from '@udecode/plate-common/react';
+import { PathApi } from '@udecode/plate';
+import { useElement, withHOC } from '@udecode/plate/react';
 import { useDraggable, useDropLine } from '@udecode/plate-dnd';
 import { ResizableProvider } from '@udecode/plate-resizable';
 import { GripHorizontal } from 'lucide-react';

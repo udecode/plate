@@ -8,12 +8,12 @@ import {
   getAncestorNode,
   getEndPoint,
   getNodeString,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 import {
   type PlateEditor,
   focusEditor,
   useEditorPlugin,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 import { useIsSelecting } from '@udecode/plate-selection/react';
 import {
   Album,

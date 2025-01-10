@@ -4,7 +4,7 @@ import {
   useEditorRef,
   useEditorSelector,
   withRef,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 import { Redo2Icon, Undo2Icon } from 'lucide-react';
 
 import { ToolbarButton } from './toolbar';

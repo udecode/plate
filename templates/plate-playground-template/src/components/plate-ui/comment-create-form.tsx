@@ -8,7 +8,7 @@ import {
   CommentNewTextarea,
   CommentsPlugin,
 } from '@udecode/plate-comments/react';
-import { useEditorPlugin } from '@udecode/plate-common/react';
+import { useEditorPlugin } from '@udecode/plate/react';
 
 import { buttonVariants } from './button';
 import { CommentAvatar } from './comment-avatar';

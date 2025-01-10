@@ -1,10 +1,10 @@
 import React from 'react';
 
 import type { TCommentText } from '@udecode/plate-comments';
-import type { SlateLeafProps } from '@udecode/plate-common';
+import type { SlateLeafProps } from '@udecode/plate';
 
 import { cn } from '@udecode/cn';
-import { SlateLeaf } from '@udecode/plate-common';
+import { SlateLeaf } from '@udecode/plate';
 
 export function CommentLeafStatic({
   children,

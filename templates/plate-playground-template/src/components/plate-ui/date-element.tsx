@@ -1,7 +1,7 @@
 'use client';
 
 import { cn, withRef } from '@udecode/cn';
-import { setNode } from '@udecode/plate-common/react';
+import { setNode } from '@udecode/plate/react';
 import { useReadOnly } from 'slate-react';
 
 import { Calendar } from './calendar';
