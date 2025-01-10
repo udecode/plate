@@ -31,7 +31,7 @@ export const getMarkdown = (
     if (fragment.length === 1) {
       const modifiedFragment = [
         {
-          ...fragment[0],
+          children: fragment[0].children
           type: 'p',
         },
       ];
