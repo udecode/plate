@@ -1,11 +1,11 @@
 import React from 'react';
 
-import type { TCaptionElement } from '@udecode/plate-caption';
 import type { SlateElementProps } from '@udecode/plate';
+import type { TCaptionElement } from '@udecode/plate-caption';
 import type { TImageElement } from '@udecode/plate-media';
 
 import { cn } from '@udecode/cn';
-import { SlateElement, getNodeString } from '@udecode/plate';
+import { NodeApi, SlateElement } from '@udecode/plate';
 
 export function ImageElementStatic({
   children,
@@ -41,7 +41,7 @@ export function ImageElementStatic({
           />
           {caption && (
             <figcaption className="mx-auto mt-2 h-[24px] max-w-full">
-              {getNodeString(caption[0])}
+              {NodeApi.string(caption[0])}
             </figcaption>
           )}
         </div>

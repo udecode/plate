@@ -1,4 +1,9 @@
 import { withProps } from '@udecode/cn';
+import {
+  ParagraphPlugin,
+  PlateLeaf,
+  usePlateEditor,
+} from '@udecode/plate/react';
 import { AIPlugin } from '@udecode/plate-ai/react';
 import {
   BoldPlugin,
@@ -16,11 +21,6 @@ import {
   CodeSyntaxPlugin,
 } from '@udecode/plate-code-block/react';
 import { CommentsPlugin } from '@udecode/plate-comments/react';
-import {
-  ParagraphPlugin,
-  PlateLeaf,
-  usePlateEditor,
-} from '@udecode/plate/react';
 import { DatePlugin } from '@udecode/plate-date/react';
 import { EmojiInputPlugin } from '@udecode/plate-emoji/react';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';

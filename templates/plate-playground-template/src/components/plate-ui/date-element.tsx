@@ -1,8 +1,7 @@
 'use client';
 
 import { cn, withRef } from '@udecode/cn';
-import { setNode } from '@udecode/plate/react';
-import { useReadOnly } from 'slate-react';
+import { useReadOnly } from '@udecode/plate/react';
 
 import { Calendar } from './calendar';
 import { PlateElement } from './plate-element';
@@ -73,7 +72,10 @@ export const DateElement = withRef<typeof PlateElement>(
               onSelect={(date) => {
                 if (!date) return;
 
-                setNode(editor, element, { date: date.toDateString() });
+                editor.tf.setNodes(
+                  { date: date.toDateString() },
+                  { at: element }
+                );
               }}
               mode="single"
               initialFocus

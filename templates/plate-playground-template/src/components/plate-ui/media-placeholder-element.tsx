@@ -6,17 +6,7 @@ import type { ReactNode } from 'react';
 import type { TPlaceholderElement } from '@udecode/plate-media';
 
 import { cn } from '@udecode/cn';
-import {
-  insertNodes,
-  removeNodes,
-  withoutSavingHistory,
-} from '@udecode/plate';
-import {
-  findPath,
-  useEditorPlugin,
-  withHOC,
-  withRef,
-} from '@udecode/plate/react';
+import { useEditorPlugin, withHOC, withRef } from '@udecode/plate/react';
 import {
   AudioPlugin,
   FilePlugin,
@@ -108,10 +98,10 @@ export const MediaPlaceholderElement = withHOC(
       useEffect(() => {
         if (!uploadedFile) return;
 
-        const path = findPath(editor, element);
+        const path = editor.api.findPath(element);
 
-        withoutSavingHistory(editor, () => {
-          removeNodes(editor, { at: path });
+        editor.tf.withoutSaving(() => {
+          editor.tf.removeNodes({ at: path });
 
           const node = {
             children: [{ text: '' }],
@@ -124,7 +114,7 @@ export const MediaPlaceholderElement = withHOC(
             url: uploadedFile.url,
           };
 
-          insertNodes(editor, node, { at: path });
+          editor.tf.insertNodes(node, { at: path });
 
           updateUploadHistory(editor, node);
         });
@@ -153,11 +143,7 @@ export const MediaPlaceholderElement = withHOC(
       }, [isReplaced]);
 
       return (
-        <PlateElement
-          ref={ref}
-          className={cn(className, 'relative my-1')}
-          {...props}
-        >
+        <PlateElement ref={ref} className={cn(className, 'my-1')} {...props}>
           {(!loading || !isImage) && (
             <div
               className={cn(

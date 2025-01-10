@@ -1,17 +1,9 @@
 import React from 'react';
 
-import type {
-  SlateEditor,
-  SlateElementProps,
-  TElement,
-} from '@udecode/plate';
+import type { SlateEditor, SlateElementProps, TElement } from '@udecode/plate';
 
 import { cn } from '@udecode/cn';
-import {
-  SlateElement,
-  getNodeEntries,
-  getNodeString,
-} from '@udecode/plate';
+import { NodeApi, SlateElement } from '@udecode/plate';
 import {
   type Heading,
   BaseTocPlugin,
@@ -44,7 +36,7 @@ export function TocElementStatic({
   const headingList = getHeadingList(editor);
 
   return (
-    <SlateElement className={cn(className, 'relative mb-1 p-0')} {...props}>
+    <SlateElement className={cn(className, 'mb-1 p-0')} {...props}>
       <div>
         {headingList.length > 0 ? (
           headingList.map((item) => (
@@ -87,7 +79,7 @@ const getHeadingList = (editor?: SlateEditor) => {
 
   const headingList: Heading[] = [];
 
-  const values = getNodeEntries(editor, {
+  const values = editor.api.nodes<TElement>({
     at: [],
     match: (n) => isHeading(n),
   });
@@ -95,10 +87,10 @@ const getHeadingList = (editor?: SlateEditor) => {
   if (!values) return [];
 
   Array.from(values, ([node, path]) => {
-    const { type } = node as TElement;
-    const title = getNodeString(node);
+    const { type } = node;
+    const title = NodeApi.string(node);
     const depth = headingDepth[type];
-    const id = node.id;
+    const id = node.id as string;
     title && headingList.push({ id, depth, path, title, type });
   });
 

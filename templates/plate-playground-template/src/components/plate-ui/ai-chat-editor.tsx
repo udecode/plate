@@ -3,6 +3,12 @@
 import React, { memo } from 'react';
 
 import { withProps } from '@udecode/cn';
+import {
+  type SlateEditor,
+  BaseParagraphPlugin,
+  SlateLeaf,
+} from '@udecode/plate';
+import { useEditorPlugin } from '@udecode/plate/react';
 import { AIChatPlugin, useLastAssistantMessage } from '@udecode/plate-ai/react';
 import {
   BaseBoldPlugin,
@@ -17,12 +23,6 @@ import {
   BaseCodeLinePlugin,
   BaseCodeSyntaxPlugin,
 } from '@udecode/plate-code-block';
-import { useEditorPlugin } from '@udecode/plate/react';
-import {
-  type SlateEditor,
-  BaseParagraphPlugin,
-  SlateLeaf,
-} from '@udecode/plate';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { BaseLinkPlugin } from '@udecode/plate-link';

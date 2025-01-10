@@ -6,8 +6,7 @@ import type { TMentionElement } from '@udecode/plate-mention';
 
 import { cn, withRef } from '@udecode/cn';
 import { IS_APPLE, getHandler } from '@udecode/plate';
-import { useElement } from '@udecode/plate/react';
-import { useFocused, useReadOnly, useSelected } from 'slate-react';
+import { useFocused, useReadOnly, useSelected } from '@udecode/plate/react';
 
 import { useMounted } from '@/hooks/use-mounted';
 
@@ -20,7 +19,7 @@ export const MentionElement = withRef<
     onClick?: (mentionNode: any) => void;
   }
 >(({ children, className, prefix, onClick, ...props }, ref) => {
-  const element = useElement<TMentionElement>();
+  const element = props.element as TMentionElement;
   const selected = useSelected();
   const focused = useFocused();
   const mounted = useMounted();

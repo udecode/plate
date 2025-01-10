@@ -57,7 +57,7 @@ importers:
         specifier: 42.0.0
         version: 42.0.0(@types/react@18.3.12)(class-variance-authority@0.7.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(tailwind-merge@2.6.0)
       '@udecode/plate':
-        specifier: 41.0.5
+        specifier: 42.0.1
         version: 42.0.1(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.25.0)(slate-dom@0.111.0(slate@0.112.0))(slate@0.112.0)(use-sync-external-store@1.4.0(react@18.3.1))
       '@udecode/plate-ai':
         specifier: 42.0.0
@@ -192,8 +192,8 @@ importers:
         specifier: 42.0.0
         version: 42.0.0(@udecode/plate@42.0.1(@types/react@18.3.12)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.25.0)(slate-dom@0.111.0(slate@0.112.0))(slate@0.112.0)(use-sync-external-store@1.4.0(react@18.3.1)))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@uploadthing/react':
-        specifier: 7.1.5
-        version: 7.1.5(next@15.1.4(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(uploadthing@7.2.0(next@15.1.4(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(tailwindcss@3.4.17))
+        specifier: 7.1.0
+        version: 7.1.0(next@15.1.4(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(uploadthing@7.2.0(next@15.1.4(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(tailwindcss@3.4.17))
       ai:
         specifier: ^4.0.31
         version: 4.0.31(react@18.3.1)(zod@3.24.1)
@@ -1821,24 +1821,18 @@ packages:
   '@uploadthing/mime-types@0.3.1':
     resolution: {integrity: sha512-CaEadjn33CzPSLRaU8uL8IRv8MpW9xU5Rg/R45T5In8608dzovDDk0uQ9jzmmLYU5hHt+4v2qugcG/jirm/KEA==}
 
-  '@uploadthing/mime-types@0.3.4':
-    resolution: {integrity: sha512-EB0o0a4y++UJFMLqS8LDVhSQgXUllG6t5fwl5cbmOM0Uay8YY5Nc/JjFwzJ8wccdIKz4oYwQW7EOSfUyaMPbfw==}
-
-  '@uploadthing/react@7.1.5':
-    resolution: {integrity: sha512-D0lP4YnUWw5LFHrLuL+sq26wlul9dGE70G+oOQ+qkM1ZqSeKSGvIdAIOAQUBj2qQi4Re7o0VpF3+3qBF3svN6A==}
+  '@uploadthing/react@7.1.0':
+    resolution: {integrity: sha512-xySIeTkX0/nYoBA+zC4ze7ickq6TB9LB6793J00iK5ELnfIILjUtR2Uyx17dMyxMkP9lmw4wIjLCwjW4dU1GIw==}
     peerDependencies:
       next: '*'
-      react: ^17.0.2 || ^18.0.0 || ^19.0.0
-      uploadthing: ^7.2.0
+      react: ^17.0.2 || ^18.0.0
+      uploadthing: 7.2.0
     peerDependenciesMeta:
       next:
         optional: true
 
   '@uploadthing/shared@7.1.0':
     resolution: {integrity: sha512-6cdS2hq9jUJFU/tqRKHs5XsDIwc6HdaVI4ka0vRy+IwjPnQBR0iXHwqyCtNNssCCAq4zQxrZr3iNEDPNqc0dqw==}
-
-  '@uploadthing/shared@7.1.5':
-    resolution: {integrity: sha512-5ePSiR2CPA5a8gfPqsHpE/uPwGG9iPqhxcFpeLGnEuExPqIi5ZY7upZgpc+6T1gMxwfbP0O5X4043TTNk3q/pA==}
 
   acorn-jsx@5.3.2:
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
@@ -2268,9 +2262,6 @@ packages:
 
   effect@3.10.3:
     resolution: {integrity: sha512-+Z5bUhzTeqYlfoPsfXMZG1pYadqLBKARD3xwMIoEAESsOhKFOrUsHHNCy2ZZW3/6oa4wokgT01k1zavA4BAQ4w==}
-
-  effect@3.11.5:
-    resolution: {integrity: sha512-oSzaR/S/2A/qDTnDqMWxQUNSjCG2sRLB4NEvTu+l9RqE122MTgKXOWzw0x4MHsdovRTzAihfkpgBj2aLFnH2+w==}
 
   electron-to-chromium@1.5.25:
     resolution: {integrity: sha512-kMb204zvK3PsSlgvvwzI3wBIcAw15tRkYk+NQdsjdDtcQWTp2RABbMQ9rUBy8KNEOM+/E6ep+XC3AykiWZld4g==}
@@ -5696,11 +5687,9 @@ snapshots:
 
   '@uploadthing/mime-types@0.3.1': {}
 
-  '@uploadthing/mime-types@0.3.4': {}
-
-  '@uploadthing/react@7.1.5(next@15.1.4(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(uploadthing@7.2.0(next@15.1.4(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(tailwindcss@3.4.17))':
+  '@uploadthing/react@7.1.0(next@15.1.4(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(uploadthing@7.2.0(next@15.1.4(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(tailwindcss@3.4.17))':
     dependencies:
-      '@uploadthing/shared': 7.1.5
+      '@uploadthing/shared': 7.1.0
       file-selector: 0.6.0
       react: 18.3.1
       uploadthing: 7.2.0(next@15.1.4(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(tailwindcss@3.4.17)
@@ -5711,12 +5700,6 @@ snapshots:
     dependencies:
       '@uploadthing/mime-types': 0.3.1
       effect: 3.10.3
-      sqids: 0.3.0
-
-  '@uploadthing/shared@7.1.5':
-    dependencies:
-      '@uploadthing/mime-types': 0.3.4
-      effect: 3.11.5
       sqids: 0.3.0
 
   acorn-jsx@5.3.2(acorn@8.12.1):
@@ -6170,10 +6153,6 @@ snapshots:
   eastasianwidth@0.2.0: {}
 
   effect@3.10.3:
-    dependencies:
-      fast-check: 3.23.2
-
-  effect@3.11.5:
     dependencies:
       fast-check: 3.23.2
 

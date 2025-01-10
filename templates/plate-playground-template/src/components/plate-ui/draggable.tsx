@@ -3,9 +3,7 @@
 import React, { useMemo } from 'react';
 
 import { cn, withRef } from '@udecode/cn';
-import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import { isType, someNode } from '@udecode/plate';
+import { isType } from '@udecode/plate';
 import {
   type NodeWrapperComponent,
   type PlateRenderElementProps,
@@ -16,6 +14,9 @@ import {
   useElement,
   usePath,
 } from '@udecode/plate/react';
+import { useReadOnly, useSelected } from '@udecode/plate/react';
+import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { useDraggable, useDropLine } from '@udecode/plate-dnd';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
@@ -33,7 +34,6 @@ import {
 } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { GripVertical } from 'lucide-react';
-import { useReadOnly, useSelected } from 'slate-react';
 
 import { STRUCTURAL_TYPES } from '@/components/editor/transforms';
 
@@ -61,7 +61,7 @@ export const DraggableAboveNodes: NodeWrapperComponent = (props) => {
       return true;
     }
     if (path.length === 3 && !isType(editor, element, UNDRAGGABLE_KEYS)) {
-      const block = someNode(editor, {
+      const block = editor.api.some({
         at: path,
         match: {
           type: editor.getType(ColumnPlugin),
@@ -73,7 +73,7 @@ export const DraggableAboveNodes: NodeWrapperComponent = (props) => {
       }
     }
     if (path.length === 4 && !isType(editor, element, UNDRAGGABLE_KEYS)) {
-      const block = someNode(editor, {
+      const block = editor.api.some({
         at: path,
         match: {
           type: editor.getType(TablePlugin),
@@ -98,8 +98,8 @@ export const Draggable = withRef<'div', PlateRenderElementProps>(
     const { children, editor, element, path } = props;
     const { isDragging, previewRef, handleRef } = useDraggable({ element });
 
-    const isInColumn = path?.length === 3;
-    const isInTable = path?.length === 4;
+    const isInColumn = path.length === 3;
+    const isInTable = path.length === 4;
 
     return (
       <div
@@ -162,8 +162,8 @@ const Gutter = React.forwardRef<
 
   const isNodeType = (keys: string[] | string) => isType(editor, element, keys);
 
-  const isInColumn = path?.length === 3;
-  const isInTable = path?.length === 4;
+  const isInColumn = path.length === 3;
+  const isInTable = path.length === 4;
 
   return (
     <div

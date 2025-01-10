@@ -2,18 +2,9 @@
 
 import { useEffect, useMemo } from 'react';
 
+import { type SlateEditor, NodeApi } from '@udecode/plate';
+import { type PlateEditor, useEditorPlugin } from '@udecode/plate/react';
 import { AIChatPlugin, AIPlugin } from '@udecode/plate-ai/react';
-import {
-  type SlateEditor,
-  getAncestorNode,
-  getEndPoint,
-  getNodeString,
-} from '@udecode/plate';
-import {
-  type PlateEditor,
-  focusEditor,
-  useEditorPlugin,
-} from '@udecode/plate/react';
 import { useIsSelecting } from '@udecode/plate-selection/react';
 import {
   Album,
@@ -44,7 +35,7 @@ export const aiChatItems = {
     value: 'accept',
     onSelect: ({ editor }) => {
       editor.getTransforms(AIChatPlugin).aiChat.accept();
-      focusEditor(editor, getEndPoint(editor, editor.selection!));
+      editor.tf.focus({ edge: 'end' });
     },
   },
   continueWrite: {
@@ -52,11 +43,11 @@ export const aiChatItems = {
     label: 'Continue writing',
     value: 'continueWrite',
     onSelect: ({ editor }) => {
-      const ancestorNode = getAncestorNode(editor);
+      const ancestorNode = editor.api.block({ highest: true });
 
       if (!ancestorNode) return;
 
-      const isEmpty = getNodeString(ancestorNode[0]).trim().length === 0;
+      const isEmpty = NodeApi.string(ancestorNode[0]).trim().length === 0;
 
       void editor.getApi(AIChatPlugin).aiChat.submit({
         mode: 'insert',
