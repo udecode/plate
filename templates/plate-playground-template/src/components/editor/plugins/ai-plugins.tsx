@@ -2,6 +2,7 @@
 
 import React from 'react';
 
+import { BaseParagraphPlugin, createSlateEditor } from '@udecode/plate';
 import { AIChatPlugin, AIPlugin } from '@udecode/plate-ai/react';
 import {
   BaseBoldPlugin,
@@ -16,7 +17,6 @@ import {
   BaseCodeLinePlugin,
   BaseCodeSyntaxPlugin,
 } from '@udecode/plate-code-block';
-import { BaseParagraphPlugin, createSlateEditor } from '@udecode/plate-common';
 import { BaseHeadingPlugin, HEADING_LEVELS } from '@udecode/plate-heading';
 import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { BaseIndentListPlugin } from '@udecode/plate-indent-list';

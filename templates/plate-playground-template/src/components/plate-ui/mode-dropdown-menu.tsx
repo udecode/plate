@@ -5,11 +5,10 @@ import React from 'react';
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
 import {
-  focusEditor,
   useEditorReadOnly,
   useEditorRef,
   usePlateStore,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 import { Eye, Pen } from 'lucide-react';
 
 import {
@@ -72,7 +71,7 @@ export function ModeDropdownMenu(props: DropdownMenuProps) {
               return;
             }
             if (newValue === 'editing') {
-              focusEditor(editor);
+              editor.tf.focus();
 
               return;
             }

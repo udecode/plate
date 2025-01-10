@@ -1,10 +1,9 @@
 'use client';
 
-import type { TElement } from '@udecode/plate-common';
+import type { TElement } from '@udecode/plate';
 
 import { faker } from '@faker-js/faker';
 import { CopilotPlugin } from '@udecode/plate-ai/react';
-import { getAncestorNode } from '@udecode/plate-common';
 import { serializeMdNodes, stripMarkdown } from '@udecode/plate-markdown';
 
 import { GhostText } from '@/components/plate-ui/ghost-text';
@@ -43,7 +42,7 @@ export const copilotPlugins = [
       },
       debounceDelay: 500,
       getPrompt: ({ editor }) => {
-        const contextEntry = getAncestorNode(editor);
+        const contextEntry = editor.api.block({ highest: true });
 
         if (!contextEntry) return '';
 

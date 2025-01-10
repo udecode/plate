@@ -5,6 +5,13 @@ import React from 'react';
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
 import { withProps } from '@udecode/cn';
+import {
+  BaseParagraphPlugin,
+  SlateLeaf,
+  createSlateEditor,
+  serializeHtml,
+} from '@udecode/plate';
+import { useEditorRef } from '@udecode/plate/react';
 import { BaseAlignPlugin } from '@udecode/plate-alignment';
 import {
   BaseBoldPlugin,
@@ -22,13 +29,6 @@ import {
   BaseCodeSyntaxPlugin,
 } from '@udecode/plate-code-block';
 import { BaseCommentsPlugin } from '@udecode/plate-comments';
-import {
-  BaseParagraphPlugin,
-  SlateLeaf,
-  createSlateEditor,
-  serializeHtml,
-} from '@udecode/plate-common';
-import { toDOMNode, useEditorRef } from '@udecode/plate-common/react';
 import { BaseDatePlugin } from '@udecode/plate-date';
 import {
   BaseFontBackgroundColorPlugin,
@@ -136,7 +136,7 @@ export function ExportToolbarButton({ children, ...props }: DropdownMenuProps) {
       'body > div:last-child img { display: inline-block !important; }'
     );
 
-    const canvas = await html2canvas(toDOMNode(editor, editor)!);
+    const canvas = await html2canvas(editor.api.toDOMNode(editor)!);
     style.remove();
 
     return canvas;

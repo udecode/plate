@@ -4,7 +4,7 @@ import React from 'react';
 
 import type { CopilotPluginConfig } from '@udecode/plate-ai/react';
 
-import { useEditorPlugin, useElement } from '@udecode/plate-common/react';
+import { useEditorPlugin, useElement } from '@udecode/plate/react';
 
 export const GhostText = () => {
   const { useOption } = useEditorPlugin<CopilotPluginConfig>({

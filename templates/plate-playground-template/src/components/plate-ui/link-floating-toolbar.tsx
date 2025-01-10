@@ -3,7 +3,7 @@
 import React from 'react';
 
 import { cn } from '@udecode/cn';
-import { useFormInputProps } from '@udecode/plate-common/react';
+import { useFormInputProps } from '@udecode/plate/react';
 import {
   type UseVirtualFloatingOptions,
   flip,

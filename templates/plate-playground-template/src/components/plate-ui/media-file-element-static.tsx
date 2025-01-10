@@ -1,10 +1,10 @@
 import React from 'react';
 
-import type { SlateElementProps } from '@udecode/plate-common';
+import type { SlateElementProps } from '@udecode/plate';
 import type { TFileElement } from '@udecode/plate-media';
 
 import { cn } from '@udecode/cn';
-import { SlateElement } from '@udecode/plate-common';
+import { SlateElement } from '@udecode/plate';
 import { FileUp } from 'lucide-react';
 
 export const MediaFileElementStatic = ({
@@ -15,10 +15,7 @@ export const MediaFileElementStatic = ({
   const { name, url } = props.element as TFileElement;
 
   return (
-    <SlateElement
-      className={cn(className, 'relative my-px rounded-sm')}
-      {...props}
-    >
+    <SlateElement className={cn(className, 'my-px rounded-sm')} {...props}>
       <a
         className="group relative m-0 flex cursor-pointer items-center rounded px-0.5 py-[3px] hover:bg-muted"
         contentEditable={false}
