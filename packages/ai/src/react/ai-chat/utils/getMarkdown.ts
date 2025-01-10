@@ -29,10 +29,14 @@ export const getMarkdown = (
 
     // Remove any block formatting
     if (fragment.length === 1) {
-      fragment[0] = {
-        children: fragment[0].children,
-        type: 'p',
-      };
+      const modifiedFragment = [
+        {
+          ...fragment[0],
+          type: 'p',
+        },
+      ];
+
+      return serializeMdNodes(modifiedFragment);
     }
 
     return serializeMdNodes(fragment);
