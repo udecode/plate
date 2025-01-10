@@ -1,4 +1,4 @@
-import { getSlateElements, isPluginStatic } from '@udecode/plate-common';
+import { getSlateElements, isSlatePluginElement } from '@udecode/plate-common';
 
 import {
   BaseCodeBlockPlugin,
@@ -6,7 +6,7 @@ import {
 } from '../BaseCodeBlockPlugin';
 
 export const htmlDeserializerCodeBlockStatic = (element: HTMLElement) => {
-  if (isPluginStatic(element, BaseCodeBlockPlugin.key)) {
+  if (isSlatePluginElement(element, BaseCodeBlockPlugin.key)) {
     const languageClass = Array.from(element.classList).find((className) =>
       className.startsWith('language-')
     );
@@ -14,7 +14,7 @@ export const htmlDeserializerCodeBlockStatic = (element: HTMLElement) => {
     const lang = languageClass?.replace('language-', '');
 
     const staticCodeLines = getSlateElements(element).filter((el) =>
-      isPluginStatic(el, BaseCodeLinePlugin.key)
+      isSlatePluginElement(el, BaseCodeLinePlugin.key)
     );
 
     if (staticCodeLines) {

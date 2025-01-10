@@ -26,22 +26,6 @@ const getParse =
     const node: any = { type };
 
     if (isIndentListStatic(element)) {
-      const { slateChecked, slateIndent, slateListStart, slateListStyleType } =
-        element.dataset;
-
-      if (slateChecked !== undefined) {
-        node.checked = slateChecked === 'true';
-      }
-      if (slateIndent !== undefined) {
-        node.indent = Number(slateIndent);
-      }
-      if (slateListStart !== undefined) {
-        node.listStart = Number(slateListStart);
-      }
-      if (slateListStyleType !== undefined) {
-        node.listStyleType = slateListStyleType;
-      }
-
       return node;
     }
     if (isDocxList(element)) {

@@ -1,37 +1,26 @@
-export const isElementStatic = (element: HTMLElement) => {
+export const isSlateVoid = (element: HTMLElement) => {
+  return element.dataset.slateVoid === 'true';
+};
+
+export const isSlateElement = (element: HTMLElement) => {
   return (
-    'dataset' in element &&
-    Object.hasOwn(element.dataset, 'slateNode') &&
-    element.dataset.slateNode === 'element'
+    element.dataset.slateNode === 'element' &&
+    element.className.startsWith('slate-')
   );
 };
 
-export const isTextStatic = (element: HTMLElement) => {
-  return (
-    'dataset' in element &&
-    Object.hasOwn(element.dataset, 'slateNode') &&
-    element.dataset.slateNode === 'text'
-  );
+export const isSlateString = (element: HTMLElement) => {
+  return element.dataset.slateNode === 'text';
 };
 
-export const isLeafStatic = (element: HTMLElement) => {
+export const isSlatePluginElement = (
+  element: HTMLElement,
+  pluginKey: string
+) => {
   return (
-    'dataset' in element &&
-    Object.hasOwn(element.dataset, 'slateLeaf') &&
-    element.dataset.slateLeaf === 'true'
+    element.dataset.slateNode === 'element' &&
+    element.classList.contains(`slate-${pluginKey}`)
   );
-};
-
-export const isStringStatic = (element: HTMLElement) => {
-  return (
-    'dataset' in element &&
-    Object.hasOwn(element.dataset, 'slateString') &&
-    element.dataset.slateString === 'true'
-  );
-};
-
-export const isPluginStatic = (element: HTMLElement, key: string) => {
-  return element.classList.contains(`slate-${key}`);
 };
 
 export const getSlateElements = (element: HTMLElement): HTMLElement[] => {

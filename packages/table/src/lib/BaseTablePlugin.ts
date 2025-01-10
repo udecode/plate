@@ -3,7 +3,7 @@ import {
   bindFirst,
   createSlatePlugin,
   createTSlatePlugin,
-  isPluginStatic,
+  isSlatePluginElement,
 } from '@udecode/plate-common';
 
 import type { TableApi, TableConfig } from './types';
@@ -76,7 +76,10 @@ export const BaseTableCellHeaderPlugin = createSlatePlugin({
 export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
   key: 'table',
   extendEditor: withTable,
-  node: { isElement: true },
+  node: {
+    isElement: true,
+    toDataAttributes: ['colSizes', 'marginLeft'],
+  },
   options: {
     _cellIndices: new WeakMap(),
     enableMerging: false,
@@ -86,18 +89,15 @@ export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
     html: {
       deserializer: {
         parse: ({ element, type }) => {
-          if (isPluginStatic(element, type)) {
-            const colSizes = JSON.parse(element.dataset.colSizes as string);
+          const parent = element.parentNode;
 
-            return { colSizes, marginLeft: 20, type };
+          if (
+            parent &&
+            element.tagName === 'TABLE' &&
+            isSlatePluginElement(parent as HTMLElement, type)
+          ) {
+            return;
           }
-          // prevent table static elements from being parsed multiple times
-          // if (
-          //   isPluginStatic(element.parentElement!, type) &&
-          //   element.tagName === 'TABLE'
-          // ) {
-          //   return;
-          // }
 
           return { type };
         },

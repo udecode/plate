@@ -40,7 +40,6 @@ export const TodoLi = (props: SlateRenderElementProps) => {
         'list-none',
         (element.checked as boolean) && 'text-muted-foreground line-through'
       )}
-      // deserialize
     >
       {children}
     </li>

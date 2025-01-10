@@ -4,7 +4,10 @@ export type ParagraphConfig = PluginConfig<'p'>;
 
 export const BaseParagraphPlugin = createSlatePlugin({
   key: 'p',
-  node: { isElement: true },
+  node: {
+    isElement: true,
+    toDataAttributes: ['indent', 'listStart', 'listStyleType', 'checked'],
+  },
   parsers: {
     html: {
       deserializer: {

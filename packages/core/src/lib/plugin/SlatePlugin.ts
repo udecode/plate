@@ -412,6 +412,9 @@ export type HtmlDeserializer<C extends AnyPluginConfig = PluginConfig> =
     query?: (
       options: SlatePluginContext<C> & { element: HTMLElement }
     ) => boolean;
+    toNodeProps?: (
+      options: SlatePluginContext<C> & { element: HTMLElement }
+    ) => Partial<TDescendant> | undefined | void;
   };
 
 export type HtmlSerializer<C extends AnyPluginConfig = PluginConfig> =

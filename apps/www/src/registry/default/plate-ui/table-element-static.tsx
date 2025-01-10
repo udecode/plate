@@ -17,7 +17,6 @@ export const TableElementStatic = ({
     <SlateElement
       className={cn(className, 'overflow-x-auto')}
       style={{ paddingLeft: props.element.marginLeft as any }}
-      data-col-sizes={JSON.stringify(colSizes)}
       {...props}
     >
       <table

@@ -11,20 +11,13 @@ export function MediaAudioElementStatic({
   className,
   ...props
 }: SlateElementProps) {
-  const { align, isUpload, url, width } = props.element as TAudioElement;
+  const { url } = props.element as TAudioElement;
 
   return (
     <SlateElement className={cn(className, 'mb-1')} {...props}>
       <figure className="group relative cursor-default">
         <div className="h-16">
-          <audio
-            className="size-full"
-            data-slate-align={align}
-            data-slate-is-upload={isUpload}
-            data-slate-width={width}
-            src={url}
-            controls
-          />
+          <audio className="size-full" src={url} controls />
         </div>
       </figure>
       {children}

@@ -94,9 +94,13 @@ export const BaseIndentListPlugin = createTSlatePlugin<BaseIndentListConfig>({
         parse: ({ editor, element, getOptions }) => {
           const parent = element.parentElement;
 
-          const isPlateStatic = parent?.dataset.slateIndentList === 'true';
-
-          if (isPlateStatic) return;
+          if (
+            parent &&
+            (parent.classList.contains('slate-ol') ||
+              parent.classList.contains('slate-ul'))
+          ) {
+            return;
+          }
 
           return {
             // gdoc uses aria-level attribute

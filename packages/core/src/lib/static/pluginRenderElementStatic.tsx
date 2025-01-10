@@ -6,6 +6,7 @@ import type { SlateEditor } from '../editor';
 import type { AnyEditorPlugin, NodeComponents } from '../plugin';
 
 import { SlateElement } from './components/SlateElement';
+import { getNodeDataAttributes } from './utils/getNodeDataAttributes';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps';
 
 export type SlateRenderElement = (
@@ -33,8 +34,13 @@ export const pluginRenderElementStatic = (
         (o) => o.render?.belowNodes ?? []
       );
 
+      const dataAttributes = getNodeDataAttributes(plugin, element);
+
       nodeProps = getRenderNodeStaticProps({
-        attributes: element.attributes as any,
+        attributes: {
+          ...(element.attributes as any),
+          ...dataAttributes,
+        },
         editor,
         plugin,
         props: nodeProps as any,
