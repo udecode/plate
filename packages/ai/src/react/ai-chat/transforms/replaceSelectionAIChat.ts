@@ -1,6 +1,12 @@
-import type { SlateEditor } from '@udecode/plate';
 import type { PlateEditor } from '@udecode/plate/react';
 
+import {
+  type NodeEntry,
+  type SlateEditor,
+  type TElement,
+  NodeApi,
+  TextApi,
+} from '@udecode/plate';
 import {
   BlockSelectionPlugin,
   removeBlockSelectionNodes,
@@ -16,20 +22,20 @@ const createFormattedBlocks = ({
 }: {
   blocks: TElement[];
   format: 'all' | 'none' | 'single';
-  sourceBlock: TNodeEntry;
+  sourceBlock: NodeEntry;
 }) => {
   if (format === 'none') return cloneDeep(blocks);
 
   const [sourceNode] = sourceBlock;
-  const firstTextEntry = getFirstNodeText(sourceNode as TElement);
+  const firstTextEntry = NodeApi.firstText(sourceNode);
 
   if (!firstTextEntry) return null;
 
-  const blockProps = getNodeProps(sourceNode);
-  const textProps = getNodeProps(firstTextEntry[0]);
+  const blockProps = NodeApi.extractProps(sourceNode);
+  const textProps = NodeApi.extractProps(firstTextEntry[0]);
 
   const applyTextFormatting = (node: any): any => {
-    if (isText(node)) {
+    if (TextApi.isText(node)) {
       return { ...textProps, ...node };
     }
     if (node.children) {
