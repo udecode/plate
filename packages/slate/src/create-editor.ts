@@ -97,6 +97,7 @@ import { blocks } from './internal/editor-extension/editor-blocks';
 import { descendant } from './internal/editor-extension/editor-descendant';
 import { mark } from './internal/editor-extension/editor-mark';
 import { hasMark } from './internal/editor-extension/hasMark';
+import { isSelected } from './internal/editor-extension/is-selected';
 import { isAt } from './internal/editor-extension/isAt';
 import { isEditorEnd } from './internal/editor-extension/isEditorEnd';
 import { isText } from './internal/editor-extension/isText';
@@ -301,6 +302,7 @@ export const createEditor = <V extends Value>({
     isMerging: bindFirst(HistoryApi.isMerging, editor as any) as any,
     isReadOnly: bindFirst(isReadOnly, editor),
     isSaving: bindFirst(HistoryApi.isSaving, editor as any) as any,
+    isSelected: bindFirst(isSelected, editor),
     isSplittingOnce: bindFirst(HistoryApi.isSplittingOnce, editor as any),
     isTargetInsideNonReadonlyVoid: bindFirst(
       isTargetInsideNonReadonlyVoid,

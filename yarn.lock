@@ -6551,6 +6551,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
     lodash: "npm:^4.17.21"
+    marked: "npm:^15.0.6"
     remark-gfm: "npm:4.0.0"
     remark-parse: "npm:^11.0.0"
     unified: "npm:^11.0.5"
@@ -14189,6 +14190,15 @@ __metadata:
   version: 3.0.4
   resolution: "markdown-table@npm:3.0.4"
   checksum: 10c0/1257b31827629a54c24a5030a3dac952256c559174c95ce3ef89bebd6bff0cb1444b1fd667b1a1bb53307f83278111505b3e26f0c4e7b731e0060d435d2d930b
+  languageName: node
+  linkType: hard
+
+"marked@npm:^15.0.6":
+  version: 15.0.6
+  resolution: "marked@npm:15.0.6"
+  bin:
+    marked: bin/marked.js
+  checksum: 10c0/8f30972ac5fdf879353484bdd7717409c241d15031a58bbc483070dedb58e4b314c41c0b59b78e536658907c02ee149eaf4b9be221f198df97beae703f529d40
   languageName: node
   linkType: hard
 
