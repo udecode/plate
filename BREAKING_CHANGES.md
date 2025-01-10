@@ -485,6 +485,7 @@ For older changelogs, see https://github.com/udecode/plate/blob/main/docs
     - `withoutNormalizing` -> `editor.tf.withoutNormalizing`
     - `wrapNodeChildren` -> `editor.tf.wrapNodes(element, { children: true })`
     - `wrapNodes` -> `editor.tf.wrapNodes`
+    - `replaceNodeChildren` -> `editor.tf.replaceNodes({ at, children: true })`
     - `resetEditor` -> `editor.tf.reset`
     - `resetEditorChildren` -> `editor.tf.reset({ children: true })`
     - `selectEditor` -> `editor.tf.select([], { focus, edge })`
