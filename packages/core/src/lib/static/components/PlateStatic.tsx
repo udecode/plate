@@ -291,15 +291,3 @@ export function PlateStatic(props: PlateStaticProps) {
 
   return aboveEditable;
 }
-
-// Whenever `value` changes, update `editor.children`
-// so that the static renderer can display it
-// React.useEffect(() => {
-//   if (value) {
-//     const newValue = typeof value === 'function' ? value(editor) : value;
-
-//     if (editor.children !== newValue) {
-//       editor.children = newValue;
-//     }
-//   }
-// }, [value, editor]);
