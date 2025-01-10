@@ -2,18 +2,16 @@ import {
   type SetNodesOptions,
   type SlateEditor,
   getInjectMatch,
-  setElements,
-  unsetNodes,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { BaseLineHeightPlugin } from '../BaseLineHeightPlugin';
 
-export const setLineHeight = <E extends SlateEditor>(
-  editor: E,
+export const setLineHeight = (
+  editor: SlateEditor,
   {
     setNodesOptions,
     value,
-  }: { value: number; setNodesOptions?: SetNodesOptions<E> }
+  }: { value: number; setNodesOptions?: SetNodesOptions }
 ): void => {
   const { defaultNodeValue, nodeKey } =
     editor.getInjectProps(BaseLineHeightPlugin);
@@ -21,13 +19,12 @@ export const setLineHeight = <E extends SlateEditor>(
   const match = getInjectMatch(editor, editor.getPlugin(BaseLineHeightPlugin));
 
   if (value === defaultNodeValue) {
-    unsetNodes(editor, nodeKey!, {
+    editor.tf.unsetNodes(nodeKey!, {
       match,
       ...setNodesOptions,
     });
   } else {
-    setElements(
-      editor,
+    editor.tf.setNodes(
       { [nodeKey!]: value },
       {
         match: match as any,

@@ -1,11 +1,7 @@
 import React from 'react';
 
-import { getNode } from '@udecode/plate-common';
-import {
-  toDOMNode,
-  useEditorRef,
-  useEditorSelector,
-} from '@udecode/plate-common/react';
+import { NodeApi } from '@udecode/plate';
+import { useEditorRef, useEditorSelector } from '@udecode/plate/react';
 
 import { getHeadingList } from '../../internal/getHeadingList';
 
@@ -63,11 +59,11 @@ export const useContentObserver = ({
     headingList.forEach((item) => {
       const { path } = item;
 
-      const node = getNode(editor, path);
+      const node = NodeApi.get(editor, path);
 
       if (!node) return;
 
-      const element = toDOMNode(editor, node);
+      const element = editor.api.toDOMNode(node);
 
       return element && observer.observe(element);
     });

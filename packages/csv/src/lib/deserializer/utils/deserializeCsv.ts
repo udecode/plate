@@ -1,10 +1,10 @@
 import {
+  type Descendant,
   type SlateEditor,
-  type TDescendant,
   type TElement,
   type TNode,
   BaseParagraphPlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 import papaparse from 'papaparse';
 
 import { type CsvParseOptions, CsvPlugin } from '../../CsvPlugin';
@@ -35,7 +35,7 @@ export const deserializeCsv = (
   }: {
     data: string;
   } & CsvParseOptions
-): TDescendant[] | undefined => {
+): Descendant[] | undefined => {
   const { errorTolerance, parseOptions: pluginParseOptions } =
     editor.getOptions(CsvPlugin);
 

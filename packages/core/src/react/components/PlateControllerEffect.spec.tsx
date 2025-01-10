@@ -1,9 +1,9 @@
 import React from 'react';
 
 import { act, render, renderHook } from '@testing-library/react';
-import { useFocused } from 'slate-react';
 
 import { createPlateEditor } from '../editor';
+import { useFocused } from '../slate-react';
 import { PlateController, usePlateControllerSelectors } from '../stores';
 import { Plate } from './Plate';
 import { PlateControllerEffect } from './PlateControllerEffect';
@@ -49,8 +49,8 @@ const UnmountablePlate = ({
 
 const FocusedContext = React.createContext(false);
 
-jest.mock('slate-react', () => ({
-  ...jest.requireActual('slate-react'),
+jest.mock('../slate-react', () => ({
+  ...jest.requireActual('../slate-react'),
   useFocused: () => React.useContext(FocusedContext),
 }));
 

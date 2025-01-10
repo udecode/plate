@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import type { Path } from 'slate';
+import type { Path } from '@udecode/plate';
 
 import type { EditorHandle } from './types';
 

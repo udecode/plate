@@ -6,8 +6,8 @@ import {
   type PluginConfig,
   type SlateEditor,
   bindFirst,
-} from '@udecode/plate-common';
-import { createTPlatePlugin, focusEditor } from '@udecode/plate-common/react';
+} from '@udecode/plate';
+import { createTPlatePlugin } from '@udecode/plate/react';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 
 import type { AIBatch } from '../../lib';
@@ -82,7 +82,6 @@ export type AIChatPluginConfig = PluginConfig<
 export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
   key: 'aiChat',
   dependencies: ['ai'],
-  extendEditor: withAIChat,
   options: {
     aiEditor: null,
     chat: { messages: [] } as any,
@@ -94,6 +93,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     triggerPreviousCharPattern: /^\s?$/,
   },
 })
+  .overrideEditor(withAIChat)
   .extend(() => ({
     useHooks: useAIChatHooks,
   }))
@@ -133,7 +133,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
         // TODO
         // editor.getApi(BlockSelectionPlugin).blockSelection.focus();
       } else {
-        focusEditor(editor);
+        editor.tf.focus();
       }
 
       const lastBatch = editor.history.undos.at(-1) as AIBatch;

@@ -1,11 +1,11 @@
 /** @jsx jsxt */
 
+import { createSlateEditor } from '@udecode/plate';
 import {
   BoldPlugin,
   ItalicPlugin,
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
-import { createSlateEditor } from '@udecode/plate-common';
 import { jsxt } from '@udecode/plate-test-utils';
 import { autoformatPlugin } from 'www/src/registry/default/components/editor/plugins/autoformat-plugin';
 
@@ -37,9 +37,9 @@ describe('when inserting ***', () => {
       value: input,
     });
 
-    editor.insertText('*');
-    editor.insertText('*');
-    editor.insertText('*');
+    editor.tf.insertText('*');
+    editor.tf.insertText('*');
+    editor.tf.insertText('*');
 
     expect(input.children).toEqual(output.children);
   });
@@ -84,12 +84,12 @@ describe('when inserting ***___', () => {
       value: input,
     });
 
-    editor.insertText('*');
-    editor.insertText('*');
-    editor.insertText('*');
-    editor.insertText('_');
-    editor.insertText('_');
-    editor.insertText('_');
+    editor.tf.insertText('*');
+    editor.tf.insertText('*');
+    editor.tf.insertText('*');
+    editor.tf.insertText('_');
+    editor.tf.insertText('_');
+    editor.tf.insertText('_');
 
     expect(input.children).toEqual(output.children);
   });

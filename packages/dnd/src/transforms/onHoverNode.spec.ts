@@ -1,24 +1,20 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
-import type { PlateEditor } from '@udecode/plate-common/react';
 import type { DropTargetMonitor } from 'react-dnd';
 
-import { collapseSelection, isExpanded } from '@udecode/plate-common';
-import { focusEditor } from '@udecode/plate-common/react';
+import { RangeApi } from '@udecode/plate';
+import { createPlateEditor } from '@udecode/plate/react';
 
 import type { DragItemNode } from '../types';
 
 import { DndPlugin } from '../DndPlugin';
 import { onHoverNode } from './onHoverNode';
 
-jest.mock('@udecode/plate-common', () => ({
-  ...jest.requireActual('@udecode/plate-common'),
-  collapseSelection: jest.fn(),
-  isExpanded: jest.fn(),
-}));
-
-jest.mock('@udecode/plate-common/react', () => ({
-  ...jest.requireActual('@udecode/plate-common/react'),
-  focusEditor: jest.fn(),
+jest.mock('@udecode/plate', () => ({
+  ...jest.requireActual('@udecode/plate'),
+  RangeApi: {
+    ...jest.requireActual('@udecode/plate').RangeApi,
+    isExpanded: jest.fn(),
+  },
 }));
 
 jest.mock('../utils', () => ({
@@ -35,11 +31,13 @@ jest.mock('./onDropNode', () => ({
 }));
 
 describe('onHoverNode', () => {
-  const editor = {
-    getOptions: jest.fn(),
-    selection: {},
-    setOption: jest.fn(),
-  } as unknown as PlateEditor;
+  const editor = createPlateEditor();
+  editor.getOptions = jest.fn();
+  editor.selection = null;
+  editor.setOption = jest.fn();
+  editor.tf.collapse = jest.fn();
+  editor.tf.focus = jest.fn();
+
   const monitor = {} as DropTargetMonitor;
   const nodeRef = {};
   const dragItem: DragItemNode = { id: 'drag' };
@@ -59,7 +57,7 @@ describe('onHoverNode', () => {
       to: [1],
     });
 
-    (isExpanded as jest.Mock).mockReturnValue(false);
+    (RangeApi.isExpanded as jest.Mock).mockReturnValue(false);
 
     onHoverNode(editor, {
       id: 'hover',
@@ -82,7 +80,12 @@ describe('onHoverNode', () => {
       to: [1],
     });
 
-    (isExpanded as jest.Mock).mockReturnValue(true);
+    (RangeApi.isExpanded as jest.Mock).mockReturnValue(true);
+
+    editor.selection = {
+      anchor: { offset: 0, path: [0] },
+      focus: { offset: 0, path: [1] },
+    };
 
     onHoverNode(editor, {
       id: 'hover',
@@ -91,8 +94,8 @@ describe('onHoverNode', () => {
       nodeRef,
     });
 
-    expect(collapseSelection).toHaveBeenCalledWith(editor);
-    expect(focusEditor).toHaveBeenCalledWith(editor);
+    expect(editor.tf.collapse).toHaveBeenCalled();
+    expect(editor.tf.focus).toHaveBeenCalled();
   });
 
   it('should handle horizontal orientation', () => {
@@ -103,7 +106,7 @@ describe('onHoverNode', () => {
       to: [1],
     });
 
-    (isExpanded as jest.Mock).mockReturnValue(false);
+    (RangeApi.isExpanded as jest.Mock).mockReturnValue(false);
 
     onHoverNode(editor, {
       id: 'hover',

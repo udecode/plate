@@ -1,8 +1,8 @@
 import React from 'react';
 
-import type { UseHooks } from '@udecode/plate-common/react';
+import type { UseHooks } from '@udecode/plate/react';
 
-import { useEditorVersion } from '@udecode/plate-common/react';
+import { useEditorVersion } from '@udecode/plate/react';
 
 import {
   type SuggestionConfig,

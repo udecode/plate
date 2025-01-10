@@ -1,4 +1,4 @@
-import { Key, toPlatePlugin } from '@udecode/plate-common/react';
+import { Key, toPlatePlugin } from '@udecode/plate/react';
 
 import { BaseItalicPlugin } from '../lib/BaseItalicPlugin';
 
@@ -10,7 +10,7 @@ export const ItalicPlugin = toPlatePlugin(
         keys: [[Key.Mod, 'i']],
         preventDefault: true,
         handler: () => {
-          editor.tf.toggle.mark({ key: type });
+          editor.tf.toggleMark(type);
         },
       },
     },

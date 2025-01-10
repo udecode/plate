@@ -1,8 +1,11 @@
 import React from 'react';
 
-import { focusAtom } from 'jotai-optics';
-import { useFocused } from 'slate-react';
+import type { WritableAtom } from 'jotai/vanilla/atom';
+import type { JotaiStore } from 'jotai-x';
 
+import { focusAtom } from 'jotai-optics';
+
+import { useFocused } from '../slate-react';
 import {
   plateControllerStore,
   useEditorId,
@@ -23,8 +26,13 @@ export const PlateControllerEffect = ({
 
   const currentStoreAtom = React.useMemo(
     () =>
-      focusAtom(plateControllerStore.atom.editorStores, (optic) =>
-        optic.prop(id)
+      focusAtom(
+        plateControllerStore.atom.editorStores as WritableAtom<
+          Record<string, JotaiStore | null>,
+          any,
+          any
+        >,
+        (optic) => optic.prop(id)
       ),
     [id]
   );

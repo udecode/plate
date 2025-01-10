@@ -3,7 +3,7 @@ import {
   type TElement,
   bindFirst,
   createTSlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import {
   insertAudioPlaceholder,

@@ -1,5 +1,4 @@
-import { type SlateEditor, getAboveNode } from '@udecode/plate-common';
-import { Path } from 'slate';
+import { type Path, type SlateEditor, PathApi } from '@udecode/plate';
 
 import { BaseListItemPlugin } from '../BaseListPlugin';
 import { getListTypes } from './getListTypes';
@@ -22,7 +21,7 @@ export const getHighestEmptyList = (
     diffListPath?: Path;
   }
 ): Path | undefined => {
-  const list = getAboveNode(editor, {
+  const list = editor.api.above({
     at: liPath,
     match: { type: getListTypes(editor) },
   });
@@ -31,9 +30,9 @@ export const getHighestEmptyList = (
 
   const [listNode, listPath] = list;
 
-  if (!diffListPath || !Path.equals(listPath, diffListPath)) {
+  if (!diffListPath || !PathApi.equals(listPath, diffListPath)) {
     if (listNode.children.length < 2) {
-      const liParent = getAboveNode(editor, {
+      const liParent = editor.api.above({
         at: listPath,
         match: { type: editor.getType(BaseListItemPlugin) },
       });

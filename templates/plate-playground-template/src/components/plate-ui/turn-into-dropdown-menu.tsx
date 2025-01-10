@@ -4,14 +4,13 @@ import React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import {
   ParagraphPlugin,
-  focusEditor,
   useEditorRef,
   useSelectionFragmentProp,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
+import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { INDENT_LIST_KEYS, ListStyleType } from '@udecode/plate-indent-list';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
@@ -140,13 +139,16 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
 
       <DropdownMenuContent
         className="ignore-click-outside/toolbar min-w-0"
+        onCloseAutoFocus={(e) => {
+          e.preventDefault();
+          editor.tf.focus();
+        }}
         align="start"
       >
         <DropdownMenuRadioGroup
           value={value}
           onValueChange={(type) => {
             setBlockType(editor, type);
-            focusEditor(editor);
           }}
           label="Turn into"
         >

@@ -1,4 +1,4 @@
-import { toPlatePlugin } from '@udecode/plate-common/react';
+import { toPlatePlugin } from '@udecode/plate/react';
 
 import { BaseAutoformatPlugin } from '../lib/BaseAutoformatPlugin';
 import { onKeyDownAutoformat } from './onKeyDownAutoformat';

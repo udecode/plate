@@ -1,0 +1,142 @@
+---
+title: Tabbable
+---
+
+<ComponentPreview name="tabbable-demo" />
+
+<PackageInfo>
+
+## 功能特点
+
+- 确保编辑器中可 tab 切换元素之间的 tab 顺序一致。
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-tabbable
+```
+
+## Usage
+
+```tsx
+import { TabbablePlugin } from '@udecode/plate-tabbable/react';
+
+const plugins = [
+  // ...其他插件,
+  TabbablePlugin,
+];
+```
+
+### 与其他插件冲突
+
+Tabbable 插件可能会与其他处理 `Tab` 键的插件（如：
+
+- 列表
+- 代码块
+- Indent 插件
+
+使用 `query` 选项在 `Tab` 键应由其他插件处理时禁用 Tabbable 插件：
+
+```tsx
+query: (editor) => {
+  const inList = findNode(editor, { match: { type: ListItemPlugin.key } });
+  const inCodeBlock = findNode(editor, { match: { type: CodeBlockPlugin.key } });
+  return !inList && !inCodeBlock;
+},
+```
+
+或者，如果你正在使用 Indent 插件，你可以只在选择特定类型的节点时启用 Tabbable 插件，例如 voids：
+
+```tsx
+query: (editor) => !!findNode(editor, {
+  match: (node) => isVoid(editor, node),
+}),
+```
+
+### 非 void Slate 节点
+
+一个 `TabbableEntry` 将创建每个可 tab 切换的 DOM 元素，使用 [tabbable](https://www.npmjs.com/package/tabbable) NPM 包确定。然后使用 `isTabbable` 过滤列表。
+
+默认情况下，`isTabbable` 仅对 void Slate 节点内的entry返回 true。你可以覆盖 `isTabbable` 以添加对包含在其他类型 Slate 节点中的 DOM 元素的支持。
+
+```tsx
+// Enable tabbable DOM elements inside CUSTOM_ELEMENT
+isTabbable: (tabbableEntry) => (
+  tabbableEntry.slateNode.type === CUSTOM_ELEMENT ||
+  isVoid(editor, tabbableEntry.slateNode)
+),
+```
+
+### DOM elements outside the editor
+
+在某些情况下，你可能希望允许用户从编辑器切换到渲染在编辑器之外的 DOM 元素，例如交互式弹出框。
+
+要实现这一点，请覆盖 `insertTabbableEntries` 以返回 `TabbableEntry` 对象的数组，每个 DOM 元素一个，这些元素是你希望包含在可 tab 切换列表中的元素。`TabbableEntry` 的 `slateNode` 和 `path` 应指向用户光标将位于的 Slate 节点，当 DOM 元素应可 tab 切换时。例如，如果 DOM 元素在链接被选中时出现，则 `slateNode` 和 `path` 应为链接的。
+
+设置 `globalEventListener` 选项为 `true` 以确保 Tabbable 插件能够将用户的焦点返回到编辑器。
+
+```tsx
+// Add buttons inside .my-popover to the list of tabbables
+globalEventListener: true,
+insertTabbableEntries: (editor) => {
+  const [selectedNode, selectedNodePath] = getNodeEntry(editor, editor.selection);
+
+  return [
+    ...document.querySelectorAll('.my-popover > button'),
+  ].map((domNode) => ({
+    domNode,
+    slateNode: selectedNode,
+    path: selectedNodePath,
+  }));
+},
+```
+## 插件
+
+### TabbablePlugin
+
+<APIOptions>
+<APIItem name="query" type="(editor: PlateEditor<V>, event: KeyboardEvent) => boolean" optional>
+动态启用或禁用插件。默认返回 `true`。
+
+- **默认值:** **`() => true`**
+
+</APIItem>
+<APIItem name="globalEventListener" type="boolean" optional>
+确定插件是否将其事件监听器添加到文档而不是编辑器，这允许它捕获来自编辑器外部的事件。
+
+- **默认值:** **`false`**
+
+</APIItem>
+<APIItem name="insertTabbableEntries" type="(editor: PlateEditor<V>, event: KeyboardEvent) => TabbableEntry[]" optional>
+向可 tab 切换元素列表添加额外的entry。对于添加不在编辑器内的可 tab 切换元素很有用。它会忽略 `isTabbable`。
+
+- **默认值:** **`() => []`**
+
+</APIItem>
+<APIItem name="isTabbable" type="(tabbableEntry: TabbableEntry) => boolean" optional>
+确定一个元素是否应该包含在可 tab 切换列表中。如果 tabbableEntry 的 slateNode 是 void，则返回 `true`。
+
+- **默认值:** **`(tabbableEntry) => isVoid(editor, tabbableEntry.slateNode)`**
+
+</APIItem>
+</APIOptions>
+
+## API
+
+### TabbableEntry
+
+定义可 tab 切换entry的属性。
+
+<APIAttributes>
+  <APIItem name="domNode" type="HTMLElement">
+    表示可 tab 切换entry的 HTML 元素。
+  </APIItem>
+  <APIItem name="slateNode" type="TNode">
+    可 tab 切换entry对应的 Slate 节点。
+  </APIItem>
+  <APIItem name="path" type="Path">
+    Slate 文档中 Slate 节点的路径。
+  </APIItem>
+</APIAttributes>

@@ -1,27 +1,27 @@
 {
-  "awesomeTypescriptLoaderOptions": {
-    "ignoreDiagnostics": [7005]
-  },
   "compilerOptions": {
+    "rootDir": ".",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "allowJs": true,
-    "allowSyntheticDefaultImports": true,
-    "downlevelIteration": true,
-    "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
+    "module": "ESNext",
     "jsx": "react",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "module": "esnext",
-    "moduleResolution": "Bundler",
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "noEmit": true,
+    "noImplicitAny": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "target": "es2017",
-    "outDir": "dist",
-    "rootDir": ".",
-    "types": ["node", "jest", "@testing-library/jest-dom"]
+    "strictBindCallApply": true,
+    "strictFunctionTypes": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true,
+    "target": "ESNext",
+    "types": ["node","@testing-library/jest-dom"]
   },
   "exclude": ["node_modules", "**/node_modules", "dist", "**/dist"]
 }

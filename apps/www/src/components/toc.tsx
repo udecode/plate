@@ -6,11 +6,25 @@ import type { TableOfContents } from '@/lib/toc';
 
 import { cn } from '@udecode/cn';
 
+import { useLocale } from '@/hooks/useLocale';
+
 interface TocProps {
   toc: TableOfContents;
 }
 
+const i18n = {
+  cn: {
+    onThisPage: '目录',
+  },
+  en: {
+    onThisPage: 'On This Page',
+  },
+};
+
 export function DashboardTableOfContents({ toc }: TocProps) {
+  const locale = useLocale();
+  const content = i18n[locale as keyof typeof i18n];
+
   const itemIds = React.useMemo(
     () =>
       toc.items
@@ -33,7 +47,7 @@ export function DashboardTableOfContents({ toc }: TocProps) {
 
   return (
     <div className="space-y-2">
-      <p className="font-medium">On This Page</p>
+      <p className="font-medium">{content.onThisPage}</p>
       <Tree activeItem={activeHeading!} tree={toc} />
     </div>
   );

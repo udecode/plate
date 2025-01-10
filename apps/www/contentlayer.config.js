@@ -14,6 +14,8 @@ import { visit } from 'unist-util-visit';
 import { rehypeComponent } from './src/lib/rehype-component';
 import { rehypeNpmCommand } from './src/lib/rehype-npm-command';
 
+import 'dotenv/config';
+
 /** @type {import('contentlayer2/source-files').ComputedFields} */
 const computedFields = {
   slug: {

@@ -1,9 +1,4 @@
-import {
-  type TEditor,
-  type TNodeEntry,
-  isDefined,
-  unsetNodes,
-} from '@udecode/plate-common';
+import { type Editor, type NodeEntry, isDefined } from '@udecode/plate';
 
 import { INDENT_LIST_KEYS } from '../BaseIndentListPlugin';
 
@@ -12,11 +7,11 @@ import { INDENT_LIST_KEYS } from '../BaseIndentListPlugin';
  * start (1).
  */
 export const normalizeFirstIndentListStart = (
-  editor: TEditor,
-  [node, path]: TNodeEntry
+  editor: Editor,
+  [node, path]: NodeEntry
 ) => {
   if (isDefined(node[INDENT_LIST_KEYS.listStart])) {
-    unsetNodes(editor, INDENT_LIST_KEYS.listStart, { at: path });
+    editor.tf.unsetNodes(INDENT_LIST_KEYS.listStart, { at: path });
 
     return true;
   }

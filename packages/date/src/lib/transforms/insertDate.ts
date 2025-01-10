@@ -1,17 +1,12 @@
-import {
-  type InsertNodesOptions,
-  type SlateEditor,
-  insertNodes,
-} from '@udecode/plate-common';
+import type { InsertNodesOptions, SlateEditor } from '@udecode/plate';
 
 import { type TDateElement, BaseDatePlugin } from '../BaseDatePlugin';
 
-export const insertDate = <E extends SlateEditor>(
+export const insertDate = (
   editor: SlateEditor,
-  { date, ...options }: { date?: string } & InsertNodesOptions<E> = {}
+  { date, ...options }: { date?: string } & InsertNodesOptions = {}
 ) => {
-  insertNodes<TDateElement | { text: string }>(
-    editor,
+  editor.tf.insertNodes<TDateElement | { text: string }>(
     [
       {
         children: [{ text: '' }],

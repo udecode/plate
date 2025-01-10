@@ -59,12 +59,7 @@ module.exports = {
     'import/no-extraneous-dependencies': 'off',
     'import/no-named-as-default': 'off',
     'import/no-named-as-default-member': 'off',
-    'import/no-unresolved': [
-      'error',
-      {
-        ignore: ['^@/', 'contentlayer/generated'],
-      },
-    ],
+    'import/no-unresolved': 'off',
     'import/prefer-default-export': 'off',
   },
 };

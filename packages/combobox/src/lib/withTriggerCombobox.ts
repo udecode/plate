@@ -1,20 +1,15 @@
-import {
-  type ExtendEditor,
-  type PluginConfig,
-  type SlateEditor,
-  type TElement,
-  getEditorString,
-  getPointBefore,
-  getRange,
-} from '@udecode/plate-common';
+import type {
+  OverrideEditor,
+  PluginConfig,
+  SlateEditor,
+  TElement,
+} from '@udecode/plate';
 
 import type { TriggerComboboxPluginOptions } from './types';
 
-export const withTriggerCombobox: ExtendEditor<
+export const withTriggerCombobox: OverrideEditor<
   PluginConfig<any, TriggerComboboxPluginOptions>
-> = ({ editor, getOptions, type }) => {
-  const { insertText } = editor;
-
+> = ({ editor, getOptions, tf: { insertText }, type }) => {
   const matchesTrigger = (text: string) => {
     const { trigger } = getOptions();
 
@@ -28,41 +23,41 @@ export const withTriggerCombobox: ExtendEditor<
     return text === trigger;
   };
 
-  editor.insertText = (text) => {
-    const { createComboboxInput, triggerPreviousCharPattern, triggerQuery } =
-      getOptions();
+  return {
+    transforms: {
+      insertText(text) {
+        const {
+          createComboboxInput,
+          triggerPreviousCharPattern,
+          triggerQuery,
+        } = getOptions();
 
-    if (
-      !editor.selection ||
-      !matchesTrigger(text) ||
-      (triggerQuery && !triggerQuery(editor as SlateEditor))
-    ) {
-      return insertText(text);
-    }
+        if (
+          !editor.selection ||
+          !matchesTrigger(text) ||
+          (triggerQuery && !triggerQuery(editor as SlateEditor))
+        ) {
+          return insertText(text);
+        }
 
-    // Make sure an input is created at the beginning of line or after a whitespace
-    const previousChar = getEditorString(
-      editor,
-      getRange(
-        editor,
-        editor.selection,
-        getPointBefore(editor, editor.selection)
-      )
-    );
+        // Make sure an input is created at the beginning of line or after a whitespace
+        const previousChar = editor.api.string(
+          editor.api.range('before', editor.selection)
+        );
 
-    const matchesPreviousCharPattern =
-      triggerPreviousCharPattern?.test(previousChar);
+        const matchesPreviousCharPattern =
+          triggerPreviousCharPattern?.test(previousChar);
 
-    if (matchesPreviousCharPattern) {
-      const inputNode: TElement = createComboboxInput
-        ? createComboboxInput(text)
-        : { children: [{ text: '' }], type };
+        if (matchesPreviousCharPattern) {
+          const inputNode: TElement = createComboboxInput
+            ? createComboboxInput(text)
+            : { children: [{ text: '' }], type };
 
-      return editor.insertNode(inputNode);
-    }
+          return editor.tf.insertNodes(inputNode);
+        }
 
-    return insertText(text);
+        return insertText(text);
+      },
+    },
   };
-
-  return editor;
 };

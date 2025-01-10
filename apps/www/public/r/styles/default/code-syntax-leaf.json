@@ -19,13 +19,13 @@
   },
   "files": [
     {
-      "content": "'use client';\n\nimport React from 'react';\n\nimport { withRef } from '@udecode/cn';\nimport { useCodeSyntaxLeaf } from '@udecode/plate-code-block/react';\nimport { PlateLeaf } from '@udecode/plate-common/react';\n\nexport const CodeSyntaxLeaf = withRef<typeof PlateLeaf>(\n  ({ children, ...props }, ref) => {\n    const { leaf } = props;\n\n    const { tokenProps } = useCodeSyntaxLeaf({ leaf });\n\n    return (\n      <PlateLeaf ref={ref} {...props}>\n        <span {...tokenProps}>{children}</span>\n      </PlateLeaf>\n    );\n  }\n);\n",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { withRef } from '@udecode/cn';\nimport { PlateLeaf } from '@udecode/plate/react';\nimport { useCodeSyntaxLeaf } from '@udecode/plate-code-block/react';\n\nexport const CodeSyntaxLeaf = withRef<typeof PlateLeaf>(\n  ({ children, ...props }, ref) => {\n    const { leaf } = props;\n\n    const { tokenProps } = useCodeSyntaxLeaf({ leaf });\n\n    return (\n      <PlateLeaf ref={ref} {...props}>\n        <span {...tokenProps}>{children}</span>\n      </PlateLeaf>\n    );\n  }\n);\n",
       "path": "plate-ui/code-syntax-leaf.tsx",
       "target": "components/plate-ui/code-syntax-leaf.tsx",
       "type": "registry:ui"
     },
     {
-      "content": "import React from 'react';\n\nimport type { SlateLeafProps } from '@udecode/plate-common';\n\nimport { cn } from '@udecode/cn';\nimport { SlateLeaf } from '@udecode/plate-common';\n\nexport function CodeSyntaxLeafStatic({\n  children,\n  className,\n  ...props\n}: SlateLeafProps) {\n  const syntaxClassName = `prism-token token ${props.leaf.tokenType}`;\n\n  return (\n    <SlateLeaf className={cn(className, syntaxClassName)} {...props}>\n      {children}\n    </SlateLeaf>\n  );\n}\n",
+      "content": "import React from 'react';\n\nimport type { SlateLeafProps } from '@udecode/plate';\n\nimport { cn } from '@udecode/cn';\nimport { SlateLeaf } from '@udecode/plate';\n\nexport function CodeSyntaxLeafStatic({\n  children,\n  className,\n  ...props\n}: SlateLeafProps) {\n  const syntaxClassName = `prism-token token ${props.leaf.tokenType}`;\n\n  return (\n    <SlateLeaf className={cn(className, syntaxClassName)} {...props}>\n      {children}\n    </SlateLeaf>\n  );\n}\n",
       "path": "plate-ui/code-syntax-leaf-static.tsx",
       "target": "components/plate-ui/code-syntax-leaf-static.tsx",
       "type": "registry:ui"

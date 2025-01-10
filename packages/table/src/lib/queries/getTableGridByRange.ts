@@ -1,20 +1,18 @@
-import type { Range } from 'slate';
-
 import {
+  type ElementEntry,
   type SlateEditor,
   type TElement,
-  type TElementEntry,
-  getNode,
-} from '@udecode/plate-common';
+  type TRange,
+  NodeApi,
+} from '@udecode/plate';
 
 import type { TTableElement } from '../../lib/types';
 
-import { BaseTablePlugin } from '../../lib/BaseTablePlugin';
-import { getEmptyTableNode } from '../../lib/utils';
+import { type TableConfig, BaseTablePlugin } from '../../lib/BaseTablePlugin';
 import { getTableMergeGridByRange } from '../merge/getTableGridByRange';
 
 export interface GetTableGridByRangeOptions {
-  at: Range;
+  at: TRange;
 
   /**
    * Format of the output:
@@ -29,10 +27,11 @@ export interface GetTableGridByRangeOptions {
 export const getTableGridByRange = (
   editor: SlateEditor,
   { at, format = 'table' }: GetTableGridByRangeOptions
-): TElementEntry[] => {
-  const { enableMerging } = editor.getOptions(BaseTablePlugin);
+): ElementEntry[] => {
+  const { api } = editor.getPlugin<TableConfig>({ key: 'table' });
+  const { disableMerge } = editor.getOptions(BaseTablePlugin);
 
-  if (enableMerging) {
+  if (!disableMerge) {
     return getTableMergeGridByRange(editor, { at, format });
   }
 
@@ -54,7 +53,7 @@ export const getTableGridByRange = (
   const relativeRowIndex = endRowIndex - startRowIndex;
   const relativeColIndex = endColIndex - startColIndex;
 
-  const table: TTableElement = getEmptyTableNode(editor, {
+  const table: TTableElement = api.create.table({
     children: [],
     colCount: relativeColIndex + 1,
     rowCount: relativeRowIndex + 1,
@@ -63,13 +62,13 @@ export const getTableGridByRange = (
   let rowIndex = startRowIndex;
   let colIndex = startColIndex;
 
-  const cellEntries: TElementEntry[] = [];
+  const cellEntries: ElementEntry[] = [];
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
     const cellPath = tablePath.concat([rowIndex, colIndex]);
 
-    const cell = getNode<TElement>(editor, cellPath);
+    const cell = NodeApi.get<TElement>(editor, cellPath);
 
     if (!cell) break;
 

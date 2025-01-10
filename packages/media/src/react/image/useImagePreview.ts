@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react';
 
-import { isHotkey } from '@udecode/plate-common';
-import { useEditorRef } from '@udecode/plate-common/react';
+import { isHotkey } from '@udecode/plate';
+import { useEditorRef } from '@udecode/plate/react';
 
 import {
   imagePreviewActions,

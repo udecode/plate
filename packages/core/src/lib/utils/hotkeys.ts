@@ -1,3 +1,5 @@
+import type { Editor } from '@udecode/slate';
+
 import { IS_APPLE } from '@udecode/utils';
 import { type KeyboardEventLike, isKeyHotkey } from 'is-hotkey';
 
@@ -65,6 +67,24 @@ export const createHotkey = (key: string) => {
   };
 };
 
+const createComposing =
+  (key: string) =>
+  (
+    editor: Editor,
+    event: React.KeyboardEvent,
+    {
+      composing,
+    }: {
+      /** Ignore the event if composing. */
+      composing?: boolean;
+    } = {}
+  ) => {
+    if (!createHotkey(key)(event)) return false;
+    if (!!composing !== editor.api.isComposing()) return false;
+
+    return true;
+  };
+
 export const Hotkeys = {
   isBold: createHotkey('bold'),
   isCompose: createHotkey('compose'),
@@ -88,6 +108,8 @@ export const Hotkeys = {
   isRedo: createHotkey('redo'),
   isSoftBreak: createHotkey('insertSoftBreak'),
   isSplitBlock: createHotkey('splitBlock'),
+  isTab: createComposing('tab'),
   isTransposeCharacter: createHotkey('transposeCharacter'),
   isUndo: createHotkey('undo'),
+  isUntab: createComposing('untab'),
 };

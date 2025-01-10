@@ -1,9 +1,7 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from '@udecode/plate-common';
-
-import { BaseParagraphPlugin } from '@udecode/plate-common';
-import { createPlateEditor } from '@udecode/plate-common/react';
+import { BaseParagraphPlugin, createEditor } from '@udecode/plate';
+import { createPlateEditor } from '@udecode/plate/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
@@ -11,14 +9,16 @@ import { BaseIndentListPlugin } from '../BaseIndentListPlugin';
 
 jsxt;
 
-const input = (
-  <editor>
-    <hp>1</hp>
-    <hp indent={1} listStart={1} listStyleType="disc">
-      2
-    </hp>
-  </editor>
-) as any as SlateEditor;
+const input = createEditor(
+  (
+    <editor>
+      <hp>1</hp>
+      <hp indent={1} listStart={1} listStyleType="disc">
+        2
+      </hp>
+    </editor>
+  ) as any
+);
 
 const output = (
   <editor>
@@ -27,13 +27,14 @@ const output = (
       2
     </hp>
   </editor>
-) as any as SlateEditor;
+) as any;
 
 it('should be', async () => {
   const editor = createPlateEditor({
-    editor: input,
     plugins: [BaseParagraphPlugin, IndentPlugin, BaseIndentListPlugin],
+    selection: input.selection,
     shouldNormalizeEditor: true,
+    value: input.children,
   });
 
   expect(editor.children).toEqual(output.children);

@@ -1,5 +1,12 @@
 # @udecode/react-utils
 
+## 42.0.0
+
+### Patch Changes
+
+- [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) –
+  - Added a new hook, `useMemoizedSelector`, which re-renders only when the selector’s result changes.
+
 ## 40.2.8
 
 ### Patch Changes

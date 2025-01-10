@@ -1,5 +1,5 @@
 /** @jsxRuntime classic */
-import type { TDescendant, Value } from '@udecode/plate-common';
+import type { Descendant, Value } from '@udecode/plate';
 
 /** @jsx jsx */
 import { jsx } from '@udecode/plate-test-utils';
@@ -10,7 +10,7 @@ const HEADINGS = 100;
 const PARAGRAPHS = 7;
 
 export const createHugeDocumentValue = () => {
-  const hugeDocument: TDescendant[] = [];
+  const hugeDocument: Descendant[] = [];
 
   for (let h = 0; h < HEADINGS; h++) {
     hugeDocument.push(

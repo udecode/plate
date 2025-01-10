@@ -1,9 +1,7 @@
 /** @jsx jsxt */
 
-import {
-  createPlateEditor,
-  getEditorPlugin,
-} from '@udecode/plate-common/react';
+import { createEditor } from '@udecode/plate';
+import { createPlateEditor, getEditorPlugin } from '@udecode/plate/react';
 import * as isHotkey from '@udecode/plate-core';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { jsxt } from '@udecode/plate-test-utils';
@@ -13,16 +11,18 @@ import { onKeyDownExitBreak } from '../../onKeyDownExitBreak';
 
 jsxt;
 
-const input = (
-  <editor>
-    <hp>paragraph</hp>
-    <hcodeblock>
-      code
-      <cursor />
-      block
-    </hcodeblock>
-  </editor>
-) as any;
+const input = createEditor(
+  (
+    <editor>
+      <hp>paragraph</hp>
+      <hcodeblock>
+        code
+        <cursor />
+        block
+      </hcodeblock>
+    </editor>
+  ) as any
+);
 
 const event = new KeyboardEvent('keydown') as any;
 

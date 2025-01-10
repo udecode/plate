@@ -1,4 +1,9 @@
 import { withProps } from '@udecode/cn';
+import {
+  ParagraphPlugin,
+  PlateLeaf,
+  usePlateEditor,
+} from '@udecode/plate/react';
 import { AIPlugin } from '@udecode/plate-ai/react';
 import {
   BoldPlugin,
@@ -16,11 +21,6 @@ import {
   CodeSyntaxPlugin,
 } from '@udecode/plate-code-block/react';
 import { CommentsPlugin } from '@udecode/plate-comments/react';
-import {
-  ParagraphPlugin,
-  PlateLeaf,
-  usePlateEditor,
-} from '@udecode/plate-common/react';
 import { DatePlugin } from '@udecode/plate-date/react';
 import { EmojiInputPlugin } from '@udecode/plate-emoji/react';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
@@ -31,6 +31,10 @@ import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { KbdPlugin } from '@udecode/plate-kbd/react';
 import { ColumnItemPlugin, ColumnPlugin } from '@udecode/plate-layout/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
+import {
+  EquationPlugin,
+  InlineEquationPlugin,
+} from '@udecode/plate-math/react';
 import {
   AudioPlugin,
   FilePlugin,
@@ -67,11 +71,13 @@ import { ColumnGroupElement } from '@/registry/default/plate-ui/column-group-ele
 import { CommentLeaf } from '@/registry/default/plate-ui/comment-leaf';
 import { DateElement } from '@/registry/default/plate-ui/date-element';
 import { EmojiInputElement } from '@/registry/default/plate-ui/emoji-input-element';
+import { EquationElement } from '@/registry/default/plate-ui/equation-element';
 import { ExcalidrawElement } from '@/registry/default/plate-ui/excalidraw-element';
 import { HeadingElement } from '@/registry/default/plate-ui/heading-element';
 import { HighlightLeaf } from '@/registry/default/plate-ui/highlight-leaf';
 import { HrElement } from '@/registry/default/plate-ui/hr-element';
 import { ImageElement } from '@/registry/default/plate-ui/image-element';
+import { InlineEquationElement } from '@/registry/default/plate-ui/inline-equation-element';
 import { KbdLeaf } from '@/registry/default/plate-ui/kbd-leaf';
 import { LinkElement } from '@/registry/default/plate-ui/link-element';
 import { MediaAudioElement } from '@/registry/default/plate-ui/media-audio-element';
@@ -110,6 +116,7 @@ export const useCreateEditor = () => {
         [CommentsPlugin.key]: CommentLeaf,
         [DatePlugin.key]: DateElement,
         [EmojiInputPlugin.key]: EmojiInputElement,
+        [EquationPlugin.key]: EquationElement,
         [ExcalidrawPlugin.key]: ExcalidrawElement,
         [FilePlugin.key]: MediaFileElement,
         [HEADING_KEYS.h1]: withProps(HeadingElement, { variant: 'h1' }),
@@ -121,6 +128,7 @@ export const useCreateEditor = () => {
         [HighlightPlugin.key]: HighlightLeaf,
         [HorizontalRulePlugin.key]: HrElement,
         [ImagePlugin.key]: ImageElement,
+        [InlineEquationPlugin.key]: InlineEquationElement,
         [ItalicPlugin.key]: withProps(PlateLeaf, { as: 'em' }),
         [KbdPlugin.key]: KbdLeaf,
         [LinkPlugin.key]: LinkElement,

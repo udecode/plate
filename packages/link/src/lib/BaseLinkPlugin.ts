@@ -1,9 +1,14 @@
 import {
+  type EditorBeforeOptions,
   type PluginConfig,
-  type RangeBeforeOptions,
   createTSlatePlugin,
+  getEditorPlugin,
   isUrl,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
+import {
+  RemoveEmptyNodesPlugin,
+  withRemoveEmptyNodes,
+} from '@udecode/plate-normalizers';
 
 import type { TLinkElement } from './types';
 
@@ -65,14 +70,13 @@ export type BaseLinkConfig = PluginConfig<
      * Allow custom config for rangeBeforeOptions.
      *
      * @example
-     *   default
      *   {
-     *   matchString: ' ',
-     *   skipInvalid: true,
-     *   afterMatch: true,
+     *     "matchString": " ",
+     *     "skipInvalid": true,
+     *     "afterMatch": true
      *   }
      */
-    rangeBeforeOptions?: RangeBeforeOptions;
+    rangeBeforeOptions?: EditorBeforeOptions;
 
     /**
      * Transform the content of the URL input before validating it. Useful for
@@ -97,7 +101,6 @@ export type BaseLinkConfig = PluginConfig<
 /** Enables support for hyperlinks. */
 export const BaseLinkPlugin = createTSlatePlugin<BaseLinkConfig>({
   key: 'a',
-  extendEditor: withLink,
   node: {
     dangerouslyAllowAttributes: ['target'],
     isElement: true,
@@ -111,36 +114,50 @@ export const BaseLinkPlugin = createTSlatePlugin<BaseLinkConfig>({
     keepSelectedTextOnPaste: true,
     rangeBeforeOptions: {
       afterMatch: true,
+      matchBlockStart: true,
       matchString: ' ',
       skipInvalid: true,
     },
   },
-}).extend(({ editor, type }) => ({
-  node: {
-    props: ({ element }) => ({
-      nodeProps: getLinkAttributes(editor, element as TLinkElement),
-    }),
-  },
-  parsers: {
-    html: {
-      deserializer: {
-        parse: ({ element }) => {
-          const url = element.getAttribute('href');
+})
+  .overrideEditor(withLink)
+  .overrideEditor(
+    ({ editor, type }) =>
+      withRemoveEmptyNodes(
+        getEditorPlugin(
+          editor,
+          RemoveEmptyNodesPlugin.configure({
+            options: { types: type },
+          })
+        )
+      ) as any
+  )
+  .extend(({ editor, type }) => ({
+    node: {
+      props: ({ element }) => ({
+        nodeProps: getLinkAttributes(editor, element as TLinkElement),
+      }),
+    },
+    parsers: {
+      html: {
+        deserializer: {
+          parse: ({ element }) => {
+            const url = element.getAttribute('href');
 
-          if (url && validateUrl(editor, url)) {
-            return {
-              target: element.getAttribute('target') || '_blank',
-              type,
-              url,
-            };
-          }
-        },
-        rules: [
-          {
-            validNodeName: 'A',
+            if (url && validateUrl(editor, url)) {
+              return {
+                target: element.getAttribute('target') || '_blank',
+                type,
+                url,
+              };
+            }
           },
-        ],
+          rules: [
+            {
+              validNodeName: 'A',
+            },
+          ],
+        },
       },
     },
-  },
-}));
+  }));

@@ -1,0 +1,143 @@
+---
+title: Serializing Markdown
+toc: false
+---
+
+<ComponentPreview name="markdown-demo" />
+
+<PackageInfo>
+
+## 功能特性
+
+- 将 Markdown 字符串转换为 Slate JSON。
+- 将 Slate JSON 转换为 Markdown 字符串。
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-markdown
+```
+
+## Usage
+
+### Markdown to Slate
+
+```tsx
+import { MarkdownPlugin } from '@udecode/plate-markdown';
+
+const editor = createPlateEditor({ 
+  plugins: [
+    // ...otherPlugins,
+    MarkdownPlugin,
+  ],
+});
+
+const value = editor.api.markdown.deserialize('**Hello world!**');
+```
+
+<ComponentPreview name="markdown-to-slate-demo" />
+
+### Slate 转 Markdown
+
+当前支持的插件：段落、链接、列表、标题、斜体、粗体和代码。
+
+```tsx
+const editor = createPlateEditor({ 
+  value,
+  plugins: [
+    // ...otherPlugins,
+    MarkdownPlugin,
+  ],
+});
+
+const content = editor.api.markdown.serialize();
+```
+
+## Plugins
+
+### MarkdownPlugin
+
+<APIOptions>
+<APIItem name="elementRules" type="RemarkElementRules">
+
+每个键是一个 Markdown 语法元素类型，值是一个转换函数。
+
+<APISubList>
+<APISubListItem parent="elementRules" name="[key in MdastElementType]" type="RemarkElementRule">
+
+键对应一个 Markdown 元素类型 (`paragraph`, `heading`, `list`, `listItem`, `link`, `image`, `blockquote`, `code`, `thematicBreak`)。值是一个对象，指定如何将给定类型的 Markdown 元素转换为 Slate 元素。
+
+<APISubList>
+<APISubListItem parent="RemarkElementRule" name="transform" type="(node: MdastNode, options: RemarkPluginOptions<V>) => TElement | TElement[]">
+一个函数，接受一个 `MdastNode` 和 `RemarkPluginOptions` 作为参数，并返回一个 `TElement` 或 `TElement` 数组。
+
+</APISubListItem>
+</APISubList>
+</APISubListItem>
+</APISubList>
+</APIItem>
+<APIItem name="textRules" type="RemarkTextRules">
+
+每个键是一个 Markdown 语法文本类型，值是一个提供可选标记和转换函数的对象。
+
+<APISubList>
+<APISubListItem parent="textRules" name="[key in MdastTextType]" type="RemarkTextRule">
+
+键对应一个 Markdown 文本类型 (`emphasis`, `strong`, `delete`, `inlineCode`, `html`, `text`)。值是一个对象，指定如何处理给定类型的 Markdown 文本。
+
+<APISubList>
+<APISubListItem parent="RemarkTextRule" name="mark" type="(options: RemarkPluginOptions<V>) => string" optional>
+
+一个可选函数，接受 `RemarkPluginOptions` 作为参数，并返回一个字符串，指示给定 Markdown 文本的标记类型。
+
+</APISubListItem>
+<APISubListItem parent="RemarkTextRule" name="transform" type="(text: string) => string" optional>
+
+一个可选函数，接受一个字符串（Markdown 文本）作为参数，并返回一个转换后的字符串。
+
+</APISubListItem>
+</APISubList>
+</APISubListItem>
+</APISubList>
+</APIItem>
+</APIOptions>
+
+## API
+
+### editor.api.markdown.deserialize
+
+将 Markdown 字符串转换为 Slate 值。
+
+<APIParameters>
+<APIItem name="markdown" type="string">
+要反序列化的 Markdown 字符串。
+</APIItem>
+</APIParameters>
+
+<APIReturns>
+<APIItem type="Descendant[]">
+一个 Slate 节点数组，表示反序列化的 Markdown 内容。
+</APIItem>
+</APIReturns>
+
+### editor.api.markdown.serialize
+
+将当前 Slate 值转换为 Markdown 字符串。
+
+<APIParameters>
+<APIItem name="options" type="object" optional>
+<APISubList>
+<APISubListItem parent="options" name="nodes" type="Descendant[]" optional>
+要序列化的 Slate 节点。如果未提供，则使用整个编辑器值。
+</APISubListItem>
+</APISubList>
+</APIItem>
+</APIParameters>
+
+<APIReturns>
+<APIItem type="string">
+一个表示序列化 Slate 内容的 Markdown 字符串。
+</APIItem>
+</APIReturns>

@@ -1,0 +1,54 @@
+---
+title: Emoji
+docs:
+  - route: /docs/combobox
+    title: Combobox
+  - route: /docs/components/emoji-input-element
+    title: Emoji Input Element
+  - route: /docs/components/emoji-dropdown-menu
+    title: Emoji Dropdown Menu
+---
+
+<ComponentPreview name="emoji-demo" />
+
+<PackageInfo>
+
+## 功能
+
+- 插入表情符号。
+- 使用 **`:`** 快捷键，然后输入表情符号名称（例如 **`:apple:`** 🍎）。自动完成建议会随着你输入而出现。
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-emoji
+```
+
+## 使用
+
+```tsx
+import { EmojiPlugin } from '@udecode/plate-emoji/react';
+
+const plugins = [
+  // ...otherPlugins,
+  EmojiPlugin,
+];
+```
+
+## 插件
+
+### EmojiPlugin
+
+继承 [TriggerComboboxPlugin](/docs/combobox#options)
+
+<APIOptions>
+<APIItem name="createEmojiNode" type="(emoji: TEmoji): ElementOrTextOf<any>" optional>
+  一个用于指定选择表情符号时插入的节点的函数。默认行为是插入一个包含表情符号作为 Unicode 字符的文本节点。
+</APIItem>
+</APIOptions>
+
+### EmojiInputPlugin
+
+处理表情符号插入的输入行为。

@@ -1,0 +1,370 @@
+---
+title: Block Selection
+docs:
+  - route: /docs/components/block-selection
+    title: Block Selection
+---
+
+<ComponentPreview name="block-selection-demo" />
+
+<PackageInfo>
+块选择功能允许用户选择和操作整个文本块，而不是单个词或字符。这个强大的功能通过提供高效的方式来管理大段内容，从而增强了编辑体验。
+
+## 功能特点
+
+- 单次操作即可选择整个块
+- 多块选择
+- 对选中的块进行复制、剪切和删除操作
+- 快速选择的键盘快捷键：
+  - `Cmd+A`：
+    - 第一次按：选择当前块
+    - 双击：选择所有块
+  - 方向键：选择上方或下方的块
+- 可自定义选中块的样式
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-selection @udecode/plate-node-id
+```
+
+## Usage
+
+```tsx
+import { NodeIdPlugin } from '@udecode/plate-node-id';
+import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+
+const plugins = [
+  // ...otherPlugins,
+  NodeIdPlugin,
+  BlockSelectionPlugin,
+];
+```
+
+### 从选择中排除块
+
+你可以使用以下方式从块选择中排除某些插件：
+
+```ts
+BlockSelectionPlugin.configure({
+  inject: {
+    // Exclude blocks below table rows
+    excludeBelowPlugins: ['tr'],
+    // Exclude block types
+    excludePlugins: ['table', 'code_line', 'column_group', 'column'],
+  }
+})
+```
+- `excludeBelowPlugins`: 不可选择的块级后代元素的插件键。用于防止在特定块下进行选择。例如，排除 'tr' 可以防止选择单个单元格，但仍允许选择表格行。
+
+- `excludePlugins`: 不可选择的块的插件键。
+
+### 设置可滚动容器
+
+如果你正在使用 [Editor](/docs/components/editor) 中的 `EditorContainer`，可以跳过本节。
+
+要控制可滚动容器，请在 `areaOptions` 中配置 `boundaries` 和 `container` 选项。这些选项接受 CSS 选择器，例如 `#selection-demo #${editor.uid}`，它们与 `document.querySelector()` 一起使用。
+
+为了使其有效工作：
+
+1. 为你的滚动容器添加 `id` 或 `className`。如果你不确定容器，可以将其添加到 `<Editor />` 组件中。我们推荐使用 `id={editor.uid}`。
+2. 在你的配置中使用适当的选择器。
+3. 不要忘记将 `position: relative` 设置到容器。
+
+Default configuration:
+
+```js
+BlockSelectionPlugin.configure({
+  options: {
+    areaOptions: {
+      boundaries: `#${editor.uid}`,
+      container: `#${editor.uid}`,
+      selectables: `#${editor.uid} .slate-selectable`,
+    },
+  },
+});
+```
+
+### 设置滚动速度
+
+使用 `options.areaOptions.behaviour.scrolling.speedDivider` 来设置滚动速度。
+
+我们推荐使用 `0.8` 的值，因为它接近浏览器原生的滚动速度。
+
+
+```ts
+BlockSelectionPlugin.configure({
+  options: {
+    areaOptions: {
+      behaviour: {
+      scrolling: {
+        // 你可以通过设置更大的值来减慢滚动速度。
+        speedDivider: 1.5,
+      },
+      // 需要移动的距离，使选择区域出现。
+      // 如果太小，可能会导致鼠标点击事件被阻止。10 是一个很好的默认值。
+      startThreshold: 4,
+    },
+  },
+}
+```
+### 添加可选择元素
+
+在任何你想要启动块选择的元素上添加 `data-plate-selectable="true"` 属性。
+
+### 阻止取消选择
+
+要防止在点击某些元素时取消选择块，请在这些组件上添加 `data-plate-prevent-unselect` 属性
+
+例如：
+```tsx
+  <YourSpecialButtoon data-plate-prevent-unselect />
+```
+
+### 全页选择
+
+#### 使元素可选择
+
+你可以启用块选择，使 `<Editor />` 组件之外的元素可选择，类似于 [Potion](https://potion.platejs.org/) 模板。添加 `data-plate-selectable` 属性到任何你想使可选择的组件：
+
+```tsx
+<Cover data-plate-selectable />
+<Sidebar data-plate-selectable />
+```
+
+这适用于任何元素，即使是在编辑器 DOM 树之外的元素。
+
+#### 重置选择
+
+有两种方式处理全页面的选择重置：
+
+1. 直接调用 API：
+```tsx
+editor.api.blockSelection.unselect();
+```
+
+2. 点击外部处理程序：
+```tsx
+const handleClickOutside = (event: MouseEvent) => {
+  if (!(event.target as HTMLElement).closest('[data-plate-selectable]')) {
+    editor.api.blockSelection.unselect();
+  }
+};
+```
+
+## 样式
+
+### 选择区域
+
+通过将 `.slate-selection-area` 类添加到你的编辑器容器组件来样式化选择区域。例如：
+
+```js
+'[&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/10'
+```
+
+### 选中的元素
+
+要确定一个元素是否被选中，使用 `useBlockSelected` 钩子。你可以使用我们的 [BlockSelection](/docs/components/block-selection) 组件或创建你自己的来渲染选中的块的视觉指示器。
+
+这个组件应该在每个块元素内部渲染，以确保一致的选择反馈。Plate UI 在 [PlateElement](/docs/components/plate-element) 中这样做。
+
+## 插件
+
+### BlockSelectionPlugin
+
+<APIOptions>
+<APIItem name="areaOptions" type="PartialSelectionOptions" optional>
+Options for the selection area. Example:
+
+```ts
+{
+  boundaries: [`#${editor.uid}`],
+  container: [`#${editor.uid}`],
+  selectables: [`#${editor.uid} .slate-selectable`],
+  selectionAreaClass: 'slate-selection-area',
+}
+```
+</APIItem>
+
+<APIItem name="editorPaddingRight" type="CSSProperties['width']" optional>
+编辑器的右内边距。
+</APIItem>
+
+<APIItem name="enableContextMenu" type="boolean" optional>
+启用或禁用块选择的上下文菜单。
+
+- **默认值:** `false`
+</APIItem>
+
+<APIItem name="isSelecting" type="boolean" optional>
+指示块选择当前是否处于活动状态。
+
+- **默认值:** `false`
+</APIItem>
+
+<APIItem name="onKeyDownSelecting" type="(e: KeyboardEvent) => void" optional>
+一个用于处理选择时的 **`keydown`** 事件的函数。
+</APIItem>
+
+<APIItem name="query" type="QueryNodeOptions" optional>
+块选择期间查询节点的选项。
+
+- **默认值:** `{ maxLevel: 1 }`
+</APIItem>
+
+<APIItem name="selectedIds" type="Set<string>" optional>
+当前选中的块的 ID 集合。
+
+- **默认值:** `new Set()`
+</APIItem>
+</APIOptions>
+
+### BlockMenuPlugin
+
+## API
+
+### editor.api.blockSelection.focus
+聚焦块选择的影子输入。这个输入处理选中块的复制、删除和粘贴事件。
+
+### editor.api.blockSelection.addSelectedRow
+
+向块选择中添加一个选中的行。
+
+<APIParameters>
+  <APIItem name="id" type="string">
+    要选择的行的 ID。
+  </APIItem>
+  <APIItem name="options" type="object" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="clear" type="boolean" optional>
+        在添加新选择之前是否清除现有选择。
+        - **默认值:** `true`
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### editor.api.blockSelection.getNodes
+
+获取编辑器中选中的块。
+
+<APIReturns>
+  <APIItem type="NodeEntry[]">
+    选中块entry的数组。
+  </APIItem>
+</APIReturns>
+
+### editor.api.blockSelection.resetSelectedIds
+
+将选中的 ID 集合重置为空集合。
+
+### editor.api.blockSelection.selectedAll
+
+选择编辑器中所有可选择的块。
+
+### editor.api.blockSelection.setSelectedIds
+
+根据添加和移除的元素设置选中的 ID。
+
+<APIParameters>
+  <APIItem name="options" type="ChangedElements">
+    <APISubList>
+      <APISubListItem parent="options" name="added" type="HTMLElement[]">
+        要添加到选择中的 HTML 元素数组。
+      </APISubListItem>
+      <APISubListItem parent="options" name="removed" type="HTMLElement[]">
+        要从选择中移除的 HTML 元素数组。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### editor.api.blockSelection.unselect
+
+取消选择所有块并将 `isSelecting` 标志设置为 false。
+
+## 转换
+
+### editor.tf.blockSelection.duplicate
+
+复制选中的块。
+
+### editor.tf.blockSelection.removeNodes
+
+从编辑器中移除选中的节点。
+
+### editor.tf.blockSelection.select
+
+选择由 `getNodes()` 返回的节点并重置选中的 ID。
+
+### editor.tf.blockSelection.setNodes
+
+设置选中节点的属性。
+
+<APIParameters>
+  <APIItem name="props" type="Partial<NodeProps<TElement>>">
+    要设置到选中节点的属性。
+  </APIItem>
+  <APIItem name="options" type="SetNodesOptions" optional>
+    设置节点的选项。
+  </APIItem>
+</APIParameters>
+
+### editor.tf.blockSelection.setTexts
+
+设置选中节点的文本属性。
+
+<APIParameters>
+  <APIItem name="props" type="Partial<NodeProps<TText>>">
+    要设置到选中节点的文本属性。
+  </APIItem>
+  <APIItem name="options" type="Omit<SetNodesOptions, 'at'>" optional>
+    设置文本节点的选项，不包括 'at' 属性。
+  </APIItem>
+</APIParameters>
+
+## 钩子
+
+### useBlockSelectable
+
+一个提供使块元素可选择的属性的钩子，包括上下文菜单行为。
+
+<APIReturns>
+  <APIItem name="props" type="object">
+    要传播到块元素的属性：
+    <APISubList>
+      <APISubListItem parent="props" name="className" type="string">
+        `'slate-selectable'` - 选择功能所需的类
+      </APISubListItem>
+      <APISubListItem parent="props" name="onContextMenu" type="(event: React.MouseEvent) => void">
+        处理右键上下文菜单行为：
+        - 为选中的块打开上下文菜单
+        - 为 void 元素打开
+        - 为带有 `data-plate-open-context-menu="true"` 的元素打开
+        - 使用 Shift 键进行多选时添加块到选择
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+
+### useBlockSelected
+
+如果上下文块被选中则返回 true。
+
+### useBlockSelectionNodes
+
+返回当前选中块的节点entry数组。
+
+### useBlockSelectionFragment
+
+返回当前选中块的节点数组。
+
+### useBlockSelectionFragmentProp
+
+返回当前选中块的片段属性。
+
+### useSelectionArea
+
+一个初始化和管理选择区域功能的钩子。

@@ -1,16 +1,4 @@
-import {
-  type SlateEditor,
-  deleteText,
-  getAboveNode,
-  getMarks,
-  insertElements,
-  isBlockTextEmptyAfterSelection,
-  isStartPoint,
-  select,
-  splitNodes,
-  withoutNormalizing,
-} from '@udecode/plate-common';
-import { Path, Range } from 'slate';
+import { type SlateEditor, PathApi } from '@udecode/plate';
 
 import { type TodoListConfig, BaseTodoListPlugin } from '../BaseTodoListPlugin';
 
@@ -28,7 +16,7 @@ export const insertTodoListItem = (
     return false;
   }
 
-  const todoEntry = getAboveNode(editor, { match: { type: todoType } });
+  const todoEntry = editor.api.above({ match: { type: todoType } });
 
   if (!todoEntry) return false;
 
@@ -36,24 +24,19 @@ export const insertTodoListItem = (
 
   let success = false;
 
-  withoutNormalizing(editor, () => {
-    if (!Range.isCollapsed(editor.selection!)) {
-      deleteText(editor);
+  editor.tf.withoutNormalizing(() => {
+    if (!editor.api.isCollapsed()) {
+      editor.tf.delete();
     }
 
-    const isStart = isStartPoint(
-      editor,
-      editor.selection!.focus,
-      paragraphPath
-    );
-    const isEnd = isBlockTextEmptyAfterSelection(editor);
+    const isStart = editor.api.isStart(editor.selection!.focus, paragraphPath);
+    const isEnd = editor.api.isEmpty(editor.selection, { after: true });
 
-    const nextParagraphPath = Path.next(paragraphPath);
+    const nextParagraphPath = PathApi.next(paragraphPath);
 
     /** If start, insert a list item before */
     if (isStart) {
-      insertElements(
-        editor,
+      editor.tf.insertNodes(
         {
           checked: inheritCheckStateOnLineStartBreak ? todo.checked : false,
           children: [{ text: '' }],
@@ -69,9 +52,8 @@ export const insertTodoListItem = (
     /** If not end, split the nodes */
     if (isEnd) {
       /** If end, insert a list item after and select it */
-      const marks = getMarks(editor) || {};
-      insertElements(
-        editor,
+      const marks = editor.api.marks() || {};
+      editor.tf.insertNodes(
         {
           checked: inheritCheckStateOnLineEndBreak ? todo.checked : false,
           children: [{ text: '', ...marks }],
@@ -79,10 +61,10 @@ export const insertTodoListItem = (
         },
         { at: nextParagraphPath }
       );
-      select(editor, nextParagraphPath);
+      editor.tf.select(nextParagraphPath);
     } else {
-      withoutNormalizing(editor, () => {
-        splitNodes(editor);
+      editor.tf.withoutNormalizing(() => {
+        editor.tf.splitNodes();
       });
     }
 

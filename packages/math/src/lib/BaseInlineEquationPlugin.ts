@@ -1,4 +1,4 @@
-import { bindFirst, createSlatePlugin } from '@udecode/plate-common';
+import { bindFirst, createSlatePlugin } from '@udecode/plate';
 
 import { insertInlineEquation } from './transforms';
 

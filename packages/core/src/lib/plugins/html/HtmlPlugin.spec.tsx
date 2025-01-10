@@ -55,11 +55,12 @@ describe('when inserting html', () => {
       const plugins = [HeadingPlugin];
 
       const editor = createPlateEditor({
-        editor: input,
         plugins,
+        selection: input.selection,
+        value: input.children,
       });
 
-      editor.insertData(dataTransfer);
+      editor.tf.insertData(dataTransfer);
 
       expect(editor.children).toEqual(expected.children);
     });
@@ -87,11 +88,12 @@ describe('when inserting html', () => {
       const plugins = [HeadingPlugin];
 
       const editor = createPlateEditor({
-        editor: input,
         plugins,
+        selection: input.selection,
+        value: input.children,
       });
 
-      editor.insertData(dataTransfer as any);
+      editor.tf.insertData(dataTransfer as any);
 
       expect(editor.children).toEqual(expected.children);
     });
@@ -120,11 +122,12 @@ describe('when inserting html', () => {
     const plugins = [BaseParagraphPlugin];
 
     const editor = createPlateEditor({
-      editor: input,
       plugins,
+      selection: input.selection,
+      value: input.children,
     });
 
-    editor.insertData(
+    editor.tf.insertData(
       makeDataTransfer(
         '<html><body><p>first element</p><p>second element</p>text node in the end</body></html>'
       )
@@ -162,11 +165,12 @@ describe('when inserting empty html', () => {
     const plugins = [BoldPlugin];
 
     const editor = createPlateEditor({
-      editor: input,
       plugins,
+      selection: input.selection,
+      value: input.children,
     });
 
-    editor.insertData(dataTransfer as any);
+    editor.tf.insertData(dataTransfer as any);
 
     expect(editor.children).toEqual(output.children);
   });
@@ -202,11 +206,12 @@ describe('when inserting an iframe without src', () => {
     const plugins = [MediaEmbedPlugin];
 
     const editor = createPlateEditor({
-      editor: input,
       plugins,
+      selection: input.selection,
+      value: input.children,
     });
 
-    editor.insertData(data as any);
+    editor.tf.insertData(data as any);
 
     expect(editor.children).toEqual(output.children);
   });
@@ -245,11 +250,12 @@ describe('when inserting link with href', () => {
     const plugins = [BaseParagraphPlugin, LinkPlugin];
 
     const editor = createPlateEditor({
-      editor: input,
       plugins,
+      selection: input.selection,
+      value: input.children,
     });
 
-    editor.insertData(data as any);
+    editor.tf.insertData(data as any);
 
     expect(editor.children).toEqual(output.children);
   });
@@ -282,12 +288,13 @@ describe('when inserting plain text', () => {
     jest.spyOn(JSON, 'parse').mockReturnValue(<fragment>inserted</fragment>);
 
     const editor = createPlateEditor({
-      editor: input,
       plugins: [],
+      selection: input.selection,
+      value: input.children,
     });
 
-    editor.insertData(data as any);
+    editor.tf.insertData(data as any);
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 });

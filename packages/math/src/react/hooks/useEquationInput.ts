@@ -1,12 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 
-import { isHotkey } from '@udecode/plate-common';
-import {
-  selectSiblingNodePoint,
-  setNode,
-  useEditorRef,
-  useElement,
-} from '@udecode/plate-common/react';
+import { isHotkey } from '@udecode/plate';
+import { useEditorRef, useElement } from '@udecode/plate/react';
 
 import type { TEquationElement } from '../../lib';
 
@@ -22,7 +17,6 @@ export const useEquationInput = ({
   const editor = useEditorRef();
   const element = useElement<TEquationElement>();
   const inputRef = useRef<HTMLTextAreaElement>(null);
-
   const [expressionInput, setExpressionInput] = React.useState<string>(
     element.texExpression
   );
@@ -46,9 +40,20 @@ export const useEquationInput = ({
   }, [open]);
 
   useEffect(() => {
-    setNode<TEquationElement>(editor, element, {
-      texExpression: expressionInput || '',
-    });
+    const setExpression = () => {
+      editor.tf.setNodes<TEquationElement>(
+        {
+          texExpression: expressionInput || '',
+        },
+        { at: element }
+      );
+    };
+    // When the cursor is inside an inline equation, the popover needs to open.
+    // However, during an undo operation, the cursor focuses on the inline equation, triggering the popover to open, which disrupts the normal undo process.
+    // So we need to remove the inline equation focus in one times undo.
+    // block equation will not block the undo process because it will not open the popover by focus.
+    // The disadvantage of this approach for block equation is that the popover cannot be opened using the keyboard.
+    isInline ? editor.tf.withMerging(setExpression) : setExpression();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expressionInput]);
 
@@ -58,9 +63,12 @@ export const useEquationInput = ({
 
   const onDismiss = () => {
     if (isInline) {
-      setNode(editor, element, {
-        texExpression: initialExpressionRef.current,
-      });
+      editor.tf.setNodes(
+        {
+          texExpression: initialExpressionRef.current,
+        },
+        { at: element }
+      );
     }
 
     onClose?.();
@@ -79,12 +87,6 @@ export const useEquationInput = ({
         } else if (isHotkey('escape')(e)) {
           e.preventDefault();
           onDismiss();
-        } else if (isHotkey('meta+z')(e)) {
-          e.preventDefault();
-          editor.undo();
-        } else if (isHotkey('meta+y')(e) || isHotkey('meta+shift+z')(e)) {
-          e.preventDefault();
-          editor.redo();
         }
         if (isInline) {
           const { selectionEnd, selectionStart, value } =
@@ -96,9 +98,8 @@ export const useEquationInput = ({
             selectionEnd === 0 &&
             isHotkey('ArrowLeft')(e)
           ) {
-            selectSiblingNodePoint(editor, {
-              node: element,
-              reverse: true,
+            editor.tf.select(element, {
+              previous: true,
             });
           }
           // at the right edge
@@ -107,7 +108,7 @@ export const useEquationInput = ({
             selectionStart === value.length &&
             isHotkey('ArrowRight')(e)
           ) {
-            selectSiblingNodePoint(editor, { node: element });
+            editor.tf.select(element, { next: true });
           }
         }
       },

@@ -1,34 +1,33 @@
-import type { ExtendEditor } from '@udecode/plate-common';
+import type { OverrideEditor } from '@udecode/plate';
 
 import type { TodoListConfig } from './BaseTodoListPlugin';
 
 import { getTodoListItemEntry } from './queries';
 import { insertTodoListItem } from './transforms';
 
-export const withTodoList: ExtendEditor<TodoListConfig> = ({
+export const withTodoList: OverrideEditor<TodoListConfig> = ({
   editor,
   getOptions,
-}) => {
-  const { insertBreak } = editor;
+  tf: { insertBreak },
+}) => ({
+  transforms: {
+    insertBreak() {
+      const insertBreakTodoList = () => {
+        if (!editor.selection) return;
 
-  editor.insertBreak = () => {
-    const insertBreakTodoList = () => {
-      if (!editor.selection) return;
+        const res = getTodoListItemEntry(editor);
 
-      const res = getTodoListItemEntry(editor);
+        // If selection is in a todo li
+        if (res) {
+          const inserted = insertTodoListItem(editor, getOptions());
 
-      // If selection is in a todo li
-      if (res) {
-        const inserted = insertTodoListItem(editor, getOptions());
+          if (inserted) return true;
+        }
+      };
 
-        if (inserted) return true;
-      }
-    };
+      if (insertBreakTodoList()) return;
 
-    if (insertBreakTodoList()) return;
-
-    insertBreak();
-  };
-
-  return editor;
-};
+      insertBreak();
+    },
+  },
+});

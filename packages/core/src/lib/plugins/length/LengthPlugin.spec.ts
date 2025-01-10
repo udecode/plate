@@ -15,7 +15,7 @@ describe('LengthPlugin', () => {
   describe('when inserting text', () => {
     it('should allow inserting text within the maxLength', () => {
       editor = createEditorWithLength(10);
-      editor.insertText('Hello');
+      editor.tf.insertText('Hello');
 
       expect(editor.children).toEqual([
         { children: [{ text: 'Hello' }], type: 'p' },
@@ -24,7 +24,7 @@ describe('LengthPlugin', () => {
 
     it('should truncate text that exceeds maxLength', () => {
       editor = createEditorWithLength(5);
-      editor.insertText('Hello, World!');
+      editor.tf.insertText('Hello, World!');
 
       expect(editor.children).toEqual([
         { children: [{ text: 'Hello' }], type: 'p' },
@@ -33,9 +33,9 @@ describe('LengthPlugin', () => {
 
     it('should handle multiple insertions up to maxLength', () => {
       editor = createEditorWithLength(10);
-      editor.insertText('Hello');
-      editor.insertText(', ');
-      editor.insertText('World');
+      editor.tf.insertText('Hello');
+      editor.tf.insertText(', ');
+      editor.tf.insertText('World');
 
       expect(editor.children).toEqual([
         { children: [{ text: 'Hello, Wor' }], type: 'p' },
@@ -46,8 +46,8 @@ describe('LengthPlugin', () => {
   describe('when deleting text', () => {
     it('should allow deleting text', () => {
       editor = createEditorWithLength(10);
-      editor.insertText('Hello, World');
-      editor.delete({ distance: 7, reverse: true });
+      editor.tf.insertText('Hello, World');
+      editor.tf.delete({ distance: 7, reverse: true });
 
       expect(editor.children).toEqual([
         { children: [{ text: 'Hel' }], type: 'p' },
@@ -58,7 +58,7 @@ describe('LengthPlugin', () => {
   describe('when pasting text', () => {
     it('should truncate pasted text that exceeds maxLength', () => {
       editor = createEditorWithLength(10);
-      editor.insertFragment([
+      editor.tf.insertFragment([
         { children: [{ text: 'This is a long pasted text' }], type: 'p' },
       ]);
 
@@ -73,7 +73,7 @@ describe('LengthPlugin', () => {
       editor = createPlateEditor({
         autoSelect: true,
       });
-      editor.insertText(
+      editor.tf.insertText(
         'This is a very long text that exceeds any reasonable limit'
       );
 

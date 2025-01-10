@@ -1,23 +1,11 @@
 import {
+  type Point,
   type SlateEditor,
   type TElement,
-  createPointRef,
-  deleteText,
-  findNode,
-  getEditorString,
-  getPointAfter,
-  getPointBefore,
-  isBlock,
-  isElementEmpty,
-  isRangeAcrossBlocks,
-  isStartPoint,
-  moveSelection,
+  type TRange,
+  PointApi,
   nanoid,
-  removeNodes,
-  unhangCharacterRange,
-  withoutNormalizing,
-} from '@udecode/plate-common';
-import { type Range, Point } from 'slate';
+} from '@udecode/plate';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { findSuggestionId } from '../queries/findSuggestionId';
@@ -31,19 +19,19 @@ import { setSuggestionNodes } from './setSuggestionNodes';
  */
 export const deleteSuggestion = (
   editor: SlateEditor,
-  at: Range,
+  at: TRange,
   {
     reverse,
   }: {
     reverse?: boolean;
   } = {}
 ) => {
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     const { anchor: from, focus: to } = at;
 
     const suggestionId = findSuggestionId(editor, from) ?? nanoid();
 
-    const toRef = createPointRef(editor, to);
+    const toRef = editor.api.pointRef(to);
 
     let pointCurrent: Point | undefined;
 
@@ -58,13 +46,13 @@ export const deleteSuggestion = (
       if (!pointTarget) break;
       // don't delete across blocks
       if (
-        !isRangeAcrossBlocks(editor, {
+        !editor.api.isAt({
           at: { anchor: pointCurrent, focus: pointTarget },
+          blocks: true,
         })
       ) {
         // always 0 when across blocks
-        const str = getEditorString(
-          editor,
+        const str = editor.api.string(
           reverse
             ? {
                 anchor: pointTarget,
@@ -79,15 +67,15 @@ export const deleteSuggestion = (
         if (str.length === 0) break;
       }
 
-      const getPoint = reverse ? getPointBefore : getPointAfter;
+      const getPoint = reverse ? editor.api.before : editor.api.after;
 
-      const pointNext = getPoint(editor, pointCurrent, {
+      const pointNext: Point | undefined = getPoint(pointCurrent, {
         unit: 'character',
       });
 
       if (!pointNext) break;
 
-      let range = reverse
+      let range: TRange = reverse
         ? {
             anchor: pointNext,
             focus: pointCurrent,
@@ -96,13 +84,13 @@ export const deleteSuggestion = (
             anchor: pointCurrent,
             focus: pointNext,
           };
-      range = unhangCharacterRange(editor, range);
+      range = editor.api.unhangRange(range, { character: true });
 
       // if the current point is in block addition suggestion, delete block
-      const entryBlock = findNode<TElement>(editor, {
+      const entryBlock = editor.api.node<TElement>({
         at: pointCurrent,
+        block: true,
         match: (n) =>
-          isBlock(editor, n) &&
           n[BaseSuggestionPlugin.key] &&
           !n.suggestionDeletion &&
           n[getSuggestionCurrentUserKey(editor)],
@@ -110,28 +98,24 @@ export const deleteSuggestion = (
 
       if (
         entryBlock &&
-        isStartPoint(editor, pointCurrent, entryBlock[1]) &&
-        isElementEmpty(editor, entryBlock[0] as any)
+        editor.api.isStart(pointCurrent, entryBlock[1]) &&
+        editor.api.isEmpty(entryBlock[0] as any)
       ) {
-        removeNodes(editor, {
+        editor.tf.removeNodes({
           at: entryBlock[1],
         });
 
         continue;
       }
       // move selection if still the same
-      if (Point.equals(pointCurrent, editor.selection!.anchor)) {
-        moveSelection(editor, {
+      if (PointApi.equals(pointCurrent, editor.selection!.anchor)) {
+        editor.tf.move({
           reverse,
           unit: 'character',
         });
       }
       // skip if the range is across blocks
-      if (
-        isRangeAcrossBlocks(editor, {
-          at: range,
-        })
-      ) {
+      if (editor.api.isAt({ at: range, blocks: true })) {
         continue;
       }
 
@@ -143,7 +127,7 @@ export const deleteSuggestion = (
       });
 
       if (entryText) {
-        deleteText(editor, { at: range, unit: 'character' });
+        editor.tf.delete({ at: range, unit: 'character' });
 
         continue;
       }

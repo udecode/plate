@@ -1,4 +1,4 @@
-import type { PluginConfig, QueryNodeOptions } from '@udecode/plate-common';
+import type { PluginConfig, QueryNodeOptions } from '@udecode/plate';
 
 export interface ExitBreakRule {
   /** Hotkey to trigger exit break. */

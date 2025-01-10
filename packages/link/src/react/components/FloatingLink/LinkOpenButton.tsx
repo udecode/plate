@@ -1,11 +1,10 @@
 import React from 'react';
 
-import { findNode } from '@udecode/plate-common';
 import {
   createPrimitiveComponent,
   useEditorRef,
   useEditorSelection,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 
 import type { TLinkElement } from '../../../lib';
 
@@ -18,7 +17,7 @@ export const useLinkOpenButtonState = () => {
 
   const entry = React.useMemo(
     () =>
-      findNode<TLinkElement>(editor, {
+      editor.api.node<TLinkElement>({
         match: { type: editor.getType(LinkPlugin) },
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps

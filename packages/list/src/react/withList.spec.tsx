@@ -1,11 +1,8 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
 
-import {
-  ParagraphPlugin,
-  createPlateEditor,
-} from '@udecode/plate-common/react';
+import { ParagraphPlugin, createPlateEditor } from '@udecode/plate/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
@@ -19,33 +16,36 @@ const testInsertText = (
   listConfig: Parameters<typeof ListPlugin.configure>[0] = {}
 ) => {
   const editor = createPlateEditor({
-    editor: input,
     plugins: [ParagraphPlugin, ListPlugin.configure(listConfig), LinkPlugin],
+    selection: input.selection,
+    value: input.children,
   });
 
-  editor.insertText('o');
+  editor.tf.insertText('o');
 
   expect(editor.children).toEqual(expected.children);
 };
 
 const testDeleteBackward = (input: any, expected: any) => {
   const editor = createPlateEditor({
-    editor: input,
     plugins: [ParagraphPlugin, ListPlugin],
+    selection: input.selection,
+    value: input.children,
   });
 
-  editor.deleteBackward('character');
+  editor.tf.deleteBackward();
 
   expect(editor.children).toEqual(expected.children);
 };
 
 const testDeleteForward = (input: any, expected: any) => {
   const editor = createPlateEditor({
-    editor: input,
     plugins: [ParagraphPlugin, ListPlugin],
+    selection: input.selection,
+    value: input.children,
   });
 
-  editor.deleteForward('character');
+  editor.tf.deleteForward();
 
   expect(editor.children).toEqual(expected.children);
 };

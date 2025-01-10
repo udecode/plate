@@ -1,0 +1,70 @@
+---
+title: Controlled Editor Value
+description: 如何控制编辑器的值。
+---
+
+在 Plate（和 Slate）中实现完全受控的编辑器值是复杂的，这是由于以下几个因素：
+
+1. 编辑器状态不仅包含内容（`editor.children`），还包括 `editor.selection` 和 `editor.history`。
+
+2. 直接替换 `editor.children` 可能会破坏选择和历史记录，导致意外行为或崩溃。
+
+3. 对编辑器值的所有更改理想情况下都应该通过 [Transforms](https://docs.slatejs.org/api/transforms) 来进行，以保持选择和历史记录的一致性。
+
+考虑到这些挑战，通常建议将 Plate 作为非受控输入使用。但是，如果你需要对编辑器的内容进行外部更改，可以使用 `editor.tf.setValue(value)` 函数。
+
+<Callout className="my-4">
+  使用 `editor.tf.setValue` 会在每次调用时重新渲染所有节点，因此
+  应该谨慎和适度地使用。如果频繁使用或在大型文档中使用，可能会影响性能。
+</Callout>
+
+另外，你可以使用 `editor.tf.reset()` 来重置编辑器状态，这将重置选择和历史记录。
+
+```tsx
+function App() {
+  const editor = usePlateEditor({
+    value: 'Initial Value',
+    // Disable the editor if initial value is not yet ready
+    // enabled: !!value,
+  });
+
+  return (
+    <div>
+      <Plate editor={editor}>
+        <PlateContent />
+      </Plate>
+
+      <button
+        onClick={() => {
+          // Replace with HTML string
+          editor.tf.setValue('Replaced Value');
+
+          // Replace with JSON value
+          editor.tf.setValue([
+            {
+              type: 'p',
+              children: [{ text: 'Replaced Value' }],
+            },
+          ]);
+
+          // Replace with empty value
+          editor.tf.setValue();
+        }}
+      >
+        替换值
+      </button>
+      
+      <button
+        onClick={() => {
+          editor.tf.reset();
+        }}
+      >
+        重置编辑器
+      </button>
+    </div>
+  );
+}
+```
+
+<ComponentPreview name="controlled-demo" padding="md" />
+

@@ -1,12 +1,8 @@
 import {
   type SlateEditor,
   type UnwrapNodesOptions,
-  getAboveNode,
-  isElement,
-  splitNodes,
-  unwrapNodes,
-  withoutNormalizing,
-} from '@udecode/plate-common';
+  ElementApi,
+} from '@udecode/plate';
 
 import { BaseLinkPlugin } from '../BaseLinkPlugin';
 
@@ -17,19 +13,20 @@ export const unwrapLink = (
     split?: boolean;
   } & UnwrapNodesOptions
 ) => {
-  return withoutNormalizing(editor, () => {
+  return editor.tf.withoutNormalizing(() => {
     if (options?.split) {
-      const linkAboveAnchor = getAboveNode(editor, {
+      const linkAboveAnchor = editor.api.above({
         at: editor.selection?.anchor,
         match: { type: editor.getType(BaseLinkPlugin) },
       });
 
       // anchor in link
       if (linkAboveAnchor) {
-        splitNodes(editor, {
+        editor.tf.splitNodes({
           at: editor.selection?.anchor,
           match: (n) =>
-            isElement(n) && n.type === editor.getType(BaseLinkPlugin),
+            ElementApi.isElement(n) &&
+            n.type === editor.getType(BaseLinkPlugin),
         });
         unwrapLink(editor, {
           at: editor.selection?.anchor,
@@ -38,17 +35,18 @@ export const unwrapLink = (
         return true;
       }
 
-      const linkAboveFocus = getAboveNode(editor, {
+      const linkAboveFocus = editor.api.above({
         at: editor.selection?.focus,
         match: { type: editor.getType(BaseLinkPlugin) },
       });
 
       // focus in link
       if (linkAboveFocus) {
-        splitNodes(editor, {
+        editor.tf.splitNodes({
           at: editor.selection?.focus,
           match: (n) =>
-            isElement(n) && n.type === editor.getType(BaseLinkPlugin),
+            ElementApi.isElement(n) &&
+            n.type === editor.getType(BaseLinkPlugin),
         });
         unwrapLink(editor, {
           at: editor.selection?.focus,
@@ -58,7 +56,7 @@ export const unwrapLink = (
       }
     }
 
-    unwrapNodes(editor, {
+    editor.tf.unwrapNodes({
       match: { type: editor.getType(BaseLinkPlugin) },
       ...options,
     });

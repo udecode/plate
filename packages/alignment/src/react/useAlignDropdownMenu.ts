@@ -1,17 +1,13 @@
-import { getNodeEntries, isBlock, isDefined } from '@udecode/plate-common';
-import {
-  focusEditor,
-  useEditorRef,
-  useEditorSelector,
-} from '@udecode/plate-common/react';
+import { isDefined } from '@udecode/plate';
+import { useEditorRef, useEditorSelector } from '@udecode/plate/react';
 
 import { type Alignment, BaseAlignPlugin, setAlign } from '../index';
 
 export const useAlignDropdownMenuState = () => {
   const value: Alignment = useEditorSelector((editor) => {
     let commonAlignment: string | undefined;
-    const codeBlockEntries = getNodeEntries(editor, {
-      match: (n) => isBlock(editor, n),
+    const codeBlockEntries = editor.api.nodes({
+      match: (n) => editor.api.isBlock(n),
     });
     const nodes = Array.from(codeBlockEntries);
     nodes.forEach(([node]) => {
@@ -55,7 +51,7 @@ export const useAlignDropdownMenu = ({
           value: newValue as Alignment,
         });
 
-        focusEditor(editor);
+        editor.tf.focus();
       },
     },
   };

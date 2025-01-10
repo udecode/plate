@@ -2,22 +2,13 @@ import React, { useCallback, useState } from 'react';
 
 import type { TextareaAutosizeProps } from 'react-textarea-autosize';
 
-import {
-  type TElement,
-  getNodeString,
-  getPointAfter,
-  isHotkey,
-} from '@udecode/plate-common';
+import { type TElement, NodeApi, PathApi, isHotkey } from '@udecode/plate';
 import {
   createPrimitiveComponent,
-  findPath,
-  focusEditor,
-  setNode,
   useEditorRef,
   useElement,
-} from '@udecode/plate-common/react';
-import { Path } from 'slate';
-import { useReadOnly } from 'slate-react';
+  useReadOnly,
+} from '@udecode/plate/react';
 
 import type { TCaptionElement } from '../../lib';
 
@@ -35,9 +26,9 @@ export const useCaptionTextareaFocus = (
 
   React.useEffect(() => {
     if (focusCaptionPath && textareaRef.current) {
-      const path = findPath(editor, element);
+      const path = editor.api.findPath(element);
 
-      if (path && Path.equals(path, focusCaptionPath)) {
+      if (path && PathApi.equals(path, focusCaptionPath)) {
         textareaRef.current.focus();
         editor.setOption(CaptionPlugin, 'focusEndPath', null);
       }
@@ -57,14 +48,15 @@ export const useCaptionTextareaState = () => {
     const nodeCaption =
       element.caption ?? ([{ children: [{ text: '' }] }] as [TElement]);
 
-    return getNodeString(nodeCaption[0]);
+    return NodeApi.string(nodeCaption[0]);
   });
 
   const updateEditorCaptionValue = useCallback(
     (newValue: string) => {
-      setNode<TCaptionElement>(editor, element, {
-        caption: [{ text: newValue }],
-      });
+      editor.tf.setNodes<TCaptionElement>(
+        { caption: [{ text: newValue }] },
+        { at: element }
+      );
     },
     [editor, element]
   );
@@ -126,27 +118,27 @@ export const useCaptionTextarea = ({
   const onKeyDown: TextareaAutosizeProps['onKeyDown'] = (e) => {
     // select image
     if (isHotkey('up', e)) {
-      const path = findPath(editor, element);
+      const path = editor.api.findPath(element);
 
       if (!path) return;
 
       e.preventDefault();
 
-      focusEditor(editor, path);
+      editor.tf.focus({ at: path });
     }
     // select next block
     if (isHotkey('down', e)) {
-      const path = findPath(editor, element);
+      const path = editor.api.findPath(element);
 
       if (!path) return;
 
-      const nextNodePath = getPointAfter(editor, path);
+      const nextNodePath = editor.api.after(path);
 
       if (!nextNodePath) return;
 
       e.preventDefault();
 
-      focusEditor(editor, nextNodePath);
+      editor.tf.focus({ at: nextNodePath });
     }
   };
 

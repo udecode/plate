@@ -1,13 +1,15 @@
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 
+import {
+  resolveCreatePluginTest,
+  resolvePluginTest,
+} from '../../internal/plugin/resolveCreatePluginTest';
 import { createPlateEditor } from '../../react';
 import {
   type PluginConfig,
   createSlateEditor,
   createSlatePlugin,
-  resolveCreatePluginTest,
-  resolvePluginTest,
 } from '../index';
 
 describe('createSlatePlugin', () => {
@@ -775,8 +777,8 @@ describe('createSlatePlugin', () => {
       expect(nodeResult).toEqual({ type: 'custom-td' });
     });
 
-    describe('when configure type and use in extendEditor', () => {
-      it('should use the configured type in extendEditor', () => {
+    describe('when configure type and use in extendEditorTransforms', () => {
+      it('should use the configured type in extendEditorTransforms', () => {
         const basePlugin = createSlatePlugin({
           key: 'testPlugin',
           node: { type: 'defaultType' },
@@ -788,21 +790,17 @@ describe('createSlatePlugin', () => {
           .configure({
             node: { type: 'customType' },
           })
-          .extend({
-            extendEditor: ({ editor, plugin }) => {
-              editor.insertText = () => {
-                type = plugin.node.type;
-              };
-
-              return editor;
+          .extendEditorTransforms(({ plugin }) => ({
+            insertText: () => {
+              type = plugin.node.type;
             },
-          });
+          }));
 
         const editor = createPlateEditor({
           plugins: [configuredPlugin],
         });
 
-        editor.insertText('');
+        editor.tf.insertText('');
 
         expect(type).toBe('customType');
       });

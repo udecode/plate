@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
-import type { Path } from 'slate';
+import type { Path } from '@udecode/plate';
 
-import { isElement } from '@udecode/plate-common';
+import { ElementApi } from '@udecode/plate';
 
 import type { EditorHandle } from './types';
 
@@ -15,7 +15,7 @@ export const getTypeAtPath = async (
   const nodeHandle = await getNodeByPath(page, editorHandle, path);
   const node = await nodeHandle.jsonValue();
 
-  if (isElement(node)) {
+  if (ElementApi.isElement(node)) {
     return node.type;
   }
 

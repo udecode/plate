@@ -1,4 +1,4 @@
-import type { TDescendant, TElement, TText } from '@udecode/plate-common';
+import type { Descendant, TElement, TText } from '@udecode/plate';
 
 import type { MdastNode, RemarkElementRules } from './types';
 
@@ -79,7 +79,7 @@ export const remarkDefaultElementRules: RemarkElementRules = {
           listItems: TElement[] = [],
           indent = 1
         ) => {
-          _node.children?.forEach((listItem) => {
+          _node.children?.forEach((listItem, index) => {
             if (!listItem.children) {
               listItems.push({
                 children: remarkTransformElementChildren(listItem, options),
@@ -91,7 +91,7 @@ export const remarkDefaultElementRules: RemarkElementRules = {
 
             const [paragraph, ...subLists] = listItem.children;
 
-            listItems.push({
+            const transformedListItem: TElement = {
               children: remarkTransformElementChildren(
                 paragraph || '',
                 options
@@ -99,7 +99,13 @@ export const remarkDefaultElementRules: RemarkElementRules = {
               indent,
               listStyleType,
               type: options.editor.getType({ key: 'p' }),
-            });
+            };
+
+            if (node.ordered) {
+              transformedListItem.listStart = index + 1;
+            }
+
+            listItems.push(transformedListItem);
 
             subLists.forEach((subList) => {
               if (subList.type === 'list') {
@@ -142,7 +148,7 @@ export const remarkDefaultElementRules: RemarkElementRules = {
               child.type === options.editor.getType({ key: 'p' })
                 ? options.editor.getType({ key: 'lic' })
                 : child.type,
-          }) as TDescendant
+          }) as Descendant
       ),
       type: options.editor.getType({ key: 'li' }),
     }),
@@ -158,7 +164,7 @@ export const remarkDefaultElementRules: RemarkElementRules = {
       const splitBlockTypes = new Set([options.editor.getType({ key: 'img' })]);
 
       const elements: TElement[] = [];
-      let inlineNodes: TDescendant[] = [];
+      let inlineNodes: Descendant[] = [];
 
       const flushInlineNodes = () => {
         if (inlineNodes.length > 0) {

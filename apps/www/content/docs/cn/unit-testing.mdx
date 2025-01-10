@@ -1,0 +1,266 @@
+---
+title: Unit Testing Plate
+description: 学习如何对 Plate 编辑器和插件进行单元测试。
+---
+
+本指南概述了使用 `@udecode/plate-test-utils` 对 Plate 插件和组件进行单元测试的最佳实践。
+
+## Installation
+
+```bash
+npm install @udecode/plate-test-utils
+```
+
+## 设置测试
+
+在测试文件顶部添加 JSX pragma：
+
+```typescript
+/** @jsx jsx */
+
+import { jsx } from '@udecode/plate-test-utils';
+
+jsx; // so ESLint doesn't complain
+```
+
+这允许你使用 JSX 语法来创建编辑器的值。
+
+## 创建测试用例
+
+### 编辑器状态表示
+
+使用 JSX 来表示编辑器状态：
+
+```typescript
+const input = (
+  <editor>
+    <hp>
+      Hello<cursor /> world
+    </hp>
+  </editor>
+) as any as PlateEditor;
+```
+
+节点元素如 `<hp />`、`<hul />`、`<hli />` 代表不同类型的节点。
+
+特殊元素如 `<cursor />`、`<anchor />`、`<focus />` 代表选区状态。
+
+### 测试转换
+
+1. 创建输入状态
+2. 定义预期的输出状态
+3. 使用 `createPlateEditor` 或 `createPlateTestEditor` 来设置编辑器
+4. 应用转换
+5. 断言编辑器的新状态
+
+以下是测试粗体格式化的示例:
+
+```typescript
+it('should use custom hotkey for bold', async () => {
+  const input = (
+    <editor>
+      <hp>
+        Hello <anchor />
+        world
+        <focus />
+      </hp>
+    </editor>
+  ) as any as PlateEditor;
+
+  const output = (
+    <editor>
+      <hp>
+        Hello <htext bold>world</htext>
+      </hp>
+    </editor>
+  ) as any as PlateEditor;
+
+  const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
+    value: input.children,
+    selection: input.selection,
+    plugins: [
+      BoldPlugin.configure({
+        handlers: {
+          onKeyDown: ({ editor, event }) => {
+            if (event.key === 'b' && event.ctrlKey) {
+              editor.tf.toggle.mark({ key: 'bold' });
+            }
+          },
+        },
+      }),
+    ],
+  });
+
+  await triggerKeyboardEvent('mod+b');
+
+  expect(editor.children).toEqual(output.children);
+});
+```
+### 测试选区
+
+测试操作如何影响编辑器的选区:
+
+```typescript
+it('should collapse selection on backspace', async () => {
+  const input = (
+    <editor>
+      <hp>
+        He<anchor />llo wor<focus />ld
+      </hp>
+    </editor>
+  ) as any as PlateEditor;
+
+  const output = (
+    <editor>
+      <hp>
+        He<cursor />ld
+      </hp>
+    </editor>
+  ) as any as PlateEditor;
+
+  const [editor] = await createPlateTestEditor({
+    value: input.children,
+    selection: input.selection,
+  });
+
+  editor.tf.deleteBackward();
+
+  expect(editor.children).toEqual(output.children);
+  expect(editor.selection).toEqual(output.selection);
+});
+```
+
+## 测试键盘事件
+
+使用 `createPlateTestEditor` 中的 `triggerKeyboardEvent`:
+
+```typescript
+it('should extend selection on shift+ArrowRight', async () => {
+  const input = (
+    <editor>
+      <hp>
+        Hello <cursor />world
+      </hp>
+    </editor>
+  ) as any as PlateEditor;
+
+  const output = (
+    <editor>
+      <hp>
+        Hello <anchor />wor<focus />ld
+      </hp>
+    </editor>
+  ) as any as PlateEditor;
+
+  const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
+    value: input.children,
+    selection: input.selection,
+  });
+
+  await triggerKeyboardEvent('shift+ArrowRight');
+  await triggerKeyboardEvent('shift+ArrowRight');
+  await triggerKeyboardEvent('shift+ArrowRight');
+
+  expect(editor.selection).toEqual(output.selection);
+});
+```
+
+## 测试复杂场景
+
+对于表格等复杂插件，测试各种场景：
+
+```typescript
+describe('Table plugin', () => {
+  it('should add a row below on Tab in last cell', async () => {
+    const input = (
+      <editor>
+        <htable>
+          <htr>
+            <htd>Cell 1</htd>
+            <htd>
+              Cell 2<cursor />
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as any as PlateEditor;
+
+    const output = (
+      <editor>
+        <htable>
+          <htr>
+            <htd>Cell 1</htd>
+            <htd>Cell 2</htd>
+          </htr>
+          <htr>
+            <htd>
+              <cursor />
+            </htd>
+            <htd></htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as any as PlateEditor;
+
+    const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
+      value: input.children,
+    selection: input.selection,
+      plugins: [TablePlugin],
+    });
+
+    await triggerKeyboardEvent('Tab');
+
+    expect(editor.children).toEqual(output.children);
+    expect(editor.selection).toEqual(output.selection);
+  });
+});
+```
+
+## 测试带选项的插件
+
+测试不同的插件选项如何影响行为：
+
+```typescript
+it('should use custom hotkey for bold', async () => {
+  const handler = jest.fn();
+  
+  const input = (
+    <editor>
+      <hp>
+        Hello <cursor />world
+      </hp>
+    </editor>
+  ) as any as PlateEditor;
+
+  const output = (
+    <editor>
+      <hp>
+        Hello <htext bold>world</htext>
+      </hp>
+    </editor>
+  ) as any as PlateEditor;
+
+  const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
+    value: input.children,
+    selection: input.selection,
+    plugins: [
+      BoldPlugin.configure({
+        shortcuts: {
+          toggleBold: {
+            handler,
+            keys: 'mod+shift+b',
+          },
+        },
+      }),
+    ],
+  });
+
+  await triggerKeyboardEvent('mod+shift+b');
+
+  expect(editor.children).toEqual(output.children);
+});
+```
+
+## Mock 与真实转换
+
+虽然 Mock 对于隔离特定行为很有用，但 Plate 测试通常会在转换后评估实际的编辑器子节点和选择。这种方法确保插件能够正确地与整个编辑器状态一起工作。

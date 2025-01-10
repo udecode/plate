@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, BaseParagraphPlugin } from '@udecode/plate-common';
-import { createPlateEditor } from '@udecode/plate-common/react';
+import { type SlateEditor, BaseParagraphPlugin } from '@udecode/plate';
+import { createPlateEditor } from '@udecode/plate/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
@@ -40,11 +40,12 @@ describe('withInsertBreakIndentList', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
       plugins: [BaseParagraphPlugin, IndentPlugin, BaseIndentListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
-    editor.insertBreak();
+    editor.tf.insertBreak();
 
     expect(editor.children).toEqual(output.children);
   });
@@ -71,11 +72,12 @@ describe('withInsertBreakIndentList', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
       plugins: [BaseParagraphPlugin, IndentPlugin, BaseIndentListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
-    editor.insertBreak();
+    editor.tf.insertBreak();
 
     expect(editor.children).toEqual(output.children);
   });
@@ -108,11 +110,12 @@ describe('withInsertBreakIndentList', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
       plugins: [BaseParagraphPlugin, IndentPlugin, BaseIndentListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
-    editor.insertBreak();
+    editor.tf.insertBreak();
 
     expect(editor.children).toEqual(output.children);
   });

@@ -1,15 +1,11 @@
 import {
+  type Path,
   type SlateEditor,
-  findNode,
-  getBlockAbove,
+  NodeApi,
+  PathApi,
   getEditorPlugin,
-  getParentNode,
-  insertElements,
-  setNodes,
-  withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 import cloneDeep from 'lodash/cloneDeep.js';
-import { Path } from 'slate';
 
 import type {
   TTableCellElement,
@@ -19,45 +15,51 @@ import type {
 
 import { BaseTablePlugin, BaseTableRowPlugin } from '../BaseTablePlugin';
 import { getTableColumnCount } from '../queries';
-import { getColSpan } from '../queries/getColSpan';
-import { getRowSpan } from '../queries/getRowSpan';
 import { getCellTypes } from '../utils';
-import { computeCellIndices } from './computeCellIndices';
+import { getCellIndices } from '../utils/getCellIndices';
 import { findCellByIndexes } from './findCellByIndexes';
-import { getCellIndices } from './getCellIndices';
 import { getCellPath } from './getCellPath';
 
 export const insertTableMergeRow = (
   editor: SlateEditor,
   {
     at,
+    before,
     fromRow,
     header,
+    select: shouldSelect,
   }: {
     /** Exact path of the row to insert the column at. Will overrule `fromRow`. */
     at?: Path;
-    disableSelect?: boolean;
+    /** Insert the row before the current row instead of after */
+    before?: boolean;
     fromRow?: Path;
     header?: boolean;
+    select?: boolean;
   } = {}
 ) => {
-  const { api, getOptions, type } = getEditorPlugin(editor, BaseTablePlugin);
-  const { _cellIndices: cellIndices } = getOptions();
+  const { api, type } = getEditorPlugin(editor, BaseTablePlugin);
 
-  const trEntry = fromRow
-    ? findNode(editor, {
-        at: fromRow,
-        match: { type: editor.getType(BaseTableRowPlugin) },
-      })
-    : getBlockAbove(editor, {
-        match: { type: editor.getType(BaseTableRowPlugin) },
-      });
+  if (at && !fromRow) {
+    const table = NodeApi.get<TTableElement>(editor, at);
+
+    if (table?.type === editor.getType(BaseTablePlugin)) {
+      fromRow = NodeApi.lastChild(editor, at)![1];
+      at = undefined;
+    }
+  }
+
+  const trEntry = editor.api.block({
+    at: fromRow,
+    match: { type: editor.getType(BaseTableRowPlugin) },
+  });
 
   if (!trEntry) return;
 
   const [, trPath] = trEntry;
 
-  const tableEntry = getBlockAbove<TTableElement>(editor, {
+  const tableEntry = editor.api.block<TTableElement>({
+    above: true,
     at: trPath,
     match: { type },
   });
@@ -66,7 +68,7 @@ export const insertTableMergeRow = (
 
   const tableNode = tableEntry[0] as TTableElement;
 
-  const cellEntry = findNode(editor, {
+  const cellEntry = editor.api.node({
     at: fromRow,
     match: { type: getCellTypes(editor) },
   });
@@ -75,10 +77,8 @@ export const insertTableMergeRow = (
 
   const [cellNode, cellPath] = cellEntry;
   const cellElement = cellNode as TTableCellElement;
-  const cellRowSpan = getRowSpan(cellElement);
-  const { row: cellRowIndex } =
-    getCellIndices(cellIndices!, cellElement) ||
-    computeCellIndices(editor, tableNode, cellElement)!;
+  const cellRowSpan = api.table.getRowSpan(cellElement);
+  const { row: cellRowIndex } = getCellIndices(editor, cellElement);
 
   const rowPath = cellPath.at(-2)!;
   const tablePath = cellPath.slice(0, -2)!;
@@ -87,14 +87,16 @@ export const insertTableMergeRow = (
   let checkingRowIndex: number;
   let nextRowPath: number[];
 
-  if (Path.isPath(at)) {
+  if (PathApi.isPath(at)) {
     nextRowIndex = at.at(-1)!;
     checkingRowIndex = cellRowIndex - 1;
     nextRowPath = at;
   } else {
-    nextRowIndex = cellRowIndex + cellRowSpan;
-    checkingRowIndex = cellRowIndex + cellRowSpan - 1;
-    nextRowPath = [...tablePath, rowPath + cellRowSpan];
+    nextRowIndex = before ? cellRowIndex : cellRowIndex + cellRowSpan;
+    checkingRowIndex = before
+      ? cellRowIndex - 1
+      : cellRowIndex + cellRowSpan - 1;
+    nextRowPath = [...tablePath, before ? rowPath : rowPath + cellRowSpan];
   }
 
   const firstRow = nextRowIndex === 0;
@@ -119,12 +121,13 @@ export const insertTableMergeRow = (
     if (!cur) return;
 
     const curCell = cur as TTableCellElement;
-    const { col: curColIndex, row: curRowIndex } =
-      getCellIndices(cellIndices!, curCell) ||
-      computeCellIndices(editor, tableNode, curCell)!;
+    const { col: curColIndex, row: curRowIndex } = getCellIndices(
+      editor,
+      curCell
+    );
 
-    const curRowSpan = getRowSpan(curCell);
-    const curColSpan = getColSpan(curCell);
+    const curRowSpan = api.table.getRowSpan(curCell);
+    const curColSpan = api.table.getColSpan(curCell);
     const currentCellPath = getCellPath(
       editor,
       tableEntry,
@@ -143,12 +146,12 @@ export const insertTableMergeRow = (
       }
 
       // make higher
-      setNodes<TTableCellElement>(editor, newCell, { at: currentCellPath });
+      editor.tf.setNodes<TTableCellElement>(newCell, { at: currentCellPath });
     } else {
       // add new
-      const row = getParentNode(editor, currentCellPath)!;
+      const row = editor.api.parent(currentCellPath)!;
       const rowElement = row[0] as TTableRowElement;
-      const emptyCell = api.create.cell!({ header, row: rowElement });
+      const emptyCell = api.create.tableCell({ header, row: rowElement });
 
       newRowChildren.push({
         ...emptyCell,
@@ -158,17 +161,28 @@ export const insertTableMergeRow = (
     }
   });
 
-  withoutNormalizing(editor, () => {
-    insertElements(
-      editor,
+  editor.tf.withoutNormalizing(() => {
+    editor.tf.insertNodes(
       {
         children: newRowChildren,
         type: editor.getType(BaseTableRowPlugin),
       },
       {
         at: nextRowPath,
-        // select: !disableSelect
+        select: false,
       }
     );
+
+    if (shouldSelect) {
+      const cellEntry = editor.api.node({
+        at: nextRowPath,
+        match: { type: getCellTypes(editor) },
+      });
+
+      if (cellEntry) {
+        const [, nextCellPath] = cellEntry;
+        editor.tf.select(nextCellPath);
+      }
+    }
   });
 };

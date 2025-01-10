@@ -1,26 +1,16 @@
 import {
+  type NodeEntry,
   type TElement,
-  type TNodeEntry,
   BaseParagraphPlugin,
+  PathApi,
   deleteMerge,
-  getNodeEntries,
-  getNodeEntry,
-  getPointBefore,
-  isFirstChild,
-  isSelectionAtBlockStart,
-  removeNodes,
-  withoutNormalizing,
-} from '@udecode/plate-common';
-import {
-  type ExtendEditor,
-  getEditorPlugin,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate';
+import { type OverrideEditor, getEditorPlugin } from '@udecode/plate/react';
 import { BaseResetNodePlugin } from '@udecode/plate-reset-node';
 import {
   SIMULATE_BACKSPACE,
   onKeyDownResetNode,
 } from '@udecode/plate-reset-node/react';
-import { Path } from 'slate';
 
 import type { ListConfig } from '../lib/BaseListPlugin';
 
@@ -34,116 +24,113 @@ import { unwrapList } from '../lib/transforms';
 import { removeFirstListItem } from '../lib/transforms/removeFirstListItem';
 import { removeListItem } from '../lib/transforms/removeListItem';
 
-export const withDeleteBackwardList: ExtendEditor<ListConfig> = ({
+export const withDeleteBackwardList: OverrideEditor<ListConfig> = ({
   editor,
-}) => {
-  const { deleteBackward } = editor;
+  tf: { deleteBackward },
+}) => ({
+  transforms: {
+    deleteBackward(unit) {
+      const deleteBackwardList = () => {
+        const res = getListItemEntry(editor, {});
+        let moved: boolean | undefined = false;
 
-  editor.deleteBackward = (unit) => {
-    const deleteBackwardList = () => {
-      const res = getListItemEntry(editor, {});
+        if (res) {
+          const { list, listItem } = res;
 
-      let moved: boolean | undefined = false;
+          if (
+            editor.api.isAt({
+              match: (node) => node.type === editor.getType(BaseListItemPlugin),
+              start: true,
+            })
+          ) {
+            editor.tf.withoutNormalizing(() => {
+              moved = removeFirstListItem(editor, { list, listItem });
 
-      if (res) {
-        const { list, listItem } = res;
+              if (moved) return true;
 
-        if (
-          isSelectionAtBlockStart(editor, {
-            match: (node) => node.type === editor.getType(BaseListItemPlugin),
-          })
-        ) {
-          withoutNormalizing(editor, () => {
-            moved = removeFirstListItem(editor, { list, listItem });
+              moved = removeListItem(editor, { list, listItem });
 
-            if (moved) return true;
+              if (moved) return true;
+              if (
+                !PathApi.hasPrevious(listItem[1]) &&
+                !isListNested(editor, list[1])
+              ) {
+                onKeyDownResetNode({
+                  ...getEditorPlugin(
+                    editor,
+                    BaseResetNodePlugin.configure({
+                      options: {
+                        rules: [
+                          {
+                            defaultType: editor.getType(BaseParagraphPlugin),
+                            hotkey: 'backspace',
+                            predicate: () => editor.api.isAt({ start: true }),
+                            types: [editor.getType(BaseListItemPlugin)],
+                            onReset: (e) => unwrapList(e),
+                          },
+                        ],
+                      },
+                    })
+                  ),
+                  event: SIMULATE_BACKSPACE,
+                } as any);
+                moved = true;
 
-            moved = removeListItem(editor, { list, listItem });
+                return;
+              }
 
-            if (moved) return true;
-            if (isFirstChild(listItem[1]) && !isListNested(editor, list[1])) {
-              onKeyDownResetNode({
-                ...getEditorPlugin(
-                  editor,
-                  BaseResetNodePlugin.configure({
-                    options: {
-                      rules: [
-                        {
-                          defaultType: editor.getType(BaseParagraphPlugin),
-                          hotkey: 'backspace',
-                          predicate: () => isSelectionAtBlockStart(editor),
-                          types: [editor.getType(BaseListItemPlugin)],
-                          onReset: (e) => unwrapList(e),
-                        },
-                      ],
-                    },
-                  })
-                ),
-                event: SIMULATE_BACKSPACE,
+              const pointBeforeListItem = editor.api.before(
+                editor.selection!.focus
+              );
+
+              let currentLic: NodeEntry<TElement> | undefined;
+              let hasMultipleChildren = false;
+
+              if (
+                pointBeforeListItem &&
+                isAcrossListItems(editor, {
+                  anchor: editor.selection!.anchor,
+                  focus: pointBeforeListItem,
+                })
+              ) {
+                const licType = editor.getType(BaseListItemContentPlugin);
+                const _licNodes = editor.api.nodes<TElement>({
+                  at: listItem[1],
+                  match: (node) => node.type === licType,
+                  mode: 'lowest',
+                });
+                currentLic = [..._licNodes][0];
+                hasMultipleChildren = currentLic[0].children.length > 1;
+              }
+
+              deleteMerge(editor, {
+                reverse: true,
+                unit,
               });
               moved = true;
 
-              return;
-            }
+              if (!currentLic || !hasMultipleChildren) return;
 
-            const pointBeforeListItem = getPointBefore(
-              editor,
-              editor.selection!.focus
-            );
+              const leftoverListItem = editor.api.node<TElement>(
+                PathApi.parent(currentLic[1])
+              )!;
 
-            let currentLic: TNodeEntry<TElement> | undefined;
-            let hasMultipleChildren = false;
-
-            // check if closest lic ancestor has multiple children
-            if (
-              pointBeforeListItem &&
-              isAcrossListItems({
-                ...editor,
-                selection: {
-                  anchor: editor.selection!.anchor,
-                  focus: pointBeforeListItem,
-                },
-              })
-            ) {
-              // get closest lic ancestor of current selectable
-              const licType = editor.getType(BaseListItemContentPlugin);
-              const _licNodes = getNodeEntries<TElement>(editor, {
-                at: listItem[1],
-                match: (node) => node.type === licType,
-                mode: 'lowest',
-              });
-              currentLic = [..._licNodes][0];
-              hasMultipleChildren = currentLic[0].children.length > 1;
-            }
-
-            deleteMerge(editor, {
-              reverse: true,
-              unit,
+              if (
+                leftoverListItem &&
+                leftoverListItem[0].children.length === 0
+              ) {
+                editor.tf.removeNodes({ at: leftoverListItem[1] });
+              }
             });
-            moved = true;
-
-            if (!currentLic || !hasMultipleChildren) return;
-
-            const leftoverListItem = getNodeEntry<TElement>(
-              editor,
-              Path.parent(currentLic[1])
-            )!;
-
-            if (leftoverListItem && leftoverListItem[0].children.length === 0) {
-              // remove the leftover empty list item
-              removeNodes(editor, { at: leftoverListItem[1] });
-            }
-          });
+          }
         }
-      }
 
-      return moved;
-    };
+        return moved;
+      };
 
-    if (deleteBackwardList()) return;
+      if (deleteBackwardList()) return;
 
-    deleteBackward(unit);
-  };
-
-  return editor;
-};
+      deleteBackward(unit);
+    },
+  },
+});

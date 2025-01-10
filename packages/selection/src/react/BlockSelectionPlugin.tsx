@@ -1,14 +1,10 @@
 import type { CSSProperties } from 'react';
 import type React from 'react';
 
-import type { PluginConfig, TElement, TNodeEntry } from '@udecode/plate-common';
+import type { NodeEntry, PluginConfig, TElement } from '@udecode/plate';
 
-import {
-  bindFirst,
-  getNodeEntries,
-  isBlockWithId,
-} from '@udecode/plate-common';
-import { createTPlatePlugin } from '@udecode/plate-common/react';
+import { bindFirst } from '@udecode/plate';
+import { createTPlatePlugin } from '@udecode/plate/react';
 
 import type { ChangedElements, PartialSelectionOptions } from '../internal';
 
@@ -60,7 +56,7 @@ export type BlockSelectionApi = {
     options: Partial<ChangedElements> & { ids?: string[] }
   ) => void;
   focus: () => void;
-  getNodes: () => TNodeEntry[];
+  getNodes: () => NodeEntry[];
   resetSelectedIds: () => void;
   selectedAll: () => void;
   unselect: () => void;
@@ -68,22 +64,6 @@ export type BlockSelectionApi = {
 
 export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
   key: 'blockSelection',
-  extendEditor: ({ api, editor, getOptions }) => {
-    const { setSelection } = editor;
-
-    editor.setSelection = (...args) => {
-      if (
-        getOptions().selectedIds!.size > 0 &&
-        !editor.getOption(BlockMenuPlugin, 'openId')
-      ) {
-        api.blockSelection.unselect();
-      }
-
-      setSelection(...args);
-    };
-
-    return editor;
-  },
   inject: {
     isBlock: true,
     nodeProps: {
@@ -146,12 +126,10 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
       getNodes: () => {
         const selectedIds = getOption('selectedIds');
 
-        return [
-          ...getNodeEntries<TElement>(editor, {
-            at: [],
-            match: (n) => isBlockWithId(editor, n) && selectedIds?.has(n.id),
-          }),
-        ];
+        return editor.api.blocks<TElement>({
+          at: [],
+          match: (n) => !!n.id && selectedIds?.has(n.id),
+        });
       },
       resetSelectedIds: () => {
         setOption('selectedIds', new Set());
@@ -165,10 +143,12 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
           const next = new Set(prev);
 
           if (added) {
-            extractSelectableIds(added).forEach((id) => next.add(id));
+            extractSelectableIds(added).forEach((id) => id && next.add(id));
           }
           if (removed) {
-            extractSelectableIds(removed).forEach((id) => next.delete(id));
+            extractSelectableIds(removed).forEach(
+              (id) => id && next.delete(id)
+            );
           }
 
           setOption('selectedIds', next);
@@ -226,4 +206,18 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
     setIndent: bindFirst(setBlockSelectionIndent, editor),
     setNodes: bindFirst(setBlockSelectionNodes, editor),
     setTexts: bindFirst(setBlockSelectionTexts, editor),
+  }))
+  .overrideEditor(({ api, editor, getOptions, tf: { setSelection } }) => ({
+    transforms: {
+      setSelection(props) {
+        if (
+          getOptions().selectedIds!.size > 0 &&
+          !editor.getOption(BlockMenuPlugin, 'openId')
+        ) {
+          api.blockSelection.unselect();
+        }
+
+        setSelection(props);
+      },
+    },
   }));

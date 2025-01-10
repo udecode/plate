@@ -1,4 +1,4 @@
-import { createSlatePlugin } from '@udecode/plate-common';
+import { createSlatePlugin } from '@udecode/plate';
 
 export const BaseFontFamilyPlugin = createSlatePlugin({
   key: 'fontFamily',

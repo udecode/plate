@@ -1,5 +1,12 @@
 # @udecode/utils
 
+## 42.0.0
+
+### Patch Changes
+
+- [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) –
+  - Added `Nullable` type
+
 ## 37.0.0
 
 ### Minor Changes

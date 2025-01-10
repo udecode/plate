@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-import type { UseHooks } from '@udecode/plate-common/react';
+import type { UseHooks } from '@udecode/plate/react';
 
 import type { ToggleConfig } from './TogglePlugin';
 

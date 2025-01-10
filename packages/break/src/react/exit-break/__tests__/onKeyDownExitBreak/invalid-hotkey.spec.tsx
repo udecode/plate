@@ -1,9 +1,7 @@
 /** @jsx jsxt */
 
-import {
-  createPlateEditor,
-  getEditorPlugin,
-} from '@udecode/plate-common/react';
+import { createEditor } from '@udecode/plate';
+import { createPlateEditor, getEditorPlugin } from '@udecode/plate/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { ExitBreakPlugin } from '../../ExitBreakPlugin';
@@ -11,14 +9,16 @@ import { onKeyDownExitBreak } from '../../onKeyDownExitBreak';
 
 jsxt;
 
-const input = (
-  <editor>
-    <hp>
-      test
-      <cursor />
-    </hp>
-  </editor>
-) as any;
+const input = createEditor(
+  (
+    <editor>
+      <hp>
+        test
+        <cursor />
+      </hp>
+    </editor>
+  ) as any
+);
 
 const event = new KeyboardEvent('keydown') as any;
 

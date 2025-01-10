@@ -1,6 +1,6 @@
-import type { ExtendConfig } from '@udecode/plate-common';
+import type { ExtendConfig } from '@udecode/plate';
 
-import { toTPlatePlugin } from '@udecode/plate-common/react';
+import { toTPlatePlugin } from '@udecode/plate/react';
 
 import type { buildToggleIndex } from './toggleIndexAtom';
 
@@ -21,7 +21,6 @@ export type ToggleConfig = ExtendConfig<
 
 /** Enables support for toggleable elements in the editor. */
 export const TogglePlugin = toTPlatePlugin<ToggleConfig>(BaseTogglePlugin, {
-  extendEditor: withToggle as any,
   options: {
     toggleIndex: new Map(),
   },
@@ -29,4 +28,4 @@ export const TogglePlugin = toTPlatePlugin<ToggleConfig>(BaseTogglePlugin, {
     aboveNodes: renderToggleAboveNodes,
   },
   useHooks: useHooksToggle as any,
-});
+}).overrideEditor(withToggle);

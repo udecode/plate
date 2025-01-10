@@ -1,34 +1,33 @@
-import type { ExtendEditor } from '@udecode/plate-common';
-
-import { collapseSelection, isExpanded } from '@udecode/plate-common';
+import type { OverrideEditor } from '@udecode/plate';
 
 import { type TableConfig, getTableAbove } from '.';
 import { getTableGridAbove } from './queries';
 
-export const withInsertTextTable: ExtendEditor<TableConfig> = ({ editor }) => {
-  const { insertText } = editor;
-
-  editor.insertText = (text) => {
-    if (isExpanded(editor.selection)) {
-      const entry = getTableAbove(editor, {
-        at: editor.selection?.anchor,
-      });
-
-      if (entry) {
-        const cellEntries = getTableGridAbove(editor, {
-          format: 'cell',
+export const withInsertTextTable: OverrideEditor<TableConfig> = ({
+  editor,
+  tf: { insertText },
+}) => ({
+  transforms: {
+    insertText(text) {
+      if (editor.api.isExpanded()) {
+        const entry = getTableAbove(editor, {
+          at: editor.selection?.anchor,
         });
 
-        if (cellEntries.length > 1) {
-          collapseSelection(editor, {
-            edge: 'focus',
+        if (entry) {
+          const cellEntries = getTableGridAbove(editor, {
+            format: 'cell',
           });
+
+          if (cellEntries.length > 1) {
+            editor.tf.collapse({
+              edge: 'focus',
+            });
+          }
         }
       }
-    }
 
-    insertText(text);
-  };
-
-  return editor;
-};
+      insertText(text);
+    },
+  },
+});

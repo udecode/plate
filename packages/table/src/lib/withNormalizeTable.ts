@@ -1,126 +1,143 @@
 import {
-  type ExtendEditor,
+  type OverrideEditor,
   type TElement,
-  getBlockAbove,
-  getParentNode,
-  isElement,
-  isText,
-  setNodes,
-  unwrapNodes,
-  wrapNodeChildren,
-} from '@udecode/plate-common';
+  ElementApi,
+  TextApi,
+} from '@udecode/plate';
 
-import type { TTableElement, TableConfig } from './types';
+import type { TTableCellElement, TTableElement } from './types';
 
-import { BaseTableRowPlugin } from './BaseTablePlugin';
-import { getCellTypes } from './utils/index';
+import { type TableConfig, BaseTableRowPlugin } from './BaseTablePlugin';
+import { getTableColumnCount } from './queries';
+import { computeCellIndices, getCellTypes } from './utils/index';
 
 /**
  * Normalize table:
  *
  * - Wrap cell children in a paragraph if they are texts.
  */
-export const withNormalizeTable: ExtendEditor<TableConfig> = ({
+export const withNormalizeTable: OverrideEditor<TableConfig> = ({
   editor,
+  getOption,
   getOptions,
+  tf: { normalizeNode },
   type,
-}) => {
-  const { normalizeNode } = editor;
+}) => ({
+  transforms: {
+    normalizeNode([n, path]) {
+      const { enableUnsetSingleColSize, initialTableWidth } = getOptions();
 
-  editor.normalizeNode = ([node, path]) => {
-    const { initialTableWidth } = getOptions();
+      if (ElementApi.isElement(n)) {
+        if (n.type === type) {
+          const node = n as TTableElement;
 
-    if (isElement(node)) {
-      if (node.type === type) {
-        if (
-          !node.children.some(
-            (child) =>
-              isElement(child) &&
-              child.type === editor.getType(BaseTableRowPlugin)
-          )
-        ) {
-          editor.removeNodes({ at: path });
+          if (
+            !node.children.some(
+              (child) =>
+                ElementApi.isElement(child) &&
+                child.type === editor.getType(BaseTableRowPlugin)
+            )
+          ) {
+            editor.tf.removeNodes({ at: path });
 
-          return;
-        }
+            return;
+          }
+          if (
+            node.colSizes &&
+            node.colSizes.length > 0 &&
+            enableUnsetSingleColSize &&
+            getTableColumnCount(node) < 2
+          ) {
+            editor.tf.unsetNodes('colSizes', {
+              at: path,
+            });
 
-        const tableEntry = getBlockAbove(editor, {
-          at: path,
-          match: { type: type },
-        });
+            return;
+          }
 
-        if (tableEntry) {
-          unwrapNodes(editor, {
+          const tableEntry = editor.api.block({
+            above: true,
             at: path,
+            match: { type: type },
           });
 
-          return;
-        }
-        if (initialTableWidth) {
-          const tableNode = node as TTableElement;
-          const colCount = (
-            tableNode.children[0]?.children as TElement[] | undefined
-          )?.length;
+          if (tableEntry) {
+            editor.tf.unwrapNodes({
+              at: path,
+            });
 
-          if (colCount) {
-            const colSizes: number[] = [];
+            return;
+          }
+          if (initialTableWidth) {
+            const tableNode = node as TTableElement;
+            const colCount = (
+              tableNode.children[0]?.children as TElement[] | undefined
+            )?.length;
 
-            if (!tableNode.colSizes) {
-              for (let i = 0; i < colCount; i++) {
-                colSizes.push(initialTableWidth / colCount);
+            if (colCount) {
+              const colSizes: number[] = [];
+
+              if (!tableNode.colSizes) {
+                for (let i = 0; i < colCount; i++) {
+                  colSizes.push(initialTableWidth / colCount);
+                }
+              } else if (tableNode.colSizes.some((size) => !size)) {
+                tableNode.colSizes.forEach((colSize) => {
+                  colSizes.push(colSize || initialTableWidth / colCount);
+                });
               }
-            } else if (tableNode.colSizes.some((size) => !size)) {
-              tableNode.colSizes.forEach((colSize) => {
-                colSizes.push(colSize || initialTableWidth / colCount);
-              });
-            }
-            if (colSizes.length > 0) {
-              setNodes<TTableElement>(editor, { colSizes }, { at: path });
+              if (colSizes.length > 0) {
+                editor.tf.setNodes<TTableElement>({ colSizes }, { at: path });
 
-              return;
+                return;
+              }
             }
           }
         }
-      }
-      if (node.type === editor.getType(BaseTableRowPlugin)) {
-        const parentEntry = getParentNode(editor, path);
+        if (n.type === editor.getType(BaseTableRowPlugin)) {
+          const parentEntry = editor.api.parent(path);
 
-        if (parentEntry?.[0].type !== type) {
-          unwrapNodes(editor, {
-            at: path,
-          });
-
-          return;
-        }
-      }
-      if (getCellTypes(editor).includes(node.type)) {
-        const { children } = node;
-
-        const parentEntry = getParentNode(editor, path);
-
-        if (parentEntry?.[0].type !== editor.getType(BaseTableRowPlugin)) {
-          unwrapNodes(editor, {
-            at: path,
-          });
-
-          return;
-        }
-        if (isText(children[0])) {
-          wrapNodeChildren<TElement>(
-            editor,
-            editor.api.create.block({}, path),
-            {
+          if (parentEntry?.[0].type !== type) {
+            editor.tf.unwrapNodes({
               at: path,
-            }
-          );
+            });
 
-          return;
+            return;
+          }
+        }
+        if (getCellTypes(editor).includes(n.type)) {
+          const node = n as TTableCellElement;
+          const cellIndices = getOption('cellIndices', node.id as string);
+
+          if (node.id && !cellIndices) {
+            computeCellIndices(editor, {
+              all: true,
+              cellNode: node,
+            });
+          }
+
+          const { children } = node;
+          const parentEntry = editor.api.parent(path);
+
+          if (parentEntry?.[0].type !== editor.getType(BaseTableRowPlugin)) {
+            editor.tf.unwrapNodes({
+              at: path,
+            });
+
+            return;
+          }
+          if (TextApi.isText(children[0])) {
+            editor.tf.wrapNodes(editor.api.create.block({}, path), {
+              at: path,
+              children: true,
+            });
+
+            return;
+          }
         }
       }
-    }
 
-    return normalizeNode([node, path]);
-  };
-
-  return editor;
-};
+      normalizeNode([n, path]);
+    },
+  },
+});

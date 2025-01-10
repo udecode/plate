@@ -2,6 +2,7 @@
 
 import React from 'react';
 
+import { useEditorReadOnly } from '@udecode/plate/react';
 import {
   BoldPlugin,
   CodePlugin,
@@ -9,7 +10,6 @@ import {
   StrikethroughPlugin,
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
-import { useEditorReadOnly } from '@udecode/plate-common/react';
 import {
   BoldIcon,
   Code2Icon,
@@ -21,6 +21,7 @@ import {
 
 import { AIToolbarButton } from './ai-toolbar-button';
 import { CommentToolbarButton } from './comment-toolbar-button';
+import { InlineEquationToolbarButton } from './inline-equation-toolbar-button';
 import { LinkToolbarButton } from './link-toolbar-button';
 import { MarkToolbarButton } from './mark-toolbar-button';
 import { MoreDropdownMenu } from './more-dropdown-menu';
@@ -72,6 +73,8 @@ export function FloatingToolbarButtons() {
             <MarkToolbarButton nodeType={CodePlugin.key} tooltip="Code (⌘+E)">
               <Code2Icon />
             </MarkToolbarButton>
+
+            <InlineEquationToolbarButton />
 
             <LinkToolbarButton />
           </ToolbarGroup>

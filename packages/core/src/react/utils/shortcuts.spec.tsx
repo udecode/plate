@@ -29,18 +29,19 @@ it('should use custom hotkey for bold', async () => {
   ) as any as PlateEditor;
 
   const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-    editor: input,
     plugins: [
       BoldPlugin.configure({
         handlers: {
           onKeyDown: ({ editor, event }) => {
             if (event.key === 'b' && event.ctrlKey) {
-              editor.tf.toggle.mark({ key: 'bold' });
+              editor.tf.toggleMark('bold');
             }
           },
         },
       }),
     ],
+    selection: input.selection,
+    value: input.children,
   });
 
   await triggerKeyboardEvent('mod+b');

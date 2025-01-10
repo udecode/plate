@@ -1,22 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import {
-  findNode,
-  getEndPoint,
-  getNextNode,
-  getPreviousNode,
-  isBlockWithId,
-  isHotkey,
-  removeNodes,
-} from '@udecode/plate-common';
+import { isHotkey } from '@udecode/plate';
 import {
   type EditableSiblingComponent,
-  focusEditor,
-  isEditorReadOnly,
   useEditorPlugin,
   useEditorRef,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 
 import type { BlockSelectionConfig } from '../BlockSelectionPlugin';
 
@@ -58,7 +48,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
 
   const handleKeyDown = React.useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
-      const isReadonly = isEditorReadOnly(editor);
+      const isReadonly = editor.api.isReadOnly();
       getOptions().onKeyDownSelecting?.(e.nativeEvent);
 
       // selecting commands
@@ -78,50 +68,54 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
       if (!getOption('isSelectingSome')) return;
       if (isHotkey('enter')(e)) {
         // get the first block in the selection
-        const entry = findNode(editor, {
+        const entry = editor.api.node({
           at: [],
-          match: (n) => isBlockWithId(editor, n) && selectedIds!.has(n.id),
+          block: true,
+          match: (n) => !!n.id && selectedIds!.has(n.id),
         });
 
         if (entry) {
           const [, path] = entry;
 
           // focus the end of that block
-          focusEditor(editor, getEndPoint(editor, path));
+          editor.tf.focus({ at: path, edge: 'end' });
           e.preventDefault();
         }
       }
       if (isHotkey(['backspace', 'delete'])(e) && !isReadonly) {
-        removeNodes(editor, {
+        editor.tf.removeNodes({
           at: [],
-          match: (n) => isBlockWithId(editor, n) && selectedIds!.has(n.id),
+          block: true,
+          match: (n) => !!n.id && selectedIds!.has(n.id),
         });
       }
       // TODO: skip toggle child
       if (isHotkey('up')(e)) {
         const firstId = [...selectedIds!][0];
-        const node = findNode(editor, {
+        const node = editor.api.node({
           at: [],
-          match: (n) => isBlockWithId(editor, n) && n.id === firstId,
+          block: true,
+          match: (n) => !!n.id && n.id === firstId,
         });
-        const prev = getPreviousNode(editor, {
+        const prev = editor.api.previous({
           at: node?.[1],
         });
 
         const prevId = prev?.[0].id;
-        api.blockSelection.addSelectedRow(prevId);
+        api.blockSelection.addSelectedRow(prevId as string);
       }
       if (isHotkey('down')(e)) {
         const lastId = [...selectedIds!].pop();
-        const node = findNode(editor, {
+        const node = editor.api.node({
           at: [],
-          match: (n) => isBlockWithId(editor, n) && n.id === lastId,
+          block: true,
+          match: (n) => !!n.id && n.id === lastId,
         });
-        const next = getNextNode(editor, {
+        const next = editor.api.next({
           at: node?.[1],
         });
         const nextId = next?.[0].id;
-        api.blockSelection.addSelectedRow(nextId);
+        api.blockSelection.addSelectedRow(nextId as string);
       }
     },
     [editor, selectedIds, api, getOptions, getOption]
@@ -145,13 +139,13 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
       if (getOption('isSelectingSome')) {
         copySelectedBlocks(editor);
 
-        if (!isEditorReadOnly(editor)) {
-          removeNodes(editor, {
+        if (!editor.api.isReadOnly()) {
+          editor.tf.removeNodes({
             at: [],
             match: (n) => selectedIds!.has(n.id),
           });
 
-          focusEditor(editor);
+          editor.tf.focus();
         }
       }
     },
@@ -162,7 +156,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
     (e: React.ClipboardEvent<HTMLInputElement>) => {
       e.preventDefault();
 
-      if (!isEditorReadOnly(editor)) {
+      if (!editor.api.isReadOnly()) {
         pasteSelectedBlocks(editor, e.nativeEvent);
       }
     },

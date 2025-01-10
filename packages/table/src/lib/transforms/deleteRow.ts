@@ -1,38 +1,32 @@
-import {
-  type SlateEditor,
-  getAboveNode,
-  getEditorPlugin,
-  isExpanded,
-  removeNodes,
-  someNode,
-} from '@udecode/plate-common';
+import { type SlateEditor, getEditorPlugin } from '@udecode/plate';
 
-import { type TTableElement, BaseTableRowPlugin } from '..';
-import { BaseTablePlugin } from '../BaseTablePlugin';
+import { type TTableElement, type TableConfig, BaseTableRowPlugin } from '..';
 import { deleteRowWhenExpanded } from '../merge';
 import { deleteTableMergeRow } from '../merge/deleteRow';
 
 export const deleteRow = (editor: SlateEditor) => {
-  const { getOptions, type } = getEditorPlugin(editor, BaseTablePlugin);
-  const { enableMerging } = getOptions();
+  const { getOptions, type } = getEditorPlugin<TableConfig>(editor, {
+    key: 'table',
+  });
+  const { disableMerge } = getOptions();
 
-  if (enableMerging) {
+  if (!disableMerge) {
     return deleteTableMergeRow(editor);
   }
   if (
-    someNode(editor, {
+    editor.api.some({
       match: { type },
     })
   ) {
-    const currentTableItem = getAboveNode<TTableElement>(editor, {
+    const currentTableItem = editor.api.above<TTableElement>({
       match: { type },
     });
 
     if (!currentTableItem) return;
-    if (isExpanded(editor.selection))
+    if (editor.api.isExpanded())
       return deleteRowWhenExpanded(editor, currentTableItem);
 
-    const currentRowItem = getAboveNode(editor, {
+    const currentRowItem = editor.api.above({
       match: { type: editor.getType(BaseTableRowPlugin) },
     });
 
@@ -42,7 +36,7 @@ export const deleteRow = (editor: SlateEditor) => {
       // Cannot delete the last row
       currentTableItem[0].children.length > 1
     ) {
-      removeNodes(editor, {
+      editor.tf.removeNodes({
         at: currentRowItem[1],
       });
     }

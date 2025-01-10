@@ -1,4 +1,4 @@
-import { createSlatePlugin } from '@udecode/plate-common';
+import { createSlatePlugin } from '@udecode/plate';
 
 /**
  * Enables support for highlights, useful when reviewing content or highlighting

@@ -50,6 +50,7 @@ module.exports = {
     ...getTsConfigBasePaths(),
     ...modules,
   },
+  modulePathIgnorePatterns: ['<rootDir>/packages/common/dist/'],
   preset: 'ts-jest',
   setupFilesAfterEnv: ['<rootDir>/scripts/setupTests.ts'],
   testEnvironment: 'jsdom',

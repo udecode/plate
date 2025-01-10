@@ -3,7 +3,7 @@ import {
   type WithPartial,
   createTSlatePlugin,
   nanoid,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { SuggestionUser, TSuggestion } from './types';
 
@@ -50,7 +50,6 @@ export type SuggestionPluginApi = {
 
 export const BaseSuggestionPlugin = createTSlatePlugin<SuggestionConfig>({
   key: 'suggestion',
-  extendEditor: withSuggestion,
   node: { isLeaf: true },
   options: {
     activeSuggestionId: null,
@@ -63,6 +62,7 @@ export const BaseSuggestionPlugin = createTSlatePlugin<SuggestionConfig>({
     onSuggestionUpdate: null,
   },
 })
+  .overrideEditor(withSuggestion)
   .extendOptions(({ getOptions }) => ({
     currentSuggestionUser: (): SuggestionUser | null => {
       const { currentUserId, users } = getOptions();
@@ -83,9 +83,7 @@ export const BaseSuggestionPlugin = createTSlatePlugin<SuggestionConfig>({
     },
   }))
   .extendApi<Partial<SuggestionPluginApi>>(({ getOptions, setOptions }) => ({
-    addSuggestion: (
-      value: WithPartial<TSuggestion, 'createdAt' | 'id' | 'userId'>
-    ) => {
+    addSuggestion: (value) => {
       const { currentUserId } = getOptions();
 
       if (!currentUserId) return;
@@ -99,21 +97,21 @@ export const BaseSuggestionPlugin = createTSlatePlugin<SuggestionConfig>({
       };
 
       setOptions((draft) => {
-        draft.suggestions[id] = newSuggestion;
+        draft.suggestions![id] = newSuggestion;
       });
     },
-    removeSuggestion: (id: string | null) => {
+    removeSuggestion: (id) => {
       if (!id) return;
 
       setOptions((draft) => {
-        delete draft.suggestions[id];
+        delete draft.suggestions![id];
       });
     },
-    updateSuggestion: (id: string | null, value: Partial<TSuggestion>) => {
+    updateSuggestion: (id, value) => {
       if (!id) return;
 
       setOptions((draft) => {
-        draft.suggestions[id] = { ...draft.suggestions[id], ...value };
+        draft.suggestions![id] = { ...draft.suggestions![id], ...value };
       });
     },
   }));

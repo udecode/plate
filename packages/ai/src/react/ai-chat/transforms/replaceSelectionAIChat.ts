@@ -1,16 +1,6 @@
-import {
-  type SlateEditor,
-  type TElement,
-  type TNodeEntry,
-  findNode,
-  getFirstNodeText,
-  getNodeProps,
-  isEditorEmpty,
-  isRangeContainsPath,
-  isText,
-  withNewBatch,
-} from '@udecode/plate-common';
-import { type PlateEditor, focusEditor } from '@udecode/plate-common/react';
+import type { SlateEditor } from '@udecode/plate';
+import type { PlateEditor } from '@udecode/plate/react';
+
 import {
   BlockSelectionPlugin,
   removeBlockSelectionNodes,
@@ -70,7 +60,7 @@ export const replaceSelectionAIChat = (
   sourceEditor: SlateEditor,
   { format = 'single' }: { format?: 'all' | 'none' | 'single' } = {}
 ) => {
-  if (!sourceEditor || isEditorEmpty(sourceEditor)) return;
+  if (!sourceEditor || sourceEditor.api.isEmpty()) return;
 
   const isBlockSelecting = editor.getOption(
     BlockSelectionPlugin,
@@ -81,7 +71,7 @@ export const replaceSelectionAIChat = (
 
   // If no blocks selected, treat it like a normal selection replacement
   if (!isBlockSelecting) {
-    const firstBlock = findNode(editor, {
+    const firstBlock = editor.api.node({
       block: true,
       mode: 'lowest',
     });
@@ -98,15 +88,15 @@ export const replaceSelectionAIChat = (
 
         if (!formattedBlocks) return;
 
-        editor.insertFragment(formattedBlocks);
-        focusEditor(editor);
+        editor.tf.insertFragment(formattedBlocks);
+        editor.tf.focus();
 
         return;
       }
     }
 
-    editor.insertFragment(sourceEditor.children);
-    focusEditor(editor);
+    editor.tf.insertFragment(sourceEditor.children);
+    editor.tf.focus();
 
     return;
   }
@@ -118,12 +108,10 @@ export const replaceSelectionAIChat = (
   // If format is 'none' or multiple blocks with 'single',
   // just insert the content as is
   if (format === 'none' || (format === 'single' && selectedBlocks.length > 1)) {
-    editor.withoutNormalizing(() => {
+    editor.tf.withoutNormalizing(() => {
       removeBlockSelectionNodes(editor);
 
-      console.log(sourceEditor.children, selectedBlocks[0][1]);
-
-      withNewBatch(editor, () => {
+      editor.tf.withNewBatch(() => {
         editor
           .getTransforms(BlockSelectionPlugin)
           .blockSelection.insertBlocksAndSelect(
@@ -135,7 +123,7 @@ export const replaceSelectionAIChat = (
       });
     });
 
-    focusEditor(editor);
+    editor.tf.focus();
 
     return;
   }
@@ -152,10 +140,10 @@ export const replaceSelectionAIChat = (
 
   if (!formattedBlocks) return;
 
-  editor.withoutNormalizing(() => {
+  editor.tf.withoutNormalizing(() => {
     removeBlockSelectionNodes(editor);
 
-    withNewBatch(editor, () => {
+    editor.tf.withNewBatch(() => {
       editor
         .getTransforms(BlockSelectionPlugin)
         .blockSelection.insertBlocksAndSelect(formattedBlocks, {
@@ -164,5 +152,5 @@ export const replaceSelectionAIChat = (
     });
   });
 
-  focusEditor(editor);
+  editor.tf.focus();
 };

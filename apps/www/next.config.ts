@@ -25,7 +25,6 @@ const nextConfig = async (phase: string) => {
         },
       ],
     },
-
     outputFileTracingIncludes: {
       '/api/registry/*': ['./src/registry/**/*'],
       '/blocks/slate-to-html': ['./public/tailwind.css', './public/prism.css'],
@@ -41,8 +40,12 @@ const nextConfig = async (phase: string) => {
     reactStrictMode: true,
 
     // eslint-disable-next-line @typescript-eslint/require-await
-    async rewrites() {
+    rewrites: async () => {
       return [
+        {
+          destination: '/?locale=cn',
+          source: '/cn',
+        },
         {
           destination: '/:path*?locale=cn', // Rewrite it to the corresponding path without /cn
           source: '/cn/:path*', // Match any path under /cn

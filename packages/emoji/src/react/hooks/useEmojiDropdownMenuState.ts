@@ -1,4 +1,4 @@
-import { useStableMemo } from '@udecode/plate-common/react';
+import { useStableMemo } from '@udecode/plate/react';
 
 import {
   type EmojiSettingsType,

@@ -306,7 +306,10 @@ export const docExamples: Registry = [
     },
     files: [
       { path: 'example/demo.tsx', type: 'registry:example' },
-      { path: 'example/values/autoformat-value.tsx', type: 'registry:example' },
+      {
+        path: 'example/values/autoformat-value.tsx',
+        type: 'registry:example',
+      },
       {
         path: 'components/editor/use-create-editor.ts',
         type: 'registry:example',
@@ -430,7 +433,10 @@ export const docExamples: Registry = [
     },
     files: [
       { path: 'example/demo.tsx', type: 'registry:example' },
-      { path: 'example/values/block-menu-value.tsx', type: 'registry:example' },
+      {
+        path: 'example/values/block-menu-value.tsx',
+        type: 'registry:example',
+      },
       {
         path: 'components/editor/use-create-editor.ts',
         type: 'registry:example',
@@ -505,7 +511,10 @@ export const docExamples: Registry = [
     },
     files: [
       { path: 'example/demo.tsx', type: 'registry:example' },
-      { path: 'example/values/comments-value.tsx', type: 'registry:example' },
+      {
+        path: 'example/values/comments-value.tsx',
+        type: 'registry:example',
+      },
       {
         path: 'components/editor/use-create-editor.ts',
         type: 'registry:example',
@@ -670,12 +679,41 @@ export const docExamples: Registry = [
   },
   {
     doc: {
+      description: 'LaTeX equations with inline and block formats.',
+      docs: [
+        {
+          route: '/docs/equation',
+          title: 'Equation',
+        },
+      ],
+    },
+    files: [
+      { path: 'example/demo.tsx', type: 'registry:example' },
+      { path: 'example/values/emoji-value.tsx', type: 'registry:example' },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'components/editor/plugins/editor-plugins.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'equation-demo',
+    registryDependencies: [],
+    type: 'registry:example',
+  },
+  {
+    doc: {
       description: 'Exit a large block using a shortcut.',
       title: 'Exit Break',
     },
     files: [
       { path: 'example/demo.tsx', type: 'registry:example' },
-      { path: 'example/values/exit-break-value.tsx', type: 'registry:example' },
+      {
+        path: 'example/values/exit-break-value.tsx',
+        type: 'registry:example',
+      },
       {
         path: 'components/editor/use-create-editor.ts',
         type: 'registry:example',
@@ -696,7 +734,10 @@ export const docExamples: Registry = [
     // },
     files: [
       { path: 'example/excalidraw-demo.tsx', type: 'registry:example' },
-      { path: 'example/values/excalidraw-value.tsx', type: 'registry:example' },
+      {
+        path: 'example/values/excalidraw-value.tsx',
+        type: 'registry:example',
+      },
       {
         path: 'components/editor/use-create-editor.ts',
         type: 'registry:example',
@@ -808,7 +849,10 @@ export const docExamples: Registry = [
     // },
     files: [
       { path: 'example/demo.tsx', type: 'registry:example' },
-      { path: 'example/values/highlight-value.tsx', type: 'registry:example' },
+      {
+        path: 'example/values/highlight-value.tsx',
+        type: 'registry:example',
+      },
       {
         path: 'components/editor/use-create-editor.ts',
         type: 'registry:example',
@@ -1257,7 +1301,10 @@ export const docExamples: Registry = [
     },
     files: [
       { path: 'example/demo.tsx', type: 'registry:example' },
-      { path: 'example/values/soft-break-value.tsx', type: 'registry:example' },
+      {
+        path: 'example/values/soft-break-value.tsx',
+        type: 'registry:example',
+      },
       {
         path: 'components/editor/use-create-editor.ts',
         type: 'registry:example',
@@ -1274,7 +1321,10 @@ export const docExamples: Registry = [
   {
     files: [
       { path: 'example/tabbable-demo.tsx', type: 'registry:example' },
-      { path: 'example/values/tabbable-value.tsx', type: 'registry:example' },
+      {
+        path: 'example/values/tabbable-value.tsx',
+        type: 'registry:example',
+      },
       {
         path: 'components/editor/use-create-editor.ts',
         type: 'registry:example',

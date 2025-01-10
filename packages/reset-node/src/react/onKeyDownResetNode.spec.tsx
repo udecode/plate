@@ -1,5 +1,13 @@
 /** @jsx jsxt */
 
+import type { SlateEditor } from '@udecode/plate';
+
+import { ParagraphPlugin } from '@udecode/plate/react';
+import {
+  createPlateEditor,
+  createTPlatePlugin,
+  getEditorPlugin,
+} from '@udecode/plate/react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import {
   BaseCodeBlockPlugin,
@@ -7,16 +15,6 @@ import {
   isSelectionAtCodeBlockStart,
   unwrapCodeBlock,
 } from '@udecode/plate-code-block';
-import {
-  isBlockAboveEmpty,
-  isSelectionAtBlockStart,
-} from '@udecode/plate-common';
-import { ParagraphPlugin } from '@udecode/plate-common/react';
-import {
-  createPlateEditor,
-  createTPlatePlugin,
-  getEditorPlugin,
-} from '@udecode/plate-common/react';
 import * as isHotkey from '@udecode/plate-core';
 import { BaseListItemPlugin, unwrapList } from '@udecode/plate-list';
 import { jsxt } from '@udecode/plate-test-utils';
@@ -30,12 +28,13 @@ jsxt;
 describe('onKeyDownResetNode', () => {
   const enterRule = {
     hotkey: 'Enter',
-    predicate: isBlockAboveEmpty,
+    predicate: (editor: SlateEditor) =>
+      editor.api.isEmpty(editor.selection, { block: true }),
   };
 
   const backspaceRule = {
     hotkey: 'Backspace',
-    predicate: isSelectionAtBlockStart,
+    predicate: (editor: SlateEditor) => editor.api.isAt({ start: true }),
   };
 
   describe('when inside a blockquote', () => {
@@ -73,8 +72,9 @@ describe('onKeyDownResetNode', () => {
       ) as any;
 
       const editor = createPlateEditor({
-        editor: input,
         plugins: [plugin],
+        selection: input.selection,
+        value: input.children,
       });
 
       jest
@@ -113,8 +113,9 @@ describe('onKeyDownResetNode', () => {
       ) as any;
 
       const editor = createPlateEditor({
-        editor: input,
         plugins: [plugin],
+        selection: input.selection,
+        value: input.children,
       });
 
       jest
@@ -176,8 +177,9 @@ describe('onKeyDownResetNode', () => {
       ) as any;
 
       const editor = createPlateEditor({
-        editor: input,
         plugins: [plugin],
+        selection: input.selection,
+        value: input.children,
       });
 
       jest
@@ -220,8 +222,9 @@ describe('onKeyDownResetNode', () => {
       ) as any;
 
       const editor = createPlateEditor({
-        editor: input,
         plugins: [plugin],
+        selection: input.selection,
+        value: input.children,
       });
 
       jest
@@ -260,8 +263,9 @@ describe('onKeyDownResetNode', () => {
       ) as any;
 
       const editor = createPlateEditor({
-        editor: input,
         plugins: [plugin],
+        selection: input.selection,
+        value: input.children,
       });
 
       jest
@@ -304,8 +308,9 @@ describe('onKeyDownResetNode', () => {
       ) as any;
 
       const editor = createPlateEditor({
-        editor: input,
         plugins: [plugin],
+        selection: input.selection,
+        value: input.children,
       });
 
       jest
@@ -361,8 +366,9 @@ describe('onKeyDownResetNode', () => {
       ) as any;
 
       const editor = createPlateEditor({
-        editor: input,
         plugins: [plugin],
+        selection: input.selection,
+        value: input.children,
       });
 
       jest
@@ -409,8 +415,9 @@ describe('onKeyDownResetNode', () => {
       ) as any;
 
       const editor = createPlateEditor({
-        editor: input,
         plugins: [plugin],
+        selection: input.selection,
+        value: input.children,
       });
 
       jest

@@ -1,4 +1,4 @@
-import { type TNode, isDefined } from '@udecode/plate-common';
+import { type TNode, isDefined } from '@udecode/plate';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 

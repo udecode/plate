@@ -1,5 +1,631 @@
 For older changelogs, see https://github.com/udecode/plate/blob/main/docs
 
+# 42.0.1
+
+## @udecode/plate-ai@42.0.0
+
+### Major Changes
+
+- [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) – AI plugins are now experimental: pin the dependency to avoid breaking changes. No breaking changes for this release.
+
+## @udecode/plate-common@42.0.0
+
+### Major Changes
+
+- [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) – This package is now deprecated and will be renamed to `@udecode/plate`. Migration:
+
+  - Remove `@udecode/plate-common` and install `@udecode/plate`
+  - Replace all `'@udecode/plate-common'` with `'@udecode/plate'`,
+
+## @udecode/plate-core@42.0.0
+
+### Major Changes
+
+- [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) –
+
+  - **Plugin `normalizeInitialValue`** now returns `void` instead of `Value`. When mutating nodes, keep their references (e.g., use `Object.assign` instead of spread).
+  - **Editor methods have moved** to `editor.tf` and `editor.api`. They still exist at the top level for **slate backward compatibility**, but are no longer redundantly typed. If you truly need the top-level method types, extend your editor type with `LegacyEditorMethods` (e.g. `editor as Editor & LegacyEditorMethods`). Since these methods can be overridden by `extendEditor`, `with...`, or slate plugins, consider migrating to the following approaches:
+
+    ```tsx
+    // For overriding existing methods only:
+    overrideEditor(({ editor, tf: { deleteForward }, api: { isInline } }) => ({
+      transforms: {
+        deleteForward(options) {
+          // ...conditional override
+          deleteForward(options);
+        },
+      },
+      api: {
+        isInline(element) {
+          // ...conditional override
+          return isInline(element);
+        },
+      },
+    }));
+    ```
+
+  This was previously done in `extendEditor` using top-level methods, which still works but now throws a type error due to the move to `editor.tf/editor.api`. A workaround is to extend your editor with `LegacyEditorMethods`.
+
+  **Why?** Having all methods at the top-level (next to `children`, `marks`, etc.) would clutter the editor interface. Slate splits transforms in three places (`editor`, `Editor`, and `Transforms`), which is also confusing. We've reorganized them into `tf` and `api` for better DX, but also to support transform-only middlewares in the future. This also lets us leverage `extendEditorTransforms`, `extendEditorApi`, and `overrideEditor` to modify those methods.
+
+  Migration example:
+
+  ```tsx
+  // From:
+  export const withInlineVoid: ExtendEditor = ({ editor }) => {
+    const { isInline, isSelectable, isVoid, markableVoid } = editor;
+
+    const voidTypes: string[] = [];
+    const inlineTypes: string[] = [];
+
+    editor.pluginList.forEach((plugin) => {
+      if (plugin.node.isInline) {
+        inlineTypes.push(plugin.node.type);
+      }
+      if (plugin.node.isVoid) {
+        voidTypes.push(plugin.node.type);
+      }
+    });
+
+    editor.isInline = (element) => {
+      return inlineTypes.includes(element.type as any)
+        ? true
+        : isInline(element);
+    };
+
+    editor.isVoid = (element) => {
+      return voidTypes.includes(element.type as any) ? true : isVoid(element);
+    };
+
+    return editor;
+  };
+
+  export const InlineVoidPlugin = createSlatePlugin({
+    key: 'inlineVoid',
+    extendEditor: withInlineVoid,
+  });
+
+  // After (using overrideEditor since we're only overriding existing methods):
+  export const withInlineVoid: OverrideEditor = ({
+    api: { isInline, isSelectable, isVoid, markableVoid },
+    editor,
+  }) => {
+    const voidTypes: string[] = [];
+    const inlineTypes: string[] = [];
+
+    editor.pluginList.forEach((plugin) => {
+      if (plugin.node.isInline) {
+        inlineTypes.push(plugin.node.type);
+      }
+      if (plugin.node.isVoid) {
+        voidTypes.push(plugin.node.type);
+      }
+    });
+
+    return {
+      api: {
+        isInline(element) {
+          return inlineTypes.includes(element.type as any)
+            ? true
+            : isInline(element);
+        },
+        isVoid(element) {
+          return voidTypes.includes(element.type as any)
+            ? true
+            : isVoid(element);
+        },
+      },
+    };
+  };
+
+  export const InlineVoidPlugin = createSlatePlugin({
+    key: 'inlineVoid',
+  }).overrideEditor(withInlineVoid);
+  ```
+
+  - Move `editor.redecorate` to `editor.api.redecorate`
+
+  Types:
+
+  - Rename `TRenderElementProps` to `RenderElementProps`
+  - Rename `TRenderLeafProps` to `RenderLeafProps`
+  - Rename `TEditableProps` to `EditableProps`
+
+## @udecode/plate@42.0.0
+
+### Major Changes
+
+- [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) – **This package is now the new common package**, so all plugin packages are being removed. **Migration**:
+
+  - Add the following dependencies:
+
+  ```json
+  "@udecode/plate-alignment": "42.0.0",
+  "@udecode/plate-autoformat": "42.0.0",
+  "@udecode/plate-basic-elements": "42.0.0",
+  "@udecode/plate-basic-marks": "42.0.0",
+  "@udecode/plate-block-quote": "42.0.0",
+  "@udecode/plate-break": "42.0.0",
+  "@udecode/plate-code-block": "42.0.0",
+  "@udecode/plate-combobox": "42.0.0",
+  "@udecode/plate-comments": "42.0.0",
+  "@udecode/plate-csv": "42.0.0",
+  "@udecode/plate-diff": "42.0.0",
+  "@udecode/plate-docx": "42.0.0",
+  "@udecode/plate-find-replace": "42.0.0",
+  "@udecode/plate-floating": "42.0.0",
+  "@udecode/plate-font": "42.0.0",
+  "@udecode/plate-heading": "42.0.0",
+  "@udecode/plate-highlight": "42.0.0",
+  "@udecode/plate-horizontal-rule": "42.0.0",
+  "@udecode/plate-indent": "42.0.0",
+  "@udecode/plate-indent-list": "42.0.0",
+  "@udecode/plate-kbd": "42.0.0",
+  "@udecode/plate-layout": "42.0.0",
+  "@udecode/plate-line-height": "42.0.0",
+  "@udecode/plate-link": "42.0.0",
+  "@udecode/plate-list": "42.0.0",
+  "@udecode/plate-markdown": "42.0.0",
+  "@udecode/plate-media": "42.0.0",
+  "@udecode/plate-mention": "42.0.0",
+  "@udecode/plate-node-id": "42.0.0",
+  "@udecode/plate-normalizers": "42.0.0",
+  "@udecode/plate-reset-node": "42.0.0",
+  "@udecode/plate-resizable": "42.0.0",
+  "@udecode/plate-select": "42.0.0",
+  "@udecode/plate-selection": "42.0.0",
+  "@udecode/plate-slash-command": "42.0.0",
+  "@udecode/plate-suggestion": "42.0.0",
+  "@udecode/plate-tabbable": "42.0.0",
+  "@udecode/plate-table": "42.0.0",
+  "@udecode/plate-toggle": "42.0.0",
+  "@udecode/plate-trailing-block": "42.0.0"
+  ```
+
+  - Either replace all `@udecode/plate` imports with the individual package imports, or export the following in a new file (e.g. `src/plate.ts`):
+
+  ```ts
+  export * from '@udecode/plate-alignment';
+  export * from '@udecode/plate-autoformat';
+  export * from '@udecode/plate-basic-elements';
+  export * from '@udecode/plate-basic-marks';
+  export * from '@udecode/plate-block-quote';
+  export * from '@udecode/plate-break';
+  export * from '@udecode/plate-code-block';
+  export * from '@udecode/plate-combobox';
+  export * from '@udecode/plate-comments';
+  export * from '@udecode/plate-diff';
+  export * from '@udecode/plate-find-replace';
+  export * from '@udecode/plate-font';
+  export * from '@udecode/plate-heading';
+  export * from '@udecode/plate-highlight';
+  export * from '@udecode/plate-horizontal-rule';
+  export * from '@udecode/plate-indent';
+  export * from '@udecode/plate-indent-list';
+  export * from '@udecode/plate-kbd';
+  export * from '@udecode/plate-layout';
+  export * from '@udecode/plate-line-height';
+  export * from '@udecode/plate-link';
+  export * from '@udecode/plate-list';
+  export * from '@udecode/plate-media';
+  export * from '@udecode/plate-mention';
+  export * from '@udecode/plate-node-id';
+  export * from '@udecode/plate-normalizers';
+  export * from '@udecode/plate-reset-node';
+  export * from '@udecode/plate-select';
+  export * from '@udecode/plate-csv';
+  export * from '@udecode/plate-docx';
+  export * from '@udecode/plate-markdown';
+  export * from '@udecode/plate-slash-command';
+  export * from '@udecode/plate-suggestion';
+  export * from '@udecode/plate-tabbable';
+  export * from '@udecode/plate-table';
+  export * from '@udecode/plate-toggle';
+  export * from '@udecode/plate-trailing-block';
+  export * from '@udecode/plate-alignment/react';
+  export * from '@udecode/plate-autoformat/react';
+  export * from '@udecode/plate-basic-elements/react';
+  export * from '@udecode/plate-basic-marks/react';
+  export * from '@udecode/plate-block-quote/react';
+  export * from '@udecode/plate-break/react';
+  export * from '@udecode/plate-code-block/react';
+  export * from '@udecode/plate-combobox/react';
+  export * from '@udecode/plate-comments/react';
+  export * from '@udecode/plate-floating';
+  export * from '@udecode/plate-font/react';
+  export * from '@udecode/plate-heading/react';
+  export * from '@udecode/plate-highlight/react';
+  export * from '@udecode/plate-layout/react';
+  export * from '@udecode/plate-slash-command/react';
+  export * from '@udecode/plate-indent/react';
+  export * from '@udecode/plate-indent-list/react';
+  export * from '@udecode/plate-kbd/react';
+  export * from '@udecode/plate-line-height/react';
+  export * from '@udecode/plate-link/react';
+  export * from '@udecode/plate-list/react';
+  export * from '@udecode/plate-media/react';
+  export * from '@udecode/plate-reset-node/react';
+  export * from '@udecode/plate-selection';
+  export * from '@udecode/plate-suggestion/react';
+  export * from '@udecode/plate-tabbable/react';
+  export * from '@udecode/plate-table/react';
+  export * from '@udecode/plate-toggle/react';
+  export * from '@udecode/plate-resizable';
+  ```
+
+  - Replace all `'@udecode/plate'` and `'@udecode/plate/react'` with `'@/plate'` in your codebase.
+
+## @udecode/plate-utils@42.0.0
+
+### Major Changes
+
+- [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) –
+  - Removed unused `moveSelectionByOffset`, `getLastBlockDOMNode`, `useLastBlock`, `useLastBlockDOMNode`
+
+## @udecode/plate-selection@42.0.0
+
+### Major Changes
+
+- [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) – Remove first parameter of editor.api.blockSelection.duplicate
+
+## @udecode/slate@42.0.0
+
+### Major Changes
+
+- [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Remove `slate`, `slate-dom`, `slate-react`, `slate-history` and `slate-hyperscript` from your dependencies. It's now part of this package and `@udecode/plate`. All exports remain the same or have equivalents (see below).
+  - Renamed `createTEditor` to `createEditor`.
+  - `createEditor` now returns an editor (`Editor`) with all queries under `editor.api` and transforms under `editor.tf`. You can see or override them at a glance. For example, we now use `editor.tf.setNodes` instead of importing `setNodes`. This marks the completion of generic typing and the removal of error throws from `slate`, `slate-dom`, and `slate-history` queries/transforms, without forking implementations. We’ve also reduced the number of queries/transforms by merging a bunch of them.
+
+  The following interfaces from `slate` and `slate-dom` are now part of `Editor`:
+
+  - `Editor`, `EditorInterface`
+
+  - `Transforms`
+
+  - `HistoryEditor` (noop, unchanged), `HistoryEditorInterface`
+
+  - `DOMEditor` (noop, unchanged), `DOMEditorInterface`
+
+  - `editor.findPath` now returns `DOMEditor.findPath` (memo) and falls back to `findNodePath` (traversal, less performant) if not found.
+
+  - Removed the first parameter (`editor`) from:
+
+    - `editor.hasEditableTarget`
+    - `editor.hasSelectableTarget`
+    - `editor.isTargetInsideNonReadonlyVoid`
+    - `editor.hasRange`
+    - `editor.hasTarget`
+
+  - `editor.api.node(options)` (previously `findNode`) `at` option is now `at ?? editor.selection` instead of `at ?? editor.selection ?? []`. That means if you want to lookup the entire document, you need to pass `[]` explicitly.
+
+  - Removed `setNode` in favor of `setNodes` (you can now pass a `TNode` to `at` directly).
+
+  - Removed `setElements` in favor of `setNodes`.
+
+  - Removed unused `isWordAfterTrigger`, `setBlockAboveNode`, `setBlockAboveTexts`, `setBlockNodes`, `getPointNextToVoid`.
+
+  - Replaced `Path` from slate with `Path` (type) and `PathApi` (static methods).
+
+  - Replaced `Operation` from slate with `Operation` (type) and `OperationApi` (static methods).
+
+  - Replaced `Point` from slate with `Point` (type) and `PointApi` (static methods).
+
+  - Replaced `Text` from slate with `TText` (type) and `TextApi` (static methods). We also export `Text` type like `slate` but we don't recommend it as it's conflicting with the DOM type.
+
+  - Replaced `Range` from slate with `TRange` (type) and `RangeApi` (static methods). We also export `Range` type like `slate` but we don't recommend it as it's conflicting with the DOM type.
+
+  - Replaced `Location` from slate with `TLocation` (type) and `LocationApi` (static methods). We also export `Location` type like `slate` but we don't recommend it as it's conflicting with the DOM type.
+
+  - Replaced `Span` from slate with `Span` (type) and `SpanApi` (static methods).
+
+  - Replaced `Node` from slate with `TNode` (type) and `NodeApi` (static methods). We also export `Node` type like `slate` but we don't recommend it as it's conflicting with the DOM type.
+
+  - Replaced `Element` from slate with `TElement` (type) and `ElementApi` (static methods). We also export `Element` type like `slate` but we don't recommend it as it's conflicting with the DOM type.
+
+  - Signature change:
+
+    - `editor.tf.toggle.block({ type, ...options })` -> `editor.tf.toggleBlock(type, options)`
+    - `editor.tf.toggle.mark({ key, clear })` -> `editor.tf.toggleMark(key, { remove: clear })`
+
+  - Moved editor functions:
+
+    - `addMark` -> `editor.tf.addMark`
+    - `addRangeMarks` -> `editor.tf.setNodes(props, { at, marks: true })`
+    - `blurEditor` -> `editor.tf.blur`
+    - `collapseSelection` -> `editor.tf.collapse`
+    - `createDocumentNode` -> `editor.api.create.value` (core)
+    - `createNode` -> `editor.api.create.block`
+    - `createPathRef` -> `editor.api.pathRef`
+    - `createPointRef` -> `editor.api.pointRef`
+    - `createRangeRef` -> `editor.api.rangeRef`
+    - `deleteBackward({ unit })` -> `editor.tf.deleteBackward(unit)`
+    - `deleteForward({ unit })` -> `editor.tf.deleteForward(unit)`
+    - `deleteFragment` -> `editor.tf.deleteFragment`
+    - `deleteText` -> `editor.tf.delete`
+    - `deselect` -> `editor.tf.deselect`
+    - `deselectEditor` -> `editor.tf.deselectDOM`
+    - `duplicateBlocks` -> `editor.tf.duplicateNodes({ nodes })`
+    - `findDescendant` -> `editor.api.descendant`
+    - `findEditorDocumentOrShadowRoot` -> `editor.api.findDocumentOrShadowRoot`
+    - `findEventRange` -> `editor.api.findEventRange`
+    - `findNode(options)` -> `editor.api.node(options)`
+    - `findNodeKey` -> `editor.api.findKey`
+    - `findNodePath` -> `editor.api.findPath`
+    - `findPath` -> `editor.api.findPath`
+    - `focusEditor` -> `editor.tf.focus({ at })`
+    - `focusEditorEdge` -> `editor.tf.focus({ at, edge: 'startEditor' | 'endEditor' })`
+    - `getAboveNode` -> `editor.api.above`
+    - `getAncestorNode` -> `editor.api.block({ highest: true })`
+    - `getBlockAbove` -> `editor.api.block({ at, above: true })` or `editor.api.block()` if `at` is not a path
+    - `getBlocks` -> `editor.api.blocks`
+    - `getEdgeBlocksAbove` -> `editor.api.edgeBlocks`
+    - `getEdgePoints` -> `editor.api.edges`
+    - `getEditorString` -> `editor.api.string`
+    - `getEditorWindow` -> `editor.api.getWindow`
+    - `getEndPoint` -> `editor.api.end`
+    - `getFirstNode` -> `editor.api.first`
+    - `getFragment` -> `editor.api.fragment`
+    - `getFragmentProp(fragment, options)` -> `editor.api.prop({ nodes, ...options})`
+    - `getLastNode` -> `editor.api.last`
+    - `getLastNodeByLevel(level)` -> `editor.api.last([], { level })`
+    - `getLeafNode` -> `editor.api.leaf`
+    - `getLevels` -> `editor.api.levels`
+    - `getMark` -> `editor.api.mark`
+    - `getMarks` -> `editor.api.marks`
+    - `getNextNode` -> `editor.api.next`
+    - `getNextNodeStartPoint` -> `editor.api.start(at, { next: true })`
+    - `getNodeEntries` -> `editor.api.nodes`
+    - `getNodeEntry` -> `editor.api.node(at, options)`
+    - `getNodesRange` -> `editor.api.nodesRange`
+    - `getParentNode` -> `editor.api.parent`
+    - `getPath` -> `editor.api.path`
+    - `getPathRefs` -> `editor.api.pathRefs`
+    - `getPoint` -> `editor.api.point`
+    - `getPointAfter` -> `editor.api.after`
+    - `getPointBefore` -> `editor.api.before`
+    - `getPointBeforeLocation` -> `editor.api.before`
+    - `getPointRefs` -> `editor.api.pointRefs`
+    - `getPositions` -> `editor.api.positions`
+    - `getPreviousBlockById` -> `editor.api.previous({ id, block: true })`
+    - `getPreviousNode` -> `editor.api.previous`
+    - `getPreviousNodeEndPoint` -> `editor.api.end({ previous: true })`
+    - `getPreviousSiblingNode` -> `editor.api.previous({ at, sibling: true })`
+    - `getRange` -> `editor.api.range`
+    - `getRangeBefore` -> `editor.api.range('before', to, { before })`
+    - `getRangeFromBlockStart` -> `editor.api.range('start', to)`
+    - `getRangeRefs` -> `editor.api.rangeRefs`
+    - `getSelectionFragment` -> `editor.api.fragment(editor.selection, { structuralTypes })`
+    - `getSelectionText` -> `editor.api.string()`
+    - `getStartPoint` -> `editor.api.start`
+    - `getVoidNode` -> `editor.api.void`
+    - `hasBlocks` -> `editor.api.hasBlocks`
+    - `hasEditorDOMNode` -> `editor.api.hasDOMNode`
+    - `hasEditorEditableTarget` -> `editor.api.hasEditableTarget`
+    - `hasEditorSelectableTarget` -> `editor.api.hasSelectableTarget`
+    - `hasEditorTarget` -> `editor.api.hasTarget`
+    - `hasInlines` -> `editor.api.hasInlines`
+    - `hasTexts` -> `editor.api.hasTexts`
+    - `insertBreak` -> `editor.tf.insertBreak`
+    - `insertData` -> `editor.tf.insertData`
+    - `insertElements` -> `editor.tf.insertNodes<TElement>`
+    - `insertEmptyElement` -> `editor.tf.insertNodes(editor.api.create.block({ type }))`
+    - `insertFragment` -> `editor.tf.insertFragment`
+    - `insertNode` -> `editor.tf.insertNode`
+    - `insertNodes` -> `editor.tf.insertNodes`
+    - `insertText` -> `editor.tf.insertText`
+    - `isAncestorEmpty` -> `editor.api.isEmpty`
+    - `isBlock` -> `editor.api.isBlock`
+    - `isBlockAboveEmpty` -> `editor.api.isEmpty(editor.selection, { block: true })`
+    - `isBlockTextEmptyAfterSelection` -> `editor.api.isEmpty(editor.selection, { after: true })`
+    - `isCollapsed(editor.selection)` -> `editor.api.isCollapsed()`
+    - `isComposing` -> `editor.api.isComposing`
+    - `isDocumentEnd` -> `editor.api.isEditorEnd`
+    - `isEdgePoint` -> `editor.api.isEdge`
+    - `isEditor` -> `editor.api.isEditor`
+    - `isEditorEmpty` -> `editor.api.isEmpty()`
+    - `isEditorFocused` -> `editor.api.isFocused`
+    - `isEditorNormalizing` -> `editor.api.isNormalizing`
+    - `isEditorReadOnly` -> `editor.api.isReadOnly`
+    - `isElementEmpty` -> `editor.api.isEmpty`
+    - `isElementReadOnly` -> `editor.api.elementReadOnly`
+    - `isEndPoint` -> `editor.api.isEnd`
+    - `isExpanded(editor.selection)` -> `editor.api.isCollapsed()`
+    - `isInline` -> `editor.api.isInline`
+    - `isMarkableVoid` -> `editor.api.markableVoid`
+    - `isMarkActive` -> `editor.api.hasMark(key)`
+    - `isPointAtWordEnd` -> `editor.api.isAt({ at, word: true, end: true })`
+    - `isRangeAcrossBlocks` -> `editor.api.isAt({ at, blocks: true })`
+    - `isRangeInSameBlock` -> `editor.api.isAt({ at, block: true })`
+    - `isRangeInSingleText` -> `editor.api.isAt({ at, text: true })`
+    - `isSelectionAtBlockEnd` -> `editor.api.isAt({ end: true })`
+    - `isSelectionAtBlockStart` -> `editor.api.isAt({ start: true })`
+    - `isSelectionCoverBlock` -> `editor.api.isAt({ block: true, start: true, end: true })`
+    - `isSelectionExpanded` -> `editor.api.isExpanded()`
+    - `isStartPoint` -> `editor.api.isStart`
+    - `isTargetinsideNonReadonlyVoidEditor` -> `editor.api.isTargetInsideNonReadonlyVoid`
+    - `isTextByPath` -> `editor.api.isText(at)`
+    - `isVoid` -> `editor.api.isVoid`
+    - `liftNodes` -> `editor.tf.liftNodes`
+    - `mergeNodes` -> `editor.tf.mergeNodes`
+    - `moveChildren` -> `editor.tf.moveNodes({ at, to, children: true, fromIndex, match: (node, path) => boolean })`
+    - `moveNodes` -> `editor.tf.moveNodes`
+    - `moveSelection` -> `editor.tf.move`
+    - `normalizeEditor` -> `editor.tf.normalize`
+    - `removeEditorMark` -> `editor.tf.removeMark`
+    - `removeEditorText` -> `editor.tf.removeNodes({ text: true, empty: false })`
+    - `removeEmptyPreviousBlock` -> `editor.tf.removeNodes({ previousEmptyBlock: true })`
+    - `removeMark(options)` -> `editor.tf.removeMarks(keys, options)`
+    - `removeNodeChildren` -> `editor.tf.removeNodes({ at, children: true })`
+    - `removeNodes` -> `editor.tf.removeNodes`
+    - `removeSelectionMark` -> `editor.tf.removeMarks()`
+    - `replaceNode(editor, { nodes, insertOptions, removeOptions })` -> `editor.tf.replaceNodes(nodes, { removeNodes, ...insertOptions })`
+    - `select` -> `editor.tf.select`
+    - `selectEndOfBlockAboveSelection` -> `editor.tf.select(editor.selection, { edge: 'end' })`
+    - `selectNodes` -> `editor.tf.select(editor.api.nodesRange(nodes))`
+    - `setFragmentData` -> `editor.tf.setFragmentData`
+    - `setMarks(marks, clear)` -> `editor.tf.addMarks(marks, { remove: string | string[] })`
+    - `setNodes` -> `editor.tf.setNodes`
+    - `setPoint` -> `editor.tf.setPoint`
+    - `setSelection` -> `editor.tf.setSelection`
+    - `someNode` -> `editor.api.some(options)`
+    - `splitNodes` -> `editor.tf.splitNodes`
+    - `toDOMNode` -> `editor.api.toDOMNode`
+    - `toDOMPoint` -> `editor.api.toDOMPoint`
+    - `toDOMRange` -> `editor.api.toDOMRange`
+    - `toggleWrapNodes` -> `editor.tf.toggleBlock(type, { wrap: true })`
+    - `toSlateNode` -> `editor.api.toSlateNode`
+    - `toSlatePoint` -> `editor.api.toSlatePoint`
+    - `toSlateRange` -> `editor.api.toSlateRange`
+    - `unhangCharacterRange` -> `editor.api.unhangRange(range, { character: true })`
+    - `unhangRange` -> `editor.api.unhangRange`
+    - `unsetNodes` -> `editor.tf.unsetNodes`
+    - `unwrapNodes` -> `editor.tf.unwrapNodes`
+    - `withoutNormalizing` -> `editor.tf.withoutNormalizing`
+    - `wrapNodeChildren` -> `editor.tf.wrapNodes(element, { children: true })`
+    - `wrapNodes` -> `editor.tf.wrapNodes`
+    - `replaceNodeChildren` -> `editor.tf.replaceNodes({ at, children: true })`
+    - `resetEditor` -> `editor.tf.reset`
+    - `resetEditorChildren` -> `editor.tf.reset({ children: true })`
+    - `selectEditor` -> `editor.tf.select([], { focus, edge })`
+    - `selectSiblingNodePoint` -> `editor.tf.select(at, { next, previous })`
+
+  - Moved to `NodeApi.`:
+
+    - `getNextSiblingNodes(parentEntry, path)` -> `NodeApi.children(editor, path, { from: path.at(-1) + 1 })`
+    - `getFirstNodeText` -> `NodeApi.firstText`
+    - `getFirstChild([node, path])` -> `NodeApi.firstChild(editor, path)`
+    - `getLastChild([node, path])` -> `NodeApi.lastChild(editor, path)`
+    - `getLastChildPath([node, path])` -> `NodeApi.lastChild(editor, path)`
+    - `isLastChild([node, path], childPath)` -> `NodeApi.isLastChild(editor, childPath)`
+    - `getChildren([node, path])` -> `Array.from(NodeApi.children(editor, path))`
+    - `getCommonNode` -> `NodeApi.common`
+    - `getNode` -> `NodeApi.get`
+    - `getNodeAncestor` -> `NodeApi.ancestor`
+    - `getNodeAncestors` -> `NodeApi.ancestors`
+    - `getNodeChild` -> `NodeApi.child`
+    - `getNodeChildren` -> `NodeApi.children`
+    - `getNodeDescendant` -> `NodeApi.descendant`
+    - `getNodeDescendants` -> `NodeApi.descendants`
+    - `getNodeElements` -> `NodeApi.elements`
+    - `getNodeFirstNode` -> `NodeApi.first`
+    - `getNodeFragment` -> `NodeApi.fragment`
+    - `getNodeLastNode` -> `NodeApi.last`
+    - `getNodeLeaf` -> `NodeApi.leaf`
+    - `getNodeLevels` -> `NodeApi.levels`
+    - `getNodeParent` -> `NodeApi.parent`
+    - `getNodeProps` -> `NodeApi.extractProps`
+    - `getNodes` -> `NodeApi.nodes`
+    - `getNodeString` -> `NodeApi.string`
+    - `getNodeTexts` -> `NodeApi.texts`
+    - `hasNode` -> `NodeApi.has`
+    - `hasSingleChild` -> `NodeApi.hasSingleChild`
+    - `isAncestor` -> `NodeApi.isAncestor`
+    - `isDescendant` -> `NodeApi.isDescendant`
+    - `isNode` -> `NodeApi.isNode`
+    - `isNodeList` -> `NodeApi.isNodeList`
+    - `nodeMatches` -> `NodeApi.matches`
+
+  - Moved to `ElementApi.`:
+
+    - `elementMatches` -> `ElementApi.matches`
+    - `isElement` -> `ElementApi.isElement`
+    - `isElementList` -> `ElementApi.isElementList`
+
+  - Moved to `TextApi.`:
+
+    - `isText` -> `TextApi.isText(at)`
+
+  - Moved to `RangeApi.`:
+
+    - `isCollapsed` -> `RangeApi.isCollapsed`
+    - `isExpanded` -> `RangeApi.isExpanded`
+
+  - Moved to `PathApi.`:
+
+    - `isFirstChild` -> `!PathApi.hasPrevious`
+    - `getPreviousPath` -> `PathApi.previous`
+
+  - Moved to `PointApi.`:
+
+    - `getPointFromLocation({ at, focus })` -> `PointApi.get(at, { focus })`
+
+  - Moved from `@udecode/plate/react` to `@udecode/plate`:
+
+    - `Hotkeys`
+
+  - Upgraded to `zustand@5` and `zustand-x@5`:
+    - Replace `createZustandStore('name')(initialState)` with `createZustandStore(initialState, { mutative: true, name: 'name' })`
+    - All plugin stores now use [zustand-mutative](https://github.com/mutativejs/zustand-mutative) for immutable state updates, which is faster than `immer`.
+
+  Types:
+
+  - Rename the following types:
+    - `TEditor` -> `Editor`
+    - `TOperation` -> `Operation`
+    - `TPath` -> `Path`
+    - `TNodeProps` -> `NodeProps`
+    - `TNodeChildEntry` -> `NodeChildEntry`
+    - `TNodeEntry` -> `NodeEntry`
+    - `TDescendant` -> `Descendant`
+    - `TDescendantEntry` -> `DescendantEntry`
+    - `TAncestor` -> `Ancestor`
+    - `TAncestorEntry` -> `AncestorEntry`
+    - `TElementEntry` -> `ElementEntry`
+    - `TTextEntry` -> `TextEntry`
+  - Query/transform options now use generic `V extends Value` instead of `E extends Editor`.
+  - `getEndPoint`, `getEdgePoints`, `getFirstNode`, `getFragment`, `getLastNode`, `getLeafNode`, `getPath`, `getPoint`, `getStartPoint` can return `undefined` if not found (suppressing error throws).
+  - `NodeApi.ancestor`, `NodeApi.child`, `NodeApi.common`, `NodeApi.descendant`, `NodeApi.first`, `NodeApi.get`, `NodeApi.last`, `NodeApi.leaf`, `NodeApi.parent`, `NodeApi.getIf`, `PathApi.previous` return `undefined` if not found instead of throwing
+  - Replace `NodeOf` type with `DescendantOf` in `editor.tf.setNodes` `editor.tf.unsetNodes`, `editor.api.previous`, `editor.api.node`, `editor.api.nodes`, `editor.api.last`
+  - Enhanced `editor.tf.setNodes`:
+    - Added `marks` option to handle mark-specific operations
+    - When `marks: true`:
+      - Only applies to text nodes in non-void nodes or markable void nodes
+      - Automatically sets `split: true` and `voids: true`
+      - Handles both expanded ranges and collapsed selections in markable voids
+    - Replaces `addRangeMarks` functionality
+
+## @udecode/slate-utils@42.0.0
+
+### Major Changes
+
+- [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) – This package is now deprecated. Use `@udecode/slate` or `@udecode/plate` instead.
+
+## @udecode/slate-react@42.0.0
+
+### Major Changes
+
+- [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) – This package is now deprecated. Use `@udecode/slate` or `@udecode/plate` instead.
+
+## @udecode/plate-table@42.0.0
+
+### Major Changes
+
+- [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) – **Major performance improvement**: all table cells were re-rendering when a single cell changed. This is now fixed.
+
+  - `TablePlugin` now depends on `NodeIdPlugin`.
+  - Table merging is now enabled by default:
+    - Renamed `enableMerging` to `disableMerge`.
+    - **Migration**:
+      - `enableMerging: true` → remove the option.
+      - otherwise → `TablePlugin.configure({ options: { disableMerge: true } })`
+  - Renamed `unmergeTableCells` to `splitTableCell`.
+  - Renamed `editor.api.create.cell` to `editor.api.create.tableCell`.
+  - In `useTableMergeState`, renamed `canUnmerge` to `canSplit`.
+  - `insertTableRow` and `insertTableColumn`: removed `disableSelect` in favor of `select`. **Migration**: replace it with the opposite boolean.
+  - `getTableCellBorders`: params `(element, options)` → `(editor, options)`; removed `isFirstCell` and `isFirstRow`.
+  - Merged `useTableCellElementState` into `useTableCellElement`:
+    - Removed its parameter.
+    - Removed `hovered` and `hoveredLeft` returns (use CSS instead).
+    - Renamed `rowSize` to `minHeight`.
+    - Computes column sizes and returns `width`.
+  - Merged `useTableCellElementResizableState` into `useTableCellElementResizable`:
+    - Removed `onHover` and `onHoverEnd` props (use CSS instead).
+  - Merged `useTableElementState` into `useTableElement`:
+    - Removed its parameter.
+    - No longer computes and returns `colSizes`, `minColumnWidth`, and `colGroupProps`.
+
 # 41.0.2
 
 ## @udecode/slate-react@41.0.0

@@ -1,5 +1,5 @@
 import type { ElementHandle, Page } from '@playwright/test';
-import type { Path } from 'slate';
+import type { Path } from '@udecode/plate';
 
 import type { EditorHandle } from './types';
 
@@ -16,8 +16,8 @@ export const getDOMNodeByPath = async (
   const adapterHandle = await getAdapter(page);
 
   return page.evaluateHandle(
-    ([adapter, editor, node]) => {
-      const domNode = adapter.toDOMNode(editor, node);
+    ([, editor, node]) => {
+      const domNode = editor.api.toDOMNode(node);
 
       if (!domNode)
         throw new Error(`getDOMNodeByPath: DOM node not found at path ${path}`);

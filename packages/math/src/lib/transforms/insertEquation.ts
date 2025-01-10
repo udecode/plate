@@ -1,20 +1,15 @@
-import {
-  type InsertNodesOptions,
-  type SlateEditor,
-  insertNodes,
-} from '@udecode/plate-common';
+import type { InsertNodesOptions, SlateEditor } from '@udecode/plate';
 
 import {
   type TEquationElement,
   BaseEquationPlugin,
 } from '../BaseEquationPlugin';
 
-export const insertEquation = <E extends SlateEditor>(
-  editor: E,
-  options?: InsertNodesOptions<E>
+export const insertEquation = (
+  editor: SlateEditor,
+  options?: InsertNodesOptions
 ) => {
-  insertNodes<TEquationElement>(
-    editor,
+  editor.tf.insertNodes<TEquationElement>(
     {
       children: [{ text: '' }],
       texExpression: '',

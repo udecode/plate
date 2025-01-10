@@ -1,0 +1,474 @@
+---
+title: Path
+description: API reference for paths in Slate.
+---
+
+`Path` arrays are a list of indexes that describe a node's exact position in a Slate node tree. Although they are usually relative to the root `Editor` object, they can be relative to any `Node` object.
+
+## Path
+
+Find the corresponding documentation in the [Slate docs](https://docs.slatejs.org/api/locations/path).
+
+### `operationCanTransformPath`
+
+Returns whether an operation can affect paths or not. Used as an optimization when updating dirty paths during normalization.
+
+<APIParameters>
+  <APIItem name="operation" type="Operation<N>">
+    The operation to check.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns `true` if the operation can transform paths (insert, merge, move, remove, or split operations).
+</APIReturns>
+
+### `transform`
+
+Transforms a path by an operation.
+
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The path to transform.
+  </APIItem>
+  <APIItem name="operation" type="Operation">
+    The operation to apply.
+  </APIItem>
+  <APIItem name="options" type="PathTransformOptions" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="affinity" type="TextDirection | null" optional>
+        The affinity of the transform.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns the transformed path, or `null` if the path was deleted.
+</APIReturns>
+
+### `ancestors`
+
+Gets a list of ancestor paths for a given path.
+
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The path to get ancestors for.
+  </APIItem>
+  <APIItem name="options" type="PathAncestorsOptions" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="reverse" type="boolean" optional>
+        If true, the paths are returned in reverse order (deepest to shallowest).
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns an array of paths sorted from shallowest to deepest ancestor (unless reversed).
+</APIReturns>
+
+### `child`
+
+Gets a path to a child at the given index.
+
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The parent path.
+  </APIItem>
+  <APIItem name="index" type="number">
+    The child index.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns the path to the child node.
+</APIReturns>
+
+### `common`
+
+Gets the common ancestor path of two paths.
+
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The first path.
+  </APIItem>
+  <APIItem name="another" type="Path">
+    The second path.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns the common ancestor path.
+</APIReturns>
+
+### `compare`
+
+Compares a path to another, returning an integer indicating whether the path was before, at, or after the other.
+
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The first path to compare.
+  </APIItem>
+  <APIItem name="another" type="Path">
+    The second path to compare.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns:
+  - `-1` if the first path is before the second
+  - `0` if the paths are at the same location
+  - `1` if the first path is after the second
+
+Note: Two paths of unequal length can still receive a `0` result if one is directly above or below the other. For exact matching, use `equals` instead.
+</APIReturns>
+
+### `endsAfter`
+
+Checks if a path ends after one of the indexes in another.
+
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The path to check.
+  </APIItem>
+  <APIItem name="another" type="Path">
+    The path to compare against.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns `true` if the path ends after the other path.
+</APIReturns>
+
+### `endsAt`
+
+Checks if a path ends at one of the indexes in another.
+
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The path to check.
+  </APIItem>
+  <APIItem name="another" type="Path">
+    The path to compare against.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns `true` if the path ends at the same index as the other path.
+</APIReturns>
+
+### `endsBefore`
+
+Checks if a path ends before one of the indexes in another.
+
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The path to check.
+  </APIItem>
+  <APIItem name="another" type="Path">
+    The path to compare against.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns `true` if the path ends before the other path.
+</APIReturns>
+
+### `equals`
+
+Checks if a path is exactly equal to another.
+
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The first path.
+  </APIItem>
+  <APIItem name="another" type="Path">
+    The second path.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns `true` if the paths are exactly equal.
+</APIReturns>
+
+### `firstChild`
+
+Gets a path to the first child of a path.
+
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The parent path.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns the path to the first child node.
+</APIReturns>
+
+### `hasPrevious`
+
+Checks if the path of previous sibling node exists.
+
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The path to check.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns `true` if a previous sibling exists.
+</APIReturns>
+
+### `isAfter`
+
+Checks if a path is after another.
+
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The path to check.
+  </APIItem>
+  <APIItem name="another" type="Path">
+    The path to compare against.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns `true` if the first path is after the second.
+</APIReturns>
+
+### `isAncestor`
+
+Checks if a path is an ancestor of another.
+
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The potential ancestor path.
+  </APIItem>
+  <APIItem name="another" type="Path">
+    The potential descendant path.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns `true` if the path is an ancestor of the other path.
+</APIReturns>
+
+### `isBefore`
+
+Checks if a path is before another.
+
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The path to check.
+  </APIItem>
+  <APIItem name="another" type="Path">
+    The path to compare against.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns `true` if the first path is before the second.
+</APIReturns>
+
+### `isChild`
+
+Checks if a path is a child of another.
+
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The potential child path.
+  </APIItem>
+  <APIItem name="another" type="Path">
+    The potential parent path.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns `true` if the path is a child of the other path.
+</APIReturns>
+
+### `isCommon`
+
+Checks if a path is equal to or an ancestor of another.
+
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The path to check.
+  </APIItem>
+  <APIItem name="another" type="Path">
+    The path to compare against.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns `true` if the path is equal to or an ancestor of the other path.
+</APIReturns>
+
+### `isDescendant`
+
+Checks if a path is a descendant of another.
+
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The potential descendant path.
+  </APIItem>
+  <APIItem name="another" type="Path">
+    The potential ancestor path.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns `true` if the path is a descendant of the other path.
+</APIReturns>
+
+### `isParent`
+
+Checks if a path is the parent of another.
+
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The potential parent path.
+  </APIItem>
+  <APIItem name="another" type="Path">
+    The potential child path.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns `true` if the path is the parent of the other path.
+</APIReturns>
+
+### `isPath`
+
+Checks if a value implements the `Path` interface.
+
+<APIParameters>
+  <APIItem name="value" type="any">
+    The value to check.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns `true` if the value is a path.
+</APIReturns>
+
+### `isSibling`
+
+Checks if a path is a sibling of another.
+
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The path to check.
+  </APIItem>
+  <APIItem name="another" type="Path">
+    The path to compare against.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns `true` if the paths are siblings.
+</APIReturns>
+
+### `lastIndex`
+
+Gets the last index of a path.
+
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The path to check.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns the last index, or -1 if the path is empty.
+</APIReturns>
+
+### `levels`
+
+Gets a list of paths at every level down to a path.
+
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The path to get levels for.
+  </APIItem>
+  <APIItem name="options" type="PathLevelsOptions" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="reverse" type="boolean" optional>
+        If true, the paths are returned in reverse order (deepest to shallowest).
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns an array of paths including the path itself and all its ancestors.
+</APIReturns>
+
+### `next`
+
+Gets the path to the next sibling node.
+
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The current path.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns the path to the next sibling.
+</APIReturns>
+
+### `parent`
+
+Gets the path to the parent node.
+
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The current path.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns the path to the parent node.
+</APIReturns>
+
+### `previous`
+
+Gets the path to the previous sibling node.
+
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The current path.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns the path to the previous sibling, or `undefined` if there is none.
+</APIReturns>
+
+### `relative`
+
+Gets a path relative to an ancestor.
+
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The path to make relative.
+  </APIItem>
+  <APIItem name="ancestor" type="Path">
+    The ancestor path.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns the relative path.
+</APIReturns>
+
+## Types
+
+### Path
+
+An array of numbers representing the indexes to traverse to reach a specific node in the document tree.
+
+### PathAncestorsOptions
+
+Options for getting ancestor paths.
+
+<APIAttributes>
+<APIItem name="reverse" type="boolean" optional>
+  If true, the paths are returned in reverse order.
+</APIItem>
+</APIAttributes>
+
+### PathLevelsOptions
+
+Options for getting path levels.
+
+<APIAttributes>
+<APIItem name="reverse" type="boolean" optional>
+  If true, the paths are returned in reverse order.
+</APIItem>
+</APIAttributes>
+
+### PathTransformOptions
+
+Options for transforming paths.
+
+<APIAttributes>
+<APIItem name="affinity" type="TextDirection | null" optional>
+  The affinity of the transform.
+</APIItem>
+</APIAttributes>

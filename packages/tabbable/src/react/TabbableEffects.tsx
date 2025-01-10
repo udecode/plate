@@ -1,14 +1,7 @@
 import React from 'react';
 
-import {
-  findPath,
-  focusEditor,
-  toDOMNode,
-  toSlateNode,
-  useEditorReadOnly,
-  useEditorRef,
-} from '@udecode/plate-common/react';
-import { Path } from 'slate';
+import { PathApi } from '@udecode/plate';
+import { useEditorReadOnly, useEditorRef } from '@udecode/plate/react';
 import { tabbable } from 'tabbable';
 
 import type { TabbableEntry } from '../lib/types';
@@ -26,7 +19,7 @@ export function TabbableEffects() {
     const { globalEventListener, insertTabbableEntries, isTabbable, query } =
       editor.getOptions(BaseTabbablePlugin);
 
-    const editorDOMNode = toDOMNode(editor, editor);
+    const editorDOMNode = editor.api.toDOMNode(editor);
 
     if (!editorDOMNode) return;
 
@@ -69,13 +62,13 @@ export function TabbableEffects() {
        */
       const defaultTabbableEntries = tabbableDOMNodes
         .map((domNode) => {
-          const slateNode = toSlateNode(editor, domNode);
+          const slateNode = editor.api.toSlateNode(domNode);
 
           if (!slateNode) return;
 
           return {
             domNode,
-            path: findPath(editor, slateNode),
+            path: editor.api.findPath(slateNode),
             slateNode,
           } as TabbableEntry;
         })
@@ -88,7 +81,7 @@ export function TabbableEffects() {
       const tabbableEntries = [
         ...insertedTabbableEntries,
         ...defaultTabbableEntries,
-      ].sort((a, b) => Path.compare(a.path, b.path));
+      ].sort((a, b) => PathApi.compare(a.path, b.path));
 
       /**
        * TODO: Refactor everything ABOVE this line into a util function and test
@@ -119,9 +112,11 @@ export function TabbableEffects() {
             break;
           }
           case 'path': {
-            focusEditor(editor, {
-              anchor: { offset: 0, path: tabDestination.path },
-              focus: { offset: 0, path: tabDestination.path },
+            editor.tf.focus({
+              at: {
+                anchor: { offset: 0, path: tabDestination.path },
+                focus: { offset: 0, path: tabDestination.path },
+              },
             });
 
             break;

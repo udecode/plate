@@ -1,0 +1,107 @@
+---
+title: Manual Installation
+description: Add dependencies to your project manually.
+---
+
+<Steps>
+
+### Add Tailwind CSS
+
+Components are styled using Tailwind CSS. You need to install Tailwind CSS in your project.
+
+[Follow the Tailwind CSS installation instructions](https://tailwindcss.com/docs/installation) to get started.
+
+### Add dependencies
+
+Add the following dependencies to your project:
+
+```bash
+npm install @udecode/plate @udecode/cn class-variance-authority tailwindcss-animate tailwind-scrollbar-hide lucide-react
+```
+
+### Configure path aliases
+
+Configure the path aliases in your `tsconfig.json` file.
+
+```json {3-6} title="tsconfig.json"
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
+  }
+}
+```
+
+### Configure tailwind.config.js
+
+<ComponentSource src="../../templates/plate-playground-template/tailwind.config.ts" />
+
+### Configure styles
+
+<ComponentSource src="../../templates/plate-playground-template/src/app/globals.css" />
+
+### Configure components.json
+
+Create a [components.json](/docs/components/components-json) in the root of your project.
+
+```json
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "default",
+  "rsc": true,
+  "tsx": true,
+  "tailwind": {
+    "baseColor": "slate",
+    "config": "tailwind.config.ts",
+    "css": "src/app/globals.css",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "aliases": {
+    "components": "@/components",
+    "hooks": "@/hooks",
+    "lib": "@/lib",
+    "ui": "@/components/ui",
+    "utils": "@/lib/utils"
+  },
+  "iconLibrary": "lucide",
+  "registries": {
+    "plate": {
+      "aliases": {
+        "ui": "@/components/plate-ui"
+      },
+      "url": "https://platejs.org/r"
+    }
+  }
+}
+```
+
+Adjust the values as needed.
+
+### That's it
+
+You can now start adding components to your project:
+
+```bash
+npx shadcx@latest add -r plate
+```
+
+### Add editor (optional)
+
+Choose your editor to get started ([browse available editors](/editors)). 
+
+[Minimal Editor](https://template.platejs.org/editor)
+```bash
+npx shadcx@latest add plate/editor-basic
+```
+
+[AI Editor](https://playground.platejs.org/editor)
+```bash
+npx shadcx@latest add plate/editor-ai
+```
+
+This will add a page in `app/editor` along with all necessary components in `components/plate-ui` as a starting point.
+
+</Steps>

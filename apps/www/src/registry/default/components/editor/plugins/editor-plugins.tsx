@@ -1,7 +1,7 @@
 'use client';
 
+import { ParagraphPlugin } from '@udecode/plate/react';
 import { CalloutPlugin } from '@udecode/plate-callout/react';
-import { ParagraphPlugin } from '@udecode/plate-common/react';
 import { DatePlugin } from '@udecode/plate-date/react';
 import { DocxPlugin } from '@udecode/plate-docx';
 import { EmojiPlugin } from '@udecode/plate-emoji/react';
@@ -16,10 +16,6 @@ import { JuicePlugin } from '@udecode/plate-juice';
 import { KbdPlugin } from '@udecode/plate-kbd/react';
 import { ColumnPlugin } from '@udecode/plate-layout/react';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
-import {
-  EquationPlugin,
-  InlineEquationPlugin,
-} from '@udecode/plate-math/react';
 import { SlashPlugin } from '@udecode/plate-slash-command/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
@@ -36,6 +32,7 @@ import { commentsPlugin } from './comments-plugin';
 import { cursorOverlayPlugin } from './cursor-overlay-plugin';
 import { deletePlugins } from './delete-plugins';
 import { dndPlugins } from './dnd-plugins';
+import { equationPlugins } from './equation-plugins';
 import { exitBreakPlugin } from './exit-break-plugin';
 import { indentListPlugins } from './indent-list-plugins';
 import { lineHeightPlugin } from './line-height-plugin';
@@ -57,8 +54,7 @@ export const viewPlugins = [
   TogglePlugin,
   tocPlugin,
   ...mediaPlugins,
-  InlineEquationPlugin,
-  EquationPlugin,
+  ...equationPlugins,
   CalloutPlugin,
   ColumnPlugin,
 

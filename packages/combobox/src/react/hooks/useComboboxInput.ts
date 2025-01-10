@@ -6,14 +6,8 @@ import {
   useRef,
 } from 'react';
 
-import { Hotkeys, isHotkey, removeNodes } from '@udecode/plate-common';
-import {
-  findPath,
-  focusEditor,
-  useEditorRef,
-  useElement,
-} from '@udecode/plate-common/react';
-import { useSelected } from 'slate-react';
+import { Hotkeys, isHotkey } from '@udecode/plate';
+import { useEditorRef, useElement, useSelected } from '@udecode/plate/react';
 
 import type {
   CancelComboboxInputCause,
@@ -63,14 +57,14 @@ export const useComboboxInput = ({
 
   const removeInput = useCallback(
     (shouldFocusEditor = false) => {
-      const path = findPath(editor, element);
+      const path = editor.api.findPath(element);
 
       if (!path) return;
 
-      removeNodes(editor, { at: path });
+      editor.tf.removeNodes({ at: path });
 
       if (shouldFocusEditor) {
-        focusEditor(editor);
+        editor.tf.focus();
       }
     },
     [editor, element]
@@ -150,7 +144,7 @@ export const useComboboxInput = ({
         if (forwardUndoRedoToEditor && (isUndo || isRedo)) {
           event.preventDefault();
           editor[isUndo ? 'undo' : 'redo']();
-          focusEditor(editor);
+          editor.tf.focus();
         }
       },
     },

@@ -1,22 +1,17 @@
 import { useEditorSelector } from '@udecode/plate-core/react';
-import {
-  isRangeAcrossBlocks,
-  isRangeInSameBlock,
-  isSelectionExpanded,
-} from '@udecode/slate-utils';
 
 export function useSelectionCollapsed() {
-  return useEditorSelector((editor) => !isSelectionExpanded(editor), []);
+  return useEditorSelector((editor) => !editor.api.isExpanded(), []);
 }
 
 export function useSelectionExpanded() {
-  return useEditorSelector((editor) => isSelectionExpanded(editor), []);
+  return useEditorSelector((editor) => editor.api.isExpanded(), []);
 }
 
 export function useSelectionWithinBlock() {
-  return useEditorSelector((editor) => isRangeInSameBlock(editor), []);
+  return useEditorSelector((editor) => editor.api.isAt({ block: true }), []);
 }
 
 export function useSelectionAcrossBlocks() {
-  return useEditorSelector((editor) => isRangeAcrossBlocks(editor), []);
+  return useEditorSelector((editor) => editor.api.isAt({ blocks: true }), []);
 }

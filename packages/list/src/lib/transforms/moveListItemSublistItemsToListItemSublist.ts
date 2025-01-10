@@ -1,25 +1,20 @@
 import {
+  type ElementEntry,
+  type Path,
   type SlateEditor,
   type TElement,
-  type TElementEntry,
-  deleteText,
-  findDescendant,
-  getLastChildPath,
-  getParentNode,
-  insertElements,
-  moveChildren,
-  withoutNormalizing,
-} from '@udecode/plate-common';
-import { Path } from 'slate';
+  NodeApi,
+  PathApi,
+} from '@udecode/plate';
 
 import { getListTypes } from '../queries/getListTypes';
 
 export interface MoveListItemSublistItemsToListItemSublistOptions {
   /** The list item to merge. */
-  fromListItem: TElementEntry;
+  fromListItem: ElementEntry;
 
   /** The list item where to merge. */
-  toListItem: TElementEntry;
+  toListItem: ElementEntry;
 
   /** Move to the start of the list instead of the end. */
   start?: boolean;
@@ -39,10 +34,10 @@ export const moveListItemSublistItemsToListItemSublist = (
 ) => {
   const [, fromListItemPath] = fromListItem;
   const [, toListItemPath] = toListItem;
-  let moved = 0;
+  let moved: boolean | void = false;
 
-  withoutNormalizing(editor, () => {
-    const fromListItemSublist = findDescendant<TElement>(editor, {
+  editor.tf.withoutNormalizing(() => {
+    const fromListItemSublist = editor.api.descendant<TElement>({
       at: fromListItemPath,
       match: {
         type: getListTypes(editor),
@@ -53,7 +48,7 @@ export const moveListItemSublistItemsToListItemSublist = (
 
     const [, fromListItemSublistPath] = fromListItemSublist;
 
-    const toListItemSublist = findDescendant<TElement>(editor, {
+    const toListItemSublist = editor.api.descendant<TElement>({
       at: toListItemPath,
       match: {
         type: getListTypes(editor),
@@ -63,7 +58,7 @@ export const moveListItemSublistItemsToListItemSublist = (
     let to: Path;
 
     if (!toListItemSublist) {
-      const fromList = getParentNode(editor, fromListItemPath);
+      const fromList = editor.api.parent(fromListItemPath);
 
       if (!fromList) return;
 
@@ -73,8 +68,7 @@ export const moveListItemSublistItemsToListItemSublist = (
 
       const toListItemSublistPath = toListItemPath.concat([1]);
 
-      insertElements(
-        editor,
+      editor.tf.insertNodes(
         { children: [], type: fromListType as string },
         { at: toListItemSublistPath }
       );
@@ -84,16 +78,17 @@ export const moveListItemSublistItemsToListItemSublist = (
       const [, toListItemSublistPath] = toListItemSublist;
       to = toListItemSublistPath.concat([0]);
     } else {
-      to = Path.next(getLastChildPath(toListItemSublist));
+      to = PathApi.next(NodeApi.lastChild(editor, toListItemSublist[1])![1]);
     }
 
-    moved = moveChildren(editor, {
+    moved = editor.tf.moveNodes({
       at: fromListItemSublistPath,
+      children: true,
       to,
     });
 
     // Remove the empty list
-    deleteText(editor, { at: fromListItemSublistPath });
+    editor.tf.delete({ at: fromListItemSublistPath });
   });
 
   return moved;

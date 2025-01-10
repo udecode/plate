@@ -8,20 +8,16 @@ import {
   type OmitFirst,
   type PluginConfig,
   type TElement,
+  NodeApi,
   bindFirst,
-  getAncestorNode,
-  getBlockAbove,
-  getNodeString,
-  isBlockAboveEmpty,
-  isExpanded,
-  isSelectionAtBlockEnd,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 import {
   type PlateEditor,
   Key,
   createTPlatePlugin,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 import { serializeMdNodes } from '@udecode/plate-markdown';
+import debounce from 'lodash/debounce.js';
 
 import type { CompleteOptions } from './utils/callCompletionApi';
 
@@ -70,7 +66,7 @@ export type CopilotPluginConfig = PluginConfig<
     /**
      * Get the prompt for AI completion.
      *
-     * @default serializeMdNodes(getAncestorNode(editor))
+     * @default serializeMdNodes(editor.api.block({ highest: true }))
      */
     getPrompt?: (options: { editor: PlateEditor }) => string;
     /** Render the ghost text. */
@@ -121,15 +117,15 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
         return false;
       }
 
-      const isEmpty = isBlockAboveEmpty(editor);
+      const isEmpty = editor.api.isEmpty(editor.selection, { block: true });
 
       if (isEmpty) return false;
 
-      const blockAbove = getBlockAbove(editor);
+      const blockAbove = editor.api.block();
 
       if (!blockAbove) return false;
 
-      const blockString = getNodeString(blockAbove[0]);
+      const blockString = NodeApi.string(blockAbove[0]);
 
       return blockString.at(-1) === ' ';
     },
@@ -139,7 +135,7 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
     error: null,
     getNextWord: getNextWord,
     getPrompt: ({ editor }) => {
-      const contextEntry = getAncestorNode(editor);
+      const contextEntry = editor.api.block({ highest: true });
 
       if (!contextEntry) return '';
 
@@ -151,9 +147,9 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
     suggestionNodeId: null,
     suggestionText: null,
     triggerQuery: ({ editor }) => {
-      if (isExpanded(editor.selection)) return false;
+      if (editor.api.isExpanded()) return false;
 
-      const isEnd = isSelectionAtBlockEnd(editor);
+      const isEnd = editor.api.isAt({ end: true });
 
       if (!isEnd) return false;
 
@@ -169,35 +165,49 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
     },
   },
 })
+  .overrideEditor(withCopilot)
   .extendOptions<Required<CopilotSelectors>>(({ getOptions }) => ({
     isSuggested: (id) => getOptions().suggestionNodeId === id,
   }))
   .extendApi<Omit<CopilotApi, 'reset'>>(
-    ({ api, editor, getOptions, setOption, setOptions }) => ({
-      accept: bindFirst(acceptCopilot, editor),
-      acceptNextWord: bindFirst(acceptCopilotNextWord, editor),
-      setBlockSuggestion: ({ id = getOptions().suggestionNodeId, text }) => {
-        if (!id) {
-          id = getBlockAbove(editor)![0].id;
-        }
+    ({ api, editor, getOptions, setOption, setOptions }) => {
+      const debounceDelay = getOptions().debounceDelay;
 
-        setOptions({
-          suggestionNodeId: id,
-          suggestionText: text,
-        });
-      },
-      stop: () => {
-        const { abortController } = getOptions();
+      let triggerSuggestion = bindFirst(triggerCopilotSuggestion, editor);
 
-        (api.copilot.triggerSuggestion as DebouncedFunc<any>)?.cancel();
+      if (debounceDelay) {
+        triggerSuggestion = debounce(
+          bindFirst(triggerCopilotSuggestion, editor),
+          debounceDelay
+        ) as any;
+      }
 
-        if (abortController) {
-          abortController.abort();
-          setOption('abortController', null);
-        }
-      },
-      triggerSuggestion: bindFirst(triggerCopilotSuggestion, editor),
-    })
+      return {
+        accept: bindFirst(acceptCopilot, editor),
+        acceptNextWord: bindFirst(acceptCopilotNextWord, editor),
+        setBlockSuggestion: ({ id = getOptions().suggestionNodeId, text }) => {
+          if (!id) {
+            id = editor.api.block()![0].id as string;
+          }
+
+          setOptions({
+            suggestionNodeId: id,
+            suggestionText: text,
+          });
+        },
+        stop: () => {
+          const { abortController } = getOptions();
+
+          (api.copilot.triggerSuggestion as DebouncedFunc<any>)?.cancel();
+
+          if (abortController) {
+            abortController.abort();
+            setOption('abortController', null);
+          }
+        },
+        triggerSuggestion,
+      };
+    }
   )
   .extendApi(({ api, setOptions }) => ({
     reset: () => {
@@ -211,7 +221,6 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
     },
   }))
   .extend({
-    extendEditor: withCopilot,
     render: {
       belowNodes: renderCopilotBelowNodes,
     },

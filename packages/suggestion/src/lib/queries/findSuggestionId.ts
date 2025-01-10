@@ -1,11 +1,4 @@
-import type { Location, Point } from 'slate';
-
-import {
-  type SlateEditor,
-  getEdgePoints,
-  getPointAfter,
-  getPointBefore,
-} from '@udecode/plate-common';
+import type { Point, SlateEditor, TLocation } from '@udecode/plate';
 
 import { SUGGESTION_KEYS } from '../BaseSuggestionPlugin';
 import { findSuggestionNode } from './findSuggestionNode';
@@ -14,7 +7,7 @@ import { findSuggestionNode } from './findSuggestionNode';
  * Find the suggestion id at the cursor point, the point before and after (if
  * offset = 0).
  */
-export const findSuggestionId = (editor: SlateEditor, at: Location) => {
+export const findSuggestionId = (editor: SlateEditor, at: TLocation) => {
   let entry = findSuggestionNode(editor, {
     at,
   });
@@ -24,12 +17,12 @@ export const findSuggestionId = (editor: SlateEditor, at: Location) => {
     let end: Point;
 
     try {
-      [start, end] = getEdgePoints(editor, at);
+      [start, end] = editor.api.edges(at)!;
     } catch {
       return;
     }
 
-    const nextPoint = getPointAfter(editor, end);
+    const nextPoint = editor.api.after(end);
 
     if (nextPoint) {
       entry = findSuggestionNode(editor, {
@@ -37,7 +30,7 @@ export const findSuggestionId = (editor: SlateEditor, at: Location) => {
       });
 
       if (!entry) {
-        const prevPoint = getPointBefore(editor, start);
+        const prevPoint = editor.api.before(start);
 
         if (prevPoint) {
           entry = findSuggestionNode(editor, {

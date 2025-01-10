@@ -1,4 +1,4 @@
-import type { SlateEditor, TNodeEntry } from '@udecode/plate-common';
+import type { NodeEntry, SlateEditor } from '@udecode/plate';
 
 import type {
   TTableCellElement,
@@ -6,22 +6,20 @@ import type {
   TTableRowElement,
 } from '../types';
 
-import { BaseTablePlugin } from '../BaseTablePlugin';
-import { getCellIndices } from './getCellIndices';
+import { getCellIndices } from '../utils/getCellIndices';
 
 export const getCellPath = (
   editor: SlateEditor,
-  tableEntry: TNodeEntry<TTableElement>,
+  tableEntry: NodeEntry<TTableElement>,
   curRowIndex: number,
   curColIndex: number
 ) => {
-  const { _cellIndices: cellIndices } = editor.getOptions(BaseTablePlugin);
   const [tableNode, tablePath] = tableEntry;
 
   const rowElem = tableNode.children[curRowIndex] as TTableRowElement;
   const foundColIndex = rowElem.children.findIndex((c) => {
     const cE = c as TTableCellElement;
-    const { col: colIndex } = getCellIndices(cellIndices!, cE)!;
+    const { col: colIndex } = getCellIndices(editor, cE);
 
     return colIndex === curColIndex;
   });

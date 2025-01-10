@@ -1,44 +1,48 @@
-import { type TEditor, getNodeEntries, isText } from '@udecode/plate-common';
-import { toDOMNode, toDOMRange } from '@udecode/plate-common/react';
-import { Path, Range } from 'slate';
+import {
+  type Editor,
+  type TRange,
+  PathApi,
+  RangeApi,
+  TextApi,
+} from '@udecode/plate';
 
 import type { SelectionRect } from '../types';
 
 export const getSelectionRects = (
-  editor: TEditor,
+  editor: Editor,
   {
     range,
     xOffset,
     yOffset,
   }: {
-    range: Range;
+    range: TRange;
     xOffset: number;
     yOffset: number;
   }
 ): SelectionRect[] => {
-  const [start, end] = Range.edges(range);
-  const domRange = toDOMRange(editor, range);
+  const [start, end] = RangeApi.edges(range);
+  const domRange = editor.api.toDOMRange(range);
 
   if (!domRange) {
     return [];
   }
 
   const selectionRects: SelectionRect[] = [];
-  const textEntries = getNodeEntries(editor, {
+  const textEntries = editor.api.nodes({
     at: range,
-    match: isText,
+    match: TextApi.isText,
   });
 
   for (const [textNode, textPath] of textEntries) {
-    const domNode = toDOMNode(editor, textNode);
+    const domNode = editor.api.toDOMNode(textNode);
 
     // Fix: failed to execute 'selectNode' on 'Range': the given Node has no parent
     if (!domNode?.parentElement) {
       return [];
     }
 
-    const isStartNode = Path.equals(textPath, start.path);
-    const isEndNode = Path.equals(textPath, end.path);
+    const isStartNode = PathApi.equals(textPath, start.path);
+    const isEndNode = PathApi.equals(textPath, end.path);
 
     let clientRects: DOMRectList | null = null;
 

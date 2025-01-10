@@ -1,20 +1,14 @@
-import {
-  type AnyObject,
-  type GetNodeEntriesOptions,
-  type SlateEditor,
-  type TEditor,
-  type UnhangRangeOptions,
-  getNodeEntries,
-  setElements,
-  unsetNodes,
-  withoutNormalizing,
-} from '@udecode/plate-common';
+import type {
+  AnyObject,
+  EditorNodesOptions,
+  SlateEditor,
+} from '@udecode/plate';
 
 import { BaseIndentPlugin } from '../BaseIndentPlugin';
 
-export interface SetIndentOptions<E extends TEditor = TEditor> {
+export interface SetIndentOptions {
   /** GetNodeEntries options */
-  getNodesOptions?: GetNodeEntriesOptions<E> & UnhangRangeOptions;
+  getNodesOptions?: EditorNodesOptions;
 
   /**
    * 1 to indent -1 to outdent
@@ -31,25 +25,25 @@ export interface SetIndentOptions<E extends TEditor = TEditor> {
 }
 
 /** Add offset to the indentation of the selected blocks. */
-export const setIndent = <E extends SlateEditor>(
-  editor: E,
+export const setIndent = (
+  editor: SlateEditor,
   {
     getNodesOptions,
     offset = 1,
     setNodesProps,
     unsetNodesProps = [],
-  }: SetIndentOptions<E>
+  }: SetIndentOptions
 ) => {
   const { nodeKey } = editor.getInjectProps(BaseIndentPlugin);
 
-  const _nodes = getNodeEntries(editor, {
+  const _nodes = editor.api.nodes({
     block: true,
     mode: 'lowest',
     ...getNodesOptions,
   });
   const nodes = Array.from(_nodes);
 
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     nodes.forEach(([node, path]) => {
       const blockIndent = (node[nodeKey!] as number) ?? 0;
       const newIndent = blockIndent + offset;
@@ -57,11 +51,11 @@ export const setIndent = <E extends SlateEditor>(
       const props = setNodesProps?.({ indent: newIndent }) ?? {};
 
       if (newIndent <= 0) {
-        unsetNodes(editor, [nodeKey!, ...unsetNodesProps], {
+        editor.tf.unsetNodes([nodeKey!, ...unsetNodesProps], {
           at: path,
         });
       } else {
-        setElements(editor, { [nodeKey!]: newIndent, ...props }, { at: path });
+        editor.tf.setNodes({ [nodeKey!]: newIndent, ...props }, { at: path });
       }
     });
   });

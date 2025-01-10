@@ -1,4 +1,4 @@
-import type { TDescendant } from '@udecode/plate-common';
+import type { Descendant } from '@udecode/plate';
 
 import type { MdastNode, RemarkPluginOptions } from './types';
 
@@ -9,7 +9,7 @@ import { remarkTransformText } from './remarkTransformText';
 export const remarkTransformNode = (
   node: MdastNode,
   options: RemarkPluginOptions
-): TDescendant | TDescendant[] => {
+): Descendant | Descendant[] => {
   const { type } = node;
 
   if (remarkTextTypes.includes(type!)) {

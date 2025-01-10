@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { createSlateEditor } from '@udecode/plate-common';
+import { createSlateEditor } from '@udecode/plate';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
@@ -423,6 +423,7 @@ describe('deserializeMdIndentList', () => {
           },
         ],
         indent: 1,
+        listStart: 1,
         listStyleType: 'decimal',
         type: 'p',
       },
@@ -433,6 +434,7 @@ describe('deserializeMdIndentList', () => {
           },
         ],
         indent: 1,
+        listStart: 2,
         listStyleType: 'decimal',
         type: 'p',
       },

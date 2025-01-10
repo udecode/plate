@@ -2,9 +2,9 @@
 
 import React, { useState } from 'react';
 
-import type { PlateRenderElementProps } from '@udecode/plate-common/react';
+import type { PlateRenderElementProps } from '@udecode/plate/react';
 
-import { Plate, createPlatePlugin } from '@udecode/plate-common/react';
+import { Plate, createPlatePlugin } from '@udecode/plate/react';
 
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';

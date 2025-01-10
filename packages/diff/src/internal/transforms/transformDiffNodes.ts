@@ -4,7 +4,7 @@
  */
 
 /* eslint-disable no-restricted-syntax */
-import type { TDescendant } from '@udecode/plate-common';
+import type { Descendant } from '@udecode/plate';
 
 import isEqual from 'lodash/isEqual.js';
 
@@ -18,10 +18,10 @@ import { copyWithout } from '../utils/copy-without';
  */
 
 type Handler = (
-  node: TDescendant,
-  nextNode: TDescendant,
+  node: Descendant,
+  nextNode: Descendant,
   options: ComputeDiffOptions
-) => TDescendant[] | false;
+) => Descendant[] | false;
 
 /**
  * Only the children have changed. Recursively call the top-level diff algorithm
@@ -37,8 +37,8 @@ const childrenOnlyStrategy: Handler = (node, nextNode, options) => {
     )
   ) {
     const children = computeDiff(
-      node.children as TDescendant[],
-      nextNode.children as TDescendant[],
+      node.children as Descendant[],
+      nextNode.children as Descendant[],
       options
     );
 
@@ -91,10 +91,10 @@ const strategies: Handler[] = [childrenOnlyStrategy, propsOnlyStrategy];
 
 // Replace node at path by nextNode using the first strategy that works.
 export function transformDiffNodes(
-  node: TDescendant,
-  nextNode: TDescendant,
+  node: Descendant,
+  nextNode: Descendant,
   options: ComputeDiffOptions
-): TDescendant[] | false {
+): Descendant[] | false {
   // Try each strategy in turn
   for (const strategy of strategies) {
     // Attempt to generate operations with the current strategy and return the operations if the strategy succeeds

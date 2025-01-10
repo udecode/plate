@@ -1,11 +1,5 @@
-import {
-  type SlateEditor,
-  deselect,
-  getEndPoint,
-  getStartPoint,
-  select,
-  withoutNormalizing,
-} from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
+
 import copyToClipboard from 'copy-to-clipboard';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
@@ -26,16 +20,16 @@ export const copySelectedBlocks = (editor: SlateEditor) => {
       let textPlain = '';
       const div = document.createElement('div');
 
-      withoutNormalizing(editor, () => {
+      editor.tf.withoutNormalizing(() => {
         selectedEntries.forEach(([, path]) => {
           // select block by block
-          select(editor, {
-            anchor: getStartPoint(editor, path),
-            focus: getEndPoint(editor, path),
+          editor.tf.select({
+            anchor: editor.api.start(path)!,
+            focus: editor.api.end(path)!,
           });
 
           // set data from selection
-          editor.setFragmentData(data);
+          editor.tf.setFragmentData(data);
 
           // get plain text
           textPlain += `${data.getData('text/plain')}\n`;
@@ -47,7 +41,7 @@ export const copySelectedBlocks = (editor: SlateEditor) => {
         });
 
         // deselect and select back selectedIds
-        deselect(editor);
+        editor.tf.deselect();
         editor.setOption(BlockSelectionPlugin, 'selectedIds', selectedIds);
       });
 

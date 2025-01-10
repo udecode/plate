@@ -1,5 +1,5 @@
-import { type Value, getNodeString } from '@udecode/plate-common';
-import { createAtomStore, useEditorPlugin } from '@udecode/plate-common/react';
+import { type Value, NodeApi } from '@udecode/plate';
+import { createAtomStore, useEditorPlugin } from '@udecode/plate/react';
 
 import type { CommentUser, TComment } from '../../../lib/types';
 
@@ -76,7 +76,7 @@ export const useCommentText = (scope?: string) => {
 
   if (!comment) return null;
 
-  return getNodeString(comment.value?.[0]);
+  return NodeApi.string(comment.value?.[0]);
 };
 
 export const useEditingCommentText = () => {
@@ -84,5 +84,5 @@ export const useEditingCommentText = () => {
 
   if (!editingValue) return null;
 
-  return getNodeString(editingValue?.[0]);
+  return NodeApi.string(editingValue?.[0]);
 };

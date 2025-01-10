@@ -1,4 +1,4 @@
-import { createSlatePlugin, someHtmlElement } from '@udecode/plate-common';
+import { createSlatePlugin, someHtmlElement } from '@udecode/plate';
 
 /** Enables support for underline formatting. */
 export const BaseUnderlinePlugin = createSlatePlugin({

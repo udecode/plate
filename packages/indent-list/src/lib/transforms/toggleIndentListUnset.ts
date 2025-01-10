@@ -1,8 +1,4 @@
-import {
-  type TEditor,
-  type TNodeEntry,
-  unsetNodes,
-} from '@udecode/plate-common';
+import type { Editor, NodeEntry } from '@udecode/plate';
 
 import {
   BaseIndentListPlugin,
@@ -13,8 +9,8 @@ import { outdentList } from './outdentList';
 
 /** Unset list style type if already set. */
 export const toggleIndentListUnset = (
-  editor: TEditor,
-  [node, path]: TNodeEntry,
+  editor: Editor,
+  [node, path]: NodeEntry,
   {
     listStyleType = ListStyleType.Disc,
   }: {
@@ -25,13 +21,13 @@ export const toggleIndentListUnset = (
     listStyleType === INDENT_LIST_KEYS.todo &&
     node.hasOwnProperty(INDENT_LIST_KEYS.checked)
   ) {
-    unsetNodes(editor as any, INDENT_LIST_KEYS.checked, { at: path });
+    editor.tf.unsetNodes(INDENT_LIST_KEYS.checked, { at: path });
     outdentList(editor as any, { listStyleType });
 
     return true;
   }
   if (listStyleType === node[BaseIndentListPlugin.key]) {
-    unsetNodes(editor as any, [BaseIndentListPlugin.key], {
+    editor.tf.unsetNodes([BaseIndentListPlugin.key], {
       at: path,
     });
 

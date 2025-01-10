@@ -5,7 +5,7 @@ import React from 'react';
 import {
   type NodeWrapperComponentProps,
   getEditorPlugin,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 
 import type { CopilotPluginConfig } from './CopilotPlugin';
 

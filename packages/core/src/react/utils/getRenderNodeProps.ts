@@ -1,15 +1,14 @@
 import type { AnyObject } from '@udecode/utils';
 
-import { findPath } from '@udecode/slate-react';
 import { clsx } from 'clsx';
 
 import type { PlateEditor } from '../editor';
 import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
 import type { PlateRenderNodeProps } from '../plugin/PlateRenderNodeProps';
 
+import { pipeInjectNodeProps } from '../../internal/plugin/pipeInjectNodeProps';
 import { getSlateClass } from '../../lib';
 import { getPluginNodeProps } from '../../lib/utils/getPluginNodeProps';
-import { pipeInjectNodeProps } from '../../lib/utils/pipeInjectNodeProps';
 import { getEditorPlugin } from '../plugin';
 
 /**
@@ -45,7 +44,7 @@ export const getRenderNodeProps = ({
   nodeProps = pipeInjectNodeProps(
     editor,
     nodeProps,
-    (node) => findPath(editor, node)!
+    (node) => editor.api.findPath(node)!
   ) as PlateRenderNodeProps;
 
   if (nodeProps.style && Object.keys(nodeProps.style).length === 0) {

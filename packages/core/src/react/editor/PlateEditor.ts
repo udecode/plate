@@ -1,6 +1,6 @@
-import type { Value } from '@udecode/slate';
+import type { EditorApi, EditorTransforms, Value } from '@udecode/slate';
 import type { UnionToIntersection } from '@udecode/utils';
-import type { EqualityChecker } from 'zustand-x';
+import type { TEqualityChecker } from 'zustand-x';
 
 import type {
   AnyPluginConfig,
@@ -20,14 +20,25 @@ import type { EXPOSED_STORE_KEYS, PlateStoreState } from '../stores';
 import type { PlateCorePlugin } from './withPlate';
 
 export type PlateEditor = {
+  getApi: <C extends AnyPluginConfig = PluginConfig>(
+    plugin?: WithRequiredKey<C>
+  ) => PlateEditor['api'] & InferApi<C>;
+
   getPlugin: <C extends AnyPluginConfig = PluginConfig>(
     plugin: WithRequiredKey<C>
   ) => C extends { node: any } ? C : EditorPlatePlugin<C>;
+
+  getTransforms: <C extends AnyPluginConfig = PluginConfig>(
+    plugin?: WithRequiredKey<C>
+  ) => PlateEditor['tf'] & InferTransforms<C>;
 
   setPlateState: <K extends (typeof EXPOSED_STORE_KEYS)[number]>(
     optionKey: K,
     value: PlateStoreState[K]
   ) => void;
+
+  transforms: EditorTransforms &
+    UnionToIntersection<InferTransforms<PlateCorePlugin>>;
 
   useOption: {
     <
@@ -55,12 +66,12 @@ export type PlateEditor = {
     <C extends AnyPluginConfig, U>(
       plugin: WithRequiredKey<C>,
       selector: (s: InferOptions<C>) => U,
-      equalityFn?: EqualityChecker<U>
+      equalityFn?: TEqualityChecker<U>
     ): U;
     <C extends AnyPluginConfig>(plugin: WithRequiredKey<C>): InferOptions<C>;
   };
 
-  api: UnionToIntersection<InferApi<PlateCorePlugin>>;
+  api: EditorApi & UnionToIntersection<InferApi<PlateCorePlugin>>;
 
   pluginList: AnyEditorPlatePlugin[];
 
@@ -69,9 +80,7 @@ export type PlateEditor = {
   shortcuts: Shortcuts;
 
   // Alias for transforms
-  tf: PlateEditor['transforms'];
-
-  transforms: UnionToIntersection<InferTransforms<PlateCorePlugin>>;
+  tf: EditorTransforms & UnionToIntersection<InferTransforms<PlateCorePlugin>>;
 
   uid?: string;
 } & BaseEditor;
@@ -80,10 +89,18 @@ export type TPlateEditor<
   V extends Value = Value,
   P extends AnyPluginConfig = PlateCorePlugin,
 > = PlateEditor & {
-  api: UnionToIntersection<InferApi<P | PlateCorePlugin>>;
+  getApi: <C extends AnyPluginConfig = PluginConfig>(
+    plugin?: WithRequiredKey<C>
+  ) => TPlateEditor<V>['api'] & InferApi<C>;
+  getTransforms: <C extends AnyPluginConfig = PluginConfig>(
+    plugin?: WithRequiredKey<C>
+  ) => TPlateEditor<V>['tf'] & InferTransforms<C>;
+  tf: EditorTransforms<V> &
+    UnionToIntersection<InferTransforms<P | PlateCorePlugin>>;
+  transforms: EditorTransforms<V> &
+    UnionToIntersection<InferTransforms<P | PlateCorePlugin>>;
+  api: EditorApi<V> & UnionToIntersection<InferApi<P | PlateCorePlugin>>;
   children: V;
   pluginList: P[];
   plugins: { [K in P['key']]: Extract<P, { key: K }> };
-  tf: UnionToIntersection<InferTransforms<P | PlateCorePlugin>>;
-  transforms: UnionToIntersection<InferTransforms<P | PlateCorePlugin>>;
 };

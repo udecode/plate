@@ -1,5 +1,7 @@
 import React from 'react';
 
+import type { TElement } from '@udecode/slate';
+
 import {
   type AnyPlatePlugin,
   type PlateRenderElementProps,
@@ -7,7 +9,6 @@ import {
   usePlateStore,
 } from '@udecode/plate-core/react';
 import { type BoxProps, Box, useComposedRef } from '@udecode/react-utils';
-import { type TElement, isBlock } from '@udecode/slate';
 import { clsx } from 'clsx';
 
 export type PlateElementProps<
@@ -31,7 +32,7 @@ export const usePlateElement = (props: PlateElementProps) => {
   const mounted = usePlateStore().get.isMounted();
 
   const block = React.useMemo(
-    () => mounted && !!element.id && isBlock(props.editor, element),
+    () => mounted && !!element.id && props.editor.api.isBlock(element),
     [element, props.editor, mounted]
   );
 
@@ -43,6 +44,11 @@ export const usePlateElement = (props: PlateElementProps) => {
       ...elementToAttributes?.(element),
       className: clsx(props.className, nodeProps?.className),
       'data-block-id': block ? element.id : undefined,
+      style: {
+        position: 'relative',
+        ...props.style,
+        ...nodeProps?.style,
+      },
     },
     ref: useComposedRef(props.ref, attributes.ref),
   };

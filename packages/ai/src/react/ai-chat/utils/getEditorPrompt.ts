@@ -1,4 +1,4 @@
-import type { PlateEditor } from '@udecode/plate-common/react';
+import type { PlateEditor } from '@udecode/plate/react';
 
 import { isSelecting } from '@udecode/plate-selection';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';

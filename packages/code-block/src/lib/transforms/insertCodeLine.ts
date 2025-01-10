@@ -1,4 +1,4 @@
-import { type SlateEditor, insertElements } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
 
 import { BaseCodeLinePlugin } from '../BaseCodeBlockPlugin';
 
@@ -7,7 +7,7 @@ export const insertCodeLine = (editor: SlateEditor, indentDepth = 0) => {
   if (editor.selection) {
     const indent = ' '.repeat(indentDepth);
 
-    insertElements(editor, {
+    editor.tf.insertNodes({
       children: [{ text: indent }],
       type: editor.getType(BaseCodeLinePlugin),
     });

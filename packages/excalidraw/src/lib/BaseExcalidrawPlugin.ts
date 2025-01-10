@@ -1,4 +1,4 @@
-import { type TElement, createSlatePlugin } from '@udecode/plate-common';
+import { type TElement, createSlatePlugin } from '@udecode/plate';
 
 import type { ExcalidrawDataState } from './types';
 

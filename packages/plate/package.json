@@ -1,7 +1,7 @@
 {
   "name": "@udecode/plate",
-  "version": "41.0.5",
-  "description": "Plate – a plugin system for slate",
+  "version": "42.0.1",
+  "description": "Plate – a framework for building rich text editors on the web",
   "keywords": [
     "contentEditable",
     "editor",
@@ -56,62 +56,18 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-alignment": "41.0.0",
-    "@udecode/plate-autoformat": "41.0.0",
-    "@udecode/plate-basic-elements": "41.0.0",
-    "@udecode/plate-basic-marks": "41.0.0",
-    "@udecode/plate-block-quote": "41.0.0",
-    "@udecode/plate-break": "41.0.0",
-    "@udecode/plate-code-block": "41.0.0",
-    "@udecode/plate-combobox": "41.0.0",
-    "@udecode/plate-comments": "41.0.0",
-    "@udecode/plate-common": "41.0.5",
-    "@udecode/plate-csv": "41.0.0",
-    "@udecode/plate-diff": "41.0.0",
-    "@udecode/plate-docx": "41.0.0",
-    "@udecode/plate-find-replace": "41.0.0",
-    "@udecode/plate-floating": "41.0.0",
-    "@udecode/plate-font": "41.0.0",
-    "@udecode/plate-heading": "41.0.0",
-    "@udecode/plate-highlight": "41.0.0",
-    "@udecode/plate-horizontal-rule": "41.0.0",
-    "@udecode/plate-indent": "41.0.0",
-    "@udecode/plate-indent-list": "41.0.0",
-    "@udecode/plate-kbd": "41.0.0",
-    "@udecode/plate-layout": "41.0.2",
-    "@udecode/plate-line-height": "41.0.0",
-    "@udecode/plate-link": "41.0.0",
-    "@udecode/plate-list": "41.0.0",
-    "@udecode/plate-markdown": "41.0.0",
-    "@udecode/plate-media": "41.0.0",
-    "@udecode/plate-mention": "41.0.0",
-    "@udecode/plate-node-id": "41.0.0",
-    "@udecode/plate-normalizers": "41.0.0",
-    "@udecode/plate-reset-node": "41.0.0",
-    "@udecode/plate-resizable": "41.0.0",
-    "@udecode/plate-select": "41.0.0",
-    "@udecode/plate-selection": "41.0.0",
-    "@udecode/plate-slash-command": "41.0.0",
-    "@udecode/plate-suggestion": "41.0.0",
-    "@udecode/plate-tabbable": "41.0.0",
-    "@udecode/plate-table": "41.0.0",
-    "@udecode/plate-toggle": "41.0.0",
-    "@udecode/plate-trailing-block": "41.0.0"
+    "@udecode/plate-core": "42.0.1",
+    "@udecode/plate-utils": "42.0.1",
+    "@udecode/react-hotkeys": "37.0.0",
+    "@udecode/react-utils": "42.0.0",
+    "@udecode/slate": "42.0.1",
+    "@udecode/utils": "42.0.0"
   },
   "peerDependencies": {
-    "react": ">=16.8.0",
-    "react-dom": ">=16.8.0",
-    "slate": ">=0.112.0",
-    "slate-dom": ">=0.111.0",
-    "slate-history": ">=0.93.0",
-    "slate-hyperscript": ">=0.66.0",
-    "slate-react": ">=0.111.0"
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
   },
   "publishConfig": {
     "access": "public"
-  },
-  "gitHead": "9f660a54cbd931cd20a6ad99e9319dbebfc7e1af",
-  "installConfig": {
-    "hoistingLimits": "workspaces"
   }
 }

@@ -1,21 +1,12 @@
 import {
-  type ExtendEditor,
+  type EditorTransforms,
+  type ElementEntry,
+  type OverrideEditor,
   type SlateEditor,
   type TElement,
-  type TElementEntry,
-  getBlockAbove,
-  getChildren,
-  getEditorString,
-  getNode,
-  getNodeEntries,
-  getNodeEntry,
-  getParentNode,
-  getPointAfter,
-  isSelectionAtBlockEnd,
-  removeNodes,
-  withoutNormalizing,
-} from '@udecode/plate-common';
-import { type TextUnit, Path } from 'slate';
+  NodeApi,
+  PathApi,
+} from '@udecode/plate';
 
 import type { ListConfig } from './BaseListPlugin';
 
@@ -37,10 +28,7 @@ import {
 } from './transforms/index';
 
 const selectionIsNotInAListHandler = (editor: SlateEditor): boolean => {
-  const pointAfterSelection = getPointAfter(
-    editor,
-    editor.selection!.focus.path
-  );
+  const pointAfterSelection = editor.api.after(editor.selection!.focus);
 
   if (pointAfterSelection) {
     // there is a block after it
@@ -51,13 +39,13 @@ const selectionIsNotInAListHandler = (editor: SlateEditor): boolean => {
     if (nextSiblingListRes) {
       // the next block is a list
       const { listItem } = nextSiblingListRes;
-      const parentBlockEntity = getBlockAbove(editor, {
+      const parentBlockEntity = editor.api.block({
         at: editor.selection!.anchor,
       });
 
-      if (!getEditorString(editor, parentBlockEntity![1])) {
+      if (!editor.api.string(parentBlockEntity![1])) {
         // the selected block is empty
-        removeNodes(editor);
+        editor.tf.removeNodes();
 
         return true;
       }
@@ -77,16 +65,16 @@ const selectionIsNotInAListHandler = (editor: SlateEditor): boolean => {
 
 const selectionIsInAListHandler = (
   editor: SlateEditor,
-  res: { list: TElementEntry; listItem: TElementEntry },
-  defaultDelete: (unit: TextUnit) => void,
-  unit: 'block' | 'character' | 'line' | 'word'
+  res: { list: ElementEntry; listItem: ElementEntry },
+  defaultDelete: EditorTransforms['deleteBackward'],
+  unit: 'block' | 'character' | 'line' | 'word' = 'character'
 ): boolean => {
   const { listItem } = res;
 
   // if it has no children
   if (!hasListChild(editor, listItem[0])) {
     const liType = editor.getType(BaseListItemPlugin);
-    const _nodes = getNodeEntries(editor, {
+    const _nodes = editor.api.nodes({
       at: listItem[1],
       match: (node, path) => {
         if (path.length === 0) {
@@ -95,7 +83,7 @@ const selectionIsInAListHandler = (
 
         const isNodeLi = (node as TElement).type === liType;
         const isSiblingOfNodeLi =
-          getNode<TElement>(editor, Path.next(path))?.type === liType;
+          NodeApi.get<TElement>(editor, PathApi.next(path))?.type === liType;
 
         return isNodeLi && isSiblingOfNodeLi;
       },
@@ -105,7 +93,7 @@ const selectionIsInAListHandler = (
 
     if (!liWithSiblings) {
       // there are no more list item in the list
-      const pointAfterListItem = getPointAfter(editor, listItem[1]);
+      const pointAfterListItem = editor.api.after(listItem[1]);
 
       if (pointAfterListItem) {
         // there is a block after it
@@ -130,14 +118,13 @@ const selectionIsInAListHandler = (
       return false;
     }
 
-    const siblingListItem = getNodeEntry<TElement>(
-      editor,
-      Path.next(liWithSiblings)
+    const siblingListItem = editor.api.node<TElement>(
+      PathApi.next(liWithSiblings)
     );
 
     if (!siblingListItem) return false;
 
-    const siblingList = getParentNode<TElement>(editor, siblingListItem[1]);
+    const siblingList = editor.api.parent<TElement>(siblingListItem[1]);
 
     if (
       siblingList &&
@@ -150,16 +137,13 @@ const selectionIsInAListHandler = (
       return true;
     }
 
-    const pointAfterListItem = getPointAfter(editor, editor.selection!.focus);
+    const pointAfterListItem = editor.api.after(editor.selection!.focus);
 
     if (
       !pointAfterListItem ||
-      !isAcrossListItems({
-        ...editor,
-        selection: {
-          anchor: editor.selection!.anchor,
-          focus: pointAfterListItem,
-        },
+      !isAcrossListItems(editor, {
+        anchor: editor.selection!.anchor,
+        focus: pointAfterListItem,
       })
     ) {
       return false;
@@ -167,7 +151,7 @@ const selectionIsInAListHandler = (
 
     // get closest lic ancestor of next selectable
     const licType = editor.getType(BaseListItemContentPlugin);
-    const _licNodes = getNodeEntries<TElement>(editor, {
+    const _licNodes = editor.api.nodes<TElement>({
       at: pointAfterListItem.path,
       match: (node) => node.type === licType,
       mode: 'lowest',
@@ -180,28 +164,28 @@ const selectionIsInAListHandler = (
     // manually run default delete
     defaultDelete(unit);
 
-    const leftoverListItem = getNodeEntry<TElement>(
-      editor,
-      Path.parent(nextSelectableLic[1])
+    const leftoverListItem = editor.api.node<TElement>(
+      PathApi.parent(nextSelectableLic[1])
     )!;
 
     if (leftoverListItem && leftoverListItem[0].children.length === 0) {
       // remove the leftover empty list item
-      removeNodes(editor, { at: leftoverListItem[1] });
+      editor.tf.removeNodes({ at: leftoverListItem[1] });
     }
 
     return true;
   }
 
   // if it has children
-  const nestedList = getNodeEntry<TElement>(
-    editor,
-    Path.next([...listItem[1], 0])
+  const nestedList = editor.api.node<TElement>(
+    PathApi.next([...listItem[1], 0])
   );
 
   if (!nestedList) return false;
 
-  const nestedListItem = getChildren<TElement>(nestedList)[0];
+  const nestedListItem = Array.from(
+    NodeApi.children<TElement>(editor, nestedList[1])
+  )[0];
 
   if (
     removeFirstListItem(editor, {
@@ -223,44 +207,45 @@ const selectionIsInAListHandler = (
   return false;
 };
 
-export const withDeleteForwardList: ExtendEditor<ListConfig> = ({ editor }) => {
-  const { deleteForward } = editor;
+export const withDeleteForwardList: OverrideEditor<ListConfig> = ({
+  editor,
+  tf: { deleteForward },
+}) => ({
+  transforms: {
+    deleteForward(unit) {
+      const deleteForwardList = () => {
+        let skipDefaultDelete = false;
 
-  editor.deleteForward = (unit) => {
-    const deleteForwardList = () => {
-      let skipDefaultDelete = false;
-
-      if (!editor?.selection) {
-        return skipDefaultDelete;
-      }
-      if (!isSelectionAtBlockEnd(editor)) {
-        return skipDefaultDelete;
-      }
-
-      withoutNormalizing(editor, () => {
-        const res = getListItemEntry(editor, {});
-
-        if (!res) {
-          skipDefaultDelete = selectionIsNotInAListHandler(editor);
-
-          return;
+        if (!editor?.selection) {
+          return skipDefaultDelete;
+        }
+        if (!editor.api.isAt({ end: true })) {
+          return skipDefaultDelete;
         }
 
-        skipDefaultDelete = selectionIsInAListHandler(
-          editor,
-          res,
-          deleteForward,
-          unit
-        );
-      });
+        editor.tf.withoutNormalizing(() => {
+          const res = getListItemEntry(editor, {});
 
-      return skipDefaultDelete;
-    };
+          if (!res) {
+            skipDefaultDelete = selectionIsNotInAListHandler(editor);
 
-    if (deleteForwardList()) return;
+            return;
+          }
 
-    deleteForward(unit);
-  };
+          skipDefaultDelete = selectionIsInAListHandler(
+            editor,
+            res,
+            deleteForward,
+            unit
+          );
+        });
 
-  return editor;
-};
+        return skipDefaultDelete;
+      };
+
+      if (deleteForwardList()) return;
+
+      deleteForward(unit);
+    },
+  },
+});

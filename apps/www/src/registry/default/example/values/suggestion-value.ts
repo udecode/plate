@@ -1,4 +1,4 @@
-import type { Value } from '@udecode/plate-common';
+import type { Value } from '@udecode/plate';
 import type { SuggestionUser, TSuggestion } from '@udecode/plate-suggestion';
 
 export const usersData: Record<string, SuggestionUser> = {

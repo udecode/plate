@@ -1,5 +1,17 @@
 # @udecode/plate-ai
 
+## 42.0.0
+
+### Major Changes
+
+- [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) – AI plugins are now experimental: pin the dependency to avoid breaking changes. No breaking changes for this release.
+
+## 41.0.14
+
+## 41.0.8
+
+## 41.0.6
+
 ## 41.0.1
 
 ### Patch Changes

@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Plate, useEditorPlugin } from '@udecode/plate-common/react';
+import { Plate, useEditorPlugin } from '@udecode/plate/react';
 import { FindReplacePlugin } from '@udecode/plate-find-replace';
 
 import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';
