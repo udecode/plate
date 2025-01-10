@@ -10,9 +10,10 @@ import {
   ElementApi,
   RangeApi,
   TextApi,
+  isElementDecorationsEqual,
+  isTextDecorationsEqual,
 } from '@udecode/slate';
 import clsx from 'clsx';
-import { isElementDecorationsEqual, isTextDecorationsEqual } from 'slate-dom';
 
 import type { SlateEditor } from '../../editor';
 import type { NodeComponents } from '../../plugin';
@@ -97,10 +98,9 @@ function BaseElementStatic({
 
 export const ElementStatic = React.memo(BaseElementStatic, (prev, next) => {
   return (
-    prev.editor === next.editor &&
-    prev.components === next.components &&
-    prev.element === next.element &&
-    prev.decorate === next.decorate &&
+    (prev.element === next.element ||
+      (prev.element._memo !== undefined &&
+        prev.element._memo === next.element._memo)) &&
     isElementDecorationsEqual(prev.decorations, next.decorations)
   );
 });
@@ -144,9 +144,8 @@ function BaseLeafStatic({
 
 export const LeafStatic = React.memo(BaseLeafStatic, (prev, next) => {
   return (
-    prev.editor === next.editor &&
-    prev.components === next.components &&
-    prev.leaf === next.leaf &&
+    // prev.leaf === next.leaf &&
+    TextApi.equals(next.leaf, prev.leaf) &&
     isTextDecorationsEqual(next.decorations, prev.decorations)
   );
 });
@@ -157,7 +156,7 @@ function Children({
   children = [],
   components,
   decorate = defaultDecorate,
-  decorations,
+  decorations = [],
   editor,
 }: {
   children: Descendant[];
@@ -210,31 +209,21 @@ function Children({
 }
 
 export type PlateStaticProps = {
+  /** Node components to render. */
   components: NodeComponents;
+  /** Editor instance. */
   editor: SlateEditor;
   style?: React.CSSProperties;
-  /**
-   * The Slate value to render. If provided, we will set editor.children = value
-   * on each render (i.e. the data being rendered). Can be either a Value or a
-   * function that takes editor and returns Value.
-   */
-  value?: ((editor: SlateEditor) => Value) | Value;
+  /** Controlled value. Alias to `editor.children`. */
+  value?: Value;
 } & React.HTMLAttributes<HTMLDivElement>;
 
 export function PlateStatic(props: PlateStaticProps) {
   const { className, components, editor, value, ...rest } = props;
 
-  // Whenever `value` changes, update `editor.children`
-  // so that the static renderer can display it
-  React.useEffect(() => {
-    if (value) {
-      const newValue = typeof value === 'function' ? value(editor) : value;
-
-      if (editor.children !== newValue) {
-        editor.children = newValue;
-      }
-    }
-  }, [value, editor]);
+  if (value) {
+    editor.children = value;
+  }
 
   const decorate = pipeDecorate(editor);
 
@@ -302,3 +291,15 @@ export function PlateStatic(props: PlateStaticProps) {
 
   return aboveEditable;
 }
+
+// Whenever `value` changes, update `editor.children`
+// so that the static renderer can display it
+// React.useEffect(() => {
+//   if (value) {
+//     const newValue = typeof value === 'function' ? value(editor) : value;
+
+//     if (editor.children !== newValue) {
+//       editor.children = newValue;
+//     }
+//   }
+// }, [value, editor]);

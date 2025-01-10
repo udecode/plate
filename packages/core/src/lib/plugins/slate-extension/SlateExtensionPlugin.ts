@@ -40,6 +40,13 @@ export const SlateExtensionPlugin = createSlatePlugin({
             }
 
             apply(operation);
+
+            if (editor.children.length === 0) {
+              editor.tf.insertNodes(editor.api.create.block(), {
+                at: [0],
+                select: !!editor.selection,
+              });
+            }
           },
           deleteBackward(unit) {
             deleteBackward(unit);

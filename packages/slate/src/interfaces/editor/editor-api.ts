@@ -75,6 +75,12 @@ export type EditorApi<V extends Value = Value> = {
     options?: EditorFragmentOptions
   ) => N[];
 
+  /** Check if a path is selected by the current selection. */
+  isSelected: (
+    target: Path | TRange,
+    options?: EditorIsSelectedOptions
+  ) => boolean;
+
   /**
    * Call a function, Determine whether or not remove the previous node when
    * merge.
@@ -769,4 +775,9 @@ export type QueryMode = {
 export type EditorLastOptions = {
   /** Get last node at this level (0-based). */
   level?: number;
+};
+
+export type EditorIsSelectedOptions = {
+  /** Check if selection contains the entire path range */
+  contains?: boolean;
 };

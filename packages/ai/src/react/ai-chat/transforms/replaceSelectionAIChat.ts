@@ -82,23 +82,23 @@ export const replaceSelectionAIChat = (
       mode: 'lowest',
     });
 
-    if (firstBlock) {
-      const isFullySelected = isRangeContainsPath(editor, firstBlock[1]);
+    if (
+      firstBlock &&
+      editor.api.isSelected(firstBlock[1], { contains: true }) &&
+      format !== 'none'
+    ) {
+      const formattedBlocks = createFormattedBlocks({
+        blocks: cloneDeep(sourceEditor.children),
+        format,
+        sourceBlock: firstBlock,
+      });
 
-      if (isFullySelected && format !== 'none') {
-        const formattedBlocks = createFormattedBlocks({
-          blocks: cloneDeep(sourceEditor.children),
-          format,
-          sourceBlock: firstBlock,
-        });
+      if (!formattedBlocks) return;
 
-        if (!formattedBlocks) return;
+      editor.tf.insertFragment(formattedBlocks);
+      editor.tf.focus();
 
-        editor.tf.insertFragment(formattedBlocks);
-        editor.tf.focus();
-
-        return;
-      }
+      return;
     }
 
     editor.tf.insertFragment(sourceEditor.children);

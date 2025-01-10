@@ -11,16 +11,26 @@ import {
   type RemarkTextRules,
   remarkPlugin,
 } from '../../remark-slate';
+import { parseMarkdownBlocks } from './parseMarkdownBlocks';
+
+export type DeserializeMdOptions = {
+  /** Token types to filter out from marked lexer */
+  excludeTokens?: string[];
+  /** Whether to add _memo property to elements */
+  memoize?: boolean;
+  /** A function that allows you to modify the markdown processor. */
+  processor?: (processor: Processor) => Processor;
+};
 
 /** Deserialize content from Markdown format to Slate format. */
 export const deserializeMd = (
   editor: SlateEditor,
   data: string,
   {
+    excludeTokens = ['space'],
+    memoize = true,
     processor,
-  }: {
-    processor?: (processor: Processor) => Processor;
-  } = {}
+  }: DeserializeMdOptions = {}
 ) => {
   const elementRules: RemarkElementRules = {};
   const textRules: RemarkTextRules = {};
@@ -36,17 +46,21 @@ export const deserializeMd = (
     tree = processor(tree);
   }
 
-  tree = tree
-    .use(remarkGfm)
-    .use(remarkPlugin, {
-      editor,
-      elementRules,
-      indentList: options.indentList,
-      textRules,
-    } as unknown as RemarkPluginOptions)
-    .processSync(data);
+  tree = tree.use(remarkGfm).use(remarkPlugin, {
+    editor,
+    elementRules,
+    indentList: options.indentList,
+    textRules,
+  } as unknown as RemarkPluginOptions);
 
-  return tree.result;
+  if (memoize) {
+    return parseMarkdownBlocks(data, { excludeTokens }).map((token) => ({
+      _memo: token.raw,
+      ...tree.processSync(token.raw).result[0],
+    }));
+  }
+
+  return tree.processSync(data).result;
 };
 
 // TODO: Collect rules from plugins

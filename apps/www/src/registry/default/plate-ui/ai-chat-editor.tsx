@@ -1,16 +1,10 @@
 'use client';
 
-import React, { memo, useCallback, useEffect, useMemo } from 'react';
+import React, { memo } from 'react';
 
 import { withProps } from '@udecode/cn';
-import {
-  type SlateEditor,
-  BaseParagraphPlugin,
-  SlateLeaf,
-  createSlateEditor,
-} from '@udecode/plate';
-import { useEditorPlugin } from '@udecode/plate/react';
-import { AIChatPlugin } from '@udecode/plate-ai/react';
+import { BaseParagraphPlugin, SlateLeaf } from '@udecode/plate';
+import { useAIChatEditor } from '@udecode/plate-ai/react';
 import {
   BaseBoldPlugin,
   BaseCodePlugin,
@@ -32,7 +26,7 @@ import {
 import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
 import { BaseLinkPlugin } from '@udecode/plate-link';
-import { MarkdownPlugin, deserializeMd } from '@udecode/plate-markdown';
+import { MarkdownPlugin } from '@udecode/plate-markdown';
 
 import {
   TodoLiStatic,
@@ -105,32 +99,9 @@ const plugins = [
 ];
 
 export const AIChatEditor = memo(({ content }: { content: string }) => {
-  const { setOption } = useEditorPlugin(AIChatPlugin);
-
-  const valueGetter = useCallback(
-    (editor: SlateEditor) => {
-      return deserializeMd(editor, content);
-    },
-    [content]
-  );
-
-  const aiEditor = useMemo(
-    () => createSlateEditor({ plugins, value: valueGetter }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  );
-
-  useEffect(() => {
-    setOption('aiEditor', aiEditor);
-    console.log('...');
-  }, [aiEditor, setOption]);
+  const aiEditor = useAIChatEditor(content);
 
   return (
-    <EditorStatic
-      variant="aiChat"
-      value={valueGetter}
-      components={components}
-      editor={aiEditor}
-    />
+    <EditorStatic variant="aiChat" components={components} editor={aiEditor} />
   );
 });
