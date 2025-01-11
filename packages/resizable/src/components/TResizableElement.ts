@@ -1,4 +1,4 @@
-import type { TElement } from '@udecode/plate-common';
+import type { TElement } from '@udecode/plate';
 
 export interface TResizableElement extends TElement {
   align?: 'center' | 'left' | 'right';

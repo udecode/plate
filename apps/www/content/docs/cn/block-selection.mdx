@@ -251,7 +251,7 @@ Options for the selection area. Example:
 获取编辑器中选中的块。
 
 <APIReturns>
-  <APIItem type="TNodeEntry[]">
+  <APIItem type="NodeEntry[]">
     选中块entry的数组。
   </APIItem>
 </APIReturns>
@@ -291,12 +291,6 @@ Options for the selection area. Example:
 
 复制选中的块。
 
-<APIParameters>
-  <APIItem name="blocks" type="TNodeEntry[]">
-    要复制的节点entry数组。
-  </APIItem>
-</APIParameters>
-
 ### editor.tf.blockSelection.removeNodes
 
 从编辑器中移除选中的节点。
@@ -310,7 +304,7 @@ Options for the selection area. Example:
 设置选中节点的属性。
 
 <APIParameters>
-  <APIItem name="props" type="Partial<TNodeProps<TElement>>">
+  <APIItem name="props" type="Partial<NodeProps<TElement>>">
     要设置到选中节点的属性。
   </APIItem>
   <APIItem name="options" type="SetNodesOptions" optional>
@@ -323,7 +317,7 @@ Options for the selection area. Example:
 设置选中节点的文本属性。
 
 <APIParameters>
-  <APIItem name="props" type="Partial<TNodeProps<TText>>">
+  <APIItem name="props" type="Partial<NodeProps<TText>>">
     要设置到选中节点的文本属性。
   </APIItem>
   <APIItem name="options" type="Omit<SetNodesOptions, 'at'>" optional>

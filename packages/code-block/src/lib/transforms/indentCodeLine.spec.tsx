@@ -1,11 +1,11 @@
 /** @jsx jsxt */
 
 import {
+  type ElementEntry,
   type SlateEditor,
-  type TElementEntry,
-  getNodeEntry,
-} from '@udecode/plate-common';
-import { createPlateEditor } from '@udecode/plate-common/react';
+  createEditor,
+} from '@udecode/plate';
+import { createPlateEditor } from '@udecode/plate/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
@@ -16,17 +16,19 @@ jsxt;
 describe('indent code line', () => {
   describe('when the selection is expanded', () => {
     it('should indent', () => {
-      const input = (
-        <editor>
-          <hcodeblock>
-            <hcodeline>
-              {'  '}before <anchor />
-              selection
-              <focus /> after
-            </hcodeline>
-          </hcodeblock>
-        </editor>
-      ) as any as SlateEditor;
+      const input = createEditor(
+        (
+          <editor>
+            <hcodeblock>
+              <hcodeline>
+                {'  '}before <anchor />
+                selection
+                <focus /> after
+              </hcodeline>
+            </hcodeblock>
+          </editor>
+        ) as any
+      );
 
       const output = (
         <editor>
@@ -41,16 +43,17 @@ describe('indent code line', () => {
       ) as any as SlateEditor;
 
       const editor = createPlateEditor({
-        editor: input,
         plugins: [CodeBlockPlugin],
+        selection: input.selection,
+        value: input.children,
       });
 
-      const codeBlock = getNodeEntry(editor, [0]) as TElementEntry;
-      const codeLine = getNodeEntry(editor, [0, 0]) as TElementEntry;
+      const codeBlock = editor.api.node([0]) as ElementEntry;
+      const codeLine = editor.api.node([0, 0]) as ElementEntry;
 
       indentCodeLine(editor, { codeBlock, codeLine });
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 
@@ -82,16 +85,17 @@ describe('indent code line', () => {
         ) as any as SlateEditor;
 
         const editor = createPlateEditor({
-          editor: input,
           plugins: [CodeBlockPlugin],
+          selection: input.selection,
+          value: input.children,
         });
 
-        const codeBlock = getNodeEntry(editor, [0]) as TElementEntry;
-        const codeLine = getNodeEntry(editor, [0, 0]) as TElementEntry;
+        const codeBlock = editor.api.node([0]) as ElementEntry;
+        const codeLine = editor.api.node([0, 0]) as ElementEntry;
 
         indentCodeLine(editor, { codeBlock, codeLine });
 
-        expect(input.children).toEqual(output.children);
+        expect(editor.children).toEqual(output.children);
       });
     });
 
@@ -122,16 +126,17 @@ describe('indent code line', () => {
         ) as any as SlateEditor;
 
         const editor = createPlateEditor({
-          editor: input,
           plugins: [CodeBlockPlugin],
+          selection: input.selection,
+          value: input.children,
         });
 
-        const codeBlock = getNodeEntry(editor, [0]) as TElementEntry;
-        const codeLine = getNodeEntry(editor, [0, 0]) as TElementEntry;
+        const codeBlock = editor.api.node([0]) as ElementEntry;
+        const codeLine = editor.api.node([0, 0]) as ElementEntry;
 
         indentCodeLine(editor, { codeBlock, codeLine });
 
-        expect(input.children).toEqual(output.children);
+        expect(editor.children).toEqual(output.children);
       });
     });
   });

@@ -4,7 +4,7 @@ import {
   HtmlPlugin,
   createSlatePlugin,
   isSlatePluginElement,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { cleanDocx } from './docx-cleaner/cleanDocx';
 import {

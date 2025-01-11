@@ -3,7 +3,7 @@
 import React from 'react';
 
 import { withProps } from '@udecode/cn';
-import { Plate, PlateElement } from '@udecode/plate-common/react';
+import { Plate, PlateElement } from '@udecode/plate/react';
 import {
   BulletedListPlugin,
   ListItemPlugin,

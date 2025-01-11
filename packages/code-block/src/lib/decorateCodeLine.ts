@@ -1,7 +1,6 @@
-import type { Decorate } from '@udecode/plate-common';
-import type { Range } from 'slate';
+import type { Decorate, TRange } from '@udecode/plate';
 
-import { getNodeString, getParentNode } from '@udecode/plate-common';
+import { NodeApi } from '@udecode/plate';
 
 import type { TCodeBlockElement } from './types';
 
@@ -10,7 +9,7 @@ import {
   BaseCodeSyntaxPlugin,
 } from './BaseCodeBlockPlugin';
 
-export interface CodeSyntaxRange extends Range {
+export interface CodeSyntaxRange extends TRange {
   [BaseCodeSyntaxPlugin.key]: true;
   tokenType: string;
 }
@@ -34,7 +33,7 @@ export const decorateCodeLine: Decorate = ({
     return ranges;
   }
 
-  const codeBlock = getParentNode<TCodeBlockElement>(editor, path);
+  const codeBlock = editor.api.parent<TCodeBlockElement>(path);
 
   if (!codeBlock) {
     return ranges;
@@ -52,7 +51,7 @@ export const decorateCodeLine: Decorate = ({
     return ranges;
   }
 
-  const text = getNodeString(node);
+  const text = NodeApi.string(node);
   const tokens = tokenize(text, lang);
   let offset = 0;
 

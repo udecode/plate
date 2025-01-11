@@ -1,27 +1,20 @@
-import {
-  type SlateEditor,
-  type TEditor,
-  type WrapNodesOptions,
-  wrapNodes,
-} from '@udecode/plate-common';
+import type { SlateEditor, WrapNodesOptions } from '@udecode/plate';
 
 import type { TLinkElement } from '../types';
 
 import { BaseLinkPlugin } from '../BaseLinkPlugin';
 
-export interface WrapLinkOptions<E extends TEditor = TEditor>
-  extends WrapNodesOptions<E> {
+export interface WrapLinkOptions extends WrapNodesOptions {
   url: string;
   target?: string;
 }
 
 /** Wrap a link node with split. */
-export const wrapLink = <E extends SlateEditor>(
-  editor: E,
-  { target, url, ...options }: WrapLinkOptions<E>
+export const wrapLink = (
+  editor: SlateEditor,
+  { target, url, ...options }: WrapLinkOptions
 ) => {
-  wrapNodes<TLinkElement>(
-    editor,
+  editor.tf.wrapNodes<TLinkElement>(
     {
       children: [],
       target,

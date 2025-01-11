@@ -2,19 +2,12 @@
 
 import React, { useCallback, useMemo, useState } from 'react';
 
-import type { TElement, Value } from '@udecode/plate-common';
+import type { RenderElementProps, TElement, Value } from '@udecode/plate';
 
+import { Editable, Plate, Slate, withReact } from '@udecode/plate/react';
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
-import { Plate } from '@udecode/plate-common/react';
 import { createEditor } from 'slate';
-import {
-  type ReactEditor,
-  type RenderElementProps,
-  Editable,
-  Slate,
-  withReact,
-} from 'slate-react';
 
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
 import { createHugeDocumentValue } from '@/registry/default/example/values/huge-document-value';
@@ -51,7 +44,7 @@ function Element({ attributes, children, element }: RenderElementProps) {
 function WithoutPlate() {
   const [initialValue, setValue] = useState(value);
   const renderElement = useCallback((p: any) => <Element {...p} />, []);
-  const editor = useMemo(() => withReact(createEditor() as ReactEditor), []);
+  const editor = useMemo(() => withReact(createEditor()), []);
   const onChange = useCallback((newValue: Value) => setValue(newValue), []);
 
   return (

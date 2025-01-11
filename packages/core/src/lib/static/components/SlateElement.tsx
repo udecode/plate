@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { type TElement, isBlock } from '@udecode/slate';
+import type { TElement } from '@udecode/slate';
+
 import clsx from 'clsx';
 
 import type { AnySlatePlugin } from '../../plugin';
@@ -21,7 +22,7 @@ export const SlateElement = (props: SlateElementProps) => {
   const { as, attributes, element, elementToAttributes, nodeProps, ...rest } =
     omitPluginContext(props);
 
-  const block = !!element.id && isBlock(props.editor, element);
+  const block = !!element.id && props.editor.api.isBlock(element);
 
   const rootProps = {
     ...attributes,

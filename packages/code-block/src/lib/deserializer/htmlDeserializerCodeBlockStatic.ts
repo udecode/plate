@@ -1,4 +1,4 @@
-import { getSlateElements, isSlatePluginElement } from '@udecode/plate-common';
+import { getSlateElements, isSlatePluginElement } from '@udecode/plate';
 
 import {
   BaseCodeBlockPlugin,

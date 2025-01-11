@@ -1,9 +1,4 @@
-import {
-  type SlateEditor,
-  removeNodes,
-  unsetNodes,
-  withoutNormalizing,
-} from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
 
 import type { TSuggestionText } from '../types';
 
@@ -14,10 +9,10 @@ export const acceptSuggestion = (
   editor: SlateEditor,
   description: TSuggestionDescription
 ) => {
-  withoutNormalizing(editor as any, () => {
+  editor.tf.withoutNormalizing(() => {
     const suggestionKey = getSuggestionKey(description.userId);
 
-    unsetNodes(editor as any, [BaseSuggestionPlugin.key, suggestionKey], {
+    editor.tf.unsetNodes([BaseSuggestionPlugin.key, suggestionKey], {
       at: [],
       match: (n) => {
         const node = n as TSuggestionText;
@@ -30,7 +25,7 @@ export const acceptSuggestion = (
         );
       },
     });
-    removeNodes(editor as any, {
+    editor.tf.removeNodes({
       at: [],
       match: (n) => {
         const node = n as TSuggestionText;

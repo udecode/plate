@@ -1,17 +1,9 @@
-import type { Range } from 'slate';
-
 import {
   type SlateEditor,
+  type TRange,
   BaseParagraphPlugin,
-  deleteText,
-  getEditorString,
-  getRangeBefore,
-  getRangeFromBlockStart,
-  isBlock,
-  isVoid,
-  setElements,
-  someNode,
-} from '@udecode/plate-common';
+  ElementApi,
+} from '@udecode/plate';
 import castArray from 'lodash/castArray.js';
 
 import type { AutoformatBlockRule } from '../types';
@@ -46,20 +38,20 @@ export const autoformatBlock = (
 
     if (!triggers.includes(text)) continue;
 
-    let matchRange: Range | undefined;
+    let matchRange: TRange | undefined;
 
     if (triggerAtBlockStart) {
-      matchRange = getRangeFromBlockStart(editor) as Range;
+      matchRange = editor.api.range('start', editor.selection);
 
       // Don't autoformat if there is void nodes.
-      const hasVoidNode = someNode(editor, {
+      const hasVoidNode = editor.api.some({
         at: matchRange,
-        match: (n) => isVoid(editor, n),
+        match: (n) => ElementApi.isElement(n) && editor.api.isVoid(n),
       });
 
       if (hasVoidNode) continue;
 
-      const textFromBlockStart = getEditorString(editor, matchRange);
+      const textFromBlockStart = editor.api.string(matchRange);
 
       const isMatched = matchByRegex
         ? !!textFromBlockStart.match(end)
@@ -67,22 +59,24 @@ export const autoformatBlock = (
 
       if (!isMatched) continue;
     } else {
-      matchRange = getRangeBefore(editor, editor.selection as Range, {
-        matchByRegex,
-        matchString: end,
+      matchRange = editor.api.range('before', editor.selection!, {
+        before: {
+          matchByRegex,
+          matchString: end,
+        },
       });
 
       if (!matchRange) continue;
     }
     if (!allowSameTypeAbove) {
       // Don't autoformat if already in a block of the same type.
-      const isBelowSameBlockType = someNode(editor, { match: { type } });
+      const isBelowSameBlockType = editor.api.some({ match: { type } });
 
       if (isBelowSameBlockType) continue;
     }
     // if the trigger is only 1 char there is nothing to delete, so we'd delete unrelated text
     if (match.length > 1) {
-      deleteText(editor, {
+      editor.tf.delete({
         at: matchRange,
       });
     }
@@ -92,11 +86,10 @@ export const autoformatBlock = (
     if (format) {
       format(editor);
     } else {
-      setElements(
-        editor,
+      editor.tf.setNodes(
         { type },
         {
-          match: (n) => isBlock(editor, n),
+          match: (n) => editor.api.isBlock(n),
         }
       );
     }

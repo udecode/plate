@@ -1,4 +1,4 @@
-import type { SlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
 
 import { setIndent } from '@udecode/plate-indent';
 
@@ -10,9 +10,9 @@ import {
 } from '../BaseIndentListPlugin';
 
 /** Decrease the indentation of the selected blocks. */
-export const outdentList = <E extends SlateEditor>(
-  editor: E,
-  options: IndentListOptions<E> = {}
+export const outdentList = (
+  editor: SlateEditor,
+  options: IndentListOptions = {}
 ) => {
   setIndent(editor, {
     offset: -1,

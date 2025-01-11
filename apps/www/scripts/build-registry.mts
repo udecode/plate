@@ -503,12 +503,7 @@ async function buildStylesIndex() {
       "class-variance-authority",
       "lucide-react",
       "@udecode/cn",
-      "@udecode/plate-common",
-      "slate",
-      "slate-dom",
-      "slate-react",
-      "slate-history",
-      "slate-hyperscript",
+      "@udecode/plate",
     ]
 
     // TODO: Remove this when we migrate to lucide-react.

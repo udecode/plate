@@ -1,9 +1,9 @@
 ---
-title: PlatePlugin
+title: Plate Plugin
 description: API reference for Plate plugins.
 ---
 
-Plate plugins are objects passed to `Plate` [plugins](/docs/api/core/plate#plugins) prop.
+Plate plugins are objects passed to `Plate` [plugins](/docs/api/core/plate-components#plugins) prop.
 
 ## Generic Types
 
@@ -33,34 +33,32 @@ const MyPlugin = createPlatePlugin<MyPluginConfig>({
 
 ## Plugin Properties
 
-## Plugin Properties
-
 <APIAttributes>
 <APIItem name="key" type="C['key']" required>
 Unique identifier used by Plate to store the plugins by key in `editor.plugins`.
 </APIItem>
 
-<APIItem name="api" type="UnionToIntersection<InferApi<C>>">
+<APIItem name="api" type="Record<string, Function>">
 An object of API functions provided by the plugin. These functions are accessible via `editor.api[key]`.
 </APIItem>
 
-<APIItem name="transforms" type="UnionToIntersection<InferTransforms<C>>">
+<APIItem name="transforms" type="Record<string, Function>">
 Transform functions provided by the plugin that modify the editor state. These are accessible via `editor.tf[key]`.
 </APIItem>
 
-<APIItem name="options" type="InferOptions<C>">
+<APIItem name="options" type="Record<string, any>">
 Extended properties used by the plugin as options.
 </APIItem>
 
-<APIItem name="handlers" type="Nullable<DOMHandlers<WithAnyKey<C>> & { onChange?: OnChange<WithAnyKey<C>> }>">
+<APIItem name="handlers" type="{ onChange?: (editor: PlateEditor) => void } & Record<string, Function>">
 Event handlers for various editor events, including `onChange`.
 </APIItem>
 
-<APIItem name="inject" type="Nullable<{...}>">
+<APIItem name="inject" type="object">
 Defines how the plugin injects functionality into other plugins or the editor.
 
 <APISubList>
-<APISubListItem parent="inject" name="nodeProps" type="InjectNodeProps<WithAnyKey<C>>" optional>
+<APISubListItem parent="inject" name="nodeProps" type="Record<string, any>" optional>
 Properties used by Plate to inject props into any node component.
 </APISubListItem>
 
@@ -85,7 +83,7 @@ If true, only matches leaf nodes. Used to restrict prop injection to leaf nodes.
 <APISubListItem parent="inject" name="maxLevel" type="number" optional>
 Maximum nesting level for node prop injection. Nodes deeper than this level will not receive injected props.
 </APISubListItem>
-<APISubListItem parent="inject" name="plugins" type="Record<string, Partial<EditorPlatePlugin<AnyPluginConfig>>>" optional>
+<APISubListItem parent="inject" name="plugins" type="Record<string, Partial<PlatePlugin>>" optional>
 Property that can be used by a plugin to allow other plugins to inject code.
 </APISubListItem>
 <APISubListItem parent="inject" name="targetPluginToInject" type="function" optional>
@@ -99,7 +97,7 @@ Plugin keys used by `InjectNodeProps` and the `targetPluginToInject` function.
 </APISubList>
 </APIItem>
 
-<APIItem name="node" type="BasePluginNode">
+<APIItem name="node" type="object">
 Defines the node-specific configuration for the plugin.
 
 <APISubList>
@@ -112,11 +110,16 @@ Indicates if this plugin's elements should be treated as inline.
 <APISubListItem parent="node" name="isLeaf" type="boolean" optional>
 Indicates if this plugin's nodes should be rendered as leaves.
 </APISubListItem>
-<APISubListItem parent="node" name="isVoid" type="boolean" optional>
-Indicates if this plugin's elements should be treated as void.
-</APISubListItem>
 <APISubListItem parent="node" name="isMarkableVoid" type="boolean" optional>
 Indicates if this plugin's void elements should be markable.
+</APISubListItem>
+<APISubListItem parent="node" name="isSelectable" type="boolean" optional>
+Indicates if this plugin's nodes should be selectable.
+
+- **Default:** `true`
+</APISubListItem>
+<APISubListItem parent="node" name="isVoid" type="boolean" optional>
+Indicates if this plugin's elements should be treated as void.
 </APISubListItem>
 <APISubListItem parent="node" name="type" type="string" optional>
 Specifies the type identifier for this plugin's nodes.
@@ -165,27 +168,27 @@ HTML React serializer configuration.
 </APISubList>
 </APIItem>
 
-<APIItem name="render" type="Nullable<{...}>">
-Defines rendering functions for various parts of the editor.
+<APIItem name="render" type="object">
+Defines how the plugin renders components.
 
 <APISubList>
-<APISubListItem parent="render" name="aboveEditable" type="React.FC<{ children: React.ReactNode }>" optional>
-Renders a component above the `Editable` component but within the `Slate` wrapper.
+<APISubListItem parent="render" name="aboveEditable" type="Component" optional>
+Component rendered above the Editable component but inside the Slate wrapper.
 </APISubListItem>
-<APISubListItem parent="render" name="aboveNodes" type="NodeWrapperComponent<WithAnyKey<C>>" optional>
-Renders a component above all other plugins' `node` components.
+<APISubListItem parent="render" name="aboveNodes" type="Component" optional>
+Component rendered above all other plugins' node components.
 </APISubListItem>
-<APISubListItem parent="render" name="aboveSlate" type="React.FC<{ children: React.ReactNode }>" optional>
-Renders a component above the `Slate` wrapper.
+<APISubListItem parent="render" name="aboveSlate" type="Component" optional>
+Component rendered above the Slate wrapper.
 </APISubListItem>
 <APISubListItem parent="render" name="afterEditable" type="EditableSiblingComponent" optional>
-Renders a component after the `Editable` component.
+Renders a component after the Editable component.
 </APISubListItem>
 <APISubListItem parent="render" name="beforeEditable" type="EditableSiblingComponent" optional>
-Renders a component before the `Editable` component.
+Renders a component before the Editable component.
 </APISubListItem>
 <APISubListItem parent="render" name="belowNodes" type="NodeWrapperComponent<WithAnyKey<C>>" optional>
-Renders a component below all other plugins' `node` components, but above their `children`.
+Renders a component below all other plugins' node components, but above their children.
 </APISubListItem>
 <APISubListItem parent="render" name="node" type="NodeComponent" optional>
 Renders the node component.
@@ -223,7 +226,18 @@ Defines the order in which plugins are registered and executed.
 Property used by Plate to decorate editor ranges.
 </APIItem>
 
-<APIItem name="useHooks" type="UseHooks<WithAnyKey<C>>" optional>
+<APIItem name="extendEditor" type="ExtendEditor<WithAnyKey<C>>" optional>
+Function to extend the editor instance. Used primarily for integrating legacy Slate plugins that need direct editor mutation. Only one `extendEditor` is allowed per plugin.
+
+```ts
+extendEditor: ({ editor }) => {
+  // Example: Integrating a legacy Slate plugin
+  return withYjs(editor);
+}
+```
+</APIItem>
+
+<APIItem name="useHooks" type="() => void" optional>
 Hook called when the editor is initialized.
 </APIItem>
 </APIAttributes>
@@ -231,7 +245,7 @@ Hook called when the editor is initialized.
 ## Plugin Methods
 
 <APIAttributes>
-<APIItem name="configure" type="function">
+<APIItem name="configure" type="(config: PlatePluginConfig | ((ctx: PlatePluginContext) => PlatePluginConfig)) => PlatePlugin">
 Creates a new plugin instance with updated options.
 
 ```ts
@@ -239,15 +253,15 @@ Creates a new plugin instance with updated options.
 ```
 </APIItem>
 
-<APIItem name="extend" type="function">
-Creates a new plugin instance with additional configuration. Can accept either an object or a function.
+<APIItem name="extend" type="(config: Partial<PlatePlugin> | ((ctx: PlatePluginContext) => Partial<PlatePlugin>)) => PlatePlugin">
+Creates a new plugin instance with additional configuration.
 
 ```ts
 (extendConfig: Partial<PlatePlugin> | ((ctx: PlatePluginContext<AnyPluginConfig>) => Partial<PlatePlugin>)) => PlatePlugin
 ```
 </APIItem>
 
-<APIItem name="extendPlugin" type="function">
+<APIItem name="extendPlugin" type="(key: string, config: Partial<PlatePlugin> | ((ctx: PlatePluginContext) => Partial<PlatePlugin>)) => PlatePlugin">
 Extends an existing nested plugin or adds a new one if not found. Supports deep nesting.
 
 ```ts
@@ -263,43 +277,69 @@ Sets or replaces the component associated with a plugin.
 ```
 </APIItem>
 
-<APIItem name="extendApi" type="function">
+<APIItem name="overrideEditor" type="function">
+Creates a new plugin instance with overridden editor methods. Provides access to original methods via `tf` and `api` parameters. Can be called multiple times to layer different overrides.
+
+```ts
+overrideEditor(({ editor, tf: { deleteForward }, api: { isInline } }) => ({
+  transforms: {
+    // Override transforms
+    deleteForward(options) {
+      deleteForward(options);
+    },
+  },
+  api: {
+    // Override API methods
+    isInline(element) {
+      return isInline(element);
+    },
+  },
+})) => PlatePlugin<C>
+```
+
+- Preferred method for modifying editor behavior
+- Type-safe access to original methods
+- Clean separation between transforms and API
+- Can be chained multiple times
+</APIItem>
+
+<APIItem name="extendApi" type="(api: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin">
 Extends the plugin's API.
 
 ```ts
-(api: (ctx: PlatePluginContext<AnyPluginConfig>) => any) => PlatePlugin<C>
+(api: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin
 ```
 </APIItem>
 
-<APIItem name="extendEditorApi" type="function">
+<APIItem name="extendEditorApi" type="(api: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin">
 Extends the editor's API with plugin-specific methods.
 
 ```ts
-(api: (ctx: PlatePluginContext<AnyPluginConfig>) => any) => PlatePlugin<C>
+(api: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin
 ```
 </APIItem>
 
-<APIItem name="extendTransforms" type="function">
+<APIItem name="extendTransforms" type="(transforms: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin">
 Extends the plugin's transforms.
 
 ```ts
-(transforms: (ctx: PlatePluginContext<AnyPluginConfig>) => any) => PlatePlugin<C>
+(transforms: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin
 ```
 </APIItem>
 
-<APIItem name="extendEditorTransforms" type="function">
+<APIItem name="extendEditorTransforms" type="(transforms: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin">
 Extends the editor's transforms with plugin-specific methods.
 
 ```ts
-(transforms: (ctx: PlatePluginContext<AnyPluginConfig>) => any) => PlatePlugin<C>
+(transforms: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin
 ```
 </APIItem>
 
-<APIItem name="extendOptions" type="function">
+<APIItem name="extendOptions" type="(options: (ctx: PlatePluginContext) => Record<string, any>) => PlatePlugin">
 Extends the plugin options with selectors.
 
 ```ts
-(options: (ctx: PlatePluginContext<AnyPluginConfig>) => any) => PlatePlugin<C>
+(options: (ctx: PlatePluginContext) => Record<string, any>) => PlatePlugin
 ```
 </APIItem>
 </APIAttributes>

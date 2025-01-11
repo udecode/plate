@@ -1,4 +1,4 @@
-import type { HtmlDeserializer } from '@udecode/plate-common';
+import type { HtmlDeserializer } from '@udecode/plate';
 
 import {
   BaseCodeBlockPlugin,

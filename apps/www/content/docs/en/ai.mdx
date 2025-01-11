@@ -49,7 +49,7 @@ import {
   BaseCodeLinePlugin,
   BaseCodeSyntaxPlugin,
 } from '@udecode/plate-code-block';
-import { BaseParagraphPlugin, createSlateEditor } from '@udecode/plate-common';
+import { BaseParagraphPlugin, createSlateEditor } from '@udecode/plate';
 import { BaseHeadingPlugin, HEADING_LEVELS } from '@udecode/plate-heading';
 import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
@@ -250,6 +250,8 @@ Extends the editor with AI transforms.
 
 ### AIChatPlugin
 
+This plugin is experimental.
+
 Enables chat operations and streaming text generation in the editor.
 
 <APIOptions>
@@ -394,7 +396,7 @@ In insert mode, undoes previous AI changes before submitting.
 Inserts AI-generated nodes with the AI mark.
 
 <APIParameters>
-  <APIItem name="nodes" type="TDescendant[]">
+  <APIItem name="nodes" type="Descendant[]">
     Nodes to insert with AI mark.
   </APIItem>
   <APIItem name="options" type="object" optional>

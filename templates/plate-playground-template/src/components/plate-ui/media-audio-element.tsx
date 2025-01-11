@@ -3,7 +3,7 @@
 import React from 'react';
 
 import { cn, withRef } from '@udecode/cn';
-import { withHOC } from '@udecode/plate-common/react';
+import { withHOC } from '@udecode/plate/react';
 import { useMediaState } from '@udecode/plate-media/react';
 import { ResizableProvider } from '@udecode/plate-resizable';
 
@@ -17,11 +17,7 @@ export const MediaAudioElement = withHOC(
       const { align = 'center', readOnly, unsafeUrl } = useMediaState();
 
       return (
-        <PlateElement
-          ref={ref}
-          className={cn(className, 'relative mb-1')}
-          {...props}
-        >
+        <PlateElement ref={ref} className={cn(className, 'mb-1')} {...props}>
           <figure
             className="group relative cursor-default"
             contentEditable={false}

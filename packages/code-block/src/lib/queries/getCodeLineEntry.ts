@@ -1,59 +1,55 @@
-import type { Location } from 'slate';
-
 import {
   type ElementOf,
+  type NodeEntry,
   type SlateEditor,
   type TElement,
-  type TNodeEntry,
-  getAboveNode,
-  getParentNode,
-  isElement,
-  someNode,
-} from '@udecode/plate-common';
+  type TLocation,
+  ElementApi,
+} from '@udecode/plate';
 
 import { BaseCodeLinePlugin } from '../BaseCodeBlockPlugin';
 
 /** If at (default = selection) is in ul>li>p, return li and ul node entries. */
 export const getCodeLineEntry = <N extends ElementOf<E>, E extends SlateEditor>(
   editor: E,
-  { at = editor.selection }: { at?: Location | null } = {}
+  { at = editor.selection }: { at?: TLocation | null } = {}
 ) => {
   if (
     at &&
-    someNode(editor, {
+    editor.api.some({
       at,
       match: { type: editor.getType(BaseCodeLinePlugin) },
     })
   ) {
-    const selectionParent = getParentNode(editor, at);
+    const selectionParent = editor.api.parent(at);
 
     if (!selectionParent) return;
 
     const [, parentPath] = selectionParent;
 
     const codeLine =
-      getAboveNode<TElement>(editor, {
+      editor.api.above<TElement>({
         at,
         match: { type: editor.getType(BaseCodeLinePlugin) },
-      }) || getParentNode<N>(editor, parentPath);
+      }) || editor.api.parent<N>(parentPath);
 
     if (!codeLine) return;
 
     const [codeLineNode, codeLinePath] = codeLine;
 
     if (
-      isElement(codeLineNode) &&
+      ElementApi.isElement(codeLineNode) &&
       codeLineNode.type !== editor.getType(BaseCodeLinePlugin)
     )
       return;
 
-    const codeBlock = getParentNode<N>(editor, codeLinePath);
+    const codeBlock = editor.api.parent<N>(codeLinePath);
 
     if (!codeBlock) return;
 
     return {
       codeBlock,
-      codeLine: codeLine as TNodeEntry<N>,
+      codeLine: codeLine as NodeEntry<N>,
     };
   }
 };

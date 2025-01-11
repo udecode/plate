@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from '@udecode/plate-common';
+import { type SlateEditor, createSlateEditor } from '@udecode/plate';
 import { ImagePlugin } from '@udecode/plate-media/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
@@ -34,15 +34,16 @@ describe('toggle on', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      editor: input,
       plugins: [ListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     toggleList(editor, {
       type: editor.getType(BulletedListPlugin),
     });
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 
   it('should turn validLiChildrenTypes to list', () => {
@@ -69,7 +70,6 @@ describe('toggle on', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      editor: input,
       plugins: [
         ListPlugin.configure({
           options: {
@@ -77,13 +77,15 @@ describe('toggle on', () => {
           },
         }),
       ],
+      selection: input.selection,
+      value: input.children,
     });
 
     toggleList(editor, {
       type: editor.getType(BulletedListPlugin),
     });
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 
   it('should turn a p with a selection to list', () => {
@@ -112,15 +114,16 @@ describe('toggle on', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      editor: input,
       plugins: [ListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     toggleList(editor, {
       type: editor.getType(BulletedListPlugin),
     });
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 
   it('should turn multiple p to list', () => {
@@ -153,15 +156,16 @@ describe('toggle on', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      editor: input,
       plugins: [ListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     toggleList(editor, {
       type: editor.getType(BulletedListPlugin),
     });
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 
   it('should turn multiple validLiChildrenTypes to list', () => {
@@ -206,7 +210,6 @@ describe('toggle on', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      editor: input,
       plugins: [
         ListPlugin.configure({
           options: {
@@ -214,13 +217,15 @@ describe('toggle on', () => {
           },
         }),
       ],
+      selection: input.selection,
+      value: input.children,
     });
 
     toggleList(editor, {
       type: editor.getType(BulletedListPlugin),
     });
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 
   it('should turn multiple p to list in the same order', () => {
@@ -267,15 +272,16 @@ describe('toggle on', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      editor: input,
       plugins: [ListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     toggleList(editor, {
       type: editor.getType(BulletedListPlugin),
     });
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 
   it('should turn multiple p to list in the same order', () => {
@@ -322,15 +328,16 @@ describe('toggle on', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      editor: input,
       plugins: [ListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     toggleList(editor, {
       type: editor.getType(BulletedListPlugin),
     });
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 });
 
@@ -372,15 +379,16 @@ describe('toggle off', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      editor: input,
       plugins: [ListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     toggleList(editor, {
       type: editor.getType(BulletedListPlugin),
     });
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 
   it('should split a nested list', () => {
@@ -430,15 +438,16 @@ describe('toggle off', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      editor: input,
       plugins: [ListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     toggleList(editor, {
       type: editor.getType(BulletedListPlugin),
     });
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 
   it('should turn a list to multiple p', () => {
@@ -471,15 +480,16 @@ describe('toggle off', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      editor: input,
       plugins: [ListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     toggleList(editor, {
       type: editor.getType(BulletedListPlugin),
     });
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 
   it('should turn multiple lists to validLiChildrenTypes', () => {
@@ -528,7 +538,6 @@ describe('toggle off', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      editor: input,
       plugins: [
         ListPlugin.configure({
           options: {
@@ -536,13 +545,15 @@ describe('toggle off', () => {
           },
         }),
       ],
+      selection: input.selection,
+      value: input.children,
     });
 
     toggleList(editor, {
       type: editor.getType(BulletedListPlugin),
     });
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 });
 
@@ -571,13 +582,14 @@ describe('toggle over', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      editor: input,
       plugins: [ListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     toggleList(editor, { type: editor.getType(NumberedListPlugin) });
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 
   it('should only toggle the nested list', () => {
@@ -615,13 +627,14 @@ describe('toggle over', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      editor: input,
       plugins: [ListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     toggleList(editor, { type: editor.getType(NumberedListPlugin) });
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 
   it('should only toggle everything that is selected', () => {
@@ -661,13 +674,14 @@ describe('toggle over', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      editor: input,
       plugins: [ListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     toggleList(editor, { type: editor.getType(NumberedListPlugin) });
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 
   it('should fully toggle a nested list when the selection contains a p', () => {
@@ -711,12 +725,13 @@ describe('toggle over', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      editor: input,
       plugins: [ListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     toggleList(editor, { type: editor.getType(NumberedListPlugin) });
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 });

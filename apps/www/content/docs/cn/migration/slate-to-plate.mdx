@@ -121,17 +121,26 @@ const withMyPlugin = (editor) => {
 };
 
 // After
+// 用于覆盖现有方法：
 const MyPlugin = createPlatePlugin({
   key: 'myPlugin',
-  extendEditor: ({ editor }) => {
-    const { insertText } = editor;
-    editor.insertText = (text) => {
+}).overrideEditor(({ editor, tf: { insertText } }) => ({
+  transforms: {
+    insertText(text) {
       // Custom logic
       insertText(text);
-    };
-    return editor;
-  },
-});
+    },
+  }
+}));
+
+// 用于添加新方法：
+const MyOtherPlugin = createPlatePlugin({
+  key: 'myOtherPlugin',
+}).extendEditorTransforms(({ editor }) => ({
+  newMethod(text) {
+    // 添加新功能
+  }
+}));
 ```
 
 有关使用插件上下文的工作原理，请查看 [Plugin Context guide](/docs/plugin-context).

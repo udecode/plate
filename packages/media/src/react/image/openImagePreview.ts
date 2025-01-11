@@ -1,4 +1,4 @@
-import { type SlateEditor, getNodeEntries } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
 
 import type { TMediaElement } from '../../index';
 
@@ -6,7 +6,7 @@ import { BaseImagePlugin } from '../../lib/image/BaseImagePlugin';
 import { type PreviewItem, imagePreviewActions } from './ImagePreviewStore';
 
 const getUrlList = (editor: SlateEditor) => {
-  const enties = getNodeEntries(editor, {
+  const enties = editor.api.nodes({
     at: [],
     match: (n) => n.type === BaseImagePlugin.key,
   });

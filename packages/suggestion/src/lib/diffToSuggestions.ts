@@ -1,17 +1,17 @@
 import {
+  type Descendant,
   type SlateEditor,
-  type TDescendant,
   type ValueOf,
   nanoid,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 import { type ComputeDiffOptions, computeDiff } from '@udecode/plate-diff';
 
 import { getSuggestionProps } from './transforms';
 
 export function diffToSuggestions<E extends SlateEditor>(
   editor: E,
-  doc0: TDescendant[],
-  doc1: TDescendant[],
+  doc0: Descendant[],
+  doc1: Descendant[],
   {
     getDeleteProps = () =>
       getSuggestionProps(editor, nanoid(), {
@@ -22,7 +22,7 @@ export function diffToSuggestions<E extends SlateEditor>(
       getSuggestionProps(editor, nanoid(), {
         suggestionUpdate: newProperties,
       }),
-    isInline = editor.isInline,
+    isInline = editor.api.isInline,
     ...options
   }: Partial<ComputeDiffOptions> = {}
 ): ValueOf<E> {

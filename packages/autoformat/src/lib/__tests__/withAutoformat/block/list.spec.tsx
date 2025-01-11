@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { createSlateEditor } from '@udecode/plate-common';
+import { createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
 import { autoformatPlugin } from 'www/src/registry/default/components/editor/plugins/autoformat-plugin';
 
@@ -40,7 +40,7 @@ describe('when -space', () => {
       value: input,
     });
 
-    editor.insertText(' ');
+    editor.tf.insertText(' ');
 
     expect(input.children).toEqual(output.children);
   });
@@ -73,7 +73,7 @@ describe('when 1.space', () => {
       value: input,
     });
 
-    editor.insertText(' ');
+    editor.tf.insertText(' ');
 
     expect(input.children).toEqual(output.children);
   });
@@ -102,7 +102,7 @@ describe('when [].space', () => {
       value: input,
     });
 
-    editor.insertText(' ');
+    editor.tf.insertText(' ');
 
     expect(input.children).toEqual(output.children);
   });
@@ -131,7 +131,7 @@ describe('when [x].space', () => {
       value: input,
     });
 
-    editor.insertText(' ');
+    editor.tf.insertText(' ');
 
     expect(input.children).toEqual(output.children);
   });
@@ -181,7 +181,7 @@ describe('when +space', () => {
       value: input,
     });
 
-    editor.insertText(' ');
+    editor.tf.insertText(' ');
 
     expect(input.children).toEqual(output.children);
   });

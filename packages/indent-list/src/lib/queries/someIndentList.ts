@@ -1,4 +1,4 @@
-import { type SlateEditor, someNode } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
 
 import { BaseIndentListPlugin, INDENT_LIST_KEYS } from '../../index';
 
@@ -8,7 +8,7 @@ export const someIndentList = (
 ) => {
   return (
     !!editor.selection &&
-    someNode(editor, {
+    editor.api.some({
       match: (n: any) => {
         const isHasProperty = n.hasOwnProperty(INDENT_LIST_KEYS.checked);
 

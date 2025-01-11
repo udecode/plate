@@ -1,59 +1,58 @@
+import type { TElement } from '@udecode/plate';
 import type { TCodeBlockElement } from '@udecode/plate-code-block';
-import type { TElement } from '@udecode/plate-common';
 
+import { BaseParagraphPlugin, createSlateEditor } from '@udecode/plate';
+import { BaseAlignPlugin } from '@udecode/plate-alignment';
+import { BaseAutoformatPlugin } from '@udecode/plate-autoformat';
 import {
-  BaseAlignPlugin,
-  BaseAutoformatPlugin,
-  BaseBlockquotePlugin,
   BaseBoldPlugin,
-  BaseCodeBlockPlugin,
   BaseCodePlugin,
-  BaseColumnPlugin,
-  BaseCommentsPlugin,
-  BaseFontBackgroundColorPlugin,
-  BaseFontColorPlugin,
-  BaseFontSizePlugin,
-  BaseHeadingPlugin,
-  BaseHighlightPlugin,
-  BaseHorizontalRulePlugin,
-  BaseImagePlugin,
-  BaseIndentListPlugin,
-  BaseIndentPlugin,
   BaseItalicPlugin,
-  BaseKbdPlugin,
-  BaseLineHeightPlugin,
-  BaseLinkPlugin,
-  BaseListPlugin,
-  BaseMediaEmbedPlugin,
-  BaseMentionPlugin,
-  BaseParagraphPlugin,
-  BaseSingleLinePlugin,
-  BaseSlashPlugin,
-  BaseSoftBreakPlugin,
   BaseStrikethroughPlugin,
   BaseSubscriptPlugin,
   BaseSuperscriptPlugin,
-  BaseTabbablePlugin,
-  BaseTablePlugin,
-  BaseTodoListPlugin,
-  BaseTogglePlugin,
   BaseUnderlinePlugin,
-  DeletePlugin,
-  DocxPlugin,
-  HEADING_KEYS,
-  NodeIdPlugin,
-  NormalizeTypesPlugin,
-  SelectOnBackspacePlugin,
-  TrailingBlockPlugin,
-  createSlateEditor,
-} from '@udecode/plate';
-import { BaseExitBreakPlugin } from '@udecode/plate-break';
+} from '@udecode/plate-basic-marks';
+import { BaseBlockquotePlugin } from '@udecode/plate-block-quote';
+import {
+  BaseExitBreakPlugin,
+  BaseSingleLinePlugin,
+  BaseSoftBreakPlugin,
+} from '@udecode/plate-break';
 import { BaseCaptionPlugin } from '@udecode/plate-caption';
+import { BaseCodeBlockPlugin } from '@udecode/plate-code-block';
+import { BaseCommentsPlugin } from '@udecode/plate-comments';
+import { DocxPlugin } from '@udecode/plate-docx';
 import { BaseEmojiPlugin } from '@udecode/plate-emoji';
 import { BaseExcalidrawPlugin } from '@udecode/plate-excalidraw';
+import {
+  BaseFontBackgroundColorPlugin,
+  BaseFontColorPlugin,
+  BaseFontSizePlugin,
+} from '@udecode/plate-font';
+import { BaseHeadingPlugin, HEADING_KEYS } from '@udecode/plate-heading';
+import { BaseHighlightPlugin } from '@udecode/plate-highlight';
+import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
+import { BaseIndentPlugin } from '@udecode/plate-indent';
+import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
 import { JuicePlugin } from '@udecode/plate-juice';
+import { BaseKbdPlugin } from '@udecode/plate-kbd';
+import { BaseColumnPlugin } from '@udecode/plate-layout';
+import { BaseLineHeightPlugin } from '@udecode/plate-line-height';
+import { BaseLinkPlugin } from '@udecode/plate-link';
+import { BaseListPlugin, BaseTodoListPlugin } from '@udecode/plate-list';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
+import { BaseImagePlugin, BaseMediaEmbedPlugin } from '@udecode/plate-media';
+import { BaseMentionPlugin } from '@udecode/plate-mention';
+import { NodeIdPlugin } from '@udecode/plate-node-id';
+import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { BaseResetNodePlugin } from '@udecode/plate-reset-node';
+import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
+import { BaseSlashPlugin } from '@udecode/plate-slash-command';
+import { BaseTabbablePlugin } from '@udecode/plate-tabbable';
+import { BaseTablePlugin } from '@udecode/plate-table';
+import { BaseTogglePlugin } from '@udecode/plate-toggle';
+import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
 import { DocContent } from '@/app/(app)/docs/[[...slug]]/doc-content';
 import { Code } from '@/components/code';

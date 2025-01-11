@@ -1,5 +1,9 @@
 # @udecode/plate-test-utils
 
+## 42.0.1
+
+## 42.0.0
+
 ## 40.0.0
 
 ### Patch Changes

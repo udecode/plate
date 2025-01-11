@@ -1,13 +1,6 @@
-import type { KeyboardHandler } from '@udecode/plate-common/react';
+import type { KeyboardHandler } from '@udecode/plate/react';
 
-import {
-  isCollapsed,
-  select,
-  someNode,
-  unhangRange,
-} from '@udecode/plate-common';
-import { Hotkeys } from '@udecode/plate-common/react';
-import { Range } from 'slate';
+import { Hotkeys, RangeApi } from '@udecode/plate';
 
 import { type ListConfig, BaseListItemPlugin } from '../lib';
 import { moveListItems } from '../lib/transforms/index';
@@ -28,23 +21,23 @@ export const onKeyDownList: KeyboardHandler<ListConfig> = ({
     const { selection } = editor;
 
     // Unhang the expanded selection
-    if (!isCollapsed(editor.selection)) {
-      const { anchor, focus } = Range.isBackward(selection)
+    if (!editor.api.isCollapsed()) {
+      const { anchor, focus } = RangeApi.isBackward(selection)
         ? { anchor: { ...selection.focus }, focus: { ...selection.anchor } }
         : { anchor: { ...selection.anchor }, focus: { ...selection.focus } };
 
       // This is a workaround for a Slate bug
       // See: https://github.com/ianstormtaylor/slate/pull/5039
-      const unHungRange = unhangRange(editor, { anchor, focus });
+      const unhangRange = editor.api.unhangRange({ anchor, focus });
 
-      if (unHungRange) {
-        workRange = unHungRange;
-        select(editor, unHungRange);
+      if (unhangRange) {
+        workRange = unhangRange;
+        editor.tf.select(unhangRange);
       }
     }
 
     // check if we're in a list context.
-    const listSelected = someNode(editor, {
+    const listSelected = editor.api.some({
       match: { type: editor.getType(BaseListItemPlugin) },
     });
 

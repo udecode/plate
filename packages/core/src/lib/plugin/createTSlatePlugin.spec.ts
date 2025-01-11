@@ -1,8 +1,8 @@
 import type { NodeComponent, PluginConfig } from './BasePlugin';
 
+import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest';
 import { createTPlatePlugin } from '../../react/plugin/createPlatePlugin';
 import { createSlateEditor } from '../editor';
-import { resolvePluginTest } from '../utils';
 import { createTSlatePlugin } from './createSlatePlugin';
 
 describe('createTSlatePlugin', () => {

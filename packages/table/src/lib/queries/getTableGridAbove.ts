@@ -1,28 +1,29 @@
 import {
-  type GetAboveNodeOptions,
+  type EditorAboveOptions,
+  type ElementEntry,
   type SlateEditor,
-  type TEditor,
-  type TElement,
-  type TElementEntry,
-  getEdgeBlocksAbove,
-} from '@udecode/plate-common';
-import { Path } from 'slate';
+  PathApi,
+} from '@udecode/plate';
 
-import { getCellTypes, getEmptyTableNode } from '../../lib/utils';
+import type { TableConfig } from '../BaseTablePlugin';
+
+import { getCellTypes } from '../../lib/utils';
 import {
   type GetTableGridByRangeOptions,
   getTableGridByRange,
 } from './getTableGridByRange';
 
-export type GetTableGridAboveOptions<E extends TEditor = TEditor> =
-  GetAboveNodeOptions<E> & Pick<GetTableGridByRangeOptions, 'format'>;
+export type GetTableGridAboveOptions = EditorAboveOptions &
+  Pick<GetTableGridByRangeOptions, 'format'>;
 
 /** Get sub table above anchor and focus. Format: tables or cells. */
-export const getTableGridAbove = <E extends SlateEditor>(
-  editor: E,
-  { format = 'table', ...options }: GetTableGridAboveOptions<E> = {}
-): TElementEntry[] => {
-  const edges = getEdgeBlocksAbove<TElement>(editor, {
+export const getTableGridAbove = (
+  editor: SlateEditor,
+  { format = 'table', ...options }: GetTableGridAboveOptions = {}
+): ElementEntry[] => {
+  const { api } = editor.getPlugin<TableConfig>({ key: 'table' });
+
+  const edges = editor.api.edgeBlocks({
     match: {
       type: getCellTypes(editor),
     },
@@ -32,7 +33,7 @@ export const getTableGridAbove = <E extends SlateEditor>(
   if (edges) {
     const [start, end] = edges;
 
-    if (!Path.equals(start[1], end[1])) {
+    if (!PathApi.equals(start[1], end[1])) {
       return getTableGridByRange(editor, {
         at: {
           anchor: {
@@ -48,7 +49,7 @@ export const getTableGridAbove = <E extends SlateEditor>(
       });
     }
     if (format === 'table') {
-      const table = getEmptyTableNode(editor, { rowCount: 1 });
+      const table = api.create.table({ rowCount: 1 });
       table.children[0].children = [start[0]];
 
       return [[table, start[1].slice(0, -2)]];

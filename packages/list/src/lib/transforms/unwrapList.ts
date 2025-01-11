@@ -1,20 +1,12 @@
-import type { Path } from 'slate';
-
 import {
+  type Path,
   type SlateEditor,
-  BaseParagraphPlugin,
-  getAboveNode,
-  getBlockAbove,
-  getCommonNode,
-  isElement,
-  setElements,
-  unwrapNodes,
-  withoutNormalizing,
-} from '@udecode/plate-common';
+  ElementApi,
+  NodeApi,
+} from '@udecode/plate';
 
 import {
   BaseBulletedListPlugin,
-  BaseListItemContentPlugin,
   BaseListItemPlugin,
   BaseNumberedListPlugin,
 } from '../BaseListPlugin';
@@ -22,19 +14,19 @@ import { getListTypes } from '../queries/index';
 
 export const unwrapList = (editor: SlateEditor, { at }: { at?: Path } = {}) => {
   const ancestorListTypeCheck = () => {
-    if (getAboveNode(editor, { match: { at, type: getListTypes(editor) } })) {
+    if (editor.api.above({ at, match: { type: getListTypes(editor) } })) {
       return true;
     }
     // The selection's common node might be a list type
     if (!at && editor.selection) {
-      const commonNode = getCommonNode(
+      const commonNode = NodeApi.common(
         editor,
         editor.selection.anchor.path,
         editor.selection.focus.path
-      );
+      )!;
 
       if (
-        isElement(commonNode[0]) &&
+        ElementApi.isElement(commonNode[0]) &&
         getListTypes(editor).includes(commonNode[0].type)
       ) {
         return true;
@@ -44,27 +36,28 @@ export const unwrapList = (editor: SlateEditor, { at }: { at?: Path } = {}) => {
     return false;
   };
 
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     do {
-      const licEntry = getBlockAbove(editor, {
-        at,
-        match: { type: editor.getType(BaseListItemContentPlugin) },
-      });
+      // const licEntry = editor.api.block({
+      //   at,
+      //   match: { type: editor.getType(BaseListItemContentPlugin) },
+      // });
 
-      if (licEntry) {
-        setElements(editor, {
-          at,
-          type: editor.getType(BaseParagraphPlugin),
-        });
-      }
+      // Allow other LIC types
+      // if (licEntry) {
+      //   editor.tf.setNodes(
+      //     { type: editor.getType(BaseParagraphPlugin) },
+      //     { at }
+      //   );
+      // }
 
-      unwrapNodes(editor, {
+      editor.tf.unwrapNodes({
         at,
         match: { type: editor.getType(BaseListItemPlugin) },
         split: true,
       });
 
-      unwrapNodes(editor, {
+      editor.tf.unwrapNodes({
         at,
         match: {
           type: [

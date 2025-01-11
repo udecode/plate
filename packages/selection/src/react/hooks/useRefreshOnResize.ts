@@ -1,13 +1,13 @@
 import React from 'react';
 
-import type { Range } from 'slate';
+import type { TRange } from '@udecode/plate';
 
 import type { SelectionRect } from '../types';
 
 import { useRequestReRender } from './useRequestReRender';
 
 export interface UseRefreshOnResizeOptions {
-  selectionRectCache: React.MutableRefObject<WeakMap<Range, SelectionRect[]>>;
+  selectionRectCache: React.MutableRefObject<WeakMap<TRange, SelectionRect[]>>;
   containerRef?: React.RefObject<HTMLElement>;
   refreshOnResize?: boolean;
 }

@@ -1,14 +1,17 @@
 import {
+  type OmitFirst,
   type PluginConfig,
   type Value,
   type WithPartial,
+  NodeApi,
+  bindFirst,
   createTSlatePlugin,
-  getNodeString,
   nanoid,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { CommentUser, TComment } from './types';
 
+import { insertComment } from './transforms/insertComment';
 import { withComments } from './withComments';
 
 export type BaseCommentsConfig = PluginConfig<
@@ -29,6 +32,11 @@ export type BaseCommentsConfig = PluginConfig<
   } & CommentsSelectors,
   {
     comment: CommentsApi;
+  },
+  {
+    insert: {
+      comment: OmitFirst<typeof insertComment>;
+    };
   }
 >;
 
@@ -52,7 +60,6 @@ export type CommentsApi = {
 
 export const BaseCommentsPlugin = createTSlatePlugin<BaseCommentsConfig>({
   key: 'comment',
-  extendEditor: withComments,
   node: { isLeaf: true },
   options: {
     activeCommentId: null,
@@ -88,7 +95,7 @@ export const BaseCommentsPlugin = createTSlatePlugin<BaseCommentsConfig>({
     newText: () => {
       const { newValue } = getOptions();
 
-      return getNodeString(newValue?.[0]);
+      return NodeApi.string(newValue?.[0]);
     },
     userById: (id) => {
       if (!id) return null;
@@ -96,6 +103,7 @@ export const BaseCommentsPlugin = createTSlatePlugin<BaseCommentsConfig>({
       return getOptions().users[id];
     },
   }))
+  .overrideEditor(withComments)
   .extendApi<Partial<CommentsApi>>(({ getOptions, setOptions }) => ({
     addComment: (value) => {
       const { myUserId } = getOptions();
@@ -109,7 +117,7 @@ export const BaseCommentsPlugin = createTSlatePlugin<BaseCommentsConfig>({
 
       if (newComment.userId) {
         setOptions((draft) => {
-          draft.comments[id] = newComment as TComment;
+          draft.comments![id] = newComment as TComment;
         });
       }
 
@@ -121,7 +129,7 @@ export const BaseCommentsPlugin = createTSlatePlugin<BaseCommentsConfig>({
       if (!myUserId) return;
 
       setOptions((draft) => {
-        draft.comments[id] = {
+        draft.comments![id] = {
           id,
           userId: myUserId,
         } as TComment;
@@ -131,7 +139,7 @@ export const BaseCommentsPlugin = createTSlatePlugin<BaseCommentsConfig>({
       if (!id) return;
 
       setOptions((draft) => {
-        delete draft.comments[id];
+        delete draft.comments![id];
       });
     },
     resetNewCommentValue: () => {
@@ -141,7 +149,10 @@ export const BaseCommentsPlugin = createTSlatePlugin<BaseCommentsConfig>({
       if (!id) return;
 
       setOptions((draft) => {
-        draft.comments[id] = { ...draft.comments[id], ...value };
+        draft.comments![id] = { ...draft.comments![id], ...value };
       });
     },
+  }))
+  .extendEditorTransforms(({ editor }) => ({
+    insert: { comment: bindFirst(insertComment, editor) },
   }));

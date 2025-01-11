@@ -5,7 +5,7 @@ import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import ReactPlayer from 'react-player';
 
 import { cn, withRef } from '@udecode/cn';
-import { useEditorMounted, withHOC } from '@udecode/plate-common/react';
+import { useEditorMounted, withHOC } from '@udecode/plate/react';
 import { useDraggable } from '@udecode/plate-dnd';
 import { parseTwitterUrl, parseVideoUrl } from '@udecode/plate-media';
 import { useMediaState } from '@udecode/plate-media/react';
@@ -44,11 +44,7 @@ export const MediaVideoElement = withHOC(
       });
 
       return (
-        <PlateElement
-          ref={ref}
-          className={cn(className, 'relative py-2.5')}
-          {...props}
-        >
+        <PlateElement ref={ref} className={cn(className, 'py-2.5')} {...props}>
           <figure
             className="relative m-0 cursor-default"
             contentEditable={false}

@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { createSlateEditor } from '@udecode/plate-common';
+import { createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
 import { autoformatPlugin } from 'www/src/registry/default/components/editor/plugins/autoformat-plugin';
 
@@ -29,8 +29,8 @@ it('should autoformat', () => {
     value: input,
   });
 
-  editor.insertText('*');
-  editor.insertText('*');
+  editor.tf.insertText('*');
+  editor.tf.insertText('*');
 
   expect(input.children).toEqual(output.children);
 });

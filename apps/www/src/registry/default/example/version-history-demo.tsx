@@ -3,14 +3,13 @@
 import React from 'react';
 
 import { cn } from '@udecode/cn';
-import { BoldPlugin, ItalicPlugin } from '@udecode/plate-basic-marks/react';
-import { SoftBreakPlugin } from '@udecode/plate-break/react';
-import { type Value, createSlatePlugin, isInline } from '@udecode/plate-common';
+import { type Value, createSlatePlugin } from '@udecode/plate';
 import {
   ParagraphPlugin,
   createPlatePlugin,
   toPlatePlugin,
-} from '@udecode/plate-common/react';
+  useSelected,
+} from '@udecode/plate/react';
 import {
   type PlateElementProps,
   type PlateLeafProps,
@@ -20,7 +19,9 @@ import {
   PlateElement,
   PlateLeaf,
   createPlateEditor,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
+import { BoldPlugin, ItalicPlugin } from '@udecode/plate-basic-marks/react';
+import { SoftBreakPlugin } from '@udecode/plate-break/react';
 import {
   type DiffOperation,
   type DiffUpdate,
@@ -28,7 +29,6 @@ import {
   withGetFragmentExcludeDiff,
 } from '@udecode/plate-diff';
 import { cloneDeep } from 'lodash';
-import { useSelected } from 'slate-react';
 
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
 import { Button } from '@/registry/default/plate-ui/button';
@@ -125,9 +125,8 @@ const InlineVoidElement = ({ children, ...props }: PlateElementProps) => {
 const DiffPlugin = toPlatePlugin(
   createSlatePlugin({
     key: 'diff',
-    extendEditor: withGetFragmentExcludeDiff,
     node: { isLeaf: true },
-  }),
+  }).overrideEditor(withGetFragmentExcludeDiff),
   {
     render: {
       aboveNodes:
@@ -145,7 +144,7 @@ const DiffPlugin = toPlatePlugin(
             } as any
           )[diffOperation.type];
 
-          const Component = isInline(editor, element) ? 'span' : 'div';
+          const Component = editor.api.isInline(element) ? 'span' : 'div';
 
           return (
             <Component
@@ -253,7 +252,7 @@ function Diff({ current, previous }: DiffProps) {
     });
 
     return computeDiff(previous, cloneDeep(current), {
-      isInline: editor.isInline,
+      isInline: editor.api.isInline,
       lineBreakChar: '¶',
     }) as Value;
   }, [previous, current]);

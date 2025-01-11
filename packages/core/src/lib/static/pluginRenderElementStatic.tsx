@@ -1,16 +1,15 @@
 import React from 'react';
 
-import type { TRenderElementProps } from '@udecode/slate-react';
-
 import type { SlateEditor } from '../editor';
 import type { AnyEditorPlugin, NodeComponents } from '../plugin';
+import type { RenderElementProps } from '../types/RenderElementProps';
 
 import { SlateElement } from './components/SlateElement';
 import { getNodeDataAttributes } from './utils/getNodeDataAttributes';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps';
 
 export type SlateRenderElement = (
-  props: TRenderElementProps
+  props: RenderElementProps
 ) => React.ReactElement | undefined;
 
 export const pluginRenderElementStatic = (

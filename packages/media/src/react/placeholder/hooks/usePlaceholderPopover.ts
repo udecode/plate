@@ -1,10 +1,11 @@
-import { isSelectionExpanded } from '@udecode/plate-common';
 import {
   useEditorRef,
   useEditorSelector,
   useElement,
-} from '@udecode/plate-common/react';
-import { useFocused, useReadOnly, useSelected } from 'slate-react';
+  useFocused,
+  useReadOnly,
+  useSelected,
+} from '@udecode/plate/react';
 
 import { type TPlaceholderElement, BasePlaceholderPlugin } from '../../../lib';
 import { usePlaceholderStore } from '../placeholderStore';
@@ -16,7 +17,7 @@ export const usePlaceholderPopoverState = () => {
   const focused = useFocused();
 
   const selectionCollapsed = useEditorSelector(
-    (editor) => !isSelectionExpanded(editor),
+    (editor) => !editor.api.isExpanded(),
     []
   );
 

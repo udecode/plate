@@ -1,6 +1,6 @@
 import type React from 'react';
 
-import { useEditorRef } from '@udecode/plate-common/react';
+import { useEditorRef } from '@udecode/plate/react';
 
 import { toggleCodeBlock } from '../../lib/transforms';
 

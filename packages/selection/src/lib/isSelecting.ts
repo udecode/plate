@@ -1,6 +1,4 @@
-import type { PlateEditor } from '@udecode/plate-common/react';
-
-import { isSelectionExpanded } from '@udecode/plate-common';
+import type { PlateEditor } from '@udecode/plate/react';
 
 import { BlockSelectionPlugin } from '../react';
 
@@ -9,7 +7,7 @@ export const isSelecting = (editor: PlateEditor) => {
     BlockSelectionPlugin,
     'isSelectingSome'
   );
-  const selectionExpanded = isSelectionExpanded(editor);
+  const selectionExpanded = editor.api.isExpanded();
 
   return selectionExpanded || isSelectingSome;
 };

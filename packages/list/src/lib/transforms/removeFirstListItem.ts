@@ -1,4 +1,4 @@
-import type { SlateEditor, TElementEntry } from '@udecode/plate-common';
+import type { ElementEntry, SlateEditor } from '@udecode/plate';
 
 import { isListNested } from '../queries/isListNested';
 import { moveListItemUp } from './moveListItemUp';
@@ -10,8 +10,8 @@ export const removeFirstListItem = (
     list,
     listItem,
   }: {
-    list: TElementEntry;
-    listItem: TElementEntry;
+    list: ElementEntry;
+    listItem: ElementEntry;
   }
 ) => {
   const [, listPath] = list;

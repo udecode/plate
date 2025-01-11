@@ -164,30 +164,92 @@ A paragraph node affected by the above plugin would look like this:
 }
 ```
 
+### Override Editor Methods
+
+The `overrideEditor` method provides a way to override existing editor methods while maintaining access to the original implementations. This is particularly useful when you want to modify the behavior of core editor functionality.
+
+```ts
+const CustomPlugin = createPlatePlugin({
+  key: 'custom',
+}).overrideEditor(({ editor, tf: { deleteForward }, api: { isInline } }) => ({
+  // Override transforms
+  transforms: {
+    deleteForward(options) {
+      // Custom logic before deletion
+      console.log('Deleting forward...');
+      
+      // Call original transform
+      deleteForward(options);
+      
+      // Custom logic after deletion
+      console.log('Deleted forward');
+    },
+  },
+  // Override API methods
+  api: {
+    isInline(element) {
+      // Custom inline element check
+      if (element.type === 'custom-inline') {
+        return true;
+      }
+      
+      // Fall back to original behavior
+      return isInline(element);
+    },
+  },
+}));
+```
+
+- Access to original methods via destructured `tf` (transforms) and `api` parameters
+- Type-safe overrides of existing methods
+- Clean separation between transforms and API methods
+- Plugin context and options access
+
+Example with typed options:
+
+```ts
+type CustomConfig = PluginConfig<
+  'custom',
+  { allowDelete: boolean }
+>;
+
+const CustomPlugin = createTPlatePlugin<CustomConfig>({
+  key: 'custom',
+  options: { allowDelete: true },
+}).overrideEditor(({ editor, tf: { deleteForward }, getOptions }) => ({
+  transforms: {
+    deleteForward(options) {
+      // Use typed options to control behavior
+      if (!getOptions().allowDelete) {
+        return;
+      }
+      
+      deleteForward(options);
+    },
+  },
+}));
+```
+
 ### Extend Editor (Advanced)
 
-Occasionally, you'll need to override the built-in editor methods provided by Slate to work around bugs or add complex functionality. To do this, you can use the `extendEditor` plugin option to directly mutate properties of the `editor` object after its creation.
-
-One common application of this technique is to create custom [normalizers](https://docs.slatejs.org/concepts/11-normalizing).
+You can extend the editor for complex functionality. To do this, you can use the `extendEditor` plugin option to directly mutate properties of the `editor` object after its creation.
 
 ```ts showLineNumbers {20}
 const CustomNormalizerPlugin = createPlatePlugin({
   key: 'customNormalizer',
   extendEditor: ({ editor }) => {
-    const { normalizeNode } = editor;
-
-    editor.normalizeNode = ([node, path]) => {
-      // Custom normalization logic here
-      // ...
-
-      // Call other normalizers
-      normalizeNode([node, path]);
-    };
-
+    editor.customState = true;
+    
     return editor;
   },
 });
 ```
+
+<Callout>
+The difference between `extendEditor` and `overrideEditor`:
+- Use `extendEditor` when integrating legacy Slate plugins like `withYjs` that need direct editor mutation. There is only one `extendEditor` per plugin.
+- Prefer using `overrideEditor` for modifying editor behavior as it has single purpose responsibility and better type safety. It can be called multiple times to layer different overrides.
+</Callout>
 
 ## Advanced Plugin Configuration
 
@@ -353,7 +415,7 @@ const CodeBlockPlugin = createTPlatePlugin<CodeBlockConfig>({
 })).extendEditorTransforms<CodeBlockConfig['transforms']>(() => ({
   insert: {
     codeBlock: ({ editor, getOptions }) => {
-      editor.insertBlock({ type: 'code_block', language: getOptions().language });
+      editor.tf.insertBlock({ type: 'code_block', language: getOptions().language });
     },
   },
 }));

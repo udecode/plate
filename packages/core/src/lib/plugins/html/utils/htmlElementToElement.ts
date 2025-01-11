@@ -1,4 +1,4 @@
-import type { TDescendant } from '@udecode/slate';
+import type { Descendant } from '@udecode/slate';
 
 import { jsx } from 'slate-hyperscript';
 
@@ -20,12 +20,12 @@ export const htmlElementToElement = (
 
     let descendants =
       node.children ??
-      (deserializeHtmlNodeChildren(editor, element) as TDescendant[]);
+      (deserializeHtmlNodeChildren(editor, element) as Descendant[]);
 
     if (descendants.length === 0 || withoutChildren || isSlateVoid(element)) {
       descendants = [{ text: '' }];
     }
 
-    return jsx('element', node, descendants) as TDescendant;
+    return jsx('element', node, descendants) as Descendant;
   }
 };

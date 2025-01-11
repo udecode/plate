@@ -4,20 +4,19 @@ import {
   type SlateEditor,
   type TElement,
   createSlateEditor,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { BaseTablePlugin } from '../BaseTablePlugin';
+import { getTestTablePlugins } from '../withNormalizeTable.spec';
 import { getTopTableCell } from './getTopTableCell';
 
 jsxt;
 
-const createTablePluginWithOptions = () => BaseTablePlugin;
-
 const createEditorInstance = (input: any) => {
   return createSlateEditor({
-    editor: input,
-    plugins: [createTablePluginWithOptions()],
+    plugins: getTestTablePlugins(),
+    selection: input.selection,
+    value: input.children,
   });
 };
 
@@ -51,7 +50,7 @@ describe('getTopTableCell', () => {
   it('should return the cell above the current cell', () => {
     const editor = createEditorInstance(input);
     const cellAbove = getTopTableCell(editor);
-    expect((cellAbove?.[0].children as TElement[])[0].children[0].text).toEqual(
+    expect((cellAbove?.[0].children as TElement[])[0].children[0].text).toBe(
       '12'
     );
   });
@@ -69,7 +68,7 @@ describe('getTopTableCell', () => {
   });
 
   it('should return undefined if no matching cell is found', () => {
-    const emptyEditor = createEditorInstance([]);
+    const emptyEditor = createEditorInstance({ children: [] });
     const cellAbove = getTopTableCell(emptyEditor);
     expect(cellAbove).toBeUndefined();
   });

@@ -1,4 +1,4 @@
-import type { PlateEditor } from '@udecode/plate-common/react';
+import type { PlateEditor } from '@udecode/plate/react';
 
 import { deserializeInlineMd } from '@udecode/plate-markdown';
 
@@ -10,6 +10,6 @@ export const acceptCopilot = (editor: PlateEditor) => {
   });
 
   if (suggestionText?.length) {
-    editor.insertFragment(deserializeInlineMd(editor, suggestionText));
+    editor.tf.insertFragment(deserializeInlineMd(editor, suggestionText));
   }
 };

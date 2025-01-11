@@ -1,8 +1,14 @@
 'use client';
 
-import type { Value } from '@udecode/plate-common';
+import type { Value } from '@udecode/plate';
 
 import { withProps } from '@udecode/cn';
+import {
+  type CreatePlateEditorOptions,
+  ParagraphPlugin,
+  PlateLeaf,
+  usePlateEditor,
+} from '@udecode/plate/react';
 import { AIPlugin } from '@udecode/plate-ai/react';
 import {
   BoldPlugin,
@@ -20,12 +26,6 @@ import {
   CodeSyntaxPlugin,
 } from '@udecode/plate-code-block/react';
 import { CommentsPlugin } from '@udecode/plate-comments/react';
-import {
-  type CreatePlateEditorOptions,
-  ParagraphPlugin,
-  PlateLeaf,
-  usePlateEditor,
-} from '@udecode/plate-common/react';
 import { DatePlugin } from '@udecode/plate-date/react';
 import { EmojiInputPlugin } from '@udecode/plate-emoji/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';

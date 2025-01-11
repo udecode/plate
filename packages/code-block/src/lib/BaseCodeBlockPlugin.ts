@@ -3,8 +3,7 @@ import {
   HtmlPlugin,
   createSlatePlugin,
   createTSlatePlugin,
-  someNode,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { Prism } from './types';
 
@@ -35,7 +34,6 @@ export const BaseCodeSyntaxPlugin = createSlatePlugin({
 
 export const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
   key: 'code_block',
-  extendEditor: withCodeBlock,
   inject: {
     plugins: {
       [HtmlPlugin.key]: {
@@ -43,7 +41,7 @@ export const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
           query: ({ editor }) => {
             const codeLineType = editor.getType(BaseCodeLinePlugin);
 
-            return !someNode(editor, {
+            return !editor.api.some({
               match: { type: codeLineType },
             });
           },
@@ -58,4 +56,4 @@ export const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
   },
   parsers: { html: { deserializer: htmlDeserializerCodeBlock } },
   plugins: [BaseCodeLinePlugin, BaseCodeSyntaxPlugin],
-});
+}).overrideEditor(withCodeBlock);

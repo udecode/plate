@@ -1,59 +1,53 @@
-import type {
-  ExtendEditor,
-  TDescendant,
-  TElement,
-} from '@udecode/plate-common';
+import type { Descendant, OverrideEditor, TElement } from '@udecode/plate';
 
-import type { TTableRowElement, TableConfig } from './types';
+import type { TableConfig } from './BaseTablePlugin';
+import type { TTableCellElement, TTableRowElement } from './types';
 
 import { getTableGridAbove } from './queries/getTableGridAbove';
 
 /** If selection is in a table, get subtable above. */
-export const withGetFragmentTable: ExtendEditor<TableConfig> = ({
+export const withGetFragmentTable: OverrideEditor<TableConfig> = ({
   api,
+  api: { getFragment },
   editor,
   type,
-}) => {
-  const { getFragment } = editor;
+}) => ({
+  api: {
+    getFragment() {
+      const fragment = getFragment();
+      const newFragment: Descendant[] = [];
 
-  editor.getFragment = (): any[] => {
-    const fragment = getFragment();
+      fragment.forEach((node) => {
+        if (node.type === type) {
+          const rows = node.children as TTableRowElement[];
+          const rowCount = rows.length;
 
-    const newFragment: TDescendant[] = [];
+          if (!rowCount) return;
 
-    fragment.forEach((node) => {
-      if (node.type === type) {
-        const rows = node.children as TTableRowElement[];
+          const colCount = rows[0].children.length;
+          const hasOneCell = rowCount <= 1 && colCount <= 1;
 
-        const rowCount = rows.length;
-
-        if (!rowCount) return;
-
-        const colCount = rows[0].children.length;
-        const hasOneCell = rowCount <= 1 && colCount <= 1;
-
-        if (hasOneCell) {
-          const cell = rows[0];
-          const cellChildren = api.table.getCellChildren!(cell);
-          newFragment.push(...(cellChildren[0].children as TElement[]));
-
-          return;
-        } else {
-          const subTable = getTableGridAbove(editor);
-
-          if (subTable.length > 0) {
-            newFragment.push(subTable[0][0]);
+          if (hasOneCell) {
+            const cell = rows[0] as TTableCellElement;
+            const cellChildren = api.table.getCellChildren!(cell);
+            newFragment.push(...(cellChildren[0].children as TElement[]));
 
             return;
+          } else {
+            const subTable = getTableGridAbove(editor);
+
+            if (subTable.length > 0) {
+              newFragment.push(subTable[0][0]);
+
+              return;
+            }
           }
         }
-      }
 
-      newFragment.push(node);
-    });
+        newFragment.push(node);
+      });
 
-    return newFragment;
-  };
-
-  return editor;
-};
+      return newFragment;
+    },
+  },
+});

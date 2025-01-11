@@ -1,15 +1,15 @@
-import type { TEditor, TElementEntry } from '@udecode/plate-common';
+import type { Editor, ElementEntry } from '@udecode/plate';
 
 import { deleteStartSpace } from './deleteStartSpace';
 
 export interface OutdentCodeLineOptions {
-  codeBlock: TElementEntry;
-  codeLine: TElementEntry;
+  codeBlock: ElementEntry;
+  codeLine: ElementEntry;
 }
 
 /** Outdent the code line. Remove 2 whitespace characters if any. */
 export const outdentCodeLine = (
-  editor: TEditor,
+  editor: Editor,
   { codeBlock, codeLine }: OutdentCodeLineOptions
 ) => {
   const deleted = deleteStartSpace(editor, { codeBlock, codeLine });

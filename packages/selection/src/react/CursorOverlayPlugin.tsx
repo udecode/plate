@@ -1,13 +1,12 @@
 import { useEffect } from 'react';
 
-import type { PluginConfig } from '@udecode/plate-common';
+import type { PluginConfig } from '@udecode/plate';
 
 import {
   type DOMHandler,
   createTPlatePlugin,
-  findEventRange,
   useEditorPlugin,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 
 import type { CursorData, CursorState } from './types';
 
@@ -56,11 +55,9 @@ export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
       editor.setOption(plugin, 'cursors', newCursors);
     },
   }))
-  .extend(() => ({
-    extendEditor: ({ api, editor, getOptions }) => {
-      const { setSelection } = editor;
-
-      editor.setSelection = (...args) => {
+  .overrideEditor(({ api, editor, getOptions, tf: { setSelection } }) => ({
+    transforms: {
+      setSelection(props) {
         if (getOptions().cursors?.selection) {
           setTimeout(() => {
             api.cursorOverlay.addCursor('selection', {
@@ -69,11 +66,11 @@ export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
           }, 0);
         }
 
-        setSelection(...args);
-      };
-
-      return editor;
+        setSelection(props);
+      },
     },
+  }))
+  .extend(() => ({
     useHooks: ({ api, setOption }) => {
       const { editor } = useEditorPlugin(BlockSelectionPlugin);
       const isSelecting = editor.useOption(BlockSelectionPlugin, 'isSelecting');
@@ -113,7 +110,7 @@ export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
 
         if (types.some((type) => type.startsWith('Files'))) return;
 
-        const range = findEventRange(editor, event);
+        const range = editor.api.findEventRange(event);
 
         if (!range) return;
 

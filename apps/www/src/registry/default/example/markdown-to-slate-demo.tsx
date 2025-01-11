@@ -2,7 +2,16 @@
 
 import React, { useState } from 'react';
 
+import type { Value } from '@udecode/plate';
+
 import { withProps } from '@udecode/cn';
+import {
+  type PlateEditor,
+  ParagraphPlugin,
+  Plate,
+  PlateLeaf,
+  usePlateEditor,
+} from '@udecode/plate/react';
 import {
   BoldPlugin,
   CodePlugin,
@@ -18,14 +27,6 @@ import {
   CodeLinePlugin,
   CodeSyntaxPlugin,
 } from '@udecode/plate-code-block/react';
-import { type Value, replaceNodeChildren } from '@udecode/plate-common';
-import {
-  type PlateEditor,
-  ParagraphPlugin,
-  Plate,
-  PlateLeaf,
-  usePlateEditor,
-} from '@udecode/plate-common/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
@@ -260,9 +261,9 @@ function useResetEditorOnChange(
 ) {
   React.useEffect(() => {
     if (value.length > 0) {
-      replaceNodeChildren(editor, {
+      editor.tf.replaceNodes(cloneDeep(value), {
         at: [],
-        nodes: cloneDeep(value),
+        children: true,
       });
 
       editor.history.undos = [];

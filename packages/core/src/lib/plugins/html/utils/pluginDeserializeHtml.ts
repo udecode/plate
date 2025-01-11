@@ -1,4 +1,4 @@
-import { type AnyObject, isDefined } from '@udecode/utils';
+import { type AnyObject, type Nullable, isDefined } from '@udecode/utils';
 import castArray from 'lodash/castArray.js';
 
 import type { SlateEditor } from '../../../editor';
@@ -6,7 +6,6 @@ import type {
   AnyEditorPlugin,
   HtmlDeserializer,
 } from '../../../plugin/SlatePlugin';
-import type { Nullable } from '../../../types';
 
 import { getEditorPlugin } from '../../../plugin';
 import { getInjectedPlugins } from '../../../utils/getInjectedPlugins';
@@ -57,7 +56,8 @@ export const pluginDeserializeHtml = (
   }: { element: HTMLElement; deserializeLeaf?: boolean }
 ): (Nullable<HtmlDeserializer> & { node: AnyObject }) | undefined => {
   const {
-    node: { isElement: isElementRoot, isLeaf: isLeafRoot, type },
+    node: { isElement: isElementRoot, isLeaf: isLeafRoot },
+    parsers,
   } = plugin;
 
   const deserializer = getDeserializedWithStaticRules(plugin);
@@ -153,9 +153,9 @@ export const pluginDeserializeHtml = (
   }
   if (!parse) {
     if (isElement) {
-      parse = () => ({ type: type });
+      parse = ({ type }) => ({ type: type });
     } else if (isLeaf) {
-      parse = () => ({ [type!]: true });
+      parse = ({ type }) => ({ [type!]: true });
     } else {
       return;
     }

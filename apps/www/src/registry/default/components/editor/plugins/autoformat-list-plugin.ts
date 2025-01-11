@@ -1,12 +1,13 @@
 'use client';
 
+import type { SlateEditor } from '@udecode/plate';
 import type {
   AutoformatBlockRule,
   AutoformatRule,
 } from '@udecode/plate-autoformat';
-import type { SlateEditor } from '@udecode/plate-common';
-import type { TTodoListItemElement } from '@udecode/plate-list';
 
+import { ElementApi, isType } from '@udecode/plate';
+import { ParagraphPlugin } from '@udecode/plate/react';
 import {
   autoformatArrow,
   autoformatLegal,
@@ -31,15 +32,6 @@ import {
   CodeBlockPlugin,
   CodeLinePlugin,
 } from '@udecode/plate-code-block/react';
-import {
-  getParentNode,
-  insertNodes,
-  isBlock,
-  isElement,
-  isType,
-  setNodes,
-} from '@udecode/plate-common';
-import { ParagraphPlugin } from '@udecode/plate-common/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
@@ -57,14 +49,14 @@ export const preFormat: AutoformatBlockRule['preFormat'] = (editor) =>
 
 export const format = (editor: SlateEditor, customFormatting: any) => {
   if (editor.selection) {
-    const parentEntry = getParentNode(editor, editor.selection);
+    const parentEntry = editor.api.parent(editor.selection);
 
     if (!parentEntry) return;
 
     const [node] = parentEntry;
 
     if (
-      isElement(node) &&
+      ElementApi.isElement(node) &&
       !isType(editor, node, CodeBlockPlugin.key) &&
       !isType(editor, node, CodeLinePlugin.key)
     ) {
@@ -218,8 +210,8 @@ export const autoformatBlocks: AutoformatRule[] = [
   },
   {
     format: (editor) => {
-      setNodes(editor, { type: HorizontalRulePlugin.key });
-      insertNodes(editor, {
+      editor.tf.setNodes({ type: HorizontalRulePlugin.key });
+      editor.tf.insertNodes({
         children: [{ text: '' }],
         type: ParagraphPlugin.key,
       });
@@ -253,11 +245,10 @@ export const autoformatLists: AutoformatRule[] = [
   },
   {
     format: (editor) =>
-      setNodes<TTodoListItemElement>(
-        editor,
+      editor.tf.setNodes(
         { checked: true, type: TodoListPlugin.key },
         {
-          match: (n) => isBlock(editor, n),
+          match: (n) => editor.api.isBlock(n),
         }
       ),
     match: '[x] ',

@@ -1,11 +1,11 @@
 /** @jsx jsxt */
 
+import { createSlateEditor } from '@udecode/plate';
 import {
   BoldPlugin,
   ItalicPlugin,
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
-import { createSlateEditor } from '@udecode/plate-common';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { BaseAutoformatPlugin } from '../../BaseAutoformatPlugin';
@@ -49,7 +49,7 @@ describe('when ignoreTrim is true', () => {
       value: input,
     });
 
-    editor.insertText('*');
+    editor.tf.insertText('*');
 
     expect(input.children).toEqual(output.children);
   });
@@ -91,7 +91,7 @@ describe('when ignoreTrim is false', () => {
         value: input,
       });
 
-      editor.insertText(' ');
+      editor.tf.insertText(' ');
 
       expect(input.children).toEqual(output.children);
     });

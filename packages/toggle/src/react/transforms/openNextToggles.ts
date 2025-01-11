@@ -1,4 +1,4 @@
-import { type SlateEditor, getNodeEntries } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
 
 import { TogglePlugin } from '../TogglePlugin';
 
@@ -6,7 +6,7 @@ import { TogglePlugin } from '../TogglePlugin';
 // So before inserting the toggle, we update the store to mark the id of the blocks about to be turned into toggles as open.
 export const openNextToggles = (editor: SlateEditor) => {
   const nodeEntries = Array.from(
-    getNodeEntries(editor, {
+    editor.api.nodes({
       block: true,
       mode: 'lowest',
     })

@@ -97,7 +97,7 @@ Plugin that automatically assigns and manages unique IDs for nodes in the editor
   List of node types that should not receive IDs.
 </APIItem>
 
-<APIItem name="filter" type="(node: TNodeEntry) => boolean" optional>
+<APIItem name="filter" type="(node: NodeEntry) => boolean" optional>
   Custom filter function for nodes that should receive IDs.
   - **Default:** `() => true`
 </APIItem>
@@ -114,7 +114,7 @@ The plugin handles several scenarios:
 </editor>
 
 // Insert node with existing ID (e.g. copy/paste)
-editor.insertNode(<hp id="10">inserted</hp>);
+editor.tf.insertNode(<hp id="10">inserted</hp>);
 // Results in:
 <editor>
   <hp id="10">test</hp>
@@ -122,7 +122,7 @@ editor.insertNode(<hp id="10">inserted</hp>);
 </editor>
 
 // Insert multiple nodes
-editor.insertNodes([
+editor.tf.insertNodes([
   <hp>inserted</hp>,
   <hp>test</hp>,
 ]);
@@ -158,13 +158,13 @@ editor.insertNodes([
 4. **Undo/Redo**:
 ```tsx
 // With reuseId=true
-editor.insertNode(<hp id="1">text</hp>);
+editor.tf.insertNode(<hp id="1">text</hp>);
 editor.undo();
 editor.redo();
 // Node keeps id="1" if not in use
 
 // With reuseId=false
-editor.insertNode(<hp id="1">text</hp>);
+editor.tf.insertNode(<hp id="1">text</hp>);
 editor.undo();
 editor.redo();
 // Node gets new id="2"

@@ -679,6 +679,10 @@ export const Index: Record<string, any> = {
         type: "registry:ui",
         target: ""
       },{
+        path: "src/registry/default/plate-ui/table-icons.tsx",
+        type: "registry:ui",
+        target: ""
+      },{
         path: "src/registry/default/plate-ui/table-element-static.tsx",
         type: "registry:ui",
         target: ""
@@ -1864,6 +1868,10 @@ export const Index: Record<string, any> = {
       registryDependencies: ["dropdown-menu","toolbar"],
       files: [{
         path: "src/registry/default/plate-ui/table-dropdown-menu.tsx",
+        type: "registry:ui",
+        target: ""
+      },{
+        path: "src/registry/default/plate-ui/table-icons.tsx",
         type: "registry:ui",
         target: ""
       }],

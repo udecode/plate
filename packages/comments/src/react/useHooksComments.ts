@@ -1,5 +1,4 @@
-import { isExpanded } from '@udecode/plate-common';
-import { type UseHooks, useHotkeys } from '@udecode/plate-common/react';
+import { type UseHooks, useHotkeys } from '@udecode/plate/react';
 
 import type { CommentsConfig } from './CommentsPlugin';
 
@@ -17,7 +16,7 @@ export const useHooksComments: UseHooks<CommentsConfig> = ({
 
       // block comments
 
-      if (!isExpanded(editor.selection)) return;
+      if (!editor.api.isExpanded()) return;
 
       tf.insert.comment();
       setOption('focusTextarea', true);

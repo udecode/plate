@@ -1,7 +1,6 @@
-import type { PlateEditor } from '@udecode/plate-common/react';
-import type { Path } from 'slate';
+import type { PlateEditor } from '@udecode/plate/react';
 
-import { type TElement, insertNodes, nanoid } from '@udecode/plate-common';
+import { type Path, type TElement, nanoid } from '@udecode/plate';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 
@@ -18,7 +17,7 @@ export const insertBlocksAndSelect = (
     node.id = id;
   });
 
-  insertNodes(editor, nodes, { at: at });
+  editor.tf.insertNodes(nodes, { at: at });
 
   setTimeout(() => {
     editor

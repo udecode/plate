@@ -1,18 +1,18 @@
 import type { Page } from '@playwright/test';
-import type { Location } from 'slate';
+import type { TLocation } from '@udecode/plate';
 
 import type { EditorHandle } from './types';
 
 export const setSelection = async (
   page: Page,
   editorHandle: EditorHandle,
-  at: Location
+  at: TLocation
 ) => {
   await page.evaluate(
     ([editor, at]) => {
-      const range = editor.range(at);
+      const range = editor.api.range(at)!;
       console.info(range);
-      editor.setSelection(range);
+      editor.tf.setSelection(range);
     },
     [editorHandle, at] as const
   );

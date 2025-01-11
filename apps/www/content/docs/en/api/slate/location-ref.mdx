@@ -1,0 +1,108 @@
+---
+title: Location References
+description: API reference for location references in Slate.
+---
+
+Location references are objects that keep specific locations (paths, points, or ranges) in a document synced over time as new operations are applied to the editor.
+
+## PathRef
+
+`PathRef` objects keep a specific path in a document synced over time. You can access their `current` property at any time for the up-to-date path value.
+
+### `transform`
+
+Transforms the path ref's current value by an operation.
+
+<APIParameters>
+  <APIItem name="ref" type="PathRef">
+    The path reference to transform.
+  </APIItem>
+  <APIItem name="op" type="Operation">
+    The operation to apply.
+  </APIItem>
+</APIParameters>
+
+<APIParameters>
+  <APIItem name="PathRef" type="object">
+    Properties:
+    <APISubList>
+      <APISubListItem>
+        current: The current path value (Path | null)
+      </APISubListItem>
+      <APISubListItem>
+        affinity: The direction to prefer when transforming ('backward' | 'forward' | null)
+      </APISubListItem>
+      <APISubListItem>
+        unref(): Unreference and get the final path value (Path | null)
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+## PointRef
+
+`PointRef` objects keep a specific point in a document synced over time. You can access their `current` property at any time for the up-to-date point value.
+
+### `transform`
+
+Transforms the point ref's current value by an operation.
+
+<APIParameters>
+  <APIItem name="ref" type="PointRef">
+    The point reference to transform.
+  </APIItem>
+  <APIItem name="op" type="Operation">
+    The operation to apply.
+  </APIItem>
+</APIParameters>
+
+<APIParameters>
+  <APIItem name="PointRef" type="object">
+    Properties:
+    <APISubList>
+      <APISubListItem>
+        current: The current point value (Point | null)
+      </APISubListItem>
+      <APISubListItem>
+        affinity: The direction to prefer when transforming (TextDirection | null)
+      </APISubListItem>
+      <APISubListItem>
+        unref(): Unreference and get the final point value (Point | null)
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+## RangeRef
+
+`RangeRef` objects keep a specific range in a document synced over time. You can access their `current` property at any time for the up-to-date range value.
+
+### `transform`
+
+Transforms the range ref's current value by an operation.
+
+<APIParameters>
+  <APIItem name="ref" type="RangeRef">
+    The range reference to transform.
+  </APIItem>
+  <APIItem name="op" type="Operation">
+    The operation to apply.
+  </APIItem>
+</APIParameters>
+
+<APIParameters>
+  <APIItem name="RangeRef" type="object">
+    Properties:
+    <APISubList>
+      <APISubListItem>
+        current: The current range value (TRange | null)
+      </APISubListItem>
+      <APISubListItem>
+        affinity: The direction to prefer when transforming ('backward' | 'forward' | 'inward' | 'outward' | null)
+      </APISubListItem>
+      <APISubListItem>
+        unref(): Unreference and get the final range value (TRange | null)
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>

@@ -1,21 +1,19 @@
-import type { Path } from 'slate';
-
 import {
-  type TEditor,
-  type TNodeEntry,
-  getNodeEntry,
-  getPreviousPath,
-} from '@udecode/plate-common';
+  type Editor,
+  type NodeEntry,
+  type Path,
+  PathApi,
+} from '@udecode/plate';
 
 import { getCellInPreviousTableRow } from './getCellInPreviousTableRow';
 
 export const getPreviousTableCell = (
-  editor: TEditor,
-  currentCell: TNodeEntry,
+  editor: Editor,
+  currentCell: NodeEntry,
   currentPath: Path,
-  currentRow: TNodeEntry
-): TNodeEntry | undefined => {
-  const prevPath = getPreviousPath(currentPath);
+  currentRow: NodeEntry
+): NodeEntry | undefined => {
+  const prevPath = PathApi.previous(currentPath);
 
   if (!prevPath) {
     const [, currentRowPath] = currentRow;
@@ -23,7 +21,7 @@ export const getPreviousTableCell = (
     return getCellInPreviousTableRow(editor, currentRowPath);
   }
 
-  const cell = getNodeEntry(editor, prevPath);
+  const cell = editor.api.node(prevPath);
 
   if (cell) return cell;
 };

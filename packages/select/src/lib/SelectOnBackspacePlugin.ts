@@ -2,7 +2,7 @@ import {
   type PluginConfig,
   type QueryNodeOptions,
   createTSlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { withSelectOnBackspace } from './withSelectOnBackspace';
 
@@ -18,8 +18,7 @@ export type SelectOnBackspaceConfig = PluginConfig<
 export const SelectOnBackspacePlugin =
   createTSlatePlugin<SelectOnBackspaceConfig>({
     key: 'selectOnBackspace',
-    extendEditor: withSelectOnBackspace,
     options: {
       removeNodeIfEmpty: false,
     },
-  });
+  }).overrideEditor(withSelectOnBackspace);

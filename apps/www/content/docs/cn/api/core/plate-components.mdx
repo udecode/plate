@@ -1,0 +1,86 @@
+---
+title: Plate Components
+description: Plate 组件的 API 参考。
+---
+
+`Plate` 是将编辑器状态加载到 store provider 中的根组件。
+
+`PlateContent` 是渲染编辑器的组件。
+
+## Plate Props
+
+<APIParameters>
+<APIItem name="children" type="ReactNode">
+子组件可以访问 plate store。
+</APIItem>
+<APIItem name="editor" type="PlateEditor">
+一个受控的 `editor` 实例。这个属性是必需的。
+</APIItem>
+<APIItem name="decorate" type="(ctx: SlatePluginContext<C>) => Range[]" optional>
+参见 [Slate 文档](https://docs.slatejs.org/concepts/09-rendering#decorations)。
+</APIItem>
+<APIItem name="onChange" type="({ value, editor }: { value: Value; editor: PlateEditor }) => void" optional>
+当编辑器状态改变时调用的受控回调。
+</APIItem>
+<APIItem name="onSelectionChange" type="(selection: Range | null) => void" optional>
+当编辑器选择改变时调用的回调。
+</APIItem>
+<APIItem name="onValueChange" type="({ value, editor }: { value: Value; editor: PlateEditor }) => void" optional>
+当编辑器值改变时调用的回调。
+</APIItem>
+<APIItem name="primary" type="boolean" optional>
+控制在与 PlateController 一起使用时编辑器是否默认被视为活动状态。
+
+- **Default:** `true`
+</APIItem>
+<APIItem name="readOnly" type="boolean" optional>
+如果为 true，编辑器处于只读模式。
+</APIItem>
+<APIItem name="renderElement" type="FC<RenderElementProps>" optional>
+元素的自定义渲染函数。
+</APIItem>
+<APIItem name="renderLeaf" type="FC<RenderLeafProps>" optional>
+叶子节点的自定义渲染函数。
+</APIItem>
+</APIParameters>
+
+## PlateContent Props
+
+[Editable](https://docs.slatejs.org/libraries/slate-react/editable) 组件的属性。扩展自 `TextareaHTMLAttributes<HTMLDivElement>`。
+
+<APIProps>
+<APIItem name="autoFocusOnEditable" type="boolean" optional>
+当编辑器从只读模式转换为可编辑模式时（当 `readOnly` 从 `true` 变为 `false` 时）自动聚焦编辑器。
+</APIItem>
+<APIItem name="renderEditable" type="(editable: ReactNode) => ReactNode" optional>
+自定义 `Editable` 节点。
+
+- **Default:** `<Editable {...props} />`
+</APIItem>
+<APIItem name="as" type="React.ElementType" optional />
+<APIItem name="autoFocus" type="boolean" optional />
+<APIItem name="decorate" type="(ctx: SlatePluginContext<C>) => Range[]" optional />
+<APIItem name="disableDefaultStyles" type="boolean" optional />
+<APIItem name="onDOMBeforeInput" type="(event: Event) => void" optional />
+<APIItem name="onKeyDown" type="(event: KeyboardEvent) => void" optional />
+<APIItem name="placeholder" type="string" optional />
+<APIItem name="readOnly" type="boolean" optional />
+<APIItem name="renderElement" type="FC<RenderElementProps>" optional />
+<APIItem name="renderLeaf" type="FC<RenderLeafProps>" optional />
+<APIItem name="renderPlaceholder" type="FC<RenderPlaceholderProps>" optional />
+<APIItem name="role" type="string" optional />
+<APIItem name="scrollSelectionIntoView" type="(editor: ReactEditor, domRange: DOMRange) => void" optional />
+<APIItem name="style" type="CSSProperties" optional />
+</APIProps>
+
+## Plate 的工作原理
+
+`Plate` 需要一个 `editor` 属性，它应该是 `PlateEditor` 的实例。如果 `editor` 为 `null`，`Plate` 将不会渲染任何内容。
+
+`Plate` 组件不处理编辑器的创建或插件的管理。这些责任由 `createPlateEditor` 处理。
+
+`Plate` 为编辑器状态提供一个 store 并渲染其子组件。它使用 `PlateStoreProvider` 使编辑器状态和相关函数对其子组件可用。
+
+元素和叶子的渲染逻辑主要由插件系统处理，如果没有找到特定节点类型的插件，则使用 `renderElement` 和 `renderLeaf` 属性作为后备。
+
+有关创建和配置编辑器的更多详细信息，请参阅[编辑器配置](/docs/editor)指南。

@@ -1,7 +1,7 @@
-import type { OmitFirst, PluginConfig } from '@udecode/plate-common';
+import type { OmitFirst, PluginConfig } from '@udecode/plate';
 import type { ParseConfig } from 'papaparse';
 
-import { bindFirst, createTSlatePlugin } from '@udecode/plate-common';
+import { bindFirst, createTSlatePlugin } from '@udecode/plate';
 
 import { deserializeCsv } from './deserializer/utils';
 

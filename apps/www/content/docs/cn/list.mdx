@@ -199,7 +199,7 @@ const plugins = [
 </APIParameters>
 
 <APIReturns>
-  <APIItem type="TElementEntry | undefined">
+  <APIItem type="ElementEntry | undefined">
     最近的 `li` 和 `ul`/`ol` 包装节点entry。
   </APIItem>
 </APIReturns>
@@ -221,7 +221,7 @@ const plugins = [
 </APIParameters>
 
 <APIReturns>
-  <APIItem type="TElementEntry | undefined">
+  <APIItem type="ElementEntry | undefined">
     根列表元素entry。
   </APIItem>
 </APIReturns>
@@ -248,7 +248,7 @@ const plugins = [
   <APIItem name="editor" type="PlateEditor">
     编辑器实例。
   </APIItem>
-  <APIItem name="node" type="TAncestor">
+  <APIItem name="node" type="Ancestor">
     要检查的节点。
   </APIItem>
 </APIParameters>
@@ -394,10 +394,10 @@ const plugins = [
   </APIItem>
   <APIItem name="options" type="MoveListItemDownOptions" optional>
     <APISubList>
-      <APISubListItem parent="options" name="list" type="TElementEntry">
+      <APISubListItem parent="options" name="list" type="ElementEntry">
         列表节点的entry。
       </APISubListItem>
-      <APISubListItem parent="options" name="listItem" type="TElementEntry">
+      <APISubListItem parent="options" name="listItem" type="ElementEntry">
         要移动的列表项节点的entry。
       </APISubListItem>
     </APISubList>
@@ -424,10 +424,10 @@ const plugins = [
   optional
 >
 <APISubList>
-<APISubListItem parent="options" name="fromListItem" type="TElementEntry">
+<APISubListItem parent="options" name="fromListItem" type="ElementEntry">
 包含要移动的子列表项的列表项entry。
 </APISubListItem>
-<APISubListItem parent="options" name="toListItem" type="TElementEntry">
+<APISubListItem parent="options" name="toListItem" type="ElementEntry">
 子列表项将被移动到的列表项entry。
 </APISubListItem>
 <APISubListItem parent="options" name="start" type="boolean" optional>
@@ -455,10 +455,10 @@ const plugins = [
   </APIItem>
   <APIItem name="options" type="MoveListItemUpOptions" optional>
     <APISubList>
-      <APISubListItem parent="options" name="list" type="TElementEntry">
+      <APISubListItem parent="options" name="list" type="ElementEntry">
         包含要移动的列表项的列表entry。
       </APISubListItem>
-      <APISubListItem parent="options" name="listItem" type="TElementEntry">
+      <APISubListItem parent="options" name="listItem" type="ElementEntry">
         要移动的列表项entry。
       </APISubListItem>
     </APISubList>
@@ -533,7 +533,7 @@ const plugins = [
 <APISubListItem
   parent="options"
   name="fromList"
-  type="TElementEntry"
+  type="ElementEntry"
   optional
 >
 其列表项将被移动的列表。
@@ -541,7 +541,7 @@ const plugins = [
 <APISubListItem
   parent="options"
   name="fromListItem"
-  type="TElementEntry"
+  type="ElementEntry"
   optional
 >
 其子列表项将被移动的列表项。
@@ -560,7 +560,7 @@ const plugins = [
 <APISubListItem
   parent="options"
   name="toList"
-  type="TElementEntry"
+  type="ElementEntry"
   optional
 >
 列表项将被移动到的列表。
@@ -635,10 +635,10 @@ const plugins = [
   </APIItem>
   <APIItem name="options" type="Object">
     <APISubList>
-      <APISubListItem parent="options" name="list" type="TElementEntry">
+      <APISubListItem parent="options" name="list" type="ElementEntry">
         包含列表项的列表entry。
       </APISubListItem>
-      <APISubListItem parent="options" name="listItem" type="TElementEntry">
+      <APISubListItem parent="options" name="listItem" type="ElementEntry">
         要删除的列表项entry。
       </APISubListItem>
     </APISubList>
@@ -661,10 +661,10 @@ const plugins = [
 </APIItem>
 <APIItem name="options" type="RemoveListItemOptions" optional>
 <APISubList>
-<APISubListItem parent="options" name="list" type="TElementEntry">
+<APISubListItem parent="options" name="list" type="ElementEntry">
 包含列表项的列表entry。
 </APISubListItem>
-<APISubListItem parent="options" name="listItem" type="TElementEntry">
+<APISubListItem parent="options" name="listItem" type="ElementEntry">
 要删除的列表项entry。
 </APISubListItem>
 <APISubListItem parent="options" name="reverse" type="boolean" optional>

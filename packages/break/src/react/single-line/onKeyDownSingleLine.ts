@@ -1,6 +1,6 @@
-import type { KeyboardHandler } from '@udecode/plate-common/react';
+import type { KeyboardHandler } from '@udecode/plate/react';
 
-import { Hotkeys } from '@udecode/plate-common';
+import { Hotkeys } from '@udecode/plate';
 
 export const onKeyDownSingleLine: KeyboardHandler = ({ event }) => {
   if (event.defaultPrevented) return;

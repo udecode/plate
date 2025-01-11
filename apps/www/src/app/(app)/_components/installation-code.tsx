@@ -10,7 +10,7 @@ import { CopyButton, CopyNpmCommandButton } from '@/components/copy-button';
 import * as Typography from '@/components/typography';
 
 const SyntaxHighlighter =
-  Prism as typeof React.Component<SyntaxHighlighterProps>;
+  Prism as unknown as typeof React.Component<SyntaxHighlighterProps>;
 
 export function InstallationCode({
   bash,

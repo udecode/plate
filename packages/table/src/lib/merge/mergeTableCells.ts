@@ -1,43 +1,24 @@
 import {
+  type Descendant,
+  type NodeEntry,
   type SlateEditor,
-  type TDescendant,
-  type TNodeEntry,
-  collapseSelection,
-  getBlockAbove,
   getEditorPlugin,
-  insertElements,
-  isElementEmpty,
-  removeNodes,
-  withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 import cloneDeep from 'lodash/cloneDeep.js';
 
-import {
-  type TTableCellElement,
-  type TTableElement,
-  computeCellIndices,
-  getCellIndices,
-  getColSpan,
-  getRowSpan,
-} from '..';
+import { type TTableCellElement, getCellIndices } from '..';
 import { BaseTableCellHeaderPlugin, BaseTablePlugin } from '../BaseTablePlugin';
 import { getTableGridAbove } from '../queries';
 
 /** Merges multiple selected cells into one. */
 export const mergeTableCells = (editor: SlateEditor) => {
-  const { api, getOptions, type } = getEditorPlugin(editor, BaseTablePlugin);
-  const { _cellIndices } = getOptions();
+  const { api } = getEditorPlugin(editor, BaseTablePlugin);
 
-  withoutNormalizing(editor, () => {
-    const tableEntry = getBlockAbove(editor, {
-      at: editor.selection?.anchor.path,
-      match: { type },
-    })!;
+  const cellEntries = getTableGridAbove(editor, {
+    format: 'cell',
+  }) as NodeEntry<TTableCellElement>[];
 
-    const cellEntries = getTableGridAbove(editor, {
-      format: 'cell',
-    }) as TNodeEntry<TTableCellElement>[];
-
+  editor.tf.withoutNormalizing(() => {
     // calculate the colSpan which is the number of horizontal cells that a cell should span.
     let colSpan = 0;
 
@@ -48,30 +29,25 @@ export const mergeTableCells = (editor: SlateEditor) => {
 
       // count only those cells that are in the first selected row.
       if (rowIndex === cellEntries[0][1].at(-2)!) {
-        const cellColSpan = getColSpan(cell as TTableCellElement);
+        const cellColSpan = api.table.getColSpan(cell);
         colSpan += cellColSpan;
       }
     }
 
     // calculate the rowSpan which is the number of vertical cells that a cell should span.
     let rowSpan = 0;
-    const { col } = getCellIndices(
-      _cellIndices!,
-      cellEntries[0][0] as TTableCellElement
-    )!;
+    const { col } = getCellIndices(editor, cellEntries[0][0]);
     cellEntries.forEach((entry) => {
-      const cell = entry[0] as TTableCellElement;
-      const { col: curCol } =
-        _cellIndices?.get(cell) ||
-        computeCellIndices(editor, tableEntry[0] as TTableElement, cell)!;
+      const cell = entry[0];
+      const { col: curCol } = getCellIndices(editor, cell);
 
       if (col === curCol) {
-        rowSpan += getRowSpan(cell);
+        rowSpan += api.table.getRowSpan(cell);
       }
     });
 
     // This will store the content of all cells we are merging
-    const mergingCellChildren: TDescendant[] = [];
+    const mergingCellChildren: Descendant[] = [];
 
     for (const cellEntry of cellEntries) {
       const [el] = cellEntry;
@@ -80,7 +56,7 @@ export const mergeTableCells = (editor: SlateEditor) => {
 
       if (
         cellChildren.length !== 1 ||
-        !isElementEmpty(editor, cellChildren[0] as any)
+        !editor.api.isEmpty(cellChildren[0] as any)
       ) {
         mergingCellChildren.push(...cloneDeep(cellChildren));
       }
@@ -104,14 +80,14 @@ export const mergeTableCells = (editor: SlateEditor) => {
     // once cell removed, next cell in the row will settle down on that path
     Object.values(cols).forEach((paths) => {
       paths?.forEach(() => {
-        removeNodes(editor, { at: paths[0] });
+        editor.tf.removeNodes({ at: paths[0] });
       });
     });
 
     // Create a new cell to replace the merged cells, with
     // calculated colSpan and rowSpan attributes and combined content
     const mergedCell = {
-      ...api.create.cell!({
+      ...api.create.tableCell({
         children: mergingCellChildren,
         header:
           cellEntries[0][0].type === editor.getType(BaseTableCellHeaderPlugin),
@@ -121,7 +97,8 @@ export const mergeTableCells = (editor: SlateEditor) => {
     };
 
     // insert the new merged cell in place of the first cell in the selection
-    insertElements(editor, mergedCell, { at: cellEntries[0][1] });
-    collapseSelection(editor);
+    editor.tf.insertNodes(mergedCell, { at: cellEntries[0][1] });
   });
+
+  editor.tf.select(editor.api.end(cellEntries[0][1])!);
 };

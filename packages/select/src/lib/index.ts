@@ -4,5 +4,4 @@
 
 export * from './DeletePlugin';
 export * from './SelectOnBackspacePlugin';
-export * from './withDelete';
 export * from './withSelectOnBackspace';

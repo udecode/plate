@@ -1,16 +1,11 @@
-import {
-  type TEditor,
-  isExpanded,
-  isSelectionAtBlockEnd,
-  isSelectionAtBlockStart,
-} from '@udecode/plate-common';
+import type { Editor } from '@udecode/plate';
 
 /**
  * Check if the selection is at the edge of its parent block. If it is and if
  * the selection is expanded, delete its content.
  */
 export const exitBreakAtEdges = (
-  editor: TEditor,
+  editor: Editor,
   {
     end,
     start,
@@ -26,15 +21,15 @@ export const exitBreakAtEdges = (
   if (start || end) {
     queryEdge = true;
 
-    if (start && isSelectionAtBlockStart(editor)) {
+    if (start && editor.api.isAt({ start: true })) {
       isEdge = true;
       isStart = true;
     }
-    if (end && isSelectionAtBlockEnd(editor)) {
+    if (end && editor.api.isAt({ end: true })) {
       isEdge = true;
     }
-    if (isEdge && isExpanded(editor.selection)) {
-      editor.deleteFragment();
+    if (isEdge && editor.api.isExpanded()) {
+      editor.tf.deleteFragment();
     }
   }
 

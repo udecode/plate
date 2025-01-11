@@ -1,8 +1,7 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from '@udecode/plate-common';
-
-import { createPlateEditor } from '@udecode/plate-common/react';
+import { type SlateEditor, createEditor } from '@udecode/plate';
+import { createPlateEditor } from '@udecode/plate/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
@@ -12,16 +11,18 @@ jsxt;
 
 describe('insert code line', () => {
   it('should insert code line below selected line', () => {
-    const input = (
-      <editor>
-        <hcodeblock>
-          <hcodeline>
-            line 1<cursor />
-          </hcodeline>
-          <hcodeline>line 2</hcodeline>
-        </hcodeblock>
-      </editor>
-    ) as any as SlateEditor;
+    const input = createEditor(
+      (
+        <editor>
+          <hcodeblock>
+            <hcodeline>
+              line 1<cursor />
+            </hcodeline>
+            <hcodeline>line 2</hcodeline>
+          </hcodeblock>
+        </editor>
+      ) as any
+    );
 
     const output = (
       <editor>
@@ -37,12 +38,13 @@ describe('insert code line', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
       plugins: [CodeBlockPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     insertCodeLine(editor, 4);
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 });

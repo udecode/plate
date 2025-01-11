@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { createSlateEditor, findNode } from '@udecode/plate-common';
+import { createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { hasListChild } from './hasListChild';
@@ -31,10 +31,11 @@ describe('when there is a sublist', () => {
 
   it('should be', () => {
     const editor = createSlateEditor({
-      editor: input,
+      selection: input.selection,
+      value: input.children,
     });
 
-    const listItem = findNode(editor, { match: { id: '2' } });
+    const listItem = editor.api.node({ id: '2', at: [] });
 
     expect(hasListChild(editor, listItem?.[0] as any)).toBeTruthy();
   });
@@ -53,10 +54,11 @@ describe('when there is no sublist', () => {
 
   it('should be', () => {
     const editor = createSlateEditor({
-      editor: input,
+      selection: input.selection,
+      value: input.children,
     });
 
-    const listItem = findNode(editor, { match: { id: '2' } });
+    const listItem = editor.api.node({ id: '2', at: [] });
 
     expect(hasListChild(editor, listItem?.[0] as any)).toBeFalsy();
   });

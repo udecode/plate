@@ -1,9 +1,4 @@
-import {
-  type InsertNodesOptions,
-  type SlateEditor,
-  insertNodes,
-  withoutNormalizing,
-} from '@udecode/plate-common';
+import type { InsertNodesOptions, SlateEditor } from '@udecode/plate';
 
 import { BaseAudioPlugin } from '../../BaseAudioPlugin';
 import { BaseFilePlugin } from '../../BaseFilePlugin';
@@ -14,14 +9,13 @@ import {
   BasePlaceholderPlugin,
 } from '../BasePlaceholderPlugin';
 
-export const insertPlaceholder = <E extends SlateEditor>(
-  editor: E,
+export const insertPlaceholder = (
+  editor: SlateEditor,
   mediaType: string,
-  options?: InsertNodesOptions<E>
+  options?: InsertNodesOptions
 ) => {
-  withoutNormalizing(editor, () =>
-    insertNodes<TPlaceholderElement>(
-      editor,
+  editor.tf.withoutNormalizing(() =>
+    editor.tf.insertNodes<TPlaceholderElement>(
       {
         children: [{ text: '' }],
         mediaType,
@@ -32,22 +26,22 @@ export const insertPlaceholder = <E extends SlateEditor>(
   );
 };
 
-export const insertImagePlaceholder = <E extends SlateEditor>(
-  editor: E,
-  options?: InsertNodesOptions<E>
+export const insertImagePlaceholder = (
+  editor: SlateEditor,
+  options?: InsertNodesOptions
 ) => insertPlaceholder(editor, BaseImagePlugin.key, options);
 
-export const insertVideoPlaceholder = <E extends SlateEditor>(
-  editor: E,
-  options?: InsertNodesOptions<E>
+export const insertVideoPlaceholder = (
+  editor: SlateEditor,
+  options?: InsertNodesOptions
 ) => insertPlaceholder(editor, BaseVideoPlugin.key, options);
 
-export const insertAudioPlaceholder = <E extends SlateEditor>(
-  editor: E,
-  options?: InsertNodesOptions<E>
+export const insertAudioPlaceholder = (
+  editor: SlateEditor,
+  options?: InsertNodesOptions
 ) => insertPlaceholder(editor, BaseAudioPlugin.key, options);
 
-export const insertFilePlaceholder = <E extends SlateEditor>(
-  editor: E,
-  options?: InsertNodesOptions<E>
+export const insertFilePlaceholder = (
+  editor: SlateEditor,
+  options?: InsertNodesOptions
 ) => insertPlaceholder(editor, BaseFilePlugin.key, options);

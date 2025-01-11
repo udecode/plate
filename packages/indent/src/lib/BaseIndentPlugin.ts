@@ -3,7 +3,7 @@ import {
   type TElement,
   BaseParagraphPlugin,
   createTSlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { withIndent } from './withIndent';
 
@@ -35,7 +35,6 @@ export type IndentConfig = PluginConfig<
 
 export const BaseIndentPlugin = createTSlatePlugin<IndentConfig>({
   key: 'indent',
-  extendEditor: withIndent,
   inject: {
     isBlock: true,
     nodeProps: {
@@ -53,4 +52,4 @@ export const BaseIndentPlugin = createTSlatePlugin<IndentConfig>({
     offset: 24,
     unit: 'px',
   },
-});
+}).overrideEditor(withIndent);

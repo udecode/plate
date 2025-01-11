@@ -1,14 +1,10 @@
 import {
-  type MoveChildrenOptions,
+  type ElementEntry,
+  type Path,
   type SlateEditor,
-  type TElementEntry,
-  deleteText,
-  findDescendant,
-  getLastChildPath,
-  moveChildren,
-  withoutNormalizing,
-} from '@udecode/plate-common';
-import { Path } from 'slate';
+  NodeApi,
+  PathApi,
+} from '@udecode/plate';
 
 import { getListTypes } from '../queries/getListTypes';
 
@@ -21,17 +17,17 @@ export interface MergeListItemIntoListOptions {
   deleteFromList?: boolean;
 
   /** List items of the list will be moved. */
-  fromList?: TElementEntry;
+  fromList?: ElementEntry;
 
   /** List items of the sublist of this node will be moved. */
-  fromListItem?: TElementEntry;
+  fromListItem?: ElementEntry;
 
-  fromStartIndex?: MoveChildrenOptions['fromStartIndex'];
+  fromStartIndex?: number;
 
   to?: Path;
 
   /** List items will be moved in this list. */
-  toList?: TElementEntry;
+  toList?: ElementEntry;
 
   /** List position where to move the list items. */
   toListIndex?: number | null;
@@ -55,11 +51,11 @@ export const moveListItemsToList = (
   }: MergeListItemIntoListOptions
 ) => {
   let fromListPath: Path | undefined;
-  let moved;
+  let moved: boolean | void = false;
 
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     if (fromListItem) {
-      const fromListItemSublist = findDescendant(editor, {
+      const fromListItemSublist = editor.api.descendant({
         at: fromListItem[1],
         match: {
           type: getListTypes(editor),
@@ -81,23 +77,26 @@ export const moveListItemsToList = (
     if (_to) to = _to;
     if (toList) {
       if (toListIndex === null) {
-        const lastChildPath = getLastChildPath(toList);
-        to = Path.next(lastChildPath);
+        const lastChildPath = NodeApi.lastChild(editor, toList[1])?.[1];
+        to = lastChildPath
+          ? PathApi.next(lastChildPath)
+          : toList[1].concat([0]);
       } else {
         to = toList[1].concat([toListIndex]);
       }
     }
     if (!to) return;
 
-    moved = moveChildren(editor, {
+    moved = editor.tf.moveNodes({
       at: fromListPath,
-      fromStartIndex,
+      children: true,
+      fromIndex: fromStartIndex,
       to,
     });
 
     // Remove the empty list
     if (deleteFromList) {
-      deleteText(editor, { at: fromListPath });
+      editor.tf.delete({ at: fromListPath });
     }
   });
 

@@ -81,7 +81,7 @@ const plugins = [
   <APIItem name="editor" type="PlateEditor">
     编辑器实例。
   </APIItem>
-  <APIItem name="options" type="GetNodeEntriesOptions">
+  <APIItem name="options" type="EditorNodesOptions">
     获取节点entry的选项。
   </APIItem>
 </APIParameters>
@@ -202,7 +202,7 @@ const plugins = [
       <APISubListItem parent="options" name="orientation" type="'horizontal' | 'vertical'" optional>
         拖放的方向。默认为 `'vertical'`。
       </APISubListItem>
-      <APISubListItem parent="options" name="canDropNode" type="(args: { dragEntry: TNodeEntry; dragItem: DragItemNode; dropEntry: TNodeEntry; editor: PlateEditor }) => boolean" optional>
+      <APISubListItem parent="options" name="canDropNode" type="(args: { dragEntry: NodeEntry; dragItem: DragItemNode; dropEntry: NodeEntry; editor: PlateEditor }) => boolean" optional>
         确定节点是否可以在当前位置放置的回调。
       </APISubListItem>
       <APISubListItem parent="options" name="preview" type="previewOptions">

@@ -1,7 +1,7 @@
 'use client';
 
 import { cn, withRef } from '@udecode/cn';
-import { useElement } from '@udecode/plate-common/react';
+import { useElement } from '@udecode/plate/react';
 import {
   useToggleButton,
   useToggleButtonState,
@@ -18,11 +18,7 @@ export const ToggleElement = withRef<typeof PlateElement>(
     const { buttonProps, open } = useToggleButton(state);
 
     return (
-      <PlateElement
-        ref={ref}
-        className={cn(className, 'relative pl-6')}
-        {...props}
-      >
+      <PlateElement ref={ref} className={cn(className, 'pl-6')} {...props}>
         <Button
           size="icon"
           variant="ghost"

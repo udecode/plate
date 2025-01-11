@@ -1,20 +1,8 @@
 import {
-  type ExtendEditor,
+  type OverrideEditor,
   type SlateEditor,
-  type TElement,
-  getBlockAbove,
-  getEndPoint,
-  getPointAfter,
-  getPointBefore,
-  getStartPoint,
-  isCollapsed,
-  isRangeInSameBlock,
-  moveSelection,
-  replaceNodeChildren,
-  select,
-  withoutNormalizing,
-} from '@udecode/plate-common';
-import { Point } from 'slate';
+  PointApi,
+} from '@udecode/plate';
 
 import { type TableConfig, getCellTypes } from '.';
 import { getTableGridAbove } from './queries/getTableGridAbove';
@@ -36,35 +24,33 @@ export const preventDeleteTableCell = (
   }
 ) => {
   const { selection } = editor;
+  const getNextPoint = reverse ? editor.api.after : editor.api.before;
 
-  const getPoint = reverse ? getEndPoint : getStartPoint;
-  const getNextPoint = reverse ? getPointAfter : getPointBefore;
-
-  if (isCollapsed(selection)) {
-    const cellEntry = getBlockAbove(editor, {
+  if (editor.api.isCollapsed()) {
+    const cellEntry = editor.api.block({
       match: { type: getCellTypes(editor) },
     });
 
     if (cellEntry) {
       // Prevent deleting cell at the start or end of a cell
       const [, cellPath] = cellEntry;
+      const start = reverse
+        ? editor.api.end(cellPath)
+        : editor.api.start(cellPath);
 
-      const start = getPoint(editor, cellPath);
-
-      if (selection && Point.equals(selection.anchor, start)) {
+      if (selection && PointApi.equals(selection.anchor, start!)) {
         return true;
       }
     } else {
       // Prevent deleting cell when selection is before or after a table
-      const nextPoint = getNextPoint(editor, selection!, { unit });
-
-      const nextCellEntry = getBlockAbove(editor, {
+      const nextPoint = getNextPoint(selection!, { unit });
+      const nextCellEntry = editor.api.block({
         at: nextPoint,
         match: { type: getCellTypes(editor) },
       });
 
       if (nextCellEntry) {
-        moveSelection(editor, { reverse: !reverse });
+        editor.tf.move({ reverse: !reverse });
 
         return true;
       }
@@ -73,54 +59,55 @@ export const preventDeleteTableCell = (
 };
 
 /** Prevent cell deletion. */
-export const withDeleteTable: ExtendEditor<TableConfig> = ({
+export const withDeleteTable: OverrideEditor<TableConfig> = ({
   editor,
+  tf: { deleteBackward, deleteForward, deleteFragment },
   type,
-}) => {
-  const { deleteBackward, deleteForward, deleteFragment } = editor;
+}) => ({
+  transforms: {
+    deleteBackward(unit) {
+      if (preventDeleteTableCell(editor, { unit: unit })) return;
 
-  editor.deleteBackward = (unit) => {
-    if (preventDeleteTableCell(editor, { unit })) return;
+      deleteBackward(unit);
+    },
 
-    return deleteBackward(unit);
-  };
+    deleteForward(unit) {
+      if (
+        preventDeleteTableCell(editor, {
+          reverse: true,
+          unit: unit,
+        })
+      )
+        return;
 
-  editor.deleteForward = (unit) => {
-    if (preventDeleteTableCell(editor, { reverse: true, unit })) return;
+      deleteForward(unit);
+    },
 
-    return deleteForward(unit);
-  };
+    deleteFragment(direction) {
+      if (editor.api.isAt({ block: true, match: (n) => n.type === type })) {
+        const cellEntries = getTableGridAbove(editor, { format: 'cell' });
 
-  editor.deleteFragment = (direction) => {
-    if (
-      isRangeInSameBlock(editor, {
-        match: (n) => n.type === type,
-      })
-    ) {
-      const cellEntries = getTableGridAbove(editor, { format: 'cell' });
+        if (cellEntries.length > 1) {
+          editor.tf.withoutNormalizing(() => {
+            cellEntries.forEach(([, cellPath]) => {
+              editor.tf.replaceNodes(editor.api.create.block(), {
+                at: cellPath,
+                children: true,
+              });
+            });
 
-      if (cellEntries.length > 1) {
-        withoutNormalizing(editor, () => {
-          cellEntries.forEach(([, cellPath]) => {
-            replaceNodeChildren<TElement>(editor, {
-              at: cellPath,
-              nodes: editor.api.create.block(),
+            // set back the selection
+            editor.tf.select({
+              anchor: editor.api.start(cellEntries[0][1])!,
+              focus: editor.api.end(cellEntries.at(-1)![1])!,
             });
           });
 
-          // set back the selection
-          select(editor, {
-            anchor: getStartPoint(editor, cellEntries[0][1]),
-            focus: getEndPoint(editor, cellEntries.at(-1)![1]),
-          });
-        });
-
-        return;
+          return;
+        }
       }
-    }
 
-    deleteFragment(direction);
-  };
-
-  return editor;
-};
+      deleteFragment(direction);
+    },
+  },
+});

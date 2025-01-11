@@ -6,7 +6,7 @@ import {
   type PluginConfig,
   type UnknownObject,
   createTSlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { WithYjsOptions } from './withTYjs';
 

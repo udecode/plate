@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react';
 
-import type { TText } from '@udecode/plate-common';
+import type { TText } from '@udecode/plate';
 
-import { useEditorPlugin } from '@udecode/plate-common/react';
+import { useEditorPlugin } from '@udecode/plate/react';
 
 import type { AIChatPluginConfig } from '../AIChatPlugin';
 

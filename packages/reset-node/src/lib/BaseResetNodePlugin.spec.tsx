@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { createSlateEditor } from '@udecode/plate-common';
+import { createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { BaseResetNodePlugin } from './BaseResetNodePlugin';
@@ -33,11 +33,12 @@ describe('ResetNodePlugin', () => {
 
     it('should reset', () => {
       const editor = createSlateEditor({
-        editor: input,
         plugins: [BaseResetNodePlugin],
+        selection: input.selection,
+        value: input.children,
       });
 
-      editor.deleteFragment();
+      editor.tf.deleteFragment();
 
       expect(editor.children).toEqual(output.children);
     });
@@ -68,11 +69,12 @@ describe('ResetNodePlugin', () => {
 
     it('should reset', () => {
       const editor = createSlateEditor({
-        editor: input,
         plugins: [BaseResetNodePlugin],
+        selection: input.selection,
+        value: input.children,
       });
 
-      editor.deleteFragment();
+      editor.tf.deleteFragment();
 
       expect(editor.children).toEqual(output.children);
     });
@@ -99,11 +101,12 @@ describe('ResetNodePlugin', () => {
 
     it('should reset', () => {
       const editor = createSlateEditor({
-        editor: input,
         plugins: [BaseResetNodePlugin],
+        selection: input.selection,
+        value: input.children,
       });
 
-      editor.deleteBackward('character');
+      editor.tf.deleteBackward();
 
       expect(editor.children).toEqual(output.children);
     });

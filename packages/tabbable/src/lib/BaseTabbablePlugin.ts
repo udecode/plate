@@ -1,8 +1,4 @@
-import {
-  type PluginConfig,
-  createTSlatePlugin,
-  isVoid,
-} from '@udecode/plate-common';
+import { type PluginConfig, createTSlatePlugin } from '@udecode/plate';
 
 import type { TabbableEntry } from './types';
 
@@ -29,7 +25,7 @@ export type TabblableConfig = PluginConfig<
     /**
      * Determine whether an element should be included in the tabbable list.
      *
-     * @default: (editor, tabbableEntry) => isVoid(editor, tabbableEntry.slateNode)
+     * @default: (editor, tabbableEntry) => editor.api.isVoid(tabbableEntry.slateNode)
      */
     isTabbable?: (entry: TabbableEntry) => boolean;
 
@@ -52,6 +48,6 @@ export const BaseTabbablePlugin = createTSlatePlugin<TabblableConfig>({
 }).extend(({ editor }) => ({
   options: {
     isTabbable: (tabbableEntry: TabbableEntry) =>
-      isVoid(editor, tabbableEntry.slateNode),
+      editor.api.isVoid(tabbableEntry.slateNode),
   },
 }));

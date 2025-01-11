@@ -1,11 +1,9 @@
 import {
+  type Path,
+  type Point,
   type SlateEditor,
-  getNodeEntry,
-  getRange,
-  isEndPoint,
-  isStartPoint,
-} from '@udecode/plate-common';
-import { type Point, Path } from 'slate';
+  PathApi,
+} from '@udecode/plate';
 
 export const isPointNextToNode = (
   editor: SlateEditor,
@@ -25,15 +23,15 @@ export const isPointNextToNode = (
     throw new Error('No valid selection point found');
   }
 
-  const selectedRange = getRange(editor, at.path);
+  const selectedRange = editor.api.range(at.path)!;
   const boundary = (() => {
     let isStart = false;
     let isEnd = false;
 
-    if (isStartPoint(editor, at, selectedRange)) {
+    if (editor.api.isStart(at, selectedRange)) {
       isStart = true;
     }
-    if (isEndPoint(editor, at, selectedRange)) {
+    if (editor.api.isEnd(at, selectedRange)) {
       isEnd = true;
     }
     if (isStart && isEnd) {
@@ -53,10 +51,10 @@ export const isPointNextToNode = (
 
   const adjacentPathFn = (path: Path) => {
     try {
-      if (reverse && boundary === 'start') return Path.previous(path);
-      if (!reverse && boundary === 'end') return Path.next(path);
+      if (reverse && boundary === 'start') return PathApi.previous(path);
+      if (!reverse && boundary === 'end') return PathApi.next(path);
       if (boundary === 'single') {
-        return reverse ? Path.previous(path) : Path.next(path);
+        return reverse ? PathApi.previous(path) : PathApi.next(path);
       }
     } catch (error) {
       return null;
@@ -69,7 +67,7 @@ export const isPointNextToNode = (
 
   if (!adjacentPath) return false;
 
-  const nextNodeEntry = getNodeEntry(editor, adjacentPath) ?? null;
+  const nextNodeEntry = editor.api.node(adjacentPath) ?? null;
 
   return !!(nextNodeEntry && nextNodeEntry[0].type === nodeType);
 };

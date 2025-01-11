@@ -1,25 +1,40 @@
-import type { ExtendEditor } from '@udecode/plate-common';
+import type { OverrideEditor } from '@udecode/plate';
 
-import type { TableConfig } from './types';
+import type { TableConfig } from './BaseTablePlugin';
 
+import { withApplyTable } from './withApplyTable';
 import { withDeleteTable } from './withDeleteTable';
 import { withGetFragmentTable } from './withGetFragmentTable';
 import { withInsertFragmentTable } from './withInsertFragmentTable';
 import { withInsertTextTable } from './withInsertTextTable';
 import { withMarkTable } from './withMarkTable';
 import { withNormalizeTable } from './withNormalizeTable';
-import { withSelectionTable } from './withSelectionTable';
 import { withSetFragmentDataTable } from './withSetFragmentDataTable';
 
-export const withTable: ExtendEditor<TableConfig> = ({ editor, ...ctx }) => {
-  editor = withNormalizeTable({ editor, ...ctx });
-  editor = withDeleteTable({ editor, ...ctx });
-  editor = withGetFragmentTable({ editor, ...ctx });
-  editor = withInsertFragmentTable({ editor, ...ctx });
-  editor = withInsertTextTable({ editor, ...ctx });
-  editor = withSelectionTable({ editor, ...ctx });
-  editor = withSetFragmentDataTable({ editor, ...ctx });
-  editor = withMarkTable({ editor, ...ctx });
+export const withTable: OverrideEditor<TableConfig> = (ctx) => {
+  const mark = withMarkTable(ctx);
 
-  return editor;
+  return {
+    api: {
+      // getFragment
+      ...withGetFragmentTable(ctx).api,
+      ...mark.api,
+    },
+    transforms: {
+      // normalize
+      ...withNormalizeTable(ctx).transforms,
+      // delete
+      ...withDeleteTable(ctx).transforms,
+      // insertFragment
+      ...withInsertFragmentTable(ctx).transforms,
+      // insertText
+      ...withInsertTextTable(ctx).transforms,
+      // apply
+      ...withApplyTable(ctx).transforms,
+      // setFragmentData
+      ...withSetFragmentDataTable(ctx).transforms,
+      // addMark, removeMark
+      ...mark.transforms,
+    },
+  };
 };

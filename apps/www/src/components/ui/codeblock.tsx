@@ -3,14 +3,17 @@
 
 'use client';
 
-import { type FC, memo } from 'react';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import React, { type FC, memo } from 'react';
+import { type SyntaxHighlighterProps, Prism } from 'react-syntax-highlighter';
 
 import { coldarkDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 
 import { Icons } from '@/components/icons';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 import { Button } from '@/registry/default/plate-ui/button';
+
+const SyntaxHighlighter =
+  Prism as unknown as typeof React.Component<SyntaxHighlighterProps>;
 
 interface Props {
   language: string;

@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { createSlateEditor } from '@udecode/plate-common';
+import { createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
 import { autoformatPlugin } from 'www/src/registry/default/components/editor/plugins/autoformat-plugin';
 
@@ -28,7 +28,7 @@ describe('when the start match is not present and the end match is present', () 
       value: input,
     });
 
-    editor.insertText(' ');
+    editor.tf.insertText(' ');
 
     expect(input.children).toEqual(output.children);
   });
@@ -56,8 +56,8 @@ describe('when there is a character before match', () => {
       value: input,
     });
 
-    editor.insertText('*');
-    editor.insertText('*');
+    editor.tf.insertText('*');
+    editor.tf.insertText('*');
 
     expect(input.children).toEqual(output.children);
   });
@@ -85,8 +85,8 @@ describe('when there is a character before match', () => {
       value: input,
     });
 
-    editor.insertText('*');
-    editor.insertText('*');
+    editor.tf.insertText('*');
+    editor.tf.insertText('*');
 
     expect(input.children).toEqual(output.children);
   });
@@ -111,7 +111,7 @@ describe('when selection is null', () => {
       value: input,
     });
 
-    editor.insertText(' ');
+    editor.tf.insertText(' ');
 
     expect(input.children).toEqual(output.children);
   });

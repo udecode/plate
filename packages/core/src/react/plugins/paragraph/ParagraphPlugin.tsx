@@ -14,7 +14,7 @@ export const ParagraphPlugin = toPlatePlugin(
         ],
         preventDefault: true,
         handler: () => {
-          editor.tf.toggle.block({ type });
+          editor.tf.toggleBlock(type);
         },
       },
     },

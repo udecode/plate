@@ -1,23 +1,20 @@
 import React from 'react';
 
-import type { TEditableProps } from '@udecode/slate-react';
-
 import {
-  type TDescendant,
+  type DecoratedRange,
+  type Descendant,
+  type NodeEntry,
   type TElement,
-  type TNodeEntry,
   type TText,
-  findNodePath,
-  getRange,
-  isElement,
-  isInline,
-  isVoid,
+  ElementApi,
+  RangeApi,
+  TextApi,
 } from '@udecode/slate';
 import clsx from 'clsx';
-import { type DecoratedRange, Range, Text } from 'slate';
 
 import type { SlateEditor } from '../../editor';
 import type { NodeComponents } from '../../plugin';
+import type { EditableProps } from '../../types/EditableProps';
 import type { SlateRenderElementProps } from '../types';
 
 import { pipeRenderElementStatic } from '../pipeRenderElementStatic';
@@ -32,7 +29,7 @@ function ElementStatic({
   element = { children: [], type: '' },
 }: {
   components: NodeComponents;
-  decorate: TEditableProps['decorate'];
+  decorate: EditableProps['decorate'];
   decorations: DecoratedRange[];
   editor: SlateEditor;
   element: TElement;
@@ -58,7 +55,7 @@ function ElementStatic({
     </Children>
   );
 
-  if (isVoid(editor, element)) {
+  if (editor.api.isVoid(element)) {
     attributes['data-slate-void'] = true;
     children = (
       <span
@@ -81,7 +78,7 @@ function ElementStatic({
       </span>
     );
   }
-  if (isInline(editor, element)) {
+  if (editor.api.isInline(element)) {
     attributes['data-slate-inline'] = true;
   }
 
@@ -111,7 +108,7 @@ function LeafStatic({
     components,
   });
 
-  const leaves = Text.decorations(leaf, decorations);
+  const leaves = TextApi.decorations(leaf, decorations);
 
   return (
     <span data-slate-node="text">
@@ -133,7 +130,7 @@ function LeafStatic({
   );
 }
 
-const defaultDecorate: (entry: TNodeEntry) => DecoratedRange[] = () => [];
+const defaultDecorate: (entry: NodeEntry) => DecoratedRange[] = () => [];
 
 function Children({
   children = [],
@@ -142,25 +139,25 @@ function Children({
   decorations,
   editor,
 }: {
-  children: TDescendant[];
+  children: Descendant[];
   components: NodeComponents;
-  decorate: TEditableProps['decorate'];
+  decorate: EditableProps['decorate'];
   decorations: DecoratedRange[];
   editor: SlateEditor;
 }) {
   return (
     <React.Fragment>
       {children.map((child, i) => {
-        const p = findNodePath(editor, child);
+        const p = editor.api.findPath(child);
 
         let ds: DecoratedRange[] = [];
 
         if (p) {
-          const range = getRange(editor, p);
+          const range = editor.api.range(p)!;
           ds = decorate([child, p]);
 
           for (const dec of decorations) {
-            const d = Range.intersection(dec, range);
+            const d = RangeApi.intersection(dec, range);
 
             if (d) {
               ds.push(d);
@@ -168,7 +165,7 @@ function Children({
           }
         }
 
-        return isElement(child) ? (
+        return ElementApi.isElement(child) ? (
           <ElementStatic
             key={i}
             components={components}

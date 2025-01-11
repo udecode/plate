@@ -31,7 +31,8 @@ describe('onKeyDownSelection', () => {
   //   ) as any;
   //
   //   const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-  //     editor: input,
+  //     value: input.children,
+  // selection: input.selection,
   //     plugins: [BlockSelectionPlugin],
   //   });
   //
@@ -57,7 +58,8 @@ describe('onKeyDownSelection', () => {
   //   ) as any;
   //
   //   const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-  //     editor: input,
+  //     value: input.children,
+  // selection: input.selection,
   //     plugins: [BlockSelectionPlugin],
   //   });
   //

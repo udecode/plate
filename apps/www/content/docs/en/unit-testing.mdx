@@ -8,7 +8,7 @@ This guide outlines best practices for unit testing Plate plugins and components
 ## Installation
 
 ```bash
-npm install @udecode/plate-test-utils slate-hyperscript
+npm install @udecode/plate-test-utils
 ```
 
 ## Setting Up Tests
@@ -76,7 +76,8 @@ it('should use custom hotkey for bold', async () => {
   ) as any as PlateEditor;
 
   const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-    editor: input,
+    value: input.children,
+    selection: input.selection,
     plugins: [
       BoldPlugin.configure({
         handlers: {
@@ -119,10 +120,11 @@ it('should collapse selection on backspace', async () => {
   ) as any as PlateEditor;
 
   const [editor] = await createPlateTestEditor({
-    editor: input,
+    value: input.children,
+    selection: input.selection,
   });
 
-  editor.deleteBackward('character');
+  editor.tf.deleteBackward();
 
   expect(editor.children).toEqual(output.children);
   expect(editor.selection).toEqual(output.selection);
@@ -152,7 +154,8 @@ it('should extend selection on shift+ArrowRight', async () => {
   ) as any as PlateEditor;
 
   const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-    editor: input,
+    value: input.children,
+    selection: input.selection,
   });
 
   await triggerKeyboardEvent('shift+ArrowRight');
@@ -201,7 +204,8 @@ describe('Table plugin', () => {
     ) as any as PlateEditor;
 
     const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-      editor: input,
+      value: input.children,
+    selection: input.selection,
       plugins: [TablePlugin],
     });
 
@@ -238,7 +242,8 @@ it('should use custom hotkey for bold', async () => {
   ) as any as PlateEditor;
 
   const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-    editor: input,
+    value: input.children,
+    selection: input.selection,
     plugins: [
       BoldPlugin.configure({
         shortcuts: {

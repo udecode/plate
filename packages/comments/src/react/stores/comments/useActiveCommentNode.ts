@@ -1,4 +1,4 @@
-import { useEditorPlugin } from '@udecode/plate-common/react';
+import { useEditorPlugin } from '@udecode/plate/react';
 
 import { findCommentNodeById } from '../../../lib';
 import { CommentsPlugin } from '../../CommentsPlugin';

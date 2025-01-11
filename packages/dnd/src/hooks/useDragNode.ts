@@ -1,6 +1,6 @@
 import { type DragSourceHookSpec, useDrag } from 'react-dnd';
 
-import type { PlateEditor } from '@udecode/plate-common/react';
+import type { PlateEditor } from '@udecode/plate/react';
 
 import type { DragItemNode } from '../types';
 

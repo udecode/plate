@@ -111,13 +111,13 @@ const FormattingPlugin = createPlatePlugin({
   shortcuts: {
     toggleBold: {
       handler: ({ editor }) => {
-        editor.toggleMark('bold');
+        editor.tf.toggleMark('bold');
       },
       keys: 'mod+b',
     },
     toggleItalic: {
       handler: ({ editor }) => {
-        editor.toggleMark('italic');
+        editor.tf.toggleMark('italic');
       },
       keys: 'mod+i',
     },

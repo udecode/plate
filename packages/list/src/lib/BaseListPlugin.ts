@@ -5,8 +5,7 @@ import {
   bindFirst,
   createSlatePlugin,
   createTSlatePlugin,
-  someNode,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import {
   toggleBulletedList,
@@ -65,7 +64,7 @@ export const BaseListItemPlugin = createSlatePlugin({
       [HtmlPlugin.key]: {
         parser: {
           preInsert: () => {
-            return someNode(editor, { match: { type } });
+            return editor.api.some({ match: { type } });
           },
         },
       },

@@ -1,8 +1,7 @@
-import type { TNodeEntry, TSelection, ValueOf } from '@udecode/slate';
-import type { TEditableProps } from '@udecode/slate-react';
-import type { Range } from 'slate';
+import type { NodeEntry, TRange, TSelection, ValueOf } from '@udecode/slate';
+import type { Nullable } from '@udecode/utils';
 
-import type { Nullable } from '../../../lib';
+import type { EditableProps } from '../../../lib';
 import type { PlateEditor } from '../../editor';
 
 export type PlateChangeKey =
@@ -11,7 +10,7 @@ export type PlateChangeKey =
   | 'versionSelection';
 
 export type PlateStoreState<E extends PlateEditor = PlateEditor> = Nullable<{
-  decorate: NonNullable<(options: { editor: E; entry: TNodeEntry }) => Range[]>;
+  decorate: NonNullable<(options: { editor: E; entry: NodeEntry }) => TRange[]>;
 
   /** Whether `Editable` is rendered so slate DOM is resolvable. */
   isMounted: boolean;
@@ -27,9 +26,9 @@ export type PlateStoreState<E extends PlateEditor = PlateEditor> = Nullable<{
   //  Whether the editor is read-only.
   readOnly: boolean;
 
-  renderElement: NonNullable<TEditableProps['renderElement']>;
+  renderElement: NonNullable<EditableProps['renderElement']>;
 
-  renderLeaf: NonNullable<TEditableProps['renderLeaf']>;
+  renderLeaf: NonNullable<EditableProps['renderLeaf']>;
 
   /**
    * Version incremented when calling `redecorate`. This is a dependency of the

@@ -1,12 +1,8 @@
 import {
-  type TEditor,
+  type Editor,
   type TSelection,
   type Value,
-  createTEditor,
-  getEndPoint,
-  getStartPoint,
-  normalizeEditor,
-  select,
+  createEditor,
 } from '@udecode/slate';
 import { nanoid } from 'nanoid';
 
@@ -14,11 +10,11 @@ import type { AnyPluginConfig } from '../plugin/BasePlugin';
 import type { AnySlatePlugin } from '../plugin/SlatePlugin';
 import type { InferPlugins, SlateEditor, TSlateEditor } from './SlateEditor';
 
+import { pipeNormalizeInitialValue } from '../../internal/plugin/pipeNormalizeInitialValue';
+import { resolvePlugins } from '../../internal/plugin/resolvePlugins';
 import { createSlatePlugin } from '../plugin/createSlatePlugin';
 import { getPluginType, getSlatePlugin } from '../plugin/getSlatePlugin';
 import { type CorePlugin, getCorePlugins } from '../plugins/getCorePlugins';
-import { pipeNormalizeInitialValue } from '../utils/pipeNormalizeInitialValue';
-import { resolvePlugins } from '../utils/resolvePlugins';
 
 export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
   id?: any;
@@ -87,7 +83,7 @@ export const withSlate = <
   V extends Value = Value,
   P extends AnyPluginConfig = CorePlugin,
 >(
-  e: TEditor,
+  e: Editor,
   {
     id,
     autoSelect,
@@ -106,6 +102,8 @@ export const withSlate = <
   editor.id = id ?? editor.id;
   editor.key = editor.key ?? nanoid();
   editor.isFallback = false;
+  editor.prevSelection = null;
+  editor.currentKeyboardEvent = null;
 
   editor.getApi = () => editor.api as any;
   editor.getTransforms = () => editor.transforms as any;
@@ -163,12 +161,15 @@ export const withSlate = <
 
     if (!store) return;
     if (typeof options === 'object') {
-      (store.set as any).mergeState(options);
+      store.set.state((draft: any) => {
+        Object.assign(draft, options);
+      });
     } else if (typeof options === 'function') {
-      (store.set as any).state(options);
+      store.set.state(options);
     }
   };
 
+  // Plugin initialization code
   const corePlugins = getCorePlugins({
     maxLength,
     plugins,
@@ -202,15 +203,14 @@ export const withSlate = <
     editor.selection = selection;
   } else if (autoSelect) {
     const edge = autoSelect === 'start' ? 'start' : 'end';
-    const target =
-      edge === 'start' ? getStartPoint(editor, []) : getEndPoint(editor, []);
-    select(editor, target);
+    const target = edge === 'start' ? editor.api.start([]) : editor.api.end([]);
+    editor.tf.select(target!);
   }
   if (editor.children.length > 0) {
     pipeNormalizeInitialValue(editor);
   }
   if (shouldNormalizeEditor) {
-    normalizeEditor(editor, { force: true });
+    editor.tf.normalize({ force: true });
   }
 
   return editor as any;
@@ -225,7 +225,7 @@ export type CreateSlateEditorOptions<
    *
    * @default createEditor()
    */
-  editor?: TEditor;
+  editor?: Editor;
 };
 
 /**
@@ -239,7 +239,7 @@ export const createSlateEditor = <
   V extends Value = Value,
   P extends AnyPluginConfig = CorePlugin,
 >({
-  editor = createTEditor(),
+  editor = createEditor(),
   ...options
 }: CreateSlateEditorOptions<V, P> = {}) => {
   return withSlate<V, P>(editor, options);

@@ -18,7 +18,7 @@ title: Serializing HTML
 
 ```tsx
 // ...
-import { createSlateEditor, serializeHtml } from '@udecode/plate-common';
+import { createSlateEditor, serializeHtml } from '@udecode/plate';
 import { EditorStatic } from '@/components/plate-ui/editor-static';
 
 // Create an editor and configure all the plugins you need
@@ -90,7 +90,7 @@ For each plugin key, provide its corresponding static component in the `componen
 // Instead of using interactive components that rely on 'use client',
 // use statically defined components that simply return plain HTML.
 
-import { createSlateEditor, serializeHtml } from '@udecode/plate-common';
+import { createSlateEditor, serializeHtml } from '@udecode/plate';
 
 // Import static versions of your components
 import { ParagraphElementStatic } from '@/components/plate-ui/paragraph-element-static';
@@ -196,7 +196,7 @@ A HTML string representing the Slate content.
 The `editor.api.html.deserialize` function allows you to convert HTML content into Slate value:
 
 ```typescript
-import { createPlateEditor } from '@udecode/plate-common/react';
+import { createPlateEditor } from '@udecode/plate/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -381,7 +381,7 @@ Flag to enable or disable the removal of whitespace from the serialized HTML.
 </APISubListItem>
 </APIParameters>
 <APIReturns>
-<APIItem type="TDescendant[]">
+<APIItem type="Descendant[]">
 
 The deserialized Slate value.
 </APIItem>

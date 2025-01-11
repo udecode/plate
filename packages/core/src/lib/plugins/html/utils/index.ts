@@ -14,6 +14,7 @@ export * from './deserializeHtmlElement';
 export * from './deserializeHtmlNode';
 export * from './deserializeHtmlNodeChildren';
 export * from './findHtmlElement';
+export * from './getDataNodeProps';
 export * from './getHtmlComments';
 export * from './htmlBodyToFragment';
 export * from './htmlBrToNewLine';

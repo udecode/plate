@@ -1,13 +1,9 @@
-import type { Path } from 'slate';
-
 import {
+  type Path,
   type SetNodesOptions,
   type SlateEditor,
-  findNode,
-  isElement,
-  setNodes,
-  withoutNormalizing,
-} from '@udecode/plate-common';
+  ElementApi,
+} from '@udecode/plate';
 
 import type { BorderDirection, BorderStyle, TTableCellElement } from '../types';
 
@@ -26,7 +22,7 @@ export const setBorderSize = (
     border?: BorderDirection | 'all';
   } = {}
 ) => {
-  const cellEntry = findNode<TTableCellElement>(editor, {
+  const cellEntry = editor.api.node<TTableCellElement>({
     at,
     match: { type: getCellTypes(editor) },
   });
@@ -44,7 +40,8 @@ export const setBorderSize = (
   };
 
   const setNodesOptions: SetNodesOptions = {
-    match: (n) => isElement(n) && getCellTypes(editor).includes(n.type),
+    match: (n) =>
+      ElementApi.isElement(n) && getCellTypes(editor).includes(n.type),
   };
 
   if (border === 'top') {
@@ -56,8 +53,7 @@ export const setBorderSize = (
         top: borderStyle,
       };
 
-      setNodes<TTableCellElement>(
-        editor,
+      editor.tf.setNodes<TTableCellElement>(
         { borders: newBorders },
         {
           at: cellPath,
@@ -80,8 +76,7 @@ export const setBorderSize = (
     };
 
     // Update the bottom border of the cell above
-    setNodes<TTableCellElement>(
-      editor,
+    editor.tf.setNodes<TTableCellElement>(
       { borders: newBorders },
       {
         at: cellAbovePath,
@@ -95,8 +90,7 @@ export const setBorderSize = (
     };
 
     // Update the bottom border of the current cell
-    setNodes<TTableCellElement>(
-      editor,
+    editor.tf.setNodes<TTableCellElement>(
       { borders: newBorders },
       {
         at: cellPath,
@@ -113,8 +107,7 @@ export const setBorderSize = (
         left: borderStyle,
       };
 
-      setNodes<TTableCellElement>(
-        editor,
+      editor.tf.setNodes<TTableCellElement>(
         { borders: newBorders },
         {
           at: cellPath,
@@ -137,8 +130,7 @@ export const setBorderSize = (
     };
 
     // Update the bottom border of the cell above
-    setNodes<TTableCellElement>(
-      editor,
+    editor.tf.setNodes<TTableCellElement>(
       { borders: newBorders },
       {
         at: prevCellPath,
@@ -152,8 +144,7 @@ export const setBorderSize = (
     };
 
     // Update the right border of the current cell
-    setNodes<TTableCellElement>(
-      editor,
+    editor.tf.setNodes<TTableCellElement>(
       { borders: newBorders },
       {
         at: cellPath,
@@ -162,7 +153,7 @@ export const setBorderSize = (
     );
   }
   if (border === 'all') {
-    withoutNormalizing(editor, () => {
+    editor.tf.withoutNormalizing(() => {
       setBorderSize(editor, size, { at, border: 'top' });
       setBorderSize(editor, size, { at, border: 'bottom' });
       setBorderSize(editor, size, { at, border: 'left' });

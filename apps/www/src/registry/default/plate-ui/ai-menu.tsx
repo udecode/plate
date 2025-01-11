@@ -2,22 +2,9 @@
 
 import * as React from 'react';
 
+import { type NodeEntry, type SlateEditor, isHotkey } from '@udecode/plate';
+import { useEditorPlugin, useHotkeys } from '@udecode/plate/react';
 import { AIChatPlugin, useEditorChat } from '@udecode/plate-ai/react';
-import {
-  type SlateEditor,
-  type TElement,
-  type TNodeEntry,
-  getAncestorNode,
-  getBlocks,
-  isElementEmpty,
-  isHotkey,
-  isSelectionAtBlockEnd,
-} from '@udecode/plate-common';
-import {
-  toDOMNode,
-  useEditorPlugin,
-  useHotkeys,
-} from '@udecode/plate-common/react';
 import {
   BlockSelectionPlugin,
   useIsSelecting,
@@ -62,8 +49,8 @@ export function AIMenu() {
 
   useEditorChat({
     chat,
-    onOpenBlockSelection: (blocks: TNodeEntry[]) => {
-      show(toDOMNode(editor, blocks.at(-1)![0])!);
+    onOpenBlockSelection: (blocks: NodeEntry[]) => {
+      show(editor.api.toDOMNode(blocks.at(-1)![0])!);
     },
     onOpenChange: (open) => {
       if (!open) {
@@ -72,18 +59,18 @@ export function AIMenu() {
       }
     },
     onOpenCursor: () => {
-      const ancestor = getAncestorNode(editor)?.[0] as TElement;
+      const [ancestor] = editor.api.block({ highest: true })!;
 
-      if (!isSelectionAtBlockEnd(editor) && !isElementEmpty(editor, ancestor)) {
+      if (!editor.api.isAt({ end: true }) && !editor.api.isEmpty(ancestor)) {
         editor
           .getApi(BlockSelectionPlugin)
           .blockSelection.addSelectedRow(ancestor.id as string);
       }
 
-      show(toDOMNode(editor, ancestor)!);
+      show(editor.api.toDOMNode(ancestor)!);
     },
     onOpenSelection: () => {
-      show(toDOMNode(editor, getBlocks(editor).at(-1)![0])!);
+      show(editor.api.toDOMNode(editor.api.blocks().at(-1)![0])!);
     },
   });
 

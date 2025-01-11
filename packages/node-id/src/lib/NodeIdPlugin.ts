@@ -1,14 +1,12 @@
 import {
+  type Descendant,
   type PluginConfig,
   type QueryNodeOptions,
-  type TDescendant,
-  type Value,
+  ElementApi,
   createTSlatePlugin,
-  isBlock,
-  isElement,
   nanoid,
   queryNode,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { withNodeId } from './withNodeId';
 
@@ -16,9 +14,9 @@ export type NodeIdConfig = PluginConfig<
   'nodeId',
   {
     /**
-     * By default, when a node inserted using editor.insertNode(s) has an id, it
-     * will be used instead of the id generator, except if it already exists in
-     * the document. Set this option to true to disable this behavior.
+     * By default, when a node inserted using editor.tf.insertNode(s) has an id,
+     * it will be used instead of the id generator, except if it already exists
+     * in the document. Set this option to true to disable this behavior.
      */
     disableInsertOverrides?: boolean;
 
@@ -72,7 +70,6 @@ export type NodeIdConfig = PluginConfig<
 /** @see {@link withNodeId} */
 export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
   key: 'nodeId',
-  extendEditor: withNodeId,
   normalizeInitialValue: ({ editor, getOptions }) => {
     const {
       allow,
@@ -90,26 +87,29 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
       const lastNode = editor.children.at(-1);
 
       if (firstNode?.id && lastNode?.id) {
-        return editor.children as Value;
+        return;
       }
     }
 
-    const addNodeId = (entry: [TDescendant, number[]]) => {
+    const addNodeId = (entry: [Descendant, number[]]) => {
       const [node, path] = entry;
-      const newNode = { ...node };
 
       if (
-        !newNode[idKey!] &&
+        !node[idKey!] &&
         queryNode([node, path], {
           allow,
           exclude,
           filter: (entry) => {
             const [node] = entry;
 
-            if (filterText && !isElement(node)) {
+            if (filterText && !ElementApi.isElement(node)) {
               return false;
             }
-            if (filterInline && isElement(node) && !isBlock(editor, node)) {
+            if (
+              filterInline &&
+              ElementApi.isElement(node) &&
+              !editor.api.isBlock(node)
+            ) {
               return false;
             }
 
@@ -117,22 +117,22 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
           },
         })
       ) {
-        newNode[idKey!] = getOptions().idCreator!();
+        node[idKey!] = getOptions().idCreator!();
       }
-      // Recursively process children if they exist
-      if ((newNode.children as any)?.length > 0) {
-        newNode.children = (newNode.children as any).map(
-          (child: any, index: number) => addNodeId([child, [...path, index]])
-        );
+      // Process children in place if they exist
+      if ((node.children as any)?.length > 0) {
+        (node.children as any).forEach((child: any, index: number) => {
+          addNodeId([child, [...path, index]]);
+        });
       }
 
-      return newNode;
+      return node;
     };
 
-    // Process top-level nodes
-    return editor.children.map((node, index) =>
-      addNodeId([node, [index]])
-    ) as Value;
+    // Process top-level nodes in place
+    editor.children.forEach((node, index) => {
+      addNodeId([node, [index]]);
+    });
   },
   options: {
     filter: () => true,
@@ -142,4 +142,4 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
     idKey: 'id',
     normalizeInitialValue: false,
   },
-});
+}).overrideEditor(withNodeId);

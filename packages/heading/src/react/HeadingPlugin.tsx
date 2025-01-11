@@ -1,8 +1,4 @@
-import {
-  type PlatePlugin,
-  Key,
-  toPlatePlugin,
-} from '@udecode/plate-common/react';
+import { type PlatePlugin, Key, toPlatePlugin } from '@udecode/plate/react';
 
 import { BaseHeadingPlugin } from '../lib/BaseHeadingPlugin';
 
@@ -22,7 +18,7 @@ export const HeadingPlugin = toPlatePlugin(BaseHeadingPlugin, ({ plugin }) => ({
             ],
             preventDefault: true,
             handler: () => {
-              editor.tf.toggle.block({ type });
+              editor.tf.toggleBlock(type);
             },
           },
         },

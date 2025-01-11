@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { createSlateEditor } from '@udecode/plate-common';
+import { createEditor, createSlateEditor } from '@udecode/plate';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { jsxt } from '@udecode/plate-test-utils';
 
@@ -8,11 +8,13 @@ import { NormalizeTypesPlugin } from '../../../lib/NormalizeTypesPlugin';
 
 jsxt;
 
-const input = (
-  <editor>
-    <hh1>test</hh1>
-  </editor>
-) as any;
+const input = createEditor(
+  (
+    <editor>
+      <hh1>test</hh1>
+    </editor>
+  ) as any
+);
 
 const output = (
   <editor>
@@ -25,7 +27,6 @@ const output = (
 
 it('should be', () => {
   const editor = createSlateEditor({
-    editor: input,
     plugins: [
       NormalizeTypesPlugin.configure({
         options: {
@@ -33,9 +34,11 @@ it('should be', () => {
         },
       }),
     ],
+    selection: input.selection,
+    value: input.children,
   });
 
-  editor.normalizeNode([input, []]);
+  editor.tf.normalizeNode([input, []]);
 
-  expect(input.children).toEqual(output.children);
+  expect(editor.children).toEqual(output.children);
 });

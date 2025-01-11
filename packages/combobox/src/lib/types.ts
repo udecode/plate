@@ -1,4 +1,4 @@
-import type { SlateEditor, TElement } from '@udecode/plate-common';
+import type { SlateEditor, TElement } from '@udecode/plate';
 
 export interface TriggerComboboxPluginOptions {
   createComboboxInput?: (trigger: string) => TElement;

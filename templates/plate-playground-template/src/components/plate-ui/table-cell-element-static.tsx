@@ -1,15 +1,10 @@
 import React from 'react';
 
-import type { SlateElementProps } from '@udecode/plate-common';
+import type { SlateElementProps } from '@udecode/plate';
 
 import { cn } from '@udecode/cn';
-import {
-  SlateElement,
-  findNode,
-  getParentNode,
-  isElement,
-} from '@udecode/plate-common';
-import { getTableCellBorders } from '@udecode/plate-table';
+import { SlateElement } from '@udecode/plate';
+import { type TTableCellElement, BaseTablePlugin } from '@udecode/plate-table';
 
 export function TableCellElementStatic({
   children,
@@ -17,28 +12,21 @@ export function TableCellElementStatic({
   isHeader,
   style,
   ...props
-}: SlateElementProps & {
+}: SlateElementProps<TTableCellElement> & {
   isHeader?: boolean;
 }) {
   const { editor, element } = props;
+  const { api } = editor.getPlugin(BaseTablePlugin);
 
-  const cellPath = findNode(editor!, {
-    match: (n) => isElement(n) && n === element,
-  })![1];
-
-  const rowPath = getParentNode(editor!, cellPath)![1];
-
-  const borders = getTableCellBorders(element, {
-    isFirstCell: cellPath.at(-1) === 0,
-    isFirstRow: rowPath.at(-1) === 0,
-  });
+  const { minHeight, width } = api.table.getCellSize({ element });
+  const borders = api.table.getCellBorders({ element });
 
   return (
     <SlateElement
       as={isHeader ? 'th' : 'td'}
       className={cn(
         className,
-        'relative h-full overflow-visible bg-background p-0',
+        'h-full overflow-visible border-none bg-background p-0',
         element.background ? 'bg-[--cellBackground]' : 'bg-background',
         cn(
           isHeader && 'text-left font-normal [&_>_*]:m-0',
@@ -56,12 +44,21 @@ export function TableCellElementStatic({
       style={
         {
           '--cellBackground': element.background,
+          maxWidth: width || 240,
+          minWidth: width || 120,
           ...style,
         } as React.CSSProperties
       }
+      {...{
+        colSpan: api.table.getColSpan(element),
+        rowSpan: api.table.getRowSpan(element),
+      }}
       {...props}
     >
-      <div className="relative z-20 box-border h-full px-4 py-2">
+      <div
+        className="relative z-20 box-border h-full px-4 py-2"
+        style={{ minHeight }}
+      >
         {children}
       </div>
     </SlateElement>

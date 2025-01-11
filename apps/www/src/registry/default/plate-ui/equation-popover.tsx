@@ -10,14 +10,14 @@ import type { TEquationElement } from '@udecode/plate-math';
 import { cn } from '@udecode/cn';
 import {
   createPrimitiveComponent,
-  selectSiblingNodePoint,
   useEditorRef,
   useElement,
-} from '@udecode/plate-common/react';
+  useReadOnly,
+  useSelected,
+} from '@udecode/plate/react';
 import { useEquationInput } from '@udecode/plate-math/react';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 import { CornerDownLeftIcon } from 'lucide-react';
-import { useReadOnly, useSelected } from 'slate-react';
 
 import { Button } from './button';
 import { PopoverContent } from './popover';
@@ -54,7 +54,7 @@ const EquationPopoverContent = ({
     setOpen(false);
 
     if (isInline) {
-      selectSiblingNodePoint(editor, { node: element });
+      editor.tf.select(element, { next: true });
     } else {
       editor
         .getApi(BlockSelectionPlugin)

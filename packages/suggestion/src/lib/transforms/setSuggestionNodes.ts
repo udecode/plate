@@ -1,14 +1,11 @@
 import {
+  type NodeProps,
   type SetNodesOptions,
   type SlateEditor,
-  type TNodeProps,
-  addRangeMarks,
-  getNodeEntries,
-  isInline,
+  ElementApi,
+  getAt,
   nanoid,
-  setNodes,
-  withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { TSuggestionText } from '../types';
 
@@ -21,34 +18,35 @@ export const setSuggestionNodes = (
     suggestionId?: string;
   } & SetNodesOptions
 ) => {
-  const { at = editor.selection, suggestionId = nanoid() } = options ?? {};
+  const at = getAt(editor, options?.at) ?? editor.selection;
+
+  if (!at) return;
+
+  const { suggestionId = nanoid() } = options ?? {};
 
   // TODO: get all inline nodes to be set
-  const _nodeEntries = getNodeEntries(editor, {
-    match: (n) => isInline(editor, n),
+  const _nodeEntries = editor.api.nodes({
+    match: (n) => ElementApi.isElement(n) && editor.api.isInline(n),
     ...options,
   });
   const nodeEntries = [..._nodeEntries];
 
-  withoutNormalizing(editor, () => {
-    const props: TNodeProps<TSuggestionText> = getSuggestionProps(
+  editor.tf.withoutNormalizing(() => {
+    const props: NodeProps<TSuggestionText> = getSuggestionProps(
       editor,
       suggestionId,
       options
     );
 
-    addRangeMarks(editor, props, {
+    editor.tf.setNodes(props, {
       at,
+      marks: true,
     });
 
     nodeEntries.forEach(([, path]) => {
-      setNodes<TSuggestionText>(editor, props, {
+      editor.tf.setNodes<TSuggestionText>(props, {
         at: path,
-        match: (n) => {
-          if (!isInline(editor, n)) return false;
-
-          return true;
-        },
+        match: (n) => ElementApi.isElement(n) && editor.api.isInline(n),
         ...options,
       });
     });

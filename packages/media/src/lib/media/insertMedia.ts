@@ -1,8 +1,4 @@
-import type {
-  InsertNodesOptions,
-  SlateEditor,
-  TEditor,
-} from '@udecode/plate-common';
+import type { InsertNodesOptions, SlateEditor } from '@udecode/plate';
 
 import {
   BaseImagePlugin,
@@ -11,8 +7,7 @@ import {
   insertMediaEmbed,
 } from '../..';
 
-export interface InsertMediaOptions<E extends TEditor = TEditor>
-  extends InsertNodesOptions<E> {
+export interface InsertMediaOptions extends InsertNodesOptions {
   /**
    * Default onClick is getting the image url by calling this promise before
    * inserting the image.
@@ -28,7 +23,7 @@ export const insertMedia = async <E extends SlateEditor>(
     getUrl,
     type = editor.getType(BaseImagePlugin),
     ...options
-  }: InsertMediaOptions<E> = {}
+  }: InsertMediaOptions = {}
 ) => {
   const url = getUrl
     ? await getUrl()

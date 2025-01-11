@@ -109,17 +109,14 @@ You can use the `extendEditor` option to override editor methods and add logging
 ```ts
 const LoggingPlugin = createPlatePlugin({
   key: 'logging',
-  extendEditor: (editor) => {
-    const { apply } = editor;
-
-    editor.apply = (operation) => {
+}).overrideEditor(({ editor, tf: { apply } }) => ({
+  transforms: {
+    apply(operation) {
       console.log('Operation:', operation);
       apply(operation);
-    };
-
-    return editor;
+    },
   },
-});
+}));
 
 const editor = createPlateEditor({
   plugins: [LoggingPlugin],

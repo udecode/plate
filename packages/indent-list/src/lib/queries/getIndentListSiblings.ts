@@ -1,10 +1,10 @@
 import type {
+  Editor,
   ElementEntryOf,
   ElementOf,
-  TEditor,
+  NodeEntry,
   TElement,
-  TNodeEntry,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { GetSiblingIndentListOptions } from './getSiblingIndentList';
 
@@ -17,7 +17,7 @@ import { getPreviousIndentList } from './getPreviousIndentList';
 
 export interface GetIndentListSiblingsOptions<
   N extends ElementOf<E>,
-  E extends TEditor = TEditor,
+  E extends Editor = Editor,
 > extends Partial<GetSiblingIndentListOptions<N, E>> {
   current?: boolean;
   next?: boolean;
@@ -26,7 +26,7 @@ export interface GetIndentListSiblingsOptions<
 
 export const getIndentListSiblings = <
   N extends ElementOf<E>,
-  E extends TEditor = TEditor,
+  E extends Editor = Editor,
 >(
   editor: E,
   entry: ElementEntryOf<E>,
@@ -37,7 +37,7 @@ export const getIndentListSiblings = <
     ...options
   }: GetIndentListSiblingsOptions<N, E> = {}
 ) => {
-  const siblings: TNodeEntry[] = [];
+  const siblings: NodeEntry[] = [];
 
   const node = entry[0] as TElement;
 

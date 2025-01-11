@@ -3,7 +3,7 @@ import React from 'react';
 import {
   createPrimitiveComponent,
   useEditorPlugin,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 
 import { LinkPlugin } from '../../LinkPlugin';
 

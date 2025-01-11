@@ -1,4 +1,4 @@
-import type { TDescendant } from '@udecode/plate-common';
+import type { Descendant } from '@udecode/plate';
 
 import type { MdastNode, RemarkPluginOptions } from './types';
 
@@ -7,7 +7,7 @@ import { remarkTransformNode } from './remarkTransformNode';
 export const remarkDefaultCompiler = (
   node: MdastNode,
   options: RemarkPluginOptions
-): TDescendant[] => {
+): Descendant[] => {
   return (node.children || []).flatMap((child) =>
     remarkTransformNode(child, options)
   );

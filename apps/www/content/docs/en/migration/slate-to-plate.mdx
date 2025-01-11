@@ -123,15 +123,23 @@ const withMyPlugin = (editor) => {
 // After
 const MyPlugin = createPlatePlugin({
   key: 'myPlugin',
-  extendEditor: ({ editor }) => {
-    const { insertText } = editor;
-    editor.insertText = (text) => {
+}).overrideEditor(({ editor, tf: { insertText } }) => ({
+  transforms: {
+    insertText(text) {
       // Custom logic
       insertText(text);
-    };
-    return editor;
-  },
-});
+    },
+  }
+}));
+
+// For adding new methods:
+const MyOtherPlugin = createPlatePlugin({
+  key: 'myOtherPlugin',
+}).extendEditorTransforms(({ editor }) => ({
+  newMethod(text) {
+    // Add new functionality
+  }
+}));
 ```
 
 For more information on working with the plugin context, see the [Plugin Context guide](/docs/plugin-context).

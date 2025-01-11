@@ -1,12 +1,11 @@
 import React from 'react';
 
-import { getNode } from '@udecode/plate-common';
+import { NodeApi } from '@udecode/plate';
 import {
-  toDOMNode,
   useEditorPlugin,
   useEditorSelector,
   useScrollRef,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 
 import type { Heading } from '../../lib/types';
 import type { TocSideBarProps } from '../types';
@@ -83,11 +82,11 @@ export const useTocSideBar = ({
     ) => {
       e.preventDefault();
       const { id, path } = item;
-      const node = getNode(editor, path);
+      const node = NodeApi.get(editor, path);
 
       if (!node) return;
 
-      const el = toDOMNode(editor, node);
+      const el = editor.api.toDOMNode(node);
 
       if (!el) return;
 

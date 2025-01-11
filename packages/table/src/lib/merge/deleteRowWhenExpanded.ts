@@ -1,29 +1,28 @@
-import type { PathRef } from 'slate';
-
 import {
+  type NodeEntry,
+  type PathRef,
   type SlateEditor,
-  type TNodeEntry,
-  createPathRef,
-  removeNodes,
-} from '@udecode/plate-common';
+  getEditorPlugin,
+} from '@udecode/plate';
 
 import {
   type TTableCellElement,
+  BaseTablePlugin,
   getCellRowIndexByPath,
-  getRowSpan,
   getTableMergedColumnCount,
 } from '..';
 import { getTableGridAbove } from '../queries';
 
 export const deleteRowWhenExpanded = (
   editor: SlateEditor,
-  [table, tablePath]: TNodeEntry<TTableCellElement>
+  [table, tablePath]: NodeEntry<TTableCellElement>
 ) => {
+  const { api } = getEditorPlugin(editor, BaseTablePlugin);
   const columnCount = getTableMergedColumnCount(table);
 
   const cells = getTableGridAbove(editor, {
     format: 'cell',
-  }) as TNodeEntry<TTableCellElement>[];
+  }) as NodeEntry<TTableCellElement>[];
 
   const firsRowIndex = getCellRowIndexByPath(cells[0][1]);
 
@@ -48,7 +47,7 @@ export const deleteRowWhenExpanded = (
         return;
       }
 
-      const rowSpan = getRowSpan(cell);
+      const rowSpan = api.table.getRowSpan(cell);
 
       rowSpanCarry = rowSpan && rowSpan > 1 ? rowSpan - 1 : 0;
       acrossRow += rowSpan ?? 1;
@@ -62,11 +61,11 @@ export const deleteRowWhenExpanded = (
 
     for (let i = firsRowIndex; i < firsRowIndex + acrossRow; i++) {
       const removedPath = tablePath.concat(i);
-      pathRefs.push(createPathRef(editor, removedPath));
+      pathRefs.push(editor.api.pathRef(removedPath));
     }
 
     pathRefs.forEach((item) => {
-      removeNodes(editor, { at: item.unref()! });
+      editor.tf.removeNodes({ at: item.unref()! });
     });
   }
 };

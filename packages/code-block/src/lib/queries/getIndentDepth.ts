@@ -1,13 +1,13 @@
-import { type TEditor, getEditorString } from '@udecode/plate-common';
+import type { Editor } from '@udecode/plate';
 
 import type { IndentCodeLineOptions } from '../transforms/indentCodeLine';
 
 export const getIndentDepth = (
-  editor: TEditor,
+  editor: Editor,
   { codeLine }: IndentCodeLineOptions
 ) => {
   const [, codeLinePath] = codeLine;
-  const text = getEditorString(editor, codeLinePath);
+  const text = editor.api.string(codeLinePath);
 
   return text.search(/\S|$/);
 };

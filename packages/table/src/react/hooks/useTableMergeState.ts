@@ -1,12 +1,13 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { isSelectionExpanded } from '@udecode/plate-common';
-import { useEditorRef, useEditorSelector } from '@udecode/plate-common/react';
-import { useReadOnly, useSelected } from 'slate-react';
+import {
+  useEditorPlugin,
+  useEditorSelector,
+  useReadOnly,
+  useSelected,
+} from '@udecode/plate/react';
 
 import {
   type TTableCellElement,
-  getColSpan,
-  getRowSpan,
   getTableGridAbove,
   isTableRectangular,
 } from '../../lib';
@@ -14,18 +15,21 @@ import { TablePlugin } from '../TablePlugin';
 import { useTableStore } from '../stores';
 
 export const useTableMergeState = () => {
-  const editor = useEditorRef();
+  const { api, getOptions } = useEditorPlugin(TablePlugin);
 
-  const { enableMerging } = editor.getOptions(TablePlugin);
+  const { disableMerge } = getOptions();
 
-  if (!enableMerging) return { canMerge: false, canUnmerge: false };
+  if (disableMerge) return { canMerge: false, canSplit: false };
 
   const readOnly = useReadOnly();
   const selected = useSelected();
-  const selectionExpanded = useEditorSelector(isSelectionExpanded, []);
+  const selectionExpanded = useEditorSelector(
+    (editor) => editor.api.isExpanded(),
+    []
+  );
 
   const collapsed = !readOnly && selected && !selectionExpanded;
-  const selectedTables = useTableStore().get.selectedTable();
+  const selectedTables = useTableStore().get.selectedTables();
   const selectedTable = selectedTables?.[0];
 
   const selectedCellEntries = useEditorSelector(
@@ -36,7 +40,7 @@ export const useTableMergeState = () => {
     []
   );
 
-  if (!selectedCellEntries) return { canMerge: false, canUnmerge: false };
+  if (!selectedCellEntries) return { canMerge: false, canSplit: false };
 
   const canMerge =
     !readOnly &&
@@ -45,11 +49,11 @@ export const useTableMergeState = () => {
     selectedCellEntries.length > 1 &&
     isTableRectangular(selectedTable);
 
-  const canUnmerge =
+  const canSplit =
     collapsed &&
     selectedCellEntries.length === 1 &&
-    (getColSpan(selectedCellEntries[0][0] as TTableCellElement) > 1 ||
-      getRowSpan(selectedCellEntries[0][0] as TTableCellElement) > 1);
+    (api.table.getColSpan(selectedCellEntries[0][0] as TTableCellElement) > 1 ||
+      api.table.getRowSpan(selectedCellEntries[0][0] as TTableCellElement) > 1);
 
-  return { canMerge, canUnmerge };
+  return { canMerge, canSplit };
 };

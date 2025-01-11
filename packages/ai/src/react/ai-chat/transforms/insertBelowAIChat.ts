@@ -1,9 +1,8 @@
-import type { PlateEditor } from '@udecode/plate-common/react';
+import type { PlateEditor } from '@udecode/plate/react';
 
-import { type SlateEditor, isEditorEmpty } from '@udecode/plate-common';
+import { type SlateEditor, PathApi, RangeApi } from '@udecode/plate';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 import cloneDeep from 'lodash/cloneDeep.js';
-import { Path, Range } from 'slate';
 
 import type { AIChatPluginConfig } from '../AIChatPlugin';
 
@@ -11,7 +10,7 @@ export const insertBelowAIChat = (
   editor: PlateEditor,
   sourceEditor: SlateEditor
 ) => {
-  if (!sourceEditor || isEditorEmpty(sourceEditor)) return;
+  if (!sourceEditor || sourceEditor.api.isEmpty()) return;
 
   const isBlockSelecting = editor.getOption(
     BlockSelectionPlugin,
@@ -37,17 +36,17 @@ export const insertBelowAIChat = (
 
     if (!lastBlock) return;
 
-    const nextPath = Path.next(lastBlock[1]);
+    const nextPath = PathApi.next(lastBlock[1]);
 
     insertBlocksAndSelect(cloneDeep(sourceEditor.children), {
       at: nextPath,
     });
   } else {
-    const [, end] = Range.edges(editor.selection!);
+    const [, end] = RangeApi.edges(editor.selection!);
     const endPath = [end.path[0]];
 
     insertBlocksAndSelect(cloneDeep(sourceEditor.children), {
-      at: Path.next(endPath),
+      at: PathApi.next(endPath),
     });
   }
 };

@@ -1,77 +1,59 @@
 import {
   type SlateEditor,
   type TElement,
-  getAboveNode,
   getEditorPlugin,
-  isExpanded,
-  removeNodes,
-  setNodes,
-  someNode,
-  withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { TTableElement } from '../types';
 
-import {
-  BaseTableCellHeaderPlugin,
-  BaseTableCellPlugin,
-  BaseTablePlugin,
-  BaseTableRowPlugin,
-} from '../BaseTablePlugin';
+import { type TableConfig, BaseTableRowPlugin } from '../BaseTablePlugin';
 import { deleteTableMergeColumn } from '../merge/deleteColumn';
 import { deleteColumnWhenExpanded } from '../merge/deleteColumnWhenExpanded';
+import { getCellTypes } from '../utils';
 
 export const deleteColumn = (editor: SlateEditor) => {
-  const { getOptions, type } = getEditorPlugin(editor, BaseTablePlugin);
-  const { enableMerging } = getOptions();
+  const { getOptions, type } = getEditorPlugin<TableConfig>(editor, {
+    key: 'table',
+  });
+  const { disableMerge } = getOptions();
 
-  if (enableMerging) {
-    return deleteTableMergeColumn(editor);
-  }
-  if (
-    !someNode(editor, {
-      match: { type },
-    })
-  ) {
-    return;
-  }
-
-  const tableEntry = getAboveNode<TTableElement>(editor, {
+  const tableEntry = editor.api.above<TTableElement>({
     match: { type },
   });
 
   if (!tableEntry) return;
-  if (isExpanded(editor.selection))
-    return deleteColumnWhenExpanded(editor, tableEntry);
 
-  const tdEntry = getAboveNode(editor, {
-    match: {
-      type: [
-        editor.getType(BaseTableCellPlugin),
-        editor.getType(BaseTableCellHeaderPlugin),
-      ],
-    },
-  });
-  const trEntry = getAboveNode(editor, {
-    match: { type: editor.getType(BaseTableRowPlugin) },
-  });
+  editor.tf.withoutNormalizing(() => {
+    if (!disableMerge) {
+      deleteTableMergeColumn(editor);
 
-  if (
-    tdEntry &&
-    trEntry &&
-    tableEntry &&
-    // Cannot delete the last cell
-    trEntry[0].children.length > 1
-  ) {
-    const [tableNode, tablePath] = tableEntry;
+      return;
+    }
+    if (editor.api.isExpanded())
+      return deleteColumnWhenExpanded(editor, tableEntry);
 
-    const tdPath = tdEntry[1];
-    const colIndex = tdPath.at(-1)!;
+    const tdEntry = editor.api.above({
+      match: { type: getCellTypes(editor) },
+    });
+    const trEntry = editor.api.above({
+      match: { type: editor.getType(BaseTableRowPlugin) },
+    });
 
-    const pathToDelete = tdPath.slice();
-    const replacePathPos = pathToDelete.length - 2;
+    if (
+      tdEntry &&
+      trEntry &&
+      tableEntry &&
+      // Cannot delete the last cell
+      trEntry[0].children.length > 1
+    ) {
+      const [tableNode, tablePath] = tableEntry;
 
-    withoutNormalizing(editor, () => {
+      const tdPath = tdEntry[1];
+      const colIndex = tdPath.at(-1)!;
+
+      const pathToDelete = tdPath.slice();
+      const replacePathPos = pathToDelete.length - 2;
+
       tableNode.children.forEach((row, rowIdx) => {
         pathToDelete[replacePathPos] = rowIdx;
 
@@ -84,9 +66,7 @@ export const deleteColumn = (editor: SlateEditor) => {
         )
           return;
 
-        removeNodes(editor, {
-          at: pathToDelete,
-        });
+        editor.tf.removeNodes({ at: pathToDelete });
       });
 
       const { colSizes } = tableNode;
@@ -95,16 +75,15 @@ export const deleteColumn = (editor: SlateEditor) => {
         const newColSizes = [...colSizes];
         newColSizes.splice(colIndex, 1);
 
-        setNodes<TTableElement>(
-          editor,
-          {
-            colSizes: newColSizes,
-          },
-          {
-            at: tablePath,
-          }
+        editor.tf.setNodes<TTableElement>(
+          { colSizes: newColSizes },
+          { at: tablePath }
         );
       }
-    });
-  }
+    }
+  });
+
+  // computeCellIndices(editor, {
+  //   tableNode: tableEntry[0],
+  // });
 };

@@ -1,5 +1,15 @@
 # @udecode/plate-md-serializer
 
+## 42.0.0
+
+## 41.0.14
+
+### Patch Changes
+
+- [#3924](https://github.com/udecode/plate/pull/3924) by [@cwooldridge1](https://github.com/cwooldridge1) – fix: markdown parser ordered list numbering
+
+- [#3924](https://github.com/udecode/plate/pull/3924) by [@cwooldridge1](https://github.com/cwooldridge1) – fix: markdown parser ordered list numbering
+
 ## 41.0.0
 
 ## 40.2.2

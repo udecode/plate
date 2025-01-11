@@ -18,7 +18,7 @@ Use one of these hooks:
 - `useEditorState`: Re-render on every change.
 
 ```ts
-import { useEditorRef, useEditorSelector, useEditorState } from '@udecode/plate-common/react';
+import { useEditorRef, useEditorSelector, useEditorState } from '@udecode/plate/react';
 
 const MyComponent = () => {
   const editor = useEditorRef();
@@ -56,7 +56,7 @@ const MyComponent = () => {
 To access the editor outside the `Plate` component or work with multiple editors, use the `PlateController` component:
 
 ```ts
-import { PlateController } from '@udecode/plate-common/react';
+import { PlateController } from '@udecode/plate/react';
 
 const App = () => (
   <PlateController>
@@ -106,13 +106,21 @@ You can also use `editor.isFallback` to check if the editor is a fallback instan
 
 ## API Methods
 
+### findPath
+
+Find the path of a node. Default is `findNodePath` (traversal). Overridden by `withPlate` to use `ReactEditor.findPath` (memo).
+
+```ts
+const path = editor.findPath(node);
+```
+
 ### getApi
 
 Retrieve the typed API for the editor:
 
 ```ts
 const api = editor.getApi(TablePlugin);
-api.api.create.cell(); // Type-safe API method
+api.api.create.tableCell(); // Type-safe API method
 ```
 
 ### getTransforms

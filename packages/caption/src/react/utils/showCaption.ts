@@ -1,11 +1,9 @@
-import type { SlateEditor, TElement } from '@udecode/plate-common';
-
-import { findPath } from '@udecode/plate-common/react';
+import type { SlateEditor, TElement } from '@udecode/plate';
 
 import { CaptionPlugin } from '../CaptionPlugin';
 
 export const showCaption = (editor: SlateEditor, element: TElement) => {
-  const path = findPath(editor, element);
+  const path = editor.api.findPath(element);
   editor.setOption(CaptionPlugin, 'visibleId', element.id as string);
 
   setTimeout(() => {

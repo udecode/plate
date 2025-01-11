@@ -1,7 +1,6 @@
 import React from 'react';
 
-import { someNode } from '@udecode/plate-common';
-import { useEditorPlugin, useEditorVersion } from '@udecode/plate-common/react';
+import { useEditorPlugin, useEditorVersion } from '@udecode/plate/react';
 
 import { BaseCommentsPlugin } from '../../lib/BaseCommentsPlugin';
 
@@ -19,13 +18,13 @@ export const useFloatingCommentsState = () => {
     // there is a delay between activeCommentId and someNode, so we sync in `active`
     if (
       activeCommentId &&
-      someNode(editor, {
+      editor.api.some({
         match: (n) => n[BaseCommentsPlugin.key],
       })
     ) {
       setActive(true);
     }
-    if (!someNode(editor, { match: (n) => n[BaseCommentsPlugin.key] })) {
+    if (!editor.api.some({ match: (n) => n[BaseCommentsPlugin.key] })) {
       setOption('activeCommentId', null);
       setActive(false);
     }

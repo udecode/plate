@@ -1,19 +1,12 @@
 import {
   type InsertNodesOptions,
   type SlateEditor,
-  type TEditor,
   type UnwrapNodesOptions,
   type WrapNodesOptions,
-  findNode,
-  getAboveNode,
-  getEditorString,
-  getNodeLeaf,
-  getNodeProps,
+  NodeApi,
+  RangeApi,
   isDefined,
-  isExpanded,
-  removeNodes,
-  setNodes,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { TLinkElement } from '../types';
 
@@ -24,13 +17,13 @@ import { unwrapLink } from './unwrapLink';
 import { upsertLinkText } from './upsertLinkText';
 import { wrapLink } from './wrapLink';
 
-export type UpsertLinkOptions<E extends TEditor = TEditor> = {
-  insertNodesOptions?: InsertNodesOptions<E>;
+export type UpsertLinkOptions = {
+  insertNodesOptions?: InsertNodesOptions;
   /** If true, insert text when selection is in url. */
   insertTextInLink?: boolean;
   skipValidation?: boolean;
-  unwrapNodesOptions?: UnwrapNodesOptions<E>;
-  wrapNodesOptions?: WrapNodesOptions<E>;
+  unwrapNodesOptions?: UnwrapNodesOptions;
+  wrapNodesOptions?: WrapNodesOptions;
 } & CreateLinkNodeOptions;
 
 /**
@@ -40,8 +33,8 @@ export type UpsertLinkOptions<E extends TEditor = TEditor> = {
  * - Remove link node, get link text Then:
  * - Insert link node
  */
-export const upsertLink = <E extends SlateEditor>(
-  editor: E,
+export const upsertLink = (
+  editor: SlateEditor,
   {
     insertNodesOptions,
     insertTextInLink,
@@ -49,13 +42,13 @@ export const upsertLink = <E extends SlateEditor>(
     target,
     text,
     url,
-  }: UpsertLinkOptions<E>
+  }: UpsertLinkOptions
 ) => {
   const at = editor.selection;
 
   if (!at) return;
 
-  const linkAbove = getAboveNode<TLinkElement>(editor, {
+  const linkAbove = editor.api.above<TLinkElement>({
     at,
     match: { type: editor.getType(BaseLinkPlugin) },
   });
@@ -63,7 +56,7 @@ export const upsertLink = <E extends SlateEditor>(
   // anchor and focus in link -> insert text
   if (insertTextInLink && linkAbove) {
     // we don't want to insert marks in links
-    editor.insertText(url);
+    editor.tf.insertText(url);
 
     return true;
   }
@@ -74,8 +67,7 @@ export const upsertLink = <E extends SlateEditor>(
   // edit the link url and/or target
   if (linkAbove) {
     if (url !== linkAbove[0]?.url || target !== linkAbove[0]?.target) {
-      setNodes<TLinkElement>(
-        editor,
+      editor.tf.setNodes<TLinkElement>(
         { target, url },
         {
           at: linkAbove[1],
@@ -89,7 +81,7 @@ export const upsertLink = <E extends SlateEditor>(
   }
 
   // selection contains at one edge edge or between the edges
-  const linkEntry = findNode<TLinkElement>(editor, {
+  const linkEntry = editor.api.node<TLinkElement>({
     at,
     match: { type: editor.getType(BaseLinkPlugin) },
   });
@@ -99,13 +91,13 @@ export const upsertLink = <E extends SlateEditor>(
   let shouldReplaceText = false;
 
   if (linkPath && text?.length) {
-    const linkText = getEditorString(editor, linkPath);
+    const linkText = editor.api.string(linkPath);
 
     if (text !== linkText) {
       shouldReplaceText = true;
     }
   }
-  if (isExpanded(at)) {
+  if (RangeApi.isExpanded(at)) {
     // anchor and focus in link
     if (linkAbove) {
       unwrapLink(editor, {
@@ -127,19 +119,19 @@ export const upsertLink = <E extends SlateEditor>(
     return true;
   }
   if (shouldReplaceText) {
-    removeNodes(editor, {
+    editor.tf.removeNodes({
       at: linkPath,
     });
   }
 
-  const props = getNodeProps(linkNode ?? ({} as any));
+  const props = NodeApi.extractProps(linkNode ?? ({} as any));
 
   const path = editor.selection?.focus.path;
 
   if (!path) return;
 
   // link text should have the focused leaf marks
-  const leaf = getNodeLeaf(editor, path);
+  const leaf = NodeApi.leaf(editor, path);
 
   // if text is empty, text is url
   if (!text?.length) {

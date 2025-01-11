@@ -1,4 +1,4 @@
-import { BaseParagraphPlugin, createSlatePlugin } from '@udecode/plate-common';
+import { BaseParagraphPlugin, createSlatePlugin } from '@udecode/plate';
 
 /**
  * Enables support for text alignment, useful to align your content to left,

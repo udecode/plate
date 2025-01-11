@@ -1,7 +1,7 @@
 'use client';
 
+import { ParagraphPlugin } from '@udecode/plate/react';
 import { CalloutPlugin } from '@udecode/plate-callout/react';
-import { ParagraphPlugin } from '@udecode/plate-common/react';
 import { DatePlugin } from '@udecode/plate-date/react';
 import { DocxPlugin } from '@udecode/plate-docx';
 import { EmojiPlugin } from '@udecode/plate-emoji/react';

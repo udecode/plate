@@ -1,4 +1,4 @@
-import type { SlateEditor, TText } from '@udecode/plate-common';
+import type { SlateEditor, TText } from '@udecode/plate';
 
 import type { TLinkElement } from '../types';
 

@@ -1,7 +1,5 @@
 /** @jsx jsx */
 
-import type { SlateEditor } from '@udecode/plate-common';
-
 import { jsx } from '@udecode/plate-test-utils';
 
 jsx;
@@ -19,7 +17,7 @@ export const a = (
       </htr>
     </htable>
   </editor>
-) as any as SlateEditor;
+) as any;
 
 export const tableInput = Object.freeze([
   {

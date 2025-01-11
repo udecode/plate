@@ -1,0 +1,188 @@
+---
+title: Store
+description: Plate store 的 API 参考。
+---
+
+`Plate` 使用 [jotai](https://github.com/pmndrs/jotai) 来存储编辑器的状态。
+
+<Callout className="my-4">
+  **注意**：要在组件中使用 store hooks，需要在 `Plate` 内部渲染该组件。
+</Callout>
+
+## Plate Store
+
+### Store
+
+PlateStoreState 对象存储 Plate 编辑器的状态。它包含有关编辑器 ID、当前值、插件和其他设置的信息。
+
+<APIAttributes>
+<APIItem name="editor" type="PlateEditor">
+Slate 编辑器引用。
+
+- **Default:** `createPlateFallbackEditor()`
+</APIItem>
+
+<APIItem name="id" type="string">
+一个用作提供者作用域的唯一 ID。如果在同一个 React 树中有多个 `Plate`，则需要使用它。
+
+- **Default:** random id
+</APIItem>
+
+<APIItem name="containerRef" type="React.RefObject<HTMLDivElement>">
+编辑器容器元素的引用。
+</APIItem>
+
+<APIItem name="decorate" type="function" optional>
+用于装饰编辑器中范围的函数。
+
+```ts
+(options: { editor: PlateEditor; entry: NodeEntry }) => Range[]
+```
+</APIItem>
+
+<APIItem name="isMounted" type="boolean" optional>
+`Editable` 是否已渲染，以便 slate DOM 可解析。
+</APIItem>
+
+<APIItem name="onChange" type="function" optional>
+用于控制回调，当编辑器状态发生变化时调用。
+
+```ts
+(options: { editor: PlateEditor; value: ValueOf<PlateEditor> }) => void
+```
+</APIItem>
+
+<APIItem name="onSelectionChange" type="function" optional>
+用于控制回调，当 editor.selection 发生变化时调用。
+
+```ts
+(options: { editor: PlateEditor; selection: TSelection }) => void
+```
+</APIItem>
+
+<APIItem name="onValueChange" type="function" optional>
+用于控制回调，当 editor.children 发生变化时调用。
+
+```ts
+(options: { editor: PlateEditor; value: ValueOf<PlateEditor> }) => void
+```
+</APIItem>
+
+<APIItem name="primary" type="boolean" optional>
+Whether the editor is primary. If no editor is active, then PlateController will use the first-mounted primary editor.
+
+- **Default:** `true`
+</APIItem>
+
+<APIItem name="readOnly" type="boolean" optional>
+编辑器是否为只读。
+</APIItem>
+
+<APIItem name="renderElement" type="function" optional>
+在编辑器中渲染元素的函数。
+</APIItem>
+
+<APIItem name="renderLeaf" type="function" optional>
+在编辑器中渲染叶节点的函数。
+</APIItem>
+
+<APIItem name="versionDecorate" type="number" optional>
+调用 `redecorate` 时递增的版本号。这是 `decorate` 函数的一个依赖项。
+</APIItem>
+
+<APIItem name="versionEditor" type="number" optional>
+每次编辑器更改时递增的版本号。
+</APIItem>
+
+<APIItem name="versionSelection" type="number" optional>
+每次编辑器.selection 更改时递增的版本号。
+</APIItem>
+
+<APIItem name="versionValue" type="number" optional>
+每次编辑器.children 更改时递增的版本号。
+</APIItem>
+</APIAttributes>
+
+## Exposed Store Keys
+
+以下存储键在 `editor.setPlateState` 中被暴露：
+
+- `readOnly`
+- `onChange`
+- `decorate`
+- `renderElement`
+- `renderLeaf`
+
+## Selectors
+
+当你需要订阅一个值时，使用 `usePlateSelectors(id).<state property>()`。
+
+- **示例：** `const value = usePlateSelectors(id).value()` 将订阅 `value` 的变化。
+- 它在底层使用 [useAtomValue](https://jotai.org/docs/utils/use-atom-value)。
+
+## Actions
+
+当你需要一个存储属性的值和设置器时，使用 `usePlateStates(id).<state property>()`。
+
+- **示例：** `const [value, setValue] = usePlateStates(id).value()`
+- 它在底层使用 [useAtom](https://jotai.org/docs/basics/primitives#use-atom)。
+
+### `useRedecorate`
+
+重新装饰编辑器。
+
+<APIParameters>
+  <APIItem name="id" type="string" optional>
+    编辑器 ID。
+  </APIItem>
+</APIParameters>
+
+## Event Editor Store
+
+此存储是一个对象，其属性键是事件名称（例如 `'focus'`），属性值是 [editor IDs](Plate#id)。
+
+- 当有[多个编辑器](multiple-editors)时，这很有用，可以基于 DOM 事件获取一个（例如最后一个聚焦的编辑器）。
+- [Plate](Plate) 的一个核心插件将存储以下事件。
+
+### State
+
+<APIAttributes>
+<APIItem name="blur" type="string | null">
+
+最后一个失去焦点的编辑器 ID。
+
+</APIItem>
+
+<APIItem name="focus" type="string | null">
+
+当前聚焦的编辑器 ID。
+
+</APIItem>
+
+<APIItem name="last" type="string | null">
+
+最后一个编辑器 ID。
+
+</APIItem>
+</APIAttributes>
+### `useEventEditorSelectors`
+
+钩子选择器。
+
+- **Example:** `useEventEditorSelectors().focus()` 将获取最后一个聚焦的编辑器 ID。
+
+### `useEventPlateId`
+
+获取最后一个事件编辑器 ID。
+
+<APIParameters>
+<APIItem name="id" type="string | null">
+
+如果定义，返回的 ID。
+
+</APIItem>
+</APIParameters>
+
+<APIReturns>
+  如果可用，从上下文中获取 plate id，否则获取最后一个事件编辑器 ID 或 `PLATE_SCOPE`。
+</APIReturns>

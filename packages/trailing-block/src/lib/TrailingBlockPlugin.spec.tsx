@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import { createSlateEditor } from '@udecode/plate-common';
-import { ParagraphPlugin } from '@udecode/plate-common/react';
+import { createSlateEditor } from '@udecode/plate';
+import { ParagraphPlugin } from '@udecode/plate/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { jsxt } from '@udecode/plate-test-utils';
 
@@ -29,7 +29,6 @@ describe('when last node is invalid', () => {
 
   it('should be', () => {
     const editor = createSlateEditor({
-      editor: input,
       plugins: [
         TrailingBlockPlugin.configure({
           options: {
@@ -38,11 +37,13 @@ describe('when last node is invalid', () => {
           },
         }),
       ],
+      selection: input.selection,
+      value: input.children,
     });
 
-    editor.normalizeNode([input, []]);
+    editor.tf.normalizeNode([input, []]);
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 });
 
@@ -70,7 +71,6 @@ describe('when level = 1', () => {
 
   it('should be', () => {
     const editor = createSlateEditor({
-      editor: input,
       plugins: [
         TrailingBlockPlugin.configure({
           options: {
@@ -79,11 +79,13 @@ describe('when level = 1', () => {
           },
         }),
       ],
+      selection: input.selection,
+      value: input.children,
     });
 
-    editor.normalizeNode([input, []]);
+    editor.tf.normalizeNode([input, []]);
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 });
 
@@ -104,7 +106,6 @@ describe('when using query', () => {
 
   it('should be', () => {
     const editor = createSlateEditor({
-      editor: input,
       plugins: [
         TrailingBlockPlugin.configure({
           options: {
@@ -114,11 +115,13 @@ describe('when using query', () => {
           },
         }),
       ],
+      selection: input.selection,
+      value: input.children,
     });
 
-    editor.normalizeNode([input, []]);
+    editor.tf.normalizeNode([input, []]);
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 });
 
@@ -141,13 +144,14 @@ describe('when the last node is valid', () => {
 
   it('should be', () => {
     const editor = createSlateEditor({
-      editor: input,
       plugins: [TrailingBlockPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
-    editor.normalizeNode([input, []]);
+    editor.tf.normalizeNode([input, []]);
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 });
 
@@ -164,11 +168,12 @@ describe('when editor has no children', () => {
 
   it('should be', () => {
     const editor = createSlateEditor({
-      editor: input,
       plugins: [TrailingBlockPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
-    editor.normalizeNode([editor, []]);
+    editor.tf.normalizeNode([editor, []]);
 
     expect(editor.children).toEqual(output.children);
   });

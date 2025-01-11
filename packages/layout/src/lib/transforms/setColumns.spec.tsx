@@ -1,7 +1,6 @@
-import type { Path } from 'slate';
+import type { Path } from '@udecode/plate';
 
-import { insertNodes } from '@udecode/plate-common';
-import { createPlateEditor } from '@udecode/plate-common/react';
+import { createPlateEditor } from '@udecode/plate/react';
 
 import { BaseColumnItemPlugin, BaseColumnPlugin } from '../BaseColumnPlugin';
 import { setColumns } from './setColumns';
@@ -189,8 +188,7 @@ describe('setColumns', () => {
     expect(node.children[2].width).toBe('34%');
 
     // Add some new content in the third column
-    insertNodes(
-      editor,
+    editor.tf.insertNodes(
       { children: [{ text: 'Column 3 text' }], type: 'p' },
       {
         at: [0, 2, 1],
