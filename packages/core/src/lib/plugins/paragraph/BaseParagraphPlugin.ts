@@ -5,8 +5,14 @@ export type ParagraphConfig = PluginConfig<'p'>;
 export const BaseParagraphPlugin = createSlatePlugin({
   key: 'p',
   node: {
+    dangerouslyAllowAttributes: [
+      'data-slate-type',
+      'data-slate-indent',
+      'data-slate-list-start',
+      'data-slate-list-style-type',
+      'data-slate-checked',
+    ],
     isElement: true,
-    toDataAttributes: ['indent', 'listStart', 'listStyleType', 'checked'],
   },
   parsers: {
     html: {
@@ -17,6 +23,15 @@ export const BaseParagraphPlugin = createSlatePlugin({
             validNodeName: 'P',
           },
         ],
+        toNodeProps: ({ element }) => {
+          const { slateIndent } = element.dataset;
+
+          if (slateIndent !== undefined) {
+            return {
+              indent: Number(slateIndent),
+            };
+          }
+        },
       },
     },
   },

@@ -129,6 +129,14 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
    */
   type: string;
 
+  /**
+   * Function that returns an object of data attributes to be added to the
+   * element.
+   */
+  toDataAttributes?: (
+    options: BasePluginContext<C> & { node: TElement }
+  ) => AnyObject;
+
   component?: NodeComponent | null;
 
   /**
@@ -191,12 +199,6 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
    * void.
    */
   isVoid?: boolean;
-
-  /**
-   * Function that returns an object of data attributes to be added to the
-   * element.
-   */
-  toDataAttributes?: string[];
 };
 
 export type BaseSerializer = AnyObject;

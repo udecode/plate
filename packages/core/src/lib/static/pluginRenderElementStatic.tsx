@@ -34,7 +34,7 @@ export const pluginRenderElementStatic = (
         (o) => o.render?.belowNodes ?? []
       );
 
-      const dataAttributes = getNodeDataAttributes(plugin, element);
+      const dataAttributes = getNodeDataAttributes(editor, plugin, element);
 
       nodeProps = getRenderNodeStaticProps({
         attributes: {

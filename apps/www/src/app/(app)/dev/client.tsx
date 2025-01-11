@@ -71,11 +71,7 @@ import Prism from 'prismjs';
 
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
 import { basicNodesValue } from '@/registry/default/example/values/basic-nodes-value';
-import { horizontalRuleValue } from '@/registry/default/example/values/horizontal-rule-value';
-import { indentListValue } from '@/registry/default/example/values/indent-list-value';
-import { linkValue } from '@/registry/default/example/values/link-value';
 import { mediaPlaceholderValue } from '@/registry/default/example/values/media-value';
-import { tableValue } from '@/registry/default/example/values/table-value';
 import { BlockquoteElementStatic } from '@/registry/default/plate-ui/blockquote-element-static';
 import { Button } from '@/registry/default/plate-ui/button';
 import { CodeBlockElementStatic } from '@/registry/default/plate-ui/code-block-element-static';
@@ -121,10 +117,10 @@ const siteUrl = 'https://platejs.org';
 const createValue = () => {
   return [
     ...basicNodesValue,
-    ...indentListValue,
-    ...linkValue,
-    ...tableValue,
-    ...horizontalRuleValue,
+    // ...indentListValue,
+    // ...linkValue,
+    // ...tableValue,
+    // ...horizontalRuleValue,
     ...mediaPlaceholderValue,
   ];
 };

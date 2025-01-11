@@ -5,8 +5,6 @@ import pick from 'lodash/pick.js';
 import type { AnyEditorPlugin } from '../plugin';
 import type { SlateRenderNodeProps } from '../static';
 
-import { getNodeDataAttributesKeys } from '../static/utils/getNodeDataAttributes';
-
 export const getPluginNodeProps = ({
   attributes,
   plugin,
@@ -34,7 +32,6 @@ export const getPluginNodeProps = ({
      */
     newProps.nodeProps = pick(attributes, [
       ...(plugin.node.dangerouslyAllowAttributes ?? []),
-      ...getNodeDataAttributesKeys(plugin),
     ]);
   }
 

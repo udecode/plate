@@ -3,6 +3,7 @@ import {
   type SlatePlugin,
   HtmlPlugin,
   createSlatePlugin,
+  isSlatePluginElement,
 } from '@udecode/plate-common';
 
 import { cleanDocx } from './docx-cleaner/cleanDocx';
@@ -16,16 +17,12 @@ import { getTextListStyleType } from './docx-cleaner/utils/getTextListStyleType'
 import { isDocxContent } from './docx-cleaner/utils/isDocxContent';
 import { isDocxList } from './docx-cleaner/utils/isDocxList';
 
-const isIndentListStatic = (element: HTMLElement) => {
-  return !!element.dataset.slateListStyleType;
-};
-
 const getParse =
   (type: string): HtmlDeserializer['parse'] =>
   ({ element }) => {
     const node: any = { type };
 
-    if (isIndentListStatic(element)) {
+    if (isSlatePluginElement(element, type)) {
       return node;
     }
     if (isDocxList(element)) {

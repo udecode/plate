@@ -2,35 +2,31 @@ import type { TElement } from '@udecode/slate';
 
 import kebabCase from 'lodash/kebabCase';
 
-import type { AnyEditorPlugin } from '../../plugin';
+import type { SlateEditor } from '../../editor';
+
+import { type AnyEditorPlugin, getEditorPlugin } from '../../plugin';
 
 export const getNodeDataAttributes = (
+  editor: SlateEditor,
   plugin: AnyEditorPlugin,
   element: TElement
 ) => {
-  const dataAttributes = plugin.node.toDataAttributes;
+  const dataAttributes = Object.keys(element).reduce((acc, key) => {
+    if (typeof element[key] === 'object') return acc;
 
-  if (!Array.isArray(dataAttributes)) return {};
-
-  return dataAttributes.reduce((acc, attributeName) => {
-    const keyName = `data-slate-${kebabCase(attributeName)}`;
-
-    const value = element[attributeName] as string;
-    const jsonValue = typeof value === 'string' ? value : JSON.stringify(value);
+    const attributeName = `data-slate-${kebabCase(key)}`;
 
     return {
       ...acc,
-      [keyName]: jsonValue,
+      [attributeName]: element[key],
     };
   }, {});
-};
 
-export const getNodeDataAttributesKeys = (plugin: AnyEditorPlugin) => {
-  const dataAttributes = plugin.node.toDataAttributes;
+  const customAttributes =
+    plugin.node.toDataAttributes?.({
+      ...(plugin ? (getEditorPlugin(editor, plugin) as any) : {}),
+      node: element,
+    }) ?? {};
 
-  if (!Array.isArray(dataAttributes)) return [];
-
-  return dataAttributes.map(
-    (attributeName) => `data-slate-${kebabCase(attributeName)}`
-  );
+  return { ...dataAttributes, ...customAttributes };
 };

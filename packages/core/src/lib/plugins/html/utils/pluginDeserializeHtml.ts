@@ -9,8 +9,8 @@ import type {
 import type { Nullable } from '../../../types';
 
 import { getEditorPlugin } from '../../../plugin';
-import { isSlatePluginElement } from '../../../static';
 import { getInjectedPlugins } from '../../../utils/getInjectedPlugins';
+import { getDataNodeProps } from './getDataNodeProps';
 
 /**
  * Get a deserializer and add default rules for deserializing plate static
@@ -71,7 +71,7 @@ export const pluginDeserializeHtml = (
     query,
     rules,
   } = deserializer;
-  let { parse, toNodeProps } = deserializer;
+  let { parse } = deserializer;
 
   const isElement = isElementRule || isElementRoot;
   const isLeaf = isLeafRule || isLeafRoot;
@@ -160,52 +160,6 @@ export const pluginDeserializeHtml = (
       return;
     }
   }
-  if (!toNodeProps) {
-    if (isElement) {
-      toNodeProps = ({ element, type }) => {
-        if (!isSlatePluginElement(element, type)) return;
-
-        const dataAttributes: Record<string, any> = {};
-
-        // Get all data-slate-* attributes from dataset
-        Object.entries(element.dataset).forEach(([key, value]) => {
-          if (
-            key.startsWith('slate') &&
-            value &&
-            // Ignore slate default attributes
-            !['slateInline', 'slateNode', 'slateVoid'].includes(key)
-          ) {
-            // Remove 'slate' prefix and convert to camelCase
-            const attributeKey =
-              key.slice(5).charAt(0).toLowerCase() + key.slice(6);
-
-            // Parse value if it's a boolean or number string
-            let parsedValue: any = value;
-
-            if (value === undefined) return;
-
-            try {
-              parsedValue = JSON.parse(value);
-            } catch (error) {
-              parsedValue = value;
-            }
-
-            dataAttributes[attributeKey] = parsedValue;
-          }
-        });
-
-        if (Object.keys(dataAttributes).length > 0) {
-          return dataAttributes;
-        }
-      };
-    } else if (isLeaf) {
-      toNodeProps = () => {
-        return {};
-      };
-    } else {
-      return;
-    }
-  }
 
   const parsedNode =
     parse({
@@ -214,11 +168,11 @@ export const pluginDeserializeHtml = (
       node: {},
     }) ?? {};
 
-  const dataNodeProps =
-    toNodeProps({
-      ...(getEditorPlugin(editor, plugin) as any),
-      element: el,
-    }) ?? {};
+  const dataNodeProps = getDataNodeProps({
+    editor,
+    element: el,
+    plugin,
+  });
 
   let node = {
     ...parsedNode,
