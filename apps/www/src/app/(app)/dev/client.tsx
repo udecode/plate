@@ -1,6 +1,13 @@
 'use client';
 
 import { withProps } from '@udecode/cn';
+import {
+  BaseParagraphPlugin,
+  SlateLeaf,
+  createSlateEditor,
+  getEditorDOMFromHtmlString,
+  serializeHtml,
+} from '@udecode/plate';
 import { BaseAlignPlugin } from '@udecode/plate-alignment';
 import {
   BaseBoldPlugin,
@@ -18,14 +25,6 @@ import {
   BaseCodeSyntaxPlugin,
 } from '@udecode/plate-code-block';
 import { BaseCommentsPlugin } from '@udecode/plate-comments';
-import {
-  BaseParagraphPlugin,
-  SlateLeaf,
-  createSlateEditor,
-  getEditorDOMFromHtmlString,
-  insertNodes,
-  serializeHtml,
-} from '@udecode/plate-common';
 import { Plate } from '@udecode/plate-core/react';
 import { BaseDatePlugin } from '@udecode/plate-date';
 import {
@@ -318,7 +317,7 @@ export function ClientComponent() {
 
     console.log(isEqual(r, createValue()), 'fj');
 
-    insertNodes(editor, r);
+    editor.tf.insertNodes(r);
   };
 
   return (
