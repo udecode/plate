@@ -6,7 +6,6 @@ export const BaseParagraphPlugin = createSlatePlugin({
   key: 'p',
   node: {
     dangerouslyAllowAttributes: [
-      'data-slate-type',
       'data-slate-indent',
       'data-slate-list-start',
       'data-slate-list-style-type',
