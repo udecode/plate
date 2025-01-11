@@ -78,7 +78,6 @@ export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
   extendEditor: withTable,
   node: {
     isElement: true,
-    toDataAttributes: ['colSizes', 'marginLeft'],
   },
   options: {
     _cellIndices: new WeakMap(),

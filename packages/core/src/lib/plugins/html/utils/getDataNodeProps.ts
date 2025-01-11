@@ -30,8 +30,6 @@ const getDefaultNodeProps = ({
       //eslint-disable-next-line
       if (value === undefined) return;
 
-      console.log('🚀 ~ Object.entries ~ value:', value);
-
       dataAttributes[attributeKey] = value;
     }
   });
