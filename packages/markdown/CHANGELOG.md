@@ -1,5 +1,7 @@
 # @udecode/plate-md-serializer
 
+## 42.0.0
+
 ## 41.0.14
 
 ### Patch Changes

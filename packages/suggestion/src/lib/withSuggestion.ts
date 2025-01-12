@@ -1,4 +1,4 @@
-import { type ExtendEditorTransforms, NodeApi } from '@udecode/plate';
+import { type OverrideEditor, NodeApi } from '@udecode/plate';
 
 import type { TSuggestionText } from './types';
 
@@ -13,7 +13,7 @@ import { insertFragmentSuggestion } from './transforms/insertFragmentSuggestion'
 import { insertTextSuggestion } from './transforms/insertTextSuggestion';
 import { getSuggestionId, getSuggestionKeys } from './utils/index';
 
-export const withSuggestion: ExtendEditorTransforms<SuggestionConfig> = ({
+export const withSuggestion: OverrideEditor<SuggestionConfig> = ({
   editor,
   getOptions,
   tf: {
@@ -26,133 +26,138 @@ export const withSuggestion: ExtendEditorTransforms<SuggestionConfig> = ({
     normalizeNode,
   },
 }) => ({
-  deleteBackward(options) {
-    if (getOptions().isSuggesting) {
-      const selection = editor.selection!;
-      const pointTarget = editor.api.before(selection, { unit: options?.unit });
+  transforms: {
+    deleteBackward(unit) {
+      if (getOptions().isSuggesting) {
+        const selection = editor.selection!;
+        const pointTarget = editor.api.before(selection, { unit });
 
-      if (!pointTarget) return;
+        if (!pointTarget) return;
 
-      deleteSuggestion(
-        editor,
-        { anchor: selection.anchor, focus: pointTarget },
-        { reverse: true }
-      );
+        deleteSuggestion(
+          editor,
+          { anchor: selection.anchor, focus: pointTarget },
+          { reverse: true }
+        );
 
-      return;
-    }
+        return;
+      }
 
-    deleteBackward(options);
-  },
+      deleteBackward(unit);
+    },
 
-  deleteForward(options) {
-    if (getOptions().isSuggesting) {
-      const selection = editor.selection!;
-      const pointTarget = editor.api.after(selection, { unit: options?.unit });
+    deleteForward(unit) {
+      if (getOptions().isSuggesting) {
+        const selection = editor.selection!;
+        const pointTarget = editor.api.after(selection, { unit });
 
-      if (!pointTarget) return;
+        if (!pointTarget) return;
 
-      deleteSuggestion(editor, {
-        anchor: selection.anchor,
-        focus: pointTarget,
-      });
+        deleteSuggestion(editor, {
+          anchor: selection.anchor,
+          focus: pointTarget,
+        });
 
-      return;
-    }
+        return;
+      }
 
-    deleteForward(options);
-  },
+      deleteForward(unit);
+    },
 
-  deleteFragment(direction) {
-    if (getOptions().isSuggesting) {
-      deleteFragmentSuggestion(editor, { reverse: true });
+    deleteFragment(direction) {
+      if (getOptions().isSuggesting) {
+        deleteFragmentSuggestion(editor, { reverse: true });
 
-      return;
-    }
+        return;
+      }
 
-    deleteFragment(direction);
-  },
+      deleteFragment(direction);
+    },
 
-  insertBreak() {
-    if (getOptions().isSuggesting) {
-      // TODO: split node
-      insertTextSuggestion(editor, '\n');
+    insertBreak() {
+      if (getOptions().isSuggesting) {
+        // TODO: split node
+        insertTextSuggestion(editor, '\n');
 
-      return;
-    }
+        return;
+      }
 
-    insertBreak();
-  },
+      insertBreak();
+    },
 
-  insertFragment(fragment) {
-    if (getOptions().isSuggesting) {
-      insertFragmentSuggestion(editor, fragment, { insertFragment });
+    insertFragment(fragment) {
+      if (getOptions().isSuggesting) {
+        insertFragmentSuggestion(editor, fragment, { insertFragment });
 
-      return;
-    }
+        return;
+      }
 
-    insertFragment(fragment);
-  },
+      insertFragment(fragment);
+    },
 
-  insertText(text) {
-    if (getOptions().isSuggesting) {
-      insertTextSuggestion(editor, text);
+    insertText(text) {
+      if (getOptions().isSuggesting) {
+        insertTextSuggestion(editor, text);
 
-      return;
-    }
+        return;
+      }
 
-    insertText(text);
-  },
+      insertText(text);
+    },
 
-  normalizeNode(entry) {
-    const [node, path] = entry;
+    normalizeNode(entry) {
+      const [node, path] = entry;
 
-    if (node[BaseSuggestionPlugin.key]) {
-      const pointBefore = editor.api.before(path);
+      if (node[BaseSuggestionPlugin.key]) {
+        const pointBefore = editor.api.before(path);
 
-      // Merge with previous suggestion
-      if (pointBefore) {
-        const nodeBefore = NodeApi.get(editor, pointBefore.path);
+        // Merge with previous suggestion
+        if (pointBefore) {
+          const nodeBefore = NodeApi.get(editor, pointBefore.path);
 
-        if (
-          (nodeBefore as any)?.[BaseSuggestionPlugin.key] &&
-          (nodeBefore as any)[SUGGESTION_KEYS.id] !== node[SUGGESTION_KEYS.id]
-        ) {
-          editor.tf.setNodes<TSuggestionText>(
-            { [SUGGESTION_KEYS.id]: (nodeBefore as any)[SUGGESTION_KEYS.id] },
+          if (
+            (nodeBefore as any)?.[BaseSuggestionPlugin.key] &&
+            (nodeBefore as any)[SUGGESTION_KEYS.id] !== node[SUGGESTION_KEYS.id]
+          ) {
+            editor.tf.setNodes<TSuggestionText>(
+              { [SUGGESTION_KEYS.id]: (nodeBefore as any)[SUGGESTION_KEYS.id] },
+              { at: path }
+            );
+
+            return;
+          }
+        }
+        // Unset suggestion when there is no suggestion id
+        if (!getSuggestionId(node)) {
+          const keys = getSuggestionKeys(node);
+          editor.tf.unsetNodes(
+            [BaseSuggestionPlugin.key, 'suggestionDeletion', ...keys],
             { at: path }
           );
 
           return;
         }
-      }
-      // Unset suggestion when there is no suggestion id
-      if (!getSuggestionId(node)) {
-        const keys = getSuggestionKeys(node);
-        editor.tf.unsetNodes(
-          [BaseSuggestionPlugin.key, 'suggestionDeletion', ...keys],
-          { at: path }
-        );
+        // Unset suggestion when there is no suggestion user id
+        if (getSuggestionKeys(node).length === 0) {
+          if (node.suggestionDeletion) {
+            // Unset deletions
+            editor.tf.unsetNodes(
+              [BaseSuggestionPlugin.key, SUGGESTION_KEYS.id],
+              {
+                at: path,
+              }
+            );
+          } else {
+            // Remove additions
+            editor.tf.removeNodes({ at: path });
+          }
 
-        return;
-      }
-      // Unset suggestion when there is no suggestion user id
-      if (getSuggestionKeys(node).length === 0) {
-        if (node.suggestionDeletion) {
-          // Unset deletions
-          editor.tf.unsetNodes([BaseSuggestionPlugin.key, SUGGESTION_KEYS.id], {
-            at: path,
-          });
-        } else {
-          // Remove additions
-          editor.tf.removeNodes({ at: path });
+          return;
         }
-
-        return;
       }
-    }
 
-    normalizeNode(entry);
+      normalizeNode(entry);
+    },
   },
 });
 

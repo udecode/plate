@@ -1,15 +1,8 @@
-import type { EditorDirectedDeletionOptions } from 'slate/dist/interfaces/editor';
-
 import { deleteForward as deleteForwardBase } from 'slate';
 
 import type { Editor } from '../../interfaces/editor/editor';
+import type { TextUnit } from '../../types';
 
-/** Delete content in the editor forward from the current selection. */
-export const deleteForward = (
-  editor: Editor,
-  options: EditorDirectedDeletionOptions = {}
-) => {
-  const { unit = 'character' } = options;
-
+export const deleteForward = (editor: Editor, unit: TextUnit = 'character') => {
   deleteForwardBase(editor as any, unit);
 };

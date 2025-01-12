@@ -25,7 +25,7 @@ export const TrailingBlockPlugin = createTSlatePlugin<TrailingBlockConfig>({
     level: 0,
   },
 })
-  .extendEditorTransforms(withTrailingBlock)
+  .overrideEditor(withTrailingBlock)
   .extend(({ editor }) => ({
     options: {
       type: editor.getType(BaseParagraphPlugin),

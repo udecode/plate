@@ -17,4 +17,4 @@ export const BaseBlockquotePlugin = createSlatePlugin({
       },
     },
   },
-}).extendEditorApi(withBlockquote);
+}).overrideEditor(withBlockquote);

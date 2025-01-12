@@ -1,86 +1,174 @@
-# @udecode/slate-react
+# @udecode/plate
 
-## 41.0.5
-
-### Patch Changes
-
-- [`e57256d45ab53c7fb1cb76b8824e815301ee10c0`](https://github.com/udecode/plate/commit/e57256d45ab53c7fb1cb76b8824e815301ee10c0) by [@zbeyens](https://github.com/zbeyens) – Type
-
-## 41.0.0
+## 42.0.0
 
 ### Major Changes
 
-- [#3830](https://github.com/udecode/plate/pull/3830) by [@felixfeng33](https://github.com/felixfeng33) – Rename `findNodePath` to `findPath` since the addition of `findNodePath` in the headless lib.
+- [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) – This package is now deprecated. Use `@udecode/slate` or `@udecode/plate` instead.
 
-  We recommend using `findPath` mostly when subscribing to its value (e.g. in a React component) as it has O(path.length) complexity, compared to O(n) for the traversal-based `findNodePath`. This optimization is particularly important in:
+## 41.0.14
 
-  - Render functions of Plate components where using `findNodePath` would increase the initial render time by O(n²)
-  - Key press handlers where using `findNodePath` would increase the handling time by O(n)
+## 41.0.13
 
-  where n is the number of nodes in the editor.
+## 41.0.12
 
-### Patch Changes
+## 41.0.10
 
-- [#3830](https://github.com/udecode/plate/pull/3830) by [@felixfeng33](https://github.com/felixfeng33) – Update `TRenderElementProps`, `TRenderLeafProps` types
+## 41.0.9
+
+## 41.0.8
+
+## 41.0.7
+
+## 41.0.6
+
+## 41.0.5
+
+## 41.0.2
+
+## 41.0.0
 
 ## 40.3.1
 
 ## 40.2.8
 
+## 40.2.7
+
+## 40.0.3
+
+## 40.0.2
+
+## 40.0.1
+
 ## 40.0.0
 
-### Major Changes
+## 39.2.21
 
-- [#3744](https://github.com/udecode/plate/pull/3744) by [@zbeyens](https://github.com/zbeyens) –
-  - Add `slate-dom` as a peer dependency
-  - Update `slate-react` peer dependency to `>=0.111.0`
+## 39.2.20
+
+## 39.2.15
+
+## 39.2.13
+
+## 39.2.12
 
 ## 39.2.1
 
+## 39.1.8
+
 ## 39.1.4
 
-### Patch Changes
-
-- [#3616](https://github.com/udecode/plate/pull/3616) by [@zbeyens](https://github.com/zbeyens) –
-  - Add `setNode`
+## 39.1.3
 
 ## 39.0.0
+
+## 38.0.6
 
 ## 38.0.4
 
 ## 38.0.3
 
+## 38.0.2
+
 ## 38.0.1
+
+## 38.0.0
+
+## 37.0.8
+
+## 37.0.7
+
+## 37.0.5
+
+## 37.0.4
+
+## 37.0.3
 
 ## 37.0.0
 
 ### Major Changes
 
-- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) – Types:
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - Split build into `@udecode/plate-common` and `@udecode/plate-common/react`.
+  - NEW `/react` exports `@udecode/react-hotkeys`
 
-  - Remove `TReactEditor` type, as it's now integrated into the main `TEditor` type in `@udecode/slate`. Use `TEditor` instead.
-  - Replace `V extends Value` with `E extends TEditor` for improved type inference
-  - NEW `TEditableProps`, `TRenderElementProps`
+## 36.3.9
+
+## 36.3.7
+
+## 36.3.4
+
+## 36.2.1
 
 ## 36.0.6
 
 ## 36.0.3
 
+## 36.0.0
+
+## 35.3.2
+
+## 34.0.5
+
+## 34.0.4
+
+## 34.0.2
+
+## 34.0.1
+
+## 34.0.0
+
+## 33.0.4
+
 ### Patch Changes
 
-- [#3346](https://github.com/udecode/plate/pull/3346) by [@yf-yang](https://github.com/yf-yang) – feat: expose onValueChange and onSelectionChange from Slate component, following https://github.com/ianstormtaylor/slate/pull/5526
+- [#3199](https://github.com/udecode/plate/pull/3199) by [@zbeyens](https://github.com/zbeyens) – Fix `PlateElementProps` type
+
+## 33.0.3
 
 ## 33.0.0
 
 ## 32.0.1
 
+## 32.0.0
+
+## 31.3.2
+
 ## 31.0.0
+
+## 30.4.5
+
+## 30.1.2
+
+## 30.0.0
+
+## 29.1.0
 
 ## 29.0.1
 
 ## 29.0.0
 
+### Minor Changes
+
+- [#2829](https://github.com/udecode/plate/pull/2829) by [@zbeyens](https://github.com/zbeyens) –
+  - re-export `@udecode/react-utils`
+
+### Patch Changes
+
+- [#2829](https://github.com/udecode/plate/pull/2829) by [@zbeyens](https://github.com/zbeyens) –
+  - Fix import from RSC
+
+## 28.0.0
+
+## 27.0.3
+
+## 27.0.0
+
+## 25.0.1
+
 ## 25.0.0
+
+## 24.5.2
 
 ## 24.4.0
 
@@ -98,27 +186,50 @@
 
 ## 24.3.0
 
+## 24.2.0
+
+## 24.0.2
+
+## 24.0.1
+
 ## 24.0.0
 
-### Minor Changes
-
-- [#2629](https://github.com/udecode/plate/pull/2629) by [@zbeyens](https://github.com/zbeyens) –
-  - Add `focusEditorEdge` transform. Focus the editor at the start or end of the document.
-
 ## 23.7.4
+
+## 23.7.0
+
+## 23.6.0
+
+## 23.3.1
+
+## 23.3.0
 
 ## 22.0.2
 
 ## 22.0.1
 
-### Patch Changes
+## 22.0.0
 
-- [`cc893ea`](https://github.com/udecode/plate/commit/cc893ea408c3d9abcef5b67cb00fa2b93a5686fe) by [@zbeyens](https://github.com/zbeyens) – Upgraded peer dep `"slate-react": ">=0.95.0"` (patch to v22).
+## 21.5.0
+
+## 21.4.2
 
 ## 21.4.1
 
+## 21.3.2
+
 ## 21.3.0
+
+## 21.1.5
 
 ## 21.0.0
 
-## 19.7.1
+## 20.7.2
+
+## 20.7.0
+
+## 20.4.0
+
+## 20.3.2
+
+## 20.0.0

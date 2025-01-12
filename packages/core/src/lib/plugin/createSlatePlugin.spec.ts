@@ -1,13 +1,15 @@
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 
+import {
+  resolveCreatePluginTest,
+  resolvePluginTest,
+} from '../../internal/plugin/resolveCreatePluginTest';
 import { createPlateEditor } from '../../react';
 import {
   type PluginConfig,
   createSlateEditor,
   createSlatePlugin,
-  resolveCreatePluginTest,
-  resolvePluginTest,
 } from '../index';
 
 describe('createSlatePlugin', () => {

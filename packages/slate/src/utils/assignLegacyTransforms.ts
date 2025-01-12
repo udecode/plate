@@ -6,8 +6,8 @@ const LEGACY_TRANSFORMS = new Set([
   'blur',
   'collapse',
   'delete',
-  // 'deleteBackward',
-  // 'deleteForward',
+  'deleteBackward',
+  'deleteForward',
   'deleteFragment',
   'deselect',
   'deselectDOM',
@@ -102,6 +102,7 @@ const LEGACY_API = new Set([
   'node',
   'nodes',
   'normalize',
+  'onChange',
   'operations',
   'parent',
   'path',
@@ -148,17 +149,6 @@ export const assignLegacyTransforms = (editor: Editor, transforms: any) => {
   );
 
   Object.assign(e, legacyTransforms);
-
-  if (transforms.deleteBackward) {
-    e.deleteBackward = (unit) => {
-      return transforms.deleteBackward({ unit });
-    };
-  }
-  if (transforms.deleteForward) {
-    e.deleteForward = (unit) => {
-      return transforms.deleteForward({ unit });
-    };
-  }
 };
 
 export const assignLegacyApi = (editor: Editor, api: any) => {
@@ -194,7 +184,7 @@ export const syncLegacyMethods = (editor: Editor) => {
 
   // Assign to editor.api
   LEGACY_API.forEach((key) => {
-    if (e[key] && (e.api as any)[key]) {
+    if (e[key]) {
       if (key === 'getMarks') {
         // Special case for marks
         (e.api as any).marks = e.getMarks;
@@ -207,22 +197,7 @@ export const syncLegacyMethods = (editor: Editor) => {
   // Assign to editor.tf
   LEGACY_TRANSFORMS.forEach((key) => {
     if (e[key]) {
-      if (key === 'insertData') {
-        console.log(e.tf[key]);
-      }
-      if (key === 'deleteBackward') {
-        // Special case for deleteBackward
-        (e.tf as any).deleteBackward = (options: any) => {
-          return e.deleteBackward(options?.unit ?? 'character');
-        };
-      } else if (key === 'deleteForward') {
-        // Special case for deleteForward
-        (e.tf as any).deleteForward = (options: any) => {
-          return e.deleteForward(options?.unit ?? 'character');
-        };
-      } else {
-        (e.tf as any)[key] = e[key];
-      }
+      (e.tf as any)[key] = e[key];
     }
   });
 };

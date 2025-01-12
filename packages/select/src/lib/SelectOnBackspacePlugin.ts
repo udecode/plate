@@ -21,4 +21,4 @@ export const SelectOnBackspacePlugin =
     options: {
       removeNodeIfEmpty: false,
     },
-  }).extendEditorTransforms(withSelectOnBackspace);
+  }).overrideEditor(withSelectOnBackspace);

@@ -8,11 +8,10 @@ import type {
   TText,
   Value,
 } from '@udecode/slate';
-import type { AnyObject, Deep2Partial } from '@udecode/utils';
+import type { AnyObject, Deep2Partial, Nullable } from '@udecode/utils';
 
 import type { SlateEditor } from '../editor';
 import type { SlateRenderElementProps, SlateRenderLeafProps } from '../static';
-import type { Nullable } from '../types/misc';
 import type {
   AnyPluginConfig,
   BaseDeserializer,
@@ -284,6 +283,8 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
 
   clone: () => SlatePlugin<C>;
 
+  overrideEditor: (override: OverrideEditor<C>) => SlatePlugin<C>;
+
   __resolved?: boolean;
 };
 
@@ -308,6 +309,37 @@ export type SlatePluginConfig<
 >;
 
 // -----------------------------------------------------------------------------
+
+export type OverrideEditor<C extends AnyPluginConfig = PluginConfig> = (
+  ctx: SlatePluginContext<C>
+) => {
+  api?: Deep2Partial<EditorApi> & {
+    [K in keyof InferApi<C>]?: InferApi<C>[K] extends (...args: any[]) => any
+      ? (...args: Parameters<InferApi<C>[K]>) => ReturnType<InferApi<C>[K]>
+      : InferApi<C>[K] extends Record<string, (...args: any[]) => any>
+        ? {
+            [N in keyof InferApi<C>[K]]?: (
+              ...args: Parameters<InferApi<C>[K][N]>
+            ) => ReturnType<InferApi<C>[K][N]>;
+          }
+        : never;
+  };
+  transforms?: Deep2Partial<EditorTransforms> & {
+    [K in keyof InferTransforms<C>]?: InferTransforms<C>[K] extends (
+      ...args: any[]
+    ) => any
+      ? (
+          ...args: Parameters<InferTransforms<C>[K]>
+        ) => ReturnType<InferTransforms<C>[K]>
+      : InferTransforms<C>[K] extends Record<string, (...args: any[]) => any>
+        ? {
+            [N in keyof InferTransforms<C>[K]]?: (
+              ...args: Parameters<InferTransforms<C>[K][N]>
+            ) => ReturnType<InferTransforms<C>[K][N]>;
+          }
+        : never;
+  };
+};
 
 export type ExtendEditorApi<
   C extends AnyPluginConfig = PluginConfig,

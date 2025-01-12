@@ -20,7 +20,7 @@ const ExampleComboboxPlugin = createSlatePlugin<
       node: { isElement: true, isInline: true, isVoid: true },
     }),
   ],
-}).extendEditorTransforms(withTriggerCombobox);
+}).overrideEditor(withTriggerCombobox);
 
 const plugins = [
   ParagraphPlugin,

@@ -107,4 +107,4 @@ export const BaseIndentListPlugin = createTSlatePlugin<BaseIndentListConfig>({
   render: {
     belowNodes: renderIndentListBelowNodes,
   },
-}).extendEditorTransforms(withIndentList);
+}).overrideEditor(withIndentList);

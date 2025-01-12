@@ -1,4 +1,4 @@
-import type { ExtendEditorTransforms } from '@udecode/plate';
+import type { OverrideEditor } from '@udecode/plate';
 
 import type { CodeBlockConfig } from './BaseCodeBlockPlugin';
 
@@ -8,7 +8,7 @@ import { withInsertDataCodeBlock } from './withInsertDataCodeBlock';
 import { withInsertFragmentCodeBlock } from './withInsertFragmentCodeBlock';
 import { withNormalizeCodeBlock } from './withNormalizeCodeBlock';
 
-export const withCodeBlock: ExtendEditorTransforms<CodeBlockConfig> = (ctx) => {
+export const withCodeBlock: OverrideEditor<CodeBlockConfig> = (ctx) => {
   const {
     editor,
     tf: { insertBreak },
@@ -39,13 +39,15 @@ export const withCodeBlock: ExtendEditorTransforms<CodeBlockConfig> = (ctx) => {
   };
 
   return {
-    insertBreak() {
-      if (insertBreakCodeBlock()) return;
+    transforms: {
+      insertBreak() {
+        if (insertBreakCodeBlock()) return;
 
-      insertBreak();
+        insertBreak();
+      },
+      ...withInsertDataCodeBlock(ctx).transforms,
+      ...withInsertFragmentCodeBlock(ctx).transforms,
+      ...withNormalizeCodeBlock(ctx).transforms,
     },
-    ...withInsertDataCodeBlock(ctx),
-    ...withInsertFragmentCodeBlock(ctx),
-    ...withNormalizeCodeBlock(ctx),
   };
 };

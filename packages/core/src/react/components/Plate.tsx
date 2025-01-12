@@ -3,7 +3,7 @@ import React, { useId } from 'react';
 import type { EditableProps } from '../../lib/types/EditableProps';
 import type { PlateEditor } from '../editor/PlateEditor';
 
-import { usePlateInstancesWarn } from '../../internal/usePlateInstancesWarn';
+import { usePlateInstancesWarn } from '../../internal/hooks/usePlateInstancesWarn';
 import { type PlateStoreState, PlateStoreProvider } from '../stores';
 
 export interface PlateProps<E extends PlateEditor = PlateEditor>

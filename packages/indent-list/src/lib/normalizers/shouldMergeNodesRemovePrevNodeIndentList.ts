@@ -1,12 +1,12 @@
-import { type ExtendEditorApi, type TElement, isDefined } from '@udecode/plate';
+import { type OverrideEditor, type TElement, isDefined } from '@udecode/plate';
 
 import { BaseIndentListPlugin } from '../BaseIndentListPlugin';
 
-export const shouldMergeNodesRemovePrevNodeIndentList: ExtendEditorApi = ({
+export const shouldMergeNodesRemovePrevNodeIndentList: OverrideEditor = ({
   api: { shouldMergeNodesRemovePrevNode },
-}) => {
-  return {
-    shouldMergeNodesRemovePrevNode(prevEntry, curNodeEntry): boolean {
+}) => ({
+  api: {
+    shouldMergeNodesRemovePrevNode(prevEntry, curNodeEntry) {
       const prevNode = prevEntry[0] as TElement;
       const curNode = curNodeEntry[0] as TElement;
 
@@ -19,5 +19,5 @@ export const shouldMergeNodesRemovePrevNodeIndentList: ExtendEditorApi = ({
 
       return shouldMergeNodesRemovePrevNode(prevEntry, curNodeEntry);
     },
-  };
-};
+  },
+});

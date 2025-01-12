@@ -1,5 +1,5 @@
 import {
-  type ExtendEditorTransforms,
+  type OverrideEditor,
   type TRange,
   NodeApi,
   RangeApi,
@@ -20,50 +20,52 @@ import { type CaptionConfig, BaseCaptionPlugin } from './BaseCaptionPlugin';
  * - If focus is in table, anchor in a block after: set focus to the point before
  *   start of table
  */
-export const withCaption: ExtendEditorTransforms<CaptionConfig> = ({
+export const withCaption: OverrideEditor<CaptionConfig> = ({
   editor,
   getOptions,
   tf: { apply },
 }) => {
   return {
-    apply(operation) {
-      const { plugins } = getOptions();
+    transforms: {
+      apply(operation) {
+        const { plugins } = getOptions();
 
-      if (operation.type === 'set_selection') {
-        const newSelection = {
-          ...editor.selection,
-          ...operation.newProperties,
-        } as TRange | null;
+        if (operation.type === 'set_selection') {
+          const newSelection = {
+            ...editor.selection,
+            ...operation.newProperties,
+          } as TRange | null;
 
-        if (
-          editor.currentKeyboardEvent &&
-          isHotkey('up', editor.currentKeyboardEvent) &&
-          newSelection &&
-          RangeApi.isCollapsed(newSelection)
-        ) {
-          const types = getPluginTypes(editor, plugins!);
+          if (
+            editor.currentKeyboardEvent &&
+            isHotkey('up', editor.currentKeyboardEvent) &&
+            newSelection &&
+            RangeApi.isCollapsed(newSelection)
+          ) {
+            const types = getPluginTypes(editor, plugins!);
 
-          const entry = editor.api.above({
-            at: newSelection,
-            match: { type: types },
-          });
+            const entry = editor.api.above({
+              at: newSelection,
+              match: { type: types },
+            });
 
-          if (entry) {
-            const [node] = entry;
+            if (entry) {
+              const [node] = entry;
 
-            if (
-              node.caption &&
-              NodeApi.string({ children: node.caption } as any).length > 0
-            ) {
-              setTimeout(() => {
-                editor.setOption(BaseCaptionPlugin, 'focusEndPath', entry[1]);
-              }, 0);
+              if (
+                node.caption &&
+                NodeApi.string({ children: node.caption } as any).length > 0
+              ) {
+                setTimeout(() => {
+                  editor.setOption(BaseCaptionPlugin, 'focusEndPath', entry[1]);
+                }, 0);
+              }
             }
           }
         }
-      }
 
-      apply(operation);
+        apply(operation);
+      },
     },
   };
 };

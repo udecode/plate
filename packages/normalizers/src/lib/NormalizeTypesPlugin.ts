@@ -1,5 +1,4 @@
 import {
-  type ErrorHandler,
   type Path,
   type PluginConfig,
   createTSlatePlugin,
@@ -27,7 +26,8 @@ export type NormalizeTypesConfig = PluginConfig<
      * `type`.
      */
     rules?: Rule[];
-  } & ErrorHandler
+    onError?: (err: any) => void;
+  }
 >;
 
 /** @see {@link withNormalizeTypes} */
@@ -36,4 +36,4 @@ export const NormalizeTypesPlugin = createTSlatePlugin<NormalizeTypesConfig>({
   options: {
     rules: [],
   },
-}).extendEditorTransforms(withNormalizeTypes);
+}).overrideEditor(withNormalizeTypes);

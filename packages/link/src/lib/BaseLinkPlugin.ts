@@ -120,8 +120,8 @@ export const BaseLinkPlugin = createTSlatePlugin<BaseLinkConfig>({
     },
   },
 })
-  .extendEditorTransforms(withLink)
-  .extendEditorTransforms(
+  .overrideEditor(withLink)
+  .overrideEditor(
     ({ editor, type }) =>
       withRemoveEmptyNodes(
         getEditorPlugin(

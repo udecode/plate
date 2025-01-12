@@ -44,8 +44,8 @@ export const BaseImagePlugin = createTSlatePlugin<ImageConfig>({
     isVoid: true,
   },
 })
-  .extendEditorTransforms(withImageUpload)
-  .extendEditorTransforms(withImageEmbed)
+  .overrideEditor(withImageUpload)
+  .overrideEditor(withImageEmbed)
   .extendEditorTransforms(({ editor }) => ({
     insert: {
       imageFromFiles: bindFirst(insertImageFromFiles, editor),

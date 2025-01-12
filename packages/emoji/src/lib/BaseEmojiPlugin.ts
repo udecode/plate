@@ -26,4 +26,4 @@ export const BaseEmojiPlugin = createTSlatePlugin<EmojiInputConfig>({
     triggerPreviousCharPattern: /^\s?$/,
   },
   plugins: [BaseEmojiInputPlugin],
-}).extendEditorTransforms(withTriggerCombobox);
+}).overrideEditor(withTriggerCombobox);

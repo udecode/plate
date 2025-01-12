@@ -1,9 +1,9 @@
 import type { OmitFirst } from '@udecode/utils';
 import type { DOMEditor } from 'slate-dom';
 
-import type { blurEditor } from '../../internal/dom-editor/blurEditor';
-import type { deselectEditor } from '../../internal/dom-editor/deselectEditor';
-import type { focusEditor } from '../../internal/dom-editor/focusEditor';
+import type { blur } from '../../internal/dom-editor/blur';
+import type { deselectDOM } from '../../internal/dom-editor/deselectDOM';
+import type { focus } from '../../internal/dom-editor/focus';
 import type { addMark } from '../../internal/editor/addMark';
 import type { deleteBackward } from '../../internal/editor/deleteBackward';
 import type { deleteForward } from '../../internal/editor/deleteForward';
@@ -19,6 +19,8 @@ import type { setSelection } from '../../internal/transforms/setSelection';
 import type { addMarks } from '../../internal/transforms-extension/addMarks';
 import type { duplicateNodes } from '../../internal/transforms-extension/duplicateNodes';
 import type { removeMarks } from '../../internal/transforms-extension/removeMarks';
+import type { reset } from '../../internal/transforms-extension/reset';
+import type { toggleBlock } from '../../internal/transforms-extension/toggleBlock';
 import type { toggleMark } from '../../internal/transforms-extension/toggleMark';
 import type { HistoryApi } from '../../slate-history/index';
 import type { At, TextUnit } from '../../types';
@@ -32,6 +34,7 @@ import type { Path } from '../path';
 import type { TRange } from '../range';
 import type { Editor, Value } from './editor';
 import type {
+  EditorNodesOptions,
   EditorNormalizeOptions,
   QueryAt,
   QueryMode,
@@ -205,10 +208,26 @@ export type EditorTransforms<V extends Value = Value> = {
    */
   removeNodes: (options?: RemoveNodesOptions<V>) => void;
   /**
+   * Reset the editor state. Use `children: true` to only reset children without
+   * clearing history and operations
+   */
+  reset: OmitFirst<typeof reset>;
+  /**
    * Split nodes at the specified location. If no location is specified, split
    * the selection.
    */
   splitNodes: (options?: SplitNodesOptions<V>) => void;
+  /**
+   * Toggle a block type. If wrap is true, wrap/unwrap the block in the
+   * specified type. Otherwise, sets the block type directly.
+   *
+   * @example
+   *   ```ts
+   *   editor.tf.toggleBlock('blockquote') // Toggle blockquote
+   *   editor.tf.toggleBlock('list', { wrap: true }) // Toggle list wrapper
+   *   ```;
+   */
+  toggleBlock: OmitFirst<typeof toggleBlock>;
   /**
    * Toggle a mark on the leaf text nodes in the current selection. If the mark
    * exists, it will be removed. Otherwise, it will be added.
@@ -237,6 +256,7 @@ export type EditorTransforms<V extends Value = Value> = {
    * @returns True if normalized.
    */
   withoutNormalizing: OmitFirst<typeof withoutNormalizing>;
+
   /**
    * Push a batch of operations as either `undos` or `redos` onto `editor.undos`
    * or `editor.redos`
@@ -281,9 +301,9 @@ export type EditorTransforms<V extends Value = Value> = {
   setSelection: OmitFirst<typeof setSelection>;
 } & {
   /** Blur the editor */
-  blur: OmitFirst<typeof blurEditor>;
+  blur: OmitFirst<typeof blur>;
   /** Deselect the editor. */
-  deselectDOM: OmitFirst<typeof deselectEditor>;
+  deselectDOM: OmitFirst<typeof deselectDOM>;
   /**
    * Focus the editor.
    *
@@ -298,7 +318,7 @@ export type EditorTransforms<V extends Value = Value> = {
    *   editor.tf.focus({ edge: 'end' }) // end of editor if selection is null
    *   ```;
    */
-  focus: OmitFirst<typeof focusEditor>;
+  focus: OmitFirst<typeof focus>;
   /**
    * Insert data from a `DataTransfer` into the editor. This is a proxy method
    * to call in this order `insertFragmentData(editor: Editor, data:
@@ -537,9 +557,18 @@ export type ReplaceNodesOptions<V extends Value = Value> = {
 export type SelectOptions = {
   /** Select edge of the block above location */
   edge?: 'end' | 'start';
+
+  /** If true, focus the editor before selecting */
+  focus?: boolean;
+
+  /** Select start of next sibling */
+  next?: boolean;
+
+  /** Select end of previous sibling */
+  previous?: boolean;
 };
 
-export type FocusEditorOptions = {
+export type FocusOptions = {
   /** Target location to select before focusing */
   at?: At;
 
@@ -559,3 +588,21 @@ export type ToggleMarkOptions = {
   /** Mark keys to remove when adding the mark. */
   remove?: string[] | string;
 };
+
+export type ResetOptions = {
+  /** When true, only reset children without clearing history and operations */
+  children?: boolean;
+} & Omit<ReplaceNodesOptions, 'at' | 'children'>;
+
+export type ToggleBlockOptions = {
+  /** The default block type to revert to when untoggling. Defaults to paragraph. */
+  defaultType?: string;
+
+  someOptions?: EditorNodesOptions;
+
+  /**
+   * If true, toggles wrapping the block with the specified type. Otherwise,
+   * toggles the block type directly.
+   */
+  wrap?: boolean;
+} & SetNodesOptions;

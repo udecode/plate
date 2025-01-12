@@ -1,10 +1,8 @@
 {
-  "name": "@udecode/slate-utils",
-  "version": "41.0.0",
-  "description": "Slate utils",
-  "keywords": [
-    "slate"
-  ],
+  "name": "@udecode/slate-react",
+  "version": "42.0.0",
+  "description": "Deprecated. Use @udecode/slate instead.",
+  "keywords": [],
   "homepage": "https://platejs.org",
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
@@ -12,7 +10,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
-    "directory": "packages/utils"
+    "directory": "packages/plate"
   },
   "license": "MIT",
   "sideEffects": false,
@@ -41,10 +39,9 @@
     "test:watch": "yarn p:test:watch",
     "typecheck": "yarn p:typecheck"
   },
-  "dependencies": {
-    "@udecode/slate": "41.0.0",
-    "@udecode/utils": "37.0.0",
-    "lodash": "^4.17.21"
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
   },
   "publishConfig": {
     "access": "public"

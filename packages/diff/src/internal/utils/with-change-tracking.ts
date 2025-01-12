@@ -1,6 +1,8 @@
 import {
   type Editor,
+  type EditorTransforms,
   type InsertTextOperation,
+  type LegacyEditorMethods,
   type MergeNodeOperation,
   type Operation,
   type PointRef,
@@ -44,7 +46,7 @@ export const withChangeTracking = <E extends Editor>(
   editor: E,
   options: ComputeDiffOptions
 ): ChangeTrackingEditor & E => {
-  const e = editor as ChangeTrackingEditor & E;
+  const e = editor as ChangeTrackingEditor & E & LegacyEditorMethods;
 
   e.propsChanges = [];
   e.insertedTexts = [];
@@ -53,6 +55,7 @@ export const withChangeTracking = <E extends Editor>(
 
   const { apply } = e;
   e.apply = (op) => applyWithChangeTracking(e, apply, op);
+  e.tf.apply = e.apply;
 
   e.commitChangesToDiffs = () => commitChangesToDiffs(e, options);
 
@@ -61,7 +64,7 @@ export const withChangeTracking = <E extends Editor>(
 
 const applyWithChangeTracking = <E extends Editor>(
   editor: ChangeTrackingEditor & E,
-  apply: E['apply'],
+  apply: EditorTransforms['apply'],
   op: Operation
 ) => {
   if (!editor.recordingOperations) {
@@ -105,7 +108,7 @@ const applyWithChangeTracking = <E extends Editor>(
 
 const applyInsertText = <E extends Editor>(
   editor: ChangeTrackingEditor & E,
-  apply: E['apply'],
+  apply: EditorTransforms['apply'],
   op: InsertTextOperation
 ) => {
   const node = NodeApi.get(editor, op.path) as TText;
@@ -128,7 +131,7 @@ const applyInsertText = <E extends Editor>(
 
 const applyRemoveText = <E extends Editor>(
   editor: ChangeTrackingEditor & E,
-  apply: E['apply'],
+  apply: EditorTransforms['apply'],
   op: RemoveTextOperation
 ) => {
   const node = NodeApi.get(editor, op.path) as TText;
@@ -151,7 +154,7 @@ const applyRemoveText = <E extends Editor>(
 
 const applyMergeNode = <E extends Editor>(
   editor: ChangeTrackingEditor & E,
-  apply: E['apply'],
+  apply: EditorTransforms['apply'],
   op: MergeNodeOperation
 ) => {
   const oldNode = NodeApi.get(editor, op.path) as TText;
@@ -177,7 +180,7 @@ const applyMergeNode = <E extends Editor>(
 
 const applySplitNode = <E extends Editor>(
   editor: ChangeTrackingEditor & E,
-  apply: E['apply'],
+  apply: EditorTransforms['apply'],
   op: SplitNodeOperation
 ) => {
   const oldNode = NodeApi.get(editor, op.path) as TText;
@@ -199,7 +202,7 @@ const applySplitNode = <E extends Editor>(
 
 const applySetNode = <E extends Editor>(
   editor: ChangeTrackingEditor & E,
-  apply: E['apply'],
+  apply: EditorTransforms['apply'],
   op: SetNodeOperation
 ) => {
   apply(op);

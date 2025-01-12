@@ -1,5 +1,136 @@
 # @udecode/plate-core
 
+## 42.0.0
+
+### Major Changes
+
+- [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) –
+
+  - **Plugin `normalizeInitialValue`** now returns `void` instead of `Value`. When mutating nodes, keep their references (e.g., use `Object.assign` instead of spread).
+  - **Editor methods have moved** to `editor.tf` and `editor.api`. They still exist at the top level for **slate backward compatibility**, but are no longer redundantly typed. If you truly need the top-level method types, extend your editor type with `LegacyEditorMethods` (e.g. `editor as Editor & LegacyEditorMethods`). Since these methods can be overridden by `extendEditor`, `with...`, or slate plugins, consider migrating to the following approaches:
+
+    ```tsx
+    // For overriding existing methods only:
+    overrideEditor(({ editor, tf: { deleteForward }, api: { isInline } }) => ({
+      transforms: {
+        deleteForward(options) {
+          // ...conditional override
+          deleteForward(options);
+        },
+      },
+      api: {
+        isInline(element) {
+          // ...conditional override
+          return isInline(element);
+        },
+      },
+    }));
+    ```
+
+  This was previously done in `extendEditor` using top-level methods, which still works but now throws a type error due to the move to `editor.tf/editor.api`. A workaround is to extend your editor with `LegacyEditorMethods`.
+
+  **Why?** Having all methods at the top-level (next to `children`, `marks`, etc.) would clutter the editor interface. Slate splits transforms in three places (`editor`, `Editor`, and `Transforms`), which is also confusing. We've reorganized them into `tf` and `api` for better DX, but also to support transform-only middlewares in the future. This also lets us leverage `extendEditorTransforms`, `extendEditorApi`, and `overrideEditor` to modify those methods.
+
+  Migration example:
+
+  ```tsx
+  // From:
+  export const withInlineVoid: ExtendEditor = ({ editor }) => {
+    const { isInline, isSelectable, isVoid, markableVoid } = editor;
+
+    const voidTypes: string[] = [];
+    const inlineTypes: string[] = [];
+
+    editor.pluginList.forEach((plugin) => {
+      if (plugin.node.isInline) {
+        inlineTypes.push(plugin.node.type);
+      }
+      if (plugin.node.isVoid) {
+        voidTypes.push(plugin.node.type);
+      }
+    });
+
+    editor.isInline = (element) => {
+      return inlineTypes.includes(element.type as any)
+        ? true
+        : isInline(element);
+    };
+
+    editor.isVoid = (element) => {
+      return voidTypes.includes(element.type as any) ? true : isVoid(element);
+    };
+
+    return editor;
+  };
+
+  export const InlineVoidPlugin = createSlatePlugin({
+    key: 'inlineVoid',
+    extendEditor: withInlineVoid,
+  });
+
+  // After (using overrideEditor since we're only overriding existing methods):
+  export const withInlineVoid: OverrideEditor = ({
+    api: { isInline, isSelectable, isVoid, markableVoid },
+    editor,
+  }) => {
+    const voidTypes: string[] = [];
+    const inlineTypes: string[] = [];
+
+    editor.pluginList.forEach((plugin) => {
+      if (plugin.node.isInline) {
+        inlineTypes.push(plugin.node.type);
+      }
+      if (plugin.node.isVoid) {
+        voidTypes.push(plugin.node.type);
+      }
+    });
+
+    return {
+      api: {
+        isInline(element) {
+          return inlineTypes.includes(element.type as any)
+            ? true
+            : isInline(element);
+        },
+        isVoid(element) {
+          return voidTypes.includes(element.type as any)
+            ? true
+            : isVoid(element);
+        },
+      },
+    };
+  };
+
+  export const InlineVoidPlugin = createSlatePlugin({
+    key: 'inlineVoid',
+  }).overrideEditor(withInlineVoid);
+  ```
+
+  - Move `editor.redecorate` to `editor.api.redecorate`
+
+  Types:
+
+  - Rename `TRenderElementProps` to `RenderElementProps`
+  - Rename `TRenderLeafProps` to `RenderLeafProps`
+  - Rename `TEditableProps` to `EditableProps`
+
+### Minor Changes
+
+- [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Import the following from `@udecode/plate-core/react` (or `@udecode/plate/react`) instead of `slate-react`: `RenderPlaceholderProps`, `DefaultElement`, `DefaultPlaceholder`, `Editable`, `Slate`, `useComposing`, `useFocused`, `useReadOnly`, `useSelected`, `withReact`.
+  - `useNodePath` is now memoized: it will re-render only when the actual path changes (`PathApi.equals`). This includes `usePath` and `path` element prop.
+  - **New hook** `useElementSelector(([node, path]) => selector(node, path), deps, { equalityFn, key })`: re-render only when the selector result changes. **We highly recommend using this hook over useElement(key)** when subscribing to an ancestor element (e.g. table element from a cell element). For example, subscribe to the row size from a cell element without affecting the re-rendering of all row cells:
+
+  ```tsx
+  const rowSize = useElementSelector(([node]) => node.size, [], {
+    key: TableRowPlugin.key,
+  });
+  ```
+
+  - Added a new plugin attribute: `SlatePlugin.node.isSelectable`. If set to `false`, the node cannot be selected.
+  - The plugin context `tf` and `api` now include `Editor` methods.
+
 ## 41.0.13
 
 ### Patch Changes

@@ -1,5 +1,5 @@
 import {
-  type ExtendEditorTransforms,
+  type OverrideEditor,
   type PathRef,
   type TElement,
   NodeApi,
@@ -12,7 +12,6 @@ import {
   INDENT_LIST_KEYS,
 } from './BaseIndentListPlugin';
 import {
-  shouldMergeNodesRemovePrevNodeIndentList,
   withDeleteBackwardIndentList,
   withInsertBreakIndentList,
 } from './normalizers';
@@ -22,9 +21,7 @@ import { getPreviousIndentList } from './queries/getPreviousIndentList';
 import { ListStyleType } from './types';
 import { withNormalizeIndentList } from './withNormalizeIndentList';
 
-export const withIndentList: ExtendEditorTransforms<BaseIndentListConfig> = (
-  ctx
-) => {
+export const withIndentList: OverrideEditor<BaseIndentListConfig> = (ctx) => {
   const {
     editor,
     getOptions,
@@ -32,381 +29,389 @@ export const withIndentList: ExtendEditorTransforms<BaseIndentListConfig> = (
   } = ctx;
 
   return {
-    ...shouldMergeNodesRemovePrevNodeIndentList(ctx),
-    ...withNormalizeIndentList(ctx),
-    ...withDeleteBackwardIndentList(ctx),
-    ...withInsertBreakIndentList(ctx),
-    apply(operation) {
-      const { path } = operation as any;
-      const { getSiblingIndentListOptions } = getOptions();
+    transforms: {
+      ...withNormalizeIndentList(ctx).transforms,
+      ...withDeleteBackwardIndentList(ctx).transforms,
+      ...withInsertBreakIndentList(ctx).transforms,
+      apply(operation) {
+        const { path } = operation as any;
+        const { getSiblingIndentListOptions } = getOptions();
 
-      let nodeBefore: TElement | null = null;
+        let nodeBefore: TElement | null = null;
 
-      if (operation.type === 'set_node') {
-        nodeBefore = NodeApi.get<TElement>(editor, path)!;
-      }
-      // If there is a previous indent list, the inserted indent list style type should be the same.
-      // Only for lower-roman and upper-roman as it overlaps with lower-alpha and upper-alpha.
-      if (operation.type === 'insert_node') {
-        const listStyleType = operation.node[BaseIndentListPlugin.key];
-
-        if (
-          listStyleType &&
-          ['lower-roman', 'upper-roman'].includes(
-            listStyleType as ListStyleType
-          )
-        ) {
-          const prevNodeEntry = getPreviousIndentList<TElement>(
-            editor,
-            [operation.node as TElement, path],
-            {
-              breakOnEqIndentNeqListStyleType: false,
-              eqIndent: false,
-              ...getSiblingIndentListOptions,
-            }
-          );
-
-          if (prevNodeEntry) {
-            const prevListStyleType =
-              prevNodeEntry[0][BaseIndentListPlugin.key];
-
-            if (
-              prevListStyleType === ListStyleType.LowerAlpha &&
-              listStyleType === ListStyleType.LowerRoman
-            ) {
-              operation.node[BaseIndentListPlugin.key] =
-                ListStyleType.LowerAlpha;
-            } else if (
-              prevListStyleType === ListStyleType.UpperAlpha &&
-              listStyleType === ListStyleType.UpperRoman
-            ) {
-              operation.node[BaseIndentListPlugin.key] =
-                ListStyleType.UpperAlpha;
-            }
-          }
+        if (operation.type === 'set_node') {
+          nodeBefore = NodeApi.get<TElement>(editor, path)!;
         }
-      }
+        // If there is a previous indent list, the inserted indent list style type should be the same.
+        // Only for lower-roman and upper-roman as it overlaps with lower-alpha and upper-alpha.
+        if (operation.type === 'insert_node') {
+          const listStyleType = operation.node[BaseIndentListPlugin.key];
 
-      // FIXME: delete first list
-      let nextIndentListPathRef: PathRef | null = null;
-
-      if (
-        operation.type === 'merge_node' &&
-        (operation.properties as any)[BaseIndentListPlugin.key]
-      ) {
-        const node = NodeApi.get<TElement>(editor, path);
-
-        if (node) {
-          const nextNodeEntryBefore = getNextIndentList<TElement>(
-            editor,
-            [node, path],
-            getSiblingIndentListOptions
-          );
-
-          if (nextNodeEntryBefore) {
-            nextIndentListPathRef = editor.api.pathRef(nextNodeEntryBefore[1]);
-          }
-        }
-      }
-      // When inserting a line break, normalize listStart if the node has a listRestart property
-      if (
-        operation.type === 'split_node' &&
-        (operation.properties as any)[BaseIndentListPlugin.key] &&
-        (operation.properties as any)[INDENT_LIST_KEYS.listRestart]
-      ) {
-        const listReStart = (operation.properties as any)[
-          INDENT_LIST_KEYS.listRestart
-        ];
-
-        (operation.properties as any)[INDENT_LIST_KEYS.listStart] =
-          listReStart + 1;
-        (operation.properties as any)[INDENT_LIST_KEYS.listRestart] = undefined;
-
-        const node = NodeApi.get<TElement>(editor, path);
-
-        if (node) {
-          const nextNodeEntryBefore = getNextIndentList<TElement>(
-            editor,
-            [node, path],
-            getSiblingIndentListOptions
-          );
-
-          if (nextNodeEntryBefore) {
-            nextIndentListPathRef = editor.api.pathRef(nextNodeEntryBefore[1]);
-          }
-        }
-      }
-
-      apply(operation);
-
-      if (operation.type === 'split_node' && nextIndentListPathRef) {
-        const nextPath = nextIndentListPathRef.unref();
-
-        if (nextPath) {
-          const nextNode = NodeApi.get<TElement>(editor, nextPath);
-
-          if (nextNode) {
-            normalizeIndentListStart<TElement>(
+          if (
+            listStyleType &&
+            ['lower-roman', 'upper-roman'].includes(
+              listStyleType as ListStyleType
+            )
+          ) {
+            const prevNodeEntry = getPreviousIndentList<TElement>(
               editor,
-              [nextNode, nextPath],
-              getSiblingIndentListOptions
+              [operation.node as TElement, path],
+              {
+                breakOnEqIndentNeqListStyleType: false,
+                eqIndent: false,
+                ...getSiblingIndentListOptions,
+              }
             );
-          }
-        }
-      }
-      if (operation.type === 'merge_node') {
-        const { properties } = operation;
 
-        if ((properties as any)[BaseIndentListPlugin.key]) {
-          const node = NodeApi.get<TElement>(editor, path);
+            if (prevNodeEntry) {
+              const prevListStyleType =
+                prevNodeEntry[0][BaseIndentListPlugin.key];
 
-          if (!node) return;
-
-          // const prevNodeEntry = getPreviousIndentList(
-          //   editor,
-          //   [node, path],
-          //   getSiblingIndentListOptions
-          // );
-          // if (!prevNodeEntry) {
-          // normalizeIndentListStart(
-          //   editor,
-          //   [node as any, path],
-          //   getSiblingIndentListOptions
-          // );
-          //   return;
-          // }
-          // normalizeIndentListStart(
-          //   editor,
-          //   prevNodeEntry,
-          //   getSiblingIndentListOptions
-          // );
-
-          normalizeIndentListStart<TElement>(
-            editor,
-            [node, path],
-            getSiblingIndentListOptions
-          );
-
-          if (nextIndentListPathRef) {
-            const nextPath = nextIndentListPathRef.unref();
-
-            if (nextPath) {
-              const nextNode = NodeApi.get<TElement>(editor, nextPath);
-
-              if (nextNode) {
-                normalizeIndentListStart<TElement>(
-                  editor,
-                  [nextNode, nextPath],
-                  getSiblingIndentListOptions
-                );
+              if (
+                prevListStyleType === ListStyleType.LowerAlpha &&
+                listStyleType === ListStyleType.LowerRoman
+              ) {
+                operation.node[BaseIndentListPlugin.key] =
+                  ListStyleType.LowerAlpha;
+              } else if (
+                prevListStyleType === ListStyleType.UpperAlpha &&
+                listStyleType === ListStyleType.UpperRoman
+              ) {
+                operation.node[BaseIndentListPlugin.key] =
+                  ListStyleType.UpperAlpha;
               }
             }
           }
         }
-      }
-      if (nodeBefore && operation.type === 'set_node') {
-        const prevListStyleType = (operation.properties as any)[
-          BaseIndentListPlugin.key
-        ];
-        const listStyleType = (operation.newProperties as any)[
-          BaseIndentListPlugin.key
-        ];
 
-        // Remove list style type
-        if (prevListStyleType && !listStyleType) {
-          const node = NodeApi.get(editor, path);
+        // FIXME: delete first list
+        let nextIndentListPathRef: PathRef | null = null;
 
-          if (!node) return;
-
-          const nextNodeEntry = getNextIndentList<TElement>(
-            editor,
-            [nodeBefore, path],
-            getSiblingIndentListOptions
-          );
-
-          if (!nextNodeEntry) return;
-
-          normalizeIndentListStart<TElement>(
-            editor,
-            nextNodeEntry,
-            getSiblingIndentListOptions
-          );
-        }
-        // Update list style type
         if (
-          (prevListStyleType || listStyleType) &&
-          prevListStyleType !== listStyleType
+          operation.type === 'merge_node' &&
+          (operation.properties as any)[BaseIndentListPlugin.key]
         ) {
           const node = NodeApi.get<TElement>(editor, path);
 
-          if (!node) return;
-
-          /**
-           * Case:
-           *
-           * - 1-<o>-1 <- toggle ol
-           * - <1>-1-2 <- normalize
-           * - 1-2-3
-           */
-          // const prevNodeEntry = getPreviousIndentList(
-          //   editor,
-          //   [node, path],
-          //   getSiblingIndentListOptions
-          // );
-          // if (prevNodeEntry) {
-          //   normalizeIndentListStart(
-          //     editor,
-          //     prevNodeEntry,
-          //     getSiblingIndentListOptions
-          //   );
-          // }
-
-          /**
-           * Case:
-           *
-           * - 1-<2>-3 <- toggle ul
-           * - 1-o-<3> <- normalize
-           * - 1-o-1
-           */
-          let nextNodeEntry = getNextIndentList<TElement>(
-            editor,
-            [nodeBefore, path],
-            getSiblingIndentListOptions
-          );
-
-          if (nextNodeEntry) {
-            normalizeIndentListStart<TElement>(
+          if (node) {
+            const nextNodeEntryBefore = getNextIndentList<TElement>(
               editor,
-              nextNodeEntry,
+              [node, path],
               getSiblingIndentListOptions
             );
-          }
 
-          nextNodeEntry = getNextIndentList<TElement>(
-            editor,
-            [node, path],
-            getSiblingIndentListOptions
-          );
-
-          if (nextNodeEntry) {
-            normalizeIndentListStart<TElement>(
-              editor,
-              nextNodeEntry,
-              getSiblingIndentListOptions
-            );
+            if (nextNodeEntryBefore) {
+              nextIndentListPathRef = editor.api.pathRef(
+                nextNodeEntryBefore[1]
+              );
+            }
           }
         }
+        // When inserting a line break, normalize listStart if the node has a listRestart property
+        if (
+          operation.type === 'split_node' &&
+          (operation.properties as any)[BaseIndentListPlugin.key] &&
+          (operation.properties as any)[INDENT_LIST_KEYS.listRestart]
+        ) {
+          const listReStart = (operation.properties as any)[
+            INDENT_LIST_KEYS.listRestart
+          ];
 
-        const prevIndent = (operation.properties as any)[BaseIndentPlugin.key];
-        const indent = (operation.newProperties as any)[BaseIndentPlugin.key];
+          (operation.properties as any)[INDENT_LIST_KEYS.listStart] =
+            listReStart + 1;
+          (operation.properties as any)[INDENT_LIST_KEYS.listRestart] =
+            undefined;
 
-        // Update indent
-        if (prevIndent !== indent) {
           const node = NodeApi.get<TElement>(editor, path);
 
-          if (!node) return;
+          if (node) {
+            const nextNodeEntryBefore = getNextIndentList<TElement>(
+              editor,
+              [node, path],
+              getSiblingIndentListOptions
+            );
 
-          /**
-           * Case:
-           *
-           * - 1-<o>-1 <- indent
-           * - <1>-1o-1 <- normalize node before
-           * - 1-1o-2
-           */
-          let prevNodeEntry = getPreviousIndentList<TElement>(
-            editor,
-            [nodeBefore, path],
-            {
-              breakOnEqIndentNeqListStyleType: false,
-              breakOnLowerIndent: false,
-              eqIndent: false,
-              ...getSiblingIndentListOptions,
+            if (nextNodeEntryBefore) {
+              nextIndentListPathRef = editor.api.pathRef(
+                nextNodeEntryBefore[1]
+              );
             }
-          );
-
-          if (prevNodeEntry) {
-            normalizeIndentListStart<TElement>(
-              editor,
-              prevNodeEntry,
-              getSiblingIndentListOptions
-            );
-          }
-
-          /**
-           * Case:
-           *
-           * - 11-<1>-11 <- indent
-           * - <11>-11-12 <- normalize prev node after
-           * - 11-12-13
-           */
-          prevNodeEntry = getPreviousIndentList<TElement>(
-            editor,
-            [node, path],
-            {
-              breakOnEqIndentNeqListStyleType: false,
-              breakOnLowerIndent: false,
-              eqIndent: false,
-              ...getSiblingIndentListOptions,
-            }
-          );
-
-          if (prevNodeEntry) {
-            normalizeIndentListStart<TElement>(
-              editor,
-              prevNodeEntry,
-              getSiblingIndentListOptions
-            );
-          }
-
-          /**
-           * Case:
-           *
-           * - 11-<12>-13 <- outdent
-           * - 11-2-<13> <- normalize next node before
-           * - 11-2-11
-           */
-          let nextNodeEntry = getNextIndentList<TElement>(
-            editor,
-            [nodeBefore, path],
-            {
-              breakOnEqIndentNeqListStyleType: false,
-              breakOnLowerIndent: false,
-              eqIndent: false,
-              ...getSiblingIndentListOptions,
-            }
-          );
-
-          if (nextNodeEntry) {
-            normalizeIndentListStart<TElement>(
-              editor,
-              nextNodeEntry,
-              getSiblingIndentListOptions
-            );
-          }
-
-          /**
-           * Case:
-           *
-           * - 1-<1o>-2 <- outdent
-           * - 1-o-<2> <- normalize next node after
-           * - 1-o-1
-           */
-          nextNodeEntry = getNextIndentList<TElement>(editor, [node, path], {
-            breakOnEqIndentNeqListStyleType: false,
-            breakOnLowerIndent: false,
-            eqIndent: false,
-            ...getSiblingIndentListOptions,
-          });
-
-          if (nextNodeEntry) {
-            normalizeIndentListStart<TElement>(
-              editor,
-              nextNodeEntry,
-              getSiblingIndentListOptions
-            );
           }
         }
-      }
+
+        apply(operation);
+
+        if (operation.type === 'split_node' && nextIndentListPathRef) {
+          const nextPath = nextIndentListPathRef.unref();
+
+          if (nextPath) {
+            const nextNode = NodeApi.get<TElement>(editor, nextPath);
+
+            if (nextNode) {
+              normalizeIndentListStart<TElement>(
+                editor,
+                [nextNode, nextPath],
+                getSiblingIndentListOptions
+              );
+            }
+          }
+        }
+        if (operation.type === 'merge_node') {
+          const { properties } = operation;
+
+          if ((properties as any)[BaseIndentListPlugin.key]) {
+            const node = NodeApi.get<TElement>(editor, path);
+
+            if (!node) return;
+
+            // const prevNodeEntry = getPreviousIndentList(
+            //   editor,
+            //   [node, path],
+            //   getSiblingIndentListOptions
+            // );
+            // if (!prevNodeEntry) {
+            // normalizeIndentListStart(
+            //   editor,
+            //   [node as any, path],
+            //   getSiblingIndentListOptions
+            // );
+            //   return;
+            // }
+            // normalizeIndentListStart(
+            //   editor,
+            //   prevNodeEntry,
+            //   getSiblingIndentListOptions
+            // );
+
+            normalizeIndentListStart<TElement>(
+              editor,
+              [node, path],
+              getSiblingIndentListOptions
+            );
+
+            if (nextIndentListPathRef) {
+              const nextPath = nextIndentListPathRef.unref();
+
+              if (nextPath) {
+                const nextNode = NodeApi.get<TElement>(editor, nextPath);
+
+                if (nextNode) {
+                  normalizeIndentListStart<TElement>(
+                    editor,
+                    [nextNode, nextPath],
+                    getSiblingIndentListOptions
+                  );
+                }
+              }
+            }
+          }
+        }
+        if (nodeBefore && operation.type === 'set_node') {
+          const prevListStyleType = (operation.properties as any)[
+            BaseIndentListPlugin.key
+          ];
+          const listStyleType = (operation.newProperties as any)[
+            BaseIndentListPlugin.key
+          ];
+
+          // Remove list style type
+          if (prevListStyleType && !listStyleType) {
+            const node = NodeApi.get(editor, path);
+
+            if (!node) return;
+
+            const nextNodeEntry = getNextIndentList<TElement>(
+              editor,
+              [nodeBefore, path],
+              getSiblingIndentListOptions
+            );
+
+            if (!nextNodeEntry) return;
+
+            normalizeIndentListStart<TElement>(
+              editor,
+              nextNodeEntry,
+              getSiblingIndentListOptions
+            );
+          }
+          // Update list style type
+          if (
+            (prevListStyleType || listStyleType) &&
+            prevListStyleType !== listStyleType
+          ) {
+            const node = NodeApi.get<TElement>(editor, path);
+
+            if (!node) return;
+
+            /**
+             * Case:
+             *
+             * - 1-<o>-1 <- toggle ol
+             * - <1>-1-2 <- normalize
+             * - 1-2-3
+             */
+            // const prevNodeEntry = getPreviousIndentList(
+            //   editor,
+            //   [node, path],
+            //   getSiblingIndentListOptions
+            // );
+            // if (prevNodeEntry) {
+            //   normalizeIndentListStart(
+            //     editor,
+            //     prevNodeEntry,
+            //     getSiblingIndentListOptions
+            //   );
+            // }
+
+            /**
+             * Case:
+             *
+             * - 1-<2>-3 <- toggle ul
+             * - 1-o-<3> <- normalize
+             * - 1-o-1
+             */
+            let nextNodeEntry = getNextIndentList<TElement>(
+              editor,
+              [nodeBefore, path],
+              getSiblingIndentListOptions
+            );
+
+            if (nextNodeEntry) {
+              normalizeIndentListStart<TElement>(
+                editor,
+                nextNodeEntry,
+                getSiblingIndentListOptions
+              );
+            }
+
+            nextNodeEntry = getNextIndentList<TElement>(
+              editor,
+              [node, path],
+              getSiblingIndentListOptions
+            );
+
+            if (nextNodeEntry) {
+              normalizeIndentListStart<TElement>(
+                editor,
+                nextNodeEntry,
+                getSiblingIndentListOptions
+              );
+            }
+          }
+
+          const prevIndent = (operation.properties as any)[
+            BaseIndentPlugin.key
+          ];
+          const indent = (operation.newProperties as any)[BaseIndentPlugin.key];
+
+          // Update indent
+          if (prevIndent !== indent) {
+            const node = NodeApi.get<TElement>(editor, path);
+
+            if (!node) return;
+
+            /**
+             * Case:
+             *
+             * - 1-<o>-1 <- indent
+             * - <1>-1o-1 <- normalize node before
+             * - 1-1o-2
+             */
+            let prevNodeEntry = getPreviousIndentList<TElement>(
+              editor,
+              [nodeBefore, path],
+              {
+                breakOnEqIndentNeqListStyleType: false,
+                breakOnLowerIndent: false,
+                eqIndent: false,
+                ...getSiblingIndentListOptions,
+              }
+            );
+
+            if (prevNodeEntry) {
+              normalizeIndentListStart<TElement>(
+                editor,
+                prevNodeEntry,
+                getSiblingIndentListOptions
+              );
+            }
+
+            /**
+             * Case:
+             *
+             * - 11-<1>-11 <- indent
+             * - <11>-11-12 <- normalize prev node after
+             * - 11-12-13
+             */
+            prevNodeEntry = getPreviousIndentList<TElement>(
+              editor,
+              [node, path],
+              {
+                breakOnEqIndentNeqListStyleType: false,
+                breakOnLowerIndent: false,
+                eqIndent: false,
+                ...getSiblingIndentListOptions,
+              }
+            );
+
+            if (prevNodeEntry) {
+              normalizeIndentListStart<TElement>(
+                editor,
+                prevNodeEntry,
+                getSiblingIndentListOptions
+              );
+            }
+
+            /**
+             * Case:
+             *
+             * - 11-<12>-13 <- outdent
+             * - 11-2-<13> <- normalize next node before
+             * - 11-2-11
+             */
+            let nextNodeEntry = getNextIndentList<TElement>(
+              editor,
+              [nodeBefore, path],
+              {
+                breakOnEqIndentNeqListStyleType: false,
+                breakOnLowerIndent: false,
+                eqIndent: false,
+                ...getSiblingIndentListOptions,
+              }
+            );
+
+            if (nextNodeEntry) {
+              normalizeIndentListStart<TElement>(
+                editor,
+                nextNodeEntry,
+                getSiblingIndentListOptions
+              );
+            }
+
+            /**
+             * Case:
+             *
+             * - 1-<1o>-2 <- outdent
+             * - 1-o-<2> <- normalize next node after
+             * - 1-o-1
+             */
+            nextNodeEntry = getNextIndentList<TElement>(editor, [node, path], {
+              breakOnEqIndentNeqListStyleType: false,
+              breakOnLowerIndent: false,
+              eqIndent: false,
+              ...getSiblingIndentListOptions,
+            });
+
+            if (nextNodeEntry) {
+              normalizeIndentListStart<TElement>(
+                editor,
+                nextNodeEntry,
+                getSiblingIndentListOptions
+              );
+            }
+          }
+        }
+      },
     },
   };
 };

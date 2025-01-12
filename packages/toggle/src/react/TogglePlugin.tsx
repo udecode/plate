@@ -1,4 +1,5 @@
-import { type ExtendConfig, NodeApi } from '@udecode/plate';
+import type { ExtendConfig } from '@udecode/plate';
+
 import { toTPlatePlugin } from '@udecode/plate/react';
 
 import type { buildToggleIndex } from './toggleIndexAtom';
@@ -7,7 +8,6 @@ import {
   type BaseToggleConfig,
   BaseTogglePlugin,
 } from '../lib/BaseTogglePlugin';
-import { isInClosedToggle } from './queries';
 import { renderToggleAboveNodes } from './renderToggleAboveNodes';
 import { useHooksToggle } from './useHooksToggle';
 import { withToggle } from './withToggle';
@@ -28,16 +28,4 @@ export const TogglePlugin = toTPlatePlugin<ToggleConfig>(BaseTogglePlugin, {
     aboveNodes: renderToggleAboveNodes,
   },
   useHooks: useHooksToggle as any,
-})
-  .extendEditorTransforms(withToggle)
-  .extendEditorApi(({ api: { isSelectable }, editor }) => ({
-    isSelectable(element) {
-      if (
-        NodeApi.isNode(element) &&
-        isInClosedToggle(editor, element.id as string)
-      )
-        return false;
-
-      return isSelectable(element);
-    },
-  }));
+}).overrideEditor(withToggle);

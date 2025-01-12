@@ -15,4 +15,4 @@ export const BaseAutoformatPlugin = createTSlatePlugin<AutoformatConfig>({
   options: {
     rules: [],
   },
-}).extendEditorTransforms(withAutoformat);
+}).overrideEditor(withAutoformat);

@@ -1,5 +1,5 @@
 import {
-  type ExtendEditorTransforms,
+  type OverrideEditor,
   type TElement,
   ElementApi,
   NodeApi,
@@ -7,54 +7,58 @@ import {
 
 import type { NormalizeTypesConfig } from './NormalizeTypesPlugin';
 
-export const withNormalizeTypes: ExtendEditorTransforms<
-  NormalizeTypesConfig
-> = ({ editor, getOptions, tf: { normalizeNode } }) => ({
-  normalizeNode([currentNode, currentPath]) {
-    const { rules, onError } = getOptions();
+export const withNormalizeTypes: OverrideEditor<NormalizeTypesConfig> = ({
+  editor,
+  getOptions,
+  tf: { normalizeNode },
+}) => ({
+  transforms: {
+    normalizeNode([currentNode, currentPath]) {
+      const { rules, onError } = getOptions();
 
-    if (currentPath.length === 0) {
-      const endCurrentNormalizationPass = rules!.some(
-        ({ path, strictType, type }) => {
-          const node = NodeApi.get<TElement>(editor, path);
+      if (currentPath.length === 0) {
+        const endCurrentNormalizationPass = rules!.some(
+          ({ path, strictType, type }) => {
+            const node = NodeApi.get<TElement>(editor, path);
 
-          if (node) {
-            if (
-              strictType &&
-              ElementApi.isElement(node) &&
-              node.type !== strictType
-            ) {
-              const { children, ...props } = editor.api.create.block({
-                type: strictType,
-              });
-              editor.tf.setNodes(props, {
-                at: path,
-              });
+            if (node) {
+              if (
+                strictType &&
+                ElementApi.isElement(node) &&
+                node.type !== strictType
+              ) {
+                const { children, ...props } = editor.api.create.block({
+                  type: strictType,
+                });
+                editor.tf.setNodes(props, {
+                  at: path,
+                });
 
-              return true;
+                return true;
+              }
+            } else {
+              try {
+                editor.tf.insertNodes(
+                  editor.api.create.block({ type: strictType ?? type! }),
+                  { at: path }
+                );
+
+                return true;
+              } catch (error) {
+                onError?.(error);
+              }
             }
-          } else {
-            try {
-              editor.tf.insertNodes(
-                editor.api.create.block({ type: strictType ?? type! }),
-                { at: path }
-              );
 
-              return true;
-            } catch (error) {
-              onError?.(error);
-            }
+            return false;
           }
+        );
 
-          return false;
+        if (endCurrentNormalizationPass) {
+          return;
         }
-      );
-
-      if (endCurrentNormalizationPass) {
-        return;
       }
-    }
 
-    return normalizeNode([currentNode, currentPath]);
+      return normalizeNode([currentNode, currentPath]);
+    },
   },
 });

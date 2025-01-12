@@ -5,7 +5,7 @@ import { withColumn } from './withColumn';
 export const BaseColumnItemPlugin = createSlatePlugin({
   key: 'column',
   node: { isElement: true },
-}).extendEditorTransforms(withColumn);
+}).overrideEditor(withColumn);
 
 export const BaseColumnPlugin = createSlatePlugin({
   key: 'column_group',

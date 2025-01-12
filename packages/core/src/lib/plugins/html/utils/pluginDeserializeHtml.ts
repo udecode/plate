@@ -1,4 +1,4 @@
-import { type AnyObject, isDefined } from '@udecode/utils';
+import { type AnyObject, type Nullable, isDefined } from '@udecode/utils';
 import castArray from 'lodash/castArray.js';
 
 import type { SlateEditor } from '../../../editor';
@@ -6,7 +6,6 @@ import type {
   AnyEditorPlugin,
   HtmlDeserializer,
 } from '../../../plugin/SlatePlugin';
-import type { Nullable } from '../../../types';
 
 import { getEditorPlugin } from '../../../plugin';
 import { getInjectedPlugins } from '../../../utils/getInjectedPlugins';

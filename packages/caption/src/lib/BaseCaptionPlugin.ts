@@ -39,4 +39,4 @@ export const BaseCaptionPlugin = createTSlatePlugin<CaptionConfig>({
   .extendOptions<CaptionSelectors>(({ getOptions }) => ({
     isVisible: (elementId) => getOptions().visibleId === elementId,
   }))
-  .extendEditorTransforms(withCaption);
+  .overrideEditor(withCaption);

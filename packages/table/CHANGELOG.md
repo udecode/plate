@@ -1,5 +1,75 @@
 # @udecode/plate-table
 
+## 42.0.0
+
+### Major Changes
+
+- [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) – **Major performance improvement**: all table cells were re-rendering when a single cell changed. This is now fixed.
+
+  - `TablePlugin` now depends on `NodeIdPlugin`.
+  - Table merging is now enabled by default:
+    - Renamed `enableMerging` to `disableMerge`.
+    - **Migration**:
+      - `enableMerging: true` → remove the option.
+      - otherwise → `TablePlugin.configure({ options: { disableMerge: true } })`
+  - Renamed `unmergeTableCells` to `splitTableCell`.
+  - Renamed `editor.api.create.cell` to `editor.api.create.tableCell`.
+  - In `useTableMergeState`, renamed `canUnmerge` to `canSplit`.
+  - `insertTableRow` and `insertTableColumn`: removed `disableSelect` in favor of `select`. **Migration**: replace it with the opposite boolean.
+  - `getTableCellBorders`: params `(element, options)` → `(editor, options)`; removed `isFirstCell` and `isFirstRow`.
+  - Merged `useTableCellElementState` into `useTableCellElement`:
+    - Removed its parameter.
+    - Removed `hovered` and `hoveredLeft` returns (use CSS instead).
+    - Renamed `rowSize` to `minHeight`.
+    - Computes column sizes and returns `width`.
+  - Merged `useTableCellElementResizableState` into `useTableCellElementResizable`:
+    - Removed `onHover` and `onHoverEnd` props (use CSS instead).
+  - Merged `useTableElementState` into `useTableElement`:
+    - Removed its parameter.
+    - No longer computes and returns `colSizes`, `minColumnWidth`, and `colGroupProps`.
+
+### Minor Changes
+
+- [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) –
+
+  - `TablePlugin` new api and transforms:
+
+  ```ts
+  type TableApi = {
+    create: {
+      table: OmitFirst<typeof getEmptyTableNode>;
+      /** Cell node factory used each time a cell is created. */
+      tableCell: OmitFirst<typeof getEmptyCellNode>;
+      tableRow: OmitFirst<typeof getEmptyRowNode>;
+    };
+    table: {
+      getCellBorders: OmitFirst<typeof getTableCellBorders>;
+      getCellSize: OmitFirst<typeof getTableCellSize>;
+      getColSpan: typeof getColSpan;
+      getRowSpan: typeof getRowSpan;
+    };
+  };
+
+  type TableTransforms = {
+    insert: {
+      table: OmitFirst<typeof insertTable>;
+    };
+    remove: {
+      table: OmitFirst<typeof deleteTable>;
+      tableColumn: OmitFirst<typeof deleteColumn>;
+      tableRow: OmitFirst<typeof deleteRow>;
+    };
+    table: {
+      merge: OmitFirst<typeof mergeTableCells>;
+      split: OmitFirst<typeof splitTableCell>;
+    };
+  };
+  ```
+
+  - `insertTableColumn` add `before` option to insert a column before the current column.
+  - `insertTableRow` add `before` option to insert a row before the current row.
+  - `insertTable` now supports inserting a table after the current table.
+
 ## 41.0.9
 
 ### Patch Changes

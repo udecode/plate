@@ -1,8 +1,4 @@
-# Slate utils
-
-## Documentation
-
-Visit https://platejs.org/docs/api/slate-utils to view the documentation.
+# Plate utils
 
 ## License
 

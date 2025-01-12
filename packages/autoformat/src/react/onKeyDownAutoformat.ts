@@ -69,7 +69,7 @@ export const onKeyDownAutoformat: KeyboardHandler<AutoformatConfig> = ({
   event.preventDefault();
 
   // remove the shorthand character.
-  editor.tf.deleteBackward({ unit: 'character' });
+  editor.tf.deleteBackward();
 
   // put back the orignal characters. This could match to a single string or an array.
   const rule = matchers[0] as AutoformatTextRule;

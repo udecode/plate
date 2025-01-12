@@ -1,8 +1,7 @@
-import type { Operation } from '@udecode/plate';
-import type { ExtendEditorTransforms, PlateEditor } from '@udecode/plate/react';
+import type { OverrideEditor, PlateEditor } from '@udecode/plate/react';
 
+import { type Operation, type TRange, RangeApi } from '@udecode/plate';
 import { serializeInlineMd } from '@udecode/plate-markdown';
-import debounce from 'lodash/debounce.js';
 
 import type { CopilotPluginConfig } from './CopilotPlugin';
 
@@ -28,102 +27,112 @@ const getPatchString = (operations: Operation[]) => {
   return string;
 };
 
-export const withCopilot: ExtendEditorTransforms<CopilotPluginConfig> = ({
+export const withCopilot: OverrideEditor<CopilotPluginConfig> = ({
   api,
   editor,
   getOptions,
   setOption,
-  tf: { apply, insertText, redo, undo, writeHistory },
+  tf: { apply, insertText, redo, setSelection, undo, writeHistory },
 }) => {
-  const debounceDelay = getOptions().debounceDelay;
-
-  if (debounceDelay) {
-    api.copilot.triggerSuggestion = debounce(
-      api.copilot.triggerSuggestion,
-      debounceDelay
-    ) as any;
-  }
+  let prevSelection: TRange | null = null;
 
   return {
-    apply(operation) {
-      const { shouldAbort } = getOptions();
+    transforms: {
+      apply(operation) {
+        const { shouldAbort } = getOptions();
 
-      if (shouldAbort) {
-        api.copilot.reset();
-      }
+        if (shouldAbort) {
+          api.copilot.reset();
+        }
 
-      apply(operation);
-    },
+        apply(operation);
+      },
+      insertText(text) {
+        const suggestionText = getOptions().suggestionText;
 
-    insertText(text) {
-      const suggestionText = getOptions().suggestionText;
-
-      // When using IME input, it's possible to enter two characters at once.
-      if (suggestionText?.startsWith(text)) {
-        withoutAbort(editor, () => {
-          editor.tf.withoutMerging(() => {
-            const newText = suggestionText?.slice(text.length);
-            setOption('suggestionText', newText);
-            insertText(text);
+        // When using IME input, it's possible to enter two characters at once.
+        if (suggestionText?.startsWith(text)) {
+          withoutAbort(editor, () => {
+            editor.tf.withoutMerging(() => {
+              const newText = suggestionText?.slice(text.length);
+              setOption('suggestionText', newText);
+              insertText(text);
+            });
           });
-        });
 
-        return;
-      }
+          return;
+        }
 
-      insertText(text);
-    },
+        insertText(text);
+      },
 
-    redo() {
-      if (!getOptions().suggestionText) return redo();
+      redo() {
+        if (!getOptions().suggestionText) return redo();
 
-      const topRedo = editor.history.redos.at(-1) as CopilotBatch;
-      const prevSuggestion = getOptions().suggestionText;
+        const topRedo = editor.history.redos.at(-1) as CopilotBatch;
+        const prevSuggestion = getOptions().suggestionText;
 
-      if (topRedo && topRedo.shouldAbort === false && prevSuggestion) {
-        withoutAbort(editor, () => {
-          const shouldRemoveText = getPatchString(topRedo.operations);
+        if (topRedo && topRedo.shouldAbort === false && prevSuggestion) {
+          withoutAbort(editor, () => {
+            const shouldRemoveText = getPatchString(topRedo.operations);
 
-          const newText = prevSuggestion.slice(shouldRemoveText.length);
-          setOption('suggestionText', newText);
+            const newText = prevSuggestion.slice(shouldRemoveText.length);
+            setOption('suggestionText', newText);
 
-          redo();
-        });
+            redo();
+          });
 
-        return;
-      }
+          return;
+        }
 
-      return redo();
-    },
+        return redo();
+      },
 
-    undo() {
-      if (!getOptions().suggestionText) return undo();
+      setSelection(props) {
+        setSelection(props);
 
-      const lastUndos = editor.history.undos.at(-1) as CopilotBatch;
-      const oldText = getOptions().suggestionText;
+        if (
+          editor.selection &&
+          (!prevSelection ||
+            !RangeApi.equals(prevSelection, editor.selection)) &&
+          getOptions().autoTriggerQuery!({ editor }) &&
+          editor.api.isFocused()
+        ) {
+          void api.copilot.triggerSuggestion();
+        }
 
-      if (lastUndos && lastUndos.shouldAbort === false && oldText) {
-        withoutAbort(editor, () => {
-          const shouldInsertText = getPatchString(lastUndos.operations);
+        prevSelection = editor.selection;
+      },
 
-          const newText = shouldInsertText + oldText;
-          setOption('suggestionText', newText);
+      undo() {
+        if (!getOptions().suggestionText) return undo();
 
-          undo();
-        });
+        const lastUndos = editor.history.undos.at(-1) as CopilotBatch;
+        const oldText = getOptions().suggestionText;
 
-        return;
-      }
+        if (lastUndos && lastUndos.shouldAbort === false && oldText) {
+          withoutAbort(editor, () => {
+            const shouldInsertText = getPatchString(lastUndos.operations);
 
-      return undo();
-    },
+            const newText = shouldInsertText + oldText;
+            setOption('suggestionText', newText);
 
-    writeHistory(stacks, batch) {
-      if (!getOptions().isLoading) {
-        batch.shouldAbort = getOptions().shouldAbort;
-      }
+            undo();
+          });
 
-      return writeHistory(stacks, batch);
+          return;
+        }
+
+        return undo();
+      },
+
+      writeHistory(stacks, batch) {
+        if (!getOptions().isLoading) {
+          batch.shouldAbort = getOptions().shouldAbort;
+        }
+
+        return writeHistory(stacks, batch);
+      },
     },
   };
 };

@@ -56,4 +56,4 @@ export const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
   },
   parsers: { html: { deserializer: htmlDeserializerCodeBlock } },
   plugins: [BaseCodeLinePlugin, BaseCodeSyntaxPlugin],
-}).extendEditorTransforms(withCodeBlock);
+}).overrideEditor(withCodeBlock);

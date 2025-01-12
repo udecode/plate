@@ -80,7 +80,7 @@ export const testDocxDeserializer = ({
       value: input.children,
     });
 
-    actual.insertData(
+    actual.tf.insertData(
       createClipboardData(readTestFile(`../__tests__/${filename}.html`))
     );
 

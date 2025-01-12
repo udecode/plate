@@ -1,5 +1,5 @@
 import {
-  type ExtendEditorTransforms,
+  type OverrideEditor,
   type SlateEditor,
   PointApi,
 } from '@udecode/plate';
@@ -59,53 +59,55 @@ export const preventDeleteTableCell = (
 };
 
 /** Prevent cell deletion. */
-export const withDeleteTable: ExtendEditorTransforms<TableConfig> = ({
+export const withDeleteTable: OverrideEditor<TableConfig> = ({
   editor,
   tf: { deleteBackward, deleteForward, deleteFragment },
   type,
 }) => ({
-  deleteBackward(options) {
-    if (preventDeleteTableCell(editor, { unit: options?.unit })) return;
+  transforms: {
+    deleteBackward(unit) {
+      if (preventDeleteTableCell(editor, { unit: unit })) return;
 
-    deleteBackward(options);
-  },
+      deleteBackward(unit);
+    },
 
-  deleteForward(options) {
-    if (
-      preventDeleteTableCell(editor, {
-        reverse: true,
-        unit: options?.unit,
-      })
-    )
-      return;
+    deleteForward(unit) {
+      if (
+        preventDeleteTableCell(editor, {
+          reverse: true,
+          unit: unit,
+        })
+      )
+        return;
 
-    deleteForward(options);
-  },
+      deleteForward(unit);
+    },
 
-  deleteFragment(direction) {
-    if (editor.api.isAt({ block: true, match: (n) => n.type === type })) {
-      const cellEntries = getTableGridAbove(editor, { format: 'cell' });
+    deleteFragment(direction) {
+      if (editor.api.isAt({ block: true, match: (n) => n.type === type })) {
+        const cellEntries = getTableGridAbove(editor, { format: 'cell' });
 
-      if (cellEntries.length > 1) {
-        editor.tf.withoutNormalizing(() => {
-          cellEntries.forEach(([, cellPath]) => {
-            editor.tf.replaceNodes(editor.api.create.block(), {
-              at: cellPath,
-              children: true,
+        if (cellEntries.length > 1) {
+          editor.tf.withoutNormalizing(() => {
+            cellEntries.forEach(([, cellPath]) => {
+              editor.tf.replaceNodes(editor.api.create.block(), {
+                at: cellPath,
+                children: true,
+              });
+            });
+
+            // set back the selection
+            editor.tf.select({
+              anchor: editor.api.start(cellEntries[0][1])!,
+              focus: editor.api.end(cellEntries.at(-1)![1])!,
             });
           });
 
-          // set back the selection
-          editor.tf.select({
-            anchor: editor.api.start(cellEntries[0][1])!,
-            focus: editor.api.end(cellEntries.at(-1)![1])!,
-          });
-        });
-
-        return;
+          return;
+        }
       }
-    }
 
-    deleteFragment(direction);
+      deleteFragment(direction);
+    },
   },
 });

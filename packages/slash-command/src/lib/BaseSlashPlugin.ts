@@ -32,4 +32,4 @@ export const BaseSlashPlugin = createTSlatePlugin<SlashConfig>({
     triggerPreviousCharPattern: /^\s?$/,
   },
   plugins: [BaseSlashInputPlugin],
-}).extendEditorTransforms(withTriggerCombobox);
+}).overrideEditor(withTriggerCombobox);

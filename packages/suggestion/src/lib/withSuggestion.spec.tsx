@@ -290,7 +290,7 @@ describe('withSuggestion', () => {
           });
           editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
 
-          editor.tf.deleteBackward({ unit: 'line' });
+          editor.tf.deleteBackward('line');
 
           expect(
             editor.children[0].children[0][BaseSuggestionPlugin.key]

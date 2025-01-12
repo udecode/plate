@@ -10,11 +10,11 @@ import type { AnyPluginConfig } from '../plugin/BasePlugin';
 import type { AnySlatePlugin } from '../plugin/SlatePlugin';
 import type { InferPlugins, SlateEditor, TSlateEditor } from './SlateEditor';
 
+import { pipeNormalizeInitialValue } from '../../internal/plugin/pipeNormalizeInitialValue';
+import { resolvePlugins } from '../../internal/plugin/resolvePlugins';
 import { createSlatePlugin } from '../plugin/createSlatePlugin';
 import { getPluginType, getSlatePlugin } from '../plugin/getSlatePlugin';
 import { type CorePlugin, getCorePlugins } from '../plugins/getCorePlugins';
-import { pipeNormalizeInitialValue } from '../utils/pipeNormalizeInitialValue';
-import { resolvePlugins } from '../utils/resolvePlugins';
 
 export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
   id?: any;

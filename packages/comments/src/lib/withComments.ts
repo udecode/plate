@@ -1,4 +1,4 @@
-import type { ExtendEditorTransforms } from '@udecode/plate';
+import type { OverrideEditor } from '@udecode/plate';
 
 import {
   type BaseCommentsConfig,
@@ -7,28 +7,30 @@ import {
 import { removeCommentMark } from './transforms/removeCommentMark';
 import { getCommentCount } from './utils';
 
-export const withComments: ExtendEditorTransforms<BaseCommentsConfig> = ({
+export const withComments: OverrideEditor<BaseCommentsConfig> = ({
   editor,
   tf: { insertBreak, normalizeNode },
 }) => {
   return {
-    insertBreak() {
-      removeCommentMark(editor);
+    transforms: {
+      insertBreak() {
+        removeCommentMark(editor);
 
-      insertBreak();
-    },
+        insertBreak();
+      },
 
-    normalizeNode(entry) {
-      const [node, path] = entry;
+      normalizeNode(entry) {
+        const [node, path] = entry;
 
-      // Unset CommentsPlugin.key prop when there is no comments
-      if (node[BaseCommentsPlugin.key] && getCommentCount(node as any) < 1) {
-        editor.tf.unsetNodes(BaseCommentsPlugin.key, { at: path });
+        // Unset CommentsPlugin.key prop when there is no comments
+        if (node[BaseCommentsPlugin.key] && getCommentCount(node as any) < 1) {
+          editor.tf.unsetNodes(BaseCommentsPlugin.key, { at: path });
 
-        return;
-      }
+          return;
+        }
 
-      normalizeNode(entry);
+        normalizeNode(entry);
+      },
     },
   };
 };

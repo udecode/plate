@@ -1,6 +1,7 @@
 import type { NodeEntry, TRange, TSelection, ValueOf } from '@udecode/slate';
+import type { Nullable } from '@udecode/utils';
 
-import type { EditableProps, Nullable } from '../../../lib';
+import type { EditableProps } from '../../../lib';
 import type { PlateEditor } from '../../editor';
 
 export type PlateChangeKey =

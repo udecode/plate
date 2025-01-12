@@ -1,18 +1,49 @@
-import {
-  type ExtendEditorApi,
-  type ExtendEditorTransforms,
-  TextApi,
-} from '@udecode/plate';
+import { type OverrideEditor, TextApi } from '@udecode/plate';
 
 import type { TableConfig } from '.';
 
 import { getTableGridAbove } from './queries';
 
-export const withMarkTable: ExtendEditorTransforms<TableConfig> = ({
+export const withMarkTable: OverrideEditor<TableConfig> = ({
+  api: { marks },
   editor,
   tf: { addMark, removeMark },
-}) => {
-  return {
+}) => ({
+  api: {
+    marks() {
+      const { selection } = editor;
+
+      if (!selection || editor.api.isCollapsed()) return marks();
+
+      const matchesCell = getTableGridAbove(editor, { format: 'cell' });
+
+      if (matchesCell.length === 0) return marks();
+
+      const totalMarks: Record<string, any> = {};
+
+      matchesCell.forEach(([_cell, cellPath]) => {
+        const textNodeEntry = editor.api.nodes({
+          at: cellPath,
+          match: (n) => TextApi.isText(n),
+        });
+
+        Array.from(textNodeEntry, (item) => item[0]).forEach((item) => {
+          const keys = Object.keys(item);
+
+          if (keys.length === 1) return;
+
+          keys.splice(keys.indexOf('text'), 1);
+
+          keys.forEach((k) => {
+            totalMarks[k] = item[k];
+          });
+        });
+      });
+
+      return totalMarks;
+    },
+  },
+  transforms: {
     addMark(key: string, value: any) {
       const { selection } = editor;
 
@@ -55,43 +86,5 @@ export const withMarkTable: ExtendEditorTransforms<TableConfig> = ({
         });
       });
     },
-  };
-};
-
-export const withMarkTableApi: ExtendEditorApi<TableConfig> = ({
-  api: { marks },
-  editor,
-}) => ({
-  marks() {
-    const { selection } = editor;
-
-    if (!selection || editor.api.isCollapsed()) return marks();
-
-    const matchesCell = getTableGridAbove(editor, { format: 'cell' });
-
-    if (matchesCell.length === 0) return marks();
-
-    const totalMarks: Record<string, any> = {};
-
-    matchesCell.forEach(([_cell, cellPath]) => {
-      const textNodeEntry = editor.api.nodes({
-        at: cellPath,
-        match: (n) => TextApi.isText(n),
-      });
-
-      Array.from(textNodeEntry, (item) => item[0]).forEach((item) => {
-        const keys = Object.keys(item);
-
-        if (keys.length === 1) return;
-
-        keys.splice(keys.indexOf('text'), 1);
-
-        keys.forEach((k) => {
-          totalMarks[k] = item[k];
-        });
-      });
-    });
-
-    return totalMarks;
   },
 });

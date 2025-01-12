@@ -1,86 +1,180 @@
-# @udecode/slate-utils
+# @udecode/plate
+
+## 42.0.0
+
+### Major Changes
+
+- [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) – This package is now deprecated. Use `@udecode/slate` or `@udecode/plate` instead.
+
+## 41.0.14
+
+## 41.0.13
+
+## 41.0.12
+
+## 41.0.10
+
+## 41.0.9
+
+## 41.0.8
+
+## 41.0.7
+
+## 41.0.6
+
+## 41.0.5
+
+## 41.0.2
 
 ## 41.0.0
 
-### Patch Changes
-
-- [#3868](https://github.com/udecode/plate/pull/3868) by [@zbeyens](https://github.com/zbeyens) – Add `getFirstNodeText`
-
 ## 40.3.1
+
+## 40.2.8
 
 ## 40.2.7
 
-### Patch Changes
+## 40.0.3
 
-- [#3809](https://github.com/udecode/plate/pull/3809) by [@zbeyens](https://github.com/zbeyens) –
-  - Add `removeEditorText`: Remove non-empty editor text nodes
+## 40.0.2
+
+## 40.0.1
+
+## 40.0.0
+
+## 39.2.21
 
 ## 39.2.20
 
-### Patch Changes
+## 39.2.15
 
-- [#3697](https://github.com/udecode/plate/pull/3697) by [@zbeyens](https://github.com/zbeyens) – Fix `getSelectionFragment` to support collapsed selection
+## 39.2.13
+
+## 39.2.12
 
 ## 39.2.1
 
+## 39.1.8
+
 ## 39.1.4
 
-### Patch Changes
+## 39.1.3
 
-- [#3616](https://github.com/udecode/plate/pull/3616) by [@zbeyens](https://github.com/zbeyens) –
-  - Add queries `getBlocks`, `getFragmentProp`, `getSelectionFragment`
-  - Add transforms `duplicateBlocks`, `removeEmptyPreviousBlock`, `selectNodes`, `setBlockAboveNode`, `setBlockNodes`
-  - Add utils `unwrapStructuralNodes`
+## 39.0.0
+
+## 38.0.6
 
 ## 38.0.4
 
 ## 38.0.3
 
+## 38.0.2
+
+## 38.0.1
+
+## 38.0.0
+
+## 37.0.8
+
+## 37.0.7
+
+## 37.0.5
+
+## 37.0.4
+
+## 37.0.3
+
 ## 37.0.0
 
 ### Major Changes
 
-- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) – Types:
-
-  - Replace `V extends Value` with `E extends TEditor` for improved type inference
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - Split build into `@udecode/plate-common` and `@udecode/plate-common/react`.
+  - NEW `/react` exports `@udecode/react-hotkeys`
 
 ## 36.3.9
 
-### Patch Changes
-
-- [#3426](https://github.com/udecode/plate/pull/3426) by [@yf-yang](https://github.com/yf-yang) – feat: `getPointBeforeLocation` - Add `matchByRegex` option
+## 36.3.7
 
 ## 36.3.4
 
-### Patch Changes
-
-- [#3408](https://github.com/udecode/plate/pull/3408) by [@yf-yang](https://github.com/yf-yang) – add removeOptions to replaceNode
+## 36.2.1
 
 ## 36.0.6
 
+## 36.0.3
+
+## 36.0.0
+
+## 35.3.2
+
+## 34.0.5
+
 ## 34.0.4
 
-### Patch Changes
+## 34.0.2
 
-- [#3262](https://github.com/udecode/plate/pull/3262) by [@felixfeng33](https://github.com/felixfeng33) – fix getAncestorNode cann't get the first node.
+## 34.0.1
 
 ## 34.0.0
 
-### Minor Changes
-
-- [#3241](https://github.com/udecode/plate/pull/3241) by [@felixfeng33](https://github.com/felixfeng33) – Add new queries `getAncestorNode` and `getNodesRange`
-
-## 32.0.1
-
-## 31.3.2
+## 33.0.4
 
 ### Patch Changes
 
-- [#3086](https://github.com/udecode/plate/pull/3086) by [@felixfeng33](https://github.com/felixfeng33) – `toggleMark` use `editor.removeMark`
+- [#3199](https://github.com/udecode/plate/pull/3199) by [@zbeyens](https://github.com/zbeyens) – Fix `PlateElementProps` type
+
+## 33.0.3
+
+## 33.0.0
+
+## 32.0.1
+
+## 32.0.0
+
+## 31.3.2
 
 ## 31.0.0
 
+## 30.4.5
+
+## 30.1.2
+
+## 30.0.0
+
+## 29.1.0
+
+## 29.0.1
+
+## 29.0.0
+
+### Minor Changes
+
+- [#2829](https://github.com/udecode/plate/pull/2829) by [@zbeyens](https://github.com/zbeyens) –
+  - re-export `@udecode/react-utils`
+
+### Patch Changes
+
+- [#2829](https://github.com/udecode/plate/pull/2829) by [@zbeyens](https://github.com/zbeyens) –
+  - Fix import from RSC
+
+## 28.0.0
+
+## 27.0.3
+
+## 27.0.0
+
+## 25.0.1
+
 ## 25.0.0
+
+## 24.5.2
+
+## 24.4.0
+
+### Minor Changes
+
+- [#2675](https://github.com/udecode/plate/pull/2675) by [@zbeyens](https://github.com/zbeyens) – Support slate-react 0.99.0
 
 ## 24.3.6
 
@@ -94,29 +188,48 @@
 
 ## 24.2.0
 
-### Minor Changes
+## 24.0.2
 
-- [`18f9778c`](https://github.com/udecode/plate/commit/18f9778cda9450cd99a71c47ab0767b64813db1a) by [@zbeyens](https://github.com/zbeyens) – Add replaceNode
+## 24.0.1
 
 ## 24.0.0
 
-### Minor Changes
-
-- [#2629](https://github.com/udecode/plate/pull/2629) by [@zbeyens](https://github.com/zbeyens) –
-  - Add `isEditorEmpty` query. Whether the editor is empty. An editor is empty if it has only one empty element.
-
 ## 23.7.4
+
+## 23.7.0
+
+## 23.6.0
+
+## 23.3.1
+
+## 23.3.0
 
 ## 22.0.2
 
-### Patch Changes
+## 22.0.1
 
-- [`f44dbd3`](https://github.com/udecode/plate/commit/f44dbd3f322a828753da31ec28576587e63ea047) by [@zbeyens](https://github.com/zbeyens) – v22
+## 22.0.0
+
+## 21.5.0
+
+## 21.4.2
 
 ## 21.4.1
 
+## 21.3.2
+
 ## 21.3.0
+
+## 21.1.5
 
 ## 21.0.0
 
-## 19.7.1
+## 20.7.2
+
+## 20.7.0
+
+## 20.4.0
+
+## 20.3.2
+
+## 20.0.0

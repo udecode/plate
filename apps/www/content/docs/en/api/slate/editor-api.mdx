@@ -1,0 +1,1413 @@
+---
+title: Editor API
+description: API reference for the Editor API.
+---
+
+The Editor API provides a set of helper functions for querying and manipulating the editor state.
+
+## `editor.api`
+
+### `above`
+
+Get the matching ancestor above a location in the document.
+
+<APIParameters>
+  <APIItem name="options" type="EditorAboveOptions<V>" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="...options" type="QueryOptions<V>">
+        Common query options.
+      </APISubListItem>
+      <APISubListItem parent="options" name="mode" type="QueryMode">
+        Query mode options.
+      </APISubListItem>
+      <APISubListItem parent="options" name="voids" type="boolean" optional>
+        Whether to include void nodes in the search
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns a `NodeEntry<N extends AncestorIn<V>>` tuple containing the matching ancestor node and its path, or `undefined` if no match is found.
+</APIReturns>
+
+### `block`
+
+Get the block at a location or find the first block that matches options.
+
+```ts
+editor.api.block() // Get block above selection
+editor.api.block({ above: true }) // Get block above selection
+editor.api.block({ at: [0, 0] }) // Get block at [0, 0]
+editor.api.block({ at: [0, 0], above: true }) // Get block at [0]
+editor.api.block({ highest: true }) // Get highest block at selection
+```
+
+<APIParameters>
+  <APIItem name="options" type="EditorBlockOptions<V>" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="...options" type="QueryOptions<V>">
+        Common query options.
+      </APISubListItem>
+      <APISubListItem parent="options" name="at" type="At | Span" optional>
+        The location to query at. Defaults to current selection.
+      </APISubListItem>
+      <APISubListItem parent="options" name="ignoreNonSelectable" type="boolean" optional>
+        Whether to ignore non-selectable nodes during traversal.
+      </APISubListItem>
+      <APISubListItem parent="options" name="reverse" type="boolean" optional>
+        Whether to traverse in reverse order.
+      </APISubListItem>
+      <APISubListItem parent="options" name="universal" type="boolean" optional>
+        Whether to ensure the operation works universally across all nodes.
+      </APISubListItem>
+      <APISubListItem parent="options" name="above" type="boolean" optional>
+        If true, get the block above the location.
+      </APISubListItem>
+      <APISubListItem parent="options" name="highest" type="boolean" optional>
+        If true, get the highest block at the location.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns the matching block node entry or `undefined` if no match is found.
+</APIReturns>
+
+### `blocks`
+
+Returns all matching blocks.
+
+<APIParameters>
+  <APIItem name="options" type="EditorNodesOptions<V>" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="...options" type="QueryOptions<V>">
+        Common query options.
+      </APISubListItem>
+      <APISubListItem parent="options" name="at" type="At | Span" optional>
+        The location to query at. Defaults to current selection.
+      </APISubListItem>
+      <APISubListItem parent="options" name="ignoreNonSelectable" type="boolean" optional>
+        Whether to ignore non-selectable nodes during traversal.
+      </APISubListItem>
+      <APISubListItem parent="options" name="reverse" type="boolean" optional>
+        Whether to traverse in reverse order.
+      </APISubListItem>
+      <APISubListItem parent="options" name="universal" type="boolean" optional>
+        Whether to ensure the operation works universally across all nodes.
+      </APISubListItem>
+      <APISubListItem parent="options" name="mode" type="QueryMode">
+        Query mode options.
+      </APISubListItem>
+      <APISubListItem parent="options" name="voids" type="boolean" optional>
+        Whether to include void nodes in the search.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns an array of `NodeEntry<ElementIn<V>>` tuples containing the matching block nodes and their paths.
+</APIReturns>
+
+### `descendant`
+
+Returns the first matching descendant.
+
+<APIParameters>
+  <APIItem name="options" type="EditorNodesOptions<V>">
+    <APISubList>
+      <APISubListItem parent="options" name="...options" type="QueryOptions<V>">
+        Common query options.
+      </APISubListItem>
+      <APISubListItem parent="options" name="at" type="At | Span" optional>
+        The location to query at. Defaults to current selection.
+      </APISubListItem>
+      <APISubListItem parent="options" name="ignoreNonSelectable" type="boolean" optional>
+        Whether to ignore non-selectable nodes during traversal.
+      </APISubListItem>
+      <APISubListItem parent="options" name="reverse" type="boolean" optional>
+        Whether to traverse in reverse order.
+      </APISubListItem>
+      <APISubListItem parent="options" name="universal" type="boolean" optional>
+        Whether to ensure the operation works universally across all nodes.
+      </APISubListItem>
+      <APISubListItem parent="options" name="mode" type="QueryMode">
+        Query mode options.
+      </APISubListItem>
+      <APISubListItem parent="options" name="voids" type="boolean" optional>
+        Whether to include void nodes in the search.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns a `NodeEntry<DescendantIn<V>>` tuple containing the first matching descendant node and its path, or `undefined` if no match is found.
+</APIReturns>
+
+### `edgeBlocks`
+
+Returns the edge blocks above a location (default: selection).
+
+<APIParameters>
+  <APIItem name="options" type="EditorNodesOptions<V>" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="...options" type="QueryOptions<V>">
+        Common query options.
+      </APISubListItem>
+      <APISubListItem parent="options" name="at" type="At | Span" optional>
+        The location to query at. Defaults to current selection.
+      </APISubListItem>
+      <APISubListItem parent="options" name="ignoreNonSelectable" type="boolean" optional>
+        Whether to ignore non-selectable nodes during traversal.
+      </APISubListItem>
+      <APISubListItem parent="options" name="reverse" type="boolean" optional>
+        Whether to traverse in reverse order.
+      </APISubListItem>
+      <APISubListItem parent="options" name="universal" type="boolean" optional>
+        Whether to ensure the operation works universally across all nodes.
+      </APISubListItem>
+      <APISubListItem parent="options" name="mode" type="QueryMode">
+        Query mode options.
+      </APISubListItem>
+      <APISubListItem parent="options" name="voids" type="boolean" optional>
+        Whether to include void nodes in the search.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns a tuple of `[NodeEntry<ElementIn<V>>, NodeEntry<ElementIn<V>>]` containing the start and end block nodes and their paths, or `null` if not found.
+</APIReturns>
+
+### `fragment`
+
+Get the fragment at a location or selection.
+
+<APIParameters>
+  <APIItem name="at" type="At | null" optional>
+    The location to get the fragment from. Defaults to current selection.
+  </APIItem>
+  <APIItem name="options" type="EditorFragmentOptions" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="structuralTypes" type="string[]" optional>
+        Types of structural nodes to unwrap.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns an array of `ElementOrTextIn<V>` nodes representing the fragment.
+</APIReturns>
+
+### `isEmpty`
+
+Check if an element is empty, accounting for void nodes.
+
+```ts
+editor.api.isEmpty() // Check if editor is empty
+editor.api.isEmpty(at) // Check if nodes at location are empty
+editor.api.isEmpty(at, { after: true }) // Check if text after location is empty
+editor.api.isEmpty(at, { block: true }) // Check if block above location is empty
+```
+
+<APIParameters>
+  <APIItem name="options" type="EditorEmptyOptions" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="...options" type="QueryOptions<V>">
+        Common query options.
+      </APISubListItem>
+      <APISubListItem parent="options" name="at" type="At | Span" optional>
+        The location to check. Defaults to current selection.
+      </APISubListItem>
+      <APISubListItem parent="options" name="after" type="boolean" optional>
+        Check if text after selection is empty.
+      </APISubListItem>
+      <APISubListItem parent="options" name="block" type="boolean" optional>
+        Check if block above location is empty.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `true` if empty, `false` otherwise.
+</APIReturns>
+
+### `isAt`
+
+Check if a location (point/range) is at a specific position.
+
+```ts
+// For ranges:
+editor.api.isAt({ text: true }) // Check if range is in single text node
+editor.api.isAt({ block: true }) // Check if range is in single block
+editor.api.isAt({ blocks: true }) // Check if range is across multiple blocks
+editor.api.isAt({ start: true }) // Check if range starts at block start
+editor.api.isAt({ end: true }) // Check if range ends at block end
+
+// For points:
+editor.api.isAt({ word: true }) // Check relative to word boundaries
+editor.api.isAt({ start: true }) // Check if at start
+editor.api.isAt({ end: true }) // Check if at end
+```
+
+<APIParameters>
+  <APIItem name="options" type="object">
+    <APISubList>
+      <APISubListItem parent="options" name="at" type="At" optional>
+        The location to check. Defaults to current selection.
+      </APISubListItem>
+      <APISubListItem parent="options" name="text" type="boolean" optional>
+        Check if range is in single text node.
+      </APISubListItem>
+      <APISubListItem parent="options" name="block" type="boolean" optional>
+        Check if range is in single block.
+      </APISubListItem>
+      <APISubListItem parent="options" name="blocks" type="boolean" optional>
+        Check if range is across multiple blocks.
+      </APISubListItem>
+      <APISubListItem parent="options" name="start" type="boolean" optional>
+        Check if at start position.
+      </APISubListItem>
+      <APISubListItem parent="options" name="end" type="boolean" optional>
+        Check if at end position.
+      </APISubListItem>
+      <APISubListItem parent="options" name="word" type="boolean" optional>
+        Check relative to word boundaries.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `true` if the location matches the specified position criteria.
+</APIReturns>
+
+### `mark`
+
+Returns the selection mark value by key.
+
+<APIParameters>
+  <APIItem name="key" type="keyof MarksIn<V>">
+    The mark key to get the value for.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `MarksIn<V>[K] | null | undefined` - The mark value if it exists, `null` if the mark is not set, or `undefined` if there are multiple different values.
+</APIReturns>
+
+### `nodes`
+
+Iterate through all nodes in the editor that match the given options.
+
+<APIParameters>
+  <APIItem name="options" type="EditorNodesOptions<V>" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="...options" type="QueryOptions<V>">
+        Common query options.
+      </APISubListItem>
+      <APISubListItem parent="options" name="at" type="At | Span" optional>
+        Where to start iterating. Defaults to editor selection.
+      </APISubListItem>
+      <APISubListItem parent="options" name="ignoreNonSelectable" type="boolean" optional>
+        Whether to ignore non-selectable nodes during traversal.
+      </APISubListItem>
+      <APISubListItem parent="options" name="reverse" type="boolean" optional>
+        Whether to traverse in reverse order.
+      </APISubListItem>
+      <APISubListItem parent="options" name="universal" type="boolean" optional>
+        Whether to ensure the operation works universally across all nodes.
+      </APISubListItem>
+      <APISubListItem parent="options" name="mode" type="QueryMode">
+        Query mode options.
+      </APISubListItem>
+      <APISubListItem parent="options" name="voids" type="boolean" optional>
+        Whether to include void nodes in the search.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns a generator of `NodeEntry<DescendantIn<V>>` tuples containing the matching nodes and their paths.
+</APIReturns>
+
+### `prop`
+
+Get a property value from a list of nodes. Returns undefined if the property value is not consistent across all nodes.
+
+<APIParameters>
+  <APIItem name="options" type="EditorPropOptions<V>">
+    <APISubList>
+      <APISubListItem parent="options" name="nodes" type="TElement[]">
+        Nodes to get the property value from.
+      </APISubListItem>
+      <APISubListItem parent="options" name="key" type="string" optional>
+        Property key to get.
+      </APISubListItem>
+      <APISubListItem parent="options" name="defaultValue" type="string" optional>
+        Default value if property not found.
+      </APISubListItem>
+      <APISubListItem parent="options" name="getProp" type="(node: DescendantIn<V>) => any" optional>
+        Custom function to extract property value.
+      </APISubListItem>
+      <APISubListItem parent="options" name="mode" type="'all' | 'block' | 'text'" optional>
+        - 'all': Get the property value from all nodes.
+        - 'block': Get the property value from the first block node.
+        - 'text': Get the property value from the first text node.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `string | undefined` - The consistent property value if found, or `undefined` if the property is not consistent across nodes.
+</APIReturns>
+
+## DOM
+
+### `findPath`
+
+Find the path of a Slate node.
+
+<APIParameters>
+  <APIItem name="node" type="TNode">
+    The node to find the path for.
+  </APIItem>
+  <APIItem name="options" type="EditorFindPathOptions" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="...options" type="QueryOptions<V>">
+        Common query options.
+      </APISubListItem>
+      <APISubListItem parent="options" name="ignoreNonSelectable" type="boolean" optional>
+        Whether to ignore non-selectable nodes during traversal.
+      </APISubListItem>
+      <APISubListItem parent="options" name="reverse" type="boolean" optional>
+        Whether to traverse in reverse order.
+      </APISubListItem>
+      <APISubListItem parent="options" name="universal" type="boolean" optional>
+        Whether to ensure the operation works universally across all nodes.
+      </APISubListItem>
+      <APISubListItem parent="options" name="mode" type="QueryMode">
+        Query mode options.
+      </APISubListItem>
+      <APISubListItem parent="options" name="voids" type="boolean" optional>
+        Whether to include void nodes in the search.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `Path | undefined` - The path of the node if found, or `undefined` if not found.
+</APIReturns>
+
+### `toDOMNode`
+
+Find the native DOM element from a Slate node.
+
+<APIParameters>
+  <APIItem name="node" type="TNode">
+    The Slate node to find the corresponding DOM element for.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `HTMLElement` - The corresponding DOM element for the Slate node.
+</APIReturns>
+
+### `toSlateNode`
+
+Find a Slate node from a native DOM element.
+
+<APIParameters>
+  <APIItem name="domNode" type="DOMNode">
+    The DOM node to find the corresponding Slate node for.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `TNode | undefined` - The corresponding Slate node if found, or `undefined` if not found.
+</APIReturns>
+
+## Utils
+
+### `createPathRef`
+
+Create a mutable ref for a Path object.
+
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The path to create a reference for.
+  </APIItem>
+  <APIItem name="options" type="EditorPathRefOptions" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="affinity" type="TextDirection | null" optional>
+        The direction to resolve the ref when ambiguous:
+        - 'forward': Resolve to the next valid position
+        - 'backward': Resolve to the previous valid position
+        - null: Do not resolve to any position
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `PathRef` - A mutable reference that updates its path as operations are applied to the editor.
+</APIReturns>
+
+### `createPointRef`
+
+Create a mutable ref for a Point object.
+
+<APIParameters>
+  <APIItem name="point" type="Point">
+    The point to create a reference for.
+  </APIItem>
+  <APIItem name="options" type="EditorPointRefOptions" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="affinity" type="TextDirection | null" optional>
+        The direction to resolve the ref when ambiguous:
+        - 'forward': Resolve to the next valid position
+        - 'backward': Resolve to the previous valid position
+        - null: Do not resolve to any position
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `PointRef` - A mutable reference that updates its point as operations are applied to the editor.
+</APIReturns>
+
+### `createRangeRef`
+
+Create a mutable ref for a Range object.
+
+<APIParameters>
+  <APIItem name="range" type="Range">
+    The range to create a reference for.
+  </APIItem>
+  <APIItem name="options" type="EditorRangeRefOptions" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="affinity" type="RangeDirection | null" optional>
+        The direction to resolve the ref when ambiguous:
+        - 'forward': Resolve both points forward
+        - 'backward': Resolve both points backward
+        - 'outward': Resolve start backward and end forward
+        - 'inward': Resolve start forward and end backward
+        - null: Do not resolve to any position
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `RangeRef` - A mutable reference that updates its range as operations are applied to the editor.
+</APIReturns>
+
+### `unhangRange`
+
+Convert a range into a non-hanging one.
+
+```ts
+// A "hanging" range is one created by the browser's "triple-click" selection behavior.
+// When triple-clicking a block, the browser selects from the start of that block to
+// the start of the next block. The range thus "hangs over" into the next block.
+```
+
+<APIParameters>
+  <APIItem name="range" type="Range">
+    The range to unhang.
+  </APIItem>
+  <APIItem name="options" type="EditorUnhangRangeOptions" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="voids" type="boolean" optional>
+        Allow placing the end of the selection in a void node.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `Range` - A new range with the end point moved backwards if it was hanging.
+</APIReturns>
+
+## Editor State
+
+### `shouldMergeNodesRemovePrevNode`
+
+Determines whether to remove the previous node when merging nodes.
+
+<APIParameters>
+  <APIItem name="prevNodeEntry" type="NodeEntry">
+    A tuple containing the previous node and its path.
+  </APIItem>
+  <APIItem name="curNodeEntry" type="NodeEntry">
+    A tuple containing the current node and its path.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `boolean` - `true` if the previous node should be removed during merge, `false` otherwise.
+</APIReturns>
+
+### `shouldNormalize`
+
+Controls whether the editor should normalize after an operation.
+
+<APIParameters>
+  <APIItem name="options" type="object">
+    <APISubList>
+      <APISubListItem parent="options" name="dirtyPaths" type="Path[]">
+        The paths that need to be normalized.
+      </APISubListItem>
+      <APISubListItem parent="options" name="initialDirtyPathsLength" type="number">
+        The initial number of dirty paths before normalization started.
+      </APISubListItem>
+      <APISubListItem parent="options" name="iteration" type="number">
+        The current normalization iteration count.
+      </APISubListItem>
+      <APISubListItem parent="options" name="operation" type="Operation" optional>
+        The operation that triggered the normalization.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `boolean` - `true` if the editor should normalize, `false` otherwise.
+</APIReturns>
+
+### `getDirtyPaths`
+
+Get the paths that need to be normalized after an operation.
+
+<APIParameters>
+  <APIItem name="operation" type="Operation<N extends DescendantIn<V>>">
+    The operation that triggered the normalization.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `Path[]` - An array of paths that need to be normalized after applying the operation.
+</APIReturns>
+
+### `setNormalizing`
+
+Manually control the editor's normalizing state.
+
+<APIParameters>
+  <APIItem name="isNormalizing" type="boolean">
+    Whether the editor should normalize after each operation.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `void`
+</APIReturns>
+
+```ts
+// Note: Using this incorrectly can leave the editor in an invalid state.
+```
+
+### `onChange`
+
+Called when there is a change in the editor.
+
+<APIParameters>
+  <APIItem name="options" type="object" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="operation" type="Operation" optional>
+        The operation that triggered the change.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `void`
+</APIReturns>
+
+## Node Operations
+
+### `last`
+
+Get the last node at a location.
+
+<APIParameters>
+  <APIItem name="at" type="At">
+    The location to get the last node from.
+  </APIItem>
+  <APIItem name="options" type="EditorLastOptions" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="level" type="number" optional>
+        Get last node at this level (0-based).
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `NodeEntry<DescendantIn<V>>` tuple containing the last node and its path, or `undefined` if not found.
+</APIReturns>
+
+### `leaf`
+
+Get the leaf text node at a location.
+
+<APIParameters>
+  <APIItem name="at" type="At">
+    The location to get the leaf from.
+  </APIItem>
+  <APIItem name="options" type="EditorLeafOptions" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="depth" type="number" optional>
+        The depth to search to.
+      </APISubListItem>
+      <APISubListItem parent="options" name="edge" type="LeafEdge" optional>
+        Which edge to get the leaf from ('start' | 'end').
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `NodeEntry<TextIn<V>>` tuple containing the leaf text node and its path, or `undefined` if not found.
+</APIReturns>
+
+### `levels`
+
+Iterate through all levels at a location.
+
+<APIParameters>
+  <APIItem name="options" type="EditorLevelsOptions<V>" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="...options" type="QueryOptions<V>">
+        Common query options.
+      </APISubListItem>
+      <APISubListItem parent="options" name="reverse" type="boolean" optional>
+        Whether to traverse in reverse order.
+      </APISubListItem>
+      <APISubListItem parent="options" name="voids" type="boolean" optional>
+        Whether to include void nodes in the search.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns a generator of `NodeEntry<NodeIn<V>>` tuples containing each ancestor node and its path.
+</APIReturns>
+
+## Element Operations
+
+### `isElementReadOnly`
+
+Check if an element is read-only.
+
+<APIParameters>
+  <APIItem name="element" type="ElementIn<V>">
+    The element to check for read-only status.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `boolean` - `true` if the element is read-only, `false` otherwise.
+</APIReturns>
+
+### `isVoid`
+
+Check if an element is void.
+
+<APIParameters>
+  <APIItem name="element" type="ElementIn<V>">
+    The element to check.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `boolean` - `true` if the element is void, `false` otherwise.
+</APIReturns>
+
+### `markableVoid`
+
+Check if an element is a markable void element.
+
+<APIParameters>
+  <APIItem name="element" type="ElementIn<V>">
+    The element to check for markable void status.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `boolean` - `true` if the element is a markable void, `false` otherwise.
+</APIReturns>
+
+## Position Operations
+
+### `positions`
+
+Iterate through all possible point positions in the document.
+
+<APIParameters>
+  <APIItem name="options" type="EditorPositionsOptions" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="at" type="At" optional>
+        The location to start iterating from. Defaults to editor selection.
+      </APISubListItem>
+      <APISubListItem parent="options" name="unit" type="TextUnit" optional>
+        The unit to move by ('offset' | 'character' | 'word' | 'line' | 'block').
+      </APISubListItem>
+      <APISubListItem parent="options" name="reverse" type="boolean" optional>
+        Whether to iterate in reverse order.
+      </APISubListItem>
+      <APISubListItem parent="options" name="voids" type="boolean" optional>
+        Whether to include void nodes in the search.
+      </APISubListItem>
+      <APISubListItem parent="options" name="ignoreNonSelectable" type="boolean" optional>
+        Whether to skip non-selectable nodes.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns a generator of `Point` objects representing each possible position in the document.
+</APIReturns>
+
+## Range Operations
+
+### `range`
+
+Create a range between two locations.
+
+<APIParameters>
+  <APIItem name="options" type="EditorRangeOptions">
+    <APISubList>
+      <APISubListItem parent="options" name="at" type="At" optional>
+        The location to create the range at. Defaults to current selection.
+      </APISubListItem>
+      <APISubListItem parent="options" name="focus" type="Point" optional>
+        The focus point of the range.
+      </APISubListItem>
+      <APISubListItem parent="options" name="anchor" type="Point" optional>
+        The anchor point of the range.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `Range` - A new range between the specified points.
+</APIReturns>
+
+### `start`
+
+Get the start point of a location.
+
+<APIParameters>
+  <APIItem name="at" type="At" optional>
+    The location to get the start point from. Defaults to current selection.
+  </APIItem>
+  <APIItem name="options" type="EditorStartOptions" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="next" type="boolean" optional>
+        Get the start point of the next node.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `Point` - The start point of the location.
+</APIReturns>
+
+### `string`
+
+Get the text string content of a location.
+
+<APIParameters>
+  <APIItem name="at" type="At" optional>
+    The location to get text from. Defaults to current selection.
+  </APIItem>
+  <APIItem name="options" type="EditorStringOptions" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="voids" type="boolean" optional>
+        Whether to include void nodes in the search.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `string` - The text content at the specified location.
+</APIReturns>
+
+### `next`
+
+Get the matching node in the branch of the document after a location.
+
+<APIParameters>
+  <APIItem name="options" type="EditorNextOptions<V>" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="...options" type="QueryOptions<V>">
+        Common query options.
+      </APISubListItem>
+      <APISubListItem parent="options" name="at" type="At | Span" optional>
+        The location to start searching from. Defaults to current selection.
+      </APISubListItem>
+      <APISubListItem parent="options" name="mode" type="QueryMode">
+        Query mode options.
+      </APISubListItem>
+      <APISubListItem parent="options" name="voids" type="boolean" optional>
+        Whether to include void nodes in the search.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `NodeEntry<DescendantIn<V>>` tuple containing the next matching node and its path, or `undefined` if not found.
+</APIReturns>
+
+### `node`
+
+Get the node at a location or find the first node that matches options.
+
+<APIParameters>
+  <APIItem name="at" type="At" optional>
+    The location to get the node from. Defaults to current selection.
+  </APIItem>
+  <APIItem name="nodeOptions" type="EditorNodeOptions" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="depth" type="number" optional>
+        The depth of the node to return.
+      </APISubListItem>
+      <APISubListItem parent="options" name="edge" type="'start' | 'end'" optional>
+        Which edge to get the node from.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `NodeEntry<NodeIn<V>>` tuple containing the node and its path, or `undefined` if not found.
+</APIReturns>
+
+### `parent`
+
+Get the parent node of a location.
+
+<APIParameters>
+  <APIItem name="at" type="At" optional>
+    The location to get the parent from. Defaults to current selection.
+  </APIItem>
+  <APIItem name="options" type="EditorParentOptions" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="depth" type="number" optional>
+        The number of levels to traverse up.
+      </APISubListItem>
+      <APISubListItem parent="options" name="edge" type="'start' | 'end'" optional>
+        Which edge to get the parent from.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `NodeEntry<AncestorIn<V>>` tuple containing the parent node and its path, or `undefined` if not found.
+</APIReturns>
+
+### `path`
+
+Get the path of a location.
+
+<APIParameters>
+  <APIItem name="at" type="At" optional>
+    The location to get the path from. Defaults to current selection.
+  </APIItem>
+  <APIItem name="options" type="EditorPathOptions" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="depth" type="number" optional>
+        The depth of the path to return.
+      </APISubListItem>
+      <APISubListItem parent="options" name="edge" type="'start' | 'end'" optional>
+        Which edge to get the path from.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `Path` - The path at the specified location.
+</APIReturns>
+
+### `point`
+
+Get the start or end point of a location.
+
+<APIParameters>
+  <APIItem name="at" type="At" optional>
+    The location to get the point from. Defaults to current selection.
+  </APIItem>
+  <APIItem name="options" type="EditorPointOptions" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="edge" type="'start' | 'end'" optional>
+        Which edge to get the point from.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `Point` - The point at the specified edge of the location.
+</APIReturns>
+
+### `previous`
+
+Get the matching node in the branch of the document before a location.
+
+<APIParameters>
+  <APIItem name="options" type="EditorPreviousOptions<V>" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="...options" type="QueryOptions<V>">
+        Common query options.
+      </APISubListItem>
+      <APISubListItem parent="options" name="at" type="At | Span" optional>
+        The location to start searching from. Defaults to current selection.
+      </APISubListItem>
+      <APISubListItem parent="options" name="mode" type="QueryMode">
+        Query mode options.
+      </APISubListItem>
+      <APISubListItem parent="options" name="voids" type="boolean" optional>
+        Whether to include void nodes in the search.
+      </APISubListItem>
+      <APISubListItem parent="options" name="sibling" type="boolean" optional>
+        Whether to get the previous sibling node.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `NodeEntry<DescendantIn<V>>` tuple containing the previous matching node and its path, or `undefined` if not found.
+</APIReturns>
+
+## Reference Operations
+
+### `createPathRef`
+
+Create a mutable ref for a Path object.
+
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The path to create a reference for.
+  </APIItem>
+  <APIItem name="options" type="EditorPathRefOptions" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="affinity" type="TextDirection | null" optional>
+        The direction to resolve the ref when ambiguous:
+        - 'forward': Resolve to the next valid position
+        - 'backward': Resolve to the previous valid position
+        - null: Do not resolve to any position
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `PathRef` - A mutable reference that updates its path as operations are applied to the editor.
+</APIReturns>
+
+### `createPointRef`
+
+Create a mutable ref for a Point object.
+
+<APIParameters>
+  <APIItem name="point" type="Point">
+    The point to create a reference for.
+  </APIItem>
+  <APIItem name="options" type="EditorPointRefOptions" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="affinity" type="TextDirection | null" optional>
+        The direction to resolve the ref when ambiguous:
+        - 'forward': Resolve to the next valid position
+        - 'backward': Resolve to the previous valid position
+        - null: Do not resolve to any position
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `PointRef` - A mutable reference that updates its point as operations are applied to the editor.
+</APIReturns>
+
+### `createRangeRef`
+
+Create a mutable ref for a Range object.
+
+<APIParameters>
+  <APIItem name="range" type="Range">
+    The range to create a reference for.
+  </APIItem>
+  <APIItem name="options" type="EditorRangeRefOptions" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="affinity" type="RangeDirection | null" optional>
+        The direction to resolve the ref when ambiguous:
+        - 'forward': Resolve both points forward
+        - 'backward': Resolve both points backward
+        - 'outward': Resolve start backward and end forward
+        - 'inward': Resolve start forward and end backward
+        - null: Do not resolve to any position
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `RangeRef` - A mutable reference that updates its range as operations are applied to the editor.
+</APIReturns>
+
+## DOM Operations
+
+### `findPath`
+
+Find the path of a DOM node.
+
+<APIParameters>
+  <APIItem name="node" type="DOMNode">
+    The DOM node to find the path for.
+  </APIItem>
+  <APIItem name="options" type="EditorFindPathOptions" optional>
+    <APISubList>
+      <APISubListItem>
+        mode: Query mode ('highest' | 'lowest' | 'all')
+      </APISubListItem>
+      <APISubListItem>
+        voids: Whether to include void nodes
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### `toDOMNode`
+
+Find the DOM node from a Slate node.
+
+<APIParameters>
+  <APIItem name="node" type="TNode">
+    The Slate node to find the corresponding DOM element for.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `HTMLElement` - The corresponding DOM element for the Slate node.
+</APIReturns>
+
+### `toDOMPoint`
+
+Find a Slate point from a DOM point.
+
+<APIParameters>
+  <APIItem name="domPoint" type="DOMPoint">
+    The DOM point to convert to a Slate point.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `Point | undefined` - The corresponding Slate point if found, or `undefined` if not found.
+</APIReturns>
+
+### `toDOMRange`
+
+Find a DOM range from a Slate range.
+
+<APIParameters>
+  <APIItem name="range" type="Range">
+    The Slate range to convert to a DOM range.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `DOMRange` - The corresponding DOM range for the Slate range.
+</APIReturns>
+
+### `toSlateNode`
+
+Find a Slate node from a native DOM element.
+
+<APIParameters>
+  <APIItem name="domNode" type="DOMNode">
+    The DOM node to find the corresponding Slate node for.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `TNode | undefined` - The corresponding Slate node if found, or `undefined` if not found.
+</APIReturns>
+
+### `toSlatePoint`
+
+Find a Slate point from a DOM point.
+
+<APIParameters>
+  <APIItem name="domPoint" type="DOMPoint">
+    The DOM point to convert to a Slate point.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `Point | undefined` - The corresponding Slate point if found, or `undefined` if not found.
+</APIReturns>
+
+### `toSlateRange`
+
+Find a Slate range from a DOM range.
+
+<APIParameters>
+  <APIItem name="domRange" type="DOMRange">
+    The DOM range to convert to a Slate range.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `Range | undefined` - The corresponding Slate range if found, or `undefined` if not found.
+</APIReturns>
+
+## Query Operations
+
+### `hasBlocks`
+
+Check if a node has block children.
+
+<APIParameters>
+  <APIItem name="node" type="Node">
+    The node to check for block children.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `boolean` - `true` if the node has block children, `false` otherwise.
+</APIReturns>
+
+### `hasInlines`
+
+Check if a node has inline children.
+
+<APIParameters>
+  <APIItem name="node" type="Node">
+    The node to check for inline children.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `boolean` - `true` if the node has inline children, `false` otherwise.
+</APIReturns>
+
+### `hasTexts`
+
+Check if a node has text children.
+
+<APIParameters>
+  <APIItem name="node" type="Node">
+    The node to check for text children.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `boolean` - `true` if the node has text children, `false` otherwise.
+</APIReturns>
+
+### `isBlock`
+
+Check if a value is a block element.
+
+<APIParameters>
+  <APIItem name="value" type="any">
+    The value to check for block element type.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `boolean` - `true` if the value is a block element, `false` otherwise.
+</APIReturns>
+
+### `isEdgePoint`
+
+Check if a point is an edge of a location.
+
+<APIParameters>
+  <APIItem name="point" type="Point">
+    The point to check for edge position.
+  </APIItem>
+  <APIItem name="at" type="Location">
+    The location to check the edge of.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `boolean` - `true` if the point is at the start or end edge of the location, `false` otherwise.
+</APIReturns>
+
+### `isEmpty`
+
+Check if a location is empty.
+
+<APIParameters>
+  <APIItem name="at" type="At" optional>
+    The location to check for emptiness. Defaults to current selection.
+  </APIItem>
+  <APIItem name="options" type="EditorEmptyOptions" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="after" type="boolean" optional>
+        Whether to check if text after the location is empty.
+      </APISubListItem>
+      <APISubListItem parent="options" name="block" type="boolean" optional>
+        Whether to check if the block above the location is empty.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `boolean` - `true` if the location is empty, `false` otherwise.
+</APIReturns>
+
+### `isEnd`
+
+Check if a point is the end of a location.
+
+<APIParameters>
+  <APIItem name="point" type="Point">
+    The point to check for end position.
+  </APIItem>
+  <APIItem name="at" type="Location">
+    The location to check the end of.
+  </APIItem>
+  <APIItem name="options" type="EditorEndOptions" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="previous" type="boolean" optional>
+        Whether to get the end point of the previous node.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `boolean` - `true` if the point is at the end of the location, `false` otherwise.
+</APIReturns>
+
+### `isStart`
+
+Check if a point is the start of a location.
+
+<APIParameters>
+  <APIItem name="point" type="Point">
+    The point to check for start position.
+  </APIItem>
+  <APIItem name="at" type="Location">
+    The location to check the start of.
+  </APIItem>
+  <APIItem name="options" type="EditorStartOptions" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="next" type="boolean" optional>
+        Whether to get the start point of the next node.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `boolean` - `true` if the point is at the start of the location, `false` otherwise.
+</APIReturns>
+
+### `isElementReadOnly`
+
+Check if an element is read-only.
+
+<APIParameters>
+  <APIItem name="element" type="ElementIn<V>">
+    The element to check for read-only status.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `boolean` - `true` if the element is read-only, `false` otherwise.
+</APIReturns>
+
+### `isVoid`
+
+Check if an element is void.
+
+<APIParameters>
+  <APIItem name="element" type="ElementIn<V>">
+    The element to check.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `boolean` - `true` if the element is void, `false` otherwise.
+</APIReturns>
+
+### `markableVoid`
+
+Check if an element is a markable void element.
+
+<APIParameters>
+  <APIItem name="element" type="ElementIn<V>">
+    The element to check for markable void status.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `boolean` - `true` if the element is a markable void, `false` otherwise.
+</APIReturns>
+
+```ts
+// Note: Using this incorrectly can leave the editor in an invalid state.
+```
+
+## Options
+
+### `QueryOptions`
+
+Common options used across multiple query methods:
+
+<APIParameters>
+  <APIItem name="at" type="At" optional>
+    Location to start searching from. Defaults to current selection.
+  </APIItem>
+  <APIItem name="id" type="boolean | string" optional>
+    Match the node by id. `true` will match all nodes with an id.
+  </APIItem>
+  <APIItem name="block" type="boolean" optional>
+    Match block nodes.
+  </APIItem>
+  <APIItem name="empty" type="boolean" optional>
+    When true, match only empty nodes. When false, match only non-empty nodes.
+  </APIItem>
+  <APIItem name="match" type="Predicate<NodeIn<V>>" optional>
+    Match the node.
+  </APIItem>
+  <APIItem name="text" type="boolean" optional>
+    When true, match only text nodes.
+  </APIItem>
+</APIParameters>
+
+### `QueryMode`
+
+<APIParameters>
+  <APIItem name="mode" type="'all' | 'highest' | 'lowest'" optional>
+    - 'all' (default): Return all matching nodes
+    - 'highest': In a hierarchy of nodes, only return the highest level matching nodes
+    - 'lowest': In a hierarchy of nodes, only return the lowest level matching nodes
+  </APIItem>
+</APIParameters>

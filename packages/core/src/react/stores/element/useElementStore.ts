@@ -1,6 +1,5 @@
 import type { ElementEntry, Path, TElement } from '@udecode/slate';
-
-import type { Nullable } from '../../../lib';
+import type { Nullable } from '@udecode/utils';
 
 import { createAtomStore } from '../../libs/jotai';
 

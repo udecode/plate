@@ -142,4 +142,4 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
     idKey: 'id',
     normalizeInitialValue: false,
   },
-}).extendEditorTransforms(withNodeId);
+}).overrideEditor(withNodeId);
