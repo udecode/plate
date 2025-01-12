@@ -3,17 +3,14 @@ title: NodeEntry
 description: API reference for node entries in Slate.
 ---
 
-`NodeEntry` objects are returned when iterating over the nodes in a Slate document tree. They consist of the node and its `Path` relative to the root node in the document. Node entries are represented as tuples of `[Node, Path]`.
-
 ## Types
 
-### NodeEntry
+### `NodeEntry`
 
-The base node entry type representing any node and its path in the document.
+Node entry objects are returned when iterating over the nodes in a Slate document tree. They consist of the node and its `Path` relative to the root node in the document.
 
 <APIParameters>
   <APIItem name="NodeEntry" type="[Node, Path]">
-    A tuple containing:
     <APISubList>
       <APISubListItem>
         First element: The node itself
@@ -25,13 +22,12 @@ The base node entry type representing any node and its path in the document.
   </APIItem>
 </APIParameters>
 
-### ElementEntry
+### `ElementEntry`
 
-Refers to an `Element` node and its path in the document.
+Element entry objects refer to an `Element` and the `Path` where it can be found inside a root node.
 
 <APIParameters>
   <APIItem name="ElementEntry" type="[Element, Path]">
-    A tuple containing:
     <APISubList>
       <APISubListItem>
         First element: An Element node
@@ -43,13 +39,12 @@ Refers to an `Element` node and its path in the document.
   </APIItem>
 </APIParameters>
 
-### TextEntry
+### `TextEntry`
 
-Refers to a `Text` node and its path in the document.
+Text entry objects refer to a `Text` and the `Path` where it can be found inside an element node.
 
 <APIParameters>
   <APIItem name="TextEntry" type="[Text, Path]">
-    A tuple containing:
     <APISubList>
       <APISubListItem>
         First element: A Text node
@@ -61,13 +56,12 @@ Refers to a `Text` node and its path in the document.
   </APIItem>
 </APIParameters>
 
-### AncestorEntry
+### `AncestorEntry`
 
-Represents an ancestor node (Editor or Element) and its path.
+Ancestor entry objects refer to an `Ancestor` and the `Path` where it can be found inside a root node.
 
 <APIParameters>
   <APIItem name="AncestorEntry" type="[Ancestor, Path]">
-    A tuple containing:
     <APISubList>
       <APISubListItem>
         First element: An Editor or Element node
@@ -79,13 +73,12 @@ Represents an ancestor node (Editor or Element) and its path.
   </APIItem>
 </APIParameters>
 
-### DescendantEntry
+### `DescendantEntry`
 
-Represents a descendant node (Element or Text) and its path.
+Descendant entry objects refer to a `Descendant` and the `Path` where it can be found inside a root node.
 
 <APIParameters>
   <APIItem name="DescendantEntry" type="[Descendant, Path]">
-    A tuple containing:
     <APISubList>
       <APISubListItem>
         First element: An Element or Text node
@@ -97,54 +90,52 @@ Represents a descendant node (Element or Text) and its path.
   </APIItem>
 </APIParameters>
 
-### NodeChildEntry
+### `DescendantEntryIn<V>`
 
-Represents a child node and its path relative to its parent.
+Descendant entry objects refer to a `Descendant` and the `Path` where it can be found inside a root node.
+
+<APIParameters>
+  <APIItem name="DescendantEntryIn<V>" type="[Descendant, Path]">
+    <APISubList>
+      <APISubListItem>
+        First element: A Descendant node
+      </APISubListItem>
+      <APISubListItem>
+        Second element: The path to the descendant
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### `DescendantEntryOf<E>`
+
+Descendant entry objects refer to a `Descendant` and the `Path` where it can be found inside a root node.
+
+<APIParameters>
+  <APIItem name="DescendantEntryOf<E>" type="[Descendant, Path]">
+    <APISubList>
+      <APISubListItem>
+        First element: A Descendant node
+      </APISubListItem>
+      <APISubListItem>
+        Second element: The path to the descendant
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### `NodeChildEntry`
+
+Node child entry objects refer to a `Node` and the `Path` where it can be found inside a parent node.
 
 <APIParameters>
   <APIItem name="NodeChildEntry" type="[Node, Path]">
-    A tuple containing:
     <APISubList>
       <APISubListItem>
         First element: A child node
       </APISubListItem>
       <APISubListItem>
         Second element: The path to the child
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIParameters>
-
-## Generic Types
-
-These types provide type safety when working with specific node types:
-
-<APIParameters>
-  <APIItem name="Value-Specific Entries" type="type">
-    <APISubList>
-      <APISubListItem>
-        `NodeEntryOf<E>`: Node entry from a specific editor type
-      </APISubListItem>
-      <APISubListItem>
-        `NodeEntryIn<V>`: Node entry from a specific value type
-      </APISubListItem>
-      <APISubListItem>
-        `ElementEntryOf<E>`: Element entry from a specific editor type
-      </APISubListItem>
-      <APISubListItem>
-        `TextEntryOf<E>`: Text entry from a specific editor type
-      </APISubListItem>
-      <APISubListItem>
-        `TextEntryIn<V>`: Text entry from a specific value type
-      </APISubListItem>
-      <APISubListItem>
-        `AncestorEntryOf<E>`: Ancestor entry from a specific editor type
-      </APISubListItem>
-      <APISubListItem>
-        `DescendantEntryOf<E>`: Descendant entry from a specific editor type
-      </APISubListItem>
-      <APISubListItem>
-        `DescendantEntryIn<V>`: Descendant entry from a specific value type
       </APISubListItem>
     </APISubList>
   </APIItem>

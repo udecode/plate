@@ -5,159 +5,273 @@ description: API reference for operations in Slate.
 
 `Operation` objects define the low-level instructions that Slate editors use to apply changes to their internal state. Representing all changes as operations is what allows Slate editors to easily implement history, collaboration, and other features.
 
-## Operation
-
-Find the corresponding documentation in the [Slate docs](https://docs.slatejs.org/concepts/05-operations).
+## Operation API
 
 ### `isNodeOperation`
 
-Checks if a value is a `NodeOperation` object.
+Check if a value is a `NodeOperation` object.
 
 <APIParameters>
   <APIItem name="value" type="any">
     The value to check.
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns `true` if the value is a node operation.
+  Returns `boolean` - `true` if the value is a node operation.
 </APIReturns>
 
 ### `inverse`
 
-Inverts an operation, returning a new operation that will exactly undo the original when applied.
+Invert an operation, returning a new operation that will exactly undo the original when applied.
 
 <APIParameters>
   <APIItem name="op" type="Operation">
     The operation to invert.
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns a new operation that undoes the original operation.
+  Returns `Operation` - A new operation that undoes the original operation.
 </APIReturns>
 
 ### `isOperation`
 
-Checks if a value is an `Operation` object.
+Check if a value is an `Operation` object.
 
 <APIParameters>
   <APIItem name="value" type="any">
     The value to check.
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns `true` if the value is an operation.
+  Returns `boolean` - `true` if the value is an operation.
 </APIReturns>
 
 ### `isOperationList`
 
-Checks if a value is a list of `Operation` objects.
+Check if a value is a list of `Operation` objects.
 
 <APIParameters>
   <APIItem name="value" type="any">
     The value to check.
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns `true` if the value is an array of operations.
+  Returns `boolean` - `true` if the value is an array of operations.
 </APIReturns>
 
 ### `isSelectionOperation`
 
-Checks if a value is a `SelectionOperation` object.
+Check if a value is a `SelectionOperation` object.
 
 <APIParameters>
   <APIItem name="value" type="any">
     The value to check.
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns `true` if the value is a selection operation.
+  Returns `boolean` - `true` if the value is a selection operation.
 </APIReturns>
 
 ### `isTextOperation`
 
-Checks if a value is a `TextOperation` object.
+Check if a value is a `TextOperation` object.
 
 <APIParameters>
   <APIItem name="value" type="any">
     The value to check.
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  Returns `true` if the value is a text operation.
+  Returns `boolean` - `true` if the value is a text operation.
 </APIReturns>
 
 ## Types
 
-### Operation
+### `Operation`
 
-The base operation type that represents any change to the editor state. Operations can be one of three types:
+`Operation` objects define the low-level instructions that Slate editors use to apply changes to their internal state. Representing all changes as operations is what allows Slate editors to easily implement history, collaboration, and other features.
 
-- **NodeOperation**: Operations that modify nodes (insert, merge, move, remove, set, split)
-- **SelectionOperation**: Operations that modify the selection state
-- **TextOperation**: Operations that modify text content (insert, remove)
+Operations can be one of three types:
 
-### NodeOperation
+```ts
+export type Operation<N extends Descendant = Descendant> =
+  | NodeOperation<N>
+  | SelectionOperation
+  | TextOperation;
+  ```
 
-<APIAttributes>
-<APIItem name="InsertNodeOperation" type="object">
-  - `type: 'insert_node'`
-  - `path: Path` - Where to insert the node
-  - `node: Descendant` - The node to insert
-</APIItem>
-<APIItem name="MergeNodeOperation" type="object">
-  - `type: 'merge_node'`
-  - `path: Path` - The node to merge
-  - `position: number` - The position to merge at
-  - `properties: Partial<NodeProps>` - Properties of the merged node
-</APIItem>
-<APIItem name="MoveNodeOperation" type="object">
-  - `type: 'move_node'`
-  - `path: Path` - The node to move
-  - `newPath: Path` - Where to move the node
-</APIItem>
-<APIItem name="RemoveNodeOperation" type="object">
-  - `type: 'remove_node'`
-  - `path: Path` - The node to remove
-  - `node: Descendant` - The node being removed
-</APIItem>
-<APIItem name="SetNodeOperation" type="object">
-  - `type: 'set_node'`
-  - `path: Path` - The node to update
-  - `properties: Partial<NodeProps>` - The old properties
-  - `newProperties: Partial<NodeProps>` - The new properties
-</APIItem>
-<APIItem name="SplitNodeOperation" type="object">
-  - `type: 'split_node'`
-  - `path: Path` - The node to split
-  - `position: number` - Where to split the node
-  - `properties: Partial<NodeProps>` - Properties of the new node
-</APIItem>
-</APIAttributes>
+### `NodeOperation`
 
-### TextOperation
+A node operation is an operation that modifies a node.
 
-<APIAttributes>
-<APIItem name="InsertTextOperation" type="object">
-  - `type: 'insert_text'`
-  - `path: Path` - The text node to modify
-  - `offset: number` - Where to insert the text
-  - `text: string` - The text to insert
-</APIItem>
-<APIItem name="RemoveTextOperation" type="object">
-  - `type: 'remove_text'`
-  - `path: Path` - The text node to modify
-  - `offset: number` - Where to remove the text
-  - `text: string` - The text being removed
-</APIItem>
-</APIAttributes>
+```ts
+type NodeOperation<N extends Descendant = Descendant> =
+  | InsertNodeOperation<N>
+  | MergeNodeOperation<N>
+  | MoveNodeOperation
+  | RemoveNodeOperation<N>
+  | SetNodeOperation<N>
+  | SplitNodeOperation<N>;
+```
 
-### SelectionOperation
+### `SelectionOperation`
 
-<APIAttributes>
-<APIItem name="SetSelectionOperation" type="object">
-  - `type: 'set_selection'`
-  - `properties: Partial<TRange> | null` - The old selection
-  - `newProperties: Partial<TRange> | null` - The new selection
-</APIItem>
-</APIAttributes>
+A selection operation is an operation that modifies the selection.
+
+```ts
+type SelectionOperation = SetSelectionOperation;
+```
+
+### `TextOperation`
+
+A text operation is an operation that modifies text content.
+
+```ts
+type TextOperation = InsertTextOperation | RemoveTextOperation;
+```
+
+
+### `InsertNodeOperation`
+
+An insert node operation is an operation that inserts a new node at a specific path.
+
+```ts
+type InsertNodeOperation<N extends Descendant = Descendant> = {
+  [key: string]: unknown;
+  node: N;
+  path: Path;
+  type: 'insert_node';
+};
+```
+
+### `MergeNodeOperation`
+
+A merge node operation is an operation that merges a node with its previous sibling.
+
+```ts
+type MergeNodeOperation<N extends Descendant = Descendant> = {
+  [key: string]: unknown;
+  path: Path;
+  position: number;
+  properties: Partial<NodeProps<N>>;
+  type: 'merge_node';
+};
+```
+
+### `MoveNodeOperation`
+
+A move node operation is an operation that moves a node to a new location in the document.
+
+```ts
+type MoveNodeOperation = {
+  [key: string]: unknown;
+  newPath: Path;
+  path: Path;
+  type: 'move_node';
+};
+```
+
+### `RemoveNodeOperation`
+
+A remove node operation is an operation that removes a node from the document.
+
+```ts
+type RemoveNodeOperation<N extends Descendant = Descendant> = {
+  [key: string]: unknown;
+  node: N;
+  path: Path;
+  type: 'remove_node';
+};
+```
+
+### `SetNodeOperation`
+
+A set node operation is an operation that updates a node's properties.
+
+```ts
+type SetNodeOperation<
+  N1 extends Descendant = Descendant,
+  N2 extends Descendant = Descendant,
+> = {
+  [key: string]: unknown;
+  newProperties: Partial<NodeProps<N1>>;
+  path: Path;
+  properties: Partial<NodeProps<N2>>;
+  type: 'set_node';
+};
+```
+
+### `SplitNodeOperation`
+
+A split node operation is an operation that splits a node into two nodes at a specific position.
+
+```ts
+type SplitNodeOperation<N extends Descendant = Descendant> = {
+  [key: string]: unknown;
+  path: Path;
+  position: number;
+  properties: Partial<NodeProps<N>>;
+  type: 'split_node';
+};
+```
+
+### `SetSelectionOperation`
+
+A set selection operation is an operation that updates the current selection state.
+
+```ts
+type SetSelectionOperation =
+  | {
+      [key: string]: unknown;
+      newProperties: Partial<TRange>;
+      properties: Partial<TRange>;
+      type: 'set_selection';
+    }
+  | {
+      [key: string]: unknown;
+      newProperties: TRange;
+      properties: null;
+      type: 'set_selection';
+    }
+  | {
+      [key: string]: unknown;
+      newProperties: null;
+      properties: TRange;
+      type: 'set_selection';
+    };
+```
+
+### `InsertTextOperation`
+
+An insert text operation is an operation that inserts text at a specific position in a text node.
+
+```ts
+type InsertTextOperation = {
+  [key: string]: unknown;
+  offset: number;
+  path: Path;
+  text: string;
+  type: 'insert_text';
+};
+```
+
+### `RemoveTextOperation`
+
+A remove text operation is an operation that removes text from a specific position in a text node.
+
+```ts
+type RemoveTextOperation = {
+  [key: string]: unknown;
+  offset: number;
+  path: Path;
+  text: string;
+  type: 'remove_text';
+};
+```
+
