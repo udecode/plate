@@ -22,12 +22,8 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
   const { api, getOption, getOptions, setOption, useOption } =
     useEditorPlugin<BlockSelectionConfig>({ key: 'blockSelection' });
 
-  // Whether we're in the special "block selection" mode
   const isSelecting = useOption('isSelecting');
-  // The set of currently selected block IDs
   const selectedIds = useOption('selectedIds');
-  // The current anchor block ID
-  const anchorId = getOption('anchorId');
 
   useSelectionArea();
 
@@ -52,129 +48,117 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
   }, [isSelecting]);
 
   /**
-   * Select all blocks in the path range between `anchorPath` and `siblingPath`.
-   * Ensures anchorId remains selected.
+   * SHIFT-based expand-or-shrink selection.
+   *
+   * - 'up': expand top if anchor is top-most, else shrink from bottom
+   * - 'down': expand bottom if anchor is bottom-most, else shrink from top
    */
-  const selectBetween = React.useCallback(
-    (anchorPath, siblingPath) => {
-      // If anchorPath is “before” siblingPath, that’s our ascending range, else swap.
-      const [minPath, maxPath] = editor.api.path.isBefore(
-        anchorPath,
-        siblingPath
-      )
-        ? [anchorPath, siblingPath]
-        : [siblingPath, anchorPath];
+  const shiftSelection = React.useCallback(
+    (direction: 'down' | 'up') => {
+      const blocks = api.blockSelection.getNodes();
 
-      // gather blocks in [minPath..maxPath]
-      const inRange = editor.api.blocks({
-        at: [minPath, maxPath],
-        match: (n) => !!n.id,
-      });
+      const [topNode, topPath] = blocks[0];
+      const [bottomNode, bottomPath] = blocks.at(-1)!;
 
-      const nextSelectedIds = new Set<string>();
-      inRange.forEach(([node]) => {
-        if (node.id) nextSelectedIds.add(node.id as string);
-      });
+      let anchorId = getOptions().anchorId as string;
 
-      // Ensure anchor is never removed
-      if (anchorId) nextSelectedIds.add(anchorId);
+      if (!anchorId) {
+        anchorId = bottomNode.id;
+        setOption('anchorId', anchorId);
+      }
 
-      setOption('selectedIds', nextSelectedIds);
+      // Find anchor block in `blocks`
+      const anchorIndex = blocks.findIndex(([n]) => n.id === anchorId);
+
+      // Is anchor the top-most or bottom-most block in the selection?
+      const anchorIsTop = anchorIndex === 0;
+      const anchorIsBottom = anchorIndex === blocks.length - 1;
+
+      // Expand or shrink
+      // SHIFT+UP
+      if (direction === 'up') {
+        if (anchorIsTop) {
+          // Expand up => add block above the top-most (if any)
+          const abovePath = PathApi.previous(topPath);
+
+          if (!abovePath) return; // none above
+
+          const aboveEntry = editor.api.block({ at: abovePath });
+
+          if (!aboveEntry) return;
+
+          const [aboveNode] = aboveEntry;
+          const newSelected = new Set(selectedIds);
+
+          if (aboveNode.id) newSelected.add(aboveNode.id as string);
+
+          // Always ensure anchor is included
+          newSelected.add(anchorId);
+          setOption('selectedIds', newSelected);
+        } else {
+          // Shrink => remove the bottom-most (unless it's the anchor)
+          if (bottomNode.id !== anchorId) {
+            const newSelected = new Set(selectedIds);
+            newSelected.delete(bottomNode.id as string);
+            newSelected.add(anchorId);
+            setOption('selectedIds', newSelected);
+          }
+        }
+      }
+
+      // SHIFT+DOWN
+      else {
+        if (anchorIsBottom) {
+          // Expand down => add block below the bottom-most
+          const belowPath = PathApi.next(bottomPath);
+
+          if (!belowPath) return;
+
+          const belowEntry = editor.api.block({ at: belowPath });
+
+          if (!belowEntry) return;
+
+          const [belowNode] = belowEntry;
+          const newSelected = new Set(selectedIds);
+
+          if (belowNode.id) newSelected.add(belowNode.id as string);
+
+          newSelected.add(anchorId);
+          setOption('selectedIds', newSelected);
+        } else {
+          // Shrink => remove the top-most (unless it's the anchor)
+          if (topNode.id !== anchorId) {
+            const newSelected = new Set(selectedIds);
+            newSelected.delete(topNode.id as string);
+            newSelected.add(anchorId);
+            setOption('selectedIds', newSelected);
+          }
+        }
+      }
     },
-    [editor, anchorId, setOption]
+    [api.blockSelection, getOptions, setOption, editor.api, selectedIds]
   );
 
-  /**
-   * Extend selection upward from top-most selected block to the block above it,
-   * while keeping the anchor constant if we already have one.
-   */
-  const extendSelectionUp = React.useCallback(() => {
-    const blocks = api.blockSelection.getNodes();
-
-    if (blocks.length === 0) return;
-
-    // top-most block in the selection
-    const [, topPath] = blocks[0];
-
-    if (!PathApi.previous(topPath)) return;
-
-    // find sibling above
-    const aboveEntry = editor.api.node({ at: PathApi.previous(topPath) })!;
-
-    let theAnchor = anchorId;
-
-    if (!theAnchor) {
-      // If anchor is unset, anchor is the block last selected by the user
-      // (e.g. the bottom-most block in doc order if you prefer).
-      // For demonstration, let's use bottom-most (like typical text selection).
-      const [maybeBottomNode] = blocks.at(-1)!;
-      theAnchor = maybeBottomNode.id;
-      setOption('anchorId', theAnchor);
-    }
-
-    const anchorEntry = editor.api.node({ match: (n) => n.id === theAnchor });
-
-    if (!anchorEntry) return;
-
-    selectBetween(anchorEntry[1], aboveEntry[1]);
-  }, [anchorId, editor, api.blockSelection, selectBetween, setOption]);
-
-  /**
-   * Extend selection downward from bottom-most selected block to the block
-   * below it, while keeping the anchor constant if we already have one.
-   */
-  const extendSelectionDown = React.useCallback(() => {
-    const blocks = api.blockSelection.getNodes();
-
-    if (blocks.length === 0) return;
-
-    // The bottom-most selected block in doc order
-    const [, bottomPath] = blocks.at(-1)!;
-    const belowEntry = editor.api.node({ at: PathApi.next(bottomPath) })!;
-
-    if (!belowEntry) return; // no block below
-
-    let theAnchor = anchorId;
-
-    if (!theAnchor) {
-      // If anchor is unset, anchor is the top-most or bottom-most block
-      // in the current selection. Here we choose the top-most to replicate
-      // typical text selection. For demonstration, we keep it consistent
-      // with extendSelectionUp above.
-      const [maybeTopNode] = blocks[0];
-      theAnchor = maybeTopNode.id;
-      setOption('anchorId', theAnchor);
-    }
-
-    const anchorEntry = editor.api.node({ match: (n) => n.id === theAnchor });
-
-    if (!anchorEntry) return;
-
-    selectBetween(anchorEntry[1], belowEntry[1]);
-  }, [anchorId, editor, api.blockSelection, selectBetween, setOption]);
-
-  /**
-   * Example: if user presses arrow-up/down WITHOUT shift, we consider this a
-   * new anchor. Or if user single-clicks, we can also set anchor. This snippet
-   * sets anchor to the newly added block row. Adjust to your preference if
-   * needed.
-   */
+  /** If user presses arrowUp/Down WITHOUT shift => new anchor */
   const moveSelectionUp = React.useCallback(() => {
     const blocks = api.blockSelection.getNodes();
 
     if (blocks.length === 0) return;
 
-    const [, firstSelectedPath] = blocks[0];
+    const [, firstPath] = blocks[0];
+    const abovePath = PathApi.previous(firstPath);
 
-    if (!PathApi.previous(firstSelectedPath)) return;
+    if (!abovePath) return;
 
-    const aboveEntry = editor.api.node<TElement & { id: string }>({
-      at: PathApi.previous(firstSelectedPath),
-    })!;
+    const aboveEntry = editor.api.block<TElement & { id: string }>({
+      at: abovePath,
+    });
 
-    // New anchor => newly selected block (aboveEntry)
-    setOption('anchorId', aboveEntry[0].id ?? null);
-    api.blockSelection.addSelectedRow(aboveEntry[0].id, { clear: true });
+    if (!aboveEntry) return;
+
+    const [aboveNode] = aboveEntry;
+    setOption('anchorId', aboveNode.id ?? null);
+    api.blockSelection.addSelectedRow(aboveNode.id, { clear: true });
   }, [api, editor, setOption]);
 
   const moveSelectionDown = React.useCallback(() => {
@@ -182,43 +166,44 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
 
     if (blocks.length === 0) return;
 
-    const [, lastSelectedPath] = blocks.at(-1)!;
-    const belowEntry = editor.api.node<TElement & { id: string }>({
-      at: PathApi.next(lastSelectedPath),
-    })!;
+    const [, lastPath] = blocks.at(-1)!;
+    const belowPath = PathApi.next(lastPath);
+
+    if (!belowPath) return;
+
+    const belowEntry = editor.api.block<TElement & { id: string }>({
+      at: belowPath,
+    });
 
     if (!belowEntry) return;
 
-    // New anchor => newly selected block (belowEntry)
-    setOption('anchorId', belowEntry[0].id ?? null);
-    api.blockSelection.addSelectedRow(belowEntry[0].id, { clear: true });
+    const [belowNode] = belowEntry;
+    setOption('anchorId', belowNode.id ?? null);
+    api.blockSelection.addSelectedRow(belowNode.id, { clear: true });
   }, [api, editor, setOption]);
 
-  /** Keyboard logic */
+  /** KeyDown logic */
   const handleKeyDown = React.useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
       const isReadonly = editor.api.isReadOnly();
       getOptions().onKeyDownSelecting?.(e.nativeEvent);
 
-      // Not in block selection mode
       if (!getOptions().isSelecting) return;
-      // SHIFT+UP => extend selection upward
-      if (e.shiftKey && isHotkey('up')(e)) {
+      if (isHotkey('shift+up')(e)) {
         e.preventDefault();
         e.stopPropagation();
-        extendSelectionUp();
+        shiftSelection('up');
 
         return;
       }
-      // SHIFT+DOWN => extend selection downward
-      if (e.shiftKey && isHotkey('down')(e)) {
+      if (isHotkey('shift+down')(e)) {
         e.preventDefault();
         e.stopPropagation();
-        extendSelectionDown();
+        shiftSelection('down');
 
         return;
       }
-      // ESC => unselect everything
+      // ESC => unselect all
       if (isHotkey('escape')(e)) {
         api.blockSelection.unselect();
         setOption('anchorId', null);
@@ -238,14 +223,14 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
 
         return;
       }
-      // Nothing is selected? bail out
+      // Only continue if we have "some" selection
       if (!getOption('isSelectingSome')) return;
-      // Enter => focus the first selected block (example)
+      // Enter => focus first selected block
       if (isHotkey('enter')(e)) {
         const entry = editor.api.node({
           at: [],
           block: true,
-          match: (n) => !!n.id && selectedIds!.has(n.id),
+          match: (n) => !!n.id && selectedIds?.has(n.id),
         });
 
         if (entry) {
@@ -256,14 +241,14 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
 
         return;
       }
-      // Backspace / delete => remove selected blocks
+      // Backspace/Delete => remove selected blocks
       if (isHotkey(['backspace', 'delete'])(e) && !isReadonly) {
         e.preventDefault();
         editor.tf.withoutNormalizing(() => {
           editor.tf.removeNodes({
             at: [],
             block: true,
-            match: (n) => !!n.id && selectedIds!.has(n.id),
+            match: (n) => !!n.id && selectedIds?.has(n.id),
           });
 
           if (editor.children.length === 0) {
@@ -273,15 +258,15 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
 
         return;
       }
-      // If SHIFT is NOT pressed => arrow up/down re-anchors selection
-      if (!e.shiftKey && isHotkey('up')(e)) {
+      // If SHIFT not pressed => arrow up/down sets new anchor
+      if (isHotkey('up')(e)) {
         e.preventDefault();
         e.stopPropagation();
         moveSelectionUp();
 
         return;
       }
-      if (!e.shiftKey && isHotkey('down')(e)) {
+      if (isHotkey('down')(e)) {
         e.preventDefault();
         e.stopPropagation();
         moveSelectionDown();
@@ -295,15 +280,14 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
       api,
       getOptions,
       getOption,
+      shiftSelection,
       moveSelectionUp,
       moveSelectionDown,
-      extendSelectionUp,
-      extendSelectionDown,
       setOption,
     ]
   );
 
-  /** Handle copy/cut/paste while in block selection */
+  /** Handle copy / cut / paste in block selection */
   const handleCopy = React.useCallback(
     (e: React.ClipboardEvent<HTMLInputElement>) => {
       e.preventDefault();
@@ -325,7 +309,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
         if (!editor.api.isReadOnly()) {
           editor.tf.removeNodes({
             at: [],
-            match: (n) => selectedIds!.has(n.id),
+            match: (n) => selectedIds?.has(n.id),
           });
           editor.tf.focus();
         }
