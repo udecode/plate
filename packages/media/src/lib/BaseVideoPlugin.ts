@@ -17,19 +17,4 @@ export const BaseVideoPlugin = createSlatePlugin({
     isElement: true,
     isVoid: true,
   },
-  parsers: {
-    html: {
-      deserializer: {
-        toNodeProps: ({ element }) => {
-          const { slateIsUpload } = element.dataset;
-
-          if (slateIsUpload !== undefined) {
-            return {
-              isUpload: Boolean(slateIsUpload),
-            };
-          }
-        },
-      },
-    },
-  },
 });

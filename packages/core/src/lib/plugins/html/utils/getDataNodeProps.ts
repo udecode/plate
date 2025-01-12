@@ -30,7 +30,13 @@ const getDefaultNodeProps = ({
       //eslint-disable-next-line
       if (value === undefined) return;
 
-      dataAttributes[attributeKey] = value;
+      let parsedValue: any = value;
+
+      if (value === 'true') parsedValue = true;
+      else if (value === 'false') parsedValue = false;
+      else if (!Number.isNaN(Number(value))) parsedValue = Number(value);
+
+      dataAttributes[attributeKey] = parsedValue;
     }
   });
 

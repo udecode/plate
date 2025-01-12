@@ -22,15 +22,6 @@ export const BaseParagraphPlugin = createSlatePlugin({
             validNodeName: 'P',
           },
         ],
-        toNodeProps: ({ element }) => {
-          const { slateIndent } = element.dataset;
-
-          if (slateIndent !== undefined) {
-            return {
-              indent: Number(slateIndent),
-            };
-          }
-        },
       },
     },
   },
