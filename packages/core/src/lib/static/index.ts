@@ -8,4 +8,5 @@ export * from './pluginRenderLeafStatic';
 export * from './serializeHtml';
 export * from './types';
 export * from './components/index';
+export * from './deserialize/index';
 export * from './utils/index';

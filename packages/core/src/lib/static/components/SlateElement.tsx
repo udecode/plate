@@ -30,6 +30,7 @@ export const SlateElement = (props: SlateElementProps) => {
     ...nodeProps,
     ...elementToAttributes?.(element),
     className: clsx(props.className, nodeProps?.className),
+    // deserialize
     'data-block-id': block ? element.id : undefined,
     style: {
       position: 'relative',

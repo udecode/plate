@@ -73,7 +73,7 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
   dependencies: string[];
 
   /** Node-specific configuration for this plugin. */
-  node: BasePluginNode;
+  node: BasePluginNode<C>;
 
   /** Extended properties used by any plugin as options. */
   options: InferOptions<C>;
@@ -112,7 +112,7 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
   enabled?: boolean;
 };
 
-export type BasePluginNode = {
+export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
   /**
    * Specifies the type identifier for this plugin's nodes.
    *
@@ -132,6 +132,14 @@ export type BasePluginNode = {
    * @default plugin.key
    */
   type: string;
+
+  /**
+   * Function that returns an object of data attributes to be added to the
+   * element.
+   */
+  toDataAttributes?: (
+    options: BasePluginContext<C> & { node: TElement }
+  ) => AnyObject | undefined;
 
   component?: NodeComponent | null;
 

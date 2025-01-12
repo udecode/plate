@@ -4,6 +4,7 @@ import { jsx } from 'slate-hyperscript';
 
 import type { SlateEditor } from '../../../editor';
 
+import { isSlateVoid } from '../../../static';
 import { deserializeHtmlNodeChildren } from './deserializeHtmlNodeChildren';
 import { pipeDeserializeHtmlElement } from './pipeDeserializeHtmlElement';
 
@@ -21,7 +22,7 @@ export const htmlElementToElement = (
       node.children ??
       (deserializeHtmlNodeChildren(editor, element) as Descendant[]);
 
-    if (descendants.length === 0 || withoutChildren) {
+    if (descendants.length === 0 || withoutChildren || isSlateVoid(element)) {
       descendants = [{ text: '' }];
     }
 

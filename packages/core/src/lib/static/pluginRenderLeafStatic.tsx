@@ -5,6 +5,7 @@ import type { NodeComponents, SlatePlugin } from '../plugin';
 import type { RenderLeafProps } from '../types/RenderLeafProps';
 
 import { SlateLeaf } from './components/SlateLeaf';
+import { getNodeDataAttributes } from './utils/getNodeDataAttributes';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps';
 
 export type SlateRenderLeaf = (
@@ -22,9 +23,15 @@ export const pluginRenderLeafStatic = (
     if (leaf[plugin.node.type ?? plugin.key]) {
       const Leaf = components?.[plugin.key] ?? SlateLeaf;
 
+      const dataAttributes = getNodeDataAttributes(editor, plugin, leaf);
+
       const ctxProps = getRenderNodeStaticProps({
-        attributes: leaf.attributes as any,
+        attributes: {
+          ...(leaf.attributes as any),
+          ...dataAttributes,
+        },
         editor,
+        node: leaf,
         plugin,
         props: nodeProps as any,
       }) as any;

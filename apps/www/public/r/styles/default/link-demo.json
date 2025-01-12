@@ -16,7 +16,7 @@
       "type": "registry:example"
     },
     {
-      "content": "import { jsx } from '@udecode/plate-test-utils';\n\njsx;\n\nexport const linkValue: any = (\n  <fragment>\n    <hh2>Link</hh2>\n    <hp>\n      Add <ha url=\"https://en.wikipedia.org/wiki/Hypertext\">hyperlinks</ha>{' '}\n      within your text to reference external sources or provide additional\n      information using the Link plugin.\n    </hp>\n    <hp>\n      Effortlessly create hyperlinks using the toolbar or by pasting a URL while\n      selecting the desired text.\n    </hp>\n  </fragment>\n);\n",
+      "content": "import { jsx } from '@udecode/plate-test-utils';\n\njsx;\n\nexport const linkValue: any = (\n  <fragment>\n    <hh2>Link</hh2>\n    <hp>\n      Add{' '}\n      <ha target=\"_blank\" url=\"https://en.wikipedia.org/wiki/Hypertext\">\n        hyperlinks\n      </ha>{' '}\n      within your text to reference external sources or provide additional\n      information using the Link plugin.\n    </hp>\n    <hp>\n      Effortlessly create hyperlinks using the toolbar or by pasting a URL while\n      selecting the desired text.\n    </hp>\n  </fragment>\n);\n",
       "path": "example/values/link-value.tsx",
       "target": "components/link-value.tsx",
       "type": "registry:example"

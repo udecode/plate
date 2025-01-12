@@ -9,7 +9,7 @@ import type { Prism } from './types';
 
 import { withCodeBlock } from '../lib/withCodeBlock';
 import { decorateCodeLine } from './decorateCodeLine';
-import { htmlDeserializerCodeBlock } from './htmlDeserializerCodeBlock';
+import { htmlDeserializerCodeBlock } from './deserializer/htmlDeserializerCodeBlock';
 
 export type CodeBlockConfig = PluginConfig<
   'code_block',

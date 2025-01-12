@@ -10,4 +10,5 @@ export interface TColumnGroupElement extends TElement {
   children: TColumnElement[];
   type: 'column_group';
   id?: string;
+  layout?: number[];
 }
