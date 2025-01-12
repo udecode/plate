@@ -459,6 +459,13 @@ export type HtmlDeserializer<C extends AnyPluginConfig = PluginConfig> =
     toNodeProps?: (
       options: SlatePluginContext<C> & { element: HTMLElement }
     ) => Partial<Descendant> | undefined | void;
+    /**
+     * Whether to disable the default node props parsing logic. By default, all
+     * data-slate-* attributes will be parsed into node props.
+     *
+     * @default false
+     */
+    disabledDefaultNodeProps?: boolean;
   };
 
 export type HtmlSerializer<C extends AnyPluginConfig = PluginConfig> =

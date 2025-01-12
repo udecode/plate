@@ -1,7 +1,7 @@
 import type { SlateEditor } from '../../../editor';
 
 import { type AnyEditorPlugin, getEditorPlugin } from '../../../plugin';
-import { isSlatePluginElement } from '../../../static';
+import { isSlatePluginNode } from '../../../static';
 
 const getDefaultNodeProps = ({
   element,
@@ -10,7 +10,7 @@ const getDefaultNodeProps = ({
   element: HTMLElement;
   type: string;
 }) => {
-  if (!isSlatePluginElement(element, type)) return;
+  if (!isSlatePluginNode(element, type)) return;
 
   const dataAttributes: Record<string, any> = {};
 
@@ -20,7 +20,7 @@ const getDefaultNodeProps = ({
       key.startsWith('slate') &&
       value &&
       // Ignore slate default attributes
-      !['slateInline', 'slateNode', 'slateVoid'].includes(key)
+      !['slateInline', 'slateLeaf', 'slateNode', 'slateVoid'].includes(key)
     ) {
       // Remove 'slate' prefix and convert to camelCase
       const attributeKey = key.slice(5).charAt(0).toLowerCase() + key.slice(6);
@@ -56,10 +56,15 @@ export const getDataNodeProps = ({
 }) => {
   const toNodeProps = plugin.parsers.html?.deserializer?.toNodeProps;
 
-  const defaultNodeProps = getDefaultNodeProps({
-    ...(getEditorPlugin(editor, plugin) as any),
-    element,
-  });
+  const disabledDefaultNodeProps =
+    plugin.parsers.html?.deserializer?.disabledDefaultNodeProps ?? false;
+
+  const defaultNodeProps = disabledDefaultNodeProps
+    ? {}
+    : getDefaultNodeProps({
+        ...(getEditorPlugin(editor, plugin) as any),
+        element,
+      });
 
   if (!toNodeProps) return defaultNodeProps;
 

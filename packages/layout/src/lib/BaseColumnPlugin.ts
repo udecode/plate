@@ -1,14 +1,27 @@
-import { createSlatePlugin } from '@udecode/plate';
+import { createSlatePlugin, keyToDataAttribute } from '@udecode/plate';
 
 import { withColumn } from './withColumn';
 
 export const BaseColumnItemPlugin = createSlatePlugin({
   key: 'column',
-  node: { isElement: true },
+  node: {
+    isElement: true,
+  },
+
+  parsers: {
+    html: {},
+  },
 }).overrideEditor(withColumn);
 
 export const BaseColumnPlugin = createSlatePlugin({
   key: 'column_group',
-  node: { isElement: true },
+  node: {
+    isElement: true,
+    toDataAttributes: ({ node }) => {
+      keyToDataAttribute;
+
+      return {};
+    },
+  },
   plugins: [BaseColumnItemPlugin],
 });

@@ -1,4 +1,4 @@
-import type { TElement } from '@udecode/slate';
+import type { TElement, TText } from '@udecode/slate';
 import type { AnyObject } from '@udecode/utils';
 
 import pick from 'lodash/pick.js';
@@ -9,13 +9,13 @@ import { type SlateRenderNodeProps, getNodeDataAttributeKeys } from '../static';
 
 export const getPluginNodeProps = ({
   attributes,
-  element,
+  node,
   plugin,
   props,
 }: {
   props: SlateRenderNodeProps;
   attributes?: AnyObject;
-  element?: TElement;
+  node?: TElement | TText;
   plugin?: AnyEditorPlugin;
 }): any => {
   let newProps: AnyObject = {};
@@ -36,7 +36,7 @@ export const getPluginNodeProps = ({
      */
     newProps.nodeProps = pick(attributes, [
       ...(plugin.node.dangerouslyAllowAttributes ?? []),
-      ...(element ? getNodeDataAttributeKeys(element) : []),
+      ...(node ? getNodeDataAttributeKeys(node) : []),
     ]);
   }
 

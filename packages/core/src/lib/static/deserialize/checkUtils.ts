@@ -23,6 +23,10 @@ export const isSlatePluginElement = (
   );
 };
 
+export const isSlatePluginNode = (element: HTMLElement, pluginKey: string) => {
+  return element.classList.contains(`slate-${pluginKey}`);
+};
+
 export const getSlateElements = (element: HTMLElement): HTMLElement[] => {
   return Array.from(element.querySelectorAll('[data-slate-node="element"]'));
 };

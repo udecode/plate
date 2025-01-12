@@ -58,6 +58,7 @@ import {
   BaseVideoPlugin,
 } from '@udecode/plate-media';
 import { BaseMentionPlugin } from '@udecode/plate-mention';
+import { NodeIdPlugin } from '@udecode/plate-node-id';
 import {
   BaseTableCellHeaderPlugin,
   BaseTableCellPlugin,
@@ -68,8 +69,9 @@ import { BaseTogglePlugin } from '@udecode/plate-toggle';
 import { isEqual } from 'lodash';
 import Prism from 'prismjs';
 
+import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
-import { commentsValue } from '@/registry/default/example/values/comments-value';
+import { columnValue } from '@/registry/default/example/values/column-value';
 import { BlockquoteElementStatic } from '@/registry/default/plate-ui/blockquote-element-static';
 import { Button } from '@/registry/default/plate-ui/button';
 import { CodeBlockElementStatic } from '@/registry/default/plate-ui/code-block-element-static';
@@ -114,16 +116,31 @@ import { ToggleElementStatic } from '@/registry/default/plate-ui/toggle-element-
 const siteUrl = 'https://platejs.org';
 const createValue = () => {
   return [
+    // ...tocValue,
     // ...basicNodesValue,
     // ...linkValue,
     // ...indentListValue,
     // ...mediaPlaceholderValue,
-    ...commentsValue,
+    // ...commentsValue,
+    // ...equationValue,
+    // ...horizontalRuleValue,
+    // ...mentionValue,
+    // ...dateValue,
+    ...columnValue,
+    // ...emojiValue,
   ];
 };
 
 export function ClientComponent() {
   const editor = useCreateEditor({
+    plugins: [
+      ...editorPlugins,
+      NodeIdPlugin.configure({
+        options: {
+          disableInsertOverrides: true,
+        },
+      }),
+    ],
     value: createValue(),
   });
   const exportToHtml = async () => {
@@ -308,6 +325,7 @@ export function ClientComponent() {
     const editorNode = getEditorDOMFromHtmlString(html);
 
     const r = editor.api.html.deserialize({
+      collapseWhiteSpace: false,
       element: editorNode,
     });
 

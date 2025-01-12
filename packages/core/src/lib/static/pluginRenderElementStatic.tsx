@@ -41,7 +41,7 @@ export const pluginRenderElementStatic = (
           ...dataAttributes,
         },
         editor,
-        element,
+        node: element,
         plugin,
         props: nodeProps as any,
       }) as any;

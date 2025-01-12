@@ -8,10 +8,10 @@ jsx;
 export const horizontalRuleValue: any = (
   <fragment>
     <hh2>Horizontal Rule</hh2>
-    <hp>
+    {/* <hp>
       Add horizontal rules to visually separate sections and content within your
       document.
-    </hp>
+    </hp> */}
     <element type={BaseHorizontalRulePlugin.key}>
       <htext />
     </element>

@@ -16,11 +16,7 @@ import { getDataNodeProps } from './getDataNodeProps';
  * elements
  */
 const getDeserializedWithStaticRules = (plugin: AnyEditorPlugin) => {
-  const isElement = plugin.node.isElement;
-
   let deserializer = plugin.parsers?.html?.deserializer;
-
-  if (!isElement) return deserializer;
 
   const rules = deserializer?.rules ?? [];
 
@@ -57,7 +53,6 @@ export const pluginDeserializeHtml = (
 ): (Nullable<HtmlDeserializer> & { node: AnyObject }) | undefined => {
   const {
     node: { isElement: isElementRoot, isLeaf: isLeafRoot },
-    parsers,
   } = plugin;
 
   const deserializer = getDeserializedWithStaticRules(plugin);
