@@ -1,18 +1,20 @@
 import type { CSSProperties } from 'react';
 import type React from 'react';
 
-import type { NodeEntry, PluginConfig, TElement } from '@udecode/plate';
+import type { NodeEntry, Path, PluginConfig, TElement } from '@udecode/plate';
 
 import { bindFirst } from '@udecode/plate';
 import { createTPlatePlugin } from '@udecode/plate/react';
 
 import type { ChangedElements, PartialSelectionOptions } from '../internal';
 
-import { getAllSelectableDomNode, getSelectedDomNode } from '../lib';
+import { querySelectorAllSelectable, querySelectorSelectable } from '../lib';
 import { extractSelectableIds } from '../lib/extractSelectableIds';
 import { BlockMenuPlugin } from './BlockMenuPlugin';
 import { BlockSelectionAfterEditable } from './components/BlockSelectionAfterEditable';
 import { useBlockSelectable } from './hooks/useBlockSelectable';
+import { moveSelection } from './internal/transforms/moveSelection';
+import { shiftSelection } from './internal/transforms/shiftSelection';
 import { onKeyDownSelection } from './onKeyDownSelection';
 import { duplicateBlockSelectionNodes } from './transforms/duplicateBlockSelectionNodes';
 import { insertBlocksAndSelect } from './transforms/insertBlocksAndSelect';
@@ -27,6 +29,13 @@ import {
 export type BlockSelectionConfig = PluginConfig<
   'blockSelection',
   {
+    /**
+     * Check if a block is selectable
+     *
+     * @default true
+     */
+    isSelectable: (element: TElement, path: Path) => boolean;
+    anchorId?: string | null;
     areaOptions?: PartialSelectionOptions;
     editorPaddingRight?: CSSProperties['width'];
     enableContextMenu?: boolean;
@@ -43,22 +52,35 @@ export type BlockSelectionConfig = PluginConfig<
 >;
 
 export type BlockSelectionSelectors = {
+  /** Check if a block is selected by id */
   isSelected?: (id?: string) => boolean;
+  /** Check if any blocks are selected */
   isSelectingSome?: () => boolean;
 };
 
 export type BlockSelectionApi = {
+  /** Select a block by id, with optional delay and clear options */
   addSelectedRow: (
     id: string,
     options?: { clear?: boolean; delay?: number }
   ) => void;
+  /** Set selected block ids */
   setSelectedIds: (
     options: Partial<ChangedElements> & { ids?: string[] }
   ) => void;
+  /** Focus block selection – that differs from the editor focus */
   focus: () => void;
+  /** Get selected blocks */
   getNodes: () => NodeEntry[];
+  /** Arrow-based move selection */
+  moveSelection: (direction: 'down' | 'up') => void;
+  /** Reset selected block ids */
   resetSelectedIds: () => void;
+  /** Select all selectable blocks */
   selectedAll: () => void;
+  /** Shift-based expand/shrink selection */
+  shiftSelection: (direction: 'down' | 'up') => void;
+  /** Unselect all blocks */
   unselect: () => void;
 };
 
@@ -74,6 +96,7 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
     },
   },
   options: {
+    anchorId: null,
     areaOptions: {
       features: {
         singleTap: {
@@ -82,6 +105,7 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
       },
     },
     enableContextMenu: false,
+    isSelectable: () => true,
     isSelecting: false,
     isSelectionAreaVisible: false,
     selectedIds: new Set(),
@@ -131,6 +155,7 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
           match: (n) => !!n.id && selectedIds?.has(n.id),
         });
       },
+      moveSelection: bindFirst(moveSelection, editor),
       resetSelectedIds: () => {
         setOption('selectedIds', new Set());
       },
@@ -156,6 +181,7 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
 
         setOption('isSelecting', true);
       },
+      shiftSelection: bindFirst(shiftSelection, editor),
       unselect: () => {
         setOption('selectedIds', new Set());
         setOption('isSelecting', false);
@@ -166,7 +192,7 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
     addSelectedRow: (id, options = {}) => {
       const { clear = true, delay } = options;
 
-      const element = getSelectedDomNode(id);
+      const element = querySelectorSelectable(id);
 
       if (!element) return;
       if (!getOptions().selectedIds!.has(id) && clear) {
@@ -189,7 +215,7 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
     },
 
     selectedAll: () => {
-      const all = getAllSelectableDomNode();
+      const all = querySelectorAllSelectable();
       setOption('selectedIds', new Set());
 
       api.blockSelection.setSelectedIds({
@@ -199,12 +225,19 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
     },
   }))
   .extendTransforms(({ editor }) => ({
+    /** Duplicate selected blocks */
     duplicate: bindFirst(duplicateBlockSelectionNodes, editor),
+    /** Insert blocks and select */
     insertBlocksAndSelect: bindFirst(insertBlocksAndSelect, editor),
+    /** Remove selected blocks */
     removeNodes: bindFirst(removeBlockSelectionNodes, editor),
+    /** Select blocks */
     select: bindFirst(selectBlockSelectionNodes, editor),
+    /** Set block indent */
     setIndent: bindFirst(setBlockSelectionIndent, editor),
+    /** Set nodes on selected blocks */
     setNodes: bindFirst(setBlockSelectionNodes, editor),
+    /** Set texts on selected blocks */
     setTexts: bindFirst(setBlockSelectionTexts, editor),
   }))
   .overrideEditor(({ api, editor, getOptions, tf: { setSelection } }) => ({

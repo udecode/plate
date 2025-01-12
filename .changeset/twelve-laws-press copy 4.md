@@ -1,0 +1,6 @@
+---
+'@udecode/plate-selection': minor
+---
+
+- Fix: after deleting all blocks using block selection, focus the empty editor.
+- Feature: shift+up/down block selection

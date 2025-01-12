@@ -45,7 +45,6 @@ export default function ControlledEditorDemo() {
         <Button
           onClick={() => {
             editor.tf.reset();
-
             editor.tf.focus();
           }}
         >

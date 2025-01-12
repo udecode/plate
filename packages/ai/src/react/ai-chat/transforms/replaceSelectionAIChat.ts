@@ -129,7 +129,7 @@ export const replaceSelectionAIChat = (
       });
     });
 
-    editor.tf.focus();
+    editor.getApi(BlockSelectionPlugin).blockSelection.focus();
 
     return;
   }
@@ -158,5 +158,5 @@ export const replaceSelectionAIChat = (
     });
   });
 
-  editor.tf.focus();
+  editor.getApi(BlockSelectionPlugin).blockSelection.focus();
 };

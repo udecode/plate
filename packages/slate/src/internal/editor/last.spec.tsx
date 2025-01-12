@@ -108,4 +108,30 @@ describe('last', () => {
       expect(res).toBeUndefined();
     });
   });
+
+  describe('when editor has no children', () => {
+    const input = createEditor((<editor></editor>) as any);
+
+    it('should return undefined when level is 0', () => {
+      const res = input.api.last([], { level: 0 });
+
+      expect(res).toBeUndefined();
+    });
+  });
+
+  describe('when element has no children', () => {
+    const input = createEditor(
+      (
+        <editor>
+          <element></element>
+        </editor>
+      ) as any
+    );
+
+    it('should return undefined when getting last node in empty element', () => {
+      const res = input.api.last([1]);
+
+      expect(res).toBeUndefined();
+    });
+  });
 });

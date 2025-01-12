@@ -64,10 +64,10 @@ describe('when getting previous node by id', () => {
   });
 
   describe('when first block', () => {
-    it('should return [null, [-1]]', () => {
+    it('should return undefined', () => {
       const e = createEditor();
       e.children = nodesFixture5;
-      expect(e.api.previous({ id: '1', block: true })).toEqual([null, [-1]]);
+      expect(e.api.previous({ id: '1', block: true })).toBeUndefined();
     });
   });
 

@@ -2,19 +2,36 @@ import type { Token } from 'marked';
 
 import { marked } from 'marked';
 
+export type ParseMarkdownBlocksOptions = {
+  /**
+   * Token types to exclude from the output.
+   *
+   * @default ['space']
+   */
+  exclude?: string[];
+  /**
+   * Whether to trim the content.
+   *
+   * @default true
+   */
+  trim?: boolean;
+};
+
 export const parseMarkdownBlocks = (
   content: string,
-  {
-    excludeTokens = ['space'],
-  }: {
-    excludeTokens?: string[];
-  }
+  { exclude = ['space'], trim = true }: ParseMarkdownBlocksOptions = {}
 ): Token[] => {
-  if (excludeTokens.length > 0) {
-    return marked
-      .lexer(content)
-      .filter((token) => !excludeTokens.includes(token.type));
+  let tokens = [...marked.lexer(content)];
+
+  if (exclude.length > 0) {
+    tokens = tokens.filter((token) => !exclude.includes(token.type));
+  }
+  if (trim) {
+    tokens = tokens.map((token) => ({
+      ...token,
+      raw: token.raw.trimEnd(),
+    }));
   }
 
-  return marked.lexer(content);
+  return tokens;
 };

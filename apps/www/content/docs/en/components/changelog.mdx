@@ -10,13 +10,14 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 
 ## January 2025 #18
 
-### January 10 #18.1
+### January 12 #18.2
 
 - `ai-plugins`: remove `createAIEditor`, it's now created in `ai-chat-editor`
 - `ai-chat-editor`: just use `useAIChatEditor` (v42.1)
 - `ai-menu`: avoid collisions, remove `aiEditorRef`
 - `command`: add `focus-visible:outline-none`
 - `editor-static`: update `aiChat` padding
+- `transforms`: fix `insertBlock` used by slash commands: it should insert a new block if the newly inserted block is of the same type as the command.
  
 ### January 8 #18.1
 

@@ -1,6 +1,6 @@
 import type { PlateEditor } from '@udecode/plate/react';
 
-import { type Path, type TElement, nanoid } from '@udecode/plate';
+import { type Path, type TElement, NodeApi, PathApi } from '@udecode/plate';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 
@@ -9,19 +9,25 @@ export const insertBlocksAndSelect = (
   nodes: TElement[],
   { at }: { at: Path }
 ) => {
-  const ids: string[] = [];
+  editor.tf.insertNodes(nodes, { at });
 
-  nodes.forEach((node) => {
-    const id = nanoid();
-    ids.push(id);
-    node.id = id;
-  });
+  const insertedNodes = [NodeApi.get<TElement>(editor, at)!];
 
-  editor.tf.insertNodes(nodes, { at: at });
+  let count = 1;
+
+  console.log(nodes.length);
+
+  while (count < nodes.length) {
+    const nextNode = NodeApi.get<TElement>(editor, PathApi.next(at))!;
+    insertedNodes.push(nextNode);
+    count++;
+  }
+
+  console.log(insertedNodes.map((n) => n.id));
 
   setTimeout(() => {
-    editor
-      .getApi(BlockSelectionPlugin)
-      .blockSelection.setSelectedIds({ ids } as any);
+    editor.getApi(BlockSelectionPlugin).blockSelection.setSelectedIds({
+      ids: insertedNodes.map((n) => n.id),
+    } as any);
   }, 0);
 };

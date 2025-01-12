@@ -19,7 +19,7 @@ import { AIChatPlugin } from '../AIChatPlugin';
 export const useAIChatEditor = (
   content: string,
   {
-    excludeTokens,
+    parser,
     processor,
     ...options
   }: {} & Partial<CreatePlateEditorOptions> & DeserializeMdOptions = {}
@@ -31,8 +31,8 @@ export const useAIChatEditor = (
   editor.children = useMemo(
     () =>
       editor.getApi(MarkdownPlugin).markdown.deserialize(content, {
-        excludeTokens,
         memoize: true,
+        parser,
         processor,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps

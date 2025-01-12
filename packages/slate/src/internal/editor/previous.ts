@@ -45,7 +45,5 @@ export const previous = <N extends DescendantOf<E>, E extends Editor = Editor>(
   if (!block) return;
 
   // both id and block are defined
-  const prevEntry = getPrevious({ at: block[1], block: true });
-
-  return prevEntry ? (prevEntry as any) : ([null, [-1]] as any);
+  return getPrevious({ at: block[1], block: true });
 };

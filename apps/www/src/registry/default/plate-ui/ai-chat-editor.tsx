@@ -3,7 +3,11 @@
 import React, { memo } from 'react';
 
 import { withProps } from '@udecode/cn';
-import { BaseParagraphPlugin, SlateLeaf } from '@udecode/plate';
+import {
+  type SlatePlugin,
+  BaseParagraphPlugin,
+  SlateLeaf,
+} from '@udecode/plate';
 import { useAIChatEditor } from '@udecode/plate-ai/react';
 import {
   BaseBoldPlugin,
@@ -18,12 +22,9 @@ import {
   BaseCodeLinePlugin,
   BaseCodeSyntaxPlugin,
 } from '@udecode/plate-code-block';
-import {
-  BaseHeadingPlugin,
-  HEADING_KEYS,
-  HEADING_LEVELS,
-} from '@udecode/plate-heading';
+import { BaseHeadingPlugin, HEADING_KEYS } from '@udecode/plate-heading';
 import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
+import { BaseIndentPlugin } from '@udecode/plate-indent';
 import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
 import { BaseLinkPlugin } from '@udecode/plate-link';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
@@ -76,14 +77,14 @@ const plugins = [
   BaseHorizontalRulePlugin,
   BaseLinkPlugin,
   BaseParagraphPlugin,
+  BaseIndentPlugin.extend({
+    inject: {
+      targetPlugins: [BaseParagraphPlugin.key],
+    },
+  }),
   BaseIndentListPlugin.extend({
     inject: {
-      targetPlugins: [
-        BaseParagraphPlugin.key,
-        ...HEADING_LEVELS,
-        BaseBlockquotePlugin.key,
-        BaseCodeBlockPlugin.key,
-      ],
+      targetPlugins: [BaseParagraphPlugin.key],
     },
     options: {
       listStyleTypes: {
@@ -96,10 +97,12 @@ const plugins = [
     },
   }),
   MarkdownPlugin.configure({ options: { indentList: true } }),
-];
+] as SlatePlugin[];
 
 export const AIChatEditor = memo(({ content }: { content: string }) => {
-  const aiEditor = useAIChatEditor(content);
+  const aiEditor = useAIChatEditor(content, {
+    plugins,
+  });
 
   return (
     <EditorStatic variant="aiChat" components={components} editor={aiEditor} />

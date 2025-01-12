@@ -11,13 +11,16 @@ import {
   type RemarkTextRules,
   remarkPlugin,
 } from '../../remark-slate';
-import { parseMarkdownBlocks } from './parseMarkdownBlocks';
+import {
+  type ParseMarkdownBlocksOptions,
+  parseMarkdownBlocks,
+} from './parseMarkdownBlocks';
 
 export type DeserializeMdOptions = {
-  /** Token types to filter out from marked lexer */
-  excludeTokens?: string[];
   /** Whether to add _memo property to elements */
   memoize?: boolean;
+  /** Options for the token parser */
+  parser?: ParseMarkdownBlocksOptions;
   /** A function that allows you to modify the markdown processor. */
   processor?: (processor: Processor) => Processor;
 };
@@ -26,11 +29,7 @@ export type DeserializeMdOptions = {
 export const deserializeMd = (
   editor: SlateEditor,
   data: string,
-  {
-    excludeTokens = ['space'],
-    memoize = true,
-    processor,
-  }: DeserializeMdOptions = {}
+  { memoize, parser, processor }: DeserializeMdOptions = {}
 ) => {
   const elementRules: RemarkElementRules = {};
   const textRules: RemarkTextRules = {};
@@ -54,10 +53,22 @@ export const deserializeMd = (
   } as unknown as RemarkPluginOptions);
 
   if (memoize) {
-    return parseMarkdownBlocks(data, { excludeTokens }).map((token) => ({
-      _memo: token.raw,
-      ...tree.processSync(token.raw).result[0],
-    }));
+    return parseMarkdownBlocks(data, parser).flatMap((token) => {
+      if (token.type === 'space') {
+        return {
+          ...editor.api.create.block(),
+          _memo: token.raw,
+        };
+      }
+
+      // TODO: split list items
+      return tree.processSync(token.raw).result.map((result: any) => {
+        return {
+          _memo: token.raw,
+          ...result,
+        };
+      });
+    });
   }
 
   return tree.processSync(data).result;
