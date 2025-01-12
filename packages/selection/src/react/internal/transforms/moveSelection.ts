@@ -1,78 +1,38 @@
-import { type NodeEntry, type TElement, PathApi } from '@udecode/plate';
 import { type PlateEditor, getEditorPlugin } from '@udecode/plate/react';
 
 import { BlockSelectionPlugin } from '../../BlockSelectionPlugin';
+import { getNextSelectable } from './getNextSelectable';
+import { getPreviousSelectable } from './getPreviousSelectable';
 
 export const moveSelection = (
   editor: PlateEditor,
   direction: 'down' | 'up'
 ) => {
-  const { api, getOptions, setOption } = getEditorPlugin(
-    editor,
-    BlockSelectionPlugin
-  );
-  const isSelectable = getOptions().isSelectable;
+  const { api, setOption } = getEditorPlugin(editor, BlockSelectionPlugin);
   const blocks = api.blockSelection.getNodes();
 
   if (blocks.length === 0) return;
   if (direction === 'up') {
     const [, topPath] = blocks[0];
 
-    let prevEntry: NodeEntry | undefined;
+    const prevEntry = getPreviousSelectable(editor, topPath);
 
-    while (!prevEntry) {
-      prevEntry = editor.api.previous<TElement & { id: string }>({
-        at: topPath,
-        block: true,
-        mode: 'lowest',
-      });
-
-      if (prevEntry) {
-        if (
-          topPath.length > 1 &&
-          !PathApi.equals(PathApi.parent(prevEntry[1]), PathApi.parent(topPath))
-        ) {
-          let found = false;
-          let parentPath = topPath;
-
-          while (!found) {
-            const parentEntry = editor.api.parent<TElement & { id: string }>(
-              parentPath
-            )!;
-
-            if (!parentEntry) {
-              break;
-            }
-
-            parentPath = parentEntry[1];
-
-            if (isSelectable?.(...parentEntry)) {
-              prevEntry = parentEntry;
-              found = true;
-            }
-          }
-        }
-
-        const [prevNode] = prevEntry;
-        setOption('anchorId', prevNode.id ?? null);
-        api.blockSelection.addSelectedRow(prevNode.id, { clear: true });
-
-        return;
-      }
+    if (prevEntry) {
+      const [prevNode] = prevEntry;
+      setOption('anchorId', prevNode.id ?? null);
+      api.blockSelection.addSelectedRow(prevNode.id, { clear: true });
     }
   } else {
     // direction === 'down'
     const [, bottomPath] = blocks.at(-1)!;
 
-    const nextEntry = editor.api.next<TElement & { id: string }>({
-      at: bottomPath,
-      block: true,
-    });
+    const nextEntry = getNextSelectable(editor, bottomPath);
 
-    if (!nextEntry) return;
-
-    const [nextNode] = nextEntry;
-    setOption('anchorId', nextNode.id ?? null);
-    api.blockSelection.addSelectedRow(nextNode.id, { clear: true });
+    if (nextEntry) {
+      const [nextNode] = nextEntry;
+      console.log(nextNode);
+      setOption('anchorId', nextNode.id ?? null);
+      api.blockSelection.addSelectedRow(nextNode.id, { clear: true });
+    }
   }
 };

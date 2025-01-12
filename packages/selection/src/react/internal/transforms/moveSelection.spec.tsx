@@ -13,7 +13,7 @@ jsxt;
 
 jest.mock('../../../lib', () => ({
   ...jest.requireActual('../../../lib'),
-  getSelectedDomNode: (id: string) => ({
+  querySelectorSelectable: (id: string) => ({
     id,
     dataset: { blockId: id },
   }),
@@ -23,7 +23,7 @@ describe('moveSelection', () => {
   let editor: PlateEditor;
 
   beforeEach(() => {
-    jest.spyOn(domUtils, 'getSelectedDomNode');
+    jest.spyOn(domUtils, 'querySelectorSelectable');
 
     editor = createPlateEditor({
       plugins: [BlockSelectionPlugin],
