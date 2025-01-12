@@ -1,3 +1,4 @@
+import type { TElement } from '@udecode/slate';
 import type { AnyObject } from '@udecode/utils';
 
 import clsx from 'clsx';
@@ -13,16 +14,19 @@ import { getPluginNodeProps } from '../../utils/getPluginNodeProps';
 export const getRenderNodeStaticProps = ({
   attributes,
   editor,
+  element,
   plugin,
   props,
 }: {
   editor: SlateEditor;
   props: SlateRenderNodeProps;
   attributes?: AnyObject;
+  element?: TElement;
   plugin?: AnyEditorPlugin;
 }): SlateRenderNodeProps => {
   props = getPluginNodeProps({
     attributes,
+    element,
     plugin,
     props,
   });

@@ -55,9 +55,6 @@ export const getDataNodeProps = ({
   plugin: AnyEditorPlugin;
 }) => {
   const toNodeProps = plugin.parsers.html?.deserializer?.toNodeProps;
-  const isElement = plugin.node.isElement;
-
-  if (!isElement) return {};
 
   const defaultNodeProps = getDefaultNodeProps({
     ...(getEditorPlugin(editor, plugin) as any),

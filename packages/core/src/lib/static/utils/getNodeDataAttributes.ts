@@ -30,3 +30,9 @@ export const getNodeDataAttributes = (
 
   return { ...dataAttributes, ...customAttributes };
 };
+
+export const getNodeDataAttributeKeys = (element: TElement) => {
+  return Object.keys(element)
+    .filter((key) => typeof element[key] !== 'object')
+    .map((key) => `data-slate-${kebabCase(key)}`);
+};

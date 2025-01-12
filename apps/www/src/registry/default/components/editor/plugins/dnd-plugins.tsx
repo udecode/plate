@@ -7,7 +7,11 @@ import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { DraggableAboveNodes } from '@/registry/default/plate-ui/draggable';
 
 export const dndPlugins = [
-  NodeIdPlugin,
+  NodeIdPlugin.configure({
+    options: {
+      disableInsertOverrides: true,
+    },
+  }),
   DndPlugin.configure({
     options: {
       enableScroller: true,

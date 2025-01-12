@@ -7,31 +7,27 @@ import {
 
 export const htmlDeserializerCodeBlockStatic = (element: HTMLElement) => {
   if (isSlatePluginElement(element, BaseCodeBlockPlugin.key)) {
-    const languageClass = Array.from(element.classList).find((className) =>
-      className.startsWith('language-')
-    );
-
-    const lang = languageClass?.replace('language-', '');
-
     const staticCodeLines = getSlateElements(element).filter((el) =>
       isSlatePluginElement(el, BaseCodeLinePlugin.key)
     );
 
     if (staticCodeLines) {
       const codeLines = staticCodeLines.map((line) => {
-        return {
-          type: BaseCodeLinePlugin.key,
-          // eslint-disable-next-line perfectionist/sort-objects
+        const node: any = {
           children: [{ text: line.textContent }],
+          type: BaseCodeLinePlugin.key,
         };
+
+        if (line.dataset.slateId) {
+          node.id = line.dataset.slateId;
+        }
+
+        return node;
       });
 
       return {
-        type: BaseCodeBlockPlugin.key,
-        // eslint-disable-next-line perfectionist/sort-objects
-        lang,
-        // eslint-disable-next-line perfectionist/sort-objects
         children: codeLines,
+        type: BaseCodeBlockPlugin.key,
       };
     }
   }
