@@ -83,11 +83,19 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
         }
       }
       if (isHotkey(['backspace', 'delete'])(e) && !isReadonly) {
-        editor.tf.removeNodes({
-          at: [],
-          block: true,
-          match: (n) => !!n.id && selectedIds!.has(n.id),
+        editor.tf.withoutNormalizing(() => {
+          editor.tf.removeNodes({
+            at: [],
+            block: true,
+            match: (n) => !!n.id && selectedIds!.has(n.id),
+          });
+
+          if (editor.children.length === 0) {
+            editor.tf.focus();
+          }
         });
+
+        return;
       }
       // TODO: skip toggle child
       if (isHotkey('up')(e)) {
