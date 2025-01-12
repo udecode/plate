@@ -3,14 +3,24 @@ export const isSlateVoid = (element: HTMLElement) => {
 };
 
 export const isSlateElement = (element: HTMLElement) => {
-  return (
-    element.dataset.slateNode === 'element' &&
-    element.className.startsWith('slate-')
-  );
+  return element.dataset.slateNode === 'element';
 };
 
 export const isSlateString = (element: HTMLElement) => {
   return element.dataset.slateNode === 'text';
+};
+
+export const isSlateLeaf = (element: HTMLElement) => {
+  return element.dataset.slateLeaf === 'true';
+};
+
+export const isSlateNode = (element: HTMLElement) => {
+  return (
+    isSlateLeaf(element) ||
+    isSlateElement(element) ||
+    isSlateVoid(element) ||
+    isSlateString(element)
+  );
 };
 
 export const isSlatePluginElement = (

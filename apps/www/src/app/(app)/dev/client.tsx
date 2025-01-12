@@ -71,7 +71,23 @@ import Prism from 'prismjs';
 
 import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
+import { alignValue } from '@/registry/default/example/values/align-value';
+import { basicElementsValue } from '@/registry/default/example/values/basic-elements-value';
+import { basicMarksValue } from '@/registry/default/example/values/basic-marks-value';
 import { columnValue } from '@/registry/default/example/values/column-value';
+import { commentsValue } from '@/registry/default/example/values/comments-value';
+import { dateValue } from '@/registry/default/example/values/date-value';
+import { equationValue } from '@/registry/default/example/values/equation-value';
+import { highlightValue } from '@/registry/default/example/values/highlight-value';
+import { horizontalRuleValue } from '@/registry/default/example/values/horizontal-rule-value';
+import { indentListValue } from '@/registry/default/example/values/indent-list-value';
+import { indentValue } from '@/registry/default/example/values/indent-value';
+import { kbdValue } from '@/registry/default/example/values/kbd-value';
+import { lineHeightValue } from '@/registry/default/example/values/line-height-value';
+import { linkValue } from '@/registry/default/example/values/link-value';
+import { todoListValue } from '@/registry/default/example/values/list-value';
+import { mentionValue } from '@/registry/default/example/values/mention-value';
+import { tocPlaygroundValue } from '@/registry/default/example/values/toc-value';
 import { BlockquoteElementStatic } from '@/registry/default/plate-ui/blockquote-element-static';
 import { Button } from '@/registry/default/plate-ui/button';
 import { CodeBlockElementStatic } from '@/registry/default/plate-ui/code-block-element-static';
@@ -116,18 +132,26 @@ import { ToggleElementStatic } from '@/registry/default/plate-ui/toggle-element-
 const siteUrl = 'https://platejs.org';
 const createValue = () => {
   return [
-    // ...tocValue,
-    // ...basicNodesValue,
-    // ...linkValue,
-    // ...indentListValue,
-    // ...mediaPlaceholderValue,
-    // ...commentsValue,
-    // ...equationValue,
-    // ...horizontalRuleValue,
-    // ...mentionValue,
-    // ...dateValue,
+    ...basicElementsValue,
+    ...basicMarksValue,
+    ...tocPlaygroundValue,
+    ...todoListValue,
+    ...linkValue,
+    ...horizontalRuleValue,
+    // ...tableValue,
+    ...equationValue,
     ...columnValue,
-    // ...emojiValue,
+    ...mentionValue,
+    ...dateValue,
+    // ...fontValue,
+    ...highlightValue,
+    ...kbdValue,
+    ...commentsValue,
+    ...alignValue,
+    ...lineHeightValue,
+    ...indentValue,
+    ...indentListValue,
+    // ...mediaValue,
   ];
 };
 

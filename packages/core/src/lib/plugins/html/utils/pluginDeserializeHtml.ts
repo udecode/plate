@@ -146,7 +146,7 @@ export const pluginDeserializeHtml = (
   ) {
     return;
   }
-  if (!parse) {
+  if (!parse)
     if (isElement) {
       parse = ({ type }) => ({ type: type });
     } else if (isLeaf) {
@@ -154,7 +154,6 @@ export const pluginDeserializeHtml = (
     } else {
       return;
     }
-  }
 
   const parsedNode =
     parse({

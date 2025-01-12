@@ -139,7 +139,7 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
    */
   toDataAttributes?: (
     options: BasePluginContext<C> & { node: TElement }
-  ) => AnyObject;
+  ) => AnyObject | undefined;
 
   component?: NodeComponent | null;
 

@@ -7,9 +7,10 @@ import {
   createSlatePlugin,
   createTSlatePlugin,
   isSlatePluginElement,
+  keyToDataAttribute,
 } from '@udecode/plate';
 
-import type { TTableCellElement } from './types';
+import type { TTableCellElement, TTableElement } from './types';
 import type { CellIndices } from './utils';
 
 import { getEmptyCellNode, getEmptyRowNode, getEmptyTableNode } from './api';
@@ -175,7 +176,17 @@ type TableTransforms = {
 export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
   key: 'table',
   // dependencies: [NodeIdPlugin.key],
-  node: { isElement: true },
+  node: {
+    dangerouslyAllowAttributes: [keyToDataAttribute('colSizes')],
+    isElement: true,
+    toDataAttributes: ({ node }) => {
+      if (node.colSizes as TTableElement['colSizes']) {
+        return {
+          [keyToDataAttribute('colSizes')]: JSON.stringify(node.colSizes),
+        };
+      }
+    },
+  },
   normalizeInitialValue: normalizeInitialValueTable,
   options: {
     _cellIndices: {},
@@ -186,7 +197,7 @@ export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
     html: {
       deserializer: {
         parse: ({ element, type }) => {
-          const parent = element.parentNode;
+          const parent = element.parentNode?.parentNode;
 
           if (
             parent &&
@@ -199,6 +210,21 @@ export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
           return { type };
         },
         rules: [{ validNodeName: 'TABLE' }],
+        toNodeProps: ({ element }) => {
+          const dangerouslyColSizesString = element.getAttribute(
+            keyToDataAttribute('colSizes')
+          );
+
+          if (!dangerouslyColSizesString) return;
+
+          const colSizes = JSON.parse(dangerouslyColSizesString);
+
+          if (!Array.isArray(colSizes)) return;
+
+          return {
+            colSizes: colSizes,
+          };
+        },
       },
     },
   },
