@@ -9,14 +9,6 @@ A `Point` represents a specific location in a Slate document. It consists of a p
 
 ### `get`
 
-```ts
-/**
- * Get the point from a location. If the location is a range, get the anchor
- * point (if `focus` is true, get the focus point). If the location is a path,
- * get the point at this path with offset 0.
- */
-```
-
 <APIParameters>
   <APIItem name="at" type="At | null" optional>
     The location to get the point from. Can be a Range, Point, or Path.
@@ -37,10 +29,6 @@ A `Point` represents a specific location in a Slate document. It consists of a p
 ### `transform`
 
 Transform a point by an operation.
-
-```ts
-// Returns the transformed point, or null if the point was deleted
-```
 
 <APIParameters>
   <APIItem name="point" type="Point">
@@ -64,12 +52,7 @@ Transform a point by an operation.
 
 ### `compare`
 
-```ts
-/**
- * Compare a point to another, returning an integer indicating whether the
- * point was before, at, or after the other.
- */
-```
+Compare a point to another, returning an integer indicating whether the point was before, at, or after the other.
 
 <APIParameters>
   <APIItem name="point" type="Point">
@@ -153,18 +136,7 @@ Check if a value implements the `Point` interface.
 
 ### `Point`
 
-```ts
-/**
- * A Point represents a specific location in a Slate document. It consists of a
- * path to a text node and an offset within that text node's content.
- */
-type Point = {
-  /** The index of the character in the text node. */
-  offset: number;
-  /** The path to the text node. */
-  path: Path;
-};
-```
+A point represents a specific location in a Slate document. It consists of a path to a text node and an offset within that text node's content.
 
 <APIAttributes>
   <APIItem name="offset" type="number">
@@ -177,11 +149,7 @@ type Point = {
 
 ### `PointTransformOptions`
 
-```ts
-interface PointTransformOptions {
-  affinity?: TextDirection | null;
-}
-```
+Options for transforming a point.
 
 <APIAttributes>
   <APIItem name="affinity" type="TextDirection | null" optional>
@@ -191,13 +159,7 @@ interface PointTransformOptions {
 
 ### `PointEntry`
 
-```ts
-/**
- * `PointEntry` objects are returned when iterating over `Point` objects that
- * belong to a range.
- */
-type PointEntry = [Point, 'anchor' | 'focus'];
-```
+A point entry is returned when iterating over `Point` objects that belong to a range.
 
 <APIAttributes>
   <APIItem name="[0]" type="Point">

@@ -9,15 +9,7 @@ description: API reference for paths in Slate.
 
 ### `operationCanTransformPath`
 
-```ts
-/**
- * Returns whether this operation can affect paths or not. Used as an
- * optimization when updating dirty paths during normalization
- *
- * NOTE: This _must_ be kept in sync with the implementation of 'transform'
- * below
- */
-```
+Check if an operation can transform a path.
 
 <APIParameters>
   <APIItem name="operation" type="Operation<N>">
@@ -32,10 +24,6 @@ description: API reference for paths in Slate.
 ### `transform`
 
 Transform a path by an operation.
-
-```ts
-// Returns the transformed path, or null if the path was deleted
-```
 
 <APIParameters>
   <APIItem name="path" type="Path">
@@ -59,14 +47,7 @@ Transform a path by an operation.
 
 ### `ancestors`
 
-```ts
-/**
- * Get a list of ancestor paths for a given path.
- *
- * The paths are sorted from shallowest to deepest ancestor. However, if the
- * `reverse: true` option is passed, they are reversed.
- */
-```
+Get a list of ancestor paths for a given path.
 
 <APIParameters>
   <APIItem name="path" type="Path">
@@ -121,16 +102,7 @@ Get the common ancestor path of two paths.
 
 ### `compare`
 
-```ts
-/**
- * Compare a path to another, returning an integer indicating whether the path
- * was before, at, or after the other.
- *
- * Note: Two paths of unequal length can still receive a `0` result if one is
- * directly above or below the other. If you want exact matching, use
- * [[PathApi.equals]] instead.
- */
-```
+Compare a path to another, returning an integer indicating whether the path was before, at, or after the other.
 
 <APIParameters>
   <APIItem name="path" type="Path">
@@ -395,10 +367,6 @@ Check if a path is a sibling of another.
 
 Get the last index of a path.
 
-```ts
-// Returns -1 if path is empty
-```
-
 <APIParameters>
   <APIItem name="path" type="Path">
     The path to check.
@@ -411,15 +379,7 @@ Get the last index of a path.
 
 ### `levels`
 
-```ts
-/**
- * Get a list of paths at every level down to a path. Note: this is the same
- * as `PathApi.ancestors`, but including the path itself.
- *
- * The paths are sorted from shallowest to deepest. However, if the `reverse:
- * true` option is passed, they are reversed.
- */
-```
+Get a list of paths at every level down to a path.
 
 <APIParameters>
   <APIItem name="path" type="Path">
@@ -501,25 +461,9 @@ Get a path relative to an ancestor.
 
 ### `Path`
 
-```ts
-/**
- * `Path` arrays are a list of indexes that describe a node's exact position in
- * a Slate node tree. Although they are usually relative to the root `Editor`
- * object, they can be relative to any `Node` object.
- */
-type Path = number[];
-```
-
 An array of numbers representing the indexes to traverse to reach a specific node in the document tree.
 
 ### `PathAncestorsOptions`
-
-```ts
-interface PathAncestorsOptions {
-  /** If true, the paths are returned in reverse order. */
-  reverse?: boolean;
-}
-```
 
 Options for getting ancestor paths.
 
@@ -531,13 +475,6 @@ Options for getting ancestor paths.
 
 ### `PathLevelsOptions`
 
-```ts
-interface PathLevelsOptions {
-  /** If true, the paths are returned in reverse order. */
-  reverse?: boolean;
-}
-```
-
 Options for getting path levels.
 
 <APIAttributes>
@@ -547,13 +484,6 @@ Options for getting path levels.
 </APIAttributes>
 
 ### `PathTransformOptions`
-
-```ts
-interface PathTransformOptions {
-  /** The affinity of the transform. */
-  affinity?: TextDirection | null;
-}
-```
 
 Options for transforming paths.
 

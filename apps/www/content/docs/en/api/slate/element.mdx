@@ -3,24 +3,11 @@ title: Element
 description: API reference for elements in Slate.
 ---
 
-```ts
-/**
- * `TElement` objects are a type of node in a Slate document that contain other
- * element nodes or text nodes. They can be either "blocks" or "inlines"
- * depending on the Slate editor's configuration.
- */
-```
-
 ## Element API
 
 ### `isElementType`
 
-```ts
-/**
- * Check if a value implements the `TElement` interface and has elementKey
- * with selected value. Default it check to `type` key value
- */
-```
+Check if a value implements the `TElement` interface and has elementKey with selected value. Default it check to `type` key value
 
 <APIParameters>
   <APIItem name="value" type="any">
@@ -40,12 +27,7 @@ description: API reference for elements in Slate.
 
 ### `isAncestor`
 
-```ts
-/**
- * Check if a value implements the 'Ancestor' interface.
- */
-```
-
+Check if a value implements the 'Ancestor' interface.
 <APIParameters>
   <APIItem name="value" type="any">
     The value to check.
@@ -58,11 +40,7 @@ description: API reference for elements in Slate.
 
 ### `isElement`
 
-```ts
-/**
- * Check if a value implements the `TElement` interface.
- */
-```
+Check if a value implements the `TElement` interface.
 
 <APIParameters>
   <APIItem name="value" type="any">
@@ -76,11 +54,7 @@ description: API reference for elements in Slate.
 
 ### `isElementList`
 
-```ts
-/**
- * Check if a value is an array of `TElement` objects.
- */
-```
+Check if a value is an array of `TElement` objects.
 
 <APIParameters>
   <APIItem name="value" type="any">
@@ -94,12 +68,7 @@ description: API reference for elements in Slate.
 
 ### `isElementProps`
 
-```ts
-/**
- * Check if a set of props is a partial of TElement.
- */
-```
-
+Check if a set of props is a partial of TElement.
 <APIParameters>
   <APIItem name="props" type="any">
     The props to check.
@@ -112,14 +81,7 @@ description: API reference for elements in Slate.
 
 ### `matches`
 
-```ts
-/**
- * Check if an element matches set of properties.
- *
- * Note: this checks custom properties, and it does not ensure that any
- * children are equivalent.
- */
-```
+Check if an element matches set of properties.
 
 <APIParameters>
   <APIItem name="element" type="TElement">
@@ -138,67 +100,49 @@ description: API reference for elements in Slate.
 
 ### `TElement`
 
-```ts
-/**
- * `TElement` objects are a type of node in a Slate document that contain other
- * element nodes or text nodes. They can be either "blocks" or "inlines"
- * depending on the Slate editor's configuration.
- */
-type TElement = {
-  children: Descendant[];
-  type: string;
-} & UnknownObject;
-```
+`TElement` objects are a type of node in a Slate document that contain other element nodes or text nodes. They can be either "blocks" or "inlines" depending on the Slate editor's configuration.
 
 <APIAttributes>
-  <APIItem name="TElement" type="object">
-    Properties:
-    - `children: Descendant[]` - Array of child nodes
-    - `type: string` - Element type identifier
-    - `[key: string]: unknown` - Additional custom properties
+  <APIItem name="children" type="Descendant[]">
+    An array of child nodes that can be either elements or text nodes.
+  </APIItem>
+  <APIItem name="type" type="string">
+    A string identifier that defines the element's type (e.g., 'paragraph', 'heading', etc.).
+  </APIItem>
+  <APIItem name="[key: string]" type="unknown">
+    Additional custom properties that can be added to the element.
   </APIItem>
 </APIAttributes>
 
 ### `Element`
 
+The `Element` interface is a type of node in a Slate document that contain other element nodes or text nodes. They can be either "blocks" or "inlines" depending on the Slate editor's configuration.
+
 ```ts
-/**
- * `Element` objects are a type of node in a Slate document that contain other
- * element nodes or text nodes. They can be either "blocks" or "inlines"
- * depending on the Slate editor's configuration.
- */
 type Element = TElement;
 ```
 
 ### `ElementOrTextOf`
 
+The `ElementOrTextOf` interface is a type that represents either an element or a text node from a specific editor type.
+
 ```ts
-/** Element or text of an editor. */
 type ElementOrTextOf<E extends Editor> = ElementOf<E> | TextOf<E>;
 ```
 
-<APIAttributes>
-  <APIItem name="ElementOrTextOf<E>" type="ElementOf<E> | TextOf<E>">
-    Generic type for elements or text nodes from a specific editor type.
-  </APIItem>
-</APIAttributes>
-
 ### `ElementOrTextIn`
+
+The `ElementOrTextIn` interface is a type that represents either an element or a text node from a specific value type.
 
 ```ts
 type ElementOrTextIn<V extends Value> = ElementIn<V> | TextIn<V>;
 ```
 
-<APIAttributes>
-  <APIItem name="ElementOrTextIn<V>" type="ElementIn<V> | TextIn<V>">
-    Generic type for elements or text nodes from a specific value type.
-  </APIItem>
-</APIAttributes>
-
 ### `ElementOf`
 
+The `ElementOf` interface is a type that represents all the element nodes from a specific node type.
+
 ```ts
-/** A utility type to get all the element nodes type from a root node. */
 type ElementOf<N extends TNode> = Editor extends N
   ? TElement
   : TElement extends N
@@ -212,12 +156,8 @@ type ElementOf<N extends TNode> = Editor extends N
 
 ### `ElementIn`
 
+The `ElementIn` interface is a type that represents an element from a specific value type.
+
 ```ts
 type ElementIn<V extends Value> = ElementOf<V[number]>;
 ```
-
-<APIAttributes>
-  <APIItem name="ElementIn<V>" type="ElementOf<V[number]>">
-    Generic type that extracts element types from a value type.
-  </APIItem>
-</APIAttributes>

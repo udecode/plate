@@ -3,13 +3,6 @@ title: Node
 description: API reference for nodes in Slate.
 ---
 
-```ts
-/**
- * The `TNode` union type represents all of the different types of nodes that
- * occur in a Slate document tree.
- */
-```
-
 ### `ancestor`
 
 Get the node at a specific path, asserting that it's an ancestor node.
@@ -29,14 +22,7 @@ Get the node at a specific path, asserting that it's an ancestor node.
 
 ### `ancestors`
 
-```ts
-/**
- * Return a generator of all the ancestor nodes above a specific path.
- *
- * By default the order is bottom-up, from lowest to highest ancestor in the
- * tree, but you can pass the `reverse: true` option to go top-down.
- */
-```
+Return a generator of all the ancestor nodes above a specific path.
 
 <APIParameters>
   <APIItem name="root" type="TNode">
@@ -174,14 +160,7 @@ Return a generator of all the descendant node entries inside a root node.
 
 ### `elements`
 
-```ts
-/**
- * Return a generator of all the element nodes inside a root node. Each
- * iteration will return an `ElementEntry` tuple consisting of `[Element,
- * Path]`. If the root node is an element it will be included in the iteration
- * as well.
- */
-```
+Return a generator of all the element nodes inside a root node.
 
 <APIParameters>
   <APIItem name="root" type="TNode">
@@ -189,11 +168,212 @@ Return a generator of all the descendant node entries inside a root node.
   </APIItem>
   <APIItem name="options" type="NodeElementsOptions" optional>
     Similar options to `descendants`.
+    <APISubList>
+      <APISubListItem parent="options" name="pass" type="function" optional>
+        Filter function for elements.
+      </APISubListItem>
+      <APISubListItem parent="options" name="reverse" type="boolean" optional>
+        If true, iterates in reverse order.
+      </APISubListItem>
+      <APISubListItem parent="options" name="from" type="Path" optional>
+        Starting path.
+      </APISubListItem>
+      <APISubListItem parent="options" name="to" type="Path" optional>
+        Ending path.
+      </APISubListItem>
+    </APISubList>
   </APIItem>
 </APIParameters>
 
 <APIReturns>
   Returns `Generator<NodeEntry<N>, void, undefined>` - A generator of element entries.
+</APIReturns>
+
+### `first`
+
+Get the first node entry in a root node from a path.
+
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    The root node.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    The path to the node.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `NodeEntry<N> | undefined` - The first node entry if found, `undefined` otherwise.
+</APIReturns>
+
+### `firstChild`
+
+Get the first child node entry of a node.
+
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    The parent node.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    The path to the parent node.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `NodeEntry<N> | undefined` - The first child node entry if found, `undefined` otherwise.
+</APIReturns>
+
+### `firstText`
+
+Get the first text node entry of a node.
+
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    The parent node.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    The path to the parent node.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `NodeEntry<N> | undefined` - The first text node entry if found, `undefined` otherwise.
+</APIReturns>
+
+### `fragment`
+
+Get the sliced fragment represented by a range inside a root node.
+
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    The root node.
+  </APIItem>
+  <APIItem name="range" type="TRange">
+    The range to slice.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `N[]` - The sliced fragment.
+</APIReturns>
+
+### `get`
+
+Get the descendant node referred to by a specific path.
+
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    The root node.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    The path to the node.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `N | undefined` - The descendant node if found, `undefined` otherwise.
+</APIReturns>
+
+### `last`
+
+Get the last node entry in a root node from a path.
+
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    The root node.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    The path to the node.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `NodeEntry<N> | undefined` - The last node entry if found, `undefined` otherwise.
+</APIReturns>
+
+### `lastChild`
+
+Get the last child node entry of a node.
+
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    The parent node.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    The path to the parent node.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `NodeEntry<N> | undefined` - The last child node entry if found, `undefined` otherwise.
+</APIReturns>
+
+### `leaf`
+
+Get the node at a specific path, ensuring it's a leaf text node.
+
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    The root node.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    The path to the node.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `N | undefined` - The leaf node if found, `undefined` otherwise.
+</APIReturns>
+
+### `levels`
+
+Return a generator of the in a branch of the tree, from a specific path.
+
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    The root node.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    The path to the node.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `Generator<NodeEntry<N>, void, undefined>` - A generator of node entries.
+</APIReturns>
+
+### `nodes`
+
+Return a generator of all the node entries of a root node.
+
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    The root node.
+  </APIItem>
+  <APIItem name="options" type="NodeTextsOptions" optional>
+    Similar options to `descendants`.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `Generator<NodeEntry<N>, void, undefined>` - A generator of text node entries.
+</APIReturns>
+
+### `parent`
+
+Get the parent of a node at a specific path.
+
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    The root node.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    The path to the node.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `N | undefined` - The parent node if found, `undefined` otherwise.
 </APIReturns>
 
 ### `texts`
@@ -213,6 +393,150 @@ Return a generator of all leaf text nodes in a root node.
   Returns `Generator<NodeEntry<N>, void, undefined>` - A generator of text node entries.
 </APIReturns>
 
+### `extractProps`
+
+Extract props from a TNode.
+
+<APIParameters>
+  <APIItem name="node" type="TNode">
+    The node to extract props from.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `NodeProps<N>` - The props of the node.
+</APIReturns>
+
+### `getIf`
+
+Similar to `get`, but returns undefined if the node does not exist.
+
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    The root node.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    The path to the node.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `N | undefined` - The descendant node if found, `undefined` otherwise.
+</APIReturns>
+
+### `has`
+
+Check if a descendant node exists at a specific path.
+
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    The root node.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    The path to the node.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem name="node" type="Descendant">
+    The node to check.
+  </APIItem>
+  <APIItem name="props" type="Partial<Descendant>">
+    The properties to match against.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `boolean` - `true` if the node matches all properties.
+</APIReturns>
+
+### `hasSingleChild`
+
+Check if a node has a single child.
+
+<APIParameters>
+  <APIItem name="node" type="TNode">
+    The node to check.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `boolean` - `true` if the node has a single child.
+</APIReturns>
+
+### `isAncestor`
+
+Check if a value implements the `Ancestor` interface.
+
+<APIParameters>
+  <APIItem name="value" type="any">
+    The value to check.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `boolean` - `true` if the value implements the `Ancestor` interface.
+</APIReturns>
+
+### `isDescendant`
+
+Check if a value implements the `Descendant` interface.
+
+<APIParameters>
+  <APIItem name="value" type="any">
+    The value to check.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `boolean` - `true` if the value implements the `Descendant` interface.
+</APIReturns>
+
+### `isLastChild`
+
+Check if a node is the last child of its parent.
+
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    The root node.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    The path to the node.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `boolean` - `true` if the node is the last child of its parent.
+</APIReturns>
+
+### `isNode`
+
+Check if a value implements the `TNode` interface.
+
+<APIParameters>
+  <APIItem name="value" type="any">
+    The value to check.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `boolean` - `true` if the value implements the `TNode` interface.
+</APIReturns>
+
+### `isNodeList`
+
+Check if a value is a list of `Descendant` objects.
+
+<APIParameters>
+  <APIItem name="value" type="any">
+    The value to check.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `boolean` - `true` if the value is a list of `Descendant` objects.
+</APIReturns>
+
 ### `matches`
 
 Check if a node matches a set of props.
@@ -226,21 +550,18 @@ Check if a node matches a set of props.
   </APIItem>
 </APIParameters>
 
+  <APIItem name="node" type="TNode">
+    The node to get text from.
+  </APIItem>
+</APIParameters>
+
 <APIReturns>
-  Returns `boolean` - `true` if the node matches all properties.
+  Returns `string` - The concatenated text content.
 </APIReturns>
 
 ### `string`
 
-```ts
-/**
- * Get the concatenated text string of a node's content.
- *
- * Note that this will not include spaces or line breaks between block nodes.
- * It is not a user-facing string, but a string for performing offset-related
- * computations for a node.
- */
-```
+Get the concatenated text string of a node's content.
 
 <APIParameters>
   <APIItem name="node" type="TNode">
@@ -254,93 +575,146 @@ Check if a node matches a set of props.
 
 ## Types
 
-### `Node`
+### `TNode`
+
+The `TNode` union type represents all of the different types of nodes that occur in a Slate document tree.
 
 ```ts
-/**
- * The `Node` union type represents all of the different types of nodes that
- * occur in a Slate document tree.
- */
-type Node = TNode;
+type TNode = Editor | TElement | TText;
 ```
 
 ### `Descendant`
 
+The `Descendant` union type represents nodes that are descendants in the tree.
+
 ```ts
-/**
- * The `Descendant` union type represents nodes that are descendants in the
- * tree. It is returned as a convenience in certain cases to narrow a value
- * further than the more generic `Node` union.
- */
 type Descendant = TElement | TText;
 ```
 
 ### `Ancestor`
 
+The `Ancestor` union type represents nodes that are ancestors in the tree.
+
 ```ts
-/**
- * The `Ancestor` union type represents nodes that are ancestors in the tree. It
- * is returned as a convenience in certain cases to narrow a value further than
- * the more generic `Node` union.
- */
 type Ancestor = Editor | TElement;
 ```
 
-### `NodeProps`
+### `Node`
+
+The `Node` union type represents all of the different types of nodes that occur in a Slate document tree.
 
 ```ts
-/** Convenience type for returning the props of a node. */
-type NodeProps<N extends TNode = TNode> = N extends Editor
-  ? Omit<N, 'children'>
-  : N extends TElement
-    ? Omit<N, 'children'>
-    : Omit<N, 'text'>;
+type Node = TNode;
 ```
 
-### `NodeEntry`
+### `NodeOf<N>`
 
-```ts
-/** A tuple type representing a node and its location in the tree. */
-type NodeEntry<T extends Node = Node> = [T, Path];
-```
+Get the node type of a specific node.
 
-### Options Interfaces
+<APIParameters>
+  <APIItem name="node" type="TNode">
+    The node to get the type of.
+  </APIItem>
+</APIParameters>
 
-```ts
-interface NodeAncestorsOptions {
-  /** If true, the paths are returned in reverse order. */
-  reverse?: boolean;
-}
+<APIReturns>
+  Returns `N` - The node type.
+</APIReturns>
 
-interface NodeChildrenOptions {
-  /** Get children starting from this index (inclusive) */
-  from?: number;
-  reverse?: boolean;
-  /** Get children up to this index (exclusive) */
-  to?: number;
-}
+### `NodeIn<V>`
 
-interface NodeDescendantsOptions<N extends TNode> {
-  from?: Path;
-  pass?: (entry: NodeEntry<DescendantOf<N>>) => boolean;
-  reverse?: boolean;
-  to?: Path;
-}
-```
+Get all possible node types from a Value type.
 
-<APIAttributes>
-<APIItem name="NodeAncestorsOptions" type="object">
-  - `reverse?: boolean` - Reverse traversal order
-</APIItem>
-<APIItem name="NodeChildrenOptions" type="object">
-  - `reverse?: boolean` - Reverse traversal order
-  - `from?: number` - Start index (inclusive)
-  - `to?: number` - End index (exclusive)
-</APIItem>
-<APIItem name="NodeDescendantsOptions" type="object">
-  - `reverse?: boolean` - Reverse traversal order
-  - `from?: Path` - Starting path
-  - `to?: Path` - Ending path
-  - `pass?: function` - Filter function
-</APIItem>
-</APIAttributes> 
+<APIParameters>
+  <APIItem name="value" type="Value">
+    The value to get node types from.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `NodeOf<V[number]>` - The node type.
+</APIReturns>
+
+### `TNodeMatch<N>`
+
+A helper type for narrowing matched nodes with a predicate.
+
+<APIParameters>
+  <APIItem name="node" type="N">
+    The node to match.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `boolean` - `true` if the node matches the predicate.
+</APIReturns>
+
+### `DescendantOf<N>`
+
+Get all possible descendant node types from a root node type.
+
+<APIParameters>
+  <APIItem name="node" type="N">
+    The node to get descendant types from.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `DescendantOf<N>` - The descendant node types.
+</APIReturns>
+
+### `DescendantIn<V>`
+
+Get all possible descendant node types from a Value type.
+
+<APIParameters>
+  <APIItem name="value" type="Value">
+    The value to get descendant types from.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `DescendantIn<V>` - The descendant node types.
+</APIReturns>
+
+### `ChildOf<N>`
+
+Get the child node type of a specific node.
+
+<APIParameters>
+  <APIItem name="node" type="N">
+    The node to get the child type from.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `ChildOf<N>` - The child node type.
+</APIReturns>
+
+### `AncestorOf<N>`
+
+Get all possible ancestor node types from a root node type.
+
+<APIParameters>
+  <APIItem name="node" type="N">
+    The node to get ancestor types from.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `AncestorOf<N>` - The ancestor node types.
+</APIReturns>
+
+### `AncestorIn<V>`
+
+Get all possible ancestor node types from a Value type.
+
+<APIParameters>
+  <APIItem name="value" type="Value">
+    The value to get ancestor types from.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  Returns `AncestorIn<V>` - The ancestor node types.
+</APIReturns>

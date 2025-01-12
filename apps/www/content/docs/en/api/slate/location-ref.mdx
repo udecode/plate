@@ -9,18 +9,7 @@ Location references are objects that keep specific locations (paths, points, or 
 
 ## PathRef
 
-```ts
-/**
- * `PathRef` objects keep a specific path in a document synced over time as new
- * operations are applied to the editor. You can access their `current` property
- * at any time for the up-to-date path value.
- */
-type PathRef = {
-  affinity: 'backward' | 'forward' | null;
-  current: Path | null;
-  unref: () => Path | null;
-};
-```
+Path reference objects keep a specific path in a document synced over time as new operations are applied to the editor. You can access their `current` property at any time for the up-to-date path value.
 
 ### `transform`
 
@@ -37,19 +26,7 @@ Transform the path ref's current value by an operation.
 
 ## PointRef
 
-```ts
-/**
- * `PointRef` objects keep a specific point in a document synced over time as
- * new operations are applied to the editor. You can access their `current`
- * property at any time for the up-to-date point value.
- */
-type PointRef = {
-  affinity: TextDirection | null;
-  current: Point | null;
-  unref: () => Point | null;
-};
-```
-
+Point reference objects keep a specific point in a document synced over time as new operations are applied to the editor. You can access their `current` property at any time for the up-to-date point value.
 ### `transform`
 
 Transform the point ref's current value by an operation.
@@ -65,18 +42,7 @@ Transform the point ref's current value by an operation.
 
 ## RangeRef
 
-```ts
-/**
- * `RangeRef` objects keep a specific range in a document synced over time as
- * new operations are applied to the editor. You can access their `current`
- * property at any time for the up-to-date range value.
- */
-type RangeRef = {
-  affinity: 'backward' | 'forward' | 'inward' | 'outward' | null;
-  current: TRange | null;
-  unref: () => TRange | null;
-};
-```
+Range reference objects keep a specific range in a document synced over time as new operations are applied to the editor. You can access their `current` property at any time for the up-to-date range value.
 
 ### `transform`
 

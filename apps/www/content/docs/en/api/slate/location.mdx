@@ -3,17 +3,6 @@ title: Location
 description: API reference for locations in Slate.
 ---
 
-```ts
-/**
- * The `TLocation` interface is a union of the ways to refer to a specific
- * location in a Slate document: paths, points or ranges.
- *
- * Methods will often accept a `Location` instead of requiring only a `Path`,
- * `Point` or `TRange`. This eliminates the need for developers to manage
- * converting between the different interfaces in their own code base.
- */
-```
-
 ### `isAt`
 
 Check if a value implements the `At` interface.
@@ -42,16 +31,6 @@ Check if a value implements the `Location` interface.
   Returns `boolean` - `true` if the value is a Path, Point, or Range.
 </APIReturns>
 
-## Span
-
-```ts
-/**
- * The `Span` interface is a low-level way to refer to locations in nodes
- * without using `Point` which requires leaf text nodes to be present.
- */
-type Span = [Path, Path];
-```
-
 ### `isSpan`
 
 Check if a value implements the `Span` interface.
@@ -70,14 +49,10 @@ Check if a value implements the `Span` interface.
 
 ### `TLocation`
 
-```ts
-/** Base location type that can be a Path, Point, or Range */
-type TLocation = Path | Point | TRange;
-```
+The `TLocation` interface is a union of the ways to refer to a specific location in a Slate document: paths, points or ranges.
 
 <APIParameters>
   <APIItem name="TLocation" type="Path | Point | TRange">
-    A union type that can be:
     <APISubList>
       <APISubListItem>
         Path: An array of numbers representing a node's position
@@ -94,21 +69,10 @@ type TLocation = Path | Point | TRange;
 
 ### `Location`
 
-```ts
-/**
- * The `Location` interface is a union of the ways to refer to a specific
- * location in a Slate document: paths, points or ranges.
- *
- * Methods will often accept a `Location` instead of requiring only a `Path`,
- * `Point` or `Range`. This eliminates the need for developers to manage
- * converting between the different interfaces in their own code base.
- */
-type Location = Path | Point | Range;
-```
+The `Location` interface is a union of the ways to refer to a specific location in a Slate document: paths, points or ranges.
 
 <APIParameters>
   <APIItem name="Location" type="Path | Point | Range">
-    A union type that can be:
     <APISubList>
       <APISubListItem>
         Path: An array of numbers representing a node's position
@@ -120,5 +84,15 @@ type Location = Path | Point | Range;
         Range: An object with `anchor` and `focus` points
       </APISubListItem>
     </APISubList>
+  </APIItem>
+</APIParameters>
+
+### `Span`
+
+The `Span` interface is a low-level way to refer to locations in nodes without using `Point` which requires leaf text nodes to be present.
+
+<APIParameters>
+  <APIItem name="Span" type="[Path, Path]">
+    A tuple containing two paths.
   </APIItem>
 </APIParameters>

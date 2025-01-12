@@ -7,15 +7,11 @@ description: API reference for ranges in Slate.
 
 ## Range API
 
-Find the corresponding documentation in the [Slate docs](https://docs.slatejs.org/api/locations/range).
+- Find the corresponding documentation in the [Slate docs](https://docs.slatejs.org/api/locations/range).
 
 ### `transform`
 
 Transform a range by an operation.
-
-```ts
-// Returns the transformed range, or null if the range was deleted
-```
 
 <APIParameters>
   <APIItem name="range" type="TRange">
@@ -39,12 +35,7 @@ Transform a range by an operation.
 
 ### `edges`
 
-```ts
-/**
- * Get the start and end points of a range, in the order in which they appear
- * in the document.
- */
-```
+Get the start and end points of a range, in the order in which they appear in the document.
 
 <APIParameters>
   <APIItem name="range" type="TRange">
@@ -130,12 +121,7 @@ Get the intersection of a range with another.
 
 ### `isBackward`
 
-```ts
-/**
- * Check if a range is backward, meaning that its anchor point appears in the
- * document _after_ its focus point.
- */
-```
+Check if a range is backward, meaning that its anchor point appears in the document _after_ its focus point.
 
 <APIParameters>
   <APIItem name="range" type="TRange">
@@ -149,12 +135,7 @@ Get the intersection of a range with another.
 
 ### `isCollapsed`
 
-```ts
-/**
- * Check if a range is collapsed, meaning that both its anchor and focus
- * points refer to the exact same position in the document.
- */
-```
+Check if a range is collapsed, meaning that both its anchor and focus points refer to the exact same position in the document.
 
 <APIParameters>
   <APIItem name="range" type="TRange | null" optional>
@@ -168,14 +149,7 @@ Get the intersection of a range with another.
 
 ### `isExpanded`
 
-```ts
-/**
- * Check if a range is expanded.
- *
- * This is the opposite of [[RangeApi.isCollapsed]] and is provided for
- * legibility.
- */
-```
+Check if a range is expanded. This is the opposite of `isCollapsed` and is provided for legibility.
 
 <APIParameters>
   <APIItem name="range" type="TRange | null" optional>
@@ -189,14 +163,7 @@ Get the intersection of a range with another.
 
 ### `isForward`
 
-```ts
-/**
- * Check if a range is forward.
- *
- * This is the opposite of [[RangeApi.isBackward]] and is provided for
- * legibility.
- */
-```
+Check if a range is forward. This is the opposite of `isBackward` and is provided for legibility.
 
 <APIParameters>
   <APIItem name="range" type="TRange">
@@ -224,9 +191,7 @@ Check if a value implements the `TRange` interface.
 
 ### `points`
 
-```ts
-/** Iterate through all of the point entries in a range. */
-```
+Iterate through all of the point entries in a range.
 
 <APIParameters>
   <APIItem name="range" type="TRange">
@@ -273,13 +238,7 @@ Check if a range completely includes another range.
 
 ### `TRange`
 
-```ts
-/**
- * `TRange` objects are a set of points that refer to a specific span of a Slate
- * document. They can define a span inside a single node or a can span across
- * multiple nodes.
- */
-```
+`TRange` objects are a set of points that refer to a specific span of a Slate document. They can define a span inside a single node or span across multiple nodes.
 
 <APIAttributes>
   <APIItem name="anchor" type="Point">
@@ -292,11 +251,7 @@ Check if a range completely includes another range.
 
 ### `RangeEdgesOptions`
 
-```ts
-interface RangeEdgesOptions {
-  reverse?: boolean;
-}
-```
+Options for getting the edges of a range.
 
 <APIAttributes>
   <APIItem name="reverse" type="boolean" optional>
@@ -306,11 +261,7 @@ interface RangeEdgesOptions {
 
 ### `RangeTransformOptions`
 
-```ts
-interface RangeTransformOptions {
-  affinity?: RangeDirection | null;
-}
-```
+Options for transforming a range.
 
 <APIAttributes>
   <APIItem name="affinity" type="RangeDirection | null" optional>
