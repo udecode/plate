@@ -1,4 +1,4 @@
-import { PathApi } from '@udecode/plate';
+import { type TElement, PathApi } from '@udecode/plate';
 import { type PlateEditor, getEditorPlugin } from '@udecode/plate/react';
 
 import { BlockSelectionPlugin } from '../../BlockSelectionPlugin';
@@ -8,14 +8,14 @@ import { BlockSelectionPlugin } from '../../BlockSelectionPlugin';
  *
  * SHIFT + DOWN:
  *
- * - If anchor is top-most in the selection => expand down (add block below the
- *   bottom-most)
- * - Otherwise => shrink from top-most (unless top-most is anchor).
+ * - If anchor is top-most in the selection => expand down (add block below
+ *   bottom-most).
+ * - Otherwise => shrink from top-most (unless top-most is the anchor).
  *
  * SHIFT + UP:
  *
- * - If anchor is bottom-most => expand up (add block above top-most)
- * - Otherwise => shrink from bottom-most (unless bottom-most is anchor).
+ * - If anchor is bottom-most => expand up (add block above top-most).
+ * - Otherwise => shrink from bottom-most (unless bottom-most is the anchor).
  */
 export const shiftSelection = (
   editor: PlateEditor,
@@ -26,27 +26,26 @@ export const shiftSelection = (
     BlockSelectionPlugin
   );
 
-  const blocks = api.blockSelection.getNodes(); // already sorted top→bottom if your plugin does that
+  const blocks = api.blockSelection.getNodes();
 
   if (blocks.length === 0) return;
 
-  // top-most, bottom-most
+  // Identify the top-most and bottom-most blocks in the current selection.
   const [topNode, topPath] = blocks[0];
   const [bottomNode, bottomPath] = blocks.at(-1)!;
+  let anchorId = getOptions().anchorId;
 
-  let anchorId = getOptions().anchorId as string | undefined;
-
-  // If no anchor, default anchor to bottom if SHIFT+up, or top if SHIFT+down (arbitrary choice).
+  // If no anchor is set, default to bottom-most if SHIFT+UP, else top-most if SHIFT+DOWN.
   if (!anchorId) {
     anchorId = direction === 'up' ? bottomNode.id : topNode.id;
     setOption('anchorId', anchorId);
   }
 
-  // find anchor index in the selection
-  const anchorIndex = blocks.findIndex(([n]) => n.id === anchorId);
+  // Find the anchor block within the current selection array.
+  const anchorIndex = blocks.findIndex(([node]) => node.id === anchorId);
 
   if (anchorIndex < 0) {
-    // re-anchor if anchor not found
+    // If anchor not found in the current selection, fallback:
     setOption('anchorId', bottomNode.id);
 
     return;
@@ -54,58 +53,74 @@ export const shiftSelection = (
 
   const anchorIsTop = anchorIndex === 0;
   const anchorIsBottom = anchorIndex === blocks.length - 1;
+
   const newSelected = new Set(getOption('selectedIds'));
 
   if (direction === 'down') {
+    // SHIFT+DOWN
     if (anchorIsTop) {
-      // expand down => add block below bottom-most
-      const belowPath = PathApi.next(bottomPath);
-
-      if (!belowPath) return;
-
-      const belowEntry = editor.api.block({ at: belowPath, highest: true });
+      // Expand down => add block below the bottom-most
+      const belowEntry = editor.api.next({
+        at: bottomPath,
+        match: (n, p) =>
+          api.blockSelection.isSelectable(n as any, p) &&
+          !PathApi.isAncestor(p, bottomPath),
+        mode: 'highest',
+      });
 
       if (!belowEntry) return;
 
       const [belowNode] = belowEntry;
 
-      if (belowNode.id) {
-        newSelected.add(belowNode.id as string);
-      }
+      newSelected.add(belowNode.id as string);
     } else {
-      // shrink => remove top-most (unless anchor)
+      // anchor is not top => shrink from top-most
+      // remove the top-most from selection unless it's the anchor.
       if (topNode.id && topNode.id !== anchorId) {
         newSelected.delete(topNode.id);
       }
     }
-
-    newSelected.add(anchorId!);
-    setOption('selectedIds', newSelected);
   } else {
-    // direction === 'up'
+    // SHIFT+UP
     if (anchorIsBottom) {
-      // expand up => add block above top-most
-      const abovePath = PathApi.previous(topPath);
-
-      if (!abovePath) return;
-
-      const aboveEntry = editor.api.block({ at: abovePath, highest: true });
+      // Expand up => add block above the top-most
+      const aboveEntry = editor.api.previous<TElement & { id: string }>({
+        at: topPath,
+        from: 'parent',
+        match: api.blockSelection.isSelectable,
+      });
 
       if (!aboveEntry) return;
 
-      const [aboveNode] = aboveEntry;
+      const [aboveNode, abovePath] = aboveEntry;
 
-      if (aboveNode.id) {
-        newSelected.add(aboveNode.id as string);
+      if (PathApi.isAncestor(abovePath, topPath)) {
+        newSelected.forEach((id) => {
+          const entry = editor.api.node({ id, at: abovePath });
+
+          if (!entry) return;
+          if (PathApi.isDescendant(entry[1], abovePath)) {
+            newSelected.delete(id);
+
+            if (id === anchorId) {
+              anchorId = aboveNode.id;
+              setOption('anchorId', anchorId);
+            }
+          }
+        });
       }
+
+      newSelected.add(aboveNode.id);
     } else {
-      // shrink => remove bottom-most
+      // anchor is not bottom => shrink from bottom-most
       if (bottomNode.id && bottomNode.id !== anchorId) {
         newSelected.delete(bottomNode.id);
       }
     }
-
-    newSelected.add(anchorId!);
-    setOption('selectedIds', newSelected);
   }
+
+  // Always ensure the anchor remains selected
+  newSelected.add(anchorId!);
+
+  setOption('selectedIds', newSelected);
 };
