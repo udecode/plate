@@ -1,5 +1,12 @@
 # @udecode/plate-comments
 
+## 42.0.3
+
+### Patch Changes
+
+- [#3952](https://github.com/udecode/plate/pull/3952) by [@zbeyens](https://github.com/zbeyens) –
+  - Fix `insertComment` - it should not deselect the editor after inserting a comment.
+
 ## 42.0.0
 
 ## 41.0.0
