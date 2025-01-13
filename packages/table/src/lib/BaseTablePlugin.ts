@@ -7,10 +7,9 @@ import {
   createSlatePlugin,
   createTSlatePlugin,
   isSlatePluginElement,
-  keyToDataAttribute,
 } from '@udecode/plate';
 
-import type { TTableCellElement, TTableElement } from './types';
+import type { TTableCellElement } from './types';
 import type { CellIndices } from './utils';
 
 import { getEmptyCellNode, getEmptyRowNode, getEmptyTableNode } from './api';
@@ -177,15 +176,15 @@ export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
   key: 'table',
   // dependencies: [NodeIdPlugin.key],
   node: {
-    dangerouslyAllowAttributes: [keyToDataAttribute('colSizes')],
+    // dangerouslyAllowAttributes: [keyToDataAttribute('colSizes')],
     isElement: true,
-    toDataAttributes: ({ node }) => {
-      if (node.colSizes as TTableElement['colSizes']) {
-        return {
-          [keyToDataAttribute('colSizes')]: JSON.stringify(node.colSizes),
-        };
-      }
-    },
+    // toDataAttributes: ({ node }) => {
+    //   if (node.colSizes as TTableElement['colSizes']) {
+    //     return {
+    //       [keyToDataAttribute('colSizes')]: JSON.stringify(node.colSizes),
+    //     };
+    //   }
+    // },
   },
   normalizeInitialValue: normalizeInitialValueTable,
   options: {
@@ -210,21 +209,21 @@ export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
           return { type };
         },
         rules: [{ validNodeName: 'TABLE' }],
-        toNodeProps: ({ element }) => {
-          const dangerouslyColSizesString = element.getAttribute(
-            keyToDataAttribute('colSizes')
-          );
+        // toNodeProps: ({ element }) => {
+        //   const dangerouslyColSizesString = element.getAttribute(
+        //     keyToDataAttribute('colSizes')
+        //   );
 
-          if (!dangerouslyColSizesString) return;
+        //   if (!dangerouslyColSizesString) return;
 
-          const colSizes = JSON.parse(dangerouslyColSizesString);
+        //   const colSizes = JSON.parse(dangerouslyColSizesString);
 
-          if (!Array.isArray(colSizes)) return;
+        //   if (!Array.isArray(colSizes)) return;
 
-          return {
-            colSizes: colSizes,
-          };
-        },
+        //   return {
+        //     colSizes: colSizes,
+        //   };
+        // },
       },
     },
   },
