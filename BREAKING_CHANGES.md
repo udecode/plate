@@ -414,7 +414,7 @@ For older changelogs, see https://github.com/udecode/plate/blob/main/docs
     - `insertFragment` -> `editor.tf.insertFragment`
     - `insertNode` -> `editor.tf.insertNode`
     - `insertNodes` -> `editor.tf.insertNodes`
-    - `insertText` -> `editor.tf.insertText`
+    - `insertText` -> `editor.tf.insertText({ at })` or `editor.tf.insertText({ marks: false })` without `at`
     - `isAncestorEmpty` -> `editor.api.isEmpty`
     - `isBlock` -> `editor.api.isBlock`
     - `isBlockAboveEmpty` -> `editor.api.isEmpty(editor.selection, { block: true })`

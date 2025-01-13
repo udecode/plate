@@ -281,10 +281,10 @@ Wrap nodes at the specified location in an element container.
 
 Add a custom property to the leaf text nodes in the current selection.
 
-+ ```ts
-+ // If the selection is currently collapsed, the marks will be added to the
-+ // `editor.marks` property instead, and applied when text is inserted next.
-+ ```
+```ts
+// If the selection is currently collapsed, the marks will be added to the
+// `editor.marks` property instead, and applied when text is inserted next.
+```
 
 <APIParameters>
   <APIItem name="key" type="string">
@@ -303,13 +303,11 @@ Add a custom property to the leaf text nodes in the current selection.
 
 Add multiple marks to the leaf text nodes in the current selection.
 
-+ ```ts
-+ // If marks with the same keys exist, they will be removed first.
-+ // Examples:
-+ // editor.tf.addMarks({ bold: true, italic: true })
-+ // editor.tf.addMarks({ bold: subscript }, { remove: 'superscript' })
-+ // editor.tf.addMarks({ bold: true }, { remove: ['italic', 'underline'] })
-+ ```
+```ts
+editor.tf.addMarks({ bold: true, italic: true })
+editor.tf.addMarks({ bold: subscript }, { remove: 'superscript' })
+editor.tf.addMarks({ bold: true }, { remove: ['italic', 'underline'] })
+```
 
 <APIParameters>
   <APIItem name="marks" type="Record<string, any>">
@@ -410,9 +408,9 @@ Duplicate nodes at a location.
 
 Insert a block break at the current selection.
 
-+ ```ts
-+ // If the selection is currently expanded, it will be deleted first.
-+ ```
+```ts
+// If the selection is currently expanded, it will be deleted first.
+```
 
 <APIReturns>
   Returns `void`
@@ -422,9 +420,9 @@ Insert a block break at the current selection.
 
 Insert a soft break at the current selection.
 
-+ ```ts
-+ // If the selection is currently expanded, it will be deleted first.
-+ ```
+```ts
+// If the selection is currently expanded, it will be deleted first.
+```
 
 <APIReturns>
   Returns `void`
@@ -455,9 +453,9 @@ Normalize any dirty objects in the editor.
 
 Redo to the next saved state.
 
-+ <APIReturns>
-+   Returns `void`
-+ </APIReturns>
+<APIReturns>
+  Returns `void`
+</APIReturns>
 
 ### `collapse`
 
@@ -541,25 +539,25 @@ Set new properties on one of the selection's points.
 
 Blur the editor.
 
-+ <APIReturns>
-+   Returns `void`
-+ </APIReturns>
+<APIReturns>
+  Returns `void`
+</APIReturns>
 
 ### `deselect`
 
 Unset the selection.
 
-+ <APIReturns>
-+   Returns `void`
-+ </APIReturns>
+<APIReturns>
+  Returns `void`
+</APIReturns>
 
 ### `withoutSaving`
 
 Apply a series of changes inside a synchronous function, without saving any of their operations into the history.
 
-+ ```ts
-+ // Operations inside this function will not be saved to history
-+ ```
+```ts
+// Operations inside this function will not be saved to history
+```
 
 <APIParameters>
   <APIItem name="fn" type="() => void">
@@ -567,9 +565,9 @@ Apply a series of changes inside a synchronous function, without saving any of t
   </APIItem>
 </APIParameters>
 
-+ <APIReturns>
-+   Returns `void`
-+ </APIReturns>
+<APIReturns>
+  Returns `void`
+</APIReturns>
 
 ### `withoutMerging`
 
@@ -702,10 +700,10 @@ The `HistoryEditor` interface extends the base `Editor` interface to handle hist
 
 Remove a custom property from all of the leaf text nodes within non-void nodes or void nodes that `editor.markableVoid()` allows in the current selection.
 
-+ ```ts
-+ // If the selection is currently collapsed, the removal will be stored on
-+ // `editor.marks` and applied to the text inserted next.
-+ ```
+```ts
+// If the selection is currently collapsed, the removal will be stored on
+// `editor.marks` and applied to the text inserted next.
+```
 
 <APIParameters>
   <APIItem name="key" type="string">
@@ -721,13 +719,13 @@ Remove a custom property from all of the leaf text nodes within non-void nodes o
 
 Remove marks from text nodes.
 
-+ ```ts
-+ // Examples:
-+ // editor.tf.removeMarks() // Remove all marks from editor.marks
-+ // editor.tf.removeMarks('bold') // Remove bold mark at selection
-+ // editor.tf.removeMarks(['bold', 'italic']) // Remove multiple marks at selection
-+ // editor.tf.removeMarks('bold', { at: range }) // Remove bold in range
-+ ```
+```ts
+// Examples:
+// editor.tf.removeMarks() // Remove all marks from editor.marks
+// editor.tf.removeMarks('bold') // Remove bold mark at selection
+// editor.tf.removeMarks(['bold', 'italic']) // Remove multiple marks at selection
+// editor.tf.removeMarks('bold', { at: range }) // Remove bold in range
+```
 
 <APIParameters>
   <APIItem name="keys" type="string[] | string" optional>
@@ -822,11 +820,11 @@ Split nodes at the specified location.
 
 Toggle a mark on the leaf text nodes in the current selection.
 
-+ ```ts
-+ // Examples:
-+ // editor.tf.toggleMark('bold') // Toggle bold mark
-+ // editor.tf.toggleMark('subscript', { remove: 'superscript' }) // Add subscript, remove superscript
-+ ```
+```ts
+// Examples:
+// editor.tf.toggleMark('bold') // Toggle bold mark
+// editor.tf.toggleMark('subscript', { remove: 'superscript' }) // Add subscript, remove superscript
+```
 
 <APIParameters>
   <APIItem name="key" type="string">
@@ -885,11 +883,11 @@ Delete content in the editor.
 
 Insert a string of text at the specified location or current selection.
 
-+ ```ts
-+ // If no location is specified, text will be inserted at:
-+ // 1. Current selection if it exists
-+ // 2. End of document if no selection exists
-+ ```
+```ts
+// If no location is specified, text will be inserted at:
+// 1. Current selection if it exists
+// 2. End of document if no selection exists
+```
 
 <APIParameters>
   <APIItem name="text" type="string">
@@ -915,12 +913,12 @@ Insert a string of text at the specified location or current selection.
 
 Set the selection to a new value. When a selection already exists, this method will update the existing value.
 
-+ ```ts
-+ // Examples:
-+ // editor.tf.select(at) // Select at location
-+ // editor.tf.select(at, { edge: 'end' }) // Select end of block above
-+ // editor.tf.select(at, { edge: 'start' }) // Select start of block above
-+ ```
+```ts
+// Examples:
+// editor.tf.select(at) // Select at location
+// editor.tf.select(at, { edge: 'end' }) // Select end of block above
+// editor.tf.select(at, { edge: 'start' }) // Select start of block above
+```
 
 <APIParameters>
   <APIItem name="at" type="At">
@@ -943,24 +941,24 @@ Set the selection to a new value. When a selection already exists, this method w
 
 Deselect the editor in the DOM.
 
-+ ```ts
-+ // This removes any browser selection from the editor's DOM element
-+ ```
+```ts
+// This removes any browser selection from the editor's DOM element
+```
 
-+ <APIReturns>
-+   Returns `void`
-+ </APIReturns>
+<APIReturns>
+  Returns `void`
+</APIReturns>
 
 ### `focus`
 
 Focus the editor.
 
-+ ```ts
-+ // Examples:
-+ // editor.tf.focus() // focus editor
-+ // editor.tf.focus({ edge: 'end' }) // end of selection if selection exists
-+ // editor.tf.focus({ edge: 'end' }) // end of editor if selection is null
-+ ```
+```ts
+// Examples:
+// editor.tf.focus() // focus editor
+// editor.tf.focus({ edge: 'end' }) // end of selection if selection exists
+// editor.tf.focus({ edge: 'end' }) // end of editor if selection is null
+```
 
 <APIParameters>
   <APIItem name="options" type="FocusEditorOptions" optional>
@@ -986,11 +984,11 @@ Focus the editor.
 
 Insert data from a `DataTransfer` into the editor.
 
-+ ```ts
-+ // This is a proxy method that calls in this order:
-+ // 1. insertFragmentData(editor, data)
-+ // 2. insertTextData(editor, data)
-+ ```
+```ts
+// This is a proxy method that calls in this order:
+// 1. insertFragmentData(editor, data)
+// 2. insertTextData(editor, data)
+```
 
 <APIParameters>
   <APIItem name="data" type="DataTransfer">
@@ -998,18 +996,18 @@ Insert data from a `DataTransfer` into the editor.
   </APIItem>
 </APIParameters>
 
-+ <APIReturns>
-+   Returns `void`
-+ </APIReturns>
+<APIReturns>
+  Returns `void`
+</APIReturns>
 
 ### `insertFragmentData`
 
 Insert fragment data from a `DataTransfer` into the editor.
 
-+ ```ts
-+ // Attempts to insert fragment data from the data transfer object.
-+ // Returns true if content was successfully inserted.
-+ ```
+```ts
+// Attempts to insert fragment data from the data transfer object.
+// Returns true if content was successfully inserted.
+```
 
 <APIParameters>
   <APIItem name="data" type="DataTransfer">
@@ -1017,18 +1015,18 @@ Insert fragment data from a `DataTransfer` into the editor.
   </APIItem>
 </APIParameters>
 
-+ <APIReturns>
-+   Returns `boolean` - `true` if content was successfully inserted, `false` otherwise.
-+ </APIReturns>
+<APIReturns>
+  Returns `boolean` - `true` if content was successfully inserted, `false` otherwise.
+</APIReturns>
 
 ### `insertTextData`
 
 Insert text data from a `DataTransfer` into the editor.
 
-+ ```ts
-+ // Attempts to insert text data from the data transfer object.
-+ // Returns true if content was successfully inserted.
-+ ```
+```ts
+// Attempts to insert text data from the data transfer object.
+// Returns true if content was successfully inserted.
+```
 
 <APIParameters>
   <APIItem name="data" type="DataTransfer">
@@ -1036,9 +1034,9 @@ Insert text data from a `DataTransfer` into the editor.
   </APIItem>
 </APIParameters>
 
-+ <APIReturns>
-+   Returns `boolean` - `true` if content was successfully inserted, `false` otherwise.
-+ </APIReturns>
+<APIReturns>
+  Returns `boolean` - `true` if content was successfully inserted, `false` otherwise.
+</APIReturns>
 
 ### `setFragmentData`
 
@@ -1050,18 +1048,18 @@ Set data from the currently selected fragment on a `DataTransfer`.
   </APIItem>
 </APIParameters>
 
-+ <APIReturns>
-+   Returns `void`
-+ </APIReturns>
+<APIReturns>
+  Returns `void`
+</APIReturns>
 
 ### `setSplittingOnce`
 
 Set whether the next operation should split into a new batch in the history.
 
-+ ```ts
-+ // When true, the next operation will start a new batch in the history
-+ // instead of merging with the previous operations
-+ ```
+```ts
+// When true, the next operation will start a new batch in the history
+// instead of merging with the previous operations
+```
 
 <APIParameters>
   <APIItem name="value" type="boolean">
@@ -1069,17 +1067,17 @@ Set whether the next operation should split into a new batch in the history.
   </APIItem>
 </APIParameters>
 
-+ <APIReturns>
-+   Returns `void`
-+ </APIReturns>
+<APIReturns>
+  Returns `void`
+</APIReturns>
 
 ### `withMerging`
 
 Apply a series of changes inside a synchronous function. These operations will be merged into the previous history.
 
-+ ```ts
-+ // All operations inside the function will be merged with the previous history batch
-+ ```
+```ts
+// All operations inside the function will be merged with the previous history batch
+```
 
 <APIParameters>
   <APIItem name="fn" type="() => void">
@@ -1087,18 +1085,18 @@ Apply a series of changes inside a synchronous function. These operations will b
   </APIItem>
 </APIParameters>
 
-+ <APIReturns>
-+   Returns `void`
-+ </APIReturns>
+<APIReturns>
+  Returns `void`
+</APIReturns>
 
 ### `withNewBatch`
 
 Apply a series of changes inside a synchronous function, ensuring that the first operation starts a new batch in the history.
 
-+ ```ts
-+ // The first operation starts a new batch in history
-+ // Subsequent operations will be merged as usual
-+ ```
+```ts
+// The first operation starts a new batch in history
+// Subsequent operations will be merged as usual
+```
 
 <APIParameters>
   <APIItem name="fn" type="() => void">
@@ -1106,9 +1104,9 @@ Apply a series of changes inside a synchronous function, ensuring that the first
   </APIItem>
 </APIParameters>
 
-+ <APIReturns>
-+   Returns `void`
-+ </APIReturns>
+<APIReturns>
+  Returns `void`
+</APIReturns>
 
 ### `normalizeNode`
 
