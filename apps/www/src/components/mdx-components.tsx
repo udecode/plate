@@ -13,9 +13,12 @@ import { useConfig } from '@/hooks/use-config';
 import { packageInfoAtom } from '@/hooks/use-package-info';
 
 import {
+  API,
   APIAttributes,
   APIItem,
   APIList,
+  APIListAPI,
+  APIMethods,
   APIOptions,
   APIParameters,
   APIProps,
@@ -23,6 +26,7 @@ import {
   APIState,
   APISubList,
   APISubListItem,
+  APITransforms,
 } from './api-list';
 import { BadgeList, BadgePopover } from './badge-popover';
 import { Callout } from './callout';
@@ -56,9 +60,12 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
 const components = {
+  API,
   APIAttributes,
   APIItem,
   APIList,
+  APIListAPI,
+  APIMethods,
   APIOptions,
   APIParameters,
   APIProps,
@@ -66,6 +73,7 @@ const components = {
   APIState,
   APISubList,
   APISubListItem,
+  APITransforms,
   Accordion,
   AccordionContent,
   AccordionItem,
