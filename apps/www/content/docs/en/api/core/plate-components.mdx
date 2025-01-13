@@ -7,9 +7,10 @@ description: API reference for Plate component.
 
 `PlateContent` is the component that renders the editor.
 
-## Plate Props
+## `<Plate>`
 
-<APIParameters>
+<API name="Plate">
+<APIProps>
 <APIItem name="children" type="ReactNode">
 Children components have access to the plate store. 
 </APIItem>
@@ -42,10 +43,12 @@ Custom render function for elements.
 <APIItem name="renderLeaf" type="FC<RenderLeafProps>" optional>
 Custom render function for leaf nodes.
 </APIItem>
-</APIParameters>
+</APIProps>
+</API>
 
-## PlateContent Props
+## `<PlateContent>`
 
+<API name="PlateContent">
 Props for the [Editable](https://docs.slatejs.org/libraries/slate-react/editable) component. Extends `TextareaHTMLAttributes<HTMLDivElement>`.
 
 <APIProps>
@@ -72,6 +75,7 @@ Custom `Editable` node.
 <APIItem name="scrollSelectionIntoView" type="(editor: ReactEditor, domRange: DOMRange) => void" optional />
 <APIItem name="style" type="CSSProperties" optional />
 </APIProps>
+</API>
 
 ## How Plate Works
 

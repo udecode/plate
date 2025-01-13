@@ -10,12 +10,6 @@ description: API reference for @udecode/plate-core.
 Generates a new instance of a `PlateEditor`, initialized with a set of plugins and their configurations.
 
 <API name="createPlateEditor">
-<APIParameters>
-  <APIItem name="options" type="CreatePlateEditorOptions<V, E>">
-    Options for creating the Plate editor.
-  </APIItem>
-</APIParameters>
-
 <APIOptions type="CreatePlateEditorOptions">
   <APIItem name="id" type="any" optional>
     Unique identifier for the editor.
@@ -91,7 +85,7 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
 </APIOptions>
 
 <APIReturns type="PlateEditor">
-  An instance of `PlateEditor` with the specified plugins and settings applied.
+  An editor instance with plugins and config applied.
 </APIReturns>
 </API>
 
@@ -103,15 +97,15 @@ Creates a new Plate plugin with the given configuration, supporting extension, n
 
 <API name="createPlatePlugin">
 <APIParameters>
-  <APIItem name="config" type="PlatePluginConfig<K, O, A, T> | ((editor: PlateEditor) => PlatePluginConfig<K, O, A, T>)">
+  <APIItem name="config" type="PlatePluginConfig | ((editor: PlateEditor) => PlatePluginConfig)">
     The configuration object for the plugin, or a function that returns the configuration. If a function is provided, it will be executed when the plugin is resolved with the editor.
 
     For details on the `PlatePluginConfig` type, refer to the [PlatePlugin API](/docs/api/core/plate-plugin#plugin-properties).
   </APIItem>
 </APIParameters>
 
-<APIReturns type="PlatePlugin<PluginConfig<K, O, A, T>>">
-  The created plugin.
+<APIReturns type="PlatePlugin">
+  A new plugin instance.
 </APIReturns>
 </API>
 
@@ -119,6 +113,7 @@ Creates a new Plate plugin with the given configuration, supporting extension, n
 
 Explicitly typed version of `createPlatePlugin`.
 
+<API name="createTPlatePlugin">
 <APIParameters>
   <APIItem name="config" type="TPlatePluginConfig<C> | ((editor: PlateEditor) => TPlatePluginConfig<C>)">
     The configuration object for the plugin, or a function that returns the configuration. This version requires an explicit type parameter `C` extending `AnyPluginConfig`.
@@ -127,31 +122,35 @@ Explicitly typed version of `createPlatePlugin`.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-  A new `PlatePlugin<C>` instance.
+<APIReturns type="PlatePlugin<C>">
+  A new plugin instance.
 </APIReturns>
+</API>
 
 ### `toPlatePlugin`
 
 Extends a SlatePlugin to create a React PlatePlugin.
 
+<API name="toPlatePlugin">
 <APIParameters>
-  <APIItem name="basePlugin" type="SlatePlugin<C>">
+  <APIItem name="basePlugin" type="SlatePlugin">
     The base SlatePlugin to be extended.
   </APIItem>
-  <APIItem name="extendConfig" type="PlatePluginConfig<C, EO, EA, ET> | ((ctx: PlatePluginContext<C>) => PlatePluginConfig<C, EO, EA, ET>)" optional>
+  <APIItem name="extendConfig" type="PlatePluginConfig | ((ctx: PlatePluginContext<C>) => PlatePluginConfig)" optional>
     A function or object that provides the extension configuration. If a function, it receives the plugin context and should return a partial PlatePlugin. If an object, it should be a partial PlatePlugin configuration.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-  A new `PlatePlugin` that combines the base SlatePlugin functionality with React-specific features defined in the extension configuration.
+<APIReturns type="PlatePlugin">
+  A new plugin instance that combines the base SlatePlugin functionality with React-specific features defined in the extension configuration.
 </APIReturns>
+</API>
 
 ### `toTPlatePlugin`
 
 Explicitly typed version of `toPlatePlugin`.
 
+<API name="toTPlatePlugin">
 <APIParameters>
   <APIItem name="basePlugin" type="SlatePlugin<TContext>">
     The base SlatePlugin to be extended.
@@ -161,76 +160,92 @@ Explicitly typed version of `toPlatePlugin`.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-  A new `PlatePlugin` with precise type control.
+<APIReturns type="PlatePlugin<C>">
+  A new plugin instance with precise type control.
 </APIReturns>
+</API>
 
 ### `useEditorContainerRef`
 
-Get the editor container DOM reference.
+<API name="useEditorContainerRef">
+<APIReturns type="React.RefObject<HTMLDivElement>">
+  The editor container DOM reference.
+</APIReturns>
+</API>
 
 ### `useEditorScrollRef`
 
-Get the editor scroll container reference.
+<API name="useEditorScrollRef">
+<APIReturns type="React.RefObject<HTMLDivElement>">
+  The editor scroll container DOM reference.
+</APIReturns>
+</API>
 
 ### `useScrollRef`
 
-Get the editor scroll container reference. Returns the scroll ref if it exists, otherwise returns the container ref.
+<API name="useScrollRef">
+<APIReturns type="React.RefObject<HTMLDivElement>">
+The editor scroll container reference. Returns the scroll ref if it exists, otherwise returns the container ref.
+</APIReturns>
+</API>
 
 ### `useEditorPlugin`
 
 Get editor and plugin context.
 
+<API name="useEditorPlugin">
 <APIParameters>
   <APIItem name="p" type="WithRequiredKey<P>">
     The plugin or plugin configuration with a required key.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-  A `PlatePluginContext` object containing:
-  <APISubList>
-    <APISubListItem parent="PlatePluginContext" name="editor" type="PlateEditor">
+<APIReturns type="PlatePluginContext">
+  <APIItem name="editor" type="PlateEditor">
       The current editor instance.
-    </APISubListItem>
-    <APISubListItem parent="PlatePluginContext" name="plugin" type="PlatePlugin">
+  </APIItem>
+  <APIItem name="plugin" type="PlatePlugin">
       The plugin instance.
-    </APISubListItem>
-    <APISubListItem parent="PlatePluginContext" name="getOption" type="function">
+  </APIItem>
+  <APIItem name="getOption" type="function">
       Function to get a specific option value.
-    </APISubListItem>
-    <APISubListItem parent="PlatePluginContext" name="getOptions" type="function">
+  </APIItem>
+  <APIItem name="getOptions" type="function">
       Function to get all options for the plugin.
-    </APISubListItem>
-    <APISubListItem parent="PlatePluginContext" name="setOption" type="function">
+  </APIItem>
+  <APIItem name="setOption" type="function">
       Function to set a specific option value.
-    </APISubListItem>
-    <APISubListItem parent="PlatePluginContext" name="setOptions" type="function">
+  </APIItem>
+  <APIItem name="setOptions" type="function">
       Function to set multiple options.
-    </APISubListItem>
-    <APISubListItem parent="PlatePluginContext" name="useOption" type="function">
+  </APIItem>
+  <APIItem name="useOption" type="function">
       Hook to subscribe to a specific option value in a React component.
-    </APISubListItem>
-  </APISubList>
+  </APIItem>
 </APIReturns>
+</API>
 
 ### `useEditorRef`
 
 Get the Slate editor reference without re-rendering.
 
+<API name="useEditorRef">
 <APIParameters>
   <APIItem name="id" type="string" optional>
     The ID of the plate editor. Useful only when nesting editors. Default is using the closest editor id.
   </APIItem>
 </APIParameters>
-<APIReturns>
-  A `PlateEditor` object, which is the Slate editor.
+
+<APIReturns type="PlateEditor">
+  The editor reference.
 </APIReturns>
+</API>
 
 ### `useEditorSelector`
 
 Subscribe to a specific property of the editor.
 
+<API name="useEditorSelector">
 <APIParameters>
   <APIItem name="selector" type="(editor: PlateEditor<V>, prev?: T) => T">
     The selector function.
@@ -239,123 +254,147 @@ Subscribe to a specific property of the editor.
     The dependency list for the selector function.
   </APIItem>
   <APIItem name="options" type="UseEditorSelectorOptions<T>" optional>
-    <APISubList>
-      <APISubListItem parent="options" name="id" type="string" optional>
-        The ID of the plate editor. Useful only when nesting editors. Default is using the closest editor id.
-      </APISubListItem>
-      <APISubListItem parent="options" name="equalityFn" type="(a: T, b: T) => boolean" optional>
-        Equality function to determine whether the result of the selector function has changed. Default is `(a, b) => a === b`.
-      </APISubListItem>
-    </APISubList>
+    Options for the selector function.
   </APIItem>
 </APIParameters>
-<APIReturns>
+
+<APIOptions>
+  <APIItem name="id" type="string" optional>
+    The ID of the plate editor. Useful only when nesting editors. Default is using the closest editor id.
+  </APIItem>
+  <APIItem name="equalityFn" type="(a: T, b: T) => boolean" optional>
+    Equality function to determine whether the result of the selector function has changed. Default is `(a, b) => a === b`.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="T">
   The return value of the selector function.
 </APIReturns>
+</API>
 
 ### `useEditorState`
 
 Get the Slate editor reference with re-rendering.
 
+<API name="useEditorState">
 <APIParameters>
   <APIItem name="id" type="string" optional>
     The ID of the plate editor. Default is using the closest editor id.
   </APIItem>
 </APIParameters>
-<APIReturns>
-  A `PlateEditor` object, which is the Slate editor.
+
+<APIReturns type="PlateEditor">
+  The editor reference.
 </APIReturns>
+</API>
+
 
 ### `useEditorReadOnly`
 
 Get the editor's `readOnly` state.
 
+<API name="useEditorReadOnly">
 <APIParameters>
   <APIItem name="id" type="string" optional>
     The ID of the plate editor.
   </APIItem>
 </APIParameters>
-<APIReturns>
-  The `readOnly` state of the editor.
+<APIReturns type="boolean">
+  Whether the editor is read-only.
 </APIReturns>
+</API>
 
 ### `useEditorMounted`
 
 Get the editor's `isMounted` state.
 
+<API name="useEditorMounted">
 <APIParameters>
   <APIItem name="id" type="string" optional>
     The ID of the plate editor.
   </APIItem>
 </APIParameters>
-<APIReturns>
-  The `isMounted` state of the editor.
+<APIReturns type="boolean">
+  Whether the editor is mounted.
 </APIReturns>
+</API>
 
 ### `useEditorSelection`
 
 Get the editor's selection. Memoized so it does not re-render if the range is the same.
 
+<API name="useEditorSelection">
 <APIParameters>
   <APIItem name="id" type="string" optional>
     The ID of the plate editor.
   </APIItem>
 </APIParameters>
-<APIReturns>The current selection in the editor.</APIReturns>
+<APIReturns type="Range | null">
+The current selection in the editor.
+</APIReturns>
+</API>
 
 ### `useEditorVersion`
 
 Get the version of the editor value. That version is incremented on each editor change.
 
+<API name="useEditorVersion">
 <APIParameters>
   <APIItem name="id" type="string" optional>
     The ID of the plate editor.
   </APIItem>
 </APIParameters>
-<APIReturns>The current version of the editor value.</APIReturns>
+<APIReturns type="number">
+The current version of the editor value.
+</APIReturns>
+</API>  
 
 ### `useSelectionVersion`
 
 Get the version of the editor selection. That version is incremented on each selection change (the range being different).
 
+<API name="useSelectionVersion">
 <APIParameters>
   <APIItem name="id" type="string" optional>
     The ID of the plate editor.
   </APIItem>
 </APIParameters>
-<APIReturns>The current version of the editor selection.</APIReturns>
+<APIReturns type="number">
+The current version of the editor selection.
+</APIReturns>
+</API>
 
 ### `useSelectionCollapsed`
 
-Returns whether the current selection is collapsed (i.e., the selection is a single point).
-
-<APIReturns>
-  A boolean value indicating if the selection is collapsed.
+<API name="useSelectionCollapsed">
+<APIReturns type="boolean">
+Whether the current selection is collapsed.
 </APIReturns>
+</API>
 
 ### `useSelectionExpanded`
 
-Returns whether the current selection is expanded (i.e., the selection has a non-zero range).
-
-<APIReturns>
-  A boolean value indicating if the selection is expanded.
+<API name="useSelectionExpanded">
+<APIReturns type="boolean">
+Whether the current selection is expanded.
 </APIReturns>
+</API>
 
 ### `useSelectionWithinBlock`
 
-Returns whether the current selection is within a single block.
-
-<APIReturns>
-  A boolean value indicating if the selection is within a single block.
+<API name="useSelectionWithinBlock">
+<APIReturns type="boolean">
+Whether the current selection is within a single block.
 </APIReturns>
+</API>
 
 ### `useSelectionAcrossBlocks`
 
-Returns whether the current selection spans across multiple blocks.
-
-<APIReturns>
-  A boolean value indicating if the selection spans across multiple blocks.
+<API name="useSelectionAcrossBlocks">
+<APIReturns type="boolean">
+Whether the current selection spans across multiple blocks.
 </APIReturns>
+</API>
 
 ### `useSelectionFragment`
 
@@ -376,41 +415,41 @@ Returns the fragment of the current selection, optionally unwrapping structural 
 ### `useSelectionFragmentProp`
 
 Returns a prop value derived from the current selection fragment.
-
-<APIParameters>
-  <APIItem name="options" type="GetSelectionFragmentOptions & GetFragmentPropOptions" optional>
-    <APISubList>
-      <APISubListItem parent="options" name="structuralTypes" type="string[]" optional>
-        Array of structural types to unwrap from the fragment.
-      </APISubListItem>
-      <APISubListItem parent="options" name="key" type="string" optional>
-        The key of the property to extract from each node.
-      </APISubListItem>
-      <APISubListItem parent="options" name="defaultValue" type="string" optional>
-        The default value to return if no valid prop is found.
-      </APISubListItem>
-      <APISubListItem parent="options" name="getProp" type="(node: TElement | TText) => any" optional>
-        Custom function to extract the prop value from a node.
-      </APISubListItem>
-      <APISubListItem parent="options" name="mode" type="'all' | 'block' | 'text'" optional>
-        Determines how to traverse the fragment:
-        - 'all': Check both block and text nodes
-        - 'block': Only check block nodes
-        - 'text': Only check text nodes
-        Default is 'block'.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIParameters>
+    
+<API name="useSelectionFragmentProp">
+<APIOptions type="GetSelectionFragmentOptions & GetFragmentPropOptions" optional>
+<APIItem name="structuralTypes" type="string[]" optional>
+Array of structural types to unwrap from the fragment.
+</APIItem>
+<APIItem name="key" type="string" optional>
+The key of the property to extract from each node.
+</APIItem>
+<APIItem name="defaultValue" type="string" optional>
+The default value to return if no valid prop is found.
+</APIItem>
+<APIItem name="getProp" type="(node: TElement | TText) => any" optional>
+Custom function to extract the prop value from a node.
+</APIItem>
+<APIItem name="mode" type="'all' | 'block' | 'text'" optional>
+Determines how to traverse the fragment:
+- 'all': Check both block and text nodes
+- 'block': Only check block nodes
+- 'text': Only check text nodes
+  
+- **Default**: `'block'`
+</APIItem>
+</APIOptions>
 
 <APIReturns>
-  A value derived from the fragment nodes, or undefined if no consistent value is found across the specified nodes.
+A value derived from the fragment nodes, or undefined if no consistent value is found across the specified nodes.
 </APIReturns>
+</API>
 
 ### `useNodePath`
 
 Returns the path of a node in the editor.
 
+<API name="useNodePath">
 <APIParameters>
   <APIItem name="node" type="TNode">
     The node to find the path for.
@@ -420,11 +459,13 @@ Returns the path of a node in the editor.
 <APIReturns>
   A memoized Path array representing the location of the node in the editor's tree structure.
 </APIReturns>
+</API>
 
 ### `usePath`
 
 Get the memoized path of the closest element.
 
+<API name="usePath">
 <APIParameters>
   <APIItem name="pluginKey" type="string" optional>
     The key of the plugin to get the path for.
@@ -434,11 +475,13 @@ Get the memoized path of the closest element.
 <APIReturns>
   The path of the element, or `undefined` if used outside of a node component's context.
 </APIReturns>
+</API>  
 
 ### `useElement`
 
 Get the element by plugin key.
 
+<API name="useElement">
 <APIParameters>
   <APIItem name="pluginKey" type="string" optional>
     The key of the plugin to get the element for.
@@ -449,6 +492,7 @@ Get the element by plugin key.
 <APIReturns>
   The element of type `T extends TElement`, or an empty object if used outside of a node component's context.
 </APIReturns>
+</API>
 
 ## Core plugins
 
@@ -493,6 +537,7 @@ Manages editor events such as focus and blur.
 
 Checks whether a node matches the provided type.
 
+<API name="isType">
 <APIParameters>
   <APIItem name="editor" type="PlateEditor<V>">
     The editor in which the node is present.
@@ -509,3 +554,4 @@ Checks whether a node matches the provided type.
   A boolean indicating whether the node's type matches the provided type or
   types.
 </APIReturns>
+</API>
