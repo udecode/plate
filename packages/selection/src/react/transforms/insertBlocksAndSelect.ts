@@ -16,7 +16,8 @@ export const insertBlocksAndSelect = (
   let count = 1;
 
   while (count < nodes.length) {
-    const nextNode = NodeApi.get<TElement>(editor, PathApi.next(at))!;
+    at = PathApi.next(at);
+    const nextNode = NodeApi.get<TElement>(editor, at)!;
     insertedNodes.push(nextNode);
     count++;
   }

@@ -42,6 +42,7 @@ const value = editor.api.markdown.deserialize('**Hello world!**');
 ### Slate to Markdown
 
 Currently supported plugins: paragraph, link, list, heading, italic, bold and code.
+List indentation uses 3 spaces instead of 2.
 
 ```tsx
 const editor = createPlateEditor({ 
@@ -114,6 +115,19 @@ Converts a Markdown string to a Slate value.
 <APIItem name="markdown" type="string">
 The Markdown string to be deserialized.
 </APIItem>
+<APIItem name="options" type="DeserializeMdOptions" optional>
+<APISubList>
+<APISubListItem parent="options" name="memoize" type="boolean" optional>
+Enable block-level memoization with `_memo` property, making it compatible with `PlateStatic` memoization.
+</APISubListItem>
+<APISubListItem parent="options" name="parser" type="ParseMarkdownBlocksOptions" optional>
+Options for the token parser. Can filter out specific markdown token types (e.g. 'space').
+</APISubListItem>
+<APISubListItem parent="options" name="processor" type="(processor: Processor) => Processor" optional>
+A function that allows you to customize the markdown processor.
+</APISubListItem>
+</APISubList>
+</APIItem>
 </APIParameters>
 
 <APIReturns>
@@ -139,5 +153,31 @@ The Slate nodes to serialize. If not provided, the entire editor value will be u
 <APIReturns>
 <APIItem type="string">
 A Markdown string representing the serialized Slate content.
+</APIItem>
+</APIReturns>
+
+### parseMarkdownBlocks
+
+Extracts and filters markdown tokens using marked lexer.
+
+<APIParameters>
+<APIItem name="markdown" type="string">
+The Markdown string to parse into tokens.
+</APIItem>
+<APIItem name="options" type="ParseMarkdownBlocksOptions" optional>
+<APISubList>
+<APISubListItem parent="options" name="exclude" type="string[]" optional>
+Array of token types to exclude (e.g. ['space', 'hr']).
+</APISubListItem>
+<APISubListItem parent="options" name="trim" type="boolean" optional>
+Whether to trim end of the content. Defaults to true.
+</APISubListItem>
+</APISubList>
+</APIItem>
+</APIParameters>
+
+<APIReturns>
+<APIItem type="Token[]">
+An array of markdown tokens.
 </APIItem>
 </APIReturns>

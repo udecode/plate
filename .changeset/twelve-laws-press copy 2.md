@@ -14,3 +14,7 @@
   - `from?: 'after' | 'child'` (default: `'after'`): Determines where to start traversing from
   - `'after'`: Start from the point after the current location
   - `'child'`: Start from the first child of the current path. `at` must be a path.
+- Add `editor.api.previous` option `from`:
+  - `from?: 'before' | 'parent'` (default: `'before'`): Determines where to start traversing from
+  - `'before'`: Start from the point before the current location
+  - `'parent'`: Start from the parent of the current path. `at` must be a path.
