@@ -41,6 +41,10 @@ import { BaseColumnItemPlugin, BaseColumnPlugin } from '@udecode/plate-layout';
 import { BaseLineHeightPlugin } from '@udecode/plate-line-height';
 import { BaseLinkPlugin } from '@udecode/plate-link';
 import {
+  BaseEquationPlugin,
+  BaseInlineEquationPlugin,
+} from '@udecode/plate-math';
+import {
   BaseAudioPlugin,
   BaseFilePlugin,
   BaseImagePlugin,
@@ -64,6 +68,7 @@ import { ColumnElementStatic } from 'www/src/registry/default/plate-ui/column-el
 import { ColumnGroupElementStatic } from 'www/src/registry/default/plate-ui/column-group-element-static';
 import { CommentLeafStatic } from 'www/src/registry/default/plate-ui/comment-leaf-static';
 import { DateElementStatic } from 'www/src/registry/default/plate-ui/date-element-static';
+import { EquationElementStatic } from 'www/src/registry/default/plate-ui/equation-element-static';
 import { HeadingElementStatic } from 'www/src/registry/default/plate-ui/heading-element-static';
 import { HrElementStatic } from 'www/src/registry/default/plate-ui/hr-element-static';
 import { ImageElementStatic } from 'www/src/registry/default/plate-ui/image-element-static';
@@ -75,6 +80,7 @@ import {
   TodoLiStatic,
   TodoMarkerStatic,
 } from 'www/src/registry/default/plate-ui/indent-todo-marker-static';
+import { InlineEquationElementStatic } from 'www/src/registry/default/plate-ui/inline-equation-element-static';
 import { KbdLeafStatic } from 'www/src/registry/default/plate-ui/kbd-leaf-static';
 import { LinkElementStatic } from 'www/src/registry/default/plate-ui/link-element-static';
 import { MediaAudioElementStatic } from 'www/src/registry/default/plate-ui/media-audio-element-static';
@@ -175,6 +181,8 @@ export const createStaticEditor = (value: Value) => {
       BaseMentionPlugin,
       BaseCommentsPlugin,
       BaseTogglePlugin,
+      BaseEquationPlugin,
+      BaseInlineEquationPlugin,
     ],
     value,
   });
@@ -192,9 +200,11 @@ export const components = {
   [BaseColumnPlugin.key]: ColumnGroupElementStatic,
   [BaseCommentsPlugin.key]: CommentLeafStatic,
   [BaseDatePlugin.key]: DateElementStatic,
+  [BaseEquationPlugin.key]: EquationElementStatic,
   [BaseFilePlugin.key]: MediaFileElementStatic,
   [BaseHorizontalRulePlugin.key]: HrElementStatic,
   [BaseImagePlugin.key]: ImageElementStatic,
+  [BaseInlineEquationPlugin.key]: InlineEquationElementStatic,
   [BaseItalicPlugin.key]: withProps(SlateLeaf, { as: 'em' }),
   [BaseKbdPlugin.key]: KbdLeafStatic,
   [BaseLinkPlugin.key]: LinkElementStatic,
