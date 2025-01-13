@@ -7,10 +7,6 @@ export const BaseColumnItemPlugin = createSlatePlugin({
   node: {
     isElement: true,
   },
-
-  parsers: {
-    html: {},
-  },
 }).overrideEditor(withColumn);
 
 export const BaseColumnPlugin = createSlatePlugin({

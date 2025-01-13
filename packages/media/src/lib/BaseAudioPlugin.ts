@@ -6,8 +6,5 @@ export interface TAudioElement extends TMediaElement {}
 
 export const BaseAudioPlugin = createSlatePlugin({
   key: 'audio',
-  node: {
-    isElement: true,
-    isVoid: true,
-  },
+  node: { isElement: true, isVoid: true },
 });

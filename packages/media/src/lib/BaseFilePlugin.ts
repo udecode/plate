@@ -6,8 +6,5 @@ export interface TFileElement extends TMediaElement {}
 
 export const BaseFilePlugin = createSlatePlugin({
   key: 'file',
-  node: {
-    isElement: true,
-    isVoid: true,
-  },
+  node: { isElement: true, isVoid: true },
 });
