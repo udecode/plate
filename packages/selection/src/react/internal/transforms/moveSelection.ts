@@ -1,8 +1,8 @@
+import type { TElement } from '@udecode/plate';
+
 import { type PlateEditor, getEditorPlugin } from '@udecode/plate/react';
 
 import { BlockSelectionPlugin } from '../../BlockSelectionPlugin';
-import { getNextSelectable } from './getNextSelectable';
-import { getPreviousSelectable } from './getPreviousSelectable';
 
 export const moveSelection = (
   editor: PlateEditor,
@@ -15,23 +15,30 @@ export const moveSelection = (
   if (direction === 'up') {
     const [, topPath] = blocks[0];
 
-    const prevEntry = getPreviousSelectable(editor, topPath);
+    const prevEntry = editor.api.previous<TElement & { id: string }>({
+      at: topPath,
+      from: 'parent',
+      match: api.blockSelection.isSelectable,
+    });
 
     if (prevEntry) {
       const [prevNode] = prevEntry;
-      setOption('anchorId', prevNode.id ?? null);
+      setOption('anchorId', prevNode.id);
       api.blockSelection.addSelectedRow(prevNode.id, { clear: true });
     }
   } else {
     // direction === 'down'
     const [, bottomPath] = blocks.at(-1)!;
 
-    const nextEntry = getNextSelectable(editor, bottomPath);
+    const nextEntry = editor.api.next<TElement & { id: string }>({
+      at: bottomPath,
+      from: 'child',
+      match: api.blockSelection.isSelectable,
+    });
 
     if (nextEntry) {
       const [nextNode] = nextEntry;
-      console.log(nextNode);
-      setOption('anchorId', nextNode.id ?? null);
+      setOption('anchorId', nextNode.id);
       api.blockSelection.addSelectedRow(nextNode.id, { clear: true });
     }
   }

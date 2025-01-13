@@ -18,6 +18,22 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 - `command`: add `focus-visible:outline-none`
 - `editor-static`: update `aiChat` padding
 - `transforms`: fix `insertBlock` used by slash commands: it should insert a new block if the newly inserted block is of the same type as the command.
+- `block-selection-plugins`: update `BlockSelectionPlugin`
+
+```tsx
+BlockSelectionPlugin.configure(({ editor }) => ({
+  options: {
+    enableContextMenu: true,
+    isSelectable: (element, path) => {
+      return (
+        !['code_line', 'column', 'td'].includes(element.type) &&
+        !editor.api.block({ above: true, at: path, match: { type: 'tr' } })
+      );
+    },
+  },
+}))
+```
+
  
 ### January 8 #18.1
 

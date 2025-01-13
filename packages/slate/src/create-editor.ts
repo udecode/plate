@@ -60,7 +60,6 @@ import { getFragment } from './internal/editor/getFragment';
 import { getLeafNode } from './internal/editor/getLeafNode';
 import { getLevels } from './internal/editor/getLevels';
 import { getMarks } from './internal/editor/getMarks';
-import { getNextNode } from './internal/editor/getNextNode';
 import { getPathRefs } from './internal/editor/getPathRefs';
 import { getPoint } from './internal/editor/getPoint';
 import { getPointAfter } from './internal/editor/getPointAfter';
@@ -83,6 +82,7 @@ import { isEmpty } from './internal/editor/isEmpty';
 import { isEndPoint } from './internal/editor/isEndPoint';
 import { isStartPoint } from './internal/editor/isStartPoint';
 import { last } from './internal/editor/last';
+import { next } from './internal/editor/next';
 import { nodes } from './internal/editor/nodes';
 import { normalizeEditor } from './internal/editor/normalizeEditor';
 import { parent } from './internal/editor/parent';
@@ -222,7 +222,7 @@ export const createEditor = <V extends Value>({
     mergeNodes: bindFirst(mergeNodes, editor),
     move: bindFirst(moveSelection, editor),
     moveNodes: bindFirst(moveNodes, editor),
-    next: bindFirst(getNextNode, editor),
+    next: bindFirst(next, editor),
     node: bindFirst(node, editor),
     nodes: bindFirst(nodes, editor),
     normalize: bindFirst(normalizeEditor, editor),

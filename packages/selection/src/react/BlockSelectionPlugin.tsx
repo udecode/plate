@@ -29,16 +29,12 @@ import {
 export type BlockSelectionConfig = PluginConfig<
   'blockSelection',
   {
-    /**
-     * Check if a block is selectable
-     *
-     * @default true
-     */
-    isSelectable: (element: TElement, path: Path) => boolean;
     anchorId?: string | null;
     areaOptions?: PartialSelectionOptions;
     editorPaddingRight?: CSSProperties['width'];
     enableContextMenu?: boolean;
+    /** Check if a block is selectable */
+    isSelectable?: (element: TElement, path: Path) => boolean;
     isSelecting?: boolean;
     isSelectionAreaVisible?: boolean;
     rightSelectionAreaClassName?: string;
@@ -72,6 +68,8 @@ export type BlockSelectionApi = {
   focus: () => void;
   /** Get selected blocks */
   getNodes: () => NodeEntry[];
+  /** Check if a block is selectable. */
+  isSelectable: (element: TElement, path: Path) => boolean;
   /** Arrow-based move selection */
   moveSelection: (direction: 'down' | 'up') => void;
   /** Reset selected block ids */
@@ -155,6 +153,10 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
           match: (n) => !!n.id && selectedIds?.has(n.id),
         });
       },
+      isSelectable: (element, path) =>
+        !!element.id &&
+        editor.api.isBlock(element) &&
+        getOptions().isSelectable!(element, path),
       moveSelection: bindFirst(moveSelection, editor),
       resetSelectedIds: () => {
         setOption('selectedIds', new Set());

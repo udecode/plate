@@ -184,4 +184,252 @@ describe('moveSelection', () => {
       expect(anchorId).toBe('block1');
     });
   });
+
+  describe('when pressing arrow down with nested blocks', () => {
+    beforeEach(() => {
+      editor = createPlateEditor({
+        plugins: [BlockSelectionPlugin],
+        value: [
+          {
+            id: 'table1',
+            children: [
+              {
+                id: 'tr1',
+                children: [
+                  {
+                    id: 'td11',
+                    children: [
+                      {
+                        id: 'p11',
+                        children: [{ text: 'Cell 1-1' }],
+                        type: 'p',
+                      },
+                    ],
+                    type: 'td',
+                  },
+                  {
+                    id: 'td12',
+                    children: [
+                      {
+                        id: 'p12',
+                        children: [{ text: 'Cell 1-2' }],
+                        type: 'p',
+                      },
+                    ],
+                    type: 'td',
+                  },
+                ],
+                type: 'tr',
+              },
+              {
+                id: 'tr2',
+                children: [
+                  {
+                    id: 'td21',
+                    children: [
+                      {
+                        id: 'p21',
+                        children: [{ text: 'Cell 2-1' }],
+                        type: 'p',
+                      },
+                    ],
+                    type: 'td',
+                  },
+                  {
+                    id: 'td22',
+                    children: [
+                      {
+                        id: 'p22',
+                        children: [{ text: 'Cell 2-2' }],
+                        type: 'p',
+                      },
+                    ],
+                    type: 'td',
+                  },
+                ],
+                type: 'tr',
+              },
+            ],
+            type: 'table',
+          },
+        ],
+      });
+
+      editor.setOption(BlockSelectionPlugin, 'isSelectable', (node) => {
+        // Only table and tr are selectable
+        return node.type === 'table' || node.type === 'tr';
+      });
+    });
+
+    it('should move from first tr to second tr in table', () => {
+      // Select tr1
+      editor.setOption(BlockSelectionPlugin, 'selectedIds', new Set(['tr1']));
+      editor.setOption(BlockSelectionPlugin, 'anchorId', 'tr1');
+
+      // Move down
+      moveSelection(editor, 'down');
+
+      const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+      expect(Array.from(selectedIds!)).toEqual(['tr2']);
+
+      const anchorId = editor.getOption(BlockSelectionPlugin, 'anchorId');
+      expect(anchorId).toBe('tr2');
+    });
+
+    it('should do nothing when at last tr', () => {
+      // Select tr2
+      editor.setOption(BlockSelectionPlugin, 'selectedIds', new Set(['tr2']));
+      editor.setOption(BlockSelectionPlugin, 'anchorId', 'tr2');
+
+      // Move down
+      moveSelection(editor, 'down');
+
+      const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+      expect(Array.from(selectedIds!)).toEqual(['tr2']);
+
+      const anchorId = editor.getOption(BlockSelectionPlugin, 'anchorId');
+      expect(anchorId).toBe('tr2');
+    });
+
+    it('should skip non-selectable td cells', () => {
+      // Select td11
+      editor.setOption(BlockSelectionPlugin, 'selectedIds', new Set(['td11']));
+      editor.setOption(BlockSelectionPlugin, 'anchorId', 'td11');
+
+      // Move down
+      moveSelection(editor, 'down');
+
+      const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+      expect(Array.from(selectedIds!)).toEqual(['tr2']);
+
+      const anchorId = editor.getOption(BlockSelectionPlugin, 'anchorId');
+      expect(anchorId).toBe('tr2');
+    });
+  });
+
+  describe('when pressing arrow up with complex nested blocks', () => {
+    beforeEach(() => {
+      editor = createPlateEditor({
+        plugins: [BlockSelectionPlugin],
+        value: [
+          {
+            id: 'block1',
+            children: [{ text: 'Block One' }],
+            type: 'p',
+          },
+          {
+            id: 'parent1',
+            children: [
+              {
+                id: 'child1',
+                children: [{ text: 'Child One' }],
+                type: 'p',
+              },
+              {
+                id: 'child2',
+                children: [{ text: 'Child Two' }],
+                type: 'p',
+              },
+            ],
+            type: 'div',
+          },
+          {
+            id: 'column_group1',
+            children: [
+              {
+                id: 'column1',
+                children: [
+                  {
+                    id: 'grandchild1',
+                    children: [{ text: 'Grandchild One' }],
+                    type: 'p',
+                  },
+                ],
+                type: 'column',
+              },
+              {
+                id: 'column2',
+                children: [
+                  {
+                    id: 'grandchild2',
+                    children: [{ text: 'Grandchild Two' }],
+                    type: 'p',
+                  },
+                ],
+                type: 'column',
+              },
+            ],
+            type: 'column_group',
+          },
+        ],
+      });
+
+      // For testing, let's skip columns
+      editor.setOption(BlockSelectionPlugin, 'isSelectable', (node) => {
+        return node.type !== 'column';
+      });
+    });
+
+    it('should move to previous sibling when not first child', () => {
+      // Select child2
+      editor.setOption(
+        BlockSelectionPlugin,
+        'selectedIds',
+        new Set(['child2'])
+      );
+      editor.setOption(BlockSelectionPlugin, 'anchorId', 'child2');
+
+      // Move up => should select child1
+      moveSelection(editor, 'up');
+
+      const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+      expect(Array.from(selectedIds!)).toEqual(['child1']);
+
+      const anchorId = editor.getOption(BlockSelectionPlugin, 'anchorId');
+      expect(anchorId).toBe('child1');
+    });
+
+    it('should move to parents previous block if first child and skipping columns', () => {
+      // Select grandchild2
+      editor.setOption(
+        BlockSelectionPlugin,
+        'selectedIds',
+        new Set(['grandchild2'])
+      );
+      editor.setOption(BlockSelectionPlugin, 'anchorId', 'grandchild2');
+
+      // Move up => should select grandchild1 (since columns are not selectable)
+      moveSelection(editor, 'up');
+
+      const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+      expect(Array.from(selectedIds!)).toEqual(['grandchild1']);
+
+      const anchorId = editor.getOption(BlockSelectionPlugin, 'anchorId');
+      expect(anchorId).toBe('grandchild1');
+    });
+
+    it('should handle deeper nesting with non-selectable parents', () => {
+      // Make column_group1 not selectable as well
+      editor.setOption(BlockSelectionPlugin, 'isSelectable', (node) => {
+        return node.type !== 'column' && node.type !== 'column_group';
+      });
+
+      // Select grandchild1
+      editor.setOption(
+        BlockSelectionPlugin,
+        'selectedIds',
+        new Set(['grandchild1'])
+      );
+      editor.setOption(BlockSelectionPlugin, 'anchorId', 'grandchild1');
+
+      // Move up => should skip column1 and column_group1, select child2
+      moveSelection(editor, 'up');
+
+      const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+      expect(Array.from(selectedIds!)).toEqual(['child2']);
+
+      const anchorId = editor.getOption(BlockSelectionPlugin, 'anchorId');
+      expect(anchorId).toBe('child2');
+    });
+  });
 });

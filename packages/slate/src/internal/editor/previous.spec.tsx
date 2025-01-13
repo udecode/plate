@@ -1,4 +1,132 @@
+/** @jsx jsx */
+import { jsx } from '@udecode/plate-test-utils';
+
 import { createEditor } from '../../create-editor';
+
+jsx;
+
+describe('previous', () => {
+  describe('when using from option', () => {
+    const editor = createEditor(
+      (
+        <editor>
+          <element id="1">
+            <text>Block One</text>
+          </element>
+          <element id="2">
+            <element id="2-1">
+              <text>Child One</text>
+            </element>
+            <element id="2-2">
+              <text>Child Two</text>
+            </element>
+          </element>
+          <element id="3">
+            <text>Block Three</text>
+          </element>
+        </editor>
+      ) as any
+    );
+
+    it('should traverse from point before when from="before"', () => {
+      const prev = editor.api.previous({ at: [2] });
+      expect(prev![0].id).toBe('2');
+    });
+
+    it('should get previous when from="parent"', () => {
+      const prev = editor.api.previous({
+        at: [1, 1], // at 2-2
+        block: true,
+        from: 'parent',
+      });
+      expect(prev![0].id).toBe('2-1');
+    });
+
+    it('should traverse from parent when from="parent"', () => {
+      const prev = editor.api.previous({
+        at: [1, 0], // at 2-1
+        block: true,
+        from: 'parent',
+      });
+      expect(prev![0].id).toBe('2');
+    });
+  });
+
+  describe('when using match option', () => {
+    const editor = createEditor(
+      (
+        <editor>
+          <element id="1" type="p">
+            <text>Block One</text>
+          </element>
+          <element id="2" type="div">
+            <element id="2-1" type="p">
+              <text>Child One</text>
+            </element>
+          </element>
+          <element id="3" type="p">
+            <text>Block Three</text>
+          </element>
+        </editor>
+      ) as any
+    );
+
+    it('should find previous node matching criteria', () => {
+      const prev = editor.api.previous({
+        at: [2],
+        match: (n) => 'type' in n && n.type === 'p',
+      });
+      expect(prev![0].id).toBe('2-1');
+    });
+  });
+
+  describe('when using nested blocks', () => {
+    const editor = createEditor(
+      (
+        <editor>
+          <element id="1">
+            <text>Block One</text>
+          </element>
+          <element id="table" type="table">
+            <element id="row1" type="table-row">
+              <element id="cell1-1" type="table-cell">
+                <text>Cell 1-1</text>
+              </element>
+              <element id="cell1-2" type="table-cell">
+                <text>Cell 1-2</text>
+              </element>
+            </element>
+            <element id="row2" type="table-row">
+              <element id="cell2-1" type="table-cell">
+                <text>Cell 2-1</text>
+              </element>
+            </element>
+          </element>
+          <element id="3">
+            <text>Block Three</text>
+          </element>
+        </editor>
+      ) as any
+    );
+
+    it('should traverse from cell to parent row when from="parent"', () => {
+      const prev = editor.api.previous({
+        at: [1, 1, 0], // at cell2-1
+        block: true,
+        from: 'parent',
+      });
+      expect(prev![0].id).toBe('row2');
+    });
+
+    it('should traverse from table to previous block when from="before"', () => {
+      const prev = editor.api.previous({
+        at: [1], // table path
+        from: 'before',
+      });
+      expect(prev![0].id).toBe('1');
+    });
+  });
+});
 
 const nodesFixture5 = [
   {

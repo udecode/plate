@@ -15,15 +15,11 @@ export const insertBlocksAndSelect = (
 
   let count = 1;
 
-  console.log(nodes.length);
-
   while (count < nodes.length) {
     const nextNode = NodeApi.get<TElement>(editor, PathApi.next(at))!;
     insertedNodes.push(nextNode);
     count++;
   }
-
-  console.log(insertedNodes.map((n) => n.id));
 
   setTimeout(() => {
     editor.getApi(BlockSelectionPlugin).blockSelection.setSelectedIds({
