@@ -15,7 +15,7 @@ export const H1 = ({
 }: React.HTMLAttributes<HTMLHeadingElement>) => (
   <h1
     className={cn(
-      'mt-2 scroll-m-20 font-heading text-4xl font-bold',
+      'group mt-2 scroll-m-20 font-heading text-4xl font-bold',
       className
     )}
     {...props}
@@ -28,7 +28,7 @@ export const H2 = ({
 }: React.HTMLAttributes<HTMLHeadingElement>) => (
   <h2
     className={cn(
-      'mt-12 scroll-m-20 border-b pb-2 font-heading text-2xl font-semibold tracking-tight first:mt-0',
+      'group mt-12 scroll-m-20 border-b pb-2 font-heading text-2xl font-semibold tracking-tight first:mt-0',
       className
     )}
     {...props}
@@ -38,15 +38,17 @@ export const H2 = ({
 export const H3 = ({
   className,
   ...props
-}: React.HTMLAttributes<HTMLHeadingElement>) => (
-  <h3
-    className={cn(
-      'mt-8 scroll-m-20 font-heading text-xl font-semibold tracking-tight',
-      className
-    )}
-    {...props}
-  />
-);
+}: React.HTMLAttributes<HTMLHeadingElement>) => {
+  return (
+    <h3
+      className={cn(
+        'group mt-8 scroll-m-20 font-heading text-xl font-semibold tracking-tight',
+        className
+      )}
+      {...props}
+    />
+  );
+};
 
 export const H4 = ({
   className,
@@ -54,7 +56,7 @@ export const H4 = ({
 }: React.HTMLAttributes<HTMLHeadingElement>) => (
   <h4
     className={cn(
-      'mt-8 scroll-m-20 font-heading text-lg font-semibold tracking-tight',
+      'group mt-8 scroll-m-20 font-heading text-lg font-semibold tracking-tight',
       className
     )}
     {...props}
@@ -67,7 +69,7 @@ export const H5 = ({
 }: React.HTMLAttributes<HTMLHeadingElement>) => (
   <h5
     className={cn(
-      'mt-8 scroll-m-20 text-lg font-semibold tracking-tight',
+      'group mt-8 scroll-m-20 text-lg font-semibold tracking-tight',
       className
     )}
     {...props}
@@ -80,7 +82,7 @@ export const H6 = ({
 }: React.HTMLAttributes<HTMLHeadingElement>) => (
   <h6
     className={cn(
-      'mt-8 scroll-m-20 text-base font-semibold tracking-tight',
+      'group mt-8 scroll-m-20 text-base font-semibold tracking-tight',
       className
     )}
     {...props}

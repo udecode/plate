@@ -1,6 +1,6 @@
 'use client';
 
-import React, { type ReactNode, useState } from 'react';
+import React, { type ReactNode, createContext, useState } from 'react';
 
 import { cn } from '@udecode/cn';
 
@@ -26,6 +26,8 @@ type Item = {
   value?: string;
 };
 
+const APIContext = createContext<{ name?: string }>({});
+
 export function APIItem({
   children,
   name,
@@ -34,17 +36,24 @@ export function APIItem({
   type,
   value,
 }: Item) {
+  const { name: contextName } = React.useContext(APIContext);
+
+  const id = `${contextName ? `${contextName}-` : ''}${name}`
+    .toLowerCase()
+    .replace(/[^\da-z]+/g, '-')
+    .replace(/^-|-$/g, '');
+
   return (
     <AccordionItem className="select-text" value={value ?? name}>
       <AccordionTrigger className="group hover:no-underline">
-        <li id={name} className="scroll-mt-[56px]">
+        <li id={id} className="scroll-mt-[56px]">
           <h4 className="relative py-2 text-start font-semibold leading-none tracking-tight">
             <a
               className={cn(
                 'opacity-0 hover:opacity-100 group-hover:opacity-100'
               )}
               onClick={(e) => e.stopPropagation()}
-              href={`#${name}`}
+              href={`#${id}`}
             >
               <div className="absolute -left-5 top-2 pr-1 leading-none">
                 <Icons.pragma className="size-4 text-muted-foreground" />
@@ -121,12 +130,14 @@ export function APIParameters({ children, ...props }: APIListProps) {
 type APIListProps = {
   children: ReactNode;
   collapsed?: boolean;
+  name?: string;
   type?: string;
 };
 
 export function APIList({
   children,
   collapsed = false,
+  name,
   type = 'parameters',
 }: APIListProps) {
   const childCount = React.Children.count(children);
@@ -144,62 +155,78 @@ export function APIList({
   if (type === 'returns' && !childCount) return null;
 
   return (
-    <section className="flex w-full flex-col items-center">
-      <div className="w-full">
-        <div className="mt-10 pb-3 ">
-          <div className="mt-5 flex items-center justify-between pb-4">
-            <h3 className="text-lg font-medium leading-none tracking-tight">
-              {type === 'parameters' && 'Parameters'}
-              {type === 'attributes' && 'Attributes'}
-              {type === 'returns' && 'Returns'}
-              {type === 'props' && 'Props'}
-              {type === 'state' && 'State'}
-              {type === 'options' && 'Options'}
-            </h3>
+    <APIContext.Provider value={{ name }}>
+      <section className="flex w-full flex-col items-center">
+        <div className="w-full">
+          <div className="mt-10 pb-3 ">
+            <div className=" mt-5 flex items-center justify-between pb-4">
+              <h3 className="group relative text-lg font-medium leading-none tracking-tight">
+                {name && (
+                  <a
+                    className={cn(
+                      'opacity-0 hover:opacity-100 group-hover:opacity-100'
+                    )}
+                    onClick={(e) => e.stopPropagation()}
+                    href={`#${name}-${type}`}
+                  >
+                    <div className="absolute -left-5 top-0 pr-1 leading-none">
+                      <Icons.pragma className="size-4 text-muted-foreground" />
+                    </div>
+                  </a>
+                )}
 
-            {hasItems && (
-              <div
-                className="cursor-pointer select-none text-sm text-muted-foreground"
-                onClick={() => {
-                  values.length === childCount
-                    ? setValues([])
-                    : setValues(newValues);
-                  setExpanded(!expanded);
-                }}
-              >
-                {values.length === childCount ? 'Collapse all' : 'Expand all'}
-              </div>
-            )}
+                {type === 'parameters' && 'Parameters'}
+                {type === 'attributes' && 'Attributes'}
+                {type === 'returns' && 'Returns'}
+                {type === 'props' && 'Props'}
+                {type === 'state' && 'State'}
+                {type === 'options' && 'Options'}
+              </h3>
+
+              {hasItems && (
+                <div
+                  className="cursor-pointer select-none text-sm text-muted-foreground"
+                  onClick={() => {
+                    values.length === childCount
+                      ? setValues([])
+                      : setValues(newValues);
+                    setExpanded(!expanded);
+                  }}
+                >
+                  {values.length === childCount ? 'Collapse all' : 'Expand all'}
+                </div>
+              )}
+            </div>
+
+            <ul className="m-0 list-none p-0">
+              <Separator />
+
+              {hasItems ? (
+                <Accordion
+                  className="w-full"
+                  value={values}
+                  onValueChange={setValues}
+                  type="multiple"
+                >
+                  {React.Children.map(children, (child, i) => {
+                    return React.cloneElement(child as any, {
+                      className: 'pt-4',
+                      value: i.toString(),
+                    });
+                  })}
+                </Accordion>
+              ) : childCount > 0 ? (
+                children
+              ) : (
+                <div className="py-4 text-sm text-muted-foreground">
+                  No parameters.
+                </div>
+              )}
+            </ul>
           </div>
-
-          <ul className="m-0 list-none p-0">
-            <Separator />
-
-            {hasItems ? (
-              <Accordion
-                className="w-full"
-                value={values}
-                onValueChange={setValues}
-                type="multiple"
-              >
-                {React.Children.map(children, (child, i) => {
-                  return React.cloneElement(child as any, {
-                    className: 'pt-4',
-                    value: i.toString(),
-                  });
-                })}
-              </Accordion>
-            ) : childCount > 0 ? (
-              children
-            ) : (
-              <div className="py-4 text-sm text-muted-foreground">
-                No parameters.
-              </div>
-            )}
-          </ul>
         </div>
-      </div>
-    </section>
+      </section>
+    </APIContext.Provider>
   );
 }
 
