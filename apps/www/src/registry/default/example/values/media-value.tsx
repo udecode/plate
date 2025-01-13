@@ -6,8 +6,8 @@ jsx;
 
 export const imageValue: any = (
   <fragment>
-    {/* <hh2>Image</hh2> */}
-    {/* <hp>Add images by either uploading them or providing the image URL:</hp> */}
+    <hh2>Image</hh2>
+    <hp>Add images by either uploading them or providing the image URL:</hp>
     <himg
       align="center"
       caption={[{ children: [{ text: 'Image caption' }] }]}
@@ -16,7 +16,7 @@ export const imageValue: any = (
     >
       <htext />
     </himg>
-    {/* <hp>Customize image captions and resize images.</hp> */}
+    <hp>Customize image captions and resize images.</hp>
   </fragment>
 );
 
@@ -70,7 +70,7 @@ export const mediaPlaceholderValue: any = (
 export const mediaValue: any = (
   <fragment>
     {imageValue}
-    {/* {mediaPlaceholderValue}
+    {mediaPlaceholderValue}
 
     <hh2>Embed</hh2>
     <hp>Embed various types of content, such as videos and tweets:</hp>
@@ -79,7 +79,7 @@ export const mediaValue: any = (
       url="https://www.youtube.com/watch?v=MyiBAziEWUA"
     >
       <htext />
-    </hmediaembed> */}
+    </hmediaembed>
     {/* BUG */}
     {/* <hmediaembed
       align="center"
