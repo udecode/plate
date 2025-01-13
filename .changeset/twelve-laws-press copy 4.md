@@ -1,5 +1,5 @@
 ---
-'@udecode/plate-selection': minor
+'@udecode/plate-selection': patch
 ---
 
 - Fix: after deleting all blocks using block selection, focus the empty editor.

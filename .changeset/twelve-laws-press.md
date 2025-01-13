@@ -1,5 +1,5 @@
 ---
-'@udecode/plate-ai': minor
+'@udecode/plate-ai': patch
 ---
 
 Breaking changes (experimental):
