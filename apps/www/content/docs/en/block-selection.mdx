@@ -222,6 +222,18 @@ A set of IDs for the currently selected blocks.
 
 - **Default:** `new Set()`
 </APIItem>
+
+<APIItem name="anchorId" type="string | null" optional>
+(Internal) The ID of the anchor block in the current selection. Used for shift-based selection.
+
+- **Default:** `null`
+</APIItem>
+
+<APIItem name="isSelectable" type="(element: TElement, path: Path) => boolean" optional>
+Function to determine if a block element is selectable.
+
+- **Default:** `() => true`
+</APIItem>
 </APIOptions>
 
 ### BlockMenuPlugin
@@ -371,3 +383,64 @@ Returns fragment prop for the currently selected blocks.
 ### useSelectionArea
 
 A hook that initializes and manages the selection area functionality.
+
+### editor.api.blockSelection.isSelectable
+
+Checks if a block element is selectable.
+
+<APIParameters>
+<APIItem name="element" type="TElement">
+The block element to check.
+</APIItem>
+<APIItem name="path" type="Path">
+The path to the block element.
+</APIItem>
+</APIParameters>
+
+<APIReturns>
+<APIItem type="boolean">
+Returns true if the block is selectable.
+</APIItem>
+</APIReturns>
+
+### editor.api.blockSelection.moveSelection
+
+Moves the selection up or down to the next selectable block.
+
+<APIParameters>
+<APIItem name="direction" type="'up' | 'down'">
+The direction to move the selection.
+</APIItem>
+</APIParameters>
+
+When moving up:
+- Gets the previous selectable block from the top-most selected block
+- Sets it as the new anchor
+- Clears previous selection and selects only this block
+
+When moving down:
+- Gets the next selectable block from the bottom-most selected block
+- Sets it as the new anchor
+- Clears previous selection and selects only this block
+
+### editor.api.blockSelection.shiftSelection
+
+Expands or shrinks the selection based on the anchor block.
+
+<APIParameters>
+<APIItem name="direction" type="'up' | 'down'">
+The direction to expand/shrink the selection.
+</APIItem>
+</APIParameters>
+
+For SHIFT + DOWN:
+- If anchor is top-most: Expands down by adding block below bottom-most
+- Otherwise: Shrinks from top-most (unless top-most is the anchor)
+
+For SHIFT + UP:
+- If anchor is bottom-most: Expands up by adding block above top-most
+- Otherwise: Shrinks from bottom-most (unless bottom-most is the anchor)
+
+The anchor block always remains selected. If no anchor is set, it defaults to:
+- Bottom-most block for SHIFT + UP
+- Top-most block for SHIFT + DOWN
