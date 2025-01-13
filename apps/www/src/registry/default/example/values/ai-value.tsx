@@ -62,6 +62,9 @@ export const aiValue: any = (
       <htext>Improve writing</htext>
     </hp>
     <hp indent={1} listStyleType="disc">
+      <htext>Emojify</htext>
+    </hp>
+    <hp indent={1} listStyleType="disc">
       <htext>Make it longer or shorter</htext>
     </hp>
     <hp indent={1} listStyleType="disc">

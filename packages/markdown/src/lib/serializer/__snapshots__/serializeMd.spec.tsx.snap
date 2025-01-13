@@ -31,11 +31,11 @@ Bullet lists:
 
 There's also support 3 levels of headers, hyperlinks, superscript, and more.
 - Indent list 1
-  - Indent list 1.1
-    - Indent list 1.1.1
-  - Indent list 1.2
+   - Indent list 1.1
+      - Indent list 1.1.1
+   - Indent list 1.2
 1. Indent ol 1
-   1. Indent ol 1.1
+    1. Indent ol 1.1
 2. Indent ol 2
 
 Custom node @mention<span style="color:blue">mark</span>"

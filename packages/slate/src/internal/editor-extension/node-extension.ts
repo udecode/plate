@@ -1,3 +1,5 @@
+import { isEditor } from 'slate';
+
 import { NodeApi } from '../../interfaces';
 
 export const NodeExtension = {
@@ -34,6 +36,7 @@ export const NodeExtension = {
 
     return firstText as any;
   },
+  isEditor: (value: any) => isEditor(value),
   isLastChild(root, path) {
     if (path.length === 0) return false;
 

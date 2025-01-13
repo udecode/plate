@@ -60,7 +60,6 @@ import { getFragment } from './internal/editor/getFragment';
 import { getLeafNode } from './internal/editor/getLeafNode';
 import { getLevels } from './internal/editor/getLevels';
 import { getMarks } from './internal/editor/getMarks';
-import { getNextNode } from './internal/editor/getNextNode';
 import { getPathRefs } from './internal/editor/getPathRefs';
 import { getPoint } from './internal/editor/getPoint';
 import { getPointAfter } from './internal/editor/getPointAfter';
@@ -83,6 +82,7 @@ import { isEmpty } from './internal/editor/isEmpty';
 import { isEndPoint } from './internal/editor/isEndPoint';
 import { isStartPoint } from './internal/editor/isStartPoint';
 import { last } from './internal/editor/last';
+import { next } from './internal/editor/next';
 import { nodes } from './internal/editor/nodes';
 import { normalizeEditor } from './internal/editor/normalizeEditor';
 import { parent } from './internal/editor/parent';
@@ -97,6 +97,7 @@ import { blocks } from './internal/editor-extension/editor-blocks';
 import { descendant } from './internal/editor-extension/editor-descendant';
 import { mark } from './internal/editor-extension/editor-mark';
 import { hasMark } from './internal/editor-extension/hasMark';
+import { isSelected } from './internal/editor-extension/is-selected';
 import { isAt } from './internal/editor-extension/isAt';
 import { isEditorEnd } from './internal/editor-extension/isEditorEnd';
 import { isText } from './internal/editor-extension/isText';
@@ -221,7 +222,7 @@ export const createEditor = <V extends Value>({
     mergeNodes: bindFirst(mergeNodes, editor),
     move: bindFirst(moveSelection, editor),
     moveNodes: bindFirst(moveNodes, editor),
-    next: bindFirst(getNextNode, editor),
+    next: bindFirst(next, editor),
     node: bindFirst(node, editor),
     nodes: bindFirst(nodes, editor),
     normalize: bindFirst(normalizeEditor, editor),
@@ -301,6 +302,7 @@ export const createEditor = <V extends Value>({
     isMerging: bindFirst(HistoryApi.isMerging, editor as any) as any,
     isReadOnly: bindFirst(isReadOnly, editor),
     isSaving: bindFirst(HistoryApi.isSaving, editor as any) as any,
+    isSelected: bindFirst(isSelected, editor),
     isSplittingOnce: bindFirst(HistoryApi.isSplittingOnce, editor as any),
     isTargetInsideNonReadonlyVoid: bindFirst(
       isTargetInsideNonReadonlyVoid,

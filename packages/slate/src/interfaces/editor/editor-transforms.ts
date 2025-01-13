@@ -26,7 +26,6 @@ import type { HistoryApi } from '../../slate-history/index';
 import type { At, TextUnit } from '../../types';
 import type { QueryNodeOptions } from '../../utils';
 import type { ElementIn, ElementOrTextIn } from '../element';
-import type { TLocation } from '../location';
 import type { Descendant, DescendantIn, NodeIn, NodeProps } from '../node';
 import type { NodeEntry } from '../node-entry';
 import type { Operation } from '../operation';
@@ -514,9 +513,10 @@ export type WrapNodesOptions<V extends Value = Value> = {
   QueryVoids;
 
 export type InsertTextOptions = {
-  at?: TLocation;
-  voids?: boolean;
-};
+  /** @default true */
+  marks?: boolean;
+} & QueryAt &
+  QueryVoids;
 
 export type DeleteTextOptions = {
   distance?: number;

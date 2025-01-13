@@ -2,6 +2,7 @@ import castArray from 'lodash/castArray.js';
 
 import {
   type Editor,
+  type Path,
   type RemoveMarksOptions,
   type TElement,
   type TNode,
@@ -18,12 +19,12 @@ export const removeMarks = (
 
   if (!selection) return;
 
-  const match = (node: TNode) => {
+  const match = (node: TNode, path: Path) => {
     if (!TextApi.isText(node)) {
       return false; // marks can only be applied to text
     }
 
-    const [parentNode] = editor.api.parent<TElement>(editor.api.path(node)!)!;
+    const [parentNode] = editor.api.parent<TElement>(path)!;
 
     return (
       !editor.api.isVoid(parentNode) || editor.api.markableVoid(parentNode)
@@ -36,7 +37,7 @@ export const removeMarks = (
   if (!expandedSelection) {
     const [selectedNode, selectedPath] = editor.api.node(selection)!;
 
-    if (selectedNode && match(selectedNode)) {
+    if (selectedNode && match(selectedNode, selectedPath)) {
       const [parentNode] = editor.api.parent<TElement>(selectedPath)!;
       markAcceptingVoidSelected =
         parentNode && editor.api.markableVoid(parentNode);

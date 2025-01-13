@@ -9,7 +9,6 @@ import {
   PathApi,
   TextApi,
 } from '../../interfaces';
-import { isEditor } from './isEditor';
 
 export const isEmpty = <E extends Editor>(
   editor: E,
@@ -17,7 +16,10 @@ export const isEmpty = <E extends Editor>(
   options?: EditorEmptyOptions
 ) => {
   if (target === null) return true;
-  if ((PathApi.isPath(target) && target.length === 0) || isEditor(target)) {
+  if (
+    (PathApi.isPath(target) && target.length === 0) ||
+    NodeApi.isEditor(target)
+  ) {
     return (
       editor.children.length === 1 &&
       isEmptyBase(editor as any, editor.children[0] as any)

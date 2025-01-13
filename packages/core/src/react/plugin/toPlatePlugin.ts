@@ -44,6 +44,7 @@ const methodsToWrap: (keyof SlatePlugin)[] = [
   'extendEditorTransforms',
   'extend',
   'extendPlugin',
+  'overrideEditor',
 ];
 
 /**

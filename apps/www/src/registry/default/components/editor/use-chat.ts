@@ -46,29 +46,58 @@ const fakeStreamText = ({
   chunkCount?: number;
   streamProtocol?: 'data' | 'text';
 } = {}) => {
-  const chunks = Array.from({ length: chunkCount }, () => ({
-    delay: faker.number.int({ max: 150, min: 50 }),
-    texts: faker.lorem.words({ max: 3, min: 1 }) + ' ',
-  }));
+  // Create 3 blocks with different lengths
+  const blocks = [
+    Array.from({ length: chunkCount }, () => ({
+      delay: faker.number.int({ max: 100, min: 30 }),
+      texts: faker.lorem.words({ max: 3, min: 1 }) + ' ',
+    })),
+    Array.from({ length: chunkCount + 2 }, () => ({
+      delay: faker.number.int({ max: 100, min: 30 }),
+      texts: faker.lorem.words({ max: 3, min: 1 }) + ' ',
+    })),
+    Array.from({ length: chunkCount + 4 }, () => ({
+      delay: faker.number.int({ max: 100, min: 30 }),
+      texts: faker.lorem.words({ max: 3, min: 1 }) + ' ',
+    })),
+  ];
+
   const encoder = new TextEncoder();
 
   return new ReadableStream({
     async start(controller) {
-      for (const chunk of chunks) {
-        await new Promise((resolve) => setTimeout(resolve, chunk.delay));
+      for (let i = 0; i < blocks.length; i++) {
+        const block = blocks[i];
 
-        if (streamProtocol === 'text') {
-          controller.enqueue(encoder.encode(chunk.texts));
-        } else {
-          controller.enqueue(
-            encoder.encode(`0:${JSON.stringify(chunk.texts)}\n`)
-          );
+        // Stream the block content
+        for (const chunk of block) {
+          await new Promise((resolve) => setTimeout(resolve, chunk.delay));
+
+          if (streamProtocol === 'text') {
+            controller.enqueue(encoder.encode(chunk.texts));
+          } else {
+            controller.enqueue(
+              encoder.encode(`0:${JSON.stringify(chunk.texts)}\n`)
+            );
+          }
+        }
+
+        // Add double newline after each block except the last one
+        if (i < blocks.length - 1) {
+          if (streamProtocol === 'text') {
+            controller.enqueue(encoder.encode('\n\n'));
+          } else {
+            controller.enqueue(encoder.encode(`0:${JSON.stringify('\n\n')}\n`));
+          }
         }
       }
 
       if (streamProtocol === 'data') {
         controller.enqueue(
-          `d:{"finishReason":"stop","usage":{"promptTokens":0,"completionTokens":${chunks.length}}}\n`
+          `d:{"finishReason":"stop","usage":{"promptTokens":0,"completionTokens":${blocks.reduce(
+            (sum, block) => sum + block.length,
+            0
+          )}}}\n`
         );
       }
 

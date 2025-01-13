@@ -75,6 +75,12 @@ export type EditorApi<V extends Value = Value> = {
     options?: EditorFragmentOptions
   ) => N[];
 
+  /** Check if a path is selected by the current selection. */
+  isSelected: (
+    target: Path | TRange,
+    options?: EditorIsSelectedOptions
+  ) => boolean;
+
   /**
    * Call a function, Determine whether or not remove the previous node when
    * merge.
@@ -547,8 +553,25 @@ export type EditorLevelsOptions<V extends Value = Value> = {
   QueryVoids;
 
 export type EditorNextOptions<V extends Value = Value> = QueryOptions<V> &
-  QueryMode &
-  QueryVoids;
+  QueryVoids & {
+    /**
+     * Determines where to start traversing from:
+     *
+     * - `'after'` (default): Start from the point after the current location
+     * - `'child'`: Start from the first child of the current path. `at` must be a
+     *   path.
+     */
+    from?: 'after' | 'child';
+
+    /**
+     * - `'all'` (default if `from` is `child`): Return all matching nodes.
+     * - `'highest'`: in a hierarchy of nodes, only return the highest level
+     *   matching nodes
+     * - `'lowest'` (default if `from` is `after`): in a hierarchy of nodes, only
+     *   return the lowest level matching nodes
+     */
+    mode?: 'all' | 'highest' | 'lowest';
+  };
 
 export type EditorNodeOptions = {
   depth?: number;
@@ -621,8 +644,24 @@ export type EditorPositionsOptions = {
   QueryTextUnit;
 
 export type EditorPreviousOptions<V extends Value = Value> = QueryOptions<V> &
-  QueryMode &
   QueryVoids & {
+    /**
+     * Determines where to start traversing from:
+     *
+     * - `'before'` (default): Start from the point before the current location
+     * - `'parent'`: Start from the parent of the current location
+     */
+    from?: 'before' | 'parent';
+
+    /**
+     * - `'all'`: Return all matching nodes
+     * - `'highest'`: in a hierarchy of nodes, only return the highest level
+     *   matching nodes
+     * - `'lowest'` (default): in a hierarchy of nodes, only return the lowest
+     *   level matching nodes
+     */
+    mode?: 'all' | 'highest' | 'lowest';
+
     /** Get the previous sibling node */
     sibling?: boolean;
   };
@@ -769,4 +808,9 @@ export type QueryMode = {
 export type EditorLastOptions = {
   /** Get last node at this level (0-based). */
   level?: number;
+};
+
+export type EditorIsSelectedOptions = {
+  /** Check if selection contains the entire path range */
+  contains?: boolean;
 };

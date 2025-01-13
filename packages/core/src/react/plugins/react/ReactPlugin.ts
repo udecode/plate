@@ -9,10 +9,10 @@ export const ReactPlugin = createSlatePlugin({
   const { reset } = editor.tf;
 
   return {
-    reset: () => {
+    reset(options) {
       const isFocused = editor.api.isFocused();
 
-      reset();
+      reset(options);
 
       if (isFocused) {
         editor.tf.focus({ edge: 'startEditor' });

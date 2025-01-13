@@ -1,5 +1,7 @@
 # @udecode/plate-test-utils
 
+## 42.0.3
+
 ## 42.0.1
 
 ## 42.0.0

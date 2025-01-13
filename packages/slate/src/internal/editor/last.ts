@@ -41,6 +41,10 @@ export const last = <N extends DescendantOf<E>, E extends Editor>(
 
     // If level is specified, get the node at that level
     if (lastNodeEntry && typeof level === 'number') {
+      if (editor.children.length === 0) {
+        return;
+      }
+
       return getNodeAtLevel(editor, lastNodeEntry, level) as any;
     }
 

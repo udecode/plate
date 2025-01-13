@@ -4,12 +4,11 @@ import React, { memo } from 'react';
 
 import { withProps } from '@udecode/cn';
 import {
-  type SlateEditor,
+  type SlatePlugin,
   BaseParagraphPlugin,
   SlateLeaf,
 } from '@udecode/plate';
-import { useEditorPlugin } from '@udecode/plate/react';
-import { AIChatPlugin, useLastAssistantMessage } from '@udecode/plate-ai/react';
+import { useAIChatEditor } from '@udecode/plate-ai/react';
 import {
   BaseBoldPlugin,
   BaseCodePlugin,
@@ -23,10 +22,17 @@ import {
   BaseCodeLinePlugin,
   BaseCodeSyntaxPlugin,
 } from '@udecode/plate-code-block';
-import { HEADING_KEYS } from '@udecode/plate-heading';
+import { BaseHeadingPlugin, HEADING_KEYS } from '@udecode/plate-heading';
 import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
+import { BaseIndentPlugin } from '@udecode/plate-indent';
+import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
 import { BaseLinkPlugin } from '@udecode/plate-link';
-import { deserializeMd } from '@udecode/plate-markdown';
+import { MarkdownPlugin } from '@udecode/plate-markdown';
+
+import {
+  TodoLiStatic,
+  TodoMarkerStatic,
+} from '@/registry/default/plate-ui/indent-todo-marker-static';
 
 import { BlockquoteElementStatic } from './blockquote-element-static';
 import { CodeBlockElementStatic } from './code-block-element-static';
@@ -39,7 +45,7 @@ import { HrElementStatic } from './hr-element-static';
 import { LinkElementStatic } from './link-element-static';
 import { ParagraphElementStatic } from './paragraph-element-static';
 
-const staticComponents = {
+const components = {
   [BaseBlockquotePlugin.key]: BlockquoteElementStatic,
   [BaseBoldPlugin.key]: withProps(SlateLeaf, { as: 'strong' }),
   [BaseCodeBlockPlugin.key]: CodeBlockElementStatic,
@@ -57,45 +63,48 @@ const staticComponents = {
   [HEADING_KEYS.h3]: withProps(HeadingElementStatic, { variant: 'h3' }),
 };
 
-export const AIChatEditor = memo(
-  ({
-    aiEditorRef,
-  }: {
-    aiEditorRef: React.MutableRefObject<SlateEditor | null>;
-  }) => {
-    const { getOptions } = useEditorPlugin(AIChatPlugin);
-    const lastAssistantMessage = useLastAssistantMessage();
-    const content = lastAssistantMessage?.content ?? '';
+const plugins = [
+  BaseBlockquotePlugin,
+  BaseBoldPlugin,
+  BaseCodeBlockPlugin,
+  BaseCodeLinePlugin,
+  BaseCodePlugin,
+  BaseCodeSyntaxPlugin,
+  BaseItalicPlugin,
+  BaseStrikethroughPlugin,
+  BaseUnderlinePlugin,
+  BaseHeadingPlugin,
+  BaseHorizontalRulePlugin,
+  BaseLinkPlugin,
+  BaseParagraphPlugin,
+  BaseIndentPlugin.extend({
+    inject: {
+      targetPlugins: [BaseParagraphPlugin.key],
+    },
+  }),
+  BaseIndentListPlugin.extend({
+    inject: {
+      targetPlugins: [BaseParagraphPlugin.key],
+    },
+    options: {
+      listStyleTypes: {
+        todo: {
+          liComponent: TodoLiStatic,
+          markerComponent: TodoMarkerStatic,
+          type: 'todo',
+        },
+      },
+    },
+  }),
+  MarkdownPlugin.configure({ options: { indentList: true } }),
+] as SlatePlugin[];
 
-    const aiEditor = React.useMemo(() => {
-      const editor = getOptions().createAIEditor();
+export const AIChatEditor = memo(({ content }: { content: string }) => {
+  const aiEditor = useAIChatEditor(content, {
+    plugins,
+  });
 
-      const fragment = deserializeMd(editor, content);
-      editor.children =
-        fragment.length > 0 ? fragment : editor.api.create.value();
-
-      return editor;
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    React.useEffect(() => {
-      if (aiEditor && content) {
-        aiEditorRef.current = aiEditor;
-
-        setTimeout(() => {
-          aiEditor.tf.setValue(deserializeMd(aiEditor, content));
-        }, 0);
-      }
-    }, [aiEditor, aiEditorRef, content]);
-
-    if (!content) return null;
-
-    return (
-      <EditorStatic
-        variant="aiChat"
-        components={staticComponents}
-        editor={aiEditor}
-      />
-    );
-  }
-);
+  return (
+    <EditorStatic variant="aiChat" components={components} editor={aiEditor} />
+  );
+});

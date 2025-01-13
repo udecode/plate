@@ -206,6 +206,9 @@ export const NodeApi: {
   /** Check if a value implements the 'Descendant' interface. */
   isDescendant: <N extends Descendant>(value: any) => value is N;
 
+  /** Check if a value implements the `Editor` interface. */
+  isEditor: (value: any) => value is Editor;
+
   /** Check if a node is the last child of its parent. */
   isLastChild: (root: TNode, path: Path) => boolean;
 

@@ -6,9 +6,12 @@ import {
   type NodeEntry,
   type TElement,
   type TText,
+  type Value,
   ElementApi,
   RangeApi,
   TextApi,
+  isElementDecorationsEqual,
+  isTextDecorationsEqual,
 } from '@udecode/slate';
 import clsx from 'clsx';
 
@@ -21,7 +24,7 @@ import { pipeRenderElementStatic } from '../pipeRenderElementStatic';
 import { pipeRenderLeafStatic } from '../pluginRenderLeafStatic';
 import { pipeDecorate } from '../utils/pipeDecorate';
 
-function ElementStatic({
+function BaseElementStatic({
   components,
   decorate,
   decorations,
@@ -93,7 +96,16 @@ function ElementStatic({
   );
 }
 
-function LeafStatic({
+export const ElementStatic = React.memo(BaseElementStatic, (prev, next) => {
+  return (
+    (prev.element === next.element ||
+      (prev.element._memo !== undefined &&
+        prev.element._memo === next.element._memo)) &&
+    isElementDecorationsEqual(prev.decorations, next.decorations)
+  );
+});
+
+function BaseLeafStatic({
   components,
   decorations,
   editor,
@@ -130,13 +142,21 @@ function LeafStatic({
   );
 }
 
+export const LeafStatic = React.memo(BaseLeafStatic, (prev, next) => {
+  return (
+    // prev.leaf === next.leaf &&
+    TextApi.equals(next.leaf, prev.leaf) &&
+    isTextDecorationsEqual(next.decorations, prev.decorations)
+  );
+});
+
 const defaultDecorate: (entry: NodeEntry) => DecoratedRange[] = () => [];
 
 function Children({
   children = [],
   components,
   decorate = defaultDecorate,
-  decorations,
+  decorations = [],
   editor,
 }: {
   children: Descendant[];
@@ -189,13 +209,21 @@ function Children({
 }
 
 export type PlateStaticProps = {
+  /** Node components to render. */
   components: NodeComponents;
+  /** Editor instance. */
   editor: SlateEditor;
   style?: React.CSSProperties;
+  /** Controlled value. Alias to `editor.children`. */
+  value?: Value;
 } & React.HTMLAttributes<HTMLDivElement>;
 
 export function PlateStatic(props: PlateStaticProps) {
-  const { className, components, editor, ...rest } = props;
+  const { className, components, editor, value, ...rest } = props;
+
+  if (value) {
+    editor.children = value;
+  }
 
   const decorate = pipeDecorate(editor);
 
