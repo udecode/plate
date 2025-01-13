@@ -1,14 +1,12 @@
 'use client';
+
 import { useState } from 'react';
 
+import type { TElement } from '@udecode/plate';
+
 import { cn } from '@udecode/cn';
-import { type TElement, getAboveNode, getMarks } from '@udecode/plate-common';
-import {
-  focusEditor,
-  useEditorPlugin,
-  useEditorSelector,
-} from '@udecode/plate-common/react';
-import { BaseFontSizePlugin, toUnitLess } from '@udecode/plate-font';
+import { useEditorPlugin, useEditorSelector } from '@udecode/plate/react';
+import { toUnitLess } from '@udecode/plate-font';
 import { FontSizePlugin } from '@udecode/plate-font/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { Minus, Plus } from 'lucide-react';
@@ -44,23 +42,21 @@ const FONT_SIZES = [
 export function FontSizeToolbarButton() {
   const [inputValue, setInputValue] = useState(DEFAULT_FONT_SIZE);
   const [isFocused, setIsFocused] = useState(false);
-  const { api, editor } = useEditorPlugin(BaseFontSizePlugin);
+  const { api, editor } = useEditorPlugin(FontSizePlugin);
 
   const cursorFontSize = useEditorSelector((editor) => {
-    const marks = getMarks(editor);
-    const fontSize = marks?.[FontSizePlugin.key];
+    const fontSize = editor.api.marks()?.[FontSizePlugin.key];
 
     if (fontSize) {
       return toUnitLess(fontSize as string);
     }
 
-    const [node] =
-      getAboveNode<TElement>(editor, {
-        at: editor.selection?.focus,
-      }) || [];
+    const [block] = editor.api.block<TElement>() || [];
 
-    return node?.type && node.type in FONT_SIZE_MAP
-      ? FONT_SIZE_MAP[node.type as keyof typeof FONT_SIZE_MAP]
+    if (!block?.type) return DEFAULT_FONT_SIZE;
+
+    return block.type in FONT_SIZE_MAP
+      ? FONT_SIZE_MAP[block.type as keyof typeof FONT_SIZE_MAP]
       : DEFAULT_FONT_SIZE;
   }, []);
 
@@ -68,7 +64,7 @@ export function FontSizeToolbarButton() {
     const newSize = toUnitLess(inputValue);
 
     if (Number.parseInt(newSize) < 1 || Number.parseInt(newSize) > 100) {
-      focusEditor(editor);
+      editor.tf.focus();
 
       return;
     }
@@ -76,19 +72,19 @@ export function FontSizeToolbarButton() {
       api.fontSize.setMark(`${newSize}px`);
     }
 
-    focusEditor(editor);
+    editor.tf.focus();
   };
 
   const handleFontSizeChange = (delta: number) => {
     const newSize = Number(displayValue) + delta;
     api.fontSize.setMark(`${newSize}px`);
-    focusEditor(editor);
+    editor.tf.focus();
   };
 
   const displayValue = isFocused ? inputValue : cursorFontSize;
 
   return (
-    <div className="flex h-7 items-center gap-1 rounded-md bg-muted/60 p-0 ">
+    <div className="flex h-7 items-center gap-1 rounded-md bg-muted/60 p-0">
       <ToolbarButton onClick={() => handleFontSizeChange(-1)}>
         <Minus />
       </ToolbarButton>

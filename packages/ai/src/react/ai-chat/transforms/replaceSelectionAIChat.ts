@@ -1,6 +1,12 @@
 import type { PlateEditor } from '@udecode/plate/react';
 
-import { type SlateEditor, NodeApi, TextApi } from '@udecode/plate';
+import {
+  type NodeEntry,
+  type SlateEditor,
+  type TElement,
+  NodeApi,
+  TextApi,
+} from '@udecode/plate';
 import {
   BlockSelectionPlugin,
   removeBlockSelectionNodes,
@@ -8,6 +14,52 @@ import {
 import cloneDeep from 'lodash/cloneDeep.js';
 
 import type { AIChatPluginConfig } from '../AIChatPlugin';
+
+const createFormattedBlocks = ({
+  blocks,
+  format,
+  sourceBlock,
+}: {
+  blocks: TElement[];
+  format: 'all' | 'none' | 'single';
+  sourceBlock: NodeEntry;
+}) => {
+  if (format === 'none') return cloneDeep(blocks);
+
+  const [sourceNode] = sourceBlock;
+  const firstTextEntry = NodeApi.firstText(sourceNode);
+
+  if (!firstTextEntry) return null;
+
+  const blockProps = NodeApi.extractProps(sourceNode);
+  const textProps = NodeApi.extractProps(firstTextEntry[0]);
+
+  const applyTextFormatting = (node: any): any => {
+    if (TextApi.isText(node)) {
+      return { ...textProps, ...node };
+    }
+    if (node.children) {
+      return {
+        ...node,
+        children: node.children.map(applyTextFormatting),
+      };
+    }
+
+    return node;
+  };
+
+  return blocks.map((block, index) => {
+    if (format === 'single' && index > 0) {
+      return block;
+    }
+
+    return {
+      ...block,
+      ...blockProps,
+      children: block.children.map(applyTextFormatting),
+    };
+  });
+};
 
 export const replaceSelectionAIChat = (
   editor: PlateEditor,
@@ -25,6 +77,30 @@ export const replaceSelectionAIChat = (
 
   // If no blocks selected, treat it like a normal selection replacement
   if (!isBlockSelecting) {
+    const firstBlock = editor.api.node({
+      block: true,
+      mode: 'lowest',
+    });
+
+    if (
+      firstBlock &&
+      editor.api.isSelected(firstBlock[1], { contains: true }) &&
+      format !== 'none'
+    ) {
+      const formattedBlocks = createFormattedBlocks({
+        blocks: cloneDeep(sourceEditor.children),
+        format,
+        sourceBlock: firstBlock,
+      });
+
+      if (!formattedBlocks) return;
+
+      editor.tf.insertFragment(formattedBlocks);
+      editor.tf.focus();
+
+      return;
+    }
+
     editor.tf.insertFragment(sourceEditor.children);
     editor.tf.focus();
 
@@ -53,7 +129,7 @@ export const replaceSelectionAIChat = (
       });
     });
 
-    editor.tf.focus();
+    editor.getApi(BlockSelectionPlugin).blockSelection.focus();
 
     return;
   }
@@ -61,49 +137,26 @@ export const replaceSelectionAIChat = (
   // Apply formatting from first block when:
   // - formatting is 'all', or
   // - only one block is selected
-  const [firstBlockNode, firstBlockPath] = selectedBlocks[0];
-  const firstBlockProps = NodeApi.extractProps(firstBlockNode);
+  const [, firstBlockPath] = selectedBlocks[0];
+  const formattedBlocks = createFormattedBlocks({
+    blocks: cloneDeep(sourceEditor.children),
+    format,
+    sourceBlock: selectedBlocks[0],
+  });
 
-  // Get formatting from first text node
-  const firstTextEntry = NodeApi.firstText(firstBlockNode);
-
-  if (!firstTextEntry) return;
-
-  const textProps = NodeApi.extractProps(firstTextEntry[0]);
-
-  // Apply text props recursively to text nodes
-  const applyTextProps = (node: any): any => {
-    if (TextApi.isText(node)) {
-      return { ...textProps, ...node };
-    }
-    if (node.children) {
-      return {
-        ...node,
-        children: node.children.map(applyTextProps),
-      };
-    }
-
-    return node;
-  };
+  if (!formattedBlocks) return;
 
   editor.tf.withoutNormalizing(() => {
     removeBlockSelectionNodes(editor);
 
     editor.tf.withNewBatch(() => {
-      // Create new blocks with first block's formatting
-      const newBlocks = cloneDeep(sourceEditor.children).map((block) => ({
-        ...block,
-        ...firstBlockProps,
-        children: block.children.map(applyTextProps),
-      }));
-
       editor
         .getTransforms(BlockSelectionPlugin)
-        .blockSelection.insertBlocksAndSelect(newBlocks, {
+        .blockSelection.insertBlocksAndSelect(formattedBlocks, {
           at: firstBlockPath,
         });
     });
   });
 
-  editor.tf.focus();
+  editor.getApi(BlockSelectionPlugin).blockSelection.focus();
 };

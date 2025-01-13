@@ -13,7 +13,7 @@ docs:
 
 - Combobox menu with predefined commands:
   - Generate: continue writing, add summary, explain
-  - Edit: improve writing, make it longer or shorter, fix spelling & grammar, simplify language
+  - Edit: improve writing, emojify, make it longer or shorter, fix spelling & grammar, simplify language
 - Three trigger modes:
   - Cursor mode: trigger at block end
   - Selection mode: trigger with selected text
@@ -442,3 +442,53 @@ Special undo operation for AI changes:
 
 - Undoes the last operation if it was AI-generated
 - Removes the redo stack entry to prevent redoing AI operations
+
+### useAIChatEditor
+
+A hook that creates an editor for AI chat responses, registers it in the AI chat plugin, and deserializes markdown content with block-level memoization.
+
+<APIParameters>
+<APIItem name="content" type="string">
+The markdown content to deserialize into the editor.
+</APIItem>
+<APIItem name="options" type="object" optional>
+<APISubList>
+<APISubListItem parent="options" name="memoize" type="boolean" optional>
+Enable block-level memoization with `_memo` property. Defaults to true.
+</APISubListItem>
+<APISubListItem parent="options" name="parser" type="ParseMarkdownBlocksOptions" optional>
+Options for the markdown token parser. Can filter out specific token types.
+</APISubListItem>
+<APISubListItem parent="options" name="processor" type="(processor: Processor) => Processor" optional>
+Function to customize the markdown processor.
+</APISubListItem>
+<APISubListItem parent="options" name="...editorOptions" type="Partial<CreatePlateEditorOptions>" optional>
+Additional options passed to `usePlateEditor`.
+</APISubListItem>
+</APISubList>
+</APIItem>
+</APIParameters>
+
+<APIReturns>
+<APIItem type="PlateEditor">
+The configured editor instance with deserialized content.
+</APIItem>
+</APIReturns>
+
+```tsx
+const AIChatEditor = ({ content }: { content: string }) => {
+  const aiEditor = useAIChatEditor(content, {
+    plugins: [
+      // Your editor plugins
+      MarkdownPlugin,
+      // etc...
+    ],
+    // Optional markdown parser options
+    parser: {
+      exclude: ['space'],
+    },
+  });
+
+  return <Editor editor={aiEditor} />;
+};
+```

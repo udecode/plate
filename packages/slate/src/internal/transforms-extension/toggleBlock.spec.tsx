@@ -1,7 +1,5 @@
 /** @jsx jsxt */
 
-import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import { createPlateEditor } from '@udecode/plate-core/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { createEditor } from '../../create-editor';
@@ -10,7 +8,7 @@ jsxt;
 
 describe('when wrap=false', () => {
   describe('active', () => {
-    const input = createEditor(
+    const editor = createEditor(
       (
         <editor>
           <hblockquote>
@@ -33,7 +31,6 @@ describe('when wrap=false', () => {
     );
 
     it('should toggle block type', () => {
-      const editor = createPlateEditor({ editor: input });
       editor.tf.toggleBlock('blockquote', { defaultType: 'p' });
 
       expect(editor.children).toEqual(output.children);
@@ -41,7 +38,7 @@ describe('when wrap=false', () => {
   });
 
   describe('inactive', () => {
-    const input = createEditor(
+    const editor = createEditor(
       (
         <editor>
           <hp>
@@ -64,8 +61,7 @@ describe('when wrap=false', () => {
     );
 
     it('should toggle block type', () => {
-      const editor = createPlateEditor({ editor: input });
-      editor.tf.toggleBlock(BlockquotePlugin.key);
+      editor.tf.toggleBlock('blockquote');
 
       expect(editor.children).toEqual(output.children);
     });
@@ -74,7 +70,7 @@ describe('when wrap=false', () => {
 
 describe('when wrap=true', () => {
   describe('active', () => {
-    const input = createEditor(
+    const editor = createEditor(
       (
         <editor>
           <hcodeblock>
@@ -99,7 +95,6 @@ describe('when wrap=true', () => {
     );
 
     it('should unwrap block', () => {
-      const editor = createPlateEditor({ editor: input });
       editor.tf.toggleBlock('code_block', { wrap: true });
 
       expect(editor.children).toEqual(output.children);
@@ -107,7 +102,7 @@ describe('when wrap=true', () => {
   });
 
   describe('inactive', () => {
-    const input = createEditor(
+    const editor = createEditor(
       (
         <editor>
           <hp>
@@ -132,7 +127,6 @@ describe('when wrap=true', () => {
     );
 
     it('should wrap block', () => {
-      const editor = createPlateEditor({ editor: input });
       editor.tf.toggleBlock('code_block', { wrap: true });
 
       expect(editor.children).toEqual(output.children);

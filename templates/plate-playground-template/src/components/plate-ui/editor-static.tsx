@@ -3,7 +3,7 @@ import React from 'react';
 import type { VariantProps } from 'class-variance-authority';
 
 import { cn } from '@udecode/cn';
-import { type PlateStaticProps, PlateStatic } from '@udecode/plate-common';
+import { type PlateStaticProps, PlateStatic } from '@udecode/plate';
 import { cva } from 'class-variance-authority';
 
 export const editorVariants = cva(

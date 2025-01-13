@@ -299,10 +299,6 @@ editor.tf.editorTransform();
 
 ```ts
 const CodeBlockPlugin = toPlatePlugin(createSlatePlugin({ key: 'code_block' }), {
-  extendEditor: ({ api, editor }) => {
-    api.plugin.getSyntaxState();
-    return editor;
-  },
   handlers: {},
   options: { hotkey: ['mod+opt+8', 'mod+shift+8'] },
 });
@@ -310,7 +306,7 @@ const CodeBlockPlugin = toPlatePlugin(createSlatePlugin({ key: 'code_block' }), 
 
 ### .overrideEditor
 
-`overrideEditor` 方法专门用于覆盖现有的编辑器方法：
+`overrideEditor` 方法专门用于覆盖现有的编辑器方法，同时保持对原始实现的访问：
 
 ```ts
 const MyPlugin = createPlatePlugin({
@@ -318,20 +314,38 @@ const MyPlugin = createPlatePlugin({
 }).overrideEditor(({ editor, tf: { insertText }, api: { isInline } }) => ({
   transforms: {
     insertText(text) {
-      // 覆盖 insertText 行为
+      // 自定义逻辑
+      console.info('Inserting:', text);
+      
+      // 调用原始方法
       insertText(text);
+      
+      // 后续逻辑
+      console.info('Inserted:', text);
     },
   },
   api: {
     isInline(element) {
-      // 覆盖 isInline 行为
+      // 自定义内联元素检查
+      if (element.type === 'custom-inline') {
+        return true;
+      }
+      
+      // 回退到原始行为
       return isInline(element);
     },
   },
 }));
 ```
 
-- 专门用于覆盖现有的编辑器方法
-- 返回的覆盖方法需要包装在 `transforms` 或 `api` 对象中
+- 修改编辑器行为的首选方法
+- 对原始方法的类型安全访问（通过 `tf` 和 `api` 参数）
+- 在 transforms 和 API 之间清晰分离
+- 可以多次链式调用以层叠不同的覆盖
 - 不能添加新方法（请改用 `extendEditorTransforms` 或 `extendEditorApi`）
-- 通过上下文提供对原始方法的访问
+
+<Callout>
+`extendEditor` 和 `overrideEditor` 的区别：
+- 使用 `extendEditor` 来集成需要直接编辑器变更的传统 Slate 插件，如 `withYjs`。每个插件只能有一个 `extendEditor`。
+- 优先使用 `overrideEditor` 来修改编辑器行为，因为它具有单一职责和更好的类型安全性。它可以多次调用以层叠不同的覆盖。
+</Callout>

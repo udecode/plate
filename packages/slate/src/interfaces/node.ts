@@ -1,6 +1,6 @@
 import { Node as SlateNode } from 'slate';
 
-import type { Editor, Value } from './editor/editor';
+import type { Editor, Value } from './editor/editor-type';
 import type { NodeEntry } from './node-entry';
 import type { Path } from './path';
 import type { TRange } from './range';
@@ -205,6 +205,9 @@ export const NodeApi: {
 
   /** Check if a value implements the 'Descendant' interface. */
   isDescendant: <N extends Descendant>(value: any) => value is N;
+
+  /** Check if a value implements the `Editor` interface. */
+  isEditor: (value: any) => value is Editor;
 
   /** Check if a node is the last child of its parent. */
   isLastChild: (root: TNode, path: Path) => boolean;

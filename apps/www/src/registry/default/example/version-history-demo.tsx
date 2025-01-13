@@ -144,7 +144,7 @@ const DiffPlugin = toPlatePlugin(
             } as any
           )[diffOperation.type];
 
-          const Component = editor.isInline(element) ? 'span' : 'div';
+          const Component = editor.api.isInline(element) ? 'span' : 'div';
 
           return (
             <Component
@@ -252,7 +252,7 @@ function Diff({ current, previous }: DiffProps) {
     });
 
     return computeDiff(previous, cloneDeep(current), {
-      isInline: editor.isInline,
+      isInline: editor.api.isInline,
       lineBreakChar: '¶',
     }) as Value;
   }, [previous, current]);

@@ -2,9 +2,13 @@
 
 import * as React from 'react';
 
-import { type NodeEntry, type SlateEditor, isHotkey } from '@udecode/plate';
+import { type NodeEntry, isHotkey } from '@udecode/plate';
 import { useEditorPlugin, useHotkeys } from '@udecode/plate/react';
-import { AIChatPlugin, useEditorChat } from '@udecode/plate-ai/react';
+import {
+  AIChatPlugin,
+  useEditorChat,
+  useLastAssistantMessage,
+} from '@udecode/plate-ai/react';
 import {
   BlockSelectionPlugin,
   useIsSelecting,
@@ -24,7 +28,6 @@ export function AIMenu() {
   const mode = useOption('mode');
   const isSelecting = useIsSelecting();
 
-  const aiEditorRef = React.useRef<SlateEditor | null>(null);
   const [value, setValue] = React.useState('');
 
   const chat = useChat();
@@ -33,6 +36,8 @@ export function AIMenu() {
   const [anchorElement, setAnchorElement] = React.useState<HTMLElement | null>(
     null
   );
+
+  const content = useLastAssistantMessage()?.content;
 
   const setOpen = (open: boolean) => {
     if (open) {
@@ -101,7 +106,7 @@ export function AIMenu() {
           }
         }}
         align="center"
-        avoidCollisions={false}
+        // avoidCollisions={false}
         side="bottom"
       >
         <Command
@@ -109,8 +114,8 @@ export function AIMenu() {
           value={value}
           onValueChange={setValue}
         >
-          {mode === 'chat' && isSelecting && messages.length > 0 && (
-            <AIChatEditor aiEditorRef={aiEditorRef} />
+          {mode === 'chat' && isSelecting && content && (
+            <AIChatEditor content={content} />
           )}
 
           {isLoading ? (
@@ -142,7 +147,7 @@ export function AIMenu() {
 
           {!isLoading && (
             <CommandList>
-              <AIMenuItems aiEditorRef={aiEditorRef} setValue={setValue} />
+              <AIMenuItems setValue={setValue} />
             </CommandList>
           )}
         </Command>

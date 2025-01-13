@@ -1,5 +1,11 @@
 # @udecode/plate-utils
 
+## 42.0.4
+
+## 42.0.3
+
+## 42.0.1
+
 ## 42.0.0
 
 ### Major Changes

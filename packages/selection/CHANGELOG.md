@@ -1,5 +1,14 @@
 # @udecode/plate-selection
 
+## 42.0.3
+
+### Patch Changes
+
+- [#3952](https://github.com/udecode/plate/pull/3952) by [@zbeyens](https://github.com/zbeyens) –
+  - Fix: after deleting all blocks using block selection, focus the empty editor.
+  - Feature: shift+up/down block selection to expand/shrink selection. Supports nested blocks.
+  - Feature: up/down support nested blocks
+
 ## 42.0.0
 
 ### Major Changes

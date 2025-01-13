@@ -1,6 +1,6 @@
 import { node as nodeBase } from 'slate';
 
-import type { Editor } from '../../interfaces/editor/editor';
+import type { Editor } from '../../interfaces/editor/editor-type';
 import type { NodeEntry } from '../../interfaces/node-entry';
 import type { AtOrDescendant } from '../../types';
 

@@ -1,8 +1,10 @@
 import {
   type OverrideEditor,
+  type Path,
   type PathRef,
   type TElement,
   NodeApi,
+  PathApi,
 } from '@udecode/plate';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 
@@ -38,6 +40,7 @@ export const withIndentList: OverrideEditor<BaseIndentListConfig> = (ctx) => {
         const { getSiblingIndentListOptions } = getOptions();
 
         let nodeBefore: TElement | null = null;
+        let targetPath: Path | null = null;
 
         if (operation.type === 'set_node') {
           nodeBefore = NodeApi.get<TElement>(editor, path)!;
@@ -87,24 +90,50 @@ export const withIndentList: OverrideEditor<BaseIndentListConfig> = (ctx) => {
         // FIXME: delete first list
         let nextIndentListPathRef: PathRef | null = null;
 
-        if (
-          operation.type === 'merge_node' &&
-          (operation.properties as any)[BaseIndentListPlugin.key]
-        ) {
-          const node = NodeApi.get<TElement>(editor, path);
+        if (operation.type === 'merge_node') {
+          const prevPath = PathApi.previous(operation.path);
+          const { properties } = operation;
 
-          if (node) {
-            const nextNodeEntryBefore = getNextIndentList<TElement>(
-              editor,
-              [node, path],
-              getSiblingIndentListOptions
-            );
+          // Check if we're merging into a list node
+          if (prevPath) {
+            const prevNode = NodeApi.get<TElement>(editor, prevPath);
 
-            if (nextNodeEntryBefore) {
-              nextIndentListPathRef = editor.api.pathRef(
-                nextNodeEntryBefore[1]
-              );
+            if (prevNode?.[BaseIndentListPlugin.key]) {
+              targetPath = prevPath;
             }
+          }
+          // Check if we're merging a list node
+          if ((properties as any)[BaseIndentListPlugin.key]) {
+            const node = NodeApi.get<TElement>(editor, path);
+
+            if (node) {
+              const nextNodeEntryBefore = getNextIndentList<TElement>(
+                editor,
+                [node, path],
+                getSiblingIndentListOptions
+              );
+
+              if (nextNodeEntryBefore) {
+                nextIndentListPathRef = editor.api.pathRef(
+                  nextNodeEntryBefore[1]
+                );
+              }
+            }
+          }
+        } else if (operation.type === 'remove_node') {
+          const nextPath = PathApi.next(operation.path);
+          const nextNode = NodeApi.get<TElement>(editor, nextPath);
+          const prevPath = PathApi.previous(operation.path);
+          const prevNode = prevPath
+            ? NodeApi.get<TElement>(editor, prevPath)
+            : null;
+
+          // Check if both the previous and next node are list nodes
+          if (
+            prevNode?.[BaseIndentListPlugin.key] &&
+            nextNode?.[BaseIndentListPlugin.key]
+          ) {
+            targetPath = operation.path;
           }
         }
         // When inserting a line break, normalize listStart if the node has a listRestart property
@@ -156,53 +185,34 @@ export const withIndentList: OverrideEditor<BaseIndentListConfig> = (ctx) => {
             }
           }
         }
-        if (operation.type === 'merge_node') {
-          const { properties } = operation;
+        // Handle merge_node and remove_node
+        if (
+          (operation.type === 'merge_node' ||
+            operation.type === 'remove_node') &&
+          targetPath
+        ) {
+          const targetNode = NodeApi.get<TElement>(editor, operation.path);
 
-          if ((properties as any)[BaseIndentListPlugin.key]) {
-            const node = NodeApi.get<TElement>(editor, path);
-
-            if (!node) return;
-
-            // const prevNodeEntry = getPreviousIndentList(
-            //   editor,
-            //   [node, path],
-            //   getSiblingIndentListOptions
-            // );
-            // if (!prevNodeEntry) {
-            // normalizeIndentListStart(
-            //   editor,
-            //   [node as any, path],
-            //   getSiblingIndentListOptions
-            // );
-            //   return;
-            // }
-            // normalizeIndentListStart(
-            //   editor,
-            //   prevNodeEntry,
-            //   getSiblingIndentListOptions
-            // );
-
+          if (targetNode?.[BaseIndentListPlugin.key]) {
             normalizeIndentListStart<TElement>(
               editor,
-              [node, path],
+              [targetNode, targetPath],
               getSiblingIndentListOptions
             );
+          }
+        }
+        if (operation.type === 'merge_node' && nextIndentListPathRef) {
+          const nextPath = nextIndentListPathRef.unref();
 
-            if (nextIndentListPathRef) {
-              const nextPath = nextIndentListPathRef.unref();
+          if (nextPath) {
+            const nextNode = NodeApi.get<TElement>(editor, nextPath);
 
-              if (nextPath) {
-                const nextNode = NodeApi.get<TElement>(editor, nextPath);
-
-                if (nextNode) {
-                  normalizeIndentListStart<TElement>(
-                    editor,
-                    [nextNode, nextPath],
-                    getSiblingIndentListOptions
-                  );
-                }
-              }
+            if (nextNode) {
+              normalizeIndentListStart<TElement>(
+                editor,
+                [nextNode, nextPath],
+                getSiblingIndentListOptions
+              );
             }
           }
         }

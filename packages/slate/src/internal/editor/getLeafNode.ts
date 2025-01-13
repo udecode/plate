@@ -3,7 +3,7 @@ import type { EditorLeafOptions } from 'slate/dist/interfaces/editor';
 import { leaf } from 'slate';
 
 import type { TextOf } from '../../interfaces';
-import type { Editor } from '../../interfaces/editor/editor';
+import type { Editor } from '../../interfaces/editor/editor-type';
 import type { NodeEntry } from '../../interfaces/node-entry';
 import type { At } from '../../types';
 

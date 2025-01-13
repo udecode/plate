@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { useEditorRef, useEditorSelector } from '@udecode/plate-common/react';
+import { useEditorRef, useEditorSelector } from '@udecode/plate/react';
 import {
   ListStyleType,
   someIndentList,

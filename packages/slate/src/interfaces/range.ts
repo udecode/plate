@@ -26,6 +26,12 @@ export const RangeApi: {
   ) => TRange | null;
 
   /**
+   * Check if a range fully contains another range, meaning that both the start
+   * and end points of the target range are included in the range.
+   */
+  contains: (range: TRange, target: TRange) => boolean;
+
+  /**
    * Get the start and end points of a range, in the order in which they appear
    * in the document.
    */
@@ -84,6 +90,14 @@ export const RangeApi: {
   surrounds: (range: TRange, target: TRange) => boolean;
 } = {
   ...SlateRange,
+  contains: (range: TRange, target: TRange) => {
+    const [targetStart, targetEnd] = RangeApi.edges(target);
+
+    return (
+      RangeApi.includes(range, targetStart) &&
+      RangeApi.includes(range, targetEnd)
+    );
+  },
   isCollapsed: (range?: TRange | null) =>
     !!range && SlateRange.isCollapsed(range),
   isExpanded: (range?: TRange | null) =>

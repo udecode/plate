@@ -1,6 +1,12 @@
 'use client';
 
 import { withProps } from '@udecode/cn';
+import {
+  ParagraphPlugin,
+  PlateElement,
+  PlateLeaf,
+  usePlateEditor,
+} from '@udecode/plate/react';
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
 import {
   BasicMarksPlugin,
@@ -9,12 +15,6 @@ import {
   StrikethroughPlugin,
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
-import {
-  ParagraphPlugin,
-  PlateElement,
-  PlateLeaf,
-  usePlateEditor,
-} from '@udecode/plate-common/react';
 
 export const useCreateEditor = () => {
   return usePlateEditor({

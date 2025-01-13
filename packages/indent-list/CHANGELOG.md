@@ -1,5 +1,11 @@
 # @udecode/plate-indent-list
 
+## 42.0.1
+
+### Patch Changes
+
+- [#3948](https://github.com/udecode/plate/pull/3948) by [@zbeyens](https://github.com/zbeyens) – Fix merging and renumbering of lists when deleting empty paragraphs between them (both backward and forward deletion)
+
 ## 42.0.0
 
 ## 41.0.10

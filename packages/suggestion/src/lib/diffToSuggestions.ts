@@ -22,7 +22,7 @@ export function diffToSuggestions<E extends SlateEditor>(
       getSuggestionProps(editor, nanoid(), {
         suggestionUpdate: newProperties,
       }),
-    isInline = editor.isInline,
+    isInline = editor.api.isInline,
     ...options
   }: Partial<ComputeDiffOptions> = {}
 ): ValueOf<E> {

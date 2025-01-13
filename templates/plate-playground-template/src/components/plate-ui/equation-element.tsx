@@ -5,10 +5,10 @@ import React, { useRef, useState } from 'react';
 import type { TEquationElement } from '@udecode/plate-math';
 
 import { cn, withRef } from '@udecode/cn';
-import { useElement } from '@udecode/plate-common/react';
+import { useElement } from '@udecode/plate/react';
+import { useSelected } from '@udecode/plate/react';
 import { useEquationElement } from '@udecode/plate-math/react';
 import { RadicalIcon } from 'lucide-react';
-import { useSelected } from 'slate-react';
 
 import { EquationPopoverContent } from './equation-popover';
 import { PlateElement } from './plate-element';
@@ -39,11 +39,7 @@ export const EquationElement = withRef<typeof PlateElement>(
     });
 
     return (
-      <PlateElement
-        ref={ref}
-        className={cn('relative my-1', className)}
-        {...props}
-      >
+      <PlateElement ref={ref} className={cn('my-1', className)} {...props}>
         <Popover open={open} onOpenChange={setOpen} modal={false}>
           <PopoverTrigger asChild>
             <div

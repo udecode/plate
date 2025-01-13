@@ -3,8 +3,8 @@ import castArray from 'lodash/castArray.js';
 import map from 'lodash/map.js';
 import { before as beforeBase } from 'slate';
 
-import type { Editor } from '../../interfaces/editor/editor';
-import type { EditorBeforeOptions } from '../../interfaces/index';
+import type { Editor } from '../../interfaces/editor/editor-type';
+import type { EditorBeforeOptions, Point } from '../../interfaces/index';
 import type { At } from '../../types';
 
 import { getAt } from '../../utils';
@@ -13,7 +13,7 @@ export const getPointBefore = (
   editor: Editor,
   at: At,
   options?: EditorBeforeOptions
-) => {
+): Point | undefined => {
   if (!options || (!options.match && !options.matchString)) {
     try {
       return beforeBase(editor as any, getAt(editor, at)!, options as any);

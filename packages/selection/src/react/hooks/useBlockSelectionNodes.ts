@@ -11,12 +11,10 @@ export function useBlockSelectionNodes() {
   const selectedIds = useOption('selectedIds');
 
   return useMemo(() => {
-    return [
-      ...editor.api.nodes<TElement>({
-        at: [],
-        match: (n) => selectedIds?.has(n.id),
-      }),
-    ];
+    return editor.api.blocks<TElement>({
+      at: [],
+      match: (n) => !!n.id && selectedIds?.has(n.id),
+    });
   }, [editor, selectedIds]);
 }
 

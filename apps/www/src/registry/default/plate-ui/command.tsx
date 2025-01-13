@@ -19,7 +19,7 @@ import { Dialog, DialogContent, DialogTitle } from './dialog';
 import { inputVariants } from './input';
 
 const commandVariants = cva(
-  'flex size-full flex-col rounded-md bg-popover text-popover-foreground',
+  'flex size-full flex-col rounded-md bg-popover text-popover-foreground focus-visible:outline-none',
   {
     defaultVariants: {
       variant: 'default',

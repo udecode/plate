@@ -1,6 +1,6 @@
 import { unhangRange as unhangRangeBase } from 'slate';
 
-import type { Editor } from '../../interfaces/editor/editor';
+import type { Editor } from '../../interfaces/editor/editor-type';
 
 import {
   type EditorUnhangRangeOptions,

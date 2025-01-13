@@ -40,7 +40,7 @@ export const insertNodes = <
 
           const children = node.children as Descendant[];
 
-          if (children.some((n) => editor.isInline(n))) return false;
+          if (children.some((n) => editor.api.isInline(n))) return false;
 
           return !filter || filter([node, path]);
         };

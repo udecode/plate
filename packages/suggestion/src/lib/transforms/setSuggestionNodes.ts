@@ -26,7 +26,7 @@ export const setSuggestionNodes = (
 
   // TODO: get all inline nodes to be set
   const _nodeEntries = editor.api.nodes({
-    match: (n) => ElementApi.isElement(n) && editor.isInline(n),
+    match: (n) => ElementApi.isElement(n) && editor.api.isInline(n),
     ...options,
   });
   const nodeEntries = [..._nodeEntries];
@@ -46,7 +46,7 @@ export const setSuggestionNodes = (
     nodeEntries.forEach(([, path]) => {
       editor.tf.setNodes<TSuggestionText>(props, {
         at: path,
-        match: (n) => ElementApi.isElement(n) && editor.isInline(n),
+        match: (n) => ElementApi.isElement(n) && editor.api.isInline(n),
         ...options,
       });
     });

@@ -26,13 +26,11 @@ import type { HistoryApi } from '../../slate-history/index';
 import type { At, TextUnit } from '../../types';
 import type { QueryNodeOptions } from '../../utils';
 import type { ElementIn, ElementOrTextIn } from '../element';
-import type { TLocation } from '../location';
 import type { Descendant, DescendantIn, NodeIn, NodeProps } from '../node';
 import type { NodeEntry } from '../node-entry';
 import type { Operation } from '../operation';
 import type { Path } from '../path';
 import type { TRange } from '../range';
-import type { Editor, Value } from './editor';
 import type {
   EditorNodesOptions,
   EditorNormalizeOptions,
@@ -42,6 +40,7 @@ import type {
   QueryTextUnit,
   QueryVoids,
 } from './editor-api';
+import type { Editor, Value } from './editor-type';
 
 export type EditorTransforms<V extends Value = Value> = {
   /**
@@ -170,7 +169,7 @@ export type EditorTransforms<V extends Value = Value> = {
   redo: () => void;
   /**
    * Remove a custom property from all of the leaf text nodes within non-void
-   * nodes or void nodes that `editor.markableVoid()` allows in the current
+   * nodes or void nodes that `editor.api.markableVoid()` allows in the current
    * selection.
    *
    * If the selection is currently collapsed, the removal will be stored on
@@ -514,9 +513,10 @@ export type WrapNodesOptions<V extends Value = Value> = {
   QueryVoids;
 
 export type InsertTextOptions = {
-  at?: TLocation;
-  voids?: boolean;
-};
+  /** @default true */
+  marks?: boolean;
+} & QueryAt &
+  QueryVoids;
 
 export type DeleteTextOptions = {
   distance?: number;

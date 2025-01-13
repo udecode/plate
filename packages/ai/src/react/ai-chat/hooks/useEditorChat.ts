@@ -25,14 +25,14 @@ export const useEditorChat = ({
   onOpenCursor,
   onOpenSelection,
 }: UseEditorChatOptions) => {
-  const { editor, setOption, setOptions, useOption } =
-    useEditorPlugin(AIChatPlugin);
+  const { editor, setOption, useOption } = useEditorPlugin(AIChatPlugin);
   const open = useOption('open');
 
   // Sync useChat with AIChatPlugin
   useEffect(() => {
     setOption('chat', chat);
-  }, [chat, setOption, setOptions]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chat.input, chat.messages, chat.isLoading, chat.data, chat.error]);
 
   useEffect(() => {
     onOpenChange?.(open);

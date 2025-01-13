@@ -3,6 +3,7 @@ import {
   type TElement,
   NodeApi,
   PointApi,
+  RangeApi,
   createTSlatePlugin,
 } from '@udecode/plate';
 
@@ -53,16 +54,7 @@ export const BaseResetNodePlugin = createTSlatePlugin<ResetNodeConfig>({
           const { selection } = editor;
 
           if (!selection) return;
-
-          const start = editor.api.start([])!;
-          const end = editor.api.end([])!;
-
-          if (
-            (PointApi.equals(selection.anchor, start) &&
-              PointApi.equals(selection.focus, end)) ||
-            (PointApi.equals(selection.focus, start) &&
-              PointApi.equals(selection.anchor, end))
-          ) {
+          if (RangeApi.equals(selection, editor.api.range([])!)) {
             editor.tf.reset({
               children: true,
               select: true,
