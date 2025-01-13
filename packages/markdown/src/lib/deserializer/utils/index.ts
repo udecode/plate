@@ -5,4 +5,5 @@
 export * from './deserializeInlineMd';
 export * from './deserializeMd';
 export * from './filterBreakLines';
+export * from './parseMarkdownBlocks';
 export * from './stripMarkdown';

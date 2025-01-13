@@ -40,7 +40,7 @@ export const range = (
   if (to && from === 'before') {
     const anchor = editor.api.before(to, options?.before);
 
-    from = anchor ?? to;
+    from = anchor ?? getAt(editor, to);
   }
 
   return rangeBase(editor as any, from as any, getAt(editor, to));

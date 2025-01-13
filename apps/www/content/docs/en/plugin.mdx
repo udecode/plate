@@ -176,13 +176,13 @@ const CustomPlugin = createPlatePlugin({
   transforms: {
     deleteForward(options) {
       // Custom logic before deletion
-      console.log('Deleting forward...');
+      console.info('Deleting forward...');
       
       // Call original transform
       deleteForward(options);
       
       // Custom logic after deletion
-      console.log('Deleted forward');
+      console.info('Deleted forward');
     },
   },
   // Override API methods

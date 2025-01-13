@@ -21,6 +21,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
   const editor = useEditorRef();
   const { api, getOption, getOptions, setOption, useOption } =
     useEditorPlugin<BlockSelectionConfig>({ key: 'blockSelection' });
+
   const isSelecting = useOption('isSelecting');
   const selectedIds = useOption('selectedIds');
 
@@ -39,6 +40,12 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
   }, [setOption]);
 
   React.useEffect(() => {
+    if (!isSelecting) {
+      setOption('anchorId', null);
+    }
+  }, [isSelecting, setOption]);
+
+  React.useEffect(() => {
     if (isSelecting && inputRef.current) {
       inputRef.current.focus({ preventScroll: true });
     } else if (inputRef.current) {
@@ -46,77 +53,101 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
     }
   }, [isSelecting]);
 
+  /** KeyDown logic */
   const handleKeyDown = React.useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
       const isReadonly = editor.api.isReadOnly();
       getOptions().onKeyDownSelecting?.(e.nativeEvent);
 
-      // selecting commands
       if (!getOptions().isSelecting) return;
+      if (isHotkey('shift+up')(e)) {
+        e.preventDefault();
+        e.stopPropagation();
+        api.blockSelection.shiftSelection('up');
+
+        return;
+      }
+      if (isHotkey('shift+down')(e)) {
+        e.preventDefault();
+        e.stopPropagation();
+        api.blockSelection.shiftSelection('down');
+
+        return;
+      }
+      // ESC => unselect all
       if (isHotkey('escape')(e)) {
         api.blockSelection.unselect();
+
+        return;
       }
+      // Undo/redo
       if (isHotkey('mod+z')(e)) {
         editor.undo();
         selectInsertedBlocks(editor);
+
+        return;
       }
       if (isHotkey('mod+shift+z')(e)) {
         editor.redo();
         selectInsertedBlocks(editor);
+
+        return;
       }
-      // selecting some commands
+      // Only continue if we have "some" selection
       if (!getOption('isSelectingSome')) return;
+      // Enter => focus first selected block
       if (isHotkey('enter')(e)) {
-        // get the first block in the selection
         const entry = editor.api.node({
           at: [],
-          match: (n) => n.id && selectedIds!.has(n.id),
+          block: true,
+          match: (n) => !!n.id && selectedIds?.has(n.id),
         });
 
         if (entry) {
           const [, path] = entry;
-
-          // focus the end of that block
           editor.tf.focus({ at: path, edge: 'end' });
           e.preventDefault();
         }
+
+        return;
       }
+      // Backspace/Delete => remove selected blocks
       if (isHotkey(['backspace', 'delete'])(e) && !isReadonly) {
-        editor.tf.removeNodes({
-          at: [],
-          match: (n) => !!n.id && selectedIds!.has(n.id),
-        });
-      }
-      // TODO: skip toggle child
-      if (isHotkey('up')(e)) {
-        const firstId = [...selectedIds!][0];
-        const node = editor.api.node({
-          at: [],
-          match: (n) => n.id && n.id === firstId,
-        });
-        const prev = editor.api.previous({
-          at: node?.[1],
+        e.preventDefault();
+        editor.tf.withoutNormalizing(() => {
+          editor.tf.removeNodes({
+            at: [],
+            block: true,
+            match: (n) => !!n.id && selectedIds?.has(n.id),
+          });
+
+          if (editor.children.length === 0) {
+            editor.tf.focus();
+          }
         });
 
-        const prevId = prev?.[0].id;
-        api.blockSelection.addSelectedRow(prevId as string);
+        return;
+      }
+      // If SHIFT not pressed => arrow up/down sets new anchor
+      if (isHotkey('up')(e)) {
+        e.preventDefault();
+        e.stopPropagation();
+        api.blockSelection.moveSelection('up');
+
+        return;
       }
       if (isHotkey('down')(e)) {
-        const lastId = [...selectedIds!].pop();
-        const node = editor.api.node({
-          at: [],
-          match: (n) => n.id && n.id === lastId,
-        });
-        const next = editor.api.next({
-          at: node?.[1],
-        });
-        const nextId = next?.[0].id;
-        api.blockSelection.addSelectedRow(nextId as string);
+        e.preventDefault();
+        e.stopPropagation();
+        api.blockSelection.moveSelection('down');
+
+        return;
       }
     },
     [editor, selectedIds, api, getOptions, getOption]
   );
 
+  /** Handle copy / cut / paste in block selection */
   const handleCopy = React.useCallback(
     (e: React.ClipboardEvent<HTMLInputElement>) => {
       e.preventDefault();
@@ -138,9 +169,8 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
         if (!editor.api.isReadOnly()) {
           editor.tf.removeNodes({
             at: [],
-            match: (n) => selectedIds!.has(n.id),
+            match: (n) => selectedIds?.has(n.id),
           });
-
           editor.tf.focus();
         }
       }

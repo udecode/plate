@@ -315,13 +315,13 @@ const MyPlugin = createPlatePlugin({
   transforms: {
     insertText(text) {
       // 自定义逻辑
-      console.log('Inserting:', text);
+      console.info('Inserting:', text);
       
       // 调用原始方法
       insertText(text);
       
       // 后续逻辑
-      console.log('Inserted:', text);
+      console.info('Inserted:', text);
     },
   },
   api: {

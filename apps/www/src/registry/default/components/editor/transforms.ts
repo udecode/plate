@@ -109,22 +109,20 @@ const insertInlineMap: Record<
 
 export const insertBlock = (editor: PlateEditor, type: string) => {
   editor.tf.withoutNormalizing(() => {
+    const block = editor.api.block();
+
+    if (!block) return;
     if (type in insertBlockMap) {
       insertBlockMap[type](editor, type);
     } else {
-      const path = editor.api.block()?.[1];
-
-      if (!path) return;
-
-      const at = PathApi.next(path);
-
       editor.tf.insertNodes(editor.api.create.block({ type }), {
-        at,
+        at: PathApi.next(block[1]),
         select: true,
       });
     }
-
-    editor.tf.removeNodes({ previousEmptyBlock: true });
+    if (getBlockType(block[0]) !== type) {
+      editor.tf.removeNodes({ previousEmptyBlock: true });
+    }
   });
 };
 

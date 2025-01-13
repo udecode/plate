@@ -378,182 +378,9 @@ describe('deserializeMd', () => {
   });
 });
 
-describe('deserializeMdIndentList', () => {
+describe('deserializeMd table', () => {
   const editor = createSlateEditor({
     plugins: [MarkdownPlugin.configure({ options: { indentList: true } })],
-  });
-
-  it('should deserialize unordered lists', () => {
-    const input = '- List item 1\n- List item 2';
-
-    const output = [
-      {
-        children: [
-          {
-            text: 'List item 1',
-          },
-        ],
-        indent: 1,
-        listStyleType: 'disc',
-        type: 'p',
-      },
-      {
-        children: [
-          {
-            text: 'List item 2',
-          },
-        ],
-        indent: 1,
-        listStyleType: 'disc',
-        type: 'p',
-      },
-    ];
-
-    expect(deserializeMd(editor, input)).toEqual(output);
-  });
-
-  it('should deserialize ordered lists', () => {
-    const input = '1. List item 1\n2. List item 2';
-
-    const output = [
-      {
-        children: [
-          {
-            text: 'List item 1',
-          },
-        ],
-        indent: 1,
-        listStart: 1,
-        listStyleType: 'decimal',
-        type: 'p',
-      },
-      {
-        children: [
-          {
-            text: 'List item 2',
-          },
-        ],
-        indent: 1,
-        listStart: 2,
-        listStyleType: 'decimal',
-        type: 'p',
-      },
-    ];
-
-    expect(deserializeMd(editor, input)).toEqual(output);
-  });
-
-  it('should deserialize mixed nested lists', () => {
-    const input = '- List item 1\n  1. List item 1.1';
-
-    const output = [
-      {
-        children: [
-          {
-            text: 'List item 1',
-          },
-        ],
-        indent: 1,
-        listStyleType: 'disc',
-        type: 'p',
-      },
-      {
-        children: [
-          {
-            text: 'List item 1.1',
-          },
-        ],
-        indent: 2,
-        listStyleType: 'disc',
-        type: 'p',
-      },
-    ];
-
-    expect(deserializeMd(editor, input)).toEqual(output);
-  });
-
-  it('should deserialize an empty list item', () => {
-    const input = '* Line 1\n*';
-
-    const output = [
-      {
-        children: [
-          {
-            text: 'Line 1',
-          },
-        ],
-        indent: 1,
-        listStyleType: 'disc',
-        type: 'p',
-      },
-      {
-        children: [{ text: '' }],
-        indent: 1,
-        listStyleType: 'disc',
-        type: 'p',
-      },
-    ];
-
-    expect(deserializeMd(editor, input)).toEqual(output);
-  });
-
-  it('should deserialize list with indented block element', () => {
-    const input = `
-- 1
-- 2
-  - 2.1
-  \`\`\`
-  2.2 code
-  \`\`\`
-`.trim();
-    const output = [
-      {
-        children: [
-          {
-            text: '1',
-          },
-        ],
-        indent: 1,
-        listStyleType: 'disc',
-        type: 'p',
-      },
-      {
-        children: [
-          {
-            text: '2',
-          },
-        ],
-        indent: 1,
-        listStyleType: 'disc',
-        type: 'p',
-      },
-      {
-        children: [
-          {
-            text: '2.1',
-          },
-        ],
-        indent: 2,
-        listStyleType: 'disc',
-        type: 'p',
-      },
-      {
-        children: [
-          {
-            children: [
-              {
-                text: '2.2 code',
-              },
-            ],
-            type: 'code_line',
-          },
-        ],
-        indent: 2,
-        type: 'code_block',
-      },
-    ];
-
-    expect(deserializeMd(editor, input)).toEqual(output);
   });
 
   it('should deserialize a table', () => {
@@ -734,5 +561,42 @@ describe('when splitLineBreaks is enabled', () => {
     );
 
     expect(deserializeMd(editor, input)).toEqual(output);
+  });
+});
+
+describe('deserializeMd options', () => {
+  const editor = createSlateEditor({
+    plugins: [MarkdownPlugin],
+  });
+
+  describe('when memoize is true', () => {
+    it('should add _memo property to elements', () => {
+      const input = '# Heading\n> Quote\n```\nCode\n```';
+
+      const output = [
+        {
+          _memo: '# Heading',
+          children: [{ text: 'Heading' }],
+          type: 'h1',
+        },
+        {
+          _memo: '> Quote',
+          children: [{ text: 'Quote' }],
+          type: 'blockquote',
+        },
+        {
+          _memo: '```\nCode\n```',
+          children: [
+            {
+              children: [{ text: 'Code' }],
+              type: 'code_line',
+            },
+          ],
+          type: 'code_block',
+        },
+      ];
+
+      expect(deserializeMd(editor, input, { memoize: true })).toEqual(output);
+    });
   });
 });

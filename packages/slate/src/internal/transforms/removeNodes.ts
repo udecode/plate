@@ -12,20 +12,25 @@ export const removeNodes = <E extends Editor>(
   const options = getQueryOptions(editor, opt);
 
   editor.tf.withoutNormalizing(() => {
-    // Handle previousEmptyBlock option
-    if (previousEmptyBlock && options.at) {
+    if (previousEmptyBlock) {
       const entry = editor.api.block({ at: options.at });
 
-      if (entry) {
-        const prevEntry = editor.api.previous({
-          at: entry[1],
-          sibling: true,
-        });
+      if (!entry) return;
 
-        if (prevEntry && editor.api.isEmpty(prevEntry[0])) {
-          editor.tf.removeNodes({ at: prevEntry[1] });
-        }
+      const prevEntry = editor.api.previous({
+        at: entry[1],
+        sibling: true,
+      });
+
+      if (!prevEntry) return;
+
+      const [prevNode, prevPath] = prevEntry;
+
+      if (editor.api.isEmpty(prevNode)) {
+        editor.tf.removeNodes({ at: prevPath });
       }
+
+      return;
     }
     // Handle children option
     if (children && options.at) {

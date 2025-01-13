@@ -17,7 +17,6 @@ export const withTrailingBlock: OverrideEditor<TrailingBlockConfig> = ({
 
       if (currentPath.length === 0) {
         const lastChild = editor.api.last([], { level });
-
         const lastChildNode = lastChild?.[0];
 
         if (

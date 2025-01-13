@@ -4,9 +4,9 @@ import type {
   deleteForward as deleteForwardBase,
 } from 'slate';
 
-import type { Value } from './editor-type';
 import type { EditorApi } from './editor-api';
 import type { EditorTransforms } from './editor-transforms';
+import type { Value } from './editor-type';
 
 export type LegacyEditorApi<V extends Value = Value> = Pick<
   EditorApi<V>,

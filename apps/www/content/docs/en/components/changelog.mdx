@@ -8,25 +8,36 @@ Since Plate UI is not a component library, a changelog is maintained here.
 
 Use the [CLI](https://platejs.org/docs/components/cli) to install the latest version of the components.
 
-## December 2024 #17
+## January 2025 #18
 
-### December 28 #17.8
+### January 12 #18.2
 
-- `export-toolbar-button`: add `katex` support
-- `plate-element`: remove `relative` className
-- All components using the `PlateElement` have had redundant `relative` class names removed.
-### December 27 #17.7
+- `ai-plugins`: remove `createAIEditor`, it's now created in `ai-chat-editor`
+- `ai-chat-editor`: just use `useAIChatEditor` (v42.1)
+- `ai-menu`: avoid collisions, remove `aiEditorRef`
+- `command`: add `focus-visible:outline-none`
+- `editor-static`: update `aiChat` padding
+- `transforms`: fix `insertBlock` used by slash commands: it should insert a new block if the newly inserted block is of the same type as the command.
+- `block-selection-plugins`: update `BlockSelectionPlugin`
 
-- `fixed-toolbar-buttons`: add `font-size-toolbar-button`
-- `floating-toolbar`: add `inline-equation-toolbar-button`
-- `turn-into-dropdown-menu`: Fix: after turn into other block, the editor should regain focus.
-- `insert-dropdown-menu`: add `inline equation` and `equation` & fix the focus issue
-- `slash-input-element`: add `equation` and `inline equation`
+```tsx
+BlockSelectionPlugin.configure(({ editor }) => ({
+  options: {
+    enableContextMenu: true,
+    isSelectable: (element, path) => {
+      return (
+        !['code_line', 'column', 'td'].includes(element.type) &&
+        !editor.api.block({ above: true, at: path, match: { type: 'tr' } })
+      );
+    },
+  },
+}))
+```
 
-### December 25 #17.6
+ 
+### January 8 #18.1
 
-v42
-
+- v42 migration
 - `table-element`, `table-element-static`
   - Move icons to `table-icons`
   - Remove `colgroup`, col width is now set in `table-cell-element`
@@ -43,6 +54,21 @@ v42
 - `indent-list-toolbar-button`: Remove `IndentListToolbarButton` use `NumberedIndentListToolbarButton` and `BulletedIndentListToolbarButton` instead.
 - `table-dropdown-menu`: new insert table interface.
 - `column-group-element`: fix `ColumnFloatingToolbar` onColumnChange
+
+## December 2024 #17
+
+### December 28 #17.8
+
+- `export-toolbar-button`: add `katex` support
+- `plate-element`: remove `relative` className
+- All components using the `PlateElement` have had redundant `relative` class names removed.
+### December 27 #17.7
+
+- `fixed-toolbar-buttons`: add `font-size-toolbar-button`
+- `floating-toolbar`: add `inline-equation-toolbar-button`
+- `turn-into-dropdown-menu`: Fix: after turn into other block, the editor should regain focus.
+- `insert-dropdown-menu`: add `inline equation` and `equation` & fix the focus issue
+- `slash-input-element`: add `equation` and `inline equation`
 
 ### December 23 #17.5
 

@@ -98,7 +98,7 @@ export const defaultSerializeMdNodesOptions: SerializeMdOptions['nodes'] = {
         // Decrement indent for indent lists
         const listDepth = node.indent ? node.indent - 1 : 0;
 
-        pre += '  '.repeat(listDepth);
+        pre += '   '.repeat(listDepth);
 
         const listStart = node.listStart ?? 1;
 

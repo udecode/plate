@@ -15,7 +15,7 @@ export type GetMatchPointsReturnType =
 export const getMatchPoints = (editor: Editor, { end, start }: MatchRange) => {
   const selection = editor.selection!;
 
-  let beforeEndMatchPoint = selection.anchor;
+  let beforeEndMatchPoint: Point | undefined = selection.anchor;
 
   if (end) {
     beforeEndMatchPoint = editor.api.before(selection, {

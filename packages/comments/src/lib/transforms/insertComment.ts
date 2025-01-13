@@ -27,10 +27,6 @@ export const insertComment = (editor: SlateEditor) => {
     { match: TextApi.isText, split: true }
   );
 
-  try {
-    editor.tf.deselect();
-  } catch {}
-
   setTimeout(() => {
     editor.setOption(BaseCommentsPlugin, 'activeCommentId', id);
   }, 0);
