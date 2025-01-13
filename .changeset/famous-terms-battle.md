@@ -1,5 +1,5 @@
 ---
-'@udecode/plate-core': minor
+'@udecode/plate-core': patch
 ---
 
-patch
+Fix (bis)
