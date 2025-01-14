@@ -7,17 +7,79 @@ The Editor API provides a set of helper functions for querying and manipulating 
 
 ## `editor.api`
 
-### `above`
+## Node
 
-Get the matching ancestor above a location in the document.
+### `nodes`
 
-<API name="above">
-<APIOptions type="EditorAboveOptions<V>">
+Iterate through all nodes in the editor that match the given options.
+
+<API name="nodes">
+<APIParameters>
+  <APIItem name="options" type="EditorNodesOptions<V>" optional>
+    Options for finding and filtering nodes in the editor.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="EditorNodesOptions<V>">
   <APIItem name="...options" type="QueryOptions<V>" optional>
-    Common query options.
+    Common query options for matching nodes.
+  </APIItem>
+  <APIItem name="at" type="At | Span" optional>
+    Where to start iterating. Defaults to editor selection.
+  </APIItem>
+  <APIItem name="ignoreNonSelectable" type="boolean" optional>
+    Whether to ignore non-selectable nodes during traversal.
+  </APIItem>
+  <APIItem name="reverse" type="boolean" optional>
+    Whether to traverse in reverse order.
+  </APIItem>
+  <APIItem name="universal" type="boolean" optional>
+    Whether to ensure the operation works universally across all nodes.
   </APIItem>
   <APIItem name="mode" type="QueryMode" optional>
-    Query mode options.
+    - 'all': Return all matching nodes
+    - 'highest': Return highest-level matching nodes
+    - 'lowest': Return lowest-level matching nodes
+  </APIItem>
+  <APIItem name="voids" type="boolean" optional>
+    Whether to include void nodes in the search.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="Generator<NodeEntry<DescendantIn<V>>, void, undefined>">
+  A generator that yields tuples of [node, path] for each matching node.
+</APIReturns>
+</API>
+
+### `descendant`
+
+Returns the first matching descendant.
+
+<API name="descendant">
+<APIParameters>
+  <APIItem name="options" type="EditorNodesOptions<V>">
+    Options for finding and filtering descendant nodes.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="EditorNodesOptions<V>">
+  <APIItem name="...options" type="QueryOptions<V>" optional>
+    Common query options for matching descendants.
+  </APIItem>
+  <APIItem name="at" type="At | Span" optional>
+    The location to start searching from. Defaults to current selection.
+  </APIItem>
+  <APIItem name="ignoreNonSelectable" type="boolean" optional>
+    Whether to skip non-selectable nodes during traversal.
+  </APIItem>
+  <APIItem name="reverse" type="boolean" optional>
+    Whether to traverse in reverse order.
+  </APIItem>
+  <APIItem name="universal" type="boolean" optional>
+    Whether to ensure the operation works universally across all nodes.
+  </APIItem>
+  <APIItem name="mode" type="QueryMode" optional>
+    Query mode for matching descendants.
   </APIItem>
   <APIItem name="voids" type="boolean" optional>
     Whether to include void nodes in the search.
@@ -25,13 +87,14 @@ Get the matching ancestor above a location in the document.
 </APIOptions>
 
 <APIReturns type="NodeEntry<N> | undefined">
-  A tuple containing the matching ancestor node and its path, or `undefined` if no match is found.
+  The first matching descendant node entry or `undefined` if no match is found.
 </APIReturns>
 </API>
 
 ### `block`
 
-Get the block at a location or find the first block that matches options.
+Get the block at a location or find the first block that matches options.  
+Blocks are typically top-level nodes, so this is a common way to retrieve the ancestor block.
 
 ```ts
 editor.api.block() // Get block above selection
@@ -65,10 +128,10 @@ editor.api.block({ highest: true }) // Get highest block at selection
     Whether to ensure the operation works universally across all nodes.
   </APIItem>
   <APIItem name="above" type="boolean" optional>
-    If true, get the block above the location. No effect when `at` is not a block path.
+    If true, get the block above the location. Ignored if `at` is not a block path.
   </APIItem>
   <APIItem name="highest" type="boolean" optional>
-    If true, get the highest block at the location (at root level, path length 1).
+    If true, get the highest block at the location (root-level block).
   </APIItem>
   <APIItem name="mode" type="QueryMode" optional>
     Query mode for matching blocks.
@@ -123,35 +186,17 @@ Returns all matching blocks.
 </APIReturns>
 </API>
 
-### `descendant`
+### `above`
 
-Returns the first matching descendant.
+Get the matching ancestor above a location in the document.
 
-<API name="descendant">
-<APIParameters>
-  <APIItem name="options" type="EditorNodesOptions<V>">
-    Options for finding and filtering descendant nodes.
-  </APIItem>
-</APIParameters>
-
-<APIOptions type="EditorNodesOptions<V>">
+<API name="above">
+<APIOptions type="EditorAboveOptions<V>">
   <APIItem name="...options" type="QueryOptions<V>" optional>
-    Common query options for matching descendants.
-  </APIItem>
-  <APIItem name="at" type="At | Span" optional>
-    The location to start searching from. Defaults to current selection.
-  </APIItem>
-  <APIItem name="ignoreNonSelectable" type="boolean" optional>
-    Whether to skip non-selectable nodes during traversal.
-  </APIItem>
-  <APIItem name="reverse" type="boolean" optional>
-    Whether to traverse in reverse order.
-  </APIItem>
-  <APIItem name="universal" type="boolean" optional>
-    Whether to ensure the operation works universally across all nodes.
+    Common query options.
   </APIItem>
   <APIItem name="mode" type="QueryMode" optional>
-    Query mode for matching descendants.
+    Query mode options.
   </APIItem>
   <APIItem name="voids" type="boolean" optional>
     Whether to include void nodes in the search.
@@ -159,13 +204,14 @@ Returns the first matching descendant.
 </APIOptions>
 
 <APIReturns type="NodeEntry<N> | undefined">
-  The first matching descendant node entry or `undefined` if no match is found.
+  A tuple containing the matching ancestor node and its path, or `undefined` if no match is found.
 </APIReturns>
 </API>
 
 ### `edgeBlocks`
 
-Returns the edge blocks above a location (default: selection).
+Returns the edge blocks above a location (default: selection).  
+Useful for retrieving the start and end block of a range.
 
 <API name="edgeBlocks">
 <APIParameters>
@@ -203,28 +249,238 @@ Returns the edge blocks above a location (default: selection).
 </APIReturns>
 </API>
 
-### `fragment`
+### `node`
 
-Get the fragment at a location or selection.
+Get the node at a location or find the first node that matches options.
 
-<API name="fragment">
+<API name="node">
 <APIParameters>
-  <APIItem name="at" type="At | null" optional>
-    The location to extract the fragment from. Defaults to current selection.
+  <APIItem name="at" type="At" optional>
+    The location to get a node from.
   </APIItem>
-  <APIItem name="options" type="EditorFragmentOptions" optional>
-    Options for extracting and processing the fragment.
+  <APIItem name="nodeOptions" type="EditorNodeOptions" optional>
+    Options for getting a node.
   </APIItem>
 </APIParameters>
 
-<APIOptions type="EditorFragmentOptions">
-  <APIItem name="structuralTypes" type="string[]" optional>
-    Types of structural nodes to unwrap.
+<APIOptions type="EditorNodeOptions">
+  <APIItem name="depth" type="number" optional>
+    The depth to traverse to find the node.
+  </APIItem>
+  <APIItem name="edge" type="'start' | 'end'" optional>
+    Which edge of the location to get the node from.
   </APIItem>
 </APIOptions>
 
-<APIReturns type="ElementOrTextIn<V>[] | undefined">
-  The fragment at the location.
+<APIReturns type="NodeEntry<NodeIn<V>> | undefined">
+  A tuple containing the matching node and its path, or undefined if not found.
+</APIReturns>
+</API>
+
+### `parent`
+
+Get the parent node of a location.
+
+<API name="parent">
+<APIParameters>
+  <APIItem name="at" type="At" optional>
+    The location to get the parent from.
+  </APIItem>
+  <APIItem name="options" type="EditorParentOptions" optional>
+    Options for getting the parent node.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="EditorParentOptions">
+  <APIItem name="depth" type="number" optional>
+    Number of levels to traverse up to find the parent.
+  </APIItem>
+  <APIItem name="edge" type="'start' | 'end'" optional>
+    Which edge of the location to get the parent from.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="NodeEntry<AncestorIn<V>> | undefined">
+  A tuple containing the parent node and its path, or undefined if not found.
+</APIReturns>
+</API>
+
+### `leaf`
+
+Get the leaf text node at a location.
+
+<API name="leaf">
+<APIParameters>
+  <APIItem name="at" type="At">
+    The location to get the leaf from.
+  </APIItem>
+  <APIItem name="options" type="EditorLeafOptions" optional>
+    Options for getting the leaf.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="EditorLeafOptions">
+  <APIItem name="depth" type="number" optional>
+    The depth to traverse to find the leaf.
+  </APIItem>
+  <APIItem name="edge" type="LeafEdge" optional>
+    Which edge of the location to get the leaf from ('start' | 'end').
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="NodeEntry<TextIn<V>> | undefined">
+  A tuple containing the leaf text node and its path, or undefined if not found.
+</APIReturns>
+</API>
+
+### `levels`
+
+Iterate through all levels at a location. This includes all ancestors up to the root editor node.
+
+<API name="levels">
+<APIParameters>
+  <APIItem name="options" type="EditorLevelsOptions<V>" optional>
+    Options for iterating levels.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="EditorLevelsOptions<V>">
+  <APIItem name="...options" type="QueryOptions<V>" optional>
+    Common query options for matching levels.
+  </APIItem>
+  <APIItem name="reverse" type="boolean" optional>
+    Whether to traverse in reverse order (bottom-up vs. top-down).
+  </APIItem>
+  <APIItem name="voids" type="boolean" optional>
+    Whether to include void nodes in the traversal.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="Generator<NodeEntry<NodeIn<V>>, void, undefined>">
+  A generator that yields tuples of [node, path] for each ancestor level.
+</APIReturns>
+</API>
+
+### `last`
+
+Get the last node at a location.
+
+<API name="last">
+<APIParameters>
+  <APIItem name="at" type="At">
+    The location to get the last node from.
+  </APIItem>
+  <APIItem name="options" type="EditorLastOptions" optional>
+    Options for getting the last node.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="EditorLastOptions">
+  <APIItem name="level" type="number" optional>
+    Get last node at this level (0-based).
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="NodeEntry<DescendantIn<V>> | undefined">
+  A tuple containing the last node and its path, or undefined if not found.
+</APIReturns>
+</API>
+
+### `string`
+
+Get the text string content of a location.
+
+<API name="string">
+<APIParameters>
+  <APIItem name="at" type="At" optional>
+    The location to get text content from. Defaults to current selection.
+  </APIItem>
+  <APIItem name="options" type="EditorStringOptions" optional>
+    Options for getting text content.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="EditorStringOptions">
+  <APIItem name="voids" type="boolean" optional>
+    Whether to include text content from void nodes.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="string">
+  The text content at the specified location.
+</APIReturns>
+</API>
+
+### `next`
+
+Get the matching node in the branch of the document after a location.
+
+<API name="next">
+<APIParameters>
+  <APIItem name="options" type="EditorNextOptions<V>" optional>
+    Options for getting the next node.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="EditorNextOptions<V>">
+  <APIItem name="...options" type="QueryOptions<V>" optional>
+    Common query options for matching nodes.
+  </APIItem>
+  <APIItem name="at" type="At | Span" optional>
+    The location to start searching from. Defaults to current selection.
+  </APIItem>
+  <APIItem name="mode" type="QueryMode" optional>
+    Query mode for matching nodes.
+  </APIItem>
+  <APIItem name="voids" type="boolean" optional>
+    Whether to include void nodes in the search.
+  </APIItem>
+  <APIItem name="from" type="'after' | 'child'" optional>
+    - 'after': Start from point after current location
+    - 'child': Start from the first child of current path
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="NodeEntry<DescendantIn<V>> | undefined">
+  A tuple containing the next matching node and its path, or undefined if not found.
+</APIReturns>
+</API>
+
+### `previous`
+
+Get the matching node in the branch of the document before a location.
+
+<API name="previous">
+<APIParameters>
+  <APIItem name="options" type="EditorPreviousOptions<V>" optional>
+    Options for getting the previous node.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="EditorPreviousOptions<V>">
+  <APIItem name="...options" type="QueryOptions<V>" optional>
+    Common query options for matching nodes.
+  </APIItem>
+  <APIItem name="at" type="At | Span" optional>
+    The location to start searching from. Defaults to current selection.
+  </APIItem>
+  <APIItem name="mode" type="QueryMode" optional>
+    Query mode for matching nodes.
+  </APIItem>
+  <APIItem name="voids" type="boolean" optional>
+    Whether to include void nodes in the search.
+  </APIItem>
+  <APIItem name="sibling" type="boolean" optional>
+    Whether to get the previous sibling node instead of any previous node.
+  </APIItem>
+  <APIItem name="from" type="'before' | 'parent'" optional>
+    - 'before': Start from point before current location
+    - 'parent': Start from parent of current location
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="NodeEntry<DescendantIn<V>> | undefined">
+  A tuple containing the previous matching node and its path, or undefined if not found.
 </APIReturns>
 </API>
 
@@ -255,64 +511,35 @@ editor.api.isEmpty(at, { block: true }) // Check if block above location is empt
     Check if text after selection is empty.
   </APIItem>
   <APIItem name="block" type="boolean" optional>
-    Check if block above location is empty.
+    Check if the block above location is empty.
   </APIItem>
 </APIOptions>
 
 <APIReturns type="boolean" />
 </API>
 
-### `isAt`
+### `fragment`
 
-Check if a location (point/range) is at a specific position.
+Get the fragment at a location or selection.
 
-```ts
-// For ranges:
-editor.api.isAt({ text: true }) // Check if range is in single text node
-editor.api.isAt({ block: true }) // Check if range is in single block
-editor.api.isAt({ blocks: true }) // Check if range is across multiple blocks
-editor.api.isAt({ start: true }) // Check if range starts at block start
-editor.api.isAt({ end: true }) // Check if range ends at block end
-
-// For points:
-editor.api.isAt({ word: true }) // Check relative to word boundaries
-editor.api.isAt({ start: true }) // Check if at start
-editor.api.isAt({ end: true }) // Check if at end
-```
-
-<API name="isAt">
+<API name="fragment">
 <APIParameters>
-  <APIItem name="options" type="object">
-    Options for checking the location's position relative to various boundaries.
+  <APIItem name="at" type="At | null" optional>
+    The location to extract the fragment from. Defaults to current selection.
+  </APIItem>
+  <APIItem name="options" type="EditorFragmentOptions" optional>
+    Options for extracting and processing the fragment.
   </APIItem>
 </APIParameters>
 
-<APIOptions type="object">
-  <APIItem name="at" type="At" optional>
-    The location to check. Defaults to current selection.
-  </APIItem>
-  <APIItem name="text" type="boolean" optional>
-    Check if range is in single text node.
-  </APIItem>
-  <APIItem name="block" type="boolean" optional>
-    Check if range is in single block.
-  </APIItem>
-  <APIItem name="blocks" type="boolean" optional>
-    Check if range is across multiple blocks.
-  </APIItem>
-  <APIItem name="start" type="boolean" optional>
-    Check if at start position.
-  </APIItem>
-  <APIItem name="end" type="boolean" optional>
-    Check if at end position.
-  </APIItem>
-  <APIItem name="word" type="boolean" optional>
-    Check relative to word boundaries.
+<APIOptions type="EditorFragmentOptions">
+  <APIItem name="structuralTypes" type="string[]" optional>
+    Types of structural nodes to unwrap.
   </APIItem>
 </APIOptions>
 
-<APIReturns type="boolean">
-  True if the location matches all specified position criteria, false otherwise.
+<APIReturns type="ElementOrTextIn<V>[] | undefined">
+  The fragment at the location.
 </APIReturns>
 </API>
 
@@ -329,48 +556,6 @@ Returns the selection mark value by key.
 
 <APIReturns type="MarksIn<V>[K] | null | undefined">
   The mark value if it exists, null if not set, or undefined if multiple different values exist.
-</APIReturns>
-</API>
-
-### `nodes`
-
-Iterate through all nodes in the editor that match the given options.
-
-<API name="nodes">
-<APIParameters>
-  <APIItem name="options" type="EditorNodesOptions<V>" optional>
-    Options for finding and filtering nodes in the editor.
-  </APIItem>
-</APIParameters>
-
-<APIOptions type="EditorNodesOptions<V>">
-  <APIItem name="...options" type="QueryOptions<V>" optional>
-    Common query options for matching nodes.
-  </APIItem>
-  <APIItem name="at" type="At | Span" optional>
-    Where to start iterating. Defaults to editor selection.
-  </APIItem>
-  <APIItem name="ignoreNonSelectable" type="boolean" optional>
-    Whether to ignore non-selectable nodes during traversal.
-  </APIItem>
-  <APIItem name="reverse" type="boolean" optional>
-    Whether to traverse in reverse order.
-  </APIItem>
-  <APIItem name="universal" type="boolean" optional>
-    Whether to ensure the operation works universally across all nodes.
-  </APIItem>
-  <APIItem name="mode" type="QueryMode" optional>
-    - 'all': Return all matching nodes
-    - 'highest': Return highest level matching nodes
-    - 'lowest': Return lowest level matching nodes
-  </APIItem>
-  <APIItem name="voids" type="boolean" optional>
-    Whether to include void nodes in the search.
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="Generator<NodeEntry<DescendantIn<V>>, void, undefined>">
-  A generator that yields tuples of [node, path] for each matching node.
 </APIReturns>
 </API>
 
@@ -400,8 +585,8 @@ Get a property value from a list of nodes. Returns `undefined` if the property v
   </APIItem>
   <APIItem name="mode" type="'all' | 'block' | 'text'" optional>
     - 'all': Get property from all nodes
-    - 'block': Get property from first block node
-    - 'text': Get property from first text node
+    - 'block': Get property from the first block node
+    - 'text': Get property from the first text node
   </APIItem>
 </APIOptions>
 
@@ -410,11 +595,152 @@ Get a property value from a list of nodes. Returns `undefined` if the property v
 </APIReturns>
 </API>
 
-## DOM
+### `getFragment`
+
+Returns the fragment at the current selection. Used when cutting or copying, as an example, to get the fragment at the current selection.
+
+<API name="getFragment">
+<APIParameters>
+  <APIItem name="at" type="At" optional>
+    The location to get the fragment from. Defaults to current selection.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="ElementOrTextIn<V>[]">
+  The fragment at the current selection.
+</APIReturns>
+</API>
+
+### `hasPath`
+
+Check if a path exists in the editor.
+
+<API name="hasPath">
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The path to check.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  True if the path exists, false otherwise.
+</APIReturns>
+</API>
+
+### `isAt`
+
+Check if a location (point/range) is at a specific position.
+
+```ts
+// For ranges:
+editor.api.isAt({ text: true }) // Check if range is in a single text node
+editor.api.isAt({ block: true }) // Check if range is in a single block
+editor.api.isAt({ blocks: true }) // Check if range is across multiple blocks
+editor.api.isAt({ start: true }) // Check if range starts at block start
+editor.api.isAt({ end: true }) // Check if range ends at block end
+
+// For points:
+editor.api.isAt({ word: true }) // Check relative to word boundaries
+editor.api.isAt({ start: true }) // Check if at start
+editor.api.isAt({ end: true }) // Check if at end
+```
+
+<API name="isAt">
+<APIParameters>
+  <APIItem name="options" type="object">
+    Options for checking the location's position relative to various boundaries.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="object">
+  <APIItem name="at" type="At" optional>
+    The location to check. Defaults to current selection.
+  </APIItem>
+  <APIItem name="text" type="boolean" optional>
+    Check if range is in a single text node.
+  </APIItem>
+  <APIItem name="block" type="boolean" optional>
+    Check if range is in a single block.
+  </APIItem>
+  <APIItem name="blocks" type="boolean" optional>
+    Check if range is across multiple blocks.
+  </APIItem>
+  <APIItem name="start" type="boolean" optional>
+    Check if at start position.
+  </APIItem>
+  <APIItem name="end" type="boolean" optional>
+    Check if at end position.
+  </APIItem>
+  <APIItem name="word" type="boolean" optional>
+    Check relative to word boundaries.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="boolean">
+  True if the location matches all specified position criteria, false otherwise.
+</APIReturns>
+</API>
+
+### `isCollapsed`
+
+Check if the selection is collapsed (start and end points are the same).
+
+<API name="isCollapsed">
+<APIReturns type="boolean">
+  True if the selection is collapsed, false otherwise.
+</APIReturns>
+</API>
+
+### `isEditorEnd`
+
+Check if selection is at editor end.
+
+<API name="isEditorEnd">
+<APIReturns type="boolean">
+  True if the selection is at the editor end, false otherwise.
+</APIReturns>
+</API>
+
+### `isExpanded`
+
+Check if the selection is expanded (start and end points are different).
+
+<API name="isExpanded">
+<APIReturns type="boolean">
+  True if the selection is expanded, false otherwise.
+</APIReturns>
+</API>
+
+### `isSelected`
+
+Check if a path is selected by the current selection.
+
+<API name="isSelected">
+<APIParameters>
+  <APIItem name="target" type="Path | TRange">
+    The path or range to check.
+  </APIItem>
+  <APIItem name="options" type="EditorIsSelectedOptions" optional>
+    Options for checking selection.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="EditorIsSelectedOptions">
+  <APIItem name="contains" type="boolean" optional>
+    Check if selection contains the entire path range.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="boolean">
+  True if the path is selected, false otherwise.
+</APIReturns>
+</API>
+
+## Location
 
 ### `findPath`
 
-Find the path of a Slate node.
+Find the path of a Slate node in the editor.
 
 <API name="findPath">
 <APIParameters>
@@ -449,6 +775,366 @@ Find the path of a Slate node.
 
 <APIReturns type="Path | undefined">
   The path of the node if found, undefined otherwise.
+</APIReturns>
+</API>
+
+### `nodesRange`
+
+Returns the range spanning the given node entries.
+
+<API name="nodesRange">
+<APIParameters>
+  <APIItem name="nodes" type="NodeEntry[]">
+    The node entries to get the range for.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="TRange | undefined">
+  The range spanning the nodes, or undefined if no valid range can be created.
+</APIReturns>
+</API>
+
+### `positions`
+
+Iterate through all possible point positions in the document.
+
+<API name="positions">
+<APIParameters>
+  <APIItem name="options" type="EditorPositionsOptions" optional>
+    Options for iterating point positions.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="EditorPositionsOptions">
+  <APIItem name="at" type="At" optional>
+    Where to start iterating. Defaults to editor selection.
+  </APIItem>
+  <APIItem name="unit" type="TextUnitAdjustment" optional>
+    - 'offset': Moves to the next offset Point
+    - 'character': Moves to the next character
+    - 'word': Moves to the position after the next word
+    - 'line' | 'block': Moves between block boundaries
+  </APIItem>
+  <APIItem name="reverse" type="boolean" optional>
+    When true returns positions in reverse order.
+  </APIItem>
+  <APIItem name="voids" type="boolean" optional>
+    Whether to include positions inside void nodes.
+  </APIItem>
+  <APIItem name="ignoreNonSelectable" type="boolean" optional>
+    Whether to skip positions in non-selectable nodes.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="Generator<Point, void, undefined>">
+  A generator that yields each valid point position in the document.
+</APIReturns>
+</API>
+
+### `range`
+
+Create a range between two locations.
+
+<API name="range">
+<APIParameters>
+  <APIItem name="options" type="EditorRangeOptions">
+    Options for creating a range.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="EditorRangeOptions">
+  <APIItem name="at" type="At" optional>
+    The location to create the range at. Defaults to current selection.
+  </APIItem>
+  <APIItem name="focus" type="Point" optional>
+    The focus (end) point of the range.
+  </APIItem>
+  <APIItem name="anchor" type="Point" optional>
+    The anchor (start) point of the range.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="TRange">
+  A new range between the specified points.
+</APIReturns>
+</API>
+
+### `unhangRange`
+
+Convert a range into a non-hanging one.
+
+A "hanging" range is one created by the browser's "triple-click" selection behavior. When triple-clicking a block, the browser selects from the start of that block to the start of the _next_ block. The range thus "hangs over" into the next block. If `unhangRange` is given such a range, it moves the end backwards until it's in a non-empty text node that precedes the hanging block.
+
+Note that `unhangRange` is designed for the specific purpose of fixing triple-clicked blocks, and therefore currently has a number of caveats:
+
+- It does not modify the start of the range; only the end. For example, it does not "unhang" a selection that starts at the end of a previous block.
+- It only does anything if the start block is fully selected. For example, it does not handle ranges created by double-clicking the end of a paragraph (which browsers treat by selecting from the end of that paragraph to the start of the next).
+
+<API name="unhangRange">
+<APIParameters>
+  <APIItem name="range" type="TRange">
+    The range to unhang.
+  </APIItem>
+  <APIItem name="options" type="EditorUnhangRangeOptions" optional>
+    Options for un-hanging the range.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="EditorUnhangRangeOptions">
+  <APIItem name="voids" type="boolean" optional>
+    Allow placing the end of the selection in a void node.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="TRange">
+  A new range with the end point moved backwards if it was hanging.
+</APIReturns>
+</API>
+
+### `start`
+
+Get the start point of a location.
+
+<API name="start">
+<APIParameters>
+  <APIItem name="at" type="At" optional>
+    The location to get the start point from.
+  </APIItem>
+  <APIItem name="options" type="EditorStartOptions" optional>
+    Options for getting the start point.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="EditorStartOptions">
+  <APIItem name="next" type="boolean" optional>
+    Get the start point of the next node instead of the current one.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="Point">
+  The start point of the location.
+</APIReturns>
+</API>
+
+
+
+## Element
+
+### `isInline`
+
+Check if a value is an inline `Element` object.
+
+<API name="isInline">
+<APIParameters>
+  <APIItem name="element" type="DescendantIn<V>">
+    The element to check.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  True if the element is inline, false otherwise.
+</APIReturns>
+</API>
+
+### `isSelectable`
+
+Check if a value is a selectable `Element` object.
+
+<API name="isSelectable">
+<APIParameters>
+  <APIItem name="element" type="ElementIn<V>">
+    The element to check.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  True if the element is selectable, false otherwise.
+</APIReturns>
+</API>
+
+### `isVoid`
+
+Check if an element is void.
+
+<API name="isVoid">
+<APIParameters>
+  <APIItem name="element" type="ElementIn<V>">
+    The element to check for void status.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  True if the element is void, false otherwise.
+</APIReturns>
+</API>
+
+### `elementReadOnly`
+
+Check if an element is read-only.
+
+<API name="elementReadOnly">
+<APIParameters>
+  <APIItem name="element" type="ElementIn<V>">
+    The element to check for read-only status.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  True if the element is read-only, false otherwise.
+</APIReturns>
+</API>
+
+### `markableVoid`
+
+Check if an element is a markable void element.
+
+<API name="markableVoid">
+<APIParameters>
+  <APIItem name="element" type="ElementIn<V>">
+    The element to check for markable void status.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  True if the element is a markable void element, false otherwise.
+</APIReturns>
+</API>
+
+## Ref
+
+### `pathRef`
+
+Create a mutable ref for a `Path`.
+
+<API name="pathRef">
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The path to reference.
+  </APIItem>
+  <APIItem name="options" type="EditorPathRefOptions" optional>
+    Options for the path reference.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="EditorPathRefOptions">
+  <APIItem name="affinity" type="TextDirection | null" optional>
+    The direction to resolve the ref when ambiguous:
+    - 'forward': Resolve to the next valid position
+    - 'backward': Resolve to the previous valid position
+    - null: Do not resolve to any position
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="PathRef">
+  A mutable reference that updates its path as operations are applied to the editor.
+</APIReturns>
+</API>
+
+### `pointRef`
+
+Create a mutable ref for a `Point`.
+
+<API name="pointRef">
+<APIParameters>
+  <APIItem name="point" type="Point">
+    The point to reference.
+  </APIItem>
+  <APIItem name="options" type="EditorPointRefOptions" optional>
+    Options for the point reference.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="EditorPointRefOptions">
+  <APIItem name="affinity" type="TextDirection | null" optional>
+    The direction to resolve the ref when ambiguous:
+    - 'forward': Resolve to the next valid position
+    - 'backward': Resolve to the previous valid position
+    - null: Do not resolve to any position
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="PointRef">
+  A mutable reference that updates its point as operations are applied to the editor.
+</APIReturns>
+</API>
+
+### `rangeRef`
+
+Create a mutable ref for a `Range`.
+
+<API name="rangeRef">
+<APIParameters>
+  <APIItem name="range" type="TRange">
+    The range to reference.
+  </APIItem>
+  <APIItem name="options" type="EditorRangeRefOptions" optional>
+    Options for the range reference.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="EditorRangeRefOptions">
+  <APIItem name="affinity" type="RangeDirection | null" optional>
+    The direction to resolve the ref when ambiguous:
+    - 'forward': Resolve both points forward
+    - 'backward': Resolve both points backward
+    - 'outward': Resolve start backward and end forward
+    - 'inward': Resolve start forward and end backward
+    - null: Do not resolve to any position
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="RangeRef">
+  A mutable reference that updates its range as operations are applied to the editor.
+</APIReturns>
+</API>
+
+## DOM
+
+### `hasEditableTarget`
+
+Check if a DOM target is editable.
+
+<API name="hasEditableTarget">
+<APIParameters>
+  <APIItem name="target" type="EventTarget | null">
+    The DOM target to check.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="target is Node">
+  True if the target is editable, false otherwise.
+</APIReturns>
+</API>
+
+### `hasSelectableTarget`
+
+Check if a DOM target is selectable.
+
+<API name="hasSelectableTarget">
+<APIParameters>
+  <APIItem name="target" type="EventTarget | null">
+    The DOM target to check.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="target is Node">
+  True if the target is selectable, false otherwise.
+</APIReturns>
+</API>
+
+### `hasTarget`
+
+Check if a DOM target exists.
+
+<API name="hasTarget">
+<APIParameters>
+  <APIItem name="target" type="EventTarget | null">
+    The DOM target to check.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="target is Node">
+  True if the target exists, false otherwise.
 </APIReturns>
 </API>
 
@@ -548,63 +1234,31 @@ Find a Slate range from a DOM range.
 </APIReturns>
 </API>
 
-## Utils
+## Callback
 
-### `unhangRange`
+### `onChange`
 
-Convert a range into a non-hanging one.
+Called when there is a change in the editor.
 
-```ts
-// A "hanging" range is one created by the browser's "triple-click" selection behavior.
-// When triple-clicking a block, the browser selects from the start of that block to
-// the start of the next block.
-```
-
-<API name="unhangRange">
+<API name="onChange">
 <APIParameters>
-  <APIItem name="range" type="TRange">
-    The range to unhang.
-  </APIItem>
-  <APIItem name="options" type="EditorUnhangRangeOptions" optional>
-    Options for un-hanging the range.
+  <APIItem name="options" type="object" optional>
+    Options for onChange.
   </APIItem>
 </APIParameters>
 
-<APIOptions type="EditorUnhangRangeOptions">
-  <APIItem name="voids" type="boolean" optional>
-    Allow placing the end of the selection in a void node.
+<APIOptions type="object">
+  <APIItem name="operation" type="Operation" optional>
+    The operation that triggered the change.
   </APIItem>
 </APIOptions>
-
-<APIReturns type="TRange">
-  A new range with the end point moved backwards if it was hanging.
-</APIReturns>
 </API>
 
-## Editor State
-
-### `shouldMergeNodesRemovePrevNode`
-
-Determines whether to remove the previous node when merging nodes.
-
-<API name="shouldMergeNodesRemovePrevNode">
-<APIParameters>
-  <APIItem name="prevNodeEntry" type="NodeEntry">
-    A tuple containing the previous node and its path.
-  </APIItem>
-  <APIItem name="curNodeEntry" type="NodeEntry">
-    A tuple containing the current node and its path.
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="boolean">
-  True if the previous node should be removed during merge, false if it should be kept.
-</APIReturns>
-</API>
+## Core
 
 ### `shouldNormalize`
 
-Controls whether the editor should normalize after an operation.
+Controls whether the editor should normalize after an operation. Override this method to prevent normalizing in certain situations.
 
 <API name="shouldNormalize">
 <APIParameters>
@@ -661,542 +1315,84 @@ Manually control the editor's normalizing state.
 </APIOptions>
 </API>
 
-### `onChange`
+### `shouldMergeNodesRemovePrevNode`
 
-Called when there is a change in the editor.
+Determines whether to remove the previous node when merging nodes.
 
-<API name="onChange">
+<API name="shouldMergeNodesRemovePrevNode">
 <APIParameters>
-  <APIItem name="options" type="object" optional>
-    Options for onChange.
+  <APIItem name="prevNodeEntry" type="NodeEntry">
+    A tuple containing the previous node and its path.
   </APIItem>
-</APIParameters>
-
-<APIOptions type="object">
-  <APIItem name="operation" type="Operation" optional>
-    The operation that triggered the change.
-  </APIItem>
-</APIOptions>
-</API>
-
-## Node Operations
-
-### `last`
-
-Get the last node at a location.
-
-<API name="last">
-<APIParameters>
-  <APIItem name="at" type="At">
-    The location to get the last node from.
-  </APIItem>
-  <APIItem name="options" type="EditorLastOptions" optional>
-    Options for getting the last node.
-  </APIItem>
-</APIParameters>
-
-<APIOptions type="EditorLastOptions">
-  <APIItem name="level" type="number" optional>
-    Get last node at this level (0-based).
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="NodeEntry<DescendantIn<V>> | undefined">
-  A tuple containing the last node and its path, or undefined if not found.
-</APIReturns>
-</API>
-
-### `leaf`
-
-Get the leaf text node at a location.
-
-<API name="leaf">
-<APIParameters>
-  <APIItem name="at" type="At">
-    The location to get the leaf from.
-  </APIItem>
-  <APIItem name="options" type="EditorLeafOptions" optional>
-    Options for getting the leaf.
-  </APIItem>
-</APIParameters>
-
-<APIOptions type="EditorLeafOptions">
-  <APIItem name="depth" type="number" optional>
-    The depth to traverse to find the leaf.
-  </APIItem>
-  <APIItem name="edge" type="LeafEdge" optional>
-    Which edge of the location to get the leaf from ('start' | 'end').
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="NodeEntry<TextIn<V>> | undefined">
-  A tuple containing the leaf text node and its path, or undefined if not found.
-</APIReturns>
-</API>
-
-### `levels`
-
-Iterate through all levels at a location.
-
-<API name="levels">
-<APIParameters>
-  <APIItem name="options" type="EditorLevelsOptions<V>" optional>
-    Options for iterating levels.
-  </APIItem>
-</APIParameters>
-
-<APIOptions type="EditorLevelsOptions<V>">
-  <APIItem name="...options" type="QueryOptions<V>" optional>
-    Common query options for matching levels.
-  </APIItem>
-  <APIItem name="reverse" type="boolean" optional>
-    Whether to traverse in reverse order (bottom-up vs top-down).
-  </APIItem>
-  <APIItem name="voids" type="boolean" optional>
-    Whether to include void nodes in the traversal.
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="Generator<NodeEntry<NodeIn<V>>, void, undefined>">
-  A generator that yields tuples of [node, path] for each ancestor level.
-</APIReturns>
-</API>
-
-## Element Operations
-
-### `elementReadOnly`
-
-Check if an element is read-only.
-
-<API name="elementReadOnly">
-<APIParameters>
-  <APIItem name="element" type="ElementIn<V>">
-    The element to check for read-only status.
+  <APIItem name="curNodeEntry" type="NodeEntry">
+    A tuple containing the current node and its path.
   </APIItem>
 </APIParameters>
 
 <APIReturns type="boolean">
-  True if the element is read-only, false otherwise.
+  True if the previous node should be removed during merge, false if it should be kept.
 </APIReturns>
 </API>
 
-### `isVoid`
+## History
 
-Check if an element is void.
+### `isMerging`
 
-<API name="isVoid">
-<APIParameters>
-  <APIItem name="element" type="ElementIn<V>">
-    The element to check for void status.
-  </APIItem>
-</APIParameters>
+Get the merge flag's current value.
 
+<API name="isMerging">
 <APIReturns type="boolean">
-  True if the element is void, false otherwise.
+  True if the editor is currently merging operations, false otherwise.
 </APIReturns>
 </API>
 
-### `markableVoid`
+### `isSaving`
 
-Check if an element is a markable void element.
+Get the saving flag's current value.
 
-<API name="markableVoid">
-<APIParameters>
-  <APIItem name="element" type="ElementIn<V>">
-    The element to check for markable void status.
-  </APIItem>
-</APIParameters>
-
+<API name="isSaving">
 <APIReturns type="boolean">
-  True if the element is a markable void element, false otherwise.
+  True if the editor is currently saving, false otherwise.
 </APIReturns>
 </API>
 
-## Position Operations
+### `isSplittingOnce`
 
-### `positions`
+Get the splitting flag's current value.
 
-Iterate through all possible point positions in the document.
-
-<API name="positions">
-<APIParameters>
-  <APIItem name="options" type="EditorPositionsOptions" optional>
-    Options for iterating point positions.
-  </APIItem>
-</APIParameters>
-
-<APIOptions type="EditorPositionsOptions">
-  <APIItem name="at" type="At" optional>
-    Where to start iterating. Defaults to editor selection.
-  </APIItem>
-  <APIItem name="unit" type="TextUnitAdjustment" optional>
-    - 'offset': Moves to the next offset Point
-    - 'character': Moves to the next character
-    - 'word': Moves to the position after the next word
-    - 'line' | 'block': Moves between block boundaries
-  </APIItem>
-  <APIItem name="reverse" type="boolean" optional>
-    When true returns positions in reverse order.
-  </APIItem>
-  <APIItem name="voids" type="boolean" optional>
-    Whether to include positions inside void nodes.
-  </APIItem>
-  <APIItem name="ignoreNonSelectable" type="boolean" optional>
-    Whether to skip positions in non-selectable nodes.
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="Generator<Point, void, undefined>">
-  A generator that yields each valid point position in the document.
+<API name="isSplittingOnce">
+<APIReturns type="boolean">
+  True if the editor is currently performing a single split operation, false otherwise.
 </APIReturns>
 </API>
 
-## Range Operations
+## Utils
 
-### `range`
+### `create.block`
 
-Create a range between two locations.
+Default block factory for creating new block elements.
 
-<API name="range">
+<API name="create.block">
 <APIParameters>
-  <APIItem name="options" type="EditorRangeOptions">
-    Options for creating a range.
+  <APIItem name="node" type="Partial<TElement>" optional>
+    Partial element properties to merge into the new block.
+  </APIItem>
+  <APIItem name="path" type="Path" optional>
+    Path for the new block.
   </APIItem>
 </APIParameters>
 
-<APIOptions type="EditorRangeOptions">
-  <APIItem name="at" type="At" optional>
-    The location to create the range at. Defaults to current selection.
-  </APIItem>
-  <APIItem name="focus" type="Point" optional>
-    The focus (end) point of the range.
-  </APIItem>
-  <APIItem name="anchor" type="Point" optional>
-    The anchor (start) point of the range.
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="TRange">
-  A new range between the specified points.
+<APIReturns type="TElement">
+  A new block element.
 </APIReturns>
 </API>
 
-### `start`
+### `create.value`
 
-Get the start point of a location.
+Default value factory for creating new editor values.
 
-<API name="start">
-<APIParameters>
-  <APIItem name="at" type="At" optional>
-    The location to get the start point from.
-  </APIItem>
-  <APIItem name="options" type="EditorStartOptions" optional>
-    Options for getting the start point.
-  </APIItem>
-</APIParameters>
-
-<APIOptions type="EditorStartOptions">
-  <APIItem name="next" type="boolean" optional>
-    Get the start point of the next node instead of the current one.
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="Point">
-  The start point of the location.
-</APIReturns>
-</API>
-
-### `string`
-
-Get the text string content of a location.
-
-<API name="string">
-<APIParameters>
-  <APIItem name="at" type="At" optional>
-    The location to get text content from. Defaults to current selection.
-  </APIItem>
-  <APIItem name="options" type="EditorStringOptions" optional>
-    Options for getting text content.
-  </APIItem>
-</APIParameters>
-
-<APIOptions type="EditorStringOptions">
-  <APIItem name="voids" type="boolean" optional>
-    Whether to include text content from void nodes.
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="string">
-  The text content at the specified location.
-</APIReturns>
-</API>
-
-### `next`
-
-Get the matching node in the branch of the document after a location.
-
-<API name="next">
-<APIParameters>
-  <APIItem name="options" type="EditorNextOptions<V>" optional>
-    Options for getting the next node.
-  </APIItem>
-</APIParameters>
-
-<APIOptions type="EditorNextOptions<V>">
-  <APIItem name="...options" type="QueryOptions<V>" optional>
-    Common query options for matching nodes.
-  </APIItem>
-  <APIItem name="at" type="At | Span" optional>
-    The location to start searching from. Defaults to current selection.
-  </APIItem>
-  <APIItem name="mode" type="QueryMode" optional>
-    Query mode for matching nodes.
-  </APIItem>
-  <APIItem name="voids" type="boolean" optional>
-    Whether to include void nodes in the search.
-  </APIItem>
-  <APIItem name="from" type="'after' | 'child'" optional>
-    - 'after': Start from point after current location
-    - 'child': Start from first child of current path
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="NodeEntry<DescendantIn<V>> | undefined">
-  A tuple containing the next matching node and its path, or undefined if not found.
-</APIReturns>
-</API>
-
-### `node`
-
-Get the node at a location or find the first node that matches options.
-
-<API name="node">
-<APIParameters>
-  <APIItem name="at" type="At" optional>
-    The location to get a node from.
-  </APIItem>
-  <APIItem name="nodeOptions" type="EditorNodeOptions" optional>
-    Options for getting a node.
-  </APIItem>
-</APIParameters>
-
-<APIOptions type="EditorNodeOptions">
-  <APIItem name="depth" type="number" optional>
-    The depth to traverse to find the node.
-  </APIItem>
-  <APIItem name="edge" type="'start' | 'end'" optional>
-    Which edge of the location to get the node from.
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="NodeEntry<NodeIn<V>> | undefined">
-  A tuple containing the matching node and its path, or undefined if not found.
-</APIReturns>
-</API>
-
-### `parent`
-
-Get the parent node of a location.
-
-<API name="parent">
-<APIParameters>
-  <APIItem name="at" type="At" optional>
-    The location to get the parent from.
-  </APIItem>
-  <APIItem name="options" type="EditorParentOptions" optional>
-    Options for getting the parent node.
-  </APIItem>
-</APIParameters>
-
-<APIOptions type="EditorParentOptions">
-  <APIItem name="depth" type="number" optional>
-    Number of levels to traverse up to find the parent.
-  </APIItem>
-  <APIItem name="edge" type="'start' | 'end'" optional>
-    Which edge of the location to get the parent from.
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="NodeEntry<AncestorIn<V>> | undefined">
-  A tuple containing the parent node and its path, or undefined if not found.
-</APIReturns>
-</API>
-
-### `path`
-
-Get the path of a location.
-
-<API name="path">
-<APIParameters>
-  <APIItem name="at" type="At" optional>
-    The location to get the path from. Defaults to current selection.
-  </APIItem>
-  <APIItem name="options" type="EditorPathOptions" optional>
-    Options for getting a path.
-  </APIItem>
-</APIParameters>
-
-<APIOptions type="EditorPathOptions">
-  <APIItem name="depth" type="number" optional>
-    The depth of the path to return.
-  </APIItem>
-  <APIItem name="edge" type="'start' | 'end'" optional>
-    Which edge of the location to get the path from.
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="Path">
-  The path at the specified location.
-</APIReturns>
-</API>
-
-### `point`
-
-Get the start or end point of a location.
-
-<API name="point">
-<APIParameters>
-  <APIItem name="at" type="At" optional>
-    The location to get the point from. Defaults to current selection.
-  </APIItem>
-  <APIItem name="options" type="EditorPointOptions" optional>
-    Options for getting a point.
-  </APIItem>
-</APIParameters>
-
-<APIOptions type="EditorPointOptions">
-  <APIItem name="edge" type="'start' | 'end'" optional>
-    Which edge of the location to get the point from.
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="Point">
-  The point at the specified edge of the location.
-</APIReturns>
-</API>
-
-### `previous`
-
-Get the matching node in the branch of the document before a location.
-
-<API name="previous">
-<APIParameters>
-  <APIItem name="options" type="EditorPreviousOptions<V>" optional>
-    Options for getting the previous node.
-  </APIItem>
-</APIParameters>
-
-<APIOptions type="EditorPreviousOptions<V>">
-  <APIItem name="...options" type="QueryOptions<V>" optional>
-    Common query options for matching nodes.
-  </APIItem>
-  <APIItem name="at" type="At | Span" optional>
-    The location to start searching from. Defaults to current selection.
-  </APIItem>
-  <APIItem name="mode" type="QueryMode" optional>
-    Query mode for matching nodes.
-  </APIItem>
-  <APIItem name="voids" type="boolean" optional>
-    Whether to include void nodes in the search.
-  </APIItem>
-  <APIItem name="sibling" type="boolean" optional>
-    Whether to get the previous sibling node instead of any previous node.
-  </APIItem>
-  <APIItem name="from" type="'before' | 'parent'" optional>
-    - 'before': Start from point before current location
-    - 'parent': Start from parent of current location
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="NodeEntry<DescendantIn<V>> | undefined">
-  A tuple containing the previous matching node and its path, or undefined if not found.
-</APIReturns>
-</API>
-
-## Reference Operations
-
-### `pathRef`
-
-Create a mutable ref for a `Path`.
-
-<API name="pathRef">
-<APIParameters>
-  <APIItem name="path" type="Path">
-    The path to reference.
-  </APIItem>
-  <APIItem name="options" type="EditorPathRefOptions" optional>
-    Options for the path reference.
-  </APIItem>
-</APIParameters>
-
-<APIOptions type="EditorPathRefOptions">
-  <APIItem name="affinity" type="TextDirection | null" optional>
-    The direction to resolve the ref when ambiguous:
-    - 'forward': Resolve to the next valid position
-    - 'backward': Resolve to the previous valid position
-    - null: Do not resolve to any position
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="PathRef">
-  A mutable reference that updates its path as operations are applied to the editor.
-</APIReturns>
-</API>
-
-### `pointRef`
-
-Create a mutable ref for a `Point`.
-
-<API name="pointRef">
-<APIParameters>
-  <APIItem name="point" type="Point">
-    The point to reference.
-  </APIItem>
-  <APIItem name="options" type="EditorPointRefOptions" optional>
-    Options for the point reference.
-  </APIItem>
-</APIParameters>
-
-<APIOptions type="EditorPointRefOptions">
-  <APIItem name="affinity" type="TextDirection | null" optional>
-    The direction to resolve the ref when ambiguous:
-    - 'forward': Resolve to the next valid position
-    - 'backward': Resolve to the previous valid position
-    - null: Do not resolve to any position
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="PointRef">
-  A mutable reference that updates its point as operations are applied to the editor.
-</APIReturns>
-</API>
-
-### `rangeRef`
-
-Create a mutable ref for a `Range`.
-
-<API name="rangeRef">
-<APIParameters>
-  <APIItem name="range" type="TRange">
-    The range to reference.
-  </APIItem>
-  <APIItem name="options" type="EditorRangeRefOptions" optional>
-    Options for the range reference.
-  </APIItem>
-</APIParameters>
-
-<APIOptions type="EditorRangeRefOptions">
-  <APIItem name="affinity" type="RangeDirection | null" optional>
-    The direction to resolve the ref when ambiguous:
-    - 'forward': Resolve both points forward
-    - 'backward': Resolve both points backward
-    - 'outward': Resolve start backward and end forward
-    - 'inward': Resolve start forward and end backward
-    - null: Do not resolve to any position
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="RangeRef">
-  A mutable reference that updates its range as operations are applied to the editor.
+<API name="create.value">
+<APIReturns type="Value">
+  A new editor value.
 </APIReturns>
 </API>
