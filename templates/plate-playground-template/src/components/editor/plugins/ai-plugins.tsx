@@ -2,76 +2,12 @@
 
 import React from 'react';
 
-import { BaseParagraphPlugin, createSlateEditor } from '@udecode/plate';
 import { AIChatPlugin, AIPlugin } from '@udecode/plate-ai/react';
-import {
-  BaseBoldPlugin,
-  BaseCodePlugin,
-  BaseItalicPlugin,
-  BaseStrikethroughPlugin,
-  BaseUnderlinePlugin,
-} from '@udecode/plate-basic-marks';
-import { BaseBlockquotePlugin } from '@udecode/plate-block-quote';
-import {
-  BaseCodeBlockPlugin,
-  BaseCodeLinePlugin,
-  BaseCodeSyntaxPlugin,
-} from '@udecode/plate-code-block';
-import { BaseHeadingPlugin, HEADING_LEVELS } from '@udecode/plate-heading';
-import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
-import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
-import { BaseLinkPlugin } from '@udecode/plate-link';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
 
 import { AIMenu } from '@/components/plate-ui/ai-menu';
-import {
-  TodoLiStatic,
-  TodoMarkerStatic,
-} from '@/components/plate-ui/indent-todo-marker-static';
 
 import { cursorOverlayPlugin } from './cursor-overlay-plugin';
-const createAIEditor = () => {
-  const editor = createSlateEditor({
-    id: 'ai',
-    plugins: [
-      BaseBlockquotePlugin,
-      BaseBoldPlugin,
-      BaseCodeBlockPlugin,
-      BaseCodeLinePlugin,
-      BaseCodePlugin,
-      BaseCodeSyntaxPlugin,
-      BaseItalicPlugin,
-      BaseStrikethroughPlugin,
-      BaseUnderlinePlugin,
-      BaseHeadingPlugin,
-      BaseHorizontalRulePlugin,
-      BaseLinkPlugin,
-      BaseParagraphPlugin,
-      BaseIndentListPlugin.extend({
-        inject: {
-          targetPlugins: [
-            BaseParagraphPlugin.key,
-            ...HEADING_LEVELS,
-            BaseBlockquotePlugin.key,
-            BaseCodeBlockPlugin.key,
-          ],
-        },
-        options: {
-          listStyleTypes: {
-            todo: {
-              liComponent: TodoLiStatic,
-              markerComponent: TodoMarkerStatic,
-              type: 'todo',
-            },
-          },
-        },
-      }),
-      MarkdownPlugin.configure({ options: { indentList: true } }),
-    ],
-  });
-
-  return editor;
-};
 
 const systemCommon = `\
 You are an advanced AI-powered note-taking assistant, designed to enhance productivity and creativity in note management.
@@ -160,7 +96,6 @@ export const aiPlugins = [
   AIPlugin,
   AIChatPlugin.configure({
     options: {
-      createAIEditor,
       promptTemplate: ({ isBlockSelecting, isSelecting }) => {
         return isBlockSelecting
           ? PROMPT_TEMPLATES.userBlockSelecting

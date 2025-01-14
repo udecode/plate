@@ -35,12 +35,13 @@ export const TodoLi = (props: SlateRenderElementProps) => {
   const { children, element } = props;
 
   return (
-    <span
+    <li
       className={cn(
+        'list-none',
         (element.checked as boolean) && 'text-muted-foreground line-through'
       )}
     >
       {children}
-    </span>
+    </li>
   );
 };
