@@ -1,5 +1,7 @@
 {
-  "dependencies": [],
+  "dependencies": [
+    "use-file-picker"
+  ],
   "doc": {
     "description": "A toolbar button to import editor content from a file.",
     "docs": [
@@ -24,6 +26,7 @@
   ],
   "name": "import-toolbar-button",
   "registryDependencies": [
+    "dropdown-menu",
     "toolbar"
   ],
   "type": "registry:ui"

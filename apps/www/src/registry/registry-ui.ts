@@ -106,7 +106,7 @@ export const uiComponents: Registry = [
     type: 'registry:ui',
   },
   {
-    dependencies: [],
+    dependencies: ['use-file-picker'],
     doc: {
       description: 'A toolbar button to import editor content from a file.',
       docs: [{ route: '/docs/import', title: 'Import' }],
@@ -118,7 +118,7 @@ export const uiComponents: Registry = [
       { path: 'plate-ui/import-toolbar-button.tsx', type: 'registry:ui' },
     ],
     name: 'import-toolbar-button',
-    registryDependencies: ['toolbar'],
+    registryDependencies: ['dropdown-menu', 'toolbar'],
     type: 'registry:ui',
   },
   {
@@ -327,7 +327,11 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
     type: 'registry:ui',
   },
   {
-    dependencies: ['@udecode/plate-emoji', '@radix-ui/react-popover'],
+    dependencies: [
+      '@udecode/plate-emoji',
+      '@emoji-mart/data@1.2.1',
+      '@radix-ui/react-popover',
+    ],
     doc: {
       description: 'A dropdown menu for emoji selection and insertion.',
       docs: [
@@ -382,6 +386,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       'indent-list-toolbar-button',
       'indent-todo-toolbar-button',
       'indent-toolbar-button',
+      'import-toolbar-button',
       'insert-dropdown-menu',
       'line-height-dropdown-menu',
       'link-toolbar-button',
@@ -1171,7 +1176,7 @@ export const uiNodes: Registry = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@udecode/plate-emoji'],
+    dependencies: ['@udecode/plate-emoji', '@emoji-mart/data@1.2.1'],
     doc: {
       description: 'An input component for emoji search and insertion.',
       docs: [

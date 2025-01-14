@@ -22,6 +22,53 @@ export const BaseEmojiPlugin = createTSlatePlugin<EmojiInputConfig>({
       type: BaseEmojiInputPlugin.key,
     }),
     createEmojiNode: ({ skins }) => ({ text: skins[0].native }),
+    data: {
+      aliases: {},
+      categories: [
+        {
+          id: 'people',
+          emojis: ['+1'],
+        },
+      ],
+      emojis: {
+        '+1': {
+          id: '+1',
+          keywords: [],
+          name: 'Thumbs Up',
+          skins: [
+            {
+              native: '👍',
+              unified: '1f44d',
+            },
+            {
+              native: '👍🏻',
+              unified: '1f44d-1f3fb',
+            },
+            {
+              native: '👍🏼',
+              unified: '1f44d-1f3fc',
+            },
+            {
+              native: '👍🏽',
+              unified: '1f44d-1f3fd',
+            },
+            {
+              native: '👍🏾',
+              unified: '1f44d-1f3fe',
+            },
+            {
+              native: '👍🏿',
+              unified: '1f44d-1f3ff',
+            },
+          ],
+          version: 1,
+        },
+      },
+      sheet: {
+        cols: 1,
+        rows: 1,
+      },
+    },
     trigger: ':',
     triggerPreviousCharPattern: /^\s?$/,
   },
