@@ -22,13 +22,13 @@ When a Node is passed, its path will be found using [`editor.api.findPath()`](/d
 Example:
 ```ts
 // Using a location
-editor.nodes({ at: [0, 0] }) // Path location
-editor.nodes({ at: { path: [0], offset: 0 } }) // Point location 
-editor.nodes({ at: { anchor: point1, focus: point2 } }) // Range location
+editor.api.nodes({ at: [0, 0] }) // Path location
+editor.api.nodes({ at: { path: [0], offset: 0 } }) // Point location 
+editor.api.nodes({ at: { anchor: point1, focus: point2 } }) // Range location
 
 // Using a node reference
 const node = editor.children[0]
-editor.nodes({ at: node }) // Will find node's path internally
+editor.api.nodes({ at: node }) // Will find node's path internally
 ```
 
 ### Match
@@ -41,17 +41,17 @@ A predicate for matching nodes. The predicate can be either:
 Example:
 ```ts
 // Function predicate
-editor.nodes({
+editor.api.nodes({
   match: (node) => node.type === 'p'
 })
 
 // Object predicate
-editor.nodes({
+editor.api.nodes({
   match: { type: 'p' }
 })
 
 // Object predicate with multiple possible values
-editor.nodes({
+editor.api.nodes({
   match: { type: ['p', 'h1'] }
 })
 ```
@@ -75,13 +75,13 @@ Mode for querying nodes in a hierarchy.
     //     - text
     
     // mode: 'all' returns both blockquote and paragraph
-    editor.nodes({ match: { type: ['blockquote', 'paragraph'] }, mode: 'all' })
+    editor.api.nodes({ match: { type: ['blockquote', 'paragraph'] }, mode: 'all' })
     
     // mode: 'highest' returns only blockquote
-    editor.nodes({ match: { type: ['blockquote', 'paragraph'] }, mode: 'highest' })
+    editor.api.nodes({ match: { type: ['blockquote', 'paragraph'] }, mode: 'highest' })
     
     // mode: 'lowest' returns only paragraph
-    editor.nodes({ match: { type: ['blockquote', 'paragraph'] }, mode: 'lowest' })
+    editor.api.nodes({ match: { type: ['blockquote', 'paragraph'] }, mode: 'lowest' })
     ```
   </APIItem>
 </APIOptions>
