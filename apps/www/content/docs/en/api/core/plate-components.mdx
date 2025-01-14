@@ -17,13 +17,13 @@ Children components have access to the plate store.
 <APIItem name="editor" type="PlateEditor">
 A controlled `editor` instance. This prop is required.
 </APIItem>
-<APIItem name="decorate" type="(ctx: SlatePluginContext<C>) => Range[]" optional>
+<APIItem name="decorate" type="(ctx: SlatePluginContext<C>) => TRange[]" optional>
 See [Slate docs](https://docs.slatejs.org/concepts/09-rendering#decorations).
 </APIItem>
 <APIItem name="onChange" type="({ value, editor }: { value: Value; editor: PlateEditor }) => void" optional>
 Controlled callback called when the editor state changes.
 </APIItem>
-<APIItem name="onSelectionChange" type="(selection: Range | null) => void" optional>
+<APIItem name="onSelectionChange" type="(selection: TRange | null) => void" optional>
 Callback called when the editor selection changes.
 </APIItem>
 <APIItem name="onValueChange" type="({ value, editor }: { value: Value; editor: PlateEditor }) => void" optional>
@@ -62,7 +62,7 @@ Custom `Editable` node.
 </APIItem>
 <APIItem name="as" type="React.ElementType" optional />
 <APIItem name="autoFocus" type="boolean" optional />
-<APIItem name="decorate" type="(ctx: SlatePluginContext<C>) => Range[]" optional />
+<APIItem name="decorate" type="(ctx: SlatePluginContext<C>) => TRange[]" optional />
 <APIItem name="disableDefaultStyles" type="boolean" optional />
 <APIItem name="onDOMBeforeInput" type="(event: Event) => void" optional />
 <APIItem name="onKeyDown" type="(event: KeyboardEvent) => void" optional />

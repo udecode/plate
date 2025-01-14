@@ -3,97 +3,107 @@ title: Text
 description: API reference for text nodes in Slate.
 ---
 
-`Text` objects represent the nodes that contain the actual text content of a Slate document along with any formatting properties. They are always leaf nodes in the document tree as they cannot contain any children.
+A Text node contains the actual text content of a Slate document along with any formatting properties. They are always leaf nodes in the document tree as they cannot contain any children.
 
-## Text API
+```ts
+type TText = {
+  text: string
+  [key: string]: unknown
+}
+```
+
+## `TextApi`
 
 ### `decorations`
 
-Get the leaves for a text node given decorations.
-
+<API name="decorations">
 <APIParameters>
   <APIItem name="node" type="TText">
     The text node to get leaves from.
   </APIItem>
   <APIItem name="decorations" type="DecoratedRange[]">
-    Array of decorated ranges to apply.
+    The array of decorated ranges to apply.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-  Returns `TText[]` - An array of text nodes with the decorations applied.
+<APIReturns type="TText[]">
+  An array of text nodes with the decorations applied.
 </APIReturns>
+</API>
 
 ### `equals`
 
-Check if two text nodes are equal.
-
+<API name="equals">
 <APIParameters>
   <APIItem name="text" type="TText">
-    First text node to compare.
+    The first text node to compare.
   </APIItem>
   <APIItem name="another" type="TText">
-    Second text node to compare.
+    The second text node to compare.
   </APIItem>
   <APIItem name="options" type="TextEqualsOptions" optional>
-    <APISubList>
-      <APISubListItem parent="options" name="loose" type="boolean" optional>
-        If true, the text content is not compared. This is used to check whether sibling text nodes can be merged.
-      </APISubListItem>
-    </APISubList>
+    Additional comparison options.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-  Returns `boolean` - `true` if the text nodes are equal according to the comparison rules, `false` otherwise.
+<APIOptions type="TextEqualsOptions">
+  <APIItem name="loose" type="boolean" optional>
+    If `true`, the text content is not compared. This is used to check
+    whether sibling text nodes can be merged based only on their
+    formatting properties.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="boolean">
+  `true` if the text nodes are equal according to the comparison rules.
 </APIReturns>
+</API>
 
 ### `isText`
 
-Check if a value implements the `Text` interface.
-
+<API name="isText">
 <APIParameters>
   <APIItem name="value" type="any">
     The value to check.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-  Returns `boolean` - `true` if the value is a valid text node, `false` otherwise.
+<APIReturns type="boolean">
+  `true` if the value is a valid text node.
 </APIReturns>
+</API>
 
 ### `isTextList`
 
-Check if a value is a list of `Text` objects.
-
+<API name="isTextList">
 <APIParameters>
   <APIItem name="value" type="any">
     The value to check.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-  Returns `boolean` - `true` if the value is an array of text nodes, `false` otherwise.
+<APIReturns type="boolean">
+  `true` if the value is an array of text nodes.
 </APIReturns>
+</API>
 
 ### `isTextProps`
 
-Check if some props are a partial of Text.
-
+<API name="isTextProps">
 <APIParameters>
   <APIItem name="props" type="any">
     The props to check.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-  Returns `boolean` - `true` if the props match a partial text node structure, `false` otherwise.
+<APIReturns type="boolean">
+  `true` if the props match a partial text node structure.
 </APIReturns>
+</API>
 
 ### `matches`
 
-Check if a text matches set of properties.
-
+<API name="matches">
 <APIParameters>
   <APIItem name="text" type="TText">
     The text node to check.
@@ -103,16 +113,18 @@ Check if a text matches set of properties.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-  Returns `boolean` - `true` if the text node matches the properties, `false` otherwise.
+<APIReturns type="boolean">
+  `true` if the text node matches the properties.
 </APIReturns>
+</API>
 
 ## Types
 
 ### `TText`
 
-`TText` objects represent the nodes that contain the actual text content of a Slate document along with any formatting properties. They are always leaf nodes in the document tree as they cannot contain any children.
+`Text` is a type alias for `TText`.
 
+<API name="TText">
 <APIAttributes>
   <APIItem name="text" type="string">
     The text content of the node.
@@ -121,72 +133,83 @@ Check if a text matches set of properties.
     Additional formatting properties that can be added to the text node.
   </APIItem>
 </APIAttributes>
+</API>
 
-### `Text`
+### `TextEntry` 
 
-A concrete implementation of the `TText` type. Text objects represent the nodes that contain the actual text content of a Slate document along with any formatting properties. They are always leaf nodes in the document tree as they cannot contain any children.
+Text entries represent a Text node and its path.
+
+<API name="TextEntry">
+<APIAttributes>
+  <APIItem name="0" type="TText">
+    The Text node.
+  </APIItem>
+  <APIItem name="1" type="Path">
+    The path to the text node.
+  </APIItem>
+</APIAttributes>
+</API>
 
 ### `DecoratedRange`
 
 A range object that includes decoration information. Used to apply formatting or styling to specific ranges of text within a document.
 
-### `TextEqualsOptions`
-
-Options for comparing text nodes.
-
-<APIAttributes>
-  <APIItem name="loose" type="boolean" optional>
-    If true, the text content is not compared. This is used to check whether sibling text nodes can be merged based only on their formatting properties.
-  </APIItem>
-</APIAttributes>
-
 ### `TextOf<N>`
 
-A utility type that extracts all possible text node types from a root node type. This is useful when you need to work with text nodes in a strongly-typed way within your editor implementation.
+A utility type that extracts all possible text node types from a root node type.
 
+<API name="TextOf">
 <APIParameters>
   <APIItem name="N" type="TNode">
     The root node type to extract text types from.
   </APIItem>
 </APIParameters>
+</API>
 
 ### `TextIn<V>`
 
-A utility type that extracts all text node types from a Value type. This is similar to `TextOf` but works specifically with editor Value types.
+A utility type that extracts all text node types from a `Value` type.
 
+<API name="TextIn">
 <APIParameters>
   <APIItem name="V" type="Value">
-    The Value type to extract text types from.
+    The `Value` type to extract text types from.
   </APIItem>
 </APIParameters>
+</API>
 
 ### `MarksOf<N>`
 
 A utility type that extracts all possible mark types from a root node type. Marks are the formatting properties that can be applied to text nodes.
 
+<API name="MarksOf">
 <APIParameters>
   <APIItem name="N" type="TNode">
     The root node type to extract mark types from.
   </APIItem>
 </APIParameters>
+</API>
 
 ### `MarksIn<V>`
 
-A utility type that extracts all mark types from a Value type. This is similar to `MarksOf` but works specifically with editor Value types.
+A utility type that extracts all mark types from a `Value` type. Similar to `MarksOf` but works specifically with editor `Value` types.
 
+<API name="MarksIn">
 <APIParameters>
   <APIItem name="V" type="Value">
-    The Value type to extract mark types from.
+    The `Value` type to extract mark types from.
   </APIItem>
 </APIParameters>
+</API>
 
 ### `MarkKeysOf<N>`
 
-A utility type that extracts all possible mark property keys from a node type. This is useful when you need to work with mark properties in a strongly-typed way.
+A utility type that extracts all possible mark property keys from a node type.
 
+<API name="MarkKeysOf">
 <APIParameters>
   <APIItem name="N" type="TNode">
     The node type to extract mark keys from.
   </APIItem>
 </APIParameters>
-
+</API>

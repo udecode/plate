@@ -23,30 +23,26 @@ npm install @udecode/plate-floating
 
 ## API Hooks
 
-### useVirtualFloating
+### `useVirtualFloating`
 
 Creates a floating element with a controlled virtual element, typically used to follow cursor position.
 
-<APIParameters>
-  <APIItem name="options" type="UseVirtualFloatingOptions">
-    Options for the virtual floating element.
-    <APISubList>
-      <APISubListItem parent="options" name="getBoundingClientRect" type="() => ClientRectObject" optional>
-        Function to get the bounding client rect.
-        - **Default:** Returns a zero-sized rect at (0,0)
-      </APISubListItem>
-      <APISubListItem parent="options" name="open" type="boolean" optional>
-        Controls visibility of the floating element.
-      </APISubListItem>
-      <APISubListItem parent="options" name="whileElementsMounted" type="function" optional>
-        Callback when elements are mounted.
-        - **Default:** `autoUpdate` (updates on scroll and resize)
-      </APISubListItem>
-    </APISubList>
+<API name="useVirtualFloating">
+<APIOptions type="UseVirtualFloatingOptions">
+  <APIItem name="getBoundingClientRect" type="() => ClientRectObject" optional>
+    Function to get the bounding client rect.
+    - **Default:** Returns a zero-sized rect at (0,0)
   </APIItem>
-</APIParameters>
+  <APIItem name="open" type="boolean" optional>
+    Controls visibility of the floating element.
+  </APIItem>
+  <APIItem name="whileElementsMounted" type="function" optional>
+    Callback when elements are mounted.
+    - **Default:** `autoUpdate` (updates on scroll and resize)
+  </APIItem>
+</APIOptions>
 
-<APIReturns>
+<APIReturns type="object">
   <APIItem name="style" type="React.CSSProperties">
     Style object to apply to the floating element.
   </APIItem>
@@ -60,29 +56,26 @@ Creates a floating element with a controlled virtual element, typically used to 
     Function to manually update positioning.
   </APIItem>
 </APIReturns>
+</API>
 
-### useFloatingToolbar
+### `useFloatingToolbar`
 
 Creates a floating toolbar that appears when text is selected in the editor.
 
-<APIParameters>
-  <APIItem name="state" type="FloatingToolbarState">
-    State options for the floating toolbar.
-    <APISubList>
-      <APISubListItem parent="state" name="floatingOptions" type="UseVirtualFloatingOptions" optional>
-        Options passed to useVirtualFloating.
-      </APISubListItem>
-      <APISubListItem parent="state" name="hideToolbar" type="boolean" optional>
-        Force hide the toolbar.
-      </APISubListItem>
-      <APISubListItem parent="state" name="showWhenReadOnly" type="boolean" optional>
-        Show toolbar in read-only mode.
-      </APISubListItem>
-    </APISubList>
+<API name="useFloatingToolbar">
+<APIOptions type="FloatingToolbarState">
+  <APIItem name="floatingOptions" type="UseVirtualFloatingOptions" optional>
+    Options passed to `useVirtualFloating`.
   </APIItem>
-</APIParameters>
+  <APIItem name="hideToolbar" type="boolean" optional>
+    Force hide the toolbar.
+  </APIItem>
+  <APIItem name="showWhenReadOnly" type="boolean" optional>
+    Show toolbar in read-only mode.
+  </APIItem>
+</APIOptions>
 
-<APIReturns>
+<APIReturns type="object">
   <APIItem name="clickOutsideRef" type="React.RefObject">
     Ref to detect clicks outside the toolbar.
   </APIItem>
@@ -96,13 +89,15 @@ Creates a floating toolbar that appears when text is selected in the editor.
     Ref to attach to the toolbar element.
   </APIItem>
 </APIReturns>
+</API>
 
 ## API
 
-### getBoundingClientRect
+### `getBoundingClientRect`
 
 Gets the bounding client rectangle for a location or array of locations in the editor.
 
+<API name="getBoundingClientRect">
 <APIParameters>
   <APIItem name="editor" type="Editor">
     The editor instance.
@@ -112,53 +107,50 @@ Gets the bounding client rectangle for a location or array of locations in the e
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-  <APIItem type="DOMRect | undefined">
-    The merged bounding client rectangle of all specified locations, or undefined if no valid rectangles found.
-  </APIItem>
+<APIReturns type="DOMRect | undefined">
+  The merged bounding client rectangle of all specified locations, or undefined if no valid rectangles found.
 </APIReturns>
+</API>
 
-### getDOMSelectionBoundingClientRect
+### `getDOMSelectionBoundingClientRect`
 
-Gets the bounding client rectangle of the current DOM selection.
-
-<APIReturns>
-  <APIItem type="ClientRectObject">
-    The bounding client rectangle of the DOM selection. Returns a zero-sized rect at (0,0) if no selection exists.
-  </APIItem>
+<API name="getDOMSelectionBoundingClientRect">
+<APIReturns type="ClientRectObject">
+  The bounding client rectangle of the DOM selection. Returns a zero-sized rect at (0,0) if no selection exists.
 </APIReturns>
+</API>
 
-### getRangeBoundingClientRect
+### `getRangeBoundingClientRect`
 
 Gets the bounding client rectangle for a specific Slate range.
 
+<API name="getRangeBoundingClientRect">
 <APIParameters>
   <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
-  <APIItem name="at" type="Range | null">
+  <APIItem name="at" type="TRange | null">
     The Slate range to get the bounding rectangle for.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-  <APIItem type="ClientRectObject">
-    The bounding client rectangle of the range. Returns a zero-sized rect at (0,0) if the range is null or invalid.
-  </APIItem>
+<APIReturns type="ClientRectObject">
+  The bounding client rectangle of the range. Returns a zero-sized rect at (0,0) if the range is null or invalid.
 </APIReturns>
+</API>
 
-### getSelectionBoundingClientRect
+### `getSelectionBoundingClientRect`
 
 Gets the bounding client rectangle of the current editor selection.
 
+<API name="getSelectionBoundingClientRect">
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-  <APIItem type="ClientRectObject">
-    The bounding client rectangle of the selection. Returns a zero-sized rect at (0,0) if the selection is not expanded.
-  </APIItem>
+<APIReturns type="ClientRectObject">
+  The bounding client rectangle of the selection. Returns a zero-sized rect at (0,0) if the selection is not expanded.
 </APIReturns>
+</API>
