@@ -1149,22 +1149,6 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
-    "export-toolbar-button": {
-      name: "export-toolbar-button",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["toolbar"],
-      files: [{
-        path: "src/registry/default/plate-ui/export-toolbar-button.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      component: React.lazy(() => import("@/registry/default/plate-ui/export-toolbar-button.tsx")),
-      source: "",
-      category: "",
-      subcategory: "",
-      chunks: []
-    },
     "import-toolbar-button": {
       name: "import-toolbar-button",
       description: "",
@@ -1176,6 +1160,22 @@ export const Index: Record<string, any> = {
         target: ""
       }],
       component: React.lazy(() => import("@/registry/default/plate-ui/import-toolbar-button.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
+    "export-toolbar-button": {
+      name: "export-toolbar-button",
+      description: "",
+      type: "registry:ui",
+      registryDependencies: ["toolbar"],
+      files: [{
+        path: "src/registry/default/plate-ui/export-toolbar-button.tsx",
+        type: "registry:ui",
+        target: ""
+      }],
+      component: React.lazy(() => import("@/registry/default/plate-ui/export-toolbar-button.tsx")),
       source: "",
       category: "",
       subcategory: "",
