@@ -10,7 +10,12 @@ export const FireMarker = (
 
   return (
     <div contentEditable={false}>
-      <span style={{ left: -26, position: 'absolute', top: -1 }}>
+      <span
+        className="select-none"
+        style={{ left: -26, position: 'absolute', top: -1 }}
+        data-plate-prevent-deserialization
+        contentEditable={false}
+      >
         {(element as TIndentElement).indent % 2 === 0 ? '🔥' : '🚀'}
       </span>
     </div>
@@ -20,5 +25,5 @@ export const FireMarker = (
 export const FireLiComponent = (props: SlateRenderElementProps) => {
   const { children } = props;
 
-  return <span>{children}</span>;
+  return <li className="list-none">{children}</li>;
 };
