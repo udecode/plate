@@ -1153,7 +1153,7 @@ export const Index: Record<string, any> = {
       name: "import-toolbar-button",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["toolbar"],
+      registryDependencies: ["dropdown-menu","toolbar"],
       files: [{
         path: "src/registry/default/plate-ui/import-toolbar-button.tsx",
         type: "registry:ui",
@@ -1413,7 +1413,7 @@ export const Index: Record<string, any> = {
       name: "fixed-toolbar-buttons",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["toolbar","ai-toolbar-button","align-dropdown-menu","color-dropdown-menu","comment-toolbar-button","emoji-dropdown-menu","font-size-toolbar-button","history-toolbar-button","indent-list-toolbar-button","indent-todo-toolbar-button","indent-toolbar-button","insert-dropdown-menu","line-height-dropdown-menu","link-toolbar-button","mark-toolbar-button","media-toolbar-button","mode-dropdown-menu","more-dropdown-menu","outdent-toolbar-button","table-dropdown-menu","toggle-toolbar-button","turn-into-dropdown-menu","export-toolbar-button"],
+      registryDependencies: ["toolbar","ai-toolbar-button","align-dropdown-menu","color-dropdown-menu","comment-toolbar-button","emoji-dropdown-menu","font-size-toolbar-button","history-toolbar-button","indent-list-toolbar-button","indent-todo-toolbar-button","indent-toolbar-button","import-toolbar-button","insert-dropdown-menu","line-height-dropdown-menu","link-toolbar-button","mark-toolbar-button","media-toolbar-button","mode-dropdown-menu","more-dropdown-menu","outdent-toolbar-button","table-dropdown-menu","toggle-toolbar-button","turn-into-dropdown-menu","export-toolbar-button"],
       files: [{
         path: "src/registry/default/plate-ui/fixed-toolbar-buttons.tsx",
         type: "registry:ui",

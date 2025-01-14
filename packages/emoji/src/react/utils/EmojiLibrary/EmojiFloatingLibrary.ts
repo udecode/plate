@@ -1,5 +1,3 @@
-import emojiMartData from '@emoji-mart/data' with { type: 'json' };
-
 import type { EmojiFloatingGridType } from './EmojiFloatingGrid';
 import type {
   IEmojiFloatingLibrary,
@@ -29,7 +27,7 @@ export class EmojiFloatingLibrary
   private constructor(
     protected settings: EmojiSettingsType,
     protected localStorage: IFrequentEmojiStorage,
-    protected library: EmojiLibrary = emojiMartData as any
+    protected library: EmojiLibrary
   ) {
     super(library);
 
@@ -48,7 +46,7 @@ export class EmojiFloatingLibrary
   public static getInstance(
     settings: EmojiSettingsType,
     localStorage: IFrequentEmojiStorage,
-    library: EmojiLibrary = emojiMartData as any
+    library: EmojiLibrary
   ) {
     if (!EmojiFloatingLibrary.instance) {
       EmojiFloatingLibrary.instance = new EmojiFloatingLibrary(
