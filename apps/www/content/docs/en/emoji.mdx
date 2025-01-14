@@ -16,7 +16,8 @@ docs:
 ## Features
 
 - Insert emoji inline.
-- Use the **`:`** shortcut followed by the emoji name (e.g., **`:apple:`** 🍎). Autocomplete suggestions appear as you type.
+- Use the `:` shortcut followed by the emoji name (e.g., `:apple:` 🍎).
+- Autocomplete suggestions appear as you type.
 
 </PackageInfo>
 
@@ -39,16 +40,20 @@ const plugins = [
 
 ## Plugins
 
-### EmojiPlugin
+### `EmojiPlugin`
 
-Extends [TriggerComboboxPlugin](/docs/combobox#options)
+<API name="EmojiPlugin">
+
+  Extends [TriggerComboboxPlugin](/docs/combobox#options)
 
 <APIOptions>
-<APIItem name="createEmojiNode" type="(emoji: TEmoji): ElementOrTextOf<any>" optional>
-  A function to specify the node inserted when an emoji is selected. The default behavior is to insert a text node containing the emoji as a Unicode character.
-</APIItem>
+  <APIItem name="createEmojiNode" type="(emoji: TEmoji): ElementOrTextOf<any>" optional>
+    Function to specify the node inserted when an emoji is selected.
+    - **Default:** Inserts a text node with the emoji Unicode character
+  </APIItem>
 </APIOptions>
+</API>
 
-### EmojiInputPlugin
+### `EmojiInputPlugin`
 
 Handles the input behavior for emoji insertion.

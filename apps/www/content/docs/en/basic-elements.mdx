@@ -23,7 +23,7 @@ docs:
 
 </PackageInfo>
 
-**Plugins:**
+## Plugins
 
 - `BlockquotePlugin` for `blockquote` element
 - `CodeBlockPlugin` for `code_block` element
@@ -66,173 +66,165 @@ const plugins = [
 
 ## Plugins
 
-### BasicElementsPlugin
+### `BasicElementsPlugin`
 
-### BlockquotePlugin
+Plugin that includes all basic element plugins.
 
-### HeadingPlugin
+### `BlockquotePlugin`
 
+Plugin for blockquote elements.
+
+### `HeadingPlugin`
+
+<API name="HeadingPlugin">
 <APIOptions>
-<APIItem name="levels" type="number" optional>
-Specifies the heading levels supported, ranging from 1 to the specified levels.
-
-</APIItem>
+  <APIItem name="levels" type="number" optional>
+    Specifies the heading levels supported, ranging from 1 to the specified levels.
+  </APIItem>
 </APIOptions>
+</API>
 
-### CodeBlockPlugin
+### `CodeBlockPlugin`
 
+<API name="CodeBlockPlugin">
 <APIOptions>
-
-<APIItem name="syntax" type="boolean" optional>
-Determines if syntax highlighting is enabled.
-
-</APIItem>
-<APIItem name="syntaxPopularFirst" type="boolean" optional>
-Determines if popular syntax should be displayed first.
-
-</APIItem>
-<APIItem name="deserializers" type="string[]" optional>
-Defines deserializers for the code block plugin.
-
-</APIItem>
+  <APIItem name="syntax" type="boolean" optional>
+    Whether syntax highlighting is enabled.
+  </APIItem>
+  <APIItem name="syntaxPopularFirst" type="boolean" optional>
+    Whether popular syntax should be displayed first.
+  </APIItem>
+  <APIItem name="deserializers" type="string[]" optional>
+    Deserializers for the code block plugin.
+  </APIItem>
 </APIOptions>
+</API>
 
 ## API Code Block
 
-### isCodeBlockEmpty
+### `isCodeBlockEmpty`
 
-Checks if the selection is inside an empty code block.
-
+<API name="isCodeBlockEmpty">
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-  <APIItem type="boolean">
-    Returns true if the selection is in an empty code block.
-  </APIItem>
+<APIReturns type="boolean">
+  Whether the selection is in an empty code block.
 </APIReturns>
+</API>
 
-### isSelectionAtCodeBlockStart
+### `isSelectionAtCodeBlockStart`
 
-Checks if the selection is at the start of the first code line in a code block.
-
+<API name="isSelectionAtCodeBlockStart">
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-  <APIItem type="boolean">
-    Returns true if the selection is at the start of the first code line in a
-    code block.
-  </APIItem>
+<APIReturns type="boolean">
+  Whether the selection is at the start of the first code line in a code block.
 </APIReturns>
+</API>
 
-### indentCodeLine
+### `indentCodeLine`
 
-Indents the code line if the selection is expanded or there are no non-whitespace characters at left of the cursor. The indentation is 2 spaces by default.
-
-<APIParameters>
-<APIItem name="editor" type="PlateEditor">
-The editor instance.
-</APIItem>
-<APIItem name="options" type="IndentCodeLineOptions">
-<APISubList>
-<APISubListItem parent="options" name="codeLine" type="ElementEntry">
-  The code line to be indented.
-</APISubListItem>
-<APISubListItem
-  parent="options"
-  name="indentDepth"
-  type="number"
->
-The size of indentation for the code line.
-
-- **Default:** `2`
-
-</APISubListItem>
-</APISubList>
-
-</APIItem>
-</APIParameters>
-
-### insertCodeBlock
-
-Inserts a code block by setting the node to code line and wrapping it with a code block. If the cursor is not at the block start, it inserts a break before the code block.
-
+<API name="indentCodeLine">
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
-  <APIItem
-    name="insertNodesOptions"
-    type="Omit<InsertNodesOptions, 'match'>"
-    optional
-  ></APIItem>
+  <APIItem name="options" type="IndentCodeLineOptions">
+    Options for indenting code line.
+  </APIItem>
 </APIParameters>
 
-### insertCodeLine
+<APIOptions type="IndentCodeLineOptions">
+  <APIItem name="codeLine" type="ElementEntry">
+    The code line to be indented.
+  </APIItem>
+  <APIItem name="indentDepth" type="number">
+    The size of indentation for the code line.
+    - **Default:** `2`
+  </APIItem>
+</APIOptions>
+</API>
 
-Inserts a code line starting with the specified indentation depth.
+### `insertCodeBlock`
 
+<API name="insertCodeBlock">
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="Omit<InsertNodesOptions, 'match'>" optional>
+    Options for inserting the code block.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `insertCodeLine`
+
+<API name="insertCodeLine">
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
   <APIItem name="indentDepth" type="number" optional>
     The depth of indentation for the code line.
-
     - **Default:** `0`
-
   </APIItem>
 </APIParameters>
+</API>
 
-### outdentCodeLine
+### `outdentCodeLine`
 
-Outdents a code line, removing two whitespace characters if present.
-
+<API name="outdentCodeLine">
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
   <APIItem name="options" type="OutdentCodeLineOptions" optional>
-    <APISubList>
-      <APISubListItem parent="options" name="codeLine" type="ElementEntry">
-        The code line to be outdented.
-      </APISubListItem>
-      <APISubListItem parent="options" name="codeBlock" type="ElementEntry">
-        The code block containing the code line to be outdented.
-      </APISubListItem>
-    </APISubList>
+    Options for outdenting code line.
   </APIItem>
 </APIParameters>
 
-### toggleCodeBlock
+<APIOptions type="OutdentCodeLineOptions">
+  <APIItem name="codeLine" type="ElementEntry">
+    The code line to be outdented.
+  </APIItem>
+  <APIItem name="codeBlock" type="ElementEntry">
+    The code block containing the code line to be outdented.
+  </APIItem>
+</APIOptions>
+</API>
 
-Toggles the code block in the editor.
+### `toggleCodeBlock`
 
+<API name="toggleCodeBlock">
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
 </APIParameters>
+</API>
 
-### unwrapCodeBlock
+### `unwrapCodeBlock`
 
-Unwraps the code block in the editor.
-
+<API name="unwrapCodeBlock">
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
 </APIParameters>
+</API>
 
-### useCodeBlockCombobox
+### `useCodeBlockCombobox`
 
+<API name="useCodeBlockCombobox">
 <APIState>
   <APIItem name="element" type="TCodeBlockElement">
     The code block element.
@@ -242,54 +234,56 @@ Unwraps the code block in the editor.
   </APIItem>
 </APIState>
 
-<APIReturns>
+<APIReturns type="{ commandItemProps: object }">
   <APIItem name="commandItemProps" type="object">
-    The props for the command item.
-    <APISubList>
-      <APISubListItem parent="commandItemProps" name="onSelect" type="function">
-        The function to call when the command item is selected.
-      </APISubListItem>
-    </APISubList>
+    Props for the command item.
+  </APIItem>
+  <APIItem name="onSelect" type="function">
+    Function to call when the command item is selected.
   </APIItem>
 </APIReturns>
+</API>
 
-### useCodeBlockElementState
+### `useCodeBlockElementState`
 
+<API name="useCodeBlockElementState">
 <APIParameters>
   <APIItem name="element" type="TCodeBlockElement">
     The code block element.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
+<APIReturns type="object">
   <APIItem name="className" type="string | false">
-    The CSS class name for the code block element, representing the selected
-    language.
+    CSS class name for the code block element, representing the selected language.
   </APIItem>
   <APIItem name="syntax" type="boolean | undefined">
     The syntax plugin option.
   </APIItem>
 </APIReturns>
+</API>
 
-### useCodeSyntaxLeaf
+### `useCodeSyntaxLeaf`
 
+<API name="useCodeSyntaxLeaf">
 <APIParameters>
   <APIItem name="options" type="object">
-    <APISubList>
-      <APISubListItem parent="options" name="leaf" type="any">
-        The leaf node representing a code syntax token.
-      </APISubListItem>
-    </APISubList>
+    Options for the code syntax leaf.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
+<APIOptions type="object">
+  <APIItem name="leaf" type="any">
+    The leaf node representing a code syntax token.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="{ tokenProps: object }">
   <APIItem name="tokenProps" type="object">
-    The props for the token.
-    <APISubList>
-      <APISubListItem parent="tokenProps" name="className" type="string">
-        The CSS class name for the token.
-      </APISubListItem>
-    </APISubList>
+    Props for the token.
+  </APIItem>
+  <APIItem name="className" type="string">
+    CSS class name for the token.
   </APIItem>
 </APIReturns>
+</API>

@@ -13,9 +13,9 @@ docs:
 
 ## Features
 
-- Add toggles to your document.
-  - Toggles are closed by default, and can be opened to reveal the content inside.
-- Refer to the [Indent documentation](/docs/indent) for more information.
+- Add toggles to your document
+  - Toggles are closed by default, and can be opened to reveal the content inside
+- Refer to the [Indent documentation](/docs/indent) for more information
 
 ## Plugin dependencies
 
@@ -33,7 +33,6 @@ npm install @udecode/plate-indent @udecode/plate-node-id @udecode/plate-toggle
 ## Usage
 
 ```tsx
-// ...
 import { ParagraphPlugin } from '@udecode/plate/react';
 import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { IndentPlugin } from '@udecode/plate-indent/react';
@@ -54,139 +53,153 @@ const plugins = [
 
 ## Plugins
 
-### TogglePlugin
+### `TogglePlugin`
+
+<API name="TogglePlugin">
+Plugin for managing toggle functionality.
 
 <APIOptions>
-<APIItem name="openIds" type="Set<string>" optional>
-A set of open toggle IDs.
-</APIItem>
-<APIItem name="isOpen" type="(toggleId: string) => boolean" optional>
-A function to determine if a toggle is open.
-</APIItem>
-<APIItem name="someClosed" type="(toggleIds: string[]) => boolean" optional>
-A function to determine if some toggles are closed.
-</APIItem>
+  <APIItem name="openIds" type="Set<string>" optional>
+    Set of open toggle IDs.
+  </APIItem>
+  <APIItem name="isOpen" type="(toggleId: string) => boolean" optional>
+    Function to check if toggle is open.
+  </APIItem>
+  <APIItem name="someClosed" type="(toggleIds: string[]) => boolean" optional>
+    Function to check if any toggles are closed.
+  </APIItem>
 </APIOptions>
+</API>
 
 ## API
 
-### editor.api.toggle.toggleIds
+### `editor.api.toggle.toggleIds`
 
-Toggles the open state of toggles.
+<API name="editor.api.toggle.toggleIds">
+Toggle open state of toggles.
 
 <APIParameters>
   <APIItem name="ids" type="string[]">
-    An array of element ids.
+    Array of element IDs.
   </APIItem>
   <APIItem name="force" type="boolean | null" optional>
-    Set to true if you want to expand all toggles regardless of their current
-    state. Set to false if you want to collapse all toggles regardless of their
-    current state. If null, it will toggle the current state.
+    Force toggle state:
+    - `true`: expand all toggles
+    - `false`: collapse all toggles
+    - `null`: toggle current state
   </APIItem>
 </APIParameters>
+</API>
 
-### openNextToggles
+### `openNextToggles`
 
-Marks the block at the current selection as an open toggle.
-Use this function right before inserting a block so that the toggle is expanded upon insertion.
+<API name="openNextToggles">
+Mark block at current selection as open toggle.
 
 <APIParameters>
   <APIItem name="editor" type="Editor">
-    The editor instance.
+    Editor instance.
   </APIItem>
 </APIParameters>
+</API>
 
-## API Components
+## Hooks
 
-### useToggleToolbarButtonState
+### `useToggleToolbarButtonState`
+
+<API name="useToggleToolbarButtonState">
+Get toggle toolbar button state.
 
 <APIReturns>
   <APIItem name="pressed" type="boolean">
-    A boolean indicating whether the button is pressed or not.
+    Whether button is pressed.
   </APIItem>
 </APIReturns>
+</API>
 
-### useToggleToolbarButton
+### `useToggleToolbarButton`
 
-A behavior hook for the toggle toolbar button.
+<API name="useToggleToolbarButton">
+Handle toggle toolbar button behavior.
 
 <APIState>
   <APIItem name="pressed" type="boolean">
-    A boolean indicating whether the button is pressed or not.
+    Whether button is pressed.
   </APIItem>
 </APIState>
 
 <APIReturns>
   <APIItem name="props" type="object">
-    <APISubList>
-      <APISubListItem parent="props" name="pressed" type="boolean">
-        A boolean indicating whether the button is pressed or not.
-      </APISubListItem>
-      <APISubListItem parent="props" name="onClick" type="function">
-        A callback function to handle the click event of the button. It toggles
-        the toggle of the specified node type in the editor and focuses the
-        editor.
-      </APISubListItem>
-      <APISubListItem parent="props" name="onMouseDown" type="function">
-        A callback function to handle the mouse down event of the button. It
-        just prevents default so that focus is not lost when clicking on the
-        button.
-      </APISubListItem>
-    </APISubList>
+    Props for toggle button.
   </APIItem>
-</APIReturns>
 
-### useToggleButtonState
+  <APIOptions type="props">
+    <APIItem name="pressed" type="boolean">
+      Whether button is pressed.
+    </APIItem>
+    <APIItem name="onClick" type="function">
+      Toggle node type and focus editor.
+    </APIItem>
+    <APIItem name="onMouseDown" type="function">
+      Prevent focus loss on click.
+    </APIItem>
+  </APIOptions>
+</APIReturns>
+</API>
+
+### `useToggleButtonState`
+
+<API name="useToggleButtonState">
+Get toggle button state.
 
 <APIParameters>
   <APIItem name="toggleId" type="string">
-    The id of the toggle element.
+    Toggle element ID.
   </APIItem>
 </APIParameters>
 
 <APIReturns>
   <APIItem name="toggleId" type="string">
-    The id of the toggle element.
+    Toggle element ID.
   </APIItem>
   <APIItem name="open" type="boolean">
-    A boolean indicating whether the toggle is open (expanded) or not
-    (collapsed).
+    Whether toggle is expanded.
   </APIItem>
 </APIReturns>
+</API>
 
-### useToggleButton
+### `useToggleButton`
 
-A behavior hook for the toggle button that expands or collapses a toggle element.
+<API name="useToggleButton">
+Handle toggle button behavior.
 
 <APIParameters>
   <APIItem name="toggleId" type="string">
-    The id of the toggle element.
+    Toggle element ID.
   </APIItem>
   <APIItem name="open" type="boolean">
-    A boolean indicating whether the toggle is open (expanded) or not
-    (collapsed).
+    Whether toggle is expanded.
   </APIItem>
 </APIParameters>
 
 <APIReturns>
   <APIItem name="toggleId" type="string">
-    The id of the toggle element.
+    Toggle element ID.
   </APIItem>
   <APIItem name="open" type="boolean">
-    A boolean indicating whether the toggle is open (expanded) or not
-    (collapsed).
+    Whether toggle is expanded.
   </APIItem>
   <APIItem name="buttonProps" type="object">
-    <APISubList>
-      <APISubListItem parent="buttonProps" name="onClick" type="function">
-        A callback function to handle the click event of the button. It toggles
-        the open state of the toggle.
-      </APISubListItem>
-      <APISubListItem parent="buttonProps" name="onMouseDown" type="function">
-        A callback function to handle the mouse down event of the button. It
-        just prevents default so that focus is not lost when clicking on the
-        button.
-      </APISubListItem>
-    </APISubList>
+    Props for toggle button.
   </APIItem>
+
+  <APIOptions type="buttonProps">
+    <APIItem name="onClick" type="function">
+      Toggle open state.
+    </APIItem>
+    <APIItem name="onMouseDown" type="function">
+      Prevent focus loss on click.
+    </APIItem>
+  </APIOptions>
 </APIReturns>
+</API>

@@ -1,14 +1,5 @@
 ---
 title: Table
-docs:
-  - route: /docs/components/table-cell-element
-    title: Table Cell Element
-  - route: /docs/components/table-dropdown-menu
-    title: Table Dropdown Menu
-  - route: /docs/components/table-element
-    title: Table Element
-  - route: /docs/components/table-row-element
-    title: Table Row Element
 ---
 
 <ComponentPreview name="table-demo" />
@@ -17,11 +8,14 @@ docs:
 
 ## Features
 
-- Enables creation and editing of tables with advanced behaviors.
-- Arrow navigation (up/down).
-- Grid cell selection.
-- Cell selection expansion with `Shift+Arrow` keys.
-- Copying and pasting cells.
+- Table editing with support for:
+  - Adding/removing rows and columns
+  - Merging/splitting cells
+  - Cell resizing
+  - Cell borders
+  - Header rows/columns
+  - Copy/paste table data
+  - Keyboard navigation
 
 </PackageInfo>
 
@@ -34,328 +28,236 @@ npm install @udecode/plate-table
 ## Usage
 
 ```tsx
-// ...
 import { TablePlugin } from '@udecode/plate-table/react';
 
 const plugins = [
   // ...otherPlugins,
-  TablePlugin.configure({
-    options: {
-      initialTableWidth: 600,
-    },
-  }),
+  TablePlugin(),
 ];
 ```
 
-### Disable merging
-
-<ComponentPreview name="table-nomerge-demo" />
-
-## Plugins
-
-### TablePlugin
-
-<APIOptions>
-
-<APIItem name="disableMerge" type="boolean" optional>
-Disables the merging behavior of cells.
-</APIItem>
-<APIItem name="disableExpandOnInsert" type="boolean" optional>
-Disables the expansion of the table when inserting cells.
-</APIItem>
-<APIItem name="disableMarginLeft" type="boolean" optional>
-Disables the left resizer of the first column in the table.
-</APIItem>
-<APIItem name="enableUnsetSingleColSize" type="boolean" optional>
-Disables unsetting the width of the first column when the table has only one column. Set this to `true` if you want to resize the table width when there's only one column. Leave it `false` if you have a full-width table.
-</APIItem>
-<APIItem name="initialTableWidth" type="number" optional>
-If defined, a normalizer will set each undefined table `colSizes` to this value divided by the number of columns. Note that merged cells are not yet supported.
-</APIItem>
-<APIItem name="minColumnWidth" type="number" optional>
-The minimum width of a column in the table.
-
-- **Default:** **`48`**
-
-</APIItem>
-</APIOptions>
-
-### TableRowPlugin
-
-Plugin for table rows.
-
-### TableCellPlugin
-
-Plugin for table cells.
-
-### TableCellHeaderPlugin
-
-Plugin for table header cells.
-
 ## API
 
-### editor.api.create.table
+### `editor.api.create.table`
 
+<API name="createTable">
 <APIParameters>
-<APIItem name="editor" type="PlateEditor">
-The editor instance.
-</APIItem>
-<APIItem name="options" type="GetEmptyTableNodeOptions" optional>
-Extends `GetEmptyRowNodeOptions`.
-<APISubList>
-<APISubListItem parent="options" name="header" type="boolean" optional>
-Specify `true` if the table has a header row.
-</APISubListItem>
-<APISubListItem parent="options" name="rowCount" type="number" optional>
-The number of rows in the table.
-
-- **Default:** `0`
-
-</APISubListItem>
-<APISubListItem parent="options" name="colCount" type="number | undefined" optional>
-The number of columns in the table.
-</APISubListItem>
-</APISubList>
-
-</APIItem>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="GetEmptyTableNodeOptions" optional>
+    Options for creating the table.
+  </APIItem>
 </APIParameters>
 
-<APIReturns>
-<APIItem type="TElement">
+<APIOptions type="GetEmptyTableNodeOptions">
+  <APIItem name="header" type="boolean" optional>
+    Specify `true` if the table has a header row.
+  </APIItem>
+  <APIItem name="rowCount" type="number" optional>
+    The number of rows in the table.
 
+    - **Default:** `0`
+  </APIItem>
+  <APIItem name="colCount" type="number" optional>
+    The number of columns in the table.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="TElement">
 The table node.
-
-</APIItem>
 </APIReturns>
+</API>
 
-### editor.api.create.tableCell
+### `editor.api.create.tableCell`
 
 Creates an empty cell node for a table.
 
-<APIParameters>
-<APIItem name="options" type="CreateCellOptions">
-Options for creating the cell.
-<APISubList>
-<APISubListItem parent="options" name="header" type="boolean" optional>
-Specify `true` if the cell is a header cell.
-</APISubListItem>
-<APISubListItem parent="options" name="row" type="TTableRowElement" optional>
-The row element. If `header` is not specified, it will determine if the cell is a header cell based on the row's children.
-</APISubListItem>
-<APISubListItem
-  parent="options"
-  name="children"
-  type="Descendant[]"
-  optional
->
-The children of the new cell node.
+<API name="createTableCell">
+<APIOptions type="CreateCellOptions">
+  <APIItem name="header" type="boolean" optional>
+    Specify `true` if the cell is a header cell.
+  </APIItem>
+  <APIItem name="row" type="TTableRowElement" optional>
+    The row element. If `header` is not specified, it will determine if the cell is a header cell based on the row's children.
+  </APIItem>
+  <APIItem name="children" type="Descendant[]" optional>
+    The children of the new cell node.
 
-- **Default:** `[editor.api.create.block()]`
+    - **Default:** `[editor.api.create.block()]`
+  </APIItem>
+</APIOptions>
 
-</APISubListItem>
-</APISubList>
-
-</APIItem>
-</APIParameters>
-
-<APIReturns>
-<APIItem type="TElement">
-
+<APIReturns type="TElement">
 The cell node.
-
-</APIItem>
 </APIReturns>
+</API>
 
-### editor.api.create.tableRow
+### `editor.api.create.tableRow`
 
 Creates an empty row node with the specified number of columns.
 
+<API name="createTableRow">
 <APIParameters>
-<APIItem name="editor" type="PlateEditor">
-The editor instance.
-</APIItem>
-<APIItem name="options" type="GetEmptyRowNodeOptions" optional>
-Extends `GetEmptyCellNodeOptions`.
-<APISubList>
-<APISubListItem parent="options" name="header" type="boolean" optional>
-Specify `true` if the row is a header row.
-</APISubListItem>
-<APISubListItem parent="options" name="colCount" type="number" optional>
-The number of columns in the row.
-
-- **Default:** `1`
-
-</APISubListItem>
-</APISubList>
-
-</APIItem>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="GetEmptyRowNodeOptions" optional>
+    Options for creating the row.
+  </APIItem>
 </APIParameters>
 
-<APIReturns>
-<APIItem type="TElement">
+<APIOptions type="GetEmptyRowNodeOptions">
+  <APIItem name="header" type="boolean" optional>
+    Specify `true` if the row is a header row.
+  </APIItem>
+  <APIItem name="colCount" type="number" optional>
+    The number of columns in the row.
 
+    - **Default:** `1`
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="TElement">
 The row node.
-
-</APIItem>
 </APIReturns>
+</API>
 
-### editor.api.table.getCellBorders
+### `editor.api.table.getCellBorders`
 
 Gets the border styles for a table cell, handling special cases for first row and first column cells.
 
+<API name="getCellBorders">
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
   <APIItem name="options" type="object">
-    <APISubList>
-      <APISubListItem parent="options" name="element" type="TTableCellElement">
-        The table cell element to get the border styles for.
-      </APISubListItem>
-      <APISubListItem parent="options" name="defaultBorder" type="Required<BorderStyle>" optional>
-        The default border style to use when cell borders are not defined.
-        <APISubList>
-          <APISubListItem parent="defaultBorder" name="color" type="string">
-            The border color.
-            - **Default:** `'rgb(209 213 219)'`
-          </APISubListItem>
-          <APISubListItem parent="defaultBorder" name="size" type="number">
-            The border size.
-            - **Default:** `1`
-          </APISubListItem>
-          <APISubListItem parent="defaultBorder" name="style" type="string">
-            The border style.
-            - **Default:** `'solid'`
-          </APISubListItem>
-        </APISubList>
-      </APISubListItem>
-    </APISubList>
+    Options for getting cell borders.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-  <APIItem type="BorderStylesDefault">
-    An object containing:
-    <APISubList>
-      <APISubListItem parent="return" name="bottom" type="Required<BorderStyle>">
-        The bottom border style.
-      </APISubListItem>
-      <APISubListItem parent="return" name="right" type="Required<BorderStyle>">
-        The right border style.
-      </APISubListItem>
-      <APISubListItem parent="return" name="left" type="Required<BorderStyle>" optional>
-        The left border style. Only present for cells in the first column.
-      </APISubListItem>
-      <APISubListItem parent="return" name="top" type="Required<BorderStyle>" optional>
-        The top border style. Only present for cells in the first row.
-      </APISubListItem>
-    </APISubList>
+<APIOptions>
+  <APIItem name="element" type="TTableCellElement">
+    The table cell element to get the border styles for.
+  </APIItem>
+  <APIItem name="defaultBorder" type="Required<BorderStyle>" optional>
+    The default border style to use when cell borders are not defined.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="BorderStylesDefault">
+  <APIItem name="bottom" type="Required<BorderStyle>">
+    The bottom border style.
+  </APIItem>
+  <APIItem name="right" type="Required<BorderStyle>">
+    The right border style.
+  </APIItem>
+  <APIItem name="left" type="Required<BorderStyle>" optional>
+    The left border style. Only present for cells in the first column.
+  </APIItem>
+  <APIItem name="top" type="Required<BorderStyle>" optional>
+    The top border style. Only present for cells in the first row.
   </APIItem>
 </APIReturns>
+</API>
 
-### editor.api.table.getCellChildren
+### `editor.api.table.getCellChildren`
 
-Gets the children of a table cell.
-
+<API name="getCellChildren">
 <APIParameters>
-<APIItem name="cell" type="TElement">
-The table cell element.
-</APIItem>
+  <APIItem name="cell" type="TElement">
+    The table cell element.
+  </APIItem>
 </APIParameters>
 
-<APIReturns>
-<APIItem type="Descendant[]">
-
+<APIReturns type="Descendant[]">
 The children of the table cell.
-
-</APIItem>
 </APIReturns>
+</API>
 
-### editor.api.table.getCellSize
+### `editor.api.table.getCellSize`
 
 Gets the width and minimum height of a table cell, taking into account column spans and column sizes.
 
+<API name="getCellSize">
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
   <APIItem name="options" type="object">
-    <APISubList>
-      <APISubListItem parent="options" name="element" type="TTableCellElement">
-        The table cell element to get the size for.
-      </APISubListItem>
-      <APISubListItem parent="options" name="colSizes" type="number[]" optional>
-        Optional array of column sizes. If not provided, will use the table's overridden column sizes.
-      </APISubListItem>
-    </APISubList>
+    Options for getting cell size.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-  <APIItem parent="return" name="width" type="number">
+<APIOptions>
+  <APIItem name="element" type="TTableCellElement">
+    The table cell element to get the size for.
+  </APIItem>
+  <APIItem name="colSizes" type="number[]" optional>
+    Optional array of column sizes. If not provided, will use the table's overridden column sizes.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="object">
+  <APIItem name="width" type="number">
     The total width of the cell, calculated by summing the widths of all columns it spans.
   </APIItem>
-  <APIItem parent="return" name="minHeight" type="number | undefined">
+  <APIItem name="minHeight" type="number | undefined">
     The minimum height of the cell, derived from the row's size property.
   </APIItem>
 </APIReturns>
+</API>
 
-### editor.api.table.getColSpan
+### `editor.api.table.getColSpan`
 
-Gets the column span of a table cell.
-
+<API name="getColSpan">
 <APIParameters>
   <APIItem name="element" type="TTableCellElement">
     The table cell element to get the column span for.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-  <APIItem type="number">
-    The number of columns this cell spans.
-    - **Default:** `1`
-  </APIItem>
+<APIReturns type="number">
+The number of columns this cell spans.
+
+- **Default:** `1`
 </APIReturns>
+</API>
 
-### editor.api.table.getRowSpan
+### `editor.api.table.getRowSpan`
 
-Gets the row span of a table cell.
-
+<API name="getRowSpan">
 <APIParameters>
   <APIItem name="element" type="TTableCellElement">
     The table cell element to get the row span for.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-  <APIItem type="number">
-    The number of rows this cell spans.
-    - **Default:** `1`
-  </APIItem>
+<APIReturns type="number">
+The number of rows this cell spans.
+
+- **Default:** `1`
 </APIReturns>
+</API>
 
-### getCellType
+### `getCellType`
 
-Get the plugin cell types.
-
+<API name="getCellType">
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-
-<APIItem type="string[]">
-  An array of element types for table cells (td and th) in the editor.
-</APIItem>
-
+<APIReturns type="string[]">
+An array of element types for table cells (td and th) in the editor.
 </APIReturns>
+</API>
 
-### getNextTableCell
+### `getNextTableCell`
 
-Gets the next cell in the table.
-
+<API name="getNextTableCell">
 <APIParameters>
   <APIItem name="editor" type="Editor">
     The editor instance.
@@ -371,17 +273,14 @@ Gets the next cell in the table.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-  <APIItem type="NodeEntry | undefined">
-    The node entry of the cell in the next row, or `undefined` if the current
-    row is the last row.
-  </APIItem>
+<APIReturns type="NodeEntry | undefined">
+The node entry of the cell in the next row, or `undefined` if the current row is the last row.
 </APIReturns>
+</API>
 
-### getPreviousTableCell
+### `getPreviousTableCell`
 
-Gets the previous cell in the table.
-
+<API name="getPreviousTableCell">
 <APIParameters>
   <APIItem name="editor" type="Editor<V>">
     The editor instance.
@@ -397,35 +296,28 @@ Gets the previous cell in the table.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-  <APIItem type="NodeEntry | undefined">
-    The node entry of the cell in the previous row, or `undefined` if the
-    current row is the first row.
-  </APIItem>
+<APIReturns type="NodeEntry | undefined">
+The node entry of the cell in the previous row, or `undefined` if the current row is the first row.
 </APIReturns>
+</API>
 
-### getTableColumnCount
+### `getTableColumnCount`
 
-Gets the number of columns in a table.
-
+<API name="getTableColumnCount">
 <APIParameters>
   <APIItem name="tableNode" type="TElement">
     The table node for which to retrieve the column count.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-<APIItem type="number">
-
+<APIReturns type="number">
 The number of columns in the table.
-
-</APIItem>
 </APIReturns>
+</API>
 
-### getTableColumnIndex
+### `getTableColumnIndex`
 
-Gets the column index of a cell node within a table.
-
+<API name="getTableColumnIndex">
 <APIParameters>
   <APIItem name="editor" type="Editor">
     The editor instance.
@@ -435,41 +327,34 @@ Gets the column index of a cell node within a table.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-<APIItem type="number">
-
+<APIReturns type="number">
 The column index of the cell node.
-
-</APIItem>
 </APIReturns>
+</API>
 
-### getTableEntries
+### `getTableEntries`
 
 Gets the table, row, and cell node entries based on the current selection or a specified location.
 
+<API name="getTableEntries">
 <APIParameters>
-<APIItem name="editor" type="PlateEditor">
-The editor instance.
-</APIItem>
-<APIItem name="options" type="object" optional>
-<APISubList>
-<APISubListItem
-  parent="options"
-  name="at"
-  type="Location | null"
-  optional
->
-The location where the table cell is located.
-
-- **Default:** `editor.selection`
-
-</APISubListItem>
-</APISubList>
-
-</APIItem>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="object" optional>
+    Options for getting table entries.
+  </APIItem>
 </APIParameters>
 
-<APIReturns>
+<APIOptions>
+  <APIItem name="at" type="Location | null" optional>
+    The location where the table cell is located.
+
+    - **Default:** `editor.selection`
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="object">
   <APIItem name="table" type="NodeEntry | undefined">
     The table node entry.
   </APIItem>
@@ -480,69 +365,68 @@ The location where the table cell is located.
     The cell node entry.
   </APIItem>
 </APIReturns>
+</API>
 
-### getTableGridAbove
+### `getTableGridAbove`
 
-Gets the sub table above the anchor and focus positions based on the specified format (tables or cells).
+Gets the sub table above the anchor and focus positions based on the specified format.
 
+<API name="getTableGridAbove">
 <APIParameters>
-<APIItem name="editor" type="PlateEditor">
-The editor instance.
-</APIItem>
-<APIItem name="options" type="GetTableGridAboveOptions" optional>
-<APISubList>
-<APISubListItem parent="options" name="format" type="string" optional>
-The format of the sub table to retrieve.
-
-- **Default:** `'table'`
-
-</APISubListItem>
-</APISubList>
-
-</APIItem>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="GetTableGridAboveOptions" optional>
+    Options for getting the table grid above.
+  </APIItem>
 </APIParameters>
 
-<APIReturns>
-  <APIItem type="ElementEntry[]">The sub table entries.</APIItem>
-</APIReturns>
+<APIOptions>
+  <APIItem name="format" type="string" optional>
+    The format of the sub table to retrieve.
 
-### getTableGridByRange
+    - **Default:** `'table'`
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="ElementEntry[]">
+The sub table entries.
+</APIReturns>
+</API>
+
+### `getTableGridByRange`
 
 Gets the sub table between two cell paths within a given range.
 
+<API name="getTableGridByRange">
 <APIParameters>
-<APIItem name="editor" type="PlateEditor">
-The editor instance.
-</APIItem>
-<APIItem name="options" type="GetTableGridByRangeOptions" optional>
-<APISubList>
-<APISubListItem parent="options" name="at" type="TRange">
-The range specifying the start and end cell paths.
-</APISubListItem>
-<APISubListItem
-  parent="options"
-  name="format"
-  type="'table' | 'cell'"
-  optional
->
-The format of the output.
-
-- **Default:** `'table'`
-
-</APISubListItem>
-</APISubList>
-
-</APIItem>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="GetTableGridByRangeOptions">
+    Options for getting the table grid by range.
+  </APIItem>
 </APIParameters>
 
-<APIReturns>
-  <APIItem type="ElementEntry[]">The sub table entries.</APIItem>
+<APIOptions>
+  <APIItem name="at" type="TRange">
+    The range specifying the start and end cell paths.
+  </APIItem>
+  <APIItem name="format" type="'table' | 'cell'" optional>
+    The format of the output.
+
+    - **Default:** `'table'`
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="ElementEntry[]">
+The sub table entries.
 </APIReturns>
+</API>
 
-### getTableRowIndex
+### `getTableRowIndex`
 
-Gets the row index of a cell node within a table.
-
+<API name="getTableRowIndex">
 <APIParameters>
   <APIItem name="editor" type="Editor">
     The editor instance.
@@ -552,40 +436,31 @@ Gets the row index of a cell node within a table.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-<APIItem type="number">
-
+<APIReturns type="number">
 The row index of the cell node.
-
-</APIItem>
 </APIReturns>
+</API>
 
-### getTopTableCell
+### `getTopTableCell`
 
-Gets the cell above the current cell in the table.
-
+<API name="getTopTableCell">
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
   <APIItem name="at" type="Path" optional>
-    The path to the current cell. If not provided, the function will search for
-    the current cell in the editor.
+    The path to the current cell. If not provided, the function will search for the current cell in the editor.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-<APIItem type="ElementEntry | undefined">
-
+<APIReturns type="ElementEntry | undefined">
 The cell node entry.
-
-</APIItem>
 </APIReturns>
+</API>
 
-### isTableBorderHidden
+### `isTableBorderHidden`
 
-Checks if the border of a table cell or the table itself is hidden based on the specified border direction.
-
+<API name="isTableBorderHidden">
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
     The editor instance.
@@ -595,270 +470,44 @@ Checks if the border of a table cell or the table itself is hidden based on the 
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-<APIItem type="boolean">
-
+<APIReturns type="boolean">
 `true` if the border is hidden, `false` otherwise.
-
-</APIItem>
 </APIReturns>
+</API>
 
-## API Transforms
-
-### editor.tf.insert.table
-
-Inserts a table at the current selection if there is no existing table in the editor. Selects the start of the inserted table.
-
-<APIParameters>
-<APIItem name="getEmptyTableNodeOptions" type="GetEmptyTableNodeOptions" optional>
-Extends `GetEmptyRowNodeOptions`.
-<APISubList>
-<APISubListItem parent="getEmptyTableNodeOptions" name="rowCount" type="number" optional>
-The number of rows in the table.
-
-- **Default:** `2`
-
-</APISubListItem>
-<APISubListItem parent="getEmptyTableNodeOptions" name="colCount" type="number" optional>
-The number of columns in the table.
-
-- **Default:** `2`
-
-</APISubListItem>
-<APISubListItem parent="getEmptyTableNodeOptions" name="header" type="boolean" optional>
-If `true`, the first row of the table will be treated as a header row.
-</APISubListItem>
-</APISubList>
-
-</APIItem>
-
-<APIItem name="options" type="InsertNodesOptions" optional>
-The options for inserting the table nodes.
-</APIItem>
-</APIParameters>
-
-### editor.tf.insert.tableColumn
-
-Inserts a column into the table at the current selection or a specified cell path.
-
-<APIParameters>
-  <APIItem name="options" type="object" optional>
-    <APISubList>
-      <APISubListItem parent="options" name="at" type="Path" optional>
-        The exact path of the cell to insert the column at. This overrules the
-        `fromCell` option.
-      </APISubListItem>
-      <APISubListItem parent="options" name="before" type="boolean" optional>
-        If true, insert the column before the current column instead of after.
-      </APISubListItem>
-      <APISubListItem parent="options" name="fromCell" type="Path" optional>
-        The path of the cell to insert the column from.
-      </APISubListItem>
-      <APISubListItem parent="options" name="header" type="boolean" optional>
-        If true, the inserted column will be treated as a header column.
-      </APISubListItem>
-      <APISubListItem parent="options" name="select" type="boolean" optional>
-        If true, the inserted column will be selected after insertion.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIParameters>
-
-### editor.tf.insert.tableRow
-
-Inserts a row into the table at the current selection or a specified row path.
-
-<APIParameters>
-  <APIItem name="options" type="object" optional>
-    <APISubList>
-      <APISubListItem parent="options" name="at" type="Path" optional>
-        Exact path of the row to insert the column at. Pass the table path to
-        insert at the end of the table. Will overrule `fromRow`.
-      </APISubListItem>
-      <APISubListItem parent="options" name="before" type="boolean" optional>
-        If true, insert the row before the current row instead of after.
-      </APISubListItem>
-      <APISubListItem parent="options" name="fromRow" type="Path" optional>
-        The path of the row to insert the new row from.
-      </APISubListItem>
-      <APISubListItem parent="options" name="header" type="boolean" optional>
-        If true, the inserted row will be treated as a header row.
-      </APISubListItem>
-      <APISubListItem parent="options" name="select" type="boolean" optional>
-        If true, the inserted row will be selected after insertion.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIParameters>
-
-### editor.tf.remove.tableColumn
-
-Deletes the column containing the selected cell in a table.
-
-### editor.tf.remove.tableRow
-
-Deletes the row containing the selected cell in a table.
-
-### editor.tf.remove.table
-
-Deletes the entire table.
-
-### editor.tf.table.merge
-
-Merges multiple selected cells into one.
-
-The merged cell will:
-- Have a colSpan equal to the number of columns spanned by the selected cells
-- Have a rowSpan equal to the number of rows spanned by the selected cells
-- Contain the combined content of all merged cells (non-empty cells only)
-- Inherit the header status from the first selected cell
-
-### editor.tf.table.split
-
-Splits a merged cell back into individual cells.
-
-The split operation will:
-- Create new cells for each column and row that was spanned
-- Copy the header status from the original merged cell
-- Place the original cell's content in the first cell
-- Create empty cells for the remaining spaces
-
-### moveSelectionFromCell
+### `moveSelectionFromCell`
 
 Moves the selection by cell unit within a table.
 
+<API name="moveSelectionFromCell">
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
   <APIItem name="options" type="object" optional>
-    <APISubList>
-      <APISubListItem parent="options" name="at" type="Location" optional>
-        The location to move the selection from.
-      </APISubListItem>
-      <APISubListItem parent="options" name="reverse" type="boolean" optional>
-        Set to `true` to move the selection to the cell above, `false` to move
-        the selection to the cell below.
-      </APISubListItem>
-      <APISubListItem
-        parent="options"
-        name="edge"
-        type="'top' | 'left' | 'right' | 'bottom'"
-        optional
-      >
-        The edge to expand the cell selection to.
-      </APISubListItem>
-      <APISubListItem
-        parent="options"
-        name="fromOneCell"
-        type="boolean"
-        optional
-      >
-        Set to `true` to move the selection from only one selected cell.
-      </APISubListItem>
-    </APISubList>
+    Options for moving the selection.
   </APIItem>
 </APIParameters>
 
-### setBorderSize
-
-Sets the size of the specified border in a table cell.
-
-<APIParameters>
-<APIItem name="editor" type="PlateEditor">
-The editor instance.
-</APIItem>
-<APIItem name="size" type="number">
-The size of the border.
-</APIItem>
-<APIItem name="options" type="object" optional>
-<APISubList>
-<APISubListItem parent="options" name="at" type="Location" optional>
-The location of the cell to set the border size.
-</APISubListItem>
-<APISubListItem parent="options" name="border" type="'all' | 'top' | 'left' | 'bottom' | 'right'" optional>
-The border direction to set the size.
-
-- **Default:** `'all'`
-
-</APISubListItem>
-</APISubList>
-
-</APIItem>
-</APIParameters>
-
-### setTableColSize
-
-Sets the width of a specific column in a table.
-
-<APIParameters>
-  <APIItem name="editor" type="Editor">
-    The editor instance.
+<APIOptions>
+  <APIItem name="at" type="Location" optional>
+    The location to move the selection from.
   </APIItem>
-  <APIItem name="options" type="object">
-    <APISubList>
-      <APISubListItem parent="options" name="colIndex" type="number" optional>
-        The index of the column to set the width.
-      </APISubListItem>
-      <APISubListItem parent="options" name="width" type="number" optional>
-        The desired width of the column.
-      </APISubListItem>
-    </APISubList>
+  <APIItem name="reverse" type="boolean" optional>
+    Set to `true` to move the selection to the cell above, `false` to move the selection to the cell below.
   </APIItem>
-  <APIItem name="getAboveNodeOptions" type="EditorAboveOptions" optional>
-    Additional options for finding the table node.
+  <APIItem name="edge" type="'top' | 'left' | 'right' | 'bottom'" optional>
+    The edge to expand the cell selection to.
   </APIItem>
-</APIParameters>
-
-### setTableMarginLeft
-
-Sets the margin left of a table.
-
-<APIParameters>
-  <APIItem name="editor" type="Editor">
-    The editor instance.
+  <APIItem name="fromOneCell" type="boolean" optional>
+    Set to `true` to move the selection from only one selected cell.
   </APIItem>
-  <APIItem name="options" type="object">
-    <APISubList>
-      <APISubListItem parent="options" name="marginLeft" type="number">
-        An object containing the desired margin left value.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-  <APIItem name="getAboveNodeOptions" type="EditorAboveOptions" optional>
-    Additional options for finding the table node.
-  </APIItem>
-</APIParameters>
+</APIOptions>
+</API>
 
-### setTableRowSize
+### `onKeyDownTable`
 
-Sets the size (height) of a table row.
-
-<APIParameters>
-  <APIItem name="editor" type="Editor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="object">
-    <APISubList>
-      <APISubListItem parent="options" name="rowIndex" type="number">
-        The index of the row to set the size.
-      </APISubListItem>
-      <APISubListItem parent="options" name="height" type="number">
-        The desired height of the row.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-  <APIItem name="getAboveNodeOptions" type="EditorAboveOptions" optional>
-    Additional options for finding the table node.
-  </APIItem>
-</APIParameters>
-
-## API Plugin
-
-### onKeyDownTable
-
-Handles the keyboard events for tables.
-
+<API name="onKeyDownTable">
 <APIParameters>
   <APIItem name="editor" type="E">
     The editor instance.
@@ -868,302 +517,191 @@ Handles the keyboard events for tables.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-  <APIItem type="KeyboardHandlerReturnType">
-    The keyboard handler return type.
-  </APIItem>
+<APIReturns type="KeyboardHandlerReturnType">
+The keyboard handler return type.
 </APIReturns>
+</API>
 
-### withDeleteTable
+### `setBorderSize`
 
-Prevents the deletion of cells in tables.
-
+<API name="setBorderSize">
 <APIParameters>
-  <APIItem name="editor" type="E">
+  <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
+  <APIItem name="size" type="number">
+    The size of the border.
+  </APIItem>
+  <APIItem name="options" type="object" optional>
+    Options for setting the border size.
+  </APIItem>
 </APIParameters>
 
-### withGetFragmentTable
+<APIOptions>
+  <APIItem name="at" type="Location" optional>
+    The location of the cell to set the border size.
+  </APIItem>
+  <APIItem name="border" type="'all' | 'top' | 'left' | 'bottom' | 'right'" optional>
+    The border direction to set the size.
 
-If the selection is inside a table, it retrieves the subtable above the selection as the fragment. This is useful when copying and pasting table cells.
+    - **Default:** `'all'`
+  </APIItem>
+</APIOptions>
+</API>
 
+### `setTableColSize`
+
+<API name="setTableColSize">
 <APIParameters>
-  <APIItem name="editor" type="E">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
+  <APIItem name="options" type="object">
+    Options for setting column size.
+  </APIItem>
+  <APIItem name="getAboveNodeOptions" type="EditorAboveOptions" optional>
+    Additional options for finding the table node.
+  </APIItem>
 </APIParameters>
 
-### withInsertFragmentTable
+<APIOptions>
+  <APIItem name="colIndex" type="number">
+    The index of the column to set the width.
+  </APIItem>
+  <APIItem name="width" type="number">
+    The desired width of the column.
+  </APIItem>
+</APIOptions>
+</API>
 
-If inserting a table:
+### `setTableMarginLeft`
 
-- If the block above the anchor of the selection is a table, replace each cell above with the inserted table until out of bounds. Select the inserted cells.
-- If there is no table above the anchor, check if the selection is inside a table. If it is, find the cell at the anchor position and replace its children with the inserted fragment.
-
+<API name="setTableMarginLeft">
 <APIParameters>
-  <APIItem name="editor" type="E">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
-  <APIItem name="plugin" type="PlatePlugin">
-    The plate plugin.
+  <APIItem name="options" type="object">
+    Options for setting table margin.
+  </APIItem>
+  <APIItem name="getAboveNodeOptions" type="EditorAboveOptions" optional>
+    Additional options for finding the table node.
   </APIItem>
 </APIParameters>
 
-### withInsertTextTable
+<APIOptions>
+  <APIItem name="marginLeft" type="number">
+    The desired margin left value.
+  </APIItem>
+</APIOptions>
+</API>
 
-If the selection is expanded:
+### `setTableRowSize`
 
-- Check if the selection is inside a table. If it is, collapse the selection to the focus edge.
-
+<API name="setTableRowSize">
 <APIParameters>
-  <APIItem name="editor" type="E">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
-  <APIItem name="plugin" type="PlatePlugin">
-    The plate plugin.
+  <APIItem name="options" type="object">
+    Options for setting row size.
+  </APIItem>
+  <APIItem name="getAboveNodeOptions" type="EditorAboveOptions" optional>
+    Additional options for finding the table node.
   </APIItem>
 </APIParameters>
 
-### withNormalizeTable
-
-Normalize table structure by performing the following actions:
-
-- Wrap cell children in a paragraph if they are texts.
-- Unwrap nodes that are not valid table elements.
-- Set initial column sizes for tables if specified.
-
-<APIParameters>
-  <APIItem name="editor" type="E">
-    The editor instance.
+<APIOptions>
+  <APIItem name="rowIndex" type="number">
+    The index of the row to set the size.
   </APIItem>
-</APIParameters>
-
-### withSelectionTable
-
-Handle table selections by performing the following actions:
-
-- Adjust the focus of the selection when the anchor is inside a table and the focus is in a block before or after the table.
-- Adjust the focus of the selection when the focus is inside a table and the anchor is in a block before or after the table.
-- Override the selection from a cell if the previous and new selections are in different cells.
-
-<APIParameters>
-  <APIItem name="editor" type="E">
-    The editor instance.
+  <APIItem name="height" type="number">
+    The desired height of the row.
   </APIItem>
-</APIParameters>
+</APIOptions>
+</API>
 
-### withSetFragmentDataTable
+### `TablePlugin`
 
-Handle setting data to the clipboard when copying or cutting table data by performing the following actions:
-
-- Check if a table entry and selected cell entries exist.
-- Handle single-cell copy or cut operations by copying the cell content instead of the table structure.
-- Create a table structure with the selected cells' content.
-- Set the text, HTML, CSV, TSV, and Slate fragment data to the clipboard.
-
-<APIParameters>
-  <APIItem name="editor" type="E">
-    The editor instance.
+<API name="TablePlugin">
+<APIOptions>
+  <APIItem name="disableMerge" type="boolean" optional>
+    Disables the merging behavior of cells.
   </APIItem>
-</APIParameters>
-
-### withTable
-
-Enhance the editor instance with table-related functionality by applying the following higher-order functions:
-
-- `withNormalizeTable`: Normalize table structure and content.
-- `withDeleteTable`: Prevent cell deletion within a table.
-- `withGetFragmentTable`: Handle getting the fragment data when copying or cutting table cells.
-- `withInsertFragmentTable`: Handle inserting table fragments.
-- `withInsertTextTable`: Handle inserting text within a table.
-- `withSelectionTable`: Handle adjusting the selection within a table.
-- `withSetFragmentDataTable`: Handle setting the fragment data when copying or cutting table data.
-
-<APIParameters>
-  <APIItem name="editor" type="E">
-    The editor instance.
+  <APIItem name="disableExpandOnInsert" type="boolean" optional>
+    Disables the expansion of the table when inserting cells.
   </APIItem>
-  <APIItem name="plugin" type="PlatePlugin">
-    The plate plugin.
+  <APIItem name="disableMarginLeft" type="boolean" optional>
+    Disables the left resizer of the first column in the table.
   </APIItem>
-</APIParameters>
-
-## API Hooks
-
-### useTableCellElementResizable
-
-A hook that provides resizing functionality for table cell elements.
-
-<APIParameters>
-  <APIItem name="options" type="TableCellElementResizableOptions">
-    <APISubList>
-      <APISubListItem parent="options" name="colIndex" type="number">
-        The index of the column.
-      </APISubListItem>
-      <APISubListItem parent="options" name="colSpan" type="number">
-        The number of columns this cell spans.
-      </APISubListItem>
-      <APISubListItem parent="options" name="rowIndex" type="number">
-        The index of the row.
-      </APISubListItem>
-      <APISubListItem parent="options" name="step" type="number" optional>
-        Resize by step instead of by pixel.
-      </APISubListItem>
-      <APISubListItem parent="options" name="stepX" type="number" optional>
-        Step size for horizontal resizing.
-        - **Default:** `step`
-      </APISubListItem>
-      <APISubListItem parent="options" name="stepY" type="number" optional>
-        Step size for vertical resizing.
-        - **Default:** `step`
-      </APISubListItem>
-    </APISubList>
+  <APIItem name="enableUnsetSingleColSize" type="boolean" optional>
+    Disables unsetting the width of the first column when the table has only one column. Set this to `true` if you want to resize the table width when there's only one column. Leave it `false` if you have a full-width table.
   </APIItem>
-</APIParameters>
+  <APIItem name="initialTableWidth" type="number" optional>
+    If defined, a normalizer will set each undefined table `colSizes` to this value divided by the number of columns. Note that merged cells are not yet supported.
+  </APIItem>
+  <APIItem name="minColumnWidth" type="number" optional>
+    The minimum width of a column in the table.
 
-<APIReturns>
-  <APIItem name="bottomProps" type="ResizeHandleProps">
-    Props for the bottom resize handle, including resize direction and handler.
+    - **Default:** `48`
   </APIItem>
-  <APIItem name="hiddenLeft" type="boolean">
-    Whether the left resize handle should be hidden. True if not the first column or margin left is disabled.
-  </APIItem>
-  <APIItem name="leftProps" type="ResizeHandleProps">
-    Props for the left resize handle, including resize direction and handler.
-  </APIItem>
-  <APIItem name="rightProps" type="ResizeHandleProps">
-    Props for the right resize handle, including resize direction, initial size, and handler.
-  </APIItem>
-</APIReturns>
+</APIOptions>
+</API>
 
-### useTableStore
+### `useIsCellSelected`
 
-The table store stores the state of the table plugin.
-
-<APIAttributes>
-  <APIItem name="colSizeOverrides" type="TableStoreSizeOverrides">
-    The column size overrides.
-  </APIItem>
-  <APIItem name="rowSizeOverrides" type="TableStoreSizeOverrides">
-    The row size overrides.
-  </APIItem>
-  <APIItem name="marginLeftOverride" type="number | null">
-    The margin left override.
-  </APIItem>
-  <APIItem name="selectedCells" type="TElement[] | null">
-    The selected cells.
-  </APIItem>
-  <APIItem name="selectedTables" type="TElement[] | null">
-    The selected tables.
-  </APIItem>
-</APIAttributes>
-
-### useIsCellSelected
-
-Custom hook that checks if a table cell is selected.
-
+<API name="useIsCellSelected">
 <APIParameters>
   <APIItem name="element" type="TElement">
     The table cell element to check.
   </APIItem>
 </APIParameters>
 
-### useSelectedCells
-
-A hook that manages the selection of cells in a table.
-
-It keeps track of the currently selected cells and updates them based on changes in editor selection.
-
-### useTableBordersDropdownMenuContentState
-
-A state hook for the table borders dropdown menu content.
-
-<APIReturns>
-An object with the following properties:
-<APIItem name="hasBottomBorder" type="boolean">
-Indicates whether the selected table cells have a bottom border.
-</APIItem>
-<APIItem name="hasTopBorder" type="boolean">
-Indicates whether the selected table cells have a top border.
-</APIItem>
-<APIItem name="hasLeftBorder" type="boolean">
-Indicates whether the selected table cells have a left border.
-</APIItem>
-<APIItem name="hasRightBorder" type="boolean">
-Indicates whether the selected table cells have a right border.
-</APIItem>
-<APIItem name="hasNoBorders" type="boolean">
-Indicates whether the selected table cells have no borders.
-</APIItem>
-<APIItem name="hasOuterBorders" type="boolean">
-Indicates whether the selected table cells have outer borders (i.e.,
-borders on all sides).
-</APIItem>
-<APIItem
-  name="getOnSelectTableBorder"
-  type="function"
->
-A factory function that returns the `onSelectTableBorder` handler for a
-specific border type.
-
-- The `onSelectTableBorder` handler is responsible for setting the border style for the selected table cells.
-
-</APIItem>
-
+<APIReturns type="boolean">
+Whether the cell is currently selected.
 </APIReturns>
+</API>
 
-### useTableColSizes
+### `useSelectedCells`
 
-Custom hook that returns the column sizes of a table with overrides applied. If the `colCount` of the table updates to 1 and the `enableUnsetSingleColSize` option is enabled, it unsets the `colSizes` node.
+<API name="useSelectedCells">
+<APIReturns type="TElement[] | null">
+The currently selected table cells. Returns null if no cells are selected.
+</APIReturns>
+</API>
 
-<APIParameters>
-<APIItem name="options" type="object" optional>
-Additional options.
-<APISubList>
-<APISubListItem parent="options" name="disableOverrides" type="boolean" optional>
-If `true`, disables applying overrides to the column sizes.
+### `useTableBordersDropdownMenuContentState`
 
-- **Default:** `false`
-
-</APISubListItem>
-</APISubList>
-
-</APIItem>
-</APIParameters>
-
-<APIReturns>
-  <APIItem name="overriddenColSizes" type="number[]">
-    The column sizes of the table with overrides applied.
+<API name="useTableBordersDropdownMenuContentState">
+<APIReturns type="object">
+  <APIItem name="hasBottomBorder" type="boolean">
+    Indicates whether the selected table cells have a bottom border.
+  </APIItem>
+  <APIItem name="hasTopBorder" type="boolean">
+    Indicates whether the selected table cells have a top border.
+  </APIItem>
+  <APIItem name="hasLeftBorder" type="boolean">
+    Indicates whether the selected table cells have a left border.
+  </APIItem>
+  <APIItem name="hasRightBorder" type="boolean">
+    Indicates whether the selected table cells have a right border.
+  </APIItem>
+  <APIItem name="hasNoBorders" type="boolean">
+    Indicates whether the selected table cells have no borders.
+  </APIItem>
+  <APIItem name="hasOuterBorders" type="boolean">
+    Indicates whether the selected table cells have outer borders (i.e., borders on all sides).
+  </APIItem>
+  <APIItem name="getOnSelectTableBorder" type="function">
+    A factory function that returns the `onSelectTableBorder` handler for a specific border type.
   </APIItem>
 </APIReturns>
+</API>
 
-### useTableElement
+### `useTableCellElement`
 
-A hook for a table element that handles cell selection and margin left calculations.
-
-<APIReturns>
-  <APIItem name="isSelectingCell" type="boolean">
-    Whether cells are currently being selected.
-  </APIItem>
-  <APIItem name="marginLeft" type="number">
-    The margin left of the table, considering overrides and plugin options.
-  </APIItem>
-  <APIItem name="props" type="object">
-    Props for the table element:
-    <APISubList>
-      <APISubListItem parent="props" name="onMouseDown" type="function">
-        Handler that collapses selection when clicking on the table while cells are selected.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIReturns>
-
-### useTableCellElement
-
-A hook for a table cell element that provides state and functionality for table cells.
-
-<APIReturns>
+<API name="useTableCellElement">
+<APIReturns type="object">
   <APIItem name="borders" type="BorderStylesDefault">
     The border styles of the table cell.
   </APIItem>
@@ -1189,56 +727,214 @@ A hook for a table cell element that provides state and functionality for table 
     The width of the cell.
   </APIItem>
 </APIReturns>
+</API>
 
-### useTableCellBorders
+### `useTableCellElementResizable`
 
-A hook that returns the border styles for a table cell.
+<API name="useTableCellElementResizable">
+<APIOptions type="TableCellElementResizableOptions">
+  <APIItem name="colIndex" type="number">
+    The index of the column.
+  </APIItem>
+  <APIItem name="colSpan" type="number">
+    The number of columns this cell spans.
+  </APIItem>
+  <APIItem name="rowIndex" type="number">
+    The index of the row.
+  </APIItem>
+  <APIItem name="step" type="number" optional>
+    Resize by step instead of by pixel.
+  </APIItem>
+  <APIItem name="stepX" type="number" optional>
+    Step size for horizontal resizing.
 
-<APIParameters>
-  None
-</APIParameters>
+    - **Default:** `step`
+  </APIItem>
+  <APIItem name="stepY" type="number" optional>
+    Step size for vertical resizing.
 
-<APIReturns>
-  <APIItem type="BorderStylesDefault">
-    An object containing the border styles for the cell:
+    - **Default:** `step`
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="object">
+  <APIItem name="bottomProps" type="ResizeHandleProps">
+    Props for the bottom resize handle, including resize direction and handler.
+  </APIItem>
+  <APIItem name="hiddenLeft" type="boolean">
+    Whether the left resize handle should be hidden. True if not the first column or margin left is disabled.
+  </APIItem>
+  <APIItem name="leftProps" type="ResizeHandleProps">
+    Props for the left resize handle, including resize direction and handler.
+  </APIItem>
+  <APIItem name="rightProps" type="ResizeHandleProps">
+    Props for the right resize handle, including resize direction, initial size, and handler.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `useTableColSizes`
+
+<API name="useTableColSizes">
+<APIOptions>
+  <APIItem name="disableOverrides" type="boolean" optional>
+    If `true`, disables applying overrides to the column sizes.
+
+    - **Default:** `false`
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="object">
+  <APIItem name="overriddenColSizes" type="number[]">
+    The column sizes of the table with overrides applied.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `useTableElement`
+
+<API name="useTableElement">
+<APIReturns type="object">
+  <APIItem name="isSelectingCell" type="boolean">
+    Whether cells are currently being selected.
+  </APIItem>
+  <APIItem name="marginLeft" type="number">
+    The margin left of the table, considering overrides and plugin options.
+  </APIItem>
+  <APIItem name="props" type="object">
+    Props for the table element:
     <APISubList>
-      <APISubListItem parent="return" name="bottom" type="Required<BorderStyle>">
-        The bottom border style.
-      </APISubListItem>
-      <APISubListItem parent="return" name="right" type="Required<BorderStyle>">
-        The right border style.
-      </APISubListItem>
-      <APISubListItem parent="return" name="left" type="Required<BorderStyle>" optional>
-        The left border style. Only present for cells in the first column.
-      </APISubListItem>
-      <APISubListItem parent="return" name="top" type="Required<BorderStyle>" optional>
-        The top border style. Only present for cells in the first row.
+      <APISubListItem parent="props" name="onMouseDown" type="function">
+        Handler that collapses selection when clicking on the table while cells are selected.
       </APISubListItem>
     </APISubList>
   </APIItem>
 </APIReturns>
+</API>
 
-### useTableCellSize
+### `useTableStore`
 
-A hook that returns the size (width and minimum height) of a table cell.
+<API name="useTableStore">
+<APIState>
+  <APIItem name="colSizeOverrides" type="TableStoreSizeOverrides">
+    The column size overrides.
+  </APIItem>
+  <APIItem name="rowSizeOverrides" type="TableStoreSizeOverrides">
+    The row size overrides.
+  </APIItem>
+  <APIItem name="marginLeftOverride" type="number | null">
+    The margin left override.
+  </APIItem>
+  <APIItem name="selectedCells" type="TElement[] | null">
+    The selected cells.
+  </APIItem>
+  <APIItem name="selectedTables" type="TElement[] | null">
+    The selected tables.
+  </APIItem>
+</APIState>
+</API>
 
+### `withDeleteTable`
+
+<API name="withDeleteTable">
 <APIParameters>
-  None
+  <APIItem name="editor" type="E">
+    The editor instance.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `withGetFragmentTable`
+
+<API name="withGetFragmentTable">
+<APIParameters>
+  <APIItem name="editor" type="E">
+    The editor instance.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `withInsertFragmentTable`
+
+<API name="withInsertFragmentTable">
+<APIParameters>
+  <APIItem name="editor" type="E">
+    The editor instance.
+  </APIItem>
+  <APIItem name="plugin" type="PlatePlugin">
+    The plate plugin.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `withInsertTextTable`
+
+<API name="withInsertTextTable">
+<APIParameters>
+  <APIItem name="editor" type="E">
+    The editor instance.
+  </APIItem>
+  <APIItem name="plugin" type="PlatePlugin">
+    The plate plugin.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `withNormalizeTable`
+
+<API name="withNormalizeTable">
+<APIParameters>
+  <APIItem name="editor" type="E">
+    The editor instance.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `withSelectionTable`
+
+<API name="withSelectionTable">
+<APIParameters>
+  <APIItem name="editor" type="E">
+    The editor instance.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `withSetFragmentDataTable`
+
+<API name="withSetFragmentDataTable">
+<APIParameters>
+  <APIItem name="editor" type="E">
+    The editor instance.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `withTable`
+
+Enhance the editor instance with table-related functionality.
+
+<API name="withTable">
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="plugin" type="PlatePlugin">
+    The plate plugin.
+  </APIItem>
 </APIParameters>
 
-<APIReturns>
-  <APIItem type="object">
-    An object containing:
-    <APISubList>
-      <APISubListItem parent="return" name="width" type="number">
-        The total width of the cell, calculated by summing the widths of all columns it spans.
-      </APISubListItem>
-      <APISubListItem parent="return" name="minHeight" type="number | undefined">
-        The minimum height of the cell, derived from the row's size property.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
+<APIReturns type="PlateEditor">
+The enhanced editor instance with table functionality:
+- `withNormalizeTable`: Normalize table structure and content
+- `withDeleteTable`: Prevent cell deletion within a table
+- `withGetFragmentTable`: Handle getting the fragment data when copying or cutting table cells
+- `withInsertFragmentTable`: Handle inserting table fragments
+- `withInsertTextTable`: Handle inserting text within a table
+- `withSelectionTable`: Handle adjusting the selection within a table
+- `withSetFragmentDataTable`: Handle setting the fragment data when copying or cutting table data
 </APIReturns>
+</API>
 
 
 

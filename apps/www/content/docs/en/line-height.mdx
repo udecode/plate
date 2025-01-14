@@ -34,61 +34,56 @@ const plugins = [
 
 ## Plugins
 
-### LineHeightPlugin
+### `LineHeightPlugin`
+
+Plugin for setting line height on blocks.
 
 ## API
 
-### setLineHeight
+### `setLineHeight`
 
-Sets the line height for selected nodes in the editor.
-
+<API name="setLineHeight">
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
   <APIItem name="options" type="object">
-    The options for setting the line height.
-    <APISubList>
-      <APISubListItem parent="options" name="value" type="number">
-        The line height value to be set.
-      </APISubListItem>
-      <APISubListItem
-        parent="options"
-        name="setNodesOptions"
-        type="SetNodesOptions"
-      >
-        Additional options for setting nodes.
-      </APISubListItem>
-    </APISubList>
+    Options for setting line height.
   </APIItem>
 </APIParameters>
 
-## API Components
+<APIOptions type="SetLineHeightOptions">
+  <APIItem name="value" type="number">
+    Line height value to set.
+  </APIItem>
+  <APIItem name="setNodesOptions" type="SetNodesOptions">
+    Additional options for setting nodes.
+  </APIItem>
+</APIOptions>
+</API>
 
-### useLineHeightDropdownMenu
+## Hooks
 
-The behavior hook for the line height dropdown menu.
+### `useLineHeightDropdownMenu`
 
+<API name="useLineHeightDropdownMenu">
 <APIState>
   <APIItem name="value" type="number">
-    The line height value.
+    Current line height value.
   </APIItem>
 </APIState>
 
-<APIReturns>
+<APIReturns type="object">
   <APIItem name="radioGroupProps" type="object">
-    The props for the radio group.
-    <APISubList>
-      <APISubListItem parent="radioGroupProps" name="value" type="string">
-        The line height value.
-      </APISubListItem>
-      <APISubListItem
-        parent="radioGroupProps"
-        name="onValueChange"
-        type="function"
-      >
-        Callback to set the line height value.
-      </APISubListItem>
-    </APISubList>
+    Props for the radio group.
   </APIItem>
+  <APIOptions type="radioGroupProps">
+    <APIItem name="value" type="string">
+      Current line height value.
+    </APIItem>
+    <APIItem name="onValueChange" type="function">
+      Handler to update line height value.
+    </APIItem>
+  </APIOptions>
 </APIReturns>
+</API>

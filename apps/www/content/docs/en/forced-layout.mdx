@@ -39,46 +39,42 @@ const plugins = [
 
 ## Plugins
 
-### TrailingBlockPlugin
+### `TrailingBlockPlugin`
 
+<API name="TrailingBlockPlugin">
 <APIOptions>
-<APIItem name="level" type="number" optional>
-Level where the trailing node should be, the first level being 0.
-
-- **Default:** `0`
-</APIItem>
-
-<APIItem name="type" type="string" optional>
-Type of the trailing block.
-
-- **Default:** `editor.getType(ParagraphPlugin)`
-</APIItem>
+  <APIItem name="level" type="number" optional>
+    Level where the trailing node should be, the first level being 0.
+    - **Default:** `0`
+  </APIItem>
+  <APIItem name="type" type="string" optional>
+    Type of the trailing block.
+    - **Default:** `editor.getType(ParagraphPlugin)`
+  </APIItem>
 </APIOptions>
 
-The `TrailingBlockPlugin` also extends `QueryNodeOptions`, which includes additional options for querying nodes.
+Also extends `QueryNodeOptions` for additional node querying options.
+</API>
 
-### NormalizeTypesPlugin
+### `NormalizeTypesPlugin`
 
-<APIOptions>
-<APIItem name="rules" type="Rule[]" optional>
-An array of rule objects for normalizing types.
-
-- **Default:** `[]`
-</APIItem>
-</APIOptions>
-
-#### Rule
-
+<API name="NormalizeTypesPlugin">
 <APIAttributes>
-<APIItem name="path" type="Path">
-Path where the rule applies.
-</APIItem>
-
-<APIItem name="strictType" type="string" optional>
-Force the type of the node at the given path.
-</APIItem>
-
-<APIItem name="type" type="string" optional>
-Type of the inserted node at the given path if `strictType` is not provided.
-</APIItem>
+  <APIItem name="rules" type="Rule[]" optional>
+    Array of rules for normalizing types.
+    - **Default:** `[]`
+  </APIItem>
 </APIAttributes>
+
+<APIOptions type="Rule">
+  <APIItem name="path" type="Path">
+    Path where the rule applies.
+  </APIItem>
+  <APIItem name="strictType" type="string" optional>
+    Force the type of the node at the given path.
+  </APIItem>
+  <APIItem name="type" type="string" optional>
+    Type of inserted node if `strictType` is not provided.
+  </APIItem>
+</APIOptions>
+</API>

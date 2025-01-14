@@ -53,14 +53,6 @@ const components = {
 - [EquationElement](https://pro.platejs.org/docs/components/equation-element) (Plus)
 - [InlineEquationElement](https://pro.platejs.org/docs/components/inline-equation-element) (Plus)
 
-
-{/* ### How to use
-
-1. Use the slash command `/equation` to insert a block equation.
-2. Use the slash command `/inline equation` to insert an inline equation.
-3. Click on any equation to edit it. Press Escape to close the editor without saving changes.
-4. Navigate through the equation using arrow keys. */}
-
 ## Examples
 
 ### Plate UI
@@ -73,40 +65,42 @@ Refer to the preview above.
 
 ## Plugins
 
-### EquationPlugin
+### `EquationPlugin`
 
-Block equation element plugin.
+Plugin for block equation elements.
 
-### InlineEquationPlugin
+### `InlineEquationPlugin`
 
-Inline equation element plugin.
+Plugin for inline equation elements.
 
 ## Transforms
 
-### editor.tf.insert.equation
+### `editor.tf.insert.equation`
 
-Inserts an empty block equation.
+<API name="insert.equation">
 <APIParameters>
   <APIItem name="options" type="InsertNodesOptions">
     Options for the insert nodes transform.
   </APIItem>
 </APIParameters>
+</API>
 
-### editor.tf.insert.inlineEquation
+### `editor.tf.insert.inlineEquation`
 
-Inserts an inline equation.
+<API name="insert.inlineEquation">
 <APIParameters>
   <APIItem name="texExpression" type="string" optional>
-    The LaTeX expression to insert. If not provided, an empty equation will be inserted.
+    The LaTeX expression to insert. Empty equation if not provided.
   </APIItem>
   <APIItem name="options" type="InsertNodesOptions" optional>
     Options for the insert nodes transform.
   </APIItem>
 </APIParameters>
+</API>
 
 ## Types
 
-### TEquationElement
+### `TEquationElement`
 
 ```typescript
 interface TEquationElement extends TElement {

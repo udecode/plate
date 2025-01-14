@@ -8,7 +8,7 @@ title: Node ID
 
 ## Features
 
-- Plugin that automatically assigns and manages unique IDs for nodes in the editor.
+- Plugin that automatically assigns and manages unique IDs for nodes in the editor
 - Configurable ID generation and storage
 - Handles node operations (insert, split) with ID preservation
 - Optional ID reuse for undo/redo and copy/paste operations
@@ -43,67 +43,69 @@ const plugins = [
 
 ## Plugins
 
-### NodeIdPlugin
+### `NodeIdPlugin`
 
-Plugin that automatically assigns and manages unique IDs for nodes in the editor.
+<API name="NodeIdPlugin">
+Plugin for automatic node ID management.
 
 <APIOptions>
-<APIItem name="disableInsertOverrides" type="boolean" optional>
-  Disable using existing IDs when inserting nodes.
-  - When `false`: Keeps existing IDs if they don't exist in the document
-  - When `true`: Always generates new IDs
-  - **Default:** `false`
-</APIItem>
+  <APIItem name="disableInsertOverrides" type="boolean" optional>
+    Disable using existing IDs when inserting nodes.
+    - When `false`: Keeps existing IDs if they don't exist in document
+    - When `true`: Always generates new IDs
+    - **Default:** `false`
+  </APIItem>
 
-<APIItem name="filterInline" type="boolean" optional>
-  Filter inline Element nodes from receiving IDs.
-  - **Default:** `true`
-</APIItem>
+  <APIItem name="filterInline" type="boolean" optional>
+    Filter inline Element nodes from receiving IDs.
+    - **Default:** `true`
+  </APIItem>
 
-<APIItem name="filterText" type="boolean" optional>
-  Filter Text nodes from receiving IDs.
-  - **Default:** `true`
-</APIItem>
+  <APIItem name="filterText" type="boolean" optional>
+    Filter Text nodes from receiving IDs.
+    - **Default:** `true`
+  </APIItem>
 
-<APIItem name="idCreator" type="() => any" optional>
-  Function to generate unique IDs.
-  - **Default:** `() => nanoid(10)`
-</APIItem>
+  <APIItem name="idCreator" type="() => any" optional>
+    Function to generate unique IDs.
+    - **Default:** `() => nanoid(10)`
+  </APIItem>
 
-<APIItem name="idKey" type="string" optional>
-  Property key used to store the ID on nodes.
-  - **Default:** `'id'`
-</APIItem>
+  <APIItem name="idKey" type="string" optional>
+    Property key used to store node IDs.
+    - **Default:** `'id'`
+  </APIItem>
 
-<APIItem name="normalizeInitialValue" type="boolean" optional>
-  Whether to normalize all nodes in the initial value.
-  - When `false`: Only checks first and last nodes
-  - When `true`: Normalizes all nodes
-  - **Default:** `false`
-</APIItem>
+  <APIItem name="normalizeInitialValue" type="boolean" optional>
+    Whether to normalize all nodes in initial value.
+    - When `false`: Only checks first and last nodes
+    - When `true`: Normalizes all nodes
+    - **Default:** `false`
+  </APIItem>
 
-<APIItem name="reuseId" type="boolean" optional>
-  Reuse IDs on undo/redo and copy/paste operations.
-  - When `true`: Keeps IDs if they don't exist in document
-  - When `false`: Always generates new IDs (safer across documents)
-  - **Default:** `false`
-</APIItem>
+  <APIItem name="reuseId" type="boolean" optional>
+    Reuse IDs on undo/redo and copy/paste.
+    - When `true`: Keeps IDs if they don't exist in document
+    - When `false`: Always generates new IDs (safer across documents)
+    - **Default:** `false`
+  </APIItem>
 
-<APIItem name="allow" type="string[]" optional>
-  List of node types that should receive IDs.
-</APIItem>
+  <APIItem name="allow" type="string[]" optional>
+    Node types that should receive IDs.
+  </APIItem>
 
-<APIItem name="exclude" type="string[]" optional>
-  List of node types that should not receive IDs.
-</APIItem>
+  <APIItem name="exclude" type="string[]" optional>
+    Node types that should not receive IDs.
+  </APIItem>
 
-<APIItem name="filter" type="(node: NodeEntry) => boolean" optional>
-  Custom filter function for nodes that should receive IDs.
-  - **Default:** `() => true`
-</APIItem>
+  <APIItem name="filter" type="(node: NodeEntry) => boolean" optional>
+    Custom filter function for nodes that should receive IDs.
+    - **Default:** `() => true`
+  </APIItem>
 </APIOptions>
+</API>
 
-### Behavior
+## Behavior
 
 The plugin handles several scenarios:
 

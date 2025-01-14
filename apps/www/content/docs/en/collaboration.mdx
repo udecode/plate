@@ -78,81 +78,81 @@ Follow the backend instructions in [Hocuspocus docs](https://tiptap.dev/hocuspoc
 
 ## Plugins
 
-### YjsPlugin
+### `YjsPlugin`
 
+<API name="YjsPlugin">
 <APIOptions>
-<APIItem name="cursorOptions" type="WithCursorsOptions<TCursorData>" optional>
-Configuration for handling cursors in the editor. These options are passed
-to the `withCursors` function.
+  <APIItem name="cursorOptions" type="WithCursorsOptions<TCursorData>" optional>
+    Configuration for handling cursors in the editor.
 
-- [WithCursorsOptions API](https://docs.slate-yjs.dev/api/slate-yjs-core/cursor-plugin#withcursors).
+    See [WithCursorsOptions API](https://docs.slate-yjs.dev/api/slate-yjs-core/cursor-plugin#withcursors).
+  </APIItem>
+  <APIItem name="hocuspocusProviderOptions" type="HocuspocusProviderConfiguration" required>
+    Configuration for the Hocuspocus provider.
 
-</APIItem>
-<APIItem
-  name="hocuspocusProviderOptions"
-  type="HocuspocusProviderConfiguration"
-  required
->
-Configuration for the Hocuspocus provider.
+    See [HocuspocusProviderConfiguration API](https://tiptap.dev/hocuspocus/provider/configuration).
+  </APIItem>
+  <APIItem name="yjsOptions" type="WithYjsOptions" optional>
+    Optional configuration for the Yjs integration.
 
-- [HocuspocusProviderConfiguration API](https://tiptap.dev/hocuspocus/provider/configuration).
-
-</APIItem>
-<APIItem name="yjsOptions" type="WithYjsOptions" optional>
-Optional configuration for the Yjs integration. These options are passed to
-the `withYjs` function.
-
-- [WithYjsOptions API](https://docs.slate-yjs.dev/api/slate-yjs-core/yjs-plugin#withyjs).
-
-</APIItem>
-<APIItem name="disableCursors" type="boolean" optional>
-A flag indicating whether to disable the cursor feature in the editor.
-</APIItem>
+    See [WithYjsOptions API](https://docs.slate-yjs.dev/api/slate-yjs-core/yjs-plugin#withyjs).
+  </APIItem>
+  <APIItem name="disableCursors" type="boolean" optional>
+    Whether to disable the cursor feature in the editor.
+  </APIItem>
 </APIOptions>
+</API>
 
 ## API
 
-### useYjsStore
+### `useYjsStore`
 
+<API name="useYjsStore">
 <APIState>
   <APIItem name="isConnected" type="boolean">
-    A flag indicating whether the editor is connected to the Hocuspocus server.
+    Whether the editor is connected to the Hocuspocus server.
   </APIItem>
   <APIItem name="isSynced" type="boolean">
-    A flag indicating whether the editor is synced with the Hocuspocus server.
+    Whether the editor is synced with the Hocuspocus server.
   </APIItem>
 </APIState>
+</API>
 
-### withTYjs
+### `withTYjs`
 
 Higher-order function that wraps a Plate editor with Yjs support, allowing for real-time collaborative editing.
 
-### PlateYjsEditorProps
+## Types
 
+### `PlateYjsEditorProps`
+
+<API name="PlateYjsEditorProps">
 <APIAttributes>
-
-Extends `YjsEditorProps` and [CursorEditor](https://docs.slate-yjs.dev/api/slate-yjs-core/cursor-plugin#cursoreditor).
-
-<APIItem name="yjs" type="object">
-  
-<APISubList>
-
-<APISubListItem parent="yjs" name="provider" type="HocuspocusProvider">
-
-The Hocuspocus provider instance.
-
-</APISubListItem>
-
-</APISubList>
-
-</APIItem>
-
+  <APIItem name="extends" type="YjsEditorProps & CursorEditor">
+    Base editor props types.
+  </APIItem>
+  <APIItem name="yjs" type="object">
+    Yjs-specific properties.
+  </APIItem>
 </APIAttributes>
 
-### YHistoryEditorProps
+<APIOptions type="object">
+  <APIItem name="provider" type="HocuspocusProvider">
+    The Hocuspocus provider instance.
+  </APIItem>
+</APIOptions>
+</API>
 
-Extends `YjsEditorProps`, [YHistoryEditor](https://docs.slate-yjs.dev/api/slate-yjs-core/history-plugin#yhistoryeditor).
+### `YHistoryEditorProps`
 
-### YjsEditorProps
+<API name="YHistoryEditorProps">
+<APIAttributes>
+  <APIItem name="extends" type="YjsEditorProps & YHistoryEditor">
+    See [YHistoryEditor API](https://docs.slate-yjs.dev/api/slate-yjs-core/history-plugin#yhistoryeditor).
+  </APIItem>
+</APIAttributes>
+</API>
 
-[YjsEditor API](https://docs.slate-yjs.dev/api/slate-yjs-core/yjs-plugin#yjseditor).
+### `YjsEditorProps`
+
+See [YjsEditor API](https://docs.slate-yjs.dev/api/slate-yjs-core/yjs-plugin#yjseditor).

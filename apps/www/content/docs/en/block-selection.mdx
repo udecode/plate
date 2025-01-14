@@ -95,22 +95,22 @@ Use `options.areaOptions.behaviour.scrolling.speedDivider` to set the scroll spe
 
 The value `0.8` is our recommended speed since it's near the browser-native speed.
 
-
 ```ts
 BlockSelectionPlugin.configure({
   options: {
     areaOptions: {
       behaviour: {
-      scrolling: {
-        // You can slow down the scroll speed by setting a bigger value.
-        speedDivider: 1.5,
+        scrolling: {
+          // You can slow down the scroll speed by setting a bigger value.
+          speedDivider: 1.5,
+        },
+        // The distance needed to move for the selection area to appear.
+        // If it's too small, it may cause the mouse click event to be blocked. 10 is a good default.
+        startThreshold: 4,
       },
-      // The distance needed to move for the selection area to appear.
-      // If it’s too small, it may cause the mouse click event to be blocked. 10 is a good default.
-      startThreshold: 4,
     },
   },
-}
+});
 ```
 
 ### Add selectable element
@@ -123,7 +123,7 @@ To prevent unselecting blocks when clicking on certain elements, add the `data-p
 
 For example:
 ```tsx
-  <YourSpecialButtoon data-plate-prevent-unselect />
+<YourSpecialButtoon data-plate-prevent-unselect />
 ```
 
 ### Full Page Selection
@@ -175,272 +175,209 @@ This component should be rendered inside each block element for consistent selec
 
 ## Plugins
 
-### BlockSelectionPlugin
+### `BlockSelectionPlugin`
 
+<API name="BlockSelectionPlugin">
 <APIOptions>
-<APIItem name="areaOptions" type="PartialSelectionOptions" optional>
-Options for the selection area. Example:
-
-```ts
-{
-  boundaries: [`#${editor.uid}`],
-  container: [`#${editor.uid}`],
-  selectables: [`#${editor.uid} .slate-selectable`],
-  selectionAreaClass: 'slate-selection-area',
-}
-```
-</APIItem>
-
-<APIItem name="editorPaddingRight" type="CSSProperties['width']" optional>
-The padding-right of the editor.
-</APIItem>
-
-<APIItem name="enableContextMenu" type="boolean" optional>
-Enables or disables the context menu for block selection.
-
-- **Default:** `false`
-</APIItem>
-
-<APIItem name="isSelecting" type="boolean" optional>
-Indicates whether block selection is currently active.
-
-- **Default:** `false`
-</APIItem>
-
-<APIItem name="onKeyDownSelecting" type="(e: KeyboardEvent) => void" optional>
-A function to handle the **`keydown`** event when selecting.
-</APIItem>
-
-<APIItem name="query" type="QueryNodeOptions" optional>
-Options for querying nodes during block selection.
-
-- **Default:** `{ maxLevel: 1 }`
-</APIItem>
-
-<APIItem name="selectedIds" type="Set<string>" optional>
-A set of IDs for the currently selected blocks.
-
-- **Default:** `new Set()`
-</APIItem>
-
-<APIItem name="anchorId" type="string | null" optional>
-(Internal) The ID of the anchor block in the current selection. Used for shift-based selection.
-
-- **Default:** `null`
-</APIItem>
-
-<APIItem name="isSelectable" type="(element: TElement, path: Path) => boolean" optional>
-Function to determine if a block element is selectable.
-
-- **Default:** `() => true`
-</APIItem>
+  <APIItem name="areaOptions" type="PartialSelectionOptions" optional>
+    Options for the selection area.
+  </APIItem>
+  <APIItem name="editorPaddingRight" type="CSSProperties['width']" optional>
+    Editor padding right.
+  </APIItem>
+  <APIItem name="excludeBelowPlugins" type="string[]" optional>
+    Plugin keys of non-selectable block descendants.
+  </APIItem>
+  <APIItem name="excludePlugins" type="string[]" optional>
+    Plugin keys of non-selectable blocks.
+  </APIItem>
 </APIOptions>
-
-### BlockMenuPlugin
+</API>
 
 ## API
 
-### editor.api.blockSelection.focus
-Focuses the block selection shadow input. This input handles copy, delete, and paste events for selected blocks.
+### `editor.api.blockSelection.add`
 
-### editor.api.blockSelection.addSelectedRow
-
-Adds a selected row to the block selection.
-
+<API name="add">
 <APIParameters>
   <APIItem name="id" type="string">
-    The ID of the row to be selected.
+    The ID of the block to add to selection.
   </APIItem>
   <APIItem name="options" type="object" optional>
-    <APISubList>
-      <APISubListItem parent="options" name="clear" type="boolean" optional>
-        Whether to clear existing selections before adding the new one.
-        - **Default:** `true`
-      </APISubListItem>
-    </APISubList>
+    Options for adding the block.
   </APIItem>
 </APIParameters>
 
-### editor.api.blockSelection.getNodes
-
-Gets the selected blocks in the editor.
-
-<APIReturns>
-  <APIItem type="NodeEntry[]">
-    An array of selected block entries.
+<APIOptions type="object">
+  <APIItem name="clear" type="boolean" optional>
+    Whether to clear existing selections before adding the new one.
+    - **Default:** `true`
   </APIItem>
+</APIOptions>
+</API>
+
+### `editor.api.blockSelection.getNodes`
+
+<API name="getNodes">
+<APIReturns type="NodeEntry[]">
+  Array of selected block entries.
 </APIReturns>
+</API>
 
-### editor.api.blockSelection.resetSelectedIds
+### `editor.api.blockSelection.resetSelectedIds`
 
-Resets the set of selected IDs to an empty set.
+Reset the set of selected IDs to an empty set.
 
-### editor.api.blockSelection.selectedAll
+### `editor.api.blockSelection.selectedAll`
 
-Selects all selectable blocks in the editor.
+Select all selectable blocks in the editor.
 
-### editor.api.blockSelection.setSelectedIds
+### `editor.api.blockSelection.setSelectedIds`
 
-Sets the selected IDs based on added and removed elements.
-
+<API name="setSelectedIds">
 <APIParameters>
   <APIItem name="options" type="ChangedElements">
-    <APISubList>
-      <APISubListItem parent="options" name="added" type="HTMLElement[]">
-        Array of HTML elements to be added to the selection.
-      </APISubListItem>
-      <APISubListItem parent="options" name="removed" type="HTMLElement[]">
-        Array of HTML elements to be removed from the selection.
-      </APISubListItem>
-    </APISubList>
+    Elements to add/remove from selection.
   </APIItem>
 </APIParameters>
 
-### editor.api.blockSelection.unselect
+<APIOptions type="ChangedElements">
+  <APIItem name="added" type="HTMLElement[]">
+    Elements to add to selection.
+  </APIItem>
+  <APIItem name="removed" type="HTMLElement[]">
+    Elements to remove from selection.
+  </APIItem>
+</APIOptions>
+</API>
 
-Unselects all blocks and sets the `isSelecting` flag to false.
+### `editor.api.blockSelection.unselect`
+
+Unselect all blocks and set `isSelecting` to false.
 
 ## Transforms
 
-### editor.tf.blockSelection.duplicate
+### `editor.tf.blockSelection.duplicate`
 
-Duplicates the selected blocks.
+Duplicate the selected blocks.
 
-### editor.tf.blockSelection.removeNodes
+### `editor.tf.blockSelection.removeNodes`
 
-Removes the selected nodes from the editor.
+Remove the selected nodes from the editor.
 
-### editor.tf.blockSelection.select
+### `editor.tf.blockSelection.select`
 
-Selects the nodes returned by `getNodes()` and resets the selected IDs.
+Select the nodes returned by `getNodes()` and reset selected IDs.
 
-### editor.tf.blockSelection.setNodes
+### `editor.tf.blockSelection.setNodes`
 
-Sets properties on the selected nodes.
-
+<API name="setNodes">
 <APIParameters>
   <APIItem name="props" type="Partial<NodeProps<TElement>>">
-    The properties to set on the selected nodes.
+    Properties to set on selected nodes.
   </APIItem>
   <APIItem name="options" type="SetNodesOptions" optional>
     Options for setting nodes.
   </APIItem>
 </APIParameters>
+</API>
 
-### editor.tf.blockSelection.setTexts
+### `editor.tf.blockSelection.setTexts`
 
-Sets text properties on the selected nodes.
-
+<API name="setTexts">
 <APIParameters>
   <APIItem name="props" type="Partial<NodeProps<TText>>">
-    The text properties to set on the selected nodes.
+    Text properties to set on selected nodes.
   </APIItem>
   <APIItem name="options" type="Omit<SetNodesOptions, 'at'>" optional>
-    Options for setting text nodes, excluding the 'at' property.
+    Options for setting text nodes.
   </APIItem>
 </APIParameters>
+</API>
 
 ## Hooks
 
-### useBlockSelectable
+### `useBlockSelectable`
 
-A hook that provides props for making a block element selectable, including context menu behavior.
-
-<APIReturns>
+<API name="useBlockSelectable">
+<APIReturns type="{ props: object }">
   <APIItem name="props" type="object">
-    Props to be spread on the block element:
-    <APISubList>
-      <APISubListItem parent="props" name="className" type="string">
-        `'slate-selectable'` - Required class for selection functionality
-      </APISubListItem>
-      <APISubListItem parent="props" name="onContextMenu" type="(event: React.MouseEvent) => void">
-        Handles right-click context menu behavior:
-        - Opens context menu for selected blocks
-        - Opens for void elements
-        - Opens for elements with `data-plate-open-context-menu="true"`
-        - Adds block to selection with Shift key for multi-select
-      </APISubListItem>
-    </APISubList>
+    Props for the block element:
+    - `className`: `'slate-selectable'`
+    - `onContextMenu`: Handler for right-click menu
   </APIItem>
 </APIReturns>
+</API>
 
-### useBlockSelected
+### `useBlockSelected`
 
-Returns true if context block is selected.
-
-### useBlockSelectionNodes
-
-Returns an array of node entries for the currently selected blocks.
-
-### useBlockSelectionFragment
-
-Returns an array of nodes for the currently selected blocks.
-
-### useBlockSelectionFragmentProp
-
-Returns fragment prop for the currently selected blocks.
-
-### useSelectionArea
-
-A hook that initializes and manages the selection area functionality.
-
-### editor.api.blockSelection.isSelectable
-
-Checks if a block element is selectable.
-
-<APIParameters>
-<APIItem name="element" type="TElement">
-The block element to check.
-</APIItem>
-<APIItem name="path" type="Path">
-The path to the block element.
-</APIItem>
-</APIParameters>
-
-<APIReturns>
-<APIItem type="boolean">
-Returns true if the block is selectable.
-</APIItem>
+<API name="useBlockSelected">
+<APIReturns type="boolean">
+  Whether the context block is selected.
 </APIReturns>
+</API>
 
-### editor.api.blockSelection.moveSelection
+### `useBlockSelectionNodes`
 
-Moves the selection up or down to the next selectable block.
+<API name="useBlockSelectionNodes">
+<APIReturns type="NodeEntry[]">
+  Array of selected block entries.
+</APIReturns>
+</API>
 
+### `useBlockSelectionFragment`
+
+<API name="useBlockSelectionFragment">
+<APIReturns type="Node[]">
+  Array of selected block nodes.
+</APIReturns>
+</API>
+
+### `useBlockSelectionFragmentProp`
+
+<API name="useBlockSelectionFragmentProp">
+<APIReturns type="Node[]">
+  Fragment prop for selected blocks.
+</APIReturns>
+</API>
+
+### `useSelectionArea`
+
+Initialize and manage selection area functionality.
+
+### `editor.api.blockSelection.isSelectable`
+
+<API name="isSelectable">
 <APIParameters>
-<APIItem name="direction" type="'up' | 'down'">
-The direction to move the selection.
-</APIItem>
+  <APIItem name="element" type="TElement">
+    Block element to check.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    Path to the block element.
+  </APIItem>
 </APIParameters>
 
-When moving up:
-- Gets the previous selectable block from the top-most selected block
-- Sets it as the new anchor
-- Clears previous selection and selects only this block
+<APIReturns type="boolean">
+  Whether the block is selectable.
+</APIReturns>
+</API>
 
-When moving down:
-- Gets the next selectable block from the bottom-most selected block
-- Sets it as the new anchor
-- Clears previous selection and selects only this block
+### `editor.api.blockSelection.moveSelection`
 
-### editor.api.blockSelection.shiftSelection
-
-Expands or shrinks the selection based on the anchor block.
-
+<API name="moveSelection">
 <APIParameters>
-<APIItem name="direction" type="'up' | 'down'">
-The direction to expand/shrink the selection.
-</APIItem>
+  <APIItem name="direction" type="'up' | 'down'">
+    Direction to move selection.
+  </APIItem>
 </APIParameters>
+</API>
 
-For SHIFT + DOWN:
-- If anchor is top-most: Expands down by adding block below bottom-most
-- Otherwise: Shrinks from top-most (unless top-most is the anchor)
+### `editor.api.blockSelection.shiftSelection`
 
-For SHIFT + UP:
-- If anchor is bottom-most: Expands up by adding block above top-most
-- Otherwise: Shrinks from bottom-most (unless bottom-most is the anchor)
-
-The anchor block always remains selected. If no anchor is set, it defaults to:
-- Bottom-most block for SHIFT + UP
-- Top-most block for SHIFT + DOWN
+<API name="shiftSelection">
+<APIParameters>
+  <APIItem name="direction" type="'up' | 'down'">
+    Direction to expand/shrink selection.
+  </APIItem>
+</APIParameters>
+</API>

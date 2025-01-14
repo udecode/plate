@@ -188,8 +188,12 @@ Inserts a link node into the editor.
   <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
-  <APIItem name="createLinkNodeOptions" type="CreateLinkNodeOptions"></APIItem>
-  <APIItem name="options" type="InsertNodesOptions" optional></APIItem>
+  <APIItem name="createLinkNodeOptions" type="CreateLinkNodeOptions">
+    Options for creating link node.
+  </APIItem>
+  <APIItem name="options" type="InsertNodesOptions" optional>
+    Additional options for node insertion.
+  </APIItem>
 </APIParameters>
 
 ### submitFloatingLink
@@ -226,7 +230,7 @@ The editor instance.
 <APIItem name="options" type="object">
 <APISubList>
 <APISubListItem parent="options" name="focused" type="boolean" optional>
-
+  Whether the floating link should be focused.
 </APISubListItem>
 </APISubList>
 
@@ -269,7 +273,7 @@ The editor instance.
 <APIItem name="options" type="object">
 <APISubList>
 <APISubListItem parent="options" name="focused" type="boolean" optional>
-
+  Whether the floating link should be focused.
 </APISubListItem>
 </APISubList>
 </APIItem>
@@ -493,7 +497,9 @@ The behavior hook for the floating link edit.
 </APIState>
 
 <APIReturns>
-  <APIItem name="ref" type="function"></APIItem>
+  <APIItem name="ref" type="function">
+    The ref of the floating element.
+  </APIItem>
   <APIItem name="props" type="object">
     <APISubList>
       <APISubListItem parent="props" name="style" type="object">

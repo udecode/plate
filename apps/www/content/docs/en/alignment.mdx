@@ -24,7 +24,6 @@ npm install @udecode/plate-alignment
 ## Usage
 
 ```tsx
-// ...
 import { createPlateEditor } from '@udecode/plate/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { ParagraphPlugin } from '@udecode/plate/react';
@@ -47,67 +46,68 @@ const editor = createPlateEditor({
 
 ## Plugins
 
-### AlignPlugin
+### `AlignPlugin`
+
+<API name="AlignPlugin">
+<APIOptions>
+  <APIItem name="inject" type="object">
+    <APIItem name="targetPlugins" type="string[]">
+      Plugin keys to enable alignment for.
+    </APIItem>
+  </APIItem>
+</APIOptions>
+</API>
 
 ## API
 
-### setAlign
+### `setAlign`
 
-Sets the alignment for the specified block elements in the editor.
-
+<API name="setAlign">
 <APIParameters>
-<APIItem name="editor" type="PlateEditor">
-The editor instance.
-</APIItem>
-<APIItem name="options" type="object" optional>
-<APISubList>
-<APISubListItem parent="options" name="value" type="Alignment" optional>
-The alignment value.
-</APISubListItem>
-<APISubListItem parent="options" name="setNodesOptions" type="SetNodesOptions" optional>
-Options for the `setNodes` function.
-</APISubListItem>
-
-</APISubList>
-</APIItem>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="object" optional>
+    Options for setting alignment.
+  </APIItem>
 </APIParameters>
 
-## API Components
+<APIOptions type="object">
+  <APIItem name="value" type="Alignment" optional>
+    The alignment value.
+  </APIItem>
+  <APIItem name="setNodesOptions" type="SetNodesOptions" optional>
+    Options for the `setNodes` function.
+  </APIItem>
+</APIOptions>
+</API>
 
-### useAlignDropdownMenuState
+## Hooks
 
-<APIReturns>
+### `useAlignDropdownMenuState`
+
+<API name="useAlignDropdownMenuState">
+<APIReturns type="object">
   <APIItem name="value" type="'left' | 'center' | 'right' | 'justify'">
     The alignment value.
   </APIItem>
 </APIReturns>
+</API>
 
-### useAlignDropdownMenu
+### `useAlignDropdownMenu`
 
+<API name="useAlignDropdownMenu">
 <APIState>
   <APIItem name="value" type="'left' | 'center' | 'right' | 'justify'">
     The alignment value.
   </APIItem>
 </APIState>
 
-<APIReturns>
+<APIReturns type="object">
   <APIItem name="radioGroupProps" type="object">
-    Props for the radio group.
-    <APISubList>
-      <APISubListItem
-        parent="radioGroupProps"
-        name="value"
-        type="'left' | 'center' | 'right' | 'justify'"
-      >
-        The alignment value.
-      </APISubListItem>
-      <APISubListItem
-        parent="radioGroupProps"
-        name="onValueChange"
-        type="function"
-      >
-        Callback to set the alignment value.
-      </APISubListItem>
-    </APISubList>
+    Props for the radio group:
+    - `value`: The alignment value
+    - `onValueChange`: Callback to set the alignment value
   </APIItem>
 </APIReturns>
+</API>

@@ -8,7 +8,8 @@ title: Single Line
 
 ## Features
 
-- Limits editor to one block of text. Suitable for brief content or titles.
+- Limits editor to one block of text
+- Suitable for brief content or titles
 
 </PackageInfo>
 
@@ -31,4 +32,38 @@ const plugins = [
 
 ## Plugins
 
-### SingleLinePlugin
+### `SingleLinePlugin`
+
+<API name="SingleLinePlugin">
+Plugin that restricts editor content to a single line of text.
+
+<APIOptions>
+  <APIItem name="disableExtraSpacing" type="boolean" optional>
+    Prevent extra spacing between blocks.
+    - **Default:** `true`
+  </APIItem>
+  <APIItem name="disableBlocks" type="boolean" optional>
+    Prevent creation of new blocks.
+    - **Default:** `true`
+  </APIItem>
+</APIOptions>
+
+Example:
+
+```tsx
+const plugins = [
+  SingleLinePlugin.configure({
+    options: {
+      disableExtraSpacing: true,
+      disableBlocks: true,
+    },
+  }),
+];
+```
+
+Behavior:
+1. Prevents creation of new blocks with Enter key
+2. Removes extra spacing between blocks
+3. Maintains single block structure
+4. Ideal for title fields or single-line inputs
+</API>

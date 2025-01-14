@@ -23,9 +23,10 @@ const MyPlugin = createPlatePlugin({
 });
 ```
 
-### getEditorPlugin
+### `getEditorPlugin`
 
-This function is particularly useful when you need to access the context of another plugin. It allows for cross-plugin communication and interaction, enabling more complex and interconnected plugin behaviors.
+<API name="getEditorPlugin">
+Access context of another plugin for cross-plugin communication.
 
 ```ts
 const MyPlugin = createPlatePlugin({
@@ -37,10 +38,12 @@ const MyPlugin = createPlatePlugin({
   },
 });
 ```
+</API>
 
-### useEditorPlugin
+### `useEditorPlugin`
 
-In React components, you can use the `useEditorPlugin` hook to access the Plugin Context:
+<API name="useEditorPlugin">
+React hook to access Plugin Context:
 
 ```ts
 const MyComponent = () => {
@@ -49,11 +52,13 @@ const MyComponent = () => {
   return <div>{useOption('myOption')}</div>;
 };
 ```
+</API>
 
 ## Plugin Context Properties
 
-### editor
+### `editor`
 
+<API name="editor">
 The current `PlateEditor` instance:
 
 ```ts
@@ -66,9 +71,11 @@ const MyPlugin = createPlatePlugin({
   },
 });
 ```
+</API>
 
-### plugin
+### `plugin`
 
+<API name="plugin">
 The current plugin configuration:
 
 ```ts
@@ -81,10 +88,12 @@ const MyPlugin = createPlatePlugin({
   },
 });
 ```
+</API>
 
-### getOption
+### `getOption`
 
-A function to get a specific option value for the plugin:
+<API name="getOption">
+Get specific option value for plugin:
 
 ```ts
 const MyPlugin = createPlatePlugin({
@@ -98,10 +107,12 @@ const MyPlugin = createPlatePlugin({
   },
 });
 ```
+</API>
 
-### getOptions
+### `getOptions`
 
-A function to get all options for the plugin:
+<API name="getOptions">
+Get all options for plugin:
 
 ```ts
 const MyPlugin = createPlatePlugin({
@@ -115,10 +126,12 @@ const MyPlugin = createPlatePlugin({
   },
 });
 ```
+</API>
 
-### setOption
+### `setOption`
 
-A function to set a specific option value for the plugin:
+<API name="setOption">
+Set specific option value for plugin:
 
 ```ts
 const MyPlugin = createPlatePlugin({
@@ -131,10 +144,12 @@ const MyPlugin = createPlatePlugin({
   },
 });
 ```
+</API>
 
-### setOptions
+### `setOptions`
 
-A function to set multiple options for the plugin:
+<API name="setOptions">
+Set multiple options for plugin:
 
 ```ts
 const MyPlugin = createPlatePlugin({
@@ -150,10 +165,12 @@ const MyPlugin = createPlatePlugin({
   },
 });
 ```
+</API>
 
-### useOption
+### `useOption`
 
-A hook to subscribe to a specific option value in a React component:
+<API name="useOption">
+Hook to subscribe to specific option value:
 
 ```ts
 const MyPlugin = createPlatePlugin({
@@ -165,10 +182,12 @@ const MyPlugin = createPlatePlugin({
   },
 });
 ```
+</API>
 
-### type
+### `type`
 
-The node type associated with the plugin:
+<API name="type">
+Node type associated with plugin:
 
 ```ts
 const MyPlugin = createPlatePlugin({
@@ -181,3 +200,4 @@ const MyPlugin = createPlatePlugin({
   },
 });
 ```
+</API>

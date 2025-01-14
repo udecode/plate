@@ -41,18 +41,19 @@ const plugins = [
 
 ## Plugins
 
-### DeletePlugin
+### `DeletePlugin`
 
+<API name="DeletePlugin">
 Plugin that removes empty blocks when pressing delete (forward delete) if they match the query options.
 
 <APIOptions>
-<APIItem name="query" type="QueryNodeOptions" optional>
-  Query options to filter which empty blocks can be removed.
-  - **Default:** `{ allow: ['p'] }`
-</APIItem>
+  <APIItem name="query" type="QueryNodeOptions" optional>
+    Query options to filter which empty blocks can be removed.
+    - **Default:** `{ allow: ['p'] }`
+  </APIItem>
 </APIOptions>
 
-For example:
+Example:
 
 ```tsx
 const plugins = [
@@ -67,9 +68,9 @@ const plugins = [
 ];
 ```
 
-The plugin will:
-1. Check if the current block is empty and matches the query options
-2. If true: Remove the entire block
+Behavior:
+1. Check if current block is empty and matches query options
+2. If true: Remove entire block
 3. If false: Use default delete behavior
 
 ```tsx
@@ -90,22 +91,24 @@ The plugin will:
   </codeblock>
 </editor>
 ```
+</API>
 
-### SelectOnBackspacePlugin
+### `SelectOnBackspacePlugin`
 
-Plugin that selects nodes instead of deleting them when pressing backspace. Useful for nodes like images or horizontal rules.
+<API name="SelectOnBackspacePlugin">
+Plugin that selects nodes instead of deleting them when pressing backspace.
 
 <APIOptions>
-<APIItem name="query" type="QueryNodeOptions">
-  Query options to determine which nodes trigger selection on backspace.
-</APIItem>
-<APIItem parent="options" name="removeNodeIfEmpty" type="boolean" optional>
-  Whether to remove the node if it's empty when backspacing.
-  - **Default:** `false`
-</APIItem>
+  <APIItem name="query" type="QueryNodeOptions">
+    Query options to determine which nodes trigger selection.
+  </APIItem>
+  <APIItem name="removeNodeIfEmpty" type="boolean" optional>
+    Whether to remove node if empty when backspacing.
+    - **Default:** `false`
+  </APIItem>
 </APIOptions>
 
-For example:
+Example:
 
 ```tsx
 const plugins = [
@@ -122,12 +125,12 @@ const plugins = [
 ];
 ```
 
-The plugin will:
-1. When backspace is pressed at the start of a block:
-2. Check if the previous node matches query options
+Behavior:
+1. When backspace is pressed at block start:
+2. Check if previous node matches query options
 3. If true:
-   - Select the previous node instead of deleting it
-   - Optionally remove current node if it's empty
+   - Select previous node instead of deleting
+   - Optionally remove current node if empty
 4. If false: Use default backspace behavior
 
 ```tsx
@@ -150,3 +153,4 @@ The plugin will:
   <img src="..." selected />
 </editor>
 ```
+</API>
