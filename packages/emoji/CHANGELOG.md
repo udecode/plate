@@ -1,5 +1,19 @@
 # @udecode/plate-emoji
 
+## 42.1.0
+
+### Minor Changes
+
+- [#3980](https://github.com/udecode/plate/pull/3980) by [@zbeyens](https://github.com/zbeyens) – Fix / Breaking change:
+
+  - Fixes #3978
+  - Fixes #3320
+  - Add `@emoji-mart/data` to your dependencies, then configure your `EmojiPlugin`:
+
+  ```ts
+  EmojiPlugin.configure({ options: { data: emojiMartData as any } });
+  ```
+
 ## 42.0.0
 
 ## 41.0.0
