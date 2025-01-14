@@ -59,7 +59,7 @@ export function ImportToolbarButton({ children, ...props }: DropdownMenuProps) {
           </DropdownMenuItem>
 
           <DropdownMenuItem disabled>
-            Import from Word{' '}
+            Import from Markdown{' '}
             <span className="text-xs text-muted-foreground">(coming soon)</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
