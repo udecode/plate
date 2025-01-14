@@ -1165,6 +1165,22 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
+    "import-toolbar-button": {
+      name: "import-toolbar-button",
+      description: "",
+      type: "registry:ui",
+      registryDependencies: ["toolbar"],
+      files: [{
+        path: "src/registry/default/plate-ui/import-toolbar-button.tsx",
+        type: "registry:ui",
+        target: ""
+      }],
+      component: React.lazy(() => import("@/registry/default/plate-ui/import-toolbar-button.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
     "caption": {
       name: "caption",
       description: "",

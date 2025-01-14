@@ -106,6 +106,22 @@ export const uiComponents: Registry = [
     type: 'registry:ui',
   },
   {
+    dependencies: [],
+    doc: {
+      description: 'A toolbar button to import editor content from a file.',
+      docs: [{ route: '/docs/import', title: 'Import' }],
+      examples: ['basic-nodes-demo'],
+      label: 'New',
+      title: 'Import Toolbar Button',
+    },
+    files: [
+      { path: 'plate-ui/import-toolbar-button.tsx', type: 'registry:ui' },
+    ],
+    name: 'import-toolbar-button',
+    registryDependencies: ['toolbar'],
+    type: 'registry:ui',
+  },
+  {
     dependencies: ['html2canvas', 'pdf-lib'],
     doc: {
       description: 'A toolbar button to export editor content as PDF.',
@@ -121,6 +137,7 @@ export const uiComponents: Registry = [
     registryDependencies: ['toolbar'],
     type: 'registry:ui',
   },
+
   {
     dependencies: ['@udecode/plate-caption'],
     doc: {

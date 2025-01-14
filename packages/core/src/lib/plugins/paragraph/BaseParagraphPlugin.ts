@@ -4,7 +4,9 @@ export type ParagraphConfig = PluginConfig<'p'>;
 
 export const BaseParagraphPlugin = createSlatePlugin({
   key: 'p',
-  node: { isElement: true },
+  node: {
+    isElement: true,
+  },
   parsers: {
     html: {
       deserializer: {

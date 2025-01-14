@@ -3,6 +3,7 @@
  */
 
 export * from './createStaticString';
+export * from './getNodeDataAttributes';
 export * from './getRenderNodeStaticProps';
 export * from './pipeDecorate';
 export * from './stripHtmlClassNames';

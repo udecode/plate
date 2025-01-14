@@ -16,7 +16,7 @@
       "type": "registry:example"
     },
     {
-      "content": "import type { Value } from '@udecode/plate';\n\nexport const commentsValue: Value = [\n  {\n    children: [{ text: 'Comments' }],\n    type: 'h2',\n  },\n  {\n    children: [\n      {\n        text: 'Add ',\n      },\n      {\n        comment: true,\n        comment_1: true,\n        text: 'comments to your content',\n      },\n      { text: ' to provide additional context, insights, or ' },\n      {\n        comment: true,\n        comment_2: true,\n        text: 'collaborate',\n      },\n      {\n        text: '  with others',\n      },\n    ],\n    type: 'p',\n  },\n];\n",
+      "content": "import type { Value } from '@udecode/plate';\n\nexport const commentsValue: Value = [\n  {\n    children: [{ text: 'Comments' }],\n    type: 'h2',\n  },\n  {\n    children: [\n      {\n        text: 'Add ',\n      },\n      {\n        comment: true,\n        comment_1: true,\n        text: 'comments to your content',\n      },\n      { text: ' to provide additional context, insights, or ' },\n      {\n        comment: true,\n        comment_2: true,\n        text: 'collaborate',\n      },\n      {\n        text: ' with others',\n      },\n    ],\n    type: 'p',\n  },\n];\n",
       "path": "example/values/comments-value.tsx",
       "target": "components/comments-value.tsx",
       "type": "registry:example"
