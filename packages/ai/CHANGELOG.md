@@ -1,5 +1,18 @@
 # @udecode/plate-ai
 
+## 42.1.0
+
+### Minor Changes
+
+- [#3980](https://github.com/udecode/plate/pull/3980) by [@zbeyens](https://github.com/zbeyens) –
+
+  - `useAIChatEditor`: add `editor` as first parameter:
+
+  ```tsx
+  const aiEditor = usePlateEditor({ plugins });
+  useAIChatEditor(aiEditor, content);
+  ```
+
 ## 42.0.3
 
 ### Patch Changes
