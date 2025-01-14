@@ -1,5 +1,11 @@
 # @udecode/plate-indent-list
 
+## 42.0.5
+
+### Patch Changes
+
+- [#3943](https://github.com/udecode/plate/pull/3943) by [@felixfeng33](https://github.com/felixfeng33) – Support deserialization from PlateStatic.
+
 ## 42.0.1
 
 ### Patch Changes
