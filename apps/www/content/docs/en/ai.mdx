@@ -458,7 +458,7 @@ Special undo operation for AI changes.
 
 ### `useAIChatEditor`
 
-A hook that creates an editor for AI chat responses, registers it in the AI chat plugin, and deserializes markdown content with block-level memoization.
+A hook that registers an editor in the AI chat plugin, and deserializes markdown content with block-level memoization.
 
 <API name="useAIChatEditor">
 <APIParameters>
@@ -493,12 +493,15 @@ A hook that creates an editor for AI chat responses, registers it in the AI chat
 
 ```tsx
 const AIChatEditor = ({ content }: { content: string }) => {
-  const aiEditor = useAIChatEditor(content, {
+  const aiEditor = usePlateEditor({
     plugins: [
       // Your editor plugins
       MarkdownPlugin,
       // etc...
     ],
+  });
+
+  useAIChatEditor(aiEditor, content, {
     // Optional markdown parser options
     parser: {
       exclude: ['space'],

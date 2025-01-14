@@ -1,5 +1,3 @@
-import emojiMartData from '@emoji-mart/data' with { type: 'json' };
-
 import type {
   Emoji,
   EmojiLibrary,
@@ -14,7 +12,7 @@ export class EmojiInlineLibrary implements IEmojiLibrary {
   protected _hash: THash = {};
   protected _keys: string[] = [];
 
-  constructor(library: EmojiLibrary = emojiMartData as any) {
+  constructor(library: EmojiLibrary) {
     this._emojis = library.emojis;
     this.init();
   }

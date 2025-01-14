@@ -34,14 +34,18 @@ export class EmojiFloatingGridBuilder {
   }
 
   public build() {
-    this.addFrequent();
+    if (this.elements.frequent) {
+      this.addFrequent();
+    }
 
     this.sections.forEach((id) => {
-      this.grid.addSection(
-        id,
-        new EmojiGridSectionWithRoot(id, this.settings.perLine.value),
-        this.elements
-      );
+      if (this.elements[id]?.length) {
+        this.grid.addSection(
+          id,
+          new EmojiGridSectionWithRoot(id, this.settings.perLine.value),
+          this.elements
+        );
+      }
     });
 
     return this.grid;

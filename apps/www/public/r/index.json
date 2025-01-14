@@ -445,7 +445,8 @@
   },
   {
     "dependencies": [
-      "@udecode/plate-emoji"
+      "@udecode/plate-emoji",
+      "@emoji-mart/data@1.2.1"
     ],
     "doc": {
       "description": "An input component for emoji search and insertion.",
@@ -1892,7 +1893,9 @@
     "type": "registry:ui"
   },
   {
-    "dependencies": [],
+    "dependencies": [
+      "use-file-picker"
+    ],
     "doc": {
       "description": "A toolbar button to import editor content from a file.",
       "docs": [
@@ -1915,6 +1918,7 @@
     ],
     "name": "import-toolbar-button",
     "registryDependencies": [
+      "dropdown-menu",
       "toolbar"
     ],
     "type": "registry:ui"
@@ -2266,6 +2270,7 @@
   {
     "dependencies": [
       "@udecode/plate-emoji",
+      "@emoji-mart/data@1.2.1",
       "@radix-ui/react-popover"
     ],
     "doc": {
@@ -2360,6 +2365,7 @@
       "indent-list-toolbar-button",
       "indent-todo-toolbar-button",
       "indent-toolbar-button",
+      "import-toolbar-button",
       "insert-dropdown-menu",
       "line-height-dropdown-menu",
       "link-toolbar-button",

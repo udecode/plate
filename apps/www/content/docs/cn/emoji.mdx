@@ -30,10 +30,11 @@ npm install @udecode/plate-emoji
 
 ```tsx
 import { EmojiPlugin } from '@udecode/plate-emoji/react';
+import emojiMartData from '@emoji-mart/data';
 
 const plugins = [
   // ...otherPlugins,
-  EmojiPlugin,
+  EmojiPlugin.configure({ options: { data: emojiMartData } }),
 ];
 ```
 

@@ -1,10 +1,8 @@
 import { useEffect, useMemo } from 'react';
 
-import {
-  type CreatePlateEditorOptions,
-  useEditorPlugin,
-  usePlateEditor,
-} from '@udecode/plate/react';
+import type { SlateEditor } from '@udecode/plate';
+
+import { useEditorPlugin } from '@udecode/plate/react';
 import {
   type DeserializeMdOptions,
   MarkdownPlugin,
@@ -13,20 +11,15 @@ import {
 import { AIChatPlugin } from '../AIChatPlugin';
 
 /**
- * Creates an editor, registers in the AI chat plugin, and deserializes the
- * content into `editor.children` with block-level memoization.
+ * Register an editor in the AI chat plugin, and deserializes the content into
+ * `editor.children` with block-level memoization.
  */
 export const useAIChatEditor = (
+  editor: SlateEditor,
   content: string,
-  {
-    parser,
-    processor,
-    ...options
-  }: {} & Partial<CreatePlateEditorOptions> & DeserializeMdOptions = {}
+  { parser, processor }: DeserializeMdOptions = {}
 ) => {
   const { setOption } = useEditorPlugin(AIChatPlugin);
-
-  const editor = usePlateEditor(options);
 
   editor.children = useMemo(
     () =>
@@ -42,6 +35,4 @@ export const useAIChatEditor = (
   useEffect(() => {
     setOption('aiEditor', editor);
   }, [editor, setOption]);
-
-  return editor;
 };

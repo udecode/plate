@@ -459,7 +459,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
       },
     ],
     label: 'Emoji',
-    npmPackage: '@udecode/plate-emoji',
+    npmPackage: '@udecode/plate-emoji @emoji-mart/data',
     pluginFactory: 'EmojiPlugin',
     reactImport: true,
     route: getPluginNavItem('emoji').href,
