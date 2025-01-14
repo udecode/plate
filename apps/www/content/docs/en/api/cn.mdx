@@ -5,25 +5,27 @@ description: API reference for @udecode/cn.
 
 `@udecode/cn` contains utility functions for React & Tailwind.
 
-### cn
+### `cn`
 
 Conditionally add Tailwind CSS classes without conflicts.
 
+<API name="cn">
 <APIParameters>
   <APIItem name="...inputs" type="CxOptions">
     Class values set using `clsx` and `tailwind-merge`.
   </APIItem>
 </APIParameters>
-<APIReturns>
 
-`className` string.
-
+<APIReturns type="string">
+  The combined className.
 </APIReturns>
+</API>
 
-### withCn
+### `withCn`
 
 Set default `className` to a component.
 
+<API name="withCn">
 <APIParameters>
   <APIItem name="Component" type="React.ComponentType">
     The component to which props will be added.
@@ -32,16 +34,17 @@ Set default `className` to a component.
     The default `className` to set using `cn`.
   </APIItem>
 </APIParameters>
-<APIReturns>
 
-A new component that includes the default `className`.
-
+<APIReturns type="React.ComponentType">
+  A new component that includes the default `className`.
 </APIReturns>
+</API>
 
-### withProps
+### `withProps`
 
 Set default props to a component.
 
+<API name="withProps">
 <APIParameters>
   <APIItem name="Component" type="React.ComponentType | ElementType">
     The component to which props will be added.
@@ -50,16 +53,17 @@ Set default props to a component.
     The props to be added to the component.
   </APIItem>
 </APIParameters>
-<APIReturns>
 
-A new component that includes the default props.
-
+<APIReturns type="React.ComponentType">
+  A new component that includes the default props.
 </APIReturns>
+</API>
 
-### withVariants
+### `withVariants`
 
 Set default `className` to a component using variants from `class-variance-authority`.
 
+<API name="withVariants">
 <APIParameters>
   <APIItem name="Component" type="React.ComponentType | ElementType">
     The component to which props will be added.
@@ -71,8 +75,8 @@ Set default `className` to a component using variants from `class-variance-autho
     The props to exclude from `Component`. Set the props that are only used for variants.
   </APIItem>
 </APIParameters>
-<APIReturns>
 
-A new component that includes the default `className`.
-
+<APIReturns type="React.ComponentType">
+  A new component that includes the default `className`.
 </APIReturns>
+</API>

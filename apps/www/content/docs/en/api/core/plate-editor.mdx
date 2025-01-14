@@ -7,7 +7,8 @@ A custom editor interface that extends the base **`Editor`** interface and inclu
 
 ## Core Properties
 
-<APIParameters>
+<API name="Properties">
+<APIAttributes>
   <APIItem name="id" type="any">
     A unique identifier for the editor.
   </APIItem>
@@ -31,11 +32,12 @@ A custom editor interface that extends the base **`Editor`** interface and inclu
   <APIItem name="plugins" type="Record<string, AnyEditorPlatePlugin>">
     A record of plugins indexed by their keys.
   </APIItem>
-</APIParameters>
-
+</APIAttributes>
+</API>
 ## API Methods
 
-<APIParameters>
+<API name="API">
+<APIMethods>
   <APIItem name="getApi" type="(plugin: PlatePlugin) => EditorApi & PlatePlugin['api']">
     Retrieve the typed API for a plugin.
   </APIItem>
@@ -48,11 +50,13 @@ A custom editor interface that extends the base **`Editor`** interface and inclu
   <APIItem name="getType" type="(plugin: PlatePlugin) => string">
     Get the node type associated with a plugin.
   </APIItem>
-</APIParameters>
+</APIMethods>
+</API>
 
 ## Option Methods
 
-<APIParameters>
+<API name="Options">
+<APIMethods>
   <APIItem name="getOption" type="(plugin: PlatePlugin, optionKey: string) => any">
     Get a specific option value for a plugin.
   </APIItem>
@@ -68,32 +72,38 @@ A custom editor interface that extends the base **`Editor`** interface and inclu
   <APIItem name="getOptionsStore" type="(plugin: PlatePlugin) => any">
     Get the zustand-x options store for a plugin.
   </APIItem>
-</APIParameters>
+</APIMethods>
+</API>
 
-## React Hooks
+## Hook Methods
 
-<APIParameters>
+<API name="Hooks">
+<APIMethods>
   <APIItem name="useOption" type="(plugin: PlatePlugin, optionKey: string) => any">
     Subscribe to a specific option value in a React component.
   </APIItem>
   <APIItem name="useOptions" type="(plugin: PlatePlugin) => any">
     Subscribe to plugin options or a derived value from options in a React component.
   </APIItem>
-</APIParameters>
+</APIMethods>
+</API>
 
 ## Plate Store Methods
 
-<APIParameters>
+<API name="Store">
+<APIMethods>
   <APIItem name="setPlateState" type="(optionKey: string, value: PlateStoreState[K]) => void">
     Update the global Plate state.
   </APIItem>
-</APIParameters>
+</APIMethods>
+</API>
 
 ## Core Plugin APIs
 
-### DebugPlugin
+### `DebugPlugin`
 
-<APIParameters>
+<API name="DebugPlugin">
+<APIListAPI>
   <APIItem name="editor.api.debug.log" type="(...args: any[]) => void">
     Log a message at the 'log' level.
   </APIItem>
@@ -106,34 +116,41 @@ A custom editor interface that extends the base **`Editor`** interface and inclu
   <APIItem name="editor.api.debug.error" type="(...args: any[]) => void">
     Log a message at the 'error' level.
   </APIItem>
-</APIParameters>
+</APIListAPI>
+</API>
 
-### HtmlPlugin
+### `HtmlPlugin`
 
-<APIParameters>
+<API name="HtmlPlugin">
+<APIListAPI>
   <APIItem name="editor.api.html.deserialize" type="(options: { element: HTMLElement }) => Descendant[]">
     Deserialize HTML content into Slate nodes.
   </APIItem>
-</APIParameters>
+</APIListAPI>
+</API>
 
-### ReactPlugin
+### `ReactPlugin`
 
-<APIParameters>
+<API name="ReactPlugin">
+<APITransforms>
   <APIItem name="editor.tf.reset" type="() => void">
     Reset the editor state while maintaining focus if the editor was focused.
   </APIItem>
-</APIParameters>
+</APITransforms>
+</API>
 
-### SlateReactExtensionPlugin
+### `SlateReactExtensionPlugin`
 
-<APIParameters>
+<API name="SlateReactExtensionPlugin">
+<APIListAPI>
   <APIItem name="editor.api.redecorate" type="() => void">
     Redecorate the editor. This method should be overridden for proper functionality.
   </APIItem>
-</APIParameters>
+</APIListAPI>
 
-<APIParameters>
+<APITransforms>
   <APIItem name="editor.tf.setValue" type="(value: Value) => void">
     Replace the editor value. See [Controlled Value](/docs/controlled) for more information.
   </APIItem>
-</APIParameters>
+</APITransforms>
+</API>

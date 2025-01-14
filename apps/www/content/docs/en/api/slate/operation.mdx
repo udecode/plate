@@ -3,161 +3,310 @@ title: Operation
 description: API reference for operations in Slate.
 ---
 
-`Operation` objects define the low-level instructions that Slate editors use to apply changes to their internal state. Representing all changes as operations is what allows Slate editors to easily implement history, collaboration, and other features.
+An Operation is the lowest-level instructions that Slate editors use to apply changes to their internal state. Representing all changes as operations is what allows Slate editors to easily implement history, collaboration, and other features.
 
-## Operation
+```typescript
+export type Operation<N extends Descendant = Descendant> =
+  | NodeOperation<N>
+  | SelectionOperation
+  | TextOperation;
+```
 
-Find the corresponding documentation in the [Slate docs](https://docs.slatejs.org/concepts/05-operations).
+## `OperationApi`
 
 ### `isNodeOperation`
 
-Checks if a value is a `NodeOperation` object.
+Check if a value is a `NodeOperation` object.
 
+<API name="isNodeOperation">
 <APIParameters>
   <APIItem name="value" type="any">
     The value to check.
   </APIItem>
 </APIParameters>
-<APIReturns>
-  Returns `true` if the value is a node operation.
+
+<APIReturns type="boolean">
+  `true` if the value is a node operation.
 </APIReturns>
+</API>
 
 ### `inverse`
 
-Inverts an operation, returning a new operation that will exactly undo the original when applied.
+Invert an operation, returning a new operation that will exactly undo the original when applied.
 
+<API name="inverse">
 <APIParameters>
   <APIItem name="op" type="Operation">
     The operation to invert.
   </APIItem>
 </APIParameters>
-<APIReturns>
-  Returns a new operation that undoes the original operation.
+
+<APIReturns type="Operation">
+  A new operation that undoes the original operation.
 </APIReturns>
+</API>
 
 ### `isOperation`
 
-Checks if a value is an `Operation` object.
+Check if a value is an `Operation` object.
 
+<API name="isOperation">
 <APIParameters>
   <APIItem name="value" type="any">
     The value to check.
   </APIItem>
 </APIParameters>
-<APIReturns>
-  Returns `true` if the value is an operation.
+
+<APIReturns type="boolean">
+  `true` if the value is an operation.
 </APIReturns>
+</API>
 
 ### `isOperationList`
 
-Checks if a value is a list of `Operation` objects.
+Check if a value is a list of `Operation` objects.
 
+<API name="isOperationList">
 <APIParameters>
   <APIItem name="value" type="any">
     The value to check.
   </APIItem>
 </APIParameters>
-<APIReturns>
-  Returns `true` if the value is an array of operations.
+
+<APIReturns type="boolean">
+  `true` if the value is an array of operations.
 </APIReturns>
+</API>
 
 ### `isSelectionOperation`
 
-Checks if a value is a `SelectionOperation` object.
+Check if a value is a `SelectionOperation` object.
 
+<API name="isSelectionOperation">
 <APIParameters>
   <APIItem name="value" type="any">
     The value to check.
   </APIItem>
 </APIParameters>
-<APIReturns>
-  Returns `true` if the value is a selection operation.
+
+<APIReturns type="boolean">
+  `true` if the value is a selection operation.
 </APIReturns>
+</API>
 
 ### `isTextOperation`
 
-Checks if a value is a `TextOperation` object.
+Check if a value is a `TextOperation` object.
 
+<API name="isTextOperation">
 <APIParameters>
   <APIItem name="value" type="any">
     The value to check.
   </APIItem>
 </APIParameters>
-<APIReturns>
-  Returns `true` if the value is a text operation.
+
+<APIReturns type="boolean">
+  `true` if the value is a text operation.
 </APIReturns>
+</API>
 
 ## Types
 
-### Operation
+### `Operation`
 
-The base operation type that represents any change to the editor state. Operations can be one of three types:
+```ts
+export type Operation<N extends Descendant = Descendant> =
+  | NodeOperation<N>
+  | SelectionOperation
+  | TextOperation;
+```
 
-- **NodeOperation**: Operations that modify nodes (insert, merge, move, remove, set, split)
-- **SelectionOperation**: Operations that modify the selection state
-- **TextOperation**: Operations that modify text content (insert, remove)
+### `NodeOperation`
 
-### NodeOperation
+A node operation modifies a node.
 
+```ts
+export type NodeOperation<N extends Descendant = Descendant> =
+  | InsertNodeOperation<N>
+  | MergeNodeOperation<N>
+  | MoveNodeOperation
+  | RemoveNodeOperation<N>
+  | SetNodeOperation<N>
+  | SplitNodeOperation<N>;
+```
+
+### `SelectionOperation`
+
+A selection operation modifies the selection.
+
+```ts
+export type SelectionOperation = SetSelectionOperation;
+```
+
+### `TextOperation`
+
+A text operation modifies text content.
+
+```ts
+export type TextOperation = InsertTextOperation | RemoveTextOperation;
+```
+
+### `InsertNodeOperation`
+
+<API name="InsertNodeOperation">
 <APIAttributes>
-<APIItem name="InsertNodeOperation" type="object">
-  - `type: 'insert_node'`
-  - `path: Path` - Where to insert the node
-  - `node: Descendant` - The node to insert
-</APIItem>
-<APIItem name="MergeNodeOperation" type="object">
-  - `type: 'merge_node'`
-  - `path: Path` - The node to merge
-  - `position: number` - The position to merge at
-  - `properties: Partial<NodeProps>` - Properties of the merged node
-</APIItem>
-<APIItem name="MoveNodeOperation" type="object">
-  - `type: 'move_node'`
-  - `path: Path` - The node to move
-  - `newPath: Path` - Where to move the node
-</APIItem>
-<APIItem name="RemoveNodeOperation" type="object">
-  - `type: 'remove_node'`
-  - `path: Path` - The node to remove
-  - `node: Descendant` - The node being removed
-</APIItem>
-<APIItem name="SetNodeOperation" type="object">
-  - `type: 'set_node'`
-  - `path: Path` - The node to update
-  - `properties: Partial<NodeProps>` - The old properties
-  - `newProperties: Partial<NodeProps>` - The new properties
-</APIItem>
-<APIItem name="SplitNodeOperation" type="object">
-  - `type: 'split_node'`
-  - `path: Path` - The node to split
-  - `position: number` - Where to split the node
-  - `properties: Partial<NodeProps>` - Properties of the new node
-</APIItem>
+  <APIItem name="node" type="N">
+    The node to insert.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    The path to insert at.
+  </APIItem>
+  <APIItem name="type" type="'insert_node'">
+    The operation type.
+  </APIItem>
 </APIAttributes>
+</API>
 
-### TextOperation
+### `MergeNodeOperation`
 
+<API name="MergeNodeOperation">
 <APIAttributes>
-<APIItem name="InsertTextOperation" type="object">
-  - `type: 'insert_text'`
-  - `path: Path` - The text node to modify
-  - `offset: number` - Where to insert the text
-  - `text: string` - The text to insert
-</APIItem>
-<APIItem name="RemoveTextOperation" type="object">
-  - `type: 'remove_text'`
-  - `path: Path` - The text node to modify
-  - `offset: number` - Where to remove the text
-  - `text: string` - The text being removed
-</APIItem>
+  <APIItem name="path" type="Path">
+    The path of the node to merge.
+  </APIItem>
+  <APIItem name="position" type="number">
+    The position to merge at.
+  </APIItem>
+  <APIItem name="properties" type="Partial<NodeProps<N>>">
+    The properties of the merged node.
+  </APIItem>
+  <APIItem name="type" type="'merge_node'">
+    The operation type.
+  </APIItem>
 </APIAttributes>
+</API>
 
-### SelectionOperation
+### `MoveNodeOperation`
 
+<API name="MoveNodeOperation">
 <APIAttributes>
-<APIItem name="SetSelectionOperation" type="object">
-  - `type: 'set_selection'`
-  - `properties: Partial<TRange> | null` - The old selection
-  - `newProperties: Partial<TRange> | null` - The new selection
-</APIItem>
+  <APIItem name="newPath" type="Path">
+    The new path to move to.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    The path of the node to move.
+  </APIItem>
+  <APIItem name="type" type="'move_node'">
+    The operation type.
+  </APIItem>
 </APIAttributes>
+</API>
+
+### `RemoveNodeOperation`
+
+<API name="RemoveNodeOperation">
+<APIAttributes>
+  <APIItem name="node" type="N">
+    The node to remove.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    The path of the node.
+  </APIItem>
+  <APIItem name="type" type="'remove_node'">
+    The operation type.
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `SetNodeOperation`
+
+<API name="SetNodeOperation">
+<APIAttributes>
+  <APIItem name="newProperties" type="Partial<NodeProps<N1>>">
+    The new properties to set.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    The path of the node.
+  </APIItem>
+  <APIItem name="properties" type="Partial<NodeProps<N2>>">
+    The old properties.
+  </APIItem>
+  <APIItem name="type" type="'set_node'">
+    The operation type.
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `SplitNodeOperation`
+
+<API name="SplitNodeOperation">
+<APIAttributes>
+  <APIItem name="path" type="Path">
+    The path of the node to split.
+  </APIItem>
+  <APIItem name="position" type="number">
+    The position to split at.
+  </APIItem>
+  <APIItem name="properties" type="Partial<NodeProps<N>>">
+    The properties of the new split node.
+  </APIItem>
+  <APIItem name="type" type="'split_node'">
+    The operation type.
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `SetSelectionOperation`
+
+<API name="SetSelectionOperation">
+<APIAttributes>
+  <APIItem name="newProperties" type="Partial<TRange> | TRange | null">
+    The new selection properties.
+  </APIItem>
+  <APIItem name="properties" type="Partial<TRange> | TRange | null">
+    The old selection properties.
+  </APIItem>
+  <APIItem name="type" type="'set_selection'">
+    The operation type.
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `InsertTextOperation`
+
+<API name="InsertTextOperation">
+<APIAttributes>
+  <APIItem name="offset" type="number">
+    The offset to insert at.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    The path of the text node.
+  </APIItem>
+  <APIItem name="text" type="string">
+    The text to insert.
+  </APIItem>
+  <APIItem name="type" type="'insert_text'">
+    The operation type.
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `RemoveTextOperation`
+
+<API name="RemoveTextOperation">
+<APIAttributes>
+  <APIItem name="offset" type="number">
+    The offset to remove from.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    The path of the text node.
+  </APIItem>
+  <APIItem name="text" type="string">
+    The text being removed.
+  </APIItem>
+  <APIItem name="type" type="'remove_text'">
+    The operation type.
+  </APIItem>
+</APIAttributes>
+</API>
+

@@ -1,20 +1,146 @@
-'use client';
+Goal:
+Migrate the existing API doc to the new format.
 
-import React, { type ReactNode, createContext, useState } from 'react';
+Return Format:
+Follow the existing pattern with:
 
-import { cn } from '@udecode/cn';
+- title: add backticks if missing and if it's a constant/function/plugin name. Add `<>` if it's a component name (e.g. `<Button>`).
+- description. remove the description if the api only includes `<APIReturns>` to avoid redundancy.
+- add examples ONLY if there is any in the jsdoc, OR if it's trivial. Avoid adding examples if you are not 100% sure it will work / reliable.
+- Wrap the following components in `<API name="sectionName">` if missing.
 
-import { Separator } from '@/registry/default/plate-ui/separator';
+API Components:
 
-import { Icons } from './icons';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from './ui/accordion';
-import { Card, CardContent } from './ui/card';
+- `<APIState>` - For state-related sections (e.g. store state)
+- `<APIProps>` - For component props
+- `<APIAttributes>` - For general attributes/properties
+- `<APIMethods>` - For methods documentation
+- `<APIListAPI>` - For plugin API documentation
+- `<APITransforms>` - For transform functions
+- `<APIParameters>` - For function parameters
+- `<APIOptions>` - For options objects (replaces APISubList for options)
+- `<APIReturns type="ReturnType">` - For return values (must include type prop)
 
+Rules:
+
+1. Always wrap API sections in `<API name="SectionName">`
+2. Use appropriate API component based on content type
+3. For parameters and options:
+
+   - If there's only one parameter, use `<APIOptions>` directly under `<API>` (no `<APIParameters>` wrapper)
+   - If there are multiple parameters, use `<APIParameters>`
+   - If one of the parameters is `options`, add/move `<APIOptions>` and its children as a sibling to `<APIParameters>`, never nest `<APIOptions>` inside `<APIParameters>`, and convert all its `<APISubListItem>` to `<APIItem>`, removing `parent` prop (when converting to `<APIOptions> > <APIItem>`)
+
+4. For return values:
+   - Always include `type` prop in `<APIReturns>`
+   - Omit `<APIReturns>` if return type is void/undefined
+   - Don't repeat the type in the description text since it's in the type prop
+
+Example of correct parameter/options structure:
+
+```tsx
+// Single parameter with options
+<API name="method">
+<APIOptions type="object">
+  <APIItem name="setting1" type="boolean" optional>
+    First setting description
+  </APIItem>
+  <APIItem name="setting2" type="string" optional>
+    Second setting description
+  </APIItem>
+</APIOptions>
+</API>
+
+// Multiple parameters, one with options
+<API name="method">
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The path to transform.
+  </APIItem>
+  <APIItem name="options" type="MethodOptions" optional>
+    Options for the method.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="MethodOptions">
+  <APIItem name="setting1" type="boolean" optional>
+    First setting description
+  </APIItem>
+</APIOptions>
+</API>
+```
+
+5. For default values:
+
+```
+<APIItem>
+<description>
+
+- **Default:** `true`
+</APIItem>
+```
+
+6. For parameters:
+
+   - Use single `<APIItem>` if only one parameter
+   - Use `<APIParameters>` + `<APIOptions>` e.g. for `(path, options) => void` pattern
+   - Use `<APISubList>` for other nested object parameters
+
+7. Keep code examples minimal and only include if:
+   - They exist in JSDoc comments
+   - The usage is trivial/obvious
+   - You are 100% confident in their correctness
+
+Complete Example:
+
+### `transform`
+
+Transform a path by an operation.
+
+```tsx
+// Transform a path by an insert operation
+path.transform([0, 1], {
+  type: 'insert_node',
+  path: [0],
+  node: { type: 'paragraph' },
+});
+
+// Transform with affinity
+path.transform([0, 2], op, { affinity: 'forward' });
+```
+
+<API name="transform">
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The path to transform.
+  </APIItem>
+  <APIItem name="operation" type="Operation">
+    The operation to apply.
+  </APIItem>
+  <APIItem name="options" type="PathTransformOptions" optional>
+    Options for transforming a path.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="PathTransformOptions">
+  <APIItem name="affinity" type="TextDirection | null" optional>
+    The affinity of the transform.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="Path | null">
+  The transformed path, or null if the path was deleted.
+</APIReturns>
+</API>
+
+Warnings:
+
+- Since your output is markdown, output in ```mdx so I can copy the whole codeblock instead of your rich-text output.
+- When you see repetitive long types, smartly decide if we should document the type in ## Types and link it instead of duplicating. If it's like one sentence doc, just repeat it instead of adding a doc section for the type.
+- Don't over-clutter the types in the text to keep it readable. Avoid generics in the text when linking a type, except in the doc section of the type itself.
+  Context API mdx components:
+
+```tsx
 type Item = {
   children: ReactNode;
   name: string;
@@ -29,38 +155,16 @@ type Item = {
 const APIContext = createContext<{ listType?: string; name?: string }>({});
 
 const listTypeToId: any = {
-  api: 'api',
   attributes: 'attrs',
-  methods: 'methods',
   options: 'opt',
   parameters: 'params',
   props: 'props',
   returns: 'returns',
   state: 'state',
-  transforms: 'tf',
-};
-
-const listTypeToBadgeStyles: Record<string, string> = {
-  api: 'bg-pink-50 text-pink-700 dark:bg-pink-950 dark:text-pink-300',
-  attributes: 'bg-cyan-50 text-cyan-700 dark:bg-cyan-950 dark:text-cyan-300',
-  methods: 'bg-cyan-50 text-cyan-700 dark:bg-cyan-950 dark:text-cyan-300',
-  options: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
-  parameters: 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300',
-  props: 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300',
-  returns: 'bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300',
-  state: 'bg-orange-50 text-orange-700 dark:bg-orange-950 dark:text-orange-300',
-  transforms:
-    'bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300',
 };
 
 export function API({ children, name }: { children: ReactNode; name: string }) {
-  return (
-    <APIContext.Provider value={{ name }}>
-      <Card className="mb-16 mt-6">
-        <CardContent className="space-y-6 py-6">{children}</CardContent>
-      </Card>
-    </APIContext.Provider>
-  );
+  return <APIContext.Provider value={{ name }}>{children}</APIContext.Provider>;
 }
 
 export function APIItem({
@@ -81,8 +185,8 @@ export function APIItem({
     : undefined;
 
   return (
-    <AccordionItem className="select-text border-none" value={value ?? name}>
-      <AccordionTrigger className="group p-0 hover:no-underline">
+    <AccordionItem className="select-text" value={value ?? name}>
+      <AccordionTrigger className="group hover:no-underline">
         <li id={id} className="scroll-mt-20">
           <h4 className="relative py-2 text-start font-semibold leading-none tracking-tight">
             {id && (
@@ -113,7 +217,7 @@ export function APIItem({
           </h4>
         </li>
       </AccordionTrigger>
-      <AccordionContent className="pb-0 pt-2">{children}</AccordionContent>
+      <AccordionContent>{children}</AccordionContent>
     </AccordionItem>
   );
 }
@@ -166,30 +270,6 @@ export function APIParameters({ children, ...props }: APIListProps) {
   );
 }
 
-export function APIListAPI({ children, ...props }: APIListProps) {
-  return (
-    <APIList listType="api" {...props}>
-      {children}
-    </APIList>
-  );
-}
-
-export function APITransforms({ children, ...props }: APIListProps) {
-  return (
-    <APIList listType="transforms" {...props}>
-      {children}
-    </APIList>
-  );
-}
-
-export function APIMethods({ children, ...props }: APIListProps) {
-  return (
-    <APIList listType="methods" {...props}>
-      {children}
-    </APIList>
-  );
-}
-
 type APIListProps = {
   children: ReactNode;
   collapsed?: boolean;
@@ -224,8 +304,8 @@ export function APIList({
     <APIContext.Provider value={{ listType, name }}>
       <section className="flex w-full flex-col items-center">
         <div className="w-full">
-          <div className="">
-            <div className="flex items-center justify-between pb-4">
+          <div className="mt-10 pb-3 ">
+            <div className="mt-5 flex items-center justify-between pb-4">
               <h3
                 id={id}
                 className="group relative scroll-mt-20 text-lg font-medium leading-none tracking-tight"
@@ -244,23 +324,12 @@ export function APIList({
                   </a>
                 )}
 
-                <span
-                  className={cn(
-                    'inline-flex items-center rounded-md px-2 py-0.5 text-base font-medium',
-                    'ring-1 ring-inset ring-black/5 dark:ring-white/5',
-                    listTypeToBadgeStyles[listType]
-                  )}
-                >
-                  {listType === 'parameters' && 'Parameters'}
-                  {listType === 'attributes' && 'Attributes'}
-                  {listType === 'returns' && 'Returns'}
-                  {listType === 'props' && 'Props'}
-                  {listType === 'state' && 'State'}
-                  {listType === 'options' && 'Options'}
-                  {listType === 'api' && 'API'}
-                  {listType === 'methods' && 'Methods'}
-                  {listType === 'transforms' && 'Transforms'}
-                </span>
+                {listType === 'parameters' && 'Parameters'}
+                {listType === 'attributes' && 'Attributes'}
+                {listType === 'returns' && 'Returns'}
+                {listType === 'props' && 'Props'}
+                {listType === 'state' && 'State'}
+                {listType === 'options' && 'Options'}
 
                 {type && (
                   <span className="ml-2 font-mono text-sm font-medium text-muted-foreground">
@@ -285,12 +354,11 @@ export function APIList({
             </div>
 
             <ul className="m-0 list-none p-0">
-              {/* {listType !== 'returns' && <Separator />} */}
               <Separator />
 
               {hasItems ? (
                 <Accordion
-                  className="w-full space-y-2 py-4"
+                  className="w-full"
                   value={values}
                   onValueChange={setValues}
                   type="multiple"
@@ -404,3 +472,4 @@ export function APISubList({
     </Card>
   );
 }
+```
