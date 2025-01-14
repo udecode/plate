@@ -56,10 +56,10 @@ export const getDataNodeProps = ({
 }) => {
   const toNodeProps = plugin.parsers.html?.deserializer?.toNodeProps;
 
-  const disabledDefaultNodeProps =
-    plugin.parsers.html?.deserializer?.disabledDefaultNodeProps ?? false;
+  const disableDefaultNodeProps =
+    plugin.parsers.html?.deserializer?.disableDefaultNodeProps ?? false;
 
-  const defaultNodeProps = disabledDefaultNodeProps
+  const defaultNodeProps = disableDefaultNodeProps
     ? {}
     : getDefaultNodeProps({
         ...(getEditorPlugin(editor, plugin) as any),
