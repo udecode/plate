@@ -158,12 +158,6 @@ editor.api.block({ highest: true }) // Get highest block at selection
 ```
 
 <API name="block">
-<APIParameters>
-  <APIItem name="options" type="EditorBlockOptions<V>" optional>
-    Options for getting a block.
-  </APIItem>
-</APIParameters>
-
 <APIOptions type="EditorBlockOptions<V>">
   <APIItem name="...options" type="QueryOptions<V>" optional>
     Common query options for matching blocks.
@@ -204,12 +198,6 @@ editor.api.block({ highest: true }) // Get highest block at selection
 Returns all matching blocks.
 
 <API name="blocks">
-<APIParameters>
-  <APIItem name="options" type="EditorNodesOptions<V>" optional>
-    Options for finding and filtering block nodes in the editor.
-  </APIItem>
-</APIParameters>
-
 <APIOptions type="EditorNodesOptions<V>">
   <APIItem name="...options" type="QueryOptions<V>" optional>
     Common query options for matching blocks.
@@ -245,12 +233,6 @@ Returns the edge blocks above a location (default: selection).
 Useful for retrieving the start and end block of a range.
 
 <API name="edgeBlocks">
-<APIParameters>
-  <APIItem name="options" type="EditorNodesOptions<V>" optional>
-    Options for finding the edge block nodes at a location.
-  </APIItem>
-</APIParameters>
-
 <APIOptions type="EditorNodesOptions<V>">
   <APIItem name="...options" type="QueryOptions<V>" optional>
     Common query options for matching blocks.
@@ -309,7 +291,6 @@ Get the fragment at a location or selection.
     Options for extracting and processing the fragment.
   </APIItem>
 </APIParameters>
-
 <APIOptions type="EditorFragmentOptions">
   <APIItem name="structuralTypes" type="string[]" optional>
     Types of structural nodes to unwrap.
@@ -436,12 +417,6 @@ editor.api.isAt({ end: true }) // Check if at end
 ```
 
 <API name="isAt">
-<APIParameters>
-  <APIItem name="options" type="object">
-    Options for checking the location's position relative to various boundaries.
-  </APIItem>
-</APIParameters>
-
 <APIOptions type="object">
   <APIItem name="at" type="At" optional>
     The location to check. Defaults to current selection.
@@ -531,7 +506,6 @@ editor.api.isEmpty(at, { block: true }) // Check if block above location is empt
     Options for determining emptiness.
   </APIItem>
 </APIParameters>
-
 <APIOptions type="EditorEmptyOptions">
   <APIItem name="...options" type="QueryOptions<V>" optional />
   <APIItem name="after" type="boolean" optional>
@@ -616,7 +590,6 @@ Check if a path is selected by the current selection.
     Options for checking selection.
   </APIItem>
 </APIParameters>
-
 <APIOptions type="EditorIsSelectedOptions">
   <APIItem name="contains" type="boolean" optional>
     Check if selection contains the entire path range.
@@ -641,7 +614,6 @@ Get the leaf text node at a location.
     Options for getting the leaf.
   </APIItem>
 </APIParameters>
-
 <APIOptions type="EditorLeafOptions">
   <APIItem name="depth" type="number" optional>
     The depth to traverse to find the leaf.
@@ -661,12 +633,6 @@ Get the leaf text node at a location.
 Iterate through all levels at a location. This includes all ancestors up to the root editor node.
 
 <API name="levels">
-<APIParameters>
-  <APIItem name="options" type="EditorLevelsOptions<V>" optional>
-    Options for iterating levels.
-  </APIItem>
-</APIParameters>
-
 <APIOptions type="EditorLevelsOptions<V>">
   <APIItem name="...options" type="QueryOptions<V>" optional>
     Common query options for matching levels.
@@ -697,7 +663,6 @@ Get the last node at a location.
     Options for getting the last node.
   </APIItem>
 </APIParameters>
-
 <APIOptions type="EditorLastOptions">
   <APIItem name="level" type="number" optional>
     Get last node at this level (0-based).
@@ -740,12 +705,6 @@ Get the marks that would be added to text at the current selection.
 Get the matching node in the branch of the document after a location.
 
 <API name="next">
-<APIParameters>
-  <APIItem name="options" type="EditorNextOptions<V>" optional>
-    Options for getting the next node.
-  </APIItem>
-</APIParameters>
-
 <APIOptions type="EditorNextOptions<V>">
   <APIItem name="...options" type="QueryOptions<V>" optional>
     Common query options for matching nodes.
@@ -784,7 +743,6 @@ Get the node at a location or find the first node that matches options.
     Options for getting a node.
   </APIItem>
 </APIParameters>
-
 <APIOptions type="EditorNodeOptions">
   <APIItem name="depth" type="number" optional>
     The depth to traverse to find the node.
@@ -804,12 +762,6 @@ Get the node at a location or find the first node that matches options.
 Iterate through all nodes in the editor that match the given options.
 
 <API name="nodes">
-<APIParameters>
-  <APIItem name="options" type="EditorNodesOptions<V>" optional>
-    Options for finding and filtering nodes in the editor.
-  </APIItem>
-</APIParameters>
-
 <APIOptions type="EditorNodesOptions<V>">
   <APIItem name="...options" type="QueryOptions<V>" optional>
     Common query options for matching nodes.
@@ -854,7 +806,6 @@ Get the parent node of a location.
     Options for getting the parent node.
   </APIItem>
 </APIParameters>
-
 <APIOptions type="EditorParentOptions">
   <APIItem name="depth" type="number" optional>
     Number of levels to traverse up to find the parent.
@@ -874,12 +825,6 @@ Get the parent node of a location.
 Get the matching node in the branch of the document before a location.
 
 <API name="previous">
-<APIParameters>
-  <APIItem name="options" type="EditorPreviousOptions<V>" optional>
-    Options for getting the previous node.
-  </APIItem>
-</APIParameters>
-
 <APIOptions type="EditorPreviousOptions<V>">
   <APIItem name="...options" type="QueryOptions<V>" optional>
     Common query options for matching nodes.
@@ -912,12 +857,6 @@ Get the matching node in the branch of the document before a location.
 Get a property value from a list of nodes. Returns `undefined` if the property value is not consistent across all nodes.
 
 <API name="prop">
-<APIParameters>
-  <APIItem name="options" type="EditorPropOptions<V>">
-    Options for retrieving and comparing property values across nodes.
-  </APIItem>
-</APIParameters>
-
 <APIOptions type="EditorPropOptions<V>">
   <APIItem name="nodes" type="TElement[]">
     The list of nodes to get the property value from.
@@ -956,7 +895,6 @@ Get the text string content of a location.
     Options for getting text content.
   </APIItem>
 </APIParameters>
-
 <APIOptions type="EditorStringOptions">
   <APIItem name="voids" type="boolean" optional>
     Whether to include text content from void nodes.
@@ -973,12 +911,6 @@ Get the text string content of a location.
 Match a void node in the current branch of the editor.
 
 <API name="void">
-<APIParameters>
-  <APIItem name="options" type="EditorVoidOptions" optional>
-    Options for finding void nodes.
-  </APIItem>
-</APIParameters>
-
 <APIOptions type="EditorVoidOptions">
   <APIItem name="at" type="At" optional>
     The location to search from. Defaults to current selection.
@@ -1011,7 +943,6 @@ Find the path of a Slate node in the editor.
     Options for finding the node's path.
   </APIItem>
 </APIParameters>
-
 <APIOptions type="EditorFindPathOptions">
   <APIItem name="...options" type="QueryOptions<Value>" optional>
     Common query options for finding nodes.
@@ -1067,7 +998,6 @@ Get the `start` or `end` (default is `start`) point of a location.
     Options for getting the point.
   </APIItem>
 </APIParameters>
-
 <APIOptions type="EditorPointOptions">
   <APIItem name="edge" type="'start' | 'end'" optional>
     Which edge of the location to get the point from.
@@ -1084,12 +1014,6 @@ Get the `start` or `end` (default is `start`) point of a location.
 Iterate through all possible point positions in the document.
 
 <API name="positions">
-<APIParameters>
-  <APIItem name="options" type="EditorPositionsOptions" optional>
-    Options for iterating point positions.
-  </APIItem>
-</APIParameters>
-
 <APIOptions type="EditorPositionsOptions">
   <APIItem name="at" type="At" optional>
     Where to start iterating. Defaults to editor selection.
@@ -1137,12 +1061,6 @@ Returns the range spanning the given node entries.
 Create a range between two locations.
 
 <API name="range">
-<APIParameters>
-  <APIItem name="options" type="EditorRangeOptions">
-    Options for creating a range.
-  </APIItem>
-</APIParameters>
-
 <APIOptions type="EditorRangeOptions">
   <APIItem name="at" type="At" optional>
     The location to create the range at. Defaults to current selection.
@@ -1173,7 +1091,6 @@ Get the start point of a location.
     Options for getting the start point.
   </APIItem>
 </APIParameters>
-
 <APIOptions type="EditorStartOptions">
   <APIItem name="next" type="boolean" optional>
     Get the start point of the next node instead of the current one.
@@ -1205,7 +1122,6 @@ Note that `unhangRange` is designed for the specific purpose of fixing triple-cl
     Options for un-hanging the range.
   </APIItem>
 </APIParameters>
-
 <APIOptions type="EditorUnhangRangeOptions">
   <APIItem name="voids" type="boolean" optional>
     Allow placing the end of the selection in a void node.
@@ -1330,7 +1246,6 @@ Create a mutable ref for a `Path`.
     Options for the path reference.
   </APIItem>
 </APIParameters>
-
 <APIOptions type="EditorPathRefOptions">
   <APIItem name="affinity" type="TextDirection | null" optional>
     The direction to resolve the ref when ambiguous:
@@ -1368,7 +1283,6 @@ Create a mutable ref for a `Point`.
     Options for the point reference.
   </APIItem>
 </APIParameters>
-
 <APIOptions type="EditorPointRefOptions">
   <APIItem name="affinity" type="TextDirection | null" optional>
     The direction to resolve the ref when ambiguous:
@@ -1406,7 +1320,6 @@ Create a mutable ref for a `Range`.
     Options for the range reference.
   </APIItem>
 </APIParameters>
-
 <APIOptions type="EditorRangeRefOptions">
   <APIItem name="affinity" type="RangeDirection | null" optional>
     The direction to resolve the ref when ambiguous:
@@ -1500,7 +1413,6 @@ Check if a DOM node is within the editor.
     Options for checking the DOM node.
   </APIItem>
 </APIParameters>
-
 <APIOptions type="object">
   <APIItem name="editable" type="boolean" optional>
     Whether to check if the node is in an editable element.
@@ -1709,12 +1621,6 @@ Find a Slate range from a DOM range.
 Called when there is a change in the editor.
 
 <API name="onChange">
-<APIParameters>
-  <APIItem name="options" type="object" optional>
-    Options for onChange.
-  </APIItem>
-</APIParameters>
-
 <APIOptions type="object">
   <APIItem name="operation" type="Operation" optional>
     The operation that triggered the change.
@@ -1776,12 +1682,6 @@ Determines whether to remove the previous node when merging nodes.
 Controls whether the editor should normalize after an operation. Override this method to prevent normalizing in certain situations.
 
 <API name="shouldNormalize">
-<APIParameters>
-  <APIItem name="options" type="object">
-    Options for normalizing.
-  </APIItem>
-</APIParameters>
-
 <APIOptions type="object">
   <APIItem name="dirtyPaths" type="Path[]">
     The paths that need to be normalized.
