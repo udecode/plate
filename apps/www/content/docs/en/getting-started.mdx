@@ -22,7 +22,7 @@ For an existing React project, jump to the next step.
 First, install the core dependencies:
 
 ```bash
-npm install @udecode/plate slate-react slate-history
+npm install @udecode/plate
 ```
 
 For the examples in this guide, we'll also use these plugins:
@@ -35,6 +35,24 @@ npm install @udecode/plate-basic-marks @udecode/plate-heading @udecode/plate-blo
 - `@udecode/plate-heading` adds h1-h6 support.
 - `@udecode/plate-block-quote` adds blockquote support.
 - `@udecode/cn` helps with component styling (optional).
+
+### TypeScript Requirements
+
+Ensure your `tsconfig.json` is properly configured. The recommended setup for Plate requires TypeScript 5.0+ with the `"bundler"` module resolution:
+
+```jsonc
+{
+  "compilerOptions": {
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    // ... other options
+  }
+}
+```
+
+<Callout>
+  **Note**: If you can't use TypeScript 5.0+ or "bundler" resolution, see the [TypeScript](/docs/typescript) page for alternative solutions using path aliases.
+</Callout>
 
 ### Basic Editor
 
