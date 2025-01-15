@@ -72,8 +72,6 @@ import { editorPlugins } from '@/registry/default/components/editor/plugins/edit
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 
-import { basicNodesValue } from './values/basic-nodes-value';
-
 export default function PlaygroundDemo({ className }: { className?: string }) {
   const value = usePlaygroundValue();
   const enabled = usePlaygroundEnabled();
@@ -96,7 +94,7 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
           enabled: process.env.NODE_ENV !== 'production',
         }),
       ],
-      value: [...basicNodesValue],
+      value: value,
     },
     []
   );
