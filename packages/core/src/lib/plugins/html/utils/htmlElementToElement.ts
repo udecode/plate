@@ -11,7 +11,8 @@ import { pipeDeserializeHtmlElement } from './pipeDeserializeHtmlElement';
 /** Deserialize HTML to Element. */
 export const htmlElementToElement = (
   editor: SlateEditor,
-  element: HTMLElement
+  element: HTMLElement,
+  isSlate = false
 ) => {
   const deserialized = pipeDeserializeHtmlElement(editor, element);
 
@@ -20,7 +21,7 @@ export const htmlElementToElement = (
 
     let descendants =
       node.children ??
-      (deserializeHtmlNodeChildren(editor, element) as Descendant[]);
+      (deserializeHtmlNodeChildren(editor, element, isSlate) as Descendant[]);
 
     if (descendants.length === 0 || withoutChildren || isSlateVoid(element)) {
       descendants = [{ text: '' }];

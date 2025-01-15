@@ -4,7 +4,6 @@ import {
   BaseCodeBlockPlugin,
   BaseCodeLinePlugin,
 } from '../BaseCodeBlockPlugin';
-import { htmlDeserializerCodeBlockStatic } from './htmlDeserializerCodeBlockStatic';
 
 export const htmlDeserializerCodeBlock: HtmlDeserializer = {
   parse: ({ element }) => {
@@ -43,11 +42,4 @@ export const htmlDeserializerCodeBlock: HtmlDeserializer = {
       },
     },
   ],
-  toNodeProps({ element }) {
-    const staticCodeBlock = htmlDeserializerCodeBlockStatic(element);
-
-    if (staticCodeBlock) {
-      return staticCodeBlock;
-    }
-  },
 };

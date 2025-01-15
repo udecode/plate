@@ -6,7 +6,6 @@ import {
   bindFirst,
   createSlatePlugin,
   createTSlatePlugin,
-  isSlatePluginElement,
 } from '@udecode/plate';
 
 import type { TTableCellElement } from './types';
@@ -187,19 +186,6 @@ export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
   parsers: {
     html: {
       deserializer: {
-        parse: ({ element, type }) => {
-          const parent = element.parentNode?.parentNode;
-
-          if (
-            parent &&
-            element.tagName === 'TABLE' &&
-            isSlatePluginElement(parent as HTMLElement, type)
-          ) {
-            return;
-          }
-
-          return { type };
-        },
         rules: [{ validNodeName: 'TABLE' }],
       },
     },
