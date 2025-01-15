@@ -1,0 +1,191 @@
+---
+title: TypeScript
+description: Configure TypeScript (tsconfig) for using Plate, including module resolution solutions.
+---
+
+Plate provides ESM packages, which require certain TypeScript (and bundler) configurations to ensure compatibility, especially when importing subpath modules like `@udecode/plate/react`. Below are several solutions and workarounds to make TypeScript happy.
+
+## Quick Summary
+
+1. **Recommended (Easiest):** Set `"moduleResolution": "bundler"` in your `tsconfig.json`.
+2. **Alternate (Node resolution):** Keep `"moduleResolution": "node"` and map paths to `dist/react` (and potentially alias them in your bundler config).
+3. **Up-to-date Packages:** Ensure all `@udecode/plate-*` dependencies share the same major/minor version.
+
+## Why Import Error Happens
+
+Plate packages provide multiple exports, including a `react` folder in each package for React-specific code. When TypeScript's older or default module resolution strategy encounters these subpath imports (e.g., `@udecode/plate-something/react`), it may fail to find the corresponding type declarations unless:
+
+1. You switch to a resolution mode that's aware of ESM exports and subpaths, or
+2. You manually alias or map these subpaths back to the correct `dist/react/index.d.ts`.
+
+## Recommended: `"moduleResolution": "bundler"`
+
+The simplest approach for modern bundlers (Vite, Next.js 14, etc.) is to enable the new TypeScript "bundler" resolution mode. Example:
+
+```jsonc
+// tsconfig.json
+{
+  "compilerOptions": {
+    // ...
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    // ...
+  }
+}
+```
+
+This aligns TypeScript's resolution logic more closely with modern bundlers and ESM packages. Below is a working excerpt from [Plate template](https://github.com/udecode/plate-template):
+
+```jsonc
+{
+  "compilerOptions": {
+    "strict": false,
+    "strictNullChecks": true,
+    "allowUnusedLabels": false,
+    "allowUnreachableCode": false,
+    "exactOptionalPropertyTypes": false,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": false,
+    "noPropertyAccessFromIndexSignature": false,
+    "noUncheckedIndexedAccess": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+
+    "isolatedModules": true,
+
+    "allowJs": true,
+    "checkJs": false,
+
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "jsx": "preserve",
+    "module": "esnext",
+    "target": "es2022",
+    "moduleResolution": "bundler",
+    "moduleDetection": "force",
+    "resolveJsonModule": true,
+    "noEmit": true,
+    "incremental": true,
+    "sourceMap": true,
+
+    "baseUrl": "src",
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    ".next/types/**/*.ts",
+    "src/**/*.ts",
+    "src/**/*.tsx"
+  ],
+  "exclude": ["node_modules"]
+}
+```
+
+**Why `moduleResolution = bundler`?**  
+- It properly handles subpath imports in ESM packages.  
+- It's the recommended solution moving forward as bundlers evolve.
+
+## Workaround: Keep `"moduleResolution": "node"` + Path Aliases
+
+If switching to `"moduleResolution": "bundler"` is not possible in a large codebase (or conflicts with older dependencies), you can manually map the subpath imports to their actual locations. For example:
+
+```jsonc
+// tsconfig.json
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "paths": {
+      "@udecode/plate/react": [
+        "./node_modules/@udecode/plate/dist/react/index.d.ts"
+      ],
+      "@udecode/plate-core/react": [
+        "./node_modules/@udecode/plate-core/dist/react/index.d.ts"
+      ],
+      "@udecode/plate-list/react": [
+        "./node_modules/@udecode/plate-list/dist/react/index.d.ts"
+      ]
+      // ...repeat for all @udecode/plate-*/react packages in use
+    }
+  }
+}
+```
+
+Additionally, in your bundler config (e.g. `vite.config.ts`), create aliases so that runtime imports resolve to the correct directories:
+
+```ts
+import { defineConfig } from 'vite';
+import path from 'path';
+
+export default defineConfig({
+  resolve: {
+    alias: {
+      '@udecode/plate/react': path.resolve(
+        __dirname,
+        'node_modules/@udecode/plate/dist/react'
+      ),
+      '@udecode/plate-core/react': path.resolve(
+        __dirname,
+        'node_modules/@udecode/plate-core/dist/react'
+      ),
+      '@udecode/plate-list/react': path.resolve(
+        __dirname,
+        'node_modules/@udecode/plate-list/dist/react'
+      ),
+
+      // Non-/react base aliases:
+      '@udecode/plate': path.resolve(
+        __dirname,
+        'node_modules/@udecode/plate'
+      ),
+      '@udecode/plate-core': path.resolve(
+        __dirname,
+        'node_modules/@udecode/plate-core'
+      ),
+      '@udecode/plate-list': path.resolve(
+        __dirname,
+        'node_modules/@udecode/plate-list'
+      )
+
+      // ...repeat for your actual set of Plate packages
+    }
+  }
+});
+```
+
+### Notes & Caveats
+- You must replicate this pattern for **every** Plate package that you import with `@udecode/plate-xyz/react`.
+- You may also need to configure Jest or other testing environments with the same aliases. 
+- This approach is more verbose and can become fragile if the packages or file structures change.
+
+## Ensure Matching Plate Versions
+
+Say you're upgrading one package to `42.0.3`, double-check that all your `@udecode/plate-*` packages are on the **latest version up to 42.0.3** (one package could stay at `42.0.2` if it has no `42.0.3` release). Mixing versions often leads to mismatches.
+
+## FAQ
+
+**Q**: "I updated `moduleResolution` to `bundler` but it broke my older imports."  
+**A**: If your codebase has older TS usage or relies on the older Node resolution, you might try partial migration or switch to the path alias approach until all dependencies can handle ESM properly.
+
+**Q**: "I want to keep `moduleResolution` as `node`. Are there official type definitions for the `/react` subpaths?"  
+**A**: All subpaths do have `.d.ts` files in `dist/react`. The path alias approach above is the recommended manual fix if you cannot do `bundler`.
+
+**Q**: "Do I have to alias each `@udecode/plate-*` package, or can I do a wildcard?"  
+**A**: Typically, you must do them individually because each has a unique `dist/react` folder. A wildcard might work in some bundler configurations, but it's trickier in TS's `paths` since each subpath needs an explicit mapping.
+
+**Q**: "What if I use an older Next.js version or a custom Webpack config?"  
+**A**: The principle is the same—add webpack aliases or switch your TS `moduleResolution`. If you have any custom Next config, you can alias the subpaths under `webpack.resolve.alias`.
+
+**Q**: "I still get type errors in Jest."  
+**A**: You'll need to replicate the same alias or resolution changes in your Jest config. For example, using `moduleNameMapper` in `jest.config.js`:
+  ```js
+  moduleNameMapper: {
+    '^@udecode/plate/react$': '<rootDir>/node_modules/@udecode/plate/dist/react',
+    // ...
+  }
+  ```
