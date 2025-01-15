@@ -7,22 +7,23 @@ description: API reference for Plate component.
 
 `PlateContent` is the component that renders the editor.
 
-## Plate Props
+## `<Plate>`
 
-<APIParameters>
+<API name="Plate">
+<APIProps>
 <APIItem name="children" type="ReactNode">
 Children components have access to the plate store. 
 </APIItem>
 <APIItem name="editor" type="PlateEditor">
 A controlled `editor` instance. This prop is required.
 </APIItem>
-<APIItem name="decorate" type="(ctx: SlatePluginContext<C>) => Range[]" optional>
+<APIItem name="decorate" type="(ctx: SlatePluginContext<C>) => TRange[]" optional>
 See [Slate docs](https://docs.slatejs.org/concepts/09-rendering#decorations).
 </APIItem>
 <APIItem name="onChange" type="({ value, editor }: { value: Value; editor: PlateEditor }) => void" optional>
 Controlled callback called when the editor state changes.
 </APIItem>
-<APIItem name="onSelectionChange" type="(selection: Range | null) => void" optional>
+<APIItem name="onSelectionChange" type="(selection: TRange | null) => void" optional>
 Callback called when the editor selection changes.
 </APIItem>
 <APIItem name="onValueChange" type="({ value, editor }: { value: Value; editor: PlateEditor }) => void" optional>
@@ -42,10 +43,12 @@ Custom render function for elements.
 <APIItem name="renderLeaf" type="FC<RenderLeafProps>" optional>
 Custom render function for leaf nodes.
 </APIItem>
-</APIParameters>
+</APIProps>
+</API>
 
-## PlateContent Props
+## `<PlateContent>`
 
+<API name="PlateContent">
 Props for the [Editable](https://docs.slatejs.org/libraries/slate-react/editable) component. Extends `TextareaHTMLAttributes<HTMLDivElement>`.
 
 <APIProps>
@@ -59,7 +62,7 @@ Custom `Editable` node.
 </APIItem>
 <APIItem name="as" type="React.ElementType" optional />
 <APIItem name="autoFocus" type="boolean" optional />
-<APIItem name="decorate" type="(ctx: SlatePluginContext<C>) => Range[]" optional />
+<APIItem name="decorate" type="(ctx: SlatePluginContext<C>) => TRange[]" optional />
 <APIItem name="disableDefaultStyles" type="boolean" optional />
 <APIItem name="onDOMBeforeInput" type="(event: Event) => void" optional />
 <APIItem name="onKeyDown" type="(event: KeyboardEvent) => void" optional />
@@ -72,6 +75,7 @@ Custom `Editable` node.
 <APIItem name="scrollSelectionIntoView" type="(editor: ReactEditor, domRange: DOMRange) => void" optional />
 <APIItem name="style" type="CSSProperties" optional />
 </APIProps>
+</API>
 
 ## How Plate Works
 

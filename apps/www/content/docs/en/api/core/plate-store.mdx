@@ -12,11 +12,10 @@ description: API reference for Plate store.
 
 ## Plate Store
 
-### State
+<API name="Store">
+The `PlateStoreState` object stores the state of the Plate editor. It contains information about the editor's ID, its current value, its plugins, and other settings.
 
-The PlateStoreState object stores the state of the Plate editor. It contains information about the editor's ID, its current value, its plugins, and other settings.
-
-<APIAttributes>
+<APIState>
 <APIItem name="editor" type="PlateEditor">
 Slate editor reference.
 
@@ -37,7 +36,7 @@ A reference to the editor container element.
 Function used to decorate ranges in the editor.
 
 ```ts
-(options: { editor: PlateEditor; entry: NodeEntry }) => Range[]
+(options: { editor: PlateEditor; entry: NodeEntry }) => TRange[]
 ```
 </APIItem>
 
@@ -102,7 +101,8 @@ Version incremented on each editor.selection change.
 <APIItem name="versionValue" type="number" optional>
 Version incremented on each editor.children change.
 </APIItem>
-</APIAttributes>
+</APIState>
+</API>
 
 ## Exposed Store Keys
 
@@ -132,11 +132,13 @@ Use `usePlateStates(id).<state property>()` when you need both the value and the
 
 Redecorate the editor.
 
+<API name="useRedecorate">
 <APIParameters>
   <APIItem name="id" type="string" optional>
     Editor ID.
   </APIItem>
 </APIParameters>
+</API>
 
 ## Event Editor Store
 
@@ -145,9 +147,8 @@ This store is an object whose property keys are event names (e.g. `'focus'`) and
 - This is useful when having [multiple editors](multiple-editors) and get one based on DOM events (e.g. the last focused editor).
 - One of the core plugins of [Plate](Plate) will store the following events.
 
-### State
-
-<APIAttributes>
+<API name="EventEditorStore">
+<APIState>
 <APIItem name="blur" type="string | null">
 
 Last editor ID that has been blurred.
@@ -165,7 +166,8 @@ Editor ID that is currently being focused.
 Last editor ID.
 
 </APIItem>
-</APIAttributes>
+</APIState>
+</API>
 
 ### `useEventEditorSelectors`
 
@@ -178,6 +180,7 @@ Hook selectors.
 
 Get the last event editor ID.
 
+<API name="useEventPlateId">
 <APIParameters>
 <APIItem name="id" type="string | null">
 
@@ -186,7 +189,8 @@ Returned ID if defined.
 </APIItem>
 </APIParameters>
 
-<APIReturns>
+<APIReturns type="string">
   The plate id from the context if available, otherwise the last event editor
   ID or `PLATE_SCOPE`.
 </APIReturns>
+</API>

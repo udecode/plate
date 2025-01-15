@@ -12,8 +12,9 @@ import {
   createPrimitiveComponent,
   useEditorRef,
   useElement,
+  useReadOnly,
+  useSelected,
 } from '@udecode/plate/react';
-import { useReadOnly, useSelected } from '@udecode/plate/react';
 import { useEquationInput } from '@udecode/plate-math/react';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 import { CornerDownLeftIcon } from 'lucide-react';

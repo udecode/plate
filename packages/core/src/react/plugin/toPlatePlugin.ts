@@ -40,11 +40,13 @@ const methodsToWrap: (keyof SlatePlugin)[] = [
   'configure',
   'configurePlugin',
   'extendEditorApi',
+  'extendOptions',
   'extendApi',
   'extendEditorTransforms',
+  'extendTransforms',
+  'overrideEditor',
   'extend',
   'extendPlugin',
-  'overrideEditor',
 ];
 
 /**

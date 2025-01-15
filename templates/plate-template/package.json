@@ -14,8 +14,8 @@
   },
   "dependencies": {
     "@udecode/cn": "^42.0.0",
-    "@udecode/plate": "^42.0.1",
-    "@udecode/plate-basic-elements": "^42.0.0",
+    "@udecode/plate": "^42.0.6",
+    "@udecode/plate-basic-elements": "^42.0.5",
     "@udecode/plate-basic-marks": "^42.0.0",
     "class-variance-authority": "0.7.1",
     "clsx": "^2.1.1",

@@ -24,7 +24,11 @@ export function ImageElementStatic({
     };
 
   return (
-    <SlateElement className={cn(className, 'py-2.5')} {...props}>
+    <SlateElement
+      className={cn(className, 'py-2.5')}
+      {...props}
+      nodeProps={nodeProps}
+    >
       <figure className="group relative m-0 inline-block" style={{ width }}>
         <div
           className="relative min-w-[92px] max-w-full"

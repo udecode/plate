@@ -15,6 +15,12 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 - `indent-fire-marker.tsx` Add `data-plate-prevent-deserialization` to prevent deserialization of the fire marker. Change the `span` tag to `li`.
 - `indent-todo-marker.tsx` change the `span` tag to `li`.
 - `image-element-static.tsx` and `hr-element-static.tsx`: Fix `nodeProps` not being passed to `SlateElement`.
+- `ai-chat-editor`:
+```tsx
+const aiEditor = usePlateEditor({ plugins });
+useAIChatEditor(aiEditor, content);
+```
+
 
 
 ### January 12 #18.2

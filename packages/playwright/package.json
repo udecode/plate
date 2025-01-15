@@ -47,7 +47,7 @@
   },
   "peerDependencies": {
     "@playwright/test": ">=1.42.1",
-    "@udecode/plate": ">=42.0.5",
+    "@udecode/plate": ">=42.0.6",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

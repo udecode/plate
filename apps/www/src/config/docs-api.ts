@@ -14,63 +14,47 @@ export const docsApi: SidebarNavItem[] = [
     items: [
       {
         href: '/docs/api/slate/editor-api',
-        label: 'Draft',
         title: 'Editor API',
       },
       {
         href: '/docs/api/slate/editor-transforms',
-        label: 'Draft',
         title: 'Editor Transforms',
       },
       {
-        href: '/docs/api/slate/element',
-        label: 'Draft',
-        title: 'Element',
-      },
-      {
-        href: '/docs/api/slate/location',
-        label: 'Draft',
-        title: 'Location',
-      },
-      {
-        href: '/docs/api/slate/location-ref',
-        label: 'Draft',
-        title: 'Location References',
-      },
-      {
         href: '/docs/api/slate/node',
-        label: 'Draft',
         title: 'Node',
       },
       {
-        href: '/docs/api/slate/node-entry',
-        label: 'Draft',
-        title: 'NodeEntry',
+        href: '/docs/api/slate/element',
+        title: 'Element',
       },
       {
-        href: '/docs/api/slate/operation',
-        label: 'Draft',
-        title: 'Operation',
+        href: '/docs/api/slate/text',
+        title: 'Text',
       },
       {
         href: '/docs/api/slate/path',
-        label: 'Draft',
         title: 'Path',
       },
       {
         href: '/docs/api/slate/point',
-        label: 'Draft',
         title: 'Point',
       },
       {
         href: '/docs/api/slate/range',
-        label: 'Draft',
         title: 'Range',
       },
       {
-        href: '/docs/api/slate/text',
-        label: 'Draft',
-        title: 'Text',
+        href: '/docs/api/slate/location',
+        title: 'Location',
+      },
+      {
+        href: '/docs/api/slate/location-ref',
+        title: 'Location Ref',
+      },
+      {
+        href: '/docs/api/slate/operation',
+        title: 'Operation',
       },
     ],
     label: 'v42',

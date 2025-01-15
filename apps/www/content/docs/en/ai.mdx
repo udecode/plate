@@ -445,9 +445,12 @@ Special undo operation for AI changes:
 
 ### useAIChatEditor
 
-A hook that creates an editor for AI chat responses, registers it in the AI chat plugin, and deserializes markdown content with block-level memoization.
+A hook that registers an editor in the AI chat plugin, and deserializes markdown content with block-level memoization.
 
 <APIParameters>
+<APIItem name="editor" type="PlateEditor">
+The editor to register in the AI chat plugin.
+</APIItem>
 <APIItem name="content" type="string">
 The markdown content to deserialize into the editor.
 </APIItem>
@@ -462,27 +465,21 @@ Options for the markdown token parser. Can filter out specific token types.
 <APISubListItem parent="options" name="processor" type="(processor: Processor) => Processor" optional>
 Function to customize the markdown processor.
 </APISubListItem>
-<APISubListItem parent="options" name="...editorOptions" type="Partial<CreatePlateEditorOptions>" optional>
-Additional options passed to `usePlateEditor`.
-</APISubListItem>
 </APISubList>
 </APIItem>
 </APIParameters>
 
-<APIReturns>
-<APIItem type="PlateEditor">
-The configured editor instance with deserialized content.
-</APIItem>
-</APIReturns>
-
 ```tsx
 const AIChatEditor = ({ content }: { content: string }) => {
-  const aiEditor = useAIChatEditor(content, {
+  const aiEditor = usePlateEditor({
     plugins: [
       // Your editor plugins
       MarkdownPlugin,
       // etc...
     ],
+  });
+
+  useAIChatEditor(aiEditor, content, {
     // Optional markdown parser options
     parser: {
       exclude: ['space'],

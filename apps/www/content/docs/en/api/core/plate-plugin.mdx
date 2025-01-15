@@ -5,34 +5,9 @@ description: API reference for Plate plugins.
 
 Plate plugins are objects passed to `Plate` [plugins](/docs/api/core/plate-components#plugins) prop.
 
-## Generic Types
-
-The `PlatePlugin` interface uses one generic type:
-
-<APIAttributes>
-<APIItem name="C" type="AnyPluginConfig = PluginConfig">
-Represents the plugin configuration. This type extends `PluginConfig` which includes `key`, `options`, `api`, and `transforms`.
-</APIItem>
-</APIAttributes>
-
-Usage example:
-
-```typescript
-type MyPluginConfig = PluginConfig<
-  'myPlugin',
-  { customOption: boolean },
-  { getData: () => string },
-  { customTransform: () => void }
->;
-
-const MyPlugin = createPlatePlugin<MyPluginConfig>({
-  key: 'myPlugin',
-  // plugin implementation
-});
-```
-
 ## Plugin Properties
 
+<API name="Properties">
 <APIAttributes>
 <APIItem name="key" type="C['key']" required>
 Unique identifier used by Plate to store the plugins by key in `editor.plugins`.
@@ -241,10 +216,12 @@ extendEditor: ({ editor }) => {
 Hook called when the editor is initialized.
 </APIItem>
 </APIAttributes>
+</API>
 
 ## Plugin Methods
 
-<APIAttributes>
+<API name="Methods">
+<APIMethods>
 <APIItem name="configure" type="(config: PlatePluginConfig | ((ctx: PlatePluginContext) => PlatePluginConfig)) => PlatePlugin">
 Creates a new plugin instance with updated options.
 
@@ -342,12 +319,12 @@ Extends the plugin options with selectors.
 (options: (ctx: PlatePluginContext) => Record<string, any>) => PlatePlugin
 ```
 </APIItem>
-</APIAttributes>
+</APIMethods>
+</API>
 
 ## Plugin Context
 
-Most plugin functions receive a `PlatePluginContext` object as their first parameter. This object includes:
-
+<API name="Context">
 <APIAttributes>
 <APIItem name="editor" type="PlateEditor">
 The current editor instance.
@@ -371,5 +348,32 @@ Function to set multiple options.
 Hook to subscribe to a specific option value in a React component.
 </APIItem>
 </APIAttributes>
+</API>
 
 For more detailed information on specific aspects of Plate plugins, refer to the individual guides on [Plugin Configuration](/docs/plugin), [Plugin Methods](/docs/plugin-methods), [Plugin Context](/docs/plugin-context), [Plugin Components](/docs/plugin-components), and [Plugin Shortcuts](/docs/plugin-shortcuts).
+
+## Generic Types
+
+<API name="GenericTypes">
+<APIAttributes>
+<APIItem name="C" type="AnyPluginConfig = PluginConfig">
+Represents the plugin configuration. This type extends `PluginConfig` which includes `key`, `options`, `api`, and `transforms`.
+</APIItem>
+</APIAttributes>
+</API>
+
+Usage example:
+
+```typescript
+type MyPluginConfig = PluginConfig<
+  'myPlugin',
+  { customOption: boolean },
+  { getData: () => string },
+  { customTransform: () => void }
+>;
+
+const MyPlugin = createPlatePlugin<MyPluginConfig>({
+  key: 'myPlugin',
+  // plugin implementation
+});
+```

@@ -36,8 +36,6 @@ export function ImportToolbarButton({ children, ...props }: DropdownMenuProps) {
         element: editorNode,
       });
 
-      console.log('🚀 ~ onFilesSelected: ~ nodes:', nodes);
-
       editor.tf.insertNodes(nodes);
     },
   });

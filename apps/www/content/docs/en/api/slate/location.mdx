@@ -3,113 +3,98 @@ title: Location
 description: API reference for locations in Slate.
 ---
 
-The `Location` interface is a union of the ways to refer to a specific location in a Slate document: paths, points, or ranges. Methods often accept a `Location` instead of requiring only a `Path`, `Point`, or `Range`. This eliminates the need for developers to manage converting between the different interfaces in their own code base.
+A Location is either a Path, Point or Range. Methods will often accept a Location instead of requiring only a Path, Point or Range.
 
-## Location
+```typescript
+type TLocation = Path | Point | TRange
+```
 
-Find the corresponding documentation in the [Slate docs](https://docs.slatejs.org/api/locations).
+- [Path](/docs/api/slate/path)
+- [PathRef](/docs/api/slate/location-ref#pathref)
+- [Point](/docs/api/slate/point)
+- [PointRef](/docs/api/slate/location-ref#pointref)
+- [Range](/docs/api/slate/range)
+- [RangeRef](/docs/api/slate/location-ref#rangeref)
+
+## `LocationApi`
 
 ### `isAt`
 
-Checks if a value implements the `At` interface.
+Check if a value implements the `At` interface.
 
+<API name="isAt">
 <APIParameters>
   <APIItem name="value" type="any">
     The value to check.
   </APIItem>
 </APIParameters>
-<APIReturns>
-  Returns `true` if the value is either a Location or a Node.
+
+<APIReturns type="boolean">
+  `true` if the value is either a location or a node.
 </APIReturns>
+</API>
 
 ### `isLocation`
 
-Checks if a value implements the `Location` interface.
+Check if a value implements the `TLocation` interface.
 
+<API name="isLocation">
 <APIParameters>
   <APIItem name="value" type="any">
     The value to check.
   </APIItem>
 </APIParameters>
-<APIReturns>
-  Returns `true` if the value is a Path, Point, or Range.
+
+<APIReturns type="boolean">
+  `true` if the value is a `Path`, `Point`, or `TRange`.
 </APIReturns>
-
-## Span
-
-The `Span` interface is a low-level way to refer to locations in nodes without using `Point` which requires leaf text nodes to be present. It is represented as a tuple of two paths.
+</API>
 
 ### `isSpan`
 
-Checks if a value implements the `Span` interface.
+Check if a value implements the `Span` interface.
 
+<API name="isSpan">
 <APIParameters>
   <APIItem name="value" type="any">
     The value to check.
   </APIItem>
 </APIParameters>
-<APIReturns>
-  Returns `true` if the value is a valid Span (tuple of two paths).
+
+<APIReturns type="boolean">
+  `true` if the value is a valid `Span`.
 </APIReturns>
+</API>
 
 ## Types
 
-### TLocation
+### `TLocation`
 
-The base location type that can be either a Path, Point, or Range.
+`Location` is a type alias for `TLocation`.
 
-<APIParameters>
-  <APIItem name="TLocation" type="Path | Point | TRange">
-    A union type that can be:
-    <APISubList>
-      <APISubListItem>
-        Path: An array of numbers representing a node's position
-      </APISubListItem>
-      <APISubListItem>
-        Point: An object with `path` and `offset` properties
-      </APISubListItem>
-      <APISubListItem>
-        TRange: An object with `anchor` and `focus` points
-      </APISubListItem>
-    </APISubList>
+<API name="TLocation">
+<APIAttributes>
+  <APIItem name="Path" type="Path">
+    An array of numbers representing a node's position.
   </APIItem>
-</APIParameters>
-
-### Location
-
-The concrete location type (same as TLocation but using concrete types).
-
-<APIParameters>
-  <APIItem name="Location" type="Path | Point | Range">
-    A union type that can be:
-    <APISubList>
-      <APISubListItem>
-        Path: An array of numbers representing a node's position
-      </APISubListItem>
-      <APISubListItem>
-        Point: An object with `path` and `offset` properties
-      </APISubListItem>
-      <APISubListItem>
-        Range: An object with `anchor` and `focus` points
-      </APISubListItem>
-    </APISubList>
+  <APIItem name="Point" type="Point">
+    An object with `path` and `offset`.
   </APIItem>
-</APIParameters>
-
-### Span
-
-A low-level location representation.
-
-<APIParameters>
-  <APIItem name="Span" type="[Path, Path]">
-    A tuple containing:
-    <APISubList>
-      <APISubListItem>
-        First element: Starting path
-      </APISubListItem>
-      <APISubListItem>
-        Second element: Ending path
-      </APISubListItem>
-    </APISubList>
+  <APIItem name="TRange" type="TRange">
+    An object with `anchor` and `focus`.
   </APIItem>
-</APIParameters>
+</APIAttributes>
+</API>
+
+### `Span`
+
+<API name="Span">
+<APIAttributes>
+  <APIItem name="[0]" type="Path">
+    The start path.
+  </APIItem>
+  <APIItem name="[1]" type="Path">
+    The end path.
+  </APIItem>
+</APIAttributes>
+</API>

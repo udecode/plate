@@ -12,7 +12,7 @@ export function HrElementStatic({
   ...props
 }: SlateElementProps) {
   return (
-    <SlateElement className={className} {...props}>
+    <SlateElement className={className} nodeProps={nodeProps} {...props}>
       <div className="cursor-text py-6" contentEditable={false}>
         <hr
           {...nodeProps}
