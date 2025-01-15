@@ -4,6 +4,7 @@ import React, { memo } from 'react';
 
 import { withProps } from '@udecode/cn';
 import { BaseParagraphPlugin, SlateLeaf } from '@udecode/plate';
+import { usePlateEditor } from '@udecode/plate/react';
 import { useAIChatEditor } from '@udecode/plate-ai/react';
 import {
   BaseBoldPlugin,
@@ -18,7 +19,6 @@ import {
   BaseCodeLinePlugin,
   BaseCodeSyntaxPlugin,
 } from '@udecode/plate-code-block';
-import { usePlateEditor } from '@udecode/plate-core/react';
 import { BaseHeadingPlugin, HEADING_KEYS } from '@udecode/plate-heading';
 import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
