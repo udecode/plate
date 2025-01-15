@@ -2,13 +2,7 @@
 title: Serializing HTML
 ---
 
-<ComponentPreview name="html-demo" maxH />
-
-<Callout className="my-4">
-  **Note**: Round-tripping is not yet supported: the HTML serializer will not
-  preserve all information from the Slate value when converting to HTML and
-  back.
-</Callout>
+<ComponentPreview name="html-demo" />
 
 ## Slate -> HTML
 
@@ -101,9 +95,11 @@ For a more complete static-render approach, see [Plate Static](/docs/plate-stati
 
 ## HTML -> Slate
 
+The HTML deserializer supports round-trip conversion, meaning you can export content to HTML and later import it back while maintaining the document structure, formatting, and attributes.
+
 ### Usage
 
-The `editor.api.html.deserialize` function allows you to convert HTML content back into a Slate value:
+The `editor.api.html.deserialize` function converts HTML content into a Slate value:
 
 ```ts
 import { createPlateEditor } from '@udecode/plate/react';
@@ -114,7 +110,13 @@ const editor = createPlateEditor({
   ],
 });
 
+// You can deserialize HTML strings
 editor.children = editor.api.html.deserialize('<p>Hello, world!</p>');
+
+// Or deserialize HTML previously exported from Plate
+const exportedHtml = await serializeHtml(editor, { components });
+const importedValue = editor.api.html.deserialize(exportedHtml);
+editor.children = importedValue;
 ```
 
 ### Plugin Deserialization Rules
