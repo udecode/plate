@@ -8,6 +8,7 @@ import { createTPlatePlugin } from '@udecode/plate/react';
 
 import type { ChangedElements, PartialSelectionOptions } from '../internal';
 
+import { selectBlocks } from '../internal/transforms/selectBlocks';
 import { querySelectorAllSelectable, querySelectorSelectable } from '../lib';
 import { extractSelectableIds } from '../lib/extractSelectableIds';
 import { BlockMenuPlugin } from './BlockMenuPlugin';
@@ -233,8 +234,17 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
     insertBlocksAndSelect: bindFirst(insertBlocksAndSelect, editor),
     /** Remove selected blocks */
     removeNodes: bindFirst(removeBlockSelectionNodes, editor),
-    /** Select blocks */
+    /** Set selection based on block selection */
     select: bindFirst(selectBlockSelectionNodes, editor),
+    /**
+     * Selects blocks in the editor based on the provided block ID.
+     *
+     * Uses block selection if any blocks are selected, otherwise falls back to
+     * editor selection. If the provided block ID is already in the current
+     * selection, maintains the existing selection. Otherwise, clears the
+     * current selection and selects only the specified block.
+     */
+    selectBlocks: bindFirst(selectBlocks, editor),
     /** Set block indent */
     setIndent: bindFirst(setBlockSelectionIndent, editor),
     /** Set nodes on selected blocks */

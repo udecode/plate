@@ -6,9 +6,12 @@ import cloneDeep from 'lodash/cloneDeep.js';
 
 import type { AIChatPluginConfig } from '../AIChatPlugin';
 
+import { createFormattedBlocks } from './replaceSelectionAIChat';
+
 export const insertBelowAIChat = (
   editor: PlateEditor,
-  sourceEditor: SlateEditor
+  sourceEditor: SlateEditor,
+  { format = 'single' }: { format?: 'all' | 'none' | 'single' } = {}
 ) => {
   if (!sourceEditor || sourceEditor.api.isEmpty()) return;
 
@@ -38,14 +41,52 @@ export const insertBelowAIChat = (
 
     const nextPath = PathApi.next(lastBlock[1]);
 
-    insertBlocksAndSelect(cloneDeep(sourceEditor.children), {
+    if (format === 'none') {
+      insertBlocksAndSelect(cloneDeep(sourceEditor.children), {
+        at: nextPath,
+      });
+
+      return;
+    }
+
+    const formattedBlocks = createFormattedBlocks({
+      blocks: cloneDeep(sourceEditor.children),
+      format,
+      sourceBlock: lastBlock,
+    });
+
+    if (!formattedBlocks) return;
+
+    insertBlocksAndSelect(formattedBlocks, {
       at: nextPath,
     });
   } else {
     const [, end] = RangeApi.edges(editor.selection!);
     const endPath = [end.path[0]];
+    const currentBlock = editor.api.node({
+      at: endPath,
+      block: true,
+      mode: 'lowest',
+    });
 
-    insertBlocksAndSelect(cloneDeep(sourceEditor.children), {
+    if (!currentBlock) return;
+    if (format === 'none') {
+      insertBlocksAndSelect(cloneDeep(sourceEditor.children), {
+        at: PathApi.next(endPath),
+      });
+
+      return;
+    }
+
+    const formattedBlocks = createFormattedBlocks({
+      blocks: cloneDeep(sourceEditor.children),
+      format,
+      sourceBlock: currentBlock,
+    });
+
+    if (!formattedBlocks) return;
+
+    insertBlocksAndSelect(formattedBlocks, {
       at: PathApi.next(endPath),
     });
   }
