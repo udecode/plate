@@ -55,12 +55,10 @@ export const BaseImagePlugin = createTSlatePlugin<ImageConfig>({
     parsers: {
       html: {
         deserializer: {
-          parse: ({ element, type }) => {
-            return {
-              type: plugin.node.type,
-              url: element.getAttribute('src'),
-            };
-          },
+          parse: ({ element }) => ({
+            type: plugin.node.type,
+            url: element.getAttribute('src'),
+          }),
           rules: [
             {
               validNodeName: 'IMG',
