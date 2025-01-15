@@ -8,12 +8,6 @@ import { htmlDeserializerCodeBlockStatic } from './htmlDeserializerCodeBlockStat
 
 export const htmlDeserializerCodeBlock: HtmlDeserializer = {
   parse: ({ element }) => {
-    const staticCodeBlock = htmlDeserializerCodeBlockStatic(element);
-
-    if (staticCodeBlock) {
-      return staticCodeBlock;
-    }
-
     const languageSelectorText =
       [...element.childNodes].find(
         (node: ChildNode) => node.nodeName === 'SELECT'
@@ -49,4 +43,11 @@ export const htmlDeserializerCodeBlock: HtmlDeserializer = {
       },
     },
   ],
+  toNodeProps({ element }) {
+    const staticCodeBlock = htmlDeserializerCodeBlockStatic(element);
+
+    if (staticCodeBlock) {
+      return staticCodeBlock;
+    }
+  },
 };

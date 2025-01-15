@@ -192,7 +192,7 @@ export const pluginDeserializeHtml = (
       node,
     });
 
-    if (res) {
+    if (res && !isSlateNode(el)) {
       node = {
         ...node,
         ...res,

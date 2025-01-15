@@ -176,15 +176,7 @@ export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
   key: 'table',
   // dependencies: [NodeIdPlugin.key],
   node: {
-    // dangerouslyAllowAttributes: [keyToDataAttribute('colSizes')],
     isElement: true,
-    // toDataAttributes: ({ node }) => {
-    //   if (node.colSizes as TTableElement['colSizes']) {
-    //     return {
-    //       [keyToDataAttribute('colSizes')]: JSON.stringify(node.colSizes),
-    //     };
-    //   }
-    // },
   },
   normalizeInitialValue: normalizeInitialValueTable,
   options: {
@@ -209,21 +201,6 @@ export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
           return { type };
         },
         rules: [{ validNodeName: 'TABLE' }],
-        // toNodeProps: ({ element }) => {
-        //   const dangerouslyColSizesString = element.getAttribute(
-        //     keyToDataAttribute('colSizes')
-        //   );
-
-        //   if (!dangerouslyColSizesString) return;
-
-        //   const colSizes = JSON.parse(dangerouslyColSizesString);
-
-        //   if (!Array.isArray(colSizes)) return;
-
-        //   return {
-        //     colSizes: colSizes,
-        //   };
-        // },
       },
     },
   },
