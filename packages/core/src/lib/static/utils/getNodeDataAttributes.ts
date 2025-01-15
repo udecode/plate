@@ -1,5 +1,5 @@
 import { type TElement, type TText, TextApi } from '@udecode/slate';
-import kebabCase from 'lodash/kebabCase';
+import kebabCase from 'lodash/kebabCase.js';
 
 import type { SlateEditor } from '../../editor';
 
