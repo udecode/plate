@@ -99,6 +99,11 @@ export const guidesNavItems: SidebarNavItem[] = [
     title: 'Serializing HTML',
   },
   {
+    href: '/docs/typescript',
+    label: 'New',
+    title: 'TypeScript',
+  },
+  {
     href: '/docs/debugging',
     title: 'Debugging',
   },
