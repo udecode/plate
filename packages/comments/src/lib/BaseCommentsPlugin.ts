@@ -76,7 +76,7 @@ export const BaseCommentsPlugin = createTSlatePlugin<BaseCommentsConfig>({
   parsers: {
     html: {
       deserializer: {
-        disabledDefaultNodeProps: true,
+        disableDefaultNodeProps: true,
         toNodeProps: ({ element }) => {
           const { slateComment } = element.dataset;
 

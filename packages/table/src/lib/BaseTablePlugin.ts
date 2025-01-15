@@ -6,7 +6,6 @@ import {
   bindFirst,
   createSlatePlugin,
   createTSlatePlugin,
-  isSlatePluginElement,
 } from '@udecode/plate';
 
 import type { TTableCellElement } from './types';
@@ -176,15 +175,7 @@ export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
   key: 'table',
   // dependencies: [NodeIdPlugin.key],
   node: {
-    // dangerouslyAllowAttributes: [keyToDataAttribute('colSizes')],
     isElement: true,
-    // toDataAttributes: ({ node }) => {
-    //   if (node.colSizes as TTableElement['colSizes']) {
-    //     return {
-    //       [keyToDataAttribute('colSizes')]: JSON.stringify(node.colSizes),
-    //     };
-    //   }
-    // },
   },
   normalizeInitialValue: normalizeInitialValueTable,
   options: {
@@ -195,35 +186,7 @@ export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
   parsers: {
     html: {
       deserializer: {
-        parse: ({ element, type }) => {
-          const parent = element.parentNode?.parentNode;
-
-          if (
-            parent &&
-            element.tagName === 'TABLE' &&
-            isSlatePluginElement(parent as HTMLElement, type)
-          ) {
-            return;
-          }
-
-          return { type };
-        },
         rules: [{ validNodeName: 'TABLE' }],
-        // toNodeProps: ({ element }) => {
-        //   const dangerouslyColSizesString = element.getAttribute(
-        //     keyToDataAttribute('colSizes')
-        //   );
-
-        //   if (!dangerouslyColSizesString) return;
-
-        //   const colSizes = JSON.parse(dangerouslyColSizesString);
-
-        //   if (!Array.isArray(colSizes)) return;
-
-        //   return {
-        //     colSizes: colSizes,
-        //   };
-        // },
       },
     },
   },

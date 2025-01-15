@@ -4,16 +4,9 @@ import {
   BaseCodeBlockPlugin,
   BaseCodeLinePlugin,
 } from '../BaseCodeBlockPlugin';
-import { htmlDeserializerCodeBlockStatic } from './htmlDeserializerCodeBlockStatic';
 
 export const htmlDeserializerCodeBlock: HtmlDeserializer = {
   parse: ({ element }) => {
-    const staticCodeBlock = htmlDeserializerCodeBlockStatic(element);
-
-    if (staticCodeBlock) {
-      return staticCodeBlock;
-    }
-
     const languageSelectorText =
       [...element.childNodes].find(
         (node: ChildNode) => node.nodeName === 'SELECT'

@@ -1,7 +1,7 @@
 import type { SlateEditor } from '../../../editor';
 
 import { type AnyEditorPlugin, getEditorPlugin } from '../../../plugin';
-import { isSlatePluginNode } from '../../../static';
+import { isSlateLeaf, isSlatePluginNode } from '../../../static';
 
 const getDefaultNodeProps = ({
   element,
@@ -10,7 +10,7 @@ const getDefaultNodeProps = ({
   element: HTMLElement;
   type: string;
 }) => {
-  if (!isSlatePluginNode(element, type)) return;
+  if (!isSlatePluginNode(element, type) && !isSlateLeaf(element)) return;
 
   const dataAttributes: Record<string, any> = {};
 
@@ -56,10 +56,10 @@ export const getDataNodeProps = ({
 }) => {
   const toNodeProps = plugin.parsers.html?.deserializer?.toNodeProps;
 
-  const disabledDefaultNodeProps =
-    plugin.parsers.html?.deserializer?.disabledDefaultNodeProps ?? false;
+  const disableDefaultNodeProps =
+    plugin.parsers.html?.deserializer?.disableDefaultNodeProps ?? false;
 
-  const defaultNodeProps = disabledDefaultNodeProps
+  const defaultNodeProps = disableDefaultNodeProps
     ? {}
     : getDefaultNodeProps({
         ...(getEditorPlugin(editor, plugin) as any),
