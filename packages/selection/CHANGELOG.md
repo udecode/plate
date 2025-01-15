@@ -1,5 +1,11 @@
 # @udecode/plate-selection
 
+## 42.2.0
+
+### Minor Changes
+
+- [#3989](https://github.com/udecode/plate/pull/3989) by [@zbeyens](https://github.com/zbeyens) – Feat: api.blockSelection.selectBlocks
+
 ## 42.0.3
 
 ### Patch Changes
