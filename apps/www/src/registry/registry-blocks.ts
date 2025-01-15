@@ -26,6 +26,7 @@ export const blocks: Registry = [
       '@udecode/plate',
       '@udecode/plate-date',
       '@udecode/plate-emoji',
+      '@emoji-mart/data@1.2.1',
       '@udecode/plate-excalidraw',
       '@udecode/plate-heading',
       '@udecode/plate-highlight',

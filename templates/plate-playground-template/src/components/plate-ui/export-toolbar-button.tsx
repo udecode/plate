@@ -383,6 +383,10 @@ export function ExportToolbarButton({ children, ...props }: DropdownMenuProps) {
           <DropdownMenuItem onSelect={exportToImage}>
             Export as Image
           </DropdownMenuItem>
+          <DropdownMenuItem disabled>
+            Export as Markdown{' '}
+            <span className="text-xs text-muted-foreground">(coming soon)</span>
+          </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>

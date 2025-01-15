@@ -3,6 +3,7 @@ import {
   type SlatePlugin,
   HtmlPlugin,
   createSlatePlugin,
+  isSlatePluginElement,
 } from '@udecode/plate';
 
 import { cleanDocx } from './docx-cleaner/cleanDocx';
@@ -21,6 +22,9 @@ const getParse =
   ({ element }) => {
     const node: any = { type };
 
+    if (isSlatePluginElement(element, type)) {
+      return node;
+    }
     if (isDocxList(element)) {
       node.indent = getDocxListIndent(element);
 

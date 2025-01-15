@@ -1,3 +1,5 @@
+import type { EmojiMartData } from '@emoji-mart/data';
+
 import type { IEmojiLibrary } from '../EmojiLibrary';
 
 import { EmojiInlineLibrary } from '../EmojiLibrary/EmojiInlineLibrary';
@@ -10,10 +12,10 @@ export class EmojiInlineIndexSearch extends AIndexSearch {
     super(library);
   }
 
-  public static getInstance() {
+  public static getInstance(data: EmojiMartData) {
     if (!EmojiInlineIndexSearch.instance) {
       EmojiInlineIndexSearch.instance = new EmojiInlineIndexSearch(
-        new EmojiInlineLibrary()
+        new EmojiInlineLibrary(data)
       );
     }
 

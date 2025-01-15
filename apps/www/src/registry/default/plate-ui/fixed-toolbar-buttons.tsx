@@ -44,6 +44,7 @@ import { EmojiDropdownMenu } from './emoji-dropdown-menu';
 import { ExportToolbarButton } from './export-toolbar-button';
 import { FontSizeToolbarButton } from './font-size-toolbar-button';
 import { RedoToolbarButton, UndoToolbarButton } from './history-toolbar-button';
+import { ImportToolbarButton } from './import-toolbar-button';
 import {
   BulletedIndentListToolbarButton,
   NumberedIndentListToolbarButton,
@@ -84,6 +85,8 @@ export function FixedToolbarButtons() {
             <ExportToolbarButton>
               <ArrowUpToLineIcon />
             </ExportToolbarButton>
+
+            <ImportToolbarButton />
           </ToolbarGroup>
 
           <ToolbarGroup>

@@ -9,6 +9,38 @@ import type {
 
 import { getEditorPlugin } from '../../../plugin';
 import { getInjectedPlugins } from '../../../utils/getInjectedPlugins';
+import { getDataNodeProps } from './getDataNodeProps';
+
+/**
+ * Get a deserializer and add default rules for deserializing plate static
+ * elements
+ */
+const getDeserializedWithStaticRules = (plugin: AnyEditorPlugin) => {
+  let deserializer = plugin.parsers?.html?.deserializer;
+
+  const rules = deserializer?.rules ?? [];
+
+  // Check if rules already contain slate-xxx className
+  const hasSlateRule = rules.some((rule) =>
+    rule.validClassName?.includes(`slate-${plugin.key}`)
+  );
+
+  const staticRules = hasSlateRule
+    ? rules
+    : [
+        {
+          validClassName: `slate-${plugin.key}`,
+          validNodeName: '*',
+        },
+        ...rules,
+      ];
+
+  if (!deserializer) deserializer = { rules: staticRules };
+
+  deserializer.rules = staticRules;
+
+  return deserializer;
+};
 
 /** Get a deserializer by type, node names, class names and styles. */
 export const pluginDeserializeHtml = (
@@ -21,10 +53,9 @@ export const pluginDeserializeHtml = (
 ): (Nullable<HtmlDeserializer> & { node: AnyObject }) | undefined => {
   const {
     node: { isElement: isElementRoot, isLeaf: isLeafRoot },
-    parsers,
   } = plugin;
 
-  const deserializer = parsers?.html?.deserializer;
+  const deserializer = getDeserializedWithStaticRules(plugin);
 
   if (!deserializer) return;
 
@@ -115,7 +146,7 @@ export const pluginDeserializeHtml = (
   ) {
     return;
   }
-  if (!parse) {
+  if (!parse)
     if (isElement) {
       parse = ({ type }) => ({ type: type });
     } else if (isLeaf) {
@@ -123,14 +154,24 @@ export const pluginDeserializeHtml = (
     } else {
       return;
     }
-  }
 
-  let node =
+  const parsedNode =
     parse({
       ...(getEditorPlugin(editor, plugin) as any),
       element: el,
       node: {},
     }) ?? {};
+
+  const dataNodeProps = getDataNodeProps({
+    editor,
+    element: el,
+    plugin,
+  });
+
+  let node = {
+    ...parsedNode,
+    ...dataNodeProps,
+  };
 
   if (Object.keys(node).length === 0) return;
 

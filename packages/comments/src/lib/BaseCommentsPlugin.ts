@@ -73,6 +73,39 @@ export const BaseCommentsPlugin = createTSlatePlugin<BaseCommentsConfig>({
     onCommentDelete: null,
     onCommentUpdate: null,
   },
+  parsers: {
+    html: {
+      deserializer: {
+        disabledDefaultNodeProps: true,
+        toNodeProps: ({ element }) => {
+          const { slateComment } = element.dataset;
+
+          const ids = Object.keys(element.dataset).filter((key) =>
+            /^slateComment-\d+$/.exec(key)
+          );
+
+          const node: any = {};
+
+          if (slateComment !== undefined) {
+            node.comment = Boolean(slateComment);
+          }
+          // parse data-slate-comment-* attributes to comment_<id>
+          if (ids.length > 0) {
+            ids.forEach((id) => {
+              const value = element.dataset[id];
+
+              if (value === undefined) return;
+
+              const key = `comment_${id.replace(/^slateComment-/, '')}`;
+              node[key] = Boolean(value);
+            });
+          }
+
+          return node;
+        },
+      },
+    },
+  },
 })
   .extendOptions<Partial<CommentsSelectors>>(({ getOptions }) => ({
     activeComment: () => {

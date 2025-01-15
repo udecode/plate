@@ -106,6 +106,22 @@ export const uiComponents: Registry = [
     type: 'registry:ui',
   },
   {
+    dependencies: ['use-file-picker'],
+    doc: {
+      description: 'A toolbar button to import editor content from a file.',
+      docs: [{ route: '/docs/import', title: 'Import' }],
+      examples: ['basic-nodes-demo'],
+      label: 'New',
+      title: 'Import Toolbar Button',
+    },
+    files: [
+      { path: 'plate-ui/import-toolbar-button.tsx', type: 'registry:ui' },
+    ],
+    name: 'import-toolbar-button',
+    registryDependencies: ['dropdown-menu', 'toolbar'],
+    type: 'registry:ui',
+  },
+  {
     dependencies: ['html2canvas', 'pdf-lib'],
     doc: {
       description: 'A toolbar button to export editor content as PDF.',
@@ -121,6 +137,7 @@ export const uiComponents: Registry = [
     registryDependencies: ['toolbar'],
     type: 'registry:ui',
   },
+
   {
     dependencies: ['@udecode/plate-caption'],
     doc: {
@@ -310,7 +327,11 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
     type: 'registry:ui',
   },
   {
-    dependencies: ['@udecode/plate-emoji', '@radix-ui/react-popover'],
+    dependencies: [
+      '@udecode/plate-emoji',
+      '@emoji-mart/data@1.2.1',
+      '@radix-ui/react-popover',
+    ],
     doc: {
       description: 'A dropdown menu for emoji selection and insertion.',
       docs: [
@@ -365,6 +386,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       'indent-list-toolbar-button',
       'indent-todo-toolbar-button',
       'indent-toolbar-button',
+      'import-toolbar-button',
       'insert-dropdown-menu',
       'line-height-dropdown-menu',
       'link-toolbar-button',
@@ -1154,7 +1176,7 @@ export const uiNodes: Registry = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@udecode/plate-emoji'],
+    dependencies: ['@udecode/plate-emoji', '@emoji-mart/data@1.2.1'],
     doc: {
       description: 'An input component for emoji search and insertion.',
       docs: [

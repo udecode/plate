@@ -7,6 +7,7 @@ const plugins: Registry = [
       '@udecode/plate-date',
       '@udecode/plate-docx',
       '@udecode/plate-emoji',
+      '@emoji-mart/data@1.2.1',
       '@udecode/plate-font',
       '@udecode/plate-highlight',
       '@udecode/plate-horizontal-rule',

@@ -3,11 +3,7 @@
 import React, { memo } from 'react';
 
 import { withProps } from '@udecode/cn';
-import {
-  type SlatePlugin,
-  BaseParagraphPlugin,
-  SlateLeaf,
-} from '@udecode/plate';
+import { BaseParagraphPlugin, SlateLeaf } from '@udecode/plate';
 import { useAIChatEditor } from '@udecode/plate-ai/react';
 import {
   BaseBoldPlugin,
@@ -22,6 +18,7 @@ import {
   BaseCodeLinePlugin,
   BaseCodeSyntaxPlugin,
 } from '@udecode/plate-code-block';
+import { usePlateEditor } from '@udecode/plate-core/react';
 import { BaseHeadingPlugin, HEADING_KEYS } from '@udecode/plate-heading';
 import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
@@ -97,12 +94,14 @@ const plugins = [
     },
   }),
   MarkdownPlugin.configure({ options: { indentList: true } }),
-] as SlatePlugin[];
+];
 
 export const AIChatEditor = memo(({ content }: { content: string }) => {
-  const aiEditor = useAIChatEditor(content, {
+  const aiEditor = usePlateEditor({
     plugins,
   });
+
+  useAIChatEditor(aiEditor, content);
 
   return (
     <EditorStatic variant="aiChat" components={components} editor={aiEditor} />

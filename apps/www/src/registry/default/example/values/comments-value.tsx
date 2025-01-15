@@ -22,7 +22,7 @@ export const commentsValue: Value = [
         text: 'collaborate',
       },
       {
-        text: '  with others',
+        text: ' with others',
       },
     ],
     type: 'p',

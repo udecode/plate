@@ -1,4 +1,8 @@
-import { BaseParagraphPlugin, createSlatePlugin } from '@udecode/plate';
+import {
+  BaseParagraphPlugin,
+  createSlatePlugin,
+  isSlatePluginElement,
+} from '@udecode/plate';
 
 /**
  * Enables support for text alignment, useful to align your content to left,
@@ -16,7 +20,10 @@ export const BaseLineHeightPlugin = createSlatePlugin({
       parsers: {
         html: {
           deserializer: {
-            parse: ({ element, node }) => {
+            parse: ({ element, node, type }) => {
+              if (isSlatePluginElement(element, type)) {
+                return { type };
+              }
               if (element.style.lineHeight) {
                 node[editor.getType(plugin)] = element.style.lineHeight;
               }

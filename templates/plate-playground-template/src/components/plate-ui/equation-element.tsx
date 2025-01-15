@@ -5,8 +5,7 @@ import React, { useRef, useState } from 'react';
 import type { TEquationElement } from '@udecode/plate-math';
 
 import { cn, withRef } from '@udecode/cn';
-import { useElement } from '@udecode/plate/react';
-import { useSelected } from '@udecode/plate/react';
+import { useElement, useSelected } from '@udecode/plate/react';
 import { useEquationElement } from '@udecode/plate-math/react';
 import { RadicalIcon } from 'lucide-react';
 

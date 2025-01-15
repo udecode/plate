@@ -10,6 +10,19 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 
 ## January 2025 #18
 
+### January 14 #18.3
+- `import-toolbar-button`: add `import-toolbar-button`
+- `indent-fire-marker.tsx` Add `data-plate-prevent-deserialization` to prevent deserialization of the fire marker. Change the `span` tag to `li`.
+- `indent-todo-marker.tsx` change the `span` tag to `li`.
+- `image-element-static.tsx` and `hr-element-static.tsx`: Fix `nodeProps` not being passed to `SlateElement`.
+- `ai-chat-editor`:
+```tsx
+const aiEditor = usePlateEditor({ plugins });
+useAIChatEditor(aiEditor, content);
+```
+
+
+
 ### January 12 #18.2
 
 - `ai-plugins`: remove `createAIEditor`, it's now created in `ai-chat-editor`
