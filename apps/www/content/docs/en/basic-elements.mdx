@@ -104,6 +104,8 @@ Plugin for blockquote elements.
 
 ### `isCodeBlockEmpty`
 
+Checks if the selection is inside an empty code block.
+
 <API name="isCodeBlockEmpty">
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
@@ -118,6 +120,8 @@ Plugin for blockquote elements.
 
 ### `isSelectionAtCodeBlockStart`
 
+Checks if the selection is at the start of the first code line in a code block.
+
 <API name="isSelectionAtCodeBlockStart">
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
@@ -131,6 +135,8 @@ Plugin for blockquote elements.
 </API>
 
 ### `indentCodeLine`
+
+Indents the code line if the selection is expanded or there are no non-whitespace characters at left of the cursor. The indentation is 2 spaces by default.
 
 <API name="indentCodeLine">
 <APIParameters>
@@ -155,18 +161,22 @@ Plugin for blockquote elements.
 
 ### `insertCodeBlock`
 
+Inserts a code block by setting the node to code line and wrapping it with a code block. If the cursor is not at the block start, it inserts a break before the code block.
+
 <API name="insertCodeBlock">
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
-  <APIItem name="options" type="Omit<InsertNodesOptions, 'match'>" optional>
-    Options for inserting the code block.
+  <APIItem name="insertNodesOptions" type="Omit<InsertNodesOptions, 'match'>" optional>
+    Options for inserting nodes.
   </APIItem>
 </APIParameters>
 </API>
 
 ### `insertCodeLine`
+
+Inserts a code line starting with the specified indentation depth.
 
 <API name="insertCodeLine">
 <APIParameters>
@@ -181,6 +191,8 @@ Plugin for blockquote elements.
 </API>
 
 ### `outdentCodeLine`
+
+Outdents a code line, removing two whitespace characters if present.
 
 <API name="outdentCodeLine">
 <APIParameters>
@@ -204,6 +216,8 @@ Plugin for blockquote elements.
 
 ### `toggleCodeBlock`
 
+Toggles the code block in the editor.
+
 <API name="toggleCodeBlock">
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
@@ -213,6 +227,8 @@ Plugin for blockquote elements.
 </API>
 
 ### `unwrapCodeBlock`
+
+Unwraps the code block in the editor.
 
 <API name="unwrapCodeBlock">
 <APIParameters>
