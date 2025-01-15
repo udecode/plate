@@ -8,6 +8,7 @@ import type {
 } from '../../../plugin/SlatePlugin';
 
 import { getEditorPlugin } from '../../../plugin';
+import { isSlateNode } from '../../../static';
 import { getInjectedPlugins } from '../../../utils/getInjectedPlugins';
 import { getDataNodeProps } from './getDataNodeProps';
 
@@ -155,12 +156,19 @@ export const pluginDeserializeHtml = (
       return;
     }
 
-  const parsedNode =
-    parse({
-      ...(getEditorPlugin(editor, plugin) as any),
-      element: el,
-      node: {},
-    }) ?? {};
+  const parsedNode = (() => {
+    if (isSlateNode(el)) {
+      return {};
+    }
+
+    return (
+      parse({
+        ...(getEditorPlugin(editor, plugin) as any),
+        element: el,
+        node: {},
+      }) ?? {}
+    );
+  })();
 
   const dataNodeProps = getDataNodeProps({
     editor,
@@ -184,7 +192,7 @@ export const pluginDeserializeHtml = (
       node,
     });
 
-    if (res) {
+    if (res && !isSlateNode(el)) {
       node = {
         ...node,
         ...res,

@@ -38,6 +38,12 @@ export const getPluginNodeProps = ({
       ...(plugin.node.dangerouslyAllowAttributes ?? []),
       ...(node ? getNodeDataAttributeKeys(node) : []),
     ]);
+  } else if (newProps.nodeProps && attributes && plugin) {
+    // Add data attributes to nodeProps if nodeProps is already set
+    newProps.nodeProps = {
+      ...newProps.nodeProps,
+      ...pick(attributes, [...(node ? getNodeDataAttributeKeys(node) : [])]),
+    };
   }
 
   props = { ...props, ...newProps };

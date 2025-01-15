@@ -1,6 +1,7 @@
 import type { SlateEditor } from '../../../editor';
 import type { DeserializeHtmlNodeReturnType } from '../types';
 
+import { isSlateNode } from '../../../static';
 import { htmlBodyToFragment } from './htmlBodyToFragment';
 import { htmlBrToNewLine } from './htmlBrToNewLine';
 import { htmlElementToElement } from './htmlElementToElement';
@@ -28,7 +29,11 @@ export const deserializeHtmlNode =
     if (fragment) return fragment;
 
     // element
-    const element = htmlElementToElement(editor, node as HTMLElement);
+    const element = htmlElementToElement(
+      editor,
+      node as HTMLElement,
+      isSlateNode(node as HTMLElement)
+    );
 
     if (element) return element;
 

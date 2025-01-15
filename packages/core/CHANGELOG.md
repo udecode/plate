@@ -1,5 +1,19 @@
 # @udecode/plate-core
 
+## 42.1.2
+
+### Patch Changes
+
+- [#3986](https://github.com/udecode/plate/pull/3986) by [@felixfeng33](https://github.com/felixfeng33) – Fix lodash import
+
+## 42.1.1
+
+### Patch Changes
+
+- [#3974](https://github.com/udecode/plate/pull/3974) by [@felixfeng33](https://github.com/felixfeng33) – fix import html
+
+- [#3974](https://github.com/udecode/plate/pull/3974) by [@felixfeng33](https://github.com/felixfeng33) – Remove useless html parser.
+
 ## 42.0.6
 
 ### Patch Changes

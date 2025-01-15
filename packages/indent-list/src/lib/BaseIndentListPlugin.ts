@@ -91,16 +91,6 @@ export const BaseIndentListPlugin = createTSlatePlugin<BaseIndentListConfig>({
       deserializer: {
         isElement: true,
         parse: ({ editor, element, getOptions }) => {
-          const parent = element.parentElement;
-
-          if (
-            parent &&
-            (parent.classList.contains('slate-ol') ||
-              parent.classList.contains('slate-ul'))
-          ) {
-            return;
-          }
-
           return {
             // gdoc uses aria-level attribute
             indent: Number(element.getAttribute('aria-level')),

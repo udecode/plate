@@ -2,7 +2,6 @@ import {
   type PluginConfig,
   bindFirst,
   createTSlatePlugin,
-  isSlatePluginElement,
 } from '@udecode/plate';
 
 import type { MediaPluginOptions, TMediaElement } from '../media';
@@ -56,16 +55,10 @@ export const BaseImagePlugin = createTSlatePlugin<ImageConfig>({
     parsers: {
       html: {
         deserializer: {
-          parse: ({ element, type }) => {
-            if (isSlatePluginElement(element as HTMLElement, type)) {
-              return;
-            }
-
-            return {
-              type: plugin.node.type,
-              url: element.getAttribute('src'),
-            };
-          },
+          parse: ({ element }) => ({
+            type: plugin.node.type,
+            url: element.getAttribute('src'),
+          }),
           rules: [
             {
               validNodeName: 'IMG',

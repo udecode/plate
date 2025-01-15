@@ -3,6 +3,7 @@ import { basicElementsValue } from 'www/src/registry/default/example/values/basi
 import { basicMarksValue } from 'www/src/registry/default/example/values/basic-marks-value';
 import { commentsValue } from 'www/src/registry/default/example/values/comments-value';
 import { dateValue } from 'www/src/registry/default/example/values/date-value';
+import { fontValue } from 'www/src/registry/default/example/values/font-value';
 // import { equationValue } from 'www/src/registry/default/example/values/equation-value';
 import { highlightValue } from 'www/src/registry/default/example/values/highlight-value';
 import { horizontalRuleValue } from 'www/src/registry/default/example/values/horizontal-rule-value';
@@ -30,7 +31,7 @@ describe('deserializePlateStatic', () => {
       // ...columnValue,
       ...mentionValue,
       ...dateValue,
-      // ...fontValue,
+      ...fontValue,
       ...highlightValue,
       ...kbdValue,
       ...commentsValue,
@@ -61,7 +62,7 @@ describe('deserializePlateStatic', () => {
       // ...columnValue,
       ...mentionValue,
       ...dateValue,
-      // ...fontValue,
+      ...fontValue,
       ...highlightValue,
       ...kbdValue,
       ...commentsValue,

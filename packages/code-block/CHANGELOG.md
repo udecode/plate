@@ -1,5 +1,11 @@
 # @udecode/plate-code-block
 
+## 42.1.1
+
+### Patch Changes
+
+- [#3974](https://github.com/udecode/plate/pull/3974) by [@felixfeng33](https://github.com/felixfeng33) – Remove useless html parser.
+
 ## 42.0.5
 
 ### Patch Changes
