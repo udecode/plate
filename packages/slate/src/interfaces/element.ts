@@ -11,9 +11,9 @@ import type { TextIn, TextOf } from './text';
  * element nodes or text nodes. They can be either "blocks" or "inlines"
  * depending on the Slate editor's configuration.
  */
-export type TElement = {
+export type TElement<T extends string = string> = {
   children: Descendant[];
-  type: string;
+  type: T;
 } & UnknownObject;
 
 /** Element retrieval and check methods. */
