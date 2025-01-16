@@ -32,7 +32,6 @@ export function ImportToolbarButton({ children, ...props }: DropdownMenuProps) {
       const editorNode = getEditorDOMFromHtmlString(text);
 
       const nodes = editor.api.html.deserialize({
-        collapseWhiteSpace: false,
         element: editorNode,
       });
 
