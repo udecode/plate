@@ -7,6 +7,7 @@ import {
   type CreatePlateEditorOptions,
   ParagraphPlugin,
   PlateLeaf,
+  useEditorRef,
   usePlateEditor,
 } from '@udecode/plate/react';
 import { AIPlugin } from '@udecode/plate-ai/react';
@@ -179,4 +180,10 @@ export const useCreateEditor = (
     },
     deps
   );
+};
+
+export type MyEditor = ReturnType<typeof useCreateEditor>;
+
+export const useMyEditor = () => {
+  return useEditorRef() as MyEditor;
 };
