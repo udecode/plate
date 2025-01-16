@@ -49,6 +49,7 @@ import { BaseKbdPlugin } from '@udecode/plate-kbd';
 import { BaseColumnItemPlugin, BaseColumnPlugin } from '@udecode/plate-layout';
 import { BaseLineHeightPlugin } from '@udecode/plate-line-height';
 import { BaseLinkPlugin } from '@udecode/plate-link';
+import { MarkdownPlugin } from '@udecode/plate-markdown';
 import {
   BaseEquationPlugin,
   BaseInlineEquationPlugin,
@@ -108,8 +109,6 @@ import { TableRowElementStatic } from '@/registry/default/plate-ui/table-row-ele
 import { TocElementStatic } from '@/registry/default/plate-ui/toc-element-static';
 import { ToggleElementStatic } from '@/registry/default/plate-ui/toggle-element-static';
 
-import type { MyEditor } from '../components/editor/use-create-editor';
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -126,7 +125,7 @@ import { ToolbarButton } from './toolbar';
 const siteUrl = 'https://platejs.org';
 
 export function ExportToolbarButton({ children, ...props }: DropdownMenuProps) {
-  const editor = useEditorRef() as MyEditor;
+  const editor = useEditorRef();
   const openState = useOpenState();
 
   const getCanvas = async () => {
@@ -362,7 +361,7 @@ export function ExportToolbarButton({ children, ...props }: DropdownMenuProps) {
   };
 
   const exportToMarkdown = async () => {
-    const md = editor.api.markdown.serialize();
+    const md = editor.getApi(MarkdownPlugin).markdown.serialize();
     const url = `data:text/markdown;charset=utf-8,${encodeURIComponent(md)}`;
     await downloadFile(url, 'plate.md');
   };

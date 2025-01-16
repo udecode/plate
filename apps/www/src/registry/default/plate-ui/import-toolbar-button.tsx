@@ -6,10 +6,9 @@ import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
 import { getEditorDOMFromHtmlString } from '@udecode/plate';
 import { useEditorRef } from '@udecode/plate/react';
+import { MarkdownPlugin } from '@udecode/plate-markdown';
 import { ArrowUpToLineIcon } from 'lucide-react';
 import { useFilePicker } from 'use-file-picker';
-
-import type { MyEditor } from '../components/editor/use-create-editor';
 
 import {
   DropdownMenu,
@@ -24,7 +23,7 @@ import { ToolbarButton } from './toolbar';
 type ImportType = 'html' | 'markdown';
 
 export function ImportToolbarButton({ children, ...props }: DropdownMenuProps) {
-  const editor = useEditorRef() as MyEditor;
+  const editor = useEditorRef();
   const openState = useOpenState();
 
   const [type, setType] = React.useState<ImportType>('html');
@@ -40,7 +39,7 @@ export function ImportToolbarButton({ children, ...props }: DropdownMenuProps) {
       return nodes;
     }
 
-    const nodes = editor.api.markdown.deserialize(text);
+    const nodes = editor.getApi(MarkdownPlugin).markdown.deserialize(text);
 
     return nodes;
   };
