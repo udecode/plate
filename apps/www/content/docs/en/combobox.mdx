@@ -106,12 +106,6 @@ The input element component can be built using [Inline Combobox](/docs/component
 Hook for managing combobox input behavior and keyboard interactions.
 
 <API name="useComboboxInput">
-<APIParameters>
-  <APIItem name="options" type="UseComboboxInputOptions">
-    Options for the combobox input.
-  </APIItem>
-</APIParameters>
-
 <APIOptions type="UseComboboxInputOptions">
   <APIItem name="ref" type="RefObject<HTMLElement>">
     Reference to the input element.
@@ -165,6 +159,14 @@ Hook for managing combobox input behavior and keyboard interactions.
   </APIItem>
   <APIItem name="props" type="object">
     Props for the input element.
+    <APISubList>
+      <APISubListItem parent="props" name="onBlur" type="EventHandler">
+        Blur event handler.
+      </APISubListItem>
+      <APISubListItem parent="props" name="onKeyDown" type="EventHandler">
+        Keydown event handler.
+      </APISubListItem>
+    </APISubList>
   </APIItem>
   <APIItem name="removeInput" type="(focusEditor?: boolean) => void">
     Function to remove the input node.

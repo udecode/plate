@@ -130,64 +130,40 @@ When rendering your editor output without the need for an interactive environmen
 
 ### API
 
-#### serializeHtml
+#### `serializeHtml`
 
 Convert Slate Nodes into HTML string.
 
-<APIParameters>
-<APIItem name="options" type="object">
+<API name="serializeHtml">
 
-Options to control the HTML serialization process.
+    <APIOptions type="object">
+      <APIItem name="components" type="NodeComponents" required>
+        A mapping of plugin keys to React components. Each component renders the corresponding Slate node as HTML.
+      </APIItem>
+      <APIItem name="editorComponent" type="React.ComponentType<T>" optional>
+        A React component to render the entire editor content.
+        - **Default:** `PlateStatic`
+      </APIItem>
+      <APIItem name="props" type="Partial<T>" optional>
+        Props to pass to the `editorComponent`. The generic type `T` extends `PlateStaticProps`.
+      </APIItem>
+      <APIItem name="preserveClassNames" type="string[]" optional>
+        A list of class name prefixes to preserve if `stripClassNames` is enabled.
+      </APIItem>
+      <APIItem name="stripClassNames" type="boolean" optional>
+        If `true`, remove class names from the output HTML except those listed in `preserveClassNames`.
+        - **Default:** `false`
+      </APIItem>
+      <APIItem name="stripDataAttributes" type="boolean" optional>
+        If `true`, remove `data-*` attributes from the output HTML.
+        - **Default:** `false`
+      </APIItem>
+    </APIOptions>
 
-<APISubList>
-<APISubListItem parent="options" name="components" type="NodeComponents">
-
-A mapping of plugin keys to React components. Each component renders the corresponding Slate node as HTML.
-
-</APISubListItem>
-
-<APISubListItem parent="options" name="editorComponent" type="React.ComponentType<T>" optional>
-
-A React component to render the entire editor content. Defaults to `PlateStatic` if not provided. This component receives `components`, `editor`, and `props`.
-
-</APISubListItem>
-
-<APISubListItem parent="options" name="props" type="Partial<T>" optional>
-
-Props to pass to the `editorComponent`. The generic type `T` extends `PlateStaticProps`.
-
-</APISubListItem>
-
-<APISubListItem parent="options" name="preserveClassNames" type="string[]" optional>
-
-A list of class name prefixes to preserve if `stripClassNames` is enabled.
-
-</APISubListItem>
-
-<APISubListItem parent="options" name="stripClassNames" type="boolean" optional>
-
-If `true`, remove class names from the output HTML except those listed in `preserveClassNames`.
-
-- **Default:** `false`
-
-</APISubListItem>
-
-<APISubListItem parent="options" name="stripDataAttributes" type="boolean" optional>
-
-If `true`, remove `data-*` attributes from the output HTML.
-
-- **Default:** `false`
-
-</APISubListItem>
-</APISubList>
-</APIItem>
-</APIParameters>
-
-<APIReturns>
-<APIItem type="string">
-A HTML string representing the Slate content.
-</APIItem>
+<APIReturns type="string">
+  A HTML string representing the Slate content.
 </APIReturns>
+</API>
 
 ## HTML -> Slate
 
@@ -361,28 +337,24 @@ export const IndentListPlugin = createTSlatePlugin<IndentListConfig>({
 });
 ```
 
-### API
+## API
 
-#### editor.api.html.deserialize
+### `editor.api.html.deserialize`
 
 Deserialize HTML string into Slate value.
 
-<APIParameters>
-<APISubListItem parent="options" name="element" type="HTMLElement | string">
+<API name="deserialize">
+    <APIOptions type="DeserializeHtmlOptions">
+      <APIItem name="element" type="HTMLElement | string">
+        The HTML element or string to deserialize.
+      </APIItem>
+      <APIItem name="collapseWhiteSpace" type="boolean" optional>
+        Flag to enable or disable the removal of whitespace from the serialized HTML.
+        - **Default:** `true`
+      </APIItem>
+    </APIOptions>
 
-The HTML element or string to deserialize.
-
-</APISubListItem>
-<APISubListItem parent="options" name="collapseWhiteSpace" type="boolean" optional>
-
-Flag to enable or disable the removal of whitespace from the serialized HTML.
-
-- **Default:** `true` (Whitespace will be removed.)
-</APISubListItem>
-</APIParameters>
-<APIReturns>
-<APIItem type="Descendant[]">
-
-The deserialized Slate value.
-</APIItem>
+<APIReturns type="Descendant[]">
+  The deserialized Slate value.
 </APIReturns>
+</API>

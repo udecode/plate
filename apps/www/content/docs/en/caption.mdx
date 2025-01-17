@@ -84,6 +84,8 @@ const plugins = [
 
 ### `TCaptionElement`
 
+Extends `TElement`.
+
 <API name="TCaptionElement">
 <APIAttributes>
   <APIItem name="extends" type="TElement">
@@ -106,26 +108,25 @@ const plugins = [
   </APIItem>
   <APIItem name="state" type="object" optional>
     State for the caption component.
+    <APISubList>
+      <APISubListItem parent="state" name="captionString" type="string" optional>
+        The string representing the caption.
+      </APISubListItem>
+      <APISubListItem parent="state" name="selected" type="boolean" optional>
+        Whether the caption component is selected.
+      </APISubListItem>
+      <APISubListItem parent="state" name="readOnly" type="boolean" optional>
+        Whether the caption component is in read-only mode.
+      </APISubListItem>
+    </APISubList>
   </APIItem>
+  
+  <APIOptions type="object">
+  <APIItem name="readOnly" type="boolean" optional>
+    Whether the caption component is in read-only mode.
+  </APIItem>
+</APIOptions>
 </APIProps>
-
-<APIOptions type="object">
-  <APIItem name="readOnly" type="boolean" optional>
-    Whether the caption component is in read-only mode.
-  </APIItem>
-</APIOptions>
-
-<APIOptions type="object">
-  <APIItem name="captionString" type="string" optional>
-    The string representing the caption.
-  </APIItem>
-  <APIItem name="selected" type="boolean" optional>
-    Whether the caption component is selected.
-  </APIItem>
-  <APIItem name="readOnly" type="boolean" optional>
-    Whether the caption component is in read-only mode.
-  </APIItem>
-</APIOptions>
 </API>
 
 ### `<CaptionTextarea>`
@@ -134,24 +135,23 @@ const plugins = [
 <APIProps>
   <APIItem name="state" type="object">
     State for the caption textarea.
+    <APISubList>
+      <APISubListItem parent="state" name="textareaRef" type="Ref">
+        Reference to the textarea element.
+      </APISubListItem>
+      <APISubListItem parent="state" name="captionValue" type="TextareaAutosizeProps['value']">
+        The value of the caption displayed in the textarea.
+      </APISubListItem>
+      <APISubListItem parent="state" name="setCaptionValue" type="(value: TextareaAutosizeProps['value']) => void">
+        Function to update the caption value.
+      </APISubListItem>
+      <APISubListItem parent="state" name="readOnly" type="boolean">
+        Whether the caption component is in read-only mode.
+      </APISubListItem>
+      <APISubListItem parent="state" name="element" type="TCaptionElement">
+        The caption element.
+      </APISubListItem>
+    </APISubList>
   </APIItem>
 </APIProps>
-
-<APIOptions type="object">
-  <APIItem name="textareaRef" type="Ref">
-    Reference to the textarea element.
-  </APIItem>
-  <APIItem name="captionValue" type="TextareaAutosizeProps['value']">
-    The value of the caption displayed in the textarea.
-  </APIItem>
-  <APIItem name="setCaptionValue" type="(value: TextareaAutosizeProps['value']) => void">
-    Function to update the caption value.
-  </APIItem>
-  <APIItem name="readOnly" type="boolean">
-    Whether the caption component is in read-only mode.
-  </APIItem>
-  <APIItem name="element" type="TCaptionElement">
-    The caption element.
-  </APIItem>
-</APIOptions>
 </API>

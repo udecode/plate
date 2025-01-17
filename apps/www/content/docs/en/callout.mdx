@@ -66,15 +66,6 @@ Callout element plugin.
 Insert a callout element into the editor.
 
 <API name="callout">
-<APIParameters>
-  <APIItem name="editor" type="SlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="object" optional>
-    Options for inserting the callout.
-  </APIItem>
-</APIParameters>
-
 <APIOptions type="object">
   <APIItem name="variant" type="string" optional>
     The variant of the callout to insert.
@@ -92,12 +83,6 @@ Insert a callout element into the editor.
 Manage the emoji picker functionality for callouts.
 
 <API name="useCalloutEmojiPicker">
-<APIParameters>
-  <APIItem name="options" type="UseCalloutEmojiPickerOptions">
-    Options for the callout emoji picker.
-  </APIItem>
-</APIParameters>
-
 <APIOptions type="UseCalloutEmojiPickerOptions">
   <APIItem name="isOpen" type="boolean">
     Whether the emoji picker is open.
@@ -107,12 +92,31 @@ Manage the emoji picker functionality for callouts.
   </APIItem>
 </APIOptions>
 
-<APIReturns type="{ emojiToolbarDropdownProps: object; props: object }">
+<APIReturns type="object">
   <APIItem name="emojiToolbarDropdownProps" type="object">
     Props for the emoji toolbar dropdown.
+    <APISubList>
+      <APISubListItem parent="emojiToolbarDropdownProps" name="isOpen" type="boolean">
+        Whether the emoji picker is open.
+      </APISubListItem>
+      <APISubListItem parent="emojiToolbarDropdownProps" name="setIsOpen" type="(v: boolean) => void">
+        Function to set the open state of the emoji picker, respecting read-only mode.
+      </APISubListItem>
+    </APISubList>
   </APIItem>
   <APIItem name="props" type="object">
     Props for the emoji picker component.
+    <APISubList>
+      <APISubListItem parent="props" name="isOpen" type="boolean">
+        Whether the emoji picker is open.
+      </APISubListItem>
+      <APISubListItem parent="props" name="setIsOpen" type="(isOpen: boolean) => void">
+        Function to set the open state of the emoji picker.
+      </APISubListItem>
+      <APISubListItem parent="props" name="onSelectEmoji" type="(options: { emojiValue?: any; icon?: any }) => void">
+        Function called when an emoji is selected. It updates the callout's icon and closes the picker.
+      </APISubListItem>
+    </APISubList>
   </APIItem>
 </APIReturns>
 </API>
@@ -120,6 +124,13 @@ Manage the emoji picker functionality for callouts.
 ## Types
 
 ### `TCalloutElement`
+
+```typescript
+interface TCalloutElement extends TElement {
+  variant?: string;
+  icon?: string;
+}
+```
 
 <API name="TCalloutElement">
 <APIAttributes>

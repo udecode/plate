@@ -79,13 +79,13 @@ Refer to the preview above.
 
 ### `SlashPlugin`
 
-<API name="SlashPlugin">
-Extends [TriggerComboboxPlugin](/docs/combobox#options)
+Plugin for slash command functionality. Extends [TriggerComboboxPlugin](/docs/combobox#options).
 
-<APIOptions>
+<API name="SlashPlugin">
+<APIOptions type="SlashPluginOptions">
   <APIItem name="createComboboxInput" type="() => TSlashInputElement" optional>
     Function to create combobox input element.
-    - **Default:**
+    - **Default:** 
     ```tsx
     () => ({
       children: [{ text: '' }],
@@ -93,12 +93,10 @@ Extends [TriggerComboboxPlugin](/docs/combobox#options)
     });
     ```
   </APIItem>
-
   <APIItem name="trigger" type="string" optional>
     Character that triggers slash command combobox.
     - **Default:** `'/'`
   </APIItem>
-
   <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>
     RegExp to match character before trigger.
     - **Default:** `/^\s?$/`

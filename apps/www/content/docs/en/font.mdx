@@ -69,6 +69,8 @@ Plugin for font size formatting.
 
 ##### `editor.api.fontSize.setMark`
 
+Set the font size mark.
+
 <API name="setMark">
 <APIParameters>
   <APIItem name="fontSize" type="string">
@@ -80,6 +82,8 @@ Plugin for font size formatting.
 #### Utils
 
 ##### `toUnitLess`
+
+Convert a font size value to a unitless value.
 
 <API name="toUnitLess">
 <APIParameters>
@@ -101,6 +105,8 @@ Plugin for font weight formatting.
 
 ### `useColorDropdownMenu`
 
+A behavior hook for the color dropdown menu component.
+
 <API name="useColorDropdownMenu">
 <APIState>
   <APIItem name="open" type="boolean">
@@ -114,27 +120,29 @@ Plugin for font weight formatting.
 <APIReturns type="object">
   <APIItem name="menuProps" type="object">
     Props for the menu component.
+    <APISubList>
+      <APISubListItem parent="menuProps" name="open" type="boolean">
+        Whether the dropdown menu is open.
+      </APISubListItem>
+      <APISubListItem parent="menuProps" name="onOpenChange" type="function">
+        Callback to toggle the open state.
+      </APISubListItem>
+    </APISubList>
   </APIItem>
-  <APIOptions type="menuProps">
-    <APIItem name="open" type="boolean">
-      Whether the dropdown menu is open.
-    </APIItem>
-    <APIItem name="onOpenChange" type="function">
-      Callback to toggle the open state.
-    </APIItem>
-  </APIOptions>
   <APIItem name="buttonProps" type="object">
     Props for the button component.
+    <APISubList>
+      <APISubListItem parent="buttonProps" name="pressed" type="boolean">
+        Whether the dropdown menu is open.
+      </APISubListItem>
+    </APISubList>
   </APIItem>
-  <APIOptions type="buttonProps">
-    <APIItem name="pressed" type="boolean">
-      Whether the dropdown menu is open.
-    </APIItem>
-  </APIOptions>
 </APIReturns>
 </API>
 
 ### `useColorInput`
+
+A behavior hook for the color input component.
 
 <API name="useColorInput">
 <APIReturns type="object">
@@ -143,16 +151,18 @@ Plugin for font weight formatting.
   </APIItem>
   <APIItem name="childProps" type="object">
     Props for the child component that triggers the color picker.
+    <APISubList>
+      <APISubListItem parent="childProps" name="onClick" type="function">
+        A callback function to handle the click event of the child component.
+      </APISubListItem>
+    </APISubList>
   </APIItem>
-  <APIOptions type="childProps">
-    <APIItem name="onClick" type="function">
-      Callback for click events.
-    </APIItem>
-  </APIOptions>
 </APIReturns>
 </API>
 
 ### `useColorsCustom`
+
+A behavior hook for custom colors in a color picker.
 
 <API name="useColorsCustom">
 <APIState>
@@ -170,22 +180,22 @@ Plugin for font weight formatting.
 <APIReturns type="object">
   <APIItem name="inputProps" type="object">
     Props for the color input element.
+    <APISubList>
+      <APISubListItem parent="inputProps" name="value" type="string">
+        The current value of the color input.
+      </APISubListItem>
+      <APISubListItem parent="inputProps" name="onChange" type="function">
+        A callback function to handle the change event of the color input.
+      </APISubListItem>
+    </APISubList>
   </APIItem>
-  <APIOptions type="inputProps">
-    <APIItem name="value" type="string">
-      Current color input value.
-    </APIItem>
-    <APIItem name="onChange" type="function">
-      Callback for input changes.
-    </APIItem>
-  </APIOptions>
   <APIItem name="menuItemProps" type="object">
     Props for menu item elements.
+     <APISubList>
+      <APISubListItem parent="menuItemProps" name="onSelect" type="function">
+        A callback function to handle the select event of the menu item.
+      </APISubListItem>
+    </APISubList>
   </APIItem>
-  <APIOptions type="menuItemProps">
-    <APIItem name="onSelect" type="function">
-      Callback for item selection.
-    </APIItem>
-  </APIOptions>
 </APIReturns>
 </API>

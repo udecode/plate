@@ -25,6 +25,8 @@ const MyPlugin = createPlatePlugin({
 
 ### `getEditorPlugin`
 
+This function is particularly useful when you need to access the context of another plugin. It allows for cross-plugin communication and interaction, enabling more complex and interconnected plugin behaviors.
+
 <API name="getEditorPlugin">
 Access context of another plugin for cross-plugin communication.
 
@@ -41,6 +43,8 @@ const MyPlugin = createPlatePlugin({
 </API>
 
 ### `useEditorPlugin`
+
+In React components, you can use the `useEditorPlugin` hook to access the Plugin Context:
 
 <API name="useEditorPlugin">
 React hook to access Plugin Context:
@@ -92,6 +96,8 @@ const MyPlugin = createPlatePlugin({
 
 ### `getOption`
 
+A function to get a specific option value for the plugin:
+
 <API name="getOption">
 Get specific option value for plugin:
 
@@ -110,6 +116,8 @@ const MyPlugin = createPlatePlugin({
 </API>
 
 ### `getOptions`
+
+A function to get all options for the plugin:
 
 <API name="getOptions">
 Get all options for plugin:
@@ -130,6 +138,8 @@ const MyPlugin = createPlatePlugin({
 
 ### `setOption`
 
+A function to set a specific option value for the plugin:
+
 <API name="setOption">
 Set specific option value for plugin:
 
@@ -147,6 +157,8 @@ const MyPlugin = createPlatePlugin({
 </API>
 
 ### `setOptions`
+
+A function to set multiple options for the plugin:
 
 <API name="setOptions">
 Set multiple options for plugin:
@@ -169,6 +181,8 @@ const MyPlugin = createPlatePlugin({
 
 ### `useOption`
 
+A hook to subscribe to a specific option value in a React component:
+
 <API name="useOption">
 Hook to subscribe to specific option value:
 
@@ -185,6 +199,8 @@ const MyPlugin = createPlatePlugin({
 </API>
 
 ### `type`
+
+The node type associated with the plugin:
 
 <API name="type">
 Node type associated with plugin:

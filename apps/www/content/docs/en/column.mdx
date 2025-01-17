@@ -50,21 +50,14 @@ Add Column Item Plugin to your document.
 
 ### `TColumnGroupElement`
 
-<API name="TColumnGroupElement">
-<APIAttributes>
-  <APIItem name="extends" type="TElement">
-    Base element type.
-  </APIItem>
-</APIAttributes>
-</API>
+Extends `TElement`.
 
 ### `TColumnElement`
 
+Extends `TElement`.
+
 <API name="TColumnElement">
 <APIAttributes>
-  <APIItem name="extends" type="TElement">
-    Base element type.
-  </APIItem>
   <APIItem name="width" type="string" optional>
     The column's width (must end with `%`)
   </APIItem>
@@ -78,17 +71,9 @@ Add Column Item Plugin to your document.
 Insert a columnGroup with two empty columns.
 
 <API name="insertColumnGroup">
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="InsertNodesOptions & { columns?: number[] | number }">
+<APIOptions type="InsertNodesOptions & { columns?: number[] | number }">
     - `columns`: Array of column widths or number of equal-width columns (default: 2)
     - Other `InsertNodesOptions` to control insert behavior
-  </APIItem>
-</APIParameters>
-
-<APIOptions type="InsertNodesOptions & { columns?: number[] | number }">
   <APIItem name="columns" type="number[] | number" optional>
     Array of column widths or number of equal-width columns (default: 2)
   </APIItem>
@@ -100,18 +85,9 @@ Insert a columnGroup with two empty columns.
 
 ### `insertColumn`
 
-Insert an empty column.
+Insert an empty column. You can set the width by options.width default is "33%"
 
 <API name="insertColumn">
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="InsertNodesOptions & { width?: string }">
-    InsertNodesOptions and width to set the insert behavior.
-  </APIItem>
-</APIParameters>
-
 <APIOptions type="InsertNodesOptions & { width?: string }">
   <APIItem name="width" type="string" optional>
     Column width (default: "33%")
@@ -128,9 +104,6 @@ Move the middle column to the left or right.
 
 <API name="moveMiddleColumn">
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
   <APIItem name="nodeEntry" type="NodeEntry">
     The node entry of `column` element
   </APIItem>
@@ -149,15 +122,6 @@ Move the middle column to the left or right.
 Convert a block into a column group layout or update an existing column group's layout.
 
 <API name="toggleColumnGroup">
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="object">
-    Options for toggling the column group.
-  </APIItem>
-</APIParameters>
-
 <APIOptions type="object">
   <APIItem name="at" type="Location" optional>
     The location to toggle the column group at.
@@ -171,20 +135,17 @@ Convert a block into a column group layout or update an existing column group's 
 </APIOptions>
 </API>
 
+Behavior:
+- If the target block is not a column group, wraps it in a new column group with the specified number of columns
+- If the target block is already a column group, updates its column layout using `setColumns`
+- The original content becomes the content of the first column
+- Additional columns are created with empty paragraphs
+
 ### `setColumns`
 
 Update the column layout of an existing column group.
 
 <API name="setColumns">
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="object">
-    Options for setting columns.
-  </APIItem>
-</APIParameters>
-
 <APIOptions type="object">
   <APIItem name="at" type="Path">
     The path to the column group element.
@@ -197,6 +158,17 @@ Update the column layout of an existing column group.
   </APIItem>
 </APIOptions>
 </API>
+
+Behavior:
+- When increasing columns:
+  - Keeps existing column content
+  - Adds new empty columns with specified widths
+- When decreasing columns:
+  - Merges content from removed columns into the last remaining column
+  - Updates widths of remaining columns
+- When keeping same number of columns:
+  - Only updates column widths
+
 
 ## Hooks
 

@@ -75,15 +75,10 @@ const plugins = [
 
 ### `ResetNodePlugin`
 
-<API name="ResetNodePlugin">
 Plugin for resetting node types based on rules.
 
-<APIOptions>
-  <APIItem name="rules" type="Array" optional>
-    Rules governing node reset behavior.
-  </APIItem>
-
-  <APIOptions type="rules">
+<API name="ResetNodePlugin">
+<APIOptions type="rules">
     <APIItem name="hotkey" type="string | string[]" optional>
       Hotkey(s) that trigger the rule.
     </APIItem>
@@ -99,14 +94,11 @@ Plugin for resetting node types based on rules.
     <APIItem name="onReset" type="(editor: PlateEditor) => void" optional>
       Callback when reset occurs.
     </APIItem>
+    <APIItem name="disableFirstBlockReset" type="boolean" optional>
+      Disable reset for first block in editor.
+    </APIItem>
+    <APIItem name="disableEditorReset" type="boolean" optional>
+      Disable reset for entire editor.
+  </APIItem>
   </APIOptions>
-
-  <APIItem name="disableFirstBlockReset" type="boolean" optional>
-    Disable reset for first block in editor.
-  </APIItem>
-
-  <APIItem name="disableEditorReset" type="boolean" optional>
-    Disable reset for entire editor.
-  </APIItem>
-</APIOptions>
 </API>

@@ -102,7 +102,8 @@ Contains the following element plugins:
 - `ListItemPlugin`
 - `ListItemContentPlugin`
 
-<APIOptions>
+<API name="ListPlugin">
+<APIOptions type="object">
   <APIItem name="validLiChildrenTypes" type="string[]" optional>
     Valid child node types for list items (besides `p` and `ul`).
   </APIItem>
@@ -132,13 +133,9 @@ Plugin for list item content.
 
 ### `editor.tf.toggle.list`
 
-<API name="editor.tf.toggle.list">
-<APIParameters>
-  <APIItem name="options" type="object">
-    Options for toggling list.
-  </APIItem>
-</APIParameters>
+Toggles a list in the editor.
 
+<API name="editor.tf.toggle.list">
 <APIOptions type="options">
   <APIItem name="type" type="string">
     Type of list to toggle.
@@ -148,18 +145,12 @@ Plugin for list item content.
 
 ### `getHighestEmptyList`
 
+Finds the highest end list that can be deleted. The path of the list should be different from `diffListPath`. If the highest end list has 2 or more items, returns `liPath`. It traverses up the parent lists until:
+
+- The list has less than 2 items.
+- Its path is not equal to `diffListPath`.
+
 <API name="getHighestEmptyList">
-Finds highest end list that can be deleted. Returns `liPath` if highest end list has 2+ items.
-
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="object" optional>
-    Options for finding list.
-  </APIItem>
-</APIParameters>
-
 <APIOptions type="options">
   <APIItem name="liPath" type="Path">
     Path of list item.
@@ -176,18 +167,9 @@ Finds highest end list that can be deleted. Returns `liPath` if highest end list
 
 ### `getListItemEntry`
 
+Returns the nearest `li` and `ul`/`ol` wrapping node entries for a given path (`default = selection`).
+
 <API name="getListItemEntry">
-Gets nearest `li` and `ul`/`ol` wrapping node entries for a given path.
-
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="object" optional>
-    Options for getting entries.
-  </APIItem>
-</APIParameters>
-
 <APIOptions type="options">
   <APIItem name="at" type="Location | null" optional>
     Location to get entries from.
@@ -202,13 +184,10 @@ Gets nearest `li` and `ul`/`ol` wrapping node entries for a given path.
 
 ### `getListRoot`
 
-<API name="getListRoot">
 Searches upward for root list element.
 
+<API name="getListRoot">
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
   <APIItem name="at" type="Path | TRange | Point | null" optional>
     Location to start search from.
     - **Default:** `editor.selection`
@@ -222,15 +201,9 @@ Searches upward for root list element.
 
 ### `getListTypes`
 
-<API name="getListTypes">
 Gets array of supported list types.
 
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-</APIParameters>
-
+<API name="getListTypes">
 <APIReturns type="string[]">
   Array of supported list types.
 </APIReturns>
@@ -238,18 +211,9 @@ Gets array of supported list types.
 
 ### `moveListSiblingsAfterCursor`
 
-<API name="moveListSiblingsAfterCursor">
 Moves list siblings after cursor to specified path.
 
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="object">
-    Options for moving siblings.
-  </APIItem>
-</APIParameters>
-
+<API name="moveListSiblingsAfterCursor">
 <APIOptions type="options">
   <APIItem name="at" type="Path">
     Cursor position path.
@@ -266,18 +230,9 @@ Moves list siblings after cursor to specified path.
 
 ### `removeFirstListItem`
 
-<API name="removeFirstListItem">
 Removes first list item if not nested and not first child.
 
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="object">
-    Options for removal.
-  </APIItem>
-</APIParameters>
-
+<API name="removeFirstListItem">
 <APIOptions type="options">
   <APIItem name="list" type="ElementEntry">
     List entry containing item.
@@ -294,18 +249,9 @@ Removes first list item if not nested and not first child.
 
 ### `removeListItem`
 
-<API name="removeListItem">
 Removes list item and moves sublist to parent if any.
 
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="RemoveListItemOptions" optional>
-    Options for removal.
-  </APIItem>
-</APIParameters>
-
+<API name="removeListItem">
 <APIOptions type="RemoveListItemOptions">
   <APIItem name="list" type="ElementEntry">
     List entry containing item.
@@ -326,13 +272,10 @@ Removes list item and moves sublist to parent if any.
 
 ### `someList`
 
-<API name="someList">
 Checks if selection is inside list of specific type.
 
+<API name="someList">
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
   <APIItem name="type" type="string">
     List type to check.
   </APIItem>
@@ -345,33 +288,19 @@ Checks if selection is inside list of specific type.
 
 ### `unindentListItems`
 
-<API name="unindentListItems">
 Decreases indentation level of list items.
 
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="UnindentListItemsOptions" optional>
+<API name="unindentListItems">
+<APIOptions type="UnindentListItemsOptions">
     Target path for unindenting.
-  </APIItem>
-</APIParameters>
+</APIOptions>
 </API>
 
 ### `unwrapList`
 
-<API name="unwrapList">
 Removes list formatting from selected items.
 
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="object" optional>
-    Options for unwrapping.
-  </APIItem>
-</APIParameters>
-
+<API name="unwrapList">
 <APIOptions type="options">
   <APIItem name="at" type="Path" optional>
     Target path for unwrapping.
@@ -382,6 +311,8 @@ Removes list formatting from selected items.
 ## Hooks
 
 ### `useListToolbarButton`
+
+A behavior hook for a list toolbar button.
 
 <API name="useListToolbarButton">
 <APIState>
@@ -398,14 +329,14 @@ Removes list formatting from selected items.
   <APIItem name="props" type="object">
     Props for toolbar button.
   </APIItem>
-  <APIOptions type="props">
-    <APIItem name="pressed" type="boolean">
+  <APISubList>
+    <APISubListItem parent="props" name="pressed" type="boolean">
       Button pressed state.
-    </APIItem>
-    <APIItem name="onClick" type="function">
+    </APISubListItem>
+    <APISubListItem parent="props" name="onClick" type="function">
       Handler to toggle list and focus editor.
-    </APIItem>
-  </APIOptions>
+    </APISubListItem>
+  </APISubList>
 </APIReturns>
 </API>
 
@@ -413,18 +344,9 @@ Removes list formatting from selected items.
 
 ### `getTodoListItemEntry`
 
-<API name="getTodoListItemEntry">
 Gets nearest todo list and item entries.
 
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="object">
-    Options for getting entries.
-  </APIItem>
-</APIParameters>
-
+<API name="getTodoListItemEntry">
 <APIOptions type="options">
   <APIItem name="at" type="Location | null" optional>
     Location to search from.
@@ -439,6 +361,8 @@ Gets nearest todo list and item entries.
 
 ### `useTodoListElement`
 
+A behavior hook a todo list item element.
+
 <API name="useTodoListElement">
 <APIState>
   <APIItem name="checked" type="boolean">
@@ -450,22 +374,19 @@ Gets nearest todo list and item entries.
   <APIItem name="element" type="TElement">
     Todo list item element.
   </APIItem>
-  <APIItem name="editor" type="PlateEditor">
-    Editor instance.
-  </APIItem>
 </APIState>
 
 <APIReturns type="object">
   <APIItem name="checkboxProps" type="object">
     Props for checkbox.
   </APIItem>
-  <APIOptions type="checkboxProps">
-    <APIItem name="checked" type="boolean">
+  <APISubList>
+    <APISubListItem parent="checkboxProps" name="checked" type="boolean">
       Checkbox checked state.
-    </APIItem>
-    <APIItem name="onCheckedChange" type="function">
+    </APISubListItem>
+    <APISubListItem parent="checkboxProps" name="onCheckedChange" type="function">
       Handler for checkbox state changes.
-    </APIItem>
-  </APIOptions>
+    </APISubListItem>
+  </APISubList>
 </APIReturns>
 </API>

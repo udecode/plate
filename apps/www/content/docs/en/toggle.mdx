@@ -55,18 +55,21 @@ const plugins = [
 
 ### `TogglePlugin`
 
-<API name="TogglePlugin">
 Plugin for managing toggle functionality.
 
-<APIOptions>
+<API name="TogglePlugin">
+<APIOptions type="object">
   <APIItem name="openIds" type="Set<string>" optional>
     Set of open toggle IDs.
+    - **Default:** `new Set()`
   </APIItem>
   <APIItem name="isOpen" type="(toggleId: string) => boolean" optional>
     Function to check if toggle is open.
+    - **Default:** `(id) => openIds.has(id)`
   </APIItem>
   <APIItem name="someClosed" type="(toggleIds: string[]) => boolean" optional>
     Function to check if any toggles are closed.
+    - **Default:** `(ids) => ids.some(id => !isOpen(id))`
   </APIItem>
 </APIOptions>
 </API>
@@ -75,12 +78,14 @@ Plugin for managing toggle functionality.
 
 ### `editor.api.toggle.toggleIds`
 
+Toggles the open state of specified toggles.
+
 <API name="editor.api.toggle.toggleIds">
 Toggle open state of toggles.
 
 <APIParameters>
   <APIItem name="ids" type="string[]">
-    Array of element IDs.
+    Array of element IDs to toggle.
   </APIItem>
   <APIItem name="force" type="boolean | null" optional>
     Force toggle state:
@@ -93,24 +98,16 @@ Toggle open state of toggles.
 
 ### `openNextToggles`
 
-<API name="openNextToggles">
 Mark block at current selection as open toggle.
-
-<APIParameters>
-  <APIItem name="editor" type="Editor">
-    Editor instance.
-  </APIItem>
-</APIParameters>
-</API>
 
 ## Hooks
 
 ### `useToggleToolbarButtonState`
 
-<API name="useToggleToolbarButtonState">
-Get toggle toolbar button state.
+Hook for getting toggle toolbar button state.
 
-<APIReturns>
+<API name="useToggleToolbarButtonState">
+<APIReturns type="object">
   <APIItem name="pressed" type="boolean">
     Whether button is pressed.
   </APIItem>
@@ -119,35 +116,36 @@ Get toggle toolbar button state.
 
 ### `useToggleToolbarButton`
 
-<API name="useToggleToolbarButton">
-Handle toggle toolbar button behavior.
+Hook for handling toggle toolbar button behavior.
 
+<API name="useToggleToolbarButton">
 <APIState>
   <APIItem name="pressed" type="boolean">
     Whether button is pressed.
   </APIItem>
 </APIState>
 
-<APIReturns>
+<APIReturns type="object">
   <APIItem name="props" type="object">
     Props for toggle button.
+    <APISubList>
+      <APISubListItem parent="props" name="pressed" type="boolean">
+        Whether button is pressed.
+      </APISubListItem>
+      <APISubListItem parent="props" name="onClick" type="function">
+        Toggle node type and focus editor.
+      </APISubListItem>
+      <APISubListItem parent="props" name="onMouseDown" type="function">
+        Prevent focus loss on click.
+      </APISubListItem>
+    </APISubList>
   </APIItem>
-
-  <APIOptions type="props">
-    <APIItem name="pressed" type="boolean">
-      Whether button is pressed.
-    </APIItem>
-    <APIItem name="onClick" type="function">
-      Toggle node type and focus editor.
-    </APIItem>
-    <APIItem name="onMouseDown" type="function">
-      Prevent focus loss on click.
-    </APIItem>
-  </APIOptions>
 </APIReturns>
 </API>
 
 ### `useToggleButtonState`
+
+Hook for getting toggle button state.
 
 <API name="useToggleButtonState">
 Get toggle button state.
@@ -158,7 +156,7 @@ Get toggle button state.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
+<APIReturns type="object">
   <APIItem name="toggleId" type="string">
     Toggle element ID.
   </APIItem>
@@ -169,6 +167,8 @@ Get toggle button state.
 </API>
 
 ### `useToggleButton`
+
+Hook for handling toggle button behavior.
 
 <API name="useToggleButton">
 Handle toggle button behavior.
@@ -182,7 +182,7 @@ Handle toggle button behavior.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
+<APIReturns type="object">
   <APIItem name="toggleId" type="string">
     Toggle element ID.
   </APIItem>
@@ -191,15 +191,14 @@ Handle toggle button behavior.
   </APIItem>
   <APIItem name="buttonProps" type="object">
     Props for toggle button.
+    <APISubList>
+      <APISubListItem parent="buttonProps" name="onClick" type="function">
+        Toggle open state.
+      </APISubListItem>
+      <APISubListItem parent="buttonProps" name="onMouseDown" type="function">
+        Prevent focus loss on click.
+      </APISubListItem>
+    </APISubList>
   </APIItem>
-
-  <APIOptions type="buttonProps">
-    <APIItem name="onClick" type="function">
-      Toggle open state.
-    </APIItem>
-    <APIItem name="onMouseDown" type="function">
-      Prevent focus loss on click.
-    </APIItem>
-  </APIOptions>
 </APIReturns>
 </API>

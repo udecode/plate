@@ -50,12 +50,12 @@ const plugins = [
 The editor requires a container component above `PlateContent` to ensure correct cursor overlay positioning:
 
 ```tsx
-export function EditorContainer(props: React.HTMLAttributes<HTMLDivElement>) {
+export const EditorContainer = (props: React.HTMLAttributes<HTMLDivElement>) => {
   const editor = useEditorRef();
   const containerRef = useEditorContainerRef();
 
   return <div id={editor.uid} ref={containerRef} {...props} />;
-}
+};
 ```
 
 This component is available in [Editor](/docs/components/editor).
@@ -74,6 +74,8 @@ To maintain the editor's selection state when focusing UI elements, add the `dat
 
 ### `CursorOverlayPlugin`
 
+Plugin that manages cursor and selection overlays.
+
 <API name="CursorOverlayPlugin">
 <APIOptions>
   <APIItem name="cursors" type="Record<string, CursorState<CursorData>>">
@@ -86,6 +88,8 @@ To maintain the editor's selection state when focusing UI elements, add the `dat
 ## API
 
 ### `editor.api.cursorOverlay.addCursor`
+
+Adds a cursor overlay with the specified key and state.
 
 <API name="addCursor">
 <APIParameters>
@@ -112,13 +116,9 @@ To maintain the editor's selection state when focusing UI elements, add the `dat
 
 ### `useCursorOverlay`
 
-<API name="useCursorOverlay">
-<APIParameters>
-  <APIItem name="options" type="object" optional>
-    Options for cursor overlay behavior.
-  </APIItem>
-</APIParameters>
+A hook that manages cursor and selection overlay states, providing real-time cursor positions and selection rectangles.
 
+<API name="useCursorOverlay">
 <APIOptions type="object">
   <APIItem name="minSelectionWidth" type="number" optional>
     Minimum width in pixels for a selection rectangle.

@@ -77,42 +77,29 @@ const plugins = [
 
 ### `indent`
 
+Indents the selected block(s) in the editor.
+
 <API name="indent">
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="SetIndentOptions" optional>
+  <APIOptions type="SetIndentOptions" optional>
     Options for indenting blocks.
-  </APIItem>
-</APIParameters>
+  </APIOptions>
 </API>
 
 ### `outdent`
 
+Decrease the indentation of the selected blocks.
+
 <API name="outdent">
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="SetIndentOptions" optional>
+  <APIOptions type="SetIndentOptions" optional>
     Options for outdenting blocks.
-  </APIItem>
-</APIParameters>
+  </APIOptions>
 </API>
 
 ### `setIndent`
 
-<API name="setIndent">
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="SetIndentOptions" optional>
-    Options for setting indent.
-  </APIItem>
-</APIParameters>
+Add offset to the indentation of the selected blocks.
 
+<API name="setIndent">
 <APIOptions type="SetIndentOptions">
   <APIItem name="offset" type="number" optional>
     Indentation offset.
@@ -134,6 +121,8 @@ const plugins = [
 ## Types
 
 ### `SetIndentOptions`
+
+Used to provide options for setting the indentation of a block of text.
 
 <API name="SetIndentOptions">
 <APIOptions>
@@ -157,30 +146,34 @@ const plugins = [
 
 ### `useIndentButton`
 
+A behavior hook for the indent button component.
+
 <API name="useIndentButton">
 <APIReturns type="object">
   <APIItem name="props" type="object">
     Props for the indent button.
+    <APISubList>
+      <APISubListItem parent="props" name="onClick" type="function">
+        Handler to indent content and focus editor.
+      </APISubListItem>
+    </APISubList>
   </APIItem>
-  <APIOptions type="props">
-    <APIItem name="onClick" type="function">
-      Handler to indent content and focus editor.
-    </APIItem>
-  </APIOptions>
 </APIReturns>
 </API>
 
 ### `useOutdentButton`
 
+A behavior hook for the outdent button component.
+
 <API name="useOutdentButton">
 <APIReturns type="object">
   <APIItem name="props" type="object">
     Props for the outdent button.
+    <APISubList>
+      <APISubListItem parent="props" name="onClick" type="function">
+        Handler to outdent content and focus editor.
+      </APISubListItem>
+    </APISubList>
   </APIItem>
-  <APIOptions type="props">
-    <APIItem name="onClick" type="function">
-      Handler to outdent content and focus editor.
-    </APIItem>
-  </APIOptions>
 </APIReturns>
 </API>

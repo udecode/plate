@@ -57,11 +57,10 @@ const plugins = [
 
 ### `editor.api.csv.deserialize`
 
+Takes a CSV (Comma Separated Values) string and converts it into a Slate compatible format. This function uses the `papaparse` library to parse the CSV data.
+
 <API name="deserialize">
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
   <APIItem name="data" type="string">
     The CSV data string to be deserialized.
   </APIItem>

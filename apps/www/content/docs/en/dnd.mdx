@@ -60,11 +60,10 @@ Then, wrap your plugin components with [Draggable](/docs/components/draggable).
 
 ### `focusBlockStartById`
 
+Selects the start of a block by ID and focuses the editor.
+
 <API name="focusBlockStartById">
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
   <APIItem name="id" type="string">
     The ID of the block to be focused.
   </APIItem>
@@ -73,15 +72,12 @@ Then, wrap your plugin components with [Draggable](/docs/components/draggable).
 
 ### `getBlocksWithId`
 
+Returns an array of blocks that have an ID.
+
 <API name="getBlocksWithId">
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="EditorNodesOptions">
-    The options for getting node entries.
-  </APIItem>
-</APIParameters>
+<APIOptions type="EditorNodesOptions">
+  The options for getting node entries.
+</APIOptions>
 
 <APIReturns type="NodeEntry[]">
   Array of blocks that have an ID.
@@ -92,9 +88,6 @@ Then, wrap your plugin components with [Draggable](/docs/components/draggable).
 
 <API name="selectBlockById">
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
   <APIItem name="id" type="string">
     The ID of the block to select.
   </APIItem>
@@ -136,6 +129,8 @@ Then, wrap your plugin components with [Draggable](/docs/components/draggable).
 
 ### `DndScroller`
 
+A wrapper component for the `Scroller` component that is conditionally rendered based on the dragging state.
+
 <API name="DndScroller">
 <APIState>
   <APIItem name="enabled" type="boolean">
@@ -166,13 +161,9 @@ Then, wrap your plugin components with [Draggable](/docs/components/draggable).
 
 ### `useDndNode`
 
-<API name="useDndNode">
-<APIParameters>
-  <APIItem name="options" type="UseDndNodeOptions">
-    Options for drag and drop behavior.
-  </APIItem>
-</APIParameters>
+A custom hook that combines the `useDragNode` and `useDropNode` hooks to enable dragging and dropping of a node from the editor. It provides a default preview for the dragged node, which can be customized or disabled.
 
+<API name="useDndNode">
 <APIOptions type="UseDndNodeOptions">
   <APIItem name="id" type="string">
     The ID of the node to be dragged.
@@ -220,16 +211,9 @@ Then, wrap your plugin components with [Draggable](/docs/components/draggable).
 
 ### `useDragNode`
 
-<API name="useDragNode">
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="UseDragNodeOptions">
-    Options for drag behavior.
-  </APIItem>
-</APIParameters>
+A custom hook that enables dragging of a node from the editor using the `useDrag` hook from `react-dnd`.
 
+<API name="useDragNode">
 <APIOptions type="UseDragNodeOptions">
   <APIItem name="id" type="string">
     Unique ID of the node to be dragged.
@@ -242,13 +226,9 @@ Then, wrap your plugin components with [Draggable](/docs/components/draggable).
 
 ### `useDraggable`
 
-<API name="useDraggable">
-<APIParameters>
-  <APIItem name="options" type="UseDndNodeOptions & { element: TElement }">
-    Options for draggable behavior.
-  </APIItem>
-</APIParameters>
+A custom hook that enables draggable behavior for a given element. It provides a preview for the element, which can be customized or disabled.
 
+<API name="useDraggable">
 <APIOptions type="object">
   <APIItem name="element" type="TElement">
     The element to make draggable.
@@ -281,16 +261,9 @@ Then, wrap your plugin components with [Draggable](/docs/components/draggable).
 
 ### `useDropNode`
 
-<API name="useDropNode">
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="UseDropNodeOptions">
-    Options for drop behavior.
-  </APIItem>
-</APIParameters>
+A custom hook that enables dropping a node on the editor. It uses the `useDrop` hook from `react-dnd` to handle the drop behavior.
 
+<API name="useDropNode">
 <APIOptions type="UseDropNodeOptions">
   <APIItem name="nodeRef" type="any">
     Reference to the node being dragged.
@@ -315,12 +288,6 @@ Then, wrap your plugin components with [Draggable](/docs/components/draggable).
 ### `useDropLine`
 
 <API name="useDropLine">
-<APIParameters>
-  <APIItem name="options" type="object" optional>
-    Options for drop line behavior.
-  </APIItem>
-</APIParameters>
-
 <APIOptions type="object">
   <APIItem name="id" type="string" optional>
     Element ID to show drop line for.

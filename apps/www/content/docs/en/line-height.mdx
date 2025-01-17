@@ -42,16 +42,9 @@ Plugin for setting line height on blocks.
 
 ### `setLineHeight`
 
-<API name="setLineHeight">
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="object">
-    Options for setting line height.
-  </APIItem>
-</APIParameters>
+Sets the line height for selected nodes in the editor.
 
+<API name="setLineHeight">
 <APIOptions type="SetLineHeightOptions">
   <APIItem name="value" type="number">
     Line height value to set.
@@ -66,6 +59,8 @@ Plugin for setting line height on blocks.
 
 ### `useLineHeightDropdownMenu`
 
+The behavior hook for the line height dropdown menu.
+
 <API name="useLineHeightDropdownMenu">
 <APIState>
   <APIItem name="value" type="number">
@@ -76,14 +71,14 @@ Plugin for setting line height on blocks.
 <APIReturns type="object">
   <APIItem name="radioGroupProps" type="object">
     Props for the radio group.
-  </APIItem>
-  <APIOptions type="radioGroupProps">
-    <APIItem name="value" type="string">
+  <APISubList>
+    <APISubListItem parent="radioGroupProps" name="value" type="string">
       Current line height value.
-    </APIItem>
-    <APIItem name="onValueChange" type="function">
+    </APISubListItem>
+    <APISubListItem parent="radioGroupProps" name="onValueChange" type="function">
       Handler to update line height value.
-    </APIItem>
-  </APIOptions>
+    </APISubListItem>
+  </APISubList>
+  </APIItem>
 </APIReturns>
 </API>

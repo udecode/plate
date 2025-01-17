@@ -139,8 +139,15 @@ await page.keyboard.type('Hello world!');
 
 You can't directly import queries or transforms into Playwright tests since they run outside the browser context. Instead:
 
-1. Interact with the editor like a user would (preferred)
-2. Call methods on the editor object inside `evaluate`/`evaluateHandle`:
+Unfortunately, this is not possible. You can only interact directly with the `editor` instance inside the browser context (using `evaluate` or `evaluateHandle`), and it isn't possible to pass imported functions from Playwright's scope into the browser. This is because neither the `editor` object nor JavaScript functions can be adequately serialized.
+
+The best workaround is to interact with the editor in the same way that a user would, without using any imported queries or transforms. This will make your Playwright tests more likely to catch bugs in your application.
+
+If this isn't practical, you can instead call a method on the `editor` object inside an `evaluate` or `evaluateHandle`. (Use `evaluateHandle` if you need to return a reference to a DOM node or a JavaScript object from the browser. Use `evaluate` if you need to return a serialized copy of a JavaScript object, or if you don't need to return any value.)
+
+Note that while these queries and transforms can't be directly used in Playwright tests, they are available when working with the editor instance in your application code. For more information on how to use these methods in your application, refer to the [Editor Methods](/docs/editor-methods) documentation.
+
+See [Playwright's docs](https://playwright.dev/docs/evaluating) for more information about `evaluate` and `evaluateHandle`.
 
 ```ts
 await editorHandle.evaluate((editor) => {
@@ -154,9 +161,9 @@ See [Playwright's docs](https://playwright.dev/docs/evaluating) for more about `
 
 ### `getEditorHandle`
 
-<API name="getEditorHandle">
-Gets handle to Plate editor instance.
+Gets a handle to the Plate editor instance.
 
+<API name="getEditorHandle">
 <APIParameters>
   <APIItem name="page" type="Page">
     Playwright page object.
@@ -173,9 +180,9 @@ Gets handle to Plate editor instance.
 
 ### `getNodeByPath`
 
-<API name="getNodeByPath">
-Gets node at specified path.
+Retrieves a node at the specified path.
 
+<API name="getNodeByPath">
 <APIParameters>
   <APIItem name="page" type="Page">
     Playwright page object.
@@ -195,9 +202,9 @@ Gets node at specified path.
 
 ### `getDOMNodeByPath`
 
-<API name="getDOMNodeByPath">
-Gets DOM node for Slate node at path.
+Gets the DOM node for a Slate node at the given path.
 
+<API name="getDOMNodeByPath">
 <APIParameters>
   <APIItem name="page" type="Page">
     Playwright page object.
@@ -217,9 +224,9 @@ Gets DOM node for Slate node at path.
 
 ### `clickAtPath`
 
-<API name="clickAtPath">
-Simulates click on node at path.
+Simulates a click on the node at the specified path.
 
+<API name="clickAtPath">
 <APIParameters>
   <APIItem name="page" type="Page">
     Playwright page object.
@@ -235,9 +242,9 @@ Simulates click on node at path.
 
 ### `getSelection`
 
-<API name="getSelection">
-Gets current editor selection.
+Retrieves the current editor selection.
 
+<API name="getSelection">
 <APIParameters>
   <APIItem name="page" type="Page">
     Playwright page object.
@@ -254,9 +261,9 @@ Gets current editor selection.
 
 ### `setSelection`
 
-<API name="setSelection">
-Sets editor selection to specified range.
+Sets the editor selection to the specified range.
 
+<API name="setSelection">
 <APIParameters>
   <APIItem name="page" type="Page">
     Playwright page object.
@@ -272,9 +279,9 @@ Sets editor selection to specified range.
 
 ### `getTypeAtPath`
 
-<API name="getTypeAtPath">
-Gets type of node at path.
+Gets the type of the node at the specified path.
 
+<API name="getTypeAtPath">
 <APIParameters>
   <APIItem name="page" type="Page">
     Playwright page object.

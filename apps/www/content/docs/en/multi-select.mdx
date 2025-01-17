@@ -89,9 +89,9 @@ Extension of `TagPlugin` that constrains editor to tag elements.
 
 ### `editor.tf.insert.tag`
 
-<API name="editor.tf.insert.tag">
 Inserts new multi-select element at current selection.
 
+<API name="editor.tf.insert.tag">
 <APIParameters>
   <APIItem name="props" type="TagLike">
     Properties for multi-select element.
@@ -109,9 +109,9 @@ Inserts new multi-select element at current selection.
 
 ### `useSelectedItems`
 
-<API name="useSelectedItems">
-Hook to get currently selected tag items.
+Hook to get the currently selected tag items in the editor.
 
+<API name="useSelectedItems">
 <APIReturns type="TagLike[]">
   Array of selected tag items with values and properties.
 </APIReturns>
@@ -119,15 +119,9 @@ Hook to get currently selected tag items.
 
 ### `getSelectedItems`
 
+Gets all tag items in the editor.
+
 <API name="getSelectedItems">
-Gets all tag items in editor.
-
-<APIParameters>
-  <APIItem name="editor" type="SlateEditor">
-    The editor instance.
-  </APIItem>
-</APIParameters>
-
 <APIReturns type="TagLike[]">
   Array of tag items in editor.
 </APIReturns>
@@ -135,13 +129,10 @@ Gets all tag items in editor.
 
 ### `isEqualTags`
 
-<API name="isEqualTags">
-Compare two sets of tags for equality, ignoring order.
+Utility function to compare two sets of tags for equality, ignoring order.
 
+<API name="isEqualTags">
 <APIParameters>
-  <APIItem name="editor" type="SlateEditor">
-    The editor instance.
-  </APIItem>
   <APIItem name="newTags" type="TagLike[]" optional>
     New tags to compare against current editor tags.
   </APIItem>
@@ -154,15 +145,9 @@ Compare two sets of tags for equality, ignoring order.
 
 ### `useSelectableItems`
 
+Hook to get the available items that can be selected, filtered by search and excluding already selected items.
+
 <API name="useSelectableItems">
-Hook for available items that can be selected.
-
-<APIParameters>
-  <APIItem name="options" type="object">
-    Options for selectable items.
-  </APIItem>
-</APIParameters>
-
 <APIOptions type="options">
   <APIItem name="allowNew" type="boolean" optional>
     Whether to allow creating new items.
@@ -190,15 +175,9 @@ Hook for available items that can be selected.
 
 ### `useSelectEditorCombobox`
 
+Hook to handle combobox behavior in the editor, including text cleanup and item selection.
+
 <API name="useSelectEditorCombobox">
-Hook for combobox behavior including text cleanup and item selection.
-
-<APIParameters>
-  <APIItem name="options" type="object">
-    Options for combobox behavior.
-  </APIItem>
-</APIParameters>
-
 <APIOptions type="options">
   <APIItem name="open" type="boolean">
     Whether combobox is open.

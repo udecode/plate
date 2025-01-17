@@ -111,9 +111,6 @@ const plugins = [
 
 <API name="getNextIndentList">
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
   <APIItem name="entry" type="ElementEntryOf">
     Entry of the current element.
   </APIItem>
@@ -129,11 +126,10 @@ const plugins = [
 
 ### `getPreviousIndentList`
 
+Gets the previous sibling entry with an indent list.
+
 <API name="getPreviousIndentList">
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
   <APIItem name="entry" type="ElementEntryOf">
     Entry of the current element.
   </APIItem>
@@ -149,16 +145,9 @@ const plugins = [
 
 ### `indentList`
 
-<API name="indentList">
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="IndentListOptions" optional>
-    Options for indenting list.
-  </APIItem>
-</APIParameters>
+Increases the indentation of the selected blocks.
 
+<API name="indentList">
 <APIOptions type="IndentListOptions">
   <APIItem name="listStyleType" type="ListStyleType | string" optional>
     List style type to use.
@@ -169,16 +158,9 @@ const plugins = [
 
 ### `outdentList`
 
-<API name="outdentList">
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="IndentListOptions" optional>
-    Options for outdenting list.
-  </APIItem>
-</APIParameters>
+Decreases the indentation of the selected blocks.
 
+<API name="outdentList">
 <APIOptions type="IndentListOptions">
   <APIItem name="listStyleType" type="ListStyleType | string" optional>
     List style type to use.
@@ -189,11 +171,10 @@ const plugins = [
 
 ### `someIndentList`
 
+Checks if some of the selected blocks have a specific list style type.
+
 <API name="someIndentList">
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
   <APIItem name="type" type="string | string[]">
     List style type to check.
   </APIItem>
@@ -202,16 +183,9 @@ const plugins = [
 
 ### `toggleIndentList`
 
-<API name="toggleIndentList">
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="IndentListOptions">
-    Options for toggling indent list.
-  </APIItem>
-</APIParameters>
+Toggles the indent list.
 
+<API name="toggleIndentList">
 <APIOptions type="IndentListOptions">
   <APIItem name="listStyleType" type="ListStyleType | string" optional>
     List style type to use.
@@ -223,6 +197,8 @@ const plugins = [
 
 ### `GetSiblingIndentListOptions`
 
+Used to provide options for getting the sibling indent list in a block of text.
+
 <API name="GetSiblingIndentListOptions">
 <APIOptions>
   <APIItem name="getPreviousEntry" type="function">
@@ -232,19 +208,28 @@ const plugins = [
     Get next sibling entry.
   </APIItem>
   <APIItem name="query" type="function">
-    Validate sibling node during lookup.
+    This function is used to validate a sibling node during the lookup process.
+    If it returns false, the next sibling is checked.
   </APIItem>
   <APIItem name="eqIndent" type="boolean">
-    Break lookup when sibling has equal indent level.
+    Indicates whether to break the lookup when the sibling node has an indent
+    level equal to the current node. If true, the lookup stops when a sibling
+    node with the same indent level is found.
   </APIItem>
   <APIItem name="breakQuery" type="(node: TNode) => boolean | undefined">
-    Condition to stop lookup process.
+    A function that takes a `TNode` and returns a boolean value or undefined.
+    This function is used to specify a condition under which the lookup process
+    should be stopped.
   </APIItem>
   <APIItem name="breakOnLowerIndent" type="boolean">
-    Break lookup on lower indent level.
+    Indicates whether to break the lookup when a sibling node with a lower
+    indent level is found. If true, the lookup stops when a sibling node with a
+    lower indent level is found.
   </APIItem>
   <APIItem name="breakOnEqIndentNeqListStyleType" type="boolean">
-    Break lookup on equal indent but different list style.
+    Indicates whether to break the lookup when a sibling node with the same
+    indent level but a different list style type is found. If true, the lookup
+    stops when such a sibling node is found.
   </APIItem>
 </APIOptions>
 </API>
@@ -252,6 +237,8 @@ const plugins = [
 ## Hooks
 
 ### `useIndentListToolbarButton`
+
+A behavior hook for the indent list toolbar button.
 
 <API name="useIndentListToolbarButton">
 <APIState>
@@ -266,14 +253,16 @@ const plugins = [
 <APIReturns type="object">
   <APIItem name="props" type="object">
     Props for the toolbar button.
+     <APISubList>
+      <APISubListItem parent="props" name="pressed" type="boolean">
+        A boolean indicating whether the button is pressed or not.
+      </APISubListItem>
+      <APISubListItem parent="props" name="onClick" type="function">
+        A callback function to handle the click event of the button. It toggles
+        the indent list of the specified node type in the editor and focuses the
+        editor.
+      </APISubListItem>
+    </APISubList>
   </APIItem>
-  <APIOptions type="props">
-    <APIItem name="pressed" type="boolean">
-      Whether button is pressed.
-    </APIItem>
-    <APIItem name="onClick" type="function">
-      Handler to toggle indent list and focus editor.
-    </APIItem>
-  </APIOptions>
 </APIReturns>
 </API>

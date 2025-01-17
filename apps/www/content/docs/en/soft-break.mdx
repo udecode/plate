@@ -56,15 +56,11 @@ const plugins = [
 
 ### `SoftBreakPlugin`
 
-<API name="SoftBreakPlugin">
 Plugin for inserting line breaks within text blocks.
 
-<APIAttributes>
-  <APIItem name="rules" type="object[]" optional>
+<API name="SoftBreakPlugin">
+  <APIOptions type="object[]">
     Rules specifying hotkeys and filters for soft breaks.
-  </APIItem>
-
-  <APIOptions type="rules">
     <APIItem name="hotkey" type="string">
       Key combination that activates soft break.
     </APIItem>
@@ -72,7 +68,6 @@ Plugin for inserting line breaks within text blocks.
       Filter options for block types where rule applies.
     </APIItem>
   </APIOptions>
-</APIAttributes>
 
 ```tsx
 const plugins = [

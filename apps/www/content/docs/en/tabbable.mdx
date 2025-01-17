@@ -77,6 +77,8 @@ To do this, override `insertTabbableEntries` to return an array of `TabbableEntr
 
 Set the `globalEventListener` option to `true` to make sure the Tabbable plugin is able to return the user's focus to the editor.
 
+For example, if the DOM element appears when a link is selected, the `slateNode` and `path` should be that of the link.
+
 ```tsx
 // Add buttons inside .my-popover to the list of tabbables
 globalEventListener: true,
@@ -97,25 +99,22 @@ insertTabbableEntries: (editor) => {
 
 ### `TabbablePlugin`
 
-<API name="TabbablePlugin">
 Plugin for managing tab order between tabbable elements.
 
+<API name="TabbablePlugin">
 <APIOptions>
   <APIItem name="query" type="(editor: PlateEditor<V>, event: KeyboardEvent) => boolean" optional>
     Enable/disable plugin dynamically.
     - **Default:** `() => true`
   </APIItem>
-
   <APIItem name="globalEventListener" type="boolean" optional>
     Add event listener to document instead of editor.
     - **Default:** `false`
   </APIItem>
-
   <APIItem name="insertTabbableEntries" type="(editor: PlateEditor<V>, event: KeyboardEvent) => TabbableEntry[]" optional>
     Add additional tabbable entries outside editor.
     - **Default:** `() => []`
   </APIItem>
-
   <APIItem name="isTabbable" type="(tabbableEntry: TabbableEntry) => boolean" optional>
     Determine if element should be tabbable.
     - **Default:** `(tabbableEntry) => isVoid(editor, tabbableEntry.slateNode)`
@@ -127,9 +126,9 @@ Plugin for managing tab order between tabbable elements.
 
 ### `TabbableEntry`
 
-<API name="TabbableEntry">
-Properties of a tabbable entry.
+Defines the properties of a tabbable entry.
 
+<API name="TabbableEntry">
 <APIAttributes>
   <APIItem name="domNode" type="HTMLElement">
     HTML element representing tabbable entry.

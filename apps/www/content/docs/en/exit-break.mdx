@@ -70,25 +70,24 @@ const plugins = [
 <APIOptions>
   <APIItem name="rules" type="ExitBreakRule[]" optional>
     Array of rules for exit break behavior.
-  </APIItem>
-</APIOptions>
-
-<APIOptions type="ExitBreakRule">
-  <APIItem name="hotkey" type="string">
-    Hotkey to trigger exit break.
-  </APIItem>
-  <APIItem name="query" type="QueryNodeOptions & { start?: boolean; end?: boolean }" optional>
-    Conditions for exit break.
-  </APIItem>
-  <APIItem name="level" type="number" optional>
-    Path level where to exit.
-    - **Default:** `1`
-  </APIItem>
-  <APIItem name="before" type="boolean" optional>
-    Whether to exit before the selected block.
-  </APIItem>
-  <APIItem name="defaultType" type="string" optional>
-    Default type of node to insert upon exit.
+    <APISubList>
+      <APISubListItem parent="rules" name="hotkey" type="string">
+        Hotkey to trigger exit break.
+      </APISubListItem>
+      <APISubListItem parent="rules" name="query" type="QueryNodeOptions & { start?: boolean; end?: boolean }" optional>
+        Conditions for exit break.
+      </APISubListItem>
+      <APISubListItem parent="rules" name="level" type="number" optional>
+        Path level where to exit.
+        - **Default:** `1`
+      </APISubListItem>
+      <APISubListItem parent="rules" name="before" type="boolean" optional>
+        Whether to exit before the selected block.
+      </APISubListItem>
+      <APISubListItem parent="rules" name="defaultType" type="string" optional>
+        Default type of node to insert upon exit.
+      </APISubListItem>
+    </APISubList>
   </APIItem>
 </APIOptions>
 </API>
@@ -97,16 +96,9 @@ const plugins = [
 
 ### `exitBreak`
 
-<API name="exitBreak">
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="Omit<ExitBreakRule, 'hotkey'>">
-    Options for the exit break operation.
-  </APIItem>
-</APIParameters>
+Exit a large block using a shortcut.
 
+<API name="exitBreak">
 <APIOptions type="ExitBreakOptions">
   <APIItem name="level" type="number" optional>
     Path level where to exit.
@@ -135,11 +127,10 @@ const plugins = [
 
 ### `exitBreakAtEdges`
 
+Checks if the selection is at the edge of its parent block and performs an "exit break" operation if specified.
+
 <API name="exitBreakAtEdges">
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
   <APIItem name="options" type="object">
     Options for checking edges.
   </APIItem>
