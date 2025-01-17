@@ -194,8 +194,8 @@ A custom hook that combines the `useDragNode` and `useDropNode` hooks to enable 
 <APIParameters>
   <APIItem name="options" type="UseDndNodeOptions">
     <APISubList>
-      <APISubListItem parent="options" name="id" type="string">
-        The ID of the node to be dragged.
+      <APISubListItem parent="options" name="element" type="TElement">
+        The node to be dragged.
       </APISubListItem>
       <APISubListItem parent="options" name="type" type="string">
         The type of drag item. Defaults to `'block'`.
@@ -251,11 +251,11 @@ A custom hook that enables dragging of a node from the editor using the `useDrag
     The editor instance.
   </APIItem>
   <APIItem name="options" type="UseDragNodeOptions">
-    The options for the drag behavior, including the unique ID of the node to be
-    dragged.
+    The options for the drag behavior, including the node to be dragged, which
+    must have a unique ID.
     <APISubList>
-      <APISubListItem parent="options" name="id" type="string">
-        The unique ID of the node to be dragged.
+      <APISubListItem parent="options" name="element" type="TElement">
+        The node to be dragged.
       </APISubListItem>
       <APISubListItem
         parent="options"
@@ -319,8 +319,8 @@ A custom hook that enables dropping a node on the editor. It uses the `useDrop` 
       <APISubListItem parent="options" name="nodeRef" type="any">
         The reference to the node being dragged.
       </APISubListItem>
-      <APISubListItem parent="options" name="id" type="string">
-        The ID of the node.
+      <APISubListItem parent="options" name="element" type="TElement">
+        The node to which the drop line is attached.
       </APISubListItem>
       <APISubListItem parent="options" name="dropLine" type="string">
         The current value of the drop line.

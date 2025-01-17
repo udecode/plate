@@ -1,3 +1,4 @@
+import type { TElement } from '@udecode/plate';
 import type { DropTargetMonitor } from 'react-dnd';
 
 import type { DragItemNode } from '../types';
@@ -15,7 +16,10 @@ describe('getHoverDirection', () => {
     getClientOffset: jest.fn(),
   } as unknown as DropTargetMonitor;
 
-  const dragItem: DragItemNode = { id: 'drag' };
+  const dragElement = { id: 'drag' } as unknown as TElement;
+  const dragItem: DragItemNode = { id: 'drag', element: dragElement };
+
+  const hoverElement = { id: 'hover' } as unknown as TElement;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -29,8 +33,8 @@ describe('getHoverDirection', () => {
     (mockMonitor.getClientOffset as any).mockReturnValue({ x: 150, y: 120 });
 
     const direction = getHoverDirection({
-      id: 'hover',
       dragItem,
+      element: hoverElement,
       monitor: mockMonitor,
       nodeRef,
       orientation: 'vertical',
@@ -47,8 +51,8 @@ describe('getHoverDirection', () => {
     (mockMonitor.getClientOffset as any).mockReturnValue({ x: 150, y: 180 });
 
     const direction = getHoverDirection({
-      id: 'hover',
       dragItem,
+      element: hoverElement,
       monitor: mockMonitor,
       nodeRef,
       orientation: 'vertical',
@@ -65,8 +69,8 @@ describe('getHoverDirection', () => {
     (mockMonitor.getClientOffset as any).mockReturnValue({ x: 120, y: 150 });
 
     const direction = getHoverDirection({
-      id: 'hover',
       dragItem,
+      element: hoverElement,
       monitor: mockMonitor,
       nodeRef,
       orientation: 'horizontal',
@@ -83,8 +87,8 @@ describe('getHoverDirection', () => {
     (mockMonitor.getClientOffset as any).mockReturnValue({ x: 180, y: 150 });
 
     const direction = getHoverDirection({
-      id: 'hover',
       dragItem,
+      element: hoverElement,
       monitor: mockMonitor,
       nodeRef,
       orientation: 'horizontal',
@@ -95,8 +99,8 @@ describe('getHoverDirection', () => {
 
   it('should return undefined if dragId === id', () => {
     const direction = getHoverDirection({
-      id: 'drag',
-      dragItem: { id: 'drag' },
+      dragItem,
+      element: dragElement,
       monitor: mockMonitor,
       nodeRef,
     });

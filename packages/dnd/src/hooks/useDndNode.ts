@@ -11,10 +11,14 @@ import { DRAG_ITEM_BLOCK, DndPlugin } from '../DndPlugin';
 import { type UseDragNodeOptions, useDragNode } from './useDragNode';
 import { type UseDropNodeOptions, useDropNode } from './useDropNode';
 
-export type UseDndNodeOptions = Partial<
-  Pick<UseDropNodeOptions, 'canDropNode' | 'id' | 'nodeRef'>
-> &
+export type UseDndNodeOptions = Pick<UseDropNodeOptions, 'element'> &
+  Partial<Pick<UseDropNodeOptions, 'canDropNode' | 'nodeRef'>> &
   Partial<Pick<UseDragNodeOptions, 'type'>> & {
+    /** Options passed to the drop hook, excluding element, nodeRef. */
+    drop?: Partial<
+      Omit<UseDropNodeOptions, 'canDropNode' | 'element' | 'nodeRef'>
+    >;
+
     preview?: {
       /** Whether to disable the preview. */
       disable?: boolean;
@@ -25,9 +29,6 @@ export type UseDndNodeOptions = Partial<
 
     /** Options passed to the drag hook. */
     drag?: Partial<Omit<UseDragNodeOptions, 'type'>>;
-
-    /** Options passed to the drop hook, excluding id, nodeRef. */
-    drop?: Partial<Omit<UseDropNodeOptions, 'canDropNode' | 'id' | 'nodeRef'>>;
 
     /** Orientation of the drag and drop interaction. */
     orientation?: 'horizontal' | 'vertical';
@@ -49,10 +50,10 @@ export type UseDndNodeOptions = Partial<
  * can be customized or removed. Returns the drag ref and drop line direction.
  */
 export const useDndNode = ({
-  id = '',
   canDropNode,
   drag: dragOptions,
   drop: dropOptions,
+  element,
   nodeRef,
   orientation = 'vertical',
   preview: previewOptions = {},
@@ -66,15 +67,15 @@ export const useDndNode = ({
   const editor = useEditorRef();
 
   const [{ isDragging }, dragRef, preview] = useDragNode(editor, {
-    id,
+    element,
     type,
     ...dragOptions,
   });
 
   const [{ isOver }, drop] = useDropNode(editor, {
-    id,
     accept: [type, NativeTypes.FILE],
     canDropNode,
+    element,
     nodeRef,
     orientation,
     onDropHandler,
