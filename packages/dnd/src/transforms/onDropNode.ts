@@ -45,12 +45,7 @@ export const getDropPath = (
 
   if (!dragPath) return;
 
-  const dragEntry = editor.api.node<TElement>({
-    id: dragItem.id,
-    at: [],
-  });
-
-  if (!dragEntry) return;
+  const dragEntry: NodeEntry<TElement> = [dragItem.element, dragPath];
 
   const hoveredPath = editor.api.findPath(element);
 
