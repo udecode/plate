@@ -6,6 +6,7 @@ import {
 } from '@udecode/slate';
 
 import type { SlateEditor } from '../editor';
+import type { SlatePlugin } from '../plugin';
 
 import { BaseParagraphPlugin } from '../plugins';
 
@@ -117,10 +118,13 @@ const normalize = (
 /** Normalize the descendants to a valid document fragment. */
 export const normalizeDescendantsToDocumentFragment = (
   editor: SlateEditor,
-  { descendants }: { descendants: Descendant[] }
+  {
+    defaultElementPlugin = BaseParagraphPlugin,
+    descendants,
+  }: { descendants: Descendant[]; defaultElementPlugin?: SlatePlugin }
 ): Descendant[] => {
   const isInline = isInlineNode(editor);
-  const defaultType = editor.getType(BaseParagraphPlugin);
+  const defaultType = editor.getType(defaultElementPlugin);
   const makeDefaultBlock = makeBlockLazy(defaultType);
 
   return normalize(descendants, isInline, makeDefaultBlock as any);
