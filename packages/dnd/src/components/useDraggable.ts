@@ -17,10 +17,9 @@ export type DraggableState = {
 };
 
 export const useDraggable = (
-  props: UseDndNodeOptions & { element: TElement }
+  props: UseDndNodeOptions
 ): DraggableState => {
   const {
-    element,
     orientation = 'vertical',
     type = DRAG_ITEM_BLOCK,
     onDropHandler,
@@ -34,7 +33,6 @@ export const useDraggable = (
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const { dragRef, isDragging } = useDndNode({
-    id: element.id as string,
     nodeRef,
     orientation,
     type,

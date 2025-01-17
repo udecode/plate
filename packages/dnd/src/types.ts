@@ -1,8 +1,11 @@
+import {TElement} from "@udecode/plate";
+
 export type DragItemNode = ElementDragItemNode | FileDragItemNode;
 
 export interface ElementDragItemNode {
   /** Required to identify the node. */
   id: string;
+  element: TElement;
   [key: string]: unknown;
 }
 

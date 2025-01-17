@@ -5,10 +5,11 @@ import type {
   DropDirection,
   ElementDragItemNode,
 } from '../types';
+import {NodeEntry, TElement} from '@udecode/plate';
 
 export interface GetHoverDirectionOptions {
-  /** Hovering node id. */
-  id: string;
+  /** Hovering node. */
+  element: TElement;
 
   dragItem: DragItemNode;
 
@@ -26,7 +27,7 @@ export interface GetHoverDirectionOptions {
  * relative to node B.
  */
 export const getHoverDirection = ({
-  id,
+  element,
   dragItem,
   monitor,
   nodeRef,
@@ -34,10 +35,8 @@ export const getHoverDirection = ({
 }: GetHoverDirectionOptions): DropDirection => {
   if (!nodeRef.current) return;
 
-  const dragId = (dragItem as ElementDragItemNode).id;
-
   // Don't replace items with themselves
-  if (dragId === id) return;
+  if (element === (dragItem as ElementDragItemNode).element) return;
 
   // Determine rectangle on screen
   const hoverBoundingRect = nodeRef.current?.getBoundingClientRect();
