@@ -17,6 +17,10 @@ export type MdNodeTypes = {
   ol: string;
   p: string;
   strikethrough: string;
+  table: string;
+  td: string;
+  th: string;
+  tr: string;
   ul: string;
   underline: string;
 };

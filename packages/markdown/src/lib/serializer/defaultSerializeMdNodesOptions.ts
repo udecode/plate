@@ -89,8 +89,14 @@ export const defaultSerializeMdNodesOptions: SerializeMdOptions['nodes'] = {
     type: 'ol',
   },
   p: {
-    serialize: (children, node, { ulListStyleTypes = [] }) => {
+    serialize: (children, node, { nodes, ulListStyleTypes = [] }) => {
       const listStyleType = node.listStyleType;
+
+      const isInTableCell =
+        node.parent?.type === nodes.td.type ||
+        node.parent?.type === nodes.th.type;
+
+      const breakTag = isInTableCell ? `<br />` : `\n`;
 
       if (listStyleType) {
         let pre = '';
@@ -103,8 +109,6 @@ export const defaultSerializeMdNodesOptions: SerializeMdOptions['nodes'] = {
         const listStart = node.listStart ?? 1;
 
         const isOL = !ulListStyleTypes.includes(listStyleType);
-        const treatAsLeaf =
-          node.children.length === 1 && isLeafNode(node.children[0]);
 
         // https://github.com/remarkjs/remark-react/issues/65
         if (isOL && listDepth > 0) {
@@ -112,14 +116,63 @@ export const defaultSerializeMdNodesOptions: SerializeMdOptions['nodes'] = {
         }
 
         // TODO: support all styles
-        return `${pre}${isOL ? listStart + '.' : '-'} ${children}${treatAsLeaf ? '\n' : ''}`;
+        return `${pre}${isOL ? listStart + '.' : '-'} ${children}${breakTag}`;
       }
 
-      return `\n${children}\n`;
+      const pre = isInTableCell ? '' : '\n';
+
+      return `${pre}${children}${breakTag}`;
     },
     type: 'p',
   },
   strikethrough: { isLeaf: true, type: 'strikethrough' },
+  table: {
+    serialize: (children) => {
+      const lines = children.split('\n').filter(Boolean);
+
+      // Line 0 is the header row
+      const headerLine = lines[0].trim();
+
+      // Remove extra "|" from both sides
+      let lineTrimmed = headerLine;
+
+      if (lineTrimmed.startsWith('|')) {
+        lineTrimmed = lineTrimmed.slice(1);
+      }
+      if (lineTrimmed.endsWith('|')) {
+        lineTrimmed = lineTrimmed.slice(0, -1);
+      }
+
+      // Generate "---" separators based on number of columns
+      const cols = lineTrimmed.split('|').length;
+      const separator = `| ${Array(cols).fill('---').join(' | ')} |`;
+
+      // Insert separator line into array
+      lines.splice(1, 0, separator);
+
+      // Join back into string
+      return lines.join('\n');
+    },
+    type: 'table',
+  },
+  td: {
+    serialize: (children) => {
+      return `| ${children}`;
+    },
+    type: 'td',
+  },
+  th: {
+    serialize: (children) => {
+      return `| ${children}`;
+    },
+    type: 'th',
+  },
+  tr: {
+    serialize: (children) => {
+      return `${children} |\n`;
+    },
+    type: 'tr',
+  },
   ul: {
     serialize: (children, _, { listDepth }) => {
       const newLineAfter = listDepth === 0 ? '\n' : '';
