@@ -43,28 +43,26 @@ export const BaseImagePlugin = createTSlatePlugin<ImageConfig>({
     isElement: true,
     isVoid: true,
   },
+  parsers: {
+    html: {
+      deserializer: {
+        parse: ({ element, type }) => ({
+          type,
+          url: element.getAttribute('src'),
+        }),
+        rules: [
+          {
+            validNodeName: 'IMG',
+          },
+        ],
+      },
+    },
+  },
 })
   .overrideEditor(withImageUpload)
   .overrideEditor(withImageEmbed)
   .extendEditorTransforms(({ editor }) => ({
     insert: {
       imageFromFiles: bindFirst(insertImageFromFiles, editor),
-    },
-  }))
-  .extend(({ plugin }) => ({
-    parsers: {
-      html: {
-        deserializer: {
-          parse: ({ element }) => ({
-            type: plugin.node.type,
-            url: element.getAttribute('src'),
-          }),
-          rules: [
-            {
-              validNodeName: 'IMG',
-            },
-          ],
-        },
-      },
     },
   }));

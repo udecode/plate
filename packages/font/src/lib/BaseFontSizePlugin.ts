@@ -23,24 +23,21 @@ export const BaseFontSizePlugin = createTSlatePlugin({
       nodeKey: 'fontSize',
     },
   },
-})
-  .extend(({ type }) => ({
-    parsers: {
-      html: {
-        deserializer: {
-          isLeaf: true,
-          parse: ({ element }) => ({ [type]: element.style.fontSize }),
-          rules: [
-            {
-              validStyle: {
-                fontSize: '*',
-              },
+  parsers: {
+    html: {
+      deserializer: {
+        isLeaf: true,
+        parse: ({ element, type }) => ({ [type]: element.style.fontSize }),
+        rules: [
+          {
+            validStyle: {
+              fontSize: '*',
             },
-          ],
-        },
+          },
+        ],
       },
     },
-  }))
-  .extendApi(({ editor }) => ({
-    setMark: bindFirst(setFontSize, editor),
-  }));
+  },
+}).extendApi(({ editor }) => ({
+  setMark: bindFirst(setFontSize, editor),
+}));

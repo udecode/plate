@@ -18,11 +18,10 @@ export const BaseMediaEmbedPlugin = createTSlatePlugin<MediaEmbedConfig>({
   options: {
     transformUrl: parseIframeUrl,
   },
-}).extend(({ type }) => ({
   parsers: {
     html: {
       deserializer: {
-        parse: ({ element }) => {
+        parse: ({ element, type }) => {
           const url = element.getAttribute('src');
 
           if (url) {
@@ -40,4 +39,4 @@ export const BaseMediaEmbedPlugin = createTSlatePlugin<MediaEmbedConfig>({
       },
     },
   },
-}));
+});
