@@ -1,11 +1,8 @@
-import { BaseBlockquotePlugin } from '@udecode/plate-block-quote';
 /** @jsx jsxt */
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
-import type { SlatePlugin } from '../plugin';
-
-import { createPlateEditor } from '../../react';
+import { createPlateEditor, createPlatePlugin } from '../../react';
 import { normalizeDescendantsToDocumentFragment } from './index';
 
 jsxt;
@@ -179,12 +176,17 @@ describe('normalizeDescendantsToDocumentFragment()', () => {
   ])(
     'should wrap inline blocks and text nodes in case they have a sibling block',
     ({ input, output }: any) => {
+      const BaseBlockquotePlugin = createPlatePlugin({
+        key: 'blockquote',
+        node: { isElement: true },
+      });
+
       const editor = createPlateEditor({
         plugins: [LinkPlugin],
       });
 
       const result = normalizeDescendantsToDocumentFragment(editor, {
-        defaultElementPlugin: BaseBlockquotePlugin as SlatePlugin,
+        defaultElementPlugin: BaseBlockquotePlugin,
         descendants: input,
       });
       expect(result).toEqual(output);

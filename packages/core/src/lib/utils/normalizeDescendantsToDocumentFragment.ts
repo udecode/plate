@@ -6,7 +6,7 @@ import {
 } from '@udecode/slate';
 
 import type { SlateEditor } from '../editor';
-import type { SlatePlugin } from '../plugin';
+import type { WithRequiredKey } from '../plugin';
 
 import { BaseParagraphPlugin } from '../plugins';
 
@@ -121,7 +121,7 @@ export const normalizeDescendantsToDocumentFragment = (
   {
     defaultElementPlugin = BaseParagraphPlugin,
     descendants,
-  }: { descendants: Descendant[]; defaultElementPlugin?: SlatePlugin }
+  }: { descendants: Descendant[]; defaultElementPlugin?: WithRequiredKey }
 ): Descendant[] => {
   const isInline = isInlineNode(editor);
   const defaultType = editor.getType(defaultElementPlugin);

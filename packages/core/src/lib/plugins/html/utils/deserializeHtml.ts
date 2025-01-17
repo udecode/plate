@@ -1,7 +1,7 @@
 import type { Descendant } from '@udecode/slate';
 
 import type { SlateEditor } from '../../../editor';
-import type { SlatePlugin } from '../../../plugin';
+import type { WithRequiredKey } from '../../../plugin';
 
 import { normalizeDescendantsToDocumentFragment } from '../../../utils/normalizeDescendantsToDocumentFragment';
 import { collapseWhiteSpace } from './collapse-white-space';
@@ -18,7 +18,7 @@ export const deserializeHtml = (
   }: {
     element: HTMLElement | string;
     collapseWhiteSpace?: boolean;
-    defaultElementPlugin?: SlatePlugin;
+    defaultElementPlugin?: WithRequiredKey;
   }
 ): Descendant[] => {
   // for serializer
