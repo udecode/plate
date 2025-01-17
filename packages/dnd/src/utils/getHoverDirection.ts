@@ -1,3 +1,4 @@
+import type { TElement } from '@udecode/plate';
 import type { DropTargetMonitor, XYCoord } from 'react-dnd';
 
 import type {
@@ -5,13 +6,12 @@ import type {
   DropDirection,
   ElementDragItemNode,
 } from '../types';
-import {NodeEntry, TElement} from '@udecode/plate';
 
 export interface GetHoverDirectionOptions {
+  dragItem: DragItemNode;
+
   /** Hovering node. */
   element: TElement;
-
-  dragItem: DragItemNode;
 
   monitor: DropTargetMonitor;
 
@@ -27,14 +27,13 @@ export interface GetHoverDirectionOptions {
  * relative to node B.
  */
 export const getHoverDirection = ({
-  element,
   dragItem,
+  element,
   monitor,
   nodeRef,
   orientation = 'vertical',
 }: GetHoverDirectionOptions): DropDirection => {
   if (!nodeRef.current) return;
-
   // Don't replace items with themselves
   if (element === (dragItem as ElementDragItemNode).element) return;
 

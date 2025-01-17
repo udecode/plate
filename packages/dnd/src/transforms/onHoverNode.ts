@@ -11,16 +11,19 @@ import { getDropPath } from './onDropNode';
 export const onHoverNode = (
   editor: PlateEditor,
   {
-    element,
     canDropNode,
     dragItem,
+    element,
     monitor,
     nodeRef,
     orientation = 'vertical',
   }: {
     dragItem: DragItemNode;
     monitor: DropTargetMonitor;
-  } & Pick<UseDropNodeOptions, 'canDropNode' | 'element' | 'nodeRef' | 'orientation'>
+  } & Pick<
+    UseDropNodeOptions,
+    'canDropNode' | 'element' | 'nodeRef' | 'orientation'
+  >
 ) => {
   const { dropTarget } = editor.getOptions(DndPlugin);
   const currentId = dropTarget?.id ?? null;
@@ -28,9 +31,9 @@ export const onHoverNode = (
 
   // Check if the drop would actually move the node.
   const result = getDropPath(editor, {
-    element,
     canDropNode,
     dragItem: dragItem as any,
+    element,
     monitor,
     nodeRef,
     orientation,

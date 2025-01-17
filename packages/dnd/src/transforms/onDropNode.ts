@@ -1,7 +1,12 @@
 import type { PlateEditor } from '@udecode/plate/react';
 import type { DropTargetMonitor } from 'react-dnd';
 
-import { type Path, type TElement, PathApi, NodeEntry } from '@udecode/plate';
+import {
+  type NodeEntry,
+  type Path,
+  type TElement,
+  PathApi,
+} from '@udecode/plate';
 
 import type { UseDropNodeOptions } from '../hooks';
 import type { ElementDragItemNode } from '../types';
@@ -12,20 +17,23 @@ import { getHoverDirection } from '../utils';
 export const getDropPath = (
   editor: PlateEditor,
   {
-    element,
     canDropNode,
     dragItem,
+    element,
     monitor,
     nodeRef,
     orientation = 'vertical',
   }: {
     dragItem: ElementDragItemNode;
     monitor: DropTargetMonitor;
-  } & Pick<UseDropNodeOptions, 'canDropNode' | 'element' | 'nodeRef' | 'orientation'>
+  } & Pick<
+    UseDropNodeOptions,
+    'canDropNode' | 'element' | 'nodeRef' | 'orientation'
+  >
 ) => {
   const direction = getHoverDirection({
-    element,
     dragItem,
+    element,
     monitor,
     nodeRef,
     orientation,
@@ -34,7 +42,9 @@ export const getDropPath = (
   if (!direction) return;
 
   const dragPath = editor.api.findPath(dragItem.element);
+
   if (!dragPath) return;
+
   const dragEntry = editor.api.node<TElement>({
     id: dragItem.id,
     at: [],
@@ -43,7 +53,9 @@ export const getDropPath = (
   if (!dragEntry) return;
 
   const hoveredPath = editor.api.findPath(element);
+
   if (!hoveredPath) return;
+
   const dropEntry: NodeEntry<TElement> = [element, hoveredPath];
 
   if (!dropEntry) return;
@@ -82,21 +94,24 @@ export const getDropPath = (
 export const onDropNode = (
   editor: PlateEditor,
   {
-    element,
     canDropNode,
     dragItem,
+    element,
     monitor,
     nodeRef,
     orientation = 'vertical',
   }: {
     dragItem: ElementDragItemNode;
     monitor: DropTargetMonitor;
-  } & Pick<UseDropNodeOptions, 'canDropNode' | 'element' | 'nodeRef' | 'orientation'>
+  } & Pick<
+    UseDropNodeOptions,
+    'canDropNode' | 'element' | 'nodeRef' | 'orientation'
+  >
 ) => {
   const result = getDropPath(editor, {
-    element,
     canDropNode,
     dragItem,
+    element,
     monitor,
     nodeRef,
     orientation,

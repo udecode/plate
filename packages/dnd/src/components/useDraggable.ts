@@ -1,7 +1,5 @@
 import React from 'react';
 
-import type { TElement } from '@udecode/plate';
-
 import { useEditorRef } from '@udecode/plate/react';
 
 import { type UseDndNodeOptions, DRAG_ITEM_BLOCK, useDndNode } from '..';
@@ -16,9 +14,7 @@ export type DraggableState = {
   ) => void;
 };
 
-export const useDraggable = (
-  props: UseDndNodeOptions
-): DraggableState => {
+export const useDraggable = (props: UseDndNodeOptions): DraggableState => {
   const {
     orientation = 'vertical',
     type = DRAG_ITEM_BLOCK,

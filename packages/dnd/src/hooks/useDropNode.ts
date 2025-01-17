@@ -76,8 +76,8 @@ export interface UseDropNodeOptions
 export const useDropNode = (
   editor: PlateEditor,
   {
-    element,
     canDropNode,
+    element,
     nodeRef,
     orientation,
     onDropHandler,
@@ -97,9 +97,9 @@ export const useDropNode = (
 
       if (!(dragItem as ElementDragItemNode).id) {
         const result = getDropPath(editor, {
-          element,
           canDropNode,
           dragItem: dragItem as any,
+          element,
           monitor,
           nodeRef,
           orientation,
@@ -131,8 +131,8 @@ export const useDropNode = (
       if (handled) return;
 
       onDropNode(editor, {
-        element,
         dragItem: dragItem as ElementDragItemNode,
+        element,
         monitor,
         nodeRef,
         orientation,
@@ -140,9 +140,9 @@ export const useDropNode = (
     },
     hover(item: DragItemNode, monitor: DropTargetMonitor) {
       onHoverNode(editor, {
-        element,
         canDropNode,
         dragItem: item,
+        element,
         monitor,
         nodeRef,
         orientation,

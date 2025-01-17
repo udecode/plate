@@ -1,15 +1,15 @@
 import { type DragSourceHookSpec, useDrag } from 'react-dnd';
 
+import type { TElement } from '@udecode/plate';
 import type { PlateEditor } from '@udecode/plate/react';
 
 import type { DragItemNode } from '../types';
 
 import { DndPlugin } from '../DndPlugin';
-import {TElement} from '@udecode/plate';
 
 export interface UseDragNodeOptions
   extends DragSourceHookSpec<DragItemNode, unknown, { isDragging: boolean }> {
-    element: TElement;
+  element: TElement;
 }
 
 /**
@@ -50,8 +50,8 @@ export const useDragNode = (
 
         return {
           id: element.id as string,
-          element,
           editorId: editor.id,
+          element,
           ..._item,
         };
       },
