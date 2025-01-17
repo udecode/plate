@@ -27,17 +27,19 @@ export const getRenderNodeProps = ({
   attributes?: AnyObject;
   plugin?: AnyEditorPlatePlugin;
 }): PlateRenderNodeProps => {
-  props = getPluginNodeProps({
-    attributes,
-    plugin: plugin as any,
-    props: props as any,
-  });
-
-  const { className } = props;
-
   let nodeProps = {
     ...props,
     ...(plugin ? (getEditorPlugin(editor, plugin) as any) : {}),
+  };
+
+  const { className } = props;
+
+  nodeProps = {
+    ...getPluginNodeProps({
+      attributes,
+      plugin: plugin as any,
+      props: nodeProps as any,
+    }),
     className: clsx(getSlateClass(plugin?.node.type), className),
   };
 
