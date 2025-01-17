@@ -1,5 +1,7 @@
 # @udecode/plate-indent-list
 
+## 42.2.2
+
 ## 42.1.1
 
 ### Patch Changes

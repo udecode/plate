@@ -1,5 +1,11 @@
 # @udecode/plate-font
 
+## 42.2.2
+
+### Patch Changes
+
+- [#4002](https://github.com/udecode/plate/pull/4002) by [@zbeyens](https://github.com/zbeyens) – Fix parsers to use custom node type
+
 ## 42.0.0
 
 ## 41.0.12

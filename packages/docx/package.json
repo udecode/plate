@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-docx",
-  "version": "42.1.1",
+  "version": "42.2.2",
   "description": "Docx serializer plugin for Plate",
   "keywords": [
     "docx",
@@ -46,18 +46,18 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-heading": "42.0.0",
+    "@udecode/plate-heading": "42.2.2",
     "@udecode/plate-indent": "42.0.0",
-    "@udecode/plate-indent-list": "42.1.1",
-    "@udecode/plate-media": "42.1.1",
-    "@udecode/plate-table": "42.1.1",
+    "@udecode/plate-indent-list": "42.2.2",
+    "@udecode/plate-media": "42.2.2",
+    "@udecode/plate-table": "42.2.2",
     "validator": "^13.12.0"
   },
   "devDependencies": {
     "@udecode/plate": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate": ">=42.1.2",
+    "@udecode/plate": ">=42.2.2",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },
