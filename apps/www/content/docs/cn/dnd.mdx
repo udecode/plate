@@ -190,8 +190,8 @@ const plugins = [
 <APIParameters>
   <APIItem name="options" type="UseDndNodeOptions">
     <APISubList>
-      <APISubListItem parent="options" name="id" type="string">
-        要拖动的节点的 ID。
+      <APISubListItem parent="options" name="element" type="TElement">
+        要拖动的节点。
       </APISubListItem>
       <APISubListItem parent="options" name="type" type="string">
         拖动项的类型。默认为 `'block'`。
@@ -247,10 +247,10 @@ const plugins = [
     编辑器实例。
   </APIItem>
   <APIItem name="options" type="UseDragNodeOptions">
-    拖动行为的选项，包括要拖动的节点的唯一 ID。
+    拖动行为的选项，包括要拖动的节点，该节点必须有一个唯一的 ID。
     <APISubList>
-      <APISubListItem parent="options" name="id" type="string">
-        要拖动的节点的唯一 ID。
+      <APISubListItem parent="options" name="element" type="TElement">
+        要拖动的节点。
       </APISubListItem>
       <APISubListItem
         parent="options"
@@ -314,8 +314,8 @@ const plugins = [
       <APISubListItem parent="options" name="nodeRef" type="any">
         被拖动节点的引用。
       </APISubListItem>
-      <APISubListItem parent="options" name="id" type="string">
-        节点的 ID。
+      <APISubListItem parent="options" name="element" type="TElement">
+        节点。
       </APISubListItem>
       <APISubListItem parent="options" name="dropLine" type="string">
         放置线的当前值。

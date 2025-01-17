@@ -26,7 +26,7 @@ export type CanDropCallback = (args: {
 
 export interface UseDropNodeOptions
   extends DropTargetHookSpec<DragItemNode, unknown, { isOver: boolean }> {
-  /** The node to be dropped on. */
+  /** The node to which the drop line is attached. */
   element: TElement;
 
   /** The reference to the node being dragged. */
