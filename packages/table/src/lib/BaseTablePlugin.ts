@@ -30,6 +30,19 @@ import {
 } from './transforms/index';
 import { withTable } from './withTable';
 
+const parse: HtmlDeserializer['parse'] = ({ element, type }) => {
+  const background = element.style.background || element.style.backgroundColor;
+
+  if (background) {
+    return {
+      background,
+      type,
+    };
+  }
+
+  return { type };
+};
+
 export const BaseTableRowPlugin = createSlatePlugin({
   key: 'tr',
   node: { isElement: true },
@@ -54,17 +67,16 @@ export const BaseTableCellPlugin = createSlatePlugin({
       },
     }),
   },
-}).extend(({ type }) => ({
   parsers: {
     html: {
       deserializer: {
         attributeNames: ['rowspan', 'colspan'],
-        parse: getParse(type),
+        parse,
         rules: [{ validNodeName: 'TD' }],
       },
     },
   },
-}));
+});
 
 export const BaseTableCellHeaderPlugin = createSlatePlugin({
   key: 'th',
@@ -78,17 +90,16 @@ export const BaseTableCellHeaderPlugin = createSlatePlugin({
       },
     }),
   },
-}).extend(({ type }) => ({
   parsers: {
     html: {
       deserializer: {
         attributeNames: ['rowspan', 'colspan'],
-        parse: getParse(type),
+        parse,
         rules: [{ validNodeName: 'TH' }],
       },
     },
   },
-}));
+});
 
 export type TableConfig = PluginConfig<
   'table',
@@ -226,19 +237,3 @@ export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
     },
   }))
   .overrideEditor(withTable);
-
-const getParse = (type: string): HtmlDeserializer['parse'] => {
-  return ({ element }) => {
-    const background =
-      element.style.background || element.style.backgroundColor;
-
-    if (background) {
-      return {
-        background,
-        type,
-      };
-    }
-
-    return { type };
-  };
-};

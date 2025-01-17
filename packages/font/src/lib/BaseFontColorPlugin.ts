@@ -8,12 +8,11 @@ export const BaseFontColorPlugin = createSlatePlugin({
       nodeKey: 'color',
     },
   },
-}).extend(({ type }) => ({
   parsers: {
     html: {
       deserializer: {
         isLeaf: true,
-        parse({ element }) {
+        parse({ element, type }) {
           if (element.style.color) {
             return { [type]: element.style.color };
           }
@@ -28,4 +27,4 @@ export const BaseFontColorPlugin = createSlatePlugin({
       },
     },
   },
-}));
+});

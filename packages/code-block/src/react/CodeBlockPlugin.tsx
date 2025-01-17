@@ -17,13 +17,13 @@ export const CodeBlockPlugin = toPlatePlugin(BaseCodeBlockPlugin, {
   handlers: {
     onKeyDown: onKeyDownCodeBlock,
   },
-}).extend(({ editor, type }) => ({
+}).extend(({ editor, plugin }) => ({
   shortcuts: {
     toggleCodeBlock: {
       keys: [[Key.Mod, Key.Alt, '8']],
       preventDefault: true,
       handler: () => {
-        editor.tf.toggleBlock(type);
+        editor.tf.toggleBlock(editor.getType(plugin));
       },
     },
   },
