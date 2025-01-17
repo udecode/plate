@@ -1,3 +1,5 @@
+import type { EmojiMartData } from '@emoji-mart/data';
+
 import {
   type EmojiCategoryList,
   type EmojiSettingsType,
@@ -7,6 +9,54 @@ import {
 } from './types';
 
 export const EMOJI_MAX_SEARCH_RESULT = 60;
+
+export const DEFAULT_EMOJI_LIBRARY: EmojiMartData = {
+  aliases: {},
+  categories: [
+    {
+      id: 'people',
+      emojis: ['+1'],
+    },
+  ],
+  emojis: {
+    '+1': {
+      id: '+1',
+      keywords: [],
+      name: 'Thumbs Up',
+      skins: [
+        {
+          native: '👍',
+          unified: '1f44d',
+        },
+        {
+          native: '👍🏻',
+          unified: '1f44d-1f3fb',
+        },
+        {
+          native: '👍🏼',
+          unified: '1f44d-1f3fc',
+        },
+        {
+          native: '👍🏽',
+          unified: '1f44d-1f3fd',
+        },
+        {
+          native: '👍🏾',
+          unified: '1f44d-1f3fe',
+        },
+        {
+          native: '👍🏿',
+          unified: '1f44d-1f3ff',
+        },
+      ],
+      version: 1,
+    },
+  },
+  sheet: {
+    cols: 1,
+    rows: 1,
+  },
+};
 
 export const defaultCategories: EmojiCategoryList[] = [
   EmojiCategory.People,
