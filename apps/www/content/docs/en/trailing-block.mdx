@@ -27,12 +27,12 @@ import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 ```tsx
 const plugins = [
   // ...otherPlugins,
-  TrailingBlockPlugin.configure({
+  TrailingBlockPlugin.configure(() => ({
     options: {
       level: 0,
       type: 'p',
     },
-  }),
+  })),
 ];
 ```
 

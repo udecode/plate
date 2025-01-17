@@ -2,34 +2,32 @@
 title: Forced Layout
 ---
 
-{/* <ComponentPreview name="forced-layout-demo" /> */}
-
 <PackageInfo>
 
 ## Features
 
 - Automatically ensures the use of specified elements as required to maintain document structure (e.g., first block should be an H1 element).
+- To force a trailing block of a specific type, see [Trailing Block](/docs/en/trailing-block).
 
 </PackageInfo>
 
 ## Installation
 
 ```bash
-npm install @udecode/plate-normalizers @udecode/plate-trailing-block
+npm install @udecode/plate-normalizers
 ```
 
 ## Usage
 
 ```tsx
-import { NormalizersPlugin } from '@udecode/plate-normalizers/react';
-import { TrailingBlockPlugin } from '@udecode/plate-trailing-block/react';
+import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
+import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 import { ParagraphPlugin } from '@udecode/plate/react';
 import { HEADING_KEYS } from '@udecode/plate-heading/react';
 
 const plugins = [
   // ...otherPlugins
-  TrailingBlockPlugin.configure({ options: { type: ParagraphPlugin.key } }),
-  NormalizersPlugin.configure({
+  NormalizeTypesPlugin.configure({
     options: {
       rules: [{ path: [0], strictType: 'h1' }],
     },
@@ -38,24 +36,6 @@ const plugins = [
 ```
 
 ## Plugins
-
-### TrailingBlockPlugin
-
-<APIOptions>
-<APIItem name="level" type="number" optional>
-Level where the trailing node should be, the first level being 0.
-
-- **Default:** `0`
-</APIItem>
-
-<APIItem name="type" type="string" optional>
-Type of the trailing block.
-
-- **Default:** `editor.getType(ParagraphPlugin)`
-</APIItem>
-</APIOptions>
-
-The `TrailingBlockPlugin` also extends `QueryNodeOptions`, which includes additional options for querying nodes.
 
 ### NormalizeTypesPlugin
 
