@@ -1,5 +1,11 @@
 # @udecode/plate-dnd
 
+## 42.2.2
+
+### Patch Changes
+
+- [#4000](https://github.com/udecode/plate/pull/4000) by [@12joan](https://github.com/12joan) – Improve performance of drag and drop
+
 ## 42.0.0
 
 ## 41.0.2

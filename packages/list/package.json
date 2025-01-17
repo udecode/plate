@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-list",
-  "version": "42.0.0",
+  "version": "42.2.2",
   "description": "List plugin for Plate",
   "keywords": [
     "plate",
@@ -57,7 +57,7 @@
     "@udecode/plate": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate": ">=42.1.2",
+    "@udecode/plate": ">=42.2.2",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },
