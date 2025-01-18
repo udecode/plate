@@ -4,6 +4,8 @@ export type MdNodeTypes = {
   bold: string;
   code: string;
   code_block: string;
+  code_line: string;
+  equation: string;
   h1: string;
   h2: string;
   h3: string;
@@ -12,6 +14,7 @@ export type MdNodeTypes = {
   h6: string;
   hr: string;
   img: string;
+  inline_equation: string;
   italic: string;
   li: string;
   ol: string;
@@ -44,7 +47,7 @@ export interface MdElementType extends NodeType {
   break?: boolean;
   caption?: (MdElementType | MdLeafType)[];
   indent?: number;
-  language?: string;
+  lang?: string;
   listStart?: number;
   listStyleType?: string;
   url?: string;

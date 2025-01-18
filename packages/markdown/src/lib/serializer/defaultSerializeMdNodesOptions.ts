@@ -24,8 +24,16 @@ export const defaultSerializeMdNodesOptions: SerializeMdOptions['nodes'] = {
   code: { isLeaf: true, type: 'code' },
   code_block: {
     serialize: (children, node) =>
-      `\n\`\`\`${node.language || ''}\n${children}\n\`\`\`\n`,
+      `\n\`\`\`${node.lang || ''}\n${children}\`\`\`\n`,
     type: 'code_block',
+  },
+  code_line: {
+    serialize: (children) => `${children}\n`,
+    type: 'code_line',
+  },
+  equation: {
+    serialize: (children, node) => `$$\n${node.texExpression}\n$$`,
+    type: 'equation',
   },
   h1: { serialize: (children) => `\n# ${children}\n`, type: 'h1' },
   h2: { serialize: (children) => `\n## ${children}\n`, type: 'h2' },
@@ -51,6 +59,10 @@ export const defaultSerializeMdNodesOptions: SerializeMdOptions['nodes'] = {
       return `\n![${caption}](${node.url || ''})\n`;
     },
     type: 'img',
+  },
+  inline_equation: {
+    serialize: (children, node) => `$${node.texExpression}$`,
+    type: 'inline_equation',
   },
   italic: { isLeaf: true, type: 'italic' },
   li: {
