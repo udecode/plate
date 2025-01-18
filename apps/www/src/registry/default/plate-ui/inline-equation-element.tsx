@@ -5,7 +5,11 @@ import { useRef, useState } from 'react';
 import type { TEquationElement } from '@udecode/plate-math';
 
 import { cn, withRef } from '@udecode/cn';
-import { useElement, useSelected } from '@udecode/plate/react';
+import {
+  useEditorSelector,
+  useElement,
+  useSelected,
+} from '@udecode/plate/react';
 import { useEquationElement } from '@udecode/plate-math/react';
 import { RadicalIcon } from 'lucide-react';
 
@@ -18,7 +22,11 @@ export const InlineEquationElement = withRef<typeof PlateElement>(
     const element = useElement<TEquationElement>();
     const katexRef = useRef<HTMLDivElement | null>(null);
     const selected = useSelected();
-    const [open, setOpen] = useState(selected);
+    const isCollapsed = useEditorSelector(
+      (editor) => editor.api.isCollapsed(),
+      []
+    );
+    const [open, setOpen] = useState(selected && isCollapsed);
 
     useEquationElement({
       element,
