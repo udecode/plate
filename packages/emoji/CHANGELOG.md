@@ -1,5 +1,7 @@
 # @udecode/plate-emoji
 
+## 42.2.4
+
 ## 42.2.1
 
 ### Patch Changes

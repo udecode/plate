@@ -1,5 +1,11 @@
 # @udecode/plate-link
 
+## 42.2.4
+
+### Patch Changes
+
+- [#4012](https://github.com/udecode/plate/pull/4012) by [@zbeyens](https://github.com/zbeyens) – Fix overrideEditor insertText missing options
+
 ## 42.2.2
 
 ### Patch Changes

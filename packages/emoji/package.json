@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-emoji",
-  "version": "42.2.1",
+  "version": "42.2.4",
   "description": "Emoji plugin for Plate",
   "keywords": [
     "plate",
@@ -50,7 +50,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-combobox": "42.0.0"
+    "@udecode/plate-combobox": "42.2.4"
   },
   "devDependencies": {
     "@emoji-mart/data": "^1.2.1",
