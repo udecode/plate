@@ -66,8 +66,6 @@ describe('BlockSelectionPlugin', () => {
     // First select tr1
     editor.setOption(BlockSelectionPlugin, 'selectedIds', new Set(['tr1']));
 
-    console.log('go');
-
     // Then select p1 (outside of table1)
     api.add('p1');
 
@@ -83,7 +81,6 @@ describe('BlockSelectionPlugin', () => {
     // Select table1
     editor.setOption(BlockSelectionPlugin, 'selectedIds', new Set(['table1']));
 
-    console.log(22);
     // Select tr1
     api.add('tr1');
 
