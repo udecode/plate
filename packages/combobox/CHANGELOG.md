@@ -1,5 +1,11 @@
 # @udecode/plate-combobox
 
+## 42.2.4
+
+### Patch Changes
+
+- [#4012](https://github.com/udecode/plate/pull/4012) by [@zbeyens](https://github.com/zbeyens) – Fix overrideEditor insertText missing options
+
 ## 42.0.0
 
 ## 41.0.0
