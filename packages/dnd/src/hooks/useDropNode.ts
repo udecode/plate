@@ -45,7 +45,7 @@ export interface UseDropNodeOptions
       monitor: DropTargetMonitor<DragItemNode, unknown>;
       nodeRef: any;
     }
-  ) => boolean;
+  ) => boolean | void;
 
   canDropNode?: CanDropCallback;
 
@@ -131,6 +131,7 @@ export const useDropNode = (
       if (handled) return;
 
       onDropNode(editor, {
+        canDropNode,
         dragItem: dragItem as ElementDragItemNode,
         element,
         monitor,

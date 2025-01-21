@@ -10,6 +10,23 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 
 ## January 2025 #18
 
+### January 21 #18.7
+
+- `table-row-element`: support row dnd
+- `editor`: z-50 for selection area
+- `draggable`: 
+  - Replace `editor.api.blockSelection.replaceSelectedIds` with `editor.api.blockSelection.clear`
+  - Use `TooltipButton` for drag handle
+  - Block select on drag handle click
+  - Hide drag handle in table cells
+- `column-element`, `table-cell-element`: add `isSelectionAreaVisible` check
+- `block-selection`: hide if dragging
+- Replace `editor.api.blockSelection.addSelectedRow` with `editor.api.blockSelection.set`:
+  - `ai-menu`
+  - `equation-popover`
+
+
+
 ### January 18 #18.6
 
 - `inline-equation-element` and `equation-popover`: Fix: When selecting an inline equation, the popover should not open, as it causes the selection to be lost.

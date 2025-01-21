@@ -24,7 +24,7 @@ export const moveSelection = (
     if (prevEntry) {
       const [prevNode] = prevEntry;
       setOption('anchorId', prevNode.id);
-      api.blockSelection.addSelectedRow(prevNode.id, { clear: true });
+      api.blockSelection.set(prevNode.id);
     }
   } else {
     // direction === 'down'
@@ -39,7 +39,7 @@ export const moveSelection = (
     if (nextEntry) {
       const [nextNode] = nextEntry;
       setOption('anchorId', nextNode.id);
-      api.blockSelection.addSelectedRow(nextNode.id, { clear: true });
+      api.blockSelection.set(nextNode.id);
     }
   }
 };

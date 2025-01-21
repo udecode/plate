@@ -41,7 +41,7 @@ export type UseDndNodeOptions = Pick<UseDropNodeOptions, 'element'> &
         monitor: DropTargetMonitor<DragItemNode, unknown>;
         nodeRef: any;
       }
-    ) => boolean;
+    ) => boolean | void;
   };
 
 /**

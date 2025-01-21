@@ -22,7 +22,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
   const { api, getOption, getOptions, setOption, useOption } =
     useEditorPlugin<BlockSelectionConfig>({ key: 'blockSelection' });
 
-  const isSelecting = useOption('isSelecting');
+  const isSelectingSome = useOption('isSelectingSome');
   const selectedIds = useOption('selectedIds');
 
   useSelectionArea();
@@ -40,18 +40,18 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
   }, [setOption]);
 
   React.useEffect(() => {
-    if (!isSelecting) {
+    if (!isSelectingSome) {
       setOption('anchorId', null);
     }
-  }, [isSelecting, setOption]);
+  }, [isSelectingSome, setOption]);
 
   React.useEffect(() => {
-    if (isSelecting && inputRef.current) {
+    if (isSelectingSome && inputRef.current) {
       inputRef.current.focus({ preventScroll: true });
     } else if (inputRef.current) {
       inputRef.current.blur();
     }
-  }, [isSelecting]);
+  }, [isSelectingSome]);
 
   /** KeyDown logic */
   const handleKeyDown = React.useCallback(
@@ -59,7 +59,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
       const isReadonly = editor.api.isReadOnly();
       getOptions().onKeyDownSelecting?.(e.nativeEvent);
 
-      if (!getOptions().isSelecting) return;
+      if (!getOption('isSelectingSome')) return;
       if (isHotkey('shift+up')(e)) {
         e.preventDefault();
         e.stopPropagation();
@@ -76,7 +76,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
       }
       // ESC => unselect all
       if (isHotkey('escape')(e)) {
-        api.blockSelection.unselect();
+        api.blockSelection.deselect();
 
         return;
       }

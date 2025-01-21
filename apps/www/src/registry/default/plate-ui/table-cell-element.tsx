@@ -10,7 +10,10 @@ import {
   useElementSelector,
   useReadOnly,
 } from '@udecode/plate/react';
-import { useBlockSelected } from '@udecode/plate-selection/react';
+import {
+  BlockSelectionPlugin,
+  useBlockSelected,
+} from '@udecode/plate-selection/react';
 import {
   TablePlugin,
   TableRowPlugin,
@@ -37,17 +40,13 @@ export const TableCellElement = withRef<
     key: TableRowPlugin.key,
   });
   const isSelectingRow = useBlockSelected(rowId);
+  const isSelectionAreaVisible = props.editor.useOption(
+    BlockSelectionPlugin,
+    'isSelectionAreaVisible'
+  );
 
-  const {
-    borders,
-    colIndex,
-    colSpan,
-    isSelectingCell,
-    minHeight,
-    rowIndex,
-    selected,
-    width,
-  } = useTableCellElement();
+  const { borders, colIndex, colSpan, minHeight, rowIndex, selected, width } =
+    useTableCellElement();
 
   const { bottomProps, hiddenLeft, leftProps, rightProps } =
     useTableCellElementResizable({
@@ -70,13 +69,10 @@ export const TableCellElement = withRef<
           'before:size-full',
           selected && 'before:z-10 before:bg-muted',
           "before:absolute before:box-border before:select-none before:content-['']",
-          borders &&
-            cn(
-              borders.bottom?.size && `before:border-b before:border-b-border`,
-              borders.right?.size && `before:border-r before:border-r-border`,
-              borders.left?.size && `before:border-l before:border-l-border`,
-              borders.top?.size && `before:border-t before:border-t-border`
-            )
+          borders.bottom?.size && `before:border-b before:border-b-border`,
+          borders.right?.size && `before:border-r before:border-r-border`,
+          borders.left?.size && `before:border-l before:border-l-border`,
+          borders.top?.size && `before:border-t before:border-t-border`
         )
       )}
       style={
@@ -94,13 +90,13 @@ export const TableCellElement = withRef<
       {...props}
     >
       <div
-        className="relative z-20 box-border h-full px-4 py-2"
+        className="relative z-20 box-border h-full px-3 py-2"
         style={{ minHeight }}
       >
         {children}
       </div>
 
-      {!isSelectingCell && (
+      {!isSelectionAreaVisible && (
         <div
           className="group absolute top-0 size-full select-none"
           contentEditable={false}

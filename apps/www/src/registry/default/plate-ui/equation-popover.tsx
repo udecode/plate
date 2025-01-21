@@ -56,7 +56,7 @@ const EquationPopoverContent = ({
     } else {
       editor
         .getApi(BlockSelectionPlugin)
-        .blockSelection.addSelectedRow(element.id as string);
+        .blockSelection.set(element.id as string);
     }
   };
 

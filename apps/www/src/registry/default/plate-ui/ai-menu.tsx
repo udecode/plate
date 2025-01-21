@@ -69,7 +69,7 @@ export function AIMenu() {
       if (!editor.api.isAt({ end: true }) && !editor.api.isEmpty(ancestor)) {
         editor
           .getApi(BlockSelectionPlugin)
-          .blockSelection.addSelectedRow(ancestor.id as string);
+          .blockSelection.set(ancestor.id as string);
       }
 
       show(editor.api.toDOMNode(ancestor)!);

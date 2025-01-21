@@ -20,13 +20,11 @@ export const duplicateBlockSelectionNodes = (editor: PlateEditor) => {
       const targetPath = [path[0] + index];
       const targetNode = editor.api.node(targetPath);
 
-      return targetNode?.[0].id;
+      return targetNode?.[0].id as string;
     })
     .filter(Boolean);
 
-  const api = editor.getApi(BlockSelectionPlugin);
-
   setTimeout(() => {
-    api.blockSelection.setSelectedIds({ ids } as any);
+    editor.setOption(BlockSelectionPlugin, 'selectedIds', new Set(ids));
   }, 0);
 };

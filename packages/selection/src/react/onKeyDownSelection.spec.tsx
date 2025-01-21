@@ -63,10 +63,10 @@ describe('onKeyDownSelection', () => {
   //     plugins: [BlockSelectionPlugin],
   //   });
   //
-  //   jest.spyOn(editor.api.blockSelection, 'selectedAll');
+  //   jest.spyOn(editor.api.blockSelection, 'selectAll');
   //
   //   await triggerKeyboardEvent('mod+a');
   //
-  //   expect(editor.api.blockSelection.selectedAll).toHaveBeenCalled();
+  //   expect(editor.api.blockSelection.selectAll).toHaveBeenCalled();
   // });
 });

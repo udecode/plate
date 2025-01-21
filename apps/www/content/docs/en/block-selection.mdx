@@ -106,7 +106,7 @@ BlockSelectionPlugin.configure({
         speedDivider: 1.5,
       },
       // The distance needed to move for the selection area to appear.
-      // If it’s too small, it may cause the mouse click event to be blocked. 10 is a good default.
+      // If it's too small, it may cause the mouse click event to be blocked. 10 is a good default.
       startThreshold: 4,
     },
   },
@@ -145,14 +145,14 @@ There are two ways to handle resetting selection across the full page:
 
 1. Direct API call:
 ```tsx
-editor.api.blockSelection.unselect();
+editor.api.blockSelection.deselect();
 ```
 
 2. Click outside handler:
 ```tsx
 const handleClickOutside = (event: MouseEvent) => {
   if (!(event.target as HTMLElement).closest('[data-plate-selectable]')) {
-    editor.api.blockSelection.unselect();
+    editor.api.blockSelection.deselect();
   }
 };
 ```
@@ -240,26 +240,37 @@ Function to determine if a block element is selectable.
 
 ## API
 
-### editor.api.blockSelection.focus
-Focuses the block selection shadow input. This input handles copy, delete, and paste events for selected blocks.
+### editor.api.blockSelection.add
 
-### editor.api.blockSelection.addSelectedRow
-
-Adds a selected row to the block selection.
+Adds one or more blocks to the selection.
 
 <APIParameters>
-  <APIItem name="id" type="string">
-    The ID of the row to be selected.
-  </APIItem>
-  <APIItem name="options" type="object" optional>
-    <APISubList>
-      <APISubListItem parent="options" name="clear" type="boolean" optional>
-        Whether to clear existing selections before adding the new one.
-        - **Default:** `true`
-      </APISubListItem>
-    </APISubList>
+  <APIItem name="id" type="string | string[]">
+    The ID(s) of the block(s) to be selected.
   </APIItem>
 </APIParameters>
+
+### editor.api.blockSelection.clear
+
+Resets the set of selected IDs to an empty set.
+
+### editor.api.blockSelection.delete
+
+Removes one or more blocks from the selection.
+
+<APIParameters>
+  <APIItem name="id" type="string | string[]">
+    The ID(s) of the block(s) to remove from selection.
+  </APIItem>
+</APIParameters>
+
+### editor.api.blockSelection.deselect
+
+Deselects all blocks and sets the `isSelecting` flag to false.
+
+### editor.api.blockSelection.focus
+
+Focuses the block selection shadow input. This input handles copy, delete, and paste events for selected blocks.
 
 ### editor.api.blockSelection.getNodes
 
@@ -271,34 +282,35 @@ Gets the selected blocks in the editor.
   </APIItem>
 </APIReturns>
 
-### editor.api.blockSelection.resetSelectedIds
+### editor.api.blockSelection.has
 
-Resets the set of selected IDs to an empty set.
-
-### editor.api.blockSelection.selectedAll
-
-Selects all selectable blocks in the editor.
-
-### editor.api.blockSelection.setSelectedIds
-
-Sets the selected IDs based on added and removed elements.
+Checks if one or more blocks are selected.
 
 <APIParameters>
-  <APIItem name="options" type="ChangedElements">
-    <APISubList>
-      <APISubListItem parent="options" name="added" type="HTMLElement[]">
-        Array of HTML elements to be added to the selection.
-      </APISubListItem>
-      <APISubListItem parent="options" name="removed" type="HTMLElement[]">
-        Array of HTML elements to be removed from the selection.
-      </APISubListItem>
-    </APISubList>
+  <APIItem name="id" type="string | string[]">
+    The ID(s) of the block(s) to check.
   </APIItem>
 </APIParameters>
 
-### editor.api.blockSelection.unselect
+<APIReturns>
+  <APIItem type="boolean">
+    Returns true if all specified blocks are selected.
+  </APIItem>
+</APIReturns>
 
-Unselects all blocks and sets the `isSelecting` flag to false.
+### editor.api.blockSelection.selectAll
+
+Selects all selectable blocks in the editor.
+
+### editor.api.blockSelection.set
+
+Sets the selection to one or more blocks, clearing any existing selection.
+
+<APIParameters>
+  <APIItem name="id" type="string | string[]">
+    The ID(s) of the block(s) to be selected.
+  </APIItem>
+</APIParameters>
 
 ## Transforms
 
