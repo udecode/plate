@@ -255,9 +255,9 @@ const MyPlugin = createPlatePlugin({
   key: 'myPlugin',
 }).overrideEditor(({ editor, tf: { insertText }, api: { isInline } }) => ({
   transforms: {
-    insertText(text) {
+    insertText(text, options) {
       // Override insertText behavior
-      insertText(text);
+      insertText(text, options);
     },
   },
   api: {
