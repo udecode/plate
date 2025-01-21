@@ -1,5 +1,7 @@
-export const extractSelectableIds = (els: Element[]): any[] => {
-  return els.map((v) => (v as HTMLElement).dataset.blockId);
+export const extractSelectableIds = (els: Element[]) => {
+  return els
+    .map((v) => (v as HTMLElement).dataset.blockId)
+    .filter(Boolean) as string[];
 };
 
 export const extractSelectableId = (el: Element) =>

@@ -1,4 +1,9 @@
-import { type OverrideEditor, type TRange, RangeApi } from '@udecode/plate';
+import {
+  type OverrideEditor,
+  type TElement,
+  type TRange,
+  RangeApi,
+} from '@udecode/plate';
 
 import type {
   TTableCellElement,
@@ -25,7 +30,7 @@ export const withApplyTable: OverrideEditor<TableConfig> = ({
   editor,
   getOptions,
   tf: { apply },
-  type,
+  type: tableType,
 }) => ({
   transforms: {
     apply(op) {
@@ -40,12 +45,12 @@ export const withApplyTable: OverrideEditor<TableConfig> = ({
           editor.api.isAt({
             at: newSelection,
             blocks: true,
-            match: (n) => n.type === type,
+            match: (n) => n.type === tableType,
           })
         ) {
           const anchorEntry = editor.api.block({
             at: newSelection.anchor,
-            match: (n) => n.type === type,
+            match: (n) => n.type === tableType,
           });
 
           if (anchorEntry) {
@@ -65,7 +70,7 @@ export const withApplyTable: OverrideEditor<TableConfig> = ({
           } else {
             const focusEntry = editor.api.block({
               at: newSelection.focus,
-              match: (n) => n.type === type,
+              match: (n) => n.type === tableType,
             });
 
             if (focusEntry) {
@@ -86,17 +91,24 @@ export const withApplyTable: OverrideEditor<TableConfig> = ({
         overrideSelectionFromCell(editor, newSelection);
       }
 
+      const opType =
+        op.type === 'remove_node'
+          ? (op.node.type as string)
+          : op.type === 'move_node'
+            ? editor.api.node<TElement>(op.path)?.[0].type
+            : undefined;
+
       const isTableOperation =
-        op.type === 'remove_node' &&
-        op.node.type &&
+        (op.type === 'remove_node' || op.type === 'move_node') &&
+        opType &&
         [
           editor.getType(BaseTableRowPlugin),
-          type,
+          tableType,
           ...getCellTypes(editor),
-        ].includes(op.node.type as string);
+        ].includes(opType as string);
 
       // Cleanup cell indices when removing a table cell
-      if (isTableOperation) {
+      if (isTableOperation && op.type === 'remove_node') {
         const cells = [
           ...editor.api.nodes<TTableCellElement>({
             at: op.path,
@@ -117,12 +129,12 @@ export const withApplyTable: OverrideEditor<TableConfig> = ({
 
       if (
         isTableOperation &&
-        // There is no new indices when removing a table
-        op.node.type !== type
+        // There is no new indices when moving/removing a table
+        opType !== tableType
       ) {
         table = editor.api.node<TTableRowElement>({
-          at: op.path,
-          match: { type },
+          at: op.type === 'move_node' ? op.newPath : op.path,
+          match: { type: tableType },
         })?.[0];
 
         if (table) {

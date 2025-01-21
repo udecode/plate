@@ -3,6 +3,8 @@
 import React from 'react';
 
 import { cn } from '@udecode/cn';
+import { useEditorPlugin } from '@udecode/plate-core/react';
+import { DndPlugin } from '@udecode/plate-dnd';
 import { useBlockSelected } from '@udecode/plate-selection/react';
 import { type VariantProps, cva } from 'class-variance-authority';
 
@@ -27,6 +29,8 @@ export function BlockSelection({
 }: React.HTMLAttributes<HTMLDivElement> &
   VariantProps<typeof blockSelectionVariants>) {
   const isBlockSelected = useBlockSelected();
+  const { useOption } = useEditorPlugin(DndPlugin);
+  const isDragging = useOption('isDragging');
 
   if (!isBlockSelected) return null;
 
@@ -34,7 +38,7 @@ export function BlockSelection({
     <div
       className={cn(
         blockSelectionVariants({
-          active: isBlockSelected,
+          active: isBlockSelected && !isDragging,
         }),
         className
       )}

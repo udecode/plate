@@ -22,7 +22,7 @@ export const selectBlocks = (editor: SlateEditor, at: Path | TNode) => {
         });
   const ids = selectedBlocks.map((block) => block[0].id as string);
 
-  editor.getApi(BlockSelectionPlugin).blockSelection.setSelectedIds({
-    ids: ids.includes(element.id) ? ids : [element.id],
-  });
+  editor
+    .getApi(BlockSelectionPlugin)
+    .blockSelection.set(ids.includes(element.id) ? ids : [element.id]);
 };

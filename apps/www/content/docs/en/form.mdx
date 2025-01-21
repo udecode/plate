@@ -48,7 +48,7 @@ export function RHFEditorForm() {
 
   const onSubmit = (data: FormData) => {
     // data.content will have final editor content
-    console.log('Submitted:', data.content);
+    console.info('Submitted:', data.content);
   };
 
   return (
@@ -110,7 +110,7 @@ export function EditorForm() {
   const editor = usePlateEditor();
 
   const onSubmit = (data: FormValues) => {
-    console.log('Submitted data:', data.content);
+    console.info('Submitted data:', data.content);
   };
 
   return (
