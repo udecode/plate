@@ -1,5 +1,12 @@
 # @udecode/plate-dnd
 
+## 42.2.3
+
+### Patch Changes
+
+- [#4010](https://github.com/udecode/plate/pull/4010) by [@zbeyens](https://github.com/zbeyens) –
+  - `useDndNode`: `onDropHandler` can return `void`
+
 ## 42.2.2
 
 ### Patch Changes

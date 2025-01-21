@@ -1,5 +1,12 @@
 # @udecode/plate-table
 
+## 42.2.3
+
+### Patch Changes
+
+- [#4010](https://github.com/udecode/plate/pull/4010) by [@zbeyens](https://github.com/zbeyens) –
+  - Recompute cell indices when moving node in table
+
 ## 42.2.2
 
 ### Patch Changes
