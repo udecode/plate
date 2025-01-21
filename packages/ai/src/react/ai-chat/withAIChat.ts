@@ -27,7 +27,7 @@ export const withAIChat: OverrideEditor<AIChatPluginConfig> = ({
 
   return {
     transforms: {
-      insertText(text) {
+      insertText(text, options) {
         const { triggerPreviousCharPattern, triggerQuery } = getOptions();
 
         const fn = () => {
@@ -60,7 +60,7 @@ export const withAIChat: OverrideEditor<AIChatPluginConfig> = ({
 
         if (fn()) return;
 
-        return insertText(text);
+        return insertText(text, options);
       },
 
       normalizeNode(entry) {

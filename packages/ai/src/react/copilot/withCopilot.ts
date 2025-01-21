@@ -47,7 +47,7 @@ export const withCopilot: OverrideEditor<CopilotPluginConfig> = ({
 
         apply(operation);
       },
-      insertText(text) {
+      insertText(text, options) {
         const suggestionText = getOptions().suggestionText;
 
         // When using IME input, it's possible to enter two characters at once.
@@ -63,7 +63,7 @@ export const withCopilot: OverrideEditor<CopilotPluginConfig> = ({
           return;
         }
 
-        insertText(text);
+        insertText(text, options);
       },
 
       redo() {

@@ -95,14 +95,14 @@ export const withSuggestion: OverrideEditor<SuggestionConfig> = ({
       insertFragment(fragment);
     },
 
-    insertText(text) {
+    insertText(text, options) {
       if (getOptions().isSuggesting) {
         insertTextSuggestion(editor, text);
 
         return;
       }
 
-      insertText(text);
+      insertText(text, options);
     },
 
     normalizeNode(entry) {
