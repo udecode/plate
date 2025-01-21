@@ -4,7 +4,14 @@ import React from 'react';
 
 import { cn, useComposedRef, withRef } from '@udecode/cn';
 import { PathApi } from '@udecode/plate';
-import { PlateElement, useReadOnly, useSelected } from '@udecode/plate/react';
+import {
+  PlateElement,
+  useEditorPlugin,
+  useEditorRef,
+  useElement,
+  useReadOnly,
+  useSelected,
+} from '@udecode/plate/react';
 import { useDraggable, useDropLine } from '@udecode/plate-dnd';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 import { GripVertical } from 'lucide-react';
@@ -13,13 +20,12 @@ import { Button } from './button';
 
 export const TableRowElement = withRef<typeof PlateElement>(
   ({ children, className, ...props }, ref) => {
-    const { editor, element } = props;
+    const { element } = props;
     const readOnly = useReadOnly();
     const selected = useSelected();
-    const isSelectionAreaVisible = editor.useOption(
-      BlockSelectionPlugin,
-      'isSelectionAreaVisible'
-    );
+    const editor = useEditorRef();
+    const { useOption } = useEditorPlugin(BlockSelectionPlugin);
+    const isSelectionAreaVisible = useOption?.('isSelectionAreaVisible');
 
     const { isDragging, previewRef, handleRef } = useDraggable({
       canDropNode: ({ dragEntry, dropEntry }) =>
@@ -29,6 +35,13 @@ export const TableRowElement = withRef<typeof PlateElement>(
         ),
       element,
       type: element.type,
+      onDropHandler: (_, { dragItem }) => {
+        const dragElement = (dragItem as any).element;
+
+        if (dragElement) {
+          editor.tf.select(dragElement);
+        }
+      },
     });
 
     return (
@@ -39,50 +52,38 @@ export const TableRowElement = withRef<typeof PlateElement>(
         data-selected={selected ? 'true' : undefined}
         {...props}
       >
-        {children}
-
         {!readOnly && !isSelectionAreaVisible && (
-          <>
-            <RowDragHandle dragRef={handleRef} isDragging={isDragging} />
+          <td className="w-2 select-none" contentEditable={false}>
+            <RowDragHandle dragRef={handleRef} />
             <DropLine />
-          </>
+          </td>
         )}
+
+        {children}
       </PlateElement>
     );
   }
 );
 
-function RowDragHandle({
-  dragRef,
-  isDragging,
-}: {
-  dragRef: React.Ref<any>;
-  isDragging: boolean;
-}) {
+function RowDragHandle({ dragRef }: { dragRef: React.Ref<any> }) {
+  const editor = useEditorRef();
+  const element = useElement();
+
   return (
-    <td
+    <Button
+      ref={dragRef}
+      variant="outline"
       className={cn(
-        'hidden w-0 group-hover/row:table-cell',
-        "group-has-[[data-resizing='true']]/row:hidden"
+        'absolute left-0 top-1/2 z-[51] h-6 w-4 -translate-y-1/2 p-0 focus-visible:ring-0 focus-visible:ring-offset-0',
+        'cursor-grab active:cursor-grabbing',
+        'opacity-0 transition-opacity duration-100 group-hover/row:opacity-100 group-has-[[data-resizing="true"]]/row:opacity-0'
       )}
+      onClick={() => {
+        editor.tf.select(element);
+      }}
     >
-      <Button
-        ref={dragRef}
-        variant="outline"
-        className={cn(
-          'absolute left-0 top-1/2 z-[51] h-6 w-4 -translate-x-1/2 -translate-y-1/2 p-0',
-          'cursor-grab active:cursor-grabbing',
-          isDragging && 'opacity-70'
-        )}
-        onClick={(event) => {
-          event.stopPropagation();
-          event.preventDefault();
-        }}
-        contentEditable={false}
-      >
-        <GripVertical className="text-muted-foreground" />
-      </Button>
-    </td>
+      <GripVertical className="text-muted-foreground" />
+    </Button>
   );
 }
 
@@ -92,15 +93,11 @@ function DropLine() {
   if (!dropLine) return null;
 
   return (
-    <td>
-      <div
-        // eslint-disable-next-line tailwindcss/no-custom-classname
-        className={cn(
-          'slate-dropLine',
-          'absolute inset-x-0 z-50 h-0.5 bg-brand/50',
-          dropLine === 'top' ? '-top-px' : '-bottom-px'
-        )}
-      />
-    </td>
+    <div
+      className={cn(
+        'absolute inset-x-0 left-2 z-50 h-0.5 bg-brand/50',
+        dropLine === 'top' ? '-top-px' : '-bottom-px'
+      )}
+    />
   );
 }

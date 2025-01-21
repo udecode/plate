@@ -132,12 +132,12 @@ export const withLink: OverrideEditor<BaseLinkConfig> = ({
         insertData(data);
       },
 
-      insertText(text) {
+      insertText(text, options) {
         if (text === ' ' && editor.api.isCollapsed()) {
           wrapLink();
         }
 
-        insertText(text);
+        insertText(text, options);
       },
 
       normalizeNode([node, path]) {

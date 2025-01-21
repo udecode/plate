@@ -68,8 +68,9 @@ export const TableElement = withHOC(
 
     const content = (
       <PlateElement
-        className={cn(className, 'overflow-x-auto py-5')}
+        className={cn(className, '-ml-2 overflow-x-auto py-5')}
         style={{ paddingLeft: marginLeft }}
+        blockSelectionClassName="left-2"
         {...props}
       >
         <div className="group/table relative w-fit">
@@ -114,6 +115,7 @@ export const TableFloatingToolbar = withRef<typeof PopoverContent>(
           ref={ref}
           asChild
           onOpenAutoFocus={(e) => e.preventDefault()}
+          contentEditable={false}
           {...props}
         >
           <Toolbar

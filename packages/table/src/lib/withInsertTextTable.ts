@@ -8,7 +8,7 @@ export const withInsertTextTable: OverrideEditor<TableConfig> = ({
   tf: { insertText },
 }) => ({
   transforms: {
-    insertText(text) {
+    insertText(text, options) {
       if (editor.api.isExpanded()) {
         const entry = getTableAbove(editor, {
           at: editor.selection?.anchor,
@@ -27,7 +27,7 @@ export const withInsertTextTable: OverrideEditor<TableConfig> = ({
         }
       }
 
-      insertText(text);
+      insertText(text, options);
     },
   },
 });
