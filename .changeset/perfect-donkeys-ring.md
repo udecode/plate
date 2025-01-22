@@ -1,5 +1,5 @@
 ---
-'@udecode/slate': minor
+'@udecode/slate': patch
 ---
 
-Update type signature of moveNodes
+Fix `editor.tf.moveNodes` type
