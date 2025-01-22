@@ -1,0 +1,428 @@
+---
+title: Form
+description: How to integrate Plate editor with react-hook-form.
+---
+
+While Plate is typically used as an **uncontrolled** input, there are valid scenarios where you want to integrate the editor within a form library like [**react-hook-form**](https://www.react-hook-form.com) or the [**Form**](https://ui.shadcn.com/docs/components/form) component from **shadcn/ui**. This guide walks through best practices and common pitfalls.
+
+## When to Integrate Plate with a Form
+
+- **Form Submission**: You want the editor's content to be included along with other fields (e.g., `<input>`, `<select>`) when the user submits the form.
+- **Validation**: You want to validate the editor's content (e.g., checking if it's empty) at the same time as other form fields.
+- **Form Data Management**: You want to store the editor content in the same store (like `react-hook-form`'s state) as other fields.
+
+However, keep in mind the warning about **fully controlling** the editor value. Plate (and Slate) strongly prefer an uncontrolled model. If you attempt to replace the editor's internal state too frequently, you can break **selection**, **history**, or cause performance issues. The recommended pattern is to treat the editor as uncontrolled, but still **sync** form data on certain events.
+
+## Approach 1: Sync on `onChange`
+
+This is the most straightforward approach: each time the editor changes, update your form field's value. For small documents or infrequent changes, this is usually acceptable.
+
+### React Hook Form Example
+
+```tsx
+import { useForm } from 'react-hook-form';
+import type { Value } from '@udecode/plate';
+import { Plate, PlateContent, usePlateEditor } from '@udecode/plate/react';
+
+type FormData = {
+  content: Value;
+};
+
+export function RHFEditorForm() {
+  const initialValue = [
+    { type: 'p', children: [{ text: 'Hello from react-hook-form!' }] },
+  ]
+
+  // Setup react-hook-form
+  const { register, handleSubmit, setValue } = useForm<FormData>({
+    defaultValues: {
+      content: initialValue,
+    },
+  });
+
+  // Create/configure the Plate editor
+  const editor = usePlateEditor({ value: initialValue });
+
+  // Register the field for react-hook-form
+  register('content', { /* validation rules... */ });
+
+  const onSubmit = (data: FormData) => {
+    // data.content will have final editor content
+    console.info('Submitted:', data.content);
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <Plate
+        editor={editor}
+        onChange={({ value }) => {
+          // Sync editor changes to the form
+          setValue('content', value);
+        }}
+      >
+        <PlateContent placeholder="Type here..." />
+      </Plate>
+
+      <button type="submit">Submit</button>
+    </form>
+  );
+}
+```
+
+**Notes**:
+1. **`defaultValues.content`**: your initial editor content.
+2. **`register('content')`**: signals to RHF that the field is tracked.  
+3. **`onChange({ value })`**: calls `setValue('content', value)` each time.
+
+If you expect large documents or fast typing, consider debouncing or switching to an `onBlur` approach to reduce form updates.
+
+### shadcn/ui Form Example
+
+[shadcn/ui](https://ui.shadcn.com/docs/components/form) provides a `<Form>` that integrates with react-hook-form. We'll use `<FormField>` to handle the field logic:
+
+```tsx
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { useForm } from 'react-hook-form';
+import { Plate, PlateContent, usePlateEditor } from '@udecode/plate/react';
+
+type FormValues = {
+  content: any;
+};
+
+export function EditorForm() {
+  // 1. Create the form
+  const form = useForm<FormValues>({
+    defaultValues: {
+      content: [
+        { type: 'p', children: [{ text: 'Hello from shadcn/ui Form!' }] },
+      ],
+    },
+  });
+
+  // 2. Create the Plate editor
+  const editor = usePlateEditor();
+
+  const onSubmit = (data: FormValues) => {
+    console.info('Submitted data:', data.content);
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <FormField
+          control={form.control}
+          name="content"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Content</FormLabel>
+              <FormControl>
+                <Plate
+                  editor={editor}
+                  onChange={({ value }) => {
+                    // Sync to the form
+                    field.onChange(value);
+                  }}
+                >
+                  <PlateContent placeholder="Type..." />
+                </Plate>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <button type="submit">Submit</button>
+      </form>
+    </Form>
+  );
+}
+```
+
+This approach makes your editor content behave like any other field in the shadcn/ui form.
+
+## Approach 2: Sync on Blur (or Another Trigger)
+
+Instead of syncing on every keystroke, you might only need the final value when the user:
+- Leaves the editor (`onBlur`),
+- Clicks a “Save” button, or
+- Reaches certain form submission logic.
+
+```tsx
+<Plate editor={editor}>
+  <PlateContent
+    onBlur={() => {
+      // Only sync on blur
+      setValue('content', editor.children);
+    }}
+  />
+</Plate>
+```
+
+This reduces overhead but your form state won't reflect partial updates while the user is typing.
+
+## Approach 3: Controlled Replacement (Advanced)
+
+If you want the form to be the single source of truth (completely [controlled](/docs/controlled)):
+```ts
+editor.tf.setValue(formStateValue);
+```
+But this has known drawbacks:
+- Potentially breaks cursor position and undo/redo.
+- Can cause frequent full re-renders for large docs.
+
+**Recommendation**: Stick to a partially uncontrolled model if you can.
+
+## Example: Save & Reset
+
+Here's a more complete form demonstrating both saving and resetting the editor/form:
+
+```tsx
+import { useForm } from 'react-hook-form';
+import { Plate, PlateContent, usePlateEditor } from '@udecode/plate/react';
+
+function MyForm() {
+  const form = useForm({
+    defaultValues: {
+      content: [
+        { type: 'p', children: [{ text: 'Initial content...' }] },
+      ],
+    },
+  });
+
+  const editor = usePlateEditor();
+
+  const onSubmit = (data) => {
+    alert(JSON.stringify(data, null, 2));
+  };
+
+  return (
+    <form onSubmit={form.handleSubmit(onSubmit)}>
+      <Plate
+        editor={editor}
+        onChange={({ value }) => form.setValue('content', value)}
+      >
+        <PlateContent />
+      </Plate>
+
+      <button type="submit">Save</button>
+
+      <button
+        type="button"
+        onClick={() => {
+          // Reset the editor
+          editor.tf.reset();
+          // Reset the form
+          form.reset();
+        }}
+      >
+        Reset
+      </button>
+    </form>
+  );
+}
+```
+
+- **`onChange`** -> updates form state.
+- **Reset** -> calls both `editor.tf.reset()` and `form.reset()` for consistency.
+
+## Migrating from a shadcn Textarea to Plate
+
+If you have a standard [TextareaForm from shadcn/ui docs](https://ui.shadcn.com/docs/components/textarea#form) and want to replace `<Textarea>` with a Plate editor, you can follow these steps:
+
+```tsx
+// 1. Original code (TextareaForm)
+<FormField
+  control={form.control}
+  name="bio"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Bio</FormLabel>
+      <FormControl>
+        <Textarea
+          placeholder="Tell us a bit about yourself"
+          className="resize-none"
+          {...field}
+        />
+      </FormControl>
+      <FormDescription>
+        You can <span>@mention</span> other users and organizations.
+      </FormDescription>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+```
+
+Create a new `EditorField` component:
+
+```tsx
+// EditorField.tsx
+"use client";
+
+import * as React from "react";
+import type { Value } from "@udecode/plate";
+import { Plate, PlateContent, usePlateEditor } from "@udecode/plate/react";
+
+/**
+ * A reusable editor component that works like a standard <Textarea>,
+ * accepting `value`, `onChange`, and optional placeholder.
+ *
+ * Usage:
+ *
+ * <FormField
+ *   control={form.control}
+ *   name="bio"
+ *   render={({ field }) => (
+ *     <FormItem>
+ *       <FormLabel>Bio</FormLabel>
+ *       <FormControl>
+ *         <EditorField
+ *           {...field}
+ *           placeholder="Tell us a bit about yourself"
+ *         />
+ *       </FormControl>
+ *       <FormDescription>Some helpful description...</FormDescription>
+ *       <FormMessage />
+ *     </FormItem>
+ *   )}
+ * />
+ */
+export interface EditorFieldProps
+  extends React.HTMLAttributes<HTMLDivElement> {
+  /**
+   * The current Slate Value. Should be an array of Slate nodes.
+   */
+  value?: Value;
+
+  /**
+   * Called when the editor value changes.
+   */
+  onChange?: (value: Value) => void;
+
+  /**
+   * Placeholder text to display when editor is empty.
+   */
+  placeholder?: string;
+}
+
+export function EditorField({
+  value,
+  onChange,
+  placeholder = "Type here...",
+  ...props
+}: EditorFieldProps) {
+  // We create our editor instance with the provided initial `value`.
+  const editor = usePlateEditor({
+    value: value ?? [
+      { type: "p", children: [{ text: "" }] }, // Default empty paragraph
+    ],
+  });
+
+  return (
+    <Plate
+      editor={editor}
+      onChange={({ value }) => {
+        // Sync changes back to the caller via onChange prop
+        onChange?.(value);
+      }}
+      {...props}
+    >
+      <PlateContent placeholder={placeholder} />
+    </Plate>
+  );
+}
+```
+
+3. Replace the `<Textarea>` with a `<EditorField>` block:
+
+```tsx
+"use client";
+
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { EditorField } from "./EditorField"; // Import the component above
+
+// 1. Define our validation schema with zod
+const FormSchema = z.object({
+  bio: z
+    .string()
+    .min(10, { message: "Bio must be at least 10 characters." })
+    .max(160, { message: "Bio must not exceed 160 characters." }),
+});
+
+// 2. Build our main form component
+export function EditorForm() {
+  // 3. Setup the form
+  const form = useForm<z.infer<typeof FormSchema>>({
+    resolver: zodResolver(FormSchema),
+    defaultValues: {
+      // Here "bio" is just a string, but our editor
+      // will interpret it as initial content if you parse it as JSON
+      bio: "",
+    },
+  });
+
+  // 4. Submission handler
+  function onSubmit(data: z.infer<typeof FormSchema>) {
+    alert("Submitted: " + JSON.stringify(data, null, 2));
+  }
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <FormField
+          control={form.control}
+          name="bio"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Bio</FormLabel>
+              <FormControl>
+                <EditorField
+                  {...field}
+                  placeholder="Tell us a bit about yourself..."
+                />
+              </FormControl>
+              <FormDescription>
+                You can <span>@mention</span> other users and organizations.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <button type="submit" className="py-2 px-4 bg-primary text-white">
+          Submit
+        </button>
+      </form>
+    </Form>
+  );
+}
+```
+
+- Any existing form validations or error messages remain the same.
+- For default values, ensure `form.defaultValues.bio` is a valid Slate value (array of nodes) instead of a string.
+- For controlled values, use `editor.tf.setValue(formStateValue)` with moderation.
+
+## Best Practices
+
+1. **Use an Uncontrolled Editor**: Let Plate manage its own state, updating the form only when necessary.  
+2. **Minimize Replacements**: Avoid calling `editor.tf.setValue` too often; it can break selection, history, or degrade performance.  
+3. **Validate at the Right Time**: Decide if you need instant validation (typing) or upon blur/submit.  
+4. **Reset Both**: If you reset the form, call `editor.tf.reset()` to keep them in sync.

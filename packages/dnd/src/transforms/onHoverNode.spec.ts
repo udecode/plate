@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 import type { DropTargetMonitor } from 'react-dnd';
 
-import { RangeApi } from '@udecode/plate';
+import { type TElement, RangeApi } from '@udecode/plate';
 import { createPlateEditor } from '@udecode/plate/react';
 
 import type { DragItemNode } from '../types';
@@ -40,7 +40,10 @@ describe('onHoverNode', () => {
 
   const monitor = {} as DropTargetMonitor;
   const nodeRef = {};
-  const dragItem: DragItemNode = { id: 'drag' };
+  const dragElement = { id: 'drag' } as unknown as TElement;
+  const dragItem: DragItemNode = { id: 'drag', element: dragElement };
+
+  const hoverElement = { id: 'hover' } as unknown as TElement;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -60,8 +63,8 @@ describe('onHoverNode', () => {
     (RangeApi.isExpanded as jest.Mock).mockReturnValue(false);
 
     onHoverNode(editor, {
-      id: 'hover',
       dragItem,
+      element: hoverElement,
       monitor,
       nodeRef,
     });
@@ -88,8 +91,8 @@ describe('onHoverNode', () => {
     };
 
     onHoverNode(editor, {
-      id: 'hover',
       dragItem,
+      element: hoverElement,
       monitor,
       nodeRef,
     });
@@ -109,8 +112,8 @@ describe('onHoverNode', () => {
     (RangeApi.isExpanded as jest.Mock).mockReturnValue(false);
 
     onHoverNode(editor, {
-      id: 'hover',
       dragItem,
+      element: hoverElement,
       monitor,
       nodeRef,
       orientation: 'horizontal',
@@ -131,8 +134,8 @@ describe('onHoverNode', () => {
     });
 
     onHoverNode(editor, {
-      id: 'hover',
       dragItem,
+      element: hoverElement,
       monitor,
       nodeRef,
     });

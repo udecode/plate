@@ -38,13 +38,7 @@ import { GripVertical } from 'lucide-react';
 
 import { STRUCTURAL_TYPES } from '@/registry/default/components/editor/transforms';
 
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipPortal,
-  TooltipProvider,
-  TooltipTrigger,
-} from './tooltip';
+import { TooltipButton } from './tooltip';
 
 const UNDRAGGABLE_KEYS = [
   ColumnItemPlugin.key,
@@ -97,7 +91,18 @@ export const DraggableAboveNodes: NodeWrapperComponent = (props) => {
 export const Draggable = withRef<'div', PlateRenderElementProps>(
   ({ className, ...props }, ref) => {
     const { children, editor, element, path } = props;
-    const { isDragging, previewRef, handleRef } = useDraggable({ element });
+    const blockSelectionApi =
+      editor.getApi(BlockSelectionPlugin).blockSelection;
+    const { isDragging, previewRef, handleRef } = useDraggable({
+      element,
+      onDropHandler: (_, { dragItem }) => {
+        const id = (dragItem as any).id;
+
+        if (blockSelectionApi && id) {
+          blockSelectionApi.set(id);
+        }
+      },
+    });
 
     const isInColumn = path.length === 3;
     const isInTable = path.length === 4;
@@ -111,35 +116,36 @@ export const Draggable = withRef<'div', PlateRenderElementProps>(
           STRUCTURAL_TYPES.includes(element.type) ? 'group/structural' : 'group'
         )}
       >
-        <Gutter>
-          <div
-            className={cn(
-              'slate-blockToolbarWrapper',
-              'flex h-[1.5em]',
-              isType(editor, element, [
-                HEADING_KEYS.h1,
-                HEADING_KEYS.h2,
-                HEADING_KEYS.h3,
-                HEADING_KEYS.h4,
-                HEADING_KEYS.h5,
-              ]) && 'h-[1.3em]',
-              isInColumn && 'h-4',
-              isInTable && 'mt-1 size-4'
-            )}
-          >
+        {!isInTable && (
+          <Gutter>
             <div
               className={cn(
-                'slate-blockToolbar',
-                'pointer-events-auto mr-1 flex items-center',
-                isInColumn && 'mr-1.5'
+                'slate-blockToolbarWrapper',
+                'flex h-[1.5em]',
+                isType(editor, element, [
+                  HEADING_KEYS.h1,
+                  HEADING_KEYS.h2,
+                  HEADING_KEYS.h3,
+                  HEADING_KEYS.h4,
+                  HEADING_KEYS.h5,
+                ]) && 'h-[1.3em]',
+                isInColumn && 'h-4'
               )}
             >
-              <div ref={handleRef} className="size-4">
-                <DragHandle />
+              <div
+                className={cn(
+                  'slate-blockToolbar',
+                  'pointer-events-auto mr-1 flex items-center',
+                  isInColumn && 'mr-1.5'
+                )}
+              >
+                <div ref={handleRef} className="size-4">
+                  <DragHandle />
+                </div>
               </div>
             </div>
-          </div>
-        </Gutter>
+          </Gutter>
+        )}
 
         <div ref={previewRef} className="slate-blockWrapper">
           <MemoizedChildren>{children}</MemoizedChildren>
@@ -164,7 +170,6 @@ const Gutter = React.forwardRef<
   const isNodeType = (keys: string[] | string) => isType(editor, element, keys);
 
   const isInColumn = path.length === 3;
-  const isInTable = path.length === 4;
 
   return (
     <div
@@ -196,7 +201,6 @@ const Gutter = React.forwardRef<
         ]) && 'py-0',
         isNodeType([PlaceholderPlugin.key, TablePlugin.key]) && 'pb-0 pt-3',
         isInColumn && 'mt-2 h-4 pt-0',
-        isInTable && 'size-4',
         className
       )}
       contentEditable={false}
@@ -209,29 +213,22 @@ const Gutter = React.forwardRef<
 
 const DragHandle = React.memo(() => {
   const editor = useEditorRef();
+  const element = useElement();
 
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger type="button">
-          <GripVertical
-            className="size-4 text-muted-foreground"
-            onClick={(event) => {
-              event.stopPropagation();
-              event.preventDefault();
-            }}
-            onMouseDown={() => {
-              editor
-                .getApi(BlockSelectionPlugin)
-                .blockSelection?.resetSelectedIds();
-            }}
-          />
-        </TooltipTrigger>
-        <TooltipPortal>
-          <TooltipContent>Drag to move</TooltipContent>
-        </TooltipPortal>
-      </Tooltip>
-    </TooltipProvider>
+    <TooltipButton
+      variant="ghost"
+      className="w-4.5 h-6 p-0"
+      onClick={() => {
+        editor
+          .getApi(BlockSelectionPlugin)
+          .blockSelection.set(element.id as string);
+      }}
+      data-plate-prevent-deselect
+      tooltip="Drag to move"
+    >
+      <GripVertical className="text-muted-foreground" />
+    </TooltipButton>
   );
 });
 

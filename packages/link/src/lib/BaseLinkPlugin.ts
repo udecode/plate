@@ -105,6 +105,9 @@ export const BaseLinkPlugin = createTSlatePlugin<BaseLinkConfig>({
     dangerouslyAllowAttributes: ['target'],
     isElement: true,
     isInline: true,
+    props: ({ editor, element }) => ({
+      nodeProps: getLinkAttributes(editor, element as TLinkElement),
+    }),
   },
   options: {
     allowedSchemes: ['http', 'https', 'mailto', 'tel'],
@@ -119,6 +122,28 @@ export const BaseLinkPlugin = createTSlatePlugin<BaseLinkConfig>({
       skipInvalid: true,
     },
   },
+  parsers: {
+    html: {
+      deserializer: {
+        parse: ({ editor, element, type }) => {
+          const url = element.getAttribute('href');
+
+          if (url && validateUrl(editor, url)) {
+            return {
+              target: element.getAttribute('target') || '_blank',
+              type,
+              url,
+            };
+          }
+        },
+        rules: [
+          {
+            validNodeName: 'A',
+          },
+        ],
+      },
+    },
+  },
 })
   .overrideEditor(withLink)
   .overrideEditor(
@@ -131,33 +156,4 @@ export const BaseLinkPlugin = createTSlatePlugin<BaseLinkConfig>({
           })
         )
       ) as any
-  )
-  .extend(({ editor, type }) => ({
-    node: {
-      props: ({ element }) => ({
-        nodeProps: getLinkAttributes(editor, element as TLinkElement),
-      }),
-    },
-    parsers: {
-      html: {
-        deserializer: {
-          parse: ({ element }) => {
-            const url = element.getAttribute('href');
-
-            if (url && validateUrl(editor, url)) {
-              return {
-                target: element.getAttribute('target') || '_blank',
-                type,
-                url,
-              };
-            }
-          },
-          rules: [
-            {
-              validNodeName: 'A',
-            },
-          ],
-        },
-      },
-    },
-  }));
+  );

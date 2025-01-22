@@ -1,7 +1,6 @@
 'use client';
 
 import emojiMartData from '@emoji-mart/data';
-import { ParagraphPlugin } from '@udecode/plate/react';
 import { CalloutPlugin } from '@udecode/plate-callout/react';
 import { DatePlugin } from '@udecode/plate-date/react';
 import { DocxPlugin } from '@udecode/plate-docx';
@@ -93,7 +92,7 @@ export const editorPlugins = [
   resetBlockTypePlugin,
   ...deletePlugins,
   softBreakPlugin,
-  TrailingBlockPlugin.configure({ options: { type: ParagraphPlugin.key } }),
+  TrailingBlockPlugin,
 
   // Deserialization
   DocxPlugin,

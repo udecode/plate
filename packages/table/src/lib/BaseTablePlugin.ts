@@ -6,7 +6,6 @@ import {
   bindFirst,
   createSlatePlugin,
   createTSlatePlugin,
-  isSlatePluginElement,
 } from '@udecode/plate';
 
 import type { TTableCellElement } from './types';
@@ -30,6 +29,19 @@ import {
   insertTableRow,
 } from './transforms/index';
 import { withTable } from './withTable';
+
+const parse: HtmlDeserializer['parse'] = ({ element, type }) => {
+  const background = element.style.background || element.style.backgroundColor;
+
+  if (background) {
+    return {
+      background,
+      type,
+    };
+  }
+
+  return { type };
+};
 
 export const BaseTableRowPlugin = createSlatePlugin({
   key: 'tr',
@@ -55,17 +67,16 @@ export const BaseTableCellPlugin = createSlatePlugin({
       },
     }),
   },
-}).extend(({ type }) => ({
   parsers: {
     html: {
       deserializer: {
         attributeNames: ['rowspan', 'colspan'],
-        parse: getParse(type),
+        parse,
         rules: [{ validNodeName: 'TD' }],
       },
     },
   },
-}));
+});
 
 export const BaseTableCellHeaderPlugin = createSlatePlugin({
   key: 'th',
@@ -79,17 +90,16 @@ export const BaseTableCellHeaderPlugin = createSlatePlugin({
       },
     }),
   },
-}).extend(({ type }) => ({
   parsers: {
     html: {
       deserializer: {
         attributeNames: ['rowspan', 'colspan'],
-        parse: getParse(type),
+        parse,
         rules: [{ validNodeName: 'TH' }],
       },
     },
   },
-}));
+});
 
 export type TableConfig = PluginConfig<
   'table',
@@ -176,15 +186,7 @@ export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
   key: 'table',
   // dependencies: [NodeIdPlugin.key],
   node: {
-    // dangerouslyAllowAttributes: [keyToDataAttribute('colSizes')],
     isElement: true,
-    // toDataAttributes: ({ node }) => {
-    //   if (node.colSizes as TTableElement['colSizes']) {
-    //     return {
-    //       [keyToDataAttribute('colSizes')]: JSON.stringify(node.colSizes),
-    //     };
-    //   }
-    // },
   },
   normalizeInitialValue: normalizeInitialValueTable,
   options: {
@@ -195,35 +197,7 @@ export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
   parsers: {
     html: {
       deserializer: {
-        parse: ({ element, type }) => {
-          const parent = element.parentNode?.parentNode;
-
-          if (
-            parent &&
-            element.tagName === 'TABLE' &&
-            isSlatePluginElement(parent as HTMLElement, type)
-          ) {
-            return;
-          }
-
-          return { type };
-        },
         rules: [{ validNodeName: 'TABLE' }],
-        // toNodeProps: ({ element }) => {
-        //   const dangerouslyColSizesString = element.getAttribute(
-        //     keyToDataAttribute('colSizes')
-        //   );
-
-        //   if (!dangerouslyColSizesString) return;
-
-        //   const colSizes = JSON.parse(dangerouslyColSizesString);
-
-        //   if (!Array.isArray(colSizes)) return;
-
-        //   return {
-        //     colSizes: colSizes,
-        //   };
-        // },
       },
     },
   },
@@ -263,19 +237,3 @@ export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
     },
   }))
   .overrideEditor(withTable);
-
-const getParse = (type: string): HtmlDeserializer['parse'] => {
-  return ({ element }) => {
-    const background =
-      element.style.background || element.style.backgroundColor;
-
-    if (background) {
-      return {
-        background,
-        type,
-      };
-    }
-
-    return { type };
-  };
-};

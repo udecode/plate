@@ -5,6 +5,8 @@ import type {
   IEmojiLibrary,
 } from './EmojiLibrary.types';
 
+import { DEFAULT_EMOJI_LIBRARY } from '../../constants';
+
 export type THash = Record<string, string>;
 
 export class EmojiInlineLibrary implements IEmojiLibrary {
@@ -12,7 +14,7 @@ export class EmojiInlineLibrary implements IEmojiLibrary {
   protected _hash: THash = {};
   protected _keys: string[] = [];
 
-  constructor(library: EmojiLibrary) {
+  constructor(library: EmojiLibrary = DEFAULT_EMOJI_LIBRARY) {
     this._emojis = library.emojis;
     this.init();
   }

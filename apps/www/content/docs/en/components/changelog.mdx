@@ -10,8 +10,38 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 
 ## January 2025 #18
 
+### January 21 #18.7
+
+- `table-element`, `table-row-element`: support row dnd and selection
+- `plate-element`: add `blockSelectionClassName` prop
+- `editor`: z-50 for selection area
+- `draggable`: 
+  - Replace `editor.api.blockSelection.replaceSelectedIds` with `editor.api.blockSelection.clear`
+  - Use `TooltipButton` for drag handle
+  - Block select on drag handle click
+  - Hide drag handle in table cells
+- `column-element`, `table-cell-element`: add `isSelectionAreaVisible` check
+- `block-selection`: hide if dragging
+- Replace `editor.api.blockSelection.addSelectedRow` with `editor.api.blockSelection.set`:
+  - `ai-menu`
+  - `equation-popover`
+- `align-dropdown-menu`: deprecate 
+
+
+### January 18 #18.6
+
+- `inline-equation-element` and `equation-popover`: Fix: When selecting an inline equation, the popover should not open, as it causes the selection to be lost.
+
+### January 17 #18.5
+
+- `emoji-picker-search-bar`: add `autoFocus`
+
+### January 16 #18.4
+
+- `import-toolbar-button` and `export-toolbar-button`: add `markdown` support
+
 ### January 14 #18.3
-- `import-toolbar-button`: add `import-toolbar-button`
+- `fixed-toolbar-buttons`: add `import-toolbar-button`
 - `indent-fire-marker.tsx` Add `data-plate-prevent-deserialization` to prevent deserialization of the fire marker. Change the `span` tag to `li`.
 - `indent-todo-marker.tsx` change the `span` tag to `li`.
 - `image-element-static.tsx` and `hr-element-static.tsx`: Fix `nodeProps` not being passed to `SlateElement`.
@@ -20,8 +50,6 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 const aiEditor = usePlateEditor({ plugins });
 useAIChatEditor(aiEditor, content);
 ```
-
-
 
 ### January 12 #18.2
 

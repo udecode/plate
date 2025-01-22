@@ -1,5 +1,27 @@
 # @udecode/plate-core
 
+## 42.2.2
+
+### Patch Changes
+
+- [#4001](https://github.com/udecode/plate/pull/4001) by [@martin-keeper](https://github.com/martin-keeper) – Add new param to HTML deserializer for changing the default element
+
+- [#4002](https://github.com/udecode/plate/pull/4002) by [@zbeyens](https://github.com/zbeyens) – Pass plugin context to `plugin.node.props`
+
+## 42.1.2
+
+### Patch Changes
+
+- [#3986](https://github.com/udecode/plate/pull/3986) by [@felixfeng33](https://github.com/felixfeng33) – Fix lodash import
+
+## 42.1.1
+
+### Patch Changes
+
+- [#3974](https://github.com/udecode/plate/pull/3974) by [@felixfeng33](https://github.com/felixfeng33) – fix import html
+
+- [#3974](https://github.com/udecode/plate/pull/3974) by [@felixfeng33](https://github.com/felixfeng33) – Remove useless html parser.
+
 ## 42.0.6
 
 ### Patch Changes

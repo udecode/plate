@@ -465,7 +465,7 @@ export type HtmlDeserializer<C extends AnyPluginConfig = PluginConfig> =
      *
      * @default false
      */
-    disabledDefaultNodeProps?: boolean;
+    disableDefaultNodeProps?: boolean;
   };
 
 export type HtmlSerializer<C extends AnyPluginConfig = PluginConfig> =

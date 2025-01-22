@@ -19,11 +19,11 @@ export const onKeyDownSelection: KeyboardHandler<BlockSelectionConfig> = ({
     const [, path] = ancestorNode;
 
     if (editor.api.isAt({ block: true, end: true, start: true })) {
-      return api.blockSelection.selectedAll();
+      return api.blockSelection.selectAll();
     }
     // TODO： should select the blocks then selected all should exclude table and columns
     if (!editor.api.isAt({ block: true })) {
-      return api.blockSelection.selectedAll();
+      return api.blockSelection.selectAll();
     }
 
     editor.tf.select(path);
@@ -35,9 +35,9 @@ export const onKeyDownSelection: KeyboardHandler<BlockSelectionConfig> = ({
     if (event.defaultPrevented) return;
 
     const ancestorNode = editor.api.block({ highest: true });
-    const id = ancestorNode?.[0].id;
+    const id = ancestorNode?.[0].id as string;
 
-    api.blockSelection.addSelectedRow(id as string);
+    api.blockSelection.set(id);
 
     event.preventDefault();
     event.stopPropagation();

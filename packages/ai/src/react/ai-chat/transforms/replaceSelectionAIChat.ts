@@ -15,7 +15,7 @@ import cloneDeep from 'lodash/cloneDeep.js';
 
 import type { AIChatPluginConfig } from '../AIChatPlugin';
 
-const createFormattedBlocks = ({
+export const createFormattedBlocks = ({
   blocks,
   format,
   sourceBlock,
@@ -53,11 +53,10 @@ const createFormattedBlocks = ({
       return block;
     }
 
-    return {
+    return applyTextFormatting({
       ...block,
       ...blockProps,
-      children: block.children.map(applyTextFormatting),
-    };
+    });
   });
 };
 

@@ -1,0 +1,229 @@
+---
+title: Plate Static
+description: A minimal, memoized, read-only version of Plate with RSC/SSR support.
+---
+
+`<PlateStatic>` provides a **fast, read-only** way to render Slate content. It is designed for **server-side** or **React Server Component** (RSC) environments, without any client-side editing logic. It also **memoizes** node renders to avoid unnecessary re-renders, making it more performant than using [`<Plate>`](/docs/api/core/plate-components) in read-only mode.
+
+`<PlateStatic>` is heavily utilized by [`serializeHtml`](/docs/api/core/plate-plugin#serializehtml) for HTML export. You can also use it in any server or RSC scenario where you want a non-interactive, purely presentational version of your content.
+
+## Key Advantages
+
+- **Server-Safe:** Does not rely on browser APIs or client-side hooks. It’s safe for SSR or RSC.
+- **No Slate Editor Overhead:** Omits interactive logic like selections or event handlers.
+- **Memoized Rendering:** Uses `_memo` references and structural comparison to re-render only changed nodes.  
+- **Partial Re-Renders:** Changes in a single paragraph won’t re-render the rest of the document.
+- **Lightweight:** Smaller bundle size compared to using `Plate` in read-only mode, since it doesn’t import additional interactive code.
+
+## When to Use `<PlateStatic>`
+
+- [**HTML Serialization**](/docs/html).
+- **Server-Rendered Previews** in Next.js (particularly page or RSC routes).
+- **Static Sites** generating read-only content.
+- **Performance-Critical** read views where minimal overhead is desired.
+- **AI Streaming Rendering** for real-time content generation where chunks of content are streamed and rendered progressively.
+
+If you want **interactive** read-only features (e.g., highlighting on hover, comment popovers, or selections), you’ll still need the standard `Plate` editor in the browser. In purely read-only server contexts, `PlateStatic` is recommended.
+
+## Usage
+
+### 1. Create a Slate Editor
+
+First, create a Slate editor with the plugins you need. You can use `createSlateEditor`, just like we use `usePlateEditor` with `Plate`.
+
+```tsx
+import { createSlateEditor } from '@udecode/plate';
+// Import your desired plugins
+
+const editor = createSlateEditor({
+  plugins: [
+    // your plugin list: e.g. headings, images, markdown, etc.
+  ],
+  value: [
+    {
+      type: 'p',
+      children: [{ text: 'Hello from a static Plate editor!' }],
+    },
+  ],
+});
+```
+
+### 2. Define Node Components (Static)
+
+If you have interactive or client-only components for your editor (e.g. ones using `use client` or event handlers), you **must** provide static variants for server rendering. For example:
+
+```tsx
+// paragraph-element-static.ts
+import React from 'react';
+import { SlateElementProps } from '@udecode/plate';
+
+export function ParagraphElementStatic(props: SlateElementProps) {
+  return (
+    <p {...props.attributes} style={props.style}>
+      {props.children}
+    </p>
+  );
+}
+```
+
+You might have a static version for headings, images, links, etc., each returning pure HTML. No browser events or `useEffect`.
+
+### 3. Map Plugin Keys to Static Components
+
+Create a mapping object where each plugin key or node type references its static component:
+
+```ts
+import { ParagraphElementStatic } from './paragraph-element-static';
+import { HeadingElementStatic } from './heading-element-static';
+// etc.
+
+export const components = {
+  p: ParagraphElementStatic,
+  h1: HeadingElementStatic,
+  // ...
+};
+```
+
+### 4. Render `<PlateStatic>`
+
+`PlateStatic` is a React component that takes:
+
+- **`editor`**: A Slate editor instance.
+- **`components`**: A record of plugin/node keys -> static components.
+- **`value?`**: Optional controlled state, overriding `editor.children`.
+- Any additional HTML/div attributes (`className`, `style`, etc.).
+
+```tsx
+import { PlateStatic } from '@udecode/plate/core/static'; 
+// or from '@udecode/plate' if re-exported
+
+export default function MyStaticView() {
+  const editor = createSlateEditor({ /* your config */ });
+
+  return (
+    <PlateStatic
+      editor={editor}
+      components={components}
+      style={{ padding: 16 }}
+      className="my-plate-static"
+    />
+  );
+}
+```
+
+If you provide a `value` prop, it overwrites `editor.children`:
+
+```tsx
+<PlateStatic
+  editor={editor}
+  components={components}
+  value={[
+    {
+      type: 'p',
+      children: [{ text: 'Overridden content.' }],
+    },
+  ]}
+/>
+```
+
+### 5. Memoization
+
+Under the hood, each `<ElementStatic>` and `<LeafStatic>` is wrapped in `React.memo`. Plate also checks:
+- **Reference Equality**: If your node references haven’t changed, it won’t re-render.
+- **`_memo` field**: If you set `node._memo` for a specific element/leaf, Plate respects that as an override. If `_memo` is unchanged, the node won’t re-render even if the text changes. This is especially helpful for custom solutions or partial updates.
+
+### `PlateStatic` vs. `Plate` + `readOnly`
+
+| Aspect                           | `PlateStatic`                                          | `Plate` + `readOnly`                              |
+| -------------------------------- | ------------------------------------------------------- | ------------------------------------------------------- |
+| **Interactive**                  | No (server-safe)                                       | Some interactive features can still run in the browser |
+| **Browser APIs**                 | Not used; safe in SSR or RSC                           | Minimal usage still in read-only mode, but it’s client |
+| **Performance**                  | More optimized for static usage, minimal overhead      | Heavier, has more editor internals loaded              |
+| **Partial Re-render**            | Uses memoization of sub-trees for efficient rendering  | Also can do partial re-render, but still has client overhead |
+| **Use Cases**                    | Server rendering, HTML serialization, static previews  | Browser-based read-only states, needed for some interactive read features |
+| **Recommended**                  | SSR or RSC with no editing or advanced interactions    | If you need client-side read-only + interactive features (like comments, hovers) |
+
+### RSC/SSR Example
+
+In a Next.js 14 (or similar) environment, you can place your `PlateStatic` in a **React Server Component**:
+
+```tsx
+// app/preview/page.tsx (RSC)
+import { PlateStatic } from '@udecode/plate/core/static';
+import { createSlateEditor } from '@udecode/plate';
+import { components } from './my-static-components'; // your static components
+
+export default async function Page() {
+  // Potentially fetch data from DB or an API here
+  const editor = createSlateEditor({
+    value: [
+      { type: 'p', children: [{ text: 'Rendered server-side 🎉' }] },
+    ],
+  });
+
+  // Return the static output:
+  return (
+    <PlateStatic 
+      editor={editor} 
+      components={components} 
+      className="my-static-preview"
+    />
+  );
+}
+```
+
+No client bundle is needed for `PlateStatic`; it’s purely rendered to HTML on the server.
+
+### Pairing with `serializeHtml`
+
+If you’re generating a complete HTML string (for emailing, PDF, or an external page), use `serializeHtml`:
+
+```ts
+import { createSlateEditor } from '@udecode/plate';
+import { serializeHtml } from '@udecode/plate/core/static';
+import { components } from './my-static-components';
+
+const editor = createSlateEditor({ /* ...plugins... */ });
+
+// Using PlateStatic under the hood
+const html = await serializeHtml(editor, {
+  components,
+  editorComponent: PlateStatic, // optional if you want a custom wrapper
+  props: { className: 'max-w-3xl mx-auto' }, 
+});
+
+console.info(html);
+/*
+<div data-slate-editor="true" data-slate-node="value" class="max-w-3xl mx-auto">
+  <div data-slate-node="element" data-slate-type="p" ...>Hello Plate!</div>
+</div>
+*/
+```
+
+For a more complete guide, see [HTML Serialization](/docs/html).
+
+## API
+
+### `<PlateStatic>`
+
+```ts
+interface PlateStaticProps extends React.HTMLAttributes<HTMLDivElement> {
+  /** The Slate editor instance. */
+  editor: SlateEditor;
+
+  /** Node components used to render each plugin/node type. */
+  components: NodeComponents;
+
+  /** Optional new `Value` to override `editor.children`. */
+  value?: Descendant[];
+
+  /** Inline styling. */
+  style?: React.CSSProperties;
+
+  /** className or other <div> attributes also supported. */
+}
+```
+
+- **`editor`**: Must be created via `createSlateEditor` (or similar).  
+- **`components`**: A record mapping plugin keys (or node types) to static React components.  
+- **`value`**: If provided, overwrites the existing `editor.children`.  

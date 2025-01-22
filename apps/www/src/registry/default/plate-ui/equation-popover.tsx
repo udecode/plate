@@ -13,7 +13,6 @@ import {
   useEditorRef,
   useElement,
   useReadOnly,
-  useSelected,
 } from '@udecode/plate/react';
 import { useEquationInput } from '@udecode/plate-math/react';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
@@ -40,13 +39,12 @@ const EquationPopoverContent = ({
   const editor = useEditorRef();
   const readOnly = useReadOnly();
   const element = useElement<TEquationElement>();
-  const selected = useSelected();
 
   useEffect(() => {
-    if (isInline && selected) {
+    if (isInline && open) {
       setOpen(true);
     }
-  }, [selected, isInline, setOpen]);
+  }, [isInline, open, setOpen]);
 
   if (readOnly) return null;
 
@@ -58,7 +56,7 @@ const EquationPopoverContent = ({
     } else {
       editor
         .getApi(BlockSelectionPlugin)
-        .blockSelection.addSelectedRow(element.id as string);
+        .blockSelection.set(element.id as string);
     }
   };
 

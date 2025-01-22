@@ -31,7 +31,10 @@ export const getTableCellSize = (
   const path = editor.api.findPath(element)!;
 
   if (!rowSize) {
-    const [rowElement] = editor.api.parent<TTableRowElement>(path)!;
+    const [rowElement] = editor.api.parent<TTableRowElement>(path) ?? [];
+
+    if (!rowElement) return { minHeight: 0, width: 0 };
+
     rowSize = rowElement.size;
   }
   if (!colSizes) {

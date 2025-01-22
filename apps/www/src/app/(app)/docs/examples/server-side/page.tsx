@@ -204,9 +204,7 @@ export default function RSCPage() {
       BaseSingleLinePlugin,
       BaseSoftBreakPlugin,
       BaseTabbablePlugin,
-      TrailingBlockPlugin.configure({
-        options: { type: BaseParagraphPlugin.key },
-      }),
+      TrailingBlockPlugin,
 
       // Collaboration
       BaseCommentsPlugin,

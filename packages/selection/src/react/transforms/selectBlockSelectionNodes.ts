@@ -8,5 +8,5 @@ export const selectBlockSelectionNodes = (editor: SlateEditor) => {
       editor.getApi(BlockSelectionPlugin).blockSelection.getNodes()
     )
   );
-  editor.getApi(BlockSelectionPlugin).blockSelection.resetSelectedIds();
+  editor.getApi(BlockSelectionPlugin).blockSelection.clear();
 };

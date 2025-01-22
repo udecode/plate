@@ -1,5 +1,19 @@
 # @udecode/plate-ai
 
+## 42.2.4
+
+### Patch Changes
+
+- [#4012](https://github.com/udecode/plate/pull/4012) by [@zbeyens](https://github.com/zbeyens) – Fix overrideEditor insertText missing options
+
+## 42.2.3
+
+## 42.2.0
+
+### Patch Changes
+
+- [#3989](https://github.com/udecode/plate/pull/3989) by [@zbeyens](https://github.com/zbeyens) – Fix replaceSelection, insertBelow
+
 ## 42.1.0
 
 ### Minor Changes

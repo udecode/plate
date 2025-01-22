@@ -6,8 +6,12 @@ export const isSlateElement = (element: HTMLElement) => {
   return element.dataset.slateNode === 'element';
 };
 
-export const isSlateString = (element: HTMLElement) => {
+export const isSlateText = (element: HTMLElement) => {
   return element.dataset.slateNode === 'text';
+};
+
+export const isSlateString = (element: HTMLElement) => {
+  return element.dataset.slateString === 'true';
 };
 
 export const isSlateLeaf = (element: HTMLElement) => {
@@ -19,7 +23,8 @@ export const isSlateNode = (element: HTMLElement) => {
     isSlateLeaf(element) ||
     isSlateElement(element) ||
     isSlateVoid(element) ||
-    isSlateString(element)
+    isSlateString(element) ||
+    isSlateText(element)
   );
 };
 

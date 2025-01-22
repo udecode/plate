@@ -24,18 +24,20 @@ export const getRenderNodeStaticProps = ({
   node?: TElement | TText;
   plugin?: AnyEditorPlugin;
 }): SlateRenderNodeProps => {
-  props = getPluginNodeProps({
-    attributes,
-    node,
-    plugin,
-    props,
-  });
-
-  const { className } = props;
-
   let nodeProps = {
     ...props,
     ...(plugin ? (getEditorPlugin(editor, plugin) as any) : {}),
+  };
+
+  const { className } = props;
+
+  nodeProps = {
+    ...getPluginNodeProps({
+      attributes,
+      node,
+      plugin,
+      props: nodeProps,
+    }),
     className: clsx(getSlateClass(plugin?.node.type), className),
   };
 

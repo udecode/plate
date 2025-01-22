@@ -1,5 +1,30 @@
 # @udecode/plate-table
 
+## 42.2.4
+
+### Patch Changes
+
+- [#4012](https://github.com/udecode/plate/pull/4012) by [@zbeyens](https://github.com/zbeyens) – Fix overrideEditor insertText missing options
+
+## 42.2.3
+
+### Patch Changes
+
+- [#4010](https://github.com/udecode/plate/pull/4010) by [@zbeyens](https://github.com/zbeyens) –
+  - Recompute cell indices when moving node in table
+
+## 42.2.2
+
+### Patch Changes
+
+- [#4002](https://github.com/udecode/plate/pull/4002) by [@zbeyens](https://github.com/zbeyens) – Fix parsers to use custom node type
+
+## 42.1.1
+
+### Patch Changes
+
+- [#3974](https://github.com/udecode/plate/pull/3974) by [@felixfeng33](https://github.com/felixfeng33) – Remove useless html parser.
+
 ## 42.0.5
 
 ### Patch Changes

@@ -56,21 +56,20 @@ export const BaseNumberedListPlugin = createSlatePlugin({
 
 export const BaseListItemPlugin = createSlatePlugin({
   key: 'li',
-  node: { isElement: true },
-  parsers: { html: { deserializer: { rules: [{ validNodeName: 'LI' }] } } },
-}).extend(({ editor, type }) => ({
   inject: {
     plugins: {
       [HtmlPlugin.key]: {
         parser: {
-          preInsert: () => {
+          preInsert: ({ editor, type }) => {
             return editor.api.some({ match: { type } });
           },
         },
       },
     },
   },
-}));
+  node: { isElement: true },
+  parsers: { html: { deserializer: { rules: [{ validNodeName: 'LI' }] } } },
+});
 
 export const BaseListItemContentPlugin = createSlatePlugin({
   key: 'lic',

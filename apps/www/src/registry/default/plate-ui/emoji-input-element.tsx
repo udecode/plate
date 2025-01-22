@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from 'react';
 
 import { withRef } from '@udecode/cn';
-import { useEditorPlugin } from '@udecode/plate-core/react';
+import { useEditorPlugin } from '@udecode/plate/react';
 import { EmojiInlineIndexSearch, insertEmoji } from '@udecode/plate-emoji';
 import { EmojiPlugin } from '@udecode/plate-emoji/react';
 

@@ -462,34 +462,26 @@ A hook that registers an editor in the AI chat plugin, and deserializes markdown
 
 <API name="useAIChatEditor">
 <APIParameters>
-  <APIItem name="content" type="string">
-    The markdown content to deserialize into the editor.
-  </APIItem>
-  <APIItem name="options" type="AIChatEditorOptions" optional>
-    Options for configuring the editor.
-  </APIItem>
+<APIItem name="editor" type="PlateEditor">
+The editor to register in the AI chat plugin.
+</APIItem>
+<APIItem name="content" type="string">
+The markdown content to deserialize into the editor.
+</APIItem>
+<APIItem name="options" type="object" optional>
+<APISubList>
+<APISubListItem parent="options" name="memoize" type="boolean" optional>
+Enable block-level memoization with `_memo` property. Defaults to true.
+</APISubListItem>
+<APISubListItem parent="options" name="parser" type="ParseMarkdownBlocksOptions" optional>
+Options for the markdown token parser. Can filter out specific token types.
+</APISubListItem>
+<APISubListItem parent="options" name="processor" type="(processor: Processor) => Processor" optional>
+Function to customize the markdown processor.
+</APISubListItem>
+</APISubList>
+</APIItem>
 </APIParameters>
-
-<APIOptions type="AIChatEditorOptions">
-  <APIItem name="memoize" type="boolean" optional>
-    Enable block-level memoization with `_memo` property.
-    - **Default:** `true`
-  </APIItem>
-  <APIItem name="parser" type="ParseMarkdownBlocksOptions" optional>
-    Options for the markdown token parser. Can filter out specific token types.
-  </APIItem>
-  <APIItem name="processor" type="(processor: Processor) => Processor" optional>
-    Function to customize the markdown processor.
-  </APIItem>
-  <APIItem name="...editorOptions" type="Partial<CreatePlateEditorOptions>" optional>
-    Additional options passed to `usePlateEditor`.
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="PlateEditor">
-  The configured editor instance with deserialized content.
-</APIReturns>
-</API>
 
 ```tsx
 const AIChatEditor = ({ content }: { content: string }) => {

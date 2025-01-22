@@ -49,6 +49,7 @@ import { BaseKbdPlugin } from '@udecode/plate-kbd';
 import { BaseColumnItemPlugin, BaseColumnPlugin } from '@udecode/plate-layout';
 import { BaseLineHeightPlugin } from '@udecode/plate-line-height';
 import { BaseLinkPlugin } from '@udecode/plate-link';
+import { MarkdownPlugin } from '@udecode/plate-markdown';
 import {
   BaseEquationPlugin,
   BaseInlineEquationPlugin,
@@ -142,25 +143,21 @@ export function ExportToolbarButton({ children, ...props }: DropdownMenuProps) {
     return canvas;
   };
 
-  const downloadFile = ({
-    content,
-    filename,
-    isHtml = false,
-  }: {
-    content: string;
-    filename: string;
-    isHtml?: boolean;
-  }) => {
-    const element = document.createElement('a');
-    const href = isHtml
-      ? `data:text/html;charset=utf-8,${encodeURIComponent(content)}`
-      : content;
-    element.setAttribute('href', href);
-    element.setAttribute('download', filename);
-    element.style.display = 'none';
-    document.body.append(element);
-    element.click();
-    element.remove();
+  const downloadFile = async (url: string, filename: string) => {
+    const response = await fetch(url);
+
+    const blob = await response.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = filename;
+    document.body.append(link);
+    link.click();
+    link.remove();
+
+    // Clean up the blob URL
+    window.URL.revokeObjectURL(blobUrl);
   };
 
   const exportToPdf = async () => {
@@ -179,15 +176,12 @@ export function ExportToolbarButton({ children, ...props }: DropdownMenuProps) {
     });
     const pdfBase64 = await pdfDoc.saveAsBase64({ dataUri: true });
 
-    downloadFile({ content: pdfBase64, filename: 'plate.pdf' });
+    await downloadFile(pdfBase64, 'plate.pdf');
   };
 
   const exportToImage = async () => {
     const canvas = await getCanvas();
-    downloadFile({
-      content: canvas.toDataURL('image/png'),
-      filename: 'plate.png',
-    });
+    await downloadFile(canvas.toDataURL('image/png'), 'plate.png');
   };
 
   const exportToHtml = async () => {
@@ -361,7 +355,15 @@ export function ExportToolbarButton({ children, ...props }: DropdownMenuProps) {
       </body>
     </html>`;
 
-    downloadFile({ content: html, filename: 'plate.html', isHtml: true });
+    const url = `data:text/html;charset=utf-8,${encodeURIComponent(html)}`;
+
+    await downloadFile(url, 'plate.html');
+  };
+
+  const exportToMarkdown = async () => {
+    const md = editor.getApi(MarkdownPlugin).markdown.serialize();
+    const url = `data:text/markdown;charset=utf-8,${encodeURIComponent(md)}`;
+    await downloadFile(url, 'plate.md');
   };
 
   return (
@@ -383,9 +385,8 @@ export function ExportToolbarButton({ children, ...props }: DropdownMenuProps) {
           <DropdownMenuItem onSelect={exportToImage}>
             Export as Image
           </DropdownMenuItem>
-          <DropdownMenuItem disabled>
-            Export as Markdown{' '}
-            <span className="text-xs text-muted-foreground">(coming soon)</span>
+          <DropdownMenuItem onSelect={exportToMarkdown}>
+            Export as Markdown
           </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>

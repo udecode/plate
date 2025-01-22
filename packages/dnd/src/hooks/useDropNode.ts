@@ -26,8 +26,8 @@ export type CanDropCallback = (args: {
 
 export interface UseDropNodeOptions
   extends DropTargetHookSpec<DragItemNode, unknown, { isOver: boolean }> {
-  /** Id of the node. */
-  id: string;
+  /** The node to which the drop line is attached. */
+  element: TElement;
 
   /** The reference to the node being dragged. */
   nodeRef: any;
@@ -45,7 +45,7 @@ export interface UseDropNodeOptions
       monitor: DropTargetMonitor<DragItemNode, unknown>;
       nodeRef: any;
     }
-  ) => boolean;
+  ) => boolean | void;
 
   canDropNode?: CanDropCallback;
 
@@ -76,14 +76,16 @@ export interface UseDropNodeOptions
 export const useDropNode = (
   editor: PlateEditor,
   {
-    id,
     canDropNode,
+    element,
     nodeRef,
     orientation,
     onDropHandler,
     ...options
   }: UseDropNodeOptions
 ) => {
+  const id = element.id as string;
+
   return useDrop<DragItemNode, unknown, { isOver: boolean }>({
     collect: (monitor) => ({
       isOver: monitor.isOver({
@@ -95,9 +97,9 @@ export const useDropNode = (
 
       if (!(dragItem as ElementDragItemNode).id) {
         const result = getDropPath(editor, {
-          id,
           canDropNode,
           dragItem: dragItem as any,
+          element,
           monitor,
           nodeRef,
           orientation,
@@ -129,8 +131,9 @@ export const useDropNode = (
       if (handled) return;
 
       onDropNode(editor, {
-        id,
+        canDropNode,
         dragItem: dragItem as ElementDragItemNode,
+        element,
         monitor,
         nodeRef,
         orientation,
@@ -138,9 +141,9 @@ export const useDropNode = (
     },
     hover(item: DragItemNode, monitor: DropTargetMonitor) {
       onHoverNode(editor, {
-        id,
         canDropNode,
         dragItem: item,
+        element,
         monitor,
         nodeRef,
         orientation,
