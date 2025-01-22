@@ -14,13 +14,13 @@ docs:
 
 - Font size, family, color, background color, and weight.
 
-**Plugins:**
+## Plugins
 
-- **`FontFamilyPlugin`**: Change font family using inline elements with a **`font-family`** in the style attribute.
-- **`FontSizePlugin`**: Control font size with inline elements having a CSS class or a **`font-size`** in the style attribute.
-- **`FontColorPlugin`**: Control font color with inline elements having a **`color`** in the style attribute.
-- **`FontBackgroundColorPlugin`**: Control font background color with inline elements having a **`background-color`** in the style attribute.
-- **`FontWeightPlugin`**: Control font weight with inline elements having a **`font-weight`** in the style attribute.
+- `FontFamilyPlugin`: Change font family using inline elements with `font-family` style
+- `FontSizePlugin`: Control font size with CSS class or `font-size` style
+- `FontColorPlugin`: Control font color with `color` style
+- `FontBackgroundColorPlugin`: Control background color with `background-color` style
+- `FontWeightPlugin`: Control font weight with `font-weight` style
 
 </PackageInfo>
 
@@ -49,94 +49,108 @@ const plugins = [
 
 ## Plugins
 
-### FontBackgroundColorPlugin
+### `FontBackgroundColorPlugin`
 
-### FontColorPlugin
+Plugin for font background color formatting.
 
-### FontFamilyPlugin
+### `FontColorPlugin`
 
-### FontSizePlugin
+Plugin for font color formatting.
+
+### `FontFamilyPlugin`
+
+Plugin for font family formatting.
+
+### `FontSizePlugin`
+
+Plugin for font size formatting.
 
 #### API
 
-##### editor.api.fontSize.setMark
+##### `editor.api.fontSize.setMark`
 
 Set the font size mark.
 
+<API name="setMark">
 <APIParameters>
   <APIItem name="fontSize" type="string">
     The font size value to set.
   </APIItem>
 </APIParameters>
+</API>
 
 #### Utils
 
-##### toUnitLess
+##### `toUnitLess`
 
 Convert a font size value to a unitless value.
 
+<API name="toUnitLess">
 <APIParameters>
   <APIItem name="fontSize" type="string">
     The font size value to convert.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-  <APIItem name="unitLess" type="string">
-    The font size value without units.
-  </APIItem>
+<APIReturns type="string">
+  The font size value without units.
 </APIReturns>
+</API>
 
-### FontWeightPlugin
+### `FontWeightPlugin`
 
-## API Components
+Plugin for font weight formatting.
 
-### useColorDropdownMenu
+## Hooks
+
+### `useColorDropdownMenu`
 
 A behavior hook for the color dropdown menu component.
 
+<API name="useColorDropdownMenu">
 <APIState>
   <APIItem name="open" type="boolean">
-    A boolean indicating whether the dropdown menu is open.
+    Whether the dropdown menu is open.
   </APIItem>
   <APIItem name="onToggle" type="function">
-    A callback function to toggle the open state of the dropdown menu.
+    Callback to toggle the open state.
   </APIItem>
 </APIState>
 
-<APIReturns>
+<APIReturns type="object">
   <APIItem name="menuProps" type="object">
-    The props to be spread on the menu component.
+    Props for the menu component.
     <APISubList>
       <APISubListItem parent="menuProps" name="open" type="boolean">
-        A boolean indicating whether the dropdown menu is open.
+        Whether the dropdown menu is open.
       </APISubListItem>
       <APISubListItem parent="menuProps" name="onOpenChange" type="function">
-        A callback function to toggle the open state of the dropdown menu.
+        Callback to toggle the open state.
       </APISubListItem>
     </APISubList>
   </APIItem>
   <APIItem name="buttonProps" type="object">
-    The props to be spread on the button component.
+    Props for the button component.
     <APISubList>
       <APISubListItem parent="buttonProps" name="pressed" type="boolean">
-        A boolean indicating whether the dropdown menu is open.
+        Whether the dropdown menu is open.
       </APISubListItem>
     </APISubList>
   </APIItem>
 </APIReturns>
+</API>
 
-### useColorInput
+### `useColorInput`
 
 A behavior hook for the color input component.
 
-<APIReturns>
+<API name="useColorInput">
+<APIReturns type="object">
   <APIItem name="inputRef" type="React.Ref<HTMLInputElement>">
-    A ref object that should be assigned to the color input element.
+    Ref for the color input element.
   </APIItem>
-  <APIItem name="childProps" type="function">
-    The props to be spread on the child component that triggers the color
-    picker.
+  <APIItem name="childProps" type="object">
+    Props for the child component that triggers the color picker.
     <APISubList>
       <APISubListItem parent="childProps" name="onClick" type="function">
         A callback function to handle the click event of the child component.
@@ -144,26 +158,28 @@ A behavior hook for the color input component.
     </APISubList>
   </APIItem>
 </APIReturns>
+</API>
 
-### useColorsCustom
+### `useColorsCustom`
 
 A behavior hook for custom colors in a color picker.
 
+<API name="useColorsCustom">
 <APIState>
   <APIItem name="updateCustomColor" type="function">
-    The callback function to update the custom color.
+    Callback to update the custom color.
   </APIItem>
   <APIItem name="value" type="string">
-    The current value of the color input.
+    Current color input value.
   </APIItem>
   <APIItem name="setValue" type="function">
-    The callback function to update the value of the color input.
+    Callback to update the color value.
   </APIItem>
 </APIState>
 
-<APIReturns>
+<APIReturns type="object">
   <APIItem name="inputProps" type="object">
-    The props to be spread on the color input element.
+    Props for the color input element.
     <APISubList>
       <APISubListItem parent="inputProps" name="value" type="string">
         The current value of the color input.
@@ -174,11 +190,12 @@ A behavior hook for custom colors in a color picker.
     </APISubList>
   </APIItem>
   <APIItem name="menuItemProps" type="object">
-    The props to be spread on the menu item elements in the color picker.
-    <APISubList>
+    Props for menu item elements.
+     <APISubList>
       <APISubListItem parent="menuItemProps" name="onSelect" type="function">
         A callback function to handle the select event of the menu item.
       </APISubListItem>
     </APISubList>
   </APIItem>
 </APIReturns>
+</API>

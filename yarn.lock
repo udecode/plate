@@ -6224,9 +6224,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ai@workspace:packages/ai"
   dependencies:
-    "@udecode/plate-combobox": "npm:42.0.0"
+    "@udecode/plate-combobox": "npm:42.2.4"
     "@udecode/plate-markdown": "npm:42.0.3"
-    "@udecode/plate-selection": "npm:42.2.0"
+    "@udecode/plate-selection": "npm:42.2.4"
     ai: "npm:^3.4.10"
     lodash: "npm:^4.17.21"
   peerDependencies:
@@ -6350,7 +6350,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-combobox@npm:42.0.0, @udecode/plate-combobox@workspace:^, @udecode/plate-combobox@workspace:packages/combobox":
+"@udecode/plate-combobox@npm:42.2.4, @udecode/plate-combobox@workspace:^, @udecode/plate-combobox@workspace:packages/combobox":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-combobox@workspace:packages/combobox"
   dependencies:
@@ -6409,7 +6409,7 @@ __metadata:
   dependencies:
     "@types/papaparse": "npm:^5.3.14"
     "@udecode/plate": "workspace:^"
-    "@udecode/plate-table": "npm:42.2.2"
+    "@udecode/plate-table": "npm:42.2.4"
     papaparse: "npm:^5.4.1"
   peerDependencies:
     "@udecode/plate": ">=42.2.2"
@@ -6481,7 +6481,7 @@ __metadata:
     "@udecode/plate-indent": "npm:42.0.0"
     "@udecode/plate-indent-list": "npm:42.2.2"
     "@udecode/plate-media": "npm:42.2.2"
-    "@udecode/plate-table": "npm:42.2.2"
+    "@udecode/plate-table": "npm:42.2.4"
     validator: "npm:^13.12.0"
   peerDependencies:
     "@udecode/plate": ">=42.2.2"
@@ -6496,7 +6496,7 @@ __metadata:
   dependencies:
     "@emoji-mart/data": "npm:^1.2.1"
     "@udecode/plate": "workspace:^"
-    "@udecode/plate-combobox": "npm:42.0.0"
+    "@udecode/plate-combobox": "npm:42.2.4"
   peerDependencies:
     "@emoji-mart/data": ">=1.2.0"
     "@udecode/plate": ">=42.2.2"
@@ -6746,7 +6746,7 @@ __metadata:
   resolution: "@udecode/plate-mention@workspace:packages/mention"
   dependencies:
     "@udecode/plate": "workspace:^"
-    "@udecode/plate-combobox": "npm:42.0.0"
+    "@udecode/plate-combobox": "npm:42.2.4"
   peerDependencies:
     "@udecode/plate": ">=42.2.2"
     react: ">=18.0.0"
@@ -6829,7 +6829,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-selection@npm:42.2.0, @udecode/plate-selection@workspace:^, @udecode/plate-selection@workspace:packages/selection":
+"@udecode/plate-selection@npm:42.2.4, @udecode/plate-selection@workspace:^, @udecode/plate-selection@workspace:packages/selection":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-selection@workspace:packages/selection"
   dependencies:
@@ -6847,7 +6847,7 @@ __metadata:
   resolution: "@udecode/plate-slash-command@workspace:packages/slash-command"
   dependencies:
     "@udecode/plate": "workspace:^"
-    "@udecode/plate-combobox": "npm:42.0.0"
+    "@udecode/plate-combobox": "npm:42.2.4"
   peerDependencies:
     "@udecode/plate": ">=42.2.2"
     react: ">=18.0.0"
@@ -6882,7 +6882,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-table@npm:42.2.2, @udecode/plate-table@workspace:^, @udecode/plate-table@workspace:packages/table":
+"@udecode/plate-table@npm:42.2.4, @udecode/plate-table@workspace:^, @udecode/plate-table@workspace:packages/table":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-table@workspace:packages/table"
   dependencies:

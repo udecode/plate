@@ -72,22 +72,26 @@ To maintain the editor's selection state when focusing UI elements, add the `dat
 
 ## Plugins
 
-### CursorOverlayPlugin
+### `CursorOverlayPlugin`
 
 Plugin that manages cursor and selection overlays.
 
+<API name="CursorOverlayPlugin">
 <APIOptions>
-<APIItem name="cursors" type="Record<string, CursorState<CursorData>>">
-Object containing cursor states. Default: `{}`
-</APIItem>
+  <APIItem name="cursors" type="Record<string, CursorState<CursorData>>">
+    Object containing cursor states.
+    - **Default:** `{}`
+  </APIItem>
 </APIOptions>
+</API>
 
 ## API
 
-### editor.api.cursorOverlay.addCursor
+### `editor.api.cursorOverlay.addCursor`
 
 Adds a cursor overlay with the specified key and state.
 
+<API name="addCursor">
 <APIParameters>
   <APIItem name="key" type="string">
     Unique identifier for the cursor (e.g., 'blur', 'drag', 'custom').
@@ -96,39 +100,39 @@ Adds a cursor overlay with the specified key and state.
     The cursor state including selection and optional styling data.
   </APIItem>
 </APIParameters>
+</API>
 
-### editor.api.cursorOverlay.removeCursor
+### `editor.api.cursorOverlay.removeCursor`
 
 Removes a cursor overlay by its key.
 
+<API name="removeCursor">
 <APIParameters>
   <APIItem name="key" type="string">
     The key of the cursor to remove.
   </APIItem>
 </APIParameters>
+</API>
 
 ## Hooks
 
-### useCursorOverlay
+### `useCursorOverlay`
 
 A hook that manages cursor and selection overlay states, providing real-time cursor positions and selection rectangles.
 
-<APIParameters>
-  <APIItem name="options" type="object" optional>
-    <APISubList>
-      <APISubListItem parent="options" name="minSelectionWidth" type="number" optional>
-        Minimum width in pixels for a selection rectangle. Useful for making cursor carets more visible.
-        - **Default:** `1`
-      </APISubListItem>
-      <APISubListItem parent="options" name="refreshOnResize" type="boolean" optional>
-        Whether to recalculate cursor positions when the container is resized.
-        - **Default:** `true`
-      </APISubListItem>
-    </APISubList>
+<API name="useCursorOverlay">
+<APIOptions type="object">
+  <APIItem name="minSelectionWidth" type="number" optional>
+    Minimum width in pixels for a selection rectangle. Useful for making cursor carets more visible.
+    - **Default:** `1`
   </APIItem>
-</APIParameters>
+  <APIItem name="refreshOnResize" type="boolean" optional>
+    Whether to recalculate cursor positions when the container is resized.
+    - **Default:** `true`
+  </APIItem>
+</APIOptions>
 
-<APIReturns>
+<APIReturns type="object">
   <APIItem name="cursors" type="CursorOverlayState<TCursorData>[]">
     Array of cursor states with their corresponding selection rectangles and styling data.
   </APIItem>
@@ -136,3 +140,4 @@ A hook that manages cursor and selection overlay states, providing real-time cur
     Function to manually trigger a recalculation of cursor positions.
   </APIItem>
 </APIReturns>
+</API>

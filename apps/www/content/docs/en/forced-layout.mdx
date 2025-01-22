@@ -39,6 +39,7 @@ const plugins = [
 
 ### NormalizeTypesPlugin
 
+<API name="NormalizeTypesPlugin">
 <APIOptions>
 <APIItem name="rules" type="Rule[]" optional>
 An array of rule objects for normalizing types.
@@ -47,18 +48,15 @@ An array of rule objects for normalizing types.
 </APIItem>
 </APIOptions>
 
-#### Rule
-
-<APIAttributes>
-<APIItem name="path" type="Path">
-Path where the rule applies.
-</APIItem>
-
-<APIItem name="strictType" type="string" optional>
-Force the type of the node at the given path.
-</APIItem>
-
-<APIItem name="type" type="string" optional>
-Type of the inserted node at the given path if `strictType` is not provided.
-</APIItem>
-</APIAttributes>
+<APIOptions type="Rule">
+  <APIItem name="path" type="Path">
+    Path where the rule applies.
+  </APIItem>
+  <APIItem name="strictType" type="string" optional>
+    Force the type of the node at the given path.
+  </APIItem>
+  <APIItem name="type" type="string" optional>
+    Type of inserted node if `strictType` is not provided.
+  </APIItem>
+</APIOptions>
+</API>

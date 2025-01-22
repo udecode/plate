@@ -76,9 +76,10 @@ The input element component can be built using [Inline Combobox](/docs/component
 
 ## Types
 
-### TriggerComboboxPluginOptions
+### `TriggerComboboxPluginOptions`
 
-<APIParameters>
+<API name="TriggerComboboxPluginOptions">
+<APIAttributes>
   <APIItem name="createComboboxInput" type="(trigger: string) => TElement">
     Function to create the input node when trigger is activated.
   </APIItem>
@@ -95,63 +96,69 @@ The input element component can be built using [Inline Combobox](/docs/component
   <APIItem name="triggerQuery" type="(editor: SlateEditor) => boolean" optional>
     Custom query function to control when trigger is active.
   </APIItem>
-</APIParameters>
+</APIAttributes>
+</API>
 
 ## Hooks
 
-### useComboboxInput
+### `useComboboxInput`
 
 Hook for managing combobox input behavior and keyboard interactions.
 
-<APIParameters>
-  <APIItem name="options" type="UseComboboxInputOptions">
-    <APISubList>
-      <APISubListItem parent="options" name="ref" type="RefObject<HTMLElement>">
-        Reference to the input element.
-      </APISubListItem>
-      <APISubListItem parent="options" name="autoFocus" type="boolean" optional>
-        Auto focus the input when mounted.
-        - **Default:** `true`
-      </APISubListItem>
-      <APISubListItem parent="options" name="cancelInputOnArrowLeftRight" type="boolean" optional>
-        Cancel on arrow keys.
-        - **Default:** `true`
-      </APISubListItem>
-      <APISubListItem parent="options" name="cancelInputOnBackspace" type="boolean" optional>
-        Cancel on backspace at start.
-        - **Default:** `true`
-      </APISubListItem>
-      <APISubListItem parent="options" name="cancelInputOnBlur" type="boolean" optional>
-        Cancel on blur.
-        - **Default:** `true`
-      </APISubListItem>
-      <APISubListItem parent="options" name="cancelInputOnDeselect" type="boolean" optional>
-        Cancel when deselected.
-        - **Default:** `true`
-      </APISubListItem>
-      <APISubListItem parent="options" name="cancelInputOnEscape" type="boolean" optional>
-        Cancel on escape key.
-        - **Default:** `true`
-      </APISubListItem>
-      <APISubListItem parent="options" name="cursorState" type="ComboboxInputCursorState" optional>
-        Current cursor position state.
-      </APISubListItem>
-      <APISubListItem parent="options" name="forwardUndoRedoToEditor" type="boolean" optional>
-        Forward undo/redo to editor.
-        - **Default:** `true`
-      </APISubListItem>
-      <APISubListItem parent="options" name="onCancelInput" type="(cause: CancelComboboxInputCause) => void" optional>
-        Callback when input is cancelled.
-      </APISubListItem>
-    </APISubList>
+<API name="useComboboxInput">
+<APIOptions type="UseComboboxInputOptions">
+  <APIItem name="ref" type="RefObject<HTMLElement>">
+    Reference to the input element.
   </APIItem>
-</APIParameters>
+  <APIItem name="autoFocus" type="boolean" optional>
+    Auto focus the input when mounted.
 
-<APIReturns>
+    - **Default:** `true`
+  </APIItem>
+  <APIItem name="cancelInputOnArrowLeftRight" type="boolean" optional>
+    Cancel on arrow keys.
+
+    - **Default:** `true`
+  </APIItem>
+  <APIItem name="cancelInputOnBackspace" type="boolean" optional>
+    Cancel on backspace at start.
+
+    - **Default:** `true`
+  </APIItem>
+  <APIItem name="cancelInputOnBlur" type="boolean" optional>
+    Cancel on blur.
+
+    - **Default:** `true`
+  </APIItem>
+  <APIItem name="cancelInputOnDeselect" type="boolean" optional>
+    Cancel when deselected.
+
+    - **Default:** `true`
+  </APIItem>
+  <APIItem name="cancelInputOnEscape" type="boolean" optional>
+    Cancel on escape key.
+
+    - **Default:** `true`
+  </APIItem>
+  <APIItem name="cursorState" type="ComboboxInputCursorState" optional>
+    Current cursor position state.
+  </APIItem>
+  <APIItem name="forwardUndoRedoToEditor" type="boolean" optional>
+    Forward undo/redo to editor.
+
+    - **Default:** `true`
+  </APIItem>
+  <APIItem name="onCancelInput" type="(cause: CancelComboboxInputCause) => void" optional>
+    Callback when input is cancelled.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="object">
   <APIItem name="cancelInput" type="(cause?: CancelComboboxInputCause, focusEditor?: boolean) => void">
     Function to cancel the input.
   </APIItem>
   <APIItem name="props" type="object">
+    Props for the input element.
     <APISubList>
       <APISubListItem parent="props" name="onBlur" type="EventHandler">
         Blur event handler.
@@ -165,6 +172,7 @@ Hook for managing combobox input behavior and keyboard interactions.
     Function to remove the input node.
   </APIItem>
 </APIReturns>
+</API>
 
 Example:
 
@@ -194,25 +202,23 @@ const MyCombobox = () => {
 };
 ```
 
-### useHTMLInputCursorState
+### `useHTMLInputCursorState`
 
 Hook for tracking cursor position in an HTML input element.
 
+<API name="useHTMLInputCursorState">
 <APIParameters>
   <APIItem name="ref" type="RefObject<HTMLInputElement>">
     Reference to the input element to track.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-  <APIItem name="state" type="ComboboxInputCursorState">
-    <APISubList>
-      <APISubListItem parent="state" name="atStart" type="boolean">
-        Whether cursor is at the start of input.
-      </APISubListItem>
-      <APISubListItem parent="state" name="atEnd" type="boolean">
-        Whether cursor is at the end of input.
-      </APISubListItem>
-    </APISubList>
+<APIReturns type="ComboboxInputCursorState">
+  <APIItem name="atStart" type="boolean">
+    Whether cursor is at the start of input.
+  </APIItem>
+  <APIItem name="atEnd" type="boolean">
+    Whether cursor is at the end of input.
   </APIItem>
 </APIReturns>
+</API>

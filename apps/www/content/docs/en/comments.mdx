@@ -50,210 +50,197 @@ const editor = createPlateEditor({
 
 ## Plugins
 
-### CommentsPlugin
+### `CommentsPlugin`
 
+<API name="CommentsPlugin">
 <APIOptions>
-
-<APIItem name="newText" type="string">
-The text for a new comment.
-</APIItem>
-
-<APIItem name="myUser" type="CommentUser">
-The current user's information.
-</APIItem>
-
-<APIItem name="userById" type="(id: string) => CommentUser">
-Function to get a user by their ID.
-</APIItem>
-
-<APIItem name="commentById" type="(id: string) => TComment">
-Function to get a comment by its ID.
-</APIItem>
-
-<APIItem name="activeComment" type="TComment">
-The currently active comment.
-</APIItem>
-
+  <APIItem name="newText" type="string">
+    The text for a new comment.
+  </APIItem>
+  <APIItem name="myUser" type="CommentUser">
+    The current user's information.
+  </APIItem>
+  <APIItem name="userById" type="(id: string) => CommentUser">
+    Function to get a user by their ID.
+  </APIItem>
+  <APIItem name="commentById" type="(id: string) => TComment">
+    Function to get a comment by its ID.
+  </APIItem>
+  <APIItem name="activeComment" type="TComment">
+    The currently active comment.
+  </APIItem>
 </APIOptions>
+</API>
 
 ## API
 
-### editor.tf.insert.comment
+### `editor.tf.insert.comment`
 
-Insert a new comment mark.
+Insert a new comment mark at the current selection.
 
-### editor.api.comment.updateComment
+### `editor.api.comment.updateComment`
 
-Updates an existing comment.
+Updates an existing comment with new content or properties.
 
-### editor.api.comment.addRawComment
+### `editor.api.comment.addRawComment`
 
-Adds a new raw comment.
+Adds a new raw comment without any preprocessing.
 
-### editor.api.comment.addComment
+### `editor.api.comment.addComment`
 
-Adds a new comment.
+Adds a new comment with proper formatting and validation.
 
-### editor.api.comment.removeComment
+### `editor.api.comment.removeComment`
 
-Removes a comment.
+Removes a comment and its associated marks from the editor.
 
-### editor.api.comment.resetNewCommentValue
+### `editor.api.comment.resetNewCommentValue`
 
-Resets the value of a new comment.
+Resets the value of a new comment to its initial state.
 
-### CommentStoreState
-
-<APIState>
-  <APIItem name="id" type="string">
-    The unique ID of the comment.
-  </APIItem>
-  <APIItem name="isMenuOpen" type="boolean">
-    A flag indicating whether the menu associated with this comment is currently
-    open.
-  </APIItem>
-  <APIItem name="editingValue" type="Value | null">
-    The value currently being edited for this comment. If no editing is in
-    progress, this value is null.
-  </APIItem>
-</APIState>
-
-### findCommentNode
+### `findCommentNode`
 
 Finds the comment node in the editor.
 
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="EditorNodesOptions" optional>
+<API name="findCommentNode">
+<APIOptions type="EditorNodesOptions" optional>
     Additional options for finding the node.
-  </APIItem>
-</APIParameters>
+</APIOptions>
+</API>
 
-### findCommentNodeById
+### `findCommentNodeById`
 
 Finds the comment node in the editor by its ID.
 
+<API name="findCommentNodeById">
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
   <APIItem name="id" type="string">
     The ID of the comment node to find.
   </APIItem>
 </APIParameters>
+</API>
 
-### getCommentCount
+### `getCommentCount`
 
 Gets the count of comments in a comment node.
 
+<API name="getCommentCount">
 <APIParameters>
   <APIItem name="node" type="TCommentText">
     The comment node.
   </APIItem>
 </APIParameters>
+</API>
 
-### getCommentKey
+### `getCommentKey`
 
 Generates a comment key based on the provided ID.
 
+<API name="getCommentKey">
 <APIParameters>
   <APIItem name="id" type="string">
     The ID of the comment.
   </APIItem>
 </APIParameters>
+</API>
 
-### getCommentKeyId
+### `getCommentKeyId`
 
 Extracts the comment ID from a comment key.
 
+<API name="getCommentKeyId">
 <APIParameters>
   <APIItem name="key" type="string">
     The comment key.
   </APIItem>
 </APIParameters>
+</API>
 
-### getCommentKeys
+### `getCommentKeys`
 
 Returns an array of comment keys present in the given node.
 
+<API name="getCommentKeys">
 <APIParameters>
   <APIItem name="node" type="TCommentText">
     The node to check for comment keys.
   </APIItem>
 </APIParameters>
+</API>
 
-### getCommentNodeEntries
+### `getCommentNodeEntries`
 
 Returns an array of node entries for comment nodes in the editor.
 
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-</APIParameters>
-
-### getCommentNodesById
+### `getCommentNodesById`
 
 Returns an array of node entries for comment nodes with a specific ID in the editor.
 
+<API name="getCommentNodesById">
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
   <APIItem name="id" type="string">
     The ID of the comment nodes to retrieve.
   </APIItem>
 </APIParameters>
+</API>
 
-### getCommentPosition
+### `getCommentPosition`
 
 Calculates the position of a comment node relative to the editor.
 
+<API name="getCommentPosition">
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
   <APIItem name="node" type="TCommentText">
     The comment node for which to calculate the position.
   </APIItem>
 </APIParameters>
+</API>
 
-### getCommentUrl
+### `getCommentUrl`
 
 Generates a URL with a query parameter for a specific comment ID.
 
+<API name="getCommentUrl">
 <APIParameters>
   <APIItem name="commentId" type="string">
     The ID of the comment.
   </APIItem>
 </APIParameters>
+</API>
 
-### getElementAbsolutePosition
+### `getElementAbsolutePosition`
 
 Calculates the absolute position of an HTML element relative to the document.
 
+<API name="getElementAbsolutePosition">
 <APIParameters>
   <APIItem name="element" type="HTMLElement">
     The HTML element for which to calculate the absolute position.
   </APIItem>
 </APIParameters>
+</API>
 
-### isCommentKey
+### `isCommentKey`
 
 Checks if a given key is a comment key.
 
+<API name="isCommentKey">
 <APIParameters>
   <APIItem name="key" type="string">
     The key to check.
   </APIItem>
 </APIParameters>
 
-### isCommentNodeById
+<APIReturns type="boolean">
+  Whether the key is a comment key.
+</APIReturns>
+</API>
+
+### `isCommentNodeById`
 
 Checks if a given node is a comment with the specified ID.
 
+<API name="isCommentNodeById">
 <APIParameters>
   <APIItem name="node" type="TNode">
     The node to check.
@@ -263,47 +250,68 @@ Checks if a given node is a comment with the specified ID.
   </APIItem>
 </APIParameters>
 
-### isCommentText
+<APIReturns type="boolean">
+  Whether the node is a comment with the specified ID.
+</APIReturns>
+</API>
+
+### `isCommentText`
 
 Checks if a given node is a comment text node.
 
+<API name="isCommentText">
 <APIParameters>
   <APIItem name="node" type="TNode">
     The node to check.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-  <APIItem type="boolean">`true` if the node is a comment text node.</APIItem>
+<APIReturns type="boolean">
+  Whether the node is a comment text node.
 </APIReturns>
+</API>
 
-### removeCommentMark
+### `removeCommentMark`
 
 Removes the comment mark from the editor.
 
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-</APIParameters>
-
-### unsetCommentNodesById
+### `unsetCommentNodesById`
 
 Unsets comment nodes with the specified ID from the editor.
 
+<API name="unsetCommentNodesById">
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
   <APIItem name="id" type="string">
     The ID of the comment nodes to unset.
   </APIItem>
 </APIParameters>
+</API>
 
-### CommentUser
+## Types
+
+### `CommentStoreState`
+
+<API name="CommentStoreState">
+<APIState>
+  <APIItem name="id" type="string">
+    The unique ID of the comment.
+  </APIItem>
+  <APIItem name="isMenuOpen" type="boolean">
+    Whether the menu associated with this comment is open.
+  </APIItem>
+  <APIItem name="editingValue" type="Value | null">
+    The value currently being edited, or null if no editing in progress.
+  </APIItem>
+</APIState>
+</API>
+
+## Components
+
+### `CommentUser`
 
 An interface representing a user who can make comments.
 
+<API name="CommentUser">
 <APIParameters>
   <APIItem name="id" type="string">
     The unique ID of the user.
@@ -315,164 +323,175 @@ An interface representing a user who can make comments.
     The URL of the user's avatar.
   </APIItem>
 </APIParameters>
+</API>
 
-### TComment
+### `TComment`
 
+Interface for comment data.
+
+<API name="TComment">
 <APIAttributes>
-<APIItem name="id" type="string">
-A unique ID for the comment.
-</APIItem>
-<APIItem name="value" type="Value">
-The Slate value of the comment.
-</APIItem>
-<APIItem name="createdAt" type="number">
-Timestamp when the comment was created.
-
-- **Default:** `Date.now()`
-
-</APIItem>
-<APIItem name="userId" type="string">
-Id of the author of the comment.
-</APIItem>
-<APIItem name="parentId" type="string" optional>
-Id of the parent comment it replies to.
-</APIItem>
-<APIItem name="isResolved" type="boolean" optional>
-Whether the comment is resolved.
-</APIItem>
-</APIAttributes>
-
-### TCommentText
-
-<APIAttributes>
-  <APIItem name="comment_<id>" type="boolean" optional>
-    Indicates whether this is a comment. Multiple comments can be present in a
-    single text node.
+  <APIItem name="id" type="string">
+    A unique ID for the comment.
+  </APIItem>
+  <APIItem name="value" type="Value">
+    The Slate value of the comment.
+  </APIItem>
+  <APIItem name="createdAt" type="number">
+    Timestamp when the comment was created.
+    - **Default:** `Date.now()`
+  </APIItem>
+  <APIItem name="userId" type="string">
+    ID of the author of the comment.
+  </APIItem>
+  <APIItem name="parentId" type="string" optional>
+    ID of the parent comment it replies to.
+  </APIItem>
+  <APIItem name="isResolved" type="boolean" optional>
+    Whether the comment is resolved.
   </APIItem>
 </APIAttributes>
+</API>
 
-## API Components
+### `TCommentText`
 
-### CommentProvider
+Interface for text nodes that can contain comments.
+
+<API name="TCommentText">
+<APIAttributes>
+  <APIItem name="comment_<id>" type="boolean" optional>
+    Indicates whether this is a comment. Multiple comments can be present in a single text node.
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `<CommentProvider>`
 
 A jotai provider for comment data.
 
+<API name="CommentProvider">
 <APIProps>
-  Extends `CommentStoreState`.
-
+  <APIItem name="extends" type="CommentStoreState">
+    Base state type.
+  </APIItem>
   <APIItem name="scope" type="Scope" optional>
     The scope of the provider.
   </APIItem>
 </APIProps>
+</API>
 
-### CommentDeleteButton
+### `<CommentDeleteButton>`
 
 A button component for deleting a comment.
 
+<API name="CommentDeleteButton">
 <APIState>
   <APIItem name="activeCommentId" type="string">
     The ID of the active comment.
-  </APIItem>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
   </APIItem>
   <APIItem name="id" type="string">
     The ID of the comment.
   </APIItem>
   <APIItem name="onCommentDelete" type="function">
-    A function to call when the comment is deleted.
+    Callback when comment is deleted.
   </APIItem>
   <APIItem name="removeComment" type="function">
-    A function to remove the comment.
+    Function to remove the comment.
   </APIItem>
   <APIItem name="setActiveCommentId" type="function">
-    A function to set the active comment ID.
+    Function to set the active comment ID.
   </APIItem>
 </APIState>
+</API>
 
-### CommentEditButton
+### `<CommentEditButton>`
 
 A button component for editing a comment.
 
+<API name="CommentEditButton">
 <APIState>
   <APIItem name="setIsMenuOpen" type="function">
-    A function to set the menu open state.
+    Function to set the menu open state.
   </APIItem>
   <APIItem name="comment" type="TComment">
     The comment object.
   </APIItem>
   <APIItem name="editingValue" type="function">
-    A function to set the editing value.
+    Function to set the editing value.
   </APIItem>
 </APIState>
+</API>
 
-### CommentEditCancelButton
+### `<CommentEditCancelButton>`
 
-A button component for canceling the editing of a comment.
+Button component for canceling comment edits.
 
-### CommentEditSaveButton
+### `<CommentEditSaveButton>`
 
-A button component for saving the editing of a comment.
-
+<API name="CommentEditSaveButton">
 <APIState>
   <APIItem name="editingValue" type="Value">
-    The value of the editing value.
+    The current editing value.
   </APIItem>
   <APIItem name="setEditingValue" type="function">
-    A function to set the editing value.
+    Function to set the editing value.
   </APIItem>
   <APIItem name="id" type="string">
     The ID of the comment.
   </APIItem>
   <APIItem name="onCommentUpdate" type="function">
-    A function to call when the comment is updated.
+    Callback when comment is updated.
   </APIItem>
   <APIItem name="updateComment" type="function">
-    A function to update the comment.
+    Function to update the comment.
   </APIItem>
   <APIItem name="value" type="string">
-    The value of the comment.
+    The comment value.
   </APIItem>
 </APIState>
+</API>
 
-### CommentEditTextarea
+### `<CommentEditTextarea>`
 
 A textarea component for editing a comment.
 
+<API name="CommentEditTextarea">
 <APIState>
   <APIItem name="setEditingValue" type="function">
-    A function to set the editing value.
+    Function to set the editing value.
   </APIItem>
   <APIItem name="textareaRef" type="React.Ref">
-    The textarea ref.
+    Reference to the textarea element.
   </APIItem>
   <APIItem name="value" type="string">
-    The value of the textarea.
+    The textarea value.
   </APIItem>
 </APIState>
+</API>
 
-### CommentNewSubmitButton
+### `<CommentNewSubmitButton>`
 
 A button component for submitting a new comment.
 
+<API name="CommentNewSubmitButton">
 <APIState>
   <APIItem name="editingCommentText" type="string">
-    The text of the comment being edited.
+    The text being edited.
   </APIItem>
   <APIItem name="resetNewCommentValue" type="function">
-    A function to reset the new comment value.
+    Function to reset the new comment value.
   </APIItem>
   <APIItem name="addComment" type="function">
-    A function to add a comment.
+    Function to add a comment.
   </APIItem>
   <APIItem name="isReplyComment" type="boolean">
-    Whether the comment is a reply.
+    Whether this is a reply comment.
   </APIItem>
   <APIItem name="submitButtonText" type="string">
-    The text of the submit button.
+    Text for the submit button.
   </APIItem>
   <APIItem name="onCommentAdd" type="function">
-    A function to call when the comment is added.
+    Callback when comment is added.
   </APIItem>
   <APIItem name="activeCommentId" type="string">
     The ID of the active comment.
@@ -481,163 +500,158 @@ A button component for submitting a new comment.
     The comment object.
   </APIItem>
   <APIItem name="newValue" type="Value">
-    The value of the edited comment.
+    The new comment value.
   </APIItem>
 </APIState>
+</API>
 
-### CommentNewTextarea
+### `<CommentNewTextarea>`
 
 A textarea component for adding a new comment.
 
+<API name="CommentNewTextarea">
 <APIState>
   <APIItem name="textareaRef" type="React.Ref">
-    The textarea ref.
+    Reference to the textarea element.
   </APIItem>
   <APIItem name="placeholder" type="string">
-    The placeholder of the textarea.
+    Placeholder text.
   </APIItem>
   <APIItem name="value" type="string">
-    The value of the textarea.
+    The textarea value.
   </APIItem>
   <APIItem name="setNewValue" type="function">
-    A function to set the new value.
+    Function to set the new value.
   </APIItem>
 </APIState>
+</API>
 
-### CommentResolveButton
+### `<CommentResolveButton>`
 
-A button component for resolving/unresolving a comment.
+Button component for resolving/unresolving comments.
 
-### CommentUserName
+### `<CommentUserName>`
 
-A div component for displaying the name of a comment user.
+Component for displaying a comment user's name.
 
-### CommentsPositioner
+### `<CommentsPositioner>`
 
-A div component for positioning comments in the editor.
-
+<API name="CommentsPositioner">
 <APIState>
   <APIItem name="activeCommentId" type="string">
-    The ID for the active comment.
+    The ID of the active comment.
   </APIItem>
   <APIItem name="position" type="object">
-    An object representing the current position of the comment (top and left
-    coordinates).
+    Position coordinates (top and left).
   </APIItem>
 </APIState>
+</API>
 
-### useActiveCommentNode
+## Hooks
+
+### `useActiveCommentNode`
 
 A custom hook that retrieves the active comment node based on the active comment ID.
 
-<APIReturns>
-
-- If there is an active comment ID, it returns the corresponding comment node.
-
-- If there is no active comment ID or the comment node is not found, it returns `null`.
-
+<API name="useActiveCommentNode">
+<APIReturns type="TCommentText | null">
+  The active comment node, or null if none found.
 </APIReturns>
+</API>
 
-### useCommentAddButton
+### `useCommentAddButton`
 
 A custom hook that provides functionality for adding a comment mark to the selected text and setting focus to the comment textarea.
 
-<APIReturns>
-  <APIItem name="props" type="object">
-    <APISubList>
-      <APISubListItem parent="props" name="onClick" type="function">
-        A function to call when the button is clicked.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
+<API name="useCommentAddButton">
+<APIReturns type="{ props: { onClick: () => void } }">
+  Props for the comment add button.
 </APIReturns>
+</API>
 
-### useCommentItemContentState
+### `useCommentItemContentState`
 
 A state hook for the comment item content component.
 
-<APIReturns>
+<API name="useCommentItemContentState">
+<APIReturns type="object">
   <APIItem name="comment" type="TComment">
     The comment object.
   </APIItem>
   <APIItem name="isReplyComment" type="boolean">
-    A boolean indicating whether the comment is a reply comment.
+    Whether this is a reply comment.
   </APIItem>
   <APIItem name="commentText" type="string">
-    The text content of the comment.
+    The comment text content.
   </APIItem>
   <APIItem name="user" type="CommentUser">
-    The user associated with the comment.
+    The comment author.
   </APIItem>
   <APIItem name="myUserId" type="string">
-    The ID of the current user.
+    Current user's ID.
   </APIItem>
   <APIItem name="editingValue" type="Value">
-    The value of the comment being edited.
+    Current editing value.
   </APIItem>
   <APIItem name="isMyComment" type="boolean">
-    A boolean indicating whether the comment is authored by the current user.
+    Whether current user is the author.
   </APIItem>
 </APIReturns>
+</API>
 
-### useCommentLeaf
+### `useCommentLeaf`
 
 A behavior hook for the comment leaf component.
 
+<API name="useCommentLeaf">
 <APIParameters>
   <APIItem name="setActiveCommentId" type="function">
-    The function to set the active comment ID.
+    Function to set active comment ID.
   </APIItem>
   <APIItem name="lastCommentId" type="string">
-    The ID of the last comment in the leaf.
+    ID of the last comment in the leaf.
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-  <APIItem name="props" type="object">
-    <APISubList>
-      <APISubListItem parent="props" name="onClick" type="function">
-        A function to call when the button is clicked.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
+<APIReturns type="object">
+  Props for the comment leaf.
+    <APIItem name="onClick" type="function">
+      Click event handler.
+    </APIItem>
 </APIReturns>
+</API>
 
-### useCommentValue
+### `useCommentValue`
 
 A custom hook that focuses and selects the text inside a textarea.
 
-<APIReturns>
-  <APIItem name="textareaRef" type="React.Ref">
-    A ref to the textarea element.
-  </APIItem>
+<API name="useCommentValue">
+<APIReturns type="React.Ref">
+  Reference to the textarea element.
 </APIReturns>
+</API>
 
-### useCommentsResolved
+### `useCommentsResolved`
 
 A custom hook that returns an array of resolved comments.
 
-<APIReturns>
-<APIItem type="TComment[]">
-
-An array of resolved comments.
-
-</APIItem>
+<API name="useCommentsResolved">
+<APIReturns type="TComment[]">
+  Array of resolved comments.
 </APIReturns>
+</API>
 
-### useCommentsShowResolvedButton
+### `useCommentsShowResolvedButton`
 
 A custom hook that returns the props for a button component used to show resolved comments.
 
-<APIReturns>
-  <APIItem name="props" type="object">
-    <APISubList>
-      <APISubListItem parent="props" name="pressed" type="boolean">
-        A boolean indicating whether the button is pressed.
-      </APISubListItem>
-      <APISubListItem parent="props" name="onClick" type="function">
-        A function to call when the button is clicked.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
+<API name="useCommentsShowResolvedButton">
+<APIReturns type="object">
+   <APIItem name="pressed" type="boolean">
+   A boolean indicating whether the button is pressed.
+   </APIItem>
+   <APIItem name="onClick" type="function">
+   A function to call when the button is clicked.
+   </APIItem>
 </APIReturns>
+</API>

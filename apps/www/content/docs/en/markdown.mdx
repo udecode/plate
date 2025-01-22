@@ -56,128 +56,116 @@ const editor = createPlateEditor({
 const content = editor.api.markdown.serialize();
 ```
 
-## Plugins
-
-### MarkdownPlugin
-
-<APIOptions>
-<APIItem name="elementRules" type="RemarkElementRules">
-
-Object where each key is a Markdown syntax element type and the value is a transformation function.
-
-<APISubList>
-<APISubListItem parent="elementRules" name="[key in MdastElementType]" type="RemarkElementRule">
-
-The key corresponds to a Markdown element type (`paragraph`, `heading`, `list`, `listItem`, `link`, `image`, `blockquote`, `code`, `thematicBreak`). The value is an object specifying how to transform the given type of Markdown element into a Slate element.
-
-<APISubList>
-<APISubListItem parent="RemarkElementRule" name="transform" type="(node: MdastNode, options: RemarkPluginOptions<V>) => TElement | TElement[]">
-A function that takes a `MdastNode` and `RemarkPluginOptions` as arguments and returns a `TElement` or an array of `TElement`.
-
-</APISubListItem>
-</APISubList>
-</APISubListItem>
-</APISubList>
-</APIItem>
-<APIItem name="textRules" type="RemarkTextRules">
-
-Object where each key is a Markdown syntax text type and the value is an object providing optional mark and transform functions.
-
-<APISubList>
-<APISubListItem parent="textRules" name="[key in MdastTextType]" type="RemarkTextRule">
-
-The key corresponds to a Markdown text type (`emphasis`, `strong`, `delete`, `inlineCode`, `html`, `text`). The value is an object specifying how to process the given type of Markdown text.
-
-<APISubList>
-<APISubListItem parent="RemarkTextRule" name="mark" type="(options: RemarkPluginOptions<V>) => string" optional>
-
-An optional function that takes `RemarkPluginOptions` as argument and returns a string, indicating the mark type for the given Markdown text.
-
-</APISubListItem>
-<APISubListItem parent="RemarkTextRule" name="transform" type="(text: string) => string" optional>
-
-An optional function that takes a string (the Markdown text) as argument and returns a transformed string.
-
-</APISubListItem>
-</APISubList>
-</APISubListItem>
-</APISubList>
-</APIItem>
-</APIOptions>
-
 ## API
 
-### editor.api.markdown.deserialize
+### `MarkdownPlugin`
+
+<API name="MarkdownPlugin">
+<APIOptions>
+  <APIItem name="elementRules" type="RemarkElementRules">
+    Object where each key is a Markdown syntax element type and the value is a transformation function.
+    <APISubList>
+      <APISubListItem parent="elementRules" name="[key in MdastElementType]" type="RemarkElementRule">
+        The key corresponds to a Markdown element type (`paragraph`, `heading`, `list`, `listItem`, `link`, `image`, `blockquote`, `code`, `thematicBreak`). The value is an object specifying how to transform the given type of Markdown element into a Slate element.
+        <APISubList>
+          <APISubListItem parent="RemarkElementRule" name="transform" type="(node: MdastNode, options: RemarkPluginOptions<V>) => TElement | TElement[]">
+            A function that takes a `MdastNode` and `RemarkPluginOptions` as arguments and returns a `TElement` or an array of `TElement`.
+          </APISubListItem>
+        </APISubList>
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+  <APIItem name="textRules" type="RemarkTextRules">
+    Object where each key is a Markdown syntax text type and the value is an object providing optional mark and transform functions.
+    <APISubList>
+      <APISubListItem parent="textRules" name="[key in MdastTextType]" type="RemarkTextRule">
+        The key corresponds to a Markdown text type (`emphasis`, `strong`, `delete`, `inlineCode`, `html`, `text`). The value is an object specifying how to process the given type of Markdown text.
+        <APISubList>
+          <APISubListItem parent="RemarkTextRule" name="mark" type="(options: RemarkPluginOptions<V>) => string" optional>
+            An optional function that takes `RemarkPluginOptions` as argument and returns a string, indicating the mark type for the given Markdown text.
+          </APISubListItem>
+          <APISubListItem parent="RemarkTextRule" name="transform" type="(text: string) => string" optional>
+            An optional function that takes a string (the Markdown text) as argument and returns a transformed string.
+          </APISubListItem>
+        </APISubList>
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIOptions>
+</API>
+
+### `editor.api.markdown.deserialize`
 
 Converts a Markdown string to a Slate value.
 
+<API name="deserialize">
 <APIParameters>
-<APIItem name="markdown" type="string">
-The Markdown string to be deserialized.
-</APIItem>
-<APIItem name="options" type="DeserializeMdOptions" optional>
-<APISubList>
-<APISubListItem parent="options" name="memoize" type="boolean" optional>
-Enable block-level memoization with `_memo` property, making it compatible with `PlateStatic` memoization.
-</APISubListItem>
-<APISubListItem parent="options" name="parser" type="ParseMarkdownBlocksOptions" optional>
-Options for the token parser. Can filter out specific markdown token types (e.g. 'space').
-</APISubListItem>
-<APISubListItem parent="options" name="processor" type="(processor: Processor) => Processor" optional>
-A function that allows you to customize the markdown processor.
-</APISubListItem>
-</APISubList>
-</APIItem>
+  <APIItem name="markdown" type="string">
+    The Markdown string to be deserialized.
+  </APIItem>
+  <APIItem name="options" type="DeserializeMdOptions" optional>
+    Options for the deserialization process.
+  </APIItem>
 </APIParameters>
 
-<APIReturns>
-<APIItem type="Descendant[]">
-An array of Slate nodes representing the deserialized Markdown content.
-</APIItem>
+<APIOptions type="object">
+      <APIItem name="memoize" type="boolean" optional>
+        Enable block-level memoization with `_memo` property, making it compatible with `PlateStatic` memoization.
+      </APIItem>
+      <APIItem name="parser" type="ParseMarkdownBlocksOptions" optional>
+        Options for the token parser. Can filter out specific markdown token types (e.g. 'space').
+      </APIItem>
+      <APIItem name="processor" type="(processor: Processor) => Processor" optional>
+        A function that allows you to customize the markdown processor.
+      </APIItem>
+    </APIOptions>
+    
+<APIReturns type="Descendant[]">
+    An array of Slate nodes representing the deserialized Markdown content.
 </APIReturns>
+</API>
 
-### editor.api.markdown.serialize
+### `editor.api.markdown.serialize`
 
 Converts the current Slate value to a Markdown string.
 
-<APIParameters>
-<APIItem name="options" type="object" optional>
-<APISubList>
-<APISubListItem parent="options" name="nodes" type="Descendant[]" optional>
-The Slate nodes to serialize. If not provided, the entire editor value will be used.
-</APISubListItem>
-</APISubList>
-</APIItem>
-</APIParameters>
+<API name="serialize">
+<APIOptions type="SerializeMarkdownOptions">
+  <APIItem name="nodes" type="Descendant[]" optional>
+    The Slate nodes to serialize. If not provided, the entire editor value will be used.
+  </APIItem>
+</APIOptions>
 
-<APIReturns>
-<APIItem type="string">
-A Markdown string representing the serialized Slate content.
-</APIItem>
+<APIReturns type="string">
+  A Markdown string representing the serialized Slate content.
 </APIReturns>
+</API>
 
-### parseMarkdownBlocks
+### `parseMarkdownBlocks`
 
 Extracts and filters markdown tokens using marked lexer.
 
+<API name="parseMarkdownBlocks">
 <APIParameters>
-<APIItem name="markdown" type="string">
-The Markdown string to parse into tokens.
-</APIItem>
-<APIItem name="options" type="ParseMarkdownBlocksOptions" optional>
-<APISubList>
-<APISubListItem parent="options" name="exclude" type="string[]" optional>
-Array of token types to exclude (e.g. ['space', 'hr']).
-</APISubListItem>
-<APISubListItem parent="options" name="trim" type="boolean" optional>
-Whether to trim end of the content. Defaults to true.
-</APISubListItem>
-</APISubList>
-</APIItem>
+  <APIItem name="markdown" type="string">
+    The Markdown string to parse into tokens.
+  </APIItem>
+  <APIItem name="options" type="ParseMarkdownBlocksOptions" optional>
+    Options for parsing the Markdown string.
+  </APIItem>
 </APIParameters>
 
-<APIReturns>
-<APIItem type="Token[]">
-An array of markdown tokens.
-</APIItem>
+<APIOptions type="ParseMarkdownBlocksOptions">
+  <APIItem name="exclude" type="string[]" optional>
+    Array of token types to exclude (e.g. ['space', 'hr']).
+  </APIItem>
+  <APIItem name="trim" type="boolean" optional>
+    Whether to trim end of the content.
+    - **Default:** `true`
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="Token[]">
+  An array of markdown tokens.
 </APIReturns>
+</API>

@@ -128,96 +128,93 @@ Refer to the preview above.
 
 ## Plugins
 
-### CopilotPlugin
+### `CopilotPlugin`
 
+Plugin for AI-powered text completion suggestions.
+
+<API name="CopilotPlugin">
 <APIOptions>
-<APIItem name="autoTriggerQuery" type="(options: { editor: PlateEditor }) => boolean" optional>
-  Additional conditions to auto trigger copilot. Default checks:
-  - Block above is not empty
-  - Block above ends with a space
-  - No existing suggestion
-</APIItem>
-
-<APIItem name="completeOptions" type="Partial<CompleteOptions>">
-  AI completion configuration options. See [AI SDK useCompletion
-  Parameters](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-completion#parameters).
-</APIItem>
-
-<APIItem name="debounceDelay" type="number" optional>
-  Delay for debouncing auto-triggered suggestions. **Default:** `0`
-</APIItem>
-
-<APIItem
-  name="getNextWord"
-  type="(options: { text: string }) => { firstWord: string; remainingText: string }"
-  optional
->
-  Function to extract the next word from suggestion text.
-</APIItem>
-
-<APIItem
-  name="getPrompt"
-  type="(options: { editor: PlateEditor }) => string"
-  optional
->
-  Function to generate the prompt for AI completion. **Default:** Uses markdown
-  serialization of ancestor node
-</APIItem>
-
-<APIItem name="renderGhostText" type="(() => React.ReactNode) | null" optional>
-  Component to render ghost text suggestions.
-</APIItem>
-
-<APIItem name="triggerQuery" type="(options: { editor: PlateEditor }) => boolean" optional>
-  Conditions to trigger copilot. Default checks:
-  - Selection is not expanded
-  - Selection is at block end
-</APIItem>
+  <APIItem name="autoTriggerQuery" type="(options: { editor: PlateEditor }) => boolean" optional>
+    Additional conditions to auto trigger copilot.
+    - **Default:** Checks:
+      - Block above is not empty
+      - Block above ends with a space
+      - No existing suggestion
+  </APIItem>
+  <APIItem name="completeOptions" type="Partial<CompleteOptions>">
+    AI completion configuration options. See [AI SDK useCompletion Parameters](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-completion#parameters).
+  </APIItem>
+  <APIItem name="debounceDelay" type="number" optional>
+    Delay for debouncing auto-triggered suggestions.
+    - **Default:** `0`
+  </APIItem>
+  <APIItem name="getNextWord" type="(options: { text: string }) => { firstWord: string; remainingText: string }" optional>
+    Function to extract the next word from suggestion text.
+  </APIItem>
+  <APIItem name="getPrompt" type="(options: { editor: PlateEditor }) => string" optional>
+    Function to generate the prompt for AI completion.
+    - **Default:** Uses markdown serialization of ancestor node
+  </APIItem>
+  <APIItem name="renderGhostText" type="(() => React.ReactNode) | null" optional>
+    Component to render ghost text suggestions.
+  </APIItem>
+  <APIItem name="triggerQuery" type="(options: { editor: PlateEditor }) => boolean" optional>
+    Conditions to trigger copilot.
+    - **Default:** Checks:
+      - Selection is not expanded
+      - Selection is at block end
+  </APIItem>
 </APIOptions>
+</API>
 
 ## API
 
-### editor.api.copilot.accept()
+### `editor.api.copilot.accept()`
 
-Accepts the current suggestion.
+Accepts the current suggestion and applies it to the editor content.
 
-### editor.api.copilot.acceptNextWord()
+### `editor.api.copilot.acceptNextWord()`
 
-Accepts the next word of the suggestion.
+Accepts only the next word of the current suggestion, allowing for granular acceptance of suggestions.
 
-### editor.api.copilot.reset()
+### `editor.api.copilot.reset()`
 
-Resets the plugin state:
+Resets the plugin state to its initial condition:
 
 - Aborts any ongoing API request
 - Clears the current completion
 - Clears suggestion node ID and text
 
-### editor.api.copilot.setBlockSuggestion()
+### `editor.api.copilot.setBlockSuggestion()`
 
 Sets suggestion text for a block.
 
+<API name="setBlockSuggestion">
 <APIParameters>
-  <APIItem name="options" type="object">
-    <APISubList>
-      <APISubListItem parent="options" name="text" type="string">
-        The suggestion text to set.
-      </APISubListItem>
-      <APISubListItem parent="options" name="id" type="string" optional>
-        Target block ID. Defaults to current block if not provided.
-      </APISubListItem>
-    </APISubList>
+  <APIItem name="options" type="SetBlockSuggestionOptions">
+    Options for setting the block suggestion.
   </APIItem>
 </APIParameters>
 
-### editor.api.copilot.stop()
+<APIOptions type="SetBlockSuggestionOptions">
+  <APIItem name="text" type="string">
+    The suggestion text to set.
+  </APIItem>
+  <APIItem name="id" type="string" optional>
+    Target block ID.
+    - **Default:** Current block
+  </APIItem>
+</APIOptions>
+</API>
 
-Stops ongoing suggestion requests:
+### `editor.api.copilot.stop()`
+
+Stops ongoing suggestion requests and cleans up:
 
 - Cancels debounced trigger calls
 - Aborts current API request
 - Resets abort controller
 
-### editor.api.copilot.triggerSuggestion()
+### `editor.api.copilot.triggerSuggestion()`
 
-Triggers a new suggestion request. Can be debounced based on plugin configuration.
+Triggers a new suggestion request. The request may be debounced based on the plugin configuration.

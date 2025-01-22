@@ -8,7 +8,7 @@ title: Trailing Block
 
 ## Features
 
-- Ensures a specific block type is always present at the end of the document.
+- Ensures a specific block type is always present at the end of the document
 
 </PackageInfo>
 
@@ -38,25 +38,29 @@ const plugins = [
 
 ## Plugins
 
-### TrailingBlockPlugin
+### `TrailingBlockPlugin`
 
+Plugin for ensuring specific block type at document end.
+
+<API name="TrailingBlockPlugin">
 <APIOptions>
-<APIItem parent="options" name="level" type="number" optional>
-  Level where the trailing node should be, the first level being 0.
-  - **Default:** `0` (root level)
-</APIItem>
-<APIItem parent="options" name="type" type="string" optional>
-  Type of the trailing block.
-  - **Default:** `editor.getType(ParagraphPlugin)`
-</APIItem>
-<APIItem parent="options" name="allow" type="string[]" optional>
-  Filter nodes that match any of these types.
-  - **Default:** `[]` (all types)
-</APIItem>
-<APIItem parent="options" name="exclude" type="string[]" optional>
-  Filter nodes that don't match any of these types.
-</APIItem>
-<APIItem parent="options" name="filter" type="(node: TNode) => boolean" optional>
-  Custom filter function.
-</APIItem>
+  <APIItem name="level" type="number" optional>
+    Level for trailing node (0 is root level).
+    - **Default:** `0`
+  </APIItem>
+  <APIItem name="type" type="string" optional>
+    Type of trailing block.
+    - **Default:** `editor.getType(ParagraphPlugin)`
+  </APIItem>
+  <APIItem name="allow" type="string[]" optional>
+    Filter nodes matching these types.
+    - **Default:** `[]` (all types)
+  </APIItem>
+  <APIItem name="exclude" type="string[]" optional>
+    Filter nodes not matching these types.
+  </APIItem>
+  <APIItem name="filter" type="(node: TNode) => boolean" optional>
+    Custom filter function.
+  </APIItem>
 </APIOptions>
+</API>

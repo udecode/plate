@@ -35,56 +35,48 @@ const plugins = [
 
 ## Plugins
 
-### DatePlugin
+### `DatePlugin`
 
-Add Date Plugin to your document.
+Plugin for adding date elements to your document.
 
 ## API
 
-### isPointNextToNode
+### `isPointNextToNode`
 
 Check if a point is next to a specific node type.
 
+<API name="isPointNextToNode">
 <APIParameters>
-
-<APIItem name="editor" type="PlateEditor">
-The editor instance.
-</APIItem>
-
-<APIItem name="nodeType" type="string">
-The type of node to check for adjacency. This should be a string representing the node type, such as 'date' for inline date elements.
-</APIItem>
-
-<APIItem name="options" type="object">
-The options for checking adjacency:
-
-<APISubList>
-<APISubListItem parent="options" name="at" type="Point" optional>
-An optional Point object specifying the position to check from. If not provided, the current selection anchor will be used.
-</APISubListItem>
-<APISubListItem parent="options" name="reverse" type="boolean">
-A boolean indicating the direction to check. If true, checks the previous node; if false, checks the next node.
-</APISubListItem>
-</APISubList>
-
-</APIItem>
-
+  <APIItem name="nodeType" type="string">
+    The type of node to check for adjacency (e.g. 'date' for inline date elements).
+  </APIItem>
+  <APIItem name="options" type="object">
+    Options for checking adjacency.
+  </APIItem>
 </APIParameters>
 
-## Plugin Transforms
+<APIOptions type="object">
+  <APIItem name="at" type="Point" optional>
+    Position to check from. Uses current selection anchor if not provided.
+  </APIItem>
+  <APIItem name="reverse" type="boolean">
+    Direction to check. If true, checks previous node; if false, checks next node.
+  </APIItem>
+</APIOptions>
+</API>
 
-### editor.tf.insert.date
+## Transforms
 
-Insert a date into the editor.
+### `editor.tf.insert.date`
 
+<API name="insert.date">
 <APIParameters>
-
-<APIItem name="date" type="string" optional>
-The date string to insert, in the format 'YYYY-MM-DD' (e.g., '2024-04-22'). If not provided, the current date will be used as the default.
-</APIItem>
-
-<APIItem name="options" type="InsertNodesOptions" optional>
-The options for inserting nodes.
-</APIItem>
-
+  <APIItem name="date" type="string" optional>
+    The date string to insert in 'YYYY-MM-DD' format.
+    - **Default:** Current date
+  </APIItem>
+  <APIItem name="options" type="InsertNodesOptions" optional>
+    Options for inserting nodes.
+  </APIItem>
 </APIParameters>
+</API>

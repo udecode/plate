@@ -244,229 +244,225 @@ Refer to the preview above.
 
 ## Plugins
 
-### AIPlugin
+### `AIPlugin`
 
 Extends the editor with AI transforms.
 
-### AIChatPlugin
+### `AIChatPlugin`
 
 This plugin is experimental.
 
 Enables chat operations and streaming text generation in the editor.
 
+<API name="AIChatPlugin">
 <APIOptions>
-<APIItem name="chat" type="UseChatHelpers">
-  Chat helpers returned by [useChat](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat).
-</APIItem>
-
-<APIItem name="createAIEditor" type="() => PlateEditor" optional>
-  
-Function to create editor instance for preview mode.
-
-- **Default:** Creates a basic editor with id 'ai'
-
-</APIItem>
-
-<APIItem name="mode" type="'chat' | 'insert'" optional>
-
-Specifies how assistant messages are handled:
-
-- `'chat'`: Shows preview with accept/reject options (default)
-- `'insert'`: Directly inserts content into editor
-- **Default:** `'chat'`
-
-</APIItem>
-
-<APIItem name="open" type="boolean" optional>
-
-Whether the AI chat is open.
-
-- **Default:** `false`
-
-</APIItem>
-
-<APIItem name="promptTemplate" type="(props: EditorPromptParams) => string" optional>
-  
-Template for generating prompts. Supports placeholders:
-
-- `{block}`: Markdown of blocks in selection
-- `{editor}`: Markdown of entire editor content
-- `{selection}`: Markdown of current selection
-- `{prompt}`: Actual user prompt
-- **Default:** `'{prompt}'`
-
-</APIItem>
-
-<APIItem name="systemTemplate" type="(props: EditorPromptParams) => string | void" optional>
-
-Template for system messages. Supports same placeholders as `promptTemplate`.
-
-- **Default:** `undefined`
-
-</APIItem>
+  <APIItem name="chat" type="UseChatHelpers">
+    Chat helpers returned by [useChat](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat).
+  </APIItem>
+  <APIItem name="createAIEditor" type="() => PlateEditor" optional>
+    Function to create editor instance for preview mode.
+    - **Default:** Creates a basic editor with id 'ai'
+  </APIItem>
+  <APIItem name="mode" type="'chat' | 'insert'" optional>
+    Specifies how assistant messages are handled:
+    - `'chat'`: Shows preview with accept/reject options
+    - `'insert'`: Directly inserts content into editor
+    - **Default:** `'chat'`
+  </APIItem>
+  <APIItem name="open" type="boolean" optional>
+    Whether the AI chat is open.
+    - **Default:** `false`
+  </APIItem>
+  <APIItem name="promptTemplate" type="(props: EditorPromptParams) => string" optional>
+    Template for generating prompts. Supports placeholders:
+    - `{block}`: Markdown of blocks in selection
+    - `{editor}`: Markdown of entire editor content
+    - `{selection}`: Markdown of current selection
+    - `{prompt}`: Actual user prompt
+    - **Default:** `'{prompt}'`
+  </APIItem>
+  <APIItem name="systemTemplate" type="(props: EditorPromptParams) => string | void" optional>
+    Template for system messages. Supports same placeholders as `promptTemplate`.
+  </APIItem>
 </APIOptions>
+</API>
 
 ## API
 
-### api.aiChat.accept()
+### `api.aiChat.accept`
 
 Accepts the current AI suggestion:
-
 - Removes AI marks from the content
 - Hides the AI chat interface
 - Focuses the editor
 
-### api.aiChat.insertBelow()
+### `api.aiChat.insertBelow`
 
 Inserts AI content below the current block.
 
+Handles both block selection and normal selection modes:
+- In block selection: Inserts after the last selected block, applying formatting from the last block
+- In normal selection: Inserts after the current block, applying formatting from the current block
+
+<API name="insertBelow">
 <APIParameters>
   <APIItem name="sourceEditor" type="PlateEditor">
     Editor containing the content to insert.
   </APIItem>
+  <APIItem name="options" type="object" optional>
+    Options for insertion.
+  </APIItem>
 </APIParameters>
 
-Handles both block selection and normal selection modes:
+<APIOptions type="object">
+  <APIItem name="format" type="'all' | 'none' | 'single'" optional>
+    Format to apply:
+    - `'all'`: Apply formatting to all blocks
+    - `'none'`: Insert without formatting
+    - `'single'`: Apply formatting only to first block
+    - **Default:** `'single'`
+  </APIItem>
+</APIOptions>
+</API>
 
-- In block selection: Inserts after the last selected block
-- In normal selection: Inserts after the current block
-
-### api.aiChat.replaceSelection()
+### `api.aiChat.replaceSelection`
 
 Replaces the current selection with AI content.
 
+Handles different selection modes:
+- Single block selection: Replaces the selected block, applying its formatting to inserted content based on format option
+- Multiple block selection: Replaces all selected blocks
+  - With `format: 'none'` or `'single'`: Preserves original formatting
+  - With `format: 'all'`: Applies first block's formatting to all content
+- Normal selection: Replaces the current selection while maintaining surrounding context
+
+<API name="replaceSelection">
 <APIParameters>
   <APIItem name="sourceEditor" type="PlateEditor">
     Editor containing the content to replace with.
   </APIItem>
   <APIItem name="options" type="object" optional>
-    <APISubList>
-      <APISubListItem parent="options" name="forceUniformFormatting" type="boolean" optional>
-        When true, applies the first block's formatting to all inserted blocks. Defaults to false.
-      </APISubListItem>
-    </APISubList>
+    Options for replacement.
   </APIItem>
 </APIParameters>
 
-Handles different selection modes:
+<APIOptions type="object">
+  <APIItem name="format" type="'all' | 'none' | 'single'" optional>
+    Format to apply:
+    - `'all'`: Apply formatting to all blocks
+    - `'none'`: Insert without formatting
+    - `'single'`: Apply formatting only to first block
+    - **Default:** `'single'`
+  </APIItem>
+</APIOptions>
+</API>
 
-- Single block selection: Replaces the selected block, applying its formatting to all inserted content
-- Multiple block selection: Replaces all selected blocks, preserving the original formatting unless `forceUniformFormatting` is enabled
-- Normal selection: Replaces the current selection while maintaining surrounding context
-
-### api.aiChat.reset()
+### `api.aiChat.reset`
 
 Resets the chat state:
-
 - Stops any ongoing generation
 - Clears chat messages
 - Removes all AI nodes from the editor
 
-### api.aiChat.submit()
+### `api.aiChat.submit`
 
 Submits a prompt to generate AI content.
 
-<APIParameters>
-  <APIItem name="options" type="object" optional>
-    <APISubList>
-      <APISubListItem
-        parent="options"
-        name="mode"
-        type="'chat' | 'insert'"
-        optional
-      >
-        Mode to use. Defaults to 'chat' for selection, 'insert' otherwise.
-      </APISubListItem>
-      <APISubListItem parent="options" name="prompt" type="string" optional>
-        Custom prompt. Uses chat input if not provided.
-      </APISubListItem>
-      <APISubListItem parent="options" name="system" type="string" optional>
-        Custom system message.
-      </APISubListItem>
-    </APISubList>
+<API name="submit">
+<APIOptions type="SubmitOptions">
+  <APIItem name="mode" type="'chat' | 'insert'" optional>
+    Mode to use. In insert mode, undoes previous AI changes before submitting.
+    - **Default:** `'chat'` for selection, `'insert'` otherwise
   </APIItem>
-</APIParameters>
-
-In insert mode, undoes previous AI changes before submitting.
+  <APIItem name="prompt" type="string" optional>
+    Custom prompt.
+    - **Default:** Uses chat input if not provided
+  </APIItem>
+  <APIItem name="system" type="string" optional>
+    Custom system message.
+  </APIItem>
+</APIOptions>
+</API>
 
 ## Transforms
 
-### tf.ai.insertNodes()
+### `tf.ai.insertNodes`
 
 Inserts AI-generated nodes with the AI mark.
 
+<API name="tf.ai.insertNodes">
 <APIParameters>
   <APIItem name="nodes" type="Descendant[]">
     Nodes to insert with AI mark.
   </APIItem>
-  <APIItem name="options" type="object" optional>
-    <APISubList>
-      <APISubListItem parent="options" name="target" type="Path" optional>
-        Target path. Defaults to current selection.
-      </APISubListItem>
-    </APISubList>
+  <APIItem name="options" type="InsertNodesOptions" optional>
+    Options for inserting nodes.
   </APIItem>
 </APIParameters>
 
-### tf.ai.removeMarks()
+<APIOptions type="InsertNodesOptions">
+  <APIItem name="target" type="Path" optional>
+    Target path.
+    - **Default:** Current selection
+  </APIItem>
+</APIOptions>
+</API>
+
+### `tf.ai.removeMarks`
 
 Removes AI marks from nodes in the specified location.
 
-<APIParameters>
-  <APIItem name="options" type="object" optional>
-    <APISubList>
-      <APISubListItem parent="options" name="at" type="Location" optional>
-        Location to remove marks from. Defaults to entire document.
-      </APISubListItem>
-    </APISubList>
+<API name="tf.ai.removeMarks">
+<APIOptions type="RemoveMarksOptions">
+  <APIItem name="at" type="Location" optional>
+    Location to remove marks from.
+    - **Default:** Entire document
   </APIItem>
-</APIParameters>
+</APIOptions>
+</API>
 
-### tf.ai.removeNodes()
+### `tf.ai.removeNodes`
 
 Removes nodes that have the AI mark.
 
-<APIParameters>
-  <APIItem name="options" type="object" optional>
-    <APISubList>
-      <APISubListItem parent="options" name="at" type="Path" optional>
-        Path to remove nodes from. Defaults to entire document.
-      </APISubListItem>
-    </APISubList>
+<API name="tf.ai.removeNodes">
+<APIOptions type="RemoveNodesOptions">
+  <APIItem name="at" type="Path" optional>
+    Path to remove nodes from.
+    - **Default:** Entire document
   </APIItem>
-</APIParameters>
+</APIOptions>
+</API>
 
-### tf.ai.undo()
+### `tf.ai.undo`
 
 Special undo operation for AI changes:
-
 - Undoes the last operation if it was AI-generated
 - Removes the redo stack entry to prevent redoing AI operations
 
-### useAIChatEditor
+### `useAIChatEditor`
 
 A hook that registers an editor in the AI chat plugin, and deserializes markdown content with block-level memoization.
 
+<API name="useAIChatEditor">
 <APIParameters>
-<APIItem name="editor" type="PlateEditor">
-The editor to register in the AI chat plugin.
-</APIItem>
-<APIItem name="content" type="string">
-The markdown content to deserialize into the editor.
-</APIItem>
-<APIItem name="options" type="object" optional>
-<APISubList>
-<APISubListItem parent="options" name="memoize" type="boolean" optional>
-Enable block-level memoization with `_memo` property. Defaults to true.
-</APISubListItem>
-<APISubListItem parent="options" name="parser" type="ParseMarkdownBlocksOptions" optional>
-Options for the markdown token parser. Can filter out specific token types.
-</APISubListItem>
-<APISubListItem parent="options" name="processor" type="(processor: Processor) => Processor" optional>
-Function to customize the markdown processor.
-</APISubListItem>
-</APISubList>
-</APIItem>
+  <APIItem name="content" type="string">
+    The markdown content to deserialize into the editor.
+  </APIItem>
+  <APIItem name="options" type="object" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="memoize" type="boolean" optional>
+        Enable block-level memoization with `_memo` property.
+        - **Default:** `true`
+      </APISubListItem>
+      <APISubListItem parent="options" name="parser" type="ParseMarkdownBlocksOptions" optional>
+        Options for the markdown token parser. Can filter out specific token types.
+      </APISubListItem>
+      <APISubListItem parent="options" name="processor" type="(processor: Processor) => Processor" optional>
+        Function to customize the markdown processor.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
 </APIParameters>
 
 ```tsx
@@ -489,3 +485,4 @@ const AIChatEditor = ({ content }: { content: string }) => {
   return <Editor editor={aiEditor} />;
 };
 ```
+</API>

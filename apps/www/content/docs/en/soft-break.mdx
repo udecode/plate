@@ -8,7 +8,7 @@ title: Soft Break
 
 ## Features
 
-- Allows insertion of line breaks within a text block without starting a new block.
+- Allows insertion of line breaks within a text block without starting a new block
 
 </PackageInfo>
 
@@ -48,14 +48,17 @@ const plugins = [
 
 <KeyTable>
   <KeyTableItem hotkey="Shift + Enter">
-    Insert a line break within a block of text without starting a new block.
+    Insert a line break within a block of text without starting a new block
   </KeyTableItem>
 </KeyTable>
 
 ## Plugins
 
-### SoftBreakPlugin
+### `SoftBreakPlugin`
 
+Plugin for inserting line breaks within text blocks.
+
+<API name="SoftBreakPlugin">
 <APIOptions>
 
 <APIItem name="rules" type="object[]" optional>
@@ -70,3 +73,4 @@ Filter options to determine the block types where the rule applies.
 </APISubList>
 </APIItem>
 </APIOptions>
+</API>

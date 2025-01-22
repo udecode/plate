@@ -58,8 +58,9 @@ const plugins = [
 
 ## Plugins
 
-### CaptionPlugin
+### `CaptionPlugin`
 
+<API name="CaptionPlugin">
 <APIOptions>
   <APIItem name="plugins" type="string[]" required>
     The plugin keys of the blocks that have caption.
@@ -77,79 +78,72 @@ const plugins = [
     Whether the caption is visible.
   </APIItem>
 </APIOptions>
+</API>
 
-## API
+## Types
 
-### TCaptionElement
+### `TCaptionElement`
 
-<APIAttributes>
 Extends `TElement`.
 
-<APIItem name="caption" type="Descendant[]" optional>
-Caption value.
-</APIItem>
+<API name="TCaptionElement">
+<APIAttributes>
+  <APIItem name="caption" type="Descendant[]" optional>
+    Caption value.
+  </APIItem>
 </APIAttributes>
+</API>
 
-## API Components
+## Components
 
-### Caption
+### `<Caption>`
 
+<API name="Caption">
 <APIProps>
   <APIItem name="options" type="object" optional>
-    <APISubList>
-      <APISubListItem parent="options" name="readOnly" type="boolean" optional>
-        A boolean value indicating whether the caption component is in read-only
-        mode.
-      </APISubListItem>
-    </APISubList>
+    Options for the caption component.
   </APIItem>
   <APIItem name="state" type="object" optional>
+    State for the caption component.
     <APISubList>
-      <APISubListItem
-        parent="state"
-        name="captionString"
-        type="string"
-        optional
-      >
+      <APISubListItem parent="state" name="captionString" type="string" optional>
         The string representing the caption.
       </APISubListItem>
       <APISubListItem parent="state" name="selected" type="boolean" optional>
-        A boolean value indicating whether the caption component is selected.
+        Whether the caption component is selected.
       </APISubListItem>
       <APISubListItem parent="state" name="readOnly" type="boolean" optional>
-        A boolean value indicating whether the caption component is in read-only
-        mode.
+        Whether the caption component is in read-only mode.
       </APISubListItem>
     </APISubList>
   </APIItem>
+  
+  <APIOptions type="object">
+  <APIItem name="readOnly" type="boolean" optional>
+    Whether the caption component is in read-only mode.
+  </APIItem>
+</APIOptions>
 </APIProps>
+</API>
 
-### CaptionTextarea
+### `<CaptionTextarea>`
 
+<API name="CaptionTextarea">
 <APIProps>
-  <APIItem name="state">
+  <APIItem name="state" type="object">
+    State for the caption textarea.
     <APISubList>
       <APISubListItem parent="state" name="textareaRef" type="Ref">
-        A reference to the `textarea` element associated with the caption
-        component.
+        Reference to the textarea element.
       </APISubListItem>
-      <APISubListItem
-        parent="state"
-        name="captionValue"
-        type="TextareaAutosizeProps['value']"
-      >
-        The value of the caption displayed in the `textarea`.
+      <APISubListItem parent="state" name="captionValue" type="TextareaAutosizeProps['value']">
+        The value of the caption displayed in the textarea.
       </APISubListItem>
-      <APISubListItem
-        parent="state"
-        name="setCaptionValue"
-        type="(value: TextareaAutosizeProps['value']) => void"
-      >
-        `captionValue` setter.
+      <APISubListItem parent="state" name="setCaptionValue" type="(value: TextareaAutosizeProps['value']) => void">
+        Function to update the caption value.
       </APISubListItem>
       <APISubListItem parent="state" name="readOnly" type="boolean">
-        A boolean value indicating whether the caption component is in read-only
-        mode.
+        Whether the caption component is in read-only mode.
       </APISubListItem>
       <APISubListItem parent="state" name="element" type="TCaptionElement">
         The caption element.
@@ -157,3 +151,4 @@ Caption value.
     </APISubList>
   </APIItem>
 </APIProps>
+</API>
