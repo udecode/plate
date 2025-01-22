@@ -56,7 +56,7 @@
   },
   "devDependencies": {
     "@udecode/plate-combobox": "42.2.4",
-    "ai": "^3.4.10"
+    "ai": "^3.4.33"
   },
   "peerDependencies": {
     "@udecode/plate": ">=42.0.3",

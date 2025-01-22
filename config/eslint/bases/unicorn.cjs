@@ -13,6 +13,7 @@ module.exports = {
   ],
   plugins: ['unicorn'],
   rules: {
+    'unicorn/prefer-global-this': 'off',
     'unicorn/consistent-destructuring': 'off',
     'unicorn/consistent-function-scoping': [
       'error',

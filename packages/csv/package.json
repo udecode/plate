@@ -47,10 +47,10 @@
   },
   "dependencies": {
     "@udecode/plate-table": "42.2.4",
-    "papaparse": "^5.4.1"
+    "papaparse": "^5.5.1"
   },
   "devDependencies": {
-    "@types/papaparse": "^5.3.14",
+    "@types/papaparse": "^5.3.15",
     "@udecode/plate": "workspace:^"
   },
   "peerDependencies": {

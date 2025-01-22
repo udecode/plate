@@ -27,6 +27,7 @@ module.exports = {
       'error',
       {
         whitelist: [
+          'scrollbar-hide',
           'ignore-click-outside/toolbar',
           'chunk-mode',
           'preview',
