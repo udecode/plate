@@ -9,7 +9,7 @@ import {
 } from '@udecode/plate';
 
 import type { UseDropNodeOptions } from '../hooks';
-import type { ElementDragItemNode } from '../types';
+import type { DragItemNode, ElementDragItemNode } from '../types';
 
 import { getHoverDirection } from '../utils';
 
@@ -24,7 +24,7 @@ export const getDropPath = (
     nodeRef,
     orientation = 'vertical',
   }: {
-    dragItem: ElementDragItemNode;
+    dragItem: DragItemNode;
     monitor: DropTargetMonitor;
   } & Pick<
     UseDropNodeOptions,
@@ -41,29 +41,35 @@ export const getDropPath = (
 
   if (!direction) return;
 
-  let dragPath = editor.api.findPath(dragItem.element);
+  let dragEntry: NodeEntry<TElement> | undefined;
+  let dropEntry: NodeEntry<TElement> | undefined;
 
-  const dragEntry: NodeEntry<TElement> | undefined = dragPath
-    ? [dragItem.element, dragPath]
-    : editor.api.node<TElement>({ id: dragItem.id, at: [] });
+  if ('element' in dragItem) {
+    const dragPath = editor.api.findPath(dragItem.element);
+    const hoveredPath = editor.api.findPath(element);
 
-  if (!dragEntry) return;
+    if (!dragPath || !hoveredPath) return;
 
-  let hoveredPath = editor.api.findPath(element);
-
-  const dropEntry: NodeEntry<TElement> | undefined = hoveredPath
-    ? [element, hoveredPath]
-    : editor.api.node<TElement>({ id: element.id as string, at: [] });
-
+    dragEntry = [dragItem.element, dragPath];
+    dropEntry = [element, hoveredPath];
+  } else {
+    dropEntry = editor.api.node<TElement>({ id: element.id as string, at: [] });
+  }
   if (!dropEntry) return;
-  if (canDropNode && !canDropNode({ dragEntry, dragItem, dropEntry, editor })) {
+  if (
+    canDropNode &&
+    dragEntry &&
+    !canDropNode({ dragEntry, dragItem, dropEntry, editor })
+  ) {
     return;
   }
 
   let dropPath: Path | undefined;
 
-  if (!dragPath) dragPath = dragEntry[1];
-  if (!hoveredPath) hoveredPath = dropEntry[1];
+  // if drag from file system use [] as default path
+  const dragPath = dragEntry?.[1] ?? [];
+  const hoveredPath = dropEntry[1];
+
   // Treat 'right' like 'bottom' (after hovered)
   // Treat 'left' like 'top' (before hovered)
   if (direction === 'bottom' || direction === 'right') {

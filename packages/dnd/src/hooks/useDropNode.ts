@@ -98,7 +98,7 @@ export const useDropNode = (
       if (!(dragItem as ElementDragItemNode).id) {
         const result = getDropPath(editor, {
           canDropNode,
-          dragItem: dragItem as any,
+          dragItem: dragItem,
           element,
           monitor,
           nodeRef,
