@@ -228,11 +228,13 @@ Plugin for block selection functionality.
 
 Adds one or more blocks to the selection.
 
+<API name="add">
 <APIParameters>
   <APIItem name="id" type="string | string[]">
     The ID(s) of the block(s) to be selected.
   </APIItem>
 </APIParameters>
+</API>
 
 ### editor.api.blockSelection.clear
 
@@ -242,11 +244,13 @@ Resets the set of selected IDs to an empty set.
 
 Removes one or more blocks from the selection.
 
+<API name="delete">
 <APIParameters>
   <APIItem name="id" type="string | string[]">
     The ID(s) of the block(s) to remove from selection.
   </APIItem>
 </APIParameters>
+</API>
 
 ### editor.api.blockSelection.deselect
 
@@ -260,11 +264,12 @@ Focuses the block selection shadow input. This input handles copy, delete, and p
 
 Gets the selected blocks in the editor.
 
+<API name="getNodes">
 <APIReturns>
   <APIItem type="NodeEntry[]">
     An array of selected block entries.
   </APIItem>
-</APIOptions>
+</APIReturns>
 </API>
 
 ### `editor.api.blockSelection.getNodes`
@@ -279,6 +284,7 @@ Gets the selected blocks in the editor.
 
 Checks if one or more blocks are selected.
 
+<API name="has">
 <APIParameters>
   <APIItem name="id" type="string | string[]">
     The ID(s) of the block(s) to check.
@@ -287,9 +293,10 @@ Checks if one or more blocks are selected.
 
 <APIReturns>
   <APIItem type="boolean">
-    Returns true if all specified blocks are selected.
+    Whether the block(s) are selected.
   </APIItem>
 </APIReturns>
+</API>
 
 ### editor.api.blockSelection.selectAll
 
@@ -299,11 +306,13 @@ Selects all selectable blocks in the editor.
 
 Sets the selection to one or more blocks, clearing any existing selection.
 
+<API name="set">
 <APIParameters>
   <APIItem name="id" type="string | string[]">
     The ID(s) of the block(s) to be selected.
   </APIItem>
 </APIParameters>
+</API>
 
 ## Transforms
 
