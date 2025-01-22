@@ -17,6 +17,7 @@ import type { Editor, Value } from './interfaces/editor/editor-type';
 import {
   type EditorApi,
   type LegacyEditorMethods,
+  NodeApi,
   RangeApi,
 } from './interfaces';
 import { blur } from './internal/dom-editor/blur';
@@ -297,6 +298,7 @@ export const createEditor = <V extends Value>({
     isCollapsed: () => RangeApi.isCollapsed(editor.selection),
     isComposing: bindFirst(isComposing, editor),
     isEditorEnd: bindFirst(isEditorEnd, editor),
+    isEditor: (value) => NodeApi.isEditor(value),
     isExpanded: () => RangeApi.isExpanded(editor.selection),
     isFocused: bindFirst(isFocused, editor),
     isMerging: bindFirst(HistoryApi.isMerging, editor as any) as any,
