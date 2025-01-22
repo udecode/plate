@@ -423,7 +423,6 @@ For older changelogs, see https://github.com/udecode/plate/blob/main/docs
     - `isComposing` -> `editor.api.isComposing`
     - `isDocumentEnd` -> `editor.api.isEditorEnd`
     - `isEdgePoint` -> `editor.api.isEdge`
-    - `isEditor` -> `editor.api.isEditor`
     - `isEditorEmpty` -> `editor.api.isEmpty()`
     - `isEditorFocused` -> `editor.api.isFocused`
     - `isEditorNormalizing` -> `editor.api.isNormalizing`
@@ -523,6 +522,7 @@ For older changelogs, see https://github.com/udecode/plate/blob/main/docs
     - `hasSingleChild` -> `NodeApi.hasSingleChild`
     - `isAncestor` -> `NodeApi.isAncestor`
     - `isDescendant` -> `NodeApi.isDescendant`
+    - `isEditor` -> `NodeApi.isEditor`
     - `isNode` -> `NodeApi.isNode`
     - `isNodeList` -> `NodeApi.isNodeList`
     - `nodeMatches` -> `NodeApi.matches`
