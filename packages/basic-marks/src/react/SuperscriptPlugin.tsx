@@ -8,7 +8,7 @@ export const SuperscriptPlugin = toPlatePlugin(
   ({ editor, type }) => ({
     shortcuts: {
       toggleSuperscript: {
-        keys: [[Key.Mod, '.']],
+        keys: [[Key.Mod, 'period']],
         preventDefault: true,
         handler: () => {
           editor.tf.toggleMark(type, {
