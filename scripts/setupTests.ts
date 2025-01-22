@@ -18,3 +18,21 @@ jest.mock('@udecode/plate-core', () => ({
   __esModule: true,
   ...jest.requireActual('@udecode/plate-core'),
 }));
+
+// Add mock for lucide-react
+jest.mock('lucide-react', () => {
+  return new Proxy(
+    {
+      __esModule: true,
+    },
+    {
+      get: function (_, prop) {
+        if (prop === '__esModule') return true;
+        // Return a mock component for any icon request
+        return function MockIcon() {
+          return null;
+        };
+      },
+    }
+  );
+});

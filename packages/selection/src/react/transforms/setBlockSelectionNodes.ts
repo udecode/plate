@@ -43,7 +43,7 @@ export const setBlockSelectionIndent = (
       const currentIndent = prevIndent + indent;
 
       editor.tf.setNodes(
-        { indent: currentIndent < 0 ? 0 : currentIndent },
+        { indent: Math.max(currentIndent, 0) },
         {
           ...options,
           at: path,

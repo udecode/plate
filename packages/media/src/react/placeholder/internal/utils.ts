@@ -86,5 +86,5 @@ function populateMaps(
 function extname(path: string) {
   const index = path.lastIndexOf('.');
 
-  return index < 0 ? '' : path.slice(Math.max(0, index));
+  return index === -1 ? '' : path.slice(Math.max(0, index));
 }
