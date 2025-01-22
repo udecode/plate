@@ -214,12 +214,17 @@ An interface for autoformat rules for block mode.
 <APIAttributes>
   <APIItem name="mode" type="'block'">
     Block mode: set block type or custom format.
+
+    - Text: insert text.
+    - Block: set block type or custom format. 
+    - Mark: insert mark(s) between matches.
   </APIItem>
   <APIItem name="match" type="string | string[]">
     Pattern to match for the autoformat rule.
   </APIItem>
   <APIItem name="type" type="string" optional>
-    Block type to set. Ignored if `format` is defined.
+    - For `mode: 'block'`: set block type. If `format` is defined, this field is ignored.
+    - For `mode: 'mark'`: Mark(s) to add.
   </APIItem>
   <APIItem name="triggerAtBlockStart" type="boolean" optional>
     Whether trigger should be at block start.

@@ -44,7 +44,7 @@ const plugins = [
 ];
 ```
 
-### Exclude blocks from selection
+### `Exclude blocks from selection`
 
 You can exclude certain plugins from block selection using:
 
@@ -183,12 +183,12 @@ Plugin for block selection functionality.
   <APIItem name="areaOptions" type="PartialSelectionOptions" optional>
     Options for the selection area.
 
-    ```ts
+```ts
 {
-  boundaries: [`#${editor.uid}`],
-  container: [`#${editor.uid}`],
-  selectables: [`#${editor.uid} .slate-selectable`],
-  selectionAreaClass: 'slate-selection-area',
+    boundaries: [`#${editor.uid}`],
+    container: [`#${editor.uid}`],
+    selectables: [`#${editor.uid} .slate-selectable`],
+    selectionAreaClass: 'slate-selection-area',
 }
 ```
   </APIItem>
@@ -224,7 +224,7 @@ Plugin for block selection functionality.
 
 ## API
 
-### editor.api.blockSelection.add
+### `editor.api.blockSelection.add`
 
 Adds one or more blocks to the selection.
 
@@ -236,11 +236,11 @@ Adds one or more blocks to the selection.
 </APIParameters>
 </API>
 
-### editor.api.blockSelection.clear
+### `editor.api.blockSelection.clear`
 
 Resets the set of selected IDs to an empty set.
 
-### editor.api.blockSelection.delete
+### `editor.api.blockSelection.delete`
 
 Removes one or more blocks from the selection.
 
@@ -252,27 +252,17 @@ Removes one or more blocks from the selection.
 </APIParameters>
 </API>
 
-### editor.api.blockSelection.deselect
+### `editor.api.blockSelection.deselect`
 
 Deselects all blocks and sets the `isSelecting` flag to false.
 
-### editor.api.blockSelection.focus
+### `editor.api.blockSelection.focus`
 
 Focuses the block selection shadow input. This input handles copy, delete, and paste events for selected blocks.
 
-### editor.api.blockSelection.getNodes
+### `editor.api.blockSelection.getNodes`
 
 Gets the selected blocks in the editor.
-
-<API name="getNodes">
-<APIReturns>
-  <APIItem type="NodeEntry[]">
-    An array of selected block entries.
-  </APIItem>
-</APIReturns>
-</API>
-
-### `editor.api.blockSelection.getNodes`
 
 <API name="getNodes">
 <APIReturns type="NodeEntry[]">
@@ -280,7 +270,7 @@ Gets the selected blocks in the editor.
 </APIReturns>
 </API>
 
-### editor.api.blockSelection.has
+### `editor.api.blockSelection.has`
 
 Checks if one or more blocks are selected.
 
@@ -298,11 +288,11 @@ Checks if one or more blocks are selected.
 </APIReturns>
 </API>
 
-### editor.api.blockSelection.selectAll
+### `editor.api.blockSelection.selectAll`
 
 Selects all selectable blocks in the editor.
 
-### editor.api.blockSelection.set
+### `editor.api.blockSelection.set`
 
 Sets the selection to one or more blocks, clearing any existing selection.
 
@@ -442,14 +432,6 @@ Initialize and manage selection area functionality.
 
 Moves the selection up or down to the next selectable block.
 
-<API name="moveSelection">
-<APIParameters>
-  <APIItem name="direction" type="'up' | 'down'">
-    Direction to move selection.
-  </APIItem>
-</APIParameters>
-</API>
-
 When moving up:
 - Gets the previous selectable block from the top-most selected block
 - Sets it as the new anchor
@@ -459,17 +441,17 @@ When moving down:
 - Sets it as the new anchor
 - Clears previous selection and selects only this block
 
-### `editor.api.blockSelection.shiftSelection`
-
-Expands or shrinks the selection based on the anchor block.
-
-<API name="shiftSelection">
+<API name="moveSelection">
 <APIParameters>
   <APIItem name="direction" type="'up' | 'down'">
-    Direction to expand/shrink selection.
+    Direction to move selection.
   </APIItem>
 </APIParameters>
 </API>
+
+### `editor.api.blockSelection.shiftSelection`
+
+Expands or shrinks the selection based on the anchor block.
 
 For SHIFT + DOWN:
 - If anchor is top-most: Expands down by adding block below bottom-most
@@ -480,3 +462,12 @@ For SHIFT + UP:
 The anchor block always remains selected. If no anchor is set, it defaults to:
 - Bottom-most block for SHIFT + UP
 - Top-most block for SHIFT + DOWN
+
+<API name="shiftSelection">
+<APIParameters>
+  <APIItem name="direction" type="'up' | 'down'">
+    Direction to expand/shrink selection.
+  </APIItem>
+</APIParameters>
+</API>
+

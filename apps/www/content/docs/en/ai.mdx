@@ -283,7 +283,6 @@ Enables chat operations and streaming text generation in the editor.
   </APIItem>
   <APIItem name="systemTemplate" type="(props: EditorPromptParams) => string | void" optional>
     Template for system messages. Supports same placeholders as `promptTemplate`.
-    - **Default:** `undefined`
   </APIItem>
 </APIOptions>
 </API>
@@ -294,39 +293,31 @@ Enables chat operations and streaming text generation in the editor.
 
 Accepts the current AI suggestion.
 
-<API name="api.aiChat.accept">
-<APIReturns type="void">
-  <APIItem name="behavior" type="string">
-    - Removes AI marks from the content
-    - Hides the AI chat interface
-    - Focuses the editor
-  </APIItem>
-</APIReturns>
-</API>
+- Removes AI marks from the content
+- Hides the AI chat interface
+- Focuses the editor
 
 ### `api.aiChat.insertBelow`
 
 Inserts AI content below the current block.
 
-<API name="api.aiChat.insertBelow">
+Handles both block selection and normal selection modes:
+- In block selection: Inserts after the last selected block
+- In normal selection: Inserts after the current block
+
+<API name="insertBelow">
 <APIParameters>
   <APIItem name="sourceEditor" type="PlateEditor">
     Editor containing the content to insert.
   </APIItem>
 </APIParameters>
-
-<APIReturns type="void">
-  Handles both block selection and normal selection modes:
-  - In block selection: Inserts after the last selected block
-  - In normal selection: Inserts after the current block
-</APIReturns>
 </API>
 
 ### `api.aiChat.replaceSelection`
 
 Replaces the current selection with AI content.
 
-<API name="api.aiChat.replaceSelection">
+<API name="replaceSelection">
 <APIParameters>
   <APIItem name="sourceEditor" type="PlateEditor">
     Editor containing the content to replace with.
@@ -357,7 +348,7 @@ Replaces the current selection with AI content.
 
 Resets the chat state.
 
-<API name="api.aiChat.reset">
+<API name="reset">
 <APIReturns type="void">
   <APIItem name="behavior" type="string">
     - Stops any ongoing generation
@@ -371,7 +362,7 @@ Resets the chat state.
 
 Submits a prompt to generate AI content.
 
-<API name="api.aiChat.submit">
+<API name="submit">
 <APIOptions type="SubmitOptions">
   <APIItem name="mode" type="'chat' | 'insert'" optional>
     Mode to use.
