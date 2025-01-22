@@ -41,17 +41,19 @@ export const getDropPath = (
 
   if (!direction) return;
 
-  const dragPath = editor.api.findPath(dragItem.element);
+  let dragPath = editor.api.findPath(dragItem.element);
 
-  if (!dragPath) return;
+  const dragEntry: NodeEntry<TElement> | undefined = dragPath
+    ? [dragItem.element, dragPath]
+    : editor.api.node<TElement>({ id: dragItem.id, at: [] });
 
-  const dragEntry: NodeEntry<TElement> = [dragItem.element, dragPath];
+  if (!dragEntry) return;
 
-  const hoveredPath = editor.api.findPath(element);
+  let hoveredPath = editor.api.findPath(element);
 
-  if (!hoveredPath) return;
-
-  const dropEntry: NodeEntry<TElement> = [element, hoveredPath];
+  const dropEntry: NodeEntry<TElement> | undefined = hoveredPath
+    ? [element, hoveredPath]
+    : editor.api.node<TElement>({ id: element.id as string, at: [] });
 
   if (!dropEntry) return;
   if (canDropNode && !canDropNode({ dragEntry, dragItem, dropEntry, editor })) {
@@ -60,6 +62,8 @@ export const getDropPath = (
 
   let dropPath: Path | undefined;
 
+  if (!dragPath) dragPath = dragEntry[1];
+  if (!hoveredPath) hoveredPath = dropEntry[1];
   // Treat 'right' like 'bottom' (after hovered)
   // Treat 'left' like 'top' (before hovered)
   if (direction === 'bottom' || direction === 'right') {
