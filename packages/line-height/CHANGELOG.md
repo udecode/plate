@@ -1,5 +1,7 @@
 # @udecode/plate-line-height
 
+## 43.0.0
+
 ## 42.1.1
 
 ### Patch Changes

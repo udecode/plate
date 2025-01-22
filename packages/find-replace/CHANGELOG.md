@@ -1,5 +1,7 @@
 # @udecode/plate-find-replace
 
+## 43.0.0
+
 ## 42.0.0
 
 ## 41.0.0

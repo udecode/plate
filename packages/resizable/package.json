@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-resizable",
-  "version": "42.0.0",
+  "version": "43.0.0",
   "description": "Plate React resize components",
   "keywords": [
     "plate",
@@ -46,7 +46,7 @@
     "@udecode/plate": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate": ">=42.2.5",
+    "@udecode/plate": ">=43.0.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

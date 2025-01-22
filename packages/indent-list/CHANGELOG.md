@@ -1,5 +1,7 @@
 # @udecode/plate-indent-list
 
+## 43.0.0
+
 ## 42.2.2
 
 ## 42.1.1
