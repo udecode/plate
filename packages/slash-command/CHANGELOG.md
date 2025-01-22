@@ -1,5 +1,7 @@
 # @udecode/plate-slash-command
 
+## 43.0.0
+
 ## 42.2.4
 
 ## 42.0.0

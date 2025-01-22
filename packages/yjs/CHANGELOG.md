@@ -1,5 +1,11 @@
 # @udecode/plate-yjs
 
+## 43.0.0
+
+### Minor Changes
+
+- [#4019](https://github.com/udecode/plate/pull/4019) by [@zbeyens](https://github.com/zbeyens) – Upgrade dependencies to latest
+
 ## 42.0.0
 
 ## 41.0.0

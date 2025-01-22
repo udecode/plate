@@ -1,5 +1,7 @@
 # @udecode/plate-heading
 
+## 43.0.0
+
 ## 42.2.2
 
 ### Patch Changes
