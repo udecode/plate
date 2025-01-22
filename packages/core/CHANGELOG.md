@@ -1,5 +1,7 @@
 # @udecode/plate-core
 
+## 42.2.5
+
 ## 42.2.2
 
 ### Patch Changes
