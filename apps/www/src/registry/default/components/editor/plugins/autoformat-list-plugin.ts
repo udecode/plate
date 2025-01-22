@@ -199,7 +199,6 @@ export const autoformatBlocks: AutoformatRule[] = [
     match: '```',
     mode: 'block',
     preFormat,
-    triggerAtBlockStart: false,
     type: CodeBlockPlugin.key,
   },
   {

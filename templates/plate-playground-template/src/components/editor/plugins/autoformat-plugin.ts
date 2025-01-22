@@ -175,7 +175,6 @@ export const autoformatBlocks: AutoformatRule[] = [
     },
     match: '```',
     mode: 'block',
-    triggerAtBlockStart: false,
     type: CodeBlockPlugin.key,
   },
   {
