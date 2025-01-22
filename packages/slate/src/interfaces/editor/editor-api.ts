@@ -458,9 +458,6 @@ export type EditorApi<V extends Value = Value> = {
   /** Check if the selection is collapsed */
   isCollapsed: () => boolean;
 
-  /** Check if a value is an `Editor` object. */
-  isEditor: (value: any) => boolean;
-
   /** Check if selection is at editor end */
   isEditorEnd: () => boolean;
 

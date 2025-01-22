@@ -2,4 +2,4 @@
 '@udecode/slate': patch
 ---
 
-add missing `editor.api.isEditor` method
+update migration guide for `isEditor` -> `NodeApi.isEditor`
