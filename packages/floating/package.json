@@ -44,8 +44,8 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@floating-ui/core": "^1.6.7",
-    "@floating-ui/react": "^0.26.23"
+    "@floating-ui/core": "^1.6.9",
+    "@floating-ui/react": "^0.27.3"
   },
   "devDependencies": {
     "@udecode/plate": "workspace:^"

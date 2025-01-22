@@ -44,7 +44,7 @@ export const shiftSelection = (
   // Find the anchor block within the current selection array.
   const anchorIndex = blocks.findIndex(([node]) => node.id === anchorId);
 
-  if (anchorIndex < 0) {
+  if (anchorIndex === -1) {
     // If anchor not found in the current selection, fallback:
     setOption('anchorId', bottomNode.id);
 

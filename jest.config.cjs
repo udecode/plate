@@ -61,7 +61,7 @@ module.exports = {
   },
   transformIgnorePatterns: [
     '/node_modules/(?!(' +
-      'react-dnd|dnd-core|@react-dnd|react-dnd-html5-backend|react-tweet|unified' +
+      'cheerio|react-dnd|dnd-core|@react-dnd|react-dnd-html5-backend|react-tweet|unified' +
       '|remark-.*' +
       '|mdast-.*' +
       '|micromark.*' +
