@@ -98,6 +98,8 @@ Returns an array of blocks that have an ID.
 
 ### `withDraggable`
 
+Enhances a component with draggable behavior.
+
 <API name="withDraggable">
 <APIParameters>
   <APIItem name="Draggable" type="React.FC">
@@ -134,19 +136,19 @@ A wrapper component for the `Scroller` component that is conditionally rendered 
 <API name="DndScroller">
 <APIState>
   <APIItem name="enabled" type="boolean">
-    Whether the scroll area is enabled.
+    A flag indicating whether the scroll area is enabled. If set to false, the scroll functionality is disabled.
   </APIItem>
   <APIItem name="height" type="number">
     Height of the scrollable area in pixels.
   </APIItem>
   <APIItem name="zIndex" type="number">
-    Stack order of the scrollable area.
+    The stack order of the scrollable area. An element with a higher z-index is drawn in front of an element with a lower one.
   </APIItem>
   <APIItem name="minStrength" type="number">
-    Minimum strength (speed) of scrolling.
+    The minimum strength (speed) of the scrolling action. Higher values will make the scroll action more sensitive.
   </APIItem>
   <APIItem name="strengthMultiplier" type="number">
-    Multiplier for scroll speed.
+    A multiplier that increases the scroll speed. Higher values will result in faster scrolling.
   </APIItem>
   <APIItem name="containerRef" type="RefObject<any>">
     Reference to the scrollable container DOM element.
@@ -180,7 +182,7 @@ A custom hook that combines the `useDragNode` and `useDropNode` hooks to enable 
     - **Default:** `'vertical'`
   </APIItem>
   <APIItem name="canDropNode" type="(args: { dragEntry: NodeEntry; dragItem: DragItemNode; dropEntry: NodeEntry; editor: PlateEditor }) => boolean" optional>
-    Callback to determine if a node can be dropped.
+    Callback to determine if a node can be dropped at the current location.
   </APIItem>
   <APIItem name="preview" type="previewOptions" optional>
     The preview options for the dragged node.
@@ -215,8 +217,8 @@ A custom hook that enables dragging of a node from the editor using the `useDrag
 
 <API name="useDragNode">
 <APIOptions type="UseDragNodeOptions">
-  <APIItem name="id" type="string">
-    Unique ID of the node to be dragged.
+  <APIItem name="element" type="TElement">
+    The node to be dragged.
   </APIItem>
   <APIItem name="item" type="DragObject | DragObjectFactory<DragObject>" optional>
     Drag object or factory function that returns it.
@@ -268,8 +270,8 @@ A custom hook that enables dropping a node on the editor. It uses the `useDrop` 
   <APIItem name="nodeRef" type="any">
     Reference to the node being dragged.
   </APIItem>
-  <APIItem name="id" type="string">
-    ID of the node.
+  <APIItem name="element" type="TElement">
+    The node to which the drop line is attached.
   </APIItem>
   <APIItem name="dropLine" type="string">
     Current value of the drop line.
@@ -286,6 +288,8 @@ A custom hook that enables dropping a node on the editor. It uses the `useDrop` 
 </API>
 
 ### `useDropLine`
+
+Returns the current drop line state for an element.
 
 <API name="useDropLine">
 <APIOptions type="object">

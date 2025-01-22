@@ -83,7 +83,7 @@ Follow the backend instructions in [Hocuspocus docs](https://tiptap.dev/hocuspoc
 <API name="YjsPlugin">
 <APIOptions>
   <APIItem name="cursorOptions" type="WithCursorsOptions<TCursorData>" optional>
-    Configuration for handling cursors in the editor.
+    Configuration for handling cursors in the editor. These options are passed to the withCursors function.
 
     See [WithCursorsOptions API](https://docs.slate-yjs.dev/api/slate-yjs-core/cursor-plugin#withcursors).
   </APIItem>
@@ -93,12 +93,12 @@ Follow the backend instructions in [Hocuspocus docs](https://tiptap.dev/hocuspoc
     See [HocuspocusProviderConfiguration API](https://tiptap.dev/hocuspocus/provider/configuration).
   </APIItem>
   <APIItem name="yjsOptions" type="WithYjsOptions" optional>
-    Optional configuration for the Yjs integration.
+    Optional configuration for the Yjs integration. These options are passed to the withYjs function.
 
     See [WithYjsOptions API](https://docs.slate-yjs.dev/api/slate-yjs-core/yjs-plugin#withyjs).
   </APIItem>
   <APIItem name="disableCursors" type="boolean" optional>
-    Whether to disable the cursor feature in the editor.
+    A flag indicating whether to disable the cursor feature in the editor.
   </APIItem>
 </APIOptions>
 </API>
@@ -126,26 +126,30 @@ Higher-order function that wraps a Plate editor with Yjs support, allowing for r
 
 ### `PlateYjsEditorProps`
 
+Extends `YjsEditorProps` and [CursorEditor](https://docs.slate-yjs.dev/api/slate-yjs-core/cursor-plugin#cursoreditor).
+
 <API name="PlateYjsEditorProps">
 <APIAttributes>
-  <APIItem name="extends" type="YjsEditorProps & CursorEditor">
-    Base editor props types.
-  </APIItem>
-  <APIItem name="yjs" type="object">
-    Yjs-specific properties.
-  </APIItem>
-</APIAttributes>
 
-<APIOptions type="object">
-  <APIItem name="provider" type="HocuspocusProvider">
-    The Hocuspocus provider instance.
-  </APIItem>
-</APIOptions>
+<APIItem name="yjs" type="object">
+
+<APISubList>
+
+<APISubListItem parent="yjs" name="provider" type="HocuspocusProvider">
+
+The Hocuspocus provider instance.
+
+</APISubListItem>
+
+</APISubList>
+
+</APIItem>
+</APIAttributes>
 </API>
 
 ### `YHistoryEditorProps`
 
-See [YHistoryEditor API](https://docs.slate-yjs.dev/api/slate-yjs-core/history-plugin#yhistoryeditor).
+Extends `YjsEditorProps`, [YHistoryEditor](https://docs.slate-yjs.dev/api/slate-yjs-core/history-plugin#yhistoryeditor).
 
 ### `YjsEditorProps`
 

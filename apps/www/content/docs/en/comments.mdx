@@ -72,51 +72,31 @@ const editor = createPlateEditor({
 </APIOptions>
 </API>
 
-## Transforms
+## API
 
 ### `editor.tf.insert.comment`
 
-Insert a new comment mark.
+Insert a new comment mark at the current selection.
 
 ### `editor.api.comment.updateComment`
 
-Updates an existing comment.
+Updates an existing comment with new content or properties.
 
 ### `editor.api.comment.addRawComment`
 
-Adds a new raw comment.
+Adds a new raw comment without any preprocessing.
 
 ### `editor.api.comment.addComment`
 
-Adds a new comment.
+Adds a new comment with proper formatting and validation.
 
 ### `editor.api.comment.removeComment`
 
-Removes a comment.
+Removes a comment and its associated marks from the editor.
 
 ### `editor.api.comment.resetNewCommentValue`
 
-Resets the value of a new comment.
-
-## Store State
-
-### `CommentStoreState`
-
-<API name="CommentStoreState">
-<APIState>
-  <APIItem name="id" type="string">
-    The unique ID of the comment.
-  </APIItem>
-  <APIItem name="isMenuOpen" type="boolean">
-    Whether the menu associated with this comment is open.
-  </APIItem>
-  <APIItem name="editingValue" type="Value | null">
-    The value currently being edited, or null if no editing in progress.
-  </APIItem>
-</APIState>
-</API>
-
-## Utils
+Resets the value of a new comment to its initial state.
 
 ### `findCommentNode`
 
@@ -305,6 +285,24 @@ Unsets comment nodes with the specified ID from the editor.
     The ID of the comment nodes to unset.
   </APIItem>
 </APIParameters>
+</API>
+
+## Types
+
+### `CommentStoreState`
+
+<API name="CommentStoreState">
+<APIState>
+  <APIItem name="id" type="string">
+    The unique ID of the comment.
+  </APIItem>
+  <APIItem name="isMenuOpen" type="boolean">
+    Whether the menu associated with this comment is open.
+  </APIItem>
+  <APIItem name="editingValue" type="Value | null">
+    The value currently being edited, or null if no editing in progress.
+  </APIItem>
+</APIState>
 </API>
 
 ## Components

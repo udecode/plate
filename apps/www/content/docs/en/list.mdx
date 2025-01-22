@@ -134,8 +134,8 @@ Plugin for list item content.
 
 Toggles a list in the editor.
 
-<API name="editor.tf.toggle.list">
-<APIOptions type="options">
+<API name="toggle.list">
+<APIOptions type="object">
   <APIItem name="type" type="string">
     Type of list to toggle.
   </APIItem>
@@ -145,12 +145,11 @@ Toggles a list in the editor.
 ### `getHighestEmptyList`
 
 Finds the highest end list that can be deleted. The path of the list should be different from `diffListPath`. If the highest end list has 2 or more items, returns `liPath`. It traverses up the parent lists until:
-
-- The list has less than 2 items.
-- Its path is not equal to `diffListPath`.
+- The list has less than 2 items
+- Its path is not equal to `diffListPath`
 
 <API name="getHighestEmptyList">
-<APIOptions type="options">
+<APIOptions type="object">
   <APIItem name="liPath" type="Path">
     Path of list item.
   </APIItem>
@@ -169,7 +168,7 @@ Finds the highest end list that can be deleted. The path of the list should be d
 Returns the nearest `li` and `ul`/`ol` wrapping node entries for a given path (`default = selection`).
 
 <API name="getListItemEntry">
-<APIOptions type="options">
+<APIOptions type="object">
   <APIItem name="at" type="Location | null" optional>
     Location to get entries from.
     - **Default:** `editor.selection`

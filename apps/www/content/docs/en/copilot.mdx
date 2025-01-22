@@ -171,15 +171,15 @@ Plugin for AI-powered text completion suggestions.
 
 ### `editor.api.copilot.accept()`
 
-Accepts the current suggestion.
+Accepts the current suggestion and applies it to the editor content.
 
 ### `editor.api.copilot.acceptNextWord()`
 
-Accepts the next word of the suggestion.
+Accepts only the next word of the current suggestion, allowing for granular acceptance of suggestions.
 
 ### `editor.api.copilot.reset()`
 
-Resets the plugin state:
+Resets the plugin state to its initial condition:
 
 - Aborts any ongoing API request
 - Clears the current completion
@@ -209,7 +209,7 @@ Sets suggestion text for a block.
 
 ### `editor.api.copilot.stop()`
 
-Stops ongoing suggestion requests:
+Stops ongoing suggestion requests and cleans up:
 
 - Cancels debounced trigger calls
 - Aborts current API request
@@ -217,4 +217,4 @@ Stops ongoing suggestion requests:
 
 ### `editor.api.copilot.triggerSuggestion()`
 
-Triggers a new suggestion request. Can be debounced based on plugin configuration.
+Triggers a new suggestion request. The request may be debounced based on the plugin configuration.

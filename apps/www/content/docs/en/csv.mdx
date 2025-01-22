@@ -42,13 +42,15 @@ const plugins = [
 <API name="CsvPlugin">
 <APIOptions>
   <APIItem name="errorTolerance" type="number" optional>
-    The tolerance for errors in the CSV data (percentage in decimal form).
-    - **Default:** `0.25` (25% of rows can contain errors)
+    The tolerance for errors in the CSV data, represented as a percentage in decimal form. This value is calculated as the ratio of errors to the total number of rows.
+
+    - **Default:** `0.25` (This indicates that up to 25% of the rows can contain errors.)
   </APIItem>
   <APIItem name="parseOptions" type="ParseConfig" optional>
-    Options for the PapaParse library.
-    - **Default:** `{ header: true }` (first row treated as header)
-    - See [PapaParse documentation](https://www.papaparse.com/docs#config)
+    Options to be passed to the PapaParse library for parsing CSV data.
+
+    - **Default:** `{ header: true }` (Indicating that the first row of the CSV data should be treated as a header.)
+    - See [PapaParse documentation](https://www.papaparse.com/docs#config) for more details about these options.
   </APIItem>
 </APIOptions>
 </API>
@@ -65,11 +67,11 @@ Takes a CSV (Comma Separated Values) string and converts it into a Slate compati
     The CSV data string to be deserialized.
   </APIItem>
   <APIItem name="errorTolerance" type="number" optional>
-    Percentage in decimal form for allowed errors (0 to ∞).
+    Percentage in decimal form, from 0 to ∞, 0 for no errors allowed. Percentage is based on number of errors compared to number of rows.
     - **Default:** `0.25`
   </APIItem>
   <APIItem name="parseOptions" type="ParseConfig">
-    Options for the PapaParse library.
+    Options to be passed to the PapaParse library for parsing CSV data.
     - **Default:** `{ header: true }`
     - See [PapaParse documentation](https://www.papaparse.com/docs#config)
   </APIItem>

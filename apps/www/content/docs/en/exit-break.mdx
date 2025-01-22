@@ -75,7 +75,11 @@ const plugins = [
         Hotkey to trigger exit break.
       </APISubListItem>
       <APISubListItem parent="rules" name="query" type="QueryNodeOptions & { start?: boolean; end?: boolean }" optional>
-        Conditions for exit break.
+        Object determining the conditions under which to exit.
+        
+        Extends QueryNodeOptions:
+        - `start`: Start of the block
+        - `end`: End of the block
       </APISubListItem>
       <APISubListItem parent="rules" name="level" type="number" optional>
         Path level where to exit.

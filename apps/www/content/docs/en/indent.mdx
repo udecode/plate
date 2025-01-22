@@ -102,17 +102,17 @@ Add offset to the indentation of the selected blocks.
 <API name="setIndent">
 <APIOptions type="SetIndentOptions">
   <APIItem name="offset" type="number" optional>
-    Indentation offset.
+    Indentation offset used in `(offset * element.indent) + unit`.
     - **Default:** `1`
   </APIItem>
   <APIItem name="getNodesOptions" type="EditorNodesOptions" optional>
     Options to get nodes to indent.
   </APIItem>
   <APIItem name="setNodesProps" type="object" optional>
-    Additional props to set on nodes.
+    Additional props to set on nodes to indent.
   </APIItem>
   <APIItem name="unsetNodesProps" type="string[]" optional>
-    Props to unset when indentation is 0.
+    Additional props to unset on nodes to indent.
     - **Default:** `[]`
   </APIItem>
 </APIOptions>
@@ -154,7 +154,7 @@ A behavior hook for the indent button component.
     Props for the indent button.
     <APISubList>
       <APISubListItem parent="props" name="onClick" type="function">
-        Handler to indent content and focus editor.
+        Callback to handle click event. Indents selected content and focuses editor.
       </APISubListItem>
     </APISubList>
   </APIItem>
@@ -171,7 +171,7 @@ A behavior hook for the outdent button component.
     Props for the outdent button.
     <APISubList>
       <APISubListItem parent="props" name="onClick" type="function">
-        Handler to outdent content and focus editor.
+        Callback to handle click event. Outdents selected content and focuses editor.
       </APISubListItem>
     </APISubList>
   </APIItem>

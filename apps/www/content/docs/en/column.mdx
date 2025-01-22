@@ -85,7 +85,7 @@ Insert a columnGroup with two empty columns.
 
 ### `insertColumn`
 
-Insert an empty column. You can set the width by options.width default is "33%"
+Insert an empty column.
 
 <API name="insertColumn">
 <APIOptions type="InsertNodesOptions & { width?: string }">
@@ -122,6 +122,10 @@ Move the middle column to the left or right.
 Convert a block into a column group layout or update an existing column group's layout.
 
 <API name="toggleColumnGroup">
+- If the target block is not a column group, wraps it in a new column group with the specified number of columns
+- If the target block is already a column group, updates its column layout using `setColumns`
+- The original content becomes the content of the first column
+- Additional columns are created with empty paragraphs
 <APIOptions type="object">
   <APIItem name="at" type="Location" optional>
     The location to toggle the column group at.
@@ -135,17 +139,19 @@ Convert a block into a column group layout or update an existing column group's 
 </APIOptions>
 </API>
 
-Behavior:
-- If the target block is not a column group, wraps it in a new column group with the specified number of columns
-- If the target block is already a column group, updates its column layout using `setColumns`
-- The original content becomes the content of the first column
-- Additional columns are created with empty paragraphs
-
 ### `setColumns`
 
 Update the column layout of an existing column group.
 
 <API name="setColumns">
+- When increasing columns:
+  - Keeps existing column content
+  - Adds new empty columns with specified widths
+- When decreasing columns:
+  - Merges content from removed columns into the last remaining column
+  - Updates widths of remaining columns
+- When keeping same number of columns:
+  - Only updates column widths
 <APIOptions type="object">
   <APIItem name="at" type="Path">
     The path to the column group element.
@@ -158,16 +164,6 @@ Update the column layout of an existing column group.
   </APIItem>
 </APIOptions>
 </API>
-
-Behavior:
-- When increasing columns:
-  - Keeps existing column content
-  - Adds new empty columns with specified widths
-- When decreasing columns:
-  - Merges content from removed columns into the last remaining column
-  - Updates widths of remaining columns
-- When keeping same number of columns:
-  - Only updates column widths
 
 
 ## Hooks

@@ -19,7 +19,7 @@ npm install @udecode/plate-playwright playwright
 
 ### Add PlaywrightPlugin
 
-Add `PlaywrightPlugin` to your editor to enable test utilities:
+In order for your Playwright tests to access and interact with the editor, you'll need to add `PlaywrightPlugin` to your editor:
 
 ```tsx
 const editor = createPlateEditor({
@@ -135,9 +135,9 @@ await setSelection(page, editorHandle, {
 await page.keyboard.type('Hello world!');
 ```
 
-## Working with Editor Methods
+## Imported queries and transforms
 
-You can't directly import queries or transforms into Playwright tests since they run outside the browser context. Instead:
+You may want to import a query or a transform such as `getBlockAbove` or `insertNodes` into your Playwright test and use it.
 
 Unfortunately, this is not possible. You can only interact directly with the `editor` instance inside the browser context (using `evaluate` or `evaluateHandle`), and it isn't possible to pass imported functions from Playwright's scope into the browser. This is because neither the `editor` object nor JavaScript functions can be adequately serialized.
 

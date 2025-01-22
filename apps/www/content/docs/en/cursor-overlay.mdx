@@ -104,6 +104,8 @@ Adds a cursor overlay with the specified key and state.
 
 ### `editor.api.cursorOverlay.removeCursor`
 
+Removes a cursor overlay by its key.
+
 <API name="removeCursor">
 <APIParameters>
   <APIItem name="key" type="string">
@@ -121,7 +123,7 @@ A hook that manages cursor and selection overlay states, providing real-time cur
 <API name="useCursorOverlay">
 <APIOptions type="object">
   <APIItem name="minSelectionWidth" type="number" optional>
-    Minimum width in pixels for a selection rectangle.
+    Minimum width in pixels for a selection rectangle. Useful for making cursor carets more visible.
     - **Default:** `1`
   </APIItem>
   <APIItem name="refreshOnResize" type="boolean" optional>

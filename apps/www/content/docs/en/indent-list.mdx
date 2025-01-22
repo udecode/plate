@@ -202,10 +202,10 @@ Used to provide options for getting the sibling indent list in a block of text.
 <API name="GetSiblingIndentListOptions">
 <APIOptions>
   <APIItem name="getPreviousEntry" type="function">
-    Get previous sibling entry.
+    This function is used to get the previous sibling entry from a given entry.
   </APIItem>
   <APIItem name="getNextEntry" type="function">
-    Get next sibling entry.
+    This function is used to get the next sibling entry from a given entry.
   </APIItem>
   <APIItem name="query" type="function">
     This function is used to validate a sibling node during the lookup process.
@@ -243,10 +243,10 @@ A behavior hook for the indent list toolbar button.
 <API name="useIndentListToolbarButton">
 <APIState>
   <APIItem name="nodeType" type="string">
-    List style type.
+    The list style type.
   </APIItem>
   <APIItem name="pressed" type="boolean">
-    Whether button is pressed.
+    Whether the button is pressed.
   </APIItem>
 </APIState>
 
@@ -255,12 +255,10 @@ A behavior hook for the indent list toolbar button.
     Props for the toolbar button.
      <APISubList>
       <APISubListItem parent="props" name="pressed" type="boolean">
-        A boolean indicating whether the button is pressed or not.
+        Whether the button is pressed.
       </APISubListItem>
       <APISubListItem parent="props" name="onClick" type="function">
-        A callback function to handle the click event of the button. It toggles
-        the indent list of the specified node type in the editor and focuses the
-        editor.
+        Callback to handle the click event. Toggles the indent list of the specified node type and focuses the editor.
       </APISubListItem>
     </APISubList>
   </APIItem>

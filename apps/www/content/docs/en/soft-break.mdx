@@ -59,33 +59,18 @@ const plugins = [
 Plugin for inserting line breaks within text blocks.
 
 <API name="SoftBreakPlugin">
-  <APIOptions type="object[]">
-    Rules specifying hotkeys and filters for soft breaks.
-    <APIItem name="hotkey" type="string">
-      Key combination that activates soft break.
-    </APIItem>
-    <APIItem name="query" type="QueryNodeOptions" optional>
-      Filter options for block types where rule applies.
-    </APIItem>
-  </APIOptions>
+<APIOptions>
 
-```tsx
-const plugins = [
-  SoftBreakPlugin.configure({
-    options: {
-      rules: [
-        // Shift+Enter always inserts soft break
-        { hotkey: 'shift+enter' },
-        // Enter inserts soft break only in specified blocks
-        {
-          hotkey: 'enter',
-          query: {
-            allow: ['code_block', 'blockquote', 'table'],
-          },
-        },
-      ],
-    },
-  }),
-];
-```
+<APIItem name="rules" type="object[]" optional>
+An array of rule objects specifying the hotkey to activate the soft break and an optional filter query.
+<APISubList>
+<APISubListItem parent="rules" name="hotkey" type="string">
+The key combination that activates the soft break.
+</APISubListItem>
+<APISubListItem parent="rules" name="query" type="QueryNodeOptions" optional>
+Filter options to determine the block types where the rule applies.
+</APISubListItem>
+</APISubList>
+</APIItem>
+</APIOptions>
 </API>

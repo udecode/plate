@@ -51,15 +51,12 @@ const components = {
 };
 ```
 
-See also:
 - [TocElement](/docs/components/toc-element)
 
 ### Scroll container
 
-If your scrolling element is:
-
-1. [EditorContainer](/docs/components/editor) - no additional setup needed
-2. Editor container - use `useEditorContainerRef()`:
+- If your scrolling element is [EditorContainer](/docs/components/editor), you can skip this step.
+- If your scrolling element is the editor container, pass `useEditorContainerRef()` as the `ref` prop. For example:
 
 ```tsx
 // Below <Plate> component
@@ -70,7 +67,7 @@ function EditorContainer({ children }: { children: React.ReactNode }) {
 }
 ```
 
-3. Ancestor of editor container - use `useEditorScrollRef()`:
+- If your scrolling element is an ancestor of the editor container, pass `useEditorScrollRef()` as the `ref` prop. For example:
 
 ```tsx
 // Below <Plate> component
