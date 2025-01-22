@@ -1,5 +1,11 @@
 # @udecode/slate
 
+## 42.2.5
+
+### Patch Changes
+
+- [#4015](https://github.com/udecode/plate/pull/4015) by [@yf-yang](https://github.com/yf-yang) – Fix `editor.tf.moveNodes` type
+
 ## 42.0.3
 
 ### Patch Changes

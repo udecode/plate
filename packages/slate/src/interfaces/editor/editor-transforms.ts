@@ -162,7 +162,7 @@ export type EditorTransforms<V extends Value = Value> = {
    * Move the nodes from an origin to a destination. A destination must be
    * specified in the `options`. If no origin is specified, move the selection.
    */
-  moveNodes: (options?: MoveNodesOptions<V>) => void;
+  moveNodes: (options: MoveNodesOptions<V>) => void;
   /** Normalize any dirty objects in the editor. */
   normalize: (options?: EditorNormalizeOptions) => void;
   /** Redo to the next saved state. */
