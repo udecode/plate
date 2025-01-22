@@ -15141,14 +15141,14 @@ __metadata:
   linkType: hard
 
 "micromark-util-subtokenize@npm:^2.0.0":
-  version: 2.0.3
-  resolution: "micromark-util-subtokenize@npm:2.0.3"
+  version: 2.0.4
+  resolution: "micromark-util-subtokenize@npm:2.0.4"
   dependencies:
     devlop: "npm:^1.0.0"
     micromark-util-chunked: "npm:^2.0.0"
     micromark-util-symbol: "npm:^2.0.0"
     micromark-util-types: "npm:^2.0.0"
-  checksum: 10c0/75501986ecb02a6f06c0f3e58b584ae3ff3553b520260e8ce27d2db8c79b8888861dd9d3b26e30f5c6084fddd90f96dc3ff551f02c2ac4d669ebe920e483b6d6
+  checksum: 10c0/d1d19c6ede87e5d3778aa7f6c56ad736a48404556757abf71ea87bd2baac71927d18db3c9a1f76c4b3f42f32d6032aea97d1de739b49872daf168c6f8f373f39
   languageName: node
   linkType: hard
 
