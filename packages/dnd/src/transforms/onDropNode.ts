@@ -67,12 +67,12 @@ export const getDropPath = (
   let dropPath: Path | undefined;
 
   // if drag from file system use [] as default path
-  const dragPath = dragEntry?.[1] ?? [];
+  const dragPath = dragEntry?.[1];
   const hoveredPath = dropEntry[1];
 
   // Treat 'right' like 'bottom' (after hovered)
   // Treat 'left' like 'top' (before hovered)
-  if (direction === 'bottom' || direction === 'right') {
+  if (dragPath && (direction === 'bottom' || direction === 'right')) {
     // Insert after hovered node
     dropPath = hoveredPath;
 
@@ -84,11 +84,12 @@ export const getDropPath = (
     dropPath = [...hoveredPath.slice(0, -1), hoveredPath.at(-1)! - 1];
 
     // If the dragged node is already right before hovered node, no change
-    if (PathApi.equals(dragPath, dropPath)) return;
+    if (dragPath && PathApi.equals(dragPath, dropPath)) return;
   }
 
   const _dropPath = dropPath as Path;
   const before =
+    dragPath &&
     PathApi.isBefore(dragPath, _dropPath) &&
     PathApi.isSibling(dragPath, _dropPath);
   const to = before ? _dropPath : PathApi.next(_dropPath);
