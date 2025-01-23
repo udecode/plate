@@ -24,7 +24,7 @@ export const getInjectMatch = <E extends SlateEditor>(
 
     const element = ElementApi.isElement(node) ? node : undefined;
 
-    if (_isElement && element) return false;
+    if (_isElement && !element) return false;
     if (_isBlock && (!element || !editor.api.isBlock(element))) return false;
     if (isLeaf && element) return false;
     if (element?.type) {
