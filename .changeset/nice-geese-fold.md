@@ -1,5 +1,5 @@
 ---
-'@udecode/plate-table': minor
+'@udecode/plate-table': patch
 ---
 
 - Support controlling many selected cells (previously only one cell)
