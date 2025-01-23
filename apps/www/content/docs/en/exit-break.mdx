@@ -22,6 +22,7 @@ npm install @udecode/plate-break
 
 ```tsx
 import { ExitBreakPlugin } from '@udecode/plate-break/react';
+import { HEADING_LEVELS } from '@udecode/plate-heading';
 
 const plugins = [
   // ...otherPlugins,
@@ -40,7 +41,7 @@ const plugins = [
           query: {
             start: true,
             end: true,
-            allow: KEYS_HEADING,
+            allow: HEADING_LEVELS,
           },
           relative: true,
           level: 1,
