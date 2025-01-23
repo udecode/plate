@@ -6,7 +6,6 @@ import { cn, useComposedRef, withRef } from '@udecode/cn';
 import { PathApi } from '@udecode/plate';
 import {
   PlateElement,
-  useEditorPlugin,
   useEditorRef,
   useElement,
   useReadOnly,
@@ -24,8 +23,11 @@ export const TableRowElement = withRef<typeof PlateElement>(
     const readOnly = useReadOnly();
     const selected = useSelected();
     const editor = useEditorRef();
-    const { useOption } = useEditorPlugin(BlockSelectionPlugin);
-    const isSelectionAreaVisible = useOption?.('isSelectionAreaVisible');
+    const isSelectionAreaVisible = editor.useOption(
+      BlockSelectionPlugin,
+      'isSelectionAreaVisible'
+    );
+    const hasControls = !readOnly && !isSelectionAreaVisible;
 
     const { isDragging, previewRef, handleRef } = useDraggable({
       canDropNode: ({ dragEntry, dropEntry }) =>
@@ -52,7 +54,7 @@ export const TableRowElement = withRef<typeof PlateElement>(
         data-selected={selected ? 'true' : undefined}
         {...props}
       >
-        {!readOnly && !isSelectionAreaVisible && (
+        {hasControls && (
           <td className="w-2 select-none" contentEditable={false}>
             <RowDragHandle dragRef={handleRef} />
             <DropLine />

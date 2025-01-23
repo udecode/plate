@@ -6,9 +6,13 @@ import { type TTableCellElement, getTableCellBorders } from '../../../lib';
 import { TablePlugin } from '../../TablePlugin';
 import { useCellIndices } from '../../hooks/useCellIndices';
 
-export function useTableCellBorders() {
+export function useTableCellBorders({
+  element: el,
+}: {
+  element?: TTableCellElement;
+} = {}) {
   const { editor } = useEditorPlugin(TablePlugin);
-  const element = useElement<TTableCellElement>();
+  const element = useElement<TTableCellElement>() ?? el;
   const cellIndices = useCellIndices();
 
   return React.useMemo(() => {

@@ -63,17 +63,14 @@ export const TableCellElement = withRef<
         className,
         'h-full overflow-visible border-none bg-background p-0',
         element.background ? 'bg-[--cellBackground]' : 'bg-background',
-
-        cn(
-          isHeader && 'text-left [&_>_*]:m-0',
-          'before:size-full',
-          selected && 'before:z-10 before:bg-muted',
-          "before:absolute before:box-border before:select-none before:content-['']",
-          borders.bottom?.size && `before:border-b before:border-b-border`,
-          borders.right?.size && `before:border-r before:border-r-border`,
-          borders.left?.size && `before:border-l before:border-l-border`,
-          borders.top?.size && `before:border-t before:border-t-border`
-        )
+        isHeader && 'text-left [&_>_*]:m-0',
+        'before:size-full',
+        selected && 'before:z-10 before:bg-brand/5',
+        "before:absolute before:box-border before:select-none before:content-['']",
+        borders.bottom?.size && `before:border-b before:border-b-border`,
+        borders.right?.size && `before:border-r before:border-r-border`,
+        borders.left?.size && `before:border-l before:border-l-border`,
+        borders.top?.size && `before:border-t before:border-t-border`
       )}
       style={
         {

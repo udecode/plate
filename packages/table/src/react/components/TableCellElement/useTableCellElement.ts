@@ -1,3 +1,5 @@
+import React from 'react';
+
 import { useEditorPlugin, useElement } from '@udecode/plate/react';
 
 import type { BorderStylesDefault, TTableCellElement } from '../../../lib';
@@ -24,10 +26,21 @@ export const useTableCellElement = (): TableCellElementState => {
   const { api } = useEditorPlugin(TablePlugin);
   const element = useElement<TTableCellElement>();
   const isCellSelected = useIsCellSelected(element);
-  const selectedCells = useTableStore().get.selectedCells();
+  const [selectedCells, setSelectedCells] = useTableStore().use.selectedCells();
+
+  // Sync element transforms with selected cells
+  React.useEffect(() => {
+    if (selectedCells?.some((v) => v.id === element.id && element !== v)) {
+      setSelectedCells(
+        selectedCells.map((v) => (v.id === element.id ? element : v))
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [element]);
+
   const rowSizeOverrides = useTableStore().get.rowSizeOverrides();
-  const { minHeight, width } = useTableCellSize();
-  const borders = useTableCellBorders();
+  const { minHeight, width } = useTableCellSize({ element });
+  const borders = useTableCellBorders({ element });
 
   /**
    * Row size: if rowSpan > 1, we might look up the rowSize for the bottom row
