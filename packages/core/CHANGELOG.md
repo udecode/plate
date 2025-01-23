@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 43.0.2
+
+### Patch Changes
+
+- [#4025](https://github.com/udecode/plate/pull/4025) by [@e1himself](https://github.com/e1himself) – Fixed props injection match check for elements
+
 ## 43.0.0
 
 ### Minor Changes

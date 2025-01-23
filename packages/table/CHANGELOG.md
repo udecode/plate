@@ -1,5 +1,13 @@
 # @udecode/plate-table
 
+## 43.0.2
+
+### Patch Changes
+
+- [#4027](https://github.com/udecode/plate/pull/4027) by [@zbeyens](https://github.com/zbeyens) –
+  - Support controlling many selected cells (previously only one cell)
+  - Fix selected cells to sync after cell operation
+
 ## 43.0.0
 
 ## 42.2.4
