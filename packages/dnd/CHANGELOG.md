@@ -1,5 +1,11 @@
 # @udecode/plate-dnd
 
+## 43.0.1
+
+### Patch Changes
+
+- [#4020](https://github.com/udecode/plate/pull/4020) by [@felixfeng33](https://github.com/felixfeng33) – Fix dnd from file system
+
 ## 43.0.0
 
 ## 42.2.4

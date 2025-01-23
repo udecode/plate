@@ -1,5 +1,11 @@
 # @udecode/plate-basic-marks
 
+## 43.0.1
+
+### Patch Changes
+
+- [#4023](https://github.com/udecode/plate/pull/4023) by [@ralphr123](https://github.com/ralphr123) – Fix editor shortcuts for subscript and superscript marks.
+
 ## 43.0.0
 
 ## 42.0.0
