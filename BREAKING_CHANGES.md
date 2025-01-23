@@ -1,5 +1,9 @@
 For older changelogs, see https://github.com/udecode/plate/blob/main/docs
 
+# 43.0.0
+
+No breaking changes. Upgraded all dependencies to the latest version.
+
 # 42.0.1
 
 ## @udecode/plate-ai@42.0.0
