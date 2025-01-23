@@ -8,7 +8,7 @@ export const SubscriptPlugin = toPlatePlugin(
   ({ editor, type }) => ({
     shortcuts: {
       toggleSubscript: {
-        keys: [[Key.Mod, ',']],
+        keys: [[Key.Mod, 'comma']],
         preventDefault: true,
         handler: () => {
           editor.tf.toggleMark(type, {
