@@ -32,7 +32,7 @@ export const onHoverNode = (
   // Check if the drop would actually move the node.
   const result = getDropPath(editor, {
     canDropNode,
-    dragItem: dragItem as any,
+    dragItem,
     element,
     monitor,
     nodeRef,
