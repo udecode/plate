@@ -12,11 +12,13 @@ export const useCellIndices = () => {
 
   return React.useMemo(() => {
     if (!cellIndices) {
-      return computeCellIndices(editor, {
-        cellNode: element,
-      })!;
+      return (
+        computeCellIndices(editor, {
+          cellNode: element,
+        }) ?? { col: 0, row: 0 }
+      );
     }
 
-    return cellIndices;
+    return cellIndices ?? { col: 0, row: 0 };
   }, [cellIndices, editor, element]);
 };

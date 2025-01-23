@@ -1,47 +1,41 @@
-import { useEditorRef, useEditorSelector } from '@udecode/plate/react';
+import {
+  useEditorRef,
+  useEditorSelector,
+  useElement,
+} from '@udecode/plate/react';
 
-import { isTableBorderHidden } from '../../../lib';
+import type { TTableElement } from '../../../lib';
+
+import {
+  type TableBorderStates,
+  getSelectedCellsBorders,
+} from '../../../lib/queries/getSelectedCellsBorders';
 import { useTableStore } from '../../stores';
 import { getOnSelectTableBorderFactory } from './getOnSelectTableBorderFactory';
 
-export const useTableBordersDropdownMenuContentState = () => {
+export const useTableBordersDropdownMenuContentState = ({
+  element: el,
+}: {
+  element?: TTableElement;
+} = {}) => {
   const editor = useEditorRef();
+  const element = useElement() ?? el;
   const selectedCells = useTableStore().get.selectedCells();
-
-  /* eslint-disable @typescript-eslint/no-shadow */
-  const hasBottomBorder = useEditorSelector(
-    (editor) => !isTableBorderHidden(editor, 'bottom'),
-    []
+  const borderStates = useEditorSelector<TableBorderStates>(
+    (editor) => getSelectedCellsBorders(editor, selectedCells),
+    [selectedCells, element]
   );
-  const hasTopBorder = useEditorSelector(
-    (editor) => !isTableBorderHidden(editor, 'top'),
-    []
-  );
-  const hasLeftBorder = useEditorSelector(
-    (editor) => !isTableBorderHidden(editor, 'left'),
-    []
-  );
-  const hasRightBorder = useEditorSelector(
-    (editor) => !isTableBorderHidden(editor, 'right'),
-    []
-  );
-  /* eslint-enable @typescript-eslint/no-shadow */
-
-  const hasOuterBorders =
-    hasBottomBorder && hasTopBorder && hasLeftBorder && hasRightBorder;
-  const hasNoBorders =
-    !hasBottomBorder && !hasTopBorder && !hasLeftBorder && !hasRightBorder;
 
   return {
     getOnSelectTableBorder: getOnSelectTableBorderFactory(
       editor,
       selectedCells
     ),
-    hasBottomBorder,
-    hasLeftBorder,
-    hasNoBorders,
-    hasOuterBorders,
-    hasRightBorder,
-    hasTopBorder,
+    hasBottomBorder: borderStates.bottom,
+    hasLeftBorder: borderStates.left,
+    hasNoBorders: borderStates.none,
+    hasOuterBorders: borderStates.outer,
+    hasRightBorder: borderStates.right,
+    hasTopBorder: borderStates.top,
   };
 };
