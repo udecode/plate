@@ -152,6 +152,10 @@ export const withNodeId: OverrideEditor<NodeIdConfig> = ({
         const { disableInsertOverrides, idKey = '' } = getOptions();
 
         if (!disableInsertOverrides && node[idKey]) {
+          if (!Object.isExtensible(node)) {
+            node = cloneDeep(node);
+          }
+
           node._id = node[idKey];
         }
 
@@ -170,6 +174,10 @@ export const withNodeId: OverrideEditor<NodeIdConfig> = ({
         insertNodes(
           nodes.map((node) => {
             if (!disableInsertOverrides && node[idKey]) {
+              if (!Object.isExtensible(node)) {
+                node = cloneDeep(node);
+              }
+
               node._id = node[idKey];
             }
 
