@@ -1,5 +1,11 @@
 # @udecode/plate-node-id
 
+## 43.0.3
+
+### Patch Changes
+
+- [`7c82e3f`](https://github.com/udecode/plate/commit/7c82e3f46587498d5e56fb698faef368398798eb) by [@zbeyens](https://github.com/zbeyens) – Fix "Cannot add property \_id, object is not extensible"
+
 ## 43.0.0
 
 ## 42.0.0
