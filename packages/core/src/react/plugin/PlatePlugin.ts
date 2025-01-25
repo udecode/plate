@@ -733,13 +733,13 @@ export interface NodeWrapperComponentProps<
   key: string;
 }
 
-export type NodeWrapperComponentReturnType<
-  C extends AnyPluginConfig = PluginConfig,
-> = React.FC<PlateRenderElementProps<TElement, C>> | undefined;
+export type NodeWrapperComponentReturnType =
+  | React.FC<PlateRenderElementProps>
+  | undefined;
 
 export type NodeWrapperComponent<C extends AnyPluginConfig = PluginConfig> = (
   props: NodeWrapperComponentProps<C>
-) => NodeWrapperComponentReturnType<C>;
+) => NodeWrapperComponentReturnType;
 
 /**
  * Function called whenever a change occurs in the editor. Return `false` to
