@@ -47,10 +47,10 @@ export const pluginRenderElementStatic = (
       }) as any;
 
       belowNodes.forEach((withHOC) => {
-        const hoc = withHOC({ ...nodeProps, key } as any);
+        const HOC = withHOC({ ...nodeProps, key } as any);
 
-        if (hoc) {
-          children = hoc({ ...nodeProps, children } as any);
+        if (HOC) {
+          children = <HOC {...nodeProps}>{children}</HOC>;
         }
       });
 
@@ -59,10 +59,10 @@ export const pluginRenderElementStatic = (
       );
 
       aboveNodes.forEach((withHOC) => {
-        const hoc = withHOC({ ...nodeProps, key } as any);
+        const HOC = withHOC({ ...nodeProps, key } as any);
 
-        if (hoc) {
-          component = hoc({ ...nodeProps, children: component } as any);
+        if (HOC) {
+          component = <HOC {...nodeProps}>{component}</HOC>;
         }
       });
 
