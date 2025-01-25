@@ -85,7 +85,7 @@ export const DraggableAboveNodes: NodeWrapperComponent = (props) => {
 
   if (!enabled) return;
 
-  return (props) => <Draggable {...props} />;
+  return Draggable;
 };
 
 export const Draggable = withRef<'div', PlateRenderElementProps>(
