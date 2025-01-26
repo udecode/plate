@@ -127,10 +127,16 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
 
       render: Nullable<{
         /**
-         * Renders a component above all other plugins' `node` components.
-         * Useful for wrapping or decorating nodes with additional UI elements.
+         * When other plugins' `node` components are rendered, this creator
+         * function can return an optional wrapper function that turns a
+         * `node`'s props to a wrapper React node as its parent. Useful for
+         * wrapping or decorating nodes with additional UI elements.
+         *
+         * NOTE: The creator function can run React hooks. NOTE: Do not run
+         * React hooks in the wrapper function. It is not equivalent to a React
+         * component.
          */
-        aboveNodes?: NodeWrapperComponent<WithAnyKey<C>>;
+        aboveNodes?: NodeWrapperFunctionCreator<WithAnyKey<C>>;
 
         /**
          * Renders a component after the `Editable` component. This is the last
@@ -142,11 +148,17 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
         beforeEditable?: EditableSiblingComponent;
 
         /**
-         * Renders a component below all other plugins' `node` components, but
-         * above their `children`. This allows for injecting content or UI
-         * elements within nodes but before their child content.
+         * When other plugins' `node` components are rendered, this creator
+         * function can return an optional wrapper function that turns a
+         * `node`'s props to a wrapper React node. The wrapper node is the
+         * `node`'s child and its original children's parent. Useful for
+         * wrapping or decorating nodes with additional UI elements.
+         *
+         * NOTE: The creator function can run React hooks. NOTE: Do not run
+         * React hooks in the wrapper function. It is not equivalent to a React
+         * component.
          */
-        belowNodes?: NodeWrapperComponent<WithAnyKey<C>>;
+        belowNodes?: NodeWrapperFunctionCreator<WithAnyKey<C>>;
 
         /** @see {@link NodeComponent} */
         node?: NodeComponent;
@@ -727,19 +739,19 @@ export type EditableSiblingComponent = (
   editableProps: EditableProps
 ) => React.ReactElement | null;
 
-export interface NodeWrapperComponentProps<
+export interface NodeWrapperFunctionCreatorProps<
   C extends AnyPluginConfig = PluginConfig,
 > extends PlateRenderElementProps<TElement, C> {
   key: string;
 }
 
-export type NodeWrapperComponentReturnType =
-  | React.FC<PlateRenderElementProps>
+export type NodeWrapperFunction =
+  | ((elementProps: PlateRenderElementProps) => React.ReactNode)
   | undefined;
 
-export type NodeWrapperComponent<C extends AnyPluginConfig = PluginConfig> = (
-  props: NodeWrapperComponentProps<C>
-) => NodeWrapperComponentReturnType;
+export type NodeWrapperFunctionCreator<
+  C extends AnyPluginConfig = PluginConfig,
+> = (props: NodeWrapperFunctionCreatorProps<C>) => NodeWrapperFunction;
 
 /**
  * Function called whenever a change occurs in the editor. Return `false` to
