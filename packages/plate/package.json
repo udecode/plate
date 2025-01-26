@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate",
-  "version": "43.0.2",
+  "version": "43.0.4",
   "description": "Plate – a framework for building rich text editors on the web",
   "keywords": [
     "contentEditable",
@@ -56,8 +56,8 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-core": "43.0.2",
-    "@udecode/plate-utils": "43.0.2",
+    "@udecode/plate-core": "43.0.4",
+    "@udecode/plate-utils": "43.0.4",
     "@udecode/react-hotkeys": "37.0.0",
     "@udecode/react-utils": "43.0.0",
     "@udecode/slate": "42.2.5",
