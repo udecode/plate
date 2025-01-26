@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 43.0.4
+
+### Patch Changes
+
+- [#4035](https://github.com/udecode/plate/pull/4035) by [@yf-yang](https://github.com/yf-yang) – Fix type of `NodeWrapperComponentReturnType`
+
 ## 43.0.2
 
 ### Patch Changes
