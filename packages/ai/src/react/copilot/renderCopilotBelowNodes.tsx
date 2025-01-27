@@ -3,7 +3,7 @@
 import React from 'react';
 
 import {
-  type NodeWrapperComponentProps,
+  type RenderNodeWrapperProps,
   getEditorPlugin,
 } from '@udecode/plate/react';
 
@@ -11,7 +11,7 @@ import type { CopilotPluginConfig } from './CopilotPlugin';
 
 export const renderCopilotBelowNodes = ({
   editor,
-}: NodeWrapperComponentProps<CopilotPluginConfig>) => {
+}: RenderNodeWrapperProps<CopilotPluginConfig>) => {
   const copilot = getEditorPlugin<CopilotPluginConfig>(editor, {
     key: 'copilot',
   });
@@ -20,7 +20,7 @@ export const renderCopilotBelowNodes = ({
 
   if (!GhostText) return;
 
-  return function Component({ children }: { children: React.ReactNode }) {
+  return ({ children }: { children: React.ReactNode }) => {
     return (
       <React.Fragment>
         {children}

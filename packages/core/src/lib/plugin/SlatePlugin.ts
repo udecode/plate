@@ -70,10 +70,15 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> =
           };
       render: Nullable<{
         /**
-         * Renders a component above all other plugins' `node` components.
-         * Useful for wrapping or decorating nodes with additional UI elements.
+         * When other plugins' `node` components are rendered, this function can
+         * return an optional wrapper function that turns a `node`'s props to a
+         * wrapper React node as its parent. Useful for wrapping or decorating
+         * nodes with additional UI elements.
+         *
+         * NOTE: The function can run React hooks. NOTE: Do not run React hooks
+         * in the wrapper function. It is not equivalent to a React component.
          */
-        aboveNodes?: NodeStaticWrapperComponent<WithAnyKey<C>>;
+        aboveNodes?: RenderStaticNodeWrapper<WithAnyKey<C>>;
 
         /**
          * Renders a component after the `Editable` component. This is the last
@@ -85,11 +90,16 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> =
         beforeEditable?: () => React.ReactElement | null;
 
         /**
-         * Renders a component below all other plugins' `node` components, but
-         * above their `children`. This allows for injecting content or UI
-         * elements within nodes but before their child content.
+         * When other plugins' `node` components are rendered, this function can
+         * return an optional wrapper function that turns a `node`'s props to a
+         * wrapper React node. The wrapper node is the `node`'s child and its
+         * original children's parent. Useful for wrapping or decorating nodes
+         * with additional UI elements.
+         *
+         * NOTE: The function can run React hooks. NOTE: Do not run React hooks
+         * in the wrapper function. It is not equivalent to a React component.
          */
-        belowNodes?: NodeStaticWrapperComponent<WithAnyKey<C>>;
+        belowNodes?: RenderStaticNodeWrapper<WithAnyKey<C>>;
 
         node?: React.FC;
       }>;
@@ -514,16 +524,32 @@ export type NodeStaticProps<C extends AnyPluginConfig = PluginConfig> =
     ) => AnyObject | undefined)
   | AnyObject;
 
+export type RenderStaticNodeWrapper<C extends AnyPluginConfig = PluginConfig> =
+  (props: RenderStaticNodeWrapperProps<C>) => RenderStaticNodeWrapperFunction;
+
+export type RenderStaticNodeWrapperFunction =
+  | ((hocProps: SlateRenderElementProps) => React.ReactNode)
+  | undefined;
+
+export interface RenderStaticNodeWrapperProps<
+  C extends AnyPluginConfig = PluginConfig,
+> extends SlateRenderElementProps<TElement, C> {
+  key: string;
+}
+
+/** @deprecated Use {@link RenderStaticNodeWrapper} instead. */
 export type NodeStaticWrapperComponent<
   C extends AnyPluginConfig = PluginConfig,
 > = (
   props: NodeStaticWrapperComponentProps<C>
 ) => NodeStaticWrapperComponentReturnType<C>;
 
+/** @deprecated Use {@link RenderStaticNodeWrapperFunction} instead. */
 export type NodeStaticWrapperComponentReturnType<
   C extends AnyPluginConfig = PluginConfig,
 > = React.FC<SlateRenderElementProps<TElement, C>> | undefined;
 
+/** @deprecated Use {@link RenderStaticNodeWrapperProps} instead. */
 export interface NodeStaticWrapperComponentProps<
   C extends AnyPluginConfig = PluginConfig,
 > extends SlateRenderElementProps<TElement, C> {
