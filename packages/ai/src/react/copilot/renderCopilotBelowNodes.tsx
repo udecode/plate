@@ -3,7 +3,7 @@
 import React from 'react';
 
 import {
-  type NodeWrapperFunctionCreatorProps,
+  type RenderNodeWrapperProps,
   getEditorPlugin,
 } from '@udecode/plate/react';
 
@@ -11,7 +11,7 @@ import type { CopilotPluginConfig } from './CopilotPlugin';
 
 export const renderCopilotBelowNodes = ({
   editor,
-}: NodeWrapperFunctionCreatorProps<CopilotPluginConfig>) => {
+}: RenderNodeWrapperProps<CopilotPluginConfig>) => {
   const copilot = getEditorPlugin<CopilotPluginConfig>(editor, {
     key: 'copilot',
   });

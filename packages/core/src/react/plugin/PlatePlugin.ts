@@ -127,16 +127,15 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
 
       render: Nullable<{
         /**
-         * When other plugins' `node` components are rendered, this creator
-         * function can return an optional wrapper function that turns a
-         * `node`'s props to a wrapper React node as its parent. Useful for
-         * wrapping or decorating nodes with additional UI elements.
+         * When other plugins' `node` components are rendered, this function can
+         * return an optional wrapper function that turns a `node`'s props to a
+         * wrapper React node as its parent. Useful for wrapping or decorating
+         * nodes with additional UI elements.
          *
-         * NOTE: The creator function can run React hooks. NOTE: Do not run
-         * React hooks in the wrapper function. It is not equivalent to a React
-         * component.
+         * NOTE: The function can run React hooks. NOTE: Do not run React hooks
+         * in the wrapper function. It is not equivalent to a React component.
          */
-        aboveNodes?: NodeWrapperFunctionCreator<WithAnyKey<C>>;
+        aboveNodes?: RenderNodeWrapper<WithAnyKey<C>>;
 
         /**
          * Renders a component after the `Editable` component. This is the last
@@ -148,17 +147,16 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
         beforeEditable?: EditableSiblingComponent;
 
         /**
-         * When other plugins' `node` components are rendered, this creator
-         * function can return an optional wrapper function that turns a
-         * `node`'s props to a wrapper React node. The wrapper node is the
-         * `node`'s child and its original children's parent. Useful for
-         * wrapping or decorating nodes with additional UI elements.
+         * When other plugins' `node` components are rendered, this function can
+         * return an optional wrapper function that turns a `node`'s props to a
+         * wrapper React node. The wrapper node is the `node`'s child and its
+         * original children's parent. Useful for wrapping or decorating nodes
+         * with additional UI elements.
          *
-         * NOTE: The creator function can run React hooks. NOTE: Do not run
-         * React hooks in the wrapper function. It is not equivalent to a React
-         * component.
+         * NOTE: The function can run React hooks. NOTE: Do not run React hooks
+         * in the wrapper function. It is not equivalent to a React component.
          */
-        belowNodes?: NodeWrapperFunctionCreator<WithAnyKey<C>>;
+        belowNodes?: RenderNodeWrapper<WithAnyKey<C>>;
 
         /** @see {@link NodeComponent} */
         node?: NodeComponent;
@@ -739,19 +737,36 @@ export type EditableSiblingComponent = (
   editableProps: EditableProps
 ) => React.ReactElement | null;
 
-export interface NodeWrapperFunctionCreatorProps<
+export interface RenderNodeWrapperProps<
   C extends AnyPluginConfig = PluginConfig,
 > extends PlateRenderElementProps<TElement, C> {
   key: string;
 }
 
-export type NodeWrapperFunction =
+export type RenderNodeWrapperFunction =
   | ((elementProps: PlateRenderElementProps) => React.ReactNode)
   | undefined;
 
-export type NodeWrapperFunctionCreator<
+export type RenderNodeWrapper<C extends AnyPluginConfig = PluginConfig> = (
+  props: RenderNodeWrapperProps<C>
+) => RenderNodeWrapperFunction;
+
+/** @deprecated Use {@link RenderNodeWrapperProps} instead. */
+export interface NodeWrapperComponentProps<
   C extends AnyPluginConfig = PluginConfig,
-> = (props: NodeWrapperFunctionCreatorProps<C>) => NodeWrapperFunction;
+> extends PlateRenderElementProps<TElement, C> {
+  key: string;
+}
+
+/** @deprecated Use {@link RenderNodeWrapperFunction} instead. */
+export type NodeWrapperComponentReturnType<
+  C extends AnyPluginConfig = PluginConfig,
+> = React.FC<PlateRenderElementProps<TElement, C>> | undefined;
+
+/** @deprecated Use {@link RenderNodeWrapper} instead. */
+export type NodeWrapperComponent<C extends AnyPluginConfig = PluginConfig> = (
+  props: NodeWrapperComponentProps<C>
+) => NodeWrapperComponentReturnType<C>;
 
 /**
  * Function called whenever a change occurs in the editor. Return `false` to

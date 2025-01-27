@@ -150,7 +150,7 @@ Defines how the plugin renders components.
 <APISubListItem parent="render" name="aboveEditable" type="Component" optional>
 Component rendered above the Editable component but inside the Slate wrapper.
 </APISubListItem>
-<APISubListItem parent="render" name="aboveNodes" type="NodeWrapperFunctionCreator<WithAnyKey<C>>" optional>
+<APISubListItem parent="render" name="aboveNodes" type="RenderNodeWrapper<WithAnyKey<C>>" optional>
 Create a function that generates a parent React node for all other plugins' node components.
 </APISubListItem>
 <APISubListItem parent="render" name="aboveSlate" type="Component" optional>
@@ -162,7 +162,7 @@ Renders a component after the Editable component.
 <APISubListItem parent="render" name="beforeEditable" type="EditableSiblingComponent" optional>
 Renders a component before the Editable component.
 </APISubListItem>
-<APISubListItem parent="render" name="belowNodes" type="NodeWrapperFunctionCreator<WithAnyKey<C>>" optional>
+<APISubListItem parent="render" name="belowNodes" type="RenderNodeWrapper<WithAnyKey<C>>" optional>
 Create a function that generates a React node below all other plugins' node React node, but above their children.
 </APISubListItem>
 <APISubListItem parent="render" name="node" type="NodeComponent" optional>

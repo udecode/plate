@@ -70,16 +70,15 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> =
           };
       render: Nullable<{
         /**
-         * When other plugins' `node` components are rendered, this creator
-         * function can return an optional wrapper function that turns a
-         * `node`'s props to a wrapper React node as its parent. Useful for
-         * wrapping or decorating nodes with additional UI elements.
+         * When other plugins' `node` components are rendered, this function can
+         * return an optional wrapper function that turns a `node`'s props to a
+         * wrapper React node as its parent. Useful for wrapping or decorating
+         * nodes with additional UI elements.
          *
-         * NOTE: The creator function can run React hooks. NOTE: Do not run
-         * React hooks in the wrapper function. It is not equivalent to a React
-         * component.
+         * NOTE: The function can run React hooks. NOTE: Do not run React hooks
+         * in the wrapper function. It is not equivalent to a React component.
          */
-        aboveNodes?: NodeStaticWrapperFunctionCreator<WithAnyKey<C>>;
+        aboveNodes?: RenderStaticNodeWrapper<WithAnyKey<C>>;
 
         /**
          * Renders a component after the `Editable` component. This is the last
@@ -91,17 +90,16 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> =
         beforeEditable?: () => React.ReactElement | null;
 
         /**
-         * When other plugins' `node` components are rendered, this creator
-         * function can return an optional wrapper function that turns a
-         * `node`'s props to a wrapper React node. The wrapper node is the
-         * `node`'s child and its original children's parent. Useful for
-         * wrapping or decorating nodes with additional UI elements.
+         * When other plugins' `node` components are rendered, this function can
+         * return an optional wrapper function that turns a `node`'s props to a
+         * wrapper React node. The wrapper node is the `node`'s child and its
+         * original children's parent. Useful for wrapping or decorating nodes
+         * with additional UI elements.
          *
-         * NOTE: The creator function can run React hooks. NOTE: Do not run
-         * React hooks in the wrapper function. It is not equivalent to a React
-         * component.
+         * NOTE: The function can run React hooks. NOTE: Do not run React hooks
+         * in the wrapper function. It is not equivalent to a React component.
          */
-        belowNodes?: NodeStaticWrapperFunctionCreator<WithAnyKey<C>>;
+        belowNodes?: RenderStaticNodeWrapper<WithAnyKey<C>>;
 
         node?: React.FC;
       }>;
@@ -526,17 +524,33 @@ export type NodeStaticProps<C extends AnyPluginConfig = PluginConfig> =
     ) => AnyObject | undefined)
   | AnyObject;
 
-export type NodeStaticWrapperFunctionCreator<
-  C extends AnyPluginConfig = PluginConfig,
-> = (
-  props: NodeStaticWrapperFunctionCreatorProps<C>
-) => NodeStaticWrapperFunction;
+export type RenderStaticNodeWrapper<C extends AnyPluginConfig = PluginConfig> =
+  (props: RenderStaticNodeWrapperProps<C>) => RenderStaticNodeWrapperFunction;
 
-export type NodeStaticWrapperFunction =
+export type RenderStaticNodeWrapperFunction =
   | ((hocProps: SlateRenderElementProps) => React.ReactNode)
   | undefined;
 
-export interface NodeStaticWrapperFunctionCreatorProps<
+export interface RenderStaticNodeWrapperProps<
+  C extends AnyPluginConfig = PluginConfig,
+> extends SlateRenderElementProps<TElement, C> {
+  key: string;
+}
+
+/** @deprecated Use {@link RenderStaticNodeWrapper} instead. */
+export type NodeStaticWrapperComponent<
+  C extends AnyPluginConfig = PluginConfig,
+> = (
+  props: NodeStaticWrapperComponentProps<C>
+) => NodeStaticWrapperComponentReturnType<C>;
+
+/** @deprecated Use {@link RenderStaticNodeWrapperFunction} instead. */
+export type NodeStaticWrapperComponentReturnType<
+  C extends AnyPluginConfig = PluginConfig,
+> = React.FC<SlateRenderElementProps<TElement, C>> | undefined;
+
+/** @deprecated Use {@link RenderStaticNodeWrapperProps} instead. */
+export interface NodeStaticWrapperComponentProps<
   C extends AnyPluginConfig = PluginConfig,
 > extends SlateRenderElementProps<TElement, C> {
   key: string;

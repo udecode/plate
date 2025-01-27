@@ -1,16 +1,15 @@
 import React from 'react';
 
 import type {
-  NodeWrapperFunction,
-  NodeWrapperFunctionCreator,
+  RenderNodeWrapper,
+  RenderNodeWrapperFunction,
 } from '@udecode/plate/react';
 
 import { useIsVisible } from './toggleIndexAtom';
 
-export const renderToggleAboveNodes: NodeWrapperFunctionCreator = () =>
-  ToggleAboveNodes;
+export const renderToggleAboveNodes: RenderNodeWrapper = () => ToggleAboveNodes;
 
-const ToggleAboveNodes: NodeWrapperFunction = ({ children, element }) => {
+const ToggleAboveNodes: RenderNodeWrapperFunction = ({ children, element }) => {
   const isVisible = useIsVisible(element.id as string);
 
   if (isVisible) return children;

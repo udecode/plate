@@ -171,7 +171,7 @@ HTML React 序列化器配置。
 <APISubListItem parent="render" name="aboveEditable" type="Component" optional>
 在 `Editable` 组件上方但在 `Slate` 包装器内渲染组件。
 </APISubListItem>
-<APISubListItem parent="render" name="aboveNodes" type="NodeWrapperFunctionCreator<WithAnyKey<C>>" optional>
+<APISubListItem parent="render" name="aboveNodes" type="RenderNodeWrapper<WithAnyKey<C>>" optional>
 创建一个函数，该函数为所有其他插件的 `node` React节点生成父节点。
 </APISubListItem>
 <APISubListItem parent="render" name="aboveSlate" type="React.FC<{ children: React.ReactNode }>" optional>
@@ -183,7 +183,7 @@ HTML React 序列化器配置。
 <APISubListItem parent="render" name="beforeEditable" type="EditableSiblingComponent" optional>
 在 `Editable` 组件前渲染组件。
 </APISubListItem>
-<APISubListItem parent="render" name="belowNodes" type="NodeWrapperFunctionCreator<WithAnyKey<C>>" optional>
+<APISubListItem parent="render" name="belowNodes" type="RenderNodeWrapper<WithAnyKey<C>>" optional>
 创建一个函数，该函数为所有其他插件的 `node` React节点和其`children`React节点之间生成一个React节点。
 </APISubListItem>
 <APISubListItem parent="render" name="node" type="NodeComponent" optional>

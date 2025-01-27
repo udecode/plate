@@ -1,9 +1,9 @@
 import React from 'react';
 
 import type {
-  NodeStaticWrapperFunction,
-  NodeStaticWrapperFunctionCreator,
-  NodeStaticWrapperFunctionCreatorProps,
+  RenderStaticNodeWrapper,
+  RenderStaticNodeWrapperFunction,
+  RenderStaticNodeWrapperProps,
 } from '@udecode/plate';
 
 import { clsx } from 'clsx';
@@ -15,9 +15,9 @@ import {
 } from '../lib';
 import { ULIST_STYLE_TYPES } from '../lib/types';
 
-export const renderIndentListBelowNodes: NodeStaticWrapperFunctionCreator = (
-  injectProps: NodeStaticWrapperFunctionCreatorProps<BaseIndentListConfig>
-): NodeStaticWrapperFunction => {
+export const renderIndentListBelowNodes: RenderStaticNodeWrapper = (
+  injectProps: RenderStaticNodeWrapperProps<BaseIndentListConfig>
+): RenderStaticNodeWrapperFunction => {
   const { element } = injectProps;
 
   const listStyleType = element[BaseIndentListPlugin.key] as string;

@@ -6,8 +6,8 @@ import React, { useMemo } from 'react';
 import { cn, withRef } from '@udecode/cn';
 import { isType } from '@udecode/plate';
 import {
-  type NodeWrapperFunctionCreator,
   type PlateRenderElementProps,
+  type RenderNodeWrapper,
   MemoizedChildren,
   ParagraphPlugin,
   useEditorPlugin,
@@ -46,7 +46,7 @@ const UNDRAGGABLE_KEYS = [
   TableCellPlugin.key,
 ];
 
-export const DraggableAboveNodes: NodeWrapperFunctionCreator = (props) => {
+export const DraggableAboveNodes: RenderNodeWrapper = (props) => {
   const { editor, element, path } = props;
   const readOnly = useReadOnly();
 
