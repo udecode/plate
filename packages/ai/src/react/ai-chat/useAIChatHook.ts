@@ -31,9 +31,6 @@ export const useAIChatHooks = () => {
 
       if (!blockAbove) return;
 
-      editor.undo();
-      editor.history.redos.pop();
-
       const nodes = deserializeInlineMd(editor, content);
 
       withAIBatch(
