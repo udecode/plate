@@ -6,6 +6,7 @@ import { cn, withRef } from '@udecode/cn';
 import { useCodeBlockElementState } from '@udecode/plate-code-block/react';
 
 import { CodeBlockCombobox } from './code-block-combobox';
+import { CodeBlockFormatButton } from './code-block-format-button';
 import { PlateElement } from './plate-element';
 
 import './code-block-element.css';
@@ -28,9 +29,10 @@ export const CodeBlockElement = withRef<typeof PlateElement>(
 
         {state.syntax && (
           <div
-            className="absolute right-2 top-2 z-10 select-none"
+            className="absolute right-2 top-2 z-10 flex select-none items-center gap-1"
             contentEditable={false}
           >
+            <CodeBlockFormatButton element={element} />
             <CodeBlockCombobox />
           </div>
         )}
