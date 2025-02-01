@@ -1,6 +1,6 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@config '../../tailwind.config.cjs';
 
 @layer base {
   :root {
@@ -108,7 +108,7 @@
   }
 }
 
-@layer utilities {
+@layer components {
   .step {
     counter-increment: step;
   }
@@ -135,7 +135,20 @@
     content: '';
     @apply absolute -inset-4 shadow-xl rounded-xl border;
   }
-  
+}
+
+@media (max-width: 640px) {
+  .container {
+    @apply px-4;
+  }
+}
+
+@utility container {
+  margin-inline: auto;
+  padding-inline: 2rem;
+}
+
+@layer base {
   /* mdx.css */
   
   [data-theme='light'] {
@@ -145,7 +158,7 @@
   [data-theme='dark'] {
     display: none;
   }
-  
+    
   .dark [data-theme='light'] {
     display: none;
   }
@@ -204,11 +217,5 @@
   
   [data-rehype-pretty-code-title] + pre {
     @apply mt-2;
-  }
-}
-
-@media (max-width: 640px) {
-  .container {
-    @apply px-4;
   }
 }

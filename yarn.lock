@@ -19853,6 +19853,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tailwindcss@npm:4.0.0":
+  version: 4.0.0
+  resolution: "tailwindcss@npm:4.0.0"
+  checksum: 10c0/418b1cb02c46f5064bdd4931d8bb030e5c2a986744226dc282b47ecd4b95d1eb919a6f35a68cac948fbf3224fd976feafd9476e289cb5774062f6a3b2a49606e
+  languageName: node
+  linkType: hard
+
 "tailwindcss@npm:^3.4.17":
   version: 3.4.17
   resolution: "tailwindcss@npm:3.4.17"
@@ -21928,7 +21935,7 @@ __metadata:
     swr: "npm:2.3.0"
     tailwind-merge: "npm:^2.6.0"
     tailwind-scrollbar-hide: "npm:1.1.7"
-    tailwindcss: "npm:^3.4.17"
+    tailwindcss: "npm:4.0.0"
     tailwindcss-animate: "npm:^1.0.7"
     ts-morph: "npm:^22.0.0"
     ts-node: "npm:^10.9.2"

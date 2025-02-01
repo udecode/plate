@@ -36,7 +36,7 @@ export function EditableVoidElement({
   return (
     // Need contentEditable=false or Firefox has issues with certain input types.
     <div {...attributes} contentEditable={false}>
-      <div className="mt-2 grid gap-6 rounded-md border p-6 shadow">
+      <div className="mt-2 grid gap-6 rounded-md border p-6 shadow-sm">
         <Input
           id="name"
           className="my-2"

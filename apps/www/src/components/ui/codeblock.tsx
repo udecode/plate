@@ -105,7 +105,7 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
           <Button
             size="sm"
             variant="ghost"
-            className="hover:bg-zinc-800 focus-visible:ring-1 focus-visible:ring-slate-700 focus-visible:ring-offset-0 hover:[&_svg]:text-muted-foreground"
+            className="hover:bg-zinc-800 focus-visible:ring-1 focus-visible:ring-slate-700 focus-visible:ring-offset-0 [&_svg]:hover:text-muted-foreground"
             onClick={downloadAsFile}
           >
             <Icons.download className="size-4" />
@@ -116,7 +116,7 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
           <Button
             size="sm"
             variant="ghost"
-            className="text-xs hover:bg-zinc-800 focus-visible:ring-1 focus-visible:ring-slate-700 focus-visible:ring-offset-0 hover:[&_svg]:text-muted-foreground"
+            className="text-xs hover:bg-zinc-800 focus-visible:ring-1 focus-visible:ring-slate-700 focus-visible:ring-offset-0 [&_svg]:hover:text-muted-foreground"
             onClick={onCopy}
           >
             {isCopied ? (

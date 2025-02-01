@@ -81,8 +81,8 @@ export function ThemesSwitcher({
                 <ToggleGroupItem
                   variant="none"
                   className={cn(
-                    'group flex size-10 shrink-0 items-center justify-center rounded-lg border-2 border-transparent p-0 aria-checked:border-[--color-1]'
-                    // mounted && isDarkTheme && mode !== 'dark' ? 'invert-[1]' : ''
+                    'group flex size-10 shrink-0 items-center justify-center rounded-lg border-2 border-transparent p-0 aria-checked:border-(--color-1)'
+                    // mounted && isDarkTheme && mode !== 'dark' ? 'invert-1' : ''
                   )}
                   style={
                     {
@@ -112,10 +112,10 @@ export function ThemesSwitcher({
                         isActive ? 'rotate-45 group-hover:rotate-0' : 'rotate-0'
                       )}
                     >
-                      <span className="flex size-6 bg-[--color-1]" />
-                      <span className="flex size-6 bg-[--color-2]" />
-                      <span className="flex size-6 bg-[--color-3]" />
-                      <span className="flex size-6 bg-[--color-4]" />
+                      <span className="flex size-6 bg-(--color-1)" />
+                      <span className="flex size-6 bg-(--color-2)" />
+                      <span className="flex size-6 bg-(--color-3)" />
+                      <span className="flex size-6 bg-(--color-4)" />
                       <span className="sr-only">{theme.name}</span>
                     </div>
                   </div>

@@ -38,7 +38,7 @@ export function InlineEquationElementStatic({
     >
       <div
         className={cn(
-          'after:absolute after:inset-0 after:-left-1 after:-top-0.5 after:z-[1] after:h-[calc(100%)+4px] after:w-[calc(100%+8px)] after:rounded-sm after:content-[""]',
+          'after:absolute after:inset-0 after:-left-1 after:-top-0.5 after:z-1 after:h-[calc(100%)+4px] after:w-[calc(100%+8px)] after:rounded-sm after:content-[""]',
           'h-6',
           element.texExpression.length === 0 &&
             'text-muted-foreground after:bg-neutral-500/10',

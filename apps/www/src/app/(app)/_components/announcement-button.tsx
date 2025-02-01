@@ -32,7 +32,7 @@ export function AnnouncementButton() {
       <Separator orientation="vertical" className="mx-2 h-4" /> */}
       <span className="whitespace-break-spaces underline-offset-4 group-hover:underline">
         <span>{content.description}</span>
-        {/* <span className="bg-gradient-to-r from-[#6EB6F2] via-[#a855f7] to-[#eab308] bg-clip-text text-transparent">
+        {/* <span className="bg-linear-to-r from-[#6EB6F2] via-[#a855f7] to-[#eab308] bg-clip-text text-transparent">
           Plate Plus
         </span> */}
       </span>

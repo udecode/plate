@@ -199,7 +199,7 @@
     "rimraf": "^6.0.1",
     "shiki": "^2.1.0",
     "tailwind-scrollbar-hide": "1.1.7",
-    "tailwindcss": "^3.4.17",
+    "tailwindcss": "4.0.0",
     "tailwindcss-animate": "^1.0.7",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.2",
