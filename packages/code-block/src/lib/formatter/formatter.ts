@@ -2,7 +2,7 @@ import { formatJson, isValidJson } from './jsonFormatter';
 
 const supportedLanguages = new Set(['json']);
 
-export const isLangSupported = (lang?: string): boolean => 
+export const isLangSupported = (lang?: string): boolean =>
   Boolean(lang && supportedLanguages.has(lang));
 
 export const formatCode = (code: string, lang?: string): string => {
@@ -11,10 +11,12 @@ export const formatCode = (code: string, lang?: string): string => {
   }
 
   switch (lang) {
-    case 'json':
+    case 'json': {
       return formatJson(code);
-    default:
+    }
+    default: {
       return code;
+    }
   }
 };
 
@@ -24,9 +26,11 @@ export const isValidSyntax = (code: string, lang?: string): boolean => {
   }
 
   switch (lang) {
-    case 'json':
+    case 'json': {
       return isValidJson(code);
-    default:
+    }
+    default: {
       return false;
+    }
   }
 };

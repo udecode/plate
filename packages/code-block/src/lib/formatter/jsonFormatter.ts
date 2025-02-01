@@ -9,6 +9,7 @@ export const formatJson = (code: string): string => {
 export const isValidJson = (code: string): boolean => {
   try {
     JSON.parse(code);
+
     return true;
   } catch (error) {
     return false;

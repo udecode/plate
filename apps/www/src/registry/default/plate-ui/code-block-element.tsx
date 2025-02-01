@@ -2,11 +2,18 @@
 
 import React from 'react';
 
-import { cn, withRef } from '@udecode/cn';
-import { useCodeBlockElementState } from '@udecode/plate-code-block/react';
+import type { Editor, TElement } from '@udecode/plate';
 
+import { cn, withRef } from '@udecode/cn';
+import {
+  formatCodeBlock,
+  isLangSupported,
+  useCodeBlockElementState,
+} from '@udecode/plate-code-block/react';
+import { BracesIcon } from 'lucide-react';
+
+import { Button } from './button';
 import { CodeBlockCombobox } from './code-block-combobox';
-import { CodeBlockFormatButton } from './code-block-format-button';
 import { PlateElement } from './plate-element';
 
 import './code-block-element.css';
@@ -32,7 +39,7 @@ export const CodeBlockElement = withRef<typeof PlateElement>(
             className="absolute right-2 top-2 z-10 flex select-none items-center gap-1"
             contentEditable={false}
           >
-            <CodeBlockFormatButton element={element} />
+            <CodeBlockFormatButton {...props} />
             <CodeBlockCombobox />
           </div>
         )}
@@ -40,3 +47,27 @@ export const CodeBlockElement = withRef<typeof PlateElement>(
     );
   }
 );
+
+export function CodeBlockFormatButton({
+  editor,
+  element,
+}: {
+  editor: Editor;
+  element: TElement;
+}) {
+  if (!isLangSupported(element)) {
+    return null;
+  }
+
+  return (
+    <Button
+      size="xs"
+      variant="ghost"
+      className="h-5 justify-between px-1 text-xs"
+      onClick={() => formatCodeBlock(editor, { element })}
+      title="Format code"
+    >
+      <BracesIcon className="text-gray-500" />
+    </Button>
+  );
+}

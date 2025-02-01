@@ -1,14 +1,12 @@
 import { createEditor } from '@udecode/plate';
 import { createPlateEditor } from '@udecode/plate/react';
 
-import { JsonFormatter } from './jsonFormatter';
+import { formatCode, isValidSyntax } from './formatter';
 
 describe('JsonFormatter', () => {
-  const formatter = new JsonFormatter();
-
   it('should detect valid JSON', () => {
     const json = '{ "name": "ChatGPT", "type": "AI" }';
-    const isValid = formatter.validSyntax(json);
+    const isValid = isValidSyntax(json);
     expect(isValid).toBe(true);
   });
 
@@ -16,7 +14,7 @@ describe('JsonFormatter', () => {
     const editor = createEditor();
     const plateEditor = createPlateEditor({ editor });
     const json = '{ name: "ChatGPT", type: AI }';
-    const isValid = formatter.validSyntax(json);
+    const isValid = isValidSyntax(json);
     expect(isValid).toBe(false);
   });
 
@@ -24,7 +22,7 @@ describe('JsonFormatter', () => {
     const editor = createEditor();
     const plateEditor = createPlateEditor({ editor });
     const json = '{"name":"ChatGPT","type":"AI"}';
-    const formattedJson = formatter.format(json);
+    const formattedJson = formatCode(json);
     const expected = `{
   "name": "ChatGPT",
   "type": "AI"
@@ -36,7 +34,7 @@ describe('JsonFormatter', () => {
     const editor = createEditor();
     const plateEditor = createPlateEditor({ editor });
     const json = '{ name: "ChatGPT", type: AI }';
-    const formattedJson = formatter.format(json);
+    const formattedJson = formatCode(json);
     expect(formattedJson).toBe(json);
   });
 });
