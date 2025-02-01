@@ -4,7 +4,7 @@ import type { TCodeBlockElement } from '../../lib';
 
 import { Formatter } from '../../lib/formatter/formatter';
 
-export const useCodeBlockFormat = ({
+export const formatCodeBlock = (editor: Editor, {
   element,
 }: {
   element: TCodeBlockElement;
