@@ -9,24 +9,17 @@ export const formatCodeBlock = (editor: Editor, {
 }: {
   element: TCodeBlockElement;
 }) => {
-  const editor = useEditorRef();
-
+      const formatter = new Formatter();
+      
   const { lang: language } = element;
-  const code = editor.api.string(element);
-
-  const formatter = new Formatter();
-  const isSupported = formatter.isLangSupported(language);
-
-  const format = () => {
-    const validSyntax = formatter.validSyntax(code, language);
+    const isSupported = isLangSupported(language);
+    if (!isSupported) return
+    const validSyntax = isValidSyntax(code, language);
 
     if (validSyntax) {
-      const formattedCode = formatter.format(code, language);
+      const code = editor.api.string(element);
+      const formattedCode = formatCode(code, language);
       editor.tf.insertText(formattedCode, { at: element });
     }
   };
-
-  const validSyntax = formatter.validSyntax(code, language);
-
-  return { format, isSupported, validSyntax };
 };
