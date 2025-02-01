@@ -22,7 +22,7 @@ export function CodeBlockFormatButton({ element }: { element: TElement }) {
       variant="ghost"
       className="h-5 justify-between px-1 text-xs"
       disabled={!validSyntax}
-      onClick={() => format()}
+      onClick={() => formatCodeBlock(editor, { element })}
       title="Format code"
     >
       <BracesIcon className="text-gray-500" />
