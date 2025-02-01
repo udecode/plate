@@ -9,7 +9,7 @@ import { Button } from './button';
 
 export function CodeBlockFormatButton({ element }: { element: TElement }) {
 
-  if (!isSupported) {
+  if (!isLangSupported(element.lang)) {
     return null;
   }
 
