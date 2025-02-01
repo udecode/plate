@@ -1,40 +1,32 @@
-import { JsonFormatter } from './jsonFormatter';
-
-export interface IFormatter {
-  format: (code: string) => string;
-  validSyntax: (code: string) => boolean;
-}
+import { formatJson, isValidJson } from './jsonFormatter';
 
 const supportedLanguages = new Set(['json']);
 
-export class Formatter {
-  format(code: string, lang?: string) {
-    if (!lang || !supportedLanguages.has(lang)) {
-      return '';
-    }
+export const isLangSupported = (lang?: string): boolean => 
+  Boolean(lang && supportedLanguages.has(lang));
 
-    switch (lang) {
-      case 'json': {
-        return new JsonFormatter().format(code);
-      }
-    }
-
-    return code;
+export const formatCode = (code: string, lang?: string): string => {
+  if (!isLangSupported(lang)) {
+    return '';
   }
 
-  isLangSupported(lang?: string) {
-    return lang && supportedLanguages.has(lang);
+  switch (lang) {
+    case 'json':
+      return formatJson(code);
+    default:
+      return code;
+  }
+};
+
+export const isValidSyntax = (code: string, lang?: string): boolean => {
+  if (!isLangSupported(lang)) {
+    return false;
   }
 
-  validSyntax(code: string, lang?: string) {
-    if (!lang || !supportedLanguages.has(lang)) {
+  switch (lang) {
+    case 'json':
+      return isValidJson(code);
+    default:
       return false;
-    }
-
-    switch (lang) {
-      case 'json': {
-        return new JsonFormatter().validSyntax(code);
-      }
-    }
   }
-}
+};
