@@ -5,11 +5,8 @@ import React from 'react';
 import type { Editor, TElement } from '@udecode/plate';
 
 import { cn, withRef } from '@udecode/cn';
-import {
-  formatCodeBlock,
-  isLangSupported,
-  useCodeBlockElementState,
-} from '@udecode/plate-code-block/react';
+import { formatCodeBlock, isLangSupported } from '@udecode/plate-code-block';
+import { useCodeBlockElementState } from '@udecode/plate-code-block/react';
 import { BracesIcon } from 'lucide-react';
 
 import { Button } from './button';
@@ -55,7 +52,7 @@ export function CodeBlockFormatButton({
   editor: Editor;
   element: TElement;
 }) {
-  if (!isLangSupported(element)) {
+  if (!isLangSupported(element.lang as string)) {
     return null;
   }
 
