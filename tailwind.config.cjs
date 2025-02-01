@@ -1,6 +1,3 @@
-const plugin = require('tailwindcss/plugin');
-
-/** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ['src/**/*.{ts,tsx}'],
   darkMode: ['class'],
@@ -8,9 +5,6 @@ module.exports = {
     require('tailwindcss-animate'),
     require('tailwind-scrollbar-hide'),
     require('@tailwindcss/typography'),
-    plugin(({ addVariant }) => {
-      addVariant('all', '& *');
-    }),
   ],
   theme: {
     container: {
@@ -102,7 +96,6 @@ module.exports = {
         ],
         mono: [
           'var(--font-mono)',
-          ...require('tailwindcss/defaultTheme').fontFamily.mono,
         ],
         sans: [
           'var(--font-sans)',
