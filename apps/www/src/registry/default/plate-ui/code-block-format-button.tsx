@@ -8,9 +8,6 @@ import { BracesIcon } from 'lucide-react';
 import { Button } from './button';
 
 export function CodeBlockFormatButton({ element }: { element: TElement }) {
-  const { format, isSupported, validSyntax } = useCodeBlockFormat({
-    element,
-  });
 
   if (!isSupported) {
     return null;
