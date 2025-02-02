@@ -39,6 +39,7 @@ export interface TTableCellElement extends TElement {
     top?: BorderStyle;
   };
   background?: string;
+  backgroundColor?: string;
   colSpan?: number;
   rowSpan?: number;
   size?: number;

@@ -1,9 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useCallback } from 'react';
 
 import type * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-import type { TTableElement } from '@udecode/plate-table';
 
 import { PopoverAnchor } from '@radix-ui/react-popover';
 import { cn, withRef } from '@udecode/cn';
@@ -19,11 +18,18 @@ import {
 } from '@udecode/plate/react';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 import {
+  type TTableElement,
+  setCellBackgroundColor,
+} from '@udecode/plate-table';
+import {
   TablePlugin,
   TableProvider,
+  useColorDropdownMenu,
+  useColorDropdownMenuState,
   useTableBordersDropdownMenuContentState,
   useTableElement,
   useTableMergeState,
+  useTableStore,
 } from '@udecode/plate-table/react';
 import {
   ArrowDown,
@@ -31,17 +37,22 @@ import {
   ArrowRight,
   ArrowUp,
   CombineIcon,
+  EraserIcon,
   Grid2X2Icon,
+  PaintBucketIcon,
   SquareSplitHorizontalIcon,
   Trash2Icon,
   XIcon,
 } from 'lucide-react';
 
+import { DEFAULT_COLORS, DEFAULT_CUSTOM_COLORS } from './color-constants';
+import { ColorPicker } from './color-picker';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuGroup,
+  DropdownMenuItem,
   DropdownMenuPortal,
   DropdownMenuTrigger,
 } from './dropdown-menu';
@@ -56,6 +67,7 @@ import {
   BorderTop,
 } from './table-icons';
 import { Toolbar, ToolbarButton, ToolbarGroup } from './toolbar';
+import { ColorDropdownMenuItems } from './color-dropdown-menu-items';
 
 export const TableElement = withHOC(
   TableProvider,
@@ -134,6 +146,9 @@ export const TableFloatingToolbar = withRef<typeof PopoverContent>(
             contentEditable={false}
           >
             <ToolbarGroup>
+              <ColorDropdownMenu tooltip="Background color">
+                <PaintBucketIcon />
+              </ColorDropdownMenu>
               {canMerge && (
                 <ToolbarButton
                   onClick={() => tf.table.merge()}
@@ -321,3 +336,62 @@ export const TableBordersDropdownMenuContent = withRef<
     </DropdownMenuContent>
   );
 });
+
+type ColorDropdownMenuProps = {
+  children: React.ReactNode;
+  tooltip: string;
+};
+
+export function ColorDropdownMenu({
+  children,
+  tooltip,
+}: ColorDropdownMenuProps) {
+  const state = useColorDropdownMenuState({
+    colors: DEFAULT_COLORS,
+    customColors: DEFAULT_CUSTOM_COLORS,
+  });
+
+  const { buttonProps, menuProps } = useColorDropdownMenu(state);
+
+  const editor = useEditorRef();
+  const selectedCells = useTableStore().get.selectedCells();
+
+  const onUpdateColor = useCallback(
+    (color: string) => {
+      state.onToggle();
+      setCellBackgroundColor(editor, { color, selectedCells });
+    },
+    [state, selectedCells, editor]
+  );
+
+  const onClearColor = useCallback(() => {
+    state.onToggle();
+    setCellBackgroundColor(editor, { color: 'transparent', selectedCells });
+  }, [state, selectedCells, editor]);
+
+  return (
+    <DropdownMenu modal={false} {...menuProps}>
+      <DropdownMenuTrigger asChild>
+        <ToolbarButton tooltip={tooltip} {...buttonProps}>
+          {children}
+        </ToolbarButton>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent align="start">
+        <DropdownMenuGroup label="Colors">
+          <ColorDropdownMenuItems
+            className="px-2"
+            colors={state.colors}
+            updateColor={onUpdateColor}
+          />
+        </DropdownMenuGroup>
+        <DropdownMenuGroup>
+          <DropdownMenuItem className="p-2" onClick={onClearColor}>
+            <EraserIcon />
+            <span>Clear</span>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}

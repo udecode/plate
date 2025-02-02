@@ -75,6 +75,7 @@ export const TableCellElement = withRef<
       style={
         {
           '--cellBackground': element.background,
+          backgroundColor: element.backgroundColor,
           maxWidth: width || 240,
           minWidth: width || 120,
           ...style,
