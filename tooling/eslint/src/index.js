@@ -6,8 +6,6 @@ import { getTailwindConfig } from './configs/tailwind.js';
 
 export { compat, defineConfig } from './utils.js';
 
-
-
 export const filePatterns = {
   js: ['*.js', '*.cjs'],
   jsx: ['*.{js,jsx,ts,tsx}'],

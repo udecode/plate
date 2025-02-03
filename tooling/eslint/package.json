@@ -13,8 +13,8 @@
   "scripts": {
     "clean": "rimraf dist *.tsbuildinfo",
     "lint": "yarn p:lint",
-    "lint:fix": "yarn lint --fix",
-    "typecheck": "tsc"
+    "lint:fix": "yarn p:lint:fix",
+    "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
     "@eslint/compat": "^1.2.6",

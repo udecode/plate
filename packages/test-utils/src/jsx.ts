@@ -1,5 +1,3 @@
-/* eslint-disable prettier/prettier */
-
 import {
   type HyperscriptShorthands,
   createHyperscript as createHyperscriptBase,
@@ -71,7 +69,7 @@ const elements: HyperscriptShorthands = {
   hnli: { type: 'nli' },
   hol: { type: 'ol' },
   hp: { type: 'p' },
-  hplaceholder: { children: voidChildren ,type: 'placeholder'},
+  hplaceholder: { children: voidChildren, type: 'placeholder' },
   htable: { type: 'table' },
   htd: { type: 'td' },
   hth: { type: 'th' },
@@ -82,7 +80,6 @@ const elements: HyperscriptShorthands = {
   hul: { type: 'ul' },
   hvideo: { children: voidChildren, type: 'video' },
 };
-
 
 export const jsx = createHyperscript({
   creators: {

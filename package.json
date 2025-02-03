@@ -38,7 +38,7 @@
     "g:dev:cli": "yarn workspace shadcx dev",
     "g:lint": "turbo --filter \"./packages/**\" lint",
     "g:lint:all": "turbo && cd templates/plate-playground-template && pnpm lint",
-    "g:lint:all:fix": "turbo lint --fix && cd templates/plate-playground-template && pnpm lint:fix",
+    "g:lint:all:fix": "turbo lint:fix && cd templates/plate-playground-template && pnpm lint:fix",
     "g:lint:fix": "turbo lint:fix",
     "g:plate-ui": "cd $INIT_CWD && COMPONENTS_REGISTRY_URL=http://localhost:3000 yarn run -T plate-ui",
     "g:release:next": "yarn build && yarn changeset publish --tag next",
