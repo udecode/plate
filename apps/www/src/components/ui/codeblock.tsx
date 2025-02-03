@@ -95,7 +95,7 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
   };
 
   return (
-    // eslint-disable-next-line tailwindcss/no-custom-classname
+    
     <div className="codeblock relative w-full bg-zinc-950 font-sans">
       <div className="flex w-full items-center justify-between bg-zinc-800 px-6 py-1 pr-4 text-zinc-100">
         <span className="text-xs lowercase">{language}</span>

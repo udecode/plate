@@ -118,7 +118,7 @@ const DropLine = React.forwardRef<
     <div
       ref={ref}
       {...props}
-      // eslint-disable-next-line tailwindcss/no-custom-classname
+      
       className={cn(
         'slate-dropLine',
         'absolute bg-brand/50',

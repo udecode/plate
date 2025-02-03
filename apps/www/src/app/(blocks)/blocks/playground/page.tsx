@@ -16,7 +16,7 @@ const block: Block = {
 export default function PlaygroundPage() {
   return (
     <div
-      // eslint-disable-next-line tailwindcss/no-custom-classname
+      
       className={cn('themes-wrapper bg-background', block.container?.className)}
     >
       {/* <BlockWrapper block={block}> */}

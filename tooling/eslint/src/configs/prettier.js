@@ -1,10 +1,10 @@
-import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
+// import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 
 import { defineConfig } from '../utils.js';
-import prettierConfig from './prettier.base.config.js';
+// import prettierConfig from './prettier.base.config.js';
 
 export default defineConfig(
-  eslintPluginPrettierRecommended,
+  // eslintPluginPrettierRecommended,
   {
     rules: {
       'arrow-body-style': 'off',
@@ -38,13 +38,14 @@ export default defineConfig(
       ],
       'prefer-arrow-callback': 'off',
 
-      'prettier/prettier': [
-        'warn',
-        prettierConfig,
-        {
-          usePrettierrc: false,
-        },
-      ],
+      'prettier/prettier': 'off',
+      // 'prettier/prettier': [
+      //   'warn',
+      //   prettierConfig,
+      //   {
+      //     usePrettierrc: false,
+      //   },
+      // ],
     },
   },
   {

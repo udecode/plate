@@ -19,7 +19,7 @@ export function ThemeWrapper({
 
   return (
     <div
-      // eslint-disable-next-line tailwindcss/no-custom-classname
+      
       className={cn(
         // `theme-${defaultTheme || config.theme}`,
         'themes-wrapper',

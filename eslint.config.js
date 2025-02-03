@@ -1,5 +1,9 @@
 import { configs, defineConfig, filePatterns } from '@app/eslint';
 
+
+
+
+
 export default defineConfig(
   {
     ignores: [
@@ -12,9 +16,9 @@ export default defineConfig(
     ],
   },
   ...configs.base,
-  ...configs.getTailwind(),
+  // ...configs.getTailwind(),
   ...configs.next,
-  ...configs.prettier,
+  // ...configs.prettier,
   {
     languageOptions: {
       parserOptions: {

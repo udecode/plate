@@ -33,6 +33,7 @@ export default defineConfig(
       'unicorn/no-document-cookie': 'off',
       // TypeScript doesn't like the for-of loop this rule fixes to
       'unicorn/no-for-loop': 'off',
+      'unicorn/no-nested-ternary': 'off',
       'unicorn/no-new-array': 'off',
       'unicorn/no-null': 'off',
       'unicorn/no-thenable': 'off',

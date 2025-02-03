@@ -35,7 +35,7 @@ export default defineConfig(
         'warn',
         { children: 'never', props: 'never' },
       ],
-      'react/jsx-newline': ['warn'],
+      'react/jsx-newline': ['off'],
       // https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/no-unescaped-entities.md
       'react/no-unescaped-entities': ['error', { forbid: ['>'] }],
 

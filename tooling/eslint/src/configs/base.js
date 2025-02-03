@@ -40,9 +40,6 @@ export default defineConfig(
   ...unicornConfig,
   ...perfectionistConfig,
 
-  // Tailwind plugin
-  // ...fixupConfigRules(compat.extends('plugin:tailwindcss/recommended')),
-
   {
     files: ['**/*.cjs'],
     languageOptions: {
@@ -60,12 +57,6 @@ export default defineConfig(
     linterOptions: {
       reportUnusedDisableDirectives: true,
     },
-    // settings: {
-    //   tailwindcss: {
-    //     callees: ['classnames', 'clsx', 'ctl', 'cn', 'cva'],
-    //   },
-    // },
-
     rules: {
       'no-empty': ['error', { allowEmptyCatch: true }],
     },
