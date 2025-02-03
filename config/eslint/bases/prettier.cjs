@@ -15,7 +15,7 @@ module.exports = {
       files: ['index.ts*'],
       rules: {
         'padding-line-between-statements': 'off',
-        'pretter/prettier': 'off',
+        'prettier/prettier': 'off',
       },
     },
   ],

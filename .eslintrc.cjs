@@ -18,14 +18,14 @@ module.exports = {
     './config/eslint/bases/typescript.cjs',
     './config/eslint/bases/jest.cjs',
     './config/eslint/bases/react.cjs',
-    './config/eslint/bases/tailwind.cjs',
+    // './config/eslint/bases/tailwind.cjs',
     './config/eslint/bases/rtl.cjs',
     './config/eslint/bases/next.cjs',
 
     './config/eslint/bases/unicorn.cjs',
     './config/eslint/bases/perfectionist.cjs',
 
-    './config/eslint/bases/prettier.cjs',
+    // './config/eslint/bases/prettier.cjs',
   ],
   ignorePatterns: [
     ...getDefaultIgnorePatterns(),

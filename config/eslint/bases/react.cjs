@@ -60,8 +60,8 @@ module.exports = {
         'jsx-a11y/label-has-for': 'off',
         'jsx-a11y/no-autofocus': 'off',
         'jsx-a11y/no-static-element-interactions': 'off',
-        'mdx/no-unescaped-entities': 'off',
-        'mdx/no-unused-expressions': 'off',
+        // 'mdx/no-unescaped-entities': 'off',
+        // 'mdx/no-unused-expressions': 'off',
         'react/button-has-type': [
           'error',
           {
