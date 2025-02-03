@@ -15,7 +15,6 @@ import {
   ColorDropdownMenuItems,
 } from './color-dropdown-menu-items';
 import { ColorInput } from './color-input';
-
 // import { ColorInput } from './color-input';
 import { DropdownMenuItem } from './dropdown-menu';
 
