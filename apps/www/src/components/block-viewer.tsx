@@ -284,7 +284,7 @@ function BlockViewerToolbar({
           <Link
             className={cn(
               buttonVariants(),
-              'group relative flex justify-start gap-2 overflow-hidden whitespace-pre rounded-sm',
+              'group relative flex justify-start gap-2 overflow-hidden rounded-sm whitespace-pre',
               'dark:bg-muted dark:text-foreground',
               'hover:ring-2 hover:ring-primary hover:ring-offset-2',
               'transition-all duration-300 ease-out',
@@ -297,7 +297,7 @@ function BlockViewerToolbar({
               className={cn(
                 'absolute right-0 -mt-12 h-32 w-8 translate-x-12 rotate-12',
                 'bg-white opacity-10',
-                'transition-all duration-1000 ease-out '
+                'transition-all duration-1000 ease-out'
               )}
             />
             Get the code -&gt;
@@ -410,7 +410,7 @@ function BlockViewerView({ preview }: { preview: React.ReactNode }) {
               />
             )}
           </ResizablePanel>
-          <ResizableHandle className="relative hidden w-3 bg-transparent p-0 after:absolute after:right-0 after:top-1/2 after:h-8 after:w-[6px] after:-translate-x-px after:-translate-y-1/2 after:rounded-full after:bg-border after:transition-all hover:after:h-10 sm:block" />
+          <ResizableHandle className="relative hidden w-3 bg-transparent p-0 after:absolute after:top-1/2 after:right-0 after:h-8 after:w-[6px] after:-translate-x-px after:-translate-y-1/2 after:rounded-full after:bg-border after:transition-all hover:after:h-10 sm:block" />
           <ResizablePanel defaultSize={0} minSize={0} />
         </ResizablePanelGroup>
       </div>
@@ -467,7 +467,7 @@ function BlockViewerCode({ size }: { size?: 'default' | 'sm' }) {
         </div>
         <div
           key={file?.path}
-          className="relative flex-1 overflow-hidden after:absolute after:inset-y-0 after:left-0 after:w-10 after:bg-zinc-950 [&_.line:before]:sticky [&_.line:before]:left-2 [&_.line:before]:z-10 [&_.line:before]:-translate-y-px [&_.line:before]:pr-1 [&_pre]:h-(--height) [&_pre]:overflow-auto [&_pre]:bg-transparent! [&_pre]:pb-20 [&_pre]:pt-4 [&_pre]:font-mono [&_pre]:text-sm [&_pre]:leading-relaxed"
+          className="relative flex-1 overflow-hidden after:absolute after:inset-y-0 after:left-0 after:w-10 after:bg-zinc-950 [&_.line:before]:sticky [&_.line:before]:left-2 [&_.line:before]:z-10 [&_.line:before]:-translate-y-px [&_.line:before]:pr-1 [&_pre]:h-(--height) [&_pre]:overflow-auto [&_pre]:bg-transparent! [&_pre]:pt-4 [&_pre]:pb-20 [&_pre]:font-mono [&_pre]:text-sm [&_pre]:leading-relaxed"
           data-rehype-pretty-code-fragment
           dangerouslySetInnerHTML={{ __html: file?.highlightedContent ?? '' }}
         />
@@ -487,7 +487,7 @@ export function BlockViewerFileTree({ size }: { size?: 'default' | 'sm' }) {
     <div className={cn('w-[280px]', size === 'sm' && 'w-[240px]')}>
       <SidebarProvider className="flex min-h-full! flex-col">
         <Sidebar
-          className="w-full flex-1 overflow-y-auto overflow-x-hidden border-r border-zinc-700 bg-zinc-900 text-white"
+          className="w-full flex-1 overflow-x-hidden overflow-y-auto border-r border-zinc-700 bg-zinc-900 text-white"
           collapsible="none"
         >
           <SidebarGroupLabel className="sticky top-0 z-10 h-12 rounded-none border-b border-zinc-700 bg-zinc-900 px-4 text-sm text-white">
@@ -516,7 +516,7 @@ function Tree({ index, item }: { index: number; item: FileTree }) {
       <SidebarMenuItem>
         <SidebarMenuButton
           className={cn(
-            'overflow-x-auto whitespace-nowrap rounded-none pl-(--index) hover:bg-zinc-700 hover:text-white focus:bg-zinc-700 focus:text-white focus-visible:bg-zinc-700 focus-visible:text-white active:bg-zinc-700 active:text-white data-[active=true]:bg-zinc-700 data-[active=true]:text-white'
+            'overflow-x-auto rounded-none pl-(--index) whitespace-nowrap hover:bg-zinc-700 hover:text-white focus:bg-zinc-700 focus:text-white focus-visible:bg-zinc-700 focus-visible:text-white active:bg-zinc-700 active:text-white data-[active=true]:bg-zinc-700 data-[active=true]:text-white'
           )}
           style={
             {
@@ -544,7 +544,7 @@ function Tree({ index, item }: { index: number; item: FileTree }) {
         <CollapsibleTrigger asChild>
           <SidebarMenuButton
             className={cn(
-              'overflow-x-auto whitespace-nowrap rounded-none pl-(--index) hover:bg-zinc-700 hover:text-white focus-visible:bg-zinc-700 focus-visible:text-white active:bg-zinc-700 active:text-white data-[active=true]:bg-zinc-700 data-[active=true]:text-white data-[state=open]:hover:bg-zinc-700 data-[state=open]:hover:text-white'
+              'overflow-x-auto rounded-none pl-(--index) whitespace-nowrap hover:bg-zinc-700 hover:text-white focus-visible:bg-zinc-700 focus-visible:text-white active:bg-zinc-700 active:text-white data-[active=true]:bg-zinc-700 data-[active=true]:text-white data-[state=open]:hover:bg-zinc-700 data-[state=open]:hover:text-white'
             )}
             style={
               {

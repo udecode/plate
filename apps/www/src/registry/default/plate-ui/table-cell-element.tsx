@@ -66,7 +66,7 @@ export const TableCellElement = withRef<
         isHeader && 'text-left *:m-0',
         'before:size-full',
         selected && 'before:z-10 before:bg-brand/5',
-        "before:absolute before:box-border before:select-none before:content-['']",
+        "before:absolute before:box-border before:content-[''] before:select-none",
         borders.bottom?.size && `before:border-b before:border-b-border`,
         borders.right?.size && `before:border-r before:border-r-border`,
         borders.left?.size && `before:border-l before:border-l-border`,
@@ -103,14 +103,14 @@ export const TableCellElement = withRef<
             <>
               <ResizeHandle
                 {...rightProps}
-                className="-right-1 -top-2 h-[calc(100%_+_8px)] w-2"
+                className="-top-2 -right-1 h-[calc(100%_+_8px)] w-2"
                 data-col={colIndex}
               />
               <ResizeHandle {...bottomProps} className="-bottom-1 h-2" />
               {!hiddenLeft && (
                 <ResizeHandle
                   {...leftProps}
-                  className="-left-1 top-0 w-2"
+                  className="top-0 -left-1 w-2"
                   data-resizer-left={colIndex === 0 ? 'true' : undefined}
                 />
               )}

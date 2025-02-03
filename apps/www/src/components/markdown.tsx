@@ -64,7 +64,7 @@ export function Markdown({
           );
         },
         p({ children }) {
-          return <Typography.P className="mb-0 mt-6">{children}</Typography.P>;
+          return <Typography.P className="mt-6 mb-0">{children}</Typography.P>;
         },
         ul({ children }) {
           return (

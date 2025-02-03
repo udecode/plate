@@ -147,7 +147,7 @@ export function DocContent({
             ))}
           </div>
         ) : null}
-        <div className="pb-12 pt-8">{children}</div>
+        <div className="pt-8 pb-12">{children}</div>
         {doc && <DocsPager doc={doc as any} />}
       </div>
 

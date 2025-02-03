@@ -25,7 +25,7 @@ const CodeBlock: FC<{
     <div className={cn('relative', className)}>
       {npm ? (
         <CopyNpmCommandButton
-          className="absolute right-4 top-4"
+          className="absolute top-4 right-4"
           commands={{
             __bunCommand__: 'bun add ' + value,
             __npmCommand__: 'npm install ' + value,
@@ -34,11 +34,10 @@ const CodeBlock: FC<{
           }}
         />
       ) : (
-        <CopyButton className="absolute right-4 top-4" value={value} />
+        <CopyButton className="absolute top-4 right-4" value={value} />
       )}
 
       <SyntaxHighlighter
-        
         className={cn(
           'codeblock relative max-h-[650px] w-full overflow-auto rounded-lg border bg-zinc-950! font-sans dark:bg-zinc-900!',
           fixedHeight && 'h-[650px]'

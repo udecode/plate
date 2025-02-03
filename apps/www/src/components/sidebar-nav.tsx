@@ -73,7 +73,7 @@ export function DocsSidebarNav({ config }: DocsSidebarNavProps) {
           />
           {filter && (
             <button
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              className="absolute top-1/2 right-2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               onClick={() => setFilter('')}
               type="button"
             >
@@ -106,7 +106,7 @@ export function DocsSidebarNav({ config }: DocsSidebarNavProps) {
                           <span
                             key={labelIndex}
                             className={cn(
-                              'rounded-md bg-secondary py-0.5 text-xs font-medium leading-none text-foreground',
+                              'rounded-md bg-secondary py-0.5 text-xs leading-none font-medium text-foreground',
                               label === 'Plus' &&
                                 'bg-primary text-background dark:text-background',
                               label === 'New' &&
@@ -145,7 +145,7 @@ export function DocsSidebarNav({ config }: DocsSidebarNavProps) {
                       <span
                         key={labelIndex}
                         className={cn(
-                          'rounded-md bg-secondary px-1.5 py-0.5 text-xs font-medium leading-none text-foreground',
+                          'rounded-md bg-secondary px-1.5 py-0.5 text-xs leading-none font-medium text-foreground',
                           label === 'Plus' &&
                             'bg-primary text-background dark:text-background',
                           label === 'New' && 'bg-[#adfa1d] dark:text-background'
@@ -249,7 +249,7 @@ export function DocsSidebarNavItems({
                 {subItem.label && (
                   <span
                     className={cn(
-                      'ml-2 rounded-md bg-secondary px-1.5 py-0.5 text-xs font-medium leading-none text-foreground',
+                      'ml-2 rounded-md bg-secondary px-1.5 py-0.5 text-xs leading-none font-medium text-foreground',
                       subItem.label === 'Plus' &&
                         'bg-primary text-background dark:text-background',
                       subItem.label === 'New' &&

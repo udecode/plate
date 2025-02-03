@@ -56,7 +56,7 @@ function Caret({ caretPosition, data }: CaretProps) {
       style={isHover ? caretStyleHover : caretStyle}
     >
       <div
-        className="absolute top-0 whitespace-nowrap rounded rounded-bl-none px-1.5 py-0.5 text-xs text-white"
+        className="absolute top-0 rounded rounded-bl-none px-1.5 py-0.5 text-xs whitespace-nowrap text-white"
         style={isHover ? labelStyleHover : labelStyle}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}

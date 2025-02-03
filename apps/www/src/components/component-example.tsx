@@ -46,13 +46,13 @@ export function ComponentExample({
         <div className="flex items-center justify-between pb-3">
           <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0">
             <TabsTrigger
-              className="relative rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+              className="relative rounded-none border-b-2 border-b-transparent bg-transparent px-4 pt-2 pb-3 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
               value="preview"
             >
               Preview
             </TabsTrigger>
             <TabsTrigger
-              className="relative rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+              className="relative rounded-none border-b-2 border-b-transparent bg-transparent px-4 pt-2 pb-3 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
               value="code"
             >
               Code
@@ -60,14 +60,14 @@ export function ComponentExample({
           </TabsList>
           {extractedClassNames ? (
             <CopyWithClassNames
-              className="absolute right-4 top-20"
+              className="absolute top-20 right-4"
               value={codeString}
               classNames={extractedClassNames}
             />
           ) : (
             codeString && (
               <CopyButton
-                className="absolute right-4 top-20"
+                className="absolute top-20 right-4"
                 value={codeString}
               />
             )

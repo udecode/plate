@@ -39,7 +39,7 @@ export function InstallationCode({
 
         {npmCommand ? (
           <CopyNpmCommandButton
-            className={cn('absolute right-4 top-4')}
+            className={cn('absolute top-4 right-4')}
             commands={{
               __bunCommand__: code.replaceAll('npm install', 'bun add'),
               __npmCommand__: code,
@@ -48,7 +48,7 @@ export function InstallationCode({
             }}
           />
         ) : (
-          <CopyButton className={cn('absolute right-4 top-4')} value={code} />
+          <CopyButton className={cn('absolute top-4 right-4')} value={code} />
         )}
       </div>
     </div>

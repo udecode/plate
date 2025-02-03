@@ -19,7 +19,6 @@ export function ThemeWrapper({
 
   return (
     <div
-      
       className={cn(
         // `theme-${defaultTheme || config.theme}`,
         'themes-wrapper',

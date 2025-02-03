@@ -47,7 +47,7 @@ export function PlaygroundPreviewToolbar({
         // fullScreen && 'bottom-4'
       )}
     >
-      <Button asChild variant="link" className="whitespace-normal px-1 md:px-2">
+      <Button asChild variant="link" className="px-1 whitespace-normal md:px-2">
         <a
           className="whitespace-nowrap"
           href={src ?? `#${block.name}`}

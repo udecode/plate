@@ -72,9 +72,16 @@
     }
   }
 
-  --font-heading: 'var(--font-heading)', 'ui-sans-serif', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI Variable Display', 'Segoe UI', 'Helvetica', 'Apple Color Emoji', 'Arial', 'sans-serif', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-  --font-mono: 'var(--font-mono)', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  --font-sans: 'var(--font-sans)', 'ui-sans-serif', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI Variable Display', 'Segoe UI', 'Helvetica', 'Apple Color Emoji', 'Arial', 'sans-serif', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-heading: 'var(--font-heading)', 'ui-sans-serif', '-apple-system',
+    'BlinkMacSystemFont', 'Segoe UI Variable Display', 'Segoe UI', 'Helvetica',
+    'Apple Color Emoji', 'Arial', 'sans-serif', 'Segoe UI Emoji',
+    'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-mono: 'var(--font-mono)', ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, 'Liberation Mono', 'Courier New', monospace;
+  --font-sans: 'var(--font-sans)', 'ui-sans-serif', '-apple-system',
+    'BlinkMacSystemFont', 'Segoe UI Variable Display', 'Segoe UI', 'Helvetica',
+    'Apple Color Emoji', 'Arial', 'sans-serif', 'Segoe UI Emoji',
+    'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
 @layer base {
@@ -107,10 +114,10 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
-    
+
     --brand: 217.2 91.2% 59.8%;
     --highlight: 47.9 95.8% 53.1%;
-    
+
     .prose {
       --tw-prose-body: var(--foreground);
       --tw-prose-bold: inherit;
@@ -147,7 +154,7 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
-    
+
     --brand: 213.3 93.9% 67.8%;
     --highlight: 48 96% 53%;
   }
@@ -158,15 +165,15 @@
     @apply border-border;
   }
   body {
-    @apply font-sans antialiased bg-background text-foreground overscroll-none;
+    @apply overscroll-none bg-background font-sans text-foreground antialiased;
   }
-  
+
   @supports (font: -apple-system-body) and (-webkit-appearance: none) {
     [data-wrapper] {
       @apply [@media(width>=1800px)]:border-t;
     }
   }
-  
+
   ::-webkit-scrollbar {
     width: 5px;
   }
@@ -190,14 +197,14 @@
 
   .step:before {
     @apply absolute inline-flex h-9 w-9 items-center justify-center rounded-full border-4 border-background bg-muted text-center -indent-px font-mono text-base font-medium;
-    @apply ml-[-50px] mt-[-4px];
+    @apply mt-[-4px] ml-[-50px];
     content: counter(step);
   }
-  
+
   .typography > .steps:first-child > h3:first-child {
     @apply mt-0;
   }
-  
+
   .steps > h3 {
     @apply mt-8 mb-4 text-base font-semibold;
   }
@@ -208,7 +215,7 @@
 
   .chunk-container::after {
     content: '';
-    @apply absolute -inset-4 shadow-xl rounded-xl border;
+    @apply absolute -inset-4 rounded-xl border shadow-xl;
   }
 }
 
@@ -227,41 +234,41 @@
 
 @layer base {
   /* mdx.css */
-  
+
   [data-theme='light'] {
     display: block;
   }
-  
+
   [data-theme='dark'] {
     display: none;
   }
-    
+
   .dark [data-theme='light'] {
     display: none;
   }
-  
+
   .dark [data-theme='dark'] {
     display: block;
   }
-  
+
   [data-rehype-pretty-code-fragment] {
     @apply relative text-white;
   }
-  
+
   [data-rehype-pretty-code-fragment] code {
-    @apply grid min-w-full break-words rounded-none border-0 bg-transparent p-0;
+    @apply grid min-w-full rounded-none border-0 bg-transparent p-0 break-words;
     counter-reset: line;
     box-decoration-break: clone;
   }
-  
+
   [data-rehype-pretty-code-fragment] .line {
     @apply inline-block min-h-[1rem] w-full px-4 py-0.5;
   }
-  
+
   [data-rehype-pretty-code-fragment] [data-line-numbers] .line {
     @apply px-2;
   }
-  
+
   [data-rehype-pretty-code-fragment] [data-line-numbers] > .line::before {
     @apply text-xs text-zinc-50/40;
     counter-increment: line;
@@ -271,27 +278,27 @@
     margin-right: 1.4rem;
     text-align: right;
   }
-  
+
   [data-rehype-pretty-code-fragment] .line--highlighted {
     @apply bg-zinc-700/50;
   }
-  
+
   [data-rehype-pretty-code-fragment] .line-highlighted span {
     @apply relative;
   }
-  
+
   [data-rehype-pretty-code-fragment] .word--highlighted {
     @apply rounded-md border-zinc-700/70 bg-zinc-700/50 p-1;
   }
-  
+
   .dark [data-rehype-pretty-code-fragment] .word--highlighted {
     @apply bg-zinc-900;
   }
-  
+
   [data-rehype-pretty-code-title] {
     @apply mt-2 px-4 pt-6 text-sm font-medium text-foreground;
   }
-  
+
   [data-rehype-pretty-code-title] + pre {
     @apply mt-2;
   }

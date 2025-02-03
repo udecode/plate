@@ -53,7 +53,7 @@ export default function CustomizerDrawer() {
           }}
           // shouldScaleBackground={false}
         >
-          <DialogContent className="max-h-[80vh] overflow-auto px-0 pb-6 pt-0">
+          <DialogContent className="max-h-[80vh] overflow-auto px-0 pt-0 pb-6">
             <CustomizerTabs />
           </DialogContent>
         </Dialog>
@@ -78,7 +78,7 @@ export default function CustomizerDrawer() {
               <Button
                 size="lg"
                 variant="ghost"
-                className="absolute left-4 top-4 size-8 p-0 px-1.5"
+                className="absolute top-4 left-4 size-8 p-0 px-1.5"
               >
                 <ChevronsRight className="size-5" />
                 <span className="sr-only">Close</span>

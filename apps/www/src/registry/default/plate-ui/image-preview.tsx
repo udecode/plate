@@ -53,14 +53,14 @@ export const ImagePreview = () => {
   return (
     <div
       className={cn(
-        'fixed left-0 top-0 z-50 h-screen w-screen',
+        'fixed top-0 left-0 z-50 h-screen w-screen',
         !isOpen && 'hidden'
       )}
       {...maskLayerProps}
     >
       <div className="absolute inset-0 size-full bg-black opacity-30"></div>
       <div className="absolute inset-0 size-full bg-black opacity-30"></div>
-      <div className="absolute inset-0 flex items-center justify-center ">
+      <div className="absolute inset-0 flex items-center justify-center">
         <div className="relative flex max-h-screen w-full items-center">
           <PreviewImage
             className={cn(
@@ -96,7 +96,7 @@ export const ImagePreview = () => {
                 <ArrowRight />
               </button>
             </div>
-            <div className="flex ">
+            <div className="flex">
               <button
                 className={cn(
                   toolButtonVariants({

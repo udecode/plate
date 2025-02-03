@@ -94,10 +94,7 @@ export const P = ({
   ...props
 }: React.HTMLAttributes<HTMLParagraphElement>) => (
   <p
-    className={cn(
-      'leading-7 not-first:mt-6 [&_code]:text-sm',
-      className
-    )}
+    className={cn('leading-7 not-first:mt-6 [&_code]:text-sm', className)}
     {...props}
   />
 );
@@ -107,10 +104,7 @@ export const UL = ({
   ...props
 }: React.HTMLAttributes<HTMLUListElement>) => (
   <ul
-    className={cn(
-      'group my-4 ml-6 list-disc group-data-list:my-2',
-      className
-    )}
+    className={cn('group my-4 ml-6 list-disc group-data-list:my-2', className)}
     data-list
     {...props}
   />
@@ -134,7 +128,7 @@ export const LI = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLElement>) => (
-  <li className={cn('mb-0 mt-2', className)} {...props} />
+  <li className={cn('mt-2 mb-0', className)} {...props} />
 );
 
 export const Blockquote = ({
@@ -231,14 +225,14 @@ export const Pre = ({
     <StyleWrapper styleName={__style__}>
       <pre
         className={cn(
-          'mb-4 mt-6 max-h-[650px] overflow-x-auto rounded-lg border bg-zinc-950 py-4 dark:bg-zinc-900',
+          'mt-6 mb-4 max-h-[650px] overflow-x-auto rounded-lg border bg-zinc-950 py-4 dark:bg-zinc-900',
           className
         )}
         {...props}
       />
       {__rawString__ && !__npmCommand__ && (
         <CopyButton
-          className={cn('absolute right-4 top-4', __withMeta__ && 'top-16')}
+          className={cn('absolute top-4 right-4', __withMeta__ && 'top-16')}
           value={__rawString__}
           event={__event__}
           src={__src__}
@@ -249,7 +243,7 @@ export const Pre = ({
         __pnpmCommand__ &&
         __bunCommand__ && (
           <CopyNpmCommandButton
-            className={cn('absolute right-4 top-4', __withMeta__ && 'top-16')}
+            className={cn('absolute top-4 right-4', __withMeta__ && 'top-16')}
             commands={{
               __bunCommand__,
               __npmCommand__,

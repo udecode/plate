@@ -185,14 +185,14 @@ const Gutter = React.forwardRef<
         !selected && 'opacity-0',
         isNodeType(HEADING_KEYS.h1) && 'pb-1 text-[1.875em]',
         isNodeType(HEADING_KEYS.h2) && 'pb-1 text-[1.5em]',
-        isNodeType(HEADING_KEYS.h3) && 'pb-1 pt-[2px] text-[1.25em]',
+        isNodeType(HEADING_KEYS.h3) && 'pt-[2px] pb-1 text-[1.25em]',
         isNodeType([HEADING_KEYS.h4, HEADING_KEYS.h5]) &&
-          'pb-0 pt-[3px] text-[1.1em]',
+          'pt-[3px] pb-0 text-[1.1em]',
         isNodeType(HEADING_KEYS.h6) && 'pb-0',
-        isNodeType(ParagraphPlugin.key) && 'pb-0 pt-[3px]',
+        isNodeType(ParagraphPlugin.key) && 'pt-[3px] pb-0',
         isNodeType(['ul', 'ol']) && 'pb-0',
         isNodeType(BlockquotePlugin.key) && 'pb-0',
-        isNodeType(CodeBlockPlugin.key) && 'pb-0 pt-6',
+        isNodeType(CodeBlockPlugin.key) && 'pt-6 pb-0',
         isNodeType([
           ImagePlugin.key,
           MediaEmbedPlugin.key,
@@ -200,7 +200,7 @@ const Gutter = React.forwardRef<
           TogglePlugin.key,
           ColumnPlugin.key,
         ]) && 'py-0',
-        isNodeType([PlaceholderPlugin.key, TablePlugin.key]) && 'pb-0 pt-3',
+        isNodeType([PlaceholderPlugin.key, TablePlugin.key]) && 'pt-3 pb-0',
         isInColumn && 'mt-2 h-4 pt-0',
         className
       )}
@@ -219,7 +219,7 @@ const DragHandle = React.memo(() => {
   return (
     <TooltipButton
       variant="ghost"
-      className="w-4.5 h-6 p-0"
+      className="h-6 w-4.5 p-0"
       onClick={() => {
         editor
           .getApi(BlockSelectionPlugin)

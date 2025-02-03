@@ -78,7 +78,7 @@ export function PlaygroundPreview({
         <ResizablePanel
           ref={ref}
           className={cn(
-            'max-sm:w-full max-sm:flex-auto! relative rounded-lg border bg-background',
+            'relative rounded-lg border bg-background max-sm:w-full max-sm:flex-auto!',
             isLiftMode && 'border-border/50'
           )}
           defaultSize={100}
@@ -110,7 +110,7 @@ export function PlaygroundPreview({
 
         <ResizableHandle
           className={cn(
-            'relative hidden w-3 bg-transparent p-0 after:absolute after:right-0 after:top-1/2 after:h-8 after:w-[6px] after:-translate-x-px after:-translate-y-1/2 after:rounded-full after:bg-border after:transition-all hover:after:h-10 sm:block',
+            'relative hidden w-3 bg-transparent p-0 after:absolute after:top-1/2 after:right-0 after:h-8 after:w-[6px] after:-translate-x-px after:-translate-y-1/2 after:rounded-full after:bg-border after:transition-all hover:after:h-10 sm:block',
             isLiftMode && 'invisible'
           )}
         />

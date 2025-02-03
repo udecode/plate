@@ -9,7 +9,7 @@ export default function CardsDemo() {
         <div className="space-y-4 lg:col-span-4 xl:col-span-6 xl:space-y-4">
           <div className="grid gap-1 sm:grid-cols-[280px_1fr] md:hidden">
             {/* <CardsCalendar /> */}
-            <div className="pt-3 sm:pl-2 sm:pt-0 xl:pl-4">
+            <div className="pt-3 sm:pt-0 sm:pl-2 xl:pl-4">
               {/* <CardsActivityGoal /> */}
             </div>
             <div className="pt-3 sm:col-span-2 xl:pt-4">
@@ -34,7 +34,7 @@ export default function CardsDemo() {
         <div className="space-y-4 lg:col-span-6 xl:col-span-5 xl:space-y-4">
           <div className="hidden gap-1 sm:grid-cols-[280px_1fr] md:grid">
             {/* <CardsCalendar /> */}
-            <div className="pt-3 sm:pl-2 sm:pt-0 xl:pl-3">
+            <div className="pt-3 sm:pt-0 sm:pl-2 xl:pl-3">
               {/* <CardsActivityGoal /> */}
             </div>
             <div className="pt-3 sm:col-span-2 xl:pt-3">

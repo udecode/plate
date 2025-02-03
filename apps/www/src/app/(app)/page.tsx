@@ -103,7 +103,7 @@ export default async function IndexPage({
             <CustomizerDrawer />
           </section>
 
-          <div className="relative mt-12 scroll-m-16 pb-48 md:mt-24 lg:mt-36 ">
+          <div className="relative mt-12 scroll-m-16 pb-48 md:mt-24 lg:mt-36">
             <BlockDisplay {...block} />
           </div>
         </div>
