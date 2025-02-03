@@ -4213,22 +4213,6 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
-    "utils": {
-      name: "utils",
-      description: "",
-      type: "registry:lib",
-      registryDependencies: undefined,
-      files: [{
-        path: "src/registry/default/lib/utils.ts",
-        type: "registry:lib",
-        target: ""
-      }],
-      component: React.lazy(() => import("@/registry/default/lib/utils.ts")),
-      source: "",
-      category: "",
-      subcategory: "",
-      chunks: []
-    },
     "uploadthing": {
       name: "uploadthing",
       description: "",

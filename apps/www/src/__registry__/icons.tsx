@@ -87,19 +87,19 @@ export const Icons = {
   radix: React.lazy(() => import("@radix-ui/react-icons").then(mod => ({
     default: mod.ChevronRightIcon
   }))),
-},  "ChevronUp": {
-  lucide: React.lazy(() => import("lucide-react").then(mod => ({
-    default: mod.ChevronUp
-  }))),
-  radix: React.lazy(() => import("@radix-ui/react-icons").then(mod => ({
-    default: mod.ChevronUpIcon
-  }))),
 },  "ChevronsUpDown": {
   lucide: React.lazy(() => import("lucide-react").then(mod => ({
     default: mod.ChevronsUpDown
   }))),
   radix: React.lazy(() => import("@radix-ui/react-icons").then(mod => ({
     default: mod.CaretSortIcon
+  }))),
+},  "ChevronUp": {
+  lucide: React.lazy(() => import("lucide-react").then(mod => ({
+    default: mod.ChevronUp
+  }))),
+  radix: React.lazy(() => import("@radix-ui/react-icons").then(mod => ({
+    default: mod.ChevronUpIcon
   }))),
 },  "Circle": {
   lucide: React.lazy(() => import("lucide-react").then(mod => ({
