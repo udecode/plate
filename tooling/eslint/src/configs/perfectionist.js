@@ -1,30 +1,16 @@
-/** @type {import('eslint').Linter.Config} */
-module.exports = {
-  extends: ['plugin:perfectionist/recommended-natural-legacy'],
-  overrides: [
-    {
-      files: ['index.ts*'],
-      rules: {
-        'perfectionist/sort-exports': 'off',
-      },
-    },
-  ],
-  plugins: ['perfectionist'],
+import perfectionist from 'eslint-plugin-perfectionist';
+
+import { defineConfig } from '../utils.js';
+
+export default defineConfig(perfectionist.configs['recommended-natural'], {
   rules: {
     '@typescript-eslint/adjacent-overload-signatures': 'off',
-
     'perfectionist/sort-array-includes': [
       'warn',
       {
         groupKind: 'literals-first',
-        ignoreCase: false,
         type: 'natural',
       },
-    ],
-
-    'perfectionist/sort-astro-attributes': [
-      'warn',
-      { ignoreCase: false, type: 'natural' },
     ],
     'perfectionist/sort-classes': [
       'warn',
@@ -44,21 +30,34 @@ module.exports = {
           'static-block',
           'unknown',
         ],
-        ignoreCase: false,
+        type: 'natural',
+      },
+    ],
+    'perfectionist/sort-decorators': [
+      'warn',
+      {
         type: 'natural',
       },
     ],
     'perfectionist/sort-enums': [
       'warn',
       {
-        ignoreCase: false,
         sortByValue: true,
         type: 'natural',
       },
     ],
     'perfectionist/sort-exports': [
       'warn',
-      { ignoreCase: false, type: 'natural' },
+      {
+        groupKind: 'types-first',
+        type: 'natural',
+      },
+    ],
+    'perfectionist/sort-heritage-clauses': [
+      'warn',
+      {
+        type: 'natural',
+      },
     ],
     'perfectionist/sort-imports': [
       // 'off',
@@ -66,12 +65,12 @@ module.exports = {
       {
         customGroups: {
           type: {
-            next: 'next',
-            react: 'react',
+            next: '^next$',
+            react: '^react$',
           },
           value: {
-            next: ['next'],
-            react: ['react', 'react-*'],
+            next: ['^next$'],
+            react: ['^react$', '^react-.*$'],
           },
         },
         groups: [
@@ -87,8 +86,7 @@ module.exports = {
           'object',
           'unknown',
         ],
-        ignoreCase: false,
-        internalPattern: ['@/**'],
+        internalPattern: ['^@/.*'],
         type: 'natural',
       },
     ],
@@ -96,12 +94,19 @@ module.exports = {
       'warn',
       {
         customGroups: {
-          key: ['key', 'keys'],
-          id: ['id', '_id'],
+          key: ['^key$', '^keys$'],
+          id: ['^id$', '^_id$'],
         },
         groupKind: 'required-first',
-        groups: ['key', 'id', 'multiline', 'unknown'],
-        ignoreCase: false,
+        groups: [
+          'key',
+          'id',
+          'unknown',
+          // 'multiline',
+          'method',
+        ],
+        partitionByComment: true,
+
         type: 'natural',
       },
     ],
@@ -111,35 +116,35 @@ module.exports = {
       'warn',
       {
         customGroups: {
-          key: ['key', 'keys'],
-          id: ['id', 'name', 'testId', 'data-testid'],
+          key: ['^key$', '^keys$'],
+          id: ['^id$', '^name$', '^testId$', '^data-testid$'],
           accessibility: [
-            'title',
-            'alt',
-            'placeholder',
-            'label',
-            'description',
-            'fallback',
+            '^title$',
+            '^alt$',
+            '^placeholder$',
+            '^label$',
+            '^description$',
+            '^fallback$',
           ],
-          callback: ['on*', 'handle*'],
-          className: ['className', 'class', 'style'],
-          control: ['asChild', 'as'],
-          data: ['data-*', 'aria-*'],
-          ref: ['ref', 'innerRef'],
+          callback: ['^on[A-Z]', '^handle[A-Z]'],
+          className: ['^className$', '^class$', '^style$'],
+          control: ['^asChild$', '^as$'],
+          data: ['^data-*', '^aria-*'],
+          ref: ['^ref$', '^innerRef$'],
           state: [
-            'value',
-            'checked',
-            'selected',
-            'open',
-            'defaultValue',
-            'defaultChecked',
-            'defaultOpen',
-            'disabled',
-            'required',
-            'readOnly',
-            'loading',
+            '^value$',
+            '^checked$',
+            '^selected$',
+            '^open$',
+            '^defaultValue$',
+            '^defaultChecked$',
+            '^defaultOpen$',
+            '^disabled$',
+            '^required$',
+            '^readOnly$',
+            '^loading$',
           ],
-          variant: ['variant', 'size', 'orientation', 'color'],
+          variant: ['^variant$', '^size$', '^orientation$', '^color$'],
         },
         groups: [
           'id',
@@ -155,31 +160,65 @@ module.exports = {
           'unknown',
           'shorthand',
         ],
-        ignoreCase: false,
         type: 'natural',
       },
     ],
-    'perfectionist/sort-maps': ['warn', { ignoreCase: false, type: 'natural' }],
+    'perfectionist/sort-modules': [
+      'warn',
+      {
+        groups: [
+          'declare-enum',
+          'export-enum',
+          'enum',
+          ['declare-interface', 'declare-type'],
+          ['export-interface', 'export-type'],
+          ['interface', 'type'],
+          'declare-class',
+          'class',
+          'export-class',
+
+          // 'declare-function',
+          // 'export-function',
+          // 'function',
+
+          // 'unknown',
+        ],
+        partitionByComment: true,
+        type: 'natural',
+      },
+    ],
     'perfectionist/sort-named-exports': [
       'warn',
-      { groupKind: 'types-first', ignoreCase: false, type: 'natural' },
+      {
+        groupKind: 'types-first',
+        type: 'natural',
+      },
     ],
-    // 'perfectionist/sort-named-imports': ['off'],
     'perfectionist/sort-named-imports': [
       'warn',
-      { groupKind: 'types-first', ignoreCase: false, type: 'natural' },
+      {
+        groupKind: 'types-first',
+        type: 'natural',
+      },
     ],
     'perfectionist/sort-object-types': [
       'warn',
       {
         customGroups: {
-          key: ['key', 'keys'],
-          id: ['id', '_id'],
-          callback: ['on*', 'handle*'],
+          key: ['^key$', '^keys$'],
+          id: ['^id$', '^_id$'],
+          callback: ['^on[A-Z]', '^handle[A-Z]'],
         },
         groupKind: 'required-first',
-        groups: ['key', 'id', 'multiline', 'unknown', 'callback'],
-        ignoreCase: false,
+        groups: [
+          'key',
+          'id',
+          'unknown',
+          // 'multiline',
+          'method',
+          'callback',
+        ],
+        newlinesBetween: 'never',
         type: 'natural',
       },
     ],
@@ -187,26 +226,31 @@ module.exports = {
       'warn',
       {
         customGroups: {
-          key: ['key', 'keys'],
-          id: ['id', '_id'],
-          callback: ['on*', 'handle*'],
+          key: ['^key$', '^keys$'],
+          id: ['^id$', '^_id$'],
+          callback: ['^on[A-Z]', '^handle[A-Z]'],
         },
-        groups: ['key', 'id', 'unknown', 'callback'],
-        ignoreCase: false,
+        groups: [
+          'key',
+          'id',
+          'unknown',
+          // 'multiline',
+          'method',
+          'callback',
+        ],
+        // newlinesBetween: 'never',
         type: 'natural',
       },
     ],
     'perfectionist/sort-sets': [
       'warn',
       {
-        ignoreCase: false,
         type: 'natural',
       },
     ],
     'perfectionist/sort-switch-case': [
       'warn',
       {
-        ignoreCase: false,
         type: 'natural',
       },
     ],
@@ -227,19 +271,23 @@ module.exports = {
           'nullish',
           'unknown',
         ],
-        ignoreCase: false,
         type: 'natural',
       },
     ],
     'perfectionist/sort-variable-declarations': [
       'warn',
       {
-        ignoreCase: false,
         type: 'natural',
       },
     ],
     'react/jsx-sort-props': 'off',
     'sort-imports': 'off',
+
     'sort-keys': 'off',
   },
-};
+  settings: {
+    perfectionist: {
+      ignoreCase: false,
+    },
+  },
+});

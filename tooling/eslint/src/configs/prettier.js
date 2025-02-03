@@ -1,27 +1,12 @@
-/**
- * Custom config base for projects using prettier.
- *
- * @see https://github.com/belgattitude/nextjs-monorepo-example/tree/main/packages/eslint-config-bases
- */
-const { getPrettierConfig } = require('../helpers/getPrettierConfig.cjs');
+import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 
-const { ...prettierConfig } = getPrettierConfig();
+import { defineConfig } from '../utils.js';
+import prettierConfig from './prettier.base.config.js';
 
-/** @type {import('eslint').Linter.Config} */
-module.exports = {
-  extends: ['prettier'],
-  overrides: [
-    {
-      files: ['index.ts*'],
-      rules: {
-        'padding-line-between-statements': 'off',
-        'pretter/prettier': 'off',
-      },
-    },
-  ],
-  plugins: ['prettier'],
+export default defineConfig(eslintPluginPrettierRecommended, {
   rules: {
     'arrow-body-style': 'off',
+    'lines-around-directive': ['warn', 'always'],
     'padding-line-between-statements': [
       'warn',
       { blankLine: 'never', next: 'case', prev: '*' },
@@ -51,6 +36,12 @@ module.exports = {
     ],
     'prefer-arrow-callback': 'off',
 
-    'prettier/prettier': ['warn', prettierConfig],
+    'prettier/prettier': [
+      'warn',
+      prettierConfig,
+      {
+        usePrettierrc: false,
+      },
+    ],
   },
-};
+});
