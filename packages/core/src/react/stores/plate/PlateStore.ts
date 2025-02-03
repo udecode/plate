@@ -11,10 +11,8 @@ export type PlateChangeKey =
 
 export type PlateStoreState<E extends PlateEditor = PlateEditor> = Nullable<{
   decorate: NonNullable<(options: { editor: E; entry: NodeEntry }) => TRange[]>;
-
   /** Whether `Editable` is rendered so slate DOM is resolvable. */
   isMounted: boolean;
-
   /**
    * Whether the editor is primary. If no editor is active, then PlateController
    * will use the first-mounted primary editor.
@@ -22,26 +20,19 @@ export type PlateStoreState<E extends PlateEditor = PlateEditor> = Nullable<{
    * @default true
    */
   primary: boolean;
-
   //  Whether the editor is read-only.
   readOnly: boolean;
-
   renderElement: NonNullable<EditableProps['renderElement']>;
-
   renderLeaf: NonNullable<EditableProps['renderLeaf']>;
-
   /**
    * Version incremented when calling `redecorate`. This is a dependency of the
    * `decorate` function.
    */
   versionDecorate: number;
-
   /** Version incremented on each editor change. */
   versionEditor: number;
-
   /** Version incremented on each editor.selection change. */
   versionSelection: number;
-
   /** Version incremented on each editor.children change. */
   versionValue: number;
   /** Controlled callback called when the editor state changes. */
@@ -58,17 +49,14 @@ export type PlateStoreState<E extends PlateEditor = PlateEditor> = Nullable<{
    * @default random id
    */
   id: string;
-
   /** A reference to the editor container element. */
   containerRef: React.RefObject<HTMLDivElement | null>;
-
   /**
    * Slate editor reference.
    *
    * @default createPlateFallbackEditor()
    */
   editor: E;
-
   /**
    * A reference to the editor scroll container element.
    *

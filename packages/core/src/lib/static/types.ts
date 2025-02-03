@@ -17,7 +17,6 @@ export type SlateRenderElementProps<
 export type SlateRenderNodeProps<C extends AnyPluginConfig = PluginConfig> =
   SlatePluginContext<C> & {
     className?: string;
-
     /** @see {@link NodeProps} */
     nodeProps?: AnyObject;
   };

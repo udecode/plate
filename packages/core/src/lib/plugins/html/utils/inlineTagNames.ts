@@ -76,6 +76,7 @@ export const inlineTagNames = new Set([
   'MAP',
   'MARK',
   'MARQUEE',
+  'math',
   'MENUITEM',
   'METER',
   'NOBR',
@@ -96,6 +97,7 @@ export const inlineTagNames = new Set([
   'STRONG',
   'SUB',
   'SUP',
+  'svg',
   'TEXTAREA',
   'TIME',
   'TRACK',
@@ -104,6 +106,4 @@ export const inlineTagNames = new Set([
   'VAR',
   'VIDEO',
   'WBR',
-  'math',
-  'svg',
 ]);

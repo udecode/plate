@@ -58,6 +58,7 @@ export const createPlateStore = <E extends PlateEditor = PlateEditor>({
       ...state,
     } as PlateStoreState<E>,
     {
+      name: 'plate',
       extend: (atoms) => ({
         trackedEditor: atom((get) => ({
           editor: get(atoms.editor),
@@ -72,7 +73,6 @@ export const createPlateStore = <E extends PlateEditor = PlateEditor>({
           version: get(atoms.versionValue),
         })),
       }),
-      name: 'plate',
     }
   );
 

@@ -118,6 +118,7 @@ export function createSlatePlugin<
       api: {},
       dependencies: [],
       editor: {},
+      handlers: {},
       inject: {},
       node: { type: key },
       options: {},
@@ -129,7 +130,6 @@ export function createSlatePlugin<
       render: {},
       shortcuts: {},
       transforms: {},
-      handlers: {},
     },
     config
   ) as unknown as SlatePlugin<PluginConfig<K, O, A, T>>;

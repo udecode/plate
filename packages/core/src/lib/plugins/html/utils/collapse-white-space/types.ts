@@ -9,6 +9,5 @@ export type CollapseWhiteSpaceState = {
     atStart: boolean;
     lastHasTrailingWhiteSpace: boolean;
   } | null;
-
   whiteSpaceRule: WhiteSpaceRule;
 };

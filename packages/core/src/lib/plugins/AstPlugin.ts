@@ -7,6 +7,7 @@ import { createSlatePlugin } from '../plugin';
 export const AstPlugin = createSlatePlugin({
   key: 'ast',
   parser: {
+    format: 'application/x-slate-fragment',
     deserialize: ({ data }) => {
       const decoded = decodeURIComponent(window.atob(data));
       let parsed;
@@ -19,6 +20,5 @@ export const AstPlugin = createSlatePlugin({
 
       return parsed;
     },
-    format: 'application/x-slate-fragment',
   },
 });

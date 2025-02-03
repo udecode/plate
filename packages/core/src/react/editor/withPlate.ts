@@ -36,8 +36,8 @@ export type WithPlateOptions<
     | 'transforms'
     | 'useHooks'
   > & {
-    rootPlugin?: (plugin: AnyPlatePlugin) => AnyPlatePlugin;
     value?: ((editor: PlateEditor) => V) | V | string;
+    rootPlugin?: (plugin: AnyPlatePlugin) => AnyPlatePlugin;
   };
 
 /**

@@ -41,12 +41,13 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> =
       normalizeInitialValue?: NormalizeInitialValue<WithAnyKey<C>>;
     }> &
     SlatePluginMethods<C> & {
+      handlers: Nullable<{}>;
       inject: Nullable<{
+        nodeProps?: InjectNodeProps<WithAnyKey<C>>;
+        plugins?: Record<string, Partial<EditorPlugin<AnyPluginConfig>>>;
         targetPluginToInject?: (
           ctx: SlatePluginContext<C> & { targetPlugin: string }
         ) => Partial<SlatePlugin<AnyPluginConfig>>;
-        nodeProps?: InjectNodeProps<WithAnyKey<C>>;
-        plugins?: Record<string, Partial<EditorPlugin<AnyPluginConfig>>>;
       }>;
       node: {
         props?: NodeStaticProps<WithAnyKey<C>>;
@@ -54,6 +55,7 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> =
       override: {
         plugins?: Record<string, Partial<EditorPlugin<AnyPluginConfig>>>;
       };
+      parser: Nullable<Parser<WithAnyKey<C>>>;
       parsers:
         | (Record<
             string,
@@ -79,16 +81,6 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> =
          * in the wrapper function. It is not equivalent to a React component.
          */
         aboveNodes?: RenderStaticNodeWrapper<WithAnyKey<C>>;
-
-        /**
-         * Renders a component after the `Editable` component. This is the last
-         * render position within the editor structure.
-         */
-        afterEditable?: () => React.ReactElement<any> | null;
-
-        /** Renders a component before the `Editable` component. */
-        beforeEditable?: () => React.ReactElement<any> | null;
-
         /**
          * When other plugins' `node` components are rendered, this function can
          * return an optional wrapper function that turns a `node`'s props to a
@@ -100,18 +92,24 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> =
          * in the wrapper function. It is not equivalent to a React component.
          */
         belowNodes?: RenderStaticNodeWrapper<WithAnyKey<C>>;
-
         node?: React.FC;
+        /**
+         * Renders a component after the `Editable` component. This is the last
+         * render position within the editor structure.
+         */
+        afterEditable?: () => React.ReactElement<any> | null;
+        /** Renders a component before the `Editable` component. */
+        beforeEditable?: () => React.ReactElement<any> | null;
       }>;
-
-      parser: Nullable<Parser<WithAnyKey<C>>>;
-
       shortcuts: {};
-
-      handlers: Nullable<{}>;
     };
 
 export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
+  __apiExtensions: ((ctx: SlatePluginContext<AnyPluginConfig>) => any)[];
+  __configuration: ((ctx: SlatePluginContext<AnyPluginConfig>) => any) | null;
+  __extensions: ((ctx: SlatePluginContext<AnyPluginConfig>) => any)[];
+  __optionExtensions: ((ctx: SlatePluginContext<AnyPluginConfig>) => any)[];
+  clone: () => SlatePlugin<C>;
   configure: (
     config:
       | ((
@@ -207,7 +205,6 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       InferTransforms<C>
     >
   >;
-
   extendEditorTransforms: <
     ET extends Record<
       string,
@@ -231,7 +228,6 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       }
     >
   >;
-
   extendOptions: <
     EO extends Record<string, (...args: any[]) => any> = Record<string, never>,
   >(
@@ -244,7 +240,6 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       InferTransforms<C>
     >
   >;
-
   extendPlugin: <P extends AnySlatePlugin, EO = {}, EA = {}, ET = {}>(
     plugin: Partial<P>,
     extendConfig:
@@ -269,7 +264,6 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
           ET
         >
   ) => SlatePlugin<C>;
-
   extendTransforms: <
     ET extends Record<string, (...args: any[]) => any> = Record<string, never>,
   >(
@@ -282,19 +276,7 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       InferTransforms<C> & Record<C['key'], ET>
     >
   >;
-
-  __apiExtensions: ((ctx: SlatePluginContext<AnyPluginConfig>) => any)[];
-
-  __configuration: ((ctx: SlatePluginContext<AnyPluginConfig>) => any) | null;
-
-  __extensions: ((ctx: SlatePluginContext<AnyPluginConfig>) => any)[];
-
-  __optionExtensions: ((ctx: SlatePluginContext<AnyPluginConfig>) => any)[];
-
-  clone: () => SlatePlugin<C>;
-
   overrideEditor: (override: OverrideEditor<C>) => SlatePlugin<C>;
-
   __resolved?: boolean;
 };
 
@@ -409,19 +391,19 @@ export type SlatePluginContext<C extends AnyPluginConfig = PluginConfig> =
 // -----------------------------------------------------------------------------
 
 export type Parser<C extends AnyPluginConfig = PluginConfig> = {
+  format?: string[] | string;
+  mimeTypes?: string[];
   deserialize?: (
     options: ParserOptions & SlatePluginContext<C>
   ) => Descendant[] | undefined;
   preInsert?: (
     options: ParserOptions & SlatePluginContext<C> & { fragment: Descendant[] }
   ) => HandlerReturnType;
+  query?: (options: ParserOptions & SlatePluginContext<C>) => boolean;
+  transformData?: (options: ParserOptions & SlatePluginContext<C>) => string;
   transformFragment?: (
     options: ParserOptions & SlatePluginContext<C> & { fragment: Descendant[] }
   ) => Descendant[];
-  format?: string[] | string;
-  mimeTypes?: string[];
-  query?: (options: ParserOptions & SlatePluginContext<C>) => boolean;
-  transformData?: (options: ParserOptions & SlatePluginContext<C>) => string;
 };
 
 /** Plate plugin overriding the `editor` methods. Naming convention is `with*`. */
@@ -439,7 +421,6 @@ export type Deserializer<C extends AnyPluginConfig = PluginConfig> =
     parse?: (
       options: AnyObject & SlatePluginContext<C> & { element: any }
     ) => Partial<Descendant> | undefined | void;
-
     query?: (
       options: AnyObject & SlatePluginContext<C> & { element: any }
     ) => boolean;
@@ -457,6 +438,13 @@ export type Serializer<C extends AnyPluginConfig = PluginConfig> =
 
 export type HtmlDeserializer<C extends AnyPluginConfig = PluginConfig> =
   BaseHtmlDeserializer & {
+    /**
+     * Whether to disable the default node props parsing logic. By default, all
+     * data-slate-* attributes will be parsed into node props.
+     *
+     * @default false
+     */
+    disableDefaultNodeProps?: boolean;
     parse?: (
       options: SlatePluginContext<C> & {
         element: HTMLElement;
@@ -469,13 +457,6 @@ export type HtmlDeserializer<C extends AnyPluginConfig = PluginConfig> =
     toNodeProps?: (
       options: SlatePluginContext<C> & { element: HTMLElement }
     ) => Partial<Descendant> | undefined | void;
-    /**
-     * Whether to disable the default node props parsing logic. By default, all
-     * data-slate-* attributes will be parsed into node props.
-     *
-     * @default false
-     */
-    disableDefaultNodeProps?: boolean;
   };
 
 export type HtmlSerializer<C extends AnyPluginConfig = PluginConfig> =
@@ -507,13 +488,13 @@ export type InjectNodeProps<C extends AnyPluginConfig = PluginConfig> =
           nodeProps: GetInjectNodePropsOptions;
         }
     ) => boolean;
+    transformClassName?: (options: TransformOptions<C>) => any;
+    transformNodeValue?: (options: TransformOptions<C>) => any;
     transformProps?: (
       options: TransformOptions<C> & {
         props: GetInjectNodePropsReturnType;
       }
     ) => AnyObject | undefined;
-    transformClassName?: (options: TransformOptions<C>) => any;
-    transformNodeValue?: (options: TransformOptions<C>) => any;
     transformStyle?: (options: TransformOptions<C>) => CSSStyleDeclaration;
   };
 

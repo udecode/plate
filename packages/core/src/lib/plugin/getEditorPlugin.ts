@@ -17,14 +17,14 @@ export function getEditorPlugin<
   return {
     api: editor.api,
     editor,
-    getOption: (key: any, ...args: any) =>
-      editor.getOption(plugin, key, ...args),
-    getOptions: () => editor.getOptions(plugin),
     plugin: plugin as any,
     setOption: ((keyOrOptions: any, value: any) =>
       editor.setOption(plugin, keyOrOptions, value)) as any,
     setOptions: ((options: any) => editor.setOptions(plugin, options)) as any,
     tf: editor.transforms,
     type: plugin.node.type,
+    getOption: (key: any, ...args: any) =>
+      editor.getOption(plugin, key, ...args),
+    getOptions: () => editor.getOptions(plugin),
   };
 }

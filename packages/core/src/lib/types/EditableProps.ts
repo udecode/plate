@@ -7,6 +7,15 @@ import type { RenderLeafFn } from './RenderLeafProps';
 
 /** `EditableProps` are passed to the <Editable> component. */
 export type EditableProps = {
+  as?: React.ElementType;
+  disableDefaultStyles?: boolean;
+  placeholder?: string;
+  readOnly?: boolean;
+  renderElement?: RenderElementFn;
+  renderLeaf?: RenderLeafFn;
+  role?: string;
+  style?: React.CSSProperties;
+  decorate?: (entry: NodeEntry) => TRange[];
   renderPlaceholder?: (props: {
     attributes: {
       contentEditable: boolean;
@@ -17,15 +26,6 @@ export type EditableProps = {
     };
     children: any;
   }) => JSX.Element;
-  as?: React.ElementType;
-  decorate?: (entry: NodeEntry) => TRange[];
-  disableDefaultStyles?: boolean;
-  placeholder?: string;
-  readOnly?: boolean;
-  renderElement?: RenderElementFn;
-  renderLeaf?: RenderLeafFn;
-  role?: string;
   scrollSelectionIntoView?: (editor: Editor, domRange: DOMRange) => void;
-  style?: React.CSSProperties;
   onDOMBeforeInput?: (event: InputEvent) => void;
 } & React.TextareaHTMLAttributes<HTMLDivElement>;

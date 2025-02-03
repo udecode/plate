@@ -20,26 +20,14 @@ import type { EXPOSED_STORE_KEYS, PlateStoreState } from '../stores';
 import type { PlateCorePlugin } from './withPlate';
 
 export type PlateEditor = {
-  getApi: <C extends AnyPluginConfig = PluginConfig>(
-    plugin?: WithRequiredKey<C>
-  ) => PlateEditor['api'] & InferApi<C>;
-
-  getPlugin: <C extends AnyPluginConfig = PluginConfig>(
-    plugin: WithRequiredKey<C>
-  ) => C extends { node: any } ? C : EditorPlatePlugin<C>;
-
-  getTransforms: <C extends AnyPluginConfig = PluginConfig>(
-    plugin?: WithRequiredKey<C>
-  ) => PlateEditor['tf'] & InferTransforms<C>;
-
-  setPlateState: <K extends (typeof EXPOSED_STORE_KEYS)[number]>(
-    optionKey: K,
-    value: PlateStoreState[K]
-  ) => void;
-
+  api: EditorApi & UnionToIntersection<InferApi<PlateCorePlugin>>;
+  pluginList: AnyEditorPlatePlugin[];
+  plugins: Record<string, AnyEditorPlatePlugin>;
+  shortcuts: Shortcuts;
+  // Alias for transforms
+  tf: EditorTransforms & UnionToIntersection<InferTransforms<PlateCorePlugin>>;
   transforms: EditorTransforms &
     UnionToIntersection<InferTransforms<PlateCorePlugin>>;
-
   useOption: {
     <
       C extends AnyPluginConfig,
@@ -61,7 +49,6 @@ export type PlateEditor = {
       ...args: Args
     ): F extends (...args: any[]) => any ? ReturnType<F> : F;
   };
-
   useOptions: {
     <C extends AnyPluginConfig, U>(
       plugin: WithRequiredKey<C>,
@@ -70,18 +57,19 @@ export type PlateEditor = {
     ): U;
     <C extends AnyPluginConfig>(plugin: WithRequiredKey<C>): InferOptions<C>;
   };
-
-  api: EditorApi & UnionToIntersection<InferApi<PlateCorePlugin>>;
-
-  pluginList: AnyEditorPlatePlugin[];
-
-  plugins: Record<string, AnyEditorPlatePlugin>;
-
-  shortcuts: Shortcuts;
-
-  // Alias for transforms
-  tf: EditorTransforms & UnionToIntersection<InferTransforms<PlateCorePlugin>>;
-
+  getApi: <C extends AnyPluginConfig = PluginConfig>(
+    plugin?: WithRequiredKey<C>
+  ) => PlateEditor['api'] & InferApi<C>;
+  getPlugin: <C extends AnyPluginConfig = PluginConfig>(
+    plugin: WithRequiredKey<C>
+  ) => C extends { node: any } ? C : EditorPlatePlugin<C>;
+  getTransforms: <C extends AnyPluginConfig = PluginConfig>(
+    plugin?: WithRequiredKey<C>
+  ) => PlateEditor['tf'] & InferTransforms<C>;
+  setPlateState: <K extends (typeof EXPOSED_STORE_KEYS)[number]>(
+    optionKey: K,
+    value: PlateStoreState[K]
+  ) => void;
   uid?: string;
 } & BaseEditor;
 
@@ -89,18 +77,18 @@ export type TPlateEditor<
   V extends Value = Value,
   P extends AnyPluginConfig = PlateCorePlugin,
 > = PlateEditor & {
+  api: EditorApi<V> & UnionToIntersection<InferApi<P | PlateCorePlugin>>;
+  children: V;
+  pluginList: P[];
+  plugins: { [K in P['key']]: Extract<P, { key: K }> };
+  tf: EditorTransforms<V> &
+    UnionToIntersection<InferTransforms<P | PlateCorePlugin>>;
+  transforms: EditorTransforms<V> &
+    UnionToIntersection<InferTransforms<P | PlateCorePlugin>>;
   getApi: <C extends AnyPluginConfig = PluginConfig>(
     plugin?: WithRequiredKey<C>
   ) => TPlateEditor<V>['api'] & InferApi<C>;
   getTransforms: <C extends AnyPluginConfig = PluginConfig>(
     plugin?: WithRequiredKey<C>
   ) => TPlateEditor<V>['tf'] & InferTransforms<C>;
-  tf: EditorTransforms<V> &
-    UnionToIntersection<InferTransforms<P | PlateCorePlugin>>;
-  transforms: EditorTransforms<V> &
-    UnionToIntersection<InferTransforms<P | PlateCorePlugin>>;
-  api: EditorApi<V> & UnionToIntersection<InferApi<P | PlateCorePlugin>>;
-  children: V;
-  pluginList: P[];
-  plugins: { [K in P['key']]: Extract<P, { key: K }> };
 };

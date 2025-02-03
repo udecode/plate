@@ -54,29 +54,29 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
     Nullable<{
       /** @see {@link Decorate} */
       decorate?: Decorate<WithAnyKey<C>>;
-
       /** @see {@link ExtendEditor} */
       extendEditor?: ExtendEditor<WithAnyKey<C>>;
-
       /** Normalize initial value before passing it into the editor. */
       normalizeInitialValue?: NormalizeInitialValue<WithAnyKey<C>>;
-
       /** @see {@link UseHooks} */
       useHooks?: UseHooks<WithAnyKey<C>>;
     }> &
     PlatePluginMethods<C> & {
+      /**
+       * Handlers called whenever the corresponding event occurs in the editor.
+       * Event handlers can return a boolean flag to specify whether the event
+       * can be treated as being handled. If it returns `true`, the next
+       * handlers will not be called.
+       */
+      handlers: Nullable<
+        DOMHandlers<WithAnyKey<C>> & {
+          /** @see {@link OnChange} */
+          onChange?: OnChange<WithAnyKey<C>>;
+        }
+      >;
       /** Plugin injection. */
       inject: Nullable<{
-        /**
-         * A function that returns a plugin config to be injected into other
-         * plugins `inject.plugins` specified by targetPlugins.
-         */
-        targetPluginToInject?: (
-          ctx: PlatePluginContext<C> & { targetPlugin: string }
-        ) => Partial<PlatePlugin<AnyPluginConfig>>;
-
         nodeProps?: InjectNodeProps<WithAnyKey<C>>;
-
         /**
          * Property that can be used by a plugin to allow other plugins to
          * inject code. For example, if multiple plugins have defined
@@ -86,21 +86,26 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
          * not overriding any plugin.
          */
         plugins?: Record<string, Partial<EditorPlatePlugin<AnyPluginConfig>>>;
+        /**
+         * A function that returns a plugin config to be injected into other
+         * plugins `inject.plugins` specified by targetPlugins.
+         */
+        targetPluginToInject?: (
+          ctx: PlatePluginContext<C> & { targetPlugin: string }
+        ) => Partial<PlatePlugin<AnyPluginConfig>>;
       }>;
-
       node: {
         /** @see {@link NodeProps} */
         props?: NodeProps<WithAnyKey<C>>;
       };
-
       override: {
         /** Replace plugin {@link NodeComponent} by key. */
         components?: Record<string, NodeComponent>;
-
         /** Extend {@link PlatePlugin} by key. */
         plugins?: Record<string, Partial<EditorPlatePlugin<AnyPluginConfig>>>;
       };
-
+      /** @see {@link Parser} */
+      parser: Nullable<Parser<WithAnyKey<C>>>;
       parsers:
         | (Record<
             string,
@@ -118,13 +123,11 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
               /** @see {@link HtmlSerializer} */
               serializer?: HtmlSerializer<WithAnyKey<C>>;
             }>;
-
             htmlReact?: Nullable<{
               /** Function to deserialize HTML to Slate nodes using React. */
               serializer?: HtmlReactSerializer<WithAnyKey<C>>;
             }>;
           };
-
       render: Nullable<{
         /**
          * When other plugins' `node` components are rendered, this function can
@@ -136,16 +139,13 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
          * in the wrapper function. It is not equivalent to a React component.
          */
         aboveNodes?: RenderNodeWrapper<WithAnyKey<C>>;
-
         /**
          * Renders a component after the `Editable` component. This is the last
          * render position within the editor structure.
          */
         afterEditable?: EditableSiblingComponent;
-
         /** Renders a component before the `Editable` component. */
         beforeEditable?: EditableSiblingComponent;
-
         /**
          * When other plugins' `node` components are rendered, this function can
          * return an optional wrapper function that turns a `node`'s props to a
@@ -157,37 +157,23 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
          * in the wrapper function. It is not equivalent to a React component.
          */
         belowNodes?: RenderNodeWrapper<WithAnyKey<C>>;
-
         /** @see {@link NodeComponent} */
         node?: NodeComponent;
       }>;
-
+      /** @see {@link Shortcuts} */
+      shortcuts: Shortcuts;
       useOptionsStore: TCreatedStoreType<
         C['options'],
         [['zustand/mutative-x', never]]
       >;
-
-      /** @see {@link Parser} */
-      parser: Nullable<Parser<WithAnyKey<C>>>;
-
-      /** @see {@link Shortcuts} */
-      shortcuts: Shortcuts;
-
-      /**
-       * Handlers called whenever the corresponding event occurs in the editor.
-       * Event handlers can return a boolean flag to specify whether the event
-       * can be treated as being handled. If it returns `true`, the next
-       * handlers will not be called.
-       */
-      handlers: Nullable<
-        DOMHandlers<WithAnyKey<C>> & {
-          /** @see {@link OnChange} */
-          onChange?: OnChange<WithAnyKey<C>>;
-        }
-      >;
     };
 
 export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
+  __apiExtensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
+  __configuration: ((ctx: PlatePluginContext<AnyPluginConfig>) => any) | null;
+  __extensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
+  __optionExtensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
+  clone: () => PlatePlugin<C>;
   configure: (
     config:
       | ((
@@ -337,7 +323,6 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       InferTransforms<C>
     >
   >;
-
   extendEditorTransforms: <
     ET extends Record<
       string,
@@ -361,7 +346,6 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       }
     >
   >;
-
   extendOptions: <
     EO extends Record<string, (...args: any[]) => any> = Record<string, never>,
   >(
@@ -374,7 +358,6 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       InferTransforms<C>
     >
   >;
-
   extendPlugin: <
     P extends AnyPlatePlugin | AnySlatePlugin,
     EO = {},
@@ -426,7 +409,6 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
               ET
             >)
   ) => PlatePlugin<C>;
-
   extendTransforms: <
     ET extends Record<string, (...args: any[]) => any> = Record<string, never>,
   >(
@@ -439,19 +421,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       InferTransforms<C> & Record<C['key'], ET>
     >
   >;
-
-  __apiExtensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
-
-  __configuration: ((ctx: PlatePluginContext<AnyPluginConfig>) => any) | null;
-
-  __extensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
-
-  __optionExtensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
-
-  clone: () => PlatePlugin<C>;
-
   overrideEditor: (override: OverrideEditor<C>) => PlatePlugin<C>;
-
   /**
    * Set {@link NodeComponent} for the plugin.
    *
@@ -460,7 +430,6 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
    *   {@link NodeComponent}.
    */
   withComponent: (component: NodeComponent) => PlatePlugin<C>;
-
   __resolved?: boolean;
 };
 
@@ -548,6 +517,8 @@ export type PlatePluginContext<
   C extends AnyPluginConfig = PluginConfig,
   E extends PlateEditor = PlateEditor,
 > = BasePluginContext<C> & {
+  editor: E;
+  plugin: EditorPlatePlugin<C>;
   useOption: {
     <
       K extends keyof InferOptions<C>,
@@ -562,9 +533,6 @@ export type PlatePluginContext<
       optionKey: K
     ): F extends (...args: any[]) => any ? never : F;
   };
-  editor: E;
-
-  plugin: EditorPlatePlugin<C>;
 };
 
 // -----------------------------------------------------------------------------
@@ -574,11 +542,13 @@ export type PlatePluginContext<
  * fragment. The fragment will be inserted to the editor if not empty.
  */
 export type Parser<C extends AnyPluginConfig = PluginConfig> = {
+  /** Format to get data. Example data types are text/plain and text/uri-list. */
+  format?: string[] | string;
+  mimeTypes?: string[];
   /** Deserialize data to fragment */
   deserialize?: (
     options: ParserOptions & PlatePluginContext<C>
   ) => Descendant[] | undefined;
-
   /**
    * Function called on `editor.tf.insertData` just before
    * `editor.tf.insertFragment`. Default: if the block above the selection is
@@ -590,22 +560,14 @@ export type Parser<C extends AnyPluginConfig = PluginConfig> = {
   preInsert?: (
     options: ParserOptions & PlatePluginContext<C> & { fragment: Descendant[] }
   ) => HandlerReturnType;
-
+  /** Query to skip this plugin. */
+  query?: (options: ParserOptions & PlatePluginContext<C>) => boolean;
+  /** Transform the inserted data. */
+  transformData?: (options: ParserOptions & PlatePluginContext<C>) => string;
   /** Transform the fragment to insert. */
   transformFragment?: (
     options: ParserOptions & PlatePluginContext<C> & { fragment: Descendant[] }
   ) => Descendant[];
-
-  /** Format to get data. Example data types are text/plain and text/uri-list. */
-  format?: string[] | string;
-
-  mimeTypes?: string[];
-
-  /** Query to skip this plugin. */
-  query?: (options: ParserOptions & PlatePluginContext<C>) => boolean;
-
-  /** Transform the inserted data. */
-  transformData?: (options: ParserOptions & PlatePluginContext<C>) => string;
 };
 
 /** Plate plugin overriding the `editor` methods. Naming convention is `with*`. */
@@ -623,7 +585,6 @@ export type Deserializer<C extends AnyPluginConfig = PluginConfig> =
     parse?: (
       options: PlatePluginContext<C> & { element: any }
     ) => Partial<Descendant> | undefined | void;
-
     query?: (options: PlatePluginContext<C> & { element: any }) => boolean;
   };
 
@@ -655,7 +616,6 @@ export type HtmlReactSerializer<C extends AnyPluginConfig = PluginConfig> = {
   parse?: React.FC<
     PlateRenderElementProps<TElement, C> & PlateRenderLeafProps<TText, C>
   >;
-
   query?: (options: PlateRenderElementProps) => boolean;
 };
 
@@ -684,28 +644,24 @@ export type InjectNodeProps<C extends AnyPluginConfig = PluginConfig> =
           nodeProps: GetInjectNodePropsOptions;
         }
     ) => boolean;
-
-    /** Transform the injected props. */
-    transformProps?: (
-      options: TransformOptions<C> & {
-        props: GetInjectNodePropsReturnType;
-      }
-    ) => AnyObject | undefined;
-
     /**
      * Transform the className.
      *
      * @default clsx(className, classNames[value])
      */
     transformClassName?: (options: TransformOptions<C>) => any;
-
     /**
      * Transform the node value for the style or className.
      *
      * @default nodeValue
      */
     transformNodeValue?: (options: TransformOptions<C>) => any;
-
+    /** Transform the injected props. */
+    transformProps?: (
+      options: TransformOptions<C> & {
+        props: GetInjectNodePropsReturnType;
+      }
+    ) => AnyObject | undefined;
     /**
      * Transform the style.
      *

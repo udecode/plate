@@ -28,8 +28,6 @@ export const DebugPlugin = createTSlatePlugin<DebugConfig>({
   key: 'debug',
   options: {
     isProduction: process.env.NODE_ENV === 'production',
-    logLevel:
-      process.env.NODE_ENV === 'production' ? 'error' : ('log' as LogLevel),
     logger: {
       error: (message, type, details) =>
         console.error(`${type ? `[${type}] ` : ''}${message}`, details),
@@ -40,6 +38,8 @@ export const DebugPlugin = createTSlatePlugin<DebugConfig>({
       warn: (message, type, details) =>
         console.warn(`${type ? `[${type}] ` : ''}${message}`, details),
     },
+    logLevel:
+      process.env.NODE_ENV === 'production' ? 'error' : ('log' as LogLevel),
     throwErrors: true,
   },
 }).extendEditorApi<DebugConfig['api']>(({ getOptions }) => {

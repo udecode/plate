@@ -18,7 +18,6 @@ import { type CorePlugin, getCorePlugins } from '../plugins/getCorePlugins';
 
 export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
   id?: any;
-
   /**
    * Select the editor after initialization.
    *
@@ -29,14 +28,10 @@ export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
    * - `'start'`: Select the start of the editor
    */
   autoSelect?: boolean | 'end' | 'start';
-
   /** Specifies the maximum number of characters allowed in the editor. */
   maxLength?: number;
-
   plugins?: P[];
-
   selection?: TSelection;
-
   /**
    * When `true`, it will normalize the initial `value` passed to the `editor`.
    * This is useful when adding normalization rules on already existing
@@ -62,10 +57,9 @@ export type WithSlateOptions<
     | 'override'
     | 'transforms'
   > & {
+    value?: ((editor: SlateEditor) => V) | V | string;
     /** Function to configure the root plugin */
     rootPlugin?: (plugin: AnySlatePlugin) => AnySlatePlugin;
-
-    value?: ((editor: SlateEditor) => V) | V | string;
   };
 
 /**
