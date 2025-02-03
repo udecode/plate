@@ -17,7 +17,7 @@ export const pluginRenderElementStatic = (
   plugin: AnyEditorPlugin,
   components?: NodeComponents
 ): SlateRenderElement =>
-  (function render(nodeProps) {
+  function render(nodeProps) {
     if (nodeProps.element.type === plugin.node.type) {
       const element = nodeProps.element;
 
@@ -68,4 +68,4 @@ export const pluginRenderElementStatic = (
 
       return component;
     }
-  });
+  };

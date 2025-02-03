@@ -12,4 +12,6 @@ export interface RenderElementProps<N extends TElement = TElement> {
   element: N;
 }
 
-export type RenderElementFn = (props: RenderElementProps) => React.ReactElement<any>;
+export type RenderElementFn = (
+  props: RenderElementProps
+) => React.ReactElement<any>;

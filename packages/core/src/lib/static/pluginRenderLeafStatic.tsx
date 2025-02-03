@@ -20,7 +20,7 @@ export const pluginRenderLeafStatic = (
   plugin: SlatePlugin,
   components: NodeComponents
 ): SlateRenderLeaf =>
-  (function render(nodeProps) {
+  function render(nodeProps) {
     const { children, leaf } = nodeProps;
 
     if (leaf[plugin.node.type ?? plugin.key]) {
@@ -43,7 +43,7 @@ export const pluginRenderLeafStatic = (
     }
 
     return children;
-  });
+  };
 
 /** @see {@link RenderLeaf} */
 export const pipeRenderLeafStatic = (

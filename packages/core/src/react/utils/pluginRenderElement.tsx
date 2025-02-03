@@ -79,7 +79,7 @@ export const pluginRenderElement = (
   editor: PlateEditor,
   plugin: AnyEditorPlatePlugin
 ): RenderElement =>
-  (function render(nodeProps) {
+  function render(nodeProps) {
     const { element, path } = nodeProps;
 
     if (element.type === plugin.node.type) {
@@ -98,4 +98,4 @@ export const pluginRenderElement = (
         </ElementProvider>
       );
     }
-  });
+  };

@@ -1,7 +1,7 @@
 import React from 'react';
+import { act } from 'react';
 
 import { render } from '@testing-library/react';
-import { act } from "react";
 
 import { createSlateEditor } from '../../lib/editor';
 import { type PluginConfig, createSlatePlugin } from '../../lib/plugin';

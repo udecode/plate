@@ -10,7 +10,11 @@ export type DraggableState = {
   previewRef: React.RefObject<HTMLDivElement | null>;
   /** The ref of the draggable handle */
   handleRef: (
-    elementOrNode: Element | React.ReactElement<any> | React.RefObject<any> | null
+    elementOrNode:
+      | Element
+      | React.ReactElement<any>
+      | React.RefObject<any>
+      | null
   ) => void;
 };
 
