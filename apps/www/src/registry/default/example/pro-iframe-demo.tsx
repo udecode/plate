@@ -1,7 +1,8 @@
 'use client';
 
+import { cn } from '@udecode/cn';
+
 import { siteConfig } from '@/config/site';
-import { cn } from '@/registry/default/lib/utils';
 
 export default function ProIframeDemo({ id }: { id: string }) {
   return (

@@ -1,5 +1,12 @@
-import { test, expect, Page } from '@playwright/test';
-import { clickAtPath, getEditable, getEditorHandle, getNodeByPath, setSelection } from '../packages/playwright/src';
+import { type Page, expect, test } from '@playwright/test';
+
+import {
+  clickAtPath,
+  getEditable,
+  getEditorHandle,
+  getNodeByPath,
+  setSelection,
+} from '../../packages/playwright/src';
 
 const getPlaygroundEditable = (page: Page) =>
   getEditable(page).locator('visible=true');
@@ -20,7 +27,7 @@ test('playground', async ({ page }) => {
   const heading = await getNodeByPath(page, editorHandle, [0]);
 
   expect(await heading.jsonValue()).toMatchObject({
-    type: 'h1',
     children: [{ text: 'Testing with Playwright' }],
+    type: 'h1',
   });
 });

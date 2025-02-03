@@ -1,6 +1,6 @@
 const {
   getPrettierConfig,
-} = require('./config/eslint/helpers/getPrettierConfig.cjs');
+} = require('./tooling/config/eslint/helpers/getPrettierConfig.cjs');
 
 const config = getPrettierConfig();
 

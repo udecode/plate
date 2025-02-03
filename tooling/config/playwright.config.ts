@@ -58,7 +58,7 @@ export default defineConfig({
   reporter: process.env.CI ? 'github' : 'list',
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  testDir: './e2e',
+  testDir: '../e2e',
   /* Maximum time one test can run for. */
   timeout: 30 * 1000,
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */

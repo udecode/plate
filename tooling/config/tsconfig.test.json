@@ -1,7 +1,7 @@
 {
-  "extends": "../tsconfig.json",
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "baseUrl": "../",
+    "baseUrl": "../../",
     "paths": {
       "@/plate/*": ["apps/www/src/lib/plate/*"],
       "@/lib/*": ["apps/www/src/lib/*"],

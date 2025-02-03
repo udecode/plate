@@ -2,12 +2,12 @@
 
 import * as React from 'react';
 
+import { cn } from '@udecode/cn';
 import { useTheme } from 'next-themes';
 
 import { useThemesConfig } from '@/hooks/use-themes-config';
 import { type Theme, THEME_LIST, THEMES } from '@/lib/themes';
 import { useMounted } from '@/registry/default/hooks/use-mounted';
-import { cn } from '@/registry/default/lib/utils';
 import {
   Tooltip,
   TooltipContent,

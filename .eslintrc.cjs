@@ -1,7 +1,7 @@
-const { filePatterns } = require('./config/eslint/constants/file-patterns.cjs');
+const { filePatterns } = require('./tooling/config/eslint/constants/file-patterns.cjs');
 const {
   getDefaultIgnorePatterns,
-} = require('./config/eslint/helpers/getDefaultIgnorePatterns.cjs');
+} = require('./tooling/config/eslint/helpers/getDefaultIgnorePatterns.cjs');
 
 /** @type {import('eslint').Linter.Config} */
 module.exports = {
@@ -15,17 +15,17 @@ module.exports = {
   extends: [
     'turbo',
 
-    './config/eslint/bases/typescript.cjs',
-    './config/eslint/bases/jest.cjs',
-    './config/eslint/bases/react.cjs',
-    './config/eslint/bases/tailwind.cjs',
-    './config/eslint/bases/rtl.cjs',
-    './config/eslint/bases/next.cjs',
+    './tooling/config/eslint/bases/typescript.cjs',
+    './tooling/config/eslint/bases/jest.cjs',
+    './tooling/config/eslint/bases/react.cjs',
+    './tooling/config/eslint/bases/tailwind.cjs',
+    './tooling/config/eslint/bases/rtl.cjs',
+    './tooling/config/eslint/bases/next.cjs',
 
-    './config/eslint/bases/unicorn.cjs',
-    './config/eslint/bases/perfectionist.cjs',
+    './tooling/config/eslint/bases/unicorn.cjs',
+    './tooling/config/eslint/bases/perfectionist.cjs',
 
-    './config/eslint/bases/prettier.cjs',
+    './tooling/config/eslint/bases/prettier.cjs',
   ],
   ignorePatterns: [
     ...getDefaultIgnorePatterns(),
