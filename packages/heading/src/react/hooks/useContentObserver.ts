@@ -6,7 +6,7 @@ import { useEditorRef, useEditorSelector } from '@udecode/plate/react';
 import { getHeadingList } from '../../internal/getHeadingList';
 
 interface UseContentObserver {
-  editorContentRef: React.RefObject<HTMLElement>;
+  editorContentRef: React.RefObject<HTMLElement | null>;
   isObserve: boolean;
   isScroll: boolean;
   rootMargin: string;

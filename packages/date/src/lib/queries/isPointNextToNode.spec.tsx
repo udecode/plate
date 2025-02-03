@@ -5,6 +5,8 @@ import { jsxt } from '@udecode/plate-test-utils';
 
 import { isPointNextToNode } from './isPointNextToNode';
 
+import type { JSX } from "react";
+
 jsxt;
 
 describe('isPointNextToNode', () => {

@@ -735,7 +735,7 @@ export type UseHooks<C extends AnyPluginConfig = PluginConfig> = (
 
 export type EditableSiblingComponent = (
   editableProps: EditableProps
-) => React.ReactElement | null;
+) => React.ReactElement<any> | null;
 
 export interface RenderNodeWrapperProps<
   C extends AnyPluginConfig = PluginConfig,

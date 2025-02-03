@@ -55,22 +55,23 @@ export const usePlateElement = (props: PlateElementProps) => {
 };
 
 /** Headless element component. */
-const PlateElement = React.forwardRef<HTMLDivElement, PlateElementProps>(
-  (props: PlateElementProps, ref) => {
-    const { props: rootProps, ref: rootRef } = usePlateElement({
-      ...props,
-      ref,
-    });
-    const { ...rest } = rootProps;
-
-    return <Box {...rest} ref={rootRef} />;
-  }
-) as (<
+export const PlateElement = React.forwardRef(function PlateElement<
   N extends TElement = TElement,
   P extends AnyPlatePlugin = AnyPlatePlugin,
->(
-  props: PlateElementProps<N, P> & React.RefAttributes<HTMLDivElement>
-) => React.ReactElement) & { displayName?: string };
-PlateElement.displayName = 'PlateElement';
+>(props: PlateElementProps<N, P>, ref: React.ForwardedRef<HTMLDivElement>) {
+  const { props: rootProps, ref: rootRef } = usePlateElement({
+    ...props,
+    ref,
+  } as any);
+  const { children, ...rest } = rootProps;
 
-export { PlateElement };
+  return (
+    <Box {...rest} ref={rootRef}>
+      {children}
+    </Box>
+  );
+}) as React.ForwardRefExoticComponent<
+  PlateElementProps & React.RefAttributes<HTMLDivElement>
+>;
+
+PlateElement.displayName = 'PlateElement';

@@ -21,7 +21,7 @@ export function PlateSlate({
 
   const editor = useEditorRef(id);
 
-  let aboveSlate: React.ReactElement | null = (
+  let aboveSlate: React.ReactElement<any> | null = (
     <Slate {...(slateProps as any)}>{children}</Slate>
   );
 

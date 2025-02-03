@@ -22,8 +22,8 @@ import {
 } from '../utils';
 
 export type MutableRefs = React.MutableRefObject<{
-  content: React.RefObject<HTMLDivElement> | undefined;
-  contentRoot: React.RefObject<HTMLDivElement> | undefined;
+  content: React.RefObject<HTMLDivElement | null> | undefined;
+  contentRoot: React.RefObject<HTMLDivElement | null> | undefined;
 }>;
 
 export type UseEmojiPickerProps = {
@@ -33,7 +33,7 @@ export type UseEmojiPickerProps = {
 };
 
 export type UseEmojiPickerType<
-  T extends React.ReactElement = React.ReactElement,
+  T extends React.ReactElement<any> = React.ReactElement<any>,
 > = {
   clearSearch: () => void;
   emojiLibrary: IEmojiFloatingLibrary;

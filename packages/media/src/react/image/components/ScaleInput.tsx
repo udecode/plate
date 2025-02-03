@@ -15,7 +15,7 @@ export const useScaleInputState = () => {
   const setIsEditingScale = imagePreviewActions.isEditingScale;
 
   const [value, setValue] = useState(scale * 100 + '');
-  const inputRef = useRef<HTMLInputElement>();
+  const inputRef = useRef<HTMLInputElement>(undefined);
 
   return {
     inputRef,

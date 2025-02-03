@@ -7,7 +7,7 @@ import type { PlateRenderLeafProps } from '../plugin/PlateRenderLeafProps';
 import { DefaultLeaf } from '../components/DefaultLeaf';
 import { getRenderNodeProps } from './getRenderNodeProps';
 
-export type RenderLeaf = (props: PlateRenderLeafProps) => React.ReactElement;
+export type RenderLeaf = (props: PlateRenderLeafProps) => React.ReactElement<any>;
 
 /**
  * Get a `Editable.renderLeaf` handler for `plugin.node.type`. If the type is
@@ -18,7 +18,7 @@ export const pluginRenderLeaf = (
   editor: PlateEditor,
   plugin: AnyEditorPlatePlugin
 ): RenderLeaf =>
-  function render(nodeProps) {
+  (function render(nodeProps) {
     const {
       render: { node },
     } = plugin;
@@ -38,4 +38,4 @@ export const pluginRenderLeaf = (
     }
 
     return children;
-  };
+  });

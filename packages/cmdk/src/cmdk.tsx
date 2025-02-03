@@ -5,8 +5,8 @@
 /* eslint-disable no-fallthrough */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 'use client';
-
 import * as React from 'react';
+import type { JSX } from 'react';
 
 import * as RadixDialog from '@radix-ui/react-dialog';
 import { useId } from '@radix-ui/react-id';
@@ -1207,7 +1207,7 @@ const useLayoutEffect =
   typeof window === 'undefined' ? React.useEffect : React.useLayoutEffect;
 
 function useLazyRef<T>(fn: () => T) {
-  const ref = React.useRef<T>();
+  const ref = React.useRef<T>(undefined);
 
   if (ref.current === undefined) {
     ref.current = fn();
@@ -1220,7 +1220,7 @@ function useLazyRef<T>(fn: () => T) {
 // https://github.com/gregberge/react-merge-refs
 // Copyright (c) 2020 Greg Bergé
 function mergeRefs<T = any>(
-  refs: (React.LegacyRef<T> | React.MutableRefObject<T>)[]
+  refs: (React.MutableRefObject<T> | React.Ref<T>)[]
 ): React.RefCallback<T> {
   return (value) => {
     refs.forEach((ref) => {
@@ -1243,11 +1243,11 @@ function useCmdk<T = any>(selector: (state: State) => T): T {
 
 function useValue(
   id: string,
-  ref: React.RefObject<HTMLElement>,
-  deps: (React.ReactNode | React.RefObject<HTMLElement> | string)[],
+  ref: React.RefObject<HTMLElement | null>,
+  deps: (React.ReactNode | React.RefObject<HTMLElement | null> | string)[],
   aliases: string[] = []
 ) {
-  const valueRef = React.useRef<string>();
+  const valueRef = React.useRef<string>(undefined);
   const context = useCommand();
 
   useLayoutEffect(() => {
@@ -1292,7 +1292,7 @@ const useScheduleLayoutEffect = () => {
   };
 };
 
-function renderChildren(children: React.ReactElement) {
+function renderChildren(children: React.ReactElement<any>) {
   const childrenType = children.type as any;
 
   // The children is a component
@@ -1311,7 +1311,7 @@ function SlottableWithNestedChildren(
     return React.cloneElement(
       renderChildren(children),
       { ref: (children as any).ref },
-      render(children.props.children)
+      render((children.props as any).children)
     );
   }
 

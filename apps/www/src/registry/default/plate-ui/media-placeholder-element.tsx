@@ -197,7 +197,7 @@ export function ImageProgress({
 }: {
   file: File;
   className?: string;
-  imageRef?: React.RefObject<HTMLImageElement>;
+  imageRef?: React.RefObject<HTMLImageElement | null>;
   progress?: number;
 }) {
   const [objectUrl, setObjectUrl] = useState<string | null>(null);

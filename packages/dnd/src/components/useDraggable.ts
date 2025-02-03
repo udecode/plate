@@ -7,10 +7,10 @@ import { type UseDndNodeOptions, DRAG_ITEM_BLOCK, useDndNode } from '..';
 export type DraggableState = {
   isDragging: boolean;
   /** The ref of the draggable element */
-  previewRef: React.RefObject<HTMLDivElement>;
+  previewRef: React.RefObject<HTMLDivElement | null>;
   /** The ref of the draggable handle */
   handleRef: (
-    elementOrNode: Element | React.ReactElement | React.RefObject<any> | null
+    elementOrNode: Element | React.ReactElement<any> | React.RefObject<any> | null
   ) => void;
 };
 

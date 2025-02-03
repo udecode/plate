@@ -84,10 +84,10 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> =
          * Renders a component after the `Editable` component. This is the last
          * render position within the editor structure.
          */
-        afterEditable?: () => React.ReactElement | null;
+        afterEditable?: () => React.ReactElement<any> | null;
 
         /** Renders a component before the `Editable` component. */
-        beforeEditable?: () => React.ReactElement | null;
+        beforeEditable?: () => React.ReactElement<any> | null;
 
         /**
          * When other plugins' `node` components are rendered, this function can

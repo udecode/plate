@@ -3,6 +3,8 @@ import type { DOMRange, Editor, NodeEntry, TRange } from '@udecode/slate';
 import type { RenderElementFn } from './RenderElementProps';
 import type { RenderLeafFn } from './RenderLeafProps';
 
+import type { JSX } from "react";
+
 /** `EditableProps` are passed to the <Editable> component. */
 export type EditableProps = {
   renderPlaceholder?: (props: {

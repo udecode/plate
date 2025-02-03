@@ -5,7 +5,7 @@ export interface TocSideBarProps {
 }
 
 export interface UseContentController {
-  containerRef: React.RefObject<HTMLDivElement>;
+  containerRef: React.RefObject<HTMLDivElement | null>;
   isObserve: boolean;
   rootMargin: string;
   topOffset: number;

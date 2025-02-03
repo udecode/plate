@@ -8,7 +8,7 @@ import { useRequestReRender } from './useRequestReRender';
 
 export interface UseRefreshOnResizeOptions {
   selectionRectCache: React.MutableRefObject<WeakMap<TRange, SelectionRect[]>>;
-  containerRef?: React.RefObject<HTMLElement>;
+  containerRef?: React.RefObject<HTMLElement | null>;
   refreshOnResize?: boolean;
 }
 

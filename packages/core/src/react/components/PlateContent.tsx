@@ -20,7 +20,7 @@ export type PlateContentProps = Omit<EditableProps, 'decorate'> & {
   decorate?: PlateStoreState['decorate'];
   disabled?: boolean;
   /** R enders the editable content. */
-  renderEditable?: (editable: React.ReactElement) => React.ReactNode;
+  renderEditable?: (editable: React.ReactElement<any>) => React.ReactNode;
 };
 
 /**

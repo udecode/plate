@@ -9,4 +9,4 @@ export interface RenderLeafProps<N extends TText = TText> {
   text: N;
 }
 
-export type RenderLeafFn = (props: RenderLeafProps) => React.ReactElement;
+export type RenderLeafFn = (props: RenderLeafProps) => React.ReactElement<any>;

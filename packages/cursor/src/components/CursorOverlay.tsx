@@ -60,7 +60,7 @@ export interface CursorOverlayProps<
    * Container the overlay will be rendered in. If set, all returned overlay
    * positions will be relative to this container.
    */
-  containerRef?: React.RefObject<HTMLElement>;
+  containerRef?: React.RefObject<HTMLElement | null>;
 
   /** Cursor states to use for calculating the overlay positions, by key. */
   cursors?: Record<string, CursorState<TCursorData>>;

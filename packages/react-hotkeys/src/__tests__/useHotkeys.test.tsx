@@ -29,7 +29,7 @@ import { HotkeysProvider, Key, useHotkeys } from '..';
 const wrapper =
   (
     initialScopes: string[]
-  ): JSXElementConstructor<{ children: ReactElement }> =>
+  ): JSXElementConstructor<{ children: ReactElement<any> }> =>
   // eslint-disable-next-line react/display-name
   ({ children }: { children?: ReactNode }) => (
     <HotkeysProvider initiallyActiveScopes={initialScopes}>

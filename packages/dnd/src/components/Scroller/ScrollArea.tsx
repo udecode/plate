@@ -32,7 +32,7 @@ export function ScrollArea({
   strengthMultiplier = 25,
   zIndex = 10_000,
 }: ScrollAreaProps) {
-  const ref = React.useRef<HTMLDivElement>();
+  const ref = React.useRef<HTMLDivElement>(undefined);
 
   const scaleYRef = React.useRef(0);
   const frameRef = React.useRef<number | null>(null);
