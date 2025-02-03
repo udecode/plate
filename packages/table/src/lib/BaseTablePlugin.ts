@@ -106,33 +106,27 @@ export type TableConfig = PluginConfig<
   {
     /** @private Keeps Track of cell indices by id. */
     _cellIndices: Record<string, { col: number; row: number }>;
-
     /** Disable expanding the table when inserting cells. */
     disableExpandOnInsert?: boolean;
-
     // Disable first column left resizer.
     disableMarginLeft?: boolean;
-
     /**
      * Disable cell merging functionality.
      *
      * @default false
      */
     disableMerge?: boolean;
-
     /**
      * Disable unsetting the first column width when the table has one column.
      * Set it to true if you want to resize the table width when there is only
      * one column. Keep it false if you have a full-width table.
      */
     enableUnsetSingleColSize?: boolean;
-
     /**
      * If defined, a normalizer will set each undefined table `colSizes` to this
      * value divided by the number of columns. Merged cells not supported.
      */
     initialTableWidth?: number;
-
     /**
      * The minimum width of a column.
      *
@@ -144,10 +138,6 @@ export type TableConfig = PluginConfig<
   TableTransforms
 >;
 
-type TableSelectors = {
-  cellIndices?: (id: string) => CellIndices;
-};
-
 type TableApi = {
   create: {
     table: OmitFirst<typeof getEmptyTableNode>;
@@ -157,11 +147,15 @@ type TableApi = {
   };
   table: {
     getCellBorders: OmitFirst<typeof getTableCellBorders>;
-    getCellChildren: (cell: TTableCellElement) => Descendant[];
     getCellSize: OmitFirst<typeof getTableCellSize>;
     getColSpan: typeof getColSpan;
     getRowSpan: typeof getRowSpan;
+    getCellChildren: (cell: TTableCellElement) => Descendant[];
   };
+};
+
+type TableSelectors = {
+  cellIndices?: (id: string) => CellIndices;
 };
 
 type TableTransforms = {
@@ -214,10 +208,10 @@ export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
     },
     table: {
       getCellBorders: bindFirst(getTableCellBorders, editor),
-      getCellChildren: (cell) => cell.children,
       getCellSize: bindFirst(getTableCellSize, editor),
       getColSpan: getColSpan,
       getRowSpan: getRowSpan,
+      getCellChildren: (cell) => cell.children,
     },
   }))
   .extendEditorTransforms<TableTransforms>(({ editor }) => ({

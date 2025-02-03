@@ -3,8 +3,8 @@ import type { PlateEditor } from '@udecode/plate/react';
 import {
   type InsertNodesOptions,
   type Path,
-  PathApi,
   nanoid,
+  PathApi,
 } from '@udecode/plate';
 
 import { type TPlaceholderElement, BasePlaceholderPlugin } from '../../../lib';
@@ -37,8 +37,8 @@ export const insertMedia = (
       PlaceholderPlugin,
       'error',
       createUploadError(UploadErrorCode.TOO_MANY_FILES, {
-        fileType: null,
         files: Array.from(files),
+        fileType: null,
         maxFileCount: 1,
       })
     );
@@ -51,8 +51,8 @@ export const insertMedia = (
       PlaceholderPlugin,
       'error',
       createUploadError(UploadErrorCode.TOO_MANY_FILES, {
-        fileType: null,
         files: Array.from(files),
+        fileType: null,
         maxFileCount,
       })
     );

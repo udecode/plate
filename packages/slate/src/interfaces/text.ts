@@ -53,6 +53,16 @@ export const TextApi: {
  */
 export type DecoratedRange = SlateDecoratedRange;
 
+/** A utility type to get all the mark types from a root node type. */
+export type MarkKeysOf<N extends TNode> =
+  {} extends MarksOf<N> ? unknown : keyof MarksOf<N>;
+
+export type MarksIn<V extends Value> = MarksOf<V[number]>;
+
+export type MarksOf<N extends TNode> = Simplify<
+  UnionToIntersection<NodeProps<TextOf<N>>>
+>;
+
 export type Text = TText;
 
 export interface TextEqualsOptions {
@@ -77,13 +87,3 @@ export type TextOf<N extends TNode> = Editor extends N
         : N extends TText
           ? N
           : never;
-
-/** A utility type to get all the mark types from a root node type. */
-export type MarkKeysOf<N extends TNode> =
-  {} extends MarksOf<N> ? unknown : keyof MarksOf<N>;
-
-export type MarksIn<V extends Value> = MarksOf<V[number]>;
-
-export type MarksOf<N extends TNode> = Simplify<
-  UnionToIntersection<NodeProps<TextOf<N>>>
->;

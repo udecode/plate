@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 import type { DropTargetMonitor } from 'react-dnd';
 
 import { type TElement, RangeApi } from '@udecode/plate';

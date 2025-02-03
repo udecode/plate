@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/only-throw-error */
 import type { AllowedFileType } from '../internal/mimes';
 
 import { type FileSize, type MediaItemConfig, UploadErrorCode } from '../type';
@@ -14,14 +13,14 @@ export const validateFileItem = (
 
   if (files.length < minFileCount)
     throw createUploadError(UploadErrorCode.TOO_LESS_FILES, {
-      fileType: key,
       files: files,
+      fileType: key,
       minFileCount: minFileCount,
     });
   if (files.length > maxFileCount)
     throw createUploadError(UploadErrorCode.TOO_MANY_FILES, {
-      fileType: key,
       files: files,
+      fileType: key,
       maxFileCount: maxFileCount,
     });
 
@@ -30,8 +29,8 @@ export const validateFileItem = (
 
     if (f.size > bytes)
       throw createUploadError(UploadErrorCode.TOO_LARGE, {
-        fileType: key,
         files: [f],
+        fileType: key,
         maxFileSize: maxFileSize!,
       });
   }

@@ -1,21 +1,11 @@
 /* eslint-disable tailwindcss/no-custom-classname */
+
 'use client';
 
 import React, { useMemo } from 'react';
 
 import { cn, withRef } from '@udecode/cn';
 import { isType } from '@udecode/plate';
-import {
-  type PlateRenderElementProps,
-  type RenderNodeWrapper,
-  MemoizedChildren,
-  ParagraphPlugin,
-  useEditorPlugin,
-  useEditorRef,
-  useElement,
-  usePath,
-} from '@udecode/plate/react';
-import { useReadOnly, useSelected } from '@udecode/plate/react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { useDraggable, useDropLine } from '@udecode/plate-dnd';
@@ -34,6 +24,17 @@ import {
   TableRowPlugin,
 } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
+import {
+  type PlateRenderElementProps,
+  type RenderNodeWrapper,
+  MemoizedChildren,
+  ParagraphPlugin,
+  useEditorPlugin,
+  useEditorRef,
+  useElement,
+  usePath,
+} from '@udecode/plate/react';
+import { useReadOnly, useSelected } from '@udecode/plate/react';
 import { GripVertical } from 'lucide-react';
 
 import { STRUCTURAL_TYPES } from '@/registry/default/components/editor/transforms';

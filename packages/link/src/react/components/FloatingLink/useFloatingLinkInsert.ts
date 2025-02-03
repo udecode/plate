@@ -1,6 +1,10 @@
 import React from 'react';
 
 import {
+  type UseVirtualFloatingOptions,
+  getDOMSelectionBoundingClientRect,
+} from '@udecode/plate-floating';
+import {
   useComposedRef,
   useEditorPlugin,
   useEditorReadOnly,
@@ -8,10 +12,6 @@ import {
   useHotkeys,
   useOnClickOutside,
 } from '@udecode/plate/react';
-import {
-  type UseVirtualFloatingOptions,
-  getDOMSelectionBoundingClientRect,
-} from '@udecode/plate-floating';
 
 import { LinkPlugin } from '../../LinkPlugin';
 import { triggerFloatingLinkInsert } from '../../utils/triggerFloatingLinkInsert';

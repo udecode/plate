@@ -29,9 +29,9 @@ export const useFloatingLinkEscape = () => {
       api.floatingLink.hide();
     },
     {
+      enabled: open,
       enableOnContentEditable: true,
       enableOnFormTags: ['INPUT'],
-      enabled: open,
     },
     []
   );

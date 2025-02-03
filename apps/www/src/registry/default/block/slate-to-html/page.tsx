@@ -4,9 +4,9 @@ import { withProps } from '@udecode/cn';
 import {
   type Value,
   BaseParagraphPlugin,
-  SlateLeaf,
   createSlateEditor,
   serializeHtml,
+  SlateLeaf,
 } from '@udecode/plate';
 import { BaseAlignPlugin } from '@udecode/plate-alignment';
 import {

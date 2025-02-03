@@ -6,10 +6,10 @@ import type { TColumnElement } from '@udecode/plate-layout';
 
 import { cn, useComposedRef, withRef } from '@udecode/cn';
 import { PathApi } from '@udecode/plate';
-import { useReadOnly, withHOC } from '@udecode/plate/react';
 import { useDraggable, useDropLine } from '@udecode/plate-dnd';
 import { ResizableProvider } from '@udecode/plate-resizable';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import { useReadOnly, withHOC } from '@udecode/plate/react';
 import { GripHorizontal } from 'lucide-react';
 
 import { Button } from './button';
@@ -33,14 +33,14 @@ export const ColumnElement = withHOC(
     );
 
     const { isDragging, previewRef, handleRef } = useDraggable({
+      element: props.element,
+      orientation: 'horizontal',
+      type: 'column',
       canDropNode: ({ dragEntry, dropEntry }) =>
         PathApi.equals(
           PathApi.parent(dragEntry[1]),
           PathApi.parent(dropEntry[1])
         ),
-      element: props.element,
-      orientation: 'horizontal',
-      type: 'column',
     });
 
     return (

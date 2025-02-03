@@ -110,9 +110,12 @@ export const HistoryApi = {
   },
 };
 
-interface Batch {
-  operations: Operation[];
-  selectionBefore: TRange | null;
+export interface History {
+  /** Redos of the editor. */
+  redos: Batch[];
+
+  /** Undos of the editor. */
+  undos: Batch[];
 }
 
 /**
@@ -120,10 +123,7 @@ interface Batch {
  * they can be undone or redone as necessary.
  */
 
-export interface History {
-  /** Redos of the editor. */
-  redos: Batch[];
-
-  /** Undos of the editor. */
-  undos: Batch[];
+interface Batch {
+  operations: Operation[];
+  selectionBefore: TRange | null;
 }

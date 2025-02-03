@@ -25,7 +25,7 @@ export const decorateCodeLine: Decorate = ({
 
   if (!Prism) return [];
 
-  const { Token, languages, tokenize } = Prism;
+  const { languages, Token, tokenize } = Prism;
 
   const ranges: CodeSyntaxRange[] = [];
 
@@ -58,8 +58,8 @@ export const decorateCodeLine: Decorate = ({
   for (const element of tokens) {
     if (element instanceof Token) {
       ranges.push({
-        [BaseCodeSyntaxPlugin.key]: true,
         anchor: { offset, path },
+        [BaseCodeSyntaxPlugin.key]: true,
         focus: { offset: offset + element.length, path },
         tokenType: element.type,
       });

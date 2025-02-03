@@ -19,14 +19,14 @@ export const BaseEmojiInputPlugin = createSlatePlugin({
 export const BaseEmojiPlugin = createTSlatePlugin<EmojiInputConfig>({
   key: 'emoji',
   options: {
+    data: DEFAULT_EMOJI_LIBRARY,
+    trigger: ':',
+    triggerPreviousCharPattern: /^\s?$/,
     createComboboxInput: () => ({
       children: [{ text: '' }],
       type: BaseEmojiInputPlugin.key,
     }),
     createEmojiNode: ({ skins }) => ({ text: skins[0].native }),
-    data: DEFAULT_EMOJI_LIBRARY,
-    trigger: ':',
-    triggerPreviousCharPattern: /^\s?$/,
   },
   plugins: [BaseEmojiInputPlugin],
 }).overrideEditor(withTriggerCombobox);

@@ -1,4 +1,5 @@
 'use client';
+
 // Lifted from slate-yjs https://github.com/BitPhinix/slate-yjs/blob/main/examples/frontend/src/pages/RemoteCursorOverlay/Overlay.tsx
 
 import React, { type CSSProperties, useState } from 'react';
@@ -89,7 +90,7 @@ function RemoteSelection({
           style={{ ...selectionStyle, ...position }}
         ></div>
       ))}
-      {caretPosition && <Caret caretPosition={caretPosition} data={data} />}
+      {caretPosition && <Caret data={data} caretPosition={caretPosition} />}
     </React.Fragment>
   );
 }

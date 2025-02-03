@@ -13,39 +13,6 @@ import type {
 
 import { useCursorOverlayPositions } from '../hooks/useCursorOverlayPositions';
 
-export type CursorProps<TCursorData extends UnknownObject = UnknownObject> =
-  CursorOverlayState<TCursorData> & {
-    id: string;
-
-    classNames?: Partial<{
-      caret: string;
-      selectionRect: string;
-    }>;
-
-    /** Whether to disable the caret. */
-    disableCaret?: boolean;
-
-    /** Whether to disable the selection rects. */
-    disableSelection?: boolean;
-
-    /**
-     * Custom caret component. For example, you could display a label next to
-     * the caret.
-     *
-     * @default styled div
-     */
-    onRenderCaret?: React.FC<
-      Pick<CursorProps<TCursorData>, 'caretPosition' | 'data'>
-    >;
-
-    /** Overrides `Caret` component */
-    onRenderSelectionRect?: React.FC<
-      {
-        selectionRect: SelectionRect;
-      } & Pick<CursorProps<TCursorData>, 'data'>
-    >;
-  };
-
 export interface CursorOverlayProps<
   TCursorData extends UnknownObject = UnknownObject,
 > extends Pick<
@@ -75,6 +42,34 @@ export interface CursorOverlayProps<
    */
   refreshOnResize?: boolean;
 }
+
+export type CursorProps<TCursorData extends UnknownObject = UnknownObject> =
+  CursorOverlayState<TCursorData> & {
+    id: string;
+    classNames?: Partial<{
+      caret: string;
+      selectionRect: string;
+    }>;
+    /** Whether to disable the caret. */
+    disableCaret?: boolean;
+    /** Whether to disable the selection rects. */
+    disableSelection?: boolean;
+    /**
+     * Custom caret component. For example, you could display a label next to
+     * the caret.
+     *
+     * @default styled div
+     */
+    onRenderCaret?: React.FC<
+      Pick<CursorProps<TCursorData>, 'caretPosition' | 'data'>
+    >;
+    /** Overrides `Caret` component */
+    onRenderSelectionRect?: React.FC<
+      {
+        selectionRect: SelectionRect;
+      } & Pick<CursorProps<TCursorData>, 'data'>
+    >;
+  };
 
 export function CursorOverlayContent<
   TCursorData extends UnknownObject = UnknownObject,

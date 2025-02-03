@@ -53,17 +53,6 @@ export const ElementApi: {
  */
 export type Element = TElement;
 
-/** Element or text of an editor. */
-export type ElementOrTextIn<V extends Value> = ElementIn<V> | TextIn<V>;
-
-export type ElementOrTextOf<E extends Editor> = ElementOf<E> | TextOf<E>;
-
-/**
- * `ElementEntry` objects refer to an `Element` and the `Path` where it can be
- * found inside a root node.
- */
-// export type ElementEntry = [TElement, Path];
-
 /** A utility type to get all the element nodes type from a root node. */
 export type ElementIn<V extends Value> = ElementOf<V[number]>;
 
@@ -81,3 +70,14 @@ export type ElementOf<N extends TNode> = Editor extends N
             | Extract<N['children'][number], TElement>
             | N
         : never;
+
+/**
+ * `ElementEntry` objects refer to an `Element` and the `Path` where it can be
+ * found inside a root node.
+ */
+// export type ElementEntry = [TElement, Path];
+
+/** Element or text of an editor. */
+export type ElementOrTextIn<V extends Value> = ElementIn<V> | TextIn<V>;
+
+export type ElementOrTextOf<E extends Editor> = ElementOf<E> | TextOf<E>;

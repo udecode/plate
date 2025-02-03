@@ -52,7 +52,6 @@ export const getIndentListSiblings = <
   let iterEntry = entry;
 
   if (previous) {
-    // eslint-disable-next-line no-constant-condition
     while (true) {
       const prevEntry = getPreviousIndentList<N, E>(editor, iterEntry, options);
 
@@ -69,7 +68,6 @@ export const getIndentListSiblings = <
   if (next) {
     iterEntry = entry;
 
-    // eslint-disable-next-line no-constant-condition
     while (true) {
       const nextEntry = getNextIndentList(editor, iterEntry, options);
 

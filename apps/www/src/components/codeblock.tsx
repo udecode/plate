@@ -44,7 +44,6 @@ const CodeBlock: FC<{
           fixedHeight && 'h-[650px]'
         )}
         style={customSyntaxHighlighterTheme as any}
-        PreTag="div"
         codeTagProps={{
           style: {
             fontFamily:
@@ -54,6 +53,7 @@ const CodeBlock: FC<{
           },
         }}
         language={npm ? 'bash' : language}
+        PreTag="div"
         showLineNumbers={false}
       >
         {npm ? 'npm install ' + value : value}
@@ -172,18 +172,18 @@ export const customSyntaxHighlighterTheme = {
     color: '#79b8ff',
   },
   'code[class*="language-"]': {
-    MozHyphens: 'none',
-    MozTabSize: '4',
-    OTabSize: '4',
-    WebkitHyphens: 'none',
     background: 'none',
     color: '#e1e4e8',
     fontFamily: "Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace",
     hyphens: 'none',
     lineHeight: '1.5',
+    MozHyphens: 'none',
+    MozTabSize: '4',
     msHyphens: 'none',
+    OTabSize: '4',
     tabSize: '4',
     textAlign: 'left',
+    WebkitHyphens: 'none',
     whiteSpace: 'pre',
     wordBreak: 'normal',
     wordSpacing: 'normal',
@@ -233,21 +233,21 @@ export const customSyntaxHighlighterTheme = {
     color: '#ffab70',
   },
   'pre[class*="language-"]': {
-    MozHyphens: 'none',
-    MozTabSize: '4',
-    OTabSize: '4',
-    WebkitHyphens: 'none',
     background: '#24292e',
     color: '#e1e4e8',
     fontFamily: "Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace",
     hyphens: 'none',
     lineHeight: '1.5',
     margin: '0.5em 0',
+    MozHyphens: 'none',
+    MozTabSize: '4',
     msHyphens: 'none',
+    OTabSize: '4',
     overflow: 'auto',
     padding: '1em',
     tabSize: '4',
     textAlign: 'left',
+    WebkitHyphens: 'none',
     whiteSpace: 'pre',
     wordBreak: 'normal',
     wordSpacing: 'normal',

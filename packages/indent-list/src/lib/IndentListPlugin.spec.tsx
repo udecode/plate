@@ -1,7 +1,5 @@
 /** @jsx jsxt */
 
-import { ParagraphPlugin } from '@udecode/plate/react';
-import { createPlateEditor } from '@udecode/plate/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
@@ -15,6 +13,8 @@ import { LinkPlugin } from '@udecode/plate-link/react';
 import { ImagePlugin } from '@udecode/plate-media/react';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { jsxt } from '@udecode/plate-test-utils';
+import { ParagraphPlugin } from '@udecode/plate/react';
+import { createPlateEditor } from '@udecode/plate/react';
 
 import { BaseIndentListPlugin } from './BaseIndentListPlugin';
 

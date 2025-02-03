@@ -2,9 +2,9 @@
 import * as React from 'react';
 import type { ReactNode } from 'react';
 import { type SyntaxHighlighterProps, Prism } from 'react-syntax-highlighter';
+import { vscDarkPlus as theme } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 import { cn } from '@udecode/cn';
-import { vscDarkPlus as theme } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 import { CopyButton, CopyNpmCommandButton } from '@/components/copy-button';
 import * as Typography from '@/components/typography';

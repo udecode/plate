@@ -17,8 +17,8 @@ export const useFloatingLinkEnter = () => {
       }
     },
     {
-      enableOnFormTags: ['INPUT'],
       enabled: open,
+      enableOnFormTags: ['INPUT'],
     },
     []
   );

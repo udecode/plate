@@ -30,13 +30,13 @@ import {
   useComboboxStore,
 } from '@ariakit/react';
 import { cn, withCn } from '@udecode/cn';
-import { useComposedRef, useEditorRef } from '@udecode/plate/react';
 import { filterWords } from '@udecode/plate-combobox';
 import {
   type UseComboboxInputResult,
   useComboboxInput,
   useHTMLInputCursorState,
 } from '@udecode/plate-combobox/react';
+import { useComposedRef, useEditorRef } from '@udecode/plate/react';
 import { cva } from 'class-variance-authority';
 
 type FilterFn = (
@@ -49,9 +49,9 @@ interface InlineComboboxContextValue {
   inputProps: UseComboboxInputResult['props'];
   inputRef: RefObject<HTMLInputElement | null>;
   removeInput: UseComboboxInputResult['removeInput'];
-  setHasEmpty: (hasEmpty: boolean) => void;
   showTrigger: boolean;
   trigger: string;
+  setHasEmpty: (hasEmpty: boolean) => void;
 }
 
 const InlineComboboxContext = createContext<InlineComboboxContextValue>(
@@ -77,9 +77,9 @@ interface InlineComboboxProps {
   trigger: string;
   filter?: FilterFn | false;
   hideWhenNoValue?: boolean;
-  setValue?: (value: string) => void;
   showTrigger?: boolean;
   value?: string;
+  setValue?: (value: string) => void;
 }
 
 const InlineCombobox = ({
@@ -191,7 +191,6 @@ const InlineCombobox = ({
     if (!store.getState().activeId) {
       store.setActiveId(store.first());
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items, store]);
 
   return (

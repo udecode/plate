@@ -2,13 +2,13 @@ import { useMemo } from 'react';
 
 import type { Value } from '@udecode/plate';
 
+import { type TIndentElement, BaseIndentPlugin } from '@udecode/plate-indent';
 import {
   atom,
   plateStore,
   useEditorPlugin,
   usePlateStore,
 } from '@udecode/plate/react';
-import { type TIndentElement, BaseIndentPlugin } from '@udecode/plate-indent';
 
 import { TogglePlugin } from './TogglePlugin';
 

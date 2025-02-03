@@ -8,9 +8,9 @@ import {
   type Operation,
   type TText,
   BaseParagraphPlugin,
+  createEditor,
   PathApi,
   TextApi,
-  createEditor,
 } from '@udecode/plate';
 
 import type { ComputeDiffOptions } from '../../lib/computeDiff';

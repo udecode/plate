@@ -3,7 +3,6 @@
 import type React from 'react';
 
 import type { TElement, TText } from '@udecode/plate';
-import type { ParagraphPlugin } from '@udecode/plate/react';
 import type { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import type {
   CodeBlockPlugin,
@@ -41,6 +40,7 @@ import type {
 } from '@udecode/plate-table/react';
 import type { TToggleElement } from '@udecode/plate-toggle';
 import type { TogglePlugin } from '@udecode/plate-toggle/react';
+import type { ParagraphPlugin } from '@udecode/plate/react';
 
 /** Text */
 
@@ -48,83 +48,52 @@ export type EmptyText = {
   text: '';
 };
 
-export type PlainText = {
-  text: string;
-};
-
-export interface RichText extends TText, TCommentText {
-  backgroundColor?: React.CSSProperties['backgroundColor'];
-  bold?: boolean;
-  code?: boolean;
-  color?: React.CSSProperties['color'];
-  fontFamily?: React.CSSProperties['fontFamily'];
-  fontSize?: React.CSSProperties['fontSize'];
-  fontWeight?: React.CSSProperties['fontWeight'];
-  italic?: boolean;
-  kbd?: boolean;
-  strikethrough?: boolean;
-  subscript?: boolean;
-  underline?: boolean;
-}
-
-/** Inline Elements */
-
-export interface MyLinkElement extends TLinkElement {
-  children: RichText[];
-  type: typeof LinkPlugin.key;
-}
-
-export interface MyMentionInputElement extends TMentionInputElement {
-  children: [PlainText];
-  type: typeof MentionInputPlugin.key;
-}
-
-export interface MyMentionElement extends TMentionElement {
-  children: [EmptyText];
-  type: typeof MentionPlugin.key;
-}
-
-export type MyInlineElement =
-  | MyLinkElement
-  | MyMentionElement
-  | MyMentionInputElement;
-
-export type MyInlineDescendant = MyInlineElement | RichText;
-
-export type MyInlineChildren = MyInlineDescendant[];
-
-/** Block props */
-
-export interface MyIndentProps {
-  indent?: number;
-}
-
-export interface MyLineHeightProps {
-  lineHeight?: React.CSSProperties['lineHeight'];
-}
-
 export interface MyAlignProps {
   align?: React.CSSProperties['textAlign'];
 }
 
 export interface MyBlockElement
-  extends TElement,
-    MyIndentProps,
-    MyLineHeightProps {
+  extends MyIndentProps,
+    MyLineHeightProps,
+    TElement {
   id?: string;
 }
 
-/** Blocks */
+/** Inline Elements */
 
-export interface MyParagraphElement extends MyBlockElement {
+export interface MyBlockquoteElement extends MyBlockElement {
   children: MyInlineChildren;
-  type: typeof ParagraphPlugin.key;
+  type: typeof BlockquotePlugin.key;
+}
+
+export interface MyBulletedListElement extends MyBlockElement, TElement {
+  children: MyListItemElement[];
+  type: typeof BulletedListPlugin.key;
+}
+
+export interface MyCodeBlockElement extends MyBlockElement {
+  children: MyCodeLineElement[];
+  type: typeof CodeBlockPlugin.key;
+}
+
+export interface MyCodeLineElement extends TElement {
+  children: PlainText[];
+  type: typeof CodeLinePlugin.key;
+}
+
+export interface MyExcalidrawElement
+  extends MyBlockElement,
+    TExcalidrawElement {
+  children: [EmptyText];
+  type: typeof ExcalidrawPlugin.key;
 }
 
 export interface MyH1Element extends MyBlockElement {
   children: MyInlineChildren;
   type: typeof HEADING_KEYS.h1;
 }
+
+/** Block props */
 
 export interface MyH2Element extends MyBlockElement {
   children: MyInlineChildren;
@@ -146,78 +115,11 @@ export interface MyH5Element extends MyBlockElement {
   type: typeof HEADING_KEYS.h5;
 }
 
+/** Blocks */
+
 export interface MyH6Element extends MyBlockElement {
   children: MyInlineChildren;
   type: typeof HEADING_KEYS.h6;
-}
-
-export interface MyBlockquoteElement extends MyBlockElement {
-  children: MyInlineChildren;
-  type: typeof BlockquotePlugin.key;
-}
-
-export interface MyCodeBlockElement extends MyBlockElement {
-  children: MyCodeLineElement[];
-  type: typeof CodeBlockPlugin.key;
-}
-
-export interface MyCodeLineElement extends TElement {
-  children: PlainText[];
-  type: typeof CodeLinePlugin.key;
-}
-
-export interface MyTableElement extends TTableElement, MyBlockElement {
-  children: MyTableRowElement[];
-  type: typeof TablePlugin.key;
-}
-
-export interface MyTableRowElement extends TElement {
-  children: MyTableCellElement[];
-  type: typeof TableRowPlugin.key;
-}
-
-export interface MyTableCellElement extends TElement {
-  children: MyNestableBlock[];
-  type: typeof TableCellPlugin.key;
-}
-
-export interface MyBulletedListElement extends TElement, MyBlockElement {
-  children: MyListItemElement[];
-  type: typeof BulletedListPlugin.key;
-}
-
-export interface MyNumberedListElement extends TElement, MyBlockElement {
-  children: MyListItemElement[];
-  type: typeof NumberedListPlugin.key;
-}
-
-export interface MyListItemElement extends TElement, MyBlockElement {
-  children: MyInlineChildren;
-  type: typeof ListItemPlugin.key;
-}
-
-export interface MyTodoListElement
-  extends TTodoListItemElement,
-    MyBlockElement {
-  children: MyInlineChildren;
-  type: typeof TodoListPlugin.key;
-}
-
-export interface MyToggleElement extends TToggleElement, MyBlockElement {
-  children: MyInlineChildren;
-  type: typeof TogglePlugin.key;
-}
-
-export interface MyImageElement extends TImageElement, MyBlockElement {
-  children: [EmptyText];
-  type: typeof ImagePlugin.key;
-}
-
-export interface MyMediaEmbedElement
-  extends TMediaEmbedElement,
-    MyBlockElement {
-  children: [EmptyText];
-  type: typeof MediaEmbedPlugin.key;
 }
 
 export interface MyHrElement extends MyBlockElement {
@@ -225,14 +127,66 @@ export interface MyHrElement extends MyBlockElement {
   type: typeof HorizontalRulePlugin.key;
 }
 
-export interface MyExcalidrawElement
-  extends TExcalidrawElement,
-    MyBlockElement {
+export interface MyImageElement extends MyBlockElement, TImageElement {
   children: [EmptyText];
-  type: typeof ExcalidrawPlugin.key;
+  type: typeof ImagePlugin.key;
+}
+
+export interface MyIndentProps {
+  indent?: number;
+}
+
+export type MyInlineChildren = MyInlineDescendant[];
+
+export type MyInlineDescendant = MyInlineElement | RichText;
+
+export type MyInlineElement =
+  | MyLinkElement
+  | MyMentionElement
+  | MyMentionInputElement;
+
+export interface MyLineHeightProps {
+  lineHeight?: React.CSSProperties['lineHeight'];
+}
+
+export interface MyLinkElement extends TLinkElement {
+  children: RichText[];
+  type: typeof LinkPlugin.key;
+}
+
+export interface MyListItemElement extends MyBlockElement, TElement {
+  children: MyInlineChildren;
+  type: typeof ListItemPlugin.key;
+}
+
+export interface MyMediaEmbedElement
+  extends MyBlockElement,
+    TMediaEmbedElement {
+  children: [EmptyText];
+  type: typeof MediaEmbedPlugin.key;
+}
+
+export interface MyMentionElement extends TMentionElement {
+  children: [EmptyText];
+  type: typeof MentionPlugin.key;
+}
+
+export interface MyMentionInputElement extends TMentionInputElement {
+  children: [PlainText];
+  type: typeof MentionInputPlugin.key;
 }
 
 export type MyNestableBlock = MyParagraphElement;
+
+export interface MyNumberedListElement extends MyBlockElement, TElement {
+  children: MyListItemElement[];
+  type: typeof NumberedListPlugin.key;
+}
+
+export interface MyParagraphElement extends MyBlockElement {
+  children: MyInlineChildren;
+  type: typeof ParagraphPlugin.key;
+}
 
 export type MyRootBlock =
   | MyBlockquoteElement
@@ -254,7 +208,53 @@ export type MyRootBlock =
   | MyTodoListElement
   | MyToggleElement;
 
+export interface MyTableCellElement extends TElement {
+  children: MyNestableBlock[];
+  type: typeof TableCellPlugin.key;
+}
+
+export interface MyTableElement extends MyBlockElement, TTableElement {
+  children: MyTableRowElement[];
+  type: typeof TablePlugin.key;
+}
+
+export interface MyTableRowElement extends TElement {
+  children: MyTableCellElement[];
+  type: typeof TableRowPlugin.key;
+}
+
+export interface MyTodoListElement
+  extends MyBlockElement,
+    TTodoListItemElement {
+  children: MyInlineChildren;
+  type: typeof TodoListPlugin.key;
+}
+
+export interface MyToggleElement extends MyBlockElement, TToggleElement {
+  children: MyInlineChildren;
+  type: typeof TogglePlugin.key;
+}
+
 export type MyValue = MyRootBlock[];
+
+export type PlainText = {
+  text: string;
+};
+
+export interface RichText extends TCommentText, TText {
+  backgroundColor?: React.CSSProperties['backgroundColor'];
+  bold?: boolean;
+  code?: boolean;
+  color?: React.CSSProperties['color'];
+  fontFamily?: React.CSSProperties['fontFamily'];
+  fontSize?: React.CSSProperties['fontSize'];
+  fontWeight?: React.CSSProperties['fontWeight'];
+  italic?: boolean;
+  kbd?: boolean;
+  strikethrough?: boolean;
+  subscript?: boolean;
+  underline?: boolean;
+}
 
 // export type MyElement = ElementOf<MyEditor>;
 

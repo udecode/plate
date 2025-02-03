@@ -8,8 +8,8 @@ import type { DialogProps } from '@radix-ui/react-dialog';
 
 import { cn } from '@udecode/cn';
 import { Circle, File, Laptop, Moon, SunMedium } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
+import { useRouter } from 'next/navigation';
 
 import { docsConfig } from '@/config/docs';
 import { Button } from '@/registry/default/plate-ui/button';

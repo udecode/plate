@@ -7,15 +7,15 @@ export const BaseStrikethroughPlugin = createSlatePlugin({
   parsers: {
     html: {
       deserializer: {
+        rules: [
+          { validNodeName: ['S', 'DEL', 'STRIKE'] },
+          { validStyle: { textDecoration: 'line-through' } },
+        ],
         query: ({ element }) =>
           !someHtmlElement(
             element,
             (node) => node.style.textDecoration === 'none'
           ),
-        rules: [
-          { validNodeName: ['S', 'DEL', 'STRIKE'] },
-          { validStyle: { textDecoration: 'line-through' } },
-        ],
       },
     },
   },

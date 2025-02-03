@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-base-to-string */
+
 'use client';
 
 import { type FC, memo } from 'react';

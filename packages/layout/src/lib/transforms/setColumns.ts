@@ -51,13 +51,11 @@ export const setColumns = (
       const insertPath = path.concat([currentCount]);
 
       // Insert the extra columns
-      const newColumns = Array(columnsToAdd)
-        .fill(null)
-        .map((_, i) => ({
-          children: [editor.api.create.block()],
-          type: editor.getType(BaseColumnItemPlugin),
-          width: widths![currentCount + i] || `${100 / targetCount}%`,
-        }));
+      const newColumns = new Array(columnsToAdd).fill(null).map((_, i) => ({
+        children: [editor.api.create.block()],
+        type: editor.getType(BaseColumnItemPlugin),
+        width: widths![currentCount + i] || `${100 / targetCount}%`,
+      }));
 
       editor.tf.insertNodes(newColumns, { at: insertPath });
 

@@ -22,7 +22,6 @@ export type UseCursorOverlayOptions = {
    * @default 1
    */
   minSelectionWidth?: number;
-
   /**
    * Whether to refresh the cursor overlay positions on container resize.
    *
@@ -131,7 +130,7 @@ export const useCursorOverlay = <TCursorData extends UnknownObject>({
   }, [containerRef, cursorStates, editor, selectionRects, minSelectionWidth]);
 
   // Update selection rects after paint
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   useIsomorphicLayoutEffect(() => {
     updateSelectionRects();
   });

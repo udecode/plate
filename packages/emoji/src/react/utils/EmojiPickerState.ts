@@ -4,7 +4,10 @@ import type { Emoji } from '@emoji-mart/data';
 
 import { type EmojiCategoryList, EmojiCategory } from '../../lib';
 
-export type MapEmojiCategoryList = Map<EmojiCategoryList, boolean>;
+export type EmojiPickerStateDispatch = {
+  type: string;
+  payload?: Partial<EmojiPickerStateProps>;
+};
 
 export type EmojiPickerStateProps = {
   hasFound: boolean;
@@ -18,10 +21,7 @@ export type EmojiPickerStateProps = {
   frequentEmoji?: string;
 };
 
-export type EmojiPickerStateDispatch = {
-  type: string;
-  payload?: Partial<EmojiPickerStateProps>;
-};
+export type MapEmojiCategoryList = Map<EmojiCategoryList, boolean>;
 
 const initialState: EmojiPickerStateProps = {
   emoji: undefined,

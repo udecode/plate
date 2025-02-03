@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
 import { type SlateEditor, createEditor } from '@udecode/plate';
-import { createPlateEditor } from '@udecode/plate/react';
 import { jsxt } from '@udecode/plate-test-utils';
+import { createPlateEditor } from '@udecode/plate/react';
 
 import { removeListItem } from './removeListItem';
 

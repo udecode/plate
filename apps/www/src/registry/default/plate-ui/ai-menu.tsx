@@ -3,7 +3,6 @@
 import * as React from 'react';
 
 import { type NodeEntry, isHotkey } from '@udecode/plate';
-import { useEditorPlugin, useHotkeys } from '@udecode/plate/react';
 import {
   AIChatPlugin,
   useEditorChat,
@@ -13,6 +12,7 @@ import {
   BlockSelectionPlugin,
   useIsSelecting,
 } from '@udecode/plate-selection/react';
+import { useEditorPlugin, useHotkeys } from '@udecode/plate/react';
 import { Loader2Icon } from 'lucide-react';
 
 import { useChat } from '@/registry/default/components/editor/use-chat';

@@ -4,9 +4,9 @@ import { useEditorPlugin, useElement } from '@udecode/plate/react';
 
 import type { BorderStylesDefault, TTableCellElement } from '../../../lib';
 
-import { TablePlugin } from '../../TablePlugin';
 import { useCellIndices } from '../../hooks/useCellIndices';
 import { useTableStore } from '../../stores';
+import { TablePlugin } from '../../TablePlugin';
 import { useIsCellSelected } from './useIsCellSelected';
 import { useTableCellBorders } from './useTableCellBorders';
 import { useTableCellSize } from './useTableCellSize';

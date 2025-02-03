@@ -41,8 +41,8 @@ export const MultiSelectPlugin = toPlatePlugin(
             editor.tf.removeNodes({
               at: [],
               empty: false,
-              match: (text: TText) => !texts.has(text),
               text: true,
+              match: (text: TText) => !texts.has(text),
             });
           }
         },

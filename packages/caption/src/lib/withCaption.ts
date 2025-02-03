@@ -1,10 +1,10 @@
 import {
   type OverrideEditor,
   type TRange,
-  NodeApi,
-  RangeApi,
   getPluginTypes,
   isHotkey,
+  NodeApi,
+  RangeApi,
 } from '@udecode/plate';
 
 import { type CaptionConfig, BaseCaptionPlugin } from './BaseCaptionPlugin';

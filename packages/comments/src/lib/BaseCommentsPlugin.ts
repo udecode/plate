@@ -3,10 +3,10 @@ import {
   type PluginConfig,
   type Value,
   type WithPartial,
-  NodeApi,
   bindFirst,
   createTSlatePlugin,
   nanoid,
+  NodeApi,
 } from '@udecode/plate';
 
 import type { CommentUser, TComment } from './types';
@@ -40,14 +40,6 @@ export type BaseCommentsConfig = PluginConfig<
   }
 >;
 
-export type CommentsSelectors = {
-  activeComment?: () => TComment | null;
-  commentById?: (id: string | null) => TComment | null;
-  myUser?: () => CommentUser | null;
-  newText?: () => string;
-  userById?: (id: string | null) => CommentUser | null;
-};
-
 export type CommentsApi = {
   addComment: (
     value: WithPartial<TComment, 'createdAt' | 'id' | 'userId'>
@@ -56,6 +48,14 @@ export type CommentsApi = {
   removeComment: (id: string | null) => void;
   resetNewCommentValue: () => void;
   updateComment: (id: string | null, value: Partial<TComment>) => void;
+};
+
+export type CommentsSelectors = {
+  activeComment?: () => TComment | null;
+  commentById?: (id: string | null) => TComment | null;
+  myUser?: () => CommentUser | null;
+  newText?: () => string;
+  userById?: (id: string | null) => CommentUser | null;
 };
 
 export const BaseCommentsPlugin = createTSlatePlugin<BaseCommentsConfig>({

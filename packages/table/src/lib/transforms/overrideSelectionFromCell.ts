@@ -1,6 +1,6 @@
 import { type SlateEditor, type TRange, isHotkey } from '@udecode/plate';
 
-import { KEY_SHIFT_EDGES, getCellTypes } from '..';
+import { getCellTypes, KEY_SHIFT_EDGES } from '..';
 import { moveSelectionFromCell } from './moveSelectionFromCell';
 
 /**

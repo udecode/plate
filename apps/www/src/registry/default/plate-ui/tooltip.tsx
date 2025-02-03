@@ -27,6 +27,10 @@ export const TooltipContent = withCn(
 );
 
 type TooltipProps<T extends React.ElementType> = {
+  delayDuration?: number;
+  disableHoverableContent?: boolean;
+  skipDelayDuration?: number;
+  tooltip?: React.ReactNode;
   tooltipContentProps?: Omit<
     React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>,
     'children'
@@ -38,10 +42,6 @@ type TooltipProps<T extends React.ElementType> = {
   tooltipTriggerProps?: React.ComponentPropsWithoutRef<
     typeof TooltipPrimitive.Trigger
   >;
-  delayDuration?: number;
-  disableHoverableContent?: boolean;
-  skipDelayDuration?: number;
-  tooltip?: React.ReactNode;
 } & React.ComponentProps<T>;
 
 export function withTooltip<T extends React.ElementType>(Component: T) {

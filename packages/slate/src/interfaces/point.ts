@@ -60,13 +60,13 @@ export const PointApi: {
   },
 };
 
-export interface PointTransformOptions {
-  affinity?: TextDirection | null;
-}
+export type PointEntry = [Point, 'anchor' | 'focus'];
 
 /**
  * `PointEntry` objects are returned when iterating over `Point` objects that
  * belong to a range.
  */
 
-export type PointEntry = [Point, 'anchor' | 'focus'];
+export interface PointTransformOptions {
+  affinity?: TextDirection | null;
+}

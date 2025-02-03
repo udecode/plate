@@ -3,7 +3,6 @@
 import React from 'react';
 
 import { withProps } from '@udecode/cn';
-import { Plate, PlateElement } from '@udecode/plate/react';
 import {
   BulletedListPlugin,
   ListItemPlugin,
@@ -11,6 +10,7 @@ import {
   NumberedListPlugin,
   TodoListPlugin,
 } from '@udecode/plate-list/react';
+import { Plate, PlateElement } from '@udecode/plate/react';
 
 import { autoformatListPlugin } from '@/registry/default/components/editor/plugins/autoformat-list-plugin';
 import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';

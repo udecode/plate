@@ -1,6 +1,6 @@
 import type { TElement } from '@udecode/plate';
 import type { DropTargetMonitor } from 'react-dnd';
-/* eslint-disable @typescript-eslint/no-require-imports */
+
 import { createPlateEditor } from '@udecode/plate/react';
 
 import type { DragItemNode } from '../types';

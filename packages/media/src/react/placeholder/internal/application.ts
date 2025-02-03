@@ -255,13 +255,13 @@ export const application = {
     extensions: ['mscml'],
     source: 'iana',
   },
-  'application/metalink+xml': {
-    extensions: ['metalink'],
-    source: 'apache',
-  },
   'application/metalink4+xml': {
     extensions: ['meta4'],
     source: 'iana',
+  },
+  'application/metalink+xml': {
+    extensions: ['metalink'],
+    source: 'apache',
   },
   'application/mets+xml': {
     extensions: ['mets'],
@@ -614,6 +614,10 @@ export const application = {
     extensions: ['td'],
     source: 'iana',
   },
+  'application/vnd.3gpp2.tcap': {
+    extensions: ['tcap'],
+    source: 'iana',
+  },
   'application/vnd.3gpp.pic-bw-large': {
     extensions: ['plb'],
     source: 'iana',
@@ -624,10 +628,6 @@ export const application = {
   },
   'application/vnd.3gpp.pic-bw-var': {
     extensions: ['pvb'],
-    source: 'iana',
-  },
-  'application/vnd.3gpp2.tcap': {
-    extensions: ['tcap'],
     source: 'iana',
   },
   'application/vnd.3m.post-it-notes': {

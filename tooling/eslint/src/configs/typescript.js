@@ -107,7 +107,6 @@ export default defineConfig(
         'import/export': 'off',
         'import/no-named-as-default': 'off',
       },
-
       'import/namespace': 'off',
       'import/no-duplicates': [
         'error',
@@ -117,6 +116,7 @@ export default defineConfig(
         },
       ],
       'import/no-named-as-default-member': 'off',
+      'import/no-unresolved': 'off',
     },
     settings: {
       'import/resolver': {

@@ -3,9 +3,9 @@ import {
   type SlateEditor,
   type UnwrapNodesOptions,
   type WrapNodesOptions,
+  isDefined,
   NodeApi,
   RangeApi,
-  isDefined,
 } from '@udecode/plate';
 
 import type { TLinkElement } from '../types';

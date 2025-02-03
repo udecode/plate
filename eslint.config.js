@@ -35,7 +35,6 @@ export default defineConfig(
     files: ['**/*.spec.ts*', '**/*.spec.tsx'],
     rules: {
       'import/no-relative-packages': 'off',
-      'import/no-unresolved': 'off',
       'react/jsx-key': 'off',
     },
   },

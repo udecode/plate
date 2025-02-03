@@ -6,11 +6,6 @@ import type { TTableCellElement } from '@udecode/plate-table';
 
 import { cn, withProps, withRef } from '@udecode/cn';
 import {
-  useEditorPlugin,
-  useElementSelector,
-  useReadOnly,
-} from '@udecode/plate/react';
-import {
   BlockSelectionPlugin,
   useBlockSelected,
 } from '@udecode/plate-selection/react';
@@ -20,6 +15,11 @@ import {
   useTableCellElement,
   useTableCellElementResizable,
 } from '@udecode/plate-table/react';
+import {
+  useEditorPlugin,
+  useElementSelector,
+  useReadOnly,
+} from '@udecode/plate/react';
 import { cva } from 'class-variance-authority';
 
 import { blockSelectionVariants } from './block-selection';

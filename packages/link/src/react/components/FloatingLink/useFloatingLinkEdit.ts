@@ -1,6 +1,10 @@
 import React from 'react';
 
 import {
+  getDOMSelectionBoundingClientRect,
+  getRangeBoundingClientRect,
+} from '@udecode/plate-floating';
+import {
   useComposedRef,
   useEditorPlugin,
   useEditorReadOnly,
@@ -8,10 +12,6 @@ import {
   useHotkeys,
   useOnClickOutside,
 } from '@udecode/plate/react';
-import {
-  getDOMSelectionBoundingClientRect,
-  getRangeBoundingClientRect,
-} from '@udecode/plate-floating';
 
 import type { LinkFloatingToolbarState } from './useFloatingLinkInsert';
 

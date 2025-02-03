@@ -2,10 +2,10 @@
 
 import React from 'react';
 
-import { Plate } from '@udecode/plate/react';
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
 import { ImagePlugin } from '@udecode/plate-media/react';
+import { Plate } from '@udecode/plate/react';
 
 import { deletePlugins } from '@/registry/default/components/editor/plugins/delete-plugins';
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';

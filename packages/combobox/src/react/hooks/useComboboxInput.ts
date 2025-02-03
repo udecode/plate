@@ -28,11 +28,11 @@ export interface UseComboboxInputOptions {
 }
 
 export interface UseComboboxInputResult {
+  props: Required<Pick<HTMLAttributes<HTMLElement>, 'onBlur' | 'onKeyDown'>>;
   cancelInput: (
     cause?: CancelComboboxInputCause,
     focusEditor?: boolean
   ) => void;
-  props: Required<Pick<HTMLAttributes<HTMLElement>, 'onBlur' | 'onKeyDown'>>;
   removeInput: (focusEditor?: boolean) => void;
 }
 

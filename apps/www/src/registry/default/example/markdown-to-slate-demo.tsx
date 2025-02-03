@@ -6,13 +6,6 @@ import type { Value } from '@udecode/plate';
 
 import { withProps } from '@udecode/cn';
 import {
-  type PlateEditor,
-  ParagraphPlugin,
-  Plate,
-  PlateLeaf,
-  usePlateEditor,
-} from '@udecode/plate/react';
-import {
   BoldPlugin,
   CodePlugin,
   ItalicPlugin,
@@ -32,7 +25,7 @@ import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { KbdPlugin } from '@udecode/plate-kbd/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
-import { MarkdownPlugin, deserializeMd } from '@udecode/plate-markdown';
+import { deserializeMd, MarkdownPlugin } from '@udecode/plate-markdown';
 import { InlineEquationPlugin } from '@udecode/plate-math/react';
 import { ImagePlugin } from '@udecode/plate-media/react';
 import {
@@ -41,6 +34,13 @@ import {
   TablePlugin,
   TableRowPlugin,
 } from '@udecode/plate-table/react';
+import {
+  type PlateEditor,
+  ParagraphPlugin,
+  Plate,
+  PlateLeaf,
+  usePlateEditor,
+} from '@udecode/plate/react';
 import { cloneDeep } from 'lodash';
 import remarkEmoji from 'remark-emoji';
 

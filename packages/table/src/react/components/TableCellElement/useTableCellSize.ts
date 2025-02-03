@@ -10,8 +10,8 @@ import {
 
 import type { TTableCellElement, TTableRowElement } from '../../../lib';
 
-import { TablePlugin, TableRowPlugin } from '../../TablePlugin';
 import { useCellIndices } from '../../hooks/useCellIndices';
+import { TablePlugin, TableRowPlugin } from '../../TablePlugin';
 import { useTableColSizes } from '../TableElement';
 
 export function useTableCellSize({

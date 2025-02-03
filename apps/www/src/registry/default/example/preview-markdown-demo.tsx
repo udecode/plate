@@ -7,12 +7,12 @@ import {
   type Decorate,
   type RenderLeafProps,
   type TText,
-  TextApi,
   createSlatePlugin,
+  TextApi,
 } from '@udecode/plate';
-import { Plate } from '@udecode/plate/react';
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
+import { Plate } from '@udecode/plate/react';
 import Prism from 'prismjs';
 
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';

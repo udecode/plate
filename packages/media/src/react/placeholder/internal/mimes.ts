@@ -14,9 +14,9 @@ export const mimes = {
   ...misc,
 };
 
-export type MimeType = keyof typeof mimes;
-
 export type FileExtension = (typeof mimes)[MimeType]['extensions'][number];
+
+export type MimeType = keyof typeof mimes;
 
 export const ALLOWED_FILE_TYPES = [
   'image',

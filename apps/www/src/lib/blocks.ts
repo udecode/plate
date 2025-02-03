@@ -8,7 +8,6 @@ import { registryItemSchema } from '@/registry/schema';
 // const BLOCKS_WHITELIST_PREFIXES = ['sidebar', 'login'];
 const REGISTRY_BLOCK_TYPES = new Set(['registry:block']);
 
-// eslint-disable-next-line @typescript-eslint/require-await
 export async function getAllBlockIds() {
   const blocks = _getAllBlocks();
 

@@ -1,10 +1,10 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @typescript-eslint/unbound-method */
-/* eslint-disable react/no-unknown-property */
+
 /* eslint-disable no-fallthrough */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+
 'use client';
+
 import * as React from 'react';
 import type { JSX } from 'react';
 
@@ -15,23 +15,75 @@ import { useSyncExternalStore } from 'use-sync-external-store/shim/index.js';
 
 import { commandScore } from './internal/command-score';
 
+// FORK
+type Actions = {
+  // Select current item. Can be used outside of the menu (e.g. Enter from another input).
+  selectCurrentItem: () => void;
+  // Select first item in the list
+  selectFirstItem: () => void;
+  // Select item at index
+  selectItem: (index: number) => void;
+  // Select last item in the list
+  selectLastItem: () => void;
+  // Select next group
+  selectNextGroup: (e: React.KeyboardEvent) => void;
+  // Select next item. Can be used outside of the menu (e.g. ArrowDown from another input).
+  selectNextItem: (e: React.KeyboardEvent) => void;
+  // Select previous group
+  selectPrevGroup: (e: React.KeyboardEvent) => void;
+  // Select previous item. Can be used outside of the menu (e.g. ArrowUp from another input).
+  selectPrevItem: (e: React.KeyboardEvent) => void;
+  // Set search so Input is not required and we can use another one.
+  setSearch: (search: string) => void;
+};
 type Children = { children?: React.ReactNode };
-type DivProps = React.ComponentPropsWithoutRef<typeof Primitive.div>;
 
-type LoadingProps = Children &
+type CommandProps = Children &
   DivProps & {
-    /** Accessible label for this loading progressbar. Not shown visibly. */
+    /** Optional default item value when it is initially rendered. */
+    defaultValue?: string;
+    /** Optionally set to `true` to disable selection via pointer events. */
+    disablePointerSelection?: boolean;
+    /** Accessible label for this command menu. Not shown visibly. */
     label?: string;
-    /** Estimated progress of loading asynchronous options. */
-    progress?: number;
+    /**
+     * Optionally set to `true` to turn on looping around when using the arrow
+     * keys.
+     */
+    loop?: boolean;
+    /**
+     * Optionally set to `false` to turn off the automatic filtering and
+     * sorting. If `false`, you must conditionally render valid items based on
+     * the search query yourself.
+     */
+    shouldFilter?: boolean;
+    /** Optional controlled state of the selected command menu item. */
+    value?: string;
+    /** Set to `false` to disable ctrl+n/j/p/k shortcuts. Defaults to `true`. */
+    vimBindings?: boolean;
+    /**
+     * Custom filter function for whether each command menu item should matches
+     * the given search query. It should return a number between 0 and 1, with 1
+     * being the best match and 0 being hidden entirely. By default, uses the
+     * `command-score` library.
+     */
+    filter?: (value: string, search: string, keywords?: string[]) => number;
+    /** Event handler called when the selected item of the menu changes. */
+    onValueChange?: (value: string) => void;
   };
-type EmptyProps = Children & DivProps & {};
-type SeparatorProps = DivProps & {
-  /**
-   * Whether this separator should always be rendered. Useful if you disable
-   * automatic filtering.
-   */
-  alwaysRender?: boolean;
+type Context = {
+  inputId: string;
+  label: string;
+  labelId: string;
+  // Ids
+  listId: string;
+  // Refs
+  listInnerRef: React.RefObject<HTMLDivElement | null>;
+  filter: () => boolean;
+  getDisablePointerSelection: () => boolean;
+  group: (id: string) => () => void;
+  item: (id: string, groupId: string) => () => void;
+  value: (id: string, value: string, keywords?: string[]) => void;
 };
 type DialogProps = RadixDialog.DialogProps &
   CommandProps & {
@@ -42,32 +94,12 @@ type DialogProps = RadixDialog.DialogProps &
     /** Provide a className to the Dialog overlay. */
     overlayClassName?: string;
   };
-type ListProps = Children &
-  DivProps & {
-    /** Accessible label for this List of suggestions. Not shown visibly. */
-    label?: string;
-  };
-type ItemProps = Children &
-  Omit<DivProps, 'disabled' | 'onSelect' | 'value'> & {
-    /** Whether this item is currently disabled. */
-    disabled?: boolean;
-    /** Whether this item is forcibly rendered regardless of filtering. */
-    forceMount?: boolean;
-    /** Optional keywords to match against when filtering. */
-    keywords?: string[];
-    /**
-     * A unique value for this item. If no value is provided, it will be
-     * inferred from `children` or the rendered `textContent`. If your
-     * `textContent` changes between renders, you _must_ provide a stable,
-     * unique `value`.
-     */
-    value?: string;
-    /**
-     * Event handler for when this item is selected, either via click or
-     * keyboard selection.
-     */
-    onSelect?: (value: string) => void;
-  };
+type DivProps = React.ComponentPropsWithoutRef<typeof Primitive.div>;
+type EmptyProps = Children & DivProps & {};
+type Group = {
+  id: string;
+  forceMount?: boolean;
+};
 type GroupProps = Children &
   Omit<DivProps, 'heading' | 'value'> & {
     /** Whether this group is forcibly rendered regardless of filtering. */
@@ -89,53 +121,46 @@ type InputProps = Omit<
   /** Event handler called when the search value changes. */
   onValueChange?: (search: string) => void;
 };
-type CommandProps = Children &
-  DivProps & {
-    /** Optional default item value when it is initially rendered. */
-    defaultValue?: string;
-    /** Optionally set to `true` to disable selection via pointer events. */
-    disablePointerSelection?: boolean;
+type ItemProps = Children &
+  Omit<DivProps, 'disabled' | 'onSelect' | 'value'> & {
+    /** Whether this item is currently disabled. */
+    disabled?: boolean;
+    /** Whether this item is forcibly rendered regardless of filtering. */
+    forceMount?: boolean;
+    /** Optional keywords to match against when filtering. */
+    keywords?: string[];
     /**
-     * Custom filter function for whether each command menu item should matches
-     * the given search query. It should return a number between 0 and 1, with 1
-     * being the best match and 0 being hidden entirely. By default, uses the
-     * `command-score` library.
+     * A unique value for this item. If no value is provided, it will be
+     * inferred from `children` or the rendered `textContent`. If your
+     * `textContent` changes between renders, you _must_ provide a stable,
+     * unique `value`.
      */
-    filter?: (value: string, search: string, keywords?: string[]) => number;
-    /** Accessible label for this command menu. Not shown visibly. */
-    label?: string;
-    /**
-     * Optionally set to `true` to turn on looping around when using the arrow
-     * keys.
-     */
-    loop?: boolean;
-    /**
-     * Optionally set to `false` to turn off the automatic filtering and
-     * sorting. If `false`, you must conditionally render valid items based on
-     * the search query yourself.
-     */
-    shouldFilter?: boolean;
-    /** Optional controlled state of the selected command menu item. */
     value?: string;
-    /** Set to `false` to disable ctrl+n/j/p/k shortcuts. Defaults to `true`. */
-    vimBindings?: boolean;
-    /** Event handler called when the selected item of the menu changes. */
-    onValueChange?: (value: string) => void;
+    /**
+     * Event handler for when this item is selected, either via click or
+     * keyboard selection.
+     */
+    onSelect?: (value: string) => void;
   };
 
-type Context = {
-  filter: () => boolean;
-  getDisablePointerSelection: () => boolean;
-  group: (id: string) => () => void;
-  inputId: string;
-  item: (id: string, groupId: string) => () => void;
-  label: string;
-  labelId: string;
-  // Ids
-  listId: string;
-  // Refs
-  listInnerRef: React.RefObject<HTMLDivElement | null>;
-  value: (id: string, value: string, keywords?: string[]) => void;
+type ListProps = Children &
+  DivProps & {
+    /** Accessible label for this List of suggestions. Not shown visibly. */
+    label?: string;
+  };
+type LoadingProps = Children &
+  DivProps & {
+    /** Accessible label for this loading progressbar. Not shown visibly. */
+    label?: string;
+    /** Estimated progress of loading asynchronous options. */
+    progress?: number;
+  };
+type SeparatorProps = DivProps & {
+  /**
+   * Whether this separator should always be rendered. Useful if you disable
+   * automatic filtering.
+   */
+  alwaysRender?: boolean;
 };
 type State = {
   filtered: { count: number; groups: Set<string>; items: Map<string, number> };
@@ -143,39 +168,14 @@ type State = {
   value: string;
 };
 type Store = {
+  emit: () => void;
   setState: <K extends keyof State>(
     key: K,
     value: State[K],
     opts?: any
   ) => void;
-  emit: () => void;
   snapshot: () => State;
   subscribe: (callback: () => void) => () => void;
-};
-type Group = {
-  id: string;
-  forceMount?: boolean;
-};
-// FORK
-type Actions = {
-  // Select current item. Can be used outside of the menu (e.g. Enter from another input).
-  selectCurrentItem: () => void;
-  // Select first item in the list
-  selectFirstItem: () => void;
-  // Select item at index
-  selectItem: (index: number) => void;
-  // Select last item in the list
-  selectLastItem: () => void;
-  // Select next group
-  selectNextGroup: (e: React.KeyboardEvent) => void;
-  // Select next item. Can be used outside of the menu (e.g. ArrowDown from another input).
-  selectNextItem: (e: React.KeyboardEvent) => void;
-  // Select previous group
-  selectPrevGroup: (e: React.KeyboardEvent) => void;
-  // Select previous item. Can be used outside of the menu (e.g. ArrowUp from another input).
-  selectPrevItem: (e: React.KeyboardEvent) => void;
-  // Set search so Input is not required and we can use another one.
-  setSearch: (search: string) => void;
 };
 
 const GROUP_SELECTOR = `[cmdk-group=""]`;
@@ -324,6 +324,11 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
 
     const context: Context = React.useMemo(
       () => ({
+        inputId,
+        label: label ?? props['aria-label']!,
+        labelId,
+        listId,
+        listInnerRef,
         filter: () => {
           return propsRef.current.shouldFilter!;
         },
@@ -341,7 +346,6 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
             allGroups.current.delete(id);
           };
         },
-        inputId,
         // Track item lifecycle (mount, unmount)
         item: (id, groupId) => {
           allItems.current.add(id);
@@ -387,10 +391,6 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
             });
           };
         },
-        label: label ?? props['aria-label']!,
-        labelId,
-        listId,
-        listInnerRef,
         // Keep id → {value, keywords} mapping up-to-date
         value: (id, value, keywords) => {
           if (value !== ids.current.get(id)?.value) {
@@ -664,11 +664,11 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
         selectFirstItem,
         selectItem: updateSelectedToIndex,
         selectLastItem: last,
-        selectNextGroup: () => updateSelectedByGroup(1),
         selectNextItem: next,
-        selectPrevGroup: () => updateSelectedByGroup(-1),
         selectPrevItem: prev,
         setSearch,
+        selectNextGroup: () => updateSelectedByGroup(1),
+        selectPrevGroup: () => updateSelectedByGroup(-1),
       };
     }, []);
     // FORK END

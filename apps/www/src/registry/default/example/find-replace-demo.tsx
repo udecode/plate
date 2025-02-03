@@ -2,8 +2,8 @@
 
 import React from 'react';
 
-import { Plate, useEditorPlugin } from '@udecode/plate/react';
 import { FindReplacePlugin } from '@udecode/plate-find-replace';
+import { Plate, useEditorPlugin } from '@udecode/plate/react';
 
 import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';

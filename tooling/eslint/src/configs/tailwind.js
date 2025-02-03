@@ -33,6 +33,7 @@ export const getTailwindConfig = ({
               'steps',
               'no-focus-ring',
               'focus-ring',
+              'line',
             ],
           },
         ],

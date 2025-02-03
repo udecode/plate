@@ -2,46 +2,6 @@ import type { SlateEditor } from '@udecode/plate';
 
 import type { GetMatchPointsReturnType } from './utils/getMatchPoints';
 
-export interface MatchRange {
-  end: string;
-  start: string;
-}
-
-export interface AutoformatQueryOptions
-  extends Omit<AutoformatCommonRule, 'query'> {
-  /** `insertText` text. */
-  text: string;
-}
-
-export interface AutoformatCommonRule {
-  /**
-   * The rule applies when the trigger and the text just before the cursor
-   * matches. For `mode: 'block'`: lookup for the end match(es) before the
-   * cursor. For `mode: 'text'`: lookup for the end match(es) before the cursor.
-   * If `format` is an array, also lookup for the start match(es). For `mode:
-   * 'mark'`: lookup for the start and end matches. Note: `'_*'`, `['_*']` and
-   * `{ start: '_*', end: '*_' }` are equivalent.
-   */
-  match: MatchRange | MatchRange[] | string[] | string;
-
-  /**
-   * If true, insert the triggering character after autoformatting.
-   *
-   * @default: false
-   */
-  insertTrigger?: boolean;
-
-  /** Query to allow autoformat. */
-  query?: (editor: SlateEditor, options: AutoformatQueryOptions) => boolean;
-
-  /**
-   * Triggering character to autoformat.
-   *
-   * @default the last character of `match` or `match.end`
-   */
-  trigger?: string[] | string;
-}
-
 export interface AutoformatBlockRule extends AutoformatCommonRule {
   match: string[] | string;
 
@@ -97,6 +57,35 @@ export interface AutoformatBlockRule extends AutoformatCommonRule {
   type?: string;
 }
 
+export interface AutoformatCommonRule {
+  /**
+   * The rule applies when the trigger and the text just before the cursor
+   * matches. For `mode: 'block'`: lookup for the end match(es) before the
+   * cursor. For `mode: 'text'`: lookup for the end match(es) before the cursor.
+   * If `format` is an array, also lookup for the start match(es). For `mode:
+   * 'mark'`: lookup for the start and end matches. Note: `'_*'`, `['_*']` and
+   * `{ start: '_*', end: '*_' }` are equivalent.
+   */
+  match: MatchRange | MatchRange[] | string[] | string;
+
+  /**
+   * If true, insert the triggering character after autoformatting.
+   *
+   * @default: false
+   */
+  insertTrigger?: boolean;
+
+  /** Query to allow autoformat. */
+  query?: (editor: SlateEditor, options: AutoformatQueryOptions) => boolean;
+
+  /**
+   * Triggering character to autoformat.
+   *
+   * @default the last character of `match` or `match.end`
+   */
+  trigger?: string[] | string;
+}
+
 export interface AutoformatMarkRule extends AutoformatCommonRule {
   mode: 'mark';
 
@@ -106,6 +95,23 @@ export interface AutoformatMarkRule extends AutoformatCommonRule {
   /** If false, do not format when the string can be trimmed. */
   ignoreTrim?: boolean;
 }
+
+export interface AutoformatPluginOptions {
+  enableUndoOnDelete?: boolean;
+  /** A list of triggering rules. */
+  rules?: AutoformatRule[];
+}
+
+export interface AutoformatQueryOptions
+  extends Omit<AutoformatCommonRule, 'query'> {
+  /** `insertText` text. */
+  text: string;
+}
+
+export type AutoformatRule =
+  | AutoformatBlockRule
+  | AutoformatMarkRule
+  | AutoformatTextRule;
 
 export interface AutoformatTextRule extends AutoformatCommonRule {
   /**
@@ -123,13 +129,7 @@ export interface AutoformatTextRule extends AutoformatCommonRule {
   mode: 'text';
 }
 
-export type AutoformatRule =
-  | AutoformatBlockRule
-  | AutoformatMarkRule
-  | AutoformatTextRule;
-
-export interface AutoformatPluginOptions {
-  enableUndoOnDelete?: boolean;
-  /** A list of triggering rules. */
-  rules?: AutoformatRule[];
+export interface MatchRange {
+  end: string;
+  start: string;
 }

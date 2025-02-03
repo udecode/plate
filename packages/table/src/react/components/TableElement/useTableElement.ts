@@ -2,8 +2,8 @@ import { useEditorPlugin, useElement } from '@udecode/plate/react';
 
 import type { TTableElement } from '../../../lib';
 
-import { TablePlugin } from '../../TablePlugin';
 import { useTableStore } from '../../stores';
+import { TablePlugin } from '../../TablePlugin';
 import { useSelectedCells } from './useSelectedCells';
 
 export const useTableElement = () => {

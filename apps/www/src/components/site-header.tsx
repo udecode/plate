@@ -1,6 +1,5 @@
 import { Suspense } from 'react';
 
-/* eslint-disable turbo/no-undeclared-env-vars */
 import Link from 'next/link';
 
 import { ModeSwitcher } from '@/components/mode-switcher';

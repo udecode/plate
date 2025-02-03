@@ -1,9 +1,4 @@
 import { withProps } from '@udecode/cn';
-import {
-  ParagraphPlugin,
-  PlateLeaf,
-  usePlateEditor,
-} from '@udecode/plate/react';
 import { AIPlugin } from '@udecode/plate-ai/react';
 import {
   BoldPlugin,
@@ -55,6 +50,11 @@ import {
   TableRowPlugin,
 } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
+import {
+  ParagraphPlugin,
+  PlateLeaf,
+  usePlateEditor,
+} from '@udecode/plate/react';
 
 import { copilotPlugins } from '@/registry/default/components/editor/plugins/copilot-plugins';
 import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';

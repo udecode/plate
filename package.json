@@ -69,6 +69,7 @@
     "release": "yarn build && yarn changeset publish",
     "sync:plate": "node templates/plate-playground-template/scripts/sync-plate.cjs",
     "sync:templates": "./tooling/scripts/sync-templates.sh \"templates/*\"",
+    "vendor": "sh tooling/scripts/vendor.sh",
     "test": "yarn g:test",
     "test:nc": "yarn g:test -- --no-cache",
     "test:wa": "yarn g:test:wa",

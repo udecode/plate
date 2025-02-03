@@ -459,11 +459,6 @@ const fixtures: Record<string, ComputeDiffFixture> = {
   },
 
   customRelatedFunction: {
-    elementsAreRelated: (element, nextElement) => {
-      const getId = (e: TElement) => NodeApi.string(e).split('/')[0];
-
-      return getId(element) === getId(nextElement);
-    },
     expected: [
       {
         children: [{ text: '3/Added paragraph 1' }],
@@ -520,6 +515,11 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         type: 'paragraph',
       },
     ],
+    elementsAreRelated: (element, nextElement) => {
+      const getId = (e: TElement) => NodeApi.string(e).split('/')[0];
+
+      return getId(element) === getId(nextElement);
+    },
   },
 
   insertInlineVoid: {
@@ -1460,8 +1460,6 @@ const fixtures: Record<string, ComputeDiffFixture> = {
   },
 
   unrelatedTexts: {
-    elementsAreRelated: (element) =>
-      !NodeApi.string(element).startsWith('NO_DIFF_INLINE'),
     expected: [
       {
         children: [{ text: 'NO_DIFF_INLINE FirstA' }],
@@ -1552,6 +1550,8 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         type: 'paragraph',
       },
     ],
+    elementsAreRelated: (element) =>
+      !NodeApi.string(element).startsWith('NO_DIFF_INLINE'),
   },
 
   updateInlineVoid: {

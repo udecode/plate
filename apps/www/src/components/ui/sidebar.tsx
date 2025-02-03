@@ -31,9 +31,9 @@ type SidebarContext = {
   isMobile: boolean;
   open: boolean;
   openMobile: boolean;
+  state: 'collapsed' | 'expanded';
   setOpen: (open: boolean) => void;
   setOpenMobile: (open: boolean) => void;
-  state: 'collapsed' | 'expanded';
   toggleSidebar: () => void;
 };
 

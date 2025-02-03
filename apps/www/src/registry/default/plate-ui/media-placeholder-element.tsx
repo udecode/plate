@@ -6,16 +6,16 @@ import type { ReactNode } from 'react';
 import type { TPlaceholderElement } from '@udecode/plate-media';
 
 import { cn } from '@udecode/cn';
-import { useEditorPlugin, withHOC, withRef } from '@udecode/plate/react';
 import {
   AudioPlugin,
   FilePlugin,
   ImagePlugin,
   PlaceholderPlugin,
   PlaceholderProvider,
-  VideoPlugin,
   updateUploadHistory,
+  VideoPlugin,
 } from '@udecode/plate-media/react';
+import { useEditorPlugin, withHOC, withRef } from '@udecode/plate/react';
 import { AudioLines, FileUp, Film, ImageIcon } from 'lucide-react';
 import { useFilePicker } from 'use-file-picker';
 
@@ -63,7 +63,7 @@ export const MediaPlaceholderElement = withHOC(
 
       const { api } = useEditorPlugin(PlaceholderPlugin);
 
-      const { isUploading, progress, uploadFile, uploadedFile, uploadingFile } =
+      const { isUploading, progress, uploadedFile, uploadFile, uploadingFile } =
         useUploadFile();
 
       const loading = isUploading && uploadingFile;

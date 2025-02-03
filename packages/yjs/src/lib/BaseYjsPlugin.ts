@@ -12,18 +12,16 @@ import type { WithYjsOptions } from './withTYjs';
 
 import { withPlateYjs } from './withPlateYjs';
 
+export type YjsConfig = PluginConfig<'yjs', YjsPluginOptions>;
+
 export type YjsPluginOptions<
   TCursorData extends UnknownObject = UnknownObject,
 > = {
   isConnected: boolean;
-
   isSynced: boolean;
-
   provider: HocuspocusProvider;
-
   /** WithCursors options */
   cursorOptions?: WithCursorsOptions<TCursorData>;
-
   disableCursors?: boolean;
   /**
    * HocuspocusProvider configuration
@@ -31,12 +29,9 @@ export type YjsPluginOptions<
    * @required
    */
   hocuspocusProviderOptions?: HocuspocusProviderConfiguration;
-
   /** WithYjs options */
   yjsOptions?: WithYjsOptions;
 };
-
-export type YjsConfig = PluginConfig<'yjs', YjsPluginOptions>;
 
 export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
   key: 'yjs',

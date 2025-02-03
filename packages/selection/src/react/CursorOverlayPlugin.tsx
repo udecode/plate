@@ -71,18 +71,6 @@ export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
     },
   }))
   .extend(() => ({
-    useHooks: ({ api, setOption }) => {
-      const { editor } = useEditorPlugin(BlockSelectionPlugin);
-      const isSelecting = editor.useOption(BlockSelectionPlugin, 'isSelecting');
-
-      useEffect(() => {
-        if (isSelecting) {
-          setTimeout(() => {
-            api.cursorOverlay.removeCursor('selection');
-          }, 0);
-        }
-      }, [isSelecting, setOption, api.cursorOverlay]);
-    },
     handlers: {
       onBlur: ({ api, editor, event }) => {
         if (!editor.selection) return;
@@ -120,5 +108,17 @@ export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
       },
       onDrop: getRemoveCursorHandler('drag') as any,
       onFocus: getRemoveCursorHandler('selection') as any,
+    },
+    useHooks: ({ api, setOption }) => {
+      const { editor } = useEditorPlugin(BlockSelectionPlugin);
+      const isSelecting = editor.useOption(BlockSelectionPlugin, 'isSelecting');
+
+      useEffect(() => {
+        if (isSelecting) {
+          setTimeout(() => {
+            api.cursorOverlay.removeCursor('selection');
+          }, 0);
+        }
+      }, [isSelecting, setOption, api.cursorOverlay]);
     },
   }));

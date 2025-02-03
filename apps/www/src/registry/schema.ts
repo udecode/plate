@@ -111,9 +111,9 @@ export const registryEntrySchema = registryItemSchema.extend({
 
 export const registrySchema = z.array(registryItemSchema);
 
-export type RegistryEntry = z.infer<typeof registryItemSchema>;
-
 export type Registry = z.infer<typeof registrySchema>;
+
+export type RegistryEntry = z.infer<typeof registryItemSchema>;
 
 export const blockSchema = registryItemSchema.extend({
   code: z.string(),

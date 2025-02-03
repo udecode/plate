@@ -6,26 +6,26 @@ import type { BlockSelectionConfig } from './BlockSelectionPlugin';
 
 export const BLOCK_CONTEXT_MENU_ID = 'context';
 
-type OpenId = (string & {}) | typeof BLOCK_CONTEXT_MENU_ID;
+export type BlockMenuApi = {
+  hide: () => void;
+  show: (id: OpenId, position?: { x: number; y: number }) => void;
+};
 
 export type BlockMenuConfig = PluginConfig<
   'blockMenu',
   {
+    openId: OpenId | null;
     position: {
       x: number;
       y: number;
     };
-    openId: OpenId | null;
   },
   {
     blockMenu: BlockMenuApi;
   }
 >;
 
-export type BlockMenuApi = {
-  hide: () => void;
-  show: (id: OpenId, position?: { x: number; y: number }) => void;
-};
+type OpenId = (string & {}) | typeof BLOCK_CONTEXT_MENU_ID;
 
 export const BlockMenuPlugin = createTPlatePlugin<BlockMenuConfig>({
   key: 'blockMenu',

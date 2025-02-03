@@ -1,9 +1,5 @@
 import { type PluginConfig, createTSlatePlugin } from '@udecode/plate';
 
-export type TToggleElement = {
-  type: typeof BaseTogglePlugin.key;
-};
-
 export type BaseToggleConfig = PluginConfig<
   'toggle',
   {
@@ -15,6 +11,10 @@ export type BaseToggleConfig = PluginConfig<
     };
   }
 >;
+
+export type TToggleElement = {
+  type: typeof BaseTogglePlugin.key;
+};
 
 type ToggleSelectors = {
   isOpen?: (toggleId: string) => boolean;

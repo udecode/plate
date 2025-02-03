@@ -1,17 +1,13 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 type AnyFunction = (...args: any[]) => any;
 type EventMap = Record<string, AnyFunction>;
 
 export class EventTarget<Events extends EventMap> {
   private readonly _listeners = new Map<keyof Events, Set<AnyFunction>>();
 
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   public emit = this.dispatchEvent;
 
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   public off = this.removeEventListener;
 
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   public on = this.addEventListener;
 
   public addEventListener<K extends keyof Events>(

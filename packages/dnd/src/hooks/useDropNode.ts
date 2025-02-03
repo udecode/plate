@@ -37,6 +37,10 @@ export interface UseDropNodeOptions
    * behavior is called after. If `true` is returned, the default behavior is
    * not called.
    */
+  canDropNode?: CanDropCallback;
+
+  orientation?: 'horizontal' | 'vertical';
+
   onDropHandler?: (
     editor: PlateEditor,
     props: {
@@ -46,10 +50,6 @@ export interface UseDropNodeOptions
       nodeRef: any;
     }
   ) => boolean | void;
-
-  canDropNode?: CanDropCallback;
-
-  orientation?: 'horizontal' | 'vertical';
 }
 
 /**

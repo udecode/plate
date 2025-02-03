@@ -17,7 +17,6 @@ export type CaptionConfig = PluginConfig<
     // isVisible?: (elementId: string) => boolean;
     /** Plugins to enable caption. */
     plugins: WithRequiredKey[];
-
     visibleId: string | null;
   } & CaptionSelectors
 >;

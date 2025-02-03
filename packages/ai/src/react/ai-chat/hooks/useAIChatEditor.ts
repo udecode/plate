@@ -2,11 +2,11 @@ import { useEffect, useMemo } from 'react';
 
 import type { SlateEditor } from '@udecode/plate';
 
-import { useEditorPlugin } from '@udecode/plate/react';
 import {
   type DeserializeMdOptions,
   MarkdownPlugin,
 } from '@udecode/plate-markdown';
+import { useEditorPlugin } from '@udecode/plate/react';
 
 import { AIChatPlugin } from '../AIChatPlugin';
 

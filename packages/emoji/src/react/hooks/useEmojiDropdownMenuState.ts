@@ -27,14 +27,12 @@ export function useEmojiDropdownMenuState({
       limit: settings.showFrequent.limit,
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-shadow
     const emojiLibrary = EmojiFloatingLibrary.getInstance(
       settings,
       frequentEmojiStorage,
       data
     );
 
-    // eslint-disable-next-line @typescript-eslint/no-shadow
     const indexSearch = EmojiFloatingIndexSearch.getInstance(emojiLibrary);
 
     return [emojiLibrary, indexSearch] as const;

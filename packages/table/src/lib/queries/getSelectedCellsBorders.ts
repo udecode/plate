@@ -9,6 +9,14 @@ import { getRowSpan } from './getRowSpan';
 import { getSelectedCellsBoundingBox } from './getSelectedCellsBoundingBox';
 import { getTopTableCell } from './getTopTableCell';
 
+export interface GetSelectedCellsBordersOptions {
+  select?: {
+    none?: boolean;
+    outer?: boolean;
+    side?: boolean;
+  };
+}
+
 export interface TableBorderStates {
   bottom: boolean;
   left: boolean;
@@ -16,14 +24,6 @@ export interface TableBorderStates {
   outer: boolean;
   right: boolean;
   top: boolean;
-}
-
-export interface GetSelectedCellsBordersOptions {
-  select?: {
-    none?: boolean;
-    outer?: boolean;
-    side?: boolean;
-  };
 }
 
 /**

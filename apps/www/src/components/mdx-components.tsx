@@ -5,8 +5,8 @@ import type { ReactNode } from 'react';
 
 import { cn } from '@udecode/cn';
 import { Provider } from 'jotai';
-import Image from 'next/image';
 import { useMDXComponent } from 'next-contentlayer2/hooks';
+import Image from 'next/image';
 
 import { ComponentInstallation } from '@/components/component-installation';
 import { useConfig } from '@/hooks/use-config';
@@ -60,6 +60,14 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
 const components = {
+  a: Link,
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+  Alert,
+  AlertDescription,
+  AlertTitle,
   API,
   APIAttributes,
   APIItem,
@@ -74,32 +82,47 @@ const components = {
   APISubList,
   APISubListItem,
   APITransforms,
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-  Alert,
-  AlertDescription,
-  AlertTitle,
   AspectRatio,
   BadgeList,
   BadgePopover,
+  blockquote: Typography.Blockquote,
   Callout,
-  CodeBlockWrapper: ({ ...props }) => (
-    <CodeBlockWrapper className="rounded-md border" {...props} />
-  ),
+  code: Code,
   ComponentExample,
   ComponentInstallation,
   ComponentPreview,
   ComponentPreviewPro,
   ComponentSource,
+  h1: Typography.H1,
+  h2: Typography.H2,
+  h3: Typography.H3,
+  h4: Typography.H4,
+  h5: Typography.H5,
+  h6: Typography.H6,
+  hr: Typography.HR,
+  Image,
+  img: Typography.Image,
+  li: Typography.LI,
+  ol: Typography.OL,
+  p: Typography.P,
+  PackageInfo,
+  pre: Typography.Pre,
+  Step: Typography.Step,
+  Steps: Typography.Steps,
+  table: Typography.Table,
+  td: Typography.TD,
+  th: Typography.TH,
+  tr: Typography.TR,
+  ul: Typography.UL,
+  CodeBlockWrapper: ({ ...props }) => (
+    <CodeBlockWrapper className="rounded-md border" {...props} />
+  ),
   FrameworkDocs: ({
     className,
     ...props
   }: React.ComponentProps<typeof FrameworkDocs>) => (
     <FrameworkDocs className={className} {...props} />
   ),
-  Image,
   KeyTable: ({
     children,
     className,
@@ -144,9 +167,6 @@ const components = {
       {...props}
     />
   ),
-  PackageInfo,
-  Step: Typography.Step,
-  Steps: Typography.Steps,
   Tabs: ({ className, ...props }: React.ComponentProps<typeof Tabs>) => (
     <Tabs className={cn('relative mt-6 w-full', className)} {...props} />
   ),
@@ -186,26 +206,6 @@ const components = {
       {...props}
     />
   ),
-  a: Link,
-  blockquote: Typography.Blockquote,
-  code: Code,
-  h1: Typography.H1,
-  h2: Typography.H2,
-  h3: Typography.H3,
-  h4: Typography.H4,
-  h5: Typography.H5,
-  h6: Typography.H6,
-  hr: Typography.HR,
-  img: Typography.Image,
-  li: Typography.LI,
-  ol: Typography.OL,
-  p: Typography.P,
-  pre: Typography.Pre,
-  table: Typography.Table,
-  td: Typography.TD,
-  th: Typography.TH,
-  tr: Typography.TR,
-  ul: Typography.UL,
 };
 
 export function Mdx({

@@ -4,19 +4,19 @@ import React from 'react';
 
 import { useCommandActions } from '@udecode/cmdk';
 import { isHotkey } from '@udecode/plate';
+import { isEqualTags } from '@udecode/plate-tag';
+import {
+  MultiSelectPlugin,
+  TagPlugin,
+  useSelectableItems,
+  useSelectEditorCombobox,
+} from '@udecode/plate-tag/react';
 import {
   Plate,
   useEditorContainerRef,
   useEditorRef,
   usePlateEditor,
 } from '@udecode/plate/react';
-import { isEqualTags } from '@udecode/plate-tag';
-import {
-  MultiSelectPlugin,
-  TagPlugin,
-  useSelectEditorCombobox,
-  useSelectableItems,
-} from '@udecode/plate-tag/react';
 import { Fzf } from 'fzf';
 import { PlusIcon } from 'lucide-react';
 

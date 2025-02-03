@@ -56,7 +56,7 @@ export const isPointNextToNode = (
       if (boundary === 'single') {
         return reverse ? PathApi.previous(path) : PathApi.next(path);
       }
-    } catch (error) {
+    } catch {
       return null;
     }
   };

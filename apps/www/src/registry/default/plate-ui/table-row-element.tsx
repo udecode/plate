@@ -4,6 +4,8 @@ import React from 'react';
 
 import { cn, useComposedRef, withRef } from '@udecode/cn';
 import { PathApi } from '@udecode/plate';
+import { useDraggable, useDropLine } from '@udecode/plate-dnd';
+import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 import {
   PlateElement,
   useEditorRef,
@@ -11,8 +13,6 @@ import {
   useReadOnly,
   useSelected,
 } from '@udecode/plate/react';
-import { useDraggable, useDropLine } from '@udecode/plate-dnd';
-import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 import { GripVertical } from 'lucide-react';
 
 import { Button } from './button';
@@ -30,13 +30,13 @@ export const TableRowElement = withRef<typeof PlateElement>(
     const hasControls = !readOnly && !isSelectionAreaVisible;
 
     const { isDragging, previewRef, handleRef } = useDraggable({
+      element,
+      type: element.type,
       canDropNode: ({ dragEntry, dropEntry }) =>
         PathApi.equals(
           PathApi.parent(dragEntry[1]),
           PathApi.parent(dropEntry[1])
         ),
-      element,
-      type: element.type,
       onDropHandler: (_, { dragItem }) => {
         const dragElement = (dragItem as any).element;
 

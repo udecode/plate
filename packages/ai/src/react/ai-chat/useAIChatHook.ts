@@ -1,5 +1,5 @@
-import { useEditorPlugin } from '@udecode/plate/react';
 import { deserializeInlineMd } from '@udecode/plate-markdown';
+import { useEditorPlugin } from '@udecode/plate/react';
 
 import type { AIPluginConfig } from '../ai/AIPlugin';
 import type { AIChatPluginConfig } from './AIChatPlugin';

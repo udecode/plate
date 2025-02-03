@@ -5,9 +5,9 @@ import {
   type PathRef,
   type SlateEditor,
   type TElement,
+  match,
   NodeApi,
   PathApi,
-  match,
 } from '@udecode/plate';
 
 import {

@@ -10,10 +10,11 @@ import { type ElementOf, type TElement, ElementApi } from './element';
 import { type TextOf, type TText, TextApi } from './text';
 
 /**
- * The `TNode` union type represents all of the different types of nodes that
- * occur in a Slate document tree.
+ * The `Ancestor` union type represents nodes that are ancestors in the tree. It
+ * is returned as a convenience in certain cases to narrow a value further than
+ * the more generic `Node` union.
  */
-export type TNode = Editor | TElement | TText;
+export type Ancestor = Editor | TElement;
 
 /**
  * The `Descendant` union type represents nodes that are descendants in the
@@ -23,19 +24,18 @@ export type TNode = Editor | TElement | TText;
 
 export type Descendant = TElement | TText;
 
-/**
- * The `Ancestor` union type represents nodes that are ancestors in the tree. It
- * is returned as a convenience in certain cases to narrow a value further than
- * the more generic `Node` union.
- */
-export type Ancestor = Editor | TElement;
-
 /** Convenience type for returning the props of a node. */
 export type NodeProps<N extends TNode = TNode> = N extends Editor
   ? Omit<N, 'children'>
   : N extends TElement
     ? Omit<N, 'children'>
     : Omit<N, 'text'>;
+
+/**
+ * The `TNode` union type represents all of the different types of nodes that
+ * occur in a Slate document tree.
+ */
+export type TNode = Editor | TElement | TText;
 
 export const NodeApi: {
   /** Get the node at a specific path, asserting that it's an ancestor node. */
@@ -259,6 +259,44 @@ export const NodeApi: {
   ...NodeExtension,
 };
 
+/** A utility type to get all the ancestor node types from a root node type. */
+export type AncestorIn<V extends Value> = AncestorOf<Editor | V[number]>;
+
+export type AncestorOf<N extends TNode> = Editor extends N
+  ? Editor | TElement
+  : TElement extends N
+    ? TElement
+    : N extends Editor
+      ? ElementOf<N['children'][number]> | N | N['children'][number]
+      : N extends TElement
+        ? ElementOf<N> | N
+        : never;
+
+/** A utility type to get the child node types from a root node type. */
+export type ChildOf<
+  N extends TNode,
+  I extends number = number,
+> = N extends Editor
+  ? N['children'][I]
+  : N extends TElement
+    ? N['children'][I]
+    : never;
+
+/** A utility type to get all the descendant node types from a root node type. */
+export type DescendantIn<V extends Value> = DescendantOf<V[number]>;
+
+export type DescendantOf<N extends TNode> = N extends Editor
+  ? ElementOf<N> | TextOf<N>
+  : N extends TElement
+    ? ElementOf<N['children'][number]> | TextOf<N>
+    : never;
+
+/**
+ * The `Node` union type represents all of the different types of nodes that
+ * occur in a Slate document tree.
+ */
+export type Node = TNode;
+
 export interface NodeAncestorsOptions {
   reverse?: boolean;
 }
@@ -285,6 +323,9 @@ export interface NodeElementsOptions<N extends TNode> {
   pass?: (entry: NodeEntry<ElementOf<N>>) => boolean;
 }
 
+/** A utility type to get all possible node types from a Value type */
+export type NodeIn<V extends Value> = NodeOf<Editor | V[number]>;
+
 export interface NodeLevelsOptions {
   reverse?: boolean;
 }
@@ -296,6 +337,9 @@ export interface NodeNodesOptions<N extends TNode> {
   pass?: (entry: NodeEntry<NodeOf<N>>) => boolean;
 }
 
+/** A utility type to get all the node types from a root node type. */
+export type NodeOf<N extends TNode> = ElementOf<N> | N | TextOf<N>;
+
 export interface NodeTextsOptions<N extends TNode> {
   from?: Path;
   reverse?: boolean;
@@ -303,51 +347,7 @@ export interface NodeTextsOptions<N extends TNode> {
   pass?: (entry: NodeEntry<TextOf<N>>) => boolean;
 }
 
-/**
- * The `Node` union type represents all of the different types of nodes that
- * occur in a Slate document tree.
- */
-export type Node = TNode;
-
-/** A utility type to get all the node types from a root node type. */
-export type NodeOf<N extends TNode> = ElementOf<N> | N | TextOf<N>;
-
-/** A utility type to get all possible node types from a Value type */
-export type NodeIn<V extends Value> = NodeOf<Editor | V[number]>;
-
 /** A helper type for narrowing matched nodes with a predicate. */
 export type TNodeMatch<N extends TNode = TNode> =
   | ((node: N, path: Path) => boolean)
   | ((node: N, path: Path) => node is N);
-
-/** A utility type to get all the descendant node types from a root node type. */
-export type DescendantIn<V extends Value> = DescendantOf<V[number]>;
-
-export type DescendantOf<N extends TNode> = N extends Editor
-  ? ElementOf<N> | TextOf<N>
-  : N extends TElement
-    ? ElementOf<N['children'][number]> | TextOf<N>
-    : never;
-
-/** A utility type to get the child node types from a root node type. */
-export type ChildOf<
-  N extends TNode,
-  I extends number = number,
-> = N extends Editor
-  ? N['children'][I]
-  : N extends TElement
-    ? N['children'][I]
-    : never;
-
-/** A utility type to get all the ancestor node types from a root node type. */
-export type AncestorIn<V extends Value> = AncestorOf<Editor | V[number]>;
-
-export type AncestorOf<N extends TNode> = Editor extends N
-  ? Editor | TElement
-  : TElement extends N
-    ? TElement
-    : N extends Editor
-      ? ElementOf<N['children'][number]> | N | N['children'][number]
-      : N extends TElement
-        ? ElementOf<N> | N
-        : never;

@@ -1,10 +1,10 @@
 import {
   type PluginConfig,
   type TElement,
+  createTSlatePlugin,
   NodeApi,
   PointApi,
   RangeApi,
-  createTSlatePlugin,
 } from '@udecode/plate';
 
 import type { ResetNodePluginOptions } from './types';

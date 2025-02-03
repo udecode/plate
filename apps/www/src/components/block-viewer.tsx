@@ -3,8 +3,8 @@
 import * as React from 'react';
 
 import type {
-  FileTree,
   createFileTreeForRegistryItemFiles,
+  FileTree,
 } from '@/lib/registry';
 import type {
   registryItemFileSchema,
@@ -60,20 +60,20 @@ import { Separator } from '@/registry/default/plate-ui/separator';
 import { Spinner } from '@/registry/default/plate-ui/spinner';
 
 type BlockViewerContext = {
+  activeFile: string | null;
+  dependencies: string[];
   highlightedFiles:
     | (z.infer<typeof registryItemFileSchema> & {
         highlightedContent: string;
       })[]
     | null;
-  activeFile: string | null;
-  dependencies: string[];
   isLoading: boolean;
   item: z.infer<typeof registryItemSchema> & { src?: string };
   resizablePanelRef: React.RefObject<ImperativePanelHandle | null> | null;
-  setActiveFile: (file: string) => void;
-  setView: (view: 'code' | 'preview') => void;
   tree: ReturnType<typeof createFileTreeForRegistryItemFiles> | null;
   view: 'code' | 'preview';
+  setActiveFile: (file: string) => void;
+  setView: (view: 'code' | 'preview') => void;
 };
 
 const BlockViewerContext = React.createContext<BlockViewerContext | null>(null);

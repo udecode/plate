@@ -196,7 +196,6 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
   return ReactDOM.createPortal(
     <input
       ref={inputRef}
-      // eslint-disable-next-line tailwindcss/no-custom-classname
       className="slate-shadow-input"
       style={{
         left: '-300px',

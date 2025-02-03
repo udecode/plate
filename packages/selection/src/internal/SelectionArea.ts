@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 'use client';
 
 import type {
@@ -54,10 +53,10 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
 
   // The scroll distance of scrollElement (body or html) relative to the initial scroll position
   private _scrollDelta: Coordinates = { x: 0, y: 0 };
-  private _scrollSpeed: Coordinates = { x: 0, y: 0 };
-
   // If a single click is being performed.
   private _scrollingActive = false;
+
+  private _scrollSpeed: Coordinates = { x: 0, y: 0 };
   private _selectables: Element[] = [];
 
   // Selection store

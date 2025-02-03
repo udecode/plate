@@ -5,17 +5,17 @@ import React, { useEffect } from 'react';
 import type { WithRequiredKey } from '@udecode/plate';
 
 import {
+  floatingMediaActions,
+  FloatingMedia as FloatingMediaPrimitive,
+  useFloatingMediaSelectors,
+} from '@udecode/plate-media/react';
+import {
   useEditorSelector,
   useElement,
   useReadOnly,
   useRemoveNodeButton,
   useSelected,
 } from '@udecode/plate/react';
-import {
-  FloatingMedia as FloatingMediaPrimitive,
-  floatingMediaActions,
-  useFloatingMediaSelectors,
-} from '@udecode/plate-media/react';
 import { Link, Trash2Icon } from 'lucide-react';
 
 import { Button, buttonVariants } from './button';

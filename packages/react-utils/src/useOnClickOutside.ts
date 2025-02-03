@@ -9,7 +9,6 @@ const canUsePassiveEvents = (): boolean => {
 
   let passive = false;
   const options = Object.defineProperty({}, 'passive', {
-    // eslint-disable-next-line getter-return
     get() {
       passive = true;
     },
@@ -28,9 +27,6 @@ export type UseOnClickOutsideCallback<T extends Event = Event> = (
   event: T
 ) => void;
 
-type El = HTMLElement;
-type Refs = React.RefObject<El | null>[];
-
 export interface UseOnClickOutsideOptions {
   detectIFrame?: boolean;
   disabled?: boolean;
@@ -42,6 +38,10 @@ export interface UseOnClickOutsideOptions {
 
 export type UseOnClickOutsideReturn = (element: El | null) => void;
 
+type El = HTMLElement;
+
+type Refs = React.RefObject<El | null>[];
+
 const checkClass = (el: HTMLElement, cl: string): boolean =>
   el.classList?.contains(cl);
 
@@ -50,7 +50,6 @@ const hasIgnoreClass = (e: any, ignoreClass: string[] | string): boolean => {
 
   while (el) {
     if (Array.isArray(ignoreClass)) {
-      // eslint-disable-next-line no-loop-func
       if (ignoreClass.some((c) => checkClass(el, c))) return true;
     } else if (checkClass(el, ignoreClass)) {
       return true;
@@ -148,7 +147,6 @@ export const useOnClickOutside = (
 
       if (detectIFrame) window.addEventListener('blur', blurHandler);
 
-      // eslint-disable-next-line consistent-return
       return () => removeEventListener();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps

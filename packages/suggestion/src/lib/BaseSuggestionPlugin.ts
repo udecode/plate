@@ -34,18 +34,18 @@ export type SuggestionConfig = PluginConfig<
   }
 >;
 
-export type SuggestionSelectors = {
-  currentSuggestionUser?: () => SuggestionUser | null;
-  suggestionById?: (id: string | null) => TSuggestion | null;
-  suggestionUserById?: (id: string | null) => SuggestionUser | null;
-};
-
 export type SuggestionPluginApi = {
   addSuggestion: (
     value: WithPartial<TSuggestion, 'createdAt' | 'id' | 'userId'>
   ) => void;
   removeSuggestion: (id: string | null) => void;
   updateSuggestion: (id: string | null, value: Partial<TSuggestion>) => void;
+};
+
+export type SuggestionSelectors = {
+  currentSuggestionUser?: () => SuggestionUser | null;
+  suggestionById?: (id: string | null) => TSuggestion | null;
+  suggestionUserById?: (id: string | null) => SuggestionUser | null;
 };
 
 export const BaseSuggestionPlugin = createTSlatePlugin<SuggestionConfig>({

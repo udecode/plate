@@ -11,8 +11,8 @@ import {
   getTableGridAbove,
   isTableRectangular,
 } from '../../lib';
-import { TablePlugin } from '../TablePlugin';
 import { useTableStore } from '../stores';
+import { TablePlugin } from '../TablePlugin';
 
 export const useTableMergeState = () => {
   const { api, getOptions } = useEditorPlugin(TablePlugin);

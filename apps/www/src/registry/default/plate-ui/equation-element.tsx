@@ -5,8 +5,8 @@ import React, { useRef, useState } from 'react';
 import type { TEquationElement } from '@udecode/plate-math';
 
 import { cn, withRef } from '@udecode/cn';
-import { useElement, useSelected } from '@udecode/plate/react';
 import { useEquationElement } from '@udecode/plate-math/react';
+import { useElement, useSelected } from '@udecode/plate/react';
 import { RadicalIcon } from 'lucide-react';
 
 import { EquationPopoverContent } from './equation-popover';

@@ -1,10 +1,10 @@
 import {
   type OmitFirst,
   type PluginConfig,
-  HtmlPlugin,
   bindFirst,
   createSlatePlugin,
   createTSlatePlugin,
+  HtmlPlugin,
 } from '@udecode/plate';
 
 import {
@@ -12,12 +12,6 @@ import {
   toggleList,
   toggleNumberedList,
 } from './transforms';
-
-export type ListPluginOptions = {
-  enableResetOnShiftTab?: boolean;
-  /** Valid children types for list items, in addition to p and ul types. */
-  validLiChildrenTypes?: string[];
-};
 
 export type ListConfig = PluginConfig<
   'list',
@@ -31,6 +25,12 @@ export type ListConfig = PluginConfig<
     };
   }
 >;
+
+export type ListPluginOptions = {
+  enableResetOnShiftTab?: boolean;
+  /** Valid children types for list items, in addition to p and ul types. */
+  validLiChildrenTypes?: string[];
+};
 
 export const BaseBulletedListPlugin = createSlatePlugin({
   key: 'ul',

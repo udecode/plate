@@ -9,19 +9,20 @@ import { removeAIMarks, undoAI } from './transforms';
 import { insertAINodes } from './transforms/insertAINodes';
 import { removeAINodes } from './transforms/removeAINodes';
 
-type BaseAIOptions = {};
-type BaseAITransforms = {
-  insertNodes: OmitFirst<typeof insertAINodes>;
-  removeMarks: OmitFirst<typeof removeAIMarks>;
-  removeNodes: OmitFirst<typeof removeAINodes>;
-};
-
 export type BaseAIPluginConfig = PluginConfig<
   'ai',
   BaseAIOptions,
   {},
   { ai: BaseAITransforms }
 >;
+
+type BaseAIOptions = {};
+
+type BaseAITransforms = {
+  insertNodes: OmitFirst<typeof insertAINodes>;
+  removeMarks: OmitFirst<typeof removeAIMarks>;
+  removeNodes: OmitFirst<typeof removeAINodes>;
+};
 
 export const BaseAIPlugin = createTSlatePlugin({
   key: 'ai',

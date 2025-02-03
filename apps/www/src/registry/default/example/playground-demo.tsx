@@ -4,7 +4,6 @@ import React, { useMemo } from 'react';
 
 import type { Value } from '@udecode/plate';
 
-import { ParagraphPlugin, Plate } from '@udecode/plate/react';
 import { AIChatPlugin, CopilotPlugin } from '@udecode/plate-ai/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
@@ -39,8 +38,8 @@ import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HeadingPlugin } from '@udecode/plate-heading/react';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
-import { IndentPlugin } from '@udecode/plate-indent/react';
 import { IndentListPlugin } from '@udecode/plate-indent-list/react';
+import { IndentPlugin } from '@udecode/plate-indent/react';
 import { JuicePlugin } from '@udecode/plate-juice';
 import { KbdPlugin } from '@udecode/plate-kbd/react';
 import { ColumnPlugin } from '@udecode/plate-layout/react';
@@ -63,6 +62,7 @@ import { TabbablePlugin } from '@udecode/plate-tabbable/react';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
+import { ParagraphPlugin, Plate } from '@udecode/plate/react';
 
 import { settingsStore } from '@/components/context/settings-store';
 import { useLocale } from '@/hooks/useLocale';
@@ -193,9 +193,9 @@ function usePlaygroundEnabled(id?: string) {
       [AIChatPlugin.key]: id === 'ai' || !!enabled[AIChatPlugin.key],
       [AlignPlugin.key]: !!enabled.align,
       [AutoformatPlugin.key]: !!enabled.autoformat,
+      [BlockquotePlugin.key]: !!enabled.blockquote,
       [BlockSelectionPlugin.key]:
         id === 'block-selection' || !!enabled.blockSelection,
-      [BlockquotePlugin.key]: !!enabled.blockquote,
       [BoldPlugin.key]: !!enabled.bold,
       [CaptionPlugin.key]: !!enabled.caption,
       [CodeBlockPlugin.key]: !!enabled.code_block,

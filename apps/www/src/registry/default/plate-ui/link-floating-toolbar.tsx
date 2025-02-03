@@ -3,7 +3,6 @@
 import React from 'react';
 
 import { cn } from '@udecode/cn';
-import { useFormInputProps } from '@udecode/plate/react';
 import {
   type UseVirtualFloatingOptions,
   flip,
@@ -18,6 +17,7 @@ import {
   useFloatingLinkInsert,
   useFloatingLinkInsertState,
 } from '@udecode/plate-link/react';
+import { useFormInputProps } from '@udecode/plate/react';
 import { ExternalLink, Link, Text, Unlink } from 'lucide-react';
 
 import { buttonVariants } from './button';

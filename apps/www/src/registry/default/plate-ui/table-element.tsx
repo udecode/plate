@@ -7,6 +7,14 @@ import type { TTableElement } from '@udecode/plate-table';
 
 import { PopoverAnchor } from '@radix-ui/react-popover';
 import { cn, withRef } from '@udecode/cn';
+import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import {
+  TablePlugin,
+  TableProvider,
+  useTableBordersDropdownMenuContentState,
+  useTableElement,
+  useTableMergeState,
+} from '@udecode/plate-table/react';
 import {
   useEditorPlugin,
   useEditorRef,
@@ -17,14 +25,6 @@ import {
   useSelected,
   withHOC,
 } from '@udecode/plate/react';
-import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
-import {
-  TablePlugin,
-  TableProvider,
-  useTableBordersDropdownMenuContentState,
-  useTableElement,
-  useTableMergeState,
-} from '@udecode/plate-table/react';
 import {
   ArrowDown,
   ArrowLeft,

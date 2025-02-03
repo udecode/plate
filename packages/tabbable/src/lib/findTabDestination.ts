@@ -1,6 +1,6 @@
 import { type SlateEditor, PathApi } from '@udecode/plate';
 
-import type { TabDestination, TabbableEntry } from './types';
+import type { TabbableEntry, TabDestination } from './types';
 
 export interface FindTabDestinationOptions {
   activeTabbableEntry: TabbableEntry | null;

@@ -5,7 +5,6 @@
 
 import React, { type FC, memo } from 'react';
 import { type SyntaxHighlighterProps, Prism } from 'react-syntax-highlighter';
-
 import { coldarkDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 
 import { Icons } from '@/components/icons';
@@ -15,12 +14,12 @@ import { Button } from '@/registry/default/plate-ui/button';
 const SyntaxHighlighter =
   Prism as unknown as typeof React.Component<SyntaxHighlighterProps>;
 
+type languageMap = Record<string, string | undefined>;
+
 interface Props {
   language: string;
   value: string;
 }
-
-type languageMap = Record<string, string | undefined>;
 
 export const programmingLanguages: languageMap = {
   c: '.c',
@@ -132,7 +131,6 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
 
       <SyntaxHighlighter
         style={coldarkDark}
-        PreTag="div"
         codeTagProps={{
           style: {
             fontFamily: 'var(--font-mono)',
@@ -149,6 +147,7 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
         lineNumberStyle={{
           userSelect: 'none',
         }}
+        PreTag="div"
         showLineNumbers
       >
         {value}

@@ -25,8 +25,8 @@ export type TColor = {
 type ColorDropdownMenuItemProps = {
   isBrightColor: boolean;
   isSelected: boolean;
-  updateColor: (color: string) => void;
   value: string;
+  updateColor: (color: string) => void;
   name?: string;
 } & DropdownMenuItemProps;
 

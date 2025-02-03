@@ -4,22 +4,6 @@ import React from 'react';
 
 import { cn } from '@udecode/cn';
 import { type Value, createSlatePlugin } from '@udecode/plate';
-import {
-  ParagraphPlugin,
-  createPlatePlugin,
-  toPlatePlugin,
-  useSelected,
-} from '@udecode/plate/react';
-import {
-  type PlateElementProps,
-  type PlateLeafProps,
-  type PlateProps,
-  Plate,
-  PlateContent,
-  PlateElement,
-  PlateLeaf,
-  createPlateEditor,
-} from '@udecode/plate/react';
 import { BoldPlugin, ItalicPlugin } from '@udecode/plate-basic-marks/react';
 import { SoftBreakPlugin } from '@udecode/plate-break/react';
 import {
@@ -28,6 +12,22 @@ import {
   computeDiff,
   withGetFragmentExcludeDiff,
 } from '@udecode/plate-diff';
+import {
+  createPlatePlugin,
+  ParagraphPlugin,
+  toPlatePlugin,
+  useSelected,
+} from '@udecode/plate/react';
+import {
+  type PlateElementProps,
+  type PlateLeafProps,
+  type PlateProps,
+  createPlateEditor,
+  Plate,
+  PlateContent,
+  PlateElement,
+  PlateLeaf,
+} from '@udecode/plate/react';
 import { cloneDeep } from 'lodash';
 
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
@@ -129,6 +129,7 @@ const DiffPlugin = toPlatePlugin(
   }).overrideEditor(withGetFragmentExcludeDiff),
   {
     render: {
+      node: DiffLeaf,
       aboveNodes:
         () =>
         ({ children, editor, element }) => {
@@ -160,7 +161,6 @@ const DiffPlugin = toPlatePlugin(
             </Component>
           );
         },
-      node: DiffLeaf,
     },
   }
 );

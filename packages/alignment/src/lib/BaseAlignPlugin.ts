@@ -11,6 +11,7 @@ export const BaseAlignPlugin = createSlatePlugin({
       styleKey: 'textAlign',
       validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
     },
+    targetPlugins: [BaseParagraphPlugin.key],
     targetPluginToInject: ({ editor, plugin }) => ({
       parsers: {
         html: {
@@ -24,6 +25,5 @@ export const BaseAlignPlugin = createSlatePlugin({
         },
       },
     }),
-    targetPlugins: [BaseParagraphPlugin.key],
   },
 });
