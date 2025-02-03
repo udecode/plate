@@ -1,7 +1,7 @@
 import React from 'react';
 
-import type { WritableAtom } from 'jotai/vanilla/atom';
 import type { JotaiStore } from 'jotai-x';
+import type { WritableAtom } from 'jotai/vanilla/atom';
 
 import { focusAtom } from 'jotai-optics';
 
