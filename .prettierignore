@@ -1,0 +1,7 @@
+**/dist
+**/node_modules
+**/.next
+**/build
+**/index.ts
+**/*.mdx
+**/__tests__/**/*.html
