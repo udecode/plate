@@ -62,7 +62,6 @@ export default defineConfig(
         },
       ],
       'perfectionist/sort-imports': [
-        // 'off',
         'warn',
         {
           customGroups: {
@@ -165,8 +164,29 @@ export default defineConfig(
           type: 'natural',
         },
       ],
-      // ordering matters
-      'perfectionist/sort-modules': 'off',
+      'perfectionist/sort-modules': [
+        'warn',
+        {
+          groups: [
+            'declare-enum',
+            'export-enum',
+            'enum',
+            ['declare-interface', 'declare-type'],
+            ['export-interface', 'export-type'],
+            ['interface', 'type'],
+            'declare-class',
+            'class',
+            'export-class',
+
+            // 'declare-function',
+            // 'export-function',
+            // 'function',
+
+            // 'unknown',
+          ],
+          type: 'natural',
+        },
+      ],
       'perfectionist/sort-named-exports': [
         'warn',
         {

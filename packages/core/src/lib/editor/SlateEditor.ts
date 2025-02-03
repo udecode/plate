@@ -77,6 +77,8 @@ export type BaseEditor = EditorBase & {
   ) => void;
 };
 
+export type InferPlugins<T extends AnyPluginConfig[]> = T[number];
+
 export type SlateEditor = BaseEditor & {
   api: EditorApi & UnionToIntersection<InferApi<CorePlugin>>;
   pluginList: AnyEditorPlugin[];
@@ -112,5 +114,3 @@ export type TSlateEditor<
     plugin?: WithRequiredKey<C>
   ) => TSlateEditor<V>['tf'] & InferTransforms<C>;
 };
-
-export type InferPlugins<T extends AnyPluginConfig[]> = T[number];

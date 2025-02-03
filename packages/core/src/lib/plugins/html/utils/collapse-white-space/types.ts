@@ -1,9 +1,3 @@
-export type WhiteSpaceRule = 'normal' | 'pre' | 'pre-line';
-
-export type TrimStartRule = 'all' | 'collapse';
-
-export type TrimEndRule = 'collapse' | 'single-newline';
-
 export type CollapseWhiteSpaceState = {
   inlineFormattingContext: {
     atStart: boolean;
@@ -11,3 +5,9 @@ export type CollapseWhiteSpaceState = {
   } | null;
   whiteSpaceRule: WhiteSpaceRule;
 };
+
+export type TrimEndRule = 'collapse' | 'single-newline';
+
+export type TrimStartRule = 'all' | 'collapse';
+
+export type WhiteSpaceRule = 'normal' | 'pre' | 'pre-line';

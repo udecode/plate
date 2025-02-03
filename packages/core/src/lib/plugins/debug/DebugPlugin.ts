@@ -12,6 +12,8 @@ export type DebugErrorType =
   | 'USE_CREATE_PLUGIN'
   | 'USE_ELEMENT_CONTEXT';
 
+export type LogLevel = 'error' | 'info' | 'log' | 'warn';
+
 export class PlateError extends Error {
   constructor(
     message: string,
@@ -21,8 +23,6 @@ export class PlateError extends Error {
     this.name = 'PlateError';
   }
 }
-
-export type LogLevel = 'error' | 'info' | 'log' | 'warn';
 
 export const DebugPlugin = createTSlatePlugin<DebugConfig>({
   key: 'debug',

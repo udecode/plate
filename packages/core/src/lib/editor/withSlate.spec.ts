@@ -10,15 +10,15 @@ import { EventEditorPlugin } from '../../react/plugins/event-editor/EventEditorP
 import {
   type SlatePlugin,
   AstPlugin,
-  DOMPlugin,
+  createSlatePlugin,
   DebugPlugin,
+  DOMPlugin,
   HistoryPlugin,
   HtmlPlugin,
   InlineVoidPlugin,
   LengthPlugin,
   ParserPlugin,
   SlateExtensionPlugin,
-  createSlatePlugin,
   withSlate,
 } from '../index';
 

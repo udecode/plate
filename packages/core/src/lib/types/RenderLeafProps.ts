@@ -1,5 +1,7 @@
 import type { TText } from '@udecode/slate';
 
+export type RenderLeafFn = (props: RenderLeafProps) => React.ReactElement<any>;
+
 export interface RenderLeafProps<N extends TText = TText> {
   attributes: {
     'data-slate-leaf'?: true;
@@ -8,5 +10,3 @@ export interface RenderLeafProps<N extends TText = TText> {
   leaf: N;
   text: N;
 }
-
-export type RenderLeafFn = (props: RenderLeafProps) => React.ReactElement<any>;

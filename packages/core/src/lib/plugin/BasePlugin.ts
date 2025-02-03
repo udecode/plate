@@ -8,6 +8,78 @@ import type { AnyObject, Nullable } from '@udecode/utils';
 import type { Draft } from 'mutative';
 import type { TStateApi } from 'zustand-x';
 
+export type AnyPluginConfig = {
+  key: any;
+  api: any;
+  options: any;
+  transforms: any;
+};
+
+export type BaseDeserializer = AnyObject & {
+  /**
+   * Deserialize an element. Overrides plugin.isElement.
+   *
+   * @default plugin.isElement
+   */
+  isElement?: boolean;
+  /**
+   * Deserialize a leaf. Overrides plugin.isLeaf.
+   *
+   * @default plugin.isLeaf
+   */
+  isLeaf?: boolean;
+};
+
+export type BaseHtmlDeserializer = BaseDeserializer & {
+  /** List of HTML attribute names to store their values in `node.attributes`. */
+  attributeNames?: string[];
+  rules?: {
+    /**
+     * Deserialize an element:
+     *
+     * - If this option (string) is in the element attribute names.
+     * - If this option (object) values match the element attributes.
+     */
+    validAttribute?: Record<string, string[] | string> | string;
+    /** Valid element `className`. */
+    validClassName?: string;
+    /** Valid element `nodeName`. Set '*' to allow any node name. */
+    validNodeName?: string[] | string;
+    /**
+     * Valid element style values. Can be a list of string (only one match is
+     * needed).
+     */
+    validStyle?: Partial<
+      Record<keyof CSSStyleDeclaration, string[] | string | undefined>
+    >;
+  }[];
+  /** Whether or not to include deserialized children on this node */
+  withoutChildren?: boolean;
+};
+
+export type BaseInjectProps = {
+  /**
+   * Object whose keys are node values and values are classNames which will be
+   * extended.
+   */
+  classNames?: AnyObject;
+  /**
+   * Default node value. The node key would be unset if the node value =
+   * defaultNodeValue.
+   */
+  defaultNodeValue?: any;
+  /** Node key to map to the styles. */
+  nodeKey?: string;
+  /**
+   * Style key to override.
+   *
+   * @default nodeKey
+   */
+  styleKey?: keyof CSSStyleDeclaration;
+  /** List of supported node values. */
+  validNodeValues?: any[];
+};
+
 export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
   /** Unique identifier for this plugin. */
   key: C['key'];
@@ -90,6 +162,25 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
    * should be used.
    */
   enabled?: boolean;
+};
+
+export type BasePluginContext<C extends AnyPluginConfig = PluginConfig> = {
+  api: C['api'] & EditorApi;
+  setOptions: {
+    (options: (state: Draft<Partial<InferOptions<C>>>) => void): void;
+    (options: Partial<InferOptions<C>>): void;
+  };
+  tf: C['transforms'] & EditorTransforms;
+  type: string;
+  getOption: <K extends keyof InferOptions<C>, F extends InferOptions<C>[K]>(
+    optionKey: K,
+    ...args: F extends (...args: infer A) => any ? A : never[]
+  ) => F extends (...args: any[]) => infer R ? R : F;
+  getOptions: () => InferOptions<C>;
+  setOption: <K extends keyof InferOptions<C>>(
+    optionKey: K,
+    value: InferOptions<C>[K]
+  ) => void;
 };
 
 export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
@@ -185,69 +276,18 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
 
 export type BaseSerializer = AnyObject;
 
-export type BaseDeserializer = AnyObject & {
-  /**
-   * Deserialize an element. Overrides plugin.isElement.
-   *
-   * @default plugin.isElement
-   */
-  isElement?: boolean;
-  /**
-   * Deserialize a leaf. Overrides plugin.isLeaf.
-   *
-   * @default plugin.isLeaf
-   */
-  isLeaf?: boolean;
+export type BaseTransformOptions = GetInjectNodePropsOptions & {
+  nodeValue?: any;
+  value?: any;
 };
 
-export type BaseHtmlDeserializer = BaseDeserializer & {
-  /** List of HTML attribute names to store their values in `node.attributes`. */
-  attributeNames?: string[];
-  rules?: {
-    /**
-     * Deserialize an element:
-     *
-     * - If this option (string) is in the element attribute names.
-     * - If this option (object) values match the element attributes.
-     */
-    validAttribute?: Record<string, string[] | string> | string;
-    /** Valid element `className`. */
-    validClassName?: string;
-    /** Valid element `nodeName`. Set '*' to allow any node name. */
-    validNodeName?: string[] | string;
-    /**
-     * Valid element style values. Can be a list of string (only one match is
-     * needed).
-     */
-    validStyle?: Partial<
-      Record<keyof CSSStyleDeclaration, string[] | string | undefined>
-    >;
-  }[];
-  /** Whether or not to include deserialized children on this node */
-  withoutChildren?: boolean;
-};
+// -----------------------------------------------------------------------------
 
-export type BaseInjectProps = {
-  /**
-   * Object whose keys are node values and values are classNames which will be
-   * extended.
-   */
-  classNames?: AnyObject;
-  /**
-   * Default node value. The node key would be unset if the node value =
-   * defaultNodeValue.
-   */
-  defaultNodeValue?: any;
-  /** Node key to map to the styles. */
-  nodeKey?: string;
-  /**
-   * Style key to override.
-   *
-   * @default nodeKey
-   */
-  styleKey?: keyof CSSStyleDeclaration;
-  /** List of supported node values. */
-  validNodeValues?: any[];
+export type ExtendConfig<C extends PluginConfig, EO = {}, EA = {}, ET = {}> = {
+  key: C['key'];
+  api: C['api'] & EA;
+  options: C['options'] & EO;
+  transforms: C['transforms'] & ET;
 };
 
 export interface GetInjectNodePropsOptions {
@@ -269,32 +309,35 @@ export interface GetInjectNodePropsReturnType extends AnyObject {
   style?: CSSStyleDeclaration;
 }
 
-export type BaseTransformOptions = GetInjectNodePropsOptions & {
-  nodeValue?: any;
-  value?: any;
-};
+export type InferApi<P> = P extends PluginConfig ? P['api'] : never;
 
-// -----------------------------------------------------------------------------
+export type InferOptions<P> = P extends PluginConfig ? P['options'] : never;
+
+export type InferTransforms<P> = P extends PluginConfig
+  ? P['transforms']
+  : never;
+
+/**
+ * Renders a component for Slate Nodes (elements if `isElement: true` or leaves
+ * if `isLeaf: true`) that match this plugin's type. This is the primary render
+ * method for plugin-specific node content.
+ *
+ * @default DefaultElement for elements, DefaultLeaf for leaves
+ */
+export type NodeComponent<T = any> = React.FC<T>;
+
+export type NodeComponents = Record<string, NodeComponent>;
+
+export type ParserOptions = {
+  data: string;
+  dataTransfer: DataTransfer;
+};
 
 export type PluginConfig<K extends string = any, O = {}, A = {}, T = {}> = {
   key: K;
   api: A;
   options: O;
   transforms: T;
-};
-
-export type ExtendConfig<C extends PluginConfig, EO = {}, EA = {}, ET = {}> = {
-  key: C['key'];
-  api: C['api'] & EA;
-  options: C['options'] & EO;
-  transforms: C['transforms'] & ET;
-};
-
-export type AnyPluginConfig = {
-  key: any;
-  api: any;
-  options: any;
-  transforms: any;
 };
 
 export type WithAnyKey<C extends AnyPluginConfig = PluginConfig> = PluginConfig<
@@ -307,46 +350,3 @@ export type WithAnyKey<C extends AnyPluginConfig = PluginConfig> = PluginConfig<
 export type WithRequiredKey<P = {}> =
   | (P extends { key: string } ? P : never)
   | { key: string };
-
-export type InferOptions<P> = P extends PluginConfig ? P['options'] : never;
-
-export type InferApi<P> = P extends PluginConfig ? P['api'] : never;
-
-export type InferTransforms<P> = P extends PluginConfig
-  ? P['transforms']
-  : never;
-
-export type ParserOptions = {
-  data: string;
-  dataTransfer: DataTransfer;
-};
-
-export type BasePluginContext<C extends AnyPluginConfig = PluginConfig> = {
-  api: C['api'] & EditorApi;
-  setOptions: {
-    (options: (state: Draft<Partial<InferOptions<C>>>) => void): void;
-    (options: Partial<InferOptions<C>>): void;
-  };
-  tf: C['transforms'] & EditorTransforms;
-  type: string;
-  getOption: <K extends keyof InferOptions<C>, F extends InferOptions<C>[K]>(
-    optionKey: K,
-    ...args: F extends (...args: infer A) => any ? A : never[]
-  ) => F extends (...args: any[]) => infer R ? R : F;
-  getOptions: () => InferOptions<C>;
-  setOption: <K extends keyof InferOptions<C>>(
-    optionKey: K,
-    value: InferOptions<C>[K]
-  ) => void;
-};
-
-/**
- * Renders a component for Slate Nodes (elements if `isElement: true` or leaves
- * if `isLeaf: true`) that match this plugin's type. This is the primary render
- * method for plugin-specific node content.
- *
- * @default DefaultElement for elements, DefaultLeaf for leaves
- */
-export type NodeComponent<T = any> = React.FC<T>;
-
-export type NodeComponents = Record<string, NodeComponent>;

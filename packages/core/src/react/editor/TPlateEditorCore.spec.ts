@@ -2,9 +2,9 @@ import type { Value } from '@udecode/slate';
 
 import {
   type InferPlugins,
-  DebugPlugin,
   createSlateEditor,
   createSlatePlugin,
+  DebugPlugin,
   someHtmlElement,
 } from '@udecode/plate-core';
 import { createPlateEditor, withPlate } from '@udecode/plate-core/react';
