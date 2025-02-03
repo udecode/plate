@@ -1,4 +1,3 @@
-/* eslint-disable react/display-name */
 import React from 'react';
 
 import { type EditorSelection, RangeApi } from '@udecode/slate';

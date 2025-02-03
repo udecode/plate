@@ -78,7 +78,7 @@ export function Plate<E extends PlateEditor = PlateEditor>(
 
   if (!props.editor) return null;
 
-  props.editor.uid = 'e-' + id.replace(/:/g, '');
+  props.editor.uid = 'e-' + id.replaceAll(':', '');
 
   return (
     <PlateInner
