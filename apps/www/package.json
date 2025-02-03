@@ -170,9 +170,6 @@
   "devDependencies": {
     "@shikijs/compat": "^2.1.0",
     "@types/lodash.template": "^4.5.3",
-    "@types/react": "^18.3.18",
-    "@types/react-color": "^3.0.13",
-    "@types/react-dom": "^18.3.5",
     "@types/react-syntax-highlighter": "^15.5.13",
     "autoprefixer": "^10.4.20",
     "concurrently": "^9.1.2",

@@ -5578,17 +5578,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-color@npm:^3.0.13":
-  version: 3.0.13
-  resolution: "@types/react-color@npm:3.0.13"
-  dependencies:
-    "@types/reactcss": "npm:*"
-  peerDependencies:
-    "@types/react": "*"
-  checksum: 10c0/a26a2a628dc98d2186743a52e18fc1a4622ba9ec69989be1e51614084fd90a52c139ea6689aa9706fcea94356d277c87d69f11a5c1f66c19b45e6b0132db40bb
-  languageName: node
-  linkType: hard
-
 "@types/react-dom@npm:19.0.3":
   version: 19.0.3
   resolution: "@types/react-dom@npm:19.0.3"
@@ -5631,15 +5620,6 @@ __metadata:
   dependencies:
     csstype: "npm:^3.0.2"
   checksum: 10c0/5fa7236356b1476de03519c66ef65d4fd904826956105619e2ad60cb0b55ae7b251dd5fff02234076225b5e15333d0d936bf9dbe1d461406f8a2ba01c197ddcd
-  languageName: node
-  linkType: hard
-
-"@types/reactcss@npm:*":
-  version: 1.2.13
-  resolution: "@types/reactcss@npm:1.2.13"
-  peerDependencies:
-    "@types/react": "*"
-  checksum: 10c0/f1b1e257dd7f02e1b50b2622c05a3fdcdb67045fdbbeab1f6ed7ef91e06f19d8899a3d7bd828c34bd2b243b7b7dd4c35376b947a683f5c0d56ea8a16b482f73d
   languageName: node
   linkType: hard
 
@@ -21690,9 +21670,6 @@ __metadata:
     "@shikijs/compat": "npm:^2.1.0"
     "@slate-yjs/react": "npm:1.1.0"
     "@types/lodash.template": "npm:^4.5.3"
-    "@types/react": "npm:^18.3.18"
-    "@types/react-color": "npm:^3.0.13"
-    "@types/react-dom": "npm:^18.3.5"
     "@types/react-syntax-highlighter": "npm:^15.5.13"
     "@udecode/cmdk": "workspace:^"
     "@udecode/cn": "workspace:^"
