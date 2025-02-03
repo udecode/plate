@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react';
 
 import {
   PlateController,
@@ -9,7 +9,6 @@ import {
 
 const createWrapper =
   (props: Omit<React.ComponentProps<typeof PlateController>, 'children'>) =>
-  // eslint-disable-next-line react/display-name
   ({ children }: any) => (
     <PlateController {...props}>{children}</PlateController>
   );

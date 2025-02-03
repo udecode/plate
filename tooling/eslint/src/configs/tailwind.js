@@ -9,7 +9,12 @@ export const getTailwindConfig = ({
   defineConfig(
     ...fixupConfigRules(compat.extends('plugin:tailwindcss/recommended')),
     {
-      files: ['**/*.jsx', '**/*.tsx'],
+      rules: {
+        'tailwindcss/no-custom-classname': 'off',
+      },
+    },
+    {
+      files: ['apps/www/**/*.tsx'],
       rules: {
         'tailwindcss/classnames-order': 'warn',
         'tailwindcss/no-custom-classname': [

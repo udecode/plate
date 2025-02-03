@@ -53,7 +53,7 @@ export default defineConfig(
         '@typescript-eslint/no-unused-expressions': 'off',
         '@typescript-eslint/no-unused-vars': 'off',
         '@typescript-eslint/only-throw-error': 'off',
-        '@typescript-eslint/require-await': 'warn',
+        '@typescript-eslint/require-await': 'off',
         '@typescript-eslint/restrict-template-expressions': 'off',
       },
       // Override stylistic-type-checked
@@ -155,13 +155,7 @@ export default defineConfig(
       ],
       // No unused imports
       'unused-imports/no-unused-imports': 'error',
-      'unused-imports/no-unused-vars': [
-        'warn',
-        {
-          argsIgnorePattern: '^_',
-          ignoreRestSiblings: true,
-        },
-      ],
+      'unused-imports/no-unused-vars': 'off',
     },
   }
 );

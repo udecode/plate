@@ -1,9 +1,9 @@
 import React from 'react';
 
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react';
 
 import { createSlatePlugin } from '../../lib/plugin';
-import { Plate, createPlateEditor, useEditorValue } from '../../react';
+import { createPlateEditor, Plate, useEditorValue } from '../../react';
 
 describe('pipeNormalizeInitialValue', () => {
   const createTestPlugin = (key: string) =>

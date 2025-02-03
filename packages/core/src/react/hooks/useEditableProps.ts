@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { useMemoOnce } from '@udecode/react-utils';
 import clsx from 'clsx';
 import omit from 'lodash/omit.js';
 import { useDeepCompareMemo } from 'use-deep-compare';
@@ -31,14 +30,14 @@ export const useEditableProps = ({
   const storeRenderLeaf = selectors.renderLeaf();
   const storeRenderElement = selectors.renderElement();
 
-  const decorateMemo = useMemoOnce(() => {
+  const decorateMemo = React.useMemo(() => {
     return pipeDecorate(
       editor,
       storeDecorate ?? (editableProps?.decorate as any)
     );
   }, [editableProps?.decorate, editor, storeDecorate]);
 
-  const decorate: typeof decorateMemo = useMemoOnce(() => {
+  const decorate: typeof decorateMemo = React.useMemo(() => {
     if (!versionDecorate || !decorateMemo) return;
 
     return (entry) => decorateMemo(entry);

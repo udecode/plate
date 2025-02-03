@@ -1,6 +1,7 @@
 import globals from 'globals';
 
 import { defineConfig } from '../utils.js';
+import jestConfig from './jest.js';
 import perfectionistConfig from './perfectionist.js';
 import rtlConfig from './rtl.js';
 import securityConfig from './security.js';
@@ -34,6 +35,7 @@ export default defineConfig(
 
   ...securityConfig,
   ...typescriptConfig,
+  ...jestConfig,
   ...rtlConfig,
   ...unicornConfig,
   ...perfectionistConfig,

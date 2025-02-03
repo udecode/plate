@@ -23,6 +23,9 @@
     "eslint-config-prettier": "^10.0.1",
     "eslint-import-resolver-typescript": "^3.7.0",
     "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-jest": "^28.11.0",
+    "eslint-plugin-jest-dom": "5.5.0",
+    "eslint-plugin-jest-formatting": "3.1.0",
     "eslint-plugin-jsdoc": "^50.6.3",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-perfectionist": "4.7.0",
@@ -45,7 +48,7 @@
     "typescript-eslint": "^8.22.0"
   },
   "devDependencies": {
-    "@next/eslint-plugin-next": "^15.1.4",
+    "@next/eslint-plugin-next": "^15.1.6",
     "@types/eslint-config-prettier": "^6.11.3",
     "@typescript-eslint/utils": "^8.22.0"
   }

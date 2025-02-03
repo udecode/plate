@@ -2,7 +2,7 @@ import React from 'react';
 import { act } from 'react';
 
 import { render } from '@testing-library/react';
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react';
 
 import { createPlateEditor } from '../editor';
 import { usePlateStore } from '../stores';
