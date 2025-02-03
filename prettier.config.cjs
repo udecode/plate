@@ -4,7 +4,8 @@ const {
 
 const config = getPrettierConfig();
 
-/** @type {import("prettier").Config} */
+/** @type {import('prettier').Config} */
 module.exports = {
   ...config,
+  tailwindStylesheet: './apps/www/src/styles/globals.css',
 };

@@ -1,4 +1,3 @@
-import { getHighlighter } from '@shikijs/compat';
 import {
   defineDocumentType,
   defineNestedType,
@@ -9,6 +8,7 @@ import rehypePrettyCode from 'rehype-pretty-code';
 import rehypeSlug from 'rehype-slug';
 import { codeImport } from 'remark-code-import';
 import remarkGfm from 'remark-gfm';
+import { createHighlighter } from 'shiki';
 import { visit } from 'unist-util-visit';
 
 import { rehypeComponent } from './src/lib/rehype-component';
@@ -131,7 +131,7 @@ export default makeSource({
       [
         rehypePrettyCode,
         {
-          getHighlighter,
+          getHighlighter: createHighlighter,
           theme: 'github-dark',
           onVisitHighlightedLine(node) {
             node.properties.className.push('line--highlighted');

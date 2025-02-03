@@ -248,7 +248,7 @@ const InlineComboboxInput = forwardRef<
         <Combobox
           ref={ref}
           className={cn(
-            'absolute left-0 top-0 size-full bg-transparent outline-none',
+            'absolute left-0 top-0 size-full bg-transparent outline-hidden',
             className
           )}
           value={value}
@@ -272,7 +272,7 @@ const InlineComboboxContent: typeof ComboboxPopover = ({
     <Portal>
       <ComboboxPopover
         className={cn(
-          'z-[500] max-h-[288px] w-[300px] overflow-y-auto rounded-md bg-popover shadow-md',
+          'z-500 max-h-[288px] w-[300px] overflow-y-auto rounded-md bg-popover shadow-md',
           className
         )}
         {...props}
@@ -282,7 +282,7 @@ const InlineComboboxContent: typeof ComboboxPopover = ({
 };
 
 const comboboxItemVariants = cva(
-  'relative mx-1 flex h-[28px] select-none items-center rounded-sm px-2 text-sm text-foreground outline-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+  'relative mx-1 flex h-[28px] select-none items-center rounded-sm px-2 text-sm text-foreground outline-hidden [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
   {
     defaultVariants: {
       interactive: true,
@@ -373,7 +373,7 @@ const InlineComboboxRow = ComboboxRow;
 
 const InlineComboboxGroup = withCn(
   ComboboxGroup,
-  'hidden py-1.5 [&:has([role=option])]:block [&:not(:last-child)]:border-b'
+  'hidden py-1.5 [&:has([role=option])]:block not-last:border-b'
 );
 
 const InlineComboboxGroupLabel = withCn(

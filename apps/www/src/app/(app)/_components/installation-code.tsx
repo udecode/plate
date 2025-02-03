@@ -29,7 +29,7 @@ export function InstallationCode({
 
       <div className="relative">
         <SyntaxHighlighter
-          className="rounded-lg border !py-4"
+          className="rounded-lg border py-4!"
           style={theme}
           language={bash ? 'bash' : 'typescript'}
           showLineNumbers={false}

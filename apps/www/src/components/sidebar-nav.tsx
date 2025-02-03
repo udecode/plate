@@ -61,7 +61,7 @@ export function DocsSidebarNav({ config }: DocsSidebarNavProps) {
 
   return sidebarNav.length > 0 ? (
     <div className="relative w-[calc(100%-1rem)]">
-      <div className="sticky top-0 z-10 flex w-full items-center bg-background/95 px-2 pb-3 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="sticky top-0 z-10 flex w-full items-center bg-background/95 px-2 pb-3 backdrop-blur-sm supports-backdrop-filter:bg-background/60">
         <div className="relative mt-3 flex w-full items-center">
           <Input
             className={cn(
@@ -97,7 +97,7 @@ export function DocsSidebarNav({ config }: DocsSidebarNavProps) {
                 className="mb-4 border-none px-2"
                 value={`item-${index}`}
               >
-                <AccordionTrigger className="py-1 text-sm font-semibold outline-none">
+                <AccordionTrigger className="py-1 text-sm font-semibold outline-hidden">
                   <div className="flex items-center">
                     {section.title}
                     {section.label && (

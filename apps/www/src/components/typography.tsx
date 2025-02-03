@@ -95,7 +95,7 @@ export const P = ({
 }: React.HTMLAttributes<HTMLParagraphElement>) => (
   <p
     className={cn(
-      'leading-7 [&:not(:first-child)]:mt-6 [&_code]:text-sm',
+      'leading-7 not-first:mt-6 [&_code]:text-sm',
       className
     )}
     {...props}
@@ -108,7 +108,7 @@ export const UL = ({
 }: React.HTMLAttributes<HTMLUListElement>) => (
   <ul
     className={cn(
-      'group my-4 ml-6 list-disc group-data-[list]:my-2',
+      'group my-4 ml-6 list-disc group-data-list:my-2',
       className
     )}
     data-list
@@ -122,7 +122,7 @@ export const OL = ({
 }: React.HTMLAttributes<HTMLOListElement>) => (
   <ol
     className={cn(
-      'group my-4 ml-6 list-decimal group-data-[list]:my-2',
+      'group my-4 ml-6 list-decimal group-data-list:my-2',
       className
     )}
     data-list

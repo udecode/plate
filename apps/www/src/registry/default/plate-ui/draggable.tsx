@@ -179,8 +179,8 @@ const Gutter = React.forwardRef<
         'slate-gutterLeft',
         'absolute -top-px z-50 flex h-full -translate-x-full cursor-text hover:opacity-100 sm:opacity-0',
         STRUCTURAL_TYPES.includes(element.type)
-          ? 'main-hover:group-hover/structural:opacity-100'
-          : 'main-hover:group-hover:opacity-100',
+          ? 'group-hover/structural:opacity-100'
+          : 'group-hover:opacity-100',
         isSelectionAreaVisible && 'hidden',
         !selected && 'opacity-0',
         isNodeType(HEADING_KEYS.h1) && 'pb-1 text-[1.875em]',

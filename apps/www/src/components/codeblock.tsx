@@ -40,7 +40,7 @@ const CodeBlock: FC<{
       <SyntaxHighlighter
         // eslint-disable-next-line tailwindcss/no-custom-classname
         className={cn(
-          'codeblock relative max-h-[650px] w-full overflow-auto rounded-lg border !bg-zinc-950 font-sans dark:!bg-zinc-900',
+          'codeblock relative max-h-[650px] w-full overflow-auto rounded-lg border bg-zinc-950! font-sans dark:bg-zinc-900!',
           fixedHeight && 'h-[650px]'
         )}
         style={customSyntaxHighlighterTheme as any}

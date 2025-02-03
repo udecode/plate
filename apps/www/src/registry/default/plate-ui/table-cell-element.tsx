@@ -62,8 +62,8 @@ export const TableCellElement = withRef<
       className={cn(
         className,
         'h-full overflow-visible border-none bg-background p-0',
-        element.background ? 'bg-[--cellBackground]' : 'bg-background',
-        isHeader && 'text-left [&_>_*]:m-0',
+        element.background ? 'bg-(--cellBackground)' : 'bg-background',
+        isHeader && 'text-left *:m-0',
         'before:size-full',
         selected && 'before:z-10 before:bg-brand/5',
         "before:absolute before:box-border before:select-none before:content-['']",
