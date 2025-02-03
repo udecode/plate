@@ -29,7 +29,7 @@ export const useTableMergeState = () => {
   );
 
   const collapsed = !readOnly && selected && !selectionExpanded;
-  const selectedTables = useTableStore().get.selectedTables();
+  const selectedTables = useTableStore().useSelectedTablesValue();
   const selectedTable = selectedTables?.[0];
 
   const selectedCellEntries = useEditorSelector(

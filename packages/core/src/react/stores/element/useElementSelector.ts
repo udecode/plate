@@ -30,5 +30,5 @@ export const useElementSelector = <T>(
     deps
   );
 
-  return useElementStore(key).get.atom(selectorAtom);
+  return useElementStore(key).getAtom(selectorAtom);
 };

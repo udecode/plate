@@ -3,7 +3,7 @@ import { useEditorPlugin } from '@udecode/plate/react';
 import { CommentsPlugin } from '../CommentsPlugin';
 import {
   useComment,
-  useCommentSelectors,
+  useCommentStore,
   useCommentText,
   useCommentUser,
 } from '../stores';
@@ -16,7 +16,7 @@ export const useCommentItemContentState = () => {
   const commentText = useCommentText();
   const user = useCommentUser();
   const myUserId = useOption('myUserId');
-  const editingValue = useCommentSelectors().editingValue();
+  const editingValue = useCommentStore().useEditingValueValue();
 
   const isMyComment = myUserId === comment.userId;
 

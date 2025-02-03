@@ -66,11 +66,11 @@ export const useIsVisible = (elementId: string) => {
     [elementId, openIds]
   );
 
-  return usePlateStore().get.atom(isVisibleAtom);
+  return usePlateStore().getAtom(isVisibleAtom);
 };
 
 export const toggleIndexAtom = atom((get) =>
   buildToggleIndex(get(editorAtom).editor.children as TIndentElement[])
 );
 
-export const useToggleIndex = () => usePlateStore().get.atom(toggleIndexAtom);
+export const useToggleIndex = () => usePlateStore().getAtom(toggleIndexAtom);

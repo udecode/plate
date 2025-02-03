@@ -24,11 +24,11 @@ export const usePlaceholderPopoverState = () => {
   const element = useElement<TPlaceholderElement>(BasePlaceholderPlugin.key);
   const { id, mediaType } = element;
 
-  const setProgresses = usePlaceholderStore().set.progresses();
-  const setIsUploading = usePlaceholderStore().set.isUploading();
-  const setUpdatedFiles = usePlaceholderStore().set.updatedFiles();
+  const setProgresses = usePlaceholderStore().useSetProgresses();
+  const setIsUploading = usePlaceholderStore().useSetIsUploading();
+  const setUpdatedFiles = usePlaceholderStore().useSetUpdatedFiles();
 
-  const size = usePlaceholderStore().get.size();
+  const size = usePlaceholderStore().useSizeValue();
 
   return {
     id,

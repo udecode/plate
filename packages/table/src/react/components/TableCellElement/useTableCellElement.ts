@@ -26,7 +26,8 @@ export const useTableCellElement = (): TableCellElementState => {
   const { api } = useEditorPlugin(TablePlugin);
   const element = useElement<TTableCellElement>();
   const isCellSelected = useIsCellSelected(element);
-  const [selectedCells, setSelectedCells] = useTableStore().use.selectedCells();
+  const [selectedCells, setSelectedCells] =
+    useTableStore().useSelectedCellsState();
 
   // Sync element transforms with selected cells
   React.useEffect(() => {
@@ -38,7 +39,7 @@ export const useTableCellElement = (): TableCellElementState => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [element]);
 
-  const rowSizeOverrides = useTableStore().get.rowSizeOverrides();
+  const rowSizeOverrides = useTableStore().useRowSizeOverridesValue();
   const { minHeight, width } = useTableCellSize({ element });
   const borders = useTableCellBorders({ element });
 

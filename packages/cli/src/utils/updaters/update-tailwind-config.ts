@@ -1,6 +1,6 @@
 import type { Config } from '@/src/utils/get-config';
 import type { registryItemTailwindSchema } from '@/src/utils/registry/schema';
-import type { Config as TailwindConfig } from 'tailwindcss';
+// import type { Config as TailwindConfig } from 'tailwindcss';
 import type { z } from 'zod';
 
 import deepmerge from 'deepmerge';
@@ -26,6 +26,9 @@ export type UpdaterTailwindConfig = Omit<TailwindConfig, 'plugins'> & {
   // We only want string plugins for now.
   plugins?: string[];
 };
+
+// Tailwind 4
+type TailwindConfig = any;
 
 export async function updateTailwindConfig(
   tailwindConfig:

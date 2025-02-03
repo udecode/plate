@@ -64,12 +64,3 @@ export type PlateStoreState<E extends PlateEditor = PlateEditor> = Nullable<{
    */
   scrollRef: React.RefObject<HTMLDivElement | null>;
 };
-
-//  A list of store keys to be exposed in `editor.api.plate.set`.
-export const EXPOSED_STORE_KEYS = [
-  'readOnly',
-  'onChange',
-  'decorate',
-  'renderElement',
-  'renderLeaf',
-] as const;

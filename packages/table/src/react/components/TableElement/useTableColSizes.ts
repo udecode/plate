@@ -16,7 +16,7 @@ export const useTableColSizes = ({
   disableOverrides?: boolean;
   transformColSizes?: (colSizes: number[]) => number[];
 } = {}): number[] => {
-  const colSizeOverrides = useTableStore().get.colSizeOverrides();
+  const colSizeOverrides = useTableStore().useColSizeOverridesValue();
 
   const overriddenColSizes = useElementSelector(
     ([tableNode]) => {

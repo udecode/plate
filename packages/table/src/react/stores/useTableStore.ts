@@ -40,16 +40,16 @@ const useOverrideSizeFactory = (
   );
 
 export const useOverrideColSize = () => {
-  const setColSizeOverrides = useTableStore().set.colSizeOverrides();
+  const setColSizeOverrides = useTableStore().useSetColSizeOverrides();
 
   return useOverrideSizeFactory(setColSizeOverrides);
 };
 
 export const useOverrideRowSize = () => {
-  const setRowSizeOverrides = useTableStore().set.rowSizeOverrides();
+  const setRowSizeOverrides = useTableStore().useSetRowSizeOverrides();
 
   return useOverrideSizeFactory(setRowSizeOverrides);
 };
 
 export const useOverrideMarginLeft = () =>
-  useTableStore().set.marginLeftOverride();
+  useTableStore().useSetMarginLeftOverride();

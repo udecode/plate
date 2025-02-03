@@ -45,7 +45,7 @@ export const useResizeHandleState = ({
   onTouchStart,
 }: ResizeHandleOptions) => {
   const readOnly = useReadOnly();
-  const onResizeStore = useResizeHandleStore().get.onResize();
+  const onResizeStore = useResizeHandleStore().useOnResizeValue();
   const onResize = onResizeProp ?? onResizeStore;
 
   const [isResizing, setIsResizing] = React.useState(false);

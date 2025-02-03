@@ -4,5 +4,5 @@
 
 export * from './PlateStore';
 export * from './createPlateStore';
-export * from './actions/index';
-export * from './selectors/index';
+export * from './useEditorPlugin';
+export * from './useEditorSelector';

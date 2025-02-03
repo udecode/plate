@@ -9,8 +9,7 @@ import { useFocused } from '../slate-react';
 import {
   plateControllerStore,
   useEditorId,
-  usePlateControllerActions,
-  usePlateSelectors,
+  usePlateControllerLocalStore,
   usePlateStore,
 } from '../stores';
 
@@ -36,23 +35,19 @@ export const PlateControllerEffect = ({
       ),
     [id]
   );
-  const setCurrentStore = usePlateControllerActions().atom(currentStoreAtom, {
-    warnIfNoStore: false,
-  });
-  const store = usePlateStore(id).store();
+  const setCurrentStore =
+    usePlateControllerLocalStore().setAtom(currentStoreAtom);
+  const store = usePlateStore(id);
 
-  const primary = usePlateSelectors(id).primary();
-  const setPrimaryEditorIds = usePlateControllerActions().primaryEditorIds({
-    warnIfNoStore: false,
-  });
+  const primary = usePlateStore(id).usePrimaryValue();
+  const setPrimaryEditorIds =
+    usePlateControllerLocalStore().useSetPrimaryEditorIds();
 
   const focused = useFocused();
-  const setActiveId = usePlateControllerActions().activeId({
-    warnIfNoStore: false,
-  });
+  const setActiveId = usePlateControllerLocalStore().useSetActiveId();
 
   React.useEffect(() => {
-    setCurrentStore(store ?? null);
+    setCurrentStore((store as any) ?? null);
 
     return () => {
       setCurrentStore(null);

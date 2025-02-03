@@ -7,17 +7,17 @@ import {
 
 import { CommentsPlugin } from '../CommentsPlugin';
 import {
-  useCommentActions,
-  useCommentSelectors,
+  useCommentStore,
   useCommentText,
 } from '../stores/comment/CommentProvider';
 
 export const useCommentEditSaveButtonState = () => {
   const { api, getOptions, setOption } = useEditorPlugin(CommentsPlugin);
 
-  const id = useCommentSelectors().id();
-  const editingValue = useCommentSelectors().editingValue();
-  const setEditingValue = useCommentActions().editingValue();
+  const store = useCommentStore();
+  const id = store.useIdValue();
+  const editingValue = store.useEditingValueValue();
+  const setEditingValue = store.useSetEditingValue();
   const value = useCommentText();
 
   return {

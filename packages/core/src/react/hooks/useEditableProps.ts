@@ -8,7 +8,7 @@ import type { EditableProps } from '../../lib';
 import type { PlateProps } from '../components';
 
 import { pipeDecorate } from '../../lib/static/utils/pipeDecorate';
-import { useEditorRef, usePlateSelectors } from '../stores';
+import { useEditorRef, usePlateStore } from '../stores';
 import { DOM_HANDLERS } from '../utils/dom-attributes';
 import { pipeHandler } from '../utils/pipeHandler';
 import { pipeRenderElement } from '../utils/pipeRenderElement';
@@ -23,12 +23,12 @@ export const useEditableProps = ({
   const { id } = editableProps;
 
   const editor = useEditorRef(id);
-  const selectors = usePlateSelectors(id);
-  const versionDecorate = selectors.versionDecorate();
-  const storeReadOnly = selectors.readOnly();
-  const storeDecorate = selectors.decorate();
-  const storeRenderLeaf = selectors.renderLeaf();
-  const storeRenderElement = selectors.renderElement();
+  const store = usePlateStore(id);
+  const versionDecorate = store.useVersionDecorateValue();
+  const storeReadOnly = store.useReadOnlyValue();
+  const storeDecorate = store.useDecorateValue();
+  const storeRenderLeaf = store.useRenderLeafValue();
+  const storeRenderElement = store.useRenderElementValue();
 
   const decorateMemo = React.useMemo(() => {
     return pipeDecorate(

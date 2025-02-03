@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { UnknownObject } from '@udecode/plate';
 
-import { usePlateSelectors } from '@udecode/plate/react';
+import { usePlateStore } from '@udecode/plate/react';
 
 import type {
   CursorData,
@@ -111,7 +111,7 @@ export function CursorOverlayContent<
 export function CursorOverlay<
   TCursorData extends UnknownObject = UnknownObject,
 >(props: CursorOverlayProps<TCursorData>) {
-  const isMounted = usePlateSelectors().isMounted();
+  const isMounted = usePlateStore().useIsMountedValue();
 
   if (!isMounted) return null;
 

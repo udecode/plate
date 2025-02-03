@@ -20,7 +20,7 @@ export const useTableBordersDropdownMenuContentState = ({
 } = {}) => {
   const editor = useEditorRef();
   const element = useElement() ?? el;
-  const selectedCells = useTableStore().get.selectedCells();
+  const selectedCells = useTableStore().useSelectedCellsValue();
   const borderStates = useEditorSelector<TableBorderStates>(
     (editor) => getSelectedCellsBorders(editor, selectedCells),
     [selectedCells, element]

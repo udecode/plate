@@ -4,14 +4,15 @@ import { act, render, renderHook } from '@testing-library/react';
 
 import { createPlateEditor } from '../editor';
 import { useFocused } from '../slate-react';
-import { PlateController, usePlateControllerSelectors } from '../stores';
+import { PlateController, usePlateControllerLocalStore } from '../stores';
 import { Plate } from './Plate';
 import { PlateControllerEffect } from './PlateControllerEffect';
 
 const DebugPlateController = () => {
-  const editorStores = usePlateControllerSelectors().editorStores();
-  const activeId = usePlateControllerSelectors().activeId();
-  const primaryEditorIds = usePlateControllerSelectors().primaryEditorIds();
+  const store = usePlateControllerLocalStore();
+  const editorStores = store.useEditorStoresValue();
+  const activeId = store.useActiveIdValue();
+  const primaryEditorIds = store.usePrimaryEditorIdsValue();
 
   return (
     <div>

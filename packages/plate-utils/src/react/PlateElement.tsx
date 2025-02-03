@@ -29,7 +29,7 @@ export const usePlateElement = (props: PlateElementProps) => {
     path,
     ...rootProps
   } = omitPluginContext(props);
-  const mounted = usePlateStore().get.isMounted();
+  const mounted = usePlateStore().useIsMountedValue();
 
   const block = React.useMemo(
     () => mounted && !!element.id && props.editor.api.isBlock(element),

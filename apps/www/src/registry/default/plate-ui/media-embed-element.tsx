@@ -34,7 +34,7 @@ export const MediaEmbedElement = withHOC(
     } = useMediaState({
       urlParsers: [parseTwitterUrl, parseVideoUrl],
     });
-    const width = useResizableStore().get.width();
+    const width = useResizableStore().useWidthValue();
     const provider = embed?.provider;
 
     return (

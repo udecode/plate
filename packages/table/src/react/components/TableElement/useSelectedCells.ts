@@ -14,8 +14,9 @@ export const useSelectedCells = () => {
   const selected = useSelected();
   const editor = useEditorRef();
 
-  const [selectedCells, setSelectedCells] = useTableStore().use.selectedCells();
-  const setSelectedTables = useTableStore().set.selectedTables();
+  const [selectedCells, setSelectedCells] =
+    useTableStore().useSelectedCellsState();
+  const setSelectedTables = useTableStore().useSetSelectedTables();
 
   React.useEffect(() => {
     if (!selected || readOnly) {

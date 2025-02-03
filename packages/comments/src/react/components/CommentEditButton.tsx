@@ -1,14 +1,12 @@
 import { createPrimitiveComponent } from '@udecode/plate/react';
 
-import {
-  useComment,
-  useCommentActions,
-} from '../stores/comment/CommentProvider';
+import { useComment, useCommentStore } from '../stores/comment/CommentProvider';
 
 export const useCommentEditButtonState = () => {
-  const setIsMenuOpen = useCommentActions().isMenuOpen();
+  const store = useCommentStore();
+  const setIsMenuOpen = store.useSetIsMenuOpen();
   const comment = useComment()!;
-  const editingValue = useCommentActions().editingValue();
+  const editingValue = store.useSetEditingValue();
 
   return {
     comment,

@@ -25,16 +25,10 @@ export const { CommentProvider, commentStore, useCommentStore } =
     }
   );
 
-export const useCommentStates = () => useCommentStore().use;
-
-export const useCommentSelectors = () => useCommentStore().get;
-
-export const useCommentActions = () => useCommentStore().set;
-
 export const useCommentUser = (scope?: string): CommentUser | null => {
   const { useOption } = useEditorPlugin(CommentsPlugin);
 
-  const commentId = useCommentSelectors().id(scope);
+  const commentId = useCommentStore(scope).useIdValue();
   const comment = useOption('commentById', commentId);
   const users = useOption('users');
 
@@ -46,7 +40,7 @@ export const useCommentUser = (scope?: string): CommentUser | null => {
 export const useCommentReplies = (scope?: string) => {
   const { useOption } = useEditorPlugin(CommentsPlugin);
 
-  const commentId = useCommentSelectors().id(scope);
+  const commentId = useCommentStore(scope).useIdValue();
   const comments = useOption('comments');
 
   const replies: Record<string, TComment> = {};
@@ -66,7 +60,7 @@ export const useCommentReplies = (scope?: string) => {
 export const useComment = (scope?: string) => {
   const { useOption } = useEditorPlugin(CommentsPlugin);
 
-  const commentId = useCommentSelectors().id(scope);
+  const commentId = useCommentStore(scope).useIdValue();
 
   return useOption('commentById', commentId);
 };
@@ -80,7 +74,7 @@ export const useCommentText = (scope?: string) => {
 };
 
 export const useEditingCommentText = () => {
-  const editingValue = useCommentSelectors().editingValue();
+  const editingValue = useCommentStore().useEditingValueValue();
 
   if (!editingValue) return null;
 

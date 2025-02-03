@@ -16,7 +16,6 @@ import type {
   EditorPlatePlugin,
   Shortcuts,
 } from '../plugin/PlatePlugin';
-import type { EXPOSED_STORE_KEYS, PlateStoreState } from '../stores';
 import type { PlateCorePlugin } from './withPlate';
 
 export type PlateEditor = {
@@ -66,10 +65,6 @@ export type PlateEditor = {
   getTransforms: <C extends AnyPluginConfig = PluginConfig>(
     plugin?: WithRequiredKey<C>
   ) => PlateEditor['tf'] & InferTransforms<C>;
-  setPlateState: <K extends (typeof EXPOSED_STORE_KEYS)[number]>(
-    optionKey: K,
-    value: PlateStoreState[K]
-  ) => void;
   uid?: string;
 } & BaseEditor;
 

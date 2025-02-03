@@ -12,8 +12,8 @@ export const useTableElement = () => {
   const { disableMarginLeft } = getOptions();
 
   const element = useElement<TTableElement>();
-  const selectedCells = useTableStore().get.selectedCells();
-  const marginLeftOverride = useTableStore().get.marginLeftOverride();
+  const selectedCells = useTableStore().useSelectedCellsValue();
+  const marginLeftOverride = useTableStore().useMarginLeftOverrideValue();
 
   const marginLeft = disableMarginLeft
     ? 0

@@ -2,16 +2,11 @@ import React from 'react';
 
 import { selectAtom } from 'jotai/utils';
 
-import type { PlateEditor } from '../../../editor/PlateEditor';
+import type { PlateEditor } from '../../editor';
 
-import {
-  type UsePlateEditorStoreOptions,
-  plateStore,
-  usePlateSelectors,
-} from '../createPlateStore';
+import { plateStore, usePlateStore } from './createPlateStore';
 
-export interface UseEditorSelectorOptions<T>
-  extends UsePlateEditorStoreOptions {
+export interface UseEditorSelectorOptions<T> {
   id?: string;
   equalityFn?: (a: T, b: T) => boolean;
 }
@@ -19,11 +14,7 @@ export interface UseEditorSelectorOptions<T>
 export const useEditorSelector = <T, E extends PlateEditor = PlateEditor>(
   selector: (editor: E, prev?: T) => T,
   deps: React.DependencyList,
-  {
-    id,
-    equalityFn = (a: T, b: T) => a === b,
-    ...storeOptions
-  }: UseEditorSelectorOptions<T> = {}
+  { id, equalityFn = (a: T, b: T) => a === b }: UseEditorSelectorOptions<T> = {}
 ): T => {
   const selectorAtom = React.useMemo(
     () =>
@@ -36,8 +27,5 @@ export const useEditorSelector = <T, E extends PlateEditor = PlateEditor>(
     deps
   );
 
-  return usePlateSelectors(id, {
-    debugHookName: 'useEditorSelector',
-    ...storeOptions,
-  }).atom(selectorAtom);
+  return usePlateStore(id).getAtom(selectorAtom);
 };

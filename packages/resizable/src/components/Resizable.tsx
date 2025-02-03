@@ -30,7 +30,7 @@ export const useResizableState = ({
 
   const nodeWidth = element?.width ?? '100%';
 
-  const [width, setWidth] = useResizableStore().use.width();
+  const [width, setWidth] = useResizableStore().useWidthState();
 
   const setNodeWidth = React.useCallback(
     (w: number) => {

@@ -3,7 +3,7 @@ import React from 'react';
 import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
 
 import { getEditorPlugin } from '../plugin';
-import { useEditorRef, usePlateActions, usePlateSelectors } from '../stores';
+import { useEditorRef, usePlateStore } from '../stores';
 
 export function EditorRefPluginEffect({
   id,
@@ -20,8 +20,8 @@ export function EditorRefPluginEffect({
 }
 
 export function EditorRefEffect({ id }: { id?: string }) {
-  const editor = usePlateSelectors(id).editor();
-  const setIsMounted = usePlateActions(id).isMounted();
+  const editor = usePlateStore(id).useEditorValue();
+  const setIsMounted = usePlateStore(id).useSetIsMounted();
 
   React.useEffect(() => {
     setIsMounted(true);

@@ -1,16 +1,15 @@
 import React from 'react';
 
-import type { JotaiStore } from 'jotai-x';
-
-import { atom, createStore } from 'jotai';
+import { atom } from 'jotai';
 
 import type { PlateEditor } from '../../editor/PlateEditor';
-import type { PlateStoreState } from './PlateStore';
+import type { PlateChangeKey, PlateStoreState } from './PlateStore';
 
 import { createAtomStore } from '../../libs';
+import { createPlateFallbackEditor } from '../../utils';
 import {
-  usePlateControllerEditorStore,
   usePlateControllerExists,
+  usePlateControllerStore,
 } from '../plate-controller';
 
 export const PLATE_SCOPE = 'plate';
@@ -79,27 +78,23 @@ export const createPlateStore = <E extends PlateEditor = PlateEditor>({
 export const {
   PlateProvider: PlateStoreProvider,
   plateStore,
-  usePlateStore,
+  usePlateStore: usePlateLocalStore,
 } = createPlateStore();
 
-export interface UsePlateEditorStoreOptions {
-  debugHookName?: string;
-}
-
-export const usePlateEditorStore = (
-  id?: string,
-  { debugHookName = 'usePlateEditorStore' }: UsePlateEditorStoreOptions = {}
-): JotaiStore => {
+export const usePlateStore = (id?: string) => {
   // Try to fetch the store from a Plate provider
-  const localStore = usePlateStore(id).store({ warnIfNoStore: false }) ?? null;
+  const localStore =
+    usePlateLocalStore({ scope: id, warnIfNoStore: false }) ?? null;
 
-  const [localStoreExists] = React.useState(!!localStore);
+  const [localStoreExists] = React.useState(!!localStore.store);
 
   // If no store was found, try to fetch the store from a PlateController
-  const store = localStoreExists
-    ? localStore
-    : // eslint-disable-next-line react-hooks/rules-of-hooks
-      usePlateControllerEditorStore(id);
+  const store = (
+    localStoreExists
+      ? localStore
+      : // eslint-disable-next-line react-hooks/rules-of-hooks
+        usePlateControllerStore(id)
+  ) as typeof localStore;
 
   /**
    * If we still have no store, there are two possibilities.
@@ -112,53 +107,138 @@ export const usePlateEditorStore = (
    * case, return a fallback store until an editor becomes active.
    */
   const plateControllerExists = usePlateControllerExists();
-  const fallbackStore = React.useMemo(() => createStore(), []);
+
+  const fallbackStore = React.useRef<typeof localStore>(undefined);
 
   if (!store) {
     if (plateControllerExists) {
-      return fallbackStore;
+      if (!fallbackStore.current) {
+        fallbackStore.current =
+          createPlateStore().usePlateStore() as unknown as typeof localStore;
+      }
+      return fallbackStore.current!;
     }
 
     throw new Error(
-      `${debugHookName} must be used inside a Plate or PlateController`
+      `Plate hooks must be used inside a Plate or PlateController`
     );
   }
-
   return store;
 };
 
-export const usePlateSelectors = (
-  id?: string,
-  options?: UsePlateEditorStoreOptions
-) => {
-  const store = usePlateEditorStore(id, {
-    debugHookName: 'usePlateSelectors',
-    ...options,
-  });
+// ─── Selectors ───────────────────────────────────────────────────────────────
 
-  return usePlateStore({ store }).get;
+/** Get the closest `Plate` id. */
+export const useEditorId = (): string => usePlateStore().useEditorValue().id;
+
+export const useEditorContainerRef = (id?: string) => {
+  return usePlateStore(id).useContainerRefValue();
 };
 
-export const usePlateActions = (
-  id?: string,
-  options?: UsePlateEditorStoreOptions
-) => {
-  const store = usePlateEditorStore(id, {
-    debugHookName: 'usePlateActions',
-    ...options,
-  });
-
-  return usePlateStore({ store }).set;
+export const useEditorScrollRef = (id?: string) => {
+  return usePlateStore(id).useScrollRefValue();
 };
 
-export const usePlateStates = (
-  id?: string,
-  options?: UsePlateEditorStoreOptions
-) => {
-  const store = usePlateEditorStore(id, {
-    debugHookName: 'usePlateStates',
-    ...options,
-  });
+/** Returns the scrollRef if it exists, otherwise returns the containerRef. */
+export const useScrollRef = (id?: string) => {
+  const scrollRef = useEditorScrollRef(id);
+  const containerRef = useEditorContainerRef(id);
 
-  return usePlateStore({ store }).use;
+  return scrollRef.current ? scrollRef : containerRef;
+};
+
+export const useEditorMounted = (id?: string): boolean => {
+  return !!usePlateStore(id).useIsMountedValue();
+};
+
+/**
+ * Whether the editor is read-only. You can also use `useReadOnly` from
+ * `slate-react` in node components.
+ */
+export const useEditorReadOnly = (id?: string): boolean => {
+  return !!usePlateStore(id).useReadOnlyValue();
+};
+
+/** Get editor ref which is never updated. */
+export const useEditorRef = <E extends PlateEditor = PlateEditor>(
+  id?: string
+): E => {
+  return (
+    (usePlateStore(id).useEditorValue() as E) ?? createPlateFallbackEditor()
+  );
+};
+
+/** Get the editor selection (deeply memoized). */
+export const useEditorSelection = (id?: string) =>
+  usePlateStore(id).useTrackedSelectionValue().selection;
+
+/** Get editor state which is updated on editor change. */
+export const useEditorState = <E extends PlateEditor = PlateEditor>(
+  id?: string
+): E => {
+  return usePlateStore(id).useTrackedEditorValue().editor;
+};
+
+/** Version incremented on each editor change. */
+export const useEditorVersion = (id?: string) => {
+  return usePlateStore(id).useVersionValueValue();
+};
+
+/** Version incremented on selection change. */
+export const useSelectionVersion = (id?: string) => {
+  return usePlateStore(id).useVersionSelectionValue();
+};
+
+/** Get the editor value (deeply memoized). */
+export const useEditorValue = (id?: string) =>
+  usePlateStore(id).useTrackedValueValue().value;
+
+/** Version incremented on value change. */
+export const useValueVersion = (id?: string) => {
+  return usePlateStore(id).useVersionValueValue();
+};
+
+// ─── Actions ─────────────────────────────────────────────────────────────────
+
+export const useIncrementVersion = (key: PlateChangeKey, id?: string) => {
+  const previousVersionRef = React.useRef(1);
+
+  const store = usePlateStore(id);
+
+  const setVersionDecorate = store.useSetVersionDecorate();
+  const setVersionSelection = store.useSetVersionSelection();
+  const setVersionValue = store.useSetVersionEditor();
+
+  return React.useCallback(() => {
+    const nextVersion = previousVersionRef.current + 1;
+
+    switch (key) {
+      case 'versionDecorate': {
+        setVersionDecorate(nextVersion);
+
+        break;
+      }
+      case 'versionEditor': {
+        setVersionValue(nextVersion);
+
+        break;
+      }
+      case 'versionSelection': {
+        setVersionSelection(nextVersion);
+
+        break;
+      }
+      // No default
+    }
+
+    previousVersionRef.current = nextVersion;
+  }, [key, setVersionDecorate, setVersionSelection, setVersionValue]);
+};
+
+export const useRedecorate = (id?: string) => {
+  const updateDecorate = useIncrementVersion('versionDecorate', id);
+
+  return React.useCallback(() => {
+    updateDecorate();
+  }, [updateDecorate]);
 };

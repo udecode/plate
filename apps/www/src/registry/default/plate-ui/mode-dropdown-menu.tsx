@@ -23,7 +23,7 @@ import { ToolbarButton } from './toolbar';
 
 export function ModeDropdownMenu(props: DropdownMenuProps) {
   const editor = useEditorRef();
-  const setReadOnly = usePlateStore().set.readOnly();
+  const setReadOnly = usePlateStore().useSetReadOnly();
   const readOnly = useEditorReadOnly();
   const openState = useOpenState();
 

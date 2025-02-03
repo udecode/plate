@@ -5,7 +5,7 @@ import {
 
 import { type BaseCommentsConfig, unsetCommentNodesById } from '../../lib';
 import { CommentsPlugin } from '../CommentsPlugin';
-import { useCommentSelectors } from '../stores/comment/CommentProvider';
+import { useCommentStore } from '../stores';
 
 export const useCommentDeleteButtonState = () => {
   const { api, editor, setOption, useOption } = useEditorPlugin(CommentsPlugin);
@@ -14,7 +14,7 @@ export const useCommentDeleteButtonState = () => {
   const onCommentDelete = useOption(
     'onCommentDelete'
   ) as BaseCommentsConfig['options']['onCommentDelete'];
-  const id = useCommentSelectors().id();
+  const id = useCommentStore().useIdValue();
 
   return {
     id,

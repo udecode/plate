@@ -3,7 +3,7 @@ import React from 'react';
 import type { Editor, TSelection, Value } from '@udecode/slate';
 import type { UnknownObject } from '@udecode/utils';
 
-import { useEditorRef, usePlateSelectors } from '../stores';
+import { useEditorRef, usePlateStore } from '../stores';
 import { pipeOnChange } from '../utils/pipeOnChange';
 
 interface SlateProps extends UnknownObject {
@@ -22,9 +22,10 @@ export const useSlateProps = ({
   id?: string;
 }): Omit<SlateProps, 'children'> => {
   const editor = useEditorRef(id);
-  const onChangeProp = usePlateSelectors(id).onChange();
-  const onValueChangeProp = usePlateSelectors(id).onValueChange();
-  const onSelectionChangeProp = usePlateSelectors(id).onSelectionChange();
+  const store = usePlateStore(id);
+  const onChangeProp = store.useOnChangeValue();
+  const onValueChangeProp = store.useOnValueChangeValue();
+  const onSelectionChangeProp = store.useOnSelectionChangeValue();
 
   const onChange = React.useCallback(
     (newValue: Value) => {

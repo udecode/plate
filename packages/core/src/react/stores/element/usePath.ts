@@ -6,7 +6,7 @@ import { useElementStore } from './useElementStore';
 /** Get the memoized path of the closest element. */
 export const usePath = (pluginKey?: string): Path => {
   const editor = useEditorRef();
-  const value = useElementStore(pluginKey).get.path();
+  const value = useElementStore(pluginKey).usePathValue();
 
   if (!value) {
     editor.api.debug.warn(

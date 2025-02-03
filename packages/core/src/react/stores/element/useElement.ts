@@ -11,7 +11,7 @@ export const useElement = <T extends TElement = TElement>(
   pluginKey = SCOPE_ELEMENT
 ): T => {
   const editor = useEditorRef();
-  const value = useElementStore(pluginKey).get.element();
+  const value = useElementStore(pluginKey).useElementValue();
 
   if (!value) {
     editor.api.debug.warn(

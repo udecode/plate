@@ -4,7 +4,7 @@ import { renderHook } from '@testing-library/react';
 
 import {
   PlateController,
-  usePlateControllerEditorStore,
+  usePlateControllerStore,
 } from './plateControllerStore';
 
 const createWrapper =
@@ -31,30 +31,27 @@ describe('plateControllerStore', () => {
 
       describe('when the id exists', () => {
         it('returns the editor store', () => {
-          const { result } = renderHook(
-            () => usePlateControllerEditorStore('2'),
-            { wrapper }
-          );
+          const { result } = renderHook(() => usePlateControllerStore('2'), {
+            wrapper,
+          });
           expect(result.current).toBe(MATCHING_STORE);
         });
       });
 
       describe('when the id does not exist', () => {
         it('returns null', () => {
-          const { result } = renderHook(
-            () => usePlateControllerEditorStore('5'),
-            { wrapper }
-          );
+          const { result } = renderHook(() => usePlateControllerStore('5'), {
+            wrapper,
+          });
           expect(result.current).toBeNull();
         });
       });
 
       describe('when the id maps to null', () => {
         it('returns null', () => {
-          const { result } = renderHook(
-            () => usePlateControllerEditorStore('4'),
-            { wrapper }
-          );
+          const { result } = renderHook(() => usePlateControllerStore('4'), {
+            wrapper,
+          });
           expect(result.current).toBeNull();
         });
       });
@@ -77,10 +74,9 @@ describe('plateControllerStore', () => {
           });
 
           it('returns the active editor store', () => {
-            const { result } = renderHook(
-              () => usePlateControllerEditorStore(),
-              { wrapper }
-            );
+            const { result } = renderHook(() => usePlateControllerStore(), {
+              wrapper,
+            });
             expect(result.current).toBe(ACTIVE_STORE);
           });
         });
@@ -100,10 +96,9 @@ describe('plateControllerStore', () => {
           });
 
           it('returns the primary editor store', () => {
-            const { result } = renderHook(
-              () => usePlateControllerEditorStore(),
-              { wrapper }
-            );
+            const { result } = renderHook(() => usePlateControllerStore(), {
+              wrapper,
+            });
             expect(result.current).toBe(PRIMARY_STORE);
           });
         });
@@ -123,10 +118,9 @@ describe('plateControllerStore', () => {
           });
 
           it('returns the primary editor store', () => {
-            const { result } = renderHook(
-              () => usePlateControllerEditorStore(),
-              { wrapper }
-            );
+            const { result } = renderHook(() => usePlateControllerStore(), {
+              wrapper,
+            });
             expect(result.current).toBe(PRIMARY_STORE);
           });
         });
@@ -148,10 +142,9 @@ describe('plateControllerStore', () => {
           });
 
           it('returns the first extant primary editor store', () => {
-            const { result } = renderHook(
-              () => usePlateControllerEditorStore(),
-              { wrapper }
-            );
+            const { result } = renderHook(() => usePlateControllerStore(), {
+              wrapper,
+            });
             expect(result.current).toBe(EXPECTED_STORE);
           });
         });
@@ -169,10 +162,9 @@ describe('plateControllerStore', () => {
           });
 
           it('returns null', () => {
-            const { result } = renderHook(
-              () => usePlateControllerEditorStore(),
-              { wrapper }
-            );
+            const { result } = renderHook(() => usePlateControllerStore(), {
+              wrapper,
+            });
             expect(result.current).toBeNull();
           });
         });
@@ -190,10 +182,9 @@ describe('plateControllerStore', () => {
           });
 
           it('returns null', () => {
-            const { result } = renderHook(
-              () => usePlateControllerEditorStore(),
-              { wrapper }
-            );
+            const { result } = renderHook(() => usePlateControllerStore(), {
+              wrapper,
+            });
             expect(result.current).toBeNull();
           });
         });

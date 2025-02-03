@@ -1,13 +1,13 @@
-import type { AnyPluginConfig, WithRequiredKey } from '../../../../lib';
-import type { PlateEditor } from '../../../editor';
+import type { AnyPluginConfig, WithRequiredKey } from '../../../lib';
+import type { PlateEditor } from '../../editor';
 
 import {
   type InferConfig,
   type PlatePlugin,
   type PlatePluginContext,
   getEditorPlugin,
-} from '../../../plugin';
-import { useEditorRef } from './useEditorRef';
+} from '../../plugin';
+import { useEditorRef } from './createPlateStore';
 
 /** Get editor and plugin context. */
 export function useEditorPlugin<

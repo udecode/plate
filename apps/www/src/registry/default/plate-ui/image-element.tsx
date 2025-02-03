@@ -23,7 +23,7 @@ export const ImageElement = withHOC(
     ({ children, className, nodeProps, ...props }, ref) => {
       const { align = 'center', focused, readOnly, selected } = useMediaState();
 
-      const width = useResizableStore().get.width();
+      const width = useResizableStore().useWidthValue();
 
       const { isDragging, handleRef } = useDraggable({
         element: props.element,
