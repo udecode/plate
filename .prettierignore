@@ -5,3 +5,5 @@
 **/index.ts
 **/*.mdx
 **/__tests__/**/*.html
+**/.contentlayer
+**/__registry__

@@ -21,6 +21,8 @@ excluded_packages=$(cat << 'EOF' | jq -r '.[] | "!\(.)"'
   "rehype",
   "rehype-autolink-headings",
   "rehype-pretty-code",
+  "@shikijs/compat",
+  "shiki",
   "rehype-slug",
   "remark",
   "remark-parse",

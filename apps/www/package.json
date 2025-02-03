@@ -159,14 +159,13 @@
     "sonner": "1.7.2",
     "tailwind-merge": "2.6.0",
     "ts-morph": "22.0.0",
-    "unist-builder": "4.0.0",
-    "unist-util-visit": "5.0.0",
     "uploadthing": "7.2.0",
     "use-file-picker": "2.1.2",
     "vaul": "1.1.2",
     "zod": "^3.20.2"
   },
   "devDependencies": {
+    "@shikijs/compat": "^1.1.7",
     "@types/lodash.template": "4.5.3",
     "@types/react-syntax-highlighter": "15.5.13",
     "autoprefixer": "10.4.20",
@@ -183,12 +182,14 @@
     "remark-code-import": "1.2.0",
     "remark-gfm": "4.0.0",
     "rimraf": "6.0.1",
-    "shiki": "2.1.0",
+    "shiki": "^1.10.1",
     "tailwind-scrollbar-hide": "2.0.0",
     "tailwindcss": "4.0.3",
     "tailwindcss-animate": "1.0.7",
     "ts-node": "10.9.2",
     "tsx": "4.19.2",
-    "typescript": "5.7.3"
+    "typescript": "5.7.3",
+    "unist-builder": "4.0.0",
+    "unist-util-visit": "5.0.0"
   }
 }

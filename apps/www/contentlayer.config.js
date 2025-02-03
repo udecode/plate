@@ -1,3 +1,4 @@
+import { getHighlighter } from '@shikijs/compat';
 import {
   defineDocumentType,
   defineNestedType,
@@ -8,7 +9,6 @@ import rehypePrettyCode from 'rehype-pretty-code';
 import rehypeSlug from 'rehype-slug';
 import { codeImport } from 'remark-code-import';
 import remarkGfm from 'remark-gfm';
-import { createHighlighter } from 'shiki';
 import { visit } from 'unist-util-visit';
 
 import { rehypeComponent } from './src/lib/rehype-component';
@@ -19,12 +19,12 @@ import 'dotenv/config';
 /** @type {import('contentlayer2/source-files').ComputedFields} */
 const computedFields = {
   slug: {
-    resolve: (doc) => `/${doc._raw.flattenedPath}`,
     type: 'string',
+    resolve: (doc) => `/${doc._raw.flattenedPath}`,
   },
   slugAsParams: {
-    resolve: (doc) => doc._raw.flattenedPath.split('/').slice(1).join('/'),
     type: 'string',
+    resolve: (doc) => doc._raw.flattenedPath.split('/').slice(1).join('/'),
   },
 };
 
@@ -131,7 +131,7 @@ export default makeSource({
       [
         rehypePrettyCode,
         {
-          getHighlighter: createHighlighter,
+          getHighlighter,
           theme: 'github-dark',
           onVisitHighlightedLine(node) {
             node.properties.className.push('line--highlighted');
@@ -172,7 +172,7 @@ export default makeSource({
               preElement.properties.__event__ = node.__event__;
             }
             if (node.__style__) {
-              preElement.properties['__style__'] = node.__style__;
+              preElement.properties.__style__ = node.__style__;
             }
           }
         });

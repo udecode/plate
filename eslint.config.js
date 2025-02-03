@@ -1,9 +1,5 @@
 import { configs, defineConfig, filePatterns } from '@app/eslint';
 
-
-
-
-
 export default defineConfig(
   {
     ignores: [

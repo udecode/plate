@@ -13,17 +13,23 @@
       {
         "name": "next"
       }
-    ],
+    ]
   },
   "include": [
-    ".eslintrc.cjs",
     "next-env.d.ts",
     "next.config.ts",
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "src/**/*.cjs",
-    "src/**/*.mjs",
-    "./scripts/*.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.cts",
+    "**/*.ctsx",
+    "**/*.mts",
+    "**/*.mtsx",
+    "**/*.js",
+    "**/*.jsx",
+    "**/*.cjs",
+    "**/*.cjsx",
+    "**/*.mjs",
+    "**/*.mjsx",
     ".next/types/**/*.ts",
     ".contentlayer/generated"
   ],
