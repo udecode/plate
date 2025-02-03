@@ -151,7 +151,6 @@ const ToolbarButton = withTooltip(
     }
   )
 );
-ToolbarButton.displayName = 'ToolbarButton';
 
 export { ToolbarButton };
 

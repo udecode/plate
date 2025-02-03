@@ -89,7 +89,7 @@ export function AIMenu() {
 
   return (
     <Popover open={open} onOpenChange={setOpen} modal={false}>
-      <PopoverAnchor virtualRef={{ current: anchorElement }} />
+      <PopoverAnchor virtualRef={{ current: anchorElement! }} />
 
       <PopoverContent
         className="border-none bg-transparent p-0 shadow-none"

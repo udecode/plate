@@ -173,7 +173,7 @@ export function SelectEditorCombobox() {
 
   return (
     <Popover open={open}>
-      <PopoverAnchor virtualRef={containerRef} />
+      <PopoverAnchor virtualRef={containerRef as any} />
       <PopoverContent
         className="p-0"
         style={{

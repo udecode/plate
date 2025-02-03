@@ -95,7 +95,7 @@ function RemoteSelection({
 }
 
 export function RemoteCursorOverlay() {
-  const containerRef = useEditorContainerRef();
+  const containerRef: any = useEditorContainerRef();
   const [cursors] = useRemoteCursorOverlayPositions<CursorData>({
     containerRef,
   });
