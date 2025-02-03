@@ -7,12 +7,12 @@ import { getTailwindConfig } from './configs/tailwind.js';
 export { compat, defineConfig } from './utils.js';
 
 export const filePatterns = {
+  js: ['*.js', '*.cjs'],
+  jsx: ['*.{js,jsx,ts,tsx}'],
   react: ['*.{jsx,tsx}'],
   test: ['**/__tests__/**', '**/*.test.*', '**/*.spec.*', '**/*.fixture.*'],
   ts: ['*.ts', '*.tsx', '*.mts'],
-  js: ['*.js', '*.cjs'],
-  jsx: ['*.{js,jsx,ts,tsx}']
-}
+};
 
 /**
  * Note: You MUST import files using the .js extension in this entire package
@@ -20,9 +20,9 @@ export const filePatterns = {
  */
 export const configs = {
   base,
+  filePatterns,
   getTailwind: getTailwindConfig,
   next,
   prettier,
   react,
-  filePatterns,
 };

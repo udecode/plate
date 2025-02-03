@@ -17,26 +17,21 @@ export type Operation<N extends Descendant = Descendant> =
 
 /** Operation manipulation and check methods. */
 export const OperationApi: {
-  /** Check if a value is a `NodeOperation` object. */
-  isNodeOperation: <N extends Descendant>(
-    value: any
-  ) => value is NodeOperation<N>;
-
   /**
    * Invert an operation, returning a new operation that will exactly undo the
    * original when applied.
    */
   inverse: (op: Operation) => Operation;
-
+  /** Check if a value is a `NodeOperation` object. */
+  isNodeOperation: <N extends Descendant>(
+    value: any
+  ) => value is NodeOperation<N>;
   /** Check if a value is an `Operation` object. */
   isOperation: <N extends Descendant>(value: any) => value is Operation<N>;
-
   /** Check if a value is a list of `Operation` objects. */
   isOperationList: (value: any) => value is Operation[];
-
   /** Check if a value is a `SelectionOperation` object. */
   isSelectionOperation: (value: any) => value is SelectionOperation;
-
   /** Check if a value is a `TextOperation` object. */
   isTextOperation: (value: any) => value is TextOperation;
 } = SlateOperation as any;
@@ -71,6 +66,14 @@ export type MoveNodeOperation = {
   type: 'move_node';
 };
 
+export type NodeOperation<N extends Descendant = Descendant> =
+  | InsertNodeOperation<N>
+  | MergeNodeOperation<N>
+  | MoveNodeOperation
+  | RemoveNodeOperation<N>
+  | SetNodeOperation<N>
+  | SplitNodeOperation<N>;
+
 export type RemoveNodeOperation<N extends Descendant = Descendant> = {
   [key: string]: unknown;
   node: N;
@@ -86,6 +89,8 @@ export type RemoveTextOperation = {
   type: 'remove_text';
 };
 
+export type SelectionOperation = SetSelectionOperation;
+
 export type SetNodeOperation<
   N1 extends Descendant = Descendant,
   N2 extends Descendant = Descendant,
@@ -100,6 +105,12 @@ export type SetNodeOperation<
 export type SetSelectionOperation =
   | {
       [key: string]: unknown;
+      newProperties: null;
+      properties: TRange;
+      type: 'set_selection';
+    }
+  | {
+      [key: string]: unknown;
       newProperties: Partial<TRange>;
       properties: Partial<TRange>;
       type: 'set_selection';
@@ -108,12 +119,6 @@ export type SetSelectionOperation =
       [key: string]: unknown;
       newProperties: TRange;
       properties: null;
-      type: 'set_selection';
-    }
-  | {
-      [key: string]: unknown;
-      newProperties: null;
-      properties: TRange;
       type: 'set_selection';
     };
 
@@ -124,15 +129,5 @@ export type SplitNodeOperation<N extends Descendant = Descendant> = {
   properties: Partial<NodeProps<N>>;
   type: 'split_node';
 };
-
-export type NodeOperation<N extends Descendant = Descendant> =
-  | InsertNodeOperation<N>
-  | MergeNodeOperation<N>
-  | MoveNodeOperation
-  | RemoveNodeOperation<N>
-  | SetNodeOperation<N>
-  | SplitNodeOperation<N>;
-
-export type SelectionOperation = SetSelectionOperation;
 
 export type TextOperation = InsertTextOperation | RemoveTextOperation;

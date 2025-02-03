@@ -1,9 +1,9 @@
-import pluginSecurity from 'eslint-plugin-security';
 import globals from 'globals';
 
 import { defineConfig } from '../utils.js';
 import perfectionistConfig from './perfectionist.js';
 import rtlConfig from './rtl.js';
+import securityConfig from './security.js';
 import typescriptConfig from './typescript.js';
 import unicornConfig from './unicorn.js';
 
@@ -32,6 +32,7 @@ export default defineConfig(
     ],
   },
 
+  ...securityConfig,
   ...typescriptConfig,
   ...rtlConfig,
   ...unicornConfig,
@@ -65,16 +66,6 @@ export default defineConfig(
 
     rules: {
       'no-empty': ['error', { allowEmptyCatch: true }],
-    },
-  },
-  // Security
-  pluginSecurity.configs.recommended,
-  {
-    rules: {
-      'security/detect-non-literal-fs-filename': 'off',
-      'security/detect-non-literal-regexp': 'off',
-      'security/detect-object-injection': 'off',
-      'security/detect-unsafe-regex': 'off',
     },
   }
 );

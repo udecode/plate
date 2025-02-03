@@ -20,9 +20,9 @@ import type { TextIn, TextOf } from './text';
 export type NodeEntry<N extends TNode = TNode> = [N, Path];
 
 /** Node entry from an editor. */
-export type NodeEntryOf<E extends Editor> = NodeEntry<NodeOf<E>>;
-
 export type NodeEntryIn<V extends Value> = NodeEntry<NodeIn<V>>;
+
+export type NodeEntryOf<E extends Editor> = NodeEntry<NodeOf<E>>;
 
 /**
  * `ElementEntry` objects refer to an `Element` and the `Path` where it can be
@@ -40,9 +40,9 @@ export type ElementEntryOf<E extends Editor> = NodeEntry<ElementOf<E>>;
 export type TextEntry<N extends TNode = TNode> = NodeEntry<TextOf<N>>;
 
 /** Text node entry of a value. */
-export type TextEntryOf<E extends Editor> = NodeEntry<TextOf<E>>;
-
 export type TextEntryIn<V extends Value> = NodeEntry<TextIn<V>>;
+
+export type TextEntryOf<E extends Editor> = NodeEntry<TextOf<E>>;
 
 /** Ancestor entry from a node. */
 export type AncestorEntry<N extends TNode = TNode> = NodeEntry<AncestorOf<N>>;
@@ -56,9 +56,9 @@ export type DescendantEntry<N extends TNode = TNode> = NodeEntry<
 >;
 
 /** Descendant entry of a value. */
-export type DescendantEntryOf<E extends Editor> = NodeEntry<DescendantOf<E>>;
-
 export type DescendantEntryIn<V extends Value> = NodeEntry<DescendantIn<V>>;
+
+export type DescendantEntryOf<E extends Editor> = NodeEntry<DescendantOf<E>>;
 
 /** Child node entry from a node. */
 export type NodeChildEntry<N extends TNode = TNode> = NodeEntry<ChildOf<N>>;

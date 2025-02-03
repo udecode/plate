@@ -5,6 +5,7 @@ import { defineConfig } from '../utils.js';
 export default defineConfig(eslintPluginUnicorn.configs['flat/recommended'], {
   rules: {
     'unicorn/consistent-destructuring': 'off',
+
     'unicorn/consistent-function-scoping': [
       'error',
       {
@@ -24,6 +25,7 @@ export default defineConfig(eslintPluginUnicorn.configs['flat/recommended'], {
     'unicorn/prefer-export-from': 'off',
     'unicorn/prefer-global-this': 'off',
     'unicorn/prefer-module': 'off',
+    'unicorn/prefer-regexp-test': 'off',
     // Spread syntax causes non-deterministic type errors
     'unicorn/prefer-spread': 'off',
     'unicorn/prefer-ternary': 'off',

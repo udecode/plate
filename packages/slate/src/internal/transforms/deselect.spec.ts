@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 import { createEditor } from '../../create-editor';
 import { deselectDOM } from '../dom-editor/deselectDOM';
 import { deselect } from './deselect';

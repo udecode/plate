@@ -18,6 +18,14 @@ export type TElement = {
 
 /** Element retrieval and check methods. */
 export const ElementApi: {
+  /** Check if a value implements the 'Ancestor' interface. */
+  isAncestor: <T extends Ancestor>(value: any) => value is T;
+  /** Check if a value implements the `TElement` interface. */
+  isElement: <T extends TElement>(value: any) => value is T;
+  /** Check if a value is an array of `TElement` objects. */
+  isElementList: <T extends TElement>(value: any) => value is T[];
+  /** Check if a set of props is a partial of TElement. */
+  isElementProps: <T extends TElement>(props: any) => props is Partial<T>;
   /**
    * Check if a value implements the `TElement` interface and has elementKey
    * with selected value. Default it check to `type` key value
@@ -27,19 +35,6 @@ export const ElementApi: {
     elementVal: string,
     elementKey?: string
   ) => value is T;
-
-  /** Check if a value implements the 'Ancestor' interface. */
-  isAncestor: <T extends Ancestor>(value: any) => value is T;
-
-  /** Check if a value implements the `TElement` interface. */
-  isElement: <T extends TElement>(value: any) => value is T;
-
-  /** Check if a value is an array of `TElement` objects. */
-  isElementList: <T extends TElement>(value: any) => value is T[];
-
-  /** Check if a set of props is a partial of TElement. */
-  isElementProps: <T extends TElement>(props: any) => props is Partial<T>;
-
   /**
    * Check if an element matches set of properties.
    *
@@ -59,9 +54,9 @@ export const ElementApi: {
 export type Element = TElement;
 
 /** Element or text of an editor. */
-export type ElementOrTextOf<E extends Editor> = ElementOf<E> | TextOf<E>;
-
 export type ElementOrTextIn<V extends Value> = ElementIn<V> | TextIn<V>;
+
+export type ElementOrTextOf<E extends Editor> = ElementOf<E> | TextOf<E>;
 
 /**
  * `ElementEntry` objects refer to an `Element` and the `Path` where it can be
@@ -70,6 +65,8 @@ export type ElementOrTextIn<V extends Value> = ElementIn<V> | TextIn<V>;
 // export type ElementEntry = [TElement, Path];
 
 /** A utility type to get all the element nodes type from a root node. */
+export type ElementIn<V extends Value> = ElementOf<V[number]>;
+
 export type ElementOf<N extends TNode> = Editor extends N
   ? TElement
   : TElement extends N
@@ -84,5 +81,3 @@ export type ElementOf<N extends TNode> = Editor extends N
             | Extract<N['children'][number], TElement>
             | N
         : never;
-
-export type ElementIn<V extends Value> = ElementOf<V[number]>;

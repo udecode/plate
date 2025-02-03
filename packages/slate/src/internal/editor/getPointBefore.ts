@@ -1,4 +1,3 @@
-/* eslint-disable no-constant-condition */
 import castArray from 'lodash/castArray.js';
 import map from 'lodash/map.js';
 import { before as beforeBase } from 'slate';

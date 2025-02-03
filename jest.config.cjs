@@ -17,7 +17,7 @@ const getTsConfigBasePaths = () => {
     : {};
 };
 
-const aliases = require(`${appRoot}/tooling/config/aliases`);
+const aliases = require(`${appRoot}/tooling/config/aliases.cjs`);
 
 const modules = {};
 
@@ -46,13 +46,13 @@ module.exports = {
   moduleDirectories: ['node_modules'],
   moduleFileExtensions: ['js', 'json', 'ts', 'tsx'],
   moduleNameMapper: {
-    '\\.(css|less|sass|scss)$': '<rootDir>/tooling/scripts/styleMock.cjs',
+    '\\.(css|less|sass|scss)$': '<rootDir>/tooling/config/styleMock.cjs',
     ...getTsConfigBasePaths(),
     ...modules,
   },
   modulePathIgnorePatterns: ['<rootDir>/packages/common/dist/'],
   preset: 'ts-jest',
-  setupFilesAfterEnv: ['<rootDir>/tooling/scripts/setupTests.ts'],
+  setupFilesAfterEnv: ['<rootDir>/tooling/config/setupTests.ts'],
   testEnvironment: 'jsdom',
   testPathIgnorePatterns: ['/playwright/', '/packages/cli/'],
   testRegex: '(test|spec).tsx?$',

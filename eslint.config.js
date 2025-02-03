@@ -8,7 +8,7 @@ export default defineConfig(
       '**/__registry__/*',
       'prisma/kysely',
       'src/lib/db/types',
-    '**/*.mdx',
+      '**/*.mdx',
     ],
   },
   ...configs.base,
@@ -45,7 +45,7 @@ export default defineConfig(
     // },
     // languageOptions: {
     //   globals: {
-        
+
     //   }
     // }
     files: filePatterns.test,
@@ -59,11 +59,5 @@ export default defineConfig(
       ],
       'react-hooks/rules-of-hooks': 'off',
     },
-  },
-  {
-    files: ['index.ts', '**/*.mdx'],
-    rules: {
-      'prettier/prettier': 'off',
-    },
-  },
+  }
 );
