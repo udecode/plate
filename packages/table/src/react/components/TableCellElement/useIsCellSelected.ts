@@ -1,9 +1,12 @@
 import type { TElement } from '@udecode/plate';
 
-import { useTableStore } from '../../stores';
+import { useEditorPlugin } from '@udecode/plate/react';
+
+import { TablePlugin } from '../../TablePlugin';
 
 export const useIsCellSelected = (element: TElement) => {
-  const selectedCells = useTableStore().useSelectedCellsValue();
+  const { useOption } = useEditorPlugin(TablePlugin);
+  const selectedCells = useOption('selectedCells');
 
   return !!selectedCells?.includes(element);
 };

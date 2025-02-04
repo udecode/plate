@@ -6,7 +6,7 @@ import { cn, withRef } from '@udecode/cn';
 import { useDraggable } from '@udecode/plate-dnd';
 import { Image, ImagePlugin, useMediaState } from '@udecode/plate-media/react';
 import { ResizableProvider, useResizableStore } from '@udecode/plate-resizable';
-import { withHOC } from '@udecode/plate/react';
+import { useStoreValue, withHOC } from '@udecode/plate/react';
 
 import { Caption, CaptionTextarea } from './caption';
 import { MediaPopover } from './media-popover';
@@ -23,7 +23,7 @@ export const ImageElement = withHOC(
     ({ children, className, nodeProps, ...props }, ref) => {
       const { align = 'center', focused, readOnly, selected } = useMediaState();
 
-      const width = useResizableStore().useWidthValue();
+      const width = useStoreValue(useResizableStore(), 'width');
 
       const { isDragging, handleRef } = useDraggable({
         element: props.element,

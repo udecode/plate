@@ -5,6 +5,8 @@ import {
   useFocused,
   useReadOnly,
   useSelected,
+  useStoreSet,
+  useStoreValue,
 } from '@udecode/plate/react';
 
 import { type TPlaceholderElement, BasePlaceholderPlugin } from '../../../lib';
@@ -24,11 +26,12 @@ export const usePlaceholderPopoverState = () => {
   const element = useElement<TPlaceholderElement>(BasePlaceholderPlugin.key);
   const { id, mediaType } = element;
 
-  const setProgresses = usePlaceholderStore().useSetProgresses();
-  const setIsUploading = usePlaceholderStore().useSetIsUploading();
-  const setUpdatedFiles = usePlaceholderStore().useSetUpdatedFiles();
+  const store = usePlaceholderStore();
+  const setProgresses = useStoreSet(store, 'progresses');
+  const setIsUploading = useStoreSet(store, 'isUploading');
+  const setUpdatedFiles = useStoreSet(store, 'updatedFiles');
 
-  const size = usePlaceholderStore().useSizeValue();
+  const size = useStoreValue(store, 'size');
 
   return {
     id,

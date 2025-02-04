@@ -1,9 +1,14 @@
 import React from 'react';
 
-import { useEditorRef, useReadOnly, useSelected } from '@udecode/plate/react';
+import {
+  useEditorPlugin,
+  useEditorRef,
+  useReadOnly,
+  useSelected,
+} from '@udecode/plate/react';
 
 import { getTableGridAbove } from '../../../lib';
-import { useTableStore } from '../../stores';
+import { TablePlugin } from '../../TablePlugin';
 
 /**
  * Many grid cells above and diff -> set No many grid cells above and diff ->
@@ -14,16 +19,15 @@ export const useSelectedCells = () => {
   const selected = useSelected();
   const editor = useEditorRef();
 
-  const [selectedCells, setSelectedCells] =
-    useTableStore().useSelectedCellsState();
-  const setSelectedTables = useTableStore().useSetSelectedTables();
+  const { setOption, useOption } = useEditorPlugin(TablePlugin);
+  const selectedCells = useOption('selectedCells');
 
   React.useEffect(() => {
     if (!selected || readOnly) {
-      setSelectedCells(null);
-      setSelectedTables(null);
+      setOption('selectedCells', null);
+      setOption('selectedTables', null);
     }
-  }, [selected, editor, setSelectedCells, readOnly, setSelectedTables]);
+  }, [selected, editor, readOnly, setOption]);
 
   React.useEffect(() => {
     if (readOnly) return;
@@ -36,19 +40,12 @@ export const useSelectedCells = () => {
       const tables = tableEntries.map((entry) => entry[0]);
 
       if (JSON.stringify(cells) !== JSON.stringify(selectedCells)) {
-        setSelectedCells(cells);
-        setSelectedTables(tables);
+        setOption('selectedCells', cells);
+        setOption('selectedTables', tables);
       }
     } else if (selectedCells) {
-      setSelectedCells(null);
-      setSelectedTables(null);
+      setOption('selectedCells', null);
+      setOption('selectedTables', null);
     }
-  }, [
-    editor,
-    editor.selection,
-    readOnly,
-    selectedCells,
-    setSelectedCells,
-    setSelectedTables,
-  ]);
+  }, [editor, editor.selection, readOnly, selectedCells, setOption]);
 };

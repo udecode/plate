@@ -1,6 +1,11 @@
 import React from 'react';
 
-import { useEditorRef, useElement, usePath } from '@udecode/plate/react';
+import {
+  useEditorRef,
+  useElement,
+  usePath,
+  useStoreState,
+} from '@udecode/plate/react';
 
 import type { ResizeEvent, ResizeLength } from '../types';
 import type { TResizableElement } from './TResizableElement';
@@ -30,7 +35,7 @@ export const useResizableState = ({
 
   const nodeWidth = element?.width ?? '100%';
 
-  const [width, setWidth] = useResizableStore().useWidthState();
+  const [width, setWidth] = useStoreState(useResizableStore(), 'width');
 
   const setNodeWidth = React.useCallback(
     (w: number) => {

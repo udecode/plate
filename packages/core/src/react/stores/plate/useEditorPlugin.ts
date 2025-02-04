@@ -7,7 +7,7 @@ import {
   type PlatePluginContext,
   getEditorPlugin,
 } from '../../plugin';
-import { useEditorRef } from './createPlateStore';
+import { type PlateStore, useEditorRef } from './createPlateStore';
 
 /** Get editor and plugin context. */
 export function useEditorPlugin<
@@ -16,8 +16,13 @@ export function useEditorPlugin<
 >(
   p: WithRequiredKey<P>,
   id?: string
-): PlatePluginContext<InferConfig<P> extends never ? P : InferConfig<P>, E> {
+): PlatePluginContext<InferConfig<P> extends never ? P : InferConfig<P>, E> & {
+  store: PlateStore;
+} {
   const editor = useEditorRef(id);
 
-  return getEditorPlugin(editor, p) as any;
+  return {
+    ...getEditorPlugin(editor, p),
+    store: editor.store,
+  } as any;
 }

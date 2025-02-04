@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { createPrimitiveComponent } from '@udecode/plate/react';
+import { createPrimitiveComponent, useStoreSet } from '@udecode/plate/react';
 
 import {
   useCommentStore,
@@ -8,7 +8,7 @@ import {
 } from '../stores/comment/CommentProvider';
 
 export const useCommentEditTextareaState = () => {
-  const setEditingValue = useCommentStore().useSetEditingValue();
+  const setEditingValue = useStoreSet(useCommentStore(), 'editingValue');
   const value = useEditingCommentText();
 
   const textareaRef = React.useRef<HTMLTextAreaElement | null>(null);

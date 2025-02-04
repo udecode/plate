@@ -1,5 +1,9 @@
 import { type Value, NodeApi } from '@udecode/plate';
-import { createAtomStore, useEditorPlugin } from '@udecode/plate/react';
+import {
+  createAtomStore,
+  useEditorPlugin,
+  useStoreValue,
+} from '@udecode/plate/react';
 
 import type { CommentUser, TComment } from '../../../lib/types';
 
@@ -74,7 +78,7 @@ export const useCommentText = (scope?: string) => {
 };
 
 export const useEditingCommentText = () => {
-  const editingValue = useCommentStore().useEditingValueValue();
+  const editingValue = useStoreValue(useCommentStore(), 'editingValue');
 
   if (!editingValue) return null;
 

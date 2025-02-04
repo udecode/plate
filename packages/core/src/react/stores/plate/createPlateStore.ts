@@ -5,12 +5,14 @@ import { atom } from 'jotai';
 import type { PlateEditor } from '../../editor/PlateEditor';
 import type { PlateChangeKey, PlateStoreState } from './PlateStore';
 
-import { createAtomStore } from '../../libs';
+import { createAtomStore, useStoreValue } from '../../libs';
 import { createPlateFallbackEditor } from '../../utils';
 import {
   usePlateControllerExists,
   usePlateControllerStore,
 } from '../plate-controller';
+
+export type PlateStore = ReturnType<typeof usePlateStore>;
 
 export const PLATE_SCOPE = 'plate';
 
@@ -129,14 +131,15 @@ export const usePlateStore = (id?: string) => {
 // ─── Selectors ───────────────────────────────────────────────────────────────
 
 /** Get the closest `Plate` id. */
-export const useEditorId = (): string => usePlateStore().useEditorValue().id;
+export const useEditorId = (): string =>
+  useStoreValue(usePlateStore(), 'editor').id;
 
 export const useEditorContainerRef = (id?: string) => {
-  return usePlateStore(id).useContainerRefValue();
+  return useStoreValue(usePlateStore(id), 'containerRef');
 };
 
 export const useEditorScrollRef = (id?: string) => {
-  return usePlateStore(id).useScrollRefValue();
+  return useStoreValue(usePlateStore(id), 'scrollRef');
 };
 
 /** Returns the scrollRef if it exists, otherwise returns the containerRef. */
@@ -148,7 +151,7 @@ export const useScrollRef = (id?: string) => {
 };
 
 export const useEditorMounted = (id?: string): boolean => {
-  return !!usePlateStore(id).useIsMountedValue();
+  return !!useStoreValue(usePlateStore(id), 'isMounted');
 };
 
 /**
@@ -156,16 +159,29 @@ export const useEditorMounted = (id?: string): boolean => {
  * `slate-react` in node components.
  */
 export const useEditorReadOnly = (id?: string): boolean => {
-  return !!usePlateStore(id).useReadOnlyValue();
+  return !!useStoreValue(usePlateStore(id), 'readOnly');
 };
 
-/** Get editor ref which is never updated. */
+/**
+ * Get a reference to the editor instance that remains stable across re-renders.
+ * The editor object is enhanced with a `store` property that provides access to
+ * the Plate store.
+ *
+ * @example
+ *   ```tsx
+ *   const editor = useEditorRef();
+ *   const readOnly = useStoreValue(editor.store, 'readOnly');
+ */
 export const useEditorRef = <E extends PlateEditor = PlateEditor>(
   id?: string
-): E => {
-  return (
-    (usePlateStore(id).useEditorValue() as E) ?? createPlateFallbackEditor()
-  );
+): E & { store: PlateStore } => {
+  const store = usePlateStore(id);
+  const editor: any =
+    (useStoreValue(store, 'editor') as E) ?? createPlateFallbackEditor();
+
+  editor.store = store;
+
+  return editor;
 };
 
 /** Get the editor selection (deeply memoized). */
@@ -181,12 +197,12 @@ export const useEditorState = <E extends PlateEditor = PlateEditor>(
 
 /** Version incremented on each editor change. */
 export const useEditorVersion = (id?: string) => {
-  return usePlateStore(id).useVersionValueValue();
+  return useStoreValue(usePlateStore(id), 'versionEditor');
 };
 
 /** Version incremented on selection change. */
 export const useSelectionVersion = (id?: string) => {
-  return usePlateStore(id).useVersionSelectionValue();
+  return useStoreValue(usePlateStore(id), 'versionSelection');
 };
 
 /** Get the editor value (deeply memoized). */
@@ -195,7 +211,7 @@ export const useEditorValue = (id?: string) =>
 
 /** Version incremented on value change. */
 export const useValueVersion = (id?: string) => {
-  return usePlateStore(id).useVersionValueValue();
+  return useStoreValue(usePlateStore(id), 'versionValue');
 };
 
 // ─── Actions ─────────────────────────────────────────────────────────────────

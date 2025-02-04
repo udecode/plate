@@ -7,6 +7,7 @@ import {
   type PlateRenderElementProps,
   omitPluginContext,
   usePlateStore,
+  useStoreValue,
 } from '@udecode/plate-core/react';
 import { type BoxProps, Box, useComposedRef } from '@udecode/react-utils';
 import { clsx } from 'clsx';
@@ -29,7 +30,7 @@ export const usePlateElement = (props: PlateElementProps) => {
     path,
     ...rootProps
   } = omitPluginContext(props);
-  const mounted = usePlateStore().useIsMountedValue();
+  const mounted = useStoreValue(usePlateStore(), 'isMounted');
 
   const block = React.useMemo(
     () => mounted && !!element.id && props.editor.api.isBlock(element),

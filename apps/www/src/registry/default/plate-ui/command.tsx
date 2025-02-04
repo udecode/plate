@@ -15,7 +15,12 @@ import {
 import { cva } from 'class-variance-authority';
 import { Search } from 'lucide-react';
 
-import { Dialog, DialogContent, DialogTitle } from './dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from './dialog';
 import { inputVariants } from './input';
 
 const commandVariants = cva(
@@ -42,6 +47,9 @@ export function CommandDialog({ children, ...props }: DialogProps) {
     <Dialog {...props}>
       <DialogContent className="overflow-hidden p-0 shadow-lg">
         <DialogTitle className="sr-only">Command Dialog</DialogTitle>
+        <DialogDescription className="sr-only">
+          Search through commands and documentation using the command menu
+        </DialogDescription>
         <Command className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group]]:px-2 [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-input-wrapper]_svg]:size-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:size-5">
           {children}
         </Command>

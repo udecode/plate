@@ -1,9 +1,9 @@
 import React from 'react';
 
-import type { JotaiStore } from 'jotai-x';
 import type { WritableAtom } from 'jotai/vanilla/atom';
 
 import { focusAtom } from 'jotai-optics';
+import { type JotaiStore, useStoreSet, useStoreValue } from 'jotai-x';
 
 import { useFocused } from '../slate-react';
 import {
@@ -39,12 +39,14 @@ export const PlateControllerEffect = ({
     usePlateControllerLocalStore().setAtom(currentStoreAtom);
   const store = usePlateStore(id);
 
-  const primary = usePlateStore(id).usePrimaryValue();
-  const setPrimaryEditorIds =
-    usePlateControllerLocalStore().useSetPrimaryEditorIds();
+  const primary = useStoreValue(store, 'primary');
+  const setPrimaryEditorIds = useStoreSet(
+    usePlateControllerLocalStore(),
+    'primaryEditorIds'
+  );
 
   const focused = useFocused();
-  const setActiveId = usePlateControllerLocalStore().useSetActiveId();
+  const setActiveId = useStoreSet(usePlateControllerLocalStore(), 'activeId');
 
   React.useEffect(() => {
     setCurrentStore((store as any) ?? null);

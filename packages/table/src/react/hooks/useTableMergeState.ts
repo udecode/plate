@@ -3,7 +3,6 @@ import {
   useEditorPlugin,
   useEditorSelector,
   useReadOnly,
-  useSelected,
 } from '@udecode/plate/react';
 
 import {
@@ -11,25 +10,27 @@ import {
   getTableGridAbove,
   isTableRectangular,
 } from '../../lib';
-import { useTableStore } from '../stores';
 import { TablePlugin } from '../TablePlugin';
 
 export const useTableMergeState = () => {
-  const { api, getOptions } = useEditorPlugin(TablePlugin);
+  const { api, getOptions, useOption } = useEditorPlugin(TablePlugin);
 
   const { disableMerge } = getOptions();
 
   if (disableMerge) return { canMerge: false, canSplit: false };
 
   const readOnly = useReadOnly();
-  const selected = useSelected();
+  const someTable = useEditorSelector(
+    (editor) => editor.api.some({ match: { type: TablePlugin.key } }),
+    []
+  );
   const selectionExpanded = useEditorSelector(
     (editor) => editor.api.isExpanded(),
     []
   );
 
-  const collapsed = !readOnly && selected && !selectionExpanded;
-  const selectedTables = useTableStore().useSelectedTablesValue();
+  const collapsed = !readOnly && someTable && !selectionExpanded;
+  const selectedTables = useOption('selectedTables');
   const selectedTable = selectedTables?.[0];
 
   const selectedCellEntries = useEditorSelector(
@@ -44,7 +45,7 @@ export const useTableMergeState = () => {
 
   const canMerge =
     !readOnly &&
-    selected &&
+    someTable &&
     selectionExpanded &&
     selectedCellEntries.length > 1 &&
     isTableRectangular(selectedTable);

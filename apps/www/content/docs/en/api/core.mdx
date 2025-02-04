@@ -219,6 +219,9 @@ Get editor and plugin context.
   <APIItem name="setOptions" type="function">
       Function to set multiple options.
   </APIItem>
+  <APIItem name="store" type="PlateStore">
+      The Plate store for the editor.
+  </APIItem>
   <APIItem name="useOption" type="function">
       Hook to subscribe to a specific option value in a React component.
   </APIItem>
@@ -227,17 +230,17 @@ Get editor and plugin context.
 
 ### `useEditorRef`
 
-Get the Slate editor reference without re-rendering.
+Get the Slate editor reference without re-rendering. The returned editor object is enhanced with a `store` property that provides access to the Plate store.
 
 <API name="useEditorRef">
 <APIParameters>
   <APIItem name="id" type="string" optional>
-    The ID of the plate editor. Useful only when nesting editors. Default is using the closest editor id.
+    Editor ID used for accessing nested editors. When not provided, returns the closest editor instance in the React tree. Only use this parameter when working with nested editors to target a specific scope.
   </APIItem>
 </APIParameters>
 
-<APIReturns type="PlateEditor">
-  The editor reference.
+<APIReturns type="PlateEditor & { store: PlateStore }">
+  The editor reference with attached store.
 </APIReturns>
 </API>
 

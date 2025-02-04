@@ -4,6 +4,7 @@ import type { Value } from '@udecode/slate';
 
 import { render } from '@testing-library/react';
 import { renderHook } from '@testing-library/react';
+import { useStoreValue } from 'jotai-x';
 import isEqual from 'lodash/isEqual';
 import memoize from 'lodash/memoize';
 
@@ -277,8 +278,9 @@ describe('Plate', () => {
       renderHook(() => usePlateStore(), { wrapper }).result.current;
 
     const getId = (wrapper: any) =>
-      renderHook(() => usePlateStore().useEditorValue().id, { wrapper }).result
-        .current;
+      renderHook(() => useStoreValue(usePlateStore(), 'editor').id, {
+        wrapper,
+      }).result.current;
 
     const getIsFallback = (wrapper: any) =>
       renderHook(() => useEditorRef().isFallback, { wrapper }).result.current;

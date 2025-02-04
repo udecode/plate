@@ -5,11 +5,6 @@ description: API reference for Plate store.
 
 `Plate` is using [jotai-x](https://github.com/udecode/jotai-x) to store the state of the editor.
 
-<Callout className="my-4">
-  **Note**: To use the store hooks in a component, it needs to be rendered
-  inside `Plate`.
-</Callout>
-
 ## Plate Store
 
 <API name="Store">
@@ -104,38 +99,60 @@ Version incremented on each editor.children change.
 </APIState>
 </API>
 
-## useAtom
+## Accessing the Store
 
-Use `usePlateStore(id).use<Name>State()` when you need both the value and the setter of a store property.
+There are three equivalent ways to access the Plate store:
 
-- **Example:** `const [count, setCount] = usePlateStore(id).useCountState()`
+### 1. Using `usePlateStore`
+
+Direct access to the store:
+
+```ts
+const store = usePlateStore(id); // id is optional, defaults to closest editor
+```
+
+### 2. Using `useEditorRef`
+
+Access store through the editor reference:
+
+```ts
+const editor = useEditorRef();
+const readOnly = useStoreValue(editor.store, 'readOnly');
+```
+
+### 3. Using `useEditorPlugin`
+
+Access store through plugin context:
+
+```ts
+const { editor, store } = useEditorPlugin(myPlugin);
+const readOnly = useStoreValue(store, 'readOnly');
+```
+
+## Store Hooks
+
+The following hooks are exported by `@udecode/plate/react`.
+
+### useStoreState
+
+Use `useStoreState(editor.store, '<name>')` when you need both the value and the setter of a store property.
+
+- **Example:** `const [count, setCount] = useStoreState(editor.store, 'count')`
 - It's using [useAtom](https://jotai.org/docs/basics/primitives#use-atom) under the hood.
 
-## useAtomValue
+### useStoreValue
 
-Use `usePlateStore(id).use<Name>Value()` when you need to subscribe to a value.
+Use `useStoreValue(editor.store, '<name>')` when you need to subscribe to a value.
 
-- **Example:** `const count = usePlateStore(id).useCountValue()` will subscribe to `count` changes.
+- **Example:** `const count = useStoreValue(editor.store, 'count')` will subscribe to `count` changes.
 - It's using [useAtomValue](https://jotai.org/docs/utils/use-atom-value) under the hood.
 
-## useSetAtom
+### useStoreSet
 
-Use `usePlateStore(id).useSetAtom<Name>()` when you only need to set a value.
+Use `useStoreSet(editor.store, '<name>')` when you only need to set a value.
 
-- **Example:** `const setCount = usePlateStore(id).useSetCount()`
+- **Example:** `const setCount = useStoreSet(editor.store, 'count')`
 - It's using [useSetAtom](https://jotai.org/docs/utils/use-set-atom) under the hood.
-
-### `useRedecorate`
-
-Redecorate the editor.
-
-<API name="useRedecorate">
-<APIParameters>
-  <APIItem name="id" type="string" optional>
-    Editor ID.
-  </APIItem>
-</APIParameters>
-</API>
 
 ## Event Editor Store
 

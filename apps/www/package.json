@@ -185,7 +185,6 @@
     "shiki": "^1.10.1",
     "tailwind-scrollbar-hide": "2.0.0",
     "tailwindcss": "4.0.3",
-    "tailwindcss-animate": "1.0.7",
     "ts-node": "10.9.2",
     "tsx": "4.19.2",
     "typescript": "5.7.3",

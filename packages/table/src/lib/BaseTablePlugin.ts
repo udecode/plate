@@ -3,6 +3,7 @@ import {
   type HtmlDeserializer,
   type OmitFirst,
   type PluginConfig,
+  type TElement,
   bindFirst,
   createSlatePlugin,
   createTSlatePlugin,
@@ -106,6 +107,10 @@ export type TableConfig = PluginConfig<
   {
     /** @private Keeps Track of cell indices by id. */
     _cellIndices: Record<string, { col: number; row: number }>;
+    /** The currently selected cells. */
+    selectedCells: TElement[] | null;
+    /** The currently selected tables. */
+    selectedTables: TElement[] | null;
     /** Disable expanding the table when inserting cells. */
     disableExpandOnInsert?: boolean;
     // Disable first column left resizer.
@@ -187,6 +192,8 @@ export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
     _cellIndices: {},
     disableMerge: false,
     minColumnWidth: 48,
+    selectedCells: null as TElement[] | null,
+    selectedTables: null as TElement[] | null,
   },
   parsers: {
     html: {
