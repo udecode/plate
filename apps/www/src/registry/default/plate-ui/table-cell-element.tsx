@@ -127,7 +127,7 @@ export const TableCellElement = withRef<
                   className={cn(
                     'absolute top-0 z-30 h-full w-1 bg-ring',
                     'left-[-1.5px]',
-                    'hidden animate-in fade-in group-has-[[data-resizer-left]:hover]/table:block group-has-[[data-resizer-left][data-resizing="true"]]/table:block'
+                    'fade-in hidden animate-in group-has-[[data-resizer-left]:hover]/table:block group-has-[[data-resizer-left][data-resizing="true"]]/table:block'
                   )}
                 />
               )}
@@ -147,7 +147,7 @@ export const TableCellHeaderElement = withProps(TableCellElement, {
   isHeader: true,
 });
 
-const columnResizeVariants = cva('hidden animate-in fade-in', {
+const columnResizeVariants = cva('fade-in hidden animate-in', {
   variants: {
     colIndex: {
       0: 'group-has-[[data-col="0"]:hover]/table:block group-has-[[data-col="0"][data-resizing="true"]]/table:block',
