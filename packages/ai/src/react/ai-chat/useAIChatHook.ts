@@ -1,5 +1,5 @@
 import { useEditorPlugin } from '@udecode/plate/react';
-import { deserializeInlineMd } from '@udecode/plate-markdown';
+import { deserializeMd } from '@udecode/plate-markdown';
 
 import type { AIPluginConfig } from '../ai/AIPlugin';
 import type { AIChatPluginConfig } from './AIChatPlugin';
@@ -34,7 +34,7 @@ export const useAIChatHooks = () => {
       editor.undo();
       editor.history.redos.pop();
 
-      const nodes = deserializeInlineMd(editor, content);
+      const nodes = deserializeMd(editor, content);
 
       withAIBatch(
         editor,
