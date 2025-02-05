@@ -1,15 +1,15 @@
-import { eventEditorSelectors } from './EventEditorStore';
+import { EventEditorStore } from './EventEditorStore';
 
 export const getEventPlateId = (id?: string) => {
   if (id) return id;
 
-  const focus = eventEditorSelectors.focus();
+  const focus = EventEditorStore.get('focus');
 
   if (focus) return focus;
 
-  const blur = eventEditorSelectors.blur();
+  const blur = EventEditorStore.get('blur');
 
   if (blur) return blur;
 
-  return eventEditorSelectors.last() ?? 'plate';
+  return EventEditorStore.get('last') ?? 'plate';
 };

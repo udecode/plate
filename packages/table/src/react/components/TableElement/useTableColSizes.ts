@@ -1,8 +1,8 @@
 import { PathApi } from '@udecode/plate';
-import { useElementSelector, useStoreValue } from '@udecode/plate/react';
+import { useElementSelector } from '@udecode/plate/react';
 
 import { getTableOverriddenColSizes } from '../../../lib';
-import { useTableStore } from '../../stores';
+import { useTableValue } from '../../stores';
 import { TablePlugin } from '../../TablePlugin';
 
 /**
@@ -16,7 +16,7 @@ export const useTableColSizes = ({
   disableOverrides?: boolean;
   transformColSizes?: (colSizes: number[]) => number[];
 } = {}): number[] => {
-  const colSizeOverrides = useStoreValue(useTableStore(), 'colSizeOverrides');
+  const colSizeOverrides = useTableValue('colSizeOverrides');
 
   const overriddenColSizes = useElementSelector(
     ([tableNode]) => {

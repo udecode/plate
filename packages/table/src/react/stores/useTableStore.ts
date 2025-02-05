@@ -1,10 +1,17 @@
 import React from 'react';
 
-import { atom, createAtomStore, useStoreSet } from '@udecode/plate/react';
+import { atom, createAtomStore } from '@udecode/plate/react';
 
 import type { TableStoreSizeOverrides } from '../../lib';
 
-export const { TableProvider, tableStore, useTableStore } = createAtomStore(
+export const {
+  TableProvider,
+  tableStore,
+  useTableSet,
+  useTableState,
+  useTableStore,
+  useTableValue,
+} = createAtomStore(
   {
     colSizeOverrides: atom(new Map() as TableStoreSizeOverrides),
     marginLeftOverride: null as number | null,
@@ -36,16 +43,15 @@ const useOverrideSizeFactory = (
   );
 
 export const useOverrideColSize = () => {
-  const setColSizeOverrides = useStoreSet(useTableStore(), 'colSizeOverrides');
+  const setColSizeOverrides = useTableSet('colSizeOverrides');
 
   return useOverrideSizeFactory(setColSizeOverrides);
 };
 
 export const useOverrideRowSize = () => {
-  const setRowSizeOverrides = useStoreSet(useTableStore(), 'rowSizeOverrides');
+  const setRowSizeOverrides = useTableSet('rowSizeOverrides');
 
   return useOverrideSizeFactory(setRowSizeOverrides);
 };
 
-export const useOverrideMarginLeft = () =>
-  useStoreSet(useTableStore(), 'marginLeftOverride');
+export const useOverrideMarginLeft = () => useTableSet('marginLeftOverride');

@@ -7,7 +7,7 @@ import { Paintbrush } from 'lucide-react';
 import { THEME_LIST } from '@/lib/themes';
 import { Button } from '@/registry/default/plate-ui/button';
 
-import { settingsStore } from './context/settings-store';
+import { SettingsStore } from './context/settings-store';
 import { ThemesSwitcher } from './themes-selector-mini';
 
 export function ThemesButton() {
@@ -25,8 +25,8 @@ export function ThemesButton() {
         variant="outline"
         className="hidden h-9 md:flex"
         onClick={() => {
-          settingsStore.set.customizerTab('themes');
-          settingsStore.set.showSettings(true);
+          SettingsStore.set('customizerTab', 'themes');
+          SettingsStore.set('showSettings', true);
         }}
       >
         <Paintbrush />

@@ -4,12 +4,10 @@ import {
   useFocused,
   useReadOnly,
   useSelected,
-  useStoreSet,
-  useStoreValue,
 } from '@udecode/plate/react';
 
 import { type TPlaceholderElement, BasePlaceholderPlugin } from '../../../lib';
-import { usePlaceholderStore } from '../placeholderStore';
+import { usePlaceholderSet, usePlaceholderValue } from '../placeholderStore';
 
 export const usePlaceholderElementState = () => {
   const element = useElement();
@@ -18,11 +16,10 @@ export const usePlaceholderElementState = () => {
   const readOnly = useReadOnly();
   const selected = useSelected();
 
-  const store = usePlaceholderStore();
-  const progresses = useStoreValue(store, 'progresses');
-  const isUploading = useStoreValue(store, 'isUploading');
-  const updatedFiles = useStoreValue(store, 'updatedFiles');
-  const setSize = useStoreSet(store, 'size');
+  const progresses = usePlaceholderValue('progresses');
+  const isUploading = usePlaceholderValue('isUploading');
+  const updatedFiles = usePlaceholderValue('updatedFiles');
+  const setSize = usePlaceholderSet('size');
 
   const { mediaType } = useElement<TPlaceholderElement>(
     BasePlaceholderPlugin.key

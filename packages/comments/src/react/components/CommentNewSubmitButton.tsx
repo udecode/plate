@@ -12,7 +12,9 @@ import {
   useComment,
 } from '../stores/comment/CommentProvider';
 
-export const useCommentNewSubmitButtonState = () => {
+export const useCommentNewSubmitButton = () => {
+  const editor = useEditorRef();
+
   const { api, getOptions, useOption } = useEditorPlugin(CommentsPlugin);
   const newText = useOption('newText');
 
@@ -21,26 +23,6 @@ export const useCommentNewSubmitButtonState = () => {
   const isReplyComment = !!comment;
 
   const submitButtonText = isReplyComment ? 'Reply' : 'Comment';
-
-  return {
-    api,
-    comment,
-    getOptions,
-    isReplyComment,
-    newText,
-    submitButtonText,
-  };
-};
-
-export const useCommentNewSubmitButton = ({
-  api,
-  comment,
-  getOptions,
-  isReplyComment,
-  newText,
-  submitButtonText,
-}: ReturnType<typeof useCommentNewSubmitButtonState>) => {
-  const editor = useEditorRef();
 
   return {
     props: {
@@ -74,5 +56,4 @@ export const useCommentNewSubmitButton = ({
 
 export const CommentNewSubmitButton = createPrimitiveComponent('button')({
   propsHook: useCommentNewSubmitButton,
-  stateHook: useCommentNewSubmitButtonState,
 });

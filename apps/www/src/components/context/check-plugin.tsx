@@ -1,8 +1,8 @@
 import type { WithRequiredKey } from '@udecode/plate-core';
 
-import { useEditorRef } from '@udecode/plate/react';
+import { useEditorRef, useStoreValue } from '@udecode/plate/react';
 
-import { settingsStore } from './settings-store';
+import { SettingsStore } from './settings-store';
 
 export const CheckPlugin = ({
   // id,
@@ -16,7 +16,11 @@ export const CheckPlugin = ({
   plugin?: WithRequiredKey;
 }) => {
   const editor = useEditorRef();
-  const enabledComponent = settingsStore.use.checkedComponentId(componentId);
+  const enabledComponent = useStoreValue(
+    SettingsStore,
+    'checkedComponentId',
+    componentId
+  );
 
   let isEnabled = true;
 

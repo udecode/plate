@@ -3,6 +3,8 @@ import React from 'react';
 import type { Editor, TSelection, Value } from '@udecode/slate';
 import type { UnknownObject } from '@udecode/utils';
 
+import { useStoreValue } from 'jotai-x';
+
 import { useEditorRef, usePlateStore } from '../stores';
 import { pipeOnChange } from '../utils/pipeOnChange';
 
@@ -23,9 +25,9 @@ export const useSlateProps = ({
 }): Omit<SlateProps, 'children'> => {
   const editor = useEditorRef(id);
   const store = usePlateStore(id);
-  const onChangeProp = store.useOnChangeValue();
-  const onValueChangeProp = store.useOnValueChangeValue();
-  const onSelectionChangeProp = store.useOnSelectionChangeValue();
+  const onChangeProp = useStoreValue(store, 'onChange');
+  const onValueChangeProp = useStoreValue(store, 'onValueChange');
+  const onSelectionChangeProp = useStoreValue(store, 'onSelectionChange');
 
   const onChange = React.useCallback(
     (newValue: Value) => {

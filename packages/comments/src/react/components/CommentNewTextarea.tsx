@@ -7,7 +7,7 @@ import {
 
 import { CommentsPlugin } from '../CommentsPlugin';
 
-export const useCommentNewTextareaState = () => {
+export const useCommentNewTextarea = () => {
   const { setOption, useOption } = useEditorPlugin(CommentsPlugin);
 
   const activeComment = useOption('activeComment');
@@ -26,20 +26,6 @@ export const useCommentNewTextareaState = () => {
   const placeholder = `${activeComment ? 'Reply...' : 'Add a comment...'}`;
 
   return {
-    placeholder,
-    setOption,
-    textareaRef,
-    value,
-  };
-};
-
-export const useCommentNewTextarea = ({
-  placeholder,
-  setOption,
-  textareaRef,
-  value,
-}: ReturnType<typeof useCommentNewTextareaState>) => {
-  return {
     props: {
       placeholder,
       ref: textareaRef,
@@ -56,5 +42,4 @@ export const useCommentNewTextarea = ({
 
 export const CommentNewTextarea = createPrimitiveComponent('textarea')({
   propsHook: useCommentNewTextarea,
-  stateHook: useCommentNewTextareaState,
 });

@@ -1,11 +1,12 @@
 import React from 'react';
 
 import { atom } from 'jotai';
+import { useStoreSet, useStoreState, useStoreValue } from 'jotai-x';
 
 import type { PlateEditor } from '../../editor/PlateEditor';
 import type { PlateChangeKey, PlateStoreState } from './PlateStore';
 
-import { createAtomStore, useStoreValue } from '../../libs';
+import { createAtomStore } from '../../libs';
 import { createPlateFallbackEditor } from '../../utils';
 import {
   usePlateControllerExists,
@@ -77,11 +78,16 @@ export const createPlateStore = <E extends PlateEditor = PlateEditor>({
     }
   );
 
-export const {
+const {
   PlateProvider: PlateStoreProvider,
   plateStore,
+  usePlateSet: usePlateLocalSet,
+  usePlateState: usePlateLocalState,
   usePlateStore: usePlateLocalStore,
+  usePlateValue: usePlateLocalValue,
 } = createPlateStore();
+
+export { plateStore, PlateStoreProvider, usePlateLocalStore };
 
 export const usePlateStore = (id?: string) => {
   // Try to fetch the store from a Plate provider
@@ -127,6 +133,30 @@ export const usePlateStore = (id?: string) => {
   }
   return store;
 };
+
+export const usePlateSet: typeof usePlateLocalSet = (key, options) => {
+  const store = usePlateStore(
+    typeof options === 'string' ? options : options?.scope
+  );
+
+  return useStoreSet(store, key);
+};
+
+export const usePlateValue = ((key, options) => {
+  const store = usePlateStore(
+    typeof options === 'string' ? options : options?.scope
+  );
+
+  return useStoreValue(store, key);
+}) as typeof usePlateLocalValue;
+
+export const usePlateState = ((key, options) => {
+  const store = usePlateStore(
+    typeof options === 'string' ? options : options?.scope
+  );
+
+  return useStoreState(store, key);
+}) as typeof usePlateLocalState;
 
 // ─── Selectors ───────────────────────────────────────────────────────────────
 
@@ -221,9 +251,9 @@ export const useIncrementVersion = (key: PlateChangeKey, id?: string) => {
 
   const store = usePlateStore(id);
 
-  const setVersionDecorate = store.useSetVersionDecorate();
-  const setVersionSelection = store.useSetVersionSelection();
-  const setVersionValue = store.useSetVersionEditor();
+  const setVersionDecorate = useStoreSet(store, 'versionDecorate');
+  const setVersionSelection = useStoreSet(store, 'versionSelection');
+  const setVersionValue = useStoreSet(store, 'versionValue');
 
   return React.useCallback(() => {
     const nextVersion = previousVersionRef.current + 1;

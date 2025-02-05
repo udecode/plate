@@ -1,15 +1,11 @@
 import React from 'react';
 
-import {
-  useEditorPlugin,
-  useElement,
-  useStoreValue,
-} from '@udecode/plate/react';
+import { useEditorPlugin, useElement } from '@udecode/plate/react';
 
 import type { BorderStylesDefault, TTableCellElement } from '../../../lib';
 
 import { useCellIndices } from '../../hooks/useCellIndices';
-import { useTableStore } from '../../stores';
+import { useTableValue } from '../../stores';
 import { TablePlugin } from '../../TablePlugin';
 import { useIsCellSelected } from './useIsCellSelected';
 import { useTableCellBorders } from './useTableCellBorders';
@@ -43,7 +39,7 @@ export const useTableCellElement = (): TableCellElementState => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [element]);
 
-  const rowSizeOverrides = useStoreValue(useTableStore(), 'rowSizeOverrides');
+  const rowSizeOverrides = useTableValue('rowSizeOverrides');
   const { minHeight, width } = useTableCellSize({ element });
   const borders = useTableCellBorders({ element });
 

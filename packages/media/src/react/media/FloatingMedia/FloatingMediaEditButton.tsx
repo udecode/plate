@@ -4,7 +4,7 @@ import { createPrimitiveComponent, useElement } from '@udecode/plate/react';
 
 import type { TMediaElement } from '../../../lib/media/types';
 
-import { floatingMediaActions } from './FloatingMediaStore';
+import { ImagePreviewStore } from '../../image';
 
 export const useFloatingMediaEditButton = () => {
   const element = useElement<TMediaElement>();
@@ -12,9 +12,12 @@ export const useFloatingMediaEditButton = () => {
   return {
     props: {
       onClick: React.useCallback(() => {
-        floatingMediaActions.url(element.url);
-        floatingMediaActions.isEditing(true);
-      }, [element.url]),
+        ImagePreviewStore.set('currentPreview', {
+          id: element.id,
+          url: element.url,
+        });
+        ImagePreviewStore.set('isEditingScale', true);
+      }, [element.id, element.url]),
     },
   };
 };

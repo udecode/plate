@@ -15,6 +15,17 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 - React 19
 - TailwindCSS 4
 - Plate 45
+- Jotai 2
+- Zustand 6
+- `comment-more-dropdown`: remove `useCommentEditButtonState`, `useCommentDeleteButtonState`
+- `image-element`, `media-embed-element`, `media-video-element`, `mode-dropdown-menu`
+  - use `const width = useResizableValue('width')`
+- `image-preview`: remove `useScaleInputState`, `useImagePreviewState`
+- `floating-toolbar`: 
+  - replace `useEventEditorSelectors` with `useEventEditorValue`
+- `media-popover`: 
+  - replace `floatingMediaActions` with `FloatingMediaStore.set`, 
+  - replace `useFloatingMediaSelectors` with `useFloatingMediaValue`
 
 ## January 2025 #18
 

@@ -1,5 +1,7 @@
 /* eslint-disable react-hooks/rules-of-hooks */
+
 import { type Editor, type Value, createEditor } from '@udecode/slate';
+import { useStoreSelect, useStoreValue } from 'zustand-x';
 
 import type { AnyPlatePlugin } from '../plugin';
 import type { SlateReactExtensionPlugin } from '../plugins';
@@ -71,7 +73,7 @@ export const withPlate = <
       return {};
     }
 
-    return store.useStore(selector, equalityFn);
+    return useStoreSelect(store, selector, equalityFn);
   }) as any;
 
   editor.useOption = (plugin: any, key: any, ...args: any) => {
@@ -86,16 +88,14 @@ export const withPlate = <
       return;
     }
 
-    const useState = (store as any)?.use[key];
-
-    if (useState) {
-      return useState(...args);
+    try {
+      return useStoreValue(store as any, key as never, ...args);
+    } catch (error) {
+      editor.api.debug.error(
+        `editor.useOption: ${key} option is not defined in plugin ${plugin.key}`,
+        'OPTION_UNDEFINED'
+      );
     }
-
-    editor.api.debug.error(
-      `editor.useOption: ${key} option is not defined in plugin ${plugin.key}`,
-      'OPTION_UNDEFINED'
-    );
   };
 
   return editor;

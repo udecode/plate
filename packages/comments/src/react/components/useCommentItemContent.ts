@@ -1,11 +1,11 @@
-import { useEditorPlugin, useStoreValue } from '@udecode/plate/react';
+import { useEditorPlugin } from '@udecode/plate/react';
 
 import { CommentsPlugin } from '../CommentsPlugin';
 import {
   useComment,
-  useCommentStore,
   useCommentText,
   useCommentUser,
+  useCommentValue,
 } from '../stores';
 
 export const useCommentItemContentState = () => {
@@ -16,7 +16,7 @@ export const useCommentItemContentState = () => {
   const commentText = useCommentText();
   const user = useCommentUser();
   const myUserId = useOption('myUserId');
-  const editingValue = useStoreValue(useCommentStore(), 'editingValue');
+  const editingValue = useCommentValue('editingValue');
 
   const isMyComment = myUserId === comment.userId;
 

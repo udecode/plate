@@ -4,11 +4,12 @@ import * as React from 'react';
 import { useMemo, useState } from 'react';
 
 import { DndPlugin } from '@udecode/plate-dnd';
+import { useStoreValue } from '@udecode/plate/react';
 import { uniqBy } from 'lodash';
 
 import {
   type SettingsStoreValue,
-  settingsStore,
+  SettingsStore,
 } from '@/components/context/settings-store';
 import { Link } from '@/components/link';
 import * as Typography from '@/components/typography';
@@ -136,8 +137,8 @@ function getEditorCodeGeneratorResult({
 export default function InstallationTab() {
   const locale = useLocale();
   const content = i18n[locale as keyof typeof i18n];
-  const checkedPlugins = settingsStore.use.checkedPlugins();
-  const checkedComponents = settingsStore.use.checkedComponents();
+  const checkedPlugins = useStoreValue(SettingsStore, 'checkedPlugins');
+  const checkedComponents = useStoreValue(SettingsStore, 'checkedComponents');
   const mounted = useMounted();
   const [isManual, setIsManual] = useState(false);
   const [radioValue, setRadioValue] = useState('editor-basic');

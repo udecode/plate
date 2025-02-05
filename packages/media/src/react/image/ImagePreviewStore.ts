@@ -20,22 +20,18 @@ export const ImagePreviewStore = createZustandStore(
     name: 'imagePreview',
   }
 )
-  .extendActions((set) => ({
+  .extendActions(({ set }) => ({
     close: () => {
-      set.currentPreview(null);
-      set.previewList([]);
-      set.openEditorId(null);
-      set.scale(1);
-      set.translate({ x: 0, y: 0 });
-      set.isEditingScale(false);
+      set('currentPreview', null);
+      set('previewList', []);
+      set('openEditorId', null);
+      set('scale', 1);
+      set('translate', { x: 0, y: 0 });
+      set('isEditingScale', false);
     },
   }))
-  .extendSelectors((_, get) => ({
-    isOpen: (editorId: string) => get.openEditorId() === editorId,
+  .extendSelectors(({ get }) => ({
+    isOpen: (editorId: string) => get('openEditorId') === editorId,
   }));
 
-export const imagePreviewActions = ImagePreviewStore.set;
-
-export const imagePreviewSelectors = ImagePreviewStore.get;
-
-export const useImagePreviewSelectors = () => ImagePreviewStore.use;
+export const { useValue: useImagePreviewValue } = ImagePreviewStore;

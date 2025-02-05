@@ -6215,7 +6215,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-core@npm:43.0.5, @udecode/plate-core@workspace:^, @udecode/plate-core@workspace:packages/core":
+"@udecode/plate-core@npm:43.0.5, @udecode/plate-core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-core@workspace:packages/core"
   dependencies:
@@ -6228,7 +6228,7 @@ __metadata:
     is-hotkey: "npm:^0.2.0"
     jotai: "npm:~2.8.4"
     jotai-optics: "npm:0.4.0"
-    jotai-x: "npm:2.1.2"
+    jotai-x: "npm:2.2.0"
     lodash: "npm:^4.17.21"
     nanoid: "npm:^5.0.9"
     optics-ts: "npm:2.4.1"
@@ -6236,7 +6236,7 @@ __metadata:
     slate-react: "npm:0.112.1"
     use-deep-compare: "npm:^1.3.0"
     zustand: "npm:^5.0.3"
-    zustand-x: "npm:5.0.1"
+    zustand-x: "npm:6.0.3"
   peerDependencies:
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
@@ -13077,9 +13077,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jotai-x@npm:2.1.2":
-  version: 2.1.2
-  resolution: "jotai-x@npm:2.1.2"
+"jotai-x@npm:2.2.0":
+  version: 2.2.0
+  resolution: "jotai-x@npm:2.2.0"
   peerDependencies:
     "@types/react": ">=17.0.0"
     jotai: ">=2.0.0"
@@ -13089,7 +13089,7 @@ __metadata:
       optional: true
     react:
       optional: true
-  checksum: 10c0/72ca9afe36c6bef7ac2280c8667546a158b307be6498fd4df5c7d2cdef95560849988c7731d0e9597c34c5c0f7bf786d769936e39f7f2d1ec36f56b552c86390
+  checksum: 10c0/4dca88b942a1e44d613de5bb94e5a0932ffa77155e5cf87e066e97bd8c74d9c92ad85230fdcb786b3bd832eba7c12df21946478b50fa2f3ef0624938acafc141
   languageName: node
   linkType: hard
 
@@ -21125,7 +21125,6 @@ __metadata:
     "@udecode/plate-code-block": "workspace:^"
     "@udecode/plate-combobox": "workspace:^"
     "@udecode/plate-comments": "workspace:^"
-    "@udecode/plate-core": "workspace:^"
     "@udecode/plate-csv": "workspace:^"
     "@udecode/plate-date": "workspace:^"
     "@udecode/plate-diff": "workspace:^"
@@ -21389,9 +21388,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zustand-x@npm:5.0.1":
-  version: 5.0.1
-  resolution: "zustand-x@npm:5.0.1"
+"zustand-x@npm:6.0.3":
+  version: 6.0.3
+  resolution: "zustand-x@npm:6.0.3"
   dependencies:
     immer: "npm:^10.0.3"
     lodash.mapvalues: "npm:^4.6.0"
@@ -21400,7 +21399,7 @@ __metadata:
     use-sync-external-store: "npm:1.4.0"
   peerDependencies:
     zustand: ">=5.0.2"
-  checksum: 10c0/28af42772747aca70f5656be5af7e116bbd323b50165fa8f5394e53b5ba0d293f947e181deacb7944f14991a8dbc10b58f35cd5c89fa66f82bdc3a2b0ac8c178
+  checksum: 10c0/95b9b67e2f5d954bad2f6bb705f215f9e8c1b2ddaa2368fa1d3b4b259569aa8b77aaba9847f66dcecaa6d4b1c7f86683bd6193d0fd86cc329d3bf733a634ff69
   languageName: node
   linkType: hard
 

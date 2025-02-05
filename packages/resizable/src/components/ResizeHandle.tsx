@@ -6,7 +6,6 @@ import {
   createAtomStore,
   createPrimitiveComponent,
   useReadOnly,
-  useStoreValue,
 } from '@udecode/plate/react';
 
 import type { ResizeDirection, ResizeEvent } from '../types';
@@ -21,10 +20,15 @@ const initialState: Nullable<ResizeHandleStoreState> = {
   onResize: null,
 };
 
-export const { ResizeHandleProvider, useResizeHandleStore } = createAtomStore(
-  initialState as ResizeHandleStoreState,
-  { name: 'resizeHandle', suppressWarnings: true }
-);
+export const {
+  ResizeHandleProvider,
+  useResizeHandleSet,
+  useResizeHandleStore,
+  useResizeHandleValue,
+} = createAtomStore(initialState as ResizeHandleStoreState, {
+  name: 'resizeHandle',
+  suppressWarnings: true,
+});
 
 export type ResizeHandleOptions = {
   direction?: ResizeDirection;
@@ -46,7 +50,7 @@ export const useResizeHandleState = ({
   onTouchStart,
 }: ResizeHandleOptions) => {
   const readOnly = useReadOnly();
-  const onResizeStore = useStoreValue(useResizeHandleStore(), 'onResize');
+  const onResizeStore = useResizeHandleValue('onResize');
   const onResize = onResizeProp ?? onResizeStore;
 
   const [isResizing, setIsResizing] = React.useState(false);

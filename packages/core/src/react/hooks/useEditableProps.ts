@@ -1,6 +1,7 @@
 import React from 'react';
 
 import clsx from 'clsx';
+import { useStoreValue } from 'jotai-x';
 import omit from 'lodash/omit.js';
 import { useDeepCompareMemo } from 'use-deep-compare';
 
@@ -24,11 +25,11 @@ export const useEditableProps = ({
 
   const editor = useEditorRef(id);
   const store = usePlateStore(id);
-  const versionDecorate = store.useVersionDecorateValue();
-  const storeReadOnly = store.useReadOnlyValue();
-  const storeDecorate = store.useDecorateValue();
-  const storeRenderLeaf = store.useRenderLeafValue();
-  const storeRenderElement = store.useRenderElementValue();
+  const versionDecorate = useStoreValue(store, 'versionDecorate');
+  const storeReadOnly = useStoreValue(store, 'readOnly');
+  const storeDecorate = useStoreValue(store, 'decorate');
+  const storeRenderLeaf = useStoreValue(store, 'renderLeaf');
+  const storeRenderElement = useStoreValue(store, 'renderElement');
 
   const decorateMemo = React.useMemo(() => {
     return pipeDecorate(

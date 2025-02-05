@@ -1,18 +1,13 @@
 import React from 'react';
 
-import {
-  useEditorRef,
-  useElement,
-  usePath,
-  useStoreState,
-} from '@udecode/plate/react';
+import { useEditorRef, useElement, usePath } from '@udecode/plate/react';
 
 import type { ResizeEvent, ResizeLength } from '../types';
 import type { TResizableElement } from './TResizableElement';
 
 import { resizeLengthClamp } from '../utils';
 import { ResizeHandleProvider } from './ResizeHandle';
-import { useResizableStore } from './useResizableStore';
+import { useResizableSet, useResizableValue } from './useResizableStore';
 
 export interface ResizableOptions {
   /** Node alignment. */
@@ -35,7 +30,8 @@ export const useResizableState = ({
 
   const nodeWidth = element?.width ?? '100%';
 
-  const [width, setWidth] = useStoreState(useResizableStore(), 'width');
+  const width = useResizableValue('width');
+  const setWidth = useResizableSet('width');
 
   const setNodeWidth = React.useCallback(
     (w: number) => {

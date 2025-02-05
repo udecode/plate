@@ -1,9 +1,5 @@
 import { type Value, NodeApi } from '@udecode/plate';
-import {
-  createAtomStore,
-  useEditorPlugin,
-  useStoreValue,
-} from '@udecode/plate/react';
+import { createAtomStore, useEditorPlugin } from '@udecode/plate/react';
 
 import type { CommentUser, TComment } from '../../../lib/types';
 
@@ -17,22 +13,28 @@ export interface CommentStoreState {
   isMenuOpen: boolean;
 }
 
-export const { CommentProvider, commentStore, useCommentStore } =
-  createAtomStore(
-    {
-      id: '',
-      editingValue: null,
-      isMenuOpen: false,
-    } as CommentStoreState,
-    {
-      name: 'comment',
-    }
-  );
+export const {
+  CommentProvider,
+  commentStore,
+  useCommentSet,
+  useCommentState,
+  useCommentStore,
+  useCommentValue,
+} = createAtomStore(
+  {
+    id: '',
+    editingValue: null,
+    isMenuOpen: false,
+  } as CommentStoreState,
+  {
+    name: 'comment',
+  }
+);
 
 export const useCommentUser = (scope?: string): CommentUser | null => {
   const { useOption } = useEditorPlugin(CommentsPlugin);
 
-  const commentId = useCommentStore(scope).useIdValue();
+  const commentId = useCommentValue('id', { scope });
   const comment = useOption('commentById', commentId);
   const users = useOption('users');
 
@@ -44,7 +46,7 @@ export const useCommentUser = (scope?: string): CommentUser | null => {
 export const useCommentReplies = (scope?: string) => {
   const { useOption } = useEditorPlugin(CommentsPlugin);
 
-  const commentId = useCommentStore(scope).useIdValue();
+  const commentId = useCommentValue('id', { scope });
   const comments = useOption('comments');
 
   const replies: Record<string, TComment> = {};
@@ -64,7 +66,7 @@ export const useCommentReplies = (scope?: string) => {
 export const useComment = (scope?: string) => {
   const { useOption } = useEditorPlugin(CommentsPlugin);
 
-  const commentId = useCommentStore(scope).useIdValue();
+  const commentId = useCommentValue('id', { scope });
 
   return useOption('commentById', commentId);
 };
@@ -78,7 +80,7 @@ export const useCommentText = (scope?: string) => {
 };
 
 export const useEditingCommentText = () => {
-  const editingValue = useStoreValue(useCommentStore(), 'editingValue');
+  const editingValue = useCommentValue('editingValue');
 
   if (!editingValue) return null;
 

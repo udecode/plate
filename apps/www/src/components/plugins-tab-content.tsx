@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 
+import { useStoreValue } from '@udecode/plate/react';
 import { ArrowUpRight, Eye, EyeOff } from 'lucide-react';
 
 import { customizerList } from '@/config/customizer-items';
@@ -10,7 +11,7 @@ import { Button } from '@/registry/default/plate-ui/button';
 import { Checkbox } from '@/registry/default/plate-ui/checkbox';
 
 import { Label } from '../registry/default/plate-ui/label';
-import { categoryIds, settingsStore } from './context/settings-store';
+import { categoryIds, SettingsStore } from './context/settings-store';
 import { Icons } from './icons';
 import { SettingCheckbox } from './setting-checkbox';
 import { TreeIcon } from './tree-icon';
@@ -22,8 +23,8 @@ import {
 } from './ui/accordion';
 
 export function SettingsEffect() {
-  const checkedPluginsNext = settingsStore.use.checkedPluginsNext();
-  const valueId = settingsStore.use.valueId();
+  const checkedPluginsNext = useStoreValue(SettingsStore, 'checkedPluginsNext');
+  const valueId = useStoreValue(SettingsStore, 'valueId');
 
   const [key, setKey] = useState(1);
   const debouncedKey = useDebounce(key, 1000);
@@ -36,7 +37,7 @@ export function SettingsEffect() {
 
   useEffect(() => {
     if (debouncedKey) {
-      settingsStore.set.syncChecked();
+      SettingsStore.set('syncChecked');
     }
   }, [debouncedKey]);
 
@@ -44,9 +45,9 @@ export function SettingsEffect() {
 }
 
 export function PluginsTabContentLazy() {
-  const checkedPlugins = settingsStore.use.checkedPlugins();
-  const checkedComponents = settingsStore.use.checkedComponents();
-  const showComponents = settingsStore.use.showComponents();
+  const checkedPlugins = useStoreValue(SettingsStore, 'checkedPlugins');
+  const checkedComponents = useStoreValue(SettingsStore, 'checkedComponents');
+  const showComponents = useStoreValue(SettingsStore, 'showComponents');
 
   const somePluginChecked = useMemo(
     () => Object.values(checkedPlugins).some(Boolean),
@@ -68,10 +69,10 @@ export function PluginsTabContentLazy() {
           checked={somePluginChecked}
           onCheckedChange={(_checked: boolean) => {
             if (somePluginChecked) {
-              settingsStore.set.checkedPlugins({} as any);
+              SettingsStore.set('checkedPlugins', {} as any);
               // settingsStore.set.checkedPluginsNext({} as any);
             } else {
-              settingsStore.set.resetPlugins();
+              SettingsStore.set('resetPlugins');
             }
           }}
         />
@@ -88,10 +89,10 @@ export function PluginsTabContentLazy() {
           checked={someComponentChecked}
           onCheckedChange={(_checked: boolean) => {
             if (someComponentChecked) {
-              settingsStore.set.checkedComponents({} as any);
+              SettingsStore.set('checkedComponents', {} as any);
             } else {
-              settingsStore.set.showComponents(true);
-              settingsStore.set.resetComponents();
+              SettingsStore.set('showComponents', true);
+              SettingsStore.set('resetComponents');
             }
           }}
         />
@@ -106,10 +107,10 @@ export function PluginsTabContentLazy() {
           className="px-2"
           onClick={() => {
             if (showComponents) {
-              settingsStore.set.checkedComponents({} as any);
+              SettingsStore.set('checkedComponents', {} as any);
             }
 
-            settingsStore.set.showComponents(!showComponents);
+            SettingsStore.set('showComponents', !showComponents);
           }}
         >
           {showComponents ? (
@@ -141,7 +142,7 @@ export function PluginsTabContentLazy() {
 }
 
 export function PluginsTabContent() {
-  const loadingSettings = settingsStore.use.loadingSettings();
+  const loadingSettings = useStoreValue(SettingsStore, 'loadingSettings');
 
   return (
     <div>
@@ -161,8 +162,8 @@ export function PluginsTabContent() {
               size="lg"
               onClick={() => {
                 // settingsStore.set.homeTab('installation');
-                settingsStore.set.showSettings(false);
-                settingsStore.set.state((draft) => {
+                SettingsStore.set('showSettings', false);
+                SettingsStore.set('state', (draft) => {
                   draft.version = draft.version! + 1;
                 });
               }}

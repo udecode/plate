@@ -101,58 +101,52 @@ Version incremented on each editor.children change.
 
 ## Accessing the Store
 
-There are three equivalent ways to access the Plate store:
-
-### 1. Using `usePlateStore`
-
-Direct access to the store:
-
 ```ts
-const store = usePlateStore(id); // id is optional, defaults to closest editor
+import { usePlateStore, useEditorRef, useEditorPlugin } from '@udecode/plate/react'
+
+// Direct store access
+const store = usePlateStore(id?) 
+
+// Via editor reference
+const store = useEditorRef().store
+
+// Via plugin context
+const store = useEditorPlugin(myPlugin).store
 ```
 
-### 2. Using `useEditorRef`
-
-Access store through the editor reference:
-
-```ts
-const editor = useEditorRef();
-const readOnly = useStoreValue(editor.store, 'readOnly');
-```
-
-### 3. Using `useEditorPlugin`
-
-Access store through plugin context:
-
-```ts
-const { editor, store } = useEditorPlugin(myPlugin);
-const readOnly = useStoreValue(store, 'readOnly');
-```
+Note: The `id` parameter is optional and defaults to the closest editor.
 
 ## Store Hooks
 
-The following hooks are exported by `@udecode/plate/react`.
+The following hooks are available to interact with the Plate store:
 
-### useStoreState
+```ts
+import { usePlateState, usePlateValue, usePlateSet } from '@udecode/plate/react'
+```
 
-Use `useStoreState(editor.store, '<name>')` when you need both the value and the setter of a store property.
+### usePlateState
 
-- **Example:** `const [count, setCount] = useStoreState(editor.store, 'count')`
-- It's using [useAtom](https://jotai.org/docs/basics/primitives#use-atom) under the hood.
+Get and set a store property value.
 
-### useStoreValue
+```ts
+const [readOnly, setReadOnly] = usePlateState('readOnly', id?)
+```
 
-Use `useStoreValue(editor.store, '<name>')` when you need to subscribe to a value.
+### usePlateValue
 
-- **Example:** `const count = useStoreValue(editor.store, 'count')` will subscribe to `count` changes.
-- It's using [useAtomValue](https://jotai.org/docs/utils/use-atom-value) under the hood.
+Subscribe to a store property value.
 
-### useStoreSet
+```ts
+const readOnly = usePlateValue('readOnly', id?)
+```
 
-Use `useStoreSet(editor.store, '<name>')` when you only need to set a value.
+### usePlateSet
 
-- **Example:** `const setCount = useStoreSet(editor.store, 'count')`
-- It's using [useSetAtom](https://jotai.org/docs/utils/use-set-atom) under the hood.
+Set a store property value.
+
+```ts
+const setReadOnly = usePlateSet('readOnly', id?)
+```
 
 ## Event Editor Store
 
@@ -183,12 +177,19 @@ Last editor ID.
 </APIState>
 </API>
 
-### `useEventEditorSelectors`
 
-Hook selectors.
+```ts
+import { EventEditorStore, useEventEditorValue } from '@udecode/plate'
 
-- **Example:** `useEventEditorSelectors().focus()` will get the
-  last focused editor ID.
+// Get a value
+const focusedId = EventEditorStore.get('focus')
+
+// Set a value
+EventEditorStore.set('focus', editorId)
+
+// Subscribe to changes
+const focusedId = useEventEditorValue('focus')
+```
 
 ### `useEventPlateId`
 

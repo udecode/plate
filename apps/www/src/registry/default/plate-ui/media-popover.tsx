@@ -5,9 +5,9 @@ import React, { useEffect } from 'react';
 import type { WithRequiredKey } from '@udecode/plate';
 
 import {
-  floatingMediaActions,
   FloatingMedia as FloatingMediaPrimitive,
-  useFloatingMediaSelectors,
+  FloatingMediaStore,
+  useFloatingMediaValue,
 } from '@udecode/plate-media/react';
 import {
   useEditorSelector,
@@ -38,11 +38,11 @@ export function MediaPopover({ children, plugin }: MediaPopoverProps) {
     []
   );
   const isOpen = !readOnly && selected && selectionCollapsed;
-  const isEditing = useFloatingMediaSelectors().isEditing();
+  const isEditing = useFloatingMediaValue('isEditing');
 
   useEffect(() => {
     if (!isOpen && isEditing) {
-      floatingMediaActions.isEditing(false);
+      FloatingMediaStore.set('isEditing', false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);

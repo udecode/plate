@@ -1,12 +1,8 @@
-import {
-  useEditorPlugin,
-  useElement,
-  useStoreValue,
-} from '@udecode/plate/react';
+import { useEditorPlugin, useElement } from '@udecode/plate/react';
 
 import type { TTableElement } from '../../../lib';
 
-import { useTableStore } from '../../stores';
+import { useTableValue } from '../../stores';
 import { TablePlugin } from '../../TablePlugin';
 import { useSelectedCells } from './useSelectedCells';
 
@@ -17,10 +13,7 @@ export const useTableElement = () => {
 
   const element = useElement<TTableElement>();
   const selectedCells = useOption('selectedCells');
-  const marginLeftOverride = useStoreValue(
-    useTableStore(),
-    'marginLeftOverride'
-  );
+  const marginLeftOverride = useTableValue('marginLeftOverride');
 
   const marginLeft = disableMarginLeft
     ? 0

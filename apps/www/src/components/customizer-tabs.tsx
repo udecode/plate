@@ -1,12 +1,14 @@
 import * as React from 'react';
 
-import { settingsStore } from './context/settings-store';
+import { useStoreValue } from '@udecode/plate/react';
+
+import { SettingsStore } from './context/settings-store';
 import { PluginsTabContent } from './plugins-tab-content';
 import { ThemeCustomizer } from './theme-customizer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
 export function CustomizerTabs() {
-  const customizerTab = settingsStore.use.customizerTab();
+  const customizerTab = useStoreValue(SettingsStore, 'customizerTab');
 
   return (
     <div className="flex size-full flex-col space-y-4 pt-4 md:space-y-6 md:pt-0">
@@ -14,7 +16,7 @@ export function CustomizerTabs() {
         className="flex h-full flex-col"
         value={customizerTab}
         onValueChange={(value) => {
-          settingsStore.set.customizerTab(value);
+          SettingsStore.set('customizerTab', value);
         }}
       >
         <div className="flex justify-center">

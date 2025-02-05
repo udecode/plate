@@ -1,5 +1,7 @@
 import type { TElement } from '@udecode/slate';
 
+import { useStoreValue } from 'jotai-x';
+
 import { useEditorRef } from '../plate';
 import { SCOPE_ELEMENT, useElementStore } from './useElementStore';
 
@@ -11,7 +13,7 @@ export const useElement = <T extends TElement = TElement>(
   pluginKey = SCOPE_ELEMENT
 ): T => {
   const editor = useEditorRef();
-  const value = useElementStore(pluginKey).useElementValue();
+  const value = useStoreValue(useElementStore(pluginKey), 'element');
 
   if (!value) {
     editor.api.debug.warn(

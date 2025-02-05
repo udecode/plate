@@ -7,38 +7,19 @@ import {
 
 import { CommentsPlugin } from '../CommentsPlugin';
 import {
-  useCommentStore,
+  useCommentSet,
   useCommentText,
+  useCommentValue,
 } from '../stores/comment/CommentProvider';
 
-export const useCommentEditSaveButtonState = () => {
-  const { api, getOptions, setOption } = useEditorPlugin(CommentsPlugin);
-
-  const store = useCommentStore();
-  const id = store.useIdValue();
-  const editingValue = store.useEditingValueValue();
-  const setEditingValue = store.useSetEditingValue();
+export const useCommentEditSaveButton = () => {
+  const { api, getOptions } = useEditorPlugin(CommentsPlugin);
   const value = useCommentText();
 
-  return {
-    id,
-    api,
-    editingValue,
-    getOptions,
-    setEditingValue,
-    setOption,
-    value,
-  };
-};
+  const id = useCommentValue('id');
+  const editingValue = useCommentValue('editingValue');
+  const setEditingValue = useCommentSet('editingValue');
 
-export const useCommentEditSaveButton = ({
-  id,
-  api,
-  editingValue,
-  getOptions,
-  setEditingValue,
-  value,
-}: ReturnType<typeof useCommentEditSaveButtonState>) => {
   return {
     props: {
       disabled: value?.trim().length === 0,
@@ -59,5 +40,4 @@ export const useCommentEditSaveButton = ({
 
 export const CommentEditSaveButton = createPrimitiveComponent('button')({
   propsHook: useCommentEditSaveButton,
-  stateHook: useCommentEditSaveButtonState,
 });

@@ -1,14 +1,14 @@
 import React from 'react';
 
-import { createPrimitiveComponent, useStoreSet } from '@udecode/plate/react';
+import { createPrimitiveComponent } from '@udecode/plate/react';
 
 import {
-  useCommentStore,
+  useCommentSet,
   useEditingCommentText,
 } from '../stores/comment/CommentProvider';
 
-export const useCommentEditTextareaState = () => {
-  const setEditingValue = useStoreSet(useCommentStore(), 'editingValue');
+export const useCommentEditTextarea = () => {
+  const setEditingValue = useCommentSet('editingValue');
   const value = useEditingCommentText();
 
   const textareaRef = React.useRef<HTMLTextAreaElement | null>(null);
@@ -23,18 +23,6 @@ export const useCommentEditTextareaState = () => {
     }, 0);
   }, [textareaRef]);
 
-  return {
-    setEditingValue,
-    textareaRef,
-    value,
-  };
-};
-
-export const useCommentEditTextarea = ({
-  setEditingValue,
-  textareaRef,
-  value,
-}: ReturnType<typeof useCommentEditTextareaState>) => {
   return {
     props: {
       placeholder: 'Add a comment...',
@@ -52,5 +40,4 @@ export const useCommentEditTextarea = ({
 
 export const CommentEditTextarea = createPrimitiveComponent('textarea')({
   propsHook: useCommentEditTextarea,
-  stateHook: useCommentEditTextareaState,
 });

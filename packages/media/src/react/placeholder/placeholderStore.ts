@@ -11,13 +11,19 @@ interface PlaceholderStore {
 }
 type Progresses = Record<string, number>;
 
-export const { PlaceholderProvider, placeholderStore, usePlaceholderStore } =
-  createAtomStore(
-    {
-      isUploading: false,
-      progresses: {},
-      size: null,
-      updatedFiles: [],
-    } as PlaceholderStore,
-    { name: 'placeholder' }
-  );
+export const {
+  PlaceholderProvider,
+  placeholderStore,
+  usePlaceholderSet,
+  usePlaceholderState,
+  usePlaceholderStore,
+  usePlaceholderValue,
+} = createAtomStore(
+  {
+    isUploading: false,
+    progresses: {},
+    size: null,
+    updatedFiles: [],
+  } as PlaceholderStore,
+  { name: 'placeholder' }
+);

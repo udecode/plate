@@ -116,37 +116,34 @@ export const withSlate = <
 
     if (!store) return editor.getPlugin(plugin).options;
 
-    return editor.getOptionsStore(plugin).get.state();
+    return editor.getOptionsStore(plugin).get('state');
   };
   editor.getOption = (plugin, key, ...args) => {
     const store = editor.getOptionsStore(plugin);
 
     if (!store) return editor.getPlugin(plugin).options[key];
 
-    const getter = (store.get as any)[key];
-
-    if (getter) {
-      return getter(...args);
+    try {
+      return (store.get as any)(key, ...args);
+    } catch (error) {
+      editor.api.debug.error(
+        `editor.getOption: ${key as string} option is not defined in plugin ${plugin.key}.`,
+        'OPTION_UNDEFINED'
+      );
     }
-
-    editor.api.debug.error(
-      `editor.getOption: ${key as string} option is not defined in plugin ${plugin.key}.`,
-      'OPTION_UNDEFINED'
-    );
   };
-  editor.setOption = (plugin: any, key: any, value: any) => {
+  editor.setOption = (plugin: any, key: any, ...args: any) => {
     const store = editor.getOptionsStore(plugin);
 
     if (!store) return;
 
-    const setter = (store.set as any)[key];
-
-    if (setter) {
-      setter(value);
-    } else {
+    try {
+      (store.set as any)(key, ...args);
+    } catch (error) {
       editor.api.debug.error(
         `editor.setOption: ${key} option is not defined in plugin ${plugin.key}.`,
-        'OPTION_UNDEFINED'
+        'OPTION_UNDEFINED',
+        error
       );
     }
   };
@@ -155,11 +152,11 @@ export const withSlate = <
 
     if (!store) return;
     if (typeof options === 'object') {
-      store.set.state((draft: any) => {
+      store.set('state', (draft: any) => {
         Object.assign(draft, options);
       });
     } else if (typeof options === 'function') {
-      store.set.state(options);
+      store.set('state', options);
     }
   };
 

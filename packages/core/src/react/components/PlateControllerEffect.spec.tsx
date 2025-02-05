@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { act, render, renderHook } from '@testing-library/react';
+import { useStoreValue } from 'jotai-x';
 
 import { createPlateEditor } from '../editor';
 import { useFocused } from '../slate-react';
@@ -10,9 +11,9 @@ import { PlateControllerEffect } from './PlateControllerEffect';
 
 const DebugPlateController = () => {
   const store = usePlateControllerLocalStore();
-  const editorStores = store.useEditorStoresValue();
-  const activeId = store.useActiveIdValue();
-  const primaryEditorIds = store.usePrimaryEditorIdsValue();
+  const editorStores = useStoreValue(store, 'editorStores');
+  const activeId = useStoreValue(store, 'activeId');
+  const primaryEditorIds = useStoreValue(store, 'primaryEditorIds');
 
   return (
     <div>

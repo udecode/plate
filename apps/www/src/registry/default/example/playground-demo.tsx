@@ -62,9 +62,9 @@ import { TabbablePlugin } from '@udecode/plate-tabbable/react';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
-import { ParagraphPlugin, Plate } from '@udecode/plate/react';
+import { ParagraphPlugin, Plate, useStoreValue } from '@udecode/plate/react';
 
-import { settingsStore } from '@/components/context/settings-store';
+import { SettingsStore } from '@/components/context/settings-store';
 import { useLocale } from '@/hooks/useLocale';
 import { getI18nValues } from '@/i18n/getI18nValues';
 import { copilotPlugins } from '@/registry/default/components/editor/plugins/copilot-plugins';
@@ -113,7 +113,7 @@ const usePlaygroundValue = (): Value => {
   const values = getI18nValues(locale);
 
   return useMemo(() => {
-    const enabled = settingsStore.get.checkedPlugins();
+    const enabled = SettingsStore.get('checkedPlugins');
 
     let value: any[] = [...values.basicElements, ...values.basicMarks];
 
@@ -186,7 +186,7 @@ const usePlaygroundValue = (): Value => {
 };
 
 function usePlaygroundEnabled(id?: string) {
-  const enabled = settingsStore.use.checkedPlugins();
+  const enabled = useStoreValue(SettingsStore, 'checkedPlugins');
 
   return useMemo(
     () => ({

@@ -4,8 +4,13 @@ export {
   createAtomStore,
   useStoreAtomState,
   useStoreAtomValue,
-  useStoreSet,
   useStoreSetAtom,
+} from 'jotai-x';
+
+export {
+  useStoreSelect,
   useStoreState,
   useStoreValue,
-} from 'jotai-x';
+  useTracked,
+  useTrackedStore,
+} from 'zustand-x';
