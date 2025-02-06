@@ -11,13 +11,8 @@ const compat = new FlatCompat({
   baseDirectory: __dirname,
 });
 
-
-
 const eslintConfig = [
-  ...compat.extends(
-    'next/core-web-vitals',
-    'next/typescript',
-  ),
+  ...compat.extends('next/core-web-vitals', 'next/typescript'),
   {
     plugins: {
       'unused-imports': unusedImports,
@@ -25,6 +20,7 @@ const eslintConfig = [
     rules: {
       '@next/next/no-html-link-for-pages': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
+      'import/no-anonymous-default-export': 'off',
       'linebreak-style': ['error', 'unix'],
       'no-case-declarations': 'off',
       'no-duplicate-imports': 'off',
@@ -32,7 +28,10 @@ const eslintConfig = [
       'no-prototype-builtins': 'off',
       'no-unused-vars': 'off',
       'react/display-name': 'off',
-      'react/jsx-curly-brace-presence': [ 'warn', { children: 'never', props: 'never' }   ],
+      'react/jsx-curly-brace-presence': [
+        'warn',
+        { children: 'never', props: 'never' },
+      ],
       'react/jsx-newline': ['off'],
       'react/no-unescaped-entities': ['error', { forbid: ['>'] }],
       'react/no-unknown-property': 'off',

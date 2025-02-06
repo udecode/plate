@@ -14,7 +14,7 @@ import {
 import { cva } from 'class-variance-authority';
 
 const editorContainerVariants = cva(
-  'relative w-full cursor-text overflow-y-auto caret-primary select-text selection:bg-brand/25 focus-visible:outline-none [&_.slate-selection-area]:z-50 [&_.slate-selection-area]:border [&_.slate-selection-area]:border-brand/25 [&_.slate-selection-area]:bg-brand/15',
+  'selection:bg-brand/25 [&_.slate-selection-area]:border-brand/25 [&_.slate-selection-area]:bg-brand/15 relative w-full cursor-text overflow-y-auto caret-primary select-text focus-visible:outline-none [&_.slate-selection-area]:z-50 [&_.slate-selection-area]:border',
   {
     defaultVariants: {
       variant: 'default',
@@ -31,8 +31,6 @@ const editorContainerVariants = cva(
     },
   }
 );
-
-
 
 export const EditorContainer = ({
   className,
