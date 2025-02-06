@@ -5,6 +5,7 @@ import {
   type OmitFirst,
   type PluginConfig,
   type SlateEditor,
+  type TNode,
   bindFirst,
 } from '@udecode/plate';
 import { createTPlatePlugin } from '@udecode/plate/react';
@@ -55,13 +56,18 @@ export type AIChatOptions = {
    * placeholders as `promptTemplate`.
    */
   systemTemplate: (props: EditorPromptParams) => string | void;
+  /**
+   * Callback function to update the anchor element when the AI is done
+   * rendering its answer
+   */
+  anchorUpdate?: (anchor: TNode) => void;
 } & TriggerComboboxPluginOptions;
 
 export type AIChatApi = {
   hide: () => void;
   reload: () => void;
   reset: OmitFirst<typeof resetAIChat>;
-  show: () => void;
+  show: (anchorUpdate?: (anchor: TNode) => void) => void;
   stop: () => void;
   submit: OmitFirst<typeof submitAIChat>;
 };
@@ -89,6 +95,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     open: false,
     promptTemplate: () => '{prompt}',
     systemTemplate: () => {},
+    anchorUpdate: undefined,
     trigger: ' ',
     triggerPreviousCharPattern: /^\s?$/,
   },
@@ -142,12 +149,15 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
         delete lastBatch.ai;
       }
     },
-    show: () => {
+    show: (anchorUpdate?: (anchor: TNode) => void) => {
       api.aiChat.reset();
 
       getOptions().chat.setMessages?.([]);
 
       setOption('open', true);
+      if (anchorUpdate) {
+        setOption('anchorUpdate', anchorUpdate);
+      }
     },
   }))
   .extendTransforms(({ editor }) => ({

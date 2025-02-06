@@ -1,4 +1,4 @@
-import type { Descendant, Path, SlateEditor } from '@udecode/plate';
+import type { Descendant, Path, SlateEditor, TElement } from '@udecode/plate';
 
 export const insertAINodes = (
   editor: SlateEditor,
@@ -12,12 +12,13 @@ export const insertAINodes = (
   if (!target && !editor.selection?.focus.path) return;
 
   const addAINodes = (plainNodes: Descendant[]) => {
+    console.log('plainNodes', plainNodes);
     return plainNodes.map(
       (plainNode: Descendant): Descendant => ({
         ...plainNode,
         ...(plainNode.children ? {} : { ai: true }),
         ...(plainNode.children
-          ? { children: addAINodes(plainNode.children) }
+          ? { children: addAINodes((plainNode as TElement).children) }
           : {}),
       })
     );
@@ -27,7 +28,6 @@ export const insertAINodes = (
   editor.tf.withoutNormalizing(() => {
     editor.tf.insertFragment(aiNodes, {
       at: editor.api.end(target || editor.selection!.focus.path),
-      select: true,
     });
     editor.tf.collapse({ edge: 'end' });
   });

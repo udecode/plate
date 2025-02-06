@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import { type NodeEntry, isHotkey } from '@udecode/plate';
+import { type NodeEntry, type TNode, isHotkey } from '@udecode/plate';
 import { useEditorPlugin, useHotkeys } from '@udecode/plate/react';
 import {
   AIChatPlugin,
@@ -37,11 +37,19 @@ export function AIMenu() {
     null
   );
 
+  const updateAnchorElement = (node: TNode) => {
+    const el = editor.api.toDOMNode(node);
+
+    if (el) {
+      setAnchorElement(el);
+    }
+  };
+
   const content = useLastAssistantMessage()?.content;
 
   const setOpen = (open: boolean) => {
     if (open) {
-      api.aiChat.show();
+      api.aiChat.show(updateAnchorElement);
     } else {
       api.aiChat.hide();
     }
@@ -82,7 +90,7 @@ export function AIMenu() {
   useHotkeys(
     'meta+j',
     () => {
-      api.aiChat.show();
+      api.aiChat.show(updateAnchorElement);
     },
     { enableOnContentEditable: true, enableOnFormTags: true }
   );
