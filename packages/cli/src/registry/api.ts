@@ -501,6 +501,7 @@ export async function getDefaultConfig(
 // TODO: We're double-fetching here. Use a cache.
 export async function resolveRegistryItems(names: string[], config: Config) {
   let registryDependencies: string[] = []
+
   for (const name of names) {
     const itemRegistryDependencies = await resolveRegistryDependencies(
       name,

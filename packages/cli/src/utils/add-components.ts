@@ -71,6 +71,7 @@ async function addProjectComponents(
   const registrySpinner = spinner(`Checking registry.`, {
     silent: options.silent,
   })?.start()
+
   const tree = await registryResolveItemsTree(components, config)
   if (!tree) {
     registrySpinner?.fail()
