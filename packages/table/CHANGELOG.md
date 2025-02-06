@@ -1,5 +1,18 @@
 # @udecode/plate-table
 
+## 44.0.0
+
+### Major Changes
+
+- [#4048](https://github.com/udecode/plate/pull/4048) by [@zbeyens](https://github.com/zbeyens) – Move store state `selectedCells` and `selectedTables` from `useTableStore` to `TablePlugin` options store. This fixes the issue to get access to those state outside a table element (e.g. the toolbar)
+
+- [#4048](https://github.com/udecode/plate/pull/4048) by [@zbeyens](https://github.com/zbeyens) – Upgrade to `jotai-x@2`. [Migration](https://github.com/udecode/jotai-x/blob/main/packages/jotai-x/CHANGELOG.md#211) needed only if you use one of these stores:
+
+  - `useCommentStore`
+  - `usePlaceholderStore`
+  - `useResizableStore`
+  - `useTableStore`
+
 ## 43.0.3
 
 ## 43.0.2

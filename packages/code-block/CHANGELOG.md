@@ -1,5 +1,7 @@
 # @udecode/plate-code-block
 
+## 44.0.0
+
 ## 43.1.0
 
 ### Minor Changes
