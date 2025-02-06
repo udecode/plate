@@ -11,12 +11,16 @@ export const insertAINodes = (
 ) => {
   if (!target && !editor.selection?.focus.path) return;
 
-  const addAINodes = (plainNodes : Descendant[]) => {
-    return plainNodes.map((plainNode: Descendant): Descendant => ({
-      ...plainNode,
-      ...(plainNode.children ? {} : {ai: true }),
-      ...(plainNode.children ? {children: addAINodes(plainNode.children) } : {})
-    }));
+  const addAINodes = (plainNodes: Descendant[]) => {
+    return plainNodes.map(
+      (plainNode: Descendant): Descendant => ({
+        ...plainNode,
+        ...(plainNode.children ? {} : { ai: true }),
+        ...(plainNode.children
+          ? { children: addAINodes(plainNode.children) }
+          : {}),
+      })
+    );
   };
   const aiNodes = addAINodes(nodes);
 

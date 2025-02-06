@@ -35,7 +35,10 @@ export const useAIChatHooks = () => {
       editor.history.redos.pop();
 
       const deserialized = deserializeMd(editor, content);
-      const nodes = deserialized[0].type === "p" ? [...deserialized[0].children, ...deserialized.slice(1)] : deserialized;
+      const nodes =
+        deserialized[0].type === 'p'
+          ? [...deserialized[0].children, ...deserialized.slice(1)]
+          : deserialized;
 
       withAIBatch(
         editor,
