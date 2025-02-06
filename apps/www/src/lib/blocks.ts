@@ -1,9 +1,9 @@
 'use server';
 
+import { registryItemSchema } from 'shadcx/registry';
 import { z } from 'zod';
 
 import { Index } from '@/__registry__';
-import { registryItemSchema } from 'shadcx/registry';
 
 // SYNC
 

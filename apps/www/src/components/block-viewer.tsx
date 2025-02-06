@@ -6,11 +6,11 @@ import type {
   createFileTreeForRegistryItemFiles,
   FileTree,
 } from '@/lib/registry';
+import type { ImperativePanelHandle } from 'react-resizable-panels';
 import type {
   registryItemFileSchema,
   registryItemSchema,
 } from 'shadcx/registry';
-import type { ImperativePanelHandle } from 'react-resizable-panels';
 import type { z } from 'zod';
 
 import { cn } from '@udecode/cn';
