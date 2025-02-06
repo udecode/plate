@@ -1,15 +1,15 @@
 import React from 'react';
 
 import {
-  useEditorPlugin,
-  useElement,
-  useElementSelector,
-} from '@udecode/plate/react';
-import {
   type ResizeEvent,
   type ResizeHandle,
   resizeLengthClampStatic,
 } from '@udecode/plate-resizable';
+import {
+  useEditorPlugin,
+  useElement,
+  useElementSelector,
+} from '@udecode/plate/react';
 
 import type { TableCellElementState } from './useTableCellElement';
 
@@ -19,19 +19,18 @@ import {
   setTableMarginLeft,
   setTableRowSize,
 } from '../../../lib';
-import { TablePlugin } from '../../TablePlugin';
 import {
   useOverrideColSize,
   useOverrideMarginLeft,
   useOverrideRowSize,
 } from '../../stores';
+import { TablePlugin } from '../../TablePlugin';
 import { useTableColSizes } from '../TableElement/useTableColSizes';
 import { roundCellSizeToStep } from './roundCellSizeToStep';
 
 export type TableCellElementResizableOptions = {
   /** Resize by step instead of by pixel. */
   step?: number;
-
   /** Overrides for X and Y axes. */
   stepX?: number;
   stepY?: number;
@@ -76,7 +75,6 @@ export const useTableCellElementResizable = ({
   const overrideRowSize = useOverrideRowSize();
   const overrideMarginLeft = useOverrideMarginLeft();
 
-  /* eslint-disable @typescript-eslint/no-shadow */
   const setColSize = React.useCallback(
     (colIndex: number, width: number) => {
       setTableColSize(editor, { colIndex, width }, { at: element });
@@ -87,7 +85,6 @@ export const useTableCellElementResizable = ({
     [editor, element, overrideColSize]
   );
 
-  /* eslint-disable @typescript-eslint/no-shadow */
   const setRowSize = React.useCallback(
     (rowIndex: number, height: number) => {
       setTableRowSize(editor, { height, rowIndex }, { at: element });

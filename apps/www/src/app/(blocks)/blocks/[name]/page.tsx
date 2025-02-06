@@ -84,9 +84,8 @@ export default async function BlockPage({
 
   return (
     <div
-      // eslint-disable-next-line tailwindcss/no-custom-classname
       className={cn(
-        'themes-wrapper bg-background [&_[data-block-hide]]:hidden',
+        'themes-wrapper bg-background **:data-block-hide:hidden',
         item.meta?.containerClassName
       )}
     >

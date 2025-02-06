@@ -2,13 +2,13 @@ import { useMemo } from 'react';
 
 import type { EditorPropOptions, TElement } from '@udecode/plate';
 
-import { useEditorPlugin, useEditorRef } from '@udecode/plate/react';
+import { useEditorRef, usePluginOption } from '@udecode/plate/react';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 
 export function useBlockSelectionNodes() {
-  const { editor, useOption } = useEditorPlugin(BlockSelectionPlugin);
-  const selectedIds = useOption('selectedIds');
+  const editor = useEditorRef();
+  const selectedIds = usePluginOption(BlockSelectionPlugin, 'selectedIds');
 
   return useMemo(() => {
     return editor.api.blocks<TElement>({

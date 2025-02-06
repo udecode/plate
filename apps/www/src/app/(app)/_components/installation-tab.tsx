@@ -4,11 +4,12 @@ import * as React from 'react';
 import { useMemo, useState } from 'react';
 
 import { DndPlugin } from '@udecode/plate-dnd';
+import { useStoreValue } from '@udecode/plate/react';
 import { uniqBy } from 'lodash';
 
 import {
   type SettingsStoreValue,
-  settingsStore,
+  SettingsStore,
 } from '@/components/context/settings-store';
 import { Link } from '@/components/link';
 import * as Typography from '@/components/typography';
@@ -48,12 +49,12 @@ const i18n = {
     gettingStartedGuide: '完整指南，请参考',
     imports: '导入',
     install: '安装',
+    installation: '安装',
     installDepsForComponents: '安装组件的依赖项',
     installPeerDeps: '安装依赖项和 Plate：',
     installPlateUI: '安装 Plate UI',
     installPlugins: '安装插件',
     installSelectedPlugins: '安装你选择的插件：',
-    installation: '安装',
     manualInstallation: '手动安装',
     next: '接下来，',
     partialInstallation: '这里是基于你选择的插件和组件的部分安装步骤。',
@@ -81,12 +82,12 @@ const i18n = {
     gettingStartedGuide: 'For a complete guide, refer to the',
     imports: 'Imports',
     install: 'Install',
+    installation: 'Installation',
     installDepsForComponents: 'Install the dependencies for the components',
     installPeerDeps: 'Install the peer dependencies and Plate:',
     installPlateUI: 'install Plate UI',
     installPlugins: 'Install Plugins',
     installSelectedPlugins: 'Install your selected plugins:',
-    installation: 'Installation',
     manualInstallation: 'Manual installation',
     next: 'Next,',
     partialInstallation:
@@ -136,8 +137,8 @@ function getEditorCodeGeneratorResult({
 export default function InstallationTab() {
   const locale = useLocale();
   const content = i18n[locale as keyof typeof i18n];
-  const checkedPlugins = settingsStore.use.checkedPlugins();
-  const checkedComponents = settingsStore.use.checkedComponents();
+  const checkedPlugins = useStoreValue(SettingsStore, 'checkedPlugins');
+  const checkedComponents = useStoreValue(SettingsStore, 'checkedComponents');
   const mounted = useMounted();
   const [isManual, setIsManual] = useState(false);
   const [radioValue, setRadioValue] = useState('editor-basic');

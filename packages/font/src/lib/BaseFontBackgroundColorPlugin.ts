@@ -11,9 +11,6 @@ export const BaseFontBackgroundColorPlugin = createSlatePlugin({
     html: {
       deserializer: {
         isLeaf: true,
-        parse: ({ element, type }) => ({
-          [type]: element.style.backgroundColor,
-        }),
         rules: [
           {
             validStyle: {
@@ -21,6 +18,9 @@ export const BaseFontBackgroundColorPlugin = createSlatePlugin({
             },
           },
         ],
+        parse: ({ element, type }) => ({
+          [type]: element.style.backgroundColor,
+        }),
       },
     },
   },

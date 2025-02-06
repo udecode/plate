@@ -47,7 +47,7 @@
   },
   "dependencies": {
     "@udecode/plate-table": "43.0.3",
-    "papaparse": "^5.5.1"
+    "papaparse": "^5.5.2"
   },
   "devDependencies": {
     "@types/papaparse": "^5.3.15",

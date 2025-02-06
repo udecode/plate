@@ -17,9 +17,5 @@ export function getEditorPlugin<
   editor: PlateEditor,
   plugin: WithRequiredKey<P>
 ): PlatePluginContext<InferConfig<P> extends never ? P : InferConfig<P>> {
-  return {
-    ...(getBaseEditorPlugin(editor, plugin) as any),
-    useOption: (key: any, ...args: any) =>
-      editor.useOption(plugin, key, ...args),
-  };
+  return getBaseEditorPlugin(editor, plugin) as any;
 }

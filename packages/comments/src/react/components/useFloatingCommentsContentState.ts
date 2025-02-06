@@ -1,15 +1,13 @@
 import React from 'react';
 
-import { useEditorPlugin } from '@udecode/plate/react';
+import { usePluginOption } from '@udecode/plate/react';
 
 import { CommentsPlugin } from '../CommentsPlugin';
 
 export const useFloatingCommentsContentState = () => {
-  const { useOption } = useEditorPlugin(CommentsPlugin);
-
-  const activeCommentId = useOption('activeCommentId');
-  const activeComment = useOption('activeComment');
-  const myUserId = useOption('myUserId');
+  const activeCommentId = usePluginOption(CommentsPlugin, 'activeCommentId');
+  const activeComment = usePluginOption(CommentsPlugin, 'activeComment');
+  const myUserId = usePluginOption(CommentsPlugin, 'myUserId');
 
   const ref = React.useRef(null);
 

@@ -44,9 +44,9 @@ In React components, you can use the `useEditorPlugin` hook to access the Plugin
 
 ```ts
 const MyComponent = () => {
-  const { editor, plugin, useOption, type } = useEditorPlugin(MyPlugin);
+  const { editor, plugin, type } = useEditorPlugin(MyPlugin);
   
-  return <div>{useOption('myOption')}</div>;
+  return <div>{type}</div>;
 };
 ```
 
@@ -147,21 +147,6 @@ const MyPlugin = createPlatePlugin({
         option2: 'newValue2',
       });
     },
-  },
-});
-```
-
-### `useOption`
-
-A hook to subscribe to a specific option value in a React component:
-
-```ts
-const MyPlugin = createPlatePlugin({
-  key: 'myPlugin',
-  options: { count: 0 },
-  useHooks: ({ useOption }) => {
-    const count = useOption('count');
-    return <div>Count: {count}</div>;
   },
 });
 ```

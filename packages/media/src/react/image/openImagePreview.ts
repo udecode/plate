@@ -3,7 +3,7 @@ import type { SlateEditor } from '@udecode/plate';
 import type { TMediaElement } from '../../index';
 
 import { BaseImagePlugin } from '../../lib/image/BaseImagePlugin';
-import { type PreviewItem, imagePreviewActions } from './ImagePreviewStore';
+import { type PreviewItem, ImagePreviewStore } from './ImagePreviewStore';
 
 const getUrlList = (editor: SlateEditor) => {
   const enties = editor.api.nodes({
@@ -24,7 +24,7 @@ export const openImagePreview = (
   const { id, url } = element;
   const urlList = getUrlList(editor);
   // document.documentElement.style.overflowY = 'hidden';
-  imagePreviewActions.openEditorId(editor.id);
-  imagePreviewActions.currentPreview({ id, url });
-  imagePreviewActions.previewList(urlList);
+  ImagePreviewStore.set('openEditorId', editor.id);
+  ImagePreviewStore.set('currentPreview', { id, url });
+  ImagePreviewStore.set('previewList', urlList);
 };

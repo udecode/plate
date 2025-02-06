@@ -4,6 +4,8 @@ import type { Metadata } from 'next';
 
 import { EditorDescription } from './editor-description';
 
+// SYNC
+
 export const metadata: Metadata = {
   description:
     'Beautifully designed. Copy and paste into your apps. Open Source.',
@@ -16,7 +18,7 @@ export default function BlocksLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="container relative">
+    <div className="relative container">
       <Suspense fallback={null}>
         <EditorDescription />
       </Suspense>

@@ -6,12 +6,6 @@
  * https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values#Speech_recognition_keys
  */
 export const Key = {
-  /** Changes the input mode on an external audio/video receiver (AVR) unit. */
-  AVRInput: 'AVRInput',
-
-  /** Toggles the power on an external AVR unit. */
-  AVRPower: 'AVRPower',
-
   /**
    * The Accept, Commit, or OK key or button. Accepts the currently selected
    * option or input method sequence conversion.
@@ -116,6 +110,12 @@ export const Key = {
 
   /** Increases the audio volume. */
   AudioVolumeUp: 'AudioVolumeUp',
+
+  /** Changes the input mode on an external audio/video receiver (AVR) unit. */
+  AVRInput: 'AVRInput',
+
+  /** Toggles the power on an external AVR unit. */
+  AVRPower: 'AVRPower',
 
   /** The Backspace key. This key is labeled Delete on Mac keyboards. */
   Backspace: 'Backspace',
@@ -259,9 +259,6 @@ export const Key = {
   /** The Cut key (on certain extended keyboards). */
   Cut: 'Cut',
 
-  /** Switches the input source to the Digital Video Recorder (DVR). */
-  DVR: 'DVR',
-
   /**
    * A dead "combining" key; that is, a key which is used in tandem with other
    * keys to generate accented and other modified characters. If pressed by
@@ -293,6 +290,9 @@ export const Key = {
 
   /** The numeric keypad's division key, /. */
   Divide: 'Divide',
+
+  /** Switches the input source to the Digital Video Recorder (DVR). */
+  DVR: 'DVR',
 
   /**
    * The Eisu key. This key's purpose is defined by the IME, but may be used to
@@ -329,14 +329,14 @@ export const Key = {
    */
   Escape: 'Escape',
 
-  /** The ExSel (Extend Selection) key. */
-  ExSel: 'ExSel',
-
   /** The Execute key. */
   Execute: 'Execute',
 
   /** The Exit button, which exits the curreent application or menu. */
   Exit: 'Exit',
+
+  /** The ExSel (Extend Selection) key. */
+  ExSel: 'ExSel',
 
   /** The first general-purpose function key, F1. */
   F1: 'F1',
@@ -991,12 +991,6 @@ export const Key = {
   /** The Romaji key; selects the Roman character set. */
   Romaji: 'Romaji',
 
-  /** Cycles among input modes on an external set-top box (STB). */
-  STBInput: 'STBInput',
-
-  /** Toggles on and off an external STB. */
-  STBPower: 'STBPower',
-
   /** Saves the current document or message. */
   Save: 'Save',
 
@@ -1075,6 +1069,12 @@ export const Key = {
    */
   Standby: 'Standby',
 
+  /** Cycles among input modes on an external set-top box (STB). */
+  STBInput: 'STBInput',
+
+  /** Toggles on and off an external STB. */
+  STBPower: 'STBPower',
+
   /** Toggles the display of subtitles on and off if they're available. */
   Subtitle: 'Subtitle',
 
@@ -1089,6 +1089,12 @@ export const Key = {
 
   /** The Symbol Lock key. */
   SymbolLock: 'SymbolLock',
+
+  /** The Horizontal Tab key, Tab. */
+  Tab: 'Tab',
+
+  /** Toggles display of teletext, if available. */
+  Teletext: 'Teletext',
 
   /** Switches into TV viewing mode. */
   TV: 'TV',
@@ -1195,12 +1201,6 @@ export const Key = {
 
   /** Timer programming button. */
   TVTimer: 'TVTimer',
-
-  /** The Horizontal Tab key, Tab. */
-  Tab: 'Tab',
-
-  /** Toggles display of teletext, if available. */
-  Teletext: 'Teletext',
 
   /** Undo the last action. */
   Undo: 'Undo',

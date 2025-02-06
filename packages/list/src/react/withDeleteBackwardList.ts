@@ -2,15 +2,15 @@ import {
   type NodeEntry,
   type TElement,
   BaseParagraphPlugin,
-  PathApi,
   deleteMerge,
+  PathApi,
 } from '@udecode/plate';
-import { type OverrideEditor, getEditorPlugin } from '@udecode/plate/react';
 import { BaseResetNodePlugin } from '@udecode/plate-reset-node';
 import {
-  SIMULATE_BACKSPACE,
   onKeyDownResetNode,
+  SIMULATE_BACKSPACE,
 } from '@udecode/plate-reset-node/react';
+import { type OverrideEditor, getEditorPlugin } from '@udecode/plate/react';
 
 import type { ListConfig } from '../lib/BaseListPlugin';
 
@@ -39,8 +39,8 @@ export const withDeleteBackwardList: OverrideEditor<ListConfig> = ({
 
           if (
             editor.api.isAt({
-              match: (node) => node.type === editor.getType(BaseListItemPlugin),
               start: true,
+              match: (node) => node.type === editor.getType(BaseListItemPlugin),
             })
           ) {
             editor.tf.withoutNormalizing(() => {
@@ -64,8 +64,8 @@ export const withDeleteBackwardList: OverrideEditor<ListConfig> = ({
                           {
                             defaultType: editor.getType(BaseParagraphPlugin),
                             hotkey: 'backspace',
-                            predicate: () => editor.api.isAt({ start: true }),
                             types: [editor.getType(BaseListItemPlugin)],
+                            predicate: () => editor.api.isAt({ start: true }),
                             onReset: (e) => unwrapList(e),
                           },
                         ],
@@ -96,8 +96,8 @@ export const withDeleteBackwardList: OverrideEditor<ListConfig> = ({
                 const licType = editor.getType(BaseListItemContentPlugin);
                 const _licNodes = editor.api.nodes<TElement>({
                   at: listItem[1],
-                  match: (node) => node.type === licType,
                   mode: 'lowest',
+                  match: (node) => node.type === licType,
                 });
                 currentLic = [..._licNodes][0];
                 hasMultipleChildren = currentLic[0].children.length > 1;

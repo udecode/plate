@@ -4,8 +4,7 @@ import { createSlatePlugin } from '@udecode/plate';
 import { createSlateEditor } from '@udecode/plate';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { jsxt } from '@udecode/plate-test-utils';
-
-import type { AutoformatPluginOptions } from '../../../types';
+import type { AutoformatConfig } from '../../../BaseAutoformatPlugin';
 
 jsxt;
 
@@ -29,7 +28,7 @@ const output = (
 it('autoformats a block with a single character trigger', () => {
   const linkEditor = createSlateEditor({
     plugins: [
-      createSlatePlugin<string, AutoformatPluginOptions>({
+      createSlatePlugin<string, AutoformatConfig['options']>({
         options: {
           rules: [
             {

@@ -9,13 +9,13 @@ export interface TDateElement extends TElement {
 
 export const BaseDatePlugin = createSlatePlugin({
   key: 'date',
+  handlers: {},
   node: {
     isElement: true,
     isInline: true,
     isSelectable: false,
     isVoid: true,
   },
-  handlers: {},
 })
   .overrideEditor(({ editor, tf: { move }, type }) => ({
     transforms: {

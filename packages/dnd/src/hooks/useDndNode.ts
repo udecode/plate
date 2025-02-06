@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { NativeTypes, getEmptyImage } from 'react-dnd-html5-backend';
+import { getEmptyImage, NativeTypes } from 'react-dnd-html5-backend';
 
 import type { ConnectDragSource, DropTargetMonitor } from 'react-dnd';
 
@@ -7,32 +7,27 @@ import { type PlateEditor, useEditorRef } from '@udecode/plate/react';
 
 import type { DragItemNode } from '../types';
 
-import { DRAG_ITEM_BLOCK, DndPlugin } from '../DndPlugin';
+import { DndPlugin, DRAG_ITEM_BLOCK } from '../DndPlugin';
 import { type UseDragNodeOptions, useDragNode } from './useDragNode';
 import { type UseDropNodeOptions, useDropNode } from './useDropNode';
 
 export type UseDndNodeOptions = Pick<UseDropNodeOptions, 'element'> &
   Partial<Pick<UseDropNodeOptions, 'canDropNode' | 'nodeRef'>> &
   Partial<Pick<UseDragNodeOptions, 'type'>> & {
+    /** Options passed to the drag hook. */
+    drag?: Partial<Omit<UseDragNodeOptions, 'type'>>;
     /** Options passed to the drop hook, excluding element, nodeRef. */
     drop?: Partial<
       Omit<UseDropNodeOptions, 'canDropNode' | 'element' | 'nodeRef'>
     >;
-
+    /** Orientation of the drag and drop interaction. */
+    orientation?: 'horizontal' | 'vertical';
     preview?: {
       /** Whether to disable the preview. */
       disable?: boolean;
-
       /** The reference to the preview element. */
       ref?: any;
     };
-
-    /** Options passed to the drag hook. */
-    drag?: Partial<Omit<UseDragNodeOptions, 'type'>>;
-
-    /** Orientation of the drag and drop interaction. */
-    orientation?: 'horizontal' | 'vertical';
-
     onDropHandler?: (
       editor: PlateEditor,
       props: {

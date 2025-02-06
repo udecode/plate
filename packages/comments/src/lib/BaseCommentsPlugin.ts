@@ -3,10 +3,10 @@ import {
   type PluginConfig,
   type Value,
   type WithPartial,
-  NodeApi,
   bindFirst,
   createTSlatePlugin,
   nanoid,
+  NodeApi,
 } from '@udecode/plate';
 
 import type { CommentUser, TComment } from './types';
@@ -29,34 +29,31 @@ export type BaseCommentsConfig = PluginConfig<
     onCommentUpdate:
       | ((value: Partial<Omit<TComment, 'id'>> & Pick<TComment, 'id'>) => void)
       | null;
-  } & CommentsSelectors,
+  },
   {
-    comment: CommentsApi;
+    comment: {
+      addComment: (
+        value: WithPartial<TComment, 'createdAt' | 'id' | 'userId'>
+      ) => WithPartial<TComment, 'userId'>;
+      addRawComment: (id: string) => void;
+      removeComment: (id: string | null) => void;
+      resetNewCommentValue: () => void;
+      updateComment: (id: string | null, value: Partial<TComment>) => void;
+    };
   },
   {
     insert: {
       comment: OmitFirst<typeof insertComment>;
     };
+  },
+  {
+    activeComment: () => TComment | null;
+    commentById: (id: string | null) => TComment | null;
+    myUser: () => CommentUser | null;
+    newText: () => string;
+    userById: (id: string | null) => CommentUser | null;
   }
 >;
-
-export type CommentsSelectors = {
-  activeComment?: () => TComment | null;
-  commentById?: (id: string | null) => TComment | null;
-  myUser?: () => CommentUser | null;
-  newText?: () => string;
-  userById?: (id: string | null) => CommentUser | null;
-};
-
-export type CommentsApi = {
-  addComment: (
-    value: WithPartial<TComment, 'createdAt' | 'id' | 'userId'>
-  ) => WithPartial<TComment, 'userId'>;
-  addRawComment: (id: string) => void;
-  removeComment: (id: string | null) => void;
-  resetNewCommentValue: () => void;
-  updateComment: (id: string | null, value: Partial<TComment>) => void;
-};
 
 export const BaseCommentsPlugin = createTSlatePlugin<BaseCommentsConfig>({
   key: 'comment',
@@ -107,7 +104,7 @@ export const BaseCommentsPlugin = createTSlatePlugin<BaseCommentsConfig>({
     },
   },
 })
-  .extendOptions<Partial<CommentsSelectors>>(({ getOptions }) => ({
+  .extendSelectors<BaseCommentsConfig['selectors']>(({ getOptions }) => ({
     activeComment: () => {
       const { activeCommentId, comments } = getOptions();
 
@@ -137,55 +134,57 @@ export const BaseCommentsPlugin = createTSlatePlugin<BaseCommentsConfig>({
     },
   }))
   .overrideEditor(withComments)
-  .extendApi<Partial<CommentsApi>>(({ getOptions, setOptions }) => ({
-    addComment: (value) => {
-      const { myUserId } = getOptions();
-      const id = value.id ?? nanoid();
-      const newComment: WithPartial<TComment, 'userId'> = {
-        id,
-        createdAt: Date.now(),
-        userId: myUserId ?? undefined,
-        ...value,
-      };
-
-      if (newComment.userId) {
-        setOptions((draft) => {
-          draft.comments![id] = newComment as TComment;
-        });
-      }
-
-      return newComment;
-    },
-    addRawComment: (id) => {
-      const { myUserId } = getOptions();
-
-      if (!myUserId) return;
-
-      setOptions((draft) => {
-        draft.comments![id] = {
+  .extendApi<Partial<BaseCommentsConfig['api']['comment']>>(
+    ({ getOptions, setOptions }) => ({
+      addComment: (value) => {
+        const { myUserId } = getOptions();
+        const id = value.id ?? nanoid();
+        const newComment: WithPartial<TComment, 'userId'> = {
           id,
-          userId: myUserId,
-        } as TComment;
-      });
-    },
-    removeComment: (id) => {
-      if (!id) return;
+          createdAt: Date.now(),
+          userId: myUserId ?? undefined,
+          ...value,
+        };
 
-      setOptions((draft) => {
-        delete draft.comments![id];
-      });
-    },
-    resetNewCommentValue: () => {
-      setOptions({ newValue: [{ children: [{ text: '' }], type: 'p' }] });
-    },
-    updateComment: (id, value) => {
-      if (!id) return;
+        if (newComment.userId) {
+          setOptions((draft) => {
+            draft.comments![id] = newComment as TComment;
+          });
+        }
 
-      setOptions((draft) => {
-        draft.comments![id] = { ...draft.comments![id], ...value };
-      });
-    },
-  }))
+        return newComment;
+      },
+      addRawComment: (id) => {
+        const { myUserId } = getOptions();
+
+        if (!myUserId) return;
+
+        setOptions((draft) => {
+          draft.comments![id] = {
+            id,
+            userId: myUserId,
+          } as TComment;
+        });
+      },
+      removeComment: (id) => {
+        if (!id) return;
+
+        setOptions((draft) => {
+          delete draft.comments![id];
+        });
+      },
+      resetNewCommentValue: () => {
+        setOptions({ newValue: [{ children: [{ text: '' }], type: 'p' }] });
+      },
+      updateComment: (id, value) => {
+        if (!id) return;
+
+        setOptions((draft) => {
+          draft.comments![id] = { ...draft.comments![id], ...value };
+        });
+      },
+    })
+  )
   .extendEditorTransforms(({ editor }) => ({
     insert: { comment: bindFirst(insertComment, editor) },
   }));

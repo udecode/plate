@@ -1,4 +1,3 @@
-import { ParagraphPlugin } from '@udecode/plate/react';
 import { AIChatPlugin, AIPlugin, CopilotPlugin } from '@udecode/plate-ai/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
@@ -38,8 +37,8 @@ import {
 import { TocPlugin } from '@udecode/plate-heading/react';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
-import { IndentPlugin } from '@udecode/plate-indent/react';
 import { IndentListPlugin } from '@udecode/plate-indent-list/react';
+import { IndentPlugin } from '@udecode/plate-indent/react';
 import { JuicePlugin } from '@udecode/plate-juice';
 import { KbdPlugin } from '@udecode/plate-kbd/react';
 import { LineHeightPlugin } from '@udecode/plate-line-height/react';
@@ -69,13 +68,20 @@ import { TabbablePlugin } from '@udecode/plate-tabbable/react';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
+import { ParagraphPlugin } from '@udecode/plate/react';
 
 import { getComponentNavItem, getPluginNavItem } from '@/config/docs';
 import { FixedToolbarPlugin } from '@/registry/default/components/editor/plugins/fixed-toolbar-plugin';
 import { FloatingToolbarPlugin } from '@/registry/default/components/editor/plugins/floating-toolbar-plugin';
 
+export type CustomizerBadge = {
+  label: string;
+};
+
 export type SettingPlugin = {
   id: string;
+  badges?: CustomizerBadge[];
+  cnImports?: string[];
   components?: {
     id: string; // e.g. 'blockquote-element'
     label: string; // e.g. 'Blockquote'
@@ -92,8 +98,6 @@ export type SettingPlugin = {
     registry?: string;
     route?: string;
   }[];
-  badges?: CustomizerBadge[];
-  cnImports?: string[];
   conflicts?: string[];
   customImports?: string[];
   dependencies?: string[];
@@ -108,14 +112,13 @@ export type SettingPlugin = {
   route?: string;
 };
 
-export type CustomizerBadge = {
-  label: string;
-};
-
 export const customizerBadges = {
   element: {
     description: '',
     label: 'Element',
+  },
+  handler: {
+    label: 'Handler',
   },
   inline: {
     label: 'Inline',
@@ -134,9 +137,6 @@ export const customizerBadges = {
   },
   void: {
     label: 'Void',
-  },
-  handler: {
-    label: 'Handler',
   },
 };
 
@@ -202,24 +202,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginFactory: 'BlockMenuPlugin',
     route: getPluginNavItem('block-menu').href,
   },
-  [BlockSelectionPlugin.key]: {
-    id: BlockSelectionPlugin.key,
-    badges: [customizerBadges.ui],
-    dependencies: [NodeIdPlugin.key],
-    label: 'Block Selection',
-    npmPackage: '@udecode/plate-selection',
-    pluginFactory: 'BlockSelectionPlugin',
-    // pluginOptions: [
-    //   `options: {`,
-    //   `  sizes: {`,
-    //   `    top: 0,`,
-    //   `    bottom: 0,`,
-    //   `  },`,
-    //   `},`,
-    // ],
-    reactImport: true,
-    route: getPluginNavItem('block-selection').href,
-  },
   [BlockquotePlugin.key]: {
     id: BlockquotePlugin.key,
     badges: [customizerBadges.element],
@@ -237,6 +219,24 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginFactory: 'BlockquotePlugin',
     reactImport: true,
     route: getPluginNavItem('basic-elements').href,
+  },
+  [BlockSelectionPlugin.key]: {
+    id: BlockSelectionPlugin.key,
+    badges: [customizerBadges.ui],
+    dependencies: [NodeIdPlugin.key],
+    label: 'Block Selection',
+    npmPackage: '@udecode/plate-selection',
+    pluginFactory: 'BlockSelectionPlugin',
+    // pluginOptions: [
+    //   `options: {`,
+    //   `  sizes: {`,
+    //   `    top: 0,`,
+    //   `    bottom: 0,`,
+    //   `  },`,
+    //   `},`,
+    // ],
+    reactImport: true,
+    route: getPluginNavItem('block-selection').href,
   },
   [BoldPlugin.key]: {
     id: BoldPlugin.key,
@@ -334,6 +334,32 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginFactory: 'CodeSyntaxPlugin',
     reactImport: true,
   },
+  column: {
+    id: 'column',
+    badges: [customizerBadges.element],
+    components: [
+      {
+        id: 'column-group-element',
+        label: 'ColumnGroupElement',
+        pluginKey: 'ColumnPlugin.key',
+        route: getComponentNavItem('column-group-element').href,
+        usage: 'ColumnGroupElement',
+      },
+      {
+        id: 'column-element',
+        label: 'ColumnElement',
+        pluginImports: ['ColumnItemPlugin'],
+        pluginKey: 'ColumnItemPlugin.key',
+        route: getComponentNavItem('column-element').href,
+        usage: 'ColumnElement',
+      },
+    ],
+    label: 'Column',
+    npmPackage: '@udecode/plate-layout',
+    pluginFactory: 'ColumnPlugin',
+    reactImport: true,
+    route: getPluginNavItem('column').href,
+  },
   [CommentsPlugin.key]: {
     id: CommentsPlugin.key,
     badges: [customizerBadges.leaf],
@@ -360,6 +386,27 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginFactory: 'CommentsPlugin',
     reactImport: true,
     route: getPluginNavItem('comments').href,
+  },
+  components: {
+    id: 'components',
+    badges: [customizerBadges.ui],
+    components: [
+      {
+        id: 'editor',
+        import: 'Editor, EditorContainer',
+        label: 'Editor',
+        route: getComponentNavItem('editor').href,
+        usage: 'Editor',
+      },
+      {
+        id: 'placeholder',
+        label: 'Placeholder',
+        registry: 'placeholder',
+        route: getComponentNavItem('placeholder').href,
+        usage: 'withPlaceholders',
+      },
+    ],
+    label: 'Components',
   },
   [CopilotPlugin.key]: {
     id: CopilotPlugin.key,
@@ -567,6 +614,78 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginFactory: 'FontSizePlugin',
     route: getPluginNavItem('font').href,
   },
+  heading: {
+    id: 'heading',
+    badges: [customizerBadges.element],
+    components: [
+      {
+        id: 'h1',
+        cnImports: ['withProps'],
+        filename: 'heading-element',
+        import: 'HeadingElement',
+        label: 'H1Element',
+        pluginKey: 'HEADING_KEYS.h1',
+        route: getComponentNavItem('heading-element').href,
+        usage: `withProps(HeadingElement, { variant: 'h1' })`,
+      },
+      {
+        id: 'h2',
+        cnImports: ['withProps'],
+        filename: 'heading-element',
+        import: 'HeadingElement',
+        label: 'H2Element',
+        pluginKey: 'HEADING_KEYS.h2',
+        route: getComponentNavItem('heading-element').href,
+        usage: `withProps(HeadingElement, { variant: 'h2' })`,
+      },
+      {
+        id: 'h3',
+        cnImports: ['withProps'],
+        filename: 'heading-element',
+        import: 'HeadingElement',
+        label: 'H3Element',
+        pluginKey: 'HEADING_KEYS.h3',
+        route: getComponentNavItem('heading-element').href,
+        usage: `withProps(HeadingElement, { variant: 'h3' })`,
+      },
+      {
+        id: 'h4',
+        cnImports: ['withProps'],
+        filename: 'heading-element',
+        import: 'HeadingElement',
+        label: 'H4Element',
+        pluginKey: 'HEADING_KEYS.h4',
+        route: getComponentNavItem('heading-element').href,
+        usage: `withProps(HeadingElement, { variant: 'h4' })`,
+      },
+      {
+        id: 'h5',
+        cnImports: ['withProps'],
+        filename: 'heading-element',
+        import: 'HeadingElement',
+        label: 'H5Element',
+        pluginKey: 'HEADING_KEYS.h5',
+        route: getComponentNavItem('heading-element').href,
+        usage: `withProps(HeadingElement, { variant: 'h5' })`,
+      },
+      {
+        id: 'h6',
+        cnImports: ['withProps'],
+        filename: 'heading-element',
+        import: 'HeadingElement',
+        label: 'H6Element',
+        pluginKey: 'HEADING_KEYS.h6',
+        route: getComponentNavItem('heading-element').href,
+        usage: `withProps(HeadingElement, { variant: 'h6' })`,
+      },
+    ],
+    customImports: [`import { HEADING_KEYS } from '@udecode/plate-heading';`],
+    label: 'Heading',
+    npmPackage: '@udecode/plate-heading',
+    pluginFactory: 'HeadingPlugin',
+    reactImport: true,
+    route: getPluginNavItem('basic-elements').href,
+  },
   [HighlightPlugin.key]: {
     id: HighlightPlugin.key,
     badges: [customizerBadges.leaf],
@@ -733,6 +852,53 @@ export const customizerItems: Record<string, SettingPlugin> = {
     reactImport: true,
     route: getPluginNavItem('link').href,
   },
+  list: {
+    id: 'list',
+    badges: [customizerBadges.element],
+    components: [
+      {
+        id: 'ul',
+        cnImports: ['withProps'],
+        filename: 'list-element',
+        import: 'ListElement',
+        label: 'BulletedListElement',
+        pluginImports: ['BulletedListPlugin'],
+        pluginKey: 'BulletedListPlugin.key',
+        route: getComponentNavItem('list-element').href,
+        usage: `withProps(ListElement, { variant: 'ul' })`,
+      },
+      {
+        id: 'ol',
+        cnImports: ['withProps'],
+        filename: 'list-element',
+        import: 'ListElement',
+        label: 'NumberedListElement',
+        noImport: true,
+        pluginImports: ['NumberedListPlugin'],
+        pluginKey: 'NumberedListPlugin.key',
+        route: getComponentNavItem('list-element').href,
+        usage: `withProps(ListElement, { variant: 'ol' })`,
+      },
+      {
+        id: 'li',
+        cnImports: ['withProps'],
+        filename: 'list-element',
+        label: 'ListItemElement',
+        noImport: true,
+        plateImports: ['PlateElement'],
+        pluginImports: ['ListItemPlugin'],
+        pluginKey: 'ListItemPlugin.key',
+        usage: `withProps(PlateElement, { as: 'li' })`,
+      },
+    ],
+    conflicts: [IndentListPlugin.key],
+    label: 'List',
+    npmPackage: '@udecode/plate-list',
+    pluginFactory: 'ListPlugin',
+    reactImport: true,
+    route: getPluginNavItem('list').href,
+  },
+
   [MarkdownPlugin.key]: {
     id: MarkdownPlugin.key,
     badges: [customizerBadges.handler],
@@ -740,6 +906,14 @@ export const customizerItems: Record<string, SettingPlugin> = {
     npmPackage: '@udecode/plate-markdown',
     pluginFactory: 'MarkdownPlugin',
     route: getPluginNavItem('markdown').href,
+  },
+  media_placeholder: {
+    id: 'media_placeholder',
+    label: 'MediaPlaceholder',
+    npmPackage: '@udecode/plate-placeholder',
+    pluginFactory: 'PlaceholderPlugin',
+    reactImport: true,
+    route: getPluginNavItem('media').href,
   },
   [MediaEmbedPlugin.key]: {
     id: MediaEmbedPlugin.key,
@@ -796,7 +970,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
     reactImport: true,
     route: getPluginNavItem('mention').href,
   },
-
   [NodeIdPlugin.key]: {
     id: NodeIdPlugin.key,
     badges: [customizerBadges.normalizer],
@@ -1093,179 +1266,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginFactory: 'UnderlinePlugin',
     reactImport: true,
     route: getPluginNavItem('basic-marks').href,
-  },
-  column: {
-    id: 'column',
-    badges: [customizerBadges.element],
-    components: [
-      {
-        id: 'column-group-element',
-        label: 'ColumnGroupElement',
-        pluginKey: 'ColumnPlugin.key',
-        route: getComponentNavItem('column-group-element').href,
-        usage: 'ColumnGroupElement',
-      },
-      {
-        id: 'column-element',
-        label: 'ColumnElement',
-        pluginImports: ['ColumnItemPlugin'],
-        pluginKey: 'ColumnItemPlugin.key',
-        route: getComponentNavItem('column-element').href,
-        usage: 'ColumnElement',
-      },
-    ],
-    label: 'Column',
-    npmPackage: '@udecode/plate-layout',
-    pluginFactory: 'ColumnPlugin',
-    reactImport: true,
-    route: getPluginNavItem('column').href,
-  },
-  components: {
-    id: 'components',
-    badges: [customizerBadges.ui],
-    components: [
-      {
-        id: 'editor',
-        import: 'Editor, EditorContainer',
-        label: 'Editor',
-        route: getComponentNavItem('editor').href,
-        usage: 'Editor',
-      },
-      {
-        id: 'placeholder',
-        label: 'Placeholder',
-        registry: 'placeholder',
-        route: getComponentNavItem('placeholder').href,
-        usage: 'withPlaceholders',
-      },
-    ],
-    label: 'Components',
-  },
-  heading: {
-    id: 'heading',
-    badges: [customizerBadges.element],
-    components: [
-      {
-        id: 'h1',
-        cnImports: ['withProps'],
-        filename: 'heading-element',
-        import: 'HeadingElement',
-        label: 'H1Element',
-        pluginKey: 'HEADING_KEYS.h1',
-        route: getComponentNavItem('heading-element').href,
-        usage: `withProps(HeadingElement, { variant: 'h1' })`,
-      },
-      {
-        id: 'h2',
-        cnImports: ['withProps'],
-        filename: 'heading-element',
-        import: 'HeadingElement',
-        label: 'H2Element',
-        pluginKey: 'HEADING_KEYS.h2',
-        route: getComponentNavItem('heading-element').href,
-        usage: `withProps(HeadingElement, { variant: 'h2' })`,
-      },
-      {
-        id: 'h3',
-        cnImports: ['withProps'],
-        filename: 'heading-element',
-        import: 'HeadingElement',
-        label: 'H3Element',
-        pluginKey: 'HEADING_KEYS.h3',
-        route: getComponentNavItem('heading-element').href,
-        usage: `withProps(HeadingElement, { variant: 'h3' })`,
-      },
-      {
-        id: 'h4',
-        cnImports: ['withProps'],
-        filename: 'heading-element',
-        import: 'HeadingElement',
-        label: 'H4Element',
-        pluginKey: 'HEADING_KEYS.h4',
-        route: getComponentNavItem('heading-element').href,
-        usage: `withProps(HeadingElement, { variant: 'h4' })`,
-      },
-      {
-        id: 'h5',
-        cnImports: ['withProps'],
-        filename: 'heading-element',
-        import: 'HeadingElement',
-        label: 'H5Element',
-        pluginKey: 'HEADING_KEYS.h5',
-        route: getComponentNavItem('heading-element').href,
-        usage: `withProps(HeadingElement, { variant: 'h5' })`,
-      },
-      {
-        id: 'h6',
-        cnImports: ['withProps'],
-        filename: 'heading-element',
-        import: 'HeadingElement',
-        label: 'H6Element',
-        pluginKey: 'HEADING_KEYS.h6',
-        route: getComponentNavItem('heading-element').href,
-        usage: `withProps(HeadingElement, { variant: 'h6' })`,
-      },
-    ],
-    customImports: [`import { HEADING_KEYS } from '@udecode/plate-heading';`],
-    label: 'Heading',
-    npmPackage: '@udecode/plate-heading',
-    pluginFactory: 'HeadingPlugin',
-    reactImport: true,
-    route: getPluginNavItem('basic-elements').href,
-  },
-  list: {
-    id: 'list',
-    badges: [customizerBadges.element],
-    components: [
-      {
-        id: 'ul',
-        cnImports: ['withProps'],
-        filename: 'list-element',
-        import: 'ListElement',
-        label: 'BulletedListElement',
-        pluginImports: ['BulletedListPlugin'],
-        pluginKey: 'BulletedListPlugin.key',
-        route: getComponentNavItem('list-element').href,
-        usage: `withProps(ListElement, { variant: 'ul' })`,
-      },
-      {
-        id: 'ol',
-        cnImports: ['withProps'],
-        filename: 'list-element',
-        import: 'ListElement',
-        label: 'NumberedListElement',
-        noImport: true,
-        pluginImports: ['NumberedListPlugin'],
-        pluginKey: 'NumberedListPlugin.key',
-        route: getComponentNavItem('list-element').href,
-        usage: `withProps(ListElement, { variant: 'ol' })`,
-      },
-      {
-        id: 'li',
-        cnImports: ['withProps'],
-        filename: 'list-element',
-        label: 'ListItemElement',
-        noImport: true,
-        plateImports: ['PlateElement'],
-        pluginImports: ['ListItemPlugin'],
-        pluginKey: 'ListItemPlugin.key',
-        usage: `withProps(PlateElement, { as: 'li' })`,
-      },
-    ],
-    conflicts: [IndentListPlugin.key],
-    label: 'List',
-    npmPackage: '@udecode/plate-list',
-    pluginFactory: 'ListPlugin',
-    reactImport: true,
-    route: getPluginNavItem('list').href,
-  },
-  media_placeholder: {
-    id: 'media_placeholder',
-    label: 'MediaPlaceholder',
-    npmPackage: '@udecode/plate-placeholder',
-    pluginFactory: 'PlaceholderPlugin',
-    reactImport: true,
-    route: getPluginNavItem('media').href,
   },
 };
 

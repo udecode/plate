@@ -4,9 +4,9 @@ import type { MediaPluginOptions, TMediaElement } from '../media/index';
 
 import { parseIframeUrl } from './parseIframeUrl';
 
-export interface TMediaEmbedElement extends TMediaElement {}
-
 export type MediaEmbedConfig = PluginConfig<'media_embed', MediaPluginOptions>;
+
+export interface TMediaEmbedElement extends TMediaElement {}
 
 /**
  * Enables support for embeddable media such as YouTube or Vimeo videos,
@@ -21,6 +21,11 @@ export const BaseMediaEmbedPlugin = createTSlatePlugin<MediaEmbedConfig>({
   parsers: {
     html: {
       deserializer: {
+        rules: [
+          {
+            validNodeName: 'IFRAME',
+          },
+        ],
         parse: ({ element, type }) => {
           const url = element.getAttribute('src');
 
@@ -31,11 +36,6 @@ export const BaseMediaEmbedPlugin = createTSlatePlugin<MediaEmbedConfig>({
             };
           }
         },
-        rules: [
-          {
-            validNodeName: 'IFRAME',
-          },
-        ],
       },
     },
   },

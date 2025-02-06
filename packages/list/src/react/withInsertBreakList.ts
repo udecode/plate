@@ -1,11 +1,11 @@
 import type { ResetNodeConfig } from '@udecode/plate-reset-node';
 
 import { BaseParagraphPlugin, createTSlatePlugin } from '@udecode/plate';
-import { type OverrideEditor, getEditorPlugin } from '@udecode/plate/react';
 import {
-  SIMULATE_BACKSPACE,
   onKeyDownResetNode,
+  SIMULATE_BACKSPACE,
 } from '@udecode/plate-reset-node/react';
+import { type OverrideEditor, getEditorPlugin } from '@udecode/plate/react';
 
 import { type ListConfig, BaseListItemPlugin } from '../lib/BaseListPlugin';
 import { getListItemEntry } from '../lib/queries/getListItemEntry';
@@ -48,10 +48,10 @@ export const withInsertBreakList: OverrideEditor<ListConfig> = ({
                 rules: [
                   {
                     defaultType: editor.getType(BaseParagraphPlugin),
+                    types: [editor.getType(BaseListItemPlugin)],
                     predicate: () =>
                       !moved &&
                       editor.api.isEmpty(editor.selection, { block: true }),
-                    types: [editor.getType(BaseListItemPlugin)],
                     onReset: (_editor) => unwrapList(_editor),
                   },
                 ],

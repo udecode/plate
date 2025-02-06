@@ -12,7 +12,6 @@ export type TrailingBlockConfig = PluginConfig<
   {
     /** Level where the trailing node should be, the first level being 0. */
     level?: number;
-
     /** Type of the trailing block */
     type?: string;
   } & QueryNodeOptions

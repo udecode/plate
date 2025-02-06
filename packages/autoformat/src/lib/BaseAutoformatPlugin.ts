@@ -1,12 +1,16 @@
 import { type PluginConfig, createTSlatePlugin } from '@udecode/plate';
 
-import type { AutoformatPluginOptions } from './types';
+import type { AutoformatRule } from './types';
 
 import { withAutoformat } from './withAutoformat';
 
 export type AutoformatConfig = PluginConfig<
   'autoformat',
-  AutoformatPluginOptions
+  {
+    enableUndoOnDelete?: boolean;
+    /** A list of triggering rules. */
+    rules?: AutoformatRule[];
+  }
 >;
 
 /** @see {@link withAutoformat} */

@@ -16,8 +16,8 @@ export const getMarkdown = (
     const blocks = editor.getOption(BlockSelectionPlugin, 'isSelectingSome')
       ? editor.getApi(BlockSelectionPlugin).blockSelection.getNodes()
       : editor.api.nodes({
-          match: (n) => editor.api.isBlock(n),
           mode: 'highest',
+          match: (n) => editor.api.isBlock(n),
         });
 
     const nodes = Array.from(blocks, (entry) => entry[0]);

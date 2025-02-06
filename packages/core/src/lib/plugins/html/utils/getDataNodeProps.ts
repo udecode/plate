@@ -27,7 +27,6 @@ const getDefaultNodeProps = ({
 
       // Parse value if it's a boolean or number string
 
-      //eslint-disable-next-line
       if (value === undefined) return;
 
       let parsedValue: any = value;

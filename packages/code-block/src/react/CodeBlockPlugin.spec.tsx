@@ -4,8 +4,8 @@ import type { SlateEditor } from '@udecode/plate';
 
 import { createSlatePlugin } from '@udecode/plate';
 import { BaseParagraphPlugin } from '@udecode/plate';
-import { createPlateEditor } from '@udecode/plate/react';
 import { jsxt } from '@udecode/plate-test-utils';
+import { createPlateEditor } from '@udecode/plate/react';
 
 import { CodeBlockPlugin } from './CodeBlockPlugin';
 
@@ -40,10 +40,10 @@ describe('code block deserialization', () => {
           createSlatePlugin({
             key: 'a',
             parser: {
+              format: 'text/plain',
               deserialize() {
                 return [{ text: 'test' }];
               },
-              format: 'text/plain',
             },
           }),
         ],

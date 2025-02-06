@@ -1,8 +1,8 @@
 import {
   type HtmlDeserializer,
   type SlatePlugin,
-  HtmlPlugin,
   createSlatePlugin,
+  HtmlPlugin,
 } from '@udecode/plate';
 
 import { cleanDocx } from './docx-cleaner/cleanDocx';

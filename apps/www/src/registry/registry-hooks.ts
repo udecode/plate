@@ -1,6 +1,6 @@
-import type { Registry } from './schema';
+import type { Registry } from 'shadcx/registry';
 
-export const hooks: Registry = [
+export const hooks: Registry['items'] = [
   {
     files: [
       {

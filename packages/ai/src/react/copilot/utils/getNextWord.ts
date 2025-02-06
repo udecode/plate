@@ -37,7 +37,6 @@ export const getNextWord: GetNextWord = ({ text }) => {
       );
 
     if (match) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const [fullMatch, spaces = '', char = '', punctuation = ''] = match;
       firstWord = spaces + char + punctuation;
       remainingText = text.slice(firstWord.length);

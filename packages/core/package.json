@@ -65,7 +65,7 @@
     "is-hotkey": "^0.2.0",
     "jotai": "~2.8.4",
     "jotai-optics": "0.4.0",
-    "jotai-x": "1.2.4",
+    "jotai-x": "2.3.0",
     "lodash": "^4.17.21",
     "nanoid": "^5.0.9",
     "optics-ts": "2.4.1",
@@ -73,7 +73,7 @@
     "slate-react": "0.112.1",
     "use-deep-compare": "^1.3.0",
     "zustand": "^5.0.3",
-    "zustand-x": "5.0.1"
+    "zustand-x": "6.0.3"
   },
   "peerDependencies": {
     "react": ">=18.0.0",

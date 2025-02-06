@@ -8,14 +8,14 @@ const isLeafNode = (node: MdElementType | MdLeafType): node is MdLeafType => {
 
 export const defaultSerializeMdNodesOptions: SerializeMdOptions['nodes'] = {
   a: {
+    type: 'a',
     serialize: (children, node) => {
       return `[${children}](${node.url || ''})`;
     },
-    type: 'a',
   },
   blockquote: {
-    serialize: (children) => `\n> ${children}\n`,
     type: 'blockquote',
+    serialize: (children) => `\n> ${children}\n`,
   },
   bold: {
     isLeaf: true,
@@ -23,25 +23,26 @@ export const defaultSerializeMdNodesOptions: SerializeMdOptions['nodes'] = {
   },
   code: { isLeaf: true, type: 'code' },
   code_block: {
+    type: 'code_block',
     serialize: (children, node) =>
       `\n\`\`\`${node.language || ''}\n${children}\n\`\`\`\n`,
-    type: 'code_block',
   },
-  h1: { serialize: (children) => `\n# ${children}\n`, type: 'h1' },
-  h2: { serialize: (children) => `\n## ${children}\n`, type: 'h2' },
-  h3: { serialize: (children) => `\n### ${children}\n`, type: 'h3' },
-  h4: { serialize: (children) => `\n#### ${children}\n`, type: 'h4' },
+  h1: { type: 'h1', serialize: (children) => `\n# ${children}\n` },
+  h2: { type: 'h2', serialize: (children) => `\n## ${children}\n` },
+  h3: { type: 'h3', serialize: (children) => `\n### ${children}\n` },
+  h4: { type: 'h4', serialize: (children) => `\n#### ${children}\n` },
   h5: {
-    serialize: (children) => `\n##### ${children}\n`,
     type: 'h5',
+    serialize: (children) => `\n##### ${children}\n`,
   },
   h6: {
-    serialize: (children) => `\n###### ${children}\n`,
     type: 'h6',
+    serialize: (children) => `\n###### ${children}\n`,
   },
-  hr: { isVoid: true, serialize: () => '\n---\n', type: 'hr' },
+  hr: { isVoid: true, type: 'hr', serialize: () => '\n---\n' },
   img: {
     isVoid: true,
+    type: 'img',
     serialize: (_, node, opts) => {
       const caption =
         node.caption
@@ -50,10 +51,10 @@ export const defaultSerializeMdNodesOptions: SerializeMdOptions['nodes'] = {
 
       return `\n![${caption}](${node.url || ''})\n`;
     },
-    type: 'img',
   },
   italic: { isLeaf: true, type: 'italic' },
   li: {
+    type: 'li',
     serialize: (children, node, { listDepth = 0, nodes }) => {
       const isOL = node && node.parent?.type === nodes.ol.type;
 
@@ -78,17 +79,17 @@ export const defaultSerializeMdNodesOptions: SerializeMdOptions['nodes'] = {
 
       return `${emptyBefore}${spacer}${isOL ? '1.' : '-'} ${children}`;
     },
-    type: 'li',
   },
   ol: {
+    type: 'ol',
     serialize: (children, _, { listDepth }) => {
       const newLineAfter = listDepth === 0 ? '\n' : '';
 
       return `${children}${newLineAfter}`;
     },
-    type: 'ol',
   },
   p: {
+    type: 'p',
     serialize: (children, node, { ulListStyleTypes = [] }) => {
       const listStyleType = node.listStyleType;
 
@@ -117,16 +118,15 @@ export const defaultSerializeMdNodesOptions: SerializeMdOptions['nodes'] = {
 
       return `\n${children}\n`;
     },
-    type: 'p',
   },
   strikethrough: { isLeaf: true, type: 'strikethrough' },
   ul: {
+    type: 'ul',
     serialize: (children, _, { listDepth }) => {
       const newLineAfter = listDepth === 0 ? '\n' : '';
 
       return `${children}${newLineAfter}`;
     },
-    type: 'ul',
   },
   underline: { isLeaf: true, type: 'underline' },
 };

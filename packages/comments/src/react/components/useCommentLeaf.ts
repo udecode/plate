@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useEditorPlugin } from '@udecode/plate/react';
+import { useEditorPlugin, usePluginOption } from '@udecode/plate/react';
 
 import {
   type TCommentText,
@@ -11,11 +11,11 @@ import {
 import { CommentsPlugin } from '../CommentsPlugin';
 
 export const useCommentLeafState = ({ leaf }: { leaf: TCommentText }) => {
-  const { editor, setOption, useOption } = useEditorPlugin(CommentsPlugin);
+  const { editor, setOption } = useEditorPlugin(CommentsPlugin);
 
   const [commentIds, setCommentIds] = React.useState<string[]>([]);
-  const activeCommentId = useOption('activeCommentId');
-  const comments = useOption('comments');
+  const activeCommentId = usePluginOption(CommentsPlugin, 'activeCommentId');
+  const comments = usePluginOption(CommentsPlugin, 'comments');
   const [commentCount, setCommentCount] = React.useState(1);
   const [isActive, setIsActive] = React.useState(false);
 

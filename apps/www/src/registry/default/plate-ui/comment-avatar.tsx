@@ -2,14 +2,13 @@
 
 import React from 'react';
 
-import { useEditorPlugin } from '@udecode/plate/react';
 import { CommentsPlugin } from '@udecode/plate-comments/react';
+import { usePluginOption } from '@udecode/plate/react';
 
 import { Avatar, AvatarFallback, AvatarImage } from './avatar';
 
 export function CommentAvatar({ userId }: { userId: string | null }) {
-  const { useOption } = useEditorPlugin(CommentsPlugin);
-  const user = useOption('userById', userId);
+  const user = usePluginOption(CommentsPlugin, 'userById', userId);
 
   if (!user) return null;
 

@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { cn } from '@udecode/cn';
+import { useStoreValue } from '@udecode/plate/react';
 import Link from 'next/link';
 
 import { type SettingPlugin, customizerItems } from '@/config/customizer-items';
@@ -14,7 +15,7 @@ import {
 
 import { Label } from '../registry/default/plate-ui/label';
 import { Code } from './code';
-import { settingsStore } from './context/settings-store';
+import { SettingsStore } from './context/settings-store';
 import { Icons } from './icons';
 import { TreeIcon } from './tree-icon';
 import { Badge } from './ui/badge';
@@ -29,8 +30,8 @@ export function SettingCheckbox({
   route,
 }: SettingPlugin) {
   // const checked = settingsStore.use.checkedIdNext(id);
-  const checked = settingsStore.use.checkedId(id);
-  const showComponents = settingsStore.use.showComponents();
+  const checked = useStoreValue(SettingsStore, 'checkedIdNext', id);
+  const showComponents = useStoreValue(SettingsStore, 'showComponents');
   const pluginHtmlId = `plugin-${id}`;
 
   return (
@@ -43,7 +44,7 @@ export function SettingCheckbox({
                 id={id}
                 checked={checked}
                 onCheckedChange={(_checked: boolean) => {
-                  settingsStore.set.setCheckedIdNext(id, _checked);
+                  SettingsStore.set('setCheckedIdNext', id, _checked);
                 }}
               />
               <Label className="flex px-2" htmlFor={id}>
@@ -213,14 +214,18 @@ export function SettingComponentCheckbox({
   componentId: string;
   htmlId: string;
 }) {
-  const checked = settingsStore.use.checkedComponentId(componentId);
+  const checked = useStoreValue(
+    SettingsStore,
+    'checkedComponentId',
+    componentId
+  );
 
   return (
     <Checkbox
       id={htmlId}
       checked={!!checked}
       onCheckedChange={(value) => {
-        settingsStore.set.setCheckedComponentId(componentId, !!value);
+        SettingsStore.set('setCheckedComponentId', componentId, !!value);
       }}
     />
   );

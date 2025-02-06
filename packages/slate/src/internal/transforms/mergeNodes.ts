@@ -86,9 +86,9 @@ export const mergeNodes = <E extends Editor>(
     // result, in which case we'll want to remove it after merging.
     const emptyAncestor = editor.api.above({
       at: path,
+      mode: 'highest',
       match: (n) =>
         levels.has(n) && ElementApi.isElement(n) && NodeApi.hasSingleChild(n),
-      mode: 'highest',
     });
 
     const emptyRef = emptyAncestor && editor.api.pathRef(emptyAncestor[1]);

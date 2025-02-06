@@ -2,7 +2,7 @@ import type { KeyboardHandler } from '@udecode/plate/react';
 
 import { isHotkey, queryNode } from '@udecode/plate';
 
-import type { ExitBreakConfig } from '../../lib/exit-break/types';
+import type { ExitBreakConfig } from '../../lib';
 
 import { exitBreak } from '../../lib/exit-break/transforms/exitBreak';
 

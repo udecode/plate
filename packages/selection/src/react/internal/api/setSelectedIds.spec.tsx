@@ -1,4 +1,3 @@
-/* eslint-disable jest/no-disabled-tests */
 import { createPlateEditor } from '@udecode/plate/react';
 
 import { BlockSelectionPlugin } from '../../BlockSelectionPlugin';

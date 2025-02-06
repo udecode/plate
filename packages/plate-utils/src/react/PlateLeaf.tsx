@@ -46,7 +46,7 @@ const PlateLeaf = React.forwardRef<HTMLSpanElement, PlateLeafProps>(
   className,
   ...props
 }: PlateLeafProps<N, P> &
-  React.RefAttributes<HTMLSpanElement>) => React.ReactElement) & {
+  React.RefAttributes<HTMLSpanElement>) => React.ReactElement<any>) & {
   displayName?: string;
 };
 PlateLeaf.displayName = 'PlateLeaf';

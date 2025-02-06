@@ -3,7 +3,6 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-/* eslint-disable no-restricted-syntax */
 import type { Descendant } from '@udecode/plate';
 
 import isEqual from 'lodash/isEqual.js';

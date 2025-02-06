@@ -6,15 +6,6 @@ import {
 
 import { withNormalizeTypes } from './withNormalizeTypes';
 
-interface Rule {
-  /** Path where the rule applies */
-  path: Path;
-  /** Force the type of the node at the given path */
-  strictType?: string;
-  /** Type of the inserted node at the given path if `strictType` is not provided */
-  type?: string;
-}
-
 export type NormalizeTypesConfig = PluginConfig<
   'normalizeTypes',
   {
@@ -29,6 +20,15 @@ export type NormalizeTypesConfig = PluginConfig<
     onError?: (err: any) => void;
   }
 >;
+
+interface Rule {
+  /** Path where the rule applies */
+  path: Path;
+  /** Force the type of the node at the given path */
+  strictType?: string;
+  /** Type of the inserted node at the given path if `strictType` is not provided */
+  type?: string;
+}
 
 /** @see {@link withNormalizeTypes} */
 export const NormalizeTypesPlugin = createTSlatePlugin<NormalizeTypesConfig>({

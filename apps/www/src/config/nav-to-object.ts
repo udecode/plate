@@ -1,7 +1,7 @@
 import type { SidebarNavItem } from '@/types/nav';
 
 export const navToObject = (
-  items: { items: SidebarNavItem[] }[] | SidebarNavItem[]
+  items: SidebarNavItem[] | { items: SidebarNavItem[] }[]
 ) =>
   Object.fromEntries(
     (Array.isArray(items)

@@ -1,5 +1,11 @@
 import type { TText, UnknownObject } from '@udecode/plate';
 
+// TODO
+export interface SuggestionEditorProps {
+  activeSuggestionId?: string | null;
+  isSuggesting?: boolean;
+}
+
 export interface SuggestionUser extends UnknownObject {
   id: string;
   name: string;
@@ -21,10 +27,4 @@ export interface TSuggestionText extends TText {
   suggestion?: boolean;
   suggestionDeletion?: boolean;
   suggestionId?: string;
-}
-
-// TODO
-export interface SuggestionEditorProps {
-  activeSuggestionId?: string | null;
-  isSuggesting?: boolean;
 }

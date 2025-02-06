@@ -1,8 +1,8 @@
 import {
   type PluginConfig,
-  HtmlPlugin,
   createSlatePlugin,
   createTSlatePlugin,
+  HtmlPlugin,
 } from '@udecode/plate';
 
 import type { Prism } from './types';

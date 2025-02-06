@@ -1,9 +1,9 @@
-import type { Registry } from '@/registry/schema';
 import type { SidebarNavItem } from '@/types/nav';
+import type { Registry } from 'shadcx/registry';
 
 import { getRegistryTitle } from '@/lib/registry-utils';
 
-export function registryToNav(registry: Registry): SidebarNavItem[] {
+export function registryToNav(registry: Registry['items']): SidebarNavItem[] {
   return registry
     .map((item) =>
       item.doc

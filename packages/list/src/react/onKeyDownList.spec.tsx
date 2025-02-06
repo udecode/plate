@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
+import { jsxt } from '@udecode/plate-test-utils';
 import { getEditorPlugin } from '@udecode/plate/react';
 import { createPlateEditor } from '@udecode/plate/react';
-import { jsxt } from '@udecode/plate-test-utils';
 
 import { BulletedListPlugin, ListPlugin } from './ListPlugin';
 import { onKeyDownList } from './onKeyDownList';

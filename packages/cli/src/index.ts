@@ -21,6 +21,7 @@ function main() {
       "-v, --version",
       "display the version number"
     )
+    
 
   program
     .addCommand(init)
@@ -28,7 +29,7 @@ function main() {
     .addCommand(diff)
     .addCommand(migrate)
     .addCommand(info)
-
+    
   program.parse()
 }
 

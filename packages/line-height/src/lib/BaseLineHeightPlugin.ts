@@ -12,6 +12,7 @@ export const BaseLineHeightPlugin = createSlatePlugin({
       defaultNodeValue: 1.5,
       nodeKey: 'lineHeight',
     },
+    targetPlugins: [BaseParagraphPlugin.key],
     targetPluginToInject: ({ editor, plugin }) => ({
       parsers: {
         html: {
@@ -27,6 +28,5 @@ export const BaseLineHeightPlugin = createSlatePlugin({
         },
       },
     }),
-    targetPlugins: [BaseParagraphPlugin.key],
   },
 });

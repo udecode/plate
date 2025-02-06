@@ -39,99 +39,69 @@ export type BlockSelectionConfig = PluginConfig<
     areaOptions?: PartialSelectionOptions;
     editorPaddingRight?: CSSProperties['width'];
     enableContextMenu?: boolean;
-    /** Check if a block is selectable */
-    isSelectable?: (element: TElement, path: Path) => boolean;
     isSelecting?: boolean;
     isSelectionAreaVisible?: boolean;
     rightSelectionAreaClassName?: string;
     selectedIds?: Set<string>;
-    shadowInputRef?: React.RefObject<HTMLInputElement>;
+    shadowInputRef?: React.RefObject<HTMLInputElement | null>;
+    /** Check if a block is selectable */
+    isSelectable?: (element: TElement, path: Path) => boolean;
     onKeyDownSelecting?: (e: KeyboardEvent) => void;
-  } & BlockSelectionSelectors,
+  },
   {
-    blockSelection: BlockSelectionApi;
+    blockSelection: {
+      /** Set selected block ids */
+      setSelectedIds: OmitFirst<typeof setSelectedIds>;
+      /** Add a block to the selection. */
+      add: (id: string[] | string) => void;
+      /**
+       * Select a block by id, with optional delay and clear options.
+       *
+       * @deprecated Use `add` or `set` instead.
+       */
+      addSelectedRow: (
+        id: string,
+        options?: { clear?: boolean; delay?: number }
+      ) => void;
+      /** Clear block selection */
+      clear: () => void;
+      /** Delete a block from the selection. */
+      delete: (id: string[] | string) => void;
+      /** Deselect all blocks */
+      deselect: () => void;
+      /** Focus block selection – that differs from the editor focus */
+      focus: () => void;
+      /** Get selected blocks */
+      getNodes: () => NodeEntry[];
+      /** Check if a block is selected. */
+      has: (id: string[] | string) => boolean;
+      /** Check if a block is selectable. */
+      isSelectable: (element: TElement, path: Path) => boolean;
+      /** Arrow-based move selection */
+      moveSelection: (direction: 'down' | 'up') => void;
+      /** Reset selected block ids. @deprecated Use `clear` instead. */
+      resetSelectedIds: () => void;
+      /** Select all selectable blocks */
+      selectAll: () => void;
+      /** Set a block to be selected. */
+      set: (id: string[] | string) => void;
+      /** Shift-based expand/shrink selection */
+      shiftSelection: (direction: 'down' | 'up') => void;
+      /** Deselect all blocks. @deprecated Use `deselect` instead. */
+      unselect: () => void;
+    };
+  },
+  {},
+  {
+    /** Check if a block is selected by id */
+    isSelected?: (id?: string) => boolean;
+    /** Check if any blocks are selected */
+    isSelectingSome?: () => boolean;
   }
 >;
 
-export type BlockSelectionSelectors = {
-  /** Check if a block is selected by id */
-  isSelected?: (id?: string) => boolean;
-  /** Check if any blocks are selected */
-  isSelectingSome?: () => boolean;
-};
-
-export type BlockSelectionApi = {
-  /**
-   * Select a block by id, with optional delay and clear options. @deprecated
-   * Use `add` or `set` instead.
-   */
-  addSelectedRow: (
-    id: string,
-    options?: { clear?: boolean; delay?: number }
-  ) => void;
-  /** Add a block to the selection. */
-  add: (id: string[] | string) => void;
-  /** Clear block selection */
-  clear: () => void;
-  /** Delete a block from the selection. */
-  delete: (id: string[] | string) => void;
-  /** Deselect all blocks */
-  deselect: () => void;
-  /** Focus block selection – that differs from the editor focus */
-  focus: () => void;
-  /** Get selected blocks */
-  getNodes: () => NodeEntry[];
-  /** Check if a block is selected. */
-  has: (id: string[] | string) => boolean;
-  /** Check if a block is selectable. */
-  isSelectable: (element: TElement, path: Path) => boolean;
-  /** Arrow-based move selection */
-  moveSelection: (direction: 'down' | 'up') => void;
-  /** Reset selected block ids. @deprecated Use `clear` instead. */
-  resetSelectedIds: () => void;
-  /** Select all selectable blocks */
-  selectAll: () => void;
-  /** Set a block to be selected. */
-  set: (id: string[] | string) => void;
-  /** Set selected block ids */
-  setSelectedIds: OmitFirst<typeof setSelectedIds>;
-  /** Shift-based expand/shrink selection */
-  shiftSelection: (direction: 'down' | 'up') => void;
-  /** Deselect all blocks. @deprecated Use `deselect` instead. */
-  unselect: () => void;
-};
-
 export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
   key: 'blockSelection',
-  inject: {
-    isBlock: true,
-    nodeProps: {
-      transformProps: () => {
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        return useBlockSelectable().props;
-      },
-    },
-  },
-  options: {
-    anchorId: null,
-    areaOptions: {
-      features: {
-        singleTap: {
-          allow: false,
-        },
-      },
-    },
-    enableContextMenu: false,
-    isSelectable: () => true,
-    isSelecting: false,
-    isSelectionAreaVisible: false,
-    selectedIds: new Set(),
-    shadowInputRef: { current: null },
-  },
-  plugins: [BlockMenuPlugin],
-  render: {
-    afterEditable: BlockSelectionAfterEditable,
-  },
   handlers: {
     onKeyDown: onKeyDownSelection,
     onMouseDown: ({ api, editor, event, getOptions }) => {
@@ -152,16 +122,48 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
       }
     },
   },
+  inject: {
+    isBlock: true,
+    nodeProps: {
+      transformProps: () => {
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        return useBlockSelectable().props;
+      },
+    },
+  },
+  options: {
+    anchorId: null,
+    areaOptions: {
+      features: {
+        singleTap: {
+          allow: false,
+        },
+      },
+    },
+    enableContextMenu: false,
+    isSelecting: false,
+    isSelectionAreaVisible: false,
+    selectedIds: new Set(),
+    shadowInputRef: { current: null },
+    isSelectable: () => true,
+  },
+  plugins: [BlockMenuPlugin],
+  render: {
+    afterEditable: BlockSelectionAfterEditable,
+  },
 })
   .extend(() => ({
     inject: {},
   }))
-  .extendOptions(({ getOptions }) => ({
-    isSelected: (id?: string) => !!id && getOptions().selectedIds!.has(id),
+  .extendSelectors<BlockSelectionConfig['selectors']>(({ getOptions }) => ({
+    isSelected: (id) => !!id && getOptions().selectedIds!.has(id),
     isSelectingSome: () => getOptions().selectedIds!.size > 0,
   }))
-  .extendApi<Partial<BlockSelectionApi>>(
+  .extendApi<Partial<BlockSelectionConfig['api']['blockSelection']>>(
     ({ editor, getOption, getOptions, setOption }) => ({
+      moveSelection: bindFirst(moveSelection, editor),
+      setSelectedIds: bindFirst(setSelectedIds, editor),
+      shiftSelection: bindFirst(shiftSelection, editor),
       add: (id) => {
         const next = new Set(getOptions().selectedIds!);
 
@@ -217,37 +219,36 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
         !!element.id &&
         editor.api.isBlock(element) &&
         getOptions().isSelectable!(element, path),
-      moveSelection: bindFirst(moveSelection, editor),
       resetSelectedIds: () => {
         setOption('selectedIds', new Set());
       },
       set: (id) => {
         setOption('selectedIds', new Set(Array.isArray(id) ? id : [id]));
       },
-      setSelectedIds: bindFirst(setSelectedIds, editor),
-      shiftSelection: bindFirst(shiftSelection, editor),
       unselect: () => {
         setOption('selectedIds', new Set());
         setOption('isSelecting', false);
       },
     })
   )
-  .extendApi<Partial<BlockSelectionApi>>(({ api, editor, setOption }) => ({
-    addSelectedRow: bindFirst(addSelectedRow, editor),
-    selectAll: () => {
-      const ids = api
-        .blocks({
-          at: [],
-          match: (n, p) =>
-            !!n.id && api.blockSelection.isSelectable(n as any, p),
-          mode: 'highest',
-        })
-        .map((n) => n[0].id as string);
+  .extendApi<Partial<BlockSelectionConfig['api']['blockSelection']>>(
+    ({ api, editor, setOption }) => ({
+      addSelectedRow: bindFirst(addSelectedRow, editor),
+      selectAll: () => {
+        const ids = api
+          .blocks({
+            at: [],
+            mode: 'highest',
+            match: (n, p) =>
+              !!n.id && api.blockSelection.isSelectable(n as any, p),
+          })
+          .map((n) => n[0].id as string);
 
-      setOption('selectedIds', new Set(ids));
-      api.blockSelection.focus();
-    },
-  }))
+        setOption('selectedIds', new Set(ids));
+        api.blockSelection.focus();
+      },
+    })
+  )
   .extendTransforms(({ editor }) => ({
     /** Duplicate selected blocks */
     duplicate: bindFirst(duplicateBlockSelectionNodes, editor),

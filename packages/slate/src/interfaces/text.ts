@@ -29,19 +29,14 @@ export const TextApi: {
     node: TText,
     decorations: DecoratedRange[]
   ) => N[];
-
   /** Check if two text nodes are equal. */
   equals: (text: TText, another: TText, options?: TextEqualsOptions) => boolean;
-
   /** Check if a value implements the `Text` interface. */
   isText: <N extends TText>(value: any) => value is N;
-
   /** Check if a value is a list of `Text` objects. */
   isTextList: <N extends TText>(value: any) => value is N[];
-
   /** Check if some props are a partial of Text. */
   isTextProps: <N extends TText>(props: any) => props is Partial<N>;
-
   /**
    * Check if an text matches set of properties.
    *
@@ -56,9 +51,19 @@ export const TextApi: {
  * Slate document along with any formatting properties. They are always leaf
  * nodes in the document tree as they cannot contain any children.
  */
-export type Text = TText;
-
 export type DecoratedRange = SlateDecoratedRange;
+
+/** A utility type to get all the mark types from a root node type. */
+export type MarkKeysOf<N extends TNode> =
+  {} extends MarksOf<N> ? unknown : keyof MarksOf<N>;
+
+export type MarksIn<V extends Value> = MarksOf<V[number]>;
+
+export type MarksOf<N extends TNode> = Simplify<
+  UnionToIntersection<NodeProps<TextOf<N>>>
+>;
+
+export type Text = TText;
 
 export interface TextEqualsOptions {
   /**
@@ -69,6 +74,8 @@ export interface TextEqualsOptions {
 }
 
 /** A utility type to get all the text node types from a root node type. */
+export type TextIn<V extends Value> = TextOf<V[number]>;
+
 export type TextOf<N extends TNode> = Editor extends N
   ? TText
   : TElement extends N
@@ -80,15 +87,3 @@ export type TextOf<N extends TNode> = Editor extends N
         : N extends TText
           ? N
           : never;
-
-export type TextIn<V extends Value> = TextOf<V[number]>;
-
-/** A utility type to get all the mark types from a root node type. */
-export type MarksOf<N extends TNode> = Simplify<
-  UnionToIntersection<NodeProps<TextOf<N>>>
->;
-
-export type MarksIn<V extends Value> = MarksOf<V[number]>;
-
-export type MarkKeysOf<N extends TNode> =
-  {} extends MarksOf<N> ? unknown : keyof MarksOf<N>;

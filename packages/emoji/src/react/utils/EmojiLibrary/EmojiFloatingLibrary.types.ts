@@ -11,15 +11,15 @@ export type FrequentEmojiStorageProps = {
   prefix?: string;
 };
 
+export interface IEmojiFloatingLibrary extends IEmojiLibrary {
+  getGrid: () => EmojiFloatingGridType;
+  indexOf: (focusedCategory: EmojiCategoryList) => number;
+  updateFrequentCategory: (emojiId: string) => void;
+}
+
 export interface IFrequentEmojiStorage {
   get: () => FrequentEmojis;
   getList: () => string[];
   set: (value: any) => void;
   update: (emojiId: string) => any;
-}
-
-export interface IEmojiFloatingLibrary extends IEmojiLibrary {
-  getGrid: () => EmojiFloatingGridType;
-  indexOf: (focusedCategory: EmojiCategoryList) => number;
-  updateFrequentCategory: (emojiId: string) => void;
 }

@@ -7,10 +7,10 @@ import {
 import cloneDeep from 'lodash/cloneDeep.js';
 
 import {
+  type TableConfig,
   type TTableCellElement,
   type TTableElement,
   type TTableRowElement,
-  type TableConfig,
   getTableAbove,
 } from '.';
 import { BaseTablePlugin } from './BaseTablePlugin';

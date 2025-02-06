@@ -1,7 +1,7 @@
 import React from 'react';
+import { act } from 'react';
 
 import { render } from '@testing-library/react';
-import { act } from 'react-dom/test-utils';
 
 import { createSlateEditor } from '../../lib/editor';
 import { type PluginConfig, createSlatePlugin } from '../../lib/plugin';
@@ -10,17 +10,33 @@ import {
   type PlatePlugin,
   createPlateEditor,
   createPlatePlugin,
+  Plate,
+  useEditorPluginOption,
+  useEditorPluginOptions,
+  usePluginOption,
 } from '../../react';
 
-// Mock component to test re-rendering
-const TestComponent = ({
+function TestComponent({
   editor,
   plugin,
 }: {
   editor: ReturnType<typeof createPlateEditor>;
   plugin: PlatePlugin<PluginConfig<any, { value: number }>>;
+}) {
+  return (
+    <Plate editor={editor}>
+      <TestComponentInner plugin={plugin} />
+    </Plate>
+  );
+}
+
+// Mock component to test re-rendering
+const TestComponentInner = ({
+  plugin,
+}: {
+  plugin: PlatePlugin<PluginConfig<any, { value: number }>>;
 }) => {
-  const value = editor.useOption(plugin, 'value');
+  const value = usePluginOption(plugin, 'value');
 
   return (
     <div>
@@ -33,13 +49,13 @@ const TestComponentNested = ({
   editor,
   plugin,
 }: {
+  editor: ReturnType<typeof createPlateEditor>;
   plugin: PlatePlugin<
     PluginConfig<any, { value: number; nested?: { subValue: string } }>
   >;
-  editor: ReturnType<typeof createPlateEditor>;
 }) => {
-  const value = editor.useOption(plugin, 'value');
-  const nestedValue = editor.useOption(plugin, 'nested');
+  const value = useEditorPluginOption(editor, plugin, 'value');
+  const nestedValue = useEditorPluginOption(editor, plugin, 'nested');
 
   return (
     <div>
@@ -127,12 +143,12 @@ describe('SlatePlugin store', () => {
     expect(store).toBeDefined();
   });
 
-  describe('extendOptions', () => {
+  describe('extendSelectors', () => {
     it('should add new selectors to the plugin store', () => {
       const p1 = createSlatePlugin({
         key: 'plugin1',
         options: { value: 1 },
-      }).extendOptions(({ getOptions }) => ({
+      }).extendSelectors(({ getOptions }) => ({
         doubleValue: () => getOptions().value * 2,
         param: (a1: number, a2: number) => getOptions().value + a1 + a2,
       }));
@@ -143,15 +159,15 @@ describe('SlatePlugin store', () => {
       expect(editor.getOption(p1, 'param', 2, 2)).toBe(5);
     });
 
-    it('should allow chaining multiple extendOptions calls', () => {
+    it('should allow chaining multiple extendSelectors calls', () => {
       const p1 = createSlatePlugin({
         key: 'plugin1',
         options: { value: 1 },
       })
-        .extendOptions(({ getOptions }) => ({
+        .extendSelectors(({ getOptions }) => ({
           doubleValue: (mul: number) => getOptions().value * mul,
         }))
-        .extendOptions(({ getOption }) => ({
+        .extendSelectors(({ getOption }) => ({
           tripleValue: () => getOption('doubleValue', 2) * 3,
         }));
 
@@ -165,7 +181,7 @@ describe('SlatePlugin store', () => {
       const p1 = createSlatePlugin({
         key: 'plugin1',
         options: { value: 1 },
-      }).extendOptions(({ getOptions }) => ({
+      }).extendSelectors(({ getOptions }) => ({
         doubleValue: () => {
           return getOptions().value * 2;
         },
@@ -182,7 +198,7 @@ describe('SlatePlugin store', () => {
   });
 });
 
-describe('PlatePlugin useOptions', () => {
+describe('PlatePlugin usePluginOption', () => {
   it('should re-render component when setOption is called', async () => {
     const p1 = createPlatePlugin({
       key: 'plugin1',
@@ -261,13 +277,13 @@ describe('PlatePlugin useOptions', () => {
     });
   });
 
-  describe('useOption', () => {
+  describe('usePluginOption', () => {
     it('should return the current option value', () => {
       const p1 = createSlatePlugin({ key: 'plugin1', options: { value: 1 } });
       const editor = createPlateEditor({ plugins: [p1] });
 
       const TestHook = () => {
-        const value = editor.useOption(p1, 'value');
+        const value = useEditorPluginOption(editor, p1, 'value');
 
         return <div data-testid="test-hook">{value}</div>;
       };
@@ -323,7 +339,7 @@ describe('PlatePlugin useOptions', () => {
 
       let renderCount = 0;
       const TestHook = () => {
-        const value = editor.useOption(p1, 'value');
+        const value = useEditorPluginOption(editor, p1, 'value');
         renderCount++;
 
         return <div data-testid="test-hook">{value}</div>;
@@ -359,17 +375,17 @@ describe('PlatePlugin useOptions', () => {
       const p1 = createPlatePlugin({
         key: 'plugin1',
         options: { value: 1 },
-      }).extendOptions(({ getOptions }) => ({
+      }).extendSelectors(({ getOptions }) => ({
         doubleValue: (mul: number) => getOptions().value * mul,
       }));
 
       const editor = createPlateEditor({ plugins: [p1] });
 
       const TestHook = () => {
-        let never = editor.useOption(p1, 'doubleValue');
         // @ts-expect-error
+        let never = useEditorPluginOption(editor, p1, 'doubleValue');
         never = 1;
-        const doubleValue = editor.useOption(p1, 'doubleValue', 2);
+        const doubleValue = useEditorPluginOption(editor, p1, 'doubleValue', 2);
 
         return <div data-testid="test-hook">{doubleValue}</div>;
       };
@@ -386,7 +402,7 @@ describe('PlatePlugin useOptions', () => {
     });
   });
 
-  describe('useOptions', () => {
+  describe('usePluginOptions', () => {
     it('should allow access to the entire store', () => {
       const p1 = createSlatePlugin({
         key: 'plugin1',
@@ -395,10 +411,14 @@ describe('PlatePlugin useOptions', () => {
       const editor = createPlateEditor({ plugins: [p1] });
 
       const TestHook = () => {
-        const { other, value } = editor.useOptions(p1, (state) => ({
-          other: state.other,
-          value: state.value,
-        }));
+        const { other, value } = useEditorPluginOptions(
+          editor,
+          p1,
+          (state) => ({
+            other: state.other,
+            value: state.value,
+          })
+        );
 
         return (
           <div>

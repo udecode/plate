@@ -2,10 +2,10 @@ import { type SlateEditor, getEditorPlugin } from '@udecode/plate';
 
 import {
   type CellIndices,
+  type TableConfig,
   type TTableCellElement,
   type TTableElement,
   type TTableRowElement,
-  type TableConfig,
   getCellIndices,
   getTableOverriddenColSizes,
 } from '..';

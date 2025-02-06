@@ -63,13 +63,13 @@ export const icons: Record<
     lucide: 'ChevronRight',
     radix: 'ChevronRightIcon',
   },
-  ChevronUp: {
-    lucide: 'ChevronUp',
-    radix: 'ChevronUpIcon',
-  },
   ChevronsUpDown: {
     lucide: 'ChevronsUpDown',
     radix: 'CaretSortIcon',
+  },
+  ChevronUp: {
+    lucide: 'ChevronUp',
+    radix: 'ChevronUpIcon',
   },
   Circle: {
     lucide: 'Circle',

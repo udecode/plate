@@ -9,9 +9,9 @@ import {
   type EmojiLibrary,
   type EmojiSettingsType,
   DEFAULT_EMOJI_LIBRARY,
+  defaultCategories,
   EmojiCategory,
   EmojiInlineLibrary,
-  defaultCategories,
 } from '../../../lib';
 import { EmojiFloatingGridBuilder } from './EmojiFloatingGridBuilder';
 

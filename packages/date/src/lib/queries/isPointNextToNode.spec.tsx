@@ -1,5 +1,7 @@
 /** @jsx jsxt */
 
+import type { JSX } from 'react';
+
 import { createEditor, createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
 

@@ -1,6 +1,6 @@
 import type { SlateEditor } from '@udecode/plate';
 
-import { type TTagElement, type TagLike, BaseTagPlugin } from './BaseTagPlugin';
+import { type TagLike, type TTagElement, BaseTagPlugin } from './BaseTagPlugin';
 
 /**
  * Compares two sets of tags/labels for equality, ignoring order

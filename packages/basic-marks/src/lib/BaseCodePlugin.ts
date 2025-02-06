@@ -7,6 +7,10 @@ export const BaseCodePlugin = createSlatePlugin({
   parsers: {
     html: {
       deserializer: {
+        rules: [
+          { validNodeName: ['CODE'] },
+          { validStyle: { fontFamily: 'Consolas' } },
+        ],
         query({ element }) {
           const blockAbove = findHtmlParentElement(element, 'P');
 
@@ -14,10 +18,6 @@ export const BaseCodePlugin = createSlatePlugin({
 
           return !findHtmlParentElement(element, 'PRE');
         },
-        rules: [
-          { validNodeName: ['CODE'] },
-          { validStyle: { fontFamily: 'Consolas' } },
-        ],
       },
     },
   },

@@ -2,9 +2,9 @@ import {
   type Path,
   type SlateEditor,
   type TElement,
+  getEditorPlugin,
   NodeApi,
   PathApi,
-  getEditorPlugin,
 } from '@udecode/plate';
 
 import type { TTableElement } from '../types';

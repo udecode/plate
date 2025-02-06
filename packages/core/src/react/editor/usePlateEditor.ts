@@ -1,8 +1,6 @@
-import type React from 'react';
+import React from 'react';
 
 import type { Value } from '@udecode/slate';
-
-import { useMemoOnce } from '@udecode/react-utils';
 
 import type { AnyPluginConfig } from '../../lib';
 
@@ -36,7 +34,7 @@ export function usePlateEditor<
   : TEnabled extends true | undefined
     ? TPlateEditor<V, P>
     : TPlateEditor<V, P> | null {
-  return useMemoOnce(
+  return React.useMemo(
     (): any => {
       if (options.enabled === false) return null;
 

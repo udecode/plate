@@ -1,11 +1,11 @@
-import type { Registry } from '@/registry/schema';
+import type { Registry } from 'shadcx/registry';
 
-export const blocks: Registry = [
+export const blocks: Registry['items'] = [
   {
     category: 'Editors',
     files: [
       {
-        path: 'block/editor-select/page.tsx',
+        path: 'blocks/editor-select/page.tsx',
         target: 'app/editor/page.tsx',
         type: 'registry:page',
       },
@@ -43,17 +43,17 @@ export const blocks: Registry = [
     ],
     files: [
       {
-        path: 'block/editor-ai/page.tsx',
+        path: 'blocks/editor-ai/page.tsx',
         target: 'app/editor/page.tsx',
         type: 'registry:page',
       },
       {
-        path: 'block/editor-ai/components/editor/plate-editor.tsx',
+        path: 'blocks/editor-ai/components/editor/plate-editor.tsx',
         target: 'components/editor/plate-editor.tsx',
         type: 'registry:component',
       },
       {
-        path: 'block/editor-ai/components/editor/use-create-editor.ts',
+        path: 'blocks/editor-ai/components/editor/use-create-editor.ts',
         target: 'components/editor/use-create-editor.ts',
         type: 'registry:component',
       },
@@ -128,17 +128,17 @@ export const blocks: Registry = [
     ],
     files: [
       {
-        path: 'block/editor-basic/page.tsx',
+        path: 'blocks/editor-basic/page.tsx',
         target: 'app/editor/page.tsx',
         type: 'registry:page',
       },
       {
-        path: 'block/editor-basic/components/editor/plate-editor.tsx',
+        path: 'blocks/editor-basic/components/editor/plate-editor.tsx',
         target: 'components/editor/plate-editor.tsx',
         type: 'registry:component',
       },
       {
-        path: 'block/editor-basic/components/editor/use-create-editor.ts',
+        path: 'blocks/editor-basic/components/editor/use-create-editor.ts',
         target: 'components/editor/use-create-editor.ts',
         type: 'registry:component',
       },
@@ -151,7 +151,7 @@ export const blocks: Registry = [
     category: 'Serializers',
     files: [
       {
-        path: 'block/slate-to-html/page.tsx',
+        path: 'blocks/slate-to-html/page.tsx',
         target: 'app/html/page.tsx',
         type: 'registry:page',
       },

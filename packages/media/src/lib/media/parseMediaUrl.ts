@@ -36,7 +36,6 @@ export const parseMediaUrl = (
         return undefined;
       }
     } catch {
-      // eslint-disable-next-line no-console
       console.warn('Could not parse URL: ' + embed.url);
 
       return undefined;

@@ -7,7 +7,7 @@ import type { TResizableElement } from './TResizableElement';
 
 import { resizeLengthClamp } from '../utils';
 import { ResizeHandleProvider } from './ResizeHandle';
-import { useResizableStore } from './useResizableStore';
+import { useResizableSet, useResizableValue } from './useResizableStore';
 
 export interface ResizableOptions {
   /** Node alignment. */
@@ -30,7 +30,8 @@ export const useResizableState = ({
 
   const nodeWidth = element?.width ?? '100%';
 
-  const [width, setWidth] = useResizableStore().use.width();
+  const width = useResizableValue('width');
+  const setWidth = useResizableSet('width');
 
   const setNodeWidth = React.useCallback(
     (w: number) => {

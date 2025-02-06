@@ -37,16 +37,16 @@ describe('when element has class and attribute, and plugin has deserialize type,
                 html: {
                   deserializer: {
                     isElement: true,
-                    parse: ({ element }) => ({
-                      id: element.dataset.id,
-                      type: 'poll',
-                    }),
                     rules: [
                       {
                         validClassName: 'poll',
                       },
                     ],
                     withoutChildren: true,
+                    parse: ({ element }) => ({
+                      id: element.dataset.id,
+                      type: 'poll',
+                    }),
                   },
                 },
               },

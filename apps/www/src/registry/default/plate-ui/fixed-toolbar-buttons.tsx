@@ -2,7 +2,6 @@
 
 import React from 'react';
 
-import { useEditorReadOnly } from '@udecode/plate/react';
 import {
   BoldPlugin,
   CodePlugin,
@@ -21,6 +20,7 @@ import {
   ImagePlugin,
   VideoPlugin,
 } from '@udecode/plate-media/react';
+import { useEditorReadOnly } from '@udecode/plate/react';
 import {
   ArrowUpToLineIcon,
   BaselineIcon,

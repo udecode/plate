@@ -9,12 +9,12 @@ import {
   withTriggerCombobox,
 } from '@udecode/plate-combobox';
 
-export interface TSlashInputElement extends TElement {}
-
 export type SlashConfig = PluginConfig<
   'slash_command',
   TriggerComboboxPluginOptions
 >;
+
+export interface TSlashInputElement extends TElement {}
 
 export const BaseSlashInputPlugin = createSlatePlugin({
   key: 'slash_input',
@@ -24,12 +24,12 @@ export const BaseSlashInputPlugin = createSlatePlugin({
 export const BaseSlashPlugin = createTSlatePlugin<SlashConfig>({
   key: 'slash_command',
   options: {
+    trigger: '/',
+    triggerPreviousCharPattern: /^\s?$/,
     createComboboxInput: () => ({
       children: [{ text: '' }],
       type: BaseSlashInputPlugin.key,
     }),
-    trigger: '/',
-    triggerPreviousCharPattern: /^\s?$/,
   },
   plugins: [BaseSlashInputPlugin],
 }).overrideEditor(withTriggerCombobox);

@@ -4,11 +4,11 @@ import { type TElement, Hotkeys, isHotkey } from '@udecode/plate';
 
 import {
   type TableConfig,
-  KEY_SHIFT_EDGES,
   getCellTypes,
   getNextTableCell,
   getPreviousTableCell,
   getTableEntries,
+  KEY_SHIFT_EDGES,
   moveSelectionFromCell,
 } from '../lib';
 

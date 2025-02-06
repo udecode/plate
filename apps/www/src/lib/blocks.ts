@@ -1,14 +1,15 @@
 'use server';
 
+import { registryItemSchema } from 'shadcx/registry';
 import { z } from 'zod';
 
 import { Index } from '@/__registry__';
-import { registryItemSchema } from '@/registry/schema';
+
+// SYNC
 
 // const BLOCKS_WHITELIST_PREFIXES = ['sidebar', 'login'];
 const REGISTRY_BLOCK_TYPES = new Set(['registry:block']);
 
-// eslint-disable-next-line @typescript-eslint/require-await
 export async function getAllBlockIds() {
   const blocks = _getAllBlocks();
 

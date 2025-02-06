@@ -1,4 +1,3 @@
-/* eslint-disable testing-library/render-result-naming-convention */
 /* eslint-disable testing-library/no-render-in-lifecycle */
 // If your actual memoized components are named "ElementStatic" and "LeafStatic",
 // you can wrap them with a mock or rename them in test for clarity.
@@ -9,10 +8,10 @@ import { render } from '@testing-library/react';
 
 import { createSlateEditor } from '../../editor';
 import { createSlatePlugin } from '../../plugin';
-import { SlateElement } from './SlateElement';
-import { SlateLeaf } from './SlateLeaf';
 // We assume these are your real components (memoized) imported:
 import { PlateStatic } from './PlateStatic';
+import { SlateElement } from './SlateElement';
+import { SlateLeaf } from './SlateLeaf';
 
 const createEditor = ({
   value = [

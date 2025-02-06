@@ -66,7 +66,6 @@ export const moveListItemsToList = (
 
       fromListPath = fromListItemSublist?.[1];
     } else if (fromList) {
-      // eslint-disable-next-line prefer-destructuring
       fromListPath = fromList[1];
     } else {
       return;

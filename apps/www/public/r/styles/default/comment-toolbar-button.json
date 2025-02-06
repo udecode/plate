@@ -20,13 +20,15 @@
   },
   "files": [
     {
-      "content": "'use client';\n\nimport React from 'react';\n\nimport { useCommentAddButton } from '@udecode/plate-comments/react';\nimport { MessageSquarePlus } from 'lucide-react';\n\nimport { ToolbarButton } from './toolbar';\n\nexport function CommentToolbarButton() {\n  const { hidden, props } = useCommentAddButton();\n\n  if (hidden) return null;\n\n  return (\n    <ToolbarButton tooltip=\"Comment (⌘+⇧+M)\" {...props}>\n      <MessageSquarePlus />\n    </ToolbarButton>\n  );\n}\n",
       "path": "plate-ui/comment-toolbar-button.tsx",
-      "target": "components/plate-ui/comment-toolbar-button.tsx",
-      "type": "registry:ui"
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { useCommentAddButton } from '@udecode/plate-comments/react';\nimport { MessageSquarePlus } from 'lucide-react';\n\nimport { ToolbarButton } from './toolbar';\n\nexport function CommentToolbarButton() {\n  const { hidden, props } = useCommentAddButton();\n\n  if (hidden) return null;\n\n  return (\n    <ToolbarButton tooltip=\"Comment (⌘+⇧+M)\" {...props}>\n      <MessageSquarePlus />\n    </ToolbarButton>\n  );\n}\n",
+      "type": "registry:ui",
+      "target": "components/plate-ui/comment-toolbar-button.tsx"
     }
   ],
   "name": "comment-toolbar-button",
   "registryDependencies": [],
-  "type": "registry:ui"
+  "type": "registry:ui",
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "author": "udecode (https://platejs.org)"
 }

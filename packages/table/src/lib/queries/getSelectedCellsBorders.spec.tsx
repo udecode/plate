@@ -2,8 +2,8 @@
 
 import type { TElement } from '@udecode/plate';
 
-import { type PlateEditor, createPlateEditor } from '@udecode/plate/react';
 import { jsx } from '@udecode/plate-test-utils';
+import { type PlateEditor, createPlateEditor } from '@udecode/plate/react';
 
 import {
   getSelectedCellsBorders,

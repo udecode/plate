@@ -47,7 +47,7 @@ export function LanguagesDropdownMenu() {
           <span className="sr-only">Language</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="z-[60] py-1">
+      <DropdownMenuContent className="z-60 py-1">
         <DropdownMenuItem asChild>
           <div
             className="m-0 w-full cursor-pointer"

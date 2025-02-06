@@ -15,6 +15,7 @@ export const HtmlPlugin = createSlatePlugin({
   }))
   .extend({
     parser: {
+      format: 'text/html',
       deserialize: ({ api, data }) => {
         const document = parseHtmlDocument(data);
 
@@ -22,6 +23,5 @@ export const HtmlPlugin = createSlatePlugin({
           element: document.body,
         });
       },
-      format: 'text/html',
     },
   });

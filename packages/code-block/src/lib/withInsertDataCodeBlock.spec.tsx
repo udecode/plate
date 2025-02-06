@@ -3,8 +3,8 @@
 import type { SlateEditor } from '@udecode/plate';
 
 import { BaseParagraphPlugin } from '@udecode/plate';
-import { createPlateEditor } from '@udecode/plate/react';
 import { createDataTransfer, jsxt } from '@udecode/plate-test-utils';
+import { createPlateEditor } from '@udecode/plate/react';
 
 import { CodeBlockPlugin } from '../react/CodeBlockPlugin';
 

@@ -7,15 +7,15 @@ export const BaseItalicPlugin = createSlatePlugin({
   parsers: {
     html: {
       deserializer: {
+        rules: [
+          { validNodeName: ['EM', 'I'] },
+          { validStyle: { fontStyle: 'italic' } },
+        ],
         query: ({ element }) =>
           !someHtmlElement(
             element,
             (node) => node.style.fontStyle === 'normal'
           ),
-        rules: [
-          { validNodeName: ['EM', 'I'] },
-          { validStyle: { fontStyle: 'italic' } },
-        ],
       },
     },
   },

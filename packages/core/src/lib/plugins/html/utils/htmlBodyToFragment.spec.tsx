@@ -2,7 +2,7 @@
 
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { ParagraphPlugin, createPlateEditor } from '../../../../react';
+import { createPlateEditor, ParagraphPlugin } from '../../../../react';
 import { htmlBodyToFragment } from './htmlBodyToFragment';
 import { parseHtmlElement } from './parseHtmlElement';
 

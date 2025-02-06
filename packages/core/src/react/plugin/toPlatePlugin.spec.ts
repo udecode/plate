@@ -43,8 +43,8 @@ describe('toPlatePlugin', () => {
     parsers: {
       html: {
         deserializer: {
-          query: ({ element }) => element.style.fontFamily !== 'Consolas',
           rules: [{ validNodeName: 'P' }],
+          query: ({ element }) => element.style.fontFamily !== 'Consolas',
         },
       },
     },
@@ -57,9 +57,9 @@ describe('toPlatePlugin', () => {
 
   it('should extend a SlatePlugin with React-specific properties and API', () => {
     const ParagraphPlugin = toPlatePlugin(BaseParagraphPlugin, {
+      handlers: { onKeyDown: () => true },
       options: { hotkey: ['mod+opt+0', 'mod+shift+0'] },
       render: { aboveEditable: MockAboveComponent, node: MockComponent },
-      handlers: { onKeyDown: () => true },
     }).extendEditorApi(() => ({
       someApiMethod: () => 'API method result',
     }));
@@ -158,11 +158,11 @@ describe('toPlatePlugin type tests', () => {
     }));
 
     const CodeBlockPlugin = toPlatePlugin(BaseCodeBlockPlugin, {
+      handlers: {},
+      options: { hotkey: ['mod+opt+8', 'mod+shift+8'] },
       extendEditor: ({ editor }) => {
         return editor;
       },
-      options: { hotkey: ['mod+opt+8', 'mod+shift+8'] },
-      handlers: {},
     }).extendEditorApi(() => ({
       plugin: {
         getLanguage: () => 'javascript' as string,

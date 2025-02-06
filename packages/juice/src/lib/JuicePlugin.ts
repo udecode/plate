@@ -1,4 +1,4 @@
-import { HtmlPlugin, createSlatePlugin } from '@udecode/plate';
+import { createSlatePlugin, HtmlPlugin } from '@udecode/plate';
 import juice from 'juice';
 
 export const JuicePlugin = createSlatePlugin({

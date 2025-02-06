@@ -16,13 +16,11 @@ export const useColorDropdownMenuState = ({
   const editor = useEditorRef();
 
   const selectionDefined = useEditorSelector(
-    // eslint-disable-next-line @typescript-eslint/no-shadow
     (editor) => !!editor.selection,
     []
   );
 
   const color = useEditorSelector(
-    // eslint-disable-next-line @typescript-eslint/no-shadow
     (editor) => editor.api.mark(nodeType) as string,
     [nodeType]
   );

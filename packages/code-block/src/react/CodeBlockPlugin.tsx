@@ -13,10 +13,10 @@ export const CodeSyntaxPlugin = toPlatePlugin(BaseCodeSyntaxPlugin);
 
 /** Enables support for pre-formatted code blocks. */
 export const CodeBlockPlugin = toPlatePlugin(BaseCodeBlockPlugin, {
-  plugins: [CodeLinePlugin, CodeSyntaxPlugin],
   handlers: {
     onKeyDown: onKeyDownCodeBlock,
   },
+  plugins: [CodeLinePlugin, CodeSyntaxPlugin],
 }).extend(({ editor, plugin }) => ({
   shortcuts: {
     toggleCodeBlock: {

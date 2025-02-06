@@ -8,10 +8,10 @@ import {
   type TText,
   type Value,
   ElementApi,
-  RangeApi,
-  TextApi,
   isElementDecorationsEqual,
   isTextDecorationsEqual,
+  RangeApi,
+  TextApi,
 } from '@udecode/slate';
 import clsx from 'clsx';
 

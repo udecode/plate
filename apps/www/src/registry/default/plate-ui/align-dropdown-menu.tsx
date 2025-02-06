@@ -4,8 +4,8 @@ import React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { useEditorRef, useSelectionFragmentProp } from '@udecode/plate/react';
 import { setAlign } from '@udecode/plate-alignment';
+import { useEditorRef, useSelectionFragmentProp } from '@udecode/plate/react';
 import {
   AlignCenterIcon,
   AlignJustifyIcon,
@@ -48,8 +48,8 @@ export function AlignDropdownMenu({ children, ...props }: DropdownMenuProps) {
   const editor = useEditorRef();
   const value = useSelectionFragmentProp({
     defaultValue: 'start',
-    getProp: (node) => node.align,
     structuralTypes: STRUCTURAL_TYPES,
+    getProp: (node) => node.align,
   });
 
   const openState = useOpenState();

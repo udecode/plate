@@ -1,33 +1,5 @@
 {
   "cssVars": {
-    "dark": {
-      "accent": "240 3.7% 15.9%",
-      "accent-foreground": "0 0% 98%",
-      "background": "240 10% 3.9%",
-      "border": "240 3.7% 15.9%",
-      "brand": "213.3 93.9% 67.8%",
-      "card": "240 10% 3.9%",
-      "card-foreground": "0 0% 98%",
-      "chart-1": "142 88% 28%",
-      "chart-2": "139 65% 20%",
-      "chart-3": "140 74% 24%",
-      "chart-4": "137 55% 15%",
-      "chart-5": "141 40% 9%",
-      "destructive": "0 72% 51%",
-      "destructive-foreground": "0 0% 98%",
-      "foreground": "0 0% 98%",
-      "highlight": "48 96% 53%",
-      "input": "240 3.7% 15.9%",
-      "muted": "240 3.7% 15.9%",
-      "muted-foreground": "240 5% 64.9%",
-      "popover": "240 10% 3.9%",
-      "popover-foreground": "0 0% 98%",
-      "primary": "142 86% 28%",
-      "primary-foreground": "356 29% 98%",
-      "ring": "142 86% 28%",
-      "secondary": "240 4.8% 95.9%",
-      "secondary-foreground": "240 5.9% 10%"
-    },
     "light": {
       "accent": "240 4.8% 95.9%",
       "accent-foreground": "240 5.9% 10%",
@@ -55,8 +27,38 @@
       "ring": "142 86% 28%",
       "secondary": "240 4.8% 95.9%",
       "secondary-foreground": "240 5.9% 10%"
+    },
+    "dark": {
+      "accent": "240 3.7% 15.9%",
+      "accent-foreground": "0 0% 98%",
+      "background": "240 10% 3.9%",
+      "border": "240 3.7% 15.9%",
+      "brand": "213.3 93.9% 67.8%",
+      "card": "240 10% 3.9%",
+      "card-foreground": "0 0% 98%",
+      "chart-1": "142 88% 28%",
+      "chart-2": "139 65% 20%",
+      "chart-3": "140 74% 24%",
+      "chart-4": "137 55% 15%",
+      "chart-5": "141 40% 9%",
+      "destructive": "0 72% 51%",
+      "destructive-foreground": "0 0% 98%",
+      "foreground": "0 0% 98%",
+      "highlight": "48 96% 53%",
+      "input": "240 3.7% 15.9%",
+      "muted": "240 3.7% 15.9%",
+      "muted-foreground": "240 5% 64.9%",
+      "popover": "240 10% 3.9%",
+      "popover-foreground": "0 0% 98%",
+      "primary": "142 86% 28%",
+      "primary-foreground": "356 29% 98%",
+      "ring": "142 86% 28%",
+      "secondary": "240 4.8% 95.9%",
+      "secondary-foreground": "240 5.9% 10%"
     }
   },
   "name": "theme-emerald",
-  "type": "registry:theme"
+  "type": "registry:theme",
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "author": "udecode (https://platejs.org)"
 }
