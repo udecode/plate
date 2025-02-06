@@ -35,7 +35,7 @@ const registrySchema = z.object({
   tailwind: z
     .object({
       config: z.string().optional(),
-      css: z.string(),
+      css: z.string().optional(),
       baseColor: z.string().optional(),
       cssVariables: z.boolean().optional(),
       prefix: z.string().optional(),
@@ -169,7 +169,7 @@ export async function getRawConfig(cwd: string): Promise<RawConfig | null> {
   } catch (error) {
     const componentPath = `${cwd}/components.json`
     throw new Error(
-      `Invalid configuration found in ${highlighter.info(componentPath)}.`
+      `Invalid configuration found in ${highlighter.info(componentPath)}. ${error}`
     )
   }
 }

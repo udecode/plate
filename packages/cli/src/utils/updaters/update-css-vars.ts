@@ -92,7 +92,7 @@ export async function transformCssVars(
       plugins.push(cleanupDefaultNextStylesPlugin())
     }
 
-    plugins.push(updateCssVarsPluginV4(cssVars))
+    plugins.push(updateCssVarsPluginV4(cssVars, options.registryName))
     plugins.push(updateThemePlugin(cssVars))
 
     if (options.tailwindConfig) {
@@ -306,7 +306,8 @@ function cleanupDefaultNextStylesPlugin() {
         }
       }
 
-      removeConflictVars(root)
+      // DIFF ???
+      // removeConflictVars(root)
 
       const darkRootRule = root.nodes.find(
         (node): node is Rule =>
@@ -315,7 +316,8 @@ function cleanupDefaultNextStylesPlugin() {
       )
 
       if (darkRootRule) {
-        removeConflictVars(darkRootRule)
+        // DIFF ???
+        // removeConflictVars(darkRootRule)
         if (darkRootRule.nodes.length === 0) {
           darkRootRule.remove()
         }
@@ -361,14 +363,21 @@ function addOrUpdateVars(
 }
 
 function updateCssVarsPluginV4(
-  cssVars: z.infer<typeof registryItemCssVarsSchema>
+  cssVars: z.infer<typeof registryItemCssVarsSchema>,
+  registryName?: string
 ) {
   return {
     postcssPlugin: "update-css-vars-v4",
     Once(root: Root) {
       Object.entries(cssVars).forEach(([key, vars]) => {
-        const selector = key === "light" ? ":root" : `.${key}`
-
+        const selector =
+          key === "light"
+            ? registryName
+              ? `[data-registry="${registryName}"]`
+              : ":root"
+            : registryName
+              ? `[data-registry="${registryName}"].${key}`
+              : `.${key}`
         let ruleNode = root.nodes?.find(
           (node): node is Rule =>
             node.type === "rule" && node.selector === selector

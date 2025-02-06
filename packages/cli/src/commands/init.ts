@@ -79,6 +79,7 @@ export const init = new Command()
       // DIFF START
       let url = REGISTRY_URL
       let name = opts.name
+
       let actualComponents = [...components]
 
       if (components.length > 0) {
@@ -147,7 +148,7 @@ export async function runInit(
   }
 
   const res = await getProjectConfig(options.cwd, projectInfo)
-  let projectConfig: Config | undefined = res?.[0] as any
+  let projectConfig: Config | undefined = res?.[0]
   const isNew = res?.[1]
   let config: Config
   let newConfig: Config | undefined
@@ -290,16 +291,18 @@ async function promptForConfig(
     },
     // DIFF
     ...(styles.length > 1
-      ? {
-          type: "select",
-          name: "style",
-          message: `Which ${highlighter.info("style")} would you like to use?`,
-          choices: styles.map((style) => ({
-            title: style.label,
-            value: style.name,
-          })),
-        }
-      : ({} as any)),
+      ? [
+          {
+            type: "select",
+            name: "style",
+            message: `Which ${highlighter.info("style")} would you like to use?`,
+            choices: styles.map((style) => ({
+              title: style.label,
+              value: style.name,
+            })),
+          },
+        ]
+      : ([] as any)),
     {
       type: "select",
       name: "tailwindBaseColor",
@@ -369,7 +372,7 @@ async function promptForConfig(
 
   return rawConfigSchema.parse({
     $schema: "https://ui.shadcn.com/schema.json",
-    style: options.style,
+    style: options.style ?? defaultConfig?.style ?? "default",
     tailwind: {
       config: options.tailwindConfig,
       css: options.tailwindCss,
@@ -386,7 +389,7 @@ async function promptForConfig(
       lib: options.components.replace(/\/components$/, "lib"),
       hooks: options.components.replace(/\/components$/, "hooks"),
     },
-    url,
+    url: registryUrl,
   })
 }
 
@@ -446,7 +449,7 @@ async function promptForMinimalConfig(
       },
     ])
 
-    style = options.style ?? "new-york"
+    style = options.style ?? style
     baseColor = options.tailwindBaseColor
     cssVariables = options.tailwindCssVariables
   }
@@ -463,15 +466,94 @@ async function promptForMinimalConfig(
     tsx: defaultConfig?.tsx,
     aliases: defaultConfig?.aliases,
     iconLibrary: defaultConfig?.iconLibrary,
+    url: opts.url,
   })
 }
 
 async function promptForNestedRegistryConfig(
-  config: Config,
-  options: z.infer<typeof initOptionsSchema>
+  defaultConfig: Config,
+  opts: z.infer<typeof initOptionsSchema>
 ) {
+  const nestedDefaultConfig = await getDefaultConfig(
+    { ...defaultConfig },
+    opts.url ?? REGISTRY_URL
+  )
+
+  const name = opts.name ?? nestedDefaultConfig.name ?? opts.url!
+
+  logger.info("Initializing " + name + " registry...")
+
+  const newConfig = await promptForMinimalConfig(nestedDefaultConfig, opts)
+
+  const relevantFields = ["style", "tailwind", "rsc", "tsx", "aliases"]
+
+  const defaultConfigSubset = Object.fromEntries(
+    relevantFields.map((field) => [field, defaultConfig[field as keyof Config]])
+  ) as any
+
+  const newConfigSubset = Object.fromEntries(
+    relevantFields.map((field) => [field, newConfig[field as keyof Config]])
+  )
+
+  const registryConfig: Config = getDifferences(
+    newConfigSubset,
+    defaultConfigSubset
+  )
+
+  registryConfig.url = opts.url
+
+  const { resolvedPaths, ...topLevelConfig } = defaultConfig
+
   return {
-    config,
-    name: options.name,
+    config: {
+      ...topLevelConfig,
+      registries: {
+        ...defaultConfig.registries,
+        [name]: registryConfig,
+      },
+    },
+    name,
+  } as { config: Config; name: string }
+}
+
+export function isDifferent(newValue: any, defaultValue: any): boolean {
+  if (typeof newValue === "object" && newValue !== null) {
+    if (typeof defaultValue !== "object" || defaultValue === null) {
+      return true
+    }
+    for (const key in newValue) {
+      if (isDifferent(newValue[key], defaultValue[key])) {
+        return true
+      }
+    }
+    for (const key in defaultValue) {
+      if (!(key in newValue)) {
+        return true
+      }
+    }
+    return false
   }
+  return newValue !== defaultValue
+}
+
+export function getDifferences(newConfig: any, defaultConfig: any): any {
+  const differences: any = {}
+
+  for (const key in newConfig) {
+    if (isDifferent(newConfig[key], defaultConfig[key])) {
+      if (typeof newConfig[key] === "object" && newConfig[key] !== null) {
+        differences[key] = getDifferences(
+          newConfig[key],
+          defaultConfig[key] || {}
+        )
+        if (Object.keys(differences[key]).length === 0) {
+          delete differences[key]
+        }
+      } else {
+        differences[key] = newConfig[key]
+      }
+    }
+  }
+
+  return differences
 }

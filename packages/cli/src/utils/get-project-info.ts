@@ -11,6 +11,7 @@ import fg from "fast-glob"
 import fs from "fs-extra"
 import { loadConfig } from "tsconfig-paths"
 import { z } from "zod"
+import { REGISTRY_URL } from "@/src/registry/api"
 
 export type TailwindVersion = "v3" | "v4" | null
 
@@ -261,7 +262,7 @@ export async function getTsConfig(cwd: string) {
 export async function getProjectConfig(
   cwd: string,
   defaultProjectInfo: ProjectInfo | null = null
-): Promise<Config | null> {
+): Promise<[Config, boolean] | null> {
   // Check for existing component config.
   const [existingConfig, projectInfo] = await Promise.all([
     getConfig(cwd),
@@ -271,7 +272,7 @@ export async function getProjectConfig(
   ])
 
   if (existingConfig) {
-    return existingConfig
+    return [{ ...existingConfig, url: REGISTRY_URL }, false]
   }
 
   if (
@@ -302,9 +303,10 @@ export async function getProjectConfig(
       lib: `${projectInfo.aliasPrefix}/lib`,
       utils: `${projectInfo.aliasPrefix}/lib/utils`,
     },
+    url: REGISTRY_URL,
   }
 
-  return await resolveConfigPaths(cwd, config)
+  return [await resolveConfigPaths(cwd, config), true]
 }
 
 export async function getProjectTailwindVersionFromConfig(
