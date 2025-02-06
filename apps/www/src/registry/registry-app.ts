@@ -1,6 +1,6 @@
-import type { Registry } from './schema';
+import type { Registry } from 'shadcx/registry';
 
-export const registryApp: Registry = [
+export const registryApp: Registry['items'] = [
   {
     dependencies: ['@ai-sdk/openai', 'ai'],
     files: [

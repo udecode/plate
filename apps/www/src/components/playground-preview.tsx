@@ -3,14 +3,13 @@
 import type { ComponentProps } from 'react';
 import * as React from 'react';
 
-import type { Block } from '@/registry/schema';
 import type { ImperativePanelHandle } from 'react-resizable-panels';
 
 import { cn } from '@udecode/cn';
 
 import { useLiftMode } from '@/hooks/use-lift-mode';
 import { useLocale } from '@/hooks/useLocale';
-import PlaygroundDemo from '@/registry/default/example/playground-demo';
+import PlaygroundDemo from '@/registry/default/examples/playground-demo';
 
 import { PlaygroundPreviewToolbar } from './playground-preview-toolbar';
 import { ThemeWrapper } from './theme-wrapper';
@@ -35,7 +34,7 @@ export function PlaygroundPreview({
   className,
   ...props
 }: {
-  block?: Block;
+  block?: any;
 } & ComponentProps<'div'>) {
   const locale = useLocale();
   const content = i18n[locale as keyof typeof i18n];

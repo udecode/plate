@@ -4,6 +4,8 @@ import type { Metadata } from 'next';
 
 import { EditorDescription } from './editor-description';
 
+// SYNC
+
 export const metadata: Metadata = {
   description:
     'Beautifully designed. Copy and paste into your apps. Open Source.',

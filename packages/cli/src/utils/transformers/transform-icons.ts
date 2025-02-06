@@ -1,60 +1,58 @@
-import type { Transformer } from '@/src/utils/transformers';
-
-import { type SourceFile, SyntaxKind } from 'ts-morph';
-
-import { ICON_LIBRARIES } from '@/src/utils/icon-libraries';
-import { getRegistryIcons } from '@/src/utils/registry';
+import { getRegistryIcons, REGISTRY_URL } from "@/src/registry/api"
+import { ICON_LIBRARIES } from "@/src/utils/icon-libraries"
+import { Transformer } from "@/src/utils/transformers"
+import { SourceFile, SyntaxKind } from "ts-morph"
 
 // Lucide is the default icon library in the registry.
-const SOURCE_LIBRARY = 'lucide';
+const SOURCE_LIBRARY = "lucide"
 
-export const transformIcons: Transformer = async ({ config, sourceFile }) => {
+export const transformIcons: Transformer = async ({ sourceFile, config }) => {
   // No transform if we cannot read the icon library.
   if (!config.iconLibrary || !(config.iconLibrary in ICON_LIBRARIES)) {
-    return sourceFile;
+    return sourceFile
   }
 
-  const registryIcons = await getRegistryIcons();
-  const sourceLibrary = SOURCE_LIBRARY;
-  const targetLibrary = config.iconLibrary;
+  const registryIcons = await getRegistryIcons(config.url ?? REGISTRY_URL)
+  const sourceLibrary = SOURCE_LIBRARY
+  const targetLibrary = config.iconLibrary
 
   if (sourceLibrary === targetLibrary) {
-    return sourceFile;
+    return sourceFile
   }
 
-  const targetedIcons: string[] = [];
-
+  let targetedIcons: string[] = []
   for (const importDeclaration of sourceFile.getImportDeclarations() ?? []) {
     if (
       importDeclaration.getModuleSpecifier()?.getText() !==
       `"${ICON_LIBRARIES[SOURCE_LIBRARY].import}"`
     ) {
-      continue;
+      continue
     }
 
     for (const specifier of importDeclaration.getNamedImports() ?? []) {
-      const iconName = specifier.getName();
-      const targetedIcon = registryIcons[iconName]?.[targetLibrary];
+      const iconName = specifier.getName()
+
+      const targetedIcon = registryIcons[iconName]?.[targetLibrary]
 
       if (!targetedIcon || targetedIcons.includes(targetedIcon)) {
-        continue;
+        continue
       }
 
-      targetedIcons.push(targetedIcon);
+      targetedIcons.push(targetedIcon)
+
       // Remove the named import.
-      specifier.remove();
+      specifier.remove()
+
       // Replace with the targeted icon.
       sourceFile
         .getDescendantsOfKind(SyntaxKind.JsxSelfClosingElement)
         .filter((node) => node.getTagNameNode()?.getText() === iconName)
-        .forEach((node) =>
-          node.getTagNameNode()?.replaceWithText(targetedIcon)
-        );
+        .forEach((node) => node.getTagNameNode()?.replaceWithText(targetedIcon))
     }
 
     // If the named import is empty, remove the import declaration.
     if (importDeclaration.getNamedImports()?.length === 0) {
-      importDeclaration.remove();
+      importDeclaration.remove()
     }
   }
 
@@ -65,20 +63,20 @@ export const transformIcons: Transformer = async ({ config, sourceFile }) => {
       namedImports: targetedIcons.map((icon) => ({
         name: icon,
       })),
-    });
+    })
 
     if (!_useSemicolon(sourceFile)) {
       iconImportDeclaration.replaceWithText(
-        iconImportDeclaration.getText().replace(';', '')
-      );
+        iconImportDeclaration.getText().replace(";", "")
+      )
     }
   }
 
-  return sourceFile;
-};
+  return sourceFile
+}
 
 function _useSemicolon(sourceFile: SourceFile) {
   return (
-    sourceFile.getImportDeclarations()?.[0]?.getText().endsWith(';') ?? false
-  );
+    sourceFile.getImportDeclarations()?.[0]?.getText().endsWith(";") ?? false
+  )
 }

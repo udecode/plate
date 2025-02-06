@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 
-import type { Block } from '@/registry/schema';
 import type { ImperativePanelHandle } from 'react-resizable-panels';
 
 import { cn } from '@udecode/cn';
@@ -29,7 +28,7 @@ export function PlaygroundPreviewToolbar({
   // fullScreen,
   // setFullScreen,
 }: {
-  block: { hasLiftMode: boolean } & Block;
+  block: { hasLiftMode: boolean } & any;
   resizablePanelRef: React.RefObject<ImperativePanelHandle | null>;
   // fullScreen: boolean;
   // setFullScreen: React.Dispatch<React.SetStateAction<boolean>>;

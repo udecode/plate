@@ -58,7 +58,7 @@ export function DocBreadcrumb({
             size="sm"
             variant="outline"
             className={cn(
-              'min-w-32 justify-between focus:outline-hidden',
+              'min-w-32 justify-between focus:outline-none',
               buttonClassName
             )}
           >

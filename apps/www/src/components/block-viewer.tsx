@@ -9,7 +9,7 @@ import type {
 import type {
   registryItemFileSchema,
   registryItemSchema,
-} from '@/registry/schema';
+} from 'shadcx/registry';
 import type { ImperativePanelHandle } from 'react-resizable-panels';
 import type { z } from 'zod';
 
@@ -58,6 +58,8 @@ import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 import { Button, buttonVariants } from '@/registry/default/plate-ui/button';
 import { Separator } from '@/registry/default/plate-ui/separator';
 import { Spinner } from '@/registry/default/plate-ui/spinner';
+
+// SYNC
 
 type BlockViewerContext = {
   activeFile: string | null;

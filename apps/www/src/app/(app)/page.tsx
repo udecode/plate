@@ -44,6 +44,8 @@ export type SearchParams = Promise<{
   locale: string;
 }>;
 
+// SYNC
+
 export default async function IndexPage({
   searchParams,
 }: {

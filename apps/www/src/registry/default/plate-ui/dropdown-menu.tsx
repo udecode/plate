@@ -94,7 +94,7 @@ export const DropdownMenuSubTrigger = withRef<
   <DropdownMenuPrimitive.SubTrigger
     ref={ref}
     className={cn(
-      'mx-1 flex cursor-default items-center gap-2 rounded-sm px-2 py-1 text-sm outline-hidden select-none focus:bg-accent data-disabled:pointer-events-none data-disabled:opacity-50 data-[state=open]:bg-accent [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+      'mx-1 flex cursor-default items-center gap-2 rounded-sm px-2 py-1 text-sm outline-none select-none focus:bg-accent data-disabled:pointer-events-none data-disabled:opacity-50 data-[state=open]:bg-accent [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
       inset && 'pl-8',
       className
     )}
@@ -132,7 +132,7 @@ export const DropdownMenuContent = withRef<
 ));
 
 const menuItemVariants = cva(
-  'relative mx-1 flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1 text-sm outline-hidden transition-colors select-none focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+  'relative mx-1 flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1 text-sm transition-colors outline-none select-none focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
   {
     variants: {
       inset: {
@@ -154,7 +154,7 @@ export const DropdownMenuCheckboxItem = withRef<
   <DropdownMenuPrimitive.CheckboxItem
     ref={ref}
     className={cn(
-      'relative mx-1 flex items-center gap-2 rounded-sm py-1 pr-2 pl-8 text-sm outline-hidden transition-colors select-none focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0',
+      'relative mx-1 flex items-center gap-2 rounded-sm py-1 pr-2 pl-8 text-sm transition-colors outline-none select-none focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0',
       'cursor-pointer',
       className
     )}
@@ -178,7 +178,7 @@ export const DropdownMenuRadioItem = withRef<
   <DropdownMenuPrimitive.RadioItem
     ref={ref}
     className={cn(
-      'relative mx-1 flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1 text-sm outline-hidden transition-colors select-none focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50 data-[state=checked]:text-accent-foreground [&_svg]:size-4',
+      'relative mx-1 flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1 text-sm transition-colors outline-none select-none focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50 data-[state=checked]:text-accent-foreground [&_svg]:size-4',
       className
     )}
     {...props}

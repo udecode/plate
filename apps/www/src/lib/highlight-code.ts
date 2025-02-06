@@ -2,7 +2,7 @@ import type { z } from 'zod';
 
 import { codeToHtml } from 'shiki';
 
-import type { registryItemFileSchema } from '../registry/schema';
+import type { registryItemFileSchema } from 'shadcx/registry';
 
 export async function highlightCode(code: string) {
   const html = await codeToHtml(code, {

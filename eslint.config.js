@@ -6,6 +6,8 @@ export default defineConfig(
       'scripts/**/*',
       '**/.contentlayer/*',
       '**/__registry__/*',
+      '**/build-registry.mts',
+      'packages/cli/src',
       'prisma/kysely',
       'src/lib/db/types',
       '**/*.mdx',

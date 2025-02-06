@@ -1,16 +1,17 @@
-import { Command } from 'commander';
-import deepmerge from 'deepmerge';
-import { promises as fs } from 'fs';
-import path from 'path';
-import prompts from 'prompts';
-import { z } from 'zod';
-
-import { preFlightInit } from '@/src/preflights/preflight-init';
-import { addComponents } from '@/src/utils/add-components';
-import { createProject } from '@/src/utils/create-project';
-import * as ERRORS from '@/src/utils/errors';
+import { promises as fs } from "fs"
+import path from "path"
+import { preFlightInit } from "@/src/preflights/preflight-init"
 import {
-  type Config,
+  getDefaultConfig,
+  getRegistryBaseColors,
+  getRegistryStyles,
+  REGISTRY_MAP,
+  REGISTRY_URL,
+} from "@/src/registry/api"
+import { addComponents } from "@/src/utils/add-components"
+import { createProject } from "@/src/utils/create-project"
+import * as ERRORS from "@/src/utils/errors"
+import {
   DEFAULT_COMPONENTS,
   DEFAULT_TAILWIND_CONFIG,
   DEFAULT_TAILWIND_CSS,
@@ -18,85 +19,80 @@ import {
   getConfig,
   rawConfigSchema,
   resolveConfigPaths,
-} from '@/src/utils/get-config';
-import { getProjectConfig, getProjectInfo } from '@/src/utils/get-project-info';
-import { handleError } from '@/src/utils/handle-error';
-import { highlighter } from '@/src/utils/highlighter';
-import { logger } from '@/src/utils/logger';
+  type Config,
+} from "@/src/utils/get-config"
 import {
-  REGISTRY_MAP,
-  REGISTRY_URL,
-  getDefaultConfig,
-  getRegistryBaseColors,
-  getRegistryStyles,
-} from '@/src/utils/registry';
-import { spinner } from '@/src/utils/spinner';
-import { updateTailwindContent } from '@/src/utils/updaters/update-tailwind-content';
-
-import { getDifferences } from '../utils/is-different';
-
-export const registryMap = {
-  magic: 'https://magicui.design/r',
-  plate: 'https://platejs.org/r',
-  shadcn: REGISTRY_URL,
-};
+  getProjectConfig,
+  getProjectInfo,
+  getProjectTailwindVersionFromConfig,
+} from "@/src/utils/get-project-info"
+import { handleError } from "@/src/utils/handle-error"
+import { highlighter } from "@/src/utils/highlighter"
+import { logger } from "@/src/utils/logger"
+import { spinner } from "@/src/utils/spinner"
+import { updateTailwindContent } from "@/src/utils/updaters/update-tailwind-content"
+import { Command } from "commander"
+import prompts from "prompts"
+import { z } from "zod"
+import deepmerge from "deepmerge"
+import { url } from "inspector"
 
 export const initOptionsSchema = z.object({
-  components: z.array(z.string()).optional(),
   cwd: z.string(),
+  components: z.array(z.string()).optional(),
+  yes: z.boolean(),
   defaults: z.boolean(),
   force: z.boolean(),
-  isNewProject: z.boolean(),
-  name: z.string().optional(),
-  pm: z.enum(['npm', 'pnpm', 'yarn', 'bun']).optional(),
   silent: z.boolean(),
+  isNewProject: z.boolean(),
   srcDir: z.boolean().optional(),
   url: z.string().optional(),
-  yes: z.boolean(),
-});
+  name: z.string().optional(),
+  pm: z.enum(["npm", "pnpm", "yarn", "bun"]).optional(),
+})
 
 export const init = new Command()
-  .name('init')
-  .description('initialize your project and install dependencies')
+  .name("init")
+  .description("initialize your project and install dependencies")
   .argument(
-    '[components...]',
-    'the components to add or a url to the component.'
+    "[components...]",
+    "the components to add or a url to the component."
   )
-  .option('-y, --yes', 'skip confirmation prompt.', true)
-  .option('-d, --defaults,', 'use default configuration.', false)
-  .option('-f, --force', 'force overwrite of existing configuration.', false)
+  .option("-y, --yes", "skip confirmation prompt.", true)
+  .option("-d, --defaults,", "use default configuration.", false)
+  .option("-f, --force", "force overwrite of existing configuration.", false)
   .option(
-    '-c, --cwd <cwd>',
-    'the working directory. defaults to the current directory.',
+    "-c, --cwd <cwd>",
+    "the working directory. defaults to the current directory.",
     process.cwd()
   )
-  .option('-s, --silent', 'mute output.', false)
+  .option("-s, --silent", "mute output.", false)
   .option(
-    '--src-dir',
-    'use the src directory when creating a new project.',
+    "--src-dir",
+    "use the src directory when creating a new project.",
     false
   )
-  .option('-n, --name <name>', 'registry name')
-  .option('--pm <pm>', 'package manager to use (npm, pnpm, yarn, bun)')
+  .option("-n, --name <name>", "registry name")
+  .option("--pm <pm>", "package manager to use (npm, pnpm, yarn, bun)")
   .action(async (components, opts) => {
     try {
       // DIFF START
-      let url = REGISTRY_URL;
-      let name = opts.name;
-      let actualComponents = [...components];
+      let url = REGISTRY_URL
+      let name = opts.name
+      let actualComponents = [...components]
 
       if (components.length > 0) {
         const registry =
-          REGISTRY_MAP[components[0] as keyof typeof REGISTRY_MAP];
+          REGISTRY_MAP[components[0] as keyof typeof REGISTRY_MAP]
 
         if (registry) {
-          url = registry;
-          name = components[0];
-          actualComponents = components.slice(1);
-        } else if (components[0].startsWith('http')) {
-          url = components[0];
-          name = components[0];
-          actualComponents = components.slice(1);
+          url = registry
+          name = components[0]
+          actualComponents = components.slice(1)
+        } else if (components[0].startsWith("http")) {
+          url = components[0]
+          name = components[0]
+          actualComponents = components.slice(1)
         }
       }
 
@@ -107,120 +103,122 @@ export const init = new Command()
         components: actualComponents,
         name,
         url,
-      });
+      })
       // DIFF END
 
-      await runInit(options);
+      await runInit(options)
 
       logger.log(
         `${highlighter.success(
-          'Success!'
+          "Success!"
         )} Project initialization completed.\nYou may now add components.`
-      );
-      logger.break();
+      )
+      logger.break()
     } catch (error) {
-      logger.break();
-      handleError(error);
+      logger.break()
+      handleError(error)
     }
-  });
+  })
 
 export async function runInit(
   options: z.infer<typeof initOptionsSchema> & {
-    skipPreflight?: boolean;
+    skipPreflight?: boolean
   }
 ) {
-  let projectInfo;
+  let projectInfo
 
-  if (options.skipPreflight) {
-    projectInfo = await getProjectInfo(options.cwd);
-  } else {
-    const preflight = await preFlightInit(options);
-
+  if (!options.skipPreflight) {
+    const preflight = await preFlightInit(options)
     if (preflight.errors[ERRORS.MISSING_DIR_OR_EMPTY_PROJECT]) {
-      const { projectPath } = await createProject(options);
-
+      const { projectPath, projectType } = await createProject(options)
       if (!projectPath) {
-        process.exit(1);
+        process.exit(1)
       }
-
-      options.cwd = projectPath;
-      options.isNewProject = true;
+      options.cwd = projectPath
+      options.isNewProject = true
+      if (projectType === "monorepo") {
+        options.cwd = path.resolve(options.cwd, "apps/web")
+        return await getConfig(options.cwd)
+      }
     }
-
-    projectInfo = preflight.projectInfo;
+    projectInfo = preflight.projectInfo
+  } else {
+    projectInfo = await getProjectInfo(options.cwd)
   }
 
-  const res = await getProjectConfig(options.cwd, projectInfo);
-  let projectConfig = res?.[0];
-  const isNew = res?.[1];
-
-  let config: Config;
-  let newConfig: Config | undefined;
-  let registryName: string | undefined;
+  const res = await getProjectConfig(options.cwd, projectInfo)
+  let projectConfig: Config | undefined = res?.[0] as any
+  const isNew = res?.[1]
+  let config: Config
+  let newConfig: Config | undefined
+  let registryName: string | undefined
 
   if (projectConfig) {
     if (isNew || options.url === projectConfig.url) {
       if (options.url === projectConfig.url) {
-        projectConfig = await getDefaultConfig(projectConfig, options.url);
+        projectConfig = await getDefaultConfig(projectConfig, options.url!)
         // Updating top-level config
-        config = await promptForMinimalConfig(projectConfig, options);
+        config = (await promptForMinimalConfig(projectConfig, options)) as any
       } else {
-        const { url, ...rest } = options;
-        newConfig = await promptForMinimalConfig(
-          await getDefaultConfig(projectConfig),
+        const { url, ...rest } = options
+        newConfig = (await promptForMinimalConfig(
+          await getDefaultConfig(projectConfig, options.url!),
           { ...rest }
-        );
-        const res = await promptForNestedRegistryConfig(newConfig, options);
-        config = res.config;
-        registryName = res.name;
+        )) as any
+        const res = await promptForNestedRegistryConfig(newConfig!, options)
+        config = res.config
+        registryName = res.name
       }
     } else {
       // Updating nested registry config
-      const res = await promptForNestedRegistryConfig(projectConfig, options);
-      config = res.config;
-      registryName = res.name;
+      const res = await promptForNestedRegistryConfig(projectConfig, options)
+      config = res.config
+      registryName = res.name
     }
   } else {
     // New configuration
-    config = await promptForConfig(await getConfig(options.cwd), options.url);
+    config = (await promptForConfig(
+      await getConfig(options.cwd),
+      options.url ?? REGISTRY_URL
+    )) as any
   }
+
   if (!options.yes) {
     const { proceed } = await prompts({
-      initial: true,
+      type: "confirm",
+      name: "proceed",
       message: `Write configuration to ${highlighter.info(
-        'components.json'
+        "components.json"
       )}. Proceed?`,
-      name: 'proceed',
-      type: 'confirm',
-    });
+      initial: true,
+    })
 
     if (!proceed) {
-      process.exit(0);
+      process.exit(0)
     }
   }
+
   if (config.url === REGISTRY_URL) {
-    delete config.url;
+    delete config.url
   }
 
   // Write components.json.
-  const componentSpinner = spinner(`Writing components.json.`).start();
-  const targetPath = path.resolve(options.cwd, 'components.json');
-  await fs.writeFile(targetPath, JSON.stringify(config, null, 2), 'utf8');
-  componentSpinner.succeed();
+  const componentSpinner = spinner(`Writing components.json.`).start()
+  const targetPath = path.resolve(options.cwd, "components.json")
+  await fs.writeFile(targetPath, JSON.stringify(config, null, 2), "utf8")
+  componentSpinner.succeed()
 
-  let registryConfig = config;
-
+  let registryConfig = config
   if (registryName) {
-    const registry = config.registries?.[registryName];
-
+    const registry = config.registries?.[registryName]
     if (registry) {
-      registryConfig = deepmerge(config, registry) as any;
+      registryConfig = deepmerge(config, registry) as any
     }
   }
 
   // Add components.
-  const fullConfig = await resolveConfigPaths(options.cwd, registryConfig);
-  const components = ['index', ...(options.components || [])];
+  const fullConfig = await resolveConfigPaths(options.cwd, registryConfig)
+  const components = ["index", ...(options.components || [])]
 
   if (newConfig) {
     await addComponents(
@@ -228,292 +226,252 @@ export async function runInit(
       await resolveConfigPaths(options.cwd, newConfig),
       {
         isNewProject:
-          options.isNewProject || projectInfo?.framework.name === 'next-app',
+          options.isNewProject || projectInfo?.framework.name === "next-app",
         // Init will always overwrite files.
         overwrite: true,
         silent: options.silent,
       }
-    );
+    )
   }
 
   await addComponents(components, fullConfig, {
     isNewProject:
-      options.isNewProject || projectInfo?.framework.name === 'next-app',
+      options.isNewProject || projectInfo?.framework.name === "next-app",
     // Init will always overwrite files.
     overwrite: true,
     registryName,
     silent: options.silent,
-  });
+  })
 
   // If a new project is using src dir, let's update the tailwind content config.
   // TODO: Handle this per framework.
   if (options.isNewProject && options.srcDir) {
     if (newConfig) {
       await updateTailwindContent(
-        ['./src/**/*.{js,ts,jsx,tsx,mdx}'],
+        ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
         await resolveConfigPaths(options.cwd, newConfig),
         {
           silent: options.silent,
         }
-      );
+      )
     }
-
     await updateTailwindContent(
-      ['./src/**/*.{js,ts,jsx,tsx,mdx}'],
+      ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
       fullConfig,
       {
         silent: options.silent,
       }
-    );
+    )
   }
 
-  return fullConfig;
+  return fullConfig
 }
 
 async function promptForConfig(
   defaultConfig: Config | null = null,
-  registryUrl?: string
+  registryUrl: string
 ) {
   const [styles, baseColors] = await Promise.all([
     getRegistryStyles(registryUrl),
     getRegistryBaseColors(),
-  ]);
+  ])
 
-  logger.info('');
+  logger.info("")
   const options = await prompts([
     {
-      active: 'yes',
-      inactive: 'no',
-      initial: defaultConfig?.tsx ?? true,
+      type: "toggle",
+      name: "typescript",
       message: `Would you like to use ${highlighter.info(
-        'TypeScript'
+        "TypeScript"
       )} (recommended)?`,
-      name: 'typescript',
-      type: 'toggle',
+      initial: defaultConfig?.tsx ?? true,
+      active: "yes",
+      inactive: "no",
     },
+    // DIFF
     ...(styles.length > 1
-      ? [
-          {
-            choices: styles.map((style) => ({
-              title: style.label,
-              value: style.name,
-            })),
-            message: `Which ${highlighter.info(
-              'style'
-            )} would you like to use?`,
-            name: 'style',
-            type: 'select',
-          },
-        ]
-      : ([] as any)),
+      ? {
+          type: "select",
+          name: "style",
+          message: `Which ${highlighter.info("style")} would you like to use?`,
+          choices: styles.map((style) => ({
+            title: style.label,
+            value: style.name,
+          })),
+        }
+      : ({} as any)),
     {
+      type: "select",
+      name: "tailwindBaseColor",
+      message: `Which color would you like to use as the ${highlighter.info(
+        "base color"
+      )}?`,
       choices: baseColors.map((color) => ({
         title: color.label,
         value: color.name,
       })),
-      message: `Which color would you like to use as the ${highlighter.info(
-        'base color'
-      )}?`,
-      name: 'tailwindBaseColor',
-      type: 'select',
     },
     {
+      type: "text",
+      name: "tailwindCss",
+      message: `Where is your ${highlighter.info("global CSS")} file?`,
       initial: defaultConfig?.tailwind.css ?? DEFAULT_TAILWIND_CSS,
-      message: `Where is your ${highlighter.info('global CSS')} file?`,
-      name: 'tailwindCss',
-      type: 'text',
     },
     {
-      active: 'yes',
-      inactive: 'no',
-      initial: defaultConfig?.tailwind.cssVariables ?? true,
+      type: "toggle",
+      name: "tailwindCssVariables",
       message: `Would you like to use ${highlighter.info(
-        'CSS variables'
+        "CSS variables"
       )} for theming?`,
-      name: 'tailwindCssVariables',
-      type: 'toggle',
+      initial: defaultConfig?.tailwind.cssVariables ?? true,
+      active: "yes",
+      inactive: "no",
     },
     {
-      initial: '',
+      type: "text",
+      name: "tailwindPrefix",
       message: `Are you using a custom ${highlighter.info(
-        'tailwind prefix eg. tw-'
+        "tailwind prefix eg. tw-"
       )}? (Leave blank if not)`,
-      name: 'tailwindPrefix',
-      type: 'text',
+      initial: "",
     },
     {
-      initial: defaultConfig?.tailwind.config ?? DEFAULT_TAILWIND_CONFIG,
+      type: "text",
+      name: "tailwindConfig",
       message: `Where is your ${highlighter.info(
-        'tailwind.config.js'
+        "tailwind.config.js"
       )} located?`,
-      name: 'tailwindConfig',
-      type: 'text',
+      initial: defaultConfig?.tailwind.config ?? DEFAULT_TAILWIND_CONFIG,
     },
     {
-      initial: defaultConfig?.aliases.components ?? DEFAULT_COMPONENTS,
+      type: "text",
+      name: "components",
       message: `Configure the import alias for ${highlighter.info(
-        'components'
+        "components"
       )}:`,
-      name: 'components',
-      type: 'text',
+      initial: defaultConfig?.aliases["components"] ?? DEFAULT_COMPONENTS,
     },
     {
-      initial: defaultConfig?.aliases.utils ?? DEFAULT_UTILS,
-      message: `Configure the import alias for ${highlighter.info('utils')}:`,
-      name: 'utils',
-      type: 'text',
+      type: "text",
+      name: "utils",
+      message: `Configure the import alias for ${highlighter.info("utils")}:`,
+      initial: defaultConfig?.aliases["utils"] ?? DEFAULT_UTILS,
     },
     {
-      active: 'yes',
-      inactive: 'no',
+      type: "toggle",
+      name: "rsc",
+      message: `Are you using ${highlighter.info("React Server Components")}?`,
       initial: defaultConfig?.rsc ?? true,
-      message: `Are you using ${highlighter.info('React Server Components')}?`,
-      name: 'rsc',
-      type: 'toggle',
+      active: "yes",
+      inactive: "no",
     },
-  ]);
+  ])
 
   return rawConfigSchema.parse({
-    $schema: 'https://ui.shadcn.com/schema.json',
-    aliases: {
-      components: options.components,
-      hooks: options.components.replace(/\/components$/, 'hooks'),
-      // TODO: fix this.
-      lib: options.components.replace(/\/components$/, 'lib'),
-      utils: options.utils,
-    },
-    rsc: options.rsc,
+    $schema: "https://ui.shadcn.com/schema.json",
     style: options.style,
     tailwind: {
-      baseColor: options.tailwindBaseColor,
       config: options.tailwindConfig,
       css: options.tailwindCss,
+      baseColor: options.tailwindBaseColor,
       cssVariables: options.tailwindCssVariables,
       prefix: options.tailwindPrefix,
     },
+    rsc: options.rsc,
     tsx: options.typescript,
-    url: options.url,
-  }) as Config;
+    aliases: {
+      utils: options.utils,
+      components: options.components,
+      // TODO: fix this.
+      lib: options.components.replace(/\/components$/, "lib"),
+      hooks: options.components.replace(/\/components$/, "hooks"),
+    },
+    url,
+  })
 }
 
 async function promptForMinimalConfig(
   defaultConfig: Config,
   opts: z.infer<typeof initOptionsSchema>
 ) {
-  let style = defaultConfig.style;
-  let baseColor = defaultConfig.tailwind.baseColor;
-  let cssVariables = defaultConfig.tailwind.cssVariables;
+  let style = defaultConfig.style
+  let baseColor = defaultConfig.tailwind.baseColor
+  let cssVariables = defaultConfig.tailwind.cssVariables
 
   if (!opts.defaults) {
-    const [styles, baseColors] = await Promise.all([
-      getRegistryStyles(opts.url),
+    const [styles, baseColors, tailwindVersion] = await Promise.all([
+      getRegistryStyles(opts.url ?? REGISTRY_URL),
       getRegistryBaseColors(),
-    ]);
+      getProjectTailwindVersionFromConfig(defaultConfig),
+    ])
 
     const options = await prompts([
       ...(styles.length > 1
         ? [
             {
+              type: tailwindVersion === "v4" ? null : "select",
+              name: "style",
+              message: `Which ${highlighter.info("style")} would you like to use?`,
               choices: styles.map((style) => ({
-                title: style.label,
+                title:
+                  style.name === "new-york"
+                    ? "New York (Recommended)"
+                    : style.label,
                 value: style.name,
               })),
-              initial: styles.findIndex((s) => s.name === style),
-              message: `Which ${highlighter.info(
-                'style'
-              )} would you like to use?`,
-              name: 'style',
-              type: 'select',
+              initial: 0,
             },
           ]
         : ([] as any)),
       {
+        type: "select",
+        name: "tailwindBaseColor",
+        message: `Which color would you like to use as the ${highlighter.info(
+          "base color"
+        )}?`,
         choices: baseColors.map((color) => ({
           title: color.label,
           value: color.name,
         })),
-        message: `Which color would you like to use as the ${highlighter.info(
-          'base color'
-        )}?`,
-        name: 'tailwindBaseColor',
-        type: 'select',
       },
       {
-        active: 'yes',
-        inactive: 'no',
-        initial: defaultConfig?.tailwind.cssVariables,
+        type: "toggle",
+        name: "tailwindCssVariables",
         message: `Would you like to use ${highlighter.info(
-          'CSS variables'
+          "CSS variables"
         )} for theming?`,
-        name: 'tailwindCssVariables',
-        type: 'toggle',
+        initial: defaultConfig?.tailwind.cssVariables,
+        active: "yes",
+        inactive: "no",
       },
-    ]);
+    ])
 
-    style = options.style ?? style;
-    baseColor = options.tailwindBaseColor ?? baseColor;
-    cssVariables = options.tailwindCssVariables ?? cssVariables;
+    style = options.style ?? "new-york"
+    baseColor = options.tailwindBaseColor
+    cssVariables = options.tailwindCssVariables
   }
 
   return rawConfigSchema.parse({
     $schema: defaultConfig?.$schema,
-    aliases: defaultConfig?.aliases,
-    iconLibrary: defaultConfig?.iconLibrary,
-    registries: defaultConfig?.registries,
-    rsc: defaultConfig?.rsc,
     style,
     tailwind: {
       ...defaultConfig?.tailwind,
       baseColor,
       cssVariables,
     },
+    rsc: defaultConfig?.rsc,
     tsx: defaultConfig?.tsx,
-    url: opts.url,
-  }) as Config;
+    aliases: defaultConfig?.aliases,
+    iconLibrary: defaultConfig?.iconLibrary,
+  })
 }
 
 async function promptForNestedRegistryConfig(
-  defaultConfig: Config,
-  opts: z.infer<typeof initOptionsSchema>
+  config: Config,
+  options: z.infer<typeof initOptionsSchema>
 ) {
-  const nestedDefaultConfig = await getDefaultConfig(
-    { ...defaultConfig },
-    opts.url
-  );
-
-  const name = opts.name ?? nestedDefaultConfig.name ?? opts.url!;
-
-  logger.info('Initializing ' + name + ' registry...');
-
-  const newConfig = await promptForMinimalConfig(nestedDefaultConfig, opts);
-
-  const relevantFields = ['style', 'tailwind', 'rsc', 'tsx', 'aliases'];
-
-  const defaultConfigSubset = Object.fromEntries(
-    relevantFields.map((field) => [field, defaultConfig[field as keyof Config]])
-  ) as any;
-
-  const newConfigSubset = Object.fromEntries(
-    relevantFields.map((field) => [field, newConfig[field as keyof Config]])
-  );
-
-  const registryConfig: Config = getDifferences(
-    newConfigSubset,
-    defaultConfigSubset
-  );
-
-  registryConfig.url = opts.url;
-
-  const { resolvedPaths, ...topLevelConfig } = defaultConfig;
-
   return {
-    config: {
-      ...topLevelConfig,
-      registries: {
-        ...defaultConfig.registries,
-        [name]: registryConfig,
-      },
-    },
-    name,
-  } as { config: Config; name: string };
+    config,
+    name: options.name,
+  }
 }

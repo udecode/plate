@@ -4,12 +4,14 @@
   ],
   "files": [
     {
-      "content": "'use client';\n\nimport { BlockSelectionPlugin } from '@udecode/plate-selection/react';\n\nexport const blockSelectionPlugins = [\n  BlockSelectionPlugin.configure(({ editor }) => ({\n    options: {\n      enableContextMenu: true,\n      isSelectable: (element, path) => {\n        return (\n          !['code_line', 'column', 'td'].includes(element.type) &&\n          !editor.api.block({ above: true, at: path, match: { type: 'tr' } })\n        );\n      },\n    },\n  })),\n] as const;\n\nexport const blockSelectionReadOnlyPlugin = BlockSelectionPlugin.configure({\n  api: {},\n  extendEditor: null,\n  handlers: {},\n  options: {},\n  render: {},\n  useHooks: null,\n});\n",
       "path": "components/editor/plugins/block-selection-plugins.ts",
-      "target": "components/editor/plugins/block-selection-plugins.ts",
-      "type": "registry:component"
+      "content": "'use client';\n\nimport { BlockSelectionPlugin } from '@udecode/plate-selection/react';\n\nexport const blockSelectionPlugins = [\n  BlockSelectionPlugin.configure(({ editor }) => ({\n    options: {\n      enableContextMenu: true,\n      isSelectable: (element, path) => {\n        return (\n          !['code_line', 'column', 'td'].includes(element.type) &&\n          !editor.api.block({ above: true, at: path, match: { type: 'tr' } })\n        );\n      },\n    },\n  })),\n] as const;\n\nexport const blockSelectionReadOnlyPlugin = BlockSelectionPlugin.configure({\n  api: {},\n  extendEditor: null,\n  handlers: {},\n  options: {},\n  render: {},\n  useHooks: null,\n});\n",
+      "type": "registry:component",
+      "target": "components/editor/plugins/block-selection-plugins.ts"
     }
   ],
   "name": "block-selection-plugins",
-  "type": "registry:component"
+  "type": "registry:component",
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "author": "udecode (https://platejs.org)"
 }

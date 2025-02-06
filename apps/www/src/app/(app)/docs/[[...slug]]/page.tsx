@@ -1,5 +1,5 @@
 import type { PackageInfoType } from '@/hooks/use-package-info';
-import type { RegistryEntry } from '@/registry/schema';
+import type { RegistryItem } from 'shadcx/registry';
 
 import { allDocs } from 'contentlayer/generated';
 import { notFound } from 'next/navigation';
@@ -69,7 +69,7 @@ interface DocPageProps {
   }>;
 }
 
-const registryNames = new Set(registry.map((item) => item.name));
+const registryNames = new Set(registry.items.map((item) => item.name));
 
 function getDocFromParams({
   locale,
@@ -117,7 +117,7 @@ export default async function DocPage(props: DocPageProps) {
 
   if (!doc) {
     let docName = params.slug?.at(-1);
-    let file: RegistryEntry | undefined;
+    let file: RegistryItem | undefined;
 
     if (category === 'component') {
       file = ui.find((c) => c.name === docName);
@@ -209,7 +209,7 @@ function getRegistryDocs({
   registryNames,
 }: {
   docName: string;
-  file: RegistryEntry;
+  file: RegistryItem;
   files: { name: string }[];
   registryNames: Set<string>;
 }) {

@@ -1,6 +1,6 @@
-import type { Registry } from './schema';
+import type { Registry } from 'shadcx/registry';
 
-export const lib: Registry = [
+export const lib: Registry['items'] = [
   {
     dependencies: [
       'uploadthing@7.2.0',

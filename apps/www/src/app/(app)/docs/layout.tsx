@@ -1,7 +1,9 @@
 'use client';
 
-import { DocsSidebarNav } from '@/components/sidebar-nav';
+import { DocsNav } from '@/components/docs-nav';
 import { docsConfig } from '@/config/docs';
+
+// SYNC
 
 interface DocsLayoutProps {
   children: React.ReactNode;
@@ -13,7 +15,7 @@ export default function DocsLayout({ children }: DocsLayoutProps) {
       {/* <aside className="fixed top-14 z-30 -ml-2 hidden h-[calc(100vh-3.5rem)] w-full shrink-0 md:sticky md:block"> */}
       <aside className="fixed top-14 z-30 hidden h-[calc(100vh-3.5rem)] w-full shrink-0 border-r border-border/40 md:sticky md:block dark:border-border">
         <div className="scrollbar-hide h-full overflow-auto pb-4">
-          <DocsSidebarNav config={docsConfig} />
+          <DocsNav config={docsConfig} />
         </div>
       </aside>
       {children}

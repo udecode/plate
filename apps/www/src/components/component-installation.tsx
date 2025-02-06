@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { RegistryEntry } from '@/registry/schema';
+import type { RegistryItem } from 'shadcx/registry';
 
 import { BlockCode } from '@/components/block-viewer';
 import { ComponentPreviewPro } from '@/components/component-preview-pro';
@@ -21,7 +21,7 @@ interface ComponentInstallationProps {
   __previewFiles__?: string;
   __tree__?: string;
   dependencies?: string[];
-  examples?: RegistryEntry[];
+  examples?: RegistryItem[];
   highlightedFiles?: any;
   inline?: boolean;
   item?: any;

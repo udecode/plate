@@ -3,7 +3,9 @@
 import { z } from 'zod';
 
 import { Index } from '@/__registry__';
-import { registryItemSchema } from '@/registry/schema';
+import { registryItemSchema } from 'shadcx/registry';
+
+// SYNC
 
 // const BLOCKS_WHITELIST_PREFIXES = ['sidebar', 'login'];
 const REGISTRY_BLOCK_TYPES = new Set(['registry:block']);

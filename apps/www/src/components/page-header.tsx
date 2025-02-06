@@ -58,7 +58,7 @@ function PageActions({
   return (
     <div
       className={cn(
-        'flex w-full items-center justify-start gap-2 py-2',
+        'flex w-full items-center justify-start gap-2 pt-2',
         className
       )}
       {...props}

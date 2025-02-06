@@ -2,6 +2,8 @@ import { cn } from '@udecode/cn';
 
 import { SiteHeader } from '@/components/site-header';
 
+// SYNC
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="border-border/40 dark:border-border" data-wrapper="">

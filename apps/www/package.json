@@ -15,6 +15,7 @@
     "lint:debug": "TIMING=1 DEBUG=eslint:cli-engine yarn lint:fix",
     "lint:fix": "yarn p:lint:fix",
     "preview": "next build && next start",
+    "registry:capture": "tsx --tsconfig ./scripts/tsconfig.scripts.json ./scripts/capture-registry.mts",
     "start": "next start",
     "typecheck": "yarn prebuild && tsc --noEmit",
     "typecheck:watch": "yarn typecheck --watch"
@@ -130,7 +131,6 @@
     "html2canvas": "1.4.1",
     "jotai": "2.8.4",
     "lodash": "4.17.21",
-    "lodash.template": "4.5.0",
     "lucide-react": "0.474.0",
     "next": "15.1.6",
     "next-contentlayer2": "0.4.6",
@@ -155,6 +155,7 @@
     "react-wrap-balancer": "1.1.1",
     "remark-emoji": "5.0.1",
     "sass": "1.83.4",
+    "shadcx": "workspace:^",
     "sonner": "1.7.4",
     "tailwind-merge": "3.0.1",
     "ts-morph": "22.0.0",
@@ -165,7 +166,6 @@
   },
   "devDependencies": {
     "@shikijs/compat": "^1.1.7",
-    "@types/lodash.template": "4.5.3",
     "@types/react-syntax-highlighter": "15.5.13",
     "autoprefixer": "10.4.20",
     "concurrently": "9.1.2",

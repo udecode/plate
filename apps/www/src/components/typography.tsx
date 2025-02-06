@@ -6,7 +6,9 @@ import type { NpmCommands } from '@/types/unist';
 
 import { cn } from '@udecode/cn';
 
-import { CopyButton, CopyNpmCommandButton } from './copy-button';
+import { CodeBlockCommand } from '@/components/code-block-command';
+
+import { CopyButton } from './copy-button';
 import { StyleWrapper } from './style-wrapper';
 
 export const H1 = ({
@@ -221,16 +223,29 @@ export const Pre = ({
   __withMeta__?: boolean;
 } & NpmCommands &
   React.HTMLAttributes<HTMLPreElement>) => {
+  const isNpmCommand =
+    __npmCommand__ && __yarnCommand__ && __pnpmCommand__ && __bunCommand__;
+  if (isNpmCommand) {
+    return (
+      <CodeBlockCommand
+        __bunCommand__={__bunCommand__}
+        __npmCommand__={__npmCommand__}
+        __pnpmCommand__={__pnpmCommand__}
+        __yarnCommand__={__yarnCommand__}
+      />
+    );
+  }
+
   return (
     <StyleWrapper styleName={__style__}>
       <pre
         className={cn(
-          'mt-6 mb-4 max-h-[650px] overflow-x-auto rounded-lg border bg-zinc-950 py-4 dark:bg-zinc-900',
+          'mt-6 mb-4 max-h-[650px] overflow-x-auto rounded-xl bg-zinc-950 py-4 dark:bg-zinc-900',
           className
         )}
         {...props}
       />
-      {__rawString__ && !__npmCommand__ && (
+      {__rawString__ && (
         <CopyButton
           className={cn('absolute top-4 right-4', __withMeta__ && 'top-16')}
           value={__rawString__}
@@ -238,20 +253,6 @@ export const Pre = ({
           src={__src__}
         />
       )}
-      {__npmCommand__ &&
-        __yarnCommand__ &&
-        __pnpmCommand__ &&
-        __bunCommand__ && (
-          <CopyNpmCommandButton
-            className={cn('absolute top-4 right-4', __withMeta__ && 'top-16')}
-            commands={{
-              __bunCommand__,
-              __npmCommand__,
-              __pnpmCommand__,
-              __yarnCommand__,
-            }}
-          />
-        )}
     </StyleWrapper>
   );
 };
