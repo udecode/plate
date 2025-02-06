@@ -2,6 +2,7 @@
 '@udecode/plate-core': major
 ---
 
+- Support React 19
 - Upgraded to `zustand-x@6`
   - `eventEditorSelectors` -> `EventEditorStore.get`
   - `eventEditorActions` -> `EventEditorStore.set`
