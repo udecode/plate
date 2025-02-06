@@ -1,12 +1,6 @@
 'use client';
 
 import { withProps } from '@udecode/cn';
-import {
-  ParagraphPlugin,
-  PlateElement,
-  PlateLeaf,
-  usePlateEditor,
-} from '@udecode/plate/react';
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
 import {
   BasicMarksPlugin,
@@ -15,23 +9,22 @@ import {
   StrikethroughPlugin,
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
+import {
+  ParagraphPlugin,
+  PlateElement,
+  PlateLeaf,
+  usePlateEditor,
+} from '@udecode/plate/react';
 
 export const useCreateEditor = () => {
   return usePlateEditor({
     override: {
       components: {
-        [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),
-        [ItalicPlugin.key]: withProps(PlateLeaf, { as: 'em' }),
-        [ParagraphPlugin.key]: withProps(PlateElement, {
-          as: 'p',
-          className: 'mb-4',
-        }),
-        [StrikethroughPlugin.key]: withProps(PlateLeaf, { as: 's' }),
-        [UnderlinePlugin.key]: withProps(PlateLeaf, { as: 'u' }),
         blockquote: withProps(PlateElement, {
           as: 'blockquote',
           className: 'mb-4 border-l-4 border-[#d0d7de] pl-4 text-[#636c76]',
         }),
+        [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),
         h1: withProps(PlateElement, {
           as: 'h1',
           className:
@@ -45,6 +38,13 @@ export const useCreateEditor = () => {
           as: 'h3',
           className: 'mb-4 mt-6 text-xl font-semibold tracking-tight',
         }),
+        [ItalicPlugin.key]: withProps(PlateLeaf, { as: 'em' }),
+        [ParagraphPlugin.key]: withProps(PlateElement, {
+          as: 'p',
+          className: 'mb-4',
+        }),
+        [StrikethroughPlugin.key]: withProps(PlateLeaf, { as: 's' }),
+        [UnderlinePlugin.key]: withProps(PlateLeaf, { as: 'u' }),
       },
     },
     plugins: [BasicElementsPlugin, BasicMarksPlugin],
