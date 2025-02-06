@@ -21,7 +21,7 @@ export const insertAINodes = (
   const aiNodes = addAINodes(nodes);
 
   editor.tf.withoutNormalizing(() => {
-    editor.tf.insertNodes(aiNodes, {
+    editor.tf.insertFragment(aiNodes, {
       at: editor.api.end(target || editor.selection!.focus.path),
       select: true,
     });
