@@ -251,5 +251,7 @@ export function findCommonRoot(cwd: string, resolvedPath: string) {
 // TODO: Cache this call.
 export async function getTargetStyleFromConfig(cwd: string) {
   const projectInfo = await getProjectInfo(cwd)
-  return projectInfo?.tailwindVersion === "v4" ? "new-york-v4" : "default"
+  // SYNC tw
+  return "default"
+  // return projectInfo?.tailwindVersion === "v4" ? "new-york-v4" : "default"
 }
