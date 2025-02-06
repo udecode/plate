@@ -1,11 +1,15 @@
-import { useEditorPlugin, useHotkeys } from '@udecode/plate/react';
+import {
+  useEditorPlugin,
+  useHotkeys,
+  usePluginOption,
+} from '@udecode/plate/react';
 
 import { LinkPlugin } from '../../LinkPlugin';
 
 export const useFloatingLinkEscape = () => {
-  const { api, editor, getOptions, useOption } = useEditorPlugin(LinkPlugin);
+  const { api, editor, getOptions } = useEditorPlugin(LinkPlugin);
 
-  const open = useOption('isOpen', editor.id);
+  const open = usePluginOption(LinkPlugin, 'isOpen', editor.id);
 
   useHotkeys(
     'escape',

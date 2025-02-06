@@ -9,7 +9,7 @@ import { PathApi } from '@udecode/plate';
 import { useDraggable, useDropLine } from '@udecode/plate-dnd';
 import { ResizableProvider } from '@udecode/plate-resizable';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
-import { useReadOnly, withHOC } from '@udecode/plate/react';
+import { usePluginOption, useReadOnly, withHOC } from '@udecode/plate/react';
 import { GripHorizontal } from 'lucide-react';
 
 import { Button } from './button';
@@ -27,7 +27,7 @@ export const ColumnElement = withHOC(
   withRef<typeof PlateElement>(({ children, className, ...props }, ref) => {
     const { width } = props.element as TColumnElement;
     const readOnly = useReadOnly();
-    const isSelectionAreaVisible = props.editor.useOption(
+    const isSelectionAreaVisible = usePluginOption(
       BlockSelectionPlugin,
       'isSelectionAreaVisible'
     );

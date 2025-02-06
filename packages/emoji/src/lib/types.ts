@@ -1,18 +1,3 @@
-import type { Emoji, EmojiMartData } from '@emoji-mart/data';
-import type { Descendant } from '@udecode/plate';
-import type { TriggerComboboxPluginOptions } from '@udecode/plate-combobox';
-
-export type EmojiPluginOptions<TEmoji extends Emoji = Emoji> = {
-  /**
-   * The emoji data.
-   *
-   * @example
-   *   import emojiMartData from '@emoji-mart/data';
-   */
-  data?: EmojiMartData;
-  createEmojiNode?: (emoji: TEmoji) => Descendant;
-} & TriggerComboboxPluginOptions;
-
 export type EmojiSettingsType = {
   buttonSize: {
     value: number;

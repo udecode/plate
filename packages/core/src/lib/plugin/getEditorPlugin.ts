@@ -24,7 +24,7 @@ export function getEditorPlugin<
     tf: editor.transforms,
     type: plugin.node.type,
     getOption: (key: any, ...args: any) =>
-      editor.getOption(plugin, key, ...args),
+      (editor.getOption as any)(plugin, key, ...args),
     getOptions: () => editor.getOptions(plugin),
   };
 }

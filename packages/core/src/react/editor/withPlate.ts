@@ -1,7 +1,4 @@
-/* eslint-disable react-hooks/rules-of-hooks */
-
 import { type Editor, type Value, createEditor } from '@udecode/slate';
-import { useStoreSelect, useStoreValue } from 'zustand-x';
 
 import type { AnyPlatePlugin } from '../plugin';
 import type { SlateReactExtensionPlugin } from '../plugins';
@@ -60,43 +57,6 @@ export const withPlate = <
     ...options,
     plugins: [...getPlateCorePlugins(), ...plugins],
   } as any) as unknown as TPlateEditor<V, InferPlugins<P[]>>;
-
-  editor.useOptions = ((plugin: any, selector: any, equalityFn: any) => {
-    const store = editor.getOptionsStore(plugin);
-
-    if (!store) {
-      // editor.api.debug.warn(
-      //   `editor.useOptions: ${plugin.key} plugin is missing`,
-      //   'PLUGIN_MISSING'
-      // );
-
-      return {};
-    }
-
-    return useStoreSelect(store, selector, equalityFn);
-  }) as any;
-
-  editor.useOption = (plugin: any, key: any, ...args: any) => {
-    const store = editor.getOptionsStore(plugin);
-
-    if (!store) {
-      // editor.api.debug.warn(
-      //   `editor.useOption: ${plugin.key} plugin is missing`,
-      //   'PLUGIN_MISSING'
-      // );
-
-      return;
-    }
-
-    try {
-      return useStoreValue(store as any, key as never, ...args);
-    } catch (error) {
-      editor.api.debug.error(
-        `editor.useOption: ${key} option is not defined in plugin ${plugin.key}`,
-        'OPTION_UNDEFINED'
-      );
-    }
-  };
 
   return editor;
 };

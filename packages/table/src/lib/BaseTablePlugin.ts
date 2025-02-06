@@ -138,47 +138,42 @@ export type TableConfig = PluginConfig<
      * @default 48
      */
     minColumnWidth?: number;
-  } & TableSelectors,
-  TableApi,
-  TableTransforms
+  },
+  {
+    create: {
+      table: OmitFirst<typeof getEmptyTableNode>;
+      /** Cell node factory used each time a cell is created. */
+      tableCell: OmitFirst<typeof getEmptyCellNode>;
+      tableRow: OmitFirst<typeof getEmptyRowNode>;
+    };
+    table: {
+      getCellBorders: OmitFirst<typeof getTableCellBorders>;
+      getCellSize: OmitFirst<typeof getTableCellSize>;
+      getColSpan: typeof getColSpan;
+      getRowSpan: typeof getRowSpan;
+      getCellChildren: (cell: TTableCellElement) => Descendant[];
+    };
+  },
+  {
+    insert: {
+      table: OmitFirst<typeof insertTable>;
+      tableColumn: OmitFirst<typeof insertTableColumn>;
+      tableRow: OmitFirst<typeof insertTableRow>;
+    };
+    remove: {
+      table: OmitFirst<typeof deleteTable>;
+      tableColumn: OmitFirst<typeof deleteColumn>;
+      tableRow: OmitFirst<typeof deleteRow>;
+    };
+    table: {
+      merge: OmitFirst<typeof mergeTableCells>;
+      split: OmitFirst<typeof splitTableCell>;
+    };
+  },
+  {
+    cellIndices?: (id: string) => CellIndices;
+  }
 >;
-
-type TableApi = {
-  create: {
-    table: OmitFirst<typeof getEmptyTableNode>;
-    /** Cell node factory used each time a cell is created. */
-    tableCell: OmitFirst<typeof getEmptyCellNode>;
-    tableRow: OmitFirst<typeof getEmptyRowNode>;
-  };
-  table: {
-    getCellBorders: OmitFirst<typeof getTableCellBorders>;
-    getCellSize: OmitFirst<typeof getTableCellSize>;
-    getColSpan: typeof getColSpan;
-    getRowSpan: typeof getRowSpan;
-    getCellChildren: (cell: TTableCellElement) => Descendant[];
-  };
-};
-
-type TableSelectors = {
-  cellIndices?: (id: string) => CellIndices;
-};
-
-type TableTransforms = {
-  insert: {
-    table: OmitFirst<typeof insertTable>;
-    tableColumn: OmitFirst<typeof insertTableColumn>;
-    tableRow: OmitFirst<typeof insertTableRow>;
-  };
-  remove: {
-    table: OmitFirst<typeof deleteTable>;
-    tableColumn: OmitFirst<typeof deleteColumn>;
-    tableRow: OmitFirst<typeof deleteRow>;
-  };
-  table: {
-    merge: OmitFirst<typeof mergeTableCells>;
-    split: OmitFirst<typeof splitTableCell>;
-  };
-};
 
 /** Enables support for tables. */
 export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
@@ -204,10 +199,10 @@ export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
   },
   plugins: [BaseTableRowPlugin, BaseTableCellPlugin, BaseTableCellHeaderPlugin],
 })
-  .extendOptions<TableSelectors>(({ getOptions }) => ({
+  .extendSelectors<TableConfig['selectors']>(({ getOptions }) => ({
     cellIndices: (id) => getOptions()._cellIndices[id],
   }))
-  .extendEditorApi<TableApi>(({ editor }) => ({
+  .extendEditorApi<TableConfig['api']>(({ editor }) => ({
     create: {
       table: bindFirst(getEmptyTableNode, editor),
       tableCell: bindFirst(getEmptyCellNode, editor),
@@ -221,7 +216,7 @@ export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
       getCellChildren: (cell) => cell.children,
     },
   }))
-  .extendEditorTransforms<TableTransforms>(({ editor }) => ({
+  .extendEditorTransforms<TableConfig['transforms']>(({ editor }) => ({
     insert: {
       table: bindFirst(insertTable, editor),
       tableColumn: bindFirst(insertTableColumn, editor),

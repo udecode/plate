@@ -222,9 +222,6 @@ Get editor and plugin context.
   <APIItem name="store" type="PlateStore">
       The Plate store for the editor.
   </APIItem>
-  <APIItem name="useOption" type="function">
-      Hook to subscribe to a specific option value in a React component.
-  </APIItem>
 </APIReturns>
 </API>
 
@@ -479,6 +476,87 @@ Get the memoized path of the closest element.
   The path of the element, or `undefined` if used outside of a node component's context.
 </APIReturns>
 </API>  
+
+### `usePluginOption`
+
+Hook to access plugin options from the plugin store. For usage inside `<Plate>`.
+
+<API name="usePluginOption">
+<APIParameters>
+  <APIItem name="plugin" type="PlatePlugin">
+    The plugin to get options from.
+  </APIItem>
+  <APIItem name="key" type="keyof (InferOptions<C> | InferSelectors<C>) | 'state'">
+    The key of the option or selector to access.
+  </APIItem>
+  <APIItem name="...args" type="any[]" optional>
+    Additional arguments:
+    - For selectors: The selector parameters
+    - Last argument can be an equality function `(a: T, b: T) => boolean`
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="T">
+  The value of the option or selector result:
+  - For 'state': Returns the entire state object
+  - For selector keys: Returns the selector's return value
+  - For option keys: Returns the option value
+</APIReturns>
+
+```tsx
+// Access a simple option
+const value = usePluginOption(plugin, 'value');
+// Access a selector with parameters
+const doubleValue = usePluginOption(plugin, 'doubleValue', 2);
+// Access with equality function
+const value = usePluginOption(plugin, 'value', (a, b) => a === b);
+// Access entire state
+const state = usePluginOption(plugin, 'state');
+```
+
+</API>
+
+### `useEditorPluginOption`
+
+Hook to access plugin options from the plugin store. For usage outside `<Plate>`.
+
+<API name="useEditorPluginOption">
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="plugin" type="PlatePlugin">
+    The plugin to get options from.
+  </APIItem>
+  <APIItem name="key" type="keyof (InferOptions<C> | InferSelectors<C>) | 'state'">
+    The key of the option or selector to access.
+  </APIItem>
+  <APIItem name="...args" type="any[]" optional>
+    Additional arguments:
+    - For selectors: The selector parameters
+    - Last argument can be an equality function `(a: T, b: T) => boolean`
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="T">
+  The value of the option or selector result:
+  - For 'state': Returns the entire state object
+  - For selector keys: Returns the selector's return value
+  - For option keys: Returns the option value
+</APIReturns>
+
+```tsx
+// Access a simple option
+const value = useEditorPluginOption(editor, plugin, 'value');
+// Access a selector with parameters
+const doubleValue = useEditorPluginOption(editor, plugin, 'doubleValue', 2);
+// Access with equality function
+const value = useEditorPluginOption(editor, plugin, 'value', (a, b) => a === b);
+// Access entire state
+const state = useEditorPluginOption(editor, plugin, 'state');
+```
+</API>
+
 
 ### `useElement`
 

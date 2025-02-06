@@ -2,7 +2,8 @@ import React from 'react';
 
 import {
   createPrimitiveComponent,
-  useEditorPlugin,
+  useEditorRef,
+  usePluginOption,
 } from '@udecode/plate/react';
 
 import { CommentsPlugin } from '../CommentsPlugin';
@@ -10,9 +11,9 @@ import { getCommentPosition } from '../queries';
 import { useActiveCommentNode } from '../stores/comments/useActiveCommentNode';
 
 export const useCommentsPositionerState = () => {
-  const { editor, useOption } = useEditorPlugin(CommentsPlugin);
+  const editor = useEditorRef();
 
-  let activeCommentId = useOption('activeCommentId');
+  let activeCommentId = usePluginOption(CommentsPlugin, 'activeCommentId');
 
   const [position, setPosition] = React.useState<{ left: number; top: number }>(
     {

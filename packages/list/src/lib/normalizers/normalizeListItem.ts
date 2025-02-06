@@ -11,7 +11,7 @@ import {
 } from '@udecode/plate';
 
 import {
-  type ListPluginOptions,
+  type ListConfig,
   BaseBulletedListPlugin,
   BaseListItemContentPlugin,
   BaseNumberedListPlugin,
@@ -59,7 +59,7 @@ export const normalizeListItem = (
   {
     listItem,
     validLiChildrenTypes = [],
-  }: { listItem: ElementEntry } & ListPluginOptions
+  }: { listItem: ElementEntry } & ListConfig['options']
 ) => {
   let changed = false;
 

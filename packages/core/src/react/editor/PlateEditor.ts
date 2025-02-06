@@ -1,12 +1,10 @@
 import type { EditorApi, EditorTransforms, Value } from '@udecode/slate';
 import type { UnionToIntersection } from '@udecode/utils';
-import type { TEqualityChecker } from 'zustand-x';
 
 import type {
   AnyPluginConfig,
   BaseEditor,
   InferApi,
-  InferOptions,
   InferTransforms,
   PluginConfig,
   WithRequiredKey,
@@ -27,35 +25,6 @@ export type PlateEditor = {
   tf: EditorTransforms & UnionToIntersection<InferTransforms<PlateCorePlugin>>;
   transforms: EditorTransforms &
     UnionToIntersection<InferTransforms<PlateCorePlugin>>;
-  useOption: {
-    <
-      C extends AnyPluginConfig,
-      K extends keyof InferOptions<C>,
-      F extends InferOptions<C>[K],
-    >(
-      plugin: WithRequiredKey<C>,
-      optionKey: K
-    ): F extends (...args: any[]) => any ? never : F;
-
-    <
-      C extends AnyPluginConfig,
-      K extends keyof InferOptions<C>,
-      F extends InferOptions<C>[K],
-      Args extends Parameters<((...args: any[]) => any) & F>,
-    >(
-      plugin: WithRequiredKey<C>,
-      optionKey: K,
-      ...args: Args
-    ): F extends (...args: any[]) => any ? ReturnType<F> : F;
-  };
-  useOptions: {
-    <C extends AnyPluginConfig, U>(
-      plugin: WithRequiredKey<C>,
-      selector: (s: InferOptions<C>) => U,
-      equalityFn?: TEqualityChecker<U>
-    ): U;
-    <C extends AnyPluginConfig>(plugin: WithRequiredKey<C>): InferOptions<C>;
-  };
   getApi: <C extends AnyPluginConfig = PluginConfig>(
     plugin?: WithRequiredKey<C>
   ) => PlateEditor['api'] & InferApi<C>;

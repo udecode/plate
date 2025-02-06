@@ -44,7 +44,6 @@ export const BaseTabbablePlugin = createTSlatePlugin<TabblableConfig>({
   },
 }).extend(({ editor }) => ({
   options: {
-    isTabbable: (tabbableEntry: TabbableEntry) =>
-      editor.api.isVoid(tabbableEntry.slateNode),
+    isTabbable: (tabbableEntry) => editor.api.isVoid(tabbableEntry.slateNode),
   },
 }));

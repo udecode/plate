@@ -7,9 +7,16 @@ import {
   RangeApi,
 } from '@udecode/plate';
 
-import type { ResetNodePluginOptions } from './types';
+import type { ResetNodePluginRule } from './types';
 
-export type ResetNodeConfig = PluginConfig<'resetNode', ResetNodePluginOptions>;
+export type ResetNodeConfig = PluginConfig<
+  'resetNode',
+  {
+    disableEditorReset?: boolean;
+    disableFirstBlockReset?: boolean;
+    rules?: ResetNodePluginRule[];
+  }
+>;
 
 /** Enables support for resetting block type from rules. */
 export const BaseResetNodePlugin = createTSlatePlugin<ResetNodeConfig>({

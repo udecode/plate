@@ -25,57 +25,55 @@ import { resetAIChat } from './utils/resetAIChat';
 import { submitAIChat } from './utils/submitAIChat';
 import { withAIChat } from './withAIChat';
 
-export type AIChatApi = {
-  reset: OmitFirst<typeof resetAIChat>;
-  submit: OmitFirst<typeof submitAIChat>;
-  hide: () => void;
-  reload: () => void;
-  show: () => void;
-  stop: () => void;
-};
-
-export type AIChatOptions = {
-  /** @private The Editor used to generate the AI response. */
-  aiEditor: SlateEditor | null;
-  chat: Partial<UseChatHelpers>;
-  /**
-   * Specifies how the assistant message is handled:
-   *
-   * - 'insert': Directly inserts content into the editor without preview.
-   * - 'chat': Initiates an interactive session to review and refine content
-   *   before insertion.
-   */
-  mode: 'chat' | 'insert';
-  open: boolean;
-  /**
-   * Template function for generating the user prompt. Supports the following
-   * placeholders:
-   *
-   * - {block}: Replaced with the markdown of the blocks in selection.
-   * - {editor}: Replaced with the markdown of the entire editor content.
-   * - {selection}: Replaced with the markdown of the current selection.
-   * - {prompt}: Replaced with the actual user prompt.
-   */
-  promptTemplate: (props: EditorPromptParams) => string;
-  /**
-   * Template function for generating the system message. Supports the same
-   * placeholders as `promptTemplate`.
-   */
-  systemTemplate: (props: EditorPromptParams) => string | void;
-} & TriggerComboboxPluginOptions;
-
 export type AIChatPluginConfig = PluginConfig<
   'aiChat',
-  AIChatOptions,
-  { aiChat: AIChatApi },
-  { aiChat: AIChatTransforms }
+  {
+    /** @private The Editor used to generate the AI response. */
+    aiEditor: SlateEditor | null;
+    chat: Partial<UseChatHelpers>;
+    /**
+     * Specifies how the assistant message is handled:
+     *
+     * - 'insert': Directly inserts content into the editor without preview.
+     * - 'chat': Initiates an interactive session to review and refine content
+     *   before insertion.
+     */
+    mode: 'chat' | 'insert';
+    open: boolean;
+    /**
+     * Template function for generating the user prompt. Supports the following
+     * placeholders:
+     *
+     * - {block}: Replaced with the markdown of the blocks in selection.
+     * - {editor}: Replaced with the markdown of the entire editor content.
+     * - {selection}: Replaced with the markdown of the current selection.
+     * - {prompt}: Replaced with the actual user prompt.
+     */
+    promptTemplate: (props: EditorPromptParams) => string;
+    /**
+     * Template function for generating the system message. Supports the same
+     * placeholders as `promptTemplate`.
+     */
+    systemTemplate: (props: EditorPromptParams) => string | void;
+  } & TriggerComboboxPluginOptions,
+  {
+    aiChat: {
+      reset: OmitFirst<typeof resetAIChat>;
+      submit: OmitFirst<typeof submitAIChat>;
+      hide: () => void;
+      reload: () => void;
+      show: () => void;
+      stop: () => void;
+    };
+  },
+  {
+    aiChat: {
+      accept: OmitFirst<typeof acceptAIChat>;
+      insertBelow: OmitFirst<typeof insertBelowAIChat>;
+      replaceSelection: OmitFirst<typeof replaceSelectionAIChat>;
+    };
+  }
 >;
-
-export type AIChatTransforms = {
-  accept: OmitFirst<typeof acceptAIChat>;
-  insertBelow: OmitFirst<typeof insertBelowAIChat>;
-  replaceSelection: OmitFirst<typeof replaceSelectionAIChat>;
-};
 
 export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
   key: 'aiChat',
@@ -95,32 +93,32 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
   .extend(() => ({
     useHooks: useAIChatHooks,
   }))
-  .extendApi<Pick<AIChatApi, 'reset' | 'stop' | 'submit'>>(
-    ({ editor, getOptions }) => {
-      return {
-        reset: bindFirst(resetAIChat, editor),
-        submit: bindFirst(submitAIChat, editor),
-        reload: () => {
-          const { chat, mode } = getOptions();
+  .extendApi<
+    Pick<AIChatPluginConfig['api']['aiChat'], 'reset' | 'stop' | 'submit'>
+  >(({ editor, getOptions }) => {
+    return {
+      reset: bindFirst(resetAIChat, editor),
+      submit: bindFirst(submitAIChat, editor),
+      reload: () => {
+        const { chat, mode } = getOptions();
 
-          if (mode === 'insert') {
-            editor.getTransforms(AIPlugin).ai.undo();
-          }
+        if (mode === 'insert') {
+          editor.getTransforms(AIPlugin).ai.undo();
+        }
 
-          void chat.reload?.({
-            body: {
-              system: getEditorPrompt(editor, {
-                promptTemplate: getOptions().systemTemplate,
-              }),
-            },
-          });
-        },
-        stop: () => {
-          getOptions().chat.stop?.();
-        },
-      };
-    }
-  )
+        void chat.reload?.({
+          body: {
+            system: getEditorPrompt(editor, {
+              promptTemplate: getOptions().systemTemplate,
+            }),
+          },
+        });
+      },
+      stop: () => {
+        getOptions().chat.stop?.();
+      },
+    };
+  })
   .extendApi(({ api, editor, getOptions, setOption }) => ({
     hide: () => {
       api.aiChat.reset();

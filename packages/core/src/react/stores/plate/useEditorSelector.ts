@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { useStoreAtomValue } from 'jotai-x';
 import { selectAtom } from 'jotai/utils';
 
 import type { PlateEditor } from '../../editor';
@@ -27,5 +28,5 @@ export const useEditorSelector = <T, E extends PlateEditor = PlateEditor>(
     deps
   );
 
-  return usePlateStore(id).getAtom(selectorAtom);
+  return useStoreAtomValue(usePlateStore(id), selectorAtom);
 };

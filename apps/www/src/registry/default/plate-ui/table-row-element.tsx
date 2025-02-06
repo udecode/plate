@@ -10,6 +10,7 @@ import {
   PlateElement,
   useEditorRef,
   useElement,
+  usePluginOption,
   useReadOnly,
   useSelected,
 } from '@udecode/plate/react';
@@ -23,7 +24,7 @@ export const TableRowElement = withRef<typeof PlateElement>(
     const readOnly = useReadOnly();
     const selected = useSelected();
     const editor = useEditorRef();
-    const isSelectionAreaVisible = editor.useOption(
+    const isSelectionAreaVisible = usePluginOption(
       BlockSelectionPlugin,
       'isSelectionAreaVisible'
     );

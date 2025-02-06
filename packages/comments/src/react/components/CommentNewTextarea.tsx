@@ -3,16 +3,17 @@ import React from 'react';
 import {
   createPrimitiveComponent,
   useEditorPlugin,
+  usePluginOption,
 } from '@udecode/plate/react';
 
 import { CommentsPlugin } from '../CommentsPlugin';
 
 export const useCommentNewTextarea = () => {
-  const { setOption, useOption } = useEditorPlugin(CommentsPlugin);
+  const { setOption } = useEditorPlugin(CommentsPlugin);
 
-  const activeComment = useOption('activeComment');
-  const value = useOption('newText');
-  const focusTextarea = useOption('focusTextarea');
+  const activeComment = usePluginOption(CommentsPlugin, 'activeComment');
+  const value = usePluginOption(CommentsPlugin, 'newText');
+  const focusTextarea = usePluginOption(CommentsPlugin, 'focusTextarea');
 
   const textareaRef = React.useRef<HTMLTextAreaElement | null>(null);
 

@@ -7,6 +7,7 @@ import {
   createPrimitiveComponent,
   useEditorRef,
   useElement,
+  usePluginOption,
   useReadOnly,
 } from '@udecode/plate/react';
 
@@ -22,7 +23,7 @@ export const useCaptionTextareaFocus = (
   const editor = useEditorRef();
   const element = useElement<TCaptionElement>();
 
-  const focusCaptionPath = editor.useOption(CaptionPlugin, 'focusEndPath');
+  const focusCaptionPath = usePluginOption(CaptionPlugin, 'focusEndPath');
 
   React.useEffect(() => {
     if (focusCaptionPath && textareaRef.current) {

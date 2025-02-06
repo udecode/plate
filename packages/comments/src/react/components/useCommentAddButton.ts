@@ -1,13 +1,13 @@
 import React from 'react';
 
-import { useEditorPlugin } from '@udecode/plate/react';
+import { useEditorPlugin, usePluginOption } from '@udecode/plate/react';
 
 import { CommentsPlugin } from '../CommentsPlugin';
 
 export const useCommentAddButton = () => {
-  const { setOption, tf, useOption } = useEditorPlugin(CommentsPlugin);
+  const { setOption, tf } = useEditorPlugin(CommentsPlugin);
 
-  const myUserId = useOption('myUserId');
+  const myUserId = usePluginOption(CommentsPlugin, 'myUserId');
 
   const onClick = React.useCallback<React.MouseEventHandler<HTMLSpanElement>>(
     (e) => {

@@ -2,36 +2,31 @@ import type { HocuspocusProviderConfiguration } from '@hocuspocus/provider';
 import type { WithCursorsOptions } from '@slate-yjs/core';
 
 import { HocuspocusProvider } from '@hocuspocus/provider';
-import {
-  type PluginConfig,
-  type UnknownObject,
-  createTSlatePlugin,
-} from '@udecode/plate';
+import { type PluginConfig, createTSlatePlugin } from '@udecode/plate';
 
 import type { WithYjsOptions } from './withTYjs';
 
 import { withPlateYjs } from './withPlateYjs';
 
-export type YjsConfig = PluginConfig<'yjs', YjsPluginOptions>;
-
-export type YjsPluginOptions<
-  TCursorData extends UnknownObject = UnknownObject,
-> = {
-  isConnected: boolean;
-  isSynced: boolean;
-  provider: HocuspocusProvider;
-  /** WithCursors options */
-  cursorOptions?: WithCursorsOptions<TCursorData>;
-  disableCursors?: boolean;
-  /**
-   * HocuspocusProvider configuration
-   *
-   * @required
-   */
-  hocuspocusProviderOptions?: HocuspocusProviderConfiguration;
-  /** WithYjs options */
-  yjsOptions?: WithYjsOptions;
-};
+export type YjsConfig = PluginConfig<
+  'yjs',
+  {
+    isConnected: boolean;
+    isSynced: boolean;
+    provider: HocuspocusProvider;
+    /** WithCursors options */
+    cursorOptions?: WithCursorsOptions;
+    disableCursors?: boolean;
+    /**
+     * HocuspocusProvider configuration
+     *
+     * @required
+     */
+    hocuspocusProviderOptions?: HocuspocusProviderConfiguration;
+    /** WithYjs options */
+    yjsOptions?: WithYjsOptions;
+  }
+>;
 
 export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
   key: 'yjs',

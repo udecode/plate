@@ -10,7 +10,6 @@ import { type PlateStoreState, useEditorRef } from '../stores';
 import { EditorHotkeysEffect } from './EditorHotkeysEffect';
 import { EditorMethodsEffect } from './EditorMethodsEffect';
 import { EditorRefEffect } from './EditorRefEffect';
-import { EditorStateEffect } from './EditorStateEffect';
 import { PlateControllerEffect } from './PlateControllerEffect';
 import { PlateSlate } from './PlateSlate';
 
@@ -94,7 +93,7 @@ const PlateContent = React.forwardRef(
 
         <EditorMethodsEffect id={id} />
         <EditorHotkeysEffect id={id} editableRef={editableRef} />
-        <EditorStateEffect id={id} />
+        {/* <EditorStateEffect id={id} /> */}
         <EditorRefEffect id={id} />
         <PlateControllerEffect id={id} />
 

@@ -2,6 +2,7 @@
 import {
   useEditorPlugin,
   useEditorSelector,
+  usePluginOption,
   useReadOnly,
 } from '@udecode/plate/react';
 
@@ -13,7 +14,7 @@ import {
 import { TablePlugin } from '../TablePlugin';
 
 export const useTableMergeState = () => {
-  const { api, getOptions, useOption } = useEditorPlugin(TablePlugin);
+  const { api, getOptions } = useEditorPlugin(TablePlugin);
 
   const { disableMerge } = getOptions();
 
@@ -30,7 +31,7 @@ export const useTableMergeState = () => {
   );
 
   const collapsed = !readOnly && someTable && !selectionExpanded;
-  const selectedTables = useOption('selectedTables');
+  const selectedTables = usePluginOption(TablePlugin, 'selectedTables');
   const selectedTable = selectedTables?.[0];
 
   const selectedCellEntries = useEditorSelector(

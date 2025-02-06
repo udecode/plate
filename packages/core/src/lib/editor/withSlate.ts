@@ -123,29 +123,30 @@ export const withSlate = <
 
     if (!store) return editor.getPlugin(plugin).options[key];
 
-    try {
-      return (store.get as any)(key, ...args);
-    } catch (error) {
+    if (!(key in store.get('state')) && !(key in store.selectors)) {
       editor.api.debug.error(
         `editor.getOption: ${key as string} option is not defined in plugin ${plugin.key}.`,
         'OPTION_UNDEFINED'
       );
+      return;
     }
+
+    return (store.get as any)(key, ...args);
   };
   editor.setOption = (plugin: any, key: any, ...args: any) => {
     const store = editor.getOptionsStore(plugin);
 
     if (!store) return;
 
-    try {
-      (store.set as any)(key, ...args);
-    } catch (error) {
+    if (!(key in store.get('state'))) {
       editor.api.debug.error(
         `editor.setOption: ${key} option is not defined in plugin ${plugin.key}.`,
-        'OPTION_UNDEFINED',
-        error
+        'OPTION_UNDEFINED'
       );
+      return;
     }
+
+    (store.set as any)(key, ...args);
   };
   editor.setOptions = (plugin: any, options: any) => {
     const store = editor.getOptionsStore(plugin);

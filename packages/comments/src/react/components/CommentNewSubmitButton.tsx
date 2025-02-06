@@ -3,6 +3,7 @@ import {
   createPrimitiveComponent,
   useEditorPlugin,
   useEditorRef,
+  usePluginOption,
 } from '@udecode/plate/react';
 
 import { getCommentFragment } from '../../lib/queries/getCommentFragment';
@@ -15,8 +16,8 @@ import {
 export const useCommentNewSubmitButton = () => {
   const editor = useEditorRef();
 
-  const { api, getOptions, useOption } = useEditorPlugin(CommentsPlugin);
-  const newText = useOption('newText');
+  const { api, getOptions } = useEditorPlugin(CommentsPlugin);
+  const newText = usePluginOption(CommentsPlugin, 'newText');
 
   const comment = useComment(SCOPE_ACTIVE_COMMENT)!;
 

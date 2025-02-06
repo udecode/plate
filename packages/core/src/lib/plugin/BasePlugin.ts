@@ -12,6 +12,7 @@ export type AnyPluginConfig = {
   key: any;
   api: any;
   options: any;
+  selectors: any;
   transforms: any;
 };
 
@@ -116,7 +117,12 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
   /** Extended properties used by any plugin as options. */
   options: InferOptions<C>;
   /** Store for managing plugin options. */
-  optionsStore: TStateApi<C['options'], [['zustand/mutative-x', never]]>;
+  optionsStore: TStateApi<
+    C['options'],
+    [['zustand/mutative-x', never]],
+    {},
+    C['selectors']
+  >;
   override: {
     /** Enable or disable plugins */
     enabled?: Partial<Record<string, boolean>>;
@@ -155,6 +161,8 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
     /** @see {@link NodeComponent} */
     node?: NodeComponent;
   }>;
+  /** Selectors for the plugin. */
+  selectors: InferSelectors<C>;
   /** Transforms (state-modifying operations) that can be applied to the editor. */
   transforms: InferTransforms<C>;
   /**
@@ -172,10 +180,20 @@ export type BasePluginContext<C extends AnyPluginConfig = PluginConfig> = {
   };
   tf: C['transforms'] & EditorTransforms;
   type: string;
-  getOption: <K extends keyof InferOptions<C>, F extends InferOptions<C>[K]>(
-    optionKey: K,
-    ...args: F extends (...args: infer A) => any ? A : never[]
-  ) => F extends (...args: any[]) => infer R ? R : F;
+  getOption: <
+    K extends keyof InferOptions<C> | keyof InferSelectors<C> | 'state',
+  >(
+    key: K,
+    ...args: K extends keyof InferSelectors<C>
+      ? Parameters<InferSelectors<C>[K]>
+      : unknown[]
+  ) => K extends 'state'
+    ? InferOptions<C>
+    : K extends keyof InferSelectors<C>
+      ? ReturnType<InferSelectors<C>[K]>
+      : K extends keyof InferOptions<C>
+        ? InferOptions<C>[K]
+        : never;
   getOptions: () => InferOptions<C>;
   setOption: <K extends keyof InferOptions<C>>(
     optionKey: K,
@@ -283,10 +301,17 @@ export type BaseTransformOptions = GetInjectNodePropsOptions & {
 
 // -----------------------------------------------------------------------------
 
-export type ExtendConfig<C extends PluginConfig, EO = {}, EA = {}, ET = {}> = {
+export type ExtendConfig<
+  C extends PluginConfig,
+  EO = {},
+  EA = {},
+  ET = {},
+  ES = {},
+> = {
   key: C['key'];
   api: C['api'] & EA;
   options: C['options'] & EO;
+  selectors: C['selectors'] & ES;
   transforms: C['transforms'] & ET;
 };
 
@@ -313,6 +338,8 @@ export type InferApi<P> = P extends PluginConfig ? P['api'] : never;
 
 export type InferOptions<P> = P extends PluginConfig ? P['options'] : never;
 
+export type InferSelectors<P> = P extends PluginConfig ? P['selectors'] : never;
+
 export type InferTransforms<P> = P extends PluginConfig
   ? P['transforms']
   : never;
@@ -333,10 +360,17 @@ export type ParserOptions = {
   dataTransfer: DataTransfer;
 };
 
-export type PluginConfig<K extends string = any, O = {}, A = {}, T = {}> = {
+export type PluginConfig<
+  K extends string = any,
+  O = {},
+  A = {},
+  T = {},
+  S = {},
+> = {
   key: K;
   api: A;
   options: O;
+  selectors: S;
   transforms: T;
 };
 
@@ -344,7 +378,8 @@ export type WithAnyKey<C extends AnyPluginConfig = PluginConfig> = PluginConfig<
   any,
   InferOptions<C>,
   InferApi<C>,
-  InferTransforms<C>
+  InferTransforms<C>,
+  InferSelectors<C>
 >;
 
 export type WithRequiredKey<P = {}> =

@@ -34,6 +34,7 @@ import type {
   HandlerReturnType,
   InferApi,
   InferOptions,
+  InferSelectors,
   InferTransforms,
   NodeComponent,
   ParserOptions,
@@ -428,12 +429,14 @@ export type PlatePluginConfig<
   O = {},
   A = {},
   T = {},
+  S = {},
   EO = {},
   EA = {},
   ET = {},
+  ES = {},
 > = Partial<
   Omit<
-    PlatePlugin<PluginConfig<K, Partial<O>, A, T>>,
+    PlatePlugin<PluginConfig<K, Partial<O>, A, T, S>>,
     | keyof PlatePluginMethods
     | 'api'
     | 'node'
@@ -442,8 +445,9 @@ export type PlatePluginConfig<
     | 'useOptionsStore'
   > & {
     api: EA;
-    node: Partial<PlatePlugin<PluginConfig<K, O, A, T>>['node']>;
+    node: Partial<PlatePlugin<PluginConfig<K, O, A, T, S>>['node']>;
     options: EO;
+    selectors: ES;
     transforms: ET;
   }
 >;
@@ -454,27 +458,13 @@ export type PlatePluginContext<
 > = BasePluginContext<C> & {
   editor: E;
   plugin: EditorPlatePlugin<C>;
-  useOption: {
-    <
-      K extends keyof InferOptions<C>,
-      F extends InferOptions<C>[K],
-      Args extends Parameters<F & ((...args: any[]) => any)>,
-    >(
-      optionKey: K,
-      ...args: Args
-    ): F extends (...args: any[]) => any ? ReturnType<F> : F;
-
-    <K extends keyof InferOptions<C>, F extends InferOptions<C>[K]>(
-      optionKey: K
-    ): F extends (...args: any[]) => any ? never : F;
-  };
 };
 
 export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   __apiExtensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
   __configuration: ((ctx: PlatePluginContext<AnyPluginConfig>) => any) | null;
   __extensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
-  __optionExtensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
+  __selectorExtensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
   clone: () => PlatePlugin<C>;
   configure: (
     config:
@@ -484,13 +474,15 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
           C['key'],
           InferOptions<C>,
           InferApi<C>,
-          InferTransforms<C>
+          InferTransforms<C>,
+          InferSelectors<C>
         >)
       | PlatePluginConfig<
           C['key'],
           InferOptions<C>,
           InferApi<C>,
-          InferTransforms<C>
+          InferTransforms<C>,
+          InferSelectors<C>
         >
   ) => PlatePlugin<C>;
   configurePlugin: <P extends AnyPlatePlugin | AnySlatePlugin>(
@@ -501,13 +493,15 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
               any,
               InferOptions<P>,
               InferApi<P>,
-              InferTransforms<P>
+              InferTransforms<P>,
+              InferSelectors<P>
             >
           : SlatePluginConfig<
               any,
               InferOptions<P>,
               InferApi<P>,
-              InferTransforms<P>
+              InferTransforms<P>,
+              InferSelectors<P>
             >)
       | ((
           ctx: P extends AnyPlatePlugin
@@ -518,16 +512,18 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
               any,
               InferOptions<P>,
               InferApi<P>,
-              InferTransforms<P>
+              InferTransforms<P>,
+              InferSelectors<P>
             >
           : SlatePluginConfig<
               any,
               InferOptions<P>,
               InferApi<P>,
-              InferTransforms<P>
+              InferTransforms<P>,
+              InferSelectors<P>
             >)
   ) => PlatePlugin<C>;
-  extend: <EO = {}, EA = {}, ET = {}>(
+  extend: <EO = {}, EA = {}, ET = {}, ES = {}>(
     extendConfig:
       | ((
           ctx: PlatePluginContext<C>
@@ -536,25 +532,30 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
           InferOptions<C>,
           InferApi<C>,
           InferTransforms<C>,
+          InferSelectors<C>,
           EO,
           EA,
-          ET
+          ET,
+          ES
         >)
       | PlatePluginConfig<
           C['key'],
           InferOptions<C>,
           InferApi<C>,
           InferTransforms<C>,
+          InferSelectors<C>,
           EO,
           EA,
-          ET
+          ET,
+          ES
         >
   ) => PlatePlugin<
     PluginConfig<
       C['key'],
       EO & InferOptions<C>,
       EA & InferApi<C>,
-      ET & InferTransforms<C>
+      ET & InferTransforms<C>,
+      InferSelectors<C>
     >
   >;
   extendApi: <
@@ -566,7 +567,8 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       C['key'],
       InferOptions<C>,
       InferApi<C> & Record<C['key'], EA>,
-      InferTransforms<C>
+      InferTransforms<C>,
+      InferSelectors<C>
     >
   >;
   /**
@@ -622,7 +624,8 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
               [N in keyof (EA & InferApi<C>)[K]]: (EA & InferApi<C>)[K][N];
             };
       },
-      InferTransforms<C>
+      InferTransforms<C>,
+      InferSelectors<C>
     >
   >;
   extendEditorTransforms: <
@@ -645,19 +648,8 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
               [N in keyof (ET & InferTransforms<C>)[K]]: (ET &
                 InferTransforms<C>)[K][N];
             };
-      }
-    >
-  >;
-  extendOptions: <
-    EO extends Record<string, (...args: any[]) => any> = Record<string, never>,
-  >(
-    extension: (ctx: PlatePluginContext<C>) => EO
-  ) => PlatePlugin<
-    PluginConfig<
-      C['key'],
-      EO & InferOptions<C>,
-      InferApi<C>,
-      InferTransforms<C>
+      },
+      InferSelectors<C>
     >
   >;
   extendPlugin: <
@@ -674,6 +666,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
               InferOptions<P>,
               InferApi<P>,
               InferTransforms<P>,
+              InferSelectors<P>,
               EO,
               EA,
               ET
@@ -683,6 +676,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
               InferOptions<P>,
               InferApi<P>,
               InferTransforms<P>,
+              InferSelectors<P>,
               EO,
               EA,
               ET
@@ -697,6 +691,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
               InferOptions<P>,
               InferApi<P>,
               InferTransforms<P>,
+              InferSelectors<P>,
               EO,
               EA,
               ET
@@ -706,11 +701,25 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
               InferOptions<P>,
               InferApi<P>,
               InferTransforms<P>,
+              InferSelectors<P>,
               EO,
               EA,
               ET
             >)
   ) => PlatePlugin<C>;
+  extendSelectors: <
+    ES extends Record<string, (...args: any[]) => any> = Record<string, never>,
+  >(
+    extension: (ctx: PlatePluginContext<C>) => ES
+  ) => PlatePlugin<
+    PluginConfig<
+      C['key'],
+      InferOptions<C>,
+      InferApi<C>,
+      InferTransforms<C>,
+      ES & InferSelectors<C>
+    >
+  >;
   extendTransforms: <
     ET extends Record<string, (...args: any[]) => any> = Record<string, never>,
   >(
@@ -720,7 +729,8 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       C['key'],
       InferOptions<C>,
       InferApi<C>,
-      InferTransforms<C> & Record<C['key'], ET>
+      InferTransforms<C> & Record<C['key'], ET>,
+      InferSelectors<C>
     >
   >;
   overrideEditor: (override: OverrideEditor<C>) => PlatePlugin<C>;

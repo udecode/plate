@@ -4,7 +4,7 @@ import type { JotaiStore } from 'jotai-x';
 
 import { type Atom, atom } from 'jotai';
 
-import { createAtomStore } from '../../libs';
+import { createAtomStore, useStoreAtomValue } from '../../libs';
 
 const {
   PlateControllerProvider: PlateController,
@@ -73,5 +73,5 @@ export const usePlateControllerStore = (idProp?: string): JotaiStore | null => {
     [idProp]
   );
 
-  return usePlateControllerLocalStore().getAtom(storeAtom);
+  return useStoreAtomValue(usePlateControllerLocalStore(), storeAtom);
 };

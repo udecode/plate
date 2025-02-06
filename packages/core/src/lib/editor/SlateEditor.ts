@@ -14,6 +14,7 @@ import type {
   AnyPluginConfig,
   InferApi,
   InferOptions,
+  InferSelectors,
   InferTransforms,
   PluginConfig,
   WithRequiredKey,
@@ -53,19 +54,31 @@ export type BaseEditor = EditorBase & {
   ) => InjectNodeProps<C>;
   getOption: <
     C extends AnyPluginConfig,
-    K extends keyof InferOptions<C>,
-    F extends InferOptions<C>[K],
+    StateType extends InferOptions<C>,
+    TSelectors extends InferSelectors<C>,
+    K extends keyof StateType | keyof TSelectors | 'state',
   >(
     plugin: WithRequiredKey<C>,
-    optionKey: K,
-    ...args: F extends (...args: infer A) => any ? A : never[]
-  ) => F extends (...args: any[]) => infer R ? R : F;
+    key: K,
+    ...args: K extends keyof TSelectors ? Parameters<TSelectors[K]> : []
+  ) => K extends 'state'
+    ? StateType
+    : K extends keyof TSelectors
+      ? ReturnType<TSelectors[K]>
+      : K extends keyof StateType
+        ? StateType[K]
+        : never;
   getOptions: <C extends AnyPluginConfig = PluginConfig>(
     plugin: WithRequiredKey<C>
   ) => InferOptions<C>;
   getOptionsStore: <C extends AnyPluginConfig>(
     plugin: WithRequiredKey<C>
-  ) => TStateApi<InferOptions<C>, [['zustand/mutative-x', never]]>;
+  ) => TStateApi<
+    InferOptions<C>,
+    [['zustand/mutative-x', never]],
+    {},
+    InferSelectors<C>
+  >;
   getPlugin: <C extends AnyPluginConfig = PluginConfig>(
     plugin: WithRequiredKey<C>
   ) => C extends { node: any } ? C : EditorPlugin<C>;

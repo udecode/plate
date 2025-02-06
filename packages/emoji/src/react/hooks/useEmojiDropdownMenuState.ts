@@ -1,4 +1,4 @@
-import { useEditorPlugin, useStableMemo } from '@udecode/plate/react';
+import { usePluginOption, useStableMemo } from '@udecode/plate/react';
 
 import {
   type EmojiSettingsType,
@@ -19,8 +19,7 @@ export function useEmojiDropdownMenuState({
   closeOnSelect = true,
   settings = EmojiSettings,
 }: EmojiDropdownMenuOptions = {}) {
-  const { useOption } = useEditorPlugin(EmojiPlugin);
-  const data = useOption('data')!;
+  const data = usePluginOption(EmojiPlugin, 'data')!;
 
   const [emojiLibrary, indexSearch] = useStableMemo(() => {
     const frequentEmojiStorage = new FrequentEmojiStorage({

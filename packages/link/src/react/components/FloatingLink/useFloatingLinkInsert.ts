@@ -11,6 +11,7 @@ import {
   useFocused,
   useHotkeys,
   useOnClickOutside,
+  usePluginOption,
 } from '@udecode/plate/react';
 
 import { LinkPlugin } from '../../LinkPlugin';
@@ -25,13 +26,13 @@ export type LinkFloatingToolbarState = {
 export const useFloatingLinkInsertState = ({
   floatingOptions,
 }: LinkFloatingToolbarState = {}) => {
-  const { editor, getOptions, useOption } = useEditorPlugin(LinkPlugin);
+  const { editor, getOptions } = useEditorPlugin(LinkPlugin);
 
   const { triggerFloatingLinkHotkeys } = getOptions();
   const readOnly = useEditorReadOnly();
   const focused = useFocused();
-  const mode = useOption('mode');
-  const isOpen = useOption('isOpen', editor.id);
+  const mode = usePluginOption(LinkPlugin, 'mode');
+  const isOpen = usePluginOption(LinkPlugin, 'isOpen', editor.id);
 
   const floating = useVirtualFloatingLink({
     editorId: editor.id,

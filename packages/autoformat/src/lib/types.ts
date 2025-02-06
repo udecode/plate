@@ -96,12 +96,6 @@ export interface AutoformatMarkRule extends AutoformatCommonRule {
   ignoreTrim?: boolean;
 }
 
-export interface AutoformatPluginOptions {
-  enableUndoOnDelete?: boolean;
-  /** A list of triggering rules. */
-  rules?: AutoformatRule[];
-}
-
 export interface AutoformatQueryOptions
   extends Omit<AutoformatCommonRule, 'query'> {
   /** `insertText` text. */

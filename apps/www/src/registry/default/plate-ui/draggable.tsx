@@ -27,10 +27,10 @@ import {
   type RenderNodeWrapper,
   MemoizedChildren,
   ParagraphPlugin,
-  useEditorPlugin,
   useEditorRef,
   useElement,
   usePath,
+  usePluginOption,
 } from '@udecode/plate/react';
 import { useReadOnly, useSelected } from '@udecode/plate/react';
 import { GripVertical } from 'lucide-react';
@@ -160,10 +160,13 @@ const Gutter = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ children, className, ...props }, ref) => {
-  const { editor, useOption } = useEditorPlugin(BlockSelectionPlugin);
+  const editor = useEditorRef();
   const element = useElement();
   const path = usePath();
-  const isSelectionAreaVisible = useOption('isSelectionAreaVisible');
+  const isSelectionAreaVisible = usePluginOption(
+    BlockSelectionPlugin,
+    'isSelectionAreaVisible'
+  );
   const selected = useSelected();
 
   const isNodeType = (keys: string[] | string) => isType(editor, element, keys);

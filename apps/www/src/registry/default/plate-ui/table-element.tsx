@@ -20,6 +20,7 @@ import {
   useEditorRef,
   useEditorSelector,
   useElement,
+  usePluginOption,
   useReadOnly,
   useRemoveNodeButton,
   useSelected,
@@ -61,7 +62,7 @@ export const TableElement = withHOC(
   TableProvider,
   withRef<typeof PlateElement>(({ children, className, ...props }, ref) => {
     const readOnly = useReadOnly();
-    const isSelectionAreaVisible = props.editor.useOption(
+    const isSelectionAreaVisible = usePluginOption(
       BlockSelectionPlugin,
       'isSelectionAreaVisible'
     );

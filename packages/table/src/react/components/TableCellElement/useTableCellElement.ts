@@ -1,6 +1,10 @@
 import React from 'react';
 
-import { useEditorPlugin, useElement } from '@udecode/plate/react';
+import {
+  useEditorPlugin,
+  useElement,
+  usePluginOption,
+} from '@udecode/plate/react';
 
 import type { BorderStylesDefault, TTableCellElement } from '../../../lib';
 
@@ -23,10 +27,10 @@ export type TableCellElementState = {
 };
 
 export const useTableCellElement = (): TableCellElementState => {
-  const { api, setOption, useOption } = useEditorPlugin(TablePlugin);
+  const { api, setOption } = useEditorPlugin(TablePlugin);
   const element = useElement<TTableCellElement>();
   const isCellSelected = useIsCellSelected(element);
-  const selectedCells = useOption('selectedCells');
+  const selectedCells = usePluginOption(TablePlugin, 'selectedCells');
 
   // Sync element transforms with selected cells
   React.useEffect(() => {

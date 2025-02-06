@@ -12,7 +12,11 @@ import {
   BlockSelectionPlugin,
   useIsSelecting,
 } from '@udecode/plate-selection/react';
-import { useEditorPlugin, useHotkeys } from '@udecode/plate/react';
+import {
+  useEditorPlugin,
+  useHotkeys,
+  usePluginOption,
+} from '@udecode/plate/react';
 import { Loader2Icon } from 'lucide-react';
 
 import { useChat } from '@/registry/default/components/editor/use-chat';
@@ -23,9 +27,9 @@ import { Command, CommandList, InputCommand } from './command';
 import { Popover, PopoverAnchor, PopoverContent } from './popover';
 
 export function AIMenu() {
-  const { api, editor, useOption } = useEditorPlugin(AIChatPlugin);
-  const open = useOption('open');
-  const mode = useOption('mode');
+  const { api, editor } = useEditorPlugin(AIChatPlugin);
+  const open = usePluginOption(AIChatPlugin, 'open');
+  const mode = usePluginOption(AIChatPlugin, 'mode');
   const isSelecting = useIsSelecting();
 
   const [value, setValue] = React.useState('');

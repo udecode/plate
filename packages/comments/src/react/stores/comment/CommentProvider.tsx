@@ -1,5 +1,5 @@
 import { type Value, NodeApi } from '@udecode/plate';
-import { createAtomStore, useEditorPlugin } from '@udecode/plate/react';
+import { createAtomStore, usePluginOption } from '@udecode/plate/react';
 
 import type { CommentUser, TComment } from '../../../lib/types';
 
@@ -32,11 +32,9 @@ export const {
 );
 
 export const useCommentUser = (scope?: string): CommentUser | null => {
-  const { useOption } = useEditorPlugin(CommentsPlugin);
-
   const commentId = useCommentValue('id', { scope });
-  const comment = useOption('commentById', commentId);
-  const users = useOption('users');
+  const comment = usePluginOption(CommentsPlugin, 'commentById', commentId);
+  const users = usePluginOption(CommentsPlugin, 'users');
 
   if (!comment) return null;
 
@@ -44,10 +42,8 @@ export const useCommentUser = (scope?: string): CommentUser | null => {
 };
 
 export const useCommentReplies = (scope?: string) => {
-  const { useOption } = useEditorPlugin(CommentsPlugin);
-
   const commentId = useCommentValue('id', { scope });
-  const comments = useOption('comments');
+  const comments = usePluginOption(CommentsPlugin, 'comments');
 
   const replies: Record<string, TComment> = {};
 
@@ -64,11 +60,9 @@ export const useCommentReplies = (scope?: string) => {
 };
 
 export const useComment = (scope?: string) => {
-  const { useOption } = useEditorPlugin(CommentsPlugin);
-
   const commentId = useCommentValue('id', { scope });
 
-  return useOption('commentById', commentId);
+  return usePluginOption(CommentsPlugin, 'commentById', commentId);
 };
 
 export const useCommentText = (scope?: string) => {

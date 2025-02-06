@@ -2,6 +2,7 @@ import {
   useEditorPlugin,
   useEditorSelector,
   useElement,
+  usePluginOption,
 } from '@udecode/plate/react';
 
 import type { TTableElement } from '../../../lib';
@@ -18,9 +19,9 @@ export const useTableBordersDropdownMenuContentState = ({
 }: {
   element?: TTableElement;
 } = {}) => {
-  const { editor, useOption } = useEditorPlugin(TablePlugin);
+  const { editor } = useEditorPlugin(TablePlugin);
   const element = useElement() ?? el;
-  const selectedCells = useOption('selectedCells');
+  const selectedCells = usePluginOption(TablePlugin, 'selectedCells');
   const borderStates = useEditorSelector<TableBorderStates>(
     (editor) => getSelectedCellsBorders(editor, selectedCells),
     [selectedCells, element]

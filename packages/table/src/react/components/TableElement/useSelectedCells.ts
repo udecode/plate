@@ -3,6 +3,7 @@ import React from 'react';
 import {
   useEditorPlugin,
   useEditorRef,
+  usePluginOption,
   useReadOnly,
   useSelected,
 } from '@udecode/plate/react';
@@ -19,8 +20,8 @@ export const useSelectedCells = () => {
   const selected = useSelected();
   const editor = useEditorRef();
 
-  const { setOption, useOption } = useEditorPlugin(TablePlugin);
-  const selectedCells = useOption('selectedCells');
+  const { setOption } = useEditorPlugin(TablePlugin);
+  const selectedCells = usePluginOption(TablePlugin, 'selectedCells');
 
   React.useEffect(() => {
     if (!selected || readOnly) {

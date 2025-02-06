@@ -74,9 +74,22 @@ export type CopilotPluginConfig = PluginConfig<
      */
     triggerQuery?: (options: { editor: PlateEditor }) => boolean;
     // query?: QueryEditorOptions;
-  } & CopilotSelectors,
+  },
   {
-    copilot: CopilotApi;
+    copilot: {
+      accept: OmitFirst<typeof acceptCopilot>;
+      acceptNextWord: OmitFirst<typeof acceptCopilotNextWord>;
+      triggerSuggestion: OmitFirst<typeof triggerCopilotSuggestion>;
+      // Function to abort the current API request and reset the completion state.
+      reset: () => void;
+      setBlockSuggestion: (options: { text: string; id?: string }) => void;
+      // Function to abort the current API request.
+      stop: () => void;
+    };
+  },
+  {},
+  {
+    isSuggested?: (id: string) => boolean;
   }
 >;
 
@@ -88,21 +101,6 @@ type CompletionState = {
   error?: Error | null;
   // Boolean flag indicating whether a fetch operation is currently in progress.
   isLoading?: boolean;
-};
-
-type CopilotApi = {
-  accept: OmitFirst<typeof acceptCopilot>;
-  acceptNextWord: OmitFirst<typeof acceptCopilotNextWord>;
-  triggerSuggestion: OmitFirst<typeof triggerCopilotSuggestion>;
-  // Function to abort the current API request and reset the completion state.
-  reset: () => void;
-  setBlockSuggestion: (options: { text: string; id?: string }) => void;
-  // Function to abort the current API request.
-  stop: () => void;
-};
-
-type CopilotSelectors = {
-  isSuggested?: (id: string) => boolean;
 };
 
 export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
@@ -166,10 +164,10 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
   },
 })
   .overrideEditor(withCopilot)
-  .extendOptions<Required<CopilotSelectors>>(({ getOptions }) => ({
+  .extendSelectors<CopilotPluginConfig['selectors']>(({ getOptions }) => ({
     isSuggested: (id) => getOptions().suggestionNodeId === id,
   }))
-  .extendApi<Omit<CopilotApi, 'reset'>>(
+  .extendApi<Omit<CopilotPluginConfig['api']['copilot'], 'reset'>>(
     ({ api, editor, getOptions, setOption, setOptions }) => {
       const debounceDelay = getOptions().debounceDelay;
 

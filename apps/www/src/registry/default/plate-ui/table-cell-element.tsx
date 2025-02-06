@@ -18,6 +18,7 @@ import {
 import {
   useEditorPlugin,
   useElementSelector,
+  usePluginOption,
   useReadOnly,
 } from '@udecode/plate/react';
 import { cva } from 'class-variance-authority';
@@ -40,7 +41,7 @@ export const TableCellElement = withRef<
     key: TableRowPlugin.key,
   });
   const isSelectingRow = useBlockSelected(rowId);
-  const isSelectionAreaVisible = props.editor.useOption(
+  const isSelectionAreaVisible = usePluginOption(
     BlockSelectionPlugin,
     'isSelectionAreaVisible'
   );

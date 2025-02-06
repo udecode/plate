@@ -15,7 +15,11 @@ import {
 
 export type ListConfig = PluginConfig<
   'list',
-  ListPluginOptions,
+  {
+    enableResetOnShiftTab?: boolean;
+    /** Valid children types for list items, in addition to p and ul types. */
+    validLiChildrenTypes?: string[];
+  },
   {},
   {
     toggle: {
@@ -25,12 +29,6 @@ export type ListConfig = PluginConfig<
     };
   }
 >;
-
-export type ListPluginOptions = {
-  enableResetOnShiftTab?: boolean;
-  /** Valid children types for list items, in addition to p and ul types. */
-  validLiChildrenTypes?: string[];
-};
 
 export const BaseBulletedListPlugin = createSlatePlugin({
   key: 'ul',

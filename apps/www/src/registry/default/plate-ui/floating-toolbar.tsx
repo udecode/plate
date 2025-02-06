@@ -13,8 +13,8 @@ import {
 import {
   useComposedRef,
   useEditorId,
-  useEditorRef,
   useEventEditorValue,
+  usePluginOption,
 } from '@udecode/plate/react';
 
 import { Toolbar } from './toolbar';
@@ -25,11 +25,10 @@ export const FloatingToolbar = withRef<
     state?: FloatingToolbarState;
   }
 >(({ children, state, ...props }, componentRef) => {
-  const editor = useEditorRef();
   const editorId = useEditorId();
   const focusedEditorId = useEventEditorValue('focus');
-  const isFloatingLinkOpen = !!editor.useOption({ key: 'a' }, 'mode');
-  const isAIChatOpen = editor.useOption({ key: 'aiChat' }, 'open');
+  const isFloatingLinkOpen = !!usePluginOption({ key: 'a' }, 'mode');
+  const isAIChatOpen = usePluginOption({ key: 'aiChat' }, 'open');
 
   const floatingToolbarState = useFloatingToolbarState({
     editorId,

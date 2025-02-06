@@ -7,7 +7,8 @@ import type { PlateEditor } from '../../editor';
 export type PlateChangeKey =
   | 'versionDecorate'
   | 'versionEditor'
-  | 'versionSelection';
+  | 'versionSelection'
+  | 'versionValue';
 
 export type PlateStoreState<E extends PlateEditor = PlateEditor> = Nullable<{
   decorate: NonNullable<(options: { editor: E; entry: NodeEntry }) => TRange[]>;

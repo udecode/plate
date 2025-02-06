@@ -5,7 +5,7 @@ import type { UnknownObject } from '@udecode/utils';
 
 import { useStoreValue } from 'jotai-x';
 
-import { useEditorRef, usePlateStore } from '../stores';
+import { useEditorRef, useIncrementVersion, usePlateStore } from '../stores';
 import { pipeOnChange } from '../utils/pipeOnChange';
 
 interface SlateProps extends UnknownObject {
@@ -28,30 +28,36 @@ export const useSlateProps = ({
   const onChangeProp = useStoreValue(store, 'onChange');
   const onValueChangeProp = useStoreValue(store, 'onValueChange');
   const onSelectionChangeProp = useStoreValue(store, 'onSelectionChange');
+  const updateVersionEditor = useIncrementVersion('versionEditor', id);
+  const updateVersionSelection = useIncrementVersion('versionSelection', id);
+  const updateVersionValue = useIncrementVersion('versionValue', id);
 
   const onChange = React.useCallback(
     (newValue: Value) => {
+      updateVersionEditor();
       const eventIsHandled = pipeOnChange(editor, newValue);
 
       if (!eventIsHandled) {
         onChangeProp?.({ editor, value: newValue });
       }
     },
-    [editor, onChangeProp]
+    [editor, onChangeProp, updateVersionEditor]
   );
 
   const onValueChange: SlateProps['onValueChange'] = React.useMemo(
     () => (value) => {
+      updateVersionValue();
       onValueChangeProp?.({ editor, value });
     },
-    [editor, onValueChangeProp]
+    [editor, onValueChangeProp, updateVersionValue]
   );
 
   const onSelectionChange: SlateProps['onSelectionChange'] = React.useMemo(
     () => (selection: TSelection) => {
+      updateVersionSelection();
       onSelectionChangeProp?.({ editor, selection });
     },
-    [editor, onSelectionChangeProp]
+    [editor, onSelectionChangeProp, updateVersionSelection]
   );
 
   return React.useMemo(() => {

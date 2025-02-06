@@ -6,6 +6,7 @@ import {
   useEditorContainerRef,
   useEditorRef,
   useIsomorphicLayoutEffect,
+  usePluginOption,
 } from '@udecode/plate/react';
 
 import type { CursorOverlayState, CursorState, SelectionRect } from '../types';
@@ -44,7 +45,7 @@ export const useCursorOverlay = <TCursorData extends UnknownObject>({
   const editor = useEditorRef();
   const containerRef = useEditorContainerRef();
 
-  const cursorStates = editor.useOption(
+  const cursorStates = usePluginOption(
     CursorOverlayPlugin,
     'cursors'
   ) as Record<string, CursorState<TCursorData>>;

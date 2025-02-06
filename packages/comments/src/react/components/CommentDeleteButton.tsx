@@ -1,6 +1,7 @@
 import {
   createPrimitiveComponent,
   useEditorPlugin,
+  usePluginOption,
 } from '@udecode/plate/react';
 
 import { type BaseCommentsConfig, unsetCommentNodesById } from '../../lib';
@@ -8,10 +9,10 @@ import { CommentsPlugin } from '../CommentsPlugin';
 import { useCommentValue } from '../stores';
 
 export const useCommentDeleteButton = () => {
-  const { api, editor, setOption, useOption } = useEditorPlugin(CommentsPlugin);
-
-  const activeCommentId = useOption('activeCommentId');
-  const onCommentDelete = useOption(
+  const { api, editor, setOption } = useEditorPlugin(CommentsPlugin);
+  const activeCommentId = usePluginOption(CommentsPlugin, 'activeCommentId');
+  const onCommentDelete = usePluginOption(
+    CommentsPlugin,
     'onCommentDelete'
   ) as BaseCommentsConfig['options']['onCommentDelete'];
   const id = useCommentValue('id');

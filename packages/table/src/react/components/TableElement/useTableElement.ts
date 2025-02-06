@@ -1,4 +1,8 @@
-import { useEditorPlugin, useElement } from '@udecode/plate/react';
+import {
+  useEditorPlugin,
+  useElement,
+  usePluginOption,
+} from '@udecode/plate/react';
 
 import type { TTableElement } from '../../../lib';
 
@@ -7,12 +11,12 @@ import { TablePlugin } from '../../TablePlugin';
 import { useSelectedCells } from './useSelectedCells';
 
 export const useTableElement = () => {
-  const { editor, getOptions, useOption } = useEditorPlugin(TablePlugin);
+  const { editor, getOptions } = useEditorPlugin(TablePlugin);
 
   const { disableMarginLeft } = getOptions();
 
   const element = useElement<TTableElement>();
-  const selectedCells = useOption('selectedCells');
+  const selectedCells = usePluginOption(TablePlugin, 'selectedCells');
   const marginLeftOverride = useTableValue('marginLeftOverride');
 
   const marginLeft = disableMarginLeft

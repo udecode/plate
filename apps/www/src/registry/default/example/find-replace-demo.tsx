@@ -3,7 +3,7 @@
 import React from 'react';
 
 import { FindReplacePlugin } from '@udecode/plate-find-replace';
-import { Plate, useEditorPlugin } from '@udecode/plate/react';
+import { Plate, useEditorPlugin, usePluginOption } from '@udecode/plate/react';
 
 import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
@@ -14,8 +14,8 @@ import { Input } from '@/registry/default/plate-ui/input';
 import { SearchHighlightLeaf } from '@/registry/default/plate-ui/search-highlight-leaf';
 
 export function FindToolbar() {
-  const { editor, setOption, useOption } = useEditorPlugin(FindReplacePlugin);
-  const search = useOption('search');
+  const { editor, setOption } = useEditorPlugin(FindReplacePlugin);
+  const search = usePluginOption(FindReplacePlugin, 'search');
 
   return (
     <FixedToolbar className="border-none py-3">

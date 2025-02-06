@@ -6,3 +6,4 @@ export * from './PlateStore';
 export * from './createPlateStore';
 export * from './useEditorPlugin';
 export * from './useEditorSelector';
+export * from './usePluginOption';

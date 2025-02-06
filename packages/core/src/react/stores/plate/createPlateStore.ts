@@ -254,6 +254,7 @@ export const useIncrementVersion = (key: PlateChangeKey, id?: string) => {
   const setVersionDecorate = useStoreSet(store, 'versionDecorate');
   const setVersionSelection = useStoreSet(store, 'versionSelection');
   const setVersionValue = useStoreSet(store, 'versionValue');
+  const setVersionEditor = useStoreSet(store, 'versionEditor');
 
   return React.useCallback(() => {
     const nextVersion = previousVersionRef.current + 1;
@@ -265,7 +266,7 @@ export const useIncrementVersion = (key: PlateChangeKey, id?: string) => {
         break;
       }
       case 'versionEditor': {
-        setVersionValue(nextVersion);
+        setVersionEditor(nextVersion);
 
         break;
       }
@@ -274,11 +275,21 @@ export const useIncrementVersion = (key: PlateChangeKey, id?: string) => {
 
         break;
       }
-      // No default
+      case 'versionValue': {
+        setVersionValue(nextVersion);
+
+        break;
+      }
     }
 
     previousVersionRef.current = nextVersion;
-  }, [key, setVersionDecorate, setVersionSelection, setVersionValue]);
+  }, [
+    key,
+    setVersionDecorate,
+    setVersionEditor,
+    setVersionSelection,
+    setVersionValue,
+  ]);
 };
 
 export const useRedecorate = (id?: string) => {

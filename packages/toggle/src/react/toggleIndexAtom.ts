@@ -6,8 +6,9 @@ import { type TIndentElement, BaseIndentPlugin } from '@udecode/plate-indent';
 import {
   atom,
   plateStore,
-  useEditorPlugin,
   usePlateStore,
+  usePluginOption,
+  useStoreAtomValue,
 } from '@udecode/plate/react';
 
 import { TogglePlugin } from './TogglePlugin';
@@ -50,9 +51,7 @@ export const editorAtom = plateStore.atom.trackedEditor;
 // In order minimize re-renders, we subscribe to both separately, but only re-render unnecessarily when opening or closing a toggle,
 //   which is less frequent than changing the editor's children.
 export const useIsVisible = (elementId: string) => {
-  const { useOption } = useEditorPlugin(TogglePlugin);
-
-  const openIds = useOption('openIds')!;
+  const openIds = usePluginOption(TogglePlugin, 'openIds')!;
   const isVisibleAtom = useMemo(
     () =>
       atom((get) => {
@@ -66,11 +65,12 @@ export const useIsVisible = (elementId: string) => {
     [elementId, openIds]
   );
 
-  return usePlateStore().getAtom(isVisibleAtom);
+  return useStoreAtomValue(usePlateStore(), isVisibleAtom);
 };
 
 export const toggleIndexAtom = atom((get) =>
   buildToggleIndex(get(editorAtom).editor.children as TIndentElement[])
 );
 
-export const useToggleIndex = () => usePlateStore().getAtom(toggleIndexAtom);
+export const useToggleIndex = () =>
+  useStoreAtomValue(usePlateStore(), toggleIndexAtom);

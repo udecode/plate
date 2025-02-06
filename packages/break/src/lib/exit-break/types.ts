@@ -1,11 +1,4 @@
-import type { PluginConfig, QueryNodeOptions } from '@udecode/plate';
-
-export type ExitBreakConfig = PluginConfig<
-  'exitBreak',
-  {
-    rules?: ExitBreakRule[];
-  }
->;
+import type { QueryNodeOptions } from '@udecode/plate';
 
 export interface ExitBreakRule {
   /** Hotkey to trigger exit break. */
