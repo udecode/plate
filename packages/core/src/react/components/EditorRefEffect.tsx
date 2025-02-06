@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useStoreSet, useStoreValue } from 'jotai-x';
+import { useAtomStoreSet, useAtomStoreValue } from 'jotai-x';
 
 import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
 
@@ -23,8 +23,8 @@ export function EditorRefPluginEffect({
 
 export function EditorRefEffect({ id }: { id?: string }) {
   const store = usePlateStore(id);
-  const editor = useStoreValue(store, 'editor');
-  const setIsMounted = useStoreSet(store, 'isMounted');
+  const editor = useAtomStoreValue(store, 'editor');
+  const setIsMounted = useAtomStoreSet(store, 'isMounted');
 
   React.useEffect(() => {
     setIsMounted(true);

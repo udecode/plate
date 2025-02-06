@@ -1,6 +1,6 @@
 import type { Path } from '@udecode/slate';
 
-import { useStoreValue } from 'jotai-x';
+import { useAtomStoreValue } from 'jotai-x';
 
 import { useEditorRef } from '../plate';
 import { useElementStore } from './useElementStore';
@@ -8,7 +8,7 @@ import { useElementStore } from './useElementStore';
 /** Get the memoized path of the closest element. */
 export const usePath = (pluginKey?: string): Path => {
   const editor = useEditorRef();
-  const value = useStoreValue(useElementStore(pluginKey), 'path');
+  const value = useAtomStoreValue(useElementStore(pluginKey), 'path');
 
   if (!value) {
     editor.api.debug.warn(

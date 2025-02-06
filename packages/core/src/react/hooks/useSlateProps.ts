@@ -3,7 +3,7 @@ import React from 'react';
 import type { Editor, TSelection, Value } from '@udecode/slate';
 import type { UnknownObject } from '@udecode/utils';
 
-import { useStoreValue } from 'jotai-x';
+import { useAtomStoreValue } from 'jotai-x';
 
 import { useEditorRef, useIncrementVersion, usePlateStore } from '../stores';
 import { pipeOnChange } from '../utils/pipeOnChange';
@@ -25,9 +25,9 @@ export const useSlateProps = ({
 }): Omit<SlateProps, 'children'> => {
   const editor = useEditorRef(id);
   const store = usePlateStore(id);
-  const onChangeProp = useStoreValue(store, 'onChange');
-  const onValueChangeProp = useStoreValue(store, 'onValueChange');
-  const onSelectionChangeProp = useStoreValue(store, 'onSelectionChange');
+  const onChangeProp = useAtomStoreValue(store, 'onChange');
+  const onValueChangeProp = useAtomStoreValue(store, 'onValueChange');
+  const onSelectionChangeProp = useAtomStoreValue(store, 'onSelectionChange');
   const updateVersionEditor = useIncrementVersion('versionEditor', id);
   const updateVersionSelection = useIncrementVersion('versionSelection', id);
   const updateVersionValue = useIncrementVersion('versionValue', id);

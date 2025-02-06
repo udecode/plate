@@ -4,7 +4,7 @@ import type { Value } from '@udecode/slate';
 
 import { render } from '@testing-library/react';
 import { renderHook } from '@testing-library/react';
-import { useStoreValue } from 'jotai-x';
+import { useAtomStoreValue } from 'jotai-x';
 import isEqual from 'lodash/isEqual';
 import memoize from 'lodash/memoize';
 
@@ -278,7 +278,7 @@ describe('Plate', () => {
       renderHook(() => usePlateStore(), { wrapper }).result.current;
 
     const getId = (wrapper: any) =>
-      renderHook(() => useStoreValue(usePlateStore(), 'editor').id, {
+      renderHook(() => useAtomStoreValue(usePlateStore(), 'editor').id, {
         wrapper,
       }).result.current;
 
