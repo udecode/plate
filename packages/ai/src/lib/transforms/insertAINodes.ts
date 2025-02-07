@@ -12,7 +12,6 @@ export const insertAINodes = (
   if (!target && !editor.selection?.focus.path) return;
 
   const addAINodes = (plainNodes: Descendant[]) => {
-    console.log('plainNodes', plainNodes);
     return plainNodes.map(
       (plainNode: Descendant): Descendant => ({
         ...plainNode,
