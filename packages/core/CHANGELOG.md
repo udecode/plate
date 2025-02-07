@@ -1,5 +1,7 @@
 # @udecode/plate-core
 
+## 44.0.1
+
 ## 44.0.0
 
 ### Major Changes
