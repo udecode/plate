@@ -2,7 +2,6 @@
 
 import { useCallback, useState } from 'react';
 
-import { ParagraphPlugin, useEditorPlugin } from '@udecode/plate/react';
 import { AIChatPlugin } from '@udecode/plate-ai/react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
@@ -12,6 +11,7 @@ import {
   BlockMenuPlugin,
   BlockSelectionPlugin,
 } from '@udecode/plate-selection/react';
+import { ParagraphPlugin, useEditorPlugin } from '@udecode/plate/react';
 
 import { useIsTouchDevice } from '@/hooks/use-is-touch-device';
 

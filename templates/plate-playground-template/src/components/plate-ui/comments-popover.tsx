@@ -3,7 +3,6 @@
 import React from 'react';
 
 import { cn } from '@udecode/cn';
-import { PortalBody } from '@udecode/plate/react';
 import {
   CommentProvider,
   CommentsPositioner,
@@ -11,6 +10,7 @@ import {
   useFloatingCommentsContentState,
   useFloatingCommentsState,
 } from '@udecode/plate-comments/react';
+import { PortalBody } from '@udecode/plate/react';
 
 import { CommentCreateForm } from './comment-create-form';
 import { CommentItem } from './comment-item';

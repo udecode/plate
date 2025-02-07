@@ -3,21 +3,19 @@
 import React from 'react';
 
 import { cn } from '@udecode/cn';
-import { useEditorPlugin } from '@udecode/plate/react';
 import {
   CommentNewSubmitButton,
   CommentNewTextarea,
   CommentsPlugin,
 } from '@udecode/plate-comments/react';
+import { usePluginOption } from '@udecode/plate/react';
 
 import { buttonVariants } from './button';
 import { CommentAvatar } from './comment-avatar';
 import { inputVariants } from './input';
 
 export function CommentCreateForm() {
-  const { useOption } = useEditorPlugin(CommentsPlugin);
-
-  const myUserId = useOption('myUserId');
+  const myUserId = usePluginOption(CommentsPlugin, 'myUserId');
 
   return (
     <div className="flex w-full space-x-2">

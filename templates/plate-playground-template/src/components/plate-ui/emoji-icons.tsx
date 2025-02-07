@@ -19,8 +19,8 @@ import {
 export const emojiCategoryIcons: Record<
   EmojiCategoryList,
   {
-    outline: React.ReactElement;
-    solid: React.ReactElement; // Needed to add another solid variant - outline will be used for now
+    outline: React.ReactElement<any>;
+    solid: React.ReactElement<any>; // Needed to add another solid variant - outline will be used for now
   }
 > = {
   activity: {
