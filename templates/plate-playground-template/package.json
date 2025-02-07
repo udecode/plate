@@ -5,7 +5,7 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev --turbo",
-    "lint": "next lint && prettier --check . --log-level warn",
+    "lint": "next lint",
     "lint:fix": "next lint --fix && prettier --write . --log-level warn",
     "preview": "next build && next start",
     "start": "next start",

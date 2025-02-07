@@ -3,7 +3,6 @@
 import * as React from 'react';
 
 import { type NodeEntry, isHotkey } from '@udecode/plate';
-import { useEditorPlugin, useHotkeys } from '@udecode/plate/react';
 import {
   AIChatPlugin,
   useEditorChat,
@@ -13,6 +12,11 @@ import {
   BlockSelectionPlugin,
   useIsSelecting,
 } from '@udecode/plate-selection/react';
+import {
+  useEditorPlugin,
+  useHotkeys,
+  usePluginOption,
+} from '@udecode/plate/react';
 import { Loader2Icon } from 'lucide-react';
 
 import { useChat } from '@/components/editor/use-chat';
@@ -23,9 +27,9 @@ import { Command, CommandList, InputCommand } from './command';
 import { Popover, PopoverAnchor, PopoverContent } from './popover';
 
 export function AIMenu() {
-  const { api, editor, useOption } = useEditorPlugin(AIChatPlugin);
-  const open = useOption('open');
-  const mode = useOption('mode');
+  const { api, editor } = useEditorPlugin(AIChatPlugin);
+  const open = usePluginOption(AIChatPlugin, 'open');
+  const mode = usePluginOption(AIChatPlugin, 'mode');
   const isSelecting = useIsSelecting();
 
   const [value, setValue] = React.useState('');
@@ -69,7 +73,7 @@ export function AIMenu() {
       if (!editor.api.isAt({ end: true }) && !editor.api.isEmpty(ancestor)) {
         editor
           .getApi(BlockSelectionPlugin)
-          .blockSelection.addSelectedRow(ancestor.id as string);
+          .blockSelection.set(ancestor.id as string);
       }
 
       show(editor.api.toDOMNode(ancestor)!);
@@ -89,7 +93,7 @@ export function AIMenu() {
 
   return (
     <Popover open={open} onOpenChange={setOpen} modal={false}>
-      <PopoverAnchor virtualRef={{ current: anchorElement }} />
+      <PopoverAnchor virtualRef={{ current: anchorElement! }} />
 
       <PopoverContent
         className="border-none bg-transparent p-0 shadow-none"
@@ -119,7 +123,7 @@ export function AIMenu() {
           )}
 
           {isLoading ? (
-            <div className="flex grow select-none items-center gap-2 p-2 text-sm text-muted-foreground">
+            <div className="flex grow items-center gap-2 p-2 text-sm text-muted-foreground select-none">
               <Loader2Icon className="size-4 animate-spin" />
               {messages.length > 1 ? 'Editing...' : 'Thinking...'}
             </div>

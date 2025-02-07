@@ -15,7 +15,6 @@ import {
   ColorDropdownMenuItems,
 } from './color-dropdown-menu-items';
 import { ColorInput } from './color-input';
-
 // import { ColorInput } from './color-input';
 import { DropdownMenuItem } from './dropdown-menu';
 
@@ -59,7 +58,7 @@ export function ColorCustom({
                 size: 'icon',
                 variant: 'outline',
               }),
-              'absolute bottom-2 right-2 top-1.5 flex size-7 items-center justify-center rounded-full'
+              'absolute top-1.5 right-2 bottom-2 flex size-7 items-center justify-center rounded-full'
             )}
             {...menuItemProps}
           >

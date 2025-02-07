@@ -1,8 +1,8 @@
 'use client';
 
-import { ParagraphPlugin } from '@udecode/plate/react';
 import { HEADING_LEVELS } from '@udecode/plate-heading';
 import { LineHeightPlugin } from '@udecode/plate-line-height/react';
+import { ParagraphPlugin } from '@udecode/plate/react';
 
 export const lineHeightPlugin = LineHeightPlugin.configure({
   inject: {
