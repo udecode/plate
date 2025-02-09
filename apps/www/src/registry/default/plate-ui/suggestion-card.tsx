@@ -20,8 +20,7 @@ import { CheckIcon, XIcon } from 'lucide-react';
 
 import { Button } from './button';
 
-export interface ResolvedSuggestion extends TResolvedSuggestion {
-}
+export interface ResolvedSuggestion extends TResolvedSuggestion {}
 
 export const LINE_BREAK_SUGGESTION = '__line_break__';
 
@@ -45,7 +44,6 @@ export const BlockSuggestionCard = ({
   isLast: boolean;
   suggestion: ResolvedSuggestion;
 }) => {
-
   // const { data: userData } = useQuery(
   //   trpc.user.getUser.queryOptions({ id: suggestion.userId })
   // );
@@ -53,16 +51,15 @@ export const BlockSuggestionCard = ({
   const { api, editor } = useEditorPlugin(SuggestionPlugin);
 
   const accept = (suggestion: ResolvedSuggestion) => {
-    api.suggestion.withoutSuggestions(()=>{
-      acceptSuggestion(editor, suggestion );
-    })
+    api.suggestion.withoutSuggestions(() => {
+      acceptSuggestion(editor, suggestion);
+    });
   };
 
   const reject = (suggestion: ResolvedSuggestion) => {
-    api.suggestion.withoutSuggestions(()=>{
-    rejectSuggestion(editor, suggestion );
-  })
-
+    api.suggestion.withoutSuggestions(() => {
+      rejectSuggestion(editor, suggestion);
+    });
   };
 
   const [hovering, setHovering] = useState(false);
@@ -71,14 +68,14 @@ export const BlockSuggestionCard = ({
   return (
     <div
       key={`${suggestion.suggestionId}_${idx}`}
-      className="relative "
+      className="relative"
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => setHovering(false)}
     >
       <div className="flex flex-col p-4">
         <div className="relative flex items-center">
           {/* <CommentAvatar user={userData} /> */}
-          <h4 className="text-sm font-semibold leading-none">
+          <h4 className="text-sm leading-none font-semibold">
             {/* {userData?.name} */}
           </h4>
           <div className="ml-1.5 text-xs leading-none text-muted-foreground/80">
@@ -88,7 +85,7 @@ export const BlockSuggestionCard = ({
           </div>
         </div>
 
-        <div className="relative mb-4 mt-1 pl-[32px] ">
+        <div className="relative mt-1 mb-4 pl-[32px]">
           <div className="flex flex-col gap-2">
             {suggestion.type === 'remove' && (
               <React.Fragment>
@@ -136,7 +133,7 @@ export const BlockSuggestionCard = ({
                         key={index}
                         className="flex items-center text-brand/80"
                       >
-                        <span className="text-sm ">with:</span>
+                        <span className="text-sm">with:</span>
                         <span className="text-sm">{text || 'line breaks'}</span>
                       </div>
                     </React.Fragment>
@@ -185,7 +182,7 @@ export const BlockSuggestionCard = ({
         ))} */}
 
         {hovering && (
-          <div className="absolute right-4 top-4 flex gap-2">
+          <div className="absolute top-4 right-4 flex gap-2">
             <Button
               variant="ghost"
               className="h-6 p-1 text-muted-foreground"

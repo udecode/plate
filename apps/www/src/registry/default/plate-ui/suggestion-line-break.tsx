@@ -22,11 +22,7 @@ export const renderSuggestionBelowNodes = ({
 
   if (!lineBreakData) return;
 
-  return function Component({
-    children,
-  }: {
-    children: React.ReactNode;
-  }) {
+  return function Component({ children }: { children: React.ReactNode }) {
     return (
       <React.Fragment>
         {children}
@@ -57,9 +53,7 @@ const SuggestionLineBreak = ({
   const isActive = activeSuggestionId === lineBreakData.id;
   const isHover = hoverSuggestionId === lineBreakData.id;
 
-
   const spanRef = useRef<HTMLSpanElement>(null);
-
 
   return (
     <span

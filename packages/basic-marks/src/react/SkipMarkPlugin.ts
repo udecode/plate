@@ -1,5 +1,5 @@
-import { toPlatePlugin } from "@udecode/plate/react";
+import { toPlatePlugin } from '@udecode/plate/react';
 
-import { BaseSkipMarkPlugin } from "../lib/BaseSkipMarkPlugin";
+import { BaseSkipMarkPlugin } from '../lib/BaseSkipMarkPlugin';
 
 export const SkipMarkPlugin = toPlatePlugin(BaseSkipMarkPlugin);

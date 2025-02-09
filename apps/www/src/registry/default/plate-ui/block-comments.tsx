@@ -136,8 +136,6 @@ const BlockCommentsContent = ({
     setOption('uniquePathMap', new Map(map).set(id, blockPath));
   });
 
-
-
   const resolvedSuggestion: ResolvedSuggestion[] = useMemo(() => {
     const map = getOption('uniquePathMap');
 
@@ -216,7 +214,7 @@ const BlockCommentsContent = ({
               case 'update': {
                 updateProps = {
                   ...updateProps,
-                  ...data. properties,
+                  ...data.properties,
                 };
 
                 newText += node.text;
@@ -296,9 +294,9 @@ const BlockCommentsContent = ({
     return res;
   }, [blockPath, editor.api, getOption, suggestionNodes]);
 
-  const discussions:any[] = []
+  const discussions: any[] = [];
 
-  const activeDiscussion = -1
+  const activeDiscussion = -1;
 
   const suggestionsCount = resolvedSuggestion.length;
 
@@ -320,8 +318,6 @@ const BlockCommentsContent = ({
   const [_open, setOpen] = React.useState(selected);
   const open = _open || selected;
 
-
-
   const anchorElement = useMemo(() => {
     // const domNode = editor.api.toDOMNode(element)!;
 
@@ -335,14 +331,11 @@ const BlockCommentsContent = ({
 
     // return editor.api.toDOMNode(activeNode[0])!;
 
-    return document.body
+    return document.body;
     // // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (
-    suggestionsCount + discussions.length === 0
-  )
-    return <>{children}</>;
+  if (suggestionsCount + discussions.length === 0) return <>{children}</>;
 
   return (
     <div ref={ref} className="flex w-full justify-between">
