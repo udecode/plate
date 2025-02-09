@@ -41,6 +41,7 @@ import { mediaPlugins } from './media-plugins';
 import { mentionPlugin } from './mention-plugin';
 import { resetBlockTypePlugin } from './reset-block-type-plugin';
 import { softBreakPlugin } from './soft-break-plugin';
+import { suggestionPlugin } from './suggestion-plugin';
 import { tablePlugin } from './table-plugin';
 import { tocPlugin } from './toc-plugin';
 
@@ -72,6 +73,7 @@ export const viewPlugins = [
 
   // Collaboration
   commentsPlugin,
+  suggestionPlugin,
 ] as const;
 
 export const editorPlugins = [

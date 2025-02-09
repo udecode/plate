@@ -1,9 +1,8 @@
-import { isSlateString } from '@udecode/plate';
+import { isSlateEditor, isSlateElement, isSlateString } from '@udecode/plate';
 import { toPlatePlugin } from '@udecode/plate/react';
 
 import { findSuggestionNode, getSuggestionId } from '../lib';
 import { BaseSuggestionPlugin } from '../lib/BaseSuggestionPlugin';
-import { useHooksSuggestion } from './useHooksSuggestion';
 
 /** Enables support for suggestions in the editor. */
 export const SuggestionPlugin = toPlatePlugin(BaseSuggestionPlugin, {
@@ -20,7 +19,11 @@ export const SuggestionPlugin = toPlatePlugin(BaseSuggestionPlugin, {
 
       if (!isSlateString(leaf)) unsetActiveSuggestion();
 
-      while (leaf.parentElement) {
+      while (
+        leaf.parentElement &&
+        !isSlateElement(leaf.parentElement) &&
+        !isSlateEditor(leaf.parentElement)
+      ) {
         if (leaf.classList.contains(`slate-${BaseSuggestionPlugin.key}`)) {
           const suggestionEntry = findSuggestionNode(editor);
 
@@ -44,5 +47,4 @@ export const SuggestionPlugin = toPlatePlugin(BaseSuggestionPlugin, {
       if (!isSet) unsetActiveSuggestion();
     },
   },
-  useHooks: useHooksSuggestion as any,
 });

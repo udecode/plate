@@ -46,6 +46,7 @@ import {
   MentionPlugin,
 } from '@udecode/plate-mention/react';
 import { SlashInputPlugin } from '@udecode/plate-slash-command/react';
+import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
 import {
   TableCellHeaderPlugin,
   TableCellPlugin,
@@ -98,6 +99,7 @@ import { TableRowElement } from '@/registry/default/plate-ui/table-row-element';
 import { TocElement } from '@/registry/default/plate-ui/toc-element';
 import { ToggleElement } from '@/registry/default/plate-ui/toggle-element';
 
+import { SuggestionLeaf } from '../../plate-ui/suggestion-leaf';
 import { editorPlugins, viewPlugins } from './plugins/editor-plugins';
 
 export const viewComponents = {
@@ -133,6 +135,7 @@ export const viewComponents = {
   [PlaceholderPlugin.key]: MediaPlaceholderElement,
   [StrikethroughPlugin.key]: withProps(PlateLeaf, { as: 's' }),
   [SubscriptPlugin.key]: withProps(PlateLeaf, { as: 'sub' }),
+  [SuggestionPlugin.key]: SuggestionLeaf,
   [SuperscriptPlugin.key]: withProps(PlateLeaf, { as: 'sup' }),
   [TableCellHeaderPlugin.key]: TableCellHeaderElement,
   [TableCellPlugin.key]: TableCellElement,
