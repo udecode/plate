@@ -3,6 +3,8 @@ import type { NextConfig } from 'next';
 import { globSync } from 'glob';
 
 const nextConfig = async (phase: string) => {
+
+
   const config: NextConfig = {
     // https://nextjs.org/docs/basic-features/image-optimization#domains
     images: {
@@ -39,7 +41,16 @@ const nextConfig = async (phase: string) => {
     // https://nextjs.org/docs/api-reference/next.config.js/react-strict-mod
     reactStrictMode: true,
 
-    // eslint-disable-next-line @typescript-eslint/require-await
+     
+    staticPageGenerationTimeout: 1200,
+
+    // typescript: {
+    //   ignoreBuildErrors: true,
+    // },
+    // eslint: {
+    //   ignoreDuringBuilds: true,
+    // },
+
     rewrites: async () => {
       return [
         {
@@ -53,14 +64,28 @@ const nextConfig = async (phase: string) => {
       ];
     },
 
-    // typescript: {
-    //   ignoreBuildErrors: true,
-    // },
-    // eslint: {
-    //   ignoreDuringBuilds: true,
-    // },
-
-    staticPageGenerationTimeout: 1200,
+    webpack: (config, { buildId, dev, isServer, webpack }) => {
+      if (!isServer) {
+        config.resolve.fallback = {
+          ...config.resolve.fallback,
+          crypto: require.resolve('crypto-browserify'),
+          stream: require.resolve('stream-browserify'),
+        };
+  
+        config.plugins.push(
+          new webpack.ProvidePlugin({
+            process: 'process/browser',
+          }),
+          new webpack.NormalModuleReplacementPlugin(
+            /node:crypto/,
+            (resource: any) => {
+              resource.request = resource.request.replace(/^node:/, '');
+            }
+          )
+        );
+      }
+      return config;
+    },
   };
 
   if (phase === 'phase-development-server') {
