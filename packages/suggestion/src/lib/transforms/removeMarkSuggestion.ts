@@ -17,7 +17,6 @@ export const removeMarkSuggestion = (editor: SlateEditor, key: string) => {
   editor.getApi(BaseSuggestionPlugin).suggestion.withoutSuggestions(() => {
     const { id, createdAt } = getRemoveMarkProps();
 
-
     const match = (n: TNode) => {
       if (!TextApi.isText(n)) return false;
       // if the node is already marked as a suggestion, we don't want to remove it unless it's a removeMark suggestion

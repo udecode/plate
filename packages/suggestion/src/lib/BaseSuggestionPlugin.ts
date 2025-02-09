@@ -3,14 +3,11 @@ import {
   type PluginConfig,
   type WithPartial,
   createTSlatePlugin,
-  isSlateString,
   nanoid,
 } from '@udecode/plate';
 
 import type { SuggestionUser, TSuggestion } from './types';
 
-import { findSuggestionNode } from './queries';
-import { getSuggestionId } from './utils';
 import { withSuggestion } from './withSuggestion';
 
 export const SUGGESTION_KEYS = {

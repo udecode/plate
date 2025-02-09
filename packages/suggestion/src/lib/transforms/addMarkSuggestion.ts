@@ -19,8 +19,7 @@ export const addMarkSuggestion = (
   value: any
 ) => {
   editor.getApi(BaseSuggestionPlugin).suggestion.withoutSuggestions(() => {
-    const { id, createdAt} = getAddMarkProps();
-
+    const { id, createdAt } = getAddMarkProps();
 
     const match = (n: TNode) => {
       if (!TextApi.isText(n)) return false;

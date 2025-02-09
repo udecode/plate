@@ -3,6 +3,7 @@ import type { SlateEditor } from '@udecode/plate';
 import { BaseSuggestionPlugin, SUGGESTION_KEYS } from '../BaseSuggestionPlugin';
 import { findSuggestionProps } from '../queries/findSuggestionId';
 
+// TODO: Refactor
 export const addSuggestionMark = (editor: SlateEditor) => {
   if (!editor.selection) return;
 

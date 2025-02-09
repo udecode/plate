@@ -114,7 +114,7 @@ export const withSuggestion: OverrideEditor<SuggestionConfig> = ({
           return insertTextSuggestion(editor, '\n');
         }
 
-        const { id,  createdAt } = findSuggestionProps(editor, {
+        const { id, createdAt } = findSuggestionProps(editor, {
           at: editor.selection!,
           type: 'insert',
         });

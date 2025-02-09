@@ -1,14 +1,13 @@
+import { isSlateString } from '@udecode/plate';
 import { toPlatePlugin } from '@udecode/plate/react';
 
+import { findSuggestionNode, getSuggestionId } from '../lib';
 import { BaseSuggestionPlugin } from '../lib/BaseSuggestionPlugin';
 import { useHooksSuggestion } from './useHooksSuggestion';
-import { isSlateString } from '@udecode/plate';
-import { findSuggestionNode, getSuggestionId } from '../lib';
 
 /** Enables support for suggestions in the editor. */
 export const SuggestionPlugin = toPlatePlugin(BaseSuggestionPlugin, {
-  useHooks: useHooksSuggestion as any,
-  handlers:{
+  handlers: {
     // unset active suggestion when clicking outside of suggestion
     onClick: ({ editor, event, setOption }) => {
       let leaf = event.target as HTMLElement;
@@ -44,5 +43,6 @@ export const SuggestionPlugin = toPlatePlugin(BaseSuggestionPlugin, {
 
       if (!isSet) unsetActiveSuggestion();
     },
-  }
+  },
+  useHooks: useHooksSuggestion as any,
 });
