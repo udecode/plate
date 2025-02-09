@@ -3,14 +3,20 @@ import {
   type SlateEditor,
   type TElement,
   type TRange,
-  nanoid,
+  ElementApi,
+  PathApi,
   PointApi,
+  TextApi,
 } from '@udecode/plate';
 
-import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
-import { findSuggestionId } from '../queries/findSuggestionId';
+import { BaseSuggestionPlugin, SUGGESTION_KEYS } from '../BaseSuggestionPlugin';
+import { findSuggestionProps } from '../queries/findSuggestionId';
 import { findSuggestionNode } from '../queries/index';
-import { getSuggestionCurrentUserKey } from './getSuggestionProps';
+import {
+  getSuggestionData,
+  getSuggestionLineBreakData,
+  isCurrentUserSuggestion,
+} from '../utils';
 import { setSuggestionNodes } from './setSuggestionNodes';
 
 /**
@@ -26,10 +32,17 @@ export const deleteSuggestion = (
     reverse?: boolean;
   } = {}
 ) => {
+  let resId: string | undefined;
+
   editor.tf.withoutNormalizing(() => {
     const { anchor: from, focus: to } = at;
 
-    const suggestionId = findSuggestionId(editor, from) ?? nanoid();
+    const { id, createdAt: createdAt } = findSuggestionProps(editor, {
+      at: from,
+      type: 'remove',
+    });
+
+    resId = id;
 
     const toRef = editor.api.pointRef(to);
 
@@ -91,8 +104,9 @@ export const deleteSuggestion = (
         block: true,
         match: (n) =>
           n[BaseSuggestionPlugin.key] &&
-          !n.suggestionDeletion &&
-          n[getSuggestionCurrentUserKey(editor)],
+          TextApi.isText(n) &&
+          getSuggestionData(n)?.type === 'insert' &&
+          isCurrentUserSuggestion(editor, n),
       });
 
       if (
@@ -106,6 +120,58 @@ export const deleteSuggestion = (
 
         continue;
       }
+      // if the range is across blocks, delete the line break
+      if (editor.api.isAt({ at: range, blocks: true })) {
+        const previousAboveNode = editor.api.above({ at: range.anchor });
+
+        if (previousAboveNode && ElementApi.isElement(previousAboveNode[0])) {
+          const lineBreakData = getSuggestionLineBreakData(
+            previousAboveNode[0]
+          );
+
+          if (lineBreakData && lineBreakData.type === 'insert') {
+            editor
+              .getApi(BaseSuggestionPlugin)
+              .suggestion.withoutSuggestions(() => {
+                editor.tf.unsetNodes([SUGGESTION_KEYS.lineBreak], {
+                  at: previousAboveNode[1],
+                });
+                editor.tf.mergeNodes({
+                  at: PathApi.next(previousAboveNode[1]),
+                });
+              });
+
+            break;
+          } else {
+            const { id, createdAt: createdAt } = findSuggestionProps(editor, {
+              at: range,
+              type: 'remove',
+            });
+
+            editor.tf.setNodes(
+              {
+                [SUGGESTION_KEYS.lineBreak]: {
+                  id,
+                  createdAt,
+                  type: 'remove',
+                  userId:
+                    editor.getOptions(BaseSuggestionPlugin).currentUserId!,
+                },
+              },
+              { at: previousAboveNode[1] }
+            );
+
+            editor.tf.move({
+              reverse,
+              unit: 'character',
+            });
+
+            continue;
+          }
+        }
+
+        break;
+      }
       // move selection if still the same
       if (PointApi.equals(pointCurrent, editor.selection!.anchor)) {
         editor.tf.move({
@@ -113,16 +179,14 @@ export const deleteSuggestion = (
           unit: 'character',
         });
       }
-      // skip if the range is across blocks
-      if (editor.api.isAt({ at: range, blocks: true })) {
-        continue;
-      }
 
       // if the current point is in addition suggestion, delete
       const entryText = findSuggestionNode(editor, {
         at: range,
         match: (n) =>
-          !n.suggestionDeletion && n[getSuggestionCurrentUserKey(editor)],
+          TextApi.isText(n) &&
+          getSuggestionData(n)?.type === 'insert' &&
+          isCurrentUserSuggestion(editor, n),
       });
 
       if (entryText) {
@@ -133,9 +197,12 @@ export const deleteSuggestion = (
 
       setSuggestionNodes(editor, {
         at: range,
+        createdAt: createdAt as number,
         suggestionDeletion: true,
-        suggestionId,
+        suggestionId: id,
       });
     }
   });
+
+  return resId;
 };

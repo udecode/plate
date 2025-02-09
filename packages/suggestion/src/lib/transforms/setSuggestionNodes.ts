@@ -1,5 +1,4 @@
 import {
-  type NodeProps,
   type SetNodesOptions,
   type SlateEditor,
   ElementApi,
@@ -7,13 +6,15 @@ import {
   nanoid,
 } from '@udecode/plate';
 
-import type { TSuggestionText } from '../types';
+import type { TSuggestionData, TSuggestionText } from '../types';
 
-import { getSuggestionProps } from './getSuggestionProps';
+import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
+import { getSuggestionKey } from '../utils';
 
 export const setSuggestionNodes = (
   editor: SlateEditor,
   options?: {
+    createdAt?: number;
     suggestionDeletion?: boolean;
     suggestionId?: string;
   } & SetNodesOptions
@@ -32,11 +33,17 @@ export const setSuggestionNodes = (
   const nodeEntries = [..._nodeEntries];
 
   editor.tf.withoutNormalizing(() => {
-    const props: NodeProps<TSuggestionText> = getSuggestionProps(
-      editor,
-      suggestionId,
-      options
-    );
+    const data: TSuggestionData = {
+      id: suggestionId,
+      createdAt: options?.createdAt ?? Date.now(),
+      type: 'remove',
+      userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
+    };
+
+    const props = {
+      [BaseSuggestionPlugin.key]: true,
+      [getSuggestionKey(suggestionId)]: data,
+    };
 
     editor.tf.setNodes(props, {
       at,

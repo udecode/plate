@@ -12,19 +12,62 @@ export interface SuggestionUser extends UnknownObject {
   avatarUrl?: string;
 }
 
+export type TInsertSuggestionData = {
+  id: string;
+  createdAt: number;
+  type: 'insert';
+  userId: string;
+};
+
+export type TRemoveSuggestionData = {
+  id: string;
+  createdAt: number;
+  type: 'remove';
+  userId: string;
+};
+
+export type TResolvedSuggestion = {
+  createdAt: Date;
+  keyId: string;
+  suggestionId: string;
+  type: 'insert' | 'remove' | 'replace' | 'update';
+  userId: string;
+  newText?: string;
+  text?: string;
+  updateProps?: any;
+};
+
 export interface TSuggestion extends UnknownObject {
   id: string;
-
-  /** @default Date.now() */
-  createdAt: number;
 
   isAccepted?: boolean;
 
   isRejected?: boolean;
 }
 
-export interface TSuggestionText extends TText {
-  suggestion?: boolean;
-  suggestionDeletion?: boolean;
-  suggestionId?: string;
-}
+export type TSuggestionData =
+  | TInsertSuggestionData
+  | TRemoveSuggestionData
+  | TUpdateSuggestionData;
+
+export type TSuggestionLineBreak = {
+  id: string;
+  createdAt: number;
+  type: 'insert' | 'remove';
+  userId: string;
+};
+
+export type TSuggestionText = TText & {
+  [key: string]: TSuggestionData | boolean | string;
+  suggestion: true;
+  text: string;
+};
+
+export type TUpdateSuggestionData = {
+  id: string;
+  createdAt: number;
+  type: 'update';
+  userId: string;
+  newProperties?: any;
+  properties?: any;
+};

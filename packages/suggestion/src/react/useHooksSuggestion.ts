@@ -7,7 +7,7 @@ import { useEditorVersion } from '@udecode/plate/react';
 import {
   type SuggestionConfig,
   findSuggestionNode,
-  getSuggestionId,
+  getSuggestionKeyId,
 } from '../lib';
 
 export const useHooksSuggestion: UseHooks<SuggestionConfig> = ({
@@ -34,7 +34,7 @@ export const useHooksSuggestion: UseHooks<SuggestionConfig> = ({
 
     const [suggestionNode] = suggestionEntry;
 
-    const id = getSuggestionId(suggestionNode);
+    const id = getSuggestionKeyId(suggestionNode);
 
     if (!id) return resetActiveSuggestion();
 

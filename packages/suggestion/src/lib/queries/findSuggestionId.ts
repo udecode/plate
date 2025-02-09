@@ -1,13 +1,29 @@
-import type { Point, SlateEditor, TLocation } from '@udecode/plate';
+import {
+  type Point,
+  type SlateEditor,
+  type TElement,
+  type TLocation,
+  nanoid,
+} from '@udecode/plate';
 
-import { SUGGESTION_KEYS } from '../BaseSuggestionPlugin';
+import {
+  getSuggestionData,
+  getSuggestionId,
+  getSuggestionLineBreakData,
+  getSuggestionLineBreakId,
+  isCurrentUserSuggestion,
+} from '../utils';
 import { findSuggestionNode } from './findSuggestionNode';
 
-/**
- * Find the suggestion id at the cursor point, the point before and after (if
- * offset = 0).
- */
-export const findSuggestionId = (editor: SlateEditor, at: TLocation) => {
+export const findSuggestionProps = (
+  editor: SlateEditor,
+  { at, type }: { at: TLocation; type: 'insert' | 'remove' | 'update' }
+): { id: string; createdAt: number } => {
+  const defaultProps = {
+    id: nanoid(),
+    createdAt: Date.now(),
+  };
+
   let entry = findSuggestionNode(editor, {
     at,
   });
@@ -19,7 +35,7 @@ export const findSuggestionId = (editor: SlateEditor, at: TLocation) => {
     try {
       [start, end] = editor.api.edges(at)!;
     } catch {
-      return;
+      return defaultProps;
     }
 
     const nextPoint = editor.api.after(end);
@@ -37,10 +53,38 @@ export const findSuggestionId = (editor: SlateEditor, at: TLocation) => {
             at: prevPoint,
           });
         }
+        // <p>111111<insert_break></p>
+        // <p><cursor /></p>
+        // in this case we need to find the parent node
+        // TODO: test
+        if (!entry && editor.api.isStart(start, at)) {
+          const _at = prevPoint ?? at;
+
+          const lineBreak = editor.api.above<TElement>({ at: _at });
+
+          if (lineBreak) {
+            return {
+              id: getSuggestionLineBreakId(lineBreak[0]) ?? nanoid(),
+              createdAt:
+                getSuggestionLineBreakData(lineBreak[0])?.createdAt ??
+                Date.now(),
+            };
+          }
+        }
       }
     }
   }
-  if (entry) {
-    return entry[0][SUGGESTION_KEYS.id];
+  // same type and same user merge suggestions
+  if (
+    entry &&
+    getSuggestionData(entry[0])?.type === type &&
+    isCurrentUserSuggestion(editor, entry[0])
+  ) {
+    return {
+      id: getSuggestionId(entry[0]) ?? nanoid(),
+      createdAt: getSuggestionData(entry[0])?.createdAt ?? Date.now(),
+    };
   }
+
+  return defaultProps;
 };

@@ -2,14 +2,13 @@ import {
   type Descendant,
   type SlateEditor,
   applyDeepToNodes,
-  nanoid,
+  TextApi,
 } from '@udecode/plate';
 
 import { BaseSuggestionPlugin, SUGGESTION_KEYS } from '../BaseSuggestionPlugin';
-import { findSuggestionId } from '../queries/findSuggestionId';
-import { getSuggestionKeys } from '../utils/index';
+import { findSuggestionProps } from '../queries/findSuggestionId';
+import { getSuggestionKey, getSuggestionKeys } from '../utils/index';
 import { deleteFragmentSuggestion } from './deleteFragmentSuggestion';
-import { getSuggestionCurrentUserKey } from './getSuggestionProps';
 
 export const insertFragmentSuggestion = (
   editor: SlateEditor,
@@ -23,36 +22,48 @@ export const insertFragmentSuggestion = (
   editor.tf.withoutNormalizing(() => {
     deleteFragmentSuggestion(editor);
 
-    const id = findSuggestionId(editor, editor.selection!) ?? nanoid();
+    const { id, createdAt: createdAt } = findSuggestionProps(editor, {
+      at: editor.selection!,
+      type: 'insert',
+    });
 
     fragment.forEach((node) => {
       applyDeepToNodes({
         node,
         source: {},
         apply: (n) => {
-          if (!n[BaseSuggestionPlugin.key]) {
-            // Add suggestion mark
-            n[BaseSuggestionPlugin.key] = true;
+          if (TextApi.isText(n)) {
+            if (!n[BaseSuggestionPlugin.key]) {
+              // Add suggestion mark
+              n[BaseSuggestionPlugin.key] = true;
+            }
+
+            // remove the other suggestion data
+            const otherUserKeys = getSuggestionKeys(n);
+            otherUserKeys.forEach((key) => {
+              delete n[key];
+            });
+
+            n[getSuggestionKey(id)] = {
+              id,
+              createdAt,
+              type: 'insert',
+              userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
+            };
+          } else {
+            n[SUGGESTION_KEYS.lineBreak] = {
+              id,
+              createdAt,
+              type: 'insert',
+              userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
+            };
           }
-          if (n.suggestionDeletion) {
-            // Remove suggestion deletion mark
-            delete n.suggestionDeletion;
-          }
-
-          n[SUGGESTION_KEYS.id] = id;
-
-          // remove the other user keys
-          const otherUserKeys = getSuggestionKeys(n);
-          otherUserKeys.forEach((key) => {
-            delete n[key];
-          });
-
-          // set current user key
-          n[getSuggestionCurrentUserKey(editor)] = true;
         },
       });
     });
 
-    insertFragment(fragment);
+    editor.getApi(BaseSuggestionPlugin).suggestion.withoutSuggestions(() => {
+      insertFragment(fragment);
+    });
   });
 };
