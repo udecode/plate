@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-diff",
-  "version": "44.0.0",
+  "version": "44.0.2",
   "description": "Compute a diff of two Slate documents",
   "keywords": [
     "plate",
