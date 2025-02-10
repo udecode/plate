@@ -75,38 +75,6 @@ export const BlockComments: RenderNodeWrapper = (props) => {
   );
 };
 
-// const BlockCommentsCard = ({
-//   discussion,
-//   isLast,
-// }: {
-//   discussion: RouterDiscussionItem;
-//   isLast: boolean;
-// }) => {
-//   const [editingId, setEditingId] = React.useState<string | null>(null);
-
-//   return (
-//     <React.Fragment key={discussion.id}>
-//       <div className="p-4">
-//         {discussion.comments.map((comment, index) => (
-//           <CommentItem
-//             key={comment.id ?? index}
-//             comment={comment}
-//             discussionLength={discussion.comments.length}
-//             documentContent={discussion?.documentContent}
-//             editingId={editingId}
-//             index={index}
-//             setEditingId={setEditingId}
-//             showDocumentContent
-//           />
-//         ))}
-//         <CommentCreateForm discussionId={discussion.id} />
-//       </div>
-
-//       {!isLast && <div className="h-px w-full bg-muted" />}
-//     </React.Fragment>
-//   );
-// };
-
 const BlockCommentsContent = ({
   blockPath,
   children,
@@ -319,21 +287,20 @@ const BlockCommentsContent = ({
   const open = _open || selected;
 
   const anchorElement = useMemo(() => {
-    // const domNode = editor.api.toDOMNode(element)!;
+    if (!activeSuggestion) return null;
 
-    // if (!activeCommentId) return domNode;
+    const activeNode = suggestionNodes.find(
+      ([node]) =>
+        TextApi.isText(node) &&
+        getSuggestionId(node) === activeSuggestion.suggestionId
+    );
 
-    // const activeNode = commentNodes.find(
-    //   ([node]) => getCommentLastId(node) === activeCommentId
-    // );
+    if (!activeNode) return null;
 
-    // if (!activeNode) return domNode;
+    return editor.api.toDOMNode(activeNode[0])!;
+  }, [activeSuggestion, editor.api, suggestionNodes]);
 
-    // return editor.api.toDOMNode(activeNode[0])!;
-
-    return document.body;
-    // // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  console.log('🚀 ~ activeSuggestion:', anchorElement);
 
   if (suggestionsCount + discussions.length === 0) return <>{children}</>;
 
@@ -341,14 +308,16 @@ const BlockCommentsContent = ({
     <div ref={ref} className="flex w-full justify-between">
       <Popover open={open} onOpenChange={setOpen}>
         <div className="w-full">{children}</div>
-        <PopoverAnchor
-          asChild
-          className="w-full"
-          virtualRef={{ current: anchorElement }}
-        />
+        {anchorElement && (
+          <PopoverAnchor
+            asChild
+            className="w-full"
+            virtualRef={{ current: anchorElement }}
+          />
+        )}
 
         <PopoverContent
-          className="max-h-[min(50dvh,calc(-24px+var(--radix-popper-available-height)))] w-[480px] max-w-[calc(100vw-24px)] min-w-[180px] overflow-y-auto"
+          className="max-h-[min(50dvh,calc(-24px+var(--radix-popper-available-height)))] w-[380px] max-w-[calc(100vw-24px)] min-w-[130px] overflow-y-auto p-0 data-[state=closed]:opacity-0"
           onOpenAutoFocus={(e) => e.preventDefault()}
           align="center"
           side="bottom"
@@ -367,7 +336,7 @@ const BlockCommentsContent = ({
           )}
 
           {!activeSuggestion &&
-            !activeDiscussion &&
+            // !activeDiscussion &&
             sortedMergedData.map((item, index) => {
               if (isSuggestion(item)) {
                 return (

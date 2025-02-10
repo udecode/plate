@@ -19,6 +19,7 @@ import { useEditorPlugin } from '@udecode/plate/react';
 import { CheckIcon, XIcon } from 'lucide-react';
 
 import { Button } from './button';
+import { CommentAvatar } from './comment-avatar';
 
 export interface ResolvedSuggestion extends TResolvedSuggestion {}
 
@@ -63,7 +64,19 @@ export const BlockSuggestionCard = ({
   };
 
   const [hovering, setHovering] = useState(false);
-  const [editingId, setEditingId] = React.useState<string | null>(null);
+
+  const mockUsers = {
+    1: {
+      id: '1',
+      avatarUrl: 'https://avatars.githubusercontent.com/u/19695832?s=96&v=4',
+      name: 'zbeyens',
+    },
+    2: {
+      id: '2',
+      avatarUrl: 'https://avatars.githubusercontent.com/u/4272090?v=4',
+      name: '12joan',
+    },
+  };
 
   return (
     <div
@@ -74,10 +87,8 @@ export const BlockSuggestionCard = ({
     >
       <div className="flex flex-col p-4">
         <div className="relative flex items-center">
-          {/* <CommentAvatar user={userData} /> */}
-          <h4 className="text-sm leading-none font-semibold">
-            {/* {userData?.name} */}
-          </h4>
+          <CommentAvatar userId={mockUsers['1'].id} />
+          <h4 className="text-sm leading-none font-semibold"></h4>
           <div className="ml-1.5 text-xs leading-none text-muted-foreground/80">
             <span className="mr-1">
               {suggestion.createdAt.toLocaleString()}
