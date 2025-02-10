@@ -55,7 +55,7 @@ export const findSuggestionProps = (
         }
         // <p>111111<insert_break></p>
         // <p><cursor /></p>
-        // in this case we need to find the parent node
+        // in this case we need to find the previous parent node
         // TODO: test
         if (!entry && editor.api.isStart(start, at)) {
           const _at = prevPoint ?? at;

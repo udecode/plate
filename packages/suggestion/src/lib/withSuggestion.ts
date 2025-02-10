@@ -121,17 +121,19 @@ export const withSuggestion: OverrideEditor<SuggestionConfig> = ({
 
         insertBreak();
 
-        editor.tf.setNodes(
-          {
-            [SUGGESTION_KEYS.lineBreak]: {
-              id,
-              createdAt,
-              type: 'insert',
-              userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
+        editor.tf.withoutMerging(() => {
+          editor.tf.setNodes(
+            {
+              [SUGGESTION_KEYS.lineBreak]: {
+                id,
+                createdAt,
+                type: 'insert',
+                userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
+              },
             },
-          },
-          { at: path }
-        );
+            { at: path }
+          );
+        });
 
         return;
       }

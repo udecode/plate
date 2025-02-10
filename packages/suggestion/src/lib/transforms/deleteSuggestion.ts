@@ -10,8 +10,7 @@ import {
 } from '@udecode/plate';
 
 import { BaseSuggestionPlugin, SUGGESTION_KEYS } from '../BaseSuggestionPlugin';
-import { findSuggestionProps } from '../queries/findSuggestionId';
-import { findSuggestionNode } from '../queries/index';
+import { findSuggestionNode, findSuggestionProps } from '../queries/';
 import {
   getSuggestionData,
   getSuggestionLineBreakData,
@@ -128,26 +127,29 @@ export const deleteSuggestion = (
           const lineBreakData = getSuggestionLineBreakData(
             previousAboveNode[0]
           );
-
-          if (lineBreakData && lineBreakData.type === 'insert') {
-            editor
-              .getApi(BaseSuggestionPlugin)
-              .suggestion.withoutSuggestions(() => {
-                editor.tf.unsetNodes([SUGGESTION_KEYS.lineBreak], {
-                  at: previousAboveNode[1],
+          if (lineBreakData) {
+            if (lineBreakData.type === 'insert') {
+              editor
+                .getApi(BaseSuggestionPlugin)
+                .suggestion.withoutSuggestions(() => {
+                  editor.tf.unsetNodes([SUGGESTION_KEYS.lineBreak], {
+                    at: previousAboveNode[1],
+                  });
+                  editor.tf.mergeNodes({
+                    at: PathApi.next(previousAboveNode[1]),
+                  });
                 });
-                editor.tf.mergeNodes({
-                  at: PathApi.next(previousAboveNode[1]),
-                });
+            }
+            if (lineBreakData.type === 'remove') {
+              editor.tf.move({
+                reverse,
+                unit: 'character',
               });
-
+            }
             break;
-          } else {
-            const { id, createdAt: createdAt } = findSuggestionProps(editor, {
-              at: range,
-              type: 'remove',
-            });
+          }
 
+          if (!lineBreakData) {
             editor.tf.setNodes(
               {
                 [SUGGESTION_KEYS.lineBreak]: {
@@ -160,13 +162,11 @@ export const deleteSuggestion = (
               },
               { at: previousAboveNode[1] }
             );
-
             editor.tf.move({
               reverse,
               unit: 'character',
             });
-
-            continue;
+            break;
           }
         }
 

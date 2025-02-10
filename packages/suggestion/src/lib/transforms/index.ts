@@ -4,7 +4,6 @@
 
 export * from './acceptSuggestion';
 export * from './addMarkSuggestion';
-export * from './addSuggestionMark';
 export * from './deleteFragmentSuggestion';
 export * from './deleteSuggestion';
 export * from './getSuggestionProps';

@@ -6,8 +6,22 @@ import { createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { BaseSuggestionPlugin } from './BaseSuggestionPlugin';
+import { getSuggestionData } from './utils';
 
 jsxt;
+
+const suggestionPlugin = BaseSuggestionPlugin.configure({
+  options: {
+    currentUserId: 'testId',
+  },
+});
+
+const testSuggestionData = {
+  id: '1',
+  createdAt: Date.now(),
+  type: 'insert',
+  userId: 'testId',
+};
 
 describe('withSuggestion', () => {
   describe('insertText', () => {
@@ -32,7 +46,7 @@ describe('withSuggestion', () => {
         ) as any as SlateEditor;
 
         const editor = createSlateEditor({
-          plugins: [BaseSuggestionPlugin],
+          plugins: [suggestionPlugin],
           selection: input.selection,
           value: input.children,
         });
@@ -44,302 +58,291 @@ describe('withSuggestion', () => {
       });
     });
 
-    // describe('when editor.getOptions(SuggestionPlugin).isSuggesting is defined', () => {
-    //   describe('when cursor is not in suggestion mark', () => {
-    //     it('should add marks', () => {
-    //       const input = (
-    //         <editor>
-    //           <hp>
-    //             test
-    //             <cursor />
-    //           </hp>
-    //         </editor>
-    //       ) as any as SlateEditor;
+    describe('when editor.getOptions(SuggestionPlugin).isSuggesting is defined', () => {
+      describe('when cursor is not in suggestion mark', () => {
+        it('should add marks and suggestion data', () => {
+          const input = (
+            <editor>
+              <hp>
+                test
+                <cursor />
+              </hp>
+            </editor>
+          ) as any as SlateEditor;
 
-    //       // const output = ((
-    //       //   <editor>
-    //       //     <hp>
-    //       //       test<htext suggestion>test</htext>
-    //       //       <cursor />
-    //       //     </hp>
-    //       //   </editor>
-    //       // ) as any) as SlateEditor;
+          const editor = createSlateEditor({
+            plugins: [suggestionPlugin],
+            selection: input.selection,
+            value: input.children,
+          });
+          editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
 
-    //       const editor = createSlateEditor({
-    //         plugins: [BaseSuggestionPlugin],
-    //         selection: input.selection,
-    //         value: input.children,
-    //       });
-    //       editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+          editor.tf.insertText('test');
 
-    //       editor.tf.insertText('test');
+          expect(
+            editor.children[0].children[1][BaseSuggestionPlugin.key]
+          ).toBeTruthy();
 
-    //       expect(
-    //         editor.children[0].children[1][BaseSuggestionPlugin.key]
-    //       ).toBeTruthy();
-    //       expect(
-    //         editor.children[0].children[1][SUGGESTION_KEYS.id]
-    //       ).toBeTruthy();
-    //     });
-    //   });
+          const data = getSuggestionData(editor.children[0].children[1] as any);
+          expect(
+            data?.createdAt && data?.id && data?.type && data?.userId
+          ).toBeTruthy();
+          expect(data?.type === 'insert').toBeTruthy();
+          expect(data?.userId === 'testId').toBeTruthy();
+          expect(typeof data?.createdAt === 'number').toBeTruthy();
+        });
+      });
+    });
 
-    // describe('when cursor is in suggestion mark', () => {
-    //   it('should not add a new suggestion id', () => {
-    //     const input = ((
-    //       <editor>
-    //         <hp>
-    //           <htext suggestion suggestionId="1">
-    //             test
-    //             <cursor />
-    //           </htext>
-    //         </hp>
-    //       </editor>
-    //     ) as any) as SlateEditor;
-    //
-    //     const output = ((
-    //       <editor>
-    //         <hp>
-    //           <htext suggestion suggestionId="1">
-    //             testtest
-    //             <cursor />
-    //           </htext>
-    //         </hp>
-    //       </editor>
-    //     ) as any) as SlateEditor;
-    //
-    //     const editor = createSlateEditor({
-    //       value: input.children,
-    //    selection: input.selection,
-    //       plugins: [SuggestionPlugin],
-    //     });
-    //     editor.getOptions(SuggestionPlugin).isSuggesting = true;
-    //
-    //     editor.tf.insertText('test');
-    //
-    //     expect(editor.children).toEqual(output.children);
-    //   });
-    // });
+    describe('when cursor is in suggestion mark', () => {
+      it('should not add a new suggestion id', () => {
+        const input = (
+          <editor>
+            <hp>
+              <htext suggestion_1={testSuggestionData} suggestion>
+                test
+                <cursor />
+              </htext>
+            </hp>
+          </editor>
+        ) as any as SlateEditor;
+
+        const output = (
+          <editor>
+            <hp>
+              <htext suggestion_1={testSuggestionData} suggestion>
+                testtest
+                <cursor />
+              </htext>
+            </hp>
+          </editor>
+        ) as any as SlateEditor;
+
+        const editor = createSlateEditor({
+          plugins: [
+            BaseSuggestionPlugin.configure({
+              options: {
+                currentUserId: 'testId',
+              },
+            }),
+          ],
+          selection: input.selection,
+          value: input.children,
+        });
+        editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+
+        editor.tf.insertText('test');
+
+        expect(editor.children).toEqual(output.children);
+      });
+    });
   });
 });
 
-// describe('deleteBackward', () => {
-//   describe('when editor.getOptions(SuggestionPlugin).isSuggesting is not defined', () => {
-//     it('should not add marks', () => {
-//       const input = (
-//         <editor>
-//           <hp>
-//             test
-//             <cursor />
-//           </hp>
-//         </editor>
-//       ) as any as SlateEditor;
+describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => {
+  describe('when there is no point before', () => {
+    it('should not add a new suggestion id', () => {
+      const input = (
+        <editor>
+          <hp>
+            <htext suggestion_1={testSuggestionData} suggestion>
+              <cursor />
+              test
+            </htext>
+          </hp>
+        </editor>
+      ) as any as SlateEditor;
 
-//       const output = (
-//         <editor>
-//           <hp>
-//             tes
-//             <cursor />
-//           </hp>
-//         </editor>
-//       ) as any as SlateEditor;
+      const output = (
+        <editor>
+          <hp>
+            <htext suggestion_1={testSuggestionData} suggestion>
+              <cursor />
+              test
+            </htext>
+          </hp>
+        </editor>
+      ) as any as SlateEditor;
 
-//       const editor = createSlateEditor({
-//         plugins: [BaseSuggestionPlugin],
-//         selection: input.selection,
-//         value: input.children,
-//       });
-//       editor.setOption(BaseSuggestionPlugin, 'isSuggesting', false);
+      const editor = createSlateEditor({
+        plugins: [suggestionPlugin],
+        selection: input.selection,
+        value: input.children,
+      });
+      editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
 
-//       editor.tf.deleteBackward();
+      editor.tf.deleteBackward();
 
-//       expect(editor.children).toEqual(output.children);
-//     });
-//   });
+      expect(editor.children).toEqual(output.children);
+    });
+  });
+});
 
-// describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => {
-//   describe('when there is no point before', () => {
-//     it('should not add a new suggestion id', () => {
-//       const input = (
-//         <editor>
-//           <hp>
-//             <htext suggestionId="1" suggestion>
-//               <cursor />
-//               test
-//             </htext>
-//           </hp>
-//         </editor>
-//       ) as any as SlateEditor;
+describe('when point before is not marked', () => {
+  it('should add a new suggestion id when remove backward', () => {
+    const input = (
+      <editor>
+        <hp>
+          test
+          <cursor />
+        </hp>
+      </editor>
+    ) as any as SlateEditor;
 
-//       const output = (
-//         <editor>
-//           <hp>
-//             <htext suggestionId="1" suggestion>
-//               <cursor />
-//               test
-//             </htext>
-//           </hp>
-//         </editor>
-//       ) as any as SlateEditor;
+    const editor = createSlateEditor({
+      plugins: [suggestionPlugin],
+      selection: input.selection,
+      value: input.children,
+    });
+    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
 
-//       const editor = createSlateEditor({
-//         plugins: [BaseSuggestionPlugin],
-//         selection: input.selection,
-//         value: input.children,
-//       });
-//       editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.tf.deleteBackward();
 
-//       editor.tf.deleteBackward();
+    const data = getSuggestionData(editor.children[0].children[1] as any);
 
-//       expect(editor.children).toEqual(output.children);
-//     });
-//   });
+    expect(
+      data?.createdAt && data?.id && data?.type && data?.userId
+    ).toBeTruthy();
+    expect(data?.type === 'remove').toBeTruthy();
+    expect(data?.userId === 'testId').toBeTruthy();
+    expect(editor.children[0].children[0].text).toBe('tes');
+    expect(typeof data?.createdAt === 'number').toBeTruthy();
+  });
+});
 
-// describe('when point before is not marked', () => {
-//   it('should add a new suggestion id', () => {
-//     const input = (
-//       <editor>
-//         <hp>
-//           test
-//           <cursor />
-//         </hp>
-//       </editor>
-//     ) as any as SlateEditor;
+describe('when point before is marked', () => {
+  it('should not add a new suggestion id when different type', () => {
+    const input = (
+      <editor>
+        <hp>
+          <htext suggestion_1={testSuggestionData} suggestion>
+            test
+          </htext>
+          t
+          <cursor />
+        </hp>
+      </editor>
+    ) as any as SlateEditor;
 
-//     const editor = createSlateEditor({
-//       plugins: [BaseSuggestionPlugin],
-//       selection: input.selection,
-//       value: input.children,
-//     });
-//     editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    const editor = createSlateEditor({
+      plugins: [suggestionPlugin],
+      selection: input.selection,
+      value: input.children,
+    });
+    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
 
-//     editor.tf.deleteBackward();
+    editor.tf.deleteBackward();
 
-//     expect(
-//       editor.children[0].children[1][BaseSuggestionPlugin.key]
-//     ).toBeTruthy();
-//     expect(
-//       editor.children[0].children[1].suggestionDeletion
-//     ).toBeTruthy();
-//     expect(
-//       editor.children[0].children[1][SUGGESTION_KEYS.id]
-//     ).toBeTruthy();
-//     expect(editor.children[0].children[0].text).toBe('tes');
-//   });
-// });
+    const data1 = getSuggestionData(editor.children[0].children[0] as any);
+    const data2 = getSuggestionData(editor.children[0].children[1] as any);
 
-// describe('when point before is marked', () => {
-//   it('should add a new suggestion id', () => {
-//     const input = (
-//       <editor>
-//         <hp>
-//           test
-//           <cursor />
-//         </hp>
-//       </editor>
-//     ) as any as SlateEditor;
+    expect(!!data1?.id && !!data2?.id).toEqual(true);
+    expect(data1?.id !== data2?.id).toEqual(true);
+  });
+});
 
-//     const editor = createSlateEditor({
-//       plugins: [BaseSuggestionPlugin],
-//       selection: input.selection,
-//       value: input.children,
-//     });
-//     editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+describe('when delete line', () => {
+  it('should add a new suggestion id', () => {
+    const input = (
+      <editor>
+        <hp>
+          test
+          <cursor />
+        </hp>
+      </editor>
+    ) as any as SlateEditor;
 
-//     editor.tf.deleteBackward();
+    const editor = createSlateEditor({
+      plugins: [suggestionPlugin],
+      selection: input.selection,
+      value: input.children,
+    });
+    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
 
-//     expect(
-//       editor.children[0].children[1][BaseSuggestionPlugin.key]
-//     ).toBeTruthy();
-//     expect(
-//       editor.children[0].children[1].suggestionDeletion
-//     ).toBeTruthy();
-//     expect(
-//       editor.children[0].children[1][SUGGESTION_KEYS.id]
-//     ).toBeTruthy();
-//     expect(editor.children[0].children[0].text).toBe('tes');
-//   });
-// });
+    editor.tf.deleteBackward('line');
 
-//     describe('when delete line', () => {
-//       it('should add a new suggestion id', () => {
-//         const input = (
-//           <editor>
-//             <hp>
-//               test
-//               <cursor />
-//             </hp>
-//           </editor>
-//         ) as any as SlateEditor;
+    const data = getSuggestionData(editor.children[0].children[0] as any);
 
-//         // const output = ((
-//         //   <editor>
-//         //     <hp>
-//         //       tes
-//         //       <htext suggestion suggestionId="1" suggestionDeletion>
-//         //         t
-//         //       </htext>
-//         //     </hp>
-//         //   </editor>
-//         // ) as any) as SlateEditor;
+    expect(
+      data?.createdAt && data?.id && data?.type && data?.userId
+    ).toBeTruthy();
+    expect(data?.type === 'remove').toBeTruthy();
+    expect(data?.userId === 'testId').toBeTruthy();
+    expect(typeof data?.createdAt === 'number').toBeTruthy();
+  });
+});
 
-//         const editor = createSlateEditor({
-//           plugins: [BaseSuggestionPlugin],
-//           selection: input.selection,
-//           value: input.children,
-//         });
-//         editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+describe('normalizeNode', () => {
+  describe('when there is a suggestion mark without data', () => {
+    it('should remove mark', () => {
+      const input = (
+        <editor>
+          <hp>
+            <htext suggestion>
+              test
+              <cursor />
+            </htext>
+          </hp>
+        </editor>
+      ) as any as SlateEditor;
 
-//         editor.tf.deleteBackward('line');
+      const output = (
+        <editor>
+          <hp>
+            test
+            <cursor />
+          </hp>
+        </editor>
+      ) as any as SlateEditor;
 
-//         expect(
-//           editor.children[0].children[0][BaseSuggestionPlugin.key]
-//         ).toBeTruthy();
-//         expect(
-//           editor.children[0].children[0].suggestionDeletion
-//         ).toBeTruthy();
-//         expect(
-//           editor.children[0].children[0][SUGGESTION_KEYS.id]
-//         ).toBeTruthy();
-//       });
-//     });
-//   });
-// });
+      const editor = createSlateEditor({
+        plugins: [BaseSuggestionPlugin],
+        selection: input.selection,
+        value: input.children,
+      });
 
-// describe('normalizeNode', () => {
-//   describe('when there is a suggestion mark without id', () => {
-//     it('should remove mark', () => {
-//       const input = (
-//         <editor>
-//           <hp>
-//             <htext suggestion>
-//               test
-//               <cursor />
-//             </htext>
-//           </hp>
-//         </editor>
-//       ) as any as SlateEditor;
+      editor.tf.normalize({
+        force: true,
+      });
 
-//       const output = (
-//         <editor>
-//           <hp>
-//             test
-//             <cursor />
-//           </hp>
-//         </editor>
-//       ) as any as SlateEditor;
+      expect(editor.children).toEqual(output.children);
+    });
+  });
+});
 
-//       const editor = createSlateEditor({
-//         plugins: [BaseSuggestionPlugin],
-//         selection: input.selection,
-//         value: input.children,
-//       });
+describe('replace', () => {
+  it('insert text when cursor is expanded', () => {
+    const input = (
+      <editor>
+        <hp>
+          <anchor />
+          test
+          <focus />
+        </hp>
+      </editor>
+    ) as any as SlateEditor;
 
-//       editor.tf.normalize({
-//         force: true,
-//       });
+    const editor = createSlateEditor({
+      plugins: [suggestionPlugin],
+      selection: input.selection,
+      value: input.children,
+    });
 
-//       expect(editor.children).toEqual(output.children);
-//     });
-//   });
-// });
-// });
+    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+
+    editor.tf.insertText('1');
+
+    expect(editor.children[0].children).toHaveLength(2);
+
+    const removedNode = editor.children[0].children[0];
+    const removeNodeData = getSuggestionData(removedNode as any);
+    const insertedNode = editor.children[0].children[1];
+    const insertedNodeData = getSuggestionData(insertedNode as any);
+
+    expect(removedNode.text).toEqual('test');
+    expect(insertedNode.text).toEqual('1');
+    expect(removeNodeData?.id).toEqual(insertedNodeData?.id);
+    expect(removeNodeData?.type).toEqual('remove');
+    expect(insertedNodeData?.type).toEqual('insert');
+  });
+});

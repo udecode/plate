@@ -13,6 +13,7 @@ const getRemoveMarkProps = () => {
   return defaultProps;
 };
 
+// TODO remove mark when the text is already marked as a bold by suggestion
 export const removeMarkSuggestion = (editor: SlateEditor, key: string) => {
   editor.getApi(BaseSuggestionPlugin).suggestion.withoutSuggestions(() => {
     const { id, createdAt } = getRemoveMarkProps();

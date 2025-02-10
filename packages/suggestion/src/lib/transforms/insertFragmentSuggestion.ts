@@ -6,7 +6,7 @@ import {
 } from '@udecode/plate';
 
 import { BaseSuggestionPlugin, SUGGESTION_KEYS } from '../BaseSuggestionPlugin';
-import { findSuggestionProps } from '../queries/findSuggestionId';
+import { findSuggestionProps } from '../queries';
 import { getSuggestionKey, getSuggestionKeys } from '../utils/index';
 import { deleteFragmentSuggestion } from './deleteFragmentSuggestion';
 
