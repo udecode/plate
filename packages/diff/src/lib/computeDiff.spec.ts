@@ -353,6 +353,48 @@ const fixtures: Record<string, ComputeDiffFixture> = {
     ],
   },
 
+  changeIdAndContent: {
+    expected: [
+      {
+        id: '1',
+        children: [{ text: 'PingCode' }],
+        type: 'paragraph',
+      },
+      {
+        id: '3',
+        children: [
+          { text: 'Worktile' },
+          { diff: true, diffOperation: { type: 'insert' }, text: '!' },
+        ],
+        type: 'paragraph',
+      },
+    ],
+    input1: [
+      {
+        id: '1',
+        children: [{ text: 'PingCode' }],
+        type: 'paragraph',
+      },
+      {
+        id: '2',
+        children: [{ text: 'Worktile' }],
+        type: 'paragraph',
+      },
+    ],
+    input2: [
+      {
+        id: '1',
+        children: [{ text: 'PingCode' }],
+        type: 'paragraph',
+      },
+      {
+        id: '3',
+        children: [{ text: 'Worktile!' }],
+        type: 'paragraph',
+      },
+    ],
+  },
+
   changeIdBlock: {
     expected: [
       {

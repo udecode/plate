@@ -5,10 +5,8 @@
 
 import type { Descendant } from '@udecode/plate';
 
-import isEqual from 'lodash/isEqual.js';
-
 import { type ComputeDiffOptions, computeDiff } from '../../lib/computeDiff';
-import { copyWithout } from '../utils/copy-without';
+import { isEqual } from '../utils/is-equal';
 
 /**
  * We try each of the Handler functions listed below until one of them matches.
@@ -30,10 +28,7 @@ const childrenOnlyStrategy: Handler = (node, nextNode, options) => {
   if (
     node.children != null &&
     nextNode.children != null &&
-    isEqual(
-      copyWithout(node, ['children']),
-      copyWithout(nextNode, ['children'])
-    )
+    isEqual(node, nextNode, options.ignoreProps || [], ['children'])
   ) {
     const children = computeDiff(
       node.children as Descendant[],
@@ -43,7 +38,7 @@ const childrenOnlyStrategy: Handler = (node, nextNode, options) => {
 
     return [
       {
-        ...node,
+        ...nextNode,
         children,
       },
     ];
