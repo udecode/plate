@@ -1,5 +1,7 @@
 # @udecode/plate-suggestion
 
+## 44.0.2
+
 ## 44.0.0
 
 ## 43.0.0
