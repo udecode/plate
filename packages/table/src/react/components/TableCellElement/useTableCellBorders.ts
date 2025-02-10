@@ -3,8 +3,8 @@ import React from 'react';
 import { useEditorPlugin, useElement } from '@udecode/plate/react';
 
 import { type TTableCellElement, getTableCellBorders } from '../../../lib';
-import { TablePlugin } from '../../TablePlugin';
 import { useCellIndices } from '../../hooks/useCellIndices';
+import { TablePlugin } from '../../TablePlugin';
 
 export function useTableCellBorders({
   element: el,

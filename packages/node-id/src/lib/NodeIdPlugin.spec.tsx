@@ -1,10 +1,10 @@
 /** @jsx jsxt */
 
 import { type SlateEditor, createSlateEditor } from '@udecode/plate';
-import { ParagraphPlugin } from '@udecode/plate/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { BulletedListPlugin, ListItemPlugin } from '@udecode/plate-list/react';
 import { jsxt } from '@udecode/plate-test-utils';
+import { ParagraphPlugin } from '@udecode/plate/react';
 
 import { NodeIdPlugin } from './NodeIdPlugin';
 
@@ -881,8 +881,8 @@ describe('when merging nodes', () => {
         plugins: [
           NodeIdPlugin.configure({
             options: {
-              filter: ([, path]) => path.length === 2,
               idCreator: getIdFactory(),
+              filter: ([, path]) => path.length === 2,
             },
           }),
         ],

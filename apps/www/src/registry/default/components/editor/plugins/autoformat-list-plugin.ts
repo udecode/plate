@@ -7,7 +7,6 @@ import type {
 } from '@udecode/plate-autoformat';
 
 import { ElementApi, isType } from '@udecode/plate';
-import { ParagraphPlugin } from '@udecode/plate/react';
 import {
   autoformatArrow,
   autoformatLegal,
@@ -42,7 +41,8 @@ import {
   NumberedListPlugin,
   TodoListPlugin,
 } from '@udecode/plate-list/react';
-import { TogglePlugin, openNextToggles } from '@udecode/plate-toggle/react';
+import { openNextToggles, TogglePlugin } from '@udecode/plate-toggle/react';
+import { ParagraphPlugin } from '@udecode/plate/react';
 
 export const preFormat: AutoformatBlockRule['preFormat'] = (editor) =>
   unwrapList(editor);
@@ -190,16 +190,16 @@ export const autoformatBlocks: AutoformatRule[] = [
     type: BlockquotePlugin.key,
   },
   {
+    match: '```',
+    mode: 'block',
+    preFormat,
+    type: CodeBlockPlugin.key,
     format: (editor) => {
       insertEmptyCodeBlock(editor, {
         defaultType: ParagraphPlugin.key,
         insertNodesOptions: { select: true },
       });
     },
-    match: '```',
-    mode: 'block',
-    preFormat,
-    type: CodeBlockPlugin.key,
   },
   {
     match: '+ ',
@@ -208,6 +208,9 @@ export const autoformatBlocks: AutoformatRule[] = [
     type: TogglePlugin.key,
   },
   {
+    match: ['---', '—-', '___ '],
+    mode: 'block',
+    type: HorizontalRulePlugin.key,
     format: (editor) => {
       editor.tf.setNodes({ type: HorizontalRulePlugin.key });
       editor.tf.insertNodes({
@@ -215,27 +218,24 @@ export const autoformatBlocks: AutoformatRule[] = [
         type: ParagraphPlugin.key,
       });
     },
-    match: ['---', '—-', '___ '],
-    mode: 'block',
-    type: HorizontalRulePlugin.key,
   },
 ];
 
 export const autoformatLists: AutoformatRule[] = [
   {
-    format: (editor) => formatList(editor, BulletedListPlugin.key),
     match: ['* ', '- '],
     mode: 'block',
     preFormat,
     type: ListItemPlugin.key,
+    format: (editor) => formatList(editor, BulletedListPlugin.key),
   },
   {
-    format: (editor) => formatList(editor, NumberedListPlugin.key),
     match: [String.raw`^\d+\.$ `, String.raw`^\d+\)$ `],
     matchByRegex: true,
     mode: 'block',
     preFormat,
     type: ListItemPlugin.key,
+    format: (editor) => formatList(editor, NumberedListPlugin.key),
   },
   {
     match: '[] ',
@@ -243,6 +243,9 @@ export const autoformatLists: AutoformatRule[] = [
     type: TodoListPlugin.key,
   },
   {
+    match: '[x] ',
+    mode: 'block',
+    type: TodoListPlugin.key,
     format: (editor) =>
       editor.tf.setNodes(
         { checked: true, type: TodoListPlugin.key },
@@ -250,9 +253,6 @@ export const autoformatLists: AutoformatRule[] = [
           match: (n) => editor.api.isBlock(n),
         }
       ),
-    match: '[x] ',
-    mode: 'block',
-    type: TodoListPlugin.key,
   },
 ];
 

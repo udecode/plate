@@ -22,8 +22,8 @@ import {
 } from '../utils';
 
 export type MutableRefs = React.MutableRefObject<{
-  content: React.RefObject<HTMLDivElement> | undefined;
-  contentRoot: React.RefObject<HTMLDivElement> | undefined;
+  content: React.RefObject<HTMLDivElement | null> | undefined;
+  contentRoot: React.RefObject<HTMLDivElement | null> | undefined;
 }>;
 
 export type UseEmojiPickerProps = {
@@ -33,9 +33,8 @@ export type UseEmojiPickerProps = {
 };
 
 export type UseEmojiPickerType<
-  T extends React.ReactElement = React.ReactElement,
+  T extends React.ReactElement<any> = React.ReactElement<any>,
 > = {
-  clearSearch: () => void;
   emojiLibrary: IEmojiFloatingLibrary;
   hasFound: boolean;
   i18n: i18nProps;
@@ -45,9 +44,10 @@ export type UseEmojiPickerType<
   refs: MutableRefs;
   searchResult: Emoji[];
   searchValue: string;
+  visibleCategories: MapEmojiCategoryList;
+  clearSearch: () => void;
   setIsOpen: (isOpen: boolean) => void;
   setSearch: (value: string) => void;
-  visibleCategories: MapEmojiCategoryList;
   handleCategoryClick: (id: EmojiCategoryList) => void;
   onMouseOver: (emoji?: Emoji) => void;
   onSelectEmoji: (emoji: Emoji) => void;

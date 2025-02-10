@@ -2,9 +2,9 @@
 
 import type { SlateEditor } from '@udecode/plate';
 
-import { ParagraphPlugin, createPlateEditor } from '@udecode/plate/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { jsxt } from '@udecode/plate-test-utils';
+import { createPlateEditor, ParagraphPlugin } from '@udecode/plate/react';
 
 import { ListPlugin } from './ListPlugin';
 

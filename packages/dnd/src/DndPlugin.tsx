@@ -18,11 +18,11 @@ export const DRAG_ITEM_BLOCK = 'block';
 export type DndConfig = PluginConfig<
   'dnd',
   {
+    draggingId?: string | null;
     dropTarget?: {
       id: string | null;
       line: DropLineDirection;
     };
-    draggingId?: string | null;
     enableScroller?: boolean;
     isDragging?: boolean;
     scrollerProps?: Partial<ScrollerProps>;
@@ -39,11 +39,6 @@ export type DndConfig = PluginConfig<
 
 export const DndPlugin = createTPlatePlugin<DndConfig>({
   key: 'dnd',
-  options: {
-    draggingId: null,
-    dropTarget: { id: null, line: '' },
-    isDragging: false,
-  },
   handlers: {
     onDragEnd: ({ editor, plugin }) => {
       editor.setOption(plugin, 'isDragging', false);
@@ -74,6 +69,11 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
 
       return getOptions().isDragging;
     },
+  },
+  options: {
+    draggingId: null,
+    dropTarget: { id: null, line: '' },
+    isDragging: false,
   },
 }).extend(({ getOptions }) => ({
   render: {

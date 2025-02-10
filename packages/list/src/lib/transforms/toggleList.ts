@@ -39,10 +39,10 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
             { type },
             {
               at: editor.selection,
+              mode: 'lowest',
               match: (n) =>
                 ElementApi.isElement(n) &&
                 getListTypes(editor).includes(n.type),
-              mode: 'lowest',
             }
           );
         }
@@ -112,11 +112,11 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
             { type },
             {
               at: editor.selection,
+              mode: 'all',
               match: (n, path) =>
                 ElementApi.isElement(n) &&
                 getListTypes(editor).includes(n.type) &&
                 path.length >= rangeLength,
-              mode: 'all',
             }
           );
         }
@@ -135,10 +135,10 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
               { type },
               {
                 at: n[1],
+                mode: 'all',
                 match: (_n) =>
                   ElementApi.isElement(_n) &&
                   getListTypes(editor).includes(_n.type),
-                mode: 'all',
               }
             );
           } else {

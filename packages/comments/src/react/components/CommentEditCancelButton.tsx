@@ -1,9 +1,9 @@
 import { createPrimitiveComponent } from '@udecode/plate/react';
 
-import { useCommentActions } from '../stores/comment/CommentProvider';
+import { useCommentSet } from '../stores';
 
 export const useCommentEditCancelButton = () => {
-  const setEditingValue = useCommentActions().editingValue();
+  const setEditingValue = useCommentSet('editingValue');
 
   return {
     props: {

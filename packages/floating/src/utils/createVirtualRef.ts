@@ -4,9 +4,10 @@ import type { Editor, TLocation } from '@udecode/plate';
 
 import { getBoundingClientRect } from './getBoundingClientRect';
 
-export type VirtualRef = React.RefObject<
-  Pick<HTMLElement, 'getBoundingClientRect'>
->;
+export type VirtualRef = React.RefObject<Pick<
+  HTMLElement,
+  'getBoundingClientRect'
+> | null>;
 
 export const createVirtualRef = (
   editor: Editor,

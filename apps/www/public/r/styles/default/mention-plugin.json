@@ -4,12 +4,14 @@
   ],
   "files": [
     {
-      "content": "'use client';\n\nimport { MentionPlugin } from '@udecode/plate-mention/react';\n\nexport const mentionPlugin = MentionPlugin.configure({\n  options: { triggerPreviousCharPattern: /^$|^[\\s\"']$/ },\n});\n",
       "path": "components/editor/plugins/mention-plugin.ts",
-      "target": "components/editor/plugins/mention-plugin.ts",
-      "type": "registry:component"
+      "content": "'use client';\n\nimport { MentionPlugin } from '@udecode/plate-mention/react';\n\nexport const mentionPlugin = MentionPlugin.configure({\n  options: { triggerPreviousCharPattern: /^$|^[\\s\"']$/ },\n});\n",
+      "type": "registry:component",
+      "target": "components/editor/plugins/mention-plugin.ts"
     }
   ],
   "name": "mention-plugin",
-  "type": "registry:component"
+  "type": "registry:component",
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "author": "udecode (https://platejs.org)"
 }

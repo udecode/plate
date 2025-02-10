@@ -1,6 +1,6 @@
-import { useEditorPlugin } from '@udecode/plate/react';
 import { deserializeMd } from '@udecode/plate-markdown';
 import type { Operation } from '@udecode/plate';
+import { useEditorPlugin, usePluginOption } from '@udecode/plate/react';
 
 import type { AIPluginConfig } from '../ai/AIPlugin';
 import type { AIChatPluginConfig } from './AIChatPlugin';
@@ -10,10 +10,11 @@ import { useChatChunk } from './hooks/useChatChunk';
 
 export const useAIChatHooks = () => {
   const { editor, tf } = useEditorPlugin<AIPluginConfig>({ key: 'ai' });
-  const { useOption, getOptions } = useEditorPlugin<AIChatPluginConfig>({
-    key: 'aiChat',
-  });
-  const mode = useOption('mode');
+  const mode = usePluginOption({ key: 'aiChat' } as AIChatPluginConfig, 'mode');
+  const anchorUpdate = usePluginOption(
+    { key: 'aiChat' } as AIChatPluginConfig,
+    'anchorUpdate'
+  );
 
   useChatChunk({
     onChunk: ({ isFirst, nodes }) => {
@@ -55,7 +56,6 @@ export const useAIChatHooks = () => {
         .at(-1)
         ?.operations.filter((op: Operation) => op.type === 'insert_node')
         .at(-1)?.node;
-      const { anchorUpdate } = getOptions();
       if (lastAINode && anchorUpdate) {
         anchorUpdate(lastAINode);
       }

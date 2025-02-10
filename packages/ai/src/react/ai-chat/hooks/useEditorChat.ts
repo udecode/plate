@@ -5,8 +5,8 @@ import { useEffect } from 'react';
 import type { NodeEntry } from '@udecode/plate';
 import type { UseChatHelpers } from 'ai/react';
 
-import { useEditorPlugin } from '@udecode/plate/react';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import { useEditorPlugin, usePluginOption } from '@udecode/plate/react';
 
 import { AIChatPlugin } from '../AIChatPlugin';
 
@@ -25,8 +25,8 @@ export const useEditorChat = ({
   onOpenCursor,
   onOpenSelection,
 }: UseEditorChatOptions) => {
-  const { editor, setOption, useOption } = useEditorPlugin(AIChatPlugin);
-  const open = useOption('open');
+  const { editor, setOption } = useEditorPlugin(AIChatPlugin);
+  const open = usePluginOption(AIChatPlugin, 'open');
 
   // Sync useChat with AIChatPlugin
   useEffect(() => {

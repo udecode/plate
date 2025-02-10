@@ -3,8 +3,8 @@
 import React from 'react';
 
 import { withRef } from '@udecode/cn';
-import { useEditorPlugin } from '@udecode/plate/react';
 import { AIChatPlugin } from '@udecode/plate-ai/react';
+import { useEditorPlugin } from '@udecode/plate/react';
 
 import { ToolbarButton } from './toolbar';
 

@@ -98,8 +98,8 @@ export function useUploadFile({
   return {
     isUploading,
     progress,
-    uploadFile: uploadThing,
     uploadedFile,
+    uploadFile: uploadThing,
     uploadingFile,
   };
 }

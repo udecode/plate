@@ -2,8 +2,8 @@
 
 import { createSlatePlugin } from '@udecode/plate';
 import { createSlateEditor } from '@udecode/plate';
-import { ParagraphPlugin } from '@udecode/plate/react';
 import { jsxt } from '@udecode/plate-test-utils';
+import { ParagraphPlugin } from '@udecode/plate/react';
 
 import type { TriggerComboboxPluginOptions } from './types';
 
@@ -28,26 +28,26 @@ const plugins = [
   ExampleComboboxPlugin.extend<TriggerComboboxPluginOptions>({
     key: 'exampleCombobox1',
     options: {
+      trigger: ['@', '#'],
+      triggerPreviousCharPattern: /^$|^[\s"']$/,
       createComboboxInput: (trigger) => ({
         children: [{ text: '' }],
         trigger,
         type: 'mention_input',
       }),
-      trigger: ['@', '#'],
-      triggerPreviousCharPattern: /^$|^[\s"']$/,
     },
   }),
 
   ExampleComboboxPlugin.extend<TriggerComboboxPluginOptions>({
     key: 'exampleCombobox2',
     options: {
+      trigger: ':',
+      triggerPreviousCharPattern: /^\s?$/,
       createComboboxInput: () => ({
         children: [{ text: '' }],
         trigger: ':',
         type: 'mention_input',
       }),
-      trigger: ':',
-      triggerPreviousCharPattern: /^\s?$/,
     },
   }),
 ];

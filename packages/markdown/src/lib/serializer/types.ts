@@ -1,3 +1,21 @@
+export interface MdElementType extends NodeType {
+  children: (MdElementType | MdLeafType)[];
+  type: string;
+  break?: boolean;
+  caption?: (MdElementType | MdLeafType)[];
+  indent?: number;
+  language?: string;
+  listStart?: number;
+  listStyleType?: string;
+  url?: string;
+}
+
+export interface MdLeafType extends NodeType {
+  text: string;
+}
+
+export type MdNodeType = MdElementType & MdLeafType & Record<string, unknown>;
+
 export type MdNodeTypes = {
   a: string;
   blockquote: string;
@@ -29,21 +47,3 @@ type NodeType = {
     length?: number;
   };
 };
-
-export interface MdLeafType extends NodeType {
-  text: string;
-}
-
-export interface MdElementType extends NodeType {
-  children: (MdElementType | MdLeafType)[];
-  type: string;
-  break?: boolean;
-  caption?: (MdElementType | MdLeafType)[];
-  indent?: number;
-  language?: string;
-  listStart?: number;
-  listStyleType?: string;
-  url?: string;
-}
-
-export type MdNodeType = MdElementType & MdLeafType & Record<string, unknown>;

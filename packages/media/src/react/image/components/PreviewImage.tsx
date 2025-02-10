@@ -2,35 +2,15 @@ import React, { useEffect, useMemo } from 'react';
 
 import { createPrimitiveComponent } from '@udecode/plate/react';
 
-import {
-  imagePreviewActions,
-  useImagePreviewSelectors,
-} from '../ImagePreviewStore';
+import { ImagePreviewStore, useImagePreviewValue } from '../ImagePreviewStore';
 import { useZoom } from '../useZoom';
 
-export const usePreviewImageState = () => {
-  const currentPreview = useImagePreviewSelectors().currentPreview();
-  const translate = useImagePreviewSelectors().translate();
-  const scale = useImagePreviewSelectors().scale();
+export const usePreviewImage = () => {
+  const currentPreview = useImagePreviewValue('currentPreview');
+  const translate = useImagePreviewValue('translate');
+  const scale = useImagePreviewValue('scale');
   const imageRef = React.useRef<HTMLImageElement>(null);
-  const setBoundingClientRect = imagePreviewActions.boundingClientRect;
 
-  return {
-    currentPreview,
-    imageRef,
-    scale,
-    setBoundingClientRect,
-    translate,
-  };
-};
-
-export const usePreviewImage = ({
-  currentPreview,
-  imageRef,
-  scale,
-  setBoundingClientRect,
-  translate,
-}: ReturnType<typeof usePreviewImageState>) => {
   const isZoomIn = useMemo(() => scale <= 1, [scale]);
 
   const { zoomIn, zoomOut } = useZoom();
@@ -42,9 +22,7 @@ export const usePreviewImage = ({
 
     if (!boundingClientRect) return;
 
-    setBoundingClientRect(boundingClientRect);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    ImagePreviewStore.set('boundingClientRect', boundingClientRect);
   }, [translate.x, translate.y, scale]);
 
   return {
@@ -66,5 +44,4 @@ export const usePreviewImage = ({
 
 export const PreviewImage = createPrimitiveComponent('img')({
   propsHook: usePreviewImage,
-  stateHook: usePreviewImageState,
 });

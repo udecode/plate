@@ -10,7 +10,7 @@ import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps';
 
 export type SlateRenderElement = (
   props: RenderElementProps
-) => React.ReactElement | undefined;
+) => React.ReactElement<any> | undefined;
 
 export const pluginRenderElementStatic = (
   editor: SlateEditor,

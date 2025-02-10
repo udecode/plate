@@ -2,7 +2,7 @@ import React from 'react';
 
 import { NodeApi } from '@udecode/plate';
 import {
-  useEditorPlugin,
+  useEditorRef,
   useEditorSelector,
   useScrollRef,
 } from '@udecode/plate/react';
@@ -12,7 +12,6 @@ import type { TocSideBarProps } from '../types';
 
 import { useContentController, useTocController } from '.';
 import { getHeadingList } from '../../internal/getHeadingList';
-import { TocPlugin } from '../TocPlugin';
 import { checkIn } from '../utils';
 
 export const useTocSideBarState = ({
@@ -20,7 +19,7 @@ export const useTocSideBarState = ({
   rootMargin = '0px 0px 0px 0px',
   topOffset = 0,
 }: TocSideBarProps) => {
-  const { editor } = useEditorPlugin(TocPlugin);
+  const editor = useEditorRef();
   const headingList = useEditorSelector(getHeadingList, []);
   const containerRef = useScrollRef();
 

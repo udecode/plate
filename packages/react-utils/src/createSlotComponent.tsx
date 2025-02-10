@@ -8,7 +8,6 @@ export const createSlotComponent = <
 >(
   element: T
 ) =>
-  // eslint-disable-next-line react/display-name
   React.forwardRef<
     any,
     {

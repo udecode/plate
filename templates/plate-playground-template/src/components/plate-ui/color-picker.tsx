@@ -15,9 +15,9 @@ import { DropdownMenuGroup, DropdownMenuItem } from './dropdown-menu';
 export const ColorPickerContent = withRef<
   'div',
   {
-    clearColor: () => void;
     colors: TColor[];
     customColors: TColor[];
+    clearColor: () => void;
     updateColor: (color: string) => void;
     updateCustomColor: (color: string) => void;
     color?: string;

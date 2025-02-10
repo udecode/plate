@@ -17,21 +17,23 @@
   },
   "files": [
     {
-      "content": "'use client';\n\nimport React from 'react';\n\nimport { withRef } from '@udecode/cn';\n\nimport { PlateElement } from './plate-element';\n\nexport const CodeLineElement = withRef<typeof PlateElement>((props, ref) => (\n  <PlateElement ref={ref} {...props} />\n));\n",
       "path": "plate-ui/code-line-element.tsx",
-      "target": "components/plate-ui/code-line-element.tsx",
-      "type": "registry:ui"
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { withRef } from '@udecode/cn';\n\nimport { PlateElement } from './plate-element';\n\nexport const CodeLineElement = withRef<typeof PlateElement>((props, ref) => (\n  <PlateElement ref={ref} {...props} />\n));\n",
+      "type": "registry:ui",
+      "target": "components/plate-ui/code-line-element.tsx"
     },
     {
-      "content": "import React from 'react';\n\nimport type { SlateElementProps } from '@udecode/plate';\n\nimport { SlateElement } from '@udecode/plate';\n\nexport const CodeLineElementStatic = ({\n  children,\n  ...props\n}: SlateElementProps) => {\n  return <SlateElement {...props}>{children}</SlateElement>;\n};\n",
       "path": "plate-ui/code-line-element-static.tsx",
-      "target": "components/plate-ui/code-line-element-static.tsx",
-      "type": "registry:ui"
+      "content": "import React from 'react';\n\nimport type { SlateElementProps } from '@udecode/plate';\n\nimport { SlateElement } from '@udecode/plate';\n\nexport const CodeLineElementStatic = ({\n  children,\n  ...props\n}: SlateElementProps) => {\n  return <SlateElement {...props}>{children}</SlateElement>;\n};\n",
+      "type": "registry:ui",
+      "target": "components/plate-ui/code-line-element-static.tsx"
     }
   ],
   "name": "code-line-element",
   "registryDependencies": [
     "plate-element"
   ],
-  "type": "registry:ui"
+  "type": "registry:ui",
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "author": "udecode (https://platejs.org)"
 }

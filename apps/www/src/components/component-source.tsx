@@ -28,12 +28,12 @@ export function ComponentSource({
   const { copyToClipboard } = useCopyToClipboard();
 
   return (
-    <div className="mb-6 mt-4">
+    <div className="mt-4 mb-6">
       {displaySrc && (
         <Button
           size="none"
           variant="ghost"
-          className="mb-0.5 w-fit select-auto px-4 py-1 text-sm font-medium text-foreground"
+          className="mb-0.5 w-fit px-4 py-1 text-sm font-medium text-foreground select-auto"
           onClick={() => {
             copyToClipboard(displaySrc, {
               tooltip: 'Copied to clipboard',

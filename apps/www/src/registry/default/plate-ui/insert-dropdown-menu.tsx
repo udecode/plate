@@ -4,11 +4,6 @@ import React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import {
-  type PlateEditor,
-  ParagraphPlugin,
-  useEditorRef,
-} from '@udecode/plate/react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { DatePlugin } from '@udecode/plate-date/react';
@@ -25,6 +20,11 @@ import {
 import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
+import {
+  type PlateEditor,
+  ParagraphPlugin,
+  useEditorRef,
+} from '@udecode/plate/react';
 import {
   CalendarIcon,
   ChevronRightIcon,
@@ -71,8 +71,8 @@ type Group = {
 
 interface Item {
   icon: React.ReactNode;
-  onSelect: (editor: PlateEditor, value: string) => void;
   value: string;
+  onSelect: (editor: PlateEditor, value: string) => void;
   focusEditor?: boolean;
   label?: string;
 }

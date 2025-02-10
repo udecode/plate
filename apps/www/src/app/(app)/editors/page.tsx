@@ -4,6 +4,8 @@ import { BlockDisplay } from '@/components/block-display';
 import { siteConfig } from '@/config/site';
 import { getAllBlockIds } from '@/lib/blocks';
 
+// SYNC
+
 const block = {
   description: 'A Notion-like AI template',
   descriptionSrc: siteConfig.links.potionTemplate,

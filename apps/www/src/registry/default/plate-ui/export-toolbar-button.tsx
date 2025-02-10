@@ -7,11 +7,10 @@ import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import { withProps } from '@udecode/cn';
 import {
   BaseParagraphPlugin,
-  SlateLeaf,
   createSlateEditor,
   serializeHtml,
+  SlateLeaf,
 } from '@udecode/plate';
-import { useEditorRef } from '@udecode/plate/react';
 import { BaseAlignPlugin } from '@udecode/plate-alignment';
 import {
   BaseBoldPlugin,
@@ -69,6 +68,7 @@ import {
   BaseTableRowPlugin,
 } from '@udecode/plate-table';
 import { BaseTogglePlugin } from '@udecode/plate-toggle';
+import { useEditorRef } from '@udecode/plate/react';
 import { ArrowDownToLineIcon } from 'lucide-react';
 import Prism from 'prismjs';
 

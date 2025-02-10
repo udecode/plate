@@ -1,6 +1,6 @@
-import type { Registry } from '@/registry/schema';
+import type { Registry } from 'shadcx/registry';
 
-const plugins: Registry = [
+const plugins: Registry['items'] = [
   {
     dependencies: [
       '@udecode/plate-callout',
@@ -458,7 +458,7 @@ const plugins: Registry = [
   },
 ];
 
-export const components: Registry = [
+export const components: Registry['items'] = [
   ...plugins,
   {
     dependencies: ['ai', '@faker-js/faker'],

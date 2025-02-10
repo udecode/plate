@@ -1,5 +1,7 @@
 # @udecode/plate-highlight
 
+## 44.0.0
+
 ## 43.0.0
 
 ## 42.0.0

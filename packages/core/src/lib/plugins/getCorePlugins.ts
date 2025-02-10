@@ -1,3 +1,4 @@
+/* eslint-disable perfectionist/sort-imports */
 import type { AnyPluginConfig, PluginConfig } from '../plugin/BasePlugin';
 import type { SlatePlugin } from '../plugin/SlatePlugin';
 
@@ -17,7 +18,6 @@ export type CorePlugin = ReturnType<typeof getCorePlugins>[number];
 export type GetCorePluginsOptions = {
   /** Specifies the maximum number of characters allowed in the editor. */
   maxLength?: number;
-
   /** Override the core plugins using the same key. */
   plugins?: AnyPluginConfig[];
 };
@@ -69,18 +69,12 @@ export const getCorePlugins = ({
   return corePlugins;
 };
 
-type LogFunction = (
-  message: string,
-  type?: DebugErrorType,
-  details?: any
-) => void;
-
 export type DebugConfig = PluginConfig<
   'debug',
   {
     isProduction: boolean;
-    logLevel: LogLevel;
     logger: Partial<Record<LogLevel, LogFunction>>;
+    logLevel: LogLevel;
     throwErrors: boolean;
   },
   {
@@ -103,3 +97,9 @@ export type LengthConfig = PluginConfig<
     maxLength: number;
   }
 >;
+
+type LogFunction = (
+  message: string,
+  type?: DebugErrorType,
+  details?: any
+) => void;

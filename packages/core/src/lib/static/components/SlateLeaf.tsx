@@ -14,7 +14,6 @@ export type SlateLeafProps<
   P extends AnySlatePlugin = AnySlatePlugin,
 > = {
   decorations?: DecoratedRange[];
-
   /** Get HTML attributes from Slate leaf. Alternative to `PlatePlugin.props`. */
   leafToAttributes?: (leaf: T) => any;
 } & SlateRenderLeafProps<T, P> &

@@ -6,10 +6,13 @@ import {
   type EditableSiblingComponent,
   useEditorPlugin,
   useEditorRef,
+  usePluginOption,
 } from '@udecode/plate/react';
 
-import type { BlockSelectionConfig } from '../BlockSelectionPlugin';
-
+import {
+  type BlockSelectionConfig,
+  BlockSelectionPlugin,
+} from '../BlockSelectionPlugin';
 import { useSelectionArea } from '../hooks';
 import {
   copySelectedBlocks,
@@ -19,11 +22,14 @@ import {
 
 export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
   const editor = useEditorRef();
-  const { api, getOption, getOptions, setOption, useOption } =
+  const { api, getOption, getOptions, setOption } =
     useEditorPlugin<BlockSelectionConfig>({ key: 'blockSelection' });
 
-  const isSelectingSome = useOption('isSelectingSome');
-  const selectedIds = useOption('selectedIds');
+  const isSelectingSome = usePluginOption(
+    BlockSelectionPlugin,
+    'isSelectingSome'
+  );
+  const selectedIds = usePluginOption(BlockSelectionPlugin, 'selectedIds');
 
   useSelectionArea();
 
@@ -196,7 +202,6 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
   return ReactDOM.createPortal(
     <input
       ref={inputRef}
-      // eslint-disable-next-line tailwindcss/no-custom-classname
       className="slate-shadow-input"
       style={{
         left: '-300px',

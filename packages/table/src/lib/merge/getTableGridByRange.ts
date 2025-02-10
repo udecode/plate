@@ -20,15 +20,6 @@ import { getCellIndicesWithSpans } from './getCellIndicesWithSpans';
 
 type FormatType = 'all' | 'cell' | 'table';
 
-interface TableGridEntries {
-  cellEntries: ElementEntry[];
-  tableEntries: ElementEntry[];
-}
-
-type GetTableGridReturnType<T> = T extends 'all'
-  ? TableGridEntries
-  : ElementEntry[];
-
 interface GetTableGridByRangeOptions<T extends FormatType> {
   at: TRange;
 
@@ -39,6 +30,15 @@ interface GetTableGridByRangeOptions<T extends FormatType> {
    * - Array of cells
    */
   format?: T;
+}
+
+type GetTableGridReturnType<T> = T extends 'all'
+  ? TableGridEntries
+  : ElementEntry[];
+
+interface TableGridEntries {
+  cellEntries: ElementEntry[];
+  tableEntries: ElementEntry[];
 }
 
 /**
@@ -102,7 +102,6 @@ export const getTableMergeGridByRange = <T extends FormatType>(
   let rowIndex = startRowIndex;
   let colIndex = startColIndex;
 
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     const cell = findCellByIndexes(editor, realTable, rowIndex, colIndex);
 

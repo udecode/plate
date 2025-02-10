@@ -6,7 +6,7 @@ import {
   type AnyPlatePlugin,
   type PlateRenderElementProps,
   omitPluginContext,
-  usePlateStore,
+  useEditorMounted,
 } from '@udecode/plate-core/react';
 import { type BoxProps, Box, useComposedRef } from '@udecode/react-utils';
 import { clsx } from 'clsx';
@@ -29,7 +29,7 @@ export const usePlateElement = (props: PlateElementProps) => {
     path,
     ...rootProps
   } = omitPluginContext(props);
-  const mounted = usePlateStore().get.isMounted();
+  const mounted = useEditorMounted();
 
   const block = React.useMemo(
     () => mounted && !!element.id && props.editor.api.isBlock(element),
@@ -55,22 +55,23 @@ export const usePlateElement = (props: PlateElementProps) => {
 };
 
 /** Headless element component. */
-const PlateElement = React.forwardRef<HTMLDivElement, PlateElementProps>(
-  (props: PlateElementProps, ref) => {
-    const { props: rootProps, ref: rootRef } = usePlateElement({
-      ...props,
-      ref,
-    });
-    const { ...rest } = rootProps;
-
-    return <Box {...rest} ref={rootRef} />;
-  }
-) as (<
+export const PlateElement = React.forwardRef(function PlateElement<
   N extends TElement = TElement,
   P extends AnyPlatePlugin = AnyPlatePlugin,
->(
-  props: PlateElementProps<N, P> & React.RefAttributes<HTMLDivElement>
-) => React.ReactElement) & { displayName?: string };
-PlateElement.displayName = 'PlateElement';
+>(props: PlateElementProps<N, P>, ref: React.ForwardedRef<HTMLDivElement>) {
+  const { props: rootProps, ref: rootRef } = usePlateElement({
+    ...props,
+    ref,
+  } as any);
+  const { children, ...rest } = rootProps;
 
-export { PlateElement };
+  return (
+    <Box {...rest} ref={rootRef}>
+      {children}
+    </Box>
+  );
+}) as React.ForwardRefExoticComponent<
+  PlateElementProps & React.RefAttributes<HTMLDivElement>
+>;
+
+PlateElement.displayName = 'PlateElement';

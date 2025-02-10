@@ -1,6 +1,6 @@
 {
   "name": "shadcx",
-  "version": "0.1.0",
+  "version": "0.2.0-next.2",
   "description": "Add Plate components to your apps.",
   "keywords": [
     "components",
@@ -26,14 +26,13 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "module": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "default": "./dist/index.js"
+    },
+    "./registry": {
+      "types": "./dist/registry/index.d.ts",
+      "default": "./dist/registry/index.js"
     }
   },
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
   "bin": "./dist/index.js",
   "files": [
     "dist/**/*"
@@ -60,7 +59,6 @@
     "fs-extra": "^11.1.0",
     "https-proxy-agent": "^6.2.0",
     "kleur": "^4.1.5",
-    "lodash.template": "^4.5.0",
     "node-fetch": "^3.3.0",
     "ora": "^6.1.2",
     "postcss": "^8.4.24",
@@ -75,7 +73,6 @@
     "@types/babel__core": "^7.20.1",
     "@types/diff": "^5.0.3",
     "@types/fs-extra": "^11.0.1",
-    "@types/lodash.template": "^4.5.1",
     "@types/prompts": "^2.4.2",
     "@types/stringify-object": "^4.0.5",
     "rimraf": "^6.0.1",

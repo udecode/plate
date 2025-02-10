@@ -7,8 +7,6 @@ import {
 
 import { HEADING_LEVELS } from './constants';
 
-export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
-
 export type HeadingConfig = PluginConfig<
   'heading',
   {
@@ -16,6 +14,8 @@ export type HeadingConfig = PluginConfig<
     levels?: HeadingLevel | HeadingLevel[];
   }
 >;
+
+export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
 /** Enables support for headings with configurable levels (from 1 to 6). */
 export const BaseHeadingPlugin = createTSlatePlugin<HeadingConfig>({

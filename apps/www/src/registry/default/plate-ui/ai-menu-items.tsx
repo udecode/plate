@@ -3,9 +3,13 @@
 import { useEffect, useMemo } from 'react';
 
 import { type SlateEditor, NodeApi } from '@udecode/plate';
-import { type PlateEditor, useEditorPlugin } from '@udecode/plate/react';
 import { AIChatPlugin, AIPlugin } from '@udecode/plate-ai/react';
 import { useIsSelecting } from '@udecode/plate-selection/react';
+import {
+  type PlateEditor,
+  useEditorRef,
+  usePluginOption,
+} from '@udecode/plate/react';
 import {
   Album,
   BadgeHelp,
@@ -252,9 +256,9 @@ export const AIMenuItems = ({
 }: {
   setValue: (value: string) => void;
 }) => {
-  const { editor, useOption } = useEditorPlugin(AIChatPlugin);
-  const { messages } = useOption('chat');
-  const aiEditor = useOption('aiEditor')!;
+  const editor = useEditorRef();
+  const { messages } = usePluginOption(AIChatPlugin, 'chat');
+  const aiEditor = usePluginOption(AIChatPlugin, 'aiEditor')!;
   const isSelecting = useIsSelecting();
 
   const menuState = useMemo(() => {

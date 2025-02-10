@@ -1,5 +1,5 @@
-import type { UploadConfig } from '../PlaceholderPlugin';
 import type { AllowedFileType, FileRouterInputKey } from '../internal/mimes';
+import type { UploadConfig } from '../PlaceholderPlugin';
 import type { MediaItemConfig, MediaKeys } from '../type';
 
 import { matchFileType } from './matchFileType';

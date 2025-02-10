@@ -4,12 +4,14 @@
   ],
   "files": [
     {
-      "content": "'use client';\n\nimport { TocPlugin } from '@udecode/plate-heading/react';\n\nexport const tocPlugin = TocPlugin.configure({\n  options: {\n    // isScroll: true,\n    topOffset: 80,\n  },\n});\n",
       "path": "components/editor/plugins/toc-plugin.ts",
-      "target": "components/editor/plugins/toc-plugin.ts",
-      "type": "registry:component"
+      "content": "'use client';\n\nimport { TocPlugin } from '@udecode/plate-heading/react';\n\nexport const tocPlugin = TocPlugin.configure({\n  options: {\n    // isScroll: true,\n    topOffset: 80,\n  },\n});\n",
+      "type": "registry:component",
+      "target": "components/editor/plugins/toc-plugin.ts"
     }
   ],
   "name": "toc-plugin",
-  "type": "registry:component"
+  "type": "registry:component",
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "author": "udecode (https://platejs.org)"
 }

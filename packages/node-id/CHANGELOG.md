@@ -1,5 +1,7 @@
 # @udecode/plate-node-id
 
+## 44.0.0
+
 ## 43.0.3
 
 ### Patch Changes

@@ -22,8 +22,8 @@ export const getSuggestionProps = (
 ) => {
   const res = {
     [BaseSuggestionPlugin.key]: true,
-    [SUGGESTION_KEYS.id]: id,
     [getSuggestionCurrentUserKey(editor)]: true,
+    [SUGGESTION_KEYS.id]: id,
   };
 
   if (suggestionDeletion) {

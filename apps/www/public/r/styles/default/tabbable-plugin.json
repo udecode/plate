@@ -6,12 +6,14 @@
   ],
   "files": [
     {
-      "content": "'use client';\n\nimport { CodeBlockPlugin } from '@udecode/plate-code-block/react';\nimport { TabbablePlugin } from '@udecode/plate-tabbable/react';\nimport { TablePlugin } from '@udecode/plate-table/react';\n\nexport const tabbablePlugin = TabbablePlugin.configure(({ editor }) => ({\n  node: {\n    isElement: true,\n  },\n  options: {\n    query: () => {\n      if (editor.api.isAt({ start: true }) || editor.api.isAt({ end: true }))\n        return false;\n\n      return !editor.api.some({\n        match: (n) => {\n          return !!(\n            n.type &&\n            ([\n              CodeBlockPlugin.key,\n              TablePlugin.key,\n              'action_item',\n              'li',\n            ].includes(n.type as string) ||\n              n.listStyleType)\n          );\n        },\n      });\n    },\n  },\n  override: {\n    enabled: {\n      indent: false,\n    },\n  },\n}));\n",
       "path": "components/editor/plugins/tabbable-plugin.ts",
-      "target": "components/editor/plugins/tabbable-plugin.ts",
-      "type": "registry:component"
+      "content": "'use client';\n\nimport { CodeBlockPlugin } from '@udecode/plate-code-block/react';\nimport { TabbablePlugin } from '@udecode/plate-tabbable/react';\nimport { TablePlugin } from '@udecode/plate-table/react';\n\nexport const tabbablePlugin = TabbablePlugin.configure(({ editor }) => ({\n  node: {\n    isElement: true,\n  },\n  options: {\n    query: () => {\n      if (editor.api.isAt({ start: true }) || editor.api.isAt({ end: true }))\n        return false;\n\n      return !editor.api.some({\n        match: (n) => {\n          return !!(\n            n.type &&\n            ([\n              'action_item',\n              CodeBlockPlugin.key,\n              'li',\n              TablePlugin.key,\n            ].includes(n.type as string) ||\n              n.listStyleType)\n          );\n        },\n      });\n    },\n  },\n  override: {\n    enabled: {\n      indent: false,\n    },\n  },\n}));\n",
+      "type": "registry:component",
+      "target": "components/editor/plugins/tabbable-plugin.ts"
     }
   ],
   "name": "tabbable-plugin",
-  "type": "registry:component"
+  "type": "registry:component",
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "author": "udecode (https://platejs.org)"
 }

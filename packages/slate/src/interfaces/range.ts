@@ -18,49 +18,34 @@ export type TRange = {
 };
 
 export const RangeApi: {
-  /** Transform a range by an operation. */
-  transform: (
-    range: TRange,
-    op: Operation,
-    options?: RangeTransformOptions
-  ) => TRange | null;
-
   /**
    * Check if a range fully contains another range, meaning that both the start
    * and end points of the target range are included in the range.
    */
   contains: (range: TRange, target: TRange) => boolean;
-
   /**
    * Get the start and end points of a range, in the order in which they appear
    * in the document.
    */
   edges: (range: TRange, options?: RangeEdgesOptions) => [Point, Point];
-
   /** Get the end point of a range. */
   end: (range: TRange) => Point;
-
   /** Check if a range is exactly equal to another. */
   equals: (range: TRange, another: TRange) => boolean;
-
   /** Check if a range includes a path, a point or part of another range. */
   includes: (range: TRange, target: Path | Point | TRange) => boolean;
-
   /** Get the intersection of a range with another. */
   intersection: (range: TRange, another: TRange) => TRange | null;
-
   /**
    * Check if a range is backward, meaning that its anchor point appears in the
    * document _after_ its focus point.
    */
   isBackward: (range: TRange) => boolean;
-
   /**
    * Check if a range is collapsed, meaning that both its anchor and focus
    * points refer to the exact same position in the document.
    */
   isCollapsed: (range?: TRange | null) => boolean;
-
   /**
    * Check if a range is expanded.
    *
@@ -68,7 +53,6 @@ export const RangeApi: {
    * legibility.
    */
   isExpanded: (range?: TRange | null) => boolean;
-
   /**
    * Check if a range is forward.
    *
@@ -76,18 +60,20 @@ export const RangeApi: {
    * legibility.
    */
   isForward: (range: TRange) => boolean;
-
   /** Check if a value implements the [[TRange]] interface. */
   isRange: (value: any) => value is TRange;
-
   /** Iterate through all of the point entries in a range. */
   points: (range: TRange) => Generator<PointEntry, void, undefined>;
-
   /** Get the start point of a range. */
   start: (range: TRange) => Point;
-
   /** Check if a range includes another range. */
   surrounds: (range: TRange, target: TRange) => boolean;
+  /** Transform a range by an operation. */
+  transform: (
+    range: TRange,
+    op: Operation,
+    options?: RangeTransformOptions
+  ) => TRange | null;
 } = {
   ...SlateRange,
   contains: (range: TRange, target: TRange) => {

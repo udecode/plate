@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/rules-of-hooks */
 /** @jsx jsxt */
 
 import { jsxt } from '@udecode/plate-test-utils';

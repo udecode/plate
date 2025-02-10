@@ -18,16 +18,16 @@ export interface GetSiblingIndentListOptions<
   N extends ElementOf<E>,
   E extends Editor = Editor,
 > {
+  breakOnEqIndentNeqListStyleType?: boolean;
+  breakOnListRestart?: boolean;
+  breakOnLowerIndent?: boolean;
+  breakQuery?: (siblingNode: TNode, currentNode: TNode) => boolean | undefined;
   getNextEntry?: (
     entry: NodeEntry<ElementOrTextOf<E>>
   ) => NodeEntry<N> | undefined;
   getPreviousEntry?: (
     entry: NodeEntry<ElementOrTextOf<E>>
   ) => NodeEntry<N> | undefined;
-  breakOnEqIndentNeqListStyleType?: boolean;
-  breakOnListRestart?: boolean;
-  breakOnLowerIndent?: boolean;
-  breakQuery?: (siblingNode: TNode, currentNode: TNode) => boolean | undefined;
   /** Query to break lookup */
   eqIndent?: boolean;
   /** Query to validate lookup. If false, check the next sibling. */
@@ -61,7 +61,6 @@ export const getSiblingIndentList = <
 
   let nextEntry = getSiblingEntry([node, path]);
 
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     if (!nextEntry) return;
 

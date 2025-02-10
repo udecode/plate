@@ -8,8 +8,8 @@ export const useAlignDropdownMenuState = ({
 }: { structuralTypes?: string[] } = {}) => {
   const value = useSelectionFragmentProp({
     defaultValue: 'start',
-    getProp: (node) => node.align,
     structuralTypes,
+    getProp: (node) => node.align,
   });
 
   return {

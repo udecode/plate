@@ -4,25 +4,24 @@
  */
 
 import { type Descendant, ElementApi, TextApi } from '@udecode/plate';
-import isEqual from 'lodash/isEqual.js';
 
 import type { ComputeDiffOptions } from '../../lib/computeDiff';
 
-import { copyWithout } from './copy-without';
+import { isEqual } from './is-equal';
 
 export function diffNodes(
   originNodes: Descendant[],
   targetNodes: Descendant[],
-  { elementsAreRelated }: ComputeDiffOptions
+  { elementsAreRelated, ignoreProps }: ComputeDiffOptions
 ) {
   const result: NodeRelatedItem[] = [];
   let relatedNode: Descendant | undefined;
-  const leftTargetNodes: Descendant[] = [...targetNodes];
+  const remainingTargetNodes: Descendant[] = [...targetNodes];
 
   originNodes.forEach((originNode: Descendant) => {
     let childrenUpdated = false;
     let nodeUpdated = false;
-    relatedNode = leftTargetNodes.find((targetNode: Descendant) => {
+    relatedNode = remainingTargetNodes.find((targetNode: Descendant) => {
       if (
         ElementApi.isElement(originNode) &&
         ElementApi.isElement(targetNode)
@@ -32,20 +31,17 @@ export function diffNodes(
 
         if (relatedResult !== null) return relatedResult;
       }
-      if (isEqualNode(originNode, targetNode)) {
-        childrenUpdated = true;
-      }
-      if (isEqualNodeChildren(originNode, targetNode)) {
-        nodeUpdated = true;
-      }
+
+      childrenUpdated = isEqualNode(originNode, targetNode, ignoreProps);
+      nodeUpdated = isEqualNodeChildren(originNode, targetNode);
 
       return nodeUpdated || childrenUpdated;
     });
 
     if (relatedNode) {
-      const insertNodes = leftTargetNodes.splice(
+      const insertNodes = remainingTargetNodes.splice(
         0,
-        leftTargetNodes.indexOf(relatedNode)
+        remainingTargetNodes.indexOf(relatedNode)
       );
       insertNodes.forEach((insertNode) => {
         result.push({
@@ -53,7 +49,7 @@ export function diffNodes(
           originNode: insertNode,
         });
       });
-      leftTargetNodes.splice(0, 1);
+      remainingTargetNodes.splice(0, 1);
     }
 
     result.push({
@@ -64,7 +60,7 @@ export function diffNodes(
       relatedNode,
     });
   });
-  leftTargetNodes.forEach((insertNode) => {
+  remainingTargetNodes.forEach((insertNode) => {
     result.push({
       insert: true,
       originNode: insertNode,
@@ -83,13 +79,20 @@ export type NodeRelatedItem = {
   relatedNode?: Descendant;
 };
 
-export function isEqualNode(value: Descendant, other: Descendant) {
+export function isEqualNode(
+  value: Descendant,
+  other: Descendant,
+  ignoreProps?: string[]
+) {
   return (
     ElementApi.isElement(value) &&
     ElementApi.isElement(other) &&
     value.children !== null &&
     other.children !== null &&
-    isEqual(copyWithout(value, ['children']), copyWithout(other, ['children']))
+    isEqual(value, other, {
+      ignoreDeep: ignoreProps,
+      ignoreShallow: ['children'],
+    })
   );
 }
 

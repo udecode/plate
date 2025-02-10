@@ -285,11 +285,11 @@ editor.setOption(MyPlugin, 'count', 5);
 editor.setOption(MyPlugin, 'count', (prev) => prev + 1);
 ```
 
-In React components, you can use the `useOption` hook to subscribe to store changes:
+In React components, you can use the `usePluginOption` or `usePluginOptions` hook to subscribe to store changes:
 
 ```tsx
 const MyComponent = () => {
-  const count = editor.useOption(MyPlugin, 'count');
+  const count = usePluginOption(MyPlugin, 'count');
   return <div>Count: {count}</div>;
 };
 ```

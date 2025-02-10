@@ -33,7 +33,7 @@ export function EquationElementStatic({
     <SlateElement className={cn('my-1', className)} {...props}>
       <div
         className={cn(
-          'group flex select-none items-center justify-center rounded-sm hover:bg-primary/10 data-[selected=true]:bg-primary/10',
+          'group flex items-center justify-center rounded-sm select-none hover:bg-primary/10 data-[selected=true]:bg-primary/10',
           element.texExpression.length === 0 ? 'bg-muted p-3 pr-9' : 'px-2 py-1'
         )}
       >
@@ -44,7 +44,7 @@ export function EquationElementStatic({
             }}
           />
         ) : (
-          <div className="flex h-7 w-full items-center gap-2 whitespace-nowrap text-sm text-muted-foreground">
+          <div className="flex h-7 w-full items-center gap-2 text-sm whitespace-nowrap text-muted-foreground">
             <RadicalIcon className="size-6 text-muted-foreground/80" />
             <div>Add a Tex equation</div>
           </div>

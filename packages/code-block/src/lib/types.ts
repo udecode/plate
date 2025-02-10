@@ -1,9 +1,9 @@
 import type { TElement } from '@udecode/plate';
-import type { Token, languages, tokenize } from 'prismjs';
+import type { languages, Token, tokenize } from 'prismjs';
 
 export type Prism = {
-  Token: typeof Token;
   languages: typeof languages;
+  Token: typeof Token;
   tokenize: typeof tokenize;
 };
 

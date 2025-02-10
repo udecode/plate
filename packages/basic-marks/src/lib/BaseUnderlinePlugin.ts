@@ -7,15 +7,15 @@ export const BaseUnderlinePlugin = createSlatePlugin({
   parsers: {
     html: {
       deserializer: {
+        rules: [
+          { validNodeName: ['U'] },
+          { validStyle: { textDecoration: ['underline'] } },
+        ],
         query: ({ element }) =>
           !someHtmlElement(
             element,
             (node) => node.style.textDecoration === 'none'
           ),
-        rules: [
-          { validNodeName: ['U'] },
-          { validStyle: { textDecoration: ['underline'] } },
-        ],
       },
     },
   },

@@ -1,11 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-type AnyFunction = (...args: any[]) => void;
-
 export interface Frames<F extends AnyFunction = AnyFunction> {
   cancel: () => void;
 
   next: (...args: Parameters<F>) => void;
 }
+
+type AnyFunction = (...args: any[]) => void;
 
 export const frames = <F extends AnyFunction>(fn: F): Frames<F> => {
   let previousArgs: Parameters<F>;

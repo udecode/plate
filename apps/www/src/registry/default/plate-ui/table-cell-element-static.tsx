@@ -27,11 +27,11 @@ export function TableCellElementStatic({
       className={cn(
         className,
         'h-full overflow-visible border-none bg-background p-0',
-        element.background ? 'bg-[--cellBackground]' : 'bg-background',
+        element.background ? 'bg-(--cellBackground)' : 'bg-background',
         cn(
-          isHeader && 'text-left font-normal [&_>_*]:m-0',
+          isHeader && 'text-left font-normal *:m-0',
           'before:size-full',
-          "before:absolute before:box-border before:select-none before:content-['']",
+          "before:absolute before:box-border before:content-[''] before:select-none",
           borders &&
             cn(
               borders.bottom?.size && `before:border-b before:border-b-border`,

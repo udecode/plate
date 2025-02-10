@@ -8,7 +8,6 @@ import { createNodeHOC } from './createNodeHOC';
 export type CreateHOCOptions<T> = {
   /** Set HOC by key. */
   key?: string;
-
   /** Set HOC by key. */
   keys?: string[];
 } & AnyObject &

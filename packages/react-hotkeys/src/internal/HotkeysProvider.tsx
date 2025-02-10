@@ -13,18 +13,18 @@ import deepEqual from './deepEqual';
 
 export type HotkeysContextType = {
   activeScopes: string[];
+  hotkeys: readonly Hotkey[];
   disableScope: (scope: string) => void;
   enableScope: (scope: string) => void;
-  hotkeys: readonly Hotkey[];
   toggleScope: (scope: string) => void;
 };
 
 // The context is only needed for special features like global scoping, so we use a graceful default fallback
 const HotkeysContext = createContext<HotkeysContextType>({
   activeScopes: [], // This array has to be empty instead of containing '*' as default, to check if the provider is set or not
+  hotkeys: [],
   disableScope: () => {},
   enableScope: () => {},
-  hotkeys: [],
   toggleScope: () => {},
 });
 

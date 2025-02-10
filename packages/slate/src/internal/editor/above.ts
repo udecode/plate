@@ -12,7 +12,7 @@ export const above = <N extends AncestorOf<E>, E extends Editor = Editor>(
 ): NodeEntry<N> | undefined => {
   try {
     return aboveBase(editor as any, getQueryOptions(editor, options)) as any;
-  } catch (error) {
+  } catch {
     return undefined;
   }
 };

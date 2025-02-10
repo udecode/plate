@@ -33,7 +33,7 @@ export const CodeBlockElement = withRef<typeof PlateElement>(
 
         {state.syntax && (
           <div
-            className="absolute right-2 top-2 z-10 flex select-none items-center gap-1"
+            className="absolute top-2 right-2 z-10 flex items-center gap-1 select-none"
             contentEditable={false}
           >
             <CodeBlockFormatButton {...props} />

@@ -3,9 +3,9 @@ import {
   type TElement,
   BaseParagraphPlugin,
   ElementApi,
+  match,
   NodeApi,
   PathApi,
-  match,
 } from '@udecode/plate';
 
 import {

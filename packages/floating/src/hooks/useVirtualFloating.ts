@@ -18,8 +18,8 @@ import {
 } from '../libs/floating-ui';
 
 export interface UseVirtualFloatingOptions extends Partial<UseFloatingOptions> {
-  getBoundingClientRect?: () => ClientRectObject;
   open?: boolean;
+  getBoundingClientRect?: () => ClientRectObject;
 }
 
 export interface UseVirtualFloatingReturn<

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type JSX } from 'react';
 
 export function createPrimitiveElement<T extends keyof HTMLElementTagNameMap>(
   tag: T

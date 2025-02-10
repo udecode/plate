@@ -13,7 +13,7 @@ import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps';
 
 export type SlateRenderLeaf = (
   props: RenderLeafProps
-) => React.ReactElement | undefined;
+) => React.ReactElement<any> | undefined;
 
 export const pluginRenderLeafStatic = (
   editor: SlateEditor,

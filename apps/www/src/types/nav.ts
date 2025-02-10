@@ -1,5 +1,7 @@
 import type { DocIcons } from '@/config/docs-icons';
 
+export interface MainNavItem extends NavItem {}
+
 export interface NavItem {
   description?: string;
   disabled?: boolean;
@@ -16,7 +18,5 @@ export interface NavItemWithChildren extends NavItem {
   headings?: string[];
   items?: NavItemWithChildren[];
 }
-
-export interface MainNavItem extends NavItem {}
 
 export interface SidebarNavItem extends NavItemWithChildren {}

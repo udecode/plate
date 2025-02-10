@@ -3,12 +3,7 @@ title: Store
 description: API reference for Plate store.
 ---
 
-`Plate` is using [jotai](https://github.com/pmndrs/jotai) to store the state of the editor.
-
-<Callout className="my-4">
-  **Note**: To use the store hooks in a component, it needs to be rendered
-  inside `Plate`.
-</Callout>
+`Plate` is using [jotai-x](https://github.com/udecode/jotai-x) to store the state of the editor.
 
 ## Plate Store
 
@@ -104,41 +99,54 @@ Version incremented on each editor.children change.
 </APIState>
 </API>
 
-## Exposed Store Keys
+## Accessing the Store
 
-The following store keys are exposed in `editor.setPlateState`:
+```ts
+import { usePlateStore, useEditorRef, useEditorPlugin } from '@udecode/plate/react'
 
-- `readOnly`
-- `onChange`
-- `decorate`
-- `renderElement`
-- `renderLeaf`
+// Direct store access
+const store = usePlateStore(id?) 
 
-## Selectors
+// Via editor reference
+const store = useEditorRef().store
 
-Use `usePlateSelectors(id).<state property>()` when you need to subscribe to a value.
+// Via plugin context
+const store = useEditorPlugin(myPlugin).store
+```
 
-- **Example:** `const value = usePlateSelectors(id).value()` will subscribe to `value` changes.
-- It's using [useAtomValue](https://jotai.org/docs/utils/use-atom-value) under the hood.
+Note: The `id` parameter is optional and defaults to the closest editor.
 
-## Actions
+## Store Hooks
 
-Use `usePlateStates(id).<state property>()` when you need both the value and the setter of a store property.
+The following hooks are available to interact with the Plate store:
 
-- **Example:** `const [value, setValue] = usePlateStates(id).value()`
-- It's using [useAtom](https://jotai.org/docs/basics/primitives#use-atom) under the hood.
+```ts
+import { usePlateState, usePlateValue, usePlateSet } from '@udecode/plate/react'
+```
 
-### `useRedecorate`
+### usePlateState
 
-Redecorate the editor.
+Get and set a store property value.
 
-<API name="useRedecorate">
-<APIParameters>
-  <APIItem name="id" type="string" optional>
-    Editor ID.
-  </APIItem>
-</APIParameters>
-</API>
+```ts
+const [readOnly, setReadOnly] = usePlateState('readOnly', id?)
+```
+
+### usePlateValue
+
+Subscribe to a store property value.
+
+```ts
+const readOnly = usePlateValue('readOnly', id?)
+```
+
+### usePlateSet
+
+Set a store property value.
+
+```ts
+const setReadOnly = usePlateSet('readOnly', id?)
+```
 
 ## Event Editor Store
 
@@ -169,12 +177,19 @@ Last editor ID.
 </APIState>
 </API>
 
-### `useEventEditorSelectors`
 
-Hook selectors.
+```ts
+import { EventEditorStore, useEventEditorValue } from '@udecode/plate'
 
-- **Example:** `useEventEditorSelectors().focus()` will get the
-  last focused editor ID.
+// Get a value
+const focusedId = EventEditorStore.get('focus')
+
+// Set a value
+EventEditorStore.set('focus', editorId)
+
+// Subscribe to changes
+const focusedId = useEventEditorValue('focus')
+```
 
 ### `useEventPlateId`
 

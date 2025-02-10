@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-slash-command",
-  "version": "43.0.0",
+  "version": "44.0.0",
   "description": "Slash commands plugin for Plate",
   "keywords": [
     "plate",
@@ -50,13 +50,13 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-combobox": "43.0.0"
+    "@udecode/plate-combobox": "44.0.0"
   },
   "devDependencies": {
     "@udecode/plate": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate": ">=43.0.5",
+    "@udecode/plate": ">=44.0.1",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

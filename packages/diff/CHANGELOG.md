@@ -1,5 +1,13 @@
 # @udecode/plate-diff
 
+## 44.0.2
+
+### Patch Changes
+
+- [#4067](https://github.com/udecode/plate/pull/4067) by [@12joan](https://github.com/12joan) – Fix: `computeDiff` deletes and reinserts nodes that differ only by their children and ignored props
+
+## 44.0.0
+
 ## 43.0.0
 
 ## 42.0.0

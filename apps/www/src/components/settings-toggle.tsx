@@ -2,6 +2,8 @@
 
 import React from 'react';
 
+import { useStoreValue } from '@udecode/plate/react';
+
 import {
   Tooltip,
   TooltipContent,
@@ -9,12 +11,12 @@ import {
   TooltipTrigger,
 } from '@/registry/default/plate-ui/tooltip';
 
-import { settingsStore } from './context/settings-store';
+import { SettingsStore } from './context/settings-store';
 import { Icons } from './icons';
 import { Toggle } from './ui/toggle';
 
 export function SettingsToggle() {
-  const showSettings = settingsStore.use.showSettings();
+  const showSettings = useStoreValue(SettingsStore, 'showSettings');
 
   return (
     <TooltipProvider>
@@ -24,7 +26,7 @@ export function SettingsToggle() {
             size="circle"
             variant="floating"
             onPressedChange={(pressed) =>
-              settingsStore.set.showSettings(pressed)
+              SettingsStore.set('showSettings', pressed)
             }
             pressed={showSettings}
           >

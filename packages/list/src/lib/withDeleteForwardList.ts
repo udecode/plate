@@ -21,8 +21,8 @@ import {
   isAcrossListItems,
 } from './queries/index';
 import {
-  moveListItemUp,
   moveListItemsToList,
+  moveListItemUp,
   removeFirstListItem,
   removeListItem,
 } from './transforms/index';
@@ -76,6 +76,7 @@ const selectionIsInAListHandler = (
     const liType = editor.getType(BaseListItemPlugin);
     const _nodes = editor.api.nodes({
       at: listItem[1],
+      mode: 'lowest',
       match: (node, path) => {
         if (path.length === 0) {
           return false;
@@ -87,7 +88,6 @@ const selectionIsInAListHandler = (
 
         return isNodeLi && isSiblingOfNodeLi;
       },
-      mode: 'lowest',
     });
     const liWithSiblings = Array.from(_nodes, (entry) => entry[1])[0];
 
@@ -153,8 +153,8 @@ const selectionIsInAListHandler = (
     const licType = editor.getType(BaseListItemContentPlugin);
     const _licNodes = editor.api.nodes<TElement>({
       at: pointAfterListItem.path,
-      match: (node) => node.type === licType,
       mode: 'lowest',
+      match: (node) => node.type === licType,
     });
     const nextSelectableLic = [..._licNodes][0];
 

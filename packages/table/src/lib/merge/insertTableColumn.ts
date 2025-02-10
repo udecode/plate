@@ -1,9 +1,9 @@
 import {
   type Path,
   type SlateEditor,
+  getEditorPlugin,
   NodeApi,
   PathApi,
-  getEditorPlugin,
 } from '@udecode/plate';
 import cloneDeep from 'lodash/cloneDeep.js';
 

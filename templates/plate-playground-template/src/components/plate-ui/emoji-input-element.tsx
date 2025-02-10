@@ -3,9 +3,9 @@
 import React, { useMemo, useState } from 'react';
 
 import { withRef } from '@udecode/cn';
-import { useEditorPlugin } from '@udecode/plate/react';
 import { EmojiInlineIndexSearch, insertEmoji } from '@udecode/plate-emoji';
 import { EmojiPlugin } from '@udecode/plate-emoji/react';
+import { usePluginOption } from '@udecode/plate/react';
 
 import { useDebounce } from '@/hooks/use-debounce';
 
@@ -22,8 +22,7 @@ import { PlateElement } from './plate-element';
 export const EmojiInputElement = withRef<typeof PlateElement>(
   ({ className, ...props }, ref) => {
     const { children, editor, element } = props;
-    const { useOption } = useEditorPlugin(EmojiPlugin);
-    const data = useOption('data')!;
+    const data = usePluginOption(EmojiPlugin, 'data')!;
     const [value, setValue] = useState('');
     const debouncedValue = useDebounce(value, 100);
     const isPending = value !== debouncedValue;

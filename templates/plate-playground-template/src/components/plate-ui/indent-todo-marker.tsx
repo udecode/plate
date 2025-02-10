@@ -3,11 +3,11 @@
 import type { SlateRenderElementProps } from '@udecode/plate';
 
 import { cn } from '@udecode/cn';
-import { useReadOnly } from '@udecode/plate/react';
 import {
   useIndentTodoListElement,
   useIndentTodoListElementState,
 } from '@udecode/plate-indent-list/react';
+import { useReadOnly } from '@udecode/plate/react';
 
 import { Checkbox } from './checkbox';
 
@@ -22,7 +22,7 @@ export const TodoMarker = ({
     <div contentEditable={false}>
       <Checkbox
         className={cn(
-          'absolute -left-6 top-1',
+          'absolute top-1 -left-6',
           readOnly && 'pointer-events-none'
         )}
         {...checkboxProps}

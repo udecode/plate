@@ -12,7 +12,7 @@ export const TodoMarkerStatic = ({
   return (
     <div contentEditable={false}>
       <CheckboxStatic
-        className="pointer-events-none absolute -left-6 top-1"
+        className="pointer-events-none absolute top-1 -left-6"
         checked={element.checked as boolean}
       />
     </div>

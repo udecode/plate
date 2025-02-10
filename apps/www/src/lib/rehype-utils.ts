@@ -56,7 +56,7 @@ export function getAllFiles(name: string, seen = new Set<string>()) {
 
   seen.add(name);
 
-  const component: any = registry.find((c) => c.name === name);
+  const component: any = registry.items.find((c) => c.name === name);
 
   if (!component) {
     throw new Error(`File ${name} not found`);
@@ -119,7 +119,7 @@ export function getAllDependencies(
 
   seen.add(name);
 
-  const component = registry.find((c) => c.name === name);
+  const component = registry.items.find((c) => c.name === name);
 
   if (!component) {
     throw new Error(`Dependency ${name} not found`);

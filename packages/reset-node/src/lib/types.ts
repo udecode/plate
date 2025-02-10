@@ -14,9 +14,3 @@ export interface ResetNodePluginRule {
   /** Callback called when resetting. */
   onReset?: (editor: SlateEditor) => void;
 }
-
-export interface ResetNodePluginOptions {
-  disableEditorReset?: boolean;
-  disableFirstBlockReset?: boolean;
-  rules?: ResetNodePluginRule[];
-}

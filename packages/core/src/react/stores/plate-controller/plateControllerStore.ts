@@ -4,12 +4,12 @@ import type { JotaiStore } from 'jotai-x';
 
 import { type Atom, atom } from 'jotai';
 
-import { createAtomStore } from '../../libs';
+import { createAtomStore, useStoreAtomValue } from '../../libs';
 
-export const {
+const {
   PlateControllerProvider: PlateController,
   plateControllerStore,
-  usePlateControllerStore,
+  usePlateControllerStore: _usePlateControllerStore,
 } = createAtomStore(
   {
     activeId: atom<string | null>(null),
@@ -21,23 +21,29 @@ export const {
   }
 );
 
-export const usePlateControllerSelectors = () => usePlateControllerStore().get;
+export { PlateController, plateControllerStore };
 
-export const usePlateControllerActions = () => usePlateControllerStore().set;
+export const usePlateControllerLocalStore: typeof _usePlateControllerStore = (
+  options
+) =>
+  _usePlateControllerStore({
+    scope: typeof options === 'string' ? options : undefined,
+    warnIfNoStore: false,
+    ...(typeof options === 'object' ? options : {}),
+  });
 
-export const usePlateControllerStates = () => usePlateControllerStore().use;
+// export const usePlateControllerStore = (options?: UsePlateControllerStoreOptions) =>
+//   _usePlateControllerStore(options);
 
 export const usePlateControllerExists = () =>
-  !!usePlateControllerStore().store({ warnIfNoStore: false });
+  !!usePlateControllerLocalStore().store;
 
 /**
  * Retrieve from PlateController the JotaiStore for the editor with a given ID,
  * or the active editor if no ID is provided, or the first primary editor if no
  * editor is active, or null.
  */
-export const usePlateControllerEditorStore = (
-  idProp?: string
-): JotaiStore | null => {
+export const usePlateControllerStore = (idProp?: string): JotaiStore | null => {
   const storeAtom: Atom<JotaiStore | null> = React.useMemo(
     () =>
       atom((get) => {
@@ -67,5 +73,5 @@ export const usePlateControllerEditorStore = (
     [idProp]
   );
 
-  return usePlateControllerSelectors().atom(storeAtom);
+  return useStoreAtomValue(usePlateControllerLocalStore(), storeAtom);
 };

@@ -13,6 +13,11 @@ import {
   BlockSelectionPlugin,
   useIsSelecting,
 } from '@udecode/plate-selection/react';
+import {
+  useEditorPlugin,
+  useHotkeys,
+  usePluginOption,
+} from '@udecode/plate/react';
 import { Loader2Icon } from 'lucide-react';
 
 import { useChat } from '@/registry/default/components/editor/use-chat';
@@ -23,9 +28,9 @@ import { Command, CommandList, InputCommand } from './command';
 import { Popover, PopoverAnchor, PopoverContent } from './popover';
 
 export function AIMenu() {
-  const { api, editor, useOption } = useEditorPlugin(AIChatPlugin);
-  const open = useOption('open');
-  const mode = useOption('mode');
+  const { api, editor } = useEditorPlugin(AIChatPlugin);
+  const open = usePluginOption(AIChatPlugin, 'open');
+  const mode = usePluginOption(AIChatPlugin, 'mode');
   const isSelecting = useIsSelecting();
 
   const [value, setValue] = React.useState('');
@@ -95,7 +100,7 @@ export function AIMenu() {
 
   return (
     <Popover open={open} onOpenChange={setOpen} modal={false}>
-      <PopoverAnchor virtualRef={{ current: anchorElement }} />
+      <PopoverAnchor virtualRef={{ current: anchorElement! }} />
 
       <PopoverContent
         className="border-none bg-transparent p-0 shadow-none"
@@ -125,14 +130,14 @@ export function AIMenu() {
           )}
 
           {isLoading ? (
-            <div className="flex grow select-none items-center gap-2 p-2 text-sm text-muted-foreground">
+            <div className="text-muted-foreground flex grow select-none items-center gap-2 p-2 text-sm">
               <Loader2Icon className="size-4 animate-spin" />
               {messages.length > 1 ? 'Editing...' : 'Thinking...'}
             </div>
           ) : (
             <InputCommand
               variant="ghost"
-              className="rounded-none border-b border-solid border-border [&_svg]:hidden"
+              className="border-border rounded-none border-b border-solid [&_svg]:hidden"
               value={input}
               onKeyDown={(e) => {
                 if (isHotkey('backspace')(e) && input.length === 0) {

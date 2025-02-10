@@ -8,7 +8,7 @@ import {
 } from '@udecode/plate/react';
 
 import { type TPlaceholderElement, BasePlaceholderPlugin } from '../../../lib';
-import { usePlaceholderStore } from '../placeholderStore';
+import { usePlaceholderSet, usePlaceholderValue } from '../placeholderStore';
 
 export const usePlaceholderPopoverState = () => {
   const editor = useEditorRef();
@@ -24,11 +24,11 @@ export const usePlaceholderPopoverState = () => {
   const element = useElement<TPlaceholderElement>(BasePlaceholderPlugin.key);
   const { id, mediaType } = element;
 
-  const setProgresses = usePlaceholderStore().set.progresses();
-  const setIsUploading = usePlaceholderStore().set.isUploading();
-  const setUpdatedFiles = usePlaceholderStore().set.updatedFiles();
+  const setProgresses = usePlaceholderSet('progresses');
+  const setIsUploading = usePlaceholderSet('isUploading');
+  const setUpdatedFiles = usePlaceholderSet('updatedFiles');
 
-  const size = usePlaceholderStore().get.size();
+  const size = usePlaceholderValue('size');
 
   return {
     id,

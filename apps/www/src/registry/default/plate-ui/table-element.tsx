@@ -7,16 +7,6 @@ import type { TTableElement } from '@udecode/plate-table';
 
 import { PopoverAnchor } from '@radix-ui/react-popover';
 import { cn, withRef } from '@udecode/cn';
-import {
-  useEditorPlugin,
-  useEditorRef,
-  useEditorSelector,
-  useElement,
-  useReadOnly,
-  useRemoveNodeButton,
-  useSelected,
-  withHOC,
-} from '@udecode/plate/react';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 import {
   TablePlugin,
@@ -25,6 +15,17 @@ import {
   useTableElement,
   useTableMergeState,
 } from '@udecode/plate-table/react';
+import {
+  useEditorPlugin,
+  useEditorRef,
+  useEditorSelector,
+  useElement,
+  usePluginOption,
+  useReadOnly,
+  useRemoveNodeButton,
+  useSelected,
+  withHOC,
+} from '@udecode/plate/react';
 import {
   ArrowDown,
   ArrowLeft,
@@ -61,7 +62,7 @@ export const TableElement = withHOC(
   TableProvider,
   withRef<typeof PlateElement>(({ children, className, ...props }, ref) => {
     const readOnly = useReadOnly();
-    const isSelectionAreaVisible = props.editor.useOption(
+    const isSelectionAreaVisible = usePluginOption(
       BlockSelectionPlugin,
       'isSelectionAreaVisible'
     );
@@ -88,7 +89,7 @@ export const TableElement = withHOC(
           <table
             ref={ref}
             className={cn(
-              'ml-px mr-0 table h-px table-fixed border-collapse',
+              'mr-0 ml-px table h-px table-fixed border-collapse',
               isSelectingCell && 'selection:bg-transparent'
             )}
             {...tableProps}
@@ -130,7 +131,7 @@ export const TableFloatingToolbar = withRef<typeof PopoverContent>(
           {...props}
         >
           <Toolbar
-            className="flex w-auto max-w-[80vw] flex-row overflow-x-auto rounded-md border bg-popover p-1 shadow-md scrollbar-hide print:hidden"
+            className="flex scrollbar-hide w-auto max-w-[80vw] flex-row overflow-x-auto rounded-md border bg-popover p-1 shadow-md print:hidden"
             contentEditable={false}
           >
             <ToolbarGroup>

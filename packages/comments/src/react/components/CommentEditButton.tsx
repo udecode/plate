@@ -1,32 +1,17 @@
 import { createPrimitiveComponent } from '@udecode/plate/react';
 
-import {
-  useComment,
-  useCommentActions,
-} from '../stores/comment/CommentProvider';
+import { useComment, useCommentSet } from '../stores/comment/CommentProvider';
 
-export const useCommentEditButtonState = () => {
-  const setIsMenuOpen = useCommentActions().isMenuOpen();
+export const useCommentEditButton = () => {
   const comment = useComment()!;
-  const editingValue = useCommentActions().editingValue();
+  const setIsMenuOpen = useCommentSet('isMenuOpen');
+  const setEditingValue = useCommentSet('editingValue');
 
-  return {
-    comment,
-    editingValue,
-    setIsMenuOpen,
-  };
-};
-
-export const useCommentEditButton = ({
-  comment,
-  editingValue,
-  setIsMenuOpen,
-}: ReturnType<typeof useCommentEditButtonState>) => {
   return {
     props: {
       onClick: () => {
         setIsMenuOpen(false);
-        editingValue(comment.value);
+        setEditingValue(comment.value);
       },
     },
   };
@@ -34,5 +19,4 @@ export const useCommentEditButton = ({
 
 export const CommentEditButton = createPrimitiveComponent('button')({
   propsHook: useCommentEditButton,
-  stateHook: useCommentEditButtonState,
 });

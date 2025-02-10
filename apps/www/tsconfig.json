@@ -14,18 +14,26 @@
         "name": "next"
       }
     ],
+    "allowImportingTsExtensions": true
   },
   "include": [
-    ".eslintrc.cjs",
     "next-env.d.ts",
     "next.config.ts",
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "src/**/*.cjs",
-    "src/**/*.mjs",
-    "./scripts/*.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.cts",
+    "**/*.ctsx",
+    "**/*.mts",
+    "**/*.mtsx",
+    "**/*.js",
+    "**/*.jsx",
+    "**/*.cjs",
+    "**/*.cjsx",
+    "**/*.mjs",
+    "**/*.mjsx",
     ".next/types/**/*.ts",
-    ".contentlayer/generated"
+    ".contentlayer/generated",
+    "./scripts/**/*.ts"
   ],
-  "exclude": ["node_modules", "./scripts/build-registry.mts", "__registry__"]
+  "exclude": ["node_modules", "__registry__"]
 }

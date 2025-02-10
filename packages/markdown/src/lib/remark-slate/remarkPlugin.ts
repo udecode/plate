@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-
 import type { Processor } from 'unified';
 
 import type { MdastNode, RemarkPluginOptions } from './types';

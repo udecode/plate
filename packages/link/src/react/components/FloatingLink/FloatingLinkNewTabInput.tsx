@@ -3,13 +3,14 @@ import React from 'react';
 import {
   createPrimitiveComponent,
   useEditorPlugin,
+  usePluginOption,
 } from '@udecode/plate/react';
 
 import { LinkPlugin } from '../../LinkPlugin';
 
 export const useFloatingLinkNewTabInputState = () => {
-  const { getOptions, useOption } = useEditorPlugin(LinkPlugin);
-  const updated = useOption('updated');
+  const { getOptions } = useEditorPlugin(LinkPlugin);
+  const updated = usePluginOption(LinkPlugin, 'updated');
   const ref = React.useRef<HTMLInputElement>(null);
   const [checked, setChecked] = React.useState<boolean>(getOptions().newTab);
 

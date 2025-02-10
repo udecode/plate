@@ -8,12 +8,12 @@ import {
 } from '../../../lib';
 
 export type EmojiFloatingGridType = IGrid<
-  React.RefObject<HTMLDivElement>,
+  React.RefObject<HTMLDivElement | null>,
   EmojiCategoryList
 >;
 
 export class EmojiFloatingGrid extends Grid<
-  React.RefObject<HTMLDivElement>,
+  React.RefObject<HTMLDivElement | null>,
   EmojiCategoryList
 > {
   public createRootRef() {
@@ -22,7 +22,7 @@ export class EmojiFloatingGrid extends Grid<
 }
 
 export class EmojiGridSectionWithRoot extends AGridSection<
-  React.RefObject<HTMLDivElement>,
+  React.RefObject<HTMLDivElement | null>,
   EmojiCategoryList
 > {
   protected createRootRef() {
