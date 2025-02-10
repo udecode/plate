@@ -3,7 +3,6 @@
 import * as React from 'react';
 
 import { type NodeEntry, type TNode, isHotkey } from '@udecode/plate';
-import { useEditorPlugin, useHotkeys } from '@udecode/plate/react';
 import {
   AIChatPlugin,
   useEditorChat,
@@ -130,14 +129,14 @@ export function AIMenu() {
           )}
 
           {isLoading ? (
-            <div className="text-muted-foreground flex grow select-none items-center gap-2 p-2 text-sm">
+            <div className="flex grow items-center gap-2 p-2 text-sm text-muted-foreground select-none">
               <Loader2Icon className="size-4 animate-spin" />
               {messages.length > 1 ? 'Editing...' : 'Thinking...'}
             </div>
           ) : (
             <InputCommand
               variant="ghost"
-              className="border-border rounded-none border-b border-solid [&_svg]:hidden"
+              className="rounded-none border-b border-solid border-border [&_svg]:hidden"
               value={input}
               onKeyDown={(e) => {
                 if (isHotkey('backspace')(e) && input.length === 0) {
