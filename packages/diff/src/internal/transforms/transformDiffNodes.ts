@@ -28,7 +28,10 @@ const childrenOnlyStrategy: Handler = (node, nextNode, options) => {
   if (
     node.children != null &&
     nextNode.children != null &&
-    isEqual(node, nextNode, options.ignoreProps || [], ['children'])
+    isEqual(node, nextNode, {
+      ignoreDeep: options.ignoreProps,
+      ignoreShallow: ['children'],
+    })
   ) {
     const children = computeDiff(
       node.children as Descendant[],

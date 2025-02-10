@@ -13,11 +13,10 @@ export interface IsEqualOptions {
 
 const without = (
   x: unknown,
-  ignoreDeep: string[],
-  ignoreShallow: string[] = []
+  { ignoreDeep = [], ignoreShallow = [] }: IsEqualOptions = {}
 ): unknown => {
   if (Array.isArray(x))
-    return x.map((y) => without(y, ignoreDeep, ignoreShallow));
+    return x.map((y) => without(y, { ignoreDeep, ignoreShallow }));
 
   if (!isPlainObject(x)) return x;
   const obj = x as UnknownObject;
@@ -26,7 +25,7 @@ const without = (
 
   for (const [key, value] of Object.entries(obj)) {
     if (ignoreShallow.includes(key) || ignoreDeep.includes(key)) continue;
-    result[key] = without(value, ignoreDeep);
+    result[key] = without(value, { ignoreDeep });
   }
 
   return result;
@@ -35,10 +34,5 @@ const without = (
 export const isEqual = (
   value: unknown,
   other: unknown,
-  ignoreDeep: string[] = [],
-  ignoreShallow: string[] = []
-) =>
-  baseIsEqual(
-    without(value, ignoreDeep, ignoreShallow),
-    without(other, ignoreDeep, ignoreShallow)
-  );
+  options?: IsEqualOptions
+) => baseIsEqual(without(value, options), without(other, options));

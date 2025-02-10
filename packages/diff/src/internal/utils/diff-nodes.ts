@@ -89,7 +89,10 @@ export function isEqualNode(
     ElementApi.isElement(other) &&
     value.children !== null &&
     other.children !== null &&
-    isEqual(value, other, ignoreProps, ['children'])
+    isEqual(value, other, {
+      ignoreDeep: ignoreProps,
+      ignoreShallow: ['children'],
+    })
   );
 }
 

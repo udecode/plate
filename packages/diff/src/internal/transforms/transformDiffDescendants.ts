@@ -91,7 +91,7 @@ export function transformDiffDescendants(
            * If the node lists are identical when ignored props are excluded,
            * just return nextNodes.
            */
-          if (isEqual(nodes, nextNodes, ignoreProps || [])) {
+          if (isEqual(nodes, nextNodes, { ignoreDeep: ignoreProps })) {
             passThroughNodes(...nextNodes);
             // Consume two diff chunks (delete and insert)
             i += 2;
