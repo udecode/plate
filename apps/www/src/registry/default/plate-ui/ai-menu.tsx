@@ -39,18 +39,9 @@ export function AIMenu() {
   const [newUpdateNode, setNewUpdateNode] = React.useState<TNode | null>(null);
 
   const updateAnchorElement = (node: TNode) => {
-    setNewUpdateNode(node);
+    const el = editor.api.toDOMNode(editor)!;
+    setAnchorElement(el);
   };
-
-  React.useEffect(() => {
-    if (newUpdateNode) {
-      const el = editor.api.toDOMNode(newUpdateNode);
-
-      console.log('el', el);
-
-      setAnchorElement(el!);
-    }
-  }, [newUpdateNode]);
 
   const content = useLastAssistantMessage()?.content;
 
