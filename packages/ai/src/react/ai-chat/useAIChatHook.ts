@@ -1,5 +1,6 @@
-import { deserializeMd } from '@udecode/plate-markdown';
 import type { Operation } from '@udecode/plate';
+
+import { deserializeMd } from '@udecode/plate-markdown';
 import { useEditorPlugin, usePluginOption } from '@udecode/plate/react';
 
 import type { AIPluginConfig } from '../ai/AIPlugin';
@@ -54,8 +55,9 @@ export const useAIChatHooks = () => {
 
       const lastAINode = editor.history.undos
         .at(-1)
-        ?.operations.filter((op: Operation) => op.type === 'insert_node')
-        .at(-1)?.node;
+        ?.operations.findLast(
+          (op: Operation) => op.type === 'insert_node'
+        )?.node;
       if (lastAINode && anchorUpdate) {
         anchorUpdate(lastAINode);
       }

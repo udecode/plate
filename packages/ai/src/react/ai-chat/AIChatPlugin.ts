@@ -86,10 +86,10 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
   dependencies: ['ai'],
   options: {
     aiEditor: null,
+    anchorUpdate: undefined,
     chat: { messages: [] } as any,
     mode: 'chat',
     open: false,
-    anchorUpdate: undefined,
     trigger: ' ',
     triggerPreviousCharPattern: /^\s?$/,
     promptTemplate: () => '{prompt}',
