@@ -40,11 +40,36 @@ export function AIMenu() {
   const [anchorElement, setAnchorElement] = React.useState<HTMLElement | null>(
     null
   );
-  const [newUpdateNode, setNewUpdateNode] = React.useState<TNode | null>(null);
 
   const updateAnchorElement = (node: TNode) => {
-    const el = editor.api.toDOMNode(editor)!;
-    setAnchorElement(el);
+    const el = editor.api.toDOMNode(node)!;
+
+    if (el) {
+      setAnchorElement(el);
+    } else {
+      // Detect a change to the editor content and update the anchor element
+      const editorDOM = editor.api.toDOMNode(editor)!;
+
+      const callback = () => {
+        const nodeDOM = editor.api.toDOMNode(node)!;
+
+        if (nodeDOM) {
+          setAnchorElement(nodeDOM);
+          editorDOM.removeEventListener('DOMNodeInserted', callback);
+        }
+      };
+
+      editorDOM.addEventListener('DOMNodeInserted', callback);
+
+      setTimeout(() => {
+        editorDOM.removeEventListener('DOMNodeInserted', callback);
+        const nodeDOM = editor.api.toDOMNode(node)!;
+
+        if (nodeDOM) {
+          setAnchorElement(nodeDOM);
+        }
+      }, 1000);
+    }
   };
 
   const content = useLastAssistantMessage()?.content;
