@@ -48,10 +48,12 @@ const fakeStreamText = ({
 } = {}) => {
   // Create 3 blocks with different lengths
   const blocks = [
+    [{ delay: 73, texts: '# Hello World' }],
     Array.from({ length: chunkCount }, () => ({
       delay: faker.number.int({ max: 100, min: 30 }),
       texts: faker.lorem.words({ max: 3, min: 1 }) + ' ',
     })),
+    [{ delay: 73, texts: '### Hello World' }],
     Array.from({ length: chunkCount + 2 }, () => ({
       delay: faker.number.int({ max: 100, min: 30 }),
       texts: faker.lorem.words({ max: 3, min: 1 }) + ' ',
