@@ -26,6 +26,7 @@ export const useLinkToolbarButton = (
     props: {
       pressed: state.pressed,
       onClick: () => {
+        editor.tf.focus();
         triggerFloatingLink(editor, { focused: true });
       },
       onMouseDown: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
