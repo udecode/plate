@@ -15,7 +15,7 @@ export const useChatChunk = ({
   onChunk: (chunk: { isFirst: boolean; nodes: TText[]; text: string }) => void;
   onFinish?: ({ content }: { content: string }) => void;
 }) => {
-  const isLoading = usePluginOption(
+  const { isLoading } = usePluginOption(
     { key: 'aiChat' } as AIChatPluginConfig,
     'chat'
   );
