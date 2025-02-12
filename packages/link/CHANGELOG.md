@@ -1,5 +1,11 @@
 # @udecode/plate-link
 
+## 44.0.4
+
+### Patch Changes
+
+- [#4073](https://github.com/udecode/plate/pull/4073) by [@EvanSmith93](https://github.com/EvanSmith93) – Editor auto focuses when opening the insert link modal
+
 ## 44.0.0
 
 ## 43.0.0
