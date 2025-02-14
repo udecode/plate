@@ -1,5 +1,11 @@
 # @udecode/plate-media
 
+## 44.0.6
+
+### Patch Changes
+
+- [#4081](https://github.com/udecode/plate/pull/4081) by [@regmsif](https://github.com/regmsif) – fix: image edit link button not pressable
+
 ## 44.0.0
 
 ### Major Changes
