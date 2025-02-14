@@ -16,8 +16,10 @@ import {
 } from '@udecode/plate';
 import {
   type TSuggestionText,
+  findSuggestionNode,
   getAllSuggestionData,
   getAllSuggestionId,
+  getAllSuggestionNodes,
   getSuggestionDataList,
   getSuggestionId,
   getSuggestionKey,
@@ -48,7 +50,6 @@ import {
 import {
   type ResolvedSuggestion,
   BlockSuggestionCard,
-  getAllSuggestionNodes,
   LINE_BREAK_SUGGESTION,
 } from './suggestion-card';
 
@@ -99,8 +100,26 @@ const BlockCommentsContent = ({
     const id = getAllSuggestionId(node);
     const map = getOption('uniquePathMap');
 
-    if (!id || map.has(id)) return;
+    if (!id) return;
 
+    const previousPath = map.get(id);
+
+    // If there are no suggestion nodes in the corresponding path in the map, then update it.
+    if (PathApi.isPath(previousPath)) {
+      const nodes = findSuggestionNode(editor, { at: previousPath });
+      const parentNode = editor.api.node(previousPath);
+      let lineBreakId = null;
+
+      if (parentNode && ElementApi.isElement(parentNode)) {
+        lineBreakId = getSuggestionLineBreakId(parentNode);
+      }
+
+      if (!nodes && lineBreakId !== id) {
+        return setOption('uniquePathMap', new Map(map).set(id, blockPath));
+      }
+
+      return;
+    }
     setOption('uniquePathMap', new Map(map).set(id, blockPath));
   });
 

@@ -1,8 +1,15 @@
-import { isSlateEditor, isSlateElement, isSlateString } from '@udecode/plate';
-import { toPlatePlugin } from '@udecode/plate/react';
+import { useEffect } from 'react';
 
-import { findSuggestionNode, getSuggestionId } from '../lib';
+import { isSlateEditor, isSlateElement, isSlateString } from '@udecode/plate';
+import { toPlatePlugin, useEditorVersion } from '@udecode/plate/react';
+
+import {
+  findSuggestionNode,
+  getAllSuggestionId,
+  getSuggestionId,
+} from '../lib';
 import { BaseSuggestionPlugin } from '../lib/BaseSuggestionPlugin';
+import { getAllSuggestionNodes } from '../lib/queries/getAllSuggestionNodes';
 
 /** Enables support for suggestions in the editor. */
 export const SuggestionPlugin = toPlatePlugin(BaseSuggestionPlugin, {
@@ -46,5 +53,23 @@ export const SuggestionPlugin = toPlatePlugin(BaseSuggestionPlugin, {
 
       if (!isSet) unsetActiveSuggestion();
     },
+  },
+  useHooks: ({ editor, getOption, setOption }) => {
+    const version = useEditorVersion();
+    useEffect(() => {
+      setOption('uniquePathMap', new Map());
+
+      const suggestionNodes = [...getAllSuggestionNodes(editor)];
+
+      suggestionNodes.forEach(([node, path]) => {
+        const id = getAllSuggestionId(node);
+        const map = getOption('uniquePathMap');
+
+        if (!id || map.has(id)) return;
+
+        setOption('uniquePathMap', new Map(map).set(id, path.slice(0, 1)));
+      });
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [version]);
   },
 });

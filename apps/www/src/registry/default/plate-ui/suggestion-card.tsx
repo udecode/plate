@@ -1,18 +1,9 @@
 import React, { useState } from 'react';
 
-import type {
-  EditorNodesOptions,
-  SlateEditor,
-  TElement,
-  ValueOf,
-} from '@udecode/plate';
-
 import {
   type TResolvedSuggestion,
-  type TSuggestionText,
   acceptSuggestion,
   rejectSuggestion,
-  SUGGESTION_KEYS,
 } from '@udecode/plate-suggestion';
 import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
 import { useEditorPlugin } from '@udecode/plate/react';
@@ -24,17 +15,6 @@ import { CommentAvatar } from './comment-avatar';
 export interface ResolvedSuggestion extends TResolvedSuggestion {}
 
 export const LINE_BREAK_SUGGESTION = '__line_break__';
-
-export const getAllSuggestionNodes = <E extends SlateEditor>(
-  editor: E,
-  { at = [], ...options }: EditorNodesOptions<ValueOf<E>> = {}
-) =>
-  editor.api.nodes<TElement | TSuggestionText>({
-    at,
-    mode: 'all',
-    match: (n) => n[SuggestionPlugin.key] || n[SUGGESTION_KEYS.lineBreak],
-    ...options,
-  });
 
 export const BlockSuggestionCard = ({
   idx,
@@ -74,6 +54,12 @@ export const BlockSuggestionCard = ({
     },
   };
 
+  const suggestionText2Array = (text: string) => {
+    if (text === LINE_BREAK_SUGGESTION) return ['line breaks'];
+
+    return text.split(LINE_BREAK_SUGGESTION);
+  };
+
   return (
     <div
       key={`${suggestion.suggestionId}_${idx}`}
@@ -96,27 +82,24 @@ export const BlockSuggestionCard = ({
           <div className="flex flex-col gap-2">
             {suggestion.type === 'remove' && (
               <React.Fragment>
-                {suggestion.text
-                  ?.split(LINE_BREAK_SUGGESTION)
-                  .map((text, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">
-                        Delete:
-                      </span>
+                {suggestionText2Array(suggestion.text!).map((text, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">
+                      Delete:
+                    </span>
 
-                      <span key={index} className="text-sm">
-                        {text || 'line breaks'}
-                      </span>
-                    </div>
-                  ))}
+                    <span key={index} className="text-sm">
+                      {text}
+                    </span>
+                  </div>
+                ))}
               </React.Fragment>
             )}
 
             {suggestion.type === 'insert' && (
               <React.Fragment>
-                {suggestion.newText
-                  ?.split(LINE_BREAK_SUGGESTION)
-                  .map((text, index) => (
+                {suggestionText2Array(suggestion.newText!).map(
+                  (text, index) => (
                     <div key={index} className="flex items-center gap-2">
                       <span className="text-sm text-muted-foreground">
                         Add:
@@ -126,15 +109,15 @@ export const BlockSuggestionCard = ({
                         {text || 'line breaks'}
                       </span>
                     </div>
-                  ))}
+                  )
+                )}
               </React.Fragment>
             )}
 
             {suggestion.type === 'replace' && (
               <div className="flex flex-col gap-2">
-                {suggestion.newText
-                  ?.split(LINE_BREAK_SUGGESTION)
-                  .map((text, index) => (
+                {suggestionText2Array(suggestion.newText!).map(
+                  (text, index) => (
                     <React.Fragment key={index}>
                       <div
                         key={index}
@@ -144,20 +127,19 @@ export const BlockSuggestionCard = ({
                         <span className="text-sm">{text || 'line breaks'}</span>
                       </div>
                     </React.Fragment>
-                  ))}
+                  )
+                )}
 
-                {suggestion.text
-                  ?.split(LINE_BREAK_SUGGESTION)
-                  .map((text, index) => (
-                    <React.Fragment key={index}>
-                      <div key={index} className="flex items-center">
-                        <span className="text-sm text-muted-foreground">
-                          {index === 0 ? 'Replace:' : 'Delete:'}
-                        </span>
-                        <span className="text-sm">{text || 'line breaks'}</span>
-                      </div>
-                    </React.Fragment>
-                  ))}
+                {suggestionText2Array(suggestion.text!).map((text, index) => (
+                  <React.Fragment key={index}>
+                    <div key={index} className="flex items-center">
+                      <span className="text-sm text-muted-foreground">
+                        {index === 0 ? 'Replace:' : 'Delete:'}
+                      </span>
+                      <span className="text-sm">{text || 'line breaks'}</span>
+                    </div>
+                  </React.Fragment>
+                ))}
               </div>
             )}
 

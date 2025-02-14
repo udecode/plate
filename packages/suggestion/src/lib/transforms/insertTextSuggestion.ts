@@ -32,7 +32,7 @@ export const insertTextSuggestion = (editor: SlateEditor, text: string) => {
       },
       {
         at: editor.selection!,
-        select: true,
+        // select: true,
       }
     );
   });

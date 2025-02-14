@@ -43,6 +43,7 @@ export const withSuggestion: OverrideEditor<SuggestionConfig> = ({
       return addMark(key, value);
     },
     apply(operation) {
+      console.log("🚀 ~ apply ~ operation:", operation)
       return apply(operation);
     },
     deleteBackward(unit) {
