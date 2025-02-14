@@ -25,6 +25,7 @@ export const acceptSuggestion = (
           if (lineBreakData)
             return (
               lineBreakData.type === 'remove' &&
+              lineBreakData.isLineBreak &&
               lineBreakData.id === description.suggestionId
             );
 
@@ -66,8 +67,15 @@ export const acceptSuggestion = (
         if (ElementApi.isElement(n)) {
           const lineBreakData = getSuggestionLineBreakData(n);
 
-          if (lineBreakData)
-            return lineBreakData.id === description.suggestionId;
+          if (lineBreakData) {
+            const isLineBreak = lineBreakData.isLineBreak;
+
+            if (isLineBreak)
+              return lineBreakData.id === description.suggestionId;
+
+            return lineBreakData.type === 'insert' &&
+              lineBreakData.id === description.suggestionId
+          }
         }
 
         return false;
@@ -90,6 +98,19 @@ export const acceptSuggestion = (
 
           return false;
         }
+
+        if (ElementApi.isElement(n)) {
+          const lineBreakData = getSuggestionLineBreakData(n);
+
+          if (lineBreakData)
+            return (
+              lineBreakData.type === 'remove' &&
+              lineBreakData.id === description.suggestionId &&
+              !lineBreakData.isLineBreak
+            );
+        }
+
+        return false;
       },
     });
   });

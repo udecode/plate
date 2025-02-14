@@ -32,6 +32,7 @@ export const rejectSuggestion = (
           if (lineBreakData)
             return (
               lineBreakData.type === 'insert' &&
+              lineBreakData.isLineBreak &&
               lineBreakData.id === description.suggestionId
             );
 
@@ -63,8 +64,17 @@ export const rejectSuggestion = (
         if (ElementApi.isElement(n)) {
           const lineBreakData = getSuggestionLineBreakData(n);
 
-          if (lineBreakData)
-            return lineBreakData.id === description.suggestionId;
+          if (lineBreakData) {
+            const isLineBreak = lineBreakData.isLineBreak;
+
+            if (isLineBreak)
+              return lineBreakData.id === description.suggestionId;
+
+            return (
+              lineBreakData.type === 'remove' &&
+              lineBreakData.id === description.suggestionId
+            );
+          }
         }
 
         return false;
@@ -73,16 +83,32 @@ export const rejectSuggestion = (
 
     editor.tf.removeNodes({
       at: [],
+      mode: 'all',
       match: (n) => {
-        const node = n as TSuggestionText;
+        if (TextApi.isText(n)) {
+          const node = n as TSuggestionText;
 
-        const suggestionData = getSuggestionData(node);
+          const suggestionData = getSuggestionData(node);
 
-        if (suggestionData)
-          return (
-            suggestionData.type === 'insert' &&
-            suggestionData.id === description.suggestionId
-          );
+          if (suggestionData)
+            return (
+              suggestionData.type === 'insert' &&
+              suggestionData.id === description.suggestionId
+            );
+
+          return false;
+        }
+
+        if (ElementApi.isElement(n)) {
+          const lineBreakData = getSuggestionLineBreakData(n);
+
+          if (lineBreakData)
+            return (
+              lineBreakData.type === 'insert' &&
+              lineBreakData.id === description.suggestionId &&
+              !lineBreakData.isLineBreak
+            );
+        }
 
         return false;
       },

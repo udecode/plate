@@ -141,6 +141,7 @@ describe('rejectSuggestion', () => {
     const lineBreakData = {
       id: '1',
       createdAt: Date.now(),
+      isLineBreak: true,
       type: 'insert',
       userId: 'testId',
     };
@@ -175,6 +176,7 @@ describe('rejectSuggestion', () => {
     const lineBreakData = {
       id: '1',
       createdAt: Date.now(),
+      isLineBreak: true,
       type: 'insert',
       userId: 'testId',
     };

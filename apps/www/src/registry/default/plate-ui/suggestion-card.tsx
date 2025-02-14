@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 
+import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
+import { HEADING_KEYS } from '@udecode/plate-heading';
 import {
   type TResolvedSuggestion,
   acceptSuggestion,
   rejectSuggestion,
 } from '@udecode/plate-suggestion';
 import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
-import { useEditorPlugin } from '@udecode/plate/react';
+import { ParagraphPlugin, useEditorPlugin } from '@udecode/plate/react';
 import { CheckIcon, XIcon } from 'lucide-react';
 
 import { Button } from './button';
@@ -15,6 +18,18 @@ import { CommentAvatar } from './comment-avatar';
 export interface ResolvedSuggestion extends TResolvedSuggestion {}
 
 export const LINE_BREAK_SUGGESTION = '__line_break__';
+
+export const TYPE_TEXT_MAP: Record<string, () => string> = {
+  [BlockquotePlugin.key]: () => 'Blockquote',
+  [CodeBlockPlugin.key]: () => 'CodeBlock',
+  [HEADING_KEYS.h1]: () => `Heading 1`,
+  [HEADING_KEYS.h2]: () => `Heading 2`,
+  [HEADING_KEYS.h3]: () => `Heading 3`,
+  [HEADING_KEYS.h4]: () => `Heading 4`,
+  [HEADING_KEYS.h5]: () => `Heading 5`,
+  [HEADING_KEYS.h6]: () => `Heading 6`,
+  [ParagraphPlugin.key]: () => 'Paragraph',
+};
 
 export const BlockSuggestionCard = ({
   idx,
@@ -57,7 +72,7 @@ export const BlockSuggestionCard = ({
   const suggestionText2Array = (text: string) => {
     if (text === LINE_BREAK_SUGGESTION) return ['line breaks'];
 
-    return text.split(LINE_BREAK_SUGGESTION);
+    return text.split(LINE_BREAK_SUGGESTION).filter(Boolean);
   };
 
   return (

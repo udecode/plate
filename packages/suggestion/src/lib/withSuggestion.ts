@@ -1,4 +1,4 @@
-import { type OverrideEditor, TextApi } from '@udecode/plate';
+import { type OverrideEditor, nanoid, TextApi } from '@udecode/plate';
 import { ParagraphPlugin } from '@udecode/plate/react';
 
 import {
@@ -28,6 +28,7 @@ export const withSuggestion: OverrideEditor<SuggestionConfig> = ({
     deleteFragment,
     insertBreak,
     insertFragment,
+    insertNodes,
     insertText,
     normalizeNode,
     removeMark,
@@ -43,7 +44,6 @@ export const withSuggestion: OverrideEditor<SuggestionConfig> = ({
       return addMark(key, value);
     },
     apply(operation) {
-      console.log("🚀 ~ apply ~ operation:", operation)
       return apply(operation);
     },
     deleteBackward(unit) {
@@ -128,6 +128,7 @@ export const withSuggestion: OverrideEditor<SuggestionConfig> = ({
               [SUGGESTION_KEYS.lineBreak]: {
                 id,
                 createdAt,
+                isLineBreak: true,
                 type: 'insert',
                 userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
               },
@@ -152,8 +153,44 @@ export const withSuggestion: OverrideEditor<SuggestionConfig> = ({
       insertFragment(fragment);
     },
 
+    insertNodes(nodes, options) {
+      if (getOptions().isSuggesting) {
+        const nodesArray = Array.isArray(nodes) ? nodes : [nodes];
+
+        if (nodesArray.some((n) => n.type === 'slash_input')) {
+          api.suggestion.withoutSuggestions(() => {
+            insertNodes(nodes, options);
+          });
+
+          return;
+        }
+
+        const suggestionNodes = nodesArray.map((node) => {
+          return {
+            ...node,
+            [SUGGESTION_KEYS.lineBreak]: {
+              id: nanoid(),
+              createdAt: Date.now(),
+              type: 'insert',
+              userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
+            },
+          };
+        });
+
+        return insertNodes(suggestionNodes, options);
+      }
+
+      return insertNodes(nodes, options);
+    },
+
     insertText(text, options) {
       if (getOptions().isSuggesting) {
+        const node = editor.api.above()!;
+
+        if (node[0][SUGGESTION_KEYS.lineBreak]) {
+          return insertText(text, options);
+        }
+
         insertTextSuggestion(editor, text);
 
         return;
@@ -202,7 +239,6 @@ export const withSuggestion: OverrideEditor<SuggestionConfig> = ({
         normalizeNode(entry);
       });
     },
-
     removeMark(key) {
       if (getOptions().isSuggesting && api.isExpanded()) {
         return removeMarkSuggestion(editor, key);
@@ -213,7 +249,17 @@ export const withSuggestion: OverrideEditor<SuggestionConfig> = ({
     // Remove nodes by block selection
     removeNodes(options) {
       if (getOptions().isSuggesting) {
-        return removeNodesSuggestion(editor, options);
+        const nodes = [...editor.api.nodes(options)];
+
+        if (nodes.some(([n]) => n.type === 'slash_input')) {
+          api.suggestion.withoutSuggestions(() => {
+            removeNodes(options);
+          });
+
+          return;
+        }
+
+        return removeNodesSuggestion(editor, nodes);
       }
 
       return removeNodes(options);

@@ -9,6 +9,7 @@ import { deleteFragmentSuggestion } from './deleteFragmentSuggestion';
 
 export const insertTextSuggestion = (editor: SlateEditor, text: string) => {
   editor.tf.withoutNormalizing(() => {
+
     let resId: string | undefined;
     const { id, createdAt: createdAt } = findSuggestionProps(editor, {
       at: editor.selection!,
@@ -19,21 +20,23 @@ export const insertTextSuggestion = (editor: SlateEditor, text: string) => {
       resId = deleteFragmentSuggestion(editor);
     }
 
-    editor.tf.insertNodes<TSuggestionText>(
-      {
-        [getSuggestionKey(resId ?? id)]: {
-          id: resId ?? id,
-          createdAt: createdAt,
-          type: 'insert',
-          userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
+    editor.getApi(BaseSuggestionPlugin).suggestion.withoutSuggestions(() => {
+      editor.tf.insertNodes<TSuggestionText>(
+        {
+          [getSuggestionKey(resId ?? id)]: {
+            id: resId ?? id,
+            createdAt: createdAt,
+            type: 'insert',
+            userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
+          },
+          suggestion: true,
+          text,
         },
-        suggestion: true,
-        text,
-      },
-      {
-        at: editor.selection!,
-        // select: true,
-      }
-    );
+        {
+          at: editor.selection!,
+          select: true,
+        }
+      );
+    });
   });
 };

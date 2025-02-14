@@ -20,7 +20,7 @@ export const renderSuggestionBelowNodes = ({
     | TSuggestionLineBreak
     | undefined;
 
-  if (!lineBreakData) return;
+  if (!lineBreakData?.isLineBreak) return;
 
   return function Component({ children }: { children: React.ReactNode }) {
     return (

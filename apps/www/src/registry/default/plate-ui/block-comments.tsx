@@ -51,6 +51,7 @@ import {
   type ResolvedSuggestion,
   BlockSuggestionCard,
   LINE_BREAK_SUGGESTION,
+  TYPE_TEXT_MAP,
 } from './suggestion-card';
 
 export const BlockComments: RenderNodeWrapper = (props) => {
@@ -98,6 +99,7 @@ const BlockCommentsContent = ({
 
   suggestionNodes.forEach(([node]) => {
     const id = getAllSuggestionId(node);
+    console.log("🚀 ~ suggestionNodes.forEach ~ id:", id)
     const map = getOption('uniquePathMap');
 
     if (!id) return;
@@ -110,8 +112,8 @@ const BlockCommentsContent = ({
       const parentNode = editor.api.node(previousPath);
       let lineBreakId = null;
 
-      if (parentNode && ElementApi.isElement(parentNode)) {
-        lineBreakId = getSuggestionLineBreakId(parentNode);
+      if (parentNode && ElementApi.isElement(parentNode[0])) {
+        lineBreakId = getSuggestionLineBreakId(parentNode[0]);
       }
 
       if (!nodes && lineBreakId !== id) {
@@ -222,9 +224,13 @@ const BlockCommentsContent = ({
 
           if (lineBreakData?.id !== keyId2SuggestionId(id)) return;
           if (lineBreakData.type === 'insert') {
-            newText += LINE_BREAK_SUGGESTION;
+            newText += lineBreakData.isLineBreak
+              ? LINE_BREAK_SUGGESTION
+              : LINE_BREAK_SUGGESTION + TYPE_TEXT_MAP[node.type]();
           } else if (lineBreakData.type === 'remove') {
-            text += LINE_BREAK_SUGGESTION;
+            text += lineBreakData.isLineBreak
+              ? LINE_BREAK_SUGGESTION
+              : LINE_BREAK_SUGGESTION + TYPE_TEXT_MAP[node.type]();
           }
         }
       });
@@ -324,7 +330,6 @@ const BlockCommentsContent = ({
     return editor.api.toDOMNode(activeNode[0])!;
   }, [activeSuggestion, editor.api, suggestionNodes]);
 
-  console.log('🚀 ~ activeSuggestion:', anchorElement);
 
   if (suggestionsCount + discussions.length === 0) return <>{children}</>;
 

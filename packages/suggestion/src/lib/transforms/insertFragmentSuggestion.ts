@@ -1,7 +1,6 @@
 import {
   type Descendant,
   type SlateEditor,
-  applyDeepToNodes,
   TextApi,
 } from '@udecode/plate';
 
@@ -27,39 +26,35 @@ export const insertFragmentSuggestion = (
       type: 'insert',
     });
 
-    fragment.forEach((node) => {
-      applyDeepToNodes({
-        node,
-        source: {},
-        apply: (n) => {
-          if (TextApi.isText(n)) {
-            if (!n[BaseSuggestionPlugin.key]) {
-              // Add suggestion mark
-              n[BaseSuggestionPlugin.key] = true;
-            }
+    console.log(fragment, 'fj');
 
-            // remove the other suggestion data
-            const otherUserKeys = getSuggestionKeys(n);
-            otherUserKeys.forEach((key) => {
-              delete n[key];
-            });
+    fragment.forEach((n) => {
+      if (TextApi.isText(n)) {
+        if (!n[BaseSuggestionPlugin.key]) {
+          // Add suggestion mark
+          n[BaseSuggestionPlugin.key] = true;
+        }
 
-            n[getSuggestionKey(id)] = {
-              id,
-              createdAt,
-              type: 'insert',
-              userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
-            };
-          } else {
-            n[SUGGESTION_KEYS.lineBreak] = {
-              id,
-              createdAt,
-              type: 'insert',
-              userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
-            };
-          }
-        },
-      });
+        // remove the other suggestion data
+        const otherUserKeys = getSuggestionKeys(n);
+        otherUserKeys.forEach((key) => {
+          delete n[key];
+        });
+
+        n[getSuggestionKey(id)] = {
+          id,
+          createdAt,
+          type: 'insert',
+          userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
+        };
+      } else {
+        n[SUGGESTION_KEYS.lineBreak] = {
+          id,
+          createdAt,
+          type: 'insert',
+          userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
+        };
+      }
     });
 
     editor.getApi(BaseSuggestionPlugin).suggestion.withoutSuggestions(() => {

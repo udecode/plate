@@ -10,7 +10,6 @@ import {
   getSuggestionData,
   getSuggestionId,
   getSuggestionLineBreakData,
-  getSuggestionLineBreakId,
   isCurrentUserSuggestion,
 } from '../utils';
 import { findSuggestionNode } from './findSuggestionNode';
@@ -62,12 +61,13 @@ export const findSuggestionProps = (
 
           const lineBreak = editor.api.above<TElement>({ at: _at });
 
-          if (lineBreak) {
+          const lineBreakData =
+            lineBreak && getSuggestionLineBreakData(lineBreak?.[0]);
+
+          if (lineBreakData?.isLineBreak) {
             return {
-              id: getSuggestionLineBreakId(lineBreak[0]) ?? nanoid(),
-              createdAt:
-                getSuggestionLineBreakData(lineBreak[0])?.createdAt ??
-                Date.now(),
+              id: lineBreakData?.id ?? nanoid(),
+              createdAt: lineBreakData?.createdAt ?? Date.now(),
             };
           }
         }

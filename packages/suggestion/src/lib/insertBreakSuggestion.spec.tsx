@@ -20,6 +20,7 @@ const suggestionPlugin = BaseSuggestionPlugin.configure({
 const testLineBreakDataInsert = {
   id: '1',
   createdAt: Date.now(),
+  isLineBreak: true,
   type: 'insert',
   userId: 'testId',
 };

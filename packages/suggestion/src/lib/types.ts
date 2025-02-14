@@ -56,6 +56,7 @@ export type TSuggestionLineBreak = {
   createdAt: number;
   type: 'insert' | 'remove';
   userId: string;
+  isLineBreak?: boolean;
 };
 
 export type TSuggestionText = TText & {
