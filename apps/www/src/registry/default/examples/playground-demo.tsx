@@ -100,12 +100,7 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
   );
 
   return (
-    <Plate
-      onValueChange={({ value }) => {
-        console.log(value, 'fj');
-      }}
-      editor={editor}
-    >
+    <Plate editor={editor}>
       <EditorContainer className={className}>
         <Editor variant="demo" className="pb-[20vh]" spellCheck={false} />
       </EditorContainer>
