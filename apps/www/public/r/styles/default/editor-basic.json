@@ -1,5 +1,7 @@
 {
-  "category": "Editors",
+  "categories": [
+    "Editors"
+  ],
   "dependencies": [
     "@udecode/plate-basic-elements",
     "@udecode/plate-basic-marks"

@@ -20,8 +20,12 @@ function _getAllBlocks() {
   const index = z.record(registryItemSchema).parse(Index.default);
 
   return Object.values(index).filter(
-    (block) =>
-      REGISTRY_BLOCK_TYPES.has(block.type) && block.category === 'Editors'
+    (block) => {
+      return (
+        REGISTRY_BLOCK_TYPES.has(block.type) &&
+        block.categories?.includes('Editors')
+      );
+    }
     // BLOCKS_WHITELIST_PREFIXES.some(
     //   (prefix) =>
     //     block.name.startsWith(prefix) && REGISTRY_BLOCK_TYPES.has(block.type)

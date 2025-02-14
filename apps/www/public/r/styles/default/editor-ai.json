@@ -1,5 +1,7 @@
 {
-  "category": "Editors",
+  "categories": [
+    "Editors"
+  ],
   "dependencies": [
     "@udecode/cn",
     "@udecode/plate-ai",
