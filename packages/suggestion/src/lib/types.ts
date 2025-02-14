@@ -32,9 +32,10 @@ export type TResolvedSuggestion = {
   suggestionId: string;
   type: 'insert' | 'remove' | 'replace' | 'update';
   userId: string;
+  newProperties?: any;
   newText?: string;
+  properties?: any;
   text?: string;
-  updateProps?: any;
 };
 
 export interface TSuggestion extends UnknownObject {

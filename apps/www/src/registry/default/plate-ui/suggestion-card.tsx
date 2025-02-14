@@ -45,10 +45,6 @@ export const BlockSuggestionCard = ({
   isLast: boolean;
   suggestion: ResolvedSuggestion;
 }) => {
-  // const { data: userData } = useQuery(
-  //   trpc.user.getUser.queryOptions({ id: suggestion.userId })
-  // );
-
   const { api, editor } = useEditorPlugin(SuggestionPlugin);
 
   const accept = (suggestion: ResolvedSuggestion) => {
@@ -168,9 +164,13 @@ export const BlockSuggestionCard = ({
             {suggestion.type === 'update' && (
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">
-                  {Object.keys(suggestion.updateProps).map((key) => (
+                  {Object.keys(suggestion.properties).map((key) => (
+                    <span key={key}>Un{key}</span>
+                  ))}
+
+                  {Object.keys(suggestion.newProperties).map((key) => (
                     <span key={key}>
-                      {suggestion.updateProps[key] ? key : 'Un' + key}
+                      {key.charAt(0).toUpperCase() + key.slice(1)}
                     </span>
                   ))}
                 </span>

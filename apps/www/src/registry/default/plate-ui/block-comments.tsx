@@ -158,7 +158,8 @@ const BlockCommentsContent = ({
 
       let newText = '';
       let text = '';
-      let updateProps: any;
+      let properties: any = {};
+      let newProperties: any = {};
 
       // overlapping suggestion
       entries.forEach(([node]) => {
@@ -180,9 +181,14 @@ const BlockCommentsContent = ({
                 break;
               }
               case 'update': {
-                updateProps = {
-                  ...updateProps,
+                properties = {
+                  ...properties,
                   ...data.properties,
+                };
+
+                newProperties = {
+                  ...newProperties,
+                  ...data.newProperties,
                 };
 
                 newText += node.text;
@@ -219,10 +225,11 @@ const BlockCommentsContent = ({
         return res.push({
           createdAt,
           keyId,
+          newProperties,
           newText,
+          properties,
           suggestionId: keyId2SuggestionId(id),
           type: 'update',
-          updateProps,
           userId: nodeData.userId,
         });
       }
@@ -263,8 +270,6 @@ const BlockCommentsContent = ({
   }, [blockPath, editor.api, getOption, suggestionNodes]);
 
   const discussions: any[] = [];
-
-  const activeDiscussion = -1;
 
   const suggestionsCount = resolvedSuggestion.length;
 

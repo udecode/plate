@@ -120,7 +120,7 @@ export const rejectSuggestion = (
           (key) => targetData.newProperties[key]
         );
 
-        editor.tf.unsetNodes([...unsetProps, getSuggestionKey(targetData.id)], {
+        editor.tf.unsetNodes([...unsetProps], {
           at: path,
         });
       }
@@ -136,6 +136,11 @@ export const rejectSuggestion = (
           }
         );
       }
+
+      // remove targetData
+      editor.tf.unsetNodes([getSuggestionKey(targetData.id)], {
+        at: path,
+      });
     });
   });
 };
