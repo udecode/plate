@@ -168,6 +168,7 @@
   },
   "devDependencies": {
     "@shikijs/compat": "^1.1.7",
+    "@tailwindcss/typography": "0.5.16",
     "@types/react-syntax-highlighter": "15.5.13",
     "autoprefixer": "10.4.20",
     "concurrently": "9.1.2",

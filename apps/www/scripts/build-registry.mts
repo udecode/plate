@@ -61,7 +61,7 @@ export const Index: Record<string, any> = {
     for (const item of registry.items) {
       const resolveFiles = item.files?.map(
         (file) =>
-          `registry/${style.name}/${
+          `src/registry/${style.name}/${
             typeof file === 'string' ? file : file.path
           }`
       );
@@ -90,6 +90,7 @@ export const Index: Record<string, any> = {
         const file = resolveFiles[0];
         const filename = path.basename(file);
         let raw: string;
+
         try {
           raw = await fs.readFile(file, 'utf8');
         } catch (error) {

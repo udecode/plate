@@ -1,4 +1,4 @@
-For older changelogs, see https://github.com/udecode/plate/blob/main/docs
+For older changelogs, see https://github.com/udecode/plate/blob/main/tooling
 
 # 44.0.1
 
