@@ -1,7 +1,7 @@
 import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
 
 import { BlockComments } from '@/registry/default/plate-ui/block-comments';
-import { renderSuggestionBelowNodes } from '@/registry/default/plate-ui/suggestion-line-break';
+import { SuggestionBelowNodes } from '@/registry/default/plate-ui/suggestion-line-break';
 
 export const suggestionPlugin = SuggestionPlugin.extend({
   options: {
@@ -9,6 +9,6 @@ export const suggestionPlugin = SuggestionPlugin.extend({
   },
   render: {
     aboveNodes: BlockComments as any,
-    belowNodes: renderSuggestionBelowNodes as any,
+    belowNodes: SuggestionBelowNodes,
   },
 });

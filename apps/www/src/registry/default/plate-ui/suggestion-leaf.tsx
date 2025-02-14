@@ -13,7 +13,6 @@ import {
   usePluginOption,
 } from '@udecode/plate/react';
 
-/** Diff leaf with suggestion interactions. */
 export function SuggestionLeaf(props: PlateLeafProps) {
   const { children, className, leaf } = props;
 

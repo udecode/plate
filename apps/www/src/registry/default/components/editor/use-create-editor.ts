@@ -90,6 +90,7 @@ import { MentionInputElement } from '@/registry/default/plate-ui/mention-input-e
 import { ParagraphElement } from '@/registry/default/plate-ui/paragraph-element';
 import { withPlaceholders } from '@/registry/default/plate-ui/placeholder';
 import { SlashInputElement } from '@/registry/default/plate-ui/slash-input-element';
+import { SuggestionLeaf } from '@/registry/default/plate-ui/suggestion-leaf';
 import {
   TableCellElement,
   TableCellHeaderElement,
@@ -99,7 +100,6 @@ import { TableRowElement } from '@/registry/default/plate-ui/table-row-element';
 import { TocElement } from '@/registry/default/plate-ui/toc-element';
 import { ToggleElement } from '@/registry/default/plate-ui/toggle-element';
 
-import { SuggestionLeaf } from '../../plate-ui/suggestion-leaf';
 import { editorPlugins, viewPlugins } from './plugins/editor-plugins';
 
 export const viewComponents = {

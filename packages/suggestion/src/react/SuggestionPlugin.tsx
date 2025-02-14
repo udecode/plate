@@ -9,9 +9,8 @@ import {
   getSuggestionId,
 } from '../lib';
 import { BaseSuggestionPlugin } from '../lib/BaseSuggestionPlugin';
-import { getAllSuggestionNodes } from '../lib/queries/getAllSuggestionNodes';
 
-/** Enables support for suggestions in the editor. */
+/** @experimental Enables support for suggestions in the editor. */
 export const SuggestionPlugin = toPlatePlugin(BaseSuggestionPlugin, {
   handlers: {
     // unset active suggestion when clicking outside of suggestion
@@ -54,12 +53,12 @@ export const SuggestionPlugin = toPlatePlugin(BaseSuggestionPlugin, {
       if (!isSet) unsetActiveSuggestion();
     },
   },
-  useHooks: ({ editor, getOption, setOption }) => {
+  useHooks: ({ api, editor, getOption, setOption }) => {
     const version = useEditorVersion();
     useEffect(() => {
       setOption('uniquePathMap', new Map());
 
-      const suggestionNodes = [...getAllSuggestionNodes(editor)];
+      const suggestionNodes = [...api.suggestion.nodes()];
 
       suggestionNodes.forEach(([node, path]) => {
         const id = getAllSuggestionId(node);

@@ -13,7 +13,7 @@ import {
 } from '@udecode/plate/react';
 import { CornerDownLeftIcon } from 'lucide-react';
 
-export const renderSuggestionBelowNodes = ({
+export const SuggestionBelowNodes = ({
   element,
 }: RenderNodeWrapperProps<SuggestionConfig>) => {
   const lineBreakData = element[SUGGESTION_KEYS.lineBreak] as
@@ -32,11 +32,11 @@ export const renderSuggestionBelowNodes = ({
   };
 };
 
-const SuggestionLineBreak = ({
+function SuggestionLineBreak({
   lineBreakData,
 }: {
   lineBreakData: TSuggestionLineBreak;
-}) => {
+}) {
   const { type } = lineBreakData;
   const isRemove = type === 'remove';
   const isInsert = type === 'insert';
@@ -78,4 +78,4 @@ const SuggestionLineBreak = ({
       <CornerDownLeftIcon className="mt-0.5 size-4" />
     </span>
   );
-};
+}

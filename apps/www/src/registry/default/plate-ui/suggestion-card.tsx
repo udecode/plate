@@ -17,7 +17,7 @@ import { CommentAvatar } from './comment-avatar';
 
 export interface ResolvedSuggestion extends TResolvedSuggestion {}
 
-export const LINE_BREAK_SUGGESTION = '__line_break__';
+export const BLOCK_SUGGESTION = '__block__';
 
 export const TYPE_TEXT_MAP: Record<string, () => string> = {
   [BlockquotePlugin.key]: () => 'Blockquote',
@@ -29,6 +29,19 @@ export const TYPE_TEXT_MAP: Record<string, () => string> = {
   [HEADING_KEYS.h5]: () => `Heading 5`,
   [HEADING_KEYS.h6]: () => `Heading 6`,
   [ParagraphPlugin.key]: () => 'Paragraph',
+};
+
+const mockUsers = {
+  1: {
+    id: '1',
+    avatarUrl: 'https://avatars.githubusercontent.com/u/19695832?s=96&v=4',
+    name: 'zbeyens',
+  },
+  2: {
+    id: '2',
+    avatarUrl: 'https://avatars.githubusercontent.com/u/4272090?v=4',
+    name: '12joan',
+  },
 };
 
 export const BlockSuggestionCard = ({
@@ -56,23 +69,10 @@ export const BlockSuggestionCard = ({
 
   const [hovering, setHovering] = useState(false);
 
-  const mockUsers = {
-    1: {
-      id: '1',
-      avatarUrl: 'https://avatars.githubusercontent.com/u/19695832?s=96&v=4',
-      name: 'zbeyens',
-    },
-    2: {
-      id: '2',
-      avatarUrl: 'https://avatars.githubusercontent.com/u/4272090?v=4',
-      name: '12joan',
-    },
-  };
-
   const suggestionText2Array = (text: string) => {
-    if (text === LINE_BREAK_SUGGESTION) return ['line breaks'];
+    if (text === BLOCK_SUGGESTION) return ['line breaks'];
 
-    return text.split(LINE_BREAK_SUGGESTION).filter(Boolean);
+    return text.split(BLOCK_SUGGESTION).filter(Boolean);
   };
 
   return (

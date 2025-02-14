@@ -50,7 +50,7 @@ import {
 import {
   type ResolvedSuggestion,
   BlockSuggestionCard,
-  LINE_BREAK_SUGGESTION,
+  BLOCK_SUGGESTION,
   TYPE_TEXT_MAP,
 } from './suggestion-card';
 
@@ -99,7 +99,7 @@ const BlockCommentsContent = ({
 
   suggestionNodes.forEach(([node]) => {
     const id = getAllSuggestionId(node);
-    console.log("🚀 ~ suggestionNodes.forEach ~ id:", id)
+    console.log('🚀 ~ suggestionNodes.forEach ~ id:', id);
     const map = getOption('uniquePathMap');
 
     if (!id) return;
@@ -225,12 +225,12 @@ const BlockCommentsContent = ({
           if (lineBreakData?.id !== keyId2SuggestionId(id)) return;
           if (lineBreakData.type === 'insert') {
             newText += lineBreakData.isLineBreak
-              ? LINE_BREAK_SUGGESTION
-              : LINE_BREAK_SUGGESTION + TYPE_TEXT_MAP[node.type]();
+              ? BLOCK_SUGGESTION
+              : BLOCK_SUGGESTION + TYPE_TEXT_MAP[node.type]();
           } else if (lineBreakData.type === 'remove') {
             text += lineBreakData.isLineBreak
-              ? LINE_BREAK_SUGGESTION
-              : LINE_BREAK_SUGGESTION + TYPE_TEXT_MAP[node.type]();
+              ? BLOCK_SUGGESTION
+              : BLOCK_SUGGESTION + TYPE_TEXT_MAP[node.type]();
           }
         }
       });
@@ -329,7 +329,6 @@ const BlockCommentsContent = ({
 
     return editor.api.toDOMNode(activeNode[0])!;
   }, [activeSuggestion, editor.api, suggestionNodes]);
-
 
   if (suggestionsCount + discussions.length === 0) return <>{children}</>;
 

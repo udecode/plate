@@ -1,12 +1,16 @@
 import {
+  type EditorNodesOptions,
+  type NodeEntry,
   type Path,
   type PluginConfig,
+  type TElement,
   type WithPartial,
   createTSlatePlugin,
+  getAt,
   nanoid,
 } from '@udecode/plate';
 
-import type { SuggestionUser, TSuggestion } from './types';
+import type { SuggestionUser, TSuggestion, TSuggestionText } from './types';
 
 import { withSuggestion } from './withSuggestion';
 
@@ -33,24 +37,27 @@ export type SuggestionConfig = PluginConfig<
           value: Partial<Omit<TSuggestion, 'id'>> & Pick<TSuggestion, 'id'>
         ) => void)
       | null;
-  } & SuggestionSelectors,
+  },
   {
-    suggestion: SuggestionPluginApi;
+    suggestion: {
+      addSuggestion: (value: WithPartial<TSuggestion, 'id' | 'userId'>) => void;
+      nodes: (
+        options?: EditorNodesOptions
+      ) => NodeEntry<TElement | TSuggestionText>[];
+      removeSuggestion: (id: string | null) => void;
+      updateSuggestion: (
+        id: string | null,
+        value: Partial<TSuggestion>
+      ) => void;
+      withoutSuggestions: (fn: () => void) => void;
+    };
+  },
+  {
+    currentSuggestionUser?: () => SuggestionUser | null;
+    suggestionById?: (id: string | null) => TSuggestion | null;
+    suggestionUserById?: (id: string | null) => SuggestionUser | null;
   }
 >;
-
-export type SuggestionPluginApi = {
-  addSuggestion: (value: WithPartial<TSuggestion, 'id' | 'userId'>) => void;
-  removeSuggestion: (id: string | null) => void;
-  updateSuggestion: (id: string | null, value: Partial<TSuggestion>) => void;
-  withoutSuggestions: (fn: () => void) => void;
-};
-
-export type SuggestionSelectors = {
-  currentSuggestionUser?: () => SuggestionUser | null;
-  suggestionById?: (id: string | null) => TSuggestion | null;
-  suggestionUserById?: (id: string | null) => SuggestionUser | null;
-};
 
 export const BaseSuggestionPlugin = createTSlatePlugin<SuggestionConfig>({
   key: 'suggestion',
@@ -88,8 +95,8 @@ export const BaseSuggestionPlugin = createTSlatePlugin<SuggestionConfig>({
       return getOptions().users[id];
     },
   }))
-  .extendApi<Partial<SuggestionPluginApi>>(
-    ({ getOption, getOptions, setOption, setOptions }) => ({
+  .extendApi<SuggestionConfig['api']['suggestion']>(
+    ({ editor, getOption, getOptions, setOption, setOptions }) => ({
       addSuggestion: (value) => {
         const { currentUserId } = getOptions();
 
@@ -105,6 +112,19 @@ export const BaseSuggestionPlugin = createTSlatePlugin<SuggestionConfig>({
         setOptions((draft) => {
           draft.suggestions![id] = newSuggestion;
         });
+      },
+      nodes: (options = {}) => {
+        const at = getAt(editor, options.at) ?? [];
+
+        return [
+          ...editor.api.nodes<TElement | TSuggestionText>({
+            ...options,
+            at,
+            mode: 'all',
+            match: (n) =>
+              n[BaseSuggestionPlugin.key] || n[SUGGESTION_KEYS.lineBreak],
+          }),
+        ];
       },
       removeSuggestion: (id) => {
         if (!id) return;
