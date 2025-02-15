@@ -60,15 +60,6 @@ export function AIMenu() {
       };
 
       editorDOM.addEventListener('DOMNodeInserted', callback);
-
-      setTimeout(() => {
-        editorDOM.removeEventListener('DOMNodeInserted', callback);
-        const nodeDOM = editor.api.toDOMNode(node)!;
-
-        if (nodeDOM) {
-          setAnchorElement(nodeDOM);
-        }
-      }, 1000);
     }
   };
 
