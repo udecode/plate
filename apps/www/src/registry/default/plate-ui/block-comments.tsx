@@ -19,7 +19,6 @@ import {
   findSuggestionNode,
   getAllSuggestionData,
   getAllSuggestionId,
-  getAllSuggestionNodes,
   getSuggestionDataList,
   getSuggestionId,
   getSuggestionKey,
@@ -49,8 +48,8 @@ import {
 
 import {
   type ResolvedSuggestion,
-  BlockSuggestionCard,
   BLOCK_SUGGESTION,
+  BlockSuggestionCard,
   TYPE_TEXT_MAP,
 } from './suggestion-card';
 
@@ -63,7 +62,10 @@ export const BlockComments: RenderNodeWrapper = (props) => {
   if (!blockPath || blockPath.length > 1) return;
 
   const commentNodes: NodeEntry<TCommentText>[] = [];
-  const suggestionNodes = [...getAllSuggestionNodes(editor, { at: blockPath })];
+
+  const suggestionNodes = [
+    ...editor.getApi(SuggestionPlugin).suggestion.nodes({ at: blockPath }),
+  ];
 
   if (commentNodes.length === 0 && suggestionNodes.length === 0) return;
 

@@ -73,8 +73,10 @@ export const acceptSuggestion = (
             if (isLineBreak)
               return lineBreakData.id === description.suggestionId;
 
-            return lineBreakData.type === 'insert' &&
+            return (
+              lineBreakData.type === 'insert' &&
               lineBreakData.id === description.suggestionId
+            );
           }
         }
 

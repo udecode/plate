@@ -4,4 +4,3 @@
 
 export * from './findSuggestionNode';
 export * from './findSuggestionProps';
-export * from './getAllSuggestionNodes';

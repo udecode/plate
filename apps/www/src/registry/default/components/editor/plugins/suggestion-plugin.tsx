@@ -9,6 +9,6 @@ export const suggestionPlugin = SuggestionPlugin.extend({
   },
   render: {
     aboveNodes: BlockComments as any,
-    belowNodes: SuggestionBelowNodes,
+    belowNodes: SuggestionBelowNodes as any,
   },
 });

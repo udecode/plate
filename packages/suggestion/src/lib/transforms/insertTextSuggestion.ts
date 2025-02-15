@@ -9,7 +9,6 @@ import { deleteFragmentSuggestion } from './deleteFragmentSuggestion';
 
 export const insertTextSuggestion = (editor: SlateEditor, text: string) => {
   editor.tf.withoutNormalizing(() => {
-
     let resId: string | undefined;
     const { id, createdAt: createdAt } = findSuggestionProps(editor, {
       at: editor.selection!,

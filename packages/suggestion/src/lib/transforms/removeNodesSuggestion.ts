@@ -1,9 +1,4 @@
-import type {
-  NodeEntry,
-  SlateEditor,
-  TElement,
-  Text,
-} from '@udecode/plate';
+import type { NodeEntry, SlateEditor, TElement, Text } from '@udecode/plate';
 
 import { SUGGESTION_KEYS } from '../BaseSuggestionPlugin';
 import { findSuggestionProps } from '../queries';

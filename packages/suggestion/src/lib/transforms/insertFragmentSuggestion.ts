@@ -1,8 +1,4 @@
-import {
-  type Descendant,
-  type SlateEditor,
-  TextApi,
-} from '@udecode/plate';
+import { type Descendant, type SlateEditor, TextApi } from '@udecode/plate';
 
 import { BaseSuggestionPlugin, SUGGESTION_KEYS } from '../BaseSuggestionPlugin';
 import { findSuggestionProps } from '../queries';
