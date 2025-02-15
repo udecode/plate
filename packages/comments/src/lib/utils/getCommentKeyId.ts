@@ -1,4 +1,4 @@
 import { BaseCommentsPlugin } from '../BaseCommentsPlugin';
 
-export const getCommentKeyId = (key: string) =>
+export const getCommentId = (key: string) =>
   key.replace(`${BaseCommentsPlugin.key}_`, '');

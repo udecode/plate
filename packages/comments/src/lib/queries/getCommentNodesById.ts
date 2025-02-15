@@ -1,10 +1,12 @@
-import type { SlateEditor } from '@udecode/plate';
+import type { PlateEditor } from '@udecode/plate/react';
 
-import { isCommentNodeById } from '../utils';
+import type { TCommentText } from '../types';
 
-export const getCommentNodesById = (editor: SlateEditor, id: string) => {
+import { isCommentNodeById } from '../utils/isCommentNodeById';
+
+export const getCommentNodesById = (editor: PlateEditor, id: string) => {
   return Array.from(
-    editor.api.nodes({
+    editor.api.nodes<TCommentText>({
       at: [],
       match: (n) => isCommentNodeById(n, id),
     })

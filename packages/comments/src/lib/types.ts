@@ -1,4 +1,4 @@
-import type { Descendant, TText, Value } from '@udecode/plate';
+import type { TText, Value } from '@udecode/plate';
 
 export interface CommentUser {
   id: string;
@@ -6,29 +6,40 @@ export interface CommentUser {
   avatarUrl?: string;
 }
 
+export type ReplyContent = [string, Value];
+
 export interface TComment {
   id: string;
-
-  /** @default Date.now() */
-  createdAt: number;
-
-  /** Author id. */
-  userId: string;
 
   /** Slate value of the document. */
   value: Value;
 
-  /** The fragment of text that the comment was originally added to. */
-  initialFragment?: Descendant[];
-
   /** Whether the comment is resolved. */
   isResolved?: boolean;
+}
 
-  /** Parent comment id it replies to. */
-  parentId?: string;
+export interface TComments {
+  id: string;
+  createdAt: number;
+  isResolved: boolean;
+  replies: TReply[];
+  updatedAt: number;
+  documentContent?: string;
+  documentContentRich?: Value;
 }
 
 export interface TCommentText extends TText {
   comment?: boolean;
   comments?: Record<string, boolean>;
+}
+
+export interface TReply {
+  id: string;
+  commentsId: string;
+  createdAt: number;
+  isUpdated: boolean;
+  updatedAt: number;
+  userId: string;
+  value: Value;
+  emoji?: string;
 }

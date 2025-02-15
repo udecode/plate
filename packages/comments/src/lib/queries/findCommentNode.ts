@@ -13,3 +13,13 @@ export const findCommentNode = (
     ...options,
   });
 };
+
+export const findCommentNodes = (
+  editor: SlateEditor,
+  options?: EditorNodesOptions
+) => {
+  return editor.api.nodes<TCommentText>({
+    match: (n) => n[BaseCommentsPlugin.key],
+    ...options,
+  });
+};

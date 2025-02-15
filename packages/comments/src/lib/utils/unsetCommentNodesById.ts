@@ -1,16 +1,35 @@
-import type { SlateEditor } from '@udecode/plate';
+import type { PlateEditor } from '@udecode/plate/react';
 
 import type { TCommentText } from '../types';
 
+import { BaseCommentsPlugin } from '../BaseCommentsPlugin';
+import { getCommentNodesById } from '../queries';
 import { getCommentKey } from './getCommentKey';
-import { isCommentNodeById } from './isCommentNodeById';
+import { getDraftCommentKey } from './getDraftCommentKey';
+import { hasManyComments } from './hasManyComments';
 
-export const unsetCommentNodesById = (
-  editor: SlateEditor,
+export const unsetCommentMark = (
+  editor: PlateEditor,
   { id }: { id: string }
 ) => {
-  editor.tf.unsetNodes<TCommentText>(getCommentKey(id), {
-    at: [],
-    match: (n) => isCommentNodeById(n, id),
+  const nodes = getCommentNodesById(editor, id);
+
+  if (!nodes) return;
+
+  nodes.forEach(([node]) => {
+    const isOverlapping = hasManyComments(node);
+
+    let unsetKeys: string[] = [];
+
+    if (isOverlapping) {
+      unsetKeys = [getDraftCommentKey(), getCommentKey(id)];
+    } else {
+      unsetKeys = [BaseCommentsPlugin.key, getDraftCommentKey(), getCommentKey(id)];
+    }
+
+    editor.tf.unsetNodes<TCommentText>(unsetKeys, {
+      at: [],
+      match: (n) => n === node,
+    });
   });
 };
