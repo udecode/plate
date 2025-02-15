@@ -1,14 +1,32 @@
 import React, { useState } from 'react';
 
+import type { TElement } from '@udecode/plate';
+
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
+import { CalloutPlugin } from '@udecode/plate-callout/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
+import { TocPlugin } from '@udecode/plate-heading/react';
+import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
+import { INDENT_LIST_KEYS, ListStyleType } from '@udecode/plate-indent-list';
+import { IndentListPlugin } from '@udecode/plate-indent-list/react';
+import { ColumnPlugin } from '@udecode/plate-layout/react';
+import { EquationPlugin } from '@udecode/plate-math/react';
+import {
+  AudioPlugin,
+  FilePlugin,
+  ImagePlugin,
+  MediaEmbedPlugin,
+  VideoPlugin,
+} from '@udecode/plate-media/react';
 import {
   type TResolvedSuggestion,
   acceptSuggestion,
   rejectSuggestion,
 } from '@udecode/plate-suggestion';
 import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
+import { TablePlugin } from '@udecode/plate-table/react';
+import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { ParagraphPlugin, useEditorPlugin } from '@udecode/plate/react';
 import { CheckIcon, XIcon } from 'lucide-react';
 
@@ -19,16 +37,36 @@ export interface ResolvedSuggestion extends TResolvedSuggestion {}
 
 export const BLOCK_SUGGESTION = '__block__';
 
-export const TYPE_TEXT_MAP: Record<string, () => string> = {
+export const TYPE_TEXT_MAP: Record<string, (node?: TElement) => string> = {
+  [AudioPlugin.key]: () => 'Audio',
   [BlockquotePlugin.key]: () => 'Blockquote',
-  [CodeBlockPlugin.key]: () => 'CodeBlock',
+  [CalloutPlugin.key]: () => 'Callout',
+  [CodeBlockPlugin.key]: () => 'Code Block',
+  [ColumnPlugin.key]: () => 'Column',
+  [EquationPlugin.key]: () => 'Equation',
+  [FilePlugin.key]: () => 'File',
   [HEADING_KEYS.h1]: () => `Heading 1`,
   [HEADING_KEYS.h2]: () => `Heading 2`,
   [HEADING_KEYS.h3]: () => `Heading 3`,
   [HEADING_KEYS.h4]: () => `Heading 4`,
   [HEADING_KEYS.h5]: () => `Heading 5`,
   [HEADING_KEYS.h6]: () => `Heading 6`,
-  [ParagraphPlugin.key]: () => 'Paragraph',
+  [HorizontalRulePlugin.key]: () => 'Horizontal Rule',
+  [ImagePlugin.key]: () => 'Image',
+  [MediaEmbedPlugin.key]: () => 'Media',
+  [ParagraphPlugin.key]: (node) => {
+    if (node?.[IndentListPlugin.key] === INDENT_LIST_KEYS.todo)
+      return 'Todo List';
+    if (node?.[IndentListPlugin.key] === ListStyleType.Decimal)
+      return 'Ordered List';
+    if (node?.[IndentListPlugin.key] === ListStyleType.Disc) return 'List';
+
+    return 'Paragraph';
+  },
+  [TablePlugin.key]: () => 'Table',
+  [TocPlugin.key]: () => 'Table of Contents',
+  [TogglePlugin.key]: () => 'Toggle',
+  [VideoPlugin.key]: () => 'Video',
 };
 
 const mockUsers = {

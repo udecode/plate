@@ -228,11 +228,11 @@ const BlockCommentsContent = ({
           if (lineBreakData.type === 'insert') {
             newText += lineBreakData.isLineBreak
               ? BLOCK_SUGGESTION
-              : BLOCK_SUGGESTION + TYPE_TEXT_MAP[node.type]();
+              : BLOCK_SUGGESTION + TYPE_TEXT_MAP[node.type](node);
           } else if (lineBreakData.type === 'remove') {
             text += lineBreakData.isLineBreak
               ? BLOCK_SUGGESTION
-              : BLOCK_SUGGESTION + TYPE_TEXT_MAP[node.type]();
+              : BLOCK_SUGGESTION + TYPE_TEXT_MAP[node.type](node);
           }
         }
       });

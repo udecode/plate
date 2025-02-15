@@ -17,6 +17,7 @@ export function BlockSuggestion({ element }: { element: TSuggestionElement }) {
         'pointer-events-none absolute inset-0 z-1 border-2 border-brand/[0.8] transition-opacity',
         isRemove && 'border-gray-300'
       )}
+      contentEditable={false}
     />
   );
 }
