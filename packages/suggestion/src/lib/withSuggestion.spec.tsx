@@ -83,7 +83,9 @@ describe('withSuggestion', () => {
             editor.children[0].children[1][BaseSuggestionPlugin.key]
           ).toBeTruthy();
 
-          const data = getInlineSuggestionData(editor.children[0].children[1] as any);
+          const data = getInlineSuggestionData(
+            editor.children[0].children[1] as any
+          );
           expect(
             data?.createdAt && data?.id && data?.type && data?.userId
           ).toBeTruthy();
@@ -233,8 +235,12 @@ describe('when point before is marked', () => {
 
     editor.tf.deleteBackward();
 
-    const data1 = getInlineSuggestionData(editor.children[0].children[0] as any);
-    const data2 = getInlineSuggestionData(editor.children[0].children[1] as any);
+    const data1 = getInlineSuggestionData(
+      editor.children[0].children[0] as any
+    );
+    const data2 = getInlineSuggestionData(
+      editor.children[0].children[1] as any
+    );
 
     expect(!!data1?.id && !!data2?.id).toEqual(true);
     expect(data1?.id !== data2?.id).toEqual(true);

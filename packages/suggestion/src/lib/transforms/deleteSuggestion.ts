@@ -124,9 +124,7 @@ export const deleteSuggestion = (
         const previousAboveNode = editor.api.above({ at: range.anchor });
 
         if (previousAboveNode && ElementApi.isElement(previousAboveNode[0])) {
-          const lineBreakData = getSuggestionData(
-            previousAboveNode[0]
-          );
+          const lineBreakData = getSuggestionData(previousAboveNode[0]);
           if (lineBreakData) {
             if (lineBreakData.type === 'insert') {
               editor

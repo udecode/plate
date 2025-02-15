@@ -61,8 +61,7 @@ export const findSuggestionProps = (
 
           const lineBreak = editor.api.above<TElement>({ at: _at });
 
-          const lineBreakData =
-            lineBreak && getSuggestionData(lineBreak?.[0]);
+          const lineBreakData = lineBreak && getSuggestionData(lineBreak?.[0]);
 
           if (lineBreakData?.isLineBreak) {
             return {
