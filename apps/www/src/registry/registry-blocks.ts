@@ -2,20 +2,7 @@ import type { Registry } from 'shadcx/registry';
 
 export const blocks: Registry['items'] = [
   {
-    category: 'Editors',
-    files: [
-      {
-        path: 'blocks/editor-select/page.tsx',
-        target: 'app/editor/page.tsx',
-        type: 'registry:page',
-      },
-    ],
-    name: 'editor-select',
-    registryDependencies: ['select-editor-demo'],
-    type: 'registry:block',
-  },
-  {
-    category: 'Editors',
+    categories: ['Editors'],
     dependencies: [
       '@udecode/cn',
       '@udecode/plate-ai',
@@ -121,7 +108,20 @@ export const blocks: Registry['items'] = [
     type: 'registry:block',
   },
   {
-    category: 'Editors',
+    categories: ['Editors'],
+    files: [
+      {
+        path: 'blocks/editor-select/page.tsx',
+        target: 'app/editor/page.tsx',
+        type: 'registry:page',
+      },
+    ],
+    name: 'editor-select',
+    registryDependencies: ['select-editor-demo'],
+    type: 'registry:block',
+  },
+  {
+    categories: ['Editors'],
     dependencies: [
       '@udecode/plate-basic-elements',
       '@udecode/plate-basic-marks',

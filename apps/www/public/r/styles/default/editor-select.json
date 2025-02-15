@@ -1,5 +1,7 @@
 {
-  "category": "Editors",
+  "categories": [
+    "Editors"
+  ],
   "files": [
     {
       "path": "blocks/editor-select/page.tsx",

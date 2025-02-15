@@ -1,9 +1,12 @@
 import { Key, toTPlatePlugin } from '@udecode/plate/react';
 
-import { BaseTodoListPlugin } from '../lib/BaseTodoListPlugin';
+import {
+  type TodoListConfig,
+  BaseTodoListPlugin,
+} from '../lib/BaseTodoListPlugin';
 
 /** Enables support for todo lists with React-specific features. */
-export const TodoListPlugin = toTPlatePlugin(
+export const TodoListPlugin = toTPlatePlugin<TodoListConfig>(
   BaseTodoListPlugin,
   ({ editor, type }) => ({
     shortcuts: {

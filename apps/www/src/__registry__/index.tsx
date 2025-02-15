@@ -2352,6 +2352,90 @@ export const Index: Record<string, any> = {
       source: "",
       meta: undefined,
     },
+    "editor-ai": {
+      name: "editor-ai",
+      description: "",
+      type: "registry:block",
+      registryDependencies: ["api-ai","api-uploadthing","plate-types","editor-plugins","copilot-plugins","floating-toolbar-plugin","fixed-toolbar-plugin","ai-menu","ghost-text","comments-popover","cursor-overlay","editor","block-context-menu","ai-leaf","blockquote-element","code-block-element","code-leaf","code-line-element","code-syntax-leaf","column-element","column-group-element","comment-leaf","date-element","draggable","equation-element","inline-equation-element","emoji-input-element","excalidraw-element","heading-element","highlight-leaf","hr-element","image-element","kbd-leaf","link-element","media-audio-element","media-embed-element","media-file-element","media-placeholder-element","media-video-element","mention-element","mention-input-element","paragraph-element","placeholder","slash-input-element","table-cell-element","table-element","table-row-element","toc-element","toggle-element"],
+      files: [{
+        path: "src/registry/default/blocks/editor-ai/page.tsx",
+        type: "registry:page",
+        target: "app/editor/page.tsx"
+      },{
+        path: "src/registry/default/blocks/editor-ai/components/editor/plate-editor.tsx",
+        type: "registry:component",
+        target: "components/editor/plate-editor.tsx"
+      },{
+        path: "src/registry/default/blocks/editor-ai/components/editor/use-create-editor.ts",
+        type: "registry:component",
+        target: "components/editor/use-create-editor.ts"
+      },{
+        path: "src/registry/default/components/editor/settings.tsx",
+        type: "registry:component",
+        target: "components/editor/settings.tsx"
+      }],
+      categories: ["Editors"],
+      component: React.lazy(() => import("@/registry/default/blocks/editor-ai/page.tsx")),
+      source: "src/__registry__/default/blocks/editor-ai/page.tsx",
+      meta: undefined,
+    },
+    "editor-select": {
+      name: "editor-select",
+      description: "",
+      type: "registry:block",
+      registryDependencies: ["select-editor-demo"],
+      files: [{
+        path: "src/registry/default/blocks/editor-select/page.tsx",
+        type: "registry:page",
+        target: "app/editor/page.tsx"
+      }],
+      categories: ["Editors"],
+      component: React.lazy(() => import("@/registry/default/blocks/editor-select/page.tsx")),
+      source: "src/__registry__/default/blocks/editor-select/page.tsx",
+      meta: undefined,
+    },
+    "editor-basic": {
+      name: "editor-basic",
+      description: "",
+      type: "registry:block",
+      registryDependencies: ["editor"],
+      files: [{
+        path: "src/registry/default/blocks/editor-basic/page.tsx",
+        type: "registry:page",
+        target: "app/editor/page.tsx"
+      },{
+        path: "src/registry/default/blocks/editor-basic/components/editor/plate-editor.tsx",
+        type: "registry:component",
+        target: "components/editor/plate-editor.tsx"
+      },{
+        path: "src/registry/default/blocks/editor-basic/components/editor/use-create-editor.ts",
+        type: "registry:component",
+        target: "components/editor/use-create-editor.ts"
+      }],
+      categories: ["Editors"],
+      component: React.lazy(() => import("@/registry/default/blocks/editor-basic/page.tsx")),
+      source: "src/__registry__/default/blocks/editor-basic/page.tsx",
+      meta: undefined,
+    },
+    "slate-to-html": {
+      name: "slate-to-html",
+      description: "",
+      type: "registry:block",
+      registryDependencies: [],
+      files: [{
+        path: "src/registry/default/blocks/slate-to-html/page.tsx",
+        type: "registry:page",
+        target: "app/html/page.tsx"
+      },{
+        path: "src/registry/default/components/editor/slate-to-html.tsx",
+        type: "registry:component",
+        target: "components/editor/slate-to-html.tsx"
+      }],
+      categories: undefined,
+      component: undefined,
+      source: "src/__registry__/default/blocks/slate-to-html/page.tsx",
+      meta: undefined,
+    },
     "uploadthing": {
       name: "uploadthing",
       description: "",
