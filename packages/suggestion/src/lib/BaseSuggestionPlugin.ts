@@ -121,8 +121,7 @@ export const BaseSuggestionPlugin = createTSlatePlugin<SuggestionConfig>({
             ...options,
             at,
             mode: 'all',
-            match: (n) =>
-              n[BaseSuggestionPlugin.key] || n[SUGGESTION_KEYS.lineBreak],
+            match: (n) => n[BaseSuggestionPlugin.key],
           }),
         ];
       },

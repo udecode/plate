@@ -5,10 +5,10 @@ import type { SlateEditor } from '@udecode/plate';
 import { createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
 
-import type { TSuggestionLineBreak } from './types';
+import type { TSuggestionData } from './types';
 
-import { BaseSuggestionPlugin, SUGGESTION_KEYS } from './BaseSuggestionPlugin';
-import { getSuggestionData, getSuggestionLineBreakData } from './utils';
+import { BaseSuggestionPlugin } from './BaseSuggestionPlugin';
+import { getInlineSuggestionData, getSuggestionData } from './utils';
 jsxt;
 
 const suggestionPlugin = BaseSuggestionPlugin.configure({
@@ -55,8 +55,8 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
     editor.tf.insertBreak();
 
     const data = editor.children[0][
-      SUGGESTION_KEYS.lineBreak
-    ] as TSuggestionLineBreak;
+      BaseSuggestionPlugin.key
+    ] as TSuggestionData;
 
     expect(editor.children).toHaveLength(2);
     expect(data).toBeDefined();
@@ -69,7 +69,7 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
   it('should not add new suggestion id if the previous node is a line break', () => {
     const input = (
       <editor>
-        <hp suggestionLineBreak={testLineBreakDataInsert}>test1</hp>
+        <hp suggestion={testLineBreakDataInsert}>test1</hp>
         <hp>
           <cursor />
           test2
@@ -87,7 +87,7 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
 
     editor.tf.insertText('1');
 
-    const data = getSuggestionData(editor.children[1].children[0] as any);
+    const data = getInlineSuggestionData(editor.children[1].children[0] as any);
 
     expect(data).toBeDefined();
     expect(data?.id === testLineBreakDataInsert.id).toBeTruthy();
@@ -99,7 +99,7 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
   it('should remove the lineBreak when type is insert', () => {
     const input = (
       <editor>
-        <hp suggestionLineBreak={testLineBreakDataInsert}>test1</hp>
+        <hp suggestion={testLineBreakDataInsert}>test1</hp>
         <hp>
           <cursor />
           test2
@@ -133,7 +133,7 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
   it('should not remove the lineBreak when type is remove', () => {
     const input = (
       <editor>
-        <hp suggestionLineBreak={testLineBreakDataRemove}>test1</hp>
+        <hp suggestion={testLineBreakDataRemove}>test1</hp>
         <hp>
           <cursor />
           test2
@@ -143,7 +143,7 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
 
     const output = (
       <editor>
-        <hp suggestionLineBreak={testLineBreakDataRemove}>
+        <hp suggestion={testLineBreakDataRemove}>
           test1
           <cursor />
         </hp>
@@ -186,8 +186,8 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
     editor.tf.deleteBackward('line');
     editor.tf.deleteBackward('character');
 
-    const lineBreakData = getSuggestionLineBreakData(editor.children[0] as any);
-    const suggestionTextData = getSuggestionData(
+    const lineBreakData = getSuggestionData(editor.children[0] as any);
+    const suggestionTextData = getInlineSuggestionData(
       editor.children[1].children[0] as any
     );
 
@@ -202,7 +202,7 @@ describe('insertBreakSuggestion when isSuggesting is false', () => {
   it('should remove the lineBreak when type is insert', () => {
     const input = (
       <editor>
-        <hp suggestionLineBreak={testLineBreakDataInsert}>test1</hp>
+        <hp suggestion={testLineBreakDataInsert}>test1</hp>
         <hp>
           <cursor />
           test2
@@ -236,7 +236,7 @@ describe('insertBreakSuggestion when isSuggesting is false', () => {
   it('should remove the lineBreak when type is remove', () => {
     const input = (
       <editor>
-        <hp suggestionLineBreak={testLineBreakDataRemove}>test1</hp>
+        <hp suggestion={testLineBreakDataRemove}>test1</hp>
         <hp>
           <cursor />
           test2

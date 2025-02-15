@@ -7,12 +7,12 @@ import {
 } from '@udecode/plate';
 
 import {
+  getInlineSuggestionData,
+  getInlineSuggestionId,
   getSuggestionData,
-  getSuggestionId,
-  getSuggestionLineBreakData,
   isCurrentUserSuggestion,
 } from '../utils';
-import { findSuggestionNode } from './findSuggestionNode';
+import { findInlineSuggestionNode } from './findSuggestionNode';
 
 export const findSuggestionProps = (
   editor: SlateEditor,
@@ -23,7 +23,7 @@ export const findSuggestionProps = (
     createdAt: Date.now(),
   };
 
-  let entry = findSuggestionNode(editor, {
+  let entry = findInlineSuggestionNode(editor, {
     at,
   });
 
@@ -40,7 +40,7 @@ export const findSuggestionProps = (
     const nextPoint = editor.api.after(end);
 
     if (nextPoint) {
-      entry = findSuggestionNode(editor, {
+      entry = findInlineSuggestionNode(editor, {
         at: nextPoint,
       });
 
@@ -48,7 +48,7 @@ export const findSuggestionProps = (
         const prevPoint = editor.api.before(start);
 
         if (prevPoint) {
-          entry = findSuggestionNode(editor, {
+          entry = findInlineSuggestionNode(editor, {
             at: prevPoint,
           });
         }
@@ -62,7 +62,7 @@ export const findSuggestionProps = (
           const lineBreak = editor.api.above<TElement>({ at: _at });
 
           const lineBreakData =
-            lineBreak && getSuggestionLineBreakData(lineBreak?.[0]);
+            lineBreak && getSuggestionData(lineBreak?.[0]);
 
           if (lineBreakData?.isLineBreak) {
             return {
@@ -77,12 +77,12 @@ export const findSuggestionProps = (
   // same type and same user merge suggestions
   if (
     entry &&
-    getSuggestionData(entry[0])?.type === type &&
+    getInlineSuggestionData(entry[0])?.type === type &&
     isCurrentUserSuggestion(editor, entry[0])
   ) {
     return {
-      id: getSuggestionId(entry[0]) ?? nanoid(),
-      createdAt: getSuggestionData(entry[0])?.createdAt ?? Date.now(),
+      id: getInlineSuggestionId(entry[0]) ?? nanoid(),
+      createdAt: getInlineSuggestionData(entry[0])?.createdAt ?? Date.now(),
     };
   }
 

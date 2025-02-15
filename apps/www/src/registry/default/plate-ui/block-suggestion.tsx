@@ -1,21 +1,15 @@
 'use client';
 
-import type { TElement } from '@udecode/plate';
+import type { TSuggestionElement } from '@udecode/plate-suggestion';
 
 import { cn } from '@udecode/cn';
-import {
-  type TSuggestionLineBreak,
-  SUGGESTION_KEYS,
-} from '@udecode/plate-suggestion';
 
-export function BlockSuggestion({ element }: { element: TElement }) {
-  const lineBreakData = element[
-    SUGGESTION_KEYS.lineBreak
-  ] as TSuggestionLineBreak;
+export function BlockSuggestion({ element }: { element: TSuggestionElement }) {
+  const suggestionData = element.suggestion;
 
-  if (lineBreakData?.isLineBreak) return null;
+  if (suggestionData?.isLineBreak) return null;
 
-  const isRemove = lineBreakData?.type === 'remove';
+  const isRemove = suggestionData?.type === 'remove';
 
   return (
     <div

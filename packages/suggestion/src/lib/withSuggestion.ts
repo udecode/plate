@@ -4,7 +4,6 @@ import { ParagraphPlugin } from '@udecode/plate/react';
 import {
   type SuggestionConfig,
   BaseSuggestionPlugin,
-  SUGGESTION_KEYS,
 } from './BaseSuggestionPlugin';
 import { findSuggestionProps } from './queries';
 import { addMarkSuggestion } from './transforms/addMarkSuggestion';
@@ -14,7 +13,7 @@ import { insertFragmentSuggestion } from './transforms/insertFragmentSuggestion'
 import { insertTextSuggestion } from './transforms/insertTextSuggestion';
 import { removeMarkSuggestion } from './transforms/removeMarkSuggestion';
 import { removeNodesSuggestion } from './transforms/removeNodesSuggestion';
-import { getSuggestionData, getSuggestionKeyId } from './utils/index';
+import { getInlineSuggestionData, getSuggestionKeyId } from './utils/index';
 
 export const withSuggestion: OverrideEditor<SuggestionConfig> = ({
   api,
@@ -69,7 +68,7 @@ export const withSuggestion: OverrideEditor<SuggestionConfig> = ({
           });
 
           if (isCrossBlock) {
-            editor.tf.unsetNodes([SUGGESTION_KEYS.lineBreak], {
+            editor.tf.unsetNodes([BaseSuggestionPlugin.key], {
               at: pointTarget,
             });
           }
@@ -125,7 +124,7 @@ export const withSuggestion: OverrideEditor<SuggestionConfig> = ({
         editor.tf.withoutMerging(() => {
           editor.tf.setNodes(
             {
-              [SUGGESTION_KEYS.lineBreak]: {
+              [BaseSuggestionPlugin.key]: {
                 id,
                 createdAt,
                 isLineBreak: true,
@@ -168,7 +167,7 @@ export const withSuggestion: OverrideEditor<SuggestionConfig> = ({
         const suggestionNodes = nodesArray.map((node) => {
           return {
             ...node,
-            [SUGGESTION_KEYS.lineBreak]: {
+            [BaseSuggestionPlugin.key]: {
               id: nanoid(),
               createdAt: Date.now(),
               type: 'insert',
@@ -187,7 +186,7 @@ export const withSuggestion: OverrideEditor<SuggestionConfig> = ({
       if (getOptions().isSuggesting) {
         const node = editor.api.above()!;
 
-        if (node[0][SUGGESTION_KEYS.lineBreak]) {
+        if (node[0][BaseSuggestionPlugin.key]) {
           return insertText(text, options);
         }
 
@@ -218,9 +217,9 @@ export const withSuggestion: OverrideEditor<SuggestionConfig> = ({
         if (
           node[BaseSuggestionPlugin.key] &&
           TextApi.isText(node) &&
-          !getSuggestionData(node)?.userId
+          !getInlineSuggestionData(node)?.userId
         ) {
-          if (getSuggestionData(node)?.type === 'remove') {
+          if (getInlineSuggestionData(node)?.type === 'remove') {
             // Unset deletions
             editor.tf.unsetNodes(
               [BaseSuggestionPlugin.key, getSuggestionKeyId(node)!],

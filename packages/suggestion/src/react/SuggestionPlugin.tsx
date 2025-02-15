@@ -4,9 +4,9 @@ import { isSlateEditor, isSlateElement, isSlateString } from '@udecode/plate';
 import { toPlatePlugin, useEditorVersion } from '@udecode/plate/react';
 
 import {
-  findSuggestionNode,
+  findInlineSuggestionNode,
   getAllSuggestionId,
-  getSuggestionId,
+  getInlineSuggestionId,
 } from '../lib';
 import { BaseSuggestionPlugin } from '../lib/BaseSuggestionPlugin';
 
@@ -31,7 +31,7 @@ export const SuggestionPlugin = toPlatePlugin(BaseSuggestionPlugin, {
         !isSlateEditor(leaf.parentElement)
       ) {
         if (leaf.classList.contains(`slate-${BaseSuggestionPlugin.key}`)) {
-          const suggestionEntry = findSuggestionNode(editor);
+          const suggestionEntry = findInlineSuggestionNode(editor);
 
           if (!suggestionEntry) {
             unsetActiveSuggestion();
@@ -39,7 +39,7 @@ export const SuggestionPlugin = toPlatePlugin(BaseSuggestionPlugin, {
             break;
           }
 
-          const id = getSuggestionId(suggestionEntry[0]);
+          const id = getInlineSuggestionId(suggestionEntry[0]);
 
           setOption('activeSuggestionId', id ?? null);
           isSet = true;

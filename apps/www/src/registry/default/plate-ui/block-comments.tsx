@@ -16,14 +16,14 @@ import {
 } from '@udecode/plate';
 import {
   type TSuggestionText,
-  findSuggestionNode,
+  findInlineSuggestionNode,
   getAllSuggestionData,
   getAllSuggestionId,
-  getSuggestionDataList,
+  getInlineSuggestionDataList,
+  getInlineSuggestionId,
+  getSuggestionData,
   getSuggestionId,
   getSuggestionKey,
-  getSuggestionLineBreakData,
-  getSuggestionLineBreakId,
   keyId2SuggestionId,
 } from '@udecode/plate-suggestion';
 import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
@@ -110,12 +110,12 @@ const BlockCommentsContent = ({
 
     // If there are no suggestion nodes in the corresponding path in the map, then update it.
     if (PathApi.isPath(previousPath)) {
-      const nodes = findSuggestionNode(editor, { at: previousPath });
+      const nodes = findInlineSuggestionNode(editor, { at: previousPath });
       const parentNode = editor.api.node(previousPath);
       let lineBreakId = null;
 
       if (parentNode && ElementApi.isElement(parentNode[0])) {
-        lineBreakId = getSuggestionLineBreakId(parentNode[0]);
+        lineBreakId = getSuggestionId(parentNode[0]);
       }
 
       if (!nodes && lineBreakId !== id) {
@@ -136,19 +136,19 @@ const BlockCommentsContent = ({
       suggestionNodes
         .flatMap(([node]) => {
           if (TextApi.isText(node)) {
-            const dataList = getSuggestionDataList(node);
+            const dataList = getInlineSuggestionDataList(node);
             const includeUpdate = dataList.some(
               (data) => data.type === 'update'
             );
 
-            if (!includeUpdate) return getSuggestionId(node);
+            if (!includeUpdate) return getInlineSuggestionId(node);
 
             return dataList
               .filter((data) => data.type === 'update')
               .map((d) => d.id);
           }
           if (ElementApi.isElement(node)) {
-            return getSuggestionLineBreakId(node);
+            return getSuggestionId(node);
           }
         })
         .filter(Boolean)
@@ -170,7 +170,7 @@ const BlockCommentsContent = ({
           mode: 'all',
           match: (n) =>
             (n[SuggestionPlugin.key] && n[getSuggestionKey(id)]) ||
-            getSuggestionLineBreakId(n as TElement) === id,
+            getSuggestionId(n as TElement) === id,
         }),
       ];
 
@@ -187,7 +187,7 @@ const BlockCommentsContent = ({
       // overlapping suggestion
       entries.forEach(([node]) => {
         if (TextApi.isText(node)) {
-          const dataList = getSuggestionDataList(node);
+          const dataList = getInlineSuggestionDataList(node);
 
           dataList.forEach((data) => {
             if (data.id !== id) return;
@@ -222,7 +222,7 @@ const BlockCommentsContent = ({
             }
           });
         } else {
-          const lineBreakData = getSuggestionLineBreakData(node);
+          const lineBreakData = getSuggestionData(node);
 
           if (lineBreakData?.id !== keyId2SuggestionId(id)) return;
           if (lineBreakData.type === 'insert') {
@@ -324,7 +324,7 @@ const BlockCommentsContent = ({
     const activeNode = suggestionNodes.find(
       ([node]) =>
         TextApi.isText(node) &&
-        getSuggestionId(node) === activeSuggestion.suggestionId
+        getInlineSuggestionId(node) === activeSuggestion.suggestionId
     );
 
     if (!activeNode) return null;

@@ -1,4 +1,4 @@
-import type { TText, UnknownObject } from '@udecode/plate';
+import type { TElement, TText, UnknownObject } from '@udecode/plate';
 
 // TODO
 export interface SuggestionEditorProps {
@@ -11,6 +11,11 @@ export interface SuggestionUser extends UnknownObject {
   name: string;
   avatarUrl?: string;
 }
+
+export type TInlineSuggestionData =
+  | TInsertSuggestionData
+  | TRemoveSuggestionData
+  | TUpdateSuggestionData;
 
 export type TInsertSuggestionData = {
   id: string;
@@ -46,21 +51,20 @@ export interface TSuggestion extends UnknownObject {
   isRejected?: boolean;
 }
 
-export type TSuggestionData =
-  | TInsertSuggestionData
-  | TRemoveSuggestionData
-  | TUpdateSuggestionData;
-
-export type TSuggestionLineBreak = {
+export type TSuggestionData = {
   id: string;
   createdAt: number;
   type: 'insert' | 'remove';
   userId: string;
   isLineBreak?: boolean;
 };
+export interface TSuggestionElement extends TElement {
+  suggestion: TSuggestionData;
+  isLineBreak?: boolean;
+}
 
 export type TSuggestionText = TText & {
-  [key: string]: TSuggestionData | boolean | string;
+  [key: string]: TInlineSuggestionData | boolean | string;
   suggestion: true;
   text: string;
 };

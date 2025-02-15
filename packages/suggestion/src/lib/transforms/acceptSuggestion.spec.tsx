@@ -152,7 +152,7 @@ describe('acceptSuggestion', () => {
 
     const input = (
       <editor>
-        <hp suggestionLineBreak={lineBreakData}>test1</hp>
+        <hp suggestion={lineBreakData}>test1</hp>
         <hp>test2</hp>
       </editor>
     ) as any as SlateEditor;
@@ -188,7 +188,7 @@ describe('acceptSuggestion', () => {
 
     const input = (
       <editor>
-        <hp suggestionLineBreak={lineBreakData}>test1</hp>
+        <hp suggestion={lineBreakData}>test1</hp>
         <hp>test2</hp>
       </editor>
     ) as any as SlateEditor;

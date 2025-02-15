@@ -1,6 +1,6 @@
 import { type SlateEditor, type TNode, nanoid, TextApi } from '@udecode/plate';
 
-import { getSuggestionData, getSuggestionKey } from '../..';
+import { getInlineSuggestionData, getSuggestionKey } from '../..';
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 
 const getAddMarkProps = () => {
@@ -24,7 +24,7 @@ export const addMarkSuggestion = (
       if (!TextApi.isText(n)) return false;
       // if the node is already marked as a suggestion, we don't want to remove it unless it's a removeMark suggestion
       if (n[BaseSuggestionPlugin.key]) {
-        const data = getSuggestionData(n);
+        const data = getInlineSuggestionData(n);
 
         if (data?.type === 'update') {
           return true;

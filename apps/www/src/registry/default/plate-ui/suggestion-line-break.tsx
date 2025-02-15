@@ -3,8 +3,8 @@ import React, { useRef } from 'react';
 import { cn } from '@udecode/cn';
 import {
   type SuggestionConfig,
-  type TSuggestionLineBreak,
-  SUGGESTION_KEYS,
+  type TSuggestionData,
+  isSuggestionElement,
 } from '@udecode/plate-suggestion';
 import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
 import {
@@ -16,28 +16,28 @@ import { CornerDownLeftIcon } from 'lucide-react';
 export const SuggestionBelowNodes = ({
   element,
 }: RenderNodeWrapperProps<SuggestionConfig>) => {
-  const lineBreakData = element[SUGGESTION_KEYS.lineBreak] as
-    | TSuggestionLineBreak
-    | undefined;
+  if (!isSuggestionElement(element)) return;
 
-  if (!lineBreakData?.isLineBreak) return;
+  const suggestionData = element.suggestion;
+
+  if (!suggestionData?.isLineBreak) return;
 
   return function Component({ children }: { children: React.ReactNode }) {
     return (
       <React.Fragment>
         {children}
-        <SuggestionLineBreak lineBreakData={lineBreakData} />
+        <SuggestionLineBreak suggestionData={suggestionData} />
       </React.Fragment>
     );
   };
 };
 
 function SuggestionLineBreak({
-  lineBreakData,
+  suggestionData,
 }: {
-  lineBreakData: TSuggestionLineBreak;
+  suggestionData: TSuggestionData;
 }) {
-  const { type } = lineBreakData;
+  const { type } = suggestionData;
   const isRemove = type === 'remove';
   const isInsert = type === 'insert';
 
@@ -50,8 +50,8 @@ function SuggestionLineBreak({
     'hoverSuggestionId'
   );
 
-  const isActive = activeSuggestionId === lineBreakData.id;
-  const isHover = hoverSuggestionId === lineBreakData.id;
+  const isActive = activeSuggestionId === suggestionData.id;
+  const isHover = hoverSuggestionId === suggestionData.id;
 
   const spanRef = useRef<HTMLSpanElement>(null);
 

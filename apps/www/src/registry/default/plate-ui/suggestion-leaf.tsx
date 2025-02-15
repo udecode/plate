@@ -2,8 +2,8 @@ import React from 'react';
 
 import { cn } from '@udecode/cn';
 import {
-  getSuggestionDataList,
-  getSuggestionId,
+  getInlineSuggestionDataList,
+  getInlineSuggestionId,
 } from '@udecode/plate-suggestion';
 import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
 import {
@@ -18,7 +18,7 @@ export function SuggestionLeaf(props: PlateLeafProps) {
 
   const { setOption } = useEditorPlugin(SuggestionPlugin);
 
-  const leafId: string = getSuggestionId(leaf) ?? '';
+  const leafId: string = getInlineSuggestionId(leaf) ?? '';
   const activeSuggestionId = usePluginOption(
     SuggestionPlugin,
     'activeSuggestionId'
@@ -27,13 +27,13 @@ export function SuggestionLeaf(props: PlateLeafProps) {
     SuggestionPlugin,
     'hoverSuggestionId'
   );
-  const hasRemove = getSuggestionDataList(leaf).some(
+  const hasRemove = getInlineSuggestionDataList(leaf).some(
     (data) => data.type === 'remove'
   );
-  const hasActive = getSuggestionDataList(leaf).some(
+  const hasActive = getInlineSuggestionDataList(leaf).some(
     (data) => data.id === activeSuggestionId
   );
-  const hasHover = getSuggestionDataList(leaf).some(
+  const hasHover = getInlineSuggestionDataList(leaf).some(
     (data) => data.id === hoverSuggestionId
   );
   const diffOperation = {

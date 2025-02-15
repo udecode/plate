@@ -8,7 +8,7 @@ import { jsxt } from '@udecode/plate-test-utils';
 import type { TUpdateSuggestionData } from '../types';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
-import { getSuggestionData, getSuggestionDataList } from '../utils';
+import { getInlineSuggestionData, getInlineSuggestionDataList } from '../utils';
 
 jsxt;
 
@@ -39,7 +39,7 @@ describe('addMarkSuggestion', () => {
     editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
     editor.tf.addMark('bold', true);
 
-    const data = getSuggestionData(
+    const data = getInlineSuggestionData(
       editor.children[0].children[0] as any
     ) as TUpdateSuggestionData;
 
@@ -84,7 +84,7 @@ describe('addMarkSuggestion', () => {
     editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
     editor.tf.addMark('italic', true);
 
-    const dataList = getSuggestionDataList(
+    const dataList = getInlineSuggestionDataList(
       editor.children[0].children[1] as any
     ) as TUpdateSuggestionData[];
 

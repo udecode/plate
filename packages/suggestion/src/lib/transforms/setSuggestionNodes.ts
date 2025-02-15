@@ -6,7 +6,7 @@ import {
   nanoid,
 } from '@udecode/plate';
 
-import type { TSuggestionData, TSuggestionText } from '../types';
+import type { TInlineSuggestionData, TSuggestionText } from '../types';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getSuggestionKey } from '../utils';
@@ -33,7 +33,7 @@ export const setSuggestionNodes = (
   const nodeEntries = [..._nodeEntries];
 
   editor.tf.withoutNormalizing(() => {
-    const data: TSuggestionData = {
+    const data: TInlineSuggestionData = {
       id: suggestionId,
       createdAt: options?.createdAt ?? Date.now(),
       type: 'remove',

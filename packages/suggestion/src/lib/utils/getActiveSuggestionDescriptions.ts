@@ -1,7 +1,7 @@
 import type { SlateEditor } from '@udecode/plate';
 
-import { findSuggestionNode } from '../queries/index';
-import { getSuggestionId } from './getSuggestionId';
+import { findInlineSuggestionNode } from '../queries/index';
+import { getInlineSuggestionId } from './getSuggestionId';
 import { getSuggestionKey, getSuggestionUserIds } from './getSuggestionKeys';
 import { getSuggestionNodeEntries } from './getSuggestionNodeEntries';
 
@@ -40,12 +40,12 @@ export type TSuggestionReplacementDescription = {
 export const getActiveSuggestionDescriptions = (
   editor: SlateEditor
 ): TSuggestionDescription[] => {
-  const aboveEntry = findSuggestionNode(editor);
+  const aboveEntry = findInlineSuggestionNode(editor);
 
   if (!aboveEntry) return [];
 
   const aboveNode = aboveEntry[0];
-  const suggestionId = getSuggestionId(aboveNode);
+  const suggestionId = getInlineSuggestionId(aboveNode);
 
   if (!suggestionId) return [];
 

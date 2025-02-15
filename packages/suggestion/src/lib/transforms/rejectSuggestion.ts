@@ -8,12 +8,13 @@ import {
 
 import type { TResolvedSuggestion, TSuggestionText } from '../types';
 
-import { SUGGESTION_KEYS } from '../BaseSuggestionPlugin';
+import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import {
+  getInlineSuggestionData,
+  getInlineSuggestionDataList,
   getSuggestionData,
-  getSuggestionDataList,
   getSuggestionKey,
-  getSuggestionLineBreakData,
+  isSuggestionElement,
 } from '../utils';
 
 export const rejectSuggestion = (
@@ -27,7 +28,7 @@ export const rejectSuggestion = (
         match: (n) => {
           if (!ElementApi.isElement(n)) return false;
 
-          const lineBreakData = getSuggestionLineBreakData(n);
+          const lineBreakData = getSuggestionData(n);
 
           if (lineBreakData)
             return (
@@ -45,13 +46,13 @@ export const rejectSuggestion = (
       editor.tf.mergeNodes({ at: PathApi.next(path) });
     });
 
-    editor.tf.unsetNodes([description.keyId, SUGGESTION_KEYS.lineBreak], {
+    editor.tf.unsetNodes([description.keyId, BaseSuggestionPlugin.key], {
       at: [],
       mode: 'all',
       match: (n) => {
         if (TextApi.isText(n)) {
           const node = n as TSuggestionText;
-          const suggestionData = getSuggestionData(node);
+          const suggestionData = getInlineSuggestionData(node);
 
           if (suggestionData)
             return (
@@ -61,8 +62,8 @@ export const rejectSuggestion = (
 
           return false;
         }
-        if (ElementApi.isElement(n)) {
-          const lineBreakData = getSuggestionLineBreakData(n);
+        if (isSuggestionElement(n)) {
+          const lineBreakData = getSuggestionData(n);
 
           if (lineBreakData) {
             const isLineBreak = lineBreakData.isLineBreak;
@@ -88,7 +89,7 @@ export const rejectSuggestion = (
         if (TextApi.isText(n)) {
           const node = n as TSuggestionText;
 
-          const suggestionData = getSuggestionData(node);
+          const suggestionData = getInlineSuggestionData(node);
 
           if (suggestionData)
             return (
@@ -100,7 +101,7 @@ export const rejectSuggestion = (
         }
 
         if (ElementApi.isElement(n)) {
-          const lineBreakData = getSuggestionLineBreakData(n);
+          const lineBreakData = getSuggestionData(n);
 
           if (lineBreakData)
             return (
@@ -120,7 +121,7 @@ export const rejectSuggestion = (
         match: (n) => {
           if (ElementApi.isElement(n)) return false;
           if (TextApi.isText(n)) {
-            const datalist = getSuggestionDataList(n);
+            const datalist = getInlineSuggestionDataList(n);
 
             if (datalist.length > 0)
               return datalist.some(
@@ -135,7 +136,7 @@ export const rejectSuggestion = (
     ];
 
     updateNodes.forEach(([node, path]) => {
-      const datalist = getSuggestionDataList(node);
+      const datalist = getInlineSuggestionDataList(node);
       const targetData = datalist.find(
         (data) => data.type === 'update' && data.id === description.suggestionId
       );

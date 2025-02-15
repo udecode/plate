@@ -4,7 +4,7 @@ import React from 'react';
 
 import type { PlateElementProps } from '@udecode/plate/react';
 
-import { SUGGESTION_KEYS } from '@udecode/plate-suggestion';
+import { isSuggestionElement } from '@udecode/plate-suggestion';
 import { PlateElement as PlateElementPrimitive } from '@udecode/plate/react';
 
 import { BlockSelection } from './block-selection';
@@ -21,7 +21,7 @@ export const PlateElement = React.forwardRef<
       {props.className?.includes('slate-selectable') && (
         <BlockSelection className={blockSelectionClassName} />
       )}
-      {props.element[SUGGESTION_KEYS.lineBreak] && (
+      {isSuggestionElement(props.element) && (
         <BlockSuggestion element={props.element} />
       )}
     </PlateElementPrimitive>

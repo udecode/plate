@@ -6,9 +6,9 @@ import {
   TextApi,
 } from '@udecode/plate';
 
-import type { TSuggestionData, TSuggestionLineBreak } from '../types';
+import type { TInlineSuggestionData, TSuggestionElement } from '../types';
 
-import { BaseSuggestionPlugin, SUGGESTION_KEYS } from '../BaseSuggestionPlugin';
+import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 
 // the last id is the active id
 export const getSuggestionKeyId = (node: TText) => {
@@ -21,25 +21,25 @@ export const getSuggestionKeyId = (node: TText) => {
 
 export const getAllSuggestionId = (node: TNode) => {
   if (TextApi.isText(node)) {
-    return getSuggestionId(node);
+    return getInlineSuggestionId(node);
   }
   if (ElementApi.isElement(node)) {
-    return getSuggestionLineBreakId(node);
+    return getSuggestionId(node);
   }
 };
 
 export const getAllSuggestionData = (
   node: TNode
-): TSuggestionData | TSuggestionLineBreak | undefined => {
+): TInlineSuggestionData | TSuggestionElement['suggestion'] | undefined => {
   if (TextApi.isText(node)) {
-    return getSuggestionData(node);
+    return getInlineSuggestionData(node);
   }
-  if (ElementApi.isElement(node)) {
-    return getSuggestionLineBreakData(node);
+  if (isSuggestionElement(node)) {
+    return node.suggestion;
   }
 };
 
-export const getSuggestionId = (node: TText) => {
+export const getInlineSuggestionId = (node: TText) => {
   const keyId = getSuggestionKeyId(node);
 
   if (!keyId) return;
@@ -47,28 +47,33 @@ export const getSuggestionId = (node: TText) => {
   return keyId.replace(`${BaseSuggestionPlugin.key}_`, '');
 };
 
-export const getSuggestionData = (node: TText) => {
+export const getInlineSuggestionData = (node: TText) => {
   const keyId = getSuggestionKeyId(node);
 
   if (!keyId) return;
 
-  return node[keyId] as TSuggestionData | undefined;
+  return node[keyId] as TInlineSuggestionData | undefined;
 };
 
-export const getSuggestionLineBreakData = (node: TElement) => {
-  return node[SUGGESTION_KEYS.lineBreak] as TSuggestionLineBreak | undefined;
+export const getSuggestionData = (node: TElement) => {
+  if (isSuggestionElement(node)) {
+    return node.suggestion;
+  }
 };
 
-export const getSuggestionLineBreakId = (node: TElement) => {
-  return getSuggestionLineBreakData(node)?.id;
+export const isSuggestionElement = (node: TNode): node is TSuggestionElement =>
+  ElementApi.isElement(node) && 'suggestion' in node;
+
+export const getSuggestionId = (node: TElement) => {
+  return getSuggestionData(node)?.id;
 };
 
-export const getSuggestionDataList = (node: TText) => {
+export const getInlineSuggestionDataList = (node: TText) => {
   return Object.keys(node)
     .filter((key) => {
       return key.startsWith(`${BaseSuggestionPlugin.key}_`);
     })
-    .map((key) => node[key] as TSuggestionData);
+    .map((key) => node[key] as TInlineSuggestionData);
 };
 
 export const keyId2SuggestionId = (keyId: string) => {

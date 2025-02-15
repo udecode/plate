@@ -2,11 +2,12 @@ import { type SlateEditor, ElementApi, PathApi, TextApi } from '@udecode/plate';
 
 import type { TResolvedSuggestion } from '../types';
 
-import { SUGGESTION_KEYS } from '../BaseSuggestionPlugin';
+import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import {
+  getInlineSuggestionData,
+  getInlineSuggestionDataList,
   getSuggestionData,
-  getSuggestionDataList,
-  getSuggestionLineBreakData,
+  isSuggestionElement,
 } from '../utils';
 
 export const acceptSuggestion = (
@@ -20,7 +21,7 @@ export const acceptSuggestion = (
         match: (n) => {
           if (!ElementApi.isElement(n)) return false;
 
-          const lineBreakData = getSuggestionLineBreakData(n);
+          const lineBreakData = getSuggestionData(n);
 
           if (lineBreakData)
             return (
@@ -38,12 +39,12 @@ export const acceptSuggestion = (
       editor.tf.mergeNodes({ at: PathApi.next(path) });
     });
 
-    editor.tf.unsetNodes([description.keyId, SUGGESTION_KEYS.lineBreak], {
+    editor.tf.unsetNodes([description.keyId, BaseSuggestionPlugin.key], {
       at: [],
       mode: 'all',
       match: (n) => {
         if (TextApi.isText(n)) {
-          const suggestionDataList = getSuggestionDataList(n);
+          const suggestionDataList = getInlineSuggestionDataList(n);
           const includeUpdate = suggestionDataList.some(
             (data) => data.type === 'update'
           );
@@ -53,7 +54,7 @@ export const acceptSuggestion = (
               (d) => d.id === description.suggestionId
             );
           } else {
-            const suggestionData = getSuggestionData(n);
+            const suggestionData = getInlineSuggestionData(n);
 
             if (suggestionData)
               return (
@@ -64,18 +65,18 @@ export const acceptSuggestion = (
 
           return false;
         }
-        if (ElementApi.isElement(n)) {
-          const lineBreakData = getSuggestionLineBreakData(n);
+        if (isSuggestionElement(n)) {
+          const suggestionData = n.suggestion;
 
-          if (lineBreakData) {
-            const isLineBreak = lineBreakData.isLineBreak;
+          if (suggestionData) {
+            const isLineBreak = suggestionData.isLineBreak;
 
             if (isLineBreak)
-              return lineBreakData.id === description.suggestionId;
+              return suggestionData.id === description.suggestionId;
 
             return (
-              lineBreakData.type === 'insert' &&
-              lineBreakData.id === description.suggestionId
+              suggestionData.type === 'insert' &&
+              suggestionData.id === description.suggestionId
             );
           }
         }
@@ -89,7 +90,7 @@ export const acceptSuggestion = (
       mode: 'all',
       match: (n) => {
         if (TextApi.isText(n)) {
-          const suggestionData = getSuggestionData(n);
+          const suggestionData = getInlineSuggestionData(n);
 
           if (suggestionData) {
             return (
@@ -101,15 +102,18 @@ export const acceptSuggestion = (
           return false;
         }
 
-        if (ElementApi.isElement(n)) {
-          const lineBreakData = getSuggestionLineBreakData(n);
+        if (isSuggestionElement(n)) {
+          const suggestionData = n.suggestion;
 
-          if (lineBreakData)
+          if (suggestionData) {
+            const isLineBreak = suggestionData.isLineBreak;
+
             return (
-              lineBreakData.type === 'remove' &&
-              lineBreakData.id === description.suggestionId &&
-              !lineBreakData.isLineBreak
+              suggestionData.type === 'remove' &&
+              suggestionData.id === description.suggestionId &&
+              !isLineBreak
             );
+          }
         }
 
         return false;

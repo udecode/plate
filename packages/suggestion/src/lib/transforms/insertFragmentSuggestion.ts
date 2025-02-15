@@ -1,6 +1,6 @@
 import { type Descendant, type SlateEditor, TextApi } from '@udecode/plate';
 
-import { BaseSuggestionPlugin, SUGGESTION_KEYS } from '../BaseSuggestionPlugin';
+import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { findSuggestionProps } from '../queries';
 import { getSuggestionKey, getSuggestionKeys } from '../utils/index';
 import { deleteFragmentSuggestion } from './deleteFragmentSuggestion';
@@ -22,8 +22,6 @@ export const insertFragmentSuggestion = (
       type: 'insert',
     });
 
-    console.log(fragment, 'fj');
-
     fragment.forEach((n) => {
       if (TextApi.isText(n)) {
         if (!n[BaseSuggestionPlugin.key]) {
@@ -44,7 +42,7 @@ export const insertFragmentSuggestion = (
           userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
         };
       } else {
-        n[SUGGESTION_KEYS.lineBreak] = {
+        n[BaseSuggestionPlugin.key] = {
           id,
           createdAt,
           type: 'insert',

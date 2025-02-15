@@ -6,7 +6,7 @@ import {
 } from '@udecode/plate';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
-import { getSuggestionData } from './getSuggestionId';
+import { getInlineSuggestionData } from './getSuggestionId';
 
 export const getSuggestionKey = (id = '0') =>
   `${BaseSuggestionPlugin.key}_${id}`;
@@ -40,5 +40,5 @@ export const getSuggestionUserId = (node: TNode) => {
 export const isCurrentUserSuggestion = (editor: SlateEditor, node: TText) => {
   const { currentUserId } = editor.getOptions(BaseSuggestionPlugin);
 
-  return getSuggestionData(node)?.userId === currentUserId;
+  return getInlineSuggestionData(node)?.userId === currentUserId;
 };

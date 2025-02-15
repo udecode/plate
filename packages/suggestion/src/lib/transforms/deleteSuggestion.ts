@@ -9,11 +9,11 @@ import {
   TextApi,
 } from '@udecode/plate';
 
-import { BaseSuggestionPlugin, SUGGESTION_KEYS } from '../BaseSuggestionPlugin';
-import { findSuggestionNode, findSuggestionProps } from '../queries/';
+import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
+import { findInlineSuggestionNode, findSuggestionProps } from '../queries/';
 import {
+  getInlineSuggestionData,
   getSuggestionData,
-  getSuggestionLineBreakData,
   isCurrentUserSuggestion,
 } from '../utils';
 import { setSuggestionNodes } from './setSuggestionNodes';
@@ -104,7 +104,7 @@ export const deleteSuggestion = (
         match: (n) =>
           n[BaseSuggestionPlugin.key] &&
           TextApi.isText(n) &&
-          getSuggestionData(n)?.type === 'insert' &&
+          getInlineSuggestionData(n)?.type === 'insert' &&
           isCurrentUserSuggestion(editor, n),
       });
 
@@ -124,7 +124,7 @@ export const deleteSuggestion = (
         const previousAboveNode = editor.api.above({ at: range.anchor });
 
         if (previousAboveNode && ElementApi.isElement(previousAboveNode[0])) {
-          const lineBreakData = getSuggestionLineBreakData(
+          const lineBreakData = getSuggestionData(
             previousAboveNode[0]
           );
           if (lineBreakData) {
@@ -132,7 +132,7 @@ export const deleteSuggestion = (
               editor
                 .getApi(BaseSuggestionPlugin)
                 .suggestion.withoutSuggestions(() => {
-                  editor.tf.unsetNodes([SUGGESTION_KEYS.lineBreak], {
+                  editor.tf.unsetNodes([BaseSuggestionPlugin.key], {
                     at: previousAboveNode[1],
                   });
                   editor.tf.mergeNodes({
@@ -152,7 +152,7 @@ export const deleteSuggestion = (
           if (!lineBreakData) {
             editor.tf.setNodes(
               {
-                [SUGGESTION_KEYS.lineBreak]: {
+                [BaseSuggestionPlugin.key]: {
                   id,
                   createdAt,
                   type: 'remove',
@@ -181,11 +181,11 @@ export const deleteSuggestion = (
       }
 
       // if the current point is in addition suggestion, delete
-      const entryText = findSuggestionNode(editor, {
+      const entryText = findInlineSuggestionNode(editor, {
         at: range,
         match: (n) =>
           TextApi.isText(n) &&
-          getSuggestionData(n)?.type === 'insert' &&
+          getInlineSuggestionData(n)?.type === 'insert' &&
           isCurrentUserSuggestion(editor, n),
       });
 

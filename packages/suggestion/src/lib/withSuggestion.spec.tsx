@@ -6,7 +6,7 @@ import { createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { BaseSuggestionPlugin } from './BaseSuggestionPlugin';
-import { getSuggestionData } from './utils';
+import { getInlineSuggestionData } from './utils';
 
 jsxt;
 
@@ -83,7 +83,7 @@ describe('withSuggestion', () => {
             editor.children[0].children[1][BaseSuggestionPlugin.key]
           ).toBeTruthy();
 
-          const data = getSuggestionData(editor.children[0].children[1] as any);
+          const data = getInlineSuggestionData(editor.children[0].children[1] as any);
           expect(
             data?.createdAt && data?.id && data?.type && data?.userId
           ).toBeTruthy();
@@ -198,7 +198,7 @@ describe('when point before is not marked', () => {
 
     editor.tf.deleteBackward();
 
-    const data = getSuggestionData(editor.children[0].children[1] as any);
+    const data = getInlineSuggestionData(editor.children[0].children[1] as any);
 
     expect(
       data?.createdAt && data?.id && data?.type && data?.userId
@@ -233,8 +233,8 @@ describe('when point before is marked', () => {
 
     editor.tf.deleteBackward();
 
-    const data1 = getSuggestionData(editor.children[0].children[0] as any);
-    const data2 = getSuggestionData(editor.children[0].children[1] as any);
+    const data1 = getInlineSuggestionData(editor.children[0].children[0] as any);
+    const data2 = getInlineSuggestionData(editor.children[0].children[1] as any);
 
     expect(!!data1?.id && !!data2?.id).toEqual(true);
     expect(data1?.id !== data2?.id).toEqual(true);
@@ -261,7 +261,7 @@ describe('when delete line', () => {
 
     editor.tf.deleteBackward('line');
 
-    const data = getSuggestionData(editor.children[0].children[0] as any);
+    const data = getInlineSuggestionData(editor.children[0].children[0] as any);
 
     expect(
       data?.createdAt && data?.id && data?.type && data?.userId
@@ -335,9 +335,9 @@ describe('replace', () => {
     expect(editor.children[0].children).toHaveLength(2);
 
     const removedNode = editor.children[0].children[0];
-    const removeNodeData = getSuggestionData(removedNode as any);
+    const removeNodeData = getInlineSuggestionData(removedNode as any);
     const insertedNode = editor.children[0].children[1];
-    const insertedNodeData = getSuggestionData(insertedNode as any);
+    const insertedNodeData = getInlineSuggestionData(insertedNode as any);
 
     expect(removedNode.text).toEqual('test');
     expect(insertedNode.text).toEqual('1');
