@@ -258,4 +258,73 @@ describe('rejectSuggestion', () => {
 
     expect(editor.children).toEqual(output.children);
   });
+
+  it('should reject remove nodes', () => {
+    const removeData = {
+      id: '1',
+      createdAt: Date.now(),
+      type: 'remove',
+      userId: 'testId',
+    };
+
+    const input = (
+      <editor>
+        <hp suggestion={removeData}>test1</hp>
+        <hp>test2</hp>
+      </editor>
+    ) as any as SlateEditor;
+
+    const output = (
+      <editor>
+        <hp>test1</hp>
+        <hp>test2</hp>
+      </editor>
+    ) as any as SlateEditor;
+
+    const editor = createSlateEditor({
+      plugins: [suggestionPlugin],
+      value: input.children,
+    });
+
+    rejectSuggestion(editor, {
+      keyId: 'suggestion_1',
+      suggestionId: '1',
+    } as any);
+
+    expect(editor.children).toEqual(output.children);
+  });
+
+  it('should reject insert nodes', () => {
+    const insertData = {
+      id: '1',
+      createdAt: Date.now(),
+      type: 'insert',
+      userId: 'testId',
+    };
+
+    const input = (
+      <editor>
+        <hp>test1</hp>
+        <hp suggestion={insertData}>test2</hp>
+      </editor>
+    ) as any as SlateEditor;
+
+    const output = (
+      <editor>
+        <hp>test1</hp>
+      </editor>
+    ) as any as SlateEditor;
+
+    const editor = createSlateEditor({
+      plugins: [suggestionPlugin],
+      value: input.children,
+    });
+
+    rejectSuggestion(editor, {
+      keyId: 'suggestion_1',
+      suggestionId: '1',
+    } as any);
+
+    expect(editor.children).toEqual(output.children);
+  });
 });

@@ -50,6 +50,12 @@ export const withSuggestion: OverrideEditor<SuggestionConfig> = ({
       const pointTarget = editor.api.before(selection, { unit });
 
       if (getOptions().isSuggesting) {
+        const node = editor.api.above();
+        // without set suggestion when delete backward in block suggestion
+        if (node?.[0][BaseSuggestionPlugin.key]) {
+          return deleteBackward(unit);
+        }
+
         if (!pointTarget) return;
 
         deleteSuggestion(
@@ -184,9 +190,9 @@ export const withSuggestion: OverrideEditor<SuggestionConfig> = ({
 
     insertText(text, options) {
       if (getOptions().isSuggesting) {
-        const node = editor.api.above()!;
+        const node = editor.api.above();
 
-        if (node[0][BaseSuggestionPlugin.key]) {
+        if (node?.[0][BaseSuggestionPlugin.key]) {
           return insertText(text, options);
         }
 

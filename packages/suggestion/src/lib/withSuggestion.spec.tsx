@@ -94,6 +94,45 @@ describe('withSuggestion', () => {
           expect(typeof data?.createdAt === 'number').toBeTruthy();
         });
       });
+
+      describe('when cursor is in block suggestion', () => {
+        it('should not add suggestion leaf', () => {
+          const blockSuggestionData = {
+            id: '1',
+            createdAt: Date.now(),
+            type: 'insert',
+            userId: 'testId',
+          };
+
+          const input = (
+            <editor>
+              <hp suggestion={blockSuggestionData}>
+                test1
+                <cursor />
+              </hp>
+            </editor>
+          ) as any as SlateEditor;
+
+          const output = (
+            <editor>
+              <hp suggestion={blockSuggestionData}>
+                test1test2
+                <cursor />
+              </hp>
+            </editor>
+          ) as any as SlateEditor;
+
+          const editor = createSlateEditor({
+            plugins: [suggestionPlugin],
+            selection: input.selection,
+            value: input.children,
+          });
+
+          editor.tf.insertText('test2');
+
+          expect(editor.children).toEqual(output.children);
+        });
+      });
     });
 
     describe('when cursor is in suggestion mark', () => {
@@ -142,40 +181,83 @@ describe('withSuggestion', () => {
 });
 
 describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => {
-  describe('when there is no point before', () => {
-    it('should not add a new suggestion id', () => {
-      const input = (
-        <editor>
-          <hp>
-            <htext suggestion_1={testSuggestionData} suggestion>
-              <cursor />
-              test
-            </htext>
-          </hp>
-        </editor>
-      ) as any as SlateEditor;
+  describe('delete backward', () => {
+    describe('when there is no point before', () => {
+      it('should not add a new suggestion id', () => {
+        const input = (
+          <editor>
+            <hp>
+              <htext suggestion_1={testSuggestionData} suggestion>
+                <cursor />
+                test
+              </htext>
+            </hp>
+          </editor>
+        ) as any as SlateEditor;
 
-      const output = (
-        <editor>
-          <hp>
-            <htext suggestion_1={testSuggestionData} suggestion>
-              <cursor />
-              test
-            </htext>
-          </hp>
-        </editor>
-      ) as any as SlateEditor;
+        const output = (
+          <editor>
+            <hp>
+              <htext suggestion_1={testSuggestionData} suggestion>
+                <cursor />
+                test
+              </htext>
+            </hp>
+          </editor>
+        ) as any as SlateEditor;
 
-      const editor = createSlateEditor({
-        plugins: [suggestionPlugin],
-        selection: input.selection,
-        value: input.children,
+        const editor = createSlateEditor({
+          plugins: [suggestionPlugin],
+          selection: input.selection,
+          value: input.children,
+        });
+        editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+
+        editor.tf.deleteBackward();
+
+        expect(editor.children).toEqual(output.children);
       });
-      editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    });
 
-      editor.tf.deleteBackward();
+    describe('when cursor is in block suggestion', () => {
+      it('without set inline suggestion when delete backward in block suggestion', () => {
+        const blockSuggestionData = {
+          id: '1',
+          createdAt: Date.now(),
+          type: 'insert',
+          userId: 'testId',
+        };
 
-      expect(editor.children).toEqual(output.children);
+        const input = (
+          <editor>
+            <hp suggestion={blockSuggestionData}>
+              test
+              <cursor />
+            </hp>
+          </editor>
+        ) as any as SlateEditor;
+
+        const output = (
+          <editor>
+            <hp suggestion={blockSuggestionData}>
+              tes
+              <cursor />
+            </hp>
+          </editor>
+        ) as any as SlateEditor;
+
+        const editor = createSlateEditor({
+          plugins: [suggestionPlugin],
+          selection: input.selection,
+          value: input.children,
+        });
+        editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+
+        editor.tf.deleteBackward();
+
+        expect(editor.children).toEqual(output.children);
+        expect(editor.selection).toEqual(output.selection);
+      });
     });
   });
 });
@@ -316,8 +398,8 @@ describe('normalizeNode', () => {
   });
 });
 
-describe('replace', () => {
-  it('insert text when cursor is expanded', () => {
+describe('insert text when cursor is expanded', () => {
+  it('it should use same suggestion id', () => {
     const input = (
       <editor>
         <hp>
