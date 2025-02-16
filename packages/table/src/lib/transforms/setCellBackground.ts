@@ -7,7 +7,7 @@ import { getCellTypes } from '../utils/getCellType';
 export const setCellBackground = (
   editor: SlateEditor,
   options: {
-    color: string;
+    color: string | null;
     selectedCells?: TElement[];
   }
 ) => {

@@ -353,7 +353,7 @@ function ColorDropdownMenu({ children, tooltip }: ColorDropdownMenuProps) {
   const onClearColor = useCallback(() => {
     setOpen(false);
     setCellBackground(editor, {
-      color: 'transparent',
+      color: null,
       selectedCells,
     });
   }, [selectedCells, editor]);
