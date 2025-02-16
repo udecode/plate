@@ -1,13 +1,13 @@
 import React from 'react';
 
-import type { NodeEntry, Path, Value } from '@udecode/plate';
-import type { PlateEditor } from '@udecode/plate-core/react';
-
+import { type NodeEntry, type Path, type Value, PathApi } from '@udecode/plate';
 import {
   type TCommentText,
   getCommentLastId,
   isExistComment,
 } from '@udecode/plate-comments';
+import { CommentsPlugin } from '@udecode/plate-comments/react';
+import { type PlateEditor, useEditorPlugin } from '@udecode/plate-core/react';
 
 import { CommentCreateForm } from './comment-create-form';
 import { CommentItem } from './comment-item';
@@ -67,6 +67,17 @@ export const useResolvedDiscussion = (
   commentNodes: NodeEntry<TCommentText>[],
   blockPath: Path
 ) => {
+  const { getOption, setOption } = useEditorPlugin(CommentsPlugin);
+
+  commentNodes.forEach(([node]) => {
+    const id = getCommentLastId(node);
+    const map = getOption('uniquePathMap');
+
+    if (!id || map.has(id)) return;
+
+    setOption('uniquePathMap', new Map(map).set(id, blockPath));
+  });
+
   const commentsIds = new Set(
     commentNodes.map(([node]) => getCommentLastId(node)!).filter(Boolean)
   );
@@ -79,6 +90,13 @@ export const useResolvedDiscussion = (
       createdAt: new Date(d.createdAt),
     }))
     .filter((item: Discussion) => {
+      /** If comment cross blocks just show it in the first block */
+      const commentsPathMap = getOption('uniquePathMap');
+      const firstBlockPath = commentsPathMap.get(item.id);
+
+      if (!firstBlockPath) return false;
+      if (!PathApi.equals(firstBlockPath, blockPath)) return false;
+
       return (
         isExistComment(item.id, editor.children) &&
         commentsIds.has(item.id) &&

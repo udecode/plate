@@ -9,6 +9,7 @@ import {
   type NodeEntry,
   type Path,
   type TElement,
+  PathApi,
   TextApi,
 } from '@udecode/plate';
 import {
@@ -93,7 +94,6 @@ const BlockCommentsContent = ({
   children,
   commentNodes,
   draftCommentNode,
-  element,
   suggestionNodes,
 }: PlateRenderElementProps & {
   blockPath: Path;
@@ -125,6 +125,7 @@ const BlockCommentsContent = ({
     activeSuggestionId &&
     resolvedSuggestion.find((s) => s.suggestionId === activeSuggestionId);
 
+  const commentingBlock = usePluginOption(CommentsPlugin, 'commentingBlock');
   const activeCommentId = usePluginOption(CommentsPlugin, 'activeId');
   const isCommenting = activeCommentId === getDraftCommentKey();
   const activeDiscussion =
@@ -142,7 +143,15 @@ const BlockCommentsContent = ({
     resolvedSuggestion.some((s) => s.suggestionId === activeSuggestionId);
 
   const [_open, setOpen] = React.useState(selected);
-  const open = _open || selected || (isCommenting && !!draftCommentNode);
+
+  // in some cases, we may comment the multiple blocks
+  const commentingCurrent =
+    !!commentingBlock && PathApi.equals(blockPath, commentingBlock);
+
+  const open =
+    _open ||
+    selected ||
+    (isCommenting && !!draftCommentNode && commentingCurrent);
 
   const anchorElement = useMemo(() => {
     let activeNode: NodeEntry | undefined;
@@ -190,7 +199,7 @@ const BlockCommentsContent = ({
           onOpenChange={(_open_) => {
             if (!_open_ && isCommenting && draftCommentNode) {
               editor.tf.unsetNodes(getDraftCommentKey(), {
-                at: blockPath,
+                at: [],
                 mode: 'lowest',
                 match: (n) => n[getDraftCommentKey()],
               });

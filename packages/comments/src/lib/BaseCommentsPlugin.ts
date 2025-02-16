@@ -16,6 +16,7 @@ export type CommentsPluginConfig = PluginConfig<
   'comment',
   {
     activeId: string | null;
+    commentingBlock: Path | null;
     hotkey: string[] | string;
     hoverId: string | null;
     isOverlapWithEditor: boolean;
@@ -40,6 +41,7 @@ export const BaseCommentsPlugin = createTSlatePlugin<CommentsPluginConfig>({
   node: { isLeaf: true },
   options: {
     activeId: null,
+    commentingBlock: null,
     hotkey: ['meta+shift+m', 'ctrl+shift+m'],
     hoverId: null,
     isOverlapWithEditor: false,

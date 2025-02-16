@@ -46,14 +46,6 @@ export const CommentsPlugin = toPlatePlugin(BaseCommentsPlugin, {
     },
   },
   node: { isLeaf: true },
-  options: {
-    activeId: null,
-    hotkey: ['meta+shift+m', 'ctrl+shift+m'],
-    hoverId: null,
-    isOverlapWithEditor: false,
-    uniquePathMap: new Map(),
-    updateTimestamp: null,
-  },
   shortcuts: {
     toggleComment: {
       keys: [[Key.Mod, Key.Shift, 'm']],

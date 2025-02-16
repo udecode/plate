@@ -244,7 +244,7 @@ export function CommentItem(props: {
                     void onCancel();
                   }}
                 >
-                  <div className="flex size-5 items-center justify-center rounded-full bg-primary/40">
+                  <div className="flex size-5 items-center justify-center rounded-[50%] bg-primary/40">
                     <XIcon className="size-3 stroke-[3px] text-background" />
                   </div>
                 </Button>
@@ -257,7 +257,7 @@ export function CommentItem(props: {
                     void onSave();
                   }}
                 >
-                  <div className="flex size-5 items-center justify-center rounded-full bg-brand">
+                  <div className="flex size-5 items-center justify-center rounded-[50%] bg-brand">
                     <CheckIcon className="size-3 stroke-[3px] text-background" />
                   </div>
                 </Button>
