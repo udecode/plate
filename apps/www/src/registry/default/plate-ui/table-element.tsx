@@ -341,7 +341,7 @@ function ColorDropdownMenu({ children, tooltip }: ColorDropdownMenuProps) {
   const [open, setOpen] = useState(false);
 
   const editor = useEditorRef();
-  const selectedCells = useTableStore().get.selectedCells() ?? undefined;
+  const selectedCells = usePluginOption(TablePlugin, 'selectedCells') ?? [];
 
   const onUpdateColor = useCallback(
     (color: string) => {
