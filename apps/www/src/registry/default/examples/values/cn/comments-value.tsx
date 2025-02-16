@@ -17,35 +17,22 @@ export const usersData = {
 export const commentsData: Record<string, TComment> = {
   1: {
     id: '1',
-    createdAt: 1_663_453_625_129,
-    userId: '1',
     value: [{ children: [{ text: '这是一条评论。' }], type: 'p' }],
   },
   2: {
     id: '2',
-    createdAt: 1_663_453_729_191,
-    userId: '1',
     value: [{ children: [{ text: '你能帮我看看这个吗 @12joan?' }], type: 'p' }],
   },
   3: {
     id: '3',
-    createdAt: 1_663_453_740_180,
-    isResolved: true,
-    userId: '1',
     value: [{ children: [{ text: '这是一条已解决的评论。' }], type: 'p' }],
   },
   4: {
     id: '4',
-    createdAt: 1_663_453_740_181,
-    parentId: '2',
-    userId: '2',
     value: [{ children: [{ text: '看起来不错。' }], type: 'p' }],
   },
   5: {
     id: '4',
-    createdAt: 1_663_453_740_182,
-    parentId: '2',
-    userId: '1',
     value: [{ children: [{ text: '谢谢！' }], type: 'p' }],
   },
 };

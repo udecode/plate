@@ -1202,22 +1202,6 @@ export const Index: Record<string, any> = {
         path: "src/registry/default/plate-ui/comment-more-dropdown.tsx",
         type: "registry:ui",
         target: ""
-      },{
-        path: "src/registry/default/plate-ui/comment-reply-items.tsx",
-        type: "registry:ui",
-        target: ""
-      },{
-        path: "src/registry/default/plate-ui/comment-resolve-button.tsx",
-        type: "registry:ui",
-        target: ""
-      },{
-        path: "src/registry/default/plate-ui/comment-value.tsx",
-        type: "registry:ui",
-        target: ""
-      },{
-        path: "src/registry/default/plate-ui/comments-popover.tsx",
-        type: "registry:ui",
-        target: ""
       }],
       categories: undefined,
       component: React.lazy(() => import("@/registry/default/plate-ui/comment-avatar.tsx")),

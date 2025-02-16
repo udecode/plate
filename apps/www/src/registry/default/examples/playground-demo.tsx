@@ -72,6 +72,8 @@ import { editorPlugins } from '@/registry/default/components/editor/plugins/edit
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 
+import { basicElementsValue } from './values/basic-elements-value';
+
 export default function PlaygroundDemo({ className }: { className?: string }) {
   const value = usePlaygroundValue();
   const enabled = usePlaygroundEnabled();
@@ -94,13 +96,13 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
           enabled: process.env.NODE_ENV !== 'production',
         }),
       ],
-      value: value,
+      value: basicElementsValue,
     },
     []
   );
 
   return (
-    <Plate editor={editor}>
+    <Plate onValueChange={(value) => console.log(value.value)} editor={editor}>
       <EditorContainer className={className}>
         <Editor variant="demo" className="pb-[20vh]" spellCheck={false} />
       </EditorContainer>
