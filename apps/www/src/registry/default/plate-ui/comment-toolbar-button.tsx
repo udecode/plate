@@ -41,8 +41,7 @@ export function CommentToolbarButton() {
       data-plate-prevent-overlay
       tooltip="Comment"
     >
-      <MessageSquareTextIcon className="mr-1" />
-      <span className="hidden sm:inline">Comment</span>
+      <MessageSquareTextIcon />
     </ToolbarButton>
   );
 }

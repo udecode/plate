@@ -53,7 +53,7 @@ import { CheckIcon, XIcon } from 'lucide-react';
 import type { Discussion, TCommentItem } from './block-comments-card';
 
 import { Button } from './button';
-import { CommentAvatar } from './comment-avatar';
+import { CommentAvatar, mockUsers } from './comment-avatar';
 import { CommentCreateForm } from './comment-create-form';
 import { CommentItem, formatCommentDate } from './comment-item';
 
@@ -93,19 +93,6 @@ export const TYPE_TEXT_MAP: Record<string, (node?: TElement) => string> = {
   [TocPlugin.key]: () => 'Table of Contents',
   [TogglePlugin.key]: () => 'Toggle',
   [VideoPlugin.key]: () => 'Video',
-};
-
-const mockUsers = {
-  1: {
-    id: '1',
-    avatarUrl: 'https://avatars.githubusercontent.com/u/19695832?s=96&v=4',
-    name: 'zbeyens',
-  },
-  2: {
-    id: '2',
-    avatarUrl: 'https://avatars.githubusercontent.com/u/4272090?v=4',
-    name: '12joan',
-  },
 };
 
 export const BlockSuggestionCard = ({
@@ -150,9 +137,10 @@ export const BlockSuggestionCard = ({
     >
       <div className="flex flex-col p-4">
         <div className="relative flex items-center">
-          <CommentAvatar userId={mockUsers['1'].id} />
+          {/* Replace to your own backend or refer to potion */}
+          <CommentAvatar userId="1" />
           <h4 className="mx-2 text-sm leading-none font-semibold">
-            Felix Feng
+            {mockUsers.find((user: any) => user.id === '1')?.name}
           </h4>
           <div className="text-xs leading-none text-muted-foreground/80">
             <span className="mr-1">

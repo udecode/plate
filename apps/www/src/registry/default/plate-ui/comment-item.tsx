@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 
 import { unsetCommentMark } from '@udecode/plate-comments';
 import { Plate, useEditorRef } from '@udecode/plate/react';
@@ -15,7 +15,7 @@ import { CheckIcon, XIcon } from 'lucide-react';
 import type { TCommentItem } from './block-comments-card';
 
 import { Button } from './button';
-import { CommentAvatar } from './comment-avatar';
+import { CommentAvatar, mockUsers } from './comment-avatar';
 import { useCommentEditor } from './comment-create-form';
 import { CommentMoreDropdown } from './comment-more-dropdown';
 import { Editor, EditorContainer } from './editor';
@@ -115,12 +115,8 @@ export function CommentItem(props: {
 
   const editor = useEditorRef();
 
-  // mock current user id
-  const currentUserId = 'current-user';
-  const isMyComment = useMemo(
-    () => currentUserId === comment.userId,
-    [comment.userId]
-  );
+  // Replace to your own backend or refer to potion
+  const isMyComment = true;
 
   const initialValue = comment.contentRich;
 
@@ -168,9 +164,11 @@ export function CommentItem(props: {
       onMouseLeave={() => setHovering(false)}
     >
       <div className="relative flex items-center">
-        <CommentAvatar userId="1" />
-
-        <h4 className="mx-2 text-sm leading-none font-semibold">John Doe</h4>
+        <CommentAvatar userId={comment.userId} />
+        <h4 className="mx-2 text-sm leading-none font-semibold">
+          {/* Replace to your own backend or refer to potion */}
+          {mockUsers.find((user: any) => user.id === comment.userId)?.name}
+        </h4>
 
         <div className="text-xs leading-none text-muted-foreground/80">
           <span className="mr-1">{formatCommentDate(comment.createdAt)}</span>
@@ -239,12 +237,12 @@ export function CommentItem(props: {
                   size="icon"
                   variant="ghost"
                   className="size-[28px]"
-                  onClick={(e) => {
+                  onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                     e.stopPropagation();
                     void onCancel();
                   }}
                 >
-                  <div className="flex size-5 items-center justify-center rounded-[50%] bg-primary/40">
+                  <div className="flex size-5 shrink-0 items-center justify-center rounded-[50%] bg-primary/40">
                     <XIcon className="size-3 stroke-[3px] text-background" />
                   </div>
                 </Button>
@@ -252,12 +250,12 @@ export function CommentItem(props: {
                 <Button
                   size="icon"
                   variant="ghost"
-                  onClick={(e) => {
+                  onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                     e.stopPropagation();
                     void onSave();
                   }}
                 >
-                  <div className="flex size-5 items-center justify-center rounded-[50%] bg-brand">
+                  <div className="flex size-5 shrink-0 items-center justify-center rounded-[50%] bg-brand">
                     <CheckIcon className="size-3 stroke-[3px] text-background" />
                   </div>
                 </Button>

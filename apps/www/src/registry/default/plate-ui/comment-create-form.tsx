@@ -130,7 +130,7 @@ export function CommentCreateForm({
         createdAt: new Date(),
         discussionId,
         isEdited: false,
-        userId: 'current-user',
+        userId: '1',
       };
 
       // Add reply to discussion comments
@@ -149,7 +149,7 @@ export function CommentCreateForm({
       .join('');
 
     const _discussionId = nanoid();
-    // 模拟创建新讨论
+    // Mock creating new discussion
     const newDiscussion: Discussion = {
       id: _discussionId,
       comments: [
@@ -159,16 +159,15 @@ export function CommentCreateForm({
           createdAt: new Date(),
           discussionId: _discussionId,
           isEdited: false,
-          userId: 'current-user',
+          userId: '1',
         },
       ],
       createdAt: new Date(),
       documentContent,
       isResolved: false,
-      userId: 'current-user',
+      userId: '1',
     };
 
-    // 存储到 session storage
     const discussions = JSON.parse(
       sessionStorage.getItem('discussions') || '[]'
     );
@@ -191,7 +190,7 @@ export function CommentCreateForm({
   const onAddSuggestion = React.useCallback(async () => {
     if (!discussionId) return;
 
-    // 模拟创建建议
+    // Mock creating suggestion
     const suggestion = {
       id: discussionId,
       comments: [
@@ -201,16 +200,15 @@ export function CommentCreateForm({
           createdAt: new Date(),
           discussionId,
           isEdited: false,
-          userId: 'current-user',
+          userId: '1',
         },
       ],
       createdAt: new Date(),
       documentContent: commentValue,
       isResolved: false,
-      userId: 'current-user',
+      userId: '1',
     };
 
-    // 存储到 session storage
     const discussions = JSON.parse(
       sessionStorage.getItem('discussions') || '[]'
     );
@@ -221,7 +219,8 @@ export function CommentCreateForm({
   return (
     <div className={cn('flex w-full', className)}>
       <div className="mt-1 mr-1 shrink-0">
-        <CommentAvatar userId={null} />
+        {/* Replace to your own backend or refer to potion */}
+        <CommentAvatar userId="1" />
       </div>
 
       <div className="relative flex grow gap-2">

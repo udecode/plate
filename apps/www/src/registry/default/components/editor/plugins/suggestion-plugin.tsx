@@ -4,7 +4,7 @@ import { SuggestionBelowNodes } from '@/registry/default/plate-ui/suggestion-lin
 
 export const suggestionPlugin = SuggestionPlugin.extend({
   options: {
-    currentUserId: 'testId',
+    currentUserId: '1',
   },
   render: {
     belowNodes: SuggestionBelowNodes as any,
