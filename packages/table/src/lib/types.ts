@@ -1,10 +1,6 @@
 import type { Descendant, TElement } from '@udecode/plate';
 
-export type CreateCellOptions = {
-  children?: Descendant[];
-  header?: boolean;
-  row?: TTableRowElement;
-};
+export type BorderDirection = 'bottom' | 'left' | 'right' | 'top';
 
 export interface BorderStyle {
   color?: string;
@@ -13,14 +9,13 @@ export interface BorderStyle {
   style?: string;
 }
 
-export interface TTableElement extends TElement {
-  colSizes?: number[];
-  marginLeft?: number;
-}
+export type CreateCellOptions = {
+  children?: Descendant[];
+  header?: boolean;
+  row?: TTableRowElement;
+};
 
-export interface TTableRowElement extends TElement {
-  size?: number;
-}
+export type TableStoreSizeOverrides = Map<number, number>;
 
 export interface TTableCellElement extends TElement {
   id?: string;
@@ -32,19 +27,21 @@ export interface TTableCellElement extends TElement {
     /** Only the last row cells have a bottom border. */
     bottom?: BorderStyle;
     left?: BorderStyle;
-
     /** Only the last column cells have a right border. */
     right?: BorderStyle;
-
     top?: BorderStyle;
   };
   background?: string;
-  backgroundColor?: string;
   colSpan?: number;
   rowSpan?: number;
   size?: number;
 }
 
-export type BorderDirection = 'bottom' | 'left' | 'right' | 'top';
+export interface TTableElement extends TElement {
+  colSizes?: number[];
+  marginLeft?: number;
+}
 
-export type TableStoreSizeOverrides = Map<number, number>;
+export interface TTableRowElement extends TElement {
+  size?: number;
+}

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import type * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 
@@ -17,15 +17,10 @@ import {
   withHOC,
 } from '@udecode/plate/react';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
-import {
-  type TTableElement,
-  setCellBackgroundColor,
-} from '@udecode/plate-table';
+import { type TTableElement, setCellBackground } from '@udecode/plate-table';
 import {
   TablePlugin,
   TableProvider,
-  useColorDropdownMenu,
-  useColorDropdownMenuState,
   useTableBordersDropdownMenuContentState,
   useTableElement,
   useTableMergeState,
@@ -45,8 +40,7 @@ import {
   XIcon,
 } from 'lucide-react';
 
-import { DEFAULT_COLORS, DEFAULT_CUSTOM_COLORS } from './color-constants';
-import { ColorPicker } from './color-picker';
+import { DEFAULT_COLORS } from './color-constants';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -342,46 +336,39 @@ type ColorDropdownMenuProps = {
   tooltip: string;
 };
 
-export function ColorDropdownMenu({
-  children,
-  tooltip,
-}: ColorDropdownMenuProps) {
-  const state = useColorDropdownMenuState({
-    colors: DEFAULT_COLORS,
-    customColors: DEFAULT_CUSTOM_COLORS,
-  });
-
-  const { buttonProps, menuProps } = useColorDropdownMenu(state);
+function ColorDropdownMenu({ children, tooltip }: ColorDropdownMenuProps) {
+  const [open, setOpen] = useState(false);
 
   const editor = useEditorRef();
-  const selectedCells = useTableStore().get.selectedCells();
+  const selectedCells = useTableStore().get.selectedCells() ?? undefined;
 
   const onUpdateColor = useCallback(
     (color: string) => {
-      state.onToggle();
-      setCellBackgroundColor(editor, { color, selectedCells });
+      setOpen(false);
+      setCellBackground(editor, { color, selectedCells });
     },
-    [state, selectedCells, editor]
+    [selectedCells, editor]
   );
 
   const onClearColor = useCallback(() => {
-    state.onToggle();
-    setCellBackgroundColor(editor, { color: 'transparent', selectedCells });
-  }, [state, selectedCells, editor]);
+    setOpen(false);
+    setCellBackground(editor, {
+      color: 'transparent',
+      selectedCells,
+    });
+  }, [selectedCells, editor]);
 
   return (
-    <DropdownMenu modal={false} {...menuProps}>
+    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger asChild>
-        <ToolbarButton tooltip={tooltip} {...buttonProps}>
-          {children}
-        </ToolbarButton>
+        <ToolbarButton tooltip={tooltip}>{children}</ToolbarButton>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="start">
         <DropdownMenuGroup label="Colors">
           <ColorDropdownMenuItems
             className="px-2"
-            colors={state.colors}
+            colors={DEFAULT_COLORS}
             updateColor={onUpdateColor}
           />
         </DropdownMenuGroup>
