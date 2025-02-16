@@ -12,4 +12,5 @@ export * from './hasManyComments';
 export * from './isCommentKey';
 export * from './isCommentNodeById';
 export * from './isCommentText';
+export * from './isExistComment';
 export * from './unsetCommentNodesById';

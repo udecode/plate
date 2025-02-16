@@ -1,13 +1,13 @@
 import { useEditorSelector } from '@udecode/plate/react';
 
-import { findCommentNode, getCommentLastId } from '../../lib';
+import { BaseCommentsPlugin, getCommentLastId } from '../../lib';
 
 export const useCommentId = () => {
   return useEditorSelector((editor) => {
     if (!editor.selection) return;
     if (editor.api.isExpanded()) return;
 
-    const commentNode = findCommentNode(editor);
+    const commentNode = editor.getApi(BaseCommentsPlugin).comment.node();
 
     if (!commentNode) return;
 

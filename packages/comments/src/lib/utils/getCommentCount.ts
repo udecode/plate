@@ -1,4 +1,3 @@
-
 import type { TCommentText } from '../types';
 
 import { getDraftCommentKey } from './getDraftCommentKey';

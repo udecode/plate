@@ -1,6 +1,8 @@
 import { type OverrideEditor, nanoid, TextApi } from '@udecode/plate';
 import { ParagraphPlugin } from '@udecode/plate/react';
 
+import type { TSuggestionElement } from './types';
+
 import {
   type SuggestionConfig,
   BaseSuggestionPlugin,
@@ -50,9 +52,12 @@ export const withSuggestion: OverrideEditor<SuggestionConfig> = ({
       const pointTarget = editor.api.before(selection, { unit });
 
       if (getOptions().isSuggesting) {
-        const node = editor.api.above();
+        const node = editor.api.above<TSuggestionElement>();
         // without set suggestion when delete backward in block suggestion
-        if (node?.[0][BaseSuggestionPlugin.key]) {
+        if (
+          node?.[0][BaseSuggestionPlugin.key] &&
+          !node?.[0].suggestion.isLineBreak
+        ) {
           return deleteBackward(unit);
         }
 
@@ -115,7 +120,6 @@ export const withSuggestion: OverrideEditor<SuggestionConfig> = ({
       if (getOptions().isSuggesting) {
         const [node, path] = editor.api.above()!;
 
-        // TODO: options
         if (path.length > 1 || node.type !== ParagraphPlugin.key) {
           return insertTextSuggestion(editor, '\n');
         }
@@ -162,6 +166,7 @@ export const withSuggestion: OverrideEditor<SuggestionConfig> = ({
       if (getOptions().isSuggesting) {
         const nodesArray = Array.isArray(nodes) ? nodes : [nodes];
 
+        // TODO: options
         if (nodesArray.some((n) => n.type === 'slash_input')) {
           api.suggestion.withoutSuggestions(() => {
             insertNodes(nodes, options);
@@ -190,9 +195,12 @@ export const withSuggestion: OverrideEditor<SuggestionConfig> = ({
 
     insertText(text, options) {
       if (getOptions().isSuggesting) {
-        const node = editor.api.above();
+        const node = editor.api.above<TSuggestionElement>();
 
-        if (node?.[0][BaseSuggestionPlugin.key]) {
+        if (
+          node?.[0][BaseSuggestionPlugin.key] &&
+          !node?.[0].suggestion.isLineBreak
+        ) {
           return insertText(text, options);
         }
 

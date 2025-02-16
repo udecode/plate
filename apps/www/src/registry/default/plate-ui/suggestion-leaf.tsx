@@ -19,14 +19,8 @@ export function SuggestionLeaf(props: PlateLeafProps) {
   const { setOption } = useEditorPlugin(SuggestionPlugin);
 
   const leafId: string = getInlineSuggestionId(leaf) ?? '';
-  const activeSuggestionId = usePluginOption(
-    SuggestionPlugin,
-    'activeSuggestionId'
-  );
-  const hoverSuggestionId = usePluginOption(
-    SuggestionPlugin,
-    'hoverSuggestionId'
-  );
+  const activeSuggestionId = usePluginOption(SuggestionPlugin, 'activeId');
+  const hoverSuggestionId = usePluginOption(SuggestionPlugin, 'hoverId');
   const hasRemove = getInlineSuggestionDataList(leaf).some(
     (data) => data.type === 'remove'
   );
@@ -62,8 +56,8 @@ export function SuggestionLeaf(props: PlateLeafProps) {
           'border-b-gray-500 bg-gray-400/25 text-gray-500 no-underline',
         className
       )}
-      onMouseEnter={() => setOption('hoverSuggestionId', leafId)}
-      onMouseLeave={() => setOption('hoverSuggestionId', null)}
+      onMouseEnter={() => setOption('hoverId', leafId)}
+      onMouseLeave={() => setOption('hoverId', null)}
     >
       {children}
     </PlateLeaf>

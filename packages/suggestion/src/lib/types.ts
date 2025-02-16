@@ -60,7 +60,6 @@ export type TSuggestionData = {
 };
 export interface TSuggestionElement extends TElement {
   suggestion: TSuggestionData;
-  isLineBreak?: boolean;
 }
 
 export type TSuggestionText = TText & {

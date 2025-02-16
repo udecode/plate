@@ -41,14 +41,8 @@ function SuggestionLineBreak({
   const isRemove = type === 'remove';
   const isInsert = type === 'insert';
 
-  const activeSuggestionId = usePluginOption(
-    SuggestionPlugin,
-    'activeSuggestionId'
-  );
-  const hoverSuggestionId = usePluginOption(
-    SuggestionPlugin,
-    'hoverSuggestionId'
-  );
+  const activeSuggestionId = usePluginOption(SuggestionPlugin, 'activeId');
+  const hoverSuggestionId = usePluginOption(SuggestionPlugin, 'hoverId');
 
   const isActive = activeSuggestionId === suggestionData.id;
   const isHover = hoverSuggestionId === suggestionData.id;

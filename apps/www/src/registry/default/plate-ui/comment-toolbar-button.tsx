@@ -2,19 +2,39 @@
 
 import React from 'react';
 
-import { useCommentAddButton } from '@udecode/plate-comments/react';
-import { MessageSquarePlus } from 'lucide-react';
+import { getDraftCommentKey } from '@udecode/plate-comments';
+import {
+  CommentsPlugin,
+  useAddCommentMark,
+} from '@udecode/plate-comments/react';
+import { useEditorRef } from '@udecode/plate/react';
+import { MessageSquareTextIcon } from 'lucide-react';
 
 import { ToolbarButton } from './toolbar';
 
 export function CommentToolbarButton() {
-  const { hidden, props } = useCommentAddButton();
+  const editor = useEditorRef();
+  const addMark = useAddCommentMark();
 
-  if (hidden) return null;
+  const onCommentToolbarButton = React.useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.stopPropagation();
+      e.preventDefault();
+      addMark();
+      editor.tf.collapse();
+      editor.setOption(CommentsPlugin, 'activeId', getDraftCommentKey());
+    },
+    [addMark, editor]
+  );
 
   return (
-    <ToolbarButton tooltip="Comment (⌘+⇧+M)" {...props}>
-      <MessageSquarePlus />
+    <ToolbarButton
+      onClick={onCommentToolbarButton}
+      data-plate-prevent-overlay
+      tooltip="Comment"
+    >
+      <MessageSquareTextIcon className="mr-1" />
+      <span className="hidden sm:inline">Comment</span>
     </ToolbarButton>
   );
 }

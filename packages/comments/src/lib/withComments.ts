@@ -1,14 +1,16 @@
-import { type OverrideEditor, RangeApi, TextApi } from '@udecode/plate';
+import type { OverrideEditor } from '@udecode/plate';
 
 import type { CommentsPluginConfig } from './BaseCommentsPlugin';
+import type { TCommentText } from './types';
 
+import { BaseCommentsPlugin } from './BaseCommentsPlugin';
 import { removeCommentMark } from './transforms';
-import { getCommentCount, getDraftCommentKey, isCommentText } from './utils';
+import { getCommentCount, getDraftCommentKey } from './utils';
 
 export const withComments: OverrideEditor<CommentsPluginConfig> = ({
   editor,
   setOption,
-  tf: { apply, insertBreak },
+  tf: { apply, insertBreak, normalizeNode },
   type,
 }) => ({
   transforms: {
@@ -29,33 +31,6 @@ export const withComments: OverrideEditor<CommentsPluginConfig> = ({
 
         setOption('updateTimestamp', Date.now());
       }
-      if (operation.type === 'set_selection') {
-        const { properties } = operation;
-
-        if (!properties?.focus) return apply(operation);
-
-        try {
-          if (RangeApi.isExpanded(properties as any)) {
-            return apply(operation);
-          }
-        } catch {
-          return apply(operation);
-        }
-
-        const commentEntry = editor.api.node({
-          at: operation.properties.focus,
-          match: (n) => TextApi.isText(n) && isCommentText(n),
-        });
-
-        if (!commentEntry) return apply(operation);
-
-        const [node, path] = commentEntry;
-
-        // Unset MARK_COMMENT prop when there is no comments
-        if (node[type] && getCommentCount(node as any) < 1) {
-          editor.tf.unsetNodes([type, getDraftCommentKey()], { at: path });
-        }
-      }
 
       apply(operation);
     },
@@ -69,6 +44,21 @@ export const withComments: OverrideEditor<CommentsPluginConfig> = ({
         at: editor.selection?.focus,
         mode: 'lowest',
       });
+    },
+    normalizeNode(entry) {
+      const [node, path] = entry;
+
+      if (
+        node[BaseCommentsPlugin.key] &&
+        !node[getDraftCommentKey()] &&
+        getCommentCount(node as TCommentText) < 1
+      ) {
+        editor.tf.unsetNodes(BaseCommentsPlugin.key, { at: path });
+
+        return;
+      }
+
+      return normalizeNode(entry);
     },
   },
 });

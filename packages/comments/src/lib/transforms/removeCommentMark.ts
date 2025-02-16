@@ -1,12 +1,10 @@
-
 import type { SlateEditor } from '@udecode/plate';
 
 import { BaseCommentsPlugin } from '../BaseCommentsPlugin';
-import { findCommentNode } from '../queries';
 import { getCommentKeys } from '../utils';
 
 export const removeCommentMark = (editor: SlateEditor) => {
-  const nodeEntry = findCommentNode(editor);
+  const nodeEntry = editor.getApi(BaseCommentsPlugin).comment.node();
 
   if (!nodeEntry) return;
 

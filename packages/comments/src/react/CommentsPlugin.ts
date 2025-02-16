@@ -2,7 +2,7 @@ import { isSlateString } from '@udecode/plate';
 import { Key, toPlatePlugin } from '@udecode/plate/react';
 
 import { BaseCommentsPlugin } from '../lib';
-import { findCommentNode, getCommentLastId } from '../lib/queries';
+import { getCommentLastId } from '../lib/queries';
 import { useHooksComments } from './useHooksComments';
 
 export const CommentsPlugin = toPlatePlugin(BaseCommentsPlugin, {
@@ -21,7 +21,9 @@ export const CommentsPlugin = toPlatePlugin(BaseCommentsPlugin, {
 
       while (leaf.parentElement) {
         if (leaf.classList.contains(`slate-${CommentsPlugin.key}`)) {
-          const commentsEntry = findCommentNode(editor);
+          const commentsEntry = editor
+            .getApi(BaseCommentsPlugin)
+            .comment.node();
 
           if (!commentsEntry) {
             unsetActiveSuggestion();

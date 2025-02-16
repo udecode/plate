@@ -23,9 +23,9 @@ export const SUGGESTION_KEYS = {
 export type SuggestionConfig = PluginConfig<
   'suggestion',
   {
-    activeSuggestionId: string | null;
+    activeId: string | null;
     currentUserId: string | null;
-    hoverSuggestionId: string | null;
+    hoverId: string | null;
     isSuggesting: boolean;
     suggestions: Record<string, TSuggestion>;
     uniquePathMap: Map<string, Path>;
@@ -63,9 +63,9 @@ export const BaseSuggestionPlugin = createTSlatePlugin<SuggestionConfig>({
   key: 'suggestion',
   node: { isLeaf: true },
   options: {
-    activeSuggestionId: null,
+    activeId: null,
     currentUserId: null,
-    hoverSuggestionId: null,
+    hoverId: null,
     isSuggesting: false,
     suggestions: {},
     uniquePathMap: new Map(),

@@ -1,73 +1,271 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 
+import { unsetCommentMark } from '@udecode/plate-comments';
+import { Plate, useEditorRef } from '@udecode/plate/react';
 import {
-  CommentProvider,
-  CommentsPlugin,
-  useCommentItemContentState,
-} from '@udecode/plate-comments/react';
-import { usePluginOption } from '@udecode/plate/react';
-import { formatDistance } from 'date-fns';
+  differenceInDays,
+  differenceInHours,
+  differenceInMinutes,
+  format,
+} from 'date-fns';
+import { CheckIcon, XIcon } from 'lucide-react';
 
+import type { TCommentItem } from './block-comments-card';
+
+import { Button } from './button';
 import { CommentAvatar } from './comment-avatar';
+import { useCommentEditor } from './comment-create-form';
 import { CommentMoreDropdown } from './comment-more-dropdown';
-import { CommentResolveButton } from './comment-resolve-button';
-import { CommentValue } from './comment-value';
+import { Editor, EditorContainer } from './editor';
 
-type PlateCommentProps = {
-  commentId: string;
+export const formatCommentDate = (date: Date) => {
+  const now = new Date();
+  const diffMinutes = differenceInMinutes(now, date);
+  const diffHours = differenceInHours(now, date);
+  const diffDays = differenceInDays(now, date);
+
+  if (diffMinutes < 60) {
+    return `${diffMinutes}m`;
+  }
+  if (diffHours < 24) {
+    return `${diffHours}h`;
+  }
+  if (diffDays < 2) {
+    return `${diffDays}d`;
+  }
+
+  return format(date, 'MM/dd/yyyy');
 };
 
-function CommentItemContent() {
+export function CommentItem(props: {
+  comment: TCommentItem;
+  discussionLength: number;
+  documentContent: string;
+  editingId: string | null;
+  index: number;
+  setEditingId: React.Dispatch<React.SetStateAction<string | null>>;
+  showDocumentContent?: boolean;
+  onEditorClick?: () => void;
+}) {
   const {
     comment,
-    commentText,
-    editingValue,
-    isMyComment,
-    isReplyComment,
-    user,
-  } = useCommentItemContentState();
+    discussionLength,
+    documentContent,
+    editingId,
+    index,
+    setEditingId,
+    showDocumentContent = false,
+    onEditorClick,
+  } = props;
+  // const { user } = comment;
+
+  const resolveDiscussion = async (id: string) => {
+    const discussions = JSON.parse(
+      sessionStorage.getItem('discussions') || '[]'
+    );
+    const updatedDiscussions = discussions.map((discussion: any) => {
+      if (discussion.id === id) {
+        return { ...discussion, isResolved: true };
+      }
+      return discussion;
+    });
+    sessionStorage.setItem('discussions', JSON.stringify(updatedDiscussions));
+  };
+
+  const removeDiscussion = async (id: string) => {
+    const discussions = JSON.parse(
+      sessionStorage.getItem('discussions') || '[]'
+    );
+    const updatedDiscussions = discussions.filter(
+      (discussion: any) => discussion.id !== id
+    );
+    sessionStorage.setItem('discussions', JSON.stringify(updatedDiscussions));
+  };
+
+  const updateComment = async (input: {
+    id: string;
+    contentRich: any;
+    discussionId: string;
+    isEdited: boolean;
+  }) => {
+    const discussions = JSON.parse(
+      sessionStorage.getItem('discussions') || '[]'
+    );
+    const updatedDiscussions = discussions.map((discussion: any) => {
+      if (discussion.id === input.discussionId) {
+        const updatedComments = discussion.comments.map((comment: any) => {
+          if (comment.id === input.id) {
+            return {
+              ...comment,
+              contentRich: input.contentRich,
+              isEdited: true,
+              updatedAt: new Date(),
+            };
+          }
+          return comment;
+        });
+        return { ...discussion, comments: updatedComments };
+      }
+      return discussion;
+    });
+    sessionStorage.setItem('discussions', JSON.stringify(updatedDiscussions));
+  };
+
+  const editor = useEditorRef();
+
+  // mock current user id
+  const currentUserId = 'current-user';
+  const isMyComment = useMemo(
+    () => currentUserId === comment.userId,
+    [comment.userId]
+  );
+
+  const initialValue = comment.contentRich;
+
+  const commentEditor = useCommentEditor(
+    {
+      id: comment.id,
+      value: initialValue,
+    },
+    [initialValue]
+  );
+
+  const onCancel = () => {
+    setEditingId(null);
+    commentEditor.tf.replaceNodes(initialValue, {
+      at: [],
+      children: true,
+    });
+  };
+
+  const onSave = () => {
+    void updateComment({
+      id: comment.id,
+      contentRich: commentEditor.children,
+      discussionId: comment.discussionId,
+      isEdited: true,
+    });
+    setEditingId(null);
+  };
+
+  const onResolveComment = () => {
+    void resolveDiscussion(comment.discussionId);
+    unsetCommentMark(editor, { id: comment.discussionId });
+  };
+
+  const isFirst = index === 0;
+  const isLast = index === discussionLength - 1;
+  const isEditing = editingId && editingId === comment.id;
+
+  const [hovering, setHovering] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   return (
-    <div>
-      <div className="relative flex items-center gap-2">
-        <CommentAvatar userId={comment.userId} />
+    <div
+      onMouseEnter={() => setHovering(true)}
+      onMouseLeave={() => setHovering(false)}
+    >
+      <div className="relative flex items-center">
+        <CommentAvatar userId="1" />
 
-        <h4 className="text-sm leading-none font-semibold">{user?.name}</h4>
+        <h4 className="mx-2 text-sm leading-none font-semibold">John Doe</h4>
 
-        <div className="text-xs leading-none text-muted-foreground">
-          {formatDistance(comment.createdAt, Date.now())} ago
+        <div className="text-xs leading-none text-muted-foreground/80">
+          <span className="mr-1">{formatCommentDate(comment.createdAt)}</span>
+          {comment.isEdited && <span>(edited)</span>}
         </div>
 
-        {isMyComment && (
-          <div className="absolute -top-0.5 -right-0.5 flex space-x-1">
-            {isReplyComment ? null : <CommentResolveButton />}
+        {isMyComment && (hovering || dropdownOpen) && (
+          <div className="absolute top-0 right-0 flex space-x-1">
+            {index === 0 && (
+              <Button
+                variant="ghost"
+                className="h-6 p-1 text-muted-foreground"
+                onClick={onResolveComment}
+                type="button"
+              >
+                <CheckIcon className="size-4" />
+              </Button>
+            )}
 
-            <CommentMoreDropdown />
+            <CommentMoreDropdown
+              onCloseAutoFocus={() => {
+                setTimeout(() => {
+                  commentEditor.tf.focus({ edge: 'endEditor' });
+                }, 0);
+              }}
+              onRemoveComment={() => {
+                if (discussionLength === 1) {
+                  unsetCommentMark(editor, { id: comment.discussionId });
+                  void removeDiscussion(comment.discussionId);
+                }
+              }}
+              comment={comment}
+              dropdownOpen={dropdownOpen}
+              setDropdownOpen={setDropdownOpen}
+              setEditingId={setEditingId}
+            />
           </div>
         )}
       </div>
 
-      <div className="mb-4 pt-0.5 pl-7">
-        {editingValue ? (
-          <CommentValue />
-        ) : (
-          <div className="text-sm whitespace-pre-wrap">{commentText}</div>
+      {isFirst && showDocumentContent && (
+        <div className="text-subtle-foreground relative mt-1 flex pl-[32px] text-sm">
+          {discussionLength > 1 && (
+            <div className="absolute top-[5px] left-3 h-full w-0.5 shrink-0 bg-muted" />
+          )}
+          <div className="my-px w-0.5 shrink-0 bg-highlight" />
+          <div className="ml-2">{documentContent}</div>
+        </div>
+      )}
+
+      <div className="relative my-1 pl-[26px]">
+        {!isLast && (
+          <div className="absolute top-0 left-3 h-full w-0.5 shrink-0 bg-muted" />
         )}
+        <Plate readOnly={!isEditing} editor={commentEditor}>
+          <EditorContainer variant="comment">
+            <Editor
+              variant="comment"
+              className="w-auto grow"
+              onClick={() => onEditorClick?.()}
+            />
+
+            {isEditing && (
+              <div className="ml-auto flex shrink-0 gap-1">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="size-[28px]"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    void onCancel();
+                  }}
+                >
+                  <div className="flex size-5 items-center justify-center rounded-full bg-primary/40">
+                    <XIcon className="size-3 stroke-[3px] text-background" />
+                  </div>
+                </Button>
+
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    void onSave();
+                  }}
+                >
+                  <div className="flex size-5 items-center justify-center rounded-full bg-brand">
+                    <CheckIcon className="size-3 stroke-[3px] text-background" />
+                  </div>
+                </Button>
+              </div>
+            )}
+          </EditorContainer>
+        </Plate>
       </div>
     </div>
-  );
-}
-
-export function CommentItem({ commentId }: PlateCommentProps) {
-  const comment = usePluginOption(CommentsPlugin, 'commentById', commentId);
-
-  if (!comment) return null;
-
-  return (
-    <CommentProvider id={commentId} key={commentId}>
-      <CommentItemContent />
-    </CommentProvider>
   );
 }

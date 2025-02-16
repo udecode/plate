@@ -2,48 +2,54 @@
 
 import React from 'react';
 
-import type { TCommentText } from '@udecode/plate-comments';
-
 import { cn } from '@udecode/cn';
 import {
-  useCommentLeaf,
-  useCommentLeafState,
-} from '@udecode/plate-comments/react';
-import { type PlateLeafProps, PlateLeaf } from '@udecode/plate/react';
+  type TCommentText,
+  getCommentLastId,
+  hasManyComments,
+} from '@udecode/plate-comments';
+import { CommentsPlugin } from '@udecode/plate-comments/react';
+import {
+  type PlateLeafProps,
+  PlateLeaf,
+  usePluginOption,
+} from '@udecode/plate/react';
 
 export function CommentLeaf({
   className,
   ...props
 }: PlateLeafProps<TCommentText>) {
-  const { children, leaf, nodeProps } = props;
+  const { children, editor, leaf, nodeProps } = props;
 
-  const state = useCommentLeafState({ leaf });
-  const { props: rootProps } = useCommentLeaf(state);
+  const { setOption } = editor;
+  const hoverId = usePluginOption(CommentsPlugin, 'hoverId');
+  const activeId = usePluginOption(CommentsPlugin, 'activeId');
 
-  if (!state.commentCount) return <>{children}</>;
-
-  let aboveChildren = <>{children}</>;
-
-  if (!state.isActive) {
-    for (let i = 1; i < state.commentCount; i++) {
-      aboveChildren = <span className="bg-highlight/25">{aboveChildren}</span>;
-    }
-  }
+  const isOverlapping = hasManyComments(leaf);
+  const lastId = getCommentLastId(leaf);
+  const isActive = activeId === lastId;
+  const isHover = hoverId === lastId;
 
   return (
     <PlateLeaf
       {...props}
       className={cn(
-        className,
-        'border-b-2 border-b-highlight/35 hover:bg-highlight/25',
-        state.isActive ? 'bg-highlight/25' : 'bg-highlight/15'
+        'border-b-2 border-b-highlight/[.36] bg-highlight/[.13] transition-colors duration-200',
+        (isHover || isActive) && 'border-b-highlight bg-highlight/25',
+        isOverlapping && 'border-b-2 border-b-highlight/[.7] bg-highlight/25',
+        (isHover || isActive) &&
+          isOverlapping &&
+          'border-b-highlight bg-highlight/45',
+        className
       )}
+      onClick={() => setOption(CommentsPlugin, 'activeId', lastId ?? null)}
+      onMouseEnter={() => setOption(CommentsPlugin, 'hoverId', lastId ?? null)}
+      onMouseLeave={() => setOption(CommentsPlugin, 'hoverId', null)}
       nodeProps={{
-        ...rootProps,
         ...nodeProps,
       }}
     >
-      {aboveChildren}
+      {children}
     </PlateLeaf>
   );
 }

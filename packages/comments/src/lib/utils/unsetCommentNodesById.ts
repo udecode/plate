@@ -24,7 +24,11 @@ export const unsetCommentMark = (
     if (isOverlapping) {
       unsetKeys = [getDraftCommentKey(), getCommentKey(id)];
     } else {
-      unsetKeys = [BaseCommentsPlugin.key, getDraftCommentKey(), getCommentKey(id)];
+      unsetKeys = [
+        BaseCommentsPlugin.key,
+        getDraftCommentKey(),
+        getCommentKey(id),
+      ];
     }
 
     editor.tf.unsetNodes<TCommentText>(unsetKeys, {

@@ -2,20 +2,26 @@
 
 import React from 'react';
 
-import { CommentsPlugin } from '@udecode/plate-comments/react';
-import { usePluginOption } from '@udecode/plate/react';
-
 import { Avatar, AvatarFallback, AvatarImage } from './avatar';
 
+const mockUsers = {
+  1: {
+    id: '1',
+    avatarUrl: 'https://avatars.githubusercontent.com/u/19695832?s=96&v=4',
+    name: 'zbeyens',
+  },
+  2: {
+    id: '2',
+    avatarUrl: 'https://avatars.githubusercontent.com/u/4272090?v=4',
+    name: '12joan',
+  },
+};
+
 export function CommentAvatar({ userId }: { userId: string | null }) {
-  const user = usePluginOption(CommentsPlugin, 'userById', userId);
-
-  if (!user) return null;
-
   return (
-    <Avatar className="size-5">
-      <AvatarImage alt={user.name} src={user.avatarUrl} />
-      <AvatarFallback>{user.name?.[0]}</AvatarFallback>
+    <Avatar className="size-6">
+      <AvatarImage alt={mockUsers[1].name} src={mockUsers[1].avatarUrl} />
+      <AvatarFallback>{mockUsers[1].name?.[0]}</AvatarFallback>
     </Avatar>
   );
 }
