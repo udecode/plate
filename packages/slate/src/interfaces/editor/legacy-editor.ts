@@ -23,6 +23,9 @@ export type LegacyEditorApi<V extends Value = Value> = Pick<
   | 'shouldNormalize'
 >;
 
+export type LegacyEditorMethods<V extends Value = Value> = LegacyEditorApi<V> &
+  LegacyEditorTransforms<V>;
+
 export type LegacyEditorTransforms<V extends Value = Value> = {
   /** Delete content in the editor backward from the current selection. */
   deleteBackward: OmitFirst<typeof deleteBackwardBase>;
@@ -48,6 +51,3 @@ export type LegacyEditorTransforms<V extends Value = Value> = {
     'insertData' | 'insertFragmentData' | 'insertTextData' | 'setFragmentData'
   > &
   Pick<EditorTransforms<V>, 'writeHistory'>;
-
-export type LegacyEditorMethods<V extends Value = Value> = LegacyEditorApi<V> &
-  LegacyEditorTransforms<V>;

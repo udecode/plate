@@ -18,13 +18,13 @@ describe('groupFilesByType', () => {
     ];
 
     const fileList = {
+      length: files.length,
+      item: (i: number) => files[i],
       [Symbol.iterator]: function* () {
         for (let i = 0; i < this.length; i++) {
           yield this.item(i);
         }
       },
-      item: (i: number) => files[i],
-      length: files.length,
     } as FileList;
 
     const config: UploadConfig = {
@@ -46,13 +46,13 @@ describe('groupFilesByType', () => {
   it('should throw InvalidFileTypeError for unsupported file types', () => {
     const files = [createFile('text.txt', 'text/plain')];
     const fileList = {
+      length: files.length,
+      item: (i: number) => files[i],
       [Symbol.iterator]: function* () {
         for (let i = 0; i < this.length; i++) {
           yield this.item(i);
         }
       },
-      item: (i: number) => files[i],
-      length: files.length,
     } as FileList;
 
     const config: UploadConfig = {
@@ -71,13 +71,13 @@ describe('groupFilesByType', () => {
   it('should accept blob type as fallback', () => {
     const files = [createFile('unknown.xyz', 'application/octet-stream')];
     const fileList = {
+      length: files.length,
+      item: (i: number) => files[i],
       [Symbol.iterator]: function* () {
         for (let i = 0; i < this.length; i++) {
           yield this.item(i);
         }
       },
-      item: (i: number) => files[i],
-      length: files.length,
     } as FileList;
 
     const config: UploadConfig = {

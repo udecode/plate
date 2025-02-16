@@ -1,8 +1,8 @@
-import type { Registry } from './schema';
+import type { Registry } from 'shadcx/registry';
 
 import { siteConfig } from '../config/site';
 
-export const uiComponents: Registry = [
+export const uiComponents: Registry['items'] = [
   {
     dependencies: [
       '@udecode/plate-ai',
@@ -918,7 +918,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
   },
 ];
 
-export const uiNodes: Registry = [
+export const uiNodes: Registry['items'] = [
   {
     dependencies: [],
     doc: {
@@ -1691,7 +1691,7 @@ export const uiNodes: Registry = [
   },
 ];
 
-export const uiPrimitives: Registry = [
+export const uiPrimitives: Registry['items'] = [
   {
     dependencies: ['@radix-ui/react-alert-dialog'],
     doc: {
@@ -1927,4 +1927,8 @@ export const uiPrimitives: Registry = [
   },
 ];
 
-export const ui: Registry = [...uiNodes, ...uiPrimitives, ...uiComponents];
+export const ui: Registry['items'] = [
+  ...uiNodes,
+  ...uiPrimitives,
+  ...uiComponents,
+];

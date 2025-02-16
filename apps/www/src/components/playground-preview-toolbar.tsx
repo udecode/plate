@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 
-import type { Block } from '@/registry/schema';
 import type { ImperativePanelHandle } from 'react-resizable-panels';
 
 import { cn } from '@udecode/cn';
@@ -29,7 +28,7 @@ export function PlaygroundPreviewToolbar({
   // fullScreen,
   // setFullScreen,
 }: {
-  block: { hasLiftMode: boolean } & Block;
+  block: { hasLiftMode: boolean } & any;
   resizablePanelRef: React.RefObject<ImperativePanelHandle | null>;
   // fullScreen: boolean;
   // setFullScreen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -47,7 +46,7 @@ export function PlaygroundPreviewToolbar({
         // fullScreen && 'bottom-4'
       )}
     >
-      <Button asChild variant="link" className="whitespace-normal px-1 md:px-2">
+      <Button asChild variant="link" className="px-1 whitespace-normal md:px-2">
         <a
           className="whitespace-nowrap"
           href={src ?? `#${block.name}`}
@@ -71,7 +70,7 @@ export function PlaygroundPreviewToolbar({
           npx shadcx add plate/{block.name}
         </Button>
         <Separator orientation="vertical" className="mx-2 hidden h-4 md:flex" />
-        <div className="hidden h-[28px] items-center gap-1.5 rounded-md border bg-background p-[2px] shadow-sm md:flex">
+        <div className="hidden h-[28px] items-center gap-1.5 rounded-md border bg-background p-[2px] shadow-xs md:flex">
           <ToggleGroup
             defaultValue="100"
             onValueChange={(value) => {
@@ -96,16 +95,16 @@ export function PlaygroundPreviewToolbar({
               className="size-[22px] rounded-sm p-0"
               value="full"
             >
-              <Maximize className="!size-3.5" />
+              <Maximize className="size-3.5!" />
             </ToggleGroupItem> */}
             <ToggleGroupItem className="size-[22px] rounded-sm p-0" value="100">
-              <Monitor className="!size-3.5" />
+              <Monitor className="size-3.5!" />
             </ToggleGroupItem>
             <ToggleGroupItem className="size-[22px] rounded-sm p-0" value="60">
-              <Tablet className="!size-3.5" />
+              <Tablet className="size-3.5!" />
             </ToggleGroupItem>
             <ToggleGroupItem className="size-[22px] rounded-sm p-0" value="30">
-              <Smartphone className="!size-3.5" />
+              <Smartphone className="size-3.5!" />
             </ToggleGroupItem>
             <Separator orientation="vertical" className="h-4" />
             <Button

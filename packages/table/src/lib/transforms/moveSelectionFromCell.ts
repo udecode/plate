@@ -13,12 +13,10 @@ export const moveSelectionFromCell = (
     reverse,
   }: {
     at?: TLocation;
-
     /** Expand cell selection to an edge. */
     edge?: 'bottom' | 'left' | 'right' | 'top';
     /** Move selection from one selected cell */
     fromOneCell?: boolean;
-
     /** False: move selection to cell below true: move selection to cell above */
     reverse?: boolean;
   } = {}

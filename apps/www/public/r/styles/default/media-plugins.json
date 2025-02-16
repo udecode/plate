@@ -5,10 +5,10 @@
   ],
   "files": [
     {
-      "content": "'use client';\n\nimport { CaptionPlugin } from '@udecode/plate-caption/react';\nimport {\n  AudioPlugin,\n  FilePlugin,\n  ImagePlugin,\n  MediaEmbedPlugin,\n  PlaceholderPlugin,\n  VideoPlugin,\n} from '@udecode/plate-media/react';\n\nimport { ImagePreview } from '@/components/plate-ui/image-preview';\nimport { MediaUploadToast } from '@/components/plate-ui/media-upload-toast';\n\nexport const mediaPlugins = [\n  ImagePlugin.extend({\n    options: { disableUploadInsert: true },\n    render: { afterEditable: ImagePreview },\n  }),\n  MediaEmbedPlugin,\n  VideoPlugin,\n  AudioPlugin,\n  FilePlugin,\n  CaptionPlugin.configure({\n    options: {\n      plugins: [\n        ImagePlugin,\n        VideoPlugin,\n        AudioPlugin,\n        FilePlugin,\n        MediaEmbedPlugin,\n      ],\n    },\n  }),\n  PlaceholderPlugin.configure({\n    options: { disableEmptyPlaceholder: true },\n    render: { afterEditable: MediaUploadToast },\n  }),\n] as const;\n",
       "path": "components/editor/plugins/media-plugins.tsx",
-      "target": "components/editor/plugins/media-plugins.tsx",
-      "type": "registry:component"
+      "content": "'use client';\n\nimport { CaptionPlugin } from '@udecode/plate-caption/react';\nimport {\n  AudioPlugin,\n  FilePlugin,\n  ImagePlugin,\n  MediaEmbedPlugin,\n  PlaceholderPlugin,\n  VideoPlugin,\n} from '@udecode/plate-media/react';\n\nimport { ImagePreview } from '@/components/plate-ui/image-preview';\nimport { MediaUploadToast } from '@/components/plate-ui/media-upload-toast';\n\nexport const mediaPlugins = [\n  ImagePlugin.extend({\n    options: { disableUploadInsert: true },\n    render: { afterEditable: ImagePreview },\n  }),\n  MediaEmbedPlugin,\n  VideoPlugin,\n  AudioPlugin,\n  FilePlugin,\n  CaptionPlugin.configure({\n    options: {\n      plugins: [\n        ImagePlugin,\n        VideoPlugin,\n        AudioPlugin,\n        FilePlugin,\n        MediaEmbedPlugin,\n      ],\n    },\n  }),\n  PlaceholderPlugin.configure({\n    options: { disableEmptyPlaceholder: true },\n    render: { afterEditable: MediaUploadToast },\n  }),\n] as const;\n",
+      "type": "registry:component",
+      "target": "components/editor/plugins/media-plugins.tsx"
     }
   ],
   "name": "media-plugins",
@@ -16,5 +16,7 @@
     "image-preview",
     "media-upload-toast"
   ],
-  "type": "registry:component"
+  "type": "registry:component",
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "author": "udecode (https://platejs.org)"
 }

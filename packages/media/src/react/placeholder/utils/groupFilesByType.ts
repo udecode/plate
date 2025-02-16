@@ -1,5 +1,5 @@
-import type { UploadConfig } from '../PlaceholderPlugin';
 import type { AllowedFileType } from '../internal/mimes';
+import type { UploadConfig } from '../PlaceholderPlugin';
 
 import { matchFileType } from './matchFileType';
 

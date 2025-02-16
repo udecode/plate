@@ -60,6 +60,8 @@ export function* nodes<N extends DescendantOf<E>, E extends Editor = Editor>(
 
   const nodeEntries = NodeApi.nodes(editor, {
     from,
+    reverse,
+    to,
     pass: ([node]) => {
       if (!ElementApi.isElement(node)) return false;
       if (
@@ -74,8 +76,6 @@ export function* nodes<N extends DescendantOf<E>, E extends Editor = Editor>(
 
       return false;
     },
-    reverse,
-    to,
   });
 
   const matches: NodeEntry<N>[] = [];

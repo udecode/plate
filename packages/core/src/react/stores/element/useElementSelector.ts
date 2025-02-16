@@ -2,6 +2,7 @@ import React from 'react';
 
 import type { NodeEntry, TElement } from '@udecode/slate';
 
+import { useStoreAtomValue } from 'jotai-x';
 import { selectAtom } from 'jotai/utils';
 
 import { elementStore, useElementStore } from './useElementStore';
@@ -30,5 +31,5 @@ export const useElementSelector = <T>(
     deps
   );
 
-  return useElementStore(key).get.atom(selectorAtom);
+  return useStoreAtomValue(useElementStore(key), selectorAtom);
 };

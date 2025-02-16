@@ -1,5 +1,11 @@
 # @udecode/slate
 
+## 44.0.0
+
+### Patch Changes
+
+- [#4048](https://github.com/udecode/plate/pull/4048) by [@zbeyens](https://github.com/zbeyens) – Fix duplicateNodes when nodes is not passed
+
 ## 42.2.5
 
 ### Patch Changes

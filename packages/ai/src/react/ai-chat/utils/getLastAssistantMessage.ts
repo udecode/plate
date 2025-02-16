@@ -1,4 +1,4 @@
-import { type PlateEditor, useEditorRef } from '@udecode/plate/react';
+import { type PlateEditor, usePluginOption } from '@udecode/plate/react';
 
 import { AIChatPlugin } from '../AIChatPlugin';
 
@@ -9,9 +9,7 @@ export function getLastAssistantMessage(editor: PlateEditor) {
 }
 
 export function useLastAssistantMessage() {
-  const editor = useEditorRef();
-
-  const chat = editor.useOption(AIChatPlugin, 'chat');
+  const chat = usePluginOption(AIChatPlugin, 'chat');
 
   return chat.messages?.findLast((message) => message.role === 'assistant');
 }

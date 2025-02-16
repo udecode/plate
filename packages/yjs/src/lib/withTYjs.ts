@@ -5,10 +5,8 @@ import { type YjsEditor, withYjs } from '@slate-yjs/core';
 
 export type WithYjsOptions = {
   autoConnect?: boolean;
-
   // Origin used when applying local slate operations to yjs
   localOrigin?: unknown;
-
   // Origin used when storing positions
   positionStorageOrigin?: unknown;
 };

@@ -11,7 +11,6 @@ export const BaseFontFamilyPlugin = createSlatePlugin({
     html: {
       deserializer: {
         isLeaf: true,
-        parse: ({ element, type }) => ({ [type]: element.style.fontFamily }),
         rules: [
           {
             validStyle: {
@@ -19,6 +18,7 @@ export const BaseFontFamilyPlugin = createSlatePlugin({
             },
           },
         ],
+        parse: ({ element, type }) => ({ [type]: element.style.fontFamily }),
       },
     },
   },

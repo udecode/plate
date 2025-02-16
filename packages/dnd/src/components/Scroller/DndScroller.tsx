@@ -1,13 +1,12 @@
 import React from 'react';
 
-import { useEditorRef } from '@udecode/plate/react';
+import { usePluginOption } from '@udecode/plate/react';
 
 import { DndPlugin } from '../../DndPlugin';
 import { type ScrollerProps, Scroller } from './Scroller';
 
 export function DndScroller(props: Partial<ScrollerProps>) {
-  const editor = useEditorRef();
-  const isDragging = editor.useOption(DndPlugin, 'isDragging');
+  const isDragging = usePluginOption(DndPlugin, 'isDragging');
 
   const [show, setShow] = React.useState(false);
 

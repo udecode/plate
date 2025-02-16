@@ -8,7 +8,11 @@ import type { TRange } from '../range';
 import type { EditorApi } from './editor-api';
 import type { EditorTransforms } from './editor-transforms';
 
-export type Value = TElement[];
+export type Editor<V extends Value = Value> = EditorBase<V> & {
+  api: EditorApi<V>;
+  tf: EditorTransforms<V>;
+  transforms: EditorTransforms<V>;
+};
 
 export type EditorBase<V extends Value = Value> = {
   /** Unique identifier for the editor. */
@@ -26,20 +30,16 @@ export type EditorBase<V extends Value = Value> = {
 } & EditorMethods<V> &
   UnknownObject;
 
+export type EditorMarks = Record<string, any>;
+
 export type EditorMethods<V extends Value = Value> = Pick<
   EditorTransforms<V>,
   'redo' | 'undo'
 >;
 
-export type Editor<V extends Value = Value> = EditorBase<V> & {
-  api: EditorApi<V>;
-  tf: EditorTransforms<V>;
-  transforms: EditorTransforms<V>;
-};
-
 export type EditorSelection = TRange | null;
 
-export type EditorMarks = Record<string, any>;
+export type Value = TElement[];
 
 /** A helper type for getting the value of an editor. */
 export type ValueOf<E extends Editor> = E['children'];

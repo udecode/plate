@@ -154,15 +154,15 @@ describe('TPlateEditor', () => {
       parsers: {
         html: {
           deserializer: {
+            rules: [
+              { validNodeName: ['STRONG', 'B'] },
+              { validStyle: { fontWeight: ['600', '700', 'bold'] } },
+            ],
             query: ({ element }) =>
               !someHtmlElement(
                 element,
                 (node) => node.style.fontWeight === 'normal'
               ),
-            rules: [
-              { validNodeName: ['STRONG', 'B'] },
-              { validStyle: { fontWeight: ['600', '700', 'bold'] } },
-            ],
           },
         },
       },

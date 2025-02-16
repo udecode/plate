@@ -31,19 +31,14 @@ export type SerializeHtmlOptions<
 > = {
   /** Node components to render the HTML */
   components: NodeComponents;
-
   /** The component used to render the editor content */
   editorComponent?: React.ComponentType<T>;
-
   /** List of className prefixes to preserve from being stripped out */
   preserveClassNames?: string[];
-
   /** Props to pass to the editor component */
   props?: Partial<T>;
-
   /** Enable stripping class names */
   stripClassNames?: boolean;
-
   /** Enable stripping data attributes */
   stripDataAttributes?: boolean;
 };

@@ -2,12 +2,12 @@
 
 import React from 'react';
 
-import { useEditorRef, useEditorSelector } from '@udecode/plate/react';
 import {
   ListStyleType,
   someIndentList,
   toggleIndentList,
 } from '@udecode/plate-indent-list';
+import { useEditorRef, useEditorSelector } from '@udecode/plate/react';
 import { List, ListOrdered } from 'lucide-react';
 
 import {

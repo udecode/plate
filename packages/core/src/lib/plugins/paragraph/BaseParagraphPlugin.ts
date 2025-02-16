@@ -10,12 +10,12 @@ export const BaseParagraphPlugin = createSlatePlugin({
   parsers: {
     html: {
       deserializer: {
-        query: ({ element }) => element.style.fontFamily !== 'Consolas',
         rules: [
           {
             validNodeName: 'P',
           },
         ],
+        query: ({ element }) => element.style.fontFamily !== 'Consolas',
       },
     },
   },

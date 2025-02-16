@@ -2,8 +2,8 @@ import {
   type ElementEntry,
   type SlateEditor,
   type TElement,
-  PathApi,
   match,
+  PathApi,
 } from '@udecode/plate';
 
 import { getListTypes } from '../queries/index';

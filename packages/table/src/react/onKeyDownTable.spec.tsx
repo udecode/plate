@@ -1,4 +1,3 @@
-/* eslint-disable jest/no-disabled-tests */
 /** @jsx jsxt */
 
 import type { SlateEditor } from '@udecode/plate';

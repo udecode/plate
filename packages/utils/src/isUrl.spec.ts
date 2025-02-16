@@ -1,4 +1,3 @@
-/* eslint-disable jest/no-commented-out-tests */
 import { isUrl } from './isUrl';
 
 describe('is-url', () => {

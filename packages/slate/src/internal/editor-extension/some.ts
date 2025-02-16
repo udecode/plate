@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/prefer-array-some */
 import type {
   Editor,
   EditorNodesOptions,

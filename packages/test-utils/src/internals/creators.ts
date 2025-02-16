@@ -12,13 +12,13 @@ import {
 } from '@udecode/slate';
 
 import {
-  AnchorToken,
-  FocusToken,
-  Token,
   addAnchorToken,
   addFocusToken,
+  AnchorToken,
+  FocusToken,
   getAnchorOffset,
   getFocusOffset,
+  Token,
 } from './tokens';
 
 /**

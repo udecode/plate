@@ -19,13 +19,11 @@ export const insertColumnGroup = (
   editor.tf.withoutNormalizing(() => {
     editor.tf.insertNodes<TColumnGroupElement>(
       {
-        children: Array(columns)
-          .fill(null)
-          .map(() => ({
-            children: [editor.api.create.block()],
-            type: BaseColumnItemPlugin.key,
-            width: `${width}%`,
-          })),
+        children: new Array(columns).fill(null).map(() => ({
+          children: [editor.api.create.block()],
+          type: BaseColumnItemPlugin.key,
+          width: `${width}%`,
+        })),
         type: BaseColumnPlugin.key,
       },
       options

@@ -28,25 +28,26 @@ export type SuggestionConfig = PluginConfig<
           value: Partial<Omit<TSuggestion, 'id'>> & Pick<TSuggestion, 'id'>
         ) => void)
       | null;
-  } & SuggestionSelectors,
+  },
   {
-    suggestion: SuggestionPluginApi;
+    suggestion: {
+      addSuggestion: (
+        value: WithPartial<TSuggestion, 'createdAt' | 'id' | 'userId'>
+      ) => void;
+      removeSuggestion: (id: string | null) => void;
+      updateSuggestion: (
+        id: string | null,
+        value: Partial<TSuggestion>
+      ) => void;
+    };
+  },
+  {},
+  {
+    currentSuggestionUser?: () => SuggestionUser | null;
+    suggestionById?: (id: string | null) => TSuggestion | null;
+    suggestionUserById?: (id: string | null) => SuggestionUser | null;
   }
 >;
-
-export type SuggestionSelectors = {
-  currentSuggestionUser?: () => SuggestionUser | null;
-  suggestionById?: (id: string | null) => TSuggestion | null;
-  suggestionUserById?: (id: string | null) => SuggestionUser | null;
-};
-
-export type SuggestionPluginApi = {
-  addSuggestion: (
-    value: WithPartial<TSuggestion, 'createdAt' | 'id' | 'userId'>
-  ) => void;
-  removeSuggestion: (id: string | null) => void;
-  updateSuggestion: (id: string | null, value: Partial<TSuggestion>) => void;
-};
 
 export const BaseSuggestionPlugin = createTSlatePlugin<SuggestionConfig>({
   key: 'suggestion',
@@ -63,55 +64,57 @@ export const BaseSuggestionPlugin = createTSlatePlugin<SuggestionConfig>({
   },
 })
   .overrideEditor(withSuggestion)
-  .extendOptions(({ getOptions }) => ({
-    currentSuggestionUser: (): SuggestionUser | null => {
+  .extendSelectors<SuggestionConfig['selectors']>(({ getOptions }) => ({
+    currentSuggestionUser: () => {
       const { currentUserId, users } = getOptions();
 
       if (!currentUserId) return null;
 
       return users[currentUserId];
     },
-    suggestionById: (id: string | null): TSuggestion | null => {
+    suggestionById: (id) => {
       if (!id) return null;
 
       return getOptions().suggestions[id];
     },
-    suggestionUserById: (id: string | null): SuggestionUser | null => {
+    suggestionUserById: (id) => {
       if (!id) return null;
 
       return getOptions().users[id];
     },
   }))
-  .extendApi<Partial<SuggestionPluginApi>>(({ getOptions, setOptions }) => ({
-    addSuggestion: (value) => {
-      const { currentUserId } = getOptions();
+  .extendApi<Partial<SuggestionConfig['api']['suggestion']>>(
+    ({ getOptions, setOptions }) => ({
+      addSuggestion: (value) => {
+        const { currentUserId } = getOptions();
 
-      if (!currentUserId) return;
+        if (!currentUserId) return;
 
-      const id = value.id ?? nanoid();
-      const newSuggestion: TSuggestion = {
-        id,
-        createdAt: Date.now(),
-        userId: currentUserId,
-        ...value,
-      };
+        const id = value.id ?? nanoid();
+        const newSuggestion: TSuggestion = {
+          id,
+          createdAt: Date.now(),
+          userId: currentUserId,
+          ...value,
+        };
 
-      setOptions((draft) => {
-        draft.suggestions![id] = newSuggestion;
-      });
-    },
-    removeSuggestion: (id) => {
-      if (!id) return;
+        setOptions((draft) => {
+          draft.suggestions![id] = newSuggestion;
+        });
+      },
+      removeSuggestion: (id) => {
+        if (!id) return;
 
-      setOptions((draft) => {
-        delete draft.suggestions![id];
-      });
-    },
-    updateSuggestion: (id, value) => {
-      if (!id) return;
+        setOptions((draft) => {
+          delete draft.suggestions![id];
+        });
+      },
+      updateSuggestion: (id, value) => {
+        if (!id) return;
 
-      setOptions((draft) => {
-        draft.suggestions![id] = { ...draft.suggestions![id], ...value };
-      });
-    },
-  }));
+        setOptions((draft) => {
+          draft.suggestions![id] = { ...draft.suggestions![id], ...value };
+        });
+      },
+    })
+  );

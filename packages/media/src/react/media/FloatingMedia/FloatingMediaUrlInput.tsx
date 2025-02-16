@@ -11,10 +11,7 @@ import {
 
 import type { TMediaElement } from '../../../lib/media/types';
 
-import {
-  floatingMediaActions,
-  floatingMediaSelectors,
-} from './FloatingMediaStore';
+import { FloatingMediaStore } from './FloatingMediaStore';
 import { submitFloatingMedia } from './submitFloatingMedia';
 
 export const useFloatingMediaUrlInputState = ({
@@ -41,8 +38,8 @@ export const useFloatingMediaUrlInputState = ({
   useHotkeys(
     'escape',
     () => {
-      if (floatingMediaSelectors.isEditing()) {
-        floatingMediaActions.reset();
+      if (FloatingMediaStore.get('isEditing')) {
+        FloatingMediaStore.actions.reset();
         editor.tf.focus({ at: editor.selection! });
       }
     },
@@ -54,7 +51,7 @@ export const useFloatingMediaUrlInputState = ({
   );
 
   return {
-    defaultValue: floatingMediaSelectors.url(),
+    defaultValue: FloatingMediaStore.get('url'),
   };
 };
 
@@ -63,7 +60,7 @@ export const useFloatingMediaUrlInput = ({
 }: ReturnType<typeof useFloatingMediaUrlInputState>) => {
   const onChange: React.ChangeEventHandler<HTMLInputElement> =
     React.useCallback((e) => {
-      floatingMediaActions.url(e.target.value);
+      FloatingMediaStore.set('url', e.target.value);
     }, []);
 
   return {

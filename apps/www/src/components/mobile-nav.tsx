@@ -33,10 +33,10 @@ export function MobileNav() {
         <Button
           size="lg"
           variant="ghost"
-          className="-ml-2 mr-2 size-8 px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 md:hidden"
+          className="mr-2 -ml-2 size-8 px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 md:hidden"
         >
           <svg
-            className="!size-6"
+            className="size-6!"
             fill="none"
             stroke="currentColor"
             strokeWidth="1.5"

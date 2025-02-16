@@ -1,5 +1,7 @@
 # @udecode/plate-floating
 
+## 44.0.0
+
 ## 43.0.0
 
 ### Minor Changes

@@ -4,7 +4,6 @@ import { render } from '@testing-library/react';
 
 import { withHOC } from './withHOC';
 
-/* eslint-disable react/display-name */
 describe('withHOC', () => {
   type DummyRef = { myRef: string };
   type DummyProps = { myProp: string };

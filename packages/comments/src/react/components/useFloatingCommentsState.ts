@@ -1,15 +1,21 @@
 import React from 'react';
 
-import { useEditorPlugin, useEditorVersion } from '@udecode/plate/react';
+import {
+  useEditorPlugin,
+  useEditorVersion,
+  usePluginOption,
+} from '@udecode/plate/react';
 
 import { BaseCommentsPlugin } from '../../lib/BaseCommentsPlugin';
 
 export const useFloatingCommentsState = () => {
-  const { api, editor, setOption, useOption } =
-    useEditorPlugin(BaseCommentsPlugin);
+  const { api, editor, setOption } = useEditorPlugin(BaseCommentsPlugin);
   const version = useEditorVersion();
 
-  const activeCommentId = useOption('activeCommentId');
+  const activeCommentId = usePluginOption(
+    BaseCommentsPlugin,
+    'activeCommentId'
+  );
 
   const [loaded, setLoaded] = React.useState(false);
   const [active, setActive] = React.useState(false);

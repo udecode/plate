@@ -62,10 +62,10 @@ export const shiftSelection = (
       // Expand down => add block below the bottom-most
       const belowEntry = editor.api.next({
         at: bottomPath,
+        mode: 'highest',
         match: (n, p) =>
           api.blockSelection.isSelectable(n as any, p) &&
           !PathApi.isAncestor(p, bottomPath),
-        mode: 'highest',
       });
 
       if (!belowEntry) return;

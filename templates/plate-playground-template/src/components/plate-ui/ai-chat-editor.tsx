@@ -4,7 +4,6 @@ import React, { memo } from 'react';
 
 import { withProps } from '@udecode/cn';
 import { BaseParagraphPlugin, SlateLeaf } from '@udecode/plate';
-import { usePlateEditor } from '@udecode/plate/react';
 import { useAIChatEditor } from '@udecode/plate-ai/react';
 import {
   BaseBoldPlugin,
@@ -25,6 +24,7 @@ import { BaseIndentPlugin } from '@udecode/plate-indent';
 import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
 import { BaseLinkPlugin } from '@udecode/plate-link';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
+import { usePlateEditor } from '@udecode/plate/react';
 
 import {
   TodoLiStatic,

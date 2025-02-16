@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import { bindFirst } from '@udecode/utils';
 import {
   apply,
@@ -42,6 +41,19 @@ import { toDOMRange } from './internal/dom-editor/toDOMRange';
 import { toSlateNode } from './internal/dom-editor/toSlateNode';
 import { toSlatePoint } from './internal/dom-editor/toSlatePoint';
 import { toSlateRange } from './internal/dom-editor/toSlateRange';
+import { edgeBlocks } from './internal/editor-extension/edge-blocks';
+import { block } from './internal/editor-extension/editor-block';
+import { blocks } from './internal/editor-extension/editor-blocks';
+import { descendant } from './internal/editor-extension/editor-descendant';
+import { mark } from './internal/editor-extension/editor-mark';
+import { hasMark } from './internal/editor-extension/hasMark';
+import { isSelected } from './internal/editor-extension/is-selected';
+import { isAt } from './internal/editor-extension/isAt';
+import { isEditorEnd } from './internal/editor-extension/isEditorEnd';
+import { isText } from './internal/editor-extension/isText';
+import { nodesRange } from './internal/editor-extension/nodes-range';
+import { prop } from './internal/editor-extension/prop';
+import { some } from './internal/editor-extension/some';
 import { above } from './internal/editor/above';
 import { addMark } from './internal/editor/addMark';
 import { createPathRef } from './internal/editor/createPathRef';
@@ -91,19 +103,13 @@ import { range } from './internal/editor/range';
 import { removeEditorMark } from './internal/editor/removeEditorMark';
 import { unhangRange } from './internal/editor/unhangRange';
 import { withoutNormalizing } from './internal/editor/withoutNormalizing';
-import { edgeBlocks } from './internal/editor-extension/edge-blocks';
-import { block } from './internal/editor-extension/editor-block';
-import { blocks } from './internal/editor-extension/editor-blocks';
-import { descendant } from './internal/editor-extension/editor-descendant';
-import { mark } from './internal/editor-extension/editor-mark';
-import { hasMark } from './internal/editor-extension/hasMark';
-import { isSelected } from './internal/editor-extension/is-selected';
-import { isAt } from './internal/editor-extension/isAt';
-import { isEditorEnd } from './internal/editor-extension/isEditorEnd';
-import { isText } from './internal/editor-extension/isText';
-import { nodesRange } from './internal/editor-extension/nodes-range';
-import { prop } from './internal/editor-extension/prop';
-import { some } from './internal/editor-extension/some';
+import { addMarks } from './internal/transforms-extension/addMarks';
+import { duplicateNodes } from './internal/transforms-extension/duplicateNodes';
+import { removeMarks } from './internal/transforms-extension/removeMarks';
+import { replaceNodes } from './internal/transforms-extension/replaceNodes';
+import { reset } from './internal/transforms-extension/reset';
+import { toggleBlock } from './internal/transforms-extension/toggleBlock';
+import { toggleMark } from './internal/transforms-extension/toggleMark';
 import { collapseSelection } from './internal/transforms/collapseSelection';
 import { deleteText } from './internal/transforms/deleteText';
 import { deselect } from './internal/transforms/deselect';
@@ -123,13 +129,6 @@ import { splitNodes } from './internal/transforms/splitNodes';
 import { unsetNodes } from './internal/transforms/unsetNodes';
 import { unwrapNodes } from './internal/transforms/unwrapNodes';
 import { wrapNodes } from './internal/transforms/wrapNodes';
-import { addMarks } from './internal/transforms-extension/addMarks';
-import { duplicateNodes } from './internal/transforms-extension/duplicateNodes';
-import { removeMarks } from './internal/transforms-extension/removeMarks';
-import { replaceNodes } from './internal/transforms-extension/replaceNodes';
-import { reset } from './internal/transforms-extension/reset';
-import { toggleBlock } from './internal/transforms-extension/toggleBlock';
-import { toggleMark } from './internal/transforms-extension/toggleMark';
 import { HistoryApi } from './slate-history/history';
 import { syncLegacyMethods } from './utils/assignLegacyTransforms';
 
@@ -294,10 +293,8 @@ export const createEditor = <V extends Value>({
     hasSelectableTarget: bindFirst(hasSelectableTarget, editor) as any,
     hasTarget: bindFirst(hasTarget, editor) as any,
     isAt: bindFirst(isAt, editor),
-    isCollapsed: () => RangeApi.isCollapsed(editor.selection),
     isComposing: bindFirst(isComposing, editor),
     isEditorEnd: bindFirst(isEditorEnd, editor),
-    isExpanded: () => RangeApi.isExpanded(editor.selection),
     isFocused: bindFirst(isFocused, editor),
     isMerging: bindFirst(HistoryApi.isMerging, editor as any) as any,
     isReadOnly: bindFirst(isReadOnly, editor),
@@ -319,6 +316,8 @@ export const createEditor = <V extends Value>({
     toSlateNode: bindFirst(toSlateNode, editor) as any,
     toSlatePoint: bindFirst(toSlatePoint, editor),
     toSlateRange: bindFirst(toSlateRange, editor),
+    isCollapsed: () => RangeApi.isCollapsed(editor.selection),
+    isExpanded: () => RangeApi.isExpanded(editor.selection),
   };
 
   const transforms: Partial<Editor<V>['transforms']> = {

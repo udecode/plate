@@ -14,6 +14,7 @@ import type {
   AnyPluginConfig,
   InferApi,
   InferOptions,
+  InferSelectors,
   InferTransforms,
   PluginConfig,
   WithRequiredKey,
@@ -27,39 +28,17 @@ import type { CorePlugin } from '../plugins';
 
 export type BaseEditor = EditorBase & {
   key: any;
-
-  getInjectProps: <C extends AnyPluginConfig = PluginConfig>(
-    plugin: WithRequiredKey<C>
-  ) => InjectNodeProps<C>;
-
-  getOption: <
-    C extends AnyPluginConfig,
-    K extends keyof InferOptions<C>,
-    F extends InferOptions<C>[K],
-  >(
-    plugin: WithRequiredKey<C>,
-    optionKey: K,
-    ...args: F extends (...args: infer A) => any ? A : never[]
-  ) => F extends (...args: any[]) => infer R ? R : F;
-
-  getOptions: <C extends AnyPluginConfig = PluginConfig>(
-    plugin: WithRequiredKey<C>
-  ) => InferOptions<C>;
-
-  getOptionsStore: <C extends AnyPluginConfig>(
-    plugin: WithRequiredKey<C>
-  ) => TStateApi<InferOptions<C>, [['zustand/mutative-x', never]]>;
-
-  getPlugin: <C extends AnyPluginConfig = PluginConfig>(
-    plugin: WithRequiredKey<C>
-  ) => C extends { node: any } ? C : EditorPlugin<C>;
-
-  setOption: <C extends AnyPluginConfig, K extends keyof InferOptions<C>>(
-    plugin: WithRequiredKey<C>,
-    optionKey: K,
-    value: InferOptions<C>[K]
-  ) => void;
-
+  currentKeyboardEvent: KeyboardEventLike | null;
+  /**
+   * Whether the editor is a fallback editor.
+   *
+   * @default false
+   * @see {@link createPlateFallbackEditor}
+   */
+  isFallback: boolean;
+  pluginList: any[];
+  plugins: Record<string, any>;
+  prevSelection: TRange | null;
   setOptions: {
     <C extends AnyPluginConfig>(
       plugin: WithRequiredKey<C>,
@@ -70,59 +49,81 @@ export type BaseEditor = EditorBase & {
       options: Partial<InferOptions<C>>
     ): void;
   };
-
-  currentKeyboardEvent: KeyboardEventLike | null;
-
+  getInjectProps: <C extends AnyPluginConfig = PluginConfig>(
+    plugin: WithRequiredKey<C>
+  ) => InjectNodeProps<C>;
+  getOption: <
+    C extends AnyPluginConfig,
+    StateType extends InferOptions<C>,
+    TSelectors extends InferSelectors<C>,
+    K extends keyof StateType | keyof TSelectors | 'state',
+  >(
+    plugin: WithRequiredKey<C>,
+    key: K,
+    ...args: K extends keyof TSelectors ? Parameters<TSelectors[K]> : []
+  ) => K extends 'state'
+    ? StateType
+    : K extends keyof TSelectors
+      ? ReturnType<TSelectors[K]>
+      : K extends keyof StateType
+        ? StateType[K]
+        : never;
+  getOptions: <C extends AnyPluginConfig = PluginConfig>(
+    plugin: WithRequiredKey<C>
+  ) => InferOptions<C>;
+  getOptionsStore: <C extends AnyPluginConfig>(
+    plugin: WithRequiredKey<C>
+  ) => TStateApi<
+    InferOptions<C>,
+    [['zustand/mutative-x', never]],
+    {},
+    InferSelectors<C>
+  >;
+  getPlugin: <C extends AnyPluginConfig = PluginConfig>(
+    plugin: WithRequiredKey<C>
+  ) => C extends { node: any } ? C : EditorPlugin<C>;
   getType: (plugin: WithRequiredKey) => string;
-
-  /**
-   * Whether the editor is a fallback editor.
-   *
-   * @default false
-   * @see {@link createPlateFallbackEditor}
-   */
-  isFallback: boolean;
-
-  pluginList: any[];
-
-  plugins: Record<string, any>;
-  prevSelection: TRange | null;
+  setOption: <C extends AnyPluginConfig, K extends keyof InferOptions<C>>(
+    plugin: WithRequiredKey<C>,
+    optionKey: K,
+    value: InferOptions<C>[K]
+  ) => void;
 };
 
+export type InferPlugins<T extends AnyPluginConfig[]> = T[number];
+
 export type SlateEditor = BaseEditor & {
+  api: EditorApi & UnionToIntersection<InferApi<CorePlugin>>;
+  pluginList: AnyEditorPlugin[];
+  plugins: Record<string, AnyEditorPlugin>;
+  // Alias for transforms
+  tf: EditorTransforms & UnionToIntersection<InferTransforms<CorePlugin>>;
+  transforms: EditorTransforms &
+    UnionToIntersection<InferTransforms<CorePlugin>>;
   getApi: <C extends AnyPluginConfig = PluginConfig>(
     plugin?: WithRequiredKey<C>
   ) => SlateEditor['api'] & InferApi<C>;
   getTransforms: <C extends AnyPluginConfig = PluginConfig>(
     plugin?: WithRequiredKey<C>
   ) => SlateEditor['tf'] & InferTransforms<C>;
-  transforms: EditorTransforms &
-    UnionToIntersection<InferTransforms<CorePlugin>>;
-  api: EditorApi & UnionToIntersection<InferApi<CorePlugin>>;
-  pluginList: AnyEditorPlugin[];
-  plugins: Record<string, AnyEditorPlugin>;
-  // Alias for transforms
-  tf: EditorTransforms & UnionToIntersection<InferTransforms<CorePlugin>>;
 };
 
 export type TSlateEditor<
   V extends Value = Value,
   P extends AnyPluginConfig = CorePlugin,
 > = SlateEditor & {
+  api: EditorApi<V> & UnionToIntersection<InferApi<CorePlugin | P>>;
+  children: V;
+  pluginList: P[];
+  plugins: { [K in P['key']]: Extract<P, { key: K }> };
+  tf: EditorTransforms<V> &
+    UnionToIntersection<InferTransforms<CorePlugin | P>>;
+  transforms: EditorTransforms<V> &
+    UnionToIntersection<InferTransforms<CorePlugin | P>>;
   getApi: <C extends AnyPluginConfig = PluginConfig>(
     plugin?: WithRequiredKey<C>
   ) => TSlateEditor<V>['api'] & InferApi<C>;
   getTransforms: <C extends AnyPluginConfig = PluginConfig>(
     plugin?: WithRequiredKey<C>
   ) => TSlateEditor<V>['tf'] & InferTransforms<C>;
-  tf: EditorTransforms<V> &
-    UnionToIntersection<InferTransforms<CorePlugin | P>>;
-  transforms: EditorTransforms<V> &
-    UnionToIntersection<InferTransforms<CorePlugin | P>>;
-  api: EditorApi<V> & UnionToIntersection<InferApi<CorePlugin | P>>;
-  children: V;
-  pluginList: P[];
-  plugins: { [K in P['key']]: Extract<P, { key: K }> };
 };
-
-export type InferPlugins<T extends AnyPluginConfig[]> = T[number];

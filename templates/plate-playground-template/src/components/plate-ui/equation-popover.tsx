@@ -8,15 +8,14 @@ import TextareaAutosize, {
 import type { TEquationElement } from '@udecode/plate-math';
 
 import { cn } from '@udecode/cn';
+import { useEquationInput } from '@udecode/plate-math/react';
+import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 import {
   createPrimitiveComponent,
   useEditorRef,
   useElement,
   useReadOnly,
-  useSelected,
 } from '@udecode/plate/react';
-import { useEquationInput } from '@udecode/plate-math/react';
-import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 import { CornerDownLeftIcon } from 'lucide-react';
 
 import { Button } from './button';
@@ -40,13 +39,12 @@ const EquationPopoverContent = ({
   const editor = useEditorRef();
   const readOnly = useReadOnly();
   const element = useElement<TEquationElement>();
-  const selected = useSelected();
 
   useEffect(() => {
-    if (isInline && selected) {
+    if (isInline && open) {
       setOpen(true);
     }
-  }, [selected, isInline, setOpen]);
+  }, [isInline, open, setOpen]);
 
   if (readOnly) return null;
 
@@ -58,7 +56,7 @@ const EquationPopoverContent = ({
     } else {
       editor
         .getApi(BlockSelectionPlugin)
-        .blockSelection.addSelectedRow(element.id as string);
+        .blockSelection.set(element.id as string);
     }
   };
 

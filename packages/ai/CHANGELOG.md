@@ -1,5 +1,13 @@
 # @udecode/plate-ai
 
+## 44.0.3
+
+### Patch Changes
+
+- [#4070](https://github.com/udecode/plate/pull/4070) by [@supersimple33](https://github.com/supersimple33) – fix: ai chat loading
+
+## 44.0.0
+
 ## 43.0.5
 
 ### Patch Changes

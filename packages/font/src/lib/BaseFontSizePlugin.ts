@@ -27,7 +27,6 @@ export const BaseFontSizePlugin = createTSlatePlugin({
     html: {
       deserializer: {
         isLeaf: true,
-        parse: ({ element, type }) => ({ [type]: element.style.fontSize }),
         rules: [
           {
             validStyle: {
@@ -35,6 +34,7 @@ export const BaseFontSizePlugin = createTSlatePlugin({
             },
           },
         ],
+        parse: ({ element, type }) => ({ [type]: element.style.fontSize }),
       },
     },
   },

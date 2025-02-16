@@ -438,6 +438,7 @@ describe('applyPluginOverrides', () => {
               },
             },
           },
+          targetPlugins: ['plugin1', 'plugin2'],
           targetPluginToInject: ({ targetPlugin }) => ({
             parsers: {
               html: {
@@ -447,7 +448,6 @@ describe('applyPluginOverrides', () => {
               },
             },
           }),
-          targetPlugins: ['plugin1', 'plugin2'],
         },
       });
 

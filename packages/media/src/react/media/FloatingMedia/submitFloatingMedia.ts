@@ -10,10 +10,7 @@ import type {
   TMediaElement,
 } from '../../../lib/media/types';
 
-import {
-  floatingMediaActions,
-  floatingMediaSelectors,
-} from './FloatingMediaStore';
+import { FloatingMediaStore } from './FloatingMediaStore';
 
 export const submitFloatingMedia = (
   editor: SlateEditor,
@@ -25,10 +22,10 @@ export const submitFloatingMedia = (
     plugin: WithRequiredKey;
   }
 ) => {
-  let url = floatingMediaSelectors.url();
+  let url = FloatingMediaStore.get('url');
 
   if (url === element.url) {
-    floatingMediaActions.reset();
+    FloatingMediaStore.actions.reset();
 
     return true;
   }
@@ -46,7 +43,7 @@ export const submitFloatingMedia = (
     url,
   });
 
-  floatingMediaActions.reset();
+  FloatingMediaStore.actions.reset();
 
   editor.tf.focus({ at: editor.selection! });
 

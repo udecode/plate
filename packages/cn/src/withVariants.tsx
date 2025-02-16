@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { VariantProps, cva } from 'class-variance-authority';
+import type { cva, VariantProps } from 'class-variance-authority';
 
 import { cn } from './cn';
 
@@ -14,31 +14,32 @@ import { cn } from './cn';
  *   that are only used for variants.
  */
 export function withVariants<
-  T extends React.ComponentType<any> | keyof HTMLElementTagNameMap,
+  T extends React.ElementType,
   V extends ReturnType<typeof cva>,
 >(Component: T, variants: V, onlyVariantsProps?: (keyof VariantProps<V>)[]) {
-  const ComponentWithClassName = Component as React.FC<{ className: string }>;
-
   return React.forwardRef<
-    React.ElementRef<T>,
-    React.ComponentPropsWithoutRef<T> & VariantProps<V>
-  >(function ExtendComponent(allProps, ref) {
-    const { className, ...props } = allProps as any;
-    const rest = { ...props };
+    React.ComponentRef<T>,
+    React.ComponentPropsWithoutRef<T> &
+      Omit<React.ComponentProps<T>, keyof VariantProps<V>> &
+      VariantProps<V>
+  >((props, ref) => {
+    const { className, ...rest } = props;
+    const variantProps = { ...rest } as VariantProps<V>;
+    const componentProps = { ...rest } as any;
 
     if (onlyVariantsProps) {
       onlyVariantsProps.forEach((key) => {
-        if (props[key as string] !== undefined) {
-          delete rest[key as string];
+        if (key in componentProps) {
+          delete componentProps[key as string];
         }
       });
     }
 
     return (
-      <ComponentWithClassName
+      <Component
         ref={ref}
-        className={cn(variants(props), className)}
-        {...(rest as any)}
+        className={cn(variants(variantProps), className)}
+        {...componentProps}
       />
     );
   });

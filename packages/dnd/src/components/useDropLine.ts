@@ -1,4 +1,4 @@
-import { useEditorRef, useElement } from '@udecode/plate/react';
+import { useElement, usePluginOptions } from '@udecode/plate/react';
 
 import type { DropLineDirection } from '../types';
 
@@ -14,12 +14,11 @@ export const useDropLine = ({
 } = {}): {
   dropLine?: DropLineDirection;
 } => {
-  const editor = useEditorRef();
   const element = useElement();
   const id = idProp || (element.id as string);
 
   const dropLine =
-    editor.useOptions(DndPlugin, ({ dropTarget }) => {
+    usePluginOptions(DndPlugin, ({ dropTarget }) => {
       if (!dropTarget) return null;
       if (dropTarget.id !== id) return null;
 

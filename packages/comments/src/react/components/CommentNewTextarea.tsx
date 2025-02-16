@@ -3,16 +3,17 @@ import React from 'react';
 import {
   createPrimitiveComponent,
   useEditorPlugin,
+  usePluginOption,
 } from '@udecode/plate/react';
 
 import { CommentsPlugin } from '../CommentsPlugin';
 
-export const useCommentNewTextareaState = () => {
-  const { setOption, useOption } = useEditorPlugin(CommentsPlugin);
+export const useCommentNewTextarea = () => {
+  const { setOption } = useEditorPlugin(CommentsPlugin);
 
-  const activeComment = useOption('activeComment');
-  const value = useOption('newText');
-  const focusTextarea = useOption('focusTextarea');
+  const activeComment = usePluginOption(CommentsPlugin, 'activeComment');
+  const value = usePluginOption(CommentsPlugin, 'newText');
+  const focusTextarea = usePluginOption(CommentsPlugin, 'focusTextarea');
 
   const textareaRef = React.useRef<HTMLTextAreaElement | null>(null);
 
@@ -25,20 +26,6 @@ export const useCommentNewTextareaState = () => {
 
   const placeholder = `${activeComment ? 'Reply...' : 'Add a comment...'}`;
 
-  return {
-    placeholder,
-    setOption,
-    textareaRef,
-    value,
-  };
-};
-
-export const useCommentNewTextarea = ({
-  placeholder,
-  setOption,
-  textareaRef,
-  value,
-}: ReturnType<typeof useCommentNewTextareaState>) => {
   return {
     props: {
       placeholder,
@@ -56,5 +43,4 @@ export const useCommentNewTextarea = ({
 
 export const CommentNewTextarea = createPrimitiveComponent('textarea')({
   propsHook: useCommentNewTextarea,
-  stateHook: useCommentNewTextareaState,
 });

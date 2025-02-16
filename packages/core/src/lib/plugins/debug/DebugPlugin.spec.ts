@@ -10,10 +10,10 @@ describe('DebugPlugin', () => {
       plugins: [
         DebugPlugin.configure({
           options: {
-            logLevel: 'log',
             logger: {
               log: mockLogger,
             } as any,
+            logLevel: 'log',
           },
         }),
         createSlatePlugin({
@@ -45,12 +45,12 @@ describe('DebugPlugin', () => {
       plugins: [
         DebugPlugin.configure({
           options: {
-            logLevel: 'info',
             logger: {
               info: infoLogger,
               log: logLogger,
               warn: warnLogger,
             },
+            logLevel: 'info',
           },
         }),
       ],
@@ -106,10 +106,10 @@ describe('DebugPlugin', () => {
         DebugPlugin.configure({
           options: {
             isProduction: true,
-            logLevel: 'log',
             logger: {
               log: mockLogger,
             } as any,
+            logLevel: 'log',
           },
         }),
       ],

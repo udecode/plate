@@ -1,4 +1,3 @@
-// eslint-disable-next-line max-classes-per-file
 import type { Path, TNode, TText } from '@udecode/slate';
 
 /** A weak map to hold anchor tokens. */

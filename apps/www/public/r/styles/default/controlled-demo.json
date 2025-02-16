@@ -1,13 +1,15 @@
 {
   "files": [
     {
+      "path": "examples/controlled-demo.tsx",
       "content": "'use client';\n\nimport React from 'react';\n\nimport { Plate, usePlateEditor } from '@udecode/plate/react';\n\nimport { Button } from '@/components/plate-ui/button';\nimport { Editor, EditorContainer } from '@/components/plate-ui/editor';\n\nexport default function ControlledEditorDemo() {\n  const editor = usePlateEditor({\n    value: [\n      {\n        children: [{ text: 'Initial Value' }],\n        type: 'p',\n      },\n    ],\n  });\n\n  return (\n    <div>\n      <Plate editor={editor}>\n        <EditorContainer>\n          <Editor />\n        </EditorContainer>\n      </Plate>\n\n      <div className=\"mt-4 flex flex-col gap-2\">\n        <Button\n          onClick={() => {\n            // Replace with HTML string\n            editor.tf.setValue([\n              {\n                children: [{ text: 'Replaced Value' }],\n                type: 'p',\n              },\n            ]);\n\n            editor.tf.focus({ edge: 'endEditor' });\n          }}\n        >\n          Replace Value\n        </Button>\n\n        <Button\n          onClick={() => {\n            editor.tf.reset();\n            editor.tf.focus();\n          }}\n        >\n          Reset Editor\n        </Button>\n      </div>\n    </div>\n  );\n}\n",
-      "path": "example/controlled-demo.tsx",
-      "target": "components/controlled-demo.tsx",
-      "type": "registry:example"
+      "type": "registry:example",
+      "target": "components/controlled-demo.tsx"
     }
   ],
   "name": "controlled-demo",
   "registryDependencies": [],
-  "type": "registry:example"
+  "type": "registry:example",
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "author": "udecode (https://platejs.org)"
 }

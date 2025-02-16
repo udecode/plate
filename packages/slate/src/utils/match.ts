@@ -4,11 +4,11 @@ import type { NodeOf, TNode } from '../interfaces/node';
 import { type Path, TextApi } from '../interfaces/index';
 import { getAt } from './getAt';
 
-type PredicateObj = Record<string, any[] | any>;
+export type Predicate<T extends TNode> = PredicateFn<T> | PredicateObj;
 
 type PredicateFn<T extends TNode> = (obj: T, path: Path) => boolean;
 
-export type Predicate<T extends TNode> = PredicateFn<T> | PredicateObj;
+type PredicateObj = Record<string, any[] | any>;
 
 function castArray<T>(value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value];

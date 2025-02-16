@@ -1,5 +1,3 @@
-/* eslint-disable react/display-name */
-
 import React from 'react';
 
 import { isDefined } from '@udecode/utils';
@@ -55,9 +53,9 @@ export const createPrimitiveComponent = <
         asChild?: boolean;
         className?: string;
         options?: Parameters<SH>[0];
-        setProps?: (hookProps: NonNullable<ReturnType<PH>['props']>) => P;
         state?: Parameters<PH>[0];
         style?: React.CSSProperties;
+        setProps?: (hookProps: NonNullable<ReturnType<PH>['props']>) => P;
       } & P
     >(
       (

@@ -60,9 +60,9 @@ export const withMarkTable: OverrideEditor<TableConfig> = ({
           },
           {
             at: cellPath,
-            match: (n) => TextApi.isText(n),
             split: true,
             voids: true,
+            match: (n) => TextApi.isText(n),
           }
         );
       });
@@ -80,9 +80,9 @@ export const withMarkTable: OverrideEditor<TableConfig> = ({
       matchesCell.forEach(([_cell, cellPath]) => {
         editor.tf.unsetNodes(key, {
           at: cellPath,
-          match: (n) => TextApi.isText(n),
           split: true,
           voids: true,
+          match: (n) => TextApi.isText(n),
         });
       });
     },

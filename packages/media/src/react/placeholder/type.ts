@@ -14,55 +14,6 @@ export enum UploadErrorCode {
   TOO_LARGE = 413,
 }
 
-export type UploadError =
-  | {
-      data: {
-        allowedTypes: string[];
-        files: File[];
-      };
-      code: UploadErrorCode.INVALID_FILE_TYPE;
-    }
-  | {
-      data: {
-        fileType: AllowedFileType;
-        files: File[];
-        maxFileSize: string;
-      };
-      code: UploadErrorCode.TOO_LARGE;
-    }
-  | {
-      data: {
-        fileType: AllowedFileType;
-        files: File[];
-        minFileCount: number;
-      };
-      code: UploadErrorCode.TOO_LESS_FILES;
-    }
-  | {
-      data: {
-        fileType: AllowedFileType | null;
-        files: File[];
-        maxFileCount: number;
-      };
-      code: UploadErrorCode.TOO_MANY_FILES;
-    }
-  | {
-      data: {
-        files: File[];
-      };
-      code: UploadErrorCode.INVALID_FILE_SIZE;
-    };
-
-export type MediaKeys =
-  | typeof AudioPlugin.key
-  | typeof FilePlugin.key
-  | typeof ImagePlugin.key
-  | typeof VideoPlugin.key;
-
-type PowOf2 = 1 | 2 | 4 | 8 | 16 | 32 | 64 | 128 | 256 | 512 | 1024;
-
-export type SizeUnit = 'B' | 'GB' | 'KB' | 'MB';
-
 export type FileSize = `${PowOf2}${SizeUnit}`;
 
 export type MediaItemConfig = {
@@ -75,3 +26,52 @@ export type MediaItemConfig = {
   // The minimum number of files of this type that must be uploaded.
   minFileCount?: number;
 };
+
+export type MediaKeys =
+  | typeof AudioPlugin.key
+  | typeof FilePlugin.key
+  | typeof ImagePlugin.key
+  | typeof VideoPlugin.key;
+
+export type SizeUnit = 'B' | 'GB' | 'KB' | 'MB';
+
+export type UploadError =
+  | {
+      code: UploadErrorCode.INVALID_FILE_SIZE;
+      data: {
+        files: File[];
+      };
+    }
+  | {
+      code: UploadErrorCode.INVALID_FILE_TYPE;
+      data: {
+        allowedTypes: string[];
+        files: File[];
+      };
+    }
+  | {
+      code: UploadErrorCode.TOO_LARGE;
+      data: {
+        files: File[];
+        fileType: AllowedFileType;
+        maxFileSize: string;
+      };
+    }
+  | {
+      code: UploadErrorCode.TOO_LESS_FILES;
+      data: {
+        files: File[];
+        fileType: AllowedFileType;
+        minFileCount: number;
+      };
+    }
+  | {
+      code: UploadErrorCode.TOO_MANY_FILES;
+      data: {
+        files: File[];
+        fileType: AllowedFileType | null;
+        maxFileCount: number;
+      };
+    };
+
+type PowOf2 = 1 | 2 | 4 | 8 | 16 | 32 | 64 | 128 | 256 | 512 | 1024;

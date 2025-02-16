@@ -27,6 +27,8 @@ export const insertFragmentSuggestion = (
 
     fragment.forEach((node) => {
       applyDeepToNodes({
+        node,
+        source: {},
         apply: (n) => {
           if (!n[BaseSuggestionPlugin.key]) {
             // Add suggestion mark
@@ -48,8 +50,6 @@ export const insertFragmentSuggestion = (
           // set current user key
           n[getSuggestionCurrentUserKey(editor)] = true;
         },
-        node,
-        source: {},
       });
     });
 

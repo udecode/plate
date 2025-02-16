@@ -176,7 +176,7 @@ Defines keyboard shortcuts for the plugin.
 </APIItem>
 
 <APIItem name="useOptionsStore" type="StoreApi<C['key'], C['options']>">
-Store for managing plugin options.
+Zustand store for managing plugin options.
 </APIItem>
 
 <APIItem name="dependencies" type="string[]">
@@ -312,8 +312,8 @@ Extends the editor's transforms with plugin-specific methods.
 ```
 </APIItem>
 
-<APIItem name="extendOptions" type="(options: (ctx: PlatePluginContext) => Record<string, any>) => PlatePlugin">
-Extends the plugin options with selectors.
+<APIItem name="extendSelectors" type="(options: (ctx: PlatePluginContext) => Record<string, any>) => PlatePlugin">
+Extends the plugin with selectors.
 
 ```ts
 (options: (ctx: PlatePluginContext) => Record<string, any>) => PlatePlugin
@@ -343,9 +343,6 @@ Function to set a specific option value.
 </APIItem>
 <APIItem name="setOptions" type="function">
 Function to set multiple options.
-</APIItem>
-<APIItem name="useOption" type="function">
-Hook to subscribe to a specific option value in a React component.
 </APIItem>
 </APIAttributes>
 </API>

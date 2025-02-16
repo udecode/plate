@@ -7,7 +7,6 @@ import type { PlatePluginContext } from './PlatePlugin';
 export type PlateRenderNodeProps<C extends AnyPluginConfig = PluginConfig> =
   PlatePluginContext<C> & {
     className?: string;
-
     /** @see {@link NodeProps} */
     nodeProps?: AnyObject;
   };

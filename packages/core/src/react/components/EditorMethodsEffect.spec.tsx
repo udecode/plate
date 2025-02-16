@@ -1,11 +1,8 @@
 import React from 'react';
 
-import { render } from '@testing-library/react';
-import { renderHook } from '@testing-library/react-hooks';
-import { act } from 'react-dom/test-utils';
+import { renderHook } from '@testing-library/react';
 
 import { createPlateEditor } from '../editor';
-import { usePlateStore } from '../stores';
 import { Plate } from './Plate';
 import { PlateContent } from './PlateContent';
 
@@ -56,7 +53,7 @@ describe('EditorMethodsEffect and redecorate', () => {
   //   const { result: redecorateFn } = renderHook(() => useRedecorate(), {
   //     wrapper,
   //   });
-  //   const { result: selectorsResult } = renderHook(() => usePlateSelectors(), {
+  //   const { result: selectorsResult } = renderHook(() => usePlateStore()..., {
   //     wrapper,
   //   });
   //
@@ -68,56 +65,4 @@ describe('EditorMethodsEffect and redecorate', () => {
   //
   //   expect(selectorsResult.current.versionDecorate()).toBe(initialVersion + 1);
   // });
-
-  it('should set setPlateState on editor', () => {
-    const editor = createPlateEditor();
-
-    const wrapper = () => (
-      <Plate editor={editor}>
-        <PlateContent />
-      </Plate>
-    );
-
-    renderHook(() => null, { wrapper });
-
-    expect(editor.setPlateState).toBeDefined();
-  });
-
-  it('should set setPlateState on editor', () => {
-    const editor = createPlateEditor();
-
-    const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <Plate editor={editor}>
-        <PlateContent />
-        {children}
-      </Plate>
-    );
-
-    renderHook(() => null, { wrapper });
-
-    expect(editor.setPlateState).toBeDefined();
-  });
-
-  it('should update allowed keys using setPlateState', () => {
-    const editor = createPlateEditor();
-
-    const TestComponent = () => {
-      const readOnly = usePlateStore().get.readOnly();
-
-      return <div data-testid="readOnly">{readOnly ? 'true' : 'false'}</div>;
-    };
-
-    const { getByTestId } = render(
-      <Plate editor={editor}>
-        <PlateContent />
-        <TestComponent />
-      </Plate>
-    );
-
-    act(() => {
-      editor.setPlateState('readOnly', true);
-    });
-
-    expect(getByTestId('readOnly')).toHaveTextContent('true');
-  });
 });

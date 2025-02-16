@@ -22,8 +22,4 @@ export const EventEditorStore = createZustandStore(
   }
 );
 
-export const eventEditorActions = EventEditorStore.set;
-
-export const eventEditorSelectors = EventEditorStore.get;
-
-export const useEventEditorSelectors = EventEditorStore.use;
+export const { useValue: useEventEditorValue } = EventEditorStore;

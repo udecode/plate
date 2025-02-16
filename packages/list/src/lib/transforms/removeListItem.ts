@@ -2,8 +2,8 @@ import {
   type ElementEntry,
   type SlateEditor,
   type TElement,
-  PathApi,
   deleteMerge,
+  PathApi,
 } from '@udecode/plate';
 
 import {
@@ -11,8 +11,8 @@ import {
   BaseListItemPlugin,
 } from '../BaseListPlugin';
 import { hasListChild } from '../queries/hasListChild';
-import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
 import { moveListItemsToList } from './moveListItemsToList';
+import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
 
 export interface RemoveListItemOptions {
   list: ElementEntry;

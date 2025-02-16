@@ -2,8 +2,8 @@ import type React from 'react';
 
 import {
   createPrimitiveComponent,
-  useEditorRef,
   useElement,
+  usePluginOption,
   useReadOnly,
   useSelected,
 } from '@udecode/plate/react';
@@ -21,11 +21,10 @@ export interface CaptionProps
 }
 
 export const useCaptionState = (options: CaptionOptions = {}) => {
-  const editor = useEditorRef();
   const element = useElement();
   const captionString = useCaptionString();
 
-  const showCaption = editor.useOption(
+  const showCaption = usePluginOption(
     CaptionPlugin,
     'isVisible',
     element.id as string

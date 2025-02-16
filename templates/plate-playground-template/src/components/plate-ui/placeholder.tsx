@@ -3,6 +3,7 @@
 import React from 'react';
 
 import { cn } from '@udecode/cn';
+import { HEADING_KEYS } from '@udecode/plate-heading';
 import { ParagraphPlugin } from '@udecode/plate/react';
 import {
   type PlaceholderProps,
@@ -10,7 +11,6 @@ import {
   createNodesHOC,
   usePlaceholderState,
 } from '@udecode/plate/react';
-import { HEADING_KEYS } from '@udecode/plate-heading';
 
 export const Placeholder = (props: PlaceholderProps) => {
   const { children, nodeProps, placeholder } = props;

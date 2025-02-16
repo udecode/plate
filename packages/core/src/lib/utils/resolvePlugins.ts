@@ -66,10 +66,10 @@ const resolvePluginStores = (editor: SlateEditor) => {
 
     // Apply option extensions
     if (
-      (plugin as any).__optionExtensions &&
-      (plugin as any).__optionExtensions.length > 0
+      (plugin as any).__selectorExtensions &&
+      (plugin as any).__selectorExtensions.length > 0
     ) {
-      (plugin as any).__optionExtensions.forEach((extension: any) => {
+      (plugin as any).__selectorExtensions.forEach((extension: any) => {
         const extendedOptions = extension(getEditorPlugin(editor, plugin));
 
         store = store.extendSelectors(() => extendedOptions);

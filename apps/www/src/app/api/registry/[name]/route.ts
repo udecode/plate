@@ -12,7 +12,7 @@ const ParamsSchema = z.object({
 });
 
 export function generateStaticParams() {
-  return registry.map(({ name }) => ({
+  return registry.items.map(({ name }) => ({
     name,
   }));
 }

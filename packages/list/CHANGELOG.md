@@ -1,5 +1,13 @@
 # @udecode/plate-list
 
+## 44.0.5
+
+### Patch Changes
+
+- [#4079](https://github.com/udecode/plate/pull/4079) by [@btabram](https://github.com/btabram) – More specific typescript types for TodoListPlugin
+
+## 44.0.0
+
 ## 43.0.0
 
 ## 42.2.2

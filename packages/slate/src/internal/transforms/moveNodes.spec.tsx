@@ -189,8 +189,8 @@ describe('moveNodes', () => {
       const moved = input.tf.moveNodes({
         at,
         children: true,
-        match: (node) => 'id' in node && node.id === 'move',
         to,
+        match: (node) => 'id' in node && node.id === 'move',
       });
 
       expect(input.children).toEqual(output.children);

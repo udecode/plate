@@ -15,7 +15,7 @@ import type {
 } from '../../lib';
 
 export interface UseComboboxInputOptions {
-  ref: RefObject<HTMLElement>;
+  ref: RefObject<HTMLElement | null>;
   autoFocus?: boolean;
   cancelInputOnArrowLeftRight?: boolean;
   cancelInputOnBackspace?: boolean;
@@ -28,11 +28,11 @@ export interface UseComboboxInputOptions {
 }
 
 export interface UseComboboxInputResult {
+  props: Required<Pick<HTMLAttributes<HTMLElement>, 'onBlur' | 'onKeyDown'>>;
   cancelInput: (
     cause?: CancelComboboxInputCause,
     focusEditor?: boolean
   ) => void;
-  props: Required<Pick<HTMLAttributes<HTMLElement>, 'onBlur' | 'onKeyDown'>>;
   removeInput: (focusEditor?: boolean) => void;
 }
 

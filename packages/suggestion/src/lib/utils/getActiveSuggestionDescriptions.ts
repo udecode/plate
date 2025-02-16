@@ -9,15 +9,20 @@ export type TSuggestionCommonDescription = {
   userId: string;
 };
 
+export type TSuggestionDeletionDescription = {
+  deletedText: string;
+  type: 'deletion';
+} & TSuggestionCommonDescription;
+
+export type TSuggestionDescription =
+  | TSuggestionDeletionDescription
+  | TSuggestionInsertionDescription
+  | TSuggestionReplacementDescription;
+
 // TODO: Move to ../types
 export type TSuggestionInsertionDescription = {
   insertedText: string;
   type: 'insertion';
-} & TSuggestionCommonDescription;
-
-export type TSuggestionDeletionDescription = {
-  deletedText: string;
-  type: 'deletion';
 } & TSuggestionCommonDescription;
 
 export type TSuggestionReplacementDescription = {
@@ -25,11 +30,6 @@ export type TSuggestionReplacementDescription = {
   insertedText: string;
   type: 'replacement';
 } & TSuggestionCommonDescription;
-
-export type TSuggestionDescription =
-  | TSuggestionDeletionDescription
-  | TSuggestionInsertionDescription
-  | TSuggestionReplacementDescription;
 
 /**
  * Get the suggestion descriptions of the selected node. A node can have

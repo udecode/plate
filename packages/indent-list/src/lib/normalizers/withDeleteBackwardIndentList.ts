@@ -1,4 +1,4 @@
-import { type OverrideEditor, NodeApi, isDefined } from '@udecode/plate';
+import { type OverrideEditor, isDefined, NodeApi } from '@udecode/plate';
 
 import {
   type BaseIndentListConfig,

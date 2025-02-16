@@ -663,10 +663,10 @@ export const THEME_LIST = [
   THEMES['one-dark-pro'],
 ];
 
-export type ThemeId = keyof typeof _THEMES;
-
 export type Theme = {
   id: ThemeId;
+  colors: Record<string, string>;
+  colorsDark: Record<string, string>;
   cssVars: {
     dark: Record<string, string>;
     light: Record<string, string>;
@@ -681,8 +681,8 @@ export type Theme = {
       type: string;
     };
   };
-  colors: Record<string, string>;
-  colorsDark: Record<string, string>;
   name: string;
   radius?: number;
 };
+
+export type ThemeId = keyof typeof _THEMES;

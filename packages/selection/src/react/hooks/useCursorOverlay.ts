@@ -6,6 +6,7 @@ import {
   useEditorContainerRef,
   useEditorRef,
   useIsomorphicLayoutEffect,
+  usePluginOption,
 } from '@udecode/plate/react';
 
 import type { CursorOverlayState, CursorState, SelectionRect } from '../types';
@@ -22,7 +23,6 @@ export type UseCursorOverlayOptions = {
    * @default 1
    */
   minSelectionWidth?: number;
-
   /**
    * Whether to refresh the cursor overlay positions on container resize.
    *
@@ -45,7 +45,7 @@ export const useCursorOverlay = <TCursorData extends UnknownObject>({
   const editor = useEditorRef();
   const containerRef = useEditorContainerRef();
 
-  const cursorStates = editor.useOption(
+  const cursorStates = usePluginOption(
     CursorOverlayPlugin,
     'cursors'
   ) as Record<string, CursorState<TCursorData>>;
@@ -131,7 +131,7 @@ export const useCursorOverlay = <TCursorData extends UnknownObject>({
   }, [containerRef, cursorStates, editor, selectionRects, minSelectionWidth]);
 
   // Update selection rects after paint
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   useIsomorphicLayoutEffect(() => {
     updateSelectionRects();
   });

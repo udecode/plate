@@ -33,13 +33,13 @@ export const BaseMentionPlugin = createTSlatePlugin<MentionConfig>({
   key: 'mention',
   node: { isElement: true, isInline: true, isMarkableVoid: true, isVoid: true },
   options: {
+    trigger: '@',
+    triggerPreviousCharPattern: /^\s?$/,
     createComboboxInput: (trigger) => ({
       children: [{ text: '' }],
       trigger,
       type: BaseMentionInputPlugin.key,
     }),
-    trigger: '@',
-    triggerPreviousCharPattern: /^\s?$/,
   },
   plugins: [BaseMentionInputPlugin],
 })

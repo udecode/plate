@@ -18,10 +18,10 @@ export const tabbablePlugin = TabbablePlugin.configure(({ editor }) => ({
           return !!(
             n.type &&
             ([
-              CodeBlockPlugin.key,
-              TablePlugin.key,
               'action_item',
+              CodeBlockPlugin.key,
               'li',
+              TablePlugin.key,
             ].includes(n.type as string) ||
               n.listStyleType)
           );

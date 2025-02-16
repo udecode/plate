@@ -121,9 +121,9 @@ While both methods can be used to modify plugin configuration, they have some ke
 
 Choose the appropriate method based on whether you need to extend the plugin's type and functionality (use `.extend`) or simply modify existing configuration (use `.configure`).
 
-### .extendOptions
+### .extendSelectors
 
-The `extendOptions` method allows you to extend the plugin options with selectors.
+The `extendSelectors` method allows you to add subscribable selectors to your plugin:
 
 ```ts
 const CounterPlugin = createPlatePlugin({
@@ -131,21 +131,19 @@ const CounterPlugin = createPlatePlugin({
   options: {
     count: 0,
   },
-}).extendOptions(({ getOptions }) => ({
+}).extendSelectors(({ getOptions }) => ({
   doubleCount: () => getOptions().count * 2,
   isEven: () => getOptions().count % 2 === 0,
 }));
 ```
 
-You can then use these extended options in your components or other plugin methods:
+You can then use those selectors in your components or other plugin methods:
 
 ```tsx
 const CounterComponent = () => {
-  const { useOption } = useEditorPlugin(CounterPlugin);
-  
-  const count = useOption('count');
-  const doubleCount = useOption('doubleCount');
-  const isEven = useOption('isEven');
+  const count = usePluginOption(CounterPlugin, 'count');
+  const doubleCount = usePluginOption(CounterPlugin, 'doubleCount');
+  const isEven = usePluginOption(CounterPlugin, 'isEven');
 
   return (
     <div>
@@ -158,8 +156,8 @@ const CounterComponent = () => {
 ```
 
 - It allows you to create derived state or computed values from plugin options.
-- Extended options are accessible using the `getOption` and `useOption` methods, just like regular options.
-- Extended options are recomputed whenever the underlying options change.
+- Read the value using `getOption`
+- Subscribe to the value using `usePluginOption`, recomputed whenever options change, re-rendering only when the result changes. **This is the main difference with `.extendApi`**.
 
 ### .withComponent
 

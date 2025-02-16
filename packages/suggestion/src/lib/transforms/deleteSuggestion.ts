@@ -3,8 +3,8 @@ import {
   type SlateEditor,
   type TElement,
   type TRange,
-  PointApi,
   nanoid,
+  PointApi,
 } from '@udecode/plate';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
@@ -35,7 +35,6 @@ export const deleteSuggestion = (
 
     let pointCurrent: Point | undefined;
 
-    // eslint-disable-next-line no-constant-condition
     while (true) {
       pointCurrent = editor.selection?.anchor;
 

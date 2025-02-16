@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-base-to-string */
+
 'use client';
 
 import { type FC, memo } from 'react';
@@ -29,7 +30,7 @@ export function Markdown({
   return (
     <MemoizedReactMarkdown
       className={cn(
-        'prose max-w-none break-words prose-p:leading-relaxed prose-pre:p-0',
+        'prose prose-p:leading-relaxed prose-pre:p-0 max-w-none break-words',
         className
       )}
       components={{
@@ -63,7 +64,7 @@ export function Markdown({
           );
         },
         p({ children }) {
-          return <Typography.P className="mb-0 mt-6">{children}</Typography.P>;
+          return <Typography.P className="mt-6 mb-0">{children}</Typography.P>;
         },
         ul({ children }) {
           return (

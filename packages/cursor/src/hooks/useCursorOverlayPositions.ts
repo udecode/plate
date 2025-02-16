@@ -88,7 +88,7 @@ export const useCursorOverlayPositions = <TCursorData extends UnknownObject>({
   }, [containerRef, cursorStates, editor, selectionRects]);
 
   // Update selection rects after paint
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   useIsomorphicLayoutEffect(() => {
     updateSelectionRects();
   });

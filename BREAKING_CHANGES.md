@@ -1,4 +1,80 @@
-For older changelogs, see https://github.com/udecode/plate/blob/main/docs
+For older changelogs, see https://github.com/udecode/plate/blob/main/tooling
+
+# 44.0.1
+
+## @udecode/plate-core@44.0.0
+
+### Major Changes
+
+- [#4048](https://github.com/udecode/plate/pull/4048) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Support React 19
+  - Upgraded to `zustand-x@6`
+    - `eventEditorSelectors` -> `EventEditorStore.get`
+    - `eventEditorActions` -> `EventEditorStore.set`
+    - `useEventEditorSelectors` -> `useEventEditorValue(key)`
+  - Upgraded to `jotai-x@2`
+    - `usePlateEditorStore` -> `usePlateStore`
+    - `usePlateActions` -> `usePlateSet`
+    - Remove `editor.setPlateState`, use `usePlateSet` instead
+    - `usePlateSelectors` -> `usePlateValue`
+    - `usePlateStates` -> `usePlateState`
+  - Moving plugin options hooks into standalone hooks to be compatible with React Compiler
+    - `editor.useOption`, `ctx.useOption` -> `usePluginOption(plugin, key, ...args)`
+    - `editor.useOptions`, `ctx.useOptions` -> `usePluginOption(plugin, 'state')`
+    - New hook `usePluginOptions(plugin, selector)` to select plugin options (Zustand way).
+  - We were supporting adding selectors to plugins using `extendOptions`. Those were mixed up with the options state, leading to potential conflicts and confusion.
+    - The plugin method is renamed to `extendSelectors`
+    - Selectors are now internally stored in `plugin.selectors` instead of `plugin.options`, but this does not change how you access those: using `editor.getOption(plugin, 'selectorName')`, `ctx.getOption('selectorName')` or above hooks.
+    - Selector types are no longer in the 2nd generic type of `PluginConfig`, we're adding a 5th generic type for it.
+
+  ```ts
+  // Before:
+  export type BlockSelectionConfig = PluginConfig<
+    'blockSelection',
+    { selectedIds?: Set<string>; } & BlockSelectionSelectors,
+  >;
+
+  // After:
+  export type BlockSelectionConfig = PluginConfig<
+    'blockSelection',
+    { selectedIds?: Set<string>; },
+    {}, // API
+    {}, // Transforms
+    BlockSelectionSelectors, // Selectors
+  }>
+  ```
+
+## @udecode/plate-comments@44.0.0
+
+### Major Changes
+
+- [#4048](https://github.com/udecode/plate/pull/4048) by [@zbeyens](https://github.com/zbeyens) – Upgrade to `jotai-x@2`. [Migration](https://github.com/udecode/jotai-x/blob/main/packages/jotai-x/CHANGELOG.md#211) needed only if you use `useCommentStore`
+
+## @udecode/plate-media@44.0.0
+
+### Major Changes
+
+- [#4048](https://github.com/udecode/plate/pull/4048) by [@zbeyens](https://github.com/zbeyens) – Upgrade to `zustand-x@2`. [Migration](https://github.com/udecode/zustand-x/blob/main/packages/zustand-x/CHANGELOG.md#600) needed only if you use one of these stores:
+
+  - `ImagePreviewStore`
+  - `FloatingMediaStore`
+
+- [#4048](https://github.com/udecode/plate/pull/4048) by [@zbeyens](https://github.com/zbeyens) – Upgrade to `jotai-x@2`. [Migration](https://github.com/udecode/jotai-x/blob/main/packages/jotai-x/CHANGELOG.md#211) needed only if you use `usePlaceholderStore`
+
+## @udecode/plate-resizable@44.0.0
+
+### Major Changes
+
+- [#4048](https://github.com/udecode/plate/pull/4048) by [@zbeyens](https://github.com/zbeyens) – Upgrade to `jotai-x@2`. [Migration](https://github.com/udecode/jotai-x/blob/main/packages/jotai-x/CHANGELOG.md#211) needed only if you use `useResizableStore`
+
+## @udecode/plate-table@44.0.0
+
+### Major Changes
+
+- [#4048](https://github.com/udecode/plate/pull/4048) by [@zbeyens](https://github.com/zbeyens) – Move store state `selectedCells` and `selectedTables` from `useTableStore` to `TablePlugin` options store. This fixes the issue to get access to those state outside a table element (e.g. the toolbar)
+
+- [#4048](https://github.com/udecode/plate/pull/4048) by [@zbeyens](https://github.com/zbeyens) – Upgrade to `jotai-x@2`. [Migration](https://github.com/udecode/jotai-x/blob/main/packages/jotai-x/CHANGELOG.md#211) needed only if you use `useTableStore`
 
 # 43.0.0
 

@@ -3,11 +3,12 @@
 import { useEffect } from 'react';
 
 import { cn } from '@udecode/cn';
+import { useStoreValue } from '@udecode/plate/react';
 import { Settings2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { parseAsBoolean, useQueryState } from 'nuqs';
 
-import { settingsStore } from '@/components/context/settings-store';
+import { SettingsStore } from '@/components/context/settings-store';
 import { PlaygroundPreview } from '@/components/playground-preview';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLocale } from '@/hooks/useLocale';
@@ -32,8 +33,8 @@ export default function HomeTabs() {
   const locale = useLocale();
   const content = i18n[locale as keyof typeof i18n];
 
-  const active = settingsStore.use.showSettings();
-  const homeTab = settingsStore.use.homeTab();
+  const active = useStoreValue(SettingsStore, 'showSettings');
+  const homeTab = useStoreValue(SettingsStore, 'homeTab');
   const [builder, setBuilder] = useQueryState(
     'builder',
     parseAsBoolean.withDefault(false)
@@ -41,7 +42,7 @@ export default function HomeTabs() {
 
   useEffect(() => {
     if (builder) {
-      settingsStore.set.showSettings(true);
+      SettingsStore.set('showSettings', true);
     }
   }, [builder]);
 
@@ -59,7 +60,7 @@ export default function HomeTabs() {
       <Tabs
         value={homeTab}
         onValueChange={(value) => {
-          settingsStore.set.homeTab(value);
+          SettingsStore.set('homeTab', value);
         }}
       >
         <TabsList>
@@ -76,10 +77,10 @@ export default function HomeTabs() {
           )}
           onClick={() => {
             if (active) {
-              settingsStore.set.showSettings(false);
+              SettingsStore.set('showSettings', false);
             } else {
-              settingsStore.set.customizerTab('plugins');
-              settingsStore.set.showSettings(true);
+              SettingsStore.set('customizerTab', 'plugins');
+              SettingsStore.set('showSettings', true);
             }
           }}
         >

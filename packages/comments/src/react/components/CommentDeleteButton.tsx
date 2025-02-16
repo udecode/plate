@@ -1,39 +1,22 @@
 import {
   createPrimitiveComponent,
   useEditorPlugin,
+  usePluginOption,
 } from '@udecode/plate/react';
 
 import { type BaseCommentsConfig, unsetCommentNodesById } from '../../lib';
 import { CommentsPlugin } from '../CommentsPlugin';
-import { useCommentSelectors } from '../stores/comment/CommentProvider';
+import { useCommentValue } from '../stores';
 
-export const useCommentDeleteButtonState = () => {
-  const { api, editor, setOption, useOption } = useEditorPlugin(CommentsPlugin);
-
-  const activeCommentId = useOption('activeCommentId');
-  const onCommentDelete = useOption(
+export const useCommentDeleteButton = () => {
+  const { api, editor, setOption } = useEditorPlugin(CommentsPlugin);
+  const activeCommentId = usePluginOption(CommentsPlugin, 'activeCommentId');
+  const onCommentDelete = usePluginOption(
+    CommentsPlugin,
     'onCommentDelete'
   ) as BaseCommentsConfig['options']['onCommentDelete'];
-  const id = useCommentSelectors().id();
+  const id = useCommentValue('id');
 
-  return {
-    id,
-    activeCommentId,
-    api,
-    editor,
-    setOption,
-    onCommentDelete,
-  };
-};
-
-export const useCommentDeleteButton = ({
-  id,
-  activeCommentId,
-  api,
-  editor,
-  setOption,
-  onCommentDelete,
-}: ReturnType<typeof useCommentDeleteButtonState>) => {
   return {
     props: {
       onClick: () => {
@@ -52,5 +35,4 @@ export const useCommentDeleteButton = ({
 
 export const CommentDeleteButton = createPrimitiveComponent('button')({
   propsHook: useCommentDeleteButton,
-  stateHook: useCommentDeleteButtonState,
 });
