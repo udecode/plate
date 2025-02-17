@@ -140,8 +140,6 @@ export function CommentCreateForm({
       .getApi(CommentsPlugin)
       .comment.nodes({ at: [], isDraft: true });
 
-    console.log('🚀 ~ onAddComment ~ commentsNodeEntry:', commentsNodeEntry);
-
     if (commentsNodeEntry.length === 0) return;
 
     const documentContent = commentsNodeEntry

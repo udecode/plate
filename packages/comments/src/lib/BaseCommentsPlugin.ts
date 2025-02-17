@@ -129,7 +129,7 @@ export const BaseCommentsPlugin = createTSlatePlugin<CommentsPluginConfig>({
       unsetMark: (options) => {
         const { id } = options;
 
-        const nodes = api.comment.nodes({ id });
+        const nodes = api.comment.nodes({ id, at: [] });
 
         if (!nodes) return;
 
