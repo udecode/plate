@@ -3,5 +3,4 @@
  */
 
 export * from './CommentsPlugin';
-export * from './useHooksComments';
 export * from './hooks/index';

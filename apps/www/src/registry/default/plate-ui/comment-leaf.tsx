@@ -3,32 +3,30 @@
 import React from 'react';
 
 import { cn } from '@udecode/cn';
-import {
-  type TCommentText,
-  getCommentLastId,
-  hasManyComments,
-} from '@udecode/plate-comments';
-import { CommentsPlugin } from '@udecode/plate-comments/react';
+import { type TCommentText, getCommentCount } from '@udecode/plate-comments';
 import {
   type PlateLeafProps,
   PlateLeaf,
+  useEditorPlugin,
   usePluginOption,
 } from '@udecode/plate/react';
+
+import { commentsPlugin } from '../components/editor/plugins/comments-plugin';
 
 export function CommentLeaf({
   className,
   ...props
 }: PlateLeafProps<TCommentText>) {
-  const { children, editor, leaf, nodeProps } = props;
+  const { children, leaf, nodeProps } = props;
 
-  const { setOption } = editor;
-  const hoverId = usePluginOption(CommentsPlugin, 'hoverId');
-  const activeId = usePluginOption(CommentsPlugin, 'activeId');
+  const { api, setOption } = useEditorPlugin(commentsPlugin);
+  const hoverId = usePluginOption(commentsPlugin, 'hoverId');
+  const activeId = usePluginOption(commentsPlugin, 'activeId');
 
-  const isOverlapping = hasManyComments(leaf);
-  const lastId = getCommentLastId(leaf);
-  const isActive = activeId === lastId;
-  const isHover = hoverId === lastId;
+  const isOverlapping = getCommentCount(leaf) > 1;
+  const currentId = api.comment.nodeId(leaf);
+  const isActive = activeId === currentId;
+  const isHover = hoverId === currentId;
 
   return (
     <PlateLeaf
@@ -42,9 +40,9 @@ export function CommentLeaf({
           'border-b-highlight bg-highlight/45',
         className
       )}
-      onClick={() => setOption(CommentsPlugin, 'activeId', lastId ?? null)}
-      onMouseEnter={() => setOption(CommentsPlugin, 'hoverId', lastId ?? null)}
-      onMouseLeave={() => setOption(CommentsPlugin, 'hoverId', null)}
+      onClick={() => setOption('activeId', currentId ?? null)}
+      onMouseEnter={() => setOption('hoverId', currentId ?? null)}
+      onMouseLeave={() => setOption('hoverId', null)}
       nodeProps={{
         ...nodeProps,
       }}

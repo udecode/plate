@@ -1,18 +1,24 @@
 import React from 'react';
 
+import type { TCommentText } from '@udecode/plate-comments';
+
 import { type NodeEntry, type Path, type Value, PathApi } from '@udecode/plate';
-import {
-  type TCommentText,
-  getCommentLastId,
-  isExistComment,
-} from '@udecode/plate-comments';
-import { CommentsPlugin } from '@udecode/plate-comments/react';
 import { type PlateEditor, useEditorPlugin } from '@udecode/plate-core/react';
 
+import { commentsPlugin } from '../components/editor/plugins/comments-plugin';
 import { CommentCreateForm } from './comment-create-form';
 import { CommentItem } from './comment-item';
 
-export interface Discussion {
+export interface TCommentItem {
+  id: string;
+  contentRich: Value;
+  createdAt: Date;
+  discussionId: string;
+  isEdited: boolean;
+  userId: string;
+}
+
+export interface TDiscussion {
   id: string;
   comments: TCommentItem[];
   createdAt: Date;
@@ -21,20 +27,11 @@ export interface Discussion {
   userId: string;
 }
 
-export type TCommentItem = {
-  id: string;
-  contentRich: Value;
-  createdAt: Date;
-  discussionId: string;
-  isEdited: boolean;
-  userId: string;
-};
-
 export const BlockCommentsCard = ({
   discussion,
   isLast,
 }: {
-  discussion: Discussion;
+  discussion: TDiscussion;
   isLast: boolean;
 }) => {
   const [editingId, setEditingId] = React.useState<string | null>(null);
@@ -67,10 +64,10 @@ export const useResolvedDiscussion = (
   commentNodes: NodeEntry<TCommentText>[],
   blockPath: Path
 ) => {
-  const { getOption, setOption } = useEditorPlugin(CommentsPlugin);
+  const { api, getOption, setOption } = useEditorPlugin(commentsPlugin);
 
   commentNodes.forEach(([node]) => {
-    const id = getCommentLastId(node);
+    const id = api.comment.nodeId(node);
     const map = getOption('uniquePathMap');
 
     if (!id || map.has(id)) return;
@@ -79,17 +76,17 @@ export const useResolvedDiscussion = (
   });
 
   const commentsIds = new Set(
-    commentNodes.map(([node]) => getCommentLastId(node)!).filter(Boolean)
+    commentNodes.map(([node]) => api.comment.nodeId(node)).filter(Boolean)
   );
 
-  const discussions: Discussion[] = JSON.parse(
+  const discussions: TDiscussion[] = JSON.parse(
     sessionStorage.getItem('discussions') || '[]'
   )
-    .map((d: Discussion) => ({
+    .map((d: TDiscussion) => ({
       ...d,
       createdAt: new Date(d.createdAt),
     }))
-    .filter((item: Discussion) => {
+    .filter((item: TDiscussion) => {
       /** If comment cross blocks just show it in the first block */
       const commentsPathMap = getOption('uniquePathMap');
       const firstBlockPath = commentsPathMap.get(item.id);
@@ -98,7 +95,7 @@ export const useResolvedDiscussion = (
       if (!PathApi.equals(firstBlockPath, blockPath)) return false;
 
       return (
-        isExistComment(item.id, editor.children) &&
+        api.comment.isExist({ id: item.id }) &&
         commentsIds.has(item.id) &&
         !item.isResolved
       );

@@ -1,3 +1,4 @@
+'use client';
 import React, { createContext, useMemo, useReducer } from 'react';
 
 import type {
@@ -12,11 +13,7 @@ import {
   PathApi,
   TextApi,
 } from '@udecode/plate';
-import {
-  type TCommentText,
-  getCommentLastId,
-  getDraftCommentKey,
-} from '@udecode/plate-comments';
+import { type TCommentText, getDraftCommentKey } from '@udecode/plate-comments';
 import { CommentsPlugin } from '@udecode/plate-comments/react';
 import {
   type TSuggestionText,
@@ -38,6 +35,7 @@ import {
   PopoverTrigger,
 } from '@/registry/default/plate-ui/popover';
 
+import { commentsPlugin } from '../components/editor/plugins/comments-plugin';
 import {
   BlockCommentsCard,
   useResolvedDiscussion,
@@ -61,7 +59,7 @@ export const BlockComments: RenderNodeWrapper = (props) => {
 
   const draftCommentNode = editor
     .getApi(CommentsPlugin)
-    .comment.draftCommentNode({ at: blockPath });
+    .comment.node({ at: blockPath, isDraft: true });
 
   const commentNodes = [
     ...editor.getApi(CommentsPlugin).comment.nodes({ at: blockPath }),
@@ -125,8 +123,11 @@ const BlockCommentsContent = ({
     activeSuggestionId &&
     resolvedSuggestion.find((s) => s.suggestionId === activeSuggestionId);
 
-  const commentingBlock = usePluginOption(CommentsPlugin, 'commentingBlock');
-  const activeCommentId = usePluginOption(CommentsPlugin, 'activeId');
+  const commentingBlock = usePluginOption(
+    commentsPlugin,
+    'commentingBlock'
+  );
+  const activeCommentId = usePluginOption(commentsPlugin, 'activeId');
   const isCommenting = activeCommentId === getDraftCommentKey();
   const activeDiscussion =
     activeCommentId &&
@@ -169,7 +170,9 @@ const BlockCommentsContent = ({
         activeNode = draftCommentNode;
       } else {
         activeNode = commentNodes.find(
-          ([node]) => getCommentLastId(node) === activeCommentId
+          ([node]) =>
+            editor.getApi(CommentsPlugin).comment.nodeId(node) ===
+            activeCommentId
         );
       }
     }

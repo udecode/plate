@@ -12,12 +12,8 @@ import {
   StrikethroughPlugin,
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
-import {
-  getCommentKey,
-  getDraftCommentKey,
-  getDraftNode,
-} from '@udecode/plate-comments';
-import { useCommentId } from '@udecode/plate-comments/react';
+import { getCommentKey, getDraftCommentKey } from '@udecode/plate-comments';
+import { CommentsPlugin, useCommentId } from '@udecode/plate-comments/react';
 import { DatePlugin } from '@udecode/plate-date/react';
 import { EmojiInputPlugin } from '@udecode/plate-emoji/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
@@ -30,7 +26,7 @@ import { Plate, useEditorRef } from '@udecode/plate/react';
 import { type CreatePlateEditorOptions, PlateLeaf } from '@udecode/plate/react';
 import { ArrowUpIcon } from 'lucide-react';
 
-import type { Discussion } from './block-comments-card';
+import type { TDiscussion } from './block-comments-card';
 
 import { useCreateEditor } from '../components/editor/use-create-editor';
 import { AILeaf } from './ai-leaf';
@@ -140,9 +136,13 @@ export function CommentCreateForm({
       return;
     }
 
-    const _commentsNodeEntry = getDraftNode(editor);
-    const commentsNodeEntry = Array.from(_commentsNodeEntry);
-    if (!commentsNodeEntry) return;
+    const commentsNodeEntry = editor
+      .getApi(CommentsPlugin)
+      .comment.nodes({ at: [], isDraft: true });
+
+    console.log('🚀 ~ onAddComment ~ commentsNodeEntry:', commentsNodeEntry);
+
+    if (commentsNodeEntry.length === 0) return;
 
     const documentContent = commentsNodeEntry
       .map(([node]) => node.text)
@@ -150,7 +150,7 @@ export function CommentCreateForm({
 
     const _discussionId = nanoid();
     // Mock creating new discussion
-    const newDiscussion: Discussion = {
+    const newDiscussion: TDiscussion = {
       id: _discussionId,
       comments: [
         {

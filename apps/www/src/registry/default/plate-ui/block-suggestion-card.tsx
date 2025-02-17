@@ -50,7 +50,7 @@ import {
 } from '@udecode/plate/react';
 import { CheckIcon, XIcon } from 'lucide-react';
 
-import type { Discussion, TCommentItem } from './block-comments-card';
+import type { TCommentItem, TDiscussion } from './block-comments-card';
 
 import { Button } from './button';
 import { CommentAvatar, mockUsers } from './comment-avatar';
@@ -491,7 +491,7 @@ export const useResolveSuggestion = (
 };
 
 export const isResolvedSuggestion = (
-  suggestion: Discussion | ResolvedSuggestion
+  suggestion: ResolvedSuggestion | TDiscussion
 ): suggestion is ResolvedSuggestion => {
   return 'suggestionId' in suggestion;
 };

@@ -2,6 +2,7 @@ import type { PlateEditor } from '@udecode/plate/react';
 
 import type { TCommentText } from '../types';
 
+// TODO: MOVE TO POTION CLIENT
 export const getCommentTop = (
   editor: PlateEditor,
   {

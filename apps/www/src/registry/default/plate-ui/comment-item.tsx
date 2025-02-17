@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 
-import { unsetCommentMark } from '@udecode/plate-comments';
-import { Plate, useEditorRef } from '@udecode/plate/react';
+import { CommentsPlugin } from '@udecode/plate-comments/react';
+import { Plate, useEditorPlugin } from '@udecode/plate/react';
 import {
   differenceInDays,
   differenceInHours,
@@ -113,7 +113,7 @@ export function CommentItem(props: {
     sessionStorage.setItem('discussions', JSON.stringify(updatedDiscussions));
   };
 
-  const editor = useEditorRef();
+  const { tf } = useEditorPlugin(CommentsPlugin);
 
   // Replace to your own backend or refer to potion
   const isMyComment = true;
@@ -148,7 +148,7 @@ export function CommentItem(props: {
 
   const onResolveComment = () => {
     void resolveDiscussion(comment.discussionId);
-    unsetCommentMark(editor, { id: comment.discussionId });
+    tf.comment.unsetMark({ id: comment.discussionId });
   };
 
   const isFirst = index === 0;
@@ -196,7 +196,7 @@ export function CommentItem(props: {
               }}
               onRemoveComment={() => {
                 if (discussionLength === 1) {
-                  unsetCommentMark(editor, { id: comment.discussionId });
+                  tf.comment.unsetMark({ id: comment.discussionId });
                   void removeDiscussion(comment.discussionId);
                 }
               }}
