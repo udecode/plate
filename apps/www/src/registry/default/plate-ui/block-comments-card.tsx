@@ -3,7 +3,7 @@ import React from 'react';
 import type { TCommentText } from '@udecode/plate-comments';
 
 import { type NodeEntry, type Path, type Value, PathApi } from '@udecode/plate';
-import { type PlateEditor, useEditorPlugin } from '@udecode/plate-core/react';
+import { useEditorPlugin } from '@udecode/plate-core/react';
 
 import { commentsPlugin } from '../components/editor/plugins/comments-plugin';
 import { CommentCreateForm } from './comment-create-form';
@@ -60,7 +60,6 @@ export const BlockCommentsCard = ({
 };
 
 export const useResolvedDiscussion = (
-  editor: PlateEditor,
   commentNodes: NodeEntry<TCommentText>[],
   blockPath: Path
 ) => {

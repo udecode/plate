@@ -11,8 +11,8 @@ import type { TCommentText } from './types';
 
 import {
   getCommentCount,
-  getCommentId,
   getCommentKey,
+  getCommentKeyId,
   getCommentKeys,
   getDraftCommentKey,
   isCommentKey,
@@ -80,7 +80,7 @@ export const BaseCommentsPlugin = createTSlatePlugin<CommentsPluginConfig>({
 
         // block the resolved id
 
-        const id = getCommentId(key);
+        const id = getCommentKeyId(key);
         ids.push(id);
       });
 

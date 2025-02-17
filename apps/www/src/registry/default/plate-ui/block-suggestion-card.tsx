@@ -36,11 +36,7 @@ import {
 import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
-import {
-  type PlateEditor,
-  ParagraphPlugin,
-  useEditorPlugin,
-} from '@udecode/plate/react';
+import { ParagraphPlugin, useEditorPlugin } from '@udecode/plate/react';
 import { CheckIcon, XIcon } from 'lucide-react';
 
 import type { TCommentItem, TDiscussion } from './block-comments-card';
@@ -271,11 +267,11 @@ export const BlockSuggestionCard = ({
 };
 
 export const useResolveSuggestion = (
-  editor: PlateEditor,
   suggestionNodes: NodeEntry<TElement | TSuggestionText>[],
   blockPath: Path
 ) => {
-  const { api, getOption, setOption } = useEditorPlugin(suggestionPlugin);
+  const { api, editor, getOption, setOption } =
+    useEditorPlugin(suggestionPlugin);
 
   suggestionNodes.forEach(([node]) => {
     const id = api.suggestion.nodeId(node);

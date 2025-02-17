@@ -101,13 +101,11 @@ const BlockCommentsContent = ({
   const editor = useEditorRef();
 
   const resolvedSuggestion = useResolveSuggestion(
-    editor,
     suggestionNodes,
     blockPath
   );
 
   const resolvedDiscussions = useResolvedDiscussion(
-    editor,
     commentNodes,
     blockPath
   );

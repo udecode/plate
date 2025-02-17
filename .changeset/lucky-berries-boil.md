@@ -1,0 +1,59 @@
+---
+'@udecode/plate-comments': major
+---
+
+UI Updates:
+
+- Removed configuration options from the plugin options:
+
+  - `options.comments`
+  - `options.myUserId`
+  - `options.users` These parameters can now be fully controlled within the component itself.
+
+- Consolidated comment-related components:
+
+  - Removed `comments-popover.tsx`, `comment-reply-items.tsx`, and `comment-value.tsx`
+  - Replaced with the new `BlockComments` component in `block-comments-card.tsx`
+  - Removed `comment-reply-items.tsx`
+  - Integrated the resolve button into `comment-more-dropdown.tsx` for better UX
+  - Updated `comment-create-form.tsx` to use a minimal Plate editor for the input box
+
+- Type
+  - Remove type `CommentUser` `TComment` Now we have `TCommentItem` `TDiscussion` in `block-comments-card.tsx`
+
+API Updates:
+
+- Removed `findCommentNode.ts` use `api.comment.node()` instead
+- Removed `findCommentNodeById.ts` use `api.comment.node({ id })` instead
+- Removed `getCommentFragment.ts`
+- Removed `getCommentNodeEntries.ts` use `api.comment.nodes()` instead
+- Removed `getCommentNodesById.ts` use `api.comment.nodes({ id })` instead
+- Removed `removeCommentMark.ts` use `tf.comment.remove()` instead
+- Removed `unsetCommentNodesById.ts` use `tf.comment.unsetMark({ id })` instead
+- Removed `getCommentUrl.ts`
+- Updated `getCommentCount.ts` to exclude draft comments from count
+- Removed `getElementAbsolutePosition.tsx` as it's no longer needed with the new UI
+- Removed `getCommentPosition.ts` as it's no longer needed with the new UI
+- Removed state management components `CommentProvider.tsx`. Users should implement their own state management solution.
+- Remove `useActiveCommentNode.ts`, `useCommentsResolved.ts` as it's no longer needed with the new UI
+- Move `useHooksComments.ts` to client side.
+
+- Remove the following components use `BlockComments` `block-comments-card.tsx` `comment-item` `comment-create-form` `comment-avatar` `comment-more-dropdown` instead
+  CommentDeleteButton.tsx
+  CommentEditActions.tsx
+  CommentEditButton.tsx
+  CommentEditCancelButton.tsx
+  CommentEditSaveButton.tsx
+  CommentEditTextarea.tsx
+  CommentNewSubmitButton.tsx
+  CommentNewTextarea.tsx
+  CommentResolveButton.tsx
+  CommentsPositioner.tsx
+  CommentUserName.tsx
+  index.ts
+  useCommentAddButton.ts
+  useCommentItemContent.ts
+  useCommentLeaf.ts
+  useCommentsShowResolvedButton.ts
+  useFloatingCommentsContentState.ts
+  useFloatingCommentsState.ts
