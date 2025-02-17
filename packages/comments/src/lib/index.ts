@@ -4,5 +4,5 @@
 
 export * from './BaseCommentsPlugin';
 export * from './types';
-export * from './queries/index';
+export * from './withComments';
 export * from './utils/index';
