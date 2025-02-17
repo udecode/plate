@@ -138,7 +138,7 @@ export const BlockSuggestionCard = ({
           </h4>
           <div className="text-xs leading-none text-muted-foreground/80">
             <span className="mr-1">
-              {formatCommentDate(suggestion.createdAt)}
+              {formatCommentDate(new Date(suggestion.createdAt))}
             </span>
           </div>
         </div>

@@ -9,7 +9,7 @@ export const removeNodesSuggestion = (
 ) => {
   if (nodes.length === 0) return;
 
-  const { id, createdAt: createdAt } = findSuggestionProps(editor, {
+  const { id, createdAt } = findSuggestionProps(editor, {
     at: editor.selection!,
     type: 'remove',
   });
@@ -19,6 +19,7 @@ export const removeNodesSuggestion = (
       {
         [BaseSuggestionPlugin.key]: {
           id,
+          createdAt,
           type: 'remove',
         },
       },

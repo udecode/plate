@@ -171,7 +171,9 @@ export function CommentItem(props: {
         </h4>
 
         <div className="text-xs leading-none text-muted-foreground/80">
-          <span className="mr-1">{formatCommentDate(comment.createdAt)}</span>
+          <span className="mr-1">
+            {formatCommentDate(new Date(comment.createdAt))}
+          </span>
           {comment.isEdited && <span>(edited)</span>}
         </div>
 
