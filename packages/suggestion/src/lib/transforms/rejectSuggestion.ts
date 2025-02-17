@@ -9,10 +9,7 @@ import {
 import type { TResolvedSuggestion, TSuggestionText } from '../types';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
-import {
-  getInlineSuggestionData,
-  getSuggestionKey,
-} from '../utils';
+import { getInlineSuggestionData, getSuggestionKey } from '../utils';
 
 export const rejectSuggestion = (
   editor: SlateEditor,

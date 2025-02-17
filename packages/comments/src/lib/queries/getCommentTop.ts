@@ -1,10 +1,10 @@
-import type { PlateEditor } from '@udecode/plate/react';
+import type { SlateEditor } from '@udecode/plate';
 
 import type { TCommentText } from '../types';
 
 // TODO: MOVE TO POTION CLIENT
 export const getCommentTop = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   {
     node,
     relativeElement,

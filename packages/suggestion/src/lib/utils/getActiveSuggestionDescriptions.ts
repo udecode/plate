@@ -46,7 +46,9 @@ export const getActiveSuggestionDescriptions = (
   if (!aboveEntry) return [];
 
   const aboveNode = aboveEntry[0];
-  const suggestionId = editor.getApi(BaseSuggestionPlugin).suggestion.nodeId(aboveNode);
+  const suggestionId = editor
+    .getApi(BaseSuggestionPlugin)
+    .suggestion.nodeId(aboveNode);
 
   if (!suggestionId) return [];
 

@@ -84,9 +84,11 @@ describe('addMarkSuggestion', () => {
     editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
     editor.tf.addMark('italic', true);
 
-    const dataList = editor.getApi(BaseSuggestionPlugin).suggestion.dataList(
-      editor.children[0].children[1] as any
-    ) as TUpdateSuggestionData[];
+    const dataList = editor
+      .getApi(BaseSuggestionPlugin)
+      .suggestion.dataList(
+        editor.children[0].children[1] as any
+      ) as TUpdateSuggestionData[];
 
     expect(dataList).toHaveLength(2);
     expect(dataList[0]).toEqual(existingData);
