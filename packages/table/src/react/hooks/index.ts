@@ -2,4 +2,3 @@
 
 export * from './useCellIndices';
 export * from './useTableMergeState';
-export * from './useColorDropdownMenu';
