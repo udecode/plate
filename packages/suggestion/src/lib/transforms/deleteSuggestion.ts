@@ -9,13 +9,11 @@ import {
   TextApi,
 } from '@udecode/plate';
 
+import type { TSuggestionElement } from '../types';
+
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
-import { findInlineSuggestionNode, findSuggestionProps } from '../queries/';
-import {
-  getInlineSuggestionData,
-  getSuggestionData,
-  isCurrentUserSuggestion,
-} from '../utils';
+import { findSuggestionProps } from '../queries/';
+import { getInlineSuggestionData, isCurrentUserSuggestion } from '../utils';
 import { setSuggestionNodes } from './setSuggestionNodes';
 
 /**
@@ -124,9 +122,14 @@ export const deleteSuggestion = (
         const previousAboveNode = editor.api.above({ at: range.anchor });
 
         if (previousAboveNode && ElementApi.isElement(previousAboveNode[0])) {
-          const lineBreakData = getSuggestionData(previousAboveNode[0]);
-          if (lineBreakData) {
-            if (lineBreakData.type === 'insert') {
+          const isBlockSuggestion = editor
+            .getApi(BaseSuggestionPlugin)
+            .suggestion.isBlockSuggestion(previousAboveNode[0]);
+
+          if (isBlockSuggestion) {
+            const node = previousAboveNode[0] as TSuggestionElement;
+
+            if (node.suggestion.type === 'insert') {
               editor
                 .getApi(BaseSuggestionPlugin)
                 .suggestion.withoutSuggestions(() => {
@@ -138,7 +141,7 @@ export const deleteSuggestion = (
                   });
                 });
             }
-            if (lineBreakData.type === 'remove') {
+            if (node.suggestion.type === 'remove') {
               editor.tf.move({
                 reverse,
                 unit: 'character',
@@ -147,7 +150,7 @@ export const deleteSuggestion = (
             break;
           }
 
-          if (!lineBreakData) {
+          if (!isBlockSuggestion) {
             editor.tf.setNodes(
               {
                 [BaseSuggestionPlugin.key]: {
@@ -179,8 +182,9 @@ export const deleteSuggestion = (
       }
 
       // if the current point is in addition suggestion, delete
-      const entryText = findInlineSuggestionNode(editor, {
+      const entryText = editor.getApi(BaseSuggestionPlugin).suggestion.node({
         at: range,
+        isText: true,
         match: (n) =>
           TextApi.isText(n) &&
           getInlineSuggestionData(n)?.type === 'insert' &&

@@ -1,11 +1,10 @@
 import React from 'react';
 
-import { cn } from '@udecode/cn';
-import {
-  getInlineSuggestionDataList,
-  getInlineSuggestionId,
+import type {
+  TSuggestionText,
 } from '@udecode/plate-suggestion';
-import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
+
+import { cn } from '@udecode/cn';
 import {
   type PlateLeafProps,
   PlateLeaf,
@@ -13,23 +12,22 @@ import {
   usePluginOption,
 } from '@udecode/plate/react';
 
+import { suggestionPlugin } from '../components/editor/plugins/suggestion-plugin';
+
 export function SuggestionLeaf(props: PlateLeafProps) {
   const { children, className, leaf } = props;
 
-  const { setOption } = useEditorPlugin(SuggestionPlugin);
+  const { api, setOption } = useEditorPlugin(suggestionPlugin);
 
-  const leafId: string = getInlineSuggestionId(leaf) ?? '';
-  const activeSuggestionId = usePluginOption(SuggestionPlugin, 'activeId');
-  const hoverSuggestionId = usePluginOption(SuggestionPlugin, 'hoverId');
-  const hasRemove = getInlineSuggestionDataList(leaf).some(
-    (data) => data.type === 'remove'
-  );
-  const hasActive = getInlineSuggestionDataList(leaf).some(
-    (data) => data.id === activeSuggestionId
-  );
-  const hasHover = getInlineSuggestionDataList(leaf).some(
-    (data) => data.id === hoverSuggestionId
-  );
+  const leafId: string = api.suggestion.nodeId(leaf as TSuggestionText) ?? '';
+  const activeSuggestionId = usePluginOption(suggestionPlugin, 'activeId');
+  const hoverSuggestionId = usePluginOption(suggestionPlugin, 'hoverId');
+  const dataList = api.suggestion.dataList(leaf as TSuggestionText);
+
+  const hasRemove = dataList.some((data) => data.type === 'remove');
+  const hasActive = dataList.some((data) => data.id === activeSuggestionId);
+  const hasHover = dataList.some((data) => data.id === hoverSuggestionId);
+
   const diffOperation = {
     type: hasRemove ? 'delete' : 'insert',
   } as const;

@@ -5,10 +5,10 @@ import type { SlateEditor } from '@udecode/plate';
 import { createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
 
-import type { TSuggestionData } from './types';
+import type { TSuggestionData, TSuggestionElement } from './types';
 
 import { BaseSuggestionPlugin } from './BaseSuggestionPlugin';
-import { getInlineSuggestionData, getSuggestionData } from './utils';
+import { getInlineSuggestionData } from './utils';
 jsxt;
 
 const suggestionPlugin = BaseSuggestionPlugin.configure({
@@ -186,7 +186,12 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
     editor.tf.deleteBackward('line');
     editor.tf.deleteBackward('character');
 
-    const lineBreakData = getSuggestionData(editor.children[0] as any);
+    const lineBreakData = editor
+      .getApi(BaseSuggestionPlugin)
+      .suggestion.isBlockSuggestion(editor.children[0] as any)
+      ? (editor.children[0].suggestion as TSuggestionElement)
+      : undefined;
+
     const suggestionTextData = getInlineSuggestionData(
       editor.children[1].children[0] as any
     );

@@ -1,18 +1,14 @@
 import {
   type Point,
   type SlateEditor,
-  type TElement,
   type TLocation,
   nanoid,
 } from '@udecode/plate';
 
-import {
-  getInlineSuggestionData,
-  getInlineSuggestionId,
-  getSuggestionData,
-  isCurrentUserSuggestion,
-} from '../utils';
-import { findInlineSuggestionNode } from './findSuggestionNode';
+import type { TSuggestionElement } from '../types';
+
+import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
+import { getInlineSuggestionData, isCurrentUserSuggestion } from '../utils';
 
 export const findSuggestionProps = (
   editor: SlateEditor,
@@ -23,8 +19,11 @@ export const findSuggestionProps = (
     createdAt: Date.now(),
   };
 
-  let entry = findInlineSuggestionNode(editor, {
+  const api = editor.getApi(BaseSuggestionPlugin);
+
+  let entry = api.suggestion.node({
     at,
+    isText: true,
   });
 
   if (!entry) {
@@ -40,16 +39,18 @@ export const findSuggestionProps = (
     const nextPoint = editor.api.after(end);
 
     if (nextPoint) {
-      entry = findInlineSuggestionNode(editor, {
+      entry = api.suggestion.node({
         at: nextPoint,
+        isText: true,
       });
 
       if (!entry) {
         const prevPoint = editor.api.before(start);
 
         if (prevPoint) {
-          entry = findInlineSuggestionNode(editor, {
+          entry = api.suggestion.node({
             at: prevPoint,
+            isText: true,
           });
         }
         // <p>111111<insert_break></p>
@@ -59,9 +60,9 @@ export const findSuggestionProps = (
         if (!entry && editor.api.isStart(start, at)) {
           const _at = prevPoint ?? at;
 
-          const lineBreak = editor.api.above<TElement>({ at: _at });
+          const lineBreak = editor.api.above<TSuggestionElement>({ at: _at });
 
-          const lineBreakData = lineBreak && getSuggestionData(lineBreak?.[0]);
+          const lineBreakData = lineBreak?.[0].suggestion;
 
           if (lineBreakData?.isLineBreak) {
             return {
@@ -80,7 +81,7 @@ export const findSuggestionProps = (
     isCurrentUserSuggestion(editor, entry[0])
   ) {
     return {
-      id: getInlineSuggestionId(entry[0]) ?? nanoid(),
+      id: api.suggestion.nodeId(entry[0]) ?? nanoid(),
       createdAt: getInlineSuggestionData(entry[0])?.createdAt ?? Date.now(),
     };
   }

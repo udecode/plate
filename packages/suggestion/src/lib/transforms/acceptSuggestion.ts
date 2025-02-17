@@ -1,14 +1,9 @@
 import { type SlateEditor, ElementApi, PathApi, TextApi } from '@udecode/plate';
 
-import type { TResolvedSuggestion } from '../types';
+import type { TResolvedSuggestion, TSuggestionText } from '../types';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
-import {
-  getInlineSuggestionData,
-  getInlineSuggestionDataList,
-  getSuggestionData,
-  isSuggestionElement,
-} from '../utils';
+import { getInlineSuggestionData } from '../utils';
 
 export const acceptSuggestion = (
   editor: SlateEditor,
@@ -21,14 +16,15 @@ export const acceptSuggestion = (
         match: (n) => {
           if (!ElementApi.isElement(n)) return false;
 
-          const lineBreakData = getSuggestionData(n);
-
-          if (lineBreakData)
+          if (
+            editor.getApi(BaseSuggestionPlugin).suggestion.isBlockSuggestion(n)
+          ) {
             return (
-              lineBreakData.type === 'remove' &&
-              lineBreakData.isLineBreak &&
-              lineBreakData.id === description.suggestionId
+              n.suggestion.type === 'remove' &&
+              n.suggestion.isLineBreak &&
+              n.suggestion.id === description.suggestionId
             );
+          }
 
           return false;
         },
@@ -44,7 +40,9 @@ export const acceptSuggestion = (
       mode: 'all',
       match: (n) => {
         if (TextApi.isText(n)) {
-          const suggestionDataList = getInlineSuggestionDataList(n);
+          const suggestionDataList = editor
+            .getApi(BaseSuggestionPlugin)
+            .suggestion.dataList(n as TSuggestionText);
           const includeUpdate = suggestionDataList.some(
             (data) => data.type === 'update'
           );
@@ -65,7 +63,10 @@ export const acceptSuggestion = (
 
           return false;
         }
-        if (isSuggestionElement(n)) {
+        if (
+          ElementApi.isElement(n) &&
+          editor.getApi(BaseSuggestionPlugin).suggestion.isBlockSuggestion(n)
+        ) {
           const suggestionData = n.suggestion;
 
           if (suggestionData) {
@@ -102,7 +103,10 @@ export const acceptSuggestion = (
           return false;
         }
 
-        if (isSuggestionElement(n)) {
+        if (
+          ElementApi.isElement(n) &&
+          editor.getApi(BaseSuggestionPlugin).suggestion.isBlockSuggestion(n)
+        ) {
           const suggestionData = n.suggestion;
 
           if (suggestionData) {

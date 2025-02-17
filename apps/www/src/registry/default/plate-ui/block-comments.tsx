@@ -2,6 +2,9 @@
 import React, { createContext, useMemo, useReducer } from 'react';
 
 import type {
+  TSuggestionText,
+} from '@udecode/plate-suggestion';
+import type {
   PlateRenderElementProps,
   RenderNodeWrapper,
 } from '@udecode/plate/react';
@@ -15,10 +18,6 @@ import {
 } from '@udecode/plate';
 import { type TCommentText, getDraftCommentKey } from '@udecode/plate-comments';
 import { CommentsPlugin } from '@udecode/plate-comments/react';
-import {
-  type TSuggestionText,
-  getInlineSuggestionId,
-} from '@udecode/plate-suggestion';
 import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
 import { useEditorRef, usePluginOption } from '@udecode/plate/react';
 import {
@@ -36,6 +35,7 @@ import {
 } from '@/registry/default/plate-ui/popover';
 
 import { commentsPlugin } from '../components/editor/plugins/comments-plugin';
+import { suggestionPlugin } from '../components/editor/plugins/suggestion-plugin';
 import {
   BlockCommentsCard,
   useResolvedDiscussion,
@@ -118,15 +118,12 @@ const BlockCommentsContent = ({
   const discussionsCount = resolvedDiscussions.length;
   const totalCount = suggestionsCount + discussionsCount;
 
-  const activeSuggestionId = usePluginOption(SuggestionPlugin, 'activeId');
+  const activeSuggestionId = usePluginOption(suggestionPlugin, 'activeId');
   const activeSuggestion =
     activeSuggestionId &&
     resolvedSuggestion.find((s) => s.suggestionId === activeSuggestionId);
 
-  const commentingBlock = usePluginOption(
-    commentsPlugin,
-    'commentingBlock'
-  );
+  const commentingBlock = usePluginOption(commentsPlugin, 'commentingBlock');
   const activeCommentId = usePluginOption(commentsPlugin, 'activeId');
   const isCommenting = activeCommentId === getDraftCommentKey();
   const activeDiscussion =
@@ -161,7 +158,8 @@ const BlockCommentsContent = ({
       activeNode = suggestionNodes.find(
         ([node]) =>
           TextApi.isText(node) &&
-          getInlineSuggestionId(node) === activeSuggestion.suggestionId
+          editor.getApi(SuggestionPlugin).suggestion.nodeId(node) ===
+            activeSuggestion.suggestionId
       );
     }
 

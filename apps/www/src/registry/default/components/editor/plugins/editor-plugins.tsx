@@ -23,6 +23,7 @@ import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 import { FixedToolbarPlugin } from '@/registry/default/components/editor/plugins/fixed-toolbar-plugin';
 import { FloatingToolbarPlugin } from '@/registry/default/components/editor/plugins/floating-toolbar-plugin';
 import { BlockComments } from '@/registry/default/plate-ui/block-comments';
+import { SuggestionBelowNodes } from '@/registry/default/plate-ui/suggestion-line-break';
 
 import { aiPlugins } from './ai-plugins';
 import { alignPlugin } from './align-plugin';
@@ -80,7 +81,11 @@ export const viewPlugins = [
       aboveNodes: BlockComments as any,
     },
   }),
-  suggestionPlugin,
+  suggestionPlugin.extend({
+    render: {
+      belowNodes: SuggestionBelowNodes as any,
+    },
+  }),
 ] as const;
 
 export const editorPlugins = [

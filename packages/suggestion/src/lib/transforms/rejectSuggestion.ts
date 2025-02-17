@@ -11,10 +11,7 @@ import type { TResolvedSuggestion, TSuggestionText } from '../types';
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import {
   getInlineSuggestionData,
-  getInlineSuggestionDataList,
-  getSuggestionData,
   getSuggestionKey,
-  isSuggestionElement,
 } from '../utils';
 
 export const rejectSuggestion = (
@@ -28,14 +25,15 @@ export const rejectSuggestion = (
         match: (n) => {
           if (!ElementApi.isElement(n)) return false;
 
-          const lineBreakData = getSuggestionData(n);
-
-          if (lineBreakData)
+          if (
+            editor.getApi(BaseSuggestionPlugin).suggestion.isBlockSuggestion(n)
+          ) {
             return (
-              lineBreakData.type === 'insert' &&
-              lineBreakData.isLineBreak &&
-              lineBreakData.id === description.suggestionId
+              n.suggestion.type === 'insert' &&
+              n.suggestion.isLineBreak &&
+              n.suggestion.id === description.suggestionId
             );
+          }
 
           return false;
         },
@@ -62,20 +60,18 @@ export const rejectSuggestion = (
 
           return false;
         }
-        if (isSuggestionElement(n)) {
-          const lineBreakData = getSuggestionData(n);
+        if (
+          ElementApi.isElement(n) &&
+          editor.getApi(BaseSuggestionPlugin).suggestion.isBlockSuggestion(n)
+        ) {
+          const isLineBreak = n.suggestion.isLineBreak;
 
-          if (lineBreakData) {
-            const isLineBreak = lineBreakData.isLineBreak;
+          if (isLineBreak) return n.suggestion.id === description.suggestionId;
 
-            if (isLineBreak)
-              return lineBreakData.id === description.suggestionId;
-
-            return (
-              lineBreakData.type === 'remove' &&
-              lineBreakData.id === description.suggestionId
-            );
-          }
+          return (
+            n.suggestion.type === 'remove' &&
+            n.suggestion.id === description.suggestionId
+          );
         }
 
         return false;
@@ -100,15 +96,15 @@ export const rejectSuggestion = (
           return false;
         }
 
-        if (ElementApi.isElement(n)) {
-          const lineBreakData = getSuggestionData(n);
-
-          if (lineBreakData)
-            return (
-              lineBreakData.type === 'insert' &&
-              lineBreakData.id === description.suggestionId &&
-              !lineBreakData.isLineBreak
-            );
+        if (
+          ElementApi.isElement(n) &&
+          editor.getApi(BaseSuggestionPlugin).suggestion.isBlockSuggestion(n)
+        ) {
+          return (
+            n.suggestion.type === 'insert' &&
+            n.suggestion.id === description.suggestionId &&
+            !n.suggestion.isLineBreak
+          );
         }
 
         return false;
@@ -121,7 +117,9 @@ export const rejectSuggestion = (
         match: (n) => {
           if (ElementApi.isElement(n)) return false;
           if (TextApi.isText(n)) {
-            const datalist = getInlineSuggestionDataList(n);
+            const datalist = editor
+              .getApi(BaseSuggestionPlugin)
+              .suggestion.dataList(n as TSuggestionText);
 
             if (datalist.length > 0)
               return datalist.some(
@@ -136,7 +134,9 @@ export const rejectSuggestion = (
     ];
 
     updateNodes.forEach(([node, path]) => {
-      const datalist = getInlineSuggestionDataList(node);
+      const datalist = editor
+        .getApi(BaseSuggestionPlugin)
+        .suggestion.dataList(node as TSuggestionText);
       const targetData = datalist.find(
         (data) => data.type === 'update' && data.id === description.suggestionId
       );

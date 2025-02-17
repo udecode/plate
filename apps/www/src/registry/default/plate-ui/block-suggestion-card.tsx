@@ -29,13 +29,6 @@ import {
   type TResolvedSuggestion,
   type TSuggestionText,
   acceptSuggestion,
-  findInlineSuggestionNode,
-  getAllSuggestionData,
-  getAllSuggestionId,
-  getInlineSuggestionDataList,
-  getInlineSuggestionId,
-  getSuggestionData,
-  getSuggestionId,
   getSuggestionKey,
   keyId2SuggestionId,
   rejectSuggestion,
@@ -52,6 +45,7 @@ import { CheckIcon, XIcon } from 'lucide-react';
 
 import type { TCommentItem, TDiscussion } from './block-comments-card';
 
+import { suggestionPlugin } from '../components/editor/plugins/suggestion-plugin';
 import { Button } from './button';
 import { CommentAvatar, mockUsers } from './comment-avatar';
 import { CommentCreateForm } from './comment-create-form';
@@ -281,10 +275,10 @@ export const useResolveSuggestion = (
   suggestionNodes: NodeEntry<TElement | TSuggestionText>[],
   blockPath: Path
 ) => {
-  const { getOption, setOption } = useEditorPlugin(SuggestionPlugin);
+  const { api, getOption, setOption } = useEditorPlugin(suggestionPlugin);
 
   suggestionNodes.forEach(([node]) => {
-    const id = getAllSuggestionId(node);
+    const id = api.suggestion.nodeId(node);
     const map = getOption('uniquePathMap');
 
     if (!id) return;
@@ -293,12 +287,12 @@ export const useResolveSuggestion = (
 
     // If there are no suggestion nodes in the corresponding path in the map, then update it.
     if (PathApi.isPath(previousPath)) {
-      const nodes = findInlineSuggestionNode(editor, { at: previousPath });
+      const nodes = api.suggestion.node({ at: previousPath, isText: true });
       const parentNode = editor.api.node(previousPath);
       let lineBreakId = null;
 
       if (parentNode && ElementApi.isElement(parentNode[0])) {
-        lineBreakId = getSuggestionId(parentNode[0]);
+        lineBreakId = api.suggestion.nodeId(parentNode[0]);
       }
 
       if (!nodes && lineBreakId !== id) {
@@ -319,19 +313,19 @@ export const useResolveSuggestion = (
       suggestionNodes
         .flatMap(([node]) => {
           if (TextApi.isText(node)) {
-            const dataList = getInlineSuggestionDataList(node);
+            const dataList = api.suggestion.dataList(node);
             const includeUpdate = dataList.some(
               (data) => data.type === 'update'
             );
 
-            if (!includeUpdate) return getInlineSuggestionId(node);
+            if (!includeUpdate) return api.suggestion.nodeId(node);
 
             return dataList
               .filter((data) => data.type === 'update')
               .map((d) => d.id);
           }
           if (ElementApi.isElement(node)) {
-            return getSuggestionId(node);
+            return api.suggestion.nodeId(node);
           }
         })
         .filter(Boolean)
@@ -353,7 +347,7 @@ export const useResolveSuggestion = (
           mode: 'all',
           match: (n) =>
             (n[SuggestionPlugin.key] && n[getSuggestionKey(id)]) ||
-            getSuggestionId(n as TElement) === id,
+            api.suggestion.nodeId(n as TElement) === id,
         }),
       ];
 
@@ -370,7 +364,7 @@ export const useResolveSuggestion = (
       // overlapping suggestion
       entries.forEach(([node]) => {
         if (TextApi.isText(node)) {
-          const dataList = getInlineSuggestionDataList(node);
+          const dataList = api.suggestion.dataList(node);
 
           dataList.forEach((data) => {
             if (data.id !== id) return;
@@ -405,7 +399,9 @@ export const useResolveSuggestion = (
             }
           });
         } else {
-          const lineBreakData = getSuggestionData(node);
+          const lineBreakData = api.suggestion.isBlockSuggestion(node)
+            ? node.suggestion
+            : undefined;
 
           if (lineBreakData?.id !== keyId2SuggestionId(id)) return;
           if (lineBreakData.type === 'insert') {
@@ -422,7 +418,7 @@ export const useResolveSuggestion = (
 
       if (entries.length === 0) return;
 
-      const nodeData = getAllSuggestionData(entries[0][0]);
+      const nodeData = api.suggestion.suggestionData(entries[0][0]);
 
       if (!nodeData) return;
 
@@ -485,7 +481,7 @@ export const useResolveSuggestion = (
     });
 
     return res;
-  }, [blockPath, editor.api, getOption, suggestionNodes]);
+  }, [api.suggestion, blockPath, editor.api, getOption, suggestionNodes]);
 
   return resolvedSuggestion;
 };

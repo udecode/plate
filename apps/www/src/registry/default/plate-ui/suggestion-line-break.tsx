@@ -1,11 +1,11 @@
 import React, { useRef } from 'react';
 
-import { cn } from '@udecode/cn';
-import {
-  type SuggestionConfig,
-  type TSuggestionData,
-  isSuggestionElement,
+import type {
+  SuggestionConfig,
+  TSuggestionData,
 } from '@udecode/plate-suggestion';
+
+import { cn } from '@udecode/cn';
 import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
 import {
   type RenderNodeWrapperProps,
@@ -13,10 +13,14 @@ import {
 } from '@udecode/plate/react';
 import { CornerDownLeftIcon } from 'lucide-react';
 
+import { suggestionPlugin } from '../components/editor/plugins/suggestion-plugin';
+
 export const SuggestionBelowNodes = ({
+  editor,
   element,
 }: RenderNodeWrapperProps<SuggestionConfig>) => {
-  if (!isSuggestionElement(element)) return;
+  if (!editor.getApi(SuggestionPlugin).suggestion.isBlockSuggestion(element))
+    return;
 
   const suggestionData = element.suggestion;
 
@@ -41,8 +45,8 @@ function SuggestionLineBreak({
   const isRemove = type === 'remove';
   const isInsert = type === 'insert';
 
-  const activeSuggestionId = usePluginOption(SuggestionPlugin, 'activeId');
-  const hoverSuggestionId = usePluginOption(SuggestionPlugin, 'hoverId');
+  const activeSuggestionId = usePluginOption(suggestionPlugin, 'activeId');
+  const hoverSuggestionId = usePluginOption(suggestionPlugin, 'hoverId');
 
   const isActive = activeSuggestionId === suggestionData.id;
   const isHover = hoverSuggestionId === suggestionData.id;

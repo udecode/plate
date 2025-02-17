@@ -1,50 +1,57 @@
 import {
   type EditorNodesOptions,
   type NodeEntry,
-  type Path,
   type PluginConfig,
   type TElement,
   type WithPartial,
+  combineMatchOptions,
   createTSlatePlugin,
+  ElementApi,
   getAt,
   nanoid,
+  TextApi,
 } from '@udecode/plate';
 
-import type { SuggestionUser, TSuggestion, TSuggestionText } from './types';
+import type {
+  SuggestionUser,
+  TInlineSuggestionData,
+  TSuggestion,
+  TSuggestionElement,
+  TSuggestionText,
+} from './types';
 
+import { getSuggestionKeyId } from './utils';
 import { withSuggestion } from './withSuggestion';
 
 export const SUGGESTION_KEYS = {
   id: 'suggestionId',
   createdAt: 'suggestionCreateAt',
-  lineBreak: 'suggestionLineBreak',
 } as const;
 
 export type SuggestionConfig = PluginConfig<
   'suggestion',
   {
-    activeId: string | null;
     currentUserId: string | null;
-    hoverId: string | null;
     isSuggesting: boolean;
     suggestions: Record<string, TSuggestion>;
-    uniquePathMap: Map<string, Path>;
     users: Record<string, SuggestionUser>;
-    onSuggestionAdd: ((value: Partial<TSuggestion>) => void) | null;
-    onSuggestionDelete: ((id: string) => void) | null;
-    onSuggestionUpdate:
-      | ((
-          value: Partial<Omit<TSuggestion, 'id'>> & Pick<TSuggestion, 'id'>
-        ) => void)
-      | null;
   },
   {
     suggestion: {
       addSuggestion: (value: WithPartial<TSuggestion, 'id' | 'userId'>) => void;
+      dataList: (node: TSuggestionText) => TInlineSuggestionData[];
+      isBlockSuggestion: (node: TElement) => node is TSuggestionElement;
+      node: (
+        options?: EditorNodesOptions & { isText?: boolean }
+      ) => NodeEntry<TSuggestionText> | undefined;
+      nodeId: (node: TElement | TSuggestionText) => string | undefined;
       nodes: (
         options?: EditorNodesOptions
       ) => NodeEntry<TElement | TSuggestionText>[];
       removeSuggestion: (id: string | null) => void;
+      suggestionData: (
+        node: TElement | TSuggestionText
+      ) => TInlineSuggestionData | TSuggestionElement['suggestion'] | undefined;
       updateSuggestion: (
         id: string | null,
         value: Partial<TSuggestion>
@@ -52,10 +59,11 @@ export type SuggestionConfig = PluginConfig<
       withoutSuggestions: (fn: () => void) => void;
     };
   },
+  {},
   {
-    currentSuggestionUser?: () => SuggestionUser | null;
-    suggestionById?: (id: string | null) => TSuggestion | null;
-    suggestionUserById?: (id: string | null) => SuggestionUser | null;
+    currentUser?: () => SuggestionUser | null;
+    suggestion?: (id: string | null) => TSuggestion | null;
+    user?: (id: string | null) => SuggestionUser | null;
   }
 >;
 
@@ -63,40 +71,34 @@ export const BaseSuggestionPlugin = createTSlatePlugin<SuggestionConfig>({
   key: 'suggestion',
   node: { isLeaf: true },
   options: {
-    activeId: null,
     currentUserId: null,
-    hoverId: null,
     isSuggesting: false,
     suggestions: {},
-    uniquePathMap: new Map(),
     users: {},
-    onSuggestionAdd: null,
-    onSuggestionDelete: null,
-    onSuggestionUpdate: null,
   },
 })
   .overrideEditor(withSuggestion)
-  .extendSelectors(({ getOptions }) => ({
-    currentSuggestionUser: (): SuggestionUser | null => {
+  .extendSelectors<SuggestionConfig['selectors']>(({ getOptions }) => ({
+    currentUser: (): SuggestionUser | null => {
       const { currentUserId, users } = getOptions();
 
       if (!currentUserId) return null;
 
       return users[currentUserId];
     },
-    suggestionById: (id: string | null): TSuggestion | null => {
+    suggestion: (id: string | null): TSuggestion | null => {
       if (!id) return null;
 
       return getOptions().suggestions[id];
     },
-    suggestionUserById: (id: string | null): SuggestionUser | null => {
+    user: (id: string | null): SuggestionUser | null => {
       if (!id) return null;
 
       return getOptions().users[id];
     },
   }))
   .extendApi<SuggestionConfig['api']['suggestion']>(
-    ({ editor, getOption, getOptions, setOption, setOptions }) => ({
+    ({ api, editor, getOption, getOptions, setOption, setOptions, type }) => ({
       addSuggestion: (value) => {
         const { currentUserId } = getOptions();
 
@@ -113,6 +115,46 @@ export const BaseSuggestionPlugin = createTSlatePlugin<SuggestionConfig>({
           draft.suggestions![id] = newSuggestion;
         });
       },
+      dataList: (node: TSuggestionText): TInlineSuggestionData[] => {
+        return Object.keys(node)
+          .filter((key) => {
+            return key.startsWith(`${BaseSuggestionPlugin.key}_`);
+          })
+          .map((key) => node[key] as TInlineSuggestionData);
+      },
+      isBlockSuggestion: (node): node is TSuggestionElement =>
+        ElementApi.isElement(node) && 'suggestion' in node,
+      node: (options = {}) => {
+        const { isText } = options;
+
+        const result = editor.api.node<TSuggestionText>({
+          ...options,
+          match: combineMatchOptions(
+            editor,
+            (n) => {
+              if (isText) return TextApi.isText(n) && (n as any)[type];
+
+              return (n as any)[type];
+            },
+            options
+          ),
+        }) as NodeEntry<TSuggestionText> | undefined;
+
+        return result;
+      },
+      nodeId: (node) => {
+        if (TextApi.isText(node)) {
+          const keyId = getSuggestionKeyId(node);
+
+          if (!keyId) return;
+
+          return keyId.replace(`${type}_`, '');
+        }
+
+        if (api.suggestion.isBlockSuggestion(node)) {
+          return node.suggestion.id;
+        }
+      },
       nodes: (options = {}) => {
         const at = getAt(editor, options.at) ?? [];
 
@@ -121,7 +163,7 @@ export const BaseSuggestionPlugin = createTSlatePlugin<SuggestionConfig>({
             ...options,
             at,
             mode: 'all',
-            match: (n) => n[BaseSuggestionPlugin.key],
+            match: (n) => n[type],
           }),
         ];
       },
@@ -131,6 +173,19 @@ export const BaseSuggestionPlugin = createTSlatePlugin<SuggestionConfig>({
         setOptions((draft) => {
           delete draft.suggestions![id];
         });
+      },
+      suggestionData: (node) => {
+        if (TextApi.isText(node)) {
+          const keyId = getSuggestionKeyId(node);
+
+          if (!keyId) return;
+
+          return node[keyId] as TInlineSuggestionData | undefined;
+        }
+
+        if (api.suggestion.isBlockSuggestion(node)) {
+          return node.suggestion;
+        }
       },
       updateSuggestion: (id, value) => {
         if (!id) return;
