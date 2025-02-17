@@ -38,22 +38,33 @@ API Updates:
 - Remove `useActiveCommentNode.ts`, `useCommentsResolved.ts` as it's no longer needed with the new UI
 - Move `useHooksComments.ts` to client side,
 
-- Remove the following components use `BlockComments` `block-comments-card.tsx` `comment-item` `comment-create-form` `comment-avatar` `comment-more-dropdown` instead
-  CommentDeleteButton.tsx
-  CommentEditActions.tsx
-  CommentEditButton.tsx
-  CommentEditCancelButton.tsx
-  CommentEditSaveButton.tsx
-  CommentEditTextarea.tsx
-  CommentNewSubmitButton.tsx
-  CommentNewTextarea.tsx
-  CommentResolveButton.tsx
-  CommentsPositioner.tsx
-  CommentUserName.tsx
-  index.ts
-  useCommentAddButton.ts
-  useCommentItemContent.ts
-  useCommentLeaf.ts
-  useCommentsShowResolvedButton.ts
-  useFloatingCommentsContentState.ts
-  useFloatingCommentsState.ts
+- Removed legacy comment components in favor of new unified components:
+  The following components have been removed and their functionality is now handled by:
+
+  - `BlockComments` (main container component)
+  - `block-comments-card.tsx` (comment thread UI)
+  - `comment-item.tsx` (individual comment display)
+  - `comment-create-form.tsx` (comment input)
+  - `comment-avatar.tsx` (user avatars)
+  - `comment-more-dropdown.tsx` (comment actions menu)
+
+  Removed components:
+
+  - CommentDeleteButton.tsx
+  - CommentEditActions.tsx
+  - CommentEditButton.tsx
+  - CommentEditCancelButton.tsx
+  - CommentEditSaveButton.tsx
+  - CommentEditTextarea.tsx
+  - CommentNewSubmitButton.tsx
+  - CommentNewTextarea.tsx
+  - CommentResolveButton.tsx
+  - CommentsPositioner.tsx
+  - CommentUserName.tsx
+  - index.ts
+  - useCommentAddButton.ts
+  - useCommentItemContent.ts
+  - useCommentLeaf.ts
+  - useCommentsShowResolvedButton.ts
+  - useFloatingCommentsContentState.ts
+  - useFloatingCommentsState.ts
