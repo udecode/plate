@@ -15,7 +15,7 @@ UI Updates:
   - Removed `comments-popover.tsx`, `comment-reply-items.tsx`, and `comment-value.tsx`
   - Replaced with the new `BlockComments` component in `block-comments-card.tsx`
   - Removed `comment-reply-items.tsx`
-  - Integrated the resolve button into `comment-more-dropdown.tsx` for better UX
+  - Remove `comment-resolve-button.tsx` use `comment-item.tsx` instead
   - Updated `comment-create-form.tsx` to use a minimal Plate editor for the input box
 
 - Type
@@ -36,7 +36,7 @@ API Updates:
 - Removed `getCommentPosition.ts` as it's no longer needed with the new UI
 - Removed state management components `CommentProvider.tsx`. Users should implement their own state management solution.
 - Remove `useActiveCommentNode.ts`, `useCommentsResolved.ts` as it's no longer needed with the new UI
-- Move `useHooksComments.ts` to client side.
+- Move `useHooksComments.ts` to client side,
 
 - Remove the following components use `BlockComments` `block-comments-card.tsx` `comment-item` `comment-create-form` `comment-avatar` `comment-more-dropdown` instead
   CommentDeleteButton.tsx
