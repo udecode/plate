@@ -14,7 +14,6 @@ import {
   useTableBordersDropdownMenuContentState,
   useTableElement,
   useTableMergeState,
-  useTableStore,
 } from '@udecode/plate-table/react';
 import {
   useEditorPlugin,
