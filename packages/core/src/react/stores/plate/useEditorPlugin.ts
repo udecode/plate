@@ -1,3 +1,5 @@
+import React from 'react';
+
 import type { AnyPluginConfig, WithRequiredKey } from '../../../lib';
 import type { PlateEditor } from '../../editor';
 
@@ -21,8 +23,12 @@ export function useEditorPlugin<
 } {
   const editor = useEditorRef(id);
 
-  return {
-    ...getEditorPlugin(editor, p),
-    store: editor.store,
-  } as any;
+  return React.useMemo(
+    () =>
+      ({
+        ...getEditorPlugin(editor, p),
+        store: editor.store,
+      }) as any,
+    [editor, p]
+  );
 }
