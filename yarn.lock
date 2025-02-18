@@ -6506,7 +6506,7 @@ __metadata:
     jotai-optics: "npm:0.4.0"
     jotai-x: "npm:2.3.0"
     lodash: "npm:^4.17.21"
-    nanoid: "npm:^5.0.9"
+    nanoid: "npm:^5.1.0"
     optics-ts: "npm:2.4.1"
     slate-hyperscript: "npm:0.100.0"
     slate-react: "npm:0.112.1"
@@ -15894,12 +15894,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nanoid@npm:^5.0.9":
-  version: 5.0.9
-  resolution: "nanoid@npm:5.0.9"
+"nanoid@npm:^5.1.0":
+  version: 5.1.0
+  resolution: "nanoid@npm:5.1.0"
   bin:
     nanoid: bin/nanoid.js
-  checksum: 10c0/a2d9710525d4998a8a1610bbe6eb9a92c254ebab7c567c1ab429046fe7eed9c4df3508b59fb44c58ffdc98edb28dd6f953715c14b64ea0a3a2ce37420cdfeefd
+  checksum: 10c0/290af467e6b65ed1df7e7518674dad87ff46204d279be98549d5480b6fb0fc601d9abd3a3abb5ee2f0554b19883153c2979fee82f57a70ce00692e4f6beae2f8
   languageName: node
   linkType: hard
 
