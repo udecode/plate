@@ -1,11 +1,12 @@
 import {
+  type NodeEntry,
   type Point,
   type SlateEditor,
   type TLocation,
   nanoid,
 } from '@udecode/plate';
 
-import type { TSuggestionElement } from '../types';
+import type { TSuggestionElement, TSuggestionText } from '../types';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getInlineSuggestionData, isCurrentUserSuggestion } from '../utils';
@@ -24,7 +25,7 @@ export const findSuggestionProps = (
   let entry = api.suggestion.node({
     at,
     isText: true,
-  });
+  }) as NodeEntry<TSuggestionText> | undefined;
 
   if (!entry) {
     let start: Point;
@@ -42,7 +43,7 @@ export const findSuggestionProps = (
       entry = api.suggestion.node({
         at: nextPoint,
         isText: true,
-      });
+      }) as NodeEntry<TSuggestionText> | undefined;
 
       if (!entry) {
         const prevPoint = editor.api.before(start);
@@ -51,7 +52,7 @@ export const findSuggestionProps = (
           entry = api.suggestion.node({
             at: prevPoint,
             isText: true,
-          });
+          }) as NodeEntry<TSuggestionText> | undefined;
         }
         // <p>111111<insert_break></p>
         // <p><cursor /></p>

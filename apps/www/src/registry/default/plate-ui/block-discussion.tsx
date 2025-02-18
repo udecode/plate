@@ -43,8 +43,8 @@ import {
   isResolvedSuggestion,
   useResolveSuggestion,
 } from './block-suggestion';
+import { type TComment, CommentItem } from './comment';
 import { CommentCreateForm } from './comment-create-form';
-import { type TComment, CommentItem } from './comment-item';
 
 export const ForceUpdateContext = createContext<() => void>(() => {});
 

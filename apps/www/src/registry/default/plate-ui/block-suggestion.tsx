@@ -51,8 +51,8 @@ import type { TDiscussion } from './block-discussion';
 import { suggestionPlugin } from '../components/editor/plugins/suggestion-plugin';
 import { Avatar, AvatarFallback, AvatarImage } from './avatar';
 import { Button } from './button';
+import { type TComment, CommentItem, formatCommentDate } from './comment';
 import { CommentCreateForm } from './comment-create-form';
-import { type TComment, CommentItem, formatCommentDate } from './comment-item';
 
 export interface ResolvedSuggestion extends TResolvedSuggestion {
   comments: TComment[];
