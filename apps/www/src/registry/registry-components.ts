@@ -212,7 +212,7 @@ const plugins: Registry['items'] = [
       },
     ],
     name: 'comments-plugin',
-    registryDependencies: ['comments-popover'],
+    registryDependencies: ['block-discussion'],
     type: 'registry:component',
   },
   {
@@ -235,6 +235,7 @@ const plugins: Registry['items'] = [
       },
     ],
     name: 'suggestion-plugin',
+    registryDependencies: ['suggestion-line-break'],
     type: 'registry:component',
   },
   {
