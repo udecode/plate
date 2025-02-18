@@ -1,13 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 
 import type * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-import type { TTableElement } from '@udecode/plate-table';
 
 import { PopoverAnchor } from '@radix-ui/react-popover';
 import { cn, withRef } from '@udecode/cn';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import { type TTableElement, setCellBackground } from '@udecode/plate-table';
 import {
   TablePlugin,
   TableProvider,
@@ -32,17 +32,21 @@ import {
   ArrowRight,
   ArrowUp,
   CombineIcon,
+  EraserIcon,
   Grid2X2Icon,
+  PaintBucketIcon,
   SquareSplitHorizontalIcon,
   Trash2Icon,
   XIcon,
 } from 'lucide-react';
 
+import { DEFAULT_COLORS } from './color-constants';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuGroup,
+  DropdownMenuItem,
   DropdownMenuPortal,
   DropdownMenuTrigger,
 } from './dropdown-menu';
@@ -57,6 +61,7 @@ import {
   BorderTop,
 } from './table-icons';
 import { Toolbar, ToolbarButton, ToolbarGroup } from './toolbar';
+import { ColorDropdownMenuItems } from './color-dropdown-menu-items';
 
 export const TableElement = withHOC(
   TableProvider,
@@ -135,6 +140,9 @@ export const TableFloatingToolbar = withRef<typeof PopoverContent>(
             contentEditable={false}
           >
             <ToolbarGroup>
+              <ColorDropdownMenu tooltip="Background color">
+                <PaintBucketIcon />
+              </ColorDropdownMenu>
               {canMerge && (
                 <ToolbarButton
                   onClick={() => tf.table.merge()}
@@ -322,3 +330,55 @@ export const TableBordersDropdownMenuContent = withRef<
     </DropdownMenuContent>
   );
 });
+
+type ColorDropdownMenuProps = {
+  children: React.ReactNode;
+  tooltip: string;
+};
+
+function ColorDropdownMenu({ children, tooltip }: ColorDropdownMenuProps) {
+  const [open, setOpen] = useState(false);
+
+  const editor = useEditorRef();
+  const selectedCells = usePluginOption(TablePlugin, 'selectedCells') ?? [];
+
+  const onUpdateColor = useCallback(
+    (color: string) => {
+      setOpen(false);
+      setCellBackground(editor, { color, selectedCells });
+    },
+    [selectedCells, editor]
+  );
+
+  const onClearColor = useCallback(() => {
+    setOpen(false);
+    setCellBackground(editor, {
+      color: null,
+      selectedCells,
+    });
+  }, [selectedCells, editor]);
+
+  return (
+    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
+      <DropdownMenuTrigger asChild>
+        <ToolbarButton tooltip={tooltip}>{children}</ToolbarButton>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent align="start">
+        <DropdownMenuGroup label="Colors">
+          <ColorDropdownMenuItems
+            className="px-2"
+            colors={DEFAULT_COLORS}
+            updateColor={onUpdateColor}
+          />
+        </DropdownMenuGroup>
+        <DropdownMenuGroup>
+          <DropdownMenuItem className="p-2" onClick={onClearColor}>
+            <EraserIcon />
+            <span>Clear</span>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
