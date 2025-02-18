@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 44.0.7
+
+### Patch Changes
+
+- [#4084](https://github.com/udecode/plate/pull/4084) by [@regmsif](https://github.com/regmsif) – fix: return value of useEditorPlugin changes when rerender
+
 ## 44.0.1
 
 ## 44.0.0
