@@ -13,13 +13,13 @@ UI Updates:
 - Consolidated comment-related components:
 
   - Removed `comments-popover.tsx`, `comment-reply-items.tsx`, and `comment-value.tsx`
-  - Replaced with the new `BlockComments` component in `block-comments-card.tsx`
+  - Replaced with the new `block-discussion.tsx` component
   - Removed `comment-reply-items.tsx`
   - Remove `comment-resolve-button.tsx` use `comment-item.tsx` instead
   - Updated `comment-create-form.tsx` to use a minimal Plate editor for the input box
 
 - Type
-  - Remove type `CommentUser` `TComment` Now we have `TCommentItem` `TDiscussion` in `block-comments-card.tsx`
+  - Remove type `CommentUser` `TComment` Now we have `TCommentItem` `TDiscussion` in `block-discussion.tsx`
 
 API Updates:
 
@@ -41,8 +41,7 @@ API Updates:
 - Removed legacy comment components in favor of new unified components:
   The following components have been removed and their functionality is now handled by:
 
-  - `BlockComments` (main container component)
-  - `block-comments-card.tsx` (comment thread UI)
+  - `block-discussion.tsx` (main container component)
   - `comment-item.tsx` (individual comment display)
   - `comment-create-form.tsx` (comment input)
   - `comment-avatar.tsx` (user avatars)
