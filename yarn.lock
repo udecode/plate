@@ -3210,9 +3210,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@parcel/watcher-android-arm64@npm:2.5.1":
+  version: 2.5.1
+  resolution: "@parcel/watcher-android-arm64@npm:2.5.1"
+  conditions: os=android & cpu=arm64
+  languageName: node
+  linkType: hard
+
 "@parcel/watcher-darwin-arm64@npm:2.5.0":
   version: 2.5.0
   resolution: "@parcel/watcher-darwin-arm64@npm:2.5.0"
+  conditions: os=darwin & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@parcel/watcher-darwin-arm64@npm:2.5.1":
+  version: 2.5.1
+  resolution: "@parcel/watcher-darwin-arm64@npm:2.5.1"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
@@ -3224,9 +3238,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@parcel/watcher-darwin-x64@npm:2.5.1":
+  version: 2.5.1
+  resolution: "@parcel/watcher-darwin-x64@npm:2.5.1"
+  conditions: os=darwin & cpu=x64
+  languageName: node
+  linkType: hard
+
 "@parcel/watcher-freebsd-x64@npm:2.5.0":
   version: 2.5.0
   resolution: "@parcel/watcher-freebsd-x64@npm:2.5.0"
+  conditions: os=freebsd & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@parcel/watcher-freebsd-x64@npm:2.5.1":
+  version: 2.5.1
+  resolution: "@parcel/watcher-freebsd-x64@npm:2.5.1"
   conditions: os=freebsd & cpu=x64
   languageName: node
   linkType: hard
@@ -3238,9 +3266,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@parcel/watcher-linux-arm-glibc@npm:2.5.1":
+  version: 2.5.1
+  resolution: "@parcel/watcher-linux-arm-glibc@npm:2.5.1"
+  conditions: os=linux & cpu=arm & libc=glibc
+  languageName: node
+  linkType: hard
+
 "@parcel/watcher-linux-arm-musl@npm:2.5.0":
   version: 2.5.0
   resolution: "@parcel/watcher-linux-arm-musl@npm:2.5.0"
+  conditions: os=linux & cpu=arm & libc=musl
+  languageName: node
+  linkType: hard
+
+"@parcel/watcher-linux-arm-musl@npm:2.5.1":
+  version: 2.5.1
+  resolution: "@parcel/watcher-linux-arm-musl@npm:2.5.1"
   conditions: os=linux & cpu=arm & libc=musl
   languageName: node
   linkType: hard
@@ -3252,9 +3294,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@parcel/watcher-linux-arm64-glibc@npm:2.5.1":
+  version: 2.5.1
+  resolution: "@parcel/watcher-linux-arm64-glibc@npm:2.5.1"
+  conditions: os=linux & cpu=arm64 & libc=glibc
+  languageName: node
+  linkType: hard
+
 "@parcel/watcher-linux-arm64-musl@npm:2.5.0":
   version: 2.5.0
   resolution: "@parcel/watcher-linux-arm64-musl@npm:2.5.0"
+  conditions: os=linux & cpu=arm64 & libc=musl
+  languageName: node
+  linkType: hard
+
+"@parcel/watcher-linux-arm64-musl@npm:2.5.1":
+  version: 2.5.1
+  resolution: "@parcel/watcher-linux-arm64-musl@npm:2.5.1"
   conditions: os=linux & cpu=arm64 & libc=musl
   languageName: node
   linkType: hard
@@ -3266,9 +3322,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@parcel/watcher-linux-x64-glibc@npm:2.5.1":
+  version: 2.5.1
+  resolution: "@parcel/watcher-linux-x64-glibc@npm:2.5.1"
+  conditions: os=linux & cpu=x64 & libc=glibc
+  languageName: node
+  linkType: hard
+
 "@parcel/watcher-linux-x64-musl@npm:2.5.0":
   version: 2.5.0
   resolution: "@parcel/watcher-linux-x64-musl@npm:2.5.0"
+  conditions: os=linux & cpu=x64 & libc=musl
+  languageName: node
+  linkType: hard
+
+"@parcel/watcher-linux-x64-musl@npm:2.5.1":
+  version: 2.5.1
+  resolution: "@parcel/watcher-linux-x64-musl@npm:2.5.1"
   conditions: os=linux & cpu=x64 & libc=musl
   languageName: node
   linkType: hard
@@ -3280,6 +3350,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@parcel/watcher-win32-arm64@npm:2.5.1":
+  version: 2.5.1
+  resolution: "@parcel/watcher-win32-arm64@npm:2.5.1"
+  conditions: os=win32 & cpu=arm64
+  languageName: node
+  linkType: hard
+
 "@parcel/watcher-win32-ia32@npm:2.5.0":
   version: 2.5.0
   resolution: "@parcel/watcher-win32-ia32@npm:2.5.0"
@@ -3287,9 +3364,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@parcel/watcher-win32-ia32@npm:2.5.1":
+  version: 2.5.1
+  resolution: "@parcel/watcher-win32-ia32@npm:2.5.1"
+  conditions: os=win32 & cpu=ia32
+  languageName: node
+  linkType: hard
+
 "@parcel/watcher-win32-x64@npm:2.5.0":
   version: 2.5.0
   resolution: "@parcel/watcher-win32-x64@npm:2.5.0"
+  conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@parcel/watcher-win32-x64@npm:2.5.1":
+  version: 2.5.1
+  resolution: "@parcel/watcher-win32-x64@npm:2.5.1"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
@@ -3344,6 +3435,59 @@ __metadata:
     "@parcel/watcher-win32-x64":
       optional: true
   checksum: 10c0/9bad727d8b11e5d150ec47459254544c583adaa47d047b8ef65e1c74aede1a0767dc7fc6b8997649dae07318d6ef39caba6a1c405d306398d5bcd47074ec5d29
+  languageName: node
+  linkType: hard
+
+"@parcel/watcher@npm:^2.5.1":
+  version: 2.5.1
+  resolution: "@parcel/watcher@npm:2.5.1"
+  dependencies:
+    "@parcel/watcher-android-arm64": "npm:2.5.1"
+    "@parcel/watcher-darwin-arm64": "npm:2.5.1"
+    "@parcel/watcher-darwin-x64": "npm:2.5.1"
+    "@parcel/watcher-freebsd-x64": "npm:2.5.1"
+    "@parcel/watcher-linux-arm-glibc": "npm:2.5.1"
+    "@parcel/watcher-linux-arm-musl": "npm:2.5.1"
+    "@parcel/watcher-linux-arm64-glibc": "npm:2.5.1"
+    "@parcel/watcher-linux-arm64-musl": "npm:2.5.1"
+    "@parcel/watcher-linux-x64-glibc": "npm:2.5.1"
+    "@parcel/watcher-linux-x64-musl": "npm:2.5.1"
+    "@parcel/watcher-win32-arm64": "npm:2.5.1"
+    "@parcel/watcher-win32-ia32": "npm:2.5.1"
+    "@parcel/watcher-win32-x64": "npm:2.5.1"
+    detect-libc: "npm:^1.0.3"
+    is-glob: "npm:^4.0.3"
+    micromatch: "npm:^4.0.5"
+    node-addon-api: "npm:^7.0.0"
+    node-gyp: "npm:latest"
+  dependenciesMeta:
+    "@parcel/watcher-android-arm64":
+      optional: true
+    "@parcel/watcher-darwin-arm64":
+      optional: true
+    "@parcel/watcher-darwin-x64":
+      optional: true
+    "@parcel/watcher-freebsd-x64":
+      optional: true
+    "@parcel/watcher-linux-arm-glibc":
+      optional: true
+    "@parcel/watcher-linux-arm-musl":
+      optional: true
+    "@parcel/watcher-linux-arm64-glibc":
+      optional: true
+    "@parcel/watcher-linux-arm64-musl":
+      optional: true
+    "@parcel/watcher-linux-x64-glibc":
+      optional: true
+    "@parcel/watcher-linux-x64-musl":
+      optional: true
+    "@parcel/watcher-win32-arm64":
+      optional: true
+    "@parcel/watcher-win32-ia32":
+      optional: true
+    "@parcel/watcher-win32-x64":
+      optional: true
+  checksum: 10c0/8f35073d0c0b34a63d4c8d2213482f0ebc6a25de7b2cdd415d19cb929964a793cb285b68d1d50bfb732b070b3c82a2fdb4eb9c250eab709a1cd9d63345455a82
   languageName: node
   linkType: hard
 
@@ -5071,6 +5215,35 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tailwindcss/cli@npm:4.0.7":
+  version: 4.0.7
+  resolution: "@tailwindcss/cli@npm:4.0.7"
+  dependencies:
+    "@parcel/watcher": "npm:^2.5.1"
+    "@tailwindcss/node": "npm:4.0.7"
+    "@tailwindcss/oxide": "npm:4.0.7"
+    enhanced-resolve: "npm:^5.18.1"
+    lightningcss: "npm:^1.29.1"
+    mri: "npm:^1.2.0"
+    picocolors: "npm:^1.1.1"
+    tailwindcss: "npm:4.0.7"
+  bin:
+    tailwindcss: dist/index.mjs
+  checksum: 10c0/9ddfc084c79533ed9db19709cb0103a62a3340935d4813426f6c2a491f3fdad0d2f249873d7cc2fb60b1f2dae828b83aa74cc424835c1dbb6388451dee7e75ea
+  languageName: node
+  linkType: hard
+
+"@tailwindcss/node@npm:4.0.7":
+  version: 4.0.7
+  resolution: "@tailwindcss/node@npm:4.0.7"
+  dependencies:
+    enhanced-resolve: "npm:^5.18.1"
+    jiti: "npm:^2.4.2"
+    tailwindcss: "npm:4.0.7"
+  checksum: 10c0/4820ee88f44d3c14ea0a2d1b9129be50efe8f389cd1207dbf5cf321df0c34c05b16119d525fb1e348df7cc00008e25b5567812692f38988962c76d5656e7374c
+  languageName: node
+  linkType: hard
+
 "@tailwindcss/node@npm:^4.0.3":
   version: 4.0.3
   resolution: "@tailwindcss/node@npm:4.0.3"
@@ -5089,9 +5262,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tailwindcss/oxide-android-arm64@npm:4.0.7":
+  version: 4.0.7
+  resolution: "@tailwindcss/oxide-android-arm64@npm:4.0.7"
+  conditions: os=android & cpu=arm64
+  languageName: node
+  linkType: hard
+
 "@tailwindcss/oxide-darwin-arm64@npm:4.0.3":
   version: 4.0.3
   resolution: "@tailwindcss/oxide-darwin-arm64@npm:4.0.3"
+  conditions: os=darwin & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@tailwindcss/oxide-darwin-arm64@npm:4.0.7":
+  version: 4.0.7
+  resolution: "@tailwindcss/oxide-darwin-arm64@npm:4.0.7"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
@@ -5103,9 +5290,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tailwindcss/oxide-darwin-x64@npm:4.0.7":
+  version: 4.0.7
+  resolution: "@tailwindcss/oxide-darwin-x64@npm:4.0.7"
+  conditions: os=darwin & cpu=x64
+  languageName: node
+  linkType: hard
+
 "@tailwindcss/oxide-freebsd-x64@npm:4.0.3":
   version: 4.0.3
   resolution: "@tailwindcss/oxide-freebsd-x64@npm:4.0.3"
+  conditions: os=freebsd & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@tailwindcss/oxide-freebsd-x64@npm:4.0.7":
+  version: 4.0.7
+  resolution: "@tailwindcss/oxide-freebsd-x64@npm:4.0.7"
   conditions: os=freebsd & cpu=x64
   languageName: node
   linkType: hard
@@ -5117,9 +5318,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tailwindcss/oxide-linux-arm-gnueabihf@npm:4.0.7":
+  version: 4.0.7
+  resolution: "@tailwindcss/oxide-linux-arm-gnueabihf@npm:4.0.7"
+  conditions: os=linux & cpu=arm
+  languageName: node
+  linkType: hard
+
 "@tailwindcss/oxide-linux-arm64-gnu@npm:4.0.3":
   version: 4.0.3
   resolution: "@tailwindcss/oxide-linux-arm64-gnu@npm:4.0.3"
+  conditions: os=linux & cpu=arm64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@tailwindcss/oxide-linux-arm64-gnu@npm:4.0.7":
+  version: 4.0.7
+  resolution: "@tailwindcss/oxide-linux-arm64-gnu@npm:4.0.7"
   conditions: os=linux & cpu=arm64 & libc=glibc
   languageName: node
   linkType: hard
@@ -5131,9 +5346,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tailwindcss/oxide-linux-arm64-musl@npm:4.0.7":
+  version: 4.0.7
+  resolution: "@tailwindcss/oxide-linux-arm64-musl@npm:4.0.7"
+  conditions: os=linux & cpu=arm64 & libc=musl
+  languageName: node
+  linkType: hard
+
 "@tailwindcss/oxide-linux-x64-gnu@npm:4.0.3":
   version: 4.0.3
   resolution: "@tailwindcss/oxide-linux-x64-gnu@npm:4.0.3"
+  conditions: os=linux & cpu=x64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@tailwindcss/oxide-linux-x64-gnu@npm:4.0.7":
+  version: 4.0.7
+  resolution: "@tailwindcss/oxide-linux-x64-gnu@npm:4.0.7"
   conditions: os=linux & cpu=x64 & libc=glibc
   languageName: node
   linkType: hard
@@ -5145,9 +5374,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tailwindcss/oxide-linux-x64-musl@npm:4.0.7":
+  version: 4.0.7
+  resolution: "@tailwindcss/oxide-linux-x64-musl@npm:4.0.7"
+  conditions: os=linux & cpu=x64 & libc=musl
+  languageName: node
+  linkType: hard
+
 "@tailwindcss/oxide-win32-arm64-msvc@npm:4.0.3":
   version: 4.0.3
   resolution: "@tailwindcss/oxide-win32-arm64-msvc@npm:4.0.3"
+  conditions: os=win32 & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@tailwindcss/oxide-win32-arm64-msvc@npm:4.0.7":
+  version: 4.0.7
+  resolution: "@tailwindcss/oxide-win32-arm64-msvc@npm:4.0.7"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
@@ -5156,6 +5399,55 @@ __metadata:
   version: 4.0.3
   resolution: "@tailwindcss/oxide-win32-x64-msvc@npm:4.0.3"
   conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@tailwindcss/oxide-win32-x64-msvc@npm:4.0.7":
+  version: 4.0.7
+  resolution: "@tailwindcss/oxide-win32-x64-msvc@npm:4.0.7"
+  conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@tailwindcss/oxide@npm:4.0.7":
+  version: 4.0.7
+  resolution: "@tailwindcss/oxide@npm:4.0.7"
+  dependencies:
+    "@tailwindcss/oxide-android-arm64": "npm:4.0.7"
+    "@tailwindcss/oxide-darwin-arm64": "npm:4.0.7"
+    "@tailwindcss/oxide-darwin-x64": "npm:4.0.7"
+    "@tailwindcss/oxide-freebsd-x64": "npm:4.0.7"
+    "@tailwindcss/oxide-linux-arm-gnueabihf": "npm:4.0.7"
+    "@tailwindcss/oxide-linux-arm64-gnu": "npm:4.0.7"
+    "@tailwindcss/oxide-linux-arm64-musl": "npm:4.0.7"
+    "@tailwindcss/oxide-linux-x64-gnu": "npm:4.0.7"
+    "@tailwindcss/oxide-linux-x64-musl": "npm:4.0.7"
+    "@tailwindcss/oxide-win32-arm64-msvc": "npm:4.0.7"
+    "@tailwindcss/oxide-win32-x64-msvc": "npm:4.0.7"
+  dependenciesMeta:
+    "@tailwindcss/oxide-android-arm64":
+      optional: true
+    "@tailwindcss/oxide-darwin-arm64":
+      optional: true
+    "@tailwindcss/oxide-darwin-x64":
+      optional: true
+    "@tailwindcss/oxide-freebsd-x64":
+      optional: true
+    "@tailwindcss/oxide-linux-arm-gnueabihf":
+      optional: true
+    "@tailwindcss/oxide-linux-arm64-gnu":
+      optional: true
+    "@tailwindcss/oxide-linux-arm64-musl":
+      optional: true
+    "@tailwindcss/oxide-linux-x64-gnu":
+      optional: true
+    "@tailwindcss/oxide-linux-x64-musl":
+      optional: true
+    "@tailwindcss/oxide-win32-arm64-msvc":
+      optional: true
+    "@tailwindcss/oxide-win32-x64-msvc":
+      optional: true
+  checksum: 10c0/ac2d43dc84dd47537dba4653d7ab90c76786df1a54d20fded11b554a581e568663cce5b58eff4ff39b2a6de64ddcd4894e378f0d38fab38803cbc2608da85288
   languageName: node
   linkType: hard
 
@@ -6066,7 +6358,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6079,7 +6371,7 @@ __metadata:
     "@udecode/plate": "workspace:^"
     lodash: "npm:^4.17.21"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6094,7 +6386,7 @@ __metadata:
     "@udecode/plate-code-block": "npm:44.0.0"
     "@udecode/plate-heading": "npm:44.0.0"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6106,7 +6398,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6118,7 +6410,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6130,7 +6422,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6142,7 +6434,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6155,7 +6447,7 @@ __metadata:
     "@udecode/plate": "workspace:^"
     react-textarea-autosize: "npm:^8.5.7"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6168,7 +6460,7 @@ __metadata:
     "@udecode/plate": "workspace:^"
     prismjs: "npm:^1.29.0"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6180,7 +6472,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6193,13 +6485,13 @@ __metadata:
     "@udecode/plate": "workspace:^"
     lodash: "npm:^4.17.21"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-core@npm:44.0.1, @udecode/plate-core@workspace:packages/core":
+"@udecode/plate-core@npm:44.0.7, @udecode/plate-core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-core@workspace:packages/core"
   dependencies:
@@ -6236,7 +6528,7 @@ __metadata:
     "@udecode/plate-table": "npm:44.0.0"
     papaparse: "npm:^5.5.2"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6248,7 +6540,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6260,7 +6552,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6274,7 +6566,7 @@ __metadata:
     diff-match-patch-ts: "npm:^0.6.0"
     lodash: "npm:^4.17.21"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6288,7 +6580,7 @@ __metadata:
     lodash: "npm:^4.17.21"
     raf: "npm:^3.4.1"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dnd: ">=14.0.0"
     react-dnd-html5-backend: ">=14.0.0"
@@ -6308,7 +6600,7 @@ __metadata:
     "@udecode/plate-table": "npm:44.0.0"
     validator: "npm:^13.12.0"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6323,7 +6615,7 @@ __metadata:
     "@udecode/plate-combobox": "npm:44.0.0"
   peerDependencies:
     "@emoji-mart/data": ">=1.2.0"
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6336,7 +6628,7 @@ __metadata:
     "@excalidraw/excalidraw": "npm:0.16.4"
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6348,7 +6640,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6362,7 +6654,7 @@ __metadata:
     "@floating-ui/react": "npm:^0.27.3"
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6375,7 +6667,7 @@ __metadata:
     "@udecode/plate": "workspace:^"
     lodash: "npm:^4.17.21"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6387,7 +6679,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6399,7 +6691,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6411,7 +6703,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6426,7 +6718,7 @@ __metadata:
     "@udecode/plate-list": "npm:44.0.5"
     clsx: "npm:^2.1.1"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6438,7 +6730,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6451,7 +6743,7 @@ __metadata:
     "@udecode/plate": "workspace:^"
     juice: "npm:^11.0.0"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6463,7 +6755,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6475,7 +6767,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6487,7 +6779,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6501,7 +6793,7 @@ __metadata:
     "@udecode/plate-floating": "npm:44.0.0"
     "@udecode/plate-normalizers": "npm:44.0.0"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6515,7 +6807,7 @@ __metadata:
     "@udecode/plate-reset-node": "npm:44.0.0"
     lodash: "npm:^4.17.21"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6532,7 +6824,7 @@ __metadata:
     remark-parse: "npm:^11.0.0"
     unified: "npm:^11.0.5"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6546,7 +6838,7 @@ __metadata:
     "@udecode/plate": "workspace:^"
     katex: "npm:0.16.21"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6559,7 +6851,7 @@ __metadata:
     "@udecode/plate": "workspace:^"
     js-video-url-parser: "npm:^0.5.1"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6572,7 +6864,7 @@ __metadata:
     "@udecode/plate": "workspace:^"
     "@udecode/plate-combobox": "npm:44.0.0"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6585,7 +6877,7 @@ __metadata:
     "@udecode/plate": "workspace:^"
     lodash: "npm:^4.17.21"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6598,7 +6890,7 @@ __metadata:
     "@udecode/plate": "workspace:^"
     lodash: "npm:^4.17.21"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6611,7 +6903,7 @@ __metadata:
     "@udecode/plate": "workspace:^"
   peerDependencies:
     "@playwright/test": ">=1.42.1"
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6623,7 +6915,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6635,7 +6927,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6647,7 +6939,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6660,7 +6952,7 @@ __metadata:
     "@udecode/plate": "workspace:^"
     copy-to-clipboard: "npm:^3.3.3"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6673,7 +6965,7 @@ __metadata:
     "@udecode/plate": "workspace:^"
     "@udecode/plate-combobox": "npm:44.0.0"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6687,7 +6979,7 @@ __metadata:
     "@udecode/plate-diff": "npm:44.0.2"
     lodash: "npm:^4.17.21"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6700,7 +6992,7 @@ __metadata:
     "@udecode/plate": "workspace:^"
     tabbable: "npm:^6.2.0"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6715,7 +7007,7 @@ __metadata:
     "@udecode/plate-resizable": "npm:44.0.0"
     lodash: "npm:^4.17.21"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6727,7 +7019,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6751,7 +7043,7 @@ __metadata:
     "@udecode/plate-node-id": "npm:44.0.0"
     lodash: "npm:^4.17.21"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6763,17 +7055,17 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-utils@npm:44.0.1, @udecode/plate-utils@workspace:packages/plate-utils":
+"@udecode/plate-utils@npm:44.0.7, @udecode/plate-utils@workspace:packages/plate-utils":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-utils@workspace:packages/plate-utils"
   dependencies:
-    "@udecode/plate-core": "npm:44.0.1"
+    "@udecode/plate-core": "npm:44.0.7"
     "@udecode/react-utils": "npm:44.0.1"
     "@udecode/slate": "npm:44.0.0"
     "@udecode/utils": "npm:42.0.0"
@@ -6794,7 +7086,7 @@ __metadata:
     "@udecode/plate": "workspace:^"
     yjs: "npm:^13.6.23"
   peerDependencies:
-    "@udecode/plate": ">=44.0.1"
+    "@udecode/plate": ">=44.0.7"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6804,8 +7096,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/plate@workspace:packages/plate"
   dependencies:
-    "@udecode/plate-core": "npm:44.0.1"
-    "@udecode/plate-utils": "npm:44.0.1"
+    "@udecode/plate-core": "npm:44.0.7"
+    "@udecode/plate-utils": "npm:44.0.7"
     "@udecode/react-hotkeys": "npm:37.0.0"
     "@udecode/react-utils": "npm:44.0.1"
     "@udecode/slate": "npm:44.0.0"
@@ -9395,6 +9687,16 @@ __metadata:
     graceful-fs: "npm:^4.2.4"
     tapable: "npm:^2.2.0"
   checksum: 10c0/5fcc264a6040754ab5b349628cac2bb5f89cee475cbe340804e657a5b9565f70e6aafb338d5895554eb0ced9f66c50f38a255274a0591dcb64ee17c549c459ce
+  languageName: node
+  linkType: hard
+
+"enhanced-resolve@npm:^5.18.1":
+  version: 5.18.1
+  resolution: "enhanced-resolve@npm:5.18.1"
+  dependencies:
+    graceful-fs: "npm:^4.2.4"
+    tapable: "npm:^2.2.0"
+  checksum: 10c0/4cffd9b125225184e2abed9fdf0ed3dbd2224c873b165d0838fd066cde32e0918626cba2f1f4bf6860762f13a7e2364fd89a82b99566be2873d813573ac71846
   languageName: node
   linkType: hard
 
@@ -19702,6 +20004,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tailwindcss@npm:4.0.7":
+  version: 4.0.7
+  resolution: "tailwindcss@npm:4.0.7"
+  checksum: 10c0/d884b580022a439e26c1c372dd693d62f552b19635c3e018af640cca00357c4407710c452bfe465902299698a325f6215777807165f7e94f8f12411651ae3d6a
+  languageName: node
+  linkType: hard
+
 "tapable@npm:^2.2.0":
   version: 2.2.1
   resolution: "tapable@npm:2.2.1"
@@ -21498,6 +21807,7 @@ __metadata:
     "@radix-ui/react-tooltip": "npm:1.1.7"
     "@shikijs/compat": "npm:^1.1.7"
     "@slate-yjs/react": "npm:1.1.0"
+    "@tailwindcss/cli": "npm:4.0.7"
     "@tailwindcss/typography": "npm:0.5.16"
     "@types/react-syntax-highlighter": "npm:15.5.13"
     "@udecode/cmdk": "workspace:^"

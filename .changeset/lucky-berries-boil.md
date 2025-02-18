@@ -2,7 +2,7 @@
 '@udecode/plate-comments': major
 ---
 
-This is a rewrite of the comments plugin to have default UI logic – **headless**.
+This is a rewrite of the comments plugin removing UI logic (headless).
 
 **Plugin Options**
 
