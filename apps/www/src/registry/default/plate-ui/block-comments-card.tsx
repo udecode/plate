@@ -69,8 +69,22 @@ export const useResolvedDiscussion = (
     const id = api.comment.nodeId(node);
     const map = getOption('uniquePathMap');
 
-    if (!id || map.has(id)) return;
+    if (!id) return;
 
+    const previousPath = map.get(id);
+
+    // If there are no comment nodes in the corresponding path in the map, then update it.
+    if (PathApi.isPath(previousPath)) {
+      const nodes = api.comment.node({ id, at: previousPath });
+
+      if (!nodes) {
+        setOption('uniquePathMap', new Map(map).set(id, blockPath));
+        return;
+      }
+
+      return;
+    }
+    // TODO: fix throw error
     setOption('uniquePathMap', new Map(map).set(id, blockPath));
   });
 

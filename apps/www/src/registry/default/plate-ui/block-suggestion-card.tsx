@@ -283,8 +283,8 @@ export const useResolveSuggestion = (
 
     // If there are no suggestion nodes in the corresponding path in the map, then update it.
     if (PathApi.isPath(previousPath)) {
-      const nodes = api.suggestion.node({ at: previousPath, isText: true });
-      const parentNode = editor.api.node(previousPath);
+      const nodes = api.suggestion.node({ id, at: previousPath, isText: true });
+      const parentNode = api.node(previousPath);
       let lineBreakId = null;
 
       if (parentNode && ElementApi.isElement(parentNode[0])) {
