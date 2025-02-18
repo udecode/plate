@@ -13,9 +13,9 @@ docs:
 
 ## Features
 
-- Add text comments as marks.
-- Comments can include explanations, suggestions, questions, notes, or ideas for content improvement.
-- Add a comment by selecting the text and using the comment button or hotkey **`Cmd+Shift+M`**.
+- Add comments as text marks.
+- Add overlapping comments.
+- Undo/redo resolution and deletion.
 
 </PackageInfo>
 
@@ -223,47 +223,11 @@ Interface for text nodes that can contain comments.
 
 <API name="TCommentText">
 <APIAttributes>
+  <APIItem name="comment" type="boolean" optional>
+    Indicates whether this is a comment.
+  </APIItem>
   <APIItem name="comment_<id>" type="boolean" optional>
-    Indicates whether this is a comment. Multiple comments can be present in a single text node.
-  </APIItem>
-</APIAttributes>
-</API>
-
-### `TCommentItem`
-
-Interface for a single comment item.
-
-<API name="TCommentItem">
-<APIAttributes>
-  <APIItem name="id" type="string">
-    A unique ID for the comment.
-  </APIItem>
-  <APIItem name="content" type="string">
-    The content of the comment.
-  </APIItem>
-  <APIItem name="createdAt" type="number">
-    Timestamp when the comment was created.
-  </APIItem>
-  <APIItem name="userId" type="string">
-    ID of the author of the comment.
-  </APIItem>
-</APIAttributes>
-</API>
-
-### `TDiscussion`
-
-Interface for a discussion thread.
-
-<API name="TDiscussion">
-<APIAttributes>
-  <APIItem name="id" type="string">
-    A unique ID for the discussion.
-  </APIItem>
-  <APIItem name="comments" type="TCommentItem[]">
-    Array of comments in the discussion.
-  </APIItem>
-  <APIItem name="resolved" type="boolean">
-    Whether the discussion is resolved.
+    Indicates the comment ID. Multiple comments can be present in a single text node.
   </APIItem>
 </APIAttributes>
 </API>
