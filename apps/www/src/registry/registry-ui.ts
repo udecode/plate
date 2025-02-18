@@ -206,25 +206,49 @@ export const uiComponents: Registry['items'] = [
   {
     dependencies: ['@udecode/plate-comments', 'date-fns'],
     doc: {
-      description: 'A popover interface for managing comments and replies.',
+      description:
+        'A popover interface for managing discussions: comments, replies, suggestions.',
       docs: [
         { route: '/docs/comments' },
-        { route: siteConfig.links.plateProComponent('comments-popover') },
+        { route: siteConfig.links.plateProComponent('block-discussion') },
       ],
       examples: ['comments-demo', 'comments-pro'],
     },
     files: [
-      { path: 'plate-ui/comment-avatar.tsx', type: 'registry:ui' },
-      { path: 'plate-ui/comment-create-form.tsx', type: 'registry:ui' },
-      { path: 'plate-ui/comment-item.tsx', type: 'registry:ui' },
-      { path: 'plate-ui/comment-more-dropdown.tsx', type: 'registry:ui' },
-      { path: 'plate-ui/comment-reply-items.tsx', type: 'registry:ui' },
-      { path: 'plate-ui/comment-resolve-button.tsx', type: 'registry:ui' },
-      { path: 'plate-ui/comment-value.tsx', type: 'registry:ui' },
-      { path: 'plate-ui/comments-popover.tsx', type: 'registry:ui' },
+      {
+        path: 'plate-ui/block-discussion.tsx',
+        type: 'registry:ui',
+      },
+      {
+        path: 'plate-ui/block-suggestion.tsx',
+        type: 'registry:ui',
+      },
+      {
+        path: 'plate-ui/comment.tsx',
+        type: 'registry:ui',
+      },
+      {
+        path: 'plate-ui/comment-create-form.tsx',
+        type: 'registry:ui',
+      },
     ],
-    name: 'comments-popover',
-    registryDependencies: ['popover', 'avatar'],
+    name: 'block-discussion',
+    registryDependencies: [
+      'suggestion-plugin',
+      'button',
+      'popover',
+      'avatar',
+      'dropdown-menu',
+      'editor',
+      'ai-leaf',
+      'avatar',
+      'date-element',
+      'emoji-input-element',
+      'inline-equation-element',
+      'link-element',
+      'mention-element',
+      'mention-input-element',
+    ],
     type: 'registry:ui',
   },
   {
@@ -1085,6 +1109,17 @@ export const uiNodes: Registry['items'] = [
     ],
     name: 'comment-leaf',
     registryDependencies: [],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@udecode/plate-suggestion'],
+    doc: {
+      description: 'A text component for suggestion.',
+      docs: [{ route: '/docs/suggestion' }],
+    },
+    files: [{ path: 'plate-ui/suggestion-leaf.tsx', type: 'registry:ui' }],
+    name: 'suggestion-leaf',
+    registryDependencies: ['suggestion-plugin'],
     type: 'registry:ui',
   },
   {

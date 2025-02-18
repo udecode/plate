@@ -2,27 +2,21 @@ import type { Value } from '@udecode/plate';
 
 export const commentsValue: Value = [
   {
-    children: [{ text: 'Comments' }],
+    children: [{ text: 'Comments & Suggestions' }],
     type: 'h2',
   },
   {
     children: [
       {
-        text: 'Add ',
+        text: 'Add comments or suggestions to your content to provide additional context, insights, or collaborate with others',
       },
+    ],
+    type: 'p',
+  },
+  {
+    children: [
       {
-        comment: true,
-        comment_1: true,
-        text: 'comments to your content',
-      },
-      { text: ' to provide additional context, insights, or ' },
-      {
-        comment: true,
-        comment_2: true,
-        text: 'collaborate',
-      },
-      {
-        text: ' with others',
+        text: 'Try it out by selecting text and clicking the button in the toolbar.',
       },
     ],
     type: 'p',

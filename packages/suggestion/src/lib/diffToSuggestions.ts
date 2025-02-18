@@ -8,6 +8,7 @@ import { type ComputeDiffOptions, computeDiff } from '@udecode/plate-diff';
 
 import { getSuggestionProps } from './transforms';
 
+// TODO: refactor
 export function diffToSuggestions<E extends SlateEditor>(
   editor: E,
   doc0: Descendant[],

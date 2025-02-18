@@ -377,7 +377,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
         pluginOptions: [
           `render: { afterEditable: () => <CommentsPopover /> },`,
         ],
-        route: getComponentNavItem('comments-popover').href,
+        route: getComponentNavItem('block-discussion').href,
         usage: 'CommentsPopover',
       },
     ],

@@ -3,4 +3,3 @@
  */
 
 export * from './SuggestionPlugin';
-export * from './useHooksSuggestion';

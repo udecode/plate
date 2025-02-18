@@ -1,36 +1,30 @@
 import type { OverrideEditor } from '@udecode/plate';
 
-import {
-  type BaseCommentsConfig,
-  BaseCommentsPlugin,
-} from './BaseCommentsPlugin';
-import { removeCommentMark } from './transforms/removeCommentMark';
-import { getCommentCount } from './utils';
+import type { BaseCommentsConfig } from './BaseCommentsPlugin';
+import type { TCommentText } from './types';
+
+import { BaseCommentsPlugin } from './BaseCommentsPlugin';
+import { getCommentCount, getDraftCommentKey } from './utils';
 
 export const withComments: OverrideEditor<BaseCommentsConfig> = ({
   editor,
-  tf: { insertBreak, normalizeNode },
-}) => {
-  return {
-    transforms: {
-      insertBreak() {
-        removeCommentMark(editor);
+  tf: { normalizeNode },
+}) => ({
+  transforms: {
+    normalizeNode(entry) {
+      const [node, path] = entry;
 
-        insertBreak();
-      },
+      if (
+        node[BaseCommentsPlugin.key] &&
+        !node[getDraftCommentKey()] &&
+        getCommentCount(node as TCommentText) < 1
+      ) {
+        editor.tf.unsetNodes(BaseCommentsPlugin.key, { at: path });
 
-      normalizeNode(entry) {
-        const [node, path] = entry;
+        return;
+      }
 
-        // Unset CommentsPlugin.key prop when there is no comments
-        if (node[BaseCommentsPlugin.key] && getCommentCount(node as any) < 1) {
-          editor.tf.unsetNodes(BaseCommentsPlugin.key, { at: path });
-
-          return;
-        }
-
-        normalizeNode(entry);
-      },
+      return normalizeNode(entry);
     },
-  };
-};
+  },
+});
