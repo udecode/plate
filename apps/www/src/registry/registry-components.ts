@@ -233,6 +233,10 @@ const plugins: Registry['items'] = [
         path: 'components/editor/plugins/suggestion-plugin.tsx',
         type: 'registry:component',
       },
+      {
+        path: 'plate-ui/suggestion-line-break.tsx',
+        type: 'registry:ui',
+      },
     ],
     name: 'suggestion-plugin',
     registryDependencies: ['suggestion-line-break'],

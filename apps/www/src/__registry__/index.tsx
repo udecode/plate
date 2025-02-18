@@ -180,6 +180,21 @@ export const Index: Record<string, any> = {
       source: "",
       meta: undefined,
     },
+    "suggestion-leaf": {
+      name: "suggestion-leaf",
+      description: "",
+      type: "registry:ui",
+      registryDependencies: ["suggestion-plugin"],
+      files: [{
+        path: "src/registry/default/plate-ui/suggestion-leaf.tsx",
+        type: "registry:ui",
+        target: ""
+      }],
+      categories: undefined,
+      component: React.lazy(() => import("@/registry/default/plate-ui/suggestion-leaf.tsx")),
+      source: "",
+      meta: undefined,
+    },
     "date-element": {
       name: "date-element",
       description: "",
@@ -1181,30 +1196,30 @@ export const Index: Record<string, any> = {
       source: "",
       meta: undefined,
     },
-    "comments-popover": {
-      name: "comments-popover",
+    "block-discussion": {
+      name: "block-discussion",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["popover","avatar"],
+      registryDependencies: ["suggestion-plugin","button","popover","comment","avatar","dropdown-menu","editor","ai-leaf","avatar","date-element","emoji-input-element","inline-equation-element","link-element","mention-element","mention-input-element"],
       files: [{
-        path: "src/registry/default/plate-ui/comment-avatar.tsx",
+        path: "src/registry/default/plate-ui/block-discussion.tsx",
+        type: "registry:ui",
+        target: ""
+      },{
+        path: "src/registry/default/plate-ui/block-suggestion.tsx",
+        type: "registry:ui",
+        target: ""
+      },{
+        path: "src/registry/default/plate-ui/comment.tsx",
         type: "registry:ui",
         target: ""
       },{
         path: "src/registry/default/plate-ui/comment-create-form.tsx",
         type: "registry:ui",
         target: ""
-      },{
-        path: "src/registry/default/plate-ui/comment-item.tsx",
-        type: "registry:ui",
-        target: ""
-      },{
-        path: "src/registry/default/plate-ui/comment-more-dropdown.tsx",
-        type: "registry:ui",
-        target: ""
       }],
       categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/comment-avatar.tsx")),
+      component: React.lazy(() => import("@/registry/default/plate-ui/block-discussion.tsx")),
       source: "",
       meta: undefined,
     },
@@ -1826,7 +1841,7 @@ export const Index: Record<string, any> = {
       name: "editor-plugins",
       description: "",
       type: "registry:component",
-      registryDependencies: ["ai-plugins","basic-nodes-plugins","align-plugin","autoformat-plugin","block-menu-plugins","equation-plugins","cursor-overlay-plugin","comments-plugin","delete-plugins","dnd-plugins","exit-break-plugin","indent-list-plugins","line-height-plugin","link-plugin","media-plugins","mention-plugin","reset-block-type-plugin","soft-break-plugin","table-plugin","toc-plugin"],
+      registryDependencies: ["ai-plugins","basic-nodes-plugins","align-plugin","autoformat-plugin","block-menu-plugins","equation-plugins","cursor-overlay-plugin","comments-plugin","delete-plugins","dnd-plugins","exit-break-plugin","indent-list-plugins","line-height-plugin","link-plugin","media-plugins","mention-plugin","reset-block-type-plugin","skip-mark-plugin","suggestion-plugin","soft-break-plugin","table-plugin","toc-plugin"],
       files: [{
         path: "src/registry/default/components/editor/plugins/editor-plugins.tsx",
         type: "registry:component",
@@ -1961,7 +1976,7 @@ export const Index: Record<string, any> = {
       name: "comments-plugin",
       description: "",
       type: "registry:component",
-      registryDependencies: ["comments-popover"],
+      registryDependencies: ["block-discussion"],
       files: [{
         path: "src/registry/default/components/editor/plugins/comments-plugin.tsx",
         type: "registry:component",
@@ -1969,6 +1984,40 @@ export const Index: Record<string, any> = {
       }],
       categories: undefined,
       component: React.lazy(() => import("@/registry/default/components/editor/plugins/comments-plugin.tsx")),
+      source: "",
+      meta: undefined,
+    },
+    "skip-mark-plugin": {
+      name: "skip-mark-plugin",
+      description: "",
+      type: "registry:component",
+      registryDependencies: undefined,
+      files: [{
+        path: "src/registry/default/components/editor/plugins/skip-mark-plugin.ts",
+        type: "registry:component",
+        target: ""
+      }],
+      categories: undefined,
+      component: React.lazy(() => import("@/registry/default/components/editor/plugins/skip-mark-plugin.ts")),
+      source: "",
+      meta: undefined,
+    },
+    "suggestion-plugin": {
+      name: "suggestion-plugin",
+      description: "",
+      type: "registry:component",
+      registryDependencies: ["suggestion-line-break"],
+      files: [{
+        path: "src/registry/default/components/editor/plugins/suggestion-plugin.tsx",
+        type: "registry:component",
+        target: ""
+      },{
+        path: "src/registry/default/plate-ui/suggestion-line-break.tsx",
+        type: "registry:ui",
+        target: ""
+      }],
+      categories: undefined,
+      component: React.lazy(() => import("@/registry/default/components/editor/plugins/suggestion-plugin.tsx")),
       source: "",
       meta: undefined,
     },
@@ -2340,7 +2389,7 @@ export const Index: Record<string, any> = {
       name: "editor-ai",
       description: "",
       type: "registry:block",
-      registryDependencies: ["api-ai","api-uploadthing","plate-types","editor-plugins","copilot-plugins","floating-toolbar-plugin","fixed-toolbar-plugin","ai-menu","ghost-text","comments-popover","cursor-overlay","editor","block-context-menu","ai-leaf","blockquote-element","code-block-element","code-leaf","code-line-element","code-syntax-leaf","column-element","column-group-element","comment-leaf","date-element","draggable","equation-element","inline-equation-element","emoji-input-element","excalidraw-element","heading-element","highlight-leaf","hr-element","image-element","kbd-leaf","link-element","media-audio-element","media-embed-element","media-file-element","media-placeholder-element","media-video-element","mention-element","mention-input-element","paragraph-element","placeholder","slash-input-element","table-cell-element","table-element","table-row-element","toc-element","toggle-element"],
+      registryDependencies: ["api-ai","api-uploadthing","plate-types","editor-plugins","copilot-plugins","floating-toolbar-plugin","fixed-toolbar-plugin","ai-menu","ghost-text","block-discussion","cursor-overlay","editor","block-context-menu","ai-leaf","blockquote-element","code-block-element","code-leaf","code-line-element","code-syntax-leaf","column-element","column-group-element","comment-leaf","suggestion-leaf","date-element","draggable","equation-element","inline-equation-element","emoji-input-element","excalidraw-element","heading-element","highlight-leaf","hr-element","image-element","kbd-leaf","link-element","media-audio-element","media-embed-element","media-file-element","media-placeholder-element","media-video-element","mention-element","mention-input-element","paragraph-element","placeholder","slash-input-element","table-cell-element","table-element","table-row-element","toc-element","toggle-element"],
       files: [{
         path: "src/registry/default/blocks/editor-ai/page.tsx",
         type: "registry:page",

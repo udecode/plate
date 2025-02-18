@@ -206,7 +206,8 @@ export const uiComponents: Registry['items'] = [
   {
     dependencies: ['@udecode/plate-comments', 'date-fns'],
     doc: {
-      description: 'A popover interface for managing comments and replies.',
+      description:
+        'A popover interface for managing discussions: comments, replies, suggestions.',
       docs: [
         { route: '/docs/comments' },
         { route: siteConfig.links.plateProComponent('block-discussion') },
@@ -214,25 +215,41 @@ export const uiComponents: Registry['items'] = [
       examples: ['comments-demo', 'comments-pro'],
     },
     files: [
-      { path: 'plate-ui/comment-create-form.tsx', type: 'registry:ui' },
-      { path: 'plate-ui/comment.tsx', type: 'registry:ui' },
-      { path: 'plate-ui/block-discussion.tsx', type: 'registry:ui' },
-      { path: 'plate-ui/block-suggestion.tsx', type: 'registry:ui' },
+      {
+        path: 'plate-ui/block-discussion.tsx',
+        type: 'registry:ui',
+      },
+      {
+        path: 'plate-ui/block-suggestion.tsx',
+        type: 'registry:ui',
+      },
+      {
+        path: 'plate-ui/comment.tsx',
+        type: 'registry:ui',
+      },
+      {
+        path: 'plate-ui/comment-create-form.tsx',
+        type: 'registry:ui',
+      },
     ],
     name: 'block-discussion',
-    registryDependencies: ['popover', 'avatar'],
-    type: 'registry:ui',
-  },
-  {
-    dependencies: ['@udecode/plate-suggestion'],
-    doc: {
-      description: 'A suggestion line break.',
-      docs: [{ route: '/docs/suggestion' }],
-    },
-    files: [
-      { path: 'plate-ui/suggestion-line-break.tsx', type: 'registry:ui' },
+    registryDependencies: [
+      'suggestion-plugin',
+      'button',
+      'popover',
+      'comment',
+      'avatar',
+      'dropdown-menu',
+      'editor',
+      'ai-leaf',
+      'avatar',
+      'date-element',
+      'emoji-input-element',
+      'inline-equation-element',
+      'link-element',
+      'mention-element',
+      'mention-input-element',
     ],
-    name: 'suggestion-line-break',
     type: 'registry:ui',
   },
   {
@@ -1103,7 +1120,7 @@ export const uiNodes: Registry['items'] = [
     },
     files: [{ path: 'plate-ui/suggestion-leaf.tsx', type: 'registry:ui' }],
     name: 'suggestion-leaf',
-    registryDependencies: [],
+    registryDependencies: ['suggestion-plugin'],
     type: 'registry:ui',
   },
   {

@@ -310,6 +310,30 @@
   },
   {
     "dependencies": [
+      "@udecode/plate-suggestion"
+    ],
+    "doc": {
+      "description": "A text component for suggestion.",
+      "docs": [
+        {
+          "route": "/docs/suggestion"
+        }
+      ]
+    },
+    "files": [
+      {
+        "path": "plate-ui/suggestion-leaf.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "suggestion-leaf",
+    "registryDependencies": [
+      "suggestion-plugin"
+    ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
       "@udecode/plate-date"
     ],
     "doc": {
@@ -2075,13 +2099,13 @@
       "date-fns"
     ],
     "doc": {
-      "description": "A popover interface for managing comments and replies.",
+      "description": "A popover interface for managing discussions: comments, replies, suggestions.",
       "docs": [
         {
           "route": "/docs/comments"
         },
         {
-          "route": "https://pro.platejs.org/docs/components/comments-popover"
+          "route": "https://pro.platejs.org/docs/components/block-discussion"
         }
       ],
       "examples": [
@@ -2091,42 +2115,39 @@
     },
     "files": [
       {
-        "path": "plate-ui/comment-avatar.tsx",
+        "path": "plate-ui/block-discussion.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/block-suggestion.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/comment.tsx",
         "type": "registry:ui"
       },
       {
         "path": "plate-ui/comment-create-form.tsx",
         "type": "registry:ui"
-      },
-      {
-        "path": "plate-ui/comment-item.tsx",
-        "type": "registry:ui"
-      },
-      {
-        "path": "plate-ui/comment-more-dropdown.tsx",
-        "type": "registry:ui"
-      },
-      {
-        "path": "plate-ui/comment-reply-items.tsx",
-        "type": "registry:ui"
-      },
-      {
-        "path": "plate-ui/comment-resolve-button.tsx",
-        "type": "registry:ui"
-      },
-      {
-        "path": "plate-ui/comment-value.tsx",
-        "type": "registry:ui"
-      },
-      {
-        "path": "plate-ui/comments-popover.tsx",
-        "type": "registry:ui"
       }
     ],
-    "name": "comments-popover",
+    "name": "block-discussion",
     "registryDependencies": [
+      "suggestion-plugin",
+      "button",
       "popover",
-      "avatar"
+      "comment",
+      "avatar",
+      "dropdown-menu",
+      "editor",
+      "ai-leaf",
+      "avatar",
+      "date-element",
+      "emoji-input-element",
+      "inline-equation-element",
+      "link-element",
+      "mention-element",
+      "mention-input-element"
     ],
     "type": "registry:ui"
   },
