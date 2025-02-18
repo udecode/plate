@@ -4,7 +4,6 @@ import {
   type PluginConfig,
   type TElement,
   type WithPartial,
-  combineMatchOptions,
   createTSlatePlugin,
   ElementApi,
   getAt,
@@ -43,7 +42,7 @@ export type SuggestionConfig = PluginConfig<
       isBlockSuggestion: (node: TElement) => node is TSuggestionElement;
       node: (
         options?: EditorNodesOptions & { isText?: boolean }
-      ) => NodeEntry<TSuggestionText> | undefined;
+      ) => NodeEntry<TSuggestionElement | TSuggestionText> | undefined;
       nodeId: (node: TElement | TSuggestionText) => string | undefined;
       nodes: (
         options?: EditorNodesOptions
@@ -125,20 +124,27 @@ export const BaseSuggestionPlugin = createTSlatePlugin<SuggestionConfig>({
       isBlockSuggestion: (node): node is TSuggestionElement =>
         ElementApi.isElement(node) && 'suggestion' in node,
       node: (options = {}) => {
-        const { isText } = options;
+        const { id, isText, ...rest } = options;
+        const result = editor.api.node<TSuggestionElement | TSuggestionText>({
+          match: (n) => {
+            if (!n[type]) return false;
+            if (isText && !TextApi.isText(n)) return false;
+            if (id) {
+              if (TextApi.isText(n)) {
+                return !!n[getSuggestionKeyId(n)!];
+              }
+              if (
+                ElementApi.isElement(n) &&
+                api.suggestion.isBlockSuggestion(n)
+              ) {
+                return n.suggestion.id === id;
+              }
+            }
 
-        const result = editor.api.node<TSuggestionText>({
-          ...options,
-          match: combineMatchOptions(
-            editor,
-            (n) => {
-              if (isText) return TextApi.isText(n) && (n as any)[type];
-
-              return (n as any)[type];
-            },
-            options
-          ),
-        }) as NodeEntry<TSuggestionText> | undefined;
+            return true;
+          },
+          ...rest,
+        });
 
         return result;
       },
