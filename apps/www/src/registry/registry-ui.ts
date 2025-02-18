@@ -214,10 +214,10 @@ export const uiComponents: Registry['items'] = [
       examples: ['comments-demo', 'comments-pro'],
     },
     files: [
-      { path: 'plate-ui/comment-avatar.tsx', type: 'registry:ui' },
+      // { path: 'plate-ui/comment-avatar.tsx', type: 'registry:ui' },
       { path: 'plate-ui/comment-create-form.tsx', type: 'registry:ui' },
       { path: 'plate-ui/comment-item.tsx', type: 'registry:ui' },
-      { path: 'plate-ui/comment-more-dropdown.tsx', type: 'registry:ui' },
+      // { path: 'plate-ui/comment-more-dropdown.tsx', type: 'registry:ui' },
       // { path: 'plate-ui/comment-reply-items.tsx', type: 'registry:ui' },
       // { path: 'plate-ui/comment-resolve-button.tsx', type: 'registry:ui' },
       // { path: 'plate-ui/comment-value.tsx', type: 'registry:ui' },

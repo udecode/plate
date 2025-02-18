@@ -1,7 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 
+import type { Value } from '@udecode/plate';
+
+import { cn } from '@udecode/cn';
 import { CommentsPlugin } from '@udecode/plate-comments/react';
 import { Plate, useEditorPlugin } from '@udecode/plate/react';
 import {
@@ -10,14 +13,20 @@ import {
   differenceInMinutes,
   format,
 } from 'date-fns';
-import { CheckIcon, XIcon } from 'lucide-react';
+import { CheckIcon, MoreHorizontalIcon , PencilIcon, TrashIcon, XIcon } from 'lucide-react';
 
-import type { TCommentItem } from './block-comments-card';
-
+import { Avatar, AvatarFallback, AvatarImage } from './avatar';
+import { ForceUpdateContext } from './block-discussion';
+import { mockUsers } from './block-suggestion';
 import { Button } from './button';
-import { CommentAvatar, mockUsers } from './comment-avatar';
 import { useCommentEditor } from './comment-create-form';
-import { CommentMoreDropdown } from './comment-more-dropdown';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from './dropdown-menu';
 import { Editor, EditorContainer } from './editor';
 
 export const formatCommentDate = (date: Date) => {
@@ -39,8 +48,17 @@ export const formatCommentDate = (date: Date) => {
   return format(date, 'MM/dd/yyyy');
 };
 
+export interface TComment {
+  id: string;
+  contentRich: Value;
+  createdAt: Date;
+  discussionId: string;
+  isEdited: boolean;
+  userId: string;
+}
+
 export function CommentItem(props: {
-  comment: TCommentItem;
+  comment: TComment;
   discussionLength: number;
   documentContent: string;
   editingId: string | null;
@@ -164,7 +182,23 @@ export function CommentItem(props: {
       onMouseLeave={() => setHovering(false)}
     >
       <div className="relative flex items-center">
-        <CommentAvatar userId={comment.userId} />
+        <Avatar className="size-6">
+          <AvatarImage
+            alt={
+              mockUsers.find((user: any) => user.id === comment.userId)?.name
+            }
+            src={
+              mockUsers.find((user: any) => user.id === comment.userId)
+                ?.avatarUrl
+            }
+          />
+          <AvatarFallback>
+            {
+              mockUsers.find((user: any) => user.id === comment.userId)
+                ?.name?.[0]
+            }
+          </AvatarFallback>
+        </Avatar>
         <h4 className="mx-2 text-sm leading-none font-semibold">
           {/* Replace to your own backend or refer to potion */}
           {mockUsers.find((user: any) => user.id === comment.userId)?.name}
@@ -267,5 +301,111 @@ export function CommentItem(props: {
         </Plate>
       </div>
     </div>
+  );
+}
+interface CommentMoreDropdownProps {
+  comment: TComment;
+  dropdownOpen: boolean;
+  setDropdownOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setEditingId: React.Dispatch<React.SetStateAction<string | null>>;
+  onCloseAutoFocus?: () => void;
+  onRemoveComment?: () => void;
+}
+
+export function CommentMoreDropdown(props: CommentMoreDropdownProps) {
+  const {
+    comment,
+    dropdownOpen,
+    setDropdownOpen,
+    setEditingId,
+    onCloseAutoFocus,
+    onRemoveComment,
+  } = props;
+
+  const forceUpdate = useContext(ForceUpdateContext);
+
+  const selectedEditCommentRef = React.useRef<boolean>(false);
+
+  const onDeleteComment = React.useCallback(() => {
+    if (!comment.id)
+      return alert('You are operating too quickly, please try again later.');
+
+    // Get discussions from session storage
+    const discussions = JSON.parse(
+      sessionStorage.getItem('discussions') || '[]'
+    );
+
+    // Find and update the discussion
+    const updatedDiscussions = discussions.map((discussion: any) => {
+      if (discussion.id !== comment.discussionId) {
+        return discussion;
+      }
+
+      const commentIndex = discussion.comments.findIndex(
+        (c: any) => c.id === comment.id
+      );
+      if (commentIndex === -1) {
+        return discussion;
+      }
+
+      return {
+        ...discussion,
+        comments: [
+          ...discussion.comments.slice(0, commentIndex),
+          ...discussion.comments.slice(commentIndex + 1),
+        ],
+      };
+    });
+
+    // Save back to session storage
+    sessionStorage.setItem('discussions', JSON.stringify(updatedDiscussions));
+    onRemoveComment?.();
+    forceUpdate();
+  }, [comment.discussionId, comment.id, forceUpdate, onRemoveComment]);
+
+  const onEditComment = React.useCallback(() => {
+    selectedEditCommentRef.current = true;
+
+    if (!comment.id)
+      return alert('You are operating too quickly, please try again later.');
+
+    setEditingId(comment.id);
+    forceUpdate();
+  }, [comment.id, forceUpdate, setEditingId]);
+
+  return (
+    <DropdownMenu
+      open={dropdownOpen}
+      onOpenChange={setDropdownOpen}
+      modal={false}
+    >
+      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+        <Button variant="ghost" className={cn('h-6 p-1 text-muted-foreground')}>
+          <MoreHorizontalIcon className="size-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        className="w-48"
+        onCloseAutoFocus={(e) => {
+          if (selectedEditCommentRef.current) {
+            onCloseAutoFocus?.();
+            selectedEditCommentRef.current = false;
+          }
+
+          return e.preventDefault();
+        }}
+      >
+        <DropdownMenuGroup>
+          <DropdownMenuItem onClick={onEditComment}>
+            <PencilIcon className="size-4" />
+            Edit comment
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={onDeleteComment}>
+            <TrashIcon className="size-4" />
+            Delete comment
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

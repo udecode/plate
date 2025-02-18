@@ -26,13 +26,14 @@ import { Plate, useEditorRef } from '@udecode/plate/react';
 import { type CreatePlateEditorOptions, PlateLeaf } from '@udecode/plate/react';
 import { ArrowUpIcon } from 'lucide-react';
 
-import type { TDiscussion } from './block-comments-card';
+import type { TDiscussion } from './block-discussion';
 
 import { useCreateEditor } from '../components/editor/use-create-editor';
 import { AILeaf } from './ai-leaf';
-import { ForceUpdateContext } from './block-comments';
+import { Avatar, AvatarFallback, AvatarImage } from './avatar';
+import { ForceUpdateContext } from './block-discussion';
+import { mockUsers } from './block-suggestion';
 import { Button } from './button';
-import { CommentAvatar } from './comment-avatar';
 import { DateElement } from './date-element';
 import { Editor, EditorContainer } from './editor';
 import { EmojiInputElement } from './emoji-input-element';
@@ -218,7 +219,15 @@ export function CommentCreateForm({
     <div className={cn('flex w-full', className)}>
       <div className="mt-1 mr-1 shrink-0">
         {/* Replace to your own backend or refer to potion */}
-        <CommentAvatar userId="1" />
+        <Avatar className="size-6">
+          <AvatarImage
+            alt={mockUsers.find((user: any) => user.id === '1')?.name}
+            src={mockUsers.find((user: any) => user.id === '1')?.avatarUrl}
+          />
+          <AvatarFallback>
+            {mockUsers.find((user: any) => user.id === '1')?.name?.[0]}
+          </AvatarFallback>
+        </Avatar>
       </div>
 
       <div className="relative flex grow gap-2">

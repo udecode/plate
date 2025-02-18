@@ -25,7 +25,7 @@ export type CommentsPluginConfig = PluginConfig<
   {},
   {
     comment: {
-      isExist: (options: { id: string }) => boolean;
+      has: (options: { id: string }) => boolean;
       node: (
         options?: EditorNodesOptions & { id?: string; isDraft?: boolean }
       ) => NodeEntry<TCommentText> | undefined;
@@ -50,7 +50,7 @@ export const BaseCommentsPlugin = createTSlatePlugin<CommentsPluginConfig>({
 })
   .overrideEditor(withComments)
   .extendApi<CommentsPluginConfig['api']['comment']>(({ editor, type }) => ({
-    isExist: (options: { id: string }): boolean => {
+    has: (options: { id: string }): boolean => {
       const { id } = options;
 
       const regex = new RegExp(`"${getCommentKey(id)}":true`);

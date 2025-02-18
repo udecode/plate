@@ -1,11 +1,9 @@
 'use client';
 import type { Path } from '@udecode/plate';
 
+import { isSlateString } from '@udecode/plate';
 import { CommentsPlugin } from '@udecode/plate-comments/react';
-import { isSlateString } from '@udecode/plate-core';
 import { useHotkeys } from '@udecode/plate/react';
-
-import { BlockComments } from '@/registry/default/plate-ui/block-comments';
 
 export const commentsPlugin = CommentsPlugin.extend({
   options: {
@@ -14,9 +12,6 @@ export const commentsPlugin = CommentsPlugin.extend({
     hotkey: ['meta+shift+m', 'ctrl+shift+m'],
     hoverId: null as string | null,
     uniquePathMap: new Map(),
-  },
-  render: {
-    aboveNodes: BlockComments as any,
   },
 }).extend({
   handlers: {

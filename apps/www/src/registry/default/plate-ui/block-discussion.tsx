@@ -17,7 +17,11 @@ import {
 import { type TCommentText, getDraftCommentKey } from '@udecode/plate-comments';
 import { CommentsPlugin } from '@udecode/plate-comments/react';
 import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
-import { useEditorRef, usePluginOption } from '@udecode/plate/react';
+import {
+  useEditorPlugin,
+  useEditorRef,
+  usePluginOption,
+} from '@udecode/plate/react';
 import {
   MessageSquareTextIcon,
   MessagesSquareIcon,
@@ -35,19 +39,16 @@ import {
 import { commentsPlugin } from '../components/editor/plugins/comments-plugin';
 import { suggestionPlugin } from '../components/editor/plugins/suggestion-plugin';
 import {
-  BlockCommentsCard,
-  useResolvedDiscussion,
-} from './block-comments-card';
-import {
   BlockSuggestionCard,
   isResolvedSuggestion,
   useResolveSuggestion,
-} from './block-suggestion-card';
+} from './block-suggestion';
 import { CommentCreateForm } from './comment-create-form';
+import { type TComment, CommentItem } from './comment-item';
 
 export const ForceUpdateContext = createContext<() => void>(() => {});
 
-export const BlockComments: RenderNodeWrapper = (props) => {
+export const BlockDiscussion: RenderNodeWrapper = (props) => {
   const { editor, element } = props;
 
   const blockPath = editor.api.findPath(element);
@@ -100,15 +101,9 @@ const BlockCommentsContent = ({
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
   const editor = useEditorRef();
 
-  const resolvedSuggestion = useResolveSuggestion(
-    suggestionNodes,
-    blockPath
-  );
+  const resolvedSuggestion = useResolveSuggestion(suggestionNodes, blockPath);
 
-  const resolvedDiscussions = useResolvedDiscussion(
-    commentNodes,
-    blockPath
-  );
+  const resolvedDiscussions = useResolvedDiscussion(commentNodes, blockPath);
 
   const suggestionsCount = resolvedSuggestion.length;
   const discussionsCount = resolvedDiscussions.length;
@@ -234,7 +229,7 @@ const BlockCommentsContent = ({
                         suggestion={item}
                       />
                     ) : (
-                      <BlockCommentsCard
+                      <BlockComment
                         key={item.id}
                         discussion={item}
                         isLast={index === sortedMergedData.length - 1}
@@ -253,7 +248,7 @@ const BlockCommentsContent = ({
                     )}
 
                     {activeDiscussion && (
-                      <BlockCommentsCard
+                      <BlockComment
                         discussion={activeDiscussion}
                         isLast={true}
                       />
@@ -294,4 +289,103 @@ const BlockCommentsContent = ({
       </div>
     </ForceUpdateContext.Provider>
   );
+};
+
+export interface TDiscussion {
+  id: string;
+  comments: TComment[];
+  createdAt: Date;
+  documentContent: string;
+  isResolved: boolean;
+  userId: string;
+}
+
+export const BlockComment = ({
+  discussion,
+  isLast,
+}: {
+  discussion: TDiscussion;
+  isLast: boolean;
+}) => {
+  const [editingId, setEditingId] = React.useState<string | null>(null);
+
+  return (
+    <React.Fragment key={discussion.id}>
+      <div className="p-4">
+        {discussion.comments.map((comment, index) => (
+          <CommentItem
+            key={comment.id ?? index}
+            comment={comment}
+            discussionLength={discussion.comments.length}
+            documentContent={discussion?.documentContent}
+            editingId={editingId}
+            index={index}
+            setEditingId={setEditingId}
+            showDocumentContent
+          />
+        ))}
+        <CommentCreateForm discussionId={discussion.id} />
+      </div>
+
+      {!isLast && <div className="h-px w-full bg-muted" />}
+    </React.Fragment>
+  );
+};
+
+export const useResolvedDiscussion = (
+  commentNodes: NodeEntry<TCommentText>[],
+  blockPath: Path
+) => {
+  const { api, getOption, setOption } = useEditorPlugin(commentsPlugin);
+
+  commentNodes.forEach(([node]) => {
+    const id = api.comment.nodeId(node);
+    const map = getOption('uniquePathMap');
+
+    if (!id) return;
+
+    const previousPath = map.get(id);
+
+    // If there are no comment nodes in the corresponding path in the map, then update it.
+    if (PathApi.isPath(previousPath)) {
+      const nodes = api.comment.node({ id, at: previousPath });
+
+      if (!nodes) {
+        setOption('uniquePathMap', new Map(map).set(id, blockPath));
+        return;
+      }
+
+      return;
+    }
+    // TODO: fix throw error
+    setOption('uniquePathMap', new Map(map).set(id, blockPath));
+  });
+
+  const commentsIds = new Set(
+    commentNodes.map(([node]) => api.comment.nodeId(node)).filter(Boolean)
+  );
+
+  const discussions: TDiscussion[] = JSON.parse(
+    sessionStorage.getItem('discussions') || '[]'
+  )
+    .map((d: TDiscussion) => ({
+      ...d,
+      createdAt: new Date(d.createdAt),
+    }))
+    .filter((item: TDiscussion) => {
+      /** If comment cross blocks just show it in the first block */
+      const commentsPathMap = getOption('uniquePathMap');
+      const firstBlockPath = commentsPathMap.get(item.id);
+
+      if (!firstBlockPath) return false;
+      if (!PathApi.equals(firstBlockPath, blockPath)) return false;
+
+      return (
+        api.comment.has({ id: item.id }) &&
+        commentsIds.has(item.id) &&
+        !item.isResolved
+      );
+    });
+
+  return discussions;
 };
