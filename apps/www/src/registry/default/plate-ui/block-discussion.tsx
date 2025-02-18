@@ -1,4 +1,5 @@
 'use client';
+
 import React, { createContext, useMemo, useReducer } from 'react';
 
 import type { TSuggestionText } from '@udecode/plate-suggestion';

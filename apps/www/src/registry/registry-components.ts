@@ -239,7 +239,7 @@ const plugins: Registry['items'] = [
       },
     ],
     name: 'suggestion-plugin',
-    registryDependencies: ['suggestion-line-break'],
+    registryDependencies: [],
     type: 'registry:component',
   },
   {

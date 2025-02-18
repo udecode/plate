@@ -1200,7 +1200,7 @@ export const Index: Record<string, any> = {
       name: "block-discussion",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["suggestion-plugin","button","popover","comment","avatar","dropdown-menu","editor","ai-leaf","avatar","date-element","emoji-input-element","inline-equation-element","link-element","mention-element","mention-input-element"],
+      registryDependencies: ["suggestion-plugin","button","popover","avatar","dropdown-menu","editor","ai-leaf","avatar","date-element","emoji-input-element","inline-equation-element","link-element","mention-element","mention-input-element"],
       files: [{
         path: "src/registry/default/plate-ui/block-discussion.tsx",
         type: "registry:ui",
@@ -2006,7 +2006,7 @@ export const Index: Record<string, any> = {
       name: "suggestion-plugin",
       description: "",
       type: "registry:component",
-      registryDependencies: ["suggestion-line-break"],
+      registryDependencies: [],
       files: [{
         path: "src/registry/default/components/editor/plugins/suggestion-plugin.tsx",
         type: "registry:component",

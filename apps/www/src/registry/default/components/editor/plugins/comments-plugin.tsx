@@ -1,9 +1,10 @@
 'use client';
+
 import type { ExtendConfig, Path } from '@udecode/plate';
 
 import { isSlateString } from '@udecode/plate';
 import {
-  type BaseCommentsPluginConfig,
+  type BaseCommentsConfig,
   BaseCommentsPlugin,
 } from '@udecode/plate-comments';
 import { toTPlatePlugin, useHotkeys } from '@udecode/plate/react';
@@ -11,7 +12,7 @@ import { toTPlatePlugin, useHotkeys } from '@udecode/plate/react';
 import { BlockDiscussion } from '@/registry/default/plate-ui/block-discussion';
 
 export type CommentsConfig = ExtendConfig<
-  BaseCommentsPluginConfig,
+  BaseCommentsConfig,
   {
     activeId: string | null;
     commentingBlock: Path | null;

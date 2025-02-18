@@ -237,7 +237,6 @@ export const uiComponents: Registry['items'] = [
       'suggestion-plugin',
       'button',
       'popover',
-      'comment',
       'avatar',
       'dropdown-menu',
       'editor',

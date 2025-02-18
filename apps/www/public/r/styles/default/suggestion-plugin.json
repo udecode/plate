@@ -17,9 +17,7 @@
     }
   ],
   "name": "suggestion-plugin",
-  "registryDependencies": [
-    "suggestion-line-break"
-  ],
+  "registryDependencies": [],
   "type": "registry:component",
   "$schema": "https://platejs.org/schema/registry-item.json",
   "author": "udecode (https://platejs.org)"
