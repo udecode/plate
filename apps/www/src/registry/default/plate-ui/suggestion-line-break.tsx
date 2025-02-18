@@ -1,24 +1,18 @@
 import React, { useRef } from 'react';
 
-import type {
-  SuggestionConfig,
-  TSuggestionData,
-} from '@udecode/plate-suggestion';
+import type { TSuggestionData } from '@udecode/plate-suggestion';
 
 import { cn } from '@udecode/cn';
 import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
-import {
-  type RenderNodeWrapperProps,
-  usePluginOption,
-} from '@udecode/plate/react';
+import { type RenderNodeWrapper, usePluginOption } from '@udecode/plate/react';
 import { CornerDownLeftIcon } from 'lucide-react';
 
 import { suggestionPlugin } from '../components/editor/plugins/suggestion-plugin';
 
-export const SuggestionBelowNodes = ({
+export const SuggestionBelowNodes: RenderNodeWrapper = ({
   editor,
   element,
-}: RenderNodeWrapperProps<SuggestionConfig>) => {
+}) => {
   if (!editor.getApi(SuggestionPlugin).suggestion.isBlockSuggestion(element))
     return;
 
@@ -26,7 +20,7 @@ export const SuggestionBelowNodes = ({
 
   if (!suggestionData?.isLineBreak) return;
 
-  return function Component({ children }: { children: React.ReactNode }) {
+  return function Component({ children }) {
     return (
       <React.Fragment>
         {children}

@@ -1,62 +1,82 @@
 import {
+  type ExtendConfig,
   type Path,
   isSlateEditor,
   isSlateElement,
   isSlateString,
 } from '@udecode/plate';
-import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
+import {
+  type BaseSuggestionConfig,
+  BaseSuggestionPlugin,
+} from '@udecode/plate-suggestion';
+import { toTPlatePlugin } from '@udecode/plate/react';
 
-export const suggestionPlugin = SuggestionPlugin.extend({
-  options: {
-    activeId: null as string | null,
-    hoverId: null as string | null,
-    uniquePathMap: new Map() as Map<string, Path>,
-  },
-}).extend({
-  handlers: {
-    // unset active suggestion when clicking outside of suggestion
-    onClick: ({ api, event, setOption, type }) => {
-      let leaf = event.target as HTMLElement;
-      let isSet = false;
+import { SuggestionBelowNodes } from '@/registry/default/plate-ui/suggestion-line-break';
 
-      const unsetActiveSuggestion = () => {
-        setOption('activeId', null);
-        isSet = true;
-      };
+export type SuggestionConfig = ExtendConfig<
+  BaseSuggestionConfig,
+  {
+    activeId: string | null;
+    currentUserId: string;
+    hoverId: string | null;
+    uniquePathMap: Map<string, Path>;
+  }
+>;
 
-      if (!isSlateString(leaf)) unsetActiveSuggestion();
+export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
+  BaseSuggestionPlugin,
+  {
+    handlers: {
+      // unset active suggestion when clicking outside of suggestion
+      onClick: ({ api, event, setOption, type }) => {
+        let leaf = event.target as HTMLElement;
+        let isSet = false;
 
-      while (
-        leaf.parentElement &&
-        !isSlateElement(leaf.parentElement) &&
-        !isSlateEditor(leaf.parentElement)
-      ) {
-        if (leaf.classList.contains(`slate-${type}`)) {
-          const suggestionEntry = api.suggestion.node({
-            isText: true,
-          });
+        const unsetActiveSuggestion = () => {
+          setOption('activeId', null);
+          isSet = true;
+        };
 
-          if (!suggestionEntry) {
-            unsetActiveSuggestion();
+        if (!isSlateString(leaf)) unsetActiveSuggestion();
+
+        while (
+          leaf.parentElement &&
+          !isSlateElement(leaf.parentElement) &&
+          !isSlateEditor(leaf.parentElement)
+        ) {
+          if (leaf.classList.contains(`slate-${type}`)) {
+            const suggestionEntry = api.suggestion!.node({
+              isText: true,
+            });
+
+            if (!suggestionEntry) {
+              unsetActiveSuggestion();
+
+              break;
+            }
+
+            const id = api.suggestion!.nodeId(suggestionEntry[0]);
+
+            setOption('activeId', id ?? null);
+            isSet = true;
 
             break;
           }
 
-          const id = api.suggestion.nodeId(suggestionEntry[0]);
-
-          setOption('activeId', id ?? null);
-          isSet = true;
-
-          break;
+          leaf = leaf.parentElement;
         }
 
-        leaf = leaf.parentElement;
-      }
-
-      if (!isSet) unsetActiveSuggestion();
+        if (!isSet) unsetActiveSuggestion();
+      },
     },
-  },
-  options: {
-    currentUserId: '1',
-  },
-});
+    options: {
+      activeId: null,
+      currentUserId: '1',
+      hoverId: null,
+      uniquePathMap: new Map(),
+    },
+    render: {
+      belowNodes: SuggestionBelowNodes,
+    },
+  }
+);

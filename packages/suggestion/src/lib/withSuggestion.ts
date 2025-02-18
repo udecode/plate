@@ -4,7 +4,7 @@ import { ParagraphPlugin } from '@udecode/plate/react';
 import type { TSuggestionElement } from './types';
 
 import {
-  type SuggestionConfig,
+  type BaseSuggestionConfig,
   BaseSuggestionPlugin,
 } from './BaseSuggestionPlugin';
 import { findSuggestionProps } from './queries';
@@ -17,7 +17,7 @@ import { removeMarkSuggestion } from './transforms/removeMarkSuggestion';
 import { removeNodesSuggestion } from './transforms/removeNodesSuggestion';
 import { getInlineSuggestionData, getSuggestionKeyId } from './utils/index';
 
-export const withSuggestion: OverrideEditor<SuggestionConfig> = ({
+export const withSuggestion: OverrideEditor<BaseSuggestionConfig> = ({
   api,
   editor,
   getOptions,

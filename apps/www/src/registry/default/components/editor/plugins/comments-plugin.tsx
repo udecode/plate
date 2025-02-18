@@ -1,69 +1,90 @@
 'use client';
-import type { Path } from '@udecode/plate';
+import type { ExtendConfig, Path } from '@udecode/plate';
 
 import { isSlateString } from '@udecode/plate';
-import { CommentsPlugin } from '@udecode/plate-comments/react';
-import { useHotkeys } from '@udecode/plate/react';
+import {
+  type BaseCommentsPluginConfig,
+  BaseCommentsPlugin,
+} from '@udecode/plate-comments';
+import { toTPlatePlugin, useHotkeys } from '@udecode/plate/react';
 
-export const commentsPlugin = CommentsPlugin.extend({
-  options: {
-    activeId: null as string | null,
-    commentingBlock: null as Path | null,
-    hotkey: ['meta+shift+m', 'ctrl+shift+m'],
-    hoverId: null as string | null,
-    uniquePathMap: new Map(),
-  },
-}).extend({
-  handlers: {
-    onClick: ({ api, event, setOption, type }) => {
-      let leaf = event.target as HTMLElement;
-      let isSet = false;
+import { BlockDiscussion } from '@/registry/default/plate-ui/block-discussion';
 
-      const unsetActiveSuggestion = () => {
-        setOption('activeId', null);
-        isSet = true;
-      };
+export type CommentsConfig = ExtendConfig<
+  BaseCommentsPluginConfig,
+  {
+    activeId: string | null;
+    commentingBlock: Path | null;
+    hotkey: string[];
+    hoverId: string | null;
+    uniquePathMap: Map<string, Path>;
+  }
+>;
 
-      if (!isSlateString(leaf)) unsetActiveSuggestion();
+export const commentsPlugin = toTPlatePlugin<CommentsConfig>(
+  BaseCommentsPlugin,
+  {
+    handlers: {
+      onClick: ({ api, event, setOption, type }) => {
+        let leaf = event.target as HTMLElement;
+        let isSet = false;
 
-      while (leaf.parentElement) {
-        if (leaf.classList.contains(`slate-${type}`)) {
-          const commentsEntry = api.comment.node();
+        const unsetActiveSuggestion = () => {
+          setOption('activeId', null);
+          isSet = true;
+        };
 
-          if (!commentsEntry) {
-            unsetActiveSuggestion();
+        if (!isSlateString(leaf)) unsetActiveSuggestion();
+
+        while (leaf.parentElement) {
+          if (leaf.classList.contains(`slate-${type}`)) {
+            const commentsEntry = api.comment!.node();
+
+            if (!commentsEntry) {
+              unsetActiveSuggestion();
+
+              break;
+            }
+
+            const id = api.comment!.nodeId(commentsEntry[0]);
+
+            setOption('activeId', id ?? null);
+            isSet = true;
 
             break;
           }
 
-          const id = api.comment.nodeId(commentsEntry[0]);
-
-          setOption('activeId', id ?? null);
-          isSet = true;
-
-          break;
+          leaf = leaf.parentElement;
         }
 
-        leaf = leaf.parentElement;
-      }
-
-      if (!isSet) unsetActiveSuggestion();
-    },
-  },
-  useHooks: ({ editor, getOptions }) => {
-    const { hotkey } = getOptions();
-    useHotkeys(
-      hotkey!,
-      (e) => {
-        if (!editor.selection) return;
-
-        e.preventDefault();
-
-        if (!editor.api.isExpanded()) return;
+        if (!isSet) unsetActiveSuggestion();
       },
-      {
-        enableOnContentEditable: true,
-      }
-    );
-  },
-});
+    },
+    options: {
+      activeId: null,
+      commentingBlock: null,
+      hotkey: ['meta+shift+m', 'ctrl+shift+m'],
+      hoverId: null,
+      uniquePathMap: new Map(),
+    },
+    render: {
+      aboveNodes: BlockDiscussion,
+    },
+    useHooks: ({ editor, getOptions }) => {
+      const { hotkey } = getOptions();
+      useHotkeys(
+        hotkey!,
+        (e) => {
+          if (!editor.selection) return;
+
+          e.preventDefault();
+
+          if (!editor.api.isExpanded()) return;
+        },
+        {
+          enableOnContentEditable: true,
+        }
+      );
+    },
+  }
+);

@@ -27,7 +27,7 @@ export const SUGGESTION_KEYS = {
   createdAt: 'suggestionCreateAt',
 } as const;
 
-export type SuggestionConfig = PluginConfig<
+export type BaseSuggestionConfig = PluginConfig<
   'suggestion',
   {
     currentUserId: string | null;
@@ -60,13 +60,13 @@ export type SuggestionConfig = PluginConfig<
   },
   {},
   {
-    currentUser?: () => SuggestionUser | null;
-    suggestion?: (id: string | null) => TSuggestion | null;
-    user?: (id: string | null) => SuggestionUser | null;
+    currentUser: () => SuggestionUser | null;
+    suggestion: (id: string | null) => TSuggestion | null;
+    user: (id: string | null) => SuggestionUser | null;
   }
 >;
 
-export const BaseSuggestionPlugin = createTSlatePlugin<SuggestionConfig>({
+export const BaseSuggestionPlugin = createTSlatePlugin<BaseSuggestionConfig>({
   key: 'suggestion',
   node: { isLeaf: true },
   options: {
@@ -77,7 +77,7 @@ export const BaseSuggestionPlugin = createTSlatePlugin<SuggestionConfig>({
   },
 })
   .overrideEditor(withSuggestion)
-  .extendSelectors<SuggestionConfig['selectors']>(({ getOptions }) => ({
+  .extendSelectors<BaseSuggestionConfig['selectors']>(({ getOptions }) => ({
     currentUser: (): SuggestionUser | null => {
       const { currentUserId, users } = getOptions();
 
@@ -96,7 +96,7 @@ export const BaseSuggestionPlugin = createTSlatePlugin<SuggestionConfig>({
       return getOptions().users[id];
     },
   }))
-  .extendApi<SuggestionConfig['api']['suggestion']>(
+  .extendApi<BaseSuggestionConfig['api']['suggestion']>(
     ({ api, editor, getOption, getOptions, setOption, setOptions, type }) => ({
       addSuggestion: (value) => {
         const { currentUserId } = getOptions();

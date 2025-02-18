@@ -20,7 +20,7 @@ import {
 } from './utils';
 import { withComments } from './withComments';
 
-export type CommentsPluginConfig = PluginConfig<
+export type BaseCommentsConfig = PluginConfig<
   'comment',
   {},
   {
@@ -44,12 +44,12 @@ export type CommentsPluginConfig = PluginConfig<
   }
 >;
 
-export const BaseCommentsPlugin = createTSlatePlugin<CommentsPluginConfig>({
+export const BaseCommentsPlugin = createTSlatePlugin<BaseCommentsConfig>({
   key: 'comment',
   node: { isLeaf: true },
 })
   .overrideEditor(withComments)
-  .extendApi<CommentsPluginConfig['api']['comment']>(({ editor, type }) => ({
+  .extendApi<BaseCommentsConfig['api']['comment']>(({ editor, type }) => ({
     has: (options: { id: string }): boolean => {
       const { id } = options;
 
@@ -100,7 +100,7 @@ export const BaseCommentsPlugin = createTSlatePlugin<CommentsPluginConfig>({
       ];
     },
   }))
-  .extendTransforms<CommentsPluginConfig['transforms']['comment']>(
+  .extendTransforms<BaseCommentsConfig['transforms']['comment']>(
     ({ api, editor, tf, type }) => ({
       removeMark: () => {
         const nodeEntry = api.comment.node();
