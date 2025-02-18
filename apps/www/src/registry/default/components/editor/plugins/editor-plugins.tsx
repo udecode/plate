@@ -22,10 +22,7 @@ import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
 import { FixedToolbarPlugin } from '@/registry/default/components/editor/plugins/fixed-toolbar-plugin';
 import { FloatingToolbarPlugin } from '@/registry/default/components/editor/plugins/floating-toolbar-plugin';
-<<<<<<< HEAD
-=======
 import { BlockDiscussion } from '@/registry/default/plate-ui/block-discussion';
->>>>>>> 905bb7d46 (refactor)
 import { SuggestionBelowNodes } from '@/registry/default/plate-ui/suggestion-line-break';
 
 import { aiPlugins } from './ai-plugins';
@@ -50,7 +47,6 @@ import { softBreakPlugin } from './soft-break-plugin';
 import { suggestionPlugin } from './suggestion-plugin';
 import { tablePlugin } from './table-plugin';
 import { tocPlugin } from './toc-plugin';
-import { BlockDiscussion } from '@/registry/default/plate-ui/block-discussion';
 
 export const viewPlugins = [
   ...basicNodesPlugins,
