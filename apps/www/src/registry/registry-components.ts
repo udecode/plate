@@ -45,6 +45,8 @@ const plugins: Registry['items'] = [
       'media-plugins',
       'mention-plugin',
       'reset-block-type-plugin',
+      'skip-mark-plugin',
+      'suggestion-plugin',
       'soft-break-plugin',
       'table-plugin',
       'toc-plugin',
@@ -211,6 +213,28 @@ const plugins: Registry['items'] = [
     ],
     name: 'comments-plugin',
     registryDependencies: ['comments-popover'],
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['@udecode/plate-basic-marks'],
+    files: [
+      {
+        path: 'components/editor/plugins/skip-mark-plugin.ts',
+        type: 'registry:component',
+      },
+    ],
+    name: 'skip-mark-plugin',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['@udecode/plate-suggestion'],
+    files: [
+      {
+        path: 'components/editor/plugins/suggestion-plugin.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'suggestion-plugin',
     type: 'registry:component',
   },
   {

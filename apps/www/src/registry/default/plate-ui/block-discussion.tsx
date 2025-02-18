@@ -28,6 +28,8 @@ import {
   PencilLineIcon,
 } from 'lucide-react';
 
+import { commentsPlugin } from '@/registry/default/components/editor/plugins/comments-plugin';
+import { suggestionPlugin } from '@/registry/default/components/editor/plugins/suggestion-plugin';
 import { Button } from '@/registry/default/plate-ui/button';
 import {
   Popover,
@@ -36,8 +38,6 @@ import {
   PopoverTrigger,
 } from '@/registry/default/plate-ui/popover';
 
-import { commentsPlugin } from '../components/editor/plugins/comments-plugin';
-import { suggestionPlugin } from '../components/editor/plugins/suggestion-plugin';
 import {
   BlockSuggestionCard,
   isResolvedSuggestion,
