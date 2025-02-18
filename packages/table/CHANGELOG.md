@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 45.0.0
+
+### Minor Changes
+
+- [#4047](https://github.com/udecode/plate/pull/4047) by [@patrick-hertling](https://github.com/patrick-hertling) – Ability to set background color of table cells
+
 ## 44.0.0
 
 ### Major Changes
