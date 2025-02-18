@@ -13,7 +13,13 @@ import {
   differenceInMinutes,
   format,
 } from 'date-fns';
-import { CheckIcon, MoreHorizontalIcon , PencilIcon, TrashIcon, XIcon } from 'lucide-react';
+import {
+  CheckIcon,
+  MoreHorizontalIcon,
+  PencilIcon,
+  TrashIcon,
+  XIcon,
+} from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from './avatar';
 import { ForceUpdateContext } from './block-discussion';

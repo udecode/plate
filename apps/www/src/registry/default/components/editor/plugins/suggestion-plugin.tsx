@@ -1,3 +1,5 @@
+'use client';
+
 import {
   type ExtendConfig,
   type Path,
@@ -10,8 +12,6 @@ import {
   BaseSuggestionPlugin,
 } from '@udecode/plate-suggestion';
 import { toTPlatePlugin } from '@udecode/plate/react';
-
-import { SuggestionBelowNodes } from '@/registry/default/plate-ui/suggestion-line-break';
 
 export type SuggestionConfig = ExtendConfig<
   BaseSuggestionConfig,
@@ -74,9 +74,6 @@ export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
       currentUserId: '1',
       hoverId: null,
       uniquePathMap: new Map(),
-    },
-    render: {
-      belowNodes: SuggestionBelowNodes,
     },
   }
 );

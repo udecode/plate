@@ -9,8 +9,6 @@ import {
 } from '@udecode/plate-comments';
 import { toTPlatePlugin, useHotkeys } from '@udecode/plate/react';
 
-import { BlockDiscussion } from '@/registry/default/plate-ui/block-discussion';
-
 export type CommentsConfig = ExtendConfig<
   BaseCommentsConfig,
   {
@@ -67,9 +65,6 @@ export const commentsPlugin = toTPlatePlugin<CommentsConfig>(
       hotkey: ['meta+shift+m', 'ctrl+shift+m'],
       hoverId: null,
       uniquePathMap: new Map(),
-    },
-    render: {
-      aboveNodes: BlockDiscussion,
     },
     useHooks: ({ editor, getOptions }) => {
       const { hotkey } = getOptions();
