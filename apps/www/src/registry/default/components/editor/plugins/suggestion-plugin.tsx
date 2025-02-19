@@ -13,6 +13,8 @@ import {
 } from '@udecode/plate-suggestion';
 import { toTPlatePlugin } from '@udecode/plate/react';
 
+import { BlockSuggestion } from '@/registry/default/plate-ui/block-suggestion';
+
 export type SuggestionConfig = ExtendConfig<
   BaseSuggestionConfig,
   {
@@ -74,6 +76,15 @@ export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
       currentUserId: '1',
       hoverId: null,
       uniquePathMap: new Map(),
+    },
+    render: {
+      belowRootNodes: ({ api, element }) => {
+        if (!api.suggestion!.isBlockSuggestion(element)) {
+          return null;
+        }
+
+        return <BlockSuggestion element={element} />;
+      },
     },
   }
 );

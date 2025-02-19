@@ -33,7 +33,6 @@ const LABELS = [
   { url: '/docs/components/form', value: 'Form' },
   { url: '/docs/components/input', value: 'Input' },
   { url: '/docs/components/label', value: 'Label' },
-  { url: '/docs/components/plate-element', value: 'Plate Element' },
   { url: '/docs/components/popover', value: 'Popover' },
   { url: '/docs/components/tag-element', value: 'Tag Element' },
 ] satisfies (SelectItem & { url: string })[];

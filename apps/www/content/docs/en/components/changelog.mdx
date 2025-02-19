@@ -26,6 +26,16 @@ Plate 45 - new comments & suggestions UI
 - NEW `block-suggestion`
 - NEW `suggestion-leaf`
 - NEW `suggestion-line-break`
+- Remove `plate-element`, import `PlateElement` from `@udecode/plate/react` instead. Add in `block-selection-plugins`:
+```tsx
+render: {
+  belowRootNodes: (props) => {
+    if (!props.className?.includes('slate-selectable')) return null;
+
+    return <BlockSelection />;
+  },
+},
+```
 
 ### February 3 #19.1
 

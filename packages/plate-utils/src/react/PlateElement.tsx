@@ -65,9 +65,21 @@ export const PlateElement = React.forwardRef(function PlateElement<
   } as any);
   const { children, ...rest } = rootProps;
 
+  const belowRootComponents = React.useMemo(
+    () =>
+      props.editor.pluginList
+        .map((plugin) => plugin.render.belowRootNodes!)
+        .filter(Boolean),
+    [props.editor.pluginList]
+  );
+
   return (
     <Box {...rest} ref={rootRef}>
       {children}
+
+      {belowRootComponents.map((Component, index) => (
+        <Component key={index} {...(props as any)} />
+      ))}
     </Box>
   );
 }) as React.ForwardRefExoticComponent<

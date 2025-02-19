@@ -29,7 +29,10 @@ import {
   PencilLineIcon,
 } from 'lucide-react';
 
-import { commentsPlugin } from '@/registry/default/components/editor/plugins/comments-plugin';
+import {
+  type CommentsConfig,
+  commentsPlugin,
+} from '@/registry/default/components/editor/plugins/comments-plugin';
 import { suggestionPlugin } from '@/registry/default/components/editor/plugins/suggestion-plugin';
 import { Button } from '@/registry/default/plate-ui/button';
 import {
@@ -49,21 +52,17 @@ import { CommentCreateForm } from './comment-create-form';
 
 export const ForceUpdateContext = createContext<() => void>(() => {});
 
-export const BlockDiscussion: RenderNodeWrapper = (props) => {
-  const { editor, element } = props;
+export const BlockDiscussion: RenderNodeWrapper<CommentsConfig> = (props) => {
+  const { api, editor, element } = props;
 
   const blockPath = editor.api.findPath(element);
 
   // avoid duplicate in table or column
   if (!blockPath || blockPath.length > 1) return;
 
-  const draftCommentNode = editor
-    .getApi(CommentsPlugin)
-    .comment.node({ at: blockPath, isDraft: true });
+  const draftCommentNode = api.comment.node({ at: blockPath, isDraft: true });
 
-  const commentNodes = [
-    ...editor.getApi(CommentsPlugin).comment.nodes({ at: blockPath }),
-  ];
+  const commentNodes = [...api.comment.nodes({ at: blockPath })];
 
   const suggestionNodes = [
     ...editor.getApi(SuggestionPlugin).suggestion.nodes({ at: blockPath }),
@@ -73,8 +72,9 @@ export const BlockDiscussion: RenderNodeWrapper = (props) => {
     commentNodes.length === 0 &&
     suggestionNodes.length === 0 &&
     !draftCommentNode
-  )
+  ) {
     return;
+  }
 
   return (props) => (
     <BlockCommentsContent

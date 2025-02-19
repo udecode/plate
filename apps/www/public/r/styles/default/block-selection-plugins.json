@@ -4,10 +4,10 @@
   ],
   "files": [
     {
-      "path": "components/editor/plugins/block-selection-plugins.ts",
-      "content": "'use client';\n\nimport { BlockSelectionPlugin } from '@udecode/plate-selection/react';\n\nexport const blockSelectionPlugins = [\n  BlockSelectionPlugin.configure(({ editor }) => ({\n    options: {\n      enableContextMenu: true,\n      isSelectable: (element, path) => {\n        return (\n          !['code_line', 'column', 'td'].includes(element.type) &&\n          !editor.api.block({ above: true, at: path, match: { type: 'tr' } })\n        );\n      },\n    },\n  })),\n] as const;\n\nexport const blockSelectionReadOnlyPlugin = BlockSelectionPlugin.configure({\n  api: {},\n  extendEditor: null,\n  handlers: {},\n  options: {},\n  render: {},\n  useHooks: null,\n});\n",
+      "path": "components/editor/plugins/block-selection-plugins.tsx",
+      "content": "'use client';\n\nimport { BlockSelectionPlugin } from '@udecode/plate-selection/react';\n\nimport { BlockSelection } from '@/components/plate-ui/block-selection';\n\nexport const blockSelectionPlugins = [\n  BlockSelectionPlugin.configure(({ editor }) => ({\n    options: {\n      enableContextMenu: true,\n      isSelectable: (element, path) => {\n        return (\n          !['code_line', 'column', 'td'].includes(element.type) &&\n          !editor.api.block({ above: true, at: path, match: { type: 'tr' } })\n        );\n      },\n    },\n    render: {\n      belowRootNodes: (props) => {\n        if (!props.className?.includes('slate-selectable')) return null;\n\n        return <BlockSelection />;\n      },\n    },\n  })),\n] as const;\n\nexport const blockSelectionReadOnlyPlugin = BlockSelectionPlugin.configure({\n  api: {},\n  extendEditor: null,\n  handlers: {},\n  options: {},\n  render: {},\n  useHooks: null,\n});\n",
       "type": "registry:component",
-      "target": "components/editor/plugins/block-selection-plugins.ts"
+      "target": "components/editor/plugins/block-selection-plugins.tsx"
     }
   ],
   "name": "block-selection-plugins",

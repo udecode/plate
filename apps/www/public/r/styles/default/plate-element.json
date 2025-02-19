@@ -17,7 +17,7 @@
   "files": [
     {
       "path": "plate-ui/plate-element.tsx",
-      "content": "'use client';\n\nimport React from 'react';\n\nimport type { PlateElementProps } from '@udecode/plate/react';\n\nimport { SuggestionPlugin } from '@udecode/plate-suggestion/react';\nimport { PlateElement as PlateElementPrimitive } from '@udecode/plate/react';\n\nimport { BlockSelection } from './block-selection';\nimport { BlockSuggestion } from './block-suggestion';\n\nexport const PlateElement = React.forwardRef<\n  HTMLDivElement,\n  PlateElementProps & { blockSelectionClassName?: string }\n>(({ blockSelectionClassName, children, editor, ...props }, ref) => {\n  return (\n    <PlateElementPrimitive ref={ref} editor={editor} {...props}>\n      {children}\n\n      {props.className?.includes('slate-selectable') && (\n        <BlockSelection className={blockSelectionClassName} />\n      )}\n\n      {editor\n        .getApi(SuggestionPlugin)\n        .suggestion.isBlockSuggestion(props.element) && (\n        <BlockSuggestion element={props.element} />\n      )}\n    </PlateElementPrimitive>\n  );\n});\n",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport type { PlateElementProps } from '@udecode/plate/react';\n\nimport { PlateElement as PlateElementPrimitive } from '@udecode/plate/react';\n\nexport const PlateElement = React.forwardRef<\n  HTMLDivElement,\n  PlateElementProps & { blockSelectionClassName?: string }\n>(({ children, ...props }, ref) => {\n  return (\n    <PlateElementPrimitive ref={ref} {...props}>\n      {children}\n    </PlateElementPrimitive>\n  );\n});\n",
       "type": "registry:ui",
       "target": "components/plate-ui/plate-element.tsx"
     }

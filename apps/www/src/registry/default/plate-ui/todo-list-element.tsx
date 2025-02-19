@@ -7,9 +7,9 @@ import {
   useTodoListElement,
   useTodoListElementState,
 } from '@udecode/plate-list/react';
+import { PlateElement } from '@udecode/plate/react';
 
 import { Checkbox } from './checkbox';
-import { PlateElement } from './plate-element';
 
 export const TodoListElement = withRef<typeof PlateElement>(
   ({ children, className, ...props }, ref) => {

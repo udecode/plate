@@ -76,15 +76,11 @@ export const viewPlugins = [
   lineHeightPlugin,
 
   // Collaboration
-  commentsPlugin.extend({
-    render: {
-      aboveNodes: BlockDiscussion as any,
-    },
+  commentsPlugin.configure({
+    render: { aboveNodes: BlockDiscussion as any },
   }),
-  suggestionPlugin.extend({
-    render: {
-      belowNodes: SuggestionBelowNodes as any,
-    },
+  suggestionPlugin.configure({
+    render: { belowNodes: SuggestionBelowNodes as any },
   }),
 ] as const;
 

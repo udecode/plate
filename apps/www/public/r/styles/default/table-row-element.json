@@ -29,9 +29,7 @@
     }
   ],
   "name": "table-row-element",
-  "registryDependencies": [
-    "plate-element"
-  ],
+  "registryDependencies": [],
   "type": "registry:ui",
   "$schema": "https://platejs.org/schema/registry-item.json",
   "author": "udecode (https://platejs.org)"
