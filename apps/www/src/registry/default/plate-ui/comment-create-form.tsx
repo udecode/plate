@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useContext, useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 
 import { cn, withProps } from '@udecode/cn';
 import { type Value, nanoid, NodeApi } from '@udecode/plate';
@@ -22,17 +22,21 @@ import {
   MentionInputPlugin,
   MentionPlugin,
 } from '@udecode/plate-mention/react';
-import { Plate, useEditorRef } from '@udecode/plate/react';
+import { Plate, useEditorRef, useStoreSelect } from '@udecode/plate/react';
 import { type CreatePlateEditorOptions, PlateLeaf } from '@udecode/plate/react';
 import { ArrowUpIcon } from 'lucide-react';
 
 import type { TDiscussion } from './block-discussion';
+import type { TComment } from './comment';
 
 import { useCreateEditor } from '../components/editor/use-create-editor';
 import { AILeaf } from './ai-leaf';
 import { Avatar, AvatarFallback, AvatarImage } from './avatar';
-import { ForceUpdateContext } from './block-discussion';
-import { mockUsers } from './block-suggestion';
+import {
+  discussionStore,
+  useFakeCurrentUserId,
+  useFakeUserInfo,
+} from './block-discussion';
 import { Button } from './button';
 import { DateElement } from './date-element';
 import { Editor, EditorContainer } from './editor';
@@ -87,11 +91,17 @@ export function CommentCreateForm({
   focusOnMount?: boolean;
   isSuggesting?: boolean;
 }) {
-  const forceUpdate = useContext(ForceUpdateContext);
+  const discussions = useStoreSelect(
+    discussionStore,
+    (state) => state.discussions
+  );
+
   const editor = useEditorRef();
   const discussionId = useCommentId() ?? discussionIdProp;
   const [resetKey, setResetKey] = React.useState(0);
 
+  const currentUserId = useFakeCurrentUserId();
+  const userInfo = useFakeUserInfo(currentUserId);
   const [commentValue, setCommentValue] = React.useState<Value | undefined>();
   const commentContent = useMemo(
     () =>
@@ -113,26 +123,33 @@ export function CommentCreateForm({
 
     if (discussionId) {
       // Get existing discussion
-      const discussions = JSON.parse(
-        sessionStorage.getItem('discussions') || '[]'
-      );
       const discussion = discussions.find((d: any) => d.id === discussionId);
 
-      if (!discussion) return;
+      if (!discussion || !commentValue) return;
 
       // Create reply comment
-      const reply = {
+      const comment: TComment = {
         id: nanoid(),
         contentRich: commentValue,
         createdAt: new Date(),
         discussionId,
         isEdited: false,
-        userId: '1',
+        // mock user id
+        userId: currentUserId,
       };
 
       // Add reply to discussion comments
-      discussion.comments.push(reply);
-      sessionStorage.setItem('discussions', JSON.stringify(discussions));
+      const updatedDiscussion = {
+        ...discussion,
+        comments: [...discussion.comments, comment],
+      };
+
+      // Filter out old discussion and add updated one
+      const updatedDiscussions = discussions
+        .filter((d: any) => d.id !== discussionId)
+        .concat(updatedDiscussion);
+
+      discussionStore.set('discussions', updatedDiscussions);
 
       return;
     }
@@ -158,20 +175,17 @@ export function CommentCreateForm({
           createdAt: new Date(),
           discussionId: _discussionId,
           isEdited: false,
-          userId: '1',
+          userId: currentUserId,
         },
       ],
       createdAt: new Date(),
       documentContent,
       isResolved: false,
-      userId: '1',
+      userId: currentUserId,
     };
 
-    const discussions = JSON.parse(
-      sessionStorage.getItem('discussions') || '[]'
-    );
-    discussions.push(newDiscussion);
-    sessionStorage.setItem('discussions', JSON.stringify(discussions));
+    // Update discussions store
+    discussionStore.set('discussions', [...discussions, newDiscussion]);
 
     const id = newDiscussion.id;
 
@@ -184,13 +198,15 @@ export function CommentCreateForm({
       );
       editor.tf.unsetNodes([getDraftCommentKey()], { at: path });
     });
-  }, [discussionId, editor, commentValue]);
+  }, [discussionId, editor, commentValue, currentUserId, discussions]);
 
   const onAddSuggestion = React.useCallback(async () => {
     if (!discussionId) return;
 
+    if (!commentValue) return;
+
     // Mock creating suggestion
-    const suggestion = {
+    const suggestion: TDiscussion = {
       id: discussionId,
       comments: [
         {
@@ -199,33 +215,26 @@ export function CommentCreateForm({
           createdAt: new Date(),
           discussionId,
           isEdited: false,
-          userId: '1',
+          userId: 'user1',
         },
       ],
       createdAt: new Date(),
-      documentContent: commentValue,
       isResolved: false,
-      userId: '1',
+      userId: 'user1',
     };
 
-    const discussions = JSON.parse(
-      sessionStorage.getItem('discussions') || '[]'
-    );
-    discussions.push(suggestion);
-    sessionStorage.setItem('discussions', JSON.stringify(discussions));
-  }, [discussionId, commentValue]);
+    // Update discussions store
+    discussionStore.set('discussions', [...discussions, suggestion]);
+  }, [discussionId, commentValue, discussions]);
 
   return (
     <div className={cn('flex w-full', className)}>
       <div className="mt-1 mr-1 shrink-0">
         {/* Replace to your own backend or refer to potion */}
         <Avatar className="size-6">
-          <AvatarImage
-            alt={mockUsers.find((user: any) => user.id === '1')?.name}
-            src={mockUsers.find((user: any) => user.id === '1')?.avatarUrl}
-          />
+          <AvatarImage alt={userInfo?.name} src={userInfo?.avatarUrl} />
           <AvatarFallback>
-            {mockUsers.find((user: any) => user.id === '1')?.name?.[0]}
+            {userInfo?.name?.[0]}
           </AvatarFallback>
         </Avatar>
       </div>
@@ -259,7 +268,6 @@ export function CommentCreateForm({
                 } else {
                   void onAddComment();
                 }
-                forceUpdate?.();
               }}
             >
               <div className="flex size-6 items-center justify-center rounded-full">

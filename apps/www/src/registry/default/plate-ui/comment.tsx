@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 
 import type { Value } from '@udecode/plate';
 
 import { cn } from '@udecode/cn';
 import { CommentsPlugin } from '@udecode/plate-comments/react';
-import { Plate, useEditorPlugin } from '@udecode/plate/react';
+import { Plate, useEditorPlugin, useStoreValue } from '@udecode/plate/react';
 import {
   differenceInDays,
   differenceInHours,
@@ -22,8 +22,11 @@ import {
 } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from './avatar';
-import { ForceUpdateContext } from './block-discussion';
-import { mockUsers } from './block-suggestion';
+import {
+  discussionStore,
+  useFakeCurrentUserId,
+  useFakeUserInfo,
+} from './block-discussion';
 import { Button } from './button';
 import { useCommentEditor } from './comment-create-form';
 import {
@@ -63,13 +66,13 @@ export interface TComment {
   userId: string;
 }
 
-export function CommentItem(props: {
+export function Comment(props: {
   comment: TComment;
   discussionLength: number;
-  documentContent: string;
   editingId: string | null;
   index: number;
   setEditingId: React.Dispatch<React.SetStateAction<string | null>>;
+  documentContent?: string;
   showDocumentContent?: boolean;
   onEditorClick?: () => void;
 }) {
@@ -85,27 +88,25 @@ export function CommentItem(props: {
   } = props;
   // const { user } = comment;
 
+  const discussions = useStoreValue(discussionStore, 'discussions');
+  const userInfo = useFakeUserInfo(comment.userId);
+  const currentUserId = useFakeCurrentUserId();
+
   const resolveDiscussion = async (id: string) => {
-    const discussions = JSON.parse(
-      sessionStorage.getItem('discussions') || '[]'
-    );
-    const updatedDiscussions = discussions.map((discussion: any) => {
+    const updatedDiscussions = discussions.map((discussion) => {
       if (discussion.id === id) {
         return { ...discussion, isResolved: true };
       }
       return discussion;
     });
-    sessionStorage.setItem('discussions', JSON.stringify(updatedDiscussions));
+    discussionStore.set('discussions', updatedDiscussions);
   };
 
   const removeDiscussion = async (id: string) => {
-    const discussions = JSON.parse(
-      sessionStorage.getItem('discussions') || '[]'
-    );
     const updatedDiscussions = discussions.filter(
       (discussion: any) => discussion.id !== id
     );
-    sessionStorage.setItem('discussions', JSON.stringify(updatedDiscussions));
+    discussionStore.set('discussions', updatedDiscussions);
   };
 
   const updateComment = async (input: {
@@ -114,12 +115,9 @@ export function CommentItem(props: {
     discussionId: string;
     isEdited: boolean;
   }) => {
-    const discussions = JSON.parse(
-      sessionStorage.getItem('discussions') || '[]'
-    );
-    const updatedDiscussions = discussions.map((discussion: any) => {
+    const updatedDiscussions = discussions.map((discussion) => {
       if (discussion.id === input.discussionId) {
-        const updatedComments = discussion.comments.map((comment: any) => {
+        const updatedComments = discussion.comments.map((comment) => {
           if (comment.id === input.id) {
             return {
               ...comment,
@@ -134,13 +132,13 @@ export function CommentItem(props: {
       }
       return discussion;
     });
-    sessionStorage.setItem('discussions', JSON.stringify(updatedDiscussions));
+    discussionStore.set('discussions', updatedDiscussions);
   };
 
   const { tf } = useEditorPlugin(CommentsPlugin);
 
   // Replace to your own backend or refer to potion
-  const isMyComment = true;
+  const isMyComment = currentUserId === comment.userId;
 
   const initialValue = comment.contentRich;
 
@@ -189,25 +187,12 @@ export function CommentItem(props: {
     >
       <div className="relative flex items-center">
         <Avatar className="size-6">
-          <AvatarImage
-            alt={
-              mockUsers.find((user: any) => user.id === comment.userId)?.name
-            }
-            src={
-              mockUsers.find((user: any) => user.id === comment.userId)
-                ?.avatarUrl
-            }
-          />
-          <AvatarFallback>
-            {
-              mockUsers.find((user: any) => user.id === comment.userId)
-                ?.name?.[0]
-            }
-          </AvatarFallback>
+          <AvatarImage alt={userInfo?.name} src={userInfo?.avatarUrl} />
+          <AvatarFallback>{userInfo?.name?.[0]}</AvatarFallback>
         </Avatar>
         <h4 className="mx-2 text-sm leading-none font-semibold">
           {/* Replace to your own backend or refer to potion */}
-          {mockUsers.find((user: any) => user.id === comment.userId)?.name}
+          {userInfo?.name}
         </h4>
 
         <div className="text-xs leading-none text-muted-foreground/80">
@@ -257,7 +242,7 @@ export function CommentItem(props: {
             <div className="absolute top-[5px] left-3 h-full w-0.5 shrink-0 bg-muted" />
           )}
           <div className="my-px w-0.5 shrink-0 bg-highlight" />
-          <div className="ml-2">{documentContent}</div>
+          {documentContent && <div className="ml-2">{documentContent}</div>}
         </div>
       )}
 
@@ -328,18 +313,13 @@ export function CommentMoreDropdown(props: CommentMoreDropdownProps) {
     onRemoveComment,
   } = props;
 
-  const forceUpdate = useContext(ForceUpdateContext);
+  const discussions = useStoreValue(discussionStore, 'discussions');
 
   const selectedEditCommentRef = React.useRef<boolean>(false);
 
   const onDeleteComment = React.useCallback(() => {
     if (!comment.id)
       return alert('You are operating too quickly, please try again later.');
-
-    // Get discussions from session storage
-    const discussions = JSON.parse(
-      sessionStorage.getItem('discussions') || '[]'
-    );
 
     // Find and update the discussion
     const updatedDiscussions = discussions.map((discussion: any) => {
@@ -364,10 +344,9 @@ export function CommentMoreDropdown(props: CommentMoreDropdownProps) {
     });
 
     // Save back to session storage
-    sessionStorage.setItem('discussions', JSON.stringify(updatedDiscussions));
+    discussionStore.set('discussions', updatedDiscussions);
     onRemoveComment?.();
-    forceUpdate();
-  }, [comment.discussionId, comment.id, forceUpdate, onRemoveComment]);
+  }, [comment.discussionId, comment.id, discussions, onRemoveComment]);
 
   const onEditComment = React.useCallback(() => {
     selectedEditCommentRef.current = true;
@@ -376,8 +355,7 @@ export function CommentMoreDropdown(props: CommentMoreDropdownProps) {
       return alert('You are operating too quickly, please try again later.');
 
     setEditingId(comment.id);
-    forceUpdate();
-  }, [comment.id, forceUpdate, setEditingId]);
+  }, [comment.id, setEditingId]);
 
   return (
     <DropdownMenu

@@ -73,7 +73,7 @@ export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
     },
     options: {
       activeId: null,
-      currentUserId: '1',
+      currentUserId: 'user3',
       hoverId: null,
       uniquePathMap: new Map(),
     },
