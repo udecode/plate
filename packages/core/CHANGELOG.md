@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 45.0.1
+
+### Patch Changes
+
+- [`8b06248`](https://github.com/udecode/plate/commit/8b06248ede9d006f1b421ec0bf820be8a536e79c) by [@felixfeng33](https://github.com/felixfeng33) – Add `isSlateEditor` to check if the HTML element is a plate editor
+
 ## 44.0.7
 
 ### Patch Changes
