@@ -43,15 +43,22 @@ import {
 import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
-import { ParagraphPlugin, useEditorPlugin } from '@udecode/plate/react';
+import {
+  ParagraphPlugin,
+  useEditorPlugin,
+  useStoreSelect,
+} from '@udecode/plate/react';
 import { CheckIcon, XIcon } from 'lucide-react';
-
-import type { TDiscussion } from './block-discussion';
 
 import { suggestionPlugin } from '../components/editor/plugins/suggestion-plugin';
 import { Avatar, AvatarFallback, AvatarImage } from './avatar';
+import {
+  type TDiscussion,
+  discussionStore,
+  useFakeUserInfo,
+} from './block-discussion';
 import { Button } from './button';
-import { type TComment, CommentItem, formatCommentDate } from './comment';
+import { type TComment, Comment, formatCommentDate } from './comment';
 import { CommentCreateForm } from './comment-create-form';
 
 export interface ResolvedSuggestion extends TResolvedSuggestion {
@@ -92,19 +99,6 @@ export const TYPE_TEXT_MAP: Record<string, (node?: TElement) => string> = {
   [VideoPlugin.key]: () => 'Video',
 };
 
-export const mockUsers = [
-  {
-    id: '1',
-    avatarUrl: 'https://avatars.githubusercontent.com/u/19695832?s=96&v=4',
-    name: 'zbeyens',
-  },
-  {
-    id: '2',
-    avatarUrl: 'https://avatars.githubusercontent.com/u/4272090?v=4',
-    name: '12joan',
-  },
-];
-
 export const BlockSuggestionCard = ({
   idx,
   isLast,
@@ -115,6 +109,8 @@ export const BlockSuggestionCard = ({
   suggestion: ResolvedSuggestion;
 }) => {
   const { api, editor } = useEditorPlugin(SuggestionPlugin);
+
+  const userInfo = useFakeUserInfo(suggestion.userId);
 
   const accept = (suggestion: ResolvedSuggestion) => {
     api.suggestion.withoutSuggestions(() => {
@@ -150,15 +146,15 @@ export const BlockSuggestionCard = ({
           {/* Replace to your own backend or refer to potion */}
           <Avatar className="size-6">
             <AvatarImage
-              alt={mockUsers.find((user: any) => user.id === '1')?.name}
-              src={mockUsers.find((user: any) => user.id === '1')?.avatarUrl}
+              alt={userInfo?.name}
+              src={userInfo?.avatarUrl}
             />
             <AvatarFallback>
-              {mockUsers.find((user: any) => user.id === '1')?.name?.[0]}
+              {userInfo?.name?.[0]}
             </AvatarFallback>
           </Avatar>
           <h4 className="mx-2 text-sm leading-none font-semibold">
-            {mockUsers.find((user: any) => user.id === '1')?.name}
+            {userInfo?.name}
           </h4>
           <div className="text-xs leading-none text-muted-foreground/80">
             <span className="mr-1">
@@ -252,7 +248,7 @@ export const BlockSuggestionCard = ({
         </div>
 
         {suggestion.comments.map((comment, index) => (
-          <CommentItem
+          <Comment
             key={comment.id ?? index}
             comment={comment}
             discussionLength={suggestion.comments.length}
@@ -298,6 +294,11 @@ export const useResolveSuggestion = (
   suggestionNodes: NodeEntry<TElement | TSuggestionText>[],
   blockPath: Path
 ) => {
+  const discussions = useStoreSelect(
+    discussionStore,
+    (state) => state.discussions
+  );
+
   const { api, editor, getOption, setOption } =
     useEditorPlugin(suggestionPlugin);
 
@@ -448,9 +449,7 @@ export const useResolveSuggestion = (
 
       // const comments = data?.discussions.find((d) => d.id === id)?.comments;
       const comments =
-        JSON.parse(sessionStorage.getItem('discussions') || '[]').find(
-          (s: any) => s.id === id
-        )?.comments || [];
+        discussions.find((s: TDiscussion) => s.id === id)?.comments || [];
       const createdAt = new Date(nodeData.createdAt);
 
       const keyId = getSuggestionKey(id);
@@ -505,7 +504,14 @@ export const useResolveSuggestion = (
     });
 
     return res;
-  }, [api.suggestion, blockPath, editor.api, getOption, suggestionNodes]);
+  }, [
+    api.suggestion,
+    blockPath,
+    discussions,
+    editor.api,
+    getOption,
+    suggestionNodes,
+  ]);
 
   return resolvedSuggestion;
 };

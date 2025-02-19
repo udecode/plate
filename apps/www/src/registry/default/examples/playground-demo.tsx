@@ -72,6 +72,7 @@ import { editorPlugins } from '@/registry/default/components/editor/plugins/edit
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 
+
 export default function PlaygroundDemo({ className }: { className?: string }) {
   const value = usePlaygroundValue();
   const enabled = usePlaygroundEnabled();

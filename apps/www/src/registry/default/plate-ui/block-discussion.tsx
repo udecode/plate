@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useMemo, useReducer } from 'react';
+import React, { useMemo } from 'react';
 
 import type { TSuggestionText } from '@udecode/plate-suggestion';
 import type {
@@ -12,6 +12,7 @@ import {
   type NodeEntry,
   type Path,
   type TElement,
+  createZustandStore,
   PathApi,
   TextApi,
 } from '@udecode/plate';
@@ -22,6 +23,7 @@ import {
   useEditorPlugin,
   useEditorRef,
   usePluginOption,
+  useStoreValue,
 } from '@udecode/plate/react';
 import {
   MessageSquareTextIcon,
@@ -47,10 +49,145 @@ import {
   isResolvedSuggestion,
   useResolveSuggestion,
 } from './block-suggestion';
-import { type TComment, CommentItem } from './comment';
+import { type TComment, Comment } from './comment';
 import { CommentCreateForm } from './comment-create-form';
 
-export const ForceUpdateContext = createContext<() => void>(() => {});
+export interface TDiscussion {
+  id: string;
+  comments: TComment[];
+  createdAt: Date;
+  isResolved: boolean;
+  userId: string;
+  documentContent?: string;
+}
+
+const initTestDiscussions = [
+  {
+    id: 'discussion1',
+    comments: [
+      {
+        id: 'comment1',
+        contentRich: [
+          {
+            children: [
+              {
+                text: 'This is a comment',
+              },
+            ],
+            type: 'p',
+          },
+        ],
+        createdAt: new Date(Date.now() - 900_000),
+        discussionId: 'discussion1',
+        isEdited: false,
+        userId: 'user1',
+      },
+    ],
+    createdAt: new Date(),
+    documentContent: 'comments to your content',
+    isResolved: false,
+    userId: 'user1',
+  },
+  {
+    id: 'discussion2',
+    comments: [
+      {
+        id: 'comment1',
+        contentRich: [
+          {
+            children: [
+              {
+                text: 'Hey, what do you think about this approach?',
+              },
+            ],
+            type: 'p',
+          },
+        ],
+        createdAt: new Date(Date.now() - 900_000),
+        discussionId: 'discussion1',
+        isEdited: false,
+        userId: 'user1',
+      },
+      {
+        id: 'comment2',
+        contentRich: [
+          {
+            children: [
+              {
+                text: 'Looks good!',
+              },
+            ],
+            type: 'p',
+          },
+        ],
+        createdAt: new Date(Date.now() - 800_000),
+        discussionId: 'discussion1',
+        isEdited: false,
+        userId: 'user2',
+      },
+      {
+        id: 'comment3',
+        contentRich: [
+          {
+            children: [
+              {
+                text: 'Thanks for the feedback!',
+              },
+            ],
+            type: 'p',
+          },
+        ],
+        createdAt: new Date(Date.now() - 700_000),
+        discussionId: 'discussion1',
+        isEdited: false,
+        userId: 'user1',
+      },
+    ],
+    createdAt: new Date(),
+    documentContent: 'collaborate',
+    isResolved: false,
+    userId: 'user2',
+  },
+];
+
+type TDiscussionStore = {
+  discussions: TDiscussion[];
+};
+
+export const discussionStore = createZustandStore<TDiscussionStore>(
+  {
+    discussions: initTestDiscussions,
+  },
+  {
+    devtools: { enabled: true }, // Redux DevTools with options
+    mutative: true, // shorthand for { enabled: true }
+    name: 'discussion',
+  }
+);
+
+export const useFakeCurrentUserId = () => 'user3';
+
+export const useFakeUserInfo = (userId: string) => {
+  const mockUsers = [
+    {
+      id: 'user1',
+      avatarUrl: 'https://avatars.githubusercontent.com/u/19695832?s=96&v=4',
+      name: 'zbeyens',
+    },
+    {
+      id: 'user2',
+      avatarUrl: 'https://avatars.githubusercontent.com/u/4272090?v=4',
+      name: '12joan',
+    },
+    {
+      id: 'user3',
+      avatarUrl: 'https://avatars.githubusercontent.com/u/164472012?v=4',
+      name: 'felixfeng33',
+    },
+  ];
+
+  return mockUsers.find((user) => user.id === userId);
+};
 
 export const BlockDiscussion: RenderNodeWrapper<CommentsConfig> = (props) => {
   const { api, editor, element } = props;
@@ -99,7 +236,6 @@ const BlockCommentsContent = ({
   draftCommentNode: NodeEntry<TCommentText> | undefined;
   suggestionNodes: NodeEntry<TElement | TSuggestionText>[];
 }) => {
-  const [, forceUpdate] = useReducer((x) => x + 1, 0);
   const editor = useEditorRef();
 
   const resolvedSuggestion = useResolveSuggestion(suggestionNodes, blockPath);
@@ -185,121 +321,107 @@ const BlockCommentsContent = ({
     return <div className="w-full">{children}</div>;
 
   return (
-    <ForceUpdateContext.Provider value={forceUpdate}>
-      <div className="flex w-full justify-between">
-        <Popover
-          open={open}
-          onOpenChange={(_open_) => {
-            if (!_open_ && isCommenting && draftCommentNode) {
-              editor.tf.unsetNodes(getDraftCommentKey(), {
-                at: [],
-                mode: 'lowest',
-                match: (n) => n[getDraftCommentKey()],
-              });
-            }
-            setOpen(_open_);
-          }}
+    <div className="flex w-full justify-between">
+      <Popover
+        open={open}
+        onOpenChange={(_open_) => {
+          if (!_open_ && isCommenting && draftCommentNode) {
+            editor.tf.unsetNodes(getDraftCommentKey(), {
+              at: [],
+              mode: 'lowest',
+              match: (n) => n[getDraftCommentKey()],
+            });
+          }
+          setOpen(_open_);
+        }}
+      >
+        <div className="w-full">{children}</div>
+        {anchorElement && (
+          <PopoverAnchor
+            asChild
+            className="w-full"
+            virtualRef={{ current: anchorElement }}
+          />
+        )}
+
+        <PopoverContent
+          className="max-h-[min(50dvh,calc(-24px+var(--radix-popper-available-height)))] w-[380px] max-w-[calc(100vw-24px)] min-w-[130px] overflow-y-auto p-0 data-[state=closed]:opacity-0"
+          onCloseAutoFocus={(e) => e.preventDefault()}
+          onOpenAutoFocus={(e) => e.preventDefault()}
+          align="center"
+          side="bottom"
         >
-          <div className="w-full">{children}</div>
-          {anchorElement && (
-            <PopoverAnchor
-              asChild
-              className="w-full"
-              virtualRef={{ current: anchorElement }}
-            />
-          )}
-
-          <PopoverContent
-            className="max-h-[min(50dvh,calc(-24px+var(--radix-popper-available-height)))] w-[380px] max-w-[calc(100vw-24px)] min-w-[130px] overflow-y-auto p-0 data-[state=closed]:opacity-0"
-            onCloseAutoFocus={(e) => e.preventDefault()}
-            onOpenAutoFocus={(e) => e.preventDefault()}
-            align="center"
-            side="bottom"
-          >
-            {isCommenting ? (
-              <CommentCreateForm className="p-4" focusOnMount />
-            ) : (
-              <React.Fragment>
-                {noneActive ? (
-                  sortedMergedData.map((item, index) =>
-                    isResolvedSuggestion(item) ? (
-                      <BlockSuggestionCard
-                        key={item.suggestionId}
-                        idx={index}
-                        isLast={index === sortedMergedData.length - 1}
-                        suggestion={item}
-                      />
-                    ) : (
-                      <BlockComment
-                        key={item.id}
-                        discussion={item}
-                        isLast={index === sortedMergedData.length - 1}
-                      />
-                    )
+          {isCommenting ? (
+            <CommentCreateForm className="p-4" focusOnMount />
+          ) : (
+            <React.Fragment>
+              {noneActive ? (
+                sortedMergedData.map((item, index) =>
+                  isResolvedSuggestion(item) ? (
+                    <BlockSuggestionCard
+                      key={item.suggestionId}
+                      idx={index}
+                      isLast={index === sortedMergedData.length - 1}
+                      suggestion={item}
+                    />
+                  ) : (
+                    <BlockComment
+                      key={item.id}
+                      discussion={item}
+                      isLast={index === sortedMergedData.length - 1}
+                    />
                   )
-                ) : (
-                  <React.Fragment>
-                    {activeSuggestion && (
-                      <BlockSuggestionCard
-                        key={activeSuggestion.suggestionId}
-                        idx={0}
-                        isLast={true}
-                        suggestion={activeSuggestion}
-                      />
-                    )}
-
-                    {activeDiscussion && (
-                      <BlockComment
-                        discussion={activeDiscussion}
-                        isLast={true}
-                      />
-                    )}
-                  </React.Fragment>
-                )}
-              </React.Fragment>
-            )}
-          </PopoverContent>
-
-          {totalCount > 0 && (
-            <div className="relative left-0 size-0 select-none">
-              <PopoverTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="mt-1 ml-1 flex h-6 gap-1 px-1.5 py-0 text-muted-foreground/80 hover:text-muted-foreground/80 data-[active=true]:bg-muted"
-                  data-active={open}
-                  contentEditable={false}
-                >
-                  {suggestionsCount > 0 && discussionsCount === 0 && (
-                    <PencilLineIcon className="size-4 shrink-0" />
+                )
+              ) : (
+                <React.Fragment>
+                  {activeSuggestion && (
+                    <BlockSuggestionCard
+                      key={activeSuggestion.suggestionId}
+                      idx={0}
+                      isLast={true}
+                      suggestion={activeSuggestion}
+                    />
                   )}
 
-                  {suggestionsCount === 0 && discussionsCount > 0 && (
-                    <MessageSquareTextIcon className="size-4 shrink-0" />
+                  {activeDiscussion && (
+                    <BlockComment discussion={activeDiscussion} isLast={true} />
                   )}
-
-                  {suggestionsCount > 0 && discussionsCount > 0 && (
-                    <MessagesSquareIcon className="size-4 shrink-0" />
-                  )}
-
-                  <span className="text-xs font-semibold">{totalCount}</span>
-                </Button>
-              </PopoverTrigger>
-            </div>
+                </React.Fragment>
+              )}
+            </React.Fragment>
           )}
-        </Popover>
-      </div>
-    </ForceUpdateContext.Provider>
+        </PopoverContent>
+
+        {totalCount > 0 && (
+          <div className="relative left-0 size-0 select-none">
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                className="mt-1 ml-1 flex h-6 gap-1 px-1.5 py-0 text-muted-foreground/80 hover:text-muted-foreground/80 data-[active=true]:bg-muted"
+                data-active={open}
+                contentEditable={false}
+              >
+                {suggestionsCount > 0 && discussionsCount === 0 && (
+                  <PencilLineIcon className="size-4 shrink-0" />
+                )}
+
+                {suggestionsCount === 0 && discussionsCount > 0 && (
+                  <MessageSquareTextIcon className="size-4 shrink-0" />
+                )}
+
+                {suggestionsCount > 0 && discussionsCount > 0 && (
+                  <MessagesSquareIcon className="size-4 shrink-0" />
+                )}
+
+                <span className="text-xs font-semibold">{totalCount}</span>
+              </Button>
+            </PopoverTrigger>
+          </div>
+        )}
+      </Popover>
+    </div>
   );
 };
-
-export interface TDiscussion {
-  id: string;
-  comments: TComment[];
-  createdAt: Date;
-  documentContent: string;
-  isResolved: boolean;
-  userId: string;
-}
 
 export const BlockComment = ({
   discussion,
@@ -314,7 +436,7 @@ export const BlockComment = ({
     <React.Fragment key={discussion.id}>
       <div className="p-4">
         {discussion.comments.map((comment, index) => (
-          <CommentItem
+          <Comment
             key={comment.id ?? index}
             comment={comment}
             discussionLength={discussion.comments.length}
@@ -338,6 +460,8 @@ export const useResolvedDiscussion = (
   blockPath: Path
 ) => {
   const { api, getOption, setOption } = useEditorPlugin(commentsPlugin);
+
+  const discussions = useStoreValue(discussionStore, 'discussions');
 
   commentNodes.forEach(([node]) => {
     const id = api.comment.nodeId(node);
@@ -366,9 +490,7 @@ export const useResolvedDiscussion = (
     commentNodes.map(([node]) => api.comment.nodeId(node)).filter(Boolean)
   );
 
-  const discussions: TDiscussion[] = JSON.parse(
-    sessionStorage.getItem('discussions') || '[]'
-  )
+  const resolvedDiscussions = discussions
     .map((d: TDiscussion) => ({
       ...d,
       createdAt: new Date(d.createdAt),
@@ -388,5 +510,5 @@ export const useResolvedDiscussion = (
       );
     });
 
-  return discussions;
+  return resolvedDiscussions;
 };
