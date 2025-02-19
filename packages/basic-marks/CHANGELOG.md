@@ -1,5 +1,11 @@
 # @udecode/plate-basic-marks
 
+## 45.0.0
+
+### Patch Changes
+
+- [#4064](https://github.com/udecode/plate/pull/4064) by [@felixfeng33](https://github.com/felixfeng33) – Add new plugin `SkipMarkPlugin`
+
 ## 44.0.0
 
 ## 43.0.1
