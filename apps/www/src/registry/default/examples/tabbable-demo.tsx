@@ -6,13 +6,17 @@ import type { PlateElementProps } from '@udecode/plate/react';
 
 import { cn } from '@udecode/cn';
 import { TabbablePlugin } from '@udecode/plate-tabbable/react';
-import { Plate, useFocused, useSelected } from '@udecode/plate/react';
+import {
+  Plate,
+  PlateElement,
+  useFocused,
+  useSelected,
+} from '@udecode/plate/react';
 
 import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
 import { tabbableValue } from '@/registry/default/examples/values/tabbable-value';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
-import { PlateElement } from '@/registry/default/plate-ui/plate-element';
 
 export default function TabbableDemo() {
   const editor = useCreateEditor({

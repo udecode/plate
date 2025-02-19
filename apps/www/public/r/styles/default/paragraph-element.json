@@ -18,7 +18,7 @@
   "files": [
     {
       "path": "plate-ui/paragraph-element.tsx",
-      "content": "'use client';\n\nimport React from 'react';\n\nimport { cn } from '@udecode/cn';\nimport { withRef } from '@udecode/plate/react';\n\nimport { PlateElement } from './plate-element';\n\nexport const ParagraphElement = withRef<typeof PlateElement>(\n  ({ children, className, ...props }, ref) => {\n    return (\n      <PlateElement\n        ref={ref}\n        className={cn(className, 'm-0 px-0 py-1')}\n        {...props}\n      >\n        {children}\n      </PlateElement>\n    );\n  }\n);\n",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { cn } from '@udecode/cn';\nimport { PlateElement , withRef } from '@udecode/plate/react';\n\n\nexport const ParagraphElement = withRef<typeof PlateElement>(\n  ({ children, className, ...props }, ref) => {\n    return (\n      <PlateElement\n        ref={ref}\n        className={cn(className, 'm-0 px-0 py-1')}\n        {...props}\n      >\n        {children}\n      </PlateElement>\n    );\n  }\n);\n",
       "type": "registry:ui",
       "target": "components/plate-ui/paragraph-element.tsx"
     },
@@ -30,9 +30,7 @@
     }
   ],
   "name": "paragraph-element",
-  "registryDependencies": [
-    "plate-element"
-  ],
+  "registryDependencies": [],
   "type": "registry:ui",
   "$schema": "https://platejs.org/schema/registry-item.json",
   "author": "udecode (https://platejs.org)"

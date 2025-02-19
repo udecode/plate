@@ -415,6 +415,18 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
         belowNodes?: RenderNodeWrapper<WithAnyKey<C>>;
         /** @see {@link NodeComponent} */
         node?: NodeComponent;
+        /**
+         * Function to render content below the root element but above its
+         * children. Similar to belowNodes but renders directly in the element
+         * rather than wrapping. Multiple plugins can provide this, and all
+         * their content will be rendered in sequence.
+         *
+         * NOTE: This is implemented in PlateElement (@udecode/plate-utils), not
+         * in plate-core.
+         */
+        belowRootNodes?: (
+          props: PlateRenderElementProps<TElement, C>
+        ) => React.ReactNode;
       }>;
       /** @see {@link Shortcuts} */
       shortcuts: Shortcuts;

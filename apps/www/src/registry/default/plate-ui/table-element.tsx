@@ -16,6 +16,7 @@ import {
   useTableMergeState,
 } from '@udecode/plate-table/react';
 import {
+  PlateElement,
   useEditorPlugin,
   useEditorRef,
   useEditorSelector,
@@ -41,6 +42,7 @@ import {
 } from 'lucide-react';
 
 import { DEFAULT_COLORS } from './color-constants';
+import { ColorDropdownMenuItems } from './color-dropdown-menu-items';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -50,7 +52,6 @@ import {
   DropdownMenuPortal,
   DropdownMenuTrigger,
 } from './dropdown-menu';
-import { PlateElement } from './plate-element';
 import { Popover, PopoverContent } from './popover';
 import {
   BorderAll,
@@ -61,7 +62,6 @@ import {
   BorderTop,
 } from './table-icons';
 import { Toolbar, ToolbarButton, ToolbarGroup } from './toolbar';
-import { ColorDropdownMenuItems } from './color-dropdown-menu-items';
 
 export const TableElement = withHOC(
   TableProvider,
@@ -84,10 +84,9 @@ export const TableElement = withHOC(
         className={cn(
           className,
           'overflow-x-auto py-5',
-          hasControls && '-ml-2'
+          hasControls && '-ml-2 *:data-[slot=block-selection]:left-2'
         )}
         style={{ paddingLeft: marginLeft }}
-        blockSelectionClassName={cn(hasControls && 'left-2')}
         {...props}
       >
         <div className="group/table relative w-fit">
@@ -340,12 +339,12 @@ function ColorDropdownMenu({ children, tooltip }: ColorDropdownMenuProps) {
   const [open, setOpen] = useState(false);
 
   const editor = useEditorRef();
-  const selectedCells = usePluginOption(TablePlugin, 'selectedCells') ?? [];
+  const selectedCells = usePluginOption(TablePlugin, 'selectedCells');
 
   const onUpdateColor = useCallback(
     (color: string) => {
       setOpen(false);
-      setCellBackground(editor, { color, selectedCells });
+      setCellBackground(editor, { color, selectedCells: selectedCells ?? [] });
     },
     [selectedCells, editor]
   );
@@ -354,7 +353,7 @@ function ColorDropdownMenu({ children, tooltip }: ColorDropdownMenuProps) {
     setOpen(false);
     setCellBackground(editor, {
       color: null,
-      selectedCells,
+      selectedCells: selectedCells ?? [],
     });
   }, [selectedCells, editor]);
 

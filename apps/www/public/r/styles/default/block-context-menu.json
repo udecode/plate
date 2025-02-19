@@ -33,7 +33,6 @@
   "name": "block-context-menu",
   "registryDependencies": [
     "calendar",
-    "plate-element",
     "context-menu",
     "use-is-touch-device"
   ],

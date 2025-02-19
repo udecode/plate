@@ -81,12 +81,7 @@ export const uiComponents: Registry['items'] = [
     },
     files: [{ path: 'plate-ui/block-context-menu.tsx', type: 'registry:ui' }],
     name: 'block-context-menu',
-    registryDependencies: [
-      'calendar',
-      'plate-element',
-      'context-menu',
-      'use-is-touch-device',
-    ],
+    registryDependencies: ['calendar', 'context-menu', 'use-is-touch-device'],
     type: 'registry:ui',
   },
   {
@@ -844,19 +839,6 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
     type: 'registry:ui',
   },
   {
-    dependencies: ['@udecode/plate-selection'],
-    doc: {
-      description: 'A base element with block selection support.',
-      docs: [{ route: '/docs/block-selection' }],
-      examples: ['basic-nodes-demo'],
-      label: 'New',
-    },
-    files: [{ path: 'plate-ui/plate-element.tsx', type: 'registry:ui' }],
-    name: 'plate-element',
-    registryDependencies: ['block-selection'],
-    type: 'registry:ui',
-  },
-  {
     dependencies: ['react-resizable-panels'],
     doc: {
       description: 'A resizable wrapper with resize handles.',
@@ -978,7 +960,7 @@ export const uiNodes: Registry['items'] = [
       { path: 'plate-ui/blockquote-element-static.tsx', type: 'registry:ui' },
     ],
     name: 'blockquote-element',
-    registryDependencies: ['plate-element'],
+    registryDependencies: [],
     type: 'registry:ui',
   },
   {
@@ -999,7 +981,7 @@ export const uiNodes: Registry['items'] = [
       { path: 'plate-ui/code-block-combobox.tsx', type: 'registry:ui' },
     ],
     name: 'code-block-element',
-    registryDependencies: ['command', 'plate-element'],
+    registryDependencies: ['command'],
     type: 'registry:ui',
   },
   {
@@ -1035,7 +1017,7 @@ export const uiNodes: Registry['items'] = [
       { path: 'plate-ui/code-line-element-static.tsx', type: 'registry:ui' },
     ],
     name: 'code-line-element',
-    registryDependencies: ['plate-element'],
+    registryDependencies: [],
     type: 'registry:ui',
   },
   {
@@ -1071,7 +1053,7 @@ export const uiNodes: Registry['items'] = [
       { path: 'plate-ui/column-element-static.tsx', type: 'registry:ui' },
     ],
     name: 'column-element',
-    registryDependencies: ['resizable', 'plate-element'],
+    registryDependencies: ['resizable'],
     type: 'registry:ui',
   },
   {
@@ -1089,7 +1071,7 @@ export const uiNodes: Registry['items'] = [
       { path: 'plate-ui/column-group-element-static.tsx', type: 'registry:ui' },
     ],
     name: 'column-group-element',
-    registryDependencies: ['command', 'resizable', 'plate-element'],
+    registryDependencies: ['command', 'resizable'],
     type: 'registry:ui',
   },
   {
@@ -1138,7 +1120,7 @@ export const uiNodes: Registry['items'] = [
       { path: 'plate-ui/date-element-static.tsx', type: 'registry:ui' },
     ],
     name: 'date-element',
-    registryDependencies: ['calendar', 'plate-element'],
+    registryDependencies: ['calendar'],
     type: 'registry:ui',
   },
   {
@@ -1184,7 +1166,7 @@ export const uiNodes: Registry['items'] = [
       },
     ],
     name: 'inline-equation-element',
-    registryDependencies: ['plate-element', 'popover'],
+    registryDependencies: ['popover'],
     type: 'registry:ui',
   },
   {
@@ -1222,7 +1204,7 @@ export const uiNodes: Registry['items'] = [
     },
     files: [{ path: 'plate-ui/emoji-input-element.tsx', type: 'registry:ui' }],
     name: 'emoji-input-element',
-    registryDependencies: ['inline-combobox', 'plate-element', 'use-debounce'],
+    registryDependencies: ['inline-combobox', 'use-debounce'],
     type: 'registry:ui',
   },
   {
@@ -1235,7 +1217,7 @@ export const uiNodes: Registry['items'] = [
     },
     files: [{ path: 'plate-ui/excalidraw-element.tsx', type: 'registry:ui' }],
     name: 'excalidraw-element',
-    registryDependencies: ['plate-element'],
+    registryDependencies: [],
     type: 'registry:ui',
   },
   {
@@ -1267,7 +1249,7 @@ export const uiNodes: Registry['items'] = [
       { path: 'plate-ui/heading-element-static.tsx', type: 'registry:ui' },
     ],
     name: 'heading-element',
-    registryDependencies: ['plate-element'],
+    registryDependencies: [],
     type: 'registry:ui',
   },
   {
@@ -1301,7 +1283,7 @@ export const uiNodes: Registry['items'] = [
       { path: 'plate-ui/hr-element-static.tsx', type: 'registry:ui' },
     ],
     name: 'hr-element',
-    registryDependencies: ['plate-element'],
+    registryDependencies: [],
     type: 'registry:ui',
   },
   {
@@ -1321,12 +1303,7 @@ export const uiNodes: Registry['items'] = [
       { path: 'plate-ui/image-element-static.tsx', type: 'registry:ui' },
     ],
     name: 'image-element',
-    registryDependencies: [
-      'media-popover',
-      'caption',
-      'resizable',
-      'plate-element',
-    ],
+    registryDependencies: ['media-popover', 'caption', 'resizable'],
     type: 'registry:ui',
   },
   {
@@ -1374,7 +1351,7 @@ export const uiNodes: Registry['items'] = [
       { path: 'plate-ui/link-element-static.tsx', type: 'registry:ui' },
     ],
     name: 'link-element',
-    registryDependencies: ['plate-element'],
+    registryDependencies: [],
     type: 'registry:ui',
   },
   {
@@ -1386,7 +1363,7 @@ export const uiNodes: Registry['items'] = [
     },
     files: [{ path: 'plate-ui/list-element.tsx', type: 'registry:ui' }],
     name: 'list-element',
-    registryDependencies: ['plate-element'],
+    registryDependencies: [],
     type: 'registry:ui',
   },
   {
@@ -1404,7 +1381,7 @@ export const uiNodes: Registry['items'] = [
       { path: 'plate-ui/media-audio-element-static.tsx', type: 'registry:ui' },
     ],
     name: 'media-audio-element',
-    registryDependencies: ['caption', 'plate-element'],
+    registryDependencies: ['caption'],
     type: 'registry:ui',
   },
   {
@@ -1426,12 +1403,7 @@ export const uiNodes: Registry['items'] = [
     },
     files: [{ path: 'plate-ui/media-embed-element.tsx', type: 'registry:ui' }],
     name: 'media-embed-element',
-    registryDependencies: [
-      'media-popover',
-      'caption',
-      'resizable',
-      'plate-element',
-    ],
+    registryDependencies: ['media-popover', 'caption', 'resizable'],
     type: 'registry:ui',
   },
   {
@@ -1450,7 +1422,7 @@ export const uiNodes: Registry['items'] = [
       { path: 'plate-ui/media-file-element-static.tsx', type: 'registry:ui' },
     ],
     name: 'media-file-element',
-    registryDependencies: ['caption', 'plate-element'],
+    registryDependencies: ['caption'],
     type: 'registry:ui',
   },
   {
@@ -1471,7 +1443,7 @@ export const uiNodes: Registry['items'] = [
       { path: 'plate-ui/media-placeholder-element.tsx', type: 'registry:ui' },
     ],
     name: 'media-placeholder-element',
-    registryDependencies: ['plate-element', 'spinner', 'uploadthing'],
+    registryDependencies: ['spinner', 'uploadthing'],
     type: 'registry:ui',
   },
   {
@@ -1496,12 +1468,7 @@ export const uiNodes: Registry['items'] = [
       { path: 'plate-ui/media-video-element-static.tsx', type: 'registry:ui' },
     ],
     name: 'media-video-element',
-    registryDependencies: [
-      'media-popover',
-      'caption',
-      'resizable',
-      'plate-element',
-    ],
+    registryDependencies: ['media-popover', 'caption', 'resizable'],
     type: 'registry:ui',
   },
   {
@@ -1519,7 +1486,7 @@ export const uiNodes: Registry['items'] = [
       { path: 'plate-ui/mention-element-static.tsx', type: 'registry:ui' },
     ],
     name: 'mention-element',
-    registryDependencies: ['plate-element', 'use-mounted'],
+    registryDependencies: ['use-mounted'],
     type: 'registry:ui',
   },
   {
@@ -1536,7 +1503,7 @@ export const uiNodes: Registry['items'] = [
       { path: 'plate-ui/mention-input-element.tsx', type: 'registry:ui' },
     ],
     name: 'mention-input-element',
-    registryDependencies: ['inline-combobox', 'plate-element'],
+    registryDependencies: ['inline-combobox'],
     type: 'registry:ui',
   },
   {
@@ -1554,7 +1521,7 @@ export const uiNodes: Registry['items'] = [
       { path: 'plate-ui/paragraph-element-static.tsx', type: 'registry:ui' },
     ],
     name: 'paragraph-element',
-    registryDependencies: ['plate-element'],
+    registryDependencies: [],
     type: 'registry:ui',
   },
   {
@@ -1593,7 +1560,7 @@ export const uiNodes: Registry['items'] = [
     },
     files: [{ path: 'plate-ui/slash-input-element.tsx', type: 'registry:ui' }],
     name: 'slash-input-element',
-    registryDependencies: ['inline-combobox', 'plate-element', 'transforms'],
+    registryDependencies: ['inline-combobox', 'transforms'],
     type: 'registry:ui',
   },
   {
@@ -1611,7 +1578,7 @@ export const uiNodes: Registry['items'] = [
       { path: 'plate-ui/table-cell-element-static.tsx', type: 'registry:ui' },
     ],
     name: 'table-cell-element',
-    registryDependencies: ['resizable', 'plate-element'],
+    registryDependencies: ['resizable'],
     type: 'registry:ui',
   },
   {
@@ -1635,7 +1602,7 @@ export const uiNodes: Registry['items'] = [
       { path: 'plate-ui/table-element-static.tsx', type: 'registry:ui' },
     ],
     name: 'table-element',
-    registryDependencies: ['dropdown-menu', 'plate-element'],
+    registryDependencies: ['dropdown-menu'],
     type: 'registry:ui',
   },
   {
@@ -1653,7 +1620,7 @@ export const uiNodes: Registry['items'] = [
       { path: 'plate-ui/table-row-element-static.tsx', type: 'registry:ui' },
     ],
     name: 'table-row-element',
-    registryDependencies: ['plate-element'],
+    registryDependencies: [],
     type: 'registry:ui',
   },
   {
@@ -1706,7 +1673,7 @@ export const uiNodes: Registry['items'] = [
     },
     files: [{ path: 'plate-ui/todo-list-element.tsx', type: 'registry:ui' }],
     name: 'todo-list-element',
-    registryDependencies: ['checkbox', 'plate-element'],
+    registryDependencies: ['checkbox'],
     type: 'registry:ui',
   },
   {
@@ -1721,7 +1688,7 @@ export const uiNodes: Registry['items'] = [
       { path: 'plate-ui/toggle-element-static.tsx', type: 'registry:ui' },
     ],
     name: 'toggle-element',
-    registryDependencies: ['button', 'plate-element'],
+    registryDependencies: ['button'],
     type: 'registry:ui',
   },
 ];

@@ -19,7 +19,7 @@
   "files": [
     {
       "path": "plate-ui/link-element.tsx",
-      "content": "'use client';\n\nimport React from 'react';\n\nimport type { TLinkElement } from '@udecode/plate-link';\n\nimport { cn, withRef } from '@udecode/cn';\nimport { useLink } from '@udecode/plate-link/react';\n\nimport { PlateElement } from './plate-element';\n\nexport const LinkElement = withRef<typeof PlateElement>(\n  ({ children, className, ...props }, ref) => {\n    const element = props.element as TLinkElement;\n    const { props: linkProps } = useLink({ element });\n\n    return (\n      <PlateElement\n        ref={ref}\n        as=\"a\"\n        className={cn(\n          className,\n          'font-medium text-primary underline decoration-primary underline-offset-4'\n        )}\n        {...(linkProps as any)}\n        {...props}\n      >\n        {children}\n      </PlateElement>\n    );\n  }\n);\n",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport type { TLinkElement } from '@udecode/plate-link';\n\nimport { cn, withRef } from '@udecode/cn';\nimport { useLink } from '@udecode/plate-link/react';\nimport { PlateElement } from '@udecode/plate/react';\n\nexport const LinkElement = withRef<typeof PlateElement>(\n  ({ children, className, ...props }, ref) => {\n    const element = props.element as TLinkElement;\n    const { props: linkProps } = useLink({ element });\n\n    return (\n      <PlateElement\n        ref={ref}\n        as=\"a\"\n        className={cn(\n          className,\n          'font-medium text-primary underline decoration-primary underline-offset-4'\n        )}\n        {...(linkProps as any)}\n        {...props}\n      >\n        {children}\n      </PlateElement>\n    );\n  }\n);\n",
       "type": "registry:ui",
       "target": "components/plate-ui/link-element.tsx"
     },
@@ -31,9 +31,7 @@
     }
   ],
   "name": "link-element",
-  "registryDependencies": [
-    "plate-element"
-  ],
+  "registryDependencies": [],
   "type": "registry:ui",
   "$schema": "https://platejs.org/schema/registry-item.json",
   "author": "udecode (https://platejs.org)"

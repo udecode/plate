@@ -18,7 +18,7 @@
   "files": [
     {
       "path": "plate-ui/blockquote-element.tsx",
-      "content": "'use client';\n\nimport React from 'react';\n\nimport { cn, withRef } from '@udecode/cn';\n\nimport { PlateElement } from './plate-element';\n\nexport const BlockquoteElement = withRef<typeof PlateElement>(\n  ({ children, className, ...props }, ref) => {\n    return (\n      <PlateElement\n        ref={ref}\n        as=\"blockquote\"\n        className={cn(className, 'my-1 border-l-2 pl-6 italic')}\n        {...props}\n      >\n        {children}\n      </PlateElement>\n    );\n  }\n);\n",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { cn, withRef } from '@udecode/cn';\nimport { PlateElement } from '@udecode/plate/react';\n\nexport const BlockquoteElement = withRef<typeof PlateElement>(\n  ({ children, className, ...props }, ref) => {\n    return (\n      <PlateElement\n        ref={ref}\n        as=\"blockquote\"\n        className={cn(className, 'my-1 border-l-2 pl-6 italic')}\n        {...props}\n      >\n        {children}\n      </PlateElement>\n    );\n  }\n);\n",
       "type": "registry:ui",
       "target": "components/plate-ui/blockquote-element.tsx"
     },
@@ -30,9 +30,7 @@
     }
   ],
   "name": "blockquote-element",
-  "registryDependencies": [
-    "plate-element"
-  ],
+  "registryDependencies": [],
   "type": "registry:ui",
   "$schema": "https://platejs.org/schema/registry-item.json",
   "author": "udecode (https://platejs.org)"

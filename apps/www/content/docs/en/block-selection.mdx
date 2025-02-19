@@ -170,7 +170,17 @@ Style the selection area by adding the `.slate-selection-area` class to your edi
 
 To determine if an element is selected, use `useBlockSelected` hook. You can render a visual indicator around selected blocks using our [BlockSelection](/docs/components/block-selection) component or create your own.
 
-This component should be rendered inside each block element for consistent selection feedback. Plate UI is doing it in [PlateElement](/docs/components/plate-element).
+This component should be rendered inside each block element for consistent selection feedback. Plate UI is doing it by configuring the plugin this way:
+
+```tsx
+render: {
+  belowRootNodes: (props) => {
+    if (!props.className?.includes('slate-selectable')) return null;
+
+    return <BlockSelection />;
+  },
+},
+```
 
 ## Plugins
 

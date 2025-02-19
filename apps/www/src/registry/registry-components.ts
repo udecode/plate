@@ -184,7 +184,7 @@ const plugins: Registry['items'] = [
     dependencies: ['@udecode/plate-selection'],
     files: [
       {
-        path: 'components/editor/plugins/block-selection-plugins.ts',
+        path: 'components/editor/plugins/block-selection-plugins.tsx',
         type: 'registry:component',
       },
     ],

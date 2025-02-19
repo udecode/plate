@@ -2,6 +2,8 @@
 
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 
+import { BlockSelection } from '@/registry/default/plate-ui/block-selection';
+
 export const blockSelectionPlugins = [
   BlockSelectionPlugin.configure(({ editor }) => ({
     options: {
@@ -11,6 +13,13 @@ export const blockSelectionPlugins = [
           !['code_line', 'column', 'td'].includes(element.type) &&
           !editor.api.block({ above: true, at: path, match: { type: 'tr' } })
         );
+      },
+    },
+    render: {
+      belowRootNodes: (props) => {
+        if (!props.className?.includes('slate-selectable')) return null;
+
+        return <BlockSelection />;
       },
     },
   })),
