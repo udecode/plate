@@ -2000,6 +2000,10 @@ export const Index: Record<string, any> = {
         path: "src/registry/default/plate-ui/suggestion-line-break.tsx",
         type: "registry:ui",
         target: ""
+      },{
+        path: "src/registry/default/plate-ui/suggestion-toolbar-button.tsx",
+        type: "registry:ui",
+        target: ""
       }],
       categories: undefined,
       component: React.lazy(() => import("@/registry/default/components/editor/plugins/suggestion-plugin.tsx")),

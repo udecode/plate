@@ -11,7 +11,7 @@ import {
   usePluginOption,
 } from '@udecode/plate/react';
 
-import { suggestionPlugin } from '../components/editor/plugins/suggestion-plugin';
+import { suggestionPlugin } from '@/registry/default/components/editor/plugins/suggestion-plugin';
 
 export function SuggestionLeaf(props: PlateLeafProps) {
   const { children, className, leaf } = props;

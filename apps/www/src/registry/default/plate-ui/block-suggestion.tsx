@@ -50,7 +50,8 @@ import {
 } from '@udecode/plate/react';
 import { CheckIcon, XIcon } from 'lucide-react';
 
-import { suggestionPlugin } from '../components/editor/plugins/suggestion-plugin';
+import { suggestionPlugin } from '@/registry/default/components/editor/plugins/suggestion-plugin';
+
 import { Avatar, AvatarFallback, AvatarImage } from './avatar';
 import {
   type TDiscussion,
@@ -314,10 +315,10 @@ export const useResolveSuggestion = (
     if (PathApi.isPath(previousPath)) {
       const nodes = api.suggestion.node({ id, at: previousPath, isText: true });
       const parentNode = api.node(previousPath);
-      let lineBreakId = null;
+      let lineBreakId: string | null = null;
 
       if (parentNode && ElementApi.isElement(parentNode[0])) {
-        lineBreakId = api.suggestion.nodeId(parentNode[0]);
+        lineBreakId = api.suggestion.nodeId(parentNode[0]) ?? null;
       }
 
       if (!nodes && lineBreakId !== id) {
