@@ -75,6 +75,7 @@ export const useCommentEditor = (
         },
       },
       plugins: [BasicMarksPlugin],
+      value: [],
       ...options,
     },
     deps
