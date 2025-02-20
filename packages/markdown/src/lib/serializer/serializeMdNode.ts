@@ -201,8 +201,17 @@ export function serializeMdNode(
     type = nodes.p.type!;
     children = opts.breakTag;
   }
-  // Skip nodes that are empty, not a list and not void.
-  if (children === '' && !node.parent?.isList && !elOptions?.isVoid) {
+
+  // Skip nodes that are empty, not a list not in a table cell and not void .
+  const isInTableCell =
+    node.parent?.type === nodes.td.type || node.parent?.type === nodes.th.type;
+
+  if (
+    children === '' &&
+    !node.parent?.isList &&
+    !elOptions?.isVoid &&
+    !isInTableCell
+  ) {
     return;
   }
   if (isLeafNode(node)) {

@@ -25,7 +25,16 @@ export const defaultSerializeMdNodesOptions: SerializeMdOptions['nodes'] = {
   code_block: {
     type: 'code_block',
     serialize: (children, node) =>
-      `\n\`\`\`${node.language || ''}\n${children}\n\`\`\`\n`,
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
+      `\n\`\`\`${node.lang || ''}\n${children}\`\`\`\n`,
+  },
+  code_line: {
+    type: 'code_line',
+    serialize: (children) => `${children}\n`,
+  },
+  equation: {
+    type: 'equation',
+    serialize: (children, node) => `$$\n${node.texExpression}\n$$`,
   },
   h1: { type: 'h1', serialize: (children) => `\n# ${children}\n` },
   h2: { type: 'h2', serialize: (children) => `\n## ${children}\n` },
@@ -51,6 +60,10 @@ export const defaultSerializeMdNodesOptions: SerializeMdOptions['nodes'] = {
 
       return `\n![${caption}](${node.url || ''})\n`;
     },
+  },
+  inline_equation: {
+    type: 'inline_equation',
+    serialize: (children, node) => `$${node.texExpression}$`,
   },
   italic: { isLeaf: true, type: 'italic' },
   li: {
@@ -90,8 +103,14 @@ export const defaultSerializeMdNodesOptions: SerializeMdOptions['nodes'] = {
   },
   p: {
     type: 'p',
-    serialize: (children, node, { ulListStyleTypes = [] }) => {
+    serialize: (children, node, { nodes, ulListStyleTypes = [] }) => {
       const listStyleType = node.listStyleType;
+
+      const isInTableCell =
+        node.parent?.type === nodes.td.type ||
+        node.parent?.type === nodes.th.type;
+
+      const breakTag = isInTableCell ? `<br />` : `\n`;
 
       if (listStyleType) {
         let pre = '';
@@ -104,8 +123,6 @@ export const defaultSerializeMdNodesOptions: SerializeMdOptions['nodes'] = {
         const listStart = node.listStart ?? 1;
 
         const isOL = !ulListStyleTypes.includes(listStyleType);
-        const treatAsLeaf =
-          node.children.length === 1 && isLeafNode(node.children[0]);
 
         // https://github.com/remarkjs/remark-react/issues/65
         if (isOL && listDepth > 0) {
@@ -113,13 +130,62 @@ export const defaultSerializeMdNodesOptions: SerializeMdOptions['nodes'] = {
         }
 
         // TODO: support all styles
-        return `${pre}${isOL ? listStart + '.' : '-'} ${children}${treatAsLeaf ? '\n' : ''}`;
+        return `${pre}${isOL ? listStart + '.' : '-'} ${children}${breakTag}`;
       }
 
-      return `\n${children}\n`;
+      const pre = isInTableCell ? '' : '\n';
+
+      return `${pre}${children}${breakTag}`;
     },
   },
   strikethrough: { isLeaf: true, type: 'strikethrough' },
+  table: {
+    type: 'table',
+    serialize: (children) => {
+      const lines = children.split('\n').filter(Boolean);
+
+      // Line 0 is the header row
+      const headerLine = lines[0].trim();
+
+      // Remove extra "|" from both sides
+      let lineTrimmed = headerLine;
+
+      if (lineTrimmed.startsWith('|')) {
+        lineTrimmed = lineTrimmed.slice(1);
+      }
+      if (lineTrimmed.endsWith('|')) {
+        lineTrimmed = lineTrimmed.slice(0, -1);
+      }
+
+      // Generate "---" separators based on number of columns
+      const cols = lineTrimmed.split('|').length;
+      const separator = `| ${Array(cols).fill('---').join(' | ')} |`;
+
+      // Insert separator line into array
+      lines.splice(1, 0, separator);
+
+      // Join back into string
+      return lines.join('\n');
+    },
+  },
+  td: {
+    type: 'td',
+    serialize: (children) => {
+      return `| ${children}`;
+    },
+  },
+  th: {
+    type: 'th',
+    serialize: (children) => {
+      return `| ${children}`;
+    },
+  },
+  tr: {
+    type: 'tr',
+    serialize: (children) => {
+      return `${children} |\n`;
+    },
+  },
   ul: {
     type: 'ul',
     serialize: (children, _, { listDepth }) => {
