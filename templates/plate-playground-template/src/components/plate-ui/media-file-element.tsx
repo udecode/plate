@@ -5,11 +5,10 @@ import React from 'react';
 import { cn, withRef } from '@udecode/cn';
 import { useMediaState } from '@udecode/plate-media/react';
 import { ResizableProvider } from '@udecode/plate-resizable';
-import { useReadOnly, withHOC } from '@udecode/plate/react';
+import { PlateElement, useReadOnly , withHOC } from '@udecode/plate/react';
 import { FileUp } from 'lucide-react';
 
 import { Caption, CaptionTextarea } from './caption';
-import { PlateElement } from './plate-element';
 
 export const MediaFileElement = withHOC(
   ResizableProvider,

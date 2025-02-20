@@ -17,6 +17,7 @@ import {
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { type PlateEditor, ParagraphPlugin } from '@udecode/plate/react';
+import { PlateElement } from '@udecode/plate/react';
 import {
   CalendarIcon,
   ChevronRightIcon,
@@ -50,7 +51,6 @@ import {
   InlineComboboxInput,
   InlineComboboxItem,
 } from './inline-combobox';
-import { PlateElement } from './plate-element';
 
 type Group = {
   group: string;
