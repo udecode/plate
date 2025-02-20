@@ -12,10 +12,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@udecode/cn": "^43.0.0",
-    "@udecode/plate": "^43.0.5",
-    "@udecode/plate-basic-elements": "^43.1.0",
-    "@udecode/plate-basic-marks": "^43.0.1",
+    "@udecode/cn": "^44.0.1",
+    "@udecode/plate": "^45.0.2",
+    "@udecode/plate-basic-elements": "^44.0.0",
+    "@udecode/plate-basic-marks": "^45.0.0",
     "class-variance-authority": "0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "0.474.0",
