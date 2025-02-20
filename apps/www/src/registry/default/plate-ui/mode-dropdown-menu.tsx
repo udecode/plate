@@ -32,7 +32,7 @@ export function ModeDropdownMenu(props: DropdownMenuProps) {
   let value = 'editing';
 
   if (readOnly) value = 'viewing';
-  
+
   if (isSuggesting) value = 'suggestion';
 
   const item: any = {

@@ -9,7 +9,7 @@ import { useDraggable } from '@udecode/plate-dnd';
 import { parseTwitterUrl, parseVideoUrl } from '@udecode/plate-media';
 import { useMediaState } from '@udecode/plate-media/react';
 import { ResizableProvider, useResizableValue } from '@udecode/plate-resizable';
-import { PlateElement, useEditorMounted , withHOC } from '@udecode/plate/react';
+import { PlateElement, useEditorMounted, withHOC } from '@udecode/plate/react';
 
 import { Caption, CaptionTextarea } from './caption';
 import {

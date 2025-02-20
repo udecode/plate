@@ -146,13 +146,8 @@ export const BlockSuggestionCard = ({
         <div className="relative flex items-center">
           {/* Replace to your own backend or refer to potion */}
           <Avatar className="size-6">
-            <AvatarImage
-              alt={userInfo?.name}
-              src={userInfo?.avatarUrl}
-            />
-            <AvatarFallback>
-              {userInfo?.name?.[0]}
-            </AvatarFallback>
+            <AvatarImage alt={userInfo?.name} src={userInfo?.avatarUrl} />
+            <AvatarFallback>{userInfo?.name?.[0]}</AvatarFallback>
           </Avatar>
           <h4 className="mx-2 text-sm leading-none font-semibold">
             {userInfo?.name}
