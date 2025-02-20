@@ -5,11 +5,10 @@ import {
   useToggleButton,
   useToggleButtonState,
 } from '@udecode/plate-toggle/react';
-import { useElement } from '@udecode/plate/react';
+import { PlateElement , useElement } from '@udecode/plate/react';
 import { ChevronRight } from 'lucide-react';
 
 import { Button } from './button';
-import { PlateElement } from './plate-element';
 
 export const ToggleElement = withRef<typeof PlateElement>(
   ({ children, className, ...props }, ref) => {

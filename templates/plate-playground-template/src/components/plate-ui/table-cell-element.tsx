@@ -16,15 +16,14 @@ import {
   useTableCellElementResizable,
 } from '@udecode/plate-table/react';
 import {
+  PlateElement,
   useEditorPlugin,
   useElementSelector,
   usePluginOption,
-  useReadOnly,
-} from '@udecode/plate/react';
+ useReadOnly } from '@udecode/plate/react';
 import { cva } from 'class-variance-authority';
 
 import { blockSelectionVariants } from './block-selection';
-import { PlateElement } from './plate-element';
 import { ResizeHandle } from './resizable';
 
 export const TableCellElement = withRef<
