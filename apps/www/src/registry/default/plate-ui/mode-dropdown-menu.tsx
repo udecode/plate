@@ -4,8 +4,13 @@ import React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { useEditorRef, usePlateState } from '@udecode/plate/react';
-import { Eye, Pen } from 'lucide-react';
+import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
+import {
+  useEditorRef,
+  usePlateState,
+  usePluginOption,
+} from '@udecode/plate/react';
+import { Eye, Pen, PencilLineIcon } from 'lucide-react';
 
 import {
   DropdownMenu,
@@ -22,15 +27,25 @@ export function ModeDropdownMenu(props: DropdownMenuProps) {
   const [readOnly, setReadOnly] = usePlateState('readOnly');
   const openState = useOpenState();
 
+  const isSuggesting = usePluginOption(SuggestionPlugin, 'isSuggesting');
+
   let value = 'editing';
 
   if (readOnly) value = 'viewing';
+  
+  if (isSuggesting) value = 'suggestion';
 
   const item: any = {
     editing: (
       <>
         <Pen />
         <span className="hidden lg:inline">Editing</span>
+      </>
+    ),
+    suggestion: (
+      <>
+        <PencilLineIcon />
+        <span className="hidden lg:inline">Suggestion</span>
       </>
     ),
     viewing: (
@@ -57,14 +72,22 @@ export function ModeDropdownMenu(props: DropdownMenuProps) {
         <DropdownMenuRadioGroup
           value={value}
           onValueChange={(newValue) => {
-            if (newValue !== 'viewing') {
-              setReadOnly(false);
-            }
             if (newValue === 'viewing') {
               setReadOnly(true);
 
               return;
+            } else {
+              setReadOnly(false);
             }
+
+            if (newValue === 'suggestion') {
+              editor.setOption(SuggestionPlugin, 'isSuggesting', true);
+
+              return;
+            } else {
+              editor.setOption(SuggestionPlugin, 'isSuggesting', false);
+            }
+
             if (newValue === 'editing') {
               editor.tf.focus();
 
@@ -78,6 +101,10 @@ export function ModeDropdownMenu(props: DropdownMenuProps) {
 
           <DropdownMenuRadioItem value="viewing">
             {item.viewing}
+          </DropdownMenuRadioItem>
+
+          <DropdownMenuRadioItem value="suggestion">
+            {item.suggestion}
           </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>
