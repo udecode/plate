@@ -11,8 +11,7 @@ import {
   usePluginOption,
 } from '@udecode/plate/react';
 
-import { commentsPlugin } from '../components/editor/plugins/comments-plugin';
-
+import { commentsPlugin } from '@/registry/default/components/editor/plugins/comments-plugin';
 export function CommentLeaf({
   className,
   ...props

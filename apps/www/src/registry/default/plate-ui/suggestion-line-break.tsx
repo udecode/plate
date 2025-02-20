@@ -10,7 +10,7 @@ import { CornerDownLeftIcon } from 'lucide-react';
 import {
   type SuggestionConfig,
   suggestionPlugin,
-} from '../components/editor/plugins/suggestion-plugin';
+} from '@/registry/default/components/editor/plugins/suggestion-plugin';
 
 export const SuggestionBelowNodes: RenderNodeWrapper<SuggestionConfig> = ({
   api,

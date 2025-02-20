@@ -26,12 +26,17 @@ import { Plate, useEditorRef, useStoreSelect } from '@udecode/plate/react';
 import { type CreatePlateEditorOptions, PlateLeaf } from '@udecode/plate/react';
 import { ArrowUpIcon } from 'lucide-react';
 
+import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from '@/registry/default/plate-ui/avatar';
+
 import type { TDiscussion } from './block-discussion';
 import type { TComment } from './comment';
 
-import { useCreateEditor } from '../components/editor/use-create-editor';
 import { AILeaf } from './ai-leaf';
-import { Avatar, AvatarFallback, AvatarImage } from './avatar';
 import {
   discussionStore,
   useFakeCurrentUserId,
@@ -233,9 +238,7 @@ export function CommentCreateForm({
         {/* Replace to your own backend or refer to potion */}
         <Avatar className="size-6">
           <AvatarImage alt={userInfo?.name} src={userInfo?.avatarUrl} />
-          <AvatarFallback>
-            {userInfo?.name?.[0]}
-          </AvatarFallback>
+          <AvatarFallback>{userInfo?.name?.[0]}</AvatarFallback>
         </Avatar>
       </div>
 
