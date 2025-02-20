@@ -120,6 +120,9 @@ const usePlaygroundValue = (): Value => {
 
     value = [{ children: [{ text: 'Playground' }], type: 'h1' }];
 
+    // New Features
+    if (enabled.comment) value.push(...values.comments);
+
     // TOC
     if (enabled.toc) value.push(...values.toc);
 
@@ -151,7 +154,7 @@ const usePlaygroundValue = (): Value => {
     if (enabled.color || enabled.backgroundColor) value.push(...values.font);
     if (enabled.highlight) value.push(...values.highlight);
     if (enabled.kbd) value.push(...values.kbd);
-    if (enabled.comment) value.push(...values.comments);
+    // if (enabled.comment) value.push(...values.comments);
 
     // Layout and structure
     value.push({ children: [{ text: 'Layout' }], type: 'h1' });
