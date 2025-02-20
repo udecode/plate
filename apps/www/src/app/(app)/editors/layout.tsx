@@ -6,10 +6,32 @@ import { EditorDescription } from './editor-description';
 
 // SYNC
 
+const title = 'Building Editors for the Web';
+const description =
+  'Clean, modern building editors. Copy and paste into your apps. Works with all React frameworks.';
+
 export const metadata: Metadata = {
-  description:
-    'Beautifully designed. Copy and paste into your apps. Open Source.',
-  title: 'Building Editors.',
+  description,
+  openGraph: {
+    images: [
+      {
+        url: `/og?title=${encodeURIComponent(
+          title
+        )}&description=${encodeURIComponent(description)}`,
+      },
+    ],
+  },
+  title,
+  twitter: {
+    card: 'summary_large_image',
+    images: [
+      {
+        url: `/og?title=${encodeURIComponent(
+          title
+        )}&description=${encodeURIComponent(description)}`,
+      },
+    ],
+  },
 };
 
 export default function BlocksLayout({

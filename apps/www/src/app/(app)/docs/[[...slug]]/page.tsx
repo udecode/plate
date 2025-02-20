@@ -1,6 +1,8 @@
 import type { PackageInfoType } from '@/hooks/use-package-info';
 import type { RegistryItem } from 'shadcx/registry';
 
+import type { Metadata } from 'next';
+
 import { allDocs } from 'contentlayer/generated';
 import { notFound } from 'next/navigation';
 
@@ -11,6 +13,7 @@ import { Mdx } from '@/components/mdx-components';
 import { docsMap } from '@/config/docs';
 import { slugToCategory } from '@/config/docs-utils';
 import { siteConfig } from '@/config/site';
+import { absoluteUrl } from '@/lib/absoluteUrl';
 import {
   getCachedDependencies,
   getCachedFileTree,
@@ -24,42 +27,6 @@ import { registry } from '@/registry/registry';
 import { examples, proExamples } from '@/registry/registry-examples';
 import { ui } from '@/registry/registry-ui';
 
-// export async function generateMetadata({
-//   params,
-// }: DocPageProps): Promise<Metadata> {
-//   const doc = getDocFromParams({ params });
-//
-//   if (!doc) {
-//     return {};
-//   }
-//
-//   return {
-//     title: doc.title,
-//     description: doc.description,
-//     openGraph: {
-//       title: doc.title,
-//       description: doc.description,
-//       type: 'article',
-//       url: absoluteUrl(doc.slug),
-//       images: [
-//         {
-//           url: siteConfig.ogImage,
-//           width: 1200,
-//           height: 630,
-//           alt: siteConfig.name,
-//         },
-//       ],
-//     },
-//     twitter: {
-//       card: 'summary_large_image',
-//       title: doc.title,
-//       description: doc.description,
-//       images: [siteConfig.ogImage],
-//       creator: '@shadcn',
-//     },
-//   };
-// }
-
 interface DocPageProps {
   params: Promise<{
     slug: string[];
@@ -69,29 +36,97 @@ interface DocPageProps {
   }>;
 }
 
-const registryNames = new Set(registry.items.map((item) => item.name));
+async function getDocFromParams({ params, searchParams }: DocPageProps) {
+  const locale = (await searchParams).locale;
+  const slugParam = (await params).slug;
 
-function getDocFromParams({
-  locale,
-  params,
-}: {
-  locale: string;
-  params: { slug: string[] };
-}) {
-  const slugPath = params.slug?.join('/') || '';
+  let slug = slugParam?.join('/') || '';
+  slug = `${locale ?? 'en'}${slug ? '/' + slug : ''}`;
 
-  const fullPath = `${locale}${slugPath ? '/' + slugPath : ''}`;
-
-  const doc = allDocs.find((document) => {
-    return document.slugAsParams === fullPath;
-  });
+  const doc = allDocs.find((doc) => doc.slugAsParams === slug);
 
   if (!doc) {
     return null;
   }
 
+  // TODO
+  const path = slugParam?.join('/') || '';
+  doc.slug = '/docs' + (path ? '/' + path : '');
+  if (locale && locale !== 'en') {
+    doc.slug += `?locale=${locale}`;
+  }
+
   return doc;
 }
+
+export async function generateMetadata({
+  params,
+  searchParams,
+}: DocPageProps): Promise<Metadata> {
+  const doc = await getDocFromParams({ params, searchParams });
+  let title: string;
+  let description: string | undefined;
+  let slug: string;
+
+  if (doc) {
+    title = doc.title;
+    description = doc.description;
+    slug = doc.slug;
+  } else {
+    const slugParam = (await params).slug;
+    const category = slugToCategory(slugParam);
+    let docName = slugParam?.at(-1);
+    let file: RegistryItem | undefined;
+
+    if (category === 'component') {
+      file = ui.find((c) => c.name === docName);
+    } else if (category === 'example') {
+      docName += '-demo';
+      file = examples.find((c) => c.name === docName);
+    }
+    if (!docName || !file) {
+      return {};
+    }
+
+    const path = slugParam?.join('/') || '';
+    slug = '/docs' + (path ? '/' + path : '');
+    title = file.doc?.title || docName;
+    description = file.doc?.description;
+  }
+
+  return {
+    description,
+    openGraph: {
+      description,
+      images: [
+        {
+          url: `/og?title=${encodeURIComponent(title)}&description=${encodeURIComponent(
+            description ?? ''
+          )}`,
+        },
+      ],
+      title,
+      type: 'article',
+      url: absoluteUrl(slug),
+    },
+    title,
+    twitter: {
+      card: 'summary_large_image',
+      creator: '@udecode',
+      description,
+      images: [
+        {
+          url: `/og?title=${encodeURIComponent(title)}&description=${encodeURIComponent(
+            description ?? ''
+          )}`,
+        },
+      ],
+      title,
+    },
+  };
+}
+
+const registryNames = new Set(registry.items.map((item) => item.name));
 
 export function generateStaticParams() {
   const docs = allDocs.map((doc) => ({
@@ -103,10 +138,9 @@ export function generateStaticParams() {
 
 export default async function DocPage(props: DocPageProps) {
   const params = await props.params;
-  const searchParams = await props.searchParams;
   const category = slugToCategory(params.slug);
 
-  const doc = getDocFromParams({ locale: searchParams.locale ?? 'en', params });
+  const doc = await getDocFromParams(props);
 
   const packageInfo: PackageInfoType = {
     gzip: '',

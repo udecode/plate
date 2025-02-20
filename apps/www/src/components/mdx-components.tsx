@@ -8,6 +8,7 @@ import { Provider } from 'jotai';
 import { useMDXComponent } from 'next-contentlayer2/hooks';
 import Image from 'next/image';
 
+import { CodeTabs } from '@/components/code-tabs';
 import { ComponentInstallation } from '@/components/component-installation';
 import { useConfig } from '@/hooks/use-config';
 import { packageInfoAtom } from '@/hooks/use-package-info';
@@ -88,6 +89,7 @@ const components = {
   blockquote: Typography.Blockquote,
   Callout,
   code: Code,
+  CodeTabs,
   ComponentExample,
   ComponentInstallation,
   ComponentPreview,

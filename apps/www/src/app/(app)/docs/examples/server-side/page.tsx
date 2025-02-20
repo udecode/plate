@@ -1,6 +1,8 @@
 import type { TElement } from '@udecode/plate';
 import type { TCodeBlockElement } from '@udecode/plate-code-block';
 
+import type { Metadata } from 'next';
+
 import { BaseParagraphPlugin, createSlateEditor } from '@udecode/plate';
 import { BaseAlignPlugin } from '@udecode/plate-alignment';
 import { BaseAutoformatPlugin } from '@udecode/plate-autoformat';
@@ -61,6 +63,29 @@ import { Markdown } from '@/components/markdown';
 import { H2, H3, P } from '@/components/typography';
 import { basicElementsValue } from '@/registry/default/examples/values/basic-elements-value';
 import { basicMarksValue } from '@/registry/default/examples/values/basic-marks-value';
+
+const title = 'Server-Side Example';
+const description = 'Server-side rendering example for Plate.';
+
+export const metadata: Metadata = {
+  description,
+  openGraph: {
+    images: [
+      {
+        url: `/og?title=${encodeURIComponent(title)}&description=${encodeURIComponent(description)}`,
+      },
+    ],
+  },
+  title,
+  twitter: {
+    card: 'summary_large_image',
+    images: [
+      {
+        url: `/og?title=${encodeURIComponent(title)}&description=${encodeURIComponent(description)}`,
+      },
+    ],
+  },
+};
 
 export default function RSCPage() {
   const mockDoc = {

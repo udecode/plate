@@ -5,6 +5,7 @@ import { useAtom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
 
 type Config = {
+  installationType: 'cli' | 'manual';
   packageManager: 'bun' | 'npm' | 'pnpm' | 'yarn';
   radius: number;
   style: Style['name'];
@@ -12,6 +13,7 @@ type Config = {
 };
 
 const configAtom = atomWithStorage<Config>('config', {
+  installationType: 'cli',
   packageManager: 'pnpm',
   radius: 0.5,
   style: 'default',

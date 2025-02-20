@@ -1,5 +1,7 @@
 import * as React from 'react';
 
+import type { Metadata } from 'next';
+
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 
@@ -37,6 +39,34 @@ const i18n = {
     getStarted: 'Get Started',
     github: 'GitHub',
     potionDescription: 'A Notion-like AI template.',
+  },
+};
+
+const title = 'Build your rich-text editor';
+const description =
+  'A set of beautifully-designed, customizable plugins and components to help you build your rich-text editor. Open Source.';
+
+export const metadata: Metadata = {
+  description,
+  openGraph: {
+    images: [
+      {
+        url: `/og?title=${encodeURIComponent(
+          title
+        )}&description=${encodeURIComponent(description)}`,
+      },
+    ],
+  },
+  title,
+  twitter: {
+    card: 'summary_large_image',
+    images: [
+      {
+        url: `/og?title=${encodeURIComponent(
+          title
+        )}&description=${encodeURIComponent(description)}`,
+      },
+    ],
   },
 };
 

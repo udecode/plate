@@ -29,6 +29,7 @@ export const blocks: Registry['items'] = [
       '@udecode/plate-toggle',
       'sonner',
     ],
+    description: 'An AI editor',
     files: [
       {
         path: 'blocks/editor-ai/page.tsx',
@@ -111,6 +112,7 @@ export const blocks: Registry['items'] = [
   },
   {
     categories: ['Editors'],
+    description: 'A multi-select editor',
     files: [
       {
         path: 'blocks/editor-select/page.tsx',
@@ -128,6 +130,7 @@ export const blocks: Registry['items'] = [
       '@udecode/plate-basic-elements',
       '@udecode/plate-basic-marks',
     ],
+    description: 'A basic editor',
     files: [
       {
         path: 'blocks/editor-basic/page.tsx',

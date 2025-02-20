@@ -7,3 +7,4 @@
 **/__tests__/**/*.html
 **/.contentlayer
 **/__registry__
+**/og

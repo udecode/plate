@@ -47,6 +47,7 @@ export function ThemeCustomizer() {
           className="ml-auto rounded-[0.5rem]"
           onClick={() => {
             setConfig({
+              installationType: 'cli',
               packageManager: 'pnpm',
               radius: 0.5,
               style: 'default',

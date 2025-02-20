@@ -6,6 +6,7 @@
     "@udecode/plate-basic-elements",
     "@udecode/plate-basic-marks"
   ],
+  "description": "A basic editor",
   "files": [
     {
       "path": "blocks/editor-basic/page.tsx",

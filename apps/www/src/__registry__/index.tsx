@@ -2376,7 +2376,7 @@ export const Index: Record<string, any> = {
     },
     "editor-ai": {
       name: "editor-ai",
-      description: "",
+      description: "An AI editor",
       type: "registry:block",
       registryDependencies: ["api-ai","api-uploadthing","plate-types","editor-plugins","copilot-plugins","floating-toolbar-plugin","fixed-toolbar-plugin","ai-menu","ghost-text","block-discussion","cursor-overlay","editor","block-context-menu","ai-leaf","blockquote-element","code-block-element","code-leaf","code-line-element","code-syntax-leaf","column-element","column-group-element","comment-leaf","suggestion-leaf","date-element","draggable","equation-element","inline-equation-element","emoji-input-element","excalidraw-element","heading-element","highlight-leaf","hr-element","image-element","kbd-leaf","link-element","media-audio-element","media-embed-element","media-file-element","media-placeholder-element","media-video-element","mention-element","mention-input-element","paragraph-element","placeholder","slash-input-element","table-cell-element","table-element","table-row-element","toc-element","toggle-element"],
       files: [{
@@ -2403,7 +2403,7 @@ export const Index: Record<string, any> = {
     },
     "editor-select": {
       name: "editor-select",
-      description: "",
+      description: "A multi-select editor",
       type: "registry:block",
       registryDependencies: ["select-editor-demo"],
       files: [{
@@ -2418,7 +2418,7 @@ export const Index: Record<string, any> = {
     },
     "editor-basic": {
       name: "editor-basic",
-      description: "",
+      description: "A basic editor",
       type: "registry:block",
       registryDependencies: ["editor"],
       files: [{

@@ -178,9 +178,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@antfu/ni@npm:^0.21.4":
-  version: 0.21.12
-  resolution: "@antfu/ni@npm:0.21.12"
+"@antfu/ni@npm:^23.2.0":
+  version: 23.3.1
+  resolution: "@antfu/ni@npm:23.3.1"
   bin:
     na: bin/na.mjs
     nci: bin/nci.mjs
@@ -189,7 +189,7 @@ __metadata:
     nr: bin/nr.mjs
     nu: bin/nu.mjs
     nun: bin/nun.mjs
-  checksum: 10c0/729e03cdde75087bd1e959357fa69caf5c8ecf80087f19ac07ecceeb0def3eabbe87a8bd88a78444bea321cce8e385a1c90dca4b5146c351e32c2a516c2d9ea2
+  checksum: 10c0/53b432ab741e13b00255f9461185e16c65696bd59e2b0039e02e94a1dbdb7e79f6ce9c1f1c590a5fa2fccdc48e2303bd3952ce43e0e5b59643c8e1f2032c957f
   languageName: node
   linkType: hard
 
@@ -18933,7 +18933,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "shadcx@workspace:packages/cli"
   dependencies:
-    "@antfu/ni": "npm:^0.21.4"
+    "@antfu/ni": "npm:^23.2.0"
     "@babel/core": "npm:^7.22.1"
     "@babel/parser": "npm:^7.22.6"
     "@babel/plugin-transform-typescript": "npm:^7.22.5"

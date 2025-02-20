@@ -2,6 +2,7 @@
   "categories": [
     "Editors"
   ],
+  "description": "A multi-select editor",
   "files": [
     {
       "path": "blocks/editor-select/page.tsx",
