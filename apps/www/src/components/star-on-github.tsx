@@ -16,7 +16,7 @@ export function StarOnGithub({ count }: { count: number }) {
       <Link
         className={cn(
           buttonVariants(),
-          'group relative flex w-full justify-start gap-2 overflow-hidden whitespace-pre rounded-sm',
+          'group relative flex w-full justify-start gap-2 overflow-hidden rounded-sm whitespace-pre',
           'dark:bg-muted dark:text-foreground',
           'hover:ring-2 hover:ring-primary hover:ring-offset-2',
           'transition-all duration-300 ease-out'
@@ -28,7 +28,7 @@ export function StarOnGithub({ count }: { count: number }) {
           className={cn(
             'absolute right-0 -mt-12 h-32 w-8 translate-x-12 rotate-12',
             'bg-white opacity-10',
-            'transition-all duration-1000 ease-out ',
+            'transition-all duration-1000 ease-out',
             cn(
               count > 0
                 ? 'group-hover:translate-x-[-181px]'

@@ -42,5 +42,6 @@ export const useSelectEditorCombobox = ({
 
   React.useEffect(() => {
     onValueChange?.(selectedItems);
-  }, [selectedItems, onValueChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedItems]);
 };

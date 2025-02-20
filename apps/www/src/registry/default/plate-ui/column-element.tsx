@@ -6,13 +6,18 @@ import type { TColumnElement } from '@udecode/plate-layout';
 
 import { cn, useComposedRef, withRef } from '@udecode/cn';
 import { PathApi } from '@udecode/plate';
-import { useReadOnly, withHOC } from '@udecode/plate/react';
 import { useDraggable, useDropLine } from '@udecode/plate-dnd';
 import { ResizableProvider } from '@udecode/plate-resizable';
+import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import {
+  PlateElement,
+  usePluginOption,
+  useReadOnly,
+  withHOC,
+} from '@udecode/plate/react';
 import { GripHorizontal } from 'lucide-react';
 
 import { Button } from './button';
-import { PlateElement } from './plate-element';
 import {
   Tooltip,
   TooltipContent,
@@ -24,32 +29,38 @@ import {
 export const ColumnElement = withHOC(
   ResizableProvider,
   withRef<typeof PlateElement>(({ children, className, ...props }, ref) => {
-    const readOnly = useReadOnly();
     const { width } = props.element as TColumnElement;
+    const readOnly = useReadOnly();
+    const isSelectionAreaVisible = usePluginOption(
+      BlockSelectionPlugin,
+      'isSelectionAreaVisible'
+    );
 
     const { isDragging, previewRef, handleRef } = useDraggable({
+      element: props.element,
+      orientation: 'horizontal',
+      type: 'column',
       canDropNode: ({ dragEntry, dropEntry }) =>
         PathApi.equals(
           PathApi.parent(dragEntry[1]),
           PathApi.parent(dropEntry[1])
         ),
-      element: props.element,
-      orientation: 'horizontal',
-      type: 'column',
     });
 
     return (
       <div className="group/column relative" style={{ width: width ?? '100%' }}>
-        <div
-          ref={handleRef}
-          className={cn(
-            'absolute left-1/2 top-2 z-50 -translate-x-1/2 -translate-y-1/2',
-            'pointer-events-auto flex items-center',
-            'opacity-0 transition-opacity group-hover/column:opacity-100'
-          )}
-        >
-          <ColumnDragHandle />
-        </div>
+        {!readOnly && !isSelectionAreaVisible && (
+          <div
+            ref={handleRef}
+            className={cn(
+              'absolute top-2 left-1/2 z-50 -translate-x-1/2 -translate-y-1/2',
+              'pointer-events-auto flex items-center',
+              'opacity-0 transition-opacity group-hover/column:opacity-100'
+            )}
+          >
+            <ColumnDragHandle />
+          </div>
+        )}
 
         <PlateElement
           ref={useComposedRef(ref, previewRef)}
@@ -67,7 +78,8 @@ export const ColumnElement = withHOC(
             )}
           >
             {children}
-            <DropLine />
+
+            {!readOnly && !isSelectionAreaVisible && <DropLine />}
           </div>
         </PlateElement>
       </div>
@@ -110,7 +122,6 @@ const DropLine = React.forwardRef<
     <div
       ref={ref}
       {...props}
-      // eslint-disable-next-line tailwindcss/no-custom-classname
       className={cn(
         'slate-dropLine',
         'absolute bg-brand/50',

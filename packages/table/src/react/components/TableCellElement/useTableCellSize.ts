@@ -8,16 +8,20 @@ import {
   useElementSelector,
 } from '@udecode/plate/react';
 
-import type { TTableRowElement } from '../../../lib';
+import type { TTableCellElement, TTableRowElement } from '../../../lib';
 
-import { TablePlugin, TableRowPlugin } from '../../TablePlugin';
 import { useCellIndices } from '../../hooks/useCellIndices';
+import { TablePlugin, TableRowPlugin } from '../../TablePlugin';
 import { useTableColSizes } from '../TableElement';
 
-export function useTableCellSize() {
+export function useTableCellSize({
+  element: el,
+}: {
+  element?: TTableCellElement;
+} = {}) {
   const { api } = useEditorPlugin(TablePlugin);
 
-  const element = useElement();
+  const element = useElement() ?? el;
   const colSizes = useTableColSizes();
   const cellIndices = useCellIndices();
   const rowSize = useElementSelector(

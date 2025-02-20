@@ -1,5 +1,17 @@
 # @udecode/plate-toggle
 
+## 44.0.0
+
+## 43.0.5
+
+### Patch Changes
+
+- [#4038](https://github.com/udecode/plate/pull/4038) by [@yf-yang](https://github.com/yf-yang) – Update types and docs of `aboveNodes` and `belowNodes`
+
+## 43.0.3
+
+## 43.0.0
+
 ## 42.0.0
 
 ## 41.0.0

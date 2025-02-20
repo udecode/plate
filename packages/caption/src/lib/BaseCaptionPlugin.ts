@@ -17,14 +17,14 @@ export type CaptionConfig = PluginConfig<
     // isVisible?: (elementId: string) => boolean;
     /** Plugins to enable caption. */
     plugins: WithRequiredKey[];
-
     visibleId: string | null;
-  } & CaptionSelectors
+  },
+  {},
+  {},
+  {
+    isVisible?: (elementId: string) => boolean;
+  }
 >;
-
-type CaptionSelectors = {
-  isVisible?: (elementId: string) => boolean;
-};
 
 /** Enables support for caption. */
 export const BaseCaptionPlugin = createTSlatePlugin<CaptionConfig>({
@@ -36,7 +36,7 @@ export const BaseCaptionPlugin = createTSlatePlugin<CaptionConfig>({
     visibleId: null,
   },
 })
-  .extendOptions<CaptionSelectors>(({ getOptions }) => ({
+  .extendSelectors<CaptionConfig['selectors']>(({ getOptions }) => ({
     isVisible: (elementId) => getOptions().visibleId === elementId,
   }))
   .overrideEditor(withCaption);

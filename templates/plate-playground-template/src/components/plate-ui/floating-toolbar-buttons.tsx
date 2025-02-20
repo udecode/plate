@@ -2,7 +2,6 @@
 
 import React from 'react';
 
-import { useEditorReadOnly } from '@udecode/plate/react';
 import {
   BoldPlugin,
   CodePlugin,
@@ -10,6 +9,7 @@ import {
   StrikethroughPlugin,
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
+import { useEditorReadOnly } from '@udecode/plate/react';
 import {
   BoldIcon,
   Code2Icon,

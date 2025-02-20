@@ -1,7 +1,7 @@
 import {
   type PlateEditor,
-  useEditorPlugin,
   useEditorSelector,
+  usePluginOption,
 } from '@udecode/plate/react';
 
 import { isSelecting } from '../../lib';
@@ -12,8 +12,10 @@ export const isSelectingOrFocused = (editor: PlateEditor) => {
 };
 
 export const useIsSelecting = () => {
-  const isSelectingSome =
-    useEditorPlugin(BlockSelectionPlugin).useOption('isSelectingSome');
+  const isSelectingSome = usePluginOption(
+    BlockSelectionPlugin,
+    'isSelectingSome'
+  );
   const selectionExpanded = useEditorSelector((editor) => {
     return editor.api.isExpanded();
   }, []);

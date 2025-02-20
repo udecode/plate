@@ -5,8 +5,6 @@ import { bindFirst, createTSlatePlugin } from '@udecode/plate';
 
 import { deserializeCsv } from './deserializer/utils';
 
-export type CsvParseOptions = ParseConfig;
-
 export type CsvConfig = PluginConfig<
   'csv',
   {
@@ -18,7 +16,6 @@ export type CsvConfig = PluginConfig<
      * @default 0.25
      */
     errorTolerance?: number;
-
     /**
      * Options to pass to papaparse
      *
@@ -33,6 +30,8 @@ export type CsvConfig = PluginConfig<
     };
   }
 >;
+
+export type CsvParseOptions = ParseConfig;
 
 /** Enables support for deserializing content from CSV format to Slate format. */
 export const CsvPlugin = createTSlatePlugin<CsvConfig>({
@@ -49,7 +48,7 @@ export const CsvPlugin = createTSlatePlugin<CsvConfig>({
   }))
   .extend(({ api }) => ({
     parser: {
-      deserialize: ({ data }) => api.csv.deserialize({ data }),
       format: 'text/plain',
+      deserialize: ({ data }) => api.csv.deserialize({ data }),
     },
   }));

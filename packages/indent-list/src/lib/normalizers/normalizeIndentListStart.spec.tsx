@@ -2,10 +2,10 @@
 
 import type { SlateEditor } from '@udecode/plate';
 
-import { ParagraphPlugin } from '@udecode/plate/react';
-import { createPlateEditor } from '@udecode/plate/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
 import { jsxt } from '@udecode/plate-test-utils';
+import { ParagraphPlugin } from '@udecode/plate/react';
+import { createPlateEditor } from '@udecode/plate/react';
 
 import { indentListPluginPage } from '../../__tests__/indentListPluginPage';
 import { BaseIndentListPlugin } from '../BaseIndentListPlugin';

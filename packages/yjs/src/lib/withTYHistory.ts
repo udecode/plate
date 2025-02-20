@@ -10,12 +10,10 @@ import {
 import type { YjsEditorProps } from './withTYjs';
 
 export type YHistoryEditor = {
-  redo: () => void;
-
-  undo: () => void;
-
   undoManager: Y.UndoManager;
   withoutSavingOrigin: unknown;
+  redo: () => void;
+  undo: () => void;
 } & YjsEditor;
 
 export type YHistoryEditorProps = Pick<

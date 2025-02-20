@@ -16,7 +16,7 @@ import { getRenderNodeProps } from './getRenderNodeProps';
  */
 export type RenderElement = (
   props: PlateRenderElementProps
-) => React.ReactElement | undefined;
+) => React.ReactElement<any> | undefined;
 
 function ElementContent({
   editor,

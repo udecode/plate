@@ -1,14 +1,9 @@
 import { useCallback } from 'react';
 
-import {
-  imagePreviewActions,
-  useImagePreviewSelectors,
-} from './ImagePreviewStore';
+import { ImagePreviewStore, useImagePreviewValue } from './ImagePreviewStore';
 
 export const useZoom = () => {
-  const scale = useImagePreviewSelectors().scale();
-  const setScale = imagePreviewActions.scale;
-  const setTranslate = imagePreviewActions.translate;
+  const scale = useImagePreviewValue('scale');
 
   const zoomIn = useCallback(() => {
     if (scale >= 2) return;
@@ -16,8 +11,7 @@ export const useZoom = () => {
     const targets = [0, 0.5, 1, 1.5, 2];
     const nextScale = targets.find((target) => scale < target);
 
-    nextScale && setScale(nextScale);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    nextScale && ImagePreviewStore.set('scale', nextScale);
   }, [scale]);
 
   const zoomOut = useCallback(() => {
@@ -28,10 +22,9 @@ export const useZoom = () => {
       .reverse()
       .find((target) => scale > target);
 
-    if (previousScale === 1) setTranslate({ x: 0, y: 0 });
+    if (previousScale === 1) ImagePreviewStore.set('translate', { x: 0, y: 0 });
 
-    previousScale && setScale(previousScale);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    previousScale && ImagePreviewStore.set('scale', previousScale);
   }, [scale]);
 
   return { zoomIn, zoomOut };

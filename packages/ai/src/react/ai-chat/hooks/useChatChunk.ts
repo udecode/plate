@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 
 import type { TText } from '@udecode/plate';
 
-import { useEditorPlugin } from '@udecode/plate/react';
+import { usePluginOption } from '@udecode/plate/react';
 
 import type { AIChatPluginConfig } from '../AIChatPlugin';
 
@@ -15,8 +15,10 @@ export const useChatChunk = ({
   onChunk: (chunk: { isFirst: boolean; nodes: TText[]; text: string }) => void;
   onFinish?: ({ content }: { content: string }) => void;
 }) => {
-  const { useOption } = useEditorPlugin<AIChatPluginConfig>({ key: 'aiChat' });
-  const { isLoading } = useOption('chat');
+  const { isLoading } = usePluginOption(
+    { key: 'aiChat' } as AIChatPluginConfig,
+    'chat'
+  );
   const content = useLastAssistantMessage()?.content;
   const insertedTextRef = useRef<string>('');
   const prevIsLoadingRef = useRef(isLoading);

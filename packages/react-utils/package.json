@@ -1,7 +1,7 @@
 {
   "name": "@udecode/react-utils",
-  "version": "42.0.0",
-  "description": "Udecode React utils",
+  "version": "44.0.1",
+  "description": "React utils",
   "keywords": [
     "utils"
   ],
@@ -41,7 +41,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@radix-ui/react-slot": "^1.1.0",
+    "@radix-ui/react-slot": "^1.1.1",
     "@udecode/utils": "42.0.0",
     "clsx": "^2.1.1"
   },

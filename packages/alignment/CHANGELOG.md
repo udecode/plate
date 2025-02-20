@@ -1,5 +1,15 @@
 # @udecode/plate-alignment
 
+## 44.0.0
+
+## 43.0.0
+
+## 42.2.4
+
+### Patch Changes
+
+- [#4012](https://github.com/udecode/plate/pull/4012) by [@zbeyens](https://github.com/zbeyens) – Deprecate useAlignDropdownMenuState, useAlignDropdownMenu
+
 ## 42.0.0
 
 ## 41.0.0

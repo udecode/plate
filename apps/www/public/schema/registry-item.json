@@ -1,0 +1,259 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "registry:pro",
+        "registry:lib",
+        "registry:block",
+        "registry:component",
+        "registry:ui",
+        "registry:hook",
+        "registry:theme",
+        "registry:page",
+        "registry:file",
+        "registry:example"
+      ]
+    },
+    "description": {
+      "type": "string"
+    },
+    "descriptionSrc": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "author": {
+      "type": "string"
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "devDependencies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "registryDependencies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "registry:lib",
+              "registry:block",
+              "registry:component",
+              "registry:ui",
+              "registry:hook",
+              "registry:theme",
+              "registry:page",
+              "registry:file",
+              "registry:example"
+            ]
+          },
+          "target": {
+            "type": "string"
+          }
+        },
+        "if": {
+          "properties": {
+            "type": {
+              "enum": ["registry:file", "registry:page"]
+            }
+          }
+        },
+        "then": {
+          "required": ["path", "type", "target"]
+        },
+        "else": {
+          "required": ["path", "type"]
+        }
+      }
+    },
+    "tailwind": {
+      "type": "object",
+      "properties": {
+        "config": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "theme": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "plugins": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "cssVars": {
+      "type": "object",
+      "properties": {
+        "light": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "dark": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "meta": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "docs": {
+      "type": "string"
+    },
+    "doc": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "docs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "route": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "examples": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "keywords": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "label": {
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "links": {
+          "type": "object",
+          "properties": {
+            "api": {
+              "type": "string"
+            },
+            "doc": {
+              "type": "string"
+            }
+          }
+        },
+        "props": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "default": {},
+              "description": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              }
+            },
+            "required": ["name", "type"]
+          }
+        },
+        "slug": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "toc": {
+          "type": "boolean"
+        },
+        "usage": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "external": {
+      "type": "boolean"
+    },
+    "rsc": {
+      "type": "boolean"
+    }
+  },
+  "required": ["name", "type"]
+}

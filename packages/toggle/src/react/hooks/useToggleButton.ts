@@ -1,10 +1,9 @@
-import { useEditorPlugin } from '@udecode/plate/react';
+import { useEditorPlugin, usePluginOption } from '@udecode/plate/react';
 
 import { BaseTogglePlugin } from '../../lib';
 
 export const useToggleButtonState = (toggleId: string) => {
-  const { useOption } = useEditorPlugin(BaseTogglePlugin);
-  const openIds = useOption('openIds')!;
+  const openIds = usePluginOption(BaseTogglePlugin, 'openIds')!;
 
   return {
     open: openIds.has(toggleId),

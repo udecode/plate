@@ -23,8 +23,10 @@ export const insertBlocksAndSelect = (
   }
 
   setTimeout(() => {
-    editor.getApi(BlockSelectionPlugin).blockSelection.setSelectedIds({
-      ids: insertedNodes.map((n) => n.id),
-    } as any);
+    editor.setOption(
+      BlockSelectionPlugin,
+      'selectedIds',
+      new Set(insertedNodes.map((n) => n.id as string))
+    );
   }, 0);
 };

@@ -150,8 +150,8 @@ Defines how the plugin renders components.
 <APISubListItem parent="render" name="aboveEditable" type="Component" optional>
 Component rendered above the Editable component but inside the Slate wrapper.
 </APISubListItem>
-<APISubListItem parent="render" name="aboveNodes" type="Component" optional>
-Component rendered above all other plugins' node components.
+<APISubListItem parent="render" name="aboveNodes" type="RenderNodeWrapper<WithAnyKey<C>>" optional>
+Create a function that generates a parent React node for all other plugins' node components.
 </APISubListItem>
 <APISubListItem parent="render" name="aboveSlate" type="Component" optional>
 Component rendered above the Slate wrapper.
@@ -162,8 +162,11 @@ Renders a component after the Editable component.
 <APISubListItem parent="render" name="beforeEditable" type="EditableSiblingComponent" optional>
 Renders a component before the Editable component.
 </APISubListItem>
-<APISubListItem parent="render" name="belowNodes" type="NodeWrapperComponent<WithAnyKey<C>>" optional>
-Renders a component below all other plugins' node components, but above their children.
+<APISubListItem parent="render" name="belowNodes" type="RenderNodeWrapper<WithAnyKey<C>>" optional>
+Create a function that generates a React node below all other plugins' node React node, but above their children.
+</APISubListItem>
+<APISubListItem parent="render" name="belowRootNodes" type="(props: PlateRenderElementProps<TElement, C>) => React.ReactNode" optional>
+Renders a component after the direct children of the root element. This differs from `belowNodes` in that it's the direct child of `PlateElement` rather than wrapping the children that could be nested. This is useful when you need components relative to the root element. Note: this is not used in Plate Core but in `PlateElement`. If you're not using `PlateElement`, you'll need to use this plugin field on your own.
 </APISubListItem>
 <APISubListItem parent="render" name="node" type="NodeComponent" optional>
 Renders the node component.
@@ -176,7 +179,7 @@ Defines keyboard shortcuts for the plugin.
 </APIItem>
 
 <APIItem name="useOptionsStore" type="StoreApi<C['key'], C['options']>">
-Store for managing plugin options.
+Zustand store for managing plugin options.
 </APIItem>
 
 <APIItem name="dependencies" type="string[]">
@@ -312,8 +315,8 @@ Extends the editor's transforms with plugin-specific methods.
 ```
 </APIItem>
 
-<APIItem name="extendOptions" type="(options: (ctx: PlatePluginContext) => Record<string, any>) => PlatePlugin">
-Extends the plugin options with selectors.
+<APIItem name="extendSelectors" type="(options: (ctx: PlatePluginContext) => Record<string, any>) => PlatePlugin">
+Extends the plugin with selectors.
 
 ```ts
 (options: (ctx: PlatePluginContext) => Record<string, any>) => PlatePlugin
@@ -343,9 +346,6 @@ Function to set a specific option value.
 </APIItem>
 <APIItem name="setOptions" type="function">
 Function to set multiple options.
-</APIItem>
-<APIItem name="useOption" type="function">
-Hook to subscribe to a specific option value in a React component.
 </APIItem>
 </APIAttributes>
 </API>

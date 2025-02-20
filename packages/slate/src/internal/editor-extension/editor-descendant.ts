@@ -55,9 +55,9 @@ export const descendant = <
 
     const nodeEntries = NodeApi.descendants<N>(root[0], {
       from,
-      pass: ([n]) => (voids ? false : editor.api.isVoid(n as any)),
       reverse,
       to,
+      pass: ([n]) => (voids ? false : editor.api.isVoid(n as any)),
     });
 
     for (const [node, path] of nodeEntries) {
@@ -65,7 +65,7 @@ export const descendant = <
         return [node, (at as Path).concat(path)];
       }
     }
-  } catch (error) {
+  } catch {
     return undefined;
   }
 };

@@ -63,7 +63,7 @@ describe('unhangRange', () => {
       };
 
       // Mock editor.api.after to return undefined
-      jest.spyOn(editor.api, 'after').mockImplementation(() => undefined);
+      jest.spyOn(editor.api, 'after').mockImplementation((() => {}) as any);
 
       const result = editor.api.unhangRange(range, { character: true });
 

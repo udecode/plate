@@ -31,7 +31,7 @@ export function ImageElementStatic({
     >
       <figure className="group relative m-0 inline-block" style={{ width }}>
         <div
-          className="relative min-w-[92px] max-w-full"
+          className="relative max-w-full min-w-[92px]"
           style={{ textAlign: align }}
         >
           <img

@@ -2,9 +2,9 @@ import type { Value } from '@udecode/slate';
 
 import {
   type InferPlugins,
-  DebugPlugin,
   createSlateEditor,
   createSlatePlugin,
+  DebugPlugin,
   someHtmlElement,
 } from '@udecode/plate-core';
 import { createPlateEditor, withPlate } from '@udecode/plate-core/react';
@@ -106,8 +106,8 @@ describe('TPlateEditor core package', () => {
             parsers: {
               html: {
                 deserializer: {
-                  parse: () => ({ test: true }),
                   withoutChildren: true,
+                  parse: () => ({ test: true }),
                 },
               },
             },
@@ -204,15 +204,15 @@ describe('TPlateEditor core package', () => {
       parsers: {
         html: {
           deserializer: {
+            rules: [
+              { validNodeName: ['STRONG', 'B'] },
+              { validStyle: { fontWeight: ['600', '700', 'bold'] } },
+            ],
             query: ({ element }) =>
               !someHtmlElement(
                 element,
                 (node) => node.style.fontWeight === 'normal'
               ),
-            rules: [
-              { validNodeName: ['STRONG', 'B'] },
-              { validStyle: { fontWeight: ['600', '700', 'bold'] } },
-            ],
           },
         },
       },

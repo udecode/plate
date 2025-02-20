@@ -49,8 +49,8 @@ export const useFloatingToolbarState = ({
   const floating = useVirtualFloating(
     mergeProps(
       {
-        getBoundingClientRect: () => getSelectionBoundingClientRect(editor),
         open,
+        getBoundingClientRect: () => getSelectionBoundingClientRect(editor),
         onOpenChange: setOpen,
       },
       floatingOptions

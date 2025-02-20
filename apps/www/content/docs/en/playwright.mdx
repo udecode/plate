@@ -48,7 +48,6 @@ In your Playwright test, get the editor handle before interacting with Plate:
 
 ```ts
 const editorHandle = await getEditorHandle(page);
-// ...
 ```
 
 For multiple editors, specify the editable element:
@@ -156,140 +155,146 @@ await editorHandle.evaluate((editor) => {
 });
 ```
 
+See [Playwright's docs](https://playwright.dev/docs/evaluating) for more about `evaluate` and `evaluateHandle`.
+
 ## API
 
-### getEditorHandle
+### `getEditorHandle`
 
 Gets a handle to the Plate editor instance.
 
+<API name="getEditorHandle">
 <APIParameters>
-<APIItem name="page" type="Page">
-The Playwright page object.
-</APIItem>
-<APIItem name="editable" type="Locator" optional>
-A locator for the editable element. If not provided, it will look for the first [data-slate-editor] on the page.
-</APIItem>
+  <APIItem name="page" type="Page">
+    Playwright page object.
+  </APIItem>
+  <APIItem name="editable" type="Locator" optional>
+    Locator for editable element. Defaults to first [data-slate-editor].
+  </APIItem>
 </APIParameters>
 
-<APIReturns>
-<APIItem type="EditorHandle">
-A handle to the Plate editor instance.
-</APIItem>
+<APIReturns type="EditorHandle">
+  Handle to Plate editor instance.
 </APIReturns>
+</API>
 
-### getNodeByPath
+### `getNodeByPath`
 
 Retrieves a node at the specified path.
 
+<API name="getNodeByPath">
 <APIParameters>
-<APIItem name="page" type="Page">
-The Playwright page object.
-</APIItem>
-<APIItem name="editorHandle" type="EditorHandle">
-The handle to the Plate editor instance.
-</APIItem>
-<APIItem name="path" type="Path">
-The path to the node.
-</APIItem>
+  <APIItem name="page" type="Page">
+    Playwright page object.
+  </APIItem>
+  <APIItem name="editorHandle" type="EditorHandle">
+    Handle to editor instance.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    Path to node.
+  </APIItem>
 </APIParameters>
 
-<APIReturns>
-<APIItem type="JSHandle<TNode>">
-A handle to the node at the specified path.
-</APIItem>
+<APIReturns type="JSHandle<TNode>">
+  Handle to node at path.
 </APIReturns>
+</API>
 
-### getDOMNodeByPath
+### `getDOMNodeByPath`
 
 Gets the DOM node for a Slate node at the given path.
 
+<API name="getDOMNodeByPath">
 <APIParameters>
-<APIItem name="page" type="Page">
-The Playwright page object.
-</APIItem>
-<APIItem name="editorHandle" type="EditorHandle">
-The handle to the Plate editor instance.
-</APIItem>
-<APIItem name="path" type="Path">
-The path to the node.
-</APIItem>
+  <APIItem name="page" type="Page">
+    Playwright page object.
+  </APIItem>
+  <APIItem name="editorHandle" type="EditorHandle">
+    Handle to editor instance.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    Path to node.
+  </APIItem>
 </APIParameters>
 
-<APIReturns>
-<APIItem type="ElementHandle">
-An ElementHandle for the DOM node corresponding to the Slate node.
-</APIItem>
+<APIReturns type="ElementHandle">
+  ElementHandle for corresponding DOM node.
 </APIReturns>
+</API>
 
-### clickAtPath
+### `clickAtPath`
 
 Simulates a click on the node at the specified path.
 
+<API name="clickAtPath">
 <APIParameters>
-<APIItem name="page" type="Page">
-The Playwright page object.
-</APIItem>
-<APIItem name="editorHandle" type="EditorHandle">
-The handle to the Plate editor instance.
-</APIItem>
-<APIItem name="path" type="Path">
-The path to the node to click.
-</APIItem>
+  <APIItem name="page" type="Page">
+    Playwright page object.
+  </APIItem>
+  <APIItem name="editorHandle" type="EditorHandle">
+    Handle to editor instance.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    Path to node to click.
+  </APIItem>
 </APIParameters>
+</API>
 
-### getSelection
+### `getSelection`
 
 Retrieves the current editor selection.
 
+<API name="getSelection">
 <APIParameters>
-<APIItem name="page" type="Page">
-The Playwright page object.
-</APIItem>
-<APIItem name="editorHandle" type="EditorHandle">
-The handle to the Plate editor instance.
-</APIItem>
+  <APIItem name="page" type="Page">
+    Playwright page object.
+  </APIItem>
+  <APIItem name="editorHandle" type="EditorHandle">
+    Handle to editor instance.
+  </APIItem>
 </APIParameters>
 
-<APIReturns>
-<APIItem type="Selection">
-The current editor selection.
-</APIItem>
+<APIReturns type="Selection">
+  Current editor selection.
 </APIReturns>
+</API>
 
-### setSelection
+### `setSelection`
 
 Sets the editor selection to the specified range.
 
+<API name="setSelection">
 <APIParameters>
-<APIItem name="page" type="Page">
-The Playwright page object.
-</APIItem>
-<APIItem name="editorHandle" type="EditorHandle">
-The handle to the Plate editor instance.
-</APIItem>
-<APIItem name="at" type="Location">
-The location to set the selection.
-</APIItem>
+  <APIItem name="page" type="Page">
+    Playwright page object.
+  </APIItem>
+  <APIItem name="editorHandle" type="EditorHandle">
+    Handle to editor instance.
+  </APIItem>
+  <APIItem name="at" type="Location">
+    Location to set selection.
+  </APIItem>
 </APIParameters>
+</API>
 
-### getTypeAtPath
+### `getTypeAtPath`
 
 Gets the type of the node at the specified path.
 
+<API name="getTypeAtPath">
 <APIParameters>
-<APIItem name="page" type="Page">
-The Playwright page object.
-</APIItem>
-<APIItem name="editorHandle" type="EditorHandle">
-The handle to the Plate editor instance.
-</APIItem>
-<APIItem name="path" type="Path">
-The path to the node.
-</APIItem>
+  <APIItem name="page" type="Page">
+    Playwright page object.
+  </APIItem>
+  <APIItem name="editorHandle" type="EditorHandle">
+    Handle to editor instance.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    Path to node.
+  </APIItem>
 </APIParameters>
 
-<APIReturns>
-<APIItem type="string">
-The type of the node at the specified path.
-</APIItem>
+<APIReturns type="string">
+  Type of node at path.
 </APIReturns>
+</API>

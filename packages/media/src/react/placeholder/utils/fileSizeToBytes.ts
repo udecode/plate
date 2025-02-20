@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/only-throw-error */
 import { type FileSize, UploadErrorCode } from '../type';
 import { createUploadError } from './createUploadError';
 

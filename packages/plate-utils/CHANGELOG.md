@@ -1,5 +1,31 @@
 # @udecode/plate-utils
 
+## 45.0.2
+
+### Patch Changes
+
+- [#4090](https://github.com/udecode/plate/pull/4090) by [@zbeyens](https://github.com/zbeyens) – Add `belowRootNodes` render option to render content below root element but above children. Similar to `belowNodes` but renders directly in the element rather than wrapping. This is used in `PlateElement` to render the `BlockSelection` component below the root element.
+
+## 45.0.1
+
+## 44.0.7
+
+## 44.0.1
+
+## 44.0.0
+
+## 43.0.5
+
+## 43.0.4
+
+## 43.0.2
+
+## 43.0.0
+
+## 42.2.5
+
+## 42.2.2
+
 ## 42.1.2
 
 ## 42.1.1

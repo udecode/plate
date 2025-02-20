@@ -33,13 +33,13 @@ export interface ChangeTrackingEditor {
     rangeRef: RangeRef;
   }[];
 
+  recordingOperations: boolean;
+
   removedTexts: {
     node: TText;
     pointRef: PointRef;
   }[];
-
   commitChangesToDiffs: () => void;
-  recordingOperations: boolean;
 }
 
 export const withChangeTracking = <E extends Editor>(

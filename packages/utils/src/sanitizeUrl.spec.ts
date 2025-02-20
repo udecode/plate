@@ -12,7 +12,6 @@ describe('sanitizeUrl', () => {
     });
 
     it('should return null when url has disallowed scheme', () => {
-      // eslint-disable-next-line no-script-url
       expect(sanitizeUrl('javascript://example.com/', options)).toBeNull();
     });
 
@@ -34,7 +33,6 @@ describe('sanitizeUrl', () => {
     });
 
     it('should return null when url has disallowed scheme', () => {
-      // eslint-disable-next-line no-script-url
       expect(sanitizeUrl('javascript://example.com/', options)).toBeNull();
     });
 

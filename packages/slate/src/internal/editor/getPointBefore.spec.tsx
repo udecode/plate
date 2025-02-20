@@ -122,8 +122,8 @@ describe('getPointBefore', () => {
         expect(
           editor.api.before(editor.selection as any, {
             afterMatch: true,
-            match: () => true,
             unit: 'offset',
+            match: () => true,
           })
         ).toEqual({ offset: 3, path: [0, 0] });
       });

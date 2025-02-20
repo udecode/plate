@@ -1,8 +1,8 @@
 import {
   type ExtendConfig,
   type InsertNodesOptions,
-  NodeApi,
   bindFirst,
+  NodeApi,
 } from '@udecode/plate';
 import { toTPlatePlugin } from '@udecode/plate/react';
 

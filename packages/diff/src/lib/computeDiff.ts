@@ -12,20 +12,20 @@ import { dmp } from '../internal/utils/dmp';
 import { StringCharMapping } from '../internal/utils/string-char-mapping';
 
 export interface ComputeDiffOptions {
+  isInline: EditorApi['isInline'];
+  getDeleteProps: (node: Descendant) => any;
+  getInsertProps: (node: Descendant) => any;
   getUpdateProps: (
     node: Descendant,
     properties: any,
     newProperties: any
   ) => any;
-  getDeleteProps: (node: Descendant) => any;
-  getInsertProps: (node: Descendant) => any;
-  isInline: EditorApi['isInline'];
+  ignoreProps?: string[];
+  lineBreakChar?: string;
   elementsAreRelated?: (
     element: TElement,
     nextElement: TElement
   ) => boolean | null;
-  ignoreProps?: string[];
-  lineBreakChar?: string;
 }
 
 export const computeDiff = (
@@ -50,6 +50,9 @@ export const computeDiff = (
   return transformDiffDescendants(diff, {
     getDeleteProps,
     getInsertProps,
+    ignoreProps,
+    isInline,
+    stringCharMapping,
     getUpdateProps: (node, properties, newProperties) => {
       // Ignore the update if only ignored props have changed
       if (
@@ -60,9 +63,6 @@ export const computeDiff = (
 
       return getUpdateProps(node, properties, newProperties);
     },
-    ignoreProps,
-    isInline,
-    stringCharMapping,
     ...options,
   });
 };

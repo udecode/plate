@@ -3,14 +3,14 @@
 import React from 'react';
 
 import { cn, withRef } from '@udecode/cn';
+import { type TColumnElement, setColumns } from '@udecode/plate-layout';
+import { useDebouncePopoverOpen } from '@udecode/plate-layout/react';
 import {
   useEditorRef,
   useElement,
   useReadOnly,
   useRemoveNodeButton,
 } from '@udecode/plate/react';
-import { type TColumnElement, setColumns } from '@udecode/plate-layout';
-import { useDebouncePopoverOpen } from '@udecode/plate-layout/react';
 import { type LucideProps, Trash2Icon } from 'lucide-react';
 
 import { Button } from './button';

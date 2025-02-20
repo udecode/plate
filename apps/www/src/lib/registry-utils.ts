@@ -1,6 +1,6 @@
-import type { RegistryEntry } from '@/registry/schema';
+import type { RegistryItem } from 'shadcx/registry';
 
-export function getRegistryTitle(item: Partial<RegistryEntry>): string {
+export function getRegistryTitle(item: Partial<RegistryItem>): string {
   return (
     item.doc?.title ??
     item.name

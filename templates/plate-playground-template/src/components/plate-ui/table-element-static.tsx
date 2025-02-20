@@ -22,7 +22,7 @@ export const TableElementStatic = ({
       {...props}
     >
       <div className="group/table relative w-fit">
-        <table className="ml-px mr-0 table h-px table-fixed border-collapse">
+        <table className="mr-0 ml-px table h-px table-fixed border-collapse">
           <tbody className="min-w-full">{children}</tbody>
         </table>
       </div>

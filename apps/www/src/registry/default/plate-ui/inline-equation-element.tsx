@@ -5,12 +5,16 @@ import { useRef, useState } from 'react';
 import type { TEquationElement } from '@udecode/plate-math';
 
 import { cn, withRef } from '@udecode/cn';
-import { useElement, useSelected } from '@udecode/plate/react';
 import { useEquationElement } from '@udecode/plate-math/react';
+import {
+  PlateElement,
+  useEditorSelector,
+  useElement,
+  useSelected,
+} from '@udecode/plate/react';
 import { RadicalIcon } from 'lucide-react';
 
 import { EquationPopoverContent } from './equation-popover';
-import { PlateElement } from './plate-element';
 import { Popover, PopoverTrigger } from './popover';
 
 export const InlineEquationElement = withRef<typeof PlateElement>(
@@ -18,7 +22,11 @@ export const InlineEquationElement = withRef<typeof PlateElement>(
     const element = useElement<TEquationElement>();
     const katexRef = useRef<HTMLDivElement | null>(null);
     const selected = useSelected();
-    const [open, setOpen] = useState(selected);
+    const isCollapsed = useEditorSelector(
+      (editor) => editor.api.isCollapsed(),
+      []
+    );
+    const [open, setOpen] = useState(selected && isCollapsed);
 
     useEquationElement({
       element,
@@ -40,7 +48,7 @@ export const InlineEquationElement = withRef<typeof PlateElement>(
       <PlateElement
         ref={ref}
         className={cn(
-          'inline-block select-none rounded-sm [&_.katex-display]:my-0',
+          'inline-block rounded-sm select-none [&_.katex-display]:my-0',
           className
         )}
         {...props}
@@ -49,7 +57,7 @@ export const InlineEquationElement = withRef<typeof PlateElement>(
           <PopoverTrigger asChild>
             <div
               className={cn(
-                'after:absolute after:inset-0 after:-left-1 after:-top-0.5 after:z-[1] after:h-[calc(100%)+4px] after:w-[calc(100%+8px)] after:rounded-sm after:content-[""]',
+                'after:absolute after:inset-0 after:-top-0.5 after:-left-1 after:z-1 after:h-[calc(100%)+4px] after:w-[calc(100%+8px)] after:rounded-sm after:content-[""]',
                 'h-6',
                 element.texExpression.length > 0 && open && 'after:bg-brand/15',
                 element.texExpression.length === 0 &&

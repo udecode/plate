@@ -8,7 +8,7 @@ import type { BlockSelectionConfig } from '../BlockSelectionPlugin';
 export const useBlockSelectable = () => {
   const element = useElement();
   const path = usePath();
-  const { api, editor, getOption, getOptions } =
+  const { api, editor, getOption, getOptions, setOption } =
     useEditorPlugin<BlockSelectionConfig>({
       key: 'blockSelection',
     });
@@ -51,9 +51,11 @@ export const useBlockSelectable = () => {
               }
             }
             if (id) {
-              api.blockSelection.addSelectedRow(id, {
-                clear: !event?.shiftKey,
-              });
+              if (event?.shiftKey) {
+                api.blockSelection.add(id);
+              } else {
+                setOption('selectedIds', new Set([id]));
+              }
             }
           },
         }

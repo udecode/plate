@@ -1,21 +1,8 @@
-import type { Registry } from '@/registry/schema';
+import type { Registry } from 'shadcx/registry';
 
-export const blocks: Registry = [
+export const blocks: Registry['items'] = [
   {
-    category: 'Editors',
-    files: [
-      {
-        path: 'block/editor-select/page.tsx',
-        target: 'app/editor/page.tsx',
-        type: 'registry:page',
-      },
-    ],
-    name: 'editor-select',
-    registryDependencies: ['select-editor-demo'],
-    type: 'registry:block',
-  },
-  {
-    category: 'Editors',
+    categories: ['Editors'],
     dependencies: [
       '@udecode/cn',
       '@udecode/plate-ai',
@@ -23,6 +10,7 @@ export const blocks: Registry = [
       '@udecode/plate-block-quote',
       '@udecode/plate-code-block',
       '@udecode/plate-comments',
+      '@udecode/plate-suggestion',
       '@udecode/plate',
       '@udecode/plate-date',
       '@udecode/plate-emoji',
@@ -43,17 +31,17 @@ export const blocks: Registry = [
     ],
     files: [
       {
-        path: 'block/editor-ai/page.tsx',
+        path: 'blocks/editor-ai/page.tsx',
         target: 'app/editor/page.tsx',
         type: 'registry:page',
       },
       {
-        path: 'block/editor-ai/components/editor/plate-editor.tsx',
+        path: 'blocks/editor-ai/components/editor/plate-editor.tsx',
         target: 'components/editor/plate-editor.tsx',
         type: 'registry:component',
       },
       {
-        path: 'block/editor-ai/components/editor/use-create-editor.ts',
+        path: 'blocks/editor-ai/components/editor/use-create-editor.ts',
         target: 'components/editor/use-create-editor.ts',
         type: 'registry:component',
       },
@@ -76,7 +64,7 @@ export const blocks: Registry = [
 
       'ai-menu',
       'ghost-text',
-      'comments-popover',
+      'block-discussion',
       'cursor-overlay',
       'editor',
       'block-context-menu',
@@ -90,6 +78,7 @@ export const blocks: Registry = [
       'column-element',
       'column-group-element',
       'comment-leaf',
+      'suggestion-leaf',
       'date-element',
       'draggable',
       'equation-element',
@@ -121,24 +110,37 @@ export const blocks: Registry = [
     type: 'registry:block',
   },
   {
-    category: 'Editors',
+    categories: ['Editors'],
+    files: [
+      {
+        path: 'blocks/editor-select/page.tsx',
+        target: 'app/editor/page.tsx',
+        type: 'registry:page',
+      },
+    ],
+    name: 'editor-select',
+    registryDependencies: ['select-editor-demo'],
+    type: 'registry:block',
+  },
+  {
+    categories: ['Editors'],
     dependencies: [
       '@udecode/plate-basic-elements',
       '@udecode/plate-basic-marks',
     ],
     files: [
       {
-        path: 'block/editor-basic/page.tsx',
+        path: 'blocks/editor-basic/page.tsx',
         target: 'app/editor/page.tsx',
         type: 'registry:page',
       },
       {
-        path: 'block/editor-basic/components/editor/plate-editor.tsx',
+        path: 'blocks/editor-basic/components/editor/plate-editor.tsx',
         target: 'components/editor/plate-editor.tsx',
         type: 'registry:component',
       },
       {
-        path: 'block/editor-basic/components/editor/use-create-editor.ts',
+        path: 'blocks/editor-basic/components/editor/use-create-editor.ts',
         target: 'components/editor/use-create-editor.ts',
         type: 'registry:component',
       },
@@ -151,7 +153,7 @@ export const blocks: Registry = [
     category: 'Serializers',
     files: [
       {
-        path: 'block/slate-to-html/page.tsx',
+        path: 'blocks/slate-to-html/page.tsx',
         target: 'app/html/page.tsx',
         type: 'registry:page',
       },

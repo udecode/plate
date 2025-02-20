@@ -1,7 +1,5 @@
 import React from 'react';
 
-import type { TElement } from '@udecode/plate';
-
 import { useEditorRef } from '@udecode/plate/react';
 
 import { type UseDndNodeOptions, DRAG_ITEM_BLOCK, useDndNode } from '..';
@@ -9,18 +7,19 @@ import { type UseDndNodeOptions, DRAG_ITEM_BLOCK, useDndNode } from '..';
 export type DraggableState = {
   isDragging: boolean;
   /** The ref of the draggable element */
-  previewRef: React.RefObject<HTMLDivElement>;
+  previewRef: React.RefObject<HTMLDivElement | null>;
   /** The ref of the draggable handle */
   handleRef: (
-    elementOrNode: Element | React.ReactElement | React.RefObject<any> | null
+    elementOrNode:
+      | Element
+      | React.ReactElement<any>
+      | React.RefObject<any>
+      | null
   ) => void;
 };
 
-export const useDraggable = (
-  props: UseDndNodeOptions & { element: TElement }
-): DraggableState => {
+export const useDraggable = (props: UseDndNodeOptions): DraggableState => {
   const {
-    element,
     orientation = 'vertical',
     type = DRAG_ITEM_BLOCK,
     onDropHandler,
@@ -34,7 +33,6 @@ export const useDraggable = (
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const { dragRef, isDragging } = useDndNode({
-    id: element.id as string,
     nodeRef,
     orientation,
     type,

@@ -1,5 +1,34 @@
 # @udecode/plate-dnd
 
+## 44.0.0
+
+## 43.0.1
+
+### Patch Changes
+
+- [#4020](https://github.com/udecode/plate/pull/4020) by [@felixfeng33](https://github.com/felixfeng33) – Fix dnd from file system
+
+## 43.0.0
+
+## 42.2.4
+
+### Patch Changes
+
+- [#4012](https://github.com/udecode/plate/pull/4012) by [@zbeyens](https://github.com/zbeyens) – Fix overrideEditor insertText missing options
+
+## 42.2.3
+
+### Patch Changes
+
+- [#4010](https://github.com/udecode/plate/pull/4010) by [@zbeyens](https://github.com/zbeyens) –
+  - `useDndNode`: `onDropHandler` can return `void`
+
+## 42.2.2
+
+### Patch Changes
+
+- [#4000](https://github.com/udecode/plate/pull/4000) by [@12joan](https://github.com/12joan) – Improve performance of drag and drop
+
 ## 42.0.0
 
 ## 41.0.2

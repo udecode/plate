@@ -6,6 +6,17 @@ import {
 } from '../BaseCodeBlockPlugin';
 
 export const htmlDeserializerCodeBlock: HtmlDeserializer = {
+  rules: [
+    {
+      validNodeName: 'PRE',
+    },
+    {
+      validNodeName: 'P',
+      validStyle: {
+        fontFamily: 'Consolas',
+      },
+    },
+  ],
   parse: ({ element }) => {
     const languageSelectorText =
       [...element.childNodes].find(
@@ -31,15 +42,4 @@ export const htmlDeserializerCodeBlock: HtmlDeserializer = {
       type: BaseCodeBlockPlugin.key,
     };
   },
-  rules: [
-    {
-      validNodeName: 'PRE',
-    },
-    {
-      validNodeName: 'P',
-      validStyle: {
-        fontFamily: 'Consolas',
-      },
-    },
-  ],
 };

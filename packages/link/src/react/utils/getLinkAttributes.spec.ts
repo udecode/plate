@@ -51,7 +51,7 @@ describe('getLinkAttributes', () => {
     const link: TLinkElement = {
       ...baseLink,
       target: '_self',
-      // eslint-disable-next-line no-script-url
+
       url: 'javascript://example.com/',
     };
 

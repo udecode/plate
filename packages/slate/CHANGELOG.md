@@ -1,5 +1,17 @@
 # @udecode/slate
 
+## 44.0.0
+
+### Patch Changes
+
+- [#4048](https://github.com/udecode/plate/pull/4048) by [@zbeyens](https://github.com/zbeyens) – Fix duplicateNodes when nodes is not passed
+
+## 42.2.5
+
+### Patch Changes
+
+- [#4015](https://github.com/udecode/plate/pull/4015) by [@yf-yang](https://github.com/yf-yang) – Fix `editor.tf.moveNodes` type
+
 ## 42.0.3
 
 ### Patch Changes

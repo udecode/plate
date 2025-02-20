@@ -1,7 +1,7 @@
 import type { ChatRequestOptions } from 'ai';
 
-import { type PlateEditor, getEditorPlugin } from '@udecode/plate/react';
 import { isSelecting } from '@udecode/plate-selection';
+import { type PlateEditor, getEditorPlugin } from '@udecode/plate/react';
 
 import type { AIChatPluginConfig } from '../AIChatPlugin';
 

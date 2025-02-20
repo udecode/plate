@@ -1,4 +1,4 @@
-import type { Registry } from './schema';
+import type { Registry } from 'shadcx/registry';
 
 import { registryApp } from './registry-app';
 import { blocks } from './registry-blocks';
@@ -9,13 +9,19 @@ import { lib } from './registry-lib';
 import { themes } from './registry-themes';
 import { ui } from './registry-ui';
 
-export const registry: Registry = [
-  ...ui,
-  ...components,
-  ...examples,
-  ...registryApp,
-  ...blocks,
-  ...lib,
-  ...hooks,
-  ...themes,
-];
+export const registry = {
+  homepage: 'https://platejs.org',
+  items: [
+    ...ui,
+    ...components,
+    ...registryApp,
+    ...blocks,
+    ...lib,
+    ...hooks,
+    ...themes,
+
+    // Internal use only.
+    ...examples,
+  ],
+  name: 'plate',
+} satisfies Registry;

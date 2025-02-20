@@ -16,6 +16,10 @@ import type { toDOMRange } from '../../internal/dom-editor/toDOMRange';
 import type { toSlateNode } from '../../internal/dom-editor/toSlateNode';
 import type { toSlatePoint } from '../../internal/dom-editor/toSlatePoint';
 import type { toSlateRange } from '../../internal/dom-editor/toSlateRange';
+import type { hasMark } from '../../internal/editor-extension/hasMark';
+import type { isAt } from '../../internal/editor-extension/isAt';
+import type { isText } from '../../internal/editor-extension/isText';
+import type { some } from '../../internal/editor-extension/some';
 import type { createPathRef } from '../../internal/editor/createPathRef';
 import type { createPointRef } from '../../internal/editor/createPointRef';
 import type { createRangeRef } from '../../internal/editor/createRangeRef';
@@ -43,10 +47,6 @@ import type { isEndPoint } from '../../internal/editor/isEndPoint';
 import type { isStartPoint } from '../../internal/editor/isStartPoint';
 import type { range } from '../../internal/editor/range';
 import type { unhangRange } from '../../internal/editor/unhangRange';
-import type { hasMark } from '../../internal/editor-extension/hasMark';
-import type { isAt } from '../../internal/editor-extension/isAt';
-import type { isText } from '../../internal/editor-extension/isText';
-import type { some } from '../../internal/editor-extension/some';
 import type { HistoryApi } from '../../slate-history';
 import type {
   At,
@@ -68,19 +68,44 @@ import type { TRange } from '../range';
 import type { MarksIn, TextIn } from '../text';
 import type { Value } from './editor-type';
 
+export type EditorAboveOptions<V extends Value = Value> = QueryOptions<V> &
+  QueryMode &
+  QueryVoids;
+
+export type EditorAfterOptions = {
+  distance?: number;
+} & QueryTextUnit &
+  QueryVoids;
+
 export type EditorApi<V extends Value = Value> = {
   /** Get the fragment at a location or selection. */
   fragment: <N extends ElementOrTextIn<V>>(
     at?: At | null,
     options?: EditorFragmentOptions
   ) => N[];
-
+  /** Get the dirty paths of the editor. */
+  getDirtyPaths: <N extends DescendantIn<V>>(operation: Operation<N>) => Path[];
+  /**
+   * Returns the fragment at the current selection. Used when cutting or
+   * copying, as an example, to get the fragment at the current selection.
+   */
+  getFragment: (at?: At) => ElementOrTextIn<V>[];
+  /** Check if a value is a read-only `Element` object. */
+  isElementReadOnly: <N extends ElementIn<V>>(element: N) => boolean;
   /** Check if a path is selected by the current selection. */
   isSelected: (
     target: Path | TRange,
     options?: EditorIsSelectedOptions
   ) => boolean;
-
+  /** Check if a value is a void `Element` object. */
+  isVoid: <N extends ElementIn<V>>(element: N) => boolean;
+  /** Check if a value is a markable `Element` object. */
+  markableVoid: <N extends ElementIn<V>>(element: N) => boolean;
+  /**
+   * Manually set if the editor should currently be normalizing. Note: Using
+   * this incorrectly can leave the editor in an invalid state.
+   */
+  setNormalizing: (isNormalizing: boolean) => void;
   /**
    * Call a function, Determine whether or not remove the previous node when
    * merge.
@@ -89,7 +114,6 @@ export type EditorApi<V extends Value = Value> = {
     prevNodeEntry: NodeEntry,
     curNodeEntry: NodeEntry
   ) => boolean;
-
   /** Override this method to prevent normalizing the editor. */
   shouldNormalize: (options: {
     dirtyPaths: Path[];
@@ -97,104 +121,9 @@ export type EditorApi<V extends Value = Value> = {
     iteration: number;
     operation?: Operation;
   }) => boolean;
-
-  /** Get the dirty paths of the editor. */
-  getDirtyPaths: <N extends DescendantIn<V>>(operation: Operation<N>) => Path[];
-
-  /**
-   * Returns the fragment at the current selection. Used when cutting or
-   * copying, as an example, to get the fragment at the current selection.
-   */
-  getFragment: (at?: At) => ElementOrTextIn<V>[];
-
-  /** Check if a value is a read-only `Element` object. */
-  isElementReadOnly: <N extends ElementIn<V>>(element: N) => boolean;
-
-  /** Check if a value is a void `Element` object. */
-  isVoid: <N extends ElementIn<V>>(element: N) => boolean;
-
-  /** Check if a value is a markable `Element` object. */
-  markableVoid: <N extends ElementIn<V>>(element: N) => boolean;
-
-  /**
-   * Manually set if the editor should currently be normalizing. Note: Using
-   * this incorrectly can leave the editor in an invalid state.
-   */
-  setNormalizing: (isNormalizing: boolean) => void;
-
   /** Called when there is a change in the editor. */
   onChange: (options?: { operation?: Operation }) => void;
 } & {
-  /** Get the matching ancestor above a location in the document. */
-  above: <N extends AncestorIn<V>>(
-    options?: EditorAboveOptions<V>
-  ) => NodeEntry<N> | undefined;
-  /** Get the last node at a location. */
-  last: <N extends DescendantIn<V>>(
-    at: At,
-    options?: EditorLastOptions
-  ) => NodeEntry<N> | undefined;
-
-  /** Get the leaf text node at a location. */
-  leaf: <N extends TextIn<V>>(
-    at: At,
-    options?: EditorLeafOptions
-  ) => NodeEntry<N> | undefined;
-
-  /** Iterate through all of the levels at a location. */
-  levels: <N extends NodeIn<V>>(
-    options?: EditorLevelsOptions<V>
-  ) => Generator<NodeEntry<N>, void, undefined>;
-  /**
-   * Get the matching node in the branch of the document after a location.
-   *
-   * Note: To find the next Point, and not the next Node, use the `Editor.after`
-   * method
-   */
-  next: <N extends DescendantIn<V>>(
-    options?: EditorNextOptions<V>
-  ) => NodeEntry<N> | undefined;
-  /**
-   * Get the node at a location or find the first node that matches options.
-   *
-   * @example
-   *   ```ts
-   *   editor.api.node([0]) // Get node at path [0]
-   *   editor.api.node({ at: [], id: '1' }) // Find first node with id '1'
-   *   editor.api.node({ at: path, block: true }) // Find first block at path
-   *   ```;
-   */
-  node: <N extends DescendantIn<V>>(
-    atOrOptions: AtOrDescendant | EditorNodesOptions<V>,
-    nodeOptions?: EditorNodeOptions
-  ) => NodeEntry<N> | undefined;
-  /**
-   * At any given `Location` or `Span` in the editor provided by `at` (default
-   * is the current selection), the method returns a Generator of `NodeEntry`
-   * objects that represent the nodes that include `at`. At the top of the
-   * hierarchy is the `Editor` object itself.
-   */
-  nodes: <N extends DescendantIn<V>>(
-    options?: EditorNodesOptions<V>
-  ) => Generator<NodeEntry<N>, void, undefined>;
-  /** Get the parent node of a location. */
-  parent: <N extends AncestorIn<V>>(
-    at: At,
-    options?: EditorParentOptions
-  ) => NodeEntry<N> | undefined;
-  /**
-   * Get the matching node in the branch of the document before a location.
-   *
-   * Note: To find the previous Point, and not the previous Node, use the
-   * `Editor.before` method
-   */
-  previous: <N extends DescendantIn<V>>(
-    options?: EditorPreviousOptions<V>
-  ) => NodeEntry<N> | undefined;
-  /** Match a void node in the current branch of the editor. */
-  void: <N extends ElementIn<V>>(
-    options?: EditorVoidOptions
-  ) => NodeEntry<N> | undefined;
   /**
    * Get the point after a location.
    *
@@ -215,18 +144,12 @@ export type EditorApi<V extends Value = Value> = {
   elementReadOnly: OmitFirst<typeof isElementReadOnly>;
   /** Get the end point of a location. */
   end: OmitFirst<typeof getEndPoint>;
-  /** Get the first node at a location. */
-  first: <N extends DescendantIn<V>>(at: At) => NodeEntry<N> | undefined;
-  /** Get the fragment at a location. */
-  fragment: <N extends ElementOrTextIn<V>>(at: At) => N[] | undefined;
   /** Check if a node has block children. */
   hasBlocks: OmitFirst<typeof hasBlocks>;
   /** Check if a node has inline and text children. */
   hasInlines: OmitFirst<typeof hasInlines>;
   /** Check if mark is active at selection */
   hasMark: OmitFirst<typeof hasMark>;
-  /** Check if a path exists in the editor. */
-  hasPath: (path: Path) => boolean;
   /** Check if a node has text children. */
   hasTexts: OmitFirst<typeof hasTexts>;
   /** Check if a value is a block `Element` object. */
@@ -251,8 +174,6 @@ export type EditorApi<V extends Value = Value> = {
   isNormalizing: OmitFirst<typeof isEditorNormalizing>;
   /** Check if a point is the start point of a location. */
   isStart: OmitFirst<typeof isStartPoint>;
-  /** Get the marks that would be added to text at the current selection. */
-  marks: () => MarksIn<V> | null;
   /** Get the path of a location. */
   path: OmitFirst<typeof path>;
   /**
@@ -336,15 +257,83 @@ export type EditorApi<V extends Value = Value> = {
    *   start of the next).
    */
   unhangRange: OmitFirst<typeof unhangRange>;
+  /** Get the matching ancestor above a location in the document. */
+  above: <N extends AncestorIn<V>>(
+    options?: EditorAboveOptions<V>
+  ) => NodeEntry<N> | undefined;
+  /** Get the first node at a location. */
+  first: <N extends DescendantIn<V>>(at: At) => NodeEntry<N> | undefined;
+  /** Get the fragment at a location. */
+  fragment: <N extends ElementOrTextIn<V>>(at: At) => N[] | undefined;
+  /** Check if a path exists in the editor. */
+  hasPath: (path: Path) => boolean;
+  /** Get the last node at a location. */
+  last: <N extends DescendantIn<V>>(
+    at: At,
+    options?: EditorLastOptions
+  ) => NodeEntry<N> | undefined;
+  /** Get the leaf text node at a location. */
+  leaf: <N extends TextIn<V>>(
+    at: At,
+    options?: EditorLeafOptions
+  ) => NodeEntry<N> | undefined;
+  /** Iterate through all of the levels at a location. */
+  levels: <N extends NodeIn<V>>(
+    options?: EditorLevelsOptions<V>
+  ) => Generator<NodeEntry<N>, void, undefined>;
+  /** Get the marks that would be added to text at the current selection. */
+  marks: () => MarksIn<V> | null;
+  /**
+   * Get the matching node in the branch of the document after a location.
+   *
+   * Note: To find the next Point, and not the next Node, use the `Editor.after`
+   * method
+   */
+  next: <N extends DescendantIn<V>>(
+    options?: EditorNextOptions<V>
+  ) => NodeEntry<N> | undefined;
+  /**
+   * Get the node at a location or find the first node that matches options.
+   *
+   * @example
+   *   ```ts
+   *   editor.api.node([0]) // Get node at path [0]
+   *   editor.api.node({ at: [], id: '1' }) // Find first node with id '1'
+   *   editor.api.node({ at: path, block: true }) // Find first block at path
+   *   ```;
+   */
+  node: <N extends DescendantIn<V>>(
+    atOrOptions: AtOrDescendant | EditorNodesOptions<V>,
+    nodeOptions?: EditorNodeOptions
+  ) => NodeEntry<N> | undefined;
+  /**
+   * At any given `Location` or `Span` in the editor provided by `at` (default
+   * is the current selection), the method returns a Generator of `NodeEntry`
+   * objects that represent the nodes that include `at`. At the top of the
+   * hierarchy is the `Editor` object itself.
+   */
+  nodes: <N extends DescendantIn<V>>(
+    options?: EditorNodesOptions<V>
+  ) => Generator<NodeEntry<N>, void, undefined>;
+  /** Get the parent node of a location. */
+  parent: <N extends AncestorIn<V>>(
+    at: At,
+    options?: EditorParentOptions
+  ) => NodeEntry<N> | undefined;
+  /**
+   * Get the matching node in the branch of the document before a location.
+   *
+   * Note: To find the previous Point, and not the previous Node, use the
+   * `Editor.before` method
+   */
+  previous: <N extends DescendantIn<V>>(
+    options?: EditorPreviousOptions<V>
+  ) => NodeEntry<N> | undefined;
+  /** Match a void node in the current branch of the editor. */
+  void: <N extends ElementIn<V>>(
+    options?: EditorVoidOptions
+  ) => NodeEntry<N> | undefined;
 } & {
-  /** Check if the target is inside a non-readonly void element. */
-  isTargetInsideNonReadonlyVoid: OmitFirst<
-    typeof isTargetInsideNonReadonlyVoid
-  >;
-  /** Find a Slate node from a native DOM `element` */
-  toSlateNode: <N extends NodeIn<V>>(
-    domNode: Parameters<typeof toSlateNode>[1]
-  ) => N | undefined;
   findDocumentOrShadowRoot: OmitFirst<typeof findDocumentOrShadowRoot>;
   /** Get the target range from a DOM `event` */
   findEventRange: OmitFirst<typeof findEventRange>;
@@ -353,24 +342,20 @@ export type EditorApi<V extends Value = Value> = {
    * `{ id: string }`
    */
   findKey: OmitFirst<typeof findKey>;
-  /**
-   * Find the path of Slate node. If DOM node is not found, it will use
-   * `findNodePath` (traversal method).
-   */
-  findPath: (node: TNode, options?: EditorFindPathOptions) => Path | undefined;
   getWindow: OmitFirst<typeof getWindow>;
   /** Check if a DOM node is within the editor */
   hasDOMNode: OmitFirst<typeof hasDOMNode>;
-  hasEditableTarget: (target: EventTarget | null) => target is Node;
   hasRange: OmitFirst<typeof hasRange>;
-  hasSelectableTarget: (target: EventTarget | null) => target is Node;
-  hasTarget: (target: EventTarget | null) => target is Node;
   /** Check if the user is currently composing inside the editor */
   isComposing: OmitFirst<typeof isComposing>;
   /** Check if the editor is focused */
   isFocused: OmitFirst<typeof isFocused>;
   /** Check if the editor is in read-only mode */
   isReadOnly: OmitFirst<typeof isReadOnly>;
+  /** Check if the target is inside a non-readonly void element. */
+  isTargetInsideNonReadonlyVoid: OmitFirst<
+    typeof isTargetInsideNonReadonlyVoid
+  >;
   /** Find the native DOM element from a Slate node */
   toDOMNode: OmitFirst<typeof toDOMNode>;
   /** Find a native DOM selection point from a Slate point */
@@ -381,6 +366,18 @@ export type EditorApi<V extends Value = Value> = {
   toSlatePoint: OmitFirst<typeof toSlatePoint>;
   /** Find a Slate range from a DOM range or selection. */
   toSlateRange: OmitFirst<typeof toSlateRange>;
+  /**
+   * Find the path of Slate node. If DOM node is not found, it will use
+   * `findNodePath` (traversal method).
+   */
+  findPath: (node: TNode, options?: EditorFindPathOptions) => Path | undefined;
+  hasEditableTarget: (target: EventTarget | null) => target is Node;
+  hasSelectableTarget: (target: EventTarget | null) => target is Node;
+  hasTarget: (target: EventTarget | null) => target is Node;
+  /** Find a Slate node from a native DOM `element` */
+  toSlateNode: <N extends NodeIn<V>>(
+    domNode: Parameters<typeof toSlateNode>[1]
+  ) => N | undefined;
 } & {
   /** Get the merge flag's current value. */
   isMerging: OmitFirst<typeof HistoryApi.isMerging>;
@@ -388,53 +385,12 @@ export type EditorApi<V extends Value = Value> = {
   isSaving: OmitFirst<typeof HistoryApi.isSaving>;
   isSplittingOnce: OmitFirst<typeof HistoryApi.isSplittingOnce>;
 } & {
-  /**
-   * Get the block at a location or find the first block that matches options.
-   * If `above` is true, get the block above the location, similar to
-   * `editor.api.above({ block: true })`. If `highest` is true, get the highest
-   * block at the location.
-   *
-   * @example
-   *   ```ts
-   *   editor.api.block() // Get block above selection
-   *   editor.api.block({ above: true }) // Get block above selection
-   *   editor.api.block({ at: [0, 0] }) // Get block at [0, 0]
-   *   editor.api.block({ at: [0, 0], above: true }) // Get block at [0]
-   *   editor.api.block({ highest: true }) // Get highest block at selection
-   *   ```;
-   */
-  block: <N extends ElementIn<V>>(
-    options?: EditorBlockOptions<V>
-  ) => NodeEntry<N> | undefined;
-
-  /** Returns all matching blocks. */
-  blocks: <N extends ElementIn<V>>(
-    options?: EditorNodesOptions<V>
-  ) => NodeEntry<N>[];
-
   create: {
     /** Default block factory. */
     block: (node?: Partial<TElement>, path?: Path) => TElement;
-
     /** Default value factory. */
     value: () => Value;
   };
-
-  /** Returns the first matching descendant. */
-  descendant: <N extends DescendantIn<V>>(
-    options: EditorNodesOptions<V>
-  ) => NodeEntry<N> | undefined;
-
-  /** Returns the edge blocks above a location (default: selection). */
-  edgeBlocks: <N1 extends ElementIn<V>, N2 extends ElementIn<V> = N1>(
-    options?: EditorAboveOptions<V>
-  ) => [NodeEntry<N1>, NodeEntry<N2>] | null;
-
-  /** Returns the selection mark value by key. */
-  mark: <K extends keyof MarksIn<V>>(
-    key: K
-  ) => MarksIn<V>[K] | null | undefined;
-
   /**
    * Check if a location (point/range) is at a specific position.
    *
@@ -454,23 +410,57 @@ export type EditorApi<V extends Value = Value> = {
    *   ```;
    */
   isAt: OmitFirst<typeof isAt>;
-
+  /** Check if a node at a location is a Text node */
+  isText: OmitFirst<typeof isText>;
+  /**
+   * Check if any node at a location (default: selection) matches the given
+   * criteria
+   */
+  some: OmitFirst<typeof some>;
+  /**
+   * Get the block at a location or find the first block that matches options.
+   * If `above` is true, get the block above the location, similar to
+   * `editor.api.above({ block: true })`. If `highest` is true, get the highest
+   * block at the location.
+   *
+   * @example
+   *   ```ts
+   *   editor.api.block() // Get block above selection
+   *   editor.api.block({ above: true }) // Get block above selection
+   *   editor.api.block({ at: [0, 0] }) // Get block at [0, 0]
+   *   editor.api.block({ at: [0, 0], above: true }) // Get block at [0]
+   *   editor.api.block({ highest: true }) // Get highest block at selection
+   *   ```;
+   */
+  block: <N extends ElementIn<V>>(
+    options?: EditorBlockOptions<V>
+  ) => NodeEntry<N> | undefined;
+  /** Returns all matching blocks. */
+  blocks: <N extends ElementIn<V>>(
+    options?: EditorNodesOptions<V>
+  ) => NodeEntry<N>[];
+  /** Returns the first matching descendant. */
+  descendant: <N extends DescendantIn<V>>(
+    options: EditorNodesOptions<V>
+  ) => NodeEntry<N> | undefined;
+  /** Returns the edge blocks above a location (default: selection). */
+  edgeBlocks: <N1 extends ElementIn<V>, N2 extends ElementIn<V> = N1>(
+    options?: EditorAboveOptions<V>
+  ) => [NodeEntry<N1>, NodeEntry<N2>] | null;
   /** Check if the selection is collapsed */
   isCollapsed: () => boolean;
-
   /** Check if selection is at editor end */
   isEditorEnd: () => boolean;
-
   /** Check if the selection is expanded */
   isExpanded: () => boolean;
   /** Check if a value is an inline `Element` object. */
   isInline: <N extends DescendantIn<V>>(element: N) => boolean;
-
   /** Check if a value is a selectable `Element` object. */
   isSelectable: <N extends ElementIn<V>>(element: N) => boolean;
-
-  /** Check if a node at a location is a Text node */
-  isText: OmitFirst<typeof isText>;
+  /** Returns the selection mark value by key. */
+  mark: <K extends keyof MarksIn<V>>(
+    key: K
+  ) => MarksIn<V>[K] | null | undefined;
   /** Returns the range spanning the given node entries. */
   nodesRange: (nodes: NodeEntry[]) => TRange | undefined;
   /**
@@ -478,43 +468,19 @@ export type EditorApi<V extends Value = Value> = {
    * property value is not consistent across all nodes.
    */
   prop: (options: EditorPropOptions<V>) => string | undefined;
-
-  /**
-   * Check if any node at a location (default: selection) matches the given
-   * criteria
-   */
-  some: OmitFirst<typeof some>;
 };
-
-export type EditorAboveOptions<V extends Value = Value> = QueryOptions<V> &
-  QueryMode &
-  QueryVoids;
-
-export type EditorAfterOptions = {
-  distance?: number;
-} & QueryTextUnit &
-  QueryVoids;
 
 export type EditorBeforeOptions = {
   distance?: number;
 } & QueryTextUnit &
   QueryVoids & {
-    /** Lookup before the location until this predicate is true */
-    match?: (value: {
-      at: At;
-      beforePoint: Point;
-      beforeString: string;
-    }) => boolean;
-
     /**
      * If true, get the point after the matching point. If false, get the
      * matching point.
      */
     afterMatch?: boolean;
-
     /** Return block start point if no match found */
     matchBlockStart?: boolean;
-
     /**
      * If true, `matchString` will be interpreted as regex expression(s).
      * Otherwise, it will be compared by string equality.
@@ -522,24 +488,76 @@ export type EditorBeforeOptions = {
      * @default false
      */
     matchByRegex?: boolean;
-
     /** Lookup before the location for `matchString`. */
     matchString?: string[] | string;
-
     /**
      * If true, lookup until the start of the editor value. If false, lookup
      * until the first invalid character.
      */
     skipInvalid?: boolean;
+    /** Lookup before the location until this predicate is true */
+    match?: (value: {
+      at: At;
+      beforePoint: Point;
+      beforeString: string;
+    }) => boolean;
   };
+
+export type EditorBlockOptions<V extends Value = Value> = Omit<
+  EditorNodesOptions<V>,
+  'block' | 'mode'
+> & {
+  /**
+   * If true, get the block above the location. This has no effect when `at` is
+   * not a block path.
+   */
+  above?: boolean;
+  /**
+   * If true, get the highest block at the location. This will return the block
+   * at the root level (path length 1).
+   */
+  highest?: boolean;
+};
 
 export type EditorElementReadOnlyOptions = {
   at?: TLocation;
 } & QueryMode &
   QueryVoids;
 
+export type EditorEmptyOptions = {
+  /** Check if text after selection is empty */
+  after?: boolean;
+  /** Check if block above location is empty */
+  block?: boolean;
+} & Omit<EditorNodesOptions, 'at' | 'block'>;
+
+export type EditorEndOptions = {
+  /** Get the end point of the previous node */
+  previous?: boolean;
+};
+
+export type EditorFindPathOptions = Omit<
+  EditorNodesOptions<Value>,
+  'at' | 'block' | 'match'
+>;
+
 export type EditorFragmentDeletionOptions = {
   direction?: TextDirection;
+};
+
+export type EditorFragmentOptions = {
+  /** Types of structural nodes to unwrap */
+  structuralTypes?: string[];
+};
+
+export type EditorIsSelectedOptions = {
+  /** Check if selection contains the entire path range */
+  contains?: boolean;
+};
+
+export type EditorLastOptions = {
+  /** Get last node at this level (0-based). */
+  level?: number;
 };
 
 export type EditorLeafOptions = {
@@ -562,7 +580,6 @@ export type EditorNextOptions<V extends Value = Value> = QueryOptions<V> &
      *   path.
      */
     from?: 'after' | 'child';
-
     /**
      * - `'all'` (default if `from` is `child`): Return all matching nodes.
      * - `'highest'`: in a hierarchy of nodes, only return the highest level
@@ -587,22 +604,6 @@ export type EditorNodesOptions<V extends Value = Value> = {
 } & Omit<QueryOptions<V>, 'at'> &
   QueryMode &
   QueryVoids;
-
-export type EditorBlockOptions<V extends Value = Value> = Omit<
-  EditorNodesOptions<V>,
-  'block' | 'mode'
-> & {
-  /**
-   * If true, get the block above the location. This has no effect when `at` is
-   * not a block path.
-   */
-  above?: boolean;
-  /**
-   * If true, get the highest block at the location. This will return the block
-   * at the root level (path length 1).
-   */
-  highest?: boolean;
-};
 
 export type EditorNormalizeOptions = {
   force?: boolean;
@@ -652,7 +653,6 @@ export type EditorPreviousOptions<V extends Value = Value> = QueryOptions<V> &
      * - `'parent'`: Start from the parent of the current location
      */
     from?: 'before' | 'parent';
-
     /**
      * - `'all'`: Return all matching nodes
      * - `'highest'`: in a hierarchy of nodes, only return the highest level
@@ -661,23 +661,9 @@ export type EditorPreviousOptions<V extends Value = Value> = QueryOptions<V> &
      *   level matching nodes
      */
     mode?: 'all' | 'highest' | 'lowest';
-
     /** Get the previous sibling node */
     sibling?: boolean;
   };
-
-export type EditorRangeRefOptions = {
-  affinity?: RangeDirection | null;
-};
-
-export type EditorStringOptions = QueryVoids;
-
-export type EditorVoidOptions = QueryAt & QueryMode & QueryVoids;
-
-export type EditorFindPathOptions = Omit<
-  EditorNodesOptions<Value>,
-  'at' | 'block' | 'match'
->;
 
 export type EditorPropOptions<V extends Value = Value> = {
   /** Nodes to get the property value from. */
@@ -686,30 +672,19 @@ export type EditorPropOptions<V extends Value = Value> = {
   key?: string;
   /** Default value to return if property is not found. */
   defaultValue?: string;
-  /** Function to get the property value from a node. */
-  getProp?: (node: DescendantIn<V>) => any;
   /**
    * - `'all'`: Get the property value from all nodes.
    * - `'block'`: Get the property value from the first block node.
    * - `'text'`: Get the property value from the first text node.
    */
   mode?: 'all' | 'block' | 'text';
-};
-
-export type EditorEndOptions = {
-  /** Get the end point of the previous node */
-  previous?: boolean;
-};
-
-export type EditorStartOptions = {
-  /** Get the start point of the next node */
-  next?: boolean;
+  /** Function to get the property value from a node. */
+  getProp?: (node: DescendantIn<V>) => any;
 };
 
 export type EditorRangeOptions = {
   /** Get range from before to the end point of `at` */
   before?: EditorBeforeOptions | boolean;
-
   /**
    * Get range from the start of the block above a location (default: selection)
    * to the location
@@ -717,18 +692,16 @@ export type EditorRangeOptions = {
   blockStart?: boolean;
 };
 
-export type EditorFragmentOptions = {
-  /** Types of structural nodes to unwrap */
-  structuralTypes?: string[];
+export type EditorRangeRefOptions = {
+  affinity?: RangeDirection | null;
 };
 
-export type EditorEmptyOptions = {
-  /** Check if text after selection is empty */
-  after?: boolean;
+export type EditorStartOptions = {
+  /** Get the start point of the next node */
+  next?: boolean;
+};
 
-  /** Check if block above location is empty */
-  block?: boolean;
-} & Omit<EditorNodesOptions, 'at' | 'block'>;
+export type EditorStringOptions = QueryVoids;
 
 export type EditorUnhangRangeOptions = {
   /**
@@ -743,32 +716,36 @@ export type EditorUnhangRangeOptions = {
   voids?: boolean;
 };
 
-export type QueryOptions<V extends Value = Value> = {
-  /** Match the node by id. `true` will match all nodes with an id. */
-  id?: boolean | string;
-
-  /** Match block nodes. */
-  block?: boolean;
-
-  /** When true, match only empty nodes. When false, match only non-empty nodes */
-  empty?: boolean;
-
-  /** Match the node. */
-  match?: Predicate<NodeIn<V>>;
-
-  /** When true, match only text nodes */
-  text?: boolean;
-} & QueryAt;
+export type EditorVoidOptions = QueryAt & QueryMode & QueryVoids;
 
 export type QueryAt = {
   /** Where to start at. @default editor.selection */
   at?: At;
 };
 
-export type QueryVoids = {
-  /** When `true` include void Nodes. */
-  voids?: boolean;
+export type QueryMode = {
+  /**
+   * - `'all'` (default): Return all matching nodes
+   * - `'highest'`: in a hierarchy of nodes, only return the highest level
+   *   matching nodes
+   * - `'lowest'`: in a hierarchy of nodes, only return the lowest level matching
+   *   nodes
+   */
+  mode?: 'all' | 'highest' | 'lowest';
 };
+
+export type QueryOptions<V extends Value = Value> = {
+  /** Match the node by id. `true` will match all nodes with an id. */
+  id?: boolean | string;
+  /** Match block nodes. */
+  block?: boolean;
+  /** When true, match only empty nodes. When false, match only non-empty nodes */
+  empty?: boolean;
+  /** Match the node. */
+  match?: Predicate<NodeIn<V>>;
+  /** When true, match only text nodes */
+  text?: boolean;
+} & QueryAt;
 
 export type QueryTextUnit = {
   /**
@@ -794,23 +771,7 @@ export type QueryTextUnit = {
   unit?: TextUnitAdjustment;
 };
 
-export type QueryMode = {
-  /**
-   * - `'all'` (default): Return all matching nodes
-   * - `'highest'`: in a hierarchy of nodes, only return the highest level
-   *   matching nodes
-   * - `'lowest'`: in a hierarchy of nodes, only return the lowest level matching
-   *   nodes
-   */
-  mode?: 'all' | 'highest' | 'lowest';
-};
-
-export type EditorLastOptions = {
-  /** Get last node at this level (0-based). */
-  level?: number;
-};
-
-export type EditorIsSelectedOptions = {
-  /** Check if selection contains the entire path range */
-  contains?: boolean;
+export type QueryVoids = {
+  /** When `true` include void Nodes. */
+  voids?: boolean;
 };

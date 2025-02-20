@@ -1,5 +1,5 @@
 import type { Config } from "@/src/utils/get-config"
-import type { registryBaseColorSchema } from "@/src/utils/registry/schema"
+import type { registryBaseColorSchema } from "@/src/registry/schema"
 import type { z } from "zod"
 
 import { promises as fs } from "fs"
@@ -21,6 +21,7 @@ export type TransformOpts = {
   raw: string
   baseColor?: z.infer<typeof registryBaseColorSchema>
   transformJsx?: boolean
+  isRemote?: boolean
 }
 
 export type Transformer<Output = SourceFile> = (

@@ -10,12 +10,18 @@ import {
 } from '../../lib';
 import { toPlatePlugin } from './toPlatePlugin';
 
-type PlatePluginConfig<K extends string = any, O = {}, A = {}, T = {}> = Omit<
+type PlatePluginConfig<
+  K extends string = any,
+  O = {},
+  A = {},
+  T = {},
+  S = {},
+> = Omit<
   Partial<
     Modify<
-      PlatePlugin<PluginConfig<K, O, A, T>>,
+      PlatePlugin<PluginConfig<K, O, A, T, S>>,
       {
-        node: Partial<PlatePlugin<PluginConfig<K, O, A, T>>['node']>;
+        node: Partial<PlatePlugin<PluginConfig<K, O, A, T, S>>['node']>;
       }
     >
   >,
@@ -39,11 +45,12 @@ export const createPlatePlugin = <
   O = {},
   A = {},
   T = {},
+  S = {},
 >(
   config:
-    | ((editor: PlateEditor) => PlatePluginConfig<K, O, A, T>)
-    | PlatePluginConfig<K, O, A, T> = {}
-): PlatePlugin<PluginConfig<K, O, A, T>> => {
+    | ((editor: PlateEditor) => PlatePluginConfig<K, O, A, T, S>)
+    | PlatePluginConfig<K, O, A, T, S> = {}
+): PlatePlugin<PluginConfig<K, O, A, T, S>> => {
   const plugin = createSlatePlugin(config as any);
 
   return toPlatePlugin(plugin as any) as any;

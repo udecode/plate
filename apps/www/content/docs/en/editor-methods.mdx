@@ -161,6 +161,8 @@ Get a specific option value for a plugin:
 const search = editor.getOption(FindReplacePlugin, 'search');
 ```
 
+To subscribe to options changes, use `usePluginOption` or `usePluginOptions` hooks.
+
 ### getOptions
 
 Get all options for a plugin:
@@ -203,46 +205,4 @@ Get the [zustand-x](https://github.com/udecode/zustand-x) options store for a pl
 
 ```ts
 const store = editor.getOptionsStore(FindReplacePlugin);
-```
-
-## React Hooks
-
-### useOption
-
-Subscribe to a specific option value in a React component:
-
-```ts
-const MyComponent = () => {
-  const search = editor.useOption(FindReplacePlugin, 'search');
-  return <div>Current search: {search}</div>;
-};
-```
-
-### useOptions
-
-You can also use a selector function to subscribe to specific parts of the options:
-
-```ts
-const MyComponent = () => {
-  const search = editor.useOptions(FindReplacePlugin, (options) => options.search);
-  return <div>Current search: {search}</div>;
-};
-```
-
-### useOptionsStore
-
-Get the [zustand-x](https://github.com/udecode/zustand-x) store hook for a plugin:
-
-```ts
-const store = editor.useOptionsStore(FindReplacePlugin);
-```
-
-## Plate Store
-
-### setPlateState
-
-Update the global Plate state:
-
-```ts
-editor.setPlateState('readOnly', true);
 ```

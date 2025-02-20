@@ -23,7 +23,7 @@ const MyPlugin = createPlatePlugin({
 });
 ```
 
-### getEditorPlugin
+### `getEditorPlugin`
 
 This function is particularly useful when you need to access the context of another plugin. It allows for cross-plugin communication and interaction, enabling more complex and interconnected plugin behaviors.
 
@@ -38,21 +38,21 @@ const MyPlugin = createPlatePlugin({
 });
 ```
 
-### useEditorPlugin
+### `useEditorPlugin`
 
 In React components, you can use the `useEditorPlugin` hook to access the Plugin Context:
 
 ```ts
 const MyComponent = () => {
-  const { editor, plugin, useOption, type } = useEditorPlugin(MyPlugin);
+  const { editor, plugin, type } = useEditorPlugin(MyPlugin);
   
-  return <div>{useOption('myOption')}</div>;
+  return <div>{type}</div>;
 };
 ```
 
 ## Plugin Context Properties
 
-### editor
+### `editor`
 
 The current `PlateEditor` instance:
 
@@ -67,7 +67,7 @@ const MyPlugin = createPlatePlugin({
 });
 ```
 
-### plugin
+### `plugin`
 
 The current plugin configuration:
 
@@ -82,7 +82,7 @@ const MyPlugin = createPlatePlugin({
 });
 ```
 
-### getOption
+### `getOption`
 
 A function to get a specific option value for the plugin:
 
@@ -99,7 +99,7 @@ const MyPlugin = createPlatePlugin({
 });
 ```
 
-### getOptions
+### `getOptions`
 
 A function to get all options for the plugin:
 
@@ -116,7 +116,7 @@ const MyPlugin = createPlatePlugin({
 });
 ```
 
-### setOption
+### `setOption`
 
 A function to set a specific option value for the plugin:
 
@@ -132,7 +132,7 @@ const MyPlugin = createPlatePlugin({
 });
 ```
 
-### setOptions
+### `setOptions`
 
 A function to set multiple options for the plugin:
 
@@ -151,22 +151,7 @@ const MyPlugin = createPlatePlugin({
 });
 ```
 
-### useOption
-
-A hook to subscribe to a specific option value in a React component:
-
-```ts
-const MyPlugin = createPlatePlugin({
-  key: 'myPlugin',
-  options: { count: 0 },
-  useHooks: ({ useOption }) => {
-    const count = useOption('count');
-    return <div>Count: {count}</div>;
-  },
-});
-```
-
-### type
+### `type`
 
 The node type associated with the plugin:
 

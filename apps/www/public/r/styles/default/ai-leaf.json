@@ -21,13 +21,15 @@
   },
   "files": [
     {
-      "content": "'use client';\n\nimport React from 'react';\n\nimport { cn, withRef } from '@udecode/cn';\nimport { PlateLeaf } from '@udecode/plate/react';\n\nexport const AILeaf = withRef<typeof PlateLeaf>(\n  ({ children, className, ...props }, ref) => {\n    return (\n      <PlateLeaf\n        ref={ref}\n        className={cn(\n          className,\n          'border-b-2 border-b-purple-100 bg-purple-50 text-purple-800',\n          'transition-all duration-200 ease-in-out'\n        )}\n        {...props}\n      >\n        {children}\n      </PlateLeaf>\n    );\n  }\n);\n",
       "path": "plate-ui/ai-leaf.tsx",
-      "target": "components/plate-ui/ai-leaf.tsx",
-      "type": "registry:ui"
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { cn } from '@udecode/cn';\nimport { PlateLeaf } from '@udecode/plate/react';\n\nexport function AILeaf({\n  className,\n  ...props\n}: React.ComponentProps<typeof PlateLeaf>) {\n  return (\n    <PlateLeaf\n      className={cn(\n        className,\n        'border-b-2 border-b-purple-100 bg-purple-50 text-purple-800',\n        'transition-all duration-200 ease-in-out'\n      )}\n      {...props}\n    />\n  );\n}\n",
+      "type": "registry:ui",
+      "target": "components/plate-ui/ai-leaf.tsx"
     }
   ],
   "name": "ai-leaf",
   "registryDependencies": [],
-  "type": "registry:ui"
+  "type": "registry:ui",
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "author": "udecode (https://platejs.org)"
 }

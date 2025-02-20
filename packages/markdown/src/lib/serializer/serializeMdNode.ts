@@ -5,44 +5,28 @@ import type {
   MdNodeTypes,
 } from './types';
 
-type MarkFormats = Record<
-  | 'bold'
-  | 'boldItalic'
-  | 'boldItalicStrikethrough'
-  | 'code'
-  | 'italic'
-  | 'strikethrough'
-  | 'underline',
-  string[] | string | null
->;
-
 export type SerializeMdNodeOptions = {
   /** The type of the node. */
   type: string;
-
+  /**
+   * Whether the node is enabled. If false, the node will be considered as
+   * paragraph.
+   */
+  enabled?: boolean;
+  isLeaf?: boolean;
+  /**
+   * Whether the node is void. Required for empty void nodes to not be skipped.
+   * Default is true for `hr` and `img` nodes
+   */
+  isVoid?: boolean;
+  /** Whether the node should be skipped (serialized to empty string). */
+  skip?: boolean;
   /** Serialize node to markdown. */
   serialize?: (
     children: string,
     node: MdNodeType,
     opts: SerializeMdOptions
   ) => string;
-
-  /**
-   * Whether the node is enabled. If false, the node will be considered as
-   * paragraph.
-   */
-  enabled?: boolean;
-
-  isLeaf?: boolean;
-
-  /**
-   * Whether the node is void. Required for empty void nodes to not be skipped.
-   * Default is true for `hr` and `img` nodes
-   */
-  isVoid?: boolean;
-
-  /** Whether the node should be skipped (serialized to empty string). */
-  skip?: boolean;
 };
 
 export interface SerializeMdOptions {
@@ -80,6 +64,17 @@ export interface SerializeMdOptions {
    */
   ulListStyleTypes?: string[];
 }
+
+type MarkFormats = Record<
+  | 'bold'
+  | 'boldItalic'
+  | 'boldItalicStrikethrough'
+  | 'code'
+  | 'italic'
+  | 'strikethrough'
+  | 'underline',
+  string[] | string | null
+>;
 
 const isLeafNode = (node: MdElementType | MdLeafType): node is MdLeafType => {
   return typeof (node as MdLeafType).text === 'string';

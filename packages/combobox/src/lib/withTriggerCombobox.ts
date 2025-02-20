@@ -25,7 +25,7 @@ export const withTriggerCombobox: OverrideEditor<
 
   return {
     transforms: {
-      insertText(text) {
+      insertText(text, options) {
         const {
           createComboboxInput,
           triggerPreviousCharPattern,
@@ -33,11 +33,12 @@ export const withTriggerCombobox: OverrideEditor<
         } = getOptions();
 
         if (
+          options?.at ||
           !editor.selection ||
           !matchesTrigger(text) ||
           (triggerQuery && !triggerQuery(editor as SlateEditor))
         ) {
-          return insertText(text);
+          return insertText(text, options);
         }
 
         // Make sure an input is created at the beginning of line or after a whitespace
@@ -53,10 +54,10 @@ export const withTriggerCombobox: OverrideEditor<
             ? createComboboxInput(text)
             : { children: [{ text: '' }], type };
 
-          return editor.tf.insertNodes(inputNode);
+          return editor.tf.insertNodes(inputNode, options);
         }
 
-        return insertText(text);
+        return insertText(text, options);
       },
     },
   };

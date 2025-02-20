@@ -1,5 +1,29 @@
 # @udecode/plate-selection
 
+## 44.0.0
+
+## 43.0.0
+
+## 42.2.4
+
+### Patch Changes
+
+- [#4012](https://github.com/udecode/plate/pull/4012) by [@zbeyens](https://github.com/zbeyens) – Fix overrideEditor insertText missing options
+
+## 42.2.3
+
+### Patch Changes
+
+- [#4010](https://github.com/udecode/plate/pull/4010) by [@zbeyens](https://github.com/zbeyens) –
+  - Block selection area: prevent selecting selectable descendants
+  - `editor.api.blockSelection`:
+    - Add `add`, `clear`, `delete`, `deselect`, `has`, `set`
+    - Deprecate `addSelectedRow`, use `add` instead
+    - Deprecate `unselect`, use `deselect` instead
+    - Deprecate `resetSelectedIds`, use `clear` instead
+    - `selectedAll` -> `selectAll`
+  - Deprecate `data-plate-prevent-unselect`, use `data-plate-prevent-deselect` instead
+
 ## 42.2.0
 
 ### Minor Changes

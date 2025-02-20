@@ -1,6 +1,6 @@
 import type { KeyboardHandler } from '@udecode/plate/react';
 
-import { PathApi, isHotkey } from '@udecode/plate';
+import { isHotkey, PathApi } from '@udecode/plate';
 
 import { ColumnPlugin } from './ColumnPlugin';
 

@@ -18,6 +18,10 @@ export const isSlateLeaf = (element: HTMLElement) => {
   return element.dataset.slateLeaf === 'true';
 };
 
+export const isSlateEditor = (element: HTMLElement) => {
+  return element.dataset.slateEditor === 'true';
+};
+
 export const isSlateNode = (element: HTMLElement) => {
   return (
     isSlateLeaf(element) ||

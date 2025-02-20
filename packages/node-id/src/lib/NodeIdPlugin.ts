@@ -2,8 +2,8 @@ import {
   type Descendant,
   type PluginConfig,
   type QueryNodeOptions,
-  ElementApi,
   createTSlatePlugin,
+  ElementApi,
   nanoid,
   queryNode,
 } from '@udecode/plate';
@@ -19,35 +19,24 @@ export type NodeIdConfig = PluginConfig<
      * in the document. Set this option to true to disable this behavior.
      */
     disableInsertOverrides?: boolean;
-
     /**
      * Filter inline `Element` nodes.
      *
      * @default true
      */
     filterInline?: boolean;
-
     /**
      * Filter `Text` nodes.
      *
      * @default true
      */
     filterText?: boolean;
-
-    /**
-     * ID factory, e.g. `uuid`
-     *
-     * @default () => Date.now()
-     */
-    idCreator?: () => any;
-
     /**
      * Node key to store the id.
      *
      * @default 'id'
      */
     idKey?: string;
-
     /**
      * Normalize initial value. If false, normalize only the first and last node
      * are missing id. To disable this behavior, use `NodeIdPlugin.configure({
@@ -56,7 +45,6 @@ export type NodeIdConfig = PluginConfig<
      * @default false
      */
     normalizeInitialValue?: boolean;
-
     /**
      * Reuse ids on undo/redo and copy/pasting if not existing in the document.
      * This is disabled by default to avoid duplicate ids across documents.
@@ -64,12 +52,26 @@ export type NodeIdConfig = PluginConfig<
      * @default false
      */
     reuseId?: boolean;
+    /**
+     * ID factory, e.g. `uuid`
+     *
+     * @default () => Date.now()
+     */
+    idCreator?: () => any;
   } & QueryNodeOptions
 >;
 
 /** @see {@link withNodeId} */
 export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
   key: 'nodeId',
+  options: {
+    filterInline: true,
+    filterText: true,
+    idKey: 'id',
+    normalizeInitialValue: false,
+    filter: () => true,
+    idCreator: () => nanoid(10),
+  },
   normalizeInitialValue: ({ editor, getOptions }) => {
     const {
       allow,
@@ -133,13 +135,5 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
     editor.children.forEach((node, index) => {
       addNodeId([node, [index]]);
     });
-  },
-  options: {
-    filter: () => true,
-    filterInline: true,
-    filterText: true,
-    idCreator: () => nanoid(10),
-    idKey: 'id',
-    normalizeInitialValue: false,
   },
 }).overrideEditor(withNodeId);

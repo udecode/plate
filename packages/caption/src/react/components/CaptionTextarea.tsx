@@ -2,11 +2,12 @@ import React, { useCallback, useState } from 'react';
 
 import type { TextareaAutosizeProps } from 'react-textarea-autosize';
 
-import { type TElement, NodeApi, PathApi, isHotkey } from '@udecode/plate';
+import { type TElement, isHotkey, NodeApi, PathApi } from '@udecode/plate';
 import {
   createPrimitiveComponent,
   useEditorRef,
   useElement,
+  usePluginOption,
   useReadOnly,
 } from '@udecode/plate/react';
 
@@ -17,12 +18,12 @@ import { TextareaAutosize } from './TextareaAutosize';
 
 /** Focus textareaRef when focusCaptionPath is set to the image path. */
 export const useCaptionTextareaFocus = (
-  textareaRef: React.RefObject<HTMLTextAreaElement>
+  textareaRef: React.RefObject<HTMLTextAreaElement | null>
 ) => {
   const editor = useEditorRef();
   const element = useElement<TCaptionElement>();
 
-  const focusCaptionPath = editor.useOption(CaptionPlugin, 'focusEndPath');
+  const focusCaptionPath = usePluginOption(CaptionPlugin, 'focusEndPath');
 
   React.useEffect(() => {
     if (focusCaptionPath && textareaRef.current) {

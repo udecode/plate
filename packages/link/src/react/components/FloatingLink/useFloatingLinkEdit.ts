@@ -1,17 +1,18 @@
 import React from 'react';
 
 import {
+  getDOMSelectionBoundingClientRect,
+  getRangeBoundingClientRect,
+} from '@udecode/plate-floating';
+import {
   useComposedRef,
   useEditorPlugin,
   useEditorReadOnly,
   useEditorVersion,
   useHotkeys,
   useOnClickOutside,
+  usePluginOption,
 } from '@udecode/plate/react';
-import {
-  getDOMSelectionBoundingClientRect,
-  getRangeBoundingClientRect,
-} from '@udecode/plate-floating';
 
 import type { LinkFloatingToolbarState } from './useFloatingLinkInsert';
 
@@ -25,14 +26,14 @@ import { useVirtualFloatingLink } from './useVirtualFloatingLink';
 export const useFloatingLinkEditState = ({
   floatingOptions,
 }: LinkFloatingToolbarState = {}) => {
-  const { editor, getOptions, type, useOption } = useEditorPlugin(LinkPlugin);
+  const { editor, getOptions, type } = useEditorPlugin(LinkPlugin);
 
   const { triggerFloatingLinkHotkeys } = getOptions();
   const readOnly = useEditorReadOnly();
-  const isEditing = useOption('isEditing');
+  const isEditing = usePluginOption(LinkPlugin, 'isEditing');
   const version = useEditorVersion();
-  const mode = useOption('mode');
-  const open = useOption('isOpen', editor.id);
+  const mode = usePluginOption(LinkPlugin, 'mode');
+  const open = usePluginOption(LinkPlugin, 'isOpen', editor.id);
 
   const getBoundingClientRect = React.useCallback(() => {
     const entry = editor.api.above({

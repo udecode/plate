@@ -33,5 +33,5 @@ export const getCellIndices = (
     }
   }
 
-  return indices;
+  return indices ?? { col: 0, row: 0 };
 };

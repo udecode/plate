@@ -3,8 +3,8 @@
 import { type ReactNode, createContext, useContext, useState } from 'react';
 
 import { cn } from '@udecode/cn';
-import { useEditorPlugin } from '@udecode/plate/react';
 import { CopilotPlugin } from '@udecode/plate-ai/react';
+import { useEditorPlugin } from '@udecode/plate/react';
 import {
   Check,
   ChevronsUpDown,
@@ -143,7 +143,7 @@ export function SettingsDialog() {
           asChild
           size="icon"
           variant="ghost"
-          className="absolute right-[28px] top-0 h-full"
+          className="absolute top-0 right-[28px] h-full"
         >
           <a
             className="flex items-center"
@@ -175,7 +175,7 @@ export function SettingsDialog() {
       <Button
         size="icon"
         variant="ghost"
-        className="absolute right-0 top-0 h-full"
+        className="absolute top-0 right-0 h-full"
         onClick={() => toggleKeyVisibility(service)}
         type="button"
       >
@@ -198,7 +198,7 @@ export function SettingsDialog() {
           size="icon"
           variant="default"
           className={cn(
-            'group fixed bottom-4 right-4 z-50 size-10 overflow-hidden',
+            'group fixed right-4 bottom-4 z-50 size-10 overflow-hidden',
             'rounded-full shadow-md hover:shadow-lg',
             'transition-all duration-300 ease-in-out hover:w-[106px]'
           )}
@@ -241,7 +241,7 @@ export function SettingsDialog() {
 
               <div className="group relative">
                 <label
-                  className="absolute start-1 top-0 z-10 block -translate-y-1/2 bg-background px-2 text-xs font-medium text-foreground group-has-[:disabled]:opacity-50"
+                  className="absolute start-1 top-0 z-10 block -translate-y-1/2 bg-background px-2 text-xs font-medium text-foreground group-has-disabled:opacity-50"
                   htmlFor="select-model"
                 >
                   Model

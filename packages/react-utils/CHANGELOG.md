@@ -1,5 +1,17 @@
 # @udecode/react-utils
 
+## 44.0.1
+
+### Patch Changes
+
+- [`e55e3c1`](https://github.com/udecode/plate/commit/e55e3c18fbea917831874fcc7d16006b841defd6) by [@zbeyens](https://github.com/zbeyens) – Support React 19
+
+## 43.0.0
+
+### Minor Changes
+
+- [#4019](https://github.com/udecode/plate/pull/4019) by [@zbeyens](https://github.com/zbeyens) – Upgrade dependencies to latest
+
 ## 42.0.0
 
 ### Patch Changes

@@ -1,5 +1,9 @@
 import type { TElement } from '@udecode/slate';
 
+export type RenderElementFn = (
+  props: RenderElementProps
+) => React.ReactElement<any>;
+
 export interface RenderElementProps<N extends TElement = TElement> {
   attributes: {
     'data-slate-node': 'element';
@@ -11,5 +15,3 @@ export interface RenderElementProps<N extends TElement = TElement> {
   children: any;
   element: N;
 }
-
-export type RenderElementFn = (props: RenderElementProps) => React.ReactElement;

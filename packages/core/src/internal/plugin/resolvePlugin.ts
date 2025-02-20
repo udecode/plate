@@ -85,9 +85,15 @@ export const resolvePlugin = <P extends AnySlatePlugin>(
   return plugin;
 };
 
-export const validatePlugin = <K extends string = any, O = {}, A = {}, T = {}>(
+export const validatePlugin = <
+  K extends string = any,
+  O = {},
+  A = {},
+  T = {},
+  S = {},
+>(
   editor: SlateEditor,
-  plugin: SlatePlugin<PluginConfig<K, O, A, T>>
+  plugin: SlatePlugin<PluginConfig<K, O, A, T, S>>
 ) => {
   if (!plugin.__extensions) {
     editor.api.debug.error(

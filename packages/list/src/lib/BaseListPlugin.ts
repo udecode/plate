@@ -1,10 +1,10 @@
 import {
   type OmitFirst,
   type PluginConfig,
-  HtmlPlugin,
   bindFirst,
   createSlatePlugin,
   createTSlatePlugin,
+  HtmlPlugin,
 } from '@udecode/plate';
 
 import {
@@ -13,15 +13,13 @@ import {
   toggleNumberedList,
 } from './transforms';
 
-export type ListPluginOptions = {
-  enableResetOnShiftTab?: boolean;
-  /** Valid children types for list items, in addition to p and ul types. */
-  validLiChildrenTypes?: string[];
-};
-
 export type ListConfig = PluginConfig<
   'list',
-  ListPluginOptions,
+  {
+    enableResetOnShiftTab?: boolean;
+    /** Valid children types for list items, in addition to p and ul types. */
+    validLiChildrenTypes?: string[];
+  },
   {},
   {
     toggle: {
@@ -56,21 +54,20 @@ export const BaseNumberedListPlugin = createSlatePlugin({
 
 export const BaseListItemPlugin = createSlatePlugin({
   key: 'li',
-  node: { isElement: true },
-  parsers: { html: { deserializer: { rules: [{ validNodeName: 'LI' }] } } },
-}).extend(({ editor, type }) => ({
   inject: {
     plugins: {
       [HtmlPlugin.key]: {
         parser: {
-          preInsert: () => {
+          preInsert: ({ editor, type }) => {
             return editor.api.some({ match: { type } });
           },
         },
       },
     },
   },
-}));
+  node: { isElement: true },
+  parsers: { html: { deserializer: { rules: [{ validNodeName: 'LI' }] } } },
+});
 
 export const BaseListItemContentPlugin = createSlatePlugin({
   key: 'lic',

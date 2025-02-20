@@ -25,47 +25,20 @@ export type BaseLinkConfig = PluginConfig<
      * @default ['http', 'https', 'mailto', 'tel']
      */
     allowedSchemes?: string[];
-
     /**
      * Skips sanitation of links.
      *
      * @default false
      */
     dangerouslySkipSanitization?: boolean;
-
     defaultLinkAttributes?: React.AnchorHTMLAttributes<HTMLAnchorElement>;
-
     forceSubmit?: boolean;
-
-    /**
-     * On keyboard shortcut or toolbar mousedown, get the link url by calling
-     * this promise. The default behavior is to use the browser's native
-     * `prompt`.
-     */
-    getLinkUrl?: (prevUrl: string | null) => Promise<string | null>;
-
-    /**
-     * Callback to optionally get the href for a url
-     *
-     * @returns Href: an optional link to be used that is different from the
-     *   text content (example https://google.com for google.com)
-     */
-    getUrlHref?: (url: string) => string | undefined;
-
-    /**
-     * Callback to validate an url.
-     *
-     * @default isUrl
-     */
-    isUrl?: (text: string) => boolean;
-
     /**
      * Keeps selected text on pasting links by default.
      *
      * @default true
      */
     keepSelectedTextOnPaste?: boolean;
-
     /**
      * Allow custom config for rangeBeforeOptions.
      *
@@ -77,7 +50,31 @@ export type BaseLinkConfig = PluginConfig<
      *   }
      */
     rangeBeforeOptions?: EditorBeforeOptions;
-
+    /**
+     * Hotkeys to trigger floating link.
+     *
+     * @default 'meta+k, ctrl+k'
+     */
+    triggerFloatingLinkHotkeys?: string[] | string;
+    /**
+     * On keyboard shortcut or toolbar mousedown, get the link url by calling
+     * this promise. The default behavior is to use the browser's native
+     * `prompt`.
+     */
+    getLinkUrl?: (prevUrl: string | null) => Promise<string | null>;
+    /**
+     * Callback to optionally get the href for a url
+     *
+     * @returns Href: an optional link to be used that is different from the
+     *   text content (example https://google.com for google.com)
+     */
+    getUrlHref?: (url: string) => string | undefined;
+    /**
+     * Callback to validate an url.
+     *
+     * @default isUrl
+     */
+    isUrl?: (text: string) => boolean;
     /**
      * Transform the content of the URL input before validating it. Useful for
      * adding a protocol to a URL. E.g. `google.com` -> `https://google.com`
@@ -88,13 +85,6 @@ export type BaseLinkConfig = PluginConfig<
      * @returns The transformed URL.
      */
     transformInput?: (url: string) => string | undefined;
-
-    /**
-     * Hotkeys to trigger floating link.
-     *
-     * @default 'meta+k, ctrl+k'
-     */
-    triggerFloatingLinkHotkeys?: string[] | string;
   }
 >;
 
@@ -105,6 +95,9 @@ export const BaseLinkPlugin = createTSlatePlugin<BaseLinkConfig>({
     dangerouslyAllowAttributes: ['target'],
     isElement: true,
     isInline: true,
+    props: ({ editor, element }) => ({
+      nodeProps: getLinkAttributes(editor, element as TLinkElement),
+    }),
   },
   options: {
     allowedSchemes: ['http', 'https', 'mailto', 'tel'],
@@ -119,6 +112,28 @@ export const BaseLinkPlugin = createTSlatePlugin<BaseLinkConfig>({
       skipInvalid: true,
     },
   },
+  parsers: {
+    html: {
+      deserializer: {
+        rules: [
+          {
+            validNodeName: 'A',
+          },
+        ],
+        parse: ({ editor, element, type }) => {
+          const url = element.getAttribute('href');
+
+          if (url && validateUrl(editor, url)) {
+            return {
+              target: element.getAttribute('target') || '_blank',
+              type,
+              url,
+            };
+          }
+        },
+      },
+    },
+  },
 })
   .overrideEditor(withLink)
   .overrideEditor(
@@ -131,33 +146,4 @@ export const BaseLinkPlugin = createTSlatePlugin<BaseLinkConfig>({
           })
         )
       ) as any
-  )
-  .extend(({ editor, type }) => ({
-    node: {
-      props: ({ element }) => ({
-        nodeProps: getLinkAttributes(editor, element as TLinkElement),
-      }),
-    },
-    parsers: {
-      html: {
-        deserializer: {
-          parse: ({ element }) => {
-            const url = element.getAttribute('href');
-
-            if (url && validateUrl(editor, url)) {
-              return {
-                target: element.getAttribute('target') || '_blank',
-                type,
-                url,
-              };
-            }
-          },
-          rules: [
-            {
-              validNodeName: 'A',
-            },
-          ],
-        },
-      },
-    },
-  }));
+  );

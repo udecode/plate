@@ -125,9 +125,9 @@ const MyPlugin = createPlatePlugin({
   key: 'myPlugin',
 }).overrideEditor(({ editor, tf: { insertText } }) => ({
   transforms: {
-    insertText(text) {
+    insertText(text, options) {
       // Custom logic
-      insertText(text);
+      insertText(text, options);
     },
   }
 }));

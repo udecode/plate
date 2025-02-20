@@ -16,7 +16,7 @@ export const getVShapes = (document: Document): Record<string, string> => {
           vShapesMap[id] = spid;
         }
       });
-    } catch (error) {
+    } catch {
       // Cannot parse as XML, we're not interested in this comment
     }
 

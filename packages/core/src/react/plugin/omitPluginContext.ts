@@ -13,7 +13,6 @@ export const omitPluginContext = <T extends PlatePluginContext<AnyPlatePlugin>>(
     setOptions,
     tf,
     type,
-    useOption,
     ...rest
   } = ctx;
 

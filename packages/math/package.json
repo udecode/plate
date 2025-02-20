@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-math",
-  "version": "42.0.0",
+  "version": "44.0.0",
   "description": "Math plugin for Plate",
   "keywords": [
     "plate",
@@ -50,14 +50,14 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "katex": "0.16.11"
+    "katex": "0.16.21"
   },
   "devDependencies": {
     "@types/katex": "0.16.7",
     "@udecode/plate": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate": ">=42.1.2",
+    "@udecode/plate": ">=45.0.2",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

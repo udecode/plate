@@ -38,61 +38,54 @@ const plugins = [
 
 ## Plugins
 
-### ExcalidrawPlugin
+### `ExcalidrawPlugin`
 
-Adds Excalidraw functionality to the editor.
+Excalidraw void element plugin.
 
 ## API
 
-#### insertExcalidraw
+### `insertExcalidraw`
 
 Inserts an Excalidraw element into the editor.
 
+<API name="insertExcalidraw">
 <APIParameters>
-<APIItem name="editor" type="PlateEditor">
-  The editor instance.
-</APIItem>
-<APIItem
-  name="props"
-  type="NodeProps<TExcalidrawElement>"
-  optional
->
-The props for the Excalidraw element.
-</APIItem>
-<APIItem name="options" type="InsertNodesOptions" optional>
-  The options for inserting the Excalidraw element.
-</APIItem>
+  <APIItem name="props" type="NodeProps<TExcalidrawElement>" optional>
+    Props for the Excalidraw element.
+  </APIItem>
+  <APIItem name="options" type="InsertNodesOptions" optional>
+    Options for inserting the Excalidraw element.
+  </APIItem>
 </APIParameters>
+</API>
 
-## API Components
+## Hooks
 
-### useExcalidrawElement
+### `useExcalidrawElement`
 
 A behavior hook for the Excalidraw component.
 
+<API name="useExcalidrawElement">
 <APIState>
-<APIItem name="element" type="TExcalidrawElement">
-The Excalidraw element.
-</APIItem>
-<APIItem name="libraryItems" type="LibraryItems" optional>
-The library items to be displayed in the Excalidraw component.
-
-- **Default:** `[]`
-
-</APIItem>
-<APIItem name="scrollToContent" type="boolean" optional>
-Determines whether to scroll to the content inside the Excalidraw component.
-
-- **Default:** `true`
-
-</APIItem>
+  <APIItem name="element" type="TExcalidrawElement">
+    The Excalidraw element.
+  </APIItem>
+  <APIItem name="libraryItems" type="LibraryItems" optional>
+    Library items to display in the Excalidraw component.
+    - **Default:** `[]`
+  </APIItem>
+  <APIItem name="scrollToContent" type="boolean" optional>
+    Whether to scroll to content inside the Excalidraw component.
+    - **Default:** `true`
+  </APIItem>
 </APIState>
 
-<APIReturns>
+<APIReturns type="object">
   <APIItem name="Excalidraw" type="any">
     The Excalidraw component.
   </APIItem>
   <APIItem name="excalidrawProps" type="ExcalidrawProps">
-    The props to be passed to the Excalidraw component.
+    Props to pass to the Excalidraw component.
   </APIItem>
 </APIReturns>
+</API>

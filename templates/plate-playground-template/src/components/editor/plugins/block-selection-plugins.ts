@@ -19,8 +19,8 @@ export const blockSelectionPlugins = [
 export const blockSelectionReadOnlyPlugin = BlockSelectionPlugin.configure({
   api: {},
   extendEditor: null,
+  handlers: {},
   options: {},
   render: {},
   useHooks: null,
-  handlers: {},
 });

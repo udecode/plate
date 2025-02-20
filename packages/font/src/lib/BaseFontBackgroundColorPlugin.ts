@@ -7,12 +7,10 @@ export const BaseFontBackgroundColorPlugin = createSlatePlugin({
       nodeKey: 'backgroundColor',
     },
   },
-}).extend(({ type }) => ({
   parsers: {
     html: {
       deserializer: {
         isLeaf: true,
-        parse: ({ element }) => ({ [type]: element.style.backgroundColor }),
         rules: [
           {
             validStyle: {
@@ -20,7 +18,10 @@ export const BaseFontBackgroundColorPlugin = createSlatePlugin({
             },
           },
         ],
+        parse: ({ element, type }) => ({
+          [type]: element.style.backgroundColor,
+        }),
       },
     },
   },
-}));
+});

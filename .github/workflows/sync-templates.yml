@@ -7,7 +7,7 @@ on:
     paths:
       - '.github/actions/**'
       - '.github/workflows/sync-templates.yml'
-      - 'scripts/sync-templates.sh'
+      - 'tooling/scripts/sync-templates.sh'
       - 'templates/**'
 
 jobs:
@@ -71,5 +71,5 @@ jobs:
       - name: 🔄 Sync Templates
         env:
           API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
-        run: ./scripts/sync-templates.sh "templates/${{ matrix.template }}"
+        run: ./tooling/scripts/sync-templates.sh "templates/${{ matrix.template }}"
         shell: bash

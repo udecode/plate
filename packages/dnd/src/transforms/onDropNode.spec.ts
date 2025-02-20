@@ -1,9 +1,9 @@
+import type { TElement } from '@udecode/plate';
 import type { DropTargetMonitor } from 'react-dnd';
 
-/* eslint-disable @typescript-eslint/no-require-imports */
 import { createPlateEditor } from '@udecode/plate/react';
 
-import type { ElementDragItemNode } from '../types';
+import type { DragItemNode } from '../types';
 
 import { onDropNode } from './onDropNode';
 
@@ -15,10 +15,13 @@ describe('onDropNode', () => {
   const editor = createPlateEditor();
   editor.tf.moveNodes = jest.fn();
   editor.tf.focus = jest.fn();
-  editor.api.node = jest.fn();
+  editor.api.findPath = jest.fn();
   const monitor = {} as DropTargetMonitor;
   const nodeRef = {};
-  const dragItem: ElementDragItemNode = { id: 'drag' };
+  const dragElement = { id: 'drag' } as unknown as TElement;
+  const dragItem: DragItemNode = { id: 'drag', element: dragElement };
+
+  const hoverElement = { id: 'hover' } as unknown as TElement;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -29,7 +32,7 @@ describe('onDropNode', () => {
       const { getHoverDirection } = require('../utils');
       getHoverDirection.mockReturnValueOnce();
 
-      onDropNode(editor, { id: 'hover', dragItem, monitor, nodeRef });
+      onDropNode(editor, { dragItem, element: hoverElement, monitor, nodeRef });
 
       expect(editor.tf.moveNodes).not.toHaveBeenCalled();
     });
@@ -39,9 +42,9 @@ describe('onDropNode', () => {
     it('should do nothing if drag node is not found', () => {
       const { getHoverDirection } = require('../utils');
       getHoverDirection.mockReturnValueOnce('bottom');
-      (editor.api.node as jest.Mock).mockReturnValueOnce(undefined);
+      (editor.api.findPath as jest.Mock).mockReturnValueOnce(undefined);
 
-      onDropNode(editor, { id: 'hover', dragItem, monitor, nodeRef });
+      onDropNode(editor, { dragItem, element: hoverElement, monitor, nodeRef });
 
       expect(editor.tf.moveNodes).not.toHaveBeenCalled();
     });
@@ -49,11 +52,11 @@ describe('onDropNode', () => {
     it('should do nothing if hover node is not found', () => {
       const { getHoverDirection } = require('../utils');
       getHoverDirection.mockReturnValueOnce('bottom');
-      (editor.api.node as jest.Mock)
-        .mockReturnValueOnce([{}, [0]])
+      (editor.api.findPath as jest.Mock)
+        .mockReturnValueOnce([0])
         .mockReturnValueOnce(undefined);
 
-      onDropNode(editor, { id: 'hover', dragItem, monitor, nodeRef });
+      onDropNode(editor, { dragItem, element: hoverElement, monitor, nodeRef });
 
       expect(editor.tf.moveNodes).not.toHaveBeenCalled();
     });
@@ -63,11 +66,11 @@ describe('onDropNode', () => {
     it('should move node below when direction is bottom', () => {
       const { getHoverDirection } = require('../utils');
       getHoverDirection.mockReturnValue('bottom');
-      (editor.api.node as jest.Mock)
-        .mockReturnValueOnce([{}, [0]])
-        .mockReturnValueOnce([{}, [1]]);
+      (editor.api.findPath as jest.Mock)
+        .mockReturnValueOnce([0])
+        .mockReturnValueOnce([1]);
 
-      onDropNode(editor, { id: 'hover', dragItem, monitor, nodeRef });
+      onDropNode(editor, { dragItem, element: hoverElement, monitor, nodeRef });
 
       expect(editor.tf.moveNodes).toHaveBeenCalledWith({
         at: [0],
@@ -78,11 +81,11 @@ describe('onDropNode', () => {
     it('should move node above when direction is top', () => {
       const { getHoverDirection } = require('../utils');
       getHoverDirection.mockReturnValue('top');
-      (editor.api.node as jest.Mock)
-        .mockReturnValueOnce([{}, [2]])
-        .mockReturnValueOnce([{}, [1]]);
+      (editor.api.findPath as jest.Mock)
+        .mockReturnValueOnce([2])
+        .mockReturnValueOnce([1]);
 
-      onDropNode(editor, { id: 'hover', dragItem, monitor, nodeRef });
+      onDropNode(editor, { dragItem, element: hoverElement, monitor, nodeRef });
 
       expect(editor.tf.moveNodes).toHaveBeenCalledWith({
         at: [2],
@@ -93,11 +96,11 @@ describe('onDropNode', () => {
     it('should not move if already in position for bottom', () => {
       const { getHoverDirection } = require('../utils');
       getHoverDirection.mockReturnValue('bottom');
-      (editor.api.node as jest.Mock)
-        .mockReturnValueOnce([{}, [1]])
-        .mockReturnValueOnce([{}, [0]]);
+      (editor.api.findPath as jest.Mock)
+        .mockReturnValueOnce([1])
+        .mockReturnValueOnce([0]);
 
-      onDropNode(editor, { id: 'hover', dragItem, monitor, nodeRef });
+      onDropNode(editor, { dragItem, element: hoverElement, monitor, nodeRef });
 
       expect(editor.tf.moveNodes).not.toHaveBeenCalled();
     });
@@ -105,11 +108,11 @@ describe('onDropNode', () => {
     it('should not move if already in position for top', () => {
       const { getHoverDirection } = require('../utils');
       getHoverDirection.mockReturnValue('top');
-      (editor.api.node as jest.Mock)
-        .mockReturnValueOnce([{}, [0]])
-        .mockReturnValueOnce([{}, [1]]);
+      (editor.api.findPath as jest.Mock)
+        .mockReturnValueOnce([0])
+        .mockReturnValueOnce([1]);
 
-      onDropNode(editor, { id: 'hover', dragItem, monitor, nodeRef });
+      onDropNode(editor, { dragItem, element: hoverElement, monitor, nodeRef });
 
       expect(editor.tf.moveNodes).not.toHaveBeenCalled();
     });
@@ -119,13 +122,13 @@ describe('onDropNode', () => {
     it('should move node right when direction is right', () => {
       const { getHoverDirection } = require('../utils');
       getHoverDirection.mockReturnValue('right');
-      (editor.api.node as jest.Mock)
-        .mockReturnValueOnce([{}, [2, 0]])
-        .mockReturnValueOnce([{}, [2, 1]]);
+      (editor.api.findPath as jest.Mock)
+        .mockReturnValueOnce([2, 0])
+        .mockReturnValueOnce([2, 1]);
 
       onDropNode(editor, {
-        id: 'hover',
         dragItem,
+        element: hoverElement,
         monitor,
         nodeRef,
         orientation: 'horizontal',
@@ -140,13 +143,13 @@ describe('onDropNode', () => {
     it('should move node left when direction is left', () => {
       const { getHoverDirection } = require('../utils');
       getHoverDirection.mockReturnValue('left');
-      (editor.api.node as jest.Mock)
-        .mockReturnValueOnce([{}, [2, 2]])
-        .mockReturnValueOnce([{}, [2, 1]]);
+      (editor.api.findPath as jest.Mock)
+        .mockReturnValueOnce([2, 2])
+        .mockReturnValueOnce([2, 1]);
 
       onDropNode(editor, {
-        id: 'hover',
         dragItem,
+        element: hoverElement,
         monitor,
         nodeRef,
         orientation: 'horizontal',
@@ -161,13 +164,13 @@ describe('onDropNode', () => {
     it('should not move if already in position for right', () => {
       const { getHoverDirection } = require('../utils');
       getHoverDirection.mockReturnValue('right');
-      (editor.api.node as jest.Mock)
-        .mockReturnValueOnce([{}, [2, 1]])
-        .mockReturnValueOnce([{}, [2, 0]]);
+      (editor.api.findPath as jest.Mock)
+        .mockReturnValueOnce([2, 1])
+        .mockReturnValueOnce([2, 0]);
 
       onDropNode(editor, {
-        id: 'hover',
         dragItem,
+        element: hoverElement,
         monitor,
         nodeRef,
         orientation: 'horizontal',
@@ -179,13 +182,13 @@ describe('onDropNode', () => {
     it('should not move if already in position for left', () => {
       const { getHoverDirection } = require('../utils');
       getHoverDirection.mockReturnValue('left');
-      (editor.api.node as jest.Mock)
-        .mockReturnValueOnce([{}, [2, 0]])
-        .mockReturnValueOnce([{}, [2, 1]]);
+      (editor.api.findPath as jest.Mock)
+        .mockReturnValueOnce([2, 0])
+        .mockReturnValueOnce([2, 1]);
 
       onDropNode(editor, {
-        id: 'hover',
         dragItem,
+        element: hoverElement,
         monitor,
         nodeRef,
         orientation: 'horizontal',

@@ -1,10 +1,15 @@
 import type { PlateEditor } from '@udecode/plate/react';
 import type { DropTargetMonitor } from 'react-dnd';
 
-import { type Path, type TElement, PathApi } from '@udecode/plate';
+import {
+  type NodeEntry,
+  type Path,
+  type TElement,
+  PathApi,
+} from '@udecode/plate';
 
 import type { UseDropNodeOptions } from '../hooks';
-import type { ElementDragItemNode } from '../types';
+import type { DragItemNode, ElementDragItemNode } from '../types';
 
 import { getHoverDirection } from '../utils';
 
@@ -12,20 +17,23 @@ import { getHoverDirection } from '../utils';
 export const getDropPath = (
   editor: PlateEditor,
   {
-    id,
     canDropNode,
     dragItem,
+    element,
     monitor,
     nodeRef,
     orientation = 'vertical',
   }: {
-    dragItem: ElementDragItemNode;
+    dragItem: DragItemNode;
     monitor: DropTargetMonitor;
-  } & Pick<UseDropNodeOptions, 'canDropNode' | 'id' | 'nodeRef' | 'orientation'>
+  } & Pick<
+    UseDropNodeOptions,
+    'canDropNode' | 'element' | 'nodeRef' | 'orientation'
+  >
 ) => {
   const direction = getHoverDirection({
-    id,
     dragItem,
+    element,
     monitor,
     nodeRef,
     orientation,
@@ -33,30 +41,38 @@ export const getDropPath = (
 
   if (!direction) return;
 
-  const dragEntry = editor.api.node<TElement>({
-    id: dragItem.id,
-    at: [],
-  });
+  let dragEntry: NodeEntry<TElement> | undefined;
+  let dropEntry: NodeEntry<TElement> | undefined;
 
-  if (!dragEntry) return;
+  if ('element' in dragItem) {
+    const dragPath = editor.api.findPath(dragItem.element);
+    const hoveredPath = editor.api.findPath(element);
 
-  const dropEntry = editor.api.node<TElement>({ id, at: [] });
+    if (!dragPath || !hoveredPath) return;
 
+    dragEntry = [dragItem.element, dragPath];
+    dropEntry = [element, hoveredPath];
+  } else {
+    dropEntry = editor.api.node<TElement>({ id: element.id as string, at: [] });
+  }
   if (!dropEntry) return;
-  if (canDropNode && !canDropNode({ dragEntry, dragItem, dropEntry, editor })) {
+  if (
+    canDropNode &&
+    dragEntry &&
+    !canDropNode({ dragEntry, dragItem, dropEntry, editor })
+  ) {
     return;
   }
 
-  const [, dragPath] = dragEntry;
-  const [, hoveredPath] = dropEntry;
-
-  editor.tf.focus();
-
   let dropPath: Path | undefined;
+
+  // if drag from file system use [] as default path
+  const dragPath = dragEntry?.[1];
+  const hoveredPath = dropEntry[1];
 
   // Treat 'right' like 'bottom' (after hovered)
   // Treat 'left' like 'top' (before hovered)
-  if (direction === 'bottom' || direction === 'right') {
+  if (dragPath && (direction === 'bottom' || direction === 'right')) {
     // Insert after hovered node
     dropPath = hoveredPath;
 
@@ -68,11 +84,12 @@ export const getDropPath = (
     dropPath = [...hoveredPath.slice(0, -1), hoveredPath.at(-1)! - 1];
 
     // If the dragged node is already right before hovered node, no change
-    if (PathApi.equals(dragPath, dropPath)) return;
+    if (dragPath && PathApi.equals(dragPath, dropPath)) return;
   }
 
   const _dropPath = dropPath as Path;
   const before =
+    dragPath &&
     PathApi.isBefore(dragPath, _dropPath) &&
     PathApi.isSibling(dragPath, _dropPath);
   const to = before ? _dropPath : PathApi.next(_dropPath);
@@ -83,21 +100,24 @@ export const getDropPath = (
 export const onDropNode = (
   editor: PlateEditor,
   {
-    id,
     canDropNode,
     dragItem,
+    element,
     monitor,
     nodeRef,
     orientation = 'vertical',
   }: {
     dragItem: ElementDragItemNode;
     monitor: DropTargetMonitor;
-  } & Pick<UseDropNodeOptions, 'canDropNode' | 'id' | 'nodeRef' | 'orientation'>
+  } & Pick<
+    UseDropNodeOptions,
+    'canDropNode' | 'element' | 'nodeRef' | 'orientation'
+  >
 ) => {
   const result = getDropPath(editor, {
-    id,
     canDropNode,
     dragItem,
+    element,
     monitor,
     nodeRef,
     orientation,

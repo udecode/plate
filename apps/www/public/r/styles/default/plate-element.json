@@ -16,15 +16,17 @@
   },
   "files": [
     {
-      "content": "'use client';\n\nimport React from 'react';\n\nimport type { PlateElementProps } from '@udecode/plate/react';\n\nimport { PlateElement as PlateElementPrimitive } from '@udecode/plate/react';\n\nimport { BlockSelection } from './block-selection';\n\nexport const PlateElement = React.forwardRef<HTMLDivElement, PlateElementProps>(\n  ({ children, ...props }: PlateElementProps, ref) => {\n    return (\n      <PlateElementPrimitive ref={ref} {...props}>\n        {children}\n\n        {props.className?.includes('slate-selectable') && <BlockSelection />}\n      </PlateElementPrimitive>\n    );\n  }\n);\n",
       "path": "plate-ui/plate-element.tsx",
-      "target": "components/plate-ui/plate-element.tsx",
-      "type": "registry:ui"
+      "content": "'use client';\n\nimport React from 'react';\n\nimport type { PlateElementProps } from '@udecode/plate/react';\n\nimport { PlateElement as PlateElementPrimitive } from '@udecode/plate/react';\n\nexport const PlateElement = React.forwardRef<\n  HTMLDivElement,\n  PlateElementProps & { blockSelectionClassName?: string }\n>(({ children, ...props }, ref) => {\n  return (\n    <PlateElementPrimitive ref={ref} {...props}>\n      {children}\n    </PlateElementPrimitive>\n  );\n});\n",
+      "type": "registry:ui",
+      "target": "components/plate-ui/plate-element.tsx"
     }
   ],
   "name": "plate-element",
   "registryDependencies": [
     "block-selection"
   ],
-  "type": "registry:ui"
+  "type": "registry:ui",
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "author": "udecode (https://platejs.org)"
 }

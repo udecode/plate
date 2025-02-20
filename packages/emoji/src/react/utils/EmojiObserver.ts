@@ -24,16 +24,16 @@ const getSectionInFocus = (
   }
 };
 
-export type SetFocusedAndVisibleSectionsType = (
-  visibleSections: MapEmojiCategoryList,
-  categoryId?: EmojiCategoryList
-) => void;
-
 export type ObserverCategoriesType = {
   ancestorRef: React.MutableRefObject<HTMLDivElement | null>;
   emojiLibrary: IEmojiFloatingLibrary;
   setFocusedAndVisibleSections: SetFocusedAndVisibleSectionsType;
 };
+
+export type SetFocusedAndVisibleSectionsType = (
+  visibleSections: MapEmojiCategoryList,
+  categoryId?: EmojiCategoryList
+) => void;
 
 export const observeCategories = ({
   ancestorRef,

@@ -1,5 +1,17 @@
 # @udecode/plate-emoji
 
+## 44.0.0
+
+## 43.0.0
+
+## 42.2.4
+
+## 42.2.1
+
+### Patch Changes
+
+- [#3995](https://github.com/udecode/plate/pull/3995) by [@zbeyens](https://github.com/zbeyens) – Fix: add default emoji data
+
 ## 42.1.0
 
 ### Minor Changes

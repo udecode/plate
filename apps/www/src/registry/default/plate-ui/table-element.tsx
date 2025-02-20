@@ -1,21 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 
 import type * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-import type { TTableElement } from '@udecode/plate-table';
 
 import { PopoverAnchor } from '@radix-ui/react-popover';
 import { cn, withRef } from '@udecode/cn';
-import {
-  useEditorPlugin,
-  useEditorSelector,
-  useElement,
-  useReadOnly,
-  useRemoveNodeButton,
-  useSelected,
-  withHOC,
-} from '@udecode/plate/react';
+import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import { type TTableElement, setCellBackground } from '@udecode/plate-table';
 import {
   TablePlugin,
   TableProvider,
@@ -24,26 +16,42 @@ import {
   useTableMergeState,
 } from '@udecode/plate-table/react';
 import {
+  PlateElement,
+  useEditorPlugin,
+  useEditorRef,
+  useEditorSelector,
+  useElement,
+  usePluginOption,
+  useReadOnly,
+  useRemoveNodeButton,
+  useSelected,
+  withHOC,
+} from '@udecode/plate/react';
+import {
   ArrowDown,
   ArrowLeft,
   ArrowRight,
   ArrowUp,
   CombineIcon,
+  EraserIcon,
   Grid2X2Icon,
+  PaintBucketIcon,
   SquareSplitHorizontalIcon,
   Trash2Icon,
   XIcon,
 } from 'lucide-react';
 
+import { DEFAULT_COLORS } from './color-constants';
+import { ColorDropdownMenuItems } from './color-dropdown-menu-items';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuGroup,
+  DropdownMenuItem,
   DropdownMenuPortal,
   DropdownMenuTrigger,
 } from './dropdown-menu';
-import { PlateElement } from './plate-element';
 import { Popover, PopoverContent } from './popover';
 import {
   BorderAll,
@@ -59,6 +67,11 @@ export const TableElement = withHOC(
   TableProvider,
   withRef<typeof PlateElement>(({ children, className, ...props }, ref) => {
     const readOnly = useReadOnly();
+    const isSelectionAreaVisible = usePluginOption(
+      BlockSelectionPlugin,
+      'isSelectionAreaVisible'
+    );
+    const hasControls = !readOnly && !isSelectionAreaVisible;
     const selected = useSelected();
     const {
       isSelectingCell,
@@ -68,7 +81,11 @@ export const TableElement = withHOC(
 
     const content = (
       <PlateElement
-        className={cn(className, 'overflow-x-auto py-5')}
+        className={cn(
+          className,
+          'overflow-x-auto py-5',
+          hasControls && '-ml-2 *:data-[slot=block-selection]:left-2'
+        )}
         style={{ paddingLeft: marginLeft }}
         {...props}
       >
@@ -76,7 +93,7 @@ export const TableElement = withHOC(
           <table
             ref={ref}
             className={cn(
-              'ml-px mr-0 table h-px table-fixed border-collapse',
+              'mr-0 ml-px table h-px table-fixed border-collapse',
               isSelectingCell && 'selection:bg-transparent'
             )}
             {...tableProps}
@@ -114,13 +131,17 @@ export const TableFloatingToolbar = withRef<typeof PopoverContent>(
           ref={ref}
           asChild
           onOpenAutoFocus={(e) => e.preventDefault()}
+          contentEditable={false}
           {...props}
         >
           <Toolbar
-            className="flex w-auto max-w-[80vw] flex-row overflow-x-auto rounded-md border bg-popover p-1 shadow-md scrollbar-hide print:hidden"
+            className="flex scrollbar-hide w-auto max-w-[80vw] flex-row overflow-x-auto rounded-md border bg-popover p-1 shadow-md print:hidden"
             contentEditable={false}
           >
             <ToolbarGroup>
+              <ColorDropdownMenu tooltip="Background color">
+                <PaintBucketIcon />
+              </ColorDropdownMenu>
               {canMerge && (
                 <ToolbarButton
                   onClick={() => tf.table.merge()}
@@ -140,26 +161,24 @@ export const TableFloatingToolbar = withRef<typeof PopoverContent>(
                 </ToolbarButton>
               )}
 
+              <DropdownMenu modal={false}>
+                <DropdownMenuTrigger asChild>
+                  <ToolbarButton tooltip="Cell borders">
+                    <Grid2X2Icon />
+                  </ToolbarButton>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuPortal>
+                  <TableBordersDropdownMenuContent />
+                </DropdownMenuPortal>
+              </DropdownMenu>
+
               {collapsed && (
-                <>
-                  <DropdownMenu modal={false}>
-                    <DropdownMenuTrigger asChild>
-                      <ToolbarButton tooltip="Cell borders">
-                        <Grid2X2Icon />
-                      </ToolbarButton>
-                    </DropdownMenuTrigger>
-
-                    <DropdownMenuPortal>
-                      <TableBordersDropdownMenuContent />
-                    </DropdownMenuPortal>
-                  </DropdownMenu>
-
-                  <ToolbarGroup>
-                    <ToolbarButton tooltip="Delete table" {...buttonProps}>
-                      <Trash2Icon />
-                    </ToolbarButton>
-                  </ToolbarGroup>
-                </>
+                <ToolbarGroup>
+                  <ToolbarButton tooltip="Delete table" {...buttonProps}>
+                    <Trash2Icon />
+                  </ToolbarButton>
+                </ToolbarGroup>
               )}
             </ToolbarGroup>
 
@@ -236,6 +255,7 @@ export const TableFloatingToolbar = withRef<typeof PopoverContent>(
 export const TableBordersDropdownMenuContent = withRef<
   typeof DropdownMenuPrimitive.Content
 >((props, ref) => {
+  const editor = useEditorRef();
   const {
     getOnSelectTableBorder,
     hasBottomBorder,
@@ -250,19 +270,16 @@ export const TableBordersDropdownMenuContent = withRef<
     <DropdownMenuContent
       ref={ref}
       className={cn('min-w-[220px]')}
+      onCloseAutoFocus={(e) => {
+        e.preventDefault();
+        editor.tf.focus();
+      }}
       align="start"
       side="right"
       sideOffset={0}
       {...props}
     >
       <DropdownMenuGroup>
-        <DropdownMenuCheckboxItem
-          checked={hasBottomBorder}
-          onCheckedChange={getOnSelectTableBorder('bottom')}
-        >
-          <BorderBottom />
-          <div>Bottom Border</div>
-        </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
           checked={hasTopBorder}
           onCheckedChange={getOnSelectTableBorder('top')}
@@ -271,18 +288,25 @@ export const TableBordersDropdownMenuContent = withRef<
           <div>Top Border</div>
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
-          checked={hasLeftBorder}
-          onCheckedChange={getOnSelectTableBorder('left')}
-        >
-          <BorderLeft />
-          <div>Left Border</div>
-        </DropdownMenuCheckboxItem>
-        <DropdownMenuCheckboxItem
           checked={hasRightBorder}
           onCheckedChange={getOnSelectTableBorder('right')}
         >
           <BorderRight />
           <div>Right Border</div>
+        </DropdownMenuCheckboxItem>
+        <DropdownMenuCheckboxItem
+          checked={hasBottomBorder}
+          onCheckedChange={getOnSelectTableBorder('bottom')}
+        >
+          <BorderBottom />
+          <div>Bottom Border</div>
+        </DropdownMenuCheckboxItem>
+        <DropdownMenuCheckboxItem
+          checked={hasLeftBorder}
+          onCheckedChange={getOnSelectTableBorder('left')}
+        >
+          <BorderLeft />
+          <div>Left Border</div>
         </DropdownMenuCheckboxItem>
       </DropdownMenuGroup>
 
@@ -305,3 +329,55 @@ export const TableBordersDropdownMenuContent = withRef<
     </DropdownMenuContent>
   );
 });
+
+type ColorDropdownMenuProps = {
+  children: React.ReactNode;
+  tooltip: string;
+};
+
+function ColorDropdownMenu({ children, tooltip }: ColorDropdownMenuProps) {
+  const [open, setOpen] = useState(false);
+
+  const editor = useEditorRef();
+  const selectedCells = usePluginOption(TablePlugin, 'selectedCells');
+
+  const onUpdateColor = useCallback(
+    (color: string) => {
+      setOpen(false);
+      setCellBackground(editor, { color, selectedCells: selectedCells ?? [] });
+    },
+    [selectedCells, editor]
+  );
+
+  const onClearColor = useCallback(() => {
+    setOpen(false);
+    setCellBackground(editor, {
+      color: null,
+      selectedCells: selectedCells ?? [],
+    });
+  }, [selectedCells, editor]);
+
+  return (
+    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
+      <DropdownMenuTrigger asChild>
+        <ToolbarButton tooltip={tooltip}>{children}</ToolbarButton>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent align="start">
+        <DropdownMenuGroup label="Colors">
+          <ColorDropdownMenuItems
+            className="px-2"
+            colors={DEFAULT_COLORS}
+            updateColor={onUpdateColor}
+          />
+        </DropdownMenuGroup>
+        <DropdownMenuGroup>
+          <DropdownMenuItem className="p-2" onClick={onClearColor}>
+            <EraserIcon />
+            <span>Clear</span>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}

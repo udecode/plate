@@ -23,7 +23,7 @@ export type LinkConfig = ExtendConfig<
      * @default { }
      */
     triggerFloatingLinkHotkeys?: string;
-  } & LinkSelectors,
+  },
   {
     floatingLink: {
       hide: () => void;
@@ -33,12 +33,12 @@ export type LinkConfig = ExtendConfig<
     link: {
       getAttributes: OmitFirst<typeof getLinkAttributes>;
     };
+  },
+  {},
+  {
+    isOpen?: (editorId: string) => boolean;
   }
 >;
-
-export type LinkSelectors = {
-  isOpen?: (editorId: string) => boolean;
-};
 
 /** Enables support for hyperlinks. */
 export const LinkPlugin = toTPlatePlugin<LinkConfig>(BaseLinkPlugin, {
@@ -93,6 +93,6 @@ export const LinkPlugin = toTPlatePlugin<LinkConfig>(BaseLinkPlugin, {
       },
     },
   }))
-  .extendOptions(({ getOptions }) => ({
-    isOpen: (editorId: string) => getOptions().openEditorId === editorId,
+  .extendSelectors<LinkConfig['selectors']>(({ getOptions }) => ({
+    isOpen: (editorId) => getOptions().openEditorId === editorId,
   }));

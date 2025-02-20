@@ -7,12 +7,10 @@ export const BaseFontWeightPlugin = createSlatePlugin({
       nodeKey: 'fontWeight',
     },
   },
-}).extend(({ type }) => ({
   parsers: {
     html: {
       deserializer: {
         isLeaf: true,
-        parse: ({ element }) => ({ [type]: element.style.fontWeight }),
         rules: [
           {
             validStyle: {
@@ -20,7 +18,8 @@ export const BaseFontWeightPlugin = createSlatePlugin({
             },
           },
         ],
+        parse: ({ element, type }) => ({ [type]: element.style.fontWeight }),
       },
     },
   },
-}));
+});

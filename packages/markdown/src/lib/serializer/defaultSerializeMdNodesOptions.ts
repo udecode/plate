@@ -8,14 +8,14 @@ const isLeafNode = (node: MdElementType | MdLeafType): node is MdLeafType => {
 
 export const defaultSerializeMdNodesOptions: SerializeMdOptions['nodes'] = {
   a: {
+    type: 'a',
     serialize: (children, node) => {
       return `[${children}](${node.url || ''})`;
     },
-    type: 'a',
   },
   blockquote: {
-    serialize: (children) => `\n> ${children}\n`,
     type: 'blockquote',
+    serialize: (children) => `\n> ${children}\n`,
   },
   bold: {
     isLeaf: true,
@@ -23,33 +23,35 @@ export const defaultSerializeMdNodesOptions: SerializeMdOptions['nodes'] = {
   },
   code: { isLeaf: true, type: 'code' },
   code_block: {
-    serialize: (children, node) =>
-      `\n\`\`\`${node.lang || ''}\n${children}\`\`\`\n`,
     type: 'code_block',
+    serialize: (children, node) =>
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
+      `\n\`\`\`${node.lang || ''}\n${children}\`\`\`\n`,
   },
   code_line: {
-    serialize: (children) => `${children}\n`,
     type: 'code_line',
+    serialize: (children) => `${children}\n`,
   },
   equation: {
-    serialize: (children, node) => `$$\n${node.texExpression}\n$$`,
     type: 'equation',
+    serialize: (children, node) => `$$\n${node.texExpression}\n$$`,
   },
-  h1: { serialize: (children) => `\n# ${children}\n`, type: 'h1' },
-  h2: { serialize: (children) => `\n## ${children}\n`, type: 'h2' },
-  h3: { serialize: (children) => `\n### ${children}\n`, type: 'h3' },
-  h4: { serialize: (children) => `\n#### ${children}\n`, type: 'h4' },
+  h1: { type: 'h1', serialize: (children) => `\n# ${children}\n` },
+  h2: { type: 'h2', serialize: (children) => `\n## ${children}\n` },
+  h3: { type: 'h3', serialize: (children) => `\n### ${children}\n` },
+  h4: { type: 'h4', serialize: (children) => `\n#### ${children}\n` },
   h5: {
-    serialize: (children) => `\n##### ${children}\n`,
     type: 'h5',
+    serialize: (children) => `\n##### ${children}\n`,
   },
   h6: {
-    serialize: (children) => `\n###### ${children}\n`,
     type: 'h6',
+    serialize: (children) => `\n###### ${children}\n`,
   },
-  hr: { isVoid: true, serialize: () => '\n---\n', type: 'hr' },
+  hr: { isVoid: true, type: 'hr', serialize: () => '\n---\n' },
   img: {
     isVoid: true,
+    type: 'img',
     serialize: (_, node, opts) => {
       const caption =
         node.caption
@@ -58,14 +60,14 @@ export const defaultSerializeMdNodesOptions: SerializeMdOptions['nodes'] = {
 
       return `\n![${caption}](${node.url || ''})\n`;
     },
-    type: 'img',
   },
   inline_equation: {
-    serialize: (children, node) => `$${node.texExpression}$`,
     type: 'inline_equation',
+    serialize: (children, node) => `$${node.texExpression}$`,
   },
   italic: { isLeaf: true, type: 'italic' },
   li: {
+    type: 'li',
     serialize: (children, node, { listDepth = 0, nodes }) => {
       const isOL = node && node.parent?.type === nodes.ol.type;
 
@@ -90,17 +92,17 @@ export const defaultSerializeMdNodesOptions: SerializeMdOptions['nodes'] = {
 
       return `${emptyBefore}${spacer}${isOL ? '1.' : '-'} ${children}`;
     },
-    type: 'li',
   },
   ol: {
+    type: 'ol',
     serialize: (children, _, { listDepth }) => {
       const newLineAfter = listDepth === 0 ? '\n' : '';
 
       return `${children}${newLineAfter}`;
     },
-    type: 'ol',
   },
   p: {
+    type: 'p',
     serialize: (children, node, { nodes, ulListStyleTypes = [] }) => {
       const listStyleType = node.listStyleType;
 
@@ -135,10 +137,10 @@ export const defaultSerializeMdNodesOptions: SerializeMdOptions['nodes'] = {
 
       return `${pre}${children}${breakTag}`;
     },
-    type: 'p',
   },
   strikethrough: { isLeaf: true, type: 'strikethrough' },
   table: {
+    type: 'table',
     serialize: (children) => {
       const lines = children.split('\n').filter(Boolean);
 
@@ -165,33 +167,32 @@ export const defaultSerializeMdNodesOptions: SerializeMdOptions['nodes'] = {
       // Join back into string
       return lines.join('\n');
     },
-    type: 'table',
   },
   td: {
+    type: 'td',
     serialize: (children) => {
       return `| ${children}`;
     },
-    type: 'td',
   },
   th: {
+    type: 'th',
     serialize: (children) => {
       return `| ${children}`;
     },
-    type: 'th',
   },
   tr: {
+    type: 'tr',
     serialize: (children) => {
       return `${children} |\n`;
     },
-    type: 'tr',
   },
   ul: {
+    type: 'ul',
     serialize: (children, _, { listDepth }) => {
       const newLineAfter = listDepth === 0 ? '\n' : '';
 
       return `${children}${newLineAfter}`;
     },
-    type: 'ul',
   },
   underline: { isLeaf: true, type: 'underline' },
 };

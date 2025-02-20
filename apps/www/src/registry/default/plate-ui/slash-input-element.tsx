@@ -3,7 +3,6 @@
 import React from 'react';
 
 import { withRef } from '@udecode/cn';
-import { type PlateEditor, ParagraphPlugin } from '@udecode/plate/react';
 import { AIChatPlugin } from '@udecode/plate-ai/react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
@@ -17,6 +16,8 @@ import {
 } from '@udecode/plate-math/react';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
+import { type PlateEditor, ParagraphPlugin } from '@udecode/plate/react';
+import { PlateElement } from '@udecode/plate/react';
 import {
   CalendarIcon,
   ChevronRightIcon,
@@ -50,7 +51,6 @@ import {
   InlineComboboxInput,
   InlineComboboxItem,
 } from './inline-combobox';
-import { PlateElement } from './plate-element';
 
 type Group = {
   group: string;
@@ -60,9 +60,9 @@ type Group = {
 interface Item {
   icon: React.ReactNode;
 
-  onSelect: (editor: PlateEditor, value: string) => void;
-
   value: string;
+
+  onSelect: (editor: PlateEditor, value: string) => void;
   className?: string;
   focusEditor?: boolean;
   keywords?: string[];

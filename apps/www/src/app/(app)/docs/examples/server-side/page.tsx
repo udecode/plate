@@ -59,8 +59,8 @@ import { Code } from '@/components/code';
 import { Link } from '@/components/link';
 import { Markdown } from '@/components/markdown';
 import { H2, H3, P } from '@/components/typography';
-import { basicElementsValue } from '@/registry/default/example/values/basic-elements-value';
-import { basicMarksValue } from '@/registry/default/example/values/basic-marks-value';
+import { basicElementsValue } from '@/registry/default/examples/values/basic-elements-value';
+import { basicMarksValue } from '@/registry/default/examples/values/basic-marks-value';
 
 export default function RSCPage() {
   const mockDoc = {
@@ -204,9 +204,7 @@ export default function RSCPage() {
       BaseSingleLinePlugin,
       BaseSoftBreakPlugin,
       BaseTabbablePlugin,
-      TrailingBlockPlugin.configure({
-        options: { type: BaseParagraphPlugin.key },
-      }),
+      TrailingBlockPlugin,
 
       // Collaboration
       BaseCommentsPlugin,

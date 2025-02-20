@@ -1,0 +1,55 @@
+{
+  "name": "@app/eslint",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A package to share ESLint configurations in workspace",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.js",
+      "types": "./src/index.d.ts"
+    }
+  },
+  "scripts": {
+    "clean": "rimraf dist *.tsbuildinfo",
+    "lint": "yarn p:lint",
+    "lint:fix": "yarn p:lint:fix",
+    "typecheck": "yarn p:typecheck"
+  },
+  "dependencies": {
+    "@eslint/compat": "^1.2.6",
+    "@eslint/eslintrc": "^3.2.0",
+    "@eslint/js": "^9.19.0",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-import-resolver-typescript": "^3.7.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-jest": "^28.11.0",
+    "eslint-plugin-jest-dom": "5.5.0",
+    "eslint-plugin-jest-formatting": "3.1.0",
+    "eslint-plugin-jsdoc": "^50.6.3",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-perfectionist": "4.7.0",
+    "eslint-plugin-playwright": "^2.2.0",
+    "eslint-plugin-prettier": "^5.2.3",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "eslint-plugin-regexp": "^2.7.0",
+    "eslint-plugin-security": "^3.0.1",
+    "eslint-plugin-tailwindcss": "^3.18.0",
+    "eslint-plugin-testing-library": "^7.1.1",
+    "eslint-plugin-turbo": "^2.4.0",
+    "eslint-plugin-unicorn": "^56.0.1",
+    "eslint-plugin-unused-imports": "^4.1.4",
+    "globals": "^15.14.0",
+    "prettier": "^3.4.2",
+    "prettier-plugin-jsdoc": "^1.3.2",
+    "prettier-plugin-packagejson": "^2.5.8",
+    "prettier-plugin-tailwindcss": "^0.6.11",
+    "typescript-eslint": "^8.22.0"
+  },
+  "devDependencies": {
+    "@next/eslint-plugin-next": "^15.1.6",
+    "@types/eslint-config-prettier": "^6.11.3",
+    "@typescript-eslint/utils": "^8.22.0"
+  }
+}

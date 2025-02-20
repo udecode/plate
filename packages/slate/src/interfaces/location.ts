@@ -21,7 +21,6 @@ export type TLocation = Path | Point | TRange;
 export const LocationApi: {
   /** Check if a value implements the `At` interface. */
   isAt: (value: any) => value is At;
-
   /** Check if a value implements the `Location` interface. */
   isLocation: (value: any) => value is Location;
 } = {

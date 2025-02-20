@@ -7,7 +7,7 @@ import { Paintbrush } from 'lucide-react';
 import { THEME_LIST } from '@/lib/themes';
 import { Button } from '@/registry/default/plate-ui/button';
 
-import { settingsStore } from './context/settings-store';
+import { SettingsStore } from './context/settings-store';
 import { ThemesSwitcher } from './themes-selector-mini';
 
 export function ThemesButton() {
@@ -15,7 +15,7 @@ export function ThemesButton() {
     <div className="flex items-center">
       <div className="mr-2 flex items-center space-x-0.5">
         <ThemesSwitcher
-          className="fixed inset-x-0 bottom-0 z-40 flex bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 lg:sticky lg:bottom-auto lg:top-20"
+          className="fixed inset-x-0 bottom-0 z-40 flex bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60 lg:sticky lg:top-20 lg:bottom-auto"
           themes={THEME_LIST}
         />
       </div>
@@ -25,8 +25,8 @@ export function ThemesButton() {
         variant="outline"
         className="hidden h-9 md:flex"
         onClick={() => {
-          settingsStore.set.customizerTab('themes');
-          settingsStore.set.showSettings(true);
+          SettingsStore.set('customizerTab', 'themes');
+          SettingsStore.set('showSettings', true);
         }}
       >
         <Paintbrush />

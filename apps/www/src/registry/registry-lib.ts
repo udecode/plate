@@ -1,17 +1,6 @@
-import type { Registry } from './schema';
+import type { Registry } from 'shadcx/registry';
 
-export const lib: Registry = [
-  {
-    dependencies: ['clsx', 'tailwind-merge'],
-    files: [
-      {
-        path: 'lib/utils.ts',
-        type: 'registry:lib',
-      },
-    ],
-    name: 'utils',
-    type: 'registry:lib',
-  },
+export const lib: Registry['items'] = [
   {
     dependencies: [
       'uploadthing@7.2.0',

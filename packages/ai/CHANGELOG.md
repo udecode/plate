@@ -1,5 +1,33 @@
 # @udecode/plate-ai
 
+## 44.0.3
+
+### Patch Changes
+
+- [#4070](https://github.com/udecode/plate/pull/4070) by [@supersimple33](https://github.com/supersimple33) – fix: ai chat loading
+
+## 44.0.0
+
+## 43.0.5
+
+### Patch Changes
+
+- [#4038](https://github.com/udecode/plate/pull/4038) by [@yf-yang](https://github.com/yf-yang) – Update types and docs of `aboveNodes` and `belowNodes`
+
+## 43.0.0
+
+### Minor Changes
+
+- [#4019](https://github.com/udecode/plate/pull/4019) by [@zbeyens](https://github.com/zbeyens) – Upgrade dependencies to latest
+
+## 42.2.4
+
+### Patch Changes
+
+- [#4012](https://github.com/udecode/plate/pull/4012) by [@zbeyens](https://github.com/zbeyens) – Fix overrideEditor insertText missing options
+
+## 42.2.3
+
 ## 42.2.0
 
 ### Patch Changes

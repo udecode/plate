@@ -1,4 +1,5 @@
 'use client';
+
 // Lifted from slate-yjs https://github.com/BitPhinix/slate-yjs/blob/main/examples/frontend/src/pages/RemoteCursorOverlay/Overlay.tsx
 
 import React, { type CSSProperties, useState } from 'react';
@@ -55,7 +56,7 @@ function Caret({ caretPosition, data }: CaretProps) {
       style={isHover ? caretStyleHover : caretStyle}
     >
       <div
-        className="absolute top-0 whitespace-nowrap rounded rounded-bl-none px-1.5 py-0.5 text-xs text-white"
+        className="absolute top-0 rounded rounded-bl-none px-1.5 py-0.5 text-xs whitespace-nowrap text-white"
         style={isHover ? labelStyleHover : labelStyle}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
@@ -89,13 +90,13 @@ function RemoteSelection({
           style={{ ...selectionStyle, ...position }}
         ></div>
       ))}
-      {caretPosition && <Caret caretPosition={caretPosition} data={data} />}
+      {caretPosition && <Caret data={data} caretPosition={caretPosition} />}
     </React.Fragment>
   );
 }
 
 export function RemoteCursorOverlay() {
-  const containerRef = useEditorContainerRef();
+  const containerRef: any = useEditorContainerRef();
   const [cursors] = useRemoteCursorOverlayPositions<CursorData>({
     containerRef,
   });

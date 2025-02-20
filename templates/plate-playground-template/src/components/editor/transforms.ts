@@ -69,6 +69,9 @@ const insertBlockMap: Record<
   string,
   (editor: PlateEditor, type: string) => void
 > = {
+  [INDENT_LIST_KEYS.todo]: insertList,
+  [ListStyleType.Decimal]: insertList,
+  [ListStyleType.Disc]: insertList,
   [ACTION_THREE_COLUMNS]: (editor) =>
     insertColumnGroup(editor, { columns: 3, select: true }),
   [AudioPlugin.key]: (editor) =>
@@ -77,14 +80,11 @@ const insertBlockMap: Record<
   [CodeBlockPlugin.key]: (editor) => insertCodeBlock(editor, { select: true }),
   [EquationPlugin.key]: (editor) => insertEquation(editor, { select: true }),
   [FilePlugin.key]: (editor) => insertFilePlaceholder(editor, { select: true }),
-  [INDENT_LIST_KEYS.todo]: insertList,
   [ImagePlugin.key]: (editor) =>
     insertMedia(editor, {
       select: true,
       type: ImagePlugin.key,
     }),
-  [ListStyleType.Decimal]: insertList,
-  [ListStyleType.Disc]: insertList,
   [MediaEmbedPlugin.key]: (editor) =>
     insertMedia(editor, {
       select: true,
@@ -152,10 +152,10 @@ const setBlockMap: Record<
   string,
   (editor: PlateEditor, type: string, entry: NodeEntry<TElement>) => void
 > = {
-  [ACTION_THREE_COLUMNS]: (editor) => toggleColumnGroup(editor, { columns: 3 }),
   [INDENT_LIST_KEYS.todo]: setList,
   [ListStyleType.Decimal]: setList,
   [ListStyleType.Disc]: setList,
+  [ACTION_THREE_COLUMNS]: (editor) => toggleColumnGroup(editor, { columns: 3 }),
 };
 
 export const setBlockType = (

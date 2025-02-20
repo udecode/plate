@@ -17,7 +17,6 @@ docs:
 
 ## Installation
 
-
 ```bash
 npm install @udecode/plate-callout
 ```
@@ -56,54 +55,44 @@ Work in progress.
 
 ## Plugins
 
-### CalloutPlugin
+### `CalloutPlugin`
 
 Callout element plugin.
 
 ## Transforms
 
-### editor.tf.insert.callout
+### `editor.tf.insert.callout`
 
-Inserts a callout element into the editor.
+Insert a callout element into the editor.
 
-<APIParameters>
-  <APIItem name="editor" type="SlateEditor">
-    The editor instance.
+<API name="callout">
+<APIOptions type="object">
+  <APIItem name="variant" type="string" optional>
+    The variant of the callout to insert.
   </APIItem>
-  <APIItem name="options" type="object" optional>
-    Options for inserting the callout.
-    <APISubList>
-      <APISubListItem parent="options" name="variant" type="string" optional>
-        The variant of the callout to insert.
-      </APISubListItem>
-      <APISubListItem parent="options" name="...InsertNodesOptions" type="InsertNodesOptions<V>">
-        Other options from `InsertNodesOptions`.
-      </APISubListItem>
-    </APISubList>
+  <APIItem name="...InsertNodesOptions" type="InsertNodesOptions<V>">
+    Other options from `InsertNodesOptions`.
   </APIItem>
-</APIParameters>
+</APIOptions>
+</API>
 
 ## Hooks
 
-### useCalloutEmojiPicker
+### `useCalloutEmojiPicker`
 
-This hook manages the emoji picker functionality for callouts.
+Manage the emoji picker functionality for callouts.
 
-<APIParameters>
-  <APIItem name="options" type="UseCalloutEmojiPickerOptions">
-    Options for the callout emoji picker.
-    <APISubList>
-      <APISubListItem parent="options" name="isOpen" type="boolean">
-        Whether the emoji picker is open.
-      </APISubListItem>
-      <APISubListItem parent="options" name="setIsOpen" type="(isOpen: boolean) => void">
-        Function to set the open state of the emoji picker.
-      </APISubListItem>
-    </APISubList>
+<API name="useCalloutEmojiPicker">
+<APIOptions type="UseCalloutEmojiPickerOptions">
+  <APIItem name="isOpen" type="boolean">
+    Whether the emoji picker is open.
   </APIItem>
-</APIParameters>
+  <APIItem name="setIsOpen" type="(isOpen: boolean) => void">
+    Function to set the open state of the emoji picker.
+  </APIItem>
+</APIOptions>
 
-<APIReturns>
+<APIReturns type="object">
   <APIItem name="emojiToolbarDropdownProps" type="object">
     Props for the emoji toolbar dropdown.
     <APISubList>
@@ -130,10 +119,11 @@ This hook manages the emoji picker functionality for callouts.
     </APISubList>
   </APIItem>
 </APIReturns>
+</API>
 
 ## Types
 
-### TCalloutElement
+### `TCalloutElement`
 
 ```typescript
 interface TCalloutElement extends TElement {
@@ -141,3 +131,14 @@ interface TCalloutElement extends TElement {
   icon?: string;
 }
 ```
+
+<API name="TCalloutElement">
+<APIAttributes>
+  <APIItem name="variant" type="string" optional>
+    The variant of the callout.
+  </APIItem>
+  <APIItem name="icon" type="string" optional>
+    The icon or emoji to display.
+  </APIItem>
+</APIAttributes>
+</API>

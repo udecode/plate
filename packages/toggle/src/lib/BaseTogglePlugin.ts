@@ -1,24 +1,24 @@
 import { type PluginConfig, createTSlatePlugin } from '@udecode/plate';
 
-export type TToggleElement = {
-  type: typeof BaseTogglePlugin.key;
-};
-
 export type BaseToggleConfig = PluginConfig<
   'toggle',
   {
     openIds?: Set<string>;
-  } & ToggleSelectors,
+  },
   {
     toggle: {
       toggleIds: (ids: string[], force?: boolean | null) => void;
     };
+  },
+  {},
+  {
+    isOpen?: (toggleId: string) => boolean;
+    someClosed?: (toggleIds: string[]) => boolean;
   }
 >;
 
-type ToggleSelectors = {
-  isOpen?: (toggleId: string) => boolean;
-  someClosed?: (toggleIds: string[]) => boolean;
+export type TToggleElement = {
+  type: typeof BaseTogglePlugin.key;
 };
 
 export const BaseTogglePlugin = createTSlatePlugin<BaseToggleConfig>({
@@ -28,18 +28,18 @@ export const BaseTogglePlugin = createTSlatePlugin<BaseToggleConfig>({
     openIds: new Set(),
   },
 })
-  .extendOptions<ToggleSelectors>(({ getOptions }) => ({
+  .extendSelectors<BaseToggleConfig['selectors']>(({ getOptions }) => ({
     isOpen: (toggleId) => {
       return getOptions().openIds!.has(toggleId);
     },
-    someClosed: (toggleIds: string[]): boolean => {
+    someClosed: (toggleIds) => {
       const { openIds } = getOptions();
 
       return toggleIds.some((id) => !openIds!.has(id));
     },
   }))
-  .extendApi(({ setOptions }) => ({
-    toggleIds: (ids: string[], force: boolean | null = null): void => {
+  .extendApi<BaseToggleConfig['api']['toggle']>(({ setOptions }) => ({
+    toggleIds: (ids, force = null) => {
       setOptions((draft) => {
         ids.forEach((id) => {
           const isCurrentlyOpen = draft.openIds!.has(id);

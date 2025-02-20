@@ -12,9 +12,9 @@ export interface InsertMediaOptions extends InsertNodesOptions {
    * Default onClick is getting the image url by calling this promise before
    * inserting the image.
    */
-  getUrl?: () => Promise<string>;
-
   type?: string;
+
+  getUrl?: () => Promise<string>;
 }
 
 export const insertMedia = async <E extends SlateEditor>(

@@ -1,10 +1,9 @@
 'use client';
 
 import { cn, withRef } from '@udecode/cn';
-import { useReadOnly } from '@udecode/plate/react';
+import { PlateElement, useReadOnly } from '@udecode/plate/react';
 
 import { Calendar } from './calendar';
-import { PlateElement } from './plate-element';
 import { Popover, PopoverContent, PopoverTrigger } from './popover';
 
 export const DateElement = withRef<typeof PlateElement>(

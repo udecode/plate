@@ -1,5 +1,55 @@
 # @udecode/plate-table
 
+## 45.0.0
+
+### Minor Changes
+
+- [#4047](https://github.com/udecode/plate/pull/4047) by [@patrick-hertling](https://github.com/patrick-hertling) – Ability to set background color of table cells
+
+## 44.0.0
+
+### Major Changes
+
+- [#4048](https://github.com/udecode/plate/pull/4048) by [@zbeyens](https://github.com/zbeyens) – Move store state `selectedCells` and `selectedTables` from `useTableStore` to `TablePlugin` options store. This fixes the issue to get access to those state outside a table element (e.g. the toolbar)
+
+- [#4048](https://github.com/udecode/plate/pull/4048) by [@zbeyens](https://github.com/zbeyens) – Upgrade to `jotai-x@2`. [Migration](https://github.com/udecode/jotai-x/blob/main/packages/jotai-x/CHANGELOG.md#211) needed only if you use one of these stores:
+
+  - `useCommentStore`
+  - `usePlaceholderStore`
+  - `useResizableStore`
+  - `useTableStore`
+
+## 43.0.3
+
+## 43.0.2
+
+### Patch Changes
+
+- [#4027](https://github.com/udecode/plate/pull/4027) by [@zbeyens](https://github.com/zbeyens) –
+  - Support controlling many selected cells (previously only one cell)
+  - Fix selected cells to sync after cell operation
+
+## 43.0.0
+
+## 42.2.4
+
+### Patch Changes
+
+- [#4012](https://github.com/udecode/plate/pull/4012) by [@zbeyens](https://github.com/zbeyens) – Fix overrideEditor insertText missing options
+
+## 42.2.3
+
+### Patch Changes
+
+- [#4010](https://github.com/udecode/plate/pull/4010) by [@zbeyens](https://github.com/zbeyens) –
+  - Recompute cell indices when moving node in table
+
+## 42.2.2
+
+### Patch Changes
+
+- [#4002](https://github.com/udecode/plate/pull/4002) by [@zbeyens](https://github.com/zbeyens) – Fix parsers to use custom node type
+
 ## 42.1.1
 
 ### Patch Changes

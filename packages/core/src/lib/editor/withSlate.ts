@@ -18,7 +18,6 @@ import { type CorePlugin, getCorePlugins } from '../plugins/getCorePlugins';
 
 export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
   id?: any;
-
   /**
    * Select the editor after initialization.
    *
@@ -29,14 +28,10 @@ export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
    * - `'start'`: Select the start of the editor
    */
   autoSelect?: boolean | 'end' | 'start';
-
   /** Specifies the maximum number of characters allowed in the editor. */
   maxLength?: number;
-
   plugins?: P[];
-
   selection?: TSelection;
-
   /**
    * When `true`, it will normalize the initial `value` passed to the `editor`.
    * This is useful when adding normalization rules on already existing
@@ -62,10 +57,9 @@ export type WithSlateOptions<
     | 'override'
     | 'transforms'
   > & {
+    value?: ((editor: SlateEditor) => V) | V | string;
     /** Function to configure the root plugin */
     rootPlugin?: (plugin: AnySlatePlugin) => AnySlatePlugin;
-
-    value?: ((editor: SlateEditor) => V) | V | string;
   };
 
 /**
@@ -122,50 +116,48 @@ export const withSlate = <
 
     if (!store) return editor.getPlugin(plugin).options;
 
-    return editor.getOptionsStore(plugin).get.state();
+    return editor.getOptionsStore(plugin).get('state');
   };
   editor.getOption = (plugin, key, ...args) => {
     const store = editor.getOptionsStore(plugin);
 
     if (!store) return editor.getPlugin(plugin).options[key];
 
-    const getter = (store.get as any)[key];
-
-    if (getter) {
-      return getter(...args);
+    if (!(key in store.get('state')) && !(key in store.selectors)) {
+      editor.api.debug.error(
+        `editor.getOption: ${key as string} option is not defined in plugin ${plugin.key}.`,
+        'OPTION_UNDEFINED'
+      );
+      return;
     }
 
-    editor.api.debug.error(
-      `editor.getOption: ${key as string} option is not defined in plugin ${plugin.key}.`,
-      'OPTION_UNDEFINED'
-    );
+    return (store.get as any)(key, ...args);
   };
-  editor.setOption = (plugin: any, key: any, value: any) => {
+  editor.setOption = (plugin: any, key: any, ...args: any) => {
     const store = editor.getOptionsStore(plugin);
 
     if (!store) return;
 
-    const setter = (store.set as any)[key];
-
-    if (setter) {
-      setter(value);
-    } else {
+    if (!(key in store.get('state'))) {
       editor.api.debug.error(
         `editor.setOption: ${key} option is not defined in plugin ${plugin.key}.`,
         'OPTION_UNDEFINED'
       );
+      return;
     }
+
+    (store.set as any)(key, ...args);
   };
   editor.setOptions = (plugin: any, options: any) => {
     const store = editor.getOptionsStore(plugin);
 
     if (!store) return;
     if (typeof options === 'object') {
-      store.set.state((draft: any) => {
+      store.set('state', (draft: any) => {
         Object.assign(draft, options);
       });
     } else if (typeof options === 'function') {
-      store.set.state(options);
+      store.set('state', options);
     }
   };
 

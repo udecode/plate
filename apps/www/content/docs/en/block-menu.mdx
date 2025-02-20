@@ -77,20 +77,21 @@ Refer to the preview above.
 
 ## Plugins
 
-### BlockMenuPlugin
+### `BlockMenuPlugin`
 
 Block menu state management.
 
 ## API
 
-### editor.api.blockMenu.hide
+### `editor.api.blockMenu.hide`
 
-Hides the block menu.
+Hide the block menu.
 
-### editor.api.blockMenu.show
+### `editor.api.blockMenu.show`
 
 Shows the block menu for a specific block.
 
+<API name="show">
 <APIParameters>
   <APIItem name="id" type="'context' | string">
     The ID of the block to show the menu for.
@@ -99,11 +100,13 @@ Shows the block menu for a specific block.
     The position to show the menu at.
   </APIItem>
 </APIParameters>
+</API>
 
-### editor.api.blockMenu.showContextMenu
+### `editor.api.blockMenu.showContextMenu`
 
 Shows the context menu for a specific block.
 
+<API name="showContextMenu">
 <APIParameters>
   <APIItem name="blockId" type="string">
     The ID of the block to show the context menu for.
@@ -112,3 +115,4 @@ Shows the context menu for a specific block.
     The position to show the context menu at.
   </APIItem>
 </APIParameters>
+</API>

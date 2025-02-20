@@ -1,5 +1,21 @@
 # @udecode/plate-code-block
 
+## 44.0.0
+
+## 43.1.0
+
+### Minor Changes
+
+- [#4043](https://github.com/udecode/plate/pull/4043) by [@patrick-hertling](https://github.com/patrick-hertling) – Ability to format a valid JSON string in a code block.
+
+## 43.0.0
+
+## 42.2.2
+
+### Patch Changes
+
+- [#4002](https://github.com/udecode/plate/pull/4002) by [@zbeyens](https://github.com/zbeyens) – Fix parsers to use custom node type
+
 ## 42.1.1
 
 ### Patch Changes

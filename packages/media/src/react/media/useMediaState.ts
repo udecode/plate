@@ -11,11 +11,11 @@ import {
 import type { TMediaElement } from '../../lib/media/types';
 
 import { BaseVideoPlugin } from '../../lib';
+import { BaseMediaEmbedPlugin, VIDEO_PROVIDERS } from '../../lib/media-embed';
 import {
   type EmbedUrlParser,
   parseMediaUrl,
 } from '../../lib/media/parseMediaUrl';
-import { BaseMediaEmbedPlugin, VIDEO_PROVIDERS } from '../../lib/media-embed';
 
 export const useMediaState = ({
   urlParsers,

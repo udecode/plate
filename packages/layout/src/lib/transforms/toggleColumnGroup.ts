@@ -39,13 +39,11 @@ export const toggleColumnGroup = (
     const columnWidths = widths || columnsToWidths({ columns });
 
     const nodes = {
-      children: Array(columns)
-        .fill(null)
-        .map((_, index) => ({
-          children: [index === 0 ? node : editor.api.create.block()],
-          type: BaseColumnItemPlugin.key,
-          width: columnWidths[index],
-        })),
+      children: new Array(columns).fill(null).map((_, index) => ({
+        children: [index === 0 ? node : editor.api.create.block()],
+        type: BaseColumnItemPlugin.key,
+        width: columnWidths[index],
+      })),
       type: BaseColumnPlugin.key,
     } as TElement;
 

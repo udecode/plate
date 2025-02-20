@@ -2,8 +2,8 @@
 
 import type { SlateEditor } from '@udecode/plate';
 
-import { type PlateEditor, createPlateEditor } from '@udecode/plate/react';
 import { jsxt } from '@udecode/plate-test-utils';
+import { type PlateEditor, createPlateEditor } from '@udecode/plate/react';
 
 import { getTestTablePlugins } from './withNormalizeTable.spec';
 

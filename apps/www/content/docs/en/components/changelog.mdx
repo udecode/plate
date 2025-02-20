@@ -8,9 +8,88 @@ Since Plate UI is not a component library, a changelog is maintained here.
 
 Use the [CLI](https://platejs.org/docs/components/cli) to install the latest version of the components.
 
+## February 2025 #19
+
+### February 18 #19.2
+
+Plate 45 - new comments & suggestions UI
+
+- NEW `block-discussion` as the main container, used in `plate-element`
+- NEW `comment` for individual comment display
+- NEW `comment-create-form` with minimal Plate editor for input
+- Removed legacy components:
+  - `comments-popover`
+  - `comment-avatar`
+  - `comment-reply-items`
+  - `comment-value`
+  - `comment-resolve-button`
+- NEW `block-suggestion`
+- NEW `suggestion-leaf`
+- NEW `suggestion-line-break`
+- Remove `plate-element`, import `PlateElement` from `@udecode/plate/react` instead. Add in `block-selection-plugins`:
+```tsx
+render: {
+  belowRootNodes: (props) => {
+    if (!props.className?.includes('slate-selectable')) return null;
+
+    return <BlockSelection />;
+  },
+},
+```
+
+### February 3 #19.1
+
+- React 19
+- TailwindCSS 4
+- Plate 45
+- Jotai 2
+- Zustand 6
+- `comment-more-dropdown`: remove `useCommentEditButtonState`, `useCommentDeleteButtonState`
+- `image-element`, `media-embed-element`, `media-video-element`, `mode-dropdown-menu`
+  - use `const width = useResizableValue('width')`
+- `image-preview`: remove `useScaleInputState`, `useImagePreviewState`
+- `floating-toolbar`: 
+  - replace `useEventEditorSelectors` with `useEventEditorValue`
+- `media-popover`: 
+  - replace `floatingMediaActions` with `FloatingMediaStore.set`, 
+  - replace `useFloatingMediaSelectors` with `useFloatingMediaValue`
+
 ## January 2025 #18
 
+### January 23 #18.8
+
+- `table-element`: fix styles, show table border controls when collapsed
+- `table-row-element`: refactor
+- `table-cell-element`: selection bg-brand
+
+### January 21 #18.7
+
+- `table-element`, `table-row-element`: support row dnd and selection
+- `plate-element`: add `blockSelectionClassName` prop
+- `editor`: z-50 for selection area
+- `draggable`: 
+  - Replace `editor.api.blockSelection.replaceSelectedIds` with `editor.api.blockSelection.clear`
+  - Use `TooltipButton` for drag handle
+  - Block select on drag handle click
+  - Hide drag handle in table cells
+- `column-element`, `table-cell-element`: add `isSelectionAreaVisible` check
+- `block-selection`: hide if dragging
+- Replace `editor.api.blockSelection.addSelectedRow` with `editor.api.blockSelection.set`:
+  - `ai-menu`
+  - `equation-popover`
+- `align-dropdown-menu`: deprecate 
+
+
+### January 18 #18.6
+
+- `inline-equation-element` and `equation-popover`: Fix: When selecting an inline equation, the popover should not open, as it causes the selection to be lost.
+
+### January 17 #18.5
+
+- `emoji-picker-search-bar`: add `autoFocus`
+
 ### January 16 #18.4
+
 - `import-toolbar-button` and `export-toolbar-button`: add `markdown` support
 
 ### January 14 #18.3

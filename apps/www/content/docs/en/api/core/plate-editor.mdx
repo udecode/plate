@@ -75,29 +75,6 @@ A custom editor interface that extends the base **`Editor`** interface and inclu
 </APIMethods>
 </API>
 
-## Hook Methods
-
-<API name="Hooks">
-<APIMethods>
-  <APIItem name="useOption" type="(plugin: PlatePlugin, optionKey: string) => any">
-    Subscribe to a specific option value in a React component.
-  </APIItem>
-  <APIItem name="useOptions" type="(plugin: PlatePlugin) => any">
-    Subscribe to plugin options or a derived value from options in a React component.
-  </APIItem>
-</APIMethods>
-</API>
-
-## Plate Store Methods
-
-<API name="Store">
-<APIMethods>
-  <APIItem name="setPlateState" type="(optionKey: string, value: PlateStoreState[K]) => void">
-    Update the global Plate state.
-  </APIItem>
-</APIMethods>
-</API>
-
 ## Core Plugin APIs
 
 ### `DebugPlugin`
@@ -144,7 +121,7 @@ A custom editor interface that extends the base **`Editor`** interface and inclu
 <API name="SlateReactExtensionPlugin">
 <APIListAPI>
   <APIItem name="editor.api.redecorate" type="() => void">
-    Redecorate the editor. This method should be overridden for proper functionality.
+    Redecorate the editor.
   </APIItem>
 </APIListAPI>
 

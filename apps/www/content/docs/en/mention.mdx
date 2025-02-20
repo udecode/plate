@@ -39,45 +39,46 @@ const plugins = [
 
 ## Plugins
 
-### MentionPlugin
+### `MentionPlugin`
 
-Extends [TriggerComboboxPlugin](/docs/combobox#options)
+Plugin for mention functionality. Extends [TriggerComboboxPlugin](/docs/combobox#options).
 
-<APIOptions>
-<APIItem name="insertSpaceAfterMention" type="boolean" optional>
-  Whether to insert a space after the mention.
-</APIItem>
+<API name="MentionPlugin">
+<APIOptions type="MentionPluginOptions">
+  <APIItem name="insertSpaceAfterMention" type="boolean" optional>
+    Whether to insert a space after the mention.
+    - **Default:** `false`
+  </APIItem>
+  <APIItem name="trigger" type="string" optional>
+    Character that triggers the mention combobox.
+    - **Default:** `'@'`
+  </APIItem>
 </APIOptions>
+</API>
 
-### MentionInputPlugin
+### `MentionInputPlugin`
 
 Plugin for mention input functionality.
 
 ## API
 
-### editor.api.insert.mention
+### `editor.api.insert.mention`
 
 Override this API method to customize how mentions are inserted.
 
-### getMentionOnSelectItem
+### `getMentionOnSelectItem`
 
-Gets the handler for selecting an item in the mention combobox.
+Gets handler for selecting mention combobox item.
 
-<APIParameters>
-<APIItem name="options" type="object" optional>
-<APISubList>
-<APISubListItem parent="options" name="key" type="string" optional>
-The plugin key of the mention plugin.
-
-- **Default:** `MentionPlugin.key`
-
-</APISubListItem>
-</APISubList>
-</APIItem>
-</APIParameters>
-
-<APIReturns>
-  <APIItem type="MentionOnSelectItem">
-    The handler for selecting an item in the mention combobox.
+<API name="getMentionOnSelectItem">
+<APIOptions type="GetMentionOnSelectItemOptions">
+  <APIItem name="key" type="string" optional>
+    Plugin key for mention plugin.
+    - **Default:** `MentionPlugin.key`
   </APIItem>
+</APIOptions>
+
+<APIReturns type="MentionOnSelectItem">
+  Handler for mention item selection.
 </APIReturns>
+</API>

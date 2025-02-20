@@ -38,7 +38,7 @@ jobs:
           key: packages-cache-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
 
       - name: 🏗 Build Registry
-        run: yarn build:registry && yarn build:tw
+        run: yarn workspace shadcx build && yarn build:registry && yarn build:tw
 
       - name: ◻️ Create Pull Request
         uses: peter-evans/create-pull-request@v4

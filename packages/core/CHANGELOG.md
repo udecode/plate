@@ -1,5 +1,102 @@
 # @udecode/plate-core
 
+## 45.0.2
+
+### Patch Changes
+
+- [#4090](https://github.com/udecode/plate/pull/4090) by [@zbeyens](https://github.com/zbeyens) – Add `belowRootNodes` render option to render content below root element but above children. Similar to `belowNodes` but renders directly in the element rather than wrapping. This is used in `PlateElement` to render the `BlockSelection` component below the root element.
+
+## 45.0.1
+
+### Patch Changes
+
+- [`8b06248`](https://github.com/udecode/plate/commit/8b06248ede9d006f1b421ec0bf820be8a536e79c) by [@felixfeng33](https://github.com/felixfeng33) – Add `isSlateEditor` to check if the HTML element is a plate editor
+
+## 44.0.7
+
+### Patch Changes
+
+- [#4084](https://github.com/udecode/plate/pull/4084) by [@regmsif](https://github.com/regmsif) – fix: return value of useEditorPlugin changes when rerender
+
+## 44.0.1
+
+## 44.0.0
+
+### Major Changes
+
+- [#4048](https://github.com/udecode/plate/pull/4048) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Support React 19
+  - Upgraded to `zustand-x@6`
+    - `eventEditorSelectors` -> `EventEditorStore.get`
+    - `eventEditorActions` -> `EventEditorStore.set`
+    - `useEventEditorSelectors` -> `useEventEditorValue(key)`
+  - Upgraded to `jotai-x@2`
+    - `usePlateEditorStore` -> `usePlateStore`
+    - `usePlateActions` -> `usePlateSet`
+    - Remove `editor.setPlateState`, use `usePlateSet` instead
+    - `usePlateSelectors` -> `usePlateValue`
+    - `usePlateStates` -> `usePlateState`
+  - Moving plugin options hooks into standalone hooks to be compatible with React Compiler
+    - `editor.useOption`, `ctx.useOption` -> `usePluginOption(plugin, key, ...args)`
+    - `editor.useOptions`, `ctx.useOptions` -> `usePluginOption(plugin, 'state')`
+    - New hook `usePluginOptions(plugin, selector)` to select plugin options (Zustand way).
+  - We were supporting adding selectors to plugins using `extendOptions`. Those were mixed up with the options state, leading to potential conflicts and confusion.
+    - The plugin method is renamed to `extendSelectors`
+    - Selectors are now internally stored in `plugin.selectors` instead of `plugin.options`, but this does not change how you access those: using `editor.getOption(plugin, 'selectorName')`, `ctx.getOption('selectorName')` or above hooks.
+    - Selector types are no longer in the 2nd generic type of `PluginConfig`, we're adding a 5th generic type for it.
+
+  ```ts
+  // Before:
+  export type BlockSelectionConfig = PluginConfig<
+    'blockSelection',
+    { selectedIds?: Set<string>; } & BlockSelectionSelectors,
+  >;
+
+  // After:
+  export type BlockSelectionConfig = PluginConfig<
+    'blockSelection',
+    { selectedIds?: Set<string>; },
+    {}, // API
+    {}, // Transforms
+    BlockSelectionSelectors, // Selectors
+  }>
+  ```
+
+## 43.0.5
+
+### Patch Changes
+
+- [#4038](https://github.com/udecode/plate/pull/4038) by [@yf-yang](https://github.com/yf-yang) – Update types and docs of `aboveNodes` and `belowNodes`
+
+## 43.0.4
+
+### Patch Changes
+
+- [#4035](https://github.com/udecode/plate/pull/4035) by [@yf-yang](https://github.com/yf-yang) – Fix type of `NodeWrapperComponentReturnType`
+
+## 43.0.2
+
+### Patch Changes
+
+- [#4025](https://github.com/udecode/plate/pull/4025) by [@e1himself](https://github.com/e1himself) – Fixed props injection match check for elements
+
+## 43.0.0
+
+### Minor Changes
+
+- [#4019](https://github.com/udecode/plate/pull/4019) by [@zbeyens](https://github.com/zbeyens) – Upgrade dependencies to latest
+
+## 42.2.5
+
+## 42.2.2
+
+### Patch Changes
+
+- [#4001](https://github.com/udecode/plate/pull/4001) by [@martin-keeper](https://github.com/martin-keeper) – Add new param to HTML deserializer for changing the default element
+
+- [#4002](https://github.com/udecode/plate/pull/4002) by [@zbeyens](https://github.com/zbeyens) – Pass plugin context to `plugin.node.props`
+
 ## 42.1.2
 
 ### Patch Changes

@@ -3,7 +3,6 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-/* eslint-disable no-restricted-syntax */
 import type { TText } from '@udecode/plate';
 
 // Get object that will set the properties of before
@@ -22,7 +21,6 @@ export function getProperties(goal: TText, before?: TText): any {
         // continue
       } else {
         if (goal[x] !== before[x]) {
-          // eslint-disable-next-line unicorn/prefer-ternary
           if (goal[x]) {
             props[x] = goal[x];
           } else {

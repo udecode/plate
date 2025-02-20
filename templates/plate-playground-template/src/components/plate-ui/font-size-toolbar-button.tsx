@@ -5,10 +5,10 @@ import { useState } from 'react';
 import type { TElement } from '@udecode/plate';
 
 import { cn } from '@udecode/cn';
-import { useEditorPlugin, useEditorSelector } from '@udecode/plate/react';
 import { toUnitLess } from '@udecode/plate-font';
 import { FontSizePlugin } from '@udecode/plate-font/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
+import { useEditorPlugin, useEditorSelector } from '@udecode/plate/react';
 import { Minus, Plus } from 'lucide-react';
 
 import { Popover, PopoverContent, PopoverTrigger } from './popover';
@@ -123,7 +123,7 @@ export function FontSizeToolbarButton() {
             <button
               key={size}
               className={cn(
-                'flex h-8 w-full items-center justify-center  text-sm hover:bg-accent data-[highlighted=true]:bg-accent'
+                'flex h-8 w-full items-center justify-center text-sm hover:bg-accent data-[highlighted=true]:bg-accent'
               )}
               onClick={() => {
                 api.fontSize.setMark(`${size}px`);

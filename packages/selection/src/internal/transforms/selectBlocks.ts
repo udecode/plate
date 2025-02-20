@@ -17,12 +17,12 @@ export const selectBlocks = (editor: SlateEditor, at: Path | TNode) => {
     blockSelection.length > 0
       ? blockSelection
       : editor.api.blocks({
-          match: (_, p) => p.length === path.length,
           mode: 'lowest',
+          match: (_, p) => p.length === path.length,
         });
   const ids = selectedBlocks.map((block) => block[0].id as string);
 
-  editor.getApi(BlockSelectionPlugin).blockSelection.setSelectedIds({
-    ids: ids.includes(element.id) ? ids : [element.id],
-  });
+  editor
+    .getApi(BlockSelectionPlugin)
+    .blockSelection.set(ids.includes(element.id) ? ids : [element.id]);
 };

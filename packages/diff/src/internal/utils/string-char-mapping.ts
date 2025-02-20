@@ -21,6 +21,10 @@ export class StringCharMapping {
     return entry[0];
   }
 
+  public nodesToString(nodes: Descendant[]): string {
+    return nodes.map(this.nodeToChar.bind(this)).join('');
+  }
+
   public nodeToChar(node: Descendant): string {
     // Check for a previously assigned character
     for (const [n, c] of this._mappedNodes) {
@@ -33,10 +37,6 @@ export class StringCharMapping {
     this._mappedNodes.push([node, c]);
 
     return c;
-  }
-
-  public nodesToString(nodes: Descendant[]): string {
-    return nodes.map(this.nodeToChar.bind(this)).join('');
   }
 
   public stringToNodes(s: string): Descendant[] {

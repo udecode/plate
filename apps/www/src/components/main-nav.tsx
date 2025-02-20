@@ -85,7 +85,7 @@ export function MainNav() {
           href={siteConfig.links.platePro}
         >
           {content.templates}
-          <Icons.arrowUpRight className="absolute -right-3 top-0 size-2.5 text-muted-foreground" />
+          <Icons.arrowUpRight className="absolute top-0 -right-3 size-2.5 text-muted-foreground" />
         </Link>
       </nav>
     </div>

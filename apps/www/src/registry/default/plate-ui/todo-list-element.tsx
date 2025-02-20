@@ -7,9 +7,9 @@ import {
   useTodoListElement,
   useTodoListElementState,
 } from '@udecode/plate-list/react';
+import { PlateElement } from '@udecode/plate/react';
 
 import { Checkbox } from './checkbox';
-import { PlateElement } from './plate-element';
 
 export const TodoListElement = withRef<typeof PlateElement>(
   ({ children, className, ...props }, ref) => {
@@ -24,7 +24,7 @@ export const TodoListElement = withRef<typeof PlateElement>(
         {...props}
       >
         <div
-          className="mr-1.5 flex select-none items-center justify-center"
+          className="mr-1.5 flex items-center justify-center select-none"
           contentEditable={false}
         >
           <Checkbox {...checkboxProps} />

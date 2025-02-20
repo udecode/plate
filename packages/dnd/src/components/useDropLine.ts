@@ -1,4 +1,4 @@
-import { useEditorPlugin, useElement } from '@udecode/plate/react';
+import { useElement, usePluginOptions } from '@udecode/plate/react';
 
 import type { DropLineDirection } from '../types';
 
@@ -16,15 +16,15 @@ export const useDropLine = ({
 } => {
   const element = useElement();
   const id = idProp || (element.id as string);
-  const dropTarget = useEditorPlugin(DndPlugin).useOption('dropTarget');
-  const dropLine = dropTarget?.line;
 
-  // Only show dropline for currently hovered element
-  if (id && dropTarget?.id !== id) {
-    return {
-      dropLine: '',
-    };
-  }
+  const dropLine =
+    usePluginOptions(DndPlugin, ({ dropTarget }) => {
+      if (!dropTarget) return null;
+      if (dropTarget.id !== id) return null;
+
+      return dropTarget.line;
+    }) ?? '';
+
   if (orientation) {
     const isHorizontalDropLine = dropLine === 'left' || dropLine === 'right';
     const isVerticalDropLine = dropLine === 'top' || dropLine === 'bottom';

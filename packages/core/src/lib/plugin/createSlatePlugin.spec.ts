@@ -517,8 +517,8 @@ describe('createSlatePlugin', () => {
             parsers: {
               html: {
                 deserializer: {
-                  parse: () => ({ test: true }),
                   withoutChildren: true,
+                  parse: () => ({ test: true }),
                 },
               },
             },

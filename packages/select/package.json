@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-select",
-  "version": "42.0.0",
+  "version": "44.0.0",
   "description": "Select plugins for Plate",
   "keywords": [
     "plate",
@@ -47,7 +47,7 @@
     "@udecode/plate": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate": ">=42.1.2",
+    "@udecode/plate": ">=45.0.2",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

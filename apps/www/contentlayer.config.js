@@ -19,12 +19,12 @@ import 'dotenv/config';
 /** @type {import('contentlayer2/source-files').ComputedFields} */
 const computedFields = {
   slug: {
-    resolve: (doc) => `/${doc._raw.flattenedPath}`,
     type: 'string',
+    resolve: (doc) => `/${doc._raw.flattenedPath}`,
   },
   slugAsParams: {
-    resolve: (doc) => doc._raw.flattenedPath.split('/').slice(1).join('/'),
     type: 'string',
+    resolve: (doc) => doc._raw.flattenedPath.split('/').slice(1).join('/'),
   },
 };
 
@@ -172,7 +172,7 @@ export default makeSource({
               preElement.properties.__event__ = node.__event__;
             }
             if (node.__style__) {
-              preElement.properties['__style__'] = node.__style__;
+              preElement.properties.__style__ = node.__style__;
             }
           }
         });

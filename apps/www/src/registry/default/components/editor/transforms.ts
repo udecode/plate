@@ -39,6 +39,7 @@ import {
   MediaEmbedPlugin,
   VideoPlugin,
 } from '@udecode/plate-media/react';
+import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
 import {
   TableCellPlugin,
   TablePlugin,
@@ -69,6 +70,9 @@ const insertBlockMap: Record<
   string,
   (editor: PlateEditor, type: string) => void
 > = {
+  [INDENT_LIST_KEYS.todo]: insertList,
+  [ListStyleType.Decimal]: insertList,
+  [ListStyleType.Disc]: insertList,
   [ACTION_THREE_COLUMNS]: (editor) =>
     insertColumnGroup(editor, { columns: 3, select: true }),
   [AudioPlugin.key]: (editor) =>
@@ -77,14 +81,11 @@ const insertBlockMap: Record<
   [CodeBlockPlugin.key]: (editor) => insertCodeBlock(editor, { select: true }),
   [EquationPlugin.key]: (editor) => insertEquation(editor, { select: true }),
   [FilePlugin.key]: (editor) => insertFilePlaceholder(editor, { select: true }),
-  [INDENT_LIST_KEYS.todo]: insertList,
   [ImagePlugin.key]: (editor) =>
     insertMedia(editor, {
       select: true,
       type: ImagePlugin.key,
     }),
-  [ListStyleType.Decimal]: insertList,
-  [ListStyleType.Disc]: insertList,
   [MediaEmbedPlugin.key]: (editor) =>
     insertMedia(editor, {
       select: true,
@@ -121,7 +122,9 @@ export const insertBlock = (editor: PlateEditor, type: string) => {
       });
     }
     if (getBlockType(block[0]) !== type) {
-      editor.tf.removeNodes({ previousEmptyBlock: true });
+      editor.getApi(SuggestionPlugin).suggestion.withoutSuggestions(() => {
+        editor.tf.removeNodes({ previousEmptyBlock: true });
+      });
     }
   });
 };
@@ -152,10 +155,10 @@ const setBlockMap: Record<
   string,
   (editor: PlateEditor, type: string, entry: NodeEntry<TElement>) => void
 > = {
-  [ACTION_THREE_COLUMNS]: (editor) => toggleColumnGroup(editor, { columns: 3 }),
   [INDENT_LIST_KEYS.todo]: setList,
   [ListStyleType.Decimal]: setList,
   [ListStyleType.Disc]: setList,
+  [ACTION_THREE_COLUMNS]: (editor) => toggleColumnGroup(editor, { columns: 3 }),
 };
 
 export const setBlockType = (

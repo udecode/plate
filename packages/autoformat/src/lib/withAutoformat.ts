@@ -17,8 +17,8 @@ export const withAutoformat: OverrideEditor<AutoformatConfig> = ({
 }) => {
   return {
     transforms: {
-      insertText(text) {
-        if (!editor.api.isCollapsed()) return insertText(text);
+      insertText(text, options) {
+        if (!editor.api.isCollapsed()) return insertText(text, options);
 
         for (const rule of getOptions().rules!) {
           const { insertTrigger, mode = 'text', query } = rule;
@@ -41,7 +41,7 @@ export const withAutoformat: OverrideEditor<AutoformatConfig> = ({
           }
         }
 
-        insertText(text);
+        insertText(text, options);
       },
     },
   };

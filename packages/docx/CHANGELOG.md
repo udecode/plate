@@ -1,5 +1,31 @@
 # @udecode/plate-docx-serializer
 
+## 45.0.0
+
+## 44.0.6
+
+## 44.0.5
+
+## 44.0.0
+
+## 43.0.5
+
+## 43.0.3
+
+## 43.0.2
+
+## 43.0.0
+
+## 42.2.4
+
+## 42.2.3
+
+## 42.2.2
+
+### Patch Changes
+
+- [#4002](https://github.com/udecode/plate/pull/4002) by [@zbeyens](https://github.com/zbeyens) – Fix parsers to use custom node type
+
 ## 42.1.1
 
 ### Patch Changes

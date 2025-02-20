@@ -56,7 +56,7 @@ const listTypeToBadgeStyles: Record<string, string> = {
 export function API({ children, name }: { children: ReactNode; name: string }) {
   return (
     <APIContext.Provider value={{ name }}>
-      <Card className="mb-16 mt-6">
+      <Card className="mt-6 mb-16">
         <CardContent className="space-y-6 py-6">{children}</CardContent>
       </Card>
     </APIContext.Provider>
@@ -81,24 +81,24 @@ export function APIItem({
     : undefined;
 
   return (
-    <AccordionItem className="select-text border-none" value={value ?? name}>
+    <AccordionItem className="border-none select-text" value={value ?? name}>
       <AccordionTrigger className="group p-0 hover:no-underline">
         <li id={id} className="scroll-mt-20">
-          <h4 className="relative py-2 text-start font-semibold leading-none tracking-tight">
+          <h4 className="relative py-2 text-start leading-none font-semibold tracking-tight">
             {id && (
               <a
                 className={cn(
-                  'opacity-0 hover:opacity-100 group-hover:opacity-100'
+                  'opacity-0 group-hover:opacity-100 hover:opacity-100'
                 )}
                 onClick={(e) => e.stopPropagation()}
                 href={`#${id}`}
               >
-                <div className="absolute -left-5 top-2 pr-1 leading-none">
+                <div className="absolute top-2 -left-5 pr-1 leading-none">
                   <Icons.pragma className="size-4 text-muted-foreground" />
                 </div>
               </a>
             )}
-            <span className="font-mono font-semibold leading-none group-hover:underline">
+            <span className="font-mono leading-none font-semibold group-hover:underline">
               {name}
             </span>
             {required && (
@@ -107,13 +107,13 @@ export function APIItem({
                 REQUIRED
               </span>
             )}
-            <span className="text-left font-mono text-sm font-medium leading-none text-muted-foreground">
+            <span className="text-left font-mono text-sm leading-none font-medium text-muted-foreground">
               {!required && optional && ' optional'} {type}
             </span>
           </h4>
         </li>
       </AccordionTrigger>
-      <AccordionContent className="pb-0 pt-2">{children}</AccordionContent>
+      <AccordionContent className="pt-2 pb-0">{children}</AccordionContent>
     </AccordionItem>
   );
 }
@@ -228,17 +228,17 @@ export function APIList({
             <div className="flex items-center justify-between pb-4">
               <h3
                 id={id}
-                className="group relative scroll-mt-20 text-lg font-medium leading-none tracking-tight"
+                className="group relative scroll-mt-20 text-lg leading-none font-medium tracking-tight"
               >
                 {id && (
                   <a
                     className={cn(
-                      'opacity-0 hover:opacity-100 group-hover:opacity-100'
+                      'opacity-0 group-hover:opacity-100 hover:opacity-100'
                     )}
                     onClick={(e) => e.stopPropagation()}
                     href={`#${id}`}
                   >
-                    <div className="absolute -left-5 top-0 pr-1 leading-none">
+                    <div className="absolute top-0 -left-5 pr-1 leading-none">
                       <Icons.pragma className="size-4 text-muted-foreground" />
                     </div>
                   </a>
@@ -247,7 +247,7 @@ export function APIList({
                 <span
                   className={cn(
                     'inline-flex items-center rounded-md px-2 py-0.5 text-base font-medium',
-                    'ring-1 ring-inset ring-black/5 dark:ring-white/5',
+                    'ring-1 ring-black/5 ring-inset dark:ring-white/5',
                     listTypeToBadgeStyles[listType]
                   )}
                 >
@@ -271,7 +271,7 @@ export function APIList({
 
               {hasItems && (
                 <div
-                  className="cursor-pointer select-none text-sm text-muted-foreground"
+                  className="cursor-pointer text-sm text-muted-foreground select-none"
                   onClick={() => {
                     values.length === childCount
                       ? setValues([])
@@ -347,27 +347,27 @@ export function APISubListItem({
         {id && (
           <a
             className={cn(
-              'opacity-0 hover:opacity-100 group-hover:opacity-100'
+              'opacity-0 group-hover:opacity-100 hover:opacity-100'
             )}
             onClick={(e) => e.stopPropagation()}
             href={`#${id}`}
           >
-            <div className="absolute -left-5 top-2 pr-1 leading-none">
+            <div className="absolute top-2 -left-5 pr-1 leading-none">
               <Icons.pragma className="size-4 text-muted-foreground" />
             </div>
           </a>
         )}
-        <span className="font-semibold leading-none text-muted-foreground">
+        <span className="leading-none font-semibold text-muted-foreground">
           {parent}.
         </span>
-        <span className="font-semibold leading-none">{name}</span>
+        <span className="leading-none font-semibold">{name}</span>
         {required && (
           <span className="ml-1 font-mono text-xs leading-none text-orange-500">
             {' '}
             REQUIRED
           </span>
         )}
-        <span className="text-left font-mono text-sm font-medium leading-none text-muted-foreground group-hover:no-underline">
+        <span className="text-left font-mono text-sm leading-none font-medium text-muted-foreground group-hover:no-underline">
           {!required && optional && ' optional'} {type}
         </span>
       </h4>

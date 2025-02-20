@@ -1,5 +1,25 @@
 # @udecode/plate-serializer-csv
 
+## 45.0.0
+
+## 44.0.0
+
+## 43.0.3
+
+## 43.0.2
+
+## 43.0.0
+
+### Minor Changes
+
+- [#4019](https://github.com/udecode/plate/pull/4019) by [@zbeyens](https://github.com/zbeyens) – Upgrade dependencies to latest
+
+## 42.2.4
+
+## 42.2.3
+
+## 42.2.2
+
 ## 42.1.1
 
 ## 42.0.5

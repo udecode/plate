@@ -3,6 +3,8 @@ import { type TElement, bindFirst, createSlatePlugin } from '@udecode/plate';
 import { insertCallout } from './transforms';
 
 export interface TCalloutElement extends TElement {
+  backgroundColor?: string;
+  icon?: string;
   variant?:
     | (string & {})
     | 'error'
@@ -11,8 +13,6 @@ export interface TCalloutElement extends TElement {
     | 'success'
     | 'tip'
     | 'warning';
-  backgroundColor?: string;
-  icon?: string;
 }
 
 export const BaseCalloutPlugin = createSlatePlugin({

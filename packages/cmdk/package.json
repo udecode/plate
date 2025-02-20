@@ -1,6 +1,6 @@
 {
   "name": "@udecode/cmdk",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Fork of cmdk with control actions.",
   "keywords": [],
   "homepage": "https://github.com/pacocoursey/cmdk#readme",
@@ -40,10 +40,10 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@radix-ui/react-dialog": "^1.1.2",
+    "@radix-ui/react-dialog": "^1.1.5",
     "@radix-ui/react-id": "^1.1.0",
-    "@radix-ui/react-primitive": "^2.0.0",
-    "use-sync-external-store": "^1.2.2"
+    "@radix-ui/react-primitive": "^2.0.1",
+    "use-sync-external-store": "^1.4.0"
   },
   "devDependencies": {
     "@types/use-sync-external-store": "0.0.6"

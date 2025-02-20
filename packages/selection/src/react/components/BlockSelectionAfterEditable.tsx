@@ -6,10 +6,13 @@ import {
   type EditableSiblingComponent,
   useEditorPlugin,
   useEditorRef,
+  usePluginOption,
 } from '@udecode/plate/react';
 
-import type { BlockSelectionConfig } from '../BlockSelectionPlugin';
-
+import {
+  type BlockSelectionConfig,
+  BlockSelectionPlugin,
+} from '../BlockSelectionPlugin';
 import { useSelectionArea } from '../hooks';
 import {
   copySelectedBlocks,
@@ -19,11 +22,14 @@ import {
 
 export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
   const editor = useEditorRef();
-  const { api, getOption, getOptions, setOption, useOption } =
+  const { api, getOption, getOptions, setOption } =
     useEditorPlugin<BlockSelectionConfig>({ key: 'blockSelection' });
 
-  const isSelecting = useOption('isSelecting');
-  const selectedIds = useOption('selectedIds');
+  const isSelectingSome = usePluginOption(
+    BlockSelectionPlugin,
+    'isSelectingSome'
+  );
+  const selectedIds = usePluginOption(BlockSelectionPlugin, 'selectedIds');
 
   useSelectionArea();
 
@@ -40,18 +46,18 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
   }, [setOption]);
 
   React.useEffect(() => {
-    if (!isSelecting) {
+    if (!isSelectingSome) {
       setOption('anchorId', null);
     }
-  }, [isSelecting, setOption]);
+  }, [isSelectingSome, setOption]);
 
   React.useEffect(() => {
-    if (isSelecting && inputRef.current) {
+    if (isSelectingSome && inputRef.current) {
       inputRef.current.focus({ preventScroll: true });
     } else if (inputRef.current) {
       inputRef.current.blur();
     }
-  }, [isSelecting]);
+  }, [isSelectingSome]);
 
   /** KeyDown logic */
   const handleKeyDown = React.useCallback(
@@ -59,7 +65,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
       const isReadonly = editor.api.isReadOnly();
       getOptions().onKeyDownSelecting?.(e.nativeEvent);
 
-      if (!getOptions().isSelecting) return;
+      if (!getOption('isSelectingSome')) return;
       if (isHotkey('shift+up')(e)) {
         e.preventDefault();
         e.stopPropagation();
@@ -76,7 +82,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
       }
       // ESC => unselect all
       if (isHotkey('escape')(e)) {
-        api.blockSelection.unselect();
+        api.blockSelection.deselect();
 
         return;
       }
@@ -196,7 +202,6 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
   return ReactDOM.createPortal(
     <input
       ref={inputRef}
-      // eslint-disable-next-line tailwindcss/no-custom-classname
       className="slate-shadow-input"
       style={{
         left: '-300px',

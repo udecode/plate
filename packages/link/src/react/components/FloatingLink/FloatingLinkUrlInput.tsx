@@ -3,14 +3,15 @@ import React from 'react';
 import {
   createPrimitiveComponent,
   useEditorPlugin,
+  usePluginOption,
 } from '@udecode/plate/react';
 
 import { encodeUrlIfNeeded, safeDecodeUrl } from '../../../lib';
 import { LinkPlugin } from '../../LinkPlugin';
 
 export const useFloatingLinkUrlInputState = () => {
-  const { getOptions, useOption } = useEditorPlugin(LinkPlugin);
-  const updated = useOption('updated');
+  const { getOptions } = useEditorPlugin(LinkPlugin);
+  const updated = usePluginOption(LinkPlugin, 'updated');
   const ref = React.useRef<HTMLInputElement>(null);
   const focused = React.useRef(false);
 

@@ -3,18 +3,17 @@
 import React from 'react';
 
 import { cn, withRef } from '@udecode/cn';
-import { withHOC } from '@udecode/plate/react';
 import { useDraggable } from '@udecode/plate-dnd';
 import { Image, ImagePlugin, useMediaState } from '@udecode/plate-media/react';
-import { ResizableProvider, useResizableStore } from '@udecode/plate-resizable';
+import { ResizableProvider, useResizableValue } from '@udecode/plate-resizable';
+import { PlateElement, withHOC } from '@udecode/plate/react';
 
 import { Caption, CaptionTextarea } from './caption';
 import { MediaPopover } from './media-popover';
-import { PlateElement } from './plate-element';
 import {
+  mediaResizeHandleVariants,
   Resizable,
   ResizeHandle,
-  mediaResizeHandleVariants,
 } from './resizable';
 
 export const ImageElement = withHOC(
@@ -23,7 +22,7 @@ export const ImageElement = withHOC(
     ({ children, className, nodeProps, ...props }, ref) => {
       const { align = 'center', focused, readOnly, selected } = useMediaState();
 
-      const width = useResizableStore().get.width();
+      const width = useResizableValue('width');
 
       const { isDragging, handleRef } = useDraggable({
         element: props.element,

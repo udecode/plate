@@ -9,15 +9,14 @@ export const FloatingMediaStore = createZustandStore(
     mutative: true,
     name: 'floatingMedia',
   }
-).extendActions((set) => ({
+).extendActions(({ set }) => ({
   reset: () => {
-    set.url('');
-    set.isEditing(false);
+    set('url', '');
+    set('isEditing', false);
   },
 }));
 
-export const floatingMediaActions = FloatingMediaStore.set;
-
-export const floatingMediaSelectors = FloatingMediaStore.get;
-
-export const useFloatingMediaSelectors = () => FloatingMediaStore.use;
+export const {
+  useState: useFloatingMediaState,
+  useValue: useFloatingMediaValue,
+} = FloatingMediaStore;

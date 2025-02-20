@@ -47,17 +47,17 @@ const components = {
 };
 ```
 
+See also:
 - [SlashInputElement](/components/slash-input-element)
 
 How to use:
 
-1. Type `/` anywhere in your document to open the slash menu.
-2. Start typing to filter options or use arrow keys to navigate.
-3. Press Enter or click to select an option.
-4. Press Escape to close the menu without selecting.
+1. Type `/` anywhere in your document to open the slash menu
+2. Start typing to filter options or use arrow keys to navigate
+3. Press Enter or click to select an option
+4. Press Escape to close the menu without selecting
 
 Available options include:
-
 - Headings
 - Lists
 
@@ -77,38 +77,33 @@ Refer to the preview above.
 
 ## Plugins
 
-### SlashPlugin
+### `SlashPlugin`
 
-Extends [TriggerComboboxPlugin](/docs/combobox#options)
+Plugin for slash command functionality. Extends [TriggerComboboxPlugin](/docs/combobox#options).
 
-<APIOptions>
-<APIItem name="createComboboxInput" type="() => TSlashInputElement" optional>
-  Function to create the combobox input element.
-
-- **Default:**
-
-```tsx
-() => ({
-  children: [{ text: '' }],
-  type: SlashInputPlugin.key,
-});
-```
-
-</APIItem>
-
-<APIItem name="trigger" type="string" optional>
-  The character that triggers the slash command combobox.
-
-- **Default:** `'/'`
-</APIItem>
-
-<APIItem name="triggerPreviousCharPattern" type="RegExp" optional>
-  Regular expression to match the character before the trigger.
-
-- **Default:** `/^\s?$/`
-</APIItem>
+<API name="SlashPlugin">
+<APIOptions type="SlashPluginOptions">
+  <APIItem name="createComboboxInput" type="() => TSlashInputElement" optional>
+    Function to create combobox input element.
+    - **Default:** 
+    ```tsx
+    () => ({
+      children: [{ text: '' }],
+      type: SlashInputPlugin.key,
+    });
+    ```
+  </APIItem>
+  <APIItem name="trigger" type="string" optional>
+    Character that triggers slash command combobox.
+    - **Default:** `'/'`
+  </APIItem>
+  <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>
+    RegExp to match character before trigger.
+    - **Default:** `/^\s?$/`
+  </APIItem>
 </APIOptions>
+</API>
 
-### SlashInputPlugin
+### `SlashInputPlugin`
 
 Plugin for slash input functionality.

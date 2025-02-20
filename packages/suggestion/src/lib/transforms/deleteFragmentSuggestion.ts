@@ -6,6 +6,8 @@ export const deleteFragmentSuggestion = (
   editor: SlateEditor,
   { reverse }: { reverse?: boolean } = {}
 ) => {
+  let resId: string | undefined;
+
   editor.tf.withoutNormalizing(() => {
     const selection = editor.selection!;
 
@@ -13,14 +15,16 @@ export const deleteFragmentSuggestion = (
 
     if (reverse) {
       editor.tf.collapse({ edge: 'end' });
-      deleteSuggestion(
+      resId = deleteSuggestion(
         editor,
         { anchor: end, focus: start },
         { reverse: true }
       );
     } else {
       editor.tf.collapse({ edge: 'start' });
-      deleteSuggestion(editor, { anchor: start, focus: end });
+      resId = deleteSuggestion(editor, { anchor: start, focus: end });
     }
   });
+
+  return resId;
 };

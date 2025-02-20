@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/rules-of-hooks */
 /** @jsx jsxt */
 
 import { BoldPlugin, ItalicPlugin } from '@udecode/plate-basic-marks/react';
