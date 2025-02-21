@@ -1,5 +1,11 @@
 # @udecode/plate-suggestion
 
+## 45.0.3
+
+### Patch Changes
+
+- [#4101](https://github.com/udecode/plate/pull/4101) by [@felixfeng33](https://github.com/felixfeng33) – Fix suggestion `api.node` when pass id.
+
 ## 45.0.0
 
 ### Major Changes
