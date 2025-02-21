@@ -8,7 +8,7 @@ import {
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getInlineSuggestionData } from './getSuggestionId';
 
-export const getSuggestionKey = (id = '0') =>
+export const getSuggestionKey = (id = '0'): string =>
   `${BaseSuggestionPlugin.key}_${id}`;
 
 export const isSuggestionKey = (key: string) =>
