@@ -41,7 +41,7 @@ export type BaseSuggestionConfig = PluginConfig<
       dataList: (node: TSuggestionText) => TInlineSuggestionData[];
       isBlockSuggestion: (node: TElement) => node is TSuggestionElement;
       node: (
-        options?: EditorNodesOptions & { id?: string; isText?: boolean; }
+        options?: EditorNodesOptions & { id?: string; isText?: boolean }
       ) => NodeEntry<TSuggestionElement | TSuggestionText> | undefined;
       nodeId: (node: TElement | TSuggestionText) => string | undefined;
       nodes: (
