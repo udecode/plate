@@ -81,6 +81,12 @@ export const pluginsNavItems: SidebarNavItem[] = [
     title: 'Comments',
   },
   {
+    description: 'Add suggestions to text as marks.',
+    href: '/docs/suggestion',
+    label: 'Experimental',
+    title: 'Suggestion',
+  },
+  {
     description: 'A visual overlay for cursors and selections.',
     href: '/docs/cursor-overlay',
     title: 'Cursor Overlay',

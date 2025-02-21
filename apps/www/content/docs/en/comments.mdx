@@ -5,6 +5,8 @@ docs:
     title: Comment Leaf
   - route: /docs/components/comment-toolbar-button
     title: Comment Toolbar Button
+  - route: /docs/components/block-discussion
+    title: Block Discussion
 ---
 
 <ComponentPreview name="comments-demo" />
@@ -32,7 +34,9 @@ import { CommentsPlugin } from '@udecode/plate-comments/react';
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
-    CommentsPlugin,
+  commentsPlugin.configure({
+    render: { aboveNodes: BlockDiscussion as any },
+  }),
   ],
 });
 ```
@@ -44,6 +48,16 @@ const editor = createPlateEditor({
     Add a comment on the selected text.
   </KeyTableItem>
 </KeyTable>
+
+## Examples
+
+### Plate UI
+
+Refer to the preview above.
+
+### Plate Plus
+
+<ComponentPreviewPro name="comments-pro" />
 
 ## Plugins
 
