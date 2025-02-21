@@ -327,6 +327,30 @@
   },
   {
     "dependencies": [
+      "@udecode/plate-suggestion"
+    ],
+    "doc": {
+      "description": "A line break component for suggestion.",
+      "docs": [
+        {
+          "route": "/docs/suggestion"
+        }
+      ]
+    },
+    "files": [
+      {
+        "path": "plate-ui/suggestion-line-break.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "suggestion-line-break",
+    "registryDependencies": [
+      "suggestion-plugin"
+    ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
       "@udecode/plate-date"
     ],
     "doc": {

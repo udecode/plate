@@ -195,6 +195,21 @@ export const Index: Record<string, any> = {
       source: "",
       meta: undefined,
     },
+    "suggestion-line-break": {
+      name: "suggestion-line-break",
+      description: "",
+      type: "registry:ui",
+      registryDependencies: ["suggestion-plugin"],
+      files: [{
+        path: "src/registry/default/plate-ui/suggestion-line-break.tsx",
+        type: "registry:ui",
+        target: ""
+      }],
+      categories: undefined,
+      component: React.lazy(() => import("@/registry/default/plate-ui/suggestion-line-break.tsx")),
+      source: "",
+      meta: undefined,
+    },
     "date-element": {
       name: "date-element",
       description: "",

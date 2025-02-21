@@ -67,10 +67,10 @@ export const proExamples: Registry['items'] = [
   },
   {
     doc: {
-      description: `- Full stack example for Discussion and Comment
+      description: `- Full stack example for Suggestion and Comment
+- Floating comments & suggestions UI with better user experience
 - Comment rendered with Plate editor
-- Discussion list in the sidebar
-- Beautifully crafted UI`,
+- Discussion list in the sidebar`,
     },
     name: 'comments-pro',
     type: 'registry:pro',

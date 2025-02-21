@@ -1098,9 +1098,24 @@ export const uiNodes: Registry['items'] = [
     doc: {
       description: 'A text component for suggestion.',
       docs: [{ route: '/docs/suggestion' }],
+      examples: ['comments-demo', 'comments-pro'],
     },
     files: [{ path: 'plate-ui/suggestion-leaf.tsx', type: 'registry:ui' }],
     name: 'suggestion-leaf',
+    registryDependencies: ['suggestion-plugin'],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@udecode/plate-suggestion'],
+    doc: {
+      description: 'A line break component for suggestion.',
+      docs: [{ route: '/docs/suggestion' }],
+      examples: ['comments-demo', 'comments-pro'],
+    },
+    files: [
+      { path: 'plate-ui/suggestion-line-break.tsx', type: 'registry:ui' },
+    ],
+    name: 'suggestion-line-break',
     registryDependencies: ['suggestion-plugin'],
     type: 'registry:ui',
   },
