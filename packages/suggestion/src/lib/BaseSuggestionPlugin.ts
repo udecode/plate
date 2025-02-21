@@ -19,7 +19,7 @@ import type {
   TSuggestionText,
 } from './types';
 
-import { getSuggestionKeyId } from './utils';
+import { getSuggestionKey, getSuggestionKeyId } from './utils';
 import { withSuggestion } from './withSuggestion';
 
 export const SUGGESTION_KEYS = {
@@ -41,7 +41,7 @@ export type BaseSuggestionConfig = PluginConfig<
       dataList: (node: TSuggestionText) => TInlineSuggestionData[];
       isBlockSuggestion: (node: TElement) => node is TSuggestionElement;
       node: (
-        options?: EditorNodesOptions & { isText?: boolean }
+        options?: EditorNodesOptions & { id?: string; isText?: boolean }
       ) => NodeEntry<TSuggestionElement | TSuggestionText> | undefined;
       nodeId: (node: TElement | TSuggestionText) => string | undefined;
       nodes: (
@@ -131,7 +131,7 @@ export const BaseSuggestionPlugin = createTSlatePlugin<BaseSuggestionConfig>({
             if (isText && !TextApi.isText(n)) return false;
             if (id) {
               if (TextApi.isText(n)) {
-                return !!n[getSuggestionKeyId(n)!];
+                return !!n[getSuggestionKey(id)];
               }
               if (
                 ElementApi.isElement(n) &&
