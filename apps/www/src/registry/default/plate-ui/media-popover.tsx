@@ -8,8 +8,10 @@ import {
   FloatingMedia as FloatingMediaPrimitive,
   FloatingMediaStore,
   useFloatingMediaValue,
+  useImagePreviewValue,
 } from '@udecode/plate-media/react';
 import {
+  useEditorRef,
   useEditorSelector,
   useElement,
   useReadOnly,
@@ -30,6 +32,7 @@ export interface MediaPopoverProps {
 }
 
 export function MediaPopover({ children, plugin }: MediaPopoverProps) {
+  const editor = useEditorRef();
   const readOnly = useReadOnly();
   const selected = useSelected();
 
@@ -37,7 +40,9 @@ export function MediaPopover({ children, plugin }: MediaPopoverProps) {
     (editor) => !editor.api.isExpanded(),
     []
   );
-  const isOpen = !readOnly && selected && selectionCollapsed;
+  const isImagePreviewOpen = useImagePreviewValue('isOpen', editor.id);
+  const isOpen =
+    !readOnly && selected && selectionCollapsed && !isImagePreviewOpen;
   const isEditing = useFloatingMediaValue('isEditing');
 
   useEffect(() => {
