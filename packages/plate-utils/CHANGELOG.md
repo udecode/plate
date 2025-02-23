@@ -1,5 +1,7 @@
 # @udecode/plate-utils
 
+## 45.0.5
+
 ## 45.0.2
 
 ### Patch Changes
