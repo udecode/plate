@@ -1,5 +1,11 @@
 # @udecode/plate-md-serializer
 
+## 45.0.4
+
+### Patch Changes
+
+- [#3998](https://github.com/udecode/plate/pull/3998) by [@felixfeng33](https://github.com/felixfeng33) – Fix serialize code-block and indent-list. Add support for equation and inline-equation.
+
 ## 44.0.0
 
 ## 43.0.0
