@@ -22,6 +22,8 @@ export type MdNodeTypes = {
   bold: string;
   code: string;
   code_block: string;
+  code_line: string;
+  equation: string;
   h1: string;
   h2: string;
   h3: string;
@@ -30,11 +32,16 @@ export type MdNodeTypes = {
   h6: string;
   hr: string;
   img: string;
+  inline_equation: string;
   italic: string;
   li: string;
   ol: string;
   p: string;
   strikethrough: string;
+  table: string;
+  td: string;
+  th: string;
+  tr: string;
   ul: string;
   underline: string;
 };
