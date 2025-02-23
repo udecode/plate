@@ -228,28 +228,28 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
       shortcuts: {
         acceptCopilot: {
           keys: [[Key.Tab]],
-          handler: ({ event }) => {
+          preventDefault: true,
+          handler: () => {
             if (!getOptions().suggestionText?.length) return;
 
-            event.preventDefault();
             api.copilot.accept();
           },
         },
         acceptCopilotNextWord: {
           keys: [[Key.Meta, Key.ArrowRight]],
-          handler: ({ event }) => {
+          preventDefault: true,
+          handler: () => {
             if (!getOptions().suggestionText?.length) return;
 
-            event.preventDefault();
             api.copilot.acceptNextWord();
           },
         },
         hideCopilot: {
           keys: [[Key.Escape]],
-          handler: ({ event }) => {
+          preventDefault: true,
+          handler: () => {
             if (!getOptions().suggestionText?.length) return;
 
-            event.preventDefault();
             api.copilot.reset();
           },
         },
