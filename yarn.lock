@@ -6341,7 +6341,7 @@ __metadata:
   resolution: "@udecode/plate-ai@workspace:packages/ai"
   dependencies:
     "@udecode/plate-combobox": "npm:44.0.0"
-    "@udecode/plate-markdown": "npm:44.0.0"
+    "@udecode/plate-markdown": "npm:45.0.4"
     "@udecode/plate-selection": "npm:44.0.0"
     ai: "npm:^3.4.33"
     lodash: "npm:^4.17.21"
@@ -6512,7 +6512,7 @@ __metadata:
     slate-react: "npm:0.112.1"
     use-deep-compare: "npm:^1.3.0"
     zustand: "npm:^5.0.3"
-    zustand-x: "npm:6.0.3"
+    zustand-x: "npm:6.1.0"
   peerDependencies:
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
@@ -6813,7 +6813,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-markdown@npm:44.0.0, @udecode/plate-markdown@workspace:^, @udecode/plate-markdown@workspace:packages/markdown":
+"@udecode/plate-markdown@npm:45.0.4, @udecode/plate-markdown@workspace:^, @udecode/plate-markdown@workspace:packages/markdown":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-markdown@workspace:packages/markdown"
   dependencies:
@@ -22090,9 +22090,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zustand-x@npm:6.0.3":
-  version: 6.0.3
-  resolution: "zustand-x@npm:6.0.3"
+"zustand-x@npm:6.1.0":
+  version: 6.1.0
+  resolution: "zustand-x@npm:6.1.0"
   dependencies:
     immer: "npm:^10.0.3"
     lodash.mapvalues: "npm:^4.6.0"
@@ -22101,7 +22101,7 @@ __metadata:
     use-sync-external-store: "npm:1.4.0"
   peerDependencies:
     zustand: ">=5.0.2"
-  checksum: 10c0/95b9b67e2f5d954bad2f6bb705f215f9e8c1b2ddaa2368fa1d3b4b259569aa8b77aaba9847f66dcecaa6d4b1c7f86683bd6193d0fd86cc329d3bf733a634ff69
+  checksum: 10c0/713c8e728fdad4cdab3bdd06c57ed33e77471bbcadee3697f19a75211f872dace2bc7df666ef5908097defe71693b54252c456ce1b72af16f850d9b33d37807b
   languageName: node
   linkType: hard
 
