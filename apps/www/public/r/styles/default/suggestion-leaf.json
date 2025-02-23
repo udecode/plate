@@ -8,6 +8,10 @@
       {
         "route": "/docs/suggestion"
       }
+    ],
+    "examples": [
+      "comments-demo",
+      "comments-pro"
     ]
   },
   "files": [

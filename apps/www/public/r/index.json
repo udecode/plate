@@ -311,6 +311,10 @@
         {
           "route": "/docs/suggestion"
         }
+      ],
+      "examples": [
+        "comments-demo",
+        "comments-pro"
       ]
     },
     "files": [
@@ -335,6 +339,10 @@
         {
           "route": "/docs/suggestion"
         }
+      ],
+      "examples": [
+        "comments-demo",
+        "comments-pro"
       ]
     },
     "files": [
