@@ -23,6 +23,10 @@ export const PlateControllerEffect = ({
   const idFromStore = useEditorId();
   const id = idProp ?? idFromStore;
 
+  if (!id) {
+    throw new Error('Editors used in PlateController must have unique IDs');
+  }
+
   const currentStoreAtom = React.useMemo(
     () =>
       focusAtom(
