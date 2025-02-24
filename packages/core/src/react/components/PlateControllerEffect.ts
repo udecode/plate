@@ -21,7 +21,7 @@ export const PlateControllerEffect = ({
   id: idProp,
 }: PlateControllerEffectProps) => {
   const idFromStore = useEditorId();
-  const id = idProp ?? idFromStore;
+  const id = idProp ?? idFromStore ?? '';
 
   const currentStoreAtom = React.useMemo(
     () =>
