@@ -30,7 +30,7 @@ jest.spyOn(global.console, 'error').mockImplementation(() => jest.fn());
 let id = 1;
 
 jest.mock('nanoid', () => ({
-  nanoid: () => `${id++}`,
+  nanoid: () => `nanoid-${id++}`,
 }));
 
 jest.mock('@udecode/plate-core', () => ({
