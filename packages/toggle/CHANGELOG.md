@@ -1,5 +1,11 @@
 # @udecode/plate-toggle
 
+## 45.0.6
+
+### Patch Changes
+
+- [#4107](https://github.com/udecode/plate/pull/4107) by [@12joan](https://github.com/12joan) – Expect `NodeIn<Value>['id']` to have type `unknown` since the Node ID plugin may or may not be enabled.
+
 ## 44.0.0
 
 ## 43.0.5
