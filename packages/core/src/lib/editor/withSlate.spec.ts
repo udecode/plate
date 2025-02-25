@@ -458,4 +458,32 @@ describe('withPlate', () => {
       ]);
     });
   });
+
+  describe('when the previous editor has an id', () => {
+    it('should use that id', () => {
+      const oldEditor = withSlate(createEditor());
+      oldEditor.id = 'old';
+      const editor = withSlate(oldEditor);
+      expect(editor.id).toBe('old');
+    });
+  });
+
+  describe('when the id option is provided', () => {
+    it('should use that id', () => {
+      const oldEditor = withSlate(createEditor());
+      oldEditor.id = 'old';
+      const editor = withSlate(oldEditor, { id: 'new' });
+      expect(editor.id).toBe('new');
+    });
+  });
+
+  describe('when no id is provided', () => {
+    it('should use a unique id for each editor', () => {
+      const id1 = withSlate(createEditor()).id;
+      const id2 = withSlate(createEditor()).id;
+      expect(id1).toBeTruthy();
+      expect(id2).toBeTruthy();
+      expect(id1).not.toEqual(id2);
+    });
+  });
 });

@@ -13,7 +13,7 @@ export function useBlockSelectionNodes() {
   return useMemo(() => {
     return editor.api.blocks<TElement>({
       at: [],
-      match: (n) => !!n.id && selectedIds?.has(n.id),
+      match: (n) => !!n.id && selectedIds?.has(n.id as string),
     });
   }, [editor, selectedIds]);
 }

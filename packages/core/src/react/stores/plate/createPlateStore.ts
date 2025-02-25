@@ -162,7 +162,7 @@ export const usePlateState = ((key, options) => {
 // ─── Selectors ───────────────────────────────────────────────────────────────
 
 /** Get the closest `Plate` id. */
-export const useEditorId = (): string | undefined =>
+export const useEditorId = (): string =>
   useAtomStoreValue(usePlateStore(), 'editor').id;
 
 export const useEditorContainerRef = (id?: string) => {

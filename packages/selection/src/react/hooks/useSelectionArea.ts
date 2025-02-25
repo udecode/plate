@@ -79,7 +79,7 @@ export const useSelectionArea = () => {
           const hasAncestor = editor.api.block({
             above: true,
             at: block[1],
-            match: (n) => !!n.id && areaRef.current.ids.has(n.id),
+            match: (n) => !!n.id && areaRef.current.ids.has(n.id as string),
           });
 
           if (!hasAncestor) {

@@ -16,7 +16,7 @@ export type Editor<V extends Value = Value> = EditorBase<V> & {
 
 export type EditorBase<V extends Value = Value> = {
   /** Unique identifier for the editor. */
-  id: any;
+  id: string;
   /** Value of the editor. */
   children: V;
   /** Contains the undos and redos of the editor. */
