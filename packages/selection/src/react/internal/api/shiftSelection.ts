@@ -37,7 +37,7 @@ export const shiftSelection = (
 
   // If no anchor is set, default to bottom-most if SHIFT+UP, else top-most if SHIFT+DOWN.
   if (!anchorId) {
-    anchorId = direction === 'up' ? bottomNode.id : topNode.id;
+    anchorId = (direction === 'up' ? bottomNode.id : topNode.id) as string;
     setOption('anchorId', anchorId);
   }
 
@@ -46,7 +46,7 @@ export const shiftSelection = (
 
   if (anchorIndex === -1) {
     // If anchor not found in the current selection, fallback:
-    setOption('anchorId', bottomNode.id);
+    setOption('anchorId', bottomNode.id as string);
 
     return;
   }
@@ -77,7 +77,7 @@ export const shiftSelection = (
       // anchor is not top => shrink from top-most
       // remove the top-most from selection unless it's the anchor.
       if (topNode.id && topNode.id !== anchorId) {
-        newSelected.delete(topNode.id);
+        newSelected.delete(topNode.id as string);
       }
     }
   } else {
@@ -114,7 +114,7 @@ export const shiftSelection = (
     } else {
       // anchor is not bottom => shrink from bottom-most
       if (bottomNode.id && bottomNode.id !== anchorId) {
-        newSelected.delete(bottomNode.id);
+        newSelected.delete(bottomNode.id as string);
       }
     }
   }
