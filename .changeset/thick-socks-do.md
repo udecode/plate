@@ -1,5 +1,5 @@
 ---
-'@udecode/plate-core': minor
+'@udecode/plate-core': patch
 ---
 
 - `editor.id` now defaults to `nanoid()` if no `id` was specified when creating the editor.
