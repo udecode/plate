@@ -12,7 +12,7 @@ export const getLastEntryEnclosedInToggle = (
   const entriesInToggle = editor.children
     .map((node, index) => [node, [index]] as NodeEntry)
     .filter(([node]) => {
-      return (toggleIndex.get(node.id) || []).includes(toggleId);
+      return (toggleIndex.get(node.id as string) || []).includes(toggleId);
     });
 
   return last(entriesInToggle);

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 
 import { atom } from 'jotai';
 import { useAtomStoreSet, useAtomStoreState, useAtomStoreValue } from 'jotai-x';
@@ -116,15 +116,16 @@ export const usePlateStore = (id?: string) => {
    */
   const plateControllerExists = usePlateControllerExists();
 
-  const fallbackStore = React.useRef<typeof localStore>(undefined);
+  const fallbackStore = useMemo(createPlateStore, []);
+  const fallbackPlateStore = fallbackStore.usePlateStore();
+  const memorizedFallbackPlateStore = useMemo(
+    () => fallbackPlateStore,
+    [fallbackPlateStore]
+  );
 
   if (!store) {
     if (plateControllerExists) {
-      if (!fallbackStore.current) {
-        fallbackStore.current =
-          createPlateStore().usePlateStore() as unknown as typeof localStore;
-      }
-      return fallbackStore.current!;
+      return memorizedFallbackPlateStore;
     }
 
     throw new Error(

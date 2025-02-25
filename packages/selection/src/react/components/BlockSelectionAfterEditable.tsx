@@ -106,7 +106,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
         const entry = editor.api.node({
           at: [],
           block: true,
-          match: (n) => !!n.id && selectedIds?.has(n.id),
+          match: (n) => !!n.id && selectedIds?.has(n.id as string),
         });
 
         if (entry) {
@@ -124,7 +124,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
           editor.tf.removeNodes({
             at: [],
             block: true,
-            match: (n) => !!n.id && selectedIds?.has(n.id),
+            match: (n) => !!n.id && selectedIds?.has(n.id as string),
           });
 
           if (editor.children.length === 0) {
@@ -175,7 +175,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
         if (!editor.api.isReadOnly()) {
           editor.tf.removeNodes({
             at: [],
-            match: (n) => selectedIds?.has(n.id),
+            match: (n) => selectedIds?.has(n.id as string),
           });
           editor.tf.focus();
         }
