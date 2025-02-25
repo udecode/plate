@@ -1,5 +1,11 @@
 # @udecode/slate
 
+## 45.0.6
+
+### Patch Changes
+
+- [#4107](https://github.com/udecode/plate/pull/4107) by [@12joan](https://github.com/12joan) – Change type of `editor.id` from `any` to `string`. The previous value of `any` was causing `NodeIn<Value>['id']` to have type `any`.
+
 ## 44.0.0
 
 ### Patch Changes

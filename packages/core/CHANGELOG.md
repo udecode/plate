@@ -1,5 +1,13 @@
 # @udecode/plate-core
 
+## 45.0.6
+
+### Patch Changes
+
+- [#4107](https://github.com/udecode/plate/pull/4107) by [@12joan](https://github.com/12joan) –
+  - `editor.id` now defaults to `nanoid()` if no `id` was specified when creating the editor.
+  - Fix: Using Plate hooks such as `useEditorRef` inside PlateController causes React to throw an error about hook order.
+
 ## 45.0.5
 
 ### Patch Changes
