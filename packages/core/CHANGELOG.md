@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 45.0.7
+
+### Patch Changes
+
+- [`91bc38e`](https://github.com/udecode/plate/commit/91bc38e5e4ff926d3c64f5561ab6f71c6f415884) by [@zbeyens](https://github.com/zbeyens) – Bump jotai-x
+
 ## 45.0.6
 
 ### Patch Changes
