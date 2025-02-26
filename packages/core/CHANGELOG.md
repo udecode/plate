@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 45.0.9
+
+### Patch Changes
+
+- [#4115](https://github.com/udecode/plate/pull/4115) by [@12joan](https://github.com/12joan) – Fallback Plate store no longer needs to be memorized since `jotai-x@2.3.1` handles this automatically
+
 ## 45.0.8
 
 ### Patch Changes
