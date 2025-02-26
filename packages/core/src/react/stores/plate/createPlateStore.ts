@@ -116,17 +116,11 @@ export const usePlateStore = (id?: string) => {
    * case, return a fallback store until an editor becomes active.
    */
   const plateControllerExists = usePlateControllerExists();
-
-  const fallbackStore = useMemo(createPlateStore, []);
-  const fallbackPlateStore = fallbackStore.usePlateStore();
-  const memorizedFallbackPlateStore = useMemo(
-    () => fallbackPlateStore,
-    [fallbackPlateStore]
-  );
+  const fallbackStore = useMemo(createPlateStore, []).usePlateStore();
 
   if (!store) {
     if (plateControllerExists) {
-      return memorizedFallbackPlateStore;
+      return fallbackStore;
     }
 
     throw new Error(
