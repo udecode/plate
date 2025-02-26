@@ -61,6 +61,7 @@ export const createPlateStore = <E extends PlateEditor = PlateEditor>({
     } as PlateStoreState<E>,
     {
       name: 'plate',
+      suppressWarnings: true,
       extend: (atoms) => ({
         trackedEditor: atom((get) => ({
           editor: get(atoms.editor),

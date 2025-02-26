@@ -20,5 +20,5 @@ const initialState: Nullable<ElementStoreState> = {
 export const { ElementProvider, elementStore, useElementStore } =
   createAtomStore(
     initialState as ElementStoreState,
-    { name: 'element' } as const
+    { name: 'element', suppressWarnings: true } as const
   );

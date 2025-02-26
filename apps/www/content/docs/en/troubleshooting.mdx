@@ -1,0 +1,62 @@
+---
+title: Troubleshooting
+description: Solutions for common issues when working with Plate.
+---
+
+## Dependency Conflicts
+
+### Multiple Plate Instances
+
+**Problem:** Unexpected behavior or "hooks can only be called inside a component" errors.
+
+**Root Cause:** Having incompatible versions of Plate packages in your project.
+
+**Diagnosis:** Check for multiple Plate package versions:
+
+```bash
+# npm
+npm ls @udecode/plate @udecode/plate-core
+
+# pnpm or yarn
+pnpm why @udecode/plate
+pnpm why @udecode/plate-core
+```
+
+**Solution:** Upgrade all packages to the latest version up to your target version:
+
+```bash
+# Example upgrading all packages to v45
+pnpm add @udecode/plate@45 @udecode/plate-core@45 @udecode/plate-ui@45 # etc.
+```
+
+### Multiple Slate Instances
+
+**Problem:** Editor features may not work correctly.
+
+**Root Cause:** Package managers sometimes install mismatched versions of Slate dependencies. For example, `pnpm` might install `slate` version 0.112.2 instead of the required 0.111.0.
+
+**Diagnosis:** Check for multiple Slate versions:
+
+```bash
+# npm
+npm ls slate slate-react slate-dom
+
+# pnpm or yarn
+pnpm why slate
+pnpm why slate-react
+pnpm why slate-dom
+```
+
+**Solution:** Force consistent Slate dependency versions:
+
+```jsonc
+// package.json
+{
+  "resolutions": {
+    "slate": "0.112.0",
+    "slate-dom": "0.112.2",
+    "slate-react": "0.112.1"
+  }
+}
+```
+

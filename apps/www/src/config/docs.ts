@@ -94,7 +94,6 @@ export const guidesNavItems: SidebarNavItem[] = [
   },
   {
     href: '/docs/form',
-    label: 'New',
     title: 'Form',
   },
   {
@@ -110,7 +109,6 @@ export const guidesNavItems: SidebarNavItem[] = [
   },
   {
     href: '/docs/typescript',
-    label: 'New',
     title: 'TypeScript',
   },
   {
@@ -124,6 +122,11 @@ export const guidesNavItems: SidebarNavItem[] = [
   {
     href: '/docs/playwright',
     title: 'Playwright Testing',
+  },
+  {
+    href: '/docs/troubleshooting',
+    label: 'New',
+    title: 'Troubleshooting',
   },
 ];
 
