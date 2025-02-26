@@ -49,14 +49,14 @@ Special elements like `<cursor />`, `<anchor />`, and `<focus />` represent sele
 
 1. Create an input state
 2. Define the expected output state
-3. Use `createPlateEditor` or `createPlateTestEditor` to set up the editor
-4. Apply the transform(s)
+3. Use `createPlateEditor` to set up the editor
+4. Apply the transform(s) directly
 5. Assert the editor's new state
 
 Example testing bold formatting:
 
 ```typescript
-it('should use custom hotkey for bold', async () => {
+it('should apply bold formatting', () => {
   const input = (
     <editor>
       <hp>
@@ -75,23 +75,14 @@ it('should use custom hotkey for bold', async () => {
     </editor>
   ) as any as PlateEditor;
 
-  const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
+  const editor = createPlateEditor({
+    plugins: [BoldPlugin],
     value: input.children,
     selection: input.selection,
-    plugins: [
-      BoldPlugin.configure({
-        handlers: {
-          onKeyDown: ({ editor, event }) => {
-            if (event.key === 'b' && event.ctrlKey) {
-              editor.tf.toggle.mark({ key: 'bold' });
-            }
-          },
-        },
-      }),
-    ],
   });
 
-  await triggerKeyboardEvent('mod+b');
+  // Apply transform directly
+  editor.tf.toggleMark('bold');
 
   expect(editor.children).toEqual(output.children);
 });
@@ -102,7 +93,7 @@ it('should use custom hotkey for bold', async () => {
 Test how operations affect the editor's selection:
 
 ```typescript
-it('should collapse selection on backspace', async () => {
+it('should collapse selection on backspace', () => {
   const input = (
     <editor>
       <hp>
@@ -119,7 +110,7 @@ it('should collapse selection on backspace', async () => {
     </editor>
   ) as any as PlateEditor;
 
-  const [editor] = await createPlateTestEditor({
+  const editor = createPlateEditor({
     value: input.children,
     selection: input.selection,
   });
@@ -133,83 +124,99 @@ it('should collapse selection on backspace', async () => {
 
 ## Testing Key Events
 
-Use `triggerKeyboardEvent` from `createPlateTestEditor`:
+When you need to test keyboard handlers directly:
 
 ```typescript
-it('should extend selection on shift+ArrowRight', async () => {
+it('should call the onKeyDown handler', () => {
   const input = (
     <editor>
       <hp>
-        Hello <cursor />world
+        Hello <anchor />world<focus />
       </hp>
     </editor>
   ) as any as PlateEditor;
 
-  const output = (
-    <editor>
-      <hp>
-        Hello <anchor />wor<focus />ld
-      </hp>
-    </editor>
-  ) as any as PlateEditor;
+  // Create a mock handler to verify it's called
+  const onKeyDownMock = jest.fn();
 
-  const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
+  const editor = createPlateEditor({
     value: input.children,
     selection: input.selection,
+    plugins: [
+      {
+        key: 'test',
+        handlers: {
+          onKeyDown: onKeyDownMock,
+        },
+      },
+    ],
   });
 
-  await triggerKeyboardEvent('shift+ArrowRight');
-  await triggerKeyboardEvent('shift+ArrowRight');
-  await triggerKeyboardEvent('shift+ArrowRight');
+  // Create the keyboard event
+  const event = new KeyboardEvent('keydown', {
+    key: 'Enter',
+  }) as any;
 
-  expect(editor.selection).toEqual(output.selection);
+  // Call the handler directly
+  editor.plugins.test.handlers.onKeyDown({
+    ...getEditorPlugin(editor, { key: 'test' }),
+    event,
+  });
+
+  // Verify the handler was called
+  expect(onKeyDownMock).toHaveBeenCalled();
 });
 ```
 
 ## Testing Complex Scenarios
 
-For complex plugins like tables, test various scenarios:
+For complex plugins like tables, test various scenarios by directly applying transforms:
 
 ```typescript
 describe('Table plugin', () => {
-  it('should add a row below on Tab in last cell', async () => {
+  it('should insert a table', () => {
     const input = (
       <editor>
-        <htable>
-          <htr>
-            <htd>Cell 1</htd>
-            <htd>
-              Cell 2<cursor />
-            </htd>
-          </htr>
-        </htable>
+        <hp>
+          Test<cursor />
+        </hp>
       </editor>
     ) as any as PlateEditor;
 
     const output = (
       <editor>
+        <hp>Test</hp>
         <htable>
           <htr>
-            <htd>Cell 1</htd>
-            <htd>Cell 2</htd>
+            <htd>
+              <hp>
+                <cursor />
+              </hp>
+            </htd>
+            <htd>
+              <hp></hp>
+            </htd>
           </htr>
           <htr>
             <htd>
-              <cursor />
+              <hp></hp>
             </htd>
-            <htd></htd>
+            <htd>
+              <hp></hp>
+            </htd>
           </htr>
         </htable>
       </editor>
     ) as any as PlateEditor;
 
-    const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
+    const editor = createPlateEditor({
       value: input.children,
-    selection: input.selection,
+      selection: input.selection,
       plugins: [TablePlugin],
     });
 
-    await triggerKeyboardEvent('Tab');
+    // Call transform directly
+    editor.tf.insertTable({ rows: 2, columns: 2 });
 
     expect(editor.children).toEqual(output.children);
     expect(editor.selection).toEqual(output.selection);
@@ -222,46 +229,63 @@ describe('Table plugin', () => {
 Test how different plugin options affect behavior:
 
 ```typescript
-it('should use custom hotkey for bold', async () => {
-  const handler = jest.fn();
-  
-  const input = (
-    <editor>
-      <hp>
-        Hello <cursor />world
-      </hp>
-    </editor>
-  ) as any as PlateEditor;
+describe('when undo is enabled', () => {
+  it('should undo text format upon delete', () => {
+    const input = (
+      <fragment>
+        <hp>
+          1/<cursor />
+        </hp>
+      </fragment>
+    ) as any;
 
-  const output = (
-    <editor>
-      <hp>
-        Hello <htext bold>world</htext>
-      </hp>
-    </editor>
-  ) as any as PlateEditor;
+    const output = (
+      <fragment>
+        <hp>
+          1/4<cursor />
+        </hp>
+      </fragment>
+    ) as any;
 
-  const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-    value: input.children,
-    selection: input.selection,
-    plugins: [
-      BoldPlugin.configure({
-        shortcuts: {
-          toggleBold: {
-            handler,
-            keys: 'mod+shift+b',
+    const editor = createPlateEditor({
+      plugins: [
+        AutoformatPlugin.configure({
+          options: {
+            enableUndoOnDelete: true,
+            rules: [
+              {
+                format: '¼',
+                match: '1/4',
+                mode: 'text',
+              },
+            ],
           },
-        },
-      }),
-    ],
+        }),
+      ],
+      value: input,
+    });
+
+    // Trigger the autoformat
+    editor.tf.insertText('4');
+
+    // Simulate backspace key
+    const event = new KeyboardEvent('keydown', {
+      key: 'backspace',
+    }) as any;
+
+    // Call the handler
+    editor.plugins[AutoformatPlugin.key].handlers.onKeyDown({
+      ...getEditorPlugin(editor, AutoformatPlugin),
+      event,
+    });
+
+    // With enableUndoOnDelete: true, pressing backspace should restore the original text
+    expect(input.children).toEqual(output.children);
   });
-
-  await triggerKeyboardEvent('mod+shift+b');
-
-  expect(editor.children).toEqual(output.children);
 });
 ```
 
 ## Mocking vs. Real Transforms
 
 While mocking can be useful for isolating specific behaviors, Plate tests often assess actual editor children and selection after transforms. This approach ensures that plugins work correctly with the entire editor state.
+
