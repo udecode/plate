@@ -189,6 +189,7 @@ const plugins: Registry['items'] = [
       },
     ],
     name: 'block-selection-plugins',
+    registryDependencies: ['block-selection'],
     type: 'registry:component',
   },
   {

@@ -1946,7 +1946,7 @@ export const Index: Record<string, any> = {
       name: "block-selection-plugins",
       description: "",
       type: "registry:component",
-      registryDependencies: undefined,
+      registryDependencies: ["block-selection"],
       files: [{
         path: "src/registry/default/components/editor/plugins/block-selection-plugins.tsx",
         type: "registry:component",
