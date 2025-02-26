@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 45.0.8
+
+### Patch Changes
+
+- [`7b988f1`](https://github.com/udecode/plate/commit/7b988f11c35a2fb8e0e966ca1c9af8710b092d5e) by [@zbeyens](https://github.com/zbeyens) – supress warning logs when using PlateController
+
 ## 45.0.7
 
 ### Patch Changes

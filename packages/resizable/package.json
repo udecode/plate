@@ -46,7 +46,7 @@
     "@udecode/plate": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate": ">=45.0.7",
+    "@udecode/plate": ">=45.0.8",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },
