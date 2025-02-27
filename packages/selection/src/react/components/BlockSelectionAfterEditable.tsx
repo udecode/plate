@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { isHotkey } from '@udecode/plate';
+import { isHotkey, PathApi } from '@udecode/plate';
 import {
   type EditableSiblingComponent,
   useEditorPlugin,
@@ -121,14 +121,34 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
       if (isHotkey(['backspace', 'delete'])(e) && !isReadonly) {
         e.preventDefault();
         editor.tf.withoutNormalizing(() => {
-          editor.tf.removeNodes({
+          const entry = editor.api.block({
             at: [],
-            block: true,
             match: (n) => !!n.id && selectedIds?.has(n.id as string),
           });
 
-          if (editor.children.length === 0) {
-            editor.tf.focus();
+          if (entry) {
+            editor.tf.removeNodes({
+              at: entry[1],
+            });
+
+            if (editor.children.length === 0) {
+              editor.tf.focus();
+            } else {
+              const prevPath = isHotkey('backspace')(e)
+                ? PathApi.previous(entry[1])
+                : entry[1];
+
+              if (prevPath) {
+                const prevEntry = editor.api.block({ at: prevPath });
+
+                if (prevEntry) {
+                  setOption(
+                    'selectedIds',
+                    new Set([prevEntry[0].id as string])
+                  );
+                }
+              }
+            }
           }
         });
 
@@ -150,7 +170,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
         return;
       }
     },
-    [editor, selectedIds, api, getOptions, getOption]
+    [editor, getOptions, getOption, api.blockSelection, selectedIds, setOption]
   );
 
   /** Handle copy / cut / paste in block selection */
@@ -173,15 +193,25 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
         copySelectedBlocks(editor);
 
         if (!editor.api.isReadOnly()) {
-          editor.tf.removeNodes({
+          const entry = editor.api.block({
             at: [],
             match: (n) => selectedIds?.has(n.id as string),
           });
-          editor.tf.focus();
+
+          if (entry) {
+            editor.tf.removeNodes({
+              at: entry[1],
+            });
+
+            const prevEntry = editor.api.block({ at: entry[1] });
+            if (prevEntry) {
+              setOption('selectedIds', new Set([prevEntry[0].id as string]));
+            }
+          }
         }
       }
     },
-    [editor, selectedIds, getOption]
+    [getOption, editor, selectedIds, setOption]
   );
 
   const handlePaste = React.useCallback(

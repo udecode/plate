@@ -12,8 +12,6 @@ export const pasteSelectedBlocks = (editor: SlateEditor, e: ClipboardEvent) => {
     const entry = entries.at(-1)!;
     const [node, path] = entry;
 
-    editor.tf.focus({ at: path, edge: 'start' });
-
     if (!editor.api.isEmpty(node as any)) {
       const at = PathApi.next(path);
 
@@ -27,8 +25,6 @@ export const pasteSelectedBlocks = (editor: SlateEditor, e: ClipboardEvent) => {
     // editor.tf.withoutMerging(() => {
     editor.tf.insertData(e.clipboardData!);
     // });
-    // insertData is focusing the editor so deselect
-    editor.tf.deselect();
 
     selectInsertedBlocks(editor);
   }
