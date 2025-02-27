@@ -1,5 +1,14 @@
 # @udecode/plate-selection
 
+## 45.1.0
+
+### Minor Changes
+
+- [#4118](https://github.com/udecode/plate/pull/4118) by [@zbeyens](https://github.com/zbeyens) –
+  - Fix block selection when pasting blocks
+  - Block selection > Backspace now selects the previous block
+  - Block selection > Delete now selects the next block
+
 ## 45.0.6
 
 ### Patch Changes
