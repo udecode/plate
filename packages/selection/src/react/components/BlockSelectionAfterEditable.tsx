@@ -193,17 +193,23 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
         copySelectedBlocks(editor);
 
         if (!editor.api.isReadOnly()) {
-          const entry = editor.api.block({
-            at: [],
-            match: (n) => selectedIds?.has(n.id as string),
-          });
+          const entries = [
+            ...editor.api.nodes({
+              at: [],
+              match: (n) => selectedIds?.has(n.id as string),
+            }),
+          ];
 
-          if (entry) {
-            editor.tf.removeNodes({
-              at: entry[1],
+          if (entries.length > 0) {
+            editor.tf.withoutNormalizing(() => {
+              for (const [, path] of [...entries].reverse()) {
+                editor.tf.removeNodes({
+                  at: path,
+                });
+              }
             });
 
-            const prevEntry = editor.api.block({ at: entry[1] });
+            const prevEntry = editor.api.block({ at: entries[0][1] });
             if (prevEntry) {
               setOption('selectedIds', new Set([prevEntry[0].id as string]));
             }
