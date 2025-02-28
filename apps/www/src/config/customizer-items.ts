@@ -371,15 +371,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
         route: getComponentNavItem('comment-leaf').href,
         usage: 'CommentLeaf',
       },
-      {
-        id: 'comments-popover',
-        label: 'CommentsPopover',
-        pluginOptions: [
-          `render: { afterEditable: () => <CommentsPopover /> },`,
-        ],
-        route: getComponentNavItem('block-discussion').href,
-        usage: 'CommentsPopover',
-      },
+      // TODO: block-discussion
     ],
     label: 'Comments',
     npmPackage: '@udecode/plate-comments',

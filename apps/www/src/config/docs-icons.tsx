@@ -141,7 +141,6 @@ export const DocIcons = {
   'comment-leaf': MessageSquareTextIcon,
   'comment-toolbar-button': MessageSquareTextIcon,
   comments: MessageSquareTextIcon,
-  'comments-popover': MessageSquareTextIcon,
   'context-menu': MousePointerClickIcon,
   copilot: ArrowRightToLineIcon,
   csv: FileSpreadsheetIcon,
