@@ -49,9 +49,11 @@
     "test:watch": "yarn p:test:watch",
     "typecheck": "yarn p:typecheck"
   },
+  "dependencies": {
+    "shiki": "3.1.0"
+  },
   "devDependencies": {
-    "@udecode/plate": "workspace:^",
-    "prismjs": "^1.29.0"
+    "@udecode/plate": "workspace:^"
   },
   "peerDependencies": {
     "@udecode/plate": ">=45.0.9",
