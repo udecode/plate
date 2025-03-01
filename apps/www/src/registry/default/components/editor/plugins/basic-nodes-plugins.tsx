@@ -11,10 +11,6 @@ const lowlight = createLowlight(all);
 export const basicNodesPlugins = [
   HeadingPlugin.configure({ options: { levels: 3 } }),
   BlockquotePlugin,
-  CodeBlockPlugin.configure({
-    options: {
-      lowlight,
-    },
-  }),
+  CodeBlockPlugin.configure({ options: { lowlight } }),
   BasicMarksPlugin,
 ] as const;

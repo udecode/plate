@@ -15,10 +15,12 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 Plate 46 - new code block
 
 - Migrated from Prism.js to lowlight for syntax highlighting
-  - `code-block-element-static`, `code-block-element`: Updated to use lowlight classes. Default to github theme.
+  - `code-block-element-static`, `code-block-element`, `code-block-combobox`: Updated to use lowlight classes. Default to github theme.
   - `code-syntax-leaf-static`, `code-syntax-leaf`: Updated to use lowlight token classes
   - Removed `prismjs` dependency and related styles
   - Use `lowlight` plugin option instead of `prism` option
+  - `code-block-combobox`: add `Auto` language option
+- `autoformat-plugin`: prevent autoformat on code blocks
 
 ```tsx
 import { all, createLowlight } from 'lowlight';
