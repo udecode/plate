@@ -64,7 +64,7 @@
   {
     "dependencies": [
       "@udecode/plate-code-block",
-      "prismjs"
+      "lowlight"
     ],
     "doc": {
       "description": "A code block with syntax highlighting and language selection.",
@@ -87,10 +87,6 @@
       },
       {
         "path": "plate-ui/code-block-element-static.tsx",
-        "type": "registry:ui"
-      },
-      {
-        "path": "plate-ui/code-block-element.css",
         "type": "registry:ui"
       },
       {

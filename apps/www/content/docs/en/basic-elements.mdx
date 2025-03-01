@@ -41,13 +41,15 @@ npm install @udecode/plate-block-quote @udecode/plate-code-block @udecode/plate-
 
 ```tsx
 import { BasicElementsPlugin, CodeBlockPlugin } from '@udecode/plate-basic-elements/react';
-import Prism from 'prismjs';
+import { all, createLowlight } from 'lowlight';
+
+const lowlight = createLowlight(all);
 
 const plugins = [
   // ...otherPlugins,
   BasicElementsPlugin.configurePlugin(CodeBlockPlugin, {
     options: {
-      prism: Prism,
+      lowlight,
     },
   }),
 ];
@@ -88,11 +90,11 @@ Plugin for blockquote elements.
 
 <API name="CodeBlockPlugin">
 <APIOptions>
-  <APIItem name="syntax" type="boolean" optional>
-    Whether syntax highlighting is enabled.
+  <APIItem name="defaultLanguage" type="string | null" optional>
+    Default language to use when no language is specified. Set to null to disable syntax highlighting by default.
   </APIItem>
-  <APIItem name="syntaxPopularFirst" type="boolean" optional>
-    Whether popular syntax should be displayed first.
+  <APIItem name="lowlight" type="ReturnType<typeof createLowlight> | null" optional>
+    Lowlight instance to use for highlighting. If not provided, syntax highlighting will be disabled.
   </APIItem>
 </APIOptions>
 </API>
@@ -179,62 +181,3 @@ Toggles the code block in the editor.
 
 Unwraps the code block in the editor.
 
-### `useCodeBlockCombobox`
-
-<API name="useCodeBlockCombobox">
-<APIState>
-  <APIItem name="element" type="TCodeBlockElement">
-    The code block element.
-  </APIItem>
-  <APIItem name="setValue" type="function">
-    Set element value callback.
-  </APIItem>
-</APIState>
-
-<APIReturns type="object">
-  <APIItem name="commandItemProps" type="object">
-    Props for the command item.
-  </APIItem>
-  <APIItem name="onSelect" type="function">
-    Function to call when the command item is selected.
-  </APIItem>
-</APIReturns>
-</API>
-
-### `useCodeBlockElementState`
-
-<API name="useCodeBlockElementState">
-<APIParameters>
-  <APIItem name="element" type="TCodeBlockElement">
-    The code block element.
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="object">
-  <APIItem name="className" type="string | false">
-    CSS class name for the code block element, representing the selected language.
-  </APIItem>
-  <APIItem name="syntax" type="boolean | undefined">
-    The syntax plugin option.
-  </APIItem>
-</APIReturns>
-</API>
-
-### `useCodeSyntaxLeaf`
-
-<API name="useCodeSyntaxLeaf">
-<APIOptions type="object">
-  <APIItem name="leaf" type="any">
-    The leaf node representing a code syntax token.
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="object">
-  <APIItem name="tokenProps" type="object">
-    Props for the token.
-  </APIItem>
-  <APIItem name="className" type="string">
-    CSS class name for the token.
-  </APIItem>
-</APIReturns>
-</API>

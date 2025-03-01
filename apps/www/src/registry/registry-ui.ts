@@ -964,7 +964,7 @@ export const uiNodes: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@udecode/plate-code-block', 'prismjs'],
+    dependencies: ['@udecode/plate-code-block', 'lowlight'],
     doc: {
       description:
         'A code block with syntax highlighting and language selection.',
@@ -977,7 +977,6 @@ export const uiNodes: Registry['items'] = [
     files: [
       { path: 'plate-ui/code-block-element.tsx', type: 'registry:ui' },
       { path: 'plate-ui/code-block-element-static.tsx', type: 'registry:ui' },
-      { path: 'plate-ui/code-block-element.css', type: 'registry:ui' },
       { path: 'plate-ui/code-block-combobox.tsx', type: 'registry:ui' },
     ],
     name: 'code-block-element',

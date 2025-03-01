@@ -53,10 +53,6 @@ export const Index: Record<string, any> = {
         type: "registry:ui",
         target: ""
       },{
-        path: "src/registry/default/plate-ui/code-block-element.css",
-        type: "registry:ui",
-        target: ""
-      },{
         path: "src/registry/default/plate-ui/code-block-combobox.tsx",
         type: "registry:ui",
         target: ""

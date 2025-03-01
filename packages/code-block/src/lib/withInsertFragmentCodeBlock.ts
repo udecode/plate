@@ -23,8 +23,6 @@ export const withInsertFragmentCodeBlock: OverrideEditor = ({
         };
       }
 
-      console.log(blockAbove, fragment);
-
       if (
         blockAbove &&
         [codeBlockType, codeLineType].includes(blockAbove?.type)
