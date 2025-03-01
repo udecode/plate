@@ -16,7 +16,6 @@ import {
 import { BaseBlockquotePlugin } from '@udecode/plate-block-quote';
 import {
   BaseCodeBlockPlugin,
-  BaseCodeLinePlugin,
   BaseCodeSyntaxPlugin,
 } from '@udecode/plate-code-block';
 import { BaseCommentsPlugin } from '@udecode/plate-comments';
@@ -193,7 +192,6 @@ export const components = {
   [BaseBlockquotePlugin.key]: BlockquoteElementStatic,
   [BaseBoldPlugin.key]: withProps(SlateLeaf, { as: 'strong' }),
   [BaseCodeBlockPlugin.key]: CodeBlockElementStatic,
-  [BaseCodeLinePlugin.key]: CodeLineElementStatic,
   [BaseCodePlugin.key]: CodeLeafStatic,
   [BaseCodeSyntaxPlugin.key]: CodeSyntaxLeafStatic,
   [BaseColumnItemPlugin.key]: ColumnElementStatic,

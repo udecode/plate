@@ -39,8 +39,6 @@ const nextConfig = async (phase: string) => {
     // https://nextjs.org/docs/api-reference/next.config.js/react-strict-mod
     reactStrictMode: true,
 
-    serverExternalPackages: ['ts-morph', 'shiki', 'typescript'],
-
     // typescript: {
     //   ignoreBuildErrors: true,
     // },
@@ -64,6 +62,12 @@ const nextConfig = async (phase: string) => {
     },
 
     webpack: (config, { buildId, dev, isServer, webpack }) => {
+      config.externals.push({
+        shiki: 'shiki',
+        'ts-morph': 'ts-morph',
+        typescript: 'typescript',
+      });
+
       if (!isServer) {
         config.resolve.fallback = {
           ...config.resolve.fallback,

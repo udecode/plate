@@ -2,7 +2,6 @@ import {
   type SlateEditor,
   type TLocation,
   BaseParagraphPlugin,
-  NodeApi,
 } from '@udecode/plate';
 
 import { BaseCodeBlockPlugin } from '../BaseCodeBlockPlugin';
@@ -21,18 +20,26 @@ export const unwrapCodeBlock = (editor: SlateEditor) => {
 
     const reversedCodeBlockEntries = Array.from(codeBlockEntries).reverse();
 
-    for (const codeBlockEntry of reversedCodeBlockEntries) {
-      const codeLineEntries = NodeApi.children(editor, codeBlockEntry[1]);
+    for (const [node, path] of reversedCodeBlockEntries) {
+      // Convert code block to paragraph
+      editor.tf.setNodes({ type: defaultType }, { at: path });
 
-      for (const [, path] of codeLineEntries) {
-        editor.tf.setNodes({ type: defaultType }, { at: path });
+      // Split text by newlines if needed
+      const text = editor.api.string(path);
+      if (text.includes('\n')) {
+        const lines = text.split('\n');
+
+        // Keep the first line in the current node
+        editor.tf.select(path);
+        editor.tf.delete();
+        editor.tf.insertText(lines[0]);
+
+        // Insert the rest of the lines as new paragraphs
+        for (let i = 1; i < lines.length; i++) {
+          editor.tf.insertBreak();
+          editor.tf.insertText(lines[i]);
+        }
       }
-
-      editor.tf.unwrapNodes({
-        at: codeBlockEntry[1],
-        match: { type: codeBlockType },
-        split: true,
-      });
     }
   });
 };

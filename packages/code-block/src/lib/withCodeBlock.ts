@@ -2,8 +2,6 @@ import type { OverrideEditor } from '@udecode/plate';
 
 import type { CodeBlockConfig } from './BaseCodeBlockPlugin';
 
-import { getCodeLineEntry, getIndentDepth } from './queries';
-import { indentCodeLine } from './transforms';
 import { withInsertDataCodeBlock } from './withInsertDataCodeBlock';
 import { withInsertFragmentCodeBlock } from './withInsertFragmentCodeBlock';
 import { withNormalizeCodeBlock } from './withNormalizeCodeBlock';
@@ -12,28 +10,22 @@ export const withCodeBlock: OverrideEditor<CodeBlockConfig> = (ctx) => {
   const {
     editor,
     tf: { insertBreak },
+    type,
   } = ctx;
 
   const insertBreakCodeBlock = () => {
     if (!editor.selection) return;
 
-    const res = getCodeLineEntry(editor, {});
-
-    if (!res) return;
-
-    const { codeBlock, codeLine } = res;
-    const indentDepth = getIndentDepth(editor, {
-      codeBlock,
-      codeLine,
+    // Check if we're in a code block
+    const [codeBlock] = editor.api.nodes({
+      match: { type },
+      mode: 'lowest',
     });
 
-    insertBreak();
+    if (!codeBlock) return;
 
-    indentCodeLine(editor, {
-      codeBlock,
-      codeLine,
-      indentDepth,
-    });
+    // Insert a newline character instead of breaking the node
+    editor.tf.insertText('\n');
 
     return true;
   };

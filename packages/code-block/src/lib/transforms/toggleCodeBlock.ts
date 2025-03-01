@@ -1,16 +1,12 @@
 import type { SlateEditor, TElement } from '@udecode/plate';
 
-import {
-  BaseCodeBlockPlugin,
-  BaseCodeLinePlugin,
-} from '../BaseCodeBlockPlugin';
+import { BaseCodeBlockPlugin } from '../BaseCodeBlockPlugin';
 import { unwrapCodeBlock } from './unwrapCodeBlock';
 
 export const toggleCodeBlock = (editor: SlateEditor) => {
   if (!editor.selection) return;
 
   const codeBlockType = editor.getType(BaseCodeBlockPlugin);
-  const codeLineType = editor.getType(BaseCodeLinePlugin);
 
   const isActive = editor.api.some({
     match: { type: codeBlockType },
@@ -20,16 +16,18 @@ export const toggleCodeBlock = (editor: SlateEditor) => {
     unwrapCodeBlock(editor);
 
     if (!isActive) {
-      editor.tf.setNodes({
-        type: codeLineType,
-      });
+      const text = editor.api.string();
 
       const codeBlock = {
-        children: [],
+        children: [{ text }],
         type: codeBlockType,
       };
 
-      editor.tf.wrapNodes<TElement>(codeBlock);
+      // Delete the current selection content
+      editor.tf.delete();
+
+      // Insert the code block
+      editor.tf.insertNodes<TElement>(codeBlock);
     }
   });
 };

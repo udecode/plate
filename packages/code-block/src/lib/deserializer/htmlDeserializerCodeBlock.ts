@@ -1,9 +1,6 @@
 import type { HtmlDeserializer } from '@udecode/plate';
 
-import {
-  BaseCodeBlockPlugin,
-  BaseCodeLinePlugin,
-} from '../BaseCodeBlockPlugin';
+import { BaseCodeBlockPlugin } from '../BaseCodeBlockPlugin';
 
 export const htmlDeserializerCodeBlock: HtmlDeserializer = {
   rules: [
@@ -26,19 +23,8 @@ export const htmlDeserializerCodeBlock: HtmlDeserializer = {
     const textContent =
       element.textContent?.replace(languageSelectorText, '') || '';
 
-    let lines = textContent.split('\n');
-
-    if (!lines?.length) {
-      lines = [textContent];
-    }
-
-    const codeLines = lines.map((line) => ({
-      children: [{ text: line }],
-      type: BaseCodeLinePlugin.key,
-    }));
-
     return {
-      children: codeLines,
+      children: [{ text: textContent }],
       type: BaseCodeBlockPlugin.key,
     };
   },

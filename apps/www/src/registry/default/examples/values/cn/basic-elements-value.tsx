@@ -12,10 +12,10 @@ export const basicElementsValue: any = (
       创建引用块来强调重要信息或突出显示来自外部来源的引用。
     </hblockquote>
     <hcodeblock lang="javascript">
-      <hcodeline>// Use code blocks to showcase code snippets</hcodeline>
-      <hcodeline>{`function greet() {`}</hcodeline>
-      <hcodeline>{`  console.info('Hello World!');`}</hcodeline>
-      <hcodeline>{`}`}</hcodeline>
+      {`// Use code blocks to showcase code snippets
+function greet() {
+  console.info('Hello World!');
+}`}
     </hcodeblock>
   </fragment>
 );

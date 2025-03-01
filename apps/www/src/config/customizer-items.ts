@@ -19,7 +19,6 @@ import {
 import { CaptionPlugin } from '@udecode/plate-caption/react';
 import {
   CodeBlockPlugin,
-  CodeLinePlugin,
   CodeSyntaxPlugin,
 } from '@udecode/plate-code-block/react';
 import { CommentsPlugin } from '@udecode/plate-comments/react';
@@ -280,14 +279,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: 'CodeBlockElement',
       },
       {
-        id: 'code-line-element',
-        label: 'CodeLineElement',
-        pluginImports: ['CodeLinePlugin'],
-        pluginKey: 'CodeLinePlugin.key',
-        route: getComponentNavItem('code-line-element').href,
-        usage: 'CodeLineElement',
-      },
-      {
         id: 'code-syntax-leaf',
         label: 'CodeSyntaxLeaf',
         pluginImports: ['CodeSyntaxPlugin'],
@@ -301,13 +292,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginFactory: 'CodeBlockPlugin',
     reactImport: true,
     route: getPluginNavItem('basic-elements').href,
-  },
-  [CodeLinePlugin.key]: {
-    id: CodeLinePlugin.key,
-    label: 'Code Line',
-    npmPackage: '@udecode/plate-code-block',
-    pluginFactory: 'CodeLinePlugin',
-    reactImport: true,
   },
   [CodePlugin.key]: {
     id: CodePlugin.key,

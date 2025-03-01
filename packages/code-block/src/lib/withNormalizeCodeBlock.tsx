@@ -1,8 +1,8 @@
-import { type OverrideEditor, ElementApi, NodeApi } from '@udecode/plate';
+import { type OverrideEditor, ElementApi } from '@udecode/plate';
 
-import { BaseCodeBlockPlugin, BaseCodeLinePlugin } from './BaseCodeBlockPlugin';
+import { BaseCodeBlockPlugin } from './BaseCodeBlockPlugin';
 
-/** Normalize code block node to force the pre>code>div.codeline structure. */
+/** Normalize code block node to ensure it has proper structure. */
 export const withNormalizeCodeBlock: OverrideEditor = ({
   editor,
   tf: { normalizeNode },
@@ -16,18 +16,13 @@ export const withNormalizeCodeBlock: OverrideEditor = ({
       }
 
       const codeBlockType = editor.getType(BaseCodeBlockPlugin);
-      const codeLineType = editor.getType(BaseCodeLinePlugin);
       const isCodeBlockRoot = node.type === codeBlockType;
 
-      if (isCodeBlockRoot) {
-        // Children should all be code lines
-        const nonCodeLine = Array.from(NodeApi.children(editor, path)).find(
-          ([child]) => child.type !== codeLineType
-        );
-
-        if (nonCodeLine) {
-          editor.tf.setNodes({ type: codeLineType }, { at: nonCodeLine[1] });
-        }
+      if (
+        isCodeBlockRoot && // Ensure code block has at least one text node
+        node.children.length === 0
+      ) {
+        editor.tf.insertNodes({ text: '' }, { at: [...path, 0] });
       }
     },
   },

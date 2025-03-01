@@ -16,7 +16,6 @@ import {
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import {
   CodeBlockPlugin,
-  CodeLinePlugin,
   CodeSyntaxPlugin,
 } from '@udecode/plate-code-block/react';
 import { CommentsPlugin } from '@udecode/plate-comments/react';
@@ -70,7 +69,6 @@ import { AILeaf } from '@/registry/default/plate-ui/ai-leaf';
 import { BlockquoteElement } from '@/registry/default/plate-ui/blockquote-element';
 import { CodeBlockElement } from '@/registry/default/plate-ui/code-block-element';
 import { CodeLeaf } from '@/registry/default/plate-ui/code-leaf';
-import { CodeLineElement } from '@/registry/default/plate-ui/code-line-element';
 import { CodeSyntaxLeaf } from '@/registry/default/plate-ui/code-syntax-leaf';
 import { ColumnElement } from '@/registry/default/plate-ui/column-element';
 import { ColumnGroupElement } from '@/registry/default/plate-ui/column-group-element';
@@ -111,7 +109,6 @@ export const viewComponents = {
   [BlockquotePlugin.key]: BlockquoteElement,
   [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),
   [CodeBlockPlugin.key]: CodeBlockElement,
-  [CodeLinePlugin.key]: CodeLineElement,
   [CodePlugin.key]: CodeLeaf,
   [CodeSyntaxPlugin.key]: CodeSyntaxLeaf,
   [ColumnItemPlugin.key]: ColumnElement,

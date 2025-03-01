@@ -24,7 +24,6 @@ import {
 import { BaseBlockquotePlugin } from '@udecode/plate-block-quote';
 import {
   BaseCodeBlockPlugin,
-  BaseCodeLinePlugin,
   BaseCodeSyntaxPlugin,
 } from '@udecode/plate-code-block';
 import { BaseCommentsPlugin } from '@udecode/plate-comments';
@@ -75,7 +74,6 @@ import Prism from 'prismjs';
 import { BlockquoteElementStatic } from '@/registry/default/plate-ui/blockquote-element-static';
 import { CodeBlockElementStatic } from '@/registry/default/plate-ui/code-block-element-static';
 import { CodeLeafStatic } from '@/registry/default/plate-ui/code-leaf-static';
-import { CodeLineElementStatic } from '@/registry/default/plate-ui/code-line-element-static';
 import { CodeSyntaxLeafStatic } from '@/registry/default/plate-ui/code-syntax-leaf-static';
 import { ColumnElementStatic } from '@/registry/default/plate-ui/column-element-static';
 import { ColumnGroupElementStatic } from '@/registry/default/plate-ui/column-group-element-static';
@@ -190,7 +188,6 @@ export function ExportToolbarButton({ children, ...props }: DropdownMenuProps) {
       [BaseBlockquotePlugin.key]: BlockquoteElementStatic,
       [BaseBoldPlugin.key]: withProps(SlateLeaf, { as: 'strong' }),
       [BaseCodeBlockPlugin.key]: CodeBlockElementStatic,
-      [BaseCodeLinePlugin.key]: CodeLineElementStatic,
       [BaseCodePlugin.key]: CodeLeafStatic,
       [BaseCodeSyntaxPlugin.key]: CodeSyntaxLeafStatic,
       [BaseColumnItemPlugin.key]: ColumnElementStatic,

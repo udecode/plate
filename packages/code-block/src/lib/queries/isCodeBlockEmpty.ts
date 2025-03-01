@@ -1,19 +1,23 @@
 import { type SlateEditor, NodeApi } from '@udecode/plate';
 
-import { getCodeLineEntry } from './getCodeLineEntry';
+import { BaseCodeBlockPlugin } from '../BaseCodeBlockPlugin';
 
 /** Is the selection inside an empty code block */
 export const isCodeBlockEmpty = (editor: SlateEditor) => {
-  const { codeBlock } = getCodeLineEntry(editor) ?? {};
+  const { selection } = editor;
+
+  if (!selection) return false;
+
+  // Find the code block containing the selection
+  const [codeBlock] = editor.api.nodes({
+    at: selection,
+    match: { type: editor.getType(BaseCodeBlockPlugin) },
+  });
 
   if (!codeBlock) return false;
 
-  const codeLines = Array.from(NodeApi.children(editor, codeBlock[1]));
+  const [node] = codeBlock;
 
-  if (codeLines.length === 0) return true;
-  if (codeLines.length > 1) return false;
-
-  const firstCodeLineNode = codeLines[0][0];
-
-  return !NodeApi.string(firstCodeLineNode);
+  // Check if the code block has no content
+  return !NodeApi.string(node);
 };

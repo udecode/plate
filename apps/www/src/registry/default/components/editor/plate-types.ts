@@ -4,10 +4,7 @@ import type React from 'react';
 
 import type { TElement, TText } from '@udecode/plate';
 import type { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import type {
-  CodeBlockPlugin,
-  CodeLinePlugin,
-} from '@udecode/plate-code-block/react';
+import type { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import type { TCommentText } from '@udecode/plate-comments';
 import type { TExcalidrawElement } from '@udecode/plate-excalidraw';
 import type { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
@@ -60,13 +57,8 @@ export interface MyBlockquoteElement extends MyBlockElement {
 }
 
 export interface MyCodeBlockElement extends MyBlockElement {
-  children: MyCodeLineElement[];
-  type: typeof CodeBlockPlugin.key;
-}
-
-export interface MyCodeLineElement extends TElement {
   children: PlainText[];
-  type: typeof CodeLinePlugin.key;
+  type: typeof CodeBlockPlugin.key;
 }
 
 export interface MyExcalidrawElement

@@ -15,7 +15,6 @@ import {
 import { BaseBlockquotePlugin } from '@udecode/plate-block-quote';
 import {
   BaseCodeBlockPlugin,
-  BaseCodeLinePlugin,
   BaseCodeSyntaxPlugin,
 } from '@udecode/plate-code-block';
 import { BaseHeadingPlugin, HEADING_KEYS } from '@udecode/plate-heading';
@@ -34,7 +33,6 @@ import {
 import { BlockquoteElementStatic } from './blockquote-element-static';
 import { CodeBlockElementStatic } from './code-block-element-static';
 import { CodeLeafStatic } from './code-leaf-static';
-import { CodeLineElementStatic } from './code-line-element-static';
 import { CodeSyntaxLeafStatic } from './code-syntax-leaf-static';
 import { EditorStatic } from './editor-static';
 import { HeadingElementStatic } from './heading-element-static';
@@ -46,7 +44,6 @@ const components = {
   [BaseBlockquotePlugin.key]: BlockquoteElementStatic,
   [BaseBoldPlugin.key]: withProps(SlateLeaf, { as: 'strong' }),
   [BaseCodeBlockPlugin.key]: CodeBlockElementStatic,
-  [BaseCodeLinePlugin.key]: CodeLineElementStatic,
   [BaseCodePlugin.key]: CodeLeafStatic,
   [BaseCodeSyntaxPlugin.key]: CodeSyntaxLeafStatic,
   [BaseHorizontalRulePlugin.key]: HrElementStatic,
@@ -64,7 +61,6 @@ const plugins = [
   BaseBlockquotePlugin,
   BaseBoldPlugin,
   BaseCodeBlockPlugin,
-  BaseCodeLinePlugin,
   BaseCodePlugin,
   BaseCodeSyntaxPlugin,
   BaseItalicPlugin,

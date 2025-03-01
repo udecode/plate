@@ -1,210 +1,131 @@
-import { useEffect } from 'react';
+import type { DecoratedRange, PluginConfig, TText } from '@udecode/plate';
+import type { createLowlight } from 'lowlight';
 
-import type { BundledLanguage, BundledTheme, ThemedToken } from 'shiki';
-
-import { type DecoratedRange, type TElement, NodeApi } from '@udecode/plate';
-import { type PlateEditor, Key, toPlatePlugin } from '@udecode/plate/react';
+import { Key, toPlatePlugin, toTPlatePlugin } from '@udecode/plate/react';
 
 import type { TCodeBlockElement } from '../lib';
 
 import {
   BaseCodeBlockPlugin,
-  BaseCodeLinePlugin,
   BaseCodeSyntaxPlugin,
 } from '../lib/BaseCodeBlockPlugin';
-import { throttleHighlighting, tokenizeCode } from './createShikiService';
 import { onKeyDownCodeBlock } from './onKeyDownCodeBlock';
 
-export const CodeLinePlugin = toPlatePlugin(BaseCodeLinePlugin);
+// Helper function to get highlight nodes from Lowlight result
+function getHighlightNodes(result: any) {
+  return result.value || result.children || [];
+}
+
+// Helper function to parse nodes from Lowlight's hast tree
+function parseNodes(
+  nodes: any[],
+  className: string[] = []
+): { classes: string[]; text: string }[] {
+  return nodes.flatMap((node) => {
+    const classes = [
+      ...className,
+      ...(node.properties ? node.properties.className : []),
+    ];
+    if (node.children) {
+      return parseNodes(node.children, classes);
+    }
+    return { classes, text: node.value };
+  });
+}
+
+// Helper function to map position in the overall code string to Slate's {path, offset}
+function positionToPoint(
+  p: number,
+  path: number[],
+  text: string
+): { offset: number; path: number[] } | null {
+  if (p <= text.length) {
+    return { offset: p, path };
+  }
+  return null;
+}
+
 export const CodeSyntaxPlugin = toPlatePlugin(BaseCodeSyntaxPlugin);
 
-type CodeDecoration = DecoratedRange & {
-  [BaseCodeSyntaxPlugin.key]: true;
-  token: Pick<ThemedToken, 'bgColor' | 'color' | 'fontStyle'>;
-};
-
-// Throttle state per block
-interface ThrottleState {
-  nextAllowedTime: number;
-  timeoutId?: NodeJS.Timeout;
-}
-const throttleControls = new Map<string, ThrottleState>();
-
-const updateTokens = async (
-  editor: PlateEditor,
-  node: TCodeBlockElement & { id: string }
-) => {
-  const options = editor.getOptions(CodeBlockPlugin);
-  const langName = (node.lang as BundledLanguage) ?? 'plaintext';
-  const code = node.children.map((child) => NodeApi.string(child)).join('\n');
-
-  // Mark as dirty immediately
-  const annotations = options.annotations?.[node.id];
-  if (annotations) {
-    editor.setOption(CodeBlockPlugin, 'annotations', {
-      ...options.annotations,
-      [node.id]: {
-        ...annotations,
-        dirty: true,
-      },
-    });
+export type CodeBlockConfig = PluginConfig<
+  'code_block',
+  {
+    /**
+     * Lowlight instance to use for highlighting. If not provided, syntax
+     * highlighting will be disabled.
+     */
+    lowlight: ReturnType<typeof createLowlight> | null;
   }
-
-  // Perform highlighting
-  const performHighlight = async () => {
-    try {
-      const tokens = await tokenizeCode(
-        code,
-        langName,
-        options.theme as BundledTheme
-      );
-
-      // Update tokens in plugin options
-      editor.setOption(CodeBlockPlugin, 'annotations', {
-        ...editor.getOptions(CodeBlockPlugin).annotations,
-        [node.id]: {
-          dirty: false,
-          tokens,
-        },
-      });
-
-      // Trigger redecorate
-      editor.api.redecorate();
-    } catch (error) {
-      console.error('Shiki highlighting error:', error);
-    }
-  };
-
-  // Get or create throttle control for this block
-  const control = throttleControls.get(node.id) || {
-    nextAllowedTime: 0,
-    timeoutId: undefined,
-  };
-  throttleControls.set(node.id, control);
-
-  // If delay is 0, perform highlighting immediately
-  if (options.delay === 0) {
-    await performHighlight();
-    return;
-  }
-
-  // Otherwise, use throttling
-  throttleHighlighting(performHighlight, control, options.delay!);
-};
+>;
 
 /** Enables support for pre-formatted code blocks. */
-export const CodeBlockPlugin = toPlatePlugin(BaseCodeBlockPlugin, {
-  handlers: {
-    onKeyDown: onKeyDownCodeBlock,
-  },
-  plugins: [CodeLinePlugin, CodeSyntaxPlugin],
-  decorate: ({ editor, entry: [node, path], getOptions, type }) => {
-    const options = getOptions();
+export const CodeBlockPlugin = toTPlatePlugin<CodeBlockConfig>(
+  BaseCodeBlockPlugin,
+  {
+    handlers: {
+      onKeyDown: onKeyDownCodeBlock,
+    },
+    options: {
+      lowlight: null,
+    },
+    plugins: [CodeSyntaxPlugin],
+    decorate: ({ editor, entry: [node, path], getOptions, type }) => {
+      const options = getOptions();
+      if (!options.lowlight || node.type !== type) return [];
 
-    if (!options.syntax || node.type !== type) {
-      return [];
-    }
-
-    // Get annotations for this block using block id
-    const blockAnnotations = options.annotations?.[(node as any).id];
-    if (!blockAnnotations?.tokens) {
-      return [];
-    }
-
-    // Return cached decorations if available and block is not dirty
-    if (!blockAnnotations.dirty && blockAnnotations.decorations) {
-      return blockAnnotations.decorations;
-    }
-
-    // Map annotations to line-specific decorations
-    const decorations: CodeDecoration[] = [];
-
-    // Process each line directly from node.children
-    (node.children as TElement[]).forEach((line, lineIndex) => {
-      const linePath = [...path, lineIndex];
-      const lineTokens = blockAnnotations.tokens[lineIndex] ?? [];
-      let offset = 0;
-
-      lineTokens.forEach((token) => {
-        if (token.content) {
-          const range = {
-            anchor: {
-              offset,
-              path: linePath,
-            },
-            focus: {
-              offset: offset + token.content.length,
-              path: linePath,
-            },
-          };
-
-          const decoration: CodeDecoration = {
-            ...range,
-            [BaseCodeSyntaxPlugin.key]: true,
-            token: {
-              bgColor: token.bgColor,
-              color: token.color,
-              fontStyle: token.fontStyle,
-            },
-          };
-
-          decorations.push(decoration);
-          offset += token.content.length;
-        }
-      });
-    });
-
-    // Cache the computed decorations
-    editor.setOption(CodeBlockPlugin, 'annotations', {
-      ...options.annotations,
-      [(node as any).id]: {
-        ...blockAnnotations,
-        decorations,
-      },
-    });
-
-    return decorations;
-  },
-  useHooks: ({ editor, type }) => {
-    useEffect(() => {
-      // Initialize highlighter with all languages from code blocks
-      const nodes = [
-        ...editor.api.nodes({
-          at: [],
-          match: { type },
-        }),
-      ];
-
-      // Process all code blocks
-      for (const [node] of nodes) {
-        void updateTokens(editor, node as any);
+      const lowlight = options.lowlight!;
+      if (!lowlight) {
+        return [];
       }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-  },
-})
-  .overrideEditor(({ editor, tf: { normalizeNode }, type }) => ({
-    transforms: {
-      normalizeNode(entry, options) {
-        const [node] = entry;
 
-        if (node.type === type) {
-          console.log('HI??');
-          void updateTokens(editor, node as any);
+      const code = (node.children as TText[])[0].text;
+      const language = (node as TCodeBlockElement).lang;
+
+      let highlighted;
+      try {
+        if (!language || language === 'auto') {
+          highlighted = lowlight.highlightAuto(code);
+        } else {
+          highlighted = lowlight.highlight(language, code);
         }
+      } catch (error) {
+        editor.api.debug.error(
+          'Highlighting error:' + (error as any),
+          'CODE_BLOCK_HIGHLIGHT'
+        );
+        highlighted = lowlight.highlightAuto(code); // Fallback to auto-detection
+      }
 
-        normalizeNode(entry, options);
+      const tokens = parseNodes(getHighlightNodes(highlighted));
+      const decorations: DecoratedRange[] = [];
+      let from = 0;
+
+      for (const token of tokens) {
+        const to = from + token.text.length;
+        const start = positionToPoint(from, path, code);
+        const end = positionToPoint(to, path, code);
+        if (start && end) {
+          decorations.push({
+            anchor: start,
+            className: token.classes.join(' '),
+            [CodeSyntaxPlugin.key]: true,
+            focus: end,
+          } as any);
+        }
+        from = to;
+      }
+
+      return decorations;
+    },
+  }
+).extend(({ editor, plugin }) => ({
+  shortcuts: {
+    toggleCodeBlock: {
+      keys: [[Key.Mod, Key.Alt, '8']],
+      preventDefault: true,
+      handler: () => {
+        editor.tf.toggleBlock(editor.getType(plugin));
       },
     },
-  }))
-  .extend(({ editor, plugin }) => ({
-    shortcuts: {
-      toggleCodeBlock: {
-        keys: [[Key.Mod, Key.Alt, '8']],
-        preventDefault: true,
-        handler: () => {
-          editor.tf.toggleBlock(editor.getType(plugin));
-        },
-      },
-    },
-  }));
+  },
+}));

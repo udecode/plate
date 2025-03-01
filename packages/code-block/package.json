@@ -49,11 +49,9 @@
     "test:watch": "yarn p:test:watch",
     "typecheck": "yarn p:typecheck"
   },
-  "dependencies": {
-    "shiki": "3.1.0"
-  },
   "devDependencies": {
-    "@udecode/plate": "workspace:^"
+    "@udecode/plate": "workspace:^",
+    "lowlight": "^3.3.0"
   },
   "peerDependencies": {
     "@udecode/plate": ">=45.0.9",

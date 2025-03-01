@@ -1,61 +1,71 @@
 import type { KeyboardHandler } from '@udecode/plate/react';
 
-import { type TElement, Hotkeys, isHotkey } from '@udecode/plate';
-
-import { BaseCodeLinePlugin } from '../lib';
-import { getCodeLineEntry } from '../lib/queries/getCodeLineEntry';
-import { indentCodeLine } from '../lib/transforms/indentCodeLine';
-import { outdentCodeLine } from '../lib/transforms/outdentCodeLine';
+import { Hotkeys, isHotkey } from '@udecode/plate';
 
 /**
- * - Shift+Tab: outdent code line.
- * - Tab: indent code line.
+ * Handles keyboard events in code blocks.
+ *
+ * - Tab: insert tab character
+ * - Shift+Tab: remove tab character
+ * - Mod+A: select entire code block
  */
-export const onKeyDownCodeBlock: KeyboardHandler = ({ editor, event }) => {
+export const onKeyDownCodeBlock: KeyboardHandler = ({
+  editor,
+  event,
+  type,
+}) => {
   if (event.defaultPrevented) return;
 
   const isTab = Hotkeys.isTab(editor, event);
   const isUntab = Hotkeys.isUntab(editor, event);
 
-  if (isTab || isUntab) {
-    const _codeLines = editor.api.nodes<TElement>({
-      match: { type: editor.getType(BaseCodeLinePlugin) },
+  if (isTab) {
+    // Insert tab character
+    event.preventDefault();
+    editor.tf.insertText('\t');
+  } else if (isUntab) {
+    // Remove tab character if at beginning of line
+    event.preventDefault();
+    const { selection } = editor;
+    if (!selection) return;
+
+    const startOfLine = editor.api.before(selection, { unit: 'line' });
+    if (!startOfLine) return;
+
+    const textBefore = editor.api.string({
+      anchor: startOfLine,
+      focus: selection.anchor,
     });
-    const codeLines = Array.from(_codeLines);
 
-    if (codeLines.length > 0) {
-      event.preventDefault();
-      const [, firstLinePath] = codeLines[0];
-      const codeBlock = editor.api.parent<TElement>(firstLinePath);
-
-      if (!codeBlock) return;
-
-      editor.tf.withoutNormalizing(() => {
-        for (const codeLine of codeLines) {
-          if (isUntab) {
-            outdentCodeLine(editor, { codeBlock, codeLine });
-          }
-          // indent with tab
-          if (isTab) {
-            indentCodeLine(editor, { codeBlock, codeLine });
-          }
-        }
+    if (textBefore.startsWith('\t')) {
+      editor.tf.delete({
+        at: {
+          anchor: startOfLine,
+          focus: {
+            offset: startOfLine.offset + 1,
+            path: startOfLine.path,
+          },
+        },
+        unit: 'character',
       });
     }
   }
+
   if (isHotkey('mod+a', event)) {
-    const res = getCodeLineEntry(editor, {});
+    const { selection } = editor;
+    if (!selection) return;
 
-    if (!res) return;
+    // Find the code block containing the selection
+    const [match] = editor.api.nodes({
+      at: selection,
+      match: { type },
+    });
 
-    const { codeBlock } = res;
-    const [, codeBlockPath] = codeBlock;
+    if (!match) return;
+    const [, path] = match;
 
-    if (editor.api.isAt({ end: true }) && editor.api.isAt({ start: true }))
-      return;
-
-    // select the whole code block
-    editor.tf.select(codeBlockPath);
+    // Select the whole code block
+    editor.tf.select(path);
 
     event.preventDefault();
     event.stopPropagation();

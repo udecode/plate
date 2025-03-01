@@ -17,7 +17,6 @@ import {
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import {
   CodeBlockPlugin,
-  CodeLinePlugin,
   CodeSyntaxPlugin,
 } from '@udecode/plate-code-block/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
@@ -53,7 +52,6 @@ import { tablePlugin } from '@/registry/default/components/editor/plugins/table-
 import { BlockquoteElement } from '@/registry/default/plate-ui/blockquote-element';
 import { CodeBlockElement } from '@/registry/default/plate-ui/code-block-element';
 import { CodeLeaf } from '@/registry/default/plate-ui/code-leaf';
-import { CodeLineElement } from '@/registry/default/plate-ui/code-line-element';
 import { CodeSyntaxLeaf } from '@/registry/default/plate-ui/code-syntax-leaf';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 import { HeadingElement } from '@/registry/default/plate-ui/heading-element';
@@ -177,7 +175,6 @@ export default function MarkdownDemo() {
           [BlockquotePlugin.key]: BlockquoteElement,
           [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),
           [CodeBlockPlugin.key]: CodeBlockElement,
-          [CodeLinePlugin.key]: CodeLineElement,
           [CodePlugin.key]: CodeLeaf,
           [CodeSyntaxPlugin.key]: CodeSyntaxLeaf,
           [HEADING_KEYS.h1]: withProps(HeadingElement, { variant: 'h1' }),

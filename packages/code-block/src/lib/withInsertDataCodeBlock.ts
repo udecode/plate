@@ -1,7 +1,5 @@
 import type { OverrideEditor, TElement } from '@udecode/plate';
 
-import { BaseCodeLinePlugin } from './BaseCodeBlockPlugin';
-
 export const withInsertDataCodeBlock: OverrideEditor = ({
   editor,
   tf: { insertData },
@@ -11,41 +9,24 @@ export const withInsertDataCodeBlock: OverrideEditor = ({
     insertData(data) {
       const text = data.getData('text/plain');
       const vscodeDataString = data.getData('vscode-editor-data');
-      const codeLineType = editor.getType(BaseCodeLinePlugin);
 
       // Handle VSCode paste with language
       if (vscodeDataString) {
         try {
           const vscodeData = JSON.parse(vscodeDataString);
-          const lines = text.split('\n');
 
           // Check if we're in a code block
           const [blockAbove] = editor.api.block<TElement>() ?? [];
           const isInCodeBlock =
-            blockAbove &&
-            [codeBlockType, codeLineType].includes(blockAbove?.type);
+            blockAbove && blockAbove?.type === codeBlockType;
 
           if (isInCodeBlock) {
-            // If in code block, insert first line as text at cursor
-            if (lines[0]) {
-              editor.tf.insertText(lines[0]);
-            }
-
-            // Insert remaining lines as new code lines
-            if (lines.length > 1) {
-              const nodes = lines.slice(1).map((line) => ({
-                children: [{ text: line }],
-                type: codeLineType,
-              }));
-              editor.tf.insertNodes(nodes);
-            }
+            // If in code block, insert text at cursor
+            editor.tf.insertText(text);
           } else {
             // Create new code block
             const node = {
-              children: lines.map((line) => ({
-                children: [{ text: line }],
-                type: codeLineType,
-              })),
+              children: [{ text }],
               lang: vscodeData?.mode,
               type: codeBlockType,
             };
@@ -59,28 +40,10 @@ export const withInsertDataCodeBlock: OverrideEditor = ({
         } catch (error) {}
       }
 
-      // Handle plain text paste into code block only if there are line breaks
+      // Handle plain text paste into code block
       const [blockAbove] = editor.api.block<TElement>() ?? [];
-      if (
-        blockAbove &&
-        [codeBlockType, codeLineType].includes(blockAbove?.type) &&
-        text?.includes('\n')
-      ) {
-        const lines = text.split('\n');
-
-        // Insert first line as text at cursor
-        if (lines[0]) {
-          editor.tf.insertText(lines[0]);
-        }
-
-        // Insert remaining lines as new code lines
-        if (lines.length > 1) {
-          const nodes = lines.slice(1).map((line) => ({
-            children: [{ text: line }],
-            type: codeLineType,
-          }));
-          editor.tf.insertNodes(nodes);
-        }
+      if (blockAbove && blockAbove?.type === codeBlockType) {
+        editor.tf.insertText(text);
         return;
       }
 

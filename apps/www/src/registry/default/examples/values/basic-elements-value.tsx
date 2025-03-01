@@ -15,11 +15,11 @@ export const basicElementsValue: any = (
       Create blockquotes to emphasize important information or highlight quotes
       from external sources.
     </hblockquote>
-    <hcodeblock lang="javascript">
-      <hcodeline>// Use code blocks to showcase code snippets</hcodeline>
-      <hcodeline>{`function greet() {`}</hcodeline>
-      <hcodeline>{`  console.info('Hello World!');`}</hcodeline>
-      <hcodeline>{`}`}</hcodeline>
+    <hcodeblock>
+      {`// Use code blocks to showcase code snippets
+function greet() {
+  console.info('Hello World!');
+}`}
     </hcodeblock>
   </fragment>
 );
