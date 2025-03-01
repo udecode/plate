@@ -1,9 +1,7 @@
 import type { BuiltinTheme, ThemedToken } from 'shiki';
 
 import {
-  type DecoratedRange,
   type PluginConfig,
-  type TElement,
   createSlatePlugin,
   createTSlatePlugin,
   HtmlPlugin,
@@ -15,11 +13,20 @@ import { withCodeBlock } from './withCodeBlock';
 export type CodeBlockConfig = PluginConfig<
   'code_block',
   {
-    // Store shiki tokens per block
     annotations?: Record<
       string, // block id
-      ThemedToken[][]
+      {
+        tokens: ThemedToken[][];
+        decorations?: any[]; // Cache for computed decorations
+        dirty?: boolean;
+      }
     >;
+    /**
+     * Minimum time (in milliseconds) between highlight operations.
+     *
+     * @default 0 (no throttling)
+     */
+    delay?: number;
     syntax?: boolean;
     syntaxPopularFirst?: boolean;
     theme?: BuiltinTheme | string;
@@ -56,55 +63,10 @@ export const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
   node: { isElement: true },
   options: {
     annotations: {},
+    delay: 0,
     syntax: true,
     syntaxPopularFirst: false,
   },
   parsers: { html: { deserializer: htmlDeserializerCodeBlock } },
   plugins: [BaseCodeLinePlugin, BaseCodeSyntaxPlugin],
-  decorate: ({ editor, entry: [node, path], getOptions, type }) => {
-    const options = getOptions();
-
-    if (!options.syntax || node.type !== type) {
-      return [];
-    }
-
-    // Get annotations for this block using block id
-    const blockTokens = options.annotations?.[(node as any).id] ?? [];
-
-    // Map annotations to line-specific decorations
-    const decorations: DecoratedRange[] = [];
-
-    // Process each line directly from node.children
-    (node.children as TElement[]).forEach((_, lineIndex) => {
-      const linePath = [...path, lineIndex];
-      const lineTokens = blockTokens[lineIndex] ?? [];
-      let offset = 0;
-
-      lineTokens.forEach((token) => {
-        if (token.content) {
-          decorations.push({
-            anchor: {
-              offset,
-              path: linePath,
-            },
-            [BaseCodeSyntaxPlugin.key]: true,
-            focus: {
-              offset: offset + token.content.length,
-              path: linePath,
-            },
-            token: {
-              bgColor: token.bgColor,
-              color: token.color,
-              fontStyle: token.fontStyle,
-            },
-          } as any);
-          offset += token.content.length;
-        }
-      });
-    });
-
-    console.log(decorations);
-
-    return decorations;
-  },
 }).overrideEditor(withCodeBlock);

@@ -13,8 +13,6 @@ import { BracesIcon } from 'lucide-react';
 import { Button } from './button';
 import { CodeBlockCombobox } from './code-block-combobox';
 
-import './code-block-element.css';
-
 export const CodeBlockElement = withRef<typeof PlateElement>(
   ({ children, className, ...props }, ref) => {
     const { element } = props;
@@ -25,6 +23,7 @@ export const CodeBlockElement = withRef<typeof PlateElement>(
       <PlateElement
         ref={ref}
         className={cn(className, 'py-1', state.className)}
+        spellCheck={false}
         {...props}
       >
         <pre className="overflow-x-auto rounded-md bg-muted px-6 py-8 font-mono text-sm leading-[normal] [tab-size:2]">

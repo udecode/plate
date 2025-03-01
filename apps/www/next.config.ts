@@ -3,8 +3,6 @@ import type { NextConfig } from 'next';
 import { globSync } from 'glob';
 
 const nextConfig = async (phase: string) => {
-
-
   const config: NextConfig = {
     // https://nextjs.org/docs/basic-features/image-optimization#domains
     images: {
@@ -41,8 +39,7 @@ const nextConfig = async (phase: string) => {
     // https://nextjs.org/docs/api-reference/next.config.js/react-strict-mod
     reactStrictMode: true,
 
-     
-    staticPageGenerationTimeout: 1200,
+    serverExternalPackages: ['ts-morph', 'shiki', 'typescript'],
 
     // typescript: {
     //   ignoreBuildErrors: true,
@@ -50,6 +47,8 @@ const nextConfig = async (phase: string) => {
     // eslint: {
     //   ignoreDuringBuilds: true,
     // },
+
+    staticPageGenerationTimeout: 1200,
 
     rewrites: async () => {
       return [
@@ -71,7 +70,7 @@ const nextConfig = async (phase: string) => {
           crypto: require.resolve('crypto-browserify'),
           stream: require.resolve('stream-browserify'),
         };
-  
+
         config.plugins.push(
           new webpack.ProvidePlugin({
             process: 'process/browser',

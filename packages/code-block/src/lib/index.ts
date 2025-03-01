@@ -3,7 +3,6 @@
  */
 
 export * from './BaseCodeBlockPlugin';
-export * from './createShikiService';
 export * from './types';
 export * from './withCodeBlock';
 export * from './withInsertDataCodeBlock';

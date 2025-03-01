@@ -10,6 +10,7 @@ export const basicNodesPlugins = [
   BlockquotePlugin,
   CodeBlockPlugin.configure({
     options: {
+      delay: 100,
       syntax: true,
       theme: 'github-light',
     },
