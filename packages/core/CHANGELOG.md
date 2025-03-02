@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 46.0.2
+
+### Patch Changes
+
+- [`50338ca`](https://github.com/udecode/plate/commit/50338cabfa36726f95be46fa0b51f64a2f1665c3) by [@zbeyens](https://github.com/zbeyens) – Fix error throwing after a large amount of nodes/re-rendering
+
 ## 45.0.9
 
 ### Patch Changes
