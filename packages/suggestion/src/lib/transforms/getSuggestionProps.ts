@@ -1,20 +1,13 @@
 import type { SlateEditor } from '@udecode/plate';
 
-import { BaseSuggestionPlugin, SUGGESTION_KEYS } from '../BaseSuggestionPlugin';
+import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getSuggestionKey } from '../utils/index';
-
-// DEPRECATED
-export const getSuggestionCurrentUserKey = (editor: SlateEditor) => {
-  const { currentUserId } = editor.getOptions(BaseSuggestionPlugin);
-
-  return getSuggestionKey(currentUserId!);
-};
 
 export const getSuggestionProps = (
   editor: SlateEditor,
   id: string,
   {
-    createdAt,
+    createdAt = Date.now(),
     suggestionDeletion,
     suggestionUpdate,
   }: {
@@ -23,19 +16,21 @@ export const getSuggestionProps = (
     suggestionUpdate?: any;
   } = {}
 ) => {
+  const type = suggestionDeletion
+    ? 'remove'
+    : suggestionUpdate
+      ? 'update'
+      : 'insert';
+
   const res = {
     [BaseSuggestionPlugin.key]: true,
-    [getSuggestionCurrentUserKey(editor)]: true,
-    [SUGGESTION_KEYS.createdAt]: createdAt,
-    [SUGGESTION_KEYS.id]: id,
+    [getSuggestionKey(id)]: {
+      id,
+      createdAt,
+      type,
+      userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
+    },
   };
-
-  if (suggestionDeletion) {
-    res.suggestionDeletion = true;
-  }
-  if (suggestionUpdate) {
-    res.suggestionUpdate = suggestionUpdate;
-  }
 
   return res;
 };
