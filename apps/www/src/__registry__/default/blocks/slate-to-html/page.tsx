@@ -70,6 +70,7 @@ import path from 'node:path';
 
 import { H3 } from '@/components/typography';
 import {
+  EditorClient,
   ExportHtmlButton,
   HtmlIframe,
 } from '@/registry/default/components/editor/slate-to-html';
@@ -329,10 +330,10 @@ export default async function SlateToHtmlBlock() {
 
   return (
     <div className="grid grid-cols-3 px-4">
-      {/* <div className="p-2">
+      <div className="p-2">
         <H3>Editor</H3>
         <EditorClient value={createValue()} />
-      </div> */}
+      </div>
 
       <div className="p-2">
         <H3>EditorStatic</H3>
