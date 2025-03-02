@@ -66,7 +66,9 @@ export const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
   },
   parsers: { html: { deserializer: htmlDeserializerCodeBlock } },
   plugins: [BaseCodeLinePlugin, BaseCodeSyntaxPlugin],
-  decorate: ({ editor, entry: [node, path], type }) => {
+  decorate: ({ editor, entry: [node, path], getOptions, type }) => {
+    if (!getOptions().lowlight) return [];
+
     const codeLineType = editor.getType(BaseCodeLinePlugin);
 
     // Initialize decorations for the code block, we assume code line decorate will be called next.
@@ -88,7 +90,7 @@ export const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
     ({ editor, getOptions, tf: { apply, normalizeNode }, type }) => ({
       transforms: {
         apply(operation) {
-          if (operation.type === 'set_node') {
+          if (getOptions().lowlight && operation.type === 'set_node') {
             const entry = editor.api.node(operation.path);
 
             if (entry?.[0].type === type && operation.newProperties?.lang) {
