@@ -6342,7 +6342,7 @@ __metadata:
   dependencies:
     "@udecode/plate-combobox": "npm:44.0.0"
     "@udecode/plate-markdown": "npm:45.0.4"
-    "@udecode/plate-selection": "npm:45.0.6"
+    "@udecode/plate-selection": "npm:45.1.0"
     ai: "npm:^3.4.33"
     lodash: "npm:^4.17.21"
   peerDependencies:
@@ -6458,7 +6458,7 @@ __metadata:
   resolution: "@udecode/plate-code-block@workspace:packages/code-block"
   dependencies:
     "@udecode/plate": "workspace:^"
-    prismjs: "npm:^1.29.0"
+    lowlight: "npm:^3.3.0"
   peerDependencies:
     "@udecode/plate": ">=45.0.9"
     react: ">=18.0.0"
@@ -6945,7 +6945,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-selection@npm:45.0.6, @udecode/plate-selection@workspace:^, @udecode/plate-selection@workspace:packages/selection":
+"@udecode/plate-selection@npm:45.1.0, @udecode/plate-selection@workspace:^, @udecode/plate-selection@workspace:packages/selection":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-selection@workspace:packages/selection"
   dependencies:
@@ -12181,6 +12181,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"highlight.js@npm:~11.11.0":
+  version: 11.11.1
+  resolution: "highlight.js@npm:11.11.1"
+  checksum: 10c0/40f53ac19dac079891fcefd5bd8a21cf2e8931fd47da5bd1dca73b7e4375c1defed0636fc39120c639b9c44119b7d110f7f0c15aa899557a5a1c8910f3c0144c
+  languageName: node
+  linkType: hard
+
 "highlightjs-vue@npm:^1.0.0":
   version: 1.0.0
   resolution: "highlightjs-vue@npm:1.0.0"
@@ -14347,6 +14354,17 @@ __metadata:
   dependencies:
     tslib: "npm:^2.0.3"
   checksum: 10c0/3d925e090315cf7dc1caa358e0477e186ffa23947740e4314a7429b6e62d72742e0bbe7536a5ae56d19d7618ce998aba05caca53c2902bd5742fdca5fc57fd7b
+  languageName: node
+  linkType: hard
+
+"lowlight@npm:3.3.0, lowlight@npm:^3.3.0":
+  version: 3.3.0
+  resolution: "lowlight@npm:3.3.0"
+  dependencies:
+    "@types/hast": "npm:^3.0.0"
+    devlop: "npm:^1.0.0"
+    highlight.js: "npm:~11.11.0"
+  checksum: 10c0/9b796fa8443b0334ebf18bc57387c9ee31432d8c263cf2089d23e1087c653d708447284e0647bf993cb2cdc810e0b268a28f51ea27b4a624893b97bdd3f025f4
   languageName: node
   linkType: hard
 
@@ -17276,7 +17294,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prismjs@npm:1.29.0, prismjs@npm:^1.27.0, prismjs@npm:^1.29.0":
+"prismjs@npm:1.29.0, prismjs@npm:^1.27.0":
   version: 1.29.0
   resolution: "prismjs@npm:1.29.0"
   checksum: 10c0/d906c4c4d01b446db549b4f57f72d5d7e6ccaca04ecc670fb85cea4d4b1acc1283e945a9cbc3d81819084a699b382f970e02f9d1378e14af9808d366d9ed7ec6
@@ -21881,6 +21899,7 @@ __metadata:
     html2canvas: "npm:1.4.1"
     jotai: "npm:2.8.4"
     lodash: "npm:4.17.21"
+    lowlight: "npm:3.3.0"
     lucide-react: "npm:0.474.0"
     mdast-util-toc: "npm:7.1.0"
     next: "npm:15.1.6"

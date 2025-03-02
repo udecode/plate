@@ -64,9 +64,9 @@ import {
   BaseTableRowPlugin,
 } from '@udecode/plate-table';
 import { BaseTogglePlugin } from '@udecode/plate-toggle';
+import { all, createLowlight } from 'lowlight';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import Prism from 'prismjs';
 
 import { H3 } from '@/components/typography';
 import {
@@ -147,11 +147,7 @@ const getCachedTailwindCss = React.cache(async () => {
   return await fs.readFile(cssPath, 'utf8');
 });
 
-const getCachedPrismCss = React.cache(async () => {
-  const cssPath = path.join(process.cwd(), 'public', 'prism.css');
-
-  return await fs.readFile(cssPath, 'utf8');
-});
+const lowlight = createLowlight(all);
 
 export default async function SlateToHtmlBlock() {
   const components = {
@@ -243,7 +239,7 @@ export default async function SlateToHtmlBlock() {
       BaseDatePlugin,
       BaseCodeBlockPlugin.configure({
         options: {
-          prism: Prism,
+          lowlight,
         },
       }),
       BaseIndentPlugin.extend({
@@ -311,7 +307,6 @@ export default async function SlateToHtmlBlock() {
   });
 
   const tailwindCss = await getCachedTailwindCss();
-  const prismCss = await getCachedPrismCss();
   const katexCDN = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.18/dist/katex.css" integrity="sha384-9PvLvaiSKCPkFKB1ZsEoTjgnJn+O3KvEwtsz37/XrkYft3DTk2gHdYvd9oWgW3tV" crossorigin="anonymous">`;
 
   // const cookieStore = await cookies();
@@ -329,7 +324,6 @@ export default async function SlateToHtmlBlock() {
   const html = createHtmlDocument({
     editorHtml,
     katexCDN,
-    prismCss,
     tailwindCss,
     theme,
   });

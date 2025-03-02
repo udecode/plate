@@ -39,15 +39,51 @@ npm install @udecode/plate-block-quote @udecode/plate-code-block @udecode/plate-
 
 ## Usage
 
+### Basic Setup
+
 ```tsx
 import { BasicElementsPlugin, CodeBlockPlugin } from '@udecode/plate-basic-elements/react';
-import Prism from 'prismjs';
+import { all, createLowlight } from 'lowlight';
+
+// Create a lowlight instance with all languages
+const lowlight = createLowlight(all);
 
 const plugins = [
   // ...otherPlugins,
   BasicElementsPlugin.configurePlugin(CodeBlockPlugin, {
     options: {
-      prism: Prism,
+      lowlight,
+    },
+  }),
+];
+```
+
+### Custom Language Setup
+
+For optimized bundle size, you can register only specific languages:
+
+```tsx
+import { createLowlight } from 'lowlight';
+import css from 'highlight.js/lib/languages/css';
+import js from 'highlight.js/lib/languages/javascript';
+import ts from 'highlight.js/lib/languages/typescript';
+import html from 'highlight.js/lib/languages/xml';
+
+// Create a lowlight instance
+const lowlight = createLowlight();
+
+// Register only the languages you need
+lowlight.register('html', html);
+lowlight.register('css', css);
+lowlight.register('js', js);
+lowlight.register('ts', ts);
+
+const plugins = [
+  BasicElementsPlugin.configurePlugin(CodeBlockPlugin, {
+    options: {
+      lowlight,
+      // Set default language (optional)
+      defaultLanguage: 'js',
     },
   }),
 ];
@@ -88,14 +124,11 @@ Plugin for blockquote elements.
 
 <API name="CodeBlockPlugin">
 <APIOptions>
-  <APIItem name="syntax" type="boolean" optional>
-    Whether syntax highlighting is enabled.
+  <APIItem name="defaultLanguage" type="string | null" optional>
+    Default language to use when no language is specified. Set to null to disable syntax highlighting by default.
   </APIItem>
-  <APIItem name="syntaxPopularFirst" type="boolean" optional>
-    Whether popular syntax should be displayed first.
-  </APIItem>
-  <APIItem name="deserializers" type="string[]" optional>
-    Deserializers for the code block plugin.
+  <APIItem name="lowlight" type="ReturnType<typeof createLowlight> | null" optional>
+    Lowlight instance to use for highlighting. If not provided, syntax highlighting will be disabled.
   </APIItem>
 </APIOptions>
 </API>
@@ -182,62 +215,3 @@ Toggles the code block in the editor.
 
 Unwraps the code block in the editor.
 
-### `useCodeBlockCombobox`
-
-<API name="useCodeBlockCombobox">
-<APIState>
-  <APIItem name="element" type="TCodeBlockElement">
-    The code block element.
-  </APIItem>
-  <APIItem name="setValue" type="function">
-    Set element value callback.
-  </APIItem>
-</APIState>
-
-<APIReturns type="object">
-  <APIItem name="commandItemProps" type="object">
-    Props for the command item.
-  </APIItem>
-  <APIItem name="onSelect" type="function">
-    Function to call when the command item is selected.
-  </APIItem>
-</APIReturns>
-</API>
-
-### `useCodeBlockElementState`
-
-<API name="useCodeBlockElementState">
-<APIParameters>
-  <APIItem name="element" type="TCodeBlockElement">
-    The code block element.
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="object">
-  <APIItem name="className" type="string | false">
-    CSS class name for the code block element, representing the selected language.
-  </APIItem>
-  <APIItem name="syntax" type="boolean | undefined">
-    The syntax plugin option.
-  </APIItem>
-</APIReturns>
-</API>
-
-### `useCodeSyntaxLeaf`
-
-<API name="useCodeSyntaxLeaf">
-<APIOptions type="object">
-  <APIItem name="leaf" type="any">
-    The leaf node representing a code syntax token.
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="object">
-  <APIItem name="tokenProps" type="object">
-    Props for the token.
-  </APIItem>
-  <APIItem name="className" type="string">
-    CSS class name for the token.
-  </APIItem>
-</APIReturns>
-</API>

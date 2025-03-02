@@ -51,6 +51,8 @@ export const DebugPlugin = createTSlatePlugin<DebugConfig>({
     type?: DebugErrorType,
     details?: any
   ) => {
+    if (process.env.NODE_ENV === 'production') return;
+
     const options = getOptions();
 
     if (options.isProduction && level === 'log') return;

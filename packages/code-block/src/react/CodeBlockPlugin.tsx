@@ -7,9 +7,9 @@ import {
 } from '../lib/BaseCodeBlockPlugin';
 import { onKeyDownCodeBlock } from './onKeyDownCodeBlock';
 
-export const CodeLinePlugin = toPlatePlugin(BaseCodeLinePlugin);
-
 export const CodeSyntaxPlugin = toPlatePlugin(BaseCodeSyntaxPlugin);
+
+export const CodeLinePlugin = toPlatePlugin(BaseCodeLinePlugin);
 
 /** Enables support for pre-formatted code blocks. */
 export const CodeBlockPlugin = toPlatePlugin(BaseCodeBlockPlugin, {

@@ -4,4 +4,3 @@
 
 export * from './CodeBlockPlugin';
 export * from './onKeyDownCodeBlock';
-export * from './hooks/index';

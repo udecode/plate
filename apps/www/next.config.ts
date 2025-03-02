@@ -3,8 +3,6 @@ import type { NextConfig } from 'next';
 import { globSync } from 'glob';
 
 const nextConfig = async (phase: string) => {
-
-
   const config: NextConfig = {
     // https://nextjs.org/docs/basic-features/image-optimization#domains
     images: {
@@ -29,20 +27,14 @@ const nextConfig = async (phase: string) => {
     },
     outputFileTracingIncludes: {
       '/api/registry/*': ['./src/registry/**/*'],
-      '/blocks/slate-to-html': ['./public/tailwind.css', './public/prism.css'],
+      '/blocks/slate-to-html': ['./public/tailwind.css'],
       '/docs/*': ['./src/registry/**/*'],
-      '/docs/examples/slate-to-html': [
-        './public/tailwind.css',
-        './public/prism.css',
-      ],
+      '/docs/examples/slate-to-html': ['./public/tailwind.css'],
     },
 
     // Configure domains to allow for optimized image loading.
     // https://nextjs.org/docs/api-reference/next.config.js/react-strict-mod
     reactStrictMode: true,
-
-     
-    staticPageGenerationTimeout: 1200,
 
     // typescript: {
     //   ignoreBuildErrors: true,
@@ -50,6 +42,8 @@ const nextConfig = async (phase: string) => {
     // eslint: {
     //   ignoreDuringBuilds: true,
     // },
+
+    staticPageGenerationTimeout: 1200,
 
     rewrites: async () => {
       return [
@@ -65,13 +59,19 @@ const nextConfig = async (phase: string) => {
     },
 
     webpack: (config, { buildId, dev, isServer, webpack }) => {
+      config.externals.push({
+        shiki: 'shiki',
+        'ts-morph': 'ts-morph',
+        typescript: 'typescript',
+      });
+
       if (!isServer) {
         config.resolve.fallback = {
           ...config.resolve.fallback,
           crypto: require.resolve('crypto-browserify'),
           stream: require.resolve('stream-browserify'),
         };
-  
+
         config.plugins.push(
           new webpack.ProvidePlugin({
             process: 'process/browser',

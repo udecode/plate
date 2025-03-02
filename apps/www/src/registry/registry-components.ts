@@ -169,7 +169,7 @@ const plugins: Registry['items'] = [
       '@udecode/plate-block-quote',
       '@udecode/plate-code-block',
       '@udecode/plate-heading',
-      'prismjs',
+      'lowlight',
     ],
     files: [
       {

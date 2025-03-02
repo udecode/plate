@@ -27,10 +27,7 @@ import {
 } from '@udecode/plate-basic-marks/react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { insertEmptyCodeBlock } from '@udecode/plate-code-block';
-import {
-  CodeBlockPlugin,
-  CodeLinePlugin,
-} from '@udecode/plate-code-block/react';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
@@ -44,10 +41,10 @@ import {
 import { openNextToggles, TogglePlugin } from '@udecode/plate-toggle/react';
 import { ParagraphPlugin } from '@udecode/plate/react';
 
-export const preFormat: AutoformatBlockRule['preFormat'] = (editor) =>
+const preFormat: AutoformatBlockRule['preFormat'] = (editor) =>
   unwrapList(editor);
 
-export const format = (editor: SlateEditor, customFormatting: any) => {
+const format = (editor: SlateEditor, customFormatting: any) => {
   if (editor.selection) {
     const parentEntry = editor.api.parent(editor.selection);
 
@@ -57,15 +54,14 @@ export const format = (editor: SlateEditor, customFormatting: any) => {
 
     if (
       ElementApi.isElement(node) &&
-      !isType(editor, node, CodeBlockPlugin.key) &&
-      !isType(editor, node, CodeLinePlugin.key)
+      !isType(editor, node, CodeBlockPlugin.key)
     ) {
       customFormatting();
     }
   }
 };
 
-export const formatList = (editor: SlateEditor, elementType: string) => {
+const formatList = (editor: SlateEditor, elementType: string) => {
   format(editor, () =>
     toggleList(editor, {
       type: elementType,
@@ -73,7 +69,7 @@ export const formatList = (editor: SlateEditor, elementType: string) => {
   );
 };
 
-export const autoformatMarks: AutoformatRule[] = [
+const autoformatMarks: AutoformatRule[] = [
   {
     match: '***',
     mode: 'mark',
@@ -146,7 +142,7 @@ export const autoformatMarks: AutoformatRule[] = [
   },
 ];
 
-export const autoformatBlocks: AutoformatRule[] = [
+const autoformatBlocks: AutoformatRule[] = [
   {
     match: '# ',
     mode: 'block',
@@ -221,7 +217,7 @@ export const autoformatBlocks: AutoformatRule[] = [
   },
 ];
 
-export const autoformatLists: AutoformatRule[] = [
+const autoformatLists: AutoformatRule[] = [
   {
     match: ['* ', '- '],
     mode: 'block',
@@ -269,6 +265,10 @@ export const autoformatListPlugin = AutoformatPlugin.configure({
       ...autoformatArrow,
       ...autoformatMath,
       ...autoformatLists,
-    ],
+    ].map((rule) => ({
+      ...rule,
+      query: (editor) =>
+        !editor.api.some({ match: { type: editor.getType(CodeBlockPlugin) } }),
+    })),
   },
 });

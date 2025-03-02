@@ -1,6 +1,6 @@
 import { type OverrideEditor, type TElement, NodeApi } from '@udecode/plate';
 
-import { BaseCodeBlockPlugin, BaseCodeLinePlugin } from './BaseCodeBlockPlugin';
+import { BaseCodeLinePlugin } from './BaseCodeBlockPlugin';
 
 function extractCodeLinesFromCodeBlock(node: TElement) {
   return node.children as TElement[];
@@ -9,11 +9,11 @@ function extractCodeLinesFromCodeBlock(node: TElement) {
 export const withInsertFragmentCodeBlock: OverrideEditor = ({
   editor,
   tf: { insertFragment },
+  type: codeBlockType,
 }) => ({
   transforms: {
     insertFragment(fragment) {
       const [blockAbove] = editor.api.block<TElement>() ?? [];
-      const codeBlockType = editor.getType(BaseCodeBlockPlugin);
       const codeLineType = editor.getType(BaseCodeLinePlugin);
 
       function convertNodeToCodeLine(node: TElement): TElement {
