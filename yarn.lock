@@ -6383,7 +6383,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
     "@udecode/plate-block-quote": "npm:44.0.0"
-    "@udecode/plate-code-block": "npm:44.0.0"
+    "@udecode/plate-code-block": "npm:46.0.0"
     "@udecode/plate-heading": "npm:44.0.0"
   peerDependencies:
     "@udecode/plate": ">=45.0.9"
@@ -6453,7 +6453,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-code-block@npm:44.0.0, @udecode/plate-code-block@workspace:^, @udecode/plate-code-block@workspace:packages/code-block":
+"@udecode/plate-code-block@npm:46.0.0, @udecode/plate-code-block@workspace:^, @udecode/plate-code-block@workspace:packages/code-block":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-code-block@workspace:packages/code-block"
   dependencies:
