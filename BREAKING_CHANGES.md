@@ -1,5 +1,111 @@
 For older changelogs, see https://github.com/udecode/plate/blob/main/tooling
 
+# 46.0.0
+
+## @udecode/plate-code-block@46.0.0
+
+### Major Changes
+
+- [#4122](https://github.com/udecode/plate/pull/4122) by [@zbeyens](https://github.com/zbeyens) – Migrated from `prismjs` to `highlight.js` + `lowlight` for syntax highlighting.
+
+  - Fix highlighting multi-lines tokens. Before, line tokens were computed line by line. Now, it's computed once for the whole block.
+  - Bundle size much lower.
+  - `CodeBlockPlugin`: remove `prism` option. Use `lowlight` option instead:
+
+  ```tsx
+  import { all, createLowlight } from 'lowlight';
+
+  const lowlight = createLowlight(all);
+
+  CodeBlockPlugin.configure({
+    options: {
+      lowlight,
+    },
+  });
+  ```
+
+  - New option: `defaultLanguage`
+  - Remove `syntax` option. Just omit `lowlight` option to disable syntax highlighting.
+  - Remove `syntaxPopularFirst` option. Control this behavior in your own components.
+  - Fix pasting code inside code blocks.
+  - Remove `useCodeBlockCombobox`, `useCodeBlockElement`, `useCodeSyntaxLeaf`, `useToggleCodeBlockButton`. The logic has been moved to the components.
+
+# 45.0.0
+
+## @udecode/plate-comments@45.0.0
+
+### Major Changes
+
+- [#4064](https://github.com/udecode/plate/pull/4064) by [@felixfeng33](https://github.com/felixfeng33) – This is a rewrite of the comments plugin removing UI logic (headless).
+
+  **Plugin Options**
+
+  - Removed configuration options from plugin options in favor of component-level control:
+    - `options.comments`
+    - `options.myUserId`
+    - `options.users`
+
+  **Components**
+
+  - Removed legacy components:
+    - `CommentDeleteButton`
+    - `CommentEditActions`
+    - `CommentEditButton`
+    - `CommentEditCancelButton`
+    - `CommentEditSaveButton`
+    - `CommentEditTextarea`
+    - `CommentNewSubmitButton`
+    - `CommentNewTextarea`
+    - `CommentResolveButton`
+    - `CommentsPositioner`
+    - `CommentUserName`
+
+  **API**
+
+  - Removed functions in favor of new API methods:
+    - `findCommentNode` → `api.comment.node()`
+    - `findCommentNodeById` → `api.comment.node({ id })`
+    - `getCommentNodeEntries` → `api.comment.nodes()`
+    - `getCommentNodesById` → `api.comment.nodes({ id })`
+    - `removeCommentMark` → `tf.comment.remove()`
+    - `unsetCommentNodesById` → `tf.comment.unsetMark({ id })`
+  - Removed unused functions:
+    - `getCommentFragment`
+    - `getCommentUrl`
+    - `getElementAbsolutePosition`
+    - `getCommentPosition`
+  - Updated `getCommentCount` to exclude draft comments
+
+  **State Management**
+
+  - Removed `CommentProvider` - users should implement their own state management – `block-discussion.tsx`
+  - Moved `useHooksComments` to UI registry – `comments-plugin.tsx`
+  - Removed hooks no longer needed with new UI:
+    - `useActiveCommentNode`
+    - `useCommentsResolved`
+    - `useCommentAddButton`
+    - `useCommentItemContent`
+    - `useCommentLeaf`
+    - `useCommentsShowResolvedButton`
+    - `useFloatingCommentsContentState`
+    - `useFloatingCommentsState`
+
+  **Types**
+
+  - Removed `CommentUser`
+  - Moved `TComment` to UI registry – `comment.tsx`
+
+## @udecode/plate-suggestion@45.0.0
+
+### Major Changes
+
+- [#4064](https://github.com/udecode/plate/pull/4064) by [@felixfeng33](https://github.com/felixfeng33) – Note: This plugin is currently in an experimental phase and breaking changes may be introduced without a major version bump.
+
+  - Add Suggestion UI
+  - Remove: `findSuggestionNode` use `findSuggestionProps.ts` instead
+  - Remove `addSuggestionMark.ts`
+  - Remove `useHooksSuggestion.ts` as we've updated the activeId logic to no longer depend on useEditorSelector
+
 # 44.0.1
 
 ## @udecode/plate-core@44.0.0
