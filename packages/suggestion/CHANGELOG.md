@@ -1,5 +1,11 @@
 # @udecode/plate-suggestion
 
+## 46.0.1
+
+### Patch Changes
+
+- [#4124](https://github.com/udecode/plate/pull/4124) by [@felixfeng33](https://github.com/felixfeng33) – Fix `diffToSuggestions` to adapt to the new suggestion structure.
+
 ## 45.0.3
 
 ### Patch Changes
