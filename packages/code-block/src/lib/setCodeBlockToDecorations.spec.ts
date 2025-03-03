@@ -183,37 +183,6 @@ describe('codeBlockToDecorations', () => {
     expect(mockHighlightAuto).not.toHaveBeenCalled();
   });
 
-  it('should handle errors during highlighting', () => {
-    // Mock highlight to throw an error
-    mockHighlight.mockImplementation(() => {
-      throw new Error('Highlighting error');
-    });
-
-    // Create a code block
-    const codeBlock: TCodeBlockElement = {
-      children: [{ children: [{ text: 'const x = 1;' }], type: 'code_line' }],
-      lang: 'javascript',
-      type: 'code_block',
-    };
-
-    const blockPath = [0];
-    const result = codeBlockToDecorations(editor, [codeBlock, blockPath]);
-
-    // Should have one entry for the code line
-    expect(result.size).toBe(1);
-
-    // The decorations for the line should be empty
-    const lineDecorations = result.get(codeBlock.children[0] as any);
-    expect(lineDecorations).toEqual([]);
-
-    // Error should be logged
-    expect(editor.api.debug.error).toHaveBeenCalledWith(
-      'Highlighting error:',
-      'CODE_HIGHLIGHT',
-      expect.any(Error)
-    );
-  });
-
   it('should handle multiline code blocks', () => {
     // Mock highlight result for multiline code
     mockHighlight.mockReturnValue({

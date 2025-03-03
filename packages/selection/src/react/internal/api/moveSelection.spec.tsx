@@ -96,7 +96,7 @@ describe('moveSelection', () => {
   });
 
   describe('when only one block is selected', () => {
-    it('should do nothing if there is no block above/below', () => {
+    it('should maintain current selection if there is no block above/below', () => {
       // Only block1 selected, anchor = block1
       editor.setOption(
         BlockSelectionPlugin,
@@ -105,21 +105,63 @@ describe('moveSelection', () => {
       );
       editor.setOption(BlockSelectionPlugin, 'anchorId', 'block1');
 
-      // Move up => block1 is the top-most => no block above
+      // Move up => block1 is the top-most => no block above => maintain block1
       moveSelection(editor, 'up');
 
-      const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+      let selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
       expect(Array.from(selectedIds!)).toEqual(['block1']);
+      let anchorId = editor.getOption(BlockSelectionPlugin, 'anchorId');
+      expect(anchorId).toBe('block1');
 
-      // Move down twice => block2 => block3
-      moveSelection(editor, 'down'); // Now block3
-      moveSelection(editor, 'down'); // No block below block3 => do nothing
-
-      const selectedIds2 = editor.getOption(
+      // Only block3 selected, anchor = block3
+      editor.setOption(
         BlockSelectionPlugin,
-        'selectedIds'
+        'selectedIds',
+        new Set(['block3'])
       );
-      expect(Array.from(selectedIds2!)).toEqual(['block3']);
+      editor.setOption(BlockSelectionPlugin, 'anchorId', 'block3');
+
+      // Move down => block3 is the bottom-most => no block below => maintain block3
+      moveSelection(editor, 'down');
+
+      selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+      expect(Array.from(selectedIds!)).toEqual(['block3']);
+      anchorId = editor.getOption(BlockSelectionPlugin, 'anchorId');
+      expect(anchorId).toBe('block3');
+    });
+
+    it('should maintain current selection when multiple blocks are selected and no prev/next block exists', () => {
+      // block1 and block2 selected at the top
+      editor.setOption(
+        BlockSelectionPlugin,
+        'selectedIds',
+        new Set(['block1', 'block2'])
+      );
+      editor.setOption(BlockSelectionPlugin, 'anchorId', 'block1');
+
+      // Move up => no block above block1 => maintain current selection
+      moveSelection(editor, 'up');
+
+      let selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+      expect(Array.from(selectedIds!)).toEqual(['block1']);
+      let anchorId = editor.getOption(BlockSelectionPlugin, 'anchorId');
+      expect(anchorId).toBe('block1');
+
+      // block2 and block3 selected at the bottom
+      editor.setOption(
+        BlockSelectionPlugin,
+        'selectedIds',
+        new Set(['block2', 'block3'])
+      );
+      editor.setOption(BlockSelectionPlugin, 'anchorId', 'block3');
+
+      // Move down => no block below block3 => maintain current selection
+      moveSelection(editor, 'down');
+
+      selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+      expect(Array.from(selectedIds!)).toEqual(['block3']);
+      anchorId = editor.getOption(BlockSelectionPlugin, 'anchorId');
+      expect(anchorId).toBe('block3');
     });
   });
 

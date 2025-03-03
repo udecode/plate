@@ -25,6 +25,8 @@ export const moveSelection = (
       const [prevNode] = prevEntry;
       setOption('anchorId', prevNode.id);
       api.blockSelection.set(prevNode.id);
+    } else {
+      api.blockSelection.set(blocks[0][0].id);
     }
   } else {
     // direction === 'down'
@@ -40,6 +42,8 @@ export const moveSelection = (
       const [nextNode] = nextEntry;
       setOption('anchorId', nextNode.id);
       api.blockSelection.set(nextNode.id);
+    } else {
+      api.blockSelection.set(blocks.at(-1)![0].id);
     }
   }
 };
