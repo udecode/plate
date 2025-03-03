@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ai",
-  "version": "45.1.0",
+  "version": "46.0.3",
   "description": "Text AI plugin for Plate",
   "keywords": [
     "plate",
@@ -50,7 +50,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-markdown": "45.0.4",
+    "@udecode/plate-markdown": "46.0.3",
     "@udecode/plate-selection": "45.1.0",
     "lodash": "^4.17.21"
   },
