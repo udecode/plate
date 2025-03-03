@@ -63,6 +63,9 @@ export interface SerializeMdOptions {
    * @default ['disc', 'circle', 'square']
    */
   ulListStyleTypes?: string[];
+
+  /** @default 'insert' */
+  ignoreSuggestionType?: 'insert' | 'remove' | 'update';
 }
 
 type MarkFormats = Record<
@@ -269,6 +272,27 @@ export function serializeMdNode(
 
         if (leafOptions?.serialize) {
           children = leafOptions.serialize(children, leaf, opts);
+        }
+      }
+    }
+
+    // TODO: test
+    if ((node as any).suggestion) {
+      const ids: string[] = Object.keys(node).filter((key) => {
+        return key.startsWith(`suggestion_`);
+      });
+
+      const activeId = ids.at(-1);
+
+      if (activeId) {
+        const suggestionData = (node as any)[activeId];
+
+        const type = suggestionData.type as 'insert' | 'remove' | 'update';
+
+        const { ignoreSuggestionType = 'insert' } = opts;
+
+        if (type === ignoreSuggestionType) {
+          return;
         }
       }
     }
