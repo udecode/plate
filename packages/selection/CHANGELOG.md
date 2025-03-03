@@ -1,5 +1,11 @@
 # @udecode/plate-selection
 
+## 46.0.4
+
+### Patch Changes
+
+- [#4132](https://github.com/udecode/plate/pull/4132) by [@zbeyens](https://github.com/zbeyens) – Fix multi-block deletion, cmd+a while selecting, arrow up/down while selecting all
+
 ## 45.1.0
 
 ### Minor Changes

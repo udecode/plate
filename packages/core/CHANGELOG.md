@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 46.0.4
+
+### Patch Changes
+
+- [#4132](https://github.com/udecode/plate/pull/4132) by [@zbeyens](https://github.com/zbeyens) – Better error message for editor.api.debug.error
+
 ## 46.0.2
 
 ### Patch Changes
