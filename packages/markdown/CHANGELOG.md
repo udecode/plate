@@ -1,5 +1,11 @@
 # @udecode/plate-md-serializer
 
+## 46.0.3
+
+### Patch Changes
+
+- [#4130](https://github.com/udecode/plate/pull/4130) by [@felixfeng33](https://github.com/felixfeng33) – Add `ignoreSuggestionType` to default retain the original document content, excluding the content after "suggestion."
+
 ## 45.0.4
 
 ### Patch Changes
