@@ -1,5 +1,11 @@
 # @udecode/plate-code-block
 
+## 46.0.4
+
+### Patch Changes
+
+- [#4132](https://github.com/udecode/plate/pull/4132) by [@zbeyens](https://github.com/zbeyens) – Support invalid languages
+
 ## 46.0.0
 
 ### Major Changes

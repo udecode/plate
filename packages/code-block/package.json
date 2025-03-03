@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-code-block",
-  "version": "46.0.0",
+  "version": "46.0.4",
   "description": "Code block plugin for Plate",
   "keywords": [
     "plate",
@@ -54,7 +54,7 @@
     "lowlight": "^3.3.0"
   },
   "peerDependencies": {
-    "@udecode/plate": ">=46.0.2",
+    "@udecode/plate": ">=46.0.4",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },
