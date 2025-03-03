@@ -72,7 +72,7 @@ export type BlockSelectionConfig = PluginConfig<
       /** Focus block selection – that differs from the editor focus */
       focus: () => void;
       /** Get selected blocks */
-      getNodes: () => NodeEntry[];
+      getNodes: () => NodeEntry<TElement & { id: string }>[];
       /** Check if a block is selected. */
       has: (id: string[] | string) => boolean;
       /** Check if a block is selectable. */
@@ -203,7 +203,7 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
       getNodes: () => {
         const selectedIds = getOption('selectedIds');
 
-        return editor.api.blocks<TElement>({
+        return editor.api.blocks<TElement & { id: string }>({
           at: [],
           match: (n) => !!n.id && selectedIds?.has(n.id as string),
         });

@@ -93,6 +93,12 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
 
         return;
       }
+      if (isHotkey('mod+a')(e)) {
+        api.blockSelection.selectAll();
+
+        return;
+      }
+
       if (isHotkey('mod+shift+z')(e)) {
         editor.redo();
         selectInsertedBlocks(editor);
@@ -121,16 +127,22 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
       if (isHotkey(['backspace', 'delete'])(e) && !isReadonly) {
         e.preventDefault();
         editor.tf.withoutNormalizing(() => {
-          const entry = editor.api.block({
-            at: [],
-            match: (n) => !!n.id && selectedIds?.has(n.id as string),
-          });
+          const entries = [
+            ...editor.api.nodes({
+              at: [],
+              match: (n) => !!n.id && selectedIds?.has(n.id as string),
+            }),
+          ];
+
+          for (const [, path] of [...entries].reverse()) {
+            editor.tf.removeNodes({
+              at: path,
+            });
+          }
+
+          const entry = entries[0];
 
           if (entry) {
-            editor.tf.removeNodes({
-              at: entry[1],
-            });
-
             if (editor.children.length === 0) {
               editor.tf.focus();
             } else {

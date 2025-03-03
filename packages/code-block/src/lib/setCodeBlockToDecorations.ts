@@ -72,28 +72,39 @@ export function codeBlockToDecorations(
   editor: SlateEditor,
   [block, blockPath]: NodeEntry<TCodeBlockElement>
 ) {
-  const { defaultLanguage, lowlight } = editor.getOptions(BaseCodeBlockPlugin);
+  const { defaultLanguage, ...options } =
+    editor.getOptions(BaseCodeBlockPlugin);
+  const lowlight = options.lowlight!;
 
   // Get all code lines and combine their text
   const text = block.children.map((line) => NodeApi.string(line)).join('\n');
   const language = block.lang;
+  const effectiveLanguage = language || defaultLanguage;
 
-  // Highlight the code
   let highlighted;
   try {
-    const effectiveLanguage = language || defaultLanguage;
-
     // Skip highlighting for plaintext or when no language is specified
     if (!effectiveLanguage || effectiveLanguage === 'plaintext') {
       highlighted = { value: [] }; // Empty result for plaintext
     } else if (effectiveLanguage === 'auto') {
-      highlighted = lowlight!.highlightAuto(text);
+      highlighted = lowlight.highlightAuto(text);
     } else {
-      highlighted = lowlight!.highlight(effectiveLanguage, text);
+      highlighted = lowlight.highlight(effectiveLanguage, text);
     }
   } catch (error) {
-    editor.api.debug.error('Highlighting error:', 'CODE_HIGHLIGHT', error);
-    highlighted = { value: [] }; // Empty result on error
+    // Verify if language is registered, fallback to plaintext if not
+    const availableLanguages = lowlight.listLanguages();
+    const isLanguageRegistered =
+      effectiveLanguage && availableLanguages.includes(effectiveLanguage);
+    if (isLanguageRegistered) {
+      editor.api.debug.error(error, 'CODE_HIGHLIGHT');
+      highlighted = { value: [] }; // Empty result on error
+    } else {
+      editor.api.debug.warn(
+        `Language "${effectiveLanguage}" is not registered. Falling back to plaintext`
+      );
+      highlighted = { value: [] };
+    }
   }
 
   // Parse and normalize tokens
@@ -104,8 +115,11 @@ export function codeBlockToDecorations(
   // Create decorations map
   const nodeToDecorations = new Map<TElement, DecoratedRange[]>();
 
+  // Safety check: don't process more lines than we have children
+  const numLines = Math.min(normalizedTokens.length, blockChildren.length);
+
   // Process each line's tokens
-  for (let index = 0; index < normalizedTokens.length; index++) {
+  for (let index = 0; index < numLines; index++) {
     const lineTokens = normalizedTokens[index];
     const element = blockChildren[index];
 

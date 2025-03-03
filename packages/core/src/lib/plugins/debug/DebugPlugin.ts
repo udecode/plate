@@ -58,10 +58,7 @@ export const DebugPlugin = createTSlatePlugin<DebugConfig>({
     if (options.isProduction && level === 'log') return;
     if (logLevels.indexOf(level) <= logLevels.indexOf(options.logLevel!)) {
       if (level === 'error' && options.throwErrors) {
-        const error =
-          message instanceof Error ? message : new PlateError(message, type);
-
-        throw error;
+        throw new PlateError(message, type);
       } else {
         options.logger[level]?.(message, type, details);
       }
