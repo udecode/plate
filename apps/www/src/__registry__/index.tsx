@@ -185,6 +185,10 @@ export const Index: Record<string, any> = {
         path: "src/registry/default/plate-ui/suggestion-leaf.tsx",
         type: "registry:ui",
         target: ""
+      },{
+        path: "src/registry/default/plate-ui/suggestion-leaf-static.tsx",
+        type: "registry:ui",
+        target: ""
       }],
       categories: undefined,
       component: React.lazy(() => import("@/registry/default/plate-ui/suggestion-leaf.tsx")),
