@@ -39,15 +39,17 @@ export const BaseSkipMarkPlugin = createTSlatePlugin<SkipMarkConfig>({
 
       const nextPoint = editor.api.start(textNode[1], { next: true });
 
-      const nextNode = editor.api.node<Text>({
-        at: nextPoint,
-        mode: 'lowest',
-        match: (node) => {
-          if (TextApi.isText(node)) {
-            return allow.some((key) => !!node[key]);
-          }
-        },
-      });
+      const nextNode =
+        nextPoint &&
+        editor.api.node<Text>({
+          at: nextPoint,
+          mode: 'lowest',
+          match: (node) => {
+            if (TextApi.isText(node)) {
+              return allow.some((key) => !!node[key]);
+            }
+          },
+        });
 
       const isBetweenSameMarks =
         nextNode &&
