@@ -93,7 +93,7 @@ export const editorPlugins = [
   ...viewPlugins,
 
   // Functionality
-  SlashPlugin.configure({
+  SlashPlugin.extend({
     options: {
       triggerQuery(editor) {
         return !editor.api.some({
