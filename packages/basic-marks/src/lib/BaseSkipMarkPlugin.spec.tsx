@@ -14,7 +14,9 @@ jsxt;
 
 const skipMarkPlugin = BaseSkipMarkPlugin.configure({
   options: {
-    allow: [BaseCodePlugin.key],
+    query: {
+      allow: [BaseCodePlugin.key],
+    },
   },
 });
 const plugins = [

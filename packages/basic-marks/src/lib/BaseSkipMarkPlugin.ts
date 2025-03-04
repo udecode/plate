@@ -9,14 +9,18 @@ import {
 export type SkipMarkConfig = PluginConfig<
   'skip-mark',
   {
-    allow: string[];
+    query: {
+      allow: string[];
+    };
   }
 >;
 
 export const BaseSkipMarkPlugin = createTSlatePlugin<SkipMarkConfig>({
   key: 'skip-mark',
   options: {
-    allow: [],
+    query: {
+      allow: [],
+    },
   },
 }).overrideEditor(({ editor, getOption, tf: { insertText } }) => ({
   transforms: {
@@ -24,7 +28,7 @@ export const BaseSkipMarkPlugin = createTSlatePlugin<SkipMarkConfig>({
       if (RangeApi.isExpanded(editor.selection))
         return insertText(text, options);
 
-      const allow = getOption('allow');
+      const allow = getOption('query').allow;
 
       const textNode = editor.api.node<Text>({
         mode: 'lowest',
