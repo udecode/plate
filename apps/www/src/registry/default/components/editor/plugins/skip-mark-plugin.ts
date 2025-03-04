@@ -5,6 +5,8 @@ import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
 
 export const skipMarkPlugin = SkipMarkPlugin.configure({
   options: {
-    allow: [SuggestionPlugin.key, CodePlugin.key, CommentsPlugin.key],
+    query: {
+      allow: [SuggestionPlugin.key, CodePlugin.key, CommentsPlugin.key],
+    },
   },
 });
