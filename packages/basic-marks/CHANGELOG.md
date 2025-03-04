@@ -1,5 +1,11 @@
 # @udecode/plate-basic-marks
 
+## 46.0.5
+
+### Patch Changes
+
+- [#4138](https://github.com/udecode/plate/pull/4138) by [@felixfeng33](https://github.com/felixfeng33) – Fix mention plugin conflict with skip mark plugin
+
 ## 45.0.0
 
 ### Patch Changes
