@@ -1099,7 +1099,10 @@ export const uiNodes: Registry['items'] = [
       docs: [{ route: '/docs/suggestion' }],
       examples: ['comments-demo', 'comments-pro'],
     },
-    files: [{ path: 'plate-ui/suggestion-leaf.tsx', type: 'registry:ui' }],
+    files: [
+      { path: 'plate-ui/suggestion-leaf.tsx', type: 'registry:ui' },
+      { path: 'plate-ui/suggestion-leaf-static.tsx', type: 'registry:ui' },
+    ],
     name: 'suggestion-leaf',
     registryDependencies: ['suggestion-plugin'],
     type: 'registry:ui',
