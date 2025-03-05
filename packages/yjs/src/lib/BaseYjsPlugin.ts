@@ -44,17 +44,11 @@ export type YjsConfig = PluginConfig<
     /** WithCursors options */
     cursorOptions?: WithCursorsOptions;
     disableCursors?: boolean;
-    /**
-     * HocuspocusProvider configuration
-     * Required if providerType is 'hocuspocus'
-     */
+    /** HocuspocusProvider configuration Required if providerType is 'hocuspocus' */
     hocuspocusProviderOptions?: HocuspocusProviderConfiguration;
     /** Provider type - defaults to hocuspocus for backward compatibility */
     providerType?: YjsProviderType;
-    /**
-     * WebRTC provider configuration
-     * Required if providerType is 'webrtc'
-     */
+    /** WebRTC provider configuration Required if providerType is 'webrtc' */
     webrtcProviderOptions?: WebRTCProviderOptions;
     /** WithYjs options */
     yjsOptions?: WithYjsOptions;
@@ -72,16 +66,24 @@ class HocuspocusProviderWrapper implements UnifiedProvider {
   connect() {
     void this.provider.connect();
   }
-  get awareness() { return this.provider.awareness!; }
+  get awareness() {
+    return this.provider.awareness!;
+  }
 }
 
 class WebRTCProviderWrapper implements UnifiedProvider {
-  connect = () => { this.provider.connect(); }  
+  connect = () => {
+    this.provider.connect();
+  };
   destroy = () => this.provider.destroy();
-  disconnect = () => { this.provider.disconnect(); }
+  disconnect = () => {
+    this.provider.disconnect();
+  };
   getDocument = () => this.provider.doc;
   constructor(private provider: WebrtcProvider) {}
-  get awareness() { return this.provider.awareness; }
+  get awareness() {
+    return this.provider.awareness;
+  }
 }
 
 export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
@@ -93,14 +95,22 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
     provider: {} as any,
   },
 }).extend(({ getOptions, setOption }) => {
-  const { hocuspocusProviderOptions, providerType = 'hocuspocus', webrtcProviderOptions } = getOptions();
+  const {
+    hocuspocusProviderOptions,
+    providerType = 'hocuspocus',
+    webrtcProviderOptions,
+  } = getOptions();
 
   if (providerType === 'hocuspocus' && !hocuspocusProviderOptions) {
-    throw new Error('HocuspocusProvider configuration is required when using hocuspocus provider');
+    throw new Error(
+      'HocuspocusProvider configuration is required when using hocuspocus provider'
+    );
   }
 
   if (providerType === 'webrtc' && !webrtcProviderOptions) {
-    throw new Error('WebRTC provider configuration is required when using webrtc provider');
+    throw new Error(
+      'WebRTC provider configuration is required when using webrtc provider'
+    );
   }
 
   let provider: UnifiedProvider;
@@ -121,19 +131,19 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
     provider = new WebRTCProviderWrapper(webrtcProvider);
 
     // Set connection status
-     webrtcProvider.on('status', (status) => {
-       if (status.connected) {
-         setOption('isConnected', true);
-         setOption('isSynced', true); 
-       } else {
-         setOption('isConnected', false);
-         setOption('isSynced', false);
-       }
-     });
+    webrtcProvider.on('status', (status) => {
+      if (status.connected) {
+        setOption('isConnected', true);
+        setOption('isSynced', true);
+      } else {
+        setOption('isConnected', false);
+        setOption('isSynced', false);
+      }
+    });
 
-     webrtcProvider.on('synced', (synced) => {
-       setOption('isSynced', synced.synced);
-     });
+    webrtcProvider.on('synced', (synced) => {
+      setOption('isSynced', synced.synced);
+    });
   } else {
     const hocusProvider = new HocuspocusProvider({
       ...hocuspocusProviderOptions!,
