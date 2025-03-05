@@ -53,6 +53,7 @@
   "dependencies": {
     "@hocuspocus/provider": "^2.15.2",
     "@slate-yjs/core": "^1.0.2",
+    "y-webrtc": "10.3.0",
     "yjs": "^13.6.23"
   },
   "devDependencies": {
