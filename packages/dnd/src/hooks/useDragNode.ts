@@ -31,8 +31,9 @@ export interface UseDragNodeOptions
  */
 export const useDragNode = (
   editor: PlateEditor,
-  { element, item, ...options }: UseDragNodeOptions
+  { element: staleElement, item, ...options }: UseDragNodeOptions
 ) => {
+  const elementId = staleElement.id as string;
   return useDrag<DragItemNode, unknown, { isDragging: boolean }>(
     () => ({
       collect: (monitor) => ({
@@ -47,9 +48,10 @@ export const useDragNode = (
         document.body.classList.add('dragging');
 
         const _item = typeof item === 'function' ? item(monitor) : item;
+        const [element] = editor.api.node<TElement>({ id: elementId, at: [] })!;
 
         return {
-          id: element.id as string,
+          id: elementId,
           editorId: editor.id,
           element,
           ..._item,
@@ -57,6 +59,6 @@ export const useDragNode = (
       },
       ...options,
     }),
-    []
+    [editor, elementId]
   );
 };
