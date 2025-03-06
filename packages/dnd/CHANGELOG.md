@@ -1,5 +1,11 @@
 # @udecode/plate-dnd
 
+## 46.0.6
+
+### Patch Changes
+
+- [#4146](https://github.com/udecode/plate/pull/4146) by [@12joan](https://github.com/12joan) – Fix: `onDropNode` uses a stale `element` object for the dragged node, resulting in incorrect drag operations.
+
 ## 44.0.0
 
 ## 43.0.1
