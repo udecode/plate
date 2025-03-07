@@ -1,5 +1,11 @@
 # @udecode/plate-indent-list
 
+## 46.0.7
+
+### Patch Changes
+
+- [#4149](https://github.com/udecode/plate/pull/4149) by [@12joan](https://github.com/12joan) – Fix: List items can have incorrect numbers after certain operations
+
 ## 44.0.5
 
 ## 44.0.0
