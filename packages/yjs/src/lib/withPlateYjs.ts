@@ -17,10 +17,9 @@ export const withPlateYjs: ExtendEditor<YjsConfig> = ({
   // not reactive
   const { cursorOptions, disableCursors, provider, yjsOptions } = getOptions();
 
-  const sharedType = provider.document.get(
-    'content',
-    Y.XmlText
-  ) as any as Y.XmlText;
+  const sharedType = provider
+    .getDocument()
+    .get('content', Y.XmlText) as Y.XmlText;
 
   if (disableCursors) {
     return withTYHistory(
@@ -37,7 +36,7 @@ export const withPlateYjs: ExtendEditor<YjsConfig> = ({
         autoConnect: false,
         ...yjsOptions,
       }),
-      provider.awareness!,
+      provider.awareness,
       cursorOptions
     )
   );
