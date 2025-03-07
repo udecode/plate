@@ -35,7 +35,6 @@ export const withIndentList: OverrideEditor<BaseIndentListConfig> = (ctx) => {
       ...withDeleteBackwardIndentList(ctx).transforms,
       ...withInsertBreakIndentList(ctx).transforms,
       apply(operation) {
-        const { path } = operation as any;
         const { getSiblingIndentListOptions } = getOptions();
 
         /**
@@ -54,7 +53,7 @@ export const withIndentList: OverrideEditor<BaseIndentListConfig> = (ctx) => {
           ) {
             const prevNodeEntry = getPreviousIndentList<TElement>(
               editor,
-              [operation.node as TElement, path],
+              [operation.node as TElement, operation.path],
               {
                 breakOnEqIndentNeqListStyleType: false,
                 eqIndent: false,
