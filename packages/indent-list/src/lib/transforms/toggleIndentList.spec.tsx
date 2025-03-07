@@ -162,7 +162,7 @@ describe('toggleIndentList', () => {
           <hp indent={2} listStart={4} listStyleType="decimal">
             21
           </hp>
-          <hp indent={1} listStyleType="disc">
+          <hp indent={1} listStart={2} listStyleType="disc">
             12
           </hp>
           <hp indent={2} listStyleType="decimal">
