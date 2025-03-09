@@ -17,7 +17,7 @@ The plugin supports two types of providers:
    - Configuration:
    ```typescript
    const options = {
-     providerType: 'hocuspocus',
+     // providerType is optional and will default to 'hocuspocus' if not specified
      hocuspocusProviderOptions: {
        url: 'ws://localhost:1234',
        name: 'document-name',
@@ -33,7 +33,7 @@ The plugin supports two types of providers:
    - Configuration:
    ```typescript
    const options = {
-     providerType: 'webrtc',
+     // providerType is optional and will be automatically set to 'webrtc' when webrtcProviderOptions is provided
      webrtcProviderOptions: {
        roomName: 'your-room-name',
        password: 'optional-room-password',
@@ -53,8 +53,8 @@ import { YjsPlugin } from '@udecode/plate-yjs';
 const plugins = [
   // ... other plugins
   YjsPlugin({
-    // Choose your provider type and options
-    providerType: 'webrtc', // or 'hocuspocus'
+    // Provider type is automatically determined based on which provider options are provided
+    // You can still explicitly set it if needed: providerType: 'webrtc'
     webrtcProviderOptions: {
       roomName: 'my-document',
       password: 'optional-password',

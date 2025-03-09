@@ -24,7 +24,7 @@ export const YjsAboveEditable: React.FC<{
 
     return () => YjsEditor.disconnect(editor as any);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [provider.awareness, provider.getDocument()]);
+  }, [provider.awareness, provider.document]);
 
   if (!isSynced) return null;
 

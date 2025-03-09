@@ -18,7 +18,7 @@ export const withPlateYjs: ExtendEditor<YjsConfig> = ({
   const { cursorOptions, disableCursors, provider, yjsOptions } = getOptions();
 
   const sharedType = provider
-    .getDocument()
+    .document
     .get('content', Y.XmlText) as Y.XmlText;
 
   if (disableCursors) {
@@ -30,6 +30,7 @@ export const withPlateYjs: ExtendEditor<YjsConfig> = ({
     );
   }
 
+  
   return withTYHistory(
     withTCursors(
       withTYjs(editor, sharedType, {
