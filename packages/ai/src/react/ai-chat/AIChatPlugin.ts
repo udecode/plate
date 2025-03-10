@@ -5,6 +5,7 @@ import {
   type OmitFirst,
   type PluginConfig,
   type SlateEditor,
+  type TNode,
   bindFirst,
 } from '@udecode/plate';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
@@ -55,6 +56,11 @@ export type AIChatPluginConfig = PluginConfig<
      * placeholders as `promptTemplate`.
      */
     systemTemplate: (props: EditorPromptParams) => string | void;
+    /**
+     * Callback function to update the anchor element when the AI is done
+     * rendering its answer
+     */
+    anchorUpdate?: (anchor: TNode) => void;
   } & TriggerComboboxPluginOptions,
   {
     aiChat: {
@@ -80,6 +86,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
   dependencies: ['ai'],
   options: {
     aiEditor: null,
+    anchorUpdate: undefined,
     chat: { messages: [] } as any,
     mode: 'chat',
     open: false,
@@ -138,12 +145,15 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
         delete lastBatch.ai;
       }
     },
-    show: () => {
+    show: (anchorUpdate?: (anchor: TNode) => void) => {
       api.aiChat.reset();
 
       getOptions().chat.setMessages?.([]);
 
       setOption('open', true);
+      if (anchorUpdate) {
+        setOption('anchorUpdate', anchorUpdate);
+      }
     },
   }))
   .extendTransforms(({ editor }) => ({
