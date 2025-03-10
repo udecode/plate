@@ -1,4 +1,4 @@
-import type { Descendant } from '@udecode/plate';
+import type { Descendant, TElement } from '@udecode/plate';
 
 import merge from 'lodash/merge.js';
 
@@ -44,6 +44,7 @@ export const serializeMdNodes = (
     nodes.length === 0 ||
     (nodes.length === 1 &&
       nodes[0].type === optionsNodes.p.type &&
+      (nodes[0] as TElement).children.length === 1 &&
       (nodes[0].children as Descendant[])[0].text === '')
   ) {
     return '';
