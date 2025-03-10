@@ -317,6 +317,10 @@
       {
         "path": "plate-ui/suggestion-leaf.tsx",
         "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/suggestion-leaf-static.tsx",
+        "type": "registry:ui"
       }
     ],
     "name": "suggestion-leaf",
