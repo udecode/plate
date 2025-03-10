@@ -1,5 +1,11 @@
 # @udecode/plate-md-serializer
 
+## 46.0.8
+
+### Patch Changes
+
+- [#4153](https://github.com/udecode/plate/pull/4153) by [@martin-lysk](https://github.com/martin-lysk) – fixes empty value detection
+
 ## 46.0.3
 
 ### Patch Changes
