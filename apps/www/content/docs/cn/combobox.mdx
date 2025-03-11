@@ -2,26 +2,26 @@
 title: Combobox
 docs:
   - route: /docs/mention
-    title: Mention Plugin
+    title: Mention 插件
   - route: /docs/slash-command
-    title: Slash Command Plugin
+    title: Slash Command 插件
   - route: /docs/emoji
-    title: Emoji Plugin
+    title: Emoji 插件
 ---
 
-`TriggerComboboxPluginOptions` 配置你的插件，当用户输入指定触发字符时插入一个组合框输入元素。
+`TriggerComboboxPluginOptions` 配置你的插件，当用户输入指定的触发字符时插入一个 combobox 输入元素。
 
 例如：
-- [Mention](/docs/mention) 插件在输入 `@` 时插入组合框
+- [Mention](/docs/mention) 插件在输入 `@` 时插入一个 combobox
 - [Slash Command](/docs/slash-command) 插件在输入 `/` 时激活
 - [Emoji](/docs/emoji) 插件在输入 `:` 时显示建议
 
-## Usage
+## 使用
 
 <Steps>
 
 <Step>
-创建一个组合框输入插件：
+为 combobox 创建一个输入插件：
 
 ```ts
 const ComboboxInputPlugin = createPlatePlugin({
@@ -36,18 +36,18 @@ const ComboboxInputPlugin = createPlatePlugin({
 </Step>
 
 <Step>
-创建你的主插件，使用 `withTriggerCombobox`：
+使用 `withTriggerCombobox` 创建你的主插件：
 
 ```ts
 const MyPlugin = createPlatePlugin({
   key: 'my_plugin',
-  // Plugin node options
+  // 插件节点选项
   node: {
     isElement: true,
     isInline: true,
     isVoid: true,
   },
-  // Combobox options
+  // Combobox 选项
   options: {
     createComboboxInput: (trigger) => ({
       children: [{ text: '' }],
@@ -57,107 +57,114 @@ const MyPlugin = createPlatePlugin({
     trigger: '@',
     triggerPreviousCharPattern: /^\s?$/,
   },
-  // Include the input plugin
+  // 包含输入插件
   plugins: [ComboboxInputPlugin],
 }).overrideEditor(withTriggerCombobox);
 ```
 
 </Step>
 <Step>
-输入元素组件可以使用 [Inline Combobox](/docs/components/inline-combobox) 构建。
+可以使用 [Inline Combobox](/docs/components/inline-combobox) 构建输入元素组件。
 </Step>
 </Steps>
 
-## Examples 
+## 示例
 
 <ComponentPreview name="mention-demo" />
 <ComponentPreview name="slash-command-demo" />
 <ComponentPreview name="emoji-demo" />
 
-## Types
+## 类型
 
-### TriggerComboboxPluginOptions
+### `TriggerComboboxPluginOptions`
 
-<APIParameters>
+<API name="TriggerComboboxPluginOptions">
+<APIAttributes>
   <APIItem name="createComboboxInput" type="(trigger: string) => TElement">
-    当触发器被激活时创建输入节点的函数。
+    当触发激活时创建输入节点的函数。
   </APIItem>
   <APIItem name="trigger" type="RegExp | string[] | string">
-    触发组合框的字符。可以是：
-    - 单个字符（例如 '@'）
+    触发 combobox 的字符。可以是：
+    - 单个字符（例如 `@`）
     - 字符数组
     - 正则表达式
   </APIItem>
   <APIItem name="triggerPreviousCharPattern" type="RegExp">
-    匹配触发字符前的字符模式。
+    匹配触发前字符的模式。
     - **示例：** `/^\s?$/` 匹配行首或空格
   </APIItem>
   <APIItem name="triggerQuery" type="(editor: SlateEditor) => boolean" optional>
-    自定义查询函数，用于控制触发器何时激活。
+    自定义查询函数，用于控制何时激活触发。
   </APIItem>
-</APIParameters>
+</APIAttributes>
+</API>
 
-## Hooks
+## 钩子
 
-### useComboboxInput
+### `useComboboxInput`
 
-用于管理组合框输入行为和键盘交互的 Hook。
+用于管理 combobox 输入行为和键盘交互的钩子。
 
-<APIParameters>
-  <APIItem name="options" type="UseComboboxInputOptions">
-    <APISubList>
-      <APISubListItem parent="options" name="ref" type="RefObject<HTMLElement>">
-        输入元素的引用。
-      </APISubListItem>
-      <APISubListItem parent="options" name="autoFocus" type="boolean" optional>
-        挂载时自动聚焦输入框。
-        - **默认值：** `true`
-      </APISubListItem>
-      <APISubListItem parent="options" name="cancelInputOnArrowLeftRight" type="boolean" optional>
-        在按下方向键时取消输入。
-        - **默认值：** `true`
-      </APISubListItem>
-      <APISubListItem parent="options" name="cancelInputOnBackspace" type="boolean" optional>
-        在起始位置按下退格键时取消输入。
-        - **默认值：** `true`
-      </APISubListItem>
-      <APISubListItem parent="options" name="cancelInputOnBlur" type="boolean" optional>
-        在失焦时取消输入。
-        - **默认值：** `true`
-      </APISubListItem>
-      <APISubListItem parent="options" name="cancelInputOnDeselect" type="boolean" optional>
-        在取消选择时取消输入。
-        - **默认值：** `true`
-      </APISubListItem>
-      <APISubListItem parent="options" name="cancelInputOnEscape" type="boolean" optional>
-        在按下 Escape 键时取消输入。
-        - **默认值：** `true`
-      </APISubListItem>
-      <APISubListItem parent="options" name="cursorState" type="ComboboxInputCursorState" optional>
-        当前光标位置状态。
-      </APISubListItem>
-      <APISubListItem parent="options" name="forwardUndoRedoToEditor" type="boolean" optional>
-        将撤销/重做操作转发给编辑器。
-        - **默认值：** `true`
-      </APISubListItem>
-      <APISubListItem parent="options" name="onCancelInput" type="(cause: CancelComboboxInputCause) => void" optional>
-        输入被取消时的回调函数。
-      </APISubListItem>
-    </APISubList>
+<API name="useComboboxInput">
+<APIOptions type="UseComboboxInputOptions">
+  <APIItem name="ref" type="RefObject<HTMLElement>">
+    输入元素的引用。
   </APIItem>
-</APIParameters>
+  <APIItem name="autoFocus" type="boolean" optional>
+    挂载时自动聚焦输入。
 
-<APIReturns>
+    - **默认值：** `true`
+  </APIItem>
+  <APIItem name="cancelInputOnArrowLeftRight" type="boolean" optional>
+    在左右箭头键时取消输入。
+
+    - **默认值：** `true`
+  </APIItem>
+  <APIItem name="cancelInputOnBackspace" type="boolean" optional>
+    在起始位置按退格键时取消输入。
+
+    - **默认值：** `true`
+  </APIItem>
+  <APIItem name="cancelInputOnBlur" type="boolean" optional>
+    在失去焦点时取消输入。
+
+    - **默认值：** `true`
+  </APIItem>
+  <APIItem name="cancelInputOnDeselect" type="boolean" optional>
+    在取消选择时取消输入。
+
+    - **默认值：** `true`
+  </APIItem>
+  <APIItem name="cancelInputOnEscape" type="boolean" optional>
+    在按下 Esc 键时取消输入。
+
+    - **默认值：** `true`
+  </APIItem>
+  <APIItem name="cursorState" type="ComboboxInputCursorState" optional>
+    当前光标位置状态。
+  </APIItem>
+  <APIItem name="forwardUndoRedoToEditor" type="boolean" optional>
+    将撤销/重做操作转发给编辑器。
+
+    - **默认值：** `true`
+  </APIItem>
+  <APIItem name="onCancelInput" type="(cause: CancelComboboxInputCause) => void" optional>
+    输入取消时的回调函数。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="object">
   <APIItem name="cancelInput" type="(cause?: CancelComboboxInputCause, focusEditor?: boolean) => void">
     取消输入的函数。
   </APIItem>
   <APIItem name="props" type="object">
+    输入元素的属性。
     <APISubList>
       <APISubListItem parent="props" name="onBlur" type="EventHandler">
-        失焦事件处理器。
+        失去焦点事件处理程序。
       </APISubListItem>
       <APISubListItem parent="props" name="onKeyDown" type="EventHandler">
-        按键事件处理器。
+        按键事件处理程序。
       </APISubListItem>
     </APISubList>
   </APIItem>
@@ -165,8 +172,9 @@ const MyPlugin = createPlatePlugin({
     移除输入节点的函数。
   </APIItem>
 </APIReturns>
+</API>
 
-Example:
+示例：
 
 ```tsx
 const MyCombobox = () => {
@@ -194,25 +202,23 @@ const MyCombobox = () => {
 };
 ```
 
-### useHTMLInputCursorState
+### `useHTMLInputCursorState`
 
-用于跟踪 HTML 输入元素中光标位置的 Hook。
+用于跟踪 HTML 输入元素中光标位置的钩子。
 
+<API name="useHTMLInputCursorState">
 <APIParameters>
   <APIItem name="ref" type="RefObject<HTMLInputElement>">
     要跟踪的输入元素的引用。
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-  <APIItem name="state" type="ComboboxInputCursorState">
-    <APISubList>
-      <APISubListItem parent="state" name="atStart" type="boolean">
-        光标是否在输入的起始位置。
-      </APISubListItem>
-      <APISubListItem parent="state" name="atEnd" type="boolean">
-        光标是否在输入的末尾位置。
-      </APISubListItem>
-    </APISubList>
+<APIReturns type="ComboboxInputCursorState">
+  <APIItem name="atStart" type="boolean">
+    光标是否在输入的开头。
+  </APIItem>
+  <APIItem name="atEnd" type="boolean">
+    光标是否在输入的末尾。
   </APIItem>
 </APIReturns>
+</API>

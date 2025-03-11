@@ -1,0 +1,229 @@
+---
+title: Plate Static
+description: 一个最小化、记忆化、只读版本的 Plate，支持 RSC/SSR。
+---
+
+`<PlateStatic>` 提供了一种**快速、只读**的方式来渲染 Slate 内容。它专为**服务器端**或**React Server Component**（RSC）环境设计，不包含任何客户端编辑逻辑。它还**记忆化**了节点的渲染，以避免不必要的重新渲染，使其比在只读模式下使用 [`<Plate>`](/docs/api/core/plate-components) 更高效。
+
+`<PlateStatic>` 被 [`serializeHtml`](/docs/api/core/plate-plugin#serializehtml) 广泛用于 HTML 导出。你也可以在任何服务器或 RSC 场景中使用它，当你需要一个非交互式、纯展示版本的内容时。
+
+## 主要优势
+
+- **服务器安全：** 不依赖浏览器 API 或客户端钩子。适用于 SSR 或 RSC。
+- **无 Slate 编辑器开销：** 省略了交互逻辑，如选择或事件处理程序。
+- **记忆化渲染：** 使用 `_memo` 引用和结构比较，仅重新渲染发生变化的节点。
+- **部分重新渲染：** 单个段落的变化不会导致整个文档重新渲染。
+- **轻量级：** 与在只读模式下使用 `Plate` 相比，包体积更小，因为它不导入额外的交互代码。
+
+## 何时使用 `<PlateStatic>`
+
+- [**HTML 序列化**](/docs/html)。
+- **服务器渲染预览**，如在 Next.js 中（特别是页面或 RSC 路由）。
+- **静态站点**生成只读内容。
+- **性能关键**的只读视图，希望最小化开销。
+- **AI 流式渲染**，用于实时内容生成，其中内容块逐步流式传输和渲染。
+
+如果你需要**交互式**的只读功能（例如，悬停高亮、评论弹出框或选择），你仍然需要在浏览器中使用标准的 `Plate` 编辑器。在纯只读的服务器环境中，推荐使用 `PlateStatic`。
+
+## 使用方法
+
+### 1. 创建一个 Slate 编辑器
+
+首先，创建一个包含你所需插件的 Slate 编辑器。你可以使用 `createSlateEditor`，就像我们在 `Plate` 中使用 `usePlateEditor` 一样。
+
+```tsx
+import { createSlateEditor } from '@udecode/plate';
+// 导入你所需的插件
+
+const editor = createSlateEditor({
+  plugins: [
+    // 你的插件列表：例如标题、图片、Markdown 等
+  ],
+  value: [
+    {
+      type: 'p',
+      children: [{ text: '来自静态 Plate 编辑器的问候！' }],
+    },
+  ],
+});
+```
+
+### 2. 定义节点组件（静态）
+
+如果你的编辑器有交互式或仅客户端的组件（例如使用 `use client` 或事件处理程序的组件），你**必须**为服务器渲染提供静态版本。例如：
+
+```tsx
+// paragraph-element-static.ts
+import React from 'react';
+import { SlateElementProps } from '@udecode/plate';
+
+export function ParagraphElementStatic(props: SlateElementProps) {
+  return (
+    <p {...props.attributes} style={props.style}>
+      {props.children}
+    </p>
+  );
+}
+```
+
+你可能需要为标题、图片、链接等提供静态版本，每个版本都返回纯 HTML。没有浏览器事件或 `useEffect`。
+
+### 3. 将插件键映射到静态组件
+
+创建一个映射对象，其中每个插件键或节点类型都引用其静态组件：
+
+```ts
+import { ParagraphElementStatic } from './paragraph-element-static';
+import { HeadingElementStatic } from './heading-element-static';
+// 等等
+
+export const components = {
+  p: ParagraphElementStatic,
+  h1: HeadingElementStatic,
+  // ...
+};
+```
+
+### 4. 渲染 `<PlateStatic>`
+
+`PlateStatic` 是一个 React 组件，接受以下参数：
+
+- **`editor`**：一个 Slate 编辑器实例。
+- **`components`**：插件/节点键 -> 静态组件的记录。
+- **`value?`**：可选的受控状态，覆盖 `editor.children`。
+- 任何额外的 HTML/div 属性（`className`、`style` 等）。
+
+```tsx
+import { PlateStatic } from '@udecode/plate/core/static'; 
+// 或者从 '@udecode/plate' 重新导出
+
+export default function MyStaticView() {
+  const editor = createSlateEditor({ /* 你的配置 */ });
+
+  return (
+    <PlateStatic
+      editor={editor}
+      components={components}
+      style={{ padding: 16 }}
+      className="my-plate-static"
+    />
+  );
+}
+```
+
+如果你提供了 `value` 属性，它将覆盖 `editor.children`：
+
+```tsx
+<PlateStatic
+  editor={editor}
+  components={components}
+  value={[
+    {
+      type: 'p',
+      children: [{ text: '覆盖的内容。' }],
+    },
+  ]}
+/>
+```
+
+### 5. 记忆化
+
+在底层，每个 `<ElementStatic>` 和 `<LeafStatic>` 都被 `React.memo` 包裹。Plate 还会检查：
+- **引用相等性**：如果你的节点引用没有变化，它不会重新渲染。
+- **`_memo` 字段**：如果你为特定元素/叶子设置了 `node._memo`，Plate 会将其视为覆盖。如果 `_memo` 未更改，即使文本发生变化，节点也不会重新渲染。这对于自定义解决方案或部分更新特别有用。
+
+### `PlateStatic` 与 `Plate` + `readOnly`
+
+| 方面                           | `PlateStatic`                                          | `Plate` + `readOnly`                              |
+| -------------------------------- | ------------------------------------------------------- | ------------------------------------------------------- |
+| **交互性**                  | 无（服务器安全）                                       | 某些交互功能仍可在浏览器中运行 |
+| **浏览器 API**                 | 不使用；在 SSR 或 RSC 中安全                           | 在只读模式下仍会使用少量浏览器 API，但它是客户端 |
+| **性能**                  | 针对静态使用进行了更多优化，开销最小      | 较重，加载了更多编辑器内部逻辑              |
+| **部分重新渲染**            | 使用子树的记忆化进行高效渲染  | 也可以进行部分重新渲染，但仍具有客户端开销 |
+| **使用场景**                    | 服务器渲染、HTML 序列化、静态预览  | 基于浏览器的只读状态，需要某些交互式只读功能（如评论、悬停） |
+| **推荐**                  | SSR 或 RSC，无需编辑或高级交互    | 如果你需要客户端只读 + 交互功能（如评论、悬停） |
+
+### RSC/SSR 示例
+
+在 Next.js 14（或类似）环境中，你可以将 `PlateStatic` 放在一个**React Server Component**中：
+
+```tsx
+// app/preview/page.tsx (RSC)
+import { PlateStatic } from '@udecode/plate/core/static';
+import { createSlateEditor } from '@udecode/plate';
+import { components } from './my-static-components'; // 你的静态组件
+
+export default async function Page() {
+  // 可能从数据库或 API 获取数据
+  const editor = createSlateEditor({
+    value: [
+      { type: 'p', children: [{ text: '服务器端渲染 🎉' }] },
+    ],
+  });
+
+  // 返回静态输出：
+  return (
+    <PlateStatic 
+      editor={editor} 
+      components={components} 
+      className="my-static-preview"
+    />
+  );
+}
+```
+
+`PlateStatic` 不需要客户端包；它完全在服务器上渲染为 HTML。
+
+### 与 `serializeHtml` 配对
+
+如果你正在生成一个完整的 HTML 字符串（用于电子邮件、PDF 或外部页面），请使用 `serializeHtml`：
+
+```ts
+import { createSlateEditor } from '@udecode/plate';
+import { serializeHtml } from '@udecode/plate/core/static';
+import { components } from './my-static-components';
+
+const editor = createSlateEditor({ /* ...插件... */ });
+
+// 在底层使用 PlateStatic
+const html = await serializeHtml(editor, {
+  components,
+  editorComponent: PlateStatic, // 可选，如果你想要自定义包装器
+  props: { className: 'max-w-3xl mx-auto' }, 
+});
+
+console.info(html);
+/*
+<div data-slate-editor="true" data-slate-node="value" class="max-w-3xl mx-auto">
+  <div data-slate-node="element" data-slate-type="p" ...>Hello Plate!</div>
+</div>
+*/
+```
+
+更完整的指南，请参阅 [HTML 序列化](/docs/html)。
+
+## API
+
+### `<PlateStatic>`
+
+```ts
+interface PlateStaticProps extends React.HTMLAttributes<HTMLDivElement> {
+  /** Slate 编辑器实例。 */
+  editor: SlateEditor;
+
+  /** 用于渲染每个插件/节点类型的节点组件。 */
+  components: NodeComponents;
+
+  /** 可选的新的 `Value`，覆盖 `editor.children`。 */
+  value?: Descendant[];
+
+  /** 内联样式。 */
+  style?: React.CSSProperties;
+
+  /** className 或其他 <div> 属性也支持。 */
+}
+```
+
+- **`editor`**：必须通过 `createSlateEditor`（或类似方法）创建。  
+- **`components`**：一个记录，将插件键（或节点类型）映射到静态 React 组件。  
+- **`value`**：如果提供，将覆盖现有的 `editor.children`。

@@ -1,5 +1,5 @@
 ---
-title: Basic Marks
+title: 基本标记
 docs:
   - route: /docs/components/mark-toolbar-button
     title: 标记工具栏按钮
@@ -11,11 +11,11 @@ docs:
 
 ## 功能
 
-- 包括常用的文本样式功能：粗体、斜体、下划线、删除线、上标、下标和代码。
+- 包含常用的文本样式功能：加粗、斜体、下划线、删除线、下标、上标和代码。
 
 </PackageInfo>
 
-**插件：**
+## 插件
 
 - `BoldPlugin` 用于 `bold` 标记
 - `ItalicPlugin` 用于 `italic` 标记
@@ -25,28 +25,28 @@ docs:
 - `SuperscriptPlugin` 用于 `superscript` 标记
 - `CodePlugin` 用于 `code` 标记
 
-## Installation
+## 安装
 
 ```bash
 npm install @udecode/plate-basic-marks
 ```
 
-## Usage
+## 使用
 
 ```tsx
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
 
 const plugins = [
-  // ...otherPlugins,
+  // ...其他插件
   BasicMarksPlugin,
 ];
 ```
 
-## 键盘快捷键
+## 快捷键
 
 <KeyTable>
   <KeyTableItem hotkey="Cmd + B">
-    切换所选文本的粗体格式。
+    切换所选文本的加粗格式。
   </KeyTableItem>
   <KeyTableItem hotkey="Cmd + I">
     切换所选文本的斜体格式。
@@ -70,67 +70,34 @@ const plugins = [
 
 ## 插件
 
-### BasicMarksPlugin
+### `BasicMarksPlugin`
 
-### BoldPlugin
+包含所有基本标记插件的插件。
 
-<APIOptions>
-<APIItem name="clear" type="string | string[]" optional>
-要删除的节点属性。
+### `BoldPlugin`
 
-</APIItem>
-</APIOptions>
+用于加粗格式的插件。
 
-### CodePlugin
+### `CodePlugin`
 
-<APIOptions>
-<APIItem name="clear" type="string | string[]" optional>
-要删除的节点属性。
+用于代码格式的插件。
 
-</APIItem>
-</APIOptions>
+### `ItalicPlugin`
 
-### ItalicPlugin
+用于斜体格式的插件。
 
-<APIOptions>
-<APIItem name="clear" type="string | string[]" optional>
-要删除的节点属性。
+### `UnderlinePlugin`
 
-</APIItem>
-</APIOptions>
+用于下划线格式的插件。
 
-### UnderlinePlugin
+### `StrikethroughPlugin`
 
-<APIOptions>
-<APIItem name="clear" type="string | string[]" optional>
-要删除的节点属性。
+用于删除线格式的插件。
 
-</APIItem>
-</APIOptions>
+### `SubscriptPlugin`
 
-### StrikethroughPlugin
+用于下标格式的插件。
 
-<APIOptions>
-<APIItem name="clear" type="string | string[]" optional>
-要删除的节点属性。
+### `SuperscriptPlugin`
 
-</APIItem>
-</APIOptions>
-
-### SubscriptPlugin
-
-<APIOptions>
-<APIItem name="clear" type="string | string[]" optional>
-要删除的节点属性。
-
-</APIItem>
-</APIOptions>
-
-### SuperscriptPlugin
-
-<APIOptions>
-<APIItem name="clear" type="string | string[]" optional>
-要删除的节点属性。
-
-</APIItem>
-</APIOptions>
+用于上标格式的插件。

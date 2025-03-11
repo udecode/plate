@@ -1,288 +1,216 @@
 ---
-title: Basic Elements
+title: 基础元素
 docs:
   - route: /docs/components/blockquote-element
-    title: Block Quote Element
+    title: 引用块元素
   - route: /docs/components/code-block-element
-    title: Code Block Element
+    title: 代码块元素
   - route: /docs/components/code-line-element
-    title: Code Line Element
+    title: 代码行元素
   - route: /docs/components/code-syntax-leaf
-    title: Code Syntax Leaf
+    title: 代码语法叶子节点
   - route: /docs/components/heading-element
-    title: Heading Element
+    title: 标题元素
 ---
 
 <ComponentPreview name="basic-elements-demo" />
 
 <PackageInfo>
 
-## 功能特点
+## 功能
 
-- 包含常用的块级元素：引用块、代码块和标题。
+- 包含常用的块元素：引用块、代码块和标题。
 
 </PackageInfo>
 
-**插件：**
+## 插件
 
 - `BlockquotePlugin` 用于 `blockquote` 元素
 - `CodeBlockPlugin` 用于 `code_block` 元素
-- `HeadingPlugin` 用于 `h1`、`h2`... 等元素
+- `HeadingPlugin` 用于 `h1`, `h2`,... 元素
 
 ## 安装
 
-## Usage
+```bash
+npm install @udecode/plate-basic-elements
+# 或者
+npm install @udecode/plate-block-quote @udecode/plate-code-block @udecode/plate-heading
+```
+
+## 使用
+
+### 基本设置
 
 ```tsx
-import {
-  BasicElementsPlugin,
-  CodeBlockPlugin,
-} from '@udecode/plate-basic-elements/react';
-import Prism from 'prismjs';
+import { BasicElementsPlugin, CodeBlockPlugin } from '@udecode/plate-basic-elements/react';
+import { all, createLowlight } from 'lowlight';
+
+// 创建一个包含所有语言的 lowlight 实例
+const lowlight = createLowlight(all);
 
 const plugins = [
-  // ...otherPlugins,
+  // ...其他插件
   BasicElementsPlugin.configurePlugin(CodeBlockPlugin, {
     options: {
-      prism: Prism,
+      lowlight,
     },
   }),
 ];
 ```
 
-## 键盘快捷键
+### 自定义语言设置
+
+为了优化包大小，你可以只注册特定的语言：
+
+```tsx
+import { createLowlight } from 'lowlight';
+import css from 'highlight.js/lib/languages/css';
+import js from 'highlight.js/lib/languages/javascript';
+import ts from 'highlight.js/lib/languages/typescript';
+import html from 'highlight.js/lib/languages/xml';
+
+// 创建一个 lowlight 实例
+const lowlight = createLowlight();
+
+// 只注册你需要的语言
+lowlight.register('html', html);
+lowlight.register('css', css);
+lowlight.register('js', js);
+lowlight.register('ts', ts);
+
+const plugins = [
+  BasicElementsPlugin.configurePlugin(CodeBlockPlugin, {
+    options: {
+      lowlight,
+      // 设置默认语言（可选）
+      defaultLanguage: 'js',
+    },
+  }),
+];
+```
+
+## 快捷键
 
 <KeyTable>
-  <KeyTableItem hotkey="Cmd + Opt + 1">切换一级标题块。</KeyTableItem>
-  <KeyTableItem hotkey="Cmd + Opt + 2">切换二级标题块。</KeyTableItem>
-  <KeyTableItem hotkey="Cmd + Opt + 3">切换三级标题块。</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Opt + 1">切换为一级标题。</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Opt + 2">切换为二级标题。</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Opt + 3">切换为三级标题。</KeyTableItem>
   <KeyTableItem hotkey="Cmd + Shift + .">
-    切换所选文本的引用块格式。
+    切换选中文本的引用块格式。
   </KeyTableItem>
 </KeyTable>
 
 ## 插件
 
-### BasicElementsPlugin
+### `BasicElementsPlugin`
 
-### BlockquotePlugin
+包含所有基础元素插件的插件。
 
-### HeadingPlugin
+### `BlockquotePlugin`
 
+用于引用块元素的插件。
+
+### `HeadingPlugin`
+
+<API name="HeadingPlugin">
 <APIOptions>
-<APIItem name="levels" type="number" optional>
-指定支持的标题级别，范围从1到指定的级别。
-
-</APIItem>
+  <APIItem name="levels" type="number" optional>
+    指定支持的标题级别，范围从 1 到指定级别。
+  </APIItem>
 </APIOptions>
+</API>
 
-### CodeBlockPlugin
+### `CodeBlockPlugin`
 
+<API name="CodeBlockPlugin">
 <APIOptions>
-
-<APIItem name="syntax" type="boolean" optional>
-确定是否启用语法高亮。
-
-</APIItem>
-<APIItem name="syntaxPopularFirst" type="boolean" optional>
-确定是否优先显示常用语法。
-
-</APIItem>
+  <APIItem name="defaultLanguage" type="string | null" optional>
+    当未指定语言时使用的默认语言。设置为 null 以默认禁用语法高亮。
+  </APIItem>
+  <APIItem name="lowlight" type="ReturnType<typeof createLowlight> | null" optional>
+    用于高亮的 lowlight 实例。如果未提供，将禁用语法高亮。
+  </APIItem>
 </APIOptions>
+</API>
 
-## 代码块 API
+## API 代码块
 
-### isCodeBlockEmpty
+### `isCodeBlockEmpty`
 
-检查选区是否在空代码块内。
-
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    编辑器实例。
-  </APIItem>
-</APIParameters>
-
-<APIReturns>
-  <APIItem type="boolean">
-    如果选区在空代码块内则返回 true。
-  </APIItem>
+<API name="isCodeBlockEmpty">
+<APIReturns type="boolean">
+  判断选择是否在空的代码块中。
 </APIReturns>
+</API>
 
-### isSelectionAtCodeBlockStart
+### `isSelectionAtCodeBlockStart`
 
-检查选区是否在代码块第一行的开始位置。
-
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    编辑器实例。
-  </APIItem>
-</APIParameters>
-
-<APIReturns>
-  <APIItem type="boolean">
-    如果选区在代码块第一行的开始位置则返回 true。
-  </APIItem>
+<API name="isSelectionAtCodeBlockStart">
+<APIReturns type="boolean">
+  判断选择是否在代码块的第一个代码行的开头。
 </APIReturns>
+</API>
 
-### indentCodeLine
+### `indentCodeLine`
 
-如果选区已展开或光标左侧没有非空白字符，则缩进代码行。默认缩进为2个空格。
+如果选择已展开或光标左侧没有非空白字符，则缩进代码行。默认缩进为 2 个空格。
 
-<APIParameters>
-<APIItem name="editor" type="PlateEditor">
-编辑器实例。
-</APIItem>
-<APIItem name="options" type="IndentCodeLineOptions">
-<APISubList>
-<APISubListItem parent="options" name="codeLine" type="ElementEntry">
-  要缩进的代码行。
-</APISubListItem>
-<APISubListItem
-  parent="options"
-  name="indentDepth"
-  type="number"
->
-代码行的缩进大小。
-
-- **默认值：** `2`
-
-</APISubListItem>
-</APISubList>
-
-</APIItem>
-</APIParameters>
-
-### insertCodeBlock
-
-插入一个代码块，将节点设置为代码行并将其包裹在代码块中。如果光标不在块开始处，则会在代码块前插入一个换行符。
-
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    编辑器实例。
+<API name="indentCodeLine">
+<APIOptions type="IndentCodeLineOptions">
+  <APIItem name="codeLine" type="ElementEntry">
+    要缩进的代码行。
   </APIItem>
-  <APIItem
-    name="insertNodesOptions"
-    type="Omit<InsertNodesOptions, 'match'>"
-    optional
-  >
-    `setNodes` 函数的选项。
+  <APIItem name="indentDepth" type="number">
+    代码行的缩进大小。
+    - **默认值:** `2`
+  </APIItem>
+</APIOptions>
+</API>
+
+### `insertCodeBlock`
+
+通过将节点设置为代码行并将其包装为代码块来插入代码块。如果光标不在块的开头，则在代码块前插入一个换行符。
+
+<API name="insertCodeBlock">
+<APIParameters>
+  <APIItem name="insertNodesOptions" type="Omit<InsertNodesOptions, 'match'>" optional>
+    插入节点的选项。
   </APIItem>
 </APIParameters>
+</API>
 
-### insertCodeLine
+### `insertCodeLine`
 
-插入一个具有指定缩进深度的代码行。
+插入一个以指定缩进深度开头的代码行。
 
+<API name="insertCodeLine">
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    编辑器实例。
-  </APIItem>
   <APIItem name="indentDepth" type="number" optional>
     代码行的缩进深度。
-
-    - **默认值：** `0`
-
+    - **默认值:** `0`
   </APIItem>
 </APIParameters>
+</API>
 
-### outdentCodeLine
+### `outdentCodeLine`
 
-减少代码行缩进，如果存在则删除两个空白字符。
+取消缩进代码行，如果存在则删除两个空白字符。
 
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    编辑器实例。
+<API name="outdentCodeLine">
+<APIOptions type="OutdentCodeLineOptions">
+  <APIItem name="codeLine" type="ElementEntry">
+    要取消缩进的代码行。
   </APIItem>
-  <APIItem name="options" type="OutdentCodeLineOptions" optional>
-    <APISubList>
-      <APISubListItem parent="options" name="codeLine" type="ElementEntry">
-        要减少缩进的代码行。
-      </APISubListItem>
-      <APISubListItem parent="options" name="codeBlock" type="ElementEntry">
-        包含要减少缩进的代码行的代码块。
-      </APISubListItem>
-    </APISubList>
+  <APIItem name="codeBlock" type="ElementEntry">
+    包含要取消缩进的代码行的代码块。
   </APIItem>
-</APIParameters>
+</APIOptions>
+</API>
 
-### toggleCodeBlock
+### `toggleCodeBlock`
 
 在编辑器中切换代码块。
 
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    编辑器实例。
-  </APIItem>
-</APIParameters>
+### `unwrapCodeBlock`
 
-### unwrapCodeBlock
-
-在编辑器中解除代码块包裹。
-
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    编辑器实例。
-  </APIItem>
-</APIParameters>
-
-### useCodeBlockCombobox
-
-<APIState>
-  <APIItem name="element" type="TCodeBlockElement">
-    代码块元素。
-  </APIItem>
-  <APIItem name="setValue" type="function">
-    设置元素值的回调函数。
-  </APIItem>
-</APIState>
-
-<APIReturns>
-  <APIItem name="commandItemProps" type="object">
-    命令项的属性。
-    <APISubList>
-      <APISubListItem parent="commandItemProps" name="onSelect" type="function">
-        选择命令项时调用的函数。
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIReturns>
-
-### useCodeBlockElementState
-
-<APIParameters>
-  <APIItem name="element" type="TCodeBlockElement">
-    代码块元素。
-  </APIItem>
-</APIParameters>
-
-<APIReturns>
-  <APIItem name="className" type="string | false">
-    代码块元素的 CSS 类名，表示所选的语言。
-  </APIItem>
-  <APIItem name="syntax" type="boolean | undefined">
-    语法插件选项。
-  </APIItem>
-</APIReturns>
-
-### useCodeSyntaxLeaf
-
-<APIParameters>
-  <APIItem name="options" type="object">
-    <APISubList>
-      <APISubListItem parent="options" name="leaf" type="any">
-        表示代码语法标记的叶节点。
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIParameters>
-
-<APIReturns>
-  <APIItem name="tokenProps" type="object">
-    标记的属性。
-    <APISubList>
-      <APISubListItem parent="tokenProps" name="className" type="string">
-        标记的 CSS 类名。
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIReturns>
+在编辑器中取消代码块的包装。

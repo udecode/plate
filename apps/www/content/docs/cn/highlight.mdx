@@ -1,8 +1,8 @@
 ---
-title: Highlight
+title: 高亮
 docs:
   - route: /docs/components/highlight-leaf
-    title: Highlight Leaf
+    title: 高亮叶子节点
 ---
 
 <ComponentPreview name="highlight-demo" />
@@ -11,9 +11,9 @@ docs:
 
 ## 功能
 
-- 提供文本标记工具，用于内容审查和引用。
-- 使用内联 `<mark>` 元素支持标记（背景颜色）。
-- 支持高亮，在审查内容或为未来参考高亮时非常有用。
+- 提供文本标记工具，用于内容审查和引用
+- 使用内联的 `<mark>` 元素支持标记（背景颜色）
+- 支持高亮功能，用于审查和引用内容
 
 </PackageInfo>
 
@@ -29,7 +29,7 @@ npm install @udecode/plate-highlight
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
 
 const plugins = [
-  // ...otherPlugins,
+  // ...其他插件,
   HighlightPlugin,
 ];
 ```
@@ -38,10 +38,12 @@ const plugins = [
 
 <KeyTable>
   <KeyTableItem hotkey="Cmd + Shift + H">
-    将高亮应用于选定文本。
+    对选中的文本应用高亮。
   </KeyTableItem>
 </KeyTable>
 
 ## 插件
 
-### HighlightPlugin
+### `HighlightPlugin`
+
+用于为文本添加高亮功能的插件。
