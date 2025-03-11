@@ -1,17 +1,17 @@
 ---
-title: Callout
+title: 提示框
 docs:
   - route: https://pro.platejs.org/docs/components/callout-element
-    title: Callout Element
+    title: 提示框元素
 ---
 
 <PackageInfo>
 
-## 功能
+## 特性
 
-- 可自定义的标注块，用于突出显示重要信息
-- 支持不同的标注变体（例如：信息、警告、错误）
-- 能够为标注设置自定义图标或表情符号
+- 可自定义的提示框块，用于突出显示重要信息
+- 支持不同的提示框变体（例如，信息、警告、错误）
+- 可以为提示框设置自定义图标或表情符号
 
 </PackageInfo>
 
@@ -29,14 +29,14 @@ import { CalloutPlugin } from '@udecode/plate-callout/react';
 
 ```tsx
 const plugins = [
-  // ...otherPlugins,
+  // ...其他插件,
   CalloutPlugin,
 ]
 ```
 
 ```tsx
 const components = {
-  // ...otherComponents,
+  // ...其他组件,
   [CalloutPlugin.key]: CalloutElement,
 }
 ```
@@ -47,7 +47,7 @@ const components = {
 
 ### Plate UI
 
-Work in progress.
+开发中。
 
 ### Plate Plus
 
@@ -55,84 +55,75 @@ Work in progress.
 
 ## 插件
 
-### CalloutPlugin
+### `CalloutPlugin`
 
-标注元素插件。
+提示框元素插件。
 
-## Transforms
+## 转换
 
-### editor.tf.insert.callout
+### `editor.tf.insert.callout`
 
-插入标注元素。
+向编辑器中插入一个提示框元素。
 
-<APIParameters>
-  <APIItem name="editor" type="SlateEditor">
-    编辑器实例。
+<API name="callout">
+<APIOptions type="object">
+  <APIItem name="variant" type="string" optional>
+    要插入的提示框变体。
   </APIItem>
-  <APIItem name="options" type="object" optional>
-    插入标注的选项。
-    <APISubList>
-      <APISubListItem parent="options" name="variant" type="string" optional>
-        要插入的标注变体。
-      </APISubListItem>
-      <APISubListItem parent="options" name="...InsertNodesOptions" type="InsertNodesOptions<V>">
-        来自 `InsertNodesOptions` 的其他选项。
-      </APISubListItem>
-    </APISubList>
+  <APIItem name="...InsertNodesOptions" type="InsertNodesOptions<V>">
+    来自 `InsertNodesOptions` 的其他选项。
   </APIItem>
-</APIParameters>
+</APIOptions>
+</API>
 
-## Hooks
+## 钩子
 
-### useCalloutEmojiPicker
+### `useCalloutEmojiPicker`
 
-此钩子管理标注的表情选择器功能。
+管理提示框的表情符号选择器功能。
 
-<APIParameters>
-  <APIItem name="options" type="UseCalloutEmojiPickerOptions">
-    标注表情选择器的选项。
-    <APISubList>
-      <APISubListItem parent="options" name="isOpen" type="boolean">
-        表情选择器是否打开。
-      </APISubListItem>
-      <APISubListItem parent="options" name="setIsOpen" type="(isOpen: boolean) => void">
-        设置表情选择器打开状态的函数。
-      </APISubListItem>
-    </APISubList>
+<API name="useCalloutEmojiPicker">
+<APIOptions type="UseCalloutEmojiPickerOptions">
+  <APIItem name="isOpen" type="boolean">
+    表情符号选择器是否打开。
   </APIItem>
-</APIParameters>
+  <APIItem name="setIsOpen" type="(isOpen: boolean) => void">
+    设置表情符号选择器打开状态的函数。
+  </APIItem>
+</APIOptions>
 
-<APIReturns>
+<APIReturns type="object">
   <APIItem name="emojiToolbarDropdownProps" type="object">
-    表情工具栏下拉菜单的属性。
+    表情符号工具栏下拉菜单的属性。
     <APISubList>
       <APISubListItem parent="emojiToolbarDropdownProps" name="isOpen" type="boolean">
-        表情选择器是否打开。
+        表情符号选择器是否打开。
       </APISubListItem>
       <APISubListItem parent="emojiToolbarDropdownProps" name="setIsOpen" type="(v: boolean) => void">
-        设置表情选择器打开状态的函数，会遵循只读模式。
+        设置表情符号选择器打开状态的函数，尊重只读模式。
       </APISubListItem>
     </APISubList>
   </APIItem>
   <APIItem name="props" type="object">
-    表情选择器组件的属性。
+    表情符号选择器组件的属性。
     <APISubList>
       <APISubListItem parent="props" name="isOpen" type="boolean">
-        表情选择器是否打开。
+        表情符号选择器是否打开。
       </APISubListItem>
       <APISubListItem parent="props" name="setIsOpen" type="(isOpen: boolean) => void">
-        设置表情选择器打开状态的函数。
+        设置表情符号选择器打开状态的函数。
       </APISubListItem>
       <APISubListItem parent="props" name="onSelectEmoji" type="(options: { emojiValue?: any; icon?: any }) => void">
-        选择表情时调用的函数。它会更新标注的图标并关闭选择器。
+        选择表情符号时调用的函数。它会更新提示框的图标并关闭选择器。
       </APISubListItem>
     </APISubList>
   </APIItem>
 </APIReturns>
+</API>
 
-## Types
+## 类型
 
-### TCalloutElement
+### `TCalloutElement`
 
 ```typescript
 interface TCalloutElement extends TElement {
@@ -140,3 +131,14 @@ interface TCalloutElement extends TElement {
   icon?: string;
 }
 ```
+
+<API name="TCalloutElement">
+<APIAttributes>
+  <APIItem name="variant" type="string" optional>
+    提示框的变体。
+  </APIItem>
+  <APIItem name="icon" type="string" optional>
+    要显示的图标或表情符号。
+  </APIItem>
+</APIAttributes>
+</API>

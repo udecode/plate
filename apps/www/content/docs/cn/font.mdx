@@ -1,5 +1,5 @@
 ---
-title: Font
+title: 字体
 description: 为文档内容提供扩展的格式化选项。
 docs:
   - route: /docs/components/color-dropdown-menu
@@ -10,17 +10,17 @@ docs:
 
 <PackageInfo>
 
-## 功能特性
+## 功能
 
-- 字体大小、字体系列、颜色、背景色和字重。
+- 字体大小、字体、颜色、背景颜色和粗细。
 
-**插件：**
+## 插件
 
-- **`FontFamilyPlugin`**: 通过在 style 属性中使用 **`font-family`** 的内联元素更改字体系列。
-- **`FontSizePlugin`**: 通过具有 CSS 类或在 style 属性中使用 **`font-size`** 的内联元素控制字体大小。
-- **`FontColorPlugin`**: 通过在 style 属性中使用 **`color`** 的内联元素控制字体颜色。
-- **`FontBackgroundColorPlugin`**: 通过在 style 属性中使用 **`background-color`** 的内联元素控制字体背景色。
-- **`FontWeightPlugin`**: 通过在 style 属性中使用 **`font-weight`** 的内联元素控制字体粗细。
+- `FontFamilyPlugin`: 使用带有 `font-family` 样式的内联元素更改字体
+- `FontSizePlugin`: 使用 CSS 类或 `font-size` 样式控制字体大小
+- `FontColorPlugin`: 使用 `color` 样式控制字体颜色
+- `FontBackgroundColorPlugin`: 使用 `background-color` 样式控制背景颜色
+- `FontWeightPlugin`: 使用 `font-weight` 样式控制字体粗细
 
 </PackageInfo>
 
@@ -30,7 +30,7 @@ docs:
 npm install @udecode/plate-font
 ```
 
-## Usage
+## 使用
 
 ```tsx
 import {
@@ -40,144 +40,162 @@ import {
 } from '@udecode/plate-font/react';
 
 const plugins = [
-  // ...otherPlugins,
+  // ...其他插件
   FontColorPlugin,
   FontBackgroundColorPlugin,
   FontSizePlugin,
 ];
 ```
 
-## Plugins
+## 插件
 
-### FontBackgroundColorPlugin
+### `FontBackgroundColorPlugin`
 
-### FontColorPlugin
+用于字体背景颜色格式化的插件。
 
-### FontFamilyPlugin
+### `FontColorPlugin`
 
-### FontSizePlugin
+用于字体颜色格式化的插件。
+
+### `FontFamilyPlugin`
+
+用于字体格式化的插件。
+
+### `FontSizePlugin`
+
+用于字体大小格式化的插件。
 
 #### API
 
-##### editor.api.fontSize.setMark
+##### `editor.api.fontSize.setMark`
 
 设置字体大小标记。
 
+<API name="setMark">
 <APIParameters>
   <APIItem name="fontSize" type="string">
     要设置的字体大小值。
   </APIItem>
 </APIParameters>
+</API>
 
-#### Utils
+#### 工具
 
-##### toUnitLess
+##### `toUnitLess`
 
-将字体大小值转换为无单位的值。
+将字体大小值转换为无单位值。
 
+<API name="toUnitLess">
 <APIParameters>
   <APIItem name="fontSize" type="string">
     要转换的字体大小值。
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-  <APIItem name="unitLess" type="string">
-    无单位字体大小值。
-  </APIItem>
+<APIReturns type="string">
+  无单位的字体大小值。
 </APIReturns>
+</API>
 
-### FontWeightPlugin
+### `FontWeightPlugin`
 
-## API Components
+用于字体粗细格式化的插件。
 
-### useColorDropdownMenu
+## 钩子
 
-颜色下拉菜单组件的行为 hook。
+### `useColorDropdownMenu`
 
+用于颜色下拉菜单组件的行为钩子。
+
+<API name="useColorDropdownMenu">
 <APIState>
   <APIItem name="open" type="boolean">
-    表示下拉菜单是否打开的布尔值。
+    下拉菜单是否打开。
   </APIItem>
   <APIItem name="onToggle" type="function">
-    用于切换下拉菜单打开状态的回调函数。
+    切换打开状态的回调函数。
   </APIItem>
 </APIState>
 
-<APIReturns>
+<APIReturns type="object">
   <APIItem name="menuProps" type="object">
-    需要传递给菜单组件的属性。
+    菜单组件的属性。
     <APISubList>
       <APISubListItem parent="menuProps" name="open" type="boolean">
-        表示下拉菜单是否打开的布尔值。
+        下拉菜单是否打开。
       </APISubListItem>
       <APISubListItem parent="menuProps" name="onOpenChange" type="function">
-        用于切换下拉菜单打开状态的回调函数。
+        切换打开状态的回调函数。
       </APISubListItem>
     </APISubList>
   </APIItem>
   <APIItem name="buttonProps" type="object">
-    需要传递给按钮组件的属性。
+    按钮组件的属性。
     <APISubList>
       <APISubListItem parent="buttonProps" name="pressed" type="boolean">
-        表示下拉菜单是否打开的布尔值。
+        下拉菜单是否打开。
       </APISubListItem>
     </APISubList>
   </APIItem>
 </APIReturns>
+</API>
 
-### useColorInput
+### `useColorInput`
 
-颜色输入组件的行为 hook。
+用于颜色输入组件的行为钩子。
 
-<APIReturns>
+<API name="useColorInput">
+<APIReturns type="object">
   <APIItem name="inputRef" type="React.Ref<HTMLInputElement>">
-    需要分配给颜色输入元素的 ref 对象。
+    颜色输入元素的引用。
   </APIItem>
-  <APIItem name="childProps" type="function">
-    需要传递给触发颜色选择器的子组件的属性。
+  <APIItem name="childProps" type="object">
+    触发颜色选择器的子组件的属性。
     <APISubList>
       <APISubListItem parent="childProps" name="onClick" type="function">
-        用于处理子组件点击事件的回调函数。
+        处理子组件点击事件的回调函数。
       </APISubListItem>
     </APISubList>
   </APIItem>
 </APIReturns>
+</API>
 
-### useColorsCustom
+### `useColorsCustom`
 
-颜色选择器中自定义颜色的行为 hook。
+用于颜色选择器中自定义颜色的行为钩子。
 
+<API name="useColorsCustom">
 <APIState>
   <APIItem name="updateCustomColor" type="function">
-    用于更新自定义颜色的回调函数。
+    更新自定义颜色的回调函数。
   </APIItem>
   <APIItem name="value" type="string">
-    颜色输入的当前值。
+    当前颜色输入值。
   </APIItem>
   <APIItem name="setValue" type="function">
-    用于更新颜色输入值的回调函数。
+    更新颜色值的回调函数。
   </APIItem>
 </APIState>
 
-<APIReturns>
+<APIReturns type="object">
   <APIItem name="inputProps" type="object">
-    需要传递给颜色输入元素的属性。
+    颜色输入元素的属性。
     <APISubList>
       <APISubListItem parent="inputProps" name="value" type="string">
         颜色输入的当前值。
       </APISubListItem>
       <APISubListItem parent="inputProps" name="onChange" type="function">
-        用于处理颜色输入变化事件的回调函数。
+        处理颜色输入变化事件的回调函数。
       </APISubListItem>
     </APISubList>
   </APIItem>
   <APIItem name="menuItemProps" type="object">
-    需要传递给颜色选择器中菜单项元素的属性。
-    <APISubList>
+    菜单项元素的属性。
+     <APISubList>
       <APISubListItem parent="menuItemProps" name="onSelect" type="function">
-        用于处理菜单项选择事件的回调函数。
+        处理菜单项选择事件的回调函数。
       </APISubListItem>
     </APISubList>
   </APIItem>
 </APIReturns>
+</API>

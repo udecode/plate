@@ -1,8 +1,8 @@
 ---
-title: Date
+title: 日期
 docs:
   - route: /docs/components/date-element
-    title: Date Element
+    title: 日期元素
 ---
 
 <ComponentPreview name="date-demo" />
@@ -11,8 +11,8 @@ docs:
 
 ## 功能
 
-- 在文本中插入和显示日期，使用内联日期元素。
-- 这些日期可以轻松选择和修改，使用日历界面。
+- 使用内联日期元素在文本中插入和显示日期。
+- 这些日期可以通过日历界面轻松选择和修改。
 
 </PackageInfo>
 
@@ -28,63 +28,55 @@ npm install @udecode/plate-date
 import { DatePlugin } from '@udecode/plate-date/react';
 
 const plugins = [
-  // ...otherPlugins,
+  // ...其他插件,
   DatePlugin,
 ];
 ```
 
 ## 插件
 
-### DatePlugin
+### `DatePlugin`
 
-添加日期插件到您的文档。
+用于向文档中添加日期元素的插件。
 
 ## API
 
-### isPointNextToNode
+### `isPointNextToNode`
 
-检查一个点是否靠近特定节点类型。
+检查某个点是否与特定类型的节点相邻。
 
+<API name="isPointNextToNode">
 <APIParameters>
-
-<APIItem name="editor" type="PlateEditor">
-编辑器实例。
-</APIItem>
-
-<APIItem name="nodeType" type="string">
-要检查的节点类型。这应该是一个表示节点类型的字符串，例如 'date' 用于内联日期元素。
-</APIItem>
-
-<APIItem name="options" type="object">
-检查邻接的选项：
-
-<APISubList>
-<APISubListItem parent="options" name="at" type="Point" optional>
-一个可选的 Point 对象，指定要检查的位置。如果未提供，则使用当前选择锚点。
-</APISubListItem>
-<APISubListItem parent="options" name="reverse" type="boolean">
-一个布尔值，指示要检查的方向。如果为 true，则检查前一个节点；如果为 false，则检查下一个节点。
-</APISubListItem>
-</APISubList>
-
-</APIItem>
-
+  <APIItem name="nodeType" type="string">
+    要检查相邻性的节点类型（例如，'date' 表示内联日期元素）。
+  </APIItem>
+  <APIItem name="options" type="object">
+    检查相邻性的选项。
+  </APIItem>
 </APIParameters>
 
-## 插件转换
+<APIOptions type="object">
+  <APIItem name="at" type="Point" optional>
+    检查的位置。如果未提供，则使用当前选择的锚点。
+  </APIItem>
+  <APIItem name="reverse" type="boolean">
+    检查方向。如果为 true，则检查前一个节点；如果为 false，则检查下一个节点。
+  </APIItem>
+</APIOptions>
+</API>
 
-### editor.tf.insert.date
+## 转换
 
-插入一个日期到编辑器中。
+### `editor.tf.insert.date`
 
+<API name="insert.date">
 <APIParameters>
-
-<APIItem name="date" type="string" optional>
-要插入的日期字符串，格式为 'YYYY-MM-DD'（例如，'2024-04-22'）。如果未提供，则使用当前日期作为默认值。
-</APIItem>
-
-<APIItem name="options" type="InsertNodesOptions" optional>
-插入节点的选项。
-</APIItem>
-
+  <APIItem name="date" type="string" optional>
+    要插入的日期字符串，格式为 'YYYY-MM-DD'。
+    - **默认值:** 当前日期
+  </APIItem>
+  <APIItem name="options" type="InsertNodesOptions" optional>
+    插入节点的选项。
+  </APIItem>
 </APIParameters>
+</API>

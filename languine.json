@@ -1,0 +1,13 @@
+{
+  "language": {
+    "source": "en",
+    "targets": [
+      "cn"
+    ]
+  },
+  "content": [
+    {
+      "source": "apps/www/content/docs/en/*.mdx"
+    }
+  ]
+}

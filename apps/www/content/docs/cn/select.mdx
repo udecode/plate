@@ -1,5 +1,5 @@
 ---
-title: Select
+title: 选择
 ---
 
 {/* <ComponentPreview name="playground-demo" id="delete" /> */}
@@ -8,8 +8,8 @@ title: Select
 
 ## 功能
 
-- 设置一个元素类型列表，在按退格键时删除
-- 设置一个元素类型列表，在按退格键时选择，而不是删除
+- 设置按下退格键时要删除的元素类型列表
+- 设置按下退格键时要选择的元素类型列表，而不是删除
 
 </PackageInfo>
 
@@ -19,7 +19,7 @@ title: Select
 npm install @udecode/plate-select
 ```
 
-## 用法
+## 使用
 
 ```tsx
 import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
@@ -27,7 +27,7 @@ import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
 
 ```tsx
 const plugins = [
-  // ...otherPlugins,
+  // ...其他插件
   SelectOnBackspacePlugin.configure({
     options: {
       query: {
@@ -41,24 +41,25 @@ const plugins = [
 
 ## 插件
 
-### DeletePlugin
+### `DeletePlugin`
 
-在按删除键（向前删除）时，如果匹配查询选项，则删除空块的插件。
+该插件在按下删除键（向前删除）时，如果匹配查询选项，则删除空块。
 
+<API name="DeletePlugin">
 <APIOptions>
-<APIItem name="query" type="QueryNodeOptions" optional>
-  查询选项，用于过滤哪些空块可以被删除。
-  - **默认:** `{ allow: ['p'] }`
-</APIItem>
+  <APIItem name="query" type="QueryNodeOptions" optional>
+    用于过滤哪些空块可以被删除的查询选项。
+    - **默认值:** `{ allow: ['p'] }`
+  </APIItem>
 </APIOptions>
 
-例如：
+示例：
 
 ```tsx
 const plugins = [
   DeletePlugin.configure({
     options: {
-      // Only remove empty paragraphs and blockquotes
+      // 仅删除空段落和块引用
       query: {
         allow: ['p', 'blockquote'],
       },
@@ -67,13 +68,13 @@ const plugins = [
 ];
 ```
 
-插件将：
+行为：
 1. 检查当前块是否为空并匹配查询选项
 2. 如果为真：删除整个块
-3. 如果为假：使用默认删除行为
+3. 如果为假：使用默认的删除行为
 
 ```tsx
-// Empty paragraph followed by code block
+// 空段落后跟代码块
 <editor>
   <p>
     <cursor />
@@ -83,55 +84,57 @@ const plugins = [
   </codeblock>
 </editor>
 
-// Pressing delete will remove the empty paragraph instead of nothing
+// 按下删除键将删除空段落而不是什么都不做
 <editor>
   <codeblock>
     <codeline>test</codeline>
   </codeblock>
 </editor>
 ```
+</API>
 
-### SelectOnBackspacePlugin
+### `SelectOnBackspacePlugin`
 
-在按退格键时选择节点而不是删除它们的插件。适用于图像或水平规则等节点。
+该插件在按下退格键时选择节点而不是删除它们。
 
+<API name="SelectOnBackspacePlugin">
 <APIOptions>
-<APIItem name="query" type="QueryNodeOptions">
-  查询选项，用于确定哪些节点在按退格键时触发选择。
-</APIItem>
-<APIItem parent="options" name="removeNodeIfEmpty" type="boolean" optional>
-  是否在按退格键时删除空节点。
-  - **默认:** `false`
-</APIItem>
+  <APIItem name="query" type="QueryNodeOptions">
+    用于确定哪些节点触发选择的查询选项。
+  </APIItem>
+  <APIItem name="removeNodeIfEmpty" type="boolean" optional>
+    是否在退格时删除空节点。
+    - **默认值:** `false`
+  </APIItem>
 </APIOptions>
 
-例如：
+示例：
 
 ```tsx
 const plugins = [
   SelectOnBackspacePlugin.configure({
     options: {
-      // Select these nodes instead of deleting them
+      // 选择这些节点而不是删除它们
       query: {
         allow: ['img', 'hr'],
       },
-      // Remove current node if empty
+      // 如果为空则删除当前节点
       removeNodeIfEmpty: true,
     },
   }),
 ];
 ```
 
-插件将：
-1. 当按退格键在块的开头时：
+行为：
+1. 当在块的开头按下退格键时：
 2. 检查前一个节点是否匹配查询选项
 3. 如果为真：
-   - 选择前一个节点而不是删除它
-   - 如果为空，则删除当前节点
-4. 如果为假：使用默认退格行为
+   - 选择前一个节点而不是删除
+   - 可选地删除当前节点（如果为空）
+4. 如果为假：使用默认的退格行为
 
 ```tsx
-// 图片后的空段落
+// 图像后的空段落
 <editor>
   <img src="..." />
   <p>
@@ -139,14 +142,15 @@ const plugins = [
   </p>
 </editor>
 
-// 按退格键将选择图片而不是删除它
+// 按下退格键将选择图像而不是删除它
 <editor>
   <img src="..." selected />
   <p></p>
 </editor>
 
-// 如果 removeNodeIfEmpty 为 true，空段落也会被删除
+// 如果 removeNodeIfEmpty 为 true，则空段落也会被删除
 <editor>
   <img src="..." selected />
 </editor>
 ```
+</API>

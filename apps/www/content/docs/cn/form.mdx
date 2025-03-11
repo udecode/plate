@@ -1,0 +1,428 @@
+---
+title: 表单
+description: 如何将 Plate 编辑器与 react-hook-form 集成。
+---
+
+虽然 Plate 通常用作**非受控**输入，但在某些情况下，您可能希望将编辑器与表单库（如 [**react-hook-form**](https://www.react-hook-form.com) 或 **shadcn/ui** 的 [**Form**](https://ui.shadcn.com/docs/components/form) 组件）集成。本指南将介绍最佳实践和常见陷阱。
+
+## 何时将 Plate 与表单集成
+
+- **表单提交**：您希望在用户提交表单时，将编辑器的内容与其他字段（如 `<input>`、`<select>`）一起提交。
+- **验证**：您希望与其他表单字段同时验证编辑器的内容（例如，检查是否为空）。
+- **表单数据管理**：您希望将编辑器内容与其他字段一起存储在同一个存储中（如 `react-hook-form` 的状态）。
+
+然而，请注意关于**完全控制**编辑器值的警告。Plate（和 Slate）强烈推荐使用非受控模型。如果您尝试过于频繁地替换编辑器的内部状态，可能会破坏**选择**、**历史记录**，或导致性能问题。推荐的做法是将编辑器视为非受控的，但在某些事件上**同步**表单数据。
+
+## 方法 1：在 `onChange` 时同步
+
+这是最直接的方法：每次编辑器发生变化时，更新表单字段的值。对于小文档或不频繁的更改，这通常是可接受的。
+
+### React Hook Form 示例
+
+```tsx
+import { useForm } from 'react-hook-form';
+import type { Value } from '@udecode/plate';
+import { Plate, PlateContent, usePlateEditor } from '@udecode/plate/react';
+
+type FormData = {
+  content: Value;
+};
+
+export function RHFEditorForm() {
+  const initialValue = [
+    { type: 'p', children: [{ text: 'Hello from react-hook-form!' }] },
+  ]
+
+  // 设置 react-hook-form
+  const { register, handleSubmit, setValue } = useForm<FormData>({
+    defaultValues: {
+      content: initialValue,
+    },
+  });
+
+  // 创建/配置 Plate 编辑器
+  const editor = usePlateEditor({ value: initialValue });
+
+  // 为 react-hook-form 注册字段
+  register('content', { /* 验证规则... */ });
+
+  const onSubmit = (data: FormData) => {
+    // data.content 将包含最终的编辑器内容
+    console.info('已提交:', data.content);
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <Plate
+        editor={editor}
+        onChange={({ value }) => {
+          // 将编辑器更改同步到表单
+          setValue('content', value);
+        }}
+      >
+        <PlateContent placeholder="在此输入..." />
+      </Plate>
+
+      <button type="submit">提交</button>
+    </form>
+  );
+}
+```
+
+**注意事项**：
+1. **`defaultValues.content`**：您的初始编辑器内容。
+2. **`register('content')`**：向 RHF 表明该字段被跟踪。  
+3. **`onChange({ value })`**：每次调用 `setValue('content', value)`。
+
+如果您预计会有大文档或快速输入，请考虑防抖或切换到 `onBlur` 方法以减少表单更新。
+
+### shadcn/ui 表单示例
+
+[shadcn/ui](https://ui.shadcn.com/docs/components/form) 提供了一个与 react-hook-form 集成的 `<Form>`。我们将使用 `<FormField>` 来处理字段逻辑：
+
+```tsx
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { useForm } from 'react-hook-form';
+import { Plate, PlateContent, usePlateEditor } from '@udecode/plate/react';
+
+type FormValues = {
+  content: any;
+};
+
+export function EditorForm() {
+  // 1. 创建表单
+  const form = useForm<FormValues>({
+    defaultValues: {
+      content: [
+        { type: 'p', children: [{ text: 'Hello from shadcn/ui Form!' }] },
+      ],
+    },
+  });
+
+  // 2. 创建 Plate 编辑器
+  const editor = usePlateEditor();
+
+  const onSubmit = (data: FormValues) => {
+    console.info('已提交数据:', data.content);
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <FormField
+          control={form.control}
+          name="content"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>内容</FormLabel>
+              <FormControl>
+                <Plate
+                  editor={editor}
+                  onChange={({ value }) => {
+                    // 同步到表单
+                    field.onChange(value);
+                  }}
+                >
+                  <PlateContent placeholder="输入..." />
+                </Plate>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <button type="submit">提交</button>
+      </form>
+    </Form>
+  );
+}
+```
+
+这种方法使您的编辑器内容表现得像 shadcn/ui 表单中的任何其他字段一样。
+
+## 方法 2：在失去焦点时同步（或其他触发器）
+
+与其在每次按键时同步，您可能只需要在用户：
+- 离开编辑器时（`onBlur`），
+- 点击“保存”按钮时，或
+- 达到某些表单提交逻辑时获取最终值。
+
+```tsx
+<Plate editor={editor}>
+  <PlateContent
+    onBlur={() => {
+      // 仅在失去焦点时同步
+      setValue('content', editor.children);
+    }}
+  />
+</Plate>
+```
+
+这减少了开销，但您的表单状态不会反映用户输入时的部分更新。
+
+## 方法 3：受控替换（高级）
+
+如果您希望表单成为单一数据源（完全[受控](/docs/controlled)）：
+```ts
+editor.tf.setValue(formStateValue);
+```
+但这有已知的缺点：
+- 可能会破坏光标位置和撤销/重做。
+- 对于大文档可能会导致频繁的完全重新渲染。
+
+**推荐**：如果可能，请坚持使用部分非受控模型。
+
+## 示例：保存和重置
+
+这是一个更完整的表单，展示了保存和重置编辑器/表单：
+
+```tsx
+import { useForm } from 'react-hook-form';
+import { Plate, PlateContent, usePlateEditor } from '@udecode/plate/react';
+
+function MyForm() {
+  const form = useForm({
+    defaultValues: {
+      content: [
+        { type: 'p', children: [{ text: '初始内容...' }] },
+      ],
+    },
+  });
+
+  const editor = usePlateEditor();
+
+  const onSubmit = (data) => {
+    alert(JSON.stringify(data, null, 2));
+  };
+
+  return (
+    <form onSubmit={form.handleSubmit(onSubmit)}>
+      <Plate
+        editor={editor}
+        onChange={({ value }) => form.setValue('content', value)}
+      >
+        <PlateContent />
+      </Plate>
+
+      <button type="submit">保存</button>
+
+      <button
+        type="button"
+        onClick={() => {
+          // 重置编辑器
+          editor.tf.reset();
+          // 重置表单
+          form.reset();
+        }}
+      >
+        重置
+      </button>
+    </form>
+  );
+}
+```
+
+- **`onChange`** -> 更新表单状态。
+- **重置** -> 调用 `editor.tf.reset()` 和 `form.reset()` 以保持一致性。
+
+## 从 shadcn 的 Textarea 迁移到 Plate
+
+如果您有一个标准的 [shadcn/ui 文档中的 TextareaForm](https://ui.shadcn.com/docs/components/textarea#form)，并希望将 `<Textarea>` 替换为 Plate 编辑器，您可以按照以下步骤操作：
+
+```tsx
+// 1. 原始代码 (TextareaForm)
+<FormField
+  control={form.control}
+  name="bio"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>简介</FormLabel>
+      <FormControl>
+        <Textarea
+          placeholder="告诉我们一些关于您的事情"
+          className="resize-none"
+          {...field}
+        />
+      </FormControl>
+      <FormDescription>
+        您可以 <span>@提及</span> 其他用户和组织。
+      </FormDescription>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+```
+
+创建一个新的 `EditorField` 组件：
+
+```tsx
+// EditorField.tsx
+"use client";
+
+import * as React from "react";
+import type { Value } from "@udecode/plate";
+import { Plate, PlateContent, usePlateEditor } from "@udecode/plate/react";
+
+/**
+ * 一个可重用的编辑器组件，其行为类似于标准的 <Textarea>，
+ * 接受 `value`、`onChange` 和可选的占位符。
+ *
+ * 用法：
+ *
+ * <FormField
+ *   control={form.control}
+ *   name="bio"
+ *   render={({ field }) => (
+ *     <FormItem>
+ *       <FormLabel>简介</FormLabel>
+ *       <FormControl>
+ *         <EditorField
+ *           {...field}
+ *           placeholder="告诉我们一些关于您的事情"
+ *         />
+ *       </FormControl>
+ *       <FormDescription>一些有用的描述...</FormDescription>
+ *       <FormMessage />
+ *     </FormItem>
+ *   )}
+ * />
+ */
+export interface EditorFieldProps
+  extends React.HTMLAttributes<HTMLDivElement> {
+  /**
+   * 当前的 Slate 值。应该是一个 Slate 节点数组。
+   */
+  value?: Value;
+
+  /**
+   * 当编辑器值发生变化时调用。
+   */
+  onChange?: (value: Value) => void;
+
+  /**
+   * 编辑器为空时显示的占位符文本。
+   */
+  placeholder?: string;
+}
+
+export function EditorField({
+  value,
+  onChange,
+  placeholder = "在此输入...",
+  ...props
+}: EditorFieldProps) {
+  // 我们使用提供的初始 `value` 创建编辑器实例。
+  const editor = usePlateEditor({
+    value: value ?? [
+      { type: "p", children: [{ text: "" }] }, // 默认空段落
+    ],
+  });
+
+  return (
+    <Plate
+      editor={editor}
+      onChange={({ value }) => {
+        // 通过 onChange 属性将更改同步回调用者
+        onChange?.(value);
+      }}
+      {...props}
+    >
+      <PlateContent placeholder={placeholder} />
+    </Plate>
+  );
+}
+```
+
+3. 将 `<Textarea>` 替换为 `<EditorField>` 块：
+
+```tsx
+"use client";
+
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { EditorField } from "./EditorField"; // 导入上面的组件
+
+// 1. 使用 zod 定义我们的验证模式
+const FormSchema = z.object({
+  bio: z
+    .string()
+    .min(10, { message: "简介必须至少 10 个字符。" })
+    .max(160, { message: "简介不得超过 160 个字符。" }),
+});
+
+// 2. 构建我们的主表单组件
+export function EditorForm() {
+  // 3. 设置表单
+  const form = useForm<z.infer<typeof FormSchema>>({
+    resolver: zodResolver(FormSchema),
+    defaultValues: {
+      // 这里 "bio" 只是一个字符串，但如果您将其解析为 JSON，
+      // 我们的编辑器会将其解释为初始内容
+      bio: "",
+    },
+  });
+
+  // 4. 提交处理程序
+  function onSubmit(data: z.infer<typeof FormSchema>) {
+    alert("已提交: " + JSON.stringify(data, null, 2));
+  }
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <FormField
+          control={form.control}
+          name="bio"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>简介</FormLabel>
+              <FormControl>
+                <EditorField
+                  {...field}
+                  placeholder="告诉我们一些关于您的事情..."
+                />
+              </FormControl>
+              <FormDescription>
+                您可以 <span>@提及</span> 其他用户和组织。
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <button type="submit" className="py-2 px-4 bg-primary text-white">
+          提交
+        </button>
+      </form>
+    </Form>
+  );
+}
+```
+
+- 任何现有的表单验证或错误信息保持不变。
+- 对于默认值，确保 `form.defaultValues.bio` 是一个有效的 Slate 值（节点数组）而不是字符串。
+- 对于受控值，适度使用 `editor.tf.setValue(formStateValue)`。
+
+## 最佳实践
+
+1. **使用非受控编辑器**：让 Plate 管理自己的状态，仅在必要时更新表单。  
+2. **最小化替换**：避免过于频繁地调用 `editor.tf.setValue`；它可能会破坏选择、历史记录或降低性能。  
+3. **在正确的时间验证**：决定是否需要即时验证（输入时）或在失去焦点/提交时验证。  
+4. **同时重置**：如果重置表单，请调用 `editor.tf.reset()` 以保持它们同步。

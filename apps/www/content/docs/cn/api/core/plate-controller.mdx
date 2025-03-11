@@ -3,43 +3,39 @@ title: Plate Controller
 description: PlateController 组件的 API 参考。
 ---
 
-**`PlateController`** 是一个可选的 provider 组件，它可以让你从各自的 **`Plate`** 组件外部访问特定的 [Plate Stores](/docs/api/core/store)。
+**`PlateController`** 是一个可选的提供者组件，用于从外部访问特定 [Plate Stores](/docs/api/core/store) 的 **`Plate`** 组件。
 
-## PlateController Store
+## PlateController 存储
 
-### State
+<API name="PlateController">
+PlateController 存储包含基于 **`id`** 获取 Plate Store 所需的信息，并确定当前哪个 **`id`** 是活动的。
 
-PlateController Store 包含了根据 **`id`** 获取 Plate Store 所需的信息，以及确定当前哪个 **`id`** 处于活动状态。
-
-<APIAttributes>
+<APIState>
 <APIItem name="activeId" type="string | null">
-
-最近获得焦点的 Plate 编辑器的 **`id`**。
+最近聚焦的 Plate 编辑器的 **`id`**。
 
 - **默认值:** `null`
-
 </APIItem>
-<APIItem name="primaryEditorIds" type="string[]">
 
-所有主要 Plate 编辑器的 **`id`**。默认情况下，除非在 **`Plate`** 组件中传入 **`primary={false}`**，否则编辑器被视为主要编辑器。
+<APIItem name="primaryEditorIds" type="string[]">
+所有主要 Plate 编辑器的 **`id`**。默认情况下，除非 **`primary={false}`** 被传递给其 **`Plate`** 组件，否则编辑器被视为主要编辑器。
 
 - **默认值:** `[]`
-
 </APIItem>
-<APIItem name="editorStores" type="Record<string, JotaiStore | null>">
 
-从每个已挂载的 Plate 编辑器的 **`id`** 到对应该编辑器的 Plate Store 的 **`JotaiStore`** 的映射。
+<APIItem name="editorStores" type="Record<string, JotaiStore | null>">
+从每个挂载的 Plate 编辑器的 **`id`** 到该编辑器的 Plate Store 对应的 **`JotaiStore`** 的映射。
 
 - **默认值:** `{}`
-
 </APIItem>
-</APIAttributes>
+</APIState>
+</API>
 
 ## 使用模式
 
 ### 通过 ID 访问特定编辑器
 
-**`PlateController`** 可以用来通过 **`id`** 访问特定编辑器的 store。注意，如果找不到匹配的编辑器，将返回一个不可变的后备编辑器。
+**`PlateController`** 可用于通过 **`id`** 访问特定编辑器的存储。请注意，如果找不到匹配的编辑器，将返回一个不可变的备用编辑器。
 
 ```tsx
 const App = withHoc(PlateController, () => {
@@ -65,15 +61,15 @@ const App = withHoc(PlateController, () => {
 });
 ```
 
-### 当前活跃的编辑器
+### 活动编辑器
 
-如果像 **`useEditorRef`** 这样的钩子在 **`PlateController`** 内部使用，但没有显式传入 **`id`**，它们将解析为当前活动的编辑器。
+如果在 **`PlateController`** 内部使用 **`useEditorRef`** 等钩子而没有显式指定 **`id`**，它们将解析为当前活动的编辑器。
 
-当前活动的编辑器确定如下：
+活动编辑器的确定方式如下：
 
-1. 如果某个编辑器已获得焦点，则返回最后一个这样的编辑器。
-2. 如果某个编辑器是主要编辑器，则返回第一个挂载的这样的编辑器。
-3. 否则，返回一个不可变的后备编辑器。
+1. 如果某个编辑器已被聚焦，则返回最后一个这样的编辑器。
+2. 如果某个编辑器是主要的，则返回第一个挂载的此类编辑器。
+3. 否则，返回一个不可变的备用编辑器。
 
 ```tsx
 const App = withHoc(PlateController, () => {
@@ -81,8 +77,8 @@ const App = withHoc(PlateController, () => {
   const isFallback = !useEditorMounted();
   
   const message = isFallback
-    ? 'Please focus an editor'
-    : `Active editor: ${activeEditorId}`;
+    ? '请聚焦一个编辑器'
+    : `活动编辑器: ${activeEditorId}`;
   
   return (
     <main>
@@ -100,18 +96,18 @@ const App = withHoc(PlateController, () => {
 });
 ```
 
-## 处理后备编辑器
+## 处理备用编辑器
 
-当一个钩子在 **`PlateController`** 内部调用时，如果无法找到匹配的 Plate Store，它将使用 Plate Store 的默认值。**`editor`** 的默认值是 **`createPlateFallbackEditor()`**。后备编辑器就像一个没有插件的空 Plate 编辑器，除了它会在收到 Slate 操作时抛出运行时错误（即它是不可变的，不能在变换中使用）。
+当在 **`PlateController`** 内部调用的钩子无法找到匹配的 Plate Store 时，它将使用 Plate Store 的默认值。**`editor`** 的默认值是 **`createPlateFallbackEditor()`**。备用编辑器就像一个没有插件的空 Plate 编辑器，只是如果它接收到 Slate 操作（即它是不可变的，不能用于转换），它会抛出运行时错误。
 
-这样做的原因是确保查询编辑器（例如确定工具栏按钮是否处于活动状态）的代码在失败时使用一个合理的默认值，而变换编辑器（例如按下工具栏按钮）的代码在失败时抛出错误。
+这样做的理由是确保查询编辑器的代码（例如确定工具栏按钮是否处于活动状态）在出现错误时静默失败并返回合理的默认值，而转换编辑器的代码（例如按下工具栏按钮）则会大声失败并抛出错误。
 
-有两种方法可以确定你正在处理后备编辑器还是真实编辑器：
+有两种方法可以确定你正在使用的是备用编辑器还是真实编辑器：
 
-- **`useEditorMounted`** 返回 **`false`** 如果无法解析任何挂载的编辑器
-- **`editor.isFallback`** 对于后备编辑器返回 **`true`**
+- **`useEditorMounted`** 如果没有找到挂载的编辑器，则返回 **`false`**
+- **`editor.isFallback`** 对于备用编辑器为 **`true`**
 
-当在 **`PlateController`** 内部使用像 **`useEditorRef`** 这样的钩子时，你应该采取防御性措施，以确保在出现后备编辑器时适当处理它们。例如，如果 **`useEditorMounted`** 返回 **`false`**，你可以禁用工具栏按钮，或者如果 **`editor.isFallback`** 是 **`true`**，你可以忽略事件。
+在 **`PlateController`** 内部使用 **`useEditorRef`** 等钩子时，你应该编写防御性代码，以确保在出现备用编辑器时能够正确处理。例如，如果 **`useEditorMounted`** 返回 **`false`**，你可以禁用工具栏按钮，或者如果 **`editor.isFallback`** 为 **`true`**，则忽略事件。
 
 ```tsx
 const App = withHoc(PlateController, () => {
@@ -125,7 +121,7 @@ const App = withHoc(PlateController, () => {
   return (
     <main>
       <button type="button" onClick={toggleBold}>
-        Bold
+        加粗
       </button>
       
       <Plate editor={createPlateEditor({ id: 'main', primary: false })}>
@@ -156,7 +152,7 @@ const App = withHoc(PlateController, () => {
         onClick={toggleBold}
         disabled={isFallback}
       >
-        Bold
+        加粗
       </button>
       
       <Plate editor={createPlateEditor({ id: 'main', primary: false })}>

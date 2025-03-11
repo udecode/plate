@@ -1,39 +1,38 @@
 ---
-title: Toggle
+title: 切换
 docs:
   - route: /docs/components/toggle-element
-    title: Toggle Element
+    title: 切换元素
   - route: /docs/components/toggle-toolbar-button
-    title: Toggle Button
+    title: 切换按钮
 ---
 
 <ComponentPreview name="toggle-demo" />
 
 <PackageInfo>
 
-## Features
+## 功能
 
-- 添加折叠和展开功能到你的文档中。
-  - 默认情况下，折叠的，可以展开以显示内部内容。
-- 参考 [Indent 文档](/docs/indent) 了解更多信息。
+- 向文档中添加切换
+  - 切换默认是关闭的，可以打开以显示内部内容
+- 更多信息请参考 [缩进文档](/docs/indent)
 
-## Plugin dependencies
+## 插件依赖
 
-- [Indent](/docs/indent)
-- [Node Id](/docs/node-id)
+- [缩进](/docs/indent)
+- [节点 ID](/docs/node-id)
 
 </PackageInfo>
 
-## Installation
+## 安装
 
 ```bash
 npm install @udecode/plate-indent @udecode/plate-node-id @udecode/plate-toggle
 ```
 
-## Usage
+## 使用
 
 ```tsx
-// ...
 import { ParagraphPlugin } from '@udecode/plate/react';
 import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { IndentPlugin } from '@udecode/plate-indent/react';
@@ -52,129 +51,154 @@ const plugins = [
 ];
 ```
 
-## Plugins
+## 插件
 
-### TogglePlugin
+### `TogglePlugin`
 
-<APIOptions>
-<APIItem name="openIds" type="Set<string>" optional>
-打开的折叠 ID 集合。
-</APIItem>
-<APIItem name="isOpen" type="(toggleId: string) => boolean" optional>
-判断折叠是否打开的函数。
-</APIItem>
-<APIItem name="someClosed" type="(toggleIds: string[]) => boolean" optional>
-判断是否有折叠处于关闭状态的函数。
-</APIItem>
+用于管理切换功能的插件。
+
+<API name="TogglePlugin">
+<APIOptions type="object">
+  <APIItem name="openIds" type="Set<string>" optional>
+    打开的切换 ID 集合。
+    - **默认值:** `new Set()`
+  </APIItem>
+  <APIItem name="isOpen" type="(toggleId: string) => boolean" optional>
+    检查切换是否打开的函数。
+    - **默认值:** `(id) => openIds.has(id)`
+  </APIItem>
+  <APIItem name="someClosed" type="(toggleIds: string[]) => boolean" optional>
+    检查是否有切换关闭的函数。
+    - **默认值:** `(ids) => ids.some(id => !isOpen(id))`
+  </APIItem>
 </APIOptions>
+</API>
 
 ## API
 
-### editor.api.toggle.toggleIds
+### `editor.api.toggle.toggleIds`
 
-切换折叠的打开状态。
+切换指定切换的打开状态。
+
+<API name="editor.api.toggle.toggleIds">
+切换切换的打开状态。
 
 <APIParameters>
   <APIItem name="ids" type="string[]">
-    元素 ID 数组。
+    要切换的元素 ID 数组。
   </APIItem>
   <APIItem name="force" type="boolean | null" optional>
-    设置为 true 将展开所有折叠，无论其当前状态如何。设置为 false 将折叠所有折叠，无论其当前状态如何。如果为 null，将切换当前状态。
+    强制切换状态：
+    - `true`: 展开所有切换
+    - `false`: 折叠所有切换
+    - `null`: 切换当前状态
   </APIItem>
 </APIParameters>
+</API>
 
-### openNextToggles
+### `openNextToggles`
 
-将当前选择处的块标记为打开的折叠。
-在插入块之前使用此函数，以便在插入时折叠处于展开状态。
+将当前选择的块标记为打开的切换。
 
-<APIParameters>
-  <APIItem name="editor" type="Editor">
-    编辑器实例。
-  </APIItem>
-</APIParameters>
+## 钩子
 
-## API 组件
+### `useToggleToolbarButtonState`
 
-### useToggleToolbarButtonState
+用于获取切换工具栏按钮状态的钩子。
 
-<APIReturns>
+<API name="useToggleToolbarButtonState">
+<APIReturns type="object">
   <APIItem name="pressed" type="boolean">
-    指示按钮是否被按下的布尔值。
+    按钮是否被按下。
   </APIItem>
 </APIReturns>
+</API>
 
-### useToggleToolbarButton
+### `useToggleToolbarButton`
 
-折叠工具栏按钮的行为钩子。
+用于处理切换工具栏按钮行为的钩子。
 
+<API name="useToggleToolbarButton">
 <APIState>
   <APIItem name="pressed" type="boolean">
-    指示按钮是否被按下的布尔值。
+    按钮是否被按下。
   </APIItem>
 </APIState>
 
-<APIReturns>
+<APIReturns type="object">
   <APIItem name="props" type="object">
+    切换按钮的属性。
     <APISubList>
       <APISubListItem parent="props" name="pressed" type="boolean">
-        指示按钮是否被按下的布尔值。
+        按钮是否被按下。
       </APISubListItem>
       <APISubListItem parent="props" name="onClick" type="function">
-        处理按钮点击事件的回调函数。它会切换编辑器中指定节点类型的折叠状态并使编辑器获得焦点。
+        切换节点类型并聚焦编辑器。
       </APISubListItem>
       <APISubListItem parent="props" name="onMouseDown" type="function">
-        处理按钮鼠标按下事件的回调函数。它只是阻止默认行为，以便在点击按钮时不会失去焦点。
+        防止点击时失去焦点。
       </APISubListItem>
     </APISubList>
   </APIItem>
 </APIReturns>
+</API>
 
-### useToggleButtonState
+### `useToggleButtonState`
+
+用于获取切换按钮状态的钩子。
+
+<API name="useToggleButtonState">
+获取切换按钮状态。
 
 <APIParameters>
   <APIItem name="toggleId" type="string">
-    折叠元素的 ID。
+    切换元素 ID。
   </APIItem>
 </APIParameters>
 
-<APIReturns>
+<APIReturns type="object">
   <APIItem name="toggleId" type="string">
-    折叠元素的 ID。
+    切换元素 ID。
   </APIItem>
   <APIItem name="open" type="boolean">
-    指示折叠是否打开（展开）或关闭（折叠）的布尔值。
+    切换是否展开。
   </APIItem>
 </APIReturns>
+</API>
 
-### useToggleButton
+### `useToggleButton`
 
-用于展开或折叠折叠元素的折叠按钮的行为钩子。
+用于处理切换按钮行为的钩子。
+
+<API name="useToggleButton">
+处理切换按钮行为。
 
 <APIParameters>
   <APIItem name="toggleId" type="string">
-    折叠元素的 ID。
+    切换元素 ID。
   </APIItem>
   <APIItem name="open" type="boolean">
-    指示折叠是否打开（展开）或关闭（折叠）的布尔值。
+    切换是否展开。
   </APIItem>
 </APIParameters>
 
-<APIReturns>
+<APIReturns type="object">
   <APIItem name="toggleId" type="string">
-    折叠元素的 ID。
+    切换元素 ID。
   </APIItem>
   <APIItem name="open" type="boolean">
-    指示折叠是否打开（展开）或关闭（折叠）的布尔值。
+    切换是否展开。
   </APIItem>
   <APIItem name="buttonProps" type="object">
+    切换按钮的属性。
     <APISubList>
       <APISubListItem parent="buttonProps" name="onClick" type="function">
-        处理按钮点击事件的回调函数。它会切换折叠的打开状态。
+        切换打开状态。
       </APISubListItem>
       <APISubListItem parent="buttonProps" name="onMouseDown" type="function">
-        处理按钮鼠标按下事件的回调函数。它只是阻止默认行为，以便在点击按钮时不会失去焦点。
+        防止点击时失去焦点。
       </APISubListItem>
     </APISubList>
   </APIItem>
 </APIReturns>
+</API>

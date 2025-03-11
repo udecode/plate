@@ -1,14 +1,14 @@
 ---
-title: Block Menu
+title: 块菜单
 docs:
   - route: /docs/components/block-context-menu
-    title: Block Context Menu
+    title: 块上下文菜单
     
   - route: https://pro.platejs.org/docs/components/block-menu
-    title: Block Menu
+    title: 块菜单
 
   - route: https://pro.platejs.org/docs/components/block-context-menu
-    title: Block Context Menu
+    title: 块上下文菜单
 
 ---
 
@@ -16,22 +16,22 @@ docs:
 
 <PackageInfo>
 
-## 功能特点
+## 功能
 
-- 右键点击块元素打开菜单。
-- 允许对块执行转换、复制或删除等操作。
+- 右键点击块以打开菜单。
+- 允许您对块执行操作，例如转换、复制或删除。
 - 可自定义菜单项和操作。
-- 支持键盘导航
+- 键盘导航
 
 </PackageInfo>
 
-## Installation
+## 安装
 
 ```bash
 npm install @udecode/plate-selection @udecode/plate-node-id
 ```
 
-## Usage
+## 使用
 
 ```tsx
 import { BlockMenuPlugin } from '@udecode/plate-selection/react';
@@ -40,7 +40,7 @@ import { NodeIdPlugin } from '@udecode/plate-node-id';
 
 ```tsx
 const plugins = [
-  // ...otherPlugins,
+  // ...其他插件,
   NodeIdPlugin,
   BlockSelectionPlugin.configure({
     options: {
@@ -55,7 +55,7 @@ const plugins = [
 
 - [BlockContextMenu](/docs/components/block-context-menu)
 
-要控制特定元素的上下文菜单的打开，你可以使用 `data-plate-open-context-menu` 属性：
+要控制特定元素的上下文菜单的打开，您可以使用 `data-plate-open-context-menu` 属性：
 
 ```tsx
 <PlateElement data-plate-open-context-menu={false} {...props}>
@@ -63,7 +63,7 @@ const plugins = [
 </PlateElement>
 ```
 
-通常，我们只需要阻止在 `<Editor />` 的内边距上右键点击。
+通常，我们只需要阻止在 `<Editor />` 的填充区域上右键点击。
 
 ## 示例
 
@@ -77,38 +77,42 @@ const plugins = [
 
 ## 插件
 
-### BlockMenuPlugin
+### `BlockMenuPlugin`
 
 块菜单状态管理。
 
 ## API
 
-### editor.api.blockMenu.hide
+### `editor.api.blockMenu.hide`
 
 隐藏块菜单。
 
-### editor.api.blockMenu.show
+### `editor.api.blockMenu.show`
 
-显示特定块的菜单。
+显示特定块的块菜单。
 
+<API name="show">
 <APIParameters>
   <APIItem name="id" type="'context' | string">
-    要显示菜单的块的 ID。
+    要显示菜单的块的ID。
   </APIItem>
   <APIItem name="position" type="{ x: number; y: number }" optional>
     显示菜单的位置。
   </APIItem>
 </APIParameters>
+</API>
 
-### editor.api.blockMenu.showContextMenu
+### `editor.api.blockMenu.showContextMenu`
 
 显示特定块的上下文菜单。
 
+<API name="showContextMenu">
 <APIParameters>
   <APIItem name="blockId" type="string">
-    要显示上下文菜单的块的 ID。
+    要显示上下文菜单的块的ID。
   </APIItem>
   <APIItem name="position" type="{ x: number; y: number }">
     显示上下文菜单的位置。
   </APIItem>
 </APIParameters>
+</API>
