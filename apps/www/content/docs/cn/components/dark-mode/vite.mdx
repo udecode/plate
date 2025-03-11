@@ -1,13 +1,13 @@
 ---
 title: Vite
-description: 为你的 Vite 应用添加深色模式。
+description: 为你的 Vite 应用添加暗黑模式。
 ---
 
-## Dark mode
+## 暗黑模式
 
 <Steps>
 
-### Create a theme provider
+### 创建主题 provider
 
 ```tsx title="components/theme-provider.tsx"
 import { createContext, useContext, useEffect, useState } from "react"
@@ -79,15 +79,15 @@ export const useTheme = () => {
   const context = useContext(ThemeProviderContext)
 
   if (context === undefined)
-    throw new Error("useTheme must be used within a ThemeProvider")
+    throw new Error("useTheme 必须在 ThemeProvider 内使用")
 
   return context
 }
 ```
 
-### Wrap your root layout
+### 包裹根布局
 
-将 `ThemeProvider` 添加到您的 root layout 中。
+将 `ThemeProvider` 添加到你的根布局中。
 
 ```tsx {1,5-7} title="App.tsx"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -103,9 +103,9 @@ function App() {
 export default App
 ```
 
-### Add a mode toggle
+### 添加模式切换
 
-在您的网站上放置一个模式切换按钮，用于在浅色和深色模式之间切换。
+在你的网站上放置一个模式切换按钮，用于在亮色和暗黑模式之间切换。
 
 ```tsx title="components/mode-toggle.tsx"
 import { Moon, Sun } from "lucide-react"
@@ -128,18 +128,18 @@ export function ModeToggle() {
         <Button variant="outline" size="icon">
           <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
           <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          <span className="sr-only">Toggle theme</span>
+          <span className="sr-only">切换主题</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => setTheme("light")}>
-          Light
+          亮色
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme("dark")}>
-          Dark
+          暗黑
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme("system")}>
-          System
+          系统
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

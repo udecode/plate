@@ -1,17 +1,17 @@
 ---
-title: Line Height
+title: 行高
 docs:
   - route: /docs/components/line-height-dropdown-menu
-    title: Line Height Dropdown Menu
+    title: 行高下拉菜单
 ---
 
 <ComponentPreview name="line-height-demo" />
 
 <PackageInfo>
 
-## 功能特点
+## 功能
 
-- 设置选定块的行高。
+- 为选中的块设置行高。
 
 </PackageInfo>
 
@@ -27,68 +27,58 @@ npm install @udecode/plate-line-height
 import { LineHeightPlugin } from '@udecode/plate-line-height/react';
 
 const plugins = [
-  // ...otherPlugins,
+  // ...其他插件,
   LineHeightPlugin,
 ];
 ```
 
 ## 插件
 
-### LineHeightPlugin
+### `LineHeightPlugin`
+
+用于在块上设置行高的插件。
 
 ## API
 
-### setLineHeight
+### `setLineHeight`
 
-设置编辑器中选定节点的行高。
+为编辑器中的选中节点设置行高。
 
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    编辑器实例。
+<API name="setLineHeight">
+<APIOptions type="SetLineHeightOptions">
+  <APIItem name="value" type="number">
+    要设置的行高值。
   </APIItem>
-  <APIItem name="options" type="object">
-    设置行高的选项。
-    <APISubList>
-      <APISubListItem parent="options" name="value" type="number">
-        要设置的行高值。
-      </APISubListItem>
-      <APISubListItem
-        parent="options"
-        name="setNodesOptions"
-        type="SetNodesOptions"
-      >
-        设置节点的其他选项。
-      </APISubListItem>
-    </APISubList>
+  <APIItem name="setNodesOptions" type="SetNodesOptions">
+    设置节点的额外选项。
   </APIItem>
-</APIParameters>
+</APIOptions>
+</API>
 
-## API 组件
+## 钩子
 
-### useLineHeightDropdownMenu
+### `useLineHeightDropdownMenu`
 
 行高下拉菜单的行为钩子。
 
+<API name="useLineHeightDropdownMenu">
 <APIState>
   <APIItem name="value" type="number">
-    行高值。
+    当前行高值。
   </APIItem>
 </APIState>
 
-<APIReturns>
+<APIReturns type="object">
   <APIItem name="radioGroupProps" type="object">
     单选组的属性。
-    <APISubList>
-      <APISubListItem parent="radioGroupProps" name="value" type="string">
-        行高值。
-      </APISubListItem>
-      <APISubListItem
-        parent="radioGroupProps"
-        name="onValueChange"
-        type="function"
-      >
-        设置行高值的回调函数。
-      </APISubListItem>
-    </APISubList>
+  <APISubList>
+    <APISubListItem parent="radioGroupProps" name="value" type="string">
+      当前行高值。
+    </APISubListItem>
+    <APISubListItem parent="radioGroupProps" name="onValueChange" type="function">
+      更新行高值的处理函数。
+    </APISubListItem>
+  </APISubList>
   </APIItem>
 </APIReturns>
+</API>

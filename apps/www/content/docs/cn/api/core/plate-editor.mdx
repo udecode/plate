@@ -1,58 +1,62 @@
 ---
-title: Plate Editor
+title: Plate 编辑器
 description: Plate 编辑器的 API 参考。
 ---
 
-一个自定义的编辑器接口，扩展了基础的 **`Editor`** 接口，并包含 Plate 库特有的属性和方法。
+一个自定义的编辑器接口，扩展了基础的 **`Editor`** 接口，并包含了 Plate 库特有的额外属性和方法。
 
-## Core Properties
+## 核心属性
 
-<APIParameters>
+<API name="属性">
+<APIAttributes>
   <APIItem name="id" type="any">
     编辑器的唯一标识符。
   </APIItem>
   <APIItem name="key" type="any">
-    可以用来唯一标识编辑器的键。
+    用于唯一标识编辑器的键。
   </APIItem>
   <APIItem name="currentKeyboardEvent" type="KeyboardEventLike | null">
-    当前正在处理的键盘事件，如果没有事件正在处理，则为 null。
+    编辑器当前正在处理的键盘事件，如果没有事件正在处理则为 null。
   </APIItem>
   <APIItem name="isFallback" type="boolean">
-    是否是后备编辑器。
+    编辑器是否为备用编辑器。
     
-    - **Default:** `false`
+    - **默认值:** `false`
   </APIItem>
   <APIItem name="prevSelection" type="TRange | null">
-    编辑器中的上一个选择范围。
+    编辑器中的上一个选区范围。
   </APIItem>
   <APIItem name="pluginList" type="AnyEditorPlatePlugin[]">
-    当前正在使用的插件列表。
+    编辑器当前正在使用的插件数组。
   </APIItem>
   <APIItem name="plugins" type="Record<string, AnyEditorPlatePlugin>">
-    一个插件键值对的记录。
+    按键索引的插件记录。
   </APIItem>
-</APIParameters>
+</APIAttributes>
+</API>
+## API 方法
 
-## API Methods
-
-<APIParameters>
+<API name="API">
+<APIMethods>
   <APIItem name="getApi" type="(plugin: PlatePlugin) => EditorApi & PlatePlugin['api']">
     获取插件的类型化 API。
   </APIItem>
   <APIItem name="getTransforms" type="(plugin: PlatePlugin) => EditorTransforms & PlatePlugin['transforms']">
-    获取插件的类型化变换。
+    获取插件的类型化转换。
   </APIItem>
   <APIItem name="getPlugin" type="(plugin: PlatePlugin) => PlatePlugin">
     通过键或基础插件获取编辑器插件实例。
   </APIItem>
   <APIItem name="getType" type="(plugin: PlatePlugin) => string">
-    获取插件的节点类型。
+    获取与插件关联的节点类型。
   </APIItem>
-</APIParameters>
+</APIMethods>
+</API>
 
-## Option Methods
+## 选项方法
 
-<APIParameters>
+<API name="选项">
+<APIMethods>
   <APIItem name="getOption" type="(plugin: PlatePlugin, optionKey: string) => any">
     获取插件的特定选项值。
   </APIItem>
@@ -68,72 +72,62 @@ description: Plate 编辑器的 API 参考。
   <APIItem name="getOptionsStore" type="(plugin: PlatePlugin) => any">
     获取插件的 zustand-x 选项存储。
   </APIItem>
-</APIParameters>
+</APIMethods>
+</API>
 
-## React Hooks
+## 核心插件 API
 
-<APIParameters>
-  <APIItem name="useOption" type="(plugin: PlatePlugin, optionKey: string) => any">
-    在 React 组件中订阅特定选项值。
-  </APIItem>
-  <APIItem name="useOptions" type="(plugin: PlatePlugin) => any">
-    在 React 组件中订阅插件选项或派生自选项的值。
-  </APIItem>
-</APIParameters>
+### `DebugPlugin`
 
-## Plate Store Methods
-
-<APIParameters>
-  <APIItem name="setPlateState" type="(optionKey: string, value: PlateStoreState[K]) => void">
-    更新全局 Plate 状态。
-  </APIItem>
-</APIParameters>
-
-## Core Plugin APIs
-
-### DebugPlugin
-
-<APIParameters>
+<API name="DebugPlugin">
+<APIListAPI>
   <APIItem name="editor.api.debug.log" type="(...args: any[]) => void">
-    在 'log' 级别打印一条消息。
+    在 'log' 级别记录消息。
   </APIItem>
   <APIItem name="editor.api.debug.info" type="(...args: any[]) => void">
-    在 'info' 级别打印一条消息。
+    在 'info' 级别记录消息。
   </APIItem>
   <APIItem name="editor.api.debug.warn" type="(...args: any[]) => void">
-    在 'warn' 级别打印一条消息。
+    在 'warn' 级别记录消息。
   </APIItem>
   <APIItem name="editor.api.debug.error" type="(...args: any[]) => void">
-    在 'error' 级别打印一条消息。
+    在 'error' 级别记录消息。
   </APIItem>
-</APIParameters>
+</APIListAPI>
+</API>
 
-### HtmlPlugin
+### `HtmlPlugin`
 
-<APIParameters>
+<API name="HtmlPlugin">
+<APIListAPI>
   <APIItem name="editor.api.html.deserialize" type="(options: { element: HTMLElement }) => Descendant[]">
     将 HTML 内容反序列化为 Slate 节点。
   </APIItem>
-</APIParameters>
+</APIListAPI>
+</API>
 
-### ReactPlugin
+### `ReactPlugin`
 
-<APIParameters>
+<API name="ReactPlugin">
+<APITransforms>
   <APIItem name="editor.tf.reset" type="() => void">
-    重置编辑器状态，同时保持焦点（如果编辑器已聚焦）。
+    重置编辑器状态，同时保持焦点（如果编辑器之前有焦点）。
   </APIItem>
-</APIParameters>
+</APITransforms>
+</API>
 
-### SlateReactExtensionPlugin
+### `SlateReactExtensionPlugin`
 
-<APIParameters>
+<API name="SlateReactExtensionPlugin">
+<APIListAPI>
   <APIItem name="editor.api.redecorate" type="() => void">
-    重新装饰编辑器。此方法应被覆盖以确保正常功能。
+    重新装饰编辑器。
   </APIItem>
-</APIParameters>
+</APIListAPI>
 
-<APIParameters>
+<APITransforms>
   <APIItem name="editor.tf.setValue" type="(value: Value) => void">
-    替换编辑器值。更多信息请参阅 [Controlled Value](/docs/controlled)。
+    替换编辑器值。有关更多信息，请参阅 [受控值](/docs/controlled)。
   </APIItem>
-</APIParameters>
+</APITransforms>
+</API>
