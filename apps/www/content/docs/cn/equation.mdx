@@ -1,22 +1,24 @@
 ---
-title: Equation
+title: 公式
 docs:
   - route: https://pro.platejs.org/docs/components/equation-element
-    title: Equation Element
+    title: 公式元素
   - route: https://pro.platejs.org/docs/components/inline-equation-element
-    title: Inline Equation Element
+    title: 行内公式元素
   - route: https://pro.platejs.org/docs/components/inline-equation-toolbar-button
-    title: Inline Equation Toolbar Button
+    title: 行内公式工具栏按钮
 ---
+
+<ComponentPreview name="equation-demo" />
 
 <PackageInfo>
 
-## Features
+## 功能
 
-- LaTeX 语法支持复杂数学表达式
-- 内联和块方程格式
-- 使用 KaTeX 实时渲染方程
-- 轻松编辑和导航方程
+- 支持 LaTeX 语法，用于复杂的数学表达式
+- 支持行内和块级公式格式
+- 使用 KaTeX 实时渲染公式
+- 轻松编辑和导航公式
 
 </PackageInfo>
 
@@ -26,7 +28,7 @@ docs:
 npm install @udecode/plate-math
 ```
 
-## Usage
+## 使用
 
 ```tsx
 import { EquationPlugin, InlineEquationPlugin } from '@udecode/plate-math/react';
@@ -34,7 +36,7 @@ import { EquationPlugin, InlineEquationPlugin } from '@udecode/plate-math/react'
 
 ```tsx
 const plugins = [
-  // ...otherPlugins,
+  // ...其他插件
   EquationPlugin,
   InlineEquationPlugin,
 ]
@@ -42,7 +44,7 @@ const plugins = [
 
 ```tsx
 const components = {
-  // ...otherComponents,
+  // ...其他组件
   [EquationPlugin.key]: EquationElement,
   [InlineEquationPlugin.key]: InlineEquationElement,
 }
@@ -51,19 +53,11 @@ const components = {
 - [EquationElement](https://pro.platejs.org/docs/components/equation-element) (Plus)
 - [InlineEquationElement](https://pro.platejs.org/docs/components/inline-equation-element) (Plus)
 
-
-{/* ### How to use
-
-1. Use the slash command `/equation` to insert a block equation.
-2. Use the slash command `/inline equation` to insert an inline equation.
-3. Click on any equation to edit it. Press Escape to close the editor without saving changes.
-4. Navigate through the equation using arrow keys. */}
-
 ## 示例
 
 ### Plate UI
 
-开发中。
+参考上面的预览。
 
 ### Plate Plus
 
@@ -71,40 +65,42 @@ const components = {
 
 ## 插件
 
-### EquationPlugin
+### `EquationPlugin`
 
-块级方程元素插件。
+用于块级公式元素的插件。
 
-### InlineEquationPlugin
+### `InlineEquationPlugin`
 
-内联方程元素插件。
+用于行内公式元素的插件。
 
 ## 转换
 
-### editor.tf.insert.equation
+### `editor.tf.insert.equation`
 
-插入一个空的块级方程。
-<APIParameters>
-  <APIItem name="options" type="InsertNodesOptions">
-    插入节点转换的选项。
-  </APIItem>
-</APIParameters>
+<API name="insert.equation">
+<APIOptions type="InsertNodesOptions">
+    插入节点的转换选项。
+</APIOptions>
+</API>
 
-### editor.tf.insert.inlineEquation
+### `editor.tf.insert.inlineEquation`
 
-插入一个内联方程。
+插入行内公式。
+
+<API name="insert.inlineEquation">
 <APIParameters>
   <APIItem name="texExpression" type="string" optional>
-    要插入的 LaTeX 表达式。如果未提供，将插入一个空方程。
+    要插入的 LaTeX 表达式。如果未提供，则为空公式。
   </APIItem>
   <APIItem name="options" type="InsertNodesOptions" optional>
-    插入节点转换的选项。
+    插入节点的转换选项。
   </APIItem>
 </APIParameters>
+</API>
 
 ## 类型
 
-### TEquationElement
+### `TEquationElement`
 
 ```typescript
 interface TEquationElement extends TElement {

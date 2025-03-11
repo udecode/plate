@@ -1,31 +1,26 @@
 ---
-title: Store
-description: Plate store 的 API 参考。
+title: 存储
+description: Plate 存储的 API 参考。
 ---
 
-`Plate` 使用 [jotai](https://github.com/pmndrs/jotai) 来存储编辑器的状态。
+`Plate` 使用 [jotai-x](https://github.com/udecode/jotai-x) 来存储编辑器的状态。
 
-<Callout className="my-4">
-  **注意**：要在组件中使用 store hooks，需要在 `Plate` 内部渲染该组件。
-</Callout>
+## Plate 存储
 
-## Plate Store
+<API name="Store">
+`PlateStoreState` 对象存储了 Plate 编辑器的状态。它包含了编辑器的 ID、当前值、插件以及其他设置的信息。
 
-### Store
-
-PlateStoreState 对象存储 Plate 编辑器的状态。它包含有关编辑器 ID、当前值、插件和其他设置的信息。
-
-<APIAttributes>
+<APIState>
 <APIItem name="editor" type="PlateEditor">
 Slate 编辑器引用。
 
-- **Default:** `createPlateFallbackEditor()`
+- **默认值:** `createPlateFallbackEditor()`
 </APIItem>
 
 <APIItem name="id" type="string">
-一个用作提供者作用域的唯一 ID。如果在同一个 React 树中有多个 `Plate`，则需要使用它。
+用作提供者范围的唯一 ID。如果你在同一个 React 树中有多个 `Plate`，请使用它。
 
-- **Default:** random id
+- **默认值:** 随机 ID
 </APIItem>
 
 <APIItem name="containerRef" type="React.RefObject<HTMLDivElement>">
@@ -36,16 +31,16 @@ Slate 编辑器引用。
 用于装饰编辑器中范围的函数。
 
 ```ts
-(options: { editor: PlateEditor; entry: NodeEntry }) => Range[]
+(options: { editor: PlateEditor; entry: NodeEntry }) => TRange[]
 ```
 </APIItem>
 
 <APIItem name="isMounted" type="boolean" optional>
-`Editable` 是否已渲染，以便 slate DOM 可解析。
+`Editable` 是否已渲染，以便 Slate DOM 可解析。
 </APIItem>
 
 <APIItem name="onChange" type="function" optional>
-用于控制回调，当编辑器状态发生变化时调用。
+当编辑器状态发生变化时调用的受控回调。
 
 ```ts
 (options: { editor: PlateEditor; value: ValueOf<PlateEditor> }) => void
@@ -53,7 +48,7 @@ Slate 编辑器引用。
 </APIItem>
 
 <APIItem name="onSelectionChange" type="function" optional>
-用于控制回调，当 editor.selection 发生变化时调用。
+当 `editor.selection` 发生变化时调用的受控回调。
 
 ```ts
 (options: { editor: PlateEditor; selection: TSelection }) => void
@@ -61,7 +56,7 @@ Slate 编辑器引用。
 </APIItem>
 
 <APIItem name="onValueChange" type="function" optional>
-用于控制回调，当 editor.children 发生变化时调用。
+当 `editor.children` 发生变化时调用的受控回调。
 
 ```ts
 (options: { editor: PlateEditor; value: ValueOf<PlateEditor> }) => void
@@ -69,9 +64,9 @@ Slate 编辑器引用。
 </APIItem>
 
 <APIItem name="primary" type="boolean" optional>
-Whether the editor is primary. If no editor is active, then PlateController will use the first-mounted primary editor.
+编辑器是否是主要的。如果没有编辑器处于活动状态，则 PlateController 将使用第一个挂载的主要编辑器。
 
-- **Default:** `true`
+- **默认值:** `true`
 </APIItem>
 
 <APIItem name="readOnly" type="boolean" optional>
@@ -79,15 +74,15 @@ Whether the editor is primary. If no editor is active, then PlateController will
 </APIItem>
 
 <APIItem name="renderElement" type="function" optional>
-在编辑器中渲染元素的函数。
+用于渲染编辑器中元素的函数。
 </APIItem>
 
 <APIItem name="renderLeaf" type="function" optional>
-在编辑器中渲染叶节点的函数。
+用于渲染编辑器中叶子节点的函数。
 </APIItem>
 
 <APIItem name="versionDecorate" type="number" optional>
-调用 `redecorate` 时递增的版本号。这是 `decorate` 函数的一个依赖项。
+调用 `redecorate` 时递增的版本号。这是 `decorate` 函数的依赖项。
 </APIItem>
 
 <APIItem name="versionEditor" type="number" optional>
@@ -95,94 +90,121 @@ Whether the editor is primary. If no editor is active, then PlateController will
 </APIItem>
 
 <APIItem name="versionSelection" type="number" optional>
-每次编辑器.selection 更改时递增的版本号。
+每次 `editor.selection` 更改时递增的版本号。
 </APIItem>
 
 <APIItem name="versionValue" type="number" optional>
-每次编辑器.children 更改时递增的版本号。
+每次 `editor.children` 更改时递增的版本号。
 </APIItem>
-</APIAttributes>
+</APIState>
+</API>
 
-## Exposed Store Keys
+## 访问存储
 
-以下存储键在 `editor.setPlateState` 中被暴露：
+```ts
+import { usePlateStore, useEditorRef, useEditorPlugin } from '@udecode/plate/react'
 
-- `readOnly`
-- `onChange`
-- `decorate`
-- `renderElement`
-- `renderLeaf`
+// 直接访问存储
+const store = usePlateStore(id?) 
 
-## Selectors
+// 通过编辑器引用访问
+const store = useEditorRef().store
 
-当你需要订阅一个值时，使用 `usePlateSelectors(id).<state property>()`。
+// 通过插件上下文访问
+const store = useEditorPlugin(myPlugin).store
+```
 
-- **示例：** `const value = usePlateSelectors(id).value()` 将订阅 `value` 的变化。
-- 它在底层使用 [useAtomValue](https://jotai.org/docs/utils/use-atom-value)。
+注意：`id` 参数是可选的，默认为最近的编辑器。
 
-## Actions
+## 存储钩子
 
-当你需要一个存储属性的值和设置器时，使用 `usePlateStates(id).<state property>()`。
+以下钩子可用于与 Plate 存储进行交互：
 
-- **示例：** `const [value, setValue] = usePlateStates(id).value()`
-- 它在底层使用 [useAtom](https://jotai.org/docs/basics/primitives#use-atom)。
+```ts
+import { usePlateState, usePlateValue, usePlateSet } from '@udecode/plate/react'
+```
 
-### `useRedecorate`
+### usePlateState
 
-重新装饰编辑器。
+获取和设置存储属性的值。
 
-<APIParameters>
-  <APIItem name="id" type="string" optional>
-    编辑器 ID。
-  </APIItem>
-</APIParameters>
+```ts
+const [readOnly, setReadOnly] = usePlateState('readOnly', id?)
+```
 
-## Event Editor Store
+### usePlateValue
 
-此存储是一个对象，其属性键是事件名称（例如 `'focus'`），属性值是 [editor IDs](Plate#id)。
+订阅存储属性的值。
 
-- 当有[多个编辑器](multiple-editors)时，这很有用，可以基于 DOM 事件获取一个（例如最后一个聚焦的编辑器）。
-- [Plate](Plate) 的一个核心插件将存储以下事件。
+```ts
+const readOnly = usePlateValue('readOnly', id?)
+```
 
-### State
+### usePlateSet
 
-<APIAttributes>
+设置存储属性的值。
+
+```ts
+const setReadOnly = usePlateSet('readOnly', id?)
+```
+
+## 事件编辑器存储
+
+此存储是一个对象，其属性键是事件名称（例如 `'focus'`），属性值是 [编辑器 ID](Plate#id)。
+
+- 当有 [多个编辑器](multiple-editors) 时，这非常有用，可以根据 DOM 事件（例如最后聚焦的编辑器）获取一个编辑器。
+- [Plate](Plate) 的核心插件之一将存储以下事件。
+
+<API name="EventEditorStore">
+<APIState>
 <APIItem name="blur" type="string | null">
 
-最后一个失去焦点的编辑器 ID。
+最近失去焦点的编辑器 ID。
 
 </APIItem>
 
 <APIItem name="focus" type="string | null">
 
-当前聚焦的编辑器 ID。
+当前正在聚焦的编辑器 ID。
 
 </APIItem>
 
 <APIItem name="last" type="string | null">
 
-最后一个编辑器 ID。
+最近的编辑器 ID。
 
 </APIItem>
-</APIAttributes>
-### `useEventEditorSelectors`
+</APIState>
+</API>
 
-钩子选择器。
 
-- **Example:** `useEventEditorSelectors().focus()` 将获取最后一个聚焦的编辑器 ID。
+```ts
+import { EventEditorStore, useEventEditorValue } from '@udecode/plate'
+
+// 获取值
+const focusedId = EventEditorStore.get('focus')
+
+// 设置值
+EventEditorStore.set('focus', editorId)
+
+// 订阅更改
+const focusedId = useEventEditorValue('focus')
+```
 
 ### `useEventPlateId`
 
-获取最后一个事件编辑器 ID。
+获取最近的事件编辑器 ID。
 
+<API name="useEventPlateId">
 <APIParameters>
 <APIItem name="id" type="string | null">
 
-如果定义，返回的 ID。
+如果定义了，则返回该 ID。
 
 </APIItem>
 </APIParameters>
 
-<APIReturns>
-  如果可用，从上下文中获取 plate id，否则获取最后一个事件编辑器 ID 或 `PLATE_SCOPE`。
+<APIReturns type="string">
+  如果可用，则返回上下文中的 plate id，否则返回最近的事件编辑器 ID 或 `PLATE_SCOPE`。
 </APIReturns>
+</API>

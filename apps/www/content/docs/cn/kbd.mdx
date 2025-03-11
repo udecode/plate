@@ -1,5 +1,5 @@
 ---
-title: Keyboard Input
+title: 键盘输入
 docs:
   - route: /docs/components/kbd-leaf
     title: Kbd Leaf
@@ -9,7 +9,7 @@ docs:
 
 <PackageInfo>
 
-## 功能特点
+## 功能
 
 - 添加对键盘输入标记的支持
 
@@ -29,21 +29,21 @@ import { KbdPlugin } from '@udecode/plate-kbd';
 
 ```tsx
 const plugins = [
-  // ...otherPlugins,
+  // ...其他插件,
   KbdPlugin,
 ];
 ```
 
 ```tsx
-const components ={
+const components = {
   [KbdPlugin.key]: KbdLeaf,
 }
 ```
 
-- [KbdLeaf](/docs/components/kbd-leaf)
+另请参阅: [KbdLeaf](/docs/components/kbd-leaf)
 
 ## 插件
 
-### KbdPlugin
+### `KbdPlugin`
 
-启用键盘输入标记。
+用于键盘输入标记的插件。

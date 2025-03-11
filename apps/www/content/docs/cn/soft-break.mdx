@@ -1,5 +1,5 @@
 ---
-title: Soft Break
+title: 软换行
 ---
 
 <ComponentPreview name="soft-break-demo" />
@@ -8,7 +8,7 @@ title: Soft Break
 
 ## 功能
 
-- 允许在文本块中插入换行符，而无需开始新块。
+- 允许在文本块中插入换行符而不开始新的块
 
 </PackageInfo>
 
@@ -18,7 +18,7 @@ title: Soft Break
 npm install @udecode/plate-break
 ```
 
-## 用法
+## 使用
 
 ```tsx
 import { SoftBreakPlugin } from '@udecode/plate-break/react';
@@ -27,7 +27,7 @@ import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { TablePlugin } from '@udecode/plate-table/react';
 
 const plugins = [
-  // ...otherPlugins,
+  // ...其他插件,
   SoftBreakPlugin.configure({
     options: {
       rules: [
@@ -44,29 +44,33 @@ const plugins = [
 ];
 ```
 
-## 键盘快捷键
-    
+## 快捷键
+
 <KeyTable>
   <KeyTableItem hotkey="Shift + Enter">
-    在文本块中插入换行符，而无需开始新块。
+    在文本块中插入换行符而不开始新的块
   </KeyTableItem>
 </KeyTable>
 
 ## 插件
 
-### SoftBreakPlugin
+### `SoftBreakPlugin`
 
+用于在文本块中插入换行符的插件。
+
+<API name="SoftBreakPlugin">
 <APIOptions>
 
 <APIItem name="rules" type="object[]" optional>
-一个规则对象数组，用于指定激活软换行的快捷键和可选的过滤查询。
+一个规则对象数组，指定激活软换行的快捷键以及可选的过滤查询。
 <APISubList>
 <APISubListItem parent="rules" name="hotkey" type="string">
-激活软换行的按键组合。
+激活软换行的键组合。
 </APISubListItem>
 <APISubListItem parent="rules" name="query" type="QueryNodeOptions" optional>
-用于确定规则适用的块类型的过滤选项。
+确定规则适用的块类型的过滤选项。
 </APISubListItem>
 </APISubList>
 </APIItem>
 </APIOptions>
+</API>

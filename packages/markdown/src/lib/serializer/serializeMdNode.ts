@@ -127,8 +127,9 @@ export function serializeMdNode(
         const listProps: any = {};
 
         const isIndentList = isLeafNode(c) ? false : !!c.listStyleType;
+        const isSelfIdentList = !!node.listStyleType;
 
-        if (isIndentList) {
+        if (isIndentList || isSelfIdentList) {
           ignoreParagraphNewlineProp = true;
           listProps.isList = true;
         } else {

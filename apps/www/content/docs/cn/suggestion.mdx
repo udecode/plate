@@ -1,0 +1,225 @@
+---
+title: 建议
+docs:
+  - route: /docs/components/suggestion-leaf
+    title: 建议叶子节点
+  - route: /docs/components/suggestion-toolbar-button
+    title: 建议工具栏按钮
+  - route: /docs/components/block-suggestion
+    title: 块建议
+  - route: /docs/components/block-discussion
+    title: 块讨论
+  - route: /docs/components/suggestion-line-break
+    title: 建议换行
+---
+
+<ComponentPreview name="comments-demo" />
+
+<PackageInfo>
+
+## 功能
+
+- 将建议添加为文本标记
+- 添加块建议
+- 跟踪建议状态和用户
+- 撤销/重做建议更改
+- 注意：这是一个实验性功能，API 可能会发生变化。
+
+</PackageInfo>
+
+## 安装
+```bash
+npm install @udecode/plate-suggestion
+```
+
+## 使用
+
+```tsx
+import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+  suggestionPlugin.configure({
+    render: { belowNodes: SuggestionBelowNodes as any },
+  }),
+  ],
+});
+```
+## 快捷键
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + Shift + S">
+    在选中的文本上添加建议。
+  </KeyTableItem>
+</KeyTable>
+
+## 示例
+
+### Plate UI
+
+请参考上面的预览。
+
+### Plate Plus
+
+<ComponentPreviewPro name="comments-pro" />
+
+## 插件
+
+### `SuggestionPlugin`
+
+## API
+
+### `editor.api.suggestion.addSuggestion`
+
+添加一个新的建议。
+
+<API name="addSuggestion">
+<APIParameters>
+  <APIItem name="value" type="WithPartial<TSuggestion, 'id' | 'userId'>">
+    要添加的建议值。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `editor.api.suggestion.dataList`
+
+从文本节点获取建议数据数组。
+
+<API name="dataList">
+<APIParameters>
+  <APIItem name="node" type="TSuggestionText">
+    建议文本节点。
+  </APIItem>
+</APIParameters>
+<APIReturns type="TInlineSuggestionData[]">
+  建议数据数组。
+</APIReturns>
+</API>
+
+### `editor.api.suggestion.isBlockSuggestion`
+
+检查节点是否为块建议元素。
+
+<API name="isBlockSuggestion">
+<APIParameters>
+  <APIItem name="node" type="TElement">
+    要检查的节点。
+  </APIItem>
+</APIParameters>
+<APIReturns type="node is TSuggestionElement">
+  节点是否为块建议。
+</APIReturns>
+</API>
+
+### `editor.api.suggestion.node`
+
+获取建议节点entry。
+
+<API name="node">
+<APIOptions type="EditorNodesOptions & { id?: string; isText?: boolean }" optional>
+  查找节点的选项。
+</APIOptions>
+<APIReturns type="NodeEntry<TSuggestionElement | TSuggestionText> | undefined">
+  如果找到，返回建议节点entry。
+</APIReturns>
+</API>
+
+### `editor.api.suggestion.nodeId`
+
+从节点获取建议的 ID。
+
+<API name="nodeId">
+<APIParameters>
+  <APIItem name="node" type="TElement | TSuggestionText">
+    要从中获取 ID 的节点。
+  </APIItem>
+</APIParameters>
+<APIReturns type="string | undefined">
+  如果找到，返回建议 ID。
+</APIReturns>
+</API>
+
+### `editor.api.suggestion.nodes`
+
+获取所有符合选项的建议节点entry。
+
+<API name="nodes">
+<APIOptions type="EditorNodesOptions" optional>
+  查找节点的选项。
+</APIOptions>
+<APIReturns type="NodeEntry<TElement | TSuggestionText>[]">
+  建议节点entry数组。
+</APIReturns>
+</API>
+
+### `editor.api.suggestion.removeSuggestion`
+
+通过 ID 移除建议。
+
+<API name="removeSuggestion">
+<APIParameters>
+  <APIItem name="id" type="string | null">
+    要移除的建议的 ID。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `editor.api.suggestion.suggestionData`
+
+从节点获取建议数据。
+
+<API name="suggestionData">
+<APIParameters>
+  <APIItem name="node" type="TElement | TSuggestionText">
+    要从中获取建议数据的节点。
+  </APIItem>
+</APIParameters>
+<APIReturns type="TInlineSuggestionData | TSuggestionElement['suggestion'] | undefined">
+  如果找到，返回建议数据。
+</APIReturns>
+</API>
+
+### `editor.api.suggestion.updateSuggestion`
+
+通过 ID 更新建议。
+
+<API name="updateSuggestion">
+<APIParameters>
+  <APIItem name="id" type="string | null">
+    要更新的建议的 ID。
+  </APIItem>
+  <APIItem name="value" type="Partial<TSuggestion>">
+    更新的建议值。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `editor.api.suggestion.withoutSuggestions`
+
+暂时禁用建议并执行函数。
+
+<API name="withoutSuggestions">
+<APIParameters>
+  <APIItem name="fn" type="() => void">
+    要执行的函数。
+  </APIItem>
+</APIParameters>
+</API>
+
+## 类型
+
+### `TSuggestionText`
+
+包含建议的文本节点的接口。
+
+<API name="TSuggestionText">
+<APIAttributes>
+  <APIItem name="suggestion" type="boolean" optional>
+    指示是否为建议。
+  </APIItem>
+  <APIItem name="suggestion_<id>" type="TInlineSuggestionData" optional>
+    包含建议数据。单个文本节点中可以存在多个建议。
+  </APIItem>
+</APIAttributes>
+</API>

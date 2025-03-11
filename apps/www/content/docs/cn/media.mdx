@@ -1,77 +1,77 @@
 ---
-title: Media
+title: 媒体
 docs:
   - route: /docs/components/image-element
-    title: Image Element
+    title: 图片元素
   - route: /docs/components/media-video-element
-    title: Video Element
+    title: 视频元素
   - route: /docs/components/media-audio-element
-    title: Audio Element
+    title: 音频元素
   - route: /docs/components/media-file-element
-    title: File Element
+    title: 文件元素
   - route: /docs/components/media-embed-element
-    title: Media Embed Element
+    title: 媒体嵌入元素
   - route: /docs/components/media-popover
-    title: Media Popover
+    title: 媒体弹出框
   - route: /docs/components/media-placeholder-element
-    title: Media Placeholder Element
+    title: 媒体占位符元素
   - route: /docs/components/media-upload-toast
-    title: Media Upload Toast
+    title: 媒体上传提示
   - route: /docs/components/media-toolbar-button
-    title: Media Toolbar Button
+    title: 媒体工具栏按钮
   - route: https://pro.platejs.org/docs/examples/upload
-    title: Upload
+    title: 上传
   - route: https://pro.platejs.org/docs/components/media-toolbar
-    title: Media Toolbar
+    title: 媒体工具栏
 ---
 
 <ComponentPreview name="media-demo" />
 
 <PackageInfo>
 
-## Features
+## 功能
 
-### Media Features
+### 媒体功能
 
 - 可编辑的标题
 - 可调整大小的元素
 
-### Media Support
+### 媒体支持
 - **文件类型**: 
   - 图片
   - 视频
   - 音频
-  - 其他 (PDF, Word, etc.)
+  - 其他 (PDF, Word, 等)
 - **视频提供者**:
   - 本地视频文件
   - YouTube, Vimeo, Dailymotion, Youku, Coub
 - **嵌入提供者**: 
-  - Tweets
+  - 推文
 
-### Upload
+### 上传
 
-- **多重上传方法**:
+- **多种上传方式**:
   - 工具栏按钮与文件选择器
   - 从文件系统拖放
-  - 从剪贴板粘贴（图片）
-  - 外部媒体嵌入
+  - 从剪贴板粘贴 (图片)
+  - 外部媒体的URL嵌入
 - **上传体验**:
   - 实时进度跟踪
   - 上传期间预览
-  - 自动将占位符转换为适当媒体元素（图片、视频、音频、文件）一旦上传或嵌入提交
+  - 上传或嵌入提交后自动将占位符转换为适当的媒体元素 (图片, 视频, 音频, 文件)
   - 错误处理
   - 文件大小验证
   - 类型验证
 
 </PackageInfo>
 
-## Installation
+## 安装
 
 ```bash
 npm install @udecode/plate-media
 ```
 
-## Usage
+## 使用
 
 ```tsx
 import {
@@ -87,7 +87,7 @@ import { SelectOnBackspacePlugin } from '@udecode/plate-select';
 
 ```tsx
 const plugins = [
-  // ...otherPlugins,
+  // ...其他插件,
   ImagePlugin,
   VideoPlugin,
   AudioPlugin,
@@ -109,7 +109,7 @@ const plugins = [
 
 ```tsx
 const components = {
-  // ...otherComponents,
+  // ...其他组件,
   [ImagePlugin.key]: ImageElement,
   [VideoPlugin.key]: VideoElement,
   [AudioPlugin.key]: AudioElement,
@@ -125,21 +125,21 @@ const components = {
 
 ### 上传
 
-有两种方法在您的编辑器中实现文件上传：
+有两种方式可以在编辑器中实现文件上传：
 
 1. 使用我们的 UploadThing 实现
-2. 使用您首选的解决方案创建自定义实现
+2. 使用您偏好的上传解决方案创建自定义实现
 
 #### UploadThing
 
 1. 添加 [MediaPlaceholderElement](/docs/components/media-placeholder-element) 组件
 
-2. 添加 UploadThing API 路由：
+2. 为 UploadThing 添加 API 路由：
 
 <ComponentInstallation name="api-uploadthing" inline />
 
-3. 从 [UploadThing](https://uploadthing.com/dashboard/settings) 获取您的秘密密钥
-4. 将您的 UploadThing 秘密密钥添加到 `.env`：
+3. 从 [UploadThing](https://uploadthing.com/dashboard/settings) 获取您的密钥
+4. 将您的 UploadThing 密钥添加到 `.env` 文件中：
 
 ```bash title=".env"
 UPLOADTHING_TOKEN=xxx
@@ -147,9 +147,9 @@ UPLOADTHING_TOKEN=xxx
 
 #### 自定义实现
 
-对于自定义实现，您需要创建一个与我们的接口匹配的上传钩子。这可以与任何上传后端（AWS S3、UploadThing、Cloudinary、Firebase Storage 等）一起使用。
+对于自定义实现，您需要创建一个符合我们接口的上传钩子。这可以与任何上传后端 (AWS S3, UploadThing, Cloudinary, Firebase Storage, 等) 一起使用。
 
-上传钩子应实现此接口：
+上传钩子应实现以下接口：
 
 ```ts
 interface UseUploadFileProps {
@@ -162,15 +162,15 @@ interface UseUploadFileProps {
 }
 
 interface UploadedFile {
-  key: string;    // Unique identifier
-  url: string;    // Public URL of the uploaded file
-  name: string;   // Original filename
-  size: number;   // File size in bytes
-  type: string;   // MIME type
+  key: string;    // 唯一标识符
+  url: string;    // 上传文件的公共URL
+  name: string;   // 原始文件名
+  size: number;   // 文件大小（字节）
+  type: string;   // MIME 类型
 }
 ```
 
-示例实现使用 S3 预签名 URL：
+使用 S3 预签名 URL 的示例实现：
 
 ```ts
 export function useUploadFile({ 
@@ -188,7 +188,7 @@ export function useUploadFile({
     setUploadingFile(file);
 
     try {
-      // Get presigned URL and final URL from your backend
+      // 从您的后端获取预签名 URL 和最终 URL
       const { presignedUrl, fileUrl, fileKey } = await fetch('/api/upload', {
         method: 'POST',
         body: JSON.stringify({
@@ -197,7 +197,7 @@ export function useUploadFile({
         }),
       }).then(r => r.json());
 
-      // Upload to S3 using presigned URL
+      // 使用预签名 URL 上传到 S3
       await axios.put(presignedUrl, file, {
         headers: { 'Content-Type': file.type },
         onUploadProgress: (progressEvent) => {
@@ -239,27 +239,26 @@ export function useUploadFile({
 }
 ```
 
-## Examples
+## 示例
 
 ### Plate UI
 
-参考上面的预览。
+请参考上面的预览。
 
 ### Plate Plus
 
 <ComponentPreviewPro name="upload-pro" />
 
-## Plugins
+## 插件
 
 ### PlaceholderPlugin
 
-用于空媒体占位符元素的插件。处理文件上传、拖放和剪贴板粘贴事件。
+用于管理上传期间的媒体占位符。处理文件上传、拖放和剪贴板粘贴事件。
 
-<APIOptions>
-<APIItem name="uploadConfig" type="Partial<Record<AllowedFileType, MediaItemConfig>>" optional>
-
+<API name="PlaceholderPlugin">
+<APIOptions type="object">
+  <APIItem name="uploadConfig" type="Partial<Record<AllowedFileType, MediaItemConfig>>" optional>
 不同文件类型的配置。默认配置：
-
 ```ts
 {
   audio: {
@@ -300,12 +299,10 @@ export function useUploadFile({
   },
 }
 ```
-
-Supported file types: `'image' | 'video' | 'audio' | 'pdf' | 'text' | 'blob'`
-
+支持的文件类型：`'image' | 'video' | 'audio' | 'pdf' | 'text' | 'blob'`
 <APISubList>
   <APISubListItem parent="uploadConfig" name="mediaType" type="MediaKeys">
-    此配置的媒体插件键：`'audio' | 'file' | 'image' | 'video'`
+    此配置对应的媒体插件键：`'audio' | 'file' | 'image' | 'video'`
   </APISubListItem>
   <APISubListItem parent="uploadConfig" name="maxFileCount" type="number" optional>
     此类型文件的最大上传数量。
@@ -314,42 +311,35 @@ Supported file types: `'image' | 'video' | 'audio' | 'pdf' | 'text' | 'blob'`
     此类型文件的最大文件大小。格式：`${1|2|4|8|16|32|64|128|256|512|1024}${B|KB|MB|GB}`
   </APISubListItem>
   <APISubListItem parent="uploadConfig" name="minFileCount" type="number" optional>
-    必须上传的此类型文件的最小数量。
+    此类型文件的最小上传数量。
   </APISubListItem>
 </APISubList>
-
 </APIItem>
-
 <APIItem name="disableEmptyPlaceholder" type="boolean" optional>
-禁用空占位符，当没有文件上传时。
-
+禁用没有文件上传时的空占位符。
 - **默认:** `false`
 </APIItem>
-
 <APIItem name="disableFileDrop" type="boolean" optional>
 禁用拖放文件上传功能。
-
 - **默认:** `false`
 </APIItem>
-
 <APIItem name="maxFileCount" type="number" optional>
-如果未通过 `uploadConfig` 指定，则一次可以上传的最大文件数量。
-
+如果未在 `uploadConfig` 中指定，则允许一次上传的最大文件数量。
 - **默认:** `5`
 </APIItem>
-
 <APIItem name="multiple" type="boolean" optional>
-允许一次上传多个相同类型的文件。
-
+允许上传多个相同类型的文件。
 - **默认:** `true`
 </APIItem>
-
 </APIOptions>
+</API>
 
-### MediaPluginOptions
-  
-媒体插件使用的选项。
 
+### `MediaPluginOptions`
+
+媒体插件使用的插件选项。
+
+<API name="MediaPluginOptions">
 <APIAttributes>
   <APIItem name="isUrl" type="function" optional>
     用于检查文本字符串是否为 URL 的函数。
@@ -358,83 +348,84 @@ Supported file types: `'image' | 'video' | 'audio' | 'pdf' | 'text' | 'blob'`
     用于转换 URL 的函数。
   </APIItem>
 </APIAttributes>
+</API>
+### `ImagePlugin`
 
-### ImagePlugin
+用于空图片元素的插件。扩展了 [MediaPluginOptions](#mediapluginoptions)。
 
-用于处理空图像元素的插件。选项继承自 [MediaPluginOptions](#mediapluginoptions)。
-
-<APIOptions>
-
-继承自 [MediaPluginOptions](#mediapluginoptions)。
-
-<APIItem name="uploadImage" type="(dataUrl: string | ArrayBuffer) => Promise<string | ArrayBuffer> | string | ArrayBuffer" optional>
-
-一个可选的方法，用于将图片上传到服务器。该方法接收以下参数之一：
-- 来自 `FileReader.readAsDataURL` 的数据 URL（字符串）
-- 来自剪贴板数据的 ArrayBuffer
-
-应返回以下内容之一：
-- 已上传图片的 URL 字符串
-- 如果不需要上传，则返回原始数据 URL/ArrayBuffer
-
-如果未提供此方法，将使用原始数据 URL/ArrayBuffer 作为图片源。
-
-</APIItem>
-<APIItem name="disableUploadInsert" type="boolean" optional>
-如果设置为 true，则在数据插入时禁用文件上传。
-</APIItem>
-<APIItem name="disableEmbedInsert" type="boolean" optional>
-如果设置为 true，则在数据插入时禁用 URL 嵌入。
-</APIItem>
+<API name="ImagePlugin">
+<APIOptions type="ImagePluginOptions">
+  <APIItem name="uploadImage" type="(dataUrl: string | ArrayBuffer) => Promise<string | ArrayBuffer> | string | ArrayBuffer" optional>
+    用于将图片上传到服务器的函数。接收：
+    - 来自 `FileReader.readAsDataURL` 的数据 URL (字符串)
+    - 来自剪贴板数据的 ArrayBuffer
+    返回：
+    - 上传图片的 URL 字符串
+    - 如果不需要上传，则返回原始数据 URL/ArrayBuffer
+    - **默认:** 返回原始输入
+  </APIItem>
+  <APIItem name="disableUploadInsert" type="boolean" optional>
+    禁用数据插入时的文件上传。
+    - **默认:** `false`
+  </APIItem>
+  <APIItem name="disableEmbedInsert" type="boolean" optional>
+    禁用数据插入时的 URL 嵌入。
+    - **默认:** `false`
+  </APIItem>
 </APIOptions>
+</API>
 
-### VideoPlugin
+### `VideoPlugin`
 
-用于处理空视频元素的插件。
+用于空视频元素的插件。
 
-### AudioPlugin
+### `AudioPlugin`
 
-用于处理空音频元素的插件。
+用于空音频元素的插件。
 
-### FilePlugin
+### `FilePlugin`
 
-用于处理空文件元素的插件。
+用于空文件元素的插件。
 
-### MediaEmbedPlugin
+### `MediaEmbedPlugin`
 
-用于处理空媒体嵌入元素的插件。选项继承自 `MediaPluginOptions`。
+用于空媒体嵌入元素的插件。选项扩展了 `MediaPluginOptions`。
 
 ## API 占位符
 
-### editor.tf.insert.media()
+### `editor.tf.insert.media()`
 
-将媒体文件插入编辑器，并带有上传占位符。
+将媒体文件插入编辑器并带有上传占位符。
 
+<API name="insertMedia">
 <APIParameters>
   <APIItem name="files" type="FileList">
     要上传的文件。根据配置的文件类型和限制进行验证。
   </APIItem>
   <APIItem name="options" type="object" optional>
-    <APISubList>
-      <APISubListItem parent="options" name="at" type="Path" optional>
-        插入媒体的位置。默认为当前选择位置。
-      </APISubListItem>
-      <APISubListItem parent="options" name="nextBlock" type="boolean" optional>
-        是否在媒体后插入新块。
-        - **默认值：** `true`
-      </APISubListItem>
-    </APISubList>
+    插入节点转换的选项。
   </APIItem>
 </APIParameters>
 
-转换过程：
+<APIOptions type="object">
+  <APIItem name="at" type="Path" optional>
+    插入媒体的位置。默认为当前选择。
+  </APIItem>
+  <APIItem name="nextBlock" type="boolean" optional>
+    是否在媒体后插入新块。
+    - **默认:** `true`
+  </APIItem>
+</APIOptions>
+</API>
+
+转换：
 - 根据配置的限制（大小、数量、类型）验证文件
 - 为每个文件创建占位符元素
 - 按顺序处理多个文件上传
 - 维护上传历史以支持撤销/重做操作
-- 如果验证失败则触发错误处理
+- 如果验证失败，触发错误处理
 
-Error codes:
+错误代码：
 ```ts
 enum UploadErrorCode {
   INVALID_FILE_TYPE = 400,
@@ -445,48 +436,54 @@ enum UploadErrorCode {
 }
 ```
 
-### editor.tf.insert.audioPlaceholder
+### `editor.tf.insert.audioPlaceholder`
 
-插入一个占位符。完成后转换为音频元素。
-<APIParameters>
+插入占位符。完成后转换为音频元素。
+
+<API name="insertAudioPlaceholder">
+<APIOptions type="InsertNodesOptions">
   <APIItem name="options" type="InsertNodesOptions">
     插入节点转换的选项。
   </APIItem>
-</APIParameters>
+</APIOptions>
+</API>
 
 
-### editor.tf.insert.filePlaceholder
+### `editor.tf.insert.filePlaceholder`
 
-插入一个占位符。完成后转换为文件元素。
-<APIParameters>
-  <APIItem name="options" type="InsertNodesOptions">
+插入占位符。完成后转换为文件元素。
+
+<API name="insertFilePlaceholder">
+<APIOptions type="InsertNodesOptions">
     插入节点转换的选项。
-  </APIItem>
-</APIParameters>
+</APIOptions>
+</API>
 
+### `editor.tf.insert.imagePlaceholder`
 
-### editor.tf.insert.imagePlaceholder
+插入占位符。完成后转换为图片元素。
 
-插入一个占位符。完成后转换为图片元素。
-<APIParameters>
-  <APIItem name="options" type="InsertNodesOptions">
+<API name="insertImagePlaceholder">
+<APIOptions type="InsertNodesOptions">
     插入节点转换的选项。
-  </APIItem>
-</APIParameters>
+</APIOptions>
+</API>
 
-### editor.tf.insert.videoPlaceholder
+### `editor.tf.insert.videoPlaceholder`
 
-插入一个占位符。完成后转换为视频元素。
-<APIParameters>
-  <APIItem name="options" type="InsertNodesOptions">
+插入占位符。完成后转换为视频元素。
+
+<API name="insertVideoPlaceholder">
+<APIOptions type="InsertNodesOptions">
     插入节点转换的选项。
-  </APIItem>
-</APIParameters>
+</APIOptions>
+</API>
 
-### editor.api.placeholder.addUploadingFile()
+### `editor.api.placeholder.addUploadingFile()`
 
 跟踪当前正在上传的文件。
 
+<API name="addUploadingFile">
 <APIParameters>
   <APIItem name="id" type="string">
     占位符元素的唯一标识符。
@@ -495,11 +492,13 @@ enum UploadErrorCode {
     正在上传的文件。
   </APIItem>
 </APIParameters>
+</API>
 
-### editor.api.placeholder.getUploadingFile()
+### `editor.api.placeholder.getUploadingFile()`
 
 获取当前正在上传的文件。
 
+<API name="getUploadingFile">
 <APIParameters>
   <APIItem name="id" type="string">
     占位符元素的唯一标识符。
@@ -508,66 +507,54 @@ enum UploadErrorCode {
 
 <APIReturns>
   <APIItem type="File | undefined">
-    如果找到则返回正在上传的文件，否则返回 undefined。
+    如果找到正在上传的文件，则返回该文件，否则返回 undefined。
   </APIItem>
 </APIReturns>
+</API>
 
-### editor.api.placeholder.removeUploadingFile()
+### `editor.api.placeholder.removeUploadingFile()`
 
 在上传完成或失败后从上传跟踪状态中移除文件。
 
+<API name="removeUploadingFile">
 <APIParameters>
   <APIItem name="id" type="string">
     要移除的占位符元素的唯一标识符。
   </APIItem>
 </APIParameters>
+</API>
 
-## API Media
+## API 媒体
 
-### parseMediaUrl
+### `parseMediaUrl`
 
-根据媒体插件的配置规则解析媒体 URL 并返回相关数据。
-
+<API name="parseMediaUrl">
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    编辑器实例。
+  <APIItem name="options.pluginKey" type="string">
+    媒体插件的键。
   </APIItem>
-  <APIItem name="options" type="object">
-    <APISubList>
-      <APISubListItem parent="options" name="pluginKey" type="string">
-        媒体插件的键。
-      </APISubListItem>
-      <APISubListItem parent="options" name="url" type="string" optional>
-        要解析的媒体 URL。
-      </APISubListItem>
-    </APISubList>
+  <APIItem name="options.url" type="string" optional>
+    要解析的媒体 URL。
   </APIItem>
 </APIParameters>
+</API>
 
-### submitFloatingMedia
+### `submitFloatingMedia`
 
-通过设置 URL 并执行必要的转换来提交浮动媒体元素。
-
+<API name="submitFloatingMedia">
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    编辑器实例。
+  <APIItem name="options.element" type="TMediaElement">
+    要提交的浮动媒体元素。
   </APIItem>
-  <APIItem name="options" type="object">
-    <APISubList>
-      <APISubListItem parent="options" name="element" type="TMediaElement">
-        要提交的浮动媒体元素。
-      </APISubListItem>
-      <APISubListItem parent="options" name="pluginKey" type="string" optional>
-        媒体插件的键。
-      </APISubListItem>
-    </APISubList>
+  <APIItem name="options.pluginKey" type="string" optional>
+    媒体插件的键。
   </APIItem>
 </APIParameters>
+</API>
 
-### EmbedUrlData
+### `EmbedUrlData`
 
-定义从解析嵌入 URL 返回的数据类型。
-
+<API name="EmbedUrlData">
 <APIAttributes>
   <APIItem name="url" type="string" optional>
     嵌入内容的 URL。
@@ -582,104 +569,94 @@ enum UploadErrorCode {
     用于渲染嵌入内容的组件。
   </APIItem>
 </APIAttributes>
+</API>
 
-## API Image
+## API 图片
 
-### insertImage
+### `insertImage`
 
-在编辑器中插入图片元素。
+将图片元素插入编辑器。
 
+<API name="insertImage">
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    编辑器实例。
-  </APIItem>
   <APIItem name="url" type="string | ArrayBuffer">
     图片的 URL 或 ArrayBuffer。
   </APIItem>
   <APIItem name="options" type="InsertNodesOptions" optional>
-    插入图片元素的其他选项。
+    插入图片元素的附加选项。
   </APIItem>
-  <APISubList>
-    <APISubListItem parent="options" name="nextBlock" type="boolean" optional>
-      如果为 true，图片将被插入到下一个块中。
-    </APISubListItem>
-  </APISubList>
 </APIParameters>
 
-### isImageUrl
+<APIOptions type="InsertImageOptions">
+  <APIItem name="nextBlock" type="boolean" optional>
+    如果为 true，图片将插入到下一个块中。
+  </APIItem>
+</APIOptions>
+</API>
 
-检查给定的 URL 是否是有效的图片 URL。
+### `isImageUrl`
 
+检查 URL 是否为有效的图片 URL。
+
+<API name="isImageUrl">
 <APIParameters>
   <APIItem name="url" type="string">
     要检查的 URL。
   </APIItem>
 </APIParameters>
 
-### withImageUpload
+<APIReturns type="boolean">
+    URL 是否为有效的图片 URL。
+</APIReturns>
+</API>
 
-增强编辑器以支持从剪贴板粘贴图片。
+### `withImageUpload`
 
+增强编辑器实例，添加图片上传功能。
+
+<API name="withImageUpload">
 <APIParameters>
-  <APIItem name="editor" type="E">
-    编辑器实例。
-  </APIItem>
   <APIItem name="plugin" type="PlatePlugin">
-    plate 插件。
+    Plate 插件。
   </APIItem>
 </APIParameters>
+</API>
 
-### withImageEmbed
+### `withImageEmbed`
 
-增强编辑器以在粘贴 URL 时自动插入图片。
+增强编辑器实例，添加图片相关功能。
 
+<API name="withImageEmbed">
 <APIParameters>
-  <APIItem name="editor" type="E">
-    编辑器实例。
-  </APIItem>
   <APIItem name="plugin" type="PlatePlugin">
-    plate 插件。
+    Plate 插件。
   </APIItem>
 </APIParameters>
+</API>
 
-## API Media Embed
+## API 媒体嵌入
 
-### insertMediaEmbed
+### `insertMediaEmbed`
 
 在当前选择位置插入媒体嵌入元素。
 
-<APIParameters>
-<APIItem name="editor" type="PlateEditor">
-编辑器实例。
-</APIItem>
-<APIItem name="options" type="object">
-<APISubList>
-<APISubListItem parent="options" name="url" type="string" optional>
-媒体嵌入的 URL。
+<API name="insertMediaEmbed">
+<APIOptions type="InsertMediaEmbedOptions">
+  <APIItem name="url" type="string" optional>
+    媒体嵌入的 URL。
+    - **默认值:** `''`
+  </APIItem>
+  <APIItem name="key" type="string" optional>
+    媒体嵌入元素的键。
+    - **默认值:** `MediaEmbedPlugin.key`
+  </APIItem>
+  <APIItem name="insertNodesOptions" type="InsertNodesOptions" optional>
+    插入节点的附加选项。
+  </APIItem>
+</APIOptions>
+</API>
 
-- **默认值：** `''`
-
-</APISubListItem>
-<APISubListItem
-  parent="options"
-  name="key"
-  type="string"
-  optional
->
-媒体嵌入元素的键。
-
-- **默认值：** `MediaEmbedPlugin.key`
-
-</APISubListItem>
-</APISubList>
-
-</APIItem>
-<APIItem name="insertNodesOptions" type="InsertNodesOptions">
-插入节点的选项。
-</APIItem>
-</APIParameters>
-
-### parseIframeUrl
+### `parseIframeUrl`
 
 解析 iframe 嵌入的 URL。
 
@@ -689,10 +666,11 @@ enum UploadErrorCode {
   </APIItem>
 </APIParameters>
 
-### parseTwitterUrl
+### `parseTwitterUrl`
 
 解析 Twitter URL 并提取推文 ID。
 
+<API name="parseVideoUrl">
 <APIParameters>
   <APIItem name="url" type="string">
     Twitter URL。
@@ -701,34 +679,35 @@ enum UploadErrorCode {
 
 <APIReturns>
   <APIItem type="EmbedUrlData | undefined">
-    如果解析成功，返回包含推文 ID 和提供者的对象。
+    如果解析成功，则返回包含推文 ID 和提供者的对象。
     如果 URL 无效或不匹配任何支持的视频提供者，则返回 undefined。
   </APIItem>
 </APIReturns>
+</API>
 
-### parseVideoUrl
+### `parseVideoUrl`
 
 解析视频 URL 并提取视频 ID 和提供者特定的嵌入 URL。
 
+<API name="parseVideoUrl">
 <APIParameters>
   <APIItem name="url" type="string">
-    视频 URL。
+    要解析的视频 URL。
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-  <APIItem type="EmbedUrlData | undefined">
-    如果解析成功，返回包含视频 ID 和提供者的对象。
-    如果 URL 无效或不匹配任何支持的视频提供者，则返回 undefined。
-  </APIItem>
+<APIReturns type="EmbedUrlData | undefined">
+  如果解析成功，则返回包含视频 ID 和提供者的对象；如果 URL 无效或不支持，则返回 undefined。
 </APIReturns>
+</API>
 
-## API Components
+## API 组件
 
-### useResizable
+### `useResizable`
 
-用于可调整大小元素的行为钩子。
+处理媒体元素的可调整大小属性。
 
+<API name="useResizable">
 <APIState>
   <APIItem name="align" type="'left' | 'center' | 'right'">
     可调整大小元素内容的对齐方式。
@@ -739,124 +718,101 @@ enum UploadErrorCode {
   <APIItem name="maxWidth" type="ResizeLength">
     可调整大小元素的最大宽度。
   </APIItem>
-  <APIItem name="setNodeWidth" type="function">
-    用于在调整大小时设置节点宽度的函数。
+  <APIItem name="setNodeWidth" type="(width: number | string) => void">
+    调整大小时设置节点宽度的函数。
   </APIItem>
-  <APIItem name="setWidth" type="function">
+  <APIItem name="setWidth" type="(width: number | string) => void">
     直接设置可调整大小元素宽度的函数。
   </APIItem>
   <APIItem name="width" type="Property.Width<string | number> | undefined">
-    可调整大小元素的当前宽度。可以是字符串（如百分比或 'auto'）或数字（表示像素）。
+    可调整大小元素的当前宽度（百分比、'auto' 或像素）。
   </APIItem>
 </APIState>
 
-<APIReturns>
+<APIReturns type="object">
   <APIItem name="wrapperRef" type="React.RefObject<HTMLDivElement>">
-    指向包装可调整大小元素的最外层 div 的 React 引用。
+    指向最外层包装 div 的 React 引用。
   </APIItem>
-  <APIItem name="wrapperProps" type="React.HTMLAttributes<HTMLDivElement>">
-    要传递给包装可调整大小元素的最外层 div 的属性。
-    <APISubList>
-      <APISubListItem parent="wrapperProps" name="style" type="CSSProperties">
-        要应用于包装 div 的 CSS 样式。
-      </APISubListItem>
-    </APISubList>
+  <APIItem name="wrapperProps.style" type="CSSProperties">
+    包装 div 的 CSS 样式。
   </APIItem>
-  <APIItem name="props" type="object">
-    要传递给可调整大小元素的属性。
-    <APISubList>
-      <APISubListItem parent="props" name="style" type="CSSProperties">
-        要应用于可调整大小元素的 CSS 样式。
-      </APISubListItem>
-    </APISubList>
+  <APIItem name="props.style" type="CSSProperties">
+    可调整大小元素的 CSS 样式。
   </APIItem>
-  <APIItem name="context" type="object">
-    <APISubList>
-      <APISubListItem parent="context" name="onResize" type="function">
-        当可调整大小元素被调整大小时调用的回调函数。
-      </APISubListItem>
-    </APISubList>
+  <APIItem name="context.onResize" type="() => void">
+    元素调整大小时调用的回调函数。
   </APIItem>
 </APIReturns>
+</API>
 
-### useFloatingMediaEditButton
+### `useFloatingMediaEditButton`
 
-用于浮动媒体编辑按钮的行为钩子。
+处理浮动媒体编辑按钮。
 
-<APIReturns>
-  <APIItem name="props" type="object">
-    <APISubList>
-      <APISubListItem name="onClick" type="function">
-        处理按钮点击的回调函数。
-      </APISubListItem>
-    </APISubList>
+<API name="useFloatingMediaEditButton">
+<APIReturns type="object">
+  <APIItem name="props.onClick" type="() => void">
+    处理按钮点击的回调函数。
   </APIItem>
 </APIReturns>
+</API>
 
-### useFloatingMediaUrlInput
+### `useFloatingMediaUrlInput`
 
-用于浮动媒体 URL 输入的行为钩子。
+处理媒体元素的 URL 输入字段。
 
+<API name="useFloatingMediaUrlInput">
 <APIProps>
   <APIItem name="defaultValue" type="string">
     URL 输入字段的默认值。
   </APIItem>
 </APIProps>
 
-<APIReturns>
-  <APIItem name="props" type="object">
-    <APISubList>
-      <APISubListItem parent="props" name="onChange" type="function">
-        处理按钮点击的回调函数。
-      </APISubListItem>
-      <APISubListItem parent="props" name="autoFocus" type="boolean">
-        如果为 true，URL 输入字段将在挂载时获得焦点。
-      </APISubListItem>
-      <APISubListItem parent="props" name="defaultValue" type="string">
-        URL 输入字段的默认值。
-      </APISubListItem>
-    </APISubList>
+<APIReturns type="object">
+  <APIItem name="props.onChange" type="() => void">
+    处理输入变化的回调函数。
+  </APIItem>
+  <APIItem name="props.autoFocus" type="boolean">
+    URL 输入字段是否应在挂载时获得焦点。
+  </APIItem>
+  <APIItem name="props.defaultValue" type="string">
+    URL 输入字段的默认值。
   </APIItem>
 </APIReturns>
+</API>
 
-### useImage
+### `useImage`
 
-用于图片元素的行为钩子。
-
-<APIReturns>
-  <APIItem name="props" type="object">
-    <APISubList>
-      <APISubListItem parent="props" name="src" type="string">
-        媒体元素的 URL。
-      </APISubListItem>
-      <APISubListItem parent="props" name="alt" type="string">
-        图片的说明文字。
-      </APISubListItem>
-      <APISubListItem parent="props" name="draggable" type="boolean">
-        指示图片是否可拖动。
-      </APISubListItem>
-    </APISubList>
+<API name="useImage">
+<APIReturns type="object">
+  <APIItem name="props.src" type="string">
+    媒体元素的 URL。
+  </APIItem>
+  <APIItem name="props.alt" type="string">
+    图片的说明文字。
+  </APIItem>
+  <APIItem name="props.draggable" type="boolean">
+    图片是否可拖动。
   </APIItem>
 </APIReturns>
+</API>
 
-### useMediaState
+### `useMediaState`
 
-用于媒体元素的状态钩子。
+媒体元素的状态钩子。
 
+### `useMediaState`
+
+<API name="useMediaState">
 <APIParameters>
-<APIItem name="options" type="object">
-<APISubList>
-<APISubListItem parent="options" name="urlParsers" type="EmbedUrlParser[]" optional>
-用于解析媒体元素 URL 的解析器数组。
-
-- **`EmbedUrlParser`:** `(url: string) => EmbedUrlData | undefined`
-
-</APISubListItem>
-</APISubList>
-</APIItem>
+  <APIItem name="options.urlParsers" type="EmbedUrlParser[]" optional>
+    用于解析媒体元素 URL 的解析器数组。
+  
+    - **`EmbedUrlParser`:** `(url: string) => EmbedUrlData | undefined`
+  </APIItem>
 </APIParameters>
 
-<APIReturns>
+<APIReturns type="object">
   <APIItem name="align" type="string">
     媒体元素的对齐方式。
   </APIItem>
@@ -882,30 +838,27 @@ enum UploadErrorCode {
     媒体元素是否为 YouTube 视频。
   </APIItem>
 </APIReturns>
+</API>
 
-### useMediaToolbarButton
+### `useMediaToolbarButton`
 
-用于媒体工具栏按钮的行为钩子。
+媒体工具栏按钮的行为钩子。
 
+### `useMediaToolbarButton`
+
+<API name="useMediaToolbarButton">
 <APIParameters>
-  <APIItem name="options" type="object">
-    <APISubList>
-      <APISubListItem parent="options" name="nodeType" type="string" optional>
-        要插入的媒体节点的类型。
-      </APISubListItem>
-    </APISubList>
+  <APIItem name="options.nodeType" type="string" optional>
+    要插入的媒体节点类型。
   </APIItem>
 </APIParameters>
 
-<APIReturns>
-  <APIItem name="props" type="object">
-    <APISubList>
-      <APISubListItem parent="props" name="onClick" type="function">
-        将媒体节点插入编辑器并使编辑器获得焦点的回调函数。
-      </APISubListItem>
-    </APISubList>
+<APIReturns type="object">
+  <APIItem name="props.onClick" type="() => void">
+    插入媒体节点并使编辑器获得焦点的回调函数。
   </APIItem>
 </APIReturns>
+</API>
 
 ## 类型
 
@@ -925,7 +878,6 @@ export interface TMediaElement extends TElement {
 ### TPlaceholderElement
 
 ```tsx
-export interface TPlaceholderElement extends TElement {
   mediaType: string;
 }
 ```

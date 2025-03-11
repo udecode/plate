@@ -1,0 +1,61 @@
+---
+title: 故障排除
+description: 解决使用 Plate 时遇到的常见问题。
+---
+
+## 依赖冲突
+
+### 多个 Plate 实例
+
+**问题:** 出现意外行为或“hooks 只能在组件内部调用”错误。
+
+**根本原因:** 项目中存在不兼容的 Plate 包版本。
+
+**诊断:** 检查是否存在多个 Plate 包版本：
+
+```bash
+# npm
+npm ls @udecode/plate @udecode/plate-core
+
+# pnpm 或 yarn
+pnpm why @udecode/plate
+pnpm why @udecode/plate-core
+```
+
+**解决方案:** 将所有包升级到目标版本的最新版本：
+
+```bash
+# 示例：将所有包升级到 v45
+pnpm add @udecode/plate@45 @udecode/plate-core@45 @udecode/plate-ui@45 # 等等
+```
+
+### 多个 Slate 实例
+
+**问题:** 编辑器功能可能无法正常工作。
+
+**根本原因:** 包管理器有时会安装不匹配的 Slate 依赖版本。例如，`pnpm` 可能会安装 `slate` 版本 0.112.2，而不是所需的 0.111.0。
+
+**诊断:** 检查是否存在多个 Slate 版本：
+
+```bash
+# npm
+npm ls slate slate-react slate-dom
+
+# pnpm 或 yarn
+pnpm why slate
+pnpm why slate-react
+pnpm why slate-dom
+```
+
+**解决方案:** 强制使用一致的 Slate 依赖版本：
+
+```jsonc
+// package.json
+{
+  "resolutions": {
+    "slate": "0.112.0",
+    "slate-dom": "0.112.2",
+    "slate-react": "0.112.1"
+  }
+}
+```
