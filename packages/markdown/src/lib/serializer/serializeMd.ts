@@ -12,7 +12,7 @@ import { serializeMdNodes } from './serializeMdNodes';
 /** Serialize the editor value to Markdown. */
 export const serializeMd = (
   editor: SlateEditor,
-  options?: {values: Parameters<typeof serializeMdNodes>['0']} & Parameters<typeof serializeMdNodes>['1']
+  options?: {value: Parameters<typeof serializeMdNodes>['0']} & Parameters<typeof serializeMdNodes>['1']
 ) => {
   const plugins = editor.pluginList.filter(
     (p) => p.node.isElement || p.node.isLeaf
@@ -31,7 +31,7 @@ export const serializeMd = (
     {} as SerializeMdOptions['nodes']
   );
 
-  const nodesToSerialize = options.values ?? editor.children;
+  const nodesToSerialize = options?.value ?? editor.children;
 
   return serializeMdNodes(nodesToSerialize, {
     ...options,
