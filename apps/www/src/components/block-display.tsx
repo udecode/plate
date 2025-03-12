@@ -57,5 +57,3 @@ export async function BlockDisplay({
     />
   );
 }
-
-export default BlockDisplay;
