@@ -567,6 +567,7 @@
     ],
     "name": "font-size-toolbar-button",
     "registryDependencies": [
+      "popover",
       "toolbar"
     ],
     "type": "registry:ui"
@@ -1783,7 +1784,9 @@
     "type": "registry:ui"
   },
   {
-    "dependencies": [],
+    "dependencies": [
+      "@udecode/plate-ai"
+    ],
     "doc": {
       "description": "A toolbar button for accessing AI features.",
       "docs": [
@@ -2086,7 +2089,9 @@
       }
     ],
     "name": "comment-toolbar-button",
-    "registryDependencies": [],
+    "registryDependencies": [
+      "comments-plugin"
+    ],
     "type": "registry:ui"
   },
   {
