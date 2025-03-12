@@ -17,7 +17,9 @@
     }
   ],
   "name": "tooltip",
-  "registryDependencies": [],
+  "registryDependencies": [
+    "button"
+  ],
   "type": "registry:ui",
   "$schema": "https://platejs.org/schema/registry-item.json",
   "author": "udecode (https://platejs.org)"
