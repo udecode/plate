@@ -1007,7 +1007,7 @@ export const Index: Record<string, any> = {
       name: "tooltip",
       description: "",
       type: "registry:ui",
-      registryDependencies: [],
+      registryDependencies: ["button"],
       files: [{
         path: "src/registry/default/plate-ui/tooltip.tsx",
         type: "registry:ui",

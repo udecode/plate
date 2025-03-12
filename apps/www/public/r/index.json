@@ -1713,7 +1713,9 @@
       }
     ],
     "name": "tooltip",
-    "registryDependencies": [],
+    "registryDependencies": [
+      "button"
+    ],
     "type": "registry:ui"
   },
   {
