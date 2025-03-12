@@ -23,6 +23,7 @@
   ],
   "name": "font-size-toolbar-button",
   "registryDependencies": [
+    "popover",
     "toolbar"
   ],
   "type": "registry:ui",

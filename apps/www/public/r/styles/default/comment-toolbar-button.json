@@ -27,7 +27,9 @@
     }
   ],
   "name": "comment-toolbar-button",
-  "registryDependencies": [],
+  "registryDependencies": [
+    "comments-plugin"
+  ],
   "type": "registry:ui",
   "$schema": "https://platejs.org/schema/registry-item.json",
   "author": "udecode (https://platejs.org)"

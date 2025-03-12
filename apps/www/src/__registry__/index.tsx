@@ -320,7 +320,7 @@ export const Index: Record<string, any> = {
       name: "font-size-toolbar-button",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["toolbar"],
+      registryDependencies: ["popover","toolbar"],
       files: [{
         path: "src/registry/default/plate-ui/font-size-toolbar-button.tsx",
         type: "registry:ui",
@@ -1200,7 +1200,7 @@ export const Index: Record<string, any> = {
       name: "comment-toolbar-button",
       description: "",
       type: "registry:ui",
-      registryDependencies: [],
+      registryDependencies: ["comments-plugin"],
       files: [{
         path: "src/registry/default/plate-ui/comment-toolbar-button.tsx",
         type: "registry:ui",
