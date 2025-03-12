@@ -1932,7 +1932,7 @@ export const uiPrimitives: Registry['items'] = [
     },
     files: [{ path: 'plate-ui/tooltip.tsx', type: 'registry:ui' }],
     name: 'tooltip',
-    registryDependencies: [],
+    registryDependencies: ['button'],
     type: 'registry:ui',
   },
   {
