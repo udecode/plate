@@ -1,39 +1,38 @@
 ---
-title: Autoformat
+title: 自动格式化
 docs:
   - route: /docs/basic-elements
-    title: Basic Elements
+    title: 基础元素
   - route: /docs/basic-marks
-    title: Basic Marks
+    title: 基础标记
   - route: /docs/horizontal-rule
-    title: Horizontal Rule
+    title: 水平线
   - route: /docs/list
-    title: List
+    title: 列表
 ---
 
 <ComponentPreview name="autoformat-demo" />
 
 <PackageInfo>
 
-## 功能特点
+## 功能
 
-- 通过短代码快速格式化内容。
-- 提供类似 markdown 的行内代码，用于实时输入。
-- 通过避免工具栏按钮和快捷键来简化编辑。
-- 自动转换功能（例如，`#` 到 H1）。
+- 通过短代码实现快速内容格式化。
+- 提供类似 Markdown 的实时输入内联代码。
+- 通过避免工具栏按钮和常见格式化的快捷键，增强并简化编辑体验。
+- 自动转换功能（例如，`#` 转换为 H1）。
 - 提供预定义的格式化规则。
 
-**格式化快捷代码：**
+## 短代码
 
 - `text*` 用于加粗文本。
 - `_text_` 用于斜体文本。
 - `~~text~~` 用于删除线文本。
-- ...等等。
+- ... 以及更多。
 
 </PackageInfo>
 
 ## 安装
-
 ```bash
 npm install @udecode/plate-autoformat
 ```
@@ -44,7 +43,7 @@ npm install @udecode/plate-autoformat
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 
 const plugins = [
-  // ...otherPlugins,
+  // ...其他插件,
   AutoformatPlugin.configure({
     options: {
       rules: autoformatRules,
@@ -63,40 +62,37 @@ const plugins = [
 ### `autoformatBlocks`
 
 ### `autoformatIndentLists`
-如果使用 [Indent List 插件](/docs/indent-list)，您可以使用以下规则：
+
+如果使用 [缩进列表插件](/docs/indent-list)，可以使用以下规则：
 
 ### `autoformatLists`
 
-如果使用 [List 插件](/docs/list)，您可以使用以下规则：
+如果使用 [列表插件](/docs/list)，可以使用以下规则：
 
 ### `autoformatMarks`
 
 ### `autoformatUtils`
 
-## API
+## 插件
 
-### AutoformatPlugin
+### `AutoformatPlugin`
 
+<API name="AutoformatPlugin">
 <APIOptions>
-
-<APIItem name="rules" type="AutoformatRule[]" optional>
-
-触发规则列表。
-
-- 可以是以下之一：`AutoformatBlockRule`、`AutoformatMarkRule`、`AutoformatTextRule`。
-- 继承 `AutoformatCommonRule`。
-
-</APIItem>
-<APIItem name="enableUndoOnDelete" type="boolean" optional>
-
-Enable undo on delete.
-
-</APIItem>
+  <APIItem name="rules" type="AutoformatRule[]" optional>
+    触发规则的列表。
+    - 可以是以下之一：`AutoformatBlockRule`, `AutoformatMarkRule`, `AutoformatTextRule`
+    - 继承自 `AutoformatCommonRule`
+  </APIItem>
+  <APIItem name="enableUndoOnDelete" type="boolean" optional>
+    启用删除时的撤销功能。
+  </APIItem>
 </APIOptions>
+</API>
 
-### Rules
+## 规则
 
-You can import the following rules:
+你可以导入以下规则：
 
 | 名称                           | 描述                          |
 | :----------------------------- | :----------------------------------- |
@@ -135,8 +131,8 @@ You can import the following rules:
 | `autoformatDivision`           | 将 `//` 转换为 `÷`。                |
 | `autoformatOperation`          | 将 `+-` 转换为 `±`。                |
 |                                | 将 `%%` 转换为 `‰`。                |
-|                                | 将 `%%%` 和 `‰%` 转换为 `‱`。       |
-|                                | `autoformatDivision` rules.          |
+|                                | 将 `%%%` 和 `‰%` 转换为 `‱.       |
+|                                | `autoformatDivision` 规则。          |
 | `autoformatSubscriptNumbers`   | 将 `~0` 转换为 `₀`。                |
 |                                | 将 `~1` 转换为 `₁`。                |
 |                                | ...                                  |
@@ -149,169 +145,136 @@ You can import the following rules:
 |                                | 将 `^9` 转换为 `⁹`。                |
 | `autoformatSuperscriptSymbols` | 将 `^+` 转换为 `°`。                |
 |                                | 将 `^-` 转换为 `⁺`。                |
-| `autoformatMath`               | `autoformatComparison` rules         |
-|                                | `autoformatEquality` rules           |
-|                                | `autoformatOperation` rules          |
-|                                | `autoformatFraction` rules           |
-|                                | `autoformatSubscriptNumbers` rules   |
-|                                | `autoformatSubscriptSymbols` rules   |
-|                                | `autoformatSuperscriptNumbers` rules |
-|                                | `autoformatSuperscriptSymbols` rules |
+| `autoformatMath`               | `autoformatComparison` 规则         |
+|                                | `autoformatEquality` 规则           |
+|                                | `autoformatOperation` 规则          |
+|                                | `autoformatFraction` 规则           |
+|                                | `autoformatSubscriptNumbers` 规则   |
+|                                | `autoformatSubscriptSymbols` 规则   |
+|                                | `autoformatSuperscriptNumbers` 规则 |
+|                                | `autoformatSuperscriptSymbols` 规则 |
 
-### AutoformatCommonRule
-自动格式化规则的通用结构接口，不受其模式影响。
+## 类型
 
+### `AutoformatCommonRule`
+
+一个接口，用于自动格式化规则的通用结构，无论其模式如何。
+
+<API name="AutoformatCommonRule">
 <APIAttributes>
 <APIItem
   name="match"
   type="string | string[] | MatchRange | MatchRange[]"
 >
+  当触发器和光标前的文本匹配时，规则适用。
 
-当触发器和光标前的文本匹配时应用规则。
+  - 对于 `mode: 'block'`：查找光标前的结束匹配项。
+  - 对于 `mode: 'text'`：查找光标前的结束匹配项。如果 `format` 是一个数组，还要查找开始匹配项。
+  - 对于 `mode: 'mark'`：查找开始和结束匹配项。
+  - 注意：`'_*'`、`['_*']` 和 `{ start: '_*', end: '*_' }` 是等价的。
+  - `MatchRange`:
 
-- 对于 `mode: 'block'`：在光标前查找结束匹配。
-- 对于 `mode: 'text'`：在光标前查找结束匹配。如果 `format` 是数组，还会查找开始匹配。
-- 对于 `mode: 'mark'`：查找开始和结束匹配。
-- 注意：`'_*'`、`['_*']` 和 `{ start: '_*', end: '*_' }` 是等效的。
-- `MatchRange`：
-
-<APISubList>
-
-<APISubListItem parent="match" name="start" type="string">
-
-范围的起始点。
-
-</APISubListItem>
-<APISubListItem parent="match" name="end" type="string">
-
-范围的结束点。
-
-</APISubListItem>
-</APISubList>
-
+  <APISubList>
+    <APISubListItem parent="match" name="start" type="string">
+      范围的起始点。
+    </APISubListItem>
+    <APISubListItem parent="match" name="end" type="string">
+      范围的结束点。
+    </APISubListItem>
+  </APISubList>
 </APIItem>
 <APIItem name="trigger" type="string | string[]" optional>
-
-触发自动格式化的字符。
-
+  触发自动格式化的字符。
 </APIItem>
 <APIItem name="insertTrigger" type="boolean" optional>
-
-如果为 true，在自动格式化后插入触发字符。
-
-- **默认值：** `false`
-
+  如果为 true，则在自动格式化后插入触发字符。
+  - **默认值:** `false`
 </APIItem>
 <APIItem
   name="query"
   type="(editor: PlateEditor, options: AutoformatQueryOptions) => boolean"
   optional
 >
+  允许自动格式化的查询函数。
 
-允许自动格式化的查询函数。
-
-- `AutoformatQueryOptions` 继承 `Omit<AutoformatCommonRule, 'query'>`：
-
-<APISubList>
-<APISubListItem parent="options" name="text" type="string">
-
-`insertText` 文本。
-
-</APISubListItem>
-</APISubList>
-
+  <APIOptions type="AutoformatQueryOptions">
+    <APIItem name="text" type="string">
+      `insertText` 文本。
+    </APIItem>
+  </APIOptions>
 </APIItem>
 </APIAttributes>
+</API>
 
-### AutoformatBlockRule
+### `AutoformatBlockRule`
 
-块模式自动格式化规则的接口。
+一个接口，用于块模式的自动格式化规则。
 
+<API name="AutoformatBlockRule">
 <APIAttributes>
-<APIItem name="mode" type="'block'">
+  <APIItem name="mode" type="'block'">
+    块模式：设置块类型或自定义格式。
 
-- 文本：插入文本。
-- 块：设置块类型或自定义格式。
-- 标记：在匹配之间插入标记。
-
-</APIItem>
-<APIItem name="match" type="string | string[]">
-
-匹配自动格式化规则的模式。
-
-</APIItem>
-<APIItem name="type" type="string" optional>
-
-- 对于 `mode: 'block'`：设置块类型。如果定义了 `format`，则忽略此字段。
-- 对于 `mode: 'mark'`：要添加的标记。
-
-</APIItem>
-<APIItem name="triggerAtBlockStart" type="boolean" optional>
-
-如果为 true，触发器应该在块开始处才允许自动格式化。
-
-- **默认值：** `true`
-
-</APIItem>
-<APIItem name="allowSameTypeAbove" type="boolean" optional>
-
-如果为 true，即使在选定块上方有相同类型的块，也允许自动格式化。
-
-- **默认值：** `false`
-
-</APIItem>
-<APIItem name="preFormat" type="(editor: PlateEditor) => void" optional>
-
-在 `format` 之前调用的函数。通常用于重置选定的块。
-
-</APIItem>
-<APIItem name="format" type="(editor: PlateEditor) => void" optional>
-
-自定义格式化函数。
-
-</APIItem>
+    - 文本：插入文本。
+    - 块：设置块类型或自定义格式。 
+    - 标记：在匹配项之间插入标记。
+  </APIItem>
+  <APIItem name="match" type="string | string[]">
+    自动格式化规则的匹配模式。
+  </APIItem>
+  <APIItem name="type" type="string" optional>
+    - 对于 `mode: 'block'`：设置块类型。如果定义了 `format`，则忽略此字段。
+    - 对于 `mode: 'mark'`：要添加的标记。
+  </APIItem>
+  <APIItem name="triggerAtBlockStart" type="boolean" optional>
+    触发器是否应在块的开头。
+    - **默认值:** `true`
+  </APIItem>
+  <APIItem name="allowSameTypeAbove" type="boolean" optional>
+    是否允许在上方使用相同块类型进行自动格式化。
+    - **默认值:** `false`
+  </APIItem>
+  <APIItem name="preFormat" type="(editor: PlateEditor) => void" optional>
+    在 `format` 之前调用的函数。用于重置选定的块。
+  </APIItem>
+  <APIItem name="format" type="(editor: PlateEditor) => void" optional>
+    自定义格式化函数。
+  </APIItem>
 </APIAttributes>
+</API>
 
-### AutoformatMarkRule
+### `AutoformatMarkRule`
 
-标记模式自动格式化规则的接口。
+一个接口，用于标记模式的自动格式化规则。
 
+<API name="AutoformatMarkRule">
 <APIAttributes>
-<APIItem name="mode" type="'mark'">
-
-模式为 'mark'。
-
-</APIItem>
-<APIItem name="type" type="string | string[]">
-
-要添加的标记。
-
-</APIItem>
-<APIItem name="ignoreTrim" type="boolean" optional>
-
-如果为 false，当字符串可以被修剪时不进行格式化。
-
-</APIItem>
+  <APIItem name="mode" type="'mark'">
+    标记模式：在匹配项之间插入标记。
+  </APIItem>
+  <APIItem name="type" type="string | string[]">
+    要添加的标记。
+  </APIItem>
+  <APIItem name="ignoreTrim" type="boolean" optional>
+    是否在字符串可以修剪时进行格式化。
+  </APIItem>
 </APIAttributes>
+</API>
 
-### AutoformatTextRule
+### `AutoformatTextRule`
 
-文本模式自动格式化规则的接口。
+一个接口，用于文本模式的自动格式化规则。
 
+<API name="AutoformatTextRule">
 <APIParameters>
-<APIItem name="mode" type="'text'">
-
-模式为 'text'。
-
-</APIItem>
-<APIItem name="match" type="string | string[]">
-
-匹配自动格式化规则的模式。
-
-</APIItem>
-<APIItem name="format" type="string | string[] | ((editor: PlateEditor, options: GetMatchPointsReturnType) => void)">
-
-匹配的文本被该字符串替换，匹配的文本被这些字符串替换，或在匹配时调用的函数。
-
-</APIItem>
+  <APIItem name="mode" type="'text'">
+    文本模式：插入文本。
+  </APIItem>
+  <APIItem name="match" type="string | string[]">
+    自动格式化规则的匹配模式。
+  </APIItem>
+  <APIItem name="format" type="string | string[] | ((editor: PlateEditor, options: GetMatchPointsReturnType) => void)">
+    文本替换或格式化函数。
+  </APIItem>
 </APIParameters>
+</API>

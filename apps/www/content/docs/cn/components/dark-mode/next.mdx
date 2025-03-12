@@ -1,13 +1,13 @@
 ---
 title: Next.js
-description: 为您的 Next.js 应用添加深色模式。
+description: 为你的 Next.js 应用添加暗黑模式。
 ---
 
-## Dark mode
+## 暗黑模式
 
 <Steps>
 
-### Install next-themes
+### 安装 next-themes
 
 首先安装 `next-themes`：
 
@@ -15,7 +15,7 @@ description: 为您的 Next.js 应用添加深色模式。
 npm install next-themes
 ```
 
-### 创建一个主题 provider
+### 创建主题 provider
 
 ```tsx title="components/theme-provider.tsx"
 'use client';
@@ -33,7 +33,7 @@ export function ThemeProvider({
 
 ### 包裹你的root layout 文件
 
-将 `ThemeProvider` 添加到您的 root layout 中。
+将 `ThemeProvider` 添加到您的 root layout 文件 中。
 
 ```tsx {1,9-11} title="app/layout.tsx"
 import { ThemeProvider } from '@/components/theme-provider';
@@ -59,9 +59,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
 }
 ```
 
-### 添加一个模式切换按钮
+### 添加模式切换按钮
 
-在您的网站上放置一个模式切换按钮，用于在浅色和深色模式之间切换。
+在你的网站上放置一个模式切换按钮，用于在亮色模式和暗黑模式之间切换。
 
 <ComponentPreview name="mode-toggle" className="[&_.preview]:items-start" />
 

@@ -1,8 +1,8 @@
 ---
-title: Horizontal Rule
+title: 水平分割线
 docs:
   - route: /docs/components/hr-element
-    title: Hr Element
+    title: Hr 元素
 ---
 
 <ComponentPreview name="horizontal-rule-demo" />
@@ -11,8 +11,8 @@ docs:
 
 ## 功能
 
-- 插入水平线以分隔内容或指示主题变化。
-- 使用 autoformat 插件，在行首输入三个破折号（**`---`**）将其转换为水平线。
+- 插入水平线以分隔内容或指示主题转换
+- 在新行开头输入三个破折号 (`---`) 以转换为水平分割线
 
 </PackageInfo>
 
@@ -32,7 +32,7 @@ import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { SelectOnBackspacePlugin } from '@udecode/plate-select/react';
 
 const plugins = [
-  // ...otherPlugins,
+  // ...其他插件,
   HorizontalRulePlugin,
   SelectOnBackspacePlugin.configure({
     options: { query: { allow: [HorizontalRulePlugin.key] } },
@@ -58,6 +58,8 @@ const plugins = [
 ];
 ```
 
-## Plugins
+## 插件
 
-### HorizontalRulePlugin
+### `HorizontalRulePlugin`
+
+用于插入水平分割线以分隔内容的插件。
