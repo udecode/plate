@@ -8,43 +8,6 @@ Since Plate UI is not a component library, a changelog is maintained here.
 
 Use the [CLI](https://platejs.org/docs/components/cli) to install the latest version of the components.
 
-## April 2025 #21
-
-### April 1 #21.1
-
-Plate 47 - WebRTC collaboration
-
-- `plate-yjs`: Major update with WebRTC provider support
-  - Added WebRTC provider support for peer-to-peer collaboration
-  - Created unified provider interface for consistent API
-  - Maintained backward compatibility with Hocuspocus
-  - Added configuration options for both providers
-
-```tsx
-// WebRTC provider configuration
-YjsPlugin.configure({
-  options: {
-    providerType: 'webrtc',
-    webrtcOptions: {
-      // WebRTC specific options
-      signaling: ['wss://your-signaling-server'],
-      password: 'optional-room-password',
-    },
-  },
-});
-
-// Hocuspocus provider (existing approach)
-YjsPlugin.configure({
-  options: {
-    providerType: 'hocuspocus', // or undefined for backward compatibility
-    hocuspocusOptions: {
-      // Hocuspocus specific options
-      url: 'wss://your-hocuspocus-server',
-    },
-  },
-});
-```
-
 ## March 2025 #20
 
 ### March 2 #20.2

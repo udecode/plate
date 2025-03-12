@@ -8,43 +8,6 @@ toc: true
 
 使用 [CLI](https://platejs.org/docs/components/cli) 安装最新版本的组件。
 
-## 2025年4月 #21
-
-### 4月1日 #21.1
-
-Plate 47 - WebRTC 协作
-
-- `plate-yjs`: WebRTC 提供程序支持的重大更新
-  - 添加 WebRTC 提供程序支持，实现点对点协作
-  - 创建统一的提供程序接口，提供一致的 API
-  - 保持与 Hocuspocus 的向后兼容性
-  - 为两种提供程序添加配置选项
-
-```tsx
-// WebRTC 提供程序配置
-YjsPlugin.configure({
-  options: {
-    providerType: 'webrtc',
-    webrtcOptions: {
-      // WebRTC 特定选项
-      signaling: ['wss://your-signaling-server'],
-      password: 'optional-room-password',
-    },
-  },
-});
-
-// Hocuspocus 提供程序（现有方法）
-YjsPlugin.configure({
-  options: {
-    providerType: 'hocuspocus', // 或未定义以保持向后兼容性
-    hocuspocusOptions: {
-      // Hocuspocus 特定选项
-      url: 'wss://your-hocuspocus-server',
-    },
-  },
-});
-```
-
 ## 2024年12月 #17
 
 ### 12月28日 #17.8
