@@ -17,7 +17,7 @@ import { siteConfig } from '@/config/site';
 import { Button } from '@/registry/default/plate-ui/button';
 
 import { AnnouncementButton } from './_components/announcement-button';
-import PotionBlockLazy from './_components/potion-block-lazy';
+import { PotionLazyBlock } from './_components/potion-lazy-block';
 
 import '../../../public/r/themes.css';
 
@@ -129,7 +129,7 @@ export default async function IndexPage({
           </section>
 
           <div className="relative mt-12 scroll-m-16 pb-48 md:mt-24 lg:mt-36">
-            <PotionBlockLazy />
+            <PotionLazyBlock />
           </div>
         </div>
       </div>

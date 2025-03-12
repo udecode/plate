@@ -86,7 +86,7 @@ const i18n = {
   },
 };
 
-export default function PotionBlockLazy() {
+export function PotionLazyBlock() {
   const searchParams = useSearchParams();
 
   const [locale, setLocale] = useState<keyof typeof i18n>('en');
@@ -105,7 +105,8 @@ export default function PotionBlockLazy() {
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 50 && !shouldRender) {
+      // scroll home page down over 100px and render the block
+      if (window.scrollY > 100 && !shouldRender) {
         setShouldRender(true);
       }
     };
