@@ -84,7 +84,7 @@ const isLeafNode = (node: MdElementType | MdLeafType): node is MdLeafType => {
 };
 
 export function serializeMdNode(
-  node: MdElementType | MdLeafType,
+  node: (MdElementType | MdLeafType) & { index: number },
   opts: SerializeMdOptions
 ) {
   const { customNodes, nodes } = opts;
@@ -177,9 +177,11 @@ export function serializeMdNode(
         return serializeMdNode(
           {
             ...c,
+            index,
             parent: {
               type,
               ...listProps,
+              children: node.children,
             },
           },
           {
