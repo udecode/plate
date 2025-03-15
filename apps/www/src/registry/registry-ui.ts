@@ -34,7 +34,7 @@ export const uiComponents: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: [],
+    dependencies: ['@udecode/plate-ai'],
     doc: {
       description: 'A toolbar button for accessing AI features.',
       docs: [
@@ -195,7 +195,7 @@ export const uiComponents: Registry['items'] = [
       { path: 'plate-ui/comment-toolbar-button.tsx', type: 'registry:ui' },
     ],
     name: 'comment-toolbar-button',
-    registryDependencies: [],
+    registryDependencies: ['comments-plugin'],
     type: 'registry:ui',
   },
   {
@@ -1248,7 +1248,7 @@ export const uiNodes: Registry['items'] = [
       { path: 'plate-ui/font-size-toolbar-button.tsx', type: 'registry:ui' },
     ],
     name: 'font-size-toolbar-button',
-    registryDependencies: ['toolbar'],
+    registryDependencies: ['popover', 'toolbar'],
     type: 'registry:ui',
   },
   {
@@ -1932,7 +1932,7 @@ export const uiPrimitives: Registry['items'] = [
     },
     files: [{ path: 'plate-ui/tooltip.tsx', type: 'registry:ui' }],
     name: 'tooltip',
-    registryDependencies: [],
+    registryDependencies: ['button'],
     type: 'registry:ui',
   },
   {

@@ -296,7 +296,7 @@ export type EditorTransforms<V extends Value = Value> = {
   /** Move the selection's point forward or backward. */
   move: OmitFirst<typeof moveSelection>;
   /**
-   * Set the selection to a new value specified by `target`. When a selection
+   * Set the selection to a new value specified by `at`. When a selection
    * already exists, this method is just a proxy for `setSelection` and will
    * update the existing value.
    *

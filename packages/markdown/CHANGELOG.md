@@ -1,5 +1,15 @@
 # @udecode/plate-md-serializer
 
+## 46.0.8
+
+### Patch Changes
+
+- [#4153](https://github.com/udecode/plate/pull/4153) by [@martin-lysk](https://github.com/martin-lysk) – fixes empty value detection
+
+- [#4152](https://github.com/udecode/plate/pull/4152) by [@martin-lysk](https://github.com/martin-lysk) – fixes indentList for root level lists
+
+- [#4156](https://github.com/udecode/plate/pull/4156) by [@martin-lysk](https://github.com/martin-lysk) – Fixes nodes option in serialize function
+
 ## 46.0.3
 
 ### Patch Changes

@@ -6,7 +6,6 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 
 import HomeTabs from '@/app/(app)/_components/home-tabs';
-import { BlockDisplay } from '@/components/block-display';
 import {
   PageHeader,
   PageHeaderDescription,
@@ -18,11 +17,16 @@ import { siteConfig } from '@/config/site';
 import { Button } from '@/registry/default/plate-ui/button';
 
 import { AnnouncementButton } from './_components/announcement-button';
+import { PotionLazyBlock } from './_components/potion-lazy-block';
 
 import '../../../public/r/themes.css';
 
 const CustomizerDrawer = dynamic(
   () => import('@/components/customizer-drawer')
+);
+
+const BlockDisplay = dynamic(() =>
+  import('@/components/block-display').then((mod) => mod.BlockDisplay)
 );
 
 const i18n = {
@@ -84,17 +88,6 @@ export default async function IndexPage({
   const locale = ((await searchParams).locale || 'en') as keyof typeof i18n;
   const content = i18n[locale];
 
-  const block = {
-    description: content.potionDescription,
-    descriptionSrc: siteConfig.links.potionTemplate,
-    isPro: true,
-    meta: {
-      iframeHeight: 800,
-    },
-    name: 'potion',
-    src: siteConfig.links.potionIframe,
-  };
-
   return (
     <>
       <div className="relative">
@@ -136,7 +129,7 @@ export default async function IndexPage({
           </section>
 
           <div className="relative mt-12 scroll-m-16 pb-48 md:mt-24 lg:mt-36">
-            <BlockDisplay {...block} />
+            <PotionLazyBlock />
           </div>
         </div>
       </div>

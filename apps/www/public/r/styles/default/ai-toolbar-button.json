@@ -1,5 +1,7 @@
 {
-  "dependencies": [],
+  "dependencies": [
+    "@udecode/plate-ai"
+  ],
   "doc": {
     "description": "A toolbar button for accessing AI features.",
     "docs": [
