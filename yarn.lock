@@ -6360,7 +6360,7 @@ __metadata:
   resolution: "@udecode/plate-ai@workspace:packages/ai"
   dependencies:
     "@udecode/plate-combobox": "npm:44.0.0"
-    "@udecode/plate-markdown": "npm:46.0.3"
+    "@udecode/plate-markdown": "npm:46.0.8"
     "@udecode/plate-selection": "npm:46.0.4"
     ai: "npm:^3.4.33"
     lodash: "npm:^4.17.21"
@@ -6832,7 +6832,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-markdown@npm:46.0.3, @udecode/plate-markdown@workspace:^, @udecode/plate-markdown@workspace:packages/markdown":
+"@udecode/plate-markdown@npm:46.0.8, @udecode/plate-markdown@workspace:^, @udecode/plate-markdown@workspace:packages/markdown":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-markdown@workspace:packages/markdown"
   dependencies:

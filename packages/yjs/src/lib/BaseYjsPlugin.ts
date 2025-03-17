@@ -1,8 +1,4 @@
-import type {
-  HocuspocusProviderConfiguration,
-  onDisconnectParameters,
-  onSyncedParameters,
-} from '@hocuspocus/provider';
+import type { HocuspocusProviderConfiguration } from '@hocuspocus/provider';
 import type { WithCursorsOptions } from '@slate-yjs/core';
 
 import { HocuspocusProvider } from '@hocuspocus/provider';
@@ -17,7 +13,7 @@ export type YjsConfig = PluginConfig<
   {
     isConnected: boolean;
     isSynced: boolean;
-    provider: HocuspocusProvider;
+    provider?: HocuspocusProvider;
     /** WithCursors options */
     cursorOptions?: WithCursorsOptions;
     disableCursors?: boolean;
@@ -43,21 +39,15 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
   const { hocuspocusProviderOptions, provider } = getOptions();
 
   if (provider) {
-    provider.setConfiguration({
-      onAwarenessChange() { },
-      onConnect() {
-        setOption('isConnected', true);
-        provider.onConnect();
-      },
-      onDisconnect(data: onDisconnectParameters) {
-        setOption('isConnected', false);
-        setOption('isSynced', false);
-        provider.onDisconnect(data);
-      },
-      onSynced(data: onSyncedParameters) {
-        setOption('isSynced', true);
-        provider.onSynced(data);
-      },
+    provider.on('connect', () => {
+      setOption('isConnected', true);
+    });
+    provider.on('disconnect', () => {
+      setOption('isConnected', false);
+      setOption('isSynced', false);
+    });
+    provider.on('synced', () => {
+      setOption('isSynced', true);
     });
 
     return {

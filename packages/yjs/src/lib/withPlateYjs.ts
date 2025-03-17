@@ -17,6 +17,9 @@ export const withPlateYjs: ExtendEditor<YjsConfig> = ({
   // not reactive
   const { cursorOptions, disableCursors, provider, yjsOptions } = getOptions();
 
+  if (!provider)
+    throw new Error('HocuspocusProvider configuration is required');
+
   const sharedType = provider.document.get(
     'content',
     Y.XmlText
