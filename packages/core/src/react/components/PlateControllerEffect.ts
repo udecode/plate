@@ -39,7 +39,8 @@ export const PlateControllerEffect = ({
   );
 
   const setCurrentStore = useStableFn(
-    usePlateControllerLocalStore().setAtom(currentStoreAtom)
+    usePlateControllerLocalStore().setAtom(currentStoreAtom),
+    [currentStoreAtom]
   );
 
   const setPrimaryEditorIds = useStableFn(
