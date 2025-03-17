@@ -1,4 +1,4 @@
-name: Jest tests
+name: Tests
 
 on:
   push:
@@ -43,7 +43,7 @@ on:
 
 jobs:
   test:
-    name: Unit Tests
+    name: Tests
     runs-on: ubuntu-latest
 
     # Add concurrency to cancel redundant runs
@@ -75,6 +75,9 @@ jobs:
 
       - name: 🧪 Run tests
         run: yarn test
+
+      - name: 📥 Install Playwright browsers
+        run: yarn playwright install
 
       - name: 🎭 Run Playwright tests
         run: yarn e2e
