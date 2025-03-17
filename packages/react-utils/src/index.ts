@@ -16,6 +16,7 @@ export * from './useIsomorphicLayoutEffect';
 export * from './useMemoOnce';
 export * from './useMemoizedSelector';
 export * from './useOnClickOutside';
+export * from './useStableFn';
 export * from './useStableMemo';
 export * from './withProviders';
 export * from './withRef';
